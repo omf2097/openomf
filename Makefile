@@ -19,7 +19,7 @@ LIBDIR=lib
 INCDIR=include
 OBJDIR=obj
 
-CFLAGS=-I$(INCDIR) -O2 -std=c99
+CFLAGS=-I$(INCDIR) -O2 -Wall -s -std=c99
 
 all: 
 	$(MKDIR) $(LIBDIR)/
