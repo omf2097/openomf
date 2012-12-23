@@ -2,6 +2,7 @@
 #include "internal/reader.h"
 #include "internal/writer.h"
 #include "internal/animation.h"
+#include <stdlib.h>
 
 bk_file* bk_load(const char *filename) {
     // Initialize reader
@@ -21,12 +22,10 @@ bk_file* bk_load(const char *filename) {
 
     // Read animations
     int8_t animno = 0;
-    int8_t last_animno = 0;
-    while(true) {
+    while(1) {
         sd_skip(r, 4);
         animno = sd_read_ubyte(r);
-        if(animno >= 50 || !sd_reader_ok()) {
-            last_animno = animno;
+        if(animno >= 50 || !sd_reader_ok(r)) {
             break;
         }
 
@@ -43,7 +42,7 @@ bk_file* bk_load(const char *filename) {
 }
 
 int bk_save(const char* filename, bk_file *data) {
-
+    return 0;
 }
 
 void bk_destroy(bk_file *data) {

@@ -1,6 +1,8 @@
 #ifndef _BK_H
 #define _BK_H
 
+#include <stdint.h>
+
 typedef struct bk_file_t {
     uint32_t file_id;
     uint8_t unknown_a;
