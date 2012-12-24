@@ -38,20 +38,32 @@
 			<Add option="-std=c99" />
 			<Add directory="include/" />
 		</Compiler>
+		<Unit filename="include/animation.h" />
 		<Unit filename="include/bk.h" />
-		<Unit filename="include/internal/animation.h" />
 		<Unit filename="include/internal/reader.h" />
 		<Unit filename="include/internal/writer.h" />
-		<Unit filename="src/bk.c">
+		<Unit filename="include/rgba_image.h" />
+		<Unit filename="include/sprite_image.h" />
+		<Unit filename="include/vga_image.h" />
+		<Unit filename="src/animation.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/internal/animation.c">
+		<Unit filename="src/bk.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/internal/reader.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/internal/writer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/rgba_image.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/sprite_image.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/vga_image.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>
