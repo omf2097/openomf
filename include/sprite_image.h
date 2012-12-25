@@ -2,6 +2,7 @@
 #define _SPRITE_IMAGE
 
 #include "rgba_image.h"
+#include "palette.h"
 
 typedef struct sprite_image_t {
     unsigned int w;

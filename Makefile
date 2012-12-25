@@ -14,7 +14,7 @@ FILES := \
     src/rgba_image.c \
     src/sprite_image.c \
     src/vga_image.c \
-    src/internal/animation.c \
+    src/animation.c \
     src/internal/reader.c \
     src/internal/writer.c 
     

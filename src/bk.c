@@ -1,7 +1,7 @@
 #include "bk.h"
 #include "internal/reader.h"
 #include "internal/writer.h"
-#include "internal/animation.h"
+#include "animation.h"
 #include <stdlib.h>
 
 bk_file* bk_load(const char *filename) {

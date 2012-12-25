@@ -1,2 +1,2 @@
-#include "internal/animation.h"
+#include "animation.h"
 
