@@ -13,7 +13,7 @@ vga_image* sd_vga_image_create(unsigned int w, unsigned int h) {
     return img;
 }
 
-void sd_vga_image_destroy(vga_image *img) {
+void sd_vga_image_delete(vga_image *img) {
     free(img->data);
     free(img);
 }
@@ -24,7 +24,7 @@ vga_image* sd_vga_image_encode(rgba_image *img, palette *pal, int remapping) {
 }
 
 rgba_image* sd_vga_image_decode(vga_image *img, palette *pal, int remapping) {
-    rgba_image *rgba = sd_create_rgba_image(img->w, img->h);
+    rgba_image *rgba = sd_rgba_image_create(img->w, img->h);
     int pos = 0;
     for(int y = img->h - 1; y >= 0; y--) {
         for(int x = 0; x < img->w; x++) {

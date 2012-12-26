@@ -2,12 +2,19 @@
 #define _BK_H
 
 #include <stdint.h>
+#include "palette.h"
+#include "vga_image.h"
 
 typedef struct bk_file_t {
     uint32_t file_id;
     uint8_t unknown_a;
     uint16_t img_w;
     uint16_t img_h;
+
+    vga_image *background;
+    palette **palettes;
+
+    char footer[30];
 } bk_file;
 
 /**
