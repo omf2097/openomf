@@ -1,2 +1,2 @@
-include "palette.h"
+#include "palette.h"
 
