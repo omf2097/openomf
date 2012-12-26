@@ -15,10 +15,10 @@ void sd_vga_image_destroy(vga_image *img) {
     free(img);
 }
 
-vga_image* sd_vga_image_encode(rgba_image *img, palette *pal) {
+vga_image* sd_vga_image_encode(rgba_image *img, palette *pal, int remapping) {
     return 0;
 }
 
-rgba_image* sd_vga_image_decode(vga_image *img, palette *pal) {
+rgba_image* sd_vga_image_decode(vga_image *img, palette *pal, int remapping) {
     return 0;
 }
