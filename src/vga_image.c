@@ -16,9 +16,11 @@ void sd_vga_image_destroy(vga_image *img) {
 }
 
 vga_image* sd_vga_image_encode(rgba_image *img, palette *pal, int remapping) {
-    return 0;
+    vga_image *vga = sd_vga_image_create(img->w, img->h);
+    return vga;
 }
 
 rgba_image* sd_vga_image_decode(vga_image *img, palette *pal, int remapping) {
-    return 0;
+    rgba_image *rgba = sd_create_rgba_image(img->w, img->h);
+    return rgba;
 }
