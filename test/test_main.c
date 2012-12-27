@@ -2,13 +2,18 @@
 #include <stdio.h>
 
 int main(void) {
-    bk_file *file;
+    sd_bk_file *file;
 
     printf("Loading file ...\n");
-    file = bk_load("MAIN.BK");
+    file = sd_bk_load("resources/MAIN.BK");
+    if(file) {
+        printf("File loaded.\n");
 
-    printf("Destroying resources ...\n");
-    bk_destroy(file);
+        printf("Destroying resources ...\n");
+        sd_bk_delete(file);
+    } else {
+        printf("Unable to load file!\n");
+    }
 
     printf("Exiting.\n");
     return 0;

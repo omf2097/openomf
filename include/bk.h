@@ -11,25 +11,25 @@ typedef struct bk_file_t {
     uint16_t img_w;
     uint16_t img_h;
 
-    vga_image *background;
-    palette **palettes;
+    sd_vga_image *background;
+    sd_palette **palettes;
 
     char footer[30];
-} bk_file;
+} sd_bk_file;
 
 /**
   * Load .BK file. Returns 0 on error.
   */
-bk_file* bk_load(const char *filename);
+sd_bk_file* sd_bk_load(const char *filename);
 
 /**
   * Saves BK file structure. Returns 1 on success, 0 on error.
   */
-int bk_save(const char* filename, bk_file *data);
+int sd_bk_save(const char* filename, sd_bk_file *bk);
 
 /**
-  * Destroys bk_file structure from memory.
+  * Deletes bk_file structure from memory.
   */
-void bk_destroy(bk_file *data);
+void sd_bk_delete(sd_bk_file *bk);
 
 #endif // _BK_H

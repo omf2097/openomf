@@ -4,7 +4,7 @@
 #include "animation.h"
 #include <stdlib.h>
 
-bk_file* bk_load(const char *filename) {
+sd_bk_file* sd_bk_load(const char *filename) {
     // Initialize reader
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
@@ -12,7 +12,7 @@ bk_file* bk_load(const char *filename) {
     }
 
     // Allocate structure
-    bk_file *bk = malloc(sizeof(bk_file));
+    sd_bk_file *bk = malloc(sizeof(sd_bk_file));
 
     // Header
     bk->file_id = sd_read_udword(r);
@@ -38,7 +38,7 @@ bk_file* bk_load(const char *filename) {
 
     // Read palettes
     uint8_t num_palettes = sd_read_ubyte(r);
-    bk->palettes = malloc(num_palettes * sizeof(palette));
+    bk->palettes = malloc(num_palettes * sizeof(sd_palette));
     for(uint8_t i = 0; i < num_palettes; i++) {
         sd_read_buf(r, (char*)bk->palettes[i]->data, 256*3);
         sd_read_buf(r, (char*)bk->palettes[i]->remaps, 19*256);
@@ -52,11 +52,11 @@ bk_file* bk_load(const char *filename) {
     return bk;
 }
 
-int bk_save(const char* filename, bk_file *bk) {
+int sd_bk_save(const char* filename, sd_bk_file *bk) {
     return 0;
 }
 
-void bk_destroy(bk_file *bk) {
+void sd_bk_delete(sd_bk_file *bk) {
     sd_vga_image_delete(bk->background);
     free(bk->palettes);
     free(bk);

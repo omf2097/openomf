@@ -9,7 +9,7 @@ typedef struct sprite_t {
     int16_t pos_y;
     uint8_t index;
     uint8_t missing;
-    sprite_image *img;
-} sprite;
+    sd_sprite_image *img;
+} sd_sprite;
 
 #endif // _SPRITE_H
