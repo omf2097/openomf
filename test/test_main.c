@@ -8,6 +8,7 @@ int main(void) {
     file = sd_bk_load("resources/MAIN.BK");
     if(file) {
         printf("File loaded.\n");
+        printf("ID: %d\n", file->file_id);
 
         printf("Destroying resources ...\n");
         sd_bk_delete(file);

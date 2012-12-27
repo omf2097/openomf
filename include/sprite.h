@@ -12,4 +12,7 @@ typedef struct sprite_t {
     sd_sprite_image *img;
 } sd_sprite;
 
+sd_sprite* sd_sprite_create();
+void sd_sprite_delete(sd_sprite *sprite);
+
 #endif // _SPRITE_H
