@@ -17,6 +17,7 @@ FILES := \
     src/vga_image.c \
     src/animation.c \
     src/palette.c \
+    src/sprite.c \
     src/internal/reader.c \
     src/internal/writer.c 
 
