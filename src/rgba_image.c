@@ -1,6 +1,7 @@
 #include "rgba_image.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 sd_rgba_image* sd_rgba_image_create(unsigned int w, unsigned int h) {
     sd_rgba_image *img = (sd_rgba_image*)malloc(sizeof(sd_rgba_image));
@@ -9,6 +10,23 @@ sd_rgba_image* sd_rgba_image_create(unsigned int w, unsigned int h) {
     img->h = h;
     memset(img->data, w*h*4, 0);
     return img;
+}
+
+void sd_rgba_image_to_ppm(sd_rgba_image *img, const char *filename) {
+    FILE *fd = fopen(filename, "w");
+    fprintf(fd, "P3\n");
+    fprintf(fd, "# %s\n", filename);
+    fprintf(fd, "%d %d\n", img->w, img->h);
+    fprintf(fd, "255\n");
+    int len = img->w * img->h * 4;
+    int i = 0;
+    while(i < len) {
+        for(int j = 0; j < 5; j++) {
+            fprintf(fd, "%d %d %d ", img->data[i], img->data[i+1], img->data[i+2]);
+            i+=4;
+        }
+        fprintf(fd, "\n");
+    }
 }
 
 void sd_rgba_image_delete(sd_rgba_image *img) {

@@ -8,6 +8,7 @@ typedef struct rgba_image_t {
 } sd_rgba_image;
 
 sd_rgba_image* sd_rgba_image_create(unsigned int w, unsigned int h);
+void sd_rgba_image_to_ppm(sd_rgba_image *img, const char *filename);
 void sd_rgba_image_delete(sd_rgba_image *img);
 
 #endif // _RGBA_IMAGE

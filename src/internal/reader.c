@@ -33,6 +33,9 @@ int sd_reader_ok(sd_reader *reader) {
     return 1;
 }
 
+long sd_reader_pos(sd_reader *reader) {
+    return ftell(reader->handle);
+}
 
 int sd_read_buf(sd_reader *reader, char *buf, int len) {
     if(fread(buf, 1, len, reader->handle) != len) {

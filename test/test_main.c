@@ -10,6 +10,9 @@ int main(void) {
         printf("File loaded.\n");
         printf("ID: %d\n", file->file_id);
 
+        printf("drawing background to out.ppm\n");
+        sd_rgba_image_to_ppm(sd_vga_image_decode(file->background, file->palettes[0], -1), "out.ppm");
+
         printf("Destroying resources ...\n");
         sd_bk_delete(file);
     } else {

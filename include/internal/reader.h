@@ -20,6 +20,8 @@ void sd_reader_close(sd_reader *reader);
   */
 int sd_reader_ok(sd_reader *reader);
 
+long sf_reader_pos(sd_reader *reader);
+
 int sd_read_buf(sd_reader *reader, char *buf, int len);
 int sd_peek_buf(sd_reader *reader, char *buf, int len);
 
