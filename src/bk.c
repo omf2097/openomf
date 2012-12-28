@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include <stdio.h>
+
 sd_bk_file* sd_bk_load(const char *filename) {
     // Initialize reader
     sd_reader *r = sd_reader_open(filename);
@@ -25,7 +27,7 @@ sd_bk_file* sd_bk_load(const char *filename) {
 
     // Read animations
     uint8_t animno = 0;
-    uint8_t size = 0;
+    uint8_t t_size = 0;
     sd_animation *ani;
     while(1) {
         sd_skip(r, 4);
@@ -34,10 +36,12 @@ sd_bk_file* sd_bk_load(const char *filename) {
             break;
         }
 
+        printf("Anim number: %d\n", animno);
+
         // BK Specific animation header
         sd_skip(r, 7);// TODO: Find out what this is
-        size = sd_read_uword(r);
-        sd_skip(r, size); // TODO: What is this ?
+        t_size = sd_read_uword(r);
+        sd_skip(r, t_size); // TODO: What is this ?
 
         // Initialize animation
         ani = sd_animation_create();
@@ -49,12 +53,14 @@ sd_bk_file* sd_bk_load(const char *filename) {
         ani->frame_count = sd_read_ubyte(r);
         ani->overlay_table = (uint32_t*)malloc(sizeof(uint32_t)*ani->overlay_count);
         sd_read_buf(r, (char*)ani->overlay_table, sizeof(uint32_t)*ani->overlay_count);
+        printf("Position (end animation header): %d\n", sd_reader_pos(r));
 
         // Animation string header
         ani->anim_string_len = sd_read_uword(r);
         ani->anim_string = (char*)malloc(ani->anim_string_len + 1);
-        sd_read_buf(r, ani->anim_string, ani->anim_string_len+1); // assume its null terminated
+        sd_read_buf(r, ani->anim_string, ani->anim_string_len + 1); // assume its null terminated
         assert(ani->anim_string[ani->anim_string_len] == '\0');
+        printf("Position (end string header): %d\n", sd_reader_pos(r));
 
         // Extra animation strings
         ani->extra_string_count = sd_read_ubyte(r);
@@ -66,6 +72,7 @@ sd_bk_file* sd_bk_load(const char *filename) {
             sd_read_buf(r, ani->extra_strings[i], size+1);
             assert(ani->extra_strings[i][size] == '\0');
         }
+        printf("Position (end extra strings): %d\n", sd_reader_pos(r));
 
         // Sprites
         ani->sprites = (sd_sprite**)malloc(sizeof(sd_sprite*) * ani->frame_count);
@@ -88,7 +95,9 @@ sd_bk_file* sd_bk_load(const char *filename) {
                 // TODO set the pointer to be the actual sprite, from the other animation, maybe?
                 sprite->img = NULL;
             }
+            printf("Position (end frame %d): %d\n", i, sd_reader_pos(r));
         }
+        printf("Position (end animation): %d\n", sd_reader_pos(r));
     }
 
     // Read background image
