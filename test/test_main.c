@@ -18,16 +18,22 @@ int main(void) {
 
         for(int i = 0; i < 50; i++) {
             if (file->animations[i]) {
-                printf("animation %d\n", i);
+                printf("animation %d with %d frames\n", i, file->animations[i]->frame_count);
                 for(int j = 0; j < file->animations[i]->frame_count; j++) {
                     if (file->animations[i]->sprites[j]->missing > 0) {
+                        printf("missing sprite: %d-%d\n", i, j);
+                        continue;
+                    }
+                    if (file->animations[i]->sprites[j]->img->len == 0) {
+                        printf("warning, 0 length sprite: %d-%d\n", i, j);
                         continue;
                     }
                     sprintf(buf, "sprite-%d-%d.ppm", i, j);
+                    /*printf("decoding sprite to %s\n", buf);*/
                     sd_rgba_image_to_ppm(sd_sprite_image_decode(file->animations[i]->sprites[j]->img, file->palettes[0], -1), buf);
                 }
             } else {
-                printf("skipping blank animation %d\n", i);
+                /*printf("skipping blank animation %d\n", i);*/
             }
         }
 
