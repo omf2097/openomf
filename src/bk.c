@@ -53,8 +53,11 @@ sd_bk_file* sd_bk_load(const char *filename) {
 
         // Animation header
         sd_read_buf(r, ani->unknown_a, 8);
+        printf("Position (details #1): %d\n", sd_reader_pos(r));
         ani->overlay_count = sd_read_uword(r);
+        printf("Position (details #2): %d\n", sd_reader_pos(r));
         ani->frame_count = sd_read_ubyte(r);
+        printf("Position (details #3): %d\n", sd_reader_pos(r));
         ani->overlay_table = (uint32_t*)malloc(sizeof(uint32_t)*ani->overlay_count);
         sd_read_buf(r, (char*)ani->overlay_table, sizeof(uint32_t)*ani->overlay_count);
         printf("Position (end animation header): %d\n", sd_reader_pos(r));
