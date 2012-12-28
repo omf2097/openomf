@@ -28,7 +28,7 @@ BINDIR=bin
 INCDIR=include
 OBJDIR=obj
 
-CFLAGS=-I$(INCDIR) -O2 -Wall -s -std=c99
+CFLAGS=-I$(INCDIR) -Wall -std=c99 -ggdb -g3
 
 all: 
 	$(MKDIR) $(LIBDIR)/
@@ -37,7 +37,7 @@ all:
 	$(CC) $(CFLAGS) -c $(FILES)
 	$(MV) *.o $(OBJDIR)/
 	$(AR) rcs $(LIBDIR)/$(LIBNAME) $(OBJDIR)/*.o
-	$(CC) -o $(BINDIR)/$(TESTBIN) -I $(INCDIR)/ -l $(LIBDIR)/ -c $(TESTMAIN)
+	$(CC) $(CFLAGS) -o $(BINDIR)/$(TESTBIN) $(TESTMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	@echo "All done!"
 
 clean:

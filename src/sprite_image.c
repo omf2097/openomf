@@ -1,21 +1,62 @@
 #include "sprite_image.h"
 #include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
 
-sd_sprite_image* sd_sprite_image_create(unsigned int w, unsigned int h) {
-    return 0;
+sd_sprite_image* sd_sprite_image_create(unsigned int w, unsigned int h, unsigned int len) {
+    sd_sprite_image *img = (sd_sprite_image*)malloc(sizeof(sd_sprite_image));
+    img->w = w;
+    img->h = h;
+    img->len = len;
+    img->data = (char*)malloc(len);
+    return img;
 }
 
 void sd_sprite_image_delete(sd_sprite_image *img) {
-
+    free(img->data);
+    free(img);
 }
 
 sd_sprite_image* sd_sprite_image_encode(sd_rgba_image *img, sd_palette *pal, int remapping) {
-    sd_sprite_image *sprite = sd_sprite_image_create(img->w, img->h);
-    return sprite;
+    /*sd_sprite_image *sprite = sd_sprite_image_create(img->w, img->h);*/
+    /*int lastx = -1;*/
+    /*unsigned int rgb_size = (img->w * img->h * 4);*/
+    /*for(int pos = 0; pos <= rgb_size; pos+= 4) {*/
+
+    return 0;
 }
 
 sd_rgba_image* sd_sprite_image_decode(sd_sprite_image *img, sd_palette *pal, int remapping) {
     sd_rgba_image *rgba = sd_rgba_image_create(img->w, img->h);
+    uint16_t x = 0;
+    uint16_t y = 0;
+    int pos = 0;
+    while(pos < img->len) {
+        // read a word
+        uint16_t c = ((uint16_t)img->data[pos] << 8) + (uint16_t)img->data[pos+1];
+        char op = c % 4;
+        uint16_t data = c / 4;
+        pos += 2; // we read 2 bytes
+        switch(op) {
+            case 0:
+                x = data;
+                break;
+            case 2:
+                y = data;
+                break;
+            case 1:
+                while(data > 0) {
+                    // XXX this is wrong
+                    /*rgba[x*y*4] = img->data[pos];*/
+                    pos++; // we read 1 byte
+                    x++;
+                    data--;
+                }
+                break;
+            case 3:
+                break;
+        }
+    }
     return rgba;
 }
 
