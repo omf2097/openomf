@@ -70,7 +70,6 @@ sd_bk_file* sd_bk_load(const char *filename) {
                 // sprite data follows
                 sprite->img = sd_sprite_image_create(width, height, len);
                 sd_read_buf(r, sprite->img->data, len);
-                sd_sprite_image_decode(sprite->img, malloc(sizeof(sd_palette)), 1);
             } else {
                 // TODO set the pointer to be the actual sprite, from the other animation, maybe?
                 sprite->img = NULL;
