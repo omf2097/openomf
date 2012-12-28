@@ -12,7 +12,7 @@ typedef struct sd_writer_t {
 sd_writer* sd_writer_open(const char *file) {
     sd_writer *writer = malloc(sizeof(sd_writer));
 
-    writer->handle = fopen(file, "w");
+    writer->handle = fopen(file, "wb");
     if(!writer->handle) {
         free(writer);
         return 0;

@@ -11,7 +11,7 @@ typedef struct sd_reader_t {
 sd_reader* sd_reader_open(const char *file) {
     sd_reader *reader = malloc(sizeof(sd_reader));
 
-    reader->handle = fopen(file, "r");
+    reader->handle = fopen(file, "rb");
     if(!reader->handle) {
         free(reader);
         return 0;
