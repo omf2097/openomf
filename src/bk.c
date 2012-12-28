@@ -33,23 +33,30 @@ sd_bk_file* sd_bk_load(const char *filename) {
         if(animno >= 50 || !sd_reader_ok(r)) {
             break;
         }
-        // skip some unknown data, for now
-        sd_skip(r, 7);
+
+        // BK Specific animation header
+        sd_skip(r, 7);// TODO: Find out what this is
         size = sd_read_uword(r);
-        // skip some unknown data
-        sd_skip(r, size);
+        sd_skip(r, size); // TODO: What is this ?
+
+        // Initialize animation
         ani = sd_animation_create();
         bk->animations[animno] = ani;
+
+        // Animation header
         sd_read_buf(r, ani->unknown_a, 8);
         ani->overlay_count = sd_read_uword(r);
         ani->frame_count = sd_read_ubyte(r);
         ani->overlay_table = (uint32_t*)malloc(sizeof(uint32_t)*ani->overlay_count);
         sd_read_buf(r, (char*)ani->overlay_table, sizeof(uint32_t)*ani->overlay_count);
+
+        // Animation string header
         ani->anim_string_len = sd_read_uword(r);
         ani->anim_string = (char*)malloc(ani->anim_string_len + 1);
-        // assume its null terminates
-        sd_read_buf(r, ani->anim_string, ani->anim_string_len+1);
+        sd_read_buf(r, ani->anim_string, ani->anim_string_len+1); // assume its null terminated
         assert(ani->anim_string[ani->anim_string_len] == '\0');
+
+        // Extra animation strings
         ani->extra_string_count = sd_read_ubyte(r);
         ani->extra_strings = (char**)malloc(sizeof(char*)*ani->extra_string_count);
         for(int i = 0; i < ani->extra_string_count; i++) {
@@ -59,6 +66,8 @@ sd_bk_file* sd_bk_load(const char *filename) {
             sd_read_buf(r, ani->extra_strings[i], size+1);
             assert(ani->extra_strings[i][size] == '\0');
         }
+
+        // Sprites
         ani->sprites = (sd_sprite**)malloc(sizeof(sd_sprite*) * ani->frame_count);
         for(int i = 0; i < ani->frame_count; i++) {
             // finally, the actual sprite!
