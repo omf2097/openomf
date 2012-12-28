@@ -25,9 +25,11 @@ sd_bk_file* sd_bk_load(const char *filename) {
     bk->img_h = sd_read_uword(r);
     memset(bk->animations, 0, sizeof(bk->animations));
 
+    printf("Position (end BK header): %d\n", sd_reader_pos(r));
+
     // Read animations
     uint8_t animno = 0;
-    uint8_t t_size = 0;
+    int t_size = 0;
     sd_animation *ani;
     while(1) {
         sd_skip(r, 4);
@@ -35,6 +37,7 @@ sd_bk_file* sd_bk_load(const char *filename) {
         if(animno >= 50 || !sd_reader_ok(r)) {
             break;
         }
+        printf("Position (end animno read): %d\n", sd_reader_pos(r));
 
         printf("Anim number: %d\n", animno);
 
@@ -42,6 +45,7 @@ sd_bk_file* sd_bk_load(const char *filename) {
         sd_skip(r, 7);// TODO: Find out what this is
         t_size = sd_read_uword(r);
         sd_skip(r, t_size); // TODO: What is this ?
+        printf("Position (end BK anim header): %d\n", sd_reader_pos(r));
 
         // Initialize animation
         ani = sd_animation_create();
