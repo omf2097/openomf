@@ -43,7 +43,6 @@ all:
 clean:
 	$(RM) $(OBJDIR)/*
 	$(RM) $(LIBDIR)/*
-	$(RM) $(BINDIR)/*
+	$(RM) $(BINDIR)/$(TESTBIN)
 	$(RMDIR) $(OBJDIR)
 	$(RMDIR) $(LIBDIR)
-	$(RMDIR) $(BINDIR)
