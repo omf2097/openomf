@@ -3,15 +3,33 @@
 
 int main(void) {
     sd_bk_file *file;
+    char buf[255];
 
     printf("Loading file ...\n");
     file = sd_bk_load("resources/MAIN.BK");
     if(file) {
         printf("File loaded.\n");
         printf("ID: %d\n", file->file_id);
+        for (int i = 0; i < file->num_palettes; i++) {
+            printf("drawing background with pallete %d to background-%d.ppm\n", i, i);
+            sprintf(buf, "background-%d.ppm", i);
+            sd_rgba_image_to_ppm(sd_vga_image_decode(file->background, file->palettes[i], -1), buf);
+        }
 
-        printf("drawing background to out.ppm\n");
-        sd_rgba_image_to_ppm(sd_vga_image_decode(file->background, file->palettes[0], -1), "out.ppm");
+        for(int i = 0; i < 50; i++) {
+            if (file->animations[i]) {
+                printf("animation %d\n", i);
+                for(int j = 0; j < file->animations[i]->frame_count; j++) {
+                    if (file->animations[i]->sprites[j]->missing > 0) {
+                        continue;
+                    }
+                    sprintf(buf, "sprite-%d-%d.ppm", i, j);
+                    sd_rgba_image_to_ppm(sd_sprite_image_decode(file->animations[i]->sprites[j]->img, file->palettes[0], -1), buf);
+                }
+            } else {
+                printf("skipping blank animation %d\n", i);
+            }
+        }
 
         printf("Destroying resources ...\n");
         sd_bk_delete(file);

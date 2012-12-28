@@ -4,6 +4,7 @@
 #include "animation.h"
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 sd_bk_file* sd_bk_load(const char *filename) {
     // Initialize reader
@@ -20,6 +21,7 @@ sd_bk_file* sd_bk_load(const char *filename) {
     bk->unknown_a = sd_read_ubyte(r);
     bk->img_w = sd_read_uword(r);
     bk->img_h = sd_read_uword(r);
+    memset(bk->animations, 0, sizeof(bk->animations));
 
     // Read animations
     uint8_t animno = 0;
@@ -37,6 +39,7 @@ sd_bk_file* sd_bk_load(const char *filename) {
         // skip some unknown data
         sd_skip(r, size);
         ani = sd_animation_create();
+        bk->animations[animno] = ani;
         sd_read_buf(r, ani->unknown_a, 8);
         ani->overlay_count = sd_read_uword(r);
         ani->frame_count = sd_read_ubyte(r);
@@ -56,9 +59,11 @@ sd_bk_file* sd_bk_load(const char *filename) {
             sd_read_buf(r, ani->extra_strings[i], size+1);
             assert(ani->extra_strings[i][size] == '\0');
         }
+        ani->sprites = (sd_sprite**)malloc(sizeof(sd_sprite*) * ani->frame_count);
         for(int i = 0; i < ani->frame_count; i++) {
             // finally, the actual sprite!
             sd_sprite *sprite = sd_sprite_create();
+            ani->sprites[i] = sprite;
             uint16_t len = sd_read_uword(r);
             sprite->pos_x = sd_read_word(r);
             sprite->pos_y = sd_read_word(r);
@@ -82,9 +87,9 @@ sd_bk_file* sd_bk_load(const char *filename) {
     sd_read_buf(r, bk->background->data, bk->img_h * bk->img_w);
 
     // Read palettes
-    uint8_t num_palettes = sd_read_ubyte(r);
-    bk->palettes = malloc(num_palettes * sizeof(sd_palette*));
-    for(uint8_t i = 0; i < num_palettes; i++) {
+    bk->num_palettes = sd_read_ubyte(r);
+    bk->palettes = malloc(bk->num_palettes * sizeof(sd_palette*));
+    for(uint8_t i = 0; i < bk->num_palettes; i++) {
         bk->palettes[i] = (sd_palette*)malloc(sizeof(sd_palette));
         sd_read_buf(r, (char*)bk->palettes[i]->data, 256*3);
         sd_read_buf(r, (char*)bk->palettes[i]->remaps, 19*256);
