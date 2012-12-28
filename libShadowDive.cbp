@@ -40,6 +40,10 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option use_console_runner="0" />
+				<Linker>
+					<Add library="shadowdive" />
+					<Add directory="lib/" />
+				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
@@ -67,6 +71,10 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="include/rgba_image.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="include/sprite.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -104,6 +112,11 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/rgba_image.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/sprite.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
