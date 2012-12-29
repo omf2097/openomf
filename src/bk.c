@@ -62,7 +62,33 @@ int sd_bk_save(const char* filename, sd_bk_file *bk) {
         return 0;
     }
 
+    // Write header
+    sd_write_udword(w, bk->file_id);
+    sd_write_ubyte(w, bk->unknown_a);
+    sd_write_uword(w, bk->img_w);
+    sd_write_uword(w, bk->img_h);
 
+    // Write animations
+    uint32_t rpos = 0, opos = 0;
+    for(uint8_t i = 0; i < 50; i++) {
+        sd_write_udword(w, 0); // FIXME: This needs to be the starting position of the next animation relative to the start of the file.
+        sd_write_ubyte(w, i);
+        sd_bk_anim_save(w, bk->anims[i]);
+    }
+
+    // Write background image
+    sd_write_buf(w, bk->background->data, bk->background->len);
+
+    // Write palettes
+    sd_write_ubyte(w, bk->num_palettes);
+    for(uint8_t i = 0; i < bk->num_palettes; i++) {
+        sd_palette_save(w, bk->palettes[i]);
+    }
+
+    // Write footer
+    sd_write_buf(w, bk->footer, 30);
+
+    // All done, close writer
     sd_writer_close(w);
     return 1;
 }

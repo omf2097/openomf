@@ -16,5 +16,6 @@ int sd_palette_load(sd_reader *reader, sd_palette *palette) {
 }
 
 void sd_palette_save(sd_writer *writer, sd_palette *palette) {
-
+    sd_write_buf(writer, (char*)palette->data, 256*3); // FIXME: Convert from 8bit to 6bit
+    sd_write_buf(writer, (char*)palette->remaps, 19*256);
 }
