@@ -14,7 +14,7 @@ sd_rgba_image* sd_rgba_image_create(unsigned int w, unsigned int h) {
 }
 
 void sd_rgba_image_to_ppm(sd_rgba_image *img, const char *filename) {
-    FILE *fd = fopen(filename, "w");
+    FILE *fd = fopen(filename, "wb");
     fprintf(fd, "P3\n");
     fprintf(fd, "# %s\n", filename);
     fprintf(fd, "%u %u\n", img->w, img->h);
