@@ -6,4 +6,6 @@ typedef struct palette_t {
     char remaps[19][256];
 } sd_palette;
 
+void sd_palette_to_rgb(sd_palette *palette);
+
 #endif // _PALETTE_H

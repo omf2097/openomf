@@ -59,9 +59,9 @@ sd_rgba_image* sd_sprite_image_decode(sd_sprite_image *img, sd_palette *pal, int
                         rgba->data[pos+1] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][1];
                         rgba->data[pos+2] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][2];
                     } else {
-                        rgba->data[pos+0] = (uint8_t)((pal->data[b][0] << 2) | (pal->data[b][0] >> 4));
-                        rgba->data[pos+1] = (uint8_t)((pal->data[b][1] << 2) | (pal->data[b][1] >> 4));
-                        rgba->data[pos+2] = (uint8_t)((pal->data[b][2] << 2) | (pal->data[b][2] >> 4));
+                        rgba->data[pos+0] = (uint8_t)pal->data[b][0];
+                        rgba->data[pos+1] = (uint8_t)pal->data[b][1];
+                        rgba->data[pos+2] = (uint8_t)pal->data[b][2];
                     }
                     i++; // we read 1 byte
                     x++;
