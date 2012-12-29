@@ -9,7 +9,7 @@ sd_rgba_image* sd_rgba_image_create(unsigned int w, unsigned int h) {
     img->data = (char*)malloc(w * h * 4);
     img->w = w;
     img->h = h;
-    memset(img->data, w*h*4, 0);
+    memset(img->data, 0, w*h*4);
     return img;
 }
 

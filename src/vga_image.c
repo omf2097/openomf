@@ -9,7 +9,7 @@ sd_vga_image* sd_vga_image_create(unsigned int w, unsigned int h) {
     img->h = h;
     img->len = w*h;
     img->data = (char*)malloc(w*h);
-    memset(img->data, w*h, 0);
+    memset(img->data, 0, w*h);
     return img;
 }
 

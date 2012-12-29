@@ -1,12 +1,17 @@
 #include <bk.h>
 #include <stdio.h>
 
-int main(void) {
+int main(int argc, char **argv) {
     sd_bk_file *file;
     char buf[255];
 
-    printf("Loading file ...\n");
-    file = sd_bk_load("resources/MAIN.BK");
+    if (argc != 2) {
+        printf("Usage %s <filename>\n", argv[0]);
+        return 1;
+    }
+
+    printf("Loading file: %s\n", argv[1]);
+    file = sd_bk_load(argv[1]);
     if(file) {
         printf("File loaded.\n");
         printf("ID: %d\n", file->file_id);
