@@ -3,6 +3,7 @@
 #include "internal/reader.h"
 #include "internal/writer.h"
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 sd_animation* sd_animation_create() {
@@ -29,7 +30,7 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     // Animation string header
     ani->anim_string_len = sd_read_uword(r);
     ani->anim_string = (char*)malloc(ani->anim_string_len + 1);
-    sd_read_buf(r, ani->anim_string, ani->anim_string_len+1); // assume its null terminated
+    sd_read_buf(r, ani->anim_string, ani->anim_string_len + 1); // assume its null terminated
     assert(ani->anim_string[ani->anim_string_len] == '\0');
 
     // Extra animation strings
@@ -55,7 +56,31 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     return sd_reader_ok(r);
 }
 
-void sd_animation_save(sd_writer *writer, sd_animation *anim) {
+void sd_animation_save(sd_writer *writer, sd_animation *ani) {
+    // Animation header
+    sd_write_buf(writer, ani->unknown_a, 8);
+    sd_write_uword(writer, ani->overlay_count);
+    sd_write_ubyte(writer, ani->frame_count);
+    sd_write_buf(writer, (char*)ani->overlay_table, ani->overlay_count * sizeof(uint32_t));
 
+    // Animation string header
+    sd_write_uword(writer, ani->anim_string_len);
+    sd_write_buf(writer, ani->anim_string, ani->anim_string_len);
+    sd_write_ubyte(writer, 0);
+
+    // Extra animation strings
+    uint16_t s_size = 0;
+    sd_write_ubyte(writer, ani->extra_string_count);
+    for(int i = 0; i < ani->extra_string_count; i++) {
+        s_size = strlen(ani->extra_strings[i]);
+        sd_write_uword(writer, s_size);
+        sd_write_buf(writer, ani->extra_strings[i], s_size);
+        sd_write_ubyte(writer, 0);
+    }
+
+    // Sprites
+    for(int i = 0; i < ani->frame_count; i++) {
+        sd_sprite_save(writer, ani->sprites[i]);
+    }
 }
 
