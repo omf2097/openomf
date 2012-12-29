@@ -62,6 +62,10 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="include/bkanim.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="include/internal/reader.h">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -79,6 +83,10 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="include/rgba_image.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="include/sounds.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -109,6 +117,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/bkanim.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/internal/reader.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -130,6 +143,11 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/rgba_image.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/sounds.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
