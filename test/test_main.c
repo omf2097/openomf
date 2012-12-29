@@ -6,6 +6,7 @@
 
 void print_sprites(int i, sd_animation *anim, sd_palette *palette) {
     char buf[256];
+    sd_rgba_image *img;
     printf("animation %d with %d frames\n", i, anim->frame_count);
     for(int j = 0; j < anim->frame_count; j++) {
         if (anim->sprites[j]->missing > 0) {
@@ -18,7 +19,9 @@ void print_sprites(int i, sd_animation *anim, sd_palette *palette) {
         }
         sprintf(buf, "sprite-%d-%d.ppm", i, j);
         /*printf("decoding sprite to %s\n", buf);*/
-        sd_rgba_image_to_ppm(sd_sprite_image_decode(anim->sprites[j]->img, palette, -1), buf);
+        img = sd_sprite_image_decode(anim->sprites[j]->img, palette, -1);
+        sd_rgba_image_to_ppm(img, buf);
+        sd_rgba_image_delete(img);
     }
 }
 
@@ -81,10 +84,13 @@ int main(int argc, char **argv) {
         if(file) {
             printf("File loaded.\n");
             printf("ID: %d\n", file->file_id);
+            sd_rgba_image *img;
             for (int i = 0; i < file->num_palettes; i++) {
                 printf("drawing background with pallete %d to background-%d.ppm\n", i, i);
                 sprintf(buf, "background-%d.ppm", i);
-                sd_rgba_image_to_ppm(sd_vga_image_decode(file->background, file->palettes[i], -1), buf);
+                img = sd_vga_image_decode(file->background, file->palettes[i], -1);
+                sd_rgba_image_to_ppm(img, buf);
+                sd_rgba_image_delete(img);
             }
 
             for(int i = 0; i < 50; i++) {

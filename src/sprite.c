@@ -10,7 +10,9 @@ sd_sprite* sd_sprite_create() {
 }
 
 void sd_sprite_delete(sd_sprite *sprite) {
-    sd_sprite_image_delete(sprite->img);
+    if (sprite->img) {
+        sd_sprite_image_delete(sprite->img);
+    }
     free(sprite);
 }
 
