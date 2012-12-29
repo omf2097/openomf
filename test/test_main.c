@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     char buf[256];
     char *ext;
 
-    if (argc < 1) {
+    if (argc <= 1) {
         printf("Usage %s [-p palette]  <filename>\n", argv[0]);
         return 1;
     }

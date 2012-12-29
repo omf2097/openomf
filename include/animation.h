@@ -3,6 +3,9 @@
 
 #include "sprite.h"
 
+typedef struct sd_reader_t sd_reader;
+typedef struct sd_writer_t sd_writer;
+
 typedef struct sd_animation_t {
     // Header
     char unknown_a[8];
@@ -25,5 +28,7 @@ typedef struct sd_animation_t {
 
 sd_animation* sd_animation_create();
 void sd_animation_delete(sd_animation *animation);
+int sd_animation_load(sd_reader *reader, sd_animation *anim);
+void sd_animation_save(sd_writer *writer, sd_animation *anim);
 
 #endif // _ANIMATION_H
