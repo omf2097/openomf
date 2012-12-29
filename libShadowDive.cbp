@@ -50,6 +50,10 @@
 			<Add option="-std=c99" />
 			<Add directory="include/" />
 		</Compiler>
+		<Unit filename="include/af.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="include/animation.h">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -63,6 +67,10 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="include/internal/writer.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="include/move.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -86,6 +94,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/af.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/animation.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -102,6 +115,11 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/internal/writer.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/move.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -140,6 +158,15 @@
 			<envvars />
 			<debugger />
 			<lib_finder disable_auto="1" />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

@@ -32,5 +32,14 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
 }
 
 void sd_sprite_save(sd_writer *writer, sd_sprite *sprite) {
-
+    sd_write_uword(writer, sprite->img->len);
+    sd_write_word(writer, sprite->pos_x);
+    sd_write_word(writer, sprite->pos_y);
+    sd_write_uword(writer, sprite->img->w);
+    sd_write_uword(writer, sprite->img->h);
+    sd_write_ubyte(writer, sprite->index);
+    sd_write_ubyte(writer, sprite->missing);
+    if(!sprite->missing) {
+        sd_write_buf(writer, sprite->img->data, sprite->img->len);
+    }
 }
