@@ -59,7 +59,7 @@ int sd_af_save(const char* filename, sd_af_file *af) {
 void sd_af_delete(sd_af_file *af) {
     for(int i = 0; i < 70; i++) {
         if(af->moves[i]) {
-            free(af->moves[i]);
+            sd_move_delete(af->moves[i]);
         }
     }
     free(af);
