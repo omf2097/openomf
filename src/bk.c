@@ -57,7 +57,14 @@ sd_bk_file* sd_bk_load(const char *filename) {
 }
 
 int sd_bk_save(const char* filename, sd_bk_file *bk) {
-    return 0;
+    sd_writer *w = sd_writer_open(filename);
+    if(!w) {
+        return 0;
+    }
+
+
+    sd_writer_close(w);
+    return 1;
 }
 
 void sd_bk_delete(sd_bk_file *bk) {

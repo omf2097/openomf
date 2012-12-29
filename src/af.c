@@ -53,7 +53,14 @@ sd_af_file* sd_af_load(const char *filename) {
 }
 
 int sd_af_save(const char* filename, sd_af_file *af) {
-    return 0;
+    sd_writer *w = sd_writer_open(filename);
+    if(!w) {
+        return 0;
+    }
+
+
+    sd_writer_close(w);
+    return 1;
 }
 
 void sd_af_delete(sd_af_file *af) {
