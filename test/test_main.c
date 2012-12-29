@@ -57,7 +57,6 @@ int main(int argc, char **argv) {
             bk_file = sd_bk_load(argv[2]);
             if (bk_file) {
                 printf("Palette loaded.\n");
-                sd_palette_to_rgb(bk_file->palettes[0]);
                 for(int i = 0; i < 50; i++) {
                     if (file->moves[i]) {
                         print_sprites(i, &file->moves[i]->animation, bk_file->palettes[0]);
@@ -83,7 +82,6 @@ int main(int argc, char **argv) {
             printf("File loaded.\n");
             printf("ID: %d\n", file->file_id);
             for (int i = 0; i < file->num_palettes; i++) {
-                sd_palette_to_rgb(file->palettes[i]);
                 printf("drawing background with pallete %d to background-%d.ppm\n", i, i);
                 sprintf(buf, "background-%d.ppm", i);
                 sd_rgba_image_to_ppm(sd_vga_image_decode(file->background, file->palettes[i], -1), buf);

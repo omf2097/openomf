@@ -5,14 +5,16 @@
 
 sd_move* sd_move_create() {
     sd_move *move = (sd_move*)malloc(sizeof(sd_move));
-    move->animation.overlay_table=NULL;
+    move->animation.overlay_table = NULL;
+    move->footer_string = NULL;
     return move;
 }
 
 void sd_move_delete(sd_move *move) {
-    if (move->animation.overlay_table != NULL) {
+    if(move->animation.overlay_table)
         free(move->animation.overlay_table);
-    }
+    if(move->footer_string)
+        free(move->footer_string);
     free(move);
 }
 

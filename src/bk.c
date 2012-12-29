@@ -51,8 +51,7 @@ sd_bk_file* sd_bk_load(const char *filename) {
     bk->palettes = malloc(bk->num_palettes * sizeof(sd_palette*));
     for(uint8_t i = 0; i < bk->num_palettes; i++) {
         bk->palettes[i] = (sd_palette*)malloc(sizeof(sd_palette));
-        sd_read_buf(r, (char*)bk->palettes[i]->data, 256*3);
-        sd_read_buf(r, (char*)bk->palettes[i]->remaps, 19*256);
+        sd_palette_load(r, bk->palettes[i]);
     }
 
     // Read footer
