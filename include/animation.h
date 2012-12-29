@@ -14,7 +14,6 @@ typedef struct sd_animation_t {
     uint32_t *overlay_table;
 
     // String header
-    uint16_t anim_string_len;
     char *anim_string;
     uint8_t unknown_b;
     uint8_t extra_string_count;

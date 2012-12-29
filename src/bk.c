@@ -20,11 +20,10 @@ sd_bk_file* sd_bk_load(const char *filename) {
     bk->unknown_a = sd_read_ubyte(r);
     bk->img_w = sd_read_uword(r);
     bk->img_h = sd_read_uword(r);
-    memset(bk->animations, 0, sizeof(bk->animations));
+    memset(bk->anims, 0, sizeof(bk->anims));
 
     // Read animations
     uint8_t animno = 0;
-    int tmp_size = 0;
     while(1) {
         sd_skip(r, 4);
         animno = sd_read_ubyte(r);
@@ -32,14 +31,9 @@ sd_bk_file* sd_bk_load(const char *filename) {
             break;
         }
 
-        // BK Specific animation header
-        sd_skip(r, 7);// TODO: Find out what this is
-        tmp_size = sd_read_uword(r);
-        sd_skip(r, tmp_size); // TODO: What is this ?
-
         // Initialize animation
-        bk->animations[animno] = sd_animation_create();
-        sd_animation_load(r, bk->animations[animno]);
+        bk->anims[animno] = sd_bk_anim_create();
+        sd_bk_anim_load(r, bk->anims[animno]);
     }
 
     // Read background image
@@ -68,6 +62,14 @@ int sd_bk_save(const char* filename, sd_bk_file *bk) {
 
 void sd_bk_delete(sd_bk_file *bk) {
     sd_vga_image_delete(bk->background);
+    for(int i = 0; i < 50; i++) {
+        if(bk->anims[i]) {
+            sd_bk_anim_delete(bk->anims[i]);
+        }
+    }
+    for(int i = 0; i < bk->num_palettes; i++) {
+        free(bk->palettes[i]);
+    }
     free(bk->palettes);
     free(bk);
 }

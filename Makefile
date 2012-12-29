@@ -18,6 +18,7 @@ FILES := \
     src/vga_image.c \
     src/animation.c \
     src/move.c \
+    src/bkanim.c \
     src/palette.c \
     src/sprite.c \
     src/internal/reader.c \

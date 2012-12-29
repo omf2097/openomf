@@ -28,10 +28,10 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     sd_read_buf(r, (char*)ani->overlay_table, sizeof(uint32_t)*ani->overlay_count);
 
     // Animation string header
-    ani->anim_string_len = sd_read_uword(r);
-    ani->anim_string = (char*)malloc(ani->anim_string_len + 1);
-    sd_read_buf(r, ani->anim_string, ani->anim_string_len + 1); // assume its null terminated
-    assert(ani->anim_string[ani->anim_string_len] == '\0');
+    uint16_t anim_string_len = sd_read_uword(r);
+    ani->anim_string = (char*)malloc(anim_string_len + 1);
+    sd_read_buf(r, ani->anim_string, anim_string_len + 1); // assume its null terminated
+    assert(ani->anim_string[anim_string_len] == '\0');
 
     // Extra animation strings
     ani->extra_string_count = sd_read_ubyte(r);

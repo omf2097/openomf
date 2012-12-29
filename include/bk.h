@@ -5,6 +5,7 @@
 #include "palette.h"
 #include "vga_image.h"
 #include "animation.h"
+#include "bkanim.h"
 
 typedef struct bk_file_t {
     uint32_t file_id;
@@ -12,7 +13,7 @@ typedef struct bk_file_t {
     uint16_t img_w;
     uint16_t img_h;
 
-    sd_animation *animations[50];
+    sd_bk_anim *anims[50];
 
     sd_vga_image *background;
 

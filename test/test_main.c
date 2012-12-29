@@ -88,8 +88,8 @@ int main(int argc, char **argv) {
             }
 
             for(int i = 0; i < 50; i++) {
-                if (file->animations[i]) {
-                    print_sprites(i, file->animations[i], file->palettes[0]);
+                if (file->anims[i]) {
+                    print_sprites(i, file->anims[i]->animation, file->palettes[0]);
                 } else {
                     /*printf("skipping blank animation %d\n", i);*/
                 }
