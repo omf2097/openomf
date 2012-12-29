@@ -64,8 +64,9 @@ void sd_animation_save(sd_writer *writer, sd_animation *ani) {
     sd_write_buf(writer, (char*)ani->overlay_table, ani->overlay_count * sizeof(uint32_t));
 
     // Animation string header
-    sd_write_uword(writer, ani->anim_string_len);
-    sd_write_buf(writer, ani->anim_string, ani->anim_string_len);
+    uint16_t a_size = strlen(ani->anim_string);
+    sd_write_uword(writer, a_size);
+    sd_write_buf(writer, ani->anim_string, a_size);
     sd_write_ubyte(writer, 0);
 
     // Extra animation strings
