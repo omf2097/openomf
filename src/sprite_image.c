@@ -32,6 +32,10 @@ sd_rgba_image* sd_sprite_image_decode(sd_sprite_image *img, sd_palette *pal, int
     uint16_t x = 0;
     uint16_t y = 0;
     int i = 0;
+    if (img->w == 0 || img->h == 0) {
+        // XXX CREDITS.BK has a bunch of 0 width sprites, for some unknown reason
+        return rgba;
+    }
     while(i < img->len) {
         // read a word
         uint16_t c = (uint8_t)img->data[i] + ((uint8_t)img->data[i+1] << 8);
