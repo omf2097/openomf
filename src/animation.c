@@ -28,7 +28,7 @@ void sd_animation_delete(sd_animation *anim) {
     }
     if(anim->sprites) {
         for(int i = 0; i < anim->frame_count; i++) {
-            free(anim->sprites[i]);
+            sd_sprite_delete(anim->sprites[i]);
         }
         free(anim->sprites);
     }
