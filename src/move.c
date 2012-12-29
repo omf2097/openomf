@@ -6,22 +6,23 @@
 
 sd_move* sd_move_create() {
     sd_move *move = (sd_move*)malloc(sizeof(sd_move));
-    move->animation.overlay_table = NULL;
     move->footer_string = NULL;
+    move->animation = NULL;
     return move;
 }
 
 void sd_move_delete(sd_move *move) {
-    if(move->animation.overlay_table)
-        free(move->animation.overlay_table);
     if(move->footer_string)
         free(move->footer_string);
+    if(move->animation)
+        sd_animation_delete(move->animation);
     free(move);
 }
 
 int sd_move_load(sd_reader *r, sd_move *move) {
     // Read animation
-    sd_animation_load(r, &move->animation);
+    move->animation = sd_animation_create();
+    sd_animation_load(r, move->animation);
 
     // Move footer
     sd_read_buf(r, move->unknown, 21);
@@ -37,7 +38,7 @@ int sd_move_load(sd_reader *r, sd_move *move) {
 
 void sd_move_save(sd_writer *writer, sd_move *move) {
     // Save animation
-    sd_animation_save(writer, &move->animation);
+    sd_animation_save(writer, move->animation);
 
     // Save move footer
     sd_write_buf(writer, move->unknown, 21);

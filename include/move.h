@@ -7,7 +7,7 @@ typedef struct sd_writer_t sd_writer;
 typedef struct sd_reader_t sd_reader;
 
 typedef struct sd_move_t {
-    sd_animation animation;
+    sd_animation *animation;
     char unknown[21];
     char move_string[21];
     char *footer_string;

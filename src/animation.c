@@ -7,14 +7,30 @@
 #include <assert.h>
 
 sd_animation* sd_animation_create() {
-    sd_animation *anim = (sd_animation*)malloc(sizeof(sd_animation));
-    anim->overlay_table=NULL;
-    return anim;
+    sd_animation *ani = (sd_animation*)malloc(sizeof(sd_animation));
+    ani->overlay_table = NULL;
+    ani->anim_string = NULL;
+    ani->extra_strings = NULL;
+    ani->sprites = NULL;
+    return ani;
 }
 
 void sd_animation_delete(sd_animation *anim) {
-    if (anim->overlay_table != NULL) {
+    if(anim->overlay_table)
         free(anim->overlay_table);
+    if(anim->anim_string)
+        free(anim->anim_string);
+    if(anim->extra_strings) {
+        for(int i = 0; i < anim->extra_string_count; i++) {
+            free(anim->extra_strings[i]);
+        }
+        free(anim->extra_strings);
+    }
+    if(anim->sprites) {
+        for(int i = 0; i < anim->frame_count; i++) {
+            free(anim->sprites[i]);
+        }
+        free(anim->sprites);
     }
     free(anim);
 }

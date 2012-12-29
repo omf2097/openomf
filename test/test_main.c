@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
                 printf("Palette loaded.\n");
                 for(int i = 0; i < 50; i++) {
                     if (file->moves[i]) {
-                        print_sprites(i, &file->moves[i]->animation, bk_file->palettes[0]);
+                        print_sprites(i, file->moves[i]->animation, bk_file->palettes[0]);
                     }
                 }
                 printf("Destroying resources ...\n");
