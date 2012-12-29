@@ -19,6 +19,7 @@ FILES := \
     src/animation.c \
     src/move.c \
     src/bkanim.c \
+    src/sounds.c \
     src/palette.c \
     src/sprite.c \
     src/internal/reader.c \

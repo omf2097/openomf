@@ -9,6 +9,11 @@ typedef struct sd_sound_t {
     char *data;
 } sd_sound;
 
+typedef struct sd_soundarray_t {
+    unsigned int len;
+    sd_sound **sounds;
+} sd_soundarray;
+
 
 
 #endif // _SOUNDS_H
