@@ -14,8 +14,8 @@ typedef struct sd_sound_file_t {
     sd_sound **sounds;
 } sd_sound_file;
 
-sd_sound_file* sd_af_load(const char *filename);
-int sd_af_save(const char* filename, sd_sound_file *sf);
-void sd_af_delete(sd_sound_file *sf);
+sd_sound_file* sd_sounds_load(const char *filename);
+int sd_sounds_save(const char* filename, sd_sound_file *sf);
+void sd_sounds_delete(sd_sound_file *sf);
 
 #endif // _SOUNDS_H

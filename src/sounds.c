@@ -3,7 +3,7 @@
 #include "internal/writer.h"
 #include <stdlib.h>
 
-sd_sound_file* sd_af_load(const char *filename) {
+sd_sound_file* sd_sounds_load(const char *filename) {
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return 0;
@@ -47,7 +47,7 @@ sd_sound_file* sd_af_load(const char *filename) {
     return sf;
 }
 
-int sd_af_save(const char* filename, sd_sound_file *sf) {
+int sd_sounds_save(const char* filename, sd_sound_file *sf) {
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
         return 0;
@@ -59,7 +59,7 @@ int sd_af_save(const char* filename, sd_sound_file *sf) {
     return 1;
 }
 
-void sd_af_delete(sd_sound_file *sf) {
+void sd_sounds_delete(sd_sound_file *sf) {
     for(int i = 0; i < sf->sound_count; i++) {
         if(sf->sounds[i]) {
             free(sf->sounds[i]);

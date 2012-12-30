@@ -25,6 +25,7 @@ FILES := \
     src/internal/writer.c 
 
 TESTMAIN = test/test_main.c
+SOUNDSMAIN = test/sounds_main.c
 ROUNDTRIP = test/roundtrip.c
     
 LIBDIR=lib
@@ -44,6 +45,7 @@ all:
 	$(AR) rcs $(LIBDIR)/$(LIBNAME) $(OBJDIR)/*.o
 	$(CC) $(CFLAGS_DBG) -o $(BINDIR)/test $(TESTMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	$(CC) $(CFLAGS_DBG) -o $(BINDIR)/roundtrip $(ROUNDTRIP) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
+	$(CC) $(CFLAGS_DBG) -o $(BINDIR)/sounds $(SOUNDSMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	@echo "All done!"
 
 release: 
@@ -55,6 +57,7 @@ release:
 	$(AR) rcs $(LIBDIR)/$(LIBNAME) $(OBJDIR)/*.o
 	$(CC) $(CFLAGS_REL) -o $(BINDIR)/test $(TESTMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	$(CC) $(CFLAGS_REL) -o $(BINDIR)/roundtrip $(ROUNDTRIP) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
+	$(CC) $(CFLAGS_REL) -o $(BINDIR)/sounds $(SOUNDSMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	@echo "All done!"
     
 clean:
@@ -64,5 +67,7 @@ clean:
 	$(RM) $(BINDIR)/test
 	$(RM) $(BINDIR)/roundtrip.exe
 	$(RM) $(BINDIR)/roundtrip
+	$(RM) $(BINDIR)/sounds
+	$(RM) $(BINDIR)/sounds.exe
 	$(RMDIR) $(OBJDIR)
 	$(RMDIR) $(LIBDIR)
