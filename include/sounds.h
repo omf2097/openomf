@@ -9,11 +9,13 @@ typedef struct sd_sound_t {
     char *data;
 } sd_sound;
 
-typedef struct sd_soundarray_t {
-    unsigned int len;
+typedef struct sd_sound_file_t {
+    unsigned int sound_count;
     sd_sound **sounds;
-} sd_soundarray;
+} sd_sound_file;
 
-
+sd_sound_file* sd_af_load(const char *filename);
+int sd_af_save(const char* filename, sd_sound_file *sf);
+void sd_af_delete(sd_sound_file *sf);
 
 #endif // _SOUNDS_H

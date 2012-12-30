@@ -25,6 +25,11 @@ int sd_reader_ok(sd_reader *reader);
   */
 long sd_reader_pos(sd_reader *reader);
 
+/**
+  * Returns the size of the file
+  */
+long sd_reader_filesize(sd_reader *reader);
+
 int sd_read_buf(sd_reader *reader, char *buf, int len);
 int sd_peek_buf(sd_reader *reader, char *buf, int len);
 

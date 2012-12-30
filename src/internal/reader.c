@@ -5,19 +5,31 @@
 
 typedef struct sd_reader_t {
     FILE *handle;
+    long filesize;
     char err[64];
 } sd_reader;
 
 sd_reader* sd_reader_open(const char *file) {
     sd_reader *reader = malloc(sizeof(sd_reader));
 
+    // Attempt to open file (note: Binary mode!)
     reader->handle = fopen(file, "rb");
     if(!reader->handle) {
         free(reader);
         return 0;
     }
 
+    // Find file size
+    fseek(reader->handle, 0, SEEK_END);
+    reader->filesize = ftell(reader->handle);
+    fseek(reader->handle, 0, SEEK_SET);
+
+    // All done.
     return reader;
+}
+
+long sd_reader_filesize(sd_reader *reader) {
+    return reader->filesize;
 }
 
 void sd_reader_close(sd_reader *reader) {
