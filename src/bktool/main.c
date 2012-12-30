@@ -24,7 +24,6 @@ int main(int argc, char* argv[]) {
         printf("Usage: %s", progname);
         arg_print_syntax(stdout, argtable, "\n");
         arg_print_glossary(stdout, argtable, "\n");
-        arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
         goto exit_0;
     }
     
