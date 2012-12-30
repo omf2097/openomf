@@ -18,8 +18,8 @@ sd_bk_file* sd_bk_load(const char *filename) {
     // Header
     bk->file_id = sd_read_udword(r);
     bk->unknown_a = sd_read_ubyte(r);
-    bk->img_w = sd_read_uword(r);
-    bk->img_h = sd_read_uword(r);
+    uint16_t img_w = sd_read_uword(r);
+    uint16_t img_h = sd_read_uword(r);
     memset(bk->anims, 0, sizeof(bk->anims));
 
     // Read animations
@@ -37,8 +37,8 @@ sd_bk_file* sd_bk_load(const char *filename) {
     }
 
     // Read background image
-    bk->background = sd_vga_image_create(bk->img_w, bk->img_h);
-    sd_read_buf(r, bk->background->data, bk->img_h * bk->img_w);
+    bk->background = sd_vga_image_create(img_w, img_h);
+    sd_read_buf(r, bk->background->data, img_h * img_w);
 
     // Read palettes
     bk->num_palettes = sd_read_ubyte(r);
@@ -65,8 +65,8 @@ int sd_bk_save(const char* filename, sd_bk_file *bk) {
     // Write header
     sd_write_udword(w, bk->file_id);
     sd_write_ubyte(w, bk->unknown_a);
-    sd_write_uword(w, bk->img_w);
-    sd_write_uword(w, bk->img_h);
+    sd_write_uword(w, bk->background->w);
+    sd_write_uword(w, bk->background->h);
 
     // Write animations
     long rpos = 0, opos = 0;
@@ -108,8 +108,6 @@ void sd_bk_set_background(sd_bk_file *bk, sd_vga_image *img) {
         sd_vga_image_delete(bk->background);
     }
     bk->background = img;
-    bk->img_h = img->h;
-    bk->img_w = img->w;
 }
 
 void sd_bk_delete(sd_bk_file *bk) {
