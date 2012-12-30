@@ -179,6 +179,10 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="test/roundtrip.c">
+			<Option compilerVar="CC" />
+			<Option target="Roundtrip" />
+		</Unit>
 		<Unit filename="test/test_main.c">
 			<Option compilerVar="CC" />
 			<Option target="Test" />
