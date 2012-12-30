@@ -18,7 +18,7 @@ SDLLIB=/libs/lib/
 
 BINDIR=bin
 CFLAGS=-I $(SDINC) -I $(SDLINC) -Wall -std=c99 -ggdb -g3
-LDFLAGS=-L $(SDLIB) -L $(SDLLIB) -lshadowdive -largtable2 -lSDL2main -lSDL2 
+LDFLAGS=-L $(SDLIB) -L $(SDLLIB) -lSDL2 -lSDL2main -lshadowdive -largtable2
 
 all: 
 	$(MKDIR) $(BINDIR)/
