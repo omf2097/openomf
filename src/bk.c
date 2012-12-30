@@ -20,9 +20,6 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    // Allocate structure
-    bk = malloc(sizeof(sd_bk_file));
-
     // Header
     bk->file_id = sd_read_udword(r);
     bk->unknown_a = sd_read_ubyte(r);
