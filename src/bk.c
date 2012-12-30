@@ -103,6 +103,15 @@ int sd_bk_save(const char* filename, sd_bk_file *bk) {
     return 1;
 }
 
+void sd_bk_set_background(sd_bk_file *bk, sd_vga_image *img) {
+    if(bk->background) {
+        sd_vga_image_delete(bk->background);
+    }
+    bk->background = img;
+    bk->img_h = img->h;
+    bk->img_w = img->w;
+}
+
 void sd_bk_delete(sd_bk_file *bk) {
     sd_vga_image_delete(bk->background);
     for(int i = 0; i < 50; i++) {

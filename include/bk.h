@@ -24,6 +24,11 @@ typedef struct bk_file_t {
 } sd_bk_file;
 
 /**
+  * Sets background image
+  */
+void sd_bk_set_background(sd_bk_file *bk, sd_vga_image *img);
+
+/**
   * Load .BK file. Returns 0 on error.
   */
 sd_bk_file* sd_bk_load(const char *filename);
