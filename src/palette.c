@@ -1,6 +1,7 @@
 #include "palette.h"
 #include "internal/reader.h"
 #include "internal/writer.h"
+#include "error.h"
 #include <stdint.h>
 
 int sd_palette_load(sd_reader *reader, sd_palette *palette) {
@@ -12,7 +13,7 @@ int sd_palette_load(sd_reader *reader, sd_palette *palette) {
         palette->data[i][2] = ((d[2] << 2) | (d[2] >> 4));
     }
     sd_read_buf(reader, (char*)palette->remaps, 19*256);
-    return sd_reader_ok(reader);
+    return SD_SUCCESS;
 }
 
 void sd_palette_save(sd_writer *writer, sd_palette *palette) {

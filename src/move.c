@@ -1,6 +1,7 @@
 #include "move.h"
 #include "internal/reader.h"
 #include "internal/writer.h"
+#include "error.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -33,7 +34,10 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     move->footer_string[len] = '\0';
 
     // Return success if reader is still ok
-    return sd_reader_ok(r);
+    if(!sd_reader_ok(r)) {
+        return SD_FILE_PARSE_ERROR;
+    }
+    return SD_SUCCESS;
 }
 
 void sd_move_save(sd_writer *writer, sd_move *move) {

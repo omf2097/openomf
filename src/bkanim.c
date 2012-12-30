@@ -1,6 +1,7 @@
 #include "bkanim.h"
 #include "internal/reader.h"
 #include "internal/writer.h"
+#include "error.h"
 #include <stdlib.h>
 
 sd_bk_anim* sd_bk_anim_create() {
@@ -32,10 +33,12 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
 
     // Initialize animation
     bka->animation = sd_animation_create();
-    sd_animation_load(r, bka->animation);
+    if(sd_animation_load(r, bka->animation)) {
+        return SD_FILE_PARSE_ERROR;
+    }
 
-    // Return success if reader is still ok
-    return sd_reader_ok(r);
+    // Return success
+    return SD_SUCCESS;
 }
 
 void sd_bk_anim_save(sd_writer *writer, sd_bk_anim *bka) {

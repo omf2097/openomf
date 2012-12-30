@@ -6,7 +6,6 @@
 
 typedef struct sd_writer_t {
     FILE *handle;
-    char err[64];
 } sd_writer;
 
 sd_writer* sd_writer_open(const char *file) {
@@ -44,7 +43,6 @@ int sd_writer_seek_end(sd_writer *writer, long offset) {
 
 int sd_write_buf(sd_writer *writer, char *buf, int len) {
     if(fwrite(buf, 1, len, writer->handle) != len) {
-        strcpy(writer->err, "Error: Wrote less than requested amount of bytes.");
         return 0;
     }
     return 1;

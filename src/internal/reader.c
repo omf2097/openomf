@@ -6,7 +6,6 @@
 typedef struct sd_reader_t {
     FILE *handle;
     long filesize;
-    char err[64];
 } sd_reader;
 
 sd_reader* sd_reader_open(const char *file) {
@@ -39,7 +38,6 @@ void sd_reader_close(sd_reader *reader) {
 
 int sd_reader_ok(sd_reader *reader) {
     if(feof(reader->handle)) {
-        strcpy(reader->err, "Error: End of file reached.");
         return 0;
     }
     return 1;
@@ -51,7 +49,6 @@ long sd_reader_pos(sd_reader *reader) {
 
 int sd_read_buf(sd_reader *reader, char *buf, int len) {
     if(fread(buf, 1, len, reader->handle) != len) {
-        strcpy(reader->err, "Error: Read less than requested amount of bytes.");
         return 0;
     }
     return 1;

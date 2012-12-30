@@ -8,15 +8,18 @@
 #include <string.h>
 #include <stdio.h>
 
+sd_af_file* sd_af_create() {
+    sd_af_file *af = (sd_af_file*)malloc(sizeof(sd_af_file));
+    memset(af->moves, 0, sizeof(af->moves));
+    return af;
+}
+
 int sd_af_load(sd_af_file *af, const char *filename) {
     // Initialize reader
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
     }
-
-    // Allocate structure
-    af = malloc(sizeof(sd_af_file));
 
     // Header
     af->file_id = sd_read_uword(r);
@@ -29,7 +32,6 @@ int sd_af_load(sd_af_file *af, const char *filename) {
     af->jump_speed = sd_read_dword(r);
     af->fall_speed = sd_read_dword(r);
     af->unknown_c = sd_read_uword(r); // TODO: Find out what this is
-    memset(af->moves, 0, sizeof(af->moves));
 
     // Read animations
     uint8_t moveno = 0;
@@ -41,7 +43,10 @@ int sd_af_load(sd_af_file *af, const char *filename) {
 
         // Read move
         af->moves[moveno] = sd_move_create();
-        sd_move_load(r, af->moves[moveno]);
+        int ret = sd_move_load(r, af->moves[moveno]);
+        if(ret != 0) {
+            return ret;
+        }
     }
 
     // Read footer

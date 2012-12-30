@@ -24,6 +24,11 @@ typedef struct af_file_t {
 } sd_af_file;
 
 /**
+  * Creates AF file structure
+  */
+sd_af_file* sd_af_create();
+
+/**
   * Load .AF file. Returns 0 on error.
   */
 int sd_af_load(sd_af_file *af, const char *filename);

@@ -22,6 +22,11 @@ typedef struct bk_file_t {
 } sd_bk_file;
 
 /**
+  * Creates BK file structure
+  */
+sd_bk_file* sd_bk_create();
+
+/**
   * Sets background image
   */
 void sd_bk_set_background(sd_bk_file *bk, sd_vga_image *img);

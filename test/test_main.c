@@ -50,8 +50,8 @@ int main(int argc, char **argv) {
             return 1;
         }
 
-        sd_bk_file *bk_file = 0;
-        sd_af_file *file = 0;
+        sd_bk_file *bk_file = sd_bk_create();
+        sd_af_file *file = sd_af_create();
         printf("Loading AF file: %s\n", argv[argc-1]);
         if(sd_af_load(file, argv[argc-1]) == 0) {
             printf("File loaded.\n");
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
         }
         return 0;
     } else if (strncmp(ext, ".BK", 3) == 0) {
-        sd_bk_file *file = 0;
+        sd_bk_file *file = sd_bk_create();
         printf("Loading BK file: %s\n", argv[1]);
         if(sd_bk_load(file, argv[1]) == 0) {
             printf("File loaded.\n");
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
             }
 
             for(int i = 0; i < 50; i++) {
-                if (file->anims[i]) {
+                if(file->anims[i]) {
                     print_sprites(i, file->anims[i]->animation, file->palettes[0]);
                 } else {
                     /*printf("skipping blank animation %d\n", i);*/

@@ -4,6 +4,13 @@
 #include "error.h"
 #include <stdlib.h>
 
+sd_sound_file* sd_sounds_create() {
+    sd_sound_file* sf = (sd_sound_file*)malloc(sizeof(sd_sound_file));
+    sf->sounds = 0;
+    sf->sound_count = 0;
+    return sf;
+}
+
 int sd_sounds_load(sd_sound_file *sf, const char *filename) {
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
@@ -22,8 +29,7 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
     }
     data_block_offsets[data_block_count] = sd_reader_filesize(r);
 
-    // Allocate structures
-    sf = (sd_sound_file*)malloc(sizeof(sd_sound_file));
+    // Allocate memory
     sf->sounds = malloc(sizeof(sd_sound*) * data_block_count);
     sf->sound_count = data_block_count;
 

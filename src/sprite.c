@@ -1,6 +1,7 @@
 #include "sprite.h"
 #include "internal/reader.h"
 #include "internal/writer.h"
+#include "error.h"
 #include <stdlib.h>
 
 sd_sprite* sd_sprite_create() {
@@ -32,7 +33,10 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
         // TODO set the pointer to be the actual sprite, from the other animation, maybe?
         sprite->img = NULL;
     }
-    return sd_reader_ok(r);
+    if(!sd_reader_ok(r)) {
+        return SD_FILE_PARSE_ERROR;
+    }
+    return SD_SUCCESS;
 }
 
 void sd_sprite_save(sd_writer *writer, sd_sprite *sprite) {

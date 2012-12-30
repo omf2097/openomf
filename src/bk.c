@@ -6,6 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+sd_bk_file* sd_bk_create() {
+    sd_bk_file *bk = (sd_bk_file*)malloc(sizeof(sd_bk_file));
+    memset(bk->anims, 0, sizeof(bk->anims));
+    bk->palettes = 0;
+    return bk;
+}
+
 int sd_bk_load(sd_bk_file *bk, const char *filename) {
     // Initialize reader
     sd_reader *r = sd_reader_open(filename);
@@ -21,7 +28,6 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     bk->unknown_a = sd_read_ubyte(r);
     uint16_t img_w = sd_read_uword(r);
     uint16_t img_h = sd_read_uword(r);
-    memset(bk->anims, 0, sizeof(bk->anims));
 
     // Read animations
     uint8_t animno = 0;
@@ -34,7 +40,10 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
 
         // Initialize animation
         bk->anims[animno] = sd_bk_anim_create();
-        sd_bk_anim_load(r, bk->anims[animno]);
+        int ret = sd_bk_anim_load(r, bk->anims[animno]);
+        if(ret != 0) {
+            return ret;
+        }
     }
 
     // Read background image
@@ -118,9 +127,11 @@ void sd_bk_delete(sd_bk_file *bk) {
             sd_bk_anim_delete(bk->anims[i]);
         }
     }
-    for(int i = 0; i < bk->num_palettes; i++) {
-        free(bk->palettes[i]);
+    if(bk->palettes) {
+        for(int i = 0; i < bk->num_palettes; i++) {
+            free(bk->palettes[i]);
+        }
+        free(bk->palettes);
     }
-    free(bk->palettes);
     free(bk);
 }

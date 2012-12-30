@@ -2,9 +2,9 @@
 #include "sprite.h"
 #include "internal/reader.h"
 #include "internal/writer.h"
+#include "error.h"
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 sd_animation* sd_animation_create() {
     sd_animation *ani = (sd_animation*)malloc(sizeof(sd_animation));
@@ -59,8 +59,10 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     // Animation string header
     uint16_t anim_string_len = sd_read_uword(r);
     ani->anim_string = (char*)malloc(anim_string_len + 1);
-    sd_read_buf(r, ani->anim_string, anim_string_len + 1); // assume its null terminated
-    assert(ani->anim_string[anim_string_len] == '\0');
+    sd_read_buf(r, ani->anim_string, anim_string_len + 1);
+    if(ani->anim_string[anim_string_len] != 0) {
+        return SD_FILE_PARSE_ERROR;
+    }
 
     // Extra animation strings
     ani->extra_string_count = sd_read_ubyte(r);
@@ -68,9 +70,10 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     for(int i = 0; i < ani->extra_string_count; i++) {
         uint16_t size = sd_read_uword(r);
         ani->extra_strings[i] = malloc(size+1);
-        // assume its null terminated
         sd_read_buf(r, ani->extra_strings[i], size+1);
-        assert(ani->extra_strings[i][size] == '\0');
+        if(ani->extra_strings[i][size] != 0) {
+            return SD_FILE_PARSE_ERROR;
+        }
     }
 
     // Sprites
@@ -78,11 +81,13 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     for(int i = 0; i < ani->frame_count; i++) {
         // finally, the actual sprite!
         ani->sprites[i] = sd_sprite_create();
-        sd_sprite_load(r, ani->sprites[i]);
+        if(sd_sprite_load(r, ani->sprites[i])) {
+            return SD_FILE_PARSE_ERROR;
+        }
     }
 
-    // Return success if reader is still ok
-    return sd_reader_ok(r);
+    // Return success
+    return SD_SUCCESS;
 }
 
 void sd_animation_save(sd_writer *writer, sd_animation *ani) {
