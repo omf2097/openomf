@@ -30,4 +30,7 @@ void sd_animation_delete(sd_animation *animation);
 int sd_animation_load(sd_reader *reader, sd_animation *anim);
 void sd_animation_save(sd_writer *writer, sd_animation *anim);
 
+void sd_animation_set_anim_string(sd_animation *animation, const char *str);
+void sd_animation_set_extra_string(sd_animation *animation, int num, const char *str);
+
 #endif // _ANIMATION_H

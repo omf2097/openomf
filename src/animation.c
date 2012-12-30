@@ -35,6 +35,19 @@ void sd_animation_delete(sd_animation *anim) {
     free(anim);
 }
 
+void sd_animation_set_anim_string(sd_animation *ani, const char *str) {
+    realloc(ani->anim_string, strlen(str)+1);
+    strcpy(ani->anim_string, str);
+}
+
+void sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) {
+    if(num < 0 || num >= ani->extra_string_count) {
+        return;
+    }
+    realloc(ani->extra_strings[num], strlen(str)+1);
+    strcpy(ani->extra_strings[num], str);
+}
+
 int sd_animation_load(sd_reader *r, sd_animation *ani) {
     // Animation header
     sd_read_buf(r, ani->unknown_a, 8);
