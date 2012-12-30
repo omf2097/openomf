@@ -114,6 +114,10 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="include/shadowdive/shadowdive.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="include/shadowdive/sounds.h">
 			<Option target="Debug" />
 			<Option target="Release" />
