@@ -1,6 +1,7 @@
 #include "shadowdive/bkanim.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/animation.h"
 #include "shadowdive/error.h"
 #include <stdlib.h>
 

@@ -1,10 +1,11 @@
 #ifndef _BK_ANIMS
 #define _BK_ANIMS
 
-#include "shadowdive/animation.h"
+#include <stdint.h>
 
 typedef struct sd_writer_t sd_writer;
 typedef struct sd_reader_t sd_reader;
+typedef struct sd_animation_t sd_animation;
 
 typedef struct sd_bk_anim_t {
     uint8_t null;

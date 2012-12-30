@@ -2,10 +2,10 @@
 #define _BK_H
 
 #include <stdint.h>
-#include "shadowdive/palette.h"
-#include "shadowdive/vga_image.h"
-#include "shadowdive/animation.h"
-#include "shadowdive/bkanim.h"
+
+typedef struct sd_palette_t sd_palette;
+typedef struct sd_bk_anim_t sd_bk_anim;
+typedef struct sd_vga_image_t sd_vga_image;
 
 typedef struct bk_file_t {
     uint32_t file_id;

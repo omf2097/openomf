@@ -1,10 +1,10 @@
 #ifndef _VGA_IMAGE
 #define _VGA_IMAGE
 
-#include "shadowdive/rgba_image.h"
-#include "shadowdive/palette.h"
+typedef struct sd_rgba_image_t sd_rgba_image;
+typedef struct sd_palette_t sd_palette;
 
-typedef struct vga_image_t {
+typedef struct sd_vga_image_t {
     unsigned int w;
     unsigned int h;
     unsigned int len;

@@ -1,10 +1,10 @@
 #ifndef _SPRITE_IMAGE
 #define _SPRITE_IMAGE
 
-#include "shadowdive/rgba_image.h"
-#include "shadowdive/palette.h"
+typedef struct sd_palette_t sd_palette;
+typedef struct sd_rgba_image_t sd_rgba_image;
 
-typedef struct sprite_image_t {
+typedef struct sd_sprite_image_t {
     unsigned int w;
     unsigned int h;
     unsigned int len;

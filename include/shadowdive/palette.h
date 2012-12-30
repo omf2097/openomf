@@ -4,7 +4,7 @@
 typedef struct sd_reader_t sd_reader;
 typedef struct sd_writer_t sd_writer;
 
-typedef struct palette_t {
+typedef struct sd_palette_t {
     char data[256][3];
     char remaps[19][256];
 } sd_palette;

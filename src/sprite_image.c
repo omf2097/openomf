@@ -1,4 +1,6 @@
 #include "shadowdive/sprite_image.h"
+#include "shadowdive/rgba_image.h"
+#include "shadowdive/palette.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -10,6 +12,7 @@ sd_sprite_image* sd_sprite_image_create(unsigned int w, unsigned int h, unsigned
     img->h = h;
     img->len = len;
     img->data = (char*)malloc(len);
+    memset(img->data, 0, len);
     return img;
 }
 
@@ -39,7 +42,6 @@ sd_rgba_image* sd_sprite_image_decode(sd_sprite_image *img, sd_palette *pal, int
     while(i < img->len) {
         // read a word
         uint16_t c = (uint8_t)img->data[i] + ((uint8_t)img->data[i+1] << 8);
-        /*printf("c is %d\n", c);*/
         char op = c % 4;
         uint16_t data = c / 4;
         i += 2; // we read 2 bytes

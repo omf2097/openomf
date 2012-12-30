@@ -1,7 +1,7 @@
 #ifndef _RGBA_IMAGE
 #define _RGBA_IMAGE
 
-typedef struct rgba_image_t {
+typedef struct sd_rgba_image_t {
     unsigned int w;
     unsigned int h;
     char *data;

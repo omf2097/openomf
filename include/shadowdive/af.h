@@ -2,9 +2,8 @@
 #define _AF_H
 
 #include <stdint.h>
-#include "shadowdive/palette.h"
-#include "shadowdive/vga_image.h"
-#include "shadowdive/move.h"
+
+typedef struct sd_move_t sd_move;
 
 typedef struct af_file_t {
     uint16_t file_id;

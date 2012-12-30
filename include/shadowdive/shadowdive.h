@@ -5,6 +5,7 @@
 #include "shadowdive/af.h"
 #include "shadowdive/sounds.h"
 #include "shadowdive/bkanim.h"
+#include "shadowdive/animation.h"
 #include "shadowdive/error.h"
 #include "shadowdive/move.h"
 #include "shadowdive/palette.h"

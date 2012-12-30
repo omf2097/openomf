@@ -2,6 +2,7 @@
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/error.h"
+#include "shadowdive/animation.h"
 #include <stdlib.h>
 #include <string.h>
 

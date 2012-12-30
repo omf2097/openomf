@@ -3,6 +3,7 @@
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/animation.h"
 #include "shadowdive/error.h"
+#include "shadowdive/move.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
