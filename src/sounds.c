@@ -12,11 +12,11 @@ sd_sound_file* sd_sounds_load(const char *filename) {
     // Read header
     sd_skip(r, 4);
     uint32_t header_size = sd_read_udword(r);
-    int data_block_count = header_size / 4;
+    int data_block_count = header_size / 4 - 2;
 
     // Find block sizes
-    uint32_t data_block_offsets[data_block_count+1];
-    for(int i = 0; i < data_block_count - 2; i++) {
+    uint32_t data_block_offsets[data_block_count];
+    for(int i = 0; i < data_block_count; i++) {
         data_block_offsets[i] = sd_read_udword(r);
     }
     data_block_offsets[data_block_count] = sd_reader_filesize(r);
@@ -34,6 +34,7 @@ sd_sound_file* sd_sounds_load(const char *filename) {
 
         if((offset - sd_reader_pos(r)) <= 2) {
             sf->sounds[i] = 0;
+            sd_skip(r, 2);
         } else {
             sound = (sd_sound*)malloc(sizeof(sd_sound));
             sound->len = offset - sd_reader_pos(r);
@@ -57,6 +58,10 @@ int sd_sounds_save(const char* filename, sd_sound_file *sf) {
 
     sd_writer_close(w);
     return 1;
+}
+
+void sd_sound_to_au(sd_sound *sound, const char* file) {
+
 }
 
 void sd_sounds_delete(sd_sound_file *sf) {

@@ -17,5 +17,6 @@ typedef struct sd_sound_file_t {
 sd_sound_file* sd_sounds_load(const char *filename);
 int sd_sounds_save(const char* filename, sd_sound_file *sf);
 void sd_sounds_delete(sd_sound_file *sf);
+void sd_sound_to_au(sd_sound *sound, const char* file);
 
 #endif // _SOUNDS_H
