@@ -10,11 +10,13 @@ typedef struct af_file_t {
     uint16_t file_id;
     uint16_t unknown_a;
     uint32_t endurance;
+    uint8_t unknown_b;
     uint16_t power;
     int32_t forward_speed;
     int32_t reverse_speed;
     int32_t jump_speed;
     int32_t fall_speed;
+    uint16_t unknown_c;
 
     sd_move *moves[70];
 
