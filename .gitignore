@@ -1,6 +1,9 @@
 # Object files
 *.o
 
+obj/
+bin/
+
 # Libraries
 *.lib
 *.a
