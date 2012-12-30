@@ -50,15 +50,13 @@ int main(int argc, char **argv) {
             return 1;
         }
 
-        sd_bk_file *bk_file;
-        sd_af_file *file;
+        sd_bk_file *bk_file = 0;
+        sd_af_file *file = 0;
         printf("Loading AF file: %s\n", argv[argc-1]);
-        file = sd_af_load(argv[argc-1]);
-        if (file) {
+        if(sd_af_load(file, argv[argc-1]) == 0) {
             printf("File loaded.\n");
             printf("Reading palette from %s\n", argv[2]);
-            bk_file = sd_bk_load(argv[2]);
-            if (bk_file) {
+            if (sd_bk_load(bk_file, argv[2]) == 0) {
                 printf("Palette loaded.\n");
                 for(int i = 0; i < 50; i++) {
                     if (file->moves[i]) {
@@ -78,10 +76,9 @@ int main(int argc, char **argv) {
         }
         return 0;
     } else if (strncmp(ext, ".BK", 3) == 0) {
-        sd_bk_file *file;
+        sd_bk_file *file = 0;
         printf("Loading BK file: %s\n", argv[1]);
-        file = sd_bk_load(argv[1]);
-        if(file) {
+        if(sd_bk_load(file, argv[1]) == 0) {
             printf("File loaded.\n");
             printf("ID: %d\n", file->file_id);
             sd_rgba_image *img;

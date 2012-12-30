@@ -2,18 +2,19 @@
 #include "internal/reader.h"
 #include "internal/writer.h"
 #include "animation.h"
+#include "error.h"
 #include <stdlib.h>
 #include <string.h>
 
-sd_bk_file* sd_bk_load(const char *filename) {
+int sd_bk_load(sd_bk_file *bk, const char *filename) {
     // Initialize reader
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
-        return 0;
+        return SD_FILE_OPEN_ERROR;
     }
 
     // Allocate structure
-    sd_bk_file *bk = malloc(sizeof(sd_bk_file));
+    bk = malloc(sizeof(sd_bk_file));
 
     // Header
     bk->file_id = sd_read_udword(r);
@@ -53,13 +54,13 @@ sd_bk_file* sd_bk_load(const char *filename) {
 
     // Close & return
     sd_reader_close(r);
-    return bk;
+    return SD_SUCCESS;
 }
 
-int sd_bk_save(const char* filename, sd_bk_file *bk) {
+int sd_bk_save(sd_bk_file *bk, const char* filename) {
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
-        return 0;
+        return SD_FILE_OPEN_ERROR;
     }
 
     // Write header
@@ -100,7 +101,7 @@ int sd_bk_save(const char* filename, sd_bk_file *bk) {
 
     // All done, close writer
     sd_writer_close(w);
-    return 1;
+    return SD_SUCCESS;
 }
 
 void sd_bk_set_background(sd_bk_file *bk, sd_vga_image *img) {

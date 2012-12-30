@@ -1,12 +1,13 @@
 #include "sounds.h"
 #include "internal/reader.h"
 #include "internal/writer.h"
+#include "error.h"
 #include <stdlib.h>
 
-sd_sound_file* sd_sounds_load(const char *filename) {
+int sd_sounds_load(sd_sound_file *sf, const char *filename) {
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
-        return 0;
+        return SD_FILE_OPEN_ERROR;
     }
 
     // Read header
@@ -22,7 +23,7 @@ sd_sound_file* sd_sounds_load(const char *filename) {
     data_block_offsets[data_block_count] = sd_reader_filesize(r);
 
     // Allocate structures
-    sd_sound_file *sf = (sd_sound_file*)malloc(sizeof(sd_sound_file));
+    sf = (sd_sound_file*)malloc(sizeof(sd_sound_file));
     sf->sounds = malloc(sizeof(sd_sound*) * data_block_count);
     sf->sound_count = data_block_count;
 
@@ -45,23 +46,23 @@ sd_sound_file* sd_sounds_load(const char *filename) {
     }
 
     sd_reader_close(r);
-    return sf;
+    return SD_SUCCESS;
 }
 
-int sd_sounds_save(const char* filename, sd_sound_file *sf) {
+int sd_sounds_save(sd_sound_file *sf, const char* filename) {
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
-        return 0;
+        return SD_FILE_OPEN_ERROR;
     }
 
     // TODO: Writer
 
     sd_writer_close(w);
-    return 1;
+    return SD_SUCCESS;
 }
 
-void sd_sound_to_au(sd_sound *sound, const char* file) {
-    sd_writer *w = sd_writer_open(file);
+void sd_sound_to_au(sd_sound *sound, const char *filename) {
+    sd_writer *w = sd_writer_open(filename);
     if(!w) return;
 
     // Write AU header

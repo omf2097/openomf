@@ -10,8 +10,6 @@
 typedef struct bk_file_t {
     uint32_t file_id;
     uint8_t unknown_a;
-    uint16_t img_w;
-    uint16_t img_h;
 
     sd_bk_anim *anims[50];
 
@@ -31,12 +29,12 @@ void sd_bk_set_background(sd_bk_file *bk, sd_vga_image *img);
 /**
   * Load .BK file. Returns 0 on error.
   */
-sd_bk_file* sd_bk_load(const char *filename);
+int sd_bk_load(sd_bk_file *bk, const char *filename);
 
 /**
   * Saves BK file structure. Returns 1 on success, 0 on error.
   */
-int sd_bk_save(const char* filename, sd_bk_file *bk);
+int sd_bk_save(sd_bk_file *bk, const char* filename);
 
 /**
   * Deletes bk_file structure from memory.

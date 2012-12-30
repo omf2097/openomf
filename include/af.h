@@ -26,12 +26,12 @@ typedef struct af_file_t {
 /**
   * Load .AF file. Returns 0 on error.
   */
-sd_af_file* sd_af_load(const char *filename);
+int sd_af_load(sd_af_file *af, const char *filename);
 
 /**
   * Saves AF file structure. Returns 1 on success, 0 on error.
   */
-int sd_af_save(const char* filename, sd_af_file *af);
+int sd_af_save(sd_af_file *af, const char* filename);
 
 /**
   * Deletes af_file structure from memory.

@@ -21,6 +21,7 @@ FILES := \
     src/sounds.c \
     src/palette.c \
     src/sprite.c \
+    src/error.c \
     src/internal/reader.c \
     src/internal/writer.c 
 

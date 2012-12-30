@@ -2,20 +2,21 @@
 #include "internal/reader.h"
 #include "internal/writer.h"
 #include "animation.h"
+#include "error.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
 
-sd_af_file* sd_af_load(const char *filename) {
+int sd_af_load(sd_af_file *af, const char *filename) {
     // Initialize reader
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
-        return 0;
+        return SD_FILE_OPEN_ERROR;
     }
 
     // Allocate structure
-    sd_af_file *af = malloc(sizeof(sd_af_file));
+    af = malloc(sizeof(sd_af_file));
 
     // Header
     af->file_id = sd_read_uword(r);
@@ -48,13 +49,13 @@ sd_af_file* sd_af_load(const char *filename) {
 
     // Close & return
     sd_reader_close(r);
-    return af;
+    return SD_SUCCESS;
 }
 
-int sd_af_save(const char* filename, sd_af_file *af) {
+int sd_af_save(sd_af_file *af, const char* filename) {
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
-        return 0;
+        return SD_FILE_OPEN_ERROR;
     }
 
     // Header
@@ -82,7 +83,7 @@ int sd_af_save(const char* filename, sd_af_file *af) {
 
     // All done!
     sd_writer_close(w);
-    return 1;
+    return SD_SUCCESS;
 }
 
 void sd_af_delete(sd_af_file *af) {
