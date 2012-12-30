@@ -1,4 +1,4 @@
-#include "rgba_image.h"
+#include "shadowdive/rgba_image.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

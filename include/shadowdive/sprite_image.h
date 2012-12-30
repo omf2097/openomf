@@ -1,8 +1,8 @@
 #ifndef _SPRITE_IMAGE
 #define _SPRITE_IMAGE
 
-#include "rgba_image.h"
-#include "palette.h"
+#include "shadowdive/rgba_image.h"
+#include "shadowdive/palette.h"
 
 typedef struct sprite_image_t {
     unsigned int w;

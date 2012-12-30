@@ -1,7 +1,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include "sprite.h"
+#include "shadowdive/sprite.h"
 
 typedef struct sd_reader_t sd_reader;
 typedef struct sd_writer_t sd_writer;

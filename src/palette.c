@@ -1,7 +1,7 @@
-#include "palette.h"
-#include "internal/reader.h"
-#include "internal/writer.h"
-#include "error.h"
+#include "shadowdive/palette.h"
+#include "shadowdive/internal/reader.h"
+#include "shadowdive/internal/writer.h"
+#include "shadowdive/error.h"
 #include <stdint.h>
 
 int sd_palette_load(sd_reader *reader, sd_palette *palette) {

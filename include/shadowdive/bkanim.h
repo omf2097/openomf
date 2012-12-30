@@ -1,7 +1,7 @@
 #ifndef _BK_ANIMS
 #define _BK_ANIMS
 
-#include "animation.h"
+#include "shadowdive/animation.h"
 
 typedef struct sd_writer_t sd_writer;
 typedef struct sd_reader_t sd_reader;

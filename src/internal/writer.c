@@ -1,4 +1,4 @@
-#include "internal/writer.h"
+#include "shadowdive/internal/writer.h"
 
 #include <stdlib.h>
 #include <stdio.h>

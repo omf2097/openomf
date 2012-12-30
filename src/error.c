@@ -1,4 +1,4 @@
-#include "error.h"
+#include "shadowdive/error.h"
 #include <string.h>
 
 void sd_get_error(char *message, int errorcode) {

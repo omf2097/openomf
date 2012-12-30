@@ -1,4 +1,4 @@
-#include "sprite_image.h"
+#include "shadowdive/sprite_image.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>

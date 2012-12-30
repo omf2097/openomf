@@ -1,7 +1,7 @@
 #ifndef MOVE_H
 #define MOVE_H
 
-#include "animation.h"
+#include "shadowdive/animation.h"
 
 typedef struct sd_writer_t sd_writer;
 typedef struct sd_reader_t sd_reader;

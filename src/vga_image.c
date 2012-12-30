@@ -1,4 +1,4 @@
-#include "vga_image.h"
+#include "shadowdive/vga_image.h"
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>

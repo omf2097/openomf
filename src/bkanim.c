@@ -1,7 +1,7 @@
-#include "bkanim.h"
-#include "internal/reader.h"
-#include "internal/writer.h"
-#include "error.h"
+#include "shadowdive/bkanim.h"
+#include "shadowdive/internal/reader.h"
+#include "shadowdive/internal/writer.h"
+#include "shadowdive/error.h"
 #include <stdlib.h>
 
 sd_bk_anim* sd_bk_anim_create() {

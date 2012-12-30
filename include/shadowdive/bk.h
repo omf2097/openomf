@@ -2,10 +2,10 @@
 #define _BK_H
 
 #include <stdint.h>
-#include "palette.h"
-#include "vga_image.h"
-#include "animation.h"
-#include "bkanim.h"
+#include "shadowdive/palette.h"
+#include "shadowdive/vga_image.h"
+#include "shadowdive/animation.h"
+#include "shadowdive/bkanim.h"
 
 typedef struct bk_file_t {
     uint32_t file_id;

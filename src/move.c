@@ -1,7 +1,7 @@
-#include "move.h"
-#include "internal/reader.h"
-#include "internal/writer.h"
-#include "error.h"
+#include "shadowdive/move.h"
+#include "shadowdive/internal/reader.h"
+#include "shadowdive/internal/writer.h"
+#include "shadowdive/error.h"
 #include <stdlib.h>
 #include <string.h>
 

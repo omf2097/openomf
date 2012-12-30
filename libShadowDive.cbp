@@ -74,55 +74,59 @@
 			<Add option="-std=c99" />
 			<Add directory="include/" />
 		</Compiler>
-		<Unit filename="include/af.h">
+		<Unit filename="include/shadowdive/af.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/animation.h">
+		<Unit filename="include/shadowdive/animation.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/bk.h">
+		<Unit filename="include/shadowdive/bk.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/bkanim.h">
+		<Unit filename="include/shadowdive/bkanim.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/internal/reader.h">
+		<Unit filename="include/shadowdive/error.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/internal/writer.h">
+		<Unit filename="include/shadowdive/internal/reader.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/move.h">
+		<Unit filename="include/shadowdive/internal/writer.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/palette.h">
+		<Unit filename="include/shadowdive/move.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/rgba_image.h">
+		<Unit filename="include/shadowdive/palette.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/sounds.h">
+		<Unit filename="include/shadowdive/rgba_image.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/sprite.h">
+		<Unit filename="include/shadowdive/sounds.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/sprite_image.h">
+		<Unit filename="include/shadowdive/sprite.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="include/vga_image.h">
+		<Unit filename="include/shadowdive/sprite_image.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="include/shadowdive/vga_image.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -142,6 +146,11 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/bkanim.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/error.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />

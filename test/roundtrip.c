@@ -1,6 +1,4 @@
-#include <bk.h>
-#include <af.h>
-#include <error.h>
+#include <shadowdive/shadowdive.h>
 #include <stdio.h>
 #include <string.h>
 #include <libgen.h>
