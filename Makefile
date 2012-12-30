@@ -17,14 +17,14 @@ SDLINC=/libs/include/
 SDLLIB=/libs/lib/
 
 BINDIR=bin
-CFLAGS=-I $(SDINC) -I $(SDLINC) -Wall -std=c99 -ggdb -g3
-LDFLAGS=-L $(SDLIB) -L $(SDLLIB) -lSDL2 -lSDL2main -lshadowdive -largtable2
+CFLAGS=-I$(SDINC) -I$(SDLINC) `sdl2-config --cflags` -Wall -std=c99 -ggdb -g3
+LDFLAGS=-L$(SDLIB) -L$(SDLLIB) `sdl2-config --libs` -lshadowdive -largtable2
 
 all: 
 	$(MKDIR) $(BINDIR)/
-	$(CC) -o $(BINDIR)/bktool $(BKTOOL_MAIN) $(CFLAGS) $(LDFLAGS)
-	$(CC) -o $(BINDIR)/aftool $(AFTOOL_MAIN) $(CFLAGS) $(LDFLAGS)
-	$(CC) -o $(BINDIR)/soundtool $(SOUNDTOOL_MAIN) $(CFLAGS) $(LDFLAGS)
+	$(CC) -o $(BINDIR)/bktool $(CFLAGS) $(LDFLAGS) $(BKTOOL_MAIN) 
+	$(CC) -o $(BINDIR)/aftool $(CFLAGS) $(LDFLAGS) $(AFTOOL_MAIN)
+	$(CC) -o $(BINDIR)/soundtool $(CFLAGS) $(LDFLAGS) $(SOUNDTOOL_MAIN)
 	$(RM) *.o
 	@echo "All done!"
 

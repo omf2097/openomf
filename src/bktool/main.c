@@ -2,7 +2,7 @@
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
