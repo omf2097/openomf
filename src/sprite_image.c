@@ -17,7 +17,9 @@ sd_sprite_image* sd_sprite_image_create(unsigned int w, unsigned int h, unsigned
 }
 
 void sd_sprite_image_delete(sd_sprite_image *img) {
-    free(img->data);
+    if (img->data) {
+        free(img->data);
+    }
     free(img);
 }
 
