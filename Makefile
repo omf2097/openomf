@@ -22,9 +22,9 @@ LDFLAGS=-L $(SDLIB) -L $(SDLLIB) -lSDL2 -lSDL2main -lshadowdive -largtable2
 
 all: 
 	$(MKDIR) $(BINDIR)/
-	$(CC) -o $(BINDIR)/bktool -c $(BKTOOL_MAIN) $(CFLAGS) $(LDFLAGS)
-	$(CC) -o $(BINDIR)/aftool -c $(AFTOOL_MAIN) $(CFLAGS) $(LDFLAGS)
-	$(CC) -o $(BINDIR)/soundtool -c $(SOUNDTOOL_MAIN) $(CFLAGS) $(LDFLAGS)
+	$(CC) -o $(BINDIR)/bktool $(BKTOOL_MAIN) $(CFLAGS) $(LDFLAGS)
+	$(CC) -o $(BINDIR)/aftool $(AFTOOL_MAIN) $(CFLAGS) $(LDFLAGS)
+	$(CC) -o $(BINDIR)/soundtool $(SOUNDTOOL_MAIN) $(CFLAGS) $(LDFLAGS)
 	$(RM) *.o
 	@echo "All done!"
 
