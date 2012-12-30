@@ -20,6 +20,10 @@ void sd_writer_close(sd_writer *writer);
   */
 long sd_writer_pos(sd_writer *writer);
 
+int sd_writer_seek_start(sd_writer *writer, long offset);
+int sd_writer_seek_cur(sd_writer *writer, long offset);
+int sd_writer_seek_end(sd_writer *writer, long offset);
+
 /**
   * Write a buffer to file.
   */

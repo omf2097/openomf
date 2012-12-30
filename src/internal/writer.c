@@ -30,6 +30,18 @@ long sd_writer_pos(sd_writer *writer) {
     return ftell(writer->handle);
 }
 
+int sd_writer_seek_start(sd_writer *writer, long offset) {
+    return fseek(writer->handle, offset, SEEK_SET);
+}
+
+int sd_writer_seek_cur(sd_writer *writer, long offset) {
+    return fseek(writer->handle, offset, SEEK_CUR);
+}
+
+int sd_writer_seek_end(sd_writer *writer, long offset) {
+    return fseek(writer->handle, offset, SEEK_END);
+}
+
 int sd_write_buf(sd_writer *writer, char *buf, int len) {
     if(fwrite(buf, 1, len, writer->handle) != len) {
         strcpy(writer->err, "Error: Wrote less than requested amount of bytes.");

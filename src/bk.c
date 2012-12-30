@@ -25,7 +25,7 @@ sd_bk_file* sd_bk_load(const char *filename) {
     // Read animations
     uint8_t animno = 0;
     while(1) {
-        sd_skip(r, 4);
+        sd_skip(r, 4); // offset of next animation
         animno = sd_read_ubyte(r);
         if(animno >= 50 || !sd_reader_ok(r)) {
             break;
@@ -69,12 +69,22 @@ int sd_bk_save(const char* filename, sd_bk_file *bk) {
     sd_write_uword(w, bk->img_h);
 
     // Write animations
-    uint32_t rpos = 0, opos = 0;
+    long rpos = 0, opos = 0;
     for(uint8_t i = 0; i < 50; i++) {
-        sd_write_udword(w, 0); // FIXME: This needs to be the starting position of the next animation relative to the start of the file.
-        sd_write_ubyte(w, i);
-        sd_bk_anim_save(w, bk->anims[i]);
+        if (bk->anims[i]) { // there can be gaps
+            opos = sd_writer_pos(w); // remember whwre we need to fill in the blank
+            sd_write_udword(w, 0); // write a 0 as a placeholder
+            sd_write_ubyte(w, i);
+            sd_bk_anim_save(w, bk->anims[i]);
+            rpos = sd_writer_pos(w);
+            sd_writer_seek_start(w, opos);
+            sd_write_udword(w, rpos); // write the actual size
+            sd_writer_seek_start(w, rpos);
+        }
     }
+
+    sd_write_udword(w, rpos);
+    sd_write_ubyte(w, 51); // indicate end of animations
 
     // Write background image
     sd_write_buf(w, bk->background->data, bk->background->len);

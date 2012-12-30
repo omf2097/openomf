@@ -42,6 +42,7 @@ all:
 	$(MV) *.o $(OBJDIR)/
 	$(AR) rcs $(LIBDIR)/$(LIBNAME) $(OBJDIR)/*.o
 	$(CC) $(CFLAGS) -o $(BINDIR)/$(TESTBIN) $(TESTMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
+	$(CC) $(CFLAGS) -o $(BINDIR)/roundtrip test/roundtrip.c -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	@echo "All done!"
 
 clean:
