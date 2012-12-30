@@ -61,7 +61,30 @@ int sd_sounds_save(const char* filename, sd_sound_file *sf) {
 }
 
 void sd_sound_to_au(sd_sound *sound, const char* file) {
+    sd_writer *w = sd_writer_open(file);
+    if(!w) return;
 
+    // Write AU header
+    sd_write_udword(w, 0x2e736e64); // Magic number (".snd")
+    sd_write_udword(w, 32); // Data start
+    sd_write_udword(w, 0xffffffff); // Data size
+    sd_write_udword(w, 2); // Type (8bit signed pcm)
+    sd_write_udword(w, 8000); // Freq
+    sd_write_udword(w, 1); // Channels
+
+    // Annotation field (terminate with 0)
+    sd_write_buf(w, "omf2097", 7);
+    sd_write_ubyte(w, 0);
+
+    // Write data
+    int8_t sample = 0;
+    for(int i = 0; i < sound->len; i++) {
+        sample = sound->data[i] - 128;
+        sd_write_byte(w, sample);
+    }
+
+    // All done!
+    sd_writer_close(w);
 }
 
 void sd_sounds_delete(sd_sound_file *sf) {
