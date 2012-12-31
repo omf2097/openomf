@@ -27,6 +27,9 @@ int main(int argc, char **argv) {
         printf("Loading AF file: %s\n", argv[1]);
         if (sd_af_load(file, argv[1]) == SD_SUCCESS) {
             printf("File loaded.\n");
+            printf("Writing AF file to %s.\n", argv[2]);
+            sd_af_save(file, argv[2]);
+            sd_af_delete(file);
         } else {
             printf("Unable to load file!\n");
             return 1;
