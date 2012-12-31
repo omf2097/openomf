@@ -1,15 +1,15 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
+#include <dumb/dumb.h>
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,end};
-    const char* progname = "soundtool";
+    const char* progname = "musictool";
     
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     
     // Handle version
     if(vers->count > 0) {
-        printf("'%s' Command line SOUNDS.DAT file editor.\n", progname);
+        printf("'%s' Command line .PSM music file player.\n", progname);
         goto exit_0;
     }
     
