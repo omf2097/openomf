@@ -53,3 +53,20 @@ void sd_move_save(sd_writer *writer, sd_move *move) {
     sd_write_buf(writer, move->footer_string, fs_size);
     sd_write_ubyte(writer, 0);
 }
+
+void sd_move_set_animation(sd_move *move, sd_animation *animation) {
+    if(move->animation) {
+        free(move->animation);
+    }
+    move->animation = animation;
+}
+
+void sd_move_set_footer_string(sd_move *move, const char* str) {
+    if(move->footer_string) {
+        realloc(move->footer_string, strlen(str)+1);
+    } else {
+        move->footer_string = (char*)malloc(strlen(str)+1);
+    }
+    strcpy(move->footer_string, str);
+}
+
