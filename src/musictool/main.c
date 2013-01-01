@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
     
     // Initialize everything
     SDL_Init(SDL_INIT_AUDIO);
-    printf("Attempting to play '%s' ...\n", *file->filename);
+    printf("Attempting to play '%s' ...\n", file->filename[0]);
     if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 16384)) {
         printf("Failed to initialize SDL2_mixer!\n");
         goto exit_1;
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
     DUH_SIGRENDERER *renderer;
     
     // Load PSM file
-    data = dumb_load_psm(*file->filename, 0);
+    data = dumb_load_psm(file->filename[0], 0);
     if(!data) {
         printf("Unable to load file!\n");
         goto exit_2;
