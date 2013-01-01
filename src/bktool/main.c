@@ -9,10 +9,11 @@ int main(int argc, char *argv[]) {
     struct arg_file *file = arg_file1("f", "file", "<file>", ".BK file");
     struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
     struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --anim)");
-    struct arg_str *key = arg_str0("k", "key", "<key>", "Select key");
-    struct arg_str *value = arg_str0("v", "value", "<value>", "Set value");
+    struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key (requires --anim)");
+    struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
+    struct arg_str *play = arg_str0(NULL, "play", "<id>", "Play animation or sprite (requires --anim)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,anim,sprite,key,value,end};
+    void* argtable[] = {help,vers,file,anim,sprite,key,value,play,end};
     const char* progname = "bktool";
     
     // Make sure everything got allocated
@@ -37,6 +38,32 @@ int main(int argc, char *argv[]) {
     if(vers->count > 0) {
         printf("'%s' Command line BK file editor.\n", progname);
         goto exit_0;
+    }
+    
+    // Argument dependencies
+    if(anim->count == 0) {
+        if(sprite->count > 0) {
+            printf("--sprite requires --anim\n");
+            printf("Try '%s --help' for more information.\n", progname);
+            goto exit_0;
+        }
+        if(key->count > 0) {
+            printf("--key requires --anim\n");
+            printf("Try '%s --help' for more information.\n", progname);
+            goto exit_0;
+        }
+        if(play->count > 0) {
+            printf("--play requires --anim\n");
+            printf("Try '%s --help' for more information.\n", progname);
+            goto exit_0;
+        }
+    }
+    if(key->count == 0) {
+        if(value->count > 0) {
+            printf("--value requires --key\n");
+            printf("Try '%s --help' for more information.\n", progname);
+            goto exit_0;
+        }
     }
     
     // Handle errors
