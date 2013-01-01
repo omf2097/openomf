@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
     if(help->count > 0) {
         printf("Usage: %s", progname);
         arg_print_syntax(stdout, argtable, "\n");
+        printf("\nArguments:\n");
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
