@@ -9,11 +9,11 @@ typedef struct sd_animation_t sd_animation;
 
 typedef struct sd_bk_anim_t {
     uint8_t null;
-    uint8_t unknown_a;
-    uint8_t unknown_b;
-    uint8_t unknown_c;
-    uint16_t unknown_d;
-    uint8_t unknown_e;
+    uint8_t chain_hit;
+    uint8_t chain_no_hit;
+    uint8_t repeat;
+    uint16_t probability;
+    uint8_t hazard_damage;
     uint16_t unknown_size;
     char* unknown_data;
 

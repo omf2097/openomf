@@ -23,11 +23,11 @@ void sd_bk_anim_delete(sd_bk_anim *bka) {
 int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     // BK Specific animation header
     bka->null = sd_read_ubyte(r);
-    bka->unknown_a = sd_read_ubyte(r);
-    bka->unknown_b = sd_read_ubyte(r);
-    bka->unknown_c = sd_read_ubyte(r);
-    bka->unknown_d = sd_read_uword(r);
-    bka->unknown_e = sd_read_ubyte(r);
+    bka->chain_hit = sd_read_ubyte(r);
+    bka->chain_no_hit = sd_read_ubyte(r);
+    bka->repeat = sd_read_ubyte(r);
+    bka->probability = sd_read_uword(r);
+    bka->hazard_damage = sd_read_ubyte(r);
     bka->unknown_size = sd_read_uword(r);
     bka->unknown_data = (char*)malloc(bka->unknown_size);
     sd_read_buf(r, bka->unknown_data, bka->unknown_size);
@@ -45,11 +45,11 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
 void sd_bk_anim_save(sd_writer *writer, sd_bk_anim *bka) {
     // Write BK specific header
     sd_write_ubyte(writer, bka->null);
-    sd_write_ubyte(writer, bka->unknown_a);
-    sd_write_ubyte(writer, bka->unknown_b);
-    sd_write_ubyte(writer, bka->unknown_c);
-    sd_write_uword(writer, bka->unknown_d);
-    sd_write_ubyte(writer, bka->unknown_e);
+    sd_write_ubyte(writer, bka->chain_hit);
+    sd_write_ubyte(writer, bka->chain_no_hit);
+    sd_write_ubyte(writer, bka->repeat);
+    sd_write_uword(writer, bka->probability);
+    sd_write_ubyte(writer, bka->hazard_damage);
     sd_write_uword(writer, bka->unknown_size);
     sd_write_buf(writer, bka->unknown_data, bka->unknown_size);
 
