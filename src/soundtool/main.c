@@ -41,14 +41,6 @@ int main(int argc, char* argv[]) {
         goto exit_0;
     }
     
-    // Init SDL
-    SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
-    
-    // TODO: Handle everything here
-    
-    // Quit
-exit_1:
-    SDL_Quit();
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     return 0;
