@@ -2,35 +2,64 @@
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 
-void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char *key, const char *value) {
+int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
+    if(bk->anims[anim] == 0) {
+        printf("Animation #%d does not exist.\n", anim);
+        return 0;
+    }
+    if(bk->anims[anim]->animation->sprites[sprite]) {
+        printf("Sprite #%d does not exist.\n", sprite);
+        return 0;
+    }
+    return 1;
+}
 
+int check_anim(sd_bk_file *bk, int anim) {
+    if(bk->anims[anim] == 0) {
+        printf("Animation #%d does not exist.\n", anim);
+        return 0;
+    }
+    return 1;
+}
+
+void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char *key, const char *value) {
+    if(!check_anim_sprite(bk, anim, sprite)) return;
+    
 }
 
 void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
-
+    if(!check_anim_sprite(bk, anim, sprite)) return;
+    
 }
 
 void sprite_play(sd_bk_file *bk, int anim, int sprite) {
-
+    if(!check_anim_sprite(bk, anim, sprite)) return;
+    
 }
 
 void sprite_info(sd_bk_file *bk, int anim, int sprite) {
+    if(!check_anim_sprite(bk, anim, sprite)) return;
+
     printf("Animation #%d, Sprite #%d information:\n", anim, sprite);
 }
 
 void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) {
-
+    if(!check_anim(bk, anim)) return;
+    
 }
 
 void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
-
+    if(!check_anim(bk, anim)) return;
+    
 }
 
 void anim_play(sd_bk_file *bk, int anim) {
-
+    if(!check_anim(bk, anim)) return;
+    
 }
 
 void anim_info(sd_bk_file *bk, int anim) {
+    if(!check_anim(bk, anim)) return;
     printf("Animation #%d information:\n", anim);
 }
 
