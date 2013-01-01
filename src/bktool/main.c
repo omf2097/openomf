@@ -24,23 +24,24 @@ int check_anim(sd_bk_file *bk, int anim) {
 
 void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char *key, const char *value) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
-    
+    sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
 }
 
 void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
-    
+    sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
 }
 
 void sprite_play(sd_bk_file *bk, int anim, int sprite) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
-    
+    sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
 }
 
 void sprite_info(sd_bk_file *bk, int anim, int sprite) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
 
     printf("Animation #%d, Sprite #%d information:\n", anim, sprite);
+    sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
 }
 
 void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) {
