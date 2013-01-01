@@ -7,10 +7,12 @@ int main(int argc, char *argv[]) {
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", ".BK file");
-    struct arg_int *anim = arg_int0("a", "anim", "<int>", "Select animation");
-    struct arg_int *sprite = arg_int0("s", "sprite", "<int>", "Select sprite (requires --anim)");
+    struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
+    struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --anim)");
+    struct arg_str *key = arg_str0("k", "key", "<key>", "Select key");
+    struct arg_str *value = arg_str0("v", "value", "<value>", "Set value");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,anim,sprite,end};
+    void* argtable[] = {help,vers,file,anim,sprite,key,value,end};
     const char* progname = "bktool";
     
     // Make sure everything got allocated
@@ -27,7 +29,7 @@ int main(int argc, char *argv[]) {
         printf("Usage: %s", progname);
         arg_print_syntax(stdout, argtable, "\n");
         printf("\nArguments:\n");
-        arg_print_glossary(stdout, argtable, "%-25s %s\n");
+        arg_print_glossary(stdout, argtable, "%-30s %s\n");
         goto exit_0;
     }
     
