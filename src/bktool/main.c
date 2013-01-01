@@ -44,7 +44,23 @@ void bk_get_key(sd_bk_file *bk, const char *key) {
 
 void bk_info(sd_bk_file *bk) {
     printf("BK File information:\n");
-    printf("File ID: %d\n", bk->file_id);
+    printf(" * File ID: %d\n", bk->file_id);
+    printf(" * Palettes: %d\n", bk->num_palettes);
+    printf(" * Unknown A: %d\n", bk->unknown_a);
+    
+    printf("Valid animations:\n");
+    for(int i = 0; i < 50; i++) {
+        if(bk->anims[i])
+            printf(" * %d\n", i);
+    }
+    
+    printf("Footer (hex):\n");
+    for(int k = 0; k < 3; k++) {
+        for(int i = 0; i < 10; i++) {
+            printf("%x\t", bk->footer[i+k*10]);
+        }
+        printf("\n");
+    }
 }
 
 int main(int argc, char *argv[]) {
