@@ -2,6 +2,51 @@
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 
+void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char *key, const char *value) {
+
+}
+
+void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
+
+}
+
+void sprite_play(sd_bk_file *bk, int anim, int sprite) {
+
+}
+
+void sprite_info(sd_bk_file *bk, int anim, int sprite) {
+    printf("Animation #%d, Sprite #%d information:\n", anim, sprite);
+}
+
+void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) {
+
+}
+
+void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
+
+}
+
+void anim_play(sd_bk_file *bk, int anim) {
+
+}
+
+void anim_info(sd_bk_file *bk, int anim) {
+    printf("Animation #%d information:\n", anim);
+}
+
+void bk_set_key(sd_bk_file *bk, const char *key, const char *value) {
+
+}
+
+void bk_get_key(sd_bk_file *bk, const char *key) {
+
+}
+
+void bk_info(sd_bk_file *bk) {
+    printf("BK File information:\n");
+    printf("File ID: %d\n", bk->file_id);
+}
+
 int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
@@ -76,10 +121,54 @@ int main(int argc, char *argv[]) {
     // Init SDL
     SDL_Init(SDL_INIT_VIDEO);
     
-    // TODO: Handle everything here
+    // Load file
+    sd_bk_file *bk = sd_bk_create();
+    int ret = sd_bk_load(bk, file->filename[0]);
+    if(ret) {
+        printf("Unable to load BK file! Make sure the file exists and is a valid BK file.\n");
+        goto exit_1;
+    }
+    
+    // Handle args
+    if(sprite->count > 0) {
+        if(key->count > 0) {
+            if(value->count > 0) {
+                sprite_set_key(bk, anim->ival[0], sprite->ival[0], key->sval[0], value->sval[0]);
+            } else {
+                sprite_get_key(bk, anim->ival[0], sprite->ival[0], key->sval[0]);
+            }
+        } else if(play->count > 0) {
+            sprite_play(bk, anim->ival[0], sprite->ival[0]);
+        } else {
+            sprite_info(bk, anim->ival[0], sprite->ival[0]);
+        }
+    } else if(anim->count > 0) {
+        if(key->count > 0) {
+            if(value->count > 0) {
+                anim_set_key(bk, anim->ival[0], key->sval[0], value->sval[0]);
+            } else {
+                anim_get_key(bk, anim->ival[0], key->sval[0]);
+            }
+        } else if(play->count > 0) {
+            anim_play(bk, anim->ival[0]);
+        } else {
+            anim_info(bk, anim->ival[0]);
+        }
+    } else {
+        if(key->count > 0) {
+            if(value->count > 0) {
+                bk_set_key(bk, key->sval[0], value->sval[0]);
+            } else {
+                bk_get_key(bk, key->sval[0]);
+            }
+        } else {
+            bk_info(bk);
+        }
+    }
     
     // Quit
 exit_1:
+    sd_bk_delete(bk);
     SDL_Quit();
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
