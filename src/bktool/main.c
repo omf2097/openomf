@@ -7,7 +7,7 @@ int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
         printf("Animation #%d does not exist.\n", anim);
         return 0;
     }
-    if(bk->anims[anim]->animation->sprites[sprite]) {
+    if(bk->anims[anim]->animation->sprites[sprite] == 0) {
         printf("Sprite #%d does not exist.\n", sprite);
         return 0;
     }
@@ -40,8 +40,15 @@ void sprite_play(sd_bk_file *bk, int anim, int sprite) {
 void sprite_info(sd_bk_file *bk, int anim, int sprite) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
 
-    printf("Animation #%d, Sprite #%d information:\n", anim, sprite);
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
+    printf("Animation #%d, Sprite #%d information:\n", anim, sprite);
+    printf(" * X:        %d\n", s->pos_x);
+    printf(" * Y:        %d\n", s->pos_y);
+    printf(" * W:        %d\n", s->img->w);
+    printf(" * H:        %d\n", s->img->h);
+    printf(" * Index:    %d\n", s->index);
+    printf(" * Missing:  %d\n", s->missing);
+    printf(" * Length:   %d\n", s->img->len);
 }
 
 void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) {
@@ -61,7 +68,42 @@ void anim_play(sd_bk_file *bk, int anim) {
 
 void anim_info(sd_bk_file *bk, int anim) {
     if(!check_anim(bk, anim)) return;
+    sd_bk_anim *bka = bk->anims[anim];
+    sd_animation *ani = bk->anims[anim]->animation;
+    
     printf("Animation #%d information:\n", anim);
+    
+    printf("\nBK specific header:\n");
+    printf(" * Null:            %d\n", bka->null);
+    printf(" * Chain # if hit:  %d\n", bka->chain_hit);
+    printf(" * Chain # not hit: %d\n", bka->chain_no_hit);
+    printf(" * Repeat:          %d\n", bka->repeat);
+    printf(" * Probability:     %d\n", bka->probability);
+    printf(" * hazard damage:   %d\n", bka->hazard_damage);
+    printf(" * String:          ");
+    for(int i = 0; i < bka->unknown_size; i++) {
+        printf("%c", bka->unknown_data[i]);
+    }
+    printf("\n");
+    
+    printf("\nCommon animation header:\n");
+    printf(" * Unknown header:  ");
+    for(int i = 0; i < 8; i++) {
+        printf("%x ", (uint8_t)ani->unknown_a[i]);
+    }
+    printf("\n");
+    printf(" * Overlays:        %d\n", ani->overlay_count);
+    for(int i = 0; i < ani->overlay_count; i++) {
+        printf("    - %d\n", ani->overlay_table[i]);
+    }
+    printf(" * Sprites:         %d\n", ani->frame_count);
+    printf(" * Animation str:   %s\n", ani->anim_string);
+    printf(" * Unknown B:       %d\n", ani->unknown_b);
+    printf(" * Extra strings:   %d\n", ani->extra_string_count);
+    for(int i = 0; i < ani->extra_string_count; i++) {
+        printf("    - %s\n", ani->extra_strings[i]);
+    }
+    
 }
 
 void bk_set_key(sd_bk_file *bk, const char *key, const char *value) {
@@ -78,13 +120,13 @@ void bk_info(sd_bk_file *bk) {
     printf(" * Palettes: %d\n", bk->num_palettes);
     printf(" * Unknown A: %d\n", bk->unknown_a);
     
-    printf("Valid animations:\n");
+    printf(" * Animations:\n");
     for(int i = 0; i < 50; i++) {
         if(bk->anims[i])
             printf(" * %d\n", i);
     }
     
-    printf("Footer (hex):\n");
+    printf(" * Footer (hex):\n");
     for(int k = 0; k < 3; k++) {
         for(int i = 0; i < 10; i++) {
             printf("%x\t", bk->footer[i+k*10]);
