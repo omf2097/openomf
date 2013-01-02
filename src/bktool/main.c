@@ -9,11 +9,11 @@
 #include <shadowdive/shadowdive.h>
 
 int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
-    if(bk->anims[anim] == 0) {
+    if(anim > 50 || anim < 0 || bk->anims[anim] == 0) {
         printf("Animation #%d does not exist.\n", anim);
         return 0;
     }
-    if(bk->anims[anim]->animation->sprites[sprite] == 0) {
+    if(sprite < 0 || bk->anims[anim]->animation->sprites[sprite] == 0 || sprite >= bk->anims[anim]->animation->frame_count) {
         printf("Sprite #%d does not exist.\n", sprite);
         return 0;
     }
@@ -21,7 +21,7 @@ int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
 }
 
 int check_anim(sd_bk_file *bk, int anim) {
-    if(bk->anims[anim] == 0) {
+    if(bk->anims[anim] == 0 || anim > 50 || anim < 0) {
         printf("Animation #%d does not exist.\n", anim);
         return 0;
     }
@@ -41,6 +41,14 @@ void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
 void sprite_play(sd_bk_file *bk, int anim, int sprite) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
+}
+
+void sprite_keylist() {
+    printf("Valid field keys for Sprite structure:\n");
+    printf("* x\n");
+    printf("* y\n");
+    printf("* index\n");
+    printf("* missing\n");
 }
 
 void sprite_info(sd_bk_file *bk, int anim, int sprite) {
@@ -70,6 +78,22 @@ void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
 void anim_play(sd_bk_file *bk, int anim) {
     if(!check_anim(bk, anim)) return;
     
+}
+
+void anim_keylist() {
+    printf("Valid field keys for Animation structure:\n");
+    printf("* null\n");
+    printf("* chain_hit\n");
+    printf("* chain_no_hit\n");
+    printf("* repeat\n");
+    printf("* probability\n");
+    printf("* hazard_damage\n");
+    printf("* bk_str\n");
+    printf("* ani_header:<byte #>\n");
+    printf("* overlay:<overlay #>\n");
+    printf("* anim_str\n");
+    printf("* unknown_a\n");
+    printf("* extra_str:<str #>\n");
 }
 
 void anim_info(sd_bk_file *bk, int anim) {
@@ -120,6 +144,14 @@ void bk_get_key(sd_bk_file *bk, const char *key) {
 
 }
 
+void bk_keylist() {
+    printf("Valid field keys for BK file root:\n");
+    printf("* fileid\n");
+    printf("* palette:<palette #>\n");
+    printf("* unknown_a\n");
+    printf("* footer:<byte #>\n");
+}
+
 void bk_info(sd_bk_file *bk) {
     printf("BK File information:\n");
     printf(" * File ID: %d\n", bk->file_id);
@@ -149,11 +181,12 @@ int main(int argc, char *argv[]) {
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .BK file");
     struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
     struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --anim)");
+    struct arg_lit *keylist = arg_lit0(NULL, "keylist", "Prints a list of valid fields for --key.");
     struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key (requires --anim)");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
     struct arg_str *play = arg_str0(NULL, "play", "<id>", "Play animation or sprite (requires --anim)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,anim,sprite,key,value,play,end};
+    void* argtable[] = {help,vers,file,output,anim,sprite,keylist,key,value,play,end};
     const char* progname = "bktool";
     
     // Make sure everything got allocated
@@ -235,6 +268,8 @@ int main(int argc, char *argv[]) {
             } else {
                 sprite_get_key(bk, anim->ival[0], sprite->ival[0], key->sval[0]);
             }
+        } else if(keylist->count > 0) {
+            sprite_keylist();
         } else if(play->count > 0) {
             sprite_play(bk, anim->ival[0], sprite->ival[0]);
         } else {
@@ -247,6 +282,8 @@ int main(int argc, char *argv[]) {
             } else {
                 anim_get_key(bk, anim->ival[0], key->sval[0]);
             }
+        } else if(keylist->count > 0) {
+            anim_keylist();
         } else if(play->count > 0) {
             anim_play(bk, anim->ival[0]);
         } else {
@@ -259,6 +296,8 @@ int main(int argc, char *argv[]) {
             } else {
                 bk_get_key(bk, key->sval[0]);
             }
+        } else if(keylist->count > 0) {
+            bk_keylist();
         } else {
             bk_info(bk);
         }
