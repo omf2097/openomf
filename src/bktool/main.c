@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input .BK file");
-    struct arg_file *output = arg_file1("o", "output", "<file>", "Output .BK file");
+    struct arg_file *output = arg_file0("o", "output", "<file>", "Output .BK file");
     struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
     struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --anim)");
     struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key (requires --anim)");
