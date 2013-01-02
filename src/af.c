@@ -8,6 +8,26 @@
 #include <assert.h>
 #include <string.h>
 
+void sd_af_postprocess(sd_af_file *af) {
+    uint32_t table[1000] = {0}; // temporary lookup table
+    sd_animation *anim;
+    // fix NULL pointers for any 'missing' sprites
+    for(int i = 0; i < 70; i++) {
+        if(af->moves[i]) {
+            anim = af->moves[i]->animation;
+            for(int j = 0; j < anim->frame_count; j++) {
+                if (anim->sprites[j]->missing > 0) {
+                    if (table[anim->sprites[j]->index]) {
+                        anim->sprites[j]->img->data = table[anim->sprites[j]->index];
+                    }
+                } else {
+                    table[anim->sprites[j]->index] = anim->sprites[j]->img->data;
+                }
+            }
+        }
+    }
+}
+
 sd_af_file* sd_af_create() {
     sd_af_file *af = (sd_af_file*)malloc(sizeof(sd_af_file));
     memset(af->moves, 0, sizeof(af->moves));
@@ -51,6 +71,8 @@ int sd_af_load(sd_af_file *af, const char *filename) {
 
     // Read footer
     sd_read_buf(r, af->footer, 30);
+
+    sd_af_postprocess(af);
 
     // Close & return
     sd_reader_close(r);

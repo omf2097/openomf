@@ -4,9 +4,30 @@
 #include "shadowdive/palette.h"
 #include "shadowdive/vga_image.h"
 #include "shadowdive/bkanim.h"
+#include "shadowdive/animation.h"
 #include "shadowdive/error.h"
 #include <stdlib.h>
 #include <string.h>
+
+void sd_bk_postprocess(sd_bk_file *bk) {
+    uint32_t table[1000] = {0}; // temporary lookup table
+    sd_animation *anim;
+    // fix NULL pointers for any 'missing' sprites
+    for(int i = 0; i < 50; i++) {
+        if(bk->anims[i]) {
+            anim = bk->anims[i]->animation;
+            for(int j = 0; j < anim->frame_count; j++) {
+                if (anim->sprites[j]->missing > 0) {
+                    if (table[anim->sprites[j]->index]) {
+                        anim->sprites[j]->img->data = table[anim->sprites[j]->index];
+                    }
+                } else {
+                    table[anim->sprites[j]->index] = anim->sprites[j]->img->data;
+                }
+            }
+        }
+    }
+}
 
 sd_bk_file* sd_bk_create() {
     sd_bk_file *bk = (sd_bk_file*)malloc(sizeof(sd_bk_file));
@@ -59,6 +80,8 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
 
     // Read footer
     sd_read_buf(r, bk->footer, 30);
+
+    sd_bk_postprocess(bk);
 
     // Close & return
     sd_reader_close(r);

@@ -12,7 +12,7 @@ sd_sprite* sd_sprite_create() {
 
 void sd_sprite_delete(sd_sprite *sprite) {
     if (sprite->img) {
-        sd_sprite_image_delete(sprite->img);
+        sd_sprite_image_delete(sprite->img, sprite->missing);
     }
     free(sprite);
 }
@@ -30,7 +30,8 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
         // sprite data follows
         sd_read_buf(r, sprite->img->data, len);
     } else {
-        // TODO set the pointer to be the actual sprite, from the other animation, maybe?
+        // we will fix this pointer after loading the whole file
+        free(sprite->img->data);
         sprite->img->data = NULL;
     }
     if(!sd_reader_ok(r)) {

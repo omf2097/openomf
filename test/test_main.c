@@ -8,10 +8,10 @@ void print_sprites(int i, sd_animation *anim, sd_palette *palette) {
     sd_rgba_image *img;
     printf("animation %d with %d frames\n", i, anim->frame_count);
     for(int j = 0; j < anim->frame_count; j++) {
-        if (anim->sprites[j]->missing > 0) {
-            printf("missing sprite: %d-%d\n", i, j);
-            continue;
-        }
+        /*if (anim->sprites[j]->missing > 0) {*/
+            /*printf("missing sprite: %d-%d\n", i, j);*/
+            /*continue;*/
+        /*}*/
         if (anim->sprites[j]->img->len == 0) {
             printf("warning, 0 length sprite: %d-%d\n", i, j);
             continue;
