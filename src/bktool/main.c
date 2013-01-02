@@ -94,14 +94,14 @@ void anim_info(sd_bk_file *bk, int anim) {
     printf("\n");
     printf(" * Overlays:        %d\n", ani->overlay_count);
     for(int i = 0; i < ani->overlay_count; i++) {
-        printf("    - %d\n", ani->overlay_table[i]);
+        printf("   - %d\n", ani->overlay_table[i]);
     }
     printf(" * Sprites:         %d\n", ani->frame_count);
     printf(" * Animation str:   %s\n", ani->anim_string);
     printf(" * Unknown B:       %d\n", ani->unknown_b);
     printf(" * Extra strings:   %d\n", ani->extra_string_count);
     for(int i = 0; i < ani->extra_string_count; i++) {
-        printf("    - %s\n", ani->extra_strings[i]);
+        printf("   - %s\n", ani->extra_strings[i]);
     }
     
 }
@@ -123,7 +123,7 @@ void bk_info(sd_bk_file *bk) {
     printf(" * Animations:\n");
     for(int i = 0; i < 50; i++) {
         if(bk->anims[i])
-            printf(" * %d\n", i);
+            printf("   - %d\n", i);
     }
     
     printf(" * Footer (hex):\n");
@@ -139,14 +139,15 @@ int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
-    struct arg_file *file = arg_file1("f", "file", "<file>", ".BK file");
+    struct arg_file *file = arg_file1("f", "file", "<file>", "Input .BK file");
+    struct arg_file *output = arg_file1("o", "output", "<file>", "Output .BK file");
     struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
     struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --anim)");
     struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key (requires --anim)");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
     struct arg_str *play = arg_str0(NULL, "play", "<id>", "Play animation or sprite (requires --anim)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,anim,sprite,key,value,play,end};
+    void* argtable[] = {help,vers,file,output,anim,sprite,key,value,play,end};
     const char* progname = "bktool";
     
     // Make sure everything got allocated
@@ -252,6 +253,11 @@ int main(int argc, char *argv[]) {
         } else {
             bk_info(bk);
         }
+    }
+    
+    // Write output file
+    if(output->count > 0) {
+        sd_bk_save(bk, output->filename[0]);
     }
     
     // Quit
