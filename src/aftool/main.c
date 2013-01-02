@@ -1,3 +1,9 @@
+/** @file main.c
+  * @brief .AF file editor tool
+  * @author Tuomas Virtanen
+  * @license MIT
+  */
+
 #include <SDL2/SDL.h>
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
@@ -30,7 +36,10 @@ int main(int argc, char* argv[]) {
     
     // Handle version
     if(vers->count > 0) {
-        printf("'%s' Command line AF file editor.\n", progname);
+        printf("%s v0.1\n", progname);
+        printf("Command line One Must Fall 2097 .AF file editor.\n");
+        printf("Source code is available at https://github.com/omf2097 under MIT license.\n");
+        printf("(C) 2013 Tuomas Virtanen\n");
         goto exit_0;
     }
     
