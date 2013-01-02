@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
         // Init SDL
         SDL_Init(SDL_INIT_AUDIO);
         if(Mix_OpenAudio(8000, AUDIO_U8, 1, 8192)) {
-            printf("Failed to initialize SDL2_mixer!\n");
+            printf("Failed to initialize SDL2_mixer : %s!\n", Mix_GetError());
             goto exit_2;
         }
         printf("Audio channel opened.\n");
@@ -108,6 +108,7 @@ exit_2:
                 k++;
             }
         }
+        printf("\n");
     }
     
 exit_1:
