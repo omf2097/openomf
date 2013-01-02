@@ -1,3 +1,9 @@
+/** @file main.c
+  * @brief .PSM music file player tool
+  * @author Tuomas Virtanen
+  * @license MIT
+  */
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <argtable2.h>
@@ -43,7 +49,10 @@ int main(int argc, char *argv[]) {
     
     // Handle version
     if(vers->count > 0) {
-        printf("'%s' Command line .PSM music file player.\n", progname);
+        printf("%s v0.1\n", progname);
+        printf("Command line One Must Fall 2097 .PSM music file player.\n");
+        printf("Source code is available at https://github.com/omf2097 under MIT license.\n");
+        printf("(C) 2013 Tuomas Virtanen\n");
         goto exit_0;
     }
     

@@ -1,3 +1,9 @@
+/** @file main.c
+  * @brief .BK file editor tool
+  * @author Tuomas Virtanen
+  * @license MIT
+  */
+
 #include <SDL2/SDL.h>
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
@@ -140,7 +146,7 @@ int main(int argc, char *argv[]) {
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input .BK file");
-    struct arg_file *output = arg_file1("o", "output", "<file>", "Output .BK file");
+    struct arg_file *output = arg_file0("o", "output", "<file>", "Output .BK file");
     struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
     struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --anim)");
     struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key (requires --anim)");
@@ -170,7 +176,10 @@ int main(int argc, char *argv[]) {
     
     // Handle version
     if(vers->count > 0) {
-        printf("'%s' Command line BK file editor.\n", progname);
+        printf("%s v0.1\n", progname);
+        printf("Command line One Must Fall 2097 .AF file editor.\n");
+        printf("Source code is available at https://github.com/omf2097 under MIT license.\n");
+        printf("(C) 2013 Tuomas Virtanen\n");
         goto exit_0;
     }
     
