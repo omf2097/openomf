@@ -28,6 +28,16 @@ int check_anim(sd_bk_file *bk, int anim) {
     return 1;
 }
 
+// Sprites --------------------------------------------------------------
+
+int sprite_key_get_id(const char* key) {
+    if(strcmp(key, "x") == 0) return 0;
+    if(strcmp(key, "y") == 0) return 1;
+    if(strcmp(key, "index") == 0) return 2;
+    if(strcmp(key, "missing") == 0) return 3;
+    return -1;
+}
+
 void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char *key, const char *value) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
@@ -36,6 +46,14 @@ void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char *key, const
 void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
+    switch(sprite_key_get_id(key)) {
+        case 0: printf("\n"); break;
+        case 1: printf("\n"); break;
+        case 2: printf("\n"); break;
+        case 3: printf("\n"); break;
+        default:
+            printf("Unknown key!\n");
+    }
 }
 
 void sprite_play(sd_bk_file *bk, int anim, int sprite) {
@@ -65,6 +83,24 @@ void sprite_info(sd_bk_file *bk, int anim, int sprite) {
     printf(" * Length:   %d\n", s->img->len);
 }
 
+// Animations --------------------------------------------------------------
+
+int anim_key_get_id(const char* key) {
+    if(strcmp(key, "null") == 0) return 0;
+    if(strcmp(key, "chain_hit") == 0) return 1;
+    if(strcmp(key, "chain_no_hit") == 0) return 2;
+    if(strcmp(key, "repeat") == 0) return 3;
+    if(strcmp(key, "probability") == 0) return 4;
+    if(strcmp(key, "hazard_damage") == 0) return 5;
+    if(strcmp(key, "bk_str") == 0) return 6;
+    if(strcmp(key, "ani_header") == 0) return 7;
+    if(strcmp(key, "overlay") == 0) return 8;
+    if(strcmp(key, "anim_str") == 0) return 9;
+    if(strcmp(key, "unknown") == 0) return 10;
+    if(strcmp(key, "extra_str") == 0) return 11;
+    return -1;
+}
+
 void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) {
     if(!check_anim(bk, anim)) return;
     
@@ -72,7 +108,22 @@ void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) 
 
 void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
     if(!check_anim(bk, anim)) return;
-    
+    switch(anim_key_get_id(key)) {
+        case 0: printf("\n"); break;
+        case 1: printf("\n"); break;
+        case 2: printf("\n"); break;
+        case 3: printf("\n"); break;
+        case 4: printf("\n"); break;
+        case 5: printf("\n"); break;
+        case 6: printf("\n"); break;
+        case 7: printf("\n"); break;
+        case 8: printf("\n"); break;
+        case 9: printf("\n"); break;
+        case 10: printf("\n"); break;
+        case 11: printf("\n"); break;
+        default:
+            printf("Unknown key!\n");
+    }
 }
 
 void anim_play(sd_bk_file *bk, int anim) {
@@ -92,7 +143,7 @@ void anim_keylist() {
     printf("* ani_header:<byte #>\n");
     printf("* overlay:<overlay #>\n");
     printf("* anim_str\n");
-    printf("* unknown_a\n");
+    printf("* unknown\n");
     printf("* extra_str:<str #>\n");
 }
 
@@ -136,19 +187,36 @@ void anim_info(sd_bk_file *bk, int anim) {
     
 }
 
+// BK Root  --------------------------------------------------------------
+
+int bk_key_get_id(const char* key) {
+    if(strcmp(key, "fileid") == 0) return 0;
+    if(strcmp(key, "palette") == 0) return 1;
+    if(strcmp(key, "unknown") == 0) return 2;
+    if(strcmp(key, "footer") == 0) return 3;
+    return -1;
+}
+
 void bk_set_key(sd_bk_file *bk, const char *key, const char *value) {
 
 }
 
 void bk_get_key(sd_bk_file *bk, const char *key) {
-
+    switch(bk_key_get_id(key)) {
+        case 0: printf("\n"); break;
+        case 1: printf("\n"); break;
+        case 2: printf("\n"); break;
+        case 3: printf("\n"); break;
+        default:
+            printf("Unknown key!\n");
+    }
 }
 
 void bk_keylist() {
     printf("Valid field keys for BK file root:\n");
     printf("* fileid\n");
     printf("* palette:<palette #>\n");
-    printf("* unknown_a\n");
+    printf("* unknown\n");
     printf("* footer:<byte #>\n");
 }
 
@@ -173,6 +241,8 @@ void bk_info(sd_bk_file *bk) {
     }
 }
 
+// Main --------------------------------------------------------------
+
 int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
@@ -182,7 +252,7 @@ int main(int argc, char *argv[]) {
     struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
     struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --anim)");
     struct arg_lit *keylist = arg_lit0(NULL, "keylist", "Prints a list of valid fields for --key.");
-    struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key (requires --anim)");
+    struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
     struct arg_str *play = arg_str0(NULL, "play", "<id>", "Play animation or sprite (requires --anim)");
     struct arg_end *end = arg_end(20);
@@ -220,11 +290,6 @@ int main(int argc, char *argv[]) {
     if(anim->count == 0) {
         if(sprite->count > 0) {
             printf("--sprite requires --anim\n");
-            printf("Try '%s --help' for more information.\n", progname);
-            goto exit_0;
-        }
-        if(key->count > 0) {
-            printf("--key requires --anim\n");
             printf("Try '%s --help' for more information.\n", progname);
             goto exit_0;
         }
