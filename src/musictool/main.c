@@ -17,9 +17,10 @@ int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
+    struct arg_lit *loop = arg_lit0("l", "loop", "Loop playback");
     struct arg_file *file = arg_file1("f", "file", "<file>", "File to play");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,end};
+    void* argtable[] = {help,vers,loop,file,end};
     const char* progname = "musictool";
     
     // Make sure everything got allocated
@@ -89,14 +90,16 @@ int main(int argc, char *argv[]) {
     int pc = 0;
     int last_pc = -1;
     printf("Position: 0%%");
-    while(pos < len) {
+    fflush(stdout);
+    while(pos < len || loop->count > 0) {
         // Prevent looping
         pos = duh_sigrenderer_get_position(renderer);
-        
+
         // Show data to user
         pc = (((float)pos / (float)len) * 100);
         if(pc % 10 == 0 && pc != last_pc && pc != 0) {
             printf(" ... %d%%", pc);
+            fflush(stdout);
             last_pc = pc;
         }
         SDL_Delay(10);
