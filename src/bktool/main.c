@@ -128,19 +128,21 @@ int anim_key_get_id(const char* key) {
 
 void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) {
     if(!check_anim(bk, anim)) return;
+    sd_bk_anim *bka = bk->anims[anim];
+    sd_animation *ani = bk->anims[anim]->animation;
     switch(anim_key_get_id(key)) {
-        case 0:  break;
-        case 1:  break;
-        case 2:  break;
-        case 3:  break;
-        case 4:  break;
-        case 5:  break;
-        case 6:  break;
-        case 7:  break;
-        case 8:  break;
-        case 9:  break;
-        case 10:  break;
-        case 11:  break;
+        case 0: bka->null = conv_ubyte(value); break;
+        case 1:  bka->chain_hit = conv_ubyte(value); break;
+        case 2:  bka->chain_no_hit = conv_ubyte(value); break;
+        case 3:  bka->repeat = conv_ubyte(value); break;
+        case 4:  bka->probability = conv_uword(value); break;
+        case 5:  bka->hazard_damage = conv_ubyte(value); break;
+        case 6:  break; // TODO
+        case 7:  break; // TODO
+        case 8:  break; // TODO
+        case 9:  sd_animation_set_anim_string(ani, value); break;
+        case 10:  ani->unknown_b = conv_ubyte(value); break;
+        case 11:  break; // TODO
         default:
             printf("Unknown key!\n");
             return;
@@ -150,19 +152,21 @@ void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) 
 
 void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
     if(!check_anim(bk, anim)) return;
+    sd_bk_anim *bka = bk->anims[anim];
+    sd_animation *ani = bk->anims[anim]->animation;
     switch(anim_key_get_id(key)) {
-        case 0: printf("\n"); break;
-        case 1: printf("\n"); break;
-        case 2: printf("\n"); break;
-        case 3: printf("\n"); break;
-        case 4: printf("\n"); break;
-        case 5: printf("\n"); break;
-        case 6: printf("\n"); break;
-        case 7: printf("\n"); break;
-        case 8: printf("\n"); break;
-        case 9: printf("\n"); break;
-        case 10: printf("\n"); break;
-        case 11: printf("\n"); break;
+        case 0: printf("%d\n", bka->null); break;
+        case 1: printf("%d\n", bka->chain_hit); break;
+        case 2: printf("%d\n", bka->chain_no_hit); break;
+        case 3: printf("%d\n", bka->repeat); break;
+        case 4: printf("%d\n", bka->probability); break;
+        case 5: printf("%d\n", bka->hazard_damage); break;
+        case 6: printf("\n"); break; // TODO
+        case 7: printf("\n"); break; // TODO
+        case 8: printf("\n"); break; // TODO
+        case 9: printf("%s\n", ani->anim_string); break;
+        case 10: printf("%d\n", ani->unknown_b); break;
+        case 11: printf("\n"); break; // TODO
         default:
             printf("Unknown key!\n");
     }
@@ -170,6 +174,8 @@ void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
 
 void anim_play(sd_bk_file *bk, int anim) {
     if(!check_anim(bk, anim)) return;
+    sd_bk_anim *bka = bk->anims[anim];
+    sd_animation *ani = bk->anims[anim]->animation;
     
 }
 
@@ -182,11 +188,11 @@ void anim_keylist() {
     printf("* probability\n");
     printf("* hazard_damage\n");
     printf("* bk_str\n");
-    printf("* ani_header:<byte #>\n");
-    printf("* overlay:<overlay #>\n");
+    //printf("* ani_header:<byte #>\n");
+    //printf("* overlay:<overlay #>\n");
     printf("* anim_str\n");
     printf("* unknown\n");
-    printf("* extra_str:<str #>\n");
+    //printf("* extra_str:<str #>\n");
 }
 
 void anim_info(sd_bk_file *bk, int anim) {
@@ -221,7 +227,7 @@ void anim_info(sd_bk_file *bk, int anim) {
     }
     printf(" * Sprites:         %d\n", ani->frame_count);
     printf(" * Animation str:   %s\n", ani->anim_string);
-    printf(" * Unknown B:       %d\n", ani->unknown_b);
+    printf(" * Unknown:       %d\n", ani->unknown_b);
     printf(" * Extra strings:   %d\n", ani->extra_string_count);
     for(int i = 0; i < ani->extra_string_count; i++) {
         printf("   - %s\n", ani->extra_strings[i]);
@@ -240,8 +246,6 @@ int bk_key_get_id(const char* key) {
 }
 
 void bk_set_key(sd_bk_file *bk, const char *key, const char *value) {
-    printf("Value (str): %s\n", value);
-    printf("Value (int): %d\n", atoi(value));
     switch(bk_key_get_id(key)) {
         case 0: bk->file_id = conv_udword(value); break;
         case 1: break;
@@ -257,7 +261,7 @@ void bk_set_key(sd_bk_file *bk, const char *key, const char *value) {
 void bk_get_key(sd_bk_file *bk, const char *key) {
     switch(bk_key_get_id(key)) {
         case 0: printf("%d\n", bk->file_id); break;
-        case 1: printf("Not implemented!"); break;
+        case 1: printf("\n"); break;
         case 2: printf("%d\n", bk->unknown_a); break;
         case 3: for(int i = 0; i < 30; i++) { printf("%x ", bk->footer[i]); } printf("\n"); break;
         default:
@@ -268,9 +272,9 @@ void bk_get_key(sd_bk_file *bk, const char *key) {
 void bk_keylist() {
     printf("Valid field keys for BK file root:\n");
     printf("* fileid\n");
-    printf("* palette:<palette #>\n");
+    //printf("* palette:<palette #>\n");
     printf("* unknown\n");
-    printf("* footer:<byte #>\n");
+    //printf("* footer:<byte #>\n");
 }
 
 void bk_info(sd_bk_file *bk) {
