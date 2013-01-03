@@ -100,9 +100,9 @@ void sprite_play(sd_bk_file *bk, int anim, int sprite) {
         printf("Could not create window: %s\n", SDL_GetError());
         return;
     }
-
+    
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
+    
     uint32_t rmask, gmask, bmask, amask;
 
     rmask = 0x000000ff;
@@ -460,8 +460,9 @@ int main(int argc, char *argv[]) {
     struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
     struct arg_str *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim)");
+    struct arg_lit *scale = arg_int0(NULL, "scale", "version", "Scales sprites (requires --play)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,anim,sprite,keylist,key,value,play,end};
+    void* argtable[] = {help,vers,file,output,anim,sprite,keylist,key,value,play,scale,end};
     const char* progname = "bktool";
     
     // Make sure everything got allocated
@@ -507,6 +508,13 @@ int main(int argc, char *argv[]) {
     if(key->count == 0) {
         if(value->count > 0) {
             printf("--value requires --key\n");
+            printf("Try '%s --help' for more information.\n", progname);
+            goto exit_0;
+        }
+    }
+    if(play->count == 0) {
+        if(scale->count > 0) {
+            printf("--scale requires --play\n");
             printf("Try '%s --help' for more information.\n", progname);
             goto exit_0;
         }
