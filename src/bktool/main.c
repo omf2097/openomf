@@ -80,19 +80,21 @@ void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
     }
 }
 
-void sprite_play(sd_bk_file *bk, int anim, int sprite) {
+void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
     SDL_Surface *surface;
     SDL_Texture *texture;
     SDL_Texture *background;
+    SDL_Texture *rendertarget;
     SDL_Rect rect;
+    SDL_Rect dstrect;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
     SDL_Window *window = SDL_CreateWindow(
             "OMF2097 Remake",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            320,
-            200,
+            320 * scale,
+            200 * scale,
             SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
             );
 
@@ -122,6 +124,11 @@ void sprite_play(sd_bk_file *bk, int anim, int sprite) {
         printf("Could not create texture: %s\n", SDL_GetError());
         return;
     }
+    
+    if((rendertarget = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 320, 200)) == 0) {
+        printf("Could not create texture: %s\n", SDL_GetError());
+        return;
+    }
 
     SDL_FreeSurface(surface);
     sd_rgba_image_delete(img);
@@ -146,6 +153,11 @@ void sprite_play(sd_bk_file *bk, int anim, int sprite) {
     rect.y = s->pos_y;
     rect.w = s->img->w;
     rect.h = s->img->h;
+    
+    dstrect.x = 0;
+    dstrect.y = 0;
+    dstrect.w = 320 * scale;
+    dstrect.h = 200 * scale;
 
     while(1) {
         SDL_Event e;
@@ -225,8 +237,11 @@ void sprite_play(sd_bk_file *bk, int anim, int sprite) {
             }
         }
         SDL_RenderClear(renderer);
+        SDL_SetRenderTarget(renderer, rendertarget);
         SDL_RenderCopy(renderer, background, NULL, NULL);
         SDL_RenderCopy(renderer, texture, NULL, &rect);
+        SDL_SetRenderTarget(renderer, NULL);
+        SDL_RenderCopy(renderer, rendertarget, NULL, &dstrect);
         SDL_RenderPresent(renderer);
         SDL_Delay(1); // don't chew too much CPU
     }
@@ -324,9 +339,9 @@ void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
     }
 }
 
-void anim_play(sd_bk_file *bk, int anim) {
+void anim_play(sd_bk_file *bk, int scale, int anim) {
     if(!check_anim(bk, anim)) return;
-    sprite_play(bk, anim, 0);
+    sprite_play(bk, scale, anim, 0);
 }
 
 void anim_keylist() {
@@ -460,7 +475,7 @@ int main(int argc, char *argv[]) {
     struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
     struct arg_str *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim)");
-    struct arg_lit *scale = arg_int0(NULL, "scale", "version", "Scales sprites (requires --play)");
+    struct arg_int *scale = arg_int0(NULL, "scale", "version", "Scales sprites (requires --play)");
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,output,anim,sprite,keylist,key,value,play,scale,end};
     const char* progname = "bktool";
@@ -538,6 +553,13 @@ int main(int argc, char *argv[]) {
         goto exit_1;
     }
     
+    int _sc = 1;
+    if(scale->count > 0) {
+        _sc = scale->ival[0];
+        if(_sc > 4) _sc = 4;
+        if(_sc < 1) _sc = 1;
+    }
+    
     // Handle args
     if(sprite->count > 0) {
         if(key->count > 0) {
@@ -549,7 +571,7 @@ int main(int argc, char *argv[]) {
         } else if(keylist->count > 0) {
             sprite_keylist();
         } else if(play->count > 0) {
-            sprite_play(bk, anim->ival[0], sprite->ival[0]);
+            sprite_play(bk, _sc, anim->ival[0], sprite->ival[0]);
         } else {
             sprite_info(bk, anim->ival[0], sprite->ival[0]);
         }
@@ -563,7 +585,7 @@ int main(int argc, char *argv[]) {
         } else if(keylist->count > 0) {
             anim_keylist();
         } else if(play->count > 0) {
-            anim_play(bk, anim->ival[0]);
+            anim_play(bk, _sc, anim->ival[0]);
         } else {
             anim_info(bk, anim->ival[0]);
         }
