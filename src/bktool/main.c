@@ -459,7 +459,7 @@ int main(int argc, char *argv[]) {
     struct arg_lit *keylist = arg_lit0(NULL, "keylist", "Prints a list of valid fields for --key.");
     struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
-    struct arg_str *play = arg_str0(NULL, "play", "<id>", "Play animation or sprite (requires --anim)");
+    struct arg_str *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim)");
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,output,anim,sprite,keylist,key,value,play,end};
     const char* progname = "bktool";
