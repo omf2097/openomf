@@ -56,23 +56,25 @@ void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char *key, const
     if(!check_anim_sprite(bk, anim, sprite)) return;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
     switch(sprite_key_get_id(key)) {
-        case 0:  break;
-        case 1:  break;
-        case 2:  break;
-        case 3:  break;
+        case 0: s->pos_x = conv_word(value); break;
+        case 1: s->pos_y = conv_word(value); break;
+        case 2: s->index = conv_ubyte(value); break;
+        case 3: s->missing = conv_ubyte(value); break;
         default:
             printf("Unknown key!\n");
+            return;
     }
+    printf("Value set!\n");
 }
 
 void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
     switch(sprite_key_get_id(key)) {
-        case 0: printf("\n"); break;
-        case 1: printf("\n"); break;
-        case 2: printf("\n"); break;
-        case 3: printf("\n"); break;
+        case 0: printf("%d\n", s->pos_x); break;
+        case 1: printf("%d\n", s->pos_y); break;
+        case 2: printf("%d\n", s->index); break;
+        case 3: printf("%d\n", s->missing); break;
         default:
             printf("Unknown key!\n");
     }
@@ -141,7 +143,9 @@ void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) 
         case 11:  break;
         default:
             printf("Unknown key!\n");
+            return;
     }
+    printf("Value set!\n");
 }
 
 void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
@@ -245,7 +249,9 @@ void bk_set_key(sd_bk_file *bk, const char *key, const char *value) {
         case 3: break;
         default:
             printf("Unknown key!\n");
+            return;
     }
+    printf("Value set!\n");
 }
 
 void bk_get_key(sd_bk_file *bk, const char *key) {
