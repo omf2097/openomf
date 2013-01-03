@@ -7,6 +7,20 @@
 #include <SDL2/SDL.h>
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
+#include <stdint.h>
+
+int clamp(int value, long low, long high) {
+    if(value > high) return high;
+    if(value < low) return low;
+    return value;
+}
+
+uint8_t  conv_ubyte(const char* data) { return clamp(atoi(data), 0, 0xFF); }
+int8_t   conv_byte (const char* data) { return clamp(atoi(data), -0x80, 0x80); }
+uint16_t conv_uword (const char* data) { return clamp(atoi(data), 0, 0xFFFF); }
+int16_t  conv_word (const char* data) { return clamp(atoi(data), -0x7FFF, 0x7FFF); }
+uint32_t conv_udword (const char* data) { return atoi(data); }
+int32_t  conv_dword (const char* data) { return atoi(data); }
 
 int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
     if(anim > 50 || anim < 0 || bk->anims[anim] == 0) {
@@ -41,6 +55,14 @@ int sprite_key_get_id(const char* key) {
 void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char *key, const char *value) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
+    switch(sprite_key_get_id(key)) {
+        case 0:  break;
+        case 1:  break;
+        case 2:  break;
+        case 3:  break;
+        default:
+            printf("Unknown key!\n");
+    }
 }
 
 void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
@@ -59,6 +81,7 @@ void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
 void sprite_play(sd_bk_file *bk, int anim, int sprite) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
+
 }
 
 void sprite_keylist() {
@@ -103,7 +126,22 @@ int anim_key_get_id(const char* key) {
 
 void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) {
     if(!check_anim(bk, anim)) return;
-    
+    switch(anim_key_get_id(key)) {
+        case 0:  break;
+        case 1:  break;
+        case 2:  break;
+        case 3:  break;
+        case 4:  break;
+        case 5:  break;
+        case 6:  break;
+        case 7:  break;
+        case 8:  break;
+        case 9:  break;
+        case 10:  break;
+        case 11:  break;
+        default:
+            printf("Unknown key!\n");
+    }
 }
 
 void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
@@ -198,15 +236,24 @@ int bk_key_get_id(const char* key) {
 }
 
 void bk_set_key(sd_bk_file *bk, const char *key, const char *value) {
-
+    printf("Value (str): %s\n", value);
+    printf("Value (int): %d\n", atoi(value));
+    switch(bk_key_get_id(key)) {
+        case 0: bk->file_id = conv_udword(value); break;
+        case 1: break;
+        case 2: bk->unknown_a = conv_ubyte(value); break;
+        case 3: break;
+        default:
+            printf("Unknown key!\n");
+    }
 }
 
 void bk_get_key(sd_bk_file *bk, const char *key) {
     switch(bk_key_get_id(key)) {
-        case 0: printf("\n"); break;
-        case 1: printf("\n"); break;
-        case 2: printf("\n"); break;
-        case 3: printf("\n"); break;
+        case 0: printf("%d\n", bk->file_id); break;
+        case 1: printf("Not implemented!"); break;
+        case 2: printf("%d\n", bk->unknown_a); break;
+        case 3: for(int i = 0; i < 30; i++) { printf("%x ", bk->footer[i]); } printf("\n"); break;
         default:
             printf("Unknown key!\n");
     }
@@ -232,13 +279,11 @@ void bk_info(sd_bk_file *bk) {
             printf("   - %d\n", i);
     }
     
-    printf(" * Footer (hex):\n");
-    for(int k = 0; k < 3; k++) {
-        for(int i = 0; i < 10; i++) {
-            printf("%x\t", bk->footer[i+k*10]);
-        }
-        printf("\n");
+    printf(" * Footer (hex): ");
+    for(int k = 0; k < 30; k++) {
+        printf("%x ", bk->footer[k]);
     }
+    printf("\n");
 }
 
 // Main --------------------------------------------------------------
@@ -280,7 +325,7 @@ int main(int argc, char *argv[]) {
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
-        printf("Command line One Must Fall 2097 .AF file editor.\n");
+        printf("Command line One Must Fall 2097 .BK file editor.\n");
         printf("Source code is available at https://github.com/omf2097 under MIT license.\n");
         printf("(C) 2013 Tuomas Virtanen\n");
         goto exit_0;
