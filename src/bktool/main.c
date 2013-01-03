@@ -411,18 +411,27 @@ void anim_info(sd_bk_file *bk, int anim) {
 
 int bk_key_get_id(const char* key) {
     if(strcmp(key, "fileid") == 0) return 0;
-    if(strcmp(key, "palette") == 0) return 1;
+    //if(strcmp(key, "palette") == 0) return 1;
     if(strcmp(key, "unknown") == 0) return 2;
     if(strcmp(key, "footer") == 0) return 3;
     return -1;
 }
 
 void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value) {
+    int tmp = 0;
     switch(bk_key_get_id(key[0])) {
         case 0: bk->file_id = conv_udword(value); break;
-        case 1: break;
+        case 1: break; // TODO
         case 2: bk->unknown_a = conv_ubyte(value); break;
-        case 3: break;
+        case 3: 
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                bk->footer[tmp] = conv_ubyte(value);
+            } else {
+                printf("Footer value requires index parameter (eg. --key footer --key 3).\n");
+                return;
+            }
+        break;
         default:
             printf("Unknown key!\n");
             return;
@@ -431,11 +440,19 @@ void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value)
 }
 
 void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
+    int tmp = 0;
     switch(bk_key_get_id(key[0])) {
         case 0: printf("%d\n", bk->file_id); break;
-        case 1: printf("\n"); break;
+        case 1: printf("\n"); break; // TODO
         case 2: printf("%d\n", bk->unknown_a); break;
-        case 3: for(int i = 0; i < 30; i++) { printf("%x ", bk->footer[i]); } printf("\n"); break;
+        case 3: 
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                printf("(hex) %x\n", bk->footer[tmp]);
+            } else {
+                for(int i = 0; i < 30; i++) { printf("%x ", bk->footer[i]); } printf("\n"); 
+            }
+            break;
         default:
             printf("Unknown key!\n");
     }
@@ -479,7 +496,7 @@ int main(int argc, char *argv[]) {
     struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
     struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --anim)");
     struct arg_lit *keylist = arg_lit0(NULL, "keylist", "Prints a list of valid fields for --key.");
-    struct arg_str *key = arg_str0(NULL, "key", "<key>", "Select key");
+    struct arg_str *key = arg_strn("k", "key", "<key>", 0, 2, "Select key");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
     struct arg_str *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim)");
     struct arg_int *scale = arg_int0(NULL, "scale", "version", "Scales sprites (requires --play)");
