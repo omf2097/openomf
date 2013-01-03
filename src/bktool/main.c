@@ -4,10 +4,12 @@
   * @license MIT
   */
 
+#define _BSD_SOURCE // for usleep
 #include <SDL2/SDL.h>
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 #include <stdint.h>
+#include <unistd.h>
 
 int clamp(int value, long low, long high) {
     if(value > high) return high;
@@ -82,8 +84,160 @@ void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
 
 void sprite_play(sd_bk_file *bk, int anim, int sprite) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
+    SDL_Surface *surface;
+    SDL_Texture *texture;
+    SDL_Texture *background;
+    SDL_Rect rect;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
+    SDL_Window *window = SDL_CreateWindow(
+            "OMF2097 Remake",
+            SDL_WINDOWPOS_CENTERED,
+            SDL_WINDOWPOS_CENTERED,
+            320,
+            200,
+            SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
+            );
 
+    if (!window) {
+        printf("Could not create window: %s\n", SDL_GetError());
+        return;
+    }
+
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+    uint32_t rmask, gmask, bmask, amask;
+
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+
+    sd_rgba_image *img = sd_vga_image_decode(bk->background, bk->palettes[0], -1);
+
+    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img->data, img->w, img->h, 32, img->w*4,
+            rmask, gmask, bmask, amask))) {
+        printf("Could not create surface: %s\n", SDL_GetError());
+        return;
+    }
+
+    if ((background = SDL_CreateTextureFromSurface(renderer, surface)) == 0) {
+        printf("Could not create texture: %s\n", SDL_GetError());
+        return;
+    }
+
+    SDL_FreeSurface(surface);
+    sd_rgba_image_delete(img);
+
+    img = sd_sprite_image_decode(s->img, bk->palettes[0], -1);
+
+    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img->data, img->w, img->h, 32, img->w*4,
+            rmask, gmask, bmask, amask))) {
+        printf("Could not create surface: %s\n", SDL_GetError());
+        return;
+    }
+
+    if ((texture = SDL_CreateTextureFromSurface(renderer, surface)) == 0) {
+        printf("Could not create texture: %s\n", SDL_GetError());
+        return;
+    }
+
+    SDL_FreeSurface(surface);
+    sd_rgba_image_delete(img);
+
+    rect.x = s->pos_x;
+    rect.y = s->pos_y;
+    rect.w = s->img->w;
+    rect.h = s->img->h;
+
+    while(1) {
+        SDL_Event e;
+        if (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                break;
+            } else if (e.type == SDL_KEYUP) {
+                int i = anim;
+                int changed = 0;
+                switch (e.key.keysym.sym) {
+                    case SDLK_RIGHT:
+                        sprite = (sprite+1) % bk->anims[anim]->animation->frame_count;
+                        printf("sprite is now %u\n", sprite);
+                        changed = 1;
+                        break;
+                    case SDLK_LEFT:
+                        sprite--;
+                        if (sprite < 0) {
+                            sprite = bk->anims[anim]->animation->frame_count - 1;
+                        }
+                        printf("sprite is now %u\n", sprite);
+                        changed = 1;
+                        break;
+                    case SDLK_UP:
+                        i++;
+                        while (!check_anim(bk, i) && i < 50) {
+                            i++;
+                        }
+                        if (i == 50) {
+                            printf("no more animations\n");
+                        } else {
+                            anim = i;
+                            printf("UP: animation is now %u\n", anim);
+                            sprite = 0;
+                        }
+                        changed = 1;
+                        break;
+                    case SDLK_DOWN:
+                        i--;
+                        while (!check_anim(bk, i) && i >= 0) {
+                            i--;
+                        }
+                        if (i < 0) {
+                            printf("no previous animations\n");
+                        } else {
+                            anim = i;
+                            printf("DOWN: animation is now %u\n", anim);
+                            sprite = 0;
+                        }
+                        changed = 1;
+                        break;
+                    default:
+                        changed = 0;
+                }
+                if (changed) {
+                    s = bk->anims[anim]->animation->sprites[sprite];
+                    img = sd_sprite_image_decode(s->img, bk->palettes[0], -1);
+
+                    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img->data, img->w, img->h, 32, img->w*4,
+                                    rmask, gmask, bmask, amask))) {
+                        printf("Could not create surface: %s\n", SDL_GetError());
+                        return;
+                    }
+
+                    if ((texture = SDL_CreateTextureFromSurface(renderer, surface)) == 0) {
+                        printf("Could not create texture: %s\n", SDL_GetError());
+                        return;
+                    }
+
+                    SDL_FreeSurface(surface);
+
+                    rect.x = s->pos_x;
+                    rect.y = s->pos_y;
+                    rect.w = s->img->w;
+                    rect.h = s->img->h;
+                }
+            }
+        }
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, background, NULL, NULL);
+        SDL_RenderCopy(renderer, texture, NULL, &rect);
+        SDL_RenderPresent(renderer);
+        usleep(6000); // don't chew too much CPU
+    }
+
+    // Close and destroy the window
+    SDL_DestroyWindow(window);
+
+    // Clean up
+    SDL_Quit();
 }
 
 void sprite_keylist() {
@@ -174,9 +328,7 @@ void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
 
 void anim_play(sd_bk_file *bk, int anim) {
     if(!check_anim(bk, anim)) return;
-    sd_bk_anim *bka = bk->anims[anim];
-    sd_animation *ani = bk->anims[anim]->animation;
-    
+    sprite_play(bk, anim, 0);
 }
 
 void anim_keylist() {
