@@ -52,10 +52,10 @@ int sprite_key_get_id(const char* key) {
     return -1;
 }
 
-void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char *key, const char *value) {
+void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char **key, int kcount, const char *value) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
-    switch(sprite_key_get_id(key)) {
+    switch(sprite_key_get_id(key[0])) {
         case 0: s->pos_x = conv_word(value); break;
         case 1: s->pos_y = conv_word(value); break;
         case 2: s->index = conv_ubyte(value); break;
@@ -67,10 +67,10 @@ void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char *key, const
     printf("Value set!\n");
 }
 
-void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char *key) {
+void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char **key, int kcount) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
-    switch(sprite_key_get_id(key)) {
+    switch(sprite_key_get_id(key[0])) {
         case 0: printf("%d\n", s->pos_x); break;
         case 1: printf("%d\n", s->pos_y); break;
         case 2: printf("%d\n", s->index); break;
@@ -295,11 +295,11 @@ int anim_key_get_id(const char* key) {
     return -1;
 }
 
-void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) {
+void anim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const char *value) {
     if(!check_anim(bk, anim)) return;
     sd_bk_anim *bka = bk->anims[anim];
     sd_animation *ani = bk->anims[anim]->animation;
-    switch(anim_key_get_id(key)) {
+    switch(anim_key_get_id(key[0])) {
         case 0: bka->null = conv_ubyte(value); break;
         case 1:  bka->chain_hit = conv_ubyte(value); break;
         case 2:  bka->chain_no_hit = conv_ubyte(value); break;
@@ -319,18 +319,23 @@ void anim_set_key(sd_bk_file *bk, int anim, const char *key, const char *value) 
     printf("Value set!\n");
 }
 
-void anim_get_key(sd_bk_file *bk, int anim, const char *key) {
+void anim_get_key(sd_bk_file *bk, int anim, const char **key, int kcount) {
     if(!check_anim(bk, anim)) return;
     sd_bk_anim *bka = bk->anims[anim];
     sd_animation *ani = bk->anims[anim]->animation;
-    switch(anim_key_get_id(key)) {
+    switch(anim_key_get_id(key[0])) {
         case 0: printf("%d\n", bka->null); break;
         case 1: printf("%d\n", bka->chain_hit); break;
         case 2: printf("%d\n", bka->chain_no_hit); break;
         case 3: printf("%d\n", bka->repeat); break;
         case 4: printf("%d\n", bka->probability); break;
         case 5: printf("%d\n", bka->hazard_damage); break;
-        case 6: printf("\n"); break; // TODO
+        case 6: 
+            for(int i = 0; i < bka->unknown_size; i++) {
+                printf("%c", bka->unknown_data[i]);
+            }
+            printf("\n");
+            break;
         case 7: printf("\n"); break; // TODO
         case 8: printf("\n"); break; // TODO
         case 9: printf("%s\n", ani->anim_string); break;
@@ -355,11 +360,11 @@ void anim_keylist() {
     printf("* probability\n");
     printf("* hazard_damage\n");
     printf("* bk_str\n");
-    //printf("* ani_header:<byte #>\n");
-    //printf("* overlay:<overlay #>\n");
+    //printf("* ani_header <byte #>\n");
+    //printf("* overlay <overlay #>\n");
     printf("* anim_str\n");
     printf("* unknown\n");
-    //printf("* extra_str:<str #>\n");
+    //printf("* extra_str <str #>\n");
 }
 
 void anim_info(sd_bk_file *bk, int anim) {
@@ -412,8 +417,8 @@ int bk_key_get_id(const char* key) {
     return -1;
 }
 
-void bk_set_key(sd_bk_file *bk, const char *key, const char *value) {
-    switch(bk_key_get_id(key)) {
+void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value) {
+    switch(bk_key_get_id(key[0])) {
         case 0: bk->file_id = conv_udword(value); break;
         case 1: break;
         case 2: bk->unknown_a = conv_ubyte(value); break;
@@ -425,8 +430,8 @@ void bk_set_key(sd_bk_file *bk, const char *key, const char *value) {
     printf("Value set!\n");
 }
 
-void bk_get_key(sd_bk_file *bk, const char *key) {
-    switch(bk_key_get_id(key)) {
+void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
+    switch(bk_key_get_id(key[0])) {
         case 0: printf("%d\n", bk->file_id); break;
         case 1: printf("\n"); break;
         case 2: printf("%d\n", bk->unknown_a); break;
@@ -441,7 +446,7 @@ void bk_keylist() {
     printf("* fileid\n");
     //printf("* palette:<palette #>\n");
     printf("* unknown\n");
-    //printf("* footer:<byte #>\n");
+    printf("* footer <byte #>\n");
 }
 
 void bk_info(sd_bk_file *bk) {
@@ -566,9 +571,9 @@ int main(int argc, char *argv[]) {
     if(sprite->count > 0) {
         if(key->count > 0) {
             if(value->count > 0) {
-                sprite_set_key(bk, anim->ival[0], sprite->ival[0], key->sval[0], value->sval[0]);
+                sprite_set_key(bk, anim->ival[0], sprite->ival[0], key->sval, key->count, value->sval[0]);
             } else {
-                sprite_get_key(bk, anim->ival[0], sprite->ival[0], key->sval[0]);
+                sprite_get_key(bk, anim->ival[0], sprite->ival[0], key->sval, key->count);
             }
         } else if(keylist->count > 0) {
             sprite_keylist();
@@ -580,9 +585,9 @@ int main(int argc, char *argv[]) {
     } else if(anim->count > 0) {
         if(key->count > 0) {
             if(value->count > 0) {
-                anim_set_key(bk, anim->ival[0], key->sval[0], value->sval[0]);
+                anim_set_key(bk, anim->ival[0], key->sval, key->count, value->sval[0]);
             } else {
-                anim_get_key(bk, anim->ival[0], key->sval[0]);
+                anim_get_key(bk, anim->ival[0], key->sval, key->count);
             }
         } else if(keylist->count > 0) {
             anim_keylist();
@@ -594,9 +599,9 @@ int main(int argc, char *argv[]) {
     } else {
         if(key->count > 0) {
             if(value->count > 0) {
-                bk_set_key(bk, key->sval[0], value->sval[0]);
+                bk_set_key(bk, key->sval, key->count, value->sval[0]);
             } else {
-                bk_get_key(bk, key->sval[0]);
+                bk_get_key(bk, key->sval, key->count);
             }
         } else if(keylist->count > 0) {
             bk_keylist();
