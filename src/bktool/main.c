@@ -4,12 +4,10 @@
   * @license MIT
   */
 
-#define _BSD_SOURCE // for usleep
 #include <SDL2/SDL.h>
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 #include <stdint.h>
-#include <unistd.h>
 
 int clamp(int value, long low, long high) {
     if(value > high) return high;
@@ -230,7 +228,7 @@ void sprite_play(sd_bk_file *bk, int anim, int sprite) {
         SDL_RenderCopy(renderer, background, NULL, NULL);
         SDL_RenderCopy(renderer, texture, NULL, &rect);
         SDL_RenderPresent(renderer);
-        usleep(6000); // don't chew too much CPU
+        SDL_Delay(1); // don't chew too much CPU
     }
 
     // Close and destroy the window
