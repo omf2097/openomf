@@ -448,9 +448,9 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
         case 3: 
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                printf("(hex) %x\n", bk->footer[tmp]);
+                printf("%d\n", bk->footer[tmp]);
             } else {
-                for(int i = 0; i < 30; i++) { printf("%x ", bk->footer[i]); } printf("\n"); 
+                for(int i = 0; i < 30; i++) { printf("%d ", bk->footer[i]); } printf("\n"); 
             }
             break;
         default:
@@ -480,7 +480,7 @@ void bk_info(sd_bk_file *bk) {
     
     printf(" * Footer (hex): ");
     for(int k = 0; k < 30; k++) {
-        printf("%x ", bk->footer[k]);
+        printf("%d ", bk->footer[k]);
     }
     printf("\n");
 }
