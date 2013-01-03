@@ -103,6 +103,8 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
         return;
     }
     
+    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->img->w, s->img->h, s->img->len);
+    
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     
     uint32_t rmask, gmask, bmask, amask;
@@ -178,7 +180,6 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                         if (sprite < 0) {
                             sprite = bk->anims[anim]->animation->frame_count - 1;
                         }
-                        printf("sprite is now %u\n", sprite);
                         changed = 1;
                         break;
                     case SDLK_UP:
@@ -215,6 +216,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                 if (changed) {
                     s = bk->anims[anim]->animation->sprites[sprite];
                     img = sd_sprite_image_decode(s->img, bk->palettes[0], -1);
+                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->img->w, s->img->h, s->img->len);
 
                     if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img->data, img->w, img->h, 32, img->w*4,
                                     rmask, gmask, bmask, amask))) {
