@@ -218,14 +218,11 @@ int bkanim_key_get_id(const char* key) {
     if(strcmp(key, "probability") == 0) return 4;
     if(strcmp(key, "hazard_damage") == 0) return 5;
     if(strcmp(key, "bk_str") == 0) return 6;
-    return -1;
+    return anim_key_get_id(key);
 }
 
-void bkanim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const char *value) {
-    if(!check_anim(bk, anim)) return;
-    sd_bk_anim *bka = bk->anims[anim];
-    sd_animation *ani = bk->anims[anim]->animation;
-    int kn = anim_key_get_id(key[0]);
+void bkanim_set_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kcount, const char *value) {
+    int kn = bkanim_key_get_id(key[0]);
     switch(kn) {
         case 0:  bka->null = conv_ubyte(value); break;
         case 1:  bka->chain_hit = conv_ubyte(value); break;
@@ -241,11 +238,8 @@ void bkanim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, cons
     printf("Value set!\n");
 }
 
-void bkanim_get_key(sd_bk_file *bk, int anim, const char **key, int kcount) {
-    if(!check_anim(bk, anim)) return;
-    sd_bk_anim *bka = bk->anims[anim];
-    sd_animation *ani = bk->anims[anim]->animation;
-    int kn = anim_key_get_id(key[0]);
+void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kcount) {
+    int kn = bkanim_key_get_id(key[0]);
     
     switch(kn) {
         case 0: printf("%d\n", bka->null); break;
@@ -274,15 +268,10 @@ void bkanim_keylist() {
     printf("* probability\n");
     printf("* hazard_damage\n");
     printf("* bk_str\n");
-    
     anim_keylist();
 }
 
-void bkanim_info(sd_bk_file *bk, int anim) {
-    if(!check_anim(bk, anim)) return;
-    sd_bk_anim *bka = bk->anims[anim];
-    sd_animation *ani = bk->anims[anim]->animation;
-    
+void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim) {
     printf("Animation #%d information:\n", anim);
     
     printf("\nBK specific header:\n");
@@ -509,32 +498,43 @@ int main(int argc, char *argv[]) {
             sprite_info(sp, anim->ival[0], sprite->ival[0]);
         }
     } else if(anim->count > 0) {
+        // Make sure the bkanim exists
+        if(!check_anim(bk, anim->ival[0])) {
+            goto exit_1;
+        }
+        sd_bk_anim *bka = bk->anims[anim->ival[0]];
+        sd_animation *ani = bka->animation;
+    
         if(key->count > 0) {
             if(value->count > 0) {
-                bkanim_set_key(bk, anim->ival[0], key->sval, key->count, value->sval[0]);
+                bkanim_set_key(bka, ani, key->sval, key->count, value->sval[0]);
             } else {
-                bkanim_get_key(bk, anim->ival[0], key->sval, key->count);
+                bkanim_get_key(bka, ani, key->sval, key->count);
             }
         } else if(keylist->count > 0) {
             bkanim_keylist();
         } else if(play->count > 0) {
             anim_play(bk, _sc, anim->ival[0]);
         } else {
-            bkanim_info(bk, anim->ival[0]);
+            bkanim_info(bka, ani, anim->ival[0]);
         }
     } else if(all_anims->count > 0) {
+        sd_bk_anim *bka;
+        sd_animation *ani;
         for(int i = 0; i < 50; i++) {
             if (bk->anims[i]) {
+                bka = bk->anims[i];
+                ani = bka->animation;
                 if(key->count > 0) {
                     if(value->count > 0) {
-                        bkanim_set_key(bk, 1, key->sval, key->count, value->sval[0]);
+                        bkanim_set_key(bka, ani, key->sval, key->count, value->sval[0]);
                     } else {
                         printf("Animation %2u: ", i);
-                        bkanim_get_key(bk, i, key->sval, key->count);
+                        bkanim_get_key(bka, ani, key->sval, key->count);
                     }
                 } else {
                     printf("\n");
-                    bkanim_info(bk, i);
+                    bkanim_info(bka, ani, i);
                 }
             }
         }

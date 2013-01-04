@@ -31,6 +31,7 @@ int check_move(sd_af_file *af, int move) {
     return 1;
 }
 
+// Sprite stuff --------------------------------------
 
 void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite) {
     if(!check_move_sprite(af, anim, sprite)) return;
@@ -191,6 +192,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
     SDL_Quit();
 }
 
+// Move stuff --------------------------------------------------
 
 int move_key_get_id(const char* key) {
     if(strcmp(key, "move_footer") == 0) return 14;
@@ -200,16 +202,34 @@ int move_key_get_id(const char* key) {
 }
 
 void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount, const char *value) {
+    int tmp = 0;
     int kn = move_key_get_id(key[0]);
     switch(kn) {
         case 14: 
-        
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < 21) {
+                    move->unknown[tmp] = conv_ubyte(value);
+                } else {
+                    printf("Move footer index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                printf("Key move_footer requires 1 parameter!\n");
+                return;
+            }
             break;
         case 15: 
-        
+            tmp = strlen(value);
+            if(tmp < 21) {
+                memcpy(move->move_string, value, tmp);
+            } else {
+                printf("String is too long! Maximum size for move_string is 21 characters!\n", tmp);
+                return;
+            }
             break;
         case 16: 
-        
+            sd_move_set_footer_string(move, value);
             break;
         default:
             anim_set_key(ani, kn, key, kcount, value);
@@ -254,7 +274,7 @@ void move_keylist() {
     printf("Valid field keys for Move structure:\n");
     anim_keylist();
     printf("* move_footer <byte #>\n");
-    printf("* move_string\n");
+    printf("* move_string <21 chars max>\n");
     printf("* footer_string\n");
 }
 
@@ -273,6 +293,8 @@ void move_info(sd_move *mv, sd_animation *ani, int move) {
     printf(" * Move string:     %s\n", mv->move_string);
     printf(" * Footer string:   %s\n", mv->footer_string);
 }
+
+// AF Specific stuff -----------------------------------------------
 
 int af_key_get_id(const char* key) {
     if(strcmp(key, "fileid") == 0) return 0;
@@ -533,7 +555,7 @@ int main(int argc, char* argv[]) {
             sprite_info(sp, move->ival[0], sprite->ival[0]);
         }
     } else if(move->count > 0) {
-        // MAke sure the Move exists
+        // Make sure the Move exists
         if(!check_move(af, move->ival[0])) {
             goto exit_2;
         }
