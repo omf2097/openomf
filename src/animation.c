@@ -2,6 +2,7 @@
 #include "shadowdive/sprite.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/internal/helpers.h"
 #include "shadowdive/error.h"
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +37,7 @@ void sd_animation_delete(sd_animation *anim) {
 }
 
 void sd_animation_set_anim_string(sd_animation *ani, const char *str) {
-    realloc(ani->anim_string, strlen(str)+1);
+    alloc_or_realloc((void**)&ani->anim_string, sizeof(str)+1);
     strcpy(ani->anim_string, str);
 }
 
@@ -44,7 +45,7 @@ void sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) 
     if(num < 0 || num >= ani->extra_string_count) {
         return;
     }
-    realloc(ani->extra_strings[num], strlen(str)+1);
+    alloc_or_realloc((void**)&ani->extra_strings[num], strlen(str)+1);
     strcpy(ani->extra_strings[num], str);
 }
 

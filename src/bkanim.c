@@ -1,9 +1,11 @@
 #include "shadowdive/bkanim.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/internal/helpers.h"
 #include "shadowdive/animation.h"
 #include "shadowdive/error.h"
 #include <stdlib.h>
+#include <string.h>
 
 sd_bk_anim* sd_bk_anim_create() {
     sd_bk_anim *bka = (sd_bk_anim*)malloc(sizeof(sd_bk_anim));
@@ -55,4 +57,9 @@ void sd_bk_anim_save(sd_writer *writer, sd_bk_anim *bka) {
 
     // Write animation
     sd_animation_save(writer, bka->animation);
+}
+
+void set_bk_anim_string(sd_bk_anim *bka, const char *data) {
+    alloc_or_realloc((void**)&bka->unknown_data, strlen(data)+1);
+    strcpy(bka->unknown_data, data);
 }

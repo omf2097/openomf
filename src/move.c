@@ -1,6 +1,7 @@
 #include "shadowdive/move.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/internal/helpers.h"
 #include "shadowdive/error.h"
 #include "shadowdive/animation.h"
 #include <stdlib.h>
@@ -72,11 +73,7 @@ void sd_move_set_animation(sd_move *move, sd_animation *animation) {
 }
 
 void sd_move_set_footer_string(sd_move *move, const char* str) {
-    if(move->footer_string) {
-        realloc(move->footer_string, strlen(str)+1);
-    } else {
-        move->footer_string = (char*)malloc(strlen(str)+1);
-    }
+    alloc_or_realloc((void**)&move->footer_string, strlen(str)+1);
     strcpy(move->footer_string, str);
 }
 

@@ -23,7 +23,8 @@ FILES := \
     src/sprite.c \
     src/error.c \
     src/internal/reader.c \
-    src/internal/writer.c 
+    src/internal/writer.c \
+    src/internal/helpers.c
 
 TESTMAIN = test/test_main.c
 SOUNDSMAIN = test/sounds_main.c

@@ -18,6 +18,6 @@ int sd_move_load(sd_reader *reader, sd_move *move);
 void sd_move_save(sd_writer *writer, sd_move *move);
 
 void sd_move_set_animation(sd_move *move, sd_animation *animation);
-void sd_move_set_footer_string(sd_move *move, const char* str);
+void sd_move_set_footer_string(sd_move *move, const char *str);
 
 #endif // _ANIMATION_H

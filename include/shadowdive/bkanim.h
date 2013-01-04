@@ -25,4 +25,6 @@ void sd_bk_anim_delete(sd_bk_anim *bka);
 int sd_bk_anim_load(sd_reader *reader, sd_bk_anim *bka);
 void sd_bk_anim_save(sd_writer *writer, sd_bk_anim *bka);
 
+void set_bk_anim_string(sd_bk_anim *bka, const char *data);
+
 #endif // _BK_ANIMS
