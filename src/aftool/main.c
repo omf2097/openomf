@@ -12,8 +12,11 @@ int main(int argc, char* argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
+    struct arg_file *file = arg_file1("f", "file", "<file>", "Input .AF file");
+    struct arg_file *output = arg_file0("o", "output", "<file>", "Output .AF file");
+    struct arg_file *palette = arg_file0("p", "palette", "<file>", "BK file for palette");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,end};
+    void* argtable[] = {help,vers,file,output,palette,end};
     const char* progname = "aftool";
     
     // Make sure everything got allocated
@@ -53,10 +56,25 @@ int main(int argc, char* argv[]) {
     // Init SDL
     SDL_Init(SDL_INIT_VIDEO);
     
+    // Load file
+    sd_af_file *af = sd_af_create();
+    int ret = sd_af_load(af, file->filename[0]);
+    if(ret) {
+        printf("Unable to load AF file! Make sure the file exists and is a valid AF file.\n");
+        goto exit_1;
+    }
+    
     // TODO: Handle everything here
+    
+    
+    // Write output file
+    if(output->count > 0) {
+        sd_af_save(af, output->filename[0]);
+    }
     
     // Quit
 exit_1:
+    sd_af_delete(af);
     SDL_Quit();
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
