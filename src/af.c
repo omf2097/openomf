@@ -9,7 +9,7 @@
 #include <string.h>
 
 void sd_af_postprocess(sd_af_file *af) {
-    intptr_t table[1000] = {0}; // temporary lookup table
+    char *table[1000] = {0}; // temporary lookup table
     sd_animation *anim;
     // fix NULL pointers for any 'missing' sprites
     for(int i = 0; i < 70; i++) {
@@ -18,10 +18,10 @@ void sd_af_postprocess(sd_af_file *af) {
             for(int j = 0; j < anim->frame_count; j++) {
                 if (anim->sprites[j]->missing > 0) {
                     if (table[anim->sprites[j]->index]) {
-                        anim->sprites[j]->img->data = (char*)table[anim->sprites[j]->index];
+                        anim->sprites[j]->img->data = table[anim->sprites[j]->index];
                     }
                 } else {
-                    table[anim->sprites[j]->index] = (intptr_t)anim->sprites[j]->img->data;
+                    table[anim->sprites[j]->index] = anim->sprites[j]->img->data;
                 }
             }
         }
