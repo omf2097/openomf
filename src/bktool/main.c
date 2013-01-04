@@ -306,12 +306,15 @@ void anim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const 
         case 3:  bka->repeat = conv_ubyte(value); break;
         case 4:  bka->probability = conv_uword(value); break;
         case 5:  bka->hazard_damage = conv_ubyte(value); break;
-        case 6:  break; // TODO
-        case 7:  break; // TODO
-        case 8:  break; // TODO
+        case 6:  set_bk_anim_string(bka, value); break;
+        case 7:  
+            break; // TODO ani_header
+        case 8:  
+            break; // TODO overlay
         case 9:  sd_animation_set_anim_string(ani, value); break;
         case 10:  ani->unknown_b = conv_ubyte(value); break;
-        case 11:  break; // TODO
+        case 11:  
+            break; // TODO extra_str
         default:
             printf("Unknown key!\n");
             return;
@@ -361,10 +364,10 @@ void anim_keylist() {
     printf("* hazard_damage\n");
     printf("* bk_str\n");
     //printf("* ani_header <byte #>\n");
-    //printf("* overlay <overlay #>\n");
+    printf("* overlay <overlay #>\n");
     printf("* anim_str\n");
     printf("* unknown\n");
-    //printf("* extra_str <str #>\n");
+    printf("* extra_str <str #>\n");
 }
 
 void anim_info(sd_bk_file *bk, int anim) {
@@ -498,7 +501,7 @@ int main(int argc, char *argv[]) {
     struct arg_lit *keylist = arg_lit0(NULL, "keylist", "Prints a list of valid fields for --key.");
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 2, "Select key");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
-    struct arg_str *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim)");
+    struct arg_lit *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim)");
     struct arg_int *scale = arg_int0(NULL, "scale", "version", "Scales sprites (requires --play)");
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,output,anim,sprite,keylist,key,value,play,scale,end};
