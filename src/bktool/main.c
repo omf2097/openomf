@@ -579,6 +579,7 @@ int main(int argc, char *argv[]) {
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input .BK file");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .BK file");
     struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
+    struct arg_int *all_anims = arg_lit0("A", "all_anims", "All animations");
     struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --anim)");
     struct arg_lit *keylist = arg_lit0(NULL, "keylist", "Prints a list of valid fields for --key.");
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 2, "Select key");
@@ -586,7 +587,7 @@ int main(int argc, char *argv[]) {
     struct arg_lit *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim)");
     struct arg_int *scale = arg_int0(NULL, "scale", "version", "Scales sprites (requires --play)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,anim,sprite,keylist,key,value,play,scale,end};
+    void* argtable[] = {help,vers,file,output,anim,all_anims,sprite,keylist,key,value,play,scale,end};
     const char* progname = "bktool";
     
     // Make sure everything got allocated
@@ -697,6 +698,22 @@ int main(int argc, char *argv[]) {
             anim_play(bk, _sc, anim->ival[0]);
         } else {
             anim_info(bk, anim->ival[0]);
+        }
+    } else if(all_anims->count > 0) {
+        for(int i = 0; i < 50; i++) {
+            if (bk->anims[i]) {
+                if(key->count > 0) {
+                    if(value->count > 0) {
+                        anim_set_key(bk, 1, key->sval, key->count, value->sval[0]);
+                    } else {
+                        printf("Animation %u:", i);
+                        anim_get_key(bk, i, key->sval, key->count);
+                    }
+                } else {
+                    printf("\n");
+                    anim_info(bk, i);
+                }
+            }
         }
     } else {
         if(key->count > 0) {
