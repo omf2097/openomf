@@ -8,19 +8,8 @@
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 #include <stdint.h>
-
-int clamp(int value, long low, long high) {
-    if(value > high) return high;
-    if(value < low) return low;
-    return value;
-}
-
-uint8_t  conv_ubyte(const char* data) { return clamp(atoi(data), 0, 0xFF); }
-int8_t   conv_byte (const char* data) { return clamp(atoi(data), -0x80, 0x80); }
-uint16_t conv_uword (const char* data) { return clamp(atoi(data), 0, 0xFFFF); }
-int16_t  conv_word (const char* data) { return clamp(atoi(data), -0x7FFF, 0x7FFF); }
-uint32_t conv_udword (const char* data) { return atoi(data); }
-int32_t  conv_dword (const char* data) { return atoi(data); }
+#include "../shared/animation_misc.h"
+#include "../shared/conversions.h"
 
 int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
     if(anim > 50 || anim < 0 || bk->anims[anim] == 0) {
@@ -42,43 +31,7 @@ int check_anim(sd_bk_file *bk, int anim) {
     return 1;
 }
 
-// Sprites --------------------------------------------------------------
-
-int sprite_key_get_id(const char* key) {
-    if(strcmp(key, "x") == 0) return 0;
-    if(strcmp(key, "y") == 0) return 1;
-    if(strcmp(key, "index") == 0) return 2;
-    if(strcmp(key, "missing") == 0) return 3;
-    return -1;
-}
-
-void sprite_set_key(sd_bk_file *bk, int anim, int sprite, const char **key, int kcount, const char *value) {
-    if(!check_anim_sprite(bk, anim, sprite)) return;
-    sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
-    switch(sprite_key_get_id(key[0])) {
-        case 0: s->pos_x = conv_word(value); break;
-        case 1: s->pos_y = conv_word(value); break;
-        case 2: s->index = conv_ubyte(value); break;
-        case 3: s->missing = conv_ubyte(value); break;
-        default:
-            printf("Unknown key!\n");
-            return;
-    }
-    printf("Value set!\n");
-}
-
-void sprite_get_key(sd_bk_file *bk, int anim, int sprite, const char **key, int kcount) {
-    if(!check_anim_sprite(bk, anim, sprite)) return;
-    sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
-    switch(sprite_key_get_id(key[0])) {
-        case 0: printf("%d\n", s->pos_x); break;
-        case 1: printf("%d\n", s->pos_y); break;
-        case 2: printf("%d\n", s->index); break;
-        case 3: printf("%d\n", s->missing); break;
-        default:
-            printf("Unknown key!\n");
-    }
-}
+// Sprites -------------------------------------------------------
 
 void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     if(!check_anim_sprite(bk, anim, sprite)) return;
@@ -253,28 +206,6 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
 
     // Clean up
     SDL_Quit();
-}
-
-void sprite_keylist() {
-    printf("Valid field keys for Sprite structure:\n");
-    printf("* x\n");
-    printf("* y\n");
-    printf("* index\n");
-    printf("* missing\n");
-}
-
-void sprite_info(sd_bk_file *bk, int anim, int sprite) {
-    if(!check_anim_sprite(bk, anim, sprite)) return;
-
-    sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
-    printf("Animation #%d, Sprite #%d information:\n", anim, sprite);
-    printf(" * X:        %d\n", s->pos_x);
-    printf(" * Y:        %d\n", s->pos_y);
-    printf(" * W:        %d\n", s->img->w);
-    printf(" * H:        %d\n", s->img->h);
-    printf(" * Index:    %d\n", s->index);
-    printf(" * Missing:  %d\n", s->missing);
-    printf(" * Length:   %d\n", s->img->len);
 }
 
 // Animations --------------------------------------------------------------
@@ -684,18 +615,25 @@ int main(int argc, char *argv[]) {
     
     // Handle args
     if(sprite->count > 0) {
+        // Make sure sprite exists.
+        if(!check_anim_sprite(bk, anim->ival[0], sprite->ival[0])) {
+            goto exit_1;
+        }
+        sd_sprite *sp = bk->anims[anim->ival[0]]->animation->sprites[sprite->ival[0]];
+    
+        // Handle arguments
         if(key->count > 0) {
             if(value->count > 0) {
-                sprite_set_key(bk, anim->ival[0], sprite->ival[0], key->sval, key->count, value->sval[0]);
+                sprite_set_key(sp, key->sval, key->count, value->sval[0]);
             } else {
-                sprite_get_key(bk, anim->ival[0], sprite->ival[0], key->sval, key->count);
+                sprite_get_key(sp, key->sval, key->count);
             }
         } else if(keylist->count > 0) {
             sprite_keylist();
         } else if(play->count > 0) {
             sprite_play(bk, _sc, anim->ival[0], sprite->ival[0]);
         } else {
-            sprite_info(bk, anim->ival[0], sprite->ival[0]);
+            sprite_info(sp, anim->ival[0], sprite->ival[0]);
         }
     } else if(anim->count > 0) {
         if(key->count > 0) {

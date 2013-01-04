@@ -13,9 +13,9 @@ set(CMAKE_C_FLAGS_DEBUG "-ggdb")
 set(CMAKE_C_FLAGS_RELEASE "-O2 -march=i686")
 add_subdirectory(src)
 
-add_executable(bktool src/bktool/main.c)
-add_executable(aftool src/aftool/main.c)
-add_executable(soundtool src/soundtool/main.c)
+add_executable(bktool src/bktool/main.c src/shared/animation_misc.c src/shared/conversions.c)
+add_executable(aftool src/aftool/main.c src/shared/animation_misc.c src/shared/conversions.c)
+add_executable(soundtool src/soundtool/main.c )
 add_executable(musictool src/musictool/main.c)
 
 set(CORELIBS ${SDL2_LIBRARY} ${ARGTABLE2_LIBRARY})

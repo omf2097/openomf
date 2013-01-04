@@ -7,19 +7,9 @@
 #include <SDL2/SDL.h>
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
-
-int clamp(int value, long low, long high) {
-    if(value > high) return high;
-    if(value < low) return low;
-    return value;
-}
-
-uint8_t  conv_ubyte(const char* data) { return clamp(atoi(data), 0, 0xFF); }
-int8_t   conv_byte (const char* data) { return clamp(atoi(data), -0x80, 0x80); }
-uint16_t conv_uword (const char* data) { return clamp(atoi(data), 0, 0xFFFF); }
-int16_t  conv_word (const char* data) { return clamp(atoi(data), -0x7FFF, 0x7FFF); }
-uint32_t conv_udword (const char* data) { return atoi(data); }
-int32_t  conv_dword (const char* data) { return atoi(data); }
+#include <stdint.h>
+#include "../shared/animation_misc.h"
+#include "../shared/conversions.h"
 
 int check_move_sprite(sd_af_file *af, int move, int sprite) {
     if(move > 70 || move < 0 || af->moves[move] == 0) {
@@ -41,41 +31,6 @@ int check_move(sd_af_file *af, int move) {
     return 1;
 }
 
-int sprite_key_get_id(const char* key) {
-    if(strcmp(key, "x") == 0) return 0;
-    if(strcmp(key, "y") == 0) return 1;
-    if(strcmp(key, "index") == 0) return 2;
-    if(strcmp(key, "missing") == 0) return 3;
-    return -1;
-}
-
-void sprite_set_key(sd_af_file *af, int move, int sprite, const char **key, int kcount, const char *value) {
-    if(!check_move_sprite(af, move, sprite)) return;
-    sd_sprite *s = af->moves[move]->animation->sprites[sprite];
-    switch(sprite_key_get_id(key[0])) {
-        case 0: s->pos_x = conv_word(value); break;
-        case 1: s->pos_y = conv_word(value); break;
-        case 2: s->index = conv_ubyte(value); break;
-        case 3: s->missing = conv_ubyte(value); break;
-        default:
-            printf("Unknown key!\n");
-            return;
-    }
-    printf("Value set!\n");
-}
-
-void sprite_get_key(sd_af_file *af, int move, int sprite, const char **key, int kcount) {
-    if(!check_move_sprite(af, move, sprite)) return;
-    sd_sprite *s = af->moves[move]->animation->sprites[sprite];
-    switch(sprite_key_get_id(key[0])) {
-        case 0: printf("%d\n", s->pos_x); break;
-        case 1: printf("%d\n", s->pos_y); break;
-        case 2: printf("%d\n", s->index); break;
-        case 3: printf("%d\n", s->missing); break;
-        default:
-            printf("Unknown key!\n");
-    }
-}
 
 void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite) {
     if(!check_move_sprite(af, anim, sprite)) return;
@@ -236,27 +191,6 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
     SDL_Quit();
 }
 
-void sprite_keylist() {
-    printf("Valid field keys for Sprite structure:\n");
-    printf("* x\n");
-    printf("* y\n");
-    printf("* index\n");
-    printf("* missing\n");
-}
-
-void sprite_info(sd_af_file *af, int move, int sprite) {
-    if(!check_move_sprite(af, move, sprite)) return;
-
-    sd_sprite *s = af->moves[move]->animation->sprites[sprite];
-    printf("animation #%d, Sprite #%d information:\n", move, sprite);
-    printf(" * X:        %d\n", s->pos_x);
-    printf(" * Y:        %d\n", s->pos_y);
-    printf(" * W:        %d\n", s->img->w);
-    printf(" * H:        %d\n", s->img->h);
-    printf(" * Index:    %d\n", s->index);
-    printf(" * Missing:  %d\n", s->missing);
-    printf(" * Length:   %d\n", s->img->len);
-}
 
 int anim_key_get_id(const char* key) {
     if(strcmp(key, "ani_header") == 0) return 7;
@@ -612,19 +546,27 @@ int main(int argc, char* argv[]) {
         if(_sc < 1) _sc = 1;
     }
 
+    // Check args
     if(sprite->count > 0) {
+        // Make sure sprite exists.
+        if(!check_move_sprite(af, move->ival[0], sprite->ival[0])) {
+            goto exit_2;
+        }
+        sd_sprite *sp = af->moves[move->ival[0]]->animation->sprites[sprite->ival[0]];
+        
+        // Handle arguments
         if(key->count > 0) {
-            /*if(value->count > 0) {*/
-                /*sprite_set_key(af, move->ival[0], sprite->ival[0], key->sval, key->count, value->sval[0]);*/
-            /*} else {*/
-                sprite_get_key(af, move->ival[0], sprite->ival[0], key->sval, key->count);
-            /*}*/
+            if(value->count > 0) {
+                sprite_set_key(sp, key->sval, key->count, value->sval[0]);
+            } else {
+                sprite_get_key(sp, key->sval, key->count);
+            }
         } else if(keylist->count > 0) {
             sprite_keylist();
         } else if(play->count > 0) {
             sprite_play(af, bk, _sc, move->ival[0], sprite->ival[0]);
         } else {
-            sprite_info(af, move->ival[0], sprite->ival[0]);
+            sprite_info(sp, move->ival[0], sprite->ival[0]);
         }
     } else if(move->count > 0) {
         if(key->count > 0) {
