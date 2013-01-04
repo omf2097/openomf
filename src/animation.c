@@ -51,7 +51,9 @@ void sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) 
 
 int sd_animation_load(sd_reader *r, sd_animation *ani) {
     // Animation header
-    sd_read_buf(r, ani->unknown_a, 8);
+    ani->start_x = sd_read_word(r);
+    ani->start_y = sd_read_word(r);
+    sd_read_buf(r, ani->unknown_a, 4);
     ani->overlay_count = sd_read_uword(r);
     ani->frame_count = sd_read_ubyte(r);
     ani->overlay_table = (uint32_t*)malloc(sizeof(uint32_t)*ani->overlay_count);
@@ -93,7 +95,9 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
 
 void sd_animation_save(sd_writer *writer, sd_animation *ani) {
     // Animation header
-    sd_write_buf(writer, ani->unknown_a, 8);
+    sd_write_word(writer, ani->start_x);
+    sd_write_word(writer, ani->start_y);
+    sd_write_buf(writer, ani->unknown_a, 4);
     sd_write_uword(writer, ani->overlay_count);
     sd_write_ubyte(writer, ani->frame_count);
     sd_write_buf(writer, (char*)ani->overlay_table, ani->overlay_count * sizeof(uint32_t));

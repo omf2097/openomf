@@ -8,7 +8,9 @@ typedef struct sd_writer_t sd_writer;
 
 typedef struct sd_animation_t {
     // Header
-    char unknown_a[8];
+    int16_t start_x;
+    int16_t start_y;
+    char unknown_a[4];
     uint16_t overlay_count;
     uint8_t frame_count;
     uint32_t *overlay_table;
