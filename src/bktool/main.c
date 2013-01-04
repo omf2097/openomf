@@ -292,6 +292,8 @@ int anim_key_get_id(const char* key) {
     if(strcmp(key, "anim_str") == 0) return 9;
     if(strcmp(key, "unknown") == 0) return 10;
     if(strcmp(key, "extra_str") == 0) return 11;
+    if(strcmp(key, "start_x") == 0) return 12;
+    if(strcmp(key, "start_y") == 0) return 13;
     return -1;
 }
 
@@ -311,7 +313,7 @@ void anim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const 
         case 7:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < 8) {
+                if(tmp < 4) {
                     ani->unknown_a[tmp] = conv_ubyte(value);
                 } else {
                     printf("Header index %d does not exist!\n", tmp);
@@ -352,6 +354,8 @@ void anim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const 
                 return;
             }
             break;
+        case 12:  ani->start_x = conv_word(value); break;
+        case 13:  ani->start_y = conv_word(value); break;
         default:
             printf("Unknown key!\n");
             return;
@@ -375,16 +379,17 @@ void anim_get_key(sd_bk_file *bk, int anim, const char **key, int kcount) {
         case 7: 
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < 8) {
+                if(tmp < 4) {
                     printf("%d\n", ani->unknown_a[tmp]);
                 } else {
                     printf("Header index %d does not exist!\n", tmp);
                     return;
                 }
             } else {
-                for(int i = 0; i < 8; i++) {
+                for(int i = 0; i < 4; i++) {
                     printf("%d ", (uint8_t)ani->unknown_a[i]);
                 }
+                printf("\n");
             }
             break; 
         case 8:
@@ -421,6 +426,8 @@ void anim_get_key(sd_bk_file *bk, int anim, const char **key, int kcount) {
                 printf("\n");
             }
             break;
+        case 12: printf("%d\n", ani->start_x); break;
+        case 13: printf("%d\n", ani->start_y); break;
         default:
             printf("Unknown key!\n");
     }
@@ -440,6 +447,8 @@ void anim_keylist() {
     printf("* probability\n");
     printf("* hazard_damage\n");
     printf("* bk_str\n");
+    printf("* start_x\n");
+    printf("* start_y\n");
     printf("* ani_header <byte #>\n");
     printf("* overlay <overlay #>\n");
     printf("* anim_str\n");
@@ -464,8 +473,10 @@ void anim_info(sd_bk_file *bk, int anim) {
     printf(" * String:          %s\n", bka->unknown_data);
     
     printf("\nCommon animation header:\n");
+    printf(" * Start X:         %d\n", ani->start_x);
+    printf(" * Start Y:         %d\n", ani->start_y);
     printf(" * Animation header:  ");
-    for(int i = 0; i < 8; i++) {
+    for(int i = 0; i < 4; i++) {
         printf("%d ", (uint8_t)ani->unknown_a[i]);
     }
     printf("\n");
@@ -579,7 +590,7 @@ int main(int argc, char *argv[]) {
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input .BK file");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .BK file");
     struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
-    struct arg_int *all_anims = arg_lit0("A", "all_anims", "All animations");
+    struct arg_lit *all_anims = arg_lit0("A", "all_anims", "All animations");
     struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --anim)");
     struct arg_lit *keylist = arg_lit0(NULL, "keylist", "Prints a list of valid fields for --key.");
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 2, "Select key");
@@ -706,7 +717,7 @@ int main(int argc, char *argv[]) {
                     if(value->count > 0) {
                         anim_set_key(bk, 1, key->sval, key->count, value->sval[0]);
                     } else {
-                        printf("Animation %u:", i);
+                        printf("Animation %2u: ", i);
                         anim_get_key(bk, i, key->sval, key->count);
                     }
                 } else {
