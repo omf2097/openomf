@@ -14,7 +14,6 @@ typedef struct sd_bk_anim_t {
     uint8_t repeat;
     uint16_t probability;
     uint8_t hazard_damage;
-    uint16_t unknown_size;
     char* unknown_data;
 
     sd_animation *animation;
