@@ -75,3 +75,84 @@ void anim_common_info(sd_animation *ani) {
         printf("   - %s\n", ani->extra_strings[i]);
     }
 }
+
+int anim_key_get_id(const char* key) {
+    if(strcmp(key, "ani_header") == 0) return 7;
+    if(strcmp(key, "overlay") == 0) return 8;
+    if(strcmp(key, "anim_str") == 0) return 9;
+    if(strcmp(key, "unknown") == 0) return 10;
+    if(strcmp(key, "extra_str") == 0) return 11;
+    if(strcmp(key, "start_x") == 0) return 12;
+    if(strcmp(key, "start_y") == 0) return 13;
+    return -1;
+}
+
+void anim_keylist() {
+    printf("* start_x\n");
+    printf("* start_y\n");
+    printf("* ani_header <byte #>\n");
+    printf("* overlay <overlay #>\n");
+    printf("* anim_str\n");
+    printf("* unknown\n");
+    printf("* extra_str <str #>\n");
+}
+
+void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount) {
+    int tmp = 0;
+    switch(kn) {
+        case 7: 
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < 4) {
+                    printf("%d\n", ani->unknown_a[tmp]);
+                } else {
+                    printf("Header index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                for(int i = 0; i < 4; i++) {
+                    printf("%d ", (uint8_t)ani->unknown_a[i]);
+                }
+                printf("\n");
+            }
+            break; 
+        case 8:
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < ani->overlay_count) {
+                    printf("%d\n", ani->overlay_table[tmp]);
+                } else {
+                    printf("Overlay index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                for(int i = 0; i < ani->overlay_count; i++) {
+                    printf("%d ", ani->overlay_table[i]);
+                }
+                printf("\n");
+            }
+            break;
+        case 9: printf("%s\n", ani->anim_string); break;
+        case 10: printf("%d\n", ani->unknown_b); break;
+        case 11: 
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < ani->extra_string_count) {
+                    printf("%s\n", ani->extra_strings[tmp]);
+                } else {
+                    printf("Extra string table index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                for(int i = 0; i < ani->extra_string_count; i++) {
+                    printf("%s ", ani->extra_strings[i]);
+                }
+                printf("\n");
+            }
+            break;
+        case 12: printf("%d\n", ani->start_x); break;
+        case 13: printf("%d\n", ani->start_y); break;
+        default:
+            printf("Unknown key!\n");
+    }
+}

@@ -210,7 +210,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
 
 // Animations --------------------------------------------------------------
 
-int anim_key_get_id(const char* key) {
+int bkanim_key_get_id(const char* key) {
     if(strcmp(key, "null") == 0) return 0;
     if(strcmp(key, "chain_hit") == 0) return 1;
     if(strcmp(key, "chain_no_hit") == 0) return 2;
@@ -218,22 +218,16 @@ int anim_key_get_id(const char* key) {
     if(strcmp(key, "probability") == 0) return 4;
     if(strcmp(key, "hazard_damage") == 0) return 5;
     if(strcmp(key, "bk_str") == 0) return 6;
-    if(strcmp(key, "ani_header") == 0) return 7;
-    if(strcmp(key, "overlay") == 0) return 8;
-    if(strcmp(key, "anim_str") == 0) return 9;
-    if(strcmp(key, "unknown") == 0) return 10;
-    if(strcmp(key, "extra_str") == 0) return 11;
-    if(strcmp(key, "start_x") == 0) return 12;
-    if(strcmp(key, "start_y") == 0) return 13;
     return -1;
 }
 
-void anim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const char *value) {
+void bkanim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const char *value) {
     int tmp = 0;
     if(!check_anim(bk, anim)) return;
     sd_bk_anim *bka = bk->anims[anim];
     sd_animation *ani = bk->anims[anim]->animation;
-    switch(anim_key_get_id(key[0])) {
+    int kn = anim_key_get_id(key[0]);
+    switch(kn) {
         case 0:  bka->null = conv_ubyte(value); break;
         case 1:  bka->chain_hit = conv_ubyte(value); break;
         case 2:  bka->chain_no_hit = conv_ubyte(value); break;
@@ -294,12 +288,13 @@ void anim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const 
     printf("Value set!\n");
 }
 
-void anim_get_key(sd_bk_file *bk, int anim, const char **key, int kcount) {
-    int tmp = 0;
+void bkanim_get_key(sd_bk_file *bk, int anim, const char **key, int kcount) {
     if(!check_anim(bk, anim)) return;
     sd_bk_anim *bka = bk->anims[anim];
     sd_animation *ani = bk->anims[anim]->animation;
-    switch(anim_key_get_id(key[0])) {
+    int kn = anim_key_get_id(key[0]);
+    
+    switch(kn) {
         case 0: printf("%d\n", bka->null); break;
         case 1: printf("%d\n", bka->chain_hit); break;
         case 2: printf("%d\n", bka->chain_no_hit); break;
@@ -307,60 +302,8 @@ void anim_get_key(sd_bk_file *bk, int anim, const char **key, int kcount) {
         case 4: printf("%d\n", bka->probability); break;
         case 5: printf("%d\n", bka->hazard_damage); break;
         case 6: printf("%s\n", bka->unknown_data ? bka->unknown_data : "(null)"); break;
-        case 7: 
-            if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < 4) {
-                    printf("%d\n", ani->unknown_a[tmp]);
-                } else {
-                    printf("Header index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                for(int i = 0; i < 4; i++) {
-                    printf("%d ", (uint8_t)ani->unknown_a[i]);
-                }
-                printf("\n");
-            }
-            break; 
-        case 8:
-            if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < ani->overlay_count) {
-                    printf("%d\n", ani->overlay_table[tmp]);
-                } else {
-                    printf("Overlay index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                for(int i = 0; i < ani->overlay_count; i++) {
-                    printf("%d ", ani->overlay_table[i]);
-                }
-                printf("\n");
-            }
-            break;
-        case 9: printf("%s\n", ani->anim_string); break;
-        case 10: printf("%d\n", ani->unknown_b); break;
-        case 11: 
-            if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < ani->extra_string_count) {
-                    printf("%s\n", ani->extra_strings[tmp]);
-                } else {
-                    printf("Extra string table index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                for(int i = 0; i < ani->extra_string_count; i++) {
-                    printf("%s ", ani->extra_strings[i]);
-                }
-                printf("\n");
-            }
-            break;
-        case 12: printf("%d\n", ani->start_x); break;
-        case 13: printf("%d\n", ani->start_y); break;
         default:
-            printf("Unknown key!\n");
+            anim_get_key(ani, kn, key, kcount);
     }
 }
 
@@ -369,7 +312,7 @@ void anim_play(sd_bk_file *bk, int scale, int anim) {
     sprite_play(bk, scale, anim, 0);
 }
 
-void anim_keylist() {
+void bkanim_keylist() {
     printf("Valid field keys for Animation structure:\n");
     printf("* null\n");
     printf("* chain_hit\n");
@@ -378,16 +321,11 @@ void anim_keylist() {
     printf("* probability\n");
     printf("* hazard_damage\n");
     printf("* bk_str\n");
-    printf("* start_x\n");
-    printf("* start_y\n");
-    printf("* ani_header <byte #>\n");
-    printf("* overlay <overlay #>\n");
-    printf("* anim_str\n");
-    printf("* unknown\n");
-    printf("* extra_str <str #>\n");
+    
+    anim_keylist();
 }
 
-void anim_info(sd_bk_file *bk, int anim) {
+void bkanim_info(sd_bk_file *bk, int anim) {
     if(!check_anim(bk, anim)) return;
     sd_bk_anim *bka = bk->anims[anim];
     sd_animation *ani = bk->anims[anim]->animation;
@@ -620,30 +558,30 @@ int main(int argc, char *argv[]) {
     } else if(anim->count > 0) {
         if(key->count > 0) {
             if(value->count > 0) {
-                anim_set_key(bk, anim->ival[0], key->sval, key->count, value->sval[0]);
+                bkanim_set_key(bk, anim->ival[0], key->sval, key->count, value->sval[0]);
             } else {
-                anim_get_key(bk, anim->ival[0], key->sval, key->count);
+                bkanim_get_key(bk, anim->ival[0], key->sval, key->count);
             }
         } else if(keylist->count > 0) {
-            anim_keylist();
+            bkanim_keylist();
         } else if(play->count > 0) {
             anim_play(bk, _sc, anim->ival[0]);
         } else {
-            anim_info(bk, anim->ival[0]);
+            bkanim_info(bk, anim->ival[0]);
         }
     } else if(all_anims->count > 0) {
         for(int i = 0; i < 50; i++) {
             if (bk->anims[i]) {
                 if(key->count > 0) {
                     if(value->count > 0) {
-                        anim_set_key(bk, 1, key->sval, key->count, value->sval[0]);
+                        bkanim_set_key(bk, 1, key->sval, key->count, value->sval[0]);
                     } else {
                         printf("Animation %2u: ", i);
-                        anim_get_key(bk, i, key->sval, key->count);
+                        bkanim_get_key(bk, i, key->sval, key->count);
                     }
                 } else {
                     printf("\n");
-                    anim_info(bk, i);
+                    bkanim_info(bk, i);
                 }
             }
         }
