@@ -60,6 +60,7 @@ void sd_bk_anim_save(sd_writer *writer, sd_bk_anim *bka) {
 }
 
 void set_bk_anim_string(sd_bk_anim *bka, const char *data) {
-    alloc_or_realloc((void**)&bka->unknown_data, strlen(data)+1);
+    bka->unknown_size = strlen(data)+1;
+    alloc_or_realloc((void**)&bka->unknown_data, bka->unknown_size);
     strcpy(bka->unknown_data, data);
 }
