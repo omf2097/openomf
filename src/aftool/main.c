@@ -312,28 +312,11 @@ void move_info(sd_af_file *af, int move) {
     sd_move *mv = af->moves[move];
     sd_animation *ani = mv->animation;
     
-    printf("Move #%d information:\n", move);
+    printf("Move #%d information:\n\n", move);
     
-    printf("\nCommon animation header:\n");
-    printf(" * Start X:         %d\n", ani->start_x);
-    printf(" * Start Y:         %d\n", ani->start_y);
-    printf(" * Animation header:  ");
-    for(int i = 0; i < 4; i++) {
-        printf("%d ", (uint8_t)ani->unknown_a[i]);
-    }
-    printf("\n");
-    printf(" * Overlays:        %d\n", ani->overlay_count);
-    for(int i = 0; i < ani->overlay_count; i++) {
-        printf("   - %d\n", ani->overlay_table[i]);
-    }
-    printf(" * Sprites:         %d\n", ani->frame_count);
-    printf(" * Animation str:   %s\n", ani->anim_string);
-    printf(" * Unknown:         %d\n", ani->unknown_b);
-    printf(" * Extra strings:   %d\n", ani->extra_string_count);
-    for(int i = 0; i < ani->extra_string_count; i++) {
-        printf("   - %s\n", ani->extra_strings[i]);
-    }
+    anim_common_info(ani);
 
+    printf("\nAF specific footer:\n");
     printf(" * Move footer:     ");
     for(int i = 0; i < 21; i++) {
         printf("%d ", (uint8_t)mv->unknown[i]);

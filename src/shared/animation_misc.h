@@ -9,4 +9,6 @@ void sprite_get_key(sd_sprite *s, const char **key, int kcount);
 void sprite_keylist();
 void sprite_info(sd_sprite *s, int anim, int sprite);
 
+void anim_common_info(sd_animation *ani);
+
 #endif // _ANIMATION_MISC_H
