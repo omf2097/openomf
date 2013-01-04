@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
         goto exit_1;
     }
     
-    int id = sid->ival[0];
+    int id = sid->ival[0]-1;
     if(sid->count > 0) {
         printf("Attempting to play sample #%d.\n", id);
     
@@ -108,7 +108,7 @@ exit_2:
         int k = 0;
         for(int i = 0; i < sounds->sound_count; i++) {
             if(sounds->sounds[i]) {
-                printf("%d", i);
+                printf("%d", i+1);
                 if((k+1)%6==0) {
                     printf("\n");
                 } else {
