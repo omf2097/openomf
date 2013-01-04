@@ -375,7 +375,7 @@ void anim_get_key(sd_bk_file *bk, int anim, const char **key, int kcount) {
         case 3: printf("%d\n", bka->repeat); break;
         case 4: printf("%d\n", bka->probability); break;
         case 5: printf("%d\n", bka->hazard_damage); break;
-        case 6: printf("%s\n", bka->unknown_data); break;
+        case 6: printf("%s\n", bka->unknown_data ? bka->unknown_data : "(null)"); break;
         case 7: 
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
