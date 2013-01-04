@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     
     int id = sid->ival[0]-1;
     if(sid->count > 0) {
-        printf("Attempting to play sample #%d.\n", id);
+        printf("Attempting to play sample #%d.\n", id+1);
     
         // Make sure there is data at requested ID position
         if(sounds->sounds[id] == 0) {
