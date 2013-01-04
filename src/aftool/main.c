@@ -373,6 +373,40 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
     }
 }
 
+void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value) {
+    int tmp = 0;
+    switch(af_key_get_id(key[0])) {
+        case 0: af->file_id = conv_uword(value); break;
+        case 1: af->unknown_a = conv_uword(value); break;
+        case 2: af->endurance = conv_udword(value); break;
+        case 3: af->unknown_b = conv_ubyte(value); break;
+        case 4: af->power = conv_uword(value); break;
+        case 5: af->forward_speed = conv_dword(value); break;
+        case 6: af->reverse_speed = conv_dword(value); break;
+        case 7: af->jump_speed = conv_dword(value); break;
+        case 8: af->fall_speed = conv_dword(value); break;
+        case 9: af->unknown_c = conv_uword(value); break;
+        case 10: 
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < 30) {
+                    af->footer[tmp] = conv_ubyte(value);
+                } else {
+                    printf("Footer index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                printf("Footer value requires index parameter (eg. --key footer --key 3).\n");
+                return;
+            }
+        break;
+        default:
+            printf("Unknown key!\n");
+            return;
+    }
+    printf("Value set!\n");
+}
+
 void af_keylist() {
     printf("Valid field keys for AF file root:\n");
     printf("* fileid\n");
@@ -583,11 +617,11 @@ int main(int argc, char* argv[]) {
         }
     } else {
         if(key->count > 0) {
-            /*if(value->count > 0) {*/
-                /*af_set_key(af, key->sval, key->count, value->sval[0]);*/
-            /*} else {*/
+            if(value->count > 0) {
+                af_set_key(af, key->sval, key->count, value->sval[0]);
+            } else {
                 af_get_key(af, key->sval, key->count);
-            /*}*/
+            }
         } else if(keylist->count > 0) {
             af_keylist();
         } else {
