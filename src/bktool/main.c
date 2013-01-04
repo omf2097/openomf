@@ -222,7 +222,6 @@ int bkanim_key_get_id(const char* key) {
 }
 
 void bkanim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const char *value) {
-    int tmp = 0;
     if(!check_anim(bk, anim)) return;
     sd_bk_anim *bka = bk->anims[anim];
     sd_animation *ani = bk->anims[anim]->animation;
@@ -235,54 +234,8 @@ void bkanim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, cons
         case 4:  bka->probability = conv_uword(value); break;
         case 5:  bka->hazard_damage = conv_ubyte(value); break;
         case 6:  set_bk_anim_string(bka, value); break;
-        case 7:
-            if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < 4) {
-                    ani->unknown_a[tmp] = conv_ubyte(value);
-                } else {
-                    printf("Header index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                printf("Key ani_header requires 1 parameter!\n");
-                return;
-            }
-            break; 
-        case 8:  
-            if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < ani->overlay_count) {
-                    ani->overlay_table[tmp] = conv_udword(value);
-                } else {
-                    printf("Overlay index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                printf("Key overlay requires 1 parameter!\n");
-                return;
-            }
-            break; 
-        case 9:  sd_animation_set_anim_string(ani, value); break;
-        case 10: ani->unknown_b = conv_ubyte(value); break;
-        case 11:  
-            if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < ani->extra_string_count) {
-                    sd_animation_set_extra_string(ani, tmp, value);
-                } else {
-                    printf("Extra string table index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                printf("Key extra_str requires 1 parameter!\n");
-                return;
-            }
-            break;
-        case 12:  ani->start_x = conv_word(value); break;
-        case 13:  ani->start_y = conv_word(value); break;
         default:
-            printf("Unknown key!\n");
+            anim_set_key(ani, kn, key, kcount, value);
             return;
     }
     printf("Value set!\n");

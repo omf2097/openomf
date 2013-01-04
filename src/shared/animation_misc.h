@@ -12,6 +12,7 @@ void sprite_info(sd_sprite *s, int anim, int sprite);
 void anim_common_info(sd_animation *ani);
 int anim_key_get_id(const char* key);
 void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount);
+void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const char *value);
 void anim_keylist();
 
 #endif // _ANIMATION_MISC_H

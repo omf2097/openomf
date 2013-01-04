@@ -199,13 +199,28 @@ int move_key_get_id(const char* key) {
     return anim_key_get_id(key);
 }
 
-void move_get_key(sd_af_file *af, int move, const char **key, int kcount) {
+void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount, const char *value) {
+    int kn = move_key_get_id(key[0]);
+    switch(kn) {
+        case 14: 
+        
+            break;
+        case 15: 
+        
+            break;
+        case 16: 
+        
+            break;
+        default:
+            anim_set_key(ani, kn, key, kcount, value);
+            return;
+    }
+    printf("Value set!\n");
+}
+
+void move_get_key(sd_move *mv, sd_animation *ani, const char **key, int kcount) {
     int tmp = 0;
-    if(!check_move(af, move)) return;
-    sd_move *mv = af->moves[move];
-    sd_animation *ani = mv->animation;
-    
-    int kn = anim_key_get_id(key[0]);
+    int kn = move_key_get_id(key[0]);
     switch(kn) {
         case 14:
             if(kcount == 2) {
@@ -232,29 +247,18 @@ void move_get_key(sd_af_file *af, int move, const char **key, int kcount) {
 }
 
 void move_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim) {
-    if(!check_move(af, anim)) return;
     sprite_play(af, bk, scale, anim, 0);
 }
 
 void move_keylist() {
     printf("Valid field keys for Move structure:\n");
-    printf("* start_x\n");
-    printf("* start_y\n");
-    printf("* ani_header <byte #>\n");
-    printf("* overlay <overlay #>\n");
-    printf("* anim_str\n");
-    printf("* unknown\n");
-    printf("* extra_str <str #>\n");
+    anim_keylist();
     printf("* move_footer <byte #>\n");
     printf("* move_string\n");
     printf("* footer_string\n");
 }
 
-void move_info(sd_af_file *af, int move) {
-    if(!check_move(af, move)) return;
-    sd_move *mv = af->moves[move];
-    sd_animation *ani = mv->animation;
-    
+void move_info(sd_move *mv, sd_animation *ani, int move) {
     printf("Move #%d information:\n\n", move);
     
     anim_common_info(ani);
@@ -529,32 +533,44 @@ int main(int argc, char* argv[]) {
             sprite_info(sp, move->ival[0], sprite->ival[0]);
         }
     } else if(move->count > 0) {
+        // MAke sure the Move exists
+        if(!check_move(af, move->ival[0])) {
+            goto exit_2;
+        }
+        sd_move *mv = af->moves[move->ival[0]];
+        sd_animation *ani = mv->animation;
+    
+        // Handle arguments
         if(key->count > 0) {
-            /*if(value->count > 0) {*/
-                /*move_set_key(af, move->ival[0], key->sval, key->count, value->sval[0]);*/
-            /*} else {*/
-                move_get_key(af, move->ival[0], key->sval, key->count);
-            /*}*/
+            if(value->count > 0) {
+                move_set_key(mv, ani, key->sval, key->count, value->sval[0]);
+            } else {
+                move_get_key(mv, ani, key->sval, key->count);
+            }
         } else if(keylist->count > 0) {
             move_keylist();
         } else if(play->count > 0) {
             move_play(af, bk, _sc, move->ival[0]);
         } else {
-            move_info(af, move->ival[0]);
+            move_info(mv, ani, move->ival[0]);
         }
     } else if(all_moves->count > 0) {
+        sd_move *mv;
+        sd_animation *ani;
         for(int i = 0; i < 70; i++) {
             if (af->moves[i]) {
+                mv = af->moves[i];
+                ani = mv->animation;
                 if(key->count > 0) {
-                    /*if(value->count > 0) {*/
-                        /*move_set_key(af, 1, key->sval, key->count, value->sval[0]);*/
-                    /*} else {*/
+                    if(value->count > 0) {
+                        move_set_key(mv, ani, key->sval, key->count, value->sval[0]);
+                    } else {
                         printf("move %2u: ", i);
-                        move_get_key(af, i, key->sval, key->count);
-                    /*}*/
+                        move_get_key(mv, ani, key->sval, key->count);
+                    }
                 } else {
                     printf("\n");
-                    move_info(af, i);
+                    move_info(mv, ani, i);
                 }
             }
         }
