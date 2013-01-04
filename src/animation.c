@@ -37,7 +37,7 @@ void sd_animation_delete(sd_animation *anim) {
 }
 
 void sd_animation_set_anim_string(sd_animation *ani, const char *str) {
-    alloc_or_realloc((void**)&ani->anim_string, sizeof(str)+1);
+    alloc_or_realloc((void**)&ani->anim_string, strlen(str)+1);
     strcpy(ani->anim_string, str);
 }
 
