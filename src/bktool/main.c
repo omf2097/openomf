@@ -674,6 +674,7 @@ int main(int argc, char *argv[]) {
         goto exit_1;
     }
     
+    // Scaling variable
     int _sc = 1;
     if(scale->count > 0) {
         _sc = scale->ival[0];
