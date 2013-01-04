@@ -8,6 +8,32 @@
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 
+void af_info(sd_af_file *af) {
+    printf("AF File information:\n");
+    printf(" * File ID: %d\n", af->file_id);
+    printf(" * Unknown A: %d\n", af->unknown_a);
+    printf(" * Endurance: %d\n", af->endurance);
+    printf(" * Unknown B: %d\n", af->unknown_b);
+    printf(" * Power: %d\n", af->power);
+    printf(" * Fwd speed: %d\n", af->forward_speed);
+    printf(" * Rev speed: %d\n", af->reverse_speed);
+    printf(" * Jump speed: %d\n", af->jump_speed);
+    printf(" * Fall speed: %d\n", af->fall_speed);
+    printf(" * Unknown C: %d\n", af->unknown_c);
+    
+    printf(" * Animations:\n");
+    for(int i = 0; i < 70; i++) {
+        if(af->moves[i])
+            printf("   - %d\n", i);
+    }
+    
+    printf(" * Footer (hex): ");
+    for(int k = 0; k < 30; k++) {
+        printf("%d ", af->footer[k]);
+    }
+    printf("\n");
+}
+
 int main(int argc, char* argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
@@ -65,7 +91,7 @@ int main(int argc, char* argv[]) {
     }
     
     // TODO: Handle everything here
-    
+    af_info(af);
     
     // Write output file
     if(output->count > 0) {
