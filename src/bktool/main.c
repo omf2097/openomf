@@ -296,25 +296,62 @@ int anim_key_get_id(const char* key) {
 }
 
 void anim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const char *value) {
+    int tmp = 0;
     if(!check_anim(bk, anim)) return;
     sd_bk_anim *bka = bk->anims[anim];
     sd_animation *ani = bk->anims[anim]->animation;
     switch(anim_key_get_id(key[0])) {
-        case 0: bka->null = conv_ubyte(value); break;
+        case 0:  bka->null = conv_ubyte(value); break;
         case 1:  bka->chain_hit = conv_ubyte(value); break;
         case 2:  bka->chain_no_hit = conv_ubyte(value); break;
         case 3:  bka->repeat = conv_ubyte(value); break;
         case 4:  bka->probability = conv_uword(value); break;
         case 5:  bka->hazard_damage = conv_ubyte(value); break;
         case 6:  set_bk_anim_string(bka, value); break;
-        case 7:  
-            break; // TODO ani_header
+        case 7:
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < 8) {
+                    ani->unknown_a[tmp] = conv_ubyte(value);
+                } else {
+                    printf("Header index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                printf("Key ani_header requires 1 parameter!\n");
+                return;
+            }
+            break; 
         case 8:  
-            break; // TODO overlay
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < ani->overlay_count) {
+                    ani->overlay_table[tmp] = conv_udword(value);
+                } else {
+                    printf("Overlay index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                printf("Key overlay requires 1 parameter!\n");
+                return;
+            }
+            break; 
         case 9:  sd_animation_set_anim_string(ani, value); break;
-        case 10:  ani->unknown_b = conv_ubyte(value); break;
+        case 10: ani->unknown_b = conv_ubyte(value); break;
         case 11:  
-            break; // TODO extra_str
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < ani->extra_string_count) {
+                    sd_animation_set_extra_string(ani, tmp, value);
+                } else {
+                    printf("Extra string table index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                printf("Key extra_str requires 1 parameter!\n");
+                return;
+            }
+            break;
         default:
             printf("Unknown key!\n");
             return;
@@ -323,6 +360,7 @@ void anim_set_key(sd_bk_file *bk, int anim, const char **key, int kcount, const 
 }
 
 void anim_get_key(sd_bk_file *bk, int anim, const char **key, int kcount) {
+    int tmp = 0;
     if(!check_anim(bk, anim)) return;
     sd_bk_anim *bka = bk->anims[anim];
     sd_animation *ani = bk->anims[anim]->animation;
@@ -333,17 +371,56 @@ void anim_get_key(sd_bk_file *bk, int anim, const char **key, int kcount) {
         case 3: printf("%d\n", bka->repeat); break;
         case 4: printf("%d\n", bka->probability); break;
         case 5: printf("%d\n", bka->hazard_damage); break;
-        case 6: 
-            for(int i = 0; i < bka->unknown_size; i++) {
-                printf("%c", bka->unknown_data[i]);
+        case 6: printf("%s\n", bka->unknown_data); break;
+        case 7: 
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < 8) {
+                    printf("%d\n", ani->unknown_a[tmp]);
+                } else {
+                    printf("Header index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                for(int i = 0; i < 8; i++) {
+                    printf("%d ", (uint8_t)ani->unknown_a[i]);
+                }
             }
-            printf("\n");
+            break; 
+        case 8:
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < ani->overlay_count) {
+                    printf("%d\n", ani->overlay_table[tmp]);
+                } else {
+                    printf("Overlay index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                for(int i = 0; i < ani->overlay_count; i++) {
+                    printf("%d ", ani->overlay_table[i]);
+                }
+                printf("\n");
+            }
             break;
-        case 7: printf("\n"); break; // TODO
-        case 8: printf("\n"); break; // TODO
         case 9: printf("%s\n", ani->anim_string); break;
         case 10: printf("%d\n", ani->unknown_b); break;
-        case 11: printf("\n"); break; // TODO
+        case 11: 
+            if(kcount == 2) {
+                tmp = conv_ubyte(key[1]);
+                if(tmp < ani->extra_string_count) {
+                    printf("%s\n", ani->extra_strings[tmp]);
+                } else {
+                    printf("Extra string table index %d does not exist!\n", tmp);
+                    return;
+                }
+            } else {
+                for(int i = 0; i < ani->extra_string_count; i++) {
+                    printf("%s ", ani->extra_strings[i]);
+                }
+                printf("\n");
+            }
+            break;
         default:
             printf("Unknown key!\n");
     }
@@ -363,7 +440,7 @@ void anim_keylist() {
     printf("* probability\n");
     printf("* hazard_damage\n");
     printf("* bk_str\n");
-    //printf("* ani_header <byte #>\n");
+    printf("* ani_header <byte #>\n");
     printf("* overlay <overlay #>\n");
     printf("* anim_str\n");
     printf("* unknown\n");
@@ -384,16 +461,12 @@ void anim_info(sd_bk_file *bk, int anim) {
     printf(" * Repeat:          %d\n", bka->repeat);
     printf(" * Probability:     %d\n", bka->probability);
     printf(" * hazard damage:   %d\n", bka->hazard_damage);
-    printf(" * String:          ");
-    for(int i = 0; i < bka->unknown_size; i++) {
-        printf("%c", bka->unknown_data[i]);
-    }
-    printf("\n");
+    printf(" * String:          %s\n", bka->unknown_data);
     
     printf("\nCommon animation header:\n");
-    printf(" * Unknown header:  ");
+    printf(" * Animation header:  ");
     for(int i = 0; i < 8; i++) {
-        printf("%x ", (uint8_t)ani->unknown_a[i]);
+        printf("%d ", (uint8_t)ani->unknown_a[i]);
     }
     printf("\n");
     printf(" * Overlays:        %d\n", ani->overlay_count);
@@ -402,7 +475,7 @@ void anim_info(sd_bk_file *bk, int anim) {
     }
     printf(" * Sprites:         %d\n", ani->frame_count);
     printf(" * Animation str:   %s\n", ani->anim_string);
-    printf(" * Unknown:       %d\n", ani->unknown_b);
+    printf(" * Unknown:         %d\n", ani->unknown_b);
     printf(" * Extra strings:   %d\n", ani->extra_string_count);
     for(int i = 0; i < ani->extra_string_count; i++) {
         printf("   - %s\n", ani->extra_strings[i]);
@@ -429,7 +502,12 @@ void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value)
         case 3: 
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                bk->footer[tmp] = conv_ubyte(value);
+                if(tmp < 30) {
+                    bk->footer[tmp] = conv_ubyte(value);
+                } else {
+                    printf("Footer index %d does not exist!\n", tmp);
+                    return;
+                }
             } else {
                 printf("Footer value requires index parameter (eg. --key footer --key 3).\n");
                 return;
@@ -451,7 +529,11 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
         case 3: 
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                printf("%d\n", bk->footer[tmp]);
+                if(tmp < 30) {
+                    printf("%d\n", bk->footer[tmp]);
+                } else {
+                    printf("Footer index %d does not exist!\n", tmp);
+                }
             } else {
                 for(int i = 0; i < 30; i++) { printf("%d ", bk->footer[i]); } printf("\n"); 
             }
