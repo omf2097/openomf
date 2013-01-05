@@ -24,6 +24,8 @@ typedef struct sd_stringparser_t {
 sd_stringparser* sd_stringparser_create();
 void sd_stringparser_delete(sd_stringparser *parser);
 void sd_stringparser_set_cbs(sd_stringparser *parser, sd_stringparser_cbs callbacks);
+
+void sd_stringparser_reset(sd_stringparser *parser);
 int sd_stringparser_run(sd_stringparser *parser, int ticks);
 
 #endif // _STRINGPARSER_H
