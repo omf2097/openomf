@@ -22,6 +22,7 @@ FILES := \
     src/palette.c \
     src/sprite.c \
     src/error.c \
+    src/fonts.c \
     src/stringparser.c \
     src/internal/reader.c \
     src/internal/writer.c \
