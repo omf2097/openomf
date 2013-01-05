@@ -39,3 +39,11 @@ target_link_libraries(test_sounds shadowdive)
 target_link_libraries(test_roundtrip shadowdive)
 target_link_libraries(test_font shadowdive)
 target_link_libraries(test_stringparser shadowdive)
+
+FILE(GLOB H_FILES "include/shadowdive/*.h")
+INSTALL(FILES ${H_FILES} DESTINATION include/shadowdive/)
+INSTALL(TARGETS shadowdive
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
