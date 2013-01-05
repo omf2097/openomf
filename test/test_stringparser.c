@@ -55,6 +55,12 @@ int main(int argc, char **argv) {
                     sd_move *move = af->moves[i];
                     if(move) {
                         test_anim_string(parser, move->animation->anim_string);
+                        for(int j=0;j<move->animation->extra_string_count;++j) {
+                            if(move->animation->extra_strings[j]) {
+                                test_anim_string(parser, move->animation->extra_strings[j]);
+                            }
+                        }
+                        if(move->footer_string) test_anim_string(parser, move->footer_string);
                     }
                 }
                 sd_af_delete(af);
@@ -70,6 +76,11 @@ int main(int argc, char **argv) {
                     sd_bk_anim *anim = bk->anims[i];
                     if(anim) {
                         test_anim_string(parser, anim->animation->anim_string);
+                        for(int j=0;j<anim->animation->extra_string_count;++j) {
+                            if(anim->animation->extra_strings[j]) {
+                                test_anim_string(parser, anim->animation->extra_strings[j]);
+                            }
+                        }
                     }
                 }
                 sd_bk_delete(bk);
