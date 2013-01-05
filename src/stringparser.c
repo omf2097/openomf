@@ -1,6 +1,7 @@
 #include "shadowdive/stringparser.h"
 #include "shadowdive/error.h"
 
+#define _BSD_SOURCE // for strdup
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -230,7 +231,7 @@ static void sd_taglist_add_tag(tag_list *list, const tag_attribute_init *attrib)
             *plist = malloc(sizeof(tag_list));
             memset(*plist, 0, sizeof(tag_list));
         }
-        plist = &((*plist)->tag_chain[*ptag]);
+        plist = &((*plist)->tag_chain[(unsigned char)*ptag]);
     } while(*(++ptag));
     if(*plist == NULL) {
         *plist = malloc(sizeof(tag_list));
@@ -244,7 +245,7 @@ static tag_attribute *sd_taglist_find_tag(tag_list *list, const char *tag) {
     tag_list **plist = &list;
     const char *ptag = tag;
     do {
-        plist = &((*plist)->tag_chain[*ptag]);
+        plist = &((*plist)->tag_chain[(unsigned char)*ptag]);
     } while(*(++ptag));
 
     if(*plist && strcmp((*plist)->attrib.tag, tag) == 0) {
@@ -383,7 +384,7 @@ int rn_tag_attribute(tag_list *list, const char **str, tag_attribute *attrib) {
     const int N_LOOK = 3;
     const tag_attribute *scanned[N_LOOK];
     int nscanned = 0;
-    tag_list *cur=list->tag_chain[**str];
+    tag_list *cur=list->tag_chain[(unsigned char)**str];
 
     memset(scanned, 0, sizeof(scanned));
 
@@ -398,7 +399,7 @@ int rn_tag_attribute(tag_list *list, const char **str, tag_attribute *attrib) {
             }
         }
         ++(*str);
-        cur = cur->tag_chain[**str];
+        cur = cur->tag_chain[(unsigned char)**str];
     } while(**str);
 
     const char *skipto = *str;
