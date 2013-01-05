@@ -3,7 +3,7 @@
 #include "shadowdive/palette.h"
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
+#include <stdint.h>
 
 sd_vga_image* sd_vga_image_create(unsigned int w, unsigned int h) {
     sd_vga_image *img = (sd_vga_image*)malloc(sizeof(sd_vga_image));

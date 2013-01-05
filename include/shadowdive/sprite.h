@@ -1,7 +1,7 @@
 #ifndef _SPRITE_H
 #define _SPRITE_H
 
-#include <inttypes.h>
+#include <stdint.h>
 #include "shadowdive/sprite_image.h"
 
 typedef struct sd_writer_t sd_writer;
