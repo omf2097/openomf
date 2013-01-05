@@ -3,6 +3,26 @@
 #include <string.h>
 #include <libgen.h>
 
+void roundtrip_sprites(int i, sd_animation *anim, sd_palette *palette) {
+    sd_rgba_image *img;
+    printf("animation %d with %d frames\n", i, anim->frame_count);
+    for(int j = 0; j < anim->frame_count; j++) {
+        if (anim->sprites[j]->img->len == 0) {
+            printf("warning, 0 length sprite: %d-%d\n", i, j);
+            continue;
+        }
+        if (anim->sprites[j]->missing != 0) {
+            continue;
+        }
+        printf("sprite length %u", anim->sprites[j]->img->len);
+        img = sd_sprite_image_decode(anim->sprites[j]->img, palette, -1);
+        anim->sprites[j]->img = sd_sprite_image_encode(img, palette, -1);
+        printf("-> %u\n", anim->sprites[j]->img->len);
+        // TODO a setter for the sprite image would be nice, so we don't leak RAM
+    }
+}
+
+
 int main(int argc, char **argv) {
     char buf[256];
     char *ext;
@@ -40,6 +60,11 @@ int main(int argc, char **argv) {
         if(sd_bk_load(file, argv[1]) == SD_SUCCESS) {
             printf("File loaded.\n");
             printf("Writing BK file to %s.\n", argv[2]);
+            for(int i = 0; i < 50; i++) {
+                if(file->anims[i]) {
+                    roundtrip_sprites(i, file->anims[i]->animation, file->palettes[0]);
+                }
+            }
             sd_bk_save(file, argv[2]);
             sd_bk_delete(file);
         } else {
