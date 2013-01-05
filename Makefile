@@ -30,7 +30,8 @@ FILES := \
 
 TESTMAIN = test/test_main.c
 SOUNDSMAIN = test/sounds_main.c
-ROUNDTRIP = test/roundtrip.c
+ROUNDTRIP = test/roundtrip.c 
+FONTMAIN = test/fonts.c
     
 LIBDIR=lib
 BINDIR=bin
@@ -50,6 +51,7 @@ all:
 	$(CC) $(CFLAGS_DBG) -o $(BINDIR)/test $(TESTMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	$(CC) $(CFLAGS_DBG) -o $(BINDIR)/roundtrip $(ROUNDTRIP) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	$(CC) $(CFLAGS_DBG) -o $(BINDIR)/sounds $(SOUNDSMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
+	$(CC) $(CFLAGS_DBG) -o $(BINDIR)/fonts $(FONTMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	@echo "All done!"
 
 release: 
@@ -62,6 +64,7 @@ release:
 	$(CC) $(CFLAGS_REL) -o $(BINDIR)/test $(TESTMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	$(CC) $(CFLAGS_REL) -o $(BINDIR)/roundtrip $(ROUNDTRIP) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	$(CC) $(CFLAGS_REL) -o $(BINDIR)/sounds $(SOUNDSMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
+	$(CC) $(CFLAGS_REL) -o $(BINDIR)/fonts $(FONTMAIN) -I $(INCDIR)/ -lshadowdive -L $(LIBDIR)/
 	@echo "All done!"
     
 clean:
@@ -73,5 +76,7 @@ clean:
 	$(RM) $(BINDIR)/roundtrip
 	$(RM) $(BINDIR)/sounds
 	$(RM) $(BINDIR)/sounds.exe
+	$(RM) $(BINDIR)/fonts
+	$(RM) $(BINDIR)/fonts.exe
 	$(RMDIR) $(OBJDIR)
 	$(RMDIR) $(LIBDIR)
