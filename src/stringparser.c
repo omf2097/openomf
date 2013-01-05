@@ -38,12 +38,12 @@ int rn_int(int *pos, const char *str) {
     }
     
     if(opos == 0) return 0;
-    return atoi(str);
+    return atoi(buf);
 }
 
 int sd_stringparser_run(sd_stringparser *parser, unsigned long ticks) {
     // Right, so
-    // 1. Jump to the part of the string that "ticks" var hits
+    // 1. Jump to the part of the string that "ticks" variable points to
     // 2. If the part has already been handled, just return.
     //    If not, parse the string part, call callbacks, etc.
     // 3. Return 0 for success, != 0 for somekind of error (use sd_error for returning string representation)
