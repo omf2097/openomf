@@ -348,6 +348,12 @@ int rn_int(int *pos, const char *str) {
     int opos = 0;
     char buf[20];
     memset(buf, 0, 20);
+    if (str[*pos] == '-' && str[(*pos)+1] >= '0' && str[(*pos)+1] <= '9') {
+        // begins with - and is followed by a digit, must be negative number
+        buf[opos] = str[*pos];
+        (*pos)++;
+        opos++;
+    }
     while(str[*pos] >= '0' && str[*pos] <= '9') {
         buf[opos] = str[*pos];
         (*pos)++;
@@ -415,9 +421,13 @@ void rn_descriptor_marker(const char **str) {
 // skip to the next tag or frame
 int next_tag(const char **str) {
     do {
-        if(islower(**str)) return TAG_TAG;
-        else if(isupper(**str)) return TAG_FRAME;
-        else if(**str == '-') return TAG_MARKER;
+        if(islower(**str)) {
+            return TAG_TAG;
+        } else if(isupper(**str)) {
+            return TAG_FRAME;
+        } else if(**str == '-' && isupper(*((*str)+1))) {
+            return TAG_MARKER;
+        }
     } while(*((*str)++));
 
     (*str)--;
