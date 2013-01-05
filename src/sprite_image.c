@@ -33,7 +33,7 @@ sd_sprite_image* sd_sprite_image_encode(sd_rgba_image *img, sd_palette *pal, int
 }
 
 sd_rgba_image* sd_sprite_image_decode(sd_sprite_image *img, sd_palette *pal, int remapping) {
-    sd_rgba_image *rgba = sd_rgba_image_create(img->w, img->h);
+    sd_rgba_image *rgba = img->len>0 ? sd_rgba_image_create(img->w, img->h) : sd_rgba_image_create(1, 1);
     uint16_t x = 0;
     uint16_t y = 0;
     int i = 0;
