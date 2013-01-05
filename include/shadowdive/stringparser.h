@@ -1,7 +1,7 @@
 #ifndef _STRINGPARSER_H
 #define _STRINGPARSER_H
 
-typedef void(*sd_stringparser_cb_t)(struct sd_stringparser_t *parser, int param);
+typedef void(*sd_stringparser_cb_t)(int param);
 
 enum {
     SD_BLEND_ADDITIVE = 0,

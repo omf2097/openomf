@@ -385,7 +385,7 @@ int sd_stringparser_run(sd_stringparser *parser, unsigned long *ticks) {
                     int pos = 0;
                     int param = rn_int(&pos, str); 
                     str += pos;
-                    if(attrib.callback) attrib.callback(parser, param);
+                    if(attrib.callback) attrib.callback(param);
                 }
             } else if(type == TAG_FRAME) {
                 // a frame
