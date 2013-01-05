@@ -12,7 +12,6 @@ typedef struct sd_stringparser_cbs_t {
 } sd_stringparser_cbs;
 
 typedef struct sd_stringparser_t {
-    unsigned long ticks;
     char *string;
     sd_stringparser_cbs cbs;
     
@@ -26,6 +25,6 @@ void sd_stringparser_delete(sd_stringparser *parser);
 void sd_stringparser_set_cbs(sd_stringparser *parser, sd_stringparser_cbs callbacks);
 
 void sd_stringparser_reset(sd_stringparser *parser);
-int sd_stringparser_run(sd_stringparser *parser, int ticks);
+int sd_stringparser_run(sd_stringparser *parser, unsigned long ticks);
 
 #endif // _STRINGPARSER_H
