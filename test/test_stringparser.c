@@ -4,20 +4,30 @@
 
 void test_anim_string(sd_stringparser *parser, const char *str) {
     // execute anim and print result
-    unsigned long ticks = 0;
-    sd_stringparser_set_string(parser, str);
-    while(sd_stringparser_run(parser, &ticks) == 0)
-    {
+    unsigned int ticks = 0;
+    char err_msg[100];
+    int err = sd_stringparser_set_string(parser, str);
+    if(err) {
+        sd_get_error(err_msg, err);
+        printf("Animation string parser error: %s (%s)\n", err_msg, str);
+    } else {
+        sd_stringparser_run(parser, ticks);
+        printf("%s passed\n", str);
     }
-    printf("%s passed\n", str);
 }
+
 void test_broken_string(sd_stringparser *parser) {
-    unsigned long ticks = 0;
-    sd_stringparser_set_string(parser, "x+4zcubs21l50zp");
-    while(sd_stringparser_run(parser, &ticks) == 0)
-    {
+    unsigned int ticks = 0;
+    char err_msg[100];
+    const char *broken_string = "x+4zcubs21l50zp";
+    int err = sd_stringparser_set_string(parser, broken_string);
+    if(err) {
+        sd_get_error(err_msg, err);
+        printf("Animation string parser error: %s (%s)\n", err_msg, broken_string);
+    } else {
+        sd_stringparser_run(parser, ticks);
+        printf("broken string test passed\n\n");
     }
-    printf("broken string test passed\n\n");
 }
 
 int main(int argc, char **argv) {

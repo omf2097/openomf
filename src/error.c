@@ -15,5 +15,8 @@ void sd_get_error(char *message, int errorcode) {
     case SD_FILE_PARSE_ERROR:
         strcpy(message, "Parser error");
         break;
+    case SD_ANIM_INVALID_STRING:
+        strcpy(message, "Invalid animation string");
+        break;
     }
 }
