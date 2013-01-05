@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(omf2097-tools)
+project(omf2097-tools C)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 find_package(SDL2)
@@ -8,10 +8,9 @@ find_package(argtable2)
 find_package(shadowdive)
 find_package(dumb)
 
-set(CMAKE_C_FLAGS "-Wall -std=c99")
-set(CMAKE_C_FLAGS_DEBUG "-ggdb")
-set(CMAKE_C_FLAGS_RELEASE "-O2 -march=i686")
-add_subdirectory(src)
+set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686")
 
 add_executable(bktool src/bktool/main.c src/shared/animation_misc.c src/shared/conversions.c)
 add_executable(aftool src/aftool/main.c src/shared/animation_misc.c src/shared/conversions.c)
