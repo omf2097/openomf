@@ -24,15 +24,18 @@ int main(int argc, char **argv) {
             return 1;
         }
         
-        for(int y = 0; y < 8; y++) {
-            for(int x = 0; x < 8; x++) {
-                if(big->chars[n].data[y] & (1 << x)) {
-                    printf("#");
-                } else {
-                    printf(" ");
-                }
+        uint64_t ch = 0;
+        int w = 8;
+        memcpy(&ch, big->chars[n].data, w);
+        for(int i = 0; i < 8*w; i++) {
+            if(ch & (1 << (i+1))) {
+                printf("#");
+            } else {
+                printf(" ");
             }
-            printf("\n");
+            if(i % w == 0 && i != 0) {
+                printf("\n");
+            }
         }
         
         sd_font_big_delete(big);
@@ -45,6 +48,19 @@ int main(int argc, char **argv) {
             return 1;
         }
         
+        uint64_t ch = 0;
+        int w = 6;
+        memcpy(&ch, small->chars[n].data, w);
+        for(int i = 0; i < 8*w; i++) {
+            if(ch & (1 << (i+1))) {
+                printf("#");
+            } else {
+                printf(" ");
+            }
+            if(i % w == 0 && i != 0) {
+                printf("\n");
+            }
+        }
         
         sd_font_small_delete(small);
     }

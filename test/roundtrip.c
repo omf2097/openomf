@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     if (strncmp(ext, ".AF", 3) == 0) {
         sd_af_file *file = sd_af_create();
         printf("Loading AF file: %s\n", argv[1]);
-        sd_bk_file *bk = sd_bk_create();
+        //sd_bk_file *bk = sd_bk_create();
         /*sd_bk_load(bk, "/home/andrew/DOS/OMF/ARENA0.BK");*/
         if (sd_af_load(file, argv[1]) == SD_SUCCESS) {
             printf("File loaded.\n");
