@@ -5,8 +5,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-#include <stdio.h>
-#include <string.h>
 
 sd_sprite_image* sd_sprite_image_create(unsigned int w, unsigned int h, unsigned int len) {
     sd_sprite_image *img = (sd_sprite_image*)malloc(sizeof(sd_sprite_image));
@@ -25,16 +23,13 @@ void sd_sprite_image_delete(sd_sprite_image *img, int missing) {
     free(img);
 }
 
-char color_to_palette_index(uint8_t r, uint8_t g, uint8_t b, sd_palette *pal) {
-    /*for(int i = 255; i >= 0; i--) {*/
-    for(int i = 0; i < 256; i++) {
+unsigned char color_to_palette_index(uint8_t r, uint8_t g, uint8_t b, sd_palette *pal) {
+    /*for(unsigned int i = 255; i >= 0; i--) {*/
+    for(unsigned int i = 0; i < 256; i++) {
         uint8_t red = pal->data[i][0] & 0xff;
         uint8_t blue = pal->data[i][1] & 0xff;
         uint8_t green = pal->data[i][2] & 0xff;
         if (red == r && blue == b && green == g) {
-            /*if (i != 63) {*/
-                /*printf("Red %u == %u; blue %u == %u; green %u == %u -- %u\n", red, r, blue, b, green, g, i);*/
-            /*}*/
             return i;
         }
     }
@@ -50,7 +45,6 @@ sd_sprite_image* sd_sprite_image_encode(sd_rgba_image *img, sd_palette *pal, int
     int i = 0;
     int rowlen = 0;
     uint16_t c;
-    printf("writing Y as %d at %d\n", 0, i);
     // always initialize Y to 0
     buf[i++] = 2;
     buf[i++] = 0;
@@ -68,31 +62,23 @@ sd_sprite_image* sd_sprite_image_encode(sd_rgba_image *img, sd_palette *pal, int
             int16_t y = (pos/4) / img->w;
             if (y != lasty) {
                 // new row
-                printf("writing Y as %d at %d\n", y, i);
                 c = (y*4)+2;
                 // write little endian unsigned word
                 buf[i++] = c & 0x00ff;
                 buf[i++] = (c & 0xff00) >> 8;
-                if (!rowlen) {
-                    printf("rowstart0 is %d\n", i);
-                    rowstart = i;
-                    i+=2;
-                }
-                lasty=y;
             }
-            if (x != lastx+1) {
+            if (x != lastx+1 || y != lasty) {
+                // if Y changes, write out X too
                 // dont write X coordinate if we just wrote a row and the nex X coordinate is 0
                 // because the decoder resets X coordinate to 0 after each row
                 if (x != 0) {
                     // we skipped some columns
-                    printf("writing X as %d at %d\n", x, i);
                     c = (x*4);
                     // write little endian unsigned word
                     buf[i++] = c & 0x00ff;
                     buf[i++] = (c & 0xff00) >> 8;
                 }
                 if (!rowlen) {
-                    printf("rowstart1 is %d\n", i);
                     rowstart = i;
                     i+=2;
                 }
@@ -103,28 +89,23 @@ sd_sprite_image* sd_sprite_image_encode(sd_rgba_image *img, sd_palette *pal, int
                     // go back and write in the width of the row of pixels
                     c = (rowlen*4)+1;
                     // place to write is at i - rowlen
-                    printf("i is %d, rowlen is %d, writing R at %d\n", i, rowlen, rowstart);
                     // write little endian unsigned word
                     buf[rowstart] = c & 0x00ff;
                     buf[rowstart+1] = (c & 0xff00) >> 8;
                     rowlen = 0;
                     lastx = -1;
-                    printf("rowstart2 is %d\n", i);
                     rowstart = i;
                     i+=2;
                 }
             } else if (lasty == 0 && x == 0) {
-                printf("rowstart3 is %d\n", i);
                 rowstart = i;
                 i+=2;
             }
-
-
             lastx=x;
+            lasty=y;
             // write byte
             buf[i++] = color_to_palette_index(r, g, b, pal);
             rowlen++;
-            /*printf("rgba at pos %u X: %u Y: %u %u %u %u %u\n", pos, x, y, r, g, b, a);*/
         }
     }
     // update the length of the last row
@@ -132,13 +113,11 @@ sd_sprite_image* sd_sprite_image_encode(sd_rgba_image *img, sd_palette *pal, int
         // go back and write in the width of the row of pixels
         c = (rowlen*4)+1;
         // place to write is at i - rowlen
-        printf("LAST i is %d, rowlen is %d, writing R at %d\n", i, rowlen, rowstart);
         // write little endian unsigned word
         buf[rowstart] = c & 0x00ff;
         buf[rowstart+1] = (c & 0xff00) >> 8;
     }
 
-    printf("writing EOF at %d\n", i);
     // End of sprite marker, a WORD of value 7
     buf[i++] = 7; 
     buf[i++] = 0;
@@ -166,14 +145,11 @@ sd_rgba_image* sd_sprite_image_decode(sd_sprite_image *img, sd_palette *pal, int
         switch(op) {
             case 0:
                 x = data;
-                printf("X is %u @ %d\n", x, i-2);
                 break;
             case 2:
                 y = data;
-                printf("Y is %u @ %d\n", y, i-2);
                 break;
             case 1:
-                printf("R is %u @ %d\n", data, i-2);
                 while(data > 0) {
                     uint8_t b = img->data[i];
                     int pos = ((y * img->w) + x) * 4;
@@ -194,7 +170,6 @@ sd_rgba_image* sd_sprite_image_decode(sd_sprite_image *img, sd_palette *pal, int
                 x = 0;
                 break;
             case 3:
-                printf("EOF @ %d\n", i-2);
                 assert(i == img->len);
                 break;
         }

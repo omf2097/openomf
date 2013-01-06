@@ -55,15 +55,16 @@ int main(int argc, char **argv) {
         sd_af_file *file = sd_af_create();
         printf("Loading AF file: %s\n", argv[1]);
         sd_bk_file *bk = sd_bk_create();
-        sd_bk_load(bk, "/home/andrew/DOS/OMF/ARENA0.BK");
+        /*sd_bk_load(bk, "/home/andrew/DOS/OMF/ARENA0.BK");*/
         if (sd_af_load(file, argv[1]) == SD_SUCCESS) {
             printf("File loaded.\n");
             printf("Writing AF file to %s.\n", argv[2]);
-            for(int i = 0; i < 70; i++) {
-                if(file->moves[i]) {
-                    roundtrip_sprites(i, file->moves[i]->animation, bk->palettes[0]);
-                }
-            }
+            // Need a palette handy to convert sprites
+            /*for(int i = 0; i < 70; i++) {*/
+                /*if(file->moves[i]) {*/
+                    /*roundtrip_sprites(i, file->moves[i]->animation, bk->palettes[0]);*/
+                /*}*/
+            /*}*/
             sd_af_save(file, argv[2]);
             sd_af_delete(file);
         } else {
