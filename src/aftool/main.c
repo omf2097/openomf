@@ -224,7 +224,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             if(tmp < 21) {
                 memcpy(move->move_string, value, tmp);
             } else {
-                printf("String is too long! Maximum size for move_string is 21 characters!\n", tmp);
+                printf("String is too long! (%u bytes) Maximum size for move_string is 21 characters!\n", tmp);
                 return;
             }
             break;

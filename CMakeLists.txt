@@ -8,9 +8,9 @@ find_package(argtable2)
 find_package(shadowdive)
 find_package(dumb)
 
-set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb")
-set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686")
+set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686 -Werror")
 
 add_executable(bktool src/bktool/main.c src/shared/animation_misc.c src/shared/conversions.c)
 add_executable(aftool src/aftool/main.c src/shared/animation_misc.c src/shared/conversions.c)
