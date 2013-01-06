@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 typedef struct sd_writer_t {
     FILE *handle;
@@ -46,6 +47,12 @@ int sd_write_buf(sd_writer *writer, char *buf, int len) {
         return 0;
     }
     return 1;
+}
+
+int sd_write_fprintf(sd_writer *writer, const char *format, ...) {
+    va_list argp;
+    va_start(argp, format);
+    return vfprintf(writer->handle, format, argp);
 }
 
 void sd_write_ubyte(sd_writer *writer, uint8_t data) {

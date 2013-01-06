@@ -80,6 +80,7 @@ int main(int argc, char **argv) {
         if(sd_bk_load(file, argv[1]) == 0) {
             printf("File loaded.\n");
             printf("ID: %d\n", file->file_id);
+            sd_palette_to_gimp_palette("palette.gpl", file->palettes[0]);
             sd_rgba_image *img;
             for (int i = 0; i < file->num_palettes; i++) {
                 printf("drawing background with pallete %d to background-%d.ppm\n", i, i);
