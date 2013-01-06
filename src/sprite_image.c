@@ -27,8 +27,8 @@ unsigned char color_to_palette_index(uint8_t r, uint8_t g, uint8_t b, sd_palette
     /*for(unsigned int i = 255; i >= 0; i--) {*/
     for(unsigned int i = 0; i < 256; i++) {
         uint8_t red = pal->data[i][0] & 0xff;
-        uint8_t blue = pal->data[i][1] & 0xff;
-        uint8_t green = pal->data[i][2] & 0xff;
+        uint8_t green = pal->data[i][1] & 0xff;
+        uint8_t blue = pal->data[i][2] & 0xff;
         if (red == r && blue == b && green == g) {
             return i;
         }
