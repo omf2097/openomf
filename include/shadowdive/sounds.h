@@ -1,5 +1,5 @@
-#ifndef _SOUNDS_H
-#define _SOUNDS_H
+#ifndef _SD_SOUNDS_H
+#define _SD_SOUNDS_H
 
 typedef struct sd_writer_t sd_writer;
 typedef struct sd_reader_t sd_reader;
@@ -20,4 +20,4 @@ sd_sound_file* sd_sounds_create();
 void sd_sounds_delete(sd_sound_file *sf);
 void sd_sound_to_au(sd_sound *sound, const char *filename);
 
-#endif // _SOUNDS_H
+#endif // _SD_SOUNDS_H

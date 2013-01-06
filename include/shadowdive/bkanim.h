@@ -1,5 +1,5 @@
-#ifndef _BK_ANIMS
-#define _BK_ANIMS
+#ifndef _SD_BK_ANIMS
+#define _SD_BK_ANIMS
 
 #include <stdint.h>
 
@@ -26,4 +26,4 @@ void sd_bk_anim_save(sd_writer *writer, sd_bk_anim *bka);
 
 void set_bk_anim_string(sd_bk_anim *bka, const char *data);
 
-#endif // _BK_ANIMS
+#endif // _SD_BK_ANIMS

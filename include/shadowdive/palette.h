@@ -1,5 +1,5 @@
-#ifndef _PALETTE_H
-#define _PALETTE_H
+#ifndef _SD_PALETTE_H
+#define _SD_PALETTE_H
 
 typedef struct sd_reader_t sd_reader;
 typedef struct sd_writer_t sd_writer;
@@ -14,4 +14,4 @@ void sd_palette_to_rgb(sd_palette *palette);
 int sd_palette_load(sd_reader *reader, sd_palette *palette);
 void sd_palette_save(sd_writer *writer, sd_palette *palette);
 
-#endif // _PALETTE_H
+#endif // _SD_PALETTE_H

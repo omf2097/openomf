@@ -1,5 +1,5 @@
-#ifndef _ERROR_H
-#define _ERROR_H
+#ifndef _SD_ERROR_H
+#define _SD_ERROR_H
 
 #define SD_SUCCESS 0
 #define SD_FILE_OPEN_ERROR 1
@@ -9,4 +9,4 @@
 
 void sd_get_error(char *message, int errorcode);
 
-#endif // _ERROR_H
+#endif // _SD_ERROR_H

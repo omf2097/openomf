@@ -23,6 +23,7 @@ add_library(shadowdive
     src/sprite_image.c
     src/stringparser.c
     src/vga_image.c
+    src/language.c
     src/internal/reader.c
     src/internal/writer.c
     src/internal/helpers.c

@@ -1,5 +1,5 @@
-#ifndef _BK_H
-#define _BK_H
+#ifndef _SD_BK_H
+#define _SD_BK_H
 
 #include <stdint.h>
 
@@ -46,4 +46,4 @@ int sd_bk_save(sd_bk_file *bk, const char* filename);
   */
 void sd_bk_delete(sd_bk_file *bk);
 
-#endif // _BK_H
+#endif // _SD_BK_H

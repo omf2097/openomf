@@ -1,5 +1,5 @@
-#ifndef _WRITER_H
-#define _WRITER_H
+#ifndef _SD_WRITER_H
+#define _SD_WRITER_H
 
 #include <stdint.h>
 
@@ -36,4 +36,4 @@ void sd_write_byte(sd_writer *writer, int8_t data);
 void sd_write_word(sd_writer *writer, int16_t data);
 void sd_write_dword(sd_writer *writer, int32_t data);
 
-#endif // _WRITER_H
+#endif // _SD_WRITER_H

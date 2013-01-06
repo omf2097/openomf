@@ -1,5 +1,5 @@
-#ifndef _AF_H
-#define _AF_H
+#ifndef _SD_AF_H
+#define _SD_AF_H
 
 #include <stdint.h>
 
@@ -42,4 +42,4 @@ int sd_af_save(sd_af_file *af, const char* filename);
   */
 void sd_af_delete(sd_af_file *af);
 
-#endif // _AF_H
+#endif // _SD_AF_H

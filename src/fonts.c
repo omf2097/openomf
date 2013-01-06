@@ -33,8 +33,7 @@ int sd_font_load(sd_font *font, const char *file, unsigned int font_h) {
     return SD_SUCCESS;
 }
 
-sd_rgba_image* sd_font_decode(sd_font *font, uint8_t ch, uint8_t r, uint8_t g, uint8_t b) {
-    sd_rgba_image *o = sd_rgba_image_create(8, font->h);
+int sd_font_decode(sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8_t g, uint8_t b) {
     int t = 0;
     for(int i = 0; i < font->h; i++) {
         for(int k = 7; k >= 0; k--) {
@@ -51,5 +50,5 @@ sd_rgba_image* sd_font_decode(sd_font *font, uint8_t ch, uint8_t r, uint8_t g, u
             }
         }
     }
-    return o;
+    return 0;
 }

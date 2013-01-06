@@ -1,5 +1,5 @@
-#ifndef ANIMATION_H
-#define ANIMATION_H
+#ifndef _SD_ANIMATION_H
+#define _SD_ANIMATION_H
 
 #include "shadowdive/sprite.h"
 
@@ -35,4 +35,4 @@ void sd_animation_save(sd_writer *writer, sd_animation *anim);
 void sd_animation_set_anim_string(sd_animation *animation, const char *str);
 void sd_animation_set_extra_string(sd_animation *animation, int num, const char *str);
 
-#endif // _ANIMATION_H
+#endif // _SD_ANIMATION_H

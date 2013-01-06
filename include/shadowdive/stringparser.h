@@ -1,5 +1,5 @@
-#ifndef _STRINGPARSER_H
-#define _STRINGPARSER_H
+#ifndef _SD_STRINGPARSER_H
+#define _SD_STRINGPARSER_H
 
 /* Tags for callbacks */
 #define SD_CB_MUSIC "smo"
@@ -44,4 +44,4 @@ void sd_stringparser_reset(sd_stringparser *parser);
 int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks);
 
 
-#endif // _STRINGPARSER_H
+#endif // _SD_STRINGPARSER_H

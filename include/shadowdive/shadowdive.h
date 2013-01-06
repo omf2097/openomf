@@ -1,5 +1,5 @@
-#ifndef _SHADOWDIVE_H
-#define _SHADOWDIVE_H
+#ifndef _SD_SHADOWDIVE_H
+#define _SD_SHADOWDIVE_H
 
 #include "shadowdive/bk.h"
 #include "shadowdive/af.h"
@@ -15,5 +15,6 @@
 #include "shadowdive/rgba_image.h"
 #include "shadowdive/stringparser.h"
 #include "shadowdive/fonts.h"
+#include "shadowdive/language.h"
 
-#endif // _SHADOWDIVE_H
+#endif // _SD_SHADOWDIVE_H

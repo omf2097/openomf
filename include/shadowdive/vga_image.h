@@ -1,5 +1,5 @@
-#ifndef _VGA_IMAGE
-#define _VGA_IMAGE
+#ifndef _SD_VGA_IMAGE
+#define _SD_VGA_IMAGE
 
 typedef struct sd_rgba_image_t sd_rgba_image;
 typedef struct sd_palette_t sd_palette;
@@ -16,4 +16,4 @@ void sd_vga_image_delete(sd_vga_image *img);
 sd_vga_image* sd_vga_image_encode(sd_rgba_image *img, sd_palette *pal, int remapping);
 sd_rgba_image* sd_vga_image_decode(sd_vga_image *img, sd_palette *pal, int remapping);
 
-#endif // _VGA_IMAGE
+#endif // _SD_VGA_IMAGE

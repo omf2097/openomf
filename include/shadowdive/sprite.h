@@ -1,5 +1,5 @@
-#ifndef _SPRITE_H
-#define _SPRITE_H
+#ifndef _SD_SPRITE_H
+#define _SD_SPRITE_H
 
 #include <stdint.h>
 #include "shadowdive/sprite_image.h"
@@ -20,4 +20,4 @@ void sd_sprite_delete(sd_sprite *sprite);
 int sd_sprite_load(sd_reader *reader, sd_sprite *sprite);
 void sd_sprite_save(sd_writer *writer, sd_sprite *sprite);
 
-#endif // _SPRITE_H
+#endif // _SD_SPRITE_H

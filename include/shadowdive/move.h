@@ -1,5 +1,5 @@
-#ifndef MOVE_H
-#define MOVE_H
+#ifndef _SD_MOVE_H
+#define _SD_MOVE_H
 
 typedef struct sd_writer_t sd_writer;
 typedef struct sd_reader_t sd_reader;
@@ -20,4 +20,4 @@ void sd_move_save(sd_writer *writer, sd_move *move);
 void sd_move_set_animation(sd_move *move, sd_animation *animation);
 void sd_move_set_footer_string(sd_move *move, const char *str);
 
-#endif // _ANIMATION_H
+#endif // _SD_MOVE_H

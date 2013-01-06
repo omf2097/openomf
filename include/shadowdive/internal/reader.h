@@ -1,5 +1,5 @@
-#ifndef _READER_H
-#define _READER_H
+#ifndef _SD_READER_H
+#define _SD_READER_H
 
 #include <stdint.h>
 
@@ -57,4 +57,4 @@ int sd_match(sd_reader *reader, char *buf, unsigned int nbytes);
   */
 void sd_skip(sd_reader *reader, unsigned int nbytes);
 
-#endif // _READER_H
+#endif // _SD_READER_H
