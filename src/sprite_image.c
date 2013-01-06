@@ -23,19 +23,6 @@ void sd_sprite_image_delete(sd_sprite_image *img, int missing) {
     free(img);
 }
 
-unsigned char color_to_palette_index(uint8_t r, uint8_t g, uint8_t b, sd_palette *pal) {
-    /*for(unsigned int i = 255; i >= 0; i--) {*/
-    for(unsigned int i = 0; i < 256; i++) {
-        uint8_t red = pal->data[i][0] & 0xff;
-        uint8_t green = pal->data[i][1] & 0xff;
-        uint8_t blue = pal->data[i][2] & 0xff;
-        if (red == r && blue == b && green == g) {
-            return i;
-        }
-    }
-    return 0;
-}
-
 sd_sprite_image* sd_sprite_image_encode(sd_rgba_image *img, sd_palette *pal, int remapping) {
     int lastx = -1;
     int lasty = 0;
@@ -104,7 +91,7 @@ sd_sprite_image* sd_sprite_image_encode(sd_rgba_image *img, sd_palette *pal, int
             lastx=x;
             lasty=y;
             // write byte
-            buf[i++] = color_to_palette_index(r, g, b, pal);
+            buf[i++] = sd_palette_resolve_color(r, g, b, pal);
             rowlen++;
         }
     }

@@ -77,6 +77,8 @@ int main(int argc, char **argv) {
         if(sd_bk_load(file, argv[1]) == SD_SUCCESS) {
             printf("File loaded.\n");
             printf("Writing BK file to %s.\n", argv[2]);
+            sd_rgba_image *img = sd_vga_image_decode(file->background, file->palettes[0], -1);
+            file->background = sd_vga_image_encode(img, file->palettes[0], -1);
             for(int i = 0; i < 50; i++) {
                 if(file->anims[i]) {
                     roundtrip_sprites(i, file->anims[i]->animation, file->palettes[0]);

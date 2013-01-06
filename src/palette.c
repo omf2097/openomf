@@ -16,6 +16,19 @@ int sd_palette_load(sd_reader *reader, sd_palette *palette) {
     return SD_SUCCESS;
 }
 
+unsigned char sd_palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, sd_palette *pal) {
+    /*for(unsigned int i = 255; i >= 0; i--) {*/
+    for(unsigned int i = 0; i < 256; i++) {
+        uint8_t red = pal->data[i][0] & 0xff;
+        uint8_t green = pal->data[i][1] & 0xff;
+        uint8_t blue = pal->data[i][2] & 0xff;
+        if (red == r && blue == b && green == g) {
+            return i;
+        }
+    }
+    return 0;
+}
+
 void sd_palette_to_gimp_palette(char *filename, sd_palette *palette) {
     sd_writer *writer = sd_writer_open(filename);
     char *d;

@@ -22,6 +22,18 @@ void sd_vga_image_delete(sd_vga_image *img) {
 
 sd_vga_image* sd_vga_image_encode(sd_rgba_image *img, sd_palette *pal, int remapping) {
     sd_vga_image *vga = sd_vga_image_create(img->w, img->h);
+    unsigned int rgb_size = (img->w * img->h * 4);
+    unsigned char palette_index;
+
+    for(int pos = 0; pos <= rgb_size; pos+= 4) {
+        uint8_t r = img->data[pos];
+        uint8_t g = img->data[pos+1];
+        uint8_t b = img->data[pos+2];
+        // ignore alpha channel, VGA images have no transparency
+        palette_index = sd_palette_resolve_color(r, g, b, pal);
+        vga->data[pos/4] = palette_index;
+    }
+
     return vga;
 }
 
