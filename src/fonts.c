@@ -47,7 +47,7 @@ int sd_font_small_load(sd_font_small *font, const char *file) {
     }
     
     for(int i = 0; i < 224; i++) {
-        sd_read_buf(r, font->chars[i].data, 8);
+        sd_read_buf(r, font->chars[i].data, 6);
         if(!sd_reader_ok(r)) {
             sd_reader_close(r);
             return SD_FILE_PARSE_ERROR;
