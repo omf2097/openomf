@@ -16,6 +16,23 @@ int sd_palette_load(sd_reader *reader, sd_palette *palette) {
     return SD_SUCCESS;
 }
 
+void sd_palette_to_gimp_palette(char *filename, sd_palette *palette) {
+    sd_writer *writer = sd_writer_open(filename);
+    char *d;
+
+    sd_write_fprintf(writer, "GIMP Palette\n");
+    sd_write_fprintf(writer, "Name: %s\n", filename);
+    sd_write_fprintf(writer, "#\n");
+    for (int i = 0; i < 255; i++) {
+        d = palette->data[i];
+        unsigned char r = d[0] & 0xff;
+        unsigned char g = d[1] & 0xff;
+        unsigned char b = d[2] & 0xff;
+        sd_write_fprintf(writer, "%3u %3u %3u\n", r, g, b);
+    }
+    return;
+}
+
 void sd_palette_save(sd_writer *writer, sd_palette *palette) {
     char *d;
     for(int i = 0; i < 256; i++) {
