@@ -35,5 +35,6 @@ int main(int argc, char *argv[]) {
     SDL_Quit();
     dumb_exit();
     DEBUG("Graceful exit.");
+    log_close();
     return 0;
 }
