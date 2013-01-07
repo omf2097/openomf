@@ -43,5 +43,9 @@ void sd_stringparser_reset(sd_stringparser *parser);
 /* Run the animation at "ticks", may return error */
 int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks);
 
+int sd_stringparser_prettyprint_frame(sd_stringparser *parser, unsigned int frame);
+
+int sd_stringparser_prettyprint(sd_stringparser *parser);
+
 
 #endif // _SD_STRINGPARSER_H

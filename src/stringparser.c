@@ -576,3 +576,33 @@ int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks) {
 
     return 0;
 }
+
+int sd_stringparser_prettyprint_frame(sd_stringparser *parser, unsigned int frame) {
+    unsigned int frames = ((frame_list*)parser->frame_list)->num_frames;
+    if (frame < frames) {
+        anim_frame f = ((frame_list*)parser->frame_list)->frames[frame];
+        printf("Sprite %c for %u ticks with %d tags\n", f.frame_letter, f.duration, f.num_tags);
+        for (int i = 0; i < f.num_tags; i++) {
+            tag_attribute *tag_attrib = sd_taglist_find_tag((tag_list*)parser->tag_list, f.tags[i]);
+            if (tag_attrib) {
+                char * desc = tag_attrib->tag_info->description ? tag_attrib->tag_info->description : "Unknown";
+                if (tag_attrib->tag_info->has_param) {
+                    printf("\t Tag %s, value %d, description %s\n", f.tags[i], f.tag_params[i], desc);
+                } else {
+                    printf("\t Tag %s, description %s\n", f.tags[i], desc);
+                }
+            }
+        }
+        return 0;
+    }
+    return 1;
+}
+
+int sd_stringparser_prettyprint(sd_stringparser *parser) {
+    unsigned int frames = ((frame_list*)parser->frame_list)->num_frames;
+    printf("Animation string contains %d frames\n", frames);
+    for (int i = 0; i < frames; i++) {
+        sd_stringparser_prettyprint_frame(parser, i);
+    }
+    return 0;
+}

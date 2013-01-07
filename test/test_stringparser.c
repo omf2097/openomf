@@ -12,6 +12,7 @@ void test_anim_string(sd_stringparser *parser, const char *str) {
         printf("Animation string parser error: %s (%s)\n", err_msg, str);
     } else {
         sd_stringparser_run(parser, ticks);
+        sd_stringparser_prettyprint(parser);
         printf("%s passed\n", str);
     }
 }
