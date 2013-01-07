@@ -6,19 +6,20 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <stdio.h>
 
 // private structs
-typedef struct tag_attribute_t {
-    const char *tag;
-    int has_param;
-    sd_stringparser_cb_t callback;
-    void *data;
-} tag_attribute;
-
 typedef struct tag_attribute_init_t {
     const char *tag;
     int has_param;
+    char *description;
 } tag_attribute_init;
+
+typedef struct tag_attribute_t {
+    tag_attribute_init *tag_info;
+    sd_stringparser_cb_t callback;
+    void *data;
+} tag_attribute;
 
 typedef struct tag_list_t {
     // traverse tag_chain to find whether a given tag is valid or not
@@ -43,7 +44,7 @@ typedef struct anim_frame_t {
 } anim_frame;
 
 typedef struct frame_list_t {
-    int num_frames;
+    unsigned int num_frames;
     anim_frame *frames;
 
     int current_frame;
@@ -58,169 +59,168 @@ enum {
 
 // list of valid tags and whether it has param or not
 const tag_attribute_init tags[] = {
-    {"aa", 0},
-    {"ab", 0},
-    {"ac", 0},
-    {"ad", 0},
-    {"ae", 0}, 
-    {"af", 0},
-    {"ag", 0},
-    {"ai", 0},
-    {"am", 0},
-    {"ao", 0},
-    {"as", 0},
-    {"at", 0},
-    {"aw", 0},
-    {"ax", 0},
-    {"ar", 0},
-    {"al", 0},
-         
-    {"b1", 0},
-    {"b2", 0},
-    {"bb", 1},
-    {"be", 0},
-    {"bf", 1},
-    {"bh", 0},
-    {"bl", 1},
-    {"bm", 1},
-    {"bj", 1},
-    {"bs", 1},
-    {"bu", 0},
-    {"bw", 0},
-    {"bx", 0},
+    {"aa", 0, NULL},
+    {"ab", 0, NULL},
+    {"ac", 0, NULL},
+    {"ad", 0, NULL},
+    {"ae", 0, NULL}, 
+    {"af", 0, NULL},
+    {"ag", 0, NULL},
+    {"ai", 0, NULL},
+    {"am", 0, NULL},
+    {"ao", 0, NULL},
+    {"as", 0, NULL},
+    {"at", 0, NULL},
+    {"aw", 0, NULL},
+    {"ax", 0, NULL},
+    {"ar", 0, NULL},
+    {"al", 0, NULL},
 
-    
-    {"bpd", 1},
-    {"bps", 1},
-    {"bpn", 1},
-    {"bpf", 0},
-    {"bpp", 1},
-    {"bpb", 1},
-    {"bpo", 0},
-    {"bz",  0},
+    {"b1", 0, NULL},
+    {"b2", 0, NULL},
+    {"bb", 1, NULL},
+    {"be", 0, NULL},
+    {"bf", 1, "Blend finish"},
+    {"bh", 0, NULL},
+    {"bl", 1, NULL},
+    {"bm", 1, NULL},
+    {"bj", 1, NULL},
+    {"bs", 1, "Blend start"},
+    {"bu", 0, NULL},
+    {"bw", 0, NULL},
+    {"bx", 0, NULL},
 
-    {"ba", 1},
-    {"bc", 1},
-    {"bd", 0},
-    {"bg", 0},
-    {"bi", 1},
-    {"bk", 1},
-    {"bn", 0},
-    {"bo", 1},
-    {"br", 0},
-    {"bt", 0},
-    {"by", 0},
+    {"bpd", 1, NULL},
+    {"bps", 1, NULL},
+    {"bpn", 1, NULL},
+    {"bpf", 0, NULL},
+    {"bpp", 1, NULL},
+    {"bpb", 1, NULL},
+    {"bpo", 0, NULL},
+    {"bz",  0, NULL},
 
-    {"cf", 0},
-    {"cg", 0},
-    {"cl", 0},
-    {"cp", 0},
-    {"cw", 0},
-    {"cx", 1},
-    {"cy", 1},
+    {"ba", 1, NULL},
+    {"bc", 1, NULL},
+    {"bd", 0, NULL},
+    {"bg", 0, NULL},
+    {"bi", 1, NULL},
+    {"bk", 1, NULL},
+    {"bn", 0, NULL},
+    {"bo", 1, NULL},
+    {"br", 0, "Draw additively?"},
+    {"bt", 0, NULL},
+    {"by", 0, NULL},
 
-    {"d", 1},
-    {"e", 0},
-    {"f", 0},
-    {"g", 0},
-    {"h", 0},
-    {"i", 0},
+    {"cf", 0, NULL},
+    {"cg", 0, NULL},
+    {"cl", 0, NULL},
+    {"cp", 0, "Apply damage?"},
+    {"cw", 0, NULL},
+    {"cx", 1, NULL},
+    {"cy", 1, NULL},
 
-    {"jf2", 0},
-    {"jf", 0},
-    {"jg", 0},
-    {"jh", 0},
-    {"jj", 0},
-    {"jl", 0},
-    {"jm", 0},
-    {"jp", 0},
-    {"jz", 0},
-    {"jn", 1},
+    {"d", 1, "Re-enter animation at N ticks"},
+    {"e", 0, NULL},
+    {"f", 0, "Flip sprite vertically?"},
+    {"g", 0, NULL},
+    {"h", 0, NULL},
+    {"i", 0, NULL},
 
-    {"k",   1},
-    {"l",   1},
-    {"ma",  1},
-    {"mc",  0},
-    {"md",  1},
-    {"mg",  1},
-    {"mi",  1},
-    {"mm",  1},
-    {"mn",  1},
-    {"mo",  0},
-    {"mp",  1},
-    {"mrx", 1},
-    {"mry", 1},
-    {"ms",  0},
-    {"mu",  1},
-    {"mx",  1},
-    {"my",  1},
-    {"m",   1},
-    {"n",   0},
-    {"ox",  1},
-    {"oy",  1},
-    {"pa",  0},
-    {"pb",  1},
-    {"pc",  1},
-    {"pd",  1},
-    {"pe",  0},
-    {"ph",  0},
-    {"pp",  1},
-    {"ps",  0},
-    {"ptd", 1},
-    {"ptp", 1},
-    {"ptr", 1},
-    {"q",   0},
-    {"r",   0},
-    {"s",   1},
-    {"sa",  0},
-    {"sb",  1},
-    {"sc",  1},
-    {"sd",  0},
-    {"se",  1},
-    {"sf",  1},
-    {"sl",  1},
-    {"smf", 1},
-    {"smo", 1},
-    
-    {"sp",  1},
-    {"sw",  1},
-    {"t",   0},
-    {"ua",  0},
-    {"ub",  0},
-    {"uc",  0},
-    {"ud",  0},
-    {"ue",  0},
-    {"uf",  0},
-    {"ug",  0},
-    {"uh",  0},
-    {"uj",  0},
-    {"ul",  0},
-    {"un",  0},
-    {"ur",  0},
-    {"us",  0},
-    {"uz",  0},
-    {"v",   0},
-    {"vsx", 0},
-    {"vsy", 0},
-    {"w",   0},
-    
-    {"x-", 1},
-    {"x+", 1},
-    {"x=", 1},
-    {"x",  1}, // if unspecified a value of 100 is assumed
-    
-    {"y-", 1},
-    {"y+", 1},
-    {"y=", 1},
-    {"y",  1}, // if unspecified a value of 100 is assumed
-    
-    {"zg", 0},
-    {"zh", 0},
-    {"zj", 0},
-    {"zl", 0},
-    {"zm", 0},
-    {"zp", 0},
-    {"zz", 0}
+    {"jf2", 0, "Allow chaining to destruction?"},
+    {"jf", 0, "Allow chaining to scrap?"},
+    {"jg", 0, NULL},
+    {"jh", 0, "Allow chaining to 'high' moves?"},
+    {"jj", 0, NULL},
+    {"jl", 0, "Allow chaining to 'low' moves?"},
+    {"jm", 0, "Allow chaining to 'mid' moves?"},
+    {"jp", 0, NULL},
+    {"jz", 0, "Allow chaining to anything? (Katana head stomp)"},
+    {"jn", 1, "Allow chaining to move N?"},
+
+    {"k",   1, NULL},
+    {"l",   1, NULL},
+    {"ma",  1, NULL},
+    {"mc",  0, NULL},
+    {"md",  1, "Destroy animation N?"},
+    {"mg",  1, NULL},
+    {"mi",  1, NULL},
+    {"mm",  1, NULL},
+    {"mn",  1, NULL},
+    {"mo",  0, NULL},
+    {"mp",  1, NULL},
+    {"mrx", 1, NULL},
+    {"mry", 1, NULL},
+    {"ms",  0, NULL},
+    {"mu",  1, NULL},
+    {"mx",  1, NULL},
+    {"my",  1, NULL},
+    {"m",   1, "Create instance of animation N"},
+    {"n",   0, NULL},
+    {"ox",  1, NULL},
+    {"oy",  1, NULL},
+    {"pa",  0, NULL},
+    {"pb",  1, NULL},
+    {"pc",  1, NULL},
+    {"pd",  1, NULL},
+    {"pe",  0, NULL},
+    {"ph",  0, NULL},
+    {"pp",  1, NULL},
+    {"ps",  0, NULL},
+    {"ptd", 1, NULL},
+    {"ptp", 1, NULL},
+    {"ptr", 1, NULL},
+    {"q",   0, NULL},
+    {"r",   0, "Flip sprite horizontally?"},
+    {"s",   1, "Play sound N from sound table footer"},
+    {"sa",  0, NULL},
+    {"sb",  1, NULL},
+    {"sc",  1, NULL},
+    {"sd",  0, NULL},
+    {"se",  1, NULL},
+    {"sf",  1, "Sound frequency?"},
+    {"sl",  1, "Sound loudness?"},
+    {"smf", 1, NULL},
+    {"smo", 1, "Play music track N"},
+
+    {"sp",  1, "Sound panning?"},
+    {"sw",  1, NULL},
+    {"t",   0, NULL},
+    {"ua",  0, NULL},
+    {"ub",  0, "Motion blur effect?"},
+    {"uc",  0, NULL},
+    {"ud",  0, NULL},
+    {"ue",  0, NULL},
+    {"uf",  0, NULL},
+    {"ug",  0, NULL},
+    {"uh",  0, NULL},
+    {"uj",  0, NULL},
+    {"ul",  0, NULL},
+    {"un",  0, NULL},
+    {"ur",  0, NULL},
+    {"us",  0, NULL},
+    {"uz",  0, NULL},
+    {"v",   0, NULL},
+    {"vsx", 0, NULL},
+    {"vsy", 0, NULL},
+    {"w",   0, NULL},
+
+    {"x-", 1, "Decrement X coordinate by N?"},
+    {"x+", 1, "Increment X coordinate by N?"},
+    {"x=", 1, "Interpolate X coordinate to N by next frame?"},
+    {"x",  1, "Set X to N (N defaults to 100)?"}, // if unspecified a value of 100 is assumed
+
+    {"y-", 1, "Decrement Y coordinate by N?"},
+    {"y+", 1, "Increment Y coordinate by N?"},
+    {"y=", 1, "Interpolate to Y coordinate to N by next frame"},
+    {"y",  1, "Set Y coordinatr to N (N defaults to 100)?"}, // if unspecified a value of 100 is assumed
+
+    {"zg", 0, "Never used?"},
+    {"zh", 0, "Never used?"},
+    {"zj", 0, "Invulnerable to jumping attacks?"},
+    {"zl", 0, "Never used?"},
+    {"zm", 0, "Never used?"},
+    {"zp", 0, "Invulnerable to projectiles?"},
+    {"zz", 0, "Invulnerable to any attacks?"}
 };
 
 static void sd_taglist_add_tag(tag_list *list, const tag_attribute_init *attrib) {
@@ -237,8 +237,7 @@ static void sd_taglist_add_tag(tag_list *list, const tag_attribute_init *attrib)
         *plist = malloc(sizeof(tag_list));
         memset(*plist, 0, sizeof(tag_list));
     }
-    (*plist)->attrib.tag = attrib->tag;
-    (*plist)->attrib.has_param = attrib->has_param;
+    (*plist)->attrib.tag_info = (tag_attribute_init*)attrib;
 }
 
 static tag_attribute *sd_taglist_find_tag(tag_list *list, const char *tag) {
@@ -248,7 +247,7 @@ static tag_attribute *sd_taglist_find_tag(tag_list *list, const char *tag) {
         plist = &((*plist)->tag_chain[(unsigned char)*ptag]);
     } while(*(++ptag));
 
-    if(*plist && strcmp((*plist)->attrib.tag, tag) == 0) {
+    if(*plist && strcmp((*plist)->attrib.tag_info->tag, tag) == 0) {
         return &(*plist)->attrib;
     }
 
@@ -256,7 +255,8 @@ static tag_attribute *sd_taglist_find_tag(tag_list *list, const char *tag) {
 }
 
 static void sd_taglist_init(tag_list *list) {
-    for(int i = 0;i < sizeof(tags)/sizeof(tag_attribute_init);++i) {
+    unsigned int tag_count =  sizeof(tags)/sizeof(tag_attribute_init);
+    for(int i = 0; i < tag_count; ++i) {
         sd_taglist_add_tag(list, tags + i);
     }
 }
@@ -299,6 +299,7 @@ static void sd_framelist_set(frame_list *list, int cur_frame, char frame_letter,
     anim_frame *frame = &list->frames[cur_frame];
     frame->frame_letter = frame_letter;
     frame->duration = duration;
+    frame->num_tags = 0;
 }
 
 static void sd_framelist_add_tag(frame_list *list, int cur_frame, tag_attribute *tag_attrib, int param){
@@ -310,7 +311,7 @@ static void sd_framelist_add_tag(frame_list *list, int cur_frame, tag_attribute 
     cur->tags = realloc(cur->tags, ntags*sizeof(char*));
 
     cur->tag_params[ntags-1] = param;
-    cur->tags[ntags-1] = tag_attrib->tag;
+    cur->tags[ntags-1] = tag_attrib->tag_info->tag;
 }
 
 static void sd_framelist_resize(frame_list *list, int frames) {
@@ -336,9 +337,10 @@ static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned in
             if(!cur->is_done) {
                 for(int i = 0;i < cur->num_tags;++i) {
                     tag_attribute *tag = sd_taglist_find_tag(tags, cur->tags[i]);
-                    if(tag->callback) tag->callback(cur, tag->data, cur->tag_params[i]);
+                    if(tag->callback) {
+                        tag->callback(cur, tag->data, cur->tag_params[i]);
+                    }
                 }
-                
             }
         }
     }
@@ -388,6 +390,8 @@ int rn_tag_attribute(tag_list *list, const char **str, tag_attribute *attrib) {
 
     memset(scanned, 0, sizeof(scanned));
 
+    const char *skipto = *str;
+
     do {
         if(cur == NULL) {
             break;
@@ -402,16 +406,16 @@ int rn_tag_attribute(tag_list *list, const char **str, tag_attribute *attrib) {
         cur = cur->tag_chain[(unsigned char)**str];
     } while(**str);
 
-    const char *skipto = *str;
     memset(attrib, 0, sizeof(tag_attribute));
     for(nscanned--;nscanned >= 0;--nscanned, --(*str)) {
-        if(scanned[nscanned]->tag) {
+        if(scanned[nscanned]->tag_info) {
             *attrib = *scanned[nscanned];
+            *str = skipto + strlen(attrib->tag_info->tag);
             return 0;
         }
     }
     // skip current tag if its not found
-    *str = skipto;
+    *str = skipto + 1;
 
     return 1;
 }
@@ -459,7 +463,7 @@ void parse_string(sd_stringparser *parser,
                     // read the numeric param and call the callback function
                     // if a param is not present, 0 is assumed
                     int pos = 0;
-                    int param = rn_int(&pos, str); 
+                    int param = rn_int(&pos, str);
                     str += pos;
                     if(tag_cb) tag_cb(parser, data, &attrib, param);
                 }
@@ -468,7 +472,6 @@ void parse_string(sd_stringparser *parser,
                 int duration=0;
                 char frame_letter=0;
                 rn_frame(&str, &frame_letter, &duration);
-
                 if(frame_cb) frame_cb(parser, data, frame_letter, duration);
             } else if(type == TAG_MARKER) {
                 // an end of frame descriptor marker (a dash, '-')
@@ -481,7 +484,7 @@ void parse_string(sd_stringparser *parser,
             }
 
             pos += (str-start);
-            if(end_of_frame) break;
+            /*if(end_of_frame) break;*/
         }
         if(end_of_frame) {
 
@@ -571,5 +574,35 @@ int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks) {
 
     sd_framelist_process(parser->frame_list, parser->tag_list, ticks);
 
+    return 0;
+}
+
+int sd_stringparser_prettyprint_frame(sd_stringparser *parser, unsigned int frame) {
+    unsigned int frames = ((frame_list*)parser->frame_list)->num_frames;
+    if (frame < frames) {
+        anim_frame f = ((frame_list*)parser->frame_list)->frames[frame];
+        printf("Sprite %c for %u ticks with %d tags\n", f.frame_letter, f.duration, f.num_tags);
+        for (int i = 0; i < f.num_tags; i++) {
+            tag_attribute *tag_attrib = sd_taglist_find_tag((tag_list*)parser->tag_list, f.tags[i]);
+            if (tag_attrib) {
+                char * desc = tag_attrib->tag_info->description ? tag_attrib->tag_info->description : "Unknown";
+                if (tag_attrib->tag_info->has_param) {
+                    printf("\t Tag %s, value %d, description %s\n", f.tags[i], f.tag_params[i], desc);
+                } else {
+                    printf("\t Tag %s, description %s\n", f.tags[i], desc);
+                }
+            }
+        }
+        return 0;
+    }
+    return 1;
+}
+
+int sd_stringparser_prettyprint(sd_stringparser *parser) {
+    unsigned int frames = ((frame_list*)parser->frame_list)->num_frames;
+    printf("Animation string contains %d frames\n", frames);
+    for (int i = 0; i < frames; i++) {
+        sd_stringparser_prettyprint_frame(parser, i);
+    }
     return 0;
 }
