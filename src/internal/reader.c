@@ -36,6 +36,10 @@ void sd_reader_close(sd_reader *reader) {
     free(reader);
 }
 
+int sd_reader_set(sd_reader *reader, long offset) {
+    return fseek(reader->handle, offset, SEEK_SET);
+}
+
 int sd_reader_ok(sd_reader *reader) {
     if(feof(reader->handle)) {
         return 0;

@@ -2,14 +2,13 @@
 #define _SD_LANGUAGE_H
 
 typedef struct sd_lang_string_t {
-    unsigned int _offset;
-    char *description;
-    char *string;
+    char description[33];
+    char *data;
 } sd_lang_string;
 
 typedef struct sd_language_t {
-    unsigned int string_count;
-    sd_lang_string **strings;
+    unsigned int count;
+    sd_lang_string *strings;
 } sd_language;
 
 sd_language* sd_language_create();

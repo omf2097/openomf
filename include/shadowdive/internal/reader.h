@@ -5,30 +5,13 @@
 
 typedef struct sd_reader_t sd_reader;
 
-/**
-  * Open file for reading.
-  */
 sd_reader* sd_reader_open(const char *file);
-
-/**
-  * Close file.
-  */
 void sd_reader_close(sd_reader *reader);
-
-/**
-  * Check if there is more data to be read.
-  */
 int sd_reader_ok(sd_reader *reader);
 
-/**
-  * Returns the file pointer position
-  */
 long sd_reader_pos(sd_reader *reader);
-
-/**
-  * Returns the size of the file
-  */
 long sd_reader_filesize(sd_reader *reader);
+int sd_reader_set(sd_reader *reader, long pos);
 
 int sd_read_buf(sd_reader *reader, char *buf, int len);
 int sd_peek_buf(sd_reader *reader, char *buf, int len);
