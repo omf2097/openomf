@@ -26,5 +26,7 @@ int main(int argc, char *argv[]) {
     // Close everything
     engine_close();
     SDL_Quit();
+    dumb_exit();
+    printf("[D] Graceful exit.\n");
     return 0;
 }

@@ -7,7 +7,7 @@ int engine_init() {
     if(video_init(640, 400, 0, 1)) {
         return 1;
     }
-    if(audio_init("AWESOEM")) {
+    if(audio_init()) {
         return 1;
     }
     run = 1;

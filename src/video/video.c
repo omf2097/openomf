@@ -56,4 +56,5 @@ void video_render() {
 void video_close() {
     SDL_GL_DeleteContext(glctx);  
     SDL_DestroyWindow(window);
+    printf("[D] Video deinit.\n");
 }
