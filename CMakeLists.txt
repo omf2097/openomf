@@ -11,6 +11,14 @@ set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686 -Werror")
 
 add_executable(openomf 
     src/main.c
+    src/engine.c
+    src/video/video.c
+    src/video/texture.c
+    src/video/fbo.c
+    src/video/shader.c
+    src/audio/audio.c
+    src/audio/music.c
+    src/audio/sound.c
 )
 
 include_directories(${SDL2_INCLUDE_DIR} ${SHADOWDIVE_INCLUDE_DIR} include)
