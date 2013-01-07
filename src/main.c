@@ -8,12 +8,12 @@ int main(int argc, char *argv[]) {
 
     // Init SDL2
     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER)) {
-        printf("SDL2 Initialization failed: %s\n", SDL_GetError());
+        printf("[E] SDL2 Initialization failed: %s\n", SDL_GetError());
         return 1;
     }
     SDL_version sdl_linked;
     SDL_GetVersion(&sdl_linked);
-    printf("SDL v%d.%d.%d\n", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
+    printf("[D] Found SDL v%d.%d.%d\n", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
     
     // Initialize engine
     if(engine_init()) {
