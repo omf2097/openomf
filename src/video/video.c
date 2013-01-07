@@ -1,4 +1,5 @@
 #include "video/video.h"
+#include "utils/log.h"
 #include <SDL2/SDL.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -27,24 +28,24 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
     );
     if(!window) {
-        printf("Could not create window: %s\n", SDL_GetError());
+        ERROR("Could not create window: %s", SDL_GetError());
         return 1;
     }
     
     // Create context
     glctx = SDL_GL_CreateContext(window);
     if(!glctx) {
-        printf("Could not create GL context: %s\n", SDL_GetError());
+        ERROR("Could not create GL context: %s", SDL_GetError());
         SDL_DestroyWindow(window);
         return 1;
     }
     
     // Show some info
-    printf("[D] Video Init OK\n");
-    printf("[D] * SDL2 Driver: %s\n", SDL_GetCurrentVideoDriver());
-    printf("[D] * Vendor:      %s\n", glGetString(GL_VENDOR));
-    printf("[D] * Renderer:    %s\n", glGetString(GL_RENDERER));
-    printf("[D] * Version:     %s\n", glGetString(GL_VERSION));
+    DEBUG("Video Init OK");
+    DEBUG(" * SDL2 Driver: %s", SDL_GetCurrentVideoDriver());
+    DEBUG(" * Vendor:      %s", glGetString(GL_VENDOR));
+    DEBUG(" * Renderer:    %s", glGetString(GL_RENDERER));
+    DEBUG(" * Version:     %s", glGetString(GL_VERSION));
     
     return 0;
 }
@@ -56,5 +57,5 @@ void video_render() {
 void video_close() {
     SDL_GL_DeleteContext(glctx);  
     SDL_DestroyWindow(window);
-    printf("[D] Video deinit.\n");
+    DEBUG("Video deinit.");
 }

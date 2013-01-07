@@ -8,13 +8,14 @@ find_package(dumb)
 find_package(opengl)
 find_package(openal)
 
-set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror")
-set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror")
+set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
 set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686 -Werror")
 
 add_executable(openomf 
     src/main.c
     src/engine.c
+    src/utils/log.c
     src/video/video.c
     src/video/texture.c
     src/video/fbo.c
