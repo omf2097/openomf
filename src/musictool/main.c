@@ -8,7 +8,7 @@
 #include <SDL2/SDL_mixer.h>
 #include <argtable2.h>
 #include <dumb/dumb.h>
-#include <inttypes.h>
+#include <stdint.h>
 
 #define DELTA (65536.0f / 44100)
 

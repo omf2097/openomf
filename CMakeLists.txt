@@ -17,6 +17,7 @@ add_executable(aftool src/aftool/main.c src/shared/animation_misc.c src/shared/c
 add_executable(soundtool src/soundtool/main.c )
 add_executable(musictool src/musictool/main.c)
 add_executable(fonttool src/fonttool/main.c)
+add_executable(languagetool src/languagetool/main.c)
 
 set(CORELIBS ${SDL2_LIBRARY} ${ARGTABLE2_LIBRARY})
 IF(MINGW)
@@ -29,3 +30,4 @@ target_link_libraries(aftool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(soundtool ${CORELIBS} ${SHADOWDIVE_LIBRARY} ${SDLMIXER_LIBRARY})
 target_link_libraries(musictool ${CORELIBS} ${DUMB_LIBRARY} ${SDLMIXER_LIBRARY})
 target_link_libraries(fonttool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(languagetool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
