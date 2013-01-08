@@ -11,6 +11,7 @@ int conf_init(const char *filename) {
         config_destroy(&conf);
         return 1;
     }
+    DEBUG("Config file '%s' read!", filename);
     return 0;
 }
 
