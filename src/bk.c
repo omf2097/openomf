@@ -143,7 +143,9 @@ void sd_bk_set_background(sd_bk_file *bk, sd_vga_image *img) {
 }
 
 void sd_bk_delete(sd_bk_file *bk) {
-    sd_vga_image_delete(bk->background);
+    if (bk->background) {
+        sd_vga_image_delete(bk->background);
+    }
     for(int i = 0; i < 50; i++) {
         if(bk->anims[i]) {
             sd_bk_anim_delete(bk->anims[i]);
