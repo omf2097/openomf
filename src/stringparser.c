@@ -358,6 +358,7 @@ static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned in
                     }
                 }
             }
+            break;
         }
     }
 }
