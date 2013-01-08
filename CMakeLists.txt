@@ -7,6 +7,7 @@ find_package(shadowdive)
 find_package(dumb)
 find_package(opengl)
 find_package(openal)
+find_package(libconfig)
 
 set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")

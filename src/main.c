@@ -2,8 +2,17 @@
 #include "utils/log.h"
 #include <SDL2/SDL.h>
 #include <dumb/dumb.h>
+#include <libconfig.h>
+#include <string.h>
 
 int main(int argc, char *argv[]) {
+    // Check arguments
+    if(argc >= 2) {
+        if(strcmp(argv[1], "-v") == 0) {
+        
+        }
+    }
+
     // Init log
     if(log_init(0)) {
         printf("Error while initializing log!\n");
@@ -24,7 +33,7 @@ int main(int argc, char *argv[]) {
     
     // Initialize engine
     if(engine_init()) {
-        return 1;
+        goto exit_0;
     }
     
     // Run
@@ -32,6 +41,7 @@ int main(int argc, char *argv[]) {
     
     // Close everything
     engine_close();
+exit_0:
     SDL_Quit();
     dumb_exit();
     DEBUG("Graceful exit.");
