@@ -6,10 +6,10 @@
 int run;
 
 int engine_init() {
-    int w = conf_int("screen.width");
-    int h = conf_int("screen.height");
-    int fs = conf_bool("screen.fullscreen");
-    int vsync = conf_bool("screen.vsync");
+    int w = conf_int("screen_w");
+    int h = conf_int("screen_w");
+    int fs = conf_bool("fullscreen");
+    int vsync = conf_bool("vsync");
 
     if(video_init(w, h, fs, vsync)) {
         return 1;

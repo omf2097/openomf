@@ -13,6 +13,19 @@ int main(int argc, char *argv[]) {
             printf("Source available at https://github.com/omf2097/ (MIT License)\n");
             printf("(C) 2013 Tuomas Virtanen\n");
             return 0;
+        } else if(strcmp(argv[1], "-h") == 0) {
+            printf("Arguments:\n");
+            printf("-h      Prints this help\n");
+            printf("-w      Writes a config file\n");
+            return 0;
+        } else if(strcmp(argv[1], "-w") == 0) {
+            if(conf_write_config("openomf.conf")) {
+                printf("Failed to write config file!\n");
+                return 1;
+            } else {
+                printf("Config file written to 'openomf.conf'!\n");
+            }
+            return 0;
         }
     }
 
@@ -23,8 +36,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Init config
-    if(conf_init("openomf.cfg")) {
-        ERROR("Error while attempting to open configuration file 'openomf.cfg'!");
+    if(conf_init("openomf.conf")) {
         goto exit_0;
     }
     

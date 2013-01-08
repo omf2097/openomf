@@ -7,7 +7,7 @@ find_package(shadowdive)
 find_package(dumb)
 find_package(opengl)
 find_package(openal)
-find_package(config)
+find_package(confuse)
 
 set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
@@ -34,7 +34,7 @@ set(COREINCS
     ${DUMB_INCLUDE_DIR} 
     ${OPENAL_INCLUDE_DIR} 
     ${OPENGL_INCLUDE_DIR}
-    ${CONFIG_INCLUDE_DIR}
+    ${CONFUSE_INCLUDE_DIR}
 )
 
 set(CORELIBS 
@@ -43,7 +43,7 @@ set(CORELIBS
     ${DUMB_LIBRARY} 
     ${OPENGL_LIBRARY} 
     ${OPENAL_LIBRARY}
-    ${CONFIG_LIBRARY}
+    ${CONFUSE_LIBRARY}
 )
 
 IF(MINGW)
