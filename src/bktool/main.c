@@ -238,7 +238,7 @@ void bkanim_set_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
     printf("Value set!\n");
 }
 
-void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kcount) {
+void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kcount, int pcount) {
     int kn = bkanim_key_get_id(key[0]);
     
     switch(kn) {
@@ -250,7 +250,7 @@ void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
         case 5: printf("%d\n", bka->hazard_damage); break;
         case 6: printf("%s\n", bka->unknown_data ? bka->unknown_data : "(null)"); break;
         default:
-            anim_get_key(ani, kn, key, kcount);
+            anim_get_key(ani, kn, key, kcount, pcount);
     }
 }
 
@@ -389,9 +389,10 @@ int main(int argc, char *argv[]) {
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 2, "Select key");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
     struct arg_lit *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim)");
-    struct arg_int *scale = arg_int0(NULL, "scale", "version", "Scales sprites (requires --play)");
+    struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
+    struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,anim,all_anims,sprite,keylist,key,value,play,scale,end};
+    void* argtable[] = {help,vers,file,output,anim,all_anims,sprite,keylist,key,value,play,scale,parse,end};
     const char* progname = "bktool";
     
     // Make sure everything got allocated
@@ -509,7 +510,7 @@ int main(int argc, char *argv[]) {
             if(value->count > 0) {
                 bkanim_set_key(bka, ani, key->sval, key->count, value->sval[0]);
             } else {
-                bkanim_get_key(bka, ani, key->sval, key->count);
+                bkanim_get_key(bka, ani, key->sval, key->count, parse->count);
             }
         } else if(keylist->count > 0) {
             bkanim_keylist();
@@ -530,7 +531,7 @@ int main(int argc, char *argv[]) {
                         bkanim_set_key(bka, ani, key->sval, key->count, value->sval[0]);
                     } else {
                         printf("Animation %2u: ", i);
-                        bkanim_get_key(bka, ani, key->sval, key->count);
+                        bkanim_get_key(bka, ani, key->sval, key->count, parse->count);
                     }
                 } else {
                     printf("\n");

@@ -153,7 +153,7 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
     printf("Value set!\n");
 }
 
-void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount) {
+void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int pcount) {
     int tmp = 0;
     switch(kn) {
         case 7: 
@@ -188,13 +188,41 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount) {
                 printf("\n");
             }
             break;
-        case 9: printf("%s\n", ani->anim_string); break;
+        case 9:
+            if (pcount > 0) {
+                sd_stringparser *parser = sd_stringparser_create();
+                int err = sd_stringparser_set_string(parser, ani->anim_string);
+                if(err) {
+                    char err_msg[255];
+                    sd_get_error(err_msg, err);
+                    printf("Animation string parser error: %s (%s)\n", err_msg, ani->anim_string);
+                } else {
+                    sd_stringparser_prettyprint(parser);
+                }
+                sd_stringparser_delete(parser);
+            } else {
+                printf("%s\n", ani->anim_string);
+            }
+            break;
         case 10: printf("%d\n", ani->unknown_b); break;
         case 11: 
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < ani->extra_string_count) {
-                    printf("%s\n", ani->extra_strings[tmp]);
+                    if (pcount > 0) {
+                        sd_stringparser *parser = sd_stringparser_create();
+                        int err = sd_stringparser_set_string(parser, ani->extra_strings[tmp]);
+                        if(err) {
+                            char err_msg[255];
+                            sd_get_error(err_msg, err);
+                            printf("Animation string parser error: %s (%s)\n", err_msg, ani->extra_strings[tmp]);
+                        } else {
+                            sd_stringparser_prettyprint(parser);
+                        }
+                        sd_stringparser_delete(parser);
+                    } else {
+                        printf("%s\n", ani->extra_strings[tmp]);
+                    }
                 } else {
                     printf("Extra string table index %d does not exist!\n", tmp);
                     return;

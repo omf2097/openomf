@@ -220,7 +220,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             }
             break;
         case 15: 
-            tmp = strlen(value);
+            tmp = strlen(value)+1;
             if(tmp < 21) {
                 memcpy(move->move_string, value, tmp);
             } else {
@@ -238,7 +238,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
     printf("Value set!\n");
 }
 
-void move_get_key(sd_move *mv, sd_animation *ani, const char **key, int kcount) {
+void move_get_key(sd_move *mv, sd_animation *ani, const char **key, int kcount, int pcount) {
     int tmp = 0;
     int kn = move_key_get_id(key[0]);
     switch(kn) {
@@ -258,11 +258,27 @@ void move_get_key(sd_move *mv, sd_animation *ani, const char **key, int kcount) 
                 printf("\n");
             }
             break;
-        case 15: printf("%s\n", mv->move_string); break;
-        case 16: printf("%s\n", mv->footer_string ? mv->footer_string : "(null)"); break;
+        case 15:
+            printf("%s\n", mv->move_string); break;
+        case 16:
+            if (pcount > 0 && mv->footer_string) {
+                sd_stringparser *parser = sd_stringparser_create();
+                int err = sd_stringparser_set_string(parser, ani->anim_string);
+                if(err) {
+                    char err_msg[255];
+                    sd_get_error(err_msg, err);
+                    printf("Animation string parser error: %s (%s)\n", err_msg, ani->anim_string);
+                } else {
+                    sd_stringparser_prettyprint(parser);
+                }
+                sd_stringparser_delete(parser);
+            } else {
+                printf("%s\n", mv->footer_string ? mv->footer_string : "(null)");
+            }
+            break;
 
         default:
-            anim_get_key(ani, kn, key, kcount);
+            anim_get_key(ani, kn, key, kcount, pcount);
     }
 }
 
@@ -434,9 +450,10 @@ int main(int argc, char* argv[]) {
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .AF file");
     struct arg_file *palette = arg_file0("p", "palette", "<file>", "BK file for palette");
     struct arg_lit *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim and --palette)");
-    struct arg_int *scale = arg_int0(NULL, "scale", "version", "Scales sprites (requires --play)");
+    struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
+    struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,move,all_moves,sprite,keylist,key,value,output,palette,play,scale,end};
+    void* argtable[] = {help,vers,file,move,all_moves,sprite,keylist,key,value,output,palette,play,scale,parse,end};
     const char* progname = "aftool";
     
     // Make sure everything got allocated
@@ -567,7 +584,7 @@ int main(int argc, char* argv[]) {
             if(value->count > 0) {
                 move_set_key(mv, ani, key->sval, key->count, value->sval[0]);
             } else {
-                move_get_key(mv, ani, key->sval, key->count);
+                move_get_key(mv, ani, key->sval, key->count, parse->count);
             }
         } else if(keylist->count > 0) {
             move_keylist();
@@ -588,7 +605,7 @@ int main(int argc, char* argv[]) {
                         move_set_key(mv, ani, key->sval, key->count, value->sval[0]);
                     } else {
                         printf("move %2u: ", i);
-                        move_get_key(mv, ani, key->sval, key->count);
+                        move_get_key(mv, ani, key->sval, key->count, parse->count);
                     }
                 } else {
                     printf("\n");
