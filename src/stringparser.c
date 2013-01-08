@@ -9,14 +9,8 @@
 #include <stdio.h>
 
 // private structs
-typedef struct tag_attribute_init_t {
-    const char *tag;
-    int has_param;
-    char *description;
-} tag_attribute_init;
-
 typedef struct tag_attribute_t {
-    tag_attribute_init *tag_info;
+    const sd_stringparser_tag_info *tag_info;
     sd_stringparser_cb_t callback;
     void *data;
 } tag_attribute;
@@ -25,6 +19,8 @@ typedef struct tag_list_t {
     // traverse tag_chain to find whether a given tag is valid or not
     struct tag_list_t *tag_chain[256];
     tag_attribute attrib;
+    sd_stringparser_cb_t default_cb;
+    void *default_cb_data;
 } tag_list;
 
 typedef struct anim_frame_t {
@@ -58,7 +54,7 @@ enum {
 };
 
 // list of valid tags and whether it has param or not
-const tag_attribute_init tags[] = {
+const sd_stringparser_tag_info tags[] = {
     {"aa", 0, NULL},
     {"ab", 0, NULL},
     {"ac", 0, NULL},
@@ -223,7 +219,7 @@ const tag_attribute_init tags[] = {
     {"zz", 0, "Invulnerable to any attacks?"}
 };
 
-static void sd_taglist_add_tag(tag_list *list, const tag_attribute_init *attrib) {
+static void sd_taglist_add_tag(tag_list *list, const sd_stringparser_tag_info *attrib) {
     tag_list **plist = &list;
     const char *ptag = attrib->tag;
     do {
@@ -237,7 +233,7 @@ static void sd_taglist_add_tag(tag_list *list, const tag_attribute_init *attrib)
         *plist = malloc(sizeof(tag_list));
         memset(*plist, 0, sizeof(tag_list));
     }
-    (*plist)->attrib.tag_info = (tag_attribute_init*)attrib;
+    (*plist)->attrib.tag_info = attrib;
 }
 
 static tag_attribute *sd_taglist_find_tag(tag_list *list, const char *tag) {
@@ -251,18 +247,19 @@ static tag_attribute *sd_taglist_find_tag(tag_list *list, const char *tag) {
         return &(*plist)->attrib;
     }
 
-    return 0;
+    return NULL;
 }
 
 static void sd_taglist_init(tag_list *list) {
-    unsigned int tag_count =  sizeof(tags)/sizeof(tag_attribute_init);
+    unsigned int tag_count =  sizeof(tags)/sizeof(sd_stringparser_tag_info);
     for(int i = 0; i < tag_count; ++i) {
         sd_taglist_add_tag(list, tags + i);
     }
 }
 
 static void sd_taglist_clear(tag_list *list) {
-    for(int i = 0;i < sizeof(list->tag_chain)/sizeof(tag_list);++i) {
+    unsigned int len = sizeof(list->tag_chain)/sizeof(tag_list*);
+    for(int i = 0;i < len;++i) {
         if(list->tag_chain[i]) {
             sd_taglist_clear(list->tag_chain[i]);
             list->tag_chain[i] = NULL;
@@ -271,13 +268,16 @@ static void sd_taglist_clear(tag_list *list) {
 }
 
 static void sd_taglist_set_cb(tag_list *list, const char *tag, sd_stringparser_cb_t cb, void *data) {
-    if(tag == NULL || cb == NULL) return;
+    if(tag) {
+        tag_attribute *tag_attrib = sd_taglist_find_tag(list, tag);
 
-    tag_attribute *tag_attrib = sd_taglist_find_tag(list, tag);
-
-    if(tag_attrib) {
-        tag_attrib->callback = cb;
-        tag_attrib->data = data;
+        if(tag_attrib) {
+            tag_attrib->callback = cb;
+            tag_attrib->data = data;
+        }
+    } else {
+        list->default_cb = cb;
+        list->default_cb_data = data;
     }
 }
 
@@ -337,8 +337,24 @@ static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned in
             if(!cur->is_done) {
                 for(int i = 0;i < cur->num_tags;++i) {
                     tag_attribute *tag = sd_taglist_find_tag(tags, cur->tags[i]);
-                    if(tag->callback) {
-                        tag->callback(cur, tag->data, cur->tag_params[i]);
+                    if(tag) {
+                        sd_stringparser_cb_param cb_param = { tag->tag_info, 
+                                                              cur->is_done, 
+                                                              ticks, 
+                                                              cur->duration,
+                                                              cur->frame_letter,
+                                                              NULL, // userdata
+                                                              cur->tag_params[i]
+                                                            };
+                        if(tag->callback) {
+                            cb_param.userdata = tag->data;
+                            tag->callback(&cb_param);
+                        } else if(tags->default_cb) {
+                            cb_param.userdata = tags->default_cb_data;
+                            tags->default_cb(&cb_param);
+                        }
+                        
+                        cur->is_done = cb_param.is_done;
                     }
                 }
             }
@@ -556,6 +572,10 @@ int sd_stringparser_set_string(sd_stringparser *parser, const char *string) {
 
 void sd_stringparser_set_cb(sd_stringparser *parser, const char *tag, sd_stringparser_cb_t cb, void *data) {
     sd_taglist_set_cb(parser->tag_list, tag, cb, data);
+}
+
+void sd_stringparser_set_default_cb(sd_stringparser *parser, sd_stringparser_cb_t cb, void *data) {
+    sd_taglist_set_cb(parser->tag_list, NULL, cb, data);
 }
 
 void sd_stringparser_reset(sd_stringparser *parser) {
