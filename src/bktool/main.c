@@ -442,6 +442,13 @@ int main(int argc, char *argv[]) {
             goto exit_0;
         }
     }
+    if(output->count == 0) {
+        if(value->count > 0) {
+            printf("--value requires --output\n");
+            printf("Try '%s --help' for more information.\n", progname);
+            goto exit_0;
+        }
+    }
     if(play->count == 0) {
         if(scale->count > 0) {
             printf("--scale requires --play\n");
