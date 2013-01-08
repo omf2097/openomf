@@ -1,10 +1,17 @@
 #include "engine.h"
+#include "utils/log.h"
+#include "utils/config.h"
 #include <SDL2/SDL.h>
 
 int run;
 
 int engine_init() {
-    if(video_init(640, 400, 0, 1)) {
+    int w = conf_int("screen.width");
+    int h = conf_int("screen.height");
+    int fs = conf_bool("screen.fullscreen");
+    int vsync = conf_bool("screen.vsync");
+
+    if(video_init(w, h, fs, vsync)) {
         return 1;
     }
     if(audio_init()) {
@@ -15,6 +22,7 @@ int engine_init() {
 }
 
 void engine_run() {
+    DEBUG("Engine starting.");
     while(run) {
         SDL_Event e;
         if(SDL_PollEvent(&e)) {
@@ -26,6 +34,7 @@ void engine_run() {
         video_render();
         SDL_Delay(1);
     }
+    DEBUG("Engine stopped.");
 }
 
 void engine_close() {

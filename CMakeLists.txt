@@ -7,7 +7,7 @@ find_package(shadowdive)
 find_package(dumb)
 find_package(opengl)
 find_package(openal)
-find_package(libconfig)
+find_package(config)
 
 set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
@@ -17,6 +17,7 @@ add_executable(openomf
     src/main.c
     src/engine.c
     src/utils/log.c
+    src/utils/config.c
     src/video/video.c
     src/video/texture.c
     src/video/fbo.c
@@ -33,6 +34,7 @@ set(COREINCS
     ${DUMB_INCLUDE_DIR} 
     ${OPENAL_INCLUDE_DIR} 
     ${OPENGL_INCLUDE_DIR}
+    ${CONFIG_INCLUDE_DIR}
 )
 
 set(CORELIBS 
@@ -41,6 +43,7 @@ set(CORELIBS
     ${DUMB_LIBRARY} 
     ${OPENGL_LIBRARY} 
     ${OPENAL_LIBRARY}
+    ${CONFIG_LIBRARY}
 )
 
 IF(MINGW)
