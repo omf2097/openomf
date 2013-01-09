@@ -1,11 +1,13 @@
 #include "audio/audio.h"
 #include "utils/log.h"
+#include "utils/list.h"
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <stdio.h>
 
 ALCdevice *aldevice;
 ALCcontext *alctx;
+list streams;
 
 int audio_init() {
     // Initialize device
@@ -18,6 +20,9 @@ int audio_init() {
     // Create context & make it current
     alctx = alcCreateContext(aldevice, 0);
     alcMakeContextCurrent(alctx);
+    
+    // List for streams
+    list_create(&streams);
 
     // Some log stuff
     DEBUG("Audio Init OK");
@@ -32,6 +37,7 @@ void audio_render() {
 }
 
 void audio_close() {
+    list_free(&streams);
     alcMakeContextCurrent(0);
     alcDestroyContext(alctx);
     alcCloseDevice(aldevice);

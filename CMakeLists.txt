@@ -18,6 +18,7 @@ add_executable(openomf
     src/engine.c
     src/utils/log.c
     src/utils/config.c
+    src/utils/list.c
     src/video/video.c
     src/video/texture.c
     src/video/fbo.c
