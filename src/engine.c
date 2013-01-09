@@ -3,6 +3,7 @@
 #include "utils/config.h"
 #include "audio/audio.h"
 #include "audio/music.h"
+#include "audio/soundloader.h"
 #include "video/video.h"
 #include <SDL2/SDL.h>
 
@@ -18,6 +19,9 @@ int engine_init() {
         return 1;
     }
     if(audio_init()) {
+        return 1;
+    }
+    if(soundloader_init("resources/SOUNDS.DAT")) {
         return 1;
     }
     run = 1;
@@ -50,6 +54,12 @@ void engine_run() {
                 if(e.key.keysym.sym == SDLK_d) {
                     music_stop();
                 }
+                if(e.key.keysym.sym == SDLK_q) { soundloader_play(10); }
+                if(e.key.keysym.sym == SDLK_w) { soundloader_play(11); }
+                if(e.key.keysym.sym == SDLK_e) { soundloader_play(12); }
+                if(e.key.keysym.sym == SDLK_r) { soundloader_play(13); }
+                if(e.key.keysym.sym == SDLK_t) { soundloader_play(14); }
+                if(e.key.keysym.sym == SDLK_y) { soundloader_play(15); }
                 break;
                 
             case SDL_QUIT:
@@ -68,4 +78,5 @@ void engine_run() {
 void engine_close() {
     video_close();
     audio_close();
+    soundloader_close();
 }

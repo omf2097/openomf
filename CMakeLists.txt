@@ -27,6 +27,7 @@ add_executable(openomf
     src/audio/music.c
     src/audio/sound.c
     src/audio/stream.c
+    src/audio/soundloader.c
 )
 
 set(COREINCS

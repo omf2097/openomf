@@ -4,6 +4,9 @@
 #include <AL/alc.h>
 
 int audio_stream_create(audio_stream *stream) {
+    // Dump old errors
+    while(alGetError() != AL_NO_ERROR);
+
     // Reserve resources
     alGenSources(1, &stream->alsource);
     alGenBuffers(AUDIO_BUFFER_COUNT, stream->albuffers);
@@ -42,11 +45,13 @@ int audio_stream_create(audio_stream *stream) {
 int audio_stream_start(audio_stream *stream) {
     char buf[AUDIO_BUFFER_SIZE];
     int ret;
-    for(unsigned int i = 0; i < AUDIO_BUFFER_COUNT; i++) {
+    unsigned int i;
+    for(i = 0; i < AUDIO_BUFFER_COUNT; i++) {
         ret = stream->update(stream, buf, AUDIO_BUFFER_SIZE);
         alBufferData(stream->albuffers[i], stream->alformat, buf, ret, stream->frequency);
+        if(ret <= 0) break; // If sample is short and doesn't have more data, stop here.
     }
-    alSourceQueueBuffers(stream->alsource, AUDIO_BUFFER_COUNT, stream->albuffers);
+    alSourceQueueBuffers(stream->alsource, i, stream->albuffers);
     alSourcePlay(stream->alsource);
     stream->playing = 1;
     return 0;
@@ -88,7 +93,7 @@ int audio_stream_render(audio_stream *stream) {
     while(val--) {
         // Fill buffer & re-queue
         ret = stream->update(stream, buf, AUDIO_BUFFER_SIZE);
-        if(ret <= 0 && val == first) {
+        if(ret <= 0 && val == first-1) {
             stream->playing = 0;
             return 1;
         }
@@ -108,6 +113,12 @@ int audio_stream_render(audio_stream *stream) {
 
 void audio_stream_free(audio_stream *stream) {
     // Free resources
+    int val;
+    ALuint buf;
+    alGetSourcei(stream->alsource, AL_BUFFERS_PROCESSED, &val);
+    while(val--) {
+        alSourceUnqueueBuffers(stream->alsource, val, &buf);
+    }
     alDeleteSources(1, &stream->alsource);
     alDeleteBuffers(AUDIO_BUFFER_COUNT, stream->albuffers);
 }
