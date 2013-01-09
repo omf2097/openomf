@@ -31,6 +31,10 @@ int audio_stream_create(audio_stream *stream) {
         return 1;
     }
     
+    // Set playing as 0. If playing = 1 and we lose data from buffers, 
+    // this will reset playback & refill buffers.
+    stream->playing = 0;
+    
     // All done
     return 0;
 }
@@ -44,11 +48,31 @@ int audio_stream_start(audio_stream *stream) {
     }
     alSourceQueueBuffers(stream->alsource, AUDIO_BUFFER_COUNT, stream->albuffers);
     alSourcePlay(stream->alsource);
+    stream->playing = 1;
     return 0;
 }
 
+void audio_stream_stop(audio_stream *stream) {
+    stream->playing = 0;
+    alSourceStop(stream->alsource);
+}
+
+int alplaying(audio_stream *stream) {
+    ALenum state;
+    alGetSourcei(stream->alsource, AL_SOURCE_STATE, &state);
+    return (state == AL_PLAYING);
+}
+
+int audio_stream_playing(audio_stream *stream) {
+    return stream->playing;
+}
 
 int audio_stream_render(audio_stream *stream) {
+    // Don't do anything unless playback has been started
+    if(!stream->playing) {
+        return 1;
+    }
+
     // See if we have any empty buffers to fill
     int val;
     alGetSourcei(stream->alsource, AL_BUFFERS_PROCESSED, &val);
@@ -60,13 +84,25 @@ int audio_stream_render(audio_stream *stream) {
     char buf[AUDIO_BUFFER_SIZE];
     ALuint bufno;
     int ret = 0;
+    int first = val;
     while(val--) {
         // Fill buffer & re-queue
         ret = stream->update(stream, buf, AUDIO_BUFFER_SIZE);
+        if(ret <= 0 && val == first) {
+            stream->playing = 0;
+            return 1;
+        }
         alSourceUnqueueBuffers(stream->alsource, 1, &bufno);
         alBufferData(bufno, stream->alformat, buf, ret, stream->frequency);
         alSourceQueueBuffers(stream->alsource, 1, &bufno);
     }
+    
+    // If stream has stopped because of empty buffers, restart playback.
+    if(stream->playing && !alplaying(stream)) {
+        alSourcePlay(stream->alsource);
+    }
+    
+    // All done!
     return 0;
 }
 

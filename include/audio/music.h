@@ -3,5 +3,6 @@
 
 int music_play(const char *filename);
 void music_stop();
+int music_playing();
 
 #endif // _MUSIC_H

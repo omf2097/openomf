@@ -26,12 +26,35 @@ int engine_init() {
 
 void engine_run() {
     DEBUG("Engine starting.");
-    music_play("resources/MENU.PSM");
     while(run) {
         SDL_Event e;
         if(SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
+            switch(e.type) {
+            case SDL_KEYDOWN:
+                if(e.key.keysym.sym == SDLK_a) {
+                    if(music_playing()) {
+                        DEBUG("Already playing - Stop first.");                
+                    } else {
+                        DEBUG("Attempting to play resources/MENU.PSM");
+                        music_play("resources/MENU.PSM");
+                    }
+                }
+                if(e.key.keysym.sym == SDLK_s) {
+                    if(music_playing()) {
+                        DEBUG("Already playing - Stop first.");                
+                    } else {
+                        DEBUG("Attempting to play resources/END.PSM");
+                        music_play("resources/END.PSM");
+                    }
+                }
+                if(e.key.keysym.sym == SDLK_d) {
+                    music_stop();
+                }
+                break;
+                
+            case SDL_QUIT:
                 run = 0;
+                break;
             }
         }
         

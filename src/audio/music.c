@@ -6,6 +6,8 @@
 #include <AL/alc.h>
 #include <dumb/dumb.h>
 
+audio_stream *music_stream = 0;
+
 typedef struct music_file_t {
     DUH_SIGRENDERER *renderer;
     DUH *data;
@@ -61,11 +63,18 @@ int music_play(const char *filename) {
     
     // Play
     audio_play(stream);
+    music_stream = stream;
     
     // All done
     return 0;
 }
 
 void music_stop() {
+    audio_stream_stop(music_stream);
+    music_stream = 0;
+}
 
+int music_playing() {
+    if(!music_stream) return 0;
+    return audio_stream_playing(music_stream);
 }

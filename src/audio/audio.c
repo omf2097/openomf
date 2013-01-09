@@ -39,6 +39,7 @@ void audio_render() {
     audio_stream *stream;
     while((stream = list_next(&it)) != 0) {
         if(audio_stream_render(stream)) {
+            audio_stream_stop(stream);
             stream->close(stream);
             audio_stream_free(stream);
             free(stream);
