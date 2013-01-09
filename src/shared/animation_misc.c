@@ -65,7 +65,12 @@ void anim_common_info(sd_animation *ani) {
     printf("\n");
     printf(" * Overlays:        %d\n", ani->overlay_count);
     for(int i = 0; i < ani->overlay_count; i++) {
-        printf("   - %d\n", ani->overlay_table[i]);
+        printf("   - %3d, %3d, %3d, %3d    (%d)\n",
+                ani->overlay_table[i] & 0xff,
+                (ani->overlay_table[i] & 0xff00) >> 8,
+                (ani->overlay_table[i] & 0xff0000) >> 16,
+                (ani->overlay_table[i] & 0xff000000) >> 24,
+                ani->overlay_table[i]);
     }
     printf(" * Sprites:         %d\n", ani->frame_count);
     printf(" * Animation str:   %s\n", ani->anim_string);
