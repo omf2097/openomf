@@ -1,6 +1,9 @@
 #include "engine.h"
 #include "utils/log.h"
 #include "utils/config.h"
+#include "audio/audio.h"
+#include "audio/music.h"
+#include "video/video.h"
 #include <SDL2/SDL.h>
 
 int run;
@@ -23,6 +26,7 @@ int engine_init() {
 
 void engine_run() {
     DEBUG("Engine starting.");
+    music_play("resources/MENU.PSM");
     while(run) {
         SDL_Event e;
         if(SDL_PollEvent(&e)) {
@@ -31,6 +35,7 @@ void engine_run() {
             }
         }
         
+        audio_render();
         video_render();
         SDL_Delay(1);
     }

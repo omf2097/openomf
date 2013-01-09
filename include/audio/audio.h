@@ -1,8 +1,11 @@
 #ifndef _AUDIO_H
 #define _AUDIO_H
 
-int audio_init(); // Select openal audio device, etc.
+typedef struct audio_stream_t audio_stream;
+
+int audio_init();
 void audio_render();
+void audio_play(audio_stream *stream);
 void audio_close();
 
 #endif // _AUDIO_H
