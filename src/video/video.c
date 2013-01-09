@@ -1,7 +1,8 @@
 #include "video/video.h"
 #include "utils/log.h"
-#define GL3_PROTOTYPES 1
 #include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glext.h>
 #include <SDL2/SDL.h>
 
 SDL_Window *window;
