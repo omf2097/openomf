@@ -4,7 +4,7 @@
 #include <GL/glu.h>
 #include <GL/glext.h>
 
-/*
+
 const char* fbo_get_status(int code) {
     switch(code) {
     case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
@@ -31,4 +31,3 @@ const char* fbo_get_status(int code) {
         return "unknown error";
     }
 }
-*/
