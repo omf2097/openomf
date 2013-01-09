@@ -1,7 +1,7 @@
 #include "video/fbo.h"
 #include "utils/log.h"
 #define GL3_PROTOTYPES 1
-#include <GL3/gl3.h>
+#include <GL/gl.h>
 
 
 const char* fbo_get_status(int code) {

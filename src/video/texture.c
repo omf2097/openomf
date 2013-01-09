@@ -2,7 +2,7 @@
 #include "utils/log.h"
 #include <shadowdive/shadowdive.h>
 #define GL3_PROTOTYPES 1
-#include <GL3/gl3.h>
+#include <GL/gl.h>
 
 void texture_internal_create(unsigned int *id, int w, int h, const char *data) {
     glGenTextures(1, id);
