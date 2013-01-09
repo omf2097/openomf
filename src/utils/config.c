@@ -8,7 +8,7 @@ cfg_opt_t cfg_opts[] = {
     CFG_BOOL("vsync",      cfg_false, CFGF_NONE),
     CFG_BOOL("fullscreen", cfg_false, CFGF_NONE),
     CFG_INT("screen_w",    640,       CFGF_NONE),
-    CFG_INT("screen_w",    400,       CFGF_NONE),
+    CFG_INT("screen_h",    400,       CFGF_NONE),
     CFG_END()
 };
 

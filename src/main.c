@@ -3,7 +3,6 @@
 #include "utils/config.h"
 #include <SDL2/SDL.h>
 #include <dumb/dumb.h>
-#include <string.h>
 
 int main(int argc, char *argv[]) {
     // Check arguments

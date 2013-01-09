@@ -7,7 +7,7 @@ int run;
 
 int engine_init() {
     int w = conf_int("screen_w");
-    int h = conf_int("screen_w");
+    int h = conf_int("screen_h");
     int fs = conf_bool("fullscreen");
     int vsync = conf_bool("vsync");
 
