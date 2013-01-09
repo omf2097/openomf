@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     
     // Init SDL2
     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER)) {
-        ERROR("SDL2 Initialization failed: %s", SDL_GetError());
+        PERROR("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_1;
     }
     SDL_version sdl_linked;

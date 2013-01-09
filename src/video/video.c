@@ -1,9 +1,8 @@
 #include "video/video.h"
 #include "utils/log.h"
+#define GL3_PROTOTYPES 1
+#include <GL3/gl3.h>
 #include <SDL2/SDL.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glext.h>
 
 SDL_Window *window;
 SDL_GLContext glctx;
@@ -17,6 +16,8 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);                                               
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);   
 
     // Open window
     window = SDL_CreateWindow(
@@ -28,14 +29,14 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
     );
     if(!window) {
-        ERROR("Could not create window: %s", SDL_GetError());
+        PERROR("Could not create window: %s", SDL_GetError());
         return 1;
     }
     
     // Set fullscreen if needed
     if(fullscreen) {
         if(SDL_SetWindowFullscreen(window, 1) != 0) {
-            ERROR("Could not set fullscreen mode!");
+            PERROR("Could not set fullscreen mode!");
         } else {
             DEBUG("Fullscreen enabled!");
         }
@@ -44,7 +45,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     // Create context
     glctx = SDL_GL_CreateContext(window);
     if(!glctx) {
-        ERROR("Could not create GL context: %s", SDL_GetError());
+        PERROR("Could not create GL context: %s", SDL_GetError());
         SDL_DestroyWindow(window);
         return 1;
     }
@@ -52,7 +53,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     // Set VSync
     if(vsync) {
         if(SDL_GL_SetSwapInterval(1) != 0) {
-            ERROR("Could not enable VSync!");
+            PERROR("Could not enable VSync!");
         } else {
             DEBUG("VSync enabled!");
         }

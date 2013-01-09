@@ -9,7 +9,7 @@ int soundloader_init(const char *filename) {
     sdf = sd_sounds_create();
     if(sd_sounds_load(sdf, filename)) {
         sd_sounds_delete(sdf);
-        ERROR("Unable to load sounds file!");
+        PERROR("Unable to load sounds file!");
         return 1;
     }
     DEBUG("Soundloader loaded '%s' !", filename);

@@ -14,7 +14,7 @@ int audio_init() {
     // Initialize device
     aldevice = alcOpenDevice(0);
     if(!aldevice) {
-        ERROR("Could not open audio playback device!");
+        PERROR("Could not open audio playback device!");
         return 1;
     }
 

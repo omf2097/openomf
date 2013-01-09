@@ -1,9 +1,8 @@
 #include "video/texture.h"
 #include "utils/log.h"
 #include <shadowdive/shadowdive.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glext.h>
+#define GL3_PROTOTYPES 1
+#include <GL3/gl3.h>
 
 void texture_internal_create(unsigned int *id, int w, int h, const char *data) {
     glGenTextures(1, id);
@@ -13,7 +12,7 @@ void texture_internal_create(unsigned int *id, int w, int h, const char *data) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #ifdef DEBUGMODE
     if(glGetError() != GL_NO_ERROR) {
-        ERROR("Error while creating texture!");
+        PERROR("Error while creating texture!");
     }
 #endif
 }

@@ -30,7 +30,7 @@ void music_close(audio_stream *stream) {
 int music_play(const char *filename) {
     DUH *data = dumb_load_psm(filename, 0);
     if(!data) {
-        ERROR("Error while loading PSM file!");
+        PERROR("Error while loading PSM file!");
         return 1;
     }
     

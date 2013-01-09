@@ -16,11 +16,11 @@ int conf_init(const char *filename) {
     cfg = cfg_init(cfg_opts, 0);
     int ret = cfg_parse(cfg, filename);
     if(ret == CFG_FILE_ERROR) {
-        ERROR("Error while attempting to read config file '%s' !", filename);
+        PERROR("Error while attempting to read config file '%s' !", filename);
         cfg_free(cfg);
         return 1;
     } else if(ret == CFG_PARSE_ERROR) {
-        ERROR("Error while attempting to parse config file '%s' !", filename);
+        PERROR("Error while attempting to parse config file '%s' !", filename);
         cfg_free(cfg);
         return 1;
     }

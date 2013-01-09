@@ -6,16 +6,14 @@
 int audio_stream_create(audio_stream *stream) {
     // Dump old errors
     int error;
-    while((error = alGetError()) != AL_NO_ERROR) {
-        DEBUG("OAL ERROR: %i", error);
-    }
+    while((error = alGetError()) != AL_NO_ERROR);
 
     // Reserve resources
     alGenSources(1, &stream->alsource);
     alGenBuffers(AUDIO_BUFFER_COUNT, stream->albuffers);
     if(alGetError() != AL_NO_ERROR) {
         alDeleteSources(1, &stream->alsource);
-        ERROR("Could not create OpenAL buffers!");
+        PERROR("Could not create OpenAL buffers!");
         return 1;
     }
     
@@ -33,7 +31,7 @@ int audio_stream_create(audio_stream *stream) {
     if(!stream->alformat) {
         alDeleteSources(1, &stream->alsource);
         alDeleteBuffers(AUDIO_BUFFER_COUNT, stream->albuffers);
-        ERROR("Could not find suitable audio format!");
+        PERROR("Could not find suitable audio format!");
         return 1;
     }
     
@@ -103,7 +101,7 @@ int audio_stream_render(audio_stream *stream) {
         alBufferData(bufno, stream->alformat, buf, ret, stream->frequency);
         alSourceQueueBuffers(stream->alsource, 1, &bufno);
         if(alGetError() != AL_NO_ERROR) {
-            ERROR("OpenAL: Error buffering!");
+            PERROR("OpenAL: Error buffering!");
         }
     }
     
