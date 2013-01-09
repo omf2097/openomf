@@ -1,8 +1,6 @@
 #include "video/fbo.h"
 #include "utils/log.h"
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glext.h>
+#include <GL/glew.h>
 
 
 const char* fbo_get_status(int code) {

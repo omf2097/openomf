@@ -1,6 +1,7 @@
 #include "engine.h"
 #include "utils/log.h"
 #include "utils/config.h"
+#include "video/glextloader.h"
 #include <SDL2/SDL.h>
 #include <dumb/dumb.h>
 
@@ -56,10 +57,16 @@ int main(int argc, char *argv[]) {
         goto exit_2;
     }
     
+    // Initialize GL extension loader
+    if(glext_init()) {
+        goto exit_3;
+    }
+    
     // Run
     engine_run();
     
     // Close everything
+exit_3:
     engine_close();
 exit_2:
     SDL_Quit();

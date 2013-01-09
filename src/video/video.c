@@ -1,9 +1,7 @@
 #include "video/video.h"
 #include "utils/log.h"
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glext.h>
 #include <SDL2/SDL.h>
+#include <GL/glew.h>
 
 SDL_Window *window;
 SDL_GLContext glctx;

@@ -8,6 +8,7 @@ find_package(dumb)
 find_package(OpenGL)
 find_package(OpenAL)
 find_package(confuse)
+find_package(GLEW)
 
 set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
@@ -23,6 +24,8 @@ add_executable(openomf
     src/video/texture.c
     src/video/fbo.c
     src/video/shader.c
+    src/video/rbo.c
+    src/video/glextloader.c
     src/audio/audio.c
     src/audio/music.c
     src/audio/sound.c
@@ -38,6 +41,7 @@ set(COREINCS
     ${OPENAL_INCLUDE_DIR} 
     ${OPENGL_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
+    ${GLEW_INCLUDE_DIR}
 )
 
 set(CORELIBS 
@@ -47,6 +51,7 @@ set(CORELIBS
     ${OPENGL_LIBRARY} 
     ${OPENAL_LIBRARY}
     ${CONFUSE_LIBRARY}
+    ${GLEW_LIBRARY}
 )
 
 IF(MINGW)
