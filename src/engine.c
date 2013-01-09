@@ -8,12 +8,14 @@
 #include <SDL2/SDL.h>
 
 int run;
+int _vsync;
 
 int engine_init() {
     int w = conf_int("screen_w");
     int h = conf_int("screen_h");
     int fs = conf_bool("fullscreen");
     int vsync = conf_bool("vsync");
+    _vsync = vsync;
 
     if(video_init(w, h, fs, vsync)) {
         return 1;
@@ -60,6 +62,9 @@ void engine_run() {
                 if(e.key.keysym.sym == SDLK_r) { soundloader_play(13); }
                 if(e.key.keysym.sym == SDLK_t) { soundloader_play(14); }
                 if(e.key.keysym.sym == SDLK_y) { soundloader_play(15); }
+                if(e.key.keysym.sym == SDLK_ESCAPE) {
+                    run = 0;
+                }
                 break;
                 
             case SDL_QUIT:
@@ -70,7 +75,9 @@ void engine_run() {
         
         audio_render();
         video_render();
-        SDL_Delay(1);
+        if(!_vsync) {
+            SDL_Delay(5);
+        }
     }
     DEBUG("Engine stopped.");
 }

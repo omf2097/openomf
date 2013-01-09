@@ -5,7 +5,10 @@
 
 int audio_stream_create(audio_stream *stream) {
     // Dump old errors
-    while(alGetError() != AL_NO_ERROR);
+    int error;
+    while((error = alGetError()) != AL_NO_ERROR) {
+        DEBUG("OAL ERROR: %i", error);
+    }
 
     // Reserve resources
     alGenSources(1, &stream->alsource);
@@ -49,23 +52,22 @@ int audio_stream_start(audio_stream *stream) {
     for(i = 0; i < AUDIO_BUFFER_COUNT; i++) {
         ret = stream->update(stream, buf, AUDIO_BUFFER_SIZE);
         alBufferData(stream->albuffers[i], stream->alformat, buf, ret, stream->frequency);
-        if(ret <= 0) break; // If sample is short and doesn't have more data, stop here.
     }
-    alSourceQueueBuffers(stream->alsource, i, stream->albuffers);
+    alSourceQueueBuffers(stream->alsource, AUDIO_BUFFER_COUNT, stream->albuffers);
     alSourcePlay(stream->alsource);
     stream->playing = 1;
     return 0;
-}
-
-void audio_stream_stop(audio_stream *stream) {
-    stream->playing = 0;
-    alSourceStop(stream->alsource);
 }
 
 int alplaying(audio_stream *stream) {
     ALenum state;
     alGetSourcei(stream->alsource, AL_SOURCE_STATE, &state);
     return (state == AL_PLAYING);
+}
+
+void audio_stream_stop(audio_stream *stream) {
+    stream->playing = 0;
+    alSourceStop(stream->alsource);
 }
 
 int audio_stream_playing(audio_stream *stream) {
@@ -100,6 +102,9 @@ int audio_stream_render(audio_stream *stream) {
         alSourceUnqueueBuffers(stream->alsource, 1, &bufno);
         alBufferData(bufno, stream->alformat, buf, ret, stream->frequency);
         alSourceQueueBuffers(stream->alsource, 1, &bufno);
+        if(alGetError() != AL_NO_ERROR) {
+            ERROR("OpenAL: Error buffering!");
+        }
     }
     
     // If stream has stopped because of empty buffers, restart playback.
@@ -113,12 +118,6 @@ int audio_stream_render(audio_stream *stream) {
 
 void audio_stream_free(audio_stream *stream) {
     // Free resources
-    int val;
-    ALuint buf;
-    alGetSourcei(stream->alsource, AL_BUFFERS_PROCESSED, &val);
-    while(val--) {
-        alSourceUnqueueBuffers(stream->alsource, val, &buf);
-    }
     alDeleteSources(1, &stream->alsource);
     alDeleteBuffers(AUDIO_BUFFER_COUNT, stream->albuffers);
 }

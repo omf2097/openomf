@@ -59,6 +59,7 @@ void audio_close() {
     list_iter(&streams, &it);
     audio_stream *stream;
     while((stream = list_next(&it)) != 0) {
+        audio_stream_stop(stream);
         stream->close(stream);
         audio_stream_free(stream);
         free(stream);

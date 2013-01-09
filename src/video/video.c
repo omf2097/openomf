@@ -32,12 +32,30 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         return 1;
     }
     
+    // Set fullscreen if needed
+    if(fullscreen) {
+        if(SDL_SetWindowFullscreen(window, 1) != 0) {
+            ERROR("Could not set fullscreen mode!");
+        } else {
+            DEBUG("Fullscreen enabled!");
+        }
+    }
+    
     // Create context
     glctx = SDL_GL_CreateContext(window);
     if(!glctx) {
         ERROR("Could not create GL context: %s", SDL_GetError());
         SDL_DestroyWindow(window);
         return 1;
+    }
+    
+    // Set VSync
+    if(vsync) {
+        if(SDL_GL_SetSwapInterval(1) != 0) {
+            ERROR("Could not enable VSync!");
+        } else {
+            DEBUG("VSync enabled!");
+        }
     }
     
     // Show some info

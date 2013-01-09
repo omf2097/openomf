@@ -70,7 +70,9 @@ int music_play(const char *filename) {
 }
 
 void music_stop() {
-    audio_stream_stop(music_stream);
+    if(music_stream) {
+        audio_stream_stop(music_stream);
+    }
     music_stream = 0;
 }
 
