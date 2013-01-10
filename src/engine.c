@@ -33,6 +33,10 @@ int engine_init() {
 void engine_run() {
     DEBUG("Engine starting.");
     while(run) {
+        // Prepare rendering here
+        video_render_prepare();
+    
+        // Handle events
         SDL_Event e;
         if(SDL_PollEvent(&e)) {
             switch(e.type) {
@@ -72,9 +76,8 @@ void engine_run() {
                 break;
             }
         }
-        
-        video_render_prepare();
-        
+
+        // Do the actual rendering jobs
         video_render_finish();
         audio_render();
         if(!_vsync) {
