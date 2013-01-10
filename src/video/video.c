@@ -10,14 +10,9 @@
 SDL_Window *window;
 SDL_GLContext glctx;
 fbo target;
-
-unsigned int screen_w;
-unsigned int screen_h;
+unsigned int fullscreen_quad;
 
 int video_init(int window_w, int window_h, int fullscreen, int vsync) {
-    screen_w = window_w;
-    screen_h = window_h;
-
     // Settings
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE,     8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,   8);
@@ -26,8 +21,8 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);                                               
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);   
+    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);                                               
+    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);   
 
     // Open window
     window = SDL_CreateWindow(
@@ -80,6 +75,17 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     glDisable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
     
+    // A nice quad. Screw you, OpenGL 3!
+    fullscreen_quad = glGenLists(1);
+    glNewList(fullscreen_quad, GL_COMPILE);
+    glBegin(GL_QUADS);
+        glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f, 1.0f, 0.0f); // Top Right
+        glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, 1.0f, 0.0f); // Top Left
+        glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f,-1.0f, 0.0f); // Bottom Left
+        glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f,-1.0f, 0.0f); // Bottom Right
+    glEnd();
+    glEndList();
+    
     // Render target FBO
     if(fbo_create(&target, NATIVE_W, NATIVE_H)) {
         SDL_DestroyWindow(window);
@@ -124,7 +130,7 @@ void video_render_finish() {
     // Clear stuff
     glDisable(GL_STENCIL_TEST);
     glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0, 0, screen_w, screen_h);
+    glViewport(0, 0, 1.0, 1.0);
     glLoadIdentity();
 
     // Disable blending & alpha testing
@@ -139,7 +145,10 @@ void video_render_finish() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // TODO: Enable shaders
-    // TODO: Render fullscreen quad or something
+    
+    // Draw textured quad
+    glCallList(fullscreen_quad);
+    
     // TODO: Disable shaders
     
     // unbind
@@ -157,6 +166,7 @@ void video_render() {
 
 void video_close() {
     fbo_free(&target);
+    glDeleteLists(fullscreen_quad, 1);
     SDL_GL_DeleteContext(glctx);  
     SDL_DestroyWindow(window);
     DEBUG("Video deinit.");
