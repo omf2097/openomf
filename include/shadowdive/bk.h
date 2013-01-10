@@ -7,7 +7,7 @@ typedef struct sd_palette_t sd_palette;
 typedef struct sd_bk_anim_t sd_bk_anim;
 typedef struct sd_vga_image_t sd_vga_image;
 
-typedef struct bk_file_t {
+typedef struct sd_bk_file_t {
     uint32_t file_id;
     uint8_t unknown_a;
 

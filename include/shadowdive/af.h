@@ -5,7 +5,7 @@
 
 typedef struct sd_move_t sd_move;
 
-typedef struct af_file_t {
+typedef struct sd_af_file_t {
     uint16_t file_id;
     uint16_t unknown_a;
     uint32_t endurance;
