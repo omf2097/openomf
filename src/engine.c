@@ -5,6 +5,7 @@
 #include "audio/music.h"
 #include "audio/soundloader.h"
 #include "video/video.h"
+#include "game/scene.h"
 #include <SDL2/SDL.h>
 
 int run;
@@ -32,50 +33,50 @@ int engine_init() {
 
 void engine_run() {
     DEBUG("Engine starting.");
+    scene scene;
+    if(scene_load(&scene, SCENE_MENU)) {
+        return;
+    }
+    
     while(run) {
         // Prepare rendering here
         video_render_prepare();
     
-        // Handle events
-        SDL_Event e;
-        if(SDL_PollEvent(&e)) {
-            switch(e.type) {
-            case SDL_KEYDOWN:
-                if(e.key.keysym.sym == SDLK_a) {
-                    if(music_playing()) {
-                        DEBUG("Already playing - Stop first.");                
-                    } else {
-                        DEBUG("Attempting to play resources/MENU.PSM");
-                        music_play("resources/MENU.PSM");
-                    }
-                }
-                if(e.key.keysym.sym == SDLK_s) {
-                    if(music_playing()) {
-                        DEBUG("Already playing - Stop first.");                
-                    } else {
-                        DEBUG("Attempting to play resources/END.PSM");
-                        music_play("resources/END.PSM");
-                    }
-                }
-                if(e.key.keysym.sym == SDLK_d) {
-                    music_stop();
-                }
-                if(e.key.keysym.sym == SDLK_q) { soundloader_play(10); }
-                if(e.key.keysym.sym == SDLK_w) { soundloader_play(11); }
-                if(e.key.keysym.sym == SDLK_e) { soundloader_play(12); }
-                if(e.key.keysym.sym == SDLK_r) { soundloader_play(13); }
-                if(e.key.keysym.sym == SDLK_t) { soundloader_play(14); }
-                if(e.key.keysym.sym == SDLK_y) { soundloader_play(15); }
-                if(e.key.keysym.sym == SDLK_ESCAPE) {
-                    run = 0;
-                }
-                break;
-                
-            case SDL_QUIT:
+        // We want to load another scene
+        if(scene.this_id != scene.next_id) {
+            if(scene.next_id == SCENE_NONE) {
                 run = 0;
                 break;
             }
+            unsigned int nid = scene.next_id;
+            scene_free(&scene);
+            scene_load(&scene, nid);
         }
+        
+        // Handle events
+        SDL_Event e;
+        if(SDL_PollEvent(&e)) {
+            // Send events to scene (if active)
+            if(!scene_handle_event(&scene, &e)) {
+                break;
+            }
+        
+            // Handle other events
+            switch(e.type) {
+                case SDL_KEYDOWN:
+                    if(e.key.keysym.sym == SDLK_ESCAPE) {
+                        run = 0;
+                    }
+                    break;
+                    
+                case SDL_QUIT:
+                    run = 0;
+                    break;
+            }
+        }
+        
+        // Render scene
+        scene_render(&scene);
 
         // Do the actual rendering jobs
         video_render_finish();
@@ -84,6 +85,9 @@ void engine_run() {
             SDL_Delay(5);
         }
     }
+    
+    scene_free(&scene);
+    
     DEBUG("Engine stopped.");
 }
 

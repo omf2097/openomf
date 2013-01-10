@@ -4,6 +4,7 @@
 #include "video/rbo.h"
 #include "video/glextloader.h"
 #include "utils/log.h"
+#include "utils/list.h"
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 
@@ -11,6 +12,8 @@ SDL_Window *window;
 SDL_GLContext glctx;
 fbo target;
 unsigned int fullscreen_quad;
+list render_list;
+texture *background_texture;
 
 int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     // Settings
@@ -92,6 +95,9 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         return 1;
     }
     
+    // BG Tex
+    background_texture = 0;
+    
     // Show some info
     DEBUG("Video Init OK");
     DEBUG(" * SDL2 Driver: %s", SDL_GetCurrentVideoDriver());
@@ -103,6 +109,9 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
 }
 
 void video_render_prepare() {
+    // Initialize the list of stuff to be rendered
+    list_create(&render_list);
+
     // Switch to FBO rendering
     fbo_bind(&target);
 
@@ -120,13 +129,66 @@ void video_render_prepare() {
     glLoadIdentity();
 }
 
+void video_set_background(texture *tex) {
+    background_texture = tex;
+}
+
 void video_render_sprite(gl_sprite *sprite) {
-    // Add to list
+    list_push_last(&render_list, sprite);
 }
 
 void video_render_finish() {
-    // Render sprites etc. here from list
+    // Handle background separately
+    if(background_texture) {
+        glStencilFunc(GL_ALWAYS, 0, 0);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        texture_bind(background_texture);
+        glCallList(fullscreen_quad);
+    }
 
+    // Render sprites etc. here from list
+    list_iterator it;
+    list_iter(&render_list, &it);
+    gl_sprite *sprite;
+    while((sprite = list_next(&it)) != 0) {
+        switch(sprite->rendering_mode) {
+        case BLEND_ADDITIVE:
+            // Additive blending, so enable blending and disable alpha testing
+            // This shouldn't touch the stencil buffer at all
+            glEnable(GL_BLEND);
+            glDisable(GL_ALPHA_TEST);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glStencilFunc(GL_EQUAL, 1, 1);
+            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+            break;
+        case BLEND_ALPHA:
+            // Alpha blending. Well, not really blending; we just skip all data where alpha = 0.
+            // Set all visible data as 1 on stencil buffer, so that all additive blending effects
+            // works on these surfaces.
+            glDisable(GL_BLEND);
+            glEnable(GL_ALPHA_TEST);
+            glAlphaFunc(GL_GREATER, 0);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glStencilFunc(GL_ALWAYS, 1, 1);
+            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+            break;
+        }
+
+        // Just draw the texture on screen to the right spot.
+        int x = sprite->x;
+        int y = sprite->y;
+        int w = sprite->tex.w;
+        int h = sprite->tex.h;
+        texture_bind(&sprite->tex);
+        glBegin(GL_QUADS);
+            glColor3f(1.0f,0.0f,0.0f); 
+            glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y+h, 0.0f); // Top Right
+            glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y+h, 0.0f); // Top Left
+            glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y,   0.0f); // Bottom Left
+            glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y,   0.0f); // Bottom Right
+        glEnd();
+    }    
+    list_free(&render_list);
 
     // Render to screen instead of FBO
     fbo_unbind();
@@ -134,7 +196,7 @@ void video_render_finish() {
     // Clear stuff
     glDisable(GL_STENCIL_TEST);
     glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0, 0, 1.0, 1.0);
+    glViewport(0, 0, 640, 400);
     glLoadIdentity();
 
     // Disable blending & alpha testing

@@ -31,6 +31,9 @@ add_executable(openomf
     src/audio/sound.c
     src/audio/stream.c
     src/audio/soundloader.c
+    src/game/scene.c
+    src/game/scenes/intro.c
+    src/game/scenes/menu.c
 )
 
 set(COREINCS

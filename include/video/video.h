@@ -4,8 +4,8 @@
 #define NATIVE_W 320
 #define NATIVE_H 200
 
-#define RENDER_BLEND 0
-#define RENDER_ADDITIVE 1
+#define BLEND_ADDITIVE 0
+#define BLEND_ALPHA 1
 
 #include "video/texture.h"
 
@@ -19,6 +19,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync); // Create
 void video_render_prepare();
 void video_render_sprite(gl_sprite *sprite);
 void video_render_finish();
+void video_set_background(texture *tex);
 void video_close();
 
 #endif // _VIDEO_H
