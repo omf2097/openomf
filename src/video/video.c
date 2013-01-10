@@ -11,7 +11,7 @@
 SDL_Window *window;
 SDL_GLContext glctx;
 fbo target;
-unsigned int fullscreen_quad;
+unsigned int fullscreen_quad, fullscreen_quad_flipped;
 list render_list;
 texture *background_texture;
 
@@ -89,6 +89,17 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     glEnd();
     glEndList();
     
+    // A nice quad with flipped texture. Screw you, OpenGL!
+    fullscreen_quad_flipped = glGenLists(1);
+    glNewList(fullscreen_quad_flipped, GL_COMPILE);
+    glBegin(GL_QUADS);
+        glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, 1.0f, 0.0f); // Top Right
+        glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, 1.0f, 0.0f); // Top Left
+        glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,-1.0f, 0.0f); // Bottom Left
+        glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,-1.0f, 0.0f); // Bottom Right
+    glEnd();
+    glEndList();
+    
     // Render target FBO
     if(fbo_create(&target, NATIVE_W, NATIVE_H)) {
         SDL_DestroyWindow(window);
@@ -143,7 +154,7 @@ void video_render_finish() {
         glStencilFunc(GL_ALWAYS, 0, 0);
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
         texture_bind(background_texture);
-        glCallList(fullscreen_quad);
+        glCallList(fullscreen_quad_flipped);
     }
 
     // Render sprites etc. here from list
