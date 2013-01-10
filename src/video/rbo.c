@@ -8,7 +8,6 @@ void rbo_create(rbo *rbo, unsigned int w, unsigned int h) {
     glGenRenderbuffers(1, &rbo->id);
     glBindRenderbuffer(GL_RENDERBUFFER, rbo->id);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
 void rbo_free(rbo *rbo) {

@@ -5,6 +5,7 @@ typedef struct sd_rgba_image_t sd_rgba_image;
 
 typedef struct texture_t {
     unsigned int id;
+    unsigned int w, h;
 } texture;
 
 void texture_create(texture *tex, const char *data, unsigned int w, unsigned int h);

@@ -4,6 +4,8 @@
 #include <GL/glew.h>
 
 void texture_create(texture *tex, const char *data, unsigned int w, unsigned int h) {
+    tex->w = w;
+    tex->h = h;
     glGenTextures(1, &tex->id);
     glBindTexture(GL_TEXTURE_2D, tex->id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
