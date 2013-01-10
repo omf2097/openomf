@@ -11,7 +11,13 @@ SDL_Window *window;
 SDL_GLContext glctx;
 fbo target;
 
+unsigned int screen_w;
+unsigned int screen_h;
+
 int video_init(int window_w, int window_h, int fullscreen, int vsync) {
+    screen_w = window_w;
+    screen_h = window_h;
+
     // Settings
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE,     8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,   8);
@@ -86,11 +92,10 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     DEBUG(" * Vendor:      %s", glGetString(GL_VENDOR));
     DEBUG(" * Renderer:    %s", glGetString(GL_RENDERER));
     DEBUG(" * Version:     %s", glGetString(GL_VERSION));
-    
     return 0;
 }
 
-void video_render() {
+void video_render_prepare() {
     // Switch to FBO rendering
     fbo_bind(&target);
 
@@ -106,9 +111,48 @@ void video_render() {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glViewport(0, 0, NATIVE_W, NATIVE_H);
     glLoadIdentity();
+}
 
+void video_render_artistry() {
+
+}
+
+void video_render_finish() {
+    // Render to screen instead of FBO
+    fbo_unbind();
+
+    // Clear stuff
+    glDisable(GL_STENCIL_TEST);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, screen_w, screen_h);
+    glLoadIdentity();
+
+    // Disable blending & alpha testing
+    glDisable(GL_BLEND);
+    glDisable(GL_ALPHA_TEST);
+
+    // Pick texture, select state
+    texture_bind(&target.tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // TODO: Enable shaders
+    // TODO: Render fullscreen quad or something
+    // TODO: Disable shaders
+    
+    // unbind
+    texture_unbind();
+    
     // Flip screen buffer
     SDL_GL_SwapWindow(window);
+}
+
+void video_render() {
+    video_render_prepare();
+    video_render_artistry();
+    video_render_finish();
 }
 
 void video_close() {
