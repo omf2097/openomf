@@ -98,6 +98,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     DEBUG(" * Vendor:      %s", glGetString(GL_VENDOR));
     DEBUG(" * Renderer:    %s", glGetString(GL_RENDERER));
     DEBUG(" * Version:     %s", glGetString(GL_VERSION));
+    DEBUG(" * GLSL:        %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
     return 0;
 }
 
@@ -119,11 +120,14 @@ void video_render_prepare() {
     glLoadIdentity();
 }
 
-void video_render_artistry() {
-
+void video_render_sprite(gl_sprite *sprite) {
+    // Add to list
 }
 
 void video_render_finish() {
+    // Render sprites etc. here from list
+
+
     // Render to screen instead of FBO
     fbo_unbind();
 
@@ -156,12 +160,6 @@ void video_render_finish() {
     
     // Flip screen buffer
     SDL_GL_SwapWindow(window);
-}
-
-void video_render() {
-    video_render_prepare();
-    video_render_artistry();
-    video_render_finish();
 }
 
 void video_close() {

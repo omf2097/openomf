@@ -73,8 +73,10 @@ void engine_run() {
             }
         }
         
+        video_render_prepare();
+        
+        video_render_finish();
         audio_render();
-        video_render();
         if(!_vsync) {
             SDL_Delay(5);
         }
