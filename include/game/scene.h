@@ -39,6 +39,6 @@ typedef struct scene_t {
 int scene_load(scene *scene, unsigned int scene_id);
 void scene_free(scene *scene);
 int scene_handle_event(scene *scene, SDL_Event *event);
-void scene_render(scene *scene);
+void scene_render(scene *scene, unsigned int delta);
 
 #endif // _SCENE_H

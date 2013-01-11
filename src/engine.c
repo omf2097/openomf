@@ -38,6 +38,8 @@ void engine_run() {
         return;
     }
     
+    unsigned int start = SDL_GetTicks();
+    unsigned int delta = 0;
     while(run) {
         // Prepare rendering here
         video_render_prepare();
@@ -76,7 +78,9 @@ void engine_run() {
         }
         
         // Render scene
-        scene_render(&scene);
+        delta = SDL_GetTicks() - start;
+        scene_render(&scene, delta);
+        start = SDL_GetTicks();
 
         // Do the actual rendering jobs
         video_render_finish();

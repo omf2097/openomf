@@ -49,14 +49,13 @@ int scene_load(scene *scene, unsigned int scene_id) {
     // Handle animations
     animation *ani;
     sd_bk_anim *bka;
+    array_create(&scene->animations);
     for(int i = 0; i < 50; i++) {
         bka = scene->bk->anims[i];
         if(bka) {
-            DEBUG("Start creating animation %u", i);
             ani = malloc(sizeof(animation));
             animation_create(ani, bka, scene->bk->palettes[0], -1);
             array_insert(&scene->animations, i, ani);
-            DEBUG("Done creating animation %u", i);
         }
     }
 
@@ -70,7 +69,7 @@ int scene_handle_event(scene *scene, SDL_Event *event) {
     return 1;
 }
 
-void scene_render(scene *scene) {
+void scene_render(scene *scene, unsigned int delta) {
 
 }
 
