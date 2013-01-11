@@ -2,28 +2,58 @@
 #include "game/animation.h"
 #include "utils/log.h"
 #include <shadowdive/shadowdive.h>
+#include "audio/music.h"
+#include "audio/soundloader.h"
 
 #define MS_PER_OMF_TICK 30
 
-void parser_cb(sd_stringparser_cb_param *param) {
+void cb_parser_d(sd_stringparser_cb_param *param) {
     animationplayer *p = param->userdata;
-    p->omf_ticks = param->tag_value * MS_PER_OMF_TICK;
-    p->real_ticks = param->tag_value;
+    p->omf_ticks = param->tag_value;
+    p->real_ticks = param->tag_value * MS_PER_OMF_TICK; 
     DEBUG("d Called."); 
 }
+
+void cb_parser_s(sd_stringparser_cb_param *param) {
+    animationplayer *p = param->userdata;
+    soundloader_play(p->ani->soundtable[param->tag_value-1]);
+    DEBUG("s Called.");
+}
+
+void cb_parser_smf(sd_stringparser_cb_param *param) {
+    music_stop();
+    DEBUG("smf Called.");
+}
+
+void cb_parser_smo(sd_stringparser_cb_param *param) {
+    switch(param->tag_value) {
+        case 0: music_stop(); break;
+        case 1: music_play("resources/END.PSM"); break;
+        case 2: music_play("resources/MENU.PSM"); break;
+        case 3: music_play("resources/ARENA0.PSM"); break;
+        case 4: music_play("resources/ARENA1.PSM"); break;
+        case 5: music_play("resources/ARENA2.PSM"); break;
+        case 6: music_play("resources/ARENA3.PSM"); break;
+        case 7: music_play("resources/ARENA4.PSM"); break;
+    }
+
+    DEBUG("smo Called.");
+}   
 
 int animationplayer_create(animationplayer *player, animation *animation) {
     player->ani = animation;
     player->parser = sd_stringparser_create();
     player->real_ticks = 0;
     player->omf_ticks = 0;
-    if(sd_stringparser_set_string(player->parser, animation->bka->animation->anim_string)) {
+    if(sd_stringparser_set_string(player->parser, animation->sdani->anim_string)) {
         sd_stringparser_delete(player->parser);
-        PERROR("Unable to initialize stringparser w/ '%s'", animation->bka->animation->anim_string);
+        PERROR("Unable to initialize stringparser w/ '%s'", animation->sdani->anim_string);
         return 1;
     }
     
-    sd_stringparser_set_cb(player->parser, "d", parser_cb, player);
+    sd_stringparser_set_cb(player->parser, "d", cb_parser_d, player);
+    sd_stringparser_set_cb(player->parser, "smo", cb_parser_smo, player);
+    sd_stringparser_set_cb(player->parser, "s", cb_parser_s, player);
     return 0;
 }
 
@@ -35,10 +65,8 @@ void animationplayer_run(animationplayer *player, unsigned int delta) {
     player->real_ticks += delta;
     
     // Only run parser when omf ticks change
-    unsigned int tmp = player->real_ticks / MS_PER_OMF_TICK;
-    if(player->omf_ticks != tmp) {
-        player->omf_ticks = tmp;
-        sd_stringparser_run(player->parser, player->omf_ticks);
-        DEBUG("Real ticks: %u, Omf ticks: %u", player->real_ticks, player->omf_ticks);
+    unsigned int tmp = (player->real_ticks / MS_PER_OMF_TICK) - player->omf_ticks;
+    for(unsigned int i = 0; i < tmp; i++) {
+        sd_stringparser_run(player->parser, player->omf_ticks++);
     }
 }

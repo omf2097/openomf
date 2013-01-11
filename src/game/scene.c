@@ -5,8 +5,6 @@
 #include "utils/array.h"
 #include "utils/log.h"
 #include "video/video.h"
-#include "audio/music.h"
-#include "audio/soundloader.h"
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
 
@@ -59,7 +57,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
         if(bka) {
             // Create animation + textures, etc.
             ani = malloc(sizeof(animation));
-            animation_create(ani, bka, scene->bk->palettes[0], -1);
+            animation_create(ani, bka->animation, scene->bk->palettes[0], -1, scene->bk->soundtable);
             array_insert(&scene->animations, i, ani);
             
             // Start playback on those animations, that have load_on_start flag as true

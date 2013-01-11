@@ -4,14 +4,15 @@
 #include <shadowdive/shadowdive.h>
 #include <stdlib.h>
 
-int animation_create(animation *ani, sd_bk_anim *bka, sd_palette *pal, int overlay) {
-    ani->bka = bka;
+int animation_create(animation *ani, sd_animation *sdani, sd_palette *pal, int overlay, char *soundtable) {
+    ani->sdani = sdani;
     array_create(&ani->sprites);
+    ani->soundtable = soundtable;
     
     // Load textures
     sd_rgba_image *img = 0;
-    for(int i = 0; i < bka->animation->frame_count; i++) {
-        img = sd_sprite_image_decode(bka->animation->sprites[i]->img, pal, overlay);
+    for(int i = 0; i < sdani->frame_count; i++) {
+        img = sd_sprite_image_decode(sdani->sprites[i]->img, pal, overlay);
         texture *tex = malloc(sizeof(texture));
         texture_create(tex, img->data, img->w, img->h);
         array_insert(&ani->sprites, i, tex);
@@ -29,5 +30,6 @@ void animation_free(animation *ani) {
         free(ptr);
     }
     array_free(&ani->sprites);
-    ani->bka = 0;
+    ani->sdani = 0;
+    ani->soundtable = 0;
 }
