@@ -12,6 +12,6 @@ void intro_render(scene *scene, unsigned int delta) {
 }
 
 void intro_load(scene *scene) {
-    scene->event = &intro_event;
-    scene->render = &intro_render;
+    scene->event = intro_event;
+    scene->render = intro_render;
 }
