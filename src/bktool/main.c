@@ -307,13 +307,13 @@ void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value)
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < 30) {
-                    bk->footer[tmp] = conv_ubyte(value);
+                    bk->soundtable[tmp] = conv_ubyte(value);
                 } else {
-                    printf("Footer index %d does not exist!\n", tmp);
+                    printf("Soundtable index %d does not exist!\n", tmp);
                     return;
                 }
             } else {
-                printf("Footer value requires index parameter (eg. --key footer --key 3).\n");
+                printf("Soundtable value requires index parameter (eg. --key soundtable --key 3).\n");
                 return;
             }
         break;
@@ -334,12 +334,12 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < 30) {
-                    printf("%d\n", bk->footer[tmp]);
+                    printf("%d\n", bk->soundtable[tmp]);
                 } else {
-                    printf("Footer index %d does not exist!\n", tmp);
+                    printf("Soundtable index %d does not exist!\n", tmp);
                 }
             } else {
-                for(int i = 0; i < 30; i++) { printf("%d ", bk->footer[i]); } printf("\n"); 
+                for(int i = 0; i < 30; i++) { printf("%d ", bk->soundtable[i]); } printf("\n"); 
             }
             break;
         default:
@@ -352,26 +352,61 @@ void bk_keylist() {
     printf("* fileid\n");
     //printf("* palette:<palette #>\n");
     printf("* unknown\n");
-    printf("* footer <byte #>\n");
+    printf("* soundtable <byte #>\n");
 }
 
 void bk_info(sd_bk_file *bk) {
     printf("BK File information:\n");
-    printf(" * File ID: %d\n", bk->file_id);
-    printf(" * Palettes: %d\n", bk->num_palettes);
-    printf(" * Unknown A: %d\n", bk->unknown_a);
+    printf(" * File ID:     %d\n", bk->file_id);
+    printf(" * Palettes:    %d\n", bk->num_palettes);
+    printf(" * Unknown A:   %d\n", bk->unknown_a);
     
-    printf(" * Animations:\n");
-    for(int i = 0; i < 50; i++) {
-        if(bk->anims[i])
-            printf("   - %d\n", i);
+    printf(" * Animations:  ");
+    int start = -1, last = -1;
+    int m;
+    for(m = 0; m < 50; m++) {
+        if(bk->anims[m]) {
+            if(start == -1) {
+                start = m;
+                last = m;
+            }
+            if(m > last+1) {
+                if(start == last) {
+                    printf("%u, ", last);
+                } else {
+                    printf("%u-%u, ", start, last);
+                }
+                start = m;
+            }
+            last = m;
+        }
+    }
+    if(m != last) {
+        if(start == last) {
+            printf("%u\n", last);
+        } else {
+            printf("%u-%u\n", start, last);
+        }
+    } else {
+        printf("\n");
     }
     
-    printf(" * Footer (hex): ");
+    printf(" * Sound table:\n");
+    printf("   |");
     for(int k = 0; k < 30; k++) {
-        printf("%d ", bk->footer[k]);
+        printf("%2d ", k);
     }
-    printf("\n");
+    printf("|\n");
+    printf("   |");
+    for(int k = 0; k < 30*3; k++) {
+        printf("-");
+    }
+    printf("|\n");
+    printf("   |");
+    for(int k = 0; k < 30; k++) {
+        printf("%2d ", bk->soundtable[k]);
+    }
+    printf("|\n");
 }
 
 // Main --------------------------------------------------------------

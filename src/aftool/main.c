@@ -323,7 +323,7 @@ int af_key_get_id(const char* key) {
     if(strcmp(key, "jump_speed") == 0) return 7;
     if(strcmp(key, "fall_speed") == 0) return 8;
     if(strcmp(key, "unknown_c") == 0) return 9;
-    if(strcmp(key, "footer") == 0) return 10;
+    if(strcmp(key, "soundtable") == 0) return 10;
     return -1;
 }
 
@@ -345,12 +345,12 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < 30) {
-                    printf("%d\n", af->footer[tmp]);
+                    printf("%d\n", af->soundtable[tmp]);
                 } else {
-                    printf("Footer index %d does not exist!\n", tmp);
+                    printf("Soundtable index %d does not exist!\n", tmp);
                 }
             } else {
-                for(int i = 0; i < 30; i++) { printf("%d ", af->footer[i]); } printf("\n"); 
+                for(int i = 0; i < 30; i++) { printf("%d ", af->soundtable[i]); } printf("\n"); 
             }
             break;
         default:
@@ -375,13 +375,13 @@ void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value)
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < 30) {
-                    af->footer[tmp] = conv_ubyte(value);
+                    af->soundtable[tmp] = conv_ubyte(value);
                 } else {
-                    printf("Footer index %d does not exist!\n", tmp);
+                    printf("Soundtable index %d does not exist!\n", tmp);
                     return;
                 }
             } else {
-                printf("Footer value requires index parameter (eg. --key footer --key 3).\n");
+                printf("Soundtable value requires index parameter (eg. --key soundtable --key 3).\n");
                 return;
             }
         break;
@@ -407,31 +407,65 @@ void af_keylist() {
     printf("* footer <byte #>\n");
 }
 
-
 void af_info(sd_af_file *af) {
     printf("AF File information:\n");
-    printf(" * File ID: %d\n", af->file_id);
-    printf(" * Unknown A: %d\n", af->unknown_a);
-    printf(" * Endurance: %d\n", af->endurance);
-    printf(" * Unknown B: %d\n", af->unknown_b);
-    printf(" * Power: %d\n", af->power);
-    printf(" * Fwd speed: %d\n", af->forward_speed);
-    printf(" * Rev speed: %d\n", af->reverse_speed);
-    printf(" * Jump speed: %d\n", af->jump_speed);
-    printf(" * Fall speed: %d\n", af->fall_speed);
-    printf(" * Unknown C: %d\n", af->unknown_c);
+    printf(" * File ID:     %d\n", af->file_id);
+    printf(" * Unknown A:   %d\n", af->unknown_a);
+    printf(" * Endurance:   %d\n", af->endurance);
+    printf(" * Unknown B:   %d\n", af->unknown_b);
+    printf(" * Power:       %d\n", af->power);
+    printf(" * Fwd speed:   %d\n", af->forward_speed);
+    printf(" * Rev speed:   %d\n", af->reverse_speed);
+    printf(" * Jump speed:  %d\n", af->jump_speed);
+    printf(" * Fall speed:  %d\n", af->fall_speed);
+    printf(" * Unknown C:   %d\n", af->unknown_c);
     
-    printf(" * animations:\n");
-    for(int i = 0; i < 70; i++) {
-        if(af->moves[i])
-            printf("   - %d\n", i);
+    printf(" * Animations:  ");
+    int start = -1, last = -1;
+    int m;
+    for(m = 0; m < 70; m++) {
+        if(af->moves[m]) {
+            if(start == -1) {
+                start = m;
+                last = m;
+            }
+            if(m > last+1) {
+                if(start == last) {
+                    printf("%u, ", last);
+                } else {
+                    printf("%u-%u, ", start, last);
+                }
+                start = m;
+            }
+            last = m;
+        }
+    }
+    if(m != last) {
+        if(start == last) {
+            printf("%u\n", last);
+        } else {
+            printf("%u-%u\n", start, last);
+        }
+    } else {
+        printf("\n");
     }
     
-    printf(" * Footer (hex): ");
+    printf(" * Sound table:\n");
+    printf("   |");
     for(int k = 0; k < 30; k++) {
-        printf("%d ", af->footer[k]);
+        printf("%2d ", k);
     }
-    printf("\n");
+    printf("|\n");
+    printf("   |");
+    for(int k = 0; k < 30*3; k++) {
+        printf("-");
+    }
+    printf("|\n");
+    printf("   |");
+    for(int k = 0; k < 30; k++) {
+        printf("%2d ", af->soundtable[k]);
+    }
+    printf("|\n");
 }
 
 
