@@ -7,25 +7,25 @@
 
 #define MS_PER_OMF_TICK 30
 
-void cb_parser_d(sd_stringparser_cb_param *param) {
+void cb_parser_tickjump(sd_stringparser_cb_param *param) {
     animationplayer *p = param->userdata;
     p->omf_ticks = param->tag_value;
     p->real_ticks = param->tag_value * MS_PER_OMF_TICK; 
     DEBUG("d Called."); 
 }
 
-void cb_parser_s(sd_stringparser_cb_param *param) {
+void cb_parser_sound(sd_stringparser_cb_param *param) {
     animationplayer *p = param->userdata;
-    soundloader_play(p->ani->soundtable[param->tag_value]+1);
+    soundloader_play(p->ani->soundtable[param->tag_value]-1);
     DEBUG("s Called.");
 }
 
-void cb_parser_smf(sd_stringparser_cb_param *param) {
+void cb_parser_music_off(sd_stringparser_cb_param *param) {
     music_stop();
     DEBUG("smf Called.");
 }
 
-void cb_parser_smo(sd_stringparser_cb_param *param) {
+void cb_parser_music_on(sd_stringparser_cb_param *param) {
     switch(param->tag_value) {
         case 0: music_stop(); break;
         case 1: music_play("resources/END.PSM"); break;
@@ -52,9 +52,10 @@ int animationplayer_create(animationplayer *player, animation *animation) {
     }
     DEBUG("P: '%s'", animation->sdani->anim_string);
     
-    sd_stringparser_set_cb(player->parser, "d", cb_parser_d, player);
-    sd_stringparser_set_cb(player->parser, "smo", cb_parser_smo, player);
-    sd_stringparser_set_cb(player->parser, "s", cb_parser_s, player);
+    sd_stringparser_set_cb(player->parser, SD_CB_JUMP_TICK, cb_parser_tickjump, player);
+    sd_stringparser_set_cb(player->parser, SD_CB_MUSIC_ON, cb_parser_music_on, player);
+    sd_stringparser_set_cb(player->parser, SD_CB_MUSIC_OFF, cb_parser_music_off, player);
+    sd_stringparser_set_cb(player->parser, SD_CB_SOUND, cb_parser_sound, player);
     return 0;
 }
 
