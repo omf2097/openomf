@@ -38,9 +38,14 @@ void engine_run() {
         return;
     }
     
-    unsigned int start = SDL_GetTicks();
-    unsigned int delta = 0;
+    unsigned int scene_start = SDL_GetTicks();
+    unsigned int scene_delta = 0;
+    unsigned int frame_period = (1/60.0f)*1000;
+    unsigned int frame_start, frame_delta;
+    int frame_wait;
     while(run) {
+        frame_start = SDL_GetTicks();
+    
         // Prepare rendering here
         video_render_prepare();
     
@@ -70,23 +75,24 @@ void engine_run() {
                         run = 0;
                     }
                     break;
-                    
                 case SDL_QUIT:
                     run = 0;
                     break;
             }
         }
-        
+
         // Render scene
-        delta = SDL_GetTicks() - start;
-        scene_render(&scene, delta);
-        start = SDL_GetTicks();
+        scene_delta = SDL_GetTicks() - scene_start;
+        scene_render(&scene, scene_delta);
+        scene_start = SDL_GetTicks();
 
         // Do the actual rendering jobs
         video_render_finish();
         audio_render();
-        if(!_vsync) {
-            SDL_Delay(5);
+        if(!_vsync && run) {
+            frame_delta = SDL_GetTicks() - frame_start;
+            frame_wait = frame_period - frame_delta;
+            SDL_Delay(frame_wait < 0 ? 0 : frame_wait);
         }
     }
     
