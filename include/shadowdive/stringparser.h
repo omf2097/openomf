@@ -17,6 +17,11 @@ typedef struct sd_stringparser_cb_param_t {
     const sd_stringparser_tag_info *tag_info;
     const int tag_value;
 
+    // a list of tags for the current frame
+    const int num_tags;
+    const char **tags;
+    const int *tag_values;
+
     /* The current tick */
     const int tick;
 

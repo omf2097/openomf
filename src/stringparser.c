@@ -365,6 +365,9 @@ static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned in
         if(frames->frame_change_cb) {        
             sd_stringparser_cb_param cb_param = { NULL, //tag info 
                                                   0, //tag value
+                                                  cur->num_tags,
+                                                  cur->tags,
+                                                  cur->tag_params,
                                                   ticks, 
                                                   cur->duration,
                                                   cur->frame_letter,
@@ -378,6 +381,9 @@ static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned in
             if(tag) {
                 sd_stringparser_cb_param cb_param = { tag->tag_info,
                                                       cur->tag_params[i],
+                                                      cur->num_tags,
+                                                      cur->tags,
+                                                      cur->tag_params,
                                                       ticks, 
                                                       cur->duration,
                                                       cur->frame_letter,
