@@ -19,7 +19,7 @@ typedef struct sd_af_file_t {
 
     sd_move *moves[70];
 
-    char footer[30];
+    char soundtable[30];
 } sd_af_file;
 
 /**

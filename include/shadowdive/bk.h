@@ -18,7 +18,7 @@ typedef struct sd_bk_file_t {
     uint8_t num_palettes;
     sd_palette **palettes;
 
-    char footer[30];
+    char soundtable[30];
 } sd_bk_file;
 
 /**

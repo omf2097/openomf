@@ -78,8 +78,8 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
         sd_palette_load(r, bk->palettes[i]);
     }
 
-    // Read footer
-    sd_read_buf(r, bk->footer, 30);
+    // Read soundtable
+    sd_read_buf(r, bk->soundtable, 30);
 
     sd_bk_postprocess(bk);
 
@@ -127,8 +127,8 @@ int sd_bk_save(sd_bk_file *bk, const char* filename) {
         sd_palette_save(w, bk->palettes[i]);
     }
 
-    // Write footer
-    sd_write_buf(w, bk->footer, 30);
+    // Write soundtable
+    sd_write_buf(w, bk->soundtable, 30);
 
     // All done, close writer
     sd_writer_close(w);

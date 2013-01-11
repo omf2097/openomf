@@ -69,8 +69,8 @@ int sd_af_load(sd_af_file *af, const char *filename) {
         }
     }
 
-    // Read footer
-    sd_read_buf(r, af->footer, 30);
+    // Read soundtable
+    sd_read_buf(r, af->soundtable, 30);
 
     sd_af_postprocess(af);
 
@@ -107,8 +107,8 @@ int sd_af_save(sd_af_file *af, const char* filename) {
 
     sd_write_ubyte(w, 250); // end of animations
 
-    // Footer
-    sd_write_buf(w, af->footer, 30);
+    // soundtable
+    sd_write_buf(w, af->soundtable, 30);
 
     // All done!
     sd_writer_close(w);
