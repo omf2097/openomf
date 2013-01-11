@@ -60,8 +60,10 @@ int scene_load(scene *scene, unsigned int scene_id) {
             animation_create(ani, bka->animation, scene->bk->palettes[0], -1, scene->bk->soundtable);
             array_insert(&scene->animations, i, ani);
             
-            // Start playback on those animations, that have load_on_start flag as true
-            if(bka->load_on_start) {
+            // Start playback on those animations, that have load_on_start flag as true 
+            // or if we are handling animation 25 of intro
+            // TODO: Maybe make the exceptions a bit more generic or something ?
+            if(bka->load_on_start || (scene_id == SCENE_INTRO && i == 25)) {
                 DEBUG("Loading animation %u on startup!", i);
                 animationplayer *player = malloc(sizeof(animationplayer));
                 animationplayer_create(player, ani);

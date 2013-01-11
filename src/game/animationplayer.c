@@ -16,7 +16,7 @@ void cb_parser_d(sd_stringparser_cb_param *param) {
 
 void cb_parser_s(sd_stringparser_cb_param *param) {
     animationplayer *p = param->userdata;
-    soundloader_play(p->ani->soundtable[param->tag_value-1]);
+    soundloader_play(p->ani->soundtable[param->tag_value]+1);
     DEBUG("s Called.");
 }
 
@@ -50,6 +50,7 @@ int animationplayer_create(animationplayer *player, animation *animation) {
         PERROR("Unable to initialize stringparser w/ '%s'", animation->sdani->anim_string);
         return 1;
     }
+    DEBUG("P: '%s'", animation->sdani->anim_string);
     
     sd_stringparser_set_cb(player->parser, "d", cb_parser_d, player);
     sd_stringparser_set_cb(player->parser, "smo", cb_parser_smo, player);

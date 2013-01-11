@@ -34,7 +34,7 @@ int engine_init() {
 void engine_run() {
     DEBUG("Engine starting.");
     scene scene;
-    if(scene_load(&scene, SCENE_MENU)) {
+    if(scene_load(&scene, SCENE_INTRO)) {
         return;
     }
     
