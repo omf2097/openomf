@@ -13,7 +13,7 @@ typedef struct animation_t {
     array sprites;
 } animation;
 
-void animation_create(animation *ani, sd_bk_anim *bka, sd_palette *pal, int overlay);
+int animation_create(animation *ani, sd_bk_anim *bka, sd_palette *pal, int overlay);
 void animation_free(animation *ani);
 
 #endif // _ANIMATION_H
