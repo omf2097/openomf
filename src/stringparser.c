@@ -30,6 +30,8 @@ typedef struct anim_frame_t {
     // the duration of this frame in "ticks"
     int duration;
 
+    int start_tick;
+
     // frame letter is always uppercase
     char frame_letter;
 
@@ -44,6 +46,7 @@ typedef struct frame_list_t {
     anim_frame *frames;
 
     int current_frame;
+    unsigned int last_tick;
 } frame_list;
 
 enum {
@@ -324,43 +327,60 @@ static void sd_framelist_resize(frame_list *list, int frames) {
         free(list->frames);
         list->frames = NULL;
     }
-    if(list->current_frame > frames) list->current_frame = frames-1;
+    list->current_frame = 0;
 }
 
 static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned int ticks) {
-    unsigned int next_frame_time=0;
-    for(int i = 0;i < frames->num_frames;++i) {
-        anim_frame *cur = &frames->frames[i];
-        next_frame_time += cur->duration;
-        if(ticks < next_frame_time) {
-            // we are in the current frame
-            if(!cur->is_done) {
-                for(int i = 0;i < cur->num_tags;++i) {
-                    tag_attribute *tag = sd_taglist_find_tag(tags, cur->tags[i]);
-                    if(tag) {
-                        sd_stringparser_cb_param cb_param = { tag->tag_info, 
-                                                              cur->is_done, 
-                                                              ticks, 
-                                                              cur->duration,
-                                                              cur->frame_letter,
-                                                              NULL, // userdata
-                                                              cur->tag_params[i]
-                                                            };
-                        if(tag->callback) {
-                            cb_param.userdata = tag->data;
-                            tag->callback(&cb_param);
-                        } else if(tags->default_cb) {
-                            cb_param.userdata = tags->default_cb_data;
-                            tags->default_cb(&cb_param);
-                        }
-                        
-                        cur->is_done = cb_param.is_done;
-                    }
-                }
+    anim_frame *cur = frames->current_frame < frames->num_frames ? 
+                      &frames->frames[frames->current_frame] : 
+                      NULL;
+
+    // only skip frame if the difference between the last tick and current tick is greater than 1
+    if(abs((long long)ticks-(long long)frames->last_tick) > 1) {
+        // skip to the next frame 
+
+        cur = &frames->frames[0];
+        unsigned int next_frame_time=0;
+        int i;
+        for(i = 0;i < frames->num_frames;++i) {
+            next_frame_time += cur->duration;
+            if(ticks < next_frame_time) {
+                cur = &frames->frames[i];
+                frames->current_frame = i;
+                break;
             }
-            break;
+        }
+        // reached the end, set to null
+        if(i == frames->num_frames) {
+            cur = NULL;
         }
     }
+
+    // only handle frame once
+    if(cur && ticks >= cur->start_tick) {
+        for(int i = 0;i < cur->num_tags;++i) {
+            tag_attribute *tag = sd_taglist_find_tag(tags, cur->tags[i]);
+            if(tag) {
+                sd_stringparser_cb_param cb_param = { tag->tag_info, 
+                                                      ticks, 
+                                                      cur->duration,
+                                                      cur->frame_letter,
+                                                      NULL, // userdata
+                                                      cur->tag_params[i]
+                                                    };
+                if(tag->callback) {
+                    cb_param.userdata = tag->data;
+                    tag->callback(&cb_param);
+                } else if(tags->default_cb) {
+                    cb_param.userdata = tags->default_cb_data;
+                    tags->default_cb(&cb_param);
+                }
+            }
+        }
+        frames->current_frame++;
+    }
+
+    frames->last_tick = ticks;
 }
 
 /* Reads next integer value from string (eg md15s5- -> reads "15" and leaves the position to point to 's'. */
@@ -462,8 +482,6 @@ void parse_string(sd_stringparser *parser,
                   void *data) {
 
     if(parser->string) {
-        int end_of_frame = 0;
-        int end_of_stream = 0;
         int pos = 0;
         while(1) {
             const char *start = parser->string + pos;
@@ -493,21 +511,12 @@ void parse_string(sd_stringparser *parser,
             } else if(type == TAG_MARKER) {
                 // an end of frame descriptor marker (a dash, '-')
                 rn_descriptor_marker(&str);
-                end_of_frame = 1;
             } else {
                 // the end of stream
-                end_of_stream = 1;
                 break;
             }
 
             pos += (str-start);
-            /*if(end_of_frame) break;*/
-        }
-        if(end_of_frame) {
-
-        }
-        if(end_of_stream) {
-
         }
     }
 }
@@ -519,6 +528,18 @@ void cb_count_frame(sd_stringparser *parser, void *pframes, char frame_letter, i
 void cb_set_frame(sd_stringparser *parser, void *pcur_frame, char frame_letter, int duration) {
     int *cur_frame = pcur_frame;
     sd_framelist_set(parser->frame_list, *cur_frame, frame_letter, duration);
+
+    frame_list *flist = parser->frame_list;
+
+    anim_frame *cur = &flist->frames[*cur_frame];
+    if(*cur_frame > 0) {
+        // calculate the current frame's starting tick 
+        anim_frame *prev = &flist->frames[*cur_frame-1];
+        cur->start_tick = prev->start_tick + prev->duration;
+    } else {
+        cur->start_tick = 0;
+    }
+
     (*cur_frame)++;
 }
 
@@ -580,9 +601,7 @@ void sd_stringparser_set_default_cb(sd_stringparser *parser, sd_stringparser_cb_
 }
 
 void sd_stringparser_reset(sd_stringparser *parser) {
-    parser->blendmode = 0;
-    parser->flip_horizontal = 0;
-    parser->flip_vertical = 0;
+    ((frame_list*)parser->frame_list)->current_frame = 0;
 }
 
 
@@ -606,7 +625,7 @@ int sd_stringparser_prettyprint_frame(sd_stringparser *parser, unsigned int fram
         for (int i = 0; i < f.num_tags; i++) {
             tag_attribute *tag_attrib = sd_taglist_find_tag((tag_list*)parser->tag_list, f.tags[i]);
             if (tag_attrib) {
-                char * desc = tag_attrib->tag_info->description ? tag_attrib->tag_info->description : "Unknown";
+                const char * desc = tag_attrib->tag_info->description ? tag_attrib->tag_info->description : "Unknown";
                 if (tag_attrib->tag_info->has_param) {
                     printf("\t Tag %s, value %d, description %s\n", f.tags[i], f.tag_params[i], desc);
                 } else {

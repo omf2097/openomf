@@ -11,6 +11,7 @@ typedef struct anim_states_t {
     tag_value blendstart; //bs
     tag_value blendfinish; //bf
     tag_value blendadditive; //br
+    tag_value jumptick;
 
 } anim_states;
 
@@ -18,6 +19,7 @@ void anim_states_reset(anim_states *st) {
     st->blendstart.has_value = 0;
     st->blendfinish.has_value = 0;
     st->blendadditive.has_value = 0;
+    st->jumptick.has_value = 0;
 }
 
 void set_variable(sd_stringparser_cb_param *param) {
@@ -37,13 +39,22 @@ void test_state_variables(const char *anim_str) {
         sd_stringparser_set_cb(parser, "bs", set_variable, &st.blendstart);
         sd_stringparser_set_cb(parser, "bf", set_variable, &st.blendfinish);
         sd_stringparser_set_cb(parser, "br", set_variable, &st.blendadditive);
+        sd_stringparser_set_cb(parser, "d", set_variable, &st.jumptick);
 
-        for(unsigned int tick=0;tick<1000;++tick) {
+        int jump_count = 0;
+        for(unsigned int tick=0;tick<2000;++tick) {
             anim_states_reset(&st);
             sd_stringparser_run(parser, tick);
             if(st.blendadditive.has_value) printf("Tick %d: blend additive %d\n", tick, st.blendadditive.value);
             if(st.blendstart.has_value) printf("Tick %d: blend start %d\n", tick, st.blendstart.value);
             if(st.blendfinish.has_value) printf("Tick %d: blend finish %d\n", tick, st.blendfinish.value);
+            if(st.jumptick.has_value) {
+                printf("Tick %d: jump to tick %d\n", tick, st.jumptick.value);
+                tick = st.jumptick.value;
+                jump_count++;
+            }
+            // limit jump count to avoid infinite loop
+            if(jump_count > 3) break;
         }
     } else {
         sd_get_error(err_msg, err);
@@ -93,7 +104,7 @@ int main(int argc, char **argv) {
     }
 
     if(strcmp(argv[1], "--testvar") == 0) {
-        test_state_variables("brA20-bs200B200-bf200C200");
+        test_state_variables("brA20-bs200B200-bf200C200-d1A2");
         return 0;
     }
 

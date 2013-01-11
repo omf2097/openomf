@@ -1,24 +1,19 @@
 #ifndef _SD_STRINGPARSER_H
 #define _SD_STRINGPARSER_H
 
-/* Tags for callbacks */
-#define SD_CB_MUSIC "smo"
-#define SD_CB_SOUND "s"
+#include "stringparser_tags.h"
 
 typedef void* sd_stringparser_tag_list;
 typedef void* sd_stringparser_frame_list;
 
 typedef struct sd_stringparser_tag_info_t {
     const char *tag;
-    int has_param;
-    char *description;
+    const int has_param;
+    const char *description;
 } sd_stringparser_tag_info;
 
 typedef struct sd_stringparser_cb_param_t {
     const sd_stringparser_tag_info *tag_info;
-    
-    /* is_done may be set to 1 to mark this frame as complete */ 
-    int is_done;
     
     /* The current tick */
     const int tick;
@@ -34,19 +29,10 @@ typedef struct sd_stringparser_cb_param_t {
 
 typedef void(*sd_stringparser_cb_t)(sd_stringparser_cb_param *info);
 
-enum {
-    SD_BLEND_ADDITIVE = 0,
-    SD_BLEND_ALPHA
-};
-
 typedef struct sd_stringparser_t {
     char *string;
     sd_stringparser_tag_list tag_list;
     sd_stringparser_frame_list frame_list;
-
-    int blendmode;
-    int flip_horizontal;
-    int flip_vertical;
 } sd_stringparser;
 
 sd_stringparser* sd_stringparser_create();
