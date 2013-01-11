@@ -1,6 +1,8 @@
 #include "game/scene.h"
-#include "utils/log.h"
 #include "game/scenes/intro.h"
+#include "game/animation.h"
+#include "utils/array.h"
+#include "utils/log.h"
 #include "video/video.h"
 #include "audio/music.h"
 #include "audio/soundloader.h"
@@ -44,6 +46,20 @@ int scene_load(scene *scene, unsigned int scene_id) {
     video_set_background(&scene->background);
     sd_rgba_image_delete(bg);
     
+    // Handle animations
+    animation *ani;
+    sd_bk_anim *bka;
+    for(int i = 0; i < 50; i++) {
+        bka = scene->bk->anims[i];
+        if(bka) {
+            DEBUG("Start creating animation %u", i);
+            ani = malloc(sizeof(animation));
+            animation_create(ani, bka, scene->bk->palettes[0], -1);
+            array_insert(&scene->animations, i, ani);
+            DEBUG("Done creating animation %u", i);
+        }
+    }
+
     // All done
     DEBUG("Scene %i loaded!", scene_id);
     return 0;
@@ -61,5 +77,14 @@ void scene_render(scene *scene) {
 void scene_free(scene *scene) {
     if(!scene) return;
     video_set_background(0);
+    texture_free(&scene->background);
+    array_iterator it;
+    animation *ani = 0;
+    array_iter(&scene->animations, &it);
+    while((ani = array_next(&it)) != 0) {
+        animation_free(ani);
+        free(ani);
+    }
+    array_free(&scene->animations);
     sd_bk_delete(scene->bk);
 }
