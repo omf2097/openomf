@@ -13,18 +13,21 @@ typedef struct sd_stringparser_tag_info_t {
 } sd_stringparser_tag_info;
 
 typedef struct sd_stringparser_cb_param_t {
+    // tag_info and tag_value are unavailable during frame change callback
     const sd_stringparser_tag_info *tag_info;
-    
+    const int tag_value;
+
     /* The current tick */
     const int tick;
-    
+
+    // the duration of this frame
     const int duration;
+
+    // the frame character in uppercase
     const char frame;
     
     /* The userdata pointer that was passed to sd_stringparser_set_default_cb/sd_stringparser_set_cb */
     void *userdata;
-    
-    const int tag_value;
 } sd_stringparser_cb_param;
 
 typedef void(*sd_stringparser_cb_t)(sd_stringparser_cb_param *info);
@@ -46,6 +49,9 @@ void sd_stringparser_set_cb(sd_stringparser *parser, const char *tag, sd_stringp
 
 /* Set a default callback to handle every other tags */
 void sd_stringparser_set_default_cb(sd_stringparser *parser, sd_stringparser_cb_t callback, void *userdata);
+
+/* Set a callback to gets called when changing to a new frame */
+void sd_stringparser_set_frame_change_cb(sd_stringparser *parser, sd_stringparser_cb_t callback, void *userdata);
 
 /* Reset the animation to the first frame */
 void sd_stringparser_reset(sd_stringparser *parser);

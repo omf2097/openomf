@@ -47,6 +47,9 @@ typedef struct frame_list_t {
 
     int current_frame;
     unsigned int last_tick;
+
+    sd_stringparser_cb_t frame_change_cb;
+    void *frame_change_data;
 } frame_list;
 
 enum {
@@ -358,15 +361,27 @@ static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned in
 
     // only handle frame once
     if(cur && ticks >= cur->start_tick) {
+
+        if(frames->frame_change_cb) {        
+            sd_stringparser_cb_param cb_param = { NULL, //tag info 
+                                                  0, //tag value
+                                                  ticks, 
+                                                  cur->duration,
+                                                  cur->frame_letter,
+                                                  frames->frame_change_data, // userdata
+                                                };
+            frames->frame_change_cb(&cb_param);
+        }
+
         for(int i = 0;i < cur->num_tags;++i) {
             tag_attribute *tag = sd_taglist_find_tag(tags, cur->tags[i]);
             if(tag) {
-                sd_stringparser_cb_param cb_param = { tag->tag_info, 
+                sd_stringparser_cb_param cb_param = { tag->tag_info,
+                                                      cur->tag_params[i],
                                                       ticks, 
                                                       cur->duration,
                                                       cur->frame_letter,
-                                                      NULL, // userdata
-                                                      cur->tag_params[i]
+                                                      NULL // userdata
                                                     };
                 if(tag->callback) {
                     cb_param.userdata = tag->data;
@@ -598,6 +613,12 @@ void sd_stringparser_set_cb(sd_stringparser *parser, const char *tag, sd_stringp
 
 void sd_stringparser_set_default_cb(sd_stringparser *parser, sd_stringparser_cb_t cb, void *data) {
     sd_taglist_set_cb(parser->tag_list, NULL, cb, data);
+}
+
+void sd_stringparser_set_frame_change_cb(sd_stringparser *parser, sd_stringparser_cb_t callback, void *userdata) {
+    frame_list *flist = parser->frame_list;
+    flist->frame_change_cb = callback;
+    flist->frame_change_data = userdata;
 }
 
 void sd_stringparser_reset(sd_stringparser *parser) {

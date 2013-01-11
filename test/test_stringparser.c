@@ -28,6 +28,10 @@ void set_variable(sd_stringparser_cb_param *param) {
     v->value = param->tag_value;
 }
 
+void frame_change(sd_stringparser_cb_param *param) {
+    printf("Frame changed\n");
+}
+
 void test_state_variables(const char *anim_str) {
     sd_stringparser *parser = sd_stringparser_create();
     char err_msg[256];
@@ -36,6 +40,7 @@ void test_state_variables(const char *anim_str) {
     if(err == 0) 
     {
         anim_states st;
+        sd_stringparser_set_frame_change_cb(parser, frame_change, NULL);
         sd_stringparser_set_cb(parser, "bs", set_variable, &st.blendstart);
         sd_stringparser_set_cb(parser, "bf", set_variable, &st.blendfinish);
         sd_stringparser_set_cb(parser, "br", set_variable, &st.blendadditive);
