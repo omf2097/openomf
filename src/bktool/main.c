@@ -214,7 +214,7 @@ int bkanim_key_get_id(const char* key) {
     if(strcmp(key, "null") == 0) return 0;
     if(strcmp(key, "chain_hit") == 0) return 1;
     if(strcmp(key, "chain_no_hit") == 0) return 2;
-    if(strcmp(key, "repeat") == 0) return 3;
+    if(strcmp(key, "load_on_start") == 0) return 3;
     if(strcmp(key, "probability") == 0) return 4;
     if(strcmp(key, "hazard_damage") == 0) return 5;
     if(strcmp(key, "bk_str") == 0) return 6;
@@ -227,7 +227,7 @@ void bkanim_set_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
         case 0:  bka->null = conv_ubyte(value); break;
         case 1:  bka->chain_hit = conv_ubyte(value); break;
         case 2:  bka->chain_no_hit = conv_ubyte(value); break;
-        case 3:  bka->repeat = conv_ubyte(value); break;
+        case 3:  bka->load_on_start = conv_ubyte(value); break;
         case 4:  bka->probability = conv_uword(value); break;
         case 5:  bka->hazard_damage = conv_ubyte(value); break;
         case 6:  set_bk_anim_string(bka, value); break;
@@ -245,7 +245,7 @@ void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
         case 0: printf("%d\n", bka->null); break;
         case 1: printf("%d\n", bka->chain_hit); break;
         case 2: printf("%d\n", bka->chain_no_hit); break;
-        case 3: printf("%d\n", bka->repeat); break;
+        case 3: printf("%d\n", bka->load_on_start); break;
         case 4: printf("%d\n", bka->probability); break;
         case 5: printf("%d\n", bka->hazard_damage); break;
         case 6: printf("%s\n", bka->unknown_data ? bka->unknown_data : "(null)"); break;
@@ -264,7 +264,7 @@ void bkanim_keylist() {
     printf("* null\n");
     printf("* chain_hit\n");
     printf("* chain_no_hit\n");
-    printf("* repeat\n");
+    printf("* load_on_start\n");
     printf("* probability\n");
     printf("* hazard_damage\n");
     printf("* bk_str\n");
@@ -278,7 +278,7 @@ void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim) {
     printf(" * Null:            %d\n", bka->null);
     printf(" * Chain # if hit:  %d\n", bka->chain_hit);
     printf(" * Chain # not hit: %d\n", bka->chain_no_hit);
-    printf(" * Repeat:          %d\n", bka->repeat);
+    printf(" * Load on start:   %d\n", bka->load_on_start);
     printf(" * Probability:     %d\n", bka->probability);
     printf(" * hazard damage:   %d\n", bka->hazard_damage);
     printf(" * String:          %s\n", bka->unknown_data);
