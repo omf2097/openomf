@@ -361,7 +361,8 @@ static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned in
 
     // only handle frame once
     if(cur && ticks >= cur->start_tick) {
-
+        int is_first_frame = ((cur == &frames->frames[0]) ? 1 : 0);
+        int is_final_frame = ((cur == &frames->frames[frames->num_frames-1]) ? 1 : 0);
         if(frames->frame_change_cb) {        
             sd_stringparser_cb_param cb_param = { NULL, //tag info 
                                                   0, //tag value
@@ -371,6 +372,8 @@ static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned in
                                                   ticks, 
                                                   cur->duration,
                                                   cur->frame_letter,
+                                                  is_first_frame,
+                                                  is_final_frame,
                                                   frames->frame_change_data, // userdata
                                                 };
             frames->frame_change_cb(&cb_param);
@@ -387,6 +390,8 @@ static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned in
                                                       ticks, 
                                                       cur->duration,
                                                       cur->frame_letter,
+                                                      is_first_frame,
+                                                      is_final_frame,
                                                       NULL // userdata
                                                     };
                 if(tag->callback) {

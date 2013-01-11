@@ -29,7 +29,10 @@ void set_variable(sd_stringparser_cb_param *param) {
 }
 
 void frame_change(sd_stringparser_cb_param *param) {
-    printf("Frame changed\n");
+    
+    if(param->is_first_frame) printf("First frame\n");
+    else if(param->is_final_frame) printf("Final frame\n");
+    else printf("Frame changed\n");
 }
 
 void test_state_variables(const char *anim_str) {
@@ -55,7 +58,7 @@ void test_state_variables(const char *anim_str) {
             if(st.blendfinish.has_value) printf("Tick %d: blend finish %d\n", tick, st.blendfinish.value);
             if(st.jumptick.has_value) {
                 printf("Tick %d: jump to tick %d\n", tick, st.jumptick.value);
-                tick = st.jumptick.value;
+                tick = st.jumptick.value-1;
                 jump_count++;
             }
             // limit jump count to avoid infinite loop
