@@ -1,11 +1,11 @@
 #include "game/scene.h"
 #include "utils/log.h"
-#include <SDL2/SDL.h>
-#include <shadowdive/shadowdive.h>
 #include "game/scenes/intro.h"
 #include "video/video.h"
 #include "audio/music.h"
 #include "audio/soundloader.h"
+#include <SDL2/SDL.h>
+#include <shadowdive/shadowdive.h>
 
 int scene_load(scene *scene, unsigned int scene_id) {
     scene->bk = sd_bk_create();

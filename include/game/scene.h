@@ -2,8 +2,7 @@
 #define _SCENE_H
 
 #include <SDL2/SDL.h>
-#include <shadowdive/shadowdive.h>
-#include "video/video.h"
+#include "video/texture.h"
 
 enum {
     SCENE_INTRO = 0,
@@ -22,6 +21,7 @@ enum {
 };
 
 typedef struct scene_t scene;
+typedef struct sd_bk_file_t sd_bk_file;
 
 typedef struct scene_t {
     sd_bk_file *bk;

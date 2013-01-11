@@ -15,6 +15,12 @@ unsigned int fullscreen_quad, fullscreen_quad_flipped;
 list render_list;
 texture *background_texture;
 
+typedef struct gl_sprite_t {
+    texture *tex;
+    unsigned int x,y;
+    unsigned int rendering_mode;
+} gl_sprite;
+
 int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     // Settings
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE,     8);
@@ -89,7 +95,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     glEnd();
     glEndList();
     
-    // A nice quad with flipped texture. Screw you, OpenGL!
+    // A nice quad with flipped texture. Screw you OpenGL, and your screwed texture loader!
     fullscreen_quad_flipped = glGenLists(1);
     glNewList(fullscreen_quad_flipped, GL_COMPILE);
     glBegin(GL_QUADS);
@@ -108,6 +114,9 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     
     // BG Tex
     background_texture = 0;
+ 
+    // Initialize the list of stuff to be rendered
+    list_create(&render_list);
     
     // Show some info
     DEBUG("Video Init OK");
@@ -120,9 +129,6 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
 }
 
 void video_render_prepare() {
-    // Initialize the list of stuff to be rendered
-    list_create(&render_list);
-
     // Switch to FBO rendering
     fbo_bind(&target);
 
@@ -144,8 +150,18 @@ void video_set_background(texture *tex) {
     background_texture = tex;
 }
 
-void video_render_sprite(gl_sprite *sprite) {
-    list_push_last(&render_list, sprite);
+void video_queue_add(texture *tex, unsigned int x, unsigned int y, unsigned int rendering_mode) {
+    gl_sprite *s = malloc(sizeof(gl_sprite));
+    s->tex = tex;
+    s->x = x;
+    s->y = y;
+    s->rendering_mode = rendering_mode;
+    list_push_last(&render_list, s);
+}
+
+void video_queue_clear() {
+    list_free(&render_list);
+    list_create(&render_list);
 }
 
 void video_render_finish() {
@@ -188,9 +204,9 @@ void video_render_finish() {
         // Just draw the texture on screen to the right spot.
         int x = sprite->x;
         int y = sprite->y;
-        int w = sprite->tex.w;
-        int h = sprite->tex.h;
-        texture_bind(&sprite->tex);
+        int w = sprite->tex->w;
+        int h = sprite->tex->h;
+        texture_bind(sprite->tex);
         glBegin(GL_QUADS);
             glColor3f(1.0f,0.0f,0.0f); 
             glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y+h, 0.0f); // Top Right
@@ -199,7 +215,6 @@ void video_render_finish() {
             glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y,   0.0f); // Bottom Right
         glEnd();
     }    
-    list_free(&render_list);
 
     // Render to screen instead of FBO
     fbo_unbind();
@@ -236,6 +251,7 @@ void video_render_finish() {
 }
 
 void video_close() {
+    list_free(&render_list);
     fbo_free(&target);
     glDeleteLists(fullscreen_quad, 1);
     SDL_GL_DeleteContext(glctx);  

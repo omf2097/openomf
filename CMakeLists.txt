@@ -20,6 +20,7 @@ add_executable(openomf
     src/utils/log.c
     src/utils/config.c
     src/utils/list.c
+    src/utils/array.c
     src/video/video.c
     src/video/texture.c
     src/video/fbo.c
@@ -32,6 +33,7 @@ add_executable(openomf
     src/audio/stream.c
     src/audio/soundloader.c
     src/game/scene.c
+    src/game/animation.c
     src/game/scenes/intro.c
     src/game/scenes/menu.c
 )
