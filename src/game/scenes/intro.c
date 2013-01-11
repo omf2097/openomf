@@ -7,7 +7,7 @@ int intro_event(scene *scene, SDL_Event *event) {
     return 1;
 }
 
-void intro_render(scene *scene) {
+void intro_render(scene *scene, unsigned int delta) {
 
 }
 

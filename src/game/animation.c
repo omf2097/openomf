@@ -8,15 +8,6 @@ int animation_create(animation *ani, sd_bk_anim *bka, sd_palette *pal, int overl
     ani->bka = bka;
     array_create(&ani->sprites);
     
-    // Load parser
-    ani->parser = sd_stringparser_create();
-    if(sd_stringparser_set_string(ani->parser, bka->animation->anim_string)) {
-        array_free(&ani->sprites);
-        sd_stringparser_delete(ani->parser);
-        PERROR("Unable to initialize stringparser w/ '%s'", bka->animation->anim_string);
-        return 1;
-    }
-    
     // Load textures
     sd_rgba_image *img = 0;
     for(int i = 0; i < bka->animation->frame_count; i++) {
@@ -38,6 +29,5 @@ void animation_free(animation *ani) {
         free(ptr);
     }
     array_free(&ani->sprites);
-    sd_stringparser_delete(ani->parser);
     ani->bka = 0;
 }

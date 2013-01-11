@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include "video/texture.h"
 #include "utils/array.h"
+#include "utils/list.h"
 
 enum {
     SCENE_INTRO = 0,
@@ -31,9 +32,10 @@ typedef struct scene_t {
     unsigned int ticks;
     texture background;
     array animations;
+    list players;
     
     int (*event)(scene *scene, SDL_Event *event);
-    void (*render)(scene *scene);
+    void (*render)(scene *scene, unsigned int delta);
 } scene;
 
 int scene_load(scene *scene, unsigned int scene_id);
