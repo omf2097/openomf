@@ -2,7 +2,8 @@
 #define _SD_STRINGPARSER_TAGS_H
 
 /* Tags for callbacks */
-#define SD_CB_MUSIC "smo"
+#define SD_CB_MUSIC_ON "smo"
+#define SD_CB_MUSIC_OFF "smf"
 #define SD_CB_SOUND "s"
 #define SD_CB_JUMP_TICK "d"
 #define SD_CB_BLEND_START "bs"
