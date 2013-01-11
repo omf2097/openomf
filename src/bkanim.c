@@ -27,7 +27,7 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     bka->null = sd_read_ubyte(r);
     bka->chain_hit = sd_read_ubyte(r);
     bka->chain_no_hit = sd_read_ubyte(r);
-    bka->repeat = sd_read_ubyte(r);
+    bka->load_on_start = sd_read_ubyte(r);
     bka->probability = sd_read_uword(r);
     bka->hazard_damage = sd_read_ubyte(r);
     uint16_t unknown_size = sd_read_uword(r);
@@ -53,7 +53,7 @@ void sd_bk_anim_save(sd_writer *writer, sd_bk_anim *bka) {
     sd_write_ubyte(writer, bka->null);
     sd_write_ubyte(writer, bka->chain_hit);
     sd_write_ubyte(writer, bka->chain_no_hit);
-    sd_write_ubyte(writer, bka->repeat);
+    sd_write_ubyte(writer, bka->load_on_start);
     sd_write_uword(writer, bka->probability);
     sd_write_ubyte(writer, bka->hazard_damage);
     if (bka->unknown_data) {
