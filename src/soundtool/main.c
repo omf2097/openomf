@@ -4,8 +4,7 @@
   * @license MIT
   */
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
+#include <ao/ao.h>
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 
@@ -75,34 +74,38 @@ int main(int argc, char* argv[]) {
             goto exit_1;
         }
     
-        // Init SDL
-        SDL_Init(SDL_INIT_AUDIO);
-        if(Mix_OpenAudio(8000, AUDIO_U8, 1, 8192)) {
-            printf("Failed to initialize SDL2_mixer : %s!\n", Mix_GetError());
+        // Initialize libao
+        ao_initialize();
+        
+        // Some required vars ...
+        int driver;
+        ao_device* output;
+        ao_sample_format format;
+            
+        // Set format
+        format.bits = 8;
+        format.rate = 8000;
+        format.channels = 1;
+        format.byte_format = AO_FMT_NATIVE;
+        format.matrix = NULL;
+        
+        // Open live output dev
+        driver = ao_default_driver_id();
+        output = ao_open_live(driver, &format, NULL);
+        if(output == NULL) {
+            printf("Unable to open output device!\n");
             goto exit_2;
         }
-        printf("Audio channel opened.\n");
-        
-        // Load audio
-        Mix_Chunk *raw_chunk = (Mix_Chunk*)malloc(sizeof(Mix_Chunk));
-        raw_chunk->allocated = 0;
-        raw_chunk->abuf = (Uint8*)sounds->sounds[id]->data;
-        raw_chunk->alen = sounds->sounds[id]->len;
-        raw_chunk->volume = 128;
         
         // Play
-        Mix_PlayChannel(-1, raw_chunk, 0);
-        
-        // Wait while playing
-        while(Mix_Playing(-1) > 0) {
-            SDL_Delay(10);
-        }
+        printf("Playing ...");
+        ao_play(output, sounds->sounds[id]->data, sounds->sounds[id]->len);
+        printf(" done.\n");
        
         // All done, free resources
-        free(raw_chunk);
-        Mix_CloseAudio();
+        ao_close(output);
 exit_2:
-        SDL_Quit();
+        ao_shutdown();
     } else {
         printf("Valid sample ID's:\n");
         int k = 0;

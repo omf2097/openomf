@@ -4,18 +4,12 @@
   * @license MIT
   */
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
 #include <argtable2.h>
 #include <dumb/dumb.h>
+#include <ao/ao.h>
 #include <stdint.h>
 
 #define DELTA (65536.0f / 44100)
-
-void psm_player(void *udata, uint8_t *stream, int len) {
-    DUH_SIGRENDERER *renderer = (DUH_SIGRENDERER*)udata;
-    duh_render(renderer, 16, 0, 1.0f, DELTA, len / 4, stream);
-}
 
 int main(int argc, char *argv[]) {
     dumb_register_stdfiles();
@@ -25,8 +19,9 @@ int main(int argc, char *argv[]) {
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_lit *loop = arg_lit0("l", "loop", "Loop playback");
     struct arg_file *file = arg_file1("f", "file", "<file>", "File to play");
+    struct arg_file *export = arg_file0("e", "export", "<file>", "Wav file to export to");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,loop,file,end};
+    void* argtable[] = {help,vers,loop,file,export,end};
     const char* progname = "musictool";
     
     // Make sure everything got allocated
@@ -63,18 +58,6 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
     
-    // argtable2 will make sure we have the -f parameter set
-    // So just init and try to play ...
-    
-    // Initialize everything
-    SDL_Init(SDL_INIT_AUDIO);
-    printf("Attempting to play '%s' ...\n", file->filename[0]);
-    if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 16384)) {
-        printf("Failed to initialize SDL2_mixer!\n");
-        goto exit_1;
-    }
-    printf("Audio channel opened.\n");
-    
     // Some libdumb related stuff
     DUH *data;
     DUH_SIGRENDERER *renderer;
@@ -83,45 +66,79 @@ int main(int argc, char *argv[]) {
     data = dumb_load_psm(file->filename[0], 0);
     if(!data) {
         printf("Unable to load file!\n");
-        goto exit_2;
+        goto exit_0;
     }
+    renderer = duh_start_sigrenderer(data, 0, 2, 0);
     printf("File loaded!\n");
     
-    // Kick the renderer up
-    renderer = duh_start_sigrenderer(data, 0, 2, 0);
+    // Initialize libao
+    ao_initialize();
     
-    // Hook custom playback function
-    Mix_HookMusic(psm_player, renderer);
+    // Some required vars ...
+    int driver;
+    ao_device* output;
+    ao_sample_format format;
+        
+    // Set format
+    format.bits = 16;
+    format.rate = 44100;
+    format.channels = 2;
+    format.byte_format = AO_FMT_NATIVE;
+    format.matrix = NULL;
     
-    // Idle while playing
-    long pos = 0;
-    long len = duh_get_length(data);
-    int pc = 0;
-    int last_pc = -1;
-    printf("Position: 0%%");
-    fflush(stdout);
-    while(pos < len || loop->count > 0) {
-        // Prevent looping
-        pos = duh_sigrenderer_get_position(renderer);
+    // Export vs. play
+    if(export->count > 0) {
+        printf("Attempting to export to '%s'.\n", export->filename[0]);
 
-        // Show data to user
-        pc = (((float)pos / (float)len) * 100);
-        if(pc % 10 == 0 && pc != last_pc && pc != 0) {
-            printf(" ... %d%%", pc);
-            fflush(stdout);
-            last_pc = pc;
+        // Open output file
+        driver = ao_driver_id("wav");
+        output = ao_open_file(driver, export->filename[0], 0, &format, NULL);
+        if(output == NULL) {
+            printf("Could not open export file.");
+            goto exit_1;
         }
-        SDL_Delay(10);
+        
+        // Save to file
+        printf("Converting ...");
+        long pos = 0;
+        long len = duh_get_length(data);
+        char buf[4096];
+        while(pos < len) {
+            duh_render(renderer, 16, 0, 1.0f, DELTA, 1024, buf);
+            ao_play(output, buf, 4096);
+            pos = duh_sigrenderer_get_position(renderer);
+        }
+        printf(" done.\n");
+    } else {
+        printf("Attempting to play file ...\n");
+    
+        // Open live output dev
+        driver = ao_default_driver_id();
+        output = ao_open_live(driver, &format, NULL);
+        if(output == NULL) {
+            printf("Unable to open output device!\n");
+            goto exit_1;
+        }
+    
+        // Play
+        printf("Playing ...");
+        long pos = 0;
+        long len = duh_get_length(data);
+        char buf[4096];
+        while(pos < len || loop->count > 0) {
+            duh_render(renderer, 16, 0, 1.0f, DELTA, 1024, buf);
+            ao_play(output, buf, 4096);
+            pos = duh_sigrenderer_get_position(renderer);
+        }
+        printf(" done.\n");
     }
-    printf("\n");
-
-    // Deinit everything
+    
+    printf("Finished!\n");
+    ao_close(output);
+exit_1:
+    ao_shutdown();
     duh_end_sigrenderer(renderer);
     unload_duh(data);
-exit_2:
-    Mix_CloseAudio();
-exit_1:
-    SDL_Quit();
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     return 0;
