@@ -8,6 +8,7 @@
 #include <dumb/dumb.h>
 #include <ao/ao.h>
 #include <stdint.h>
+#include <string.h>
 
 #define DELTA (65536.0f / 44100)
 
@@ -19,7 +20,7 @@ int main(int argc, char *argv[]) {
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_lit *loop = arg_lit0("l", "loop", "Loop playback");
     struct arg_file *file = arg_file1("f", "file", "<file>", "File to play");
-    struct arg_file *export = arg_file0("e", "export", "<file>", "Wav file to export to");
+    struct arg_file *export = arg_file0("e", "export", "<file>", "WAV file to export to");
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,loop,file,export,end};
     const char* progname = "musictool";
@@ -80,10 +81,11 @@ int main(int argc, char *argv[]) {
     ao_sample_format format;
         
     // Set format
+    memset(&format, 0, sizeof(format));
     format.bits = 16;
     format.rate = 44100;
     format.channels = 2;
-    format.byte_format = AO_FMT_NATIVE;
+    format.byte_format = AO_FMT_LITTLE;
     format.matrix = NULL;
     
     // Export vs. play
@@ -99,13 +101,16 @@ int main(int argc, char *argv[]) {
         }
         
         // Save to file
-        printf("Converting ...");
+        printf("Converting ... ");
         long pos = 0;
         long len = duh_get_length(data);
         char buf[4096];
         while(pos < len) {
             duh_render(renderer, 16, 0, 1.0f, DELTA, 1024, buf);
-            ao_play(output, buf, 4096);
+            if(ao_play(output, buf, 4096) == 0) {
+                printf(" Error while doing ao_play!\n");
+                goto exit_2;
+            }
             pos = duh_sigrenderer_get_position(renderer);
         }
         printf(" done.\n");
@@ -134,6 +139,7 @@ int main(int argc, char *argv[]) {
     }
     
     printf("Finished!\n");
+exit_2:
     ao_close(output);
 exit_1:
     ao_shutdown();
