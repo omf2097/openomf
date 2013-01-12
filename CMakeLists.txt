@@ -3,7 +3,7 @@ project(ShadowDive C)
 
 set(CMAKE_C_FLAGS "-Wall -std=gnu99 -ggdb -Werror")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=gnu99 -ggdb -Werror")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -std=gnu99 -O2 -march=i686 -Werror")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -std=gnu99 -Os -march=i686 -Werror")
 
 link_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(include/)
