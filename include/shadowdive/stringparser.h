@@ -12,39 +12,32 @@ typedef struct sd_stringparser_tag_info_t {
     const char *description;
 } sd_stringparser_tag_info;
 
-typedef struct sd_stringparser_cb_param_t {
-    /* tag_info and tag_value are unavailable during frame change callback */
-    const sd_stringparser_tag_info *tag_info;
-    const int tag_value;
+typedef struct sd_stringparser_tag_value {
+    int is_set;
+    int value;
+} sd_stringparser_tag_value;
 
+typedef struct sd_stringparser_frame_t {
     /* a list of tags for the current frame, unavailable if_animation_end is true */
-    const int num_tags;
+    int num_tags;
     const char **tags;
-    const int *tag_values;
-
-    /* The current tick */
-    const int tick;
+    int *tag_values;
 
     /* the duration of this frame, unavailable if_animation_end is true */
-    const int duration;
+    int duration;
 
     /* the frame character in uppercase, unavailable if_animation_end is true */
-    const char frame;
+    char frame;
 
     /* is_first_frame is set to 1 if the current frame is the first frame of this animation */
-    const int is_first_frame;
+    int is_first_frame;
 
     /* is_final_frame is set to 1 if the current frame is the final frame of this animation */
-    const int is_final_frame;
+    int is_final_frame;
 
     /* is_animation_end is set to 1 if the current animation has ended (ie. 1 frame after the final frame) */
-    const int is_animation_end;
-
-    /* The userdata pointer that was passed to sd_stringparser_set_default_cb/sd_stringparser_set_cb */
-    void *userdata;
-} sd_stringparser_cb_param;
-
-typedef void(*sd_stringparser_cb_t)(sd_stringparser_cb_param *info);
+    int is_animation_end;
+} sd_stringparser_frame;
 
 typedef struct sd_stringparser_t {
     char *string;
@@ -58,20 +51,19 @@ void sd_stringparser_delete(sd_stringparser *parser);
 /* Parses the string and construct an animation list internally, may return error */
 int sd_stringparser_set_string(sd_stringparser *parser, const char *string);
 
-/* Set a callback, the userdata pointer is passed to the callback */
-void sd_stringparser_set_cb(sd_stringparser *parser, const char *tag, sd_stringparser_cb_t callback, void *userdata);
-
-/* Set a default callback to handle every other tags */
-void sd_stringparser_set_default_cb(sd_stringparser *parser, sd_stringparser_cb_t callback, void *userdata);
-
-/* Set a callback to gets called when changing to a new frame */
-void sd_stringparser_set_frame_change_cb(sd_stringparser *parser, sd_stringparser_cb_t callback, void *userdata);
-
 /* Reset the animation to the first frame */
 void sd_stringparser_reset(sd_stringparser *parser);
 
 /* Run the animation at "ticks", may return error */
-int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks);
+int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks, sd_stringparser_frame *out_frame);
+
+/* Return 0 if the tag was found, otherwise return 1 */
+/* out_tag must be declared as const sd_stringparser_tag_value* */
+int sd_stringparser_get_tag(sd_stringparser *parser, const char *tag, const sd_stringparser_tag_value **out_tag);
+
+/* Return 0 if the tag was found, otherwise return 1 */
+/* out_tag must be declared as const sd_stringparser_tag_info* */
+int sd_stringparser_get_taginfo(sd_stringparser *parser, const char *tag, const sd_stringparser_tag_info ** out_info);
 
 int sd_stringparser_prettyprint_frame(sd_stringparser *parser, unsigned int frame);
 

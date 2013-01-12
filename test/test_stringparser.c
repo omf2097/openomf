@@ -2,39 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef struct tag_value_t {
-    int value;
-    int has_value;
-} tag_value;
 
-typedef struct anim_states_t {
-    tag_value blendstart; //bs
-    tag_value blendfinish; //bf
-    tag_value blendadditive; //br
-    tag_value jumptick;
-
-} anim_states;
-
-void anim_states_reset(anim_states *st) {
-    st->blendstart.has_value = 0;
-    st->blendfinish.has_value = 0;
-    st->blendadditive.has_value = 0;
-    st->jumptick.has_value = 0;
-}
-
-void set_variable(sd_stringparser_cb_param *param) {
-    tag_value *v = param->userdata;
-    v->has_value = 1;
-    v->value = param->tag_value;
-}
-
-void frame_change(sd_stringparser_cb_param *param) {
-    
-    if(param->is_first_frame) printf("First frame\n");
-    else if(param->is_final_frame) printf("Final frame\n");
-    else if(param->is_animation_end) printf("%d.Animation  finished\n", param->tick);
-    else printf("Frame changed\n");
-}
 
 void test_state_variables(const char *anim_str) {
     sd_stringparser *parser = sd_stringparser_create();
@@ -43,27 +11,37 @@ void test_state_variables(const char *anim_str) {
     int err = sd_stringparser_set_string(parser, anim_str);
     if(err == 0) 
     {
-        anim_states st;
-        sd_stringparser_set_frame_change_cb(parser, frame_change, NULL);
-        sd_stringparser_set_cb(parser, "bs", set_variable, &st.blendstart);
-        sd_stringparser_set_cb(parser, "bf", set_variable, &st.blendfinish);
-        sd_stringparser_set_cb(parser, "br", set_variable, &st.blendadditive);
-        sd_stringparser_set_cb(parser, "d", set_variable, &st.jumptick);
+        sd_stringparser_frame frame;
+        const sd_stringparser_tag_value *tag;
 
         int jump_count = 0;
         for(unsigned int tick=0;tick<2000;++tick) {
-            anim_states_reset(&st);
-            sd_stringparser_run(parser, tick);
-            if(st.blendadditive.has_value) printf("Tick %d: blend additive %d\n", tick, st.blendadditive.value);
-            if(st.blendstart.has_value) printf("Tick %d: blend start %d\n", tick, st.blendstart.value);
-            if(st.blendfinish.has_value) printf("Tick %d: blend finish %d\n", tick, st.blendfinish.value);
-            if(st.jumptick.has_value) {
-                printf("Tick %d: jump to tick %d\n", tick, st.jumptick.value);
-                tick = st.jumptick.value-1;
-                jump_count++;
+            if(sd_stringparser_run(parser, tick, &frame) == 0) {
+                if(frame.is_first_frame) printf("First frame\n");
+                else if(frame.is_final_frame) printf("Final frame\n");
+                else if(frame.is_animation_end) printf("%d.Animation  finished\n", tick);
+                else printf("Frame changed\n");
+
+                if(sd_stringparser_get_tag(parser, SD_BLEND_ADDITIVE, &tag) == 0) {
+                    if(tag->is_set) printf("Tick %d: blend additive %d\n", tick, tag->value);
+                }
+                if(sd_stringparser_get_tag(parser, SD_BLEND_START, &tag) == 0) {
+                    if(tag->is_set) printf("Tick %d: blend start %d\n", tick, tag->value);
+                }
+                if(sd_stringparser_get_tag(parser, SD_BLEND_FINISH, &tag) == 0) {
+                    if(tag->is_set) printf("Tick %d: blend finish %d\n", tick, tag->value);
+                }
+                if(sd_stringparser_get_tag(parser, SD_JUMP_TICK, &tag) == 0) {
+                    if(tag->is_set) {
+                        printf("Tick %d: jump to tick %d\n", tick, tag->value);
+                        tick = tag->value-1;
+                        jump_count++;
+                    }
+                }
+
+                // limit jump count to avoid infinite loop
+                if(jump_count > 3) break;
             }
-            // limit jump count to avoid infinite loop
-            if(jump_count > 3) break;
         }
     } else {
         sd_get_error(err_msg, err);
@@ -78,11 +56,12 @@ void test_anim_string(sd_stringparser *parser, const char *str) {
     unsigned int ticks = 0;
     char err_msg[100];
     int err = sd_stringparser_set_string(parser, str);
+    sd_stringparser_frame frame;
     if(err) {
         sd_get_error(err_msg, err);
         printf("Animation string parser error: %s (%s)\n", err_msg, str);
     } else {
-        sd_stringparser_run(parser, ticks);
+        sd_stringparser_run(parser, ticks, &frame);
         sd_stringparser_prettyprint(parser);
         printf("%s passed\n", str);
     }
@@ -91,13 +70,14 @@ void test_anim_string(sd_stringparser *parser, const char *str) {
 void test_broken_string(sd_stringparser *parser) {
     unsigned int ticks = 0;
     char err_msg[100];
+    sd_stringparser_frame frame;
     const char *broken_string = "x+4zcubs21l50zp";
     int err = sd_stringparser_set_string(parser, broken_string);
     if(err) {
         sd_get_error(err_msg, err);
         printf("Animation string parser error: %s (%s)\n", err_msg, broken_string);
     } else {
-        sd_stringparser_run(parser, ticks);
+        sd_stringparser_run(parser, ticks, &frame);
         printf("broken string test passed\n\n");
     }
 }
