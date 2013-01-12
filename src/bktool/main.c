@@ -11,6 +11,8 @@
 #include "../shared/animation_misc.h"
 #include "../shared/conversions.h"
 
+void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim);
+
 int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
     if(anim > 50 || anim < 0 || bk->anims[anim] == 0) {
         printf("Animation #%d does not exist.\n", anim);
@@ -145,6 +147,9 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                         } else {
                             anim = i;
                             printf("UP: animation is now %u\n", anim);
+                            sd_bk_anim *bka = bk->anims[anim];
+                            sd_animation *ani = bka->animation;
+                            bkanim_info(bka, ani, anim);
                             sprite = 0;
                         }
                         changed = 1;
@@ -159,6 +164,9 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                         } else {
                             anim = i;
                             printf("DOWN: animation is now %u\n", anim);
+                            sd_bk_anim *bka = bk->anims[anim];
+                            sd_animation *ani = bka->animation;
+                            bkanim_info(bka, ani, anim);
                             sprite = 0;
                         }
                         changed = 1;
@@ -169,7 +177,9 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                 if (changed) {
                     s = bk->anims[anim]->animation->sprites[sprite];
                     img = sd_sprite_image_decode(s->img, bk->palettes[0], -1);
-                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->img->w, s->img->h, s->img->len);
+                    int x = s->pos_x + bk->anims[anim]->animation->start_x;
+                    int y = s->pos_y + bk->anims[anim]->animation->start_y;
+                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", x, y, s->img->w, s->img->h, s->img->len);
 
                     if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img->data, img->w, img->h, 32, img->w*4,
                                     rmask, gmask, bmask, amask))) {
@@ -184,8 +194,8 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
 
                     SDL_FreeSurface(surface);
 
-                    rect.x = s->pos_x;
-                    rect.y = s->pos_y;
+                    rect.x = x;
+                    rect.y = y;
                     rect.w = s->img->w;
                     rect.h = s->img->h;
                 }
@@ -198,7 +208,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
         SDL_SetRenderTarget(renderer, NULL);
         SDL_RenderCopy(renderer, rendertarget, NULL, &dstrect);
         SDL_RenderPresent(renderer);
-        SDL_Delay(1); // don't chew too much CPU
+        SDL_Delay(10); // don't chew too much CPU
     }
 
     // Close and destroy the window
