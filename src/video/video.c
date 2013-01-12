@@ -8,20 +8,27 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 
-SDL_Window *window;
-SDL_GLContext glctx;
-fbo target;
-unsigned int fullscreen_quad, fullscreen_quad_flipped;
-list render_list;
-texture *background_texture;
-
 typedef struct gl_sprite_t {
     texture *tex;
     unsigned int x,y;
     unsigned int rendering_mode;
+    int priority;
 } gl_sprite;
 
+SDL_Window *window;
+SDL_GLContext glctx;
+fbo target;
+unsigned int fullscreen_quad, fullscreen_quad_flipped;
+gl_sprite *objects[100];
+int objects_size;
+texture *background_texture;
+int screen_w, screen_h;
+
+
 int video_init(int window_w, int window_h, int fullscreen, int vsync) {
+    screen_w = window_w;
+    screen_h = window_h;
+
     // Settings
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE,     8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,   8);
@@ -114,9 +121,9 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     
     // BG Tex
     background_texture = 0;
- 
-    // Initialize the list of stuff to be rendered
-    list_create(&render_list);
+    
+    // Objects list
+    objects_size = 0;
     
     // Show some info
     DEBUG("Video Init OK");
@@ -150,26 +157,38 @@ void video_set_background(texture *tex) {
     background_texture = tex;
 }
 
-void video_queue_add(texture *tex, unsigned int x, unsigned int y, unsigned int rendering_mode) {
+int texsort(const void *a, const void *b) {
+    const gl_sprite *sa = *(gl_sprite**)a;
+    const gl_sprite *sb = *(gl_sprite**)b;
+    return (sa->priority - sb->priority);
+}
+
+void video_queue_add(texture *tex, unsigned int x, unsigned int y, unsigned int rendering_mode, int priority) {
     gl_sprite *s = malloc(sizeof(gl_sprite));
     s->tex = tex;
     s->x = x;
     s->y = y;
+    s->priority = priority;
     s->rendering_mode = rendering_mode;
-    list_push_last(&render_list, s);
+    objects[objects_size++] = s;
+    qsort(objects, objects_size, sizeof(gl_sprite*), texsort);
 }
 
 void video_queue_remove(texture *tex) {
-    list_iterator it;
-    list_iter(&render_list, &it);
-    gl_sprite *s;
-    while((s = list_next(&it)) != 0) {
-        if(s->tex == tex) {
-            list_delete(&render_list, &it);
-            free(s);
-            return;
+    // Find tex
+    int index = -1;
+    for(int r = 0; r < objects_size; r++) {
+        if(tex == objects[r]->tex && index < 0) {
+            index = r;
+            free(objects[r]);
+            objects[r] = 0;
+            continue;
+        }
+        if(index > -1) {
+            objects[r-1] = objects[r];
         }
     }
+    objects_size--;
 }
 
 void video_render_finish() {
@@ -182,10 +201,9 @@ void video_render_finish() {
     }
 
     // Render sprites etc. here from list
-    list_iterator it;
-    list_iter(&render_list, &it);
     gl_sprite *sprite;
-    while((sprite = list_next(&it)) != 0) {
+    for(int r = 0; r < objects_size; r++) {
+        sprite = objects[r];
         switch(sprite->rendering_mode) {
         case BLEND_ADDITIVE:
             // Additive blending, so enable blending and disable alpha testing
@@ -229,7 +247,7 @@ void video_render_finish() {
     // Clear stuff
     glDisable(GL_STENCIL_TEST);
     glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0, 0, 640, 400);
+    glViewport(0, 0, screen_w, screen_h);
     glLoadIdentity();
 
     // Disable blending & alpha testing
@@ -258,7 +276,9 @@ void video_render_finish() {
 }
 
 void video_close() {
-    list_free(&render_list);
+    for(int r = 0; r < objects_size; r++) {
+        free(objects[r]);
+    }
     fbo_free(&target);
     glDeleteLists(fullscreen_quad, 1);
     SDL_GL_DeleteContext(glctx);  

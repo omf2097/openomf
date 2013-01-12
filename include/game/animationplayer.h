@@ -23,6 +23,7 @@ typedef struct animationplayer_t {
     
     list children;
     animationplayer *parent;
+    int priority;
     
     unsigned int x,y;
     texture *obj;

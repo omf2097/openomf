@@ -44,7 +44,7 @@ void cb_parser_anim_create(sd_stringparser_cb_param *param) {
         animationplayer_create(id, np, ani, p->anims, p);
         np->x = ani->sdani->start_x;
         np->y = ani->sdani->start_y;
-        list_push_last(&p->children, np);
+        list_push_first(&p->children, np);
         DEBUG("Create animation %d @ x,y = %d,%d", id, np->x, np->y);
     } else {
         PERROR("Attempted to create an instance of nonexistent animation!");
@@ -52,6 +52,11 @@ void cb_parser_anim_create(sd_stringparser_cb_param *param) {
 }
 
 void animationplayer_destroy_child(animationplayer *player, int id) {
+    // Animation was not found from this level. Check sister animations.
+    if(player->parent) {
+        animationplayer_destroy_child(player->parent, id);
+    }
+
     // Attempt to kill child from this node
     list_iterator it;
     list_iter(&player->children, &it);
@@ -63,11 +68,6 @@ void animationplayer_destroy_child(animationplayer *player, int id) {
             free(tmp);
             return;
         }
-    }
-    
-    // Animation was not found from this level. Check sister animations.
-    if(player->parent) {
-        animationplayer_destroy_child(player->parent, id);
     }
 }
 
@@ -113,9 +113,15 @@ void cb_parser_frame_change(sd_stringparser_cb_param *param) {
     texture *tex = array_get(&p->ani->sprites, real_frame);
     if(tex) {
         incinerate_obj(p);
-        video_queue_add(tex, p->x + sprite->pos_x, p->y + sprite->pos_y, p->state.blendmode);
+        video_queue_add(tex, p->x + sprite->pos_x, p->y + sprite->pos_y, p->state.blendmode, p->priority);
         p->obj = tex;
-        DEBUG("Frame %d, x,y = %d,%d, blendmode = %s", real_frame, p->x + sprite->pos_x, p->y + sprite->pos_y, (p->state.blendmode == BLEND_ALPHA ? "alpha" : "additive"));
+        const char *modetext = (p->state.blendmode == BLEND_ADDITIVE ? "additive" : "alpha");
+        DEBUG("Frame %d, x,y = %d,%d, prio = %d, blendmode = %s", 
+                real_frame, 
+                p->x + sprite->pos_x, 
+                p->y + sprite->pos_y,
+                p->priority,
+                modetext);
     } else {
         PERROR("No texture @ %u", real_frame);
     }
@@ -130,6 +136,7 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
     player->finished = 0;
     player->anims = anims;
     player->parent = parent;
+    player->priority = (parent != 0) ? parent->priority+1 : 0;
     list_create(&player->children);
     if(sd_stringparser_set_string(player->parser, animation->sdani->anim_string)) {
         sd_stringparser_delete(player->parser);

@@ -14,8 +14,14 @@ int scene_load(scene *scene, unsigned int scene_id) {
     
     // Load BK
     switch(scene_id) {
-        case SCENE_INTRO: ret = sd_bk_load(scene->bk, "resources/INTRO.BK"); break;
-        case SCENE_MENU:  ret = sd_bk_load(scene->bk, "resources/MAIN.BK");  break;
+        case SCENE_INTRO:    ret = sd_bk_load(scene->bk, "resources/INTRO.BK");    break;
+        case SCENE_MENU:     ret = sd_bk_load(scene->bk, "resources/MAIN.BK");     break;
+        case SCENE_NEWSROOM: ret = sd_bk_load(scene->bk, "resources/NEWSROOM.BK"); break;
+        case SCENE_END:      ret = sd_bk_load(scene->bk, "resources/END.BK");      break;
+        case SCENE_END1:     ret = sd_bk_load(scene->bk, "resources/END1.BK");     break;
+        case SCENE_END2:     ret = sd_bk_load(scene->bk, "resources/END2.BK");     break;
+        case SCENE_MELEE:    ret = sd_bk_load(scene->bk, "resources/MELEE.BK");    break;
+        case SCENE_VS:       ret = sd_bk_load(scene->bk, "resources/VS.BK");       break;
         default:
             sd_bk_delete(scene->bk);
             PERROR("Unknown scene_id!");

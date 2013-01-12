@@ -6,13 +6,17 @@
 #include "utils/array.h"
 #include "utils/list.h"
 
-#define MS_PER_OMF_TICK 11
+#define MS_PER_OMF_TICK 10
 
 enum {
     SCENE_INTRO = 0,
     SCENE_MENU,
     SCENE_END,
+    SCENE_END1,
+    SCENE_END2,
     SCENE_MECHLAB,
+    SCENE_VS,
+    SCENE_MELEE,
     SCENE_NEWSROOM,
     SCENE_TOURNAMENT,
     SCENE_ARENA0,
