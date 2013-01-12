@@ -360,50 +360,61 @@ static void sd_framelist_process(frame_list *frames, tag_list *tags, unsigned in
     }
 
     // only handle frame once
-    if(cur && ticks >= cur->start_tick) {
+    unsigned int total_duration = frames->frames[frames->num_frames-1].start_tick + frames->frames[frames->num_frames-1].duration;
+    if((cur && ticks >= cur->start_tick) || 
+        (frames->current_frame == frames->num_frames && ticks >= total_duration)) {
+
         int is_first_frame = ((cur == &frames->frames[0]) ? 1 : 0);
         int is_final_frame = ((cur == &frames->frames[frames->num_frames-1]) ? 1 : 0);
+        int is_animation_end = ((frames->current_frame >= frames->num_frames) ? 1 : 0);
+
         if(frames->frame_change_cb) {        
             sd_stringparser_cb_param cb_param = { NULL, //tag info 
                                                   0, //tag value
-                                                  cur->num_tags,
-                                                  cur->tags,
-                                                  cur->tag_params,
+                                                  is_animation_end ? 0 : cur->num_tags,
+                                                  is_animation_end ? NULL : cur->tags,
+                                                  is_animation_end ? NULL : cur->tag_params,
                                                   ticks, 
-                                                  cur->duration,
-                                                  cur->frame_letter,
+                                                  is_animation_end ? 0 : cur->duration,
+                                                  is_animation_end ? 0 : cur->frame_letter,
                                                   is_first_frame,
                                                   is_final_frame,
+                                                  is_animation_end,
                                                   frames->frame_change_data, // userdata
                                                 };
             frames->frame_change_cb(&cb_param);
+            if(is_animation_end)
+                frames->current_frame++;
         }
 
-        for(int i = 0;i < cur->num_tags;++i) {
-            tag_attribute *tag = sd_taglist_find_tag(tags, cur->tags[i]);
-            if(tag) {
-                sd_stringparser_cb_param cb_param = { tag->tag_info,
-                                                      cur->tag_params[i],
-                                                      cur->num_tags,
-                                                      cur->tags,
-                                                      cur->tag_params,
-                                                      ticks, 
-                                                      cur->duration,
-                                                      cur->frame_letter,
-                                                      is_first_frame,
-                                                      is_final_frame,
-                                                      NULL // userdata
-                                                    };
-                if(tag->callback) {
-                    cb_param.userdata = tag->data;
-                    tag->callback(&cb_param);
-                } else if(tags->default_cb) {
-                    cb_param.userdata = tags->default_cb_data;
-                    tags->default_cb(&cb_param);
+        if(is_animation_end == 0)  {
+            for(int i = 0;i < cur->num_tags;++i) {
+                tag_attribute *tag = sd_taglist_find_tag(tags, cur->tags[i]);
+                if(tag) {
+                    sd_stringparser_cb_param cb_param = { tag->tag_info,
+                                                          cur->tag_params[i],
+                                                          cur->num_tags,
+                                                          cur->tags,
+                                                          cur->tag_params,
+                                                          ticks, 
+                                                          cur->duration,
+                                                          cur->frame_letter,
+                                                          is_first_frame,
+                                                          is_final_frame,
+                                                          0, // is animation end
+                                                          NULL // userdata
+                                                        };
+                    if(tag->callback) {
+                        cb_param.userdata = tag->data;
+                        tag->callback(&cb_param);
+                    } else if(tags->default_cb) {
+                        cb_param.userdata = tags->default_cb_data;
+                        tags->default_cb(&cb_param);
+                    }
                 }
             }
+            frames->current_frame++;
         }
-        frames->current_frame++;
     }
 
     frames->last_tick = ticks;

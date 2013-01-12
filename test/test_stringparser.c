@@ -32,6 +32,7 @@ void frame_change(sd_stringparser_cb_param *param) {
     
     if(param->is_first_frame) printf("First frame\n");
     else if(param->is_final_frame) printf("Final frame\n");
+    else if(param->is_animation_end) printf("%d.Animation  finished\n", param->tick);
     else printf("Frame changed\n");
 }
 
@@ -112,7 +113,7 @@ int main(int argc, char **argv) {
     }
 
     if(strcmp(argv[1], "--testvar") == 0) {
-        test_state_variables("brA20-bs200B200-bf200C200-d1A2");
+        test_state_variables("brA20-bs200B200-bf200C200");
         return 0;
     }
 

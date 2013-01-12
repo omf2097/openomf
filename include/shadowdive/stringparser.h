@@ -17,7 +17,7 @@ typedef struct sd_stringparser_cb_param_t {
     const sd_stringparser_tag_info *tag_info;
     const int tag_value;
 
-    /* a list of tags for the current frame */
+    /* a list of tags for the current frame, unavailable if_animation_end is true */
     const int num_tags;
     const char **tags;
     const int *tag_values;
@@ -25,10 +25,10 @@ typedef struct sd_stringparser_cb_param_t {
     /* The current tick */
     const int tick;
 
-    /* the duration of this frame */
+    /* the duration of this frame, unavailable if_animation_end is true */
     const int duration;
 
-    /* the frame character in uppercase */
+    /* the frame character in uppercase, unavailable if_animation_end is true */
     const char frame;
 
     /* is_first_frame is set to 1 if the current frame is the first frame of this animation */
@@ -36,7 +36,10 @@ typedef struct sd_stringparser_cb_param_t {
 
     /* is_final_frame is set to 1 if the current frame is the final frame of this animation */
     const int is_final_frame;
-    
+
+    /* is_animation_end is set to 1 if the current animation has ended (ie. 1 frame after the final frame) */
+    const int is_animation_end;
+
     /* The userdata pointer that was passed to sd_stringparser_set_default_cb/sd_stringparser_set_cb */
     void *userdata;
 } sd_stringparser_cb_param;
