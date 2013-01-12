@@ -422,7 +422,7 @@ void af_info(sd_af_file *af) {
     
     printf(" * Animations:  ");
     int start = -1, last = -1;
-    int m;
+    unsigned int m;
     for(m = 0; m < 70; m++) {
         if(af->moves[m]) {
             if(start == -1) {

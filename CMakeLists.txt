@@ -31,3 +31,9 @@ target_link_libraries(soundtool ${CORELIBS} ${SHADOWDIVE_LIBRARY} ${SDLMIXER_LIB
 target_link_libraries(musictool ${CORELIBS} ${DUMB_LIBRARY} ${SDLMIXER_LIBRARY})
 target_link_libraries(fonttool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(languagetool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
+
+INSTALL(TARGETS bktool aftool soundtool musictool fonttool languagetool
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
