@@ -79,10 +79,10 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         }
     }
     
-    // Disable depth testing etc (not needed), enable textures
+    // Enable textures
+    glEnable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
-    glEnable(GL_TEXTURE_2D);
     
     // A nice quad. Screw you, OpenGL 3!
     fullscreen_quad = glGenLists(1);
@@ -142,7 +142,7 @@ void video_render_prepare() {
     glClear(GL_COLOR_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
     glClearStencil(0);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glViewport(0, 0, NATIVE_W, NATIVE_H);
+    glViewport(0.0f, 0.0f, NATIVE_W, NATIVE_H);
     glLoadIdentity();
 }
 
@@ -159,9 +159,17 @@ void video_queue_add(texture *tex, unsigned int x, unsigned int y, unsigned int 
     list_push_last(&render_list, s);
 }
 
-void video_queue_clear() {
-    list_free(&render_list);
-    list_create(&render_list);
+void video_queue_remove(texture *tex) {
+    list_iterator it;
+    list_iter(&render_list, &it);
+    gl_sprite *s;
+    while((s = list_next(&it)) != 0) {
+        if(s->tex == tex) {
+            list_delete(&render_list, &it);
+            free(s);
+            return;
+        }
+    }
 }
 
 void video_render_finish() {
@@ -202,17 +210,16 @@ void video_render_finish() {
         }
 
         // Just draw the texture on screen to the right spot.
-        int x = sprite->x;
-        int y = sprite->y;
-        int w = sprite->tex->w;
-        int h = sprite->tex->h;
+        float w = sprite->tex->w / 160.0f;
+        float h = sprite->tex->h / 100.0f;
+        float x = -1.0 + 2.0f * sprite->x / 320.0f;
+        float y = 1.0 - sprite->y / 100.0f - h;
         texture_bind(sprite->tex);
         glBegin(GL_QUADS);
-            glColor3f(1.0f,0.0f,0.0f); 
-            glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y+h, 0.0f); // Top Right
-            glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y+h, 0.0f); // Top Left
-            glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y,   0.0f); // Bottom Left
-            glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y,   0.0f); // Bottom Right
+            glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
+            glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
+            glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
+            glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
         glEnd();
     }    
 

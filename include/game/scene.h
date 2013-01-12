@@ -6,6 +6,8 @@
 #include "utils/array.h"
 #include "utils/list.h"
 
+#define MS_PER_OMF_TICK 11
+
 enum {
     SCENE_INTRO = 0,
     SCENE_MENU,
@@ -29,7 +31,8 @@ typedef struct scene_t {
     sd_bk_file *bk;
     unsigned int this_id;
     unsigned int next_id;
-    unsigned int ticks;
+    unsigned int real_ticks;
+    unsigned int omf_ticks;
     texture background;
     array animations;
     list players;
@@ -42,5 +45,8 @@ int scene_load(scene *scene, unsigned int scene_id);
 void scene_free(scene *scene);
 int scene_handle_event(scene *scene, SDL_Event *event);
 void scene_render(scene *scene, unsigned int delta);
+
+void scene_delete_animation(unsigned int animation);
+void scene_create_animation(unsigned int animation);
 
 #endif // _SCENE_H

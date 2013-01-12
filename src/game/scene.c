@@ -8,6 +8,20 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
 
+void create_new_animation_instance(scene *scene, unsigned int id) {
+    animation *ani = array_get(&scene->animations, id);
+    if(ani != NULL) {
+        animationplayer *player = malloc(sizeof(animationplayer));
+        animationplayer_create(id, player, ani);
+        player->x = ani->sdani->start_x;
+        player->y = ani->sdani->start_y;
+        list_push_last(&scene->players, player);
+        DEBUG("Create animation %d @ x,y = %d,%d", id, player->x, player->y);
+    } else {
+        PERROR("Attempted to create an instance of nonexistent animation!");
+    }
+}
+
 int scene_load(scene *scene, unsigned int scene_id) {
     scene->bk = sd_bk_create();
     int ret = 0;
@@ -28,7 +42,8 @@ int scene_load(scene *scene, unsigned int scene_id) {
     }
     scene->this_id = scene_id;
     scene->next_id = scene_id;
-    scene->ticks = 0;
+    scene->real_ticks = 0;
+    scene->omf_ticks = 1;
     
     // Load specific stuff
     switch(scene_id) {
@@ -52,7 +67,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
     animation *ani;
     sd_bk_anim *bka;
     array_create(&scene->animations);
-    for(int i = 0; i < 50; i++) {
+    for(unsigned int i = 0; i < 50; i++) {
         bka = scene->bk->anims[i];
         if(bka) {
             // Create animation + textures, etc.
@@ -64,10 +79,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
             // or if we are handling animation 25 of intro
             // TODO: Maybe make the exceptions a bit more generic or something ?
             if(bka->load_on_start || (scene_id == SCENE_INTRO && i == 25)) {
-                DEBUG("Loading animation %u on startup!", i);
-                animationplayer *player = malloc(sizeof(animationplayer));
-                animationplayer_create(player, ani);
-                list_push_last(&scene->players, player);
+                create_new_animation_instance(scene, i);
             }
         }
     }
@@ -86,15 +98,61 @@ int scene_handle_event(scene *scene, SDL_Event *event) {
 }
 
 void scene_render(scene *scene, unsigned int delta) {
-    scene->ticks += delta;
+    scene->real_ticks += delta;
     list_iterator it;
-    list_iter(&scene->players, &it);
     animationplayer *player;
-    while((player = list_next(&it)) != 0) {
-        animationplayer_run(player, delta);
+    
+    int kill_list[list_size(&scene->players)];
+    int kill_list_len = 0;
+    
+    int tmp = (scene->real_ticks / MS_PER_OMF_TICK) - scene->omf_ticks;
+    for(int i = 0; i < tmp; i++) {
+        // Iterate through the players
+        list_iter(&scene->players, &it);
+        while((player = list_next(&it)) != 0) {
+            animationplayer_run(player);
+            
+            // Got animation create request
+            if(player->anim_create_req >= 0) {
+                create_new_animation_instance(scene, player->anim_create_req);
+                player->anim_create_req = -1;
+            }
+            
+            // Got animation destroy request
+            if(player->anim_destroy_req >= 0) {
+                kill_list[kill_list_len++] = player->anim_destroy_req;
+                DEBUG("Killing animation %d", player->anim_destroy_req);
+                player->anim_destroy_req = -1;
+            }
+        }
+        
+        // Kill animations in killist
+        unsigned int tmp;
+        while(kill_list_len-- >= 0) {
+            list_iter(&scene->players, &it);
+            tmp = kill_list[kill_list_len-1];
+            while((player = list_next(&it)) != 0) {
+                if(tmp == player->id) {
+                    list_delete(&scene->players, &it);
+                    animationplayer_free(player);
+                    free(player);
+                    DEBUG("Killed animation %d", tmp);
+                }
+            }
+        }
+        
+        // Run custom render function, if defined
+        if(scene->render) {
+            scene->render(scene, delta);
+        }
+        scene->omf_ticks++;
     }
-    if(scene->render) {
-        scene->render(scene, delta);
+    
+    // If no animations to play, jump to next scene (if any)
+    // TODO: Hackish, make this nicer.
+    if(list_size(&scene->players) <= 0) {
+        scene->next_id = SCENE_MENU;
+        DEBUG("NEXT ID!");
     }
 }
 
