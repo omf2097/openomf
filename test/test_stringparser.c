@@ -12,7 +12,24 @@ void test_state_variables(const char *anim_str) {
     if(err == 0) 
     {
         sd_stringparser_frame frame;
-        const sd_stringparser_tag_value *tag;
+        const sd_stringparser_tag_value *blend_additive, *blend_start, *blend_end, *jump;
+
+        if(sd_stringparser_get_tag(parser, SD_BLEND_ADDITIVE, &blend_additive)) {
+            printf("Error getting blend additive tag\n");
+            return;
+        }
+        if(sd_stringparser_get_tag(parser, SD_BLEND_START, &blend_start)) {
+            printf("Error getting blend start tag\n");
+            return;
+        }
+        if(sd_stringparser_get_tag(parser, SD_BLEND_FINISH, &blend_end)) {
+            printf("Error getting blend end tag\n");
+            return;
+        }
+        if(sd_stringparser_get_tag(parser, SD_JUMP_TICK, &jump)) {
+            printf("Error getting jump tag\n");
+            return;
+        }
 
         int jump_count = 0;
         for(unsigned int tick=0;tick<2000;++tick) {
@@ -22,21 +39,22 @@ void test_state_variables(const char *anim_str) {
                 else if(frame.is_animation_end) printf("%d.Animation  finished\n", tick);
                 else printf("Frame changed\n");
 
-                if(sd_stringparser_get_tag(parser, SD_BLEND_ADDITIVE, &tag) == 0) {
-                    if(tag->is_set) printf("Tick %d: blend additive %d\n", tick, tag->value);
+                if(blend_additive->is_set) {
+                    printf("Tick %d: blend additive %d\n", tick, blend_additive->value);
                 }
-                if(sd_stringparser_get_tag(parser, SD_BLEND_START, &tag) == 0) {
-                    if(tag->is_set) printf("Tick %d: blend start %d\n", tick, tag->value);
+
+                if(blend_start->is_set) {
+                    printf("Tick %d: blend start %d\n", tick, blend_start->value);
                 }
-                if(sd_stringparser_get_tag(parser, SD_BLEND_FINISH, &tag) == 0) {
-                    if(tag->is_set) printf("Tick %d: blend finish %d\n", tick, tag->value);
+
+                if(blend_end->is_set) {
+                    printf("Tick %d: blend finish %d\n", tick, blend_end->value);
                 }
-                if(sd_stringparser_get_tag(parser, SD_JUMP_TICK, &tag) == 0) {
-                    if(tag->is_set) {
-                        printf("Tick %d: jump to tick %d\n", tick, tag->value);
-                        tick = tag->value-1;
-                        jump_count++;
-                    }
+
+                if(jump->is_set) {
+                    printf("Tick %d: jump to tick %d\n", tick, jump->value);
+                    tick = jump->value-1;
+                    jump_count++;
                 }
 
                 // limit jump count to avoid infinite loop
