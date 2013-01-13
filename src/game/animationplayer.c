@@ -8,22 +8,21 @@
 #include "video/texture.h"
 #include <stdlib.h>
 
-void cb_parser_tickjump(sd_stringparser_cb_param *param) {
-    animationplayer *p = param->userdata;
-    p->ticks = param->tag_value;
+
+void cmd_tickjump(animationplayer *player, int tick) {
+    player->ticks = tick;
 }
 
-void cb_parser_sound(sd_stringparser_cb_param *param) {
-    animationplayer *p = param->userdata;
-    soundloader_play(p->ani->soundtable[param->tag_value]-1);
+void cmd_sound(animationplayer *player, int sound) {
+    soundloader_play(player->ani->soundtable[sound]-1);
 }
 
-void cb_parser_music_off(sd_stringparser_cb_param *param) {
+void cmd_music_off() {
     music_stop();
 }
 
-void cb_parser_music_on(sd_stringparser_cb_param *param) {
-    switch(param->tag_value) {
+void cmd_music_on(int music) {
+    switch(music) {
         case 0: music_stop(); break;
         case 1: music_play("resources/END.PSM"); break;
         case 2: music_play("resources/MENU.PSM"); break;
@@ -35,26 +34,24 @@ void cb_parser_music_on(sd_stringparser_cb_param *param) {
     }
 }
 
-void cb_parser_anim_create(sd_stringparser_cb_param *param) {
-    animationplayer *p = param->userdata;
-    int id = param->tag_value;
-    animation *ani = array_get(p->anims, id);
+void cmd_anim_create(animationplayer *player, int id) {
+    animation *ani = array_get(player->anims, id);
     if(ani != NULL) {
         animationplayer *np = malloc(sizeof(animationplayer));
-        animationplayer_create(id, np, ani, p->anims, p);
+        animationplayer_create(id, np, ani, player->anims, player);
         np->x = ani->sdani->start_x;
         np->y = ani->sdani->start_y;
-        list_push_first(&p->children, np);
+        list_push_first(&player->children, np);
         DEBUG("Create animation %d @ x,y = %d,%d", id, np->x, np->y);
     } else {
         PERROR("Attempted to create an instance of nonexistent animation!");
     }
 }
 
-void animationplayer_destroy_child(animationplayer *player, int id) {
+void cmd_anim_destroy(animationplayer *player, int id) {
     // Animation was not found from this level. Check sister animations.
     if(player->parent) {
-        animationplayer_destroy_child(player->parent, id);
+        cmd_anim_destroy(player->parent, id);
     }
 
     // Attempt to kill child from this node
@@ -71,59 +68,10 @@ void animationplayer_destroy_child(animationplayer *player, int id) {
     }
 }
 
-void cb_parser_anim_destroy(sd_stringparser_cb_param *param) {
-    // Try to kill animation
-    animationplayer *player = param->userdata;
-    animationplayer_destroy_child(player, param->tag_value);
-}
-
-void cb_parser_blendmode_additive(sd_stringparser_cb_param *param) {
-    animationplayer_state *state = param->userdata;
-    state->blendmode = BLEND_ADDITIVE;
-}
-
 void incinerate_obj(animationplayer *player) {
     if(player->obj) {
         video_queue_remove(player->obj);
         player->obj = 0;
-    }
-}
-
-void cb_parser_frame_change(sd_stringparser_cb_param *param) {
-    animationplayer *p = param->userdata;
-    int real_frame = param->frame - 65;
-
-    // Remove old anim frame
-    incinerate_obj(p);
-    
-    // If last frame, ask for removal
-    if(param->is_animation_end) {
-        p->finished = 1;
-        DEBUG("Animationplayer %d asks for removal ...", p->id);
-        return;
-    }
-    
-    // 'Z' and up are invalid
-    if(real_frame >= 25) return;
-    
-    // Get real sprite info
-    sd_sprite *sprite = p->ani->sdani->sprites[real_frame];
-    
-    // Get texture
-    texture *tex = array_get(&p->ani->sprites, real_frame);
-    if(tex) {
-        incinerate_obj(p);
-        video_queue_add(tex, p->x + sprite->pos_x, p->y + sprite->pos_y, p->state.blendmode, p->priority);
-        p->obj = tex;
-        const char *modetext = (p->state.blendmode == BLEND_ADDITIVE ? "additive" : "alpha");
-        DEBUG("Frame %d, x,y = %d,%d, prio = %d, blendmode = %s", 
-                real_frame, 
-                p->x + sprite->pos_x, 
-                p->y + sprite->pos_y,
-                p->priority,
-                modetext);
-    } else {
-        PERROR("No texture @ %u", real_frame);
     }
 }
 
@@ -144,21 +92,21 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
         return 1;
     }
     DEBUG("P: '%s'", animation->sdani->anim_string);
-    
-    // Callbacks
-    sd_stringparser_set_cb(player->parser, SD_CB_JUMP_TICK, cb_parser_tickjump, player);
-    sd_stringparser_set_cb(player->parser, SD_CB_MUSIC_ON, cb_parser_music_on, player);
-    sd_stringparser_set_cb(player->parser, SD_CB_MUSIC_OFF, cb_parser_music_off, player);
-    sd_stringparser_set_cb(player->parser, SD_CB_SOUND, cb_parser_sound, player);
-    sd_stringparser_set_cb(player->parser, SD_CB_CREATE_ANIMATION, cb_parser_anim_create, player);
-    sd_stringparser_set_cb(player->parser, SD_CB_DESTROY_ANIMATION, cb_parser_anim_destroy, player); 
-    
-    // State changes
-    sd_stringparser_set_cb(player->parser, SD_CB_BLEND_ADDITIVE, cb_parser_blendmode_additive, &player->state);
-    
-    // Frame change
-    sd_stringparser_set_frame_change_cb(player->parser, cb_parser_frame_change, player);
     return 0;
+}
+
+int isset(sd_stringparser *parser, const char *tagstr) {
+    const sd_stringparser_tag_value *tag;
+    if(sd_stringparser_get_tag(parser, tagstr, &tag) == 0 && tag->is_set) {
+        return 1;
+    }
+    return 0;
+}
+
+int get(sd_stringparser *parser, const char *tagstr) {
+    const sd_stringparser_tag_value *tag;
+    sd_stringparser_get_tag(parser, tagstr, &tag);
+    return tag->value;
 }
 
 void animationplayer_free(animationplayer *player) {
@@ -180,14 +128,54 @@ void animationplayer_free(animationplayer *player) {
     player->parser = 0;
 }
 
-void reset_state(animationplayer_state *state) {
-    state->blendmode = BLEND_ALPHA;
-}
-
 void animationplayer_run(animationplayer *player) {
     if(player && player->parser && !player->finished) {
-        reset_state(&player->state);
-        sd_stringparser_run(player->parser, player->ticks-1);
+        sd_stringparser_frame param;
+        sd_stringparser *p = player->parser;
+        if(sd_stringparser_run(player->parser, player->ticks-1, &param) == 0) {
+            int real_frame = param.frame - 65;
+            
+            // Do something if animation is finished!
+            if(param.is_animation_end) {
+                player->finished = 1;
+                DEBUG("Animationplayer %d asks for removal ...", player->id);
+            }
+            
+            // Kill old sprite, if defined
+            incinerate_obj(player);
+            
+            // Tick management
+            if(isset(p, "d"))   { cmd_tickjump(player, get(p, "d")); }
+        
+            // Animation management
+            if(isset(p, "m"))   { cmd_anim_create(player, get(p, "m"));   }
+            if(isset(p, "md"))  { cmd_anim_destroy(player, get(p, "md")); }
+        
+            // Handle music and sounds
+            if(isset(p, "smo")) { cmd_music_on(get(p, "smo"));    }
+            if(isset(p, "smf")) { cmd_music_off();                }
+            if(isset(p, "s"))   { cmd_sound(player, get(p, "s")); }
+            
+            // Draw frame sprite
+            if(real_frame < 25) {
+                sd_sprite *sprite = player->ani->sdani->sprites[real_frame];
+                texture *tex = array_get(&player->ani->sprites, real_frame);
+                if(tex) {
+                    int blendmode = isset(p, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
+                    video_queue_add(tex, player->x + sprite->pos_x, player->y + sprite->pos_y, blendmode, player->priority);
+                    player->obj = tex;
+                    DEBUG("Frame %d, x,y = %d,%d, prio = %d, blendmode = %s", 
+                            real_frame, 
+                            player->x + sprite->pos_x, 
+                            player->y + sprite->pos_y,
+                            player->priority,
+                            (blendmode == BLEND_ADDITIVE ? "additive" : "alpha"));
+                } else {
+                    PERROR("No texture @ %u", real_frame);
+                }
+            }
+            
+        }
         player->ticks++;
     }
 

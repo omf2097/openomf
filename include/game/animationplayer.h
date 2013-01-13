@@ -9,17 +9,12 @@ typedef struct animation_t animation;
 typedef struct sd_stringparser_t sd_stringparser;
 typedef struct animationplayer_t animationplayer;
 
-typedef struct animationplayer_state_t {
-    int blendmode;
-} animationplayer_state;
-
 typedef struct animationplayer_t {
     unsigned int id;
     animation *ani;
     array *anims;
     sd_stringparser *parser;
     unsigned int ticks;
-    animationplayer_state state;
     
     list children;
     animationplayer *parent;
