@@ -1,5 +1,5 @@
-#include "audio/audio.h"
 #include "audio/stream.h"
+#include "audio/audio.h"
 #include "utils/log.h"
 #include "utils/list.h"
 #include <AL/al.h>

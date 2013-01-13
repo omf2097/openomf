@@ -1,16 +1,16 @@
-#include "game/animationplayer.h"
-#include "game/animation.h"
-#include "utils/log.h"
+#include <stdlib.h>
 #include <shadowdive/shadowdive.h>
+#include "utils/log.h"
+#include "audio/sound.h"
 #include "audio/music.h"
 #include "audio/soundloader.h"
 #include "audio/sound_state.h"
-#include "video/video.h"
-#include "audio/sound.h"
 #include "video/texture.h"
-#include <stdlib.h>
-
+#include "video/video.h"
 #include "game/scene.h"
+#include "game/animation.h"
+#include "game/animationplayer.h"
+
 
 
 void cmd_tickjump(animationplayer *player, int tick) {

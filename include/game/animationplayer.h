@@ -4,13 +4,6 @@
 #include "utils/list.h"
 #include "utils/array.h"
 
-typedef struct sound_state_t sound_state;
-typedef struct texture_t texture;
-typedef struct animation_t animation;
-typedef struct sd_stringparser_t sd_stringparser;
-typedef struct animationplayer_t animationplayer;
-typedef struct scene_t scene;
-
 typedef struct aniplayer_sprite_t {
     int x,y;
     texture *tex;
@@ -40,7 +33,7 @@ typedef struct animationplayer_t {
     scene *scene;
     
     void (*del_player)(scene *scene, int id);
-    void (*add_player)(scene *scene, animationplayer *player);
+    void (*add_player)(scene *scene, struct animationplayer_t *player);
 } animationplayer;
 
 int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims);
