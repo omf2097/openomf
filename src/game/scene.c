@@ -69,9 +69,10 @@ int scene_load(scene *scene, unsigned int scene_id) {
             // TODO: Maybe make the exceptions a bit more generic or something ?
             if(bka->load_on_start || (scene_id == SCENE_INTRO && i == 25)) {
                 animationplayer *player = malloc(sizeof(animationplayer));
-                animationplayer_create(i, player, ani, &scene->animations, 0);
+                animationplayer_create(i, player, ani, &scene->animations);
                 player->x = ani->sdani->start_x;
                 player->y = ani->sdani->start_y;
+                player->scene = scene;
                 list_push_last(&scene->players, player);
                 DEBUG("Create animation %d @ x,y = %d,%d", i, player->x, player->y);
             }

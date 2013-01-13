@@ -8,6 +8,8 @@
 #include "video/texture.h"
 #include <stdlib.h>
 
+#include "game/scene.h"
+
 
 void cmd_tickjump(animationplayer *player, int tick) {
     player->ticks = tick;
@@ -34,14 +36,15 @@ void cmd_music_on(int music) {
     }
 }
 
-void cmd_anim_create(animationplayer *player, int id, int mx, int my) {
+void cmd_anim_create(animationplayer *player, int id, int mx, int my, scene *scene) {
     animation *ani = array_get(player->anims, id);
     if(ani != NULL) {
         animationplayer *np = malloc(sizeof(animationplayer));
-        animationplayer_create(id, np, ani, player->anims, player);
+        animationplayer_create(id, np, ani, player->anims);
         np->x = ani->sdani->start_x + mx;
         np->y = ani->sdani->start_y + my;
-        list_push_last(&player->children, np);
+        np->scene = scene;
+        list_push_last(&player->scene->players, np);
         DEBUG("Create animation %d @ x,y = %d,%d", id, np->x, np->y);
     } else {
         PERROR("Attempted to create an instance of nonexistent animation!");
@@ -51,21 +54,14 @@ void cmd_anim_create(animationplayer *player, int id, int mx, int my) {
 int cmd_anim_destroy(animationplayer *player, int id) {
     // Attempt to kill child from this node
     list_iterator it;
-    list_iter(&player->children, &it);
+    list_iter(&player->scene->players, &it);
     animationplayer *tmp;
     while((tmp = list_next(&it)) != 0) {
         if(tmp->id == id) {
-            list_delete(&player->children, &it);
+            list_delete(&player->scene->players, &it);
             animationplayer_free(tmp);
             free(tmp);
             DEBUG("Animation %d killed animation %d.", player->id, id);
-            return 0;
-        }
-    }
-    
-    // Animation was not found from this level. Check sister animations.
-    if(player->parent) {
-        if(!cmd_anim_destroy(player->parent, id)) {
             return 0;
         }
     }
@@ -81,7 +77,7 @@ void incinerate_obj(animationplayer *player) {
     }
 }
 
-int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims, animationplayer *parent) {
+int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims) {
     player->ani = animation;
     player->id = id;
     player->parser = sd_stringparser_create();
@@ -89,8 +85,7 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
     player->obj = 0;
     player->finished = 0;
     player->anims = anims;
-    player->parent = parent;
-    list_create(&player->children);
+    player->scene = 0;
     if(sd_stringparser_set_string(player->parser, animation->sdani->anim_string)) {
         sd_stringparser_delete(player->parser);
         PERROR("Unable to initialize stringparser w/ '%s'", animation->sdani->anim_string);
@@ -115,16 +110,6 @@ int get(sd_stringparser *parser, const char *tagstr) {
 }
 
 void animationplayer_free(animationplayer *player) {
-    // Free all children
-    list_iterator it;
-    list_iter(&player->children, &it);
-    animationplayer *tmp;
-    while((tmp = list_next(&it)) != 0) {
-        animationplayer_free(tmp);
-        free(tmp);
-    }
-    list_free(&player->children);
-    
     // Free sprite
     incinerate_obj(player);
     
@@ -138,14 +123,6 @@ void animationplayer_render(animationplayer *player) {
     if(player->obj) {
         aniplayer_sprite *s = player->obj;
         video_render_sprite(s->tex, s->x, s->y, s->blendmode);
-    }
-    
-    // Render children
-    list_iterator it;
-    list_iter(&player->children, &it);
-    animationplayer *tmp;
-    while((tmp = list_next(&it)) != 0) {
-        animationplayer_render(tmp);
     }
 }
 
@@ -173,7 +150,7 @@ void animationplayer_run(animationplayer *player) {
             if(isset(p, "m")) {
                 int mx = isset(p, "mx") ? get(p, "mx") : 0;
                 int my = isset(p, "my") ? get(p, "my") : 0;
-                cmd_anim_create(player, get(p, "m"), mx, my);
+                cmd_anim_create(player, get(p, "m"), mx, my, player->scene);
             }
             if(isset(p, "md")) { 
                 cmd_anim_destroy(player, get(p, "md")); 
@@ -202,19 +179,6 @@ void animationplayer_run(animationplayer *player) {
             
         }
         player->ticks++;
-    }
-    
-    list_iterator it;
-    list_iter(&player->children, &it);
-    animationplayer *tmp;
-    while((tmp = list_next(&it)) != 0) {
-        animationplayer_run(tmp);
-        if(tmp->finished) {
-            list_delete(&player->children, &it);
-            DEBUG("Player %d deleted animationplayer %d.", player->id, tmp->id);
-            animationplayer_free(tmp);
-            free(tmp);
-        }
     }
     
 exit_0:

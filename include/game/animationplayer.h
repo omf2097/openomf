@@ -8,6 +8,7 @@ typedef struct texture_t texture;
 typedef struct animation_t animation;
 typedef struct sd_stringparser_t sd_stringparser;
 typedef struct animationplayer_t animationplayer;
+typedef struct scene_t scene;
 
 typedef struct aniplayer_sprite_t {
     int x,y;
@@ -22,16 +23,14 @@ typedef struct animationplayer_t {
     sd_stringparser *parser;
     unsigned int ticks;
     
-    list children;
-    animationplayer *parent;
-    
     unsigned int x,y;
     aniplayer_sprite *obj;
+    scene *scene;
     
     unsigned int finished;
 } animationplayer;
 
-int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims, animationplayer *parent);
+int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims);
 void animationplayer_free(animationplayer *player);
 void animationplayer_run(animationplayer *player);
 void animationplayer_render(animationplayer *player);
