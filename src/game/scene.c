@@ -34,8 +34,6 @@ int scene_load(scene *scene, unsigned int scene_id) {
     }
     scene->this_id = scene_id;
     scene->next_id = scene_id;
-    scene->real_ticks = 0;
-    scene->omf_ticks = 1;
     
     // Load specific stuff
     switch(scene_id) {
@@ -49,7 +47,6 @@ int scene_load(scene *scene, unsigned int scene_id) {
     // Convert background
     sd_rgba_image *bg = sd_vga_image_decode(scene->bk->background, scene->bk->palettes[0], -1);
     texture_create(&scene->background, bg->data, bg->w, bg->h);
-    video_set_background(&scene->background);
     sd_rgba_image_delete(bg);
     
     // Players list
@@ -75,7 +72,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
                 animationplayer_create(i, player, ani, &scene->animations, 0);
                 player->x = ani->sdani->start_x;
                 player->y = ani->sdani->start_y;
-                list_push_last(&scene->players, player);
+                list_push_first(&scene->players, player);
                 DEBUG("Create animation %d @ x,y = %d,%d", i, player->x, player->y);
             }
         }
@@ -94,34 +91,39 @@ int scene_handle_event(scene *scene, SDL_Event *event) {
     return 1;
 }
 
-void scene_render(scene *scene, unsigned int delta) {
-    scene->real_ticks += delta;
+void scene_render(scene *scene) {
+    // Render background
+    video_render_background(&scene->background);
+
+    // Render objects
     list_iterator it;
     animationplayer *player;
-    
-    int tmp = (scene->real_ticks / MS_PER_OMF_TICK) - scene->omf_ticks;
-    for(int i = 0; i < tmp; i++) {
-        // Iterate through the players
-        list_iter(&scene->players, &it);
-        while((player = list_next(&it)) != 0) {
-            animationplayer_run(player);
-            if(player->finished) {
-                list_delete(&scene->players, &it);
-                DEBUG("Deleted ROOT animationplayer %d.", player->id);
-                animationplayer_free(player);
-                free(player);
-            }
-        }
-        
-        // Run custom render function, if defined
-        if(scene->render) {
-            scene->render(scene, delta);
-        }
-        
-        // Omf ticks + 1
-        scene->omf_ticks++;
+    list_iter(&scene->players, &it);
+    while((player = list_next(&it)) != 0) {
+        animationplayer_render(player);
     }
-    
+}
+
+void scene_tick(scene *scene) {
+    // Iterate through the players
+    list_iterator it;
+    animationplayer *player;
+    list_iter(&scene->players, &it);
+    while((player = list_next(&it)) != 0) {
+        animationplayer_run(player);
+        if(player->finished) {
+            list_delete(&scene->players, &it);
+            DEBUG("Deleted ROOT animationplayer %d.", player->id);
+            animationplayer_free(player);
+            free(player);
+        }
+    }
+        
+    // Run custom render function, if defined
+    if(scene->render) {
+        scene->render(scene);
+    }
+        
     // If no animations to play, jump to next scene (if any)
     // TODO: Hackish, make this nicer.
     if(list_size(&scene->players) <= 0) {
@@ -134,7 +136,6 @@ void scene_free(scene *scene) {
     if(!scene) return;
     
     // Release background
-    video_set_background(0);
     texture_free(&scene->background);
     
     // Free players

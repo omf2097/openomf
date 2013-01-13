@@ -41,7 +41,7 @@ void cmd_anim_create(animationplayer *player, int id) {
         animationplayer_create(id, np, ani, player->anims, player);
         np->x = ani->sdani->start_x;
         np->y = ani->sdani->start_y;
-        list_push_first(&player->children, np);
+        list_push_last(&player->children, np);
         DEBUG("Create animation %d @ x,y = %d,%d", id, np->x, np->y);
     } else {
         PERROR("Attempted to create an instance of nonexistent animation!");
@@ -70,7 +70,7 @@ void cmd_anim_destroy(animationplayer *player, int id) {
 
 void incinerate_obj(animationplayer *player) {
     if(player->obj) {
-        video_queue_remove(player->obj);
+        free(player->obj);
         player->obj = 0;
     }
 }
@@ -84,7 +84,6 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
     player->finished = 0;
     player->anims = anims;
     player->parent = parent;
-    player->priority = (parent != 0) ? parent->priority+1 : 0;
     list_create(&player->children);
     if(sd_stringparser_set_string(player->parser, animation->sdani->anim_string)) {
         sd_stringparser_delete(player->parser);
@@ -128,6 +127,22 @@ void animationplayer_free(animationplayer *player) {
     player->parser = 0;
 }
 
+void animationplayer_render(animationplayer *player) {
+    // Render self
+    if(player->obj) {
+        aniplayer_sprite *s = player->obj;
+        video_render_sprite(s->tex, s->x, s->y, s->blendmode);
+    }
+    
+    // Render children
+    list_iterator it;
+    list_iter(&player->children, &it);
+    animationplayer *tmp;
+    while((tmp = list_next(&it)) != 0) {
+        animationplayer_render(tmp);
+    }
+}
+
 void animationplayer_run(animationplayer *player) {
     if(player && player->parser && !player->finished) {
         sd_stringparser_frame param;
@@ -136,9 +151,10 @@ void animationplayer_run(animationplayer *player) {
             int real_frame = param.frame - 65;
             
             // Do something if animation is finished!
-            if(param.is_animation_end) {
+            if(param.is_animation_end || player->finished) {
                 player->finished = 1;
                 DEBUG("Animationplayer %d asks for removal ...", player->id);
+                goto exit_0;
             }
             
             // Kill old sprite, if defined
@@ -148,8 +164,12 @@ void animationplayer_run(animationplayer *player) {
             if(isset(p, "d"))   { cmd_tickjump(player, get(p, "d")); }
         
             // Animation management
-            if(isset(p, "m"))   { cmd_anim_create(player, get(p, "m"));   }
-            if(isset(p, "md"))  { cmd_anim_destroy(player, get(p, "md")); }
+            if(isset(p, "m")) {
+                cmd_anim_create(player, get(p, "m"));
+            }
+            if(isset(p, "md")) { 
+                cmd_anim_destroy(player, get(p, "md")); 
+            }
         
             // Handle music and sounds
             if(isset(p, "smo")) { cmd_music_on(get(p, "smo"));    }
@@ -161,15 +181,12 @@ void animationplayer_run(animationplayer *player) {
                 sd_sprite *sprite = player->ani->sdani->sprites[real_frame];
                 texture *tex = array_get(&player->ani->sprites, real_frame);
                 if(tex) {
-                    int blendmode = isset(p, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
-                    video_queue_add(tex, player->x + sprite->pos_x, player->y + sprite->pos_y, blendmode, player->priority);
-                    player->obj = tex;
-                    DEBUG("Frame %d, x,y = %d,%d, prio = %d, blendmode = %s", 
-                            real_frame, 
-                            player->x + sprite->pos_x, 
-                            player->y + sprite->pos_y,
-                            player->priority,
-                            (blendmode == BLEND_ADDITIVE ? "additive" : "alpha"));
+                    aniplayer_sprite *anisprite = malloc(sizeof(aniplayer_sprite));
+                    anisprite->x = player->x + sprite->pos_x;
+                    anisprite->y = player->y + sprite->pos_y;
+                    anisprite->blendmode = isset(p, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
+                    anisprite->tex = tex;
+                    player->obj = anisprite;
                 } else {
                     PERROR("No texture @ %u", real_frame);
                 }
@@ -178,7 +195,7 @@ void animationplayer_run(animationplayer *player) {
         }
         player->ticks++;
     }
-
+    
     list_iterator it;
     list_iter(&player->children, &it);
     animationplayer *tmp;
@@ -191,4 +208,7 @@ void animationplayer_run(animationplayer *player) {
             free(tmp);
         }
     }
+    
+exit_0:
+    return;
 }

@@ -8,8 +8,10 @@
 #include "game/scene.h"
 #include <SDL2/SDL.h>
 
-int run;
-int _vsync;
+#define MS_PER_OMF_TICK 10
+
+int run = 0;
+int _vsync = 0;
 
 int engine_init() {
     int w = conf_int("screen_w");
@@ -39,13 +41,8 @@ void engine_run() {
     }
     
     unsigned int scene_start = SDL_GetTicks();
-    unsigned int scene_delta = 0;
-    unsigned int frame_period = (1/60.0f)*1000;
-    unsigned int frame_start, frame_delta;
-    int frame_wait;
+    unsigned int omf_wait = 0;
     while(run) {
-        frame_start = SDL_GetTicks();
-    
         // Prepare rendering here
         video_render_prepare();
     
@@ -82,17 +79,21 @@ void engine_run() {
         }
 
         // Render scene
-        scene_delta = SDL_GetTicks() - scene_start;
-        scene_render(&scene, scene_delta);
+        omf_wait += SDL_GetTicks() - scene_start;
+        while(omf_wait > MS_PER_OMF_TICK) {
+            scene_tick(&scene);
+            omf_wait -= MS_PER_OMF_TICK;
+        }
         scene_start = SDL_GetTicks();
 
         // Do the actual rendering jobs
+        scene_render(&scene);
         video_render_finish();
         audio_render();
+        
+        // Delay stuff a bit if vsync is off
         if(!_vsync && run) {
-            frame_delta = SDL_GetTicks() - frame_start;
-            frame_wait = frame_period - frame_delta;
-            SDL_Delay(frame_wait < 0 ? 0 : frame_wait);
+            SDL_Delay(1);
         }
     }
     

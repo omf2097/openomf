@@ -19,9 +19,6 @@ SDL_Window *window;
 SDL_GLContext glctx;
 fbo target;
 unsigned int fullscreen_quad, fullscreen_quad_flipped;
-gl_sprite *objects[100];
-int objects_size;
-texture *background_texture;
 int screen_w, screen_h;
 
 
@@ -119,12 +116,6 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         return 1;
     }
     
-    // BG Tex
-    background_texture = 0;
-    
-    // Objects list
-    objects_size = 0;
-    
     // Show some info
     DEBUG("Video Init OK");
     DEBUG(" * SDL2 Driver: %s", SDL_GetCurrentVideoDriver());
@@ -153,58 +144,16 @@ void video_render_prepare() {
     glLoadIdentity();
 }
 
-void video_set_background(texture *tex) {
-    background_texture = tex;
-}
-
-int texsort(const void *a, const void *b) {
-    const gl_sprite *sa = *(gl_sprite**)a;
-    const gl_sprite *sb = *(gl_sprite**)b;
-    return (sa->priority - sb->priority);
-}
-
-void video_queue_add(texture *tex, unsigned int x, unsigned int y, unsigned int rendering_mode, int priority) {
-    gl_sprite *s = malloc(sizeof(gl_sprite));
-    s->tex = tex;
-    s->x = x;
-    s->y = y;
-    s->priority = priority;
-    s->rendering_mode = rendering_mode;
-    objects[objects_size++] = s;
-    qsort(objects, objects_size, sizeof(gl_sprite*), texsort);
-}
-
-void video_queue_remove(texture *tex) {
-    // Find tex
-    int index = -1;
-    for(int r = 0; r < objects_size; r++) {
-        if(tex == objects[r]->tex && index < 0) {
-            index = r;
-            free(objects[r]);
-            objects[r] = 0;
-            continue;
-        }
-        if(index > -1) {
-            objects[r-1] = objects[r];
-        }
-    }
-    objects_size--;
-}
-
-void video_render_finish() {
+void video_render_background(texture *tex) {
     // Handle background separately
-    if(background_texture) {
-        glStencilFunc(GL_ALWAYS, 0, 0);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-        texture_bind(background_texture);
-        glCallList(fullscreen_quad_flipped);
-    }
+    glStencilFunc(GL_ALWAYS, 0, 0);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    texture_bind(tex);
+    glCallList(fullscreen_quad_flipped);
+}
 
-    // Render sprites etc. here from list
-    gl_sprite *sprite;
-    for(int r = 0; r < objects_size; r++) {
-        sprite = objects[r];
-        switch(sprite->rendering_mode) {
+void video_render_sprite(texture *tex, unsigned int sx, unsigned int sy, unsigned int rendering_mode) {
+    switch(rendering_mode) {
         case BLEND_ADDITIVE:
             // Additive blending, so enable blending and disable alpha testing
             // This shouldn't touch the stencil buffer at all
@@ -225,22 +174,24 @@ void video_render_finish() {
             glStencilFunc(GL_ALWAYS, 1, 1);
             glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
             break;
-        }
+    }
 
-        // Just draw the texture on screen to the right spot.
-        float w = sprite->tex->w / 160.0f;
-        float h = sprite->tex->h / 100.0f;
-        float x = -1.0 + 2.0f * sprite->x / 320.0f;
-        float y = 1.0 - sprite->y / 100.0f - h;
-        texture_bind(sprite->tex);
-        glBegin(GL_QUADS);
-            glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
-            glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
-            glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
-            glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
-        glEnd();
-    }    
+    // Just draw the texture on screen to the right spot.
+    float w = tex->w / 160.0f;
+    float h = tex->h / 100.0f;
+    float x = -1.0 + 2.0f * sx / 320.0f;
+    float y = 1.0 - sy / 100.0f - h;
+    texture_bind(tex);
+    glBegin(GL_QUADS);
+        glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
+        glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
+        glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
+        glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
+    glEnd();
+}
 
+
+void video_render_finish() {
     // Render to screen instead of FBO
     fbo_unbind();
 
@@ -276,9 +227,6 @@ void video_render_finish() {
 }
 
 void video_close() {
-    for(int r = 0; r < objects_size; r++) {
-        free(objects[r]);
-    }
     fbo_free(&target);
     glDeleteLists(fullscreen_quad, 1);
     SDL_GL_DeleteContext(glctx);  
