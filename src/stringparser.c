@@ -417,6 +417,8 @@ static int sd_framelist_process(frame_list *frames, tag_list *tags, unsigned int
         int is_final_frame = ((cur == &frames->frames[frames->num_frames-1]) ? 1 : 0);
         int is_animation_end = ((frames->current_frame >= frames->num_frames) ? 1 : 0);
 
+        out_frame->id = frames->current_frame;
+
         if(is_animation_end) {
             out_frame->num_tags = 0;
             out_frame->duration = 0;
@@ -669,6 +671,25 @@ void sd_stringparser_reset(sd_stringparser *parser) {
 
 int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks, sd_stringparser_frame *out_frame) {
     return sd_framelist_process(parser->frame_list, parser->tag_list, ticks, out_frame);
+}
+
+int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringparser_frame *out_frame) {
+    unsigned int frames = ((frame_list*)parser->frame_list)->num_frames;
+    if (frame < frames) {
+        anim_frame *f = &((frame_list*)parser->frame_list)->frames[frame];
+        out_frame->id = frame;
+        out_frame->num_tags = f->num_tags;
+        out_frame->tags = f->tags;
+        out_frame->tag_values = f->tag_params;
+        out_frame->duration = f->duration;
+        out_frame->frame = f->frame_letter;
+        out_frame->is_first_frame = (frame == 0);
+        out_frame->is_final_frame = (frame == (frames-1));
+        out_frame->is_animation_end = 0;
+        return 0;
+    }
+
+    return 1;
 }
 
 /* Return 0 if the tag was found, otherwise return 1 */

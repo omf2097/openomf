@@ -34,10 +34,10 @@ void test_state_variables(const char *anim_str) {
         int jump_count = 0;
         for(unsigned int tick=0;tick<2000;++tick) {
             if(sd_stringparser_run(parser, tick, &frame) == 0) {
-                if(frame.is_first_frame) printf("First frame\n");
-                else if(frame.is_final_frame) printf("Final frame\n");
-                else if(frame.is_animation_end) printf("%d.Animation  finished\n", tick);
-                else printf("Frame changed\n");
+                if(frame.is_first_frame) printf("#%d First frame\n", frame.id);
+                else if(frame.is_final_frame) printf("#%d Final frame\n", frame.id);
+                else if(frame.is_animation_end) printf("#%d %d.Animation  finished\n", frame.id, tick);
+                else printf("#%d Frame changed\n", frame.id);
 
                 if(blend_additive->is_set) {
                     printf("Tick %d: blend additive %d\n", tick, blend_additive->value);
