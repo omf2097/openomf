@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 
+#ifndef _SD_MOVE_H
 typedef struct sd_move_t sd_move;
+#endif
 
 typedef struct sd_af_file_t {
     uint16_t file_id;

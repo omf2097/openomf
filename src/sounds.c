@@ -1,7 +1,7 @@
-#include "shadowdive/sounds.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/error.h"
+#include "shadowdive/sounds.h"
 #include <stdlib.h>
 
 sd_sound_file* sd_sounds_create() {

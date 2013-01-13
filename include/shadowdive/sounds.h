@@ -1,8 +1,13 @@
 #ifndef _SD_SOUNDS_H
 #define _SD_SOUNDS_H
 
+#ifndef _SD_WRITER_H
 typedef struct sd_writer_t sd_writer;
+#endif
+
+#ifndef _SD_READER_H
 typedef struct sd_reader_t sd_reader;
+#endif
 
 typedef struct sd_sound_t {
     unsigned int len;

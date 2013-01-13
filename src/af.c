@@ -1,9 +1,9 @@
-#include "shadowdive/af.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/animation.h"
 #include "shadowdive/error.h"
 #include "shadowdive/move.h"
+#include "shadowdive/af.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>

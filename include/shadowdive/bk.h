@@ -3,9 +3,17 @@
 
 #include <stdint.h>
 
+#ifndef _SD_PALETTE_H
 typedef struct sd_palette_t sd_palette;
+#endif
+
+#ifndef _SD_ANIMATION_H
 typedef struct sd_bk_anim_t sd_bk_anim;
+#endif
+
+#ifndef _SD_VGA_IMAGE_H
 typedef struct sd_vga_image_t sd_vga_image;
+#endif
 
 typedef struct sd_bk_file_t {
     uint32_t file_id;

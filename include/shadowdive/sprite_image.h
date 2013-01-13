@@ -1,8 +1,13 @@
 #ifndef _SD_SPRITE_IMAGE
 #define _SD_SPRITE_IMAGE
 
+#ifndef _SD_PALETTE_H
 typedef struct sd_palette_t sd_palette;
+#endif
+
+#ifndef _SD_RGBA_IMAGE_H
 typedef struct sd_rgba_image_t sd_rgba_image;
+#endif
 
 typedef struct sd_sprite_image_t {
     unsigned int w;

@@ -1,9 +1,17 @@
 #ifndef _SD_MOVE_H
 #define _SD_MOVE_H
 
+#ifndef _SD_WRITER_H
 typedef struct sd_writer_t sd_writer;
+#endif
+
+#ifndef _SD_READER_H
 typedef struct sd_reader_t sd_reader;
+#endif
+
+#ifndef _SD_ANIMATION_H
 typedef struct sd_animation_t sd_animation;
+#endif
 
 typedef struct sd_move_t {
     sd_animation *animation;

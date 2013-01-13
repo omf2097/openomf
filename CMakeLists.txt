@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 project(ShadowDive C)
 
-set(CMAKE_C_FLAGS "-Wall -std=gnu99 -ggdb -Werror")
-set(CMAKE_C_FLAGS_DEBUG "-Wall -std=gnu99 -ggdb -Werror")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -std=gnu99 -Os -march=i686 -Werror")
+set(CMAKE_C_FLAGS "-Wall -std=gnu99 -ggdb -pedantic")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -std=gnu99 -ggdb -Werror -pedantic")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -std=gnu99 -Os -march=i686 -Werror -pedantic")
 
 link_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(include/)

@@ -1,7 +1,7 @@
-#include "shadowdive/internal/reader.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 typedef struct sd_reader_t {
     FILE *handle;
