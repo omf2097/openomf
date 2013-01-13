@@ -49,11 +49,6 @@ void cmd_anim_create(animationplayer *player, int id) {
 }
 
 void cmd_anim_destroy(animationplayer *player, int id) {
-    // Animation was not found from this level. Check sister animations.
-    if(player->parent) {
-        cmd_anim_destroy(player->parent, id);
-    }
-
     // Attempt to kill child from this node
     list_iterator it;
     list_iter(&player->children, &it);
@@ -65,6 +60,11 @@ void cmd_anim_destroy(animationplayer *player, int id) {
             free(tmp);
             return;
         }
+    }
+    
+    // Animation was not found from this level. Check sister animations.
+    if(player->parent) {
+        cmd_anim_destroy(player->parent, id);
     }
 }
 

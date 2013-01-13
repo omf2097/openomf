@@ -72,7 +72,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
                 animationplayer_create(i, player, ani, &scene->animations, 0);
                 player->x = ani->sdani->start_x;
                 player->y = ani->sdani->start_y;
-                list_push_first(&scene->players, player);
+                list_push_last(&scene->players, player);
                 DEBUG("Create animation %d @ x,y = %d,%d", i, player->x, player->y);
             }
         }
