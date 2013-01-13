@@ -4,8 +4,13 @@
 #include <stdint.h>
 #include "shadowdive/sprite_image.h"
 
+#ifndef _SD_WRITER_H
 typedef struct sd_writer_t sd_writer;
+#endif
+
+#ifndef _SD_READER_H
 typedef struct sd_reader_t sd_reader;
+#endif
 
 typedef struct sprite_t {
     int16_t pos_x;

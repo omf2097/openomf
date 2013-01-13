@@ -1,7 +1,7 @@
-#include "shadowdive/sprite.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/error.h"
+#include "shadowdive/sprite.h"
 #include <stdlib.h>
 
 sd_sprite* sd_sprite_create() {

@@ -1,7 +1,9 @@
 #ifndef _SD_FONTS_H
 #define _SD_FONTS_H
 
+#ifndef _SD_RGBA_IMAGE_H
 typedef struct sd_rgba_image_t sd_rgba_image;
+#endif
 
 #include <stdint.h>
 

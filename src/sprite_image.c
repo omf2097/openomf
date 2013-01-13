@@ -1,6 +1,6 @@
-#include "shadowdive/sprite_image.h"
 #include "shadowdive/rgba_image.h"
 #include "shadowdive/palette.h"
+#include "shadowdive/sprite_image.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>

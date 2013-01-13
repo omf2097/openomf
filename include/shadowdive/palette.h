@@ -3,8 +3,13 @@
 
 #include <stdint.h>
 
+#ifndef _SD_READER_H
 typedef struct sd_reader_t sd_reader;
+#endif
+
+#ifndef _SD_WRITER_H
 typedef struct sd_writer_t sd_writer;
+#endif
 
 typedef struct sd_palette_t {
     char data[256][3];

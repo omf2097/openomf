@@ -3,9 +3,6 @@
 
 #include "shadowdive/sprite.h"
 
-typedef struct sd_reader_t sd_reader;
-typedef struct sd_writer_t sd_writer;
-
 typedef struct sd_animation_t {
     // Header
     int16_t start_x;

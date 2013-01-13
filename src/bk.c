@@ -1,11 +1,12 @@
-#include "shadowdive/bk.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/palette.h"
+#include "shadowdive/rgba_image.h"
 #include "shadowdive/vga_image.h"
-#include "shadowdive/bkanim.h"
 #include "shadowdive/animation.h"
+#include "shadowdive/bkanim.h"
 #include "shadowdive/error.h"
+#include "shadowdive/bk.h"
 #include <stdlib.h>
 #include <string.h>
 

@@ -1,8 +1,8 @@
-#include "shadowdive/fonts.h"
 #include "shadowdive/rgba_image.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/error.h"
+#include "shadowdive/fonts.h"
 #include <stdlib.h>
 
 #include <stdio.h>

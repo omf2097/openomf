@@ -1,9 +1,8 @@
-#include "shadowdive/internal/writer.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 typedef struct sd_writer_t {
     FILE *handle;
