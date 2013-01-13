@@ -1,7 +1,7 @@
 #include "shadowdive/stringparser.h"
+#include "shadowdive/internal/helpers.h"
 #include "shadowdive/error.h"
 
-#define _BSD_SOURCE // for strdup
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -642,7 +642,7 @@ void sd_stringparser_delete(sd_stringparser *parser) {
 
 int sd_stringparser_set_string(sd_stringparser *parser, const char *string) {
     if(parser->string) free(parser->string);
-    parser->string = strdup(string);
+    parser->string = sd_strdup(string);
 
     int frames=0;
     parse_string(parser, cb_count_frame, NULL, &frames);
