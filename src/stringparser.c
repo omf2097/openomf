@@ -489,7 +489,7 @@ static void rn_frame(const char **str, char *frame_letter, int *duration) {
 // returns 0 if found, otherwise return nonzero
 static int rn_tag_attribute(tag_list *list, const char **str, tag_attribute *attrib) {
     const int N_LOOK = 3;
-    const tag_attribute *scanned[N_LOOK];
+    tag_attribute *scanned[N_LOOK];
     int nscanned = 0;
     tag_list *cur=list->tag_chain[(unsigned char)**str];
 
