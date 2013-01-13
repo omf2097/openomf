@@ -34,13 +34,13 @@ void cmd_music_on(int music) {
     }
 }
 
-void cmd_anim_create(animationplayer *player, int id) {
+void cmd_anim_create(animationplayer *player, int id, int mx, int my) {
     animation *ani = array_get(player->anims, id);
     if(ani != NULL) {
         animationplayer *np = malloc(sizeof(animationplayer));
         animationplayer_create(id, np, ani, player->anims, player);
-        np->x = ani->sdani->start_x;
-        np->y = ani->sdani->start_y;
+        np->x = ani->sdani->start_x + mx;
+        np->y = ani->sdani->start_y + my;
         list_push_last(&player->children, np);
         DEBUG("Create animation %d @ x,y = %d,%d", id, np->x, np->y);
     } else {
@@ -48,7 +48,7 @@ void cmd_anim_create(animationplayer *player, int id) {
     }
 }
 
-void cmd_anim_destroy(animationplayer *player, int id) {
+int cmd_anim_destroy(animationplayer *player, int id) {
     // Attempt to kill child from this node
     list_iterator it;
     list_iter(&player->children, &it);
@@ -58,14 +58,20 @@ void cmd_anim_destroy(animationplayer *player, int id) {
             list_delete(&player->children, &it);
             animationplayer_free(tmp);
             free(tmp);
-            return;
+            DEBUG("Animation %d killed animation %d.", player->id, id);
+            return 0;
         }
     }
     
     // Animation was not found from this level. Check sister animations.
     if(player->parent) {
-        cmd_anim_destroy(player->parent, id);
+        if(!cmd_anim_destroy(player->parent, id)) {
+            return 0;
+        }
     }
+    
+    PERROR("Animation %d could not find %d to delete!", player->id, id);
+    return 1;
 }
 
 void incinerate_obj(animationplayer *player) {
@@ -165,7 +171,9 @@ void animationplayer_run(animationplayer *player) {
         
             // Animation management
             if(isset(p, "m")) {
-                cmd_anim_create(player, get(p, "m"));
+                int mx = isset(p, "mx") ? get(p, "mx") : 0;
+                int my = isset(p, "my") ? get(p, "my") : 0;
+                cmd_anim_create(player, get(p, "m"), mx, my);
             }
             if(isset(p, "md")) { 
                 cmd_anim_destroy(player, get(p, "md")); 
