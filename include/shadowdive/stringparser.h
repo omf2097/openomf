@@ -18,6 +18,9 @@ typedef struct sd_stringparser_tag_value {
 } sd_stringparser_tag_value;
 
 typedef struct sd_stringparser_frame_t {
+    /* Zero-based unique id for this frame */
+    int id;
+
     /* a list of tags for the current frame, unavailable if_animation_end is true */
     int num_tags;
     const char **tags;
@@ -56,6 +59,8 @@ void sd_stringparser_reset(sd_stringparser *parser);
 
 /* Run the animation at "ticks", may return error */
 int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks, sd_stringparser_frame *out_frame);
+
+int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringparser_frame *out_frame);
 
 /* Return 0 if the tag was found, otherwise return 1 */
 /* out_tag must be declared as const sd_stringparser_tag_value* */

@@ -54,7 +54,7 @@ int sd_font_decode(sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8
                 o->data[t++] = r;
                 o->data[t++] = g;
                 o->data[t++] = b;
-                o->data[t++] = 255;
+                o->data[t++] = (uint8_t)255;
             } else {
                 o->data[t++] = 0;
                 o->data[t++] = 0;

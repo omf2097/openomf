@@ -53,7 +53,7 @@ sd_rgba_image* sd_vga_image_decode(sd_vga_image *img, sd_palette *pal, int remap
                 rgba->data[pos+1] = (uint8_t)pal->data[b][1];
                 rgba->data[pos+2] = (uint8_t)pal->data[b][2];
             }
-            rgba->data[pos+3] = 255; // fully opaque
+            rgba->data[pos+3] = (uint8_t)255; // fully opaque
         }
     }
     return rgba;
