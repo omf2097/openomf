@@ -83,18 +83,22 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
     return 0;
 }
 
-int isset(sd_stringparser *parser, const char *tagstr) {
-    const sd_stringparser_tag_value *tag;
-    if(sd_stringparser_get_tag(parser, tagstr, &tag) == 0 && tag->is_set) {
-        return 1;
+int isset(sd_stringparser_frame *frame, const char *tag) {
+    for(int i=0; i < frame->num_tags; i++) {
+        if(strcmp(frame->tags[i], tag) == 0) {
+            return 1;
+        }
     }
     return 0;
 }
 
-int get(sd_stringparser *parser, const char *tagstr) {
-    const sd_stringparser_tag_value *tag;
-    sd_stringparser_get_tag(parser, tagstr, &tag);
-    return tag->value;
+int get(sd_stringparser_frame *frame, const char *tag) {
+    for(int i=0; i < frame->num_tags; i++) {
+        if(strcmp(frame->tags[i], tag) == 0) {
+            return frame->tag_values[i];
+        }
+    }
+    return 0;
 }
 
 void animationplayer_free(animationplayer *player) {
@@ -120,8 +124,9 @@ void animationplayer_run(animationplayer *player) {
     if(player && player->finished) return;
 
     sd_stringparser_frame param;
-    sd_stringparser *p = player->parser;
+    sd_stringparser_frame *f;
     if(sd_stringparser_run(player->parser, player->ticks-1, &param) == 0) {
+        f = &param;
         int real_frame = param.frame - 65;
         
         // Do something if animation is finished!
@@ -135,22 +140,22 @@ void animationplayer_run(animationplayer *player) {
         incinerate_obj(player);
         
         // Tick management
-        if(isset(p, "d"))   { cmd_tickjump(player, get(p, "d")); }
+        if(isset(f, "d"))   { cmd_tickjump(player, get(f, "d")); }
     
         // Animation management
-        if(isset(p, "m")) {
-            int mx = isset(p, "mx") ? get(p, "mx") : 0;
-            int my = isset(p, "my") ? get(p, "my") : 0;
-            cmd_anim_create(player, get(p, "m"), mx, my, player->scene);
+        if(isset(f, "m")) {
+            int mx = isset(f, "mx") ? get(f, "mx") : 0;
+            int my = isset(f, "my") ? get(f, "my") : 0;
+            cmd_anim_create(player, get(f, "m"), mx, my, player->scene);
         }
-        if(isset(p, "md")) { 
-            cmd_anim_destroy(player, get(p, "md")); 
+        if(isset(f, "md")) { 
+            cmd_anim_destroy(player, get(f, "md")); 
         }
     
         // Handle music and sounds
-        if(isset(p, "smo")) { cmd_music_on(get(p, "smo"));    }
-        if(isset(p, "smf")) { cmd_music_off();                }
-        if(isset(p, "s"))   { cmd_sound(player, get(p, "s")); }
+        if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));    }
+        if(isset(f, "smf")) { cmd_music_off();                }
+        if(isset(f, "s"))   { cmd_sound(player, get(f, "s")); }
         
         // Draw frame sprite
         if(real_frame < 25) {
@@ -160,7 +165,7 @@ void animationplayer_run(animationplayer *player) {
                 aniplayer_sprite *anisprite = malloc(sizeof(aniplayer_sprite));
                 anisprite->x = player->x + sprite->pos_x;
                 anisprite->y = player->y + sprite->pos_y;
-                anisprite->blendmode = isset(p, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
+                anisprite->blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
                 anisprite->tex = tex;
                 player->obj = anisprite;
             } else {
