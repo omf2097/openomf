@@ -152,6 +152,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
 
 void video_render_prepare() {
     // Switch to FBO rendering
+    texture_unbind();
     fbo_bind(&target);
 
     // Set state
@@ -174,6 +175,7 @@ void video_render_background(texture *tex) {
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     texture_bind(tex);
     glCallList(fullscreen_quad_flipped);
+    texture_unbind();
 }
 
 void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mode) {
@@ -187,7 +189,7 @@ void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mo
             glStencilFunc(GL_EQUAL, 1, 1);
             glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             break;
-        case BLEND_ALPHA:
+        default:
             // Alpha blending. Well, not really blending; we just skip all data where alpha = 0.
             // Set all visible data as 1 on stencil buffer, so that all additive blending effects
             // works on these surfaces.

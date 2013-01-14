@@ -33,7 +33,7 @@ int fbo_create(fbo *fbo, unsigned int w, unsigned int h) {
     glGenFramebuffers(1, &fbo->id);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->id);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo->tex.id, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo->rbo.id);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fbo->rbo.id);
     
     // Make sure everything worked.
     int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
