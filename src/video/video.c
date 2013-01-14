@@ -3,6 +3,8 @@
 #include "video/texture.h"
 #include "video/rbo.h"
 #include "video/glextloader.h"
+#include "video/shaderprogram.h"
+#include "video/shader.h"
 #include "utils/log.h"
 #include "utils/list.h"
 #include <SDL2/SDL.h>
@@ -21,6 +23,7 @@ fbo target;
 unsigned int fullscreen_quad, fullscreen_quad_flipped;
 int screen_w, screen_h;
 
+shaderprogram lights;
 
 int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     screen_w = window_w;
@@ -82,6 +85,27 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
             DEBUG("VSync enabled!");
         }
     }
+    
+    // Load shaders
+    shader *lightshow = malloc(sizeof(shader));
+    if(shader_create(lightshow, "shaders/light.ps", SHADER_FRAGMENT)) {
+        PERROR("Unable to link shader!");
+        shader_debug_log(lightshow);
+        SDL_DestroyWindow(window);
+        return 1;
+    }
+    shader_debug_log(lightshow);
+    
+    // Load shaderprogram
+    shaderprog_create(&lights);
+    shaderprog_attach(&lights, lightshow);
+    if(shaderprog_link(&lights)) {
+        PERROR("Unable to link shaderprogram!");
+        shaderprog_debug_log(&lights);
+        SDL_DestroyWindow(window);
+        return 1;
+    }
+    shaderprog_debug_log(&lights);
     
     // Enable textures
     glEnable(GL_TEXTURE_2D);
@@ -213,11 +237,13 @@ void video_render_finish() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // TODO: Enable shaders
+    //shaderprog_use(&lights, 1);
     
     // Draw textured quad
     glCallList(fullscreen_quad);
     
     // TODO: Disable shaders
+    //shaderprog_use(&lights, 0);
     
     // unbind
     texture_unbind();
@@ -227,6 +253,7 @@ void video_render_finish() {
 }
 
 void video_close() {
+    shaderprog_free(&lights);
     fbo_free(&target);
     glDeleteLists(fullscreen_quad, 1);
     SDL_GL_DeleteContext(glctx);  
