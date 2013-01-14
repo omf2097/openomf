@@ -16,6 +16,12 @@ typedef struct aniplayer_sprite_t {
     int blendmode;
 } aniplayer_sprite;
 
+typedef struct aniplayer_slide_op_t {
+    int x_per_tick;
+    int y_per_tick;
+    int enabled;
+} aniplayer_slide_op;
+
 typedef struct animationplayer_t {
     unsigned int id;
     unsigned int finished;
@@ -25,7 +31,9 @@ typedef struct animationplayer_t {
     array *anims;
     sd_stringparser *parser;
     
-    unsigned int x,y;
+    aniplayer_slide_op slide_op;
+    
+    int x,y;
     aniplayer_sprite *obj;
     scene *scene;
     

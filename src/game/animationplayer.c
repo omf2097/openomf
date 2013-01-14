@@ -74,6 +74,9 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
     player->finished = 0;
     player->anims = anims;
     player->scene = 0;
+    player->slide_op.enabled = 0;
+    player->slide_op.x_per_tick = 0;
+    player->slide_op.y_per_tick = 0;
     if(sd_stringparser_set_string(player->parser, animation->sdani->anim_string)) {
         sd_stringparser_delete(player->parser);
         PERROR("Unable to initialize stringparser w/ '%s'", animation->sdani->anim_string);
@@ -123,11 +126,26 @@ void animationplayer_render(animationplayer *player) {
 void animationplayer_run(animationplayer *player) {
     if(player && player->finished) return;
 
+    // Handle slide operation
+    if(player->slide_op.enabled) {
+        player->x += player->slide_op.x_per_tick;
+        player->y += player->slide_op.y_per_tick;
+        if(player->obj) {
+            player->obj->x += player->slide_op.x_per_tick;
+            player->obj->y += player->slide_op.y_per_tick;
+        }
+    }
+    
+    // Handle frame switch
     sd_stringparser_frame param;
-    sd_stringparser_frame *f;
+    sd_stringparser_frame n_param;
+    sd_stringparser_frame *f = &param;
+    sd_stringparser_frame *n = &n_param;
     if(sd_stringparser_run(player->parser, player->ticks-1, &param) == 0) {
-        f = &param;
         int real_frame = param.frame - 65;
+        
+        // Disable stuff from previous frame
+        player->slide_op.enabled = 0;
         
         // Do something if animation is finished!
         if(param.is_animation_end || player->finished) {
@@ -156,6 +174,24 @@ void animationplayer_run(animationplayer *player) {
         if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));    }
         if(isset(f, "smf")) { cmd_music_off();                }
         if(isset(f, "s"))   { cmd_sound(player, get(f, "s")); }
+        
+        // Check if next frame contains X=nnn or Y=nnn 
+        if(!param.is_final_frame) {
+            sd_stringparser_peek(player->parser, param.id + 1, &n_param);
+            player->slide_op.x_per_tick = 0;
+            player->slide_op.y_per_tick = 0;
+            int slide = 0;
+            if(isset(n, "x=")) {
+                slide = get(n, "x=");
+                player->slide_op.x_per_tick = (abs(player->x) + abs(slide)) / param.duration * (slide < 0 ? -1 : 1);
+                player->slide_op.enabled = 1;
+            }
+            if(isset(n, "y=")) { 
+                slide = get(n, "y=");
+                player->slide_op.y_per_tick = (abs(player->y) + abs(slide)) / param.duration * (slide < 0 ? -1 : 1);
+                player->slide_op.enabled = 1;
+            }
+        }
         
         // Draw frame sprite
         if(real_frame < 25) {

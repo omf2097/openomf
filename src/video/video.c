@@ -152,7 +152,7 @@ void video_render_background(texture *tex) {
     glCallList(fullscreen_quad_flipped);
 }
 
-void video_render_sprite(texture *tex, unsigned int sx, unsigned int sy, unsigned int rendering_mode) {
+void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mode) {
     switch(rendering_mode) {
         case BLEND_ADDITIVE:
             // Additive blending, so enable blending and disable alpha testing

@@ -11,7 +11,7 @@ typedef struct texture_t texture;
 
 int video_init(int window_w, int window_h, int fullscreen, int vsync); // Create window etc.
 void video_render_prepare();
-void video_render_sprite(texture *texture, unsigned int x, unsigned int y, unsigned int render_mode);
+void video_render_sprite(texture *texture, int x, int y, unsigned int render_mode);
 void video_render_finish();
 void video_render_background(texture *tex);
 void video_close();
