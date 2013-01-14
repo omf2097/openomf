@@ -28,6 +28,7 @@ enum {
 
 typedef struct scene_t scene;
 typedef struct sd_bk_file_t sd_bk_file;
+typedef struct animationplayer_t animationplayer;
 
 typedef struct scene_t {
     sd_bk_file *bk;
@@ -35,7 +36,9 @@ typedef struct scene_t {
     unsigned int next_id;
     texture background;
     array animations;
-    list players;
+    
+    list child_players;
+    list root_players;
     
     int (*event)(scene *scene, SDL_Event *event);
     void (*render)(scene *scene);

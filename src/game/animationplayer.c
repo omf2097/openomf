@@ -44,30 +44,18 @@ void cmd_anim_create(animationplayer *player, int id, int mx, int my, scene *sce
         np->x = ani->sdani->start_x + mx;
         np->y = ani->sdani->start_y + my;
         np->scene = scene;
-        list_push_last(&player->scene->players, np);
+        np->add_player = player->add_player;
+        np->del_player = player->del_player;
+        player->add_player(player->scene, np);
         DEBUG("Create animation %d @ x,y = %d,%d", id, np->x, np->y);
-    } else {
-        PERROR("Attempted to create an instance of nonexistent animation!");
-    }
+        return;
+    } 
+    PERROR("Attempted to create an instance of nonexistent animation!");
 }
 
-int cmd_anim_destroy(animationplayer *player, int id) {
-    // Attempt to kill child from this node
-    list_iterator it;
-    list_iter(&player->scene->players, &it);
-    animationplayer *tmp;
-    while((tmp = list_next(&it)) != 0) {
-        if(tmp->id == id) {
-            list_delete(&player->scene->players, &it);
-            animationplayer_free(tmp);
-            free(tmp);
-            DEBUG("Animation %d killed animation %d.", player->id, id);
-            return 0;
-        }
-    }
-    
-    PERROR("Animation %d could not find %d to delete!", player->id, id);
-    return 1;
+void cmd_anim_destroy(animationplayer *player, int id) {
+    player->del_player(player->scene, id);
+    DEBUG("Animation %d killed animation %d.", player->id, id);
 }
 
 void incinerate_obj(animationplayer *player) {
@@ -119,6 +107,8 @@ void animationplayer_free(animationplayer *player) {
 }
 
 void animationplayer_render(animationplayer *player) {
+    if(player != NULL && player->finished) return;
+
     // Render self
     if(player->obj) {
         aniplayer_sprite *s = player->obj;
@@ -127,59 +117,58 @@ void animationplayer_render(animationplayer *player) {
 }
 
 void animationplayer_run(animationplayer *player) {
-    if(player && player->parser && !player->finished) {
-        sd_stringparser_frame param;
-        sd_stringparser *p = player->parser;
-        if(sd_stringparser_run(player->parser, player->ticks-1, &param) == 0) {
-            int real_frame = param.frame - 65;
-            
-            // Do something if animation is finished!
-            if(param.is_animation_end || player->finished) {
-                player->finished = 1;
-                DEBUG("Animationplayer %d asks for removal ...", player->id);
-                goto exit_0;
-            }
-            
-            // Kill old sprite, if defined
-            incinerate_obj(player);
-            
-            // Tick management
-            if(isset(p, "d"))   { cmd_tickjump(player, get(p, "d")); }
+    if(player && player->finished) return;
+
+    sd_stringparser_frame param;
+    sd_stringparser *p = player->parser;
+    if(sd_stringparser_run(player->parser, player->ticks-1, &param) == 0) {
+        int real_frame = param.frame - 65;
         
-            // Animation management
-            if(isset(p, "m")) {
-                int mx = isset(p, "mx") ? get(p, "mx") : 0;
-                int my = isset(p, "my") ? get(p, "my") : 0;
-                cmd_anim_create(player, get(p, "m"), mx, my, player->scene);
-            }
-            if(isset(p, "md")) { 
-                cmd_anim_destroy(player, get(p, "md")); 
-            }
-        
-            // Handle music and sounds
-            if(isset(p, "smo")) { cmd_music_on(get(p, "smo"));    }
-            if(isset(p, "smf")) { cmd_music_off();                }
-            if(isset(p, "s"))   { cmd_sound(player, get(p, "s")); }
-            
-            // Draw frame sprite
-            if(real_frame < 25) {
-                sd_sprite *sprite = player->ani->sdani->sprites[real_frame];
-                texture *tex = array_get(&player->ani->sprites, real_frame);
-                if(tex) {
-                    aniplayer_sprite *anisprite = malloc(sizeof(aniplayer_sprite));
-                    anisprite->x = player->x + sprite->pos_x;
-                    anisprite->y = player->y + sprite->pos_y;
-                    anisprite->blendmode = isset(p, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
-                    anisprite->tex = tex;
-                    player->obj = anisprite;
-                } else {
-                    PERROR("No texture @ %u", real_frame);
-                }
-            }
-            
+        // Do something if animation is finished!
+        if(param.is_animation_end || player->finished) {
+            player->finished = 1;
+            DEBUG("Animationplayer %d asks for removal ...", player->id);
+            goto exit_0;
         }
-        player->ticks++;
+        
+        // Kill old sprite, if defined
+        incinerate_obj(player);
+        
+        // Tick management
+        if(isset(p, "d"))   { cmd_tickjump(player, get(p, "d")); }
+    
+        // Animation management
+        if(isset(p, "m")) {
+            int mx = isset(p, "mx") ? get(p, "mx") : 0;
+            int my = isset(p, "my") ? get(p, "my") : 0;
+            cmd_anim_create(player, get(p, "m"), mx, my, player->scene);
+        }
+        if(isset(p, "md")) { 
+            cmd_anim_destroy(player, get(p, "md")); 
+        }
+    
+        // Handle music and sounds
+        if(isset(p, "smo")) { cmd_music_on(get(p, "smo"));    }
+        if(isset(p, "smf")) { cmd_music_off();                }
+        if(isset(p, "s"))   { cmd_sound(player, get(p, "s")); }
+        
+        // Draw frame sprite
+        if(real_frame < 25) {
+            sd_sprite *sprite = player->ani->sdani->sprites[real_frame];
+            texture *tex = array_get(&player->ani->sprites, real_frame);
+            if(tex) {
+                aniplayer_sprite *anisprite = malloc(sizeof(aniplayer_sprite));
+                anisprite->x = player->x + sprite->pos_x;
+                anisprite->y = player->y + sprite->pos_y;
+                anisprite->blendmode = isset(p, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
+                anisprite->tex = tex;
+                player->obj = anisprite;
+            } else {
+                PERROR("No texture @ %u", real_frame);
+            }
+        } 
     }
+    player->ticks++;
     
 exit_0:
     return;

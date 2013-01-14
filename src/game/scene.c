@@ -8,6 +8,11 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
 
+// Internal functions
+void scene_add_ani_player(scene *scene, animationplayer *player);
+void scene_set_ani_finished(scene *scene, int id);
+
+// Loads BK file etc.
 int scene_load(scene *scene, unsigned int scene_id) {
     scene->bk = sd_bk_create();
     int ret = 0;
@@ -50,7 +55,8 @@ int scene_load(scene *scene, unsigned int scene_id) {
     sd_rgba_image_delete(bg);
     
     // Players list
-    list_create(&scene->players);
+    list_create(&scene->child_players);
+    list_create(&scene->root_players);
     
     // Handle animations
     animation *ani;
@@ -73,7 +79,9 @@ int scene_load(scene *scene, unsigned int scene_id) {
                 player->x = ani->sdani->start_x;
                 player->y = ani->sdani->start_y;
                 player->scene = scene;
-                list_push_last(&scene->players, player);
+                player->add_player = scene_add_ani_player;
+                player->del_player = scene_set_ani_finished;
+                list_push_last(&scene->root_players, player);
                 DEBUG("Create animation %d @ x,y = %d,%d", i, player->x, player->y);
             }
         }
@@ -82,6 +90,50 @@ int scene_load(scene *scene, unsigned int scene_id) {
     // All done
     DEBUG("Scene %i loaded!", scene_id);
     return 0;
+}
+
+void scene_add_ani_player(scene *scene, animationplayer *player) {
+    list_push_last(&scene->child_players, player);
+}
+
+void scene_set_ani_finished(scene *scene, int id) {
+    list_iterator it;
+    animationplayer *tmp = 0;
+    
+    list_iter(&scene->child_players, &it);
+    while((tmp = list_next(&it)) != NULL) {
+        if(tmp->id == id) {
+            tmp->finished = 1;
+            return;
+        }
+    }
+    
+    list_iter(&scene->root_players, &it);
+    while((tmp = list_next(&it)) != NULL) {
+        if(tmp->id == id) {
+            tmp->finished = 1;
+            return;
+        }
+    }
+}
+
+void scene_clean_ani_players(scene *scene) {
+    list_iterator it;
+    animationplayer *tmp = 0;
+
+    list_iter(&scene->child_players, &it);
+    while((tmp = list_next(&it)) != NULL) {
+        if(tmp->finished) { 
+            list_delete(&scene->child_players, &it); 
+        }
+    }
+    
+    list_iter(&scene->root_players, &it);
+    while((tmp = list_next(&it)) != NULL) {
+        if(tmp->finished) { 
+            list_delete(&scene->root_players, &it); 
+        }
+    }
 }
 
 // Return 0 if event was handled here
@@ -98,26 +150,31 @@ void scene_render(scene *scene) {
 
     // Render objects
     list_iterator it;
-    animationplayer *player;
-    list_iter(&scene->players, &it);
-    while((player = list_next(&it)) != 0) {
-        animationplayer_render(player);
+    animationplayer *tmp = 0;
+    list_iter(&scene->child_players, &it);
+    while((tmp = list_next(&it)) != NULL) {
+        animationplayer_render(tmp);
+    }
+    list_iter(&scene->root_players, &it);
+    while((tmp = list_next(&it)) != NULL) {
+        animationplayer_render(tmp);
     }
 }
 
 void scene_tick(scene *scene) {
-    // Iterate through the players
+    // Remove finished players
+    scene_clean_ani_players(scene);
+
+    // Tick all players
     list_iterator it;
-    animationplayer *player;
-    list_iter(&scene->players, &it);
-    while((player = list_next(&it)) != 0) {
-        animationplayer_run(player);
-        if(player->finished) {
-            list_delete(&scene->players, &it);
-            DEBUG("Deleted ROOT animationplayer %d.", player->id);
-            animationplayer_free(player);
-            free(player);
-        }
+    animationplayer *tmp = 0;
+    list_iter(&scene->child_players, &it);
+    while((tmp = list_next(&it)) != NULL) {
+        animationplayer_run(tmp);
+    }
+    list_iter(&scene->root_players, &it);
+    while((tmp = list_next(&it)) != NULL) {
+        animationplayer_run(tmp);
     }
         
     // Run custom render function, if defined
@@ -127,7 +184,7 @@ void scene_tick(scene *scene) {
         
     // If no animations to play, jump to next scene (if any)
     // TODO: Hackish, make this nicer.
-    if(list_size(&scene->players) <= 0) {
+    if(list_size(&scene->root_players) <= 0) {
         scene->next_id = SCENE_MENU;
         DEBUG("NEXT ID!");
     }
@@ -140,20 +197,26 @@ void scene_free(scene *scene) {
     texture_free(&scene->background);
     
     // Free players
-    list_iterator lit;
-    animationplayer *player = 0;
-    list_iter(&scene->players, &lit);
-    while((player = list_next(&lit)) != 0) {
-        animationplayer_free(player);
-        free(player);
+    list_iterator it;
+    animationplayer *tmp = 0;
+    list_iter(&scene->child_players, &it);
+    while((tmp = list_next(&it)) != NULL) {
+        animationplayer_free(tmp);
+        free(tmp);
     }
-    list_free(&scene->players);
+    list_iter(&scene->root_players, &it);
+    while((tmp = list_next(&it)) != NULL) {
+        animationplayer_free(tmp);
+        free(tmp);
+    }
+    list_free(&scene->child_players);
+    list_free(&scene->root_players);
     
     // Free animations
-    array_iterator it;
+    array_iterator ait;
     animation *ani = 0;
-    array_iter(&scene->animations, &it);
-    while((ani = array_next(&it)) != 0) {
+    array_iter(&scene->animations, &ait);
+    while((ani = array_next(&ait)) != 0) {
         animation_free(ani);
         free(ani);
     }

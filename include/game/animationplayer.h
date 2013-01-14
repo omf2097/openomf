@@ -18,16 +18,19 @@ typedef struct aniplayer_sprite_t {
 
 typedef struct animationplayer_t {
     unsigned int id;
+    unsigned int finished;
+    unsigned int ticks;
+    
     animation *ani;
     array *anims;
     sd_stringparser *parser;
-    unsigned int ticks;
     
     unsigned int x,y;
     aniplayer_sprite *obj;
     scene *scene;
     
-    unsigned int finished;
+    void (*del_player)(scene *scene, int id);
+    void (*add_player)(scene *scene, animationplayer *player);
 } animationplayer;
 
 int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims);
