@@ -10,13 +10,6 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 
-typedef struct gl_sprite_t {
-    texture *tex;
-    unsigned int x,y;
-    unsigned int rendering_mode;
-    int priority;
-} gl_sprite;
-
 SDL_Window *window;
 SDL_GLContext glctx;
 fbo target;
