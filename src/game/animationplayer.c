@@ -34,12 +34,11 @@ void cmd_sound_vol(animationplayer *player, int vol) {
     player->snd->vol = vol/60.0f;
 }
 
-// between -16 and 240
+// between -16 and 239
 void cmd_sound_freq(animationplayer *player, int f) {
-    f += 16;
-    if(f < 0) { f = 0; }
-    if(f > 255) { f = 255; }
-    player->snd->freq = f/255.0f + 1.0f;
+    if(f < -16) { f = -16; }
+    if(f > 239) { f = 239; }
+    player->snd->freq = f/239.0f + 1.0f;
 }
 
 void cmd_music_off() {
