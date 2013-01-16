@@ -16,7 +16,7 @@ int soundloader_init(const char *filename) {
     return 0;
 }
 
-void soundloader_play(unsigned int sound) {
+void soundloader_play(unsigned int sound, sound_state *ss) {
     // Make sure sound exists
     if(sound > sdf->sound_count) {
         return;
@@ -29,7 +29,7 @@ void soundloader_play(unsigned int sound) {
     }
     
     // Play sound
-    sound_play(sample->data, sample->len);
+    sound_play(sample->data, sample->len, ss);
 }
 
 void soundloader_close() {

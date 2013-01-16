@@ -1,4 +1,5 @@
 #include "audio/stream.h"
+#include "audio/sound.h"
 #include "utils/log.h"
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -43,6 +44,18 @@ int audio_stream_create(audio_stream *stream) {
     return 0;
 }
 
+int alplay(audio_stream *stream) {
+    if(stream->snd) {
+        // apply sound effects
+        float pos[] = {stream->snd->pan, 0.0f, 0.0f}; 
+        alSourcefv(stream->alsource, AL_POSITION, pos);
+        alSourcef(stream->alsource, AL_GAIN, stream->snd->vol);
+        alSourcef(stream->alsource, AL_PITCH, stream->snd->freq);
+    }
+    alSourcePlay(stream->alsource);
+    return 0;
+}
+
 int audio_stream_start(audio_stream *stream) {
     char buf[AUDIO_BUFFER_SIZE];
     int ret;
@@ -52,7 +65,7 @@ int audio_stream_start(audio_stream *stream) {
         alBufferData(stream->albuffers[i], stream->alformat, buf, ret, stream->frequency);
     }
     alSourceQueueBuffers(stream->alsource, AUDIO_BUFFER_COUNT, stream->albuffers);
-    alSourcePlay(stream->alsource);
+    alplay(stream);
     stream->playing = 1;
     return 0;
 }
@@ -107,7 +120,7 @@ int audio_stream_render(audio_stream *stream) {
     
     // If stream has stopped because of empty buffers, restart playback.
     if(stream->playing && !alplaying(stream)) {
-        alSourcePlay(stream->alsource);
+        alplay(stream);
     }
     
     // All done!

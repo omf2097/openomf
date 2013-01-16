@@ -4,6 +4,7 @@
 #include "utils/list.h"
 #include "utils/array.h"
 
+typedef struct sound_state_t sound_state;
 typedef struct texture_t texture;
 typedef struct animation_t animation;
 typedef struct sd_stringparser_t sd_stringparser;
@@ -28,6 +29,7 @@ typedef struct animationplayer_t {
     unsigned int ticks;
     
     animation *ani;
+    sound_state *snd;
     array *anims;
     sd_stringparser *parser;
     

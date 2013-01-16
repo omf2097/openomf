@@ -52,6 +52,7 @@ int music_play(const char *filename) {
     stream->userdata = (void*)mf;
     stream->update = &music_update;
     stream->close = &music_close;
+    stream->snd = NULL; // no panning, freq etc
     
     // Create openal stream
     if(audio_stream_create(stream)) {

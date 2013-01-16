@@ -5,6 +5,7 @@
 #define AUDIO_BUFFER_SIZE 32768
 
 typedef struct audio_stream_t audio_stream;
+typedef struct sound_state_t sound_state;
 
 typedef struct audio_stream_t {
     unsigned int alsource;
@@ -14,6 +15,7 @@ typedef struct audio_stream_t {
     int channels;
     int bytes;
     int playing;
+    sound_state *snd;
     void *userdata;
     int (*update)(audio_stream *stream, char *buf, int len);
     void (*close)(audio_stream *stream);

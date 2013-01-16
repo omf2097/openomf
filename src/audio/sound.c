@@ -26,9 +26,10 @@ int sound_update(audio_stream *stream, char *buf, int len) {
 void sound_close(audio_stream *stream) {
     sound_effect *se = (sound_effect*)stream->userdata;
     free(se);
+    free(stream->snd);
 }
 
-int sound_play(const char *data, unsigned int len) {
+int sound_play(const char *data, unsigned int len, sound_state *ss) {
     // Audio data struct for userdata
     sound_effect *se = malloc(sizeof(sound_effect));
     se->data = data;
@@ -43,6 +44,8 @@ int sound_play(const char *data, unsigned int len) {
     stream->userdata = (void*)se;
     stream->update = &sound_update;
     stream->close = &sound_close;
+    stream->snd = malloc(sizeof(sound_state));
+    memcpy(stream->snd, ss, sizeof(sound_state));
     
     // Create openal stream
     if(audio_stream_create(stream)) {

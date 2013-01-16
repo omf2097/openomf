@@ -5,6 +5,7 @@
 #include "audio/music.h"
 #include "audio/soundloader.h"
 #include "video/video.h"
+#include "audio/sound.h"
 #include "video/texture.h"
 #include <stdlib.h>
 
@@ -15,8 +16,30 @@ void cmd_tickjump(animationplayer *player, int tick) {
     player->ticks = tick;
 }
 
+
 void cmd_sound(animationplayer *player, int sound) {
-    soundloader_play(player->ani->soundtable[sound]-1);
+    soundloader_play(player->ani->soundtable[sound]-1, player->snd);
+}
+
+ // -127 to 126, 0 is the middle
+void cmd_sound_pan(animationplayer *player, int pan) {
+    if(pan < -127) { pan = -127; }
+    player->snd->pan = ((char)pan)/126.0f;
+}
+
+// between 0 and 60 (capped to 60)
+void cmd_sound_vol(animationplayer *player, int vol) {
+    if(vol < 0) { vol = 0; }
+    if(vol > 60) { vol = 0; }
+    player->snd->vol = vol/60.0f;
+}
+
+// between -16 and 240
+void cmd_sound_freq(animationplayer *player, int f) {
+    f += 16;
+    if(f < 0) { f = 0; }
+    if(f > 255) { f = 255; }
+    player->snd->freq = f/255.0f + 1.0f;
 }
 
 void cmd_music_off() {
@@ -65,7 +88,16 @@ void incinerate_obj(animationplayer *player) {
     }
 }
 
+sound_state *sound_state_create() {
+    sound_state *s = malloc(sizeof(sound_state));
+    memset(s, 0, sizeof(sound_state));
+    s->vol = 1.0f;
+    s->freq = 1.0f;
+    return s;
+}
+
 int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims) {
+    player->snd = sound_state_create();
     player->ani = animation;
     player->id = id;
     player->parser = sd_stringparser_create();
@@ -111,6 +143,9 @@ void animationplayer_free(animationplayer *player) {
     // Free parser
     sd_stringparser_delete(player->parser);
     player->parser = 0;
+    
+    // Free Sound State
+    free(player->snd);
 }
 
 void animationplayer_render(animationplayer *player) {
@@ -171,9 +206,13 @@ void animationplayer_run(animationplayer *player) {
         }
     
         // Handle music and sounds
+        if(isset(f, "sf"))  { cmd_sound_freq(player, get(f, "sf")); }
+        if(isset(f, "l"))   { cmd_sound_vol(player, get(f, "l")); }
+        if(isset(f, "sb"))  { cmd_sound_pan(player, get(f, "sb")); }
         if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));    }
         if(isset(f, "smf")) { cmd_music_off();                }
         if(isset(f, "s"))   { cmd_sound(player, get(f, "s")); }
+        
         
         // Check if next frame contains X=nnn or Y=nnn 
         if(!param.is_final_frame) {

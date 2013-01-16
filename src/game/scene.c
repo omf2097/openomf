@@ -5,6 +5,7 @@
 #include "utils/array.h"
 #include "utils/log.h"
 #include "video/video.h"
+#include "audio/sound.h"
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
 
