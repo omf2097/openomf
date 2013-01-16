@@ -50,7 +50,8 @@ int alplay(audio_stream *stream) {
         float pos[] = {stream->snd->pan, 0.0f, 0.0f}; 
         alSourcefv(stream->alsource, AL_POSITION, pos);
         alSourcef(stream->alsource, AL_GAIN, stream->snd->vol);
-        alSourcef(stream->alsource, AL_PITCH, stream->snd->freq);
+        // zero freq is not legal
+        if(stream->snd->freq != 0.0f) { alSourcef(stream->alsource, AL_PITCH, stream->snd->freq); }
     }
     alSourcePlay(stream->alsource);
     return 0;

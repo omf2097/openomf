@@ -23,8 +23,9 @@ void cmd_sound(animationplayer *player, int sound) {
 
  // -127 to 126, 0 is the middle
 void cmd_sound_pan(animationplayer *player, int pan) {
-    if(pan < -127) { pan = -127; }
-    player->snd->pan = ((char)pan)/126.0f;
+    if(pan < -100) { pan = -100; }
+    if(pan > 100) { pan = 100; }
+    player->snd->pan = ((char)pan)/100.0f;
 }
 
 // between 0 and 60 (capped to 60)
@@ -38,7 +39,10 @@ void cmd_sound_vol(animationplayer *player, int vol) {
 void cmd_sound_freq(animationplayer *player, int f) {
     if(f < -16) { f = -16; }
     if(f > 239) { f = 239; }
-    player->snd->freq = f/239.0f + 1.0f;
+    float nf = (f/239.0f)*3.0f + 1.0f; // 3x freq multiplier seems to be close to omf
+    if(nf < 0.5f) { nf = 0.5f; }
+    if(nf > 2.0f) { nf = 2.0f; }
+    player->snd->freq = nf;
 }
 
 void cmd_music_off() {
@@ -205,12 +209,14 @@ void animationplayer_run(animationplayer *player) {
         }
     
         // Handle music and sounds
+        player->snd->freq = 1.0f;
+        player->snd->pan = 0.0f;
         if(isset(f, "sf"))  { cmd_sound_freq(player, get(f, "sf")); }
-        if(isset(f, "l"))   { cmd_sound_vol(player, get(f, "l")); }
-        if(isset(f, "sb"))  { cmd_sound_pan(player, get(f, "sb")); }
-        if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));    }
-        if(isset(f, "smf")) { cmd_music_off();                }
-        if(isset(f, "s"))   { cmd_sound(player, get(f, "s")); }
+        if(isset(f, "l"))   { cmd_sound_vol(player, get(f, "l"));   }
+        if(isset(f, "sb"))  { cmd_sound_pan(player, get(f, "sb"));  }
+        if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));          }
+        if(isset(f, "smf")) { cmd_music_off();                      }
+        if(isset(f, "s"))   { cmd_sound(player, get(f, "s"));       }
         
         
         // Check if next frame contains X=nnn or Y=nnn 
