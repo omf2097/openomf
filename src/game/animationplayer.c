@@ -21,18 +21,27 @@ void cmd_sound(animationplayer *player, int sound) {
     soundloader_play(player->ani->soundtable[sound]-1, player->snd);
 }
 
- // -127 to 126, 0 is the middle
+ // -100 to 100, 0 is the middle
 void cmd_sound_pan(animationplayer *player, int pan) {
     if(pan < -100) { pan = -100; }
     if(pan > 100) { pan = 100; }
-    player->snd->pan = ((char)pan)/100.0f;
+    player->snd->pan_start = ((char)pan)/100.0f;
+    player->snd->pan_end = player->snd->pan_start;
 }
 
-// between 0 and 60 (capped to 60)
+ // -100 to 100, 0 is the middle
+void cmd_sound_pan_end(animationplayer *player, int pan) {
+    if(pan < -100) { pan = -100; }
+    if(pan > 100) { pan = 100; }
+    player->snd->pan_end = ((char)pan)/100.0f;
+    player->snd->pan = player->snd->pan_start;
+}
+
+// between 0 and 100 (capped to 100)
 void cmd_sound_vol(animationplayer *player, int vol) {
     if(vol < 0) { vol = 0; }
-    if(vol > 60) { vol = 0; }
-    player->snd->vol = vol/60.0f;
+    if(vol > 100) { vol = 100; }
+    player->snd->vol = vol/100.0f;
 }
 
 // between -16 and 239
@@ -211,12 +220,16 @@ void animationplayer_run(animationplayer *player) {
         // Handle music and sounds
         player->snd->freq = 1.0f;
         player->snd->pan = 0.0f;
-        if(isset(f, "sf"))  { cmd_sound_freq(player, get(f, "sf")); }
-        if(isset(f, "l"))   { cmd_sound_vol(player, get(f, "l"));   }
-        if(isset(f, "sb"))  { cmd_sound_pan(player, get(f, "sb"));  }
-        if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));          }
-        if(isset(f, "smf")) { cmd_music_off();                      }
-        if(isset(f, "s"))   { cmd_sound(player, get(f, "s"));       }
+        player->snd->pan_start = 0.0f;
+        player->snd->pan_end = 0.0f;
+        if(isset(f, "sf"))  { cmd_sound_freq(player, get(f, "sf"));      }
+        if(isset(f, "l"))   { cmd_sound_vol(player, get(f, "l"));        }
+        if(isset(f, "sb"))  { cmd_sound_pan(player, get(f, "sb"));       }
+        if(isset(f, "sl"))  { cmd_sound_pan_end(player, get(f, "sl"));   }
+        if(isset(f, "se"))  { cmd_sound_pan_end(player, get(f, "se")+1); }
+        if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));               }
+        if(isset(f, "smf")) { cmd_music_off();                           }
+        if(isset(f, "s"))   { cmd_sound(player, get(f, "s"));            }
         
         
         // Check if next frame contains X=nnn or Y=nnn 

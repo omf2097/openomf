@@ -44,7 +44,7 @@ int audio_stream_create(audio_stream *stream) {
     return 0;
 }
 
-int alplay(audio_stream *stream) {
+void alplay(audio_stream *stream) {
     if(stream->snd) {
         // apply sound effects
         float pos[] = {stream->snd->pan, 0.0f, 0.0f}; 
@@ -54,7 +54,6 @@ int alplay(audio_stream *stream) {
         if(stream->snd->freq != 0.0f) { alSourcef(stream->alsource, AL_PITCH, stream->snd->freq); }
     }
     alSourcePlay(stream->alsource);
-    return 0;
 }
 
 int audio_stream_start(audio_stream *stream) {
@@ -86,11 +85,13 @@ int audio_stream_playing(audio_stream *stream) {
     return stream->playing;
 }
 
-int audio_stream_render(audio_stream *stream) {
+int audio_stream_render(audio_stream *stream, int dt) {
     // Don't do anything unless playback has been started
     if(!stream->playing) {
         return 1;
     }
+    
+    if(stream->preupdate) { stream->preupdate(stream, dt); }
 
     // See if we have any empty buffers to fill
     int val;
@@ -111,6 +112,7 @@ int audio_stream_render(audio_stream *stream) {
             stream->playing = 0;
             return 1;
         }
+        
         alSourceUnqueueBuffers(stream->alsource, 1, &bufno);
         alBufferData(bufno, stream->alformat, buf, ret, stream->frequency);
         alSourceQueueBuffers(stream->alsource, 1, &bufno);

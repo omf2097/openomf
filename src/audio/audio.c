@@ -33,12 +33,12 @@ int audio_init() {
     return 0;
 }
 
-void audio_render() {
+void audio_render(int dt) {
     list_iterator it;
     list_iter(&streams, &it);
     audio_stream *stream;
     while((stream = list_next(&it)) != 0) {
-        if(audio_stream_render(stream)) {
+        if(audio_stream_render(stream, dt)) {
             audio_stream_stop(stream);
             stream->close(stream);
             audio_stream_free(stream);

@@ -79,7 +79,8 @@ void engine_run() {
         }
 
         // Render scene
-        omf_wait += SDL_GetTicks() - scene_start;
+        int dt = SDL_GetTicks() - scene_start;
+        omf_wait += dt;
         while(omf_wait > MS_PER_OMF_TICK) {
             scene_tick(&scene);
             omf_wait -= MS_PER_OMF_TICK;
@@ -89,7 +90,7 @@ void engine_run() {
         // Do the actual rendering jobs
         scene_render(&scene);
         video_render_finish();
-        audio_render();
+        audio_render(dt);
         
         // Delay stuff a bit if vsync is off
         if(!_vsync && run) {

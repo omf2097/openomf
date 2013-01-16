@@ -50,6 +50,7 @@ int music_play(const char *filename) {
     stream->channels = 2;
     stream->bytes = 2;
     stream->userdata = (void*)mf;
+    stream->preupdate = NULL;
     stream->update = &music_update;
     stream->close = &music_close;
     stream->snd = NULL; // no panning, freq etc

@@ -5,12 +5,27 @@
 #include <AL/alc.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include "utils/log.h"
 typedef struct sound_effect_t {
     const char *data;
     unsigned int len;
     unsigned int pos;
 } sound_effect;
+
+
+void audio_stream_pan(audio_stream *stream, int dt) {
+    sound_effect *se = (sound_effect*)stream->userdata;
+    float t = (stream->snd->pan_end-stream->snd->pan_start)*(dt/(se->len/8.0f));
+    stream->snd->pan += t;
+    if((t < 0.0f && stream->snd->pan < stream->snd->pan_end) || 
+       (t > 0.0f && stream->snd->pan > stream->snd->pan_end)) { stream->snd->pan = stream->snd->pan_end; }
+    float pos[] = {stream->snd->pan, 0.0f, 0.0f}; 
+    alSourcefv(stream->alsource, AL_POSITION, pos);
+}
+
+void sound_preupdate(audio_stream *stream, int dt) {
+    audio_stream_pan(stream, dt);
+}
 
 int sound_update(audio_stream *stream, char *buf, int len) {
     sound_effect *se = (sound_effect*)stream->userdata;
@@ -42,6 +57,7 @@ int sound_play(const char *data, unsigned int len, sound_state *ss) {
     stream->channels = 1;
     stream->bytes = 1;
     stream->userdata = (void*)se;
+    stream->preupdate = &sound_preupdate;
     stream->update = &sound_update;
     stream->close = &sound_close;
     stream->snd = malloc(sizeof(sound_state));
