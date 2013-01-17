@@ -64,7 +64,7 @@ int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringp
 
 /* Return 0 if the tag was found, otherwise return 1 */
 /* out_tag must be declared as const sd_stringparser_tag_value* */
-int sd_stringparser_get_tag(sd_stringparser *parser, const char *tag, const sd_stringparser_tag_value **out_tag);
+int sd_stringparser_get_tag(sd_stringparser *parser, unsigned int frame, const char *tag, const sd_stringparser_tag_value **out_tag);
 
 /* Return 0 if the tag was found, otherwise return 1 */
 /* out_tag must be declared as const sd_stringparser_tag_info* */

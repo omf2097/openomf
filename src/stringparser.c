@@ -22,20 +22,6 @@ typedef struct tag_list_t {
     tag_attribute attrib;
 } tag_list;
 
-// This list stores a list of tags that requires resetting 
-// how it works:
-// At the beginning of a parser run, reset all tags and clear this list
-// During a parser run, store the tag that was modified into this list
-typedef struct tag_reset_node_t {
-    struct tag_reset_node_t *next;
-    tag_attribute *tag;
-} tag_reset_node;
-
-typedef struct tag_reset_list_t {
-    tag_reset_node *head;
-    tag_reset_node *tail;
-} tag_reset_list;
-
 typedef struct anim_frame_t {
     // is_done is set to 1 if this frame is completed also no further processing for this frame 
     int is_done;
@@ -52,6 +38,9 @@ typedef struct anim_frame_t {
     int num_tags;
     const char **tags;
     int *tag_params;
+    
+    // used for O(1) tag lookup
+    tag_list *tag_list;
 } anim_frame;
 
 typedef struct frame_list_t {
@@ -60,8 +49,6 @@ typedef struct frame_list_t {
 
     int current_frame;
     unsigned int last_tick;
-
-    tag_reset_list tag_resetlist;
 } frame_list;
 
 enum {
@@ -70,6 +57,8 @@ enum {
     TAG_MARKER,
     TAG_END
 };
+
+static const sd_stringparser_tag_value null_tag = {0,0};
 
 // list of valid tags and whether it has param or not
 static const sd_stringparser_tag_info tags[] = {
@@ -237,47 +226,6 @@ static const sd_stringparser_tag_info tags[] = {
     {"zz", 0, "Invulnerable to any attacks?"}
 };
 
-static void tag_resetlist_init(tag_reset_list *list) {
-    list->head = malloc(sizeof(tag_reset_node));
-    list->tail = malloc(sizeof(tag_reset_node));
-    list->head->next = list->tail;
-    list->tail->next = NULL;
-}
-
-static void tag_resetlist_clear(tag_reset_list *list) {
-    tag_reset_node *node = list->head;
-    tag_reset_node  *head = node;
-    // skip first two nodes since they are placeholders
-    tag_reset_node  *tail = node = node->next;
-    node = node->next; 
-    while(node) {
-        tag_reset_node *next = node->next;
-        node->tag->value.is_set = 0;
-        node->tag->value.value = 0;
-        free(node);
-        node = next;
-    }
-    list->head = head;
-    list->tail = tail;
-    list->head->next = tail;
-    tail->next = NULL;
-}
-
-static void tag_resetlist_deinit(tag_reset_list *list) {
-    tag_resetlist_clear(list);
-    free(list->head);
-    free(list->tail);
-}
-static void tag_resetlist_add(tag_reset_list *list, tag_attribute *tag) {
-    tag_reset_node *node = malloc(sizeof(tag_reset_node));
-    node->next = NULL;
-    node->tag = tag;
-
-    list->tail->next = node;
-    list->tail = node;
-}
-
-
 static void sd_taglist_add_tag(tag_list *list, const sd_stringparser_tag_info *attrib) {
     tag_list **plist = &list;
     const char *ptag = attrib->tag;
@@ -300,9 +248,9 @@ static tag_attribute *sd_taglist_find_tag(tag_list *list, const char *tag) {
     const char *ptag = tag;
     do {
         plist = &((*plist)->tag_chain[(unsigned char)*ptag]);
-    } while(*(++ptag));
+    } while(*(++ptag) && *plist);
 
-    if(*plist && strcmp((*plist)->attrib.tag_info->tag, tag) == 0) {
+    if(*plist) {
         return &(*plist)->attrib;
     }
 
@@ -326,8 +274,15 @@ static void sd_taglist_clear(tag_list *list) {
     }
 }
 
+static void sd_taglist_delete(tag_list **list) {
+    if(*list) {
+        sd_taglist_clear(*list);
+        free(list);
+        *list = NULL;
+    }
+}
+
 static void sd_framelist_init(frame_list *list) {
-    tag_resetlist_init(&list->tag_resetlist);
 }
 
 static void sd_framelist_clear(frame_list *list) {
@@ -336,10 +291,10 @@ static void sd_framelist_clear(frame_list *list) {
         anim_frame *f = &list->frames[i];
         free(f->tag_params);
         free(f->tags);
+        sd_taglist_delete(&f->tag_list);
         memset(f, 0, sizeof(anim_frame));
     }
     free(list->frames);
-    tag_resetlist_deinit(&list->tag_resetlist);
     list->frames = NULL;
     list->current_frame = 0;
     list->num_frames = 0;
@@ -350,6 +305,14 @@ static void sd_framelist_set(frame_list *list, int cur_frame, char frame_letter,
     frame->frame_letter = frame_letter;
     frame->duration = duration;
     frame->num_tags = 0;
+    
+    if(frame->tag_list) {
+        // free the old tag list first
+        sd_taglist_delete(&frame->tag_list);
+    }
+    
+    frame->tag_list = malloc(sizeof(tag_list));
+    memset(frame->tag_list, 0, sizeof(tag_list));
 }
 
 static void sd_framelist_add_tag(frame_list *list, int cur_frame, tag_attribute *tag_attrib, int param){
@@ -362,14 +325,24 @@ static void sd_framelist_add_tag(frame_list *list, int cur_frame, tag_attribute 
 
     cur->tag_params[ntags-1] = param;
     cur->tags[ntags-1] = tag_attrib->tag_info->tag;
+    
+    sd_taglist_add_tag(cur->tag_list, tag_attrib->tag_info);
+    tag_attribute *t = sd_taglist_find_tag(cur->tag_list, tag_attrib->tag_info->tag);
+    if(t) {
+        t->value.is_set = 1;
+        t->value.value = param;
+    }
 }
 
 static void sd_framelist_resize(frame_list *list, int frames) {
     int prev_num_frames = list->num_frames;
     list->num_frames = frames;
+    for (int i = frames;i < prev_num_frames;++i) {
+        sd_taglist_delete(&list->frames[i].tag_list);
+    }
     if(frames > 0) {
         list->frames = realloc(list->frames, frames*sizeof(anim_frame));
-        if(frames > prev_num_frames) memset(list->frames+prev_num_frames, 0, (frames-prev_num_frames)*sizeof(anim_frame));
+        if(frames > prev_num_frames) { memset(list->frames+prev_num_frames, 0, (frames-prev_num_frames)*sizeof(anim_frame)); }
     } else {
         free(list->frames);
         list->frames = NULL;
@@ -411,8 +384,6 @@ static int sd_framelist_process(frame_list *frames, tag_list *tags, unsigned int
     if((cur && ticks >= cur->start_tick) || 
         (frames->current_frame == frames->num_frames && ticks >= total_duration)) {
 
-        tag_resetlist_clear(&frames->tag_resetlist);
-
         int is_first_frame = ((cur == &frames->frames[0]) ? 1 : 0);
         int is_final_frame = ((cur == &frames->frames[frames->num_frames-1]) ? 1 : 0);
         int is_animation_end = ((frames->current_frame >= frames->num_frames) ? 1 : 0);
@@ -429,14 +400,6 @@ static int sd_framelist_process(frame_list *frames, tag_list *tags, unsigned int
             out_frame->tag_values = cur->tag_params;
             out_frame->duration = cur->duration;
             out_frame->frame = cur->frame_letter;
-
-            for(int i=0;i<cur->num_tags;++i) {
-                tag_attribute *tag_attr = sd_taglist_find_tag(tags, cur->tags[i]);
-                tag_attr->value.is_set = 1;
-                tag_attr->value.value = cur->tag_params[i];
-
-                tag_resetlist_add(&frames->tag_resetlist, tag_attr);
-            }
         }
 
         out_frame->is_first_frame = is_first_frame;
@@ -634,10 +597,9 @@ sd_stringparser* sd_stringparser_create() {
 void sd_stringparser_delete(sd_stringparser *parser) {
     if(parser) {
         if(parser->string) free(parser->string);
-        sd_taglist_clear(parser->tag_list);
+        sd_taglist_delete((tag_list**)&parser->tag_list);
         sd_framelist_clear(parser->frame_list);
         free(parser->frame_list);
-        free(parser->tag_list);
         free(parser);
     }
 }
@@ -693,15 +655,19 @@ int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringp
 }
 
 /* Return 0 if the tag was found, otherwise return 1 */
-int sd_stringparser_get_tag(sd_stringparser *parser, const char *tag, const sd_stringparser_tag_value **out_tag) {
-    tag_attribute *tag_attr = sd_taglist_find_tag(parser->tag_list, tag);
-    if(tag_attr) {
-        *out_tag = &tag_attr->value;
-        return 0;
+int sd_stringparser_get_tag(sd_stringparser *parser, unsigned int frame, const char *tag, const sd_stringparser_tag_value **out_tag) {
+    unsigned int frames = ((frame_list*)parser->frame_list)->num_frames;
+    if (frame < frames) {
+        anim_frame *f = &((frame_list*)parser->frame_list)->frames[frame];
+        tag_attribute *tag_attr = sd_taglist_find_tag(f->tag_list, tag);
+        if(tag_attr) {
+            *out_tag = &tag_attr->value;
+            return 0;
+        }
     }
-    *out_tag = NULL;
-
-    return 1;
+    
+    *out_tag = &null_tag;
+    return 0;
 }
 
 int sd_stringparser_get_taginfo(sd_stringparser *parser, const char *tag, const sd_stringparser_tag_info **out_info) {
