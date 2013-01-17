@@ -1,54 +1,73 @@
 #include "utils/list.h"
 #include <stdlib.h>
+#include <string.h>
 
 void list_create(list *list) {
-    list->first = 0;
-    list->last = 0;
+    list->first = NULL;
+    list->last = NULL;
     list->size = 0;
+    list->alloc.cmalloc = malloc;
+    list->alloc.crealloc = realloc;
+    list->alloc.cfree = free;
+}
+
+void list_create_with_allocator(list *list, allocator alloc) {
+    list->first = NULL;
+    list->last = NULL;
+    list->size = 0;
+    list->alloc = alloc;
 }
 
 void list_free(list *list) {
     if(list->size == 0) return;
     list_node *next, *now;
     now = list->first;
-    while(now != 0) {
+    while(now != NULL) {
         next = now->next;
-        free(now);
+        list->alloc.cfree(now->data);
+        list->alloc.cfree(now);
         now = next;
     }
     list->size = 0;
 }
 
-void list_push_first(list *list, void *ptr) {
-    list_node *node = (list_node*)malloc(sizeof(list_node));
+void list_prepend(list *list, const void *ptr, int size) {
+    list_node *node = (list_node*)list->alloc.cmalloc(sizeof(list_node));
     node->next = list->first;
-    node->prev = 0;
-    node->data = ptr;
+    node->prev = NULL;
+    node->data = list->alloc.cmalloc(size);
+    memcpy(node->data, (const char*)ptr, size);
     if(list->first) { list->first->prev = node; }
     if(!list->last) { list->last = node; }
     list->first = node;
     list->size++;
 }
 
-void list_push_last(list *list, void *ptr) {
-    list_node *node = (list_node*)malloc(sizeof(list_node));
-    node->next = 0;
+void list_append(list *list, const void *ptr, int size) {
+    list_node *node = (list_node*)list->alloc.cmalloc(sizeof(list_node));
+    node->next = NULL;
     node->prev = list->last;
-    node->data = ptr;
+    node->data = list->alloc.cmalloc(size);
+    memcpy(node->data, (const char*)ptr, size);
     if(list->last) { list->last->next = node; }
     if(!list->first) { list->first = node; }
     list->last = node;
     list->size++;
 }
 
-void list_delete(list *list, list_iterator *iterator) {
-    list_node *node = iterator->this;
-    if(node->prev) { node->prev->next = node->next; }
-    if(node->next) { node->next->prev = node->prev; }
+void list_delete(list *list, iterator *iter) {
+    list_node *node = (list_node*)iter->vnow;
+    if(node == NULL && iter->prev == NULL) { node = list->first; }
+    if(node == NULL && iter->next == NULL) { node = list->last;  }
+    if(node->prev != NULL)  { node->prev->next = node->next; }
+    if(node->next != NULL)  { node->next->prev = node->prev; }
     if(node == list->first) { list->first = node->next; }
     if(node == list->last)  { list->last = node->prev;  }
-    iterator->this = 0;
-    iterator->next = node->next;
+    if(iter->next == NULL) {
+        iter->vnow = node->next;
+    } else {
+        iter->vnow = node->prev;
+    }
     free(node);
     list->size--;
 }
@@ -57,19 +76,49 @@ unsigned int list_size(list *list) {
     return list->size;
 }
 
-void list_iter(list *list, list_iterator *iterator) {
-    iterator->this = 0;
-    iterator->next = list->first;
+void* list_iter_next(iterator *iter) {
+    if(iter->vnow == NULL) {
+        iter->vnow = ((list*)iter->data)->first;
+    } else {
+        iter->vnow = ((list_node*)iter->vnow)->next;
+    }
+    if(iter->vnow == NULL) {
+        iter->ended = 1;
+        return NULL;
+    }
+    return ((list_node*)iter->vnow)->data;
 }
 
-void* list_next(list_iterator *iterator) {
-    iterator->this = iterator->next;
-    if(iterator->this) {
-        iterator->next = iterator->this->next;
+void* list_iter_prev(iterator *iter) {
+    if(iter->vnow == NULL) {
+        iter->vnow = ((list*)iter->data)->last;
+    } else {
+        iter->vnow = ((list_node*)iter->vnow)->prev;
     }
-    if(iterator->this) {
-        return iterator->this->data;
+    if(iter->vnow == NULL) {
+        iter->ended = 1;
+        return NULL;
     }
-    return 0;
+    return ((list_node*)iter->vnow)->data;
 }
+
+void list_iter_begin(list *list, iterator *iter) {
+    iter->data = list;
+    iter->vnow = NULL;
+    iter->inow = 0;
+    iter->next = list_iter_next;
+    iter->prev = NULL;
+    iter->ended = (list->first == NULL);
+}
+
+void list_iter_end(list *list, iterator *iter) {
+    iter->data = list;
+    iter->vnow = NULL;
+    iter->inow = 0;
+    iter->next = NULL;
+    iter->prev = list_iter_prev;
+    iter->ended = (list->first == NULL);
+}
+
+
 

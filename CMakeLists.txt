@@ -20,6 +20,8 @@ add_executable(openomf
     src/utils/log.c
     src/utils/config.c
     src/utils/list.c
+    src/utils/vector.c
+    src/utils/iterator.c
     src/utils/array.c
     src/video/video.c
     src/video/texture.c

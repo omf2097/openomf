@@ -16,7 +16,8 @@ int shader_create(shader *shader, const char *filename, int type) {
     fseek(f, 0, SEEK_END);
     long filesize = ftell(f);
     rewind(f);
-    char *buf = malloc(filesize);
+    char *buf = malloc(filesize+1);
+    buf[filesize] = 0;
     if(buf == NULL) {
         PERROR("Unable to reserve memory for shader '%s'! %d bytes required.", filename, filesize);
         fclose(f);
