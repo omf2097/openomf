@@ -131,21 +131,15 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
 }
 
 int isset(sd_stringparser_frame *frame, const char *tag) {
-    for(int i=0; i < frame->num_tags; i++) {
-        if(strcmp(frame->tags[i], tag) == 0) {
-            return 1;
-        }
-    }
-    return 0;
+    const sd_stringparser_tag_value *v;
+    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
+    return v->is_set;
 }
 
 int get(sd_stringparser_frame *frame, const char *tag) {
-    for(int i=0; i < frame->num_tags; i++) {
-        if(strcmp(frame->tags[i], tag) == 0) {
-            return frame->tag_values[i];
-        }
-    }
-    return 0;
+    const sd_stringparser_tag_value *v;
+    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
+    return v->value;
 }
 
 void animationplayer_free(animationplayer *player) {
