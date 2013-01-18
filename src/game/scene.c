@@ -1,5 +1,6 @@
 #include "game/scene.h"
 #include "game/scenes/intro.h"
+#include "game/scenes/menu.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
 #include "utils/array.h"
@@ -44,7 +45,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
     // Load specific stuff
     switch(scene_id) {
         case SCENE_INTRO: intro_load(scene); break;
-        //case SCENE_MENU: menu_load(scene); break;
+        case SCENE_MENU: menu_load(scene); break;
         default: 
             scene->render = 0;
             scene->event = 0;
