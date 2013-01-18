@@ -1,6 +1,6 @@
+#include "video/texture.h"
 #include "video/video.h"
 #include "video/fbo.h"
-#include "video/texture.h"
 #include "video/rbo.h"
 #include "video/glextloader.h"
 #include "video/shaderprogram.h"

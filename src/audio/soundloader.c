@@ -1,7 +1,8 @@
-#include "audio/soundloader.h"
 #include "audio/sound.h"
 #include "utils/log.h"
-#include <shadowdive/shadowdive.h>
+#include <shadowdive/shadowdive.h>a
+#include "audio/sound_state.h"
+#include "audio/soundloader.h"
 
 sd_sound_file *sdf = 0;
 
@@ -9,7 +10,7 @@ int soundloader_init(const char *filename) {
     sdf = sd_sounds_create();
     if(sd_sounds_load(sdf, filename)) {
         sd_sounds_delete(sdf);
-        PERROR("Unable to load sounds file!");
+        PERROR("Unable to load sounds file %s!", filename);
         return 1;
     }
     DEBUG("Soundloader loaded '%s' !", filename);
