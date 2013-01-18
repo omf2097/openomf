@@ -277,7 +277,7 @@ static void sd_taglist_clear(tag_list *list) {
 static void sd_taglist_delete(tag_list **list) {
     if(*list) {
         sd_taglist_clear(*list);
-        free(list);
+        free(*list);
         *list = NULL;
     }
 }
