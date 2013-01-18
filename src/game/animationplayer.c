@@ -4,6 +4,7 @@
 #include <shadowdive/shadowdive.h>
 #include "audio/music.h"
 #include "audio/soundloader.h"
+#include "audio/sound_state.h"
 #include "video/video.h"
 #include "audio/sound.h"
 #include "video/texture.h"
@@ -74,15 +75,15 @@ void cmd_music_on(int music) {
 void cmd_anim_create(animationplayer *player, int id, int mx, int my, scene *scene) {
     animation *ani = array_get(player->anims, id);
     if(ani != NULL) {
-        animationplayer *np = malloc(sizeof(animationplayer));
-        animationplayer_create(id, np, ani, player->anims);
-        np->x = ani->sdani->start_x + mx;
-        np->y = ani->sdani->start_y + my;
-        np->scene = scene;
-        np->add_player = player->add_player;
-        np->del_player = player->del_player;
-        player->add_player(player->scene, np);
-        DEBUG("Create animation %d @ x,y = %d,%d", id, np->x, np->y);
+        animationplayer np;
+        animationplayer_create(id, &np, ani, player->anims);
+        np.x = ani->sdani->start_x + mx;
+        np.y = ani->sdani->start_y + my;
+        np.scene = scene;
+        np.add_player = player->add_player;
+        np.del_player = player->del_player;
+        player->add_player(player->scene, &np);
+        DEBUG("Create animation %d @ x,y = %d,%d", id, np.x, np.y);
         return;
     } 
     PERROR("Attempted to create an instance of nonexistent animation!");

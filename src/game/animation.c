@@ -15,7 +15,7 @@ int animation_create(animation *ani, sd_animation *sdani, sd_palette *pal, int o
         img = sd_sprite_image_decode(sdani->sprites[i]->img, pal, overlay);
         texture *tex = malloc(sizeof(texture));
         texture_create(tex, img->data, img->w, img->h);
-        array_insert(&ani->sprites, i, tex);
+        array_set(&ani->sprites, i, tex);
         sd_rgba_image_delete(img);
     }
     return 0;
@@ -23,9 +23,9 @@ int animation_create(animation *ani, sd_animation *sdani, sd_palette *pal, int o
 
 void animation_free(animation *ani) {
     texture *ptr;
-    array_iterator it;
-    array_iter(&ani->sprites, &it);
-    while((ptr = array_next(&it)) != 0) {
+    iterator it;
+    array_iter_begin(&ani->sprites, &it);
+    while((ptr = iter_next(&it)) != 0) {
         texture_free(ptr);
         free(ptr);
     }

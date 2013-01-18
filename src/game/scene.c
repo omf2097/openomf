@@ -69,21 +69,21 @@ int scene_load(scene *scene, unsigned int scene_id) {
             // Create animation + textures, etc.
             ani = malloc(sizeof(animation));
             animation_create(ani, bka->animation, scene->bk->palettes[0], -1, scene->bk->soundtable);
-            array_insert(&scene->animations, i, ani);
+            array_set(&scene->animations, i, ani);
             
             // Start playback on those animations, that have load_on_start flag as true 
             // or if we are handling animation 25 of intro
             // TODO: Maybe make the exceptions a bit more generic or something ?
             if(bka->load_on_start || (scene_id == SCENE_INTRO && i == 25)) {
-                animationplayer *player = malloc(sizeof(animationplayer));
-                animationplayer_create(i, player, ani, &scene->animations);
-                player->x = ani->sdani->start_x;
-                player->y = ani->sdani->start_y;
-                player->scene = scene;
-                player->add_player = scene_add_ani_player;
-                player->del_player = scene_set_ani_finished;
-                list_push_last(&scene->root_players, player);
-                DEBUG("Create animation %d @ x,y = %d,%d", i, player->x, player->y);
+                animationplayer player;
+                animationplayer_create(i, &player, ani, &scene->animations);
+                player.x = ani->sdani->start_x;
+                player.y = ani->sdani->start_y;
+                player.scene = scene;
+                player.add_player = scene_add_ani_player;
+                player.del_player = scene_set_ani_finished;
+                list_append(&scene->root_players, &player, sizeof(animationplayer));
+                DEBUG("Create animation %d @ x,y = %d,%d", i, player.x, player.y);
             }
         }
     }
@@ -94,23 +94,23 @@ int scene_load(scene *scene, unsigned int scene_id) {
 }
 
 void scene_add_ani_player(scene *scene, animationplayer *player) {
-    list_push_last(&scene->child_players, player);
+    list_append(&scene->child_players, player, sizeof(animationplayer));
 }
 
 void scene_set_ani_finished(scene *scene, int id) {
-    list_iterator it;
+    iterator it;
     animationplayer *tmp = 0;
     
-    list_iter(&scene->child_players, &it);
-    while((tmp = list_next(&it)) != NULL) {
+    list_iter_begin(&scene->child_players, &it);
+    while((tmp = iter_next(&it)) != NULL) {
         if(tmp->id == id) {
             tmp->finished = 1;
             return;
         }
     }
     
-    list_iter(&scene->root_players, &it);
-    while((tmp = list_next(&it)) != NULL) {
+    list_iter_begin(&scene->root_players, &it);
+    while((tmp = iter_next(&it)) != NULL) {
         if(tmp->id == id) {
             tmp->finished = 1;
             return;
@@ -119,19 +119,21 @@ void scene_set_ani_finished(scene *scene, int id) {
 }
 
 void scene_clean_ani_players(scene *scene) {
-    list_iterator it;
+    iterator it;
     animationplayer *tmp = 0;
 
-    list_iter(&scene->child_players, &it);
-    while((tmp = list_next(&it)) != NULL) {
-        if(tmp->finished) { 
+    list_iter_begin(&scene->child_players, &it);
+    while((tmp = iter_next(&it)) != NULL) {
+        if(tmp->finished) {
+            animationplayer_free(tmp);
             list_delete(&scene->child_players, &it); 
         }
     }
     
-    list_iter(&scene->root_players, &it);
-    while((tmp = list_next(&it)) != NULL) {
+    list_iter_begin(&scene->root_players, &it);
+    while((tmp = iter_next(&it)) != NULL) {
         if(tmp->finished) { 
+            animationplayer_free(tmp);
             list_delete(&scene->root_players, &it); 
         }
     }
@@ -150,14 +152,14 @@ void scene_render(scene *scene) {
     video_render_background(&scene->background);
 
     // Render objects
-    list_iterator it;
+    iterator it;
     animationplayer *tmp = 0;
-    list_iter(&scene->child_players, &it);
-    while((tmp = list_next(&it)) != NULL) {
+    list_iter_begin(&scene->child_players, &it);
+    while((tmp = iter_next(&it)) != NULL) {
         animationplayer_render(tmp);
     }
-    list_iter(&scene->root_players, &it);
-    while((tmp = list_next(&it)) != NULL) {
+    list_iter_begin(&scene->root_players, &it);
+    while((tmp = iter_next(&it)) != NULL) {
         animationplayer_render(tmp);
     }
 }
@@ -167,14 +169,14 @@ void scene_tick(scene *scene) {
     scene_clean_ani_players(scene);
 
     // Tick all players
-    list_iterator it;
+    iterator it;
     animationplayer *tmp = 0;
-    list_iter(&scene->child_players, &it);
-    while((tmp = list_next(&it)) != NULL) {
+    list_iter_begin(&scene->child_players, &it);
+    while((tmp = iter_next(&it)) != NULL) {
         animationplayer_run(tmp);
     }
-    list_iter(&scene->root_players, &it);
-    while((tmp = list_next(&it)) != NULL) {
+    list_iter_begin(&scene->root_players, &it);
+    while((tmp = iter_next(&it)) != NULL) {
         animationplayer_run(tmp);
     }
         
@@ -198,26 +200,23 @@ void scene_free(scene *scene) {
     texture_free(&scene->background);
     
     // Free players
-    list_iterator it;
+    iterator it;
     animationplayer *tmp = 0;
-    list_iter(&scene->child_players, &it);
-    while((tmp = list_next(&it)) != NULL) {
+    list_iter_begin(&scene->child_players, &it);
+    while((tmp = iter_next(&it)) != NULL) {
         animationplayer_free(tmp);
-        free(tmp);
     }
-    list_iter(&scene->root_players, &it);
-    while((tmp = list_next(&it)) != NULL) {
+    list_iter_begin(&scene->root_players, &it);
+    while((tmp = iter_next(&it)) != NULL) {
         animationplayer_free(tmp);
-        free(tmp);
     }
     list_free(&scene->child_players);
     list_free(&scene->root_players);
     
     // Free animations
-    array_iterator ait;
     animation *ani = 0;
-    array_iter(&scene->animations, &ait);
-    while((ani = array_next(&ait)) != 0) {
+    array_iter_begin(&scene->animations, &it);
+    while((ani = iter_next(&it)) != 0) {
         animation_free(ani);
         free(ani);
     }

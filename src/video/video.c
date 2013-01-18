@@ -17,6 +17,7 @@ unsigned int fullscreen_quad, fullscreen_quad_flipped;
 int screen_w, screen_h;
 
 shaderprogram lights;
+//shaderprogram xbr;
 
 int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     screen_w = window_w;
@@ -99,6 +100,36 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         return 1;
     }
     shaderprog_debug_log(&lights);
+    
+    /*shader *xbrpix = malloc(sizeof(shader));
+    if(shader_create(xbrpix, "shaders/xbr.ps", SHADER_FRAGMENT)) {
+        PERROR("Unable to link shader!");
+        shader_debug_log(xbrpix);
+        SDL_DestroyWindow(window);
+        return 1;
+    }
+    shader_debug_log(xbrpix);
+    
+    shader *xbrver = malloc(sizeof(shader));
+    if(shader_create(xbrver, "shaders/xbr.vs", SHADER_VERTEX)) {
+        PERROR("Unable to link shader!");
+        shader_debug_log(xbrver);
+        SDL_DestroyWindow(window);
+        return 1;
+    }
+    shader_debug_log(xbrver);
+    
+    // Load shaderprogram
+    shaderprog_create(&xbr);
+    shaderprog_attach(&xbr, xbrpix);
+    shaderprog_attach(&xbr, xbrver);
+    if(shaderprog_link(&xbr)) {
+        PERROR("Unable to link shaderprogram!");
+        shaderprog_debug_log(&xbr);
+        SDL_DestroyWindow(window);
+        return 1;
+    }
+    shaderprog_debug_log(&xbr);*/
     
     // Enable textures
     glEnable(GL_TEXTURE_2D);
@@ -232,12 +263,14 @@ void video_render_finish() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // TODO: Enable shaders
+    //shaderprog_use(&xbr, 1);
     //shaderprog_use(&lights, 1);
     
     // Draw textured quad
     glCallList(fullscreen_quad);
     
     // TODO: Disable shaders
+    //shaderprog_use(&xbr, 0);
     //shaderprog_use(&lights, 0);
     
     // unbind
