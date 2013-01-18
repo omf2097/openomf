@@ -11,9 +11,9 @@ find_package(confuse)
 find_package(GLEW)
 find_package(Libintl)
 
-set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE -pedantic")
-set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE -pedantic")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686 -Werror -pedantic")
+set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686 -Werror")
 
 add_executable(openomf 
     src/main.c
@@ -40,6 +40,7 @@ add_executable(openomf
     src/game/animation.c
     src/game/animationplayer.c
     src/game/scenes/intro.c
+    src/game/scenes/menu.c
 )
 
 set(COREINCS

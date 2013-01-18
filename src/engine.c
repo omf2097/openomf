@@ -69,11 +69,6 @@ void engine_run() {
         
             // Handle other events
             switch(e.type) {
-                case SDL_KEYDOWN:
-                    if(e.key.keysym.sym == SDLK_ESCAPE) {
-                        run = 0;
-                    }
-                    break;
                 case SDL_QUIT:
                     run = 0;
                     break;
