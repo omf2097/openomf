@@ -18,6 +18,9 @@ typedef struct sd_stringparser_tag_value {
 } sd_stringparser_tag_value;
 
 typedef struct sd_stringparser_frame_t {
+    /* The owner of this frame */
+    struct sd_stringparser_t *parser;
+
     /* Zero-based unique id for this frame */
     int id;
 

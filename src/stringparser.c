@@ -632,10 +632,12 @@ void sd_stringparser_reset(sd_stringparser *parser) {
 
 
 int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks, sd_stringparser_frame *out_frame) {
+    out_frame->parser = parser;
     return sd_framelist_process(parser->frame_list, parser->tag_list, ticks, out_frame);
 }
 
 int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringparser_frame *out_frame) {
+    out_frame->parser = parser;
     unsigned int frames = ((frame_list*)parser->frame_list)->num_frames;
     if (frame < frames) {
         anim_frame *f = &((frame_list*)parser->frame_list)->frames[frame];
