@@ -141,7 +141,7 @@ static const sd_stringparser_tag_info tags[] = {
     {"jn", 1, "Allow chaining to move N?"},
 
     {"k",   1, NULL},
-    {"l",   1, NULL},
+    {"l",   1, "Sound loudness"},
     {"ma",  1, NULL},
     {"mc",  0, NULL},
     {"md",  1, "Destroy animation N?"},
@@ -176,16 +176,16 @@ static const sd_stringparser_tag_info tags[] = {
     {"r",   0, "Flip sprite horizontally?"},
     {"s",   1, "Play sound N from sound table footer"},
     {"sa",  0, NULL},
-    {"sb",  1, NULL},
+    {"sb",  1, "Sound panning start"},
     {"sc",  1, NULL},
     {"sd",  0, NULL},
-    {"se",  1, NULL},
-    {"sf",  1, "Sound frequency?"},
-    {"sl",  1, "Sound loudness?"},
+    {"se",  1, "Sound panning end 1"},
+    {"sf",  1, "Sound frequency"},
+    {"sl",  1, "Sound panning end 2"},
     {"smf", 1, "Stop playing music track N"},
     {"smo", 1, "Play music track N"},
 
-    {"sp",  1, "Sound panning?"},
+    {"sp",  1, NULL},
     {"sw",  1, NULL},
     {"t",   0, NULL},
     {"ua",  0, NULL},
@@ -277,7 +277,7 @@ static void sd_taglist_clear(tag_list *list) {
 static void sd_taglist_delete(tag_list **list) {
     if(*list) {
         sd_taglist_clear(*list);
-        free(list);
+        free(*list);
         *list = NULL;
     }
 }
