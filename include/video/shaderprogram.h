@@ -1,12 +1,12 @@
 #ifndef _SHADERPROGRAM_H
 #define _SHADERPROGRAM_H
 
-#include "utils/list.h"
+#include "utils/vector.h"
 #include "video/shader.h"
 
 typedef struct shaderprogram_t {
     unsigned int id;
-    list shaders;
+    vector shaders;
     int linked;
 } shaderprogram;
 

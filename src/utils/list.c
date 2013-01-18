@@ -68,7 +68,8 @@ void list_delete(list *list, iterator *iter) {
     } else {
         iter->vnow = node->prev;
     }
-    free(node);
+    list->alloc.cfree(node->data);
+    list->alloc.cfree(node);
     list->size--;
 }
 

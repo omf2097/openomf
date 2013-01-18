@@ -5,21 +5,20 @@
 
 void shaderprog_create(shaderprogram *prog) {
     prog->id = glCreateProgram();
-    list_create(&prog->shaders);
+    vector_create(&prog->shaders, sizeof(shader));
     prog->linked = 0;
 }
 
 void shaderprog_free(shaderprogram *prog) {
     // Detach shaders
-    list_iterator it;
-    list_iter(&prog->shaders, &it);
+    iterator it;
+    vector_iter_begin(&prog->shaders, &it);
     shader *tmp;
-    while((tmp = list_next(&it)) != NULL) {
+    while((tmp = iter_next(&it)) != NULL) {
         glDetachShader(prog->id, tmp->id);
         shader_free(tmp);
-        free(tmp);
     }
-    list_free(&prog->shaders);
+    vector_free(&prog->shaders);
     
     // Destroy program
     glDeleteProgram(prog->id);
@@ -27,7 +26,7 @@ void shaderprog_free(shaderprogram *prog) {
 
 void shaderprog_attach(shaderprogram *prog, shader *shader) {
     glAttachShader(prog->id, shader->id);
-    list_push_last(&prog->shaders, shader);
+    vector_append(&prog->shaders, shader);
 }
 
 int shaderprog_link(shaderprogram *prog) {

@@ -6,8 +6,6 @@
 #include <AL/alc.h>
 #include <dumb/dumb.h>
 
-audio_stream *music_stream = 0;
-
 typedef struct music_file_t {
     DUH_SIGRENDERER *renderer;
     DUH *data;
@@ -45,40 +43,39 @@ int music_play(const char *filename) {
     mf->bps = 2 * 2;
     
     // Create stream
-    audio_stream *stream = malloc(sizeof(audio_stream));
-    stream->frequency = 44100;
-    stream->channels = 2;
-    stream->bytes = 2;
-    stream->userdata = (void*)mf;
-    stream->preupdate = NULL;
-    stream->update = &music_update;
-    stream->close = &music_close;
-    stream->snd = NULL; // no panning, freq etc
+    audio_stream stream;
+    stream.frequency = 44100;
+    stream.channels = 2;
+    stream.bytes = 2;
+    stream.type = TYPE_MUSIC;
+    stream.userdata = (void*)mf;
+    stream.preupdate = NULL;
+    stream.update = music_update;
+    stream.close = music_close;
     
     // Create openal stream
-    if(audio_stream_create(stream)) {
+    if(audio_stream_create(&stream)) {
         unload_duh(mf->data);
-        free(stream);
         free(mf);
         return 1;
     }
     
     // Play
-    audio_play(stream);
-    music_stream = stream;
+    audio_play(&stream);
     
     // All done
     return 0;
 }
 
 void music_stop() {
-    if(music_stream) {
-        audio_stream_stop(music_stream);
+    audio_stream *stream = audio_get_music();
+    if(stream) {
+        audio_stream_stop(stream);
     }
-    music_stream = 0;
 }
 
 int music_playing() {
-    if(!music_stream) return 0;
-    return audio_stream_playing(music_stream);
+    audio_stream *stream = audio_get_music();
+    if(!stream) return 0;
+    return audio_stream_playing(stream);
 }

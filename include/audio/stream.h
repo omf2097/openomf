@@ -1,26 +1,33 @@
 #ifndef _STREAM_H
 #define _STREAM_H
 
+#include "audio/sound_state.h"
+
 #define AUDIO_BUFFER_COUNT 3
 #define AUDIO_BUFFER_SIZE 32768
 
 typedef struct audio_stream_t audio_stream;
-typedef struct sound_state_t sound_state;
 
-typedef struct audio_stream_t {
+enum {
+    TYPE_MUSIC,
+    TYPE_EFFECT
+};
+
+struct audio_stream_t {
     unsigned int alsource;
     unsigned int albuffers[AUDIO_BUFFER_COUNT];
     int alformat;
     int frequency;
     int channels;
     int bytes;
+    int type;
     int playing;
-    sound_state *snd;
+    sound_state snd;
     void *userdata;
     void (*preupdate)(audio_stream *stream, int dt);
     int (*update)(audio_stream *stream, char *buf, int len);
     void (*close)(audio_stream *stream);
-} audio_stream;
+};
 
 int audio_stream_create(audio_stream *stream);
 int audio_stream_start(audio_stream *stream);

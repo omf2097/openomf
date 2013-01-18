@@ -45,13 +45,13 @@ int audio_stream_create(audio_stream *stream) {
 }
 
 void alplay(audio_stream *stream) {
-    if(stream->snd) {
+    if(stream->type == TYPE_EFFECT) {
         // apply sound effects
-        float pos[] = {stream->snd->pan, 0.0f, 0.0f}; 
+        float pos[] = {stream->snd.pan, 0.0f, 0.0f}; 
         alSourcefv(stream->alsource, AL_POSITION, pos);
-        alSourcef(stream->alsource, AL_GAIN, stream->snd->vol);
+        alSourcef(stream->alsource, AL_GAIN, stream->snd.vol);
         // zero freq is not legal
-        if(stream->snd->freq != 0.0f) { alSourcef(stream->alsource, AL_PITCH, stream->snd->freq); }
+        if(stream->snd.freq != 0.0f) { alSourcef(stream->alsource, AL_PITCH, stream->snd.freq); }
     }
     alSourcePlay(stream->alsource);
 }
