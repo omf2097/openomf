@@ -34,35 +34,45 @@ int audio_init() {
 }
 
 void audio_render(int dt) {
-    list_iterator it;
-    list_iter(&streams, &it);
+    iterator it;
+    list_iter_begin(&streams, &it);
     audio_stream *stream;
-    while((stream = list_next(&it)) != 0) {
+    while((stream = iter_next(&it)) != NULL) {
         if(audio_stream_render(stream, dt)) {
             audio_stream_stop(stream);
             stream->close(stream);
             audio_stream_free(stream);
-            free(stream);
             list_delete(&streams, &it);
         }
     }
 }
 
+audio_stream* audio_get_music() {
+    iterator it;
+    list_iter_begin(&streams, &it);
+    audio_stream *stream;
+    while((stream = iter_next(&it)) != NULL) {
+        if(stream->type == TYPE_MUSIC) {
+            return stream;
+        }
+    }
+    return NULL;
+}
+
 void audio_play(audio_stream *stream) {
     audio_stream_start(stream);
-    list_push_last(&streams, stream);
+    list_append(&streams, stream, sizeof(audio_stream));
 }
 
 void audio_close() {
     // Free streams
-    list_iterator it;
-    list_iter(&streams, &it);
+    iterator it;
+    list_iter_begin(&streams, &it);
     audio_stream *stream;
-    while((stream = list_next(&it)) != 0) {
+    while((stream = iter_next(&it)) != NULL) {
         audio_stream_stop(stream);
         stream->close(stream);
         audio_stream_free(stream);
-        free(stream);
     }
     list_free(&streams);
 

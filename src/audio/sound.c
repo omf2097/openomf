@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "utils/log.h"
+
 typedef struct sound_effect_t {
     const char *data;
     unsigned int len;
@@ -15,11 +16,13 @@ typedef struct sound_effect_t {
 
 void audio_stream_pan(audio_stream *stream, int dt) {
     sound_effect *se = (sound_effect*)stream->userdata;
-    float t = (stream->snd->pan_end-stream->snd->pan_start)*(dt/(se->len/8.0f));
-    stream->snd->pan += t;
-    if((t < 0.0f && stream->snd->pan < stream->snd->pan_end) || 
-       (t > 0.0f && stream->snd->pan > stream->snd->pan_end)) { stream->snd->pan = stream->snd->pan_end; }
-    float pos[] = {stream->snd->pan, 0.0f, 0.0f}; 
+    float t = (stream->snd.pan_end-stream->snd.pan_start)*(dt/(se->len/8.0f));
+    stream->snd.pan += t;
+    if((t < 0.0f && stream->snd.pan < stream->snd.pan_end) || 
+       (t > 0.0f && stream->snd.pan > stream->snd.pan_end)) { 
+       stream->snd.pan = stream->snd.pan_end; 
+    }
+    float pos[] = {stream->snd.pan, 0.0f, 0.0f}; 
     alSourcefv(stream->alsource, AL_POSITION, pos);
 }
 
@@ -41,7 +44,6 @@ int sound_update(audio_stream *stream, char *buf, int len) {
 void sound_close(audio_stream *stream) {
     sound_effect *se = (sound_effect*)stream->userdata;
     free(se);
-    free(stream->snd);
 }
 
 int sound_play(const char *data, unsigned int len, sound_state *ss) {
@@ -52,26 +54,25 @@ int sound_play(const char *data, unsigned int len, sound_state *ss) {
     se->len = len;
     
     // Create stream
-    audio_stream *stream = malloc(sizeof(audio_stream));
-    stream->frequency = 8000;
-    stream->channels = 1;
-    stream->bytes = 1;
-    stream->userdata = (void*)se;
-    stream->preupdate = &sound_preupdate;
-    stream->update = &sound_update;
-    stream->close = &sound_close;
-    stream->snd = malloc(sizeof(sound_state));
-    memcpy(stream->snd, ss, sizeof(sound_state));
+    audio_stream stream;
+    stream.frequency = 8000;
+    stream.channels = 1;
+    stream.bytes = 1;
+    stream.type = TYPE_EFFECT;
+    stream.userdata = (void*)se;
+    stream.preupdate = sound_preupdate;
+    stream.update = sound_update;
+    stream.close = sound_close;
+    stream.snd = *ss;
     
     // Create openal stream
-    if(audio_stream_create(stream)) {
-        free(stream);
+    if(audio_stream_create(&stream)) {
         free(se);
         return 1;
     }
     
     // Play
-    audio_play(stream);
+    audio_play(&stream);
     
     // All done
     return 0;
