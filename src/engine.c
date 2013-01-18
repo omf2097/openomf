@@ -1,9 +1,11 @@
 #include "engine.h"
 #include "utils/log.h"
 #include "utils/config.h"
+#include "audio/stream.h"
 #include "audio/audio.h"
 #include "audio/music.h"
 #include "audio/soundloader.h"
+#include "video/texture.h"
 #include "video/video.h"
 #include "game/scene.h"
 #include <SDL2/SDL.h>

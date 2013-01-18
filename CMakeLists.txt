@@ -9,10 +9,11 @@ find_package(OpenGL)
 find_package(OpenAL)
 find_package(confuse)
 find_package(GLEW)
+find_package(Libintl)
 
-set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
-set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686 -Werror")
+set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE -pedantic")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE -pedantic")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686 -Werror -pedantic")
 
 add_executable(openomf 
     src/main.c
@@ -39,7 +40,6 @@ add_executable(openomf
     src/game/animation.c
     src/game/animationplayer.c
     src/game/scenes/intro.c
-    src/game/scenes/menu.c
 )
 
 set(COREINCS
@@ -51,6 +51,7 @@ set(COREINCS
     ${OPENGL_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
+    ${LIBINTL_INCLUDE_DIR}
 )
 
 set(CORELIBS 
@@ -61,6 +62,7 @@ set(CORELIBS
     ${OPENAL_LIBRARY}
     ${CONFUSE_LIBRARY}
     ${GLEW_LIBRARY}
+    ${LIBINTL_LIBRARIES}
 )
 
 IF(MINGW)
