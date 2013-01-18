@@ -1,13 +1,15 @@
+#include <SDL2/SDL.h>
+#include <shadowdive/shadowdive.h>
+#include "utils/array.h"
+#include "utils/log.h"
+#include "video/texture.h"
+#include "video/video.h"
+#include "audio/sound.h"
+#include "audio/sound_state.h"
 #include "game/scene.h"
 #include "game/scenes/intro.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
-#include "utils/array.h"
-#include "utils/log.h"
-#include "video/video.h"
-#include "audio/sound.h"
-#include <SDL2/SDL.h>
-#include <shadowdive/shadowdive.h>
 
 // Internal functions
 void scene_add_ani_player(scene *scene, animationplayer *player);
