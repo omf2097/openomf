@@ -41,6 +41,7 @@ add_executable(openomf
     src/game/animationplayer.c
     src/game/scenes/intro.c
     src/game/scenes/menu.c
+    src/game/text/text.c
 )
 
 set(COREINCS

@@ -3,6 +3,18 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
 
+int intro_init(scene *scene) {
+    return 0;
+}
+
+void intro_deinit(scene *scene) {
+
+}
+
+void intro_tick(scene *scene) {
+
+}
+
 int intro_event(scene *scene, SDL_Event *e) {
     switch(e->type) {
     case SDL_KEYDOWN:
@@ -22,4 +34,7 @@ void intro_render(scene *scene) {
 void intro_load(scene *scene) {
     scene->event = intro_event;
     scene->render = intro_render;
+    scene->init = intro_init;
+    scene->deinit = intro_deinit;
+    scene->tick = intro_tick;
 }

@@ -49,8 +49,18 @@ int scene_load(scene *scene, unsigned int scene_id) {
         case SCENE_INTRO: intro_load(scene); break;
         case SCENE_MENU: menu_load(scene); break;
         default: 
-            scene->render = 0;
-            scene->event = 0;
+            scene->render = NULL;
+            scene->event = NULL;
+            scene->init = NULL;
+            scene->deinit = NULL;
+    }
+    
+    // Init scene
+    if(scene->init != NULL) {
+        if(scene->init(scene)) {
+            sd_bk_delete(scene->bk);
+            return 1;
+        }
     }
     
     // Convert background
@@ -165,6 +175,11 @@ void scene_render(scene *scene) {
     while((tmp = iter_next(&it)) != NULL) {
         animationplayer_render(tmp);
     }
+    
+    // Run custom render function, if defined
+    if(scene->render != NULL) {
+        scene->render(scene);
+    }
 }
 
 void scene_tick(scene *scene) {
@@ -183,9 +198,9 @@ void scene_tick(scene *scene) {
         animationplayer_run(tmp);
     }
         
-    // Run custom render function, if defined
-    if(scene->render) {
-        scene->render(scene);
+    // Run custom tick function, if defined
+    if(scene->tick != NULL) {
+        scene->tick(scene);
     }
         
     // If no animations to play, jump to next scene (if any)
@@ -198,6 +213,11 @@ void scene_tick(scene *scene) {
 
 void scene_free(scene *scene) {
     if(!scene) return;
+    
+    // Deinit scene
+    if(scene->deinit != NULL) {
+        scene->deinit(scene);
+    }
     
     // Release background
     texture_free(&scene->background);

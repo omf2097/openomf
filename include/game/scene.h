@@ -36,8 +36,11 @@ typedef struct scene_t {
     list child_players;
     list root_players;
     
+    int (*init)(struct scene_t *scene);
     int (*event)(struct scene_t *scene, SDL_Event *event);
     void (*render)(struct scene_t *scene);
+    void (*deinit)(struct scene_t *scene);
+    void (*tick)(struct scene_t *scene);
 } scene;
 
 int scene_load(scene *scene, unsigned int scene_id);

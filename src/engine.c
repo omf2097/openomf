@@ -56,7 +56,9 @@ void engine_run() {
             }
             unsigned int nid = scene.next_id;
             scene_free(&scene);
-            scene_load(&scene, nid);
+            if(scene_load(&scene, nid)) {
+                return;
+            }
         }
         
         // Handle events
