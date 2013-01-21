@@ -1,5 +1,7 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
+#include "utils/log.h"
+#include "game/text/text.h"
 #include "audio/music.h"
 #include "game/scene.h"
 #include "game/scenes/menu.h"
@@ -38,14 +40,8 @@ void menu_render(scene *scene) {
 void menu_load(scene *scene) {
     scene->event = menu_event;
     scene->render = menu_render;
-<<<<<<< HEAD
     scene->init = menu_init;
     scene->deinit = menu_deinit;
     scene->tick = menu_tick;
 }
-=======
-    if(!music_playing()) {
-        music_play("resources/MENU.PSM");
-    }
-}
->>>>>>> e7c8f1c0ea786823ad82bd14d32b96192220e138
+
