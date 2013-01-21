@@ -8,6 +8,12 @@ void font_create(font *font) {
 
 void font_free(font *font) {
     font->size = FONT_UNDEFINED;
+    iterator it;
+    vector_iter_begin(&font->textures, &it);
+    texture *tex;
+    while((tex = iter_next(&it)) != NULL) {
+        texture_free(tex);
+    }
     vector_free(&font->textures);
 }
 
