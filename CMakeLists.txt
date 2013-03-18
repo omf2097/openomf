@@ -22,6 +22,7 @@ add_executable(openomf
     src/utils/config.c
     src/utils/list.c
     src/utils/vector.c
+    src/utils/hashmap.c
     src/utils/iterator.c
     src/utils/array.c
     src/video/video.c
