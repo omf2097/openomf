@@ -205,6 +205,18 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
         SDL_SetRenderTarget(renderer, rendertarget);
         SDL_RenderCopy(renderer, background, NULL, NULL);
         SDL_RenderCopy(renderer, texture, NULL, &rect);
+
+        // render the collision data
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        for(int i = 0; i < bk->anims[anim]->animation->col_coord_count; i++) {
+            int x = bk->anims[anim]->animation->col_coord_table[i].x;
+            int y = bk->anims[anim]->animation->col_coord_table[i].y;
+            int y_ext = bk->anims[anim]->animation->col_coord_table[i].y_ext;
+            if (y_ext == sprite) {
+                SDL_RenderDrawPoint(renderer, x, y);
+            }
+        }
+
         SDL_SetRenderTarget(renderer, NULL);
         SDL_RenderCopy(renderer, rendertarget, NULL, &dstrect);
         SDL_RenderPresent(renderer);
