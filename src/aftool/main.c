@@ -179,8 +179,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         SDL_RenderFillRect(renderer, &dstrect);
         SDL_RenderCopy(renderer, texture, NULL, &rect);
-        SDL_SetRenderTarget(renderer, NULL);
-        SDL_RenderCopy(renderer, rendertarget, NULL, &dstrect);
+
         // render the collision data
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         for(int i = 0; i < af->moves[anim]->animation->overlay_count; i++) {
@@ -190,6 +189,10 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
             int y = ((b&0x3ff)<<(6+16))>>(6+16);
             SDL_RenderDrawPoint(renderer, 160+x, 100+y);
         }
+        
+        // Switch to screen target & scale
+        SDL_SetRenderTarget(renderer, NULL);
+        SDL_RenderCopy(renderer, rendertarget, NULL, &dstrect);
         SDL_RenderPresent(renderer);
         SDL_Delay(1); // don't chew too much CPU
     }
