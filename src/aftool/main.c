@@ -185,7 +185,10 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
         for(int i = 0; i < af->moves[anim]->animation->col_coord_count; i++) {
             int x = af->moves[anim]->animation->col_coord_table[i].x;
             int y = af->moves[anim]->animation->col_coord_table[i].y;
-            SDL_RenderDrawPoint(renderer, 160+x, 100+y);
+            int y_ext = af->moves[anim]->animation->col_coord_table[i].y_ext;
+            if (y_ext == sprite) {
+                SDL_RenderDrawPoint(renderer, 160+x, 100+y);
+            }
         }
         
         // Switch to screen target & scale
