@@ -56,26 +56,23 @@ void sprite_info(sd_sprite *s, int anim, int sprite) {
 
 void anim_common_info(sd_animation *ani) {
     printf("Common animation header:\n");
-    printf(" * Start X:         %d\n", ani->start_x);
-    printf(" * Start Y:         %d\n", ani->start_y);
+    printf(" * Start X:          %d\n", ani->start_x);
+    printf(" * Start Y:          %d\n", ani->start_y);
     printf(" * Animation header:  ");
     for(int i = 0; i < 4; i++) {
         printf("%d ", (uint8_t)ani->unknown_a[i]);
     }
     printf("\n");
-    printf(" * Overlays:        %d\n", ani->overlay_count);
-    for(int i = 0; i < ani->overlay_count; i++) {
-        printf("   - %3d, %3d, %3d, %3d    (%d)\n",
-                ani->overlay_table[i] & 0xff,
-                (ani->overlay_table[i] & 0xff00) >> 8,
-                (ani->overlay_table[i] & 0xff0000) >> 16,
-                (ani->overlay_table[i] & 0xff000000) >> 24,
-                ani->overlay_table[i]);
+    printf(" * Collision coords: %d\n", ani->col_coord_count);
+    for(int i = 0; i < ani->col_coord_count; i++) {
+        printf("   - x,y = (%d,%d), x_ext = %d, y_ext = %d\n",
+                ani->col_coord_table[i].x, ani->col_coord_table[i].y,
+                ani->col_coord_table[i].x_ext, ani->col_coord_table[i].y_ext);
     }
-    printf(" * Sprites:         %d\n", ani->frame_count);
-    printf(" * Animation str:   %s\n", ani->anim_string);
-    printf(" * Unknown:         %d\n", ani->unknown_b);
-    printf(" * Extra strings:   %d\n", ani->extra_string_count);
+    printf(" * Sprites:          %d\n", ani->frame_count);
+    printf(" * Animation str:    %s\n", ani->anim_string);
+    printf(" * Unknown:          %d\n", ani->unknown_b);
+    printf(" * Extra strings:    %d\n", ani->extra_string_count);
     for(int i = 0; i < ani->extra_string_count; i++) {
         printf("   - %s\n", ani->extra_strings[i]);
     }
@@ -83,7 +80,7 @@ void anim_common_info(sd_animation *ani) {
 
 int anim_key_get_id(const char* key) {
     if(strcmp(key, "ani_header") == 0) return 7;
-    if(strcmp(key, "overlay") == 0) return 8;
+    if(strcmp(key, "collision") == 0) return 8;
     if(strcmp(key, "anim_str") == 0) return 9;
     if(strcmp(key, "unknown") == 0) return 10;
     if(strcmp(key, "extra_str") == 0) return 11;
@@ -96,7 +93,7 @@ void anim_keylist() {
     printf("* start_x\n");
     printf("* start_y\n");
     printf("* ani_header <byte #>\n");
-    printf("* overlay <overlay #>\n");
+    printf("* collision <collision #>\n");
     printf("* anim_str\n");
     printf("* unknown\n");
     printf("* extra_str <str #>\n");
@@ -120,10 +117,10 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
             }
             break; 
         case 8:  
-            if(kcount == 2) {
+            /*if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->overlay_count) {
-                    ani->overlay_table[tmp] = conv_udword(value);
+                if(tmp < ani->col_coord_count) {
+                    ani->col_coord_table[tmp] = conv_udword(value);
                 } else {
                     printf("Overlay index %d does not exist!\n", tmp);
                     return;
@@ -131,7 +128,8 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
             } else {
                 printf("Key overlay requires 1 parameter!\n");
                 return;
-            }
+            }*/
+            printf("Coord value setting not supported yet!\n");
             break; 
         case 9:  sd_animation_set_anim_string(ani, value); break;
         case 10: ani->unknown_b = conv_ubyte(value); break;
@@ -180,15 +178,23 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
         case 8:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->overlay_count) {
-                    printf("%d\n", ani->overlay_table[tmp]);
+                if(tmp < ani->col_coord_count) {
+                    printf("x,y = (%d,%d), x_ext = %d, y_ext = %d\n",
+                            ani->col_coord_table[tmp].x, 
+                            ani->col_coord_table[tmp].y,
+                            ani->col_coord_table[tmp].x_ext, 
+                            ani->col_coord_table[tmp].y_ext);
                 } else {
-                    printf("Overlay index %d does not exist!\n", tmp);
+                    printf("Collision table index %d does not exist!\n", tmp);
                     return;
                 }
             } else {
-                for(int i = 0; i < ani->overlay_count; i++) {
-                    printf("%d ", ani->overlay_table[i]);
+                for(int i = 0; i < ani->col_coord_count; i++) {
+                    printf("x,y = (%d,%d), x_ext = %d, y_ext = %d\n",
+                            ani->col_coord_table[i].x, 
+                            ani->col_coord_table[i].y,
+                            ani->col_coord_table[i].x_ext, 
+                            ani->col_coord_table[i].y_ext);
                 }
                 printf("\n");
             }

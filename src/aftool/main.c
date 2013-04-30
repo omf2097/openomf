@@ -182,11 +182,9 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
 
         // render the collision data
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        for(int i = 0; i < af->moves[anim]->animation->overlay_count; i++) {
-            int a = af->moves[anim]->animation->overlay_table[i] & 0xffff;
-            int b = (af->moves[anim]->animation->overlay_table[i] & 0xffff0000) >> 16;
-            int x = ((a&0x3ff)<<(6+16))>>(6+16);
-            int y = ((b&0x3ff)<<(6+16))>>(6+16);
+        for(int i = 0; i < af->moves[anim]->animation->col_coord_count; i++) {
+            int x = af->moves[anim]->animation->col_coord_table[i].x;
+            int y = af->moves[anim]->animation->col_coord_table[i].y;
             SDL_RenderDrawPoint(renderer, 160+x, 100+y);
         }
         
