@@ -3,14 +3,21 @@
 
 #include "shadowdive/sprite.h"
 
+typedef struct col_coord_t {
+    int16_t x;
+    uint8_t x_ext; 
+    int16_t y;
+    uint8_t y_ext;
+} col_coord;
+
 typedef struct sd_animation_t {
     // Header
     int16_t start_x;
     int16_t start_y;
     char unknown_a[4];
-    uint16_t overlay_count;
+    uint16_t col_coord_count;
     uint8_t frame_count;
-    uint32_t *overlay_table;
+    col_coord *col_coord_table;
 
     // String header
     char *anim_string;

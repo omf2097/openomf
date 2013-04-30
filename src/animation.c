@@ -9,7 +9,7 @@
 
 sd_animation* sd_animation_create() {
     sd_animation *ani = (sd_animation*)malloc(sizeof(sd_animation));
-    ani->overlay_table = NULL;
+    ani->col_coord_table = NULL;
     ani->anim_string = NULL;
     ani->extra_strings = NULL;
     ani->sprites = NULL;
@@ -17,8 +17,8 @@ sd_animation* sd_animation_create() {
 }
 
 void sd_animation_delete(sd_animation *anim) {
-    if(anim->overlay_table)
-        free(anim->overlay_table);
+    if(anim->col_coord_table)
+        free(anim->col_coord_table);
     if(anim->anim_string)
         free(anim->anim_string);
     if(anim->extra_strings) {
@@ -54,10 +54,22 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     ani->start_x = sd_read_word(r);
     ani->start_y = sd_read_word(r);
     sd_read_buf(r, ani->unknown_a, 4);
-    ani->overlay_count = sd_read_uword(r);
+    ani->col_coord_count = sd_read_uword(r);
     ani->frame_count = sd_read_ubyte(r);
-    ani->overlay_table = (uint32_t*)malloc(sizeof(uint32_t)*ani->overlay_count);
-    sd_read_buf(r, (char*)ani->overlay_table, sizeof(uint32_t)*ani->overlay_count);
+    
+    // Read collision point data
+    ani->col_coord_table = (col_coord*)malloc(sizeof(col_coord)*ani->col_coord_count);
+    uint32_t tmp;
+    int32_t a,b;
+    for(int i = 0; i < ani->col_coord_count; i++) {
+        tmp = sd_read_udword(r);
+        a = tmp & 0xffff;
+        b = (tmp & 0xffff0000) >> 16;
+        ani->col_coord_table[i].x = ((a & 0x3ff) << (6+16)) >> (6+16);
+        ani->col_coord_table[i].x_ext = (a >> 10);
+        ani->col_coord_table[i].y = ((b & 0x3ff) << (6+16)) >> (6+16);
+        ani->col_coord_table[i].y_ext = (b >> 10);
+    }
 
     // Animation string header
     uint16_t anim_string_len = sd_read_uword(r);
@@ -98,9 +110,21 @@ void sd_animation_save(sd_writer *writer, sd_animation *ani) {
     sd_write_word(writer, ani->start_x);
     sd_write_word(writer, ani->start_y);
     sd_write_buf(writer, ani->unknown_a, 4);
-    sd_write_uword(writer, ani->overlay_count);
+    sd_write_uword(writer, ani->col_coord_count);
     sd_write_ubyte(writer, ani->frame_count);
-    sd_write_buf(writer, (char*)ani->overlay_table, ani->overlay_count * sizeof(uint32_t));
+    
+    // collision table
+    uint32_t tmp;
+    for(int i = 0; i < ani->col_coord_count; i++) {
+        tmp = (ani->col_coord_table[i].y_ext & 0x3f);
+        tmp = tmp << 10;
+        tmp = (tmp | (ani->col_coord_table[i].y & 0x3ff));
+        tmp = tmp << 6;
+        tmp = (tmp | (ani->col_coord_table[i].x_ext & 0x3f));
+        tmp = tmp << 10;
+        tmp = (tmp | (ani->col_coord_table[i].x & 0x3ff));
+        sd_write_udword(writer, tmp);
+    }
 
     // Animation string header
     uint16_t a_size = strlen(ani->anim_string);
