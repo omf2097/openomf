@@ -34,7 +34,14 @@ int menu_event(scene *scene, SDL_Event *event) {
 }
 
 void menu_render(scene *scene) {
-
+    int line = 50;
+    font_render(&font_small, "Just", 200, line, 50, 205, 50);
+    line += 7;
+    font_render(&font_small, "Testing", 200, line, 50, 205, 50);
+    line += 7;
+    font_render(&font_small, "the font", 200, line, 50, 205, 50);
+    line += 7;
+    font_render(&font_small, "renderer", 200, line, 50, 205, 50);
 }
 
 void menu_load(scene *scene) {

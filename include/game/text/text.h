@@ -21,13 +21,6 @@ struct font_t {
 void font_create(font *font);
 void font_free(font *font);
 int font_load(font *font, const char* file, unsigned int size);
-void font_render(font *font, const char *text, int x, int y, char r, char g, char b);
-
-/*
-* This file should load fonts and be able to render given text on a certain size texture.
-* We might also want some cache for textures created here (for speed).
-*/
-
-
+void font_render(font *font, const char *text, int x, int y, unsigned char r, unsigned char g, unsigned char b);
 
 #endif // _TEXT_H

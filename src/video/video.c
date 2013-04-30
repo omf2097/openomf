@@ -174,36 +174,9 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     return 0;
 }
 
-void video_render_prepare() {
-    // Switch to FBO rendering
-    texture_unbind();
-    fbo_bind(&target);
-
-    // Set state
-    glEnable(GL_STENCIL_TEST);
-    glDisable(GL_BLEND);
-    glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0);
-
-    // Clear stuff
-    glClear(GL_COLOR_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
-    glClearStencil(0);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glViewport(0.0f, 0.0f, NATIVE_W, NATIVE_H);
-    glLoadIdentity();
-}
-
-void video_render_background(texture *tex) {
-    // Handle background separately
-    glStencilFunc(GL_ALWAYS, 0, 0);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-    texture_bind(tex);
-    glCallList(fullscreen_quad_flipped);
-    texture_unbind();
-}
-
-void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mode) {
-    switch(rendering_mode) {
+void video_set_rendering_mode(int mode) {
+    // Set mode
+    switch(mode) {
         case BLEND_ADDITIVE:
             // Additive blending, so enable blending and disable alpha testing
             // This shouldn't touch the stencil buffer at all
@@ -225,7 +198,63 @@ void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mo
             glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
             break;
     }
+}
 
+void video_render_prepare() {
+    // Switch to FBO rendering
+    texture_unbind();
+    fbo_bind(&target);
+
+    // Set state
+    glEnable(GL_STENCIL_TEST);
+    glDisable(GL_BLEND);
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0);
+
+    // Clear stuff
+    glClear(GL_COLOR_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+    glClearStencil(0);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glViewport(0.0f, 0.0f, NATIVE_W, NATIVE_H);
+    glLoadIdentity();
+    
+    // Set mode
+    video_set_rendering_mode(BLEND_ALPHA);
+}
+
+void video_render_background(texture *tex) {
+    // Handle background separately
+    glStencilFunc(GL_ALWAYS, 0, 0);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    texture_bind(tex);
+    glCallList(fullscreen_quad_flipped);
+    texture_unbind();
+}
+
+void video_render_char(texture *tex, int sx, int sy, unsigned char r, unsigned char g, unsigned char b) {
+    // Alpha testing
+    video_set_rendering_mode(BLEND_ALPHA);
+
+    // Just draw the texture on screen to the right spot.
+    float w = tex->w / 160.0f;
+    float h = tex->h / 100.0f;
+    float x = -1.0 + 2.0f * sx / 320.0f;
+    float y = 1.0 - sy / 100.0f - h;
+    texture_bind(tex);
+    glBegin(GL_QUADS);
+        glColor3f(r/255.0f,g/255.0f,b/255.0f);
+        glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
+        glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
+        glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
+        glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
+        glColor3f(1.0f,1.0f,1.0f);
+    glEnd();
+}
+
+void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mode) {
+    // Set rendering mode
+    video_set_rendering_mode(rendering_mode);
+    
     // Just draw the texture on screen to the right spot.
     float w = tex->w / 160.0f;
     float h = tex->h / 100.0f;

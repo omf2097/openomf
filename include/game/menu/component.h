@@ -10,9 +10,7 @@ typedef struct component_t component;
 struct component_t {
     void *obj;
     void (*render)(void *obj);
-    void (*click)(void *obj);
-    void (*select_left)(void *obj);
-    void (*select_right)(void *obj);
+    void (*event)(void *obj);
 };
 
 #endif // _COMPONENT_H

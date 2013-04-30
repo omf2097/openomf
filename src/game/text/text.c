@@ -1,5 +1,9 @@
 #include "game/text/text.h"
+#include "video/video.h"
 #include <shadowdive/shadowdive.h>
+#include <string.h>
+
+#include "utils/log.h"
 
 void font_create(font *font) {
     font->size = FONT_UNDEFINED;
@@ -57,6 +61,14 @@ int font_load(font *font, const char* filename, unsigned int size) {
     return 0;
 }
 
-void font_render(font *font, const char *text, int x, int y, char r, char g, char b) {
-
+void font_render(font *font, const char *text, int x, int y, unsigned char r, unsigned char g, unsigned char b) {
+    int len = strlen(text);
+    int pos_x = x;
+    texture *tex = NULL;
+    for(int i = 0; i < len; i++) {
+        int code = text[i] - 32;
+        tex = vector_get(&font->textures, code);
+        video_render_char(tex, pos_x, y, r, g, b);
+        pos_x += tex->w;
+    }
 }
