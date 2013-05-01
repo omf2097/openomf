@@ -11,7 +11,9 @@ typedef struct component_t component;
 */
 struct component_t {
     int x,y,w,h;
+    // could use a bitmask for the different states
     int selected;
+    int disabled;
     void *obj;
     void *userdata;
     

@@ -20,7 +20,7 @@ void menu_free(menu *menu) {
 }
 
 int menu_get_ypos(menu *menu) {
-    int ypos = 0;
+    int ypos = 8;
     iterator it;
     vector_iter_begin(&menu->objs, &it);
     component **tmp;
@@ -58,18 +58,20 @@ int menu_handle_event(menu *menu, SDL_Event *event) {
         case SDL_KEYDOWN:
             if(event->key.keysym.sym == SDLK_DOWN || event->key.keysym.sym == SDLK_UP) {
                 (*c)->selected = 0;
-                
-                if(event->key.keysym.sym == SDLK_DOWN) {
-                    menu->selected++;
-                }
-                if(event->key.keysym.sym == SDLK_UP) {
-                    menu->selected--;
-                }
-                if(menu->selected < 0) menu->selected = 0;
-                if(menu->selected >= vector_size(&menu->objs)) menu->selected = vector_size(&menu->objs) - 1;
-                
-                // Update selected component
-                c = vector_get(&menu->objs, menu->selected);
+                do {
+                    if(event->key.keysym.sym == SDLK_DOWN) {
+                        menu->selected++;
+                    }
+                    if(event->key.keysym.sym == SDLK_UP) {
+                        menu->selected--;
+                    }
+                    // wrap around
+                    if(menu->selected < 0) menu->selected = vector_size(&menu->objs) - 1;
+                    if(menu->selected >= vector_size(&menu->objs)) menu->selected = 0;
+
+                    // Update selected component
+                    c = vector_get(&menu->objs, menu->selected);
+                } while ((*c)->disabled);
                 (*c)->selected = 1;
                 return 0;
             }

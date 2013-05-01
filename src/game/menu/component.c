@@ -8,6 +8,7 @@ void component_create(component *c) {
     c->w = 0;
     c->h = 0;
     c->selected = 0;
+    c->disabled = 0;
     c->obj = NULL;
     
     // Function pointers

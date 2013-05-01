@@ -24,11 +24,16 @@ void textbutton_free(component *c) {
 
 void textbutton_render(component *c) {
     textbutton *tb = c->obj;
+    int chars = strlen(tb->text);
+    int width = chars*tb->font->w;
+    int xoff = (c->w - width)/2;
     if(c->selected) {
         int t = tb->ticks / 2;
-        font_render(tb->font, tb->text, c->x, c->y, 80 - t, 220 - t*2, 80 - t);
+        font_render(tb->font, tb->text, c->x + xoff, c->y, 80 - t, 220 - t*2, 80 - t);
+    } else if (c->disabled) {
+        font_render(tb->font, tb->text, c->x + xoff, c->y, 121, 121, 121);
     } else {
-        font_render(tb->font, tb->text, c->x, c->y, 80, 220, 80);
+        font_render(tb->font, tb->text, c->x + xoff, c->y, 0, 121, 0);
     }
 }
 

@@ -9,11 +9,27 @@
 #include "game/menu/textbutton.h"
 
 font font_large;
-menu smenu;
-component pvp_button;
+menu *current_menu;
+menu main_menu;
+component oneplayer_button;
+component twoplayer_button;
 component tourn_button;
-component settings_button;
-component exit_button;
+component config_button;
+component gameplay_button;
+component ordering_button;
+component help_button;
+component demo_button;
+component scoreboard_button;
+component quit_button;
+
+menu config_menu;
+component playerone_input_button;
+component playertwo_input_button;
+component video_options_button;
+component sound_toggle;
+component music_toggle;
+component stereo_toggle;
+component config_done_button;
 
 void mainmenu_quit(component *c, void *userdata) {
     scene *scene = userdata;
@@ -23,6 +39,15 @@ void mainmenu_quit(component *c, void *userdata) {
 void mainmenu_1v1(component *c, void *userdata) {
     scene *scene = userdata;
     scene->next_id = SCENE_ARENA1;
+}
+
+void mainmenu_enter_menu(component *c, void *userdata) {
+    current_menu = (menu*)userdata;
+}
+
+void mainmenu_prev_menu(component *c, void *userdata) {
+    // TODO keep a stack of previous menus
+    current_menu = &main_menu;
 }
 
 int mainmenu_init(scene *scene) {
@@ -39,52 +64,106 @@ int mainmenu_init(scene *scene) {
         return 1;
     }
     
-    // Create menu
-    menu_create(&smenu, 165, 5, 151, 119);
-    textbutton_create(&pvp_button, &font_large, "ONE PLAYER GAME");
-    textbutton_create(&tourn_button, &font_large, "TOURNAMENT");
-    textbutton_create(&settings_button, &font_large, "SETTINGS");
-    textbutton_create(&exit_button, &font_large, "EXIT");
-    menu_attach(&smenu, &pvp_button, 10);
-    menu_attach(&smenu, &tourn_button, 10);
-    menu_attach(&smenu, &settings_button, 10);
-    menu_attach(&smenu, &exit_button, 10);
+    // Create main menu
+    menu_create(&main_menu, 165, 5, 151, 119);
+    textbutton_create(&oneplayer_button, &font_large, "ONE PLAYER GAME");
+    textbutton_create(&twoplayer_button, &font_large, "TWO PLAYER GAME");
+    textbutton_create(&tourn_button, &font_large, "TOURNAMENT PLAY");
+    textbutton_create(&config_button, &font_large, "CONFIGURATION");
+    textbutton_create(&gameplay_button, &font_large, "GAMEPLAY");
+    textbutton_create(&ordering_button, &font_large, "ORDERING INFO");
+    textbutton_create(&help_button, &font_large, "HELP");
+    textbutton_create(&demo_button, &font_large, "DEMO");
+    textbutton_create(&scoreboard_button, &font_large, "SCOREBOARD");
+    textbutton_create(&quit_button, &font_large, "QUIT");
+    menu_attach(&main_menu, &oneplayer_button, 11);
+    menu_attach(&main_menu, &twoplayer_button, 11);
+    menu_attach(&main_menu, &tourn_button, 11);
+    menu_attach(&main_menu, &config_button, 11);
+    menu_attach(&main_menu, &gameplay_button, 11);
+    menu_attach(&main_menu, &ordering_button, 11);
+    menu_attach(&main_menu, &help_button, 11);
+    menu_attach(&main_menu, &demo_button, 11);
+    menu_attach(&main_menu, &scoreboard_button, 11);
+    menu_attach(&main_menu, &quit_button, 11);
+
+    // Status
+    twoplayer_button.disabled = 1;
+    tourn_button.disabled = 1;
+    config_button.disabled = 0;
+    gameplay_button.disabled = 1;
+    ordering_button.disabled = 1;
+    help_button.disabled = 1;
+    demo_button.disabled = 1;
+    scoreboard_button.disabled = 1;
     
     // Events
-    exit_button.userdata = (void*)scene;
-    exit_button.click = mainmenu_quit;
-    pvp_button.userdata = (void*)scene;
-    pvp_button.click = mainmenu_1v1;
+    quit_button.userdata = (void*)scene;
+    quit_button.click = mainmenu_quit;
+    oneplayer_button.userdata = (void*)scene;
+    oneplayer_button.click = mainmenu_1v1;
+    config_button.userdata = (void*)&config_menu;
+    config_button.click = mainmenu_enter_menu;
+
+    // create configuration menu
+    menu_create(&config_menu, 165, 5, 151, 119);
+    textbutton_create(&playerone_input_button, &font_large, "PLAYER 1 INPUT");
+    textbutton_create(&playertwo_input_button, &font_large, "PLAYER 2 INPUT");
+    textbutton_create(&video_options_button, &font_large, "VIDEO OPTIONS");
+    textbutton_create(&sound_toggle, &font_large, "SOUND ON");
+    textbutton_create(&music_toggle, &font_large, "MUSIC ON");
+    textbutton_create(&stereo_toggle, &font_large, "STEREO NORMAL");
+    textbutton_create(&config_done_button, &font_large, "DONE");
+    menu_attach(&config_menu, &playerone_input_button, 11);
+    menu_attach(&config_menu, &playertwo_input_button, 11);
+    menu_attach(&config_menu, &video_options_button, 11);
+    menu_attach(&config_menu, &sound_toggle, 11);
+    menu_attach(&config_menu, &music_toggle, 11);
+    menu_attach(&config_menu, &stereo_toggle, 11);
+    menu_attach(&config_menu, &config_done_button, 11);
+
+    config_done_button.click = mainmenu_prev_menu;
+
+
+    current_menu = &main_menu;
     
     // All done
     return 0;
 }
 
 void mainmenu_deinit(scene *scene) {
-    textbutton_free(&settings_button);
+    textbutton_free(&oneplayer_button);
+    textbutton_free(&twoplayer_button);
     textbutton_free(&tourn_button);
-    textbutton_free(&pvp_button);
-    textbutton_free(&exit_button);
-    menu_free(&smenu);
+    textbutton_free(&config_button);
+    textbutton_free(&gameplay_button);
+    textbutton_free(&ordering_button);
+    textbutton_free(&help_button);
+    textbutton_free(&demo_button);
+    textbutton_free(&scoreboard_button);
+    textbutton_free(&quit_button);
+    menu_free(&main_menu);
     font_free(&font_large);
 }
 
 void mainmenu_tick(scene *scene) {
-    menu_tick(&smenu);
+    menu_tick(current_menu);
 }
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
-    // the menu will need to handle escapes to exit submenus
-    // but we're going to hijack them for now
     if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
-        scene->next_id = SCENE_CREDITS;
-        return 1;
+        if (current_menu == &main_menu) {
+            scene->next_id = SCENE_CREDITS;
+            return 1;
+        } else {
+            current_menu = &main_menu;
+        }
     }
-    return menu_handle_event(&smenu, event);
+    return menu_handle_event(current_menu, event);
 }
 
 void mainmenu_render(scene *scene) {
-    menu_render(&smenu);
+    menu_render(current_menu);
 }
 
 void mainmenu_load(scene *scene) {
