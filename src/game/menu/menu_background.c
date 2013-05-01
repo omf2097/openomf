@@ -34,18 +34,17 @@ void menu_background_create(texture *tex, int w, int h) {
         bitmap[i] = 4;
         bitmap[i+1] = 4;
         bitmap[i+2] = 16;
-        bitmap[i+3] = 10;
+        bitmap[i+3] = 210;
     }
 
     // draw the grid
     // TODO this isn't centered as described above, which is how the game does it
 
     for(int i = 7; i < w; i+=8) {
-        DEBUG("drawing %d/%d", i, w);
-        draw_y_line(bitmap, i, 0, h-1, w, 0, 0, 35, 255);
+        draw_y_line(bitmap, i, 0, h-1, w, 0, 0, 89, 255);
     }
     for(int i = 7; i < h; i+=8) {
-        draw_x_line(bitmap, i, 0, w, w, 0, 0, 35, 255);
+        draw_x_line(bitmap, i, 0, w, w, 0, 0, 89, 255);
     }
 
     // draw the border
