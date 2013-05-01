@@ -8,7 +8,7 @@
 #include "game/menu/menu.h"
 #include "game/menu/textbutton.h"
 
-font font_small;
+font font_large;
 menu smenu;
 component pvp_button;
 component tourn_button;
@@ -32,19 +32,19 @@ int mainmenu_init(scene *scene) {
     }
     
     // Create font
-    font_create(&font_small);
-    if(font_load(&font_small, "resources/CHARSMAL.DAT", FONT_SMALL)) {
-        PERROR("Error while loading small font!");
-        font_free(&font_small);
+    font_create(&font_large);
+    if(font_load(&font_large, "resources/GRAPHCHR.DAT", FONT_BIG)) {
+        PERROR("Error while loading large font!");
+        font_free(&font_large);
         return 1;
     }
     
     // Create menu
     menu_create(&smenu, 165, 5, 151, 119);
-    textbutton_create(&pvp_button, &font_small, "1 vs. 1");
-    textbutton_create(&tourn_button, &font_small, "Tournament");
-    textbutton_create(&settings_button, &font_small, "Settings");
-    textbutton_create(&exit_button, &font_small, "Exit");
+    textbutton_create(&pvp_button, &font_large, "ONE PLAYER GAME");
+    textbutton_create(&tourn_button, &font_large, "TOURNAMENT");
+    textbutton_create(&settings_button, &font_large, "SETTINGS");
+    textbutton_create(&exit_button, &font_large, "EXIT");
     menu_attach(&smenu, &pvp_button, 10);
     menu_attach(&smenu, &tourn_button, 10);
     menu_attach(&smenu, &settings_button, 10);
@@ -66,7 +66,7 @@ void mainmenu_deinit(scene *scene) {
     textbutton_free(&pvp_button);
     textbutton_free(&exit_button);
     menu_free(&smenu);
-    font_free(&font_small);
+    font_free(&font_large);
 }
 
 void mainmenu_tick(scene *scene) {
