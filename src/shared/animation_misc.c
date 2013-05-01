@@ -71,7 +71,6 @@ void anim_common_info(sd_animation *ani) {
     }
     printf(" * Sprites:          %d\n", ani->frame_count);
     printf(" * Animation str:    %s\n", ani->anim_string);
-    printf(" * Unknown:          %d\n", ani->unknown_b);
     printf(" * Extra strings:    %d\n", ani->extra_string_count);
     for(int i = 0; i < ani->extra_string_count; i++) {
         printf("   - %s\n", ani->extra_strings[i]);
@@ -82,7 +81,6 @@ int anim_key_get_id(const char* key) {
     if(strcmp(key, "ani_header") == 0) return 7;
     if(strcmp(key, "collision") == 0) return 8;
     if(strcmp(key, "anim_str") == 0) return 9;
-    if(strcmp(key, "unknown") == 0) return 10;
     if(strcmp(key, "extra_str") == 0) return 11;
     if(strcmp(key, "start_x") == 0) return 12;
     if(strcmp(key, "start_y") == 0) return 13;
@@ -132,7 +130,6 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
             printf("Coord value setting not supported yet!\n");
             break; 
         case 9:  sd_animation_set_anim_string(ani, value); break;
-        case 10: ani->unknown_b = conv_ubyte(value); break;
         case 11:  
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
@@ -215,7 +212,6 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
                 printf("%s\n", ani->anim_string);
             }
             break;
-        case 10: printf("%d\n", ani->unknown_b); break;
         case 11: 
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
