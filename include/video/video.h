@@ -6,6 +6,7 @@
 
 #define BLEND_ADDITIVE 0
 #define BLEND_ALPHA 1
+#define BLEND_ALPHA_FULL 2
 
 int video_init(int window_w, int window_h, int fullscreen, int vsync); // Create window etc.
 void video_render_prepare();

@@ -186,6 +186,13 @@ void video_set_rendering_mode(int mode) {
             glStencilFunc(GL_EQUAL, 1, 1);
             glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             break;
+        case BLEND_ALPHA_FULL:
+            // Full alpha blending. Disable stencil.
+            glEnable(GL_BLEND);
+            glDisable(GL_ALPHA_TEST);
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+            glStencilFunc(GL_EQUAL, 1, 1);
+            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
         default:
             // Alpha blending. Well, not really blending; we just skip all data where alpha = 0.
             // Set all visible data as 1 on stencil buffer, so that all additive blending effects
