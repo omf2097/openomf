@@ -40,5 +40,6 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
 void animationplayer_free(animationplayer *player);
 void animationplayer_run(animationplayer *player);
 void animationplayer_render(animationplayer *player);
+void animationplayer_reset(animationplayer *player);
 
 #endif // _ANIMATIONPLAYER_H

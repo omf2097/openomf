@@ -29,6 +29,7 @@ enum {
 
 typedef struct scene_t {
     struct sd_bk_file_t *bk;
+    unsigned int loop;
     unsigned int this_id;
     unsigned int next_id;
     texture background;

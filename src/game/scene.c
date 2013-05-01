@@ -21,6 +21,7 @@ void scene_set_ani_finished(scene *scene, int id);
 // Loads BK file etc.
 int scene_load(scene *scene, unsigned int scene_id) {
     scene->bk = sd_bk_create();
+    scene->loop = 1;
     int ret = 0;
     
     // Load BK
@@ -107,7 +108,8 @@ int scene_load(scene *scene, unsigned int scene_id) {
             // Start playback on those animations, that have load_on_start flag as true 
             // or if we are handling animation 25 of intro
             // TODO: Maybe make the exceptions a bit more generic or something ?
-            if(bka->load_on_start || (scene_id == SCENE_INTRO && i == 25) || (scene_id == SCENE_CREDITS && i == 20) ||(scene_id==SCENE_ARENA0&&i==0)) {
+            // TODO check other probabilites here
+            if(bka->load_on_start || bka->probability == 1 || (scene_id == SCENE_INTRO && i == 25)) {
                 animationplayer player;
                 player.x = ani->sdani->start_x;
                 player.y = ani->sdani->start_y;
@@ -165,9 +167,14 @@ void scene_clean_ani_players(scene *scene) {
     
     list_iter_begin(&scene->root_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
-        if(tmp->finished) { 
-            animationplayer_free(tmp);
-            list_delete(&scene->root_players, &it); 
+        if(tmp->finished) {
+            // if their probability is 1, go around again
+            if (scene->loop && scene->bk->anims[tmp->id]->probability == 1) {
+                animationplayer_reset(tmp);
+            } else {
+                animationplayer_free(tmp);
+                list_delete(&scene->root_players, &it);
+            }
         }
     }
 }

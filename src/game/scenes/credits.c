@@ -7,6 +7,7 @@
 #include "game/scenes/credits.h"
 
 int credits_init(scene *scene) {
+    scene->loop = 0;
     return 0;
 }
 

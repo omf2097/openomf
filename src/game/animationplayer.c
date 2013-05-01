@@ -289,3 +289,8 @@ void animationplayer_run(animationplayer *player) {
 exit_0:
     return;
 }
+
+void animationplayer_reset(animationplayer *player) {
+    player->ticks = 1;
+    player->finished = 0;
+}
