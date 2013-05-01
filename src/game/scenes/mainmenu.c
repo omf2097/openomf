@@ -7,6 +7,7 @@
 #include "game/scenes/mainmenu.h"
 #include "game/menu/menu.h"
 #include "game/menu/textbutton.h"
+#include "game/menu/textselector.h"
 
 font font_large;
 menu *current_menu;
@@ -110,9 +111,12 @@ int mainmenu_init(scene *scene) {
     textbutton_create(&playerone_input_button, &font_large, "PLAYER 1 INPUT");
     textbutton_create(&playertwo_input_button, &font_large, "PLAYER 2 INPUT");
     textbutton_create(&video_options_button, &font_large, "VIDEO OPTIONS");
-    textbutton_create(&sound_toggle, &font_large, "SOUND ON");
-    textbutton_create(&music_toggle, &font_large, "MUSIC ON");
-    textbutton_create(&stereo_toggle, &font_large, "STEREO NORMAL");
+    textselector_create(&sound_toggle, &font_large, "SOUND", "ON");
+    textselector_add_option(&sound_toggle, "OFF");
+    textselector_create(&music_toggle, &font_large, "MUSIC", "ON");
+    textselector_add_option(&music_toggle, "OFF");
+    textselector_create(&stereo_toggle, &font_large, "STEREO", "NORMAL");
+    textselector_add_option(&stereo_toggle, "REVERSED");
     textbutton_create(&config_done_button, &font_large, "DONE");
     menu_attach(&config_menu, &playerone_input_button, 11);
     menu_attach(&config_menu, &playertwo_input_button, 11);
@@ -143,6 +147,16 @@ void mainmenu_deinit(scene *scene) {
     textbutton_free(&scoreboard_button);
     textbutton_free(&quit_button);
     menu_free(&main_menu);
+
+    textbutton_free(&playerone_input_button);
+    textbutton_free(&playertwo_input_button);
+    textbutton_free(&video_options_button);
+    textselector_free(&sound_toggle);
+    textselector_free(&music_toggle);
+    textselector_free(&stereo_toggle);
+    textbutton_free(&config_done_button);
+    menu_free(&config_menu);
+
     font_free(&font_large);
 }
 

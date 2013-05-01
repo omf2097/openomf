@@ -50,6 +50,7 @@ add_executable(openomf
     src/game/menu/menu_background.c
     src/game/menu/selection.c
     src/game/menu/textbutton.c
+    src/game/menu/textselector.c
     src/game/menu/togglebutton.c
     src/game/menu/component.c
 )
