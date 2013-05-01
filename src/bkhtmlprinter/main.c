@@ -7,6 +7,7 @@
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 #include <stdint.h>
+#include <png.h>
 
 const char *header = "<!DOCTYPE html>\
 <html>\
@@ -38,6 +39,39 @@ h4 { font-size: 14px; font-weight: bold; }\
 
 const char *footer = "</body></html>";
 
+int write_png(FILE *fp, char *data, int w, int h) {
+    png_structp png_ptr;
+    png_infop info_ptr;
+    
+    // Get row pointers
+    char *rows[h];
+    for(int i = 0; i < h; i++) {
+        rows[i] = data + (i * w)*4;
+    }
+    
+    // Init
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    info_ptr = png_create_info_struct(png_ptr);
+    setjmp(png_jmpbuf(png_ptr));
+    png_init_io(png_ptr, fp);
+    
+    // Write header. RGB, 8bits per channel
+    setjmp(png_jmpbuf(png_ptr));
+    png_set_IHDR(png_ptr, info_ptr, w, h,
+                 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+    png_write_info(png_ptr, info_ptr);
+    
+    // Write data
+    setjmp(png_jmpbuf(png_ptr));
+    png_write_image(png_ptr, (void*)rows);
+    
+    // End
+    setjmp(png_jmpbuf(png_ptr));
+    png_write_end(png_ptr, NULL);
+    return 0;
+}
+
 // Main --------------------------------------------------------------
 
 int main(int argc, char *argv[]) {
@@ -45,9 +79,10 @@ int main(int argc, char *argv[]) {
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input .BK file");
-    struct arg_file *output = arg_file1("o", "output", "<file>", "Output .html file");
+    struct arg_str *outdir = arg_str1("o", "outdir", "<str>", "Output directory");
+    struct arg_str *name = arg_str1("n", "name", "<str>", "Output name");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,end};
+    void* argtable[] = {help,vers,file,outdir,name,end};
     const char* progname = "bkhtmlprinter";
     
     // Make sure everything got allocated
@@ -92,13 +127,30 @@ int main(int argc, char *argv[]) {
         goto exit_1;
     }
     
+    // Some vars
+    FILE *fp;
+    char namebuf[256];
+    
     // Open output file
     FILE *f;
-    f = fopen(output->filename[0], "w");
+    sprintf(namebuf, "%s/%s.html\0", outdir->sval[0], name->sval[0]);
+    f = fopen(namebuf, "w");
     if(f == NULL) {
         printf("Error while opening file!");
         goto exit_1;
     }
+    
+    // Write background
+    sprintf(namebuf, "%s/%s_bg.png\0", outdir->sval[0], name->sval[0]);
+    fp = fopen(namebuf, "wb");
+    if(f == NULL) {
+        printf("Error while opening background file for writing!");
+        goto exit_1;
+    }
+    sd_rgba_image *bg = sd_vga_image_decode(bk->background, bk->palettes[0], 0);
+    write_png(fp, bg->data, bg->w, bg->h);
+    sd_rgba_image_delete(bg);
+    fclose(fp);
     
     // Print header to file
     fprintf(f, "%s", header);
@@ -108,6 +160,11 @@ int main(int argc, char *argv[]) {
     fprintf(f, "<h2>General information</h2><table><tr><th>Key</th><th>Value</th></tr>");
     fprintf(f, "<tr><td>File ID</td><td>%d</td></tr>", bk->file_id);
     fprintf(f, "</table>");
+    
+    // Image
+    fprintf(f, "<h2>Background</h2>");
+    sprintf(namebuf, "%s_bg.png\0", name->sval[0]);
+    fprintf(f, "<img src=\"%s\" width=\"640\" height=\"400\">", namebuf);
     
     // Palettes
     if(bk->num_palettes > 0) {
