@@ -14,12 +14,13 @@ set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686 -Werror")
 
 add_executable(bktool src/bktool/main.c src/shared/animation_misc.c src/shared/conversions.c)
 add_executable(aftool src/aftool/main.c src/shared/animation_misc.c src/shared/conversions.c)
-add_executable(soundtool src/soundtool/main.c )
+add_executable(bkhtmlprinter src/bkhtmlprinter/main.c)
+add_executable(soundtool src/soundtool/main.c)
 add_executable(musictool src/musictool/main.c)
 add_executable(fonttool src/fonttool/main.c)
 add_executable(languagetool src/languagetool/main.c)
 
-set(CORELIBS ${SDL2_LIBRARY} ${ARGTABLE2_LIBRARY})
+set(CORELIBS ${ARGTABLE2_LIBRARY})
 IF(MINGW)
     set(CORELIBS mingw32 ${CORELIBS})
 ENDIF(MINGW)
@@ -31,14 +32,15 @@ include_directories(
     ${DUMB_INCLUDE_DIR}
     ${AO_INCLUDE_DIR}
 ) 
-target_link_libraries(bktool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(aftool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(soundtool ${CORELIBS} ${SHADOWDIVE_LIBRARY} ${AO_LIBRARY})
-target_link_libraries(musictool ${CORELIBS} ${DUMB_LIBRARY} ${AO_LIBRARY})
-target_link_libraries(fonttool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(languagetool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(bktool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(aftool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(bkhtmlprinter ${CORELIBS} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(soundtool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY} ${AO_LIBRARY})
+target_link_libraries(musictool ${CORELIBS} ${SDL2_LIBRARY} ${DUMB_LIBRARY} ${AO_LIBRARY})
+target_link_libraries(fonttool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(languagetool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 
-INSTALL(TARGETS bktool aftool soundtool musictool fonttool languagetool
+INSTALL(TARGETS bktool bkhtmlprinter aftool soundtool musictool fonttool languagetool
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
