@@ -107,8 +107,24 @@ int main(int argc, char *argv[]) {
     // Root
     fprintf(f, "<h2>General information</h2><table><tr><th>Key</th><th>Value</th></tr>");
     fprintf(f, "<tr><td>File ID</td><td>%d</td></tr>", bk->file_id);
-    fprintf(f, "<tr><td>Palettes</td><td>%d</td></tr>", bk->num_palettes);
     fprintf(f, "</table>");
+    
+    // Palettes
+    if(bk->num_palettes > 0) {
+        fprintf(f, "<h2>Palettes</h2>");
+        for(int i = 0; i < bk->num_palettes; i++) {
+            fprintf(f, "<h3>Palette %d</h3>", i);
+            fprintf(f, "<table>");
+            for(int y = 0; y < 16; y++) {
+                fprintf(f, "<tr>");
+                for(int x = 0; x < 16; x++) {
+                    fprintf(f, "<td style=\"\">%d</td>", y*16 + x);
+                }
+                fprintf(f, "</tr>");
+            }
+            fprintf(f, "</table>");
+        }
+    }
     
     // Animations
     fprintf(f, "<h2>Animations</h2><div id=\"animations\">");
