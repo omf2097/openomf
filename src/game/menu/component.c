@@ -9,10 +9,15 @@ void component_create(component *c) {
     c->h = 0;
     c->selected = 0;
     c->obj = NULL;
+    
+    // Function pointers
     c->render = NULL;
     c->event = NULL;
     c->layout = component_layout;
     c->tick = NULL;
+    
+    // Event functions
+    c->click = NULL;
 }
 
 void component_free(component *c) {

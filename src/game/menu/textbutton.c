@@ -37,7 +37,9 @@ int textbutton_event(component *c, SDL_Event *event) {
     switch(event->type) {
         case SDL_KEYDOWN:
             if(event->key.keysym.sym == SDLK_RETURN) {
-                c->click(c, c->userdata);
+                if(c->click != NULL) {
+                    c->click(c, c->userdata);
+                }
                 return 0;
             }
     }
