@@ -48,11 +48,11 @@ void mainmenu_deinit(scene *scene) {
 }
 
 void mainmenu_tick(scene *scene) {
-
+    menu_tick(&smenu);
 }
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
-    return 1;
+    return menu_handle_event(&smenu, event);
 }
 
 void mainmenu_render(scene *scene) {

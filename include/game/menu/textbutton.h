@@ -9,12 +9,14 @@ typedef struct textbutton_t textbutton;
 struct textbutton_t {
     const char *text;
     font *font;
+    int ticks;
+    int dir;
 };
 
 void textbutton_create(component *c, font *font, const char *text);
 void textbutton_free(component *c);
 void textbutton_render(component *c);
-void textbutton_event(component *c);
-
+int textbutton_event(component *c);
+void textbutton_tick(component *c);
 
 #endif // _TEXTBUTTON_H

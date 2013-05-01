@@ -9,10 +9,12 @@ typedef struct component_t component;
 */
 struct component_t {
     int x,y,w,h;
+    int selected;
     void *obj;
     void (*render)(component *c);
-    void (*event)(component *c);
+    int (*event)(component *c);
     void (*layout)(component *c, int x, int y, int w, int h);
+    void (*tick)(component *c);
 };
 
 void component_create(component *c);

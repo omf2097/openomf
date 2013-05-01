@@ -63,10 +63,10 @@ void engine_run() {
         
         // Handle events
         SDL_Event e;
-        if(SDL_PollEvent(&e)) {
+        while(SDL_PollEvent(&e)) {
             // Send events to scene (if active)
             if(!scene_handle_event(&scene, &e)) {
-                break;
+                continue;
             }
         
             // Handle other events
