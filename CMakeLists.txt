@@ -42,6 +42,7 @@ add_executable(openomf
     src/game/animationplayer.c
     src/game/scenes/intro.c
     src/game/scenes/mainmenu.c
+    src/game/scenes/credits.c
     src/game/text/text.c
     src/game/text/languages.c
     src/game/menu/menu.c

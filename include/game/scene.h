@@ -12,6 +12,7 @@ enum {
     SCENE_END,
     SCENE_END1,
     SCENE_END2,
+    SCENE_CREDITS,
     SCENE_MECHLAB,
     SCENE_VS,
     SCENE_MELEE,

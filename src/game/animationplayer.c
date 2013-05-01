@@ -76,9 +76,9 @@ void cmd_anim_create(animationplayer *player, int id, int mx, int my, scene *sce
     animation *ani = array_get(player->anims, id);
     if(ani != NULL) {
         animationplayer np;
-        animationplayer_create(id, &np, ani, player->anims);
         np.x = ani->sdani->start_x + mx;
         np.y = ani->sdani->start_y + my;
+        animationplayer_create(id, &np, ani, player->anims);
         np.scene = scene;
         np.add_player = player->add_player;
         np.del_player = player->del_player;
@@ -109,7 +109,24 @@ sound_state *sound_state_create() {
     return s;
 }
 
+int isset(sd_stringparser_frame *frame, const char *tag) {
+    const sd_stringparser_tag_value *v;
+    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
+    return v->is_set;
+}
+
+int get(sd_stringparser_frame *frame, const char *tag) {
+    const sd_stringparser_tag_value *v;
+    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
+    return v->value;
+}
+
+int dist(int a, int b) {
+    return abs((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1 : -1);
+}
+
 int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims) {
+    sd_stringparser_frame param;
     player->snd = sound_state_create();
     player->ani = animation;
     player->id = id;
@@ -127,20 +144,18 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
         PERROR("Unable to initialize stringparser w/ '%s'", animation->sdani->anim_string);
         return 1;
     }
+    sd_stringparser_peek(player->parser, 0, &param);
+    if(isset(&param, "x=")) {
+        player->x = get(&param, "x=");
+        DEBUG("Set player->x to %d", player->x);
+    }
+    if(isset(&param, "y=")) {
+        player->y = get(&param, "y=");
+        DEBUG("Set player->y to %d", player->y);
+    }
+
     DEBUG("P: '%s'", animation->sdani->anim_string);
     return 0;
-}
-
-int isset(sd_stringparser_frame *frame, const char *tag) {
-    const sd_stringparser_tag_value *v;
-    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
-    return v->is_set;
-}
-
-int get(sd_stringparser_frame *frame, const char *tag) {
-    const sd_stringparser_tag_value *v;
-    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
-    return v->value;
 }
 
 void animationplayer_free(animationplayer *player) {
@@ -235,13 +250,21 @@ void animationplayer_run(animationplayer *player) {
             int slide = 0;
             if(isset(n, "x=")) {
                 slide = get(n, "x=");
-                player->slide_op.x_per_tick = (abs(player->x) + abs(slide)) / param.duration * (slide < 0 ? -1 : 1);
-                player->slide_op.enabled = 1;
+                if (slide != player->x) {
+                    DEBUG("%d player->x was %d, interpolating to %d", player->id, player->x, slide);
+                    player->slide_op.x_per_tick = dist(player->x, slide) / param.duration;
+                    DEBUG("%d moving %d per tick over %d ticks", player->id, player->slide_op.x_per_tick, param.duration);
+                    player->slide_op.enabled = 1;
+                }
             }
             if(isset(n, "y=")) { 
                 slide = get(n, "y=");
-                player->slide_op.y_per_tick = (abs(player->y) + abs(slide)) / param.duration * (slide < 0 ? -1 : 1);
-                player->slide_op.enabled = 1;
+                if (slide != player->y) {
+                    DEBUG("%d player->y was %d, interpolating to %d", player->id, player->y, slide);
+                    player->slide_op.y_per_tick = dist(player->y, slide) / param.duration;
+                    DEBUG("%d moving %d per tick over %d ticks", player->id, player->slide_op.y_per_tick, param.duration);
+                    player->slide_op.enabled = 1;
+                }
             }
         }
         

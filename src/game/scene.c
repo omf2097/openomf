@@ -9,6 +9,7 @@
 #include "game/scene.h"
 #include "game/scenes/intro.h"
 #include "game/scenes/mainmenu.h"
+#include "game/scenes/credits.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
 
@@ -29,6 +30,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
         case SCENE_END:      ret = sd_bk_load(scene->bk, "resources/END.BK");      break;
         case SCENE_END1:     ret = sd_bk_load(scene->bk, "resources/END1.BK");     break;
         case SCENE_END2:     ret = sd_bk_load(scene->bk, "resources/END2.BK");     break;
+        case SCENE_CREDITS:  ret = sd_bk_load(scene->bk, "resources/CREDITS.BK");  break;
         case SCENE_MELEE:    ret = sd_bk_load(scene->bk, "resources/MELEE.BK");    break;
         case SCENE_VS:       ret = sd_bk_load(scene->bk, "resources/VS.BK");       break;
         default:
@@ -48,6 +50,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
     switch(scene_id) {
         case SCENE_INTRO: intro_load(scene); break;
         case SCENE_MENU: mainmenu_load(scene); break;
+        case SCENE_CREDITS: credits_load(scene); break;
         default: 
             scene->render = NULL;
             scene->event = NULL;
@@ -87,11 +90,11 @@ int scene_load(scene *scene, unsigned int scene_id) {
             // Start playback on those animations, that have load_on_start flag as true 
             // or if we are handling animation 25 of intro
             // TODO: Maybe make the exceptions a bit more generic or something ?
-            if(bka->load_on_start || (scene_id == SCENE_INTRO && i == 25)) {
+            if(bka->load_on_start || (scene_id == SCENE_INTRO && i == 25) || (scene_id == SCENE_CREDITS && i == 20)) {
                 animationplayer player;
-                animationplayer_create(i, &player, ani, &scene->animations);
                 player.x = ani->sdani->start_x;
                 player.y = ani->sdani->start_y;
+                animationplayer_create(i, &player, ani, &scene->animations);
                 player.scene = scene;
                 player.add_player = scene_add_ani_player;
                 player.del_player = scene_set_ani_finished;
@@ -206,7 +209,11 @@ void scene_tick(scene *scene) {
     // If no animations to play, jump to next scene (if any)
     // TODO: Hackish, make this nicer.
     if(list_size(&scene->root_players) <= 0) {
-        scene->next_id = SCENE_MENU;
+        if (scene->this_id == SCENE_CREDITS) {
+            scene->next_id = SCENE_NONE;
+        } else {
+            scene->next_id = SCENE_MENU;
+        }
         DEBUG("NEXT ID!");
     }
 }

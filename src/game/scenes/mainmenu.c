@@ -17,7 +17,7 @@ component exit_button;
 
 void mainmenu_quit(component *c, void *userdata) {
     scene *scene = userdata;
-    scene->next_id = SCENE_END;
+    scene->next_id = SCENE_CREDITS;
 }
 
 int mainmenu_init(scene *scene) {
@@ -67,6 +67,12 @@ void mainmenu_tick(scene *scene) {
 }
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
+    // the menu will need to handle escapes to exit submenus
+    // but we're going to hijack them for now
+    if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
+        scene->next_id = SCENE_CREDITS;
+        return 1;
+    }
     return menu_handle_event(&smenu, event);
 }
 
