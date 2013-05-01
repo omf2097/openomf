@@ -7,6 +7,7 @@ find_package(argtable2)
 find_package(shadowdive)
 find_package(dumb)
 find_package(ao)
+find_package(png)
 
 set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror")
@@ -27,6 +28,7 @@ ENDIF(MINGW)
 
 include_directories(
     ${SDL2_INCLUDE_DIR}
+    ${PNG_INCLUDE_DIR}
     ${ARGTABLE2_INCLUDE_DIR}
     ${SHADOWDIVE_INCLUDE_DIR}
     ${DUMB_INCLUDE_DIR}
@@ -34,7 +36,7 @@ include_directories(
 ) 
 target_link_libraries(bktool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(aftool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(bkhtmlprinter ${CORELIBS} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(bkhtmlprinter ${CORELIBS} ${PNG_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(soundtool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY} ${AO_LIBRARY})
 target_link_libraries(musictool ${CORELIBS} ${SDL2_LIBRARY} ${DUMB_LIBRARY} ${AO_LIBRARY})
 target_link_libraries(fonttool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
