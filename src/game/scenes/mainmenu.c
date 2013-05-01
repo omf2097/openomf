@@ -40,7 +40,7 @@ int mainmenu_init(scene *scene) {
     }
     
     // Create menu
-    menu_create(&smenu, 160, 20, 140, 200);
+    menu_create(&smenu, 160, 20, 151, 119);
     textbutton_create(&pvp_button, &font_small, "1 vs. 1");
     textbutton_create(&tourn_button, &font_small, "Tournament");
     textbutton_create(&settings_button, &font_small, "Settings");

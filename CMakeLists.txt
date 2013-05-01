@@ -47,6 +47,7 @@ add_executable(openomf
     src/game/text/text.c
     src/game/text/languages.c
     src/game/menu/menu.c
+    src/game/menu/menu_background.c
     src/game/menu/selection.c
     src/game/menu/textbutton.c
     src/game/menu/togglebutton.c

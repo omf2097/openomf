@@ -2,6 +2,7 @@
 #define _MENU_H
 
 #include "utils/vector.h"
+#include "video/texture.h"
 #include "game/menu/component.h"
 #include <SDL2/SDL.h>
 
@@ -9,6 +10,7 @@ typedef struct menu_t menu;
 
 struct menu_t {
     vector objs;
+    texture tex;
     int x,y,w,h;
     int selected;
 };
