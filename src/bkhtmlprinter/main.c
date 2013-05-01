@@ -113,12 +113,17 @@ int main(int argc, char *argv[]) {
     if(bk->num_palettes > 0) {
         fprintf(f, "<h2>Palettes</h2>");
         for(int i = 0; i < bk->num_palettes; i++) {
-            fprintf(f, "<h3>Palette %d</h3>", i);
+            sd_palette *pal = bk->palettes[i];
+            fprintf(f, "<h3>Palette %d</h3>", i+1);
             fprintf(f, "<table>");
             for(int y = 0; y < 16; y++) {
                 fprintf(f, "<tr>");
                 for(int x = 0; x < 16; x++) {
-                    fprintf(f, "<td style=\"\">%d</td>", y*16 + x);
+                    fprintf(f, "<td style=\"background-color: rgb(%d,%d,%d); text-align: middle; width: 30px; height: 30px; color: white;\">%d</td>", 
+                        pal->data[y*16+x][0],
+                        pal->data[y*16+x][1],
+                        pal->data[y*16+x][2],
+                        y*16 + x);
                 }
                 fprintf(f, "</tr>");
             }
