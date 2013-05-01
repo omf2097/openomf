@@ -8,6 +8,7 @@
 #include "game/menu/menu.h"
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
+#include "game/menu/textslider.h"
 
 font font_large;
 menu *current_menu;
@@ -31,6 +32,17 @@ component sound_toggle;
 component music_toggle;
 component stereo_toggle;
 component config_done_button;
+
+menu gameplay_menu;
+component speed_slider;
+component fightmode_toggle;
+component powerone_slider;
+component powertwo_slider;
+component hazards_toggle;
+component cpu_toggle;
+component round_toggle;
+component gameplay_done_button;
+
 
 void mainmenu_quit(component *c, void *userdata) {
     scene *scene = userdata;
@@ -92,7 +104,7 @@ int mainmenu_init(scene *scene) {
     twoplayer_button.disabled = 1;
     tourn_button.disabled = 1;
     config_button.disabled = 0;
-    gameplay_button.disabled = 1;
+    gameplay_button.disabled = 0;
     ordering_button.disabled = 1;
     help_button.disabled = 1;
     demo_button.disabled = 1;
@@ -105,6 +117,9 @@ int mainmenu_init(scene *scene) {
     oneplayer_button.click = mainmenu_1v1;
     config_button.userdata = (void*)&config_menu;
     config_button.click = mainmenu_enter_menu;
+
+    gameplay_button.userdata = (void*)&gameplay_menu;
+    gameplay_button.click = mainmenu_enter_menu;
 
     // create configuration menu
     menu_create(&config_menu, 165, 5, 151, 119);
@@ -128,6 +143,34 @@ int mainmenu_init(scene *scene) {
 
     config_done_button.click = mainmenu_prev_menu;
 
+    menu_create(&gameplay_menu, 165, 5, 151, 119);
+    textslider_create(&speed_slider, &font_large, "SPEED", 10);
+    textselector_create(&fightmode_toggle, &font_large, "FIGHT MODE", "NORMAL");
+    textselector_add_option(&fightmode_toggle, "HYPER");
+    textslider_create(&powerone_slider, &font_large, "POWER 1", 8);
+    textslider_create(&powertwo_slider, &font_large, "POWER 2", 8);
+    textselector_create(&hazards_toggle, &font_large, "HAZARDS", "ON");
+    textselector_add_option(&hazards_toggle, "OFF");
+    textselector_create(&cpu_toggle, &font_large, "CPU:", "PUNCHING BAG");
+    textselector_add_option(&cpu_toggle, "ROOKIE");
+    textselector_add_option(&cpu_toggle, "VETERAN");
+    textselector_add_option(&cpu_toggle, "WORLD CLASS");
+    textselector_add_option(&cpu_toggle, "CHAMPION");
+    textselector_create(&round_toggle, &font_large, "", "ONE ROUND");
+    textselector_add_option(&round_toggle, "BEST 2 OF 3");
+    textselector_add_option(&round_toggle, "BEST 3 OF 5");
+    textselector_add_option(&round_toggle, "BEST 4 OF 7");
+    textbutton_create(&gameplay_done_button, &font_large, "DONE");
+    menu_attach(&gameplay_menu, &speed_slider, 11);
+    menu_attach(&gameplay_menu, &fightmode_toggle, 11);
+    menu_attach(&gameplay_menu, &powerone_slider, 11);
+    menu_attach(&gameplay_menu, &powertwo_slider, 11);
+    menu_attach(&gameplay_menu, &hazards_toggle, 11);
+    menu_attach(&gameplay_menu, &cpu_toggle, 11);
+    menu_attach(&gameplay_menu, &round_toggle, 11);
+    menu_attach(&gameplay_menu, &gameplay_done_button, 11);
+
+    gameplay_done_button.click = mainmenu_prev_menu;
 
     current_menu = &main_menu;
     
@@ -156,6 +199,16 @@ void mainmenu_deinit(scene *scene) {
     textselector_free(&stereo_toggle);
     textbutton_free(&config_done_button);
     menu_free(&config_menu);
+
+    textslider_free(&speed_slider);
+    textselector_free(&fightmode_toggle);
+    textslider_free(&powerone_slider);
+    textslider_free(&powertwo_slider);
+    textselector_free(&hazards_toggle);
+    textselector_free(&cpu_toggle);
+    textselector_free(&round_toggle);
+    textbutton_free(&gameplay_done_button);
+    menu_free(&gameplay_menu);
 
     font_free(&font_large);
 }
