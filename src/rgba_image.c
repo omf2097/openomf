@@ -28,6 +28,7 @@ void sd_rgba_image_to_ppm(sd_rgba_image *img, const char *filename) {
         }
         fprintf(fd, "\n");
     }
+    fclose(fd);
 }
 
 void sd_rgba_image_delete(sd_rgba_image *img) {
