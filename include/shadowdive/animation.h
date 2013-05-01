@@ -21,7 +21,6 @@ typedef struct sd_animation_t {
 
     // String header
     char *anim_string;
-    uint8_t unknown_b;
     uint8_t extra_string_count;
 
     // Extra strings
