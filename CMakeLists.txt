@@ -51,6 +51,12 @@ add_executable(openomf
     src/game/menu/vsizer.c
 )
 
+IF(UNIX)
+    SET(MATH_LIBRARY -lm)
+ELSE(UNIX)
+    SET(MATH_LIBRARY)
+ENDIF(UNIX)
+
 set(COREINCS
     include
     ${SDL2_INCLUDE_DIR} 
@@ -72,6 +78,7 @@ set(CORELIBS
     ${CONFUSE_LIBRARY}
     ${GLEW_LIBRARY}
     ${LIBINTL_LIBRARIES}
+    ${MATH_LIBRARY}
 )
 
 IF(MINGW)
