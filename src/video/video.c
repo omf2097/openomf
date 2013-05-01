@@ -182,6 +182,7 @@ void video_set_rendering_mode(int mode) {
             // This shouldn't touch the stencil buffer at all
             glEnable(GL_BLEND);
             glDisable(GL_ALPHA_TEST);
+            glEnable(GL_STENCIL_TEST);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
             glStencilFunc(GL_EQUAL, 1, 1);
             glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
@@ -190,9 +191,8 @@ void video_set_rendering_mode(int mode) {
             // Full alpha blending. Disable stencil.
             glEnable(GL_BLEND);
             glDisable(GL_ALPHA_TEST);
-            glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-            glStencilFunc(GL_EQUAL, 1, 1);
-            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+            glDisable(GL_STENCIL_TEST);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             break;
         default:
             // Alpha blending. Well, not really blending; we just skip all data where alpha = 0.
@@ -200,6 +200,7 @@ void video_set_rendering_mode(int mode) {
             // works on these surfaces.
             glDisable(GL_BLEND);
             glEnable(GL_ALPHA_TEST);
+            glEnable(GL_STENCIL_TEST);
             glAlphaFunc(GL_GREATER, 0);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glStencilFunc(GL_ALWAYS, 1, 1);
