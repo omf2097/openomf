@@ -25,7 +25,8 @@ $(\"#animations\").accordion({});\
 body,p,table,tr,th,td { font-family: 'Open Sans', sans-serif; }\
 table { margin:0;padding:0; border-spacing:0; border-collapse:collapse; }\
 td,th { padding-left: 5px; padding-right: 5px; padding-top: 3px; padding-bottom: 3px; text-align: left; font-size: 14px; }\
-th { background-color: #dedede; }\
+.ui-accordion-content td { border: 1px solid #dedede; }\
+.ui-accordion-content th { background-color: #dedede; }\
 h1 { font-size: 30px; font-weight: bold; }\
 h2 { font-size: 24px; font-weight: bold; }\
 h3 { font-size: 18px; font-weight: bold; }\
@@ -164,7 +165,7 @@ int main(int argc, char *argv[]) {
     // Image
     fprintf(f, "<h2>Background</h2>");
     sprintf(namebuf, "%s_bg.png\0", name->sval[0]);
-    fprintf(f, "<img src=\"%s\" width=\"640\" height=\"400\">", namebuf);
+    fprintf(f, "<img src=\"%s\" width=\"640\" height=\"400\" />", namebuf);
     
     // Palettes
     if(bk->num_palettes > 0) {
@@ -208,7 +209,6 @@ int main(int argc, char *argv[]) {
             fprintf(f, "<tr><td>Start X</td><td>%d</td></tr>", ani->start_x);
             fprintf(f, "<tr><td>Start Y</td><td>%d</td></tr>", ani->start_y);
             fprintf(f, "<tr><td>Animation string</td><td>%s</td></tr>", ani->anim_string);
-            fprintf(f, "<tr><td>Unknown B</td><td>%d</td></tr>", ani->unknown_b);
             fprintf(f, "</table></div>");
             
             // Extra strings
@@ -234,17 +234,29 @@ int main(int argc, char *argv[]) {
             
             // Frames
             fprintf(f, "<div class=\"iblock\"><h4>Frames</h4>");
-            fprintf(f, "<table><tr><th>#</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Index</th><th>Missing</th></tr>");
+            fprintf(f, "<table><tr><th>#</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Index</th><th>Missing</th><th>Sprite</th></tr>");
             for(int b = 0; b < ani->frame_count; b++) {
                 sd_sprite *sprite = ani->sprites[b];
-                fprintf(f, "<tr><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>", 
+                
+                // Write sprite
+                sprintf(namebuf, "%s/%s_sprite_%d_%d.png\0", outdir->sval[0], name->sval[0], m, b);
+                fp = fopen(namebuf, "wb");
+                sd_rgba_image *img = sd_sprite_image_decode(sprite->img, bk->palettes[0], 0);
+                write_png(fp, img->data, img->w, img->h);
+                sd_rgba_image_delete(img);
+                fclose(fp);
+                
+                // Print html
+                sprintf(namebuf, "%s_sprite_%d_%d.png\0", name->sval[0], m, b);
+                fprintf(f, "<tr><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td><img src=\"%s\" /></td></tr>", 
                     b,
                     sprite->pos_x,
                     sprite->pos_y,
                     sprite->img->w,
                     sprite->img->h,
                     sprite->index,
-                    sprite->missing);
+                    sprite->missing,
+                    namebuf);
             }
             fprintf(f, "</table>");
             
