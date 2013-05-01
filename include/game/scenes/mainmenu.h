@@ -1,6 +1,6 @@
-#ifndef _MENU_H
-#define _MENU_H
+#ifndef _MAINMENU_H
+#define _MAINMENU_H
 
-void menu_load(scene *scene);
+void mainmenu_load(scene *scene);
 
-#endif // _MENU_H
+#endif // _MAINMENU_H

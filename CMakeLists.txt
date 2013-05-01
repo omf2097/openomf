@@ -48,7 +48,7 @@ add_executable(openomf
     src/game/menu/selection.c
     src/game/menu/textbutton.c
     src/game/menu/togglebutton.c
-    src/game/menu/vsizer.c
+    src/game/menu/component.c
 )
 
 IF(UNIX)

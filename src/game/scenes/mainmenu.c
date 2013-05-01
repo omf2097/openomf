@@ -5,50 +5,65 @@
 #include "audio/music.h"
 #include "game/scene.h"
 #include "game/scenes/mainmenu.h"
+#include "game/menu/menu.h"
+#include "game/menu/textbutton.h"
 
 font font_small;
+menu smenu;
+component pvp_button;
+component tourn_button;
+component settings_button;
 
-int menu_init(scene *scene) {
+int mainmenu_init(scene *scene) {
+    // Force music playback
     if(!music_playing()) {
         music_play("resources/MENU.PSM");
     }
+    
+    // Create font
     font_create(&font_small);
     if(font_load(&font_small, "resources/CHARSMAL.DAT", FONT_SMALL)) {
         PERROR("Error while loading small font!");
         font_free(&font_small);
         return 1;
     }
+    
+    // Create menu
+    menu_create(&smenu, 160, 20, 140, 200);
+    textbutton_create(&pvp_button, &font_small, "1 vs. 1");
+    textbutton_create(&tourn_button, &font_small, "Tournament");
+    textbutton_create(&settings_button, &font_small, "Settings");
+    menu_attach(&smenu, &pvp_button, 15);
+    menu_attach(&smenu, &tourn_button, 15);
+    menu_attach(&smenu, &settings_button, 15);
     return 0;
 }
 
-void menu_deinit(scene *scene) {
+void mainmenu_deinit(scene *scene) {
+    textbutton_free(&settings_button);
+    textbutton_free(&tourn_button);
+    textbutton_free(&pvp_button);
+    menu_free(&smenu);
     font_free(&font_small);
 }
 
-void menu_tick(scene *scene) {
+void mainmenu_tick(scene *scene) {
 
 }
 
-int menu_event(scene *scene, SDL_Event *event) {
+int mainmenu_event(scene *scene, SDL_Event *event) {
     return 1;
 }
 
-void menu_render(scene *scene) {
-    int line = 50;
-    font_render(&font_small, "Just", 200, line, 50, 205, 50);
-    line += 7;
-    font_render(&font_small, "Testing", 200, line, 50, 205, 50);
-    line += 7;
-    font_render(&font_small, "the font", 200, line, 50, 205, 50);
-    line += 7;
-    font_render(&font_small, "renderer", 200, line, 50, 205, 50);
+void mainmenu_render(scene *scene) {
+    menu_render(&smenu);
 }
 
-void menu_load(scene *scene) {
-    scene->event = menu_event;
-    scene->render = menu_render;
-    scene->init = menu_init;
-    scene->deinit = menu_deinit;
-    scene->tick = menu_tick;
+void mainmenu_load(scene *scene) {
+    scene->event = mainmenu_event;
+    scene->render = mainmenu_render;
+    scene->init = mainmenu_init;
+    scene->deinit = mainmenu_deinit;
+    scene->tick = mainmenu_tick;
 }
 

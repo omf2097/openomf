@@ -47,7 +47,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
     // Load specific stuff
     switch(scene_id) {
         case SCENE_INTRO: intro_load(scene); break;
-        case SCENE_MENU: menu_load(scene); break;
+        case SCENE_MENU: mainmenu_load(scene); break;
         default: 
             scene->render = NULL;
             scene->event = NULL;

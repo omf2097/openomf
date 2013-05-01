@@ -7,20 +7,14 @@
 typedef struct menu_t menu;
 
 struct menu_t {
-    list objs; // List of all components
+    list objs;
+    int x,y,w,h;
 };
 
-void menu_create(menu *menu);
+void menu_create(menu *menu, int x, int y, int w, int h);
 void menu_free(menu *menu);
-
-/*
-* This attachs the given component to the menu.
-* Any rendering request to the menu will also be directed to all attached objects.
-* Any events will be directed to the relevant components only.
-*/
-void menu_attach(menu *menu, component *component, int x, int y, int w, int h);
-
-void menu_render(menu *menu); // Renders menu on texture (or something else ? FBO ?)
-void menu_handle_event(menu *menu); // Handle SDL event, pass to relevant components
+void menu_attach(menu *menu, component *component, int h);
+void menu_render(menu *menu); 
+void menu_handle_event(menu *menu);
 
 #endif // _MENU_H
