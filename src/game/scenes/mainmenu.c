@@ -4,7 +4,7 @@
 #include "game/text/text.h"
 #include "audio/music.h"
 #include "game/scene.h"
-#include "game/scenes/menu.h"
+#include "game/scenes/mainmenu.h"
 
 font font_small;
 

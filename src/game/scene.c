@@ -8,7 +8,7 @@
 #include "audio/sound_state.h"
 #include "game/scene.h"
 #include "game/scenes/intro.h"
-#include "game/scenes/menu.h"
+#include "game/scenes/mainmenu.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
 
