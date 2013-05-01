@@ -70,7 +70,7 @@ int menu_handle_event(menu *menu, SDL_Event *event) {
             }
     }
 
-    if(!(*c)->event(*c)) {
+    if(!(*c)->event(*c, event)) {
         return 0;
     }
     

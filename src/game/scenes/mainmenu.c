@@ -13,6 +13,12 @@ menu smenu;
 component pvp_button;
 component tourn_button;
 component settings_button;
+component exit_button;
+
+void mainmenu_quit(component *c, void *userdata) {
+    scene *scene = userdata;
+    scene->next_id = SCENE_END;
+}
 
 int mainmenu_init(scene *scene) {
     // Force music playback
@@ -33,9 +39,17 @@ int mainmenu_init(scene *scene) {
     textbutton_create(&pvp_button, &font_small, "1 vs. 1");
     textbutton_create(&tourn_button, &font_small, "Tournament");
     textbutton_create(&settings_button, &font_small, "Settings");
-    menu_attach(&smenu, &pvp_button, 15);
-    menu_attach(&smenu, &tourn_button, 15);
-    menu_attach(&smenu, &settings_button, 15);
+    textbutton_create(&exit_button, &font_small, "Exit");
+    menu_attach(&smenu, &pvp_button, 10);
+    menu_attach(&smenu, &tourn_button, 10);
+    menu_attach(&smenu, &settings_button, 10);
+    menu_attach(&smenu, &exit_button, 10);
+    
+    // Events
+    exit_button.userdata = (void*)scene;
+    exit_button.click = mainmenu_quit;
+    
+    // All done
     return 0;
 }
 
@@ -43,6 +57,7 @@ void mainmenu_deinit(scene *scene) {
     textbutton_free(&settings_button);
     textbutton_free(&tourn_button);
     textbutton_free(&pvp_button);
+    textbutton_free(&exit_button);
     menu_free(&smenu);
     font_free(&font_small);
 }

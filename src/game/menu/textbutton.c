@@ -1,6 +1,6 @@
 #include "game/menu/textbutton.h"
 #include <stdlib.h>
-#include "utils/log.h"
+#include <SDL2/SDL.h>
 
 void textbutton_create(component *c, font *font, const char *text) {
     component_create(c);
@@ -32,7 +32,15 @@ void textbutton_render(component *c) {
     }
 }
 
-int textbutton_event(component *c) {
+int textbutton_event(component *c, SDL_Event *event) {
+    // Handle selection
+    switch(event->type) {
+        case SDL_KEYDOWN:
+            if(event->key.keysym.sym == SDLK_RETURN) {
+                c->click(c, c->userdata);
+                return 0;
+            }
+    }
     return 1;
 }
 

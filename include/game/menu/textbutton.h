@@ -16,7 +16,7 @@ struct textbutton_t {
 void textbutton_create(component *c, font *font, const char *text);
 void textbutton_free(component *c);
 void textbutton_render(component *c);
-int textbutton_event(component *c);
+int textbutton_event(component *c, SDL_Event *event);
 void textbutton_tick(component *c);
 
 #endif // _TEXTBUTTON_H

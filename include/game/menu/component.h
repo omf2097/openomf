@@ -1,6 +1,8 @@
 #ifndef _COMPONENT_H
 #define _COMPONENT_H
 
+#include <SDL2/SDL.h>
+
 typedef struct component_t component;
 
 /*
@@ -11,10 +13,14 @@ struct component_t {
     int x,y,w,h;
     int selected;
     void *obj;
+    void *userdata;
+    
     void (*render)(component *c);
-    int (*event)(component *c);
+    int (*event)(component *c, SDL_Event *event);
     void (*layout)(component *c, int x, int y, int w, int h);
     void (*tick)(component *c);
+    
+    void (*click)(component *c, void *userdata);
 };
 
 void component_create(component *c);
