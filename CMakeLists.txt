@@ -3,7 +3,7 @@ project(ShadowDive C)
 
 set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -pedantic")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -pedantic")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -Os -march=i686 -Werror -pedantic")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -Os -march=native -Werror -pedantic")
 
 link_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(include/)
