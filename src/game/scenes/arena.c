@@ -1,14 +1,34 @@
 #include "game/scene.h"
 #include "game/scenes/arena.h"
+#include "audio/music.h"
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
 
 int arena_init(scene *scene) {
+    music_stop();
+    switch (scene->bk->file_id) {
+        case 8:
+            music_play("resources/ARENA0.PSM");
+            break;
+        case 16:
+            music_play("resources/ARENA1.PSM");
+            break;
+        case 32:
+            music_play("resources/ARENA2.PSM");
+            break;
+        case 64:
+            music_play("resources/ARENA3.PSM");
+            break;
+        case 128:
+            music_play("resources/ARENA4.PSM");
+            break;
+    }
+
     return 0;
 }
 
 void arena_deinit(scene *scene) {
-
+    music_stop();
 }
 
 void arena_tick(scene *scene) {
