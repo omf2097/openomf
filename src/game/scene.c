@@ -10,6 +10,7 @@
 #include "game/scenes/intro.h"
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/credits.h"
+#include "game/scenes/arena.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
 
@@ -26,6 +27,12 @@ int scene_load(scene *scene, unsigned int scene_id) {
     switch(scene_id) {
         case SCENE_INTRO:    ret = sd_bk_load(scene->bk, "resources/INTRO.BK");    break;
         case SCENE_MENU:     ret = sd_bk_load(scene->bk, "resources/MAIN.BK");     break;
+        case SCENE_ARENA0:   ret = sd_bk_load(scene->bk, "resources/ARENA0.BK");   break;
+        case SCENE_ARENA1:   ret = sd_bk_load(scene->bk, "resources/ARENA1.BK");   break;
+        case SCENE_ARENA2:   ret = sd_bk_load(scene->bk, "resources/ARENA2.BK");   break;
+        case SCENE_ARENA3:   ret = sd_bk_load(scene->bk, "resources/ARENA3.BK");   break;
+        case SCENE_ARENA4:   ret = sd_bk_load(scene->bk, "resources/ARENA4.BK");   break;
+        case SCENE_ARENA5:   ret = sd_bk_load(scene->bk, "resources/ARENA5.BK");   break;
         case SCENE_NEWSROOM: ret = sd_bk_load(scene->bk, "resources/NEWSROOM.BK"); break;
         case SCENE_END:      ret = sd_bk_load(scene->bk, "resources/END.BK");      break;
         case SCENE_END1:     ret = sd_bk_load(scene->bk, "resources/END1.BK");     break;
@@ -51,6 +58,16 @@ int scene_load(scene *scene, unsigned int scene_id) {
         case SCENE_INTRO: intro_load(scene); break;
         case SCENE_MENU: mainmenu_load(scene); break;
         case SCENE_CREDITS: credits_load(scene); break;
+        
+        case SCENE_ARENA0:
+        case SCENE_ARENA1:
+        case SCENE_ARENA2:
+        case SCENE_ARENA3:
+        case SCENE_ARENA4:
+        case SCENE_ARENA5:
+            arena_load(scene); 
+            break;
+            
         default: 
             scene->render = NULL;
             scene->event = NULL;
@@ -90,7 +107,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
             // Start playback on those animations, that have load_on_start flag as true 
             // or if we are handling animation 25 of intro
             // TODO: Maybe make the exceptions a bit more generic or something ?
-            if(bka->load_on_start || (scene_id == SCENE_INTRO && i == 25) || (scene_id == SCENE_CREDITS && i == 20)) {
+            if(bka->load_on_start || (scene_id == SCENE_INTRO && i == 25) || (scene_id == SCENE_CREDITS && i == 20) ||(scene_id==SCENE_ARENA0&&i==0)) {
                 animationplayer player;
                 player.x = ani->sdani->start_x;
                 player.y = ani->sdani->start_y;

@@ -20,6 +20,11 @@ void mainmenu_quit(component *c, void *userdata) {
     scene->next_id = SCENE_CREDITS;
 }
 
+void mainmenu_1v1(component *c, void *userdata) {
+    scene *scene = userdata;
+    scene->next_id = SCENE_ARENA1;
+}
+
 int mainmenu_init(scene *scene) {
     // Force music playback
     if(!music_playing()) {
@@ -48,6 +53,8 @@ int mainmenu_init(scene *scene) {
     // Events
     exit_button.userdata = (void*)scene;
     exit_button.click = mainmenu_quit;
+    pvp_button.userdata = (void*)scene;
+    pvp_button.click = mainmenu_1v1;
     
     // All done
     return 0;
