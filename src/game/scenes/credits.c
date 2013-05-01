@@ -21,8 +21,7 @@ int credits_event(scene *scene, SDL_Event *e) {
     switch(e->type) {
     case SDL_KEYDOWN:
         if(e->key.keysym.sym == SDLK_ESCAPE) {
-            // TODO better way to tell the engine to stop..
-            exit(0);
+            scene->next_id = SCENE_NONE;
             return 1;
         }
         break;
