@@ -76,7 +76,7 @@ void settings_load_fields(void *st, field *fields, int nfields) {
                         free(s);
                     }
                     const char *s2 = conf_string(f->name);
-                    *s = malloc(strlen(s2));
+                    *s = malloc(strlen(s2)+1);
                     strcpy(*s, s2);
                 }
                 break;
