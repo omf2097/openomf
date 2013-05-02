@@ -1,5 +1,6 @@
 #include "game/menu/textslider.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <SDL2/SDL.h>
 
 void textslider_create(component *c, font *font, const char *text, unsigned int positions) {
