@@ -25,6 +25,7 @@ component scoreboard_button;
 component quit_button;
 
 menu config_menu;
+component config_header;
 component playerone_input_button;
 component playertwo_input_button;
 component video_options_button;
@@ -34,6 +35,7 @@ component stereo_toggle;
 component config_done_button;
 
 menu gameplay_menu;
+component gameplay_header;
 component speed_slider;
 component fightmode_toggle;
 component powerone_slider;
@@ -123,6 +125,7 @@ int mainmenu_init(scene *scene) {
 
     // create configuration menu
     menu_create(&config_menu, 165, 5, 151, 119);
+    textbutton_create(&config_header, &font_large, "CONFIGURATION");
     textbutton_create(&playerone_input_button, &font_large, "PLAYER 1 INPUT");
     textbutton_create(&playertwo_input_button, &font_large, "PLAYER 2 INPUT");
     textbutton_create(&video_options_button, &font_large, "VIDEO OPTIONS");
@@ -133,6 +136,7 @@ int mainmenu_init(scene *scene) {
     textselector_create(&stereo_toggle, &font_large, "STEREO", "NORMAL");
     textselector_add_option(&stereo_toggle, "REVERSED");
     textbutton_create(&config_done_button, &font_large, "DONE");
+    menu_attach(&config_menu, &config_header, 33);
     menu_attach(&config_menu, &playerone_input_button, 11);
     menu_attach(&config_menu, &playertwo_input_button, 11);
     menu_attach(&config_menu, &video_options_button, 11);
@@ -141,9 +145,13 @@ int mainmenu_init(scene *scene) {
     menu_attach(&config_menu, &stereo_toggle, 11);
     menu_attach(&config_menu, &config_done_button, 11);
 
+    config_header.disabled = 1;
+    menu_select(&config_menu, &playerone_input_button);
+
     config_done_button.click = mainmenu_prev_menu;
 
     menu_create(&gameplay_menu, 165, 5, 151, 119);
+    textbutton_create(&gameplay_header, &font_large, "GAMEPLAY");
     textslider_create(&speed_slider, &font_large, "SPEED", 10);
     textselector_create(&fightmode_toggle, &font_large, "FIGHT MODE", "NORMAL");
     textselector_add_option(&fightmode_toggle, "HYPER");
@@ -161,6 +169,7 @@ int mainmenu_init(scene *scene) {
     textselector_add_option(&round_toggle, "BEST 3 OF 5");
     textselector_add_option(&round_toggle, "BEST 4 OF 7");
     textbutton_create(&gameplay_done_button, &font_large, "DONE");
+    menu_attach(&gameplay_menu, &gameplay_header, 22);
     menu_attach(&gameplay_menu, &speed_slider, 11);
     menu_attach(&gameplay_menu, &fightmode_toggle, 11);
     menu_attach(&gameplay_menu, &powerone_slider, 11);
@@ -169,6 +178,9 @@ int mainmenu_init(scene *scene) {
     menu_attach(&gameplay_menu, &cpu_toggle, 11);
     menu_attach(&gameplay_menu, &round_toggle, 11);
     menu_attach(&gameplay_menu, &gameplay_done_button, 11);
+
+    gameplay_header.disabled = 1;
+    menu_select(&gameplay_menu, &speed_slider);
 
     gameplay_done_button.click = mainmenu_prev_menu;
 
@@ -220,7 +232,11 @@ void mainmenu_tick(scene *scene) {
 int mainmenu_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
         if (current_menu == &main_menu) {
-            scene->next_id = SCENE_CREDITS;
+            if (menu_selected(&main_menu) == &quit_button) {
+                scene->next_id = SCENE_CREDITS;
+            } else {
+                menu_select(&main_menu, &quit_button);
+            }
             return 1;
         } else {
             current_menu = &main_menu;

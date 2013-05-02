@@ -30,6 +30,32 @@ int menu_get_ypos(menu *menu) {
     return ypos;
 }
 
+void menu_select(menu *menu, component *c) {
+    component **tmp;
+    iterator it;
+    int i = 0;
+    vector_iter_begin(&menu->objs, &it);
+    while((tmp = iter_next(&it)) != NULL) {
+        if (*tmp == c) {
+            break;
+        }
+        i++;
+    }
+    if (tmp == NULL) {
+        return;
+    }
+
+    tmp = vector_get(&menu->objs, menu->selected);
+    (*tmp)->selected=0; // unselect the old component
+    c->selected = 1; //select the new one
+    menu->selected = i;
+}
+
+component* menu_selected(menu *menu) {
+    component **res = vector_get(&menu->objs, menu->selected);
+    return *res;
+}
+
 void menu_attach(menu *menu, component *c, int h) {
     c->layout(c, menu->x, menu->y + menu_get_ypos(menu), menu->w, h);
     if(vector_size(&menu->objs) == 0) {

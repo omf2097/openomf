@@ -18,6 +18,8 @@ struct menu_t {
 void menu_create(menu *menu, int x, int y, int w, int h);
 void menu_free(menu *menu);
 void menu_attach(menu *menu, component *component, int h);
+void menu_select(menu *menu, component *c);
+component* menu_selected(menu *menu);
 void menu_render(menu *menu);
 void menu_tick(menu *menu);
 int menu_handle_event(menu *menu, SDL_Event *event);
