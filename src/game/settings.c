@@ -122,8 +122,9 @@ void settings_free_strings(void *st, const field *fields, int nfields) {
     }
 }
 
-void settings_init(settings *s) {
+int settings_init(settings *s) {
     memset(s, 0, sizeof(settings));
+    return conf_init("openomf.conf");
 }
 
 void settings_load(settings *s) {
@@ -143,5 +144,6 @@ void settings_free(settings *s) {
     settings_free_strings(&s->video, f_video, sizeof(f_video)/sizeof(field));
     settings_free_strings(&s->sound, f_sound, sizeof(f_sound)/sizeof(field));
     settings_free_strings(&s->gameplay, f_gameplay, sizeof(f_gameplay)/sizeof(field));
+    conf_close();
 }
 

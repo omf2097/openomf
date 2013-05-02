@@ -22,5 +22,7 @@ void textselector_free(component *c);
 void textselector_render(component *c);
 int textselector_event(component *c, SDL_Event *event);
 void textselector_tick(component *c);
+int textselector_getpos(component *c);
+void textselector_setpos(component *c, int pos);
 
 #endif // _TEXTSELECTOR_H

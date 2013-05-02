@@ -20,5 +20,7 @@ void textslider_free(component *c);
 void textslider_render(component *c);
 int textslider_event(component *c, SDL_Event *event);
 void textslider_tick(component *c);
+int textslider_getpos(component *c);
+void textslider_setpos(component *c, int pos);
 
 #endif // _TEXTSLIDER_H

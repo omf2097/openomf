@@ -91,3 +91,13 @@ void textslider_tick(component *c) {
         tb->dir = 0;
     }
 }
+
+int textslider_getpos(component *c) {
+    textslider *tb = c->obj;
+    return tb->pos;
+}
+void textslider_setpos(component *c, int pos) {
+    textslider *tb = c->obj;
+    tb->pos = pos;
+}
+

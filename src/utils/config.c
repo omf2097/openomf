@@ -2,7 +2,7 @@
 #include "utils/log.h"
 #include <confuse.h>
 
-cfg_t *cfg;
+cfg_t *cfg=NULL;
 
 cfg_opt_t cfg_opts[] = {
     // video
@@ -48,9 +48,13 @@ int conf_init(const char *filename) {
 int conf_write_config(const char *filename) {
     FILE *fp = fopen(filename, "w");
     if(fp != NULL) {
-        cfg_t *tmp = cfg_init(cfg_opts, 0);
-        cfg_print(tmp, fp);
-        cfg_free(tmp);
+        if(cfg == NULL) { 
+            cfg_t *tmp = cfg_init(cfg_opts, 0);  
+            cfg_print(tmp, fp);
+            cfg_free(tmp);
+        } else {
+            cfg_print(cfg, fp);
+        }
         fclose(fp);
         return 0;
     }
@@ -90,5 +94,8 @@ void conf_setstring(const char *name, const char *val) {
 }
 
 void conf_close() {
-    cfg_free(cfg);
+    if(cfg) { 
+        cfg_free(cfg); 
+        cfg = NULL;
+    }
 }

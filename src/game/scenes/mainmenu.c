@@ -69,7 +69,9 @@ void mainmenu_prev_menu(component *c, void *userdata) {
 }
 
 int mainmenu_init(scene *scene) {
-    settings_init(&setting);
+    if(settings_init(&setting)) {
+        return 1;
+    }
     settings_load(&setting);
 
     // Force music playback
@@ -135,10 +137,10 @@ int mainmenu_init(scene *scene) {
     textbutton_create(&playerone_input_button, &font_large, "PLAYER 1 INPUT");
     textbutton_create(&playertwo_input_button, &font_large, "PLAYER 2 INPUT");
     textbutton_create(&video_options_button, &font_large, "VIDEO OPTIONS");
-    textselector_create(&sound_toggle, &font_large, "SOUND", "ON");
-    textselector_add_option(&sound_toggle, "OFF");
-    textselector_create(&music_toggle, &font_large, "MUSIC", "ON");
-    textselector_add_option(&music_toggle, "OFF");
+    textselector_create(&sound_toggle, &font_large, "SOUND", "OFF");
+    textselector_add_option(&sound_toggle, "ON");
+    textselector_create(&music_toggle, &font_large, "MUSIC", "OFF");
+    textselector_add_option(&music_toggle, "ON");
     textselector_create(&stereo_toggle, &font_large, "STEREO", "NORMAL");
     textselector_add_option(&stereo_toggle, "REVERSED");
     textbutton_create(&config_done_button, &font_large, "DONE");
@@ -163,8 +165,8 @@ int mainmenu_init(scene *scene) {
     textselector_add_option(&fightmode_toggle, "HYPER");
     textslider_create(&powerone_slider, &font_large, "POWER 1", 8);
     textslider_create(&powertwo_slider, &font_large, "POWER 2", 8);
-    textselector_create(&hazards_toggle, &font_large, "HAZARDS", "ON");
-    textselector_add_option(&hazards_toggle, "OFF");
+    textselector_create(&hazards_toggle, &font_large, "HAZARDS", "OFF");
+    textselector_add_option(&hazards_toggle, "ON");
     textselector_create(&cpu_toggle, &font_large, "CPU:", "PUNCHING BAG");
     textselector_add_option(&cpu_toggle, "ROOKIE");
     textselector_add_option(&cpu_toggle, "VETERAN");
@@ -185,6 +187,17 @@ int mainmenu_init(scene *scene) {
     menu_attach(&gameplay_menu, &cpu_toggle, 11);
     menu_attach(&gameplay_menu, &round_toggle, 11);
     menu_attach(&gameplay_menu, &gameplay_done_button, 11);
+    
+    textselector_setpos(&sound_toggle, setting.sound.sound_on);
+    textselector_setpos(&music_toggle, setting.sound.music_on);
+    textselector_setpos(&stereo_toggle, setting.sound.stereo_reversed);
+    textslider_setpos(&speed_slider, setting.gameplay.speed);
+    textslider_setpos(&powerone_slider, setting.gameplay.power1);
+    textslider_setpos(&powertwo_slider, setting.gameplay.power2);
+    textselector_setpos(&fightmode_toggle, setting.gameplay.fight_mode);
+    textselector_setpos(&hazards_toggle, setting.gameplay.hazards_on);
+    textselector_setpos(&cpu_toggle, setting.gameplay.difficulty);
+    textselector_setpos(&round_toggle, setting.gameplay.rounds);
 
     gameplay_header.disabled = 1;
     menu_select(&gameplay_menu, &speed_slider);
@@ -198,6 +211,20 @@ int mainmenu_init(scene *scene) {
 }
 
 void mainmenu_deinit(scene *scene) {
+    setting.sound.sound_on = textselector_getpos(&sound_toggle);
+    setting.sound.music_on = textselector_getpos(&music_toggle);
+    setting.sound.stereo_reversed = textselector_getpos(&stereo_toggle);
+    setting.gameplay.speed = textslider_getpos(&speed_slider);
+    setting.gameplay.power1 = textslider_getpos(&powerone_slider);
+    setting.gameplay.power2 = textslider_getpos(&powertwo_slider);
+    setting.gameplay.fight_mode = textselector_getpos(&fightmode_toggle);
+    setting.gameplay.hazards_on = textselector_getpos(&hazards_toggle);
+    setting.gameplay.difficulty = textselector_getpos(&cpu_toggle);
+    setting.gameplay.rounds = textselector_getpos(&round_toggle);
+    
+    settings_save(&setting);
+    settings_free(&setting);
+    
     textbutton_free(&oneplayer_button);
     textbutton_free(&twoplayer_button);
     textbutton_free(&tourn_button);
@@ -230,9 +257,6 @@ void mainmenu_deinit(scene *scene) {
     menu_free(&gameplay_menu);
 
     font_free(&font_large);
-    
-    settings_save(&setting);
-    settings_free(&setting);
 }
 
 void mainmenu_tick(scene *scene) {

@@ -44,7 +44,7 @@ typedef struct settings_t {
     settings_gameplay gameplay;
 } settings;
 
-void settings_init(settings *s);
+int settings_init(settings *s);
 void settings_free(settings *s);
 
 void settings_load(settings *s);

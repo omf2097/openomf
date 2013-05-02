@@ -88,3 +88,11 @@ void textselector_tick(component *c) {
         tb->dir = 0;
     }
 }
+int textselector_getpos(component *c) {
+    textselector *tb = c->obj;
+    return tb->pos;
+}
+void textselector_setpos(component *c, int pos) {
+    textselector *tb = c->obj;
+    tb->pos = pos;
+}
