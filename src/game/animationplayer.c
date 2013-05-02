@@ -111,7 +111,7 @@ int dist(int a, int b) {
     return abs((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1 : -1);
 }
 
-int animationplayer_create(unsigned int id, animationplayer *player, animation *animation) {
+int animationplayer_create(animationplayer *player, unsigned int id, animation *animation) {
     sd_stringparser_frame param;
     player->snd = sound_state_create();
     player->ani = animation;

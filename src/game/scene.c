@@ -113,7 +113,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
                 animationplayer player;
                 player.x = ani->sdani->start_x;
                 player.y = ani->sdani->start_y;
-                animationplayer_create(i, &player, ani);
+                animationplayer_create(&player, i, ani);
                 player.userdata = scene;
                 player.add_player = scene_add_ani_player;
                 player.del_player = scene_set_ani_finished;
@@ -135,7 +135,7 @@ void scene_add_ani_player(void *userdata, int id, int mx, int my) {
         animationplayer np;
         np.x = ani->sdani->start_x + mx;
         np.y = ani->sdani->start_y + my;
-        animationplayer_create(id, &np, ani);
+        animationplayer_create(&np, id, ani);
         np.userdata = userdata;
         np.add_player = scene_add_ani_player;
         np.del_player = scene_set_ani_finished;

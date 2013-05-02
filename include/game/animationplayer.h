@@ -36,7 +36,7 @@ typedef struct animationplayer_t {
     void (*add_player)(void *userdata, int id, int mx, int my);
 } animationplayer;
 
-int animationplayer_create(unsigned int id, animationplayer *player, animation *animation);
+int animationplayer_create(animationplayer *player, unsigned int id, animation *animation);
 void animationplayer_free(animationplayer *player);
 void animationplayer_run(animationplayer *player);
 void animationplayer_render(animationplayer *player);
