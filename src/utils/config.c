@@ -18,14 +18,13 @@ cfg_opt_t cfg_opts[] = {
     CFG_BOOL("stereo_reversed", cfg_false, CFGF_NONE),
     
     // gameplay
-    CFG_INT("players",          1,         CFGF_NONE),
     CFG_INT("speed",            5,         CFGF_NONE),
     CFG_INT("fight_mode",       0,         CFGF_NONE),
     CFG_INT("power1",           5,         CFGF_NONE),
     CFG_INT("power2",           5,         CFGF_NONE),
     CFG_BOOL("hazards_on",      cfg_true,  CFGF_NONE),
     CFG_INT("difficulty",       1,         CFGF_NONE),
-    CFG_INT("rounds",           3,         CFGF_NONE),
+    CFG_INT("rounds",           1,         CFGF_NONE),
     CFG_END()
 };
 
