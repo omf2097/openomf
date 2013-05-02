@@ -58,6 +58,7 @@ add_executable(openomf
     src/game/menu/component.c
     src/controller/controller.c
     src/controller/keyboard.c
+    src/console/console.c
 )
 
 IF(UNIX)

@@ -8,6 +8,7 @@
 #include "video/texture.h"
 #include "video/video.h"
 #include "game/scene.h"
+#include "console/console.h"
 #include <SDL2/SDL.h>
 
 #define MS_PER_OMF_TICK 10
@@ -29,6 +30,9 @@ int engine_init() {
         return 1;
     }
     if(soundloader_init("resources/SOUNDS.DAT")) {
+        return 1;
+    }
+    if(console_init()) {
         return 1;
     }
     run = 1;
@@ -64,6 +68,17 @@ void engine_run() {
         // Handle events
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
+            // if(button == console_close_button) {
+            //     console_window_close();
+            // }
+            // if(console_window_is_open()) {
+            //     console_handle(&e);
+            //     continue;
+            // }
+            // if(button == console_open_button) {
+            //     console_window_open();
+            // }
+        
             // Send events to scene (if active)
             if(!scene_handle_event(&scene, &e)) {
                 continue;
@@ -82,12 +97,14 @@ void engine_run() {
         omf_wait += dt;
         while(omf_wait > MS_PER_OMF_TICK) {
             scene_tick(&scene);
+            console_tick();
             omf_wait -= MS_PER_OMF_TICK;
         }
         scene_start = SDL_GetTicks();
 
         // Do the actual rendering jobs
         scene_render(&scene);
+        console_render();
         video_render_finish();
         audio_render(dt);
         
@@ -103,6 +120,7 @@ void engine_run() {
 }
 
 void engine_close() {
+    console_close();
     video_close();
     audio_close();
     soundloader_close();
