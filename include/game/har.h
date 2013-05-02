@@ -2,8 +2,9 @@
 #define _HAR_H
 
 #include <shadowdive/shadowdive.h>
-
-typedef struct animationplayer_t animationplayer;
+#include "utils/array.h"
+#include "game/animation.h"
+#include "game/animationplayer.h"
 
 enum {
     ACT_KICK,
@@ -20,11 +21,14 @@ typedef struct har_t har;
 struct har_t {
     unsigned int x,y;
     sd_af_file *af;
-    animationplayer *player;
+    array animations;
+    animationplayer player;
+    
+    int tick; // TEMPORARY TO SLOW DOWN ANIMATION
 };
 
 void har_free(har *har);
-int har_load(har *har, const char *filename); // Returns 0 on success
+int har_load(har *har, sd_palette *pal, char *soundtable, const char *filename); // Returns 0 on success
 void har_tick(har *har); // Called by scene.c tick function at every game tick
 void har_render(har *har); // Called by scene.h render function at every frame render
 void har_act(har *har, int act_type); // Handle event passed from inputhandler

@@ -3,6 +3,8 @@
 
 #include "utils/list.h"
 #include "utils/array.h"
+#include "video/texture.h"
+#include "audio/sound_state.h"
 
 typedef struct aniplayer_sprite_t {
     int x,y;

@@ -210,6 +210,14 @@ void scene_render(scene *scene) {
     if(scene->render != NULL) {
         scene->render(scene);
     }
+    
+    // Render hars
+    if(scene->player1_har != NULL) {
+        har_render(scene->player1_har);
+    }
+    if(scene->player2_har != NULL) {
+        har_render(scene->player2_har);
+    }
 }
 
 void scene_tick(scene *scene) {
@@ -232,6 +240,15 @@ void scene_tick(scene *scene) {
     if(scene->tick != NULL) {
         scene->tick(scene);
     }
+    
+    // Har ticks
+    if(scene->player1_har != NULL) {
+        har_tick(scene->player1_har);
+    }
+    if(scene->player2_har != NULL) {
+        har_tick(scene->player2_har);
+    }
+    
         
     // If no animations to play, jump to next scene (if any)
     // TODO: Hackish, make this nicer.
@@ -244,6 +261,31 @@ void scene_tick(scene *scene) {
         DEBUG("NEXT ID!");
     }
 }
+
+void scene_set_player1_har(scene *scene, har *har) {
+    if(scene->player1_har != NULL) 
+        free(scene->player1_har);
+    scene->player1_har = har;
+}
+
+void scene_set_player2_har(scene *scene, har *har) {
+    if(scene->player2_har != NULL) 
+        free(scene->player2_har);
+    scene->player2_har = har;
+}
+
+void scene_set_player1_ctrl(scene *scene, controller *ctrl) {
+    if(scene->player1_ctrl != NULL) 
+        free(scene->player1_ctrl);
+    scene->player1_ctrl = ctrl;
+}
+
+void scene_set_player2_ctrl(scene *scene, controller *ctrl) {
+    if(scene->player2_ctrl != NULL) 
+        free(scene->player2_ctrl);
+    scene->player2_ctrl = ctrl;
+}
+
 
 void scene_free(scene *scene) {
     if(!scene) return;
@@ -279,6 +321,12 @@ void scene_free(scene *scene) {
     }
     array_free(&scene->animations);
 
+    // Free hars and their controllers
+    scene_set_player1_har(scene, NULL);
+    scene_set_player2_har(scene, NULL);
+    scene_set_player1_ctrl(scene, NULL);
+    scene_set_player2_ctrl(scene, NULL);
+    
     // Free BK
     sd_bk_delete(scene->bk);
 }

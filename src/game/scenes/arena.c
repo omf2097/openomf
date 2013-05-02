@@ -1,7 +1,9 @@
 #include "game/scene.h"
 #include "game/scenes/arena.h"
 #include "audio/music.h"
+#include "game/har.h"
 #include <SDL2/SDL.h>
+#include <stdlib.h>
 #include <shadowdive/shadowdive.h>
 
 int arena_init(scene *scene) {
@@ -23,11 +25,16 @@ int arena_init(scene *scene) {
             music_play("resources/ARENA4.PSM");
             break;
     }
-
+    
+    // Load some har on the arena
+    har *h1 = malloc(sizeof(har));
+    har_load(h1, scene->bk->palettes[0], scene->bk->soundtable, "resources/FIGHTR0.AF");
+    scene_set_player1_har(scene, h1);
     return 0;
 }
 
 void arena_deinit(scene *scene) {
+    scene_set_player1_har(scene, NULL);
     music_stop();
 }
 

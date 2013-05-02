@@ -5,6 +5,8 @@
 #include "video/texture.h"
 #include "utils/array.h"
 #include "utils/list.h"
+#include "game/har.h"
+#include "controller/controller.h"
 
 enum {
     SCENE_INTRO = 0,
@@ -38,12 +40,22 @@ typedef struct scene_t {
     list child_players;
     list root_players;
     
+    har *player1_har;
+    har *player2_har;
+    controller *player1_ctrl;
+    controller *player2_ctrl;
+    
     int (*init)(struct scene_t *scene);
     int (*event)(struct scene_t *scene, SDL_Event *event);
     void (*render)(struct scene_t *scene);
     void (*deinit)(struct scene_t *scene);
     void (*tick)(struct scene_t *scene);
 } scene;
+
+void scene_set_player1_har(scene *scene, har *har);
+void scene_set_player2_har(scene *scene, har *har);
+void scene_set_player1_ctrl(scene *scene, controller *ctrl);
+void scene_set_player2_ctrl(scene *scene, controller *ctrl);
 
 int scene_load(scene *scene, unsigned int scene_id);
 void scene_free(scene *scene);

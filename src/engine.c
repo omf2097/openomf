@@ -42,10 +42,17 @@ int engine_init() {
 void engine_run() {
     DEBUG("Engine starting.");
     scene scene;
+    scene.player1_har = NULL;
+    scene.player2_har = NULL;
+    scene.player1_ctrl = NULL;
+    scene.player2_ctrl = NULL;
+    
+    // Load scene
     if(scene_load(&scene, SCENE_INTRO)) {
         return;
     }
     
+    // Game loop
     unsigned int scene_start = SDL_GetTicks();
     unsigned int omf_wait = 0;
     while(run) {
@@ -68,7 +75,7 @@ void engine_run() {
         // Handle events
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
-            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_BACKQUOTE) {
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
                if (console_window_is_open()) {
                    console_window_close();
                } else {
@@ -116,6 +123,7 @@ void engine_run() {
         }
     }
     
+    // Free scene object
     scene_free(&scene);
     
     DEBUG("Engine stopped.");
