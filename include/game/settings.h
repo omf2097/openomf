@@ -28,7 +28,6 @@ typedef struct settings_video_t {
 } settings_video;
 
 typedef struct settings_gameplay_t {
-    int players;
     int speed;
     fight_mode fight_mode;
     int power1;

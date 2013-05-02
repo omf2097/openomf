@@ -31,7 +31,6 @@ const field f_sound[] = {
 };
 
 const field f_gameplay[] = {
-    {"players",            TYPE_INT,  offsetof(settings_gameplay, players)},
     {"speed",              TYPE_INT,  offsetof(settings_gameplay, speed)},
     {"fight_mode",         TYPE_INT,  offsetof(settings_gameplay, fight_mode)},
     {"power1",             TYPE_INT,  offsetof(settings_gameplay, power1)},
