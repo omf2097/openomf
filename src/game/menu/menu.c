@@ -17,6 +17,7 @@ void menu_create(menu *menu, int x, int y, int w, int h) {
 
 void menu_free(menu *menu) {
     vector_free(&menu->objs);
+    texture_free(&menu->tex);
 }
 
 int menu_get_ypos(menu *menu) {

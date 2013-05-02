@@ -7,9 +7,13 @@
 typedef struct console_t console;
 
 struct console_t {
-    font *font;
+    font font;
     char buffer[512];
+    char input[41];
+    texture background;
     int isopen;
+    int ypos;
+    unsigned int ticks, dir;
 };
 
 int console_init();

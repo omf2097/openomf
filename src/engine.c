@@ -68,17 +68,19 @@ void engine_run() {
         // Handle events
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
-            // if(button == console_close_button) {
-            //     console_window_close();
-            // }
-            // if(console_window_is_open()) {
-            //     console_handle(&e);
-            //     continue;
-            // }
-            // if(button == console_open_button) {
-            //     console_window_open();
-            // }
-        
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_BACKQUOTE) {
+               if (console_window_is_open()) {
+                   console_window_close();
+               } else {
+                   console_window_open();
+               }
+               continue;
+            }
+            if(console_window_is_open()) {
+                 console_event(&e);
+                 continue;
+            }
+
             // Send events to scene (if active)
             if(!scene_handle_event(&scene, &e)) {
                 continue;
