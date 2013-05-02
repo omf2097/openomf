@@ -37,6 +37,7 @@ add_executable(openomf
     src/audio/sound.c
     src/audio/stream.c
     src/audio/soundloader.c
+    src/game/settings.c
     src/game/scene.c
     src/game/har.c
     src/game/animation.c

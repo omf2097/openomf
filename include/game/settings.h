@@ -37,7 +37,7 @@ typedef struct settings_gameplay_t {
     fight_mode fight_mode;
     int power1;
     int power2;
-    int hazards;
+    int hazards_on;
     difficulty difficulty;
     int rounds;
 } settings_gameplay;
@@ -48,7 +48,11 @@ typedef struct settings_t {
     settings_gameplay gameplay;
 } settings;
 
-void settings_load(settings *s);
+void settings_init(settings *s);
 void settings_free(settings *s);
 
+void settings_load(settings *s);
+void settings_save(settings *s);
+
 #endif // _SETTINGS_H
+

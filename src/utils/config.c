@@ -56,6 +56,22 @@ const char* conf_string(const char *name) {
     return cfg_getstr(cfg, name);
 }
 
+void conf_setint(const char *name, int val) {
+    cfg_setint(cfg, name, val);
+}
+
+void conf_setfloat(const char *name, double val) {
+    cfg_setfloat(cfg, name, val);
+}
+
+void conf_setbool(const char *name, int val) {
+    cfg_setbool(cfg, name, val);
+}
+
+void conf_setstring(const char *name, const char *val) {
+    cfg_setstr(cfg, name, val);
+}
+
 void conf_close() {
     cfg_free(cfg);
 }
