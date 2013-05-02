@@ -15,7 +15,7 @@
 #include "game/animationplayer.h"
 
 // Internal functions
-void scene_add_ani_player(void *userdata, animationplayer *player);
+void scene_add_ani_player(void *userdata, int id, int mx, int my);
 void scene_set_ani_finished(void *userdata, int id);
 
 // Loads BK file etc.
@@ -113,7 +113,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
                 animationplayer player;
                 player.x = ani->sdani->start_x;
                 player.y = ani->sdani->start_y;
-                animationplayer_create(i, &player, ani, &scene->animations);
+                animationplayer_create(i, &player, ani);
                 player.userdata = scene;
                 player.add_player = scene_add_ani_player;
                 player.del_player = scene_set_ani_finished;
@@ -128,9 +128,21 @@ int scene_load(scene *scene, unsigned int scene_id) {
     return 0;
 }
 
-void scene_add_ani_player(void *userdata, animationplayer *player) {
+void scene_add_ani_player(void *userdata, int id, int mx, int my) {
     scene *sc = userdata;
-    list_append(&sc->child_players, player, sizeof(animationplayer));
+    animation *ani = array_get(&sc->animations, id);
+    if(ani != NULL) {
+        animationplayer np;
+        np.x = ani->sdani->start_x + mx;
+        np.y = ani->sdani->start_y + my;
+        animationplayer_create(id, &np, ani);
+        np.userdata = userdata;
+        np.add_player = scene_add_ani_player;
+        np.del_player = scene_set_ani_finished;
+        list_append(&sc->child_players, &np, sizeof(animationplayer));
+        DEBUG("Create animation %d @ x,y = %d,%d", id, np.x, np.y);
+        return;
+    } 
 }
 
 void scene_set_ani_finished(void *userdata, int id) {

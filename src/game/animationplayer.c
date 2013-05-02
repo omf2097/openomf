@@ -72,20 +72,7 @@ void cmd_music_on(int music) {
 }
 
 void cmd_anim_create(animationplayer *player, int id, int mx, int my, void *userdata) {
-    animation *ani = array_get(player->anims, id);
-    if(ani != NULL) {
-        animationplayer np;
-        np.x = ani->sdani->start_x + mx;
-        np.y = ani->sdani->start_y + my;
-        animationplayer_create(id, &np, ani, player->anims);
-        np.userdata = userdata;
-        np.add_player = player->add_player;
-        np.del_player = player->del_player;
-        player->add_player(player->userdata, &np);
-        DEBUG("Create animation %d @ x,y = %d,%d", id, np.x, np.y);
-        return;
-    } 
-    PERROR("Attempted to create an instance of nonexistent animation!");
+    player->add_player(player->userdata, id, mx, my);
 }
 
 void cmd_anim_destroy(animationplayer *player, int id) {
@@ -124,7 +111,7 @@ int dist(int a, int b) {
     return abs((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1 : -1);
 }
 
-int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims) {
+int animationplayer_create(unsigned int id, animationplayer *player, animation *animation) {
     sd_stringparser_frame param;
     player->snd = sound_state_create();
     player->ani = animation;
@@ -133,7 +120,6 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
     player->ticks = 1;
     player->obj = 0;
     player->finished = 0;
-    player->anims = anims;
     player->userdata = 0;
     player->slide_op.enabled = 0;
     player->slide_op.x_per_tick = 0;
@@ -217,10 +203,10 @@ void animationplayer_run(animationplayer *player) {
         if(isset(f, "d"))   { cmd_tickjump(player, get(f, "d")); }
     
         // Animation management
-        if(isset(f, "m")) {
+        if(isset(f, "m") && player->add_player != NULL) {
             int mx = isset(f, "mx") ? get(f, "mx") : 0;
             int my = isset(f, "my") ? get(f, "my") : 0;
-            cmd_anim_create(player, get(f, "m"), mx, my, player->userdata);
+            player->add_player(player->userdata, get(f, "m"), mx, my);
         }
         if(isset(f, "md")) { 
             cmd_anim_destroy(player, get(f, "md")); 

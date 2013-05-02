@@ -39,7 +39,7 @@ int har_load(har *h, sd_palette *pal, char *soundtable, const char *file) {
     // Start player with animation 11
     h->player.x = h->x;
     h->player.y = h->y;
-    animationplayer_create(11, &h->player, array_get(&h->animations, 11), &h->animations);
+    animationplayer_create(11, &h->player, array_get(&h->animations, 11));
     DEBUG("Har %s loaded!", file);
     return 0;
 }

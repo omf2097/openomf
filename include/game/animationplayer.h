@@ -2,7 +2,6 @@
 #define _ANIMATIONPLAYER_H
 
 #include "utils/list.h"
-#include "utils/array.h"
 #include "video/texture.h"
 #include "audio/sound_state.h"
 
@@ -25,7 +24,6 @@ typedef struct animationplayer_t {
     
     animation *ani;
     sound_state *snd;
-    array *anims;
     sd_stringparser *parser;
     
     aniplayer_slide_op slide_op;
@@ -35,10 +33,10 @@ typedef struct animationplayer_t {
     void *userdata;
     
     void (*del_player)(void *userdata, int id);
-    void (*add_player)(void *userdata, struct animationplayer_t *player);
+    void (*add_player)(void *userdata, int id, int mx, int my);
 } animationplayer;
 
-int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims);
+int animationplayer_create(unsigned int id, animationplayer *player, animation *animation);
 void animationplayer_free(animationplayer *player);
 void animationplayer_run(animationplayer *player);
 void animationplayer_render(animationplayer *player);
