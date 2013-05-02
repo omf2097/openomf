@@ -1,7 +1,10 @@
 #include "game/scene.h"
+#include "video/texture.h"
+#include "video/video.h"
 #include "game/scenes/arena.h"
 #include "audio/music.h"
 #include "game/menu/menu.h"
+#include "game/menu/menu_background.h"
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
@@ -20,6 +23,7 @@ component speed_slider;
 component video_button;
 component help_button;
 component quit_button;
+texture tex;
 int menu_visible = 0;
 
 void game_menu_quit(component *c, void *userdata) {
@@ -87,6 +91,10 @@ int arena_init(scene *scene) {
 
     menu_select(&game_menu, &return_button);
 
+    // background for the 'help' at the bottom of the screen
+    // TODO support rendering text onto it
+    menu_background_create(&tex, 301, 37);
+
     return 0;
 }
 
@@ -117,6 +125,7 @@ int arena_event(scene *scene, SDL_Event *e) {
 void arena_render(scene *scene) {
     if (menu_visible) {
         menu_render(&game_menu);
+        video_render_sprite(&tex, 10, 150, BLEND_ALPHA_FULL);
     };
 }
 
