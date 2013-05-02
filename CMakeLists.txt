@@ -56,6 +56,8 @@ add_executable(openomf
     src/game/menu/textslider.c
     src/game/menu/togglebutton.c
     src/game/menu/component.c
+    src/controller/controller.c
+    src/controller/keyboard.c
 )
 
 IF(UNIX)
