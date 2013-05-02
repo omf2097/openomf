@@ -155,6 +155,7 @@ int mainmenu_init(scene *scene) {
     textselector_add_option(&cpu_toggle, "ROOKIE");
     textselector_add_option(&cpu_toggle, "VETERAN");
     textselector_add_option(&cpu_toggle, "WORLD CLASS");
+    textselector_add_option(&cpu_toggle, "DEADLY");
     textselector_add_option(&cpu_toggle, "CHAMPION");
     textselector_create(&round_toggle, &font_large, "", "ONE ROUND");
     textselector_add_option(&round_toggle, "BEST 2 OF 3");
