@@ -1,11 +1,6 @@
 #ifndef _SETTINGS_H
 #define _SETTINGS_H
 
-typedef enum stereo_t {
-    STEREO, 
-    MONO
-} stereo_mode;
-
 typedef enum fight_mode_t {
     FIGHT_MODE_NORMAL, 
     FIGHT_MODE_HYPER
@@ -23,12 +18,13 @@ typedef enum difficulty_t {
 typedef struct settings_sound_t {
     int sound_on;
     int music_on;
-    stereo_mode stereo_mode;
+    int stereo_on;
     int stereo_reversed;
 } settings_sound;
 
 typedef struct settings_video_t {
-    int dummy;
+    int screen_w;
+    int screen_h;
 } settings_video;
 
 typedef struct settings_gameplay_t {

@@ -3,12 +3,15 @@
 #include "utils/log.h"
 #include "game/text/text.h"
 #include "audio/music.h"
+#include "game/settings.h"
 #include "game/scene.h"
 #include "game/scenes/mainmenu.h"
 #include "game/menu/menu.h"
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
+
+settings setting;
 
 font font_large;
 menu *current_menu;
@@ -66,6 +69,9 @@ void mainmenu_prev_menu(component *c, void *userdata) {
 }
 
 int mainmenu_init(scene *scene) {
+    settings_init(&setting);
+    settings_load(&setting);
+
     // Force music playback
     if(!music_playing()) {
         music_play("resources/MENU.PSM");
@@ -224,6 +230,9 @@ void mainmenu_deinit(scene *scene) {
     menu_free(&gameplay_menu);
 
     font_free(&font_large);
+    
+    settings_save(&setting);
+    settings_free(&setting);
 }
 
 void mainmenu_tick(scene *scene) {

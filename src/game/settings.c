@@ -1,5 +1,6 @@
 #include "game/settings.h"
 #include "utils/config.h"
+#include "utils/log.h"
 #include <stddef.h> //offsetof
 #include <stdlib.h>
 #include <string.h>
@@ -17,18 +18,19 @@ typedef struct field_t {
     int offset;
 } field;
 
-static field f_video[] = {
-    {"dummy", TYPE_INT, offsetof(settings_video, dummy)}
+const field f_video[] = {
+    {"screen_w", TYPE_INT, offsetof(settings_video, screen_w)},
+    {"screen_h", TYPE_INT, offsetof(settings_video, screen_h)}
 };
 
-static field f_sound[] = {
+const field f_sound[] = {
     {"sound_on",           TYPE_BOOL, offsetof(settings_sound, sound_on)},
     {"music_on",           TYPE_BOOL, offsetof(settings_sound, music_on)},
-    {"stereo_mode",        TYPE_INT,  offsetof(settings_sound, stereo_mode)},
+    {"stereo_on",          TYPE_BOOL, offsetof(settings_sound, stereo_on)},
     {"stereo_reversed",    TYPE_BOOL, offsetof(settings_sound, stereo_reversed)}
 };
 
-static field f_gameplay[] = {
+const field f_gameplay[] = {
     {"players",            TYPE_INT,  offsetof(settings_gameplay, players)},
     {"speed",              TYPE_INT,  offsetof(settings_gameplay, speed)},
     {"fight_mode",         TYPE_INT,  offsetof(settings_gameplay, fight_mode)},
@@ -40,21 +42,21 @@ static field f_gameplay[] = {
 };
 
 int *fieldint(void *st, int offset) {
-    return (int*)(char*)st + offset;
+    return (int*)((char*)st + offset);
 }
 float *fieldfloat(void *st, int offset) {
-    return (float*)(char*)st + offset;
+    return (float*)((char*)st + offset);
 }
 char* *fieldstr(void *st, int offset) {
-    return (char**)(char*)st + offset;
+    return (char**)((char*)st + offset);
 }
 int *fieldbool(void *st, int offset) {
     return fieldint(st, offset);
 }
 
-void settings_load_fields(void *st, field *fields, int nfields) {
+void settings_load_fields(void *st, const field *fields, int nfields) {
     for(int i=0;i < nfields;++i) {
-        field *f = &fields[i];
+        const field *f = &fields[i];
         switch(f->type) {
             case TYPE_INT:
                 *fieldint(st, f->offset) = conf_int(f->name);
@@ -73,7 +75,7 @@ void settings_load_fields(void *st, field *fields, int nfields) {
                     // make a copy of the string
                     char **s = fieldstr(st, f->offset);
                     if(*s) {
-                        free(s);
+                        free(*s);
                     }
                     const char *s2 = conf_string(f->name);
                     *s = malloc(strlen(s2)+1);
@@ -84,9 +86,9 @@ void settings_load_fields(void *st, field *fields, int nfields) {
     }
 }
 
-void settings_save_fields(void *st, field *fields, int nfields) {
+void settings_save_fields(void *st, const field *fields, int nfields) {
     for(int i=0;i < nfields;++i) {
-        field *f = &fields[i];
+        const field *f = &fields[i];
         switch(f->type) {
             case TYPE_INT:
                 conf_setint(f->name, *fieldint(st, f->offset));
@@ -107,9 +109,9 @@ void settings_save_fields(void *st, field *fields, int nfields) {
     }
 }
 
-void settings_free_strings(void *st, field *fields, int nfields) {
+void settings_free_strings(void *st, const field *fields, int nfields) {
     for(int i=0;i < nfields;++i) {
-        field *f = &fields[i];
+        const field *f = &fields[i];
         if(f->type == TYPE_STRING) {
             char **s = fieldstr(st, f->offset);
             if(*s) { 
@@ -133,9 +135,13 @@ void settings_save(settings *s) {
     settings_save_fields(&s->video, f_video, sizeof(f_video)/sizeof(field));
     settings_save_fields(&s->sound, f_sound, sizeof(f_sound)/sizeof(field));
     settings_save_fields(&s->gameplay, f_gameplay, sizeof(f_gameplay)/sizeof(field));
+    if(conf_write_config("openomf.conf")) {
+        PERROR("Failed to write config file!\n");
+    }
 }
 void settings_free(settings *s) {
     settings_free_strings(&s->video, f_video, sizeof(f_video)/sizeof(field));
     settings_free_strings(&s->sound, f_sound, sizeof(f_sound)/sizeof(field));
     settings_free_strings(&s->gameplay, f_gameplay, sizeof(f_gameplay)/sizeof(field));
 }
+
