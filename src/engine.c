@@ -68,7 +68,7 @@ void engine_run() {
         // Handle events
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
-            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_BACKQUOTE) {
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
                if (console_window_is_open()) {
                    console_window_close();
                } else {
