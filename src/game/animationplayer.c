@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <shadowdive/shadowdive.h>
 #include "utils/log.h"
 #include "audio/sound.h"
@@ -7,10 +8,8 @@
 #include "audio/sound_state.h"
 #include "video/texture.h"
 #include "video/video.h"
-#include "game/scene.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
-
 
 
 void cmd_tickjump(animationplayer *player, int tick) {
@@ -72,17 +71,17 @@ void cmd_music_on(int music) {
     }
 }
 
-void cmd_anim_create(animationplayer *player, int id, int mx, int my, scene *scene) {
+void cmd_anim_create(animationplayer *player, int id, int mx, int my, void *userdata) {
     animation *ani = array_get(player->anims, id);
     if(ani != NULL) {
         animationplayer np;
         np.x = ani->sdani->start_x + mx;
         np.y = ani->sdani->start_y + my;
         animationplayer_create(id, &np, ani, player->anims);
-        np.scene = scene;
+        np.userdata = userdata;
         np.add_player = player->add_player;
         np.del_player = player->del_player;
-        player->add_player(player->scene, &np);
+        player->add_player(player->userdata, &np);
         DEBUG("Create animation %d @ x,y = %d,%d", id, np.x, np.y);
         return;
     } 
@@ -90,7 +89,7 @@ void cmd_anim_create(animationplayer *player, int id, int mx, int my, scene *sce
 }
 
 void cmd_anim_destroy(animationplayer *player, int id) {
-    player->del_player(player->scene, id);
+    player->del_player(player->userdata, id);
     DEBUG("Animation %d killed animation %d.", player->id, id);
 }
 
@@ -135,7 +134,7 @@ int animationplayer_create(unsigned int id, animationplayer *player, animation *
     player->obj = 0;
     player->finished = 0;
     player->anims = anims;
-    player->scene = 0;
+    player->userdata = 0;
     player->slide_op.enabled = 0;
     player->slide_op.x_per_tick = 0;
     player->slide_op.y_per_tick = 0;
@@ -221,7 +220,7 @@ void animationplayer_run(animationplayer *player) {
         if(isset(f, "m")) {
             int mx = isset(f, "mx") ? get(f, "mx") : 0;
             int my = isset(f, "my") ? get(f, "my") : 0;
-            cmd_anim_create(player, get(f, "m"), mx, my, player->scene);
+            cmd_anim_create(player, get(f, "m"), mx, my, player->userdata);
         }
         if(isset(f, "md")) { 
             cmd_anim_destroy(player, get(f, "md")); 

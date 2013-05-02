@@ -15,8 +15,8 @@
 #include "game/animationplayer.h"
 
 // Internal functions
-void scene_add_ani_player(scene *scene, animationplayer *player);
-void scene_set_ani_finished(scene *scene, int id);
+void scene_add_ani_player(void *userdata, animationplayer *player);
+void scene_set_ani_finished(void *userdata, int id);
 
 // Loads BK file etc.
 int scene_load(scene *scene, unsigned int scene_id) {
@@ -114,7 +114,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
                 player.x = ani->sdani->start_x;
                 player.y = ani->sdani->start_y;
                 animationplayer_create(i, &player, ani, &scene->animations);
-                player.scene = scene;
+                player.userdata = scene;
                 player.add_player = scene_add_ani_player;
                 player.del_player = scene_set_ani_finished;
                 list_append(&scene->root_players, &player, sizeof(animationplayer));
@@ -128,15 +128,17 @@ int scene_load(scene *scene, unsigned int scene_id) {
     return 0;
 }
 
-void scene_add_ani_player(scene *scene, animationplayer *player) {
-    list_append(&scene->child_players, player, sizeof(animationplayer));
+void scene_add_ani_player(void *userdata, animationplayer *player) {
+    scene *sc = userdata;
+    list_append(&sc->child_players, player, sizeof(animationplayer));
 }
 
-void scene_set_ani_finished(scene *scene, int id) {
+void scene_set_ani_finished(void *userdata, int id) {
+    scene *sc = userdata;
     iterator it;
     animationplayer *tmp = 0;
     
-    list_iter_begin(&scene->child_players, &it);
+    list_iter_begin(&sc->child_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
         if(tmp->id == id) {
             tmp->finished = 1;
@@ -144,7 +146,7 @@ void scene_set_ani_finished(scene *scene, int id) {
         }
     }
     
-    list_iter_begin(&scene->root_players, &it);
+    list_iter_begin(&sc->root_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
         if(tmp->id == id) {
             tmp->finished = 1;
@@ -153,27 +155,28 @@ void scene_set_ani_finished(scene *scene, int id) {
     }
 }
 
-void scene_clean_ani_players(scene *scene) {
+void scene_clean_ani_players(void *userdata) {
+    scene *sc = (scene*)userdata;
     iterator it;
     animationplayer *tmp = 0;
 
-    list_iter_begin(&scene->child_players, &it);
+    list_iter_begin(&sc->child_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
         if(tmp->finished) {
             animationplayer_free(tmp);
-            list_delete(&scene->child_players, &it); 
+            list_delete(&sc->child_players, &it); 
         }
     }
     
-    list_iter_begin(&scene->root_players, &it);
+    list_iter_begin(&sc->root_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
         if(tmp->finished) {
             // if their probability is 1, go around again
-            if (scene->loop && scene->bk->anims[tmp->id]->probability == 1) {
+            if (sc->loop && sc->bk->anims[tmp->id]->probability == 1) {
                 animationplayer_reset(tmp);
             } else {
                 animationplayer_free(tmp);
-                list_delete(&scene->root_players, &it);
+                list_delete(&sc->root_players, &it);
             }
         }
     }

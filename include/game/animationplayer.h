@@ -30,10 +30,10 @@ typedef struct animationplayer_t {
     
     int x,y;
     aniplayer_sprite *obj;
-    scene *scene;
+    void *userdata;
     
-    void (*del_player)(scene *scene, int id);
-    void (*add_player)(scene *scene, struct animationplayer_t *player);
+    void (*del_player)(void *userdata, int id);
+    void (*add_player)(void *userdata, struct animationplayer_t *player);
 } animationplayer;
 
 int animationplayer_create(unsigned int id, animationplayer *player, animation *animation, array *anims);
