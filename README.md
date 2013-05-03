@@ -7,7 +7,7 @@ Together with networking, we try to make it easier to play One Must Fall in orig
 
 Data Files
 ----------
-OpenOMF uses the original data files from original game using libShadowDrive.
+OpenOMF uses the original data files from original game using libShadowDive.
 Since One Must Fall 2079 is freeware the files are obtainable from http://omf2097.com/
 
 License
