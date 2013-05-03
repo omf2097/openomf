@@ -3,6 +3,7 @@
 
 #include "game/menu/component.h"
 #include "game/text/text.h"
+#include "utils/vector.h"
 
 typedef struct textselector_t textselector;
 
@@ -12,8 +13,7 @@ struct textselector_t {
     int ticks;
     int dir;
     int pos;
-    int option_count;
-    char *options[10];
+    vector options;
 };
 
 void textselector_create(component *c, font *font, const char *text, const char *initialoption);

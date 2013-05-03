@@ -12,8 +12,8 @@ void textselector_create(component *c, font *font, const char *text, const char 
     tb->ticks = 0;
     tb->dir = 0;
     tb->pos = 0;
-    tb->option_count = 1;
-    tb->options[0] = (char*)initialvalue;
+    vector_create(&tb->options, sizeof(char*));
+    vector_append(&tb->options, &initialvalue);
     c->obj = tb;
     c->render = textselector_render;
     c->event = textselector_event;
@@ -22,12 +22,12 @@ void textselector_create(component *c, font *font, const char *text, const char 
 
 void textselector_add_option(component *c, const char *value) {
     textselector *tb = c->obj;
-    // TODO don't add more than 10 options ;)
-    tb->options[tb->option_count++] = (char*)value;
+    vector_append(&tb->options, &value);
 }
 
 void textselector_free(component *c) {
     textselector *tb = c->obj;
+    vector_free(&tb->options);
     free(tb);
     component_free(c);
 }
@@ -38,7 +38,8 @@ void textselector_render(component *c) {
     int chars;
     int width;
     int xoff;
-    sprintf(buf, "%s %s", tb->text, tb->options[tb->pos]);
+    char **opt = vector_get(&tb->options, tb->pos);
+    sprintf(buf, "%s %s", tb->text, *opt);
     chars = strlen(buf);
     width = chars*tb->font->w;
     xoff = (c->w - width)/2;
@@ -59,14 +60,14 @@ int textselector_event(component *c, SDL_Event *event) {
         case SDL_KEYDOWN:
             if(event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_RIGHT) {
                 tb->pos++;
-                if (tb->pos >= tb->option_count) {
+                if (tb->pos >= vector_size(&tb->options)) {
                     tb->pos = 0;
                 }
                 return 0;
             } else  if(event->key.keysym.sym == SDLK_LEFT) {
                 tb->pos--;
                 if (tb->pos < 0) {
-                    tb->pos = tb->option_count -1;
+                    tb->pos = vector_size(&tb->options) -1;
                 }
                 return 0;
             }

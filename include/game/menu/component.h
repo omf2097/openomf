@@ -23,6 +23,7 @@ struct component_t {
     void (*tick)(component *c);
     
     void (*click)(component *c, void *userdata);
+    void (*toggle)(component *c, void *userdata, char *option);
 };
 
 void component_create(component *c);
