@@ -75,6 +75,14 @@ void engine_run() {
         // Handle events
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
+            // Handle other events
+            switch(e.type) {
+                case SDL_QUIT:
+                    run = 0;
+                    break;
+            }
+        
+            // Console events
             if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
                if (console_window_is_open()) {
                    console_window_close();
@@ -95,9 +103,6 @@ void engine_run() {
         
             // Handle other events
             switch(e.type) {
-                case SDL_QUIT:
-                    run = 0;
-                    break;
             }
         }
 
