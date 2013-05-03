@@ -217,18 +217,18 @@ void scene_render(scene *scene) {
     while((tmp = iter_next(&it)) != NULL) {
         animationplayer_render(tmp);
     }
-    
-    // Run custom render function, if defined
-    if(scene->render != NULL) {
-        scene->render(scene);
-    }
-    
+
     // Render hars
     if(scene->player1_har != NULL) {
         har_render(scene->player1_har);
     }
     if(scene->player2_har != NULL) {
         har_render(scene->player2_har);
+    }
+ 
+    // Run custom render function, if defined
+    if(scene->render != NULL) {
+        scene->render(scene);
     }
 }
 

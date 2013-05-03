@@ -106,7 +106,21 @@ int arena_init(scene *scene) {
 }
 
 void arena_deinit(scene *scene) {
+    menu_visible = 0;
     scene_set_player1_har(scene, NULL);
+
+    textbutton_free(&title_button);
+    textbutton_free(&return_button);
+    textslider_free(&sound_slider);
+    textslider_free(&music_slider);
+    textslider_free(&speed_slider);
+    textbutton_free(&video_button);
+    textbutton_free(&help_button);
+    textbutton_free(&quit_button);
+    menu_free(&game_menu);
+
+    texture_free(&tex);
+
     music_stop();
 }
 
