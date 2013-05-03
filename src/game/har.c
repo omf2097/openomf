@@ -65,6 +65,10 @@ void har_free(har *h) {
 void har_tick(har *har) {
     har->tick++;
     if(har->tick > 8) {
+        if(har->player.finished) {
+            animationplayer_free(&har->player);
+            animationplayer_create(&har->player, 11, array_get(&har->animations, 11));
+        }
         animationplayer_run(&har->player);
         har->tick = 0;
     }
