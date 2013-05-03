@@ -34,6 +34,7 @@ sd_bk_file* sd_bk_create() {
     sd_bk_file *bk = (sd_bk_file*)malloc(sizeof(sd_bk_file));
     memset(bk->anims, 0, sizeof(bk->anims));
     bk->palettes = 0;
+    bk->background = NULL;
     return bk;
 }
 
