@@ -66,5 +66,6 @@ int har_load(har *har, sd_palette *pal, char *soundtable, const char *filename, 
 void har_tick(har *har); // Called by scene.c tick function at every game tick
 void har_render(har *har); // Called by scene.h render function at every frame render
 void har_act(har *har, int act_type); // Handle event passed from inputhandler
+void har_set_direction(har *har, int direction);
 
 #endif // _HAR_H

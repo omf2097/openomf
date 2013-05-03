@@ -159,6 +159,17 @@ void arena_tick(scene *scene) {
     if(!menu_visible) {
         keyboard_tick(scene->player1_ctrl);
         keyboard_tick(scene->player2_ctrl);
+        if (scene->player1_har->x > scene->player2_har->x) {
+            if (scene->player1_har->direction == 1) {
+                har_set_direction(scene->player1_har, -1);
+                har_set_direction(scene->player2_har, 1);
+            }
+        } else if (scene->player1_har->x < scene->player2_har->x) {
+            if (scene->player1_har->direction == -1) {
+                har_set_direction(scene->player1_har, 1);
+                har_set_direction(scene->player2_har, -1);
+            }
+        }
     }
 }
 

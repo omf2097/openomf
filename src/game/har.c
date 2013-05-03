@@ -130,6 +130,15 @@ void har_render(har *har) {
     animationplayer_render(&har->player);
 }
 
+void har_set_direction(har *har, int direction) {
+    har->direction = direction;
+    if (har->player.id != 11 && har->player.id != 4 && har->player.id != 10 && har->player.id != 1) {
+        // don't change the direction yet, non-idle move in progress
+        return;
+    }
+    animationplayer_set_direction(&har->player, har->direction);
+}
+
 void add_input(har *har, char c) {
     // only add it if it is not the current head of the array
     if (har->inputs[0] == c) {
@@ -141,7 +150,6 @@ void add_input(har *har, char c) {
     // write the new first element
     har->inputs[0] = c;
 }
-
 
 void har_act(har *har, int act_type) {
     if (har->player.id != 11 && har->player.id != 4 && har->player.id != 10 && har->player.id != 1) {
