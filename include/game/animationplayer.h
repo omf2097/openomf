@@ -13,7 +13,9 @@ typedef struct aniplayer_sprite_t {
 
 typedef struct aniplayer_slide_op_t {
     int x_per_tick;
+    int x_rem;
     int y_per_tick;
+    int y_rem;
     int enabled;
 } aniplayer_slide_op;
 
