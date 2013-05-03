@@ -44,6 +44,7 @@ int har_load(har *h, sd_palette *pal, char *soundtable, const char *file) {
     h->player.y = h->y;
     animationplayer_create(&h->player, 11, array_get(&h->animations, 11));
     animationplayer_set_repeat(&h->player, 1);
+    animationplayer_run(&h->player);
     DEBUG("Har %s loaded!", file);
     return 0;
 }
@@ -164,6 +165,7 @@ void har_act(har *har, int act_type) {
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 11, array_get(&har->animations, 11));
                 animationplayer_set_repeat(&har->player, 1);
+                animationplayer_run(&har->player);
             }
             har->state = STATE_STANDING;
             har->x_per_tick = 0;
@@ -175,6 +177,7 @@ void har_act(har *har, int act_type) {
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 10, array_get(&har->animations, 10));
                 animationplayer_set_repeat(&har->player, 1);
+                animationplayer_run(&har->player);
             }
             har->state = STATE_WALKING;
             har->x_per_tick = -1;
@@ -185,6 +188,7 @@ void har_act(har *har, int act_type) {
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 10, array_get(&har->animations, 10));
                 animationplayer_set_repeat(&har->player, 1);
+                animationplayer_run(&har->player);
             }
             har->state = STATE_WALKING;
             har->x_per_tick = 1;
@@ -195,6 +199,7 @@ void har_act(har *har, int act_type) {
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 4, array_get(&har->animations, 4));
                 animationplayer_set_repeat(&har->player, 1);
+                animationplayer_run(&har->player);
             }
             har->state = STATE_CROUCHING;
             har->x_per_tick = 0;
@@ -205,6 +210,7 @@ void har_act(har *har, int act_type) {
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 1, array_get(&har->animations, 1));
                 /*animationplayer_set_repeat(&har->player, 1);*/
+                /*animationplayer_run(&har->player);*/
             }
 
             har->state = STATE_JUMPING;
@@ -225,6 +231,7 @@ void har_act(har *har, int act_type) {
                 DEBUG("input was %s", har->inputs);
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, i, array_get(&har->animations, i));
+                animationplayer_run(&har->player);
                 har->inputs[0]='\0';
                 har->x_per_tick = 0;
                 har->y_per_tick = 0;
