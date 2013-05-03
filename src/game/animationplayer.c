@@ -120,6 +120,7 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
     player->ticks = 1;
     player->obj = 0;
     player->finished = 0;
+    player->repeat = 0;
     player->userdata = 0;
     player->slide_op.enabled = 0;
     player->slide_op.x_per_tick = 0;
@@ -191,8 +192,9 @@ void animationplayer_run(animationplayer *player) {
     sd_stringparser_frame n_param;
     sd_stringparser_frame *f = &param;
     sd_stringparser_frame *n = &n_param;
+    int real_frame;
     if(sd_stringparser_run(player->parser, player->ticks-1, &param) == 0) {
-        int real_frame = param.frame - 65;
+        real_frame = param.frame - 65;
         
         // Disable stuff from previous frame
         player->slide_op.enabled = 0;
@@ -200,8 +202,14 @@ void animationplayer_run(animationplayer *player) {
         // Do something if animation is finished!
         if(param.is_animation_end || player->finished) {
             player->finished = 1;
-            DEBUG("Animationplayer %d asks for removal ...", player->id);
-            goto exit_0;
+            if(player->repeat) {
+                player->ticks = 1;
+                player->finished = 0;
+                sd_stringparser_run(player->parser, player->ticks-1, &param);
+                real_frame = param.frame - 65;
+            } else {
+                return;
+            }
         }
         
         // Kill old sprite, if defined
@@ -283,8 +291,12 @@ void animationplayer_run(animationplayer *player) {
     }
     player->ticks++;
     
-exit_0:
+    // All done.
     return;
+}
+
+void animationplayer_set_repeat(animationplayer *player, unsigned int repeat) {
+    player->repeat = repeat;
 }
 
 void animationplayer_reset(animationplayer *player) {

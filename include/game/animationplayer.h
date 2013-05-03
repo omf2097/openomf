@@ -24,6 +24,8 @@ typedef struct animationplayer_t {
     unsigned int finished;
     unsigned int ticks;
     
+    unsigned int repeat;
+    
     animation *ani;
     sound_state *snd;
     sd_stringparser *parser;
@@ -43,5 +45,6 @@ void animationplayer_free(animationplayer *player);
 void animationplayer_run(animationplayer *player);
 void animationplayer_render(animationplayer *player);
 void animationplayer_reset(animationplayer *player);
+void animationplayer_set_repeat(animationplayer *player, unsigned int repeat);
 
 #endif // _ANIMATIONPLAYER_H

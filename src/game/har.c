@@ -11,13 +11,10 @@ int har_load(har *h, sd_palette *pal, char *soundtable, const char *file) {
     h->tick = 0; // TEMPORARY
     h->af = sd_af_create();
     
-    DEBUG("Har %s, loading AF file ...", file);
-    
+    // Load AF
     if(sd_af_load(h->af, file)) {
         return 1;
     }
-    
-    DEBUG("Har %s, loading all animations ...", file);
     
     // Handle animations
     animation *ani;
@@ -34,12 +31,11 @@ int har_load(har *h, sd_palette *pal, char *soundtable, const char *file) {
         }
     }
     
-    DEBUG("Har %s, starting animation ...", file);
-    
     // Start player with animation 11
     h->player.x = h->x;
     h->player.y = h->y;
     animationplayer_create(&h->player, 11, array_get(&h->animations, 11));
+    animationplayer_set_repeat(&h->player, 1);
     DEBUG("Har %s loaded!", file);
     return 0;
 }
@@ -64,9 +60,6 @@ void har_free(har *h) {
 
 void har_tick(har *har) {
     har->tick++;
-    if(har->player.finished) {
-        animationplayer_reset(&har->player);
-    }
     if(har->tick > 8) {
         animationplayer_run(&har->player);
         har->tick = 0;
