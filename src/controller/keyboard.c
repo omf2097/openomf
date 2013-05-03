@@ -25,11 +25,9 @@ void keyboard_tick(controller *ctrl) {
         /*har_act(ctrl->har, ACT_JUMP);*/
     } else if(state[k->keys->right] && !state[k->keys->left] && !state[k->keys->up] &&
             !state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {
-        DEBUG("walk right");
         har_act(ctrl->har, ACT_WALKRIGHT);
     } else if(state[k->keys->left] && !state[k->keys->right] && !state[k->keys->up] &&
             !state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {
-        DEBUG("walk left");
         har_act(ctrl->har, ACT_WALKLEFT);
     } else {
         har_act(ctrl->har, ACT_STOP);
