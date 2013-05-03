@@ -65,12 +65,10 @@ void har_free(har *h) {
 void har_tick(har *har) {
     har->tick++;
     if(har->player.finished) {
-        if (har->player.id == 11) {
-            animationplayer_reset(&har->player);
-        } else {
-            animationplayer_free(&har->player);
-            animationplayer_create(&har->player, 11, array_get(&har->animations, 11));
-        }
+        // 11 will never be finished, if it is set to repeat
+        animationplayer_free(&har->player);
+        animationplayer_create(&har->player, 11, array_get(&har->animations, 11));
+        animationplayer_set_repeat(&har->player, 1);
     }
     if(har->tick > 8) {
         animationplayer_run(&har->player);
