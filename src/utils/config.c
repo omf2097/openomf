@@ -33,8 +33,13 @@ int conf_init(const char *filename) {
     int ret = cfg_parse(cfg, filename);
     if(ret == CFG_FILE_ERROR) {
         PERROR("Error while attempting to read config file '%s' !", filename);
-        cfg_free(cfg);
-        return 1;
+        DEBUG("Trying to write a default config file to '%s'", filename);
+        if (!conf_write_config(filename)) {
+            conf_init(filename);
+        } else {
+            cfg_free(cfg);
+            return 1;
+        }
     } else if(ret == CFG_PARSE_ERROR) {
         PERROR("Error while attempting to parse config file '%s' !", filename);
         cfg_free(cfg);
