@@ -285,7 +285,11 @@ void animationplayer_run(animationplayer *player) {
             texture *tex = array_get(&player->ani->sprites, real_frame);
             if(tex) {
                 aniplayer_sprite *anisprite = malloc(sizeof(aniplayer_sprite));
-                anisprite->x = sprite->pos_x;
+                if (player->direction == -1) {
+                    anisprite->x = (sprite->pos_x * player->direction) - sprite->img->w;
+                } else {
+                    anisprite->x = sprite->pos_x;
+                }
                 anisprite->y = sprite->pos_y;
                 anisprite->flipmode = FLIP_NONE;
                 anisprite->blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
