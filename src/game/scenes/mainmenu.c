@@ -286,7 +286,7 @@ void mainmenu_deinit(scene *scene) {
     textbutton_free(&config_done_button);
     menu_free(&config_menu);
 
-    textselector_free(&video_header);
+    textbutton_free(&video_header);
     textselector_free(&resolution_toggle);
     textselector_free(&fullscreen_toggle);
     textselector_free(&scaling_toggle);
