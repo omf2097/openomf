@@ -40,8 +40,8 @@ void game_menu_return(component *c, void *userdata) {
 }
 
 int arena_init(scene *scene) {
-    controller *player1_ctrl;
-    keyboard_keys *keys;
+    controller *player1_ctrl, *player2_ctrl;
+    keyboard_keys *keys, *keys2;
     music_stop();
     switch (scene->bk->file_id) {
         case 8:
@@ -64,8 +64,11 @@ int arena_init(scene *scene) {
 
     // Load some har on the arena
     har *h1 = malloc(sizeof(har));
-    har_load(h1, scene->bk->palettes[0], scene->bk->soundtable, "resources/FIGHTR0.AF");
+    har *h2 = malloc(sizeof(har));
+    har_load(h1, scene->bk->palettes[0], scene->bk->soundtable, "resources/FIGHTR0.AF", 60, 190, 1);
+    har_load(h2, scene->bk->palettes[0], scene->bk->soundtable, "resources/FIGHTR0.AF", 260, 190, -1);
     scene_set_player1_har(scene, h1);
+    scene_set_player2_har(scene, h2);
 
     player1_ctrl = malloc(sizeof(controller));
     keys = malloc(sizeof(keyboard_keys));
@@ -77,6 +80,17 @@ int arena_init(scene *scene) {
     keys->kick = SDL_SCANCODE_RSHIFT;
     keyboard_create(player1_ctrl, h1, keys);
     scene_set_player1_ctrl(scene, player1_ctrl);
+
+    player2_ctrl = malloc(sizeof(controller));
+    keys2 = malloc(sizeof(keyboard_keys));
+    keys2->up = SDL_SCANCODE_W;
+    keys2->down = SDL_SCANCODE_S;
+    keys2->left = SDL_SCANCODE_A;
+    keys2->right = SDL_SCANCODE_D;
+    keys2->punch = SDL_SCANCODE_LSHIFT;
+    keys2->kick = SDL_SCANCODE_LCTRL;
+    keyboard_create(player2_ctrl, h2, keys2);
+    scene_set_player2_ctrl(scene, player2_ctrl);
 
 
     // Create font
@@ -144,6 +158,7 @@ void arena_deinit(scene *scene) {
 void arena_tick(scene *scene) {
     if(!menu_visible) {
         keyboard_tick(scene->player1_ctrl);
+        keyboard_tick(scene->player2_ctrl);
     }
 }
 
@@ -164,7 +179,9 @@ int arena_event(scene *scene, SDL_Event *e) {
         return menu_handle_event(&game_menu, e);
     } else {
         // TODO don't assume a keyboard controller!
-        return  keyboard_handle(scene->player1_ctrl, e);
+        keyboard_handle(scene->player1_ctrl, e);
+        keyboard_handle(scene->player2_ctrl, e);
+        return 0;
     }
 }
 

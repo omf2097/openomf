@@ -116,6 +116,7 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
     player->snd = sound_state_create();
     player->ani = animation;
     player->id = id;
+    player->direction = 1;
     player->parser = sd_stringparser_create();
     player->ticks = 1;
     player->obj = 0;
@@ -165,7 +166,11 @@ void animationplayer_render(animationplayer *player) {
     // Render self
     if(player->obj) {
         aniplayer_sprite *s = player->obj;
-        video_render_sprite(s->tex, player->x + s->x, player->y + s->y, s->blendmode);
+        int flipmode = s->flipmode;
+        if (player->direction == -1) {
+            flipmode ^= FLIP_HORIZONTAL;
+        }
+        video_render_sprite_flip(s->tex, player->x + s->x, player->y + s->y, s->blendmode, flipmode);
     }
 }
 
@@ -282,7 +287,14 @@ void animationplayer_run(animationplayer *player) {
                 aniplayer_sprite *anisprite = malloc(sizeof(aniplayer_sprite));
                 anisprite->x = sprite->pos_x;
                 anisprite->y = sprite->pos_y;
+                anisprite->flipmode = FLIP_NONE;
                 anisprite->blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
+                if(isset(f, "r")) {
+                    anisprite->flipmode |= FLIP_HORIZONTAL;
+                }
+                if (isset(f, "f")) {
+                    anisprite->flipmode |= FLIP_VERTICAL;
+                }
                 anisprite->tex = tex;
                 player->obj = anisprite;
             } else {
@@ -298,6 +310,10 @@ void animationplayer_run(animationplayer *player) {
 
 void animationplayer_set_repeat(animationplayer *player, unsigned int repeat) {
     player->repeat = repeat;
+}
+
+void animationplayer_set_direction(animationplayer *player, int direction) {
+    player->direction = direction;
 }
 
 void animationplayer_next_frame(animationplayer *player) {

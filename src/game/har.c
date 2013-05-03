@@ -6,11 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-int har_load(har *h, sd_palette *pal, char *soundtable, const char *file) {
-    h->x = 60;
-    h->y = 190;
+int har_load(har *h, sd_palette *pal, char *soundtable, const char *file, int x, int y, int direction) {
+    h->x = x;
+    h->y = y;
     h->state = STATE_STANDING;
-    h->direction = 1; //facing forward
+    h->direction = direction;
     h->x_per_tick = 0;
     h->y_per_tick = 0;
     h->tick = 0; // TEMPORARY
@@ -43,6 +43,7 @@ int har_load(har *h, sd_palette *pal, char *soundtable, const char *file) {
     h->player.x = h->x;
     h->player.y = h->y;
     animationplayer_create(&h->player, 11, array_get(&h->animations, 11));
+    animationplayer_set_direction(&h->player, h->direction);
     animationplayer_set_repeat(&h->player, 1);
     animationplayer_run(&h->player);
     DEBUG("Har %s loaded!", file);
@@ -120,6 +121,7 @@ void har_tick(har *har) {
         animationplayer_free(&har->player);
         animationplayer_create(&har->player, animation, array_get(&har->animations, animation));
         animationplayer_set_repeat(&har->player, 1);
+        animationplayer_set_direction(&har->player, har->direction);
         animationplayer_run(&har->player);
     }
 }
@@ -185,6 +187,7 @@ void har_act(har *har, int act_type) {
                 har->state = STATE_STANDING;
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 11, array_get(&har->animations, 11));
+                animationplayer_set_direction(&har->player, har->direction);
                 animationplayer_set_repeat(&har->player, 1);
                 animationplayer_run(&har->player);
             } else if (har->state == STATE_JUMPING && har->y_per_tick < 0) {
@@ -204,6 +207,7 @@ void har_act(har *har, int act_type) {
                 // TODO technically we should play this animation in reverse
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 10, array_get(&har->animations, 10));
+                animationplayer_set_direction(&har->player, har->direction);
                 animationplayer_set_repeat(&har->player, 1);
                 animationplayer_run(&har->player);
             }
@@ -215,6 +219,7 @@ void har_act(har *har, int act_type) {
                 har->state = STATE_WALKING;
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 10, array_get(&har->animations, 10));
+                animationplayer_set_direction(&har->player, har->direction);
                 animationplayer_set_repeat(&har->player, 1);
                 animationplayer_run(&har->player);
             }
@@ -227,6 +232,7 @@ void har_act(har *har, int act_type) {
                 har->x_per_tick = 0;
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 4, array_get(&har->animations, 4));
+                animationplayer_set_direction(&har->player, har->direction);
                 animationplayer_set_repeat(&har->player, 1);
                 animationplayer_run(&har->player);
             }
@@ -239,6 +245,7 @@ void har_act(har *har, int act_type) {
                 har->y -= 40;
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 1, array_get(&har->animations, 1));
+                animationplayer_set_direction(&har->player, har->direction);
                 animationplayer_run(&har->player);
             }
             break;
@@ -258,6 +265,7 @@ void har_act(har *har, int act_type) {
                     DEBUG("input was %s", har->inputs);
                     animationplayer_free(&har->player);
                     animationplayer_create(&har->player, i, array_get(&har->animations, i));
+                    animationplayer_set_direction(&har->player, har->direction);
                     animationplayer_run(&har->player);
                     har->inputs[0]='\0';
                     har->x_per_tick = 0;

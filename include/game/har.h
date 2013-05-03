@@ -62,7 +62,7 @@ struct har_t {
 };
 
 void har_free(har *har);
-int har_load(har *har, sd_palette *pal, char *soundtable, const char *filename); // Returns 0 on success
+int har_load(har *har, sd_palette *pal, char *soundtable, const char *filename, int x, int y, int direction); // Returns 0 on success
 void har_tick(har *har); // Called by scene.c tick function at every game tick
 void har_render(har *har); // Called by scene.h render function at every frame render
 void har_act(har *har, int act_type); // Handle event passed from inputhandler

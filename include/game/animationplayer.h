@@ -9,6 +9,7 @@ typedef struct aniplayer_sprite_t {
     int x,y;
     texture *tex;
     int blendmode;
+    int flipmode;
 } aniplayer_sprite;
 
 typedef struct aniplayer_slide_op_t {
@@ -25,6 +26,7 @@ typedef struct animationplayer_t {
     unsigned int ticks;
     
     unsigned int repeat;
+    int direction;
     
     animation *ani;
     sound_state *snd;
@@ -46,6 +48,7 @@ void animationplayer_run(animationplayer *player);
 void animationplayer_render(animationplayer *player);
 void animationplayer_reset(animationplayer *player);
 void animationplayer_set_repeat(animationplayer *player, unsigned int repeat);
+void animationplayer_set_direction(animationplayer *player, int direction);
 void animationplayer_next_frame(animationplayer *player);
 
 #endif // _ANIMATIONPLAYER_H

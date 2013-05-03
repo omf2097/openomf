@@ -261,6 +261,10 @@ void video_render_char(texture *tex, int sx, int sy, unsigned char r, unsigned c
 }
 
 void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mode) {
+    video_render_sprite_flip(tex, sx, sy, rendering_mode, FLIP_NONE);
+}
+
+void video_render_sprite_flip(texture *tex, int sx, int sy, unsigned int rendering_mode, unsigned int flip_mode) {
     // Set rendering mode
     video_set_rendering_mode(rendering_mode);
     
@@ -271,10 +275,36 @@ void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mo
     float y = 1.0 - sy / 100.0f - h;
     texture_bind(tex);
     glBegin(GL_QUADS);
-        glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
-        glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
-        glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
-        glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
+    switch(flip_mode) {
+        case FLIP_NONE:
+            // regular draw
+            glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
+            glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
+            glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
+            glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
+            break;
+        case FLIP_HORIZONTAL:
+            // horizontal flip
+            glTexCoord2f(0.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
+            glTexCoord2f(1.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
+            glTexCoord2f(1.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
+            glTexCoord2f(0.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
+            break;
+      case FLIP_VERTICAL:
+            // vert flip
+            glTexCoord2f(0.0f, 1.0f); glVertex3f(x+w, y+h, 0); // Top Right
+            glTexCoord2f(1.0f, 1.0f); glVertex3f(x,   y+h, 0); // Top Left
+            glTexCoord2f(1.0f, 0.0f); glVertex3f(x,   y,   0); // Bottom Left
+            glTexCoord2f(0.0f, 0.0f); glVertex3f(x+w, y,   0); // Bottom Right
+            break;
+      case FLIP_VERTICAL|FLIP_HORIZONTAL:
+            // both flip
+            glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y+h, 0); // Top Right
+            glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y+h, 0); // Top Left
+            glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y,   0); // Bottom Left
+            glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y,   0); // Bottom Right
+            break;
+    }
     glEnd();
 }
 
