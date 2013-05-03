@@ -158,22 +158,46 @@ void har_act(har *har, int act_type) {
             add_input(har, '2');
             break;
         case ACT_LEFT:
-            add_input(har, '4');
+            if (har->direction == -1) {
+                add_input(har, '6');
+            } else {
+                add_input(har, '4');
+            }
             break;
         case ACT_RIGHT:
-            add_input(har, '6');
+            if (har->direction == -1) {
+                add_input(har, '4');
+            } else {
+                add_input(har, '6');
+            }
             break;
         case ACT_UPRIGHT:
-            add_input(har, '9');
+            if (har->direction == -1) {
+                add_input(har, '7');
+            } else {
+                add_input(har, '9');
+            }
             break;
         case ACT_UPLEFT:
-            add_input(har, '7');
+            if (har->direction == -1) {
+                add_input(har, '9');
+            } else {
+                add_input(har, '7');
+            }
             break;
         case ACT_DOWNRIGHT:
-            add_input(har, '3');
+            if (har->direction == -1) {
+                add_input(har, '1');
+            } else {
+                add_input(har, '3');
+            }
             break;
         case ACT_DOWNLEFT:
-            add_input(har, '1');
+            if (har->direction == -1) {
+                add_input(har, '3');
+            } else {
+                add_input(har, '1');
+            }
             break;
         case ACT_KICK:
             add_input(har, 'K');
