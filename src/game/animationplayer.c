@@ -127,6 +127,7 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
     player->slide_op.x_rem = 0;
     player->slide_op.y_per_tick = 0;
     player->slide_op.y_rem = 0;
+    player->add_player = NULL;
     if(sd_stringparser_set_string(player->parser, animation->sdani->anim_string)) {
         sd_stringparser_delete(player->parser);
         PERROR("Unable to initialize stringparser w/ '%s'", animation->sdani->anim_string);
