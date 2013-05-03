@@ -66,11 +66,13 @@ void har_tick(har *har) {
     har->tick++;
     if(har->player.finished) {
         // 11 will never be finished, if it is set to repeat
+        har->tick = 0;
         animationplayer_free(&har->player);
         animationplayer_create(&har->player, 11, array_get(&har->animations, 11));
         animationplayer_set_repeat(&har->player, 1);
+        animationplayer_run(&har->player);
     }
-    if(har->tick > 8) {
+    if(har->tick > 3) {
         animationplayer_run(&har->player);
         har->tick = 0;
     }
