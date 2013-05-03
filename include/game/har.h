@@ -10,7 +10,11 @@ enum {
     ACT_KICK,
     ACT_PUNCH,
     ACT_UP,
+    ACT_UPLEFT,
+    ACT_UPRIGHT,
     ACT_DOWN,
+    ACT_DOWNLEFT,
+    ACT_DOWNRIGHT,
     ACT_LEFT,
     ACT_RIGHT,
     ACT_STOP,
@@ -23,6 +27,7 @@ struct har_t {
     sd_af_file *af;
     array animations;
     animationplayer player;
+    char inputs[11]; // I don't think any move in the game needs 10 inputs to trigger...
     
     int tick; // TEMPORARY TO SLOW DOWN ANIMATION
 };

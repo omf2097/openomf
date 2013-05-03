@@ -9,6 +9,8 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
+#include "controller/controller.h"
+#include "controller/keyboard.h"
 #include "utils/log.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
@@ -38,6 +40,8 @@ void game_menu_return(component *c, void *userdata) {
 }
 
 int arena_init(scene *scene) {
+    controller *player1_ctrl;
+    keyboard_keys *keys;
     music_stop();
     switch (scene->bk->file_id) {
         case 8:
@@ -57,10 +61,23 @@ int arena_init(scene *scene) {
             break;
     }
 
+
     // Load some har on the arena
     har *h1 = malloc(sizeof(har));
     har_load(h1, scene->bk->palettes[0], scene->bk->soundtable, "resources/FIGHTR0.AF");
     scene_set_player1_har(scene, h1);
+
+    player1_ctrl = malloc(sizeof(controller));
+    keys = malloc(sizeof(keyboard_keys));
+    keys->up = SDL_SCANCODE_UP;
+    keys->down = SDL_SCANCODE_DOWN;
+    keys->left = SDL_SCANCODE_LEFT;
+    keys->right = SDL_SCANCODE_RIGHT;
+    keys->punch = SDL_SCANCODE_RETURN;
+    keys->kick = SDL_SCANCODE_RSHIFT;
+    keyboard_create(player1_ctrl, h1, keys);
+    scene_set_player1_ctrl(scene, player1_ctrl);
+
 
     // Create font
     font_create(&font_large);
@@ -141,7 +158,12 @@ int arena_event(scene *scene, SDL_Event *e) {
         }
         break;
     }
-    return menu_handle_event(&game_menu, e);
+    if(menu_visible) {
+        return menu_handle_event(&game_menu, e);
+    } else {
+        // TODO don't assume a keyboard controller!
+        return  keyboard_handle(scene->player1_ctrl, e);
+    }
 }
 
 void arena_render(scene *scene) {

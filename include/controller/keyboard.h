@@ -7,7 +7,7 @@
 typedef struct keyboard_keys_t keyboard_keys;
 typedef struct keyboard_t keyboard;
 
-struct keys_t {
+struct keyboard_keys_t {
     int up;
     int down;
     int left;
