@@ -142,7 +142,9 @@ void arena_deinit(scene *scene) {
 }
 
 void arena_tick(scene *scene) {
-
+    if(!menu_visible) {
+        keyboard_tick(scene->player1_ctrl);
+    }
 }
 
 int arena_event(scene *scene, SDL_Event *e) {

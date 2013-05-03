@@ -1,4 +1,5 @@
 #include "controller/keyboard.h"
+#include "utils/log.h"
 
 void keyboard_create(controller *ctrl, har *har, keyboard_keys *keys) {
     keyboard *k = malloc(sizeof(keyboard));
@@ -12,6 +13,27 @@ void keyboard_free(controller *ctrl) {
     keyboard *k = ctrl->data;
     free(k->keys);
     free(k);
+}
+
+void keyboard_tick(controller *ctrl) {
+    keyboard *k = ctrl->data;
+    unsigned char *state = SDL_GetKeyboardState(NULL);
+
+    if (state[k->keys->down]) {
+        har_act(ctrl->har, ACT_CROUCH);
+    /*} else if (state[k->keys->up]) {*/
+        /*har_act(ctrl->har, ACT_JUMP);*/
+    } else if(state[k->keys->right] && !state[k->keys->left] && !state[k->keys->up] &&
+            !state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {
+        DEBUG("walk right");
+        har_act(ctrl->har, ACT_WALKRIGHT);
+    } else if(state[k->keys->left] && !state[k->keys->right] && !state[k->keys->up] &&
+            !state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {
+        DEBUG("walk left");
+        har_act(ctrl->har, ACT_WALKLEFT);
+    } else {
+        har_act(ctrl->har, ACT_STOP);
+    }
 }
 
 int keyboard_handle(controller *ctrl, SDL_Event *event) {

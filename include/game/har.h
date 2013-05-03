@@ -18,12 +18,41 @@ enum {
     ACT_LEFT,
     ACT_RIGHT,
     ACT_STOP,
+    ACT_WALKLEFT,
+    ACT_WALKRIGHT,
+    ACT_CROUCH,
+    ACT_JUMP
+};
+
+// these are mostly guesses, but seem to fit
+enum {
+    CAT_MISC = 0,
+    CAT_CLOSE = 2,
+    CAT_CROUCH = 4,
+    CAT_STANDING = 5,
+    CAT_WALKING, // may also include standing
+    CAT_JUMPING,
+    CAT_PROJECTILE,
+    CAT_BASIC,
+    CAT_VICTORY = 10, // or defeat
+    CAT_SCRAP,
+    CAT_DESTRUCTION
+};
+
+enum {
+    STATE_STANDING,
+    STATE_WALKING,
+    STATE_CROUCHING,
+    STATE_JUMPING
 };
 
 typedef struct har_t har;
 
 struct har_t {
     unsigned int x,y;
+    unsigned int state;
+    int x_per_tick, y_per_tick;
+    int direction; // 1 or -1
     sd_af_file *af;
     array animations;
     animationplayer player;

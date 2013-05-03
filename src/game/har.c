@@ -8,7 +8,11 @@
 
 int har_load(har *h, sd_palette *pal, char *soundtable, const char *file) {
     h->x = 60;
-    h->y = 180;
+    h->y = 190;
+    h->state = STATE_STANDING;
+    h->direction = 1; //facing forward
+    h->x_per_tick = 0;
+    h->y_per_tick = 0;
     h->tick = 0; // TEMPORARY
     h->af = sd_af_create();
     // fill the input buffer with 'pauses'
@@ -63,12 +67,33 @@ void har_free(har *h) {
 }
 
 void har_tick(har *har) {
+    har->x += har->x_per_tick;
+    har->y += har->y_per_tick;
+    if (har->x < 24) {
+        har->x = 24;
+    }
+    if (har->x > 295) {
+        har->x = 295;
+    }
+
+    har->player.x = har->x;
+    har->player.y = har->y;
     har->tick++;
     if(har->player.finished) {
         // 11 will never be finished, if it is set to repeat
         har->tick = 0;
+        int animation = 11;
+        switch(har->state) {
+            case STATE_STANDING:
+                animation = 11;
+                break;
+            case STATE_CROUCHING:
+                animation = 4;
+                break;
+        }
+        DEBUG("next animation is %d", animation);
         animationplayer_free(&har->player);
-        animationplayer_create(&har->player, 11, array_get(&har->animations, 11));
+        animationplayer_create(&har->player, animation, array_get(&har->animations, animation));
         animationplayer_set_repeat(&har->player, 1);
         animationplayer_run(&har->player);
     }
@@ -96,7 +121,7 @@ void add_input(har *har, char c) {
 
 
 void har_act(har *har, int act_type) {
-    if (har->player.id != 11) {
+    if (har->player.id != 11 && har->player.id != 4 && har->player.id != 10) {
         // if we're not in the idle loop, bail for now
         return;
     }
@@ -134,10 +159,59 @@ void har_act(har *har, int act_type) {
             add_input(har, 'P');
             break;
         case ACT_STOP:
+            if (har->state != STATE_STANDING) {
+                DEBUG("standing");
+                animationplayer_free(&har->player);
+                animationplayer_create(&har->player, 11, array_get(&har->animations, 11));
+                animationplayer_set_repeat(&har->player, 1);
+            }
+            har->state = STATE_STANDING;
+            har->x_per_tick = 0;
             add_input(har, '5');
             break;
+        case ACT_WALKLEFT:
+            if (har->state != STATE_WALKING) {
+                DEBUG("walk left");
+                animationplayer_free(&har->player);
+                animationplayer_create(&har->player, 10, array_get(&har->animations, 10));
+                animationplayer_set_repeat(&har->player, 1);
+            }
+            har->state = STATE_WALKING;
+            har->x_per_tick = -1;
+            break;
+        case ACT_WALKRIGHT:
+            if (har->state != STATE_WALKING) {
+                DEBUG("walk right");
+                animationplayer_free(&har->player);
+                animationplayer_create(&har->player, 10, array_get(&har->animations, 10));
+                animationplayer_set_repeat(&har->player, 1);
+            }
+            har->state = STATE_WALKING;
+            har->x_per_tick = 1;
+            break;
+        case ACT_CROUCH:
+            if (har->state != STATE_CROUCHING) {
+                DEBUG("crouching");
+                animationplayer_free(&har->player);
+                animationplayer_create(&har->player, 4, array_get(&har->animations, 4));
+                animationplayer_set_repeat(&har->player, 1);
+            }
+            har->state = STATE_CROUCHING;
+            har->x_per_tick = 0;
+            break;
+        case ACT_JUMP:
+            if (har->state != STATE_JUMPING) {
+                DEBUG("jump");
+                animationplayer_free(&har->player);
+                animationplayer_create(&har->player, 1, array_get(&har->animations, 1));
+                /*animationplayer_set_repeat(&har->player, 1);*/
+            }
+
+            har->state = STATE_JUMPING;
+            har->y_per_tick = -1;
+            break;
     }
-    DEBUG("input buffer is now %s", har->inputs);
+    /*DEBUG("input buffer is now %s", har->inputs);*/
 
     // try to find a matching move
     sd_move *move;
@@ -148,8 +222,12 @@ void har_act(har *har, int act_type) {
             len = strlen(move->move_string);
             if (!strncmp(move->move_string, har->inputs, len)) {
                 DEBUG("matched move %d with string %s", i, move->move_string);
+                DEBUG("input was %s", har->inputs);
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, i, array_get(&har->animations, i));
+                har->inputs[0]='\0';
+                har->x_per_tick = 0;
+                har->y_per_tick = 0;
                 break;
             }
         }
