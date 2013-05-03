@@ -49,7 +49,7 @@ enum {
 typedef struct har_t har;
 
 struct har_t {
-    unsigned int x,y;
+    int x,y;
     unsigned int state;
     int x_per_tick, y_per_tick;
     int direction; // 1 or -1

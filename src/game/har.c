@@ -70,11 +70,26 @@ void har_free(har *h) {
 void har_tick(har *har) {
     har->x += har->x_per_tick;
     har->y += har->y_per_tick;
+    
+    //bounds
     if (har->x < 24) {
         har->x = 24;
     }
     if (har->x > 295) {
         har->x = 295;
+    }
+    if (har->y < 0) {
+        har->y = 0;
+        har->y_per_tick = 1;
+    }
+
+    // jumping magic
+    if (har->y > 190 - 40 && har->state == STATE_JUMPING) {
+        har->y = 190;
+        har->y_per_tick = 0;
+        har->player.finished = 1;
+        DEBUG("stopped jumping");
+        har->state = STATE_STANDING;
     }
 
     har->player.x = har->x;
@@ -123,7 +138,7 @@ void add_input(har *har, char c) {
 
 
 void har_act(har *har, int act_type) {
-    if (har->player.id != 11 && har->player.id != 4 && har->player.id != 10) {
+    if (har->player.id != 11 && har->player.id != 4 && har->player.id != 10 && har->player.id != 1) {
         // if we're not in the idle loop, bail for now
         return;
     }
@@ -161,61 +176,67 @@ void har_act(har *har, int act_type) {
             add_input(har, 'P');
             break;
         case ACT_STOP:
-            if (har->state != STATE_STANDING) {
+            if (har->state != STATE_STANDING && har->state != STATE_JUMPING) {
                 DEBUG("standing");
+                har->state = STATE_STANDING;
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 11, array_get(&har->animations, 11));
                 animationplayer_set_repeat(&har->player, 1);
                 animationplayer_run(&har->player);
+            } else if (har->state == STATE_JUMPING && har->y_per_tick < 0) {
+                // start falling
+                har->y_per_tick = 2;
+                // jump to next frame in animation
+                DEBUG("switching to falling");
+                animationplayer_next_frame(&har->player);
             }
-            har->state = STATE_STANDING;
             har->x_per_tick = 0;
             add_input(har, '5');
             break;
         case ACT_WALKLEFT:
-            if (har->state != STATE_WALKING) {
+            if (har->state != STATE_WALKING && har->state != STATE_JUMPING) {
                 DEBUG("walk left");
+                har->state = STATE_WALKING;
+                // TODO technically we should play this animation in reverse
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 10, array_get(&har->animations, 10));
                 animationplayer_set_repeat(&har->player, 1);
                 animationplayer_run(&har->player);
             }
-            har->state = STATE_WALKING;
             har->x_per_tick = -1;
             break;
         case ACT_WALKRIGHT:
-            if (har->state != STATE_WALKING) {
+            if (har->state != STATE_WALKING && har->state != STATE_JUMPING) {
                 DEBUG("walk right");
+                har->state = STATE_WALKING;
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 10, array_get(&har->animations, 10));
                 animationplayer_set_repeat(&har->player, 1);
                 animationplayer_run(&har->player);
             }
-            har->state = STATE_WALKING;
             har->x_per_tick = 1;
             break;
         case ACT_CROUCH:
-            if (har->state != STATE_CROUCHING) {
+            if (har->state != STATE_CROUCHING && har->state != STATE_JUMPING) {
                 DEBUG("crouching");
+                har->state = STATE_CROUCHING;
+                har->x_per_tick = 0;
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 4, array_get(&har->animations, 4));
                 animationplayer_set_repeat(&har->player, 1);
                 animationplayer_run(&har->player);
             }
-            har->state = STATE_CROUCHING;
-            har->x_per_tick = 0;
             break;
         case ACT_JUMP:
             if (har->state != STATE_JUMPING) {
                 DEBUG("jump");
+                har->state = STATE_JUMPING;
+                har->y_per_tick = -2;
+                har->y -= 40;
                 animationplayer_free(&har->player);
                 animationplayer_create(&har->player, 1, array_get(&har->animations, 1));
-                /*animationplayer_set_repeat(&har->player, 1);*/
-                /*animationplayer_run(&har->player);*/
+                animationplayer_run(&har->player);
             }
-
-            har->state = STATE_JUMPING;
-            har->y_per_tick = -1;
             break;
     }
     /*DEBUG("input buffer is now %s", har->inputs);*/
@@ -228,15 +249,21 @@ void har_act(har *har, int act_type) {
         if(move != NULL) {
             len = strlen(move->move_string);
             if (!strncmp(move->move_string, har->inputs, len)) {
-                DEBUG("matched move %d with string %s", i, move->move_string);
-                DEBUG("input was %s", har->inputs);
-                animationplayer_free(&har->player);
-                animationplayer_create(&har->player, i, array_get(&har->animations, i));
-                animationplayer_run(&har->player);
-                har->inputs[0]='\0';
-                har->x_per_tick = 0;
-                har->y_per_tick = 0;
-                break;
+                if ((har->state == STATE_JUMPING && move->unknown[13] == CAT_JUMPING) || har->state != STATE_JUMPING) {
+                    DEBUG("matched move %d with string %s", i, move->move_string);
+                    DEBUG("input was %s", har->inputs);
+                    animationplayer_free(&har->player);
+                    animationplayer_create(&har->player, i, array_get(&har->animations, i));
+                    animationplayer_run(&har->player);
+                    har->inputs[0]='\0';
+                    har->x_per_tick = 0;
+                    if (har->state == STATE_JUMPING) {
+                        har->y_per_tick = 2;
+                    } else {
+                        har->y_per_tick = 0;
+                    }
+                    break;
+                }
             }
         }
     }

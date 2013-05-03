@@ -165,7 +165,7 @@ void animationplayer_render(animationplayer *player) {
     // Render self
     if(player->obj) {
         aniplayer_sprite *s = player->obj;
-        video_render_sprite(s->tex, s->x, s->y, s->blendmode);
+        video_render_sprite(s->tex, player->x + s->x, player->y + s->y, s->blendmode);
     }
 }
 
@@ -280,8 +280,8 @@ void animationplayer_run(animationplayer *player) {
             texture *tex = array_get(&player->ani->sprites, real_frame);
             if(tex) {
                 aniplayer_sprite *anisprite = malloc(sizeof(aniplayer_sprite));
-                anisprite->x = player->x + sprite->pos_x;
-                anisprite->y = player->y + sprite->pos_y;
+                anisprite->x = sprite->pos_x;
+                anisprite->y = sprite->pos_y;
                 anisprite->blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
                 anisprite->tex = tex;
                 player->obj = anisprite;
@@ -298,6 +298,15 @@ void animationplayer_run(animationplayer *player) {
 
 void animationplayer_set_repeat(animationplayer *player, unsigned int repeat) {
     player->repeat = repeat;
+}
+
+void animationplayer_next_frame(animationplayer *player) {
+    sd_stringparser_frame param;
+    // right now, this can only skip the first frame...
+    if(sd_stringparser_run(player->parser, 0, &param) == 0) {
+        DEBUG("setting ticks %d -> %d", player->ticks, param.duration);
+        player->ticks = param.duration+1;
+    }
 }
 
 void animationplayer_reset(animationplayer *player) {

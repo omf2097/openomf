@@ -46,5 +46,6 @@ void animationplayer_run(animationplayer *player);
 void animationplayer_render(animationplayer *player);
 void animationplayer_reset(animationplayer *player);
 void animationplayer_set_repeat(animationplayer *player, unsigned int repeat);
+void animationplayer_next_frame(animationplayer *player);
 
 #endif // _ANIMATIONPLAYER_H
