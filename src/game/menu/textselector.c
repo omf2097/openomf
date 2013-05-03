@@ -63,11 +63,17 @@ int textselector_event(component *c, SDL_Event *event) {
                 if (tb->pos >= vector_size(&tb->options)) {
                     tb->pos = 0;
                 }
+                if(c->toggle != NULL) {
+                    c->toggle(c, c->userdata, tb->pos);
+                }
                 return 0;
             } else  if(event->key.keysym.sym == SDLK_LEFT) {
                 tb->pos--;
                 if (tb->pos < 0) {
                     tb->pos = vector_size(&tb->options) -1;
+                }
+                if(c->toggle != NULL) {
+                    c->toggle(c, c->userdata, tb->pos);
                 }
                 return 0;
             }
