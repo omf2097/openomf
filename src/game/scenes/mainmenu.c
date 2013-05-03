@@ -27,6 +27,13 @@ component demo_button;
 component scoreboard_button;
 component quit_button;
 
+menu video_menu;
+component video_header;
+component resolution_toggle;
+component fullscreen_toggle;
+component scaling_toggle;
+component video_done_button;
+
 menu config_menu;
 component config_header;
 component playerone_input_button;
@@ -48,7 +55,11 @@ component cpu_toggle;
 component round_toggle;
 component gameplay_done_button;
 
+// Menu stack
+menu *mstack[10];
+int mstack_pos = 0;
 
+// Menu event handlers
 void mainmenu_quit(component *c, void *userdata) {
     scene *scene = userdata;
     scene->next_id = SCENE_CREDITS;
@@ -61,13 +72,15 @@ void mainmenu_1v1(component *c, void *userdata) {
 
 void mainmenu_enter_menu(component *c, void *userdata) {
     current_menu = (menu*)userdata;
+    mstack[mstack_pos++] = current_menu;
 }
 
 void mainmenu_prev_menu(component *c, void *userdata) {
-    // TODO keep a stack of previous menus
-    current_menu = &main_menu;
+    mstack[--mstack_pos] = NULL;
+    current_menu = mstack[mstack_pos-1];
 }
 
+// Init menus
 int mainmenu_init(scene *scene) {
     if(settings_init(&setting)) {
         return 1;
@@ -86,6 +99,10 @@ int mainmenu_init(scene *scene) {
         font_free(&font_large);
         return 1;
     }
+    
+    // Start stack
+    mstack_pos = 0;
+    mstack[mstack_pos++] = &main_menu;
     
     // Create main menu
     menu_create(&main_menu, 165, 5, 151, 119);
@@ -152,12 +169,35 @@ int mainmenu_init(scene *scene) {
     menu_attach(&config_menu, &music_toggle, 11);
     menu_attach(&config_menu, &stereo_toggle, 11);
     menu_attach(&config_menu, &config_done_button, 11);
+    
+    video_options_button.userdata = (void*)&video_menu;
+    video_options_button.click = mainmenu_enter_menu;
 
     config_header.disabled = 1;
     menu_select(&config_menu, &playerone_input_button);
 
     config_done_button.click = mainmenu_prev_menu;
 
+    menu_create(&video_menu, 165, 5, 151, 119);
+    textbutton_create(&video_header, &font_large, "VIDEO");
+    textselector_create(&resolution_toggle, &font_large, "RES:", "640x400");
+    textselector_add_option(&resolution_toggle, "1280x800");
+    textselector_add_option(&resolution_toggle, "1920x1080");
+    textselector_create(&fullscreen_toggle, &font_large, "FULLSCREEN:", "OFF");
+    textselector_add_option(&fullscreen_toggle, "ON");
+    textselector_create(&scaling_toggle, &font_large, "SCALING:", "STRETCH");
+    textselector_add_option(&scaling_toggle, "ASPECT");
+    textselector_add_option(&scaling_toggle, "HQX");
+    textbutton_create(&video_done_button, &font_large, "DONE");
+    menu_attach(&video_menu, &video_header, 22);
+    menu_attach(&video_menu, &resolution_toggle, 11);
+    menu_attach(&video_menu, &fullscreen_toggle, 11);
+    menu_attach(&video_menu, &scaling_toggle, 11);
+    menu_attach(&video_menu, &video_done_button, 11);
+    video_header.disabled = 1;
+    video_done_button.click = mainmenu_prev_menu;
+    menu_select(&video_menu, &resolution_toggle);
+    
     menu_create(&gameplay_menu, 165, 5, 151, 119);
     textbutton_create(&gameplay_header, &font_large, "GAMEPLAY");
     textslider_create(&speed_slider, &font_large, "SPEED", 10);
@@ -246,6 +286,13 @@ void mainmenu_deinit(scene *scene) {
     textbutton_free(&config_done_button);
     menu_free(&config_menu);
 
+    textselector_free(&video_header);
+    textselector_free(&resolution_toggle);
+    textselector_free(&fullscreen_toggle);
+    textselector_free(&scaling_toggle);
+    textbutton_free(&video_done_button);
+    menu_free(&video_menu);
+    
     textslider_free(&speed_slider);
     textselector_free(&fightmode_toggle);
     textslider_free(&powerone_slider);
