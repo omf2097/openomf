@@ -80,7 +80,11 @@ void har_tick(har *har) {
     }
     if (har->y < 0) {
         har->y = 0;
-        har->y_per_tick = 1;
+        // start falling
+        har->y_per_tick = 2;
+        // jump to next frame in animation
+        DEBUG("switching to falling");
+        animationplayer_next_frame(&har->player);
     }
 
     // jumping magic
