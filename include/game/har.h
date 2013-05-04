@@ -60,6 +60,8 @@ struct har_t {
     char inputs[11]; // I don't think any move in the game needs 10 inputs to trigger...
     
     int tick; // TEMPORARY TO SLOW DOWN ANIMATION
+
+    list child_players; // projectiles and the like
 };
 
 void har_free(har *har);
