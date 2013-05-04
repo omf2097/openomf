@@ -22,9 +22,6 @@ int texture_upload(texture *tex) {
 int texture_create(texture *tex, const char *data, unsigned int w, unsigned int h) {
     tex->w = w;
     tex->h = h;
-    if(tex->w * tex->h * 4 >= 1221988320) {
-        DEBUG("ERROR: W: %d H: %d", tex->w, tex->h);
-    }
     
     // Reserve texture ID
     glGenTextures(1, &tex->id);
