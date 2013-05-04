@@ -71,15 +71,6 @@ void cmd_music_on(int music) {
     }
 }
 
-void cmd_anim_create(animationplayer *player, int id, int mx, int my, void *userdata) {
-    player->add_player(player->userdata, id, mx, my);
-}
-
-void cmd_anim_destroy(animationplayer *player, int id) {
-    player->del_player(player->userdata, id);
-    DEBUG("Animation %d killed animation %d.", player->id, id);
-}
-
 void incinerate_obj(animationplayer *player) {
     if(player->obj) {
         free(player->obj);
@@ -230,8 +221,8 @@ void animationplayer_run(animationplayer *player) {
             int my = isset(f, "my") ? get(f, "my") : 0;
             player->add_player(player->userdata, get(f, "m"), mx, my);
         }
-        if(isset(f, "md")) { 
-            cmd_anim_destroy(player, get(f, "md")); 
+        if(isset(f, "md") && player->del_player != NULL) { 
+            player->del_player(player->userdata, get(f, "md"));
         }
     
         // Handle music and sounds
@@ -318,6 +309,10 @@ void animationplayer_set_repeat(animationplayer *player, unsigned int repeat) {
 
 void animationplayer_set_direction(animationplayer *player, int direction) {
     player->direction = direction;
+}
+
+int animationplayer_get_frame(animationplayer *player) {
+    return sd_stringparser_get_current_frame_id(player->parser);
 }
 
 void animationplayer_next_frame(animationplayer *player) {

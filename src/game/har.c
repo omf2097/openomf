@@ -68,6 +68,29 @@ void har_free(har *h) {
     animationplayer_free(&h->player);
 }
 
+void har_take_damage(har *har, int amount) {
+
+}
+
+void har_collision_scene(har *har, scene *scene) {
+
+    
+}
+
+void har_collision_har(har *har_a, har *har_b) {
+    // Make stuff easier to get to :)
+    int ani_id = har_a->player.id;
+    int frame_id = animationplayer_get_frame(&har_a->player);
+    sd_animation *ani = har_a->af->moves[ani_id]->animation;
+    
+    // Find collision points, if any
+    for(int i = 0; i < ani->col_coord_count; i++) {
+        if(ani->col_coord_table[i].y_ext == frame_id) {
+            // Do something
+        }
+    }
+}
+
 void har_tick(har *har) {
     har->x += har->x_per_tick;
     har->y += har->y_per_tick;

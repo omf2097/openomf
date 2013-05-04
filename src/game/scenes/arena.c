@@ -159,6 +159,14 @@ void arena_tick(scene *scene) {
     if(!menu_visible) {
         keyboard_tick(scene->player1_ctrl);
         keyboard_tick(scene->player2_ctrl);
+        
+        // Collision detections
+        har_collision_har(scene->player1_har, scene->player2_har);
+        har_collision_har(scene->player2_har, scene->player1_har);
+        har_collision_scene(scene->player1_har, scene);
+        har_collision_scene(scene->player2_har, scene);
+        
+        // Turn the HARs to face the enemy
         if (scene->player1_har->x > scene->player2_har->x) {
             if (scene->player1_har->direction == 1) {
                 har_set_direction(scene->player1_har, -1);
