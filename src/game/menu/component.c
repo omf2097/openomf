@@ -20,6 +20,7 @@ void component_create(component *c) {
     // Event functions
     c->click = NULL;
     c->toggle = NULL;
+    c->slide = NULL;
 }
 
 void component_free(component *c) {
