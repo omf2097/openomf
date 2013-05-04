@@ -12,7 +12,8 @@ struct textselector_t {
     font *font;
     int ticks;
     int dir;
-    int pos;
+    int pos_;
+    int *pos;
     vector options;
 };
 
@@ -22,7 +23,6 @@ void textselector_free(component *c);
 void textselector_render(component *c);
 int textselector_event(component *c, SDL_Event *event);
 void textselector_tick(component *c);
-int textselector_getpos(component *c);
-void textselector_setpos(component *c, int pos);
+void textselector_bindvar(component *c, int *var);
 
 #endif // _TEXTSELECTOR_H

@@ -11,7 +11,8 @@ struct textslider_t {
     font *font;
     int ticks;
     int dir;
-    int pos;
+    int pos_;
+    int *pos;
     int positions;
 };
 
@@ -20,7 +21,6 @@ void textslider_free(component *c);
 void textslider_render(component *c);
 int textslider_event(component *c, SDL_Event *event);
 void textslider_tick(component *c);
-int textslider_getpos(component *c);
-void textslider_setpos(component *c, int pos);
+void textslider_bindvar(component *c, int *var);
 
 #endif // _TEXTSLIDER_H

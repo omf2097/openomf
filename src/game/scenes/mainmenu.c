@@ -211,8 +211,9 @@ int mainmenu_init(scene *scene) {
     textselector_add_option(&cpu_toggle, "ROOKIE");
     textselector_add_option(&cpu_toggle, "VETERAN");
     textselector_add_option(&cpu_toggle, "WORLD CLASS");
-    textselector_add_option(&cpu_toggle, "DEADLY");
     textselector_add_option(&cpu_toggle, "CHAMPION");
+    textselector_add_option(&cpu_toggle, "DEADLY");
+    textselector_add_option(&cpu_toggle, "ULTIMATE");
     textselector_create(&round_toggle, &font_large, "", "ONE ROUND");
     textselector_add_option(&round_toggle, "BEST 2 OF 3");
     textselector_add_option(&round_toggle, "BEST 3 OF 5");
@@ -228,16 +229,24 @@ int mainmenu_init(scene *scene) {
     menu_attach(&gameplay_menu, &round_toggle, 11);
     menu_attach(&gameplay_menu, &gameplay_done_button, 11);
     
-    textselector_setpos(&sound_toggle, setting.sound.sound_on);
-    textselector_setpos(&music_toggle, setting.sound.music_on);
-    textselector_setpos(&stereo_toggle, setting.sound.stereo_reversed);
-    textslider_setpos(&speed_slider, setting.gameplay.speed);
-    textslider_setpos(&powerone_slider, setting.gameplay.power1);
-    textslider_setpos(&powertwo_slider, setting.gameplay.power2);
-    textselector_setpos(&fightmode_toggle, setting.gameplay.fight_mode);
-    textselector_setpos(&hazards_toggle, setting.gameplay.hazards_on);
-    textselector_setpos(&cpu_toggle, setting.gameplay.difficulty);
-    textselector_setpos(&round_toggle, setting.gameplay.rounds);
+    // sound options
+    textselector_bindvar(&sound_toggle, &setting.sound.sound_on);
+    textselector_bindvar(&music_toggle, &setting.sound.music_on);
+    textselector_bindvar(&stereo_toggle, &setting.sound.stereo_reversed);
+    
+    // video options
+    textselector_bindvar(&resolution_toggle, &setting.video.resolution);
+    textselector_bindvar(&fullscreen_toggle, &setting.video.fullscreen);
+    textselector_bindvar(&scaling_toggle, &setting.video.scaling);
+    
+    // gameplay options
+    textslider_bindvar(&speed_slider, &setting.gameplay.speed);
+    textslider_bindvar(&powerone_slider, &setting.gameplay.power1);
+    textslider_bindvar(&powertwo_slider, &setting.gameplay.power2);
+    textselector_bindvar(&fightmode_toggle, &setting.gameplay.fight_mode);
+    textselector_bindvar(&hazards_toggle, &setting.gameplay.hazards_on);
+    textselector_bindvar(&cpu_toggle, &setting.gameplay.difficulty);
+    textselector_bindvar(&round_toggle, &setting.gameplay.rounds);
 
     gameplay_header.disabled = 1;
     menu_select(&gameplay_menu, &speed_slider);
@@ -250,21 +259,7 @@ int mainmenu_init(scene *scene) {
     return 0;
 }
 
-void mainmenu_deinit(scene *scene) {
-    setting.sound.sound_on = textselector_getpos(&sound_toggle);
-    setting.sound.music_on = textselector_getpos(&music_toggle);
-    setting.sound.stereo_reversed = textselector_getpos(&stereo_toggle);
-    setting.gameplay.speed = textslider_getpos(&speed_slider);
-    setting.gameplay.power1 = textslider_getpos(&powerone_slider);
-    setting.gameplay.power2 = textslider_getpos(&powertwo_slider);
-    setting.gameplay.fight_mode = textselector_getpos(&fightmode_toggle);
-    setting.gameplay.hazards_on = textselector_getpos(&hazards_toggle);
-    setting.gameplay.difficulty = textselector_getpos(&cpu_toggle);
-    setting.gameplay.rounds = textselector_getpos(&round_toggle);
-    
-    settings_save(&setting);
-    settings_free(&setting);
-    
+void mainmenu_deinit(scene *scene) {      
     textbutton_free(&oneplayer_button);
     textbutton_free(&twoplayer_button);
     textbutton_free(&tourn_button);
@@ -304,6 +299,9 @@ void mainmenu_deinit(scene *scene) {
     menu_free(&gameplay_menu);
 
     font_free(&font_large);
+    
+    settings_save(&setting);
+    settings_free(&setting);
 }
 
 void mainmenu_tick(scene *scene) {

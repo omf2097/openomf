@@ -11,7 +11,8 @@ void textslider_create(component *c, font *font, const char *text, unsigned int 
     tb->font = font;
     tb->ticks = 0;
     tb->dir = 0;
-    tb->pos = 1;
+    tb->pos_ = 1;
+    tb->pos = &tb->pos_;
     tb->positions = positions;
     c->obj = tb;
     c->render = textslider_render;
@@ -34,7 +35,7 @@ void textslider_render(component *c) {
     sprintf(buf, "%s ", tb->text);
     chars = strlen(buf);
     for(int i = 0; i < tb->positions; i++) {
-        if (i+1 > tb->pos) {
+        if (i+1 > *tb->pos) {
             buf[chars+i] = '|';
         } else {
             buf[chars+i] = 127;
@@ -61,15 +62,15 @@ int textslider_event(component *c, SDL_Event *event) {
     switch(event->type) {
         case SDL_KEYDOWN:
             if(event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_RIGHT) {
-                tb->pos++;
-                if (tb->pos >= tb->positions) {
-                    tb->pos = tb->positions;
+                (*tb->pos)++;
+                if (*tb->pos >= tb->positions) {
+                    *tb->pos = tb->positions;
                 }
                 return 0;
             } else  if(event->key.keysym.sym == SDLK_LEFT) {
-                tb->pos--;
-                if (tb->pos < 1) {
-                    tb->pos = 1;
+                (*tb->pos)--;
+                if (*tb->pos < 1) {
+                    *tb->pos = 1;
                 }
                 return 0;
             }
@@ -92,12 +93,8 @@ void textslider_tick(component *c) {
     }
 }
 
-int textslider_getpos(component *c) {
+void textslider_bindvar(component *c, int *var) {
     textslider *tb = c->obj;
-    return tb->pos;
-}
-void textslider_setpos(component *c, int pos) {
-    textslider *tb = c->obj;
-    tb->pos = pos;
+    tb->pos = var;
 }
 

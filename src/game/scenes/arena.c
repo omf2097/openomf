@@ -3,6 +3,7 @@
 #include "video/video.h"
 #include "game/scenes/arena.h"
 #include "audio/music.h"
+#include "game/settings.h"
 #include "game/har.h"
 #include "game/menu/menu.h"
 #include "game/menu/menu_background.h"
@@ -16,6 +17,7 @@
 #include <stdlib.h>
 #include <shadowdive/shadowdive.h>
 
+settings setting;
 
 font font_large;
 menu game_menu;
@@ -40,6 +42,11 @@ void game_menu_return(component *c, void *userdata) {
 }
 
 int arena_init(scene *scene) {
+    if(settings_init(&setting)) {
+        return 1;
+    }
+    settings_load(&setting);
+    
     controller *player1_ctrl, *player2_ctrl;
     keyboard_keys *keys, *keys2;
     music_stop();
@@ -119,6 +126,13 @@ int arena_init(scene *scene) {
     menu_attach(&game_menu, &video_button, 11);
     menu_attach(&game_menu, &help_button, 11);
     menu_attach(&game_menu, &quit_button, 11);
+    
+    // sound options
+    textslider_bindvar(&sound_slider, &setting.sound.sound_vol);
+    textslider_bindvar(&music_slider, &setting.sound.music_vol);
+    
+    // gameplay options
+    textslider_bindvar(&speed_slider, &setting.gameplay.speed);
 
     title_button.disabled=1;
 
@@ -153,6 +167,9 @@ void arena_deinit(scene *scene) {
     texture_free(&tex);
 
     music_stop();
+    
+    settings_save(&setting);
+    settings_free(&setting);
 }
 
 void arena_tick(scene *scene) {

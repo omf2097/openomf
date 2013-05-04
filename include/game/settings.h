@@ -11,8 +11,9 @@ typedef enum difficulty_t {
     ROOKIE, 
     VETERAN, 
     WORLD_CLASS,
+    CHAMPION,
     DEADLY,
-    CHAMPION
+    ULTIMATE
 } difficulty;
 
 typedef struct settings_sound_t {
@@ -20,20 +21,23 @@ typedef struct settings_sound_t {
     int music_on;
     int stereo_on;
     int stereo_reversed;
+    int sound_vol;
+    int music_vol;
 } settings_sound;
 
 typedef struct settings_video_t {
-    int screen_w;
-    int screen_h;
+    int resolution;
+    int fullscreen;
+    int scaling;
 } settings_video;
 
 typedef struct settings_gameplay_t {
     int speed;
-    fight_mode fight_mode;
+    int fight_mode;
     int power1;
     int power2;
     int hazards_on;
-    difficulty difficulty;
+    int difficulty;
     int rounds;
 } settings_gameplay;
 

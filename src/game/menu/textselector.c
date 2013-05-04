@@ -11,7 +11,8 @@ void textselector_create(component *c, font *font, const char *text, const char 
     tb->font = font;
     tb->ticks = 0;
     tb->dir = 0;
-    tb->pos = 0;
+    tb->pos_ = 0;
+    tb->pos = &tb->pos_;
     vector_create(&tb->options, sizeof(char*));
     vector_append(&tb->options, &initialvalue);
     c->obj = tb;
@@ -38,7 +39,7 @@ void textselector_render(component *c) {
     int chars;
     int width;
     int xoff;
-    char **opt = vector_get(&tb->options, tb->pos);
+    char **opt = vector_get(&tb->options, *tb->pos);
     sprintf(buf, "%s %s", tb->text, *opt);
     chars = strlen(buf);
     width = chars*tb->font->w;
@@ -59,21 +60,21 @@ int textselector_event(component *c, SDL_Event *event) {
     switch(event->type) {
         case SDL_KEYDOWN:
             if(event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_RIGHT) {
-                tb->pos++;
-                if (tb->pos >= vector_size(&tb->options)) {
-                    tb->pos = 0;
+                (*tb->pos)++;
+                if (*tb->pos >= vector_size(&tb->options)) {
+                    *tb->pos = 0;
                 }
                 if(c->toggle != NULL) {
-                    c->toggle(c, c->userdata, tb->pos);
+                    c->toggle(c, c->userdata, *tb->pos);
                 }
                 return 0;
             } else  if(event->key.keysym.sym == SDLK_LEFT) {
-                tb->pos--;
-                if (tb->pos < 0) {
-                    tb->pos = vector_size(&tb->options) -1;
+                (*tb->pos)--;
+                if (*tb->pos < 0) {
+                    *tb->pos = vector_size(&tb->options) -1;
                 }
                 if(c->toggle != NULL) {
-                    c->toggle(c, c->userdata, tb->pos);
+                    c->toggle(c, c->userdata, *tb->pos);
                 }
                 return 0;
             }
@@ -95,11 +96,8 @@ void textselector_tick(component *c) {
         tb->dir = 0;
     }
 }
-int textselector_getpos(component *c) {
+
+void textselector_bindvar(component *c, int *var) {
     textselector *tb = c->obj;
-    return tb->pos;
-}
-void textselector_setpos(component *c, int pos) {
-    textselector *tb = c->obj;
-    tb->pos = pos;
+    tb->pos = var;
 }

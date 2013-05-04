@@ -19,15 +19,18 @@ typedef struct field_t {
 } field;
 
 const field f_video[] = {
-    {"screen_w", TYPE_INT, offsetof(settings_video, screen_w)},
-    {"screen_h", TYPE_INT, offsetof(settings_video, screen_h)}
+    {"resolution",    TYPE_INT,  offsetof(settings_video, resolution)},
+    {"fullscreen",    TYPE_BOOL, offsetof(settings_video, fullscreen)},
+    {"scaling",       TYPE_INT,  offsetof(settings_video, scaling)}
 };
 
 const field f_sound[] = {
     {"sound_on",           TYPE_BOOL, offsetof(settings_sound, sound_on)},
     {"music_on",           TYPE_BOOL, offsetof(settings_sound, music_on)},
     {"stereo_on",          TYPE_BOOL, offsetof(settings_sound, stereo_on)},
-    {"stereo_reversed",    TYPE_BOOL, offsetof(settings_sound, stereo_reversed)}
+    {"stereo_reversed",    TYPE_BOOL, offsetof(settings_sound, stereo_reversed)},
+    {"sound_vol",          TYPE_INT,  offsetof(settings_sound, sound_vol)},
+    {"music_vol",          TYPE_INT,  offsetof(settings_sound, music_vol)}
 };
 
 const field f_gameplay[] = {
