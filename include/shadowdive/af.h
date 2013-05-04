@@ -30,12 +30,12 @@ typedef struct sd_af_file_t {
 sd_af_file* sd_af_create();
 
 /**
-  * Load .AF file. Returns 0 on error.
+  * Load .AF file. Returns SD_SUCCESS on success.
   */
 int sd_af_load(sd_af_file *af, const char *filename);
 
 /**
-  * Saves AF file structure. Returns 1 on success, 0 on error.
+  * Saves AF file structure. Returns SD_SUCCESS on success, else on error.
   */
 int sd_af_save(sd_af_file *af, const char* filename);
 

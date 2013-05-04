@@ -712,3 +712,8 @@ int sd_stringparser_prettyprint(sd_stringparser *parser) {
     }
     return 0;
 }
+
+int sd_stringparser_get_current_frame_id(sd_stringparser *parser) {
+    return ((frame_list*)parser->frame_list)->current_frame;
+}
+
