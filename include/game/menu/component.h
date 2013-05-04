@@ -24,6 +24,7 @@ struct component_t {
     
     void (*click)(component *c, void *userdata);
     void (*toggle)(component *c, void *userdata, int option);
+    void (*slide)(component *c, void *userdata, int pos);
 };
 
 void component_create(component *c);

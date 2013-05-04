@@ -14,7 +14,6 @@ struct textslider_t {
     int pos_;
     int *pos;
     int positions;
-    void(*clicked)(textslider*);
 };
 
 void textslider_create(component *c, font *font, const char *text, unsigned int positions);
@@ -23,6 +22,5 @@ void textslider_render(component *c);
 int textslider_event(component *c, SDL_Event *event);
 void textslider_tick(component *c);
 void textslider_bindvar(component *c, int *var);
-void textslider_bindclicked(component *c, void(*clicked)(textslider*));
 
 #endif // _TEXTSLIDER_H

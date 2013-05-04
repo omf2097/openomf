@@ -76,13 +76,6 @@ const char *restabstr[] = {
     "2560x1440",
     "2560x1600"
 }; 
-   
-// Menu events
-void resolution_clicked(textselector *tb) {
-    const int *res = restab[*tb->pos];
-    setting.video.screen_w = res[0];
-    setting.video.screen_h = res[1];
-}
 
 // Menu stack
 menu *mstack[10];
@@ -107,6 +100,12 @@ void mainmenu_enter_menu(component *c, void *userdata) {
 void mainmenu_prev_menu(component *c, void *userdata) {
     mstack[--mstack_pos] = NULL;
     current_menu = mstack[mstack_pos-1];
+}
+
+void resolution_toggled(component *c, void *userdata, int pos) {
+    const int *res = restab[pos];
+    setting.video.screen_w = res[0];
+    setting.video.screen_h = res[1];
 }
 
 // Init menus
@@ -265,7 +264,7 @@ int mainmenu_init(scene *scene) {
     textselector_bindvar(&stereo_toggle, &setting.sound.stereo_reversed);
     
     // video options
-    textselector_bindclicked(&resolution_toggle, &resolution_clicked);
+    resolution_toggle.toggle = resolution_toggled;
     textselector_bindvar(&resolution_toggle, &setting.video.resindex);
     textselector_bindvar(&fullscreen_toggle, &setting.video.fullscreen);
     textselector_bindvar(&scaling_toggle, &setting.video.scaling);
