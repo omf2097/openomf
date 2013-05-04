@@ -103,6 +103,21 @@ void* list_iter_prev(iterator *iter) {
     return ((list_node*)iter->vnow)->data;
 }
 
+void* list_get(list *list, unsigned int i) {
+    if(i >= list_size(list)) return NULL;
+    iterator it;
+    list_iter_begin(list, &it);
+    list_node *node;
+    int n = 0;
+    while((node = iter_next(&it)) != NULL) {
+        if(i == n) {
+            return node->data;
+        }
+        n++;
+    }
+    return NULL;
+}
+
 void list_iter_begin(list *list, iterator *iter) {
     iter->data = list;
     iter->vnow = NULL;

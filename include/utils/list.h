@@ -28,5 +28,6 @@ void list_delete(list *list, iterator *iter);
 unsigned int list_size(list *list);
 void list_iter_begin(list *list, iterator *iter);
 void list_iter_end(list *list, iterator *iter);
+void* list_get(list *list, unsigned int i);
 
 #endif
