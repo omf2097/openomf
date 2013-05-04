@@ -14,6 +14,7 @@ void textslider_create(component *c, font *font, const char *text, unsigned int 
     tb->pos_ = 1;
     tb->pos = &tb->pos_;
     tb->positions = positions;
+    tb->clicked = NULL;
     c->obj = tb;
     c->render = textslider_render;
     c->event = textslider_event;
@@ -59,6 +60,7 @@ void textslider_render(component *c) {
 int textslider_event(component *c, SDL_Event *event) {
     // Handle selection
     textslider *tb = c->obj;
+    int isclicked = 0;
     switch(event->type) {
         case SDL_KEYDOWN:
             if(event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_RIGHT) {
@@ -66,12 +68,16 @@ int textslider_event(component *c, SDL_Event *event) {
                 if (*tb->pos >= tb->positions) {
                     *tb->pos = tb->positions;
                 }
-                return 0;
+                isclicked = 1;
             } else  if(event->key.keysym.sym == SDLK_LEFT) {
                 (*tb->pos)--;
                 if (*tb->pos < 1) {
                     *tb->pos = 1;
                 }
+                isclicked = 1;
+            }
+            if(isclicked) {
+                if(tb->clicked) { tb->clicked(tb); }
                 return 0;
             }
     }
@@ -95,6 +101,10 @@ void textslider_tick(component *c) {
 
 void textslider_bindvar(component *c, int *var) {
     textslider *tb = c->obj;
-    tb->pos = var;
+    tb->pos = (var ? var : &tb->pos_);
 }
 
+void textslider_bindclicked(component *c, void(*clicked)(textslider*)) {
+    textslider *tb = c->obj;
+    tb->clicked = clicked;
+}

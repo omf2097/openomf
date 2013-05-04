@@ -26,7 +26,9 @@ typedef struct settings_sound_t {
 } settings_sound;
 
 typedef struct settings_video_t {
-    int resolution;
+    int resindex;
+    int screen_w;
+    int screen_h;
     int fullscreen;
     int scaling;
 } settings_video;

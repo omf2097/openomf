@@ -55,6 +55,35 @@ component cpu_toggle;
 component round_toggle;
 component gameplay_done_button;
 
+const int restab[][2] = {
+    {320, 200},
+    {640, 400},
+    {1280, 800},
+    {1600, 1000},
+    {1920, 1080},
+    {1920, 1200},
+    {2560, 1440},
+    {2560, 1600}
+};
+
+const char *restabstr[] = {
+    "320x200",
+    "640x400",
+    "1280x800",
+    "1600x1000",
+    "1920x1080",
+    "1920x1200",
+    "2560x1440",
+    "2560x1600"
+}; 
+   
+// Menu events
+void resolution_clicked(textselector *tb) {
+    const int *res = restab[*tb->pos];
+    setting.video.screen_w = res[0];
+    setting.video.screen_h = res[1];
+}
+
 // Menu stack
 menu *mstack[10];
 int mstack_pos = 0;
@@ -180,9 +209,10 @@ int mainmenu_init(scene *scene) {
 
     menu_create(&video_menu, 165, 5, 151, 119);
     textbutton_create(&video_header, &font_large, "VIDEO");
-    textselector_create(&resolution_toggle, &font_large, "RES:", "640x400");
-    textselector_add_option(&resolution_toggle, "1280x800");
-    textselector_add_option(&resolution_toggle, "1920x1080");
+    textselector_create(&resolution_toggle, &font_large, "RES:", restabstr[0]);
+    for(int i=1;i < sizeof(restabstr)/sizeof(char*); ++i) {
+        textselector_add_option(&resolution_toggle, restabstr[i]);
+    }
     textselector_create(&fullscreen_toggle, &font_large, "FULLSCREEN:", "OFF");
     textselector_add_option(&fullscreen_toggle, "ON");
     textselector_create(&scaling_toggle, &font_large, "SCALING:", "STRETCH");
@@ -235,7 +265,8 @@ int mainmenu_init(scene *scene) {
     textselector_bindvar(&stereo_toggle, &setting.sound.stereo_reversed);
     
     // video options
-    textselector_bindvar(&resolution_toggle, &setting.video.resolution);
+    textselector_bindclicked(&resolution_toggle, &resolution_clicked);
+    textselector_bindvar(&resolution_toggle, &setting.video.resindex);
     textselector_bindvar(&fullscreen_toggle, &setting.video.fullscreen);
     textselector_bindvar(&scaling_toggle, &setting.video.scaling);
     

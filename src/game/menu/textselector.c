@@ -13,6 +13,7 @@ void textselector_create(component *c, font *font, const char *text, const char 
     tb->dir = 0;
     tb->pos_ = 0;
     tb->pos = &tb->pos_;
+    tb->clicked = NULL;
     vector_create(&tb->options, sizeof(char*));
     vector_append(&tb->options, &initialvalue);
     c->obj = tb;
@@ -57,6 +58,7 @@ void textselector_render(component *c) {
 int textselector_event(component *c, SDL_Event *event) {
     // Handle selection
     textselector *tb = c->obj;
+    int isclicked = 0;
     switch(event->type) {
         case SDL_KEYDOWN:
             if(event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_RIGHT) {
@@ -67,7 +69,7 @@ int textselector_event(component *c, SDL_Event *event) {
                 if(c->toggle != NULL) {
                     c->toggle(c, c->userdata, *tb->pos);
                 }
-                return 0;
+                isclicked = 1;
             } else  if(event->key.keysym.sym == SDLK_LEFT) {
                 (*tb->pos)--;
                 if (*tb->pos < 0) {
@@ -76,6 +78,10 @@ int textselector_event(component *c, SDL_Event *event) {
                 if(c->toggle != NULL) {
                     c->toggle(c, c->userdata, *tb->pos);
                 }
+                isclicked = 1;
+            }
+            if(isclicked) {
+                if(tb->clicked) { tb->clicked(tb); }
                 return 0;
             }
     }
@@ -99,5 +105,10 @@ void textselector_tick(component *c) {
 
 void textselector_bindvar(component *c, int *var) {
     textselector *tb = c->obj;
-    tb->pos = var;
+    tb->pos = (var ? var : &tb->pos_);
+}
+
+void textselector_bindclicked(component *c, void(*clicked)(textselector*)) {
+    textselector *tb = c->obj;
+    tb->clicked = clicked;
 }

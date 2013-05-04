@@ -8,9 +8,9 @@ cfg_opt_t cfg_opts[] = {
     // video
     CFG_BOOL("vsync",           cfg_false, CFGF_NONE),
     CFG_BOOL("fullscreen",      cfg_false, CFGF_NONE),
-    CFG_INT("screen_w",         640,       CFGF_NONE),
-    CFG_INT("screen_h",         400,       CFGF_NONE),
-    CFG_INT("resolution",       0,         CFGF_NONE),
+    CFG_INT("resindex",         0,         CFGF_NONE),
+    CFG_INT("screen_w",         320,       CFGF_NONE),
+    CFG_INT("screen_h",         200,       CFGF_NONE),
     CFG_INT("scaling",          0,         CFGF_NONE),
     
     // sound
