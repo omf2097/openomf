@@ -717,3 +717,10 @@ int sd_stringparser_get_current_frame_id(sd_stringparser *parser) {
     return ((frame_list*)parser->frame_list)->current_frame;
 }
 
+char sd_stringparser_get_current_frame_letter(sd_stringparser *parser) {
+    int frame = ((frame_list*)parser->frame_list)->current_frame;
+    // XXX for some reason, the frame seems to be off by one
+    return ((frame_list*)parser->frame_list)->frames[frame-1].frame_letter;
+}
+
+

@@ -79,4 +79,6 @@ int sd_stringparser_prettyprint(sd_stringparser *parser);
 
 int sd_stringparser_get_current_frame_id(sd_stringparser *parser);
 
+char sd_stringparser_get_current_frame_letter(sd_stringparser *parser);
+
 #endif // _SD_STRINGPARSER_H
