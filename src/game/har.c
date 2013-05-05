@@ -160,10 +160,26 @@ void har_collision_har(har *har_a, har *har_b) {
                 DEBUG("x coordinate hit!");
                 if (ani->col_coord_table[i].y + har_a->y > y && ani->col_coord_table[i].y + har_a->y < y + h) {
                     DEBUG("y coordinate hit!");
-                    // Do a fine grained per-pixel check for a hit
+                    // TODO Do a fine grained per-pixel check for a hit
                     har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
                 }
             }
+        }
+    }
+
+    if (har_a->state == STATE_WALKING && har_a->direction == -1) {
+        // walking towards the enemy
+        // 35 is a made up number that 'looks right'
+        DEBUG("%d between %d, %d", har_a->x, har_b->x, har_b->x+35);
+        if (har_a->x < har_b->x+35 && har_a->x > har_b->x) {
+            har_a->x = har_b->x+35;
+        }
+    }
+    if (har_a->state == STATE_WALKING && har_a->direction == 1) {
+        // walking towards the enemy
+        DEBUG("%d between %d, %d", har_a->x, har_b->x-35, har_b->x);
+        if (har_a->x+35 > har_b->x && har_a->x < har_b->x) {
+            har_a->x = har_b->x - 35;
         }
     }
 }
@@ -179,8 +195,8 @@ void har_tick(har *har) {
     if (har->x > 295) {
         har->x = 295;
     }
-    if (har->y < 0) {
-        har->y = 0;
+    if (har->y < 50) {
+        har->y = 50;
         // start falling
         har->y_per_tick = 2;
         // jump to next frame in animation
