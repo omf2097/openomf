@@ -51,5 +51,6 @@ void animationplayer_set_repeat(animationplayer *player, unsigned int repeat);
 void animationplayer_set_direction(animationplayer *player, int direction);
 void animationplayer_next_frame(animationplayer *player);
 int animationplayer_get_frame(animationplayer *player);
+char animationplayer_get_frame_letter(animationplayer *player);
 
 #endif // _ANIMATIONPLAYER_H

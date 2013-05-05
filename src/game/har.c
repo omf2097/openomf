@@ -122,24 +122,48 @@ void har_free(har *h) {
 }
 
 void har_take_damage(har *har, int amount) {
-
+    DEBUG("HAR took %f damage", amount / 2.0f);
+    // we actually only want to play 3 frames from this animation, but lack the ability
+    har_switch_animation(har, 9);
 }
 
 void har_collision_scene(har *har, scene *scene) {
-
-    
 }
 
 void har_collision_har(har *har_a, har *har_b) {
     // Make stuff easier to get to :)
     int ani_id = har_a->player.id;
-    int frame_id = animationplayer_get_frame(&har_a->player);
+    // XXX for some reason, the current frame always seems off by one
+    int frame_id = animationplayer_get_frame(&har_a->player) - 1;
     sd_animation *ani = har_a->af->moves[ani_id]->animation;
-    
+
+    int other_ani_id = har_b->player.id;
+    if (other_ani_id == 9) {
+        // can't kick them while they're down
+        return;
+    }
+    char other_frame_letter = animationplayer_get_frame_letter(&har_b->player);
+    /*DEBUG("other frame letter is %d -> %c for frame %d", other_frame_letter, other_frame_letter, frame_id);*/
+    /*sd_animation *other_ani = har_a->af->moves[ani_id]->animation;*/
+    sd_sprite *sprite = har_b->af->moves[other_ani_id]->animation->sprites[(int)other_frame_letter - 65];
+    int x = har_b->x + sprite->pos_x;
+    int y = har_b->y + sprite->pos_y;
+    int w = sprite->img->w;
+    int h = sprite->img->h;
+
     // Find collision points, if any
     for(int i = 0; i < ani->col_coord_count; i++) {
         if(ani->col_coord_table[i].y_ext == frame_id) {
-            // Do something
+            DEBUG("%d vs %d-%d", (ani->col_coord_table[i].x * har_a->direction) + har_a->x, x, x+w);
+            // coarse check vs sprite dimensions
+            if ((ani->col_coord_table[i].x * har_a->direction) + har_a->x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->x < x + w) {
+                DEBUG("x coordinate hit!");
+                if (ani->col_coord_table[i].y + har_a->y > y && ani->col_coord_table[i].y + har_a->y < y + h) {
+                    DEBUG("y coordinate hit!");
+                    // Do a fine grained per-pixel check for a hit
+                    har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
+                }
+            }
         }
     }
 }
@@ -187,6 +211,12 @@ void har_tick(har *har) {
     if(har->tick > 3) {
         animationplayer_run(&har->player);
         har->tick = 0;
+    }
+
+    if (har->player.id == 9 && animationplayer_get_frame(&har->player) > 4) {
+        // bail out of the 'hit' animation early, because the hit animation
+        // contains ALL the hit aniamtions one after the other
+        har->player.finished = 1;
     }
     if(har->player.finished) {
         // 11 will never be finished, if it is set to repeat
