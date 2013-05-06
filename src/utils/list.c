@@ -111,7 +111,7 @@ void* list_get(list *list, unsigned int i) {
     int n = 0;
     while((node = iter_next(&it)) != NULL) {
         if(i == n) {
-            return node->data;
+            return node;
         }
         n++;
     }
