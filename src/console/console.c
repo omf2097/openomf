@@ -20,7 +20,7 @@ void console_cmd_help(scene *scene, int argc, char **argv) {
     iterator it;
     hashmap_iter_begin(&con->cmds, &it);
     hashmap_pair *pair;
-    while((pair = iter_next(&it))) {
+    while((pair = iter_next(&it)) != NULL) {
         char *name = pair->key;
         command *cmd = pair->val;
         DEBUG("%s - %s", name, cmd->doc);
