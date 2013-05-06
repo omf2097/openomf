@@ -182,18 +182,22 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
     _vsync = vsync;
     screen_w = window_w;
     screen_h = window_h;
+    
     SDL_SetWindowSize(window, window_w, window_h);
 
     if(SDL_SetWindowFullscreen(window, fullscreen ? SDL_TRUE : SDL_FALSE) != 0) {
         PERROR("Could not set fullscreen mode!");
     } else {
-        DEBUG("Fullscreen enabled!");
+        DEBUG("Fullscreen changed!");
     }
+    
+    // sometime the window doesn't change size after setting fullscreen
+    SDL_SetWindowSize(window, window_w, window_h);
 
     if(SDL_GL_SetSwapInterval(vsync ? 1 : 0) != 0) {
         PERROR("Could not enable VSync!");
     } else {
-        DEBUG("VSync enabled!");
+        DEBUG("VSync changed!");
     }
     
     texturelist_revalidate_all();
