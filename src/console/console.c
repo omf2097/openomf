@@ -15,6 +15,21 @@ void console_cmd_quit(scene *scene, int argc, char **argv) {
     scene->next_id = SCENE_CREDITS;
 }
 
+void console_cmd_help(scene *scene, int argc, char **argv) {
+    // print list of commands
+}
+
+void console_cmd_scene(scene *scene, int argc, char **argv) {
+    // change scene
+    if(argc == 2) {
+        char *end;
+        int i = (int)strtol(argv[1], &end, 10);
+        if(!*end) {
+            scene->next_id = i;
+        }
+    }
+}
+
 int make_argv(char *p, char **argv) {
     // split line into argv, warning: does not handle quoted strings
     int argc = 0;
@@ -68,6 +83,8 @@ int console_init() {
     // Add console commands
     console_add_cmd("quit", &console_cmd_quit);
     console_add_cmd("exit", &console_cmd_quit);
+    console_add_cmd("help", &console_cmd_help);
+    console_add_cmd("scene", &console_cmd_scene);
  
     // Create font
     font_create(&con->font);
