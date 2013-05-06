@@ -17,6 +17,14 @@ void console_cmd_quit(scene *scene, int argc, char **argv) {
 
 void console_cmd_help(scene *scene, int argc, char **argv) {
     // print list of commands
+    iterator it;
+    hashmap_iter_begin(&con->cmds, &it);
+    hashmap_pair *pair;
+    while((pair = iter_next(&it))) {
+        char *name = pair->key;
+        command *cmd = pair->val;
+        DEBUG("%s - %s", name, cmd->doc);
+    }
 }
 
 void console_cmd_scene(scene *scene, int argc, char **argv) {
@@ -52,8 +60,8 @@ void console_handle_line(scene *scene) {
         unsigned int len;
         make_argv(con->input, argv);
         if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
-            command_func *cmd = val;
-            (*cmd)(scene, argc, argv);
+            command *cmd = val;
+            cmd->func(scene, argc, argv);
         }
     }
 }
@@ -81,10 +89,10 @@ int console_init() {
     menu_background_create(&con->background, 322, 101);
  
     // Add console commands
-    console_add_cmd("quit", &console_cmd_quit);
-    console_add_cmd("exit", &console_cmd_quit);
-    console_add_cmd("help", &console_cmd_help);
-    console_add_cmd("scene", &console_cmd_scene);
+    console_add_cmd("quit",  &console_cmd_quit,  "quit the game");
+    console_add_cmd("exit",  &console_cmd_quit,  "quit the game");
+    console_add_cmd("help",  &console_cmd_help,  "show all commands");
+    console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
  
     // Create font
     font_create(&con->font);
@@ -184,8 +192,11 @@ void console_tick() {
     }
 }
 
-void console_add_cmd(const char *name, command_func func) {
-    hashmap_sput(&con->cmds, name, (void**)&func, sizeof(command_func*));
+void console_add_cmd(const char *name, command_func func, const char *doc) {
+    command c;
+    c.func = func;
+    c.doc = doc;
+    hashmap_sput(&con->cmds, name, &c, sizeof(command));
 }
 
 int console_window_is_open() {

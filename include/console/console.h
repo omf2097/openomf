@@ -8,6 +8,7 @@
 
 typedef struct scene_t scene;
 typedef struct console_t console;
+typedef struct command_t command;
 
 typedef void(*command_func)(scene *scene, int argc, char **argv);
 
@@ -21,7 +22,12 @@ struct console_t {
     int isopen;
     int ypos;
     unsigned int ticks, dir;
-    hashmap cmds; // string -> command_func
+    hashmap cmds; // string -> command
+};
+
+struct command_t {
+    command_func func;
+    const char *doc;
 };
 
 int console_init();
@@ -29,7 +35,7 @@ void console_close();
 void console_event(scene *scene, SDL_Event *event);
 void console_render();
 void console_tick();
-void console_add_cmd(const char *name, command_func func);
+void console_add_cmd(const char *name, command_func func, const char *doc);
 
 int console_window_is_open();
 void console_window_open();
