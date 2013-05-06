@@ -1,4 +1,5 @@
 #include "video/texture.h"
+#include "video/texturelist.h"
 #include "video/video.h"
 #include "video/fbo.h"
 #include "video/rbo.h"
@@ -195,6 +196,7 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
         DEBUG("VSync enabled!");
     }
     
+    texturelist_revalidate_all();
     return 0;
 }
 
