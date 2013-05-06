@@ -10,6 +10,9 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 
+// HACK to notify the engine that vsync has changed
+extern int _vsync; 
+
 SDL_Window *window;
 SDL_GLContext glctx;
 fbo target;
@@ -171,6 +174,27 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     DEBUG(" * Renderer:    %s", glGetString(GL_RENDERER));
     DEBUG(" * Version:     %s", glGetString(GL_VERSION));
     DEBUG(" * GLSL:        %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    return 0;
+}
+
+int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
+    _vsync = vsync;
+    screen_w = window_w;
+    screen_h = window_h;
+    SDL_SetWindowSize(window, window_w, window_h);
+
+    if(SDL_SetWindowFullscreen(window, fullscreen ? SDL_TRUE : SDL_FALSE) != 0) {
+        PERROR("Could not set fullscreen mode!");
+    } else {
+        DEBUG("Fullscreen enabled!");
+    }
+
+    if(SDL_GL_SetSwapInterval(vsync ? 1 : 0) != 0) {
+        PERROR("Could not enable VSync!");
+    } else {
+        DEBUG("VSync enabled!");
+    }
+    
     return 0;
 }
 

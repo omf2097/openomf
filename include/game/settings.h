@@ -29,6 +29,7 @@ typedef struct settings_video_t {
     int resindex;
     int screen_w;
     int screen_h;
+    int vsync;
     int fullscreen;
     int scaling;
 } settings_video;

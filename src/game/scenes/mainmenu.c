@@ -3,6 +3,7 @@
 #include "utils/log.h"
 #include "game/text/text.h"
 #include "audio/music.h"
+#include "video/video.h"
 #include "game/settings.h"
 #include "game/scene.h"
 #include "game/scenes/mainmenu.h"
@@ -30,6 +31,7 @@ component quit_button;
 menu video_menu;
 component video_header;
 component resolution_toggle;
+component vsync_toggle;
 component fullscreen_toggle;
 component scaling_toggle;
 component video_done_button;
@@ -102,10 +104,23 @@ void mainmenu_prev_menu(component *c, void *userdata) {
     current_menu = mstack[mstack_pos-1];
 }
 
+void vsync_toggled(component *c, void *userdata, int pos) {
+    settings_video *v = &setting.video;
+    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
+}
+
 void resolution_toggled(component *c, void *userdata, int pos) {
     const int *res = restab[pos];
     setting.video.screen_w = res[0];
     setting.video.screen_h = res[1];
+    
+    settings_video *v = &setting.video;
+    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
+}
+
+void fullscreen_toggled(component *c, void *userdata, int pos) {
+    settings_video *v = &setting.video;
+    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
 }
 
 // Init menus
@@ -212,6 +227,8 @@ int mainmenu_init(scene *scene) {
     for(int i=1;i < sizeof(restabstr)/sizeof(char*); ++i) {
         textselector_add_option(&resolution_toggle, restabstr[i]);
     }
+    textselector_create(&vsync_toggle, &font_large, "VSYNC:", "OFF");
+    textselector_add_option(&vsync_toggle, "ON");
     textselector_create(&fullscreen_toggle, &font_large, "FULLSCREEN:", "OFF");
     textselector_add_option(&fullscreen_toggle, "ON");
     textselector_create(&scaling_toggle, &font_large, "SCALING:", "STRETCH");
@@ -220,6 +237,7 @@ int mainmenu_init(scene *scene) {
     textbutton_create(&video_done_button, &font_large, "DONE");
     menu_attach(&video_menu, &video_header, 22);
     menu_attach(&video_menu, &resolution_toggle, 11);
+    menu_attach(&video_menu, &vsync_toggle, 11);
     menu_attach(&video_menu, &fullscreen_toggle, 11);
     menu_attach(&video_menu, &scaling_toggle, 11);
     menu_attach(&video_menu, &video_done_button, 11);
@@ -264,8 +282,11 @@ int mainmenu_init(scene *scene) {
     textselector_bindvar(&stereo_toggle, &setting.sound.stereo_reversed);
     
     // video options
+    vsync_toggle.toggle = vsync_toggled;
     resolution_toggle.toggle = resolution_toggled;
+    fullscreen_toggle.toggle = fullscreen_toggled;
     textselector_bindvar(&resolution_toggle, &setting.video.resindex);
+    textselector_bindvar(&vsync_toggle, &setting.video.vsync);
     textselector_bindvar(&fullscreen_toggle, &setting.video.fullscreen);
     textselector_bindvar(&scaling_toggle, &setting.video.scaling);
     

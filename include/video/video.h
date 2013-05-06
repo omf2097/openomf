@@ -14,6 +14,7 @@
 
 
 int video_init(int window_w, int window_h, int fullscreen, int vsync); // Create window etc.
+int video_reinit(int window_w, int window_h, int fullscreen, int vsync);
 void video_render_prepare();
 void video_render_sprite(texture *texture, int x, int y, unsigned int render_mode);
 void video_render_sprite_flip(texture *texture, int x, int y, unsigned int render_mode, unsigned int flip_mode);

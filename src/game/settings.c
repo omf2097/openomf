@@ -22,6 +22,7 @@ const field f_video[] = {
     {"resindex",    TYPE_INT,  offsetof(settings_video, resindex)},
     {"screen_w",    TYPE_INT,  offsetof(settings_video, screen_w)},
     {"screen_h",    TYPE_INT,  offsetof(settings_video, screen_h)},
+    {"vsync",       TYPE_BOOL, offsetof(settings_video, vsync)},
     {"fullscreen",  TYPE_BOOL, offsetof(settings_video, fullscreen)},
     {"scaling",     TYPE_INT,  offsetof(settings_video, scaling)}
 };
