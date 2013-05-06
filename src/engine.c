@@ -93,7 +93,7 @@ void engine_run() {
                continue;
             }
             if(console_window_is_open()) {
-                 console_event(&e);
+                 console_event(&scene, &e);
                  continue;
             }
 

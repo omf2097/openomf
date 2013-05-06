@@ -1,6 +1,7 @@
 #include "console/console.h"
 #include "video/video.h"
 #include "game/menu/menu_background.h"
+#include "game/scene.h"
 #include "utils/log.h"
 #include <stdlib.h>
 #include <ctype.h>
@@ -10,11 +11,8 @@
 console *con = NULL;
 
 // Handle console commands
-void console_cmd_quit(int argc, char **argv) {
-    DEBUG("called %s", argv[0]);
-    for(int i=1;i<argc;++i) {
-        DEBUG("param %s", argv[i]);
-    }
+void console_cmd_quit(scene *scene, int argc, char **argv) {
+    scene->next_id = SCENE_CREDITS;
 }
 
 int make_argv(char *p, char **argv) {
@@ -31,7 +29,7 @@ int make_argv(char *p, char **argv) {
     return argc;
 }
 
-void console_handle_line() {
+void console_handle_line(scene *scene) {
     int argc = make_argv(con->input, NULL);
     if(argc > 0) {
         char *argv[argc];
@@ -40,7 +38,7 @@ void console_handle_line() {
         make_argv(con->input, argv);
         if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
             command_func *cmd = val;
-            (*cmd)(argc, argv);
+            (*cmd)(scene, argc, argv);
         }
     }
 }
@@ -69,6 +67,7 @@ int console_init() {
  
     // Add console commands
     console_add_cmd("quit", &console_cmd_quit);
+    console_add_cmd("exit", &console_cmd_quit);
  
     // Create font
     font_create(&con->font);
@@ -88,7 +87,7 @@ void console_close() {
     free(con);
 }
 
-void console_event(SDL_Event *e) {
+void console_event(scene *scene, SDL_Event *e) {
     if (e->type == SDL_KEYDOWN) {
         unsigned char code = e->key.keysym.sym;
         unsigned char len = strlen(con->input);
@@ -117,7 +116,7 @@ void console_event(SDL_Event *e) {
             // send the input somewhere and clear the input line
             if(con->input[0] != '\0') {
                 console_add_history();
-                console_handle_line();
+                console_handle_line(scene);
                 con->input[0] = '\0';
             }
         } else if (code >= 32 && code <= 126) {

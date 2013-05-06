@@ -6,8 +6,10 @@
 #include "utils/hashmap.h"
 #include <SDL2/SDL.h>
 
-typedef void(*command_func)(int argc, char **argv);
+typedef struct scene_t scene;
 typedef struct console_t console;
+
+typedef void(*command_func)(scene *scene, int argc, char **argv);
 
 struct console_t {
     font font;
@@ -24,7 +26,7 @@ struct console_t {
 
 int console_init();
 void console_close();
-void console_event(SDL_Event *event);
+void console_event(scene *scene, SDL_Event *event);
 void console_render();
 void console_tick();
 void console_add_cmd(const char *name, command_func func);
