@@ -3,13 +3,46 @@
 #include "game/menu/menu_background.h"
 #include "utils/log.h"
 #include <stdlib.h>
+#include <ctype.h>
 
 #define HISTORY_MAX 100
 
 console *con = NULL;
 
+// Handle console commands
+void console_cmd_quit(int argc, char **argv) {
+    DEBUG("called %s", argv[0]);
+    for(int i=1;i<argc;++i) {
+        DEBUG("param %s", argv[i]);
+    }
+}
+
+int make_argv(char *p, char **argv) {
+    // split line into argv, warning: does not handle quoted strings
+    int argc = 0;
+    while(isspace(*p)) { ++p; }
+    while(*p) {
+        if(argv) argv[argc] = p;
+        while(*p && !isspace(*p)) { ++p; }
+        if(argv && *p) *p++ = '\0';
+        while(isspace(*p)) { ++p; }
+        ++argc;
+    }
+    return argc;
+}
+
 void console_handle_line() {
-    
+    int argc = make_argv(con->input, NULL);
+    if(argc > 0) {
+        char *argv[argc];
+        void *val = 0;
+        unsigned int len;
+        make_argv(con->input, argv);
+        if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
+            command_func *cmd = val;
+            (*cmd)(argc, argv);
+        }
+    }
 }
 
 void console_add_history() {
@@ -30,8 +63,12 @@ int console_init() {
     con->ticks = 0;
     con->input[0] = '\0';
     con->histpos = -1;
-    list_create(&con->history);    
+    list_create(&con->history);
+    hashmap_create(&con->cmds, 8);
     menu_background_create(&con->background, 322, 101);
+ 
+    // Add console commands
+    console_add_cmd("quit", &console_cmd_quit);
  
     // Create font
     font_create(&con->font);
@@ -47,6 +84,7 @@ void console_close() {
     texture_free(&con->background);
     font_free(&con->font);
     list_free(&con->history);
+    hashmap_free(&con->cmds);
     free(con);
 }
 
@@ -101,7 +139,7 @@ void console_render() {
         if(con->histpos == -1 && con->histpos_changed) {
             con->input[0] = '\0';
             con->histpos_changed = 0;
-        }        
+        }
         video_render_sprite(&con->background, -1, con->ypos - 101, BLEND_ALPHA_FULL);
         int t = con->ticks / 2;
         // input line
@@ -128,6 +166,10 @@ void console_tick() {
     if(con->ticks == 0) {
         con->dir = 0;
     }
+}
+
+void console_add_cmd(const char *name, command_func func) {
+    hashmap_sput(&con->cmds, name, (void**)&func, sizeof(command_func*));
 }
 
 int console_window_is_open() {
