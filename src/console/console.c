@@ -4,7 +4,23 @@
 #include "utils/log.h"
 #include <stdlib.h>
 
+#define HISTORY_MAX 100
+
 console *con = NULL;
+
+void console_handle_line() {
+    
+}
+
+void console_add_history() {
+    iterator it;
+    if(list_size(&con->history) == HISTORY_MAX) {
+        list_iter_end(&con->history, &it);
+        list_delete(&con->history, &it);
+    }
+    list_prepend(&con->history, con->input, sizeof(con->input));
+    con->histpos = -1;
+}
 
 int console_init() {
     if(con != NULL) return 1;
@@ -13,6 +29,8 @@ int console_init() {
     con->ypos = 0;
     con->ticks = 0;
     con->input[0] = '\0';
+    con->histpos = -1;
+    list_create(&con->history);    
     menu_background_create(&con->background, 322, 101);
  
     // Create font
@@ -28,6 +46,7 @@ int console_init() {
 void console_close() {
     texture_free(&con->background);
     font_free(&con->font);
+    list_free(&con->history);
     free(con);
 }
 
@@ -35,25 +54,54 @@ void console_event(SDL_Event *e) {
     if (e->type == SDL_KEYDOWN) {
         unsigned char code = e->key.keysym.sym;
         unsigned char len = strlen(con->input);
+        unsigned char *state = SDL_GetKeyboardState(NULL);
         /*if ((code >= SDLK_a && code <= SDLK_z) || (code >= SDLK_0 && code <= SDLK_9) || code == SDLK_SPACE || code == SDLK) {*/
-        if (code >= 32 && code <= 126) {
-            if (len < 40) {
-                con->input[len+1] = '\0';
-                con->input[len] = code;
+        // SDLK_UP and SDLK_DOWN does not work here
+        if(state[SDL_SCANCODE_UP]) {
+            if(con->histpos < HISTORY_MAX && con->histpos < (signed int)(list_size(&con->history)-1)) {
+                con->histpos++;
+                con->histpos_changed = 1;
             }
-        } else if (code == SDLK_BACKSPACE || code == SDLK_DELETE) {
+        } else if(state[SDL_SCANCODE_DOWN]) {
+            if(con->histpos > -1) {
+                con->histpos--;
+                con->histpos_changed = 1;
+            }
+        } else if(state[SDL_SCANCODE_LEFT]) {
+            // TODO move cursor to the left
+        } else if(state[SDL_SCANCODE_RIGHT]) {
+            // TODO move cursor to the right
+        } else if (state[SDL_SCANCODE_BACKSPACE] || state[SDL_SCANCODE_DELETE]) {
             if (len > 0) {
                 con->input[len-1] = '\0';
             }
-        } else if (code == SDLK_RETURN) {
+        } else if (state[SDL_SCANCODE_RETURN]) {
             // send the input somewhere and clear the input line
-            con->input[0] = '\0';
-        }
+            if(con->input[0] != '\0') {
+                console_add_history();
+                console_handle_line();
+                con->input[0] = '\0';
+            }
+        } else if (code >= 32 && code <= 126) {
+            if (len < sizeof(con->input)-1) {
+                con->input[len+1] = '\0';
+                con->input[len] = code;
+            }
+        } 
     }
 }
 
 void console_render() {
     if (con->ypos > 0) {
+        if(con->histpos != -1 && con->histpos_changed) {
+            char *input = list_get(&con->history, con->histpos);
+            memcpy(con->input, input, sizeof(con->input));
+            con->histpos_changed = 0;
+        }
+        if(con->histpos == -1 && con->histpos_changed) {
+            con->input[0] = '\0';
+            con->histpos_changed = 0;
+        }        
         video_render_sprite(&con->background, -1, con->ypos - 101, BLEND_ALPHA_FULL);
         int t = con->ticks / 2;
         // input line

@@ -2,13 +2,16 @@
 #define _CONSOLE_H
 
 #include "game/text/text.h"
+#include "utils/list.h"
 #include <SDL2/SDL.h>
 
 typedef struct console_t console;
 
 struct console_t {
     font font;
-    char buffer[512];
+    list history;
+    int histpos;
+    int histpos_changed;
     char input[41];
     texture background;
     int isopen;
