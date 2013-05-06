@@ -57,6 +57,7 @@ add_executable(openomf
     src/game/menu/textslider.c
     src/game/menu/togglebutton.c
     src/game/menu/component.c
+    src/game/physics/physics.c
     src/controller/controller.c
     src/controller/keyboard.c
     src/console/console.c

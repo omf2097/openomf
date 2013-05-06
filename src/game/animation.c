@@ -1,4 +1,5 @@
 #include "game/animation.h"
+#include "utils/log.h"
 #include "video/texture.h"
 #include <shadowdive/shadowdive.h>
 #include <stdlib.h>
