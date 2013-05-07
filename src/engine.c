@@ -48,10 +48,10 @@ int engine_init() {
 void engine_run() {
     DEBUG("Engine starting.");
     scene scene;
-    scene.player1_har = NULL;
-    scene.player2_har = NULL;
-    scene.player1_ctrl = NULL;
-    scene.player2_ctrl = NULL;
+    scene.player1.har = NULL;
+    scene.player2.har = NULL;
+    scene.player1.ctrl = NULL;
+    scene.player2.ctrl = NULL;
 
     // Load scene
     if(scene_load(&scene, SCENE_INTRO)) {

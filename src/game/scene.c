@@ -226,11 +226,11 @@ void scene_render(scene *scene) {
     }
 
     // Render hars
-    if(scene->player1_har != NULL) {
-        har_render(scene->player1_har);
+    if(scene->player1.har != NULL) {
+        har_render(scene->player1.har);
     }
-    if(scene->player2_har != NULL) {
-        har_render(scene->player2_har);
+    if(scene->player2.har != NULL) {
+        har_render(scene->player2.har);
     }
  
     // Run custom render function, if defined
@@ -261,11 +261,11 @@ void scene_tick(scene *scene) {
     }
     
     // Har ticks
-    if(scene->player1_har != NULL) {
-        har_tick(scene->player1_har);
+    if(scene->player1.har != NULL) {
+        har_tick(scene->player1.har);
     }
-    if(scene->player2_har != NULL) {
-        har_tick(scene->player2_har);
+    if(scene->player2.har != NULL) {
+        har_tick(scene->player2.har);
     }
     
         
@@ -282,27 +282,27 @@ void scene_tick(scene *scene) {
 }
 
 void scene_set_player1_har(scene *scene, har *har) {
-    if(scene->player1_har != NULL) 
-        free(scene->player1_har);
-    scene->player1_har = har;
+    if(scene->player1.har != NULL) 
+        free(scene->player1.har);
+    scene->player1.har = har;
 }
 
 void scene_set_player2_har(scene *scene, har *har) {
-    if(scene->player2_har != NULL) 
-        free(scene->player2_har);
-    scene->player2_har = har;
+    if(scene->player2.har != NULL) 
+        free(scene->player2.har);
+    scene->player2.har = har;
 }
 
 void scene_set_player1_ctrl(scene *scene, controller *ctrl) {
-    if(scene->player1_ctrl != NULL) 
-        free(scene->player1_ctrl);
-    scene->player1_ctrl = ctrl;
+    if(scene->player1.ctrl != NULL) 
+        free(scene->player1.ctrl);
+    scene->player1.ctrl = ctrl;
 }
 
 void scene_set_player2_ctrl(scene *scene, controller *ctrl) {
-    if(scene->player2_ctrl != NULL) 
-        free(scene->player2_ctrl);
-    scene->player2_ctrl = ctrl;
+    if(scene->player2.ctrl != NULL) 
+        free(scene->player2.ctrl);
+    scene->player2.ctrl = ctrl;
 }
 
 
