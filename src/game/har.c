@@ -176,7 +176,7 @@ void har_collision_har(har *har_a, har *har_b) {
     // Make stuff easier to get to :)
     int ani_id = har_a->player.id;
     // XXX for some reason, the current frame always seems off by one
-    int frame_id = animationplayer_get_frame(&har_a->player) - 1;
+    int frame_id = animationplayer_get_frame(&har_a->player);
     sd_animation *ani = har_a->af->moves[ani_id]->animation;
 
     int other_ani_id = har_b->player.id;
