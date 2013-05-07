@@ -75,7 +75,7 @@ int arena_init(scene *scene) {
     keys->right = SDL_SCANCODE_RIGHT;
     keys->punch = SDL_SCANCODE_RETURN;
     keys->kick = SDL_SCANCODE_RSHIFT;
-    keyboard_create(player1_ctrl, scene->player1_har, keys);
+    keyboard_create(player1_ctrl, scene->player1.har, keys);
     scene_set_player1_ctrl(scene, player1_ctrl);
 
     player2_ctrl = malloc(sizeof(controller));
@@ -86,7 +86,7 @@ int arena_init(scene *scene) {
     keys2->right = SDL_SCANCODE_D;
     keys2->punch = SDL_SCANCODE_LSHIFT;
     keys2->kick = SDL_SCANCODE_LCTRL;
-    keyboard_create(player2_ctrl, scene->player2_har, keys2);
+    keyboard_create(player2_ctrl, scene->player2.har, keys2);
     scene_set_player2_ctrl(scene, player2_ctrl);
 
 
@@ -163,25 +163,25 @@ void arena_deinit(scene *scene) {
 
 void arena_tick(scene *scene) {
     if(!menu_visible) {
-        keyboard_tick(scene->player1_ctrl);
-        keyboard_tick(scene->player2_ctrl);
+        keyboard_tick(scene->player1.ctrl);
+        keyboard_tick(scene->player2.ctrl);
         
         // Collision detections
-        har_collision_har(scene->player1_har, scene->player2_har);
-        har_collision_har(scene->player2_har, scene->player1_har);
-        har_collision_scene(scene->player1_har, scene);
-        har_collision_scene(scene->player2_har, scene);
+        har_collision_har(scene->player1.har, scene->player2.har);
+        har_collision_har(scene->player2.har, scene->player1.har);
+        har_collision_scene(scene->player1.har, scene);
+        har_collision_scene(scene->player2.har, scene);
         
         // Turn the HARs to face the enemy
-        if (scene->player1_har->x > scene->player2_har->x) {
-            if (scene->player1_har->direction == 1) {
-                har_set_direction(scene->player1_har, -1);
-                har_set_direction(scene->player2_har, 1);
+        if (scene->player1.har->x > scene->player2.har->x) {
+            if (scene->player1.har->direction == 1) {
+                har_set_direction(scene->player1.har, -1);
+                har_set_direction(scene->player2.har, 1);
             }
-        } else if (scene->player1_har->x < scene->player2_har->x) {
-            if (scene->player1_har->direction == -1) {
-                har_set_direction(scene->player1_har, 1);
-                har_set_direction(scene->player2_har, -1);
+        } else if (scene->player1.har->x < scene->player2.har->x) {
+            if (scene->player1.har->direction == -1) {
+                har_set_direction(scene->player1.har, 1);
+                har_set_direction(scene->player2.har, -1);
             }
         }
     }
@@ -204,8 +204,8 @@ int arena_event(scene *scene, SDL_Event *e) {
         return menu_handle_event(&game_menu, e);
     } else {
         // TODO don't assume a keyboard controller!
-        keyboard_handle(scene->player1_ctrl, e);
-        keyboard_handle(scene->player2_ctrl, e);
+        keyboard_handle(scene->player1.ctrl, e);
+        keyboard_handle(scene->player2.ctrl, e);
         return 0;
     }
 }

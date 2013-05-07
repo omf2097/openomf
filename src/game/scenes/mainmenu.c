@@ -90,6 +90,13 @@ void mainmenu_quit(component *c, void *userdata) {
 
 void mainmenu_1v1(component *c, void *userdata) {
     scene *scene = userdata;
+    scene->player2.selectable = 0;
+    scene->next_id = SCENE_MELEE;
+}
+
+void mainmenu_1v2(component *c, void *userdata) {
+    scene *scene = userdata;
+    scene->player2.selectable = 1;
     scene->next_id = SCENE_MELEE;
 }
 
@@ -161,7 +168,6 @@ int mainmenu_init(scene *scene) {
     menu_attach(&main_menu, &quit_button, 11);
 
     // Status
-    twoplayer_button.disabled = 1;
     tourn_button.disabled = 1;
     config_button.disabled = 0;
     gameplay_button.disabled = 0;
@@ -175,6 +181,8 @@ int mainmenu_init(scene *scene) {
     quit_button.click = mainmenu_quit;
     oneplayer_button.userdata = (void*)scene;
     oneplayer_button.click = mainmenu_1v1;
+    twoplayer_button.userdata = (void*)scene;
+    twoplayer_button.click = mainmenu_1v2;
     config_button.userdata = (void*)&config_menu;
     config_button.click = mainmenu_enter_menu;
 

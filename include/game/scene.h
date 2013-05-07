@@ -29,6 +29,14 @@ enum {
     SCENE_NONE
 };
 
+typedef struct scene_player_t {
+    har *har;
+    controller *ctrl;
+    texture *portrait;
+    int selectable;
+    // store crap like agility and stuff here?
+} scene_player;
+
 typedef struct scene_t {
     struct sd_bk_file_t *bk;
     unsigned int loop;
@@ -36,15 +44,13 @@ typedef struct scene_t {
     unsigned int next_id;
     texture background;
     array animations;
-    
+
     list child_players;
     list root_players;
-    
-    har *player1_har;
-    har *player2_har;
-    controller *player1_ctrl;
-    controller *player2_ctrl;
-    
+
+    scene_player player1;
+    scene_player player2;
+
     int (*init)(struct scene_t *scene);
     int (*event)(struct scene_t *scene, SDL_Event *event);
     void (*render)(struct scene_t *scene);
