@@ -90,7 +90,7 @@ void mainmenu_quit(component *c, void *userdata) {
 
 void mainmenu_1v1(component *c, void *userdata) {
     scene *scene = userdata;
-    scene->next_id = SCENE_ARENA3;
+    scene->next_id = SCENE_MELEE;
 }
 
 void mainmenu_enter_menu(component *c, void *userdata) {
