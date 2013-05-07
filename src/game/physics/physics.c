@@ -14,7 +14,7 @@ void physics_init(physics_state *state, int pos_x, int pos_y, float spd_x, float
  * In Y, take gravity into account.
  */
 void physics_tick(physics_state *state) {
-    if(state->spd.y > 0) {
+    if(state->in_air) {
         state->pos.y += state->spd.y;
         state->spd.y -= PHYSICS_G;
         if(state->pos.y <= 0) {
@@ -46,4 +46,19 @@ void physics_recoil(physics_state *state, int spd_x, int spd_y) {
     state->spd.x = spd_x;
     state->spd.y = spd_y;
     state->in_air = 1;
+}
+
+
+void physics_move(physics_state *state, int spd_x) {
+    if(!state->in_air) {
+        state->spd.x = spd_x;
+    }
+}
+
+int physics_is_falling(physics_state *state) {
+    return (state->spd.y < 0);
+}
+
+int physics_is_stopped(physics_state *state) {
+    return (state->spd.x == 0 && state->spd.y == 0);
 }

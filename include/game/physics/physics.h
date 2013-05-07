@@ -17,6 +17,8 @@ void physics_init(physics_state *state, int pos_x, int pos_y, float spd_x, float
 void physics_tick(physics_state *state);
 void physics_jump(physics_state *state, int spd_x, int spd_y);
 void physics_recoil(physics_state *state, int spd_x, int spd_y);
-
+void physics_move(physics_state *state, int spd_x);
+int physics_is_falling(physics_state *state);
+int physics_is_stopped(physics_state *state);
 
 #endif // _PHYSICS_H
