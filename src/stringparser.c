@@ -366,9 +366,9 @@ static int sd_framelist_process(frame_list *frames, tag_list *tags, unsigned int
         unsigned int next_frame_time=0;
         int i;
         for(i = 0;i < frames->num_frames;++i) {
+            cur = &frames->frames[i];
             next_frame_time += cur->duration;
             if(ticks < next_frame_time) {
-                cur = &frames->frames[i];
                 frames->next_frame = i;
                 break;
             }
@@ -628,6 +628,7 @@ int sd_stringparser_set_string(sd_stringparser *parser, const char *string) {
 
 void sd_stringparser_reset(sd_stringparser *parser) {
     ((frame_list*)parser->frame_list)->next_frame = 0;
+    ((frame_list*)parser->frame_list)->last_tick = 0;
 }
 
 
