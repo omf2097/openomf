@@ -635,12 +635,14 @@ int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks, sd_stringpa
     out_frame->parser = parser;
     int r = sd_framelist_process(parser->frame_list, parser->tag_list, ticks, out_frame);
 
-    if(out_frame->is_animation_end) {
-        // return the result of the last run if frame ended
-        memcpy(out_frame, &parser->current_frame, sizeof(sd_stringparser_frame));
-        out_frame->is_animation_end = 1;
-    } else {
-        memcpy(&parser->current_frame, out_frame, sizeof(sd_stringparser_frame));
+    if(r == 0) {
+        if(out_frame->is_animation_end) {
+            // return the result of the last run if frame ended
+            memcpy(out_frame, &parser->current_frame, sizeof(sd_stringparser_frame));
+            out_frame->is_animation_end = 1;
+        } else {
+            memcpy(&parser->current_frame, out_frame, sizeof(sd_stringparser_frame));
+        }
     }
 
     return r;
