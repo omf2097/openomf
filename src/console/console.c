@@ -10,12 +10,21 @@
 
 console *con = NULL;
 
+int strtoint(char *input, int *output) {
+    char *end;
+    *output = (int)strtol(input, &end, 10);
+    if(!*end) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
 // Handle console commands
-void console_cmd_quit(scene *scene, int argc, char **argv) {
+void console_cmd_quit(scene *scene, void *userdata, int argc, char **argv) {
     scene->next_id = SCENE_CREDITS;
 }
 
-void console_cmd_help(scene *scene, int argc, char **argv) {
+void console_cmd_help(scene *scene, void *userdata, int argc, char **argv) {
     // print list of commands
     iterator it;
     hashmap_iter_begin(&con->cmds, &it);
@@ -27,13 +36,34 @@ void console_cmd_help(scene *scene, int argc, char **argv) {
     }
 }
 
-void console_cmd_scene(scene *scene, int argc, char **argv) {
+void console_cmd_scene(scene *scene, void *userdata, int argc, char **argv) {
     // change scene
     if(argc == 2) {
-        char *end;
-        int i = (int)strtol(argv[1], &end, 10);
-        if(!*end) {
+        int i;
+        if(strtoint(argv[1], &i)) {
             scene->next_id = i;
+        }
+    }
+}
+
+void console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
+    // change har
+    if(argc == 2) {
+        int i;
+        if(strtoint(argv[1], &i)) {
+            har *h = scene->player1.har;
+            int hx = h->x;
+            int hy = h->y;
+            int hd = h->direction;
+            if(h != NULL) {
+                har_free(h);
+                free(h);
+                scene->player1.har = NULL;
+            }
+            h = malloc(sizeof(har));
+            har_load(h, scene->bk->palettes[0], scene->bk->soundtable, i, hx, hy, hd);
+            scene_set_player1_har(scene, h);
+            scene->player1.ctrl->har = h;
         }
     }
 }
@@ -43,9 +73,9 @@ int make_argv(char *p, char **argv) {
     int argc = 0;
     while(isspace(*p)) { ++p; }
     while(*p) {
-        if(argv) argv[argc] = p;
+        if(argv != NULL) argv[argc] = p;
         while(*p && !isspace(*p)) { ++p; }
-        if(argv && *p) *p++ = '\0';
+        if(argv != NULL && *p) *p++ = '\0';
         while(isspace(*p)) { ++p; }
         ++argc;
     }
@@ -61,7 +91,7 @@ void console_handle_line(scene *scene) {
         make_argv(con->input, argv);
         if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
             command *cmd = val;
-            cmd->func(scene, argc, argv);
+            cmd->func(scene, cmd->userdata, argc, argv);
         }
     }
 }
@@ -93,7 +123,8 @@ int console_init() {
     console_add_cmd("exit",  &console_cmd_quit,  "quit the game");
     console_add_cmd("help",  &console_cmd_help,  "show all commands");
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
- 
+    console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
+    
     // Create font
     font_create(&con->font);
     if(font_load(&con->font, "resources/CHARSMAL.DAT", FONT_SMALL)) {
@@ -195,6 +226,7 @@ void console_tick() {
 void console_add_cmd(const char *name, command_func func, const char *doc) {
     command c;
     c.func = func;
+    c.userdata = NULL;
     c.doc = doc;
     hashmap_sput(&con->cmds, name, &c, sizeof(command));
 }

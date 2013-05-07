@@ -9,6 +9,7 @@
 #include "video/texturelist.h"
 #include "video/video.h"
 #include "game/scene.h"
+#include "game/settings.h"
 #include "console/console.h"
 #include <SDL2/SDL.h>
 
@@ -18,10 +19,14 @@ int run = 0;
 int _vsync = 0;
 
 int engine_init() {
-    int w = conf_int("screen_w");
-    int h = conf_int("screen_h");
-    int fs = conf_bool("fullscreen");
-    int vsync = conf_bool("vsync");
+    settings_init();
+    settings_load();
+    settings *setting = settings_get();
+    
+    int w = setting->video.screen_w;
+    int h = setting->video.screen_h;
+    int fs = setting->video.fullscreen;
+    int vsync = setting->video.vsync;
     _vsync = vsync;
     texturelist_init();
     if(video_init(w, h, fs, vsync)) {
@@ -43,16 +48,16 @@ int engine_init() {
 void engine_run() {
     DEBUG("Engine starting.");
     scene scene;
-    scene.player1_har = NULL;
-    scene.player2_har = NULL;
-    scene.player1_ctrl = NULL;
-    scene.player2_ctrl = NULL;
-    
+    scene.player1.har = NULL;
+    scene.player2.har = NULL;
+    scene.player1.ctrl = NULL;
+    scene.player2.ctrl = NULL;
+
     // Load scene
     if(scene_load(&scene, SCENE_INTRO)) {
         return;
     }
-    
+
     // Game loop
     unsigned int scene_start = SDL_GetTicks();
     unsigned int omf_wait = 0;
@@ -141,4 +146,7 @@ void engine_close() {
     texturelist_close();
     audio_close();
     soundloader_close();
+    
+    settings_save();
+    settings_free();
 }

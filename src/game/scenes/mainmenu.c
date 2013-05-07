@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
+#include "engine.h"
 #include "utils/log.h"
 #include "game/text/text.h"
 #include "audio/music.h"
@@ -11,8 +12,6 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
-
-settings setting;
 
 font font_large;
 menu *current_menu;
@@ -91,7 +90,14 @@ void mainmenu_quit(component *c, void *userdata) {
 
 void mainmenu_1v1(component *c, void *userdata) {
     scene *scene = userdata;
-    scene->next_id = SCENE_ARENA3;
+    scene->player2.selectable = 0;
+    scene->next_id = SCENE_MELEE;
+}
+
+void mainmenu_1v2(component *c, void *userdata) {
+    scene *scene = userdata;
+    scene->player2.selectable = 1;
+    scene->next_id = SCENE_MELEE;
 }
 
 void mainmenu_enter_menu(component *c, void *userdata) {
@@ -105,7 +111,7 @@ void mainmenu_prev_menu(component *c, void *userdata) {
 }
 
 void video_done_clicked(component *c, void *userdata) {    
-    settings_video *v = &setting.video;
+    settings_video *v = &settings_get()->video;
     video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
     
     mainmenu_prev_menu(c, userdata);
@@ -113,17 +119,14 @@ void video_done_clicked(component *c, void *userdata) {
 
 void resolution_toggled(component *c, void *userdata, int pos) {
     const int *res = restab[pos];
-    setting.video.screen_w = res[0];
-    setting.video.screen_h = res[1];
+    settings_get()->video.screen_w = res[0];
+    settings_get()->video.screen_h = res[1];
 }
 
 // Init menus
 int mainmenu_init(scene *scene) {
-    if(settings_init(&setting)) {
-        return 1;
-    }
-    settings_load(&setting);
-
+    settings *setting = settings_get();
+    
     // Force music playback
     if(!music_playing()) {
         music_play("resources/MENU.PSM");
@@ -165,7 +168,6 @@ int mainmenu_init(scene *scene) {
     menu_attach(&main_menu, &quit_button, 11);
 
     // Status
-    twoplayer_button.disabled = 1;
     tourn_button.disabled = 1;
     config_button.disabled = 0;
     gameplay_button.disabled = 0;
@@ -179,6 +181,8 @@ int mainmenu_init(scene *scene) {
     quit_button.click = mainmenu_quit;
     oneplayer_button.userdata = (void*)scene;
     oneplayer_button.click = mainmenu_1v1;
+    twoplayer_button.userdata = (void*)scene;
+    twoplayer_button.click = mainmenu_1v2;
     config_button.userdata = (void*)&config_menu;
     config_button.click = mainmenu_enter_menu;
 
@@ -271,25 +275,25 @@ int mainmenu_init(scene *scene) {
     menu_attach(&gameplay_menu, &gameplay_done_button, 11);
     
     // sound options
-    textselector_bindvar(&sound_toggle, &setting.sound.sound_on);
-    textselector_bindvar(&music_toggle, &setting.sound.music_on);
-    textselector_bindvar(&stereo_toggle, &setting.sound.stereo_reversed);
+    textselector_bindvar(&sound_toggle, &setting->sound.sound_on);
+    textselector_bindvar(&music_toggle, &setting->sound.music_on);
+    textselector_bindvar(&stereo_toggle, &setting->sound.stereo_reversed);
     
     // video options
     resolution_toggle.toggle = resolution_toggled;
-    textselector_bindvar(&resolution_toggle, &setting.video.resindex);
-    textselector_bindvar(&vsync_toggle, &setting.video.vsync);
-    textselector_bindvar(&fullscreen_toggle, &setting.video.fullscreen);
-    textselector_bindvar(&scaling_toggle, &setting.video.scaling);
+    textselector_bindvar(&resolution_toggle, &setting->video.resindex);
+    textselector_bindvar(&vsync_toggle, &setting->video.vsync);
+    textselector_bindvar(&fullscreen_toggle, &setting->video.fullscreen);
+    textselector_bindvar(&scaling_toggle, &setting->video.scaling);
     
     // gameplay options
-    textslider_bindvar(&speed_slider, &setting.gameplay.speed);
-    textslider_bindvar(&powerone_slider, &setting.gameplay.power1);
-    textslider_bindvar(&powertwo_slider, &setting.gameplay.power2);
-    textselector_bindvar(&fightmode_toggle, &setting.gameplay.fight_mode);
-    textselector_bindvar(&hazards_toggle, &setting.gameplay.hazards_on);
-    textselector_bindvar(&cpu_toggle, &setting.gameplay.difficulty);
-    textselector_bindvar(&round_toggle, &setting.gameplay.rounds);
+    textslider_bindvar(&speed_slider, &setting->gameplay.speed);
+    textslider_bindvar(&powerone_slider, &setting->gameplay.power1);
+    textslider_bindvar(&powertwo_slider, &setting->gameplay.power2);
+    textselector_bindvar(&fightmode_toggle, &setting->gameplay.fight_mode);
+    textselector_bindvar(&hazards_toggle, &setting->gameplay.hazards_on);
+    textselector_bindvar(&cpu_toggle, &setting->gameplay.difficulty);
+    textselector_bindvar(&round_toggle, &setting->gameplay.rounds);
 
     gameplay_header.disabled = 1;
     menu_select(&gameplay_menu, &speed_slider);
@@ -343,8 +347,7 @@ void mainmenu_deinit(scene *scene) {
 
     font_free(&font_large);
     
-    settings_save(&setting);
-    settings_free(&setting);
+    settings_save(settings_get());
 }
 
 void mainmenu_tick(scene *scene) {

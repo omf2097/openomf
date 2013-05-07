@@ -312,7 +312,6 @@ void animationplayer_set_direction(animationplayer *player, int direction) {
 }
 
 int animationplayer_get_frame(animationplayer *player) {
-    // XXX the value returned here seems to be off by one
     return sd_stringparser_get_current_frame_id(player->parser);
 }
 
