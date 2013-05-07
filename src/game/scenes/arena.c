@@ -33,6 +33,10 @@ int menu_visible = 0;
 
 void game_menu_quit(component *c, void *userdata) {
     scene *scene = userdata;
+    scene_set_player1_har(scene, NULL);
+    scene_set_player2_har(scene, NULL);
+    scene_set_player1_ctrl(scene, NULL);
+    scene_set_player2_ctrl(scene, NULL);
     scene->next_id = SCENE_MENU;
 }
 
@@ -63,15 +67,6 @@ int arena_init(scene *scene) {
             break;
     }
 
-
-    // Load some har on the arena
-    har *h1 = malloc(sizeof(har));
-    har *h2 = malloc(sizeof(har));
-    har_load(h1, scene->bk->palettes[0], scene->bk->soundtable, "resources/FIGHTR0.AF", 60, 190, 1);
-    har_load(h2, scene->bk->palettes[0], scene->bk->soundtable, "resources/FIGHTR0.AF", 260, 190, -1);
-    scene_set_player1_har(scene, h1);
-    scene_set_player2_har(scene, h2);
-
     player1_ctrl = malloc(sizeof(controller));
     keys = malloc(sizeof(keyboard_keys));
     keys->up = SDL_SCANCODE_UP;
@@ -80,7 +75,7 @@ int arena_init(scene *scene) {
     keys->right = SDL_SCANCODE_RIGHT;
     keys->punch = SDL_SCANCODE_RETURN;
     keys->kick = SDL_SCANCODE_RSHIFT;
-    keyboard_create(player1_ctrl, h1, keys);
+    keyboard_create(player1_ctrl, scene->player1_har, keys);
     scene_set_player1_ctrl(scene, player1_ctrl);
 
     player2_ctrl = malloc(sizeof(controller));
@@ -91,7 +86,7 @@ int arena_init(scene *scene) {
     keys2->right = SDL_SCANCODE_D;
     keys2->punch = SDL_SCANCODE_LSHIFT;
     keys2->kick = SDL_SCANCODE_LCTRL;
-    keyboard_create(player2_ctrl, h2, keys2);
+    keyboard_create(player2_ctrl, scene->player2_har, keys2);
     scene_set_player2_ctrl(scene, player2_ctrl);
 
 

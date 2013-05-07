@@ -17,6 +17,7 @@ void har_add_ani_player(void *userdata, int id, int mx, int my) {
     animation *ani = array_get(&har->animations, id);
     if(ani != NULL) {
         animationplayer np;
+        DEBUG("spawning %id at %d + %d +%d", id, ani->sdani->start_x, mx, har->x);
         np.x = ani->sdani->start_x + mx + har->x;
         np.y = ani->sdani->start_y + my + har->y;
         animationplayer_create(&np, id, ani);
@@ -25,6 +26,7 @@ void har_add_ani_player(void *userdata, int id, int mx, int my) {
         np.add_player = har_add_ani_player;
         np.del_player = har_set_ani_finished;
         list_append(&har->child_players, &np, sizeof(animationplayer));
+        animationplayer_run(&np);
         DEBUG("Create animation %d @ x,y = %d,%d", id, np.x, np.y);
         return;
     } 
@@ -54,7 +56,7 @@ void har_switch_animation(har *har, int id) {
     har->player.del_player = har_set_ani_finished;
 }
 
-int har_load(har *h, sd_palette *pal, char *soundtable, const char *file, int x, int y, int direction) {
+int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, int direction) {
     h->x = x;
     h->y = y;
     h->state = STATE_STANDING;
@@ -68,7 +70,47 @@ int har_load(har *h, sd_palette *pal, char *soundtable, const char *file, int x,
     h->inputs[10] = '\0';
     
     // Load AF
-    if(sd_af_load(h->af, file)) {
+    int ret;
+    switch (id) {
+        case HAR_JAGUAR:
+            ret = sd_af_load(h->af, "resources/FIGHTR0.AF");
+            break;
+        case HAR_SHADOW:
+            ret = sd_af_load(h->af, "resources/FIGHTR1.AF");
+            break;
+        case HAR_THORN:
+            ret = sd_af_load(h->af, "resources/FIGHTR2.AF");
+            break;
+        case HAR_PYROS:
+            ret = sd_af_load(h->af, "resources/FIGHTR3.AF");
+            break;
+        case HAR_ELECTRA:
+            ret = sd_af_load(h->af, "resources/FIGHTR4.AF");
+            break;
+        case HAR_KATANA:
+            ret = sd_af_load(h->af, "resources/FIGHTR5.AF");
+            break;
+        case HAR_SHREDDER:
+            ret = sd_af_load(h->af, "resources/FIGHTR6.AF");
+            break;
+        case HAR_FLAIL:
+            ret = sd_af_load(h->af, "resources/FIGHTR7.AF");
+            break;
+        case HAR_GARGOYLE:
+            ret = sd_af_load(h->af, "resources/FIGHTR8.AF");
+            break;
+        case HAR_CHRONOS:
+            ret = sd_af_load(h->af, "resources/FIGHTR9.af");
+            break;
+        case HAR_NOVA:
+            ret = sd_af_load(h->af, "resources/FIGHTR10.AF");
+            break;
+        default:
+            return 1;
+            break;
+    }
+
+    if (ret) {
         return 1;
     }
     
@@ -99,7 +141,7 @@ int har_load(har *h, sd_palette *pal, char *soundtable, const char *file, int x,
     h->player.userdata = h;
     h->player.add_player = har_add_ani_player;
     h->player.del_player = har_set_ani_finished;
-    DEBUG("Har %s loaded!", file);
+    DEBUG("Har %d loaded!", id);
     return 0;
 }
 
@@ -253,7 +295,6 @@ void har_tick(har *har) {
 }
 
 void har_render(har *har) {
-    animationplayer_render(&har->player);
  
     iterator it;
     animationplayer *tmp = 0;
@@ -261,6 +302,8 @@ void har_render(har *har) {
     while((tmp = iter_next(&it)) != NULL) {
         animationplayer_render(tmp);
     }
+
+    animationplayer_render(&har->player);
 
 }
 
