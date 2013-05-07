@@ -1,3 +1,4 @@
+#include "engine.h"
 #include "game/scene.h"
 #include "video/texture.h"
 #include "video/video.h"
@@ -16,8 +17,6 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <shadowdive/shadowdive.h>
-
-settings setting;
 
 font font_large;
 menu game_menu;
@@ -42,11 +41,7 @@ void game_menu_return(component *c, void *userdata) {
 }
 
 int arena_init(scene *scene) {
-    if(settings_init(&setting)) {
-        return 1;
-    }
-    settings_load(&setting);
-    
+    settings *setting = engine_globals()->settings;
     controller *player1_ctrl, *player2_ctrl;
     keyboard_keys *keys, *keys2;
     music_stop();
@@ -128,11 +123,11 @@ int arena_init(scene *scene) {
     menu_attach(&game_menu, &quit_button, 11);
     
     // sound options
-    textslider_bindvar(&sound_slider, &setting.sound.sound_vol);
-    textslider_bindvar(&music_slider, &setting.sound.music_vol);
+    textslider_bindvar(&sound_slider, &setting->sound.sound_vol);
+    textslider_bindvar(&music_slider, &setting->sound.music_vol);
     
     // gameplay options
-    textslider_bindvar(&speed_slider, &setting.gameplay.speed);
+    textslider_bindvar(&speed_slider, &setting->gameplay.speed);
 
     title_button.disabled=1;
 
@@ -168,8 +163,7 @@ void arena_deinit(scene *scene) {
 
     music_stop();
     
-    settings_save(&setting);
-    settings_free(&setting);
+    settings_save(engine_globals()->settings);
 }
 
 void arena_tick(scene *scene) {

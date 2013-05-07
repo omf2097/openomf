@@ -9,6 +9,7 @@
 #include "video/texturelist.h"
 #include "video/video.h"
 #include "game/scene.h"
+#include "game/settings.h"
 #include "console/console.h"
 #include <SDL2/SDL.h>
 
@@ -17,11 +18,17 @@
 int run = 0;
 int _vsync = 0;
 
+settings _settings;
+engine_global _engine_global = {NULL, &_settings};
+
 int engine_init() {
-    int w = conf_int("screen_w");
-    int h = conf_int("screen_h");
-    int fs = conf_bool("fullscreen");
-    int vsync = conf_bool("vsync");
+    settings_init(&_settings);
+    settings_load(&_settings);
+    
+    int w = _settings.video.screen_w;
+    int h = _settings.video.screen_h;
+    int fs = _settings.video.fullscreen;
+    int vsync = _settings.video.vsync;
     _vsync = vsync;
     texturelist_init();
     if(video_init(w, h, fs, vsync)) {
@@ -48,11 +55,13 @@ void engine_run() {
     scene.player1_ctrl = NULL;
     scene.player2_ctrl = NULL;
     
+    engine_globals()->scene = &scene; 
+
     // Load scene
     if(scene_load(&scene, SCENE_INTRO)) {
         return;
     }
-    
+
     // Game loop
     unsigned int scene_start = SDL_GetTicks();
     unsigned int omf_wait = 0;
@@ -141,4 +150,11 @@ void engine_close() {
     texturelist_close();
     audio_close();
     soundloader_close();
+    
+    settings_save(&_settings);
+    settings_free(&_settings);
+}
+
+engine_global *engine_globals() {
+    return &_engine_global;
 }

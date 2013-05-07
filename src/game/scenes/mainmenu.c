@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
+#include "engine.h"
 #include "utils/log.h"
 #include "game/text/text.h"
 #include "audio/music.h"
@@ -11,8 +12,6 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
-
-settings setting;
 
 font font_large;
 menu *current_menu;
@@ -105,7 +104,7 @@ void mainmenu_prev_menu(component *c, void *userdata) {
 }
 
 void video_done_clicked(component *c, void *userdata) {    
-    settings_video *v = &setting.video;
+    settings_video *v = &engine_globals()->settings->video;
     video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
     
     mainmenu_prev_menu(c, userdata);
@@ -113,17 +112,14 @@ void video_done_clicked(component *c, void *userdata) {
 
 void resolution_toggled(component *c, void *userdata, int pos) {
     const int *res = restab[pos];
-    setting.video.screen_w = res[0];
-    setting.video.screen_h = res[1];
+    engine_globals()->settings->video.screen_w = res[0];
+    engine_globals()->settings->video.screen_h = res[1];
 }
 
 // Init menus
 int mainmenu_init(scene *scene) {
-    if(settings_init(&setting)) {
-        return 1;
-    }
-    settings_load(&setting);
-
+    settings *setting = engine_globals()->settings;
+    
     // Force music playback
     if(!music_playing()) {
         music_play("resources/MENU.PSM");
@@ -271,25 +267,25 @@ int mainmenu_init(scene *scene) {
     menu_attach(&gameplay_menu, &gameplay_done_button, 11);
     
     // sound options
-    textselector_bindvar(&sound_toggle, &setting.sound.sound_on);
-    textselector_bindvar(&music_toggle, &setting.sound.music_on);
-    textselector_bindvar(&stereo_toggle, &setting.sound.stereo_reversed);
+    textselector_bindvar(&sound_toggle, &setting->sound.sound_on);
+    textselector_bindvar(&music_toggle, &setting->sound.music_on);
+    textselector_bindvar(&stereo_toggle, &setting->sound.stereo_reversed);
     
     // video options
     resolution_toggle.toggle = resolution_toggled;
-    textselector_bindvar(&resolution_toggle, &setting.video.resindex);
-    textselector_bindvar(&vsync_toggle, &setting.video.vsync);
-    textselector_bindvar(&fullscreen_toggle, &setting.video.fullscreen);
-    textselector_bindvar(&scaling_toggle, &setting.video.scaling);
+    textselector_bindvar(&resolution_toggle, &setting->video.resindex);
+    textselector_bindvar(&vsync_toggle, &setting->video.vsync);
+    textselector_bindvar(&fullscreen_toggle, &setting->video.fullscreen);
+    textselector_bindvar(&scaling_toggle, &setting->video.scaling);
     
     // gameplay options
-    textslider_bindvar(&speed_slider, &setting.gameplay.speed);
-    textslider_bindvar(&powerone_slider, &setting.gameplay.power1);
-    textslider_bindvar(&powertwo_slider, &setting.gameplay.power2);
-    textselector_bindvar(&fightmode_toggle, &setting.gameplay.fight_mode);
-    textselector_bindvar(&hazards_toggle, &setting.gameplay.hazards_on);
-    textselector_bindvar(&cpu_toggle, &setting.gameplay.difficulty);
-    textselector_bindvar(&round_toggle, &setting.gameplay.rounds);
+    textslider_bindvar(&speed_slider, &setting->gameplay.speed);
+    textslider_bindvar(&powerone_slider, &setting->gameplay.power1);
+    textslider_bindvar(&powertwo_slider, &setting->gameplay.power2);
+    textselector_bindvar(&fightmode_toggle, &setting->gameplay.fight_mode);
+    textselector_bindvar(&hazards_toggle, &setting->gameplay.hazards_on);
+    textselector_bindvar(&cpu_toggle, &setting->gameplay.difficulty);
+    textselector_bindvar(&round_toggle, &setting->gameplay.rounds);
 
     gameplay_header.disabled = 1;
     menu_select(&gameplay_menu, &speed_slider);
@@ -343,8 +339,7 @@ void mainmenu_deinit(scene *scene) {
 
     font_free(&font_large);
     
-    settings_save(&setting);
-    settings_free(&setting);
+    settings_save(engine_globals()->settings);
 }
 
 void mainmenu_tick(scene *scene) {
