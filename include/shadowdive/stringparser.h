@@ -49,6 +49,9 @@ typedef struct sd_stringparser_t {
     char *string;
     sd_stringparser_tag_list tag_list;
     sd_stringparser_frame_list frame_list;
+    
+    /* current_frame is not available until sd_stringparser_run has been called first */
+    sd_stringparser_frame current_frame;
 } sd_stringparser;
 
 sd_stringparser* sd_stringparser_create();
