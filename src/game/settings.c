@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+settings _settings;
+
 typedef enum field_type_t {
     TYPE_INT, 
     TYPE_FLOAT,
@@ -127,28 +129,32 @@ void settings_free_strings(void *st, const field *fields, int nfields) {
     }
 }
 
-int settings_init(settings *s) {
-    memset(s, 0, sizeof(settings));
+int settings_init() {
+    memset(&_settings, 0, sizeof(settings));
     return conf_init("openomf.conf");
 }
 
-void settings_load(settings *s) {
-    settings_load_fields(&s->video, f_video, sizeof(f_video)/sizeof(field));
-    settings_load_fields(&s->sound, f_sound, sizeof(f_sound)/sizeof(field));
-    settings_load_fields(&s->gameplay, f_gameplay, sizeof(f_gameplay)/sizeof(field));
+void settings_load() {
+    settings_load_fields(&_settings.video, f_video, sizeof(f_video)/sizeof(field));
+    settings_load_fields(&_settings.sound, f_sound, sizeof(f_sound)/sizeof(field));
+    settings_load_fields(&_settings.gameplay, f_gameplay, sizeof(f_gameplay)/sizeof(field));
 }
-void settings_save(settings *s) {
-    settings_save_fields(&s->video, f_video, sizeof(f_video)/sizeof(field));
-    settings_save_fields(&s->sound, f_sound, sizeof(f_sound)/sizeof(field));
-    settings_save_fields(&s->gameplay, f_gameplay, sizeof(f_gameplay)/sizeof(field));
+void settings_save() {
+    settings_save_fields(&_settings.video, f_video, sizeof(f_video)/sizeof(field));
+    settings_save_fields(&_settings.sound, f_sound, sizeof(f_sound)/sizeof(field));
+    settings_save_fields(&_settings.gameplay, f_gameplay, sizeof(f_gameplay)/sizeof(field));
     if(conf_write_config("openomf.conf")) {
         PERROR("Failed to write config file!\n");
     }
 }
-void settings_free(settings *s) {
-    settings_free_strings(&s->video, f_video, sizeof(f_video)/sizeof(field));
-    settings_free_strings(&s->sound, f_sound, sizeof(f_sound)/sizeof(field));
-    settings_free_strings(&s->gameplay, f_gameplay, sizeof(f_gameplay)/sizeof(field));
+void settings_free() {
+    settings_free_strings(&_settings.video, f_video, sizeof(f_video)/sizeof(field));
+    settings_free_strings(&_settings.sound, f_sound, sizeof(f_sound)/sizeof(field));
+    settings_free_strings(&_settings.gameplay, f_gameplay, sizeof(f_gameplay)/sizeof(field));
     conf_close();
+}
+
+settings *settings_get() {
+    return &_settings;
 }
 

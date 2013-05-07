@@ -50,11 +50,13 @@ typedef struct settings_t {
     settings_gameplay gameplay;
 } settings;
 
-int settings_init(settings *s);
-void settings_free(settings *s);
+int settings_init();
+void settings_free();
 
-void settings_load(settings *s);
-void settings_save(settings *s);
+void settings_load();
+void settings_save();
+
+settings *settings_get();
 
 #endif // _SETTINGS_H
 

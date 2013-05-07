@@ -18,17 +18,15 @@
 int run = 0;
 int _vsync = 0;
 
-settings _settings;
-engine_global _engine_global = {NULL, &_settings};
-
 int engine_init() {
-    settings_init(&_settings);
-    settings_load(&_settings);
+    settings_init();
+    settings_load();
+    settings *setting = settings_get();
     
-    int w = _settings.video.screen_w;
-    int h = _settings.video.screen_h;
-    int fs = _settings.video.fullscreen;
-    int vsync = _settings.video.vsync;
+    int w = setting->video.screen_w;
+    int h = setting->video.screen_h;
+    int fs = setting->video.fullscreen;
+    int vsync = setting->video.vsync;
     _vsync = vsync;
     texturelist_init();
     if(video_init(w, h, fs, vsync)) {
@@ -54,8 +52,6 @@ void engine_run() {
     scene.player2_har = NULL;
     scene.player1_ctrl = NULL;
     scene.player2_ctrl = NULL;
-    
-    engine_globals()->scene = &scene; 
 
     // Load scene
     if(scene_load(&scene, SCENE_INTRO)) {
@@ -151,10 +147,6 @@ void engine_close() {
     audio_close();
     soundloader_close();
     
-    settings_save(&_settings);
-    settings_free(&_settings);
-}
-
-engine_global *engine_globals() {
-    return &_engine_global;
+    settings_save();
+    settings_free();
 }

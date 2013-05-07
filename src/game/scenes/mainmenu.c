@@ -104,7 +104,7 @@ void mainmenu_prev_menu(component *c, void *userdata) {
 }
 
 void video_done_clicked(component *c, void *userdata) {    
-    settings_video *v = &engine_globals()->settings->video;
+    settings_video *v = &settings_get()->video;
     video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
     
     mainmenu_prev_menu(c, userdata);
@@ -112,13 +112,13 @@ void video_done_clicked(component *c, void *userdata) {
 
 void resolution_toggled(component *c, void *userdata, int pos) {
     const int *res = restab[pos];
-    engine_globals()->settings->video.screen_w = res[0];
-    engine_globals()->settings->video.screen_h = res[1];
+    settings_get()->video.screen_w = res[0];
+    settings_get()->video.screen_h = res[1];
 }
 
 // Init menus
 int mainmenu_init(scene *scene) {
-    settings *setting = engine_globals()->settings;
+    settings *setting = settings_get();
     
     // Force music playback
     if(!music_playing()) {
@@ -339,7 +339,7 @@ void mainmenu_deinit(scene *scene) {
 
     font_free(&font_large);
     
-    settings_save(engine_globals()->settings);
+    settings_save(settings_get());
 }
 
 void mainmenu_tick(scene *scene) {

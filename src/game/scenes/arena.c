@@ -41,7 +41,7 @@ void game_menu_return(component *c, void *userdata) {
 }
 
 int arena_init(scene *scene) {
-    settings *setting = engine_globals()->settings;
+    settings *setting = settings_get();
     controller *player1_ctrl, *player2_ctrl;
     keyboard_keys *keys, *keys2;
     music_stop();
@@ -163,7 +163,7 @@ void arena_deinit(scene *scene) {
 
     music_stop();
     
-    settings_save(engine_globals()->settings);
+    settings_save(settings_get());
 }
 
 void arena_tick(scene *scene) {
