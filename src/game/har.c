@@ -93,6 +93,14 @@ void phycb_move(physics_state *state, void *userdata) {
     // TODO: Handle reverse animation if necessary
 }
 
+void phycb_crouch(physics_state *state, void *userdata) {
+    har *h = userdata;
+    h->state = STATE_CROUCHING;
+    har_switch_animation(h, 4);
+    //animationplayer_set_repeat(&h->player, 1);
+    DEBUG("crouching");
+}
+
 int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, int direction) {
     // Physics & callbacks
     physics_init(&h->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, 0.4f, h);
@@ -101,6 +109,7 @@ int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, in
     h->phy.stop = phycb_stop;
     h->phy.jump = phycb_jump;
     h->phy.move = phycb_move;
+    h->phy.crouch = phycb_crouch;
     
     // Initial bot stuff
     h->state = STATE_STANDING;
@@ -272,7 +281,7 @@ void har_tick(har *har) {
     physics_tick(&har->phy);
 
     har->player.x = har->phy.pos.x;
-    if(har->state == STATE_JUMPING) {
+    if(physics_is_in_air(&har->phy)) {
         har->player.y = har->phy.pos.y - 40;
     } else {
         har->player.y = har->phy.pos.y;
@@ -410,6 +419,7 @@ void har_act(har *har, int act_type) {
             break;
         case ACT_STOP:
             physics_move(&har->phy, 0);
+            har->state = STATE_STANDING;
             add_input(har, '5');
             break;
         case ACT_WALKLEFT:
@@ -419,13 +429,7 @@ void har_act(har *har, int act_type) {
             physics_move(&har->phy, 1.0f);
             break;
         case ACT_CROUCH:
-            if (har->state != STATE_CROUCHING && har->state != STATE_JUMPING) {
-                har->state = STATE_CROUCHING;
-                physics_move(&har->phy, 0);
-                har_switch_animation(har, 4);
-                animationplayer_set_repeat(&har->player, 1);
-                DEBUG("crouching");
-            }
+            physics_crouch(&har->phy);
             break;
         case ACT_JUMP:
             physics_jump(&har->phy, -8.0f);
