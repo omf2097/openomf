@@ -30,6 +30,8 @@ enum {
 };
 
 typedef struct scene_player_t {
+    int har_id;
+    int player_id;
     har *har;
     controller *ctrl;
     texture *portrait;

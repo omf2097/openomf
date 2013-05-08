@@ -64,7 +64,6 @@ sd_rgba_image* sub_sprite(sd_sprite *sprite, sd_palette *pal, int x, int y, int 
     return out;
 }
 
-// Init menus
 int melee_init(scene *scene) {
     char bitmap[51*36*4];
     memset(&bitmap, 255, 51*36*4);
@@ -161,18 +160,18 @@ int melee_event(scene *scene, SDL_Event *event) {
                     player_id_b = 5*row_b + column_b;
                     selection = 1;
                 } else {
-                    har *h1 = malloc(sizeof(har));
-                    har *h2 = malloc(sizeof(har));
-                    har_load(h1, scene->bk->palettes[0], scene->bk->soundtable, 5*row_a+column_a, 60, 190, 1);
+                    scene->player1.har_id = 5*row_a+column_a;
+                    scene->player1.player_id = player_id_a;
                     if (scene->player2.selectable) {
-                        har_load(h2, scene->bk->palettes[0], scene->bk->soundtable, 5*row_b+column_b, 260, 190, -1);
+                        scene->player2.har_id = 5*row_b+column_b;
+                        scene->player2.player_id = player_id_b;
                     } else {
                         // default to jaguar
-                        har_load(h2, scene->bk->palettes[0], scene->bk->soundtable, HAR_JAGUAR, 260, 190, -1);
+                        scene->player2.har_id = 0;
+                        // default to shirro
+                        scene->player2.player_id = 4;
                     }
-                    scene_set_player1_har(scene, h1);
-                    scene_set_player2_har(scene, h2);
-                    scene->next_id = SCENE_ARENA3;
+                    scene->next_id = SCENE_VS;
                 }
                 break;
             case SDLK_LEFT:

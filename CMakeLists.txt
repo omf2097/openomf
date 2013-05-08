@@ -48,6 +48,7 @@ add_executable(openomf
     src/game/scenes/credits.c
     src/game/scenes/arena.c
     src/game/scenes/melee.c
+    src/game/scenes/vs.c
     src/game/text/text.c
     src/game/text/languages.c
     src/game/menu/menu.c

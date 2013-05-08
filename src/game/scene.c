@@ -14,6 +14,7 @@
 #include "game/scenes/credits.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/melee.h"
+#include "game/scenes/vs.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
 
@@ -90,6 +91,9 @@ int scene_load(scene *scene, unsigned int scene_id) {
         case SCENE_MELEE:
             fixup_palette(scene->bk->palettes[0]);
             melee_load(scene); break;
+        case SCENE_VS:
+            fixup_palette(scene->bk->palettes[0]);
+            vs_load(scene); break;
         case SCENE_ARENA0:
         case SCENE_ARENA1:
         case SCENE_ARENA2:
@@ -295,7 +299,7 @@ void scene_tick(scene *scene) {
         
     // If no animations to play, jump to next scene (if any)
     // TODO: Hackish, make this nicer.
-    if(list_size(&scene->root_players) <= 0 && scene->this_id != SCENE_MELEE) {
+    if(list_size(&scene->root_players) <= 0 && scene->this_id != SCENE_MELEE && scene->this_id != SCENE_VS) {
         if (scene->this_id == SCENE_CREDITS) {
             scene->next_id = SCENE_NONE;
         } else {
