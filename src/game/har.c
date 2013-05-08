@@ -17,9 +17,9 @@ void har_add_ani_player(void *userdata, int id, int mx, int my) {
     animation *ani = array_get(&har->animations, id);
     if(ani != NULL) {
         animationplayer np;
-        DEBUG("spawning %id at %d + %d +%d", id, ani->sdani->start_x, mx, har->x);
-        np.x = ani->sdani->start_x + mx + har->x;
-        np.y = ani->sdani->start_y + my + har->y;
+        DEBUG("spawning %id at %d + %d +%d", id, ani->sdani->start_x, mx, har->phy.pos.x);
+        np.x = ani->sdani->start_x + mx + har->phy.pos.x;
+        np.y = ani->sdani->start_y + my + har->phy.pos.y;
         animationplayer_create(&np, id, ani);
         animationplayer_set_direction(&np, har->direction);
         np.userdata = userdata;
@@ -56,15 +56,58 @@ void har_switch_animation(har *har, int id) {
     har->player.del_player = har_set_ani_finished;
 }
 
+void phycb_fall(physics_state *state, void *userdata) {
+    har *h = userdata;
+    animationplayer_next_frame(&h->player);
+    DEBUG("switching to falling");
+}
+
+void phycb_floor_hit(physics_state *state, void *userdata, int flight_mode) {
+    har *h = userdata;
+    h->player.finished = 1;
+    h->state = STATE_STANDING;
+    DEBUG("stopped jumping");
+}
+
+void phycb_stop(physics_state *state, void *userdata) {
+    har *h = userdata;
+    h->state = STATE_STANDING;
+    har_switch_animation(h, 11);
+    animationplayer_set_repeat(&h->player, 1);
+    DEBUG("switching to idle");
+}
+
+void phycb_jump(physics_state *state, void *userdata) {
+    har *h = userdata;
+    h->state = STATE_JUMPING;
+    har_switch_animation(h, 1);
+    DEBUG("switching to jumping");
+}
+
+void phycb_move(physics_state *state, void *userdata) {
+    har *h = userdata;
+    h->state = STATE_WALKING;
+    har_switch_animation(h, 10);
+    animationplayer_set_repeat(&h->player, 1);
+    DEBUG("switching to walking");
+    // TODO: Handle reverse animation if necessary
+}
+
 int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, int direction) {
-    h->x = x;
-    h->y = y;
+    // Physics & callbacks
+    physics_init(&h->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, 0.4f, h);
+    h->phy.fall = phycb_fall;
+    h->phy.floor_hit = phycb_floor_hit;
+    h->phy.stop = phycb_stop;
+    h->phy.jump = phycb_jump;
+    h->phy.move = phycb_move;
+    
+    // Initial bot stuff
     h->state = STATE_STANDING;
     h->direction = direction;
-    h->x_per_tick = 0;
-    h->y_per_tick = 0;
     h->tick = 0; // TEMPORARY
     h->af = sd_af_create();
+    
     // fill the input buffer with 'pauses'
     memset(h->inputs, '5', 10);
     h->inputs[10] = '\0';
@@ -132,8 +175,8 @@ int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, in
     list_create(&h->child_players);
 
     // Start player with animation 11
-    h->player.x = h->x;
-    h->player.y = h->y;
+    h->player.x = h->phy.pos.x;
+    h->player.y = h->phy.pos.y;
     animationplayer_create(&h->player, 11, array_get(&h->animations, 11));
     animationplayer_set_direction(&h->player, h->direction);
     animationplayer_set_repeat(&h->player, 1);
@@ -187,19 +230,19 @@ void har_collision_har(har *har_a, har *har_b) {
     /*DEBUG("other frame letter is %d -> %c for frame %d", other_frame_letter, other_frame_letter, frame_id);*/
     /*sd_animation *other_ani = har_a->af->moves[ani_id]->animation;*/
     sd_sprite *sprite = har_b->af->moves[other_ani_id]->animation->sprites[(int)other_frame_letter - 65];
-    int x = har_b->x + sprite->pos_x;
-    int y = har_b->y + sprite->pos_y;
+    int x = har_b->phy.pos.x + sprite->pos_x;
+    int y = har_b->phy.pos.y + sprite->pos_y;
     int w = sprite->img->w;
     int h = sprite->img->h;
 
     // Find collision points, if any
     for(int i = 0; i < ani->col_coord_count; i++) {
         if(ani->col_coord_table[i].y_ext == frame_id) {
-            DEBUG("%d vs %d-%d", (ani->col_coord_table[i].x * har_a->direction) + har_a->x, x, x+w);
+            DEBUG("%d vs %d-%d", (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, x, x+w);
             // coarse check vs sprite dimensions
-            if ((ani->col_coord_table[i].x * har_a->direction) + har_a->x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->x < x + w) {
+            if ((ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->phy.pos.x < x + w) {
                 DEBUG("x coordinate hit!");
-                if (ani->col_coord_table[i].y + har_a->y > y && ani->col_coord_table[i].y + har_a->y < y + h) {
+                if (ani->col_coord_table[i].y + har_a->phy.pos.y > y && ani->col_coord_table[i].y + har_a->phy.pos.y < y + h) {
                     DEBUG("y coordinate hit!");
                     // TODO Do a fine grained per-pixel check for a hit
                     har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
@@ -211,51 +254,29 @@ void har_collision_har(har *har_a, har *har_b) {
     if (har_a->state == STATE_WALKING && har_a->direction == -1) {
         // walking towards the enemy
         // 35 is a made up number that 'looks right'
-        DEBUG("%d between %d, %d", har_a->x, har_b->x, har_b->x+35);
-        if (har_a->x < har_b->x+35 && har_a->x > har_b->x) {
-            har_a->x = har_b->x+35;
+        DEBUG("%d between %d, %d", har_a->phy.pos.x, har_b->phy.pos.x, har_b->phy.pos.x+35);
+        if (har_a->phy.pos.x < har_b->phy.pos.x+35 && har_a->phy.pos.x > har_b->phy.pos.x) {
+            har_a->phy.pos.x = har_b->phy.pos.x+35;
         }
     }
     if (har_a->state == STATE_WALKING && har_a->direction == 1) {
         // walking towards the enemy
-        DEBUG("%d between %d, %d", har_a->x, har_b->x-35, har_b->x);
-        if (har_a->x+35 > har_b->x && har_a->x < har_b->x) {
-            har_a->x = har_b->x - 35;
+        DEBUG("%d between %d, %d", har_a->phy.pos.x, har_b->phy.pos.x-35, har_b->phy.pos.x);
+        if (har_a->phy.pos.x+35 > har_b->phy.pos.x && har_a->phy.pos.x < har_b->phy.pos.x) {
+            har_a->phy.pos.x = har_b->phy.pos.x - 35;
         }
     }
 }
 
 void har_tick(har *har) {
-    har->x += har->x_per_tick;
-    har->y += har->y_per_tick;
-    
-    //bounds
-    if (har->x < 24) {
-        har->x = 24;
-    }
-    if (har->x > 295) {
-        har->x = 295;
-    }
-    if (har->y < 50) {
-        har->y = 50;
-        // start falling
-        har->y_per_tick = 2;
-        // jump to next frame in animation
-        DEBUG("switching to falling");
-        animationplayer_next_frame(&har->player);
-    }
+    physics_tick(&har->phy);
 
-    // jumping magic
-    if (har->y > 190 - 40 && har->state == STATE_JUMPING) {
-        har->y = 190;
-        har->y_per_tick = 0;
-        har->player.finished = 1;
-        DEBUG("stopped jumping");
-        har->state = STATE_STANDING;
+    har->player.x = har->phy.pos.x;
+    if(har->state == STATE_JUMPING) {
+        har->player.y = har->phy.pos.y - 40;
+    } else {
+        har->player.y = har->phy.pos.y;
     }
-
-    har->player.x = har->x;
-    har->player.y = har->y;
     har->tick++;
 
     iterator it;
@@ -294,7 +315,6 @@ void har_tick(har *har) {
 }
 
 void har_render(har *har) {
- 
     iterator it;
     animationplayer *tmp = 0;
     list_iter_begin(&har->child_players, &it);
@@ -303,7 +323,6 @@ void har_render(har *har) {
     }
 
     animationplayer_render(&har->player);
-
 }
 
 void har_set_direction(har *har, int direction) {
@@ -390,58 +409,26 @@ void har_act(har *har, int act_type) {
             add_input(har, 'P');
             break;
         case ACT_STOP:
-            if (har->state != STATE_STANDING && har->state != STATE_JUMPING) {
-                DEBUG("standing");
-                har->state = STATE_STANDING;
-                har_switch_animation(har, 11);
-                animationplayer_set_repeat(&har->player, 1);
-            } else if (har->state == STATE_JUMPING && har->y_per_tick < 0) {
-                // start falling
-                har->y_per_tick = 2;
-                // jump to next frame in animation
-                DEBUG("switching to falling");
-                animationplayer_next_frame(&har->player);
-            }
-            har->x_per_tick = 0;
+            physics_move(&har->phy, 0);
             add_input(har, '5');
             break;
         case ACT_WALKLEFT:
-            if (har->state != STATE_WALKING && har->state != STATE_JUMPING) {
-                DEBUG("walk left");
-                har->state = STATE_WALKING;
-                // TODO technically we should play this animation in reverse
-                har_switch_animation(har, 10);
-                animationplayer_set_repeat(&har->player, 1);
-            }
-            har->x_per_tick = -1;
+            physics_move(&har->phy, -1.0f);
             break;
         case ACT_WALKRIGHT:
-            if (har->state != STATE_WALKING && har->state != STATE_JUMPING) {
-                DEBUG("walk right");
-                har->state = STATE_WALKING;
-                har_switch_animation(har, 10);
-                animationplayer_set_repeat(&har->player, 1);
-            }
-            har->x_per_tick = 1;
+            physics_move(&har->phy, 1.0f);
             break;
         case ACT_CROUCH:
             if (har->state != STATE_CROUCHING && har->state != STATE_JUMPING) {
-                DEBUG("crouching");
                 har->state = STATE_CROUCHING;
-                har->x_per_tick = 0;
+                physics_move(&har->phy, 0);
                 har_switch_animation(har, 4);
                 animationplayer_set_repeat(&har->player, 1);
+                DEBUG("crouching");
             }
             break;
         case ACT_JUMP:
-            if (har->state != STATE_JUMPING) {
-                DEBUG("jump");
-                har->state = STATE_JUMPING;
-                har->y_per_tick = -2;
-                har->y -= 40;
-
-                har_switch_animation(har, 1);
-            }
+            physics_jump(&har->phy, -8.0f);
             break;
     }
     /*DEBUG("input buffer is now %s", har->inputs);*/
@@ -458,14 +445,9 @@ void har_act(har *har, int act_type) {
                     DEBUG("matched move %d with string %s", i, move->move_string);
                     DEBUG("input was %s", har->inputs);
 
+                    physics_move(&har->phy, 0);
                     har_switch_animation(har, i);
                     har->inputs[0]='\0';
-                    har->x_per_tick = 0;
-                    if (har->state == STATE_JUMPING) {
-                        har->y_per_tick = 2;
-                    } else {
-                        har->y_per_tick = 0;
-                    }
                     break;
                 }
             }

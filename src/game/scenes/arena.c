@@ -173,12 +173,12 @@ void arena_tick(scene *scene) {
         har_collision_scene(scene->player2.har, scene);
         
         // Turn the HARs to face the enemy
-        if (scene->player1.har->x > scene->player2.har->x) {
+        if (scene->player1.har->phy.pos.x > scene->player2.har->phy.pos.x) {
             if (scene->player1.har->direction == 1) {
                 har_set_direction(scene->player1.har, -1);
                 har_set_direction(scene->player2.har, 1);
             }
-        } else if (scene->player1.har->x < scene->player2.har->x) {
+        } else if (scene->player1.har->phy.pos.x < scene->player2.har->phy.pos.x) {
             if (scene->player1.har->direction == -1) {
                 har_set_direction(scene->player1.har, 1);
                 har_set_direction(scene->player2.har, -1);

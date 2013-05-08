@@ -5,6 +5,7 @@
 #include "utils/array.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
+#include "game/physics/physics.h"
 
 typedef struct scene_t scene;
 typedef struct har_t har;
@@ -64,9 +65,8 @@ enum {
 };
 
 struct har_t {
-    int x,y;
+    physics_state phy;
     unsigned int state;
-    int x_per_tick, y_per_tick;
     int direction; // 1 or -1
     sd_af_file *af;
     array animations;
