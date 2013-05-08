@@ -82,6 +82,9 @@ int scene_load(scene *scene, unsigned int scene_id) {
 
     scene->this_id = scene_id;
     scene->next_id = scene_id;
+
+    // optional callback
+    scene->post_init = NULL;
     
     // Load specific stuff
     switch(scene_id) {
@@ -157,7 +160,13 @@ int scene_load(scene *scene, unsigned int scene_id) {
             }
         }
     }
-    
+
+    // run post init, if defined
+    if(scene->post_init != NULL) {
+        DEBUG("running post init");
+        scene->post_init(scene);
+    }
+
     // All done
     DEBUG("Scene %i loaded! Textures now using %d bytes of (v)ram!", scene_id, texturelist_get_bsize());
     return 0;

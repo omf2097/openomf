@@ -54,6 +54,7 @@ typedef struct scene_t {
     scene_player player2;
 
     int (*init)(struct scene_t *scene);
+    void (*post_init)(struct scene_t *scene);
     int (*event)(struct scene_t *scene, SDL_Event *event);
     void (*render)(struct scene_t *scene);
     void (*deinit)(struct scene_t *scene);
