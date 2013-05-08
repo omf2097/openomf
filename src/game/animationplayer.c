@@ -249,6 +249,10 @@ void animationplayer_run(animationplayer *player) {
             int slide = 0;
             if(isset(n, "x=")) {
                 slide = get(n, "x=");
+                if (player->direction == -1) {
+                    // if the sprite is flipped horizontally, adjust the X coordinates
+                    slide = 320 - slide;
+                }
                 if (slide != player->x) {
                     DEBUG("%d player->x was %d, interpolating to %d", player->id, player->x, slide);
                     // scale distance by 100 so we can handle uneven interpolation (eg. 160/100)

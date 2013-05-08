@@ -91,8 +91,9 @@ void vs_post_init(scene *scene) {
     ani = array_get(&scene->animations, 8);
     if (ani != NULL) {
         animationplayer_create(&scientist, 8, ani);
-        scientist.x = 300;
+        scientist.x = 320-114;
         scientist.y = 118;
+        scientist.direction = -1;
     } else {
         DEBUG("could not load scientist animation");
     }
