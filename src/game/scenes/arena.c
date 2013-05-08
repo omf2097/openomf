@@ -143,7 +143,10 @@ int arena_init(scene *scene) {
 void arena_deinit(scene *scene) {
     menu_visible = 0;
     scene_set_player1_har(scene, NULL);
-
+    scene_set_player2_har(scene, NULL);
+    scene_set_player1_ctrl(scene, NULL);
+    scene_set_player2_ctrl(scene, NULL);
+    
     textbutton_free(&title_button);
     textbutton_free(&return_button);
     textslider_free(&sound_slider);
@@ -154,6 +157,7 @@ void arena_deinit(scene *scene) {
     textbutton_free(&quit_button);
     menu_free(&game_menu);
 
+    font_free(&font_large);
     texture_free(&tex);
 
     music_stop();

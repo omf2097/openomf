@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
+#include "controller/keyboard.h"
 #include "utils/array.h"
 #include "utils/log.h"
 #include "video/texture.h"
@@ -282,26 +283,38 @@ void scene_tick(scene *scene) {
 }
 
 void scene_set_player1_har(scene *scene, har *har) {
-    if(scene->player1.har != NULL) 
+    if(scene->player1.har != NULL) {
+        har_free(scene->player1.har);
         free(scene->player1.har);
+    }
     scene->player1.har = har;
 }
 
 void scene_set_player2_har(scene *scene, har *har) {
-    if(scene->player2.har != NULL) 
+    if(scene->player2.har != NULL) {
+        har_free(scene->player2.har);
         free(scene->player2.har);
+    }
     scene->player2.har = har;
 }
 
 void scene_set_player1_ctrl(scene *scene, controller *ctrl) {
-    if(scene->player1.ctrl != NULL) 
+    if(scene->player1.ctrl != NULL) {
+        if(scene->player1.ctrl->type == CTRL_TYPE_KEYBOARD) {
+            keyboard_free(scene->player1.ctrl);
+        }
         free(scene->player1.ctrl);
+    }
     scene->player1.ctrl = ctrl;
 }
 
 void scene_set_player2_ctrl(scene *scene, controller *ctrl) {
-    if(scene->player2.ctrl != NULL) 
+    if(scene->player2.ctrl != NULL) {
+        if(scene->player2.ctrl->type == CTRL_TYPE_KEYBOARD) {
+            keyboard_free(scene->player2.ctrl);
+        }
         free(scene->player2.ctrl);
+    }
     scene->player2.ctrl = ctrl;
 }
 
