@@ -13,6 +13,20 @@
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
 
+struct resolution_t {
+    int w;  int h;  const char *name;
+} _resolutions[] = {
+    {320,   200,    "320x200"},
+    {640,   400,    "640x400"},
+    {1280,  800,    "1280x800"},
+    {1600,  1000,   "1600x1000"},
+    {1650,  1080,   "1650x1080"},
+    {1920,  1080,   "1920x1080"},
+    {1920,  1200,   "1920x1200"},
+    {2560,  1440,   "2560x1440"},
+    {2560,  1600,   "2560x1600"}
+};
+
 font font_large;
 menu *current_menu;
 menu main_menu;
@@ -56,28 +70,6 @@ component cpu_toggle;
 component round_toggle;
 component gameplay_done_button;
 
-const int restab[][2] = {
-    {320, 200},
-    {640, 400},
-    {1280, 800},
-    {1600, 1000},
-    {1920, 1080},
-    {1920, 1200},
-    {2560, 1440},
-    {2560, 1600}
-};
-
-const char *restabstr[] = {
-    "320x200",
-    "640x400",
-    "1280x800",
-    "1600x1000",
-    "1920x1080",
-    "1920x1200",
-    "2560x1440",
-    "2560x1600"
-}; 
-
 // Menu stack
 menu *mstack[10];
 int mstack_pos = 0;
@@ -118,9 +110,8 @@ void video_done_clicked(component *c, void *userdata) {
 }
 
 void resolution_toggled(component *c, void *userdata, int pos) {
-    const int *res = restab[pos];
-    settings_get()->video.screen_w = res[0];
-    settings_get()->video.screen_h = res[1];
+    settings_get()->video.screen_w = _resolutions[pos].w;
+    settings_get()->video.screen_h = _resolutions[pos].h;
 }
 
 // Init menus
@@ -221,9 +212,9 @@ int mainmenu_init(scene *scene) {
 
     menu_create(&video_menu, 165, 5, 151, 119);
     textbutton_create(&video_header, &font_large, "VIDEO");
-    textselector_create(&resolution_toggle, &font_large, "RES:", restabstr[0]);
-    for(int i=1;i < sizeof(restabstr)/sizeof(char*); ++i) {
-        textselector_add_option(&resolution_toggle, restabstr[i]);
+    textselector_create(&resolution_toggle, &font_large, "RES:", _resolutions[0].name);
+    for(int i=1;i < sizeof(_resolutions)/sizeof(struct resolution_t); ++i) {
+        textselector_add_option(&resolution_toggle, _resolutions[i].name);
     }
     textselector_create(&vsync_toggle, &font_large, "VSYNC:", "OFF");
     textselector_add_option(&vsync_toggle, "ON");
