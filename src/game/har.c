@@ -419,7 +419,6 @@ void har_act(har *har, int act_type) {
             break;
         case ACT_STOP:
             physics_move(&har->phy, 0);
-            har->state = STATE_STANDING;
             add_input(har, '5');
             break;
         case ACT_WALKLEFT:
