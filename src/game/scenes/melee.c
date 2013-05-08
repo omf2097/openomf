@@ -89,12 +89,24 @@ int melee_init(scene *scene) {
     menu_background_create(&feh, 90, 61);
     menu_background_create(&bleh, 160, 43);
     texture_create(&select_hilight, bitmap, 51, 36);
-
+    
+    memset(&harplayer_a, 0, sizeof(harplayer_a));
+    memset(&harplayer_b, 0, sizeof(harplayer_b));
+    
     // All done
     return 0;
 }
 
 void melee_deinit(scene *scene) {
+    animationplayer_free(&harplayer_a);
+    animationplayer_free(&harplayer_b);
+    
+    for(int i = 0; i < 10; i++) {
+        texture_free(&harportraits[i]);
+    }
+    texture_free(&feh);
+    texture_free(&bleh);
+    texture_free(&select_hilight);
 }
 
 void melee_tick(scene *scene) {
