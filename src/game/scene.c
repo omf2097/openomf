@@ -22,6 +22,29 @@ void scene_add_ani_player(void *userdata, int id, int mx, int my);
 void scene_set_ani_finished(void *userdata, int id);
 void fixup_palette(sd_palette *palette);
 
+// Tells is scene is valid
+int scene_is_valid(int id) {
+    switch(id) {
+        case SCENE_INTRO:
+        case SCENE_MENU:
+        case SCENE_ARENA0:
+        case SCENE_ARENA1:
+        case SCENE_ARENA2:
+        case SCENE_ARENA3:
+        case SCENE_ARENA4:
+        case SCENE_ARENA5:
+        case SCENE_NEWSROOM:
+        case SCENE_END:
+        case SCENE_END1:
+        case SCENE_END2: 
+        case SCENE_CREDITS:
+        case SCENE_MELEE:
+        case SCENE_VS:
+            return 1;
+    }
+    return 0;
+}
+
 // Loads BK file etc.
 int scene_load(scene *scene, unsigned int scene_id) {
     scene->bk = sd_bk_create();

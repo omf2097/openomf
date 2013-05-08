@@ -8,6 +8,8 @@
 
 #define HISTORY_MAX 100
 
+void console_add_history();
+
 console *con = NULL;
 
 int strtoint(char *input, int *output) {
@@ -41,7 +43,9 @@ void console_cmd_scene(scene *scene, void *userdata, int argc, char **argv) {
     if(argc == 2) {
         int i;
         if(strtoint(argv[1], &i)) {
-            scene->next_id = i;
+            if(scene_is_valid(i)) {
+                scene->next_id = i;
+            }
         }
     }
 }

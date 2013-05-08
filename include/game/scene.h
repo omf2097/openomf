@@ -63,6 +63,7 @@ void scene_set_player2_har(scene *scene, har *har);
 void scene_set_player1_ctrl(scene *scene, controller *ctrl);
 void scene_set_player2_ctrl(scene *scene, controller *ctrl);
 
+int scene_is_valid(int id);
 int scene_load(scene *scene, unsigned int scene_id);
 void scene_free(scene *scene);
 int scene_handle_event(scene *scene, SDL_Event *event);
