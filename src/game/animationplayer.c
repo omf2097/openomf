@@ -173,17 +173,13 @@ void animationplayer_run(animationplayer *player) {
         int x = player->slide_op.x_rem + player->slide_op.x_per_tick;
         int y = player->slide_op.y_rem + player->slide_op.y_per_tick;
         // find how many full pixels we can move
-        player->x += x / 10;
-        player->y += y / 10;
-        if(player->obj) {
-            player->obj->x += x / 10;
-            player->obj->y += y / 10;
-        }
+        player->x += x / 100;
+        player->y += y / 100;
         // stash the remaining partial pixels for the next tick
-        player->slide_op.x_rem = x % 10;
-        player->slide_op.y_rem = y % 10;
+        player->slide_op.x_rem = x % 100;
+        player->slide_op.y_rem = y % 100;
     }
-    
+
     // Handle frame switch
     sd_stringparser_frame param;
     sd_stringparser_frame n_param;
@@ -213,7 +209,10 @@ void animationplayer_run(animationplayer *player) {
         incinerate_obj(player);
         
         // Tick management
-        if(isset(f, "d"))   { cmd_tickjump(player, get(f, "d")); }
+        if(isset(f, "d"))   {
+            cmd_tickjump(player, get(f, "d"));
+            sd_stringparser_reset(player->parser);
+        }
     
         // Animation management
         if(isset(f, "m") && player->add_player != NULL) {
@@ -252,9 +251,9 @@ void animationplayer_run(animationplayer *player) {
                 slide = get(n, "x=");
                 if (slide != player->x) {
                     DEBUG("%d player->x was %d, interpolating to %d", player->id, player->x, slide);
-                    // scale distance by 10 so we can handle uneven interpolation (eg. 160/100)
-                    player->slide_op.x_per_tick = (dist(player->x, slide) * 10) / param.duration;
-                    DEBUG("%d moving %d per tick over %d ticks", player->id, player->slide_op.x_per_tick, param.duration);
+                    // scale distance by 100 so we can handle uneven interpolation (eg. 160/100)
+                    player->slide_op.x_per_tick = (dist(player->x, slide) * 100) / param.duration;
+                    DEBUG("%d moving %d per tick over %d ticks for total %d", player->id, player->slide_op.x_per_tick, param.duration, dist(player->x, slide));
                     player->slide_op.enabled = 1;
                 }
             }
@@ -262,8 +261,8 @@ void animationplayer_run(animationplayer *player) {
                 slide = get(n, "y=");
                 if (slide != player->y) {
                     DEBUG("%d player->y was %d, interpolating to %d", player->id, player->y, slide);
-                    // scale distance by 10 so we can handle uneven interpolation (eg. 160/100)
-                    player->slide_op.y_per_tick = (dist(player->y, slide) * 10) / param.duration;
+                    // scale distance by 100 so we can handle uneven interpolation (eg. 160/100)
+                    player->slide_op.y_per_tick = (dist(player->y, slide) * 100) / param.duration;
                     DEBUG("%d moving %d per tick over %d ticks", player->id, player->slide_op.y_per_tick, param.duration);
                     player->slide_op.enabled = 1;
                 }
@@ -297,6 +296,8 @@ void animationplayer_run(animationplayer *player) {
             }
         } 
     }
+
+
     player->ticks++;
     
     // All done.
