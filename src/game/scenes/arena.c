@@ -19,9 +19,10 @@
 #include <stdlib.h>
 #include <shadowdive/shadowdive.h>
 
-#define HEALTHBAR_COLOR_BG color_create(150,150,150,255)
-#define HEALTHBAR_COLOR_BORDER color_create(50,50,50,255)
-#define HEALTHBAR_COLOR_INT color_create(30,30,30,255)
+#define HEALTHBAR_COLOR_BG color_create(89,40,101,255)
+#define HEALTHBAR_COLOR_TL_BORDER color_create(60,0,60,255)
+#define HEALTHBAR_COLOR_BR_BORDER color_create(178,0,223,255)
+#define HEALTHBAR_COLOR_INT color_create(255,56,109,255)
 
 menu game_menu;
 component title_button;
@@ -136,9 +137,20 @@ int arena_init(scene *scene) {
     menu_background_create(&tex, 301, 37);
     
     // Health bars
-    progressbar_create(&player1_health_bar, 5, 5, 80, 10, HEALTHBAR_COLOR_BORDER, HEALTHBAR_COLOR_BG, HEALTHBAR_COLOR_INT, PROGRESSBAR_LEFT);
-    progressbar_create(&player2_health_bar, 235, 5, 80, 10, HEALTHBAR_COLOR_BORDER, HEALTHBAR_COLOR_BG, HEALTHBAR_COLOR_INT, PROGRESSBAR_RIGHT);
-    
+    progressbar_create(&player1_health_bar, 
+                       5, 5, 100, 8, 
+                       HEALTHBAR_COLOR_TL_BORDER, 
+                       HEALTHBAR_COLOR_BR_BORDER, 
+                       HEALTHBAR_COLOR_BG, 
+                       HEALTHBAR_COLOR_INT, 
+                       PROGRESSBAR_LEFT);
+    progressbar_create(&player2_health_bar, 
+                       215, 5, 100, 8, 
+                       HEALTHBAR_COLOR_TL_BORDER, 
+                       HEALTHBAR_COLOR_BR_BORDER, 
+                       HEALTHBAR_COLOR_BG, 
+                       HEALTHBAR_COLOR_INT, 
+                       PROGRESSBAR_RIGHT);
     return 0;
 }
 

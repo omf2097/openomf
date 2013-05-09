@@ -58,6 +58,17 @@ void image_rect(image *img, unsigned int x, unsigned int y, unsigned int w, unsi
     image_line(img, x, y, x, y+h, c);
 }
 
+void image_rect_bevel(image *img, 
+                      unsigned int x, unsigned int y, 
+                      unsigned int w, unsigned int h, 
+                      color ctop, color cright, 
+                      color cbottom, color cleft) {
+    image_line(img, x, y, x+w, y, ctop);
+    image_line(img, x, y+h, x+w, y+h, cbottom);
+    image_line(img, x+w, y, x+w, y+h, cright);
+    image_line(img, x, y, x, y+h, cleft);
+}
+
 void image_filled_rect(image *img, unsigned int x, unsigned int y, unsigned int w, unsigned int h, color c) {
     for(int my = y; my < y+h; my++) {
         for(int mx = x; mx < x+w; mx++) {

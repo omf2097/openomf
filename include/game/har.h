@@ -73,8 +73,8 @@ struct har_t {
     animationplayer player;
     char inputs[11]; // I don't think any move in the game needs 10 inputs to trigger...
     
-    unsigned int health, health_max;
-    unsigned int endurance, endurance_max;
+    int health, health_max;
+    int endurance, endurance_max;
     
     int tick; // TEMPORARY TO SLOW DOWN ANIMATION
 

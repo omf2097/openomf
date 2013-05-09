@@ -20,7 +20,8 @@ struct progress_bar_t {
 void progressbar_create(progress_bar *bar,     
                        unsigned int x, unsigned int y,
                        unsigned int w, unsigned int h,
-                       color border_color,
+                       color border_topleft_color,
+                       color border_bottomright_color,
                        color bg_color,
                        color int_color, 
                        int orientation);
