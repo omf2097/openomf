@@ -32,6 +32,7 @@ add_executable(openomf
     src/video/shaderprogram.c
     src/video/rbo.c
     src/video/image.c
+    src/video/color.c
     src/video/glextloader.c
     src/video/texturelist.c
     src/audio/audio.c

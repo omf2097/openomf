@@ -6,7 +6,8 @@
 
 int image_create(image *img, int w, int h) {
     img->data = malloc(w * h * 4);
-    img->stride = w * 4;
+    img->w = w;
+    img->h = h;
     return 0;
 }
 
@@ -22,11 +23,7 @@ int image_create_from_sd(image *img, sd_rgba_image *sdimg) {
 }
 
 void image_clear(image *img, color c) {
-    for(int y = 0; y < img->h; y++) {
-        for(int x = 0; x < img->w; x++) {
-            image_set_pixel(img, x, y, c);
-        }
-    }
+    image_filled_rect(img, 0, 0, img->w, img->h, c);
 }
 
 // Bresenham
@@ -48,10 +45,10 @@ void image_line(image *img, unsigned int x0, unsigned int y0, unsigned int x1, u
 }
 
 void image_set_pixel(image *img, unsigned int x, unsigned int y, color c) {
-    img->data[y * img->stride + 4 * x + 0] = c.r;
-    img->data[y * img->stride + 4 * x + 1] = c.g;
-    img->data[y * img->stride + 4 * x + 2] = c.b;
-    img->data[y * img->stride + 4 * x + 3] = c.a;
+    img->data[(y * img->w + x) * 4 + 0] = c.r;
+    img->data[(y * img->w + x) * 4 + 1] = c.g;
+    img->data[(y * img->w + x) * 4 + 2] = c.b;
+    img->data[(y * img->w + x) * 4 + 3] = c.a;
 }
 
 void image_rect(image *img, unsigned int x, unsigned int y, unsigned int w, unsigned int h, color c) {
@@ -62,6 +59,10 @@ void image_rect(image *img, unsigned int x, unsigned int y, unsigned int w, unsi
 }
 
 void image_filled_rect(image *img, unsigned int x, unsigned int y, unsigned int w, unsigned int h, color c) {
-
+    for(int my = y; my < y+h; my++) {
+        for(int mx = x; mx < x+w; mx++) {
+            image_set_pixel(img, mx, my, c);
+        }
+    }
 }
  

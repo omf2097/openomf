@@ -8,7 +8,6 @@ typedef struct image_t image;
 
 struct image_t {
     unsigned int w,h;
-    unsigned int stride;
     char *data;
 };
 

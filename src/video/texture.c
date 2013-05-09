@@ -41,6 +41,10 @@ int texture_create(texture *tex, const char *data, unsigned int w, unsigned int 
     return 1;
 }
 
+int texture_create_from_img(texture *tex, const image *img) {
+    return texture_create(tex, img->data, img->w, img->h);
+}
+
 void texture_free(texture *tex) {
     texturelist_remove(tex);
     if(tex->data != 0) {

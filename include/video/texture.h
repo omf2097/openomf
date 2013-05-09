@@ -1,6 +1,8 @@
 #ifndef _TEXTURE_H
 #define _TEXTURE_H
 
+#include "video/image.h"
+
 typedef struct texture_t {
     char *data;
     unsigned int id;
@@ -8,6 +10,7 @@ typedef struct texture_t {
 } texture;
 
 int texture_create(texture *tex, const char *data, unsigned int w, unsigned int h);
+int texture_create_from_img(texture *tex, const image *img);
 void texture_free(texture *tex);
 int texture_valid(texture *tex);
 int texture_revalidate(texture *tex);
