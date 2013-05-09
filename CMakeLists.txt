@@ -45,6 +45,7 @@ add_executable(openomf
     src/game/har.c
     src/game/animation.c
     src/game/animationplayer.c
+    src/game/scenes/progressbar.c
     src/game/scenes/intro.c
     src/game/scenes/mainmenu.c
     src/game/scenes/credits.c

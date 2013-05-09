@@ -3,6 +3,7 @@
 #include "video/texture.h"
 #include "video/video.h"
 #include "game/scenes/arena.h"
+#include "game/scenes/progressbar.h"
 #include "audio/music.h"
 #include "game/settings.h"
 #include "game/har.h"
@@ -18,6 +19,10 @@
 #include <stdlib.h>
 #include <shadowdive/shadowdive.h>
 
+#define HEALTHBAR_COLOR_BG color_create(150,150,150,255)
+#define HEALTHBAR_COLOR_BORDER color_create(50,50,50,255)
+#define HEALTHBAR_COLOR_INT color_create(30,30,30,255)
+
 menu game_menu;
 component title_button;
 component return_button;
@@ -29,6 +34,9 @@ component help_button;
 component quit_button;
 texture tex;
 int menu_visible = 0;
+
+progress_bar player1_health_bar;
+progress_bar player2_health_bar;
 
 void game_menu_quit(component *c, void *userdata) {
     scene *scene = userdata;
@@ -126,7 +134,13 @@ int arena_init(scene *scene) {
     // background for the 'help' at the bottom of the screen
     // TODO support rendering text onto it
     menu_background_create(&tex, 301, 37);
-
+    
+    // Health bars
+    progressbar_create(&player1_health_bar, 5, 5, 80, 10, HEALTHBAR_COLOR_BORDER, HEALTHBAR_COLOR_BG, HEALTHBAR_COLOR_INT, PROGRESSBAR_LEFT);
+    progressbar_create(&player2_health_bar, 235, 5, 80, 10, HEALTHBAR_COLOR_BORDER, HEALTHBAR_COLOR_BG, HEALTHBAR_COLOR_INT, PROGRESSBAR_RIGHT);
+    progressbar_set(&player1_health_bar, 100);
+    progressbar_set(&player2_health_bar, 60);
+    
     return 0;
 }
 
@@ -150,6 +164,9 @@ void arena_deinit(scene *scene) {
     texture_free(&tex);
 
     music_stop();
+    
+    progressbar_free(&player1_health_bar);
+    progressbar_free(&player2_health_bar);
     
     settings_save(settings_get());
 }
@@ -204,10 +221,13 @@ int arena_event(scene *scene, SDL_Event *e) {
 }
 
 void arena_render(scene *scene) {
+    progressbar_render(&player1_health_bar);
+    progressbar_render(&player2_health_bar);
+    
     if (menu_visible) {
         menu_render(&game_menu);
         video_render_sprite(&tex, 10, 150, BLEND_ALPHA_FULL);
-    };
+    }
 }
 
 void arena_load(scene *scene) {
