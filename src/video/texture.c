@@ -28,9 +28,8 @@ int texture_create(texture *tex, const char *data, unsigned int w, unsigned int 
     
     // If data is null, then we create an uninitialized texture
     // Otherwise, copy the raw image data to a buffer.
-    if(data == 0) {
-        tex->data = 0;
-    } else {
+    tex->data = NULL;
+    if(data != NULL) {
         tex->data = malloc(w * h * 4);
         memcpy(tex->data, data, w * h * 4);
     }
