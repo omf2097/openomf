@@ -49,7 +49,7 @@ int sd_font_save(sd_font *font, const char *file) {
 int sd_font_decode(sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8_t g, uint8_t b) {
     int t = 0;
     for(int i = 0; i < font->h; i++) {
-        for(int k = 7; k >= 0; k--) {
+        for(int k = font->h-1; k >= 0; k--) {
             if(font->chars[ch].data[i] & (1 << k)) {
                 o->data[t++] = r;
                 o->data[t++] = g;
