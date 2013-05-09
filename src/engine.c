@@ -20,8 +20,6 @@ int run = 0;
 int _vsync = 0;
 
 int engine_init() {
-    settings_init();
-    settings_load();
     settings *setting = settings_get();
     
     int w = setting->video.screen_w;
@@ -155,7 +153,4 @@ void engine_close() {
     texturelist_close();
     audio_close();
     soundloader_close();
-    
-    settings_save();
-    settings_free();
 }

@@ -1,6 +1,11 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+void conf_addint(char *name, int default_val);
+void conf_addbool(char *name, int default_val);
+void conf_addfloat(char *name, double default_val);
+void conf_addstring(char *name, char *default_val);
+
 int conf_init(const char *filename);
 int conf_write_config(const char *filename);
 void conf_close();

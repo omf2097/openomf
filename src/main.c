@@ -1,6 +1,6 @@
 #include "engine.h"
 #include "utils/log.h"
-#include "utils/config.h"
+#include "game/settings.h"
 #include <SDL2/SDL.h>
 #include <dumb/dumb.h>
 
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
             printf("-w      Writes a config file\n");
             return 0;
         } else if(strcmp(argv[1], "-w") == 0) {
-            if(conf_write_config("openomf.conf")) {
+            if(settings_write_defaults()) {
                 printf("Failed to write config file!\n");
                 return 1;
             } else {
@@ -35,9 +35,10 @@ int main(int argc, char *argv[]) {
     }
     
     // Init config
-    if(conf_init("openomf.conf")) {
+    if(settings_init()) {
         goto exit_0;
     }
+    settings_load();
     
     // Init libDumb
     dumb_register_stdfiles();
@@ -65,7 +66,8 @@ exit_2:
     SDL_Quit();
 exit_1:
     dumb_exit();
-    conf_close();
+    settings_save();
+    settings_free();
 exit_0:
     DEBUG("Exit.");
     log_close();

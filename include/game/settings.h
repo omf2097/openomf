@@ -50,6 +50,7 @@ typedef struct settings_t {
     settings_gameplay gameplay;
 } settings;
 
+int settings_write_defaults();
 int settings_init();
 void settings_free();
 
