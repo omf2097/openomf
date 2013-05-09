@@ -18,18 +18,27 @@ void keyboard_free(controller *ctrl) {
 void keyboard_tick(controller *ctrl) {
     keyboard *k = ctrl->data;
     unsigned char *state = SDL_GetKeyboardState(NULL);
+    int handled = 0;
 
     if (state[k->keys->down]) {
         har_act(ctrl->har, ACT_CROUCH);
-    } else if (state[k->keys->up]) {
+        handled = 1;
+    }
+    if (state[k->keys->up]) {
         har_act(ctrl->har, ACT_JUMP);
-    } else if(state[k->keys->right] && !state[k->keys->left] && !state[k->keys->up] &&
+        handled = 1;
+    }
+    if(state[k->keys->right] && !state[k->keys->left] && !state[k->keys->up] &&
             !state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {
         har_act(ctrl->har, ACT_WALKRIGHT);
-    } else if(state[k->keys->left] && !state[k->keys->right] && !state[k->keys->up] &&
+        handled = 1;
+    }
+    if(state[k->keys->left] && !state[k->keys->right] && !state[k->keys->up] &&
             !state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {
         har_act(ctrl->har, ACT_WALKLEFT);
-    } else {
+        handled = 1;
+    }
+    if(!handled) {
         har_act(ctrl->har, ACT_STOP);
     }
 }
