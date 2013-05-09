@@ -8,6 +8,7 @@
 #include "video/texture.h"
 #include "video/texturelist.h"
 #include "video/video.h"
+#include "game/text/languages.h"
 #include "game/scene.h"
 #include "game/settings.h"
 #include "console/console.h"
@@ -30,6 +31,9 @@ int engine_init() {
     _vsync = vsync;
     texturelist_init();
     if(video_init(w, h, fs, vsync)) {
+        return 1;
+    }
+    if(lang_init()) {
         return 1;
     }
     if(fonts_init()) {
@@ -146,6 +150,7 @@ void engine_run() {
 void engine_close() {
     console_close();
     fonts_close();
+    lang_close();
     video_close();
     texturelist_close();
     audio_close();

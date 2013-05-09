@@ -7,19 +7,10 @@
 * texture with the help of text.h ?
 */
 
-typedef struct lang_t lang;
-
-struct lang_t {
-    // Something here ...
-};
-
-void lang_create(lang *lang);
-void lang_free(lang *lang);
-
-// Return 0 on success
-int lang_load(lang *lang, const char *filename);
+int lang_init();
+void lang_close();
 
 // Maybe something like this ?
-const char* lang_get(lang *lang, unsigned int textid);
+const char* lang_get(unsigned int id);
 
 #endif // _LANGUAGES_H

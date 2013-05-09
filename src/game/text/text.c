@@ -90,6 +90,9 @@ void font_render_len(font *font, const char *text, int len, int x, int y, unsign
     texture **tex = NULL;
     for(int i = 0; i < len; i++) {
         int code = text[i] - 32;
+        if (code < 0) {
+            continue;
+        }
         tex = vector_get(&font->textures, code);
         video_render_char(*tex, pos_x, y, r, g, b);
         pos_x += font->w;

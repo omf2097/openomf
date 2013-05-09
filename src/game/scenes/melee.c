@@ -6,6 +6,7 @@
 #include "audio/music.h"
 #include "video/video.h"
 #include "game/settings.h"
+#include "game/text/languages.h"
 #include "game/scene.h"
 #include "game/scenes/melee.h"
 #include "game/menu/menu_background.h"
@@ -257,7 +258,18 @@ void melee_render(scene *scene) {
         video_render_sprite_flip(&feh, 70, 0, BLEND_ALPHA, FLIP_NONE);
         video_render_sprite_flip(&bleh, 0, 62, BLEND_ALPHA, FLIP_NONE);
 
-        font_render_wrapped(&font_small, "Forced to fend for herself after her parents mysterious death, Crystal's determination has earned great respect.", 4, 66, 152, 255, 255, 255);
+        // player bio
+        font_render_wrapped(&font_small, lang_get(135+current_a), 4, 66, 152, 0, 255, 0);
+
+        if (scene->player2.selectable) {
+            video_render_sprite_flip(&feh, 320-70-feh.w, 0, BLEND_ALPHA, FLIP_NONE);
+            video_render_sprite_flip(&bleh, 320-bleh.w, 62, BLEND_ALPHA, FLIP_NONE);
+            // player bio
+            font_render_wrapped(&font_small, lang_get(135+current_b), 320-bleh.w+4, 66, 152, 0, 255, 0);
+        } else {
+            // 'choose your pilot'
+            font_render_wrapped(&font_small, lang_get(187), 160, 97, 160, 0, 255, 0);
+        }
     }
     ani = array_get(&scene->animations, 5);
     if (scene->player2.selectable) {
@@ -308,6 +320,9 @@ void melee_render(scene *scene) {
             // currently selected HAR
             video_render_sprite_flip(&harportraits[current_b], 11 + (62*column_b), 115 + (42*row_b), BLEND_ALPHA, FLIP_NONE);
             animationplayer_render(&harplayer_b);
+        } else {
+            // 'choose your HAR'
+            font_render_wrapped(&font_small, lang_get(186), 160, 97, 160, 0, 255, 0);
         }
     }
 
