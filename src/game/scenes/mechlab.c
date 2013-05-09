@@ -22,11 +22,12 @@ typedef struct panelbutton_t {
 
 texture bgtex[3];
 texture paneltex;
-texture handtex[5];
 
 sd_sprite *panelspr;
 sd_sprite *bgspr[3];
-sd_sprite *handspr[5];
+
+int handpoking = 0;
+animationplayer handplayer;
 
 panelbutton main_buttons[10];
 panelbutton yesno_buttons[2];
@@ -65,11 +66,6 @@ int mechlab_init(scene *scene) {
         sprtotex(scene, &bgtex[i], bgspr[i]);
     }
 
-    for(int i = 0;i < 5; i++) {
-        handspr[i] = scene->bk->anims[29]->animation->sprites[i];
-        sprtotex(scene, &handtex[i], handspr[i]);
-    }
-
     panelspr = scene->bk->anims[1]->animation->sprites[2];
     sprtotex(scene, &paneltex, panelspr);
 
@@ -83,13 +79,16 @@ int mechlab_init(scene *scene) {
     return 0;
 }
 
+void mechlab_post_init(scene *scene) {
+    animationplayer_create(&handplayer, 29, array_get(&scene->animations, 29));
+    animationplayer_run(&handplayer);
+}
+
 void mechlab_deinit(scene *scene) {
     for(int i = 0;i < 3; i++) {
         texture_free(&bgtex[i]);
     }
-    for(int i = 0;i < 5; i++) {
-        texture_free(&handtex[i]);
-    }
+    animationplayer_free(&handplayer);
     texture_free(&paneltex);
 
     panelbutton_free(ailevel_buttons, NPANELBUTTON(ailevel_buttons));
@@ -101,6 +100,15 @@ void mechlab_deinit(scene *scene) {
 }
 
 void mechlab_tick(scene *scene) {
+    if(handpoking) {
+        animationplayer_run(&handplayer);
+
+        if(handplayer.finished) {
+            animationplayer_reset(&handplayer);
+            animationplayer_run(&handplayer);
+            handpoking = 0;
+        }
+    }
 }
 
 int mechlab_event(scene *scene, SDL_Event *event) {
@@ -108,6 +116,10 @@ int mechlab_event(scene *scene, SDL_Event *event) {
         switch(event->key.keysym.sym) {
             case SDLK_ESCAPE:
                 scene->next_id = SCENE_MENU;
+                break;
+
+            case SDLK_RETURN:
+                handpoking = 1;
                 break;
 
             // TODO selection order
@@ -140,15 +152,16 @@ void mechlab_render(scene *scene) {
     video_render_sprite(&paneltex, panelspr->pos_x, panelspr->pos_y, BLEND_ALPHA_FULL);
 
     sd_sprite *selspr = hand.buttons[hand.sel].spr;
-    video_render_sprite(&handtex[0],
-                        selspr->pos_x + selspr->img->w/2 + handspr[0]->pos_x,
-                        selspr->pos_y + selspr->img->h/2 + handspr[0]->pos_y, BLEND_ALPHA_FULL);
+    handplayer.x = selspr->pos_x + selspr->img->w/2 ;
+    handplayer.y = selspr->pos_y + selspr->img->h/2 ;
+    animationplayer_render(&handplayer);
 }
 
 void mechlab_load(scene *scene) {
     scene->event = mechlab_event;
     scene->render = mechlab_render;
     scene->init = mechlab_init;
+    scene->post_init = mechlab_post_init;
     scene->deinit = mechlab_deinit;
     scene->tick = mechlab_tick;
 }
