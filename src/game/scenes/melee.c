@@ -86,8 +86,8 @@ int melee_init(scene *scene) {
         texture_create(&harportraits[i], out->data, 51, 36);
         sd_rgba_image_delete(out);
     }
-    menu_background_create(&feh, 90, 61);
-    menu_background_create(&bleh, 160, 43);
+    menu_background2_create(&feh, 90, 61);
+    menu_background2_create(&bleh, 160, 43);
     texture_create(&select_hilight, bitmap, 51, 36);
     
     memset(&harplayer_a, 0, sizeof(harplayer_a));
