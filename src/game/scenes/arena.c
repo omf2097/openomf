@@ -18,7 +18,6 @@
 #include <stdlib.h>
 #include <shadowdive/shadowdive.h>
 
-font font_large;
 menu game_menu;
 component title_button;
 component return_button;
@@ -89,15 +88,6 @@ int arena_init(scene *scene) {
     keyboard_create(player2_ctrl, scene->player2.har, keys2);
     scene_set_player2_ctrl(scene, player2_ctrl);
 
-
-    // Create font
-    font_create(&font_large);
-    if(font_load(&font_large, "resources/GRAPHCHR.DAT", FONT_BIG)) {
-        PERROR("Error while loading large font!");
-        font_free(&font_large);
-        return 1;
-    }
-
     menu_create(&game_menu, 70, 5, 181, 117);
     textbutton_create(&title_button, &font_large, "OMF 2097");
     textbutton_create(&return_button, &font_large, "RETURN TO GAME");
@@ -157,7 +147,6 @@ void arena_deinit(scene *scene) {
     textbutton_free(&quit_button);
     menu_free(&game_menu);
 
-    font_free(&font_large);
     texture_free(&tex);
 
     music_stop();

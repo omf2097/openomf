@@ -27,7 +27,6 @@ struct resolution_t {
     {2560,  1600,   "2560x1600"}
 };
 
-font font_large;
 menu *current_menu;
 menu main_menu;
 component oneplayer_button;
@@ -121,14 +120,6 @@ int mainmenu_init(scene *scene) {
     // Force music playback
     if(!music_playing()) {
         music_play("resources/MENU.PSM");
-    }
-    
-    // Create font
-    font_create(&font_large);
-    if(font_load(&font_large, "resources/GRAPHCHR.DAT", FONT_BIG)) {
-        PERROR("Error while loading large font!");
-        font_free(&font_large);
-        return 1;
     }
     
     // Start stack
@@ -336,8 +327,6 @@ void mainmenu_deinit(scene *scene) {
     textbutton_free(&gameplay_done_button);
     menu_free(&gameplay_menu);
 
-    font_free(&font_large);
-    
     settings_save(settings_get());
 }
 

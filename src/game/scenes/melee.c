@@ -91,7 +91,7 @@ int melee_init(scene *scene) {
     
     memset(&harplayer_a, 0, sizeof(harplayer_a));
     memset(&harplayer_b, 0, sizeof(harplayer_b));
-    
+
     // All done
     return 0;
 }
@@ -256,6 +256,8 @@ void melee_render(scene *scene) {
     if (selection == 0) {
         video_render_sprite_flip(&feh, 70, 0, BLEND_ALPHA, FLIP_NONE);
         video_render_sprite_flip(&bleh, 0, 62, BLEND_ALPHA, FLIP_NONE);
+
+        font_render_wrapped(&font_small, "Forced to fend for herself after her parents mysterious death, Crystal's determination has earned great respect.", 4, 66, 152, 255, 255, 255);
     }
     ani = array_get(&scene->animations, 5);
     if (scene->player2.selectable) {

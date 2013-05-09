@@ -18,9 +18,13 @@ struct font_t {
     vector textures;
 };
 
-void font_create(font *font);
-void font_free(font *font);
-int font_load(font *font, const char* file, unsigned int size);
+// globals, yay
+extern font font_small;
+extern font font_large;
+
+int fonts_init();
+void fonts_close();
 void font_render(font *font, const char *text, int x, int y, unsigned char r, unsigned char g, unsigned char b);
+void font_render_wrapped(font *font, const char *text, int x, int y, int w, unsigned char r, unsigned char g, unsigned char b);
 
 #endif // _TEXT_H

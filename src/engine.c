@@ -32,6 +32,9 @@ int engine_init() {
     if(video_init(w, h, fs, vsync)) {
         return 1;
     }
+    if(fonts_init()) {
+        return 1;
+    }
     if(audio_init()) {
         return 1;
     }
@@ -142,6 +145,7 @@ void engine_run() {
 
 void engine_close() {
     console_close();
+    fonts_close();
     video_close();
     texturelist_close();
     audio_close();

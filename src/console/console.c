@@ -129,19 +129,11 @@ int console_init() {
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
     console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
     
-    // Create font
-    font_create(&con->font);
-    if(font_load(&con->font, "resources/CHARSMAL.DAT", FONT_SMALL)) {
-        PERROR("Error while loading small font!");
-        font_free(&con->font);
-        return 1;
-    }
     return 0;
 }
 
 void console_close() {
     texture_free(&con->background);
-    font_free(&con->font);
     list_free(&con->history);
     hashmap_free(&con->cmds);
     free(con);
@@ -202,9 +194,9 @@ void console_render() {
         video_render_sprite(&con->background, -1, con->ypos - 101, BLEND_ALPHA_FULL);
         int t = con->ticks / 2;
         // input line
-        font_render(&con->font, con->input, 0 , con->ypos - 7, 121, 121, 121);
+        font_render(&font_small, con->input, 0 , con->ypos - 7, 121, 121, 121);
         //cursor
-        font_render(&con->font, "", strlen(con->input)*8 , con->ypos - 7, 121 - t, 121 - t, 121 - t);
+        font_render(&font_small, "", strlen(con->input)*font_small.w , con->ypos - 7, 121 - t, 121 - t, 121 - t);
     }
 }
 
