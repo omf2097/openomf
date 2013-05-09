@@ -138,8 +138,6 @@ int arena_init(scene *scene) {
     // Health bars
     progressbar_create(&player1_health_bar, 5, 5, 80, 10, HEALTHBAR_COLOR_BORDER, HEALTHBAR_COLOR_BG, HEALTHBAR_COLOR_INT, PROGRESSBAR_LEFT);
     progressbar_create(&player2_health_bar, 235, 5, 80, 10, HEALTHBAR_COLOR_BORDER, HEALTHBAR_COLOR_BG, HEALTHBAR_COLOR_INT, PROGRESSBAR_RIGHT);
-    progressbar_set(&player1_health_bar, 100);
-    progressbar_set(&player2_health_bar, 60);
     
     return 0;
 }
@@ -221,6 +219,10 @@ int arena_event(scene *scene, SDL_Event *e) {
 }
 
 void arena_render(scene *scene) {
+    float p1_hp = (float)scene->player1.har->health / (float)scene->player1.har->health_max;
+    float p2_hp = (float)scene->player2.har->health / (float)scene->player2.har->health_max;
+    progressbar_set(&player1_health_bar, p1_hp * 100);
+    progressbar_set(&player2_health_bar, p2_hp * 100);
     progressbar_render(&player1_health_bar);
     progressbar_render(&player2_health_bar);
     

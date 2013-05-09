@@ -187,6 +187,10 @@ int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, in
     
     list_create(&h->child_players);
 
+    // Har properties
+    h->health = h->health_max = 500;
+    h->endurance = h->endurance_max = h->af->endurance;
+    
     // Start player with animation 11
     h->player.x = h->phy.pos.x;
     h->player.y = h->phy.pos.y;
@@ -220,7 +224,9 @@ void har_free(har *h) {
 }
 
 void har_take_damage(har *har, int amount) {
-    DEBUG("HAR took %f damage", amount / 2.0f);
+    har->health -= amount / 2.0f;
+    if(har->health < 0) har->health = 0;
+    DEBUG("HAR took %f damage, and its health is now %d", amount / 2.0f, har->health);
     // we actually only want to play 3 frames from this animation, but lack the ability
     har_switch_animation(har, 9);
 }
