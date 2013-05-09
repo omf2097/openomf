@@ -91,6 +91,11 @@ void mainmenu_1v2(component *c, void *userdata) {
     scene->next_id = SCENE_MELEE;
 }
 
+void mainmenu_tourn(component *c, void *userdata) {
+    scene *scene = userdata;
+    scene->next_id = SCENE_MECHLAB;
+}
+
 void mainmenu_enter_menu(component *c, void *userdata) {
     current_menu = (menu*)userdata;
     mstack[mstack_pos++] = current_menu;
@@ -150,7 +155,7 @@ int mainmenu_init(scene *scene) {
     menu_attach(&main_menu, &quit_button, 11);
 
     // Status
-    tourn_button.disabled = 1;
+    tourn_button.disabled = 0;
     config_button.disabled = 0;
     gameplay_button.disabled = 0;
     ordering_button.disabled = 1;
@@ -165,6 +170,8 @@ int mainmenu_init(scene *scene) {
     oneplayer_button.click = mainmenu_1v1;
     twoplayer_button.userdata = (void*)scene;
     twoplayer_button.click = mainmenu_1v2;
+    tourn_button.userdata = (void*)scene;
+    tourn_button.click = mainmenu_tourn;
     config_button.userdata = (void*)&config_menu;
     config_button.click = mainmenu_enter_menu;
 

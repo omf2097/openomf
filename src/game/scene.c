@@ -13,6 +13,7 @@
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/credits.h"
 #include "game/scenes/arena.h"
+#include "game/scenes/mechlab.h"
 #include "game/scenes/melee.h"
 #include "game/scenes/vs.h"
 #include "game/animation.h"
@@ -39,6 +40,7 @@ int scene_is_valid(int id) {
         case SCENE_END1:
         case SCENE_END2: 
         case SCENE_CREDITS:
+        case SCENE_MECHLAB:
         case SCENE_MELEE:
         case SCENE_VS:
         case SCENE_NORTHAM:
@@ -71,6 +73,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
         case SCENE_END1:     ret = sd_bk_load(scene->bk, "resources/END1.BK");     break;
         case SCENE_END2:     ret = sd_bk_load(scene->bk, "resources/END2.BK");     break;
         case SCENE_CREDITS:  ret = sd_bk_load(scene->bk, "resources/CREDITS.BK");  break;
+        case SCENE_MECHLAB:  ret = sd_bk_load(scene->bk, "resources/MECHLAB.BK");  break;
         case SCENE_MELEE:    ret = sd_bk_load(scene->bk, "resources/MELEE.BK");    break;
         case SCENE_VS:       ret = sd_bk_load(scene->bk, "resources/VS.BK");       break;
         case SCENE_NORTHAM:  ret = sd_bk_load(scene->bk, "resources/NORTH_AM.BK"); break;
@@ -105,6 +108,9 @@ int scene_load(scene *scene, unsigned int scene_id) {
         case SCENE_VS:
             fixup_palette(scene->bk->palettes[0]);
             vs_load(scene); break;
+        case SCENE_MECHLAB:
+            mechlab_load(scene);
+            break;
         case SCENE_ARENA0:
         case SCENE_ARENA1:
         case SCENE_ARENA2:
@@ -316,7 +322,7 @@ void scene_tick(scene *scene) {
         
     // If no animations to play, jump to next scene (if any)
     // TODO: Hackish, make this nicer.
-    if(list_size(&scene->root_players) <= 0 && scene->this_id != SCENE_MELEE && scene->this_id != SCENE_VS) {
+    if(list_size(&scene->root_players) <= 0 && scene->this_id != SCENE_MELEE && scene->this_id != SCENE_VS && scene->this_id != SCENE_MECHLAB) {
         if (scene->this_id == SCENE_CREDITS) {
             scene->next_id = SCENE_NONE;
         } else {
