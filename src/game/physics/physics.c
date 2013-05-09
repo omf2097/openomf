@@ -51,6 +51,9 @@ void physics_check_bounds(physics_state *state) {
         if(state->vertical_state != PHY_VSTATE_NONE && state->vertical_state != PHY_VSTATE_CROUCH) {
             if(state->floor_hit != NULL) {
                 state->floor_hit(state, state->userdata, state->vertical_state);
+                if(!SPD_X_ZERO(state->spd.x)) {
+                    if(state->move != NULL) { state->move(state, state->userdata); }
+                }
             }
             state->vertical_state = PHY_VSTATE_NONE;
         }
@@ -108,6 +111,9 @@ void physics_move(physics_state *state, float spd_x) {
         }
         if(state->stop != NULL && SPD_X_ZERO(spd_x) && !SPD_X_ZERO(state->spd.x)){
             state->spd.x = spd_x;
+            state->stop(state, state->userdata);
+        }
+        if(state->stop != NULL && SPD_X_ZERO(spd_x) && state->vertical_state != PHY_VSTATE_CROUCH){
             state->stop(state, state->userdata);
         }
         state->vertical_state = PHY_VSTATE_NONE;

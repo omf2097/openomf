@@ -71,10 +71,12 @@ void phycb_floor_hit(physics_state *state, void *userdata, int flight_mode) {
 
 void phycb_stop(physics_state *state, void *userdata) {
     har *h = userdata;
-    h->state = STATE_STANDING;
-    har_switch_animation(h, 11);
-    animationplayer_set_repeat(&h->player, 1);
-    DEBUG("switching to idle");
+    if(h->state != STATE_STANDING) {
+        h->state = STATE_STANDING;
+        har_switch_animation(h, 11);
+        animationplayer_set_repeat(&h->player, 1);
+        DEBUG("switching to idle");
+    }
 }
 
 void phycb_jump(physics_state *state, void *userdata) {
@@ -95,10 +97,12 @@ void phycb_move(physics_state *state, void *userdata) {
 
 void phycb_crouch(physics_state *state, void *userdata) {
     har *h = userdata;
-    h->state = STATE_CROUCHING;
-    har_switch_animation(h, 4);
-    //animationplayer_set_repeat(&h->player, 1);
-    DEBUG("crouching");
+    if(h->state != STATE_CROUCHING) {
+        h->state = STATE_CROUCHING;
+        har_switch_animation(h, 4);
+        //animationplayer_set_repeat(&h->player, 1);
+        DEBUG("crouching");
+    }
 }
 
 int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, int direction) {
