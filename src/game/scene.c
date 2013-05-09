@@ -41,6 +41,10 @@ int scene_is_valid(int id) {
         case SCENE_CREDITS:
         case SCENE_MELEE:
         case SCENE_VS:
+        case SCENE_NORTHAM:
+        case SCENE_KATUSHAI:
+        case SCENE_WAR:
+        case SCENE_WORLD:
             return 1;
     }
     return 0;
@@ -69,6 +73,10 @@ int scene_load(scene *scene, unsigned int scene_id) {
         case SCENE_CREDITS:  ret = sd_bk_load(scene->bk, "resources/CREDITS.BK");  break;
         case SCENE_MELEE:    ret = sd_bk_load(scene->bk, "resources/MELEE.BK");    break;
         case SCENE_VS:       ret = sd_bk_load(scene->bk, "resources/VS.BK");       break;
+        case SCENE_NORTHAM:  ret = sd_bk_load(scene->bk, "resources/NORTH_AM.BK"); break;
+        case SCENE_KATUSHAI: ret = sd_bk_load(scene->bk, "resources/KATUSHAI.BK"); break;
+        case SCENE_WAR:      ret = sd_bk_load(scene->bk, "resources/WAR.BK");      break;
+        case SCENE_WORLD:    ret = sd_bk_load(scene->bk, "resources/WORLD.BK");    break;
         default:
             sd_bk_delete(scene->bk);
             PERROR("Unknown scene_id!");

@@ -272,8 +272,14 @@ void melee_render(scene *scene) {
         }
     }
     ani = array_get(&scene->animations, 5);
+
+    // player 1 name
+    font_render_wrapped(&font_small, lang_get(20+current_a), 0, 52, 66, 0, 0, 0);
+
     if (scene->player2.selectable) {
         video_render_sprite_flip(array_get(&ani->sprites, 0), 254, 0, BLEND_ALPHA, FLIP_NONE);
+        // player 1 name
+        font_render_wrapped(&font_small, lang_get(20+current_b), 320-66, 52, 66, 0, 0, 0);
     } else {
         video_render_sprite_flip(array_get(&ani->sprites, 1), 162, 0, BLEND_ALPHA, FLIP_NONE);
     }
