@@ -352,7 +352,8 @@ static void sd_framelist_resize(frame_list *list, int frames) {
 }
 
 // returns 0 if theres a frame, otherwise return 1
-static int sd_framelist_process(frame_list *frames, tag_list *tags, 
+static int sd_framelist_process(int *is_frame_ready, 
+                                frame_list *frames, tag_list *tags, 
                                 unsigned int ticks, unsigned int end_ticks, 
                                 sd_stringparser_frame *out_frame) {
     int retval = 1;
@@ -388,12 +389,19 @@ static int sd_framelist_process(frame_list *frames, tag_list *tags,
         unsigned int total_duration = frames->frames[frames->num_frames-1].start_tick + frames->frames[frames->num_frames-1].duration;
         int is_animation_end = ((frames->next_frame == frames->num_frames && ticks >= total_duration) ||
                                 (ticks >= end_ticks) ? 1 : 0);                   
-        if(cur == NULL) { cur = &frames->frames[frames->next_frame]; }
+        if(cur == NULL) { cur = &frames->frames[frames->num_frames-1]; }
         if((cur && ticks >= cur->start_tick) || is_animation_end) {
             int is_first_frame = ((cur == &frames->frames[0]) ? 1 : 0);
             int is_final_frame = ((cur == &frames->frames[frames->num_frames-1]) ? 1 : 0);
 
-            out_frame->id = frames->next_frame;
+            if(frames->next_frame == frames->num_frames) {
+                out_frame->id = frames->num_frames-1;
+            } else if(frames->next_frame < frames->num_frames) {
+                out_frame->id = frames->next_frame;
+            } else {
+                fprintf(stderr, "stringparser_run: Shouldn't have reached here!\n");
+                return 1;
+            }
 
             out_frame->num_tags = cur->num_tags;
             out_frame->tags = cur->tags;
@@ -434,7 +442,9 @@ static int sd_framelist_process(frame_list *frames, tag_list *tags,
             retval = 0;
         }
     }
-
+    if(retval) { *is_frame_ready = 0; }
+    else { *is_frame_ready = 1; }
+    
     frames->last_tick = ticks;
 
     return retval;
@@ -608,6 +618,7 @@ static void cb_store_tag(sd_stringparser *parser, void *pcur_frame, tag_attribut
 
 sd_stringparser* sd_stringparser_create() {
     sd_stringparser *parser = (sd_stringparser*)malloc(sizeof(sd_stringparser));
+    parser->is_frame_ready = 0;
     memset(&parser->current_frame, 0, sizeof(sd_stringparser_frame));
     parser->current_frame.parser = parser;
     parser->tag_list = malloc(sizeof(tag_list));
@@ -658,11 +669,11 @@ void sd_stringparser_reset(sd_stringparser *parser) {
 }
 
 int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks) {
-    return sd_framelist_process(parser->frame_list, parser->tag_list, ticks, UINT32_MAX, &parser->current_frame);
+    return sd_framelist_process(&parser->is_frame_ready, parser->frame_list, parser->tag_list, ticks, UINT32_MAX, &parser->current_frame);
 }
 
 int sd_stringparser_run_ex(sd_stringparser *parser, unsigned int ticks, unsigned int end_ticks) {
-    return sd_framelist_process(parser->frame_list, parser->tag_list, ticks, end_ticks, &parser->current_frame);
+    return sd_framelist_process(&parser->is_frame_ready, parser->frame_list, parser->tag_list, ticks, end_ticks, &parser->current_frame);
 }
 
 int sd_stringparser_run_frames(sd_stringparser *parser, unsigned int ticks, unsigned int end_frame) {
@@ -670,7 +681,7 @@ int sd_stringparser_run_frames(sd_stringparser *parser, unsigned int ticks, unsi
     
     if(end_frame >= 0 && end_frame < frames->num_frames) {
         unsigned end_ticks = frames->frames[end_frame].start_tick + frames->frames[end_frame].duration; 
-        return sd_framelist_process(parser->frame_list, parser->tag_list, ticks, end_ticks, &parser->current_frame);
+        return sd_framelist_process(&parser->is_frame_ready, parser->frame_list, parser->tag_list, ticks, end_ticks, &parser->current_frame);
     } else {
         return 1;
     }
