@@ -37,6 +37,7 @@ animationplayer harplayer_b;
 void melee_switch_animation(scene *scene, animationplayer *harplayer, int id) {
     animationplayer_free(harplayer);
     animationplayer_create(harplayer, id, array_get(&scene->animations, id));
+    animationplayer_set_repeat(harplayer, 1);
     animationplayer_run(harplayer);
 }
 
@@ -129,12 +130,6 @@ void melee_tick(scene *scene) {
             if (scene->player2.selectable) {
                 animationplayer_run(&harplayer_b);
             }
-        }
-        if(harplayer_a.finished) {
-            animationplayer_reset(&harplayer_a);
-        }
-        if (scene->player2.selectable && harplayer_b.finished) {
-            animationplayer_reset(&harplayer_b);
         }
     }
 }

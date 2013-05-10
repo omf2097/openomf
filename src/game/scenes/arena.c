@@ -7,6 +7,7 @@
 #include "audio/music.h"
 #include "game/settings.h"
 #include "game/har.h"
+#include "game/text/text.h"
 #include "game/menu/menu.h"
 #include "game/menu/menu_background.h"
 #include "game/menu/textbutton.h"
@@ -277,6 +278,9 @@ void arena_render(scene *scene) {
     progressbar_set(&player2_endurance_bar, p2_en * 100);
     progressbar_render(&player1_endurance_bar);
     progressbar_render(&player2_endurance_bar);
+    
+    // Render HAR and pilot names
+    
     
     if (menu_visible) {
         menu_render(&game_menu);
