@@ -247,36 +247,40 @@ void har_collision_scene(har *har, scene *scene) {
 void har_collision_har(har *har_a, har *har_b) {
     // Make stuff easier to get to :)
     int ani_id = har_a->player.id;
-    int frame_id = animationplayer_get_frame(&har_a->player);
-    sd_animation *ani = har_a->af->moves[ani_id]->animation;
+    if(har_a->player.parser->is_frame_ready) {
+        int frame_id = animationplayer_get_frame(&har_a->player);
+        sd_animation *ani = har_a->af->moves[ani_id]->animation;
 
-    int other_ani_id = har_b->player.id;
-    if (other_ani_id == ANIM_DAMAGE) {
-        // can't kick them while they're down
-        return;
-    }
-    char other_frame_letter = animationplayer_get_frame_letter(&har_b->player);
-    /*DEBUG("other frame letter is %d -> %c for frame %d", other_frame_letter, other_frame_letter, frame_id);*/
-    /*sd_animation *other_ani = har_a->af->moves[ani_id]->animation;*/
-    sd_sprite *sprite = har_b->af->moves[other_ani_id]->animation->sprites[(int)other_frame_letter - 65];
-    int x = har_b->phy.pos.x + sprite->pos_x;
-    int y = har_b->phy.pos.y + sprite->pos_y;
-    int w = sprite->img->w;
-    int h = sprite->img->h;
+        int other_ani_id = har_b->player.id;
+        if (other_ani_id == ANIM_DAMAGE) {
+            // can't kick them while they're down
+            return;
+        }
+        if(har_b->player.parser->is_frame_ready) {
+            char other_frame_letter = animationplayer_get_frame_letter(&har_b->player);
+            /*DEBUG("other frame letter is %d -> %c for frame %d", other_frame_letter, other_frame_letter, frame_id);*/
+            /*sd_animation *other_ani = har_a->af->moves[ani_id]->animation;*/
+            sd_sprite *sprite = har_b->af->moves[other_ani_id]->animation->sprites[(int)other_frame_letter - 65];
+            int x = har_b->phy.pos.x + sprite->pos_x;
+            int y = har_b->phy.pos.y + sprite->pos_y;
+            int w = sprite->img->w;
+            int h = sprite->img->h;
 
-    // Find collision points, if any
-    for(int i = 0; i < ani->col_coord_count; i++) {
-        if(ani->col_coord_table[i].y_ext == frame_id) {
-            DEBUG("%d vs %d-%d", (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, x, x+w);
-            // coarse check vs sprite dimensions
-            if ((ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->phy.pos.x < x + w) {
-                DEBUG("x coordinate hit!");
-                if (ani->col_coord_table[i].y + har_a->phy.pos.y > y && ani->col_coord_table[i].y + har_a->phy.pos.y < y + h) {
-                    DEBUG("y coordinate hit!");
-                    // TODO Do a fine grained per-pixel check for a hit
-                    har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
-                    if (har_b->health == 0) {
-                        har_switch_animation(har_a, ANIM_VICTORY);
+            // Find collision points, if any
+            for(int i = 0; i < ani->col_coord_count; i++) {
+                if(ani->col_coord_table[i].y_ext == frame_id) {
+                    DEBUG("%d vs %d-%d", (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, x, x+w);
+                    // coarse check vs sprite dimensions
+                    if ((ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->phy.pos.x < x + w) {
+                        DEBUG("x coordinate hit!");
+                        if (ani->col_coord_table[i].y + har_a->phy.pos.y > y && ani->col_coord_table[i].y + har_a->phy.pos.y < y + h) {
+                            DEBUG("y coordinate hit!");
+                            // TODO Do a fine grained per-pixel check for a hit
+                            har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
+                            if (har_b->health == 0) {
+                                har_switch_animation(har_a, ANIM_VICTORY);
+                            }
+                        }
                     }
                 }
             }

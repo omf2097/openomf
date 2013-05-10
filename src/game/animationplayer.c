@@ -181,25 +181,25 @@ void animationplayer_run(animationplayer *player) {
     }
 
     // Handle frame switch
-    sd_stringparser_frame param;
+    sd_stringparser_frame *param = &player->parser->current_frame;
     sd_stringparser_frame n_param;
-    sd_stringparser_frame *f = &param;
+    sd_stringparser_frame *f = param;
     sd_stringparser_frame *n = &n_param;
     int real_frame;
-    if(sd_stringparser_run(player->parser, player->ticks-1, &param) == 0) {
-        real_frame = param.frame - 65;
+    if(sd_stringparser_run(player->parser, player->ticks-1) == 0) {
+        real_frame = param->letter - 65;
         
         // Disable stuff from previous frame
         player->slide_op.enabled = 0;
         
         // Do something if animation is finished!
-        if(param.is_animation_end || player->finished) {
+        if(param->is_animation_end || player->finished) {
             player->finished = 1;
             if(player->repeat) {
                 player->ticks = 1;
                 player->finished = 0;
-                sd_stringparser_run(player->parser, player->ticks-1, &param);
-                real_frame = param.frame - 65;
+                sd_stringparser_run(player->parser, player->ticks-1);
+                real_frame = param->letter - 65;
             } else {
                 return;
             }
@@ -240,8 +240,8 @@ void animationplayer_run(animationplayer *player) {
         
         
         // Check if next frame contains X=nnn or Y=nnn 
-        if(!param.is_final_frame) {
-            sd_stringparser_peek(player->parser, param.id + 1, &n_param);
+        if(!param->is_final_frame) {
+            sd_stringparser_peek(player->parser, param->id + 1, &n_param);
             player->slide_op.x_per_tick = 0;
             player->slide_op.x_rem = 0;
             player->slide_op.y_per_tick = 0;
@@ -256,8 +256,8 @@ void animationplayer_run(animationplayer *player) {
                 if (slide != player->x) {
                     DEBUG("%d player->x was %d, interpolating to %d", player->id, player->x, slide);
                     // scale distance by 100 so we can handle uneven interpolation (eg. 160/100)
-                    player->slide_op.x_per_tick = (dist(player->x, slide) * 100) / param.duration;
-                    DEBUG("%d moving %d per tick over %d ticks for total %d", player->id, player->slide_op.x_per_tick, param.duration, dist(player->x, slide));
+                    player->slide_op.x_per_tick = (dist(player->x, slide) * 100) / param->duration;
+                    DEBUG("%d moving %d per tick over %d ticks for total %d", player->id, player->slide_op.x_per_tick, param->duration, dist(player->x, slide));
                     player->slide_op.enabled = 1;
                 }
             }
@@ -266,8 +266,8 @@ void animationplayer_run(animationplayer *player) {
                 if (slide != player->y) {
                     DEBUG("%d player->y was %d, interpolating to %d", player->id, player->y, slide);
                     // scale distance by 100 so we can handle uneven interpolation (eg. 160/100)
-                    player->slide_op.y_per_tick = (dist(player->y, slide) * 100) / param.duration;
-                    DEBUG("%d moving %d per tick over %d ticks", player->id, player->slide_op.y_per_tick, param.duration);
+                    player->slide_op.y_per_tick = (dist(player->y, slide) * 100) / param->duration;
+                    DEBUG("%d moving %d per tick over %d ticks", player->id, player->slide_op.y_per_tick, param->duration);
                     player->slide_op.enabled = 1;
                 }
             }
@@ -325,11 +325,10 @@ char animationplayer_get_frame_letter(animationplayer *player) {
 }
 
 void animationplayer_next_frame(animationplayer *player) {
-    sd_stringparser_frame param;
     // right now, this can only skip the first frame...
-    if(sd_stringparser_run(player->parser, 0, &param) == 0) {
-        DEBUG("setting ticks %d -> %d", player->ticks, param.duration);
-        player->ticks = param.duration+1;
+    if(sd_stringparser_run(player->parser, 0) == 0) {
+        DEBUG("setting ticks %d -> %d", player->ticks, player->parser->current_frame.duration);
+        player->ticks = player->parser->current_frame.duration+1;
     }
 }
 
