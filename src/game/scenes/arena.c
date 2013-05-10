@@ -279,8 +279,19 @@ void arena_render(scene *scene) {
     progressbar_render(&player1_endurance_bar);
     progressbar_render(&player2_endurance_bar);
     
-    // Render HAR and pilot names
+    // Some test data
+    scene->player1.player_name = "Katajakasa";
+    scene->player2.player_name = "Vagabond";
+    scene->player1.har_name = "Python";
+    scene->player2.har_name = "Erlang";
     
+    // Render HAR and pilot names
+    font_render(&font_small, scene->player1.player_name, 5, 19, 186, 250, 250);
+    font_render(&font_small, scene->player1.har_name, 5, 26, 186, 250, 250);
+    int h2len = strlen(scene->player2.har_name) * 6;
+    int p2len = strlen(scene->player2.player_name) * 6;
+    font_render(&font_small, scene->player2.player_name, 315-p2len, 19, 186, 250, 250);
+    font_render(&font_small, scene->player2.har_name, 315-h2len, 26, 186, 250, 250);
     
     if (menu_visible) {
         menu_render(&game_menu);
