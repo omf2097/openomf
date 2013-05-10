@@ -15,6 +15,9 @@ struct progress_bar_t {
     unsigned int w,h,x,y;
     int orientation;
     unsigned int percentage;
+    color int_topleft_color;
+    color int_bottomright_color;
+    color int_bg_color;
 };
 
 void progressbar_create(progress_bar *bar,     
@@ -23,7 +26,9 @@ void progressbar_create(progress_bar *bar,
                        color border_topleft_color,
                        color border_bottomright_color,
                        color bg_color,
-                       color int_color, 
+                       color int_topleft_color,
+                       color int_bottomright_color,
+                       color int_bg_color,
                        int orientation);
 void progressbar_free(progress_bar *bar);
 void progressbar_set(progress_bar *bar, unsigned int percentage);

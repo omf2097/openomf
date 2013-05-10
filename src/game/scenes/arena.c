@@ -19,10 +19,15 @@
 #include <stdlib.h>
 #include <shadowdive/shadowdive.h>
 
-#define HEALTHBAR_COLOR_BG color_create(89,40,101,255)
-#define HEALTHBAR_COLOR_TL_BORDER color_create(60,0,60,255)
-#define HEALTHBAR_COLOR_BR_BORDER color_create(178,0,223,255)
-#define HEALTHBAR_COLOR_INT color_create(255,56,109,255)
+#define BAR_COLOR_BG color_create(89,40,101,255)
+#define BAR_COLOR_TL_BORDER color_create(60,0,60,255)
+#define BAR_COLOR_BR_BORDER color_create(178,0,223,255)
+#define HEALTHBAR_COLOR_BG color_create(255,56,109,255)
+#define HEALTHBAR_COLOR_TL_BORDER color_create(255,0,0,255)
+#define HEALTHBAR_COLOR_BR_BORDER color_create(158,0,0,255)
+#define ENDURANCEBAR_COLOR_BG color_create(97,150,186,255)
+#define ENDURANCEBAR_COLOR_TL_BORDER color_create(24,117,138,255)
+#define ENDURANCEBAR_COLOR_BR_BORDER color_create(0,69,93,255)
 
 menu game_menu;
 component title_button;
@@ -38,6 +43,8 @@ int menu_visible = 0;
 
 progress_bar player1_health_bar;
 progress_bar player2_health_bar;
+progress_bar player1_endurance_bar;
+progress_bar player2_endurance_bar;
 
 void game_menu_quit(component *c, void *userdata) {
     scene *scene = userdata;
@@ -139,17 +146,39 @@ int arena_init(scene *scene) {
     // Health bars
     progressbar_create(&player1_health_bar, 
                        5, 5, 100, 8, 
-                       HEALTHBAR_COLOR_TL_BORDER, 
-                       HEALTHBAR_COLOR_BR_BORDER, 
-                       HEALTHBAR_COLOR_BG, 
-                       HEALTHBAR_COLOR_INT, 
+                       BAR_COLOR_TL_BORDER, 
+                       BAR_COLOR_BR_BORDER, 
+                       BAR_COLOR_BG, 
+                       HEALTHBAR_COLOR_TL_BORDER,
+                       HEALTHBAR_COLOR_BR_BORDER,
+                       HEALTHBAR_COLOR_BG,
                        PROGRESSBAR_LEFT);
     progressbar_create(&player2_health_bar, 
                        215, 5, 100, 8, 
-                       HEALTHBAR_COLOR_TL_BORDER, 
-                       HEALTHBAR_COLOR_BR_BORDER, 
-                       HEALTHBAR_COLOR_BG, 
-                       HEALTHBAR_COLOR_INT, 
+                       BAR_COLOR_TL_BORDER, 
+                       BAR_COLOR_BR_BORDER, 
+                       BAR_COLOR_BG, 
+                       HEALTHBAR_COLOR_TL_BORDER,
+                       HEALTHBAR_COLOR_BR_BORDER,
+                       HEALTHBAR_COLOR_BG,
+                       PROGRESSBAR_RIGHT);
+    progressbar_create(&player1_endurance_bar, 
+                       5, 14, 100, 4, 
+                       BAR_COLOR_TL_BORDER, 
+                       BAR_COLOR_BR_BORDER, 
+                       BAR_COLOR_BG, 
+                       ENDURANCEBAR_COLOR_TL_BORDER,
+                       ENDURANCEBAR_COLOR_BR_BORDER,
+                       ENDURANCEBAR_COLOR_BG,
+                       PROGRESSBAR_LEFT);
+    progressbar_create(&player2_endurance_bar, 
+                       215, 14, 100, 4, 
+                       BAR_COLOR_TL_BORDER, 
+                       BAR_COLOR_BR_BORDER, 
+                       BAR_COLOR_BG, 
+                       ENDURANCEBAR_COLOR_TL_BORDER,
+                       ENDURANCEBAR_COLOR_BR_BORDER,
+                       ENDURANCEBAR_COLOR_BG,
                        PROGRESSBAR_RIGHT);
     return 0;
 }
@@ -177,6 +206,8 @@ void arena_deinit(scene *scene) {
     
     progressbar_free(&player1_health_bar);
     progressbar_free(&player2_health_bar);
+    progressbar_free(&player1_endurance_bar);
+    progressbar_free(&player2_endurance_bar);
     
     settings_save(settings_get());
 }
@@ -231,12 +262,21 @@ int arena_event(scene *scene, SDL_Event *e) {
 }
 
 void arena_render(scene *scene) {
+    // Set health bar
     float p1_hp = (float)scene->player1.har->health / (float)scene->player1.har->health_max;
     float p2_hp = (float)scene->player2.har->health / (float)scene->player2.har->health_max;
     progressbar_set(&player1_health_bar, p1_hp * 100);
     progressbar_set(&player2_health_bar, p2_hp * 100);
     progressbar_render(&player1_health_bar);
     progressbar_render(&player2_health_bar);
+    
+    // Set endurance bar
+    float p1_en = (float)scene->player1.har->endurance / (float)scene->player1.har->endurance_max;
+    float p2_en = (float)scene->player2.har->endurance / (float)scene->player2.har->endurance_max;
+    progressbar_set(&player1_endurance_bar, p1_en * 100);
+    progressbar_set(&player2_endurance_bar, p2_en * 100);
+    progressbar_render(&player1_endurance_bar);
+    progressbar_render(&player2_endurance_bar);
     
     if (menu_visible) {
         menu_render(&game_menu);
