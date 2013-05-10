@@ -102,13 +102,12 @@ void mechlab_deinit(scene *scene) {
 void mechlab_tick(scene *scene) {
     if(handpoking) {
         animationplayer_run(&handplayer);
-
         if(handplayer.finished) {
             animationplayer_reset(&handplayer);
-            animationplayer_run(&handplayer);
             handpoking = 0;
         }
     }
+
 }
 
 int mechlab_event(scene *scene, SDL_Event *event) {

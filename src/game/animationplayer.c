@@ -335,4 +335,5 @@ void animationplayer_next_frame(animationplayer *player) {
 void animationplayer_reset(animationplayer *player) {
     player->ticks = 1;
     player->finished = 0;
+    sd_stringparser_reset(player->parser);
 }
