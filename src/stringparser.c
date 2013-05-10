@@ -778,6 +778,18 @@ int sd_stringparser_prettyprint(sd_stringparser *parser) {
     }
     return 0;
 }
+unsigned int sd_stringparser_num_frames(sd_stringparser *parser) {
+    return ((frame_list*)parser->frame_list)->num_frames;
+}
+
+unsigned int sd_stringparser_num_ticks(sd_stringparser *parser) {
+    frame_list *frames = parser->frame_list;
+    if(frames->num_frames > 0) {
+        return frames->frames[frames->num_frames-1].start_tick + frames->frames[frames->num_frames-1].duration;
+    } else {
+        return 0;
+    }
+}
 
 int sd_stringparser_get_current_frame_id(sd_stringparser *parser) {
     return parser->current_frame.id;

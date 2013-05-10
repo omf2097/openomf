@@ -96,6 +96,9 @@ int sd_stringparser_prettyprint_frame(sd_stringparser *parser, unsigned int fram
 
 int sd_stringparser_prettyprint(sd_stringparser *parser);
 
+unsigned int sd_stringparser_num_frames(sd_stringparser *parser);
+unsigned int sd_stringparser_num_ticks(sd_stringparser *parser);
+
 int sd_stringparser_get_current_frame_id(sd_stringparser *parser);
 
 char sd_stringparser_get_current_frame_letter(sd_stringparser *parser);
