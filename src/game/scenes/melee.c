@@ -1,12 +1,14 @@
 #include <string.h>
+#include <time.h>
+#include <stdlib.h>
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
 #include "utils/log.h"
 #include "game/text/text.h"
+#include "game/text/languages.h"
 #include "audio/music.h"
 #include "video/video.h"
 #include "game/settings.h"
-#include "game/text/languages.h"
 #include "game/scene.h"
 #include "game/scenes/melee.h"
 #include "game/menu/menu_background.h"
@@ -162,10 +164,12 @@ int melee_event(scene *scene, SDL_Event *event) {
                         scene->player2.har_id = 5*row_b+column_b;
                         scene->player2.player_id = player_id_b;
                     } else {
-                        // default to jaguar
-                        scene->player2.har_id = 0;
-                        // default to shirro
-                        scene->player2.player_id = 4;
+                        // randomly pick opponent and HAR
+                        srand(time(NULL));
+                        scene->player2.har_id = rand() % 10;
+                        int i;
+                        while((i = rand() % 10) == player_id_a) {}
+                        scene->player2.player_id = i;
                     }
                     scene->next_id = SCENE_VS;
                 }

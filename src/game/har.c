@@ -333,7 +333,6 @@ void har_tick(har *har) {
     if (har->endurance < har->endurance_max &&
             (har->player.id == ANIM_IDLE || har->player.id == ANIM_CROUCHING ||
              har->player.id == ANIM_WALKING || har->player.id == ANIM_JUMPING)) {
-        DEBUG("incrementing endurance");
         har->endurance++;
     }
     if(har->player.finished) {

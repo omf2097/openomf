@@ -1,15 +1,20 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
 #include "utils/log.h"
+#include "game/text/text.h"
+#include "game/text/languages.h"
 #include "game/har.h"
 #include "game/scene.h"
 #include "video/video.h"
 #include "game/scenes/vs.h"
+#include "game/menu/menu_background.h"
 
 texture player2_background;
 animationplayer welder;
 animationplayer scientist;
 list child_players;
+texture arena_select_bg;
+int arena;
 
 sd_rgba_image* sub_image(sd_vga_image *image, sd_palette *pal, int x, int y, int w, int h) {
     sd_rgba_image *img = 0;
@@ -67,9 +72,13 @@ int vs_init(scene *scene) {
     // clone the left side of the background image
     sd_rgba_image * out = sub_image(scene->bk->background, scene->bk->palettes[0], 0, 0, 160, 200);
 
+    arena = rand() % 5; // srand was done in melee
+
     list_create(&child_players);
 
     texture_create(&player2_background, out->data, 160, 200);
+
+    menu_background2_create(&arena_select_bg, 211, 50);
     sd_rgba_image_delete(out);
     return 0;
 }
@@ -139,7 +148,21 @@ int vs_event(scene *scene, SDL_Event *event) {
                 har_load(h2, scene->bk->palettes[0], scene->bk->soundtable, scene->player2.har_id, 260, 190, -1);
                 scene_set_player1_har(scene, h1);
                 scene_set_player2_har(scene, h2);
-                scene->next_id = SCENE_ARENA3;
+                scene->next_id = SCENE_ARENA0+arena;
+                break;
+            case SDLK_UP:
+            case SDLK_LEFT:
+                arena--;
+                if (arena < 0) {
+                    arena = 4;
+                }
+                break;
+            case SDLK_DOWN:
+            case SDLK_RIGHT:
+                arena++;
+                if (arena > 4) {
+                    arena = 0;
+                }
                 break;
         }
         return 1;
@@ -160,6 +183,36 @@ void vs_render(scene *scene) {
     // player 2 HAR
     video_render_sprite_flip(array_get(&ani->sprites, scene->player2.har_id), 160+ (ani->sdani->sprites[scene->player2.har_id]->pos_x * -1) - ani->sdani->sprites[scene->player2.har_id]->img->w,
             0+ani->sdani->sprites[scene->player2.har_id]->pos_y, BLEND_ALPHA, FLIP_HORIZONTAL);
+
+    ani = array_get(&scene->animations, 4);
+
+    // player 1 portrait
+    video_render_sprite_flip(array_get(&ani->sprites, scene->player1.player_id), 0,
+            200-ani->sdani->sprites[scene->player1.player_id]->img->w, BLEND_ALPHA, FLIP_NONE);
+
+    // player 2 portrait
+    video_render_sprite_flip(array_get(&ani->sprites, scene->player2.player_id), 320-ani->sdani->sprites[scene->player2.player_id]->img->w,
+            200-ani->sdani->sprites[scene->player1.player_id]->img->w, BLEND_ALPHA, FLIP_HORIZONTAL);
+
+
+    if (scene->player2.selectable) {
+        // arena selection
+        video_render_sprite_flip(&arena_select_bg, 55, 150, BLEND_ALPHA, FLIP_NONE);
+
+        ani = array_get(&scene->animations, 3);
+        video_render_sprite_flip(array_get(&ani->sprites, arena), 59, 155, BLEND_ALPHA, FLIP_NONE);
+
+
+        // arena name
+        font_render_wrapped(&font_small, lang_get(56+arena), 59+72, 153, (211-72)-4, 0, 255, 0);
+
+        // arena description
+        font_render_wrapped(&font_small, lang_get(66+arena), 59+72, 161, (211-72)-4, 0, 255, 0);
+
+    } else {
+        font_render_wrapped(&font_small, lang_get(749+(11*scene->player1.player_id)+scene->player2.player_id), 59, 160, 150, 255, 255, 0);
+        font_render_wrapped(&font_small, lang_get(870+(11*scene->player2.player_id)+scene->player1.player_id), 320-(59+150), 180, 150, 255, 255, 0);
+    }
 
     // welder & scientist
     animationplayer_render(&welder);
