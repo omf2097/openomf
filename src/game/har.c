@@ -237,8 +237,9 @@ void har_take_damage(har *har, int amount) {
         return;
     }
     DEBUG("HAR took %f damage, and its health is now %d", amount / 2.0f, har->health);
-    // we actually only want to play 3 frames from this animation, but lack the ability
     har_switch_animation(har, ANIM_DAMAGE);
+    // play until end of frame 2 (zero based index)
+    animationplayer_set_end_frame(&har->player, 2);
 }
 
 void har_collision_scene(har *har, scene *scene) {

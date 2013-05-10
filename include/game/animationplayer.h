@@ -27,6 +27,7 @@ typedef struct animationplayer_t {
     
     unsigned int repeat;
     int direction;
+    unsigned int end_frame;
     
     animation *ani;
     sound_state *snd;
@@ -49,6 +50,7 @@ void animationplayer_render(animationplayer *player);
 void animationplayer_reset(animationplayer *player);
 void animationplayer_set_repeat(animationplayer *player, unsigned int repeat);
 void animationplayer_set_direction(animationplayer *player, int direction);
+void animationplayer_set_end_frame(animationplayer *player, unsigned int end_frame);
 void animationplayer_next_frame(animationplayer *player);
 int animationplayer_get_frame(animationplayer *player);
 char animationplayer_get_frame_letter(animationplayer *player);

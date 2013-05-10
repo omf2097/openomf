@@ -108,6 +108,7 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
     player->ani = animation;
     player->id = id;
     player->direction = 1;
+    player->end_frame = UINT32_MAX;
     player->parser = sd_stringparser_create();
     player->ticks = 1;
     player->obj = 0;
@@ -186,7 +187,14 @@ void animationplayer_run(animationplayer *player) {
     sd_stringparser_frame *f = param;
     sd_stringparser_frame *n = &n_param;
     int real_frame;
-    if(sd_stringparser_run(player->parser, player->ticks-1) == 0) {
+
+    int run_ret;
+    if(player->end_frame == UINT32_MAX) {
+        run_ret = sd_stringparser_run(player->parser, player->ticks-1);
+    } else {
+        run_ret = sd_stringparser_run_frames(player->parser, player->ticks-1, player->end_frame);
+    }
+    if(run_ret == 0) {
         real_frame = param->letter - 65;
         
         // Disable stuff from previous frame
@@ -329,6 +337,10 @@ void animationplayer_next_frame(animationplayer *player) {
         DEBUG("setting ticks %d -> %d", player->ticks, player->parser->current_frame.duration);
         player->ticks = player->parser->current_frame.duration+1;
     }
+}
+
+void animationplayer_set_end_frame(animationplayer *player, unsigned int end_frame) {
+    player->end_frame = end_frame;
 }
 
 void animationplayer_reset(animationplayer *player) {
