@@ -1,3 +1,8 @@
+/*! \file 
+ * \brief Contains stuff that handles AF files.
+ * \license MIT
+ */ 
+
 #ifndef _SD_AF_H
 #define _SD_AF_H
 
@@ -24,24 +29,32 @@ typedef struct sd_af_file_t {
     char soundtable[30];
 } sd_af_file;
 
-/**
-  * Creates AF file structure
-  */
+/*! \brief Create AF container
+ * Creates the AF container struct, allocated memory etc.
+ * \return AF container struct pointer
+ */
 sd_af_file* sd_af_create();
 
-/**
-  * Load .AF file. Returns SD_SUCCESS on success.
-  */
+/*! \brief Load AF file
+ * Loads the given AF file to memory
+ * \param af AF struct pointer. Must be created using sd_af_create().
+ * \param filename Name of the AF file.
+ * \return SD_SUCCESS on success.
+ */
 int sd_af_load(sd_af_file *af, const char *filename);
 
-/**
-  * Saves AF file structure. Returns SD_SUCCESS on success, else on error.
-  */
+/*! \brief Save AF file
+ * Saves the given AF file from memory to a file on disk.
+ * \param af AF struct pointer. Must be created using sd_af_create().
+ * \param filename Name of the AF file to save into.
+ * \return SD_SUCCESS on success.
+ */
 int sd_af_save(sd_af_file *af, const char* filename);
 
-/**
-  * Deletes af_file structure from memory.
-  */
+/*! \brief Free AF container
+ * Frees up the af struct memory.
+ * \param af AF struct pointer. Must be created using sd_af_create().
+ */
 void sd_af_delete(sd_af_file *af);
 
 #endif // _SD_AF_H
