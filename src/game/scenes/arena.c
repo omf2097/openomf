@@ -264,35 +264,38 @@ int arena_event(scene *scene, SDL_Event *e) {
 
 void arena_render(scene *scene) {
     // Set health bar
-    float p1_hp = (float)scene->player1.har->health / (float)scene->player1.har->health_max;
-    float p2_hp = (float)scene->player2.har->health / (float)scene->player2.har->health_max;
-    progressbar_set(&player1_health_bar, p1_hp * 100);
-    progressbar_set(&player2_health_bar, p2_hp * 100);
-    progressbar_render(&player1_health_bar);
-    progressbar_render(&player2_health_bar);
+    if(scene->player1.har != NULL && scene->player2.har != NULL) {
+        float p1_hp = (float)scene->player1.har->health / (float)scene->player1.har->health_max;
+        float p2_hp = (float)scene->player2.har->health / (float)scene->player2.har->health_max;
+        progressbar_set(&player1_health_bar, p1_hp * 100);
+        progressbar_set(&player2_health_bar, p2_hp * 100);
+        progressbar_render(&player1_health_bar);
+        progressbar_render(&player2_health_bar);
+        
+        // Set endurance bar
+        float p1_en = (float)scene->player1.har->endurance / (float)scene->player1.har->endurance_max;
+        float p2_en = (float)scene->player2.har->endurance / (float)scene->player2.har->endurance_max;
+        progressbar_set(&player1_endurance_bar, p1_en * 100);
+        progressbar_set(&player2_endurance_bar, p2_en * 100);
+        progressbar_render(&player1_endurance_bar);
+        progressbar_render(&player2_endurance_bar);
+        
+        // Some test data
+        scene->player1.player_name = "Katajakasa";
+        scene->player2.player_name = "Vagabond";
+        scene->player1.har_name = "Python";
+        scene->player2.har_name = "Erlang";
+        
+        // Render HAR and pilot names
+        font_render(&font_small, scene->player1.player_name, 5, 19, 186, 250, 250);
+        font_render(&font_small, scene->player1.har_name, 5, 26, 186, 250, 250);
+        int h2len = strlen(scene->player2.har_name) * 6;
+        int p2len = strlen(scene->player2.player_name) * 6;
+        font_render(&font_small, scene->player2.player_name, 315-p2len, 19, 186, 250, 250);
+        font_render(&font_small, scene->player2.har_name, 315-h2len, 26, 186, 250, 250);
+    }
     
-    // Set endurance bar
-    float p1_en = (float)scene->player1.har->endurance / (float)scene->player1.har->endurance_max;
-    float p2_en = (float)scene->player2.har->endurance / (float)scene->player2.har->endurance_max;
-    progressbar_set(&player1_endurance_bar, p1_en * 100);
-    progressbar_set(&player2_endurance_bar, p2_en * 100);
-    progressbar_render(&player1_endurance_bar);
-    progressbar_render(&player2_endurance_bar);
-    
-    // Some test data
-    scene->player1.player_name = "Katajakasa";
-    scene->player2.player_name = "Vagabond";
-    scene->player1.har_name = "Python";
-    scene->player2.har_name = "Erlang";
-    
-    // Render HAR and pilot names
-    font_render(&font_small, scene->player1.player_name, 5, 19, 186, 250, 250);
-    font_render(&font_small, scene->player1.har_name, 5, 26, 186, 250, 250);
-    int h2len = strlen(scene->player2.har_name) * 6;
-    int p2len = strlen(scene->player2.player_name) * 6;
-    font_render(&font_small, scene->player2.player_name, 315-p2len, 19, 186, 250, 250);
-    font_render(&font_small, scene->player2.har_name, 315-h2len, 26, 186, 250, 250);
-    
+    // Draw menu if necessary
     if (menu_visible) {
         menu_render(&game_menu);
         video_render_sprite(&tex, 10, 150, BLEND_ALPHA_FULL);
