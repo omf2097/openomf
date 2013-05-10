@@ -8,6 +8,7 @@
 #include "game/settings.h"
 #include "game/har.h"
 #include "game/text/text.h"
+#include "game/text/languages.h"
 #include "game/menu/menu.h"
 #include "game/menu/menu_background.h"
 #include "game/menu/textbutton.h"
@@ -153,7 +154,7 @@ int arena_init(scene *scene) {
                        HEALTHBAR_COLOR_TL_BORDER,
                        HEALTHBAR_COLOR_BR_BORDER,
                        HEALTHBAR_COLOR_BG,
-                       PROGRESSBAR_LEFT);
+                       PROGRESSBAR_RIGHT);
     progressbar_create(&player2_health_bar, 
                        215, 5, 100, 8, 
                        BAR_COLOR_TL_BORDER, 
@@ -162,7 +163,7 @@ int arena_init(scene *scene) {
                        HEALTHBAR_COLOR_TL_BORDER,
                        HEALTHBAR_COLOR_BR_BORDER,
                        HEALTHBAR_COLOR_BG,
-                       PROGRESSBAR_RIGHT);
+                       PROGRESSBAR_LEFT);
     progressbar_create(&player1_endurance_bar, 
                        5, 14, 100, 4, 
                        BAR_COLOR_TL_BORDER, 
@@ -171,7 +172,7 @@ int arena_init(scene *scene) {
                        ENDURANCEBAR_COLOR_TL_BORDER,
                        ENDURANCEBAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_BG,
-                       PROGRESSBAR_LEFT);
+                       PROGRESSBAR_RIGHT);
     progressbar_create(&player2_endurance_bar, 
                        215, 14, 100, 4, 
                        BAR_COLOR_TL_BORDER, 
@@ -180,7 +181,7 @@ int arena_init(scene *scene) {
                        ENDURANCEBAR_COLOR_TL_BORDER,
                        ENDURANCEBAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_BG,
-                       PROGRESSBAR_RIGHT);
+                       PROGRESSBAR_LEFT);
     return 0;
 }
 
@@ -271,7 +272,7 @@ void arena_render(scene *scene) {
         progressbar_set(&player2_health_bar, p2_hp * 100);
         progressbar_render(&player1_health_bar);
         progressbar_render(&player2_health_bar);
-        
+
         // Set endurance bar
         float p1_en = (float)scene->player1.har->endurance / (float)scene->player1.har->endurance_max;
         float p2_en = (float)scene->player2.har->endurance / (float)scene->player2.har->endurance_max;
@@ -279,22 +280,16 @@ void arena_render(scene *scene) {
         progressbar_set(&player2_endurance_bar, p2_en * 100);
         progressbar_render(&player1_endurance_bar);
         progressbar_render(&player2_endurance_bar);
-        
-        // Some test data
-        scene->player1.player_name = "Katajakasa";
-        scene->player2.player_name = "joneirik";
-        scene->player1.har_name = "Awesomebot";
-        scene->player2.har_name = "Crapbot";
-        
+
         // Render HAR and pilot names
-        font_render(&font_small, scene->player1.player_name, 5, 19, 186, 250, 250);
-        font_render(&font_small, scene->player1.har_name, 5, 26, 186, 250, 250);
-        int h2len = strlen(scene->player2.har_name) * 6;
-        int p2len = strlen(scene->player2.player_name) * 6;
-        font_render(&font_small, scene->player2.player_name, 315-p2len, 19, 186, 250, 250);
-        font_render(&font_small, scene->player2.har_name, 315-h2len, 26, 186, 250, 250);
+        font_render(&font_small, lang_get(scene->player1.player_id+20), 5, 19, 186, 250, 250);
+        font_render(&font_small, lang_get(scene->player1.har_id+31), 5, 26, 186, 250, 250);
+        int h2len = strlen(lang_get(scene->player2.player_id+20)) * font_small.w;
+        int p2len = strlen(lang_get(scene->player2.har_id+31)) * font_small.w;
+        font_render(&font_small, lang_get(scene->player2.player_id+20), 315-p2len, 19, 186, 250, 250);
+        font_render(&font_small, lang_get(scene->player2.har_id+31), 315-h2len, 26, 186, 250, 250);
     }
-    
+
     // Draw menu if necessary
     if (menu_visible) {
         menu_render(&game_menu);

@@ -194,7 +194,7 @@ int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, in
     // Start player with animation 11
     h->player.x = h->phy.pos.x;
     h->player.y = h->phy.pos.y;
-    animationplayer_create(&h->player, 11, array_get(&h->animations, 11));
+    animationplayer_create(&h->player, ANIM_IDLE, array_get(&h->animations, ANIM_IDLE));
     animationplayer_set_direction(&h->player, h->direction);
     animationplayer_set_repeat(&h->player, 1);
     animationplayer_run(&h->player);
@@ -225,10 +225,20 @@ void har_free(har *h) {
 
 void har_take_damage(har *har, int amount) {
     har->health -= amount / 2.0f;
-    if(har->health < 0) har->health = 0;
+    har->endurance -= amount;
+    if(har->health < 0) {
+        har->health = 0;
+        har_switch_animation(har, ANIM_DEFEAT);
+        return;
+    }
+    if(har->endurance < 0) {
+        har->endurance = 0;
+        har_switch_animation(har, ANIM_STUNNED);
+        return;
+    }
     DEBUG("HAR took %f damage, and its health is now %d", amount / 2.0f, har->health);
     // we actually only want to play 3 frames from this animation, but lack the ability
-    har_switch_animation(har, 9);
+    har_switch_animation(har, ANIM_DAMAGE);
 }
 
 void har_collision_scene(har *har, scene *scene) {
@@ -241,7 +251,7 @@ void har_collision_har(har *har_a, har *har_b) {
     sd_animation *ani = har_a->af->moves[ani_id]->animation;
 
     int other_ani_id = har_b->player.id;
-    if (other_ani_id == 9) {
+    if (other_ani_id == ANIM_DAMAGE) {
         // can't kick them while they're down
         return;
     }
@@ -265,6 +275,9 @@ void har_collision_har(har *har_a, har *har_b) {
                     DEBUG("y coordinate hit!");
                     // TODO Do a fine grained per-pixel check for a hit
                     har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
+                    if (har_b->health == 0) {
+                        har_switch_animation(har_a, ANIM_VICTORY);
+                    }
                 }
             }
         }
@@ -310,21 +323,29 @@ void har_tick(har *har) {
         har->tick = 0;
     }
 
-    if (har->player.id == 9 && animationplayer_get_frame(&har->player) > 4) {
+    if (har->player.id == ANIM_DAMAGE && animationplayer_get_frame(&har->player) > 4) {
         // bail out of the 'hit' animation early, because the hit animation
         // contains ALL the hit aniamtions one after the other
         har->player.finished = 1;
     }
+
+    //regenerate endurance if not attacking
+    if (har->endurance < har->endurance_max &&
+            (har->player.id == ANIM_IDLE || har->player.id == ANIM_CROUCHING ||
+             har->player.id == ANIM_WALKING || har->player.id == ANIM_JUMPING)) {
+        DEBUG("incrementing endurance");
+        har->endurance++;
+    }
     if(har->player.finished) {
         // 11 will never be finished, if it is set to repeat
         har->tick = 0;
-        int animation = 11;
+        int animation = ANIM_IDLE;
         switch(har->state) {
             case STATE_STANDING:
-                animation = 11;
+                animation = ANIM_IDLE;
                 break;
             case STATE_CROUCHING:
-                animation = 4;
+                animation = ANIM_CROUCHING;
                 break;
         }
         DEBUG("next animation is %d", animation);
@@ -366,7 +387,7 @@ void add_input(har *har, char c) {
 }
 
 void har_act(har *har, int act_type) {
-    if (har->player.id != 11 && har->player.id != 4 && har->player.id != 10 && har->player.id != 1) {
+    if (har->player.id != ANIM_IDLE && har->player.id != ANIM_CROUCHING && har->player.id != ANIM_WALKING && har->player.id != ANIM_JUMPING) {
         // if we're not in the idle loop, bail for now
         return;
     }

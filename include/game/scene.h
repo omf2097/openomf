@@ -40,10 +40,6 @@ typedef struct scene_player_t {
     controller *ctrl;
     texture *portrait;
     int selectable;
-    
-    const char *player_name;
-    const char *har_name;
-    
     // store crap like agility and stuff here?
 } scene_player;
 
