@@ -384,11 +384,11 @@ static int sd_framelist_process(int *is_frame_ready,
         }
     }
     
-    if(tick_diff > 0) {
+    if(tick_diff >= 0) {
         // only handle frame once
         unsigned int total_duration = frames->frames[frames->num_frames-1].start_tick + frames->frames[frames->num_frames-1].duration;
         int is_animation_end = ((frames->next_frame == frames->num_frames && ticks >= total_duration) ||
-                                (ticks >= end_ticks) ? 1 : 0);                   
+                                (ticks >= end_ticks) ? 1 : 0);
         if(cur == NULL) { cur = &frames->frames[frames->num_frames-1]; }
         if((cur && ticks >= cur->start_tick) || is_animation_end) {
             int is_first_frame = ((cur == &frames->frames[0]) ? 1 : 0);
@@ -419,6 +419,7 @@ static int sd_framelist_process(int *is_frame_ready,
         }
     } else if(tick_diff < 0) {
         // only handle frame once
+        if(end_ticks == UINT32_MAX) { end_ticks = 0; }
         int is_animation_end = ((frames->next_frame == 0 && ticks == 0) || (ticks <= end_ticks) ? 1 : 0);
         if(cur == NULL) { cur = &frames->frames[0]; }
         if((cur && ticks <= cur->start_tick) || is_animation_end) {
