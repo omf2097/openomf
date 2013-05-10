@@ -334,7 +334,7 @@ void mainmenu_deinit(scene *scene) {
     textbutton_free(&gameplay_done_button);
     menu_free(&gameplay_menu);
 
-    settings_save(settings_get());
+    settings_save();
 }
 
 void mainmenu_tick(scene *scene) {

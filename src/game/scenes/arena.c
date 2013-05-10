@@ -211,7 +211,7 @@ void arena_deinit(scene *scene) {
     progressbar_free(&player1_endurance_bar);
     progressbar_free(&player2_endurance_bar);
     
-    settings_save(settings_get());
+    settings_save();
 }
 
 void arena_tick(scene *scene) {
