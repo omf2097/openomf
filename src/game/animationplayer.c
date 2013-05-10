@@ -196,8 +196,7 @@ void animationplayer_run(animationplayer *player) {
         if(param->is_animation_end || player->finished) {
             player->finished = 1;
             if(player->repeat) {
-                player->ticks = 1;
-                player->finished = 0;
+                animationplayer_reset(player);
                 sd_stringparser_run(player->parser, player->ticks-1);
                 real_frame = param->letter - 65;
             } else {
