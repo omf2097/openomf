@@ -11,30 +11,30 @@ void test_state_variables(const char *anim_str) {
     int err = sd_stringparser_set_string(parser, anim_str);
     if(err == 0) 
     {
-        sd_stringparser_frame frame;
         const sd_stringparser_tag_value *blend_additive, *blend_start, *blend_end, *jump;
 
         int jump_count = 0;
         for(unsigned int tick=0;tick<2000;++tick) {
-            if(sd_stringparser_run(parser, tick, &frame) == 0) {
-                if(frame.is_first_frame) printf("#%d First frame\n", frame.id);
-                else if(frame.is_final_frame) printf("#%d Final frame\n", frame.id);
-                else if(frame.is_animation_end) printf("#%d %d.Animation  finished\n", frame.id, tick);
-                else printf("#%d Frame changed\n", frame.id);
+            if(sd_stringparser_run(parser, tick) == 0) {
+                sd_stringparser_frame *frame = &parser->current_frame;
+                if(frame->is_first_frame) printf("#%d First frame\n", frame->id);
+                else if(frame->is_final_frame) printf("#%d Final frame\n", frame->id);
+                else if(frame->is_animation_end) printf("#%d %d.Animation  finished\n", frame->id, tick);
+                else printf("#%d Frame changed\n", frame->id);
                 
-                if(sd_stringparser_get_tag(parser, frame.id, SD_BLEND_ADDITIVE, &blend_additive)) {
+                if(sd_stringparser_get_tag(parser, frame->id, SD_BLEND_ADDITIVE, &blend_additive)) {
                     printf("Error getting blend additive tag\n");
                     return;
                 }
-                if(sd_stringparser_get_tag(parser, frame.id, SD_BLEND_START, &blend_start)) {
+                if(sd_stringparser_get_tag(parser, frame->id, SD_BLEND_START, &blend_start)) {
                     printf("Error getting blend start tag\n");
                     return;
                 }
-                if(sd_stringparser_get_tag(parser, frame.id, SD_BLEND_FINISH, &blend_end)) {
+                if(sd_stringparser_get_tag(parser, frame->id, SD_BLEND_FINISH, &blend_end)) {
                     printf("Error getting blend end tag\n");
                     return;
                 }
-                if(sd_stringparser_get_tag(parser, frame.id, SD_JUMP_TICK, &jump)) {
+                if(sd_stringparser_get_tag(parser, frame->id, SD_JUMP_TICK, &jump)) {
                     printf("Error getting jump tag\n");
                     return;
                 }
@@ -74,12 +74,11 @@ void test_anim_string(sd_stringparser *parser, const char *str) {
     unsigned int ticks = 0;
     char err_msg[100];
     int err = sd_stringparser_set_string(parser, str);
-    sd_stringparser_frame frame;
     if(err) {
         sd_get_error(err_msg, err);
         printf("Animation string parser error: %s (%s)\n", err_msg, str);
     } else {
-        sd_stringparser_run(parser, ticks, &frame);
+        sd_stringparser_run(parser, ticks);
         sd_stringparser_prettyprint(parser);
         printf("%s passed\n", str);
     }
@@ -88,14 +87,13 @@ void test_anim_string(sd_stringparser *parser, const char *str) {
 void test_broken_string(sd_stringparser *parser) {
     unsigned int ticks = 0;
     char err_msg[100];
-    sd_stringparser_frame frame;
     const char *broken_string = "x+4zcubs21l50zp";
     int err = sd_stringparser_set_string(parser, broken_string);
     if(err) {
         sd_get_error(err_msg, err);
         printf("Animation string parser error: %s (%s)\n", err_msg, broken_string);
     } else {
-        sd_stringparser_run(parser, ticks, &frame);
+        sd_stringparser_run(parser, ticks);
         printf("broken string test passed\n\n");
     }
 }

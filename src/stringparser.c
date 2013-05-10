@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 
 // private structs
 typedef struct tag_attribute_t {
@@ -351,17 +352,20 @@ static void sd_framelist_resize(frame_list *list, int frames) {
 }
 
 // returns 0 if theres a frame, otherwise return 1
-static int sd_framelist_process(frame_list *frames, tag_list *tags, unsigned int ticks, sd_stringparser_frame *out_frame) {
+static int sd_framelist_process(frame_list *frames, tag_list *tags, 
+                                unsigned int ticks, unsigned int end_ticks, 
+                                sd_stringparser_frame *out_frame) {
     int retval = 1;
 
     anim_frame *cur = frames->next_frame < frames->num_frames ? 
                       &frames->frames[frames->next_frame] : 
                       NULL;
 
+    long long tick_diff = (long long)ticks-(long long)frames->last_tick;
+    
     // only skip frame if the difference between the last tick and current tick is greater than 1
-    if(abs((long long)ticks-(long long)frames->last_tick) > 1) {
+    if(abs(tick_diff) > 1) {
         // skip to the next frame 
-
         cur = &frames->frames[0];
         unsigned int next_frame_time=0;
         int i;
@@ -378,43 +382,64 @@ static int sd_framelist_process(frame_list *frames, tag_list *tags, unsigned int
             cur = NULL;
         }
     }
+    
+    if(tick_diff > 0) {
+        // only handle frame once
+        unsigned int total_duration = frames->frames[frames->num_frames-1].start_tick + frames->frames[frames->num_frames-1].duration;
+        int is_animation_end = ((frames->next_frame == frames->num_frames && ticks >= total_duration) ||
+                                (ticks >= end_ticks) ? 1 : 0);                   
+        if(cur == NULL) { cur = &frames->frames[frames->next_frame]; }
+        if((cur && ticks >= cur->start_tick) || is_animation_end) {
+            int is_first_frame = ((cur == &frames->frames[0]) ? 1 : 0);
+            int is_final_frame = ((cur == &frames->frames[frames->num_frames-1]) ? 1 : 0);
 
-    // only handle frame once
-    unsigned int total_duration = frames->frames[frames->num_frames-1].start_tick + frames->frames[frames->num_frames-1].duration;
-    if((cur && ticks >= cur->start_tick) || 
-        (frames->next_frame == frames->num_frames && ticks >= total_duration)) {
+            out_frame->id = frames->next_frame;
 
-        int is_first_frame = ((cur == &frames->frames[0]) ? 1 : 0);
-        int is_final_frame = ((cur == &frames->frames[frames->num_frames-1]) ? 1 : 0);
-        int is_animation_end = ((frames->next_frame >= frames->num_frames) ? 1 : 0);
-
-        out_frame->id = frames->next_frame;
-
-        if(is_animation_end) {
-            out_frame->num_tags = 0;
-            out_frame->duration = 0;
-            out_frame->frame = 0;
-        } else {
             out_frame->num_tags = cur->num_tags;
             out_frame->tags = cur->tags;
             out_frame->tag_values = cur->tag_params;
             out_frame->duration = cur->duration;
-            out_frame->frame = cur->frame_letter;
+            out_frame->letter = cur->frame_letter;
+
+            out_frame->is_first_frame = is_first_frame;
+            out_frame->is_final_frame = is_final_frame;
+            out_frame->is_animation_end = is_animation_end;
+
+            if((frames->next_frame < frames->num_frames) && !is_animation_end) { frames->next_frame++; }
+
+            retval = 0;
         }
+    } else if(tick_diff < 0) {
+        // only handle frame once
+        int is_animation_end = ((frames->next_frame == 0 && ticks == 0) || (ticks <= end_ticks) ? 1 : 0);
+        if(cur == NULL) { cur = &frames->frames[0]; }
+        if((cur && ticks <= cur->start_tick) || is_animation_end) {
+            int is_first_frame = ((cur == &frames->frames[0]) ? 1 : 0);
+            int is_final_frame = ((cur == &frames->frames[frames->num_frames-1]) ? 1 : 0);
+            
+            out_frame->id = frames->next_frame;
 
-        out_frame->is_first_frame = is_first_frame;
-        out_frame->is_final_frame = is_final_frame;
-        out_frame->is_animation_end = is_animation_end;
+            out_frame->num_tags = cur->num_tags;
+            out_frame->tags = cur->tags;
+            out_frame->tag_values = cur->tag_params;
+            out_frame->duration = cur->duration;
+            out_frame->letter = cur->frame_letter;
 
-        frames->next_frame++;
+            out_frame->is_first_frame = is_first_frame;
+            out_frame->is_final_frame = is_final_frame;
+            out_frame->is_animation_end = is_animation_end;
 
-        retval = 0;
+            if((frames->next_frame > 0) && !is_animation_end) { frames->next_frame--; }
+
+            retval = 0;
+        }
     }
 
     frames->last_tick = ticks;
 
     return retval;
 }
+
 
 /* Reads next integer value from string (eg md15s5- -> reads "15" and leaves the position to point to 's'. */
 static int rn_int(int *pos, const char *str) {
@@ -583,6 +608,8 @@ static void cb_store_tag(sd_stringparser *parser, void *pcur_frame, tag_attribut
 
 sd_stringparser* sd_stringparser_create() {
     sd_stringparser *parser = (sd_stringparser*)malloc(sizeof(sd_stringparser));
+    memset(&parser->current_frame, 0, sizeof(sd_stringparser_frame));
+    parser->current_frame.parser = parser;
     parser->tag_list = malloc(sizeof(tag_list));
     memset(parser->tag_list, 0 , sizeof(tag_list));
     parser->frame_list = malloc(sizeof(frame_list));
@@ -625,28 +652,42 @@ int sd_stringparser_set_string(sd_stringparser *parser, const char *string) {
     return SD_ANIM_INVALID_STRING;
 }
 
-
 void sd_stringparser_reset(sd_stringparser *parser) {
     ((frame_list*)parser->frame_list)->next_frame = 0;
     ((frame_list*)parser->frame_list)->last_tick = 0;
 }
 
+int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks) {
+    return sd_framelist_process(parser->frame_list, parser->tag_list, ticks, UINT32_MAX, &parser->current_frame);
+}
 
-int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks, sd_stringparser_frame *out_frame) {
-    out_frame->parser = parser;
-    int r = sd_framelist_process(parser->frame_list, parser->tag_list, ticks, out_frame);
+int sd_stringparser_run_ex(sd_stringparser *parser, unsigned int ticks, unsigned int end_ticks) {
+    return sd_framelist_process(parser->frame_list, parser->tag_list, ticks, end_ticks, &parser->current_frame);
+}
 
-    if(r == 0) {
-        if(out_frame->is_animation_end) {
-            // return the result of the last run if frame ended
-            memcpy(out_frame, &parser->current_frame, sizeof(sd_stringparser_frame));
-            out_frame->is_animation_end = 1;
-        } else {
-            memcpy(&parser->current_frame, out_frame, sizeof(sd_stringparser_frame));
-        }
+int sd_stringparser_run_frames(sd_stringparser *parser, unsigned int ticks, unsigned int end_frame) {
+    frame_list *frames = parser->frame_list;
+    
+    if(end_frame >= 0 && end_frame < frames->num_frames) {
+        unsigned end_ticks = frames->frames[end_frame].start_tick + frames->frames[end_frame].duration; 
+        return sd_framelist_process(parser->frame_list, parser->tag_list, ticks, end_ticks, &parser->current_frame);
+    } else {
+        return 1;
     }
+}
 
-    return r;
+int sd_stringparser_goto_frame(sd_stringparser *parser, unsigned int frame, unsigned int *ticks) {
+    frame_list *frames = parser->frame_list;
+    
+    if(ticks == NULL) { return 1; }
+    
+    if(frame >= 0 && frame < frames->num_frames) {
+        *ticks = frames->last_tick = frames->frames[frame].start_tick; 
+        frames->next_frame = frame; 
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringparser_frame *out_frame) {
@@ -659,7 +700,7 @@ int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringp
         out_frame->tags = f->tags;
         out_frame->tag_values = f->tag_params;
         out_frame->duration = f->duration;
-        out_frame->frame = f->frame_letter;
+        out_frame->letter = f->frame_letter;
         out_frame->is_first_frame = (frame == 0);
         out_frame->is_final_frame = (frame == (frames-1));
         out_frame->is_animation_end = 0;
@@ -731,7 +772,7 @@ int sd_stringparser_get_current_frame_id(sd_stringparser *parser) {
 }
 
 char sd_stringparser_get_current_frame_letter(sd_stringparser *parser) {
-    return parser->current_frame.frame;
+    return parser->current_frame.letter;
 }
 
 

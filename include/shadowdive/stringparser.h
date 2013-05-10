@@ -24,16 +24,16 @@ typedef struct sd_stringparser_frame_t {
     /* Zero-based unique id for this frame */
     int id;
 
-    /* a list of tags for the current frame, unavailable if_animation_end is true */
+    /* a list of tags for the current frame */
     int num_tags;
     const char **tags;
     int *tag_values;
 
-    /* the duration of this frame, unavailable if_animation_end is true */
+    /* the duration of this frame */
     int duration;
 
-    /* the frame character in uppercase, unavailable if_animation_end is true */
-    char frame;
+    /* the frame character in uppercase */
+    char letter;
 
     /* is_first_frame is set to 1 if the current frame is the first frame of this animation */
     int is_first_frame;
@@ -64,7 +64,22 @@ int sd_stringparser_set_string(sd_stringparser *parser, const char *string);
 void sd_stringparser_reset(sd_stringparser *parser);
 
 /* Run the animation at "ticks", may return error */
-int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks, sd_stringparser_frame *out_frame);
+/* ticks must be externally incremented/decremented */
+/* An increment/decrement of ticks greater than 1 will trigger a frame jump */
+int sd_stringparser_run(sd_stringparser *parser, unsigned int ticks);
+
+/* Run the animation from ticks A to B, may return error */
+/* ticks must be externally incremented/decremented */
+/* An increment/decrement of ticks greater than 1 will trigger a frame jump */
+int sd_stringparser_run_ex(sd_stringparser *parser, unsigned int ticks, unsigned int end_ticks);
+
+/* Run the animation until the end of specified frame, may return error */
+/* ticks must be externally incremented/decremented */
+/* An increment/decrement of ticks greater than 1 will trigger a frame jump */
+int sd_stringparser_run_frames(sd_stringparser *parser, unsigned int ticks, unsigned int end_frame);
+
+/* Jump to frame, the starting tick of the frame is stored in ticks, may return error */
+int sd_stringparser_goto_frame(sd_stringparser *parser, unsigned int frame, unsigned int *ticks);
 
 int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringparser_frame *out_frame);
 
