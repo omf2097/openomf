@@ -6,6 +6,7 @@
 #include "video/glextloader.h"
 #include "video/shaderprogram.h"
 #include "video/shader.h"
+#include "video/image.h"
 #include "utils/log.h"
 #include "utils/list.h"
 #include <SDL2/SDL.h>
@@ -202,6 +203,12 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
     
     texturelist_revalidate_all();
     return 0;
+}
+
+void video_screenshot(image *img) {
+    image_create(img, screen_w, screen_h);
+    glReadBuffer(GL_FRONT);
+    glReadPixels(0, 0, img->w, img->h, GL_BGR, GL_UNSIGNED_BYTE, img->data);
 }
 
 void video_set_rendering_mode(int mode) {

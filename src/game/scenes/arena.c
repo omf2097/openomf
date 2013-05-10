@@ -282,9 +282,9 @@ void arena_render(scene *scene) {
         
         // Some test data
         scene->player1.player_name = "Katajakasa";
-        scene->player2.player_name = "Vagabond";
-        scene->player1.har_name = "Python";
-        scene->player2.har_name = "Erlang";
+        scene->player2.player_name = "joneirik";
+        scene->player1.har_name = "Awesomebot";
+        scene->player2.har_name = "Crapbot";
         
         // Render HAR and pilot names
         font_render(&font_small, scene->player1.player_name, 5, 19, 186, 250, 250);

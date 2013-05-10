@@ -18,6 +18,7 @@
 
 int run = 0;
 int _vsync = 0;
+int take_screenshot = 0;
 
 int engine_init() {
     settings *setting = settings_get();
@@ -114,6 +115,11 @@ void engine_run() {
         
             // Handle other events
             switch(e.type) {
+                case SDL_KEYDOWN:
+                    if(e.key.keysym.sym == SDLK_F1) {
+                        take_screenshot = 1;
+                    }
+                    break;
             }
         }
 
@@ -132,6 +138,15 @@ void engine_run() {
         console_render();
         video_render_finish();
         audio_render(dt);
+        
+        // If screenshot requested, do it here.
+        if(take_screenshot) {
+            image img;
+            video_screenshot(&img);
+            image_write_tga(&img, "screenshot.tga");
+            image_free(&img);
+            take_screenshot = 0;
+        }
         
         // Delay stuff a bit if vsync is off
         if(!_vsync && run) {

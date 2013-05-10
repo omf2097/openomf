@@ -3,6 +3,21 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <math.h>
+#include <stdint.h>
+#include <stdio.h>
+
+typedef struct __attribute__ ((__packed__)) tga_header_t {
+    uint8_t id;
+    uint8_t colormap;
+    uint8_t type;
+    uint8_t colormap_spec[5];
+    uint16_t origin_x;
+    uint16_t origin_y;
+    uint16_t width;
+    uint16_t height;
+    uint8_t depth;
+    uint8_t descriptor;
+} tga_header;
 
 int image_create(image *img, int w, int h) {
     img->data = malloc(w * h * 4);
@@ -75,5 +90,35 @@ void image_filled_rect(image *img, unsigned int x, unsigned int y, unsigned int 
             image_set_pixel(img, mx, my, c);
         }
     }
+}
+
+void image_write_tga(image *img, const char *filename) {
+    // Open file
+    FILE *fp = fopen(filename, "wb");
+    if(fp == NULL) {
+        return;
+    }
+    
+    // Write header
+    tga_header header;
+    header.id = 0;
+    header.colormap = 0;
+    header.type = 2;
+    for(int i = 0; i < 5; i++) {
+        header.colormap_spec[i] = 0;
+    }
+    header.origin_x = 0;
+    header.origin_y = 0;
+    header.width = img->w;
+    header.height = img->h;
+    header.depth = 24;
+    header.descriptor = 0;
+    fwrite(&header, sizeof(tga_header), 1, fp);
+    
+    // Write data
+    fwrite(img->data, img->w * img->h * 4, 1, fp);
+    
+    // Free file
+    fclose(fp);
 }
  

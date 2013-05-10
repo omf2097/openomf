@@ -24,6 +24,7 @@ void image_rect_bevel(image *img,
                       unsigned int w, unsigned int h, 
                       color ctop, color cright, 
                       color cbottom, color left);
-void image_filled_rect(image *img, unsigned int x, unsigned int y, unsigned int w, unsigned int h, color c); 
+void image_filled_rect(image *img, unsigned int x, unsigned int y, unsigned int w, unsigned int h, color c);
+void image_write_tga(image *img, const char *filename);
 
 #endif // _IMAGE_H
