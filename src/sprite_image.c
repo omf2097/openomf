@@ -1,5 +1,6 @@
 #include "shadowdive/rgba_image.h"
 #include "shadowdive/palette.h"
+#include "shadowdive/vga_image.h"
 #include "shadowdive/sprite_image.h"
 #include <stdlib.h>
 #include <stdint.h>
@@ -162,5 +163,46 @@ sd_rgba_image* sd_sprite_image_decode(sd_sprite_image *img, sd_palette *pal, int
         }
     }
     return rgba;
+}
+
+sd_vga_image* sd_sprite_vga_decode(sd_sprite_image *img) {
+    sd_vga_image *vga = img->len>0 ? sd_vga_image_create(img->w, img->h) : sd_vga_image_create(1, 1);
+    uint16_t x = 0;
+    uint16_t y = 0;
+    int i = 0;
+    if (img->w == 0 || img->h == 0) {
+        // XXX CREDITS.BK has a bunch of 0 width sprites, for some unknown reason
+        return vga;
+    }
+    while(i < img->len) {
+        // read a word
+        uint16_t c = (uint8_t)img->data[i] + ((uint8_t)img->data[i+1] << 8);
+        char op = c % 4;
+        uint16_t data = c / 4;
+        i += 2; // we read 2 bytes
+        switch(op) {
+            case 0:
+                x = data;
+                break;
+            case 2:
+                y = data;
+                break;
+            case 1:
+                while(data > 0) {
+                    uint8_t b = img->data[i];
+                    int pos = ((y * img->w) + x);
+                    vga->data[pos] = b;
+                    i++; // we read 1 byte
+                    x++;
+                    data--;
+                }
+                x = 0;
+                break;
+            case 3:
+                assert(i == img->len);
+                break;
+        }
+    }
+    return vga;
 }
 

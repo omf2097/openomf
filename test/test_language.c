@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     int id = atoi(argv[2]);
     if(id < 0) {
         for(int i = 0; i < language->count; i++) {
-            printf("=> %s\n", language->strings[i].description);
+            printf("#%d => %s\n", i, language->strings[i].description);
             printf("%s\n", language->strings[i].data);
         }
     } else if(id >= 0 && id < language->count) {
