@@ -101,6 +101,9 @@ struct har_t {
     
     int tick; // TEMPORARY TO SLOW DOWN ANIMATION
 
+    image cd_debug;
+    texture cd_debug_tex;
+
     list child_players; // projectiles and the like
 };
 

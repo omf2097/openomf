@@ -48,7 +48,7 @@ void texture_free(texture *tex) {
     texturelist_remove(tex);
     if(tex->data != 0) {
         free(tex->data);
-        tex->data = 0;
+        tex->data = NULL;
     }
     glDeleteTextures(1, &tex->id);
     tex->w = 0;

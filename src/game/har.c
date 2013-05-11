@@ -114,6 +114,9 @@ int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, in
     h->phy.jump = phycb_jump;
     h->phy.move = phycb_move;
     h->phy.crouch = phycb_crouch;
+
+    image_create(&h->cd_debug, 420, 300);
+    h->cd_debug_tex.data = NULL;
     
     // Initial bot stuff
     h->state = STATE_STANDING;
@@ -259,31 +262,83 @@ void har_collision_har(har *har_a, har *har_b) {
         }
         if(har_b->player.parser->is_frame_ready) {
             char other_frame_letter = animationplayer_get_frame_letter(&har_b->player);
-            /*DEBUG("other frame letter is %d -> %c for frame %d", other_frame_letter, other_frame_letter, frame_id);*/
-            /*sd_animation *other_ani = har_a->af->moves[ani_id]->animation;*/
             sd_sprite *sprite = har_b->af->moves[other_ani_id]->animation->sprites[(int)other_frame_letter - 65];
             int x = har_b->phy.pos.x + sprite->pos_x;
             int y = har_b->phy.pos.y + sprite->pos_y;
             int w = sprite->img->w;
             int h = sprite->img->h;
+            int hit = 0;
+
+           if (har_b->direction == -1) {
+                x = har_b->phy.pos.x + ((sprite->pos_x * har_b->direction) - sprite->img->w);
+            }
+
+
+           sd_vga_image *vga = sd_sprite_vga_decode(sprite->img);
+
+           // XXX the graphical collision detection debug stuff below is commented out because it is a little buggy
+
+            /*image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));*/
+            // draw the bounding box
+            /*image_rect(&har_a->cd_debug, x, y, w, h, color_create(0, 0, 0, 255));*/
+
+            // draw the 'ghost'
+            /*for (int i = 0; i < vga->w*vga->h; i++) {*/
+                /*if (vga->data[i] > 0 && vga->data[i] < 48) {*/
+                    /*if (har_b->direction == -1) {*/
+                        /*image_set_pixel(&har_a->cd_debug, x + (vga->w - (i % vga->w)), y + (i / vga->w), color_create(255, 255, 255, 100));*/
+                    /*} else {*/
+                        /*image_set_pixel(&har_a->cd_debug, x + (i % vga->w), y + (i / vga->w), color_create(255, 255, 255, 100));*/
+                    /*}*/
+                /*}*/
+            /*}*/
+
+            /*image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x, har_a->phy.pos.y, color_create(255, 255, 0, 255));*/
+            /*image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x, har_b->phy.pos.y, color_create(255, 255, 0, 255));*/
 
             // Find collision points, if any
             for(int i = 0; i < ani->col_coord_count; i++) {
                 if(ani->col_coord_table[i].y_ext == frame_id) {
-                    DEBUG("%d vs %d-%d", (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, x, x+w);
+                    /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 0, 255, 255));*/
                     // coarse check vs sprite dimensions
                     if ((ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->phy.pos.x < x + w) {
-                        DEBUG("x coordinate hit!");
                         if (ani->col_coord_table[i].y + har_a->phy.pos.y > y && ani->col_coord_table[i].y + har_a->phy.pos.y < y + h) {
-                            DEBUG("y coordinate hit!");
-                            // TODO Do a fine grained per-pixel check for a hit
-                            har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
-                            if (har_b->health == 0) {
-                                har_switch_animation(har_a, ANIM_VICTORY);
+                            /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 255, 0, 255));*/
+                            // Do a fine grained per-pixel check for a hit
+
+                            int xoff = x - har_a->phy.pos.x;
+                            int yoff = har_b->phy.pos.y - har_a->phy.pos.y;
+                            int xcoord = (ani->col_coord_table[i].x * har_a->direction) - xoff;
+                            int ycoord = (h + (ani->col_coord_table[i].y - yoff)) - (h+sprite->pos_y);
+
+                            if (har_b->direction == -1) {
+                                xcoord = vga->w - xcoord;
+                            }
+
+                            unsigned char hitpixel = vga->data[ycoord*vga->w+xcoord];
+                            if (hitpixel > 0 && hitpixel < 48) {
+                                // this is a HAR pixel
+
+                                DEBUG("hit point was %d, %d -- %d", xcoord, ycoord, h+sprite->pos_y);
+                                hit = 1;
+                                /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(255, 0, 0, 255));*/
+                                break;
                             }
                         }
                     }
                 }
+            }
+            if (hit) {
+                har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
+                if (har_b->health == 0) {
+                    har_switch_animation(har_a, ANIM_VICTORY);
+                }
+
+                /*if (har_a->cd_debug_tex.data) {*/
+                    /*texture_free(&har_a->cd_debug_tex);*/
+                /*}*/
+
+                /*texture_create_from_img(&har_a->cd_debug_tex, &har_a->cd_debug);*/
             }
         }
     }
@@ -291,14 +346,12 @@ void har_collision_har(har *har_a, har *har_b) {
     if (har_a->state == STATE_WALKING && har_a->direction == -1) {
         // walking towards the enemy
         // 35 is a made up number that 'looks right'
-        DEBUG("%d between %d, %d", har_a->phy.pos.x, har_b->phy.pos.x, har_b->phy.pos.x+35);
         if (har_a->phy.pos.x < har_b->phy.pos.x+35 && har_a->phy.pos.x > har_b->phy.pos.x) {
             har_a->phy.pos.x = har_b->phy.pos.x+35;
         }
     }
     if (har_a->state == STATE_WALKING && har_a->direction == 1) {
         // walking towards the enemy
-        DEBUG("%d between %d, %d", har_a->phy.pos.x, har_b->phy.pos.x-35, har_b->phy.pos.x);
         if (har_a->phy.pos.x+35 > har_b->phy.pos.x && har_a->phy.pos.x < har_b->phy.pos.x) {
             har_a->phy.pos.x = har_b->phy.pos.x - 35;
         }
@@ -367,6 +420,10 @@ void har_render(har *har) {
     }
 
     animationplayer_render(&har->player);
+
+    if (har->cd_debug_tex.data) {
+        video_render_sprite_flip(&har->cd_debug_tex, 0, 0, BLEND_ALPHA_FULL, FLIP_NONE);
+    }
 }
 
 void har_set_direction(har *har, int direction) {
