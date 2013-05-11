@@ -105,7 +105,7 @@ void phycb_crouch(physics_state *state, void *userdata) {
     }
 }
 
-int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, int direction) {
+int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     // Physics & callbacks
     physics_init(&h->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, 0.4f, h);
     h->phy.fall = phycb_fall;
@@ -182,7 +182,7 @@ int har_load(har *h, sd_palette *pal, char *soundtable, int id, int x, int y, in
         if(move != NULL) {
             // Create animation + textures, etc.
             ani = malloc(sizeof(animation));
-            animation_create(ani, move->animation, pal, -1, soundtable);
+            animation_create(ani, move->animation, pal, -1, h->af->soundtable);
             array_set(&h->animations, i, ani);
             DEBUG("Loading animation %d", i);
         }

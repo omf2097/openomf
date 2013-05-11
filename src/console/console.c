@@ -65,7 +65,7 @@ void console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
                 scene->player1.har = NULL;
             }
             h = malloc(sizeof(har));
-            har_load(h, scene->bk->palettes[0], scene->bk->soundtable, i, hx, hy, hd);
+            har_load(h, scene->bk->palettes[0], i, hx, hy, hd);
             scene_set_player1_har(scene, h);
             scene->player1.ctrl->har = h;
         }
