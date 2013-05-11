@@ -7,7 +7,7 @@
 
 int texture_upload(texture *tex) {
     glBindTexture(GL_TEXTURE_2D, tex->id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->w, tex->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex->data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->bitmap_w, tex->bitmap_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex->data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #ifdef DEBUGMODE
@@ -20,8 +20,8 @@ int texture_upload(texture *tex) {
 }
 
 int texture_create(texture *tex, const char *data, unsigned int w, unsigned int h) {
-    tex->w = w;
-    tex->h = h;
+    tex->w = tex->bitmap_w = w;
+    tex->h = tex->bitmap_h = h;
     
     // Reserve texture ID
     glGenTextures(1, &tex->id);
@@ -59,7 +59,7 @@ unsigned int texture_size(texture *tex) {
     if(tex->data == 0) {
         return 0;
     }
-    return tex->w * tex->h * 4;
+    return tex->bitmap_w * tex->bitmap_h * 4;
 }
 
 int texture_revalidate(texture *tex) {
@@ -70,7 +70,7 @@ int texture_revalidate(texture *tex) {
 }
 
 int texture_pix_opaque(texture *tex, unsigned int x, unsigned int y) {
-    return (tex->data[(x + y * tex->w) * 4 + 3] > 0);
+    return (tex->data[(x + y * tex->bitmap_w) * 4 + 3] > 0);
 }
 
 int texture_valid(texture *tex) {

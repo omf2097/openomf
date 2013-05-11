@@ -7,6 +7,7 @@ typedef struct texture_t {
     char *data;
     unsigned int id;
     unsigned int w, h;
+    unsigned int bitmap_w, bitmap_h;
 } texture;
 
 int texture_create(texture *tex, const char *data, unsigned int w, unsigned int h);
