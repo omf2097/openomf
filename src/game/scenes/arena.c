@@ -284,8 +284,8 @@ void arena_render(scene *scene) {
         // Render HAR and pilot names
         font_render(&font_small, lang_get(scene->player1.player_id+20), 5, 19, 186, 250, 250);
         font_render(&font_small, lang_get(scene->player1.har_id+31), 5, 26, 186, 250, 250);
-        int h2len = strlen(lang_get(scene->player2.player_id+20)) * font_small.w;
-        int p2len = strlen(lang_get(scene->player2.har_id+31)) * font_small.w;
+        int p2len = (strlen(lang_get(scene->player2.player_id+20))-1) * font_small.w;
+        int h2len = (strlen(lang_get(scene->player2.har_id+31))-1) * font_small.w;
         font_render(&font_small, lang_get(scene->player2.player_id+20), 315-p2len, 19, 186, 250, 250);
         font_render(&font_small, lang_get(scene->player2.har_id+31), 315-h2len, 26, 186, 250, 250);
     }
