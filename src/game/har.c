@@ -251,95 +251,96 @@ void har_collision_scene(har *har, scene *scene) {
 void har_collision_har(har *har_a, har *har_b) {
     // Make stuff easier to get to :)
     int ani_id = har_a->player.id;
-    if(har_a->player.parser->is_frame_ready) {
+
+    sd_animation *ani = har_a->af->moves[ani_id]->animation;
+
+    int other_ani_id = har_b->player.id;
+    if (other_ani_id == ANIM_DAMAGE) {
+        // can't kick them while they're down
+        return;
+    }
+
+    // har_b frame must be ready here or else it will crash
+    if(har_b->player.parser->is_frame_ready) {
         int frame_id = animationplayer_get_frame(&har_a->player);
-        sd_animation *ani = har_a->af->moves[ani_id]->animation;
+        char other_frame_letter = animationplayer_get_frame_letter(&har_b->player);
+        sd_sprite *sprite = har_b->af->moves[other_ani_id]->animation->sprites[(int)other_frame_letter - 65];
+        int x = har_b->phy.pos.x + sprite->pos_x;
+        int y = har_b->phy.pos.y + sprite->pos_y;
+        int w = sprite->img->w;
+        int h = sprite->img->h;
+        int hit = 0;
 
-        int other_ani_id = har_b->player.id;
-        if (other_ani_id == ANIM_DAMAGE) {
-            // can't kick them while they're down
-            return;
+       if (har_b->direction == -1) {
+            x = har_b->phy.pos.x + ((sprite->pos_x * har_b->direction) - sprite->img->w);
         }
-        if(har_b->player.parser->is_frame_ready) {
-            char other_frame_letter = animationplayer_get_frame_letter(&har_b->player);
-            sd_sprite *sprite = har_b->af->moves[other_ani_id]->animation->sprites[(int)other_frame_letter - 65];
-            int x = har_b->phy.pos.x + sprite->pos_x;
-            int y = har_b->phy.pos.y + sprite->pos_y;
-            int w = sprite->img->w;
-            int h = sprite->img->h;
-            int hit = 0;
-
-           if (har_b->direction == -1) {
-                x = har_b->phy.pos.x + ((sprite->pos_x * har_b->direction) - sprite->img->w);
-            }
 
 
-           sd_vga_image *vga = sd_sprite_vga_decode(sprite->img);
+       sd_vga_image *vga = sd_sprite_vga_decode(sprite->img);
 
-           // XXX the graphical collision detection debug stuff below is commented out because it is a little buggy
+       // XXX the graphical collision detection debug stuff below is commented out because it is a little buggy
 
-            /*image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));*/
-            // draw the bounding box
-            /*image_rect(&har_a->cd_debug, x, y, w, h, color_create(0, 0, 0, 255));*/
+        /*image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));*/
+        // draw the bounding box
+        /*image_rect(&har_a->cd_debug, x, y, w, h, color_create(0, 0, 0, 255));*/
 
-            // draw the 'ghost'
-            /*for (int i = 0; i < vga->w*vga->h; i++) {*/
-                /*if (vga->data[i] > 0 && vga->data[i] < 48) {*/
-                    /*if (har_b->direction == -1) {*/
-                        /*image_set_pixel(&har_a->cd_debug, x + (vga->w - (i % vga->w)), y + (i / vga->w), color_create(255, 255, 255, 100));*/
-                    /*} else {*/
-                        /*image_set_pixel(&har_a->cd_debug, x + (i % vga->w), y + (i / vga->w), color_create(255, 255, 255, 100));*/
-                    /*}*/
+        // draw the 'ghost'
+        /*for (int i = 0; i < vga->w*vga->h; i++) {*/
+            /*if (vga->data[i] > 0 && vga->data[i] < 48) {*/
+                /*if (har_b->direction == -1) {*/
+                    /*image_set_pixel(&har_a->cd_debug, x + (vga->w - (i % vga->w)), y + (i / vga->w), color_create(255, 255, 255, 100));*/
+                /*} else {*/
+                    /*image_set_pixel(&har_a->cd_debug, x + (i % vga->w), y + (i / vga->w), color_create(255, 255, 255, 100));*/
                 /*}*/
             /*}*/
+        /*}*/
 
-            /*image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x, har_a->phy.pos.y, color_create(255, 255, 0, 255));*/
-            /*image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x, har_b->phy.pos.y, color_create(255, 255, 0, 255));*/
+        /*image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x, har_a->phy.pos.y, color_create(255, 255, 0, 255));*/
+        /*image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x, har_b->phy.pos.y, color_create(255, 255, 0, 255));*/
 
-            // Find collision points, if any
-            for(int i = 0; i < ani->col_coord_count; i++) {
-                if(ani->col_coord_table[i].y_ext == frame_id) {
-                    /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 0, 255, 255));*/
-                    // coarse check vs sprite dimensions
-                    if ((ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->phy.pos.x < x + w) {
-                        if (ani->col_coord_table[i].y + har_a->phy.pos.y > y && ani->col_coord_table[i].y + har_a->phy.pos.y < y + h) {
-                            /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 255, 0, 255));*/
-                            // Do a fine grained per-pixel check for a hit
+        // Find collision points, if any
+        for(int i = 0; i < ani->col_coord_count; i++) {
+            if(ani->col_coord_table[i].y_ext == frame_id) {
+                /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 0, 255, 255));*/
+                // coarse check vs sprite dimensions
+                if ((ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->phy.pos.x < x + w) {
+                    if (ani->col_coord_table[i].y + har_a->phy.pos.y > y && ani->col_coord_table[i].y + har_a->phy.pos.y < y + h) {
+                        /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 255, 0, 255));*/
+                        // Do a fine grained per-pixel check for a hit
 
-                            int xoff = x - har_a->phy.pos.x;
-                            int yoff = har_b->phy.pos.y - har_a->phy.pos.y;
-                            int xcoord = (ani->col_coord_table[i].x * har_a->direction) - xoff;
-                            int ycoord = (h + (ani->col_coord_table[i].y - yoff)) - (h+sprite->pos_y);
+                        int xoff = x - har_a->phy.pos.x;
+                        int yoff = har_b->phy.pos.y - har_a->phy.pos.y;
+                        int xcoord = (ani->col_coord_table[i].x * har_a->direction) - xoff;
+                        int ycoord = (h + (ani->col_coord_table[i].y - yoff)) - (h+sprite->pos_y);
 
-                            if (har_b->direction == -1) {
-                                xcoord = vga->w - xcoord;
-                            }
+                        if (har_b->direction == -1) {
+                            xcoord = vga->w - xcoord;
+                        }
 
-                            unsigned char hitpixel = vga->data[ycoord*vga->w+xcoord];
-                            if (hitpixel > 0 && hitpixel < 48) {
-                                // this is a HAR pixel
+                        unsigned char hitpixel = vga->data[ycoord*vga->w+xcoord];
+                        if (hitpixel > 0 && hitpixel < 48) {
+                            // this is a HAR pixel
 
-                                DEBUG("hit point was %d, %d -- %d", xcoord, ycoord, h+sprite->pos_y);
-                                hit = 1;
-                                /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(255, 0, 0, 255));*/
-                                break;
-                            }
+                            DEBUG("hit point was %d, %d -- %d", xcoord, ycoord, h+sprite->pos_y);
+                            hit = 1;
+                            /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(255, 0, 0, 255));*/
+                            break;
                         }
                     }
                 }
             }
-            if (hit) {
-                har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
-                if (har_b->health == 0) {
-                    har_switch_animation(har_a, ANIM_VICTORY);
-                }
-
-                /*if (har_a->cd_debug_tex.data) {*/
-                    /*texture_free(&har_a->cd_debug_tex);*/
-                /*}*/
-
-                /*texture_create_from_img(&har_a->cd_debug_tex, &har_a->cd_debug);*/
+        }
+        if (hit) {
+            har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
+            if (har_b->health == 0) {
+                har_switch_animation(har_a, ANIM_VICTORY);
             }
+
+            /*if (har_a->cd_debug_tex.data) {*/
+                /*texture_free(&har_a->cd_debug_tex);*/
+            /*}*/
+
+            /*texture_create_from_img(&har_a->cd_debug_tex, &har_a->cd_debug);*/
         }
     }
 

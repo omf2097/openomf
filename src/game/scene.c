@@ -306,11 +306,6 @@ void scene_tick(scene *scene) {
         animationplayer_run(tmp);
     }
         
-    // Run custom tick function, if defined
-    if(scene->tick != NULL) {
-        scene->tick(scene);
-    }
-    
     // Har ticks
     if(scene->player1.har != NULL) {
         har_tick(scene->player1.har);
@@ -318,7 +313,11 @@ void scene_tick(scene *scene) {
     if(scene->player2.har != NULL) {
         har_tick(scene->player2.har);
     }
-    
+
+    // Run custom tick function, if defined
+    if(scene->tick != NULL) {
+        scene->tick(scene);
+    }
         
     // If no animations to play, jump to next scene (if any)
     // TODO: Hackish, make this nicer.
