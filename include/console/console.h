@@ -17,6 +17,9 @@ struct console_t {
     list history;
     int histpos;
     int histpos_changed;
+    char output[481];
+    unsigned int output_head, output_tail;
+    int output_overflowing;
     char input[41];
     texture background;
     int isopen;

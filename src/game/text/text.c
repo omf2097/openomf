@@ -85,16 +85,20 @@ void fonts_close() {
     font_free(&font_large);
 }
 
+void font_render_char(font *font, char ch, int x, int y, unsigned char r, unsigned char g, unsigned char b) {
+    int code = ch - 32;
+    texture **tex = NULL;
+    if (code < 0) {
+        return;
+    }
+    tex = vector_get(&font->textures, code);
+    video_render_char(*tex, x, y, r, g, b);
+}
+
 void font_render_len(font *font, const char *text, int len, int x, int y, unsigned char r, unsigned char g, unsigned char b) {
     int pos_x = x;
-    texture **tex = NULL;
     for(int i = 0; i < len; i++) {
-        int code = text[i] - 32;
-        if (code < 0) {
-            continue;
-        }
-        tex = vector_get(&font->textures, code);
-        video_render_char(*tex, pos_x, y, r, g, b);
+        font_render_char(font, text[i], pos_x, y, r, g, b);
         pos_x += font->w;
     }
 }

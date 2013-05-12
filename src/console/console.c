@@ -7,8 +7,12 @@
 #include <ctype.h>
 
 #define HISTORY_MAX 100
+#define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
+#define BUFFER_DEC(b) (((b) + sizeof(con->output) - 1) % sizeof(con->output))
 
 void console_add_history();
+void console_output_add(const char *text);
+void console_output_addline(const char *text);
 
 console *con = NULL;
 
@@ -35,6 +39,9 @@ void console_cmd_help(scene *scene, void *userdata, int argc, char **argv) {
         char *name = pair->key;
         command *cmd = pair->val;
         DEBUG("%s - %s", name, cmd->doc);
+        console_output_add(name);
+        console_output_add(" - ");
+        console_output_addline(cmd->doc);
     }
 }
 
@@ -108,6 +115,75 @@ void console_add_history() {
     }
     list_prepend(&con->history, con->input, sizeof(con->input));
     con->histpos = -1;
+    console_output_add("> ");
+    console_output_addline(con->input);
+}
+
+void console_output_add(const char *text) {
+    size_t len = strlen(text);
+    for(size_t i = 0;i < len;++i) {
+        char c = text[i];
+        con->output[con->output_tail] = c;
+        con->output_tail = BUFFER_INC(con->output_tail);
+        if(con->output_tail == con->output_head) {
+            // buffer is overflowing
+            con->output_head = BUFFER_INC(con->output_head);
+            con->output_overflowing = 1;
+        }
+    }
+}
+void console_output_addline(const char *text) {
+    console_output_add(text);
+    console_output_add("\n");
+}
+
+void console_output_render() {
+    int x = 0;
+    int y = 0;
+    unsigned int lines = 0;
+
+    // iterate the output buffer backward to count up to 16 lines or 480 chars, whichever comes first
+    unsigned int si;
+    if(con->output_overflowing) {
+        si = BUFFER_DEC(con->output_head);
+        si = BUFFER_DEC(si);
+    } else if(con->output_tail == con->output_head) {
+        si = con->output_tail;
+    } else {
+        si = BUFFER_DEC(con->output_tail);
+    }
+
+    for(;
+        si != con->output_head;
+        si = BUFFER_DEC(si)) {
+
+        if(con->output[si] == '\n') {
+            lines++;
+
+            if(lines >= 16) {
+                si = BUFFER_INC(si);
+                break;
+            }
+        }
+    }
+    if(con->output_overflowing && si == con->output_head) {
+        si = con->output_tail;
+    }
+
+    for(unsigned int i = si;
+        i != con->output_tail;
+        i = BUFFER_INC(i)) {
+
+        char c = con->output[i];
+        if(c == '\n') {
+            x = 0;
+            y += font_small.h;
+        } else {
+            // TODO add word wrapping?
+            font_render_char(&font_small, con->output[i], x, y+con->ypos-100, 121, 121, 121);
+            x += font_small.w;
+        }
+    }
 }
 
 int console_init() {
@@ -117,6 +193,10 @@ int console_init() {
     con->ypos = 0;
     con->ticks = 0;
     con->input[0] = '\0';
+    con->output[0] = '\0';
+    con->output_head = 0;
+    con->output_tail = 0;
+    con->output_overflowing = 0;
     con->histpos = -1;
     list_create(&con->history);
     hashmap_create(&con->cmds, 8);
@@ -197,6 +277,7 @@ void console_render() {
         font_render(&font_small, con->input, 0 , con->ypos - 7, 121, 121, 121);
         //cursor
         font_render(&font_small, "", strlen(con->input)*font_small.w , con->ypos - 7, 121 - t, 121 - t, 121 - t);
+        console_output_render();
     }
 }
 
