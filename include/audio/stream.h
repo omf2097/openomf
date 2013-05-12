@@ -35,5 +35,6 @@ int audio_stream_render(audio_stream *stream, int dt);
 void audio_stream_free(audio_stream *stream);
 void audio_stream_stop(audio_stream *stream);
 int audio_stream_playing(audio_stream *stream);
+void audio_stream_set_volume(audio_stream *stream, float vol);
 
 #endif // _STREAM_H

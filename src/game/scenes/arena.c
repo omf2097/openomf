@@ -4,6 +4,8 @@
 #include "video/video.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/progressbar.h"
+#include "audio/stream.h"
+#include "audio/audio.h"
 #include "audio/music.h"
 #include "game/settings.h"
 #include "game/har.h"
@@ -61,6 +63,14 @@ void game_menu_return(component *c, void *userdata) {
     menu_visible=0;
 }
 
+void music_slide(component *c, void *userdata, int pos) {
+    audio_set_volume(TYPE_MUSIC, pos/10.0f);
+}
+
+void sound_slide(component *c, void *userdata, int pos) {
+    audio_set_volume(TYPE_EFFECT, pos/10.0f);
+}
+
 int arena_init(scene *scene) {
     settings *setting = settings_get();
     controller *player1_ctrl, *player2_ctrl;
@@ -83,6 +93,7 @@ int arena_init(scene *scene) {
             music_play("resources/ARENA4.PSM");
             break;
     }
+    audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
 
     player1_ctrl = malloc(sizeof(controller));
     keys = malloc(sizeof(keyboard_keys));
@@ -126,6 +137,8 @@ int arena_init(scene *scene) {
     menu_attach(&game_menu, &quit_button, 11);
     
     // sound options
+    sound_slider.slide = sound_slide;
+    music_slider.slide = music_slide;
     textslider_bindvar(&sound_slider, &setting->sound.sound_vol);
     textslider_bindvar(&music_slider, &setting->sound.music_vol);
     

@@ -64,6 +64,17 @@ void audio_play(audio_stream *stream) {
     list_append(&streams, stream, sizeof(audio_stream));
 }
 
+void audio_set_volume(int type, float vol) {
+    iterator it;
+    list_iter_begin(&streams, &it);
+    audio_stream *stream;
+    while((stream = iter_next(&it)) != NULL) {
+        if(type == stream->type) {
+            audio_stream_set_volume(stream, vol);
+        }
+    }
+}
+
 void audio_close() {
     // Free streams
     iterator it;

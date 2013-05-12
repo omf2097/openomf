@@ -73,6 +73,7 @@ int sound_play(const char *data, unsigned int len, sound_state *ss) {
     
     // Play
     audio_play(&stream);
+    audio_stream_set_volume(&stream, ss->vol);
     
     // All done
     return 0;

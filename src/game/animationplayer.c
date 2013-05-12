@@ -2,6 +2,8 @@
 #include <string.h>
 #include <shadowdive/shadowdive.h>
 #include "utils/log.h"
+#include "audio/stream.h"
+#include "audio/audio.h"
 #include "audio/sound.h"
 #include "audio/music.h"
 #include "audio/soundloader.h"
@@ -10,6 +12,7 @@
 #include "video/video.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
+#include "game/settings.h"
 
 
 void cmd_tickjump(animationplayer *player, int tick) {
@@ -41,7 +44,7 @@ void cmd_sound_pan_end(animationplayer *player, int pan) {
 void cmd_sound_vol(animationplayer *player, int vol) {
     if(vol < 0) { vol = 0; }
     if(vol > 100) { vol = 100; }
-    player->snd->vol = vol/100.0f;
+    player->snd->vol = vol/100.0f * (settings_get()->sound.sound_vol/10.0f);
 }
 
 // between -16 and 239
@@ -69,6 +72,7 @@ void cmd_music_on(int music) {
         case 6: music_play("resources/ARENA3.PSM"); break;
         case 7: music_play("resources/ARENA4.PSM"); break;
     }
+    audio_set_volume(TYPE_MUSIC, settings_get()->sound.music_vol/10.0f);
 }
 
 void incinerate_obj(animationplayer *player) {
@@ -81,7 +85,7 @@ void incinerate_obj(animationplayer *player) {
 sound_state *sound_state_create() {
     sound_state *s = malloc(sizeof(sound_state));
     memset(s, 0, sizeof(sound_state));
-    s->vol = 1.0f;
+    s->vol = 1.0f * (settings_get()->sound.sound_vol/10.0f);
     s->freq = 1.0f;
     return s;
 }

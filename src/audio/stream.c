@@ -84,6 +84,9 @@ void audio_stream_stop(audio_stream *stream) {
 int audio_stream_playing(audio_stream *stream) {
     return stream->playing;
 }
+void audio_stream_set_volume(audio_stream *stream, float vol) {
+    alSourcef(stream->alsource, AL_GAIN, vol);
+}
 
 int audio_stream_render(audio_stream *stream, int dt) {
     // Don't do anything unless playback has been started

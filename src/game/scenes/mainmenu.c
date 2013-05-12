@@ -3,6 +3,8 @@
 #include "engine.h"
 #include "utils/log.h"
 #include "game/text/text.h"
+#include "audio/stream.h"
+#include "audio/audio.h"
 #include "audio/music.h"
 #include "video/video.h"
 #include "game/settings.h"
@@ -125,6 +127,7 @@ int mainmenu_init(scene *scene) {
     // Force music playback
     if(!music_playing()) {
         music_play("resources/MENU.PSM");
+        audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
     }
     
     // Start stack
