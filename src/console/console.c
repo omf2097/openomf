@@ -4,6 +4,7 @@
 #include "game/scene.h"
 #include "utils/log.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <ctype.h>
 
 #define HISTORY_MAX 100
@@ -26,11 +27,12 @@ int strtoint(char *input, int *output) {
     }
 }
 // Handle console commands
-void console_cmd_quit(scene *scene, void *userdata, int argc, char **argv) {
+int console_cmd_quit(scene *scene, void *userdata, int argc, char **argv) {
     scene->next_id = SCENE_CREDITS;
+    return 0;
 }
 
-void console_cmd_help(scene *scene, void *userdata, int argc, char **argv) {
+int console_cmd_help(scene *scene, void *userdata, int argc, char **argv) {
     // print list of commands
     iterator it;
     hashmap_iter_begin(&con->cmds, &it);
@@ -43,21 +45,24 @@ void console_cmd_help(scene *scene, void *userdata, int argc, char **argv) {
         console_output_add(" - ");
         console_output_addline(cmd->doc);
     }
+    return 0;
 }
 
-void console_cmd_scene(scene *scene, void *userdata, int argc, char **argv) {
+int console_cmd_scene(scene *scene, void *userdata, int argc, char **argv) {
     // change scene
     if(argc == 2) {
         int i;
         if(strtoint(argv[1], &i)) {
             if(scene_is_valid(i)) {
                 scene->next_id = i;
+                return 0;
             }
         }
     }
+    return 1;
 }
 
-void console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
+int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
     // change har
     if(argc == 2) {
         int i;
@@ -75,8 +80,10 @@ void console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
             har_load(h, scene->bk->palettes[0], i, hx, hy, hd);
             scene_set_player1_har(scene, h);
             scene->player1.ctrl->har = h;
+            return 0;
         }
     }
+    return 1;
 }
 
 int make_argv(char *p, char **argv) {
@@ -102,7 +109,20 @@ void console_handle_line(scene *scene) {
         make_argv(con->input, argv);
         if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
             command *cmd = val;
-            cmd->func(scene, cmd->userdata, argc, argv);
+            int err = cmd->func(scene, cmd->userdata, argc, argv);
+            if(err == 0)
+            {
+                console_output_add("> ");
+                console_output_add(argv[0]);
+                console_output_addline(" SUCCESS");
+            } else {
+                char buf[12];
+                sprintf(buf, "%d", err);
+                console_output_add("> ");
+                console_output_add(argv[0]);
+                console_output_add(" ERROR:");
+                console_output_addline(buf);
+            }
         }
     }
 }
@@ -115,8 +135,6 @@ void console_add_history() {
     }
     list_prepend(&con->history, con->input, sizeof(con->input));
     con->histpos = -1;
-    console_output_add("> ");
-    console_output_addline(con->input);
 }
 
 void console_output_add(const char *text) {

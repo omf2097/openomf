@@ -10,7 +10,8 @@ typedef struct scene_t scene;
 typedef struct console_t console;
 typedef struct command_t command;
 
-typedef void(*command_func)(scene *scene, void *userdata, int argc, char **argv);
+// return 0 on success, otherwise return error code
+typedef int(*command_func)(scene *scene, void *userdata, int argc, char **argv);
 
 struct console_t {
     font font;
