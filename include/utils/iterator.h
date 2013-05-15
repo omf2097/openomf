@@ -6,7 +6,7 @@ typedef struct iterator_t iterator;
 struct iterator_t {
     void *data;
     void *vnow;
-    unsigned int inow;
+    int inow;
     void* (*next)(iterator*);
     void* (*prev)(iterator*);
     int ended;
