@@ -11,10 +11,6 @@
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
 #define BUFFER_DEC(b) (((b) + sizeof(con->output) - 1) % sizeof(con->output))
 
-void console_add_history();
-void console_output_add(const char *text);
-void console_output_addline(const char *text);
-
 console *con = NULL;
 
 int strtoint(char *input, int *output) {
@@ -27,6 +23,15 @@ int strtoint(char *input, int *output) {
     }
 }
 // Handle console commands
+int console_clear_quit(scene *scene, void *userdata, int argc, char **argv) {
+    con->output[0] = '\0';
+    con->output_head = 0;
+    con->output_tail = 0;
+    con->output_pos = 0;
+    con->output_overflowing = 0;
+    return 0;
+}
+
 int console_cmd_quit(scene *scene, void *userdata, int argc, char **argv) {
     scene->next_id = SCENE_CREDITS;
     return 0;
@@ -111,67 +116,59 @@ int make_argv(char *p, char **argv) {
     return argc;
 }
 
-void console_handle_line(scene *scene) {
-    int argc = make_argv(con->input, NULL);
-    if(argc > 0) {
-        char *argv[argc];
-        void *val = 0;
-        unsigned int len;
-        make_argv(con->input, argv);
-        if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
-            command *cmd = val;
-            int err = cmd->func(scene, cmd->userdata, argc, argv);
-            if(err == 0)
-            {
-                console_output_add("> ");
-                console_output_add(argv[0]);
-                console_output_addline(" SUCCESS");
-            } else {
-                char buf[12];
-                sprintf(buf, "%d", err);
-                console_output_add("> ");
-                console_output_add(argv[0]);
-                console_output_add(" ERROR:");
-                console_output_addline(buf);
-            }
-        }
-    }
-}
-
-void console_add_history() {
+void console_add_history(const char *input, unsigned int len) {
     iterator it;
     if(list_size(&con->history) == HISTORY_MAX) {
         list_iter_end(&con->history, &it);
         list_delete(&con->history, &it);
     }
-    list_prepend(&con->history, con->input, sizeof(con->input));
+    list_prepend(&con->history, input, len);
     con->histpos = -1;
 }
 
-void console_output_add(const char *text) {
-    size_t len = strlen(text);
-    for(size_t i = 0;i < len;++i) {
-        char c = text[i];
-        con->output[con->output_tail] = c;
-        con->output_tail = BUFFER_INC(con->output_tail);
-        if(con->output_tail == con->output_head) {
-            // buffer is overflowing
-            con->output_head = BUFFER_INC(con->output_head);
-            con->output_overflowing = 1;
+void console_handle_line(scene *scene) {
+    if(con->input[0] == '\0') {
+        console_output_addline("> ");
+    } else {
+        char input_copy[sizeof(con->input)];
+        memcpy(input_copy, con->input, sizeof(con->input));
+        int argc = make_argv(con->input, NULL);
+        if(argc > 0) {
+            char *argv[argc];
+            void *val = 0;
+            unsigned int len;
+            make_argv(con->input, argv);
+            if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
+                command *cmd = val;
+                int err = cmd->func(scene, cmd->userdata, argc, argv);
+                if(err == 0)
+                {
+                    console_output_add("> ");
+                    console_output_add(argv[0]);
+                    console_output_addline(" SUCCESS");
+                } else {
+                    char buf[12];
+                    sprintf(buf, "%d", err);
+                    console_output_add("> ");
+                    console_output_add(argv[0]);
+                    console_output_add(" ERROR:");
+                    console_output_addline(buf);
+                }
+                console_add_history(input_copy, sizeof(input_copy));
+            } else {
+                console_output_add("> ");
+                console_output_add(argv[0]);
+                console_output_addline(" NOT RECOGNIZED");
+            }
+        } else {
+            console_output_addline("> ");
         }
     }
 }
-void console_output_addline(const char *text) {
-    console_output_add(text);
-    console_output_add("\n");
-}
 
-void console_output_render() {
-    int x = 0;
-    int y = 0;
-    unsigned int lines = 0;
-
+void console_output_scroll_to_end() {
     // iterate the output buffer backward to count up to 16 lines or 480 chars, whichever comes first
+    unsigned int lines = 0;
     unsigned int si;
     if(con->output_overflowing) {
         si = BUFFER_DEC(con->output_head);
@@ -195,21 +192,77 @@ void console_output_render() {
             }
         }
     }
-    if(con->output_overflowing && si == con->output_head) {
-        si = con->output_tail;
+
+    con->output_pos = si;
+}
+
+void console_output_scroll_up(unsigned int lines) {
+    unsigned int l = 0;
+    if(con->output_pos != con->output_head) {
+        con->output_pos = BUFFER_DEC(con->output_pos);
+    }
+    while(con->output_pos != con->output_head) {
+        con->output_pos = BUFFER_DEC(con->output_pos);
+        if(con->output[con->output_pos] == '\n') {
+            l++;
+            if(l == lines){
+                con->output_pos = BUFFER_INC(con->output_pos);
+                break;
+            }
+        }
+    }
+}
+
+void console_output_scroll_down(unsigned int lines) {
+    unsigned int l = 0;
+    while(con->output_pos != con->output_tail) {
+        con->output_pos = BUFFER_INC(con->output_pos);
+        if(con->output[con->output_pos] == '\n') {
+            l++;
+            if(l == lines){
+                con->output_pos = BUFFER_INC(con->output_pos);
+                break;
+            }
+        }
+    }
+}
+
+void console_output_add(const char *text) {
+    size_t len = strlen(text);
+    for(size_t i = 0;i < len;++i) {
+        char c = text[i];
+        con->output[con->output_tail] = c;
+        con->output_tail = BUFFER_INC(con->output_tail);
+        if(con->output_tail == con->output_head) {
+            // buffer is overflowing
+            con->output_head = BUFFER_INC(con->output_head);
+            con->output_overflowing = 1;
+        }
     }
 
-    for(unsigned int i = si;
-        i != con->output_tail;
+    console_output_scroll_to_end();
+}
+void console_output_addline(const char *text) {
+    console_output_add(text);
+    console_output_add("\n");
+}
+
+void console_output_render() {
+    int x = 0;
+    int y = 0;
+    unsigned int lines = 0;
+    for(unsigned int i = con->output_pos;
+        i != con->output_tail && lines < 15;
         i = BUFFER_INC(i)) {
 
         char c = con->output[i];
         if(c == '\n') {
             x = 0;
             y += font_small.h;
+            lines++;
         } else {
             // TODO add word wrapping?
-            font_render_char(&font_small, con->output[i], x, y+con->ypos-100, 121, 121, 121);
+            font_render_char(&font_small, c, x, y+con->ypos-100, 121, 121, 121);
             x += font_small.w;
         }
     }
@@ -225,6 +278,7 @@ int console_init() {
     con->output[0] = '\0';
     con->output_head = 0;
     con->output_tail = 0;
+    con->output_pos = 0;
     con->output_overflowing = 0;
     con->histpos = -1;
     list_create(&con->history);
@@ -232,6 +286,8 @@ int console_init() {
     menu_background_create(&con->background, 322, 101);
  
     // Add console commands
+    console_add_cmd("clear", &console_clear_quit,  "clear the console");
+    console_add_cmd("cls",   &console_clear_quit,  "clear the console");
     console_add_cmd("quit",  &console_cmd_quit,  "quit the game");
     console_add_cmd("exit",  &console_cmd_quit,  "quit the game");
     console_add_cmd("help",  &console_cmd_help,  "show all commands");
@@ -276,11 +332,12 @@ void console_event(scene *scene, SDL_Event *e) {
             }
         } else if (state[SDL_SCANCODE_RETURN]) {
             // send the input somewhere and clear the input line
-            if(con->input[0] != '\0') {
-                console_add_history();
-                console_handle_line(scene);
-                con->input[0] = '\0';
-            }
+            console_handle_line(scene);
+            con->input[0] = '\0';
+        } else if(state[SDL_SCANCODE_PAGEUP]) {
+            console_output_scroll_up(1);
+        } else if(state[SDL_SCANCODE_PAGEDOWN]) {
+            console_output_scroll_down(1);
         } else if (code >= 32 && code <= 126) {
             if (len < sizeof(con->input)-1) {
                 con->input[len+1] = '\0';
@@ -336,6 +393,24 @@ void console_add_cmd(const char *name, command_func func, const char *doc) {
     c.userdata = NULL;
     c.doc = doc;
     hashmap_sput(&con->cmds, name, &c, sizeof(command));
+}
+
+void console_set_userdata(const char *name, void *userdata) {
+    void *val;
+    unsigned int len;
+    if(!hashmap_sget(&con->cmds, name, &val, &len)) {
+        command *c = val;
+        c->userdata = userdata;
+    }
+}
+
+void *console_get_userdata(const char *name) {
+    void *val;
+    unsigned int len;
+    if(!hashmap_sget(&con->cmds, name, &val, &len)) {
+        return val;
+    }
+    return NULL;
 }
 
 int console_window_is_open() {

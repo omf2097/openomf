@@ -18,8 +18,8 @@ struct console_t {
     list history;
     int histpos;
     int histpos_changed;
-    char output[481];
-    unsigned int output_head, output_tail;
+    char output[4810];
+    unsigned int output_head, output_tail, output_pos;
     int output_overflowing;
     char input[41];
     texture background;
@@ -43,6 +43,9 @@ void console_tick();
 void console_add_cmd(const char *name, command_func func, const char *doc);
 void console_set_userdata(const char *name, void *userdata);
 void *console_get_userdata(const char *name);
+
+void console_output_add(const char *text);
+void console_output_addline(const char *text);
 
 int console_window_is_open();
 void console_window_open();
