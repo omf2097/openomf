@@ -235,8 +235,9 @@ void arena_tick(scene *scene) {
         // Collision detections
         har_collision_har(scene->player1.har, scene->player2.har);
         har_collision_har(scene->player2.har, scene->player1.har);
-        har_collision_scene(scene->player1.har, scene);
-        har_collision_scene(scene->player2.har, scene);
+        // XXX this can't go in har.c because of a typedef loop on OSX
+        //har_collision_scene(scene->player1.har, scene);
+        //har_collision_scene(scene->player2.har, scene);
         
         // Turn the HARs to face the enemy
         if (scene->player1.har->phy.pos.x > scene->player2.har->phy.pos.x) {

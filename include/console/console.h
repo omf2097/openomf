@@ -1,12 +1,12 @@
 #ifndef _CONSOLE_H
 #define _CONSOLE_H
 
-#include "game/text/text.h"
+#include <SDL2/SDL.h>
 #include "utils/list.h"
 #include "utils/hashmap.h"
-#include <SDL2/SDL.h>
+#include "game/text/text.h"
+#include "game/scene.h"
 
-typedef struct scene_t scene;
 typedef struct console_t console;
 typedef struct command_t command;
 

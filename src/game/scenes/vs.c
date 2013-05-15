@@ -144,8 +144,14 @@ int vs_event(scene *scene, SDL_Event *event) {
             case SDLK_RETURN:
                 h1 = malloc(sizeof(har));
                 h2 = malloc(sizeof(har));
-                har_load(h1, scene->bk->palettes[0], scene->player1.har_id, 60, 190, 1);
-                har_load(h2, scene->bk->palettes[0], scene->player2.har_id, 260, 190, -1);
+                if (har_load(h1, scene->bk->palettes[0], scene->player1.har_id, 60, 190, 1)) {
+                    scene->next_id = SCENE_NONE;
+                    return 1;
+                }
+                if (har_load(h2, scene->bk->palettes[0], scene->player2.har_id, 260, 190, -1)) {
+                    scene->next_id = SCENE_NONE;
+                    return 1;
+                }
                 scene_set_player1_har(scene, h1);
                 scene_set_player2_har(scene, h2);
                 scene->next_id = SCENE_ARENA0+arena;

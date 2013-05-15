@@ -1,9 +1,6 @@
 #ifndef _VIDEO_H
 #define _VIDEO_H
 
-typedef struct image_t image;
-typedef struct texture_t texture;
-
 #define NATIVE_W 320
 #define NATIVE_H 200
 

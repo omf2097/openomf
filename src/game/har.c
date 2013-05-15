@@ -73,7 +73,7 @@ void phycb_stop(physics_state *state, void *userdata) {
     har *h = userdata;
     if(h->state != STATE_STANDING) {
         h->state = STATE_STANDING;
-        har_switch_animation(h, 11);
+        har_switch_animation(h, ANIM_IDLE);
         animationplayer_set_repeat(&h->player, 1);
         DEBUG("switching to idle");
     }
@@ -82,14 +82,14 @@ void phycb_stop(physics_state *state, void *userdata) {
 void phycb_jump(physics_state *state, void *userdata) {
     har *h = userdata;
     h->state = STATE_JUMPING;
-    har_switch_animation(h, 1);
+    har_switch_animation(h, ANIM_JUMPING);
     DEBUG("switching to jumping");
 }
 
 void phycb_move(physics_state *state, void *userdata) {
     har *h = userdata;
     h->state = STATE_WALKING;
-    har_switch_animation(h, 10);
+    har_switch_animation(h, ANIM_WALKING);
     animationplayer_set_repeat(&h->player, 1);
     DEBUG("switching to walking");
     // TODO: Handle reverse animation if necessary
@@ -99,7 +99,7 @@ void phycb_crouch(physics_state *state, void *userdata) {
     har *h = userdata;
     if(h->state != STATE_CROUCHING) {
         h->state = STATE_CROUCHING;
-        har_switch_animation(h, 4);
+        har_switch_animation(h, ANIM_CROUCHING);
         //animationplayer_set_repeat(&h->player, 1);
         DEBUG("crouching");
     }
@@ -170,6 +170,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     }
 
     if (ret) {
+        PERROR("Failed to load HAR %d", id);
         return 1;
     }
     
@@ -243,9 +244,6 @@ void har_take_damage(har *har, int amount) {
     har_switch_animation(har, ANIM_DAMAGE);
     // play until end of frame 2 (zero based index)
     animationplayer_set_end_frame(&har->player, 2);
-}
-
-void har_collision_scene(har *har, scene *scene) {
 }
 
 void har_collision_har(har *har_a, har *har_b) {

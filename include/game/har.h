@@ -5,10 +5,8 @@
 #include "utils/array.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
+//#include "game/scene.h"
 #include "game/physics/physics.h"
-
-typedef struct scene_t scene;
-typedef struct har_t har;
 
 enum {
     ACT_KICK,
@@ -87,7 +85,7 @@ enum {
     STATE_JUMPING
 };
 
-struct har_t {
+typedef struct har_t {
     physics_state phy;
     unsigned int state;
     int direction; // 1 or -1
@@ -105,7 +103,7 @@ struct har_t {
     texture cd_debug_tex;
 
     list child_players; // projectiles and the like
-};
+} har;
 
 void har_free(har *har);
 int har_load(har *har, sd_palette *pal, int id, int x, int y, int direction); // Returns 0 on success
@@ -113,7 +111,6 @@ void har_tick(har *har); // Called by scene.c tick function at every game tick
 void har_render(har *har); // Called by scene.h render function at every frame render
 void har_act(har *har, int act_type); // Handle event passed from inputhandler
 void har_set_direction(har *har, int direction);
-void har_collision_scene(har *har, scene *scene);
 void har_collision_har(har *har_a, har *har_b);
 void har_take_damage(har *har, int amount);
 

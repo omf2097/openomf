@@ -4,12 +4,10 @@
 #include <shadowdive/rgba_image.h>
 #include "video/color.h"
 
-typedef struct image_t image;
-
-struct image_t {
+typedef struct image_t {
     unsigned int w,h;
     char *data;
-};
+} image;
 
 int image_create(image *img, int w, int h);
 int image_create_from_sd(image *img, sd_rgba_image *sdimg);
