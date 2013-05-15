@@ -29,6 +29,21 @@ int sort_command_by_name(const void *a, const void *b) {
 }
 
 // Handle console commands
+int console_cmd_history(scene *scene, void *userdata, int argc, char **argv) {
+    iterator it;
+    char *input;
+    char buf[sizeof(con->input)];
+    int i = 1;
+
+    list_iter_begin(&con->history, &it);
+    while((input = iter_next(&it)) != NULL) {
+        sprintf(buf, "%d. %s", i, input);
+        console_output_addline(buf);
+        i++;
+    }
+    return 0;
+}
+
 int console_cmd_clear(scene *scene, void *userdata, int argc, char **argv) {
     con->output[0] = '\0';
     con->output_head = 0;
@@ -121,9 +136,9 @@ int make_argv(char *p, char **argv) {
     int argc = 0;
     while(isspace(*p)) { ++p; }
     while(*p) {
-        if(argv != NULL) argv[argc] = p;
+        if(argv != NULL) { argv[argc] = p; }
         while(*p && !isspace(*p)) { ++p; }
-        if(argv != NULL && *p) *p++ = '\0';
+        if(argv != NULL && *p) { *p++ = '\0'; }
         while(isspace(*p)) { ++p; }
         ++argc;
     }
@@ -300,6 +315,7 @@ int console_init() {
     menu_background_create(&con->background, 322, 101);
  
     // Add console commands
+    console_add_cmd("h",     &console_cmd_history,  "show command history");
     console_add_cmd("clear", &console_cmd_clear,  "clear the console");
     console_add_cmd("cls",   &console_cmd_clear,  "clear the console");
     console_add_cmd("quit",  &console_cmd_quit,  "quit the game");
