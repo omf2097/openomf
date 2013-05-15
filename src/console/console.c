@@ -22,6 +22,12 @@ int strtoint(char *input, int *output) {
         return 0;
     }
 }
+int sort_command_by_name(const void *a, const void *b) {
+    hashmap_pair *const *h1 = a;
+    hashmap_pair *const *h2 = b;
+    return strcmp((*h1)->key, (*h2)->key);
+}
+
 // Handle console commands
 int console_clear_quit(scene *scene, void *userdata, int argc, char **argv) {
     con->output[0] = '\0';
@@ -39,17 +45,25 @@ int console_cmd_quit(scene *scene, void *userdata, int argc, char **argv) {
 
 int console_cmd_help(scene *scene, void *userdata, int argc, char **argv) {
     // print list of commands
+    vector sorted;
     iterator it;
+    hashmap_pair *pair, **ppair;
+
+    vector_create(&sorted, sizeof(hashmap_pair*));
     hashmap_iter_begin(&con->cmds, &it);
-    hashmap_pair *pair;
     while((pair = iter_next(&it)) != NULL) {
-        char *name = pair->key;
-        command *cmd = pair->val;
-        DEBUG("%s - %s", name, cmd->doc);
+        vector_append(&sorted, &pair);
+    }
+    vector_sort(&sorted, &sort_command_by_name);
+    vector_iter_begin(&sorted, &it);
+    while((ppair = iter_next(&it)) != NULL) {
+        char *name = (*ppair)->key;
+        command *cmd = (*ppair)->val;
         console_output_add(name);
         console_output_add(" - ");
         console_output_addline(cmd->doc);
     }
+    vector_free(&sorted);
     return 0;
 }
 
