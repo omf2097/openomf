@@ -99,6 +99,7 @@ typedef struct har_t {
     
     int tick; // TEMPORARY TO SLOW DOWN ANIMATION
 
+    unsigned int cd_debug_enabled;
     image cd_debug;
     texture cd_debug_tex;
 

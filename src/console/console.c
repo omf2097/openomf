@@ -86,6 +86,17 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
     return 1;
 }
 
+int console_cd_debug(scene *scene, void *userdata, int argc, char **argv) {
+    if (scene->player1.har) {
+        scene->player1.har->cd_debug_enabled = 1;
+    }
+
+    if (scene->player2.har) {
+        scene->player2.har->cd_debug_enabled = 1;
+    }
+    return 0;
+}
+
 int make_argv(char *p, char **argv) {
     // split line into argv, warning: does not handle quoted strings
     int argc = 0;
@@ -226,6 +237,7 @@ int console_init() {
     console_add_cmd("help",  &console_cmd_help,  "show all commands");
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
     console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
+    console_add_cmd("cd-debug",&console_cd_debug,   "toggle collision detection debugging");
     
     return 0;
 }

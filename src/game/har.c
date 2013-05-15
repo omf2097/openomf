@@ -115,6 +115,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     h->phy.move = phycb_move;
     h->phy.crouch = phycb_crouch;
 
+    h->cd_debug_enabled = 0;
     image_create(&h->cd_debug, 420, 300);
     h->cd_debug_tex.data = NULL;
     
@@ -268,6 +269,7 @@ void har_collision_har(har *har_a, har *har_b) {
         int w = sprite->img->w;
         int h = sprite->img->h;
         int hit = 0;
+        int boxhit = 0;
 
        if (har_b->direction == -1) {
             x = har_b->phy.pos.x + ((sprite->pos_x * har_b->direction) - sprite->img->w);
@@ -278,32 +280,33 @@ void har_collision_har(har *har_a, har *har_b) {
 
        // XXX the graphical collision detection debug stuff below is commented out because it is a little buggy
 
-        /*image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));*/
+        image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));
         // draw the bounding box
-        /*image_rect(&har_a->cd_debug, x, y, w, h, color_create(0, 0, 0, 255));*/
+        image_rect(&har_a->cd_debug, x+50, y, w, h, color_create(0, 0, 0, 255));
 
         // draw the 'ghost'
-        /*for (int i = 0; i < vga->w*vga->h; i++) {*/
-            /*if (vga->data[i] > 0 && vga->data[i] < 48) {*/
-                /*if (har_b->direction == -1) {*/
-                    /*image_set_pixel(&har_a->cd_debug, x + (vga->w - (i % vga->w)), y + (i / vga->w), color_create(255, 255, 255, 100));*/
-                /*} else {*/
-                    /*image_set_pixel(&har_a->cd_debug, x + (i % vga->w), y + (i / vga->w), color_create(255, 255, 255, 100));*/
-                /*}*/
-            /*}*/
-        /*}*/
+        for (int i = 0; i < vga->w*vga->h; i++) {
+            if (vga->data[i] > 0 && vga->data[i] < 48) {
+                if (har_b->direction == -1) {
+                    image_set_pixel(&har_a->cd_debug, x + 50 + (vga->w - (i % vga->w)), y + (i / vga->w), color_create(255, 255, 255, 100));
+                } else {
+                    image_set_pixel(&har_a->cd_debug, x + 50 + (i % vga->w), y + (i / vga->w), color_create(255, 255, 255, 100));
+                }
+            }
+        }
 
-        /*image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x, har_a->phy.pos.y, color_create(255, 255, 0, 255));*/
-        /*image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x, har_b->phy.pos.y, color_create(255, 255, 0, 255));*/
+        image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x + 50, har_a->phy.pos.y, color_create(255, 255, 0, 255));
+        image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x + 50 , har_b->phy.pos.y, color_create(255, 255, 0, 255));
 
         // Find collision points, if any
         for(int i = 0; i < ani->col_coord_count; i++) {
             if(ani->col_coord_table[i].y_ext == frame_id) {
-                /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 0, 255, 255));*/
+                image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 0, 255, 255));
                 // coarse check vs sprite dimensions
                 if ((ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->phy.pos.x < x + w) {
                     if (ani->col_coord_table[i].y + har_a->phy.pos.y > y && ani->col_coord_table[i].y + har_a->phy.pos.y < y + h) {
-                        /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 255, 0, 255));*/
+                        boxhit = 1;
+                        image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 255, 0, 255));
                         // Do a fine grained per-pixel check for a hit
 
                         int xoff = x - har_a->phy.pos.x;
@@ -321,8 +324,8 @@ void har_collision_har(har *har_a, har *har_b) {
 
                             DEBUG("hit point was %d, %d -- %d", xcoord, ycoord, h+sprite->pos_y);
                             hit = 1;
-                            /*image_set_pixel(&har_a->cd_debug, (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(255, 0, 0, 255));*/
-                            break;
+                            image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(255, 0, 0, 255));
+                            //break;
                         }
                     }
                 }
@@ -333,12 +336,14 @@ void har_collision_har(har *har_a, har *har_b) {
             if (har_b->health == 0) {
                 har_switch_animation(har_a, ANIM_VICTORY);
             }
+        }
 
-            /*if (har_a->cd_debug_tex.data) {*/
-                /*texture_free(&har_a->cd_debug_tex);*/
-            /*}*/
+        if ((hit || boxhit) && har_a->cd_debug_enabled) {
+            if (har_a->cd_debug_tex.data) {
+                texture_free(&har_a->cd_debug_tex);
+            }
 
-            /*texture_create_from_img(&har_a->cd_debug_tex, &har_a->cd_debug);*/
+            texture_create_from_img(&har_a->cd_debug_tex, &har_a->cd_debug);
         }
     }
 
@@ -420,9 +425,6 @@ void har_render(har *har) {
 
     animationplayer_render(&har->player);
 
-    if (har->cd_debug_tex.data) {
-        video_render_sprite_flip(&har->cd_debug_tex, 0, 0, BLEND_ALPHA_FULL, FLIP_NONE);
-    }
 }
 
 void har_set_direction(har *har, int direction) {
