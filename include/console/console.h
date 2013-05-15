@@ -41,6 +41,7 @@ void console_event(scene *scene, SDL_Event *event);
 void console_render();
 void console_tick();
 void console_add_cmd(const char *name, command_func func, const char *doc);
+void console_remove_cmd(const char *name);
 void console_set_userdata(const char *name, void *userdata);
 void *console_get_userdata(const char *name);
 

@@ -434,6 +434,10 @@ void console_add_cmd(const char *name, command_func func, const char *doc) {
     hashmap_sput(&con->cmds, name, &c, sizeof(command));
 }
 
+void console_remove_cmd(const char *name) {
+    hashmap_sdel(&con->cmds, name);
+}
+
 void console_set_userdata(const char *name, void *userdata) {
     void *val;
     unsigned int len;
