@@ -147,11 +147,20 @@ int make_argv(char *p, char **argv) {
 
 void console_add_history(const char *input, unsigned int len) {
     iterator it;
-    if(list_size(&con->history) == HISTORY_MAX) {
-        list_iter_end(&con->history, &it);
-        list_delete(&con->history, &it);
+    list_iter_begin(&con->history, &it);
+
+    char *input2 = iter_next(&it);
+    if(input2 != NULL) {
+        if(strcmp(input, input2) != 0) {
+            if(list_size(&con->history) == HISTORY_MAX) {
+                list_iter_end(&con->history, &it);
+                list_delete(&con->history, &it);
+            }
+            list_prepend(&con->history, input, len);
+        }
+    } else if(input2 == NULL) {
+        list_prepend(&con->history, input, len);
     }
-    list_prepend(&con->history, input, len);
     con->histpos = -1;
 }
 
