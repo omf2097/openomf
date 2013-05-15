@@ -142,7 +142,7 @@ void console_add_history(const char *input, unsigned int len) {
 
 void console_handle_line(scene *scene) {
     if(con->input[0] == '\0') {
-        console_output_addline("> ");
+        console_output_addline(">");
     } else {
         char input_copy[sizeof(con->input)];
         memcpy(input_copy, con->input, sizeof(con->input));
@@ -175,7 +175,7 @@ void console_handle_line(scene *scene) {
                 console_output_addline(" NOT RECOGNIZED");
             }
         } else {
-            console_output_addline("> ");
+            console_output_addline(">");
         }
     }
 }
