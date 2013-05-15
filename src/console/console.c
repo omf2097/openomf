@@ -29,7 +29,7 @@ int sort_command_by_name(const void *a, const void *b) {
 }
 
 // Handle console commands
-int console_clear_quit(scene *scene, void *userdata, int argc, char **argv) {
+int console_cmd_clear(scene *scene, void *userdata, int argc, char **argv) {
     con->output[0] = '\0';
     con->output_head = 0;
     con->output_tail = 0;
@@ -300,8 +300,8 @@ int console_init() {
     menu_background_create(&con->background, 322, 101);
  
     // Add console commands
-    console_add_cmd("clear", &console_clear_quit,  "clear the console");
-    console_add_cmd("cls",   &console_clear_quit,  "clear the console");
+    console_add_cmd("clear", &console_cmd_clear,  "clear the console");
+    console_add_cmd("cls",   &console_cmd_clear,  "clear the console");
     console_add_cmd("quit",  &console_cmd_quit,  "quit the game");
     console_add_cmd("exit",  &console_cmd_quit,  "quit the game");
     console_add_cmd("help",  &console_cmd_help,  "show all commands");
