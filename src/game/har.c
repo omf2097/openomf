@@ -231,21 +231,23 @@ void har_free(har *h) {
 
 void har_take_damage(har *har, int amount) {
     har->health -= amount / 2.0f;
-    har->endurance -= amount * 2;
+    har->endurance -= amount;
     if(har->health <= 0) {
         har->health = 0;
-        har_switch_animation(har, ANIM_DEFEAT);
-        return;
     }
     if(har->endurance <= 0) {
         har->endurance = 0;
-        har_switch_animation(har, ANIM_STUNNED);
-        return;
     }
     DEBUG("HAR took %f damage, and its health is now %d", amount / 2.0f, har->health);
-    har_switch_animation(har, ANIM_DAMAGE);
-    // play until end of frame 2 (zero based index)
-    animationplayer_set_end_frame(&har->player, 2);
+    if (har->health == 0 && har->endurance == 0) {
+        har_switch_animation(har, ANIM_DEFEAT);
+    } else if (har->endurance == 0) {
+        har_switch_animation(har, ANIM_STUNNED);
+    } else {
+        har_switch_animation(har, ANIM_DAMAGE);
+        // play until end of frame 2 (zero based index)
+        animationplayer_set_end_frame(&har->player, 2);
+    }
 }
 
 void har_collision_har(har *har_a, har *har_b) {
@@ -344,7 +346,7 @@ void har_collision_har(har *har_a, har *har_b) {
         }
         if (hit) {
             har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
-            if (har_b->health == 0) {
+            if (har_b->health == 0 && har_b->endurance == 0) {
                 har_a->state = STATE_VICTORY;
                 har_switch_animation(har_a, ANIM_VICTORY);
             }
@@ -399,8 +401,8 @@ void har_tick(har *har) {
     if(har->tick > 3) {
         animationplayer_run(&har->player);
         har->tick = 0;
-        //regenerate endurance if not attacking
-        if (har->endurance < har->endurance_max &&
+        //regenerate endurance if not attacking, and not dead
+        if ((har->health > 0 || har->endurance > 0) && har->endurance < har->endurance_max &&
                 (har->player.id == ANIM_IDLE || har->player.id == ANIM_CROUCHING ||
                  har->player.id == ANIM_WALKING || har->player.id == ANIM_JUMPING)) {
             har->endurance++;
