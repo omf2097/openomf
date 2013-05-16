@@ -71,7 +71,7 @@ void phycb_floor_hit(physics_state *state, void *userdata, int flight_mode) {
 
 void phycb_stop(physics_state *state, void *userdata) {
     har *h = userdata;
-    if(h->state != STATE_STANDING) {
+    if(h->state != STATE_STANDING && h->state != STATE_SCRAP && h->state != STATE_DESTRUCTION) {
         h->state = STATE_STANDING;
         har_switch_animation(h, ANIM_IDLE);
         animationplayer_set_repeat(&h->player, 1);
@@ -116,7 +116,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     h->phy.crouch = phycb_crouch;
 
     h->cd_debug_enabled = 0;
-    image_create(&h->cd_debug, 420, 300);
+    image_create(&h->cd_debug, 420, 350);
     h->cd_debug_tex.data = NULL;
     
     // Initial bot stuff
@@ -282,31 +282,31 @@ void har_collision_har(har *har_a, har *har_b) {
 
         image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));
         // draw the bounding box
-        image_rect(&har_a->cd_debug, x+50, y, w, h, color_create(0, 0, 0, 255));
+        image_rect(&har_a->cd_debug, x+50, y+50, w, h, color_create(0, 0, 0, 255));
 
         // draw the 'ghost'
         for (int i = 0; i < vga->w*vga->h; i++) {
             if (vga->data[i] > 0 && vga->data[i] < 48) {
                 if (har_b->direction == -1) {
-                    image_set_pixel(&har_a->cd_debug, x + 50 + (vga->w - (i % vga->w)), y + (i / vga->w), color_create(255, 255, 255, 100));
+                    image_set_pixel(&har_a->cd_debug, x + 50 + (vga->w - (i % vga->w)), 50 + y + (i / vga->w), color_create(255, 255, 255, 100));
                 } else {
-                    image_set_pixel(&har_a->cd_debug, x + 50 + (i % vga->w), y + (i / vga->w), color_create(255, 255, 255, 100));
+                    image_set_pixel(&har_a->cd_debug, x + 50 + (i % vga->w), 50 + y + (i / vga->w), color_create(255, 255, 255, 100));
                 }
             }
         }
 
-        image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x + 50, har_a->phy.pos.y, color_create(255, 255, 0, 255));
-        image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x + 50 , har_b->phy.pos.y, color_create(255, 255, 0, 255));
+        image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x + 50, har_a->phy.pos.y + 50, color_create(255, 255, 0, 255));
+        image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x + 50 , har_b->phy.pos.y + 50, color_create(255, 255, 0, 255));
 
         // Find collision points, if any
         for(int i = 0; i < ani->col_coord_count; i++) {
             if(ani->col_coord_table[i].y_ext == frame_id) {
-                image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 0, 255, 255));
+                image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, 50 + ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 0, 255, 255));
                 // coarse check vs sprite dimensions
                 if ((ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->phy.pos.x < x + w) {
                     if (ani->col_coord_table[i].y + har_a->phy.pos.y > y && ani->col_coord_table[i].y + har_a->phy.pos.y < y + h) {
                         boxhit = 1;
-                        image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 255, 0, 255));
+                        image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, 50 + ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 255, 0, 255));
                         // Do a fine grained per-pixel check for a hit
 
                         int xoff = x - har_a->phy.pos.x;
@@ -324,8 +324,11 @@ void har_collision_har(har *har_a, har *har_b) {
 
                             DEBUG("hit point was %d, %d -- %d", xcoord, ycoord, h+sprite->pos_y);
                             hit = 1;
-                            image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(255, 0, 0, 255));
-                            //break;
+                            image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x,  50 + ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(255, 0, 0, 255));
+                            if (!har_a->cd_debug_enabled) {
+                                // not debugging, we can break out of the loop and not draw any more pixels
+                                break;
+                            }
                         }
                     }
                 }
@@ -334,6 +337,7 @@ void har_collision_har(har *har_a, har *har_b) {
         if (hit) {
             har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
             if (har_b->health == 0) {
+                har_a->state = STATE_VICTORY;
                 har_switch_animation(har_a, ANIM_VICTORY);
             }
         }
@@ -347,17 +351,21 @@ void har_collision_har(har *har_a, har *har_b) {
         }
     }
 
+    har_a->close = 0;
+
     if (har_a->state == STATE_WALKING && har_a->direction == -1) {
         // walking towards the enemy
         // 35 is a made up number that 'looks right'
         if (har_a->phy.pos.x < har_b->phy.pos.x+35 && har_a->phy.pos.x > har_b->phy.pos.x) {
             har_a->phy.pos.x = har_b->phy.pos.x+35;
+            har_a->close = 1;
         }
     }
     if (har_a->state == STATE_WALKING && har_a->direction == 1) {
         // walking towards the enemy
         if (har_a->phy.pos.x+35 > har_b->phy.pos.x && har_a->phy.pos.x < har_b->phy.pos.x) {
             har_a->phy.pos.x = har_b->phy.pos.x - 35;
+            har_a->close = 1;
         }
     }
 }
@@ -408,6 +416,12 @@ void har_tick(har *har) {
             case STATE_CROUCHING:
                 animation = ANIM_CROUCHING;
                 break;
+            case STATE_SCRAP:
+                animation = ANIM_VICTORY;
+                break;
+            case STATE_DESTRUCTION:
+                animation = ANIM_VICTORY;
+                break;
         }
         DEBUG("next animation is %d", animation);
         har_switch_animation(har, animation);
@@ -448,8 +462,52 @@ void add_input(har *har, char c) {
     har->inputs[0] = c;
 }
 
+int move_allowed(har *har, sd_move *move) {
+    int cat = move->unknown[13];
+    switch(har->state) {
+        case STATE_JUMPING:
+            if(cat == CAT_JUMPING) {
+                return 1;
+            }
+            break;
+        /*case STATE_CROUCHING:*/
+            /*if (cat == CAT_CROUCH) {*/
+                /*return 1;*/
+            /*}*/
+            /*break;*/
+        case  STATE_VICTORY:
+            if (cat == CAT_SCRAP) {
+                har->state = STATE_SCRAP;
+                return 1;
+            }
+            break;
+        case STATE_SCRAP:
+            if (cat == CAT_DESTRUCTION) {
+                har->state = STATE_DESTRUCTION;
+                return 1;
+            }
+            break;
+        default:
+            if (cat == CAT_CLOSE) {
+                return har->close;
+            } else if (cat == CAT_JUMPING) {
+                return 0;
+            }
+            // allow anything else, for now
+            return 1;
+            break;
+    }
+    return 0;
+}
+
 void har_act(har *har, int act_type) {
-    if (har->player.id != ANIM_IDLE && har->player.id != ANIM_CROUCHING && har->player.id != ANIM_WALKING && har->player.id != ANIM_JUMPING) {
+    if (!(
+            har->player.id == ANIM_IDLE ||
+            har->player.id == ANIM_CROUCHING ||
+            har->player.id == ANIM_WALKING ||
+            har->player.id == ANIM_JUMPING ||
+            har->state == STATE_VICTORY ||
+            har->state == STATE_SCRAP)) {
         // if we're not in the idle loop, bail for now
         return;
     }
@@ -511,20 +569,30 @@ void har_act(har *har, int act_type) {
             add_input(har, 'P');
             break;
         case ACT_STOP:
-            physics_move(&har->phy, 0);
+            if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                physics_move(&har->phy, 0);
+            }
             add_input(har, '5');
             break;
         case ACT_WALKLEFT:
-            physics_move(&har->phy, -1.0f);
+            if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                physics_move(&har->phy, -1.0f);
+            }
             break;
         case ACT_WALKRIGHT:
-            physics_move(&har->phy, 1.0f);
+            if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                physics_move(&har->phy, 1.0f);
+            }
             break;
         case ACT_CROUCH:
-            physics_crouch(&har->phy);
+            if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                physics_crouch(&har->phy);
+            }
             break;
         case ACT_JUMP:
-            physics_jump(&har->phy, -8.0f);
+            if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                physics_jump(&har->phy, -8.0f);
+            }
             break;
     }
     /*DEBUG("input buffer is now %s", har->inputs);*/
@@ -537,7 +605,7 @@ void har_act(har *har, int act_type) {
         if(move != NULL) {
             len = strlen(move->move_string);
             if (!strncmp(move->move_string, har->inputs, len)) {
-                if ((har->state == STATE_JUMPING && move->unknown[13] == CAT_JUMPING) || har->state != STATE_JUMPING) {
+                if (move_allowed(har, move)) {
                     DEBUG("matched move %d with string %s", i, move->move_string);
                     DEBUG("input was %s", har->inputs);
 

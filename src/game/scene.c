@@ -285,11 +285,11 @@ void scene_render(scene *scene) {
     }
 
     if(scene->player1.har && scene->player1.har->cd_debug_tex.data) {
-        video_render_sprite_flip(&scene->player1.har->cd_debug_tex, -50, 0, BLEND_ALPHA_FULL, FLIP_NONE);
+        video_render_sprite_flip(&scene->player1.har->cd_debug_tex, -50, -50, BLEND_ALPHA_FULL, FLIP_NONE);
     }
 
     if(scene->player2.har && scene->player2.har->cd_debug_tex.data) {
-        video_render_sprite_flip(&scene->player2.har->cd_debug_tex, -50, 0, BLEND_ALPHA_FULL, FLIP_NONE);
+        video_render_sprite_flip(&scene->player2.har->cd_debug_tex, -50, -50, BLEND_ALPHA_FULL, FLIP_NONE);
     }
  
     // Run custom render function, if defined

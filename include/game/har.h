@@ -60,7 +60,7 @@ enum {
     CAT_PROJECTILE,
     CAT_BASIC,
     CAT_VICTORY = 10, // or defeat
-    CAT_SCRAP,
+    CAT_SCRAP = 12,
     CAT_DESTRUCTION
 };
 
@@ -82,7 +82,10 @@ enum {
     STATE_STANDING,
     STATE_WALKING,
     STATE_CROUCHING,
-    STATE_JUMPING
+    STATE_JUMPING,
+    STATE_VICTORY,
+    STATE_SCRAP,
+    STATE_DESTRUCTION
 };
 
 typedef struct har_t {
@@ -102,6 +105,8 @@ typedef struct har_t {
     unsigned int cd_debug_enabled;
     image cd_debug;
     texture cd_debug_tex;
+
+    int close; // are we close to the other player?
 
     list child_players; // projectiles and the like
 } har;
