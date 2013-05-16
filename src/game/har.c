@@ -280,20 +280,22 @@ void har_collision_har(har *har_a, har *har_b) {
 
        // XXX the graphical collision detection debug stuff below is commented out because it is a little buggy
 
-        image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));
-        // draw the bounding box
-        image_rect(&har_a->cd_debug, x+50, y+50, w, h, color_create(0, 0, 0, 255));
+       if(har_a->cd_debug_enabled) {
+           image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));
+           // draw the bounding box
+           image_rect(&har_a->cd_debug, x+50, y+50, w, h, color_create(0, 0, 0, 255));
 
-        // draw the 'ghost'
-        for (int i = 0; i < vga->w*vga->h; i++) {
-            if (vga->data[i] > 0 && vga->data[i] < 48) {
-                if (har_b->direction == -1) {
-                    image_set_pixel(&har_a->cd_debug, x + 50 + (vga->w - (i % vga->w)), 50 + y + (i / vga->w), color_create(255, 255, 255, 100));
-                } else {
-                    image_set_pixel(&har_a->cd_debug, x + 50 + (i % vga->w), 50 + y + (i / vga->w), color_create(255, 255, 255, 100));
-                }
-            }
-        }
+           // draw the 'ghost'
+           for (int i = 0; i < vga->w*vga->h; i++) {
+               if (vga->data[i] > 0 && vga->data[i] < 48) {
+                   if (har_b->direction == -1) {
+                       image_set_pixel(&har_a->cd_debug, x + 50 + (vga->w - (i % vga->w)), 50 + y + (i / vga->w), color_create(255, 255, 255, 100));
+                   } else {
+                       image_set_pixel(&har_a->cd_debug, x + 50 + (i % vga->w), 50 + y + (i / vga->w), color_create(255, 255, 255, 100));
+                   }
+               }
+           }
+       }
 
         image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x + 50, har_a->phy.pos.y + 50, color_create(255, 255, 0, 255));
         image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x + 50 , har_b->phy.pos.y + 50, color_create(255, 255, 0, 255));
@@ -301,12 +303,16 @@ void har_collision_har(har *har_a, har *har_b) {
         // Find collision points, if any
         for(int i = 0; i < ani->col_coord_count; i++) {
             if(ani->col_coord_table[i].y_ext == frame_id) {
-                image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, 50 + ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 0, 255, 255));
+                if(har_a->cd_debug_enabled) {
+                    image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, 50 + ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 0, 255, 255));
+                }
                 // coarse check vs sprite dimensions
                 if ((ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x > x && (ani->col_coord_table[i].x * har_a->direction) +har_a->phy.pos.x < x + w) {
                     if (ani->col_coord_table[i].y + har_a->phy.pos.y > y && ani->col_coord_table[i].y + har_a->phy.pos.y < y + h) {
                         boxhit = 1;
-                        image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, 50 + ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 255, 0, 255));
+                        if(har_a->cd_debug_enabled) {
+                            image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x, 50 + ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(0, 255, 0, 255));
+                        }
                         // Do a fine grained per-pixel check for a hit
 
                         int xoff = x - har_a->phy.pos.x;
@@ -324,10 +330,11 @@ void har_collision_har(har *har_a, har *har_b) {
 
                             DEBUG("hit point was %d, %d -- %d", xcoord, ycoord, h+sprite->pos_y);
                             hit = 1;
-                            image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x,  50 + ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(255, 0, 0, 255));
                             if (!har_a->cd_debug_enabled) {
                                 // not debugging, we can break out of the loop and not draw any more pixels
                                 break;
+                            } else {
+                                image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + har_a->phy.pos.x,  50 + ani->col_coord_table[i].y + har_a->phy.pos.y, color_create(255, 0, 0, 255));
                             }
                         }
                     }
