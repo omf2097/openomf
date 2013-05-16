@@ -194,7 +194,8 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
 
     // Har properties
     h->health = h->health_max = 500;
-    h->endurance = h->endurance_max = h->af->endurance;
+    /*h->endurance = h->endurance_max = h->af->endurance;*/
+    h->endurance = h->endurance_max = 200;
     
     // Start player with animation 11
     h->player.x = h->phy.pos.x;
@@ -230,13 +231,13 @@ void har_free(har *h) {
 
 void har_take_damage(har *har, int amount) {
     har->health -= amount / 2.0f;
-    har->endurance -= amount;
-    if(har->health < 0) {
+    har->endurance -= amount * 2;
+    if(har->health <= 0) {
         har->health = 0;
         har_switch_animation(har, ANIM_DEFEAT);
         return;
     }
-    if(har->endurance < 0) {
+    if(har->endurance <= 0) {
         har->endurance = 0;
         har_switch_animation(har, ANIM_STUNNED);
         return;
@@ -398,6 +399,12 @@ void har_tick(har *har) {
     if(har->tick > 3) {
         animationplayer_run(&har->player);
         har->tick = 0;
+        //regenerate endurance if not attacking
+        if (har->endurance < har->endurance_max &&
+                (har->player.id == ANIM_IDLE || har->player.id == ANIM_CROUCHING ||
+                 har->player.id == ANIM_WALKING || har->player.id == ANIM_JUMPING)) {
+            har->endurance++;
+        }
     }
 
     if (har->player.id == ANIM_DAMAGE && animationplayer_get_frame(&har->player) > 4) {
@@ -406,12 +413,6 @@ void har_tick(har *har) {
         har->player.finished = 1;
     }
 
-    //regenerate endurance if not attacking
-    if (har->endurance < har->endurance_max &&
-            (har->player.id == ANIM_IDLE || har->player.id == ANIM_CROUCHING ||
-             har->player.id == ANIM_WALKING || har->player.id == ANIM_JUMPING)) {
-        har->endurance++;
-    }
     if(har->player.finished) {
         // 11 will never be finished, if it is set to repeat
         har->tick = 0;
