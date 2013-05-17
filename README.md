@@ -43,4 +43,4 @@ OpenOMF is developed under the MIT License. Please read LICENSE for more informa
 
 Contact
 -------
-Join us on #omf on irc.freenode.net if you want to get in contact with us.
+Join us on [#omf](http://webchat.freenode.net?channels=omf) on [irc.freenode.net](irc://chat.freenode.net/omf) if you want to get in contact with us.
