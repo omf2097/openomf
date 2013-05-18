@@ -375,7 +375,7 @@ void har_collision_har(har *har_a, har *har_b) {
                 }
             }
         }
-        if (hit || har_a->af->moves[ani_id]->unknown[13 == CAT_CLOSE]) {
+        if (hit || har_a->af->moves[ani_id]->unknown[13] == CAT_CLOSE) {
             // close moves alwaya hit, for now
             har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17], har_a->af->moves[ani_id]->footer_string);
             if (har_b->health == 0 && har_b->endurance == 0) {

@@ -257,9 +257,6 @@ void animationplayer_run(animationplayer *player) {
         if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));               }
         if(isset(f, "smf")) { cmd_music_off();                           }
         if(isset(f, "s"))   { cmd_sound(player, get(f, "s"));            }
-        if(isset(f, "v") && (isset(f, "x-") || isset(f, "y-"))) {
-            DEBUG("VOLOCITY CHANGED");
-        }
         if (isset(f, "v") && player->phys != NULL) {
             int x, y = 0;
             if(isset(f, "y-")) {
@@ -270,13 +267,41 @@ void animationplayer_run(animationplayer *player) {
             if(isset(f, "x-")) {
                 x = get(f, "x-") * -1 * player->direction;
             } else if(isset(f, "x")) {
-                x = get(f, "x-") * player->direction;
+                x = get(f, "x") * player->direction;
             }
 
             if (x || y) {
                 player->phys(player->userdata, x, y);
             }
         }
+        if (isset(f, "v") == 0 && (isset(f, "x") || isset(f, "y") || isset(f, "x-") || isset(f, "y-"))) {
+            // check for relative X interleaving
+            int x = 0, y = 0;
+            if(isset(f, "y-")) {
+                y = get(f, "y-") * -1;
+            } else if(isset(f, "y")) {
+                y = get(f, "y");
+            }
+            if(isset(f, "x-")) {
+                x = get(f, "x-") * -1 * player->direction;
+            } else if(isset(f, "x")) {
+                x = get(f, "x") * player->direction;
+            }
+
+            DEBUG("x %d, y %d", x, y);
+
+            if (x) {
+                player->slide_op.x_per_tick = x * 100 / param->duration;
+                DEBUG("%d player->x was %d, interpolating to %d - %d", player->id, player->x, player->x + x, player->slide_op.x_per_tick);
+                player->slide_op.enabled = 1;
+            }
+            if (y) {
+                player->slide_op.y_per_tick = y * 100 / param->duration;
+                DEBUG("%d player->y was %d, interpolating to %d - %d", player->id, player->y, player->y + y, player->slide_op.y_per_tick);
+                player->slide_op.enabled = 1;
+            }
+        }
+
 
         // Check if next frame contains X=nnn or Y=nnn 
         if(!param->is_final_frame) {
