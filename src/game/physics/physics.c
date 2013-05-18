@@ -1,3 +1,4 @@
+#include "utils/log.h"
 #include "game/physics/physics.h"
 #include <stdlib.h>
 
@@ -45,8 +46,7 @@ void physics_check_bounds(physics_state *state) {
     // Floor/ceiling
     if(state->pos.y < state->ceiling) {
         state->pos.y = state->ceiling;
-    }
-    else if(state->pos.y >= state->floor) {
+    } else if(state->pos.y >= state->floor) {
         state->pos.y = state->floor;
         if(state->vertical_state != PHY_VSTATE_NONE && state->vertical_state != PHY_VSTATE_CROUCH) {
             if(state->floor_hit != NULL) {
@@ -98,6 +98,10 @@ void physics_recoil(physics_state *state, float spd_x, float spd_y) {
     state->spd.x = spd_x;
     state->spd.y = spd_y;
     state->vertical_state = PHY_VSTATE_RECOIL;
+    state->pos.y -= 1;
+    if(state->pos.y < state->floor) {
+        DEBUG("kicked airborne");
+    }
     if(state->recoil != NULL) {
         state->recoil(state, state->userdata);
     }
@@ -144,5 +148,5 @@ int physics_is_moving_down(physics_state *state) {
 }
 
 int physics_is_in_air(physics_state *state) {
-    return (state->pos.y < state->floor);
+    return (state->pos.y < state->floor && state->vertical_state != PHY_VSTATE_RECOIL);
 }

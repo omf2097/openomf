@@ -41,8 +41,7 @@ typedef struct animationplayer_t {
     
     void (*del_player)(void *userdata, int id);
     void (*add_player)(void *userdata, int id, int mx, int my);
-    void (*phys_x)(void *userdata, int velocity);
-    void (*phys_y)(void *userdata, int velocity);
+    void (*phys)(void *userdata, int x, int y);
 } animationplayer;
 
 int animationplayer_create(animationplayer *player, unsigned int id, animation *animation);

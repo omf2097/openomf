@@ -123,8 +123,7 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
     player->slide_op.y_per_tick = 0;
     player->slide_op.y_rem = 0;
     player->add_player = NULL;
-    player->phys_x = NULL;
-    player->phys_y = NULL;
+    player->phys = NULL;
     player->parser = NULL;
     return animationplayer_set_string(player, animation->sdani->anim_string);
 }
@@ -195,13 +194,6 @@ void animationplayer_run(animationplayer *player) {
         player->slide_op.y_rem = y % 100;
     }
 
-    // Handle frame switch
-    sd_stringparser_frame *param = &player->parser->current_frame;
-    sd_stringparser_frame n_param;
-    sd_stringparser_frame *f = param;
-    sd_stringparser_frame *n = &n_param;
-    int real_frame;
-
     int run_ret;
     if(player->end_frame == UINT32_MAX) {
         run_ret = sd_stringparser_run(player->parser, player->ticks-1);
@@ -209,6 +201,13 @@ void animationplayer_run(animationplayer *player) {
         run_ret = sd_stringparser_run_frames(player->parser, player->ticks-1, player->end_frame);
     }
     if(run_ret == 0) {
+        // Handle frame switch
+        sd_stringparser_frame *param = &player->parser->current_frame;
+        sd_stringparser_frame n_param;
+        sd_stringparser_frame *f = param;
+        sd_stringparser_frame *n = &n_param;
+        int real_frame;
+
         real_frame = param->letter - 65;
         
         // Disable stuff from previous frame
@@ -261,18 +260,21 @@ void animationplayer_run(animationplayer *player) {
         if(isset(f, "v") && (isset(f, "x-") || isset(f, "y-"))) {
             DEBUG("VOLOCITY CHANGED");
         }
-        if (isset(f, "v")) {
-            if(isset(f, "y-") && player->phys_y != NULL) {
-                DEBUG("BL:AH 2222");
-                // velocity Y
-                // XXX uncomment for crashes
-                /*player->phys_y(player->userdata, get(f, "y-") * -1);*/
+        if (isset(f, "v") && player->phys != NULL) {
+            int x, y = 0;
+            if(isset(f, "y-")) {
+                y = get(f, "y-") * -1;
+            } else if(isset(f, "y")) {
+                y = get(f, "y");
             }
-            if(isset(f, "x-") && player->phys_x != NULL) {
-                DEBUG("BL:AH");
-                // velocity X
-                // XXX uncomment for crashes
-                /*player->phys_x(player->userdata, get(f, "x-") * -1 * player->direction);*/
+            if(isset(f, "x-")) {
+                x = get(f, "x-") * -1 * player->direction;
+            } else if(isset(f, "x")) {
+                x = get(f, "x-") * player->direction;
+            }
+
+            if (x || y) {
+                player->phys(player->userdata, x, y);
             }
         }
 

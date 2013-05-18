@@ -12,8 +12,7 @@
 void har_add_ani_player(void *userdata, int id, int mx, int my);
 void har_set_ani_finished(void *userdata, int id);
 
-void har_phys_x(void *userdata, int velocity);
-void har_phys_y(void *userdata, int velocity);
+void har_phys(void *userdata, int x, int y);
 
 void har_add_ani_player(void *userdata, int id, int mx, int my) {
     har *har = userdata;
@@ -49,16 +48,11 @@ void har_set_ani_finished(void *userdata, int id) {
     }
 }
 
-void har_phys_x(void *userdata, int velocity) {
-    DEBUG("setting x velocity to %f", (float) velocity);
+void har_phys(void *userdata, int x, int y) {
+    DEBUG("setting recoil velocity to %f , %f", (float)x, (float)y);
     har *har = userdata;
-    physics_move(&har->phy, (float) velocity);
-}
-
-void har_phys_y(void *userdata, int velocity) {
-    DEBUG("setting y velocity to %f", (float) velocity);
-    har *har = userdata;
-    physics_jump(&har->phy, (float)velocity);
+    physics_recoil(&har->phy, (float)x, (float)y);
+    physics_tick(&har->phy);
 }
 
 void har_switch_animation(har *har, int id) {
@@ -68,27 +62,35 @@ void har_switch_animation(har *har, int id) {
     har->player.userdata = har;
     har->player.add_player = har_add_ani_player;
     har->player.del_player = har_set_ani_finished;
-    har->player.phys_x = har_phys_x;
-    har->player.phys_y = har_phys_y;
+    har->player.phys = har_phys;
     animationplayer_run(&har->player);
 }
 
 void phycb_fall(physics_state *state, void *userdata) {
     har *h = userdata;
-    animationplayer_next_frame(&h->player);
-    DEBUG("switching to falling");
+    if (h->state == STATE_JUMPING) {
+        animationplayer_next_frame(&h->player);
+        DEBUG("switching to falling");
+    }
 }
 
 void phycb_floor_hit(physics_state *state, void *userdata, int flight_mode) {
     har *h = userdata;
     h->player.finished = 1;
-    h->state = STATE_STANDING;
-    DEBUG("stopped jumping");
+    if (h->state == STATE_JUMPING) {
+        h->state = STATE_STANDING;
+        DEBUG("stopped jumping");
+    } else if (h->state == STATE_RECOIL) {
+        DEBUG("crashed into ground");
+        har_switch_animation(h, ANIM_STANDUP);
+        physics_move(&h->phy, 0.0f);
+        //h->state = STATE_STANDING;
+    }
 }
 
 void phycb_stop(physics_state *state, void *userdata) {
     har *h = userdata;
-    if(h->state != STATE_STANDING && h->state != STATE_SCRAP && h->state != STATE_DESTRUCTION) {
+    if(h->state != STATE_STANDING && h->state != STATE_SCRAP && h->state != STATE_DESTRUCTION && h->state != STATE_RECOIL) {
         h->state = STATE_STANDING;
         har_switch_animation(h, ANIM_IDLE);
         animationplayer_set_repeat(&h->player, 1);
@@ -105,11 +107,13 @@ void phycb_jump(physics_state *state, void *userdata) {
 
 void phycb_move(physics_state *state, void *userdata) {
     har *h = userdata;
-    h->state = STATE_WALKING;
-    har_switch_animation(h, ANIM_WALKING);
-    animationplayer_set_repeat(&h->player, 1);
-    DEBUG("switching to walking");
-    // TODO: Handle reverse animation if necessary
+    if (h->state != STATE_RECOIL) {
+        h->state = STATE_WALKING;
+        har_switch_animation(h, ANIM_WALKING);
+        animationplayer_set_repeat(&h->player, 1);
+        DEBUG("switching to walking");
+        // TODO: Handle reverse animation if necessary
+    }
 }
 
 void phycb_crouch(physics_state *state, void *userdata) {
@@ -124,7 +128,7 @@ void phycb_crouch(physics_state *state, void *userdata) {
 
 int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     // Physics & callbacks
-    physics_init(&h->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, 0.4f, h);
+    physics_init(&h->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, 1.0f, h);
     h->phy.fall = phycb_fall;
     h->phy.floor_hit = phycb_floor_hit;
     h->phy.stop = phycb_stop;
@@ -223,8 +227,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     h->player.userdata = h;
     h->player.add_player = har_add_ani_player;
     h->player.del_player = har_set_ani_finished;
-    h->player.phys_x = har_phys_x;
-    h->player.phys_y = har_phys_y;
+    h->player.phys = har_phys;
     animationplayer_run(&h->player);
     DEBUG("Har %d loaded!", id);
     return 0;
@@ -272,8 +275,8 @@ void har_take_damage(har *har, int amount, const char *string) {
         har->player.userdata = har;
         har->player.add_player = har_add_ani_player;
         har->player.del_player = har_set_ani_finished;
-        har->player.phys_x = har_phys_x;
-        har->player.phys_y = har_phys_y;
+        har->player.phys = har_phys;
+        har->state = STATE_RECOIL;
         animationplayer_run(&har->player);
     }
 }
@@ -372,7 +375,8 @@ void har_collision_har(har *har_a, har *har_b) {
                 }
             }
         }
-        if (hit) {
+        if (hit || har_a->af->moves[ani_id]->unknown[13 == CAT_CLOSE]) {
+            // close moves alwaya hit, for now
             har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17], har_a->af->moves[ani_id]->footer_string);
             if (har_b->health == 0 && har_b->endurance == 0) {
                 har_a->state = STATE_VICTORY;
@@ -409,11 +413,10 @@ void har_collision_har(har *har_a, har *har_b) {
 }
 
 void har_tick(har *har) {
-    physics_tick(&har->phy);
 
     har->player.x = har->phy.pos.x;
     if(physics_is_in_air(&har->phy)) {
-        har->player.y = har->phy.pos.y - 40;
+        har->player.y = har->phy.pos.y - 20;
     } else {
         har->player.y = har->phy.pos.y;
     }
@@ -427,6 +430,7 @@ void har_tick(har *har) {
     }
 
     if(har->tick > 3) {
+        physics_tick(&har->phy);
         animationplayer_run(&har->player);
         har->tick = 0;
         //regenerate endurance if not attacking, and not dead
@@ -437,13 +441,16 @@ void har_tick(har *har) {
         }
     }
 
-    if (har->player.id == ANIM_DAMAGE && animationplayer_get_frame(&har->player) > 4) {
+    /*if (har->player.id == ANIM_DAMAGE && animationplayer_get_frame(&har->player) > 4) {*/
         // bail out of the 'hit' animation early, because the hit animation
         // contains ALL the hit aniamtions one after the other
-        har->player.finished = 1;
-    }
+        /*har->player.finished = 1;*/
+    /*}*/
 
     if(har->player.finished) {
+        if (har->state == STATE_RECOIL) {
+            har->state = STATE_STANDING;
+        }
         // 11 will never be finished, if it is set to repeat
         har->tick = 0;
         int animation = ANIM_IDLE;
@@ -527,6 +534,7 @@ int move_allowed(har *har, sd_move *move) {
             break;
         default:
             if (cat == CAT_CLOSE) {
+                DEBUG("trying a CLOSE move %d", har->close);
                 return har->close;
             } else if (cat == CAT_JUMPING) {
                 return 0;
@@ -614,12 +622,12 @@ void har_act(har *har, int act_type) {
             break;
         case ACT_WALKLEFT:
             if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
-                physics_move(&har->phy, -1.0f);
+                physics_move(&har->phy, -3.0f);
             }
             break;
         case ACT_WALKRIGHT:
             if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
-                physics_move(&har->phy, 1.0f);
+                physics_move(&har->phy, 3.0f);
             }
             break;
         case ACT_CROUCH:
@@ -629,7 +637,7 @@ void har_act(har *har, int act_type) {
             break;
         case ACT_JUMP:
             if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
-                physics_jump(&har->phy, -8.0f);
+                physics_jump(&har->phy, -15.0f);
             }
             break;
     }
