@@ -12,6 +12,9 @@
 void har_add_ani_player(void *userdata, int id, int mx, int my);
 void har_set_ani_finished(void *userdata, int id);
 
+void har_phys_x(void *userdata, int velocity);
+void har_phys_y(void *userdata, int velocity);
+
 void har_add_ani_player(void *userdata, int id, int mx, int my) {
     har *har = userdata;
     animation *ani = array_get(&har->animations, id);
@@ -46,14 +49,28 @@ void har_set_ani_finished(void *userdata, int id) {
     }
 }
 
+void har_phys_x(void *userdata, int velocity) {
+    DEBUG("setting x velocity to %f", (float) velocity);
+    har *har = userdata;
+    physics_move(&har->phy, (float) velocity);
+}
+
+void har_phys_y(void *userdata, int velocity) {
+    DEBUG("setting y velocity to %f", (float) velocity);
+    har *har = userdata;
+    physics_jump(&har->phy, (float)velocity);
+}
+
 void har_switch_animation(har *har, int id) {
     animationplayer_free(&har->player);
     animationplayer_create(&har->player, id, array_get(&har->animations, id));
     animationplayer_set_direction(&har->player, har->direction);
-    animationplayer_run(&har->player);
     har->player.userdata = har;
     har->player.add_player = har_add_ani_player;
     har->player.del_player = har_set_ani_finished;
+    har->player.phys_x = har_phys_x;
+    har->player.phys_y = har_phys_y;
+    animationplayer_run(&har->player);
 }
 
 void phycb_fall(physics_state *state, void *userdata) {
@@ -195,7 +212,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     // Har properties
     h->health = h->health_max = 500;
     /*h->endurance = h->endurance_max = h->af->endurance;*/
-    h->endurance = h->endurance_max = 200;
+    h->endurance = h->endurance_max = 500;
     
     // Start player with animation 11
     h->player.x = h->phy.pos.x;
@@ -203,10 +220,12 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     animationplayer_create(&h->player, ANIM_IDLE, array_get(&h->animations, ANIM_IDLE));
     animationplayer_set_direction(&h->player, h->direction);
     animationplayer_set_repeat(&h->player, 1);
-    animationplayer_run(&h->player);
     h->player.userdata = h;
     h->player.add_player = har_add_ani_player;
     h->player.del_player = har_set_ani_finished;
+    h->player.phys_x = har_phys_x;
+    h->player.phys_y = har_phys_y;
+    animationplayer_run(&h->player);
     DEBUG("Har %d loaded!", id);
     return 0;
 }
@@ -229,24 +248,33 @@ void har_free(har *h) {
     animationplayer_free(&h->player);
 }
 
-void har_take_damage(har *har, int amount) {
+void har_take_damage(har *har, int amount, const char *string) {
     har->health -= amount / 2.0f;
-    har->endurance -= amount;
+    har->endurance -= amount / 2.0f;
     if(har->health <= 0) {
         har->health = 0;
     }
     if(har->endurance <= 0) {
         har->endurance = 0;
     }
-    DEBUG("HAR took %f damage, and its health is now %d", amount / 2.0f, har->health);
+    DEBUG("HAR took %f damage, and its health is now %d -- %d", amount / 2.0f, har->health, har->endurance);
     if (har->health == 0 && har->endurance == 0) {
         har_switch_animation(har, ANIM_DEFEAT);
     } else if (har->endurance == 0) {
         har_switch_animation(har, ANIM_STUNNED);
     } else {
-        har_switch_animation(har, ANIM_DAMAGE);
-        // play until end of frame 2 (zero based index)
-        animationplayer_set_end_frame(&har->player, 2);
+        animationplayer_free(&har->player);
+        animationplayer_create(&har->player, ANIM_DAMAGE, array_get(&har->animations, ANIM_DAMAGE));
+        animationplayer_set_direction(&har->player, har->direction);
+        if (string) {
+            animationplayer_set_string(&har->player, string);
+        }
+        har->player.userdata = har;
+        har->player.add_player = har_add_ani_player;
+        har->player.del_player = har_set_ani_finished;
+        har->player.phys_x = har_phys_x;
+        har->player.phys_y = har_phys_y;
+        animationplayer_run(&har->player);
     }
 }
 
@@ -345,7 +373,7 @@ void har_collision_har(har *har_a, har *har_b) {
             }
         }
         if (hit) {
-            har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17]);
+            har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17], har_a->af->moves[ani_id]->footer_string);
             if (har_b->health == 0 && har_b->endurance == 0) {
                 har_a->state = STATE_VICTORY;
                 har_switch_animation(har_a, ANIM_VICTORY);

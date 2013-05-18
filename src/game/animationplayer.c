@@ -107,13 +107,11 @@ int dist(int a, int b) {
 }
 
 int animationplayer_create(animationplayer *player, unsigned int id, animation *animation) {
-    sd_stringparser_frame param;
     player->snd = sound_state_create();
     player->ani = animation;
     player->id = id;
     player->direction = 1;
     player->end_frame = UINT32_MAX;
-    player->parser = sd_stringparser_create();
     player->ticks = 1;
     player->obj = 0;
     player->finished = 0;
@@ -125,9 +123,21 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
     player->slide_op.y_per_tick = 0;
     player->slide_op.y_rem = 0;
     player->add_player = NULL;
-    if(sd_stringparser_set_string(player->parser, animation->sdani->anim_string)) {
+    player->phys_x = NULL;
+    player->phys_y = NULL;
+    player->parser = NULL;
+    return animationplayer_set_string(player, animation->sdani->anim_string);
+}
+
+int animationplayer_set_string(animationplayer *player, const char *string) {
+    sd_stringparser_frame param;
+    if (player->parser) {
         sd_stringparser_delete(player->parser);
-        PERROR("Unable to initialize stringparser w/ '%s'", animation->sdani->anim_string);
+    }
+    player->parser = sd_stringparser_create();
+    if(sd_stringparser_set_string(player->parser, string)) {
+        sd_stringparser_delete(player->parser);
+        PERROR("Unable to initialize stringparser w/ '%s'", string);
         return 1;
     }
     sd_stringparser_peek(player->parser, 0, &param);
@@ -139,10 +149,10 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
         player->y = get(&param, "y=");
         DEBUG("Set player->y to %d", player->y);
     }
-
-    DEBUG("P: '%s'", animation->sdani->anim_string);
+    DEBUG("P: '%s'", string);
     return 0;
 }
+
 
 void animationplayer_free(animationplayer *player) {
     // Free sprite
@@ -248,8 +258,24 @@ void animationplayer_run(animationplayer *player) {
         if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));               }
         if(isset(f, "smf")) { cmd_music_off();                           }
         if(isset(f, "s"))   { cmd_sound(player, get(f, "s"));            }
-        
-        
+        if(isset(f, "v") && (isset(f, "x-") || isset(f, "y-"))) {
+            DEBUG("VOLOCITY CHANGED");
+        }
+        if (isset(f, "v")) {
+            if(isset(f, "y-") && player->phys_y != NULL) {
+                DEBUG("BL:AH 2222");
+                // velocity Y
+                // XXX uncomment for crashes
+                /*player->phys_y(player->userdata, get(f, "y-") * -1);*/
+            }
+            if(isset(f, "x-") && player->phys_x != NULL) {
+                DEBUG("BL:AH");
+                // velocity X
+                // XXX uncomment for crashes
+                /*player->phys_x(player->userdata, get(f, "x-") * -1 * player->direction);*/
+            }
+        }
+
         // Check if next frame contains X=nnn or Y=nnn 
         if(!param->is_final_frame) {
             sd_stringparser_peek(player->parser, param->id + 1, &n_param);
@@ -266,7 +292,7 @@ void animationplayer_run(animationplayer *player) {
                 }
                 if (slide != player->x) {
                     DEBUG("%d player->x was %d, interpolating to %d", player->id, player->x, slide);
-                    // scale distance by 100 so we can handle uneven interpolation (eg. 160/100)
+                    // scale distance by 101 so we can handle uneven interpolation (eg. 160/100)
                     player->slide_op.x_per_tick = (dist(player->x, slide) * 100) / param->duration;
                     DEBUG("%d moving %d per tick over %d ticks for total %d", player->id, player->slide_op.x_per_tick, param->duration, dist(player->x, slide));
                     player->slide_op.enabled = 1;

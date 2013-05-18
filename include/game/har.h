@@ -118,6 +118,6 @@ void har_render(har *har); // Called by scene.h render function at every frame r
 void har_act(har *har, int act_type); // Handle event passed from inputhandler
 void har_set_direction(har *har, int direction);
 void har_collision_har(har *har_a, har *har_b);
-void har_take_damage(har *har, int amount);
+void har_take_damage(har *har, int amount, const char *string);
 
 #endif // _HAR_H
