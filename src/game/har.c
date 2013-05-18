@@ -13,6 +13,7 @@ void har_add_ani_player(void *userdata, int id, int mx, int my);
 void har_set_ani_finished(void *userdata, int id);
 
 void har_phys(void *userdata, int x, int y);
+void har_pos(void *userdata, int x, int y);
 
 void har_add_ani_player(void *userdata, int id, int mx, int my) {
     har *har = userdata;
@@ -55,6 +56,12 @@ void har_phys(void *userdata, int x, int y) {
     physics_tick(&har->phy);
 }
 
+void har_pos(void *userdata, int x, int y) {
+    har *har = userdata;
+    har->phy.pos.x = x;
+    har->phy.pos.y = y;
+}
+
 void har_switch_animation(har *har, int id) {
     animationplayer_free(&har->player);
     animationplayer_create(&har->player, id, array_get(&har->animations, id));
@@ -63,6 +70,7 @@ void har_switch_animation(har *har, int id) {
     har->player.add_player = har_add_ani_player;
     har->player.del_player = har_set_ani_finished;
     har->player.phys = har_phys;
+    har->player.pos = har_pos;
     animationplayer_run(&har->player);
 }
 
@@ -228,6 +236,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     h->player.add_player = har_add_ani_player;
     h->player.del_player = har_set_ani_finished;
     h->player.phys = har_phys;
+    h->player.pos = har_pos;
     animationplayer_run(&h->player);
     DEBUG("Har %d loaded!", id);
     return 0;
@@ -276,6 +285,7 @@ void har_take_damage(har *har, int amount, const char *string) {
         har->player.add_player = har_add_ani_player;
         har->player.del_player = har_set_ani_finished;
         har->player.phys = har_phys;
+        har->player.pos = har_pos;
         har->state = STATE_RECOIL;
         animationplayer_run(&har->player);
     }
@@ -288,7 +298,7 @@ void har_collision_har(har *har_a, har *har_b) {
     sd_animation *ani = har_a->af->moves[ani_id]->animation;
 
     int other_ani_id = har_b->player.id;
-    if (other_ani_id == ANIM_DAMAGE) {
+    if (har_b->state == STATE_RECOIL) {
         // can't kick them while they're down
         return;
     }

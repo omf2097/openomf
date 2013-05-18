@@ -258,7 +258,7 @@ void animationplayer_run(animationplayer *player) {
         if(isset(f, "smf")) { cmd_music_off();                           }
         if(isset(f, "s"))   { cmd_sound(player, get(f, "s"));            }
         if (isset(f, "v") && player->phys != NULL) {
-            int x, y = 0;
+            int x = 0, y = 0;
             if(isset(f, "y-")) {
                 y = get(f, "y-") * -1;
             } else if(isset(f, "y")) {
@@ -274,37 +274,26 @@ void animationplayer_run(animationplayer *player) {
                 player->phys(player->userdata, x, y);
             }
         }
-        if (isset(f, "v") == 0 && (isset(f, "x") || isset(f, "y") || isset(f, "x-") || isset(f, "y-"))) {
+        if (isset(f, "v") == 0 && (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
             // check for relative X interleaving
             int x = 0, y = 0;
             if(isset(f, "y-")) {
                 y = get(f, "y-") * -1;
-            } else if(isset(f, "y")) {
-                y = get(f, "y");
+            } else if(isset(f, "y+")) {
+                y = get(f, "y+");
             }
             if(isset(f, "x-")) {
                 x = get(f, "x-") * -1 * player->direction;
-            } else if(isset(f, "x")) {
-                x = get(f, "x") * player->direction;
+            } else if(isset(f, "x+")) {
+                x = get(f, "x+") * player->direction;
             }
 
             DEBUG("x %d, y %d", x, y);
-
-            if (x) {
-                // pretty sure the physics engine clobbers this
+            if (player->pos != NULL) {
+                player->pos(player->userdata, player->x+x, player->y+y);
+            } else {
                 player->x += x;
-                /*player->phys->pos.x += x;*/
-                /*player->slide_op.x_per_tick = x * 100 / param->duration;*/
-                DEBUG("%d player->x was %d, interpolating to %d - %d", player->id, player->x, player->x + x, player->slide_op.x_per_tick);
-                /*player->slide_op.enabled = 1;*/
-            }
-            if (y) {
-                // pretty sure the physics engine clobbers this
                 player->y += y;
-                /*player->phys->pos.y += y;*/
-                /*player->slide_op.y_per_tick = y * 100 / param->duration;*/
-                DEBUG("%d player->y was %d, interpolating to %d - %d", player->id, player->y, player->y + y, player->slide_op.y_per_tick);
-                /*player->slide_op.enabled = 1;*/
             }
         }
 
