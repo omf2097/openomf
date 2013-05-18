@@ -291,14 +291,20 @@ void animationplayer_run(animationplayer *player) {
             DEBUG("x %d, y %d", x, y);
 
             if (x) {
-                player->slide_op.x_per_tick = x * 100 / param->duration;
+                // pretty sure the physics engine clobbers this
+                player->x += x;
+                /*player->phys->pos.x += x;*/
+                /*player->slide_op.x_per_tick = x * 100 / param->duration;*/
                 DEBUG("%d player->x was %d, interpolating to %d - %d", player->id, player->x, player->x + x, player->slide_op.x_per_tick);
-                player->slide_op.enabled = 1;
+                /*player->slide_op.enabled = 1;*/
             }
             if (y) {
-                player->slide_op.y_per_tick = y * 100 / param->duration;
+                // pretty sure the physics engine clobbers this
+                player->y += y;
+                /*player->phys->pos.y += y;*/
+                /*player->slide_op.y_per_tick = y * 100 / param->duration;*/
                 DEBUG("%d player->y was %d, interpolating to %d - %d", player->id, player->y, player->y + y, player->slide_op.y_per_tick);
-                player->slide_op.enabled = 1;
+                /*player->slide_op.enabled = 1;*/
             }
         }
 

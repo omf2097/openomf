@@ -414,12 +414,6 @@ void har_collision_har(har *har_a, har *har_b) {
 
 void har_tick(har *har) {
 
-    har->player.x = har->phy.pos.x;
-    if(physics_is_in_air(&har->phy)) {
-        har->player.y = har->phy.pos.y - 20;
-    } else {
-        har->player.y = har->phy.pos.y;
-    }
     har->tick++;
 
     iterator it;
@@ -431,6 +425,12 @@ void har_tick(har *har) {
 
     if(har->tick > 3) {
         physics_tick(&har->phy);
+        har->player.x = har->phy.pos.x;
+        if(physics_is_in_air(&har->phy)) {
+            har->player.y = har->phy.pos.y - 20;
+        } else {
+            har->player.y = har->phy.pos.y;
+        }
         animationplayer_run(&har->player);
         har->tick = 0;
         //regenerate endurance if not attacking, and not dead
