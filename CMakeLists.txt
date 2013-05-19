@@ -43,6 +43,7 @@ add_executable(openomf
     src/game/settings.c
     src/game/scene.c
     src/game/har.c
+    src/game/particle.c
     src/game/animation.c
     src/game/animationplayer.c
     src/game/scenes/progressbar.c
