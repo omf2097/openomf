@@ -224,7 +224,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     // Har properties
     h->health = h->health_max = 500;
     /*h->endurance = h->endurance_max = h->af->endurance;*/
-    h->endurance = h->endurance_max = 500;
+    h->endurance = h->endurance_max = 200;
     
     // Start player with animation 11
     h->player.x = h->phy.pos.x;
@@ -262,7 +262,7 @@ void har_free(har *h) {
 
 void har_take_damage(har *har, int amount, const char *string) {
     har->health -= amount / 2.0f;
-    har->endurance -= amount / 2.0f;
+    har->endurance -= amount;
     if(har->health <= 0) {
         har->health = 0;
     }
@@ -386,8 +386,13 @@ void har_collision_har(har *har_a, har *har_b) {
             }
         }
         if (hit || har_a->af->moves[ani_id]->unknown[13] == CAT_CLOSE) {
-            // close moves alwaya hit, for now
+            // close moves always hit, for now
             har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17], har_a->af->moves[ani_id]->footer_string);
+            // check if there's a subsequent animation to change to, eg spike charge
+            if (har_a->af->moves[ani_id]->unknown[12] != 0) {
+                DEBUG("chained animation detected");
+                har_switch_animation(har_a, har_a->af->moves[ani_id]->unknown[12]);
+            }
             if (har_b->health == 0 && har_b->endurance == 0) {
                 har_a->state = STATE_VICTORY;
                 har_switch_animation(har_a, ANIM_VICTORY);
@@ -450,12 +455,6 @@ void har_tick(har *har) {
             har->endurance++;
         }
     }
-
-    /*if (har->player.id == ANIM_DAMAGE && animationplayer_get_frame(&har->player) > 4) {*/
-        // bail out of the 'hit' animation early, because the hit animation
-        // contains ALL the hit aniamtions one after the other
-        /*har->player.finished = 1;*/
-    /*}*/
 
     if(har->player.finished) {
         if (har->state == STATE_RECOIL) {
