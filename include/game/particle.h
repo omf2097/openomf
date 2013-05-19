@@ -9,7 +9,7 @@
 /* A few thoughts:
  * - Particle vs. Scene, particle vs. Har collisions should probably be handled in har.c
  * - Particle vs. Particle collisions are probably not necessary
- * - Particle should notify finished state by calling "finished" callback.
+ * - Particle should notify finished state by settings finshed flag to 1.
  */
 
 typedef struct particle_t particle;
@@ -17,14 +17,11 @@ typedef struct particle_t particle;
 struct particle_t {
     animationplayer player;
     physics_state phy;
-    
-    // Callbacks
-    void *userdata;
-    // "finished" is called when particle has finished everything and can be removed
-    void (*finished)(particle *p, void *userdata); 
+    int finished;
+    unsigned int id;
 };
 
-int particle_load(particle *p, unsigned int id, animation *ani, int x, int y); 
+int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction); 
 void particle_free(particle *p);
 void particle_tick(particle *p);
 void particle_render(particle *p);

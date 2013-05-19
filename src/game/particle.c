@@ -1,8 +1,12 @@
 #include "game/particle.h"
 
-int particle_load(particle *p, unsigned int id, animation *ani, int x, int y) {
+int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction) {
     physics_init(&p->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, 1.0f, p);
-    return animationplayer_create(&p->player, id, ani);
+    animationplayer_create(&p->player, id, ani);
+    animationplayer_set_direction(&p->player, direction);
+    p->finished = 0;
+    p->id = id;
+    return 0;
 }
 
 void particle_free(particle *p) {

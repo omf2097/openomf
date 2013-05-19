@@ -111,7 +111,6 @@ typedef struct har_t {
     int close; // are we close to the other player?
 
     // TODO: Kill child_players, and start using particles.
-    list child_players; // projectiles and the like
     list particles;
 } har;
 

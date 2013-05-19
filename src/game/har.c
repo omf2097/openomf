@@ -16,21 +16,19 @@ void har_phys(void *userdata, int x, int y);
 void har_pos(void *userdata, int x, int y);
 
 void har_add_ani_player(void *userdata, int id, int mx, int my) {
+    int px,py;
     har *har = userdata;
     animation *ani = array_get(&har->animations, id);
     if(ani != NULL) {
-        animationplayer np;
         DEBUG("spawning %id at %d + %d +%d", id, ani->sdani->start_x, mx, har->phy.pos.x);
-        np.x = ani->sdani->start_x + mx + har->phy.pos.x;
-        np.y = ani->sdani->start_y + my + har->phy.pos.y;
-        animationplayer_create(&np, id, ani);
-        animationplayer_set_direction(&np, har->direction);
-        np.userdata = userdata;
-        np.add_player = har_add_ani_player;
-        np.del_player = har_set_ani_finished;
-        list_append(&har->child_players, &np, sizeof(animationplayer));
-        animationplayer_run(&np);
-        DEBUG("Create animation %d @ x,y = %d,%d", id, np.x, np.y);
+        px = ani->sdani->start_x + mx + har->phy.pos.x;
+        py = ani->sdani->start_y + my + har->phy.pos.y;
+        
+        particle p;
+        particle_create(&p, id, ani, px, py, har->direction);
+        particle_tick(&p);
+        list_append(&har->particles, &p, sizeof(particle));
+        DEBUG("Create animation %d @ x,y = %d,%d", id, p.phy.pos.x, p.phy.pos.y);
         return;
     } 
 }
@@ -38,12 +36,12 @@ void har_add_ani_player(void *userdata, int id, int mx, int my) {
 void har_set_ani_finished(void *userdata, int id) {
     har *har = userdata;
     iterator it;
-    animationplayer *tmp = 0;
+    particle *p = 0;
     
-    list_iter_begin(&har->child_players, &it);
-    while((tmp = iter_next(&it)) != NULL) {
-        if(tmp->id == id) {
-            tmp->finished = 1;
+    list_iter_begin(&har->particles, &it);
+    while((p = iter_next(&it)) != NULL) {
+        if(p->id == id) {
+            p->finished = 1;
             return;
         }
     }
@@ -219,7 +217,6 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
         }
     }
     
-    list_create(&h->child_players); // TODO: REMOVE
     list_create(&h->particles);
 
     // Har properties
@@ -258,9 +255,6 @@ void har_free(har *h) {
         free(ani);
     }
     array_free(&h->animations);
-    
-    // free projectiles
-    list_free(&h->child_players); // TODO: Remove this
     
     // Free particles
     list_iter_begin(&h->particles, &it);
@@ -446,14 +440,6 @@ void har_tick(har *har) {
 
     har->tick++;
 
-    // Projectile collisions
-    // TODO: Remove this
-    animationplayer *tmp = 0;
-    list_iter_begin(&har->child_players, &it);
-    while((tmp = iter_next(&it)) != NULL) {
-        animationplayer_run(tmp);
-    }
-    
     // Handle ticks
     if(har->tick > 3) {
         // Particles
@@ -512,14 +498,7 @@ void har_tick(har *har) {
 void har_render(har *har) {
     iterator it;
     particle *p;
-    
-    // TODO: Remove this
-    animationplayer *tmp = 0;
-    list_iter_begin(&har->child_players, &it);
-    while((tmp = iter_next(&it)) != NULL) {
-        animationplayer_render(tmp);
-    }
-    
+
     // Render particles
     list_iter_begin(&har->particles, &it);
     while((p = iter_next(&it)) != NULL) {
