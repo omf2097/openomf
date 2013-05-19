@@ -5,8 +5,12 @@
 #include "game/animation.h"
 #include "game/animationplayer.h"
 #include "game/physics/physics.h"
-#include "game/har.h"
-#include "game/scene.h"
+
+/* A few thoughts:
+ * - Particle vs. Scene, particle vs. Har collisions should probably be handled in har.c
+ * - Particle vs. Particle collisions are probably not necessary
+ * - Particle should notify finished state by calling "finished" callback.
+ */
 
 typedef struct particle_t particle;
 
@@ -20,11 +24,9 @@ struct particle_t {
     void (*finished)(particle *p, void *userdata); 
 };
 
-int particle_load(particle *p, unsigned int id, animation *ani); 
+int particle_load(particle *p, unsigned int id, animation *ani, int x, int y); 
 void particle_free(particle *p);
 void particle_tick(particle *p);
 void particle_render(particle *p);
-void particle_collision_har(particle *p, har *h);
-void particle_collision_scene(particle *p, scene *c);
 
 #endif // _PARTICLE_H

@@ -219,7 +219,8 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
         }
     }
     
-    list_create(&h->child_players);
+    list_create(&h->child_players); // TODO: REMOVE
+    list_create(&h->particles);
 
     // Har properties
     h->health = h->health_max = 500;
@@ -243,18 +244,30 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
 }
 
 void har_free(har *h) {
+    iterator it;
+    animation *ani;
+    particle *p;
+
     // Free AF
     sd_af_delete(h->af);
     
     // Free animations
-    animation *ani = 0;
-    iterator it;
     array_iter_begin(&h->animations, &it);
     while((ani = iter_next(&it)) != 0) {
         animation_free(ani);
         free(ani);
     }
     array_free(&h->animations);
+    
+    // free projectiles
+    list_free(&h->child_players); // TODO: Remove this
+    
+    // Free particles
+    list_iter_begin(&h->particles, &it);
+    while((p = iter_next(&it)) != NULL) {
+        particle_free(p);
+    }
+    list_free(&h->particles);
     
     // Unload player
     animationplayer_free(&h->player);
@@ -423,17 +436,28 @@ void har_collision_har(har *har_a, har *har_b) {
 }
 
 void har_tick(har *har) {
+    iterator it;
+    particle *p;
 
     har->tick++;
 
-    iterator it;
+    // Projectile collisions
+    // TODO: Remove this
     animationplayer *tmp = 0;
     list_iter_begin(&har->child_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
         animationplayer_run(tmp);
     }
-
+    
+    // Handle ticks
     if(har->tick > 3) {
+        // Particles
+        list_iter_begin(&har->particles, &it);
+        while((p = iter_next(&it)) != NULL) {
+            particle_tick(p);
+        }
+    
+        // Har physics
         physics_tick(&har->phy);
         har->player.x = har->phy.pos.x;
         if(physics_is_in_air(&har->phy)) {
@@ -441,6 +465,8 @@ void har_tick(har *har) {
         } else {
             har->player.y = har->phy.pos.y;
         }
+        
+        // Animationplayer ticks
         animationplayer_run(&har->player);
         har->tick = 0;
         //regenerate endurance if not attacking, and not dead
@@ -486,12 +512,22 @@ void har_tick(har *har) {
 
 void har_render(har *har) {
     iterator it;
+    particle *p;
+    
+    // TODO: Remove this
     animationplayer *tmp = 0;
     list_iter_begin(&har->child_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
         animationplayer_render(tmp);
     }
+    
+    // Render particles
+    list_iter_begin(&har->particles, &it);
+    while((p = iter_next(&it)) != NULL) {
+        particle_render(p);
+    }
 
+    // Render HAR
     animationplayer_render(&har->player);
 
 }

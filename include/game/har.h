@@ -7,6 +7,7 @@
 #include "game/animationplayer.h"
 //#include "game/scene.h"
 #include "game/physics/physics.h"
+#include "game/particle.h"
 
 enum {
     ACT_KICK,
@@ -109,7 +110,9 @@ typedef struct har_t {
 
     int close; // are we close to the other player?
 
+    // TODO: Kill child_players, and start using particles.
     list child_players; // projectiles and the like
+    list particles;
 } har;
 
 void har_free(har *har);
@@ -119,6 +122,7 @@ void har_render(har *har); // Called by scene.h render function at every frame r
 void har_act(har *har, int act_type); // Handle event passed from inputhandler
 void har_set_direction(har *har, int direction);
 void har_collision_har(har *har_a, har *har_b);
+void har_collision_particle(har *har); // TODO: Think about this
 void har_take_damage(har *har, int amount, const char *string);
 
 #endif // _HAR_H
