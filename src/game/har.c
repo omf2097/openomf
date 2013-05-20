@@ -311,7 +311,8 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
     animation *scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL);
     for(int i = 0; i < 4; i++) {
         particle *p = malloc(sizeof(particle));
-        particle_create(p, ANIM_SCRAP_METAL, scrap_ani, x, y, direction, 1.0f);
+        scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL+(i%3));
+        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, x, y, direction, 1.0f);
         p->phy.spd.y = direction * (-3.0 / i);
         p->phy.spd.x = direction * (5.0 / i);
         list_append(&h->particles, &p, sizeof(particle*));
