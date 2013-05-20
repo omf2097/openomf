@@ -305,13 +305,12 @@ void har_take_damage(har *har, int amount, const char *string) {
 void har_spawn_scrap(har *h, int x, int y, int direction) {
     // Spawn scrap!
     animation *scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL);
-    for(int i = 0; i < 20; i++) {
-        particle p;
-        particle_create(&p, ANIM_SCRAP_METAL, scrap_ani, x, y, direction, 1.0f);
-        p.phy.spd.y = -3.0f;
-        p.phy.spd.x = direction * (1.0 / i);
-        particle_tick(&p);
-        list_append(&h->particles, &p, sizeof(particle));
+    for(int i = 0; i < 4; i++) {
+        particle *p = malloc(sizeof(particle));
+        particle_create(p, ANIM_SCRAP_METAL, scrap_ani, x, y, direction, 1.0f);
+        p->phy.spd.y = direction * (-3.0 / i);
+        p->phy.spd.x = direction * (5.0 / i);
+        list_append(&h->particles, &p, sizeof(particle*));
     }
 }
 
@@ -395,6 +394,12 @@ void har_collision_har(har *har_a, har *har_b) {
                         if (hitpixel > 0 && hitpixel < 48) {
                             // this is a HAR pixel
 
+                            // TODO: Move this elsewhere, possibly to har_take_damage
+                            har_spawn_scrap(har_b, 
+                                            har_b->phy.pos.x + (sprite->img->w - xcoord), 
+                                            har_b->phy.pos.y - (sprite->img->h - ycoord), 
+                                            har_a->direction);
+                            
                             DEBUG("hit point was %d, %d -- %d", xcoord, ycoord, h+sprite->pos_y);
                             hit = 1;
                             if (!har_a->cd_debug_enabled) {

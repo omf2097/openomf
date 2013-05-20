@@ -18,6 +18,7 @@ int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, 
     physics_init(&p->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, gravity, p);
     p->phy.wall_hit = particle_wall_hit;
     p->phy.floor_hit = particle_floor_hit;
+    p->phy.vertical_state = PHY_VSTATE_JUMP;
     
     animationplayer_create(&p->player, id, ani);
     animationplayer_set_direction(&p->player, direction);
