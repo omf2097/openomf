@@ -21,7 +21,7 @@ struct particle_t {
     unsigned int id;
 };
 
-int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction); 
+int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction, float gravity); 
 void particle_free(particle *p);
 void particle_tick(particle *p);
 void particle_render(particle *p);

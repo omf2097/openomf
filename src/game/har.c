@@ -24,11 +24,14 @@ void har_add_ani_player(void *userdata, int id, int mx, int my) {
         px = ani->sdani->start_x + mx + har->phy.pos.x;
         py = ani->sdani->start_y + my + har->phy.pos.y;
         
-        particle p;
-        particle_create(&p, id, ani, px, py, har->direction);
-        particle_tick(&p);
-        list_append(&har->particles, &p, sizeof(particle));
-        DEBUG("Create animation %d @ x,y = %d,%d", id, p.phy.pos.x, p.phy.pos.y);
+        particle *p = malloc(sizeof(particle));
+        particle_create(p, id, ani, px, py, har->direction, 0.0f);
+        p->phy.spd.x = har->direction * 20.0f;
+        p->phy.spd.y = 0.0f;
+        particle_tick(p);
+        list_append(&har->particles, &p, sizeof(particle*));
+        
+        DEBUG("Create animation %d @ pos = %d,%d, spd = %f,%f", id, p->phy.pos.x, p->phy.pos.y, p->phy.spd.x, p->phy.spd.y);
         return;
     } 
 }
@@ -36,12 +39,12 @@ void har_add_ani_player(void *userdata, int id, int mx, int my) {
 void har_set_ani_finished(void *userdata, int id) {
     har *har = userdata;
     iterator it;
-    particle *p = 0;
+    particle **p = 0;
     
     list_iter_begin(&har->particles, &it);
     while((p = iter_next(&it)) != NULL) {
-        if(p->id == id) {
-            p->finished = 1;
+        if((*p)->id == id) {
+            (*p)->finished = 1;
             return;
         }
     }
@@ -243,7 +246,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
 void har_free(har *h) {
     iterator it;
     animation *ani;
-    particle *p;
+    particle **p;
 
     // Free AF
     sd_af_delete(h->af);
@@ -259,7 +262,8 @@ void har_free(har *h) {
     // Free particles
     list_iter_begin(&h->particles, &it);
     while((p = iter_next(&it)) != NULL) {
-        particle_free(p);
+        particle_free(*p);
+        free(*p);
     }
     list_free(&h->particles);
     
@@ -298,6 +302,19 @@ void har_take_damage(har *har, int amount, const char *string) {
     }
 }
 
+void har_spawn_scrap(har *h, int x, int y, int direction) {
+    // Spawn scrap!
+    animation *scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL);
+    for(int i = 0; i < 20; i++) {
+        particle p;
+        particle_create(&p, ANIM_SCRAP_METAL, scrap_ani, x, y, direction, 1.0f);
+        p.phy.spd.y = -3.0f;
+        p.phy.spd.x = direction * (1.0 / i);
+        particle_tick(&p);
+        list_append(&h->particles, &p, sizeof(particle));
+    }
+}
+
 void har_collision_har(har *har_a, har *har_b) {
     // Make stuff easier to get to :)
     int ani_id = har_a->player.id;
@@ -322,31 +339,30 @@ void har_collision_har(har *har_a, har *har_b) {
         int hit = 0;
         int boxhit = 0;
 
-       if (har_b->direction == -1) {
+        if (har_b->direction == -1) {
             x = har_b->phy.pos.x + ((sprite->pos_x * har_b->direction) - sprite->img->w);
         }
 
+        sd_vga_image *vga = sd_sprite_vga_decode(sprite->img);
 
-       sd_vga_image *vga = sd_sprite_vga_decode(sprite->img);
+        // XXX the graphical collision detection debug stuff below is commented out because it is a little buggy
 
-       // XXX the graphical collision detection debug stuff below is commented out because it is a little buggy
+        if(har_a->cd_debug_enabled) {
+            image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));
+            // draw the bounding box
+            image_rect(&har_a->cd_debug, x+50, y+50, w, h, color_create(0, 0, 0, 255));
 
-       if(har_a->cd_debug_enabled) {
-           image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));
-           // draw the bounding box
-           image_rect(&har_a->cd_debug, x+50, y+50, w, h, color_create(0, 0, 0, 255));
-
-           // draw the 'ghost'
-           for (int i = 0; i < vga->w*vga->h; i++) {
-               if (vga->data[i] > 0 && vga->data[i] < 48) {
-                   if (har_b->direction == -1) {
-                       image_set_pixel(&har_a->cd_debug, x + 50 + (vga->w - (i % vga->w)), 50 + y + (i / vga->w), color_create(255, 255, 255, 100));
-                   } else {
-                       image_set_pixel(&har_a->cd_debug, x + 50 + (i % vga->w), 50 + y + (i / vga->w), color_create(255, 255, 255, 100));
-                   }
-               }
-           }
-       }
+            // draw the 'ghost'
+            for (int i = 0; i < vga->w*vga->h; i++) {
+                if (vga->data[i] > 0 && vga->data[i] < 48) {
+                    if (har_b->direction == -1) {
+                        image_set_pixel(&har_a->cd_debug, x + 50 + (vga->w - (i % vga->w)), 50 + y + (i / vga->w), color_create(255, 255, 255, 100));
+                    } else {
+                        image_set_pixel(&har_a->cd_debug, x + 50 + (i % vga->w), 50 + y + (i / vga->w), color_create(255, 255, 255, 100));
+                    }
+                }
+            }
+        }
 
         image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x + 50, har_a->phy.pos.y + 50, color_create(255, 255, 0, 255));
         image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x + 50 , har_b->phy.pos.y + 50, color_create(255, 255, 0, 255));
@@ -436,7 +452,7 @@ void har_collision_har(har *har_a, har *har_b) {
 
 void har_tick(har *har) {
     iterator it;
-    particle *p;
+    particle **p;
 
     har->tick++;
 
@@ -445,7 +461,14 @@ void har_tick(har *har) {
         // Particles
         list_iter_begin(&har->particles, &it);
         while((p = iter_next(&it)) != NULL) {
-            particle_tick(p);
+            if((*p)->finished) {
+                DEBUG("Freeing finished particle # %d", (*p)->id);
+                particle_free(*p);
+                free(*p);
+                list_delete(&har->particles, &it);
+            } else {
+                particle_tick(*p);
+            }
         }
     
         // Har physics
@@ -497,12 +520,12 @@ void har_tick(har *har) {
 
 void har_render(har *har) {
     iterator it;
-    particle *p;
+    particle **p;
 
     // Render particles
     list_iter_begin(&har->particles, &it);
     while((p = iter_next(&it)) != NULL) {
-        particle_render(p);
+        particle_render(*p);
     }
 
     // Render HAR
