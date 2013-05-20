@@ -80,6 +80,7 @@ void har_switch_animation(har *har, int id) {
     har->player.del_player = har_set_ani_finished;
     har->player.phys = har_phys;
     har->player.pos = har_pos;
+    har->hit_this_time = 0;
     animationplayer_run(&har->player);
 }
 
@@ -250,6 +251,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     h->player.del_player = har_set_ani_finished;
     h->player.phys = har_phys;
     h->player.pos = har_pos;
+    h->hit_this_time = 0;
     animationplayer_run(&h->player);
     DEBUG("Har %d loaded!", id);
     return 0;
@@ -295,8 +297,11 @@ void har_take_damage(har *har, int amount, const char *string) {
     DEBUG("HAR took %f damage, and its health is now %d -- %d", amount / 2.0f, har->health, har->endurance);
     if (har->health == 0 && har->endurance == 0) {
         har_switch_animation(har, ANIM_DEFEAT);
-    } else if (har->endurance == 0) {
+    } else if (har->endurance == 0 && har->state != STATE_STUNNED) {
+        har->state = STATE_STUNNED;
         har_switch_animation(har, ANIM_STUNNED);
+        // TODO time out after some time...
+        animationplayer_set_repeat(&har->player, 1);
     } else {
         animationplayer_free(&har->player);
         animationplayer_create(&har->player, ANIM_DAMAGE, array_get(&har->animations, ANIM_DAMAGE));
@@ -304,11 +309,16 @@ void har_take_damage(har *har, int amount, const char *string) {
         if (string) {
             animationplayer_set_string(&har->player, string);
         }
+        har->hit_this_time = 0;
         har->player.userdata = har;
         har->player.add_player = har_add_ani_player;
         har->player.del_player = har_set_ani_finished;
         har->player.phys = har_phys;
         har->player.pos = har_pos;
+        if (har->state == STATE_STUNNED) {
+            // hit while stunned, refill the endurance meter
+            har->endurance = har->endurance_max;
+        }
         har->state = STATE_RECOIL;
         animationplayer_run(&har->player);
     }
@@ -334,8 +344,9 @@ void har_collision_har(har *har_a, har *har_b) {
     sd_animation *ani = har_a->af->moves[ani_id]->animation;
 
     int other_ani_id = har_b->player.id;
-    if (har_b->state == STATE_RECOIL) {
+    if (har_b->state == STATE_RECOIL || har_a->hit_this_time) {
         // can't kick them while they're down
+        // also can't hit other har twice with one move?
         return;
     }
 
@@ -425,8 +436,10 @@ void har_collision_har(har *har_a, har *har_b) {
                 }
             }
         }
+        // TODO during SCRAP/DESTRUCTION, apply the correct move string to the other HAR
         if (hit || har_a->af->moves[ani_id]->unknown[13] == CAT_CLOSE) {
             // close moves always hit, for now
+            har_a->hit_this_time = 1;
             har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17], har_a->af->moves[ani_id]->footer_string);
             // check if there's a subsequent animation to change to, eg spike charge
             if (har_a->af->moves[ani_id]->unknown[12] != 0) {

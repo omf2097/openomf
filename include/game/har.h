@@ -85,6 +85,7 @@ enum {
     STATE_CROUCHING,
     STATE_JUMPING,
     STATE_RECOIL,
+    STATE_STUNNED,
     STATE_VICTORY,
     STATE_SCRAP,
     STATE_DESTRUCTION
@@ -103,6 +104,8 @@ typedef struct har_t {
     int endurance, endurance_max;
     
     int tick; // TEMPORARY TO SLOW DOWN ANIMATION
+
+    int hit_this_time; // did the current animation score a hit?
 
     unsigned int cd_debug_enabled;
     image cd_debug;
