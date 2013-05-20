@@ -28,12 +28,12 @@ void keyboard_tick(controller *ctrl) {
         har_act(ctrl->har, ACT_JUMP);
         handled = 1;
     }
-    if(state[k->keys->right] && !state[k->keys->left] && !state[k->keys->up] &&
+    if(state[k->keys->right] && !state[k->keys->left] &&
             !state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {
         har_act(ctrl->har, ACT_WALKRIGHT);
         handled = 1;
     }
-    if(state[k->keys->left] && !state[k->keys->right] && !state[k->keys->up] &&
+    if(state[k->keys->left] && !state[k->keys->right] &&
             !state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {
         har_act(ctrl->har, ACT_WALKLEFT);
         handled = 1;

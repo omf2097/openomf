@@ -84,10 +84,14 @@ void phycb_fall(physics_state *state, void *userdata) {
 }
 
 void phycb_floor_hit(physics_state *state, void *userdata, int flight_mode) {
+    DEBUG("Hit the floor");
+
     har *h = userdata;
     h->player.finished = 1;
     if (h->state == STATE_JUMPING) {
         h->state = STATE_STANDING;
+        // XXX-Hunter adding this line seem to have fixed the bunnyhop bug
+        physics_move(&h->phy, 0.0f);
         DEBUG("stopped jumping");
     } else if (h->state == STATE_RECOIL) {
         DEBUG("crashed into ground");
