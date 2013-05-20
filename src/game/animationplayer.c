@@ -124,6 +124,7 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
     player->slide_op.y_rem = 0;
     player->add_player = NULL;
     player->phys = NULL;
+    player->pos = NULL;
     player->parser = NULL;
     return animationplayer_set_string(player, animation->sdani->anim_string);
 }
