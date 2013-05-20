@@ -33,7 +33,7 @@ sd_rgba_image* sub_image(sd_vga_image *image, sd_palette *pal, int x, int y, int
     return out;
 }
 
-void vs_add_ani_player(void *userdata, int id, int mx, int my) {
+void vs_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
     scene *scene = userdata;
     animation *ani = array_get(&scene->animations, id);
     if(ani != NULL) {

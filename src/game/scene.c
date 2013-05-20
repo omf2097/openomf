@@ -20,7 +20,7 @@
 #include "game/animationplayer.h"
 
 // Internal functions
-void scene_add_ani_player(void *userdata, int id, int mx, int my);
+void scene_add_ani_player(void *userdata, int id, int mx, int my, int mg);
 void scene_set_ani_finished(void *userdata, int id);
 void fixup_palette(sd_palette *palette);
 
@@ -186,7 +186,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
     return 0;
 }
 
-void scene_add_ani_player(void *userdata, int id, int mx, int my) {
+void scene_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
     scene *sc = userdata;
     animation *ani = array_get(&sc->animations, id);
     if(ani != NULL) {

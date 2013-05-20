@@ -19,6 +19,7 @@ struct particle_t {
     physics_state phy;
     int finished;
     unsigned int id;
+    animation *successor;
 };
 
 int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction, float gravity); 

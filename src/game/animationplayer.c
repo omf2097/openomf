@@ -239,7 +239,8 @@ void animationplayer_run(animationplayer *player) {
         if(isset(f, "m") && player->add_player != NULL) {
             int mx = isset(f, "mx") ? get(f, "mx") : 0;
             int my = isset(f, "my") ? get(f, "my") : 0;
-            player->add_player(player->userdata, get(f, "m"), mx, my);
+            int mg = isset(f, "mg") ? get(f, "mg") : 0;
+            player->add_player(player->userdata, get(f, "m"), mx, my, mg);
         }
         if(isset(f, "md") && player->del_player != NULL) { 
             player->del_player(player->userdata, get(f, "md"));
@@ -262,13 +263,13 @@ void animationplayer_run(animationplayer *player) {
             int x = 0, y = 0;
             if(isset(f, "y-")) {
                 y = get(f, "y-") * -1;
-            } else if(isset(f, "y")) {
-                y = get(f, "y");
+            } else if(isset(f, "y+")) {
+                y = get(f, "y+");
             }
             if(isset(f, "x-")) {
                 x = get(f, "x-") * -1 * player->direction;
-            } else if(isset(f, "x")) {
-                x = get(f, "x") * player->direction;
+            } else if(isset(f, "x+")) {
+                x = get(f, "x+") * player->direction;
             }
 
             if (x || y) {

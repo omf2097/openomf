@@ -9,25 +9,33 @@
 #include <string.h>
 
 // Internal functions
-void har_add_ani_player(void *userdata, int id, int mx, int my);
+void har_add_ani_player(void *userdata, int id, int mx, int my, int mg);
 void har_set_ani_finished(void *userdata, int id);
 
 void har_phys(void *userdata, int x, int y);
 void har_pos(void *userdata, int x, int y);
 
-void har_add_ani_player(void *userdata, int id, int mx, int my) {
+void har_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
     int px,py;
     har *har = userdata;
     animation *ani = array_get(&har->animations, id);
     if(ani != NULL) {
-        DEBUG("spawning %id at %d + %d +%d", id, ani->sdani->start_x, mx, har->phy.pos.x);
+        DEBUG("spawning %d at %d + %d +%d", id, ani->sdani->start_x, mx, har->phy.pos.x);
+        DEBUG("spawning %d at %d + %d +%d", id, ani->sdani->start_y, my, har->phy.pos.y);
         px = ani->sdani->start_x + mx + har->phy.pos.x;
         py = ani->sdani->start_y + my + har->phy.pos.y;
         
         particle *p = malloc(sizeof(particle));
-        particle_create(p, id, ani, px, py, har->direction, 0.0f);
-        p->phy.spd.x = har->direction * 20.0f;
-        p->phy.spd.y = 0.0f;
+        particle_create(p, id, ani, px, py, har->direction, mg/100.0f);
+        int c = har->af->moves[id]->unknown[16];
+        DEBUG("successor for %d is %d", id, c);
+        if (c) {
+            p->successor = array_get(&har->animations, c);
+        } else {
+            p->successor = NULL;
+        }
+        //p->phy.spd.x = har->direction * 20.0f;
+        //p->phy.spd.y = 0.0f;
         particle_tick(p);
         list_append(&har->particles, &p, sizeof(particle*));
         
@@ -366,10 +374,9 @@ void har_collision_har(har *har_a, har *har_b) {
                     }
                 }
             }
+            image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x + 50, har_a->phy.pos.y + 50, color_create(255, 255, 0, 255));
+            image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x + 50 , har_b->phy.pos.y + 50, color_create(255, 255, 0, 255));
         }
-
-        image_set_pixel(&har_a->cd_debug, har_a->phy.pos.x + 50, har_a->phy.pos.y + 50, color_create(255, 255, 0, 255));
-        image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x + 50 , har_b->phy.pos.y + 50, color_create(255, 255, 0, 255));
 
         // Find collision points, if any
         for(int i = 0; i < ani->col_coord_count; i++) {
@@ -448,6 +455,8 @@ void har_collision_har(har *har_a, har *har_b) {
         // 35 is a made up number that 'looks right'
         if (har_a->phy.pos.x < har_b->phy.pos.x+35 && har_a->phy.pos.x > har_b->phy.pos.x) {
             har_a->phy.pos.x = har_b->phy.pos.x+35;
+        }
+        if (har_a->phy.pos.x < har_b->phy.pos.x+45 && har_a->phy.pos.x > har_b->phy.pos.x) {
             har_a->close = 1;
         }
     }
@@ -455,6 +464,8 @@ void har_collision_har(har *har_a, har *har_b) {
         // walking towards the enemy
         if (har_a->phy.pos.x+35 > har_b->phy.pos.x && har_a->phy.pos.x < har_b->phy.pos.x) {
             har_a->phy.pos.x = har_b->phy.pos.x - 35;
+        }
+        if (har_a->phy.pos.x+45 > har_b->phy.pos.x && har_a->phy.pos.x < har_b->phy.pos.x) {
             har_a->close = 1;
         }
     }
