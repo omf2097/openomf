@@ -11,7 +11,10 @@
 #include "game/settings.h"
 #include "game/scene.h"
 #include "game/scenes/melee.h"
+#include "game/scenes/progressbar.h"
 #include "game/menu/menu_background.h"
+
+#define MAX_STAT 20
 
 int selection; // 0 for player, 1 for HAR
 int row_a, row_b; // 0 or 1
@@ -21,8 +24,27 @@ struct players_t {
     sd_sprite *sprite;
 };
 
+struct pilot_t {
+    int power, agility, endurance;
+};
+
+struct pilot_t pilots[10] = {
+    {5,16,9},
+    {13,9,8},
+    {7,20,4},
+    {9,7,15},
+    {20,1,8},
+    {9,10,11},
+    {10,1,20},
+    {7,10,13},
+    {14,8,8},
+    {14,4,12}
+};
+
 struct players_t players[10];
 struct players_t players_big[10];
+
+progress_bar bar_power[2], bar_agility[2], bar_endurance[2];
 
 int player_id_a, player_id_b;
 
@@ -35,6 +57,8 @@ unsigned int pulsedir;
 
 animationplayer harplayer_a;
 animationplayer harplayer_b;
+
+void refresh_pilot_stats();
 
 void melee_switch_animation(scene *scene, animationplayer *harplayer, int id) {
     animationplayer_free(harplayer);
@@ -92,7 +116,25 @@ int melee_init(scene *scene) {
     menu_background2_create(&feh, 90, 61);
     menu_background2_create(&bleh, 160, 43);
     texture_create(&select_hilight, bitmap, 51, 36);
-    
+
+    const color bar_color = color_create(0, 190, 0, 255);
+    const color bar_bg_color = color_create(80, 220, 80, 0);
+    const color bar_border_color = color_create(0, 96, 0, 255);
+    const color bar_top_left_border_color = color_create(0, 255, 0, 255);
+    const color bar_bottom_right_border_color = color_create(0, 125, 0, 255);
+    progressbar_create(&bar_power[0],     74, 12, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    progressbar_create(&bar_agility[0],   74, 30, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    progressbar_create(&bar_endurance[0], 74, 48, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    progressbar_create(&bar_power[1],     320-66-feh.w, 12, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    progressbar_create(&bar_agility[1],   320-66-feh.w, 30, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    progressbar_create(&bar_endurance[1], 320-66-feh.w, 48, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    for(int i = 0;i < 2;i++) {
+        progressbar_set(&bar_power[i], 50);
+        progressbar_set(&bar_agility[i], 50);
+        progressbar_set(&bar_endurance[i], 50);
+    }
+    refresh_pilot_stats();
+
     memset(&harplayer_a, 0, sizeof(harplayer_a));
     memset(&harplayer_b, 0, sizeof(harplayer_b));
 
@@ -110,6 +152,11 @@ void melee_deinit(scene *scene) {
     texture_free(&feh);
     texture_free(&bleh);
     texture_free(&select_hilight);
+    for(int i = 0;i < 2;i++) {
+        progressbar_free(&bar_power[i]);
+        progressbar_free(&bar_agility[i]);
+        progressbar_free(&bar_endurance[i]);
+    }
 }
 
 void melee_tick(scene *scene) {
@@ -134,6 +181,17 @@ void melee_tick(scene *scene) {
             }
         }
     }
+}
+
+void refresh_pilot_stats() {
+    int current_a = 5*row_a + column_a;
+    int current_b = 5*row_b + column_b;
+    progressbar_set(&bar_power[0], (pilots[current_a].power*100)/MAX_STAT);
+    progressbar_set(&bar_agility[0], (pilots[current_a].agility*100)/MAX_STAT);
+    progressbar_set(&bar_endurance[0], (pilots[current_a].endurance*100)/MAX_STAT);
+    progressbar_set(&bar_power[1], (pilots[current_b].power*100)/MAX_STAT);
+    progressbar_set(&bar_agility[1], (pilots[current_b].agility*100)/MAX_STAT);
+    progressbar_set(&bar_endurance[1], (pilots[current_b].endurance*100)/MAX_STAT);
 }
 
 int melee_event(scene *scene, SDL_Event *event) {
@@ -211,6 +269,7 @@ int melee_event(scene *scene, SDL_Event *event) {
                 row_b = 1;
                 break;
         }
+        refresh_pilot_stats();
         if (selection == 1) {
             int har_animation_a = (5*row_a) + column_a + 18;
             if (harplayer_a.id != har_animation_a) {
@@ -259,12 +318,26 @@ void melee_render(scene *scene) {
 
         // player bio
         font_render_wrapped(&font_small, lang_get(135+current_a), 4, 66, 152, 0, 255, 0);
+        // player stats
+        font_render(&font_small, "power", 74+27, 4, 0, 255, 0);
+        font_render(&font_small, "agility", 74+19, 22, 0, 255, 0);
+        font_render(&font_small, "endurance", 74+12, 40, 0, 255, 0);
+        progressbar_render(&bar_power[0]);
+        progressbar_render(&bar_agility[0]);
+        progressbar_render(&bar_endurance[0]);
 
         if (scene->player2.selectable) {
             video_render_sprite_flip(&feh, 320-70-feh.w, 0, BLEND_ALPHA, FLIP_NONE);
             video_render_sprite_flip(&bleh, 320-bleh.w, 62, BLEND_ALPHA, FLIP_NONE);
             // player bio
             font_render_wrapped(&font_small, lang_get(135+current_b), 320-bleh.w+4, 66, 152, 0, 255, 0);
+            // player stats
+            font_render(&font_small, "power", 320-66-feh.w+27, 4, 0, 255, 0);
+            font_render(&font_small, "agility", 320-66-feh.w+19, 22, 0, 255, 0);
+            font_render(&font_small, "endurance", 320-66-feh.w+12, 40, 0, 255, 0);
+            progressbar_render(&bar_power[1]);
+            progressbar_render(&bar_agility[1]);
+            progressbar_render(&bar_endurance[1]);
         } else {
             // 'choose your pilot'
             font_render_wrapped(&font_small, lang_get(187), 160, 97, 160, 0, 255, 0);
@@ -339,7 +412,6 @@ void melee_render(scene *scene) {
             font_render_wrapped(&font_small, lang_get(186), 160, 97, 160, 0, 255, 0);
         }
     }
-
 }
 
 void melee_load(scene *scene) {
