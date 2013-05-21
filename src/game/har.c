@@ -295,6 +295,7 @@ void har_take_damage(har *har, int amount, const char *string) {
     }
     DEBUG("HAR took %f damage, and its health is now %d -- %d", amount / 2.0f, har->health, har->endurance);
     if (har->health == 0 && har->endurance == 0) {
+        har->state = STATE_DEFEAT;
         har_switch_animation(har, ANIM_DEFEAT);
     } else if (har->endurance == 0 && har->state != STATE_STUNNED) {
         har->state = STATE_STUNNED;
@@ -427,6 +428,23 @@ void har_collision_har(har *har_a, har *har_b) {
     if (har_b->state == STATE_RECOIL || har_a->hit_this_time) {
         // can't kick them while they're down
         // also can't hit other har twice with one move?
+        return;
+    }
+
+    if (har_b->state == STATE_DEFEAT && (har_a->state == STATE_SCRAP || har_a->state == STATE_DESTRUCTION) && har_a->hit_this_time == 0) {
+        DEBUG("SCRAP/DESTRUCTION!");
+        har_a->hit_this_time = 1;
+        char *string = har_a->af->moves[ani_id]->footer_string;
+        animationplayer_free(&har_b->player);
+        animationplayer_create(&har_b->player, ANIM_DAMAGE, array_get(&har_b->animations, ANIM_DAMAGE));
+        animationplayer_set_direction(&har_b->player, har_b->direction);
+        if (string) {
+            animationplayer_set_string(&har_b->player, string);
+        }
+        har_b->player.userdata = har_b;
+        har_b->player.add_player = har_add_ani_player;
+        har_b->player.del_player = har_set_ani_finished;
+        har_b->player.phy = &har_b->phy;
         return;
     }
 
@@ -590,6 +608,9 @@ void har_tick(har *har) {
                 break;
             case STATE_DESTRUCTION:
                 animation = ANIM_VICTORY;
+                break;
+            case STATE_DEFEAT:
+                animation = ANIM_DEFEAT;
                 break;
         }
         DEBUG("next animation is %d", animation);
