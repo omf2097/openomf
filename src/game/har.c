@@ -88,6 +88,10 @@ void phycb_fall(physics_state *state, void *userdata) {
     har *h = userdata;
     if (h->state == STATE_JUMPING) {
         animationplayer_next_frame(&h->player);
+        if(h->phy.spd.x*h->direction < 0) {
+            animationplayer_goto_frame(&h->player, sd_stringparser_num_frames(h->player.parser)-1);
+            h->player.reverse = 1;
+        }
         DEBUG("switching to falling");
     }
 }
@@ -96,6 +100,7 @@ void phycb_floor_hit(physics_state *state, void *userdata, int flight_mode) {
     DEBUG("Hit the floor");
 
     har *h = userdata;
+    h->player.reverse = 0;
     h->player.finished = 1;
     if (h->state == STATE_JUMPING) {
         h->state = STATE_STANDING;
@@ -551,6 +556,18 @@ void har_tick(har *har) {
             har->player.y = har->phy.pos.y - 20;
         } else {
             har->player.y = har->phy.pos.y;
+        }
+
+        if(har->player.id == ANIM_JUMPING &&
+               physics_is_in_air(&har->phy) &&
+               (physics_is_moving_left(&har->phy) || physics_is_moving_right(&har->phy)) &&
+               physics_is_moving_down(&har->phy)) {
+
+            if(har->phy.spd.x*har->direction > 0) {
+                animationplayer_goto_frame(&har->player, animationplayer_get_frame(&har->player)+1);
+            } else {
+                animationplayer_goto_frame(&har->player, animationplayer_get_frame(&har->player)-1);
+            }
         }
         
         // Animationplayer ticks

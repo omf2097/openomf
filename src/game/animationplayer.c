@@ -111,6 +111,7 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
     player->ani = animation;
     player->id = id;
     player->direction = 1;
+    player->reverse = 0;
     player->end_frame = UINT32_MAX;
     player->ticks = 1;
     player->obj = 0;
@@ -362,8 +363,11 @@ void animationplayer_run(animationplayer *player) {
         } 
     }
 
-
-    player->ticks++;
+    if(player->reverse) {
+        player->ticks--;
+    } else {
+        player->ticks++;
+    }
     
     // All done.
     return;
@@ -391,6 +395,11 @@ void animationplayer_next_frame(animationplayer *player) {
         DEBUG("setting ticks %d -> %d", player->ticks, player->parser->current_frame.duration);
         player->ticks = player->parser->current_frame.duration+1;
     }
+}
+
+void animationplayer_goto_frame(animationplayer *player, unsigned int frame_id) {
+    sd_stringparser_goto_frame(player->parser, frame_id, &player->ticks);
+    player->ticks++;
 }
 
 void animationplayer_set_end_frame(animationplayer *player, unsigned int end_frame) {

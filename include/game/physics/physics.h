@@ -44,6 +44,8 @@ void physics_move(physics_state *state, float spd_x);
 void physics_crouch(physics_state *state);
 int physics_is_moving_up(physics_state *state);
 int physics_is_moving_down(physics_state *state);
+int physics_is_moving_left(physics_state *state);
+int physics_is_moving_right(physics_state *state);
 int physics_is_stopped(physics_state *state);
 int physics_is_in_air(physics_state *state);
 

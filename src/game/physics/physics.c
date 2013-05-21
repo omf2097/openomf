@@ -140,11 +140,19 @@ int physics_is_stopped(physics_state *state) {
 }
 
 int physics_is_moving_up(physics_state *state) {
-    return (state->spd.y > 0);
+    return (state->spd.y < 0);
 }
 
 int physics_is_moving_down(physics_state *state) {
-    return (state->spd.y < 0);
+    return (state->spd.y > 0);
+}
+
+int physics_is_moving_left(physics_state *state) {
+    return (state->spd.x < 0);
+}
+
+int physics_is_moving_right(physics_state *state) {
+    return (state->spd.x > 0);
 }
 
 int physics_is_in_air(physics_state *state) {

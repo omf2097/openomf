@@ -26,6 +26,7 @@ typedef struct animationplayer_t {
     unsigned int ticks;
     
     unsigned int repeat;
+    unsigned int reverse;
     int direction;
     unsigned int end_frame;
     
@@ -55,6 +56,7 @@ void animationplayer_set_repeat(animationplayer *player, unsigned int repeat);
 void animationplayer_set_direction(animationplayer *player, int direction);
 void animationplayer_set_end_frame(animationplayer *player, unsigned int end_frame);
 void animationplayer_next_frame(animationplayer *player);
+void animationplayer_goto_frame(animationplayer *player, unsigned int frame_id);
 int animationplayer_get_frame(animationplayer *player);
 char animationplayer_get_frame_letter(animationplayer *player);
 
