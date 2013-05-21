@@ -319,9 +319,9 @@ void melee_render(scene *scene) {
         // player bio
         font_render_wrapped(&font_small, lang_get(135+current_a), 4, 66, 152, 0, 255, 0);
         // player stats
-        font_render(&font_small, "power", 74+27, 4, 0, 255, 0);
-        font_render(&font_small, "agility", 74+19, 22, 0, 255, 0);
-        font_render(&font_small, "endurance", 74+12, 40, 0, 255, 0);
+        font_render(&font_small, lang_get(216), 74+27, 4, 0, 255, 0);
+        font_render(&font_small, lang_get(217), 74+19, 22, 0, 255, 0);
+        font_render(&font_small, lang_get(218), 74+12, 40, 0, 255, 0);
         progressbar_render(&bar_power[0]);
         progressbar_render(&bar_agility[0]);
         progressbar_render(&bar_endurance[0]);
@@ -332,9 +332,9 @@ void melee_render(scene *scene) {
             // player bio
             font_render_wrapped(&font_small, lang_get(135+current_b), 320-bleh.w+4, 66, 152, 0, 255, 0);
             // player stats
-            font_render(&font_small, "power", 320-66-feh.w+27, 4, 0, 255, 0);
-            font_render(&font_small, "agility", 320-66-feh.w+19, 22, 0, 255, 0);
-            font_render(&font_small, "endurance", 320-66-feh.w+12, 40, 0, 255, 0);
+            font_render(&font_small, lang_get(216), 320-66-feh.w+27, 4, 0, 255, 0);
+            font_render(&font_small, lang_get(217), 320-66-feh.w+19, 22, 0, 255, 0);
+            font_render(&font_small, lang_get(218), 320-66-feh.w+12, 40, 0, 255, 0);
             progressbar_render(&bar_power[1]);
             progressbar_render(&bar_agility[1]);
             progressbar_render(&bar_endurance[1]);
