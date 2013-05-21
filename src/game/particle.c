@@ -16,20 +16,26 @@ void particle_pos(void *userdata, int x, int y) {
     particle->phy.pos.y = y;
 }
 
-void particle_wall_hit(physics_state *state, void *userdata, int side, int vstate) {
-    particle *p = (particle*)userdata;
+int particle_successor(particle *p) {
     if (p->successor) {
         DEBUG("playing successor animation");
         int direction = p->player.direction;
+        physics_state *phy = &p->phy;
         animationplayer_free(&p->player);
         animationplayer_create(&p->player, 0, p->successor);
         animationplayer_set_direction(&p->player, direction);
         p->player.userdata = p;
-        p->player.phys = particle_phys;
-        p->player.pos = particle_pos;
+        p->player.phy = phy;
         animationplayer_run(&p->player);
         p->successor = NULL;
-    } else {
+        return 1;
+    }
+    return 0;
+}
+
+void particle_wall_hit(physics_state *state, void *userdata, int side, int vstate) {
+    particle *p = (particle*)userdata;
+    if (!particle_successor(p)) {
         p->finished = 1;
     }
     DEBUG("Particle: wall hit @ %d,%d", p->phy.pos.x, p->phy.pos.y);
@@ -37,18 +43,7 @@ void particle_wall_hit(physics_state *state, void *userdata, int side, int vstat
 
 void particle_floor_hit(physics_state *state, void *userdata, int vstate) {
     particle *p = (particle*)userdata;
-    if (p->successor) {
-        DEBUG("playing successor animation");
-        int direction = p->player.direction;
-        animationplayer_free(&p->player);
-        animationplayer_create(&p->player, 0, p->successor);
-        animationplayer_set_direction(&p->player, direction);
-        p->player.userdata = p;
-        p->player.phys = particle_phys;
-        p->player.pos = particle_pos;
-        animationplayer_run(&p->player);
-        p->successor = NULL;
-    } else {
+    if (!particle_successor(p)) {
         p->finished = 1;
     }
     DEBUG("Particle: floor hit @ %d,%d", p->phy.pos.x, p->phy.pos.y);
@@ -66,8 +61,7 @@ int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, 
     p->player.x = x;
     p->player.y = y;
     p->player.userdata = p;
-    p->player.phys = particle_phys;
-    p->player.pos = particle_pos;
+    p->player.phy = &p->phy;
     p->finished = 0;
     p->id = id;
     p->successor = NULL;
@@ -81,6 +75,9 @@ void particle_free(particle *p) {
 void particle_tick(particle *p) {
     physics_tick(&p->phy);
     animationplayer_run(&p->player);
+    if(p->player.finished) {
+        p->finished = 1;
+    }
 }
 
 void particle_render(particle *p) {

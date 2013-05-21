@@ -42,10 +42,6 @@ void vs_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
         np.x = ani->sdani->start_x + mx + welder.x;
         np.y = ani->sdani->start_y + my + welder.y;
         animationplayer_create(&np, id, ani);
-        /*animationplayer_set_direction(&np, har->direction);*/
-        /*np.userdata = userdata;*/
-        /*np.add_player = vs_add_ani_player;*/
-        /*np.del_player = vs_set_ani_finished;*/
         list_append(&child_players, &np, sizeof(animationplayer));
         animationplayer_run(&np);
         DEBUG("Create animation %d @ x,y = %d,%d", id, np.x, np.y);

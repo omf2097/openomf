@@ -65,6 +65,12 @@ void physics_tick(physics_state *state) {
     float last_spd_y = state->spd.y;
     state->pos.y += state->spd.y;
     state->pos.x += state->spd.x;
+
+    if (state->ticks > 0) {
+        state->pos.x += state->move_per_tick.x;
+        state->pos.y += state->move_per_tick.y;
+        state->ticks--;
+    }
     
     // Check bounds
     physics_check_bounds(state);
@@ -98,10 +104,6 @@ void physics_recoil(physics_state *state, float spd_x, float spd_y) {
     state->spd.x = spd_x;
     state->spd.y = spd_y;
     state->vertical_state = PHY_VSTATE_RECOIL;
-    state->pos.y -= 1;
-    if(state->pos.y < state->floor) {
-        DEBUG("kicked airborne");
-    }
     if(state->recoil != NULL) {
         state->recoil(state, state->userdata);
     }
@@ -123,6 +125,12 @@ void physics_move(physics_state *state, float spd_x) {
         state->vertical_state = PHY_VSTATE_NONE;
         state->spd.x = spd_x;
     }
+}
+
+void physics_move_per_tick(physics_state *state, float x, float y, unsigned int ticks) {
+    state->move_per_tick.x = x;
+    state->move_per_tick.y = y;
+    state->ticks = ticks;
 }
 
 void physics_crouch(physics_state *state) {

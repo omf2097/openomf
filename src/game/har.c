@@ -31,11 +31,7 @@ void har_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
         DEBUG("successor for %d is %d", id, c);
         if (c) {
             p->successor = array_get(&har->animations, c);
-        } else {
-            p->successor = NULL;
         }
-        //p->phy.spd.x = har->direction * 20.0f;
-        //p->phy.spd.y = 0.0f;
         particle_tick(p);
         list_append(&har->particles, &p, sizeof(particle*));
         
@@ -78,8 +74,7 @@ void har_switch_animation(har *har, int id) {
     har->player.userdata = har;
     har->player.add_player = har_add_ani_player;
     har->player.del_player = har_set_ani_finished;
-    har->player.phys = har_phys;
-    har->player.pos = har_pos;
+    har->player.phy = &har->phy;
     har->hit_this_time = 0;
     animationplayer_run(&har->player);
 }
@@ -254,8 +249,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     h->player.userdata = h;
     h->player.add_player = har_add_ani_player;
     h->player.del_player = har_set_ani_finished;
-    h->player.phys = har_phys;
-    h->player.pos = har_pos;
+    h->player.phy = &h->phy;
     h->hit_this_time = 0;
     animationplayer_run(&h->player);
     DEBUG("Har %d loaded!", id);
@@ -318,8 +312,7 @@ void har_take_damage(har *har, int amount, const char *string) {
         har->player.userdata = har;
         har->player.add_player = har_add_ani_player;
         har->player.del_player = har_set_ani_finished;
-        har->player.phys = har_phys;
-        har->player.pos = har_pos;
+        har->player.phy = &har->phy;
         if (har->state == STATE_STUNNED) {
             // hit while stunned, refill the endurance meter
             har->endurance = har->endurance_max;
@@ -456,19 +449,16 @@ void har_collision_har(har *har_a, har *har_b) {
         while((p = iter_next(&it)) != NULL && hit == 0) {
             ani = (*p)->player.ani->sdani;
             ani_id = (*p)->player.id;
-            DEBUG("checking particle collision");
             frame_id = animationplayer_get_frame_letter(&(*p)->player) - 65;
             hit = check_collision(har_a, (*p)->phy,  har_b, ani, frame_id, sprite, vga);
-            DEBUG("particle hit? %d", hit);
             if (hit && (*p)->successor) {
-                DEBUG("playing successor animation");
                 int direction = (*p)->player.direction;
+                physics_state *phy = &(*p)->phy;
                 animationplayer_free(&(*p)->player);
                 animationplayer_create(&(*p)->player, 0, (*p)->successor);
                 animationplayer_set_direction(&(*p)->player, direction);
+                (*p)->player.phy = phy;
                 (*p)->player.userdata = *p;
-                /*(*p)->player.phys = particle_phys;*/
-                /*(*p)->player.pos = particle_pos;*/
                 animationplayer_run(&(*p)->player);
                 (*p)->successor = NULL;
                 (*p)->finished = 1;

@@ -124,8 +124,7 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
     player->slide_op.y_per_tick = 0;
     player->slide_op.y_rem = 0;
     player->add_player = NULL;
-    player->phys = NULL;
-    player->pos = NULL;
+    player->phy = NULL;
     player->parser = NULL;
     return animationplayer_set_string(player, animation->sdani->anim_string);
 }
@@ -260,7 +259,7 @@ void animationplayer_run(animationplayer *player) {
         if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));               }
         if(isset(f, "smf")) { cmd_music_off();                           }
         if(isset(f, "s"))   { cmd_sound(player, get(f, "s"));            }
-        if (isset(f, "v") && player->phys != NULL) {
+        if (isset(f, "v") && player->phy != NULL) {
             int x = 0, y = 0;
             if(isset(f, "y-")) {
                 y = get(f, "y-") * -1;
@@ -274,7 +273,7 @@ void animationplayer_run(animationplayer *player) {
             }
 
             if (x || y) {
-                player->phys(player->userdata, x, y);
+                physics_recoil(player->phy, (float)x, (float)y);
             }
         }
         if (isset(f, "v") == 0 && (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
@@ -291,9 +290,9 @@ void animationplayer_run(animationplayer *player) {
                 x = get(f, "x+") * player->direction;
             }
 
-            DEBUG("x %d, y %d", x, y);
-            if (player->pos != NULL) {
-                player->pos(player->userdata, player->x+x, player->y+y);
+            if (player->phy != NULL) {
+                DEBUG("x %d, y %d => x %d, y %d", player->phy->pos.x, player->phy->pos.y, x, y);
+                physics_move_per_tick(player->phy, x / (float)param->duration, y / (float)param->duration, param->duration);
             } else {
                 player->x += x;
                 player->y += y;

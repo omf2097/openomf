@@ -16,6 +16,8 @@ typedef struct physics_state_t physics_state;
 struct physics_state_t {
     vec2i pos;
     vec2f spd;
+    vec2f move_per_tick;
+    unsigned int ticks;
     int vertical_state;
     
     void *userdata;
@@ -41,6 +43,7 @@ void physics_tick(physics_state *state);
 void physics_jump(physics_state *state, float spd_y);
 void physics_recoil(physics_state *state, float spd_x, float spd_y);
 void physics_move(physics_state *state, float spd_x);
+void physics_move_per_tick(physics_state *state, float x, float y, unsigned int ticks);
 void physics_crouch(physics_state *state);
 int physics_is_moving_up(physics_state *state);
 int physics_is_moving_down(physics_state *state);

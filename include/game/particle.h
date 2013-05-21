@@ -22,7 +22,8 @@ struct particle_t {
     animation *successor;
 };
 
-int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction, float gravity); 
+int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction, float gravity);
+int particle_successor(particle *p);
 void particle_free(particle *p);
 void particle_tick(particle *p);
 void particle_render(particle *p);
