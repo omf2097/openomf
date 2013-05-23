@@ -107,6 +107,7 @@ void vs_post_init(scene *scene) {
 
 void vs_deinit(scene *scene) {
     texture_free(&player2_background);
+    texture_free(&arena_select_bg);
     animationplayer_free(&welder);
     animationplayer_free(&scientist);
 
@@ -127,7 +128,13 @@ void vs_tick(scene *scene) {
     animationplayer *tmp = 0;
     list_iter_begin(&child_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
-        animationplayer_run(tmp);
+        if (tmp->finished) {
+            DEBUG("freeing finished animation %d", tmp->id);
+            animationplayer_free(tmp);
+            list_delete(&child_players, &it);
+        } else {
+            animationplayer_run(tmp);
+        }
     }
 }
 
