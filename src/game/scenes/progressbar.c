@@ -15,7 +15,6 @@ void progressbar_create_block(progress_bar *bar) {
                          bar->int_bottomright_color, 
                          bar->int_bottomright_color, 
                          bar->int_topleft_color);
-        texture_free(&bar->block);
         texture_create_from_img(&bar->block, &tmp);
         image_free(&tmp);
     }
@@ -67,6 +66,7 @@ void progressbar_free(progress_bar *bar) {
 
 void progressbar_set(progress_bar *bar, unsigned int percentage) {
     bar->percentage = (percentage > 100 ? 100 : percentage);
+    texture_free(&bar->block);
     progressbar_create_block(bar);
 }
 
