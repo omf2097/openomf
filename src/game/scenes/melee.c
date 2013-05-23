@@ -89,6 +89,7 @@ sd_rgba_image* sub_sprite(sd_sprite *sprite, sd_palette *pal, int x, int y, int 
             }
         }
     }
+    sd_rgba_image_delete(img);
     return out;
 }
 

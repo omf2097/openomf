@@ -30,6 +30,7 @@ sd_rgba_image* sub_image(sd_vga_image *image, sd_palette *pal, int x, int y, int
             out->data[local_offset+3] = (char)img->data[offset+3];
         }
     }
+    sd_rgba_image_delete(img);
     return out;
 }
 

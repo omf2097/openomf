@@ -263,6 +263,8 @@ void har_free(har *h) {
 
     // Free AF
     sd_af_delete(h->af);
+
+    image_free(&h->cd_debug);
     
     // Free animations
     array_iter_begin(&h->animations, &it);
@@ -482,6 +484,8 @@ void har_collision_har(har *har_a, har *har_b) {
                 (*p)->finished = 1;
             }
         }
+
+        sd_vga_image_delete(vga);
 
         if (!hit) {
             // particles did not hit, restore original ani id

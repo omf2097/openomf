@@ -311,6 +311,7 @@ void mainmenu_deinit(scene *scene) {
     textbutton_free(&quit_button);
     menu_free(&main_menu);
 
+    textbutton_free(&config_header);
     textbutton_free(&playerone_input_button);
     textbutton_free(&playertwo_input_button);
     textbutton_free(&video_options_button);
@@ -322,11 +323,13 @@ void mainmenu_deinit(scene *scene) {
 
     textbutton_free(&video_header);
     textselector_free(&resolution_toggle);
+    textselector_free(&vsync_toggle);
     textselector_free(&fullscreen_toggle);
     textselector_free(&scaling_toggle);
     textbutton_free(&video_done_button);
     menu_free(&video_menu);
-    
+
+    textbutton_free(&gameplay_header);
     textslider_free(&speed_slider);
     textselector_free(&fightmode_toggle);
     textslider_free(&powerone_slider);
