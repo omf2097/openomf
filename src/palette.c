@@ -31,7 +31,7 @@ unsigned char sd_palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, sd_palet
 
 void sd_palette_to_gimp_palette(char *filename, sd_palette *palette) {
     sd_writer *writer = sd_writer_open(filename);
-    char *d;
+    unsigned char *d;
 
     sd_write_fprintf(writer, "GIMP Palette\n");
     sd_write_fprintf(writer, "Name: %s\n", filename);
@@ -47,7 +47,7 @@ void sd_palette_to_gimp_palette(char *filename, sd_palette *palette) {
 }
 
 void sd_palette_save(sd_writer *writer, sd_palette *palette) {
-    char *d;
+    unsigned char *d;
     for(int i = 0; i < 256; i++) {
         d = palette->data[i];
         // for some reason, we need to mask off the high bits or the bitshift doesn't work

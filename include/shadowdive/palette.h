@@ -12,8 +12,8 @@ typedef struct sd_writer_t sd_writer;
 #endif
 
 typedef struct sd_palette_t {
-    char data[256][3];
-    char remaps[19][256];
+    unsigned char data[256][3];
+    unsigned char remaps[19][256];
 } sd_palette;
 
 unsigned char sd_palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, sd_palette *pal);
