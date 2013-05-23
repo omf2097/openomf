@@ -141,10 +141,14 @@ int vs_event(scene *scene, SDL_Event *event) {
                 h1 = malloc(sizeof(har));
                 h2 = malloc(sizeof(har));
                 if (har_load(h1, scene->bk->palettes[0], scene->player1.har_id, 60, 190, 1)) {
+                    free(h1);
+                    free(h2);
                     scene->next_id = SCENE_NONE;
                     return 1;
                 }
                 if (har_load(h2, scene->bk->palettes[0], scene->player2.har_id, 260, 190, -1)) {
+                    har_free(h1);
+                    free(h2);
                     scene->next_id = SCENE_NONE;
                     return 1;
                 }

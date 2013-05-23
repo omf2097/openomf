@@ -11,7 +11,7 @@ find_package(confuse)
 find_package(GLEW)
 find_package(Libintl)
 
-set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
+set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -Wpedantic -Wno-newline-eof -DDEBUGMODE")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
 set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=native -Werror")
 
@@ -59,11 +59,9 @@ add_executable(openomf
     src/game/text/languages.c
     src/game/menu/menu.c
     src/game/menu/menu_background.c
-    src/game/menu/selection.c
     src/game/menu/textbutton.c
     src/game/menu/textselector.c
     src/game/menu/textslider.c
-    src/game/menu/togglebutton.c
     src/game/menu/component.c
     src/game/physics/physics.c
     src/controller/controller.c

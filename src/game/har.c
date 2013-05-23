@@ -325,7 +325,7 @@ void har_take_damage(har *har, int amount, const char *string) {
 
 void har_spawn_scrap(har *h, int x, int y, int direction) {
     // Spawn scrap!
-    animation *scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL);
+    animation *scrap_ani;
     for(int i = 1; i < 16; i++) {
         particle *p = malloc(sizeof(particle));
         scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL+(i%3));

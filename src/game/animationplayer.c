@@ -167,7 +167,7 @@ void animationplayer_free(animationplayer *player) {
 }
 
 void animationplayer_render(animationplayer *player) {
-    if(player != NULL && player->finished) return;
+    if(player->finished) return;
 
     // Render self
     if(player->obj) {
@@ -181,7 +181,7 @@ void animationplayer_render(animationplayer *player) {
 }
 
 void animationplayer_run(animationplayer *player) {
-    if(player && player->finished) return;
+    if(player->finished) return;
 
     // Handle slide operation
     if(player->slide_op.enabled) {
