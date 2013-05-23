@@ -203,7 +203,7 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
             ret = sd_af_load(h->af, "resources/FIGHTR8.AF");
             break;
         case HAR_CHRONOS:
-            ret = sd_af_load(h->af, "resources/FIGHTR9.af");
+            ret = sd_af_load(h->af, "resources/FIGHTR9.AF");
             break;
         case HAR_NOVA:
             ret = sd_af_load(h->af, "resources/FIGHTR10.AF");
