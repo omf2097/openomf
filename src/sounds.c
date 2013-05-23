@@ -97,8 +97,10 @@ void sd_sound_to_au(sd_sound *sound, const char *filename) {
 void sd_sounds_delete(sd_sound_file *sf) {
     for(int i = 0; i < sf->sound_count; i++) {
         if(sf->sounds[i]) {
+            free(sf->sounds[i]->data);
             free(sf->sounds[i]);
         }
     }
     free(sf->sounds);
+    free(sf);
 }

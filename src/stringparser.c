@@ -270,6 +270,7 @@ static void sd_taglist_clear(tag_list *list) {
     for(int i = 0;i < len;++i) {
         if(list->tag_chain[i]) {
             sd_taglist_clear(list->tag_chain[i]);
+            free(list->tag_chain[i]);
             list->tag_chain[i] = NULL;
         }
     }

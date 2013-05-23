@@ -17,6 +17,7 @@ void sd_language_delete(sd_language *language) {
             for(int i = 0; i < language->count; i++) {
                 free(language->strings[i].data);
             }
+            free(language->strings);
         }
         free(language);
     }
