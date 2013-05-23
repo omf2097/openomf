@@ -317,11 +317,11 @@ void melee_render(scene *scene) {
         video_render_sprite_flip(&bleh, 0, 62, BLEND_ALPHA, FLIP_NONE);
 
         // player bio
-        font_render_wrapped(&font_small, lang_get(135+current_a), 4, 66, 152, 0, 255, 0);
+        font_render_wrapped(&font_small, lang_get(135+current_a), 4, 66, 152, COLOR_GREEN);
         // player stats
-        font_render(&font_small, lang_get(216), 74+27, 4, 0, 255, 0);
-        font_render(&font_small, lang_get(217), 74+19, 22, 0, 255, 0);
-        font_render(&font_small, lang_get(218), 74+12, 40, 0, 255, 0);
+        font_render(&font_small, lang_get(216), 74+27, 4, COLOR_GREEN);
+        font_render(&font_small, lang_get(217), 74+19, 22, COLOR_GREEN);
+        font_render(&font_small, lang_get(218), 74+12, 40, COLOR_GREEN);
         progressbar_render(&bar_power[0]);
         progressbar_render(&bar_agility[0]);
         progressbar_render(&bar_endurance[0]);
@@ -330,17 +330,17 @@ void melee_render(scene *scene) {
             video_render_sprite_flip(&feh, 320-70-feh.w, 0, BLEND_ALPHA, FLIP_NONE);
             video_render_sprite_flip(&bleh, 320-bleh.w, 62, BLEND_ALPHA, FLIP_NONE);
             // player bio
-            font_render_wrapped(&font_small, lang_get(135+current_b), 320-bleh.w+4, 66, 152, 0, 255, 0);
+            font_render_wrapped(&font_small, lang_get(135+current_b), 320-bleh.w+4, 66, 152, COLOR_GREEN);
             // player stats
-            font_render(&font_small, lang_get(216), 320-66-feh.w+27, 4, 0, 255, 0);
-            font_render(&font_small, lang_get(217), 320-66-feh.w+19, 22, 0, 255, 0);
-            font_render(&font_small, lang_get(218), 320-66-feh.w+12, 40, 0, 255, 0);
+            font_render(&font_small, lang_get(216), 320-66-feh.w+27, 4, COLOR_GREEN);
+            font_render(&font_small, lang_get(217), 320-66-feh.w+19, 22, COLOR_GREEN);
+            font_render(&font_small, lang_get(218), 320-66-feh.w+12, 40, COLOR_GREEN);
             progressbar_render(&bar_power[1]);
             progressbar_render(&bar_agility[1]);
             progressbar_render(&bar_endurance[1]);
         } else {
             // 'choose your pilot'
-            font_render_wrapped(&font_small, lang_get(187), 160, 97, 160, 0, 255, 0);
+            font_render_wrapped(&font_small, lang_get(187), 160, 97, 160, COLOR_GREEN);
         }
     }
     ani = array_get(&scene->animations, 5);
@@ -352,11 +352,11 @@ void melee_render(scene *scene) {
     }
     if (selection == 0) {
         // player 1 name
-        font_render_wrapped(&font_small, lang_get(20+current_a), 0, 52, 66, 0, 0, 0);
+        font_render_wrapped(&font_small, lang_get(20+current_a), 0, 52, 66, COLOR_BLACK);
 
         if (scene->player2.selectable) {
             // player 2 name
-            font_render_wrapped(&font_small, lang_get(20+current_b), 320-66, 52, 66, 0, 0, 0);
+            font_render_wrapped(&font_small, lang_get(20+current_b), 320-66, 52, 66, COLOR_BLACK);
         }
 
         render_highlights(scene);
@@ -395,11 +395,11 @@ void melee_render(scene *scene) {
         animationplayer_render(&harplayer_a);
 
         // player 1 name
-        font_render_wrapped(&font_small, lang_get(20+player_id_a), 0, 52, 66, 0, 0, 0);
+        font_render_wrapped(&font_small, lang_get(20+player_id_a), 0, 52, 66, COLOR_BLACK);
 
         if (scene->player2.selectable) {
             // player 2 name
-            font_render_wrapped(&font_small, lang_get(20+player_id_b), 320-66, 52, 66, 0, 0, 0);
+            font_render_wrapped(&font_small, lang_get(20+player_id_b), 320-66, 52, 66, COLOR_BLACK);
 
             // currently selected player
             video_render_sprite_flip(array_get(&ani->sprites, player_id_b), 320-(players_big[player_id_b].sprite->img->w + players_big[player_id_b].sprite->pos_x),
@@ -409,7 +409,7 @@ void melee_render(scene *scene) {
             animationplayer_render(&harplayer_b);
         } else {
             // 'choose your HAR'
-            font_render_wrapped(&font_small, lang_get(186), 160, 97, 160, 0, 255, 0);
+            font_render_wrapped(&font_small, lang_get(186), 160, 97, 160, COLOR_GREEN);
         }
     }
 }

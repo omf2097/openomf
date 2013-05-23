@@ -46,11 +46,11 @@ void textselector_render(component *c) {
     xoff = (c->w - width)/2;
     if(c->selected) {
         int t = tb->ticks / 2;
-        font_render(tb->font, buf, c->x + xoff, c->y, 80 - t, 220 - t*2, 80 - t);
+        font_render(tb->font, buf, c->x + xoff, c->y, color_create(80 - t, 220 - t*2, 80 - t, 255));
     } else if (c->disabled) {
-        font_render(tb->font, buf, c->x + xoff, c->y, 121, 121, 121);
+        font_render(tb->font, buf, c->x + xoff, c->y, color_create(121, 121, 121, 255));
     } else {
-        font_render(tb->font, buf, c->x + xoff, c->y, 0, 121, 0);
+        font_render(tb->font, buf, c->x + xoff, c->y, color_create(0, 121, 0, 255));
     }
 }
 

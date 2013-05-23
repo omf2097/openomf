@@ -85,37 +85,37 @@ void fonts_close() {
     font_free(&font_large);
 }
 
-void font_render_char(font *font, char ch, int x, int y, unsigned char r, unsigned char g, unsigned char b) {
+void font_render_char(font *font, char ch, int x, int y, color c) {
     int code = ch - 32;
     texture **tex = NULL;
     if (code < 0) {
         return;
     }
     tex = vector_get(&font->textures, code);
-    video_render_char(*tex, x, y, r, g, b);
+    video_render_char(*tex, x, y, c.r, c.g, c.b);
 }
 
-void font_render_len(font *font, const char *text, int len, int x, int y, unsigned char r, unsigned char g, unsigned char b) {
+void font_render_len(font *font, const char *text, int len, int x, int y, color c) {
     int pos_x = x;
     for(int i = 0; i < len; i++) {
-        font_render_char(font, text[i], pos_x, y, r, g, b);
+        font_render_char(font, text[i], pos_x, y, c);
         pos_x += font->w;
     }
 }
 
-void font_render(font *font, const char *text, int x, int y, unsigned char r, unsigned char g, unsigned char b) {
+void font_render(font *font, const char *text, int x, int y, color c) {
     int len = strlen(text);
-    font_render_len(font, text, len, x, y, r, g, b);
+    font_render_len(font, text, len, x, y, c);
 }
 
-void font_render_wrapped(font *font, const char *text, int x, int y, int w, unsigned char r, unsigned char g, unsigned char b) {
+void font_render_wrapped(font *font, const char *text, int x, int y, int w, color c) {
     int len = strlen(text);
     if (font->w*len < w) {
         // short enough text that we don't need to wrap
 
         // render it centered, at least for now
         int xoff = (w - font->w*len)/2;
-        font_render_len(font, text, len, x + xoff, y, r, g, b);
+        font_render_len(font, text, len, x + xoff, y, c);
     } else {
         // ok, we actually have to do some real work
         // look ma, no mallocs!
@@ -140,7 +140,7 @@ void font_render_wrapped(font *font, const char *text, int x, int y, int w, unsi
             }
             int len = stop - start;
             int xoff = (w - font->w*len)/2;
-            font_render_len(font, start, len, x + xoff, y + yoff, r, g, b);
+            font_render_len(font, start, len, x + xoff, y + yoff, c);
             yoff += font->h+1;
             start = stop+1;
             stop = start;

@@ -289,6 +289,7 @@ void console_output_render() {
     int x = 0;
     int y = 0;
     unsigned int lines = 0;
+    const color textcolor = color_create(121, 121, 121, 255);
     for(unsigned int i = con->output_pos;
         i != con->output_tail && lines < 15;
         i = BUFFER_INC(i)) {
@@ -300,7 +301,7 @@ void console_output_render() {
             lines++;
         } else {
             // TODO add word wrapping?
-            font_render_char(&font_small, c, x, y+con->ypos-100, 121, 121, 121);
+            font_render_char(&font_small, c, x, y+con->ypos-100, textcolor);
             x += font_small.w;
         }
     }
@@ -400,9 +401,9 @@ void console_render() {
         video_render_sprite(&con->background, -1, con->ypos - 101, BLEND_ALPHA_FULL);
         int t = con->ticks / 2;
         // input line
-        font_render(&font_small, con->input, 0 , con->ypos - 7, 121, 121, 121);
+        font_render(&font_small, con->input, 0 , con->ypos - 7, color_create(121, 121, 121, 255));
         //cursor
-        font_render(&font_small, "", strlen(con->input)*font_small.w , con->ypos - 7, 121 - t, 121 - t, 121 - t);
+        font_render(&font_small, "", strlen(con->input)*font_small.w , con->ypos - 7, color_create(121 - t, 121 - t, 121 - t, 255));
         console_output_render();
     }
 }

@@ -206,14 +206,14 @@ void vs_render(scene *scene) {
 
 
         // arena name
-        font_render_wrapped(&font_small, lang_get(56+arena), 59+72, 153, (211-72)-4, 0, 255, 0);
+        font_render_wrapped(&font_small, lang_get(56+arena), 59+72, 153, (211-72)-4, COLOR_GREEN);
 
         // arena description
-        font_render_wrapped(&font_small, lang_get(66+arena), 59+72, 161, (211-72)-4, 0, 255, 0);
+        font_render_wrapped(&font_small, lang_get(66+arena), 59+72, 161, (211-72)-4, COLOR_GREEN);
 
     } else {
-        font_render_wrapped(&font_small, lang_get(749+(11*scene->player1.player_id)+scene->player2.player_id), 59, 160, 150, 255, 255, 0);
-        font_render_wrapped(&font_small, lang_get(870+(11*scene->player2.player_id)+scene->player1.player_id), 320-(59+150), 180, 150, 255, 255, 0);
+        font_render_wrapped(&font_small, lang_get(749+(11*scene->player1.player_id)+scene->player2.player_id), 59, 160, 150, COLOR_YELLOW);
+        font_render_wrapped(&font_small, lang_get(870+(11*scene->player2.player_id)+scene->player1.player_id), 320-(59+150), 180, 150, COLOR_YELLOW);
     }
 
     // welder & scientist

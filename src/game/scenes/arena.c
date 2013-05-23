@@ -309,22 +309,22 @@ void arena_render(scene *scene) {
         progressbar_render(&player2_endurance_bar);
 
         // Render HAR and pilot names
-        font_render(&font_small, lang_get(scene->player1.player_id+20), 5, 19, 186, 250, 250);
-        font_render(&font_small, lang_get(scene->player1.har_id+31), 5, 26, 186, 250, 250);
+        font_render(&font_small, lang_get(scene->player1.player_id+20), 5, 19, TEXT_COLOR);
+        font_render(&font_small, lang_get(scene->player1.har_id+31), 5, 26, TEXT_COLOR);
         int p2len = (strlen(lang_get(scene->player2.player_id+20))-1) * font_small.w;
         int h2len = (strlen(lang_get(scene->player2.har_id+31))-1) * font_small.w;
-        font_render(&font_small, lang_get(scene->player2.player_id+20), 315-p2len, 19, 186, 250, 250);
-        font_render(&font_small, lang_get(scene->player2.har_id+31), 315-h2len, 26, 186, 250, 250);
+        font_render(&font_small, lang_get(scene->player2.player_id+20), 315-p2len, 19, TEXT_COLOR);
+        font_render(&font_small, lang_get(scene->player2.har_id+31), 315-h2len, 26, TEXT_COLOR);
         
         // Render score stuff
         chr_score_render(&player1_score);
         chr_score_render(&player2_score);
         char tmp[50];
         chr_score_format(&player1_score, tmp);
-        font_render(&font_small, tmp, 5, 33, 186, 250, 250);
+        font_render(&font_small, tmp, 5, 33, TEXT_COLOR);
         int s2len = strlen(tmp) * font_small.w;
         chr_score_format(&player2_score, tmp);
-        font_render(&font_small, tmp, 315-s2len, 33, 186, 250, 250);
+        font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
     }
 
     // Draw menu if necessary
