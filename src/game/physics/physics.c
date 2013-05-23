@@ -17,6 +17,7 @@ void physics_init(physics_state *state, int pos_x, int pos_y, float spd_x, float
     state->gravity = gravity;
     state->userdata = userdata;
     state->vertical_state = PHY_VSTATE_NONE;
+    state->ticks = 0;
     
     // Callbacks
     state->jump = NULL;
