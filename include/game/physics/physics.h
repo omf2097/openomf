@@ -27,6 +27,8 @@ struct physics_state_t {
     int wall_left;
     int wall_right;
     float gravity;
+    float bounciness;
+    float friction;
     
     void (*jump)(physics_state *state, void *userdata);
     void (*fall)(physics_state *state, void *userdata);
@@ -38,7 +40,7 @@ struct physics_state_t {
     void (*crouch)(physics_state *state, void *userdata);
 };
 
-void physics_init(physics_state *state, int pos_x, int pos_y, float spd_x, float spd_y, int floor, int ceiling, int wall_left, int wall_right, float gravity, void *userdata);
+void physics_init(physics_state *state, int pos_x, int pos_y, float spd_x, float spd_y, int floor, int ceiling, int wall_left, int wall_right, float gravity, float bounciness, float friction, void *userdata);
 void physics_tick(physics_state *state);
 void physics_jump(physics_state *state, float spd_y);
 void physics_recoil(physics_state *state, float spd_x, float spd_y);

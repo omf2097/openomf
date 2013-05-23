@@ -26,7 +26,7 @@ void har_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
         py = ani->sdani->start_y + my + har->phy.pos.y;
         
         particle *p = malloc(sizeof(particle));
-        particle_create(p, id, ani, px, py, har->direction, mg/100.0f);
+        particle_create(p, id, ani, px, py, har->direction, mg/100.0f, 0.0f, 1.0f); // No friction, no bounciness
         int c = har->af->moves[id]->unknown[16];
         DEBUG("successor for %d is %d", id, c);
         if (c) {
@@ -150,7 +150,7 @@ void phycb_crouch(physics_state *state, void *userdata) {
 
 int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     // Physics & callbacks
-    physics_init(&h->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, 1.0f, h);
+    physics_init(&h->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, 1.0f, 0.0f, 1.0f, h);
     h->phy.fall = phycb_fall;
     h->phy.floor_hit = phycb_floor_hit;
     h->phy.stop = phycb_stop;
@@ -326,12 +326,12 @@ void har_take_damage(har *har, int amount, const char *string) {
 void har_spawn_scrap(har *h, int x, int y, int direction) {
     // Spawn scrap!
     animation *scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL);
-    for(int i = 0; i < 4; i++) {
+    for(int i = 1; i < 16; i++) {
         particle *p = malloc(sizeof(particle));
         scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL+(i%3));
-        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, x, y, direction, 1.0f);
-        p->phy.spd.y = direction * (-3.0 / i);
-        p->phy.spd.x = direction * (5.0 / i);
+        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, x, y, direction, 1.0f, 0.4f, 0.95f); // Retains 0.4f of force when hits surface, retains 0.95f of force per tick.
+        p->phy.spd.y = (-(4.0 / 16 * i + 2.0));
+        p->phy.spd.x = direction * (6.0 / 16 * i + 2.0);
         list_append(&h->particles, &p, sizeof(particle*));
     }
 }
