@@ -53,5 +53,6 @@ int physics_is_moving_left(physics_state *state);
 int physics_is_moving_right(physics_state *state);
 int physics_is_stopped(physics_state *state);
 int physics_is_in_air(physics_state *state);
+int physics_is_bouncy(physics_state *state);
 
 #endif // _PHYSICS_H

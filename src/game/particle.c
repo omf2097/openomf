@@ -33,16 +33,32 @@ int particle_successor(particle *p) {
     return 0;
 }
 
+void particle_wall_hit(physics_state *state, void *userdata, int side, int vstate) {
+     particle *p = (particle*)userdata;
+     if(!physics_is_bouncy(state) && !particle_successor(p)) {
+         p->finished = 1;
+     }
+     DEBUG("Particle: wall hit @ %d,%d", p->phy.pos.x, p->phy.pos.y);
+ }
+ 
+void particle_floor_hit(physics_state *state, void *userdata, int vstate) {
+    particle *p = (particle*)userdata;
+    if(!physics_is_bouncy(state) && !particle_successor(p)) {
+        p->finished = 1;
+    }
+    DEBUG("Particle: floor hit @ %d,%d", p->phy.pos.x, p->phy.pos.y);
+} 
+
 void particle_stopped(physics_state *state, void *userdata) {
     particle *p = (particle*)userdata;
-    //if(!particle_successor(p)) {
-        p->finished = 1;
-    //}
+    p->finished = 1;
 }
 
 int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction, float gravity, float bounciness, float friction) {
     physics_init(&p->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, gravity, bounciness, friction, p);
     p->phy.stop = particle_stopped;
+    p->phy.wall_hit = particle_wall_hit;
+    p->phy.floor_hit = particle_floor_hit;
     p->phy.vertical_state = PHY_VSTATE_JUMP;
     
     animationplayer_create(&p->player, id, ani);
@@ -66,9 +82,7 @@ void particle_tick(particle *p) {
     physics_tick(&p->phy);
     animationplayer_run(&p->player);
     if(p->player.finished) {
-        //if(!particle_successor(p)) {
-            p->finished = 1;
-        //}
+        p->finished = 1;
     }
 }
 

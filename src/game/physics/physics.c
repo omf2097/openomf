@@ -185,3 +185,7 @@ int physics_is_moving_right(physics_state *state) {
 int physics_is_in_air(physics_state *state) {
     return (state->pos.y < state->floor && state->vertical_state != PHY_VSTATE_RECOIL);
 }
+
+int physics_is_bouncy(physics_state *state) {
+    return (state->bounciness > 0.0f);
+}
