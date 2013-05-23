@@ -9,6 +9,7 @@
 #include "audio/music.h"
 #include "game/settings.h"
 #include "game/har.h"
+#include "game/score.h"
 #include "game/text/text.h"
 #include "game/text/languages.h"
 #include "game/menu/menu.h"
@@ -32,6 +33,7 @@
 #define ENDURANCEBAR_COLOR_BG color_create(97,150,186,255)
 #define ENDURANCEBAR_COLOR_TL_BORDER color_create(24,117,138,255)
 #define ENDURANCEBAR_COLOR_BR_BORDER color_create(0,69,93,255)
+#define TEXT_COLOR color_create(186,250,250,255)
 
 menu game_menu;
 component title_button;
@@ -49,6 +51,8 @@ progress_bar player1_health_bar;
 progress_bar player2_health_bar;
 progress_bar player1_endurance_bar;
 progress_bar player2_endurance_bar;
+chr_score player1_score;
+chr_score player2_score;
 
 void game_menu_quit(component *c, void *userdata) {
     scene *scene = userdata;
@@ -195,6 +199,8 @@ int arena_init(scene *scene) {
                        ENDURANCEBAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_BG,
                        PROGRESSBAR_LEFT);
+    chr_score_create(&player1_score, 4, 33, 1.0f);
+    chr_score_create(&player2_score, 215, 33, 1.0f); // TODO: Set better coordinates for this
     return 0;
 }
 
@@ -223,11 +229,18 @@ void arena_deinit(scene *scene) {
     progressbar_free(&player2_health_bar);
     progressbar_free(&player1_endurance_bar);
     progressbar_free(&player2_endurance_bar);
+    chr_score_free(&player1_score);
+    chr_score_free(&player2_score);
     
     settings_save();
 }
 
 void arena_tick(scene *scene) {
+    // Handle scrolling score texts
+    chr_score_tick(&player1_score);
+    chr_score_tick(&player2_score);
+
+    // Handle menu, if visible
     if(!menu_visible) {
         keyboard_tick(scene->player1.ctrl);
         keyboard_tick(scene->player2.ctrl);
@@ -302,6 +315,16 @@ void arena_render(scene *scene) {
         int h2len = (strlen(lang_get(scene->player2.har_id+31))-1) * font_small.w;
         font_render(&font_small, lang_get(scene->player2.player_id+20), 315-p2len, 19, 186, 250, 250);
         font_render(&font_small, lang_get(scene->player2.har_id+31), 315-h2len, 26, 186, 250, 250);
+        
+        // Render score stuff
+        chr_score_render(&player1_score);
+        chr_score_render(&player2_score);
+        char tmp[50];
+        chr_score_format(&player1_score, tmp);
+        font_render(&font_small, tmp, 5, 33, 186, 250, 250);
+        int s2len = strlen(tmp) * font_small.w;
+        chr_score_format(&player2_score, tmp);
+        font_render(&font_small, tmp, 315-s2len, 33, 186, 250, 250);
     }
 
     // Draw menu if necessary
