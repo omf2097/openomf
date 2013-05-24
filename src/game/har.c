@@ -76,6 +76,7 @@ void har_switch_animation(har *har, int id) {
     har->player.del_player = har_set_ani_finished;
     har->player.phy = &har->phy;
     har->hit_this_time = 0;
+    har->player.reverse = 0;
     animationplayer_run(&har->player);
 }
 
@@ -83,7 +84,7 @@ void phycb_fall(physics_state *state, void *userdata) {
     har *h = userdata;
     if (h->state == STATE_JUMPING) {
         animationplayer_next_frame(&h->player);
-        if(h->phy.spd.x*h->direction < 0) {
+        if(h->player.id == ANIM_JUMPING && h->phy.spd.x*h->direction < 0) {
             animationplayer_goto_frame(&h->player, sd_stringparser_num_frames(h->player.parser)-1);
             h->player.reverse = 1;
         }

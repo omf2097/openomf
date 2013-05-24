@@ -14,8 +14,6 @@
 #include "console/console.h"
 #include <SDL2/SDL.h>
 
-#define MS_PER_OMF_TICK 10
-
 int run = 0;
 int _vsync = 0;
 int take_screenshot = 0;
@@ -126,10 +124,10 @@ void engine_run() {
         // Render scene
         int dt = SDL_GetTicks() - scene_start;
         omf_wait += dt;
-        while(omf_wait > MS_PER_OMF_TICK) {
+        while(omf_wait > scene_ms_per_tick()) {
             scene_tick(&scene);
             console_tick();
-            omf_wait -= MS_PER_OMF_TICK;
+            omf_wait -= scene_ms_per_tick();
         }
         scene_start = SDL_GetTicks();
 

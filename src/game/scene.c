@@ -8,6 +8,7 @@
 #include "video/video.h"
 #include "audio/sound.h"
 #include "audio/sound_state.h"
+#include "game/settings.h"
 #include "game/scene.h"
 #include "game/scenes/intro.h"
 #include "game/scenes/mainmenu.h"
@@ -18,6 +19,8 @@
 #include "game/scenes/vs.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
+
+#define MS_PER_OMF_TICK_SLOWEST 16
 
 // Internal functions
 void scene_add_ani_player(void *userdata, int id, int mx, int my, int mg);
@@ -414,6 +417,9 @@ void scene_free(scene *scene) {
 
     // Free BK
     sd_bk_delete(scene->bk);
+}
+unsigned int scene_ms_per_tick() {
+    return MS_PER_OMF_TICK_SLOWEST - settings_get()->gameplay.speed;
 }
 
 void fixup_palette(sd_palette *palette) {

@@ -76,5 +76,6 @@ void scene_free(scene *scene);
 int scene_handle_event(scene *scene, SDL_Event *event);
 void scene_render(scene *scene);
 void scene_tick(scene *scene);
+unsigned int scene_ms_per_tick();
 
 #endif // _SCENE_H
