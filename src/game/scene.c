@@ -20,6 +20,7 @@
 #include "game/animation.h"
 #include "game/animationplayer.h"
 
+#define MS_PER_OMF_TICK 10
 #define MS_PER_OMF_TICK_SLOWEST 16
 
 // Internal functions
@@ -418,8 +419,18 @@ void scene_free(scene *scene) {
     // Free BK
     sd_bk_delete(scene->bk);
 }
-unsigned int scene_ms_per_tick() {
-    return MS_PER_OMF_TICK_SLOWEST - settings_get()->gameplay.speed;
+unsigned int scene_ms_per_tick(scene *scene) {
+    switch(scene->this_id) {
+        case SCENE_ARENA0:
+        case SCENE_ARENA1:
+        case SCENE_ARENA2:
+        case SCENE_ARENA3:
+        case SCENE_ARENA4:
+        case SCENE_ARENA5:
+            return MS_PER_OMF_TICK_SLOWEST - settings_get()->gameplay.speed;
+    }
+
+    return MS_PER_OMF_TICK;
 }
 
 void fixup_palette(sd_palette *palette) {

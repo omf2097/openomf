@@ -124,10 +124,10 @@ void engine_run() {
         // Render scene
         int dt = SDL_GetTicks() - scene_start;
         omf_wait += dt;
-        while(omf_wait > scene_ms_per_tick()) {
+        while(omf_wait > scene_ms_per_tick(&scene)) {
             scene_tick(&scene);
             console_tick();
-            omf_wait -= scene_ms_per_tick();
+            omf_wait -= scene_ms_per_tick(&scene);
         }
         scene_start = SDL_GetTicks();
 
