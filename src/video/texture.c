@@ -45,14 +45,14 @@ int texture_create_from_img(texture *tex, const image *img) {
 }
 
 void texture_free(texture *tex) {
-    texturelist_remove(tex);
     if(tex->data != 0) {
+        texturelist_remove(tex);
         free(tex->data);
         tex->data = NULL;
+        glDeleteTextures(1, &tex->id);
+        tex->w = 0;
+        tex->h = 0;
     }
-    glDeleteTextures(1, &tex->id);
-    tex->w = 0;
-    tex->h = 0;
 }
 
 unsigned int texture_size(texture *tex) {
