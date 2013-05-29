@@ -497,6 +497,8 @@ void har_collision_har(har *har_a, har *har_b) {
         if (hit || har_a->af->moves[ani_id]->unknown[13] == CAT_CLOSE) {
             // close moves always hit, for now
             har_a->hit_this_time = 1;
+            har_b->player.enemy_x = har_a->phy.pos.x;
+            har_b->player.enemy_y = har_a->phy.pos.y;
             har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17], har_a->af->moves[ani_id]->footer_string);
             // check if there's a subsequent animation to change to, eg spike charge
             if (har_a->af->moves[ani_id]->unknown[12] != 0) {

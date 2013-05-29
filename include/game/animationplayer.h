@@ -39,6 +39,7 @@ typedef struct animationplayer_t {
     physics_state *phy;
     
     int x,y;
+    int enemy_x, enemy_y;
     aniplayer_sprite *obj;
     void *userdata;
     

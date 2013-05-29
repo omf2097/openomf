@@ -276,7 +276,28 @@ void animationplayer_run(animationplayer *player) {
                 physics_recoil(player->phy, (float)x, (float)y);
             }
         }
-        if (isset(f, "v") == 0 && (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
+        if (isset(f, "e") && player->phy != NULL) {
+            // x,y relative to *enemy's* position
+            int x = 0, y = 0;
+            if(isset(f, "y-")) {
+                y = get(f, "y-") * -1;
+            } else if(isset(f, "y+")) {
+                y = get(f, "y+");
+            }
+            if(isset(f, "x-")) {
+                x = get(f, "x-") * -1 * player->direction;
+            } else if(isset(f, "x+")) {
+                x = get(f, "x+") * player->direction;
+            }
+
+            if (x || y) {
+                int x_dist = dist(player->phy->pos.x, player->enemy_x + x);
+                int y_dist = dist(player->phy->pos.y, player->enemy_y + y);
+                DEBUG("xdist %d %d + %d -> %d, ydist %d %d + %d -> %d", player->phy->pos.x, player->enemy_x, x, x_dist, player->phy->pos.y, player->enemy_y, y, y_dist);
+                physics_move_per_tick(player->phy, x_dist / (float)param->duration, y_dist / (float)param->duration, param->duration);
+            }
+        }
+        if (isset(f, "v") == 0 && isset(f, "e") == 0 && (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
             // check for relative X interleaving
             int x = 0, y = 0;
             if(isset(f, "y-")) {
