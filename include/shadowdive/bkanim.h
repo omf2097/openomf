@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 #ifndef _SD_READER_H
 typedef struct sd_reader_t sd_reader;
 #endif
@@ -33,5 +37,9 @@ int sd_bk_anim_load(sd_reader *reader, sd_bk_anim *bka);
 void sd_bk_anim_save(sd_writer *writer, sd_bk_anim *bka);
 
 void set_bk_anim_string(sd_bk_anim *bka, const char *data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SD_BK_ANIMS

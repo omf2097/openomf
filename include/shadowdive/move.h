@@ -1,6 +1,10 @@
 #ifndef _SD_MOVE_H
 #define _SD_MOVE_H
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 #ifndef _SD_WRITER_H
 typedef struct sd_writer_t sd_writer;
 #endif
@@ -27,5 +31,9 @@ void sd_move_save(sd_writer *writer, sd_move *move);
 
 void sd_move_set_animation(sd_move *move, sd_animation *animation);
 void sd_move_set_footer_string(sd_move *move, const char *str);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SD_MOVE_H

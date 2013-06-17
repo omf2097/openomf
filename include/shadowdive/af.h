@@ -8,6 +8,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 #ifndef _SD_MOVE_H
 typedef struct sd_move_t sd_move;
 #endif
@@ -56,5 +60,9 @@ int sd_af_save(sd_af_file *af, const char* filename);
  * \param af AF struct pointer. Must be created using sd_af_create().
  */
 void sd_af_delete(sd_af_file *af);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SD_AF_H

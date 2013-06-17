@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 #ifndef _SD_READER_H
 typedef struct sd_reader_t sd_reader;
 #endif
@@ -22,5 +26,9 @@ void sd_palette_to_gimp_palette(char *filename, sd_palette *palette);
 
 int sd_palette_load(sd_reader *reader, sd_palette *palette);
 void sd_palette_save(sd_writer *writer, sd_palette *palette);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SD_PALETTE_H

@@ -3,6 +3,10 @@
 
 #include "stringparser_tags.h"
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 typedef void* sd_stringparser_tag_list;
 typedef void* sd_stringparser_frame_list;
 
@@ -102,5 +106,9 @@ unsigned int sd_stringparser_num_ticks(sd_stringparser *parser);
 int sd_stringparser_get_current_frame_id(sd_stringparser *parser);
 
 char sd_stringparser_get_current_frame_letter(sd_stringparser *parser);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SD_STRINGPARSER_H

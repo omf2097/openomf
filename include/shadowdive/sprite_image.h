@@ -1,6 +1,10 @@
 #ifndef _SD_SPRITE_IMAGE
 #define _SD_SPRITE_IMAGE
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 #ifndef _SD_PALETTE_H
 typedef struct sd_palette_t sd_palette;
 #endif
@@ -26,5 +30,9 @@ void sd_sprite_image_delete(sd_sprite_image *img, int missing);
 sd_sprite_image* sd_sprite_image_encode(sd_rgba_image *img, sd_palette *pal, int remapping);
 sd_rgba_image* sd_sprite_image_decode(sd_sprite_image *img, sd_palette *pal, int remapping);
 sd_vga_image* sd_sprite_vga_decode(sd_sprite_image *img);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SD_SPRITE_IMAGE

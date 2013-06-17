@@ -3,6 +3,10 @@
 
 #include "shadowdive/sprite.h"
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 typedef struct col_coord_t {
     int16_t x;
     uint8_t x_ext; 
@@ -37,5 +41,9 @@ void sd_animation_save(sd_writer *writer, sd_animation *anim);
 
 void sd_animation_set_anim_string(sd_animation *animation, const char *str);
 void sd_animation_set_extra_string(sd_animation *animation, int num, const char *str);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SD_ANIMATION_H

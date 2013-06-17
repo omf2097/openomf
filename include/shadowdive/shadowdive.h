@@ -11,7 +11,6 @@ typedef struct sd_writer_t sd_writer;
 typedef struct sd_reader_t sd_reader;
 #endif
 
-
 #include "shadowdive/palette.h"
 #include "shadowdive/rgba_image.h"
 #include "shadowdive/vga_image.h"

@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include "shadowdive/sprite_image.h"
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 #ifndef _SD_WRITER_H
 typedef struct sd_writer_t sd_writer;
 #endif
@@ -24,5 +28,9 @@ sd_sprite* sd_sprite_create();
 void sd_sprite_delete(sd_sprite *sprite);
 int sd_sprite_load(sd_reader *reader, sd_sprite *sprite);
 void sd_sprite_save(sd_writer *writer, sd_sprite *sprite);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SD_SPRITE_H

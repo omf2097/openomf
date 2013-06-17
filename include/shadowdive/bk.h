@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus 
+extern "C" {
+#endif
+
 #ifndef _SD_PALETTE_H
 typedef struct sd_palette_t sd_palette;
 #endif
@@ -53,5 +57,9 @@ int sd_bk_save(sd_bk_file *bk, const char* filename);
   * Deletes bk_file structure from memory.
   */
 void sd_bk_delete(sd_bk_file *bk);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SD_BK_H
