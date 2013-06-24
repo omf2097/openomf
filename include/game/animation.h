@@ -2,9 +2,7 @@
 #define _ANIMATION_H
 
 #include "utils/array.h"
-
-typedef struct sd_animation_t sd_animation;
-typedef struct sd_palette_t sd_palette;
+#include <shadowdive/shadowdive.h>
 
 typedef struct animation_t {
     sd_animation *sdani;

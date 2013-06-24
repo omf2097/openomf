@@ -1,7 +1,6 @@
 #include "game/animation.h"
 #include "utils/log.h"
 #include "video/texture.h"
-#include <shadowdive/shadowdive.h>
 #include <stdlib.h>
 
 int animation_create(animation *ani, sd_animation *sdani, sd_palette *pal, int overlay, char *soundtable) {
