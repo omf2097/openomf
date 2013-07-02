@@ -2,6 +2,7 @@
 #define _PARTICLE_H
 
 #include <shadowdive/shadowdive.h>
+#include <chipmunk/chipmunk.h>
 #include "game/animation.h"
 #include "game/animationplayer.h"
 #include "game/physics/physics.h"
@@ -16,10 +17,17 @@ typedef struct particle_t particle;
 
 struct particle_t {
     animationplayer player;
-    physics_state phy;
     int finished;
     unsigned int id;
     animation *successor;
+    
+    cpSpace *space;
+    cpShape *line_floor;
+    cpShape *line_wall_left;
+    cpShape *line_wall_right;
+    cpShape *line_ceiling;
+    cpBody *obody;
+    cpShape *oshape;
 };
 
 int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction, float gravity, float bounciness, float friction);

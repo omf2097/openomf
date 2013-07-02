@@ -35,7 +35,7 @@ void har_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
         particle_tick(p);
         list_append(&har->particles, &p, sizeof(particle*));
         
-        DEBUG("Create animation %d @ pos = %d,%d, spd = %f,%f", id, p->phy.pos.x, p->phy.pos.y, p->phy.spd.x, p->phy.spd.y);
+        DEBUG("Create animation %d", id);
         return;
     } 
 }
@@ -333,8 +333,11 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
         particle *p = malloc(sizeof(particle));
         scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL+(i%3));
         particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, x, y, direction, 1.0f, 0.4f, 0.95f); // Retains 0.4f of force when hits surface, retains 0.95f of force per tick.
-        p->phy.spd.y = (-(4.0 / 16 * i + 2.0));
-        p->phy.spd.x = direction * (6.0 / 16 * i + 2.0);
+        
+        // TODO: Fix velocity vector setting
+        
+        //p->phy.spd.y = (-(4.0 / 16 * i + 2.0));
+        //p->phy.spd.x = direction * (6.0 / 16 * i + 2.0);
         list_append(&h->particles, &p, sizeof(particle*));
     }
 }
@@ -462,8 +465,10 @@ void har_collision_har(har *har_a, har *har_b) {
 
         hit = check_collision(har_a, har_a->phy, har_b, ani, frame_id, sprite, vga);
 
+        // TODO: FIX Particle to HAR collisions
+        
         // check any projectiles this har has in=flight
-        iterator it;
+        /*iterator it;
         particle **p;
 
         list_iter_begin(&har_a->particles, &it);
@@ -484,7 +489,7 @@ void har_collision_har(har *har_a, har *har_b) {
                 (*p)->successor = NULL;
                 (*p)->finished = 1;
             }
-        }
+        }*/
 
         sd_vga_image_delete(vga);
 
