@@ -60,7 +60,7 @@ void particle_stopped(physics_state *state, void *userdata) {
 
 int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction, float gravity, float bounciness, float friction) {
     // Room physics
-    cpVect grav = cpv(0, -100);
+    cpVect grav = cpv(0, 100);
     p->space = cpSpaceNew();
     cpSpaceSetGravity(p->space, grav);
     
