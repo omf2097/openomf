@@ -58,9 +58,21 @@ void particle_stopped(physics_state *state, void *userdata) {
 }
 */
 
-int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction, float gravity, float bounciness, float friction) {
+void particle_get_vel(particle *p, int *vx, int *vy) {
+    cpVect v = cpBodyGetVel(p->obody);
+    *vx = v.x;
+    *vy = v.y;
+}
+
+void particle_get_pos(particle *p, int *x, int *y) {
+    cpVect v = cpBodyGetPos(p->obody);
+    *x = v.x;
+    *y = v.y;
+}
+
+int particle_create(particle *p, unsigned int id, animation *ani, int dir, int x, int y, int vx, int vy, float mass, float gravity, float friction, float elasticity) {
     // Room physics
-    cpVect grav = cpv(0, 100);
+    cpVect grav = cpv(0, gravity);
     p->space = cpSpaceNew();
     cpSpaceSetGravity(p->space, grav);
     
@@ -75,22 +87,22 @@ int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, 
     cpSpaceAddShape(p->space, p->line_wall_right);
     
     // Body physics
-    cpFloat mass = 1;
     cpFloat radius = 5;
     cpFloat moment = cpMomentForCircle(mass, 0, radius, cpvzero);
     p->obody = cpSpaceAddBody(p->space, cpBodyNew(mass, moment));
     cpBodySetPos(p->obody, cpv(x, y));
+    cpBodySetVel(p->obody, cpv(vx,vy));
     p->oshape = cpSpaceAddShape(p->space, cpCircleShapeNew(p->obody, radius, cpvzero));
-    cpShapeSetFriction(p->oshape, 0.7);
+    cpShapeSetFriction(p->oshape, friction);
+    cpShapeSetElasticity(p->oshape, elasticity);
     
     // Animation playback stuff
     animationplayer_create(&p->player, id, ani);
-    animationplayer_set_direction(&p->player, direction);
+    animationplayer_set_direction(&p->player, dir);
     /*animationplayer_set_repeat(&p->player, 1);*/
     p->player.x = x;
     p->player.y = y;
     p->player.userdata = p;
-    //p->player.phy = &p->phy;
     p->finished = 0;
     p->id = id;
     p->successor = NULL;

@@ -30,8 +30,10 @@ struct particle_t {
     cpShape *oshape;
 };
 
-int particle_create(particle *p, unsigned int id, animation *ani, int x, int y, int direction, float gravity, float bounciness, float friction);
+int particle_create(particle *p, unsigned int id, animation *ani, int dir, int x, int y, int vx, int vy, float mass, float gravity, float friction, float elasticity);
 int particle_successor(particle *p);
+void particle_get_vel(particle *p, int *vx, int *vy);
+void particle_get_pos(particle *p, int *x, int *y);
 void particle_free(particle *p);
 void particle_tick(particle *p);
 void particle_render(particle *p);

@@ -26,7 +26,7 @@ void har_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
         py = ani->sdani->start_y + my + har->phy.pos.y;
         
         particle *p = malloc(sizeof(particle));
-        particle_create(p, id, ani, px, py, har->direction, mg/100.0f, 0.0f, 1.0f); // No friction, no bounciness
+        particle_create(p, id, ani, 0, px, py, 0, 0, mg/100.0f, 0.0f, 1.0f, 0.0f);
         int c = har->af->moves[id]->unknown[16];
         DEBUG("successor for %d is %d", id, c);
         if (c) {
@@ -332,12 +332,9 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
     for(int i = 1; i < 16; i++) {
         particle *p = malloc(sizeof(particle));
         scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL+(i%3));
-        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, x, y, direction, 1.0f, 0.4f, 0.95f); // Retains 0.4f of force when hits surface, retains 0.95f of force per tick.
-        
-        // TODO: Fix velocity vector setting
-        
-        //p->phy.spd.y = (-(4.0 / 16 * i + 2.0));
-        //p->phy.spd.x = direction * (6.0 / 16 * i + 2.0);
+        int vy = (-(4.0 / 16 * i + 2.0));
+        int vx = direction * (30.0 / 16 * i + 2.0);
+        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 1.0f, 100.0f, 0.7f, 0.3f); 
         list_append(&h->particles, &p, sizeof(particle*));
     }
 }
