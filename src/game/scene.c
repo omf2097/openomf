@@ -60,6 +60,7 @@ int scene_is_valid(int id) {
 int scene_load(scene *scene, unsigned int scene_id) {
     scene->bk = sd_bk_create();
     scene->loop = 1;
+    scene->local = NULL;
     int ret = 0;
     
     // Load BK

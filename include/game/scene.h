@@ -50,6 +50,7 @@ typedef struct scene_t {
     unsigned int next_id;
     texture background;
     array animations;
+    void *local;
 
     list child_players;
     list root_players;

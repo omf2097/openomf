@@ -4,6 +4,7 @@
 #include "game/scene.h"
 #include "utils/log.h"
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -349,7 +350,7 @@ void console_event(scene *scene, SDL_Event *e) {
     if (e->type == SDL_KEYDOWN) {
         unsigned char code = e->key.keysym.sym;
         unsigned char len = strlen(con->input);
-        unsigned char *state = SDL_GetKeyboardState(NULL);
+        const unsigned char *state = SDL_GetKeyboardState(NULL);
         /*if ((code >= SDLK_a && code <= SDLK_z) || (code >= SDLK_0 && code <= SDLK_9) || code == SDLK_SPACE || code == SDLK) {*/
         // SDLK_UP and SDLK_DOWN does not work here
         if(state[SDL_SCANCODE_UP]) {

@@ -17,7 +17,7 @@ void keyboard_free(controller *ctrl) {
 
 void keyboard_tick(controller *ctrl) {
     keyboard *k = ctrl->data;
-    unsigned char *state = SDL_GetKeyboardState(NULL);
+    const unsigned char *state = SDL_GetKeyboardState(NULL);
     int handled = 0;
 
     if (state[k->keys->down]) {
@@ -49,7 +49,7 @@ int keyboard_handle(controller *ctrl, SDL_Event *event) {
         return 1;
     }
     if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) {
-        unsigned char *state = SDL_GetKeyboardState(NULL);
+        const unsigned char *state = SDL_GetKeyboardState(NULL);
         if ( state[k->keys->left] && state[k->keys->up]) {
             har_act(ctrl->har, ACT_UPLEFT);
         } else if ( state[k->keys->left] && state[k->keys->down]) {
