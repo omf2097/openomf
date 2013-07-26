@@ -21,16 +21,12 @@ struct particle_t {
     unsigned int id;
     animation *successor;
     
-    cpSpace *space;
-    cpShape *line_floor;
-    cpShape *line_wall_left;
-    cpShape *line_wall_right;
-    cpShape *line_ceiling;
+    cpSpace *space; // References to arena.c
     cpBody *obody;
     cpShape *oshape;
 };
 
-int particle_create(particle *p, unsigned int id, animation *ani, int dir, int x, int y, int vx, int vy, float mass, float gravity, float friction, float elasticity);
+int particle_create(particle *p, unsigned int id, animation *ani, cpSpace *space, int dir, int x, int y, int vx, int vy, float mass, float gravity, float friction, float elasticity);
 int particle_successor(particle *p);
 void particle_get_vel(particle *p, int *vx, int *vy);
 void particle_get_pos(particle *p, int *x, int *y);

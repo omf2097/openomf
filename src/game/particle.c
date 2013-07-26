@@ -70,23 +70,9 @@ void particle_get_pos(particle *p, int *x, int *y) {
     *y = v.y;
 }
 
-int particle_create(particle *p, unsigned int id, animation *ani, int dir, int x, int y, int vx, int vy, float mass, float gravity, float friction, float elasticity) {
-    // Room physics
-    cpVect grav = cpv(0, gravity);
-    p->space = cpSpaceNew();
-    cpSpaceSetGravity(p->space, grav);
-    
-    // Room constraints
-    p->line_floor = cpSegmentShapeNew(p->space->staticBody, cpv(0, 200), cpv(320, 200), 0);
-    p->line_ceiling = cpSegmentShapeNew(p->space->staticBody, cpv(0, 0), cpv(320, 0), 0);
-    p->line_wall_left = cpSegmentShapeNew(p->space->staticBody, cpv(0, 0), cpv(0, 200), 0);
-    p->line_wall_right = cpSegmentShapeNew(p->space->staticBody, cpv(320, 0), cpv(320, 200), 0);
-    cpSpaceAddShape(p->space, p->line_floor);
-    cpSpaceAddShape(p->space, p->line_ceiling);
-    cpSpaceAddShape(p->space, p->line_wall_left);
-    cpSpaceAddShape(p->space, p->line_wall_right);
-    
+int particle_create(particle *p, unsigned int id, animation *ani, cpSpace *space, int dir, int x, int y, int vx, int vy, float mass, float gravity, float friction, float elasticity) {
     // Body physics
+    p->space = space;
     cpFloat radius = 5;
     cpFloat moment = cpMomentForCircle(mass, 0, radius, cpvzero);
     p->obody = cpSpaceAddBody(p->space, cpBodyNew(mass, moment));
@@ -112,16 +98,10 @@ int particle_create(particle *p, unsigned int id, animation *ani, int dir, int x
 void particle_free(particle *p) {
     cpShapeFree(p->oshape);
     cpBodyFree(p->obody);
-    cpShapeFree(p->line_floor);
-    cpShapeFree(p->line_ceiling);
-    cpShapeFree(p->line_wall_left);
-    cpShapeFree(p->line_wall_right);
-    cpSpaceFree(p->space);
     animationplayer_free(&p->player);
 }
 
 void particle_tick(particle *p) {
-    cpSpaceStep(p->space, 0.08); // TODO: Do we need the real value here ?
     animationplayer_run(&p->player);
     if(p->player.finished) {
         p->finished = 1;

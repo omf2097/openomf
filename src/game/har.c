@@ -26,7 +26,7 @@ void har_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
         py = ani->sdani->start_y + my + har->phy.pos.y;
         
         particle *p = malloc(sizeof(particle));
-        particle_create(p, id, ani, 0, px, py, 0, 0, mg/100.0f, 0.0f, 1.0f, 0.0f);
+        particle_create(p, id, ani, p->space, 0, px, py, 0, 0, mg/100.0f, 0.0f, 1.0f, 0.0f);
         int c = har->af->moves[id]->unknown[16];
         DEBUG("successor for %d is %d", id, c);
         if (c) {
@@ -257,6 +257,11 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     return 0;
 }
 
+int har_init_physics(har *har, cpSpace *space) {
+    har->space = space;
+    return 0;
+}
+
 void har_free(har *h) {
     iterator it;
     animation *ani;
@@ -334,7 +339,7 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
         scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL+(i%3));
         int vy = (-(4.0 / 16 * i + 2.0));
         int vx = direction * (30.0 / 16 * i + 2.0);
-        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 1.0f, 100.0f, 0.7f, 0.3f); 
+        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, h->space, direction, x, y, vx, vy, 1.0f, 100.0f, 0.7f, 0.3f); 
         list_append(&h->particles, &p, sizeof(particle*));
     }
 }

@@ -23,6 +23,7 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <string.h>
+#include <chipmunk/chipmunk.h>
 #include <shadowdive/shadowdive.h>
 
 #define BAR_COLOR_BG color_create(89,40,101,255)
@@ -49,6 +50,12 @@ typedef struct arena_local_t {
     texture tex;
     int menu_visible;
 
+    cpSpace *space;
+    cpShape *line_floor;
+    cpShape *line_wall_left;
+    cpShape *line_wall_right;
+    cpShape *line_ceiling;
+    
     progress_bar player1_health_bar;
     progress_bar player2_health_bar;
     progress_bar player1_endurance_bar;
@@ -80,9 +87,14 @@ void sound_slide(component *c, void *userdata, int pos) {
 }
 
 int arena_init(scene *scene) {
-    settings *setting = settings_get();
+    settings *setting;
     controller *player1_ctrl, *player2_ctrl;
     keyboard_keys *keys, *keys2;
+    arena_local *local;
+    cpVect grav;
+    
+    // Load up settings
+    setting = settings_get();
     
     // Handle music playback
     music_stop();
@@ -106,9 +118,29 @@ int arena_init(scene *scene) {
     audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
 
     // Initialize local struct
-    arena_local *local = malloc(sizeof(arena_local));
+    local = malloc(sizeof(arena_local));
     scene->local = local;
     
+    // Init physics
+    grav = cpv(0, 100);
+    local->space = cpSpaceNew();
+    cpSpaceSetGravity(local->space, grav);
+    
+    // Arena constraints
+    local->line_floor = cpSegmentShapeNew(local->space->staticBody, cpv(0, 200), cpv(320, 200), 0);
+    local->line_ceiling = cpSegmentShapeNew(local->space->staticBody, cpv(0, 0), cpv(320, 0), 0);
+    local->line_wall_left = cpSegmentShapeNew(local->space->staticBody, cpv(0, 0), cpv(0, 200), 0);
+    local->line_wall_right = cpSegmentShapeNew(local->space->staticBody, cpv(320, 0), cpv(320, 200), 0);
+    cpSpaceAddShape(local->space, local->line_floor);
+    cpSpaceAddShape(local->space, local->line_ceiling);
+    cpSpaceAddShape(local->space, local->line_wall_left);
+    cpSpaceAddShape(local->space, local->line_wall_right);
+    
+    // Init physics for hars
+    har_init_physics(scene->player1.har, local->space);
+    har_init_physics(scene->player2.har, local->space);
+    
+    // Player 1 controller
     player1_ctrl = malloc(sizeof(controller));
     keys = malloc(sizeof(keyboard_keys));
     keys->up = SDL_SCANCODE_UP;
@@ -120,6 +152,7 @@ int arena_init(scene *scene) {
     keyboard_create(player1_ctrl, scene->player1.har, keys);
     scene_set_player1_ctrl(scene, player1_ctrl);
 
+    // Player 2 controller
     player2_ctrl = malloc(sizeof(controller));
     keys2 = malloc(sizeof(keyboard_keys));
     keys2->up = SDL_SCANCODE_W;
@@ -131,6 +164,7 @@ int arena_init(scene *scene) {
     keyboard_create(player2_ctrl, scene->player2.har, keys2);
     scene_set_player2_ctrl(scene, player2_ctrl);
 
+    // Arena menu
     local->menu_visible = 0;
     menu_create(&local->game_menu, 70, 5, 181, 117);
     textbutton_create(&local->title_button, &font_large, "OMF 2097");
@@ -246,12 +280,25 @@ void arena_deinit(scene *scene) {
     
     settings_save();
     
+    cpShapeFree(local->line_floor);
+    cpShapeFree(local->line_ceiling);
+    cpShapeFree(local->line_wall_left);
+    cpShapeFree(local->line_wall_right);
+    cpSpaceFree(local->space);
+    
     free(scene->local);
 }
 
 void arena_tick(scene *scene) {
     arena_local *local = scene->local;
 
+    // Tick physics
+    cpSpaceStep(local->space, 0.08); // TODO: This is a guesstimate. Do we even need the real value here ?
+    
+    // Har ticks
+    har_tick(scene->player1.har);
+    har_tick(scene->player2.har);
+    
     // Handle scrolling score texts
     chr_score_tick(&local->player1_score);
     chr_score_tick(&local->player2_score);
@@ -311,6 +358,18 @@ int arena_event(scene *scene, SDL_Event *e) {
 void arena_render(scene *scene) {
     arena_local *local = (arena_local*)scene->local;
 
+    // Render hars
+    har_render(scene->player1.har);
+    har_render(scene->player2.har);
+
+    // Debug textures
+    if(scene->player1.har && scene->player1.har->cd_debug_tex.data) {
+        video_render_sprite_flip(&scene->player1.har->cd_debug_tex, -50, -50, BLEND_ALPHA_FULL, FLIP_NONE);
+    }
+    if(scene->player2.har && scene->player2.har->cd_debug_tex.data) {
+        video_render_sprite_flip(&scene->player2.har->cd_debug_tex, -50, -50, BLEND_ALPHA_FULL, FLIP_NONE);
+    }
+    
     // Set health bar
     if(scene->player1.har != NULL && scene->player2.har != NULL) {
         float p1_hp = (float)scene->player1.har->health / (float)scene->player1.har->health_max;

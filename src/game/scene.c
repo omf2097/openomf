@@ -280,22 +280,6 @@ void scene_render(scene *scene) {
     while((tmp = iter_next(&it)) != NULL) {
         animationplayer_render(tmp);
     }
-
-    // Render hars
-    if(scene->player1.har != NULL) {
-        har_render(scene->player1.har);
-    }
-    if(scene->player2.har != NULL) {
-        har_render(scene->player2.har);
-    }
-
-    if(scene->player1.har && scene->player1.har->cd_debug_tex.data) {
-        video_render_sprite_flip(&scene->player1.har->cd_debug_tex, -50, -50, BLEND_ALPHA_FULL, FLIP_NONE);
-    }
-
-    if(scene->player2.har && scene->player2.har->cd_debug_tex.data) {
-        video_render_sprite_flip(&scene->player2.har->cd_debug_tex, -50, -50, BLEND_ALPHA_FULL, FLIP_NONE);
-    }
  
     // Run custom render function, if defined
     if(scene->render != NULL) {
@@ -317,14 +301,6 @@ void scene_tick(scene *scene) {
     list_iter_begin(&scene->root_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
         animationplayer_run(tmp);
-    }
-        
-    // Har ticks
-    if(scene->player1.har != NULL) {
-        har_tick(scene->player1.har);
-    }
-    if(scene->player2.har != NULL) {
-        har_tick(scene->player2.har);
     }
 
     // Run custom tick function, if defined
