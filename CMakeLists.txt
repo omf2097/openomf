@@ -4,6 +4,7 @@ project(OpenOMF C)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 find_package(SDL2)
 find_package(shadowdive)
+find_package(chipmunk)
 find_package(dumb)
 find_package(OpenGL)
 find_package(OpenAL)
@@ -69,12 +70,6 @@ add_executable(openomf
     src/console/console.c
 )
 
-IF(UNIX)
-    SET(MATH_LIBRARY -lm)
-ELSE(UNIX)
-    SET(MATH_LIBRARY)
-ENDIF(UNIX)
-
 set(COREINCS
     include
     ${SDL2_INCLUDE_DIR} 
@@ -85,6 +80,7 @@ set(COREINCS
     ${CONFUSE_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
+    ${CHIPMUNK_INCLUDE_DIR}
 )
 
 set(CORELIBS 
@@ -96,12 +92,16 @@ set(CORELIBS
     ${CONFUSE_LIBRARY}
     ${GLEW_LIBRARY}
     ${LIBINTL_LIBRARIES}
-    ${MATH_LIBRARY}
+    ${CHIPMUNK_LIBRARY}
 )
 
 IF(MINGW)
     set(CORELIBS mingw32 ${CORELIBS})
 ENDIF(MINGW)
+
+IF(UNIX)
+    SET(CORELIBS ${CORELIBS} -lm)
+ENDIF(UNIX)
 
 include_directories(${COREINCS})
 target_link_libraries(openomf ${CORELIBS})
