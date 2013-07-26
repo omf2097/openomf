@@ -66,10 +66,6 @@ typedef struct arena_local_t {
 
 void game_menu_quit(component *c, void *userdata) {
     scene *scene = userdata;
-    scene_set_player1_har(scene, NULL);
-    scene_set_player2_har(scene, NULL);
-    scene_set_player1_ctrl(scene, NULL);
-    scene_set_player2_ctrl(scene, NULL);
     scene->next_id = SCENE_MENU;
 }
 
