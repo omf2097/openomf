@@ -10,12 +10,13 @@ Dependencies
 
 * libShadowDive: https://github.com/omf2097/libShadowDive
 * libdumb: https://github.com/omf2097/libdumb-kataja
-* SDL2: http://www.libsdl.org/tmp/SDL-2.0.tar.gz
+* SDL2: http://www.libsdl.org/tmp/download-2.0.php
 * OpenAL: http://kcat.strangesoft.net/openal.html
 * confuse: http://www.nongnu.org/confuse/
 * GLEW: http://glew.sourceforge.net/
 * Gettext (if you have problems with libintl)
 * Chipmunk: http://chipmunk-physics.net/
+* Enet: http://enet.bespin.org/
 
 Several of these are probably available as packages for your operating system, but some you will
 have to install from source.
