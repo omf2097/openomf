@@ -190,7 +190,7 @@ int vs_event(scene *scene, SDL_Event *event) {
                 // Player 2 controller
                 player2_ctrl = malloc(sizeof(controller));
                 controller_init(player2_ctrl);
-                player1_ctrl->har = scene->player1.har;
+                player2_ctrl->har = scene->player2.har;
                 keys2 = malloc(sizeof(keyboard_keys));
                 keys2->up = SDL_SCANCODE_W;
                 keys2->down = SDL_SCANCODE_S;
