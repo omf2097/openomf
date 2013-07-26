@@ -24,7 +24,7 @@ void controller_cmd(controller* ctrl, int action) {
     hook_function **p = 0;
     
     if (action != 10) {
-        DEBUG("controller sent action %d", action);
+        DEBUG("controller sent action %d to HAR %p", action, ctrl->har);
     }
     list_iter_begin(&ctrl->hooks, &it);
     while((p = iter_next(&it)) != NULL) {

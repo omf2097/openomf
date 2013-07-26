@@ -17,12 +17,15 @@ void net_controller_free(controller *ctrl) {
 void net_controller_tick(controller *ctrl) {
     ENetEvent event;
     wtf *data = ctrl->data;
+    int action;
     ENetHost *host = data->host;
     if (enet_host_service(host, &event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
-                DEBUG("got packet %s", event.packet->data);
-                int action = atoi((char*)event.packet->data);
+                action = atoi((char*)event.packet->data);
+                if (action != 10) {
+                    DEBUG("got packet %s", event.packet->data);
+                }
                 controller_cmd(ctrl, action);
                 enet_packet_destroy(event.packet);
                 break;
@@ -53,6 +56,8 @@ void hook(controller *ctrl, int action) {
     if (peer) {
         enet_peer_send(peer, 0, packet);
         enet_host_flush (host);
+    } else {
+        DEBUG("peer is null~");
     }
 }
 

@@ -272,10 +272,14 @@ int console_cmd_listen(scene *scene, void *userdata, int argc, char **argv) {
         scene_set_player1_har(scene, h1);
         scene_set_player2_har(scene, h2);
 
-        // Player 1 controller -- Keyboard
         player1_ctrl = malloc(sizeof(controller));
         controller_init(player1_ctrl);
         player1_ctrl->har = scene->player1.har;
+        player2_ctrl = malloc(sizeof(controller));
+        controller_init(player2_ctrl);
+        player2_ctrl->har = scene->player2.har;
+
+        // Player 1 controller -- Keyboard
         keys = malloc(sizeof(keyboard_keys));
         keys->up = SDL_SCANCODE_UP;
         keys->down = SDL_SCANCODE_DOWN;
@@ -287,9 +291,6 @@ int console_cmd_listen(scene *scene, void *userdata, int argc, char **argv) {
         scene_set_player1_ctrl(scene, player1_ctrl);
 
         // Player 2 controller -- Network
-        player2_ctrl = malloc(sizeof(controller));
-        controller_init(player2_ctrl);
-        player1_ctrl->har = scene->player1.har;
         net_controller_create(player2_ctrl, player1_ctrl, server, event.peer);
         scene_set_player2_ctrl(scene, player2_ctrl);
 
