@@ -5,6 +5,7 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 find_package(SDL2)
 find_package(shadowdive)
 find_package(chipmunk)
+find_package(enet)
 find_package(dumb)
 find_package(OpenGL)
 find_package(OpenAL)
@@ -67,6 +68,7 @@ add_executable(openomf
     src/game/physics/physics.c
     src/controller/controller.c
     src/controller/keyboard.c
+    src/controller/net_controller.c
     src/console/console.c
 )
 
@@ -81,6 +83,7 @@ set(COREINCS
     ${GLEW_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
     ${CHIPMUNK_INCLUDE_DIR}
+    ${ENET_INCLUDE_DIR}
 )
 
 set(CORELIBS 
@@ -93,6 +96,7 @@ set(CORELIBS
     ${GLEW_LIBRARY}
     ${LIBINTL_LIBRARIES}
     ${CHIPMUNK_LIBRARY}
+    ${ENET_LIBRARY}
 )
 
 IF(MINGW)

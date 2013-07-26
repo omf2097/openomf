@@ -7,6 +7,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <enet/enet.h>
+#include <controller/keyboard.h>
+#include <controller/net_controller.h>
 
 #define HISTORY_MAX 100
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
@@ -130,6 +133,173 @@ int console_cd_debug(scene *scene, void *userdata, int argc, char **argv) {
         scene->player2.har->cd_debug_enabled = 1;
     }
     return 0;
+}
+
+int console_cmd_connect(scene *scene, void *userdata, int argc, char **argv) {
+    ENetHost *client;
+    ENetAddress address;
+    ENetPeer *peer;
+    ENetEvent event;
+    if (argc == 2) {
+        client = enet_host_create(NULL, 1, 2, 0, 0);
+        if (client == NULL) {
+            DEBUG("Failed to initialize ENet client");
+            return 1;
+        }
+        enet_address_set_host(&address, argv[1]);
+        address.port = 1337;
+
+        peer = enet_host_connect(client, &address, 2, 0);
+
+        if (peer == NULL) {
+            DEBUG("Unable to connect to %s", argv[1]);
+            return 1;
+        }
+        if (enet_host_service(client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
+            // send a fake ACT_STOP
+            ENetPacket * packet = enet_packet_create("\n", 2,  ENET_PACKET_FLAG_RELIABLE);
+            enet_peer_send (peer, 0, packet);
+            enet_host_flush(client);
+            DEBUG("Connected to %s!", argv[1]);
+
+            har *h1, *h2;
+            controller *player1_ctrl, *player2_ctrl;
+            keyboard_keys *keys;
+
+            h1 = malloc(sizeof(har));
+            h2 = malloc(sizeof(har));
+            if (har_load(h1, scene->bk->palettes[0], HAR_JAGUAR, 60, 190, 1)) {
+                free(h1);
+                free(h2);
+                scene->next_id = SCENE_NONE;
+                return 1;
+            }
+            if (har_load(h2, scene->bk->palettes[0], HAR_JAGUAR, 260, 190, -1)) {
+                har_free(h1);
+                free(h2);
+                scene->next_id = SCENE_NONE;
+                return 1;
+            }
+
+            scene->player1.har_id = HAR_JAGUAR;
+            scene->player1.player_id = 0;
+            scene->player2.har_id = HAR_JAGUAR;
+            scene->player2.player_id = 0;
+
+            scene_set_player1_har(scene, h1);
+            scene_set_player2_har(scene, h2);
+
+            player1_ctrl = malloc(sizeof(controller));
+            controller_init(player1_ctrl);
+            player1_ctrl->har = scene->player1.har;
+            player2_ctrl = malloc(sizeof(controller));
+            controller_init(player2_ctrl);
+            player2_ctrl->har = scene->player2.har;
+
+            // Player 1 controller -- Network
+            net_controller_create(player1_ctrl, player2_ctrl, client, peer);
+            scene_set_player1_ctrl(scene, player1_ctrl);
+
+            // Player 2 controller -- Keyboard
+            keys = malloc(sizeof(keyboard_keys));
+            keys->up = SDL_SCANCODE_UP;
+            keys->down = SDL_SCANCODE_DOWN;
+            keys->left = SDL_SCANCODE_LEFT;
+            keys->right = SDL_SCANCODE_RIGHT;
+            keys->punch = SDL_SCANCODE_RETURN;
+            keys->kick = SDL_SCANCODE_RSHIFT;
+            keyboard_create(player2_ctrl, keys);
+            scene_set_player2_ctrl(scene, player2_ctrl);
+
+            scene->next_id = SCENE_ARENA0;
+            return 0;
+        } else {
+            enet_peer_reset(peer);
+            DEBUG("Connection to %s failed", argv[1]);
+            return 1;
+        }
+    }
+    return 1;
+}
+
+int console_cmd_listen(scene *scene, void *userdata, int argc, char **argv) {
+    ENetAddress address;
+    ENetHost *server;
+    ENetEvent event;
+
+    address.host = ENET_HOST_ANY;
+    address.port = 1337;
+
+    server = enet_host_create(&address, 1, 2, 0, 0);
+    if (server == NULL) {
+        DEBUG("failed to initialize ENET server");
+        return 1;
+    }
+
+    if (enet_host_service(server, &event, 10000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
+        DEBUG("Client connected from %x:%u",  event.peer->address.host, event.peer->address.port);
+
+        ENetPacket * packet = enet_packet_create("\n", 2,  ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send (event.peer, 0, packet);
+        enet_host_flush(server);
+
+        har *h1, *h2;
+        controller *player1_ctrl, *player2_ctrl;
+        keyboard_keys *keys;
+
+
+        h1 = malloc(sizeof(har));
+        h2 = malloc(sizeof(har));
+        if (har_load(h1, scene->bk->palettes[0], HAR_JAGUAR, 60, 190, 1)) {
+            free(h1);
+            free(h2);
+            scene->next_id = SCENE_NONE;
+            return 1;
+        }
+        if (har_load(h2, scene->bk->palettes[0], HAR_JAGUAR, 260, 190, -1)) {
+            har_free(h1);
+            free(h2);
+            scene->next_id = SCENE_NONE;
+            return 1;
+        }
+
+
+        scene->player1.har_id = HAR_JAGUAR;
+        scene->player1.player_id = 0;
+        scene->player2.har_id = HAR_JAGUAR;
+        scene->player2.player_id = 0;
+
+        scene_set_player1_har(scene, h1);
+        scene_set_player2_har(scene, h2);
+
+        // Player 1 controller -- Keyboard
+        player1_ctrl = malloc(sizeof(controller));
+        controller_init(player1_ctrl);
+        player1_ctrl->har = scene->player1.har;
+        keys = malloc(sizeof(keyboard_keys));
+        keys->up = SDL_SCANCODE_UP;
+        keys->down = SDL_SCANCODE_DOWN;
+        keys->left = SDL_SCANCODE_LEFT;
+        keys->right = SDL_SCANCODE_RIGHT;
+        keys->punch = SDL_SCANCODE_RETURN;
+        keys->kick = SDL_SCANCODE_RSHIFT;
+        keyboard_create(player1_ctrl, keys);
+        scene_set_player1_ctrl(scene, player1_ctrl);
+
+        // Player 2 controller -- Network
+        player2_ctrl = malloc(sizeof(controller));
+        controller_init(player2_ctrl);
+        player1_ctrl->har = scene->player1.har;
+        net_controller_create(player2_ctrl, player1_ctrl, server, event.peer);
+        scene_set_player2_ctrl(scene, player2_ctrl);
+
+        scene->next_id = SCENE_ARENA0;
+        return 0;
+    } else {
+        DEBUG("No connections received");
+        return 1;
+    }
+    return 1;
 }
 
 int make_argv(char *p, char **argv) {
@@ -335,6 +505,8 @@ int console_init() {
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
     console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
     console_add_cmd("cd-debug",&console_cd_debug,   "toggle collision detection debugging");
+    console_add_cmd("connect", &console_cmd_connect,   "connect to provided IP");
+    console_add_cmd("listen", &console_cmd_listen,   "wait for a network connection, times out after 5 seconds");
     
     return 0;
 }

@@ -17,8 +17,6 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
-#include "controller/controller.h"
-#include "controller/keyboard.h"
 #include "utils/log.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
@@ -84,8 +82,6 @@ void sound_slide(component *c, void *userdata, int pos) {
 
 int arena_init(scene *scene) {
     settings *setting;
-    controller *player1_ctrl, *player2_ctrl;
-    keyboard_keys *keys, *keys2;
     arena_local *local;
     cpVect grav;
     
@@ -136,30 +132,6 @@ int arena_init(scene *scene) {
     har_init_physics(scene->player1.har, local->space);
     har_init_physics(scene->player2.har, local->space);
     
-    // Player 1 controller
-    player1_ctrl = malloc(sizeof(controller));
-    keys = malloc(sizeof(keyboard_keys));
-    keys->up = SDL_SCANCODE_UP;
-    keys->down = SDL_SCANCODE_DOWN;
-    keys->left = SDL_SCANCODE_LEFT;
-    keys->right = SDL_SCANCODE_RIGHT;
-    keys->punch = SDL_SCANCODE_RETURN;
-    keys->kick = SDL_SCANCODE_RSHIFT;
-    keyboard_create(player1_ctrl, scene->player1.har, keys);
-    scene_set_player1_ctrl(scene, player1_ctrl);
-
-    // Player 2 controller
-    player2_ctrl = malloc(sizeof(controller));
-    keys2 = malloc(sizeof(keyboard_keys));
-    keys2->up = SDL_SCANCODE_W;
-    keys2->down = SDL_SCANCODE_S;
-    keys2->left = SDL_SCANCODE_A;
-    keys2->right = SDL_SCANCODE_D;
-    keys2->punch = SDL_SCANCODE_LSHIFT;
-    keys2->kick = SDL_SCANCODE_LCTRL;
-    keyboard_create(player2_ctrl, scene->player2.har, keys2);
-    scene_set_player2_ctrl(scene, player2_ctrl);
-
     // Arena menu
     local->menu_visible = 0;
     menu_create(&local->game_menu, 70, 5, 181, 117);
@@ -302,8 +274,8 @@ void arena_tick(scene *scene) {
 
     // Handle menu, if visible
     if(!local->menu_visible) {
-        keyboard_tick(scene->player1.ctrl);
-        keyboard_tick(scene->player2.ctrl);
+        controller_tick(scene->player1.ctrl);
+        controller_tick(scene->player2.ctrl);
         
         // Collision detections
         har_collision_har(scene->player1.har, scene->player2.har);
@@ -345,9 +317,8 @@ int arena_event(scene *scene, SDL_Event *e) {
     if(local->menu_visible) {
         return menu_handle_event(&local->game_menu, e);
     } else {
-        // TODO don't assume a keyboard controller!
-        keyboard_handle(scene->player1.ctrl, e);
-        keyboard_handle(scene->player2.ctrl, e);
+        controller_event(scene->player1.ctrl, e);
+        controller_event(scene->player2.ctrl, e);
         return 0;
     }
 }

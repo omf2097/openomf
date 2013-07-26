@@ -31,7 +31,7 @@ void list_free(list *list) {
     list->size = 0;
 }
 
-void list_prepend(list *list, const void *ptr, int size) {
+void list_prepend(list *list, const void *ptr, size_t size) {
     list_node *node = (list_node*)list->alloc.cmalloc(sizeof(list_node));
     node->next = list->first;
     node->prev = NULL;
@@ -43,7 +43,7 @@ void list_prepend(list *list, const void *ptr, int size) {
     list->size++;
 }
 
-void list_append(list *list, const void *ptr, int size) {
+void list_append(list *list, const void *ptr, size_t size) {
     list_node *node = (list_node*)list->alloc.cmalloc(sizeof(list_node));
     node->next = NULL;
     node->prev = list->last;

@@ -109,7 +109,7 @@ void conf_setfloat(const char *name, double val) {
 }
 
 void conf_setbool(const char *name, int val) {
-    cfg_setbool(cfg, name, val);
+    cfg_setbool(cfg, name, (cfg_bool_t)val);
 }
 
 void conf_setstring(const char *name, const char *val) {

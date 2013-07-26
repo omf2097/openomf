@@ -13,6 +13,7 @@
 #include "game/settings.h"
 #include "console/console.h"
 #include <SDL2/SDL.h>
+#include <enet/enet.h>
 
 int run = 0;
 int _vsync = 0;
@@ -56,6 +57,11 @@ void engine_run() {
     scene.player2.har = NULL;
     scene.player1.ctrl = NULL;
     scene.player2.ctrl = NULL;
+
+    if (enet_initialize() != 0) {
+        DEBUG("failed to initialize enet");
+        return;
+    }
 
     // Load scene
     if(scene_load(&scene, SCENE_INTRO)) {
@@ -166,4 +172,5 @@ void engine_close() {
     texturelist_close();
     audio_close();
     soundloader_close();
+    enet_deinitialize();
 }

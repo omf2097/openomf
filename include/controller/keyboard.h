@@ -20,9 +20,7 @@ struct keyboard_t {
     keyboard_keys *keys;
 };
 
-void keyboard_create(controller *ctrl, har *har, keyboard_keys *keys);
+void keyboard_create(controller *ctrl, keyboard_keys *keys);
 void keyboard_free(controller *ctrl);
-void keyboard_tick(controller *ctrl);
-int keyboard_handle(controller *ctrl, SDL_Event *event);
 
 #endif // _KEYBOARD_H

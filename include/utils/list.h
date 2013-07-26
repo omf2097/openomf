@@ -22,8 +22,8 @@ typedef struct list_t {
 void list_create(list *list);
 void list_create_with_allocator(list *list, allocator alloc);
 void list_free(list *list);
-void list_prepend(list *list, const void *ptr, int size);
-void list_append(list *list, const void *ptr, int size);
+void list_prepend(list *list, const void *ptr, size_t size);
+void list_append(list *list, const void *ptr, size_t size);
 void list_delete(list *list, iterator *iter);
 unsigned int list_size(list *list);
 void list_iter_begin(list *list, iterator *iter);
