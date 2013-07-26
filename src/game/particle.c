@@ -96,6 +96,8 @@ int particle_create(particle *p, unsigned int id, animation *ani, cpSpace *space
 }
 
 void particle_free(particle *p) {
+    cpSpaceRemoveShape(p->space, p->oshape);
+    cpSpaceRemoveBody(p->space, p->obody);
     cpShapeFree(p->oshape);
     cpBodyFree(p->obody);
     animationplayer_free(&p->player);
