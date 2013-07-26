@@ -11,6 +11,7 @@
 #include "utils/list.h"
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+#include <stdlib.h>
 
 // HACK to notify the engine that vsync has changed
 extern int _vsync; 

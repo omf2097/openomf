@@ -2,6 +2,7 @@
 #define _HAR_H
 
 #include <shadowdive/shadowdive.h>
+#include <chipmunk/chipmunk.h>
 #include "utils/array.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
@@ -101,6 +102,11 @@ typedef struct har_t {
     animationplayer player;
     char inputs[11]; // I don't think any move in the game needs 10 inputs to trigger...
     
+    // For physics
+    cpSpace *space; // References to arena.c
+    cpBody *obody;
+    cpShape *oshape;
+    
     int health, health_max;
     int endurance, endurance_max;
     
@@ -120,6 +126,7 @@ typedef struct har_t {
 
 void har_free(har *har);
 int har_load(har *har, sd_palette *pal, int id, int x, int y, int direction); // Returns 0 on success
+int har_init_physics(har *har, cpSpace *space);
 void har_tick(har *har); // Called by scene.c tick function at every game tick
 void har_render(har *har); // Called by scene.h render function at every frame render
 void har_act(har *har, int act_type); // Handle event passed from inputhandler

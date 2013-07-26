@@ -15,6 +15,7 @@ Dependencies
 * confuse: http://www.nongnu.org/confuse/
 * GLEW: http://glew.sourceforge.net/
 * Gettext (if you have problems with libintl)
+* Chipmunk: http://chipmunk-physics.net/
 
 Several of these are probably available as packages for your operating system, but some you will
 have to install from source.
