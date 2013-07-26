@@ -13,7 +13,7 @@ find_package(confuse)
 find_package(GLEW)
 find_package(Libintl)
 
-set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -pedantic -DDEBUGMODE")
+set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -DDEBUGMODE")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
 set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=native -Werror")
 
@@ -100,7 +100,7 @@ set(CORELIBS
 )
 
 IF(MINGW)
-    set(CORELIBS mingw32 ${CORELIBS})
+    set(CORELIBS mingw32 ${CORELIBS} ws2_32 winmm)
 ENDIF(MINGW)
 
 IF(UNIX)
