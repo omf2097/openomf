@@ -199,6 +199,7 @@ int arena_init(scene *scene) {
     // Events
     local->quit_button.userdata = (void*)scene;
     local->quit_button.click = game_menu_quit;
+    local->return_button.userdata = (void*)scene;
     local->return_button.click = game_menu_return;
 
     menu_select(&local->game_menu, &local->return_button);
