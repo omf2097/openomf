@@ -1,5 +1,6 @@
 #include "controller/net_controller.h"
 #include "utils/log.h"
+#include <stdio.h>
 
 typedef struct wtf_t {
     ENetHost *host;
@@ -63,5 +64,5 @@ void net_controller_create(controller *ctrl, controller *other, ENetHost *host, 
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
     ctrl->handle_fun = &net_controller_handle;
-    controller_add_hook(other, &hook);
+    controller_add_hook(other, ctrl, &hook);
 }
