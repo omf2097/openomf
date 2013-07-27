@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
 #include <enet/enet.h>
+#include <time.h>
 #include "engine.h"
 #include "utils/log.h"
 #include "game/text/text.h"
@@ -33,6 +34,8 @@ struct resolution_t {
     {2560,  1440,   "2560x1440"},
     {2560,  1600,   "2560x1600"}
 };
+
+time_t connect_start;
 
 menu *current_menu;
 menu main_menu;
@@ -171,6 +174,7 @@ void mainmenu_connect_to_ip(component *c, void *userdata) {
         enet_host_destroy(host);
         host = NULL;
     }
+    time(&connect_start);
 }
 
 void mainmenu_cancel_connection(component *c, void *userdata) {
@@ -180,6 +184,7 @@ void mainmenu_cancel_connection(component *c, void *userdata) {
     }
     connect_ip_input.disabled = 0;
     connect_ip_button.disabled = 0;
+    menu_select(&connect_menu, &connect_ip_button);
     mainmenu_prev_menu(c, userdata);
 }
 
@@ -585,7 +590,11 @@ void mainmenu_tick(scene *scene) {
                 scene->next_id = SCENE_ARENA0;
             }
         } else {
-            /*DEBUG("still trying to connect");*/
+            if (role == ROLE_CLIENT && difftime(time(NULL), connect_start) > 5.0) {
+                DEBUG("connection timed out");
+
+                mainmenu_cancel_connection(&connect_ip_cancel_button, NULL);
+            }
         }
     }
 }
