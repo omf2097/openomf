@@ -93,6 +93,13 @@ enum {
     STATE_DESTRUCTION
 };
 
+enum {
+    HOOK_MOVE,
+    HOOK_CROUCH,
+    HOOK_JUMP,
+    HOOK_ATTACK
+};
+
 typedef struct har_t {
     physics_state phy;
     unsigned int state;
@@ -107,6 +114,8 @@ typedef struct har_t {
     cpGroup particle_group;
     cpBody *obody;
     cpShape *oshape;
+
+    list hooks;
     
     int health, health_max;
     int endurance, endurance_max;
@@ -135,5 +144,7 @@ void har_set_direction(har *har, int direction);
 void har_collision_har(har *har_a, har *har_b);
 void har_collision_particle(har *har); // TODO: Think about this
 void har_take_damage(har *har, int amount, const char *string);
+
+void har_parse_command(har *har, char *buf);
 
 #endif // _HAR_H

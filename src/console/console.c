@@ -197,7 +197,7 @@ int console_cmd_connect(scene *scene, void *userdata, int argc, char **argv) {
             player2_ctrl->har = scene->player2.har;
 
             // Player 1 controller -- Network
-            net_controller_create(player1_ctrl, player2_ctrl, client, peer);
+            net_controller_create(player1_ctrl, scene->player2.har, client, peer);
             scene_set_player1_ctrl(scene, player1_ctrl);
 
             // Player 2 controller -- Keyboard
@@ -291,7 +291,7 @@ int console_cmd_listen(scene *scene, void *userdata, int argc, char **argv) {
         scene_set_player1_ctrl(scene, player1_ctrl);
 
         // Player 2 controller -- Network
-        net_controller_create(player2_ctrl, player1_ctrl, server, event.peer);
+        net_controller_create(player2_ctrl, scene->player1.har, server, event.peer);
         scene_set_player2_ctrl(scene, player2_ctrl);
 
         scene->next_id = SCENE_ARENA0;

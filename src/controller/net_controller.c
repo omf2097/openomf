@@ -5,6 +5,7 @@
 typedef struct wtf_t {
     ENetHost *host;
     ENetPeer *peer;
+    int last;
 } wtf;
 
 void net_controller_free(controller *ctrl) {
@@ -26,7 +27,7 @@ void net_controller_tick(controller *ctrl) {
                 if (action != 10) {
                     DEBUG("got packet %s", event.packet->data);
                 }
-                controller_cmd(ctrl, action);
+                har_parse_command(ctrl->har, (char*)event.packet->data);
                 enet_packet_destroy(event.packet);
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
@@ -42,16 +43,12 @@ int net_controller_handle(controller *ctrl, SDL_Event *event) {
     return 1;
 }
 
-void hook(controller *ctrl, int action) {
+void hook(controller *ctrl, char* buf) {
     wtf *data = ctrl->data;
     ENetPeer *peer = data->peer;
     ENetHost *host = data->host;
     ENetPacket * packet;
-    char buf[10];
-    if (action != 10) {
-        DEBUG("sending event %d", action);
-    }
-    sprintf(buf, "%d", action);
+
     packet = enet_packet_create(buf, strlen (buf) + 1, ENET_PACKET_FLAG_RELIABLE);
     if (peer) {
         enet_peer_send(peer, 0, packet);
@@ -61,13 +58,14 @@ void hook(controller *ctrl, int action) {
     }
 }
 
-void net_controller_create(controller *ctrl, controller *other, ENetHost *host, ENetPeer *peer) {
+void net_controller_create(controller *ctrl, har *otherhar, ENetHost *host, ENetPeer *peer) {
     wtf *data = malloc(sizeof(wtf));
     data->host = host;
     data->peer = peer;
+    data->last = -1;
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
     ctrl->handle_fun = &net_controller_handle;
-    controller_add_hook(other, ctrl, &hook);
+    har_add_hook(otherhar, ctrl, &hook);
 }

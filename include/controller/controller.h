@@ -31,4 +31,6 @@ void controller_tick(controller *ctrl);
 
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type));
 
+void har_add_hook(har *har, controller *ctrl, void(*fp)(controller *ctrl, char* msg));
+
 #endif // _CONTROLLER_H

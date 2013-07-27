@@ -7,6 +7,12 @@
 #include "utils/list.h"
 #include <stdlib.h>
 #include <string.h>
+#include "controller/controller.h"
+
+typedef struct hook_function_t {
+    void(*fp)(controller *ctrl, char* buf);
+    controller *source;
+} hook_function;
 
 // Internal functions
 void har_add_ani_player(void *userdata, int id, int mx, int my, int mg);
@@ -14,6 +20,8 @@ void har_set_ani_finished(void *userdata, int id);
 
 void har_phys(void *userdata, int x, int y);
 void har_pos(void *userdata, int x, int y);
+
+void fire_hooks(har *har, char *buf);
 
 void har_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
     int px,py;
@@ -160,6 +168,8 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     h->phy.jump = phycb_jump;
     h->phy.move = phycb_move;
     h->phy.crouch = phycb_crouch;
+
+    list_create(&h->hooks);
 
     h->cd_debug_enabled = 0;
     image_create(&h->cd_debug, 420, 350);
@@ -724,6 +734,7 @@ void har_act(har *har, int act_type) {
         // if we're not in the idle loop, bail for now
         return;
     }
+    char buf[50];
 
     // for the reason behind the numbers, look at a numpad sometime
     switch(act_type) {
@@ -783,28 +794,52 @@ void har_act(har *har, int act_type) {
             break;
         case ACT_STOP:
             if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                if (har->player.id != ANIM_IDLE && har->player.id != ANIM_JUMPING) {
+                    sprintf(buf, "%d|%d|%d|%f", har->phy.pos.x, har->phy.pos.y, HOOK_MOVE, 0.0f);
+                    fire_hooks(har, buf);
+                }
                 physics_move(&har->phy, 0);
             }
             add_input(har, '5');
             break;
         case ACT_WALKLEFT:
             if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                if ((har->player.id != ANIM_WALKING && har->player.id != ANIM_JUMPING) || har->phy.spd.x != -3.0f) {
+                    sprintf(buf, "%d|%d|%d|%f", har->phy.pos.x, har->phy.pos.y, HOOK_MOVE, -3.0f);
+                    fire_hooks(har, buf);
+                }
                 physics_move(&har->phy, -3.0f);
+                return;
             }
             break;
         case ACT_WALKRIGHT:
             if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                if ((har->player.id != ANIM_WALKING && har->player.id != ANIM_JUMPING) || har->phy.spd.x != 3.0f) {
+                    sprintf(buf, "%d|%d|%d|%f", har->phy.pos.x, har->phy.pos.y, HOOK_MOVE, 3.0f);
+                    fire_hooks(har, buf);
+                }
                 physics_move(&har->phy, 3.0f);
+                return;
             }
             break;
         case ACT_CROUCH:
             if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                if (har->player.id != ANIM_CROUCHING) {
+                    sprintf(buf, "%d|%d|%d", har->phy.pos.x, har->phy.pos.y, HOOK_CROUCH);
+                    fire_hooks(har, buf);
+                }
                 physics_crouch(&har->phy);
+                return;
             }
             break;
         case ACT_JUMP:
             if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                if (har->phy.vertical_state != PHY_VSTATE_JUMP) {
+                    sprintf(buf, "%d|%d|%d|%f", har->phy.pos.x, har->phy.pos.y, HOOK_JUMP, -15.0f);
+                    fire_hooks(har, buf);
+                }
                 physics_jump(&har->phy, -15.0f);
+                return;
             }
             break;
     }
@@ -822,6 +857,9 @@ void har_act(har *har, int act_type) {
                     DEBUG("matched move %d with string %s", i, move->move_string);
                     DEBUG("input was %s", har->inputs);
 
+                    sprintf(buf, "%d|%d|%d|%d", har->phy.pos.x, har->phy.pos.y, HOOK_ATTACK, i);
+                    fire_hooks(har, buf);
+
                     physics_move(&har->phy, 0);
                     har_switch_animation(har, i);
                     har->inputs[0]='\0';
@@ -831,3 +869,66 @@ void har_act(har *har, int act_type) {
         }
     }
 }
+
+void fire_hooks(har *har, char* buf) {
+    iterator it;
+    hook_function **p = 0;
+    
+    list_iter_begin(&har->hooks, &it);
+    while((p = iter_next(&it)) != NULL) {
+        ((*p)->fp)((*p)->source, buf);
+    }
+}
+
+void har_add_hook(har *har, controller *ctrl, void(*fp)(controller *ctrl, char* msg)) {
+    hook_function *h = malloc(sizeof(hook_function));
+    h->fp = fp;
+    h->source = ctrl;
+    list_append(&har->hooks, &h, sizeof(hook_function*));
+}
+
+void har_parse_command(har *har, char *buf) {
+    int x, y, action, length, ret, move;
+    float p;
+    if ((ret =sscanf(buf, "%d|%d|%d%n", &x, &y, &action, &length)) == 3) {
+        DEBUG("HAR at %d,%d did %d", x, y, action);
+        switch (action) {
+            case HOOK_MOVE:
+                if(sscanf(buf+length, "|%f", &p) == 1) {
+                    har->phy.pos.x = x;
+                    har->phy.pos.y = y;
+                    physics_move(&har->phy, p);
+                } else {
+                    DEBUG("bad packet %s", buf+length);
+                }
+                break;
+            case HOOK_JUMP:
+                if(sscanf(buf+length, "|%f", &p) == 1) {
+                    har->phy.pos.x = x;
+                    har->phy.pos.y = y;
+                    physics_jump(&har->phy, p);
+                } else {
+                    DEBUG("bad packet %s", buf+length);
+                }
+                break;
+            case HOOK_CROUCH:
+                har->phy.pos.x = x;
+                har->phy.pos.y = y;
+                physics_crouch(&har->phy);
+                break;
+            case HOOK_ATTACK:
+                if(sscanf(buf+length, "|%d", &move) == 1) {
+                    har->phy.pos.x = x;
+                    har->phy.pos.y = y;
+                    physics_move(&har->phy, 0);
+                    har_switch_animation(har, move);
+                } else {
+                    DEBUG("bad packet %s", buf+length);
+                }
+                break;
+        }
+    } else {
+        DEBUG("invalid command packet %s -- %d", buf, ret);
+    }
+}
+
