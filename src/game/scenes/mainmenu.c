@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
+#include <enet/enet.h>
 #include "engine.h"
 #include "utils/log.h"
 #include "game/text/text.h"
@@ -14,6 +15,10 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
+#include "game/menu/textinput.h"
+#include "controller/controller.h"
+#include "controller/keyboard.h"
+#include "controller/net_controller.h"
 
 struct resolution_t {
     int w;  int h;  const char *name;
@@ -36,11 +41,26 @@ component twoplayer_button;
 component tourn_button;
 component config_button;
 component gameplay_button;
-component ordering_button;
+component net_button;
 component help_button;
 component demo_button;
 component scoreboard_button;
 component quit_button;
+
+menu net_menu;
+component net_header;
+component net_connect_button;
+component net_listen_button;
+component net_done_button;
+
+menu connect_menu;
+component connect_ip_input;
+component connect_ip_button;
+component connect_ip_cancel_button;
+
+menu listen_menu;
+component listen_button;
+component listen_cancel_button;
 
 menu video_menu;
 component video_header;
@@ -70,6 +90,14 @@ component hazards_toggle;
 component cpu_toggle;
 component round_toggle;
 component gameplay_done_button;
+
+ENetHost *host;
+int role;
+
+enum {
+    ROLE_SERVER,
+    ROLE_CLIENT
+};
 
 // Menu stack
 menu *mstack[10];
@@ -120,6 +148,54 @@ void resolution_toggled(component *c, void *userdata, int pos) {
     settings_get()->video.screen_h = _resolutions[pos].h;
 }
 
+void mainmenu_connect_to_ip(component *c, void *userdata) {
+    ENetAddress address;
+    char *addr = textinput_value(&connect_ip_input);
+    host = enet_host_create(NULL, 1, 2, 0, 0);
+    role = ROLE_CLIENT;
+    if (host == NULL) {
+        DEBUG("Failed to initialize ENet client");
+        return;
+    }
+    connect_ip_input.disabled = 1;
+    connect_ip_button.disabled = 1;
+    menu_select(&connect_menu, &connect_ip_cancel_button);
+
+    enet_address_set_host(&address, addr);
+    address.port = 1337;
+
+    ENetPeer *peer = enet_host_connect(host, &address, 2, 0);
+
+    if (peer == NULL) {
+        DEBUG("Unable to connect to %s", addr);
+        enet_host_destroy(host);
+        host = NULL;
+    }
+}
+
+void mainmenu_cancel_connection(component *c, void *userdata) {
+    if (host) {
+        enet_host_destroy(host);
+        host = NULL;
+    }
+    connect_ip_input.disabled = 0;
+    connect_ip_button.disabled = 0;
+    mainmenu_prev_menu(c, userdata);
+}
+
+void mainmenu_listen_for_connections(component *c, void *userdata) {
+    ENetAddress address;
+    address.host = ENET_HOST_ANY;
+    address.port = 1337;
+    host = enet_host_create(&address, 1, 2, 0, 0);
+    role = ROLE_SERVER;
+    if (host == NULL) {
+        DEBUG("Failed to initialize ENet client");
+        return;
+    }
+    mainmenu_enter_menu(c, userdata);
+}
+
 // Init menus
 int mainmenu_init(scene *scene) {
     settings *setting = settings_get();
@@ -139,9 +215,9 @@ int mainmenu_init(scene *scene) {
     textbutton_create(&oneplayer_button, &font_large, "ONE PLAYER GAME");
     textbutton_create(&twoplayer_button, &font_large, "TWO PLAYER GAME");
     textbutton_create(&tourn_button, &font_large, "TOURNAMENT PLAY");
+    textbutton_create(&net_button, &font_large, "NETWORK PLAY");
     textbutton_create(&config_button, &font_large, "CONFIGURATION");
     textbutton_create(&gameplay_button, &font_large, "GAMEPLAY");
-    textbutton_create(&ordering_button, &font_large, "ORDERING INFO");
     textbutton_create(&help_button, &font_large, "HELP");
     textbutton_create(&demo_button, &font_large, "DEMO");
     textbutton_create(&scoreboard_button, &font_large, "SCOREBOARD");
@@ -149,9 +225,9 @@ int mainmenu_init(scene *scene) {
     menu_attach(&main_menu, &oneplayer_button, 11);
     menu_attach(&main_menu, &twoplayer_button, 11);
     menu_attach(&main_menu, &tourn_button, 11);
+    menu_attach(&main_menu, &net_button, 11);
     menu_attach(&main_menu, &config_button, 11);
     menu_attach(&main_menu, &gameplay_button, 11);
-    menu_attach(&main_menu, &ordering_button, 11);
     menu_attach(&main_menu, &help_button, 11);
     menu_attach(&main_menu, &demo_button, 11);
     menu_attach(&main_menu, &scoreboard_button, 11);
@@ -161,7 +237,7 @@ int mainmenu_init(scene *scene) {
     tourn_button.disabled = 0;
     config_button.disabled = 0;
     gameplay_button.disabled = 0;
-    ordering_button.disabled = 1;
+    net_button.disabled = 0;
     help_button.disabled = 1;
     demo_button.disabled = 1;
     scoreboard_button.disabled = 1;
@@ -177,9 +253,59 @@ int mainmenu_init(scene *scene) {
     tourn_button.click = mainmenu_tourn;
     config_button.userdata = (void*)&config_menu;
     config_button.click = mainmenu_enter_menu;
+    net_button.userdata = (void*)&net_menu;
+    net_button.click = mainmenu_enter_menu;
+
 
     gameplay_button.userdata = (void*)&gameplay_menu;
     gameplay_button.click = mainmenu_enter_menu;
+
+    // network play menu
+    menu_create(&net_menu, 165, 5, 151, 119);
+    textbutton_create(&net_header, &font_large, "NETWORK PLAY");
+    textbutton_create(&net_connect_button, &font_large, "CONNECT TO SERVER");
+    textbutton_create(&net_listen_button, &font_large, "START SERVER");
+    textbutton_create(&net_done_button, &font_large, "DONE");
+    menu_attach(&net_menu, &net_header, 33),
+    menu_attach(&net_menu, &net_connect_button, 11),
+    menu_attach(&net_menu, &net_listen_button, 55),
+    menu_attach(&net_menu, &net_done_button, 11),
+
+    net_listen_button.userdata = (void*)&listen_menu;
+    net_listen_button.click = mainmenu_listen_for_connections;
+
+    net_header.disabled = 1;
+    menu_select(&net_menu, &net_connect_button);
+
+    net_connect_button.userdata = (void*)&connect_menu;
+    net_connect_button.click = mainmenu_enter_menu;
+
+    net_done_button.click = mainmenu_prev_menu;
+
+    // connect menu
+    menu_create(&connect_menu, 10, 80, 300, 50);
+    textinput_create(&connect_ip_input, &font_large, "Host/IP", "");
+    textbutton_create(&connect_ip_button, &font_large, "CONNECT");
+    textbutton_create(&connect_ip_cancel_button, &font_large, "CANCEL");
+    menu_attach(&connect_menu, &connect_ip_input, 11),
+    menu_attach(&connect_menu, &connect_ip_button, 11),
+    menu_attach(&connect_menu, &connect_ip_cancel_button, 11),
+
+    connect_ip_button.userdata = (void*)&connect_menu;
+    connect_ip_button.click = mainmenu_connect_to_ip;
+
+    connect_ip_cancel_button.click = mainmenu_cancel_connection;
+
+    // listen menu
+    menu_create(&listen_menu, 10, 80, 300, 50);
+    textbutton_create(&listen_button, &font_large, "Waiting for connection...");
+    textbutton_create(&listen_cancel_button, &font_large, "CANCEL");
+    menu_attach(&listen_menu, &listen_button, 11),
+    menu_attach(&listen_menu, &listen_cancel_button, 11),
+    listen_button.disabled = 1;
+    menu_select(&listen_menu, &listen_cancel_button);
+
+    listen_cancel_button.click = mainmenu_cancel_connection;
 
     // create configuration menu
     menu_create(&config_menu, 165, 5, 151, 119);
@@ -304,7 +430,7 @@ void mainmenu_deinit(scene *scene) {
     textbutton_free(&tourn_button);
     textbutton_free(&config_button);
     textbutton_free(&gameplay_button);
-    textbutton_free(&ordering_button);
+    textbutton_free(&net_button);
     textbutton_free(&help_button);
     textbutton_free(&demo_button);
     textbutton_free(&scoreboard_button);
@@ -345,6 +471,123 @@ void mainmenu_deinit(scene *scene) {
 
 void mainmenu_tick(scene *scene) {
     menu_tick(current_menu);
+    if (host) {
+        ENetEvent event;
+        if (enet_host_service(host, &event, 0) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
+            ENetPacket * packet = enet_packet_create("0", 2,  ENET_PACKET_FLAG_RELIABLE);
+            enet_peer_send(event.peer, 0, packet);
+            enet_host_flush(host);
+            if (role == ROLE_SERVER) {
+                DEBUG("client connected!");
+                har *h1, *h2;
+                controller *player1_ctrl, *player2_ctrl;
+                keyboard_keys *keys;
+
+
+                h1 = malloc(sizeof(har));
+                h2 = malloc(sizeof(har));
+                if (har_load(h1, scene->bk->palettes[0], HAR_JAGUAR, 60, 190, 1)) {
+                    free(h1);
+                    free(h2);
+                    scene->next_id = SCENE_NONE;
+                    return;
+                }
+                if (har_load(h2, scene->bk->palettes[0], HAR_JAGUAR, 260, 190, -1)) {
+                    har_free(h1);
+                    free(h2);
+                    scene->next_id = SCENE_NONE;
+                    return;
+                }
+
+
+                scene->player1.har_id = HAR_JAGUAR;
+                scene->player1.player_id = 0;
+                scene->player2.har_id = HAR_JAGUAR;
+                scene->player2.player_id = 0;
+
+                scene_set_player1_har(scene, h1);
+                scene_set_player2_har(scene, h2);
+
+                player1_ctrl = malloc(sizeof(controller));
+                controller_init(player1_ctrl);
+                player1_ctrl->har = scene->player1.har;
+                player2_ctrl = malloc(sizeof(controller));
+                controller_init(player2_ctrl);
+                player2_ctrl->har = scene->player2.har;
+
+                // Player 1 controller -- Keyboard
+                keys = malloc(sizeof(keyboard_keys));
+                keys->up = SDL_SCANCODE_UP;
+                keys->down = SDL_SCANCODE_DOWN;
+                keys->left = SDL_SCANCODE_LEFT;
+                keys->right = SDL_SCANCODE_RIGHT;
+                keys->punch = SDL_SCANCODE_RETURN;
+                keys->kick = SDL_SCANCODE_RSHIFT;
+                keyboard_create(player1_ctrl, keys);
+                scene_set_player1_ctrl(scene, player1_ctrl);
+
+                // Player 2 controller -- Network
+                net_controller_create(player2_ctrl, scene->player1.har, host, event.peer);
+                scene_set_player2_ctrl(scene, player2_ctrl);
+
+                scene->next_id = SCENE_ARENA0;
+            } else if (role == ROLE_CLIENT) {
+                DEBUG("connected to server!");
+                har *h1, *h2;
+                controller *player1_ctrl, *player2_ctrl;
+                keyboard_keys *keys;
+
+                h1 = malloc(sizeof(har));
+                h2 = malloc(sizeof(har));
+                if (har_load(h1, scene->bk->palettes[0], HAR_JAGUAR, 60, 190, 1)) {
+                    free(h1);
+                    free(h2);
+                    scene->next_id = SCENE_NONE;
+                    return;
+                }
+                if (har_load(h2, scene->bk->palettes[0], HAR_JAGUAR, 260, 190, -1)) {
+                    har_free(h1);
+                    free(h2);
+                    scene->next_id = SCENE_NONE;
+                    return;
+                }
+
+                scene->player1.har_id = HAR_JAGUAR;
+                scene->player1.player_id = 0;
+                scene->player2.har_id = HAR_JAGUAR;
+                scene->player2.player_id = 0;
+
+                scene_set_player1_har(scene, h1);
+                scene_set_player2_har(scene, h2);
+
+                player1_ctrl = malloc(sizeof(controller));
+                controller_init(player1_ctrl);
+                player1_ctrl->har = scene->player1.har;
+                player2_ctrl = malloc(sizeof(controller));
+                controller_init(player2_ctrl);
+                player2_ctrl->har = scene->player2.har;
+
+                // Player 1 controller -- Network
+                net_controller_create(player1_ctrl, scene->player2.har, host, event.peer);
+                scene_set_player1_ctrl(scene, player1_ctrl);
+
+                // Player 2 controller -- Keyboard
+                keys = malloc(sizeof(keyboard_keys));
+                keys->up = SDL_SCANCODE_UP;
+                keys->down = SDL_SCANCODE_DOWN;
+                keys->left = SDL_SCANCODE_LEFT;
+                keys->right = SDL_SCANCODE_RIGHT;
+                keys->punch = SDL_SCANCODE_RETURN;
+                keys->kick = SDL_SCANCODE_RSHIFT;
+                keyboard_create(player2_ctrl, keys);
+                scene_set_player2_ctrl(scene, player2_ctrl);
+
+                scene->next_id = SCENE_ARENA0;
+            }
+        } else {
+            /*DEBUG("still trying to connect");*/
+        }
+    }
 }
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
@@ -357,7 +600,12 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
             }
             return 1;
         } else {
-            current_menu = &main_menu;
+            if (host) {
+                enet_host_destroy(host);
+                host = NULL;
+            }
+            mstack[--mstack_pos] = NULL;
+            current_menu = mstack[mstack_pos-1];
         }
     }
     return menu_handle_event(current_menu, event);
