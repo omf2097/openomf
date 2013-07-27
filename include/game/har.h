@@ -104,6 +104,7 @@ typedef struct har_t {
     
     // For physics
     cpSpace *space; // References to arena.c
+    cpGroup particle_group;
     cpBody *obody;
     cpShape *oshape;
     

@@ -118,7 +118,7 @@ int arena_init(scene *scene) {
     scene->local = local;
     
     // Init physics
-    grav = cpv(0, 100);
+    grav = cpv(0, 10);
     local->space = cpSpaceNew();
     cpSpaceSetGravity(local->space, grav);
     
