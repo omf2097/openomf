@@ -7,6 +7,7 @@
 #include "utils/list.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "controller/controller.h"
 
 typedef struct hook_function_t {
