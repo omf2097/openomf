@@ -37,7 +37,7 @@ void har_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
         particle *p = malloc(sizeof(particle));
         p->space = har->space;
         p->group = har->particle_group;
-        particle_create(p, id, ani, 0, px, py, 0, 0, mg/100.0f, 0.0f, 1.0f, 0.0f);
+        particle_create(p, id, ani, 0, px, py, 0, 0, 1.0f, mg/100.0f, 1.0f, 0.0f);
         int c = har->af->moves[id]->unknown[16];
         DEBUG("successor for %d is %d", id, c);
         if (c) {
