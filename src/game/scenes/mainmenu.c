@@ -213,8 +213,8 @@ int mainmenu_init(scene *scene) {
     }
     
     // Start stack
-    mstack_pos = 1;
-    mstack[mstack_pos] = &main_menu;
+    mstack_pos = 0;
+    mstack[mstack_pos++] = &main_menu;
     
     // Create main menu
     menu_create(&main_menu, 165, 5, 151, 119);
