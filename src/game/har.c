@@ -11,8 +11,8 @@
 #include "controller/controller.h"
 
 typedef struct hook_function_t {
-    void(*fp)(controller *ctrl, char* buf);
-    controller *source;
+    void(*fp)(char* buf, void *userdata);
+    void *userdata;
 } hook_function;
 
 // Internal functions
@@ -877,14 +877,14 @@ void fire_hooks(har *har, char* buf) {
     
     list_iter_begin(&har->hooks, &it);
     while((p = iter_next(&it)) != NULL) {
-        ((*p)->fp)((*p)->source, buf);
+        ((*p)->fp)(buf, (*p)->userdata);
     }
 }
 
-void har_add_hook(har *har, controller *ctrl, void(*fp)(controller *ctrl, char* msg)) {
+void har_add_hook(har *har, void(*fp)(char* msg, void *user), void *userdata) {
     hook_function *h = malloc(sizeof(hook_function));
     h->fp = fp;
-    h->source = ctrl;
+    h->userdata = userdata;
     list_append(&har->hooks, &h, sizeof(hook_function*));
 }
 

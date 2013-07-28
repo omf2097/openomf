@@ -34,6 +34,6 @@ int controller_event(controller *ctrl, SDL_Event *event) {
     return ctrl->handle_fun(ctrl, event);
 }
 
-void controller_tick(controller *ctrl) {
-    ctrl->tick_fun(ctrl);
+int controller_tick(controller *ctrl) {
+    return ctrl->tick_fun(ctrl);
 }

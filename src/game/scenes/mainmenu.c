@@ -135,6 +135,7 @@ void mainmenu_enter_menu(component *c, void *userdata) {
 }
 
 void mainmenu_prev_menu(component *c, void *userdata) {
+    DEBUG("prev menu");
     mstack[--mstack_pos] = NULL;
     current_menu = mstack[mstack_pos-1];
 }
@@ -212,8 +213,8 @@ int mainmenu_init(scene *scene) {
     }
     
     // Start stack
-    mstack_pos = 0;
-    mstack[mstack_pos++] = &main_menu;
+    mstack_pos = 1;
+    mstack[mstack_pos] = &main_menu;
     
     // Create main menu
     menu_create(&main_menu, 165, 5, 151, 119);
@@ -484,34 +485,13 @@ void mainmenu_tick(scene *scene) {
             enet_host_flush(host);
             if (role == ROLE_SERVER) {
                 DEBUG("client connected!");
-                har *h1, *h2;
                 controller *player1_ctrl, *player2_ctrl;
                 keyboard_keys *keys;
-
-
-                h1 = malloc(sizeof(har));
-                h2 = malloc(sizeof(har));
-                if (har_load(h1, scene->bk->palettes[0], HAR_JAGUAR, 60, 190, 1)) {
-                    free(h1);
-                    free(h2);
-                    scene->next_id = SCENE_NONE;
-                    return;
-                }
-                if (har_load(h2, scene->bk->palettes[0], HAR_JAGUAR, 260, 190, -1)) {
-                    har_free(h1);
-                    free(h2);
-                    scene->next_id = SCENE_NONE;
-                    return;
-                }
-
 
                 scene->player1.har_id = HAR_JAGUAR;
                 scene->player1.player_id = 0;
                 scene->player2.har_id = HAR_JAGUAR;
                 scene->player2.player_id = 0;
-
-                scene_set_player1_har(scene, h1);
-                scene_set_player2_har(scene, h2);
 
                 player1_ctrl = malloc(sizeof(controller));
                 controller_init(player1_ctrl);
@@ -532,38 +512,19 @@ void mainmenu_tick(scene *scene) {
                 scene_set_player1_ctrl(scene, player1_ctrl);
 
                 // Player 2 controller -- Network
-                net_controller_create(player2_ctrl, scene->player1.har, host, event.peer);
+                net_controller_create(player2_ctrl, host, event.peer);
                 scene_set_player2_ctrl(scene, player2_ctrl);
-
+                host = NULL;
                 scene->next_id = SCENE_ARENA0;
             } else if (role == ROLE_CLIENT) {
                 DEBUG("connected to server!");
-                har *h1, *h2;
                 controller *player1_ctrl, *player2_ctrl;
                 keyboard_keys *keys;
-
-                h1 = malloc(sizeof(har));
-                h2 = malloc(sizeof(har));
-                if (har_load(h1, scene->bk->palettes[0], HAR_JAGUAR, 60, 190, 1)) {
-                    free(h1);
-                    free(h2);
-                    scene->next_id = SCENE_NONE;
-                    return;
-                }
-                if (har_load(h2, scene->bk->palettes[0], HAR_JAGUAR, 260, 190, -1)) {
-                    har_free(h1);
-                    free(h2);
-                    scene->next_id = SCENE_NONE;
-                    return;
-                }
 
                 scene->player1.har_id = HAR_JAGUAR;
                 scene->player1.player_id = 0;
                 scene->player2.har_id = HAR_JAGUAR;
                 scene->player2.player_id = 0;
-
-                scene_set_player1_har(scene, h1);
-                scene_set_player2_har(scene, h2);
 
                 player1_ctrl = malloc(sizeof(controller));
                 controller_init(player1_ctrl);
@@ -573,7 +534,7 @@ void mainmenu_tick(scene *scene) {
                 player2_ctrl->har = scene->player2.har;
 
                 // Player 1 controller -- Network
-                net_controller_create(player1_ctrl, scene->player2.har, host, event.peer);
+                net_controller_create(player1_ctrl, host, event.peer);
                 scene_set_player1_ctrl(scene, player1_ctrl);
 
                 // Player 2 controller -- Keyboard
@@ -586,7 +547,7 @@ void mainmenu_tick(scene *scene) {
                 keys->kick = SDL_SCANCODE_RSHIFT;
                 keyboard_create(player2_ctrl, keys);
                 scene_set_player2_ctrl(scene, player2_ctrl);
-
+                host = NULL;
                 scene->next_id = SCENE_ARENA0;
             }
         } else {
@@ -601,6 +562,7 @@ void mainmenu_tick(scene *scene) {
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
+        DEBUG("esc key");
         if (current_menu == &main_menu) {
             if (menu_selected(&main_menu) == &quit_button) {
                 scene->next_id = SCENE_CREDITS;

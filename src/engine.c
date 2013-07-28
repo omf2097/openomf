@@ -75,18 +75,6 @@ void engine_run() {
         // Prepare rendering here
         video_render_prepare();
     
-        // We want to load another scene
-        if(scene.this_id != scene.next_id) {
-            if(scene.next_id == SCENE_NONE) {
-                run = 0;
-                break;
-            }
-            unsigned int nid = scene.next_id;
-            scene_free(&scene);
-            if(scene_load(&scene, nid)) {
-                return;
-            }
-        }
         
         // Handle events
         SDL_Event e;
@@ -132,6 +120,18 @@ void engine_run() {
         omf_wait += dt;
         while(omf_wait > scene_ms_per_tick(&scene)) {
             scene_tick(&scene);
+            // We want to load another scene
+            if(scene.this_id != scene.next_id) {
+                if(scene.next_id == SCENE_NONE) {
+                    run = 0;
+                    break;
+                }
+                unsigned int nid = scene.next_id;
+                scene_free(&scene);
+                if(scene_load(&scene, nid)) {
+                    return;
+                }
+            }
             console_tick();
             omf_wait -= scene_ms_per_tick(&scene);
         }

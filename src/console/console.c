@@ -162,32 +162,13 @@ int console_cmd_connect(scene *scene, void *userdata, int argc, char **argv) {
             enet_host_flush(client);
             DEBUG("Connected to %s!", argv[1]);
 
-            har *h1, *h2;
             controller *player1_ctrl, *player2_ctrl;
             keyboard_keys *keys;
-
-            h1 = malloc(sizeof(har));
-            h2 = malloc(sizeof(har));
-            if (har_load(h1, scene->bk->palettes[0], HAR_JAGUAR, 60, 190, 1)) {
-                free(h1);
-                free(h2);
-                scene->next_id = SCENE_NONE;
-                return 1;
-            }
-            if (har_load(h2, scene->bk->palettes[0], HAR_JAGUAR, 260, 190, -1)) {
-                har_free(h1);
-                free(h2);
-                scene->next_id = SCENE_NONE;
-                return 1;
-            }
 
             scene->player1.har_id = HAR_JAGUAR;
             scene->player1.player_id = 0;
             scene->player2.har_id = HAR_JAGUAR;
             scene->player2.player_id = 0;
-
-            scene_set_player1_har(scene, h1);
-            scene_set_player2_har(scene, h2);
 
             player1_ctrl = malloc(sizeof(controller));
             controller_init(player1_ctrl);
@@ -197,7 +178,7 @@ int console_cmd_connect(scene *scene, void *userdata, int argc, char **argv) {
             player2_ctrl->har = scene->player2.har;
 
             // Player 1 controller -- Network
-            net_controller_create(player1_ctrl, scene->player2.har, client, peer);
+            net_controller_create(player1_ctrl, client, peer);
             scene_set_player1_ctrl(scene, player1_ctrl);
 
             // Player 2 controller -- Keyboard
@@ -243,34 +224,12 @@ int console_cmd_listen(scene *scene, void *userdata, int argc, char **argv) {
         enet_peer_send (event.peer, 0, packet);
         enet_host_flush(server);
 
-        har *h1, *h2;
         controller *player1_ctrl, *player2_ctrl;
         keyboard_keys *keys;
 
-
-        h1 = malloc(sizeof(har));
-        h2 = malloc(sizeof(har));
-        if (har_load(h1, scene->bk->palettes[0], HAR_JAGUAR, 60, 190, 1)) {
-            free(h1);
-            free(h2);
-            scene->next_id = SCENE_NONE;
-            return 1;
-        }
-        if (har_load(h2, scene->bk->palettes[0], HAR_JAGUAR, 260, 190, -1)) {
-            har_free(h1);
-            free(h2);
-            scene->next_id = SCENE_NONE;
-            return 1;
-        }
-
-
-        scene->player1.har_id = HAR_JAGUAR;
         scene->player1.player_id = 0;
         scene->player2.har_id = HAR_JAGUAR;
         scene->player2.player_id = 0;
-
-        scene_set_player1_har(scene, h1);
-        scene_set_player2_har(scene, h2);
 
         player1_ctrl = malloc(sizeof(controller));
         controller_init(player1_ctrl);
@@ -291,7 +250,7 @@ int console_cmd_listen(scene *scene, void *userdata, int argc, char **argv) {
         scene_set_player1_ctrl(scene, player1_ctrl);
 
         // Player 2 controller -- Network
-        net_controller_create(player2_ctrl, scene->player1.har, server, event.peer);
+        net_controller_create(player2_ctrl, server, event.peer);
         scene_set_player2_ctrl(scene, player2_ctrl);
 
         scene->next_id = SCENE_ARENA0;

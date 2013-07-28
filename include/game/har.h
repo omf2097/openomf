@@ -147,4 +147,6 @@ void har_take_damage(har *har, int amount, const char *string);
 
 void har_parse_command(har *har, char *buf);
 
+void har_add_hook(har *har, void(*fp)(char* msg, void *userdata), void *userdata);
+
 #endif // _HAR_H

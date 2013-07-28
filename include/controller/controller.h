@@ -16,8 +16,9 @@ typedef struct controller_t controller;
 struct controller_t {
     har *har;
     list hooks;
-    void (*tick_fun)(controller *ctrl);
-    int (*handle_fun)(controller *ctrl, SDL_Event *event);
+    int (*tick_fun)(controller *ctrl);
+    int (*handle_fun)(controller *ctrl, SDL_Event *event);  
+    void (*har_hook)(char* buf, void *userdata);
     void *data;
     int type;
 };
@@ -27,10 +28,9 @@ void controller_init(controller* ctrl);
 void controller_cmd(controller* ctrl, int action);
 
 int controller_event(controller *ctrl, SDL_Event *event);
-void controller_tick(controller *ctrl);
+int controller_tick(controller *ctrl);
 
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type));
 
-void har_add_hook(har *har, controller *ctrl, void(*fp)(controller *ctrl, char* msg));
 
 #endif // _CONTROLLER_H

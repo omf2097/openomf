@@ -7,7 +7,7 @@ void keyboard_free(controller *ctrl) {
     free(k);
 }
 
-void keyboard_tick(controller *ctrl) {
+int keyboard_tick(controller *ctrl) {
     keyboard *k = ctrl->data;
     const unsigned char *state = SDL_GetKeyboardState(NULL);
     int handled = 0;
@@ -33,6 +33,7 @@ void keyboard_tick(controller *ctrl) {
     if(!handled) {
         controller_cmd(ctrl, ACT_STOP);
     }
+    return 0;
 }
 
 int keyboard_handle(controller *ctrl, SDL_Event *event) {

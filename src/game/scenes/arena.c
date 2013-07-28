@@ -17,6 +17,7 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
+#include "controller/net_controller.h"
 #include "utils/log.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
@@ -64,6 +65,15 @@ typedef struct arena_local_t {
 
 void game_menu_quit(component *c, void *userdata) {
     scene *scene = userdata;
+
+    if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
+        net_controller_free(scene->player1.ctrl);
+    }
+
+    if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {
+        net_controller_free(scene->player2.ctrl);
+    }
+
     scene->next_id = SCENE_MENU;
 }
 
@@ -112,6 +122,40 @@ int arena_init(scene *scene) {
     // Initialize local struct
     local = malloc(sizeof(arena_local));
     scene->local = local;
+
+    // init HARs
+    har *h1, *h2;
+
+    h1 = malloc(sizeof(har));
+    h2 = malloc(sizeof(har));
+    if (har_load(h1, scene->bk->palettes[0], scene->player1.har_id, 60, 190, 1)) {
+        free(h1);
+        free(h2);
+        scene->next_id = SCENE_NONE;
+        return 1;
+    }
+    if (har_load(h2, scene->bk->palettes[0], scene->player2.har_id, 260, 190, -1)) {
+        har_free(h1);
+        free(h2);
+        scene->next_id = SCENE_NONE;
+        return 1;
+    }
+
+    scene_set_player1_har(scene, h1);
+    scene_set_player2_har(scene, h2);
+
+    scene->player1.ctrl->har = h1;
+    scene->player2.ctrl->har = h2;
+
+    // set up the magic HAR hooks
+    if (scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
+        har_add_hook(scene->player2.har, scene->player1.ctrl->har_hook, (void*)scene->player1.ctrl);
+    }
+
+    if (scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {
+        har_add_hook(scene->player1.har, scene->player2.ctrl->har_hook, (void*)scene->player2.ctrl);
+    }
+
     
     // Init physics
     grav = cpv(0, 10);
@@ -274,8 +318,19 @@ void arena_tick(scene *scene) {
 
     // Handle menu, if visible
     if(!local->menu_visible) {
-        controller_tick(scene->player1.ctrl);
-        controller_tick(scene->player2.ctrl);
+        if(controller_tick(scene->player1.ctrl) ||
+                controller_tick(scene->player2.ctrl)) {
+            // one of the controllers bailed
+
+            if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
+                net_controller_free(scene->player1.ctrl);
+            }
+
+            if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {
+                net_controller_free(scene->player2.ctrl);
+            }
+            scene->next_id = SCENE_MENU;
+        }
         
         // Collision detections
         har_collision_har(scene->player1.har, scene->player2.har);

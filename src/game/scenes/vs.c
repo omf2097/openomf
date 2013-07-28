@@ -144,64 +144,47 @@ void vs_tick(scene *scene) {
 
 int vs_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN) {
-        har *h1, *h2;
         switch (event->key.keysym.sym) {
             case SDLK_ESCAPE:
                 scene->next_id = SCENE_MELEE;
                 break;
             case SDLK_RETURN:
-                h1 = malloc(sizeof(har));
-                h2 = malloc(sizeof(har));
-                if (har_load(h1, scene->bk->palettes[0], scene->player1.har_id, 60, 190, 1)) {
-                    free(h1);
-                    free(h2);
-                    scene->next_id = SCENE_NONE;
-                    return 1;
-                }
-                if (har_load(h2, scene->bk->palettes[0], scene->player2.har_id, 260, 190, -1)) {
-                    har_free(h1);
-                    free(h2);
-                    scene->next_id = SCENE_NONE;
-                    return 1;
-                }
-
-                scene_set_player1_har(scene, h1);
-                scene_set_player2_har(scene, h2);
 
                 // set up default keyboard controls
-                
-                controller *player1_ctrl, *player2_ctrl;
-                keyboard_keys *keys, *keys2;
+                {
+                    controller *player1_ctrl, *player2_ctrl;
+                    keyboard_keys *keys, *keys2;
 
-                // Player 1 controller
-                player1_ctrl = malloc(sizeof(controller));
-                controller_init(player1_ctrl);
-                player1_ctrl->har = scene->player1.har;
-                keys = malloc(sizeof(keyboard_keys));
-                keys->up = SDL_SCANCODE_UP;
-                keys->down = SDL_SCANCODE_DOWN;
-                keys->left = SDL_SCANCODE_LEFT;
-                keys->right = SDL_SCANCODE_RIGHT;
-                keys->punch = SDL_SCANCODE_RETURN;
-                keys->kick = SDL_SCANCODE_RSHIFT;
-                keyboard_create(player1_ctrl, keys);
-                scene_set_player1_ctrl(scene, player1_ctrl);
+                    // Player 1 controller
+                    player1_ctrl = malloc(sizeof(controller));
+                    controller_init(player1_ctrl);
+                    player1_ctrl->har = scene->player1.har;
+                    keys = malloc(sizeof(keyboard_keys));
+                    keys->up = SDL_SCANCODE_UP;
+                    keys->down = SDL_SCANCODE_DOWN;
+                    keys->left = SDL_SCANCODE_LEFT;
+                    keys->right = SDL_SCANCODE_RIGHT;
+                    keys->punch = SDL_SCANCODE_RETURN;
+                    keys->kick = SDL_SCANCODE_RSHIFT;
+                    keyboard_create(player1_ctrl, keys);
+                    scene_set_player1_ctrl(scene, player1_ctrl);
 
-                // Player 2 controller
-                player2_ctrl = malloc(sizeof(controller));
-                controller_init(player2_ctrl);
-                player2_ctrl->har = scene->player2.har;
-                keys2 = malloc(sizeof(keyboard_keys));
-                keys2->up = SDL_SCANCODE_W;
-                keys2->down = SDL_SCANCODE_S;
-                keys2->left = SDL_SCANCODE_A;
-                keys2->right = SDL_SCANCODE_D;
-                keys2->punch = SDL_SCANCODE_LSHIFT;
-                keys2->kick = SDL_SCANCODE_LCTRL;
-                keyboard_create(player2_ctrl, keys2);
-                scene_set_player2_ctrl(scene, player2_ctrl);
+                    // Player 2 controller
+                    player2_ctrl = malloc(sizeof(controller));
+                    controller_init(player2_ctrl);
+                    player2_ctrl->har = scene->player2.har;
+                    keys2 = malloc(sizeof(keyboard_keys));
+                    keys2->up = SDL_SCANCODE_W;
+                    keys2->down = SDL_SCANCODE_S;
+                    keys2->left = SDL_SCANCODE_A;
+                    keys2->right = SDL_SCANCODE_D;
+                    keys2->punch = SDL_SCANCODE_LSHIFT;
+                    keys2->kick = SDL_SCANCODE_LCTRL;
+                    keyboard_create(player2_ctrl, keys2);
+                    scene_set_player2_ctrl(scene, player2_ctrl);
 
-                scene->next_id = SCENE_ARENA0+arena;
+                    scene->next_id = SCENE_ARENA0+arena;
+                }
                 break;
             case SDLK_UP:
             case SDLK_LEFT:
