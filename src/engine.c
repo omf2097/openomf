@@ -58,11 +58,6 @@ void engine_run() {
     scene.player1.ctrl = NULL;
     scene.player2.ctrl = NULL;
 
-    if (enet_initialize() != 0) {
-        DEBUG("failed to initialize enet");
-        return;
-    }
-
     // Load scene
     if(scene_load(&scene, SCENE_INTRO)) {
         return;
@@ -172,5 +167,4 @@ void engine_close() {
     texturelist_close();
     audio_close();
     soundloader_close();
-    enet_deinitialize();
 }

@@ -53,9 +53,15 @@ int main(int argc, char *argv[]) {
     SDL_GetVersion(&sdl_linked);
     DEBUG("Found SDL v%d.%d.%d", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
     
+    // Init enet
+    if(enet_initialize() != 0) {
+        PERROR("Failed to initialize enet");
+        goto exit_2;
+    }
+    
     // Initialize engine
     if(engine_init()) {
-        goto exit_2;
+        goto exit_3;
     }
     
     // Run
@@ -63,8 +69,10 @@ int main(int argc, char *argv[]) {
     
     // Close everything
     engine_close();
-exit_2:
+exit_3:
     SDL_Quit();
+exit_2:
+    enet_deinitialize();
 exit_1:
     dumb_exit();
     settings_save();
