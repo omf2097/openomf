@@ -19,6 +19,7 @@
 int selection; // 0 for player, 1 for HAR
 int row_a, row_b; // 0 or 1
 int column_a, column_b; // 0-4
+int done_a, done_b; // 0-1
 
 struct players_t {
     sd_sprite *sprite;
@@ -67,6 +68,8 @@ void melee_switch_animation(scene *scene, animationplayer *harplayer, int id) {
     animationplayer_run(harplayer);
 }
 
+void handle_action(scene *scene, int player, int action);
+
 // extract part of a sprite as a new sprite
 // we need this because the HAR portraits are one single sprite, unlike the player portraits
 // so we need to chunk them up into individual sprites and strip out the black background
@@ -103,6 +106,8 @@ int melee_init(scene *scene) {
     column_a = 0;
     row_b = 0;
     column_b = 4;
+    done_a = 0;
+    done_b = 0;
     for(int i = 0; i < 10; i++) {
         players[i].sprite = scene->bk->anims[3]->animation->sprites[i];
         DEBUG("found sprite %d x %d at %d, %d", players[i].sprite->img->w, players[i].sprite->img->h, players[i].sprite->pos_x, players[i].sprite->pos_y);
@@ -117,6 +122,16 @@ int melee_init(scene *scene) {
     menu_background2_create(&feh, 90, 61);
     menu_background2_create(&bleh, 160, 43);
     texture_create(&select_hilight, bitmap, 51, 36);
+
+    // set up the magic controller hooks
+    if (scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
+        controller_add_hook(scene->player2.ctrl, scene->player1.ctrl, scene->player1.ctrl->controller_hook);
+    }
+
+    if (scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {
+        controller_add_hook(scene->player1.ctrl, scene->player2.ctrl, scene->player2.ctrl->controller_hook);
+    }
+
 
     const color bar_color = color_create(0, 190, 0, 255);
     const color bar_bg_color = color_create(80, 220, 80, 0);
@@ -182,6 +197,35 @@ void melee_tick(scene *scene) {
             }
         }
     }
+
+    ctrl_event *p1 = NULL, *p2 = NULL, *i;
+    if(controller_tick(scene->player1.ctrl, &p1) ||
+            controller_tick(scene->player2.ctrl, &p2)) {
+        // one of the controllers bailed
+
+        /*if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {*/
+            /*net_controller_free(scene->player1.ctrl);*/
+        /*}*/
+
+        /*if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {*/
+            /*net_controller_free(scene->player2.ctrl);*/
+        /*}*/
+        scene->next_id = SCENE_MENU;
+    }
+    i = p1;
+    if (i) {
+        do {
+            handle_action(scene, 1, i->action);
+        } while((i = i->next));
+        DEBUG("done");
+    }
+    i = p2;
+    if (i) {
+        do {
+            handle_action(scene, 2, i->action);
+        } while((i = i->next));
+        DEBUG("done");
+    }
 }
 
 void refresh_pilot_stats() {
@@ -195,27 +239,51 @@ void refresh_pilot_stats() {
     progressbar_set(&bar_endurance[1], (pilots[current_b].endurance*100)/MAX_STAT);
 }
 
-int melee_event(scene *scene, SDL_Event *event) {
-    if(event->type == SDL_KEYDOWN) {
-        switch (event->key.keysym.sym) {
-            case SDLK_ESCAPE:
-                if (selection == 1) {
-                    // restorethe player selection
-                    column_a = player_id_a % 5;
-                    row_a = player_id_a / 5;
-                    column_b = player_id_b % 5;
-                    row_b = player_id_b / 5;
+void handle_action(scene *scene, int player, int action) {
+    int *row, *column, *done;
+    if (player == 1) {
+        DEBUG("event for player 1");
+        row = &row_a;
+        column = &column_a;
+        done = &done_a;
+    } else {
+        DEBUG("event for player 2");
+        row = &row_b;
+        column = &column_b;
+        done = &done_b;
+    }
 
-                    selection = 0;
-                } else {
-                    scene->next_id = SCENE_MENU;
-                }
-                break;
-            case SDLK_RETURN:
+    if (*done) {
+        return;
+    }
+
+    switch (action) {
+        case ACT_LEFT:
+            (*column)--;
+            if (*column < 0) {
+                *column = 4;
+            }
+            break;
+        case ACT_RIGHT:
+            (*column)++;
+            if (*column > 4) {
+                *column = 0;
+            }
+            break;
+        case ACT_UP:
+        case ACT_DOWN:
+            *row = *row == 0 ? 1 : 0;
+            break;
+        case ACT_KICK:
+        case ACT_PUNCH:
+            *done = 1;
+            if (done_a && (done_b || !scene->player2.selectable)) {
+                done_a = 0;
+                done_b = 0;
                 if (selection == 0) {
+                    selection = 1;
                     player_id_a = 5*row_a + column_a;
                     player_id_b = 5*row_b + column_b;
-                    selection = 1;
                 } else {
                     scene->player1.har_id = 5*row_a+column_a;
                     scene->player1.player_id = player_id_a;
@@ -232,78 +300,91 @@ int melee_event(scene *scene, SDL_Event *event) {
                     }
                     scene->next_id = SCENE_VS;
                 }
-                break;
-            case SDLK_LEFT:
-                column_a--;
-                if (column_a < 0) {
-                    column_a = 0;
-                }
-                break;
-            case SDLK_RIGHT:
-                column_a++;
-                if (column_a > 4) {
-                    column_a = 4;
-                }
-                break;
-            case SDLK_UP:
-                row_a = 0;
-                break;
-            case SDLK_DOWN:
-                row_a = 1;
-                break;
-            case SDLK_a:
-                column_b--;
-                if (column_b < 0) {
-                    column_b = 0;
-                }
-                break;
-            case SDLK_d:
-                column_b++;
-                if (column_b > 4) {
-                    column_b = 4;
-                }
-                break;
-            case SDLK_w:
-                row_b = 0;
-                break;
-            case SDLK_s:
-                row_b = 1;
-                break;
+            }
+            break;
+    }
+
+    refresh_pilot_stats();
+    if (selection == 1) {
+        int har_animation_a = (5*row_a) + column_a + 18;
+        if (harplayer_a.id != har_animation_a) {
+            melee_switch_animation(scene, &harplayer_a, har_animation_a);
+            // these are just guesses
+            harplayer_a.x = 110;
+            harplayer_a.y = 95;
+            animationplayer_set_direction(&harplayer_a, 1);
         }
-        refresh_pilot_stats();
-        if (selection == 1) {
-            int har_animation_a = (5*row_a) + column_a + 18;
-            if (harplayer_a.id != har_animation_a) {
-                melee_switch_animation(scene, &harplayer_a, har_animation_a);
+        if (scene->player2.selectable) {
+            int har_animation_b = (5*row_b) + column_b + 18;
+            if (harplayer_b.id != har_animation_b) {
+                melee_switch_animation(scene, &harplayer_b, har_animation_b);
                 // these are just guesses
-                harplayer_a.x = 110;
-                harplayer_a.y = 95;
-                animationplayer_set_direction(&harplayer_a, 1);
-            }
-            if (scene->player2.selectable) {
-                int har_animation_b = (5*row_b) + column_b + 18;
-                if (harplayer_b.id != har_animation_b) {
-                    melee_switch_animation(scene, &harplayer_b, har_animation_b);
-                    // these are just guesses
-                    harplayer_b.x = 320-110;
-                    harplayer_b.y = 95;
-                    animationplayer_set_direction(&harplayer_b, -1);
-                }
+                harplayer_b.x = 320-110;
+                harplayer_b.y = 95;
+                animationplayer_set_direction(&harplayer_b, -1);
             }
         }
-        return 1;
+    }
+}
+
+int melee_event(scene *scene, SDL_Event *event) {
+    if(event->type == SDL_KEYDOWN) {
+        if (event->key.keysym.sym == SDLK_ESCAPE) {
+                if (selection == 1) {
+                    // restore the player selection
+                    column_a = player_id_a % 5;
+                    row_a = player_id_a / 5;
+                    column_b = player_id_b % 5;
+                    row_b = player_id_b / 5;
+
+                    selection = 0;
+                    done_a = 0;
+                    done_b = 0;
+                } else {
+                    scene->next_id = SCENE_MENU;
+                }
+            } else {
+                ctrl_event *p1=NULL, *p2 = NULL, *i;
+                controller_event(scene->player1.ctrl, event, &p1);
+                controller_event(scene->player2.ctrl, event, &p2);
+                i = p1;
+                if (i) {
+                    do {
+                        handle_action(scene, 1, i->action);
+                    } while((i = i->next));
+                    DEBUG("done");
+                }
+                i = p2;
+                if (i) {
+                    do {
+                        handle_action(scene, 2, i->action);
+                    } while((i = i->next));
+                    DEBUG("done");
+                }
+            }
     }
     return 0;
 }
 
 void render_highlights(scene *scene) {
+    int trans;
     if (scene->player2.selectable && row_a == row_b && column_a == column_b) {
         video_render_char(&select_hilight, 11 + (62*column_a), 115 + (42*row_a), 250 - ticks , 0, 250 - ticks);
     } else {
         if (scene->player2.selectable) {
-            video_render_char(&select_hilight, 11 + (62*column_b), 115 + (42*row_b), 0 , 0, 250 - ticks);
+            if (done_b) {
+                trans = 250;
+            } else {
+                trans = 250 - ticks;
+            }
+            video_render_char(&select_hilight, 11 + (62*column_b), 115 + (42*row_b), 0 , 0, trans);
         }
-        video_render_char(&select_hilight, 11 + (62*column_a), 115 + (42*row_a), 250 - ticks, 0, 0);
+        if (done_a) {
+                trans = 250;
+            } else {
+                trans = 250 - ticks;
+            }
+        video_render_char(&select_hilight, 11 + (62*column_a), 115 + (42*row_a), trans, 0, 0);
     }
 }
 

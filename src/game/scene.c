@@ -320,6 +320,12 @@ void scene_tick(scene *scene) {
     }
 }
 
+void scene_act(scene *scene, controller *ctrl, int action) {
+    if (scene->act != NULL) {
+        scene->act(scene, ctrl, action);
+    }
+}
+
 void scene_set_player1_har(scene *scene, har *har) {
     if(scene->player1.har != NULL) {
         har_free(scene->player1.har);

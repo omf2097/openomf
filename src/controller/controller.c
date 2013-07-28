@@ -9,6 +9,7 @@ typedef struct hook_function_t {
 
 void controller_init(controller *ctrl) {
     list_create(&ctrl->hooks);
+    ctrl->har = NULL;
 }
 
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type)) {
@@ -18,22 +19,44 @@ void controller_add_hook(controller *ctrl, controller *source, void(*fp)(control
     list_append(&ctrl->hooks, &h, sizeof(hook_function*));
 }
 
-void controller_cmd(controller* ctrl, int action) {
+void controller_clear_hooks(controller *ctrl) {
+    iterator it;
+    hook_function **tmp = 0;
+    list_iter_begin(&ctrl->hooks, &it);
+    while((tmp = iter_next(&it)) != NULL) {
+        free(*tmp);
+        list_delete(&ctrl->hooks, &it); 
+    }
+}
+
+
+void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
     // fire any installed hooks
     iterator it;
     hook_function **p = 0;
+    ctrl_event *i;
     
     list_iter_begin(&ctrl->hooks, &it);
     while((p = iter_next(&it)) != NULL) {
         ((*p)->fp)((*p)->source, action);
     }
-    har_act(ctrl->har, action);
+    if (*ev == NULL) {
+        *ev = malloc(sizeof(ctrl_event));
+        (*ev)->action = action;
+        (*ev)->next = NULL;
+    } else {
+        i = *ev;
+        while (i->next) {}
+        i->next = malloc(sizeof(ctrl_event));
+        i->next->action = action;
+        i->next->next = NULL;
+    }
 }
 
-int controller_event(controller *ctrl, SDL_Event *event) {
-    return ctrl->handle_fun(ctrl, event);
+int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
+    return ctrl->handle_fun(ctrl, event, ev);
 }
 
-int controller_tick(controller *ctrl) {
-    return ctrl->tick_fun(ctrl);
+int controller_tick(controller *ctrl, ctrl_event **ev) {
+    return ctrl->tick_fun(ctrl, ev);
 }

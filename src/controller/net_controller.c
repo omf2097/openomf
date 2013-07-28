@@ -34,19 +34,23 @@ void net_controller_free(controller *ctrl) {
     free(data);
 }
 
-int net_controller_tick(controller *ctrl) {
+int net_controller_tick(controller *ctrl, ctrl_event **ev) {
     ENetEvent event;
     wtf *data = ctrl->data;
-    int action;
     ENetHost *host = data->host;
     if (enet_host_service(host, &event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
-                action = atoi((char*)event.packet->data);
-                if (action != 10) {
-                    DEBUG("got packet %s", event.packet->data);
+                DEBUG("got packet %s", event.packet->data);
+                if (event.packet->data[0] == 'k') {
+                    // dispatch keypress to scene
+                    int action = atoi((char*)event.packet->data+1);
+                    DEBUG("sending action %d to controller", action);
+                    controller_cmd(ctrl, action, ev);
+                } else {
+                    // dispatch it to the HAR
+                    har_parse_command(ctrl->har, (char*)event.packet->data);
                 }
-                har_parse_command(ctrl->har, (char*)event.packet->data);
                 enet_packet_destroy(event.packet);
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
@@ -61,11 +65,11 @@ int net_controller_tick(controller *ctrl) {
     return 0;
 }
 
-int net_controller_handle(controller *ctrl, SDL_Event *event) {
+int net_controller_handle(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
     return 1;
 }
 
-void hook(char* buf, void *userdata) {
+void har_hook(char* buf, void *userdata) {
     controller *ctrl = userdata;
     wtf *data = ctrl->data;
     ENetPeer *peer = data->peer;
@@ -73,6 +77,27 @@ void hook(char* buf, void *userdata) {
     data->disconnected = 0;
     ENetPacket * packet;
 
+    packet = enet_packet_create(buf, strlen (buf) + 1, ENET_PACKET_FLAG_RELIABLE);
+    if (peer) {
+        enet_peer_send(peer, 0, packet);
+        enet_host_flush (host);
+    } else {
+        DEBUG("peer is null~");
+    }
+}
+
+void controller_hook(controller *ctrl, int action) {
+    char buf[10];
+    wtf *data = ctrl->data;
+    ENetPeer *peer = data->peer;
+    ENetHost *host = data->host;
+    ENetPacket *packet;
+    if (action == ACT_STOP) {
+        // not interested
+        return;
+    }
+    DEBUG("controller hook fired with %d", action);
+    sprintf(buf, "k%d", action);
     packet = enet_packet_create(buf, strlen (buf) + 1, ENET_PACKET_FLAG_RELIABLE);
     if (peer) {
         enet_peer_send(peer, 0, packet);
@@ -91,5 +116,6 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer) {
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
     ctrl->handle_fun = &net_controller_handle;
-    ctrl->har_hook = &hook;
+    ctrl->har_hook = &har_hook;
+    ctrl->controller_hook = &controller_hook;
 }

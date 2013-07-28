@@ -147,12 +147,15 @@ int arena_init(scene *scene) {
     scene->player1.ctrl->har = h1;
     scene->player2.ctrl->har = h2;
 
+    // remove the keyboard hooks
     // set up the magic HAR hooks
     if (scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
+        controller_clear_hooks(scene->player2.ctrl);
         har_add_hook(scene->player2.har, scene->player1.ctrl->har_hook, (void*)scene->player1.ctrl);
     }
 
     if (scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {
+        controller_clear_hooks(scene->player1.ctrl);
         har_add_hook(scene->player1.har, scene->player2.ctrl->har_hook, (void*)scene->player2.ctrl);
     }
 
@@ -318,8 +321,9 @@ void arena_tick(scene *scene) {
 
     // Handle menu, if visible
     if(!local->menu_visible) {
-        if(controller_tick(scene->player1.ctrl) ||
-                controller_tick(scene->player2.ctrl)) {
+        ctrl_event *p1 = NULL, *p2 = NULL, *i;
+        if(controller_tick(scene->player1.ctrl, &p1) ||
+                controller_tick(scene->player2.ctrl, &p2)) {
             // one of the controllers bailed
 
             if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
@@ -330,6 +334,23 @@ void arena_tick(scene *scene) {
                 net_controller_free(scene->player2.ctrl);
             }
             scene->next_id = SCENE_MENU;
+        }
+
+        i = p1;
+        if (i) {
+            do {
+                /*DEBUG("har 1 act %d", i->action);*/
+                har_act(scene->player1.har, i->action);
+            } while((i = i->next));
+            /*DEBUG("done");*/
+        }
+        i = p2;
+        if (i) {
+            do {
+                /*DEBUG("har 2 act %d", i->action);*/
+                har_act(scene->player2.har, i->action);
+            } while((i = i->next));
+            /*DEBUG("done");*/
         }
         
         // Collision detections
@@ -372,8 +393,25 @@ int arena_event(scene *scene, SDL_Event *e) {
     if(local->menu_visible) {
         return menu_handle_event(&local->game_menu, e);
     } else {
-        controller_event(scene->player1.ctrl, e);
-        controller_event(scene->player2.ctrl, e);
+        ctrl_event *p1=NULL, *p2=NULL, *i;
+        controller_event(scene->player1.ctrl, e, &p1);
+        controller_event(scene->player2.ctrl, e, &p2);
+        i = p1;
+        if (i) {
+            do {
+                /*DEBUG("har 1 act %d", i->action);*/
+                har_act(scene->player1.har, i->action);
+            } while((i = i->next));
+            /*DEBUG("done");*/
+        }
+        i = p2;
+        if (i) {
+            do {
+                /*DEBUG("har 2 act %d", i->action);*/
+                har_act(scene->player2.har, i->action);
+            } while((i = i->next));
+            /*DEBUG("done");*/
+        }
         return 0;
     }
 }

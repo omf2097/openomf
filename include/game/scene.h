@@ -64,6 +64,7 @@ typedef struct scene_t {
     void (*render)(struct scene_t *scene);
     void (*deinit)(struct scene_t *scene);
     void (*tick)(struct scene_t *scene);
+    void (*act)(struct scene_t *scene, controller *ctrl, int action);
 } scene;
 
 void scene_set_player1_har(scene *scene, har *har);
@@ -77,6 +78,7 @@ void scene_free(scene *scene);
 int scene_handle_event(scene *scene, SDL_Event *event);
 void scene_render(scene *scene);
 void scene_tick(scene *scene);
+void scene_act(scene *scene, controller *ctrl, int action);
 unsigned int scene_ms_per_tick(scene *scene);
 
 #endif // _SCENE_H

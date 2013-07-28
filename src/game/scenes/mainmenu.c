@@ -114,12 +114,80 @@ void mainmenu_quit(component *c, void *userdata) {
 
 void mainmenu_1v1(component *c, void *userdata) {
     scene *scene = userdata;
+
+    controller *player1_ctrl, *player2_ctrl;
+    keyboard_keys *keys, *keys2;
+
+    //TODO read key config from settings
+
+    // Player 1 controller
+    player1_ctrl = malloc(sizeof(controller));
+    controller_init(player1_ctrl);
+    player1_ctrl->har = scene->player1.har;
+    keys = malloc(sizeof(keyboard_keys));
+    keys->up = SDL_SCANCODE_UP;
+    keys->down = SDL_SCANCODE_DOWN;
+    keys->left = SDL_SCANCODE_LEFT;
+    keys->right = SDL_SCANCODE_RIGHT;
+    keys->punch = SDL_SCANCODE_RETURN;
+    keys->kick = SDL_SCANCODE_RSHIFT;
+    keyboard_create(player1_ctrl, keys);
+    scene_set_player1_ctrl(scene, player1_ctrl);
+
+    // TODO this should be AI
+    // Player 2 controller
+    player2_ctrl = malloc(sizeof(controller));
+    controller_init(player2_ctrl);
+    player2_ctrl->har = scene->player2.har;
+    keys2 = malloc(sizeof(keyboard_keys));
+    keys2->up = SDL_SCANCODE_W;
+    keys2->down = SDL_SCANCODE_S;
+    keys2->left = SDL_SCANCODE_A;
+    keys2->right = SDL_SCANCODE_D;
+    keys2->punch = SDL_SCANCODE_LSHIFT;
+    keys2->kick = SDL_SCANCODE_LCTRL;
+    keyboard_create(player2_ctrl, keys2);
+    scene_set_player2_ctrl(scene, player2_ctrl);
+
     scene->player2.selectable = 0;
     scene->next_id = SCENE_MELEE;
 }
 
 void mainmenu_1v2(component *c, void *userdata) {
     scene *scene = userdata;
+
+    controller *player1_ctrl, *player2_ctrl;
+    keyboard_keys *keys, *keys2;
+
+    // Player 1 controller
+    player1_ctrl = malloc(sizeof(controller));
+    controller_init(player1_ctrl);
+    player1_ctrl->har = scene->player1.har;
+    keys = malloc(sizeof(keyboard_keys));
+    keys->up = SDL_SCANCODE_UP;
+    keys->down = SDL_SCANCODE_DOWN;
+    keys->left = SDL_SCANCODE_LEFT;
+    keys->right = SDL_SCANCODE_RIGHT;
+    keys->punch = SDL_SCANCODE_RETURN;
+    keys->kick = SDL_SCANCODE_RSHIFT;
+    keyboard_create(player1_ctrl, keys);
+    scene_set_player1_ctrl(scene, player1_ctrl);
+
+    // Player 2 controller
+    player2_ctrl = malloc(sizeof(controller));
+    controller_init(player2_ctrl);
+    player2_ctrl->har = scene->player2.har;
+    keys2 = malloc(sizeof(keyboard_keys));
+    keys2->up = SDL_SCANCODE_W;
+    keys2->down = SDL_SCANCODE_S;
+    keys2->left = SDL_SCANCODE_A;
+    keys2->right = SDL_SCANCODE_D;
+    keys2->punch = SDL_SCANCODE_LSHIFT;
+    keys2->kick = SDL_SCANCODE_LCTRL;
+    keyboard_create(player2_ctrl, keys2);
+    scene_set_player2_ctrl(scene, player2_ctrl);
+
+
     scene->player2.selectable = 1;
     scene->next_id = SCENE_MELEE;
 }
@@ -515,7 +583,8 @@ void mainmenu_tick(scene *scene) {
                 net_controller_create(player2_ctrl, host, event.peer);
                 scene_set_player2_ctrl(scene, player2_ctrl);
                 host = NULL;
-                scene->next_id = SCENE_ARENA0;
+                scene->player2.selectable = 1;
+                scene->next_id = SCENE_MELEE;
             } else if (role == ROLE_CLIENT) {
                 DEBUG("connected to server!");
                 controller *player1_ctrl, *player2_ctrl;
@@ -548,7 +617,8 @@ void mainmenu_tick(scene *scene) {
                 keyboard_create(player2_ctrl, keys);
                 scene_set_player2_ctrl(scene, player2_ctrl);
                 host = NULL;
-                scene->next_id = SCENE_ARENA0;
+                scene->player2.selectable = 1;
+                scene->next_id = SCENE_MELEE;
             }
         } else {
             if (role == ROLE_CLIENT && difftime(time(NULL), connect_start) > 5.0) {
