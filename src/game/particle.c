@@ -73,8 +73,8 @@ void particle_get_pos(particle *p, int *x, int *y) {
 int particle_create(particle *p, unsigned int id, animation *ani, int dir, int x, int y, int vx, int vy, float mass, float gravity, float friction, float elasticity) {
     // Body physics
     cpFloat radius = 5;
-    cpFloat moment = cpMomentForCircle(mass, 0, radius, cpvzero);
-    p->obody = cpSpaceAddBody(p->space, cpBodyNew(mass, moment));
+    //cpFloat moment = cpMomentForCircle(mass, 0, radius, cpvzero);
+    p->obody = cpSpaceAddBody(p->space, cpBodyNew(mass, INFINITY));
     cpBodySetPos(p->obody, cpv(x, y));
     cpBodySetVel(p->obody, cpv(vx,vy));
     p->oshape = cpSpaceAddShape(p->space, cpCircleShapeNew(p->obody, radius, cpvzero));

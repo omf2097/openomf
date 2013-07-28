@@ -355,7 +355,7 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
         scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL+(i%3));
         int vy = (-(4.0 / 16 * i + 2.0));
         int vx = direction * (30.0 / 16 * i + 2.0);
-        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 1.0f, 100.0f, 1.0f, 0.3f); 
+        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 1.0f, 100.0f, 0.5f, 0.3f); 
         list_append(&h->particles, &p, sizeof(particle*));
     }
 }
@@ -370,7 +370,6 @@ int check_collision(har *har_a, physics_state phy, har *har_b, sd_animation *ani
     if (har_b->direction == -1) {
         x = har_b->phy.pos.x + ((sprite->pos_x * har_b->direction) - sprite->img->w);
     }
-
 
     if(har_a->cd_debug_enabled) {
         image_clear(&har_a->cd_debug, color_create(0, 0, 0, 0));
