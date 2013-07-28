@@ -13,7 +13,6 @@
 #include "game/settings.h"
 #include "console/console.h"
 #include <SDL2/SDL.h>
-#include <enet/enet.h>
 
 int run = 0;
 int _vsync = 0;
