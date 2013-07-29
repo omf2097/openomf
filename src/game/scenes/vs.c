@@ -73,7 +73,13 @@ int vs_init(scene *scene) {
     // clone the left side of the background image
     sd_rgba_image * out = sub_image(scene->bk->background, scene->bk->palettes[0], 0, 0, 160, 200);
 
-    arena = rand() % 5; // srand was done in melee
+    if (scene->player2.selectable) {
+        // player1 gets to choose, start at arena
+        arena = 0;
+    } else {
+        // pick a random arena for 1 player mode
+        arena = rand() % 5; // srand was done in melee
+    }
 
     list_create(&child_players);
 
@@ -124,6 +130,29 @@ void vs_deinit(scene *scene) {
 
 }
 
+void vs_handle_action(scene *scene, int action) {
+    switch (action) {
+        case ACT_KICK:
+        case ACT_PUNCH:
+            scene->next_id = SCENE_ARENA0+arena;
+            break;
+        case ACT_UP:
+        case ACT_LEFT:
+            arena--;
+            if (arena < 0) {
+                arena =4;
+            }
+            break;
+        case ACT_DOWN:
+        case ACT_RIGHT:
+            arena++;
+            if (arena > 4) {
+                arena = 0;
+            }
+            break;
+    }
+}
+
 void vs_tick(scene *scene) {
     animationplayer_run(&welder);
     animationplayer_run(&scientist);
@@ -140,32 +169,42 @@ void vs_tick(scene *scene) {
             animationplayer_run(tmp);
         }
     }
+
+    ctrl_event *p1 = NULL, *i;
+    if(controller_tick(scene->player1.ctrl, &p1)) {
+        // one of the controllers bailed
+
+        /*if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {*/
+            /*net_controller_free(scene->player1.ctrl);*/
+        /*}*/
+
+        /*if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {*/
+            /*net_controller_free(scene->player2.ctrl);*/
+        /*}*/
+        scene->next_id = SCENE_MENU;
+    }
+    i = p1;
+    if (i) {
+        do {
+            vs_handle_action(scene, i->action);
+        } while((i = i->next));
+    }
 }
 
 int vs_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN) {
-        switch (event->key.keysym.sym) {
-            case SDLK_ESCAPE:
+        if(event->key.keysym.sym == SDLK_ESCAPE) {
                 scene->next_id = SCENE_MELEE;
-                break;
-            case SDLK_RETURN:
-
-                scene->next_id = SCENE_ARENA0+arena;
-                break;
-            case SDLK_UP:
-            case SDLK_LEFT:
-                arena--;
-                if (arena < 0) {
-                    arena = 4;
-                }
-                break;
-            case SDLK_DOWN:
-            case SDLK_RIGHT:
-                arena++;
-                if (arena > 4) {
-                    arena = 0;
-                }
-                break;
+        } else {
+            ctrl_event *p1=NULL, *i;
+            controller_event(scene->player1.ctrl, event, &p1);
+            i = p1;
+            if (i) {
+                do {
+                    vs_handle_action(scene, i->action);
+                } while((i = i->next));
+                DEBUG("done");
+            }
         }
         return 1;
     }
