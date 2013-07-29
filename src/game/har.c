@@ -19,33 +19,39 @@ typedef struct hook_function_t {
 void har_add_ani_player(void *userdata, int id, int mx, int my, int mg);
 void har_set_ani_finished(void *userdata, int id);
 
-void har_phys(void *userdata, int x, int y);
-void har_pos(void *userdata, int x, int y);
-
 void fire_hooks(har *har, char *buf);
 
 void har_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
-    int px,py;
+    int px,py,successor;
     har *har = userdata;
     animation *ani = array_get(&har->animations, id);
     if(ani != NULL) {
-        DEBUG("spawning %d at %d + %d +%d", id, ani->sdani->start_x, mx, har->phy.pos.x);
-        DEBUG("spawning %d at %d + %d +%d", id, ani->sdani->start_y, my, har->phy.pos.y);
-        px = ani->sdani->start_x + mx + har->phy.pos.x;
-        py = ani->sdani->start_y + my + har->phy.pos.y;
+        // Position for new object
+        object_get_pos(har->pobj, px, py);
+        DEBUG("spawning %d at (%d + %d + %d, %d + %d + %d)", id, ani->sdani->start_x, mx, px, ani->sdani->start_y, my, py);
+        px += ani->sdani->start_x;
+        px += mx;
+        py += ani->sdani->start_y;
+        py += my;
+
+        // Object physics
+        object obj;
+        object_create(&obj, har->space, px, py, 0, 0, 1.0f, 1.0f, 0.0f);
+        object_set_gravity(&obj, mg/100.0f);
         
+        // Particle object
         particle *p = malloc(sizeof(particle));
-        p->space = har->space;
-        p->group = har->particle_group;
-        particle_create(p, id, ani, 0, px, py, 0, 0, 1.0f, mg/100.0f, 1.0f, 0.0f);
-        int c = har->af->moves[id]->unknown[16];
-        DEBUG("successor for %d is %d", id, c);
-        if (c) {
-            p->successor = array_get(&har->animations, c);
-        }
-        particle_tick(p);
-        list_append(&har->particles, &p, sizeof(particle*));
+        particle_create(p, id, ani, 0, obj);
         
+        // Find successor
+        successor = har->af->moves[id]->unknown[16];
+        if(successor) {
+            p->successor = array_get(&har->animations, successor);
+            DEBUG("%d has a successor: %d", id, successor);
+        }
+        
+        // Add to particle list
+        list_append(&har->particles, &p, sizeof(particle*));
         DEBUG("Create animation %d", id);
         return;
     } 
@@ -65,27 +71,13 @@ void har_set_ani_finished(void *userdata, int id) {
     }
 }
 
-void har_phys(void *userdata, int x, int y) {
-    DEBUG("setting recoil velocity to %f , %f", (float)x, (float)y);
-    har *har = userdata;
-    physics_recoil(&har->phy, (float)x, (float)y);
-    physics_tick(&har->phy);
-}
-
-void har_pos(void *userdata, int x, int y) {
-    har *har = userdata;
-    har->phy.pos.x = x;
-    har->phy.pos.y = y;
-}
-
 void har_switch_animation(har *har, int id) {
     animationplayer_free(&har->player);
-    animationplayer_create(&har->player, id, array_get(&har->animations, id));
+    animationplayer_create(&har->player, id, array_get(&har->animations, id), &har->pobj);
     animationplayer_set_direction(&har->player, har->direction);
     har->player.userdata = har;
     har->player.add_player = har_add_ani_player;
     har->player.del_player = har_set_ani_finished;
-    har->player.phy = &har->phy;
     har->hit_this_time = 0;
     har->player.reverse = 0;
     animationplayer_run(&har->player);
@@ -161,15 +153,6 @@ void phycb_crouch(physics_state *state, void *userdata) {
 }
 
 int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
-    // Physics & callbacks
-    physics_init(&h->phy, x, y, 0.0f, 0.0f, 190, 10, 24, 295, 1.0f, 0.0f, 1.0f, h);
-    h->phy.fall = phycb_fall;
-    h->phy.floor_hit = phycb_floor_hit;
-    h->phy.stop = phycb_stop;
-    h->phy.jump = phycb_jump;
-    h->phy.move = phycb_move;
-    h->phy.crouch = phycb_crouch;
-
     list_create(&h->hooks);
 
     h->cd_debug_enabled = 0;
@@ -253,26 +236,24 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     h->health = h->health_max = 500;
     /*h->endurance = h->endurance_max = h->af->endurance;*/
     h->endurance = h->endurance_max = 200;
+    DEBUG("Har %d loaded!", id);
+    return 0;
+}
+
+int har_init(har *har, cpSpace *space) {
+    har->space = space;
+    object_create(&har->pobj, 
+    har->particle_group = 1;
     
     // Start player with animation 11
-    h->player.x = h->phy.pos.x;
-    h->player.y = h->phy.pos.y;
-    animationplayer_create(&h->player, ANIM_IDLE, array_get(&h->animations, ANIM_IDLE));
+    animationplayer_create(&h->player, &har->pobj, ANIM_IDLE, array_get(&h->animations, ANIM_IDLE));
     animationplayer_set_direction(&h->player, h->direction);
     animationplayer_set_repeat(&h->player, 1);
     h->player.userdata = h;
     h->player.add_player = har_add_ani_player;
     h->player.del_player = har_set_ani_finished;
-    h->player.phy = &h->phy;
     h->hit_this_time = 0;
     animationplayer_run(&h->player);
-    DEBUG("Har %d loaded!", id);
-    return 0;
-}
-
-int har_init_physics(har *har, cpSpace *space) {
-    har->space = space;
-    har->particle_group = 1;
     return 0;
 }
 
@@ -326,7 +307,7 @@ void har_take_damage(har *har, int amount, const char *string) {
         animationplayer_set_repeat(&har->player, 1);
     } else {
         animationplayer_free(&har->player);
-        animationplayer_create(&har->player, ANIM_DAMAGE, array_get(&har->animations, ANIM_DAMAGE));
+        animationplayer_create(&har->player, &har->pobj, ANIM_DAMAGE, array_get(&har->animations, ANIM_DAMAGE));
         animationplayer_set_direction(&har->player, har->direction);
         if (string) {
             animationplayer_set_string(&har->player, string);
@@ -335,7 +316,6 @@ void har_take_damage(har *har, int amount, const char *string) {
         har->player.userdata = har;
         har->player.add_player = har_add_ani_player;
         har->player.del_player = har_set_ani_finished;
-        har->player.phy = &har->phy;
         if (har->state == STATE_STUNNED) {
             // hit while stunned, refill the endurance meter
             har->endurance = har->endurance_max;

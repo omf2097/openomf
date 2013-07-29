@@ -4,7 +4,7 @@
 #include "utils/list.h"
 #include "video/texture.h"
 #include "audio/sound_state.h"
-#include "game/physics/physics.h"
+#include "game/object.h"
 
 typedef struct aniplayer_sprite_t {
     int x,y;
@@ -36,18 +36,16 @@ typedef struct animationplayer_t {
     sd_stringparser *parser;
     
     aniplayer_slide_op slide_op;
-    physics_state *phy;
     
-    int x,y;
     int enemy_x, enemy_y;
-    aniplayer_sprite *obj;
+    aniplayer_sprite *sprite_obj;
     void *userdata;
     
     void (*del_player)(void *userdata, int id);
     void (*add_player)(void *userdata, int id, int mx, int my, int mg);
 } animationplayer;
 
-int animationplayer_create(animationplayer *player, unsigned int id, animation *animation);
+int animationplayer_create(animationplayer *player, unsigned int id, animation *animation, object *pobj);
 int animationplayer_set_string(animationplayer *player, const char *string);
 void animationplayer_free(animationplayer *player);
 void animationplayer_run(animationplayer *player);

@@ -76,9 +76,9 @@ void cmd_music_on(int music) {
 }
 
 void incinerate_obj(animationplayer *player) {
-    if(player->obj) {
-        free(player->obj);
-        player->obj = 0;
+    if(player->sprite_obj) {
+        free(player->sprite_obj);
+        player->sprite_obj = 0;
     }
 }
 
@@ -106,7 +106,8 @@ int dist(int a, int b) {
     return abs((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1 : -1);
 }
 
-int animationplayer_create(animationplayer *player, unsigned int id, animation *animation) {
+int animationplayer_create(animationplayer *player, unsigned int id, animation *animation, object *pobj) {
+    player->pobj = pobj;
     player->snd = sound_state_create();
     player->ani = animation;
     player->id = id;
@@ -114,17 +115,16 @@ int animationplayer_create(animationplayer *player, unsigned int id, animation *
     player->reverse = 0;
     player->end_frame = UINT32_MAX;
     player->ticks = 1;
-    player->obj = 0;
+    player->sprite_obj = NULL;
     player->finished = 0;
     player->repeat = 0;
-    player->userdata = 0;
+    player->userdata = NULL;
     player->slide_op.enabled = 0;
     player->slide_op.x_per_tick = 0;
     player->slide_op.x_rem = 0;
     player->slide_op.y_per_tick = 0;
     player->slide_op.y_rem = 0;
     player->add_player = NULL;
-    player->phy = NULL;
     player->parser = NULL;
     return animationplayer_set_string(player, animation->sdani->anim_string);
 }
@@ -141,13 +141,16 @@ int animationplayer_set_string(animationplayer *player, const char *string) {
         return 1;
     }
     sd_stringparser_peek(player->parser, 0, &param);
+    
+    // Set pos
+    int opx, opy;
     if(isset(&param, "x=")) {
-        player->x = get(&param, "x=");
-        DEBUG("Set player->x to %d", player->x);
+        object_get_pos(player->pobj, opx, opy);
+        object_set_pos(player->pobj, get(&param, "y="), opy);
     }
     if(isset(&param, "y=")) {
-        player->y = get(&param, "y=");
-        DEBUG("Set player->y to %d", player->y);
+        object_get_pos(player->pobj, opx, opy);
+        object_set_pos(player->pobj, opx, get(&param, "y="));
     }
     DEBUG("P: '%s'", string);
     return 0;
@@ -170,8 +173,8 @@ void animationplayer_render(animationplayer *player) {
     if(player->finished) return;
 
     // Render self
-    if(player->obj) {
-        aniplayer_sprite *s = player->obj;
+    if(player->sprite_obj) {
+        aniplayer_sprite *s = player->sprite_obj;
         int flipmode = s->flipmode;
         if (player->direction == -1) {
             flipmode ^= FLIP_HORIZONTAL;
@@ -376,7 +379,7 @@ void animationplayer_run(animationplayer *player) {
                     anisprite->flipmode |= FLIP_VERTICAL;
                 }
                 anisprite->tex = tex;
-                player->obj = anisprite;
+                player->sprite_obj = anisprite;
             } else {
                 PERROR("No texture @ %u", real_frame);
             }

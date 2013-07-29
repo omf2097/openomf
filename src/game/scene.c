@@ -10,6 +10,7 @@
 #include "audio/sound_state.h"
 #include "game/settings.h"
 #include "game/scene.h"
+#include "game/object.h"
 #include "game/scenes/intro.h"
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/credits.h"

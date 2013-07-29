@@ -2,16 +2,9 @@
 #define _PARTICLE_H
 
 #include <shadowdive/shadowdive.h>
-#include <chipmunk/chipmunk.h>
 #include "game/animation.h"
 #include "game/animationplayer.h"
-#include "game/physics/physics.h"
-
-/* A few thoughts:
- * - Particle vs. Scene, particle vs. Har collisions should probably be handled in har.c
- * - Particle vs. Particle collisions are probably not necessary
- * - Particle should notify finished state by settings finshed flag to 1.
- */
+#include "game/object.h"
 
 typedef struct particle_t particle;
 
@@ -21,17 +14,12 @@ struct particle_t {
     unsigned int id;
     animation *successor;
     
-    cpGroup group;
-    cpSpace *space; // References to arena.c
-    cpBody *obody;
-    cpShape *oshape;
+    object *pobj;
 };
 
-int particle_create(particle *p, unsigned int id, animation *ani, int dir, int x, int y, int vx, int vy, float mass, float gravity, float friction, float elasticity);
-int particle_successor(particle *p);
-void particle_get_vel(particle *p, int *vx, int *vy);
-void particle_get_pos(particle *p, int *x, int *y);
+int particle_create(particle *p, unsigned int id, animation *ani, int dir, object pobj);
 void particle_free(particle *p);
+int particle_successor(particle *p);
 void particle_tick(particle *p);
 void particle_render(particle *p);
 
