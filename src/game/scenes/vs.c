@@ -170,8 +170,9 @@ void vs_tick(scene *scene) {
         }
     }
 
-    ctrl_event *p1 = NULL, *i;
-    if(controller_tick(scene->player1.ctrl, &p1)) {
+    ctrl_event *p1 = NULL, *p2 = NULL, *i;
+    if(controller_tick(scene->player1.ctrl, &p1) ||
+            controller_tick(scene->player2.ctrl, &p2)) {
         // one of the controllers bailed
 
         /*if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {*/
