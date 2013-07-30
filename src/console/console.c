@@ -106,9 +106,9 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
         int i;
         if(strtoint(argv[1], &i)) {
             har *h = scene->player1.har;
-            int hx = h->phy.pos.x;
-            int hy = h->phy.pos.y;
+            int hx, hy;
             int hd = h->direction;
+            object_get_pos(&h->pobj, &hx, &hy);
             if(h != NULL) {
                 har_free(h);
                 free(h);

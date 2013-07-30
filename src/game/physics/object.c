@@ -1,7 +1,7 @@
 #include "game//physics/object.h"
 #include <stdlib.h>
 
-typedef object_userdata_t {
+typedef struct object_userdata_t {
     cpFloat gravity;
 } object_userdata;
 
@@ -10,7 +10,7 @@ void object_create(object *obj, cpSpace *space, cpFloat px, cpFloat py, cpFloat 
     obj->friction = friction;
     obj->elasticity = elasticity;
     obj->body = cpSpaceAddBody(obj->space, cpBodyNew(mass, INFINITY));
-    obj->userdata = malloc(sizeof(object_userdata));
+    obj->body->data = malloc(sizeof(object_userdata));
     cpBodySetPos(obj->body, cpv(px, py));
     cpBodySetVel(obj->body, cpv(vx, vy));
     obj->shape = cpSpaceAddShape(obj->space, cpCircleShapeNew(obj->body, 5.0f, cpvzero));
@@ -88,12 +88,12 @@ void object_add_pos(object *obj, int px, int py) {
 
 // TODO: This function is atm. complete guesswork. Do something about it.
 static void no_grav_vel_func(cpBody *body, cpVect gravity, cpFloat damping, cpFloat dt) {
-    cpFloat grav = ((object_userdata)body->userdata).gravity;
-    cpBodyUpdateVelocity(body, grav, damping, dt);
+    cpFloat grav = ((object_userdata*)body->data)->gravity;
+    cpBodyUpdateVelocity(body, cpv(0, grav), damping, dt);
 }
 
 void object_set_gravity(object *obj, cpFloat gravity) {
-    ((object_userdata)obj->body->userdata).gravity = gravity;
+    ((object_userdata*)obj->body->data)->gravity = gravity;
     obj->body->velocity_func = no_grav_vel_func;
 }
 
@@ -104,7 +104,7 @@ void object_set_group(object *obj, unsigned int group) {
 void object_free(object *obj) {
     cpSpaceRemoveShape(obj->space, obj->shape);
     cpSpaceRemoveBody(obj->space, obj->body);
-    free((object_userdata)obj->body->userdata);
+    free((object_userdata*)obj->body->data);
     cpShapeFree(obj->shape);
     cpBodyFree(obj->body);
 }

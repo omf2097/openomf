@@ -1,6 +1,6 @@
 #include "game/physics/space.h"
 
-cpSpace global_space = NULL;
+cpSpace *global_space = NULL;
 
 void physics_space_init() {
     global_space = cpSpaceNew();
