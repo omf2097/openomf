@@ -132,8 +132,8 @@ typedef struct har_t {
 } har;
 
 void har_free(har *har);
-int har_load(har *har, sd_palette *pal, int id, int x, int y, int direction); // Returns 0 on success
-int har_init(har *har);
+int har_load(har *har, sd_palette *pal, int id, int direction); // Returns 0 on success
+int har_init(har *har, int x, int y);
 void har_tick(har *har); // Called by scene.c tick function at every game tick
 void har_render(har *har); // Called by scene.h render function at every frame render
 void har_act(har *har, int act_type); // Handle event passed from inputhandler

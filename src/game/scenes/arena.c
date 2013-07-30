@@ -128,13 +128,13 @@ int arena_init(scene *scene) {
 
     h1 = malloc(sizeof(har));
     h2 = malloc(sizeof(har));
-    if (har_load(h1, scene->bk->palettes[0], scene->player1.har_id, 60, 190, 1)) {
+    if (har_load(h1, scene->bk->palettes[0], scene->player1.har_id, 1)) {
         free(h1);
         free(h2);
         scene->next_id = SCENE_NONE;
         return 1;
     }
-    if (har_load(h2, scene->bk->palettes[0], scene->player2.har_id, 260, 190, -1)) {
+    if (har_load(h2, scene->bk->palettes[0], scene->player2.har_id, -1)) {
         har_free(h1);
         free(h2);
         scene->next_id = SCENE_NONE;
@@ -176,8 +176,8 @@ int arena_init(scene *scene) {
     cpSpaceAddShape(local->space, local->line_wall_right);
     
     // Init physics for hars
-    /*har_init_physics(scene->player1.har, local->space);*/
-    /*har_init_physics(scene->player2.har, local->space);*/
+    har_init(scene->player1.har, 60, 190);
+    har_init(scene->player2.har, 260, 190);
     
     // Arena menu
     local->menu_visible = 0;
