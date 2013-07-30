@@ -11,6 +11,7 @@
 #include "game/text/languages.h"
 #include "game/scene.h"
 #include "game/settings.h"
+#include "game/physics/space.h"
 #include "console/console.h"
 #include <SDL2/SDL.h>
 
@@ -45,6 +46,8 @@ int engine_init() {
     if(console_init()) {
         return 1;
     }
+    physics_space_init();
+    physics_space_set_gravity(10.0f);
     run = 1;
     return 0;
 }
@@ -113,7 +116,12 @@ void engine_run() {
         int dt = SDL_GetTicks() - scene_start;
         omf_wait += dt;
         while(omf_wait > scene_ms_per_tick(&scene)) {
+            // Tick physics engine
+            physics_space_tick(1/dt);
+            
+            // Tick scene
             scene_tick(&scene);
+            
             // We want to load another scene
             if(scene.this_id != scene.next_id) {
                 if(scene.next_id == SCENE_NONE) {
@@ -126,7 +134,11 @@ void engine_run() {
                     return;
                 }
             }
+            
+            // Tick console
             console_tick();
+            
+            // Handle waiting period leftover time
             omf_wait -= scene_ms_per_tick(&scene);
         }
         scene_start = SDL_GetTicks();
@@ -159,6 +171,7 @@ void engine_run() {
 }
 
 void engine_close() {
+    physics_space_close();
     console_close();
     fonts_close();
     lang_close();
