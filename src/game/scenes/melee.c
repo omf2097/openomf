@@ -61,9 +61,12 @@ animationplayer harplayer_b;
 
 void refresh_pilot_stats();
 
-void melee_switch_animation(scene *scene, animationplayer *harplayer, int id) {
+void melee_switch_animation(scene *scene, animationplayer *harplayer, int id, int x, int y) {
+    object *obj = malloc(sizeof(object));
+    object_create(obj, global_space, x, y, 0, 0, 1.0f, 1.0f, 0.0f);
+    object_set_gravity(obj, 0.0f);
     animationplayer_free(harplayer);
-    animationplayer_create(harplayer, id, array_get(&scene->animations, id));
+    animationplayer_create(harplayer, id, array_get(&scene->animations, id), obj);
     animationplayer_set_repeat(harplayer, 1);
     animationplayer_run(harplayer);
 }
@@ -308,19 +311,13 @@ void handle_action(scene *scene, int player, int action) {
     if (selection == 1) {
         int har_animation_a = (5*row_a) + column_a + 18;
         if (harplayer_a.id != har_animation_a) {
-            melee_switch_animation(scene, &harplayer_a, har_animation_a);
-            // these are just guesses
-            harplayer_a.x = 110;
-            harplayer_a.y = 95;
+            melee_switch_animation(scene, &harplayer_a, har_animation_a, 110, 95);
             animationplayer_set_direction(&harplayer_a, 1);
         }
         if (scene->player2.selectable) {
             int har_animation_b = (5*row_b) + column_b + 18;
             if (harplayer_b.id != har_animation_b) {
-                melee_switch_animation(scene, &harplayer_b, har_animation_b);
-                // these are just guesses
-                harplayer_b.x = 320-110;
-                harplayer_b.y = 95;
+                melee_switch_animation(scene, &harplayer_b, har_animation_b, 210, 95);
                 animationplayer_set_direction(&harplayer_b, -1);
             }
         }

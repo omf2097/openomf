@@ -93,7 +93,7 @@ void sound_slide(component *c, void *userdata, int pos) {
 int arena_init(scene *scene) {
     settings *setting;
     arena_local *local;
-    cpVect grav;
+    /*cpVect grav;*/
     
     // Load up settings
     setting = settings_get();
@@ -176,8 +176,8 @@ int arena_init(scene *scene) {
     cpSpaceAddShape(local->space, local->line_wall_right);
     
     // Init physics for hars
-    har_init_physics(scene->player1.har, local->space);
-    har_init_physics(scene->player2.har, local->space);
+    /*har_init_physics(scene->player1.har, local->space);*/
+    /*har_init_physics(scene->player2.har, local->space);*/
     
     // Arena menu
     local->menu_visible = 0;
@@ -360,12 +360,15 @@ void arena_tick(scene *scene) {
         //har_collision_scene(scene->player2.har, scene);
         
         // Turn the HARs to face the enemy
-        if (scene->player1.har->phy.pos.x > scene->player2.har->phy.pos.x) {
+        int x1, x2, y1, y2;
+        object_get_pos(&(scene->player1.har->pobj), &x1, &y1);
+        object_get_pos(&(scene->player2.har->pobj), &x2, &y2);
+        if (x1 > x2) {
             if (scene->player1.har->direction == 1) {
                 har_set_direction(scene->player1.har, -1);
                 har_set_direction(scene->player2.har, 1);
             }
-        } else if (scene->player1.har->phy.pos.x < scene->player2.har->phy.pos.x) {
+        } else if (x1 < x2) {
             if (scene->player1.har->direction == -1) {
                 har_set_direction(scene->player1.har, 1);
                 har_set_direction(scene->player2.har, -1);

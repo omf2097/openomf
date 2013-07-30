@@ -80,7 +80,10 @@ int mechlab_init(scene *scene) {
 }
 
 void mechlab_post_init(scene *scene) {
-    animationplayer_create(&handplayer, 29, array_get(&scene->animations, 29));
+    object *obj = malloc(sizeof(object));
+    object_create(obj, global_space, 0, 0, 0, 0, 1.0f, 1.0f, 0.0f);
+    object_set_gravity(obj, 0.0f);
+    animationplayer_create(&handplayer, 29, array_get(&scene->animations, 29), obj);
     animationplayer_run(&handplayer);
 }
 
@@ -151,8 +154,7 @@ void mechlab_render(scene *scene) {
     video_render_sprite(&paneltex, panelspr->pos_x, panelspr->pos_y, BLEND_ALPHA_FULL);
 
     sd_sprite *selspr = hand.buttons[hand.sel].spr;
-    handplayer.x = selspr->pos_x + selspr->img->w/2 ;
-    handplayer.y = selspr->pos_y + selspr->img->h/2 ;
+    object_set_pos(handplayer.pobj, selspr->pos_x + selspr->img->w/2, selspr->pos_y + selspr->img->h/2);
     animationplayer_render(&handplayer);
 }
 

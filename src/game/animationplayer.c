@@ -145,11 +145,11 @@ int animationplayer_set_string(animationplayer *player, const char *string) {
     // Set pos
     int opx, opy;
     if(isset(&param, "x=")) {
-        object_get_pos(player->pobj, opx, opy);
+        object_get_pos(player->pobj, &opx, &opy);
         object_set_pos(player->pobj, get(&param, "y="), opy);
     }
     if(isset(&param, "y=")) {
-        object_get_pos(player->pobj, opx, opy);
+        object_get_pos(player->pobj, &opx, &opy);
         object_set_pos(player->pobj, opx, get(&param, "y="));
     }
     DEBUG("P: '%s'", string);
@@ -174,12 +174,14 @@ void animationplayer_render(animationplayer *player) {
 
     // Render self
     if(player->sprite_obj) {
+        int x, y;
         aniplayer_sprite *s = player->sprite_obj;
         int flipmode = s->flipmode;
         if (player->direction == -1) {
             flipmode ^= FLIP_HORIZONTAL;
         }
-        video_render_sprite_flip(s->tex, player->x + s->x, player->y + s->y, s->blendmode, flipmode);
+        object_get_pos(player->pobj, &x, &y);
+        video_render_sprite_flip(s->tex, x + s->x, y + s->y, s->blendmode, flipmode);
     }
 }
 
@@ -187,12 +189,12 @@ void animationplayer_run(animationplayer *player) {
     if(player->finished) return;
 
     // Handle slide operation
+    // TODO make the physics object handle this, or something
     if(player->slide_op.enabled) {
         int x = player->slide_op.x_rem + player->slide_op.x_per_tick;
         int y = player->slide_op.y_rem + player->slide_op.y_per_tick;
         // find how many full pixels we can move
-        player->x += x / 100;
-        player->y += y / 100;
+        object_add_pos(player->pobj, x / 100, y / 100);
         // stash the remaining partial pixels for the next tick
         player->slide_op.x_rem = x % 100;
         player->slide_op.y_rem = y % 100;
@@ -262,7 +264,7 @@ void animationplayer_run(animationplayer *player) {
         if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));               }
         if(isset(f, "smf")) { cmd_music_off();                           }
         if(isset(f, "s"))   { cmd_sound(player, get(f, "s"));            }
-        if (isset(f, "v") && player->phy != NULL) {
+        if (isset(f, "v")) {
             int x = 0, y = 0;
             if(isset(f, "y-")) {
                 y = get(f, "y-") * -1;
@@ -276,10 +278,10 @@ void animationplayer_run(animationplayer *player) {
             }
 
             if (x || y) {
-                physics_recoil(player->phy, (float)x, (float)y);
+                object_add_vel(player->pobj, x, y);
             }
         }
-        if (isset(f, "e") && player->phy != NULL) {
+        if (isset(f, "e")) {
             // x,y relative to *enemy's* position
             int x = 0, y = 0;
             if(isset(f, "y-")) {
@@ -293,12 +295,14 @@ void animationplayer_run(animationplayer *player) {
                 x = get(f, "x+") * player->direction;
             }
 
-            if (x || y) {
-                int x_dist = dist(player->phy->pos.x, player->enemy_x + x);
-                int y_dist = dist(player->phy->pos.y, player->enemy_y + y);
-                DEBUG("xdist %d %d + %d -> %d, ydist %d %d + %d -> %d", player->phy->pos.x, player->enemy_x, x, x_dist, player->phy->pos.y, player->enemy_y, y, y_dist);
-                physics_move_per_tick(player->phy, x_dist / (float)param->duration, y_dist / (float)param->duration, param->duration);
-            }
+            int xpos, ypos;
+            object_get_pos(player->pobj, &xpos, &ypos);
+            int x_dist = dist(xpos, player->enemy_x + x);
+            int y_dist = dist(ypos, player->enemy_y + y);
+            /*DEBUG("xdist %d %d + %d -> %d, ydist %d %d + %d -> %d", player->phy->pos.x, player->enemy_x, x, x_dist, player->phy->pos.y, player->enemy_y, y, y_dist);*/
+            player->slide_op.enabled = 1;
+            player->slide_op.x_per_tick = x_dist / (float)param->duration;
+            player->slide_op.y_per_tick = y_dist / (float)param->duration;
         }
         if (isset(f, "v") == 0 && isset(f, "e") == 0 && (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
             // check for relative X interleaving
@@ -314,13 +318,10 @@ void animationplayer_run(animationplayer *player) {
                 x = get(f, "x+") * player->direction;
             }
 
-            if (player->phy != NULL) {
-                DEBUG("x %d, y %d => x %d, y %d", player->phy->pos.x, player->phy->pos.y, x, y);
-                physics_move_per_tick(player->phy, x / (float)param->duration, y / (float)param->duration, param->duration);
-            } else {
-                player->x += x;
-                player->y += y;
-            }
+            /*DEBUG("x %d, y %d => x %d, y %d", player->phy->pos.x, player->phy->pos.y, x, y);*/
+            player->slide_op.enabled = 1;
+            player->slide_op.x_per_tick = x / (float)param->duration;
+            player->slide_op.y_per_tick = y / (float)param->duration;
         }
 
 
@@ -332,26 +333,29 @@ void animationplayer_run(animationplayer *player) {
             player->slide_op.y_per_tick = 0;
             player->slide_op.y_rem = 0;
             int slide = 0;
+            int xpos, ypos;
             if(isset(n, "x=")) {
                 slide = get(n, "x=");
                 if (player->direction == -1) {
                     // if the sprite is flipped horizontally, adjust the X coordinates
                     slide = 320 - slide;
                 }
-                if (slide != player->x) {
-                    DEBUG("%d player->x was %d, interpolating to %d", player->id, player->x, slide);
+                object_get_pos(player->pobj, &xpos, &ypos);
+                if (slide != xpos) {
+                    DEBUG("%d player->x was %d, interpolating to %d", player->id, xpos, slide);
                     // scale distance by 101 so we can handle uneven interpolation (eg. 160/100)
-                    player->slide_op.x_per_tick = (dist(player->x, slide) * 100) / param->duration;
-                    DEBUG("%d moving %d per tick over %d ticks for total %d", player->id, player->slide_op.x_per_tick, param->duration, dist(player->x, slide));
+                    player->slide_op.x_per_tick = (dist(xpos, slide) * 100) / param->duration;
+                    DEBUG("%d moving %d per tick over %d ticks for total %d", player->id, player->slide_op.x_per_tick, param->duration, dist(xpos, slide));
                     player->slide_op.enabled = 1;
                 }
             }
             if(isset(n, "y=")) { 
                 slide = get(n, "y=");
-                if (slide != player->y) {
-                    DEBUG("%d player->y was %d, interpolating to %d", player->id, player->y, slide);
+                object_get_pos(player->pobj, &xpos, &ypos);
+                if (slide != ypos) {
+                    DEBUG("%d player->y was %d, interpolating to %d", player->id, ypos, slide);
                     // scale distance by 100 so we can handle uneven interpolation (eg. 160/100)
-                    player->slide_op.y_per_tick = (dist(player->y, slide) * 100) / param->duration;
+                    player->slide_op.y_per_tick = (dist(ypos, slide) * 100) / param->duration;
                     DEBUG("%d moving %d per tick over %d ticks", player->id, player->slide_op.y_per_tick, param->duration);
                     player->slide_op.enabled = 1;
                 }

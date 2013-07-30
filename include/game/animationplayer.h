@@ -4,6 +4,7 @@
 #include "utils/list.h"
 #include "video/texture.h"
 #include "audio/sound_state.h"
+#include "game/physics/space.h"
 #include "game/physics/object.h"
 
 typedef struct aniplayer_sprite_t {
@@ -22,6 +23,7 @@ typedef struct aniplayer_slide_op_t {
 } aniplayer_slide_op;
 
 typedef struct animationplayer_t {
+    object *pobj;
     unsigned int id;
     unsigned int finished;
     unsigned int ticks;
