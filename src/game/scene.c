@@ -173,6 +173,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
                 object *obj = malloc(sizeof(object));
                 object_create(obj, global_space, ani->sdani->start_x, ani->sdani->start_y, 0, 0, 1.0f, 1.0f, 0.0f);
                 object_set_gravity(obj, 0.0f);
+                object_set_group(obj, 1);
                 animationplayer_create(&player, i, ani, obj);
                 player.userdata = scene;
                 player.add_player = scene_add_ani_player;
@@ -202,6 +203,7 @@ void scene_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
         object *obj = malloc(sizeof(object));
         object_create(obj, global_space, ani->sdani->start_x + mx, ani->sdani->start_y + my, 0, 0, 1.0f, 1.0f, 0.0f);
         object_set_gravity(obj, 0.0f);
+        object_set_group(obj, 1);
         animationplayer_create(&np, id, ani, obj);
         np.userdata = userdata;
         np.add_player = scene_add_ani_player;

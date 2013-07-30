@@ -117,7 +117,7 @@ void engine_run() {
         omf_wait += dt;
         while(omf_wait > scene_ms_per_tick(&scene)) {
             // Tick physics engine
-            physics_space_tick(1/dt);
+            physics_space_tick(0.08);
             
             // Tick scene
             scene_tick(&scene);
