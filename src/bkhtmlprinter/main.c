@@ -248,7 +248,7 @@ int main(int argc, char *argv[]) {
                     fclose(fp);
                     sprintf(namebuf, "%s_sprite_%d_%d.png", name->sval[0], m, b);
                 } else {
-                    sprintf(namebuf, "");
+                    namebuf[0] = 0;
                 }
                 
                 // Print html

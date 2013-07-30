@@ -7,7 +7,7 @@ find_package(argtable2)
 find_package(shadowdive)
 find_package(dumb)
 find_package(ao)
-find_package(png)
+find_package(PNG)
 
 set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror")
