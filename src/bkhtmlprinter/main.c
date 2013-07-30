@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
     
     // Open output file
     FILE *f;
-    sprintf(namebuf, "%s/%s.html\0", outdir->sval[0], name->sval[0]);
+    sprintf(namebuf, "%s/%s.html", outdir->sval[0], name->sval[0]);
     f = fopen(namebuf, "w");
     if(f == NULL) {
         printf("Error while opening file!");
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Write background
-    sprintf(namebuf, "%s/%s_bg.png\0", outdir->sval[0], name->sval[0]);
+    sprintf(namebuf, "%s/%s_bg.png", outdir->sval[0], name->sval[0]);
     fp = fopen(namebuf, "wb");
     if(f == NULL) {
         printf("Error while opening background file for writing!");
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
     
     // Image
     fprintf(f, "<h2>Background</h2>");
-    sprintf(namebuf, "%s_bg.png\0", name->sval[0]);
+    sprintf(namebuf, "%s_bg.png", name->sval[0]);
     fprintf(f, "<img src=\"%s\" width=\"640\" height=\"400\" />", namebuf);
     
     // Palettes
@@ -239,15 +239,19 @@ int main(int argc, char *argv[]) {
                 sd_sprite *sprite = ani->sprites[b];
                 
                 // Write sprite
-                sprintf(namebuf, "%s/%s_sprite_%d_%d.png\0", outdir->sval[0], name->sval[0], m, b);
-                fp = fopen(namebuf, "wb");
-                sd_rgba_image *img = sd_sprite_image_decode(sprite->img, bk->palettes[0], 0);
-                write_png(fp, img->data, img->w, img->h);
-                sd_rgba_image_delete(img);
-                fclose(fp);
+                if(sprite->img->len > 0 && sprite->img->w > 0 && sprite->img->h > 0) {
+                    sprintf(namebuf, "%s/%s_sprite_%d_%d.png", outdir->sval[0], name->sval[0], m, b);
+                    fp = fopen(namebuf, "wb");
+                    sd_rgba_image *img = sd_sprite_image_decode(sprite->img, bk->palettes[0], 0);
+                    write_png(fp, img->data, img->w, img->h);
+                    sd_rgba_image_delete(img);
+                    fclose(fp);
+                    sprintf(namebuf, "%s_sprite_%d_%d.png", name->sval[0], m, b);
+                } else {
+                    sprintf(namebuf, "");
+                }
                 
                 // Print html
-                sprintf(namebuf, "%s_sprite_%d_%d.png\0", name->sval[0], m, b);
                 fprintf(f, "<tr><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td><img src=\"%s\" /></td></tr>", 
                     b,
                     sprite->pos_x,
