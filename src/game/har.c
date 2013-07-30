@@ -338,15 +338,17 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
     }
 }
 
-int check_collision(har *har_a, physics_state phy, har *har_b, sd_animation *ani, int frame_id, sd_sprite *sprite, sd_vga_image *vga) {
-    int x = har_b->phy.pos.x + sprite->pos_x;
-    int y = har_b->phy.pos.y + sprite->pos_y;
+int check_collision(har *har_a, har *har_b, sd_animation *ani, int frame_id, sd_sprite *sprite, sd_vga_image *vga) {
+    int x,y;
+    object_get_pos(&har_b->pobj, &x, &y);
+    x += sprite->pos_x;
+    y += sprite->pos_y;
     int w = sprite->img->w;
     int h = sprite->img->h;
     int hit = 0;
 
     if (har_b->direction == -1) {
-        x = har_b->phy.pos.x + ((sprite->pos_x * har_b->direction) - sprite->img->w);
+        x = object_get_px(&har_b->pobj) + ((sprite->pos_x * har_b->direction) - sprite->img->w);
     }
 
     if(har_a->cd_debug_enabled) {
@@ -364,27 +366,32 @@ int check_collision(har *har_a, physics_state phy, har *har_b, sd_animation *ani
                 }
             }
         }
-        image_set_pixel(&har_a->cd_debug, phy.pos.x + 50, phy.pos.y + 50, color_create(255, 255, 0, 255));
-        image_set_pixel(&har_a->cd_debug, har_b->phy.pos.x + 50 , har_b->phy.pos.y + 50, color_create(255, 255, 0, 255));
+        image_set_pixel(&har_a->cd_debug, object_get_px(&har_a->pobj)  + 50, object_get_py(&har_a->pobj) + 50, color_create(255, 255, 0, 255));
+        image_set_pixel(&har_a->cd_debug, object_get_px(&har_b->pobj) + 50 , object_get_py(&har_b->pobj) + 50, color_create(255, 255, 0, 255));
     }
 
     // Find collision points, if any
     for(int i = 0; i < ani->col_coord_count; i++) {
         if(ani->col_coord_table[i].y_ext == frame_id) {
             if(har_a->cd_debug_enabled) {
-                image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + phy.pos.x, 50 + ani->col_coord_table[i].y + phy.pos.y, color_create(0, 0, 255, 255));
+                image_set_pixel(
+                    &har_a->cd_debug, 
+                    50 + (ani->col_coord_table[i].x * har_a->direction) + object_get_px(&har_a->pobj), 
+                    50 + ani->col_coord_table[i].y + object_get_py(&har_a->pobj), 
+                    color_create(0, 0, 255, 255)
+                );
             }
             // coarse check vs sprite dimensions
-            if ((ani->col_coord_table[i].x * har_a->direction) + phy.pos.x > x && (ani->col_coord_table[i].x * har_a->direction) +phy.pos.x < x + w) {
-                if (ani->col_coord_table[i].y + phy.pos.y > y && ani->col_coord_table[i].y + phy.pos.y < y + h) {
+            if ((ani->col_coord_table[i].x * har_a->direction) + object_get_px(&har_a->pobj) > x && (ani->col_coord_table[i].x * har_a->direction) + object_get_px(&har_a->pobj) < x + w) {
+                if (ani->col_coord_table[i].y + object_get_py(&har_a->pobj) > y && ani->col_coord_table[i].y + object_get_py(&har_a->pobj) < y + h) {
                     if(har_a->cd_debug_enabled) {
-                        image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + phy.pos.x, 50 + ani->col_coord_table[i].y + phy.pos.y, color_create(0, 255, 0, 255));
+                        image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + object_get_px(&har_a->pobj), 50 + ani->col_coord_table[i].y + object_get_py(&har_a->pobj), color_create(0, 255, 0, 255));
                     }
                     // Do a fine grained per-pixel check for a hit
                     //boxhit = 1;
 
-                    int xoff = x - phy.pos.x;
-                    int yoff = har_b->phy.pos.y - phy.pos.y;
+                    int xoff = x - object_get_px(&har_a->pobj);
+                    int yoff = object_get_py(&har_b->pobj) - object_get_py(&har_a->pobj);
                     int xcoord = (ani->col_coord_table[i].x * har_a->direction) - xoff;
                     int ycoord = (h + (ani->col_coord_table[i].y - yoff)) - (h+sprite->pos_y);
 
@@ -397,10 +404,12 @@ int check_collision(har *har_a, physics_state phy, har *har_b, sd_animation *ani
                         // this is a HAR pixel
 
                         // TODO: Move this elsewhere, possibly to har_take_damage
-                        har_spawn_scrap(har_b, 
-                                har_b->phy.pos.x + (sprite->img->w - xcoord), 
-                                har_b->phy.pos.y - (sprite->img->h - ycoord), 
-                                har_a->direction);
+                        har_spawn_scrap(
+                                har_b, 
+                                object_get_px(&har_b->pobj) + (sprite->img->w - xcoord), 
+                                object_get_py(&har_b->pobj) - (sprite->img->h - ycoord), 
+                                har_a->direction
+                        );
 
                         DEBUG("hit point was %d, %d -- %d", xcoord, ycoord, h+sprite->pos_y);
                         hit = 1;
@@ -408,7 +417,12 @@ int check_collision(har *har_a, physics_state phy, har *har_b, sd_animation *ani
                             // not debugging, we can break out of the loop and not draw any more pixels
                             break;
                         } else {
-                            image_set_pixel(&har_a->cd_debug, 50 + (ani->col_coord_table[i].x * har_a->direction) + phy.pos.x,  50 + ani->col_coord_table[i].y + phy.pos.y, color_create(255, 0, 0, 255));
+                            image_set_pixel(
+                                &har_a->cd_debug, 
+                                50 + (ani->col_coord_table[i].x * har_a->direction) + object_get_px(&har_a->pobj), 
+                                50 + ani->col_coord_table[i].y + object_get_py(&har_a->pobj), 
+                                color_create(255, 0, 0, 255)
+                            );
                         }
                     }
                 }
@@ -437,7 +451,7 @@ void har_collision_har(har *har_a, har *har_b) {
         har_a->hit_this_time = 1;
         char *string = har_a->af->moves[ani_id]->footer_string;
         animationplayer_free(&har_b->player);
-        animationplayer_create(&har_b->player, ANIM_DAMAGE, array_get(&har_b->animations, ANIM_DAMAGE));
+        animationplayer_create(&har_b->player, ANIM_DAMAGE, array_get(&har_b->animations, ANIM_DAMAGE), &har_b->pobj);
         animationplayer_set_direction(&har_b->player, har_b->direction);
         if (string) {
             animationplayer_set_string(&har_b->player, string);
@@ -445,7 +459,6 @@ void har_collision_har(har *har_a, har *har_b) {
         har_b->player.userdata = har_b;
         har_b->player.add_player = har_add_ani_player;
         har_b->player.del_player = har_set_ani_finished;
-        har_b->player.phy = &har_b->phy;
         return;
     }
 
@@ -458,12 +471,12 @@ void har_collision_har(har *har_a, har *har_b) {
 
         sd_vga_image *vga = sd_sprite_vga_decode(sprite->img);
 
-        hit = check_collision(har_a, har_a->phy, har_b, ani, frame_id, sprite, vga);
+        hit = check_collision(har_a, har_b, ani, frame_id, sprite, vga);
 
         // TODO: FIX Particle to HAR collisions
         
         // check any projectiles this har has in=flight
-        /*iterator it;
+        iterator it;
         particle **p;
 
         list_iter_begin(&har_a->particles, &it);
@@ -471,20 +484,18 @@ void har_collision_har(har *har_a, har *har_b) {
             ani = (*p)->player.ani->sdani;
             ani_id = (*p)->player.id;
             frame_id = animationplayer_get_frame_letter(&(*p)->player) - 65;
-            hit = check_collision(har_a, (*p)->phy,  har_b, ani, frame_id, sprite, vga);
+            hit = check_collision(har_a, har_b, ani, frame_id, sprite, vga);
             if (hit && (*p)->successor) {
                 int direction = (*p)->player.direction;
-                physics_state *phy = &(*p)->phy;
                 animationplayer_free(&(*p)->player);
-                animationplayer_create(&(*p)->player, 0, (*p)->successor);
+                animationplayer_create(&(*p)->player, 0, (*p)->successor, &(*p)->pobj);
                 animationplayer_set_direction(&(*p)->player, direction);
-                (*p)->player.phy = phy;
                 (*p)->player.userdata = *p;
                 animationplayer_run(&(*p)->player);
                 (*p)->successor = NULL;
                 (*p)->finished = 1;
             }
-        }*/
+        }
 
         sd_vga_image_delete(vga);
 
@@ -497,8 +508,7 @@ void har_collision_har(har *har_a, har *har_b) {
         if (hit || har_a->af->moves[ani_id]->unknown[13] == CAT_CLOSE) {
             // close moves always hit, for now
             har_a->hit_this_time = 1;
-            har_b->player.enemy_x = har_a->phy.pos.x;
-            har_b->player.enemy_y = har_a->phy.pos.y;
+            object_get_pos(&har_a->pobj, &har_b->player.enemy_x, &har_b->player.enemy_y);
             har_take_damage(har_b, har_a->af->moves[ani_id]->unknown[17], har_a->af->moves[ani_id]->footer_string);
             // check if there's a subsequent animation to change to, eg spike charge
             if (har_a->af->moves[ani_id]->unknown[12] != 0) {
@@ -525,19 +535,19 @@ void har_collision_har(har *har_a, har *har_b) {
     if (har_a->state == STATE_WALKING && har_a->direction == -1) {
         // walking towards the enemy
         // 35 is a made up number that 'looks right'
-        if (har_a->phy.pos.x < har_b->phy.pos.x+35 && har_a->phy.pos.x > har_b->phy.pos.x) {
-            har_a->phy.pos.x = har_b->phy.pos.x+35;
+        if (object_get_px(&har_a->pobj) < object_get_px(&har_b->pobj)+35 && object_get_px(&har_a->pobj) > object_get_px(&har_b->pobj)) {
+            object_set_px(&har_a->pobj, object_get_px(&har_b->pobj) + 35);
         }
-        if (har_a->phy.pos.x < har_b->phy.pos.x+45 && har_a->phy.pos.x > har_b->phy.pos.x) {
+        if (object_get_px(&har_a->pobj) < object_get_px(&har_b->pobj)+45 && object_get_px(&har_a->pobj) > object_get_px(&har_b->pobj)) {
             har_a->close = 1;
         }
     }
     if (har_a->state == STATE_WALKING && har_a->direction == 1) {
         // walking towards the enemy
-        if (har_a->phy.pos.x+35 > har_b->phy.pos.x && har_a->phy.pos.x < har_b->phy.pos.x) {
-            har_a->phy.pos.x = har_b->phy.pos.x - 35;
+        if (object_get_px(&har_a->pobj)+35 > object_get_px(&har_b->pobj) && object_get_px(&har_a->pobj) < object_get_px(&har_b->pobj)) {
+            object_set_px(&har_a->pobj, object_get_px(&har_b->pobj) - 35);
         }
-        if (har_a->phy.pos.x+45 > har_b->phy.pos.x && har_a->phy.pos.x < har_b->phy.pos.x) {
+        if (object_get_px(&har_a->pobj)+45 > object_get_px(&har_b->pobj) && object_get_px(&har_a->pobj) < object_get_px(&har_b->pobj)) {
             har_a->close = 1;
         }
     }
@@ -564,9 +574,9 @@ void har_tick(har *har) {
             }
         }
     
-        // Har physics
-        physics_tick(&har->phy);
-        har->player.x = har->phy.pos.x;
+        // I don't even know what to do about this right now ...
+        /*
+        har->player.x = object_get_px(&har->pobj);
         if(physics_is_in_air(&har->phy)) {
             har->player.y = har->phy.pos.y - 20;
         } else {
@@ -583,7 +593,7 @@ void har_tick(har *har) {
             } else {
                 animationplayer_goto_frame(&har->player, animationplayer_get_frame(&har->player)-1);
             }
-        }
+        }*/
         
         // Animationplayer ticks
         animationplayer_run(&har->player);
@@ -769,7 +779,8 @@ void har_act(har *har, int act_type) {
             break;
         case ACT_PUNCH:
             add_input(har, 'P');
-            break;
+            break; 
+/*
         case ACT_STOP:
             if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
                 if (har->player.id != ANIM_IDLE && har->player.id != ANIM_JUMPING) {
@@ -820,6 +831,7 @@ void har_act(har *har, int act_type) {
                 return;
             }
             break;
+*/
     }
     /*DEBUG("input buffer is now %s", har->inputs);*/
 
@@ -835,10 +847,10 @@ void har_act(har *har, int act_type) {
                     DEBUG("matched move %d with string %s", i, move->move_string);
                     DEBUG("input was %s", har->inputs);
 
-                    sprintf(buf, "%d|%d|%d|%d", har->phy.pos.x, har->phy.pos.y, HOOK_ATTACK, i);
+                    sprintf(buf, "%d|%d|%d|%d", object_get_px(&har->pobj), object_get_py(&har->pobj), HOOK_ATTACK, i);
                     fire_hooks(har, buf);
 
-                    physics_move(&har->phy, 0);
+                    //physics_move(&har->phy, 0);
                     har_switch_animation(har, i);
                     har->inputs[0]='\0';
                     break;
@@ -873,32 +885,28 @@ void har_parse_command(har *har, char *buf) {
         switch (action) {
             case HOOK_MOVE:
                 if(sscanf(buf+length, "|%f", &p) == 1) {
-                    har->phy.pos.x = x;
-                    har->phy.pos.y = y;
-                    physics_move(&har->phy, p);
+                    object_set_pos(&har->pobj, x, y);
+                    //physics_move(&har->phy, p);
                 } else {
                     DEBUG("bad packet %s", buf+length);
                 }
                 break;
             case HOOK_JUMP:
                 if(sscanf(buf+length, "|%f", &p) == 1) {
-                    har->phy.pos.x = x;
-                    har->phy.pos.y = y;
-                    physics_jump(&har->phy, p);
+                    object_set_pos(&har->pobj, x, y);
+                    //physics_jump(&har->phy, p);
                 } else {
                     DEBUG("bad packet %s", buf+length);
                 }
                 break;
             case HOOK_CROUCH:
-                har->phy.pos.x = x;
-                har->phy.pos.y = y;
-                physics_crouch(&har->phy);
+                object_set_pos(&har->pobj, x, y);
+                //physics_crouch(&har->phy);
                 break;
             case HOOK_ATTACK:
                 if(sscanf(buf+length, "|%d", &move) == 1) {
-                    har->phy.pos.x = x;
-                    har->phy.pos.y = y;
-                    physics_move(&har->phy, 0);
+                    object_set_pos(&har->pobj, x, y);
+                    //physics_move(&har->phy, 0);
                     har_switch_animation(har, move);
                 } else {
                     DEBUG("bad packet %s", buf+length);

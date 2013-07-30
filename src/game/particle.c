@@ -18,7 +18,7 @@ int particle_create(particle *p, unsigned int id, animation *ani, int dir, int p
 
 void particle_free(particle *p) {
     animationplayer_free(&p->player);
-    object_free(p->pobj);
+    object_free(&p->pobj);
 }
 
 int particle_successor(particle *p) {
@@ -26,7 +26,7 @@ int particle_successor(particle *p) {
         DEBUG("playing successor animation");
         int direction = p->player.direction;
         animationplayer_free(&p->player);
-        animationplayer_create(&p->player, 0, p->successor);
+        animationplayer_create(&p->player, 0, p->successor, &p->pobj);
         animationplayer_set_direction(&p->player, direction);
         p->player.userdata = p;
         animationplayer_run(&p->player);
@@ -45,8 +45,8 @@ void particle_tick(particle *p) {
     }
     
     // Check if particle is stopped
-    float vx, float vy;
-    object_get_vel(p->obj, vx, vy);
+    cpFloat vx, vy;
+    object_get_vel(&p->pobj, &vx, &vy);
     if(vx == 0 && vy == 0) {
         p->finished = 1;
     }

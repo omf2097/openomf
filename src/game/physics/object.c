@@ -42,6 +42,16 @@ void object_set_pos(object *obj, int px, int py) {
     cpBodySetPos(obj->body, cpv(px, py));
 }
 
+void object_set_px(object *obj, int px) {
+    cpVect npos = cpBodyGetPos(obj->body);
+    cpBodySetPos(obj->body, cpv(px, npos.y));
+}
+
+void object_set_py(object *obj, int py) {
+    cpVect npos = cpBodyGetPos(obj->body);
+    cpBodySetPos(obj->body, cpv(npos.x, py));
+}
+
 void object_get_vel(object *obj, cpFloat *vx, cpFloat *vy) {
     cpVect nvel = cpBodyGetVel(obj->body);
     *vx = nvel.x;
@@ -52,6 +62,14 @@ void object_get_pos(object *obj, int *px, int *py) {
     cpVect npos = cpBodyGetPos(obj->body);
     *px = npos.x;
     *py = npos.y;
+}
+
+int object_get_px(object *obj) {
+    return cpBodyGetPos(obj->body).x;
+}
+
+int object_get_py(object *obj) {
+    return cpBodyGetPos(obj->body).y;
 }
 
 void object_add_vel(object *obj, cpFloat vx, cpFloat vy) {
