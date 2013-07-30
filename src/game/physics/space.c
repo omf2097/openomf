@@ -10,8 +10,8 @@ void physics_space_set_gravity(cpFloat gravity) {
     cpSpaceSetGravity(global_space, cpv(0, gravity));
 }
 
-void physics_space_tick() {
-    cpSpaceStep(global_space, 0.08);
+void physics_space_tick(float time) {
+    cpSpaceStep(global_space, time);
 }
 
 void physics_space_close() {

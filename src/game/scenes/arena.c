@@ -161,9 +161,7 @@ int arena_init(scene *scene) {
 
     
     // Init physics
-    grav = cpv(0, 10);
-    local->space = cpSpaceNew();
-    cpSpaceSetGravity(local->space, grav);
+    local->space = global_space;
     
     // Arena constraints
     local->line_floor = cpSegmentShapeNew(local->space->staticBody, cpv(0, 200), cpv(320, 200), 0);
@@ -302,7 +300,6 @@ void arena_deinit(scene *scene) {
     cpShapeFree(local->line_ceiling);
     cpShapeFree(local->line_wall_left);
     cpShapeFree(local->line_wall_right);
-    cpSpaceFree(local->space);
     
     free(scene->local);
 }

@@ -101,8 +101,6 @@ enum {
 };
 
 typedef struct har_t {
-    object pobj;
-
     unsigned int state;
     int direction; // 1 or -1
     sd_af_file *af;
@@ -112,6 +110,7 @@ typedef struct har_t {
     
     // For physics
     cpSpace *space; // References to arena.c
+    object pobj;
 
     list hooks;
     
@@ -134,7 +133,7 @@ typedef struct har_t {
 
 void har_free(har *har);
 int har_load(har *har, sd_palette *pal, int id, int x, int y, int direction); // Returns 0 on success
-int har_init(har *har, cpSpace *space);
+int har_init(har *har);
 void har_tick(har *har); // Called by scene.c tick function at every game tick
 void har_render(har *har); // Called by scene.h render function at every frame render
 void har_act(har *har, int act_type); // Handle event passed from inputhandler

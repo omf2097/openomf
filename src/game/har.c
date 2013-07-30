@@ -5,6 +5,7 @@
 #include "audio/sound.h"
 #include "utils/array.h"
 #include "utils/list.h"
+#include "game/physics/space.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -27,21 +28,16 @@ void har_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
     animation *ani = array_get(&har->animations, id);
     if(ani != NULL) {
         // Position for new object
-        object_get_pos(har->pobj, px, py);
+        object_get_pos(&har->pobj, &px, &py);
         DEBUG("spawning %d at (%d + %d + %d, %d + %d + %d)", id, ani->sdani->start_x, mx, px, ani->sdani->start_y, my, py);
         px += ani->sdani->start_x;
         px += mx;
         py += ani->sdani->start_y;
         py += my;
 
-        // Object physics
-        object obj;
-        object_create(&obj, har->space, px, py, 0, 0, 1.0f, 1.0f, 0.0f);
-        object_set_gravity(&obj, mg/100.0f);
-        
         // Particle object
         particle *p = malloc(sizeof(particle));
-        particle_create(p, id, ani, 0, obj);
+        particle_create(p, id, ani, 0, px, py, 0, 0, mg/100.0f);
         
         // Find successor
         successor = har->af->moves[id]->unknown[16];
@@ -83,6 +79,7 @@ void har_switch_animation(har *har, int id) {
     animationplayer_run(&har->player);
 }
 
+/*
 void phycb_fall(physics_state *state, void *userdata) {
     har *h = userdata;
     if (h->state == STATE_JUMPING) {
@@ -151,6 +148,7 @@ void phycb_crouch(physics_state *state, void *userdata) {
         DEBUG("crouching");
     }
 }
+*/
 
 int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     list_create(&h->hooks);
@@ -240,20 +238,19 @@ int har_load(har *h, sd_palette *pal, int id, int x, int y, int direction) {
     return 0;
 }
 
-int har_init(har *har, cpSpace *space) {
-    har->space = space;
-    object_create(&har->pobj, 
-    har->particle_group = 1;
+int har_init(har *har) {
+    har->space = global_space;
+    object_create(&har->pobj, global_space, 0, 0, 0, 0, 1.0f, 0.0f, 0.0f);
     
     // Start player with animation 11
-    animationplayer_create(&h->player, &har->pobj, ANIM_IDLE, array_get(&h->animations, ANIM_IDLE));
-    animationplayer_set_direction(&h->player, h->direction);
-    animationplayer_set_repeat(&h->player, 1);
-    h->player.userdata = h;
-    h->player.add_player = har_add_ani_player;
-    h->player.del_player = har_set_ani_finished;
-    h->hit_this_time = 0;
-    animationplayer_run(&h->player);
+    animationplayer_create(&har->player, ANIM_IDLE, array_get(&har->animations, ANIM_IDLE), &har->pobj);
+    animationplayer_set_direction(&har->player, har->direction);
+    animationplayer_set_repeat(&har->player, 1);
+    har->player.userdata = har;
+    har->player.add_player = har_add_ani_player;
+    har->player.del_player = har_set_ani_finished;
+    har->hit_this_time = 0;
+    animationplayer_run(&har->player);
     return 0;
 }
 
@@ -285,6 +282,9 @@ void har_free(har *h) {
     
     // Unload player
     animationplayer_free(&h->player);
+    
+    // Free object
+    object_free(&h->pobj);
 }
 
 void har_take_damage(har *har, int amount, const char *string) {
@@ -307,7 +307,7 @@ void har_take_damage(har *har, int amount, const char *string) {
         animationplayer_set_repeat(&har->player, 1);
     } else {
         animationplayer_free(&har->player);
-        animationplayer_create(&har->player, &har->pobj, ANIM_DAMAGE, array_get(&har->animations, ANIM_DAMAGE));
+        animationplayer_create(&har->player, ANIM_DAMAGE, array_get(&har->animations, ANIM_DAMAGE), &har->pobj);
         animationplayer_set_direction(&har->player, har->direction);
         if (string) {
             animationplayer_set_string(&har->player, string);
@@ -330,12 +330,10 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
     animation *scrap_ani;
     for(int i = 1; i < 16; i++) {
         particle *p = malloc(sizeof(particle));
-        p->space = h->space;
-        p->group = h->particle_group;
         scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL+(i%3));
         int vy = (-(4.0 / 16 * i + 2.0));
         int vx = direction * (30.0 / 16 * i + 2.0);
-        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 1.0f, 100.0f, 0.5f, 0.3f); 
+        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 10.0f); 
         list_append(&h->particles, &p, sizeof(particle*));
     }
 }

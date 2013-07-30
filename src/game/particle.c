@@ -1,13 +1,15 @@
 #include "game/particle.h"
 #include "utils/log.h"
+#include "game/physics/space.h"
 #include <stdlib.h>
 
-int particle_create(particle *p, unsigned int id, animation *ani, int dir, object pobj) {
+int particle_create(particle *p, unsigned int id, animation *ani, int dir, int px, int py, int vx, int vy, float gravity) {
     p->player.userdata = p;
     p->finished = 0;
     p->id = id;
     p->successor = NULL;
-    p->pobj = pobj;
+    object_create(&p->pobj, global_space, px, py, vx, vy, 1.0f, 1.0f, 0.0f);
+    object_set_gravity(&p->pobj, gravity);
     animationplayer_create(&p->player, id, ani, &p->pobj);
     animationplayer_set_direction(&p->player, dir);
     animationplayer_run(&p->player);

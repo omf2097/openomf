@@ -13,11 +13,10 @@ struct particle_t {
     int finished;
     unsigned int id;
     animation *successor;
-    
-    object *pobj;
+    object pobj;
 };
 
-int particle_create(particle *p, unsigned int id, animation *ani, int dir, object pobj);
+int particle_create(particle *p, unsigned int id, animation *ani, int dir, int px, int py, int vx, int vy, float gravity);
 void particle_free(particle *p);
 int particle_successor(particle *p);
 void particle_tick(particle *p);
