@@ -7,9 +7,8 @@
 #include "game/animation.h"
 #include "game/animationplayer.h"
 //#include "game/scene.h"
-#include "game/physics/physics.h"
+#include "game/physics/object.h"
 #include "game/particle.h"
-#include "game/object.h"
 
 enum {
     ACT_KICK,

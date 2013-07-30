@@ -4,7 +4,7 @@
 #include <shadowdive/shadowdive.h>
 #include "game/animation.h"
 #include "game/animationplayer.h"
-#include "game/object.h"
+#include "game/physics/object.h"
 
 typedef struct particle_t particle;
 

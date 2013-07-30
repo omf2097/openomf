@@ -4,7 +4,7 @@
 #include "utils/list.h"
 #include "video/texture.h"
 #include "audio/sound_state.h"
-#include "game/object.h"
+#include "game/physics/object.h"
 
 typedef struct aniplayer_sprite_t {
     int x,y;

@@ -52,7 +52,6 @@ add_executable(openomf
     src/game/har.c
     src/game/particle.c
     src/game/score.c
-    src/game/object.c
     src/game/animation.c
     src/game/animationplayer.c
     src/game/scenes/progressbar.c
@@ -72,7 +71,7 @@ add_executable(openomf
     src/game/menu/textslider.c
     src/game/menu/textinput.c
     src/game/menu/component.c
-    src/game/physics/physics.c
+    src/game/physics/object.c
     src/controller/controller.c
     src/controller/keyboard.c
     src/controller/net_controller.c
