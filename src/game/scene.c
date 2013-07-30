@@ -10,6 +10,7 @@
 #include "audio/sound_state.h"
 #include "game/settings.h"
 #include "game/scene.h"
+#include "game/physics/space.h"
 #include "game/physics/object.h"
 #include "game/scenes/intro.h"
 #include "game/scenes/mainmenu.h"
@@ -133,7 +134,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
             scene->init = NULL;
             scene->deinit = NULL;
     }
-    
+
     // Init scene
     if(scene->init != NULL) {
         if(scene->init(scene)) {
@@ -169,14 +170,15 @@ int scene_load(scene *scene, unsigned int scene_id) {
             // TODO check other probabilites here
             if(bka->load_on_start || bka->probability == 1 || (scene_id == SCENE_INTRO && i == 25)) {
                 animationplayer player;
-                player.x = ani->sdani->start_x;
-                player.y = ani->sdani->start_y;
-                animationplayer_create(&player, i, ani);
+                object *obj = malloc(sizeof(object));
+                object_create(obj, global_space, ani->sdani->start_x, ani->sdani->start_y, 0, 0, 1.0f, 1.0f, 0.0f);
+                object_set_gravity(obj, 0.0f);
+                animationplayer_create(&player, i, ani, obj);
                 player.userdata = scene;
                 player.add_player = scene_add_ani_player;
                 player.del_player = scene_set_ani_finished;
                 list_append(&scene->root_players, &player, sizeof(animationplayer));
-                DEBUG("Create animation %d @ x,y = %d,%d", i, player.x, player.y);
+                DEBUG("Create animation %d @ x,y = %d,%d", i, ani->sdani->start_x, ani->sdani->start_y);
             }
         }
     }
@@ -197,14 +199,15 @@ void scene_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
     animation *ani = array_get(&sc->animations, id);
     if(ani != NULL) {
         animationplayer np;
-        np.x = ani->sdani->start_x + mx;
-        np.y = ani->sdani->start_y + my;
-        animationplayer_create(&np, id, ani);
+        object *obj = malloc(sizeof(object));
+        object_create(obj, global_space, ani->sdani->start_x + mx, ani->sdani->start_y + my, 0, 0, 1.0f, 1.0f, 0.0f);
+        object_set_gravity(obj, 0.0f);
+        animationplayer_create(&np, id, ani, obj);
         np.userdata = userdata;
         np.add_player = scene_add_ani_player;
         np.del_player = scene_set_ani_finished;
         list_append(&sc->child_players, &np, sizeof(animationplayer));
-        DEBUG("Create animation %d @ x,y = %d,%d", id, np.x, np.y);
+        DEBUG("Create animation %d @ x,y = %d,%d", id, ani->sdani->start_x + mx, ani->sdani->start_y + my);
         return;
     } 
 }
