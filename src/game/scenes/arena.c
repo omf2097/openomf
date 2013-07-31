@@ -296,6 +296,10 @@ void arena_deinit(scene *scene) {
     
     settings_save();
     
+    cpSpaceRemoveShape(obj->space, local->line_floor);
+    cpSpaceRemoveShape(obj->space, local->line_ceiling);
+    cpSpaceRemoveShape(obj->space, local->line_wall_left);
+    cpSpaceRemoveShape(obj->space, local->line_wall_right);
     cpShapeFree(local->line_floor);
     cpShapeFree(local->line_ceiling);
     cpShapeFree(local->line_wall_left);
