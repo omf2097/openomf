@@ -168,7 +168,7 @@ int arena_init(scene *scene) {
     local->line_ceiling = cpSegmentShapeNew(local->space->staticBody, cpv(0, 0), cpv(320, 0), 0);
     local->line_wall_left = cpSegmentShapeNew(local->space->staticBody, cpv(0, 0), cpv(0, 200), 0);
     local->line_wall_right = cpSegmentShapeNew(local->space->staticBody, cpv(320, 0), cpv(320, 200), 0);
-    cpShapeSetFriction(local->line_floor, 10.0f);
+    cpShapeSetFriction(local->line_floor, 1.0f);
     cpShapeSetElasticity(local->line_floor, 1.0f);
     cpSpaceAddShape(local->space, local->line_floor);
     cpSpaceAddShape(local->space, local->line_ceiling);
@@ -296,10 +296,10 @@ void arena_deinit(scene *scene) {
     
     settings_save();
     
-    cpSpaceRemoveShape(obj->space, local->line_floor);
-    cpSpaceRemoveShape(obj->space, local->line_ceiling);
-    cpSpaceRemoveShape(obj->space, local->line_wall_left);
-    cpSpaceRemoveShape(obj->space, local->line_wall_right);
+    cpSpaceRemoveShape(local->space, local->line_floor);
+    cpSpaceRemoveShape(local->space, local->line_ceiling);
+    cpSpaceRemoveShape(local->space, local->line_wall_left);
+    cpSpaceRemoveShape(local->space, local->line_wall_right);
     cpShapeFree(local->line_floor);
     cpShapeFree(local->line_ceiling);
     cpShapeFree(local->line_wall_left);
