@@ -9,6 +9,7 @@ void object_create(object *obj, cpSpace *space, cpFloat px, cpFloat py, cpFloat 
     obj->space = space;
     obj->friction = friction;
     obj->elasticity = elasticity;
+    obj->group = CP_NO_GROUP;
     obj->body = cpSpaceAddBody(obj->space, cpBodyNew(mass, INFINITY));
     obj->body->data = malloc(sizeof(object_userdata));
     cpBodySetPos(obj->body, cpv(px, py));
@@ -16,6 +17,7 @@ void object_create(object *obj, cpSpace *space, cpFloat px, cpFloat py, cpFloat 
     obj->shape = cpSpaceAddShape(obj->space, cpCircleShapeNew(obj->body, 5.0f, cpvzero));
     cpShapeSetFriction(obj->shape, friction);
     cpShapeSetElasticity(obj->shape, elasticity);
+    cpShapeSetGroup(obj->shape, obj->group);
 }
 
 void object_set_collision_box(object *obj, int w, int h) {
@@ -24,6 +26,7 @@ void object_set_collision_box(object *obj, int w, int h) {
     obj->shape = cpSpaceAddShape(obj->space, cpBoxShapeNew(obj->body, w, h));
     cpShapeSetFriction(obj->shape, obj->friction);
     cpShapeSetElasticity(obj->shape, obj->elasticity);
+    cpShapeSetGroup(obj->shape, obj->group);
 }
 
 void object_set_friction(object *obj, cpFloat friction) {
@@ -86,7 +89,7 @@ void object_add_pos(object *obj, int px, int py) {
     cpBodySetPos(obj->body, npos);
 }
 
-// TODO: This function is atm. complete guesswork. Do something about it.
+// TODO: This function is atm. completely guesswork. Do something about it.
 static void no_grav_vel_func(cpBody *body, cpVect gravity, cpFloat damping, cpFloat dt) {
     cpFloat grav = ((object_userdata*)body->data)->gravity;
     cpBodyUpdateVelocity(body, cpv(0, grav), damping, dt);
@@ -98,7 +101,8 @@ void object_set_gravity(object *obj, cpFloat gravity) {
 }
 
 void object_set_group(object *obj, unsigned int group) {
-    cpShapeSetGroup(obj->shape, group);
+    obj->group = group;
+    cpShapeSetGroup(obj->shape, obj->group);
 }
 
 void object_free(object *obj) {

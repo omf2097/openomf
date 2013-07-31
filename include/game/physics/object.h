@@ -7,7 +7,7 @@ typedef struct object_t {
     cpSpace *space;
     cpBody *body;
     cpShape *shape;
-    
+    cpGroup group;
     cpFloat friction;
     cpFloat elasticity;
 } object;

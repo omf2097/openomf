@@ -384,6 +384,7 @@ void animationplayer_run(animationplayer *player) {
                 }
                 anisprite->tex = tex;
                 player->sprite_obj = anisprite;
+                object_set_collision_box(player->pobj, anisprite->tex->w, anisprite->tex->h);
             } else {
                 PERROR("No texture @ %u", real_frame);
             }
