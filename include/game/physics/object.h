@@ -4,7 +4,7 @@
 #include <chipmunk/chipmunk.h>
 
 enum {
-    LAYER_HARS = 0x01,
+    LAYER_HAR = 0x01,
     LAYER_SCRAP = 0x02,
 };
 

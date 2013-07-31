@@ -284,6 +284,7 @@ int har_init(har *har, int x, int y) {
     har->space = global_space;
     object_create(&har->pobj, global_space, x, y, 0, 0, 1.0f, 0.0f, 0.0f);
     object_set_gravity(&har->pobj, 9.0f);
+    object_set_layers(&har->pobj, LAYER_HAR);
     // Start player with animation 11
     animationplayer_create(&har->player, ANIM_IDLE, array_get(&har->animations, ANIM_IDLE), &har->pobj);
     animationplayer_set_direction(&har->player, har->direction);
