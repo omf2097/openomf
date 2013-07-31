@@ -82,6 +82,7 @@ void har_switch_animation(har *har, int id) {
 static void ground_check(cpBody *body, cpArbiter *arb, cpVect *groundNormal){
     cpVect n = cpvneg(cpArbiterGetNormal(arb, 0));
 
+    // TODO we should really check if we're colliding with the ground plane
     if(n.y < groundNormal->y){
         (*groundNormal) = n;
     }
@@ -93,10 +94,6 @@ int har_on_ground(har *har) {
     cpBodyEachArbiter(har->pobj.body, (cpBodyArbiterIteratorFunc)ground_check, &groundNormal);
 
     cpBool grounded = (groundNormal.y < 0.0);
-
-    if (groundNormal.y != -1.0) {
-        DEBUG("groundnormal %f", groundNormal.y);
-    }
 
     if (grounded && har->state == STATE_JUMPING) {
         DEBUG("landed");
@@ -113,10 +110,15 @@ int har_on_ground(har *har) {
          } else if (vy < 0.0) {
              DEBUG("rising");
          }
-    } else if (har->state == STATE_RECOIL) {
-        har_switch_animation(har, ANIM_STANDUP);
-        har->state = STATE_STANDING;
-        object_set_vel(&har->pobj, 0, 0);
+    } else if (grounded && har->state == STATE_RECOIL) {
+         cpFloat vx, vy;
+         object_get_vel(&har->pobj, &vx, &vy);
+         if (vy >= 0.0) {
+             // falling, not rising
+             har_switch_animation(har, ANIM_STANDUP);
+             har->state = STATE_STANDING;
+             object_set_vel(&har->pobj, 0, 0);
+         }
     }
     return 1;
 }
@@ -283,7 +285,7 @@ int har_load(har *h, sd_palette *pal, int id, int direction) {
 int har_init(har *har, int x, int y) {
     har->space = global_space;
     object_create(&har->pobj, global_space, x, y, 0, 0, 1.0f, 0.0f, 0.0f);
-    object_set_gravity(&har->pobj, 9.0f);
+    object_set_gravity(&har->pobj, 1.0f);
     object_set_layers(&har->pobj, LAYER_HAR);
     // Start player with animation 11
     animationplayer_create(&har->player, ANIM_IDLE, array_get(&har->animations, ANIM_IDLE), &har->pobj);
@@ -764,7 +766,8 @@ void har_act(har *har, int act_type) {
             har->player.id == ANIM_WALKING ||
             har->player.id == ANIM_JUMPING ||
             har->state == STATE_VICTORY ||
-            har->state == STATE_SCRAP)) {
+            har->state == STATE_SCRAP ||
+            har->state == STATE_RECOIL)) {
         // if we're not in the idle loop, bail for now
         return;
     }
@@ -918,7 +921,7 @@ void har_act(har *har, int act_type) {
                 if (har->state != STATE_JUMPING) {
                     har->state = STATE_JUMPING;
                     har_switch_animation(har, ANIM_JUMPING);
-                    object_add_vel(&har->pobj, 0, -50);
+                    object_add_vel(&har->pobj, 0, -15);
                 }
             }
             return;
