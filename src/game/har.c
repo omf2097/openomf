@@ -378,6 +378,8 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
         int vx = direction * (30.0 / 16 * i + 2.0);
         particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 10.0f);
         particle_set_lifetime(p, 40);
+        object_set_group(&p->pobj, 2); // Set group for scrap
+        object_set_layers(&p->pobj, LAYER_SCRAP); // Set layer for scrap
         list_append(&h->particles, &p, sizeof(particle*));
     }
 }

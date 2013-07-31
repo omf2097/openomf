@@ -12,8 +12,6 @@ int particle_create(particle *p, unsigned int id, animation *ani, int dir, int p
     p->lifeticks = 0;
     object_create(&p->pobj, global_space, px, py, vx, vy, 1.0f, 1.0f, 0.4f);
     object_set_gravity(&p->pobj, gravity);
-    object_set_group(&p->pobj, 2);
-    object_set_layers(&p->pobj, LAYER_SCRAP);
     animationplayer_create(&p->player, id, ani, &p->pobj);
     animationplayer_set_direction(&p->player, dir);
     animationplayer_run(&p->player);
