@@ -110,7 +110,9 @@ int har_on_ground(har *har) {
          } else if (vy < 0.0) {
              DEBUG("rising");
          }
-    } else if (grounded && har->state == STATE_RECOIL) {
+    } else if (!grounded && har->state == STATE_RECOIL) {
+        har->state = STATE_AIRBORNE_RECOIL;
+    } else if (grounded && har->state == STATE_AIRBORNE_RECOIL) {
          cpFloat vx, vy;
          object_get_vel(&har->pobj, &vx, &vy);
          if (vy >= 0.0) {
