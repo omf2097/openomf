@@ -375,7 +375,8 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
         scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL+(i%3));
         int vy = (-(4.0 / 16 * i + 2.0));
         int vx = direction * (30.0 / 16 * i + 2.0);
-        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 10.0f); 
+        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 10.0f);
+        particle_set_lifetime(p, 40);
         list_append(&h->particles, &p, sizeof(particle*));
     }
 }
@@ -607,7 +608,6 @@ void har_tick(har *har) {
         list_iter_begin(&har->particles, &it);
         while((p = iter_next(&it)) != NULL) {
             if((*p)->finished) {
-                DEBUG("Freeing finished particle # %d", (*p)->id);
                 particle_free(*p);
                 free(*p);
                 list_delete(&har->particles, &it);

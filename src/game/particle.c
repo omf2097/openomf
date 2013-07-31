@@ -8,8 +8,11 @@ int particle_create(particle *p, unsigned int id, animation *ani, int dir, int p
     p->finished = 0;
     p->id = id;
     p->successor = NULL;
-    object_create(&p->pobj, global_space, px, py, vx, vy, 1.0f, 1.0f, 0.0f);
+    p->lifetime = PARTICLE_NO_LIFETIME;
+    p->lifeticks = 0;
+    object_create(&p->pobj, global_space, px, py, vx, vy, 1.0f, 1.0f, 0.4f);
     object_set_gravity(&p->pobj, gravity);
+    object_set_group(&p->pobj, 2);
     animationplayer_create(&p->player, id, ani, &p->pobj);
     animationplayer_set_direction(&p->player, dir);
     animationplayer_run(&p->player);
@@ -19,6 +22,10 @@ int particle_create(particle *p, unsigned int id, animation *ani, int dir, int p
 void particle_free(particle *p) {
     animationplayer_free(&p->player);
     object_free(&p->pobj);
+}
+
+void particle_set_lifetime(particle *p, int lifetime) {
+    p->lifetime = lifetime;
 }
 
 int particle_successor(particle *p) {
@@ -37,18 +44,19 @@ int particle_successor(particle *p) {
 }
 
 void particle_tick(particle *p) {
+    p->lifeticks++;
     animationplayer_run(&p->player);
     
     // Check if animation is finished
     if(p->player.finished) {
         p->finished = 1;
+        return;
     }
     
-    // Check if particle is stopped
-    cpFloat vx, vy;
-    object_get_vel(&p->pobj, &vx, &vy);
-    if(vx == 0 && vy == 0) {
+    // Check if lifetime is over
+    if(p->lifetime != PARTICLE_NO_LIFETIME && p->lifetime < p->lifeticks) {
         p->finished = 1;
+        return;
     }
 }
 
