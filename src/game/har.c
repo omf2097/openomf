@@ -832,6 +832,50 @@ void har_act(har *har, int act_type) {
             }
             break;
 */
+        case ACT_WALKRIGHT:
+            if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION && har->state != STATE_JUMPING) {
+                if (har->state != STATE_WALKING) {
+                    har->state = STATE_WALKING;
+                    har_switch_animation(har, ANIM_WALKING);
+                    animationplayer_set_repeat(&har->player, 1);
+                }
+                object_set_vel(&har->pobj, 5, 0);
+            }
+            return;
+        case ACT_WALKLEFT:
+            if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION && har->state != STATE_JUMPING) {
+                if (har->state != STATE_WALKING) {
+                    har->state = STATE_WALKING;
+                    har_switch_animation(har, ANIM_WALKING);
+                    animationplayer_set_repeat(&har->player, 1);
+                }
+                object_set_vel(&har->pobj, -5, 0);
+            }
+            return;
+        case ACT_STOP:
+            if (har->state == STATE_CROUCHING || har->state == STATE_WALKING) {
+                har->state = STATE_STANDING;
+                har_switch_animation(har, ANIM_IDLE);
+                animationplayer_set_repeat(&har->player, 1);
+                object_set_vel(&har->pobj, 0, 0);
+            }
+            return;
+        case ACT_CROUCH:
+            if(har->state != STATE_CROUCHING) {
+                har->state = STATE_CROUCHING;
+                har_switch_animation(har, ANIM_CROUCHING);
+                object_set_vel(&har->pobj, 0, 0);
+            }
+            return;
+        case ACT_JUMP:
+            if (har->state != STATE_VICTORY && har->state != STATE_SCRAP && har->state != STATE_DESTRUCTION) {
+                if (har->state != STATE_JUMPING) {
+                    har->state = STATE_JUMPING;
+                    har_switch_animation(har, ANIM_JUMPING);
+                    object_add_vel(&har->pobj, 0, -50);
+                }
+            }
+            return;
     }
     /*DEBUG("input buffer is now %s", har->inputs);*/
 
