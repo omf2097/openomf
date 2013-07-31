@@ -49,7 +49,6 @@ typedef struct arena_local_t {
     texture tex;
     int menu_visible;
 
-    cpSpace *space;
     cpShape *line_floor;
     cpShape *line_wall_left;
     cpShape *line_wall_right;
@@ -159,21 +158,17 @@ int arena_init(scene *scene) {
         har_add_hook(scene->player1.har, scene->player2.ctrl->har_hook, (void*)scene->player2.ctrl);
     }
 
-    
-    // Init physics
-    local->space = global_space;
-    
     // Arena constraints
-    local->line_floor = cpSegmentShapeNew(local->space->staticBody, cpv(0, 200), cpv(320, 200), 0);
-    local->line_ceiling = cpSegmentShapeNew(local->space->staticBody, cpv(0, 0), cpv(320, 0), 0);
-    local->line_wall_left = cpSegmentShapeNew(local->space->staticBody, cpv(0, 0), cpv(0, 200), 0);
-    local->line_wall_right = cpSegmentShapeNew(local->space->staticBody, cpv(320, 0), cpv(320, 200), 0);
+    local->line_floor = cpSegmentShapeNew(global_space->staticBody, cpv(0, 200), cpv(320, 200), 0);
+    local->line_ceiling = cpSegmentShapeNew(global_space->staticBody, cpv(0, 0), cpv(320, 0), 0);
+    local->line_wall_left = cpSegmentShapeNew(global_space->staticBody, cpv(0, 0), cpv(0, 200), 0);
+    local->line_wall_right = cpSegmentShapeNew(global_space->staticBody, cpv(320, 0), cpv(320, 200), 0);
     cpShapeSetFriction(local->line_floor, 1.0f);
     cpShapeSetElasticity(local->line_floor, 1.0f);
-    cpSpaceAddShape(local->space, local->line_floor);
-    cpSpaceAddShape(local->space, local->line_ceiling);
-    cpSpaceAddShape(local->space, local->line_wall_left);
-    cpSpaceAddShape(local->space, local->line_wall_right);
+    cpSpaceAddShape(global_space, local->line_floor);
+    cpSpaceAddShape(global_space, local->line_ceiling);
+    cpSpaceAddShape(global_space, local->line_wall_left);
+    cpSpaceAddShape(global_space, local->line_wall_right);
     
     // Init physics for hars
     har_init(scene->player1.har, 60, 190);
@@ -296,10 +291,10 @@ void arena_deinit(scene *scene) {
     
     settings_save();
     
-    cpSpaceRemoveShape(local->space, local->line_floor);
-    cpSpaceRemoveShape(local->space, local->line_ceiling);
-    cpSpaceRemoveShape(local->space, local->line_wall_left);
-    cpSpaceRemoveShape(local->space, local->line_wall_right);
+    cpSpaceRemoveShape(global_space, local->line_floor);
+    cpSpaceRemoveShape(global_space, local->line_ceiling);
+    cpSpaceRemoveShape(global_space, local->line_wall_left);
+    cpSpaceRemoveShape(global_space, local->line_wall_right);
     cpShapeFree(local->line_floor);
     cpShapeFree(local->line_ceiling);
     cpShapeFree(local->line_wall_left);
@@ -312,7 +307,7 @@ void arena_tick(scene *scene) {
     arena_local *local = scene->local;
 
     // Tick physics
-    cpSpaceStep(local->space, 0.08); // TODO: This is a guesstimate. Do we even need the real value here ?
+    cpSpaceStep(global_space, 0.08); // TODO: This is a guesstimate. Do we even need the real value here ?
     
     // Har ticks
     har_tick(scene->player1.har);

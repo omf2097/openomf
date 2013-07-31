@@ -6,7 +6,6 @@
 #include "utils/array.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
-//#include "game/scene.h"
 #include "game/physics/object.h"
 #include "game/particle.h"
 
@@ -109,7 +108,6 @@ typedef struct har_t {
     char inputs[11]; // I don't think any move in the game needs 10 inputs to trigger...
     
     // For physics
-    cpSpace *space; // References to arena.c
     object pobj;
 
     list hooks;

@@ -283,7 +283,6 @@ int har_load(har *h, sd_palette *pal, int id, int direction) {
 }
 
 int har_init(har *har, int x, int y) {
-    har->space = global_space;
     object_create(&har->pobj, global_space, x, y, 0, 0, 1.0f, 0.0f, 0.0f);
     object_set_gravity(&har->pobj, 1.0f);
     object_set_layers(&har->pobj, LAYER_HAR);
