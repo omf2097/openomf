@@ -27,6 +27,7 @@ void object_set_collision_box(object *obj, int w, int h) {
     cpShapeSetFriction(obj->shape, obj->friction);
     cpShapeSetElasticity(obj->shape, obj->elasticity);
     cpShapeSetGroup(obj->shape, obj->group);
+    cpShapeSetLayers(obj->shape, obj->layers);
 }
 
 void object_set_friction(object *obj, cpFloat friction) {
@@ -35,6 +36,11 @@ void object_set_friction(object *obj, cpFloat friction) {
 
 void object_set_elasticity(object *obj, cpFloat elasticity) {
     cpShapeSetElasticity(obj->shape, elasticity);
+}
+
+void object_set_layers(object *obj, int layers) {
+    obj->layers = layers;
+    cpShapeSetLayers(obj->shape, layers);
 }
 
 void object_set_vel(object *obj, cpFloat vx, cpFloat vy) {

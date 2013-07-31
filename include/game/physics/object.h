@@ -3,6 +3,11 @@
 
 #include <chipmunk/chipmunk.h>
 
+enum {
+    LAYER_HARS = 0x01,
+    LAYER_SCRAP = 0x02,
+};
+
 typedef struct object_t {
     cpSpace *space;
     cpBody *body;
@@ -10,12 +15,14 @@ typedef struct object_t {
     cpGroup group;
     cpFloat friction;
     cpFloat elasticity;
+    int layers;
 } object;
 
 void object_create(object *obj, cpSpace *space, cpFloat px, cpFloat py, cpFloat vx, cpFloat vy, cpFloat mass, cpFloat friction, cpFloat elasticity);
 void object_set_collision_box(object *obj, int w, int h);
 void object_set_friction(object *obj, cpFloat friction);
 void object_set_elasticity(object *obj, cpFloat elasticity);
+void object_set_layers(object *obj, int layers);
 void object_set_vel(object *obj, cpFloat vx, cpFloat vy);
 void object_set_pos(object *obj, int px, int py);
 void object_set_px(object *obj, int px);
