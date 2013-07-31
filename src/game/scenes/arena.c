@@ -168,7 +168,7 @@ int arena_init(scene *scene) {
     local->line_ceiling = cpSegmentShapeNew(local->space->staticBody, cpv(0, 0), cpv(320, 0), 0);
     local->line_wall_left = cpSegmentShapeNew(local->space->staticBody, cpv(0, 0), cpv(0, 200), 0);
     local->line_wall_right = cpSegmentShapeNew(local->space->staticBody, cpv(320, 0), cpv(320, 200), 0);
-    cpShapeSetFriction(local->line_floor, 1.0f);
+    cpShapeSetFriction(local->line_floor, 10.0f);
     cpShapeSetElasticity(local->line_floor, 1.0f);
     cpSpaceAddShape(local->space, local->line_floor);
     cpSpaceAddShape(local->space, local->line_ceiling);
