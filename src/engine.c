@@ -60,6 +60,8 @@ void engine_run() {
     scene.player1.ctrl = NULL;
     scene.player2.ctrl = NULL;
 
+    float t = 0.0f;
+    
     // Load scene
     if(scene_load(&scene, SCENE_INTRO)) {
         return;
@@ -117,7 +119,8 @@ void engine_run() {
         omf_wait += dt;
         while(omf_wait > scene_ms_per_tick(&scene)) {
             // Tick physics engine
-            physics_space_tick(0.08);
+            t = ((float)scene_ms_per_tick(&scene)) / 1000;
+            physics_space_tick(t);
             
             // Tick scene
             scene_tick(&scene);
