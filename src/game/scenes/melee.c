@@ -66,6 +66,10 @@ void melee_switch_animation(scene *scene, animationplayer *harplayer, int id, in
     object_create(obj, global_space, x, y, 0, 0, 1.0f, 1.0f, 0.0f);
     object_set_gravity(obj, 0.0f);
     animationplayer_free(harplayer);
+    if (harplayer->pobj) {
+        object_free(harplayer->pobj);
+        free(harplayer->pobj);
+    }
     animationplayer_create(harplayer, id, array_get(&scene->animations, id), obj);
     animationplayer_set_repeat(harplayer, 1);
     animationplayer_run(harplayer);
@@ -155,15 +159,27 @@ int melee_init(scene *scene) {
     refresh_pilot_stats();
 
     memset(&harplayer_a, 0, sizeof(harplayer_a));
+    harplayer_a.pobj = NULL;
     memset(&harplayer_b, 0, sizeof(harplayer_b));
+    harplayer_a.pobj = NULL;
 
     // All done
     return 0;
 }
 
 void melee_deinit(scene *scene) {
+    if (harplayer_a.pobj) {
+        object_free(harplayer_a.pobj);
+        free(harplayer_a.pobj);
+    }
     animationplayer_free(&harplayer_a);
-    animationplayer_free(&harplayer_b);
+    if (scene->player2.selectable) {
+        if (harplayer_b.pobj) {
+            object_free(harplayer_b.pobj);
+            free(harplayer_b.pobj);
+        }
+        animationplayer_free(&harplayer_b);
+    }
     
     for(int i = 0; i < 10; i++) {
         texture_free(&harportraits[i]);

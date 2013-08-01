@@ -123,7 +123,9 @@ void vs_post_init(scene *scene) {
 void vs_deinit(scene *scene) {
     texture_free(&player2_background);
     texture_free(&arena_select_bg);
+    object_free(welder.pobj);
     animationplayer_free(&welder);
+    object_free(scientist.pobj);
     animationplayer_free(&scientist);
 
     iterator it;

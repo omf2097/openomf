@@ -244,6 +244,8 @@ void scene_clean_ani_players(void *userdata) {
     list_iter_begin(&sc->child_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
         if(tmp->finished) {
+            object_free(tmp->pobj);
+            free(tmp->pobj);
             animationplayer_free(tmp);
             list_delete(&sc->child_players, &it); 
         }
@@ -256,6 +258,8 @@ void scene_clean_ani_players(void *userdata) {
             if (sc->loop && sc->bk->anims[tmp->id]->probability == 1) {
                 animationplayer_reset(tmp);
             } else {
+                object_free(tmp->pobj);
+                free(tmp->pobj);
                 animationplayer_free(tmp);
                 list_delete(&sc->root_players, &it);
             }
@@ -385,10 +389,14 @@ void scene_free(scene *scene) {
     animationplayer *tmp = 0;
     list_iter_begin(&scene->child_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
+        object_free(tmp->pobj);
+        free(tmp->pobj);
         animationplayer_free(tmp);
     }
     list_iter_begin(&scene->root_players, &it);
     while((tmp = iter_next(&it)) != NULL) {
+        object_free(tmp->pobj);
+        free(tmp->pobj);
         animationplayer_free(tmp);
     }
     list_free(&scene->child_players);

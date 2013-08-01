@@ -34,6 +34,7 @@ void textinput_create(component *c, font *font, const char *text, const char *in
 
 void textinput_free(component *c) {
     textinput *tb = c->obj;
+    texture_free(&tb->tex);
     free(tb);
     component_free(c);
 }

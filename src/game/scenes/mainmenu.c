@@ -540,6 +540,21 @@ void mainmenu_deinit(scene *scene) {
     textbutton_free(&gameplay_done_button);
     menu_free(&gameplay_menu);
 
+    textbutton_free(&net_header);
+    textbutton_free(&net_connect_button);
+    textbutton_free(&net_listen_button);
+    textbutton_free(&net_done_button);
+    menu_free(&net_menu);
+
+    textinput_free(&connect_ip_input);
+    textbutton_free(&connect_ip_button);
+    textbutton_free(&connect_ip_cancel_button);
+    menu_free(&connect_menu);
+
+    textbutton_free(&listen_button);
+    textbutton_free(&listen_cancel_button);
+    menu_free(&listen_menu);
+
     settings_save();
 }
 
