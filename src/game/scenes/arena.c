@@ -306,9 +306,6 @@ void arena_deinit(scene *scene) {
 void arena_tick(scene *scene) {
     arena_local *local = scene->local;
 
-    // Tick physics
-    cpSpaceStep(global_space, 0.08); // TODO: This is a guesstimate. Do we even need the real value here ?
-    
     // Har ticks
     har_tick(scene->player1.har);
     har_tick(scene->player2.har);
