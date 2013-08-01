@@ -161,7 +161,7 @@ int melee_init(scene *scene) {
     memset(&harplayer_a, 0, sizeof(harplayer_a));
     harplayer_a.pobj = NULL;
     memset(&harplayer_b, 0, sizeof(harplayer_b));
-    harplayer_a.pobj = NULL;
+    harplayer_b.pobj = NULL;
 
     // All done
     return 0;
