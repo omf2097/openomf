@@ -74,6 +74,8 @@ add_executable(openomf
     src/game/menu/component.c
     src/game/physics/object.c
     src/game/physics/space.c
+    src/game/physics/shape.c
+    src/game/physics/shape_rect.c
     src/controller/controller.c
     src/controller/keyboard.c
     src/controller/net_controller.c
