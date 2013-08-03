@@ -47,7 +47,6 @@ int engine_init() {
         return 1;
     }
     physics_space_init();
-    physics_space_set_gravity(10.0f);
     run = 1;
     return 0;
 }
@@ -60,8 +59,6 @@ void engine_run() {
     scene.player1.ctrl = NULL;
     scene.player2.ctrl = NULL;
 
-    float t = 0.0f;
-    
     // Load scene
     if(scene_load(&scene, SCENE_INTRO)) {
         return;
@@ -119,8 +116,7 @@ void engine_run() {
         omf_wait += dt;
         while(omf_wait > scene_ms_per_tick(&scene)) {
             // Tick physics engine
-            t = ((float)scene_ms_per_tick(&scene)) / 1000;
-            physics_space_tick(t);
+            physics_space_tick();
             
             // Tick scene
             scene_tick(&scene);

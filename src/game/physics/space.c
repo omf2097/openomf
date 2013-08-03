@@ -3,7 +3,8 @@
 physics_space *global_space = NULL;
 
 void physics_space_init() {
-
+    global_space = malloc(sizeof(physics_space));
+    vector_init(&global_space->objects, sizeof(object*));
 }
 
 void physics_space_tick() {
@@ -22,13 +23,22 @@ void physics_space_tick() {
 }
 
 void physics_space_add(object *obj) {
-
+    vector_append(&global_space->objects, &obj);
 }
 
 void physics_space_remove(object *obj) {
-
+    iterator it;
+    object *o;
+    vector_iterator_begin(&global_space->objects, &it);
+    while((o = iter_next(&it)) != NULL) {
+        if(*o == obj) {
+            vector_delete(&it);
+        }
+    }
 }
 
 void physics_space_close() {
-
+    vector_free(&global_space->objects);
+    free(global_space);
+    global_space = NULL;
 }
