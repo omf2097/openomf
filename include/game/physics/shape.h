@@ -1,6 +1,8 @@
 #ifndef _SHAPE_H
 #define _SHAPE_H
 
+#include "utils/vec.h"
+
 typedef struct shape_t {
     void *data;
     int (*check_collision)(void *data, vec2f check_pos, vec2f self_pos);
