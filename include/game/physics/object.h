@@ -8,7 +8,7 @@
 #define OBJECT_NO_GROUP -1
 
 typedef struct object_t object;
-typedef void (*ev_collision_callback)(const object *a, const object *b, void *userdata);
+typedef void (*ev_collision_callback)(const object *a, const object *b, void *userdata_a, void *userdata_b);
 
 struct object_t {
     vec2f pos;
