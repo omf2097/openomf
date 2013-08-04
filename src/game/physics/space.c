@@ -9,14 +9,15 @@ void physics_space_init() {
 }
 
 void physics_space_tick() {
-    // Check for all objects that have obj->can_collide set to 1
-    // If collision happens, call obj->collision_[soft|hard]
-    // Soft collision = Bounding box collision, no object reaction
-    // Hard collision = Objects react to each other somehow
+    // Collisions:
+    // - Happen only for objects that are marked to be on same layers (bitmask obj->layers)
+    // - Happen only for objects that are in different groups (objects in same group do not interact)
     
-    // We may need to make an intersection function for eg. box vs. box collision and such.
-    // Right now the shaped themselves to the collision checks in a callback function, and
-    // they only check if pixel is inside a box.
+    // If collision happens:
+    // Soft collision = Bounding box collision, call user defined callback (if not NULL)
+    // Hard collision = Stop object or bounce it off (depending on what has been defined)
+    
+    // Intersections can be checked with shape_intersect. 
     
     // We should also make "inside-out" box, that checks that object is inside the box and
     // not outside (or something) for making sure the hars do not go outside the map.
