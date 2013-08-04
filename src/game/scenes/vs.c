@@ -48,7 +48,7 @@ void vs_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
         object_get_pos(welder.pobj, &welder_x, &welder_y);
         object_set_gravity(obj, 0.0f);
         DEBUG("spawning %id at %d + %d +%d", id, ani->sdani->start_x, mx, welder_x);
-        object_create(obj, global_space, ani->sdani->start_x + mx + welder_x, ani->sdani->start_y + my + welder_y, 0, 0, 1.0f, 1.0f, 0.0f);
+        object_create(obj, ani->sdani->start_x + mx + welder_x, ani->sdani->start_y + my + welder_y, 0, 0);
         animationplayer_create(&np, id, ani, obj);
         list_append(&child_players, &np, sizeof(animationplayer));
         animationplayer_run(&np);
@@ -98,7 +98,7 @@ void vs_post_init(scene *scene) {
     ani = array_get(&scene->animations, 7);
     if (ani != NULL) {
         object *obj = malloc(sizeof(object));
-        object_create(obj, global_space, 90, 80, 0, 0, 1.0f, 1.0f, 0.0f);
+        object_create(obj, 90, 80, 0, 0);
         object_set_gravity(obj, 0.0f);
         animationplayer_create(&welder, 7, ani, obj);
         welder.userdata = scene;
@@ -111,7 +111,7 @@ void vs_post_init(scene *scene) {
     ani = array_get(&scene->animations, 8);
     if (ani != NULL) {
         object *obj = malloc(sizeof(object));
-        object_create(obj, global_space, 320-114, 118, 0, 0, 1.0f, 1.0f, 0.0f);
+        object_create(obj, 320-114, 118, 0, 0);
         object_set_gravity(obj, 0.0f);
         animationplayer_create(&scientist, 8, ani, obj);
         scientist.direction = -1;

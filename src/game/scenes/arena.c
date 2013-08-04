@@ -22,7 +22,6 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <string.h>
-#include <chipmunk/chipmunk.h>
 #include <shadowdive/shadowdive.h>
 
 #define BAR_COLOR_BG color_create(89,40,101,255)
@@ -48,11 +47,6 @@ typedef struct arena_local_t {
     component quit_button;
     texture tex;
     int menu_visible;
-
-    cpShape *line_floor;
-    cpShape *line_wall_left;
-    cpShape *line_wall_right;
-    cpShape *line_ceiling;
     
     progress_bar player1_health_bar;
     progress_bar player2_health_bar;
@@ -159,6 +153,7 @@ int arena_init(scene *scene) {
     }
 
     // Arena constraints
+    /*
     local->line_floor = cpSegmentShapeNew(global_space->staticBody, cpv(0, 200), cpv(320, 200), 0);
     local->line_ceiling = cpSegmentShapeNew(global_space->staticBody, cpv(0, 0), cpv(320, 0), 0);
     local->line_wall_left = cpSegmentShapeNew(global_space->staticBody, cpv(0, 0), cpv(0, 200), 0);
@@ -169,6 +164,7 @@ int arena_init(scene *scene) {
     cpSpaceAddShape(global_space, local->line_ceiling);
     cpSpaceAddShape(global_space, local->line_wall_left);
     cpSpaceAddShape(global_space, local->line_wall_right);
+    */
     
     // Init physics for hars
     har_init(scene->player1.har, 60, 190);
@@ -291,6 +287,7 @@ void arena_deinit(scene *scene) {
     
     settings_save();
     
+    /*
     cpSpaceRemoveShape(global_space, local->line_floor);
     cpSpaceRemoveShape(global_space, local->line_ceiling);
     cpSpaceRemoveShape(global_space, local->line_wall_left);
@@ -299,6 +296,7 @@ void arena_deinit(scene *scene) {
     cpShapeFree(local->line_ceiling);
     cpShapeFree(local->line_wall_left);
     cpShapeFree(local->line_wall_right);
+    */
     
     free(scene->local);
 }

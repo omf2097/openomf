@@ -3,13 +3,19 @@
 
 #include "utils/vec.h"
 
+enum {
+    SHAPE_TYPE_POINT = 1,
+    SHAPE_TYPE_RECT,
+    SHAPE_TYPE_POINTGROUP,
+    SHAPE_TYPE_CIRCLE,
+};
+
 typedef struct shape_t {
     void *data;
-    int (*check_collision)(void *data, vec2f check_pos, vec2f self_pos);
-    int (*free)(void *data);
+    int type;
+    void (*free)(void *d);
 } shape;
 
-int shape_check_collision(void *shape, vec2f check_pos, vec2f self_pos);
-void shape_free(void *shape);
+void shape_free(shape *shape);
 
 #endif // _SHAPE_H

@@ -171,7 +171,7 @@ int scene_load(scene *scene, unsigned int scene_id) {
             if(bka->load_on_start || bka->probability == 1 || (scene_id == SCENE_INTRO && i == 25)) {
                 animationplayer player;
                 object *obj = malloc(sizeof(object));
-                object_create(obj, global_space, ani->sdani->start_x, ani->sdani->start_y, 0, 0, 1.0f, 1.0f, 0.0f);
+                object_create(obj, ani->sdani->start_x, ani->sdani->start_y, 0, 0);
                 object_set_gravity(obj, 0.0f);
                 object_set_group(obj, 1);
                 animationplayer_create(&player, i, ani, obj);
@@ -201,7 +201,7 @@ void scene_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
     if(ani != NULL) {
         animationplayer np;
         object *obj = malloc(sizeof(object));
-        object_create(obj, global_space, ani->sdani->start_x + mx, ani->sdani->start_y + my, 0, 0, 1.0f, 1.0f, 0.0f);
+        object_create(obj, ani->sdani->start_x + mx, ani->sdani->start_y + my, 0, 0);
         object_set_gravity(obj, 0.0f);
         object_set_group(obj, 1);
         animationplayer_create(&np, id, ani, obj);

@@ -1,10 +1,11 @@
 #include "game/physics/space.h"
+#include <stdlib.h>
 
 physics_space *global_space = NULL;
 
 void physics_space_init() {
     global_space = malloc(sizeof(physics_space));
-    vector_init(&global_space->objects, sizeof(object*));
+    vector_create(&global_space->objects, sizeof(object*));
 }
 
 void physics_space_tick() {
@@ -28,11 +29,11 @@ void physics_space_add(object *obj) {
 
 void physics_space_remove(object *obj) {
     iterator it;
-    object *o;
-    vector_iterator_begin(&global_space->objects, &it);
+    object **o;
+    vector_iter_begin(&global_space->objects, &it);
     while((o = iter_next(&it)) != NULL) {
         if(*o == obj) {
-            vector_delete(&it);
+            vector_delete(&global_space->objects, &it);
         }
     }
 }

@@ -2,12 +2,14 @@
 #define _HAR_H
 
 #include <shadowdive/shadowdive.h>
-#include <chipmunk/chipmunk.h>
 #include "utils/array.h"
 #include "game/animation.h"
 #include "game/animationplayer.h"
 #include "game/physics/object.h"
 #include "game/particle.h"
+
+#define LAYER_HAR 0x01
+#define LAYER_SCRAP 0x02
 
 enum {
     ACT_KICK,

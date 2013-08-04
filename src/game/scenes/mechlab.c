@@ -81,7 +81,7 @@ int mechlab_init(scene *scene) {
 
 void mechlab_post_init(scene *scene) {
     object *obj = malloc(sizeof(object));
-    object_create(obj, global_space, 0, 0, 0, 0, 1.0f, 1.0f, 0.0f);
+    object_create(obj, 0, 0, 0, 0);
     object_set_gravity(obj, 0.0f);
     animationplayer_create(&handplayer, 29, array_get(&scene->animations, 29), obj);
     animationplayer_run(&handplayer);

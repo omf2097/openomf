@@ -10,7 +10,7 @@ int particle_create(particle *p, unsigned int id, animation *ani, int dir, int p
     p->successor = NULL;
     p->lifetime = PARTICLE_NO_LIFETIME;
     p->lifeticks = 0;
-    object_create(&p->pobj, global_space, px, py, vx, vy, 1.0f, 1.0f, 0.4f);
+    object_create(&p->pobj, px, py, vx, vy);
     object_set_gravity(&p->pobj, gravity);
     animationplayer_create(&p->player, id, ani, &p->pobj);
     animationplayer_set_direction(&p->player, dir);

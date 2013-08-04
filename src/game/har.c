@@ -79,6 +79,7 @@ void har_switch_animation(har *har, int id) {
     animationplayer_run(&har->player);
 }
 
+/*
 static void ground_check(cpBody *body, cpArbiter *arb, cpVect *groundNormal){
     cpVect n = cpvneg(cpArbiterGetNormal(arb, 0));
 
@@ -87,8 +88,9 @@ static void ground_check(cpBody *body, cpArbiter *arb, cpVect *groundNormal){
         (*groundNormal) = n;
     }
 }
-
+*/
 int har_on_ground(har *har) {
+/*
     cpVect groundNormal = cpvzero;
 
     cpBodyEachArbiter(har->pobj.body, (cpBodyArbiterIteratorFunc)ground_check, &groundNormal);
@@ -103,7 +105,7 @@ int har_on_ground(har *har) {
         object_set_vel(&har->pobj, 0, 0);
         return 0;
     } else if (har->state == STATE_JUMPING) {
-         cpFloat vx, vy;
+         float vx, vy;
          object_get_vel(&har->pobj, &vx, &vy);
          if (vy > 0.0) {
              DEBUG("falling");
@@ -113,7 +115,7 @@ int har_on_ground(har *har) {
     } else if (!grounded && har->state == STATE_RECOIL) {
         har->state = STATE_AIRBORNE_RECOIL;
     } else if (grounded && har->state == STATE_AIRBORNE_RECOIL) {
-         cpFloat vx, vy;
+         float vx, vy;
          object_get_vel(&har->pobj, &vx, &vy);
          if (vy >= 0.0) {
              // falling, not rising
@@ -122,6 +124,7 @@ int har_on_ground(har *har) {
              object_set_vel(&har->pobj, 0, 0);
          }
     }
+*/
     return 1;
 }
 
@@ -285,7 +288,7 @@ int har_load(har *h, sd_palette *pal, int id, int direction) {
 }
 
 int har_init(har *har, int x, int y) {
-    object_create(&har->pobj, global_space, x, y, 0, 0, 1.0f, 0.0f, 0.0f);
+    object_create(&har->pobj, x, y, 0, 0);
     object_set_gravity(&har->pobj, 1.0f);
     object_set_layers(&har->pobj, LAYER_HAR);
     // Start player with animation 11

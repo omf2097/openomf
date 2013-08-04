@@ -63,7 +63,7 @@ void refresh_pilot_stats();
 
 void melee_switch_animation(scene *scene, animationplayer *harplayer, int id, int x, int y) {
     object *obj = malloc(sizeof(object));
-    object_create(obj, global_space, x, y, 0, 0, 1.0f, 1.0f, 0.0f);
+    object_create(obj, x, y, 0, 0);
     object_set_gravity(obj, 0.0f);
     animationplayer_free(harplayer);
     if (harplayer->pobj) {
