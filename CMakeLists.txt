@@ -4,7 +4,6 @@ project(OpenOMF C)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 find_package(SDL2)
 find_package(shadowdive)
-find_package(chipmunk)
 find_package(enet)
 find_package(dumb)
 find_package(OpenGL)
@@ -93,7 +92,6 @@ set(COREINCS
     ${CONFUSE_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
-    ${CHIPMUNK_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
 )
 
@@ -106,7 +104,6 @@ set(CORELIBS
     ${CONFUSE_LIBRARY}
     ${GLEW_LIBRARY}
     ${LIBINTL_LIBRARIES}
-    ${CHIPMUNK_LIBRARY}
     ${ENET_LIBRARY}
 )
 
