@@ -17,6 +17,9 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
+#include "game/physics/object.h"
+#include "game/physics/space.h"
+#include "game/physics/shape_invrect.h"
 #include "controller/net_controller.h"
 #include "utils/log.h"
 #include <SDL2/SDL.h>
@@ -47,6 +50,8 @@ typedef struct arena_local_t {
     component quit_button;
     texture tex;
     int menu_visible;
+    
+    object arena_obj;
     
     progress_bar player1_health_bar;
     progress_bar player2_health_bar;
@@ -153,18 +158,12 @@ int arena_init(scene *scene) {
     }
 
     // Arena constraints
-    /*
-    local->line_floor = cpSegmentShapeNew(global_space->staticBody, cpv(0, 200), cpv(320, 200), 0);
-    local->line_ceiling = cpSegmentShapeNew(global_space->staticBody, cpv(0, 0), cpv(320, 0), 0);
-    local->line_wall_left = cpSegmentShapeNew(global_space->staticBody, cpv(0, 0), cpv(0, 200), 0);
-    local->line_wall_right = cpSegmentShapeNew(global_space->staticBody, cpv(320, 0), cpv(320, 200), 0);
-    cpShapeSetFriction(local->line_floor, 1.0f);
-    cpShapeSetElasticity(local->line_floor, 1.0f);
-    cpSpaceAddShape(global_space, local->line_floor);
-    cpSpaceAddShape(global_space, local->line_ceiling);
-    cpSpaceAddShape(global_space, local->line_wall_left);
-    cpSpaceAddShape(global_space, local->line_wall_right);
-    */
+    shape *arena_shape = malloc(sizeof(shape));
+    shape_invrect_create(arena_shape, 320, 200);
+    object_create(&local->arena_obj, 0, 0, 0, 0);
+    object_set_static(&local->arena_obj, 1);
+    object_set_hard_shape(&local->arena_obj, arena_shape);
+    physics_space_add(&local->arena_obj);
     
     // Init physics for hars
     har_init(scene->player1.har, 60, 190);
@@ -287,16 +286,8 @@ void arena_deinit(scene *scene) {
     
     settings_save();
     
-    /*
-    cpSpaceRemoveShape(global_space, local->line_floor);
-    cpSpaceRemoveShape(global_space, local->line_ceiling);
-    cpSpaceRemoveShape(global_space, local->line_wall_left);
-    cpSpaceRemoveShape(global_space, local->line_wall_right);
-    cpShapeFree(local->line_floor);
-    cpShapeFree(local->line_ceiling);
-    cpShapeFree(local->line_wall_left);
-    cpShapeFree(local->line_wall_right);
-    */
+    physics_space_remove(&local->arena_obj);
+    object_free(&local->arena_obj);
     
     free(scene->local);
 }

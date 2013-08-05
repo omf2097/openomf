@@ -4,7 +4,7 @@
 #include "utils/vec.h"
 #include "game/physics/shape.h"
 
-#define OBJECT_NO_LAYERS 0
+#define OBJECT_DEFAULT_LAYER 0x01
 #define OBJECT_NO_GROUP -1
 
 typedef struct object_t object;
@@ -17,6 +17,7 @@ struct object_t {
     shape *col_shape_soft;
     float gravity;
     
+    int is_static;
     int group;
     int layers;
     
@@ -33,6 +34,7 @@ void object_set_group(object *obj, int group);
 void object_set_gravity(object *obj, float gravity);
 void object_set_hard_shape(object *obj, shape *sh);
 void object_set_soft_shape(object *obj, shape *sh);
+void object_set_static(object *obj, int is_static);
 
 int  object_get_px(object *obj);
 int  object_get_py(object *obj);

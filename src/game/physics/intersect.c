@@ -13,9 +13,9 @@ int intersect_point_rect(vec2i pc, vec2i rc, vec2i size) {
 
 int intersect_point_invrect(vec2i pc, vec2i rc, vec2i size) {
     return (
-        pc.x > (rc.x + size.x) && 
-        pc.x < rc.x &&
-        pc.y > (rc.y + size.y) && 
+        pc.x > (rc.x + size.x) || 
+        pc.x < rc.x ||
+        pc.y > (rc.y + size.y) ||
         pc.y < rc.y
     );
 }

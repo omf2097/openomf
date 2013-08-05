@@ -1,5 +1,6 @@
 #include "game/physics/space.h"
 #include "game/physics/intersect.h"
+#include "utils/log.h"
 #include <stdlib.h>
 
 physics_space *global_space = NULL;
@@ -50,14 +51,20 @@ void physics_space_tick() {
         a = *((object**)vector_get(&global_space->objects, i));
         for(int k = i+1; k < size; k++) {
             b = *((object**)vector_get(&global_space->objects, k));
-            if(a->group != b->group && a->layers & b->layers) {
-                if(shape_intersect(a->col_shape_hard, vec2f_to_i(a->pos), b->col_shape_hard, vec2f_to_i(b->pos))) {
-                    // For now, just zero out the velocity of colliding objects.
-                    object_set_vel(a, 0.0f, 0.0f);
-                    object_set_vel(b, 0.0f, 0.0f);
+            if((a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) && a->layers & b->layers) {
+                if(a->col_shape_hard != NULL && b->col_shape_hard != NULL) {
+                    if(shape_intersect(a->col_shape_hard, vec2f_to_i(a->pos), b->col_shape_hard, vec2f_to_i(b->pos))) {
+                        // For now, just zero out the velocity of colliding objects. We also need to take into account static objects.
+                        DEBUG("Hard collision!");
+                        object_set_vel(a, 0.0f, 0.0f);
+                        object_set_vel(b, 0.0f, 0.0f); 
+                    }
                 }
-                if(shape_intersect(a->col_shape_soft, vec2f_to_i(a->pos), b->col_shape_soft, vec2f_to_i(b->pos))) {
-                    a->ev_collision(a,b,a->userdata,b->userdata);
+                if(a->col_shape_soft != NULL && b->col_shape_soft != NULL) {
+                    if(shape_intersect(a->col_shape_soft, vec2f_to_i(a->pos), b->col_shape_soft, vec2f_to_i(b->pos))) {
+                        DEBUG("Soft collision!");
+                        a->ev_collision(a,b,a->userdata,b->userdata);
+                    }
                 }
             }
         }
