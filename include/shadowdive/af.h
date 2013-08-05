@@ -1,5 +1,5 @@
 /*! \file 
- * \brief Contains stuff that handles AF files.
+ * \brief Contains functions for handling .AF (HAR) files.
  * \license MIT
  */ 
 

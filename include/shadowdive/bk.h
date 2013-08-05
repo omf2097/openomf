@@ -1,3 +1,8 @@
+/*! \file 
+ * \brief Contains functions for handling .BK (arena/background) files.
+ * \license MIT
+ */ 
+
 #ifndef _SD_BK_H
 #define _SD_BK_H
 
@@ -33,29 +38,40 @@ typedef struct sd_bk_file_t {
     char soundtable[30];
 } sd_bk_file;
 
-/**
-  * Creates BK file structure
-  */
+/*! \brief Create BK container
+ * Creates the BK container struct, allocated memory etc.
+ * \return BK container struct pointer
+ */
 sd_bk_file* sd_bk_create();
 
-/**
-  * Sets background image
-  */
+/*! \brief Set background image
+ * Loads Sets the background image of the BK file.
+ * \param bk BK struct pointer.
+ * \param img Image data struct
+ * \return SD_SUCCESS on success.
+ */
 void sd_bk_set_background(sd_bk_file *bk, sd_vga_image *img);
 
-/**
-  * Load .BK file. Returns 0 on error.
-  */
+/*! \brief Load .BK file
+ * Loads the given BK file to memory
+ * \param bk BK struct pointer.
+ * \param filename Name of the BK file.
+ * \return SD_SUCCESS on success.
+ */
 int sd_bk_load(sd_bk_file *bk, const char *filename);
 
-/**
-  * Saves BK file structure. Returns 1 on success, 0 on error.
-  */
+/*! \brief Save .BK file
+ * Saves the given BK file from memory to a file on disk.
+ * \param bk BK struct pointer. 
+ * \param filename Name of the BK file to save into.
+ * \return SD_SUCCESS on success.
+ */
 int sd_bk_save(sd_bk_file *bk, const char* filename);
 
-/**
-  * Deletes bk_file structure from memory.
-  */
+/*! \brief Free BK container
+ * Frees up the bk struct memory.
+ * \param bk BK struct pointer.
+ */
 void sd_bk_delete(sd_bk_file *bk);
 
 #ifdef __cplusplus
