@@ -143,6 +143,8 @@ void har_collision_har(har *har_a, har *har_b);
 void har_collision_particle(har *har); // TODO: Think about this
 void har_take_damage(har *har, int amount, const char *string);
 
+int har_is_grounded(har *har);
+
 void har_parse_command(har *har, char *buf);
 
 void har_add_hook(har *har, void(*fp)(char* msg, void *userdata), void *userdata);

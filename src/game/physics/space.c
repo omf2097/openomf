@@ -17,6 +17,10 @@ vec2i vec2f_to_i(vec2f f) {
 }
 
 void physics_space_tick() {
+    iterator it;
+    object *a, *b, **t;
+    unsigned int size;
+
     // Collisions:
     // - Happen only for objects that are marked to be on same layers (bitmask obj->layers)
     // - Happen only for objects that are in different groups (objects in same group do not interact)
@@ -31,8 +35,17 @@ void physics_space_tick() {
     // not outside (or something) for making sure the hars do not go outside the map.
     // Or maybe just make the walls out of rectangles ? Or something.
     
-    unsigned int size = vector_size(&global_space->objects);
-    object *a, *b;
+    // Handle movement
+    vector_iter_begin(&global_space->objects, &it);
+    while((t = iter_next(&it)) != NULL) {
+        a = *t;
+        a->pos.x += a->vel.x;
+        a->pos.y += a->vel.y;
+        a->vel.y += a->gravity;
+    }
+    
+    // Check for collisions
+    size = vector_size(&global_space->objects);
     for(int i = 0; i < size; i++) {
         a = *((object**)vector_get(&global_space->objects, i));
         for(int k = i+1; k < size; k++) {

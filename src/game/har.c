@@ -79,52 +79,40 @@ void har_switch_animation(har *har, int id) {
     animationplayer_run(&har->player);
 }
 
-/*
-static void ground_check(cpBody *body, cpArbiter *arb, cpVect *groundNormal){
-    cpVect n = cpvneg(cpArbiterGetNormal(arb, 0));
-
-    // TODO we should really check if we're colliding with the ground plane
-    if(n.y < groundNormal->y){
-        (*groundNormal) = n;
-    }
+int har_is_grounded(har *har) {
+    return (object_get_py(&har->pobj) == 0.0f && object_get_vy(&har->pobj) == 0.0);
 }
-*/
+
 int har_on_ground(har *har) {
-/*
-    cpVect groundNormal = cpvzero;
+    int grounded = har_is_grounded(har);
 
-    cpBodyEachArbiter(har->pobj.body, (cpBodyArbiterIteratorFunc)ground_check, &groundNormal);
-
-    cpBool grounded = (groundNormal.y < 0.0);
-
-    if (grounded && har->state == STATE_JUMPING) {
+    if(grounded && har->state == STATE_JUMPING) {
         DEBUG("landed");
         har->state = STATE_STANDING;
         har->player.reverse = 0;
         har->player.finished = 1;
         object_set_vel(&har->pobj, 0, 0);
         return 0;
-    } else if (har->state == STATE_JUMPING) {
+    } else if(har->state == STATE_JUMPING) {
          float vx, vy;
          object_get_vel(&har->pobj, &vx, &vy);
-         if (vy > 0.0) {
+         if(vy > 0.0) {
              DEBUG("falling");
-         } else if (vy < 0.0) {
+         } else if(vy < 0.0) {
              DEBUG("rising");
          }
-    } else if (!grounded && har->state == STATE_RECOIL) {
+    } else if(!grounded && har->state == STATE_RECOIL) {
         har->state = STATE_AIRBORNE_RECOIL;
-    } else if (grounded && har->state == STATE_AIRBORNE_RECOIL) {
+    } else if(grounded && har->state == STATE_AIRBORNE_RECOIL) {
          float vx, vy;
          object_get_vel(&har->pobj, &vx, &vy);
-         if (vy >= 0.0) {
+         if(vy >= 0.0) {
              // falling, not rising
              har_switch_animation(har, ANIM_STANDUP);
              har->state = STATE_STANDING;
              object_set_vel(&har->pobj, 0, 0);
          }
     }
-*/
     return 1;
 }
 
@@ -291,6 +279,7 @@ int har_init(har *har, int x, int y) {
     object_create(&har->pobj, x, y, 0, 0);
     object_set_gravity(&har->pobj, 1.0f);
     object_set_layers(&har->pobj, LAYER_HAR);
+    physics_space_add(&har->pobj);
     // Start player with animation 11
     animationplayer_create(&har->player, ANIM_IDLE, array_get(&har->animations, ANIM_IDLE), &har->pobj);
     animationplayer_set_direction(&har->player, har->direction);
@@ -333,6 +322,7 @@ void har_free(har *h) {
     animationplayer_free(&h->player);
     
     // Free object
+    physics_space_remove(&h->pobj);
     object_free(&h->pobj);
 }
 
