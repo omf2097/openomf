@@ -143,14 +143,11 @@ int animationplayer_set_string(animationplayer *player, const char *string) {
     sd_stringparser_peek(player->parser, 0, &param);
     
     // Set pos
-    int opx, opy;
     if(isset(&param, "x=")) {
-        object_get_pos(player->pobj, &opx, &opy);
-        object_set_pos(player->pobj, get(&param, "y="), opy);
+        object_set_px(player->pobj, get(&param, "y="));
     }
     if(isset(&param, "y=")) {
-        object_get_pos(player->pobj, &opx, &opy);
-        object_set_pos(player->pobj, opx, get(&param, "y="));
+        object_set_py(player->pobj, get(&param, "y="));
     }
     DEBUG("P: '%s'", string);
     return 0;
@@ -342,10 +339,10 @@ void animationplayer_run(animationplayer *player) {
                 }
                 object_get_pos(player->pobj, &xpos, &ypos);
                 if (slide != xpos) {
-                    DEBUG("%d player->x was %d, interpolating to %d", player->id, xpos, slide);
+                    //DEBUG("%d player->x was %d, interpolating to %d", player->id, xpos, slide);
                     // scale distance by 101 so we can handle uneven interpolation (eg. 160/100)
                     player->slide_op.x_per_tick = (dist(xpos, slide) * 100) / param->duration;
-                    DEBUG("%d moving %d per tick over %d ticks for total %d", player->id, player->slide_op.x_per_tick, param->duration, dist(xpos, slide));
+                    //DEBUG("%d moving %d per tick over %d ticks for total %d", player->id, player->slide_op.x_per_tick, param->duration, dist(xpos, slide));
                     player->slide_op.enabled = 1;
                 }
             }
@@ -353,10 +350,10 @@ void animationplayer_run(animationplayer *player) {
                 slide = get(n, "y=");
                 object_get_pos(player->pobj, &xpos, &ypos);
                 if (slide != ypos) {
-                    DEBUG("%d player->y was %d, interpolating to %d", player->id, ypos, slide);
+                    //DEBUG("%d player->y was %d, interpolating to %d", player->id, ypos, slide);
                     // scale distance by 100 so we can handle uneven interpolation (eg. 160/100)
                     player->slide_op.y_per_tick = (dist(ypos, slide) * 100) / param->duration;
-                    DEBUG("%d moving %d per tick over %d ticks", player->id, player->slide_op.y_per_tick, param->duration);
+                    //DEBUG("%d moving %d per tick over %d ticks", player->id, player->slide_op.y_per_tick, param->duration);
                     player->slide_op.enabled = 1;
                 }
             }
@@ -384,7 +381,6 @@ void animationplayer_run(animationplayer *player) {
                 }
                 anisprite->tex = tex;
                 player->sprite_obj = anisprite;
-                /*object_set_collision_box(player->pobj, anisprite->tex->w, anisprite->tex->h);*/
             } else {
                 PERROR("No texture @ %u", real_frame);
             }
