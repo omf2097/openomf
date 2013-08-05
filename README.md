@@ -8,15 +8,18 @@ Overview
 libShadowDive is a library for reading and writing One Must Fall 2097 datafiles. 
 
 Right now Shadowdive can handle following file formats:
-* .AF files (HAR data)
-* .BK files (Background/arena data)
-* ENGLISH.DAT, GERMAN.DAT language files
-* SOUNDS.DAT (Sounds file)
-* .CHR files (Characters for both big and small fonts)
+* HAR Data files (*.AF)
+* Arena/background data files (*.BK)
+* Language files (ENGLISH.DAT,GERMAN.DAT)
+* Sound data file (SOUNDS.DAT)
+* Characters for both big and small fonts (GRAPHCHR.DAT, CHARSMAL.DAT)
 
 Following formats are still TODO:
-* .CHR (Character files)
-* .TRN (Tournament data files)
+* Character save files (*.CHR)
+* Tournament data files (*.TRN)
+
+Other files:
+* OMF music files are in PSM module format, and can be opened with libdumb.
 
 Compiling
 ---------
@@ -27,6 +30,7 @@ To compile:
 $ cd build
 $ cmake ..
 $ make
+```
 
 License
 -------
