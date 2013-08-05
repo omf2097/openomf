@@ -681,7 +681,7 @@ int sd_stringparser_run_ex(sd_stringparser *parser, unsigned int ticks, unsigned
 int sd_stringparser_run_frames(sd_stringparser *parser, unsigned int ticks, unsigned int end_frame) {
     frame_list *frames = parser->frame_list;
     
-    if(end_frame >= 0 && end_frame < frames->num_frames) {
+    if(end_frame < frames->num_frames) {
         unsigned end_ticks = frames->frames[end_frame].start_tick + frames->frames[end_frame].duration; 
         return sd_framelist_process(&parser->is_frame_ready, parser->frame_list, parser->tag_list, ticks, end_ticks, &parser->current_frame);
     } else {
@@ -694,7 +694,7 @@ int sd_stringparser_goto_frame(sd_stringparser *parser, unsigned int frame, unsi
     
     if(ticks == NULL) { return 1; }
     
-    if(frame >= 0 && frame < frames->num_frames) {
+    if(frame < frames->num_frames) {
         *ticks = frames->last_tick = frames->frames[frame].start_tick; 
         frames->next_frame = frame; 
         return 0;
