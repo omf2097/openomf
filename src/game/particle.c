@@ -1,6 +1,8 @@
 #include "game/particle.h"
 #include "utils/log.h"
 #include "game/physics/space.h"
+#include "game/physics/shape.h"
+#include "game/physics/shape_rect.h"
 #include <stdlib.h>
 
 int particle_create(particle *p, unsigned int id, animation *ani, int dir, int px, int py, int vx, int vy, float gravity) {
@@ -10,8 +12,12 @@ int particle_create(particle *p, unsigned int id, animation *ani, int dir, int p
     p->successor = NULL;
     p->lifetime = PARTICLE_NO_LIFETIME;
     p->lifeticks = 0;
+    shape *particle_shape = malloc(sizeof(shape));
+    shape_rect_create(particle_shape, 10, 10);
     object_create(&p->pobj, px, py, vx, vy);
     object_set_gravity(&p->pobj, gravity);
+    object_set_hard_shape(&p->pobj, particle_shape);
+    physics_space_add(&p->pobj);
     animationplayer_create(&p->player, id, ani, &p->pobj);
     animationplayer_set_direction(&p->player, dir);
     animationplayer_run(&p->player);
@@ -20,6 +26,7 @@ int particle_create(particle *p, unsigned int id, animation *ani, int dir, int p
 
 void particle_free(particle *p) {
     animationplayer_free(&p->player);
+    physics_space_remove(&p->pobj);
     object_free(&p->pobj);
 }
 

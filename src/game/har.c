@@ -6,6 +6,9 @@
 #include "utils/array.h"
 #include "utils/list.h"
 #include "game/physics/space.h"
+#include "game/physics/object.h"
+#include "game/physics/shape.h"
+#include "game/physics/shape_rect.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -261,7 +264,7 @@ int har_load(har *h, sd_palette *pal, int id, int direction) {
             ani = malloc(sizeof(animation));
             animation_create(ani, move->animation, pal, -1, h->af->soundtable);
             array_set(&h->animations, i, ani);
-            DEBUG("Loading animation %d", i);
+            //DEBUG("Loading animation %d", i);
         }
     }
     
@@ -276,9 +279,12 @@ int har_load(har *h, sd_palette *pal, int id, int direction) {
 }
 
 int har_init(har *har, int x, int y) {
+    shape *har_shape = malloc(sizeof(shape));
+    shape_rect_create(har_shape, 20, 50);
     object_create(&har->pobj, x, y, 0, 0);
     object_set_gravity(&har->pobj, 1.0f);
     object_set_layers(&har->pobj, LAYER_HAR);
+    object_set_hard_shape(&har->pobj, har_shape);
     physics_space_add(&har->pobj);
     // Start player with animation 11
     animationplayer_create(&har->player, ANIM_IDLE, array_get(&har->animations, ANIM_IDLE), &har->pobj);
@@ -370,9 +376,9 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
     for(int i = 1; i < 16; i++) {
         particle *p = malloc(sizeof(particle));
         scrap_ani = array_get(&h->animations, ANIM_SCRAP_METAL+(i%3));
-        int vy = (-(4.0 / 16 * i + 2.0));
-        int vx = direction * (30.0 / 16 * i + 2.0);
-        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 10.0f);
+        int vy = (-(4.0 / 16 * i + 0.5));
+        int vx = direction * (30.0 / 16 * i + 0.5);
+        particle_create(p, ANIM_SCRAP_METAL+(i%3), scrap_ani, direction, x, y, vx, vy, 1.0f);
         particle_set_lifetime(p, 40);
         object_set_group(&p->pobj, 2); // Set group for scrap
         object_set_layers(&p->pobj, LAYER_SCRAP); // Set layer for scrap

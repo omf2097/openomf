@@ -40,9 +40,11 @@ void physics_space_tick() {
     vector_iter_begin(&global_space->objects, &it);
     while((t = iter_next(&it)) != NULL) {
         a = *t;
-        a->pos.x += a->vel.x;
-        a->pos.y += a->vel.y;
-        a->vel.y += a->gravity;
+        if(!a->is_static) {
+            a->pos.x += a->vel.x;
+            a->pos.y += a->vel.y;
+            a->vel.y += a->gravity;
+        }
     }
     
     // Check for collisions
@@ -55,7 +57,6 @@ void physics_space_tick() {
                 if(a->col_shape_hard != NULL && b->col_shape_hard != NULL) {
                     if(shape_intersect(a->col_shape_hard, vec2f_to_i(a->pos), b->col_shape_hard, vec2f_to_i(b->pos))) {
                         // For now, just zero out the velocity of colliding objects. We also need to take into account static objects.
-                        DEBUG("Hard collision!");
                         object_set_vel(a, 0.0f, 0.0f);
                         object_set_vel(b, 0.0f, 0.0f); 
                     }

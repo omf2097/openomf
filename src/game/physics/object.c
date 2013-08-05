@@ -1,11 +1,14 @@
 #include "game/physics/object.h"
 #include <stdlib.h>
 
+#include "utils/log.h"
+
 void object_create(object *obj, int px, int py, float vx, float vy) {
     obj->pos.x = px;
     obj->pos.y = py;
     obj->vel.x = vx;
     obj->vel.y = vy;
+    DEBUG("Object created. pos = (%f, %f), vel = (%f, %f)", obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y);
     obj->is_static = 0;
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = OBJECT_NO_GROUP;
@@ -13,6 +16,7 @@ void object_create(object *obj, int px, int py, float vx, float vy) {
     obj->col_shape_hard = NULL;
     obj->col_shape_soft = NULL;
     obj->ev_collision = NULL;
+    obj->gravity = 0.0f;
 }
 
 void object_free(object *obj) {

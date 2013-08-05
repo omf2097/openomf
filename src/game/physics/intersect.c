@@ -66,6 +66,12 @@ int shape_intersect(shape *a, vec2i ca, shape *b, vec2i cb) {
                 case SHAPE_TYPE_INVRECT: return intersect_point_invrect(ca, cb, shape_invrect_get_size(b));
             };
             break;
+        case SHAPE_TYPE_INVRECT:
+            switch(b->type) {
+                case SHAPE_TYPE_POINT: return intersect_point_invrect(cb, ca, shape_invrect_get_size(a));
+                case SHAPE_TYPE_RECT: return intersect_rect_invrect(cb, shape_rect_get_size(b), ca, shape_invrect_get_size(a));
+            };
+            break;
     };
     return 0;
 }

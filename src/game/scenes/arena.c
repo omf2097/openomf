@@ -163,6 +163,7 @@ int arena_init(scene *scene) {
     object_create(&local->arena_obj, 0, 0, 0, 0);
     object_set_static(&local->arena_obj, 1);
     object_set_hard_shape(&local->arena_obj, arena_shape);
+    object_set_layers(&local->arena_obj, LAYER_HAR|LAYER_SCRAP);
     physics_space_add(&local->arena_obj);
     
     // Init physics for hars
