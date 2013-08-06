@@ -1,12 +1,17 @@
 cmake_minimum_required(VERSION 2.6)
 project(ShadowDive C)
 
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
+
 set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -pedantic")
 set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -pedantic")
 set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -Os -march=native -Werror -pedantic")
 
 link_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(include/)
+
+enable_testing()
+add_subdirectory(testing)
 
 add_library(shadowdive
     src/af.c
