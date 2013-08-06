@@ -11,4 +11,13 @@ typedef struct vec2i_t {
     int y;
 } vec2i;
 
+vec2i vec2i_add(vec2i a, vec2i b);
+vec2i vec2i_sub(vec2i a, vec2i b);
+vec2i vec2i_mult(vec2i a, vec2i b);
+vec2f vec2f_add(vec2f a, vec2f b);
+vec2f vec2f_sub(vec2f a, vec2f b);
+vec2f vec2f_mult(vec2f a, vec2f b);
+vec2i vec2f_to_i(vec2f f);
+vec2f vec2i_to_f(vec2i i);
+
 #endif // _VEC_H

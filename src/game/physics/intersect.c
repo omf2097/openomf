@@ -1,6 +1,7 @@
 #include "game/physics/intersect.h"
 #include "game/physics/shape_rect.h"
 #include "game/physics/shape_invrect.h"
+#include "utils/log.h"
 
 int intersect_point_rect(vec2i pc, vec2i rc, vec2i size) {
     return (

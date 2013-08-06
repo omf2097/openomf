@@ -11,6 +11,8 @@ void shape_rect_create(shape *shape, int w, int h) {
     rect->size.x = w;
     rect->size.y = h;
     shape->type = SHAPE_TYPE_RECT;
+    shape->comp.x = -w;
+    shape->comp.y = -h;
     shape->data = rect;
     shape->free = shape_rect_free;
 }

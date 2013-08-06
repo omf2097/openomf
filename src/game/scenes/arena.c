@@ -464,10 +464,16 @@ void arena_render(scene *scene) {
     iterator it;
     vector_iter_begin(&global_space->objects, &it);
     object **o;
+    vec2i pos, size;
     while((o = (object**)iter_next(&it)) != NULL) {
         if((*o)->col_shape_hard->type == SHAPE_TYPE_RECT) {
-            vec2i size = shape_rect_get_size((*o)->col_shape_hard);
-            video_render_colored_quad(object_get_px(*o), object_get_py(*o), size.x, size.y, color_create(128,90,90,128));
+            size = shape_rect_get_size((*o)->col_shape_hard);
+            pos = vec2i_add(vec2f_to_i((*o)->pos), (*o)->col_shape_hard->comp);
+            video_render_colored_quad(pos.x, pos.y, size.x, size.y, color_create(190,120,120,128));
+        } else if((*o)->col_shape_hard->type == SHAPE_TYPE_INVRECT) {
+            size = shape_invrect_get_size((*o)->col_shape_hard);
+            pos = vec2i_add(vec2f_to_i((*o)->pos), (*o)->col_shape_hard->comp);
+            video_render_colored_quad(pos.x, pos.y, size.x, size.y, color_create(120,190,120,128));
         }
     }
 #endif

@@ -32,6 +32,7 @@ add_executable(openomf
     src/utils/iterator.c
     src/utils/array.c
     src/utils/ringbuffer.c
+    src/utils/vec.c
     src/video/video.c
     src/video/texture.c
     src/video/fbo.c
