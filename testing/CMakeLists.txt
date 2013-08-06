@@ -3,8 +3,8 @@ enable_testing()
 find_package(CUnit)
 
 IF(CUNIT_FOUND)
-    include_directories(${CUNIT_INCLUDE_DIRS} . ../include/)
-    set(LIBS ${CUNIT_LIBRARIES} shadowdive)
+    include_directories(${CUNIT_INCLUDE_DIR} . ../include/)
+    set(LIBS ${CUNIT_LIBRARY} shadowdive)
 
     add_executable(test_af_reader test_af_reader.c)
     add_executable(test_bk_reader test_bk_reader.c)
