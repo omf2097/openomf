@@ -5,4 +5,4 @@ compiler:
 before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq libcunit1 libcunit1-dev
-script: cd build && cmake .. && make && ctest
+script: mkdir build && cd build && cmake .. && make && ctest
