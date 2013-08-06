@@ -280,7 +280,7 @@ int har_load(har *h, sd_palette *pal, int id, int direction) {
 
 int har_init(har *har, int x, int y) {
     shape *har_shape = malloc(sizeof(shape));
-    shape_rect_create(har_shape, 20, 50);
+    shape_rect_create(har_shape, 20, 20);
     object_create(&har->pobj, x, y, 0, 0);
     object_set_gravity(&har->pobj, 1.0f);
     object_set_layers(&har->pobj, LAYER_HAR);

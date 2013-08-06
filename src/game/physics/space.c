@@ -20,6 +20,7 @@ vec2i vec2f_to_i(vec2f f) {
 void physics_space_tick() {
     iterator it;
     object *a, *b, **t;
+    vec2i apos,bpos;
     unsigned int size;
 
     // Collisions:
@@ -54,15 +55,17 @@ void physics_space_tick() {
         for(int k = i+1; k < size; k++) {
             b = *((object**)vector_get(&global_space->objects, k));
             if((a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) && a->layers & b->layers) {
+                apos = vec2f_to_i(a->pos);
+                bpos = vec2f_to_i(b->pos);
                 if(a->col_shape_hard != NULL && b->col_shape_hard != NULL) {
-                    if(shape_intersect(a->col_shape_hard, vec2f_to_i(a->pos), b->col_shape_hard, vec2f_to_i(b->pos))) {
+                    if(shape_intersect(a->col_shape_hard, apos, b->col_shape_hard, bpos)) {
                         // For now, just zero out the velocity of colliding objects. We also need to take into account static objects.
                         object_set_vel(a, 0.0f, 0.0f);
                         object_set_vel(b, 0.0f, 0.0f); 
                     }
                 }
                 if(a->col_shape_soft != NULL && b->col_shape_soft != NULL) {
-                    if(shape_intersect(a->col_shape_soft, vec2f_to_i(a->pos), b->col_shape_soft, vec2f_to_i(b->pos))) {
+                    if(shape_intersect(a->col_shape_soft, apos, b->col_shape_soft, bpos)) {
                         DEBUG("Soft collision!");
                         a->ev_collision(a,b,a->userdata,b->userdata);
                     }

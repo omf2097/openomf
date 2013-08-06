@@ -5,10 +5,44 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <stdlib.h>
+#include <string.h>
 
 ALCdevice *aldevice;
 ALCcontext *alctx;
 list streams;
+
+void audio_get_output_list(list *devlist) {
+    const ALCchar *device, *devices, *next;
+    size_t len;
+
+    if(alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT") == AL_TRUE) { 
+        devices = alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
+        device = devices;
+        next = devices + 1;
+        len = 0;
+
+        while(device && *device != '\0' && next && *next != '\n') {
+            len = strlen(device);
+            list_append(devlist, device, len+1);
+            device += (len + 1);
+            next += (len + 2);
+        }
+    }
+}
+
+void audio_debug_print_output_devs() {
+    list dev_list;
+    iterator it;
+    char *tmp;
+    list_create(&dev_list);
+    audio_get_output_list(&dev_list);
+    list_iter_begin(&dev_list, &it);
+    DEBUG("Audio output devices:");
+    while((tmp = iter_next(&it)) != NULL) {
+        DEBUG(" * %s", tmp);
+    }
+    list_free(&dev_list);
+}
 
 int audio_init() {
     // Initialize device
@@ -30,6 +64,8 @@ int audio_init() {
     DEBUG(" * Vendor:      %s", alGetString(AL_VENDOR));
     DEBUG(" * Renderer:    %s", alGetString(AL_RENDERER));
     DEBUG(" * Version:     %s", alGetString(AL_VERSION));
+    
+    audio_debug_print_output_devs();
     return 0;
 }
 
