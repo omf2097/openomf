@@ -278,7 +278,7 @@ void video_render_background(texture *tex) {
     texture_unbind();
 }
 
-void video_render_char(texture *tex, int sx, int sy, unsigned char r, unsigned char g, unsigned char b) {
+void video_render_char(texture *tex, int sx, int sy, color c) {
     // Alpha testing
     video_set_rendering_mode(BLEND_ALPHA);
 
@@ -288,14 +288,14 @@ void video_render_char(texture *tex, int sx, int sy, unsigned char r, unsigned c
     float x = -1.0 + 2.0f * sx / 320.0f;
     float y = 1.0 - sy / 100.0f - h;
     texture_bind(tex);
+    glColor3f(c.r/255.0f, c.g/255.0f, c.b/255.0f);
     glBegin(GL_QUADS);
-        glColor3f(r/255.0f,g/255.0f,b/255.0f);
         glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
         glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
         glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
         glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
-        glColor3f(1.0f,1.0f,1.0f);
     glEnd();
+    glColor3f(1.0f,1.0f,1.0f);
 }
 
 void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mode) {
@@ -346,6 +346,24 @@ void video_render_sprite_flip(texture *tex, int sx, int sy, unsigned int renderi
     glEnd();
 }
 
+void video_render_colored_quad(int _x, int _y, int _w, int _h, color c) {
+    // Alpha testing
+    video_set_rendering_mode(BLEND_ALPHA_FULL);
+
+    // Just draw the texture on screen to the right spot.
+    float w = _w / 160.0f;
+    float h = _h / 100.0f;
+    float x = -1.0 + 2.0f * _x / 320.0f;
+    float y = 1.0 - _y / 100.0f - h;
+    glColor4f(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
+    glBegin(GL_QUADS);
+        glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
+        glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
+        glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
+        glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
+    glEnd();
+    glColor3f(1.0f,1.0f,1.0f);
+}
 
 void video_render_finish() {
     // Render to screen instead of FBO

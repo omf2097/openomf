@@ -92,7 +92,7 @@ void font_render_char(font *font, char ch, int x, int y, color c) {
         return;
     }
     tex = vector_get(&font->textures, code);
-    video_render_char(*tex, x, y, c.r, c.g, c.b);
+    video_render_char(*tex, x, y, c);
 }
 
 void font_render_len(font *font, const char *text, int len, int x, int y, color c) {

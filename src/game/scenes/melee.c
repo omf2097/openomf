@@ -382,7 +382,7 @@ int melee_event(scene *scene, SDL_Event *event) {
 void render_highlights(scene *scene) {
     int trans;
     if (scene->player2.selectable && row_a == row_b && column_a == column_b) {
-        video_render_char(&select_hilight, 11 + (62*column_a), 115 + (42*row_a), 250 - ticks , 0, 250 - ticks);
+        video_render_char(&select_hilight, 11 + (62*column_a), 115 + (42*row_a), color_create(250-ticks, 0, 250-ticks, 0));
     } else {
         if (scene->player2.selectable) {
             if (done_b) {
@@ -390,14 +390,14 @@ void render_highlights(scene *scene) {
             } else {
                 trans = 250 - ticks;
             }
-            video_render_char(&select_hilight, 11 + (62*column_b), 115 + (42*row_b), 0 , 0, trans);
+            video_render_char(&select_hilight, 11 + (62*column_b), 115 + (42*row_b), color_create(0, 0, trans, 0));
         }
         if (done_a) {
                 trans = 250;
             } else {
                 trans = 250 - ticks;
             }
-        video_render_char(&select_hilight, 11 + (62*column_a), 115 + (42*row_a), trans, 0, 0);
+        video_render_char(&select_hilight, 11 + (62*column_a), 115 + (42*row_a), color_create(trans, 0, 0, 0));
     }
 }
 
