@@ -27,6 +27,11 @@
 #include <string.h>
 #include <shadowdive/shadowdive.h>
 
+#ifdef DEBUGMODE
+    #include "utils/vector.h"
+    #include "game/physics/shape_rect.h"
+#endif
+
 #define BAR_COLOR_BG color_create(89,40,101,255)
 #define BAR_COLOR_TL_BORDER color_create(60,0,60,255)
 #define BAR_COLOR_BR_BORDER color_create(178,0,223,255)
@@ -455,6 +460,18 @@ void arena_render(scene *scene) {
         font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
     }
 
+#ifdef DEBUGMODE
+    iterator it;
+    vector_iter_begin(&global_space->objects, &it);
+    object **o;
+    while((o = (object**)iter_next(&it)) != NULL) {
+        if((*o)->col_shape_hard->type == SHAPE_TYPE_RECT) {
+            vec2i size = shape_rect_get_size((*o)->col_shape_hard);
+            video_render_colored_quad(object_get_px(*o), object_get_py(*o), size.x, size.y, color_create(128,90,90,128));
+        }
+    }
+#endif
+    
     // Draw menu if necessary
     if(local->menu_visible) {
         menu_render(&local->game_menu);

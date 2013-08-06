@@ -350,18 +350,20 @@ void video_render_colored_quad(int _x, int _y, int _w, int _h, color c) {
     // Alpha testing
     video_set_rendering_mode(BLEND_ALPHA_FULL);
 
-    // Just draw the texture on screen to the right spot.
+    // Just draw the quad on screen to the right spot.
     float w = _w / 160.0f;
     float h = _h / 100.0f;
     float x = -1.0 + 2.0f * _x / 320.0f;
     float y = 1.0 - _y / 100.0f - h;
+    glDisable(GL_TEXTURE_2D);
     glColor4f(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
     glBegin(GL_QUADS);
-        glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
-        glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
-        glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
-        glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
+        glVertex3f(x+w, y+h, 0); // Top Right
+        glVertex3f(x,   y+h, 0); // Top Left
+        glVertex3f(x,   y,   0); // Bottom Left
+        glVertex3f(x+w, y,   0); // Bottom Right
     glEnd();
+    glEnable(GL_TEXTURE_2D);
     glColor3f(1.0f,1.0f,1.0f);
 }
 

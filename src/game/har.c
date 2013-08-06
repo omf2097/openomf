@@ -295,6 +295,7 @@ int har_init(har *har, int x, int y) {
     har->player.del_player = har_set_ani_finished;
     har->hit_this_time = 0;
     animationplayer_run(&har->player);
+    DEBUG("HAR Created @ %d,%d", x, y);
     return 0;
 }
 
