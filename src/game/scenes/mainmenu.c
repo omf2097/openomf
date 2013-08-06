@@ -2,6 +2,7 @@
 #include <shadowdive/shadowdive.h>
 #include <enet/enet.h>
 #include <time.h>
+#include <stdio.h>
 #include "engine.h"
 #include "utils/log.h"
 #include "game/text/text.h"
@@ -37,6 +38,11 @@ struct resolution_t {
 
 time_t connect_start;
 
+time_t video_accept_timer;
+settings_video old_video_settings;
+int video_accept_secs = 0;
+char video_accept_label[100];
+
 menu *current_menu;
 menu main_menu;
 component oneplayer_button;
@@ -49,6 +55,11 @@ component help_button;
 component demo_button;
 component scoreboard_button;
 component quit_button;
+
+menu video_confirm_menu;
+component video_confirm_header;
+component video_confirm_cancel;
+component video_confirm_ok;
 
 menu net_menu;
 component net_header;
@@ -208,10 +219,33 @@ void mainmenu_prev_menu(component *c, void *userdata) {
     current_menu = mstack[mstack_pos-1];
 }
 
+void video_options_enter(component *c, void *userdata) {
+    mainmenu_enter_menu(c, userdata);
+    old_video_settings = settings_get()->video;
+}
+
 void video_done_clicked(component *c, void *userdata) {    
     settings_video *v = &settings_get()->video;
     video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
+    mainmenu_prev_menu(c, userdata);
     
+    if (old_video_settings.screen_w != v->screen_w || 
+        old_video_settings.screen_h != v->screen_h ||
+        old_video_settings.fullscreen != v->fullscreen) {
+        // Resolution confirmation dialog
+        mainmenu_enter_menu(c, &video_confirm_menu);
+        time(&video_accept_timer);
+        video_accept_secs = 20;
+        if(sprintf(video_accept_label, "ACCEPT NEW RESOLUTION? %d", video_accept_secs) > 0) {
+            ((textbutton*)video_confirm_header.obj)->text = video_accept_label;
+        }
+    }
+}
+
+void video_confirm_cancel_clicked(component *c, void *userdata) {
+    settings_video *v = &settings_get()->video;
+    *v = old_video_settings;
+    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
     mainmenu_prev_menu(c, userdata);
 }
 
@@ -333,7 +367,24 @@ int mainmenu_init(scene *scene) {
 
     gameplay_button.userdata = (void*)&gameplay_menu;
     gameplay_button.click = mainmenu_enter_menu;
-
+    
+    // Video confirmation dialog
+    menu_create(&video_confirm_menu, 10, 80, 300, 40);
+    textbutton_create(&video_confirm_header, &font_large, "ACCEPT NEW RESOLUTION?");
+    textbutton_create(&video_confirm_cancel, &font_large, "CANCEL");
+    textbutton_create(&video_confirm_ok, &font_large, "OK");
+    menu_attach(&video_confirm_menu, &video_confirm_header, 11);
+    menu_attach(&video_confirm_menu, &video_confirm_cancel, 11);
+    menu_attach(&video_confirm_menu, &video_confirm_ok, 11);
+    
+    video_confirm_header.disabled = 1;
+    menu_select(&video_confirm_menu, &video_confirm_cancel);
+    
+    video_confirm_cancel.click = video_confirm_cancel_clicked;
+    
+    video_confirm_ok.click = mainmenu_prev_menu;
+    
+    
     // network play menu
     menu_create(&net_menu, 165, 5, 151, 119);
     textbutton_create(&net_header, &font_large, "NETWORK PLAY");
@@ -404,7 +455,7 @@ int mainmenu_init(scene *scene) {
     menu_attach(&config_menu, &config_done_button, 11);
     
     video_options_button.userdata = (void*)&video_menu;
-    video_options_button.click = mainmenu_enter_menu;
+    video_options_button.click = video_options_enter;
 
     config_header.disabled = 1;
     menu_select(&config_menu, &playerone_input_button);
@@ -545,6 +596,20 @@ void mainmenu_deinit(scene *scene) {
 
 void mainmenu_tick(scene *scene) {
     menu_tick(current_menu);
+    if (mstack[mstack_pos-1] == &video_confirm_menu) {
+        if (difftime(time(NULL), video_accept_timer) >= 1.0) {
+            time(&video_accept_timer);
+            video_accept_secs--;
+            if(sprintf(video_accept_label, "ACCEPT NEW RESOLUTION? %d", video_accept_secs) > 0) {
+                ((textbutton*)video_confirm_header.obj)->text = video_accept_label;
+            }
+        }
+        
+        if (video_accept_secs == 0) {
+            video_confirm_cancel.click(&video_confirm_cancel, video_confirm_cancel.userdata);
+        }
+    }
+
     if (host) {
         ENetEvent event;
         if (enet_host_service(host, &event, 0) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
