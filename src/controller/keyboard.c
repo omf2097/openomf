@@ -1,5 +1,6 @@
 #include "controller/keyboard.h"
 #include "utils/log.h"
+#include <stdlib.h>
 
 void keyboard_free(controller *ctrl) {
     keyboard *k = ctrl->data;
