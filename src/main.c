@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
     
     // Initialize engine
     if(engine_init()) {
+        PERROR("Failed to initialize game engine.");
         goto exit_3;
     }
     
@@ -71,9 +72,9 @@ int main(int argc, char *argv[]) {
     // Close everything
     engine_close();
 exit_3:
-    SDL_Quit();
-exit_2:
     enet_deinitialize();
+exit_2:
+    SDL_Quit();
 exit_1:
     dumb_exit();
     settings_save();
