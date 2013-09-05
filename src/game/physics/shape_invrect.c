@@ -11,8 +11,6 @@ void shape_invrect_create(shape *shape, int w, int h) {
     irect->size.y = h;
     shape->type = SHAPE_TYPE_INVRECT;
     shape->data = irect;
-    shape->comp.x = 30;
-    shape->comp.y = 0;
     shape->free = shape_invrect_free;
 }
 

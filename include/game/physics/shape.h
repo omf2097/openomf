@@ -14,7 +14,6 @@ enum {
 typedef struct shape_t {
     void *data;
     int type;
-    vec2i comp;
     void (*free)(void *d);
 } shape;
 

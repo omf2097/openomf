@@ -164,9 +164,10 @@ int arena_init(scene *scene) {
 
     // Arena constraints
     shape *arena_shape = malloc(sizeof(shape));
-    shape_invrect_create(arena_shape, 320, 200);
+    shape_invrect_create(arena_shape, 300, 190);
     object_create(&local->arena_obj, 0, 0, 0, 0);
     object_set_static(&local->arena_obj, 1);
+    object_set_pos(&local->arena_obj, 10, 0);
     object_set_hard_shape(&local->arena_obj, arena_shape);
     object_set_layers(&local->arena_obj, LAYER_HAR|LAYER_SCRAP);
     physics_space_add(&local->arena_obj);
@@ -468,11 +469,11 @@ void arena_render(scene *scene) {
     while((o = (object**)iter_next(&it)) != NULL) {
         if((*o)->col_shape_hard->type == SHAPE_TYPE_RECT) {
             size = shape_rect_get_size((*o)->col_shape_hard);
-            pos = vec2i_add(vec2f_to_i((*o)->pos), (*o)->col_shape_hard->comp);
+            pos = vec2f_to_i((*o)->pos);
             video_render_colored_quad(pos.x, pos.y, size.x, size.y, color_create(190,120,120,128));
         } else if((*o)->col_shape_hard->type == SHAPE_TYPE_INVRECT) {
             size = shape_invrect_get_size((*o)->col_shape_hard);
-            pos = vec2i_add(vec2f_to_i((*o)->pos), (*o)->col_shape_hard->comp);
+            pos = vec2f_to_i((*o)->pos);
             video_render_colored_quad(pos.x, pos.y, size.x, size.y, color_create(120,190,120,128));
         }
     }

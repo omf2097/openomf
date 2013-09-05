@@ -7,12 +7,19 @@
 #define OBJECT_DEFAULT_LAYER 0x01
 #define OBJECT_NO_GROUP -1
 
+enum {
+    OBJECT_STABLE = 0,
+    OBJECT_MOVING
+};
+
 typedef struct object_t object;
 typedef void (*ev_collision_callback)(const object *a, const object *b, void *userdata_a, void *userdata_b);
 
 struct object_t {
     vec2f pos;
     vec2f vel;
+    int vstate;
+    int hstate;
     shape *col_shape_hard;
     shape *col_shape_soft;
     float gravity;
@@ -35,6 +42,9 @@ void object_set_gravity(object *obj, float gravity);
 void object_set_hard_shape(object *obj, shape *sh);
 void object_set_soft_shape(object *obj, shape *sh);
 void object_set_static(object *obj, int is_static);
+
+void object_reset_hstate(object *obj);
+void object_reset_vstate(object *obj);
 
 int  object_get_px(object *obj);
 int  object_get_py(object *obj);

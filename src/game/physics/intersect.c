@@ -31,12 +31,13 @@ int intersect_rect_rect(vec2i rac, vec2i ras, vec2i rbc, vec2i rbs) {
 }
 
 int intersect_rect_invrect(vec2i rac, vec2i ras, vec2i rbc, vec2i rbs) {
-    return (
+    int ok = (
         (rac.x + ras.x) > (rbc.x + rbs.x) ||
         (rac.y + ras.y) > (rbc.y + rbs.y) ||
         rac.x < rbc.x ||
         rac.y < rbc.y
     );
+    return ok;
 }
 
 int intersect_point_point(vec2i a, vec2i b) {
@@ -49,28 +50,39 @@ int intersect_point_point(vec2i a, vec2i b) {
 int shape_intersect(shape *a, vec2i ca, shape *b, vec2i cb) {
     if(a->type == b->type) {
         switch(a->type) {
-            case SHAPE_TYPE_RECT: return intersect_rect_rect(ca, shape_rect_get_size(a), cb, shape_rect_get_size(b));
-            case SHAPE_TYPE_POINT: return intersect_point_point(ca, cb);
+            case SHAPE_TYPE_RECT: 
+                return intersect_rect_rect(ca, shape_rect_get_size(a), 
+                                           cb, shape_rect_get_size(b));
+            case SHAPE_TYPE_POINT: 
+                return intersect_point_point(ca, cb);
         };
     }
 
     switch(a->type) {
         case SHAPE_TYPE_RECT:
             switch(b->type) {
-                case SHAPE_TYPE_POINT: return intersect_point_rect(cb, ca, shape_rect_get_size(a));
-                case SHAPE_TYPE_INVRECT: return intersect_rect_invrect(ca, shape_rect_get_size(a), cb, shape_invrect_get_size(b));
+                case SHAPE_TYPE_POINT: 
+                    return intersect_point_rect(cb, ca, shape_rect_get_size(a));
+                case SHAPE_TYPE_INVRECT: 
+                    return intersect_rect_invrect(ca, shape_rect_get_size(a), 
+                                                  cb, shape_invrect_get_size(b));
             };
             break;
         case SHAPE_TYPE_POINT:
             switch(b->type) {
-                case SHAPE_TYPE_RECT: return intersect_point_rect(ca, cb, shape_rect_get_size(b));
-                case SHAPE_TYPE_INVRECT: return intersect_point_invrect(ca, cb, shape_invrect_get_size(b));
+                case SHAPE_TYPE_RECT: 
+                    return intersect_point_rect(ca, cb, shape_rect_get_size(b));
+                case SHAPE_TYPE_INVRECT: 
+                    return intersect_point_invrect(ca, cb, shape_invrect_get_size(b));
             };
             break;
         case SHAPE_TYPE_INVRECT:
             switch(b->type) {
-                case SHAPE_TYPE_POINT: return intersect_point_invrect(cb, ca, shape_invrect_get_size(a));
-                case SHAPE_TYPE_RECT: return intersect_rect_invrect(cb, shape_rect_get_size(b), ca, shape_invrect_get_size(a));
+                case SHAPE_TYPE_POINT: 
+                    return intersect_point_invrect(cb, ca, shape_invrect_get_size(a));
+                case SHAPE_TYPE_RECT: 
+                    return intersect_rect_invrect(cb, shape_rect_get_size(b), 
+                                                  ca, shape_invrect_get_size(a));
             };
             break;
     };
