@@ -121,77 +121,6 @@ int har_on_ground(har *har) {
     return 1;
 }
 
-/*
-void phycb_fall(physics_state *state, void *userdata) {
-    har *h = userdata;
-    if (h->state == STATE_JUMPING) {
-        animationplayer_next_frame(&h->player);
-        if(h->player.id == ANIM_JUMPING && h->phy.spd.x*h->direction < 0) {
-            animationplayer_goto_frame(&h->player, sd_stringparser_num_frames(h->player.parser)-1);
-            h->player.reverse = 1;
-        }
-        DEBUG("switching to falling");
-    }
-}
-
-void phycb_floor_hit(physics_state *state, void *userdata, int flight_mode) {
-    DEBUG("Hit the floor");
-
-    har *h = userdata;
-    h->player.reverse = 0;
-    h->player.finished = 1;
-    if (h->state == STATE_JUMPING) {
-        h->state = STATE_STANDING;
-        // XXX-Hunter adding this line seem to have fixed the bunnyhop bug
-        physics_move(&h->phy, 0.0f);
-        DEBUG("stopped jumping");
-    } else if (h->state == STATE_RECOIL) {
-        DEBUG("crashed into ground");
-        har_switch_animation(h, ANIM_STANDUP);
-        physics_move(&h->phy, 0.0f);
-        //h->state = STATE_STANDING;
-    }
-}
-
-void phycb_stop(physics_state *state, void *userdata) {
-    har *h = userdata;
-    if(h->state != STATE_STANDING && h->state != STATE_SCRAP && h->state != STATE_DESTRUCTION && h->state != STATE_RECOIL) {
-        h->state = STATE_STANDING;
-        har_switch_animation(h, ANIM_IDLE);
-        animationplayer_set_repeat(&h->player, 1);
-        DEBUG("switching to idle");
-    }
-}
-
-void phycb_jump(physics_state *state, void *userdata) {
-    har *h = userdata;
-    h->state = STATE_JUMPING;
-    har_switch_animation(h, ANIM_JUMPING);
-    DEBUG("switching to jumping");
-}
-
-void phycb_move(physics_state *state, void *userdata) {
-    har *h = userdata;
-    if (h->state != STATE_RECOIL) {
-        h->state = STATE_WALKING;
-        har_switch_animation(h, ANIM_WALKING);
-        animationplayer_set_repeat(&h->player, 1);
-        DEBUG("switching to walking");
-        // TODO: Handle reverse animation if necessary
-    }
-}
-
-void phycb_crouch(physics_state *state, void *userdata) {
-    har *h = userdata;
-    if(h->state != STATE_CROUCHING) {
-        h->state = STATE_CROUCHING;
-        har_switch_animation(h, ANIM_CROUCHING);
-        //animationplayer_set_repeat(&h->player, 1);
-        DEBUG("crouching");
-    }
-}
-*/
-
 int har_load(har *h, sd_palette *pal, int id, int direction) {
     list_create(&h->hooks);
 
@@ -305,7 +234,7 @@ void har_collision_wall(object *har, object *wall) {
      }
 }
 
-void har_collision_har(object *a, object *b) {
+void har_collision_har(object *a, object *b, har *har_a, har *har_b) {
 
 }
 
@@ -316,13 +245,13 @@ void har_collision_cb(object *a, object *b, void *userdata_a, void *userdata_b) 
     switch(as->type) {
         case SHAPE_TYPE_RECT:
             switch(bs->type) {
-                case SHAPE_TYPE_RECT: har_collision_har(a, b);
-                case SHAPE_TYPE_INVRECT: har_collision_wall(a, b);
+                case SHAPE_TYPE_RECT: har_collision_har(a, b, (har*)userdata_a, (har*)userdata_b); break;
+                case SHAPE_TYPE_INVRECT: har_collision_wall(a, b); break;
             };
             break;
         case SHAPE_TYPE_INVRECT:
             switch(bs->type) {
-                case SHAPE_TYPE_RECT: har_collision_wall(b, a);
+                case SHAPE_TYPE_RECT: har_collision_wall(b, a); break;
             };
             break;
     };
