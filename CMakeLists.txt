@@ -78,7 +78,6 @@ add_executable(openomf
     src/game/physics/shape_rect.c
     src/game/physics/shape_invrect.c
     src/game/physics/intersect.c
-    src/game/physics/collisions.c
     src/controller/controller.c
     src/controller/keyboard.c
     src/controller/net_controller.c

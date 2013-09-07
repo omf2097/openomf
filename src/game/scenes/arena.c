@@ -168,7 +168,7 @@ int arena_init(scene *scene) {
     object_create(&local->arena_obj, 0, 0, 0, 0);
     object_set_static(&local->arena_obj, 1);
     object_set_pos(&local->arena_obj, 10, 0);
-    object_set_hard_shape(&local->arena_obj, arena_shape);
+    object_set_shape(&local->arena_obj, arena_shape);
     object_set_layers(&local->arena_obj, LAYER_HAR|LAYER_SCRAP);
     physics_space_add(&local->arena_obj);
     
@@ -330,23 +330,19 @@ void arena_tick(scene *scene) {
         i = p1;
         if (i) {
             do {
-                /*DEBUG("har 1 act %d", i->action);*/
                 har_act(scene->player1.har, i->action);
             } while((i = i->next));
-            /*DEBUG("done");*/
         }
         i = p2;
         if (i) {
             do {
-                /*DEBUG("har 2 act %d", i->action);*/
                 har_act(scene->player2.har, i->action);
             } while((i = i->next));
-            /*DEBUG("done");*/
         }
         
         // Collision detections
-        har_collision_har(scene->player1.har, scene->player2.har);
-        har_collision_har(scene->player2.har, scene->player1.har);
+        //har_collision_har(scene->player1.har, scene->player2.har);
+        //har_collision_har(scene->player2.har, scene->player1.har);
         // XXX this can't go in har.c because of a typedef loop on OSX
         //har_collision_scene(scene->player1.har, scene);
         //har_collision_scene(scene->player2.har, scene);
@@ -467,12 +463,12 @@ void arena_render(scene *scene) {
     object **o;
     vec2i pos, size;
     while((o = (object**)iter_next(&it)) != NULL) {
-        if((*o)->col_shape_hard->type == SHAPE_TYPE_RECT) {
-            size = shape_rect_get_size((*o)->col_shape_hard);
+        if((*o)->col_shape->type == SHAPE_TYPE_RECT) {
+            size = shape_rect_get_size((*o)->col_shape);
             pos = vec2f_to_i((*o)->pos);
             video_render_colored_quad(pos.x, pos.y, size.x, size.y, color_create(190,120,120,128));
-        } else if((*o)->col_shape_hard->type == SHAPE_TYPE_INVRECT) {
-            size = shape_invrect_get_size((*o)->col_shape_hard);
+        } else if((*o)->col_shape->type == SHAPE_TYPE_INVRECT) {
+            size = shape_invrect_get_size((*o)->col_shape);
             pos = vec2f_to_i((*o)->pos);
             video_render_colored_quad(pos.x, pos.y, size.x, size.y, color_create(120,190,120,128));
         }

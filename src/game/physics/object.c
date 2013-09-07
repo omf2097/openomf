@@ -15,23 +15,21 @@ void object_create(object *obj, int px, int py, float vx, float vy) {
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = OBJECT_NO_GROUP;
     obj->userdata = NULL;
-    obj->col_shape_hard = NULL;
-    obj->col_shape_soft = NULL;
+    obj->col_shape = NULL;
     obj->ev_collision = NULL;
     obj->gravity = 0.0f;
 }
 
 void object_free(object *obj) {
-    if(obj->col_shape_soft != NULL) {
-        shape_free(obj->col_shape_soft);
-        free(obj->col_shape_soft);
-        obj->col_shape_soft = NULL;
+    if(obj->col_shape != NULL) {
+        shape_free(obj->col_shape);
+        free(obj->col_shape);
+        obj->col_shape = NULL;
     }
-    if(obj->col_shape_hard != NULL) { 
-        shape_free(obj->col_shape_hard);
-        free(obj->col_shape_hard);
-        obj->col_shape_hard = NULL;
-    }
+}
+
+void object_set_userdata(object *obj, void *ptr) {
+    obj->userdata = ptr;
 }
 
 void object_ev_cb_register(object *obj, ev_collision_callback cb) {
@@ -50,16 +48,32 @@ void object_set_gravity(object *obj, float gravity) {
     obj->gravity = gravity;
 }
 
-void object_set_hard_shape(object *obj, shape *sh) {
-    obj->col_shape_hard = sh;
-}
-
-void object_set_soft_shape(object *obj, shape *sh) {
-    obj->col_shape_soft = sh;
+void object_set_shape(object *obj, shape *shape) {
+    obj->col_shape = shape;
 }
 
 void object_set_static(object *obj, int is_static) {
     obj->is_static = is_static;
+}
+
+shape* object_get_shape(object *obj) {
+    return obj->col_shape;
+}
+
+int object_is_static(object *obj) {
+    return obj->is_static;
+}
+
+int object_get_gravity(object *obj) {
+    return obj->gravity;
+}
+
+int object_get_group(object *obj) {
+    return obj->group;
+}
+
+int object_get_layers(object *obj) {
+    return obj->layers;
 }
 
 void object_reset_vstate(object *obj) {

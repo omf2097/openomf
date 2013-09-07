@@ -1,6 +1,5 @@
 #include "game/physics/space.h"
 #include "game/physics/intersect.h"
-#include "game/physics/collisions.h"
 #include "utils/log.h"
 #include <stdlib.h>
 
@@ -14,7 +13,6 @@ void physics_space_init() {
 void physics_space_tick() {
     iterator it;
     object *a, *b, **t;
-    vec2i apos,bpos;
     unsigned int size;
 
     // Handle movement
@@ -37,17 +35,16 @@ void physics_space_tick() {
             if((a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) && 
                 a->layers & b->layers) {
 
-                apos = vec2f_to_i(a->pos);
-                bpos = vec2f_to_i(b->pos);
-                if(a->col_shape_hard != NULL && b->col_shape_hard != NULL) {
-                    if(shape_intersect(a->col_shape_hard, apos, 
-                                       b->col_shape_hard, bpos)) {
-                        collision_handle(a, b);
-                    }
-                }
-                if(a->col_shape_soft != NULL && b->col_shape_soft != NULL) {
-                    if(shape_intersect(a->col_shape_soft, apos, b->col_shape_soft, bpos)) {
-                        a->ev_collision(a,b,a->userdata,b->userdata);
+                if(a->col_shape != NULL && b->col_shape != NULL) {
+                    if(shape_intersect(a->col_shape, vec2f_to_i(a->pos), 
+                                       b->col_shape, vec2f_to_i(b->pos))) {
+
+                        // Try calling collision handler for one of the objects
+                        if(a->ev_collision != NULL) {
+                            a->ev_collision(a,b,a->userdata,b->userdata);
+                        } else if(b->ev_collision != NULL) {
+                            b->ev_collision(a,b,a->userdata,b->userdata);
+                        }
                     }
                 }
             }

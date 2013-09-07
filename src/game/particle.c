@@ -16,7 +16,7 @@ int particle_create(particle *p, unsigned int id, animation *ani, int dir, int p
     shape_rect_create(particle_shape, 10, 10);
     object_create(&p->pobj, px, py, vx, vy);
     object_set_gravity(&p->pobj, gravity);
-    object_set_hard_shape(&p->pobj, particle_shape);
+    object_set_shape(&p->pobj, particle_shape);
     physics_space_add(&p->pobj);
     animationplayer_create(&p->player, id, ani, &p->pobj);
     animationplayer_set_direction(&p->player, dir);

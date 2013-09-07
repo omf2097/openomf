@@ -139,14 +139,13 @@ void har_tick(har *har); // Called by scene.c tick function at every game tick
 void har_render(har *har); // Called by scene.h render function at every frame render
 void har_act(har *har, int act_type); // Handle event passed from inputhandler
 void har_set_direction(har *har, int direction);
+/*
 void har_collision_har(har *har_a, har *har_b);
-void har_collision_particle(har *har); // TODO: Think about this
+void har_collision_particle(har *har);
+*/
 void har_take_damage(har *har, int amount, const char *string);
-
 int har_is_grounded(har *har);
-
 void har_parse_command(har *har, char *buf);
-
 void har_add_hook(har *har, void(*fp)(char* msg, void *userdata), void *userdata);
 
 #endif // _HAR_H

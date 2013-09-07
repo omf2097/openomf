@@ -6,6 +6,8 @@
 #include "utils/array.h"
 #include "utils/list.h"
 #include "game/physics/space.h"
+#include "game/physics/shape_rect.h"
+#include "game/physics/shape_invrect.h"
 #include "game/physics/object.h"
 #include "game/physics/shape.h"
 #include "game/physics/shape_rect.h"
@@ -278,13 +280,63 @@ int har_load(har *h, sd_palette *pal, int id, int direction) {
     return 0;
 }
 
+void har_collision_wall(object *har, object *wall) {
+    shape *hs = object_get_shape(har);
+    shape *ws = object_get_shape(wall);
+
+    if((har->pos.x + shape_rect_get_size(hs).x) >= (wall->pos.x + shape_invrect_get_size(ws).x)) {
+        object_set_px(har, (wall->pos.x + shape_invrect_get_size(ws).x) - shape_rect_get_size(hs).x);
+        object_set_vx(har, 0.0f);
+        object_reset_vstate(har);
+    } else if(har->pos.x < wall->pos.x) {
+        object_set_px(har, wall->pos.x);
+        object_set_vx(har, 0.0f);
+        object_reset_vstate(har);
+    }
+
+    if((har->pos.y + shape_rect_get_size(hs).y) >= (wall->pos.y + shape_invrect_get_size(ws).y)) {
+        object_set_py(har, (wall->pos.y + shape_invrect_get_size(ws).y - shape_rect_get_size(hs).y));
+        object_set_vy(har, 0.0f);
+        object_reset_hstate(har);
+    } else if(har->pos.y <= wall->pos.y) {
+        object_set_py(har, wall->pos.y);
+        object_set_vy(har, 0.1f);
+        object_reset_hstate(har);
+     }
+}
+
+void har_collision_har(object *a, object *b) {
+
+}
+
+void har_collision_cb(object *a, object *b, void *userdata_a, void *userdata_b) {
+    // Handle shape specific stuff
+    shape *as = object_get_shape(a);
+    shape *bs = object_get_shape(b);
+    switch(as->type) {
+        case SHAPE_TYPE_RECT:
+            switch(bs->type) {
+                case SHAPE_TYPE_RECT: har_collision_har(a, b);
+                case SHAPE_TYPE_INVRECT: har_collision_wall(a, b);
+            };
+            break;
+        case SHAPE_TYPE_INVRECT:
+            switch(bs->type) {
+                case SHAPE_TYPE_RECT: har_collision_wall(b, a);
+            };
+            break;
+    };
+}
+
 int har_init(har *har, int x, int y) {
     shape *har_shape = malloc(sizeof(shape));
     shape_rect_create(har_shape, 20, 20);
     object_create(&har->pobj, x, y, 0, 0);
     object_set_gravity(&har->pobj, 1.0f);
     object_set_layers(&har->pobj, LAYER_HAR);
-    object_set_hard_shape(&har->pobj, har_shape);
+    object_set_shape(&har->pobj, har_shape);
+    object_ev_cb_register(&har->pobj, har_collision_cb);
+    object_set_userdata(&har->pobj, har);
     physics_space_add(&har->pobj);
     // Start player with animation 11
     animationplayer_create(&har->player, ANIM_IDLE, array_get(&har->animations, ANIM_IDLE), &har->pobj);
@@ -387,6 +439,7 @@ void har_spawn_scrap(har *h, int x, int y, int direction) {
     }
 }
 
+/*
 int check_collision(har *har_a, har *har_b, sd_animation *ani, int frame_id, sd_sprite *sprite, sd_vga_image *vga) {
     int x,y;
     object_get_pos(&har_b->pobj, &x, &y);
@@ -454,11 +507,10 @@ int check_collision(har *har_a, har *har_b, sd_animation *ani, int frame_id, sd_
 
                         // TODO: Move this elsewhere, possibly to har_take_damage
                         har_spawn_scrap(
-                                har_b, 
-                                object_get_px(&har_b->pobj) + (sprite->img->w - xcoord), 
-                                object_get_py(&har_b->pobj) - (sprite->img->h - ycoord), 
-                                har_a->direction
-                        );
+                            har_b, 
+                            object_get_px(&har_b->pobj) + (sprite->img->w - xcoord), 
+                            object_get_py(&har_b->pobj) - (sprite->img->h - ycoord), 
+                            har_a->direction);
 
                         DEBUG("hit point was %d, %d -- %d", xcoord, ycoord, h+sprite->pos_y);
                         hit = 1;
@@ -581,6 +633,7 @@ void har_collision_har(har *har_a, har *har_b) {
 
     har_a->close = 0;
 
+    
     if (har_a->state == STATE_WALKING && har_a->direction == -1) {
         // walking towards the enemy
         // 35 is a made up number that 'looks right'
@@ -600,17 +653,17 @@ void har_collision_har(har *har_a, har *har_b) {
             har_a->close = 1;
         }
     }
-}
+}*/
 
 void har_tick(har *har) {
     iterator it;
-    particle **p;
 
     har->tick++;
 
     // Handle ticks
     if(har->tick > 3) {
         // Particles
+        particle **p;
         list_iter_begin(&har->particles, &it);
         while((p = iter_next(&it)) != NULL) {
             if((*p)->finished) {
