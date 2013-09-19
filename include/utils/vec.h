@@ -19,5 +19,7 @@ vec2f vec2f_sub(vec2f a, vec2f b);
 vec2f vec2f_mult(vec2f a, vec2f b);
 vec2i vec2f_to_i(vec2f f);
 vec2f vec2i_to_f(vec2i i);
+vec2i vec2i_create(int x, int y);
+vec2f vec2f_create(float x, float y);
 
 #endif // _VEC_H

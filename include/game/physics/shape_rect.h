@@ -10,5 +10,6 @@ typedef struct shape_rect_t {
 
 void shape_rect_create(shape *shape, int w, int h);
 vec2i shape_rect_get_size(shape *shape);
+void shape_rect_set_size(shape *shape, vec2i size);
 
 #endif // _SHAPE_RECT_H

@@ -49,3 +49,17 @@ vec2f vec2i_to_f(vec2i i) {
     f.y = i.y;
     return f;
 }
+
+vec2i vec2i_create(int x, int y) {
+    vec2i v;
+    v.x = x;
+    v.y = y;
+    return v;
+}
+
+vec2f vec2f_create(float x, float y) {
+    vec2f v;
+    v.x = x;
+    v.y = y;
+    return v;
+}
