@@ -16,7 +16,7 @@ typedef struct sd_writer_t sd_writer;
 typedef struct sd_reader_t sd_reader;
 #endif
 
-typedef struct sprite_t {
+typedef struct sd_sprite_t {
     int16_t pos_x;
     int16_t pos_y;
     uint8_t index;
