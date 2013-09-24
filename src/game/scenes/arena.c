@@ -96,7 +96,6 @@ void sound_slide(component *c, void *userdata, int pos) {
 int arena_init(scene *scene) {
     settings *setting;
     arena_local *local;
-    /*cpVect grav;*/
     
     // Load up settings
     setting = settings_get();

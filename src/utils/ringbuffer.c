@@ -1,5 +1,5 @@
 /*
- * Buffer abstractions for serial.c.
+ * Generic ringbuffer
  *
  * Copyright (c) 2011, Tuomas Virtanen
  * license: MIT; see LICENSE for details.

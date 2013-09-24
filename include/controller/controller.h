@@ -2,8 +2,7 @@
 #define _CONTROLLER_H
 
 #include <SDL2/SDL.h>
-
-#include "game/har.h"
+#include "game/objects/har.h"
 
 enum {
     CTRL_TYPE_KEYBOARD,

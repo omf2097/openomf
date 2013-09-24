@@ -13,17 +13,15 @@ find_package(GLEW)
 find_package(Libintl)
 
 IF(MINGW)
-    set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
+    set(CMAKE_C_FLAGS "-Wall -std=c99 -Werror")
 ELSE(MINGW)
-    set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -pedantic -DDEBUGMODE")
+    set(CMAKE_C_FLAGS "-Wall -std=c99 -Werror -pedantic")
 ENDIF(MINGW)
 
-set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=native -Werror")
+set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE")
+set(CMAKE_C_FLAGS_RELEASE "-O2 -march=native")
 
 add_executable(openomf 
-    src/main.c
-    src/engine.c
     src/utils/log.c
     src/utils/config.c
     src/utils/list.c
@@ -33,6 +31,7 @@ add_executable(openomf
     src/utils/array.c
     src/utils/ringbuffer.c
     src/utils/vec.c
+    src/utils/string.c
     src/video/video.c
     src/video/texture.c
     src/video/fbo.c
@@ -48,13 +47,23 @@ add_executable(openomf
     src/audio/sound.c
     src/audio/stream.c
     src/audio/soundloader.c
+    src/resources/af.c
+    src/resources/af_loader.c
+    src/resources/af_move.c
+    src/resources/bk.c
+    src/resources/bk_info.c
+    src/resources/bk_loader.c
+    src/resources/palette.c
+    src/resources/sprite.c
+    src/resources/animation.c
     src/game/settings.c
-    src/game/scene.c
-    src/game/har.c
-    src/game/particle.c
     src/game/score.c
-    src/game/animation.c
-    src/game/animationplayer.c
+    src/game/game_state.c
+    src/game/protos/object.c
+    src/game/protos/player.c
+    src/game/protos/scene.c
+    src/game/objects/har.c
+    src/game/objects/particle.c
     src/game/scenes/progressbar.c
     src/game/scenes/intro.c
     src/game/scenes/mainmenu.c
@@ -72,16 +81,12 @@ add_executable(openomf
     src/game/menu/textslider.c
     src/game/menu/textinput.c
     src/game/menu/component.c
-    src/game/physics/object.c
-    src/game/physics/space.c
-    src/game/physics/shape.c
-    src/game/physics/shape_rect.c
-    src/game/physics/shape_invrect.c
-    src/game/physics/intersect.c
     src/controller/controller.c
     src/controller/keyboard.c
     src/controller/net_controller.c
     src/console/console.c
+    src/main.c
+    src/engine.c
 )
 
 set(COREINCS

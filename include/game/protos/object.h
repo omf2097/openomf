@@ -1,8 +1,11 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
+#include "resources/animation.h"
+#include "resources/sprite.h"
+#include "game/protos/player.h"
+
 #include "utils/vec.h"
-#include "game/physics/shape.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
 #define OBJECT_NO_GROUP -1
@@ -12,38 +15,45 @@ enum {
     OBJECT_MOVING
 };
 
-typedef struct object_t object;
-typedef void (*ev_collision_callback)(object *a, object *b, void *userdata_a, void *userdata_b);
+typedef struct sd_animation_t sd_animation;
 
-struct object_t {
+typedef struct object_t {
     vec2f pos;
     vec2f vel;
     int vstate;
     int hstate;
-    shape *col_shape;
     float gravity;
     
     int is_static;
     int group;
     int layers;
     
+    animation *cur_animation;
+    sprite *cur_sprite;
+    char *sound_translation_table;
+
+    player_sprite_state sprite_state;
+    player_animation_state animation_state;
+
     void *userdata;
-    ev_collision_callback ev_collision;
-};
+} object;
 
 void object_create(object *obj, int px, int py, float vx, float vy);
 void object_free(object *obj);
 
-void object_ev_cb_register(object *obj, ev_collision_callback cb);
+void object_set_animation(object *obj, animation *ani);
+void object_select_sprite(object *obj, int id);
+
+void object_tick(object *obj);
+void object_render(object *obj);
+
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);
 void object_set_gravity(object *obj, float gravity);
-void object_set_shape(object *obj, shape *shape);
 void object_set_static(object *obj, int is_static);
 
 void object_set_userdata(object *obj, void *ptr);
 
-shape* object_get_shape(object *obj);
 int object_is_static(object *obj);
 int object_get_gravity(object *obj);
 int object_get_group(object *obj);
@@ -51,6 +61,10 @@ int object_get_layers(object *obj);
 
 void object_reset_hstate(object *obj);
 void object_reset_vstate(object *obj);
+
+int object_get_w(object *obj);
+int object_get_h(object *obj);
+void object_get_size(object *obj, int *w, int *h);
 
 int  object_get_px(object *obj);
 int  object_get_py(object *obj);

@@ -9,9 +9,8 @@
 #include "video/texturelist.h"
 #include "video/video.h"
 #include "game/text/languages.h"
-#include "game/scene.h"
+#include "game/game_state.h"
 #include "game/settings.h"
-#include "game/physics/space.h"
 #include "console/console.h"
 #include <SDL2/SDL.h>
 
@@ -46,32 +45,32 @@ int engine_init() {
     if(console_init()) {
         return 1;
     }
-    physics_space_init();
     run = 1;
     return 0;
 }
 
 void engine_run() {
     DEBUG("Engine starting.");
-    scene scene;
-    scene.player1.har = NULL;
-    scene.player2.har = NULL;
-    scene.player1.ctrl = NULL;
-    scene.player2.ctrl = NULL;
 
-    // Load scene
-    if(scene_load(&scene, SCENE_INTRO)) {
+    // Set up game
+    game_state game;
+    if(game_state_create(&game)) {
         return;
     }
 
+    // Init players
+    for(int i = 0; i < 2; i++) {
+        game.player[i].har = NULL;
+        game.player[i].ctrl = NULL;
+    }
+
     // Game loop
-    unsigned int scene_start = SDL_GetTicks();
+    unsigned int frame_start = SDL_GetTicks();
     unsigned int omf_wait = 0;
-    while(run) {
+    while(run && game_state_is_running()) {
         // Prepare rendering here
         video_render_prepare();
     
-        
         // Handle events
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
@@ -79,6 +78,11 @@ void engine_run() {
             switch(e.type) {
                 case SDL_QUIT:
                     run = 0;
+                    break;
+                case SDL_KEYDOWN:
+                    if(e.key.keysym.sym == SDLK_F1) {
+                        take_screenshot = 1;
+                    }
                     break;
             }
         
@@ -97,43 +101,18 @@ void engine_run() {
             }
 
             // Send events to scene (if active)
-            if(!scene_handle_event(&scene, &e)) {
+            if(!game_state_handle_event(&scene, &e)) {
                 continue;
-            }
-        
-            // Handle other events
-            switch(e.type) {
-                case SDL_KEYDOWN:
-                    if(e.key.keysym.sym == SDLK_F1) {
-                        take_screenshot = 1;
-                    }
-                    break;
             }
         }
 
         // Render scene
-        int dt = SDL_GetTicks() - scene_start;
+        int dt = SDL_GetTicks() - frame_start;
         omf_wait += dt;
-        while(omf_wait > scene_ms_per_tick(&scene)) {
-            // Tick physics engine
-            physics_space_tick();
-            
+        while(omf_wait > game_state_ms_per_tick(&game)) {
             // Tick scene
-            scene_tick(&scene);
-            
-            // We want to load another scene
-            if(scene.this_id != scene.next_id) {
-                if(scene.next_id == SCENE_NONE) {
-                    run = 0;
-                    break;
-                }
-                unsigned int nid = scene.next_id;
-                scene_free(&scene);
-                if(scene_load(&scene, nid)) {
-                    return;
-                }
-            }
-            
+            game_state_tick(&game);
+
             // Tick console
             console_tick();
             
@@ -143,7 +122,7 @@ void engine_run() {
         scene_start = SDL_GetTicks();
 
         // Do the actual rendering jobs
-        scene_render(&scene);
+        game_state_render(&game);
         console_render();
         video_render_finish();
         audio_render(dt);
@@ -164,13 +143,12 @@ void engine_run() {
     }
     
     // Free scene object
-    scene_free(&scene);
+    game_state_free(&scene);
     
     DEBUG("Engine stopped.");
 }
 
 void engine_close() {
-    physics_space_close();
     console_close();
     fonts_close();
     lang_close();

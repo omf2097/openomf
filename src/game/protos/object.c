@@ -1,4 +1,4 @@
-#include "game/physics/object.h"
+#include "game/objects/object.h"
 #include <stdlib.h>
 
 #include "utils/log.h"
@@ -10,77 +10,64 @@ void object_create(object *obj, int px, int py, float vx, float vy) {
     obj->vel.y = vy;
     object_reset_vstate(obj);
     object_reset_hstate(obj);
-    DEBUG("Object created. pos = (%f, %f), vel = (%f, %f)", obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y);
     obj->is_static = 0;
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = OBJECT_NO_GROUP;
     obj->userdata = NULL;
-    obj->col_shape = NULL;
-    obj->ev_collision = NULL;
     obj->gravity = 0.0f;
+
+    obj->cur_animation = NULL;
+    obj->cur_sprite = NULL;
+    obj->sound_translation_table = NULL;
 }
 
 void object_free(object *obj) {
-    if(obj->col_shape != NULL) {
-        shape_free(obj->col_shape);
-        free(obj->col_shape);
-        obj->col_shape = NULL;
-    }
+
 }
 
-void object_set_userdata(object *obj, void *ptr) {
-    obj->userdata = ptr;
+void object_set_animation(object *obj, animation *ani) {
+    obj->cur_animation = ani;
 }
 
-void object_ev_cb_register(object *obj, ev_collision_callback cb) {
-    obj->ev_collision = cb;
+void object_select_sprite(object *obj, int id) {
+    obj->cur_sprite = animation_get_sprite(obj->cur_animation, id);
 }
 
-void object_set_layers(object *obj, int layers) {
-    obj->layers = layers;
-}
+void object_set_userdata(object *obj, void *ptr) { obj->userdata = ptr; }
+void object_set_layers(object *obj, int layers) { obj->layers = layers; }
+void object_set_group(object *obj, int group) { obj->group = group; }
+void object_set_gravity(object *obj, float gravity) { obj->gravity = gravity; }
+void object_set_static(object *obj, int is_static) { obj->is_static = is_static; }
 
-void object_set_group(object *obj, int group) {
-    obj->group = group;
-}
-
-void object_set_gravity(object *obj, float gravity) {
-    obj->gravity = gravity;
-}
-
-void object_set_shape(object *obj, shape *shape) {
-    obj->col_shape = shape;
-}
-
-void object_set_static(object *obj, int is_static) {
-    obj->is_static = is_static;
-}
-
-shape* object_get_shape(object *obj) {
-    return obj->col_shape;
-}
-
-int object_is_static(object *obj) {
-    return obj->is_static;
-}
-
-int object_get_gravity(object *obj) {
-    return obj->gravity;
-}
-
-int object_get_group(object *obj) {
-    return obj->group;
-}
-
-int object_get_layers(object *obj) {
-    return obj->layers;
-}
+int object_is_static(object *obj) { return obj->is_static; }
+int object_get_gravity(object *obj) { return obj->gravity; }
+int object_get_group(object *obj) { return obj->group; }
+int object_get_layers(object *obj) { return obj->layers; }
 
 void object_reset_vstate(object *obj) {
     obj->hstate = (obj->vel.x < 0.01f && obj->vel.x > -0.01f) ? OBJECT_STABLE : OBJECT_MOVING;
 }
 void object_reset_hstate(object *obj) {
     obj->vstate = (obj->vel.y < 0.01f && obj->vel.y > -0.01f) ? OBJECT_STABLE : OBJECT_MOVING;
+}
+
+int object_get_w(object *obj) {
+    if(obj->cur_sprite != NULL) {
+        return obj->cur_sprite->tex.w;
+    }
+    return 0;
+}
+
+int object_get_h(object *obj) {
+    if(obj->cur_sprite != NULL) {
+        return obj->cur_sprite->tex.h;
+    }
+    return 0;
+}
+
+void object_get_size(object *obj, int *w, int *h) {
+    *w = object_get_w(obj);
+    *h = object_get_h(obj);
 }
 
 int  object_get_px(object *obj) { return obj->pos.x; }

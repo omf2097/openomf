@@ -32,10 +32,11 @@ int texture_create(texture *tex, const char *data, unsigned int w, unsigned int 
     if(data != NULL) {
         tex->data = malloc(w * h * 4);
         memcpy(tex->data, data, w * h * 4);
-    }
-    if(!texture_upload(tex)) {
-        texturelist_add(tex);
-        return 0;
+
+        if(!texture_upload(tex)) {
+            texturelist_add(tex);
+            return 0;
+        }
     }
     return 1;
 }
@@ -45,7 +46,7 @@ int texture_create_from_img(texture *tex, const image *img) {
 }
 
 void texture_free(texture *tex) {
-    if(tex->data != 0) {
+    if(tex->data != NULL) {
         texturelist_remove(tex);
         free(tex->data);
         tex->data = NULL;
@@ -56,7 +57,7 @@ void texture_free(texture *tex) {
 }
 
 unsigned int texture_size(texture *tex) {
-    if(tex->data == 0) {
+    if(tex->data == NULL) {
         return 0;
     }
     return tex->bitmap_w * tex->bitmap_h * 4;

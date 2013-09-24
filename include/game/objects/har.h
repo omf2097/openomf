@@ -3,10 +3,8 @@
 
 #include <shadowdive/shadowdive.h>
 #include "utils/array.h"
-#include "game/animation.h"
-#include "game/animationplayer.h"
-#include "game/physics/object.h"
-#include "game/particle.h"
+#include "resources/af_loader.h"
+#include "game/protos/object.h"
 
 #define LAYER_HAR 0x01
 #define LAYER_SCRAP 0x02
@@ -65,20 +63,6 @@ enum {
     CAT_VICTORY = 10, // or defeat
     CAT_SCRAP = 12,
     CAT_DESTRUCTION
-};
-
-enum {
-    HAR_JAGUAR=0,
-    HAR_SHADOW,
-    HAR_THORN,
-    HAR_PYROS,
-    HAR_ELECTRA,
-    HAR_KATANA,
-    HAR_SHREDDER,
-    HAR_FLAIL,
-    HAR_GARGOYLE,
-    HAR_CHRONOS,
-    HAR_NOVA
 };
 
 enum {
