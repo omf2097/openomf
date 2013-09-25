@@ -3,10 +3,13 @@
 
 #include <SDL2/SDL.h>
 #include "utils/vector.h"
-#include "game/objects/har.h"
+//#include "game/objects/har.h"
 #include "game/protos/scene.h"
 #include "game/protos/object.h"
-#include "controller/controller.h"
+//#include "controller/controller.h"
+
+typedef struct har_t har;
+typedef struct controller_t controller;
 
 typedef struct game_player_t {
     int har_id;
@@ -15,7 +18,6 @@ typedef struct game_player_t {
     controller *ctrl;
     texture *portrait;
     int selectable;
-    // store crap like agility and stuff here?
 } game_player;
 
 typedef struct game_state_t {
@@ -23,9 +25,8 @@ typedef struct game_state_t {
     unsigned int this_id, next_id;
     scene sc;
     vector objects;
-    scene_player players[2];
+    game_player players[2];
 } game_state;
-
 
 int game_state_create(game_state *game);
 void game_state_free(game_state *game);
@@ -33,6 +34,8 @@ int game_state_handle_event(game_state *game, SDL_Event *event);
 void game_state_render(game_state *game);
 void game_state_tick(game_state *game);
 int game_state_is_running(game_state *game);
+void game_state_set_next(game_state *game, unsigned int next_scene_ud);
+void game_state_add_object(game_state *game, object *obj);
 void game_state_set_player_har(game_state *game, int player_id, har *har);
 void game_state_set_player_ctrl(game_state *game, int player_id, controller *ctrl);
 unsigned int game_state_ms_per_tick(game_state *game);

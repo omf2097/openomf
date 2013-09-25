@@ -5,12 +5,10 @@
 #include "engine.h"
 #include "utils/log.h"
 #include "game/text/text.h"
-#include "audio/stream.h"
 #include "audio/audio.h"
 #include "audio/music.h"
 #include "video/video.h"
 #include "game/settings.h"
-#include "game/scene.h"
 #include "game/scenes/mainmenu.h"
 #include "game/menu/menu.h"
 #include "game/menu/textbutton.h"
@@ -20,14 +18,21 @@
 #include "controller/controller.h"
 #include "controller/keyboard.h"
 #include "controller/net_controller.h"
+#include "resources/ids.h"
 
 struct resolution_t {
     int w;  int h;  const char *name;
 } _resolutions[] = {
     {320,   200,    "320x200"},
     {640,   400,    "640x400"},
+    {800,   600,    "800x600"},
+    {1024,  768,    "1024x768"},
+    {1280,  720,    "1280x720"},
     {1280,  800,    "1280x800"},
+    {1024,  1024,   "1280x1024"},
+    {1440,  900,    "1440x900"},
     {1600,  1000,   "1600x1000"},
+    {1600,  1200,   "1600x1200"},
     {1650,  1080,   "1650x1080"},
     {1920,  1080,   "1920x1080"},
     {1920,  1200,   "1920x1200"},
@@ -35,76 +40,78 @@ struct resolution_t {
     {2560,  1600,   "2560x1600"}
 };
 
-time_t connect_start;
-
-menu *current_menu;
-menu main_menu;
-component oneplayer_button;
-component twoplayer_button;
-component tourn_button;
-component config_button;
-component gameplay_button;
-component net_button;
-component help_button;
-component demo_button;
-component scoreboard_button;
-component quit_button;
-
-menu net_menu;
-component net_header;
-component net_connect_button;
-component net_listen_button;
-component net_done_button;
-
-menu connect_menu;
-component connect_ip_input;
-component connect_ip_button;
-component connect_ip_cancel_button;
-
-menu listen_menu;
-component listen_button;
-component listen_cancel_button;
-
-menu video_menu;
-component video_header;
-component resolution_toggle;
-component vsync_toggle;
-component fullscreen_toggle;
-component scaling_toggle;
-component video_done_button;
-
-menu config_menu;
-component config_header;
-component playerone_input_button;
-component playertwo_input_button;
-component video_options_button;
-component sound_toggle;
-component music_toggle;
-component stereo_toggle;
-component config_done_button;
-
-menu gameplay_menu;
-component gameplay_header;
-component speed_slider;
-component fightmode_toggle;
-component powerone_slider;
-component powertwo_slider;
-component hazards_toggle;
-component cpu_toggle;
-component round_toggle;
-component gameplay_done_button;
-
-ENetHost *host;
-int role;
-
 enum {
     ROLE_SERVER,
     ROLE_CLIENT
 };
 
-// Menu stack
-menu *mstack[10];
-int mstack_pos = 0;
+typedef struct intro_local_t {
+    time_t connect_start;
+
+    menu *current_menu;
+    menu main_menu;
+    component oneplayer_button;
+    component twoplayer_button;
+    component tourn_button;
+    component config_button;
+    component gameplay_button;
+    component net_button;
+    component help_button;
+    component demo_button;
+    component scoreboard_button;
+    component quit_button;
+
+    menu net_menu;
+    component net_header;
+    component net_connect_button;
+    component net_listen_button;
+    component net_done_button;
+
+    menu connect_menu;
+    component connect_ip_input;
+    component connect_ip_button;
+    component connect_ip_cancel_button;
+
+    menu listen_menu;
+    component listen_button;
+    component listen_cancel_button;
+
+    menu video_menu;
+    component video_header;
+    component resolution_toggle;
+    component vsync_toggle;
+    component fullscreen_toggle;
+    component scaling_toggle;
+    component video_done_button;
+
+    menu config_menu;
+    component config_header;
+    component playerone_input_button;
+    component playertwo_input_button;
+    component video_options_button;
+    component sound_toggle;
+    component music_toggle;
+    component stereo_toggle;
+    component config_done_button;
+
+    menu gameplay_menu;
+    component gameplay_header;
+    component speed_slider;
+    component fightmode_toggle;
+    component powerone_slider;
+    component powertwo_slider;
+    component hazards_toggle;
+    component cpu_toggle;
+    component round_toggle;
+    component gameplay_done_button;
+
+    ENetHost *host;
+    int role;
+
+    // Menu stack
+    menu *mstack[10];
+    int mstack_pos = 0;
+} intro_local;
 
 // Menu event handlers
 void mainmenu_quit(component *c, void *userdata) {
@@ -270,8 +277,186 @@ void mainmenu_listen_for_connections(component *c, void *userdata) {
     mainmenu_enter_menu(c, userdata);
 }
 
+
+void mainmenu_free(scene *scene) {      
+    textbutton_free(&oneplayer_button);
+    textbutton_free(&twoplayer_button);
+    textbutton_free(&tourn_button);
+    textbutton_free(&config_button);
+    textbutton_free(&gameplay_button);
+    textbutton_free(&net_button);
+    textbutton_free(&help_button);
+    textbutton_free(&demo_button);
+    textbutton_free(&scoreboard_button);
+    textbutton_free(&quit_button);
+    menu_free(&main_menu);
+
+    textbutton_free(&config_header);
+    textbutton_free(&playerone_input_button);
+    textbutton_free(&playertwo_input_button);
+    textbutton_free(&video_options_button);
+    textselector_free(&sound_toggle);
+    textselector_free(&music_toggle);
+    textselector_free(&stereo_toggle);
+    textbutton_free(&config_done_button);
+    menu_free(&config_menu);
+
+    textbutton_free(&video_header);
+    textselector_free(&resolution_toggle);
+    textselector_free(&vsync_toggle);
+    textselector_free(&fullscreen_toggle);
+    textselector_free(&scaling_toggle);
+    textbutton_free(&video_done_button);
+    menu_free(&video_menu);
+
+    textbutton_free(&gameplay_header);
+    textslider_free(&speed_slider);
+    textselector_free(&fightmode_toggle);
+    textslider_free(&powerone_slider);
+    textslider_free(&powertwo_slider);
+    textselector_free(&hazards_toggle);
+    textselector_free(&cpu_toggle);
+    textselector_free(&round_toggle);
+    textbutton_free(&gameplay_done_button);
+    menu_free(&gameplay_menu);
+
+    textbutton_free(&net_header);
+    textbutton_free(&net_connect_button);
+    textbutton_free(&net_listen_button);
+    textbutton_free(&net_done_button);
+    menu_free(&net_menu);
+
+    textinput_free(&connect_ip_input);
+    textbutton_free(&connect_ip_button);
+    textbutton_free(&connect_ip_cancel_button);
+    menu_free(&connect_menu);
+
+    textbutton_free(&listen_button);
+    textbutton_free(&listen_cancel_button);
+    menu_free(&listen_menu);
+
+    settings_save();
+}
+
+void mainmenu_tick(scene *scene) {
+    menu_tick(current_menu);
+    if (host) {
+        ENetEvent event;
+        if (enet_host_service(host, &event, 0) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
+            ENetPacket * packet = enet_packet_create("0", 2,  ENET_PACKET_FLAG_RELIABLE);
+            enet_peer_send(event.peer, 0, packet);
+            enet_host_flush(host);
+            if (role == ROLE_SERVER) {
+                DEBUG("client connected!");
+                controller *player1_ctrl, *player2_ctrl;
+                keyboard_keys *keys;
+
+                scene->player1.har_id = HAR_JAGUAR;
+                scene->player1.player_id = 0;
+                scene->player2.har_id = HAR_JAGUAR;
+                scene->player2.player_id = 0;
+
+                player1_ctrl = malloc(sizeof(controller));
+                controller_init(player1_ctrl);
+                player1_ctrl->har = scene->player1.har;
+                player2_ctrl = malloc(sizeof(controller));
+                controller_init(player2_ctrl);
+                player2_ctrl->har = scene->player2.har;
+
+                // Player 1 controller -- Keyboard
+                keys = malloc(sizeof(keyboard_keys));
+                keys->up = SDL_SCANCODE_UP;
+                keys->down = SDL_SCANCODE_DOWN;
+                keys->left = SDL_SCANCODE_LEFT;
+                keys->right = SDL_SCANCODE_RIGHT;
+                keys->punch = SDL_SCANCODE_RETURN;
+                keys->kick = SDL_SCANCODE_RSHIFT;
+                keyboard_create(player1_ctrl, keys);
+                scene_set_player1_ctrl(scene, player1_ctrl);
+
+                // Player 2 controller -- Network
+                net_controller_create(player2_ctrl, host, event.peer);
+                scene_set_player2_ctrl(scene, player2_ctrl);
+                host = NULL;
+                scene->player2.selectable = 1;
+                scene->next_id = SCENE_MELEE;
+            } else if (role == ROLE_CLIENT) {
+                DEBUG("connected to server!");
+                controller *player1_ctrl, *player2_ctrl;
+                keyboard_keys *keys;
+
+                scene->player1.har_id = HAR_JAGUAR;
+                scene->player1.player_id = 0;
+                scene->player2.har_id = HAR_JAGUAR;
+                scene->player2.player_id = 0;
+
+                player1_ctrl = malloc(sizeof(controller));
+                controller_init(player1_ctrl);
+                player1_ctrl->har = scene->player1.har;
+                player2_ctrl = malloc(sizeof(controller));
+                controller_init(player2_ctrl);
+                player2_ctrl->har = scene->player2.har;
+
+                // Player 1 controller -- Network
+                net_controller_create(player1_ctrl, host, event.peer);
+                scene_set_player1_ctrl(scene, player1_ctrl);
+
+                // Player 2 controller -- Keyboard
+                keys = malloc(sizeof(keyboard_keys));
+                keys->up = SDL_SCANCODE_UP;
+                keys->down = SDL_SCANCODE_DOWN;
+                keys->left = SDL_SCANCODE_LEFT;
+                keys->right = SDL_SCANCODE_RIGHT;
+                keys->punch = SDL_SCANCODE_RETURN;
+                keys->kick = SDL_SCANCODE_RSHIFT;
+                keyboard_create(player2_ctrl, keys);
+                scene_set_player2_ctrl(scene, player2_ctrl);
+                host = NULL;
+                scene->player2.selectable = 1;
+                scene->next_id = SCENE_MELEE;
+            }
+        } else {
+            if (role == ROLE_CLIENT && difftime(time(NULL), connect_start) > 5.0) {
+                DEBUG("connection timed out");
+
+                mainmenu_cancel_connection(&connect_ip_cancel_button, NULL);
+            }
+        }
+    }
+}
+
+int mainmenu_event(scene *scene, SDL_Event *event) {
+    if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
+        if (current_menu == &main_menu) {
+            if (menu_selected(&main_menu) == &quit_button) {
+                scene->next_id = SCENE_CREDITS;
+            } else {
+                menu_select(&main_menu, &quit_button);
+            }
+            return 1;
+        } else {
+            if (host) {
+                enet_host_destroy(host);
+                host = NULL;
+            }
+            mstack[--mstack_pos] = NULL;
+            current_menu = mstack[mstack_pos-1];
+        }
+    }
+    return menu_handle_event(current_menu, event);
+}
+
+void mainmenu_render(scene *scene) {
+    menu_render(current_menu);
+}
+
 // Init menus
-int mainmenu_init(scene *scene) {
+int mainmenu_create(scene *scene, void *gs) {
+    // Init local data
+    mainmenu_local *local = malloc(sizeof(mainmenu_local));
+    scene_set_userdata(scene, local);
+
+    // Load settings
     settings *setting = settings_get();
     
     // Force music playback
@@ -281,8 +466,8 @@ int mainmenu_init(scene *scene) {
     }
     
     // Start stack
-    mstack_pos = 0;
-    mstack[mstack_pos++] = &main_menu;
+    local->mstack_pos = 0;
+    local->mstack[local->mstack_pos++] = &local->main_menu;
     
     // Create main menu
     menu_create(&main_menu, 165, 5, 151, 119);
@@ -494,188 +679,12 @@ int mainmenu_init(scene *scene) {
 
     current_menu = &main_menu;
     
+    // Set callbacks
+    scene_set_event_cb(scene, mainmenu_event);
+    scene_set_render_cb(scene, mainmenu_render);
+    scene_set_free_cb(scene, mainmenu_free);
+    scene_set_tick_cb(scene, mainmenu_tick);
+
     // All done
     return 0;
 }
-
-void mainmenu_deinit(scene *scene) {      
-    textbutton_free(&oneplayer_button);
-    textbutton_free(&twoplayer_button);
-    textbutton_free(&tourn_button);
-    textbutton_free(&config_button);
-    textbutton_free(&gameplay_button);
-    textbutton_free(&net_button);
-    textbutton_free(&help_button);
-    textbutton_free(&demo_button);
-    textbutton_free(&scoreboard_button);
-    textbutton_free(&quit_button);
-    menu_free(&main_menu);
-
-    textbutton_free(&config_header);
-    textbutton_free(&playerone_input_button);
-    textbutton_free(&playertwo_input_button);
-    textbutton_free(&video_options_button);
-    textselector_free(&sound_toggle);
-    textselector_free(&music_toggle);
-    textselector_free(&stereo_toggle);
-    textbutton_free(&config_done_button);
-    menu_free(&config_menu);
-
-    textbutton_free(&video_header);
-    textselector_free(&resolution_toggle);
-    textselector_free(&vsync_toggle);
-    textselector_free(&fullscreen_toggle);
-    textselector_free(&scaling_toggle);
-    textbutton_free(&video_done_button);
-    menu_free(&video_menu);
-
-    textbutton_free(&gameplay_header);
-    textslider_free(&speed_slider);
-    textselector_free(&fightmode_toggle);
-    textslider_free(&powerone_slider);
-    textslider_free(&powertwo_slider);
-    textselector_free(&hazards_toggle);
-    textselector_free(&cpu_toggle);
-    textselector_free(&round_toggle);
-    textbutton_free(&gameplay_done_button);
-    menu_free(&gameplay_menu);
-
-    textbutton_free(&net_header);
-    textbutton_free(&net_connect_button);
-    textbutton_free(&net_listen_button);
-    textbutton_free(&net_done_button);
-    menu_free(&net_menu);
-
-    textinput_free(&connect_ip_input);
-    textbutton_free(&connect_ip_button);
-    textbutton_free(&connect_ip_cancel_button);
-    menu_free(&connect_menu);
-
-    textbutton_free(&listen_button);
-    textbutton_free(&listen_cancel_button);
-    menu_free(&listen_menu);
-
-    settings_save();
-}
-
-void mainmenu_tick(scene *scene) {
-    menu_tick(current_menu);
-    if (host) {
-        ENetEvent event;
-        if (enet_host_service(host, &event, 0) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
-            ENetPacket * packet = enet_packet_create("0", 2,  ENET_PACKET_FLAG_RELIABLE);
-            enet_peer_send(event.peer, 0, packet);
-            enet_host_flush(host);
-            if (role == ROLE_SERVER) {
-                DEBUG("client connected!");
-                controller *player1_ctrl, *player2_ctrl;
-                keyboard_keys *keys;
-
-                scene->player1.har_id = HAR_JAGUAR;
-                scene->player1.player_id = 0;
-                scene->player2.har_id = HAR_JAGUAR;
-                scene->player2.player_id = 0;
-
-                player1_ctrl = malloc(sizeof(controller));
-                controller_init(player1_ctrl);
-                player1_ctrl->har = scene->player1.har;
-                player2_ctrl = malloc(sizeof(controller));
-                controller_init(player2_ctrl);
-                player2_ctrl->har = scene->player2.har;
-
-                // Player 1 controller -- Keyboard
-                keys = malloc(sizeof(keyboard_keys));
-                keys->up = SDL_SCANCODE_UP;
-                keys->down = SDL_SCANCODE_DOWN;
-                keys->left = SDL_SCANCODE_LEFT;
-                keys->right = SDL_SCANCODE_RIGHT;
-                keys->punch = SDL_SCANCODE_RETURN;
-                keys->kick = SDL_SCANCODE_RSHIFT;
-                keyboard_create(player1_ctrl, keys);
-                scene_set_player1_ctrl(scene, player1_ctrl);
-
-                // Player 2 controller -- Network
-                net_controller_create(player2_ctrl, host, event.peer);
-                scene_set_player2_ctrl(scene, player2_ctrl);
-                host = NULL;
-                scene->player2.selectable = 1;
-                scene->next_id = SCENE_MELEE;
-            } else if (role == ROLE_CLIENT) {
-                DEBUG("connected to server!");
-                controller *player1_ctrl, *player2_ctrl;
-                keyboard_keys *keys;
-
-                scene->player1.har_id = HAR_JAGUAR;
-                scene->player1.player_id = 0;
-                scene->player2.har_id = HAR_JAGUAR;
-                scene->player2.player_id = 0;
-
-                player1_ctrl = malloc(sizeof(controller));
-                controller_init(player1_ctrl);
-                player1_ctrl->har = scene->player1.har;
-                player2_ctrl = malloc(sizeof(controller));
-                controller_init(player2_ctrl);
-                player2_ctrl->har = scene->player2.har;
-
-                // Player 1 controller -- Network
-                net_controller_create(player1_ctrl, host, event.peer);
-                scene_set_player1_ctrl(scene, player1_ctrl);
-
-                // Player 2 controller -- Keyboard
-                keys = malloc(sizeof(keyboard_keys));
-                keys->up = SDL_SCANCODE_UP;
-                keys->down = SDL_SCANCODE_DOWN;
-                keys->left = SDL_SCANCODE_LEFT;
-                keys->right = SDL_SCANCODE_RIGHT;
-                keys->punch = SDL_SCANCODE_RETURN;
-                keys->kick = SDL_SCANCODE_RSHIFT;
-                keyboard_create(player2_ctrl, keys);
-                scene_set_player2_ctrl(scene, player2_ctrl);
-                host = NULL;
-                scene->player2.selectable = 1;
-                scene->next_id = SCENE_MELEE;
-            }
-        } else {
-            if (role == ROLE_CLIENT && difftime(time(NULL), connect_start) > 5.0) {
-                DEBUG("connection timed out");
-
-                mainmenu_cancel_connection(&connect_ip_cancel_button, NULL);
-            }
-        }
-    }
-}
-
-int mainmenu_event(scene *scene, SDL_Event *event) {
-    if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
-        DEBUG("esc key");
-        if (current_menu == &main_menu) {
-            if (menu_selected(&main_menu) == &quit_button) {
-                scene->next_id = SCENE_CREDITS;
-            } else {
-                menu_select(&main_menu, &quit_button);
-            }
-            return 1;
-        } else {
-            if (host) {
-                enet_host_destroy(host);
-                host = NULL;
-            }
-            mstack[--mstack_pos] = NULL;
-            current_menu = mstack[mstack_pos-1];
-        }
-    }
-    return menu_handle_event(current_menu, event);
-}
-
-void mainmenu_render(scene *scene) {
-    menu_render(current_menu);
-}
-
-void mainmenu_load(scene *scene) {
-    scene->event = mainmenu_event;
-    scene->render = mainmenu_render;
-    scene->init = mainmenu_init;
-    scene->deinit = mainmenu_deinit;
-    scene->tick = mainmenu_tick;
-}
-

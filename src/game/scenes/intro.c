@@ -1,25 +1,13 @@
-#include "game/scene.h"
 #include "game/scenes/intro.h"
+#include "resources/ids.h"
+#include "utils/log.h"
 #include <SDL2/SDL.h>
-#include <shadowdive/shadowdive.h>
-
-int intro_init(scene *scene) {
-    return 0;
-}
-
-void intro_deinit(scene *scene) {
-
-}
-
-void intro_tick(scene *scene) {
-
-}
 
 int intro_event(scene *scene, SDL_Event *e) {
     switch(e->type) {
     case SDL_KEYDOWN:
         if(e->key.keysym.sym == SDLK_ESCAPE) {
-            scene->next_id = SCENE_MENU;
+            scene_load_new_scene(scene, SCENE_MENU);
             return 1;
         }
         break;
@@ -27,14 +15,7 @@ int intro_event(scene *scene, SDL_Event *e) {
     return 1;
 }
 
-void intro_render(scene *scene) {
-
-}
-
-void intro_load(scene *scene) {
-    scene->event = intro_event;
-    scene->render = intro_render;
-    scene->init = intro_init;
-    scene->deinit = intro_deinit;
-    scene->tick = intro_tick;
+int intro_create(scene *scene) {
+    scene_set_event_cb(scene, intro_event);
+    return 0;
 }

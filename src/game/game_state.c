@@ -29,14 +29,18 @@ void game_state_add_object(game_state *game, object *obj) {
     vector_append(&game->objects, obj);
 }
 
+void game_state_set_next(game_state *game, unsigned int next_scene_ud) {
+    game->next_id = next_scene_id;
+}
+
 int game_state_is_running(game_state *game) {
     return game->run;
 }
 
 // Return 0 if event was handled here
 int game_state_handle_event(game_state *game, SDL_Event *event) {
-    if(game->sc.event) {
-        return game->sc.event(&game->sc, event);
+    if(scene_event(&game->sc, event) == 0) {
+        return 0;
     }
     return 1;
 }
@@ -54,14 +58,29 @@ void game_state_render(game_state *game) {
     }
 }
 
-void game_load_new(game_state *game, int scene_id) {
+int game_load_new(game_state *game, int scene_id) {
+    // Free old scene
     scene_free(&game->sc);
+
+    // Initialize new scene with BK data etc.
+    if(scene_create(&game->sc, game, scene_id)) {
+        PERROR("Error while loading scene %d.", scene_id);
+        return 1;
+    }
+
+    // Load scene specifics
     switch(scene_id) {
         case SCENE_INTRO: 
-            intro_load(&game->sc);
+            if(intro_create(&game->sc)) {
+                PERROR("Error while creating Intro scene.");
+                return 1;
+            }
             break;
         case SCENE_MENU: 
-            mainmenu_load(&game->sc); 
+            if(mainmenu_create(&game->sc)) {
+                PERROR("Error while creating Mainmenu scene.");
+                return 1;
+            }
             break;
         case SCENE_CREDITS: 
             credits_load(&game->sc); 
@@ -83,16 +102,10 @@ void game_load_new(game_state *game, int scene_id) {
         case SCENE_ARENA5:
             arena_load(&game->sc); 
             break;
-        default: 
-            game->sc.render = NULL;
-            game->sc.event = NULL;
-            game->sc.init = NULL;
-            game->sc.deinit = NULL;
-            game->sc.tick = NULL;
-            break;
     }
     game->this_id = scene_id;
     game->next_id = scene_id;
+    return 0;
 }
 
 void game_state_tick(game_state *game) {
@@ -105,7 +118,11 @@ void game_state_tick(game_state *game) {
         }
 
         // Load up new scene
-        game_load_new(game, game->next_id);
+        if(game_load_new(game, game->next_id)) {
+            PERROR("Error while loading new scene! bail.");
+            game->run = 0;
+            return;
+        }
     }
 
     // Tick scene
@@ -174,7 +191,7 @@ unsigned int game_state_ms_per_tick(game_state *game) {
 }
 
 /*
-void scene_physics_tick(scene *scene) {
+void game_state_physics_tick(scene *scene) {
     iterator it;
     object *a, *b, **t;
     unsigned int size;

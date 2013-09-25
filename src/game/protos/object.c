@@ -1,4 +1,4 @@
-#include "game/objects/object.h"
+#include "game/protos/object.h"
 #include <stdlib.h>
 
 #include "utils/log.h"

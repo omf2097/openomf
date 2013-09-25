@@ -7,16 +7,12 @@
 #include "game/scenes/credits.h"
 
 int credits_init(scene *scene) {
-    scene->loop = 0;
     return 0;
 }
 
-void credits_deinit(scene *scene) {
-}
-
-void credits_tick(scene *scene) {
-
-}
+void credits_free(scene *scene) {}
+void credits_render(scene *scene) {}
+void credits_tick(scene *scene) {}
 
 int credits_event(scene *scene, SDL_Event *e) {
     switch(e->type) {
@@ -30,15 +26,11 @@ int credits_event(scene *scene, SDL_Event *e) {
     return 1;
 }
 
-void credits_render(scene *scene) {
-
-}
-
 void credits_load(scene *scene) {
-    scene->event = credits_event;
-    scene->render = credits_render;
-    scene->init = credits_init;
-    scene->deinit = credits_deinit;
-    scene->tick = credits_tick;
+    scene_set_init_cb(scene, credits_init);
+    scene_set_render_cb(scene, credits_render);
+    scene_set_event_cb(scene, credits_event);
+    scene_set_free_cb(scene, credits_free);
+    scene_set_tick_cb(scene, credits_tick);
 }
 

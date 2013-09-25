@@ -4,7 +4,6 @@
 #include "resources/animation.h"
 #include "resources/sprite.h"
 #include "game/protos/player.h"
-
 #include "utils/vec.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01

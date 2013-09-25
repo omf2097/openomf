@@ -1,7 +1,6 @@
-#include "game/objects/player.h"
-#include "game/objects/object.h"
+#include "game/protos/player.h"
+#include "game/protos/object.h"
 #include "utils/string.h"
-
 #include <shadowdive/stringparser.h>
 #include <inttypes.h>
 #include <stdlib.h>

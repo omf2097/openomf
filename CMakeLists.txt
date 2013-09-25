@@ -56,22 +56,19 @@ add_executable(openomf
     src/resources/palette.c
     src/resources/sprite.c
     src/resources/animation.c
-    src/game/settings.c
-    src/game/score.c
-    src/game/game_state.c
     src/game/protos/object.c
     src/game/protos/player.c
     src/game/protos/scene.c
-    src/game/objects/har.c
-    src/game/objects/particle.c
     src/game/scenes/progressbar.c
     src/game/scenes/intro.c
+    src/game/scenes/mechlab.c
     src/game/scenes/mainmenu.c
     src/game/scenes/credits.c
     src/game/scenes/arena.c
     src/game/scenes/melee.c
-    src/game/scenes/mechlab.c
     src/game/scenes/vs.c
+    src/game/objects/har.c
+    src/game/objects/particle.c
     src/game/text/text.c
     src/game/text/languages.c
     src/game/menu/menu.c
@@ -81,6 +78,9 @@ add_executable(openomf
     src/game/menu/textslider.c
     src/game/menu/textinput.c
     src/game/menu/component.c
+    src/game/settings.c
+    src/game/score.c
+    src/game/game_state.c
     src/controller/controller.c
     src/controller/keyboard.c
     src/controller/net_controller.c

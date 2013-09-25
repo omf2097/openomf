@@ -17,20 +17,12 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
-#include "game/physics/object.h"
-#include "game/physics/space.h"
-#include "game/physics/shape_invrect.h"
 #include "controller/net_controller.h"
 #include "utils/log.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <string.h>
 #include <shadowdive/shadowdive.h>
-
-#ifdef DEBUGMODE
-    #include "utils/vector.h"
-    #include "game/physics/shape_rect.h"
-#endif
 
 #define BAR_COLOR_BG color_create(89,40,101,255)
 #define BAR_COLOR_TL_BORDER color_create(60,0,60,255)
@@ -66,6 +58,8 @@ typedef struct arena_local_t {
     chr_score player2_score;
 } arena_local;
 
+// -------- Local callbacks --------
+
 void game_menu_quit(component *c, void *userdata) {
     scene *scene = userdata;
 
@@ -92,6 +86,8 @@ void music_slide(component *c, void *userdata, int pos) {
 void sound_slide(component *c, void *userdata, int pos) {
     audio_set_volume(TYPE_EFFECT, pos/10.0f);
 }
+
+// -------- Scene callbacks --------
 
 int arena_init(scene *scene) {
     settings *setting;
@@ -123,7 +119,7 @@ int arena_init(scene *scene) {
 
     // Initialize local struct
     local = malloc(sizeof(arena_local));
-    scene->local = local;
+    scene_set_userdata(scene, local);
 
     // init HARs
     har *h1, *h2;
@@ -261,8 +257,8 @@ int arena_init(scene *scene) {
     return 0;
 }
 
-void arena_deinit(scene *scene) {
-    arena_local *local = scene->local;
+void arena_free(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
     local->menu_visible = 0;
     scene_set_player1_har(scene, NULL);
     scene_set_player2_har(scene, NULL);
@@ -299,7 +295,7 @@ void arena_deinit(scene *scene) {
 }
 
 void arena_tick(scene *scene) {
-    arena_local *local = scene->local;
+    arena_local *local = scene_get_userdata(scene);
 
     // Har ticks
     har_tick(scene->player1.har);
@@ -365,7 +361,7 @@ void arena_tick(scene *scene) {
 }
 
 int arena_event(scene *scene, SDL_Event *e) {
-    arena_local *local = scene->local;
+    arena_local *local = scene_get_userdata(scene);
 
     switch(e->type) {
     case SDL_KEYDOWN:
@@ -406,7 +402,7 @@ int arena_event(scene *scene, SDL_Event *e) {
 }
 
 void arena_render(scene *scene) {
-    arena_local *local = (arena_local*)scene->local;
+    arena_local *local = scene_get_userdata(scene);
 
     // Render hars
     har_render(scene->player1.har);
@@ -455,24 +451,6 @@ void arena_render(scene *scene) {
         chr_score_format(&local->player2_score, tmp);
         font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
     }
-
-#ifdef DEBUGMODE
-    iterator it;
-    vector_iter_begin(&global_space->objects, &it);
-    object **o;
-    vec2i pos, size;
-    while((o = (object**)iter_next(&it)) != NULL) {
-        if((*o)->col_shape->type == SHAPE_TYPE_RECT) {
-            size = shape_rect_get_size((*o)->col_shape);
-            pos = vec2f_to_i((*o)->pos);
-            video_render_colored_quad(pos.x, pos.y, size.x, size.y, color_create(190,120,120,128));
-        } else if((*o)->col_shape->type == SHAPE_TYPE_INVRECT) {
-            size = shape_invrect_get_size((*o)->col_shape);
-            pos = vec2f_to_i((*o)->pos);
-            video_render_colored_quad(pos.x, pos.y, size.x, size.y, color_create(120,190,120,128));
-        }
-    }
-#endif
     
     // Draw menu if necessary
     if(local->menu_visible) {
@@ -481,10 +459,12 @@ void arena_render(scene *scene) {
     }
 }
 
+// -------- Loader --------
+
 void arena_load(scene *scene) {
-    scene->event = arena_event;
-    scene->render = arena_render;
-    scene->init = arena_init;
-    scene->deinit = arena_deinit;
-    scene->tick = arena_tick;
+    scene_set_init_cb(scene, arena_init);
+    scene_set_render_cb(scene, arena_render);
+    scene_set_event_cb(scene, arena_event);
+    scene_set_free_cb(scene, arena_free);
+    scene_set_tick_cb(scene, arena_tick);
 }
