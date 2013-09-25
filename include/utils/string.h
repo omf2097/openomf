@@ -1,5 +1,5 @@
-#ifndef _STRING_H
-#define _STRING_H
+#ifndef _UTIL_STRING_H
+#define _UTIL_STRING_H
 
 #include <string.h>
 
@@ -27,4 +27,4 @@ int str_to_long(str *string, long *result);
 int str_to_float(str *string, float *result);
 const char* str_c(str *string);
 
-#endif // _STRING_H
+#endif // _UTIL_STRING_H
