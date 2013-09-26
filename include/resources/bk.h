@@ -7,6 +7,7 @@
 #include "utils/vector.h"
 
 typedef struct bk_t {
+	int file_id;
 	sprite background;
 	hashmap infos;
 	vector palettes;
@@ -15,6 +16,7 @@ typedef struct bk_t {
 
 void bk_create(bk *b, void *src);
 bk_info* bk_get_info(bk *b, int id);
+palette* bk_get_palette(bk *b, int id);
 void bk_free(bk *b);
 
 #endif // _BK_H

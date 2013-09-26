@@ -4,6 +4,9 @@
 void bk_create(bk *b, void *src) {
 	sd_bk_file *sdbk = (sd_bk_file*)src;
 
+	// File ID
+	b->file_id = sdbk->file_id;
+
 	// Copy VGA image
 	sd_vga_image *raw_image = sd_vga_image_create(sdbk->background->w, sdbk->background->h);
 	memcpy(raw_image->data, sdbk->background->data, raw_image->len);
@@ -36,6 +39,10 @@ bk_info* bk_get_info(bk *b, int id) {
 		return NULL;
 	}
 	return val;
+}
+
+palette* bk_get_palette(bk *b, int id) {
+	return vector_get(&b->palettes, id);
 }
 
 void bk_free(bk *b) {

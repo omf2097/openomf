@@ -39,5 +39,6 @@ enum RESOURCE_ID {
 };
 
 void get_filename_by_id(int id, char *ptr);
+char* get_id_name(int id);
 
 #endif // _IDS_H

@@ -61,7 +61,6 @@ add_executable(openomf
     src/game/protos/scene.c
     src/game/scenes/progressbar.c
     src/game/scenes/intro.c
-    src/game/scenes/mechlab.c
     src/game/scenes/mainmenu.c
     src/game/scenes/credits.c
     src/game/scenes/arena.c

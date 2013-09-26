@@ -1,6 +1,8 @@
 #ifndef _MECHLAB_H
 #define _MECHLAB_H
 
-void mechlab_load(scene *scene);
+#include "game/protos/scene.h"
+
+int mechlab_create(scene *scene);
 
 #endif // _MECHLAB_H

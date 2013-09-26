@@ -1,28 +1,45 @@
-#include "game/protos/object.h"
 #include <stdlib.h>
+#include "game/protos/object.h"
 
-#include "utils/log.h"
-
-void object_create(object *obj, int px, int py, float vx, float vy) {
-    obj->pos.x = px;
-    obj->pos.y = py;
-    obj->vel.x = vx;
-    obj->vel.y = vy;
+void object_create(object *obj, vec2i pos, vec2f vel) {
+    obj->pos = vec2i_to_f(pos);
+    obj->vel = vel;
     object_reset_vstate(obj);
     object_reset_hstate(obj);
     obj->is_static = 0;
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = OBJECT_NO_GROUP;
     obj->userdata = NULL;
+    obj->tick = NULL;
+    obj->free = NULL;
+    obj->act = NULL;
     obj->gravity = 0.0f;
-
+    obj->direction = OBJECT_FACE_RIGHT;
     obj->cur_animation = NULL;
     obj->cur_sprite = NULL;
     obj->sound_translation_table = NULL;
 }
 
-void object_free(object *obj) {
+void object_tick(object *obj) {
+    if(obj->tick != NULL) {
+        obj->tick(obj);
+    }
+}
 
+void object_render(object *obj) {
+
+}
+
+void object_act(object *obj, int action) {
+    if(obj->act != NULL) {
+        obj->act(obj, action);
+    }
+}
+
+void object_free(object *obj) {
+    if(obj->free != NULL) {
+        obj->free(obj);
+    }
 }
 
 void object_set_animation(object *obj, animation *ani) {
@@ -34,6 +51,11 @@ void object_select_sprite(object *obj, int id) {
 }
 
 void object_set_userdata(object *obj, void *ptr) { obj->userdata = ptr; }
+void* object_get_userdata(object *obj) { return obj->userdata; }
+void object_set_free_cb(object *obj, object_free_cb cbfunc) { obj->free = cbfunc; }
+void object_set_act_cb(object *obj, object_act_cb cbfunc) { obj->act = cbfunc; }
+void object_set_tick_cb(object *obj, object_tick_cb cbfunc) { obj->tick = cbfunc; }
+
 void object_set_layers(object *obj, int layers) { obj->layers = layers; }
 void object_set_group(object *obj, int group) { obj->group = group; }
 void object_set_gravity(object *obj, float gravity) { obj->gravity = gravity; }
@@ -50,6 +72,9 @@ void object_reset_vstate(object *obj) {
 void object_reset_hstate(object *obj) {
     obj->vstate = (obj->vel.y < 0.01f && obj->vel.y > -0.01f) ? OBJECT_STABLE : OBJECT_MOVING;
 }
+
+void object_set_direction(object *obj, int dir) { obj->direction = dir; }
+int object_get_direction(object *obj) { return obj->direction; }
 
 int object_get_w(object *obj) {
     if(obj->cur_sprite != NULL) {

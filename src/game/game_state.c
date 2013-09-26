@@ -9,7 +9,7 @@
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/credits.h"
 #include "game/scenes/arena.h"
-#include "game/scenes/mechlab.h"
+//#include "game/scenes/mechlab.h"
 #include "game/scenes/melee.h"
 #include "game/scenes/vs.h"
 
@@ -22,6 +22,9 @@ int game_state_create(game_state *game) {
     game->this_id = SCENE_INTRO;
     game->next_id = SCENE_INTRO;
     intro_load(&game->sc);
+    for(int i = 0; i < 2; i++) {
+        game_player_create(&game->players[i]);
+    }
     return 1;
 }
 
@@ -92,8 +95,8 @@ int game_load_new(game_state *game, int scene_id) {
             vs_load(&game->sc); 
             break;
         case SCENE_MECHLAB:
-            mechlab_load(&game->sc);
-            break;
+            /*mechlab_load(&game->sc);
+            break;*/
         case SCENE_ARENA0:
         case SCENE_ARENA1:
         case SCENE_ARENA2:
@@ -142,29 +145,15 @@ void game_state_tick(game_state *game) {
     }
 }
 
-void game_state_set_player_har(game_state *game, int player_id, har *har) {
-    if(game->player[player_id].har != NULL) {
-        har_free(game->player[player_id].har);
-        free(game->player[player_id].har);
-    }
-    game->player[player_id].har = har;
-}
-
-void game_state_set_player_ctrl(game_state *game, int player_id, controller *ctrl) {
-    if(game->player[player_id].ctrl != NULL) {
-        if(game->player[player_id].ctrl->type == CTRL_TYPE_KEYBOARD) {
-            keyboard_free(game->player[player_id].ctrl);
-        }
-        free(game->player[player_id].ctrl);
-    }
-    game->player[player_id].ctrl = ctrl;
+game_player* game_state_get_player(game_state *game, int player_id) {
+    return &game->players[player_id];
 }
 
 void game_state_free(game_state *game) {
     // Deinit scene
     scene_deinit(&game->sc);
     
-    // Free players
+    // Free objects
     object *obj = NULL;
     iterator it;
     vector_iter_begin(&game->objects, &it);
@@ -173,6 +162,11 @@ void game_state_free(game_state *game) {
         vector_delete(&game->objects, &it);
     }
     
+    // Free players
+    for(int i = 0; i < 2; i++) {
+        game_player_free(&game->players[i]);
+    }
+
     // Free scene
     scene_free(&game->sc);
 }

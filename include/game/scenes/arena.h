@@ -1,6 +1,8 @@
 #ifndef _ARENA_H
 #define _ARENA_H
 
-void arena_load(scene *scene);
+#include "game/protos/scene.h"
+
+int arena_create(scene *scene);
 
 #endif // _ARENA_H

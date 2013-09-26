@@ -6,10 +6,10 @@
 #include "game/game_state.h"
 
 // Loads BK file etc.
-int scene_create(scene *scene, void *game_state, unsigned int scene_id) {
+int scene_create(scene *scene, void *game_state, int scene_id) {
     // Load BK
     if(scene_id == SCENE_NONE || load_bk_file(&scene->bk_data, scene_id)) {
-        PERROR("Unable to load BK file!");
+        PERROR("Unable to load BK file %s (%d)!", get_id_name(scene_id), scene_id);
         return 1;
     }
 
@@ -19,6 +19,7 @@ int scene_create(scene *scene, void *game_state, unsigned int scene_id) {
     scene->event = NULL;
     scene->render = NULL;
     scene->tick = NULL;
+    DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
     return 0;
 }
 
@@ -58,6 +59,10 @@ void scene_free(scene *scene) {
     bk_free(&scene->bk_data);
 }
 
+game_player* scene_get_game_player(scene *scene, int player_id) {
+    return game_state_get_player(scene->game_state, player_id);
+}
+
 void scene_set_free_cb(scene *scene, scene_free_cb cbfunc) {
     scene->free = cbfunc;
 }
@@ -74,7 +79,7 @@ void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc) {
     scene->tick = cbfunc;
 }
 
-void scene_load_new_scene(scene *scene, unsigned int scene_id) {
+void scene_load_new_scene(scene *scene, int scene_id) {
     game_state_set_next(scene->game_state, scene_id);
 }
 

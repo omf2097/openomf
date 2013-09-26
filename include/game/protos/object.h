@@ -14,13 +14,23 @@ enum {
     OBJECT_MOVING
 };
 
-typedef struct sd_animation_t sd_animation;
+enum {
+    OBJECT_FACE_RIGHT = 0,
+    OBJECT_FACE_LEFT = 1
+};
 
-typedef struct object_t {
+typedef struct object_t object;
+
+typedef void (*object_free_cb)(object *object);
+typedef void (*object_act_cb)(object *object, int action);
+typedef void (*object_tick_cb)(object *object);
+
+struct object_t {
     vec2f pos;
     vec2f vel;
     int vstate;
     int hstate;
+    int direction;
     float gravity;
     
     int is_static;
@@ -35,16 +45,18 @@ typedef struct object_t {
     player_animation_state animation_state;
 
     void *userdata;
-} object;
+    object_free_cb free;
+    object_act_cb act;
+    object_tick_cb tick;
+};
 
-void object_create(object *obj, int px, int py, float vx, float vy);
+void object_create(object *obj, vec2i pos, vec2f vel);
+void object_tick(object *obj);
+void object_act(object *obj, int action);
 void object_free(object *obj);
 
 void object_set_animation(object *obj, animation *ani);
 void object_select_sprite(object *obj, int id);
-
-void object_tick(object *obj);
-void object_render(object *obj);
 
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);
@@ -52,6 +64,13 @@ void object_set_gravity(object *obj, float gravity);
 void object_set_static(object *obj, int is_static);
 
 void object_set_userdata(object *obj, void *ptr);
+void *object_get_userdata(object *obj);
+void object_set_free_cb(object *obj, object_free_cb cbfunc);
+void object_set_act_cb(object *obj, object_act_cb cbfunc);
+void object_set_tick_cb(object *obj, object_tick_cb cbfunc);
+
+void object_set_direction(object *obj, int dir);
+int object_get_direction(object *obj);
 
 int object_is_static(object *obj);
 int object_get_gravity(object *obj);
