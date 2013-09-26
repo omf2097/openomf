@@ -14,11 +14,11 @@ void game_player_free(game_player *gp) {
 }
 
 void game_player_set_har(game_player *gp, object *har) {
-	if(hp->har != NULL) {
-		har_free(hp->har);
-		free(hp->har);
+	if(gp->har != NULL) {
+		har_free(gp->har);
+		free(gp->har);
 	}
-	hp->har = har;
+	gp->har = har;
 }
 
 object* game_player_get_har(game_player *gp) {

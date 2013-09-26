@@ -96,12 +96,12 @@ void engine_run() {
                continue;
             }
             if(console_window_is_open()) {
-                 console_event(&scene, &e);
+                 console_event(&game.sc, &e);
                  continue;
             }
 
             // Send events to scene (if active)
-            if(!game_state_handle_event(&scene, &e)) {
+            if(!game_state_handle_event(&game, &e)) {
                 continue;
             }
         }
@@ -117,9 +117,9 @@ void engine_run() {
             console_tick();
             
             // Handle waiting period leftover time
-            omf_wait -= scene_ms_per_tick(&scene);
+            /*omf_wait -= scene_ms_per_tick(&game->sc);*/
         }
-        scene_start = SDL_GetTicks();
+        /*scene_start = SDL_GetTicks();*/
 
         // Do the actual rendering jobs
         game_state_render(&game);
@@ -143,7 +143,7 @@ void engine_run() {
     }
     
     // Free scene object
-    game_state_free(&scene);
+    game_state_free(&game);
     
     DEBUG("Engine stopped.");
 }

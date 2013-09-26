@@ -1,5 +1,6 @@
 #include "resources/ids.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 void get_filename_by_id(int id, char *ptr) {
     const char* path = "resources/";
