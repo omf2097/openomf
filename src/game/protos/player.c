@@ -169,9 +169,9 @@ void player_run(object *obj) {
     if(run_ret == 0) {
         // Handle frame switch
         sd_stringparser_frame *param = &state->parser->current_frame;
-        sd_stringparser_frame n_param;
+        //sd_stringparser_frame n_param;
         sd_stringparser_frame *f = param;
-        sd_stringparser_frame *n = &n_param;
+        //sd_stringparser_frame *n = &n_param;
         int real_frame;
 
         real_frame = param->letter - 65;
@@ -278,6 +278,7 @@ void player_run(object *obj) {
 
 
         // Check if next frame contains X=nnn or Y=nnn 
+        /*
         if(!param->is_final_frame) {
             sd_stringparser_peek(state->parser, param->id + 1, &n_param);
             int slide = 0;
@@ -294,7 +295,7 @@ void player_run(object *obj) {
                 slide = get(n, "y=");
                 object_get_pos(obj, &xpos, &ypos);
             }
-        }
+        }*/
         
         // Set render settings
         if(real_frame < 25) {
