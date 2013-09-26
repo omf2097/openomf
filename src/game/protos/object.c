@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "game/protos/object.h"
+#include "video/video.h"
 
 void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->pos = vec2i_to_f(pos);
@@ -27,7 +28,14 @@ void object_tick(object *obj) {
 }
 
 void object_render(object *obj) {
-
+    if(obj->cur_sprite != NULL) {
+        video_render_sprite_flip(
+            &obj->cur_sprite->tex, 
+            obj->pos.x + obj->cur_sprite->pos.x, 
+            obj->pos.y + obj->cur_sprite->pos.y,
+            BLEND_ALPHA,
+            ((obj->direction == OBJECT_FACE_LEFT) ? FLIP_HORIZONTAL : 0));
+    }
 }
 
 void object_act(object *obj, int action) {

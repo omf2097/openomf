@@ -26,7 +26,6 @@ int dist(int a, int b) {
 // ---------------- Public functions ---------------- 
 
 void player_create(object *obj) {
-    obj->animation_state.direction = 1;
     obj->animation_state.reverse = 0;
     obj->animation_state.end_frame = UINT32_MAX;
     obj->animation_state.ticks = 1;
@@ -75,10 +74,6 @@ void player_reset(object *obj) {
 }
 
 void player_run(object *obj) {
-
-}
-
-void player_render(object *obj) {
 
 }
 

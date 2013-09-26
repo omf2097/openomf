@@ -16,7 +16,6 @@ typedef struct player_animation_state_t {
     unsigned int ticks;
     unsigned int repeat;
     unsigned int reverse;
-    int direction;
     unsigned int end_frame;
     sound_state *sound_state;
     sd_stringparser *parser;
@@ -31,10 +30,8 @@ void player_free(object *obj);
 void player_reload(object *obj);
 void player_reset(object *obj);
 void player_run(object *obj);
-void player_render(object *obj);
 void player_set_repeat(object *obj, int repeat);
 int player_get_repeat(object *obj);
-void player_set_direction(object *obj, int direction);
 void player_set_end_frame(object *obj, int end_frame);
 void player_next_frame(object *obj);
 void player_goto_frame(object *obj, int frame_id);
