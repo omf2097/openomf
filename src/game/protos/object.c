@@ -29,12 +29,20 @@ void object_tick(object *obj) {
 
 void object_render(object *obj) {
     if(obj->cur_sprite != NULL) {
+        int y = obj->pos.y + obj->cur_sprite->pos.y;
+        int x = obj->pos.x + obj->cur_sprite->pos.x;
+        if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+            x = obj->pos.x + (obj->cur_sprite->pos.x * object_get_direction(obj)) - object_get_w(obj);
+        } 
+        int flipmode = obj->sprite_state.flipmode;
+        if(obj->direction == OBJECT_FACE_LEFT) {
+            flipmode ^= FLIP_HORIZONTAL;
+        }
         video_render_sprite_flip(
             &obj->cur_sprite->tex, 
-            obj->pos.x + obj->cur_sprite->pos.x, 
-            obj->pos.y + obj->cur_sprite->pos.y,
-            BLEND_ALPHA,
-            ((obj->direction == OBJECT_FACE_LEFT) ? FLIP_HORIZONTAL : 0));
+            x, y,
+            obj->sprite_state.blendmode,
+            flipmode);
     }
 }
 
@@ -52,6 +60,7 @@ void object_free(object *obj) {
 
 void object_set_animation(object *obj, animation *ani) {
     obj->cur_animation = ani;
+    player_reload(obj);
 }
 
 void object_select_sprite(object *obj, int id) {

@@ -1,8 +1,7 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
-#include "audio/sound_state.h"
-
+typedef struct sound_state_t sound_state;
 typedef struct object_t object;
 typedef struct sd_stringparser_t sd_stringparser;
 

@@ -15,8 +15,8 @@ enum {
 };
 
 enum {
-    OBJECT_FACE_RIGHT = 0,
-    OBJECT_FACE_LEFT = 1
+    OBJECT_FACE_LEFT = -1,
+    OBJECT_FACE_RIGHT = 1
 };
 
 typedef struct object_t object;

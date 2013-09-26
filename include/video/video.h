@@ -2,6 +2,7 @@
 #define _VIDEO_H
 
 #include "video/color.h"
+#include "video/texture.h"
 
 #define NATIVE_W 320
 #define NATIVE_H 200
