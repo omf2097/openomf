@@ -51,6 +51,7 @@ struct object_t {
 };
 
 void object_create(object *obj, vec2i pos, vec2f vel);
+void object_render(object *obj);
 void object_tick(object *obj);
 void object_act(object *obj, int action);
 void object_free(object *obj);
@@ -71,7 +72,7 @@ void object_set_tick_cb(object *obj, object_tick_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);
 int object_get_repeat(object *obj);
-
+int object_finished(object *obj);
 void object_set_direction(object *obj, int dir);
 int object_get_direction(object *obj);
 

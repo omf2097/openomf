@@ -92,7 +92,7 @@ void object_reset_hstate(object *obj) {
 
 void object_set_repeat(object *obj, int repeat) { player_set_repeat(obj, repeat); }
 int object_get_repeat(object *obj) { return player_get_repeat(obj); }
-
+int object_finished(object *obj) { return obj->animation_state.finished; }
 void object_set_direction(object *obj, int dir) { obj->direction = dir; }
 int object_get_direction(object *obj) { return obj->direction; }
 

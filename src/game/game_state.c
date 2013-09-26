@@ -2,7 +2,9 @@
 #include <SDL2/SDL.h>
 #include "controller/keyboard.h"
 #include "utils/log.h"
+#include "resources/ids.h"
 #include "game/game_state.h"
+#include "game/settings.h"
 #include "game/protos/scene.h"
 #include "game/protos/object.h"
 #include "game/scenes/intro.h"
@@ -21,7 +23,7 @@ int game_state_create(game_state *game) {
     vector_create(&game->objects, sizeof(object));
     game->this_id = SCENE_INTRO;
     game->next_id = SCENE_INTRO;
-    intro_load(&game->sc);
+    intro_create(&game->sc);
     for(int i = 0; i < 2; i++) {
         game_player_create(&game->players[i]);
     }
@@ -32,7 +34,7 @@ void game_state_add_object(game_state *game, object *obj) {
     vector_append(&game->objects, obj);
 }
 
-void game_state_set_next(game_state *game, unsigned int next_scene_ud) {
+void game_state_set_next(game_state *game, unsigned int next_scene_id) {
     game->next_id = next_scene_id;
 }
 
@@ -75,24 +77,33 @@ int game_load_new(game_state *game, int scene_id) {
     switch(scene_id) {
         case SCENE_INTRO: 
             if(intro_create(&game->sc)) {
-                PERROR("Error while creating Intro scene.");
+                PERROR("Error while creating intro scene.");
                 return 1;
             }
             break;
         case SCENE_MENU: 
             if(mainmenu_create(&game->sc)) {
-                PERROR("Error while creating Mainmenu scene.");
+                PERROR("Error while creating mainmenu scene.");
                 return 1;
             }
             break;
         case SCENE_CREDITS: 
-            credits_load(&game->sc); 
+            if(credits_create(&game->sc)) {
+                PERROR("Error while creating credits scene.");
+                return 1;
+            }
             break;
         case SCENE_MELEE:
-            melee_load(&game->sc); 
+            if(melee_create(&game->sc)) {
+                PERROR("Error while creating melee scene.");
+                return 1;
+            } 
             break;
         case SCENE_VS:
-            vs_load(&game->sc); 
+            if(vs_create(&game->sc)) {
+                PERROR("Error while creating VS scene.");
+                return 1;
+            }
             break;
         case SCENE_MECHLAB:
             /*mechlab_load(&game->sc);
@@ -103,7 +114,10 @@ int game_load_new(game_state *game, int scene_id) {
         case SCENE_ARENA3:
         case SCENE_ARENA4:
         case SCENE_ARENA5:
-            arena_load(&game->sc); 
+            if(arena_create(&game->sc)) {
+                PERROR("Error while creating arena scene.");
+                return 1;
+            } 
             break;
     }
     game->this_id = scene_id;
@@ -151,7 +165,7 @@ game_player* game_state_get_player(game_state *game, int player_id) {
 
 void game_state_free(game_state *game) {
     // Deinit scene
-    scene_deinit(&game->sc);
+    scene_free(&game->sc);
     
     // Free objects
     object *obj = NULL;

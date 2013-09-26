@@ -3,6 +3,6 @@
 
 #include "game/protos/scene.h"
 
-void credits_load(scene *scene);
+int credits_create(scene *scene);
 
 #endif // _CREDITS_H

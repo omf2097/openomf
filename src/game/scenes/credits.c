@@ -13,7 +13,8 @@ int credits_event(scene *scene, SDL_Event *e) {
     return 1;
 }
 
-void credits_load(scene *scene) {
+int credits_create(scene *scene) {
     scene_set_event_cb(scene, credits_event);
+    return 0;
 }
 
