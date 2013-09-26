@@ -12,16 +12,13 @@
 #include "game/protos/scene.h"
 #include "game/protos/object.h"
 #include "resources/ids.h"
+#include "resources/bk.h"
+#include "resources/animation.h"
 #include "game/scenes/melee.h"
 #include "game/scenes/progressbar.h"
 #include "game/menu/menu_background.h"
 
 #define MAX_STAT 20
-
-int selection; // 0 for player, 1 for HAR
-int row_a, row_b; // 0 or 1
-int column_a, column_b; // 0-4
-int done_a, done_b; // 0-1
 
 struct players_t {
     sd_sprite *sprite;
@@ -31,51 +28,50 @@ struct pilot_t {
     int power, agility, endurance;
 };
 
-struct pilot_t pilots[10] = {
-    {5,16,9},
-    {13,9,8},
-    {7,20,4},
-    {9,7,15},
-    {20,1,8},
-    {9,10,11},
-    {10,1,20},
-    {7,10,13},
-    {14,8,8},
-    {14,4,12}
-};
+typedef struct melee_local_t {
 
-struct players_t players[10];
-struct players_t players_big[10];
+    int selection; // 0 for player, 1 for HAR
+    int row_a, row_b; // 0 or 1
+    int column_a, column_b; // 0-4
+    int done_a, done_b; // 0-1
 
-progress_bar bar_power[2], bar_agility[2], bar_endurance[2];
 
-int player_id_a, player_id_b;
+    struct pilot_t pilots[10];
 
-texture feh;
-texture bleh;
-texture select_hilight;
-texture harportraits[10];
-unsigned int ticks, hartick;
-unsigned int pulsedir;
+    progress_bar bar_power[2];
+    progress_bar bar_agility[2];
+    progress_bar bar_endurance[2];
 
-animationplayer harplayer_a;
-animationplayer harplayer_b;
+    int player_id_a;
+    int player_id_b;
+
+    texture feh;
+    texture bleh;
+    texture select_hilight;
+    texture harportraits[10];
+    unsigned int ticks;
+    unsigned int hartick;
+    unsigned int pulsedir;
+
+    object *harplayer_a;
+    object *harplayer_b;
+} melee_local;
 
 void refresh_pilot_stats();
 
-void melee_switch_animation(scene *scene, animationplayer *harplayer, int id, int x, int y) {
-    object *obj = malloc(sizeof(object));
-    object_create(obj, x, y, 0, 0);
-    object_set_gravity(obj, 0.0f);
-    animationplayer_free(harplayer);
-    if (harplayer->pobj) {
-        object_free(harplayer->pobj);
-        free(harplayer->pobj);
-    }
-    animationplayer_create(harplayer, id, array_get(&scene->animations, id), obj);
-    animationplayer_set_repeat(harplayer, 1);
-    animationplayer_run(harplayer);
-}
+/*void melee_switch_animation(scene *scene, object *harplayer, int id, int x, int y) {*/
+    /*object *obj = malloc(sizeof(object));*/
+    /*object_create(obj, x, y, 0, 0);*/
+    /*object_set_gravity(obj, 0.0f);*/
+    /*animationplayer_free(harplayer);*/
+    /*if (harplayer->pobj) {*/
+        /*object_free(harplayer->pobj);*/
+        /*free(harplayer->pobj);*/
+    /*}*/
+    /*animationplayer_create(harplayer, id, array_get(&scene->animations, id), obj);*/
+    /*animationplayer_set_repeat(harplayer, 1);*/
+    /*animationplayer_run(harplayer);*/
+/*}*/
 
 void handle_action(scene *scene, int player, int action);
 
@@ -105,180 +101,91 @@ sd_rgba_image* sub_sprite(sd_sprite *sprite, sd_palette *pal, int x, int y, int 
     return out;
 }
 
-int melee_init(scene *scene) {
-    char bitmap[51*36*4];
-    memset(&bitmap, 255, 51*36*4);
-    ticks = 0;
-    pulsedir = 0;
-    selection = 0;
-    row_a = 0;
-    column_a = 0;
-    row_b = 0;
-    column_b = 4;
-    done_a = 0;
-    done_b = 0;
-    for(int i = 0; i < 10; i++) {
-        players[i].sprite = scene->bk->anims[3]->animation->sprites[i];
-        DEBUG("found sprite %d x %d at %d, %d", players[i].sprite->img->w, players[i].sprite->img->h, players[i].sprite->pos_x, players[i].sprite->pos_y);
-        players_big[i].sprite = scene->bk->anims[4]->animation->sprites[i];
-
-        int row = i / 5;
-        int col = i % 5;
-        sd_rgba_image * out = sub_sprite(scene->bk->anims[1]->animation->sprites[0], scene->bk->palettes[0], (62*col), (42*row), 51, 36);
-        texture_create(&harportraits[i], out->data, 51, 36);
-        sd_rgba_image_delete(out);
-    }
-    menu_background2_create(&feh, 90, 61);
-    menu_background2_create(&bleh, 160, 43);
-    texture_create(&select_hilight, bitmap, 51, 36);
-
-    // set up the magic controller hooks
-    if (scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
-        controller_add_hook(scene->player2.ctrl, scene->player1.ctrl, scene->player1.ctrl->controller_hook);
-    }
-
-    if (scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {
-        controller_add_hook(scene->player1.ctrl, scene->player2.ctrl, scene->player2.ctrl->controller_hook);
-    }
-
-
-    const color bar_color = color_create(0, 190, 0, 255);
-    const color bar_bg_color = color_create(80, 220, 80, 0);
-    const color bar_border_color = color_create(0, 96, 0, 255);
-    const color bar_top_left_border_color = color_create(0, 255, 0, 255);
-    const color bar_bottom_right_border_color = color_create(0, 125, 0, 255);
-    progressbar_create(&bar_power[0],     74, 12, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
-    progressbar_create(&bar_agility[0],   74, 30, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
-    progressbar_create(&bar_endurance[0], 74, 48, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
-    progressbar_create(&bar_power[1],     320-66-feh.w, 12, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
-    progressbar_create(&bar_agility[1],   320-66-feh.w, 30, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
-    progressbar_create(&bar_endurance[1], 320-66-feh.w, 48, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
-    for(int i = 0;i < 2;i++) {
-        progressbar_set(&bar_power[i], 50);
-        progressbar_set(&bar_agility[i], 50);
-        progressbar_set(&bar_endurance[i], 50);
-    }
-    refresh_pilot_stats();
-
-    memset(&harplayer_a, 0, sizeof(harplayer_a));
-    harplayer_a.pobj = NULL;
-    memset(&harplayer_b, 0, sizeof(harplayer_b));
-    harplayer_b.pobj = NULL;
-
-    // All done
-    return 0;
-}
-
-void melee_deinit(scene *scene) {
-    if (harplayer_a.pobj) {
-        object_free(harplayer_a.pobj);
-        free(harplayer_a.pobj);
-    }
-    animationplayer_free(&harplayer_a);
-    if (scene->player2.selectable) {
-        if (harplayer_b.pobj) {
-            object_free(harplayer_b.pobj);
-            free(harplayer_b.pobj);
-        }
-        animationplayer_free(&harplayer_b);
-    }
+void melee_free(scene *scene) {
+    melee_local *local = scene_get_userdata(scene);
+    /*if (harplayer_a.pobj) {*/
+        /*object_free(harplayer_a.pobj);*/
+        /*free(harplayer_a.pobj);*/
+    /*}*/
+    /*animationplayer_free(&harplayer_a);*/
+    /*if (scene->player2.selectable) {*/
+        /*if (harplayer_b.pobj) {*/
+            /*object_free(harplayer_b.pobj);*/
+            /*free(harplayer_b.pobj);*/
+        /*}*/
+        /*animationplayer_free(&harplayer_b);*/
+    /*}*/
     
     for(int i = 0; i < 10; i++) {
-        texture_free(&harportraits[i]);
+        texture_free(&local->harportraits[i]);
     }
-    texture_free(&feh);
-    texture_free(&bleh);
-    texture_free(&select_hilight);
+    texture_free(&local->feh);
+    texture_free(&local->bleh);
+    texture_free(&local->select_hilight);
     for(int i = 0;i < 2;i++) {
-        progressbar_free(&bar_power[i]);
-        progressbar_free(&bar_agility[i]);
-        progressbar_free(&bar_endurance[i]);
+        progressbar_free(&local->bar_power[i]);
+        progressbar_free(&local->bar_agility[i]);
+        progressbar_free(&local->bar_endurance[i]);
     }
 }
 
 void melee_tick(scene *scene) {
-    if(!pulsedir) {
-        ticks++;
+    melee_local *local = scene_get_userdata(scene);
+    if(!local->pulsedir) {
+        local->ticks++;
     } else {
-        ticks--;
+        local->ticks--;
     }
-    if(ticks > 120) {
-        pulsedir = 1;
+    if(local->ticks > 120) {
+        local->pulsedir = 1;
     }
-    if(ticks == 0) {
-        pulsedir = 0;
+    if(local->ticks == 0) {
+        local->pulsedir = 0;
     }
-    hartick++;
-    if (selection == 1) {
-        if(hartick > 10) {
-            hartick = 0;
-            animationplayer_run(&harplayer_a);
-            if (scene->player2.selectable) {
-                animationplayer_run(&harplayer_b);
-            }
+    local->hartick++;
+    if (local->selection == 1) {
+        if(local->hartick > 10) {
+            local->hartick = 0;
+            /*animationplayer_run(&harplayer_a);*/
+            /*if (scene->player2.selectable) {*/
+                /*animationplayer_run(&harplayer_b);*/
+            /*}*/
         }
     }
 
-    ctrl_event *p1 = NULL, *p2 = NULL, *i;
-    if(controller_tick(scene->player1.ctrl, &p1) ||
-            controller_tick(scene->player2.ctrl, &p2)) {
-        // one of the controllers bailed
-
-        /*if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {*/
-            /*net_controller_free(scene->player1.ctrl);*/
-        /*}*/
-
-        /*if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {*/
-            /*net_controller_free(scene->player2.ctrl);*/
-        /*}*/
-        scene->next_id = SCENE_MENU;
-    }
-    i = p1;
-    if (i) {
-        do {
-            handle_action(scene, 1, i->action);
-        } while((i = i->next));
-        DEBUG("done");
-    }
-    i = p2;
-    if (i) {
-        do {
-            handle_action(scene, 2, i->action);
-        } while((i = i->next));
-        DEBUG("done");
-    }
 }
 
-void refresh_pilot_stats() {
-    int current_a = 5*row_a + column_a;
-    int current_b = 5*row_b + column_b;
-    progressbar_set(&bar_power[0], (pilots[current_a].power*100)/MAX_STAT);
-    progressbar_set(&bar_agility[0], (pilots[current_a].agility*100)/MAX_STAT);
-    progressbar_set(&bar_endurance[0], (pilots[current_a].endurance*100)/MAX_STAT);
-    progressbar_set(&bar_power[1], (pilots[current_b].power*100)/MAX_STAT);
-    progressbar_set(&bar_agility[1], (pilots[current_b].agility*100)/MAX_STAT);
-    progressbar_set(&bar_endurance[1], (pilots[current_b].endurance*100)/MAX_STAT);
+void refresh_pilot_stats(melee_local *local) {
+    int current_a = 5*local->row_a + local->column_a;
+    int current_b = 5*local->row_b + local->column_b;
+    progressbar_set(&local->bar_power[0], (local->pilots[current_a].power*100)/MAX_STAT);
+    progressbar_set(&local->bar_agility[0], (local->pilots[current_a].agility*100)/MAX_STAT);
+    progressbar_set(&local->bar_endurance[0], (local->pilots[current_a].endurance*100)/MAX_STAT);
+    progressbar_set(&local->bar_power[1], (local->pilots[current_b].power*100)/MAX_STAT);
+    progressbar_set(&local->bar_agility[1], (local->pilots[current_b].agility*100)/MAX_STAT);
+    progressbar_set(&local->bar_endurance[1], (local->pilots[current_b].endurance*100)/MAX_STAT);
 }
 
 void handle_action(scene *scene, int player, int action) {
+    /*melee_local *local = scene_get_userdata(scene);
     int *row, *column, *done;
     if (player == 1) {
         DEBUG("event for player 1");
-        row = &row_a;
-        column = &column_a;
-        done = &done_a;
+        row = &local->row_a;
+        column = &local->column_a;
+        done = &local->done_a;
     } else {
         DEBUG("event for player 2");
-        row = &row_b;
-        column = &column_b;
-        done = &done_b;
+        row = &local->row_b;
+        column = &local->column_b;
+        done = &local->done_b;
     }
 
     if (*done) {
         return;
-    }
+    }*/
 
-    switch (action) {
+    /*switch (action) {
         case ACT_LEFT:
             (*column)--;
             if (*column < 0) {
@@ -339,26 +246,28 @@ void handle_action(scene *scene, int player, int action) {
                 animationplayer_set_direction(&harplayer_b, -1);
             }
         }
-    }
+    }*/
 }
 
 int melee_event(scene *scene, SDL_Event *event) {
+    melee_local *local = scene_get_userdata(scene);
     if(event->type == SDL_KEYDOWN) {
         if (event->key.keysym.sym == SDLK_ESCAPE) {
-                if (selection == 1) {
+                if (local->selection == 1) {
                     // restore the player selection
-                    column_a = player_id_a % 5;
-                    row_a = player_id_a / 5;
-                    column_b = player_id_b % 5;
-                    row_b = player_id_b / 5;
+                    local->column_a = local->player_id_a % 5;
+                    local->row_a = local->player_id_a / 5;
+                    local->column_b = local->player_id_b % 5;
+                    local->row_b = local->player_id_b / 5;
 
-                    selection = 0;
-                    done_a = 0;
-                    done_b = 0;
+                    local->selection = 0;
+                    local->done_a = 0;
+                    local->done_b = 0;
                 } else {
-                    scene->next_id = SCENE_MENU;
+                    scene_load_new_scene(scene, SCENE_MENU);
                 }
             } else {
+                /*
                 ctrl_event *p1=NULL, *p2 = NULL, *i;
                 controller_event(scene->player1.ctrl, event, &p1);
                 controller_event(scene->player2.ctrl, event, &p2);
@@ -375,43 +284,49 @@ int melee_event(scene *scene, SDL_Event *event) {
                         handle_action(scene, 2, i->action);
                     } while((i = i->next));
                     DEBUG("done");
-                }
+                }*/
             }
     }
     return 0;
 }
 
 void render_highlights(scene *scene) {
+    melee_local *local = scene_get_userdata(scene);
+    /*game_player *player1 = scene_get_game_player(scene, 1);*/
+    game_player *player2 = scene_get_game_player(scene, 1);
     int trans;
-    if (scene->player2.selectable && row_a == row_b && column_a == column_b) {
-        video_render_char(&select_hilight, 11 + (62*column_a), 115 + (42*row_a), color_create(250-ticks, 0, 250-ticks, 0));
+    if (player2->selectable && local->row_a == local->row_b && local->column_a == local->column_b) {
+        video_render_char(&local->select_hilight, 11 + (62*local->column_a), 115 + (42*local->row_a), color_create(250-local->ticks, 0, 250-local->ticks, 0));
     } else {
-        if (scene->player2.selectable) {
-            if (done_b) {
+        if (player2->selectable) {
+            if (local->done_b) {
                 trans = 250;
             } else {
-                trans = 250 - ticks;
+                trans = 250 - local->ticks;
             }
-            video_render_char(&select_hilight, 11 + (62*column_b), 115 + (42*row_b), color_create(0, 0, trans, 0));
+            video_render_char(&local->select_hilight, 11 + (62*local->column_b), 115 + (42*local->row_b), color_create(0, 0, trans, 0));
         }
-        if (done_a) {
+        if (local->done_a) {
                 trans = 250;
             } else {
-                trans = 250 - ticks;
+                trans = 250 - local->ticks;
             }
-        video_render_char(&select_hilight, 11 + (62*column_a), 115 + (42*row_a), color_create(trans, 0, 0, 0));
+        video_render_char(&local->select_hilight, 11 + (62*local->column_a), 115 + (42*local->row_a), color_create(trans, 0, 0, 0));
     }
 }
 
 void melee_render(scene *scene) {
     animation *ani;
-    int current_a = 5*row_a + column_a;
-    int current_b = 5*row_b + column_b;
+    sprite *sprite;
+    melee_local *local = scene_get_userdata(scene);
+    game_player *player2 = scene_get_game_player(scene, 1);
+    int current_a = 5*local->row_a + local->column_a;
+    int current_b = 5*local->row_b + local->column_b;
 
 
-    if (selection == 0) {
-        video_render_sprite_flip(&feh, 70, 0, BLEND_ALPHA, FLIP_NONE);
-        video_render_sprite_flip(&bleh, 0, 62, BLEND_ALPHA, FLIP_NONE);
+    if (local->selection == 0) {
+        video_render_sprite_flip(&local->feh, 70, 0, BLEND_ALPHA, FLIP_NONE);
+        video_render_sprite_flip(&local->bleh, 0, 62, BLEND_ALPHA, FLIP_NONE);
 
         // player bio
         font_render_wrapped(&font_small, lang_get(135+current_a), 4, 66, 152, COLOR_GREEN);
@@ -419,91 +334,91 @@ void melee_render(scene *scene) {
         font_render(&font_small, lang_get(216), 74+27, 4, COLOR_GREEN);
         font_render(&font_small, lang_get(217), 74+19, 22, COLOR_GREEN);
         font_render(&font_small, lang_get(218), 74+12, 40, COLOR_GREEN);
-        progressbar_render(&bar_power[0]);
-        progressbar_render(&bar_agility[0]);
-        progressbar_render(&bar_endurance[0]);
+        progressbar_render(&local->bar_power[0]);
+        progressbar_render(&local->bar_agility[0]);
+        progressbar_render(&local->bar_endurance[0]);
 
-        if (scene->player2.selectable) {
-            video_render_sprite_flip(&feh, 320-70-feh.w, 0, BLEND_ALPHA, FLIP_NONE);
-            video_render_sprite_flip(&bleh, 320-bleh.w, 62, BLEND_ALPHA, FLIP_NONE);
+        if (player2->selectable) {
+            video_render_sprite_flip(&local->feh, 320-70-local->feh.w, 0, BLEND_ALPHA, FLIP_NONE);
+            video_render_sprite_flip(&local->bleh, 320-local->bleh.w, 62, BLEND_ALPHA, FLIP_NONE);
             // player bio
-            font_render_wrapped(&font_small, lang_get(135+current_b), 320-bleh.w+4, 66, 152, COLOR_GREEN);
+            font_render_wrapped(&font_small, lang_get(135+current_b), 320-local->bleh.w+4, 66, 152, COLOR_GREEN);
             // player stats
-            font_render(&font_small, lang_get(216), 320-66-feh.w+27, 4, COLOR_GREEN);
-            font_render(&font_small, lang_get(217), 320-66-feh.w+19, 22, COLOR_GREEN);
-            font_render(&font_small, lang_get(218), 320-66-feh.w+12, 40, COLOR_GREEN);
-            progressbar_render(&bar_power[1]);
-            progressbar_render(&bar_agility[1]);
-            progressbar_render(&bar_endurance[1]);
+            font_render(&font_small, lang_get(216), 320-66-local->feh.w+27, 4, COLOR_GREEN);
+            font_render(&font_small, lang_get(217), 320-66-local->feh.w+19, 22, COLOR_GREEN);
+            font_render(&font_small, lang_get(218), 320-66-local->feh.w+12, 40, COLOR_GREEN);
+            progressbar_render(&local->bar_power[1]);
+            progressbar_render(&local->bar_agility[1]);
+            progressbar_render(&local->bar_endurance[1]);
         } else {
             // 'choose your pilot'
             font_render_wrapped(&font_small, lang_get(187), 160, 97, 160, COLOR_GREEN);
         }
     }
-    ani = array_get(&scene->animations, 5);
+    ani = &bk_get_info(&scene->bk_data, 5)->ani;
 
-    if (scene->player2.selectable) {
-        video_render_sprite_flip(array_get(&ani->sprites, 0), 254, 0, BLEND_ALPHA, FLIP_NONE);
+    if (player2->selectable) {
+        video_render_sprite_flip(&animation_get_sprite(ani, 0)->tex, 254, 0, BLEND_ALPHA, FLIP_NONE);
     } else {
-        video_render_sprite_flip(array_get(&ani->sprites, 1), 162, 0, BLEND_ALPHA, FLIP_NONE);
+        video_render_sprite_flip(&animation_get_sprite(ani, 1)->tex, 162, 0, BLEND_ALPHA, FLIP_NONE);
     }
-    if (selection == 0) {
+    if (local->selection == 0) {
         // player 1 name
         font_render_wrapped(&font_small, lang_get(20+current_a), 0, 52, 66, COLOR_BLACK);
 
-        if (scene->player2.selectable) {
+        if (player2->selectable) {
             // player 2 name
             font_render_wrapped(&font_small, lang_get(20+current_b), 320-66, 52, 66, COLOR_BLACK);
         }
 
         render_highlights(scene);
         for(int i = 0; i < 10; i++) {
-            ani = array_get(&scene->animations, 3);
+            sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, i);
 
-            video_render_sprite_flip(array_get(&ani->sprites, i), players[i].sprite->pos_x, players[i].sprite->pos_y, BLEND_ALPHA, FLIP_NONE);
+            video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
             if (i == current_a) {
                 // render the big portrait
-                ani = array_get(&scene->animations, 4);
-                video_render_sprite_flip(array_get(&ani->sprites, i), players_big[i].sprite->pos_x, players_big[i].sprite->pos_y, BLEND_ALPHA, FLIP_NONE);
+                sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, i);
+                video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
             }
 
-            if (scene->player2.selectable && i == current_b) {
+            if (player2->selectable && i == current_b) {
                 // render the big portrait
-                ani = array_get(&scene->animations, 4);
-                video_render_sprite_flip(array_get(&ani->sprites, i), 320-(players_big[i].sprite->img->w + players_big[i].sprite->pos_x), players_big[i].sprite->pos_y, BLEND_ALPHA, FLIP_HORIZONTAL);
+                sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, i);
+                video_render_sprite_flip(&sprite->tex, 320-(sprite->tex.w + sprite->pos.x), sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
             }
         }
     } else {
         // render the stupid unselected HAR portraits before anything
         // so we can render anything else on top of them
-        sd_sprite *sprite = scene->bk->anims[1]->animation->sprites[0];
-        ani = array_get(&scene->animations, 1);
-        video_render_sprite_flip(array_get(&ani->sprites, 0), sprite->pos_x, sprite->pos_y, BLEND_ALPHA, FLIP_NONE);
+        sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);
+        video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
         render_highlights(scene);
 
         // currently selected player
-        ani = array_get(&scene->animations, 4);
-        video_render_sprite_flip(array_get(&ani->sprites, player_id_a), players_big[player_id_a].sprite->pos_x, players_big[player_id_a].sprite->pos_y, BLEND_ALPHA, FLIP_NONE);
+        sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_a);
+        video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
         //currently selected HAR
-        video_render_sprite_flip(&harportraits[current_a], 11 + (62*column_a), 115 + (42*row_a), BLEND_ALPHA, FLIP_NONE);
-        animationplayer_render(&harplayer_a);
+        /*video_render_sprite_flip(&harportraits[current_a], 11 + (62*column_a), 115 + (42*row_a), BLEND_ALPHA, FLIP_NONE);*/
+        /*animationplayer_render(&harplayer_a);*/
 
         // player 1 name
-        font_render_wrapped(&font_small, lang_get(20+player_id_a), 0, 52, 66, COLOR_BLACK);
+        font_render_wrapped(&font_small, lang_get(20+local->player_id_a), 0, 52, 66, COLOR_BLACK);
 
-        if (scene->player2.selectable) {
+        if (player2->selectable) {
             // player 2 name
-            font_render_wrapped(&font_small, lang_get(20+player_id_b), 320-66, 52, 66, COLOR_BLACK);
+            font_render_wrapped(&font_small, lang_get(20+local->player_id_b), 320-66, 52, 66, COLOR_BLACK);
 
             // currently selected player
-            video_render_sprite_flip(array_get(&ani->sprites, player_id_b), 320-(players_big[player_id_b].sprite->img->w + players_big[player_id_b].sprite->pos_x),
-                    players_big[player_id_b].sprite->pos_y, BLEND_ALPHA, FLIP_HORIZONTAL);
+            sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_b);
+            video_render_sprite_flip(&sprite->tex, 320-sprite->tex.w + sprite->pos.x,
+                    sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
             // currently selected HAR
-            video_render_sprite_flip(&harportraits[current_b], 11 + (62*column_b), 115 + (42*row_b), BLEND_ALPHA, FLIP_NONE);
-            animationplayer_render(&harplayer_b);
+            /*video_render_sprite_flip(&harportraits[current_b], 11 + (62*column_b), 115 + (42*row_b), BLEND_ALPHA, FLIP_NONE);*/
+            /*animationplayer_render(&harplayer_b);*/
         } else {
             // 'choose your HAR'
             font_render_wrapped(&font_small, lang_get(186), 160, 97, 160, COLOR_GREEN);
@@ -511,11 +426,82 @@ void melee_render(scene *scene) {
     }
 }
 
-void melee_load(scene *scene) {
-    scene->event = melee_event;
-    scene->render = melee_render;
-    scene->init = melee_init;
-    scene->deinit = melee_deinit;
-    scene->tick = melee_tick;
-}
+int melee_create(scene *scene) {
+    char bitmap[51*36*4];
 
+    // Init local data
+    melee_local *local = malloc(sizeof(melee_local));
+    scene_set_userdata(scene, local);
+
+    local->pilots[0].power=5;
+    local->pilots[0].agility=16;
+    /*= {*/
+        /*{5,16,9},*/
+        /*{13,9,8},*/
+        /*{7,20,4},*/
+        /*{9,7,15},*/
+        /*{20,1,8},*/
+        /*{9,10,11},*/
+        /*{10,1,20},*/
+        /*{7,10,13},*/
+        /*{14,8,8},*/
+        /*{14,4,12}*/
+    /*};*/
+
+    memset(&bitmap, 255, 51*36*4);
+    local->ticks = 0;
+    local->pulsedir = 0;
+    local->selection = 0;
+    local->row_a = 0;
+    local->column_a = 0;
+    local->row_b = 0;
+    local->column_b = 4;
+    local->done_a = 0;
+    local->done_b = 0;
+
+    menu_background2_create(&local->feh, 90, 61);
+    menu_background2_create(&local->bleh, 160, 43);
+    texture_create(&local->select_hilight, bitmap, 51, 36);
+
+    // set up the magic controller hooks
+    /*if (scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {*/
+        /*controller_add_hook(scene->player2.ctrl, scene->player1.ctrl, scene->player1.ctrl->controller_hook);*/
+    /*}*/
+
+    /*if (scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {*/
+        /*controller_add_hook(scene->player1.ctrl, scene->player2.ctrl, scene->player2.ctrl->controller_hook);*/
+    /*}*/
+
+
+    const color bar_color = color_create(0, 190, 0, 255);
+    const color bar_bg_color = color_create(80, 220, 80, 0);
+    const color bar_border_color = color_create(0, 96, 0, 255);
+    const color bar_top_left_border_color = color_create(0, 255, 0, 255);
+    const color bar_bottom_right_border_color = color_create(0, 125, 0, 255);
+    progressbar_create(&local->bar_power[0],     74, 12, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    progressbar_create(&local->bar_agility[0],   74, 30, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    progressbar_create(&local->bar_endurance[0], 74, 48, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    progressbar_create(&local->bar_power[1],     320-66-local->feh.w, 12, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    progressbar_create(&local->bar_agility[1],   320-66-local->feh.w, 30, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    progressbar_create(&local->bar_endurance[1], 320-66-local->feh.w, 48, 20*4, 8, bar_border_color, bar_border_color, bar_bg_color, bar_top_left_border_color, bar_bottom_right_border_color, bar_color, PROGRESSBAR_LEFT);
+    for(int i = 0;i < 2;i++) {
+        progressbar_set(&local->bar_power[i], 50);
+        progressbar_set(&local->bar_agility[i], 50);
+        progressbar_set(&local->bar_endurance[i], 50);
+    }
+    refresh_pilot_stats(local);
+
+    /*memset(&harplayer_a, 0, sizeof(harplayer_a));*/
+    /*harplayer_a.pobj = NULL;*/
+    /*memset(&harplayer_b, 0, sizeof(harplayer_b));*/
+    /*harplayer_b.pobj = NULL;*/
+
+    // Set callbacks
+    scene_set_event_cb(scene, melee_event);
+    scene_set_render_cb(scene, melee_render);
+    scene_set_free_cb(scene, melee_free);
+    scene_set_tick_cb(scene, melee_tick);
+
+    // All done
+    return 0;
+}

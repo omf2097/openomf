@@ -15,7 +15,7 @@ find_package(Libintl)
 IF(MINGW)
     set(CMAKE_C_FLAGS "-Wall -std=c99 -Werror")
 ELSE(MINGW)
-    set(CMAKE_C_FLAGS "-Wall -std=c99 -Werror -pedantic")
+    set(CMAKE_C_FLAGS "-Wall -std=c99 -Werror")
 ENDIF(MINGW)
 
 set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE")

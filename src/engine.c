@@ -60,14 +60,14 @@ void engine_run() {
 
     // Init players
     for(int i = 0; i < 2; i++) {
-        game.player[i].har = NULL;
-        game.player[i].ctrl = NULL;
+        game.players[i].har = NULL;
+        game.players[i].ctrl = NULL;
     }
 
     // Game loop
     unsigned int frame_start = SDL_GetTicks();
     unsigned int omf_wait = 0;
-    while(run && game_state_is_running()) {
+    while(run && game_state_is_running(&game)) {
         // Prepare rendering here
         video_render_prepare();
     

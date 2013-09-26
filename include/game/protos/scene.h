@@ -2,7 +2,9 @@
 #define _SCENE_H
 
 #include <SDL2/SDL.h>
+#include "controller/controller.h"
 #include "game/protos/object.h"
+#include "game/game_player.h"
 #include "resources/bk.h"
 
 typedef struct scene_t scene;

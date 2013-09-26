@@ -49,7 +49,7 @@ int net_controller_tick(controller *ctrl, ctrl_event **ev) {
                     controller_cmd(ctrl, action, ev);
                 } else {
                     // dispatch it to the HAR
-                    har_parse_command(ctrl->har, (char*)event.packet->data);
+                    /*har_parse_command(ctrl->har, (char*)event.packet->data);*/
                 }
                 enet_packet_destroy(event.packet);
                 break;

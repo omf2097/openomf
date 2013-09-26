@@ -1,7 +1,8 @@
 #include "console/console.h"
 #include "video/video.h"
 #include "game/menu/menu_background.h"
-#include "game/scene.h"
+#include "game/protos/scene.h"
+#include "resources/ids.h"
 #include "utils/log.h"
 #include <stdlib.h>
 #include <string.h>
@@ -58,7 +59,7 @@ int console_cmd_clear(scene *scene, void *userdata, int argc, char **argv) {
 }
 
 int console_cmd_quit(scene *scene, void *userdata, int argc, char **argv) {
-    scene->next_id = SCENE_CREDITS;
+    scene_load_new_scene(scene, SCENE_CREDITS);
     return 0;
 }
 
@@ -92,7 +93,7 @@ int console_cmd_scene(scene *scene, void *userdata, int argc, char **argv) {
         int i;
         if(strtoint(argv[1], &i)) {
             if(scene_is_valid(i)) {
-                scene->next_id = i;
+                scene_load_new_scene(scene, i);
                 return 0;
             }
         }
@@ -100,12 +101,12 @@ int console_cmd_scene(scene *scene, void *userdata, int argc, char **argv) {
     return 1;
 }
 
-int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
+/*int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
     // change har
     if(argc == 2) {
         int i;
         if(strtoint(argv[1], &i)) {
-            har *h = scene->player1.har;
+            har *h = &scene_get_game_player(scene, 0)->har;
             int hx, hy;
             int hd = h->direction;
             object_get_pos(&h->pobj, &hx, &hy);
@@ -123,20 +124,20 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
         }
     }
     return 1;
-}
+}*/
 
 int console_cd_debug(scene *scene, void *userdata, int argc, char **argv) {
-    if (scene->player1.har) {
-        scene->player1.har->cd_debug_enabled = 1;
-    }
+    /*if (scene->player1.har) {*/
+        /*scene->player1.har->cd_debug_enabled = 1;*/
+    /*}*/
 
-    if (scene->player2.har) {
-        scene->player2.har->cd_debug_enabled = 1;
-    }
+    /*if (scene->player2.har) {*/
+        /*scene->player2.har->cd_debug_enabled = 1;*/
+    /*}*/
     return 0;
 }
 
-int console_cmd_connect(scene *scene, void *userdata, int argc, char **argv) {
+/*int console_cmd_connect(scene *scene, void *userdata, int argc, char **argv) {
     ENetHost *client;
     ENetAddress address;
     ENetPeer *peer;
@@ -163,20 +164,23 @@ int console_cmd_connect(scene *scene, void *userdata, int argc, char **argv) {
             enet_host_flush(client);
             DEBUG("Connected to %s!", argv[1]);
 
+            game_player *player1 = scene_get_game_player(scene, 0);
+            game_player *player2 = scene_get_game_player(scene, 1);
+
             controller *player1_ctrl, *player2_ctrl;
             keyboard_keys *keys;
 
-            scene->player1.har_id = HAR_JAGUAR;
-            scene->player1.player_id = 0;
-            scene->player2.har_id = HAR_JAGUAR;
-            scene->player2.player_id = 0;
+            player1->har_id = HAR_JAGUAR;
+            player1->player_id = 0;
+            player2->har_id = HAR_JAGUAR;
+            player2->player_id = 0;
 
             player1_ctrl = malloc(sizeof(controller));
             controller_init(player1_ctrl);
-            player1_ctrl->har = scene->player1.har;
+            player1_ctrl->har = player1->har;
             player2_ctrl = malloc(sizeof(controller));
             controller_init(player2_ctrl);
-            player2_ctrl->har = scene->player2.har;
+            player2_ctrl->har = player2->har;
 
             // Player 1 controller -- Network
             net_controller_create(player1_ctrl, client, peer);
@@ -193,7 +197,7 @@ int console_cmd_connect(scene *scene, void *userdata, int argc, char **argv) {
             keyboard_create(player2_ctrl, keys);
             scene_set_player2_ctrl(scene, player2_ctrl);
 
-            scene->next_id = SCENE_ARENA0;
+            scene_load_new_scene(scene, SCENE_ARENA0);
             return 0;
         } else {
             enet_peer_reset(peer);
@@ -254,14 +258,14 @@ int console_cmd_listen(scene *scene, void *userdata, int argc, char **argv) {
         net_controller_create(player2_ctrl, server, event.peer);
         scene_set_player2_ctrl(scene, player2_ctrl);
 
-        scene->next_id = SCENE_ARENA0;
+        scene_load_new_scene(scene, SCENE_ARENA0);
         return 0;
     } else {
         DEBUG("No connections received");
         return 1;
     }
     return 1;
-}
+}*/
 
 int make_argv(char *p, char **argv) {
     // split line into argv, warning: does not handle quoted strings
@@ -464,10 +468,10 @@ int console_init() {
     console_add_cmd("exit",  &console_cmd_quit,  "quit the game");
     console_add_cmd("help",  &console_cmd_help,  "show all commands");
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
-    console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
+    /*console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");*/
     console_add_cmd("cd-debug",&console_cd_debug,   "toggle collision detection debugging");
-    console_add_cmd("connect", &console_cmd_connect,   "connect to provided IP");
-    console_add_cmd("listen", &console_cmd_listen,   "wait for a network connection, times out after 5 seconds");
+    /*console_add_cmd("connect", &console_cmd_connect,   "connect to provided IP");*/
+    /*console_add_cmd("listen", &console_cmd_listen,   "wait for a network connection, times out after 5 seconds");*/
     
     return 0;
 }

@@ -53,7 +53,9 @@ struct object_t {
 void object_create(object *obj, vec2i pos, vec2f vel);
 void object_render(object *obj);
 void object_tick(object *obj);
+void object_render(object *obj);
 void object_act(object *obj, int action);
+int object_finished(object *obj);
 void object_free(object *obj);
 
 void object_set_animation(object *obj, animation *ani);

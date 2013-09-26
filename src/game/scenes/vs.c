@@ -4,27 +4,28 @@
 #include "utils/log.h"
 #include "game/text/text.h"
 #include "game/text/languages.h"
-#include "game/har.h"
-#include "game/scene.h"
+#include "game/protos/scene.h"
 #include "video/video.h"
 #include "game/scenes/vs.h"
+#include "resources/ids.h"
 #include "game/menu/menu_background.h"
-
 #include "controller/controller.h"
 #include "controller/keyboard.h"
 
 
-texture player2_background;
-animationplayer welder;
-animationplayer scientist;
-list child_players;
-texture arena_select_bg;
-int arena;
+typedef struct vs_local_t {
+    texture player2_background;
+    /*animationplayer welder;*/
+    /*animationplayer scientist;*/
+    /*list child_players;*/
+    texture arena_select_bg;
+    int arena;
+} vs_local;
 
-sd_rgba_image* sub_image(sd_vga_image *image, sd_palette *pal, int x, int y, int w, int h) {
+sd_rgba_image* sub_image(sd_vga_image *image, palette *pal, int x, int y, int w, int h) {
     sd_rgba_image *img = 0;
     sd_rgba_image *out = sd_rgba_image_create(w, h);
-    img = sd_vga_image_decode(image, pal, -1);
+    img = sd_vga_image_decode(image, (sd_palette*)pal, -1);
     for(int i = y; i < y+h; i++) {
         for(int j = x; j < x+w; j++) {
             int offset = (i*image->w*4)+(j*4);
@@ -39,9 +40,9 @@ sd_rgba_image* sub_image(sd_vga_image *image, sd_palette *pal, int x, int y, int
     return out;
 }
 
-void vs_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
+/*void vs_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
     scene *scene = userdata;
-    animation *ani = array_get(&scene->animations, id);
+    animation *ani = &bk_get_info(&scene->bk_data, id)->ani;
     if(ani != NULL) {
         animationplayer np;
         object *obj = malloc(sizeof(object));
@@ -53,13 +54,11 @@ void vs_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
         animationplayer_create(&np, id, ani, obj);
         list_append(&child_players, &np, sizeof(animationplayer));
         animationplayer_run(&np);
-        /*DEBUG("Create animation %d @ x,y = %d,%d", id, np.x, np.y);*/
         return;
     }
 }
 
 void vs_set_ani_finished(void *userdata, int id) {
-    /*scene *scene = userdata;*/
     iterator it;
     animationplayer *tmp = 0;
 
@@ -73,26 +72,6 @@ void vs_set_ani_finished(void *userdata, int id) {
 }
 
 
-int vs_init(scene *scene) {
-    // clone the left side of the background image
-    sd_rgba_image * out = sub_image(scene->bk->background, scene->bk->palettes[0], 0, 0, 160, 200);
-
-    if (scene->player2.selectable) {
-        // player1 gets to choose, start at arena
-        arena = 0;
-    } else {
-        // pick a random arena for 1 player mode
-        arena = rand() % 5; // srand was done in melee
-    }
-
-    list_create(&child_players);
-
-    texture_create(&player2_background, out->data, 160, 200);
-
-    menu_background2_create(&arena_select_bg, 211, 50);
-    sd_rgba_image_delete(out);
-    return 0;
-}
 
 void vs_post_init(scene *scene) {
     animation *ani;
@@ -119,27 +98,16 @@ void vs_post_init(scene *scene) {
     } else {
         DEBUG("could not load scientist animation");
     }
-}
+}*/
 
-void vs_deinit(scene *scene) {
-    texture_free(&player2_background);
-    texture_free(&arena_select_bg);
-    object_free(welder.pobj);
-    animationplayer_free(&welder);
-    object_free(scientist.pobj);
-    animationplayer_free(&scientist);
-
-    iterator it;
-    animationplayer *tmp = 0;
-    list_iter_begin(&child_players, &it);
-    while((tmp = iter_next(&it)) != NULL) {
-        animationplayer_free(tmp);
-    }
-
+void vs_free(scene *scene) {
+    vs_local *local = scene_get_userdata(scene);
+    texture_free(&local->player2_background);
+    texture_free(&local->arena_select_bg);
 }
 
 void vs_handle_action(scene *scene, int action) {
-    switch (action) {
+    /*switch (action) {
         case ACT_KICK:
         case ACT_PUNCH:
             scene->next_id = SCENE_ARENA0+arena;
@@ -158,29 +126,15 @@ void vs_handle_action(scene *scene, int action) {
                 arena = 0;
             }
             break;
-    }
+    }*/
 }
 
 void vs_tick(scene *scene) {
-    animationplayer_run(&welder);
-    animationplayer_run(&scientist);
-
-    iterator it;
-    animationplayer *tmp = 0;
-    list_iter_begin(&child_players, &it);
-    while((tmp = iter_next(&it)) != NULL) {
-        if (tmp->finished) {
-            DEBUG("freeing finished animation %d", tmp->id);
-            animationplayer_free(tmp);
-            list_delete(&child_players, &it);
-        } else {
-            animationplayer_run(tmp);
-        }
-    }
-
+    game_player *player1 = scene_get_game_player(scene, 0);
+    game_player *player2 = scene_get_game_player(scene, 1);
     ctrl_event *p1 = NULL, *p2 = NULL, *i;
-    if(controller_tick(scene->player1.ctrl, &p1) ||
-            controller_tick(scene->player2.ctrl, &p2)) {
+    if(controller_tick(player1->ctrl, &p1) ||
+            controller_tick(player2->ctrl, &p2)) {
         // one of the controllers bailed
 
         /*if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {*/
@@ -190,7 +144,7 @@ void vs_tick(scene *scene) {
         /*if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {*/
             /*net_controller_free(scene->player2.ctrl);*/
         /*}*/
-        scene->next_id = SCENE_MENU;
+        scene_load_new_scene(scene, SCENE_MENU);
     }
     i = p1;
     if (i) {
@@ -203,10 +157,11 @@ void vs_tick(scene *scene) {
 int vs_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN) {
         if(event->key.keysym.sym == SDLK_ESCAPE) {
-                scene->next_id = SCENE_MELEE;
+                scene_load_new_scene(scene, SCENE_MELEE);
         } else {
             ctrl_event *p1=NULL, *i;
-            controller_event(scene->player1.ctrl, event, &p1);
+            game_player *player1 = scene_get_game_player(scene, 0);
+            controller_event(player1->ctrl, event, &p1);
             i = p1;
             if (i) {
                 do {
@@ -221,74 +176,89 @@ int vs_event(scene *scene, SDL_Event *event) {
 }
 
 void vs_render(scene *scene) {
+    vs_local *local = scene_get_userdata(scene);
     // render the right side of the background
-    video_render_sprite_flip(&player2_background, 160, 0, BLEND_ALPHA, FLIP_HORIZONTAL);
+    video_render_sprite_flip(&local->player2_background, 160, 0, BLEND_ALPHA, FLIP_HORIZONTAL);
 
-    animation *ani = array_get(&scene->animations, 5);
+    game_player *player1 = scene_get_game_player(scene, 0);
+    game_player *player2 = scene_get_game_player(scene, 1);
 
     // player 1 HAR
-    video_render_sprite_flip(array_get(&ani->sprites, scene->player1.har_id), 160+ani->sdani->sprites[scene->player1.har_id]->pos_x,
-            0+ani->sdani->sprites[scene->player1.har_id]->pos_y, BLEND_ALPHA, FLIP_NONE);
+
+    sprite *sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id);
+    video_render_sprite_flip(&sprite->tex, 160+sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
     // player 2 HAR
-    video_render_sprite_flip(array_get(&ani->sprites, scene->player2.har_id), 160+ (ani->sdani->sprites[scene->player2.har_id]->pos_x * -1) - ani->sdani->sprites[scene->player2.har_id]->img->w,
-            0+ani->sdani->sprites[scene->player2.har_id]->pos_y, BLEND_ALPHA, FLIP_HORIZONTAL);
-
-    ani = array_get(&scene->animations, 4);
+    sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id);
+    video_render_sprite_flip(&sprite->tex, 160+ (sprite->pos.x * -1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
 
     // player 1 portrait
-    video_render_sprite_flip(array_get(&ani->sprites, scene->player1.player_id), 0,
-            200-ani->sdani->sprites[scene->player1.player_id]->img->w, BLEND_ALPHA, FLIP_NONE);
+    sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, player1->player_id);
+    video_render_sprite_flip(&sprite->tex, 0, 200 - sprite->tex.w, BLEND_ALPHA, FLIP_NONE);
 
     // player 2 portrait
-    video_render_sprite_flip(array_get(&ani->sprites, scene->player2.player_id), 320-ani->sdani->sprites[scene->player2.player_id]->img->w,
-            200-ani->sdani->sprites[scene->player1.player_id]->img->w, BLEND_ALPHA, FLIP_HORIZONTAL);
+    sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, player2->player_id);
+    video_render_sprite_flip(&sprite->tex, 320 - sprite->tex.w, 200 - sprite->tex.w, BLEND_ALPHA, FLIP_HORIZONTAL);
 
 
-    if (scene->player2.selectable) {
+    if (player2->selectable) {
         // arena selection
-        video_render_sprite_flip(&arena_select_bg, 55, 150, BLEND_ALPHA, FLIP_NONE);
+        video_render_sprite_flip(&local->arena_select_bg, 55, 150, BLEND_ALPHA, FLIP_NONE);
 
-        ani = array_get(&scene->animations, 3);
-        video_render_sprite_flip(array_get(&ani->sprites, arena), 59, 155, BLEND_ALPHA, FLIP_NONE);
+        sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, local->arena);
+        video_render_sprite_flip(&sprite->tex, 59, 155, BLEND_ALPHA, FLIP_NONE);
 
 
         // arena name
-        font_render_wrapped(&font_small, lang_get(56+arena), 59+72, 153, (211-72)-4, COLOR_GREEN);
+        font_render_wrapped(&font_small, lang_get(56+local->arena), 59+72, 153, (211-72)-4, COLOR_GREEN);
 
         // arena description
-        font_render_wrapped(&font_small, lang_get(66+arena), 59+72, 161, (211-72)-4, COLOR_GREEN);
+        font_render_wrapped(&font_small, lang_get(66+local->arena), 59+72, 161, (211-72)-4, COLOR_GREEN);
 
     } else {
-        font_render_wrapped(&font_small, lang_get(749+(11*scene->player1.player_id)+scene->player2.player_id), 59, 160, 150, COLOR_YELLOW);
-        font_render_wrapped(&font_small, lang_get(870+(11*scene->player2.player_id)+scene->player1.player_id), 320-(59+150), 180, 150, COLOR_YELLOW);
+        font_render_wrapped(&font_small, lang_get(749+(11*player1->player_id)+player2->player_id), 59, 160, 150, COLOR_YELLOW);
+        font_render_wrapped(&font_small, lang_get(870+(11*player2->player_id)+player1->player_id), 320-(59+150), 180, 150, COLOR_YELLOW);
     }
 
     // welder & scientist
-    animationplayer_render(&welder);
-    animationplayer_render(&scientist);
+    /*animationplayer_render(&welder);*/
+    /*animationplayer_render(&scientist);*/
 
-    iterator it;
-    animationplayer *tmp = 0;
-    list_iter_begin(&child_players, &it);
-    while((tmp = iter_next(&it)) != NULL) {
-        animationplayer_render(tmp);
-    }
+    /*iterator it;*/
+    /*animationplayer *tmp = 0;*/
+    /*list_iter_begin(&child_players, &it);*/
+    /*while((tmp = iter_next(&it)) != NULL) {*/
+        /*animationplayer_render(tmp);*/
+    /*}*/
 
     // gantries
-    ani = array_get(&scene->animations, 11);
-    video_render_sprite_flip(array_get(&ani->sprites, 0), ani->sdani->sprites[0]->pos_x,
-            ani->sdani->sprites[0]->pos_y, BLEND_ALPHA, FLIP_NONE);
-    video_render_sprite_flip(array_get(&ani->sprites, 0), 320 - (ani->sdani->sprites[0]->pos_x*-1) - ani->sdani->sprites[0]->img->w,
-            ani->sdani->sprites[0]->pos_y, BLEND_ALPHA, FLIP_HORIZONTAL);
+    sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 11)->ani, 0);
+    video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
+    video_render_sprite_flip(&sprite->tex, 320 - (sprite->pos.x*-1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
 }
 
-void vs_load(scene *scene) {
-    scene->event = vs_event;
-    scene->render = vs_render;
-    scene->init = vs_init;
-    scene->post_init = vs_post_init;
-    scene->deinit = vs_deinit;
-    scene->tick = vs_tick;
+int vs_create(scene *scene) {
+    // Init local data
+    vs_local *local = malloc(sizeof(vs_local));
+    scene_set_userdata(scene, local);
+
+    game_player *player2 = scene_get_game_player(scene, 1);
+
+    // clone the left side of the background image
+    sd_rgba_image * out = sub_image((sd_vga_image*)scene->bk_data.background.raw_sprite, bk_get_palette(&scene->bk_data, 0), 0, 0, 160, 200);
+
+    if (player2->selectable) {
+        // player1 gets to choose, start at arena
+        local->arena = 0;
+    } else {
+        // pick a random arena for 1 player mode
+        local->arena = rand() % 5; // srand was done in melee
+    }
+
+    texture_create(&local->player2_background, out->data, 160, 200);
+
+    menu_background2_create(&local->arena_select_bg, 211, 50);
+    sd_rgba_image_delete(out);
+    return 0;
 }
 

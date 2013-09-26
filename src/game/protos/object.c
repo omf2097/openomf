@@ -52,6 +52,11 @@ void object_act(object *obj, int action) {
     }
 }
 
+int object_finished(object *obj) {
+    // TODO
+    return 0;
+}
+
 void object_free(object *obj) {
     if(obj->free != NULL) {
         obj->free(obj);

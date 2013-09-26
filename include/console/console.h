@@ -5,7 +5,7 @@
 #include "utils/list.h"
 #include "utils/hashmap.h"
 #include "game/text/text.h"
-#include "game/scene.h"
+#include "game/protos/scene.h"
 
 typedef struct console_t console;
 typedef struct command_t command;
