@@ -298,7 +298,8 @@ void player_run(object *obj) {
         
         // Set render settings
         if(real_frame < 25) {
-            sprite *sprite = obj->cur_sprite;
+            sprite *sprite = animation_get_sprite(obj->cur_animation, real_frame);
+            obj->cur_sprite = sprite;
             if(sprite != NULL) {
                 obj->sprite_state.flipmode = FLIP_NONE;
                 obj->sprite_state.blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
