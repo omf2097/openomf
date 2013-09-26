@@ -86,8 +86,8 @@ void player_set_repeat(object *obj, int repeat) {
 	obj->animation_state.repeat = repeat;
 }
 
-void player_set_direction(object *obj, int direction) {
-	obj->animation_state.direction = direction;
+int player_get_repeat(object *obj) {
+    return obj->animation_state.repeat;
 }
 
 void player_set_end_frame(object *obj, int end_frame) {

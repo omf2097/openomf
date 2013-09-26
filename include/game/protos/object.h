@@ -69,6 +69,9 @@ void object_set_free_cb(object *obj, object_free_cb cbfunc);
 void object_set_act_cb(object *obj, object_act_cb cbfunc);
 void object_set_tick_cb(object *obj, object_tick_cb cbfunc);
 
+void object_set_repeat(object *obj, int repeat);
+int object_get_repeat(object *obj);
+
 void object_set_direction(object *obj, int dir);
 int object_get_direction(object *obj);
 

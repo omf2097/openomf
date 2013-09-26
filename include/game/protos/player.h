@@ -33,6 +33,7 @@ void player_reset(object *obj);
 void player_run(object *obj);
 void player_render(object *obj);
 void player_set_repeat(object *obj, int repeat);
+int player_get_repeat(object *obj);
 void player_set_direction(object *obj, int direction);
 void player_set_end_frame(object *obj, int end_frame);
 void player_next_frame(object *obj);

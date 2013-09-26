@@ -68,7 +68,6 @@ add_executable(openomf
     src/game/scenes/melee.c
     src/game/scenes/vs.c
     src/game/objects/har.c
-    src/game/objects/particle.c
     src/game/text/text.c
     src/game/text/languages.c
     src/game/menu/menu.c

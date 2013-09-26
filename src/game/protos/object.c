@@ -73,6 +73,9 @@ void object_reset_hstate(object *obj) {
     obj->vstate = (obj->vel.y < 0.01f && obj->vel.y > -0.01f) ? OBJECT_STABLE : OBJECT_MOVING;
 }
 
+void object_set_repeat(object *obj, int repeat) { player_set_repeat(obj, repeat); }
+int object_get_repeat(object *obj) { return player_get_repeat(obj); }
+
 void object_set_direction(object *obj, int dir) { obj->direction = dir; }
 int object_get_direction(object *obj) { return obj->direction; }
 
