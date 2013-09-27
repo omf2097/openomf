@@ -25,6 +25,10 @@ const char* fbo_get_status(int code) {
 }
 
 int fbo_create(fbo *fbo, unsigned int w, unsigned int h) {
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
     // Texture and Renderbuffer object (RBO)
     rbo_create(&fbo->rbo, w, h);
     texture_create(&fbo->tex, 0, w, h);

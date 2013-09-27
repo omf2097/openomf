@@ -25,6 +25,8 @@ int engine_init() {
     int h = setting->video.screen_h;
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
+    DEBUG("Initializing for %dx%d, fs: %d, vsync: %d", w, h, fs, vsync);
+
     _vsync = vsync;
     texturelist_init();
     if(video_init(w, h, fs, vsync)) {
@@ -117,9 +119,9 @@ void engine_run() {
             console_tick();
             
             // Handle waiting period leftover time
-            /*omf_wait -= scene_ms_per_tick(&game->sc);*/
+            omf_wait -= game_state_ms_per_tick(&game);
         }
-        /*scene_start = SDL_GetTicks();*/
+        frame_start = SDL_GetTicks();
 
         // Do the actual rendering jobs
         game_state_render(&game);

@@ -1,4 +1,5 @@
 #include "game/game_player.h"
+#include <stdlib.h>
 
 void game_player_create(game_player *gp) {
 	gp->har_id = 0;

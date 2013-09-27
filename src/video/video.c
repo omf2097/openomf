@@ -37,8 +37,8 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);                                               
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);   
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);                                               
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);   
 
     // Open window
     window = SDL_CreateWindow(
@@ -87,7 +87,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     }
     
     // Load shaders
-    shader *lightshow = malloc(sizeof(shader));
+    /*shader *lightshow = malloc(sizeof(shader));
     if(shader_create(lightshow, "shaders/light.ps", SHADER_FRAGMENT)) {
         PERROR("Unable to link shader!");
         shader_debug_log(lightshow);
@@ -107,7 +107,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     }
     shaderprog_debug_log(&lights);
     
-    /*shader *xbrpix = malloc(sizeof(shader));
+    shader *xbrpix = malloc(sizeof(shader));
     if(shader_create(xbrpix, "shaders/xbr.ps", SHADER_FRAGMENT)) {
         PERROR("Unable to link shader!");
         shader_debug_log(xbrpix);
@@ -141,6 +141,8 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
     
     // A nice quad. Screw you, OpenGL 3!
     fullscreen_quad = glGenLists(1);
@@ -407,7 +409,7 @@ void video_render_finish() {
 }
 
 void video_close() {
-    shaderprog_free(&lights);
+    //shaderprog_free(&lights);
     fbo_free(&target);
     glDeleteLists(fullscreen_quad, 1);
     SDL_GL_DeleteContext(glctx);  
