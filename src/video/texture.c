@@ -32,11 +32,10 @@ int texture_create(texture *tex, const char *data, unsigned int w, unsigned int 
     if(data != NULL) {
         tex->data = malloc(w * h * 4);
         memcpy(tex->data, data, w * h * 4);
-
-        if(!texture_upload(tex)) {
-            texturelist_add(tex);
-            return 0;
-        }
+    }
+    if(!texture_upload(tex)) {
+        texturelist_add(tex);
+        return 0;
     }
     return 1;
 }

@@ -449,6 +449,7 @@ int console_init() {
     con->isopen = 0;
     con->ypos = 0;
     con->ticks = 0;
+    con->dir = 0;
     con->input[0] = '\0';
     con->output[0] = '\0';
     con->output_head = 0;

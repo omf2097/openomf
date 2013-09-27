@@ -173,9 +173,6 @@ game_player* game_state_get_player(game_state *game, int player_id) {
 }
 
 void game_state_free(game_state *game) {
-    // Deinit scene
-    scene_free(&game->sc);
-    
     // Free objects
     object *obj = NULL;
     iterator it;

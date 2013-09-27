@@ -13,12 +13,18 @@ int scene_create(scene *scene, void *game_state, int scene_id) {
         return 1;
     }
 
+    // Init functions
     scene->game_state = game_state;
     scene->userdata = NULL;
     scene->free = NULL;
     scene->event = NULL;
     scene->render = NULL;
     scene->tick = NULL;
+
+    // Init background sprite with palette
+    sprite_init(&scene->bk_data.background, bk_get_palette(&scene->bk_data, 0), 0);
+
+    // All done.
     DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
     return 0;
 }
