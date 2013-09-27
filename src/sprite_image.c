@@ -171,7 +171,7 @@ sd_vga_image* sd_sprite_vga_decode(sd_sprite_image *img) {
     uint16_t x = 0;
     uint16_t y = 0;
     int i = 0;
-    if (img->w == 0 || img->h == 0) {
+    if (img->w == 0 || img->h == 0 || img->len == 0) {
         // XXX CREDITS.BK has a bunch of 0 width sprites, for some unknown reason
         return vga;
     }
