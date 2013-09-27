@@ -259,6 +259,11 @@ int vs_create(scene *scene) {
 
     menu_background2_create(&local->arena_select_bg, 211, 50);
     sd_rgba_image_delete(out);
+
+    scene_set_render_cb(scene, vs_render);
+    scene_set_event_cb(scene, vs_event);
+    scene_set_tick_cb(scene, vs_tick);
+    scene_set_free_cb(scene, vs_free);
     return 0;
 }
 
