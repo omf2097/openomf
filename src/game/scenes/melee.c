@@ -330,6 +330,7 @@ void melee_render(scene *scene) {
     int current_a = 5*local->row_a + local->column_a;
     int current_b = 5*local->row_b + local->column_b;
 
+    palette *mpal = bk_get_palette(&scene->bk_data, 0);
 
     if (local->selection == 0) {
         video_render_sprite_flip(&local->feh, 70, 0, BLEND_ALPHA, FLIP_NONE);
@@ -362,13 +363,15 @@ void melee_render(scene *scene) {
             font_render_wrapped(&font_small, lang_get(187), 160, 97, 160, COLOR_GREEN);
         }
     }
-    ani = &bk_get_info(&scene->bk_data, 5)->ani;
 
+    ani = &bk_get_info(&scene->bk_data, 5)->ani;
+    animation_init(ani, mpal, 0);
     if (player2->selectable) {
         video_render_sprite_flip(&animation_get_sprite(ani, 0)->tex, 254, 0, BLEND_ALPHA, FLIP_NONE);
     } else {
         video_render_sprite_flip(&animation_get_sprite(ani, 1)->tex, 162, 0, BLEND_ALPHA, FLIP_NONE);
     }
+
     if (local->selection == 0) {
         // player 1 name
         font_render_wrapped(&font_small, lang_get(20+current_a), 0, 52, 66, COLOR_BLACK);
@@ -381,18 +384,20 @@ void melee_render(scene *scene) {
         render_highlights(scene);
         for(int i = 0; i < 10; i++) {
             sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, i);
-
+            sprite_init(sprite, mpal, 0);
             video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
             if (i == current_a) {
                 // render the big portrait
                 sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, i);
+                sprite_init(sprite, mpal, 0);
                 video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
             }
 
             if (player2->selectable && i == current_b) {
                 // render the big portrait
                 sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, i);
+                sprite_init(sprite, mpal, 0);
                 video_render_sprite_flip(&sprite->tex, 320-(sprite->tex.w + sprite->pos.x), sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
             }
         }
@@ -400,12 +405,14 @@ void melee_render(scene *scene) {
         // render the stupid unselected HAR portraits before anything
         // so we can render anything else on top of them
         sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);
+        sprite_init(sprite, mpal, 0);
         video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
         render_highlights(scene);
 
         // currently selected player
         sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_a);
+        sprite_init(sprite, mpal, 0);
         video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
         //currently selected HAR
@@ -421,6 +428,7 @@ void melee_render(scene *scene) {
 
             // currently selected player
             sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_b);
+            sprite_init(sprite, mpal, 0);
             video_render_sprite_flip(&sprite->tex, 320-sprite->tex.w + sprite->pos.x,
                     sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
             // currently selected HAR

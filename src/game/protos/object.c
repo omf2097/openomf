@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "game/protos/object.h"
 #include "video/video.h"
+#include "utils/log.h"
 
 void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->pos = vec2i_to_f(pos);
@@ -37,7 +38,7 @@ void object_render(object *obj) {
         int x = obj->pos.x + obj->cur_sprite->pos.x;
         if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
             x = obj->pos.x + (obj->cur_sprite->pos.x * object_get_direction(obj)) - object_get_w(obj);
-        } 
+        }
         int flipmode = obj->sprite_state.flipmode;
         if(obj->direction == OBJECT_FACE_LEFT) {
             flipmode ^= FLIP_HORIZONTAL;
