@@ -22,7 +22,7 @@ int texture_upload(texture *tex) {
 int texture_create(texture *tex, const char *data, unsigned int w, unsigned int h) {
     tex->w = tex->bitmap_w = w;
     tex->h = tex->bitmap_h = h;
-    
+
     // Reserve texture ID
     glGenTextures(1, &tex->id);
     

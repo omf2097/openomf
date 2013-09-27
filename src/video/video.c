@@ -210,7 +210,6 @@ void video_screenshot(image *img) {
     image_create(img, screen_w, screen_h);
     glReadBuffer(GL_FRONT);
     glReadPixels(0, 0, img->w, img->h, GL_BGR, GL_UNSIGNED_BYTE, img->data);
-    glReadBuffer(GL_NONE);
 }
 
 void video_set_rendering_mode(int mode) {
