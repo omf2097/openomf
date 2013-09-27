@@ -343,7 +343,7 @@ void mainmenu_free(scene *scene) {
     textbutton_free(&local->gameplay_done_button);
     menu_free(&local->gameplay_menu);
 
-    textbutton_free(&local->net_header);
+    /*textbutton_free(&local->net_header);
     textbutton_free(&local->net_connect_button);
     textbutton_free(&local->net_listen_button);
     textbutton_free(&local->net_done_button);
@@ -356,7 +356,7 @@ void mainmenu_free(scene *scene) {
 
     textbutton_free(&local->listen_button);
     textbutton_free(&local->listen_cancel_button);
-    menu_free(&local->listen_menu);
+    menu_free(&local->listen_menu);*/
 
     settings_save();
 }
