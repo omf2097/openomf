@@ -8,24 +8,6 @@
 #define LAYER_HAR 0x01
 #define LAYER_SCRAP 0x02
 
-enum {
-    ACT_KICK,
-    ACT_PUNCH,
-    ACT_UP,
-    ACT_UPLEFT,
-    ACT_UPRIGHT,
-    ACT_DOWN,
-    ACT_DOWNLEFT,
-    ACT_DOWNRIGHT,
-    ACT_LEFT,
-    ACT_RIGHT,
-    ACT_STOP,
-    ACT_WALKLEFT,
-    ACT_WALKRIGHT,
-    ACT_CROUCH,
-    ACT_JUMP
-};
-
 // All HARs have these predefined animations
 enum {
     ANIM_JUMPING=1,

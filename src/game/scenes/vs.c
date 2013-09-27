@@ -107,26 +107,27 @@ void vs_free(scene *scene) {
 }
 
 void vs_handle_action(scene *scene, int action) {
-    /*switch (action) {
+    vs_local *local = scene_get_userdata(scene);
+    switch (action) {
         case ACT_KICK:
         case ACT_PUNCH:
-            scene->next_id = SCENE_ARENA0+arena;
+            scene_load_new_scene(scene, SCENE_ARENA0+local->arena);
             break;
         case ACT_UP:
         case ACT_LEFT:
-            arena--;
-            if (arena < 0) {
-                arena =4;
+            local->arena--;
+            if (local->arena < 0) {
+                local->arena =4;
             }
             break;
         case ACT_DOWN:
         case ACT_RIGHT:
-            arena++;
-            if (arena > 4) {
-                arena = 0;
+            local->arena++;
+            if (local->arena > 4) {
+                local->arena = 0;
             }
             break;
-    }*/
+    }
 }
 
 void vs_tick(scene *scene) {

@@ -57,7 +57,7 @@ typedef struct melee_local_t {
     object *harplayer_b;
 } melee_local;
 
-void refresh_pilot_stats();
+void refresh_pilot_stats(melee_local *local);
 
 /*void melee_switch_animation(scene *scene, object *harplayer, int id, int x, int y) {*/
     /*object *obj = malloc(sizeof(object));*/
@@ -171,7 +171,9 @@ void refresh_pilot_stats(melee_local *local) {
 }
 
 void handle_action(scene *scene, int player, int action) {
-    /*melee_local *local = scene_get_userdata(scene);
+    game_player *player1 = scene_get_game_player(scene, 0);
+    game_player *player2 = scene_get_game_player(scene, 1);
+    melee_local *local = scene_get_userdata(scene);
     int *row, *column, *done;
     if (player == 1) {
         DEBUG("event for player 1");
@@ -187,9 +189,9 @@ void handle_action(scene *scene, int player, int action) {
 
     if (*done) {
         return;
-    }*/
+    }
 
-    /*switch (action) {
+    switch (action) {
         case ACT_LEFT:
             (*column)--;
             if (*column < 0) {
@@ -209,42 +211,42 @@ void handle_action(scene *scene, int player, int action) {
         case ACT_KICK:
         case ACT_PUNCH:
             *done = 1;
-            if (done_a && (done_b || !scene->player2.selectable)) {
-                done_a = 0;
-                done_b = 0;
-                if (selection == 0) {
-                    selection = 1;
-                    player_id_a = 5*row_a + column_a;
-                    player_id_b = 5*row_b + column_b;
+            if (local->done_a && (local->done_b || !player2->selectable)) {
+                local->done_a = 0;
+                local->done_b = 0;
+                if (local->selection == 0) {
+                    local->selection = 1;
+                    local->player_id_a = 5*local->row_a + local->column_a;
+                    local->player_id_b = 5*local->row_b + local->column_b;
                 } else {
-                    scene->player1.har_id = 5*row_a+column_a;
-                    scene->player1.player_id = player_id_a;
-                    if (scene->player2.selectable) {
-                        scene->player2.har_id = 5*row_b+column_b;
-                        scene->player2.player_id = player_id_b;
+                    player1->har_id = 5*local->row_a+local->column_a;
+                    player1->player_id = local->player_id_a;
+                    if (player2->selectable) {
+                        player2->har_id = 5*local->row_b+local->column_b;
+                        player2->player_id = local->player_id_b;
                     } else {
                         // randomly pick opponent and HAR
                         srand(time(NULL));
-                        scene->player2.har_id = rand() % 10;
+                        player2->har_id = rand() % 10;
                         int i;
-                        while((i = rand() % 10) == player_id_a) {}
-                        scene->player2.player_id = i;
+                        while((i = rand() % 10) == local->player_id_a) {}
+                        player2->player_id = i;
                     }
-                    scene->next_id = SCENE_VS;
+                    scene_load_new_scene(scene, SCENE_VS);
                 }
             }
             break;
     }
 
-    refresh_pilot_stats();
-    if (selection == 1) {
-        int har_animation_a = (5*row_a) + column_a + 18;
+    refresh_pilot_stats(local);
+    /*if (local->selection == 1) {
+        int har_animation_a = (5*local->row_a) + local->column_a + 18;
         if (harplayer_a.id != har_animation_a) {
             melee_switch_animation(scene, &harplayer_a, har_animation_a, 110, 95);
             animationplayer_set_direction(&harplayer_a, 1);
         }
-        if (scene->player2.selectable) {
-            int har_animation_b = (5*row_b) + column_b + 18;
+        if (player2->selectable) {
+            int har_animation_b = (5*local->row_b) + local->column_b + 18;
             if (harplayer_b.id != har_animation_b) {
                 melee_switch_animation(scene, &harplayer_b, har_animation_b, 210, 95);
                 animationplayer_set_direction(&harplayer_b, -1);
@@ -271,10 +273,11 @@ int melee_event(scene *scene, SDL_Event *event) {
                     scene_load_new_scene(scene, SCENE_MENU);
                 }
             } else {
-                /*
+                game_player *player1 = scene_get_game_player(scene, 0);
+                game_player *player2 = scene_get_game_player(scene, 1);
                 ctrl_event *p1=NULL, *p2 = NULL, *i;
-                controller_event(scene->player1.ctrl, event, &p1);
-                controller_event(scene->player2.ctrl, event, &p2);
+                controller_event(player1->ctrl, event, &p1);
+                controller_event(player2->ctrl, event, &p2);
                 i = p1;
                 if (i) {
                     do {
@@ -288,7 +291,7 @@ int melee_event(scene *scene, SDL_Event *event) {
                         handle_action(scene, 2, i->action);
                     } while((i = i->next));
                     DEBUG("done");
-                }*/
+                }
             }
     }
     return 0;
@@ -437,20 +440,37 @@ int melee_create(scene *scene) {
     melee_local *local = malloc(sizeof(melee_local));
     scene_set_userdata(scene, local);
 
+    // TODO read this from MASTER.DAT
     local->pilots[0].power=5;
     local->pilots[0].agility=16;
-    /*= {*/
-        /*{5,16,9},*/
-        /*{13,9,8},*/
-        /*{7,20,4},*/
-        /*{9,7,15},*/
-        /*{20,1,8},*/
-        /*{9,10,11},*/
-        /*{10,1,20},*/
-        /*{7,10,13},*/
-        /*{14,8,8},*/
-        /*{14,4,12}*/
-    /*};*/
+    local->pilots[0].endurance=9;
+    local->pilots[1].power=13;
+    local->pilots[1].agility=9;
+    local->pilots[1].endurance=8;
+    local->pilots[2].power=7;
+    local->pilots[2].agility=20;
+    local->pilots[2].endurance=4;
+    local->pilots[3].power=9;
+    local->pilots[3].agility=7;
+    local->pilots[3].endurance=15;
+    local->pilots[4].power=20;
+    local->pilots[4].agility=1;
+    local->pilots[4].endurance=8;
+    local->pilots[5].power=9;
+    local->pilots[5].agility=10;
+    local->pilots[5].endurance=11;
+    local->pilots[6].power=10;
+    local->pilots[6].agility=1;
+    local->pilots[6].endurance=20;
+    local->pilots[7].power=7;
+    local->pilots[7].agility=10;
+    local->pilots[7].endurance=13;
+    local->pilots[8].power=14;
+    local->pilots[8].agility=8;
+    local->pilots[8].endurance=8;
+    local->pilots[9].power=14;
+    local->pilots[9].agility=4;
+    local->pilots[9].endurance=12;
 
     memset(&bitmap, 255, 51*36*4);
     local->ticks = 0;

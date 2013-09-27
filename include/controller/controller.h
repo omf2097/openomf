@@ -7,6 +7,24 @@
 #include "utils/list.h"
 
 enum {
+    ACT_KICK,
+    ACT_PUNCH,
+    ACT_UP,
+    ACT_UPLEFT,
+    ACT_UPRIGHT,
+    ACT_DOWN,
+    ACT_DOWNLEFT,
+    ACT_DOWNRIGHT,
+    ACT_LEFT,
+    ACT_RIGHT,
+    ACT_STOP,
+    ACT_WALKLEFT,
+    ACT_WALKRIGHT,
+    ACT_CROUCH,
+    ACT_JUMP
+};
+
+enum {
     CTRL_TYPE_KEYBOARD,
     CTRL_TYPE_GAMEPAD,
     CTRL_TYPE_NETWORK,
