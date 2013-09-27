@@ -19,9 +19,13 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->cur_animation = NULL;
     obj->cur_sprite = NULL;
     obj->sound_translation_table = NULL;
+    player_create(obj);
 }
 
 void object_tick(object *obj) {
+    if(obj->cur_animation != NULL) {
+        player_run(obj);
+    }
     if(obj->tick != NULL) {
         obj->tick(obj);
     }
@@ -56,6 +60,11 @@ void object_free(object *obj) {
     if(obj->free != NULL) {
         obj->free(obj);
     }
+    player_free(obj);
+}
+
+void object_set_stl(object *obj, char *ptr) {
+    obj->sound_translation_table = ptr;
 }
 
 void object_set_animation(object *obj, animation *ani) {

@@ -24,6 +24,23 @@ int scene_create(scene *scene, void *game_state, int scene_id) {
     // Init background sprite with palette
     sprite_init(&scene->bk_data.background, bk_get_palette(&scene->bk_data, 0), 0);
 
+    // Bootstrap animations
+    iterator it;
+    hashmap_iter_begin(&scene->bk_data.infos, &it);
+    hashmap_pair *pair = NULL;
+    while((pair = iter_next(&it)) != NULL) {
+        bk_info *info = (bk_info*)pair->val;
+        if(info->load_on_start || info->probability == 1) {
+            object *obj = malloc(sizeof(object));
+            object_create(obj, info->ani.start_pos, vec2f_create(0,0));
+            object_set_stl(obj, scene->bk_data.sound_translation_table);
+            animation_init(&info->ani, bk_get_palette(&scene->bk_data, 0), 0);
+            object_set_animation(obj, &info->ani);
+            scene_add_object(scene, obj);
+            DEBUG("Scene bootstrap: Animation started.");
+        }
+    }
+
     // All done.
     DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
     return 0;

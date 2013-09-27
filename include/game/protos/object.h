@@ -58,6 +58,8 @@ void object_act(object *obj, int action);
 int object_finished(object *obj);
 void object_free(object *obj);
 
+void object_set_stl(object *obj, char *ptr);
+
 void object_set_animation(object *obj, animation *ani);
 void object_select_sprite(object *obj, int id);
 

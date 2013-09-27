@@ -21,7 +21,6 @@ void sprite_init(sprite *sp, palette *pal, int remap_id) {
 							(sd_vga_image*)sp->raw_sprite, 
 							(sd_palette*)pal, 
 							remap_id);
-	DEBUG("TEX: w,h = %d,%d.", img->w, img->h);
 	if(texture_create(&sp->tex, img->data, img->w, img->h)) {
 		PERROR("There was an error while creating texture in sprite_init!");
 	}

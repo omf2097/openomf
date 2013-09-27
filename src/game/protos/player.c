@@ -108,12 +108,14 @@ void player_create(object *obj) {
     obj->animation_state.enemy_y = 0;
     obj->animation_state.add_player = NULL;
     obj->animation_state.parser = NULL;
+    obj->animation_state.sound_state = malloc(sizeof(sound_state));
 }
 
 void player_free(object *obj) {
     if(obj->animation_state.parser != NULL) {
         sd_stringparser_delete(obj->animation_state.parser);
     }
+    free(obj->animation_state.sound_state);
 }
 
 void player_reload(object *obj) {

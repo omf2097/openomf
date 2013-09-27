@@ -162,6 +162,7 @@ void game_state_tick(game_state *game) {
         if(object_finished(obj)) {
             object_free(obj);
             vector_delete(&game->objects, &it);
+            DEBUG("Object is finished, removing.");
         } else {
             object_tick(obj);
         }
