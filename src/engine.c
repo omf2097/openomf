@@ -6,7 +6,6 @@
 #include "audio/music.h"
 #include "audio/soundloader.h"
 #include "video/texture.h"
-#include "video/texturelist.h"
 #include "video/video.h"
 #include "game/text/languages.h"
 #include "game/game_state.h"
@@ -28,7 +27,6 @@ int engine_init() {
     DEBUG("Initializing for %dx%d, fs: %d, vsync: %d", w, h, fs, vsync);
 
     _vsync = vsync;
-    texturelist_init();
     if(video_init(w, h, fs, vsync)) {
         return 1;
     }
@@ -155,7 +153,6 @@ void engine_close() {
     fonts_close();
     lang_close();
     video_close();
-    texturelist_close();
     audio_close();
     soundloader_close();
 }

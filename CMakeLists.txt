@@ -41,7 +41,6 @@ add_executable(openomf
     src/video/image.c
     src/video/color.c
     src/video/glextloader.c
-    src/video/texturelist.c
     src/audio/audio.c
     src/audio/music.c
     src/audio/sound.c
