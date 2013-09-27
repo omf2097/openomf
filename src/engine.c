@@ -124,7 +124,7 @@ void engine_run() {
         frame_start = SDL_GetTicks();
 
         // Do the actual rendering jobs
-        game_state_render(&game);
+        //game_state_render(&game);
         console_render();
         video_render_finish();
         audio_render(dt);
