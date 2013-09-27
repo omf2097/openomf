@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
 
 sd_sprite_image* sd_sprite_image_create(unsigned int w, unsigned int h, unsigned int len) {
     sd_sprite_image *img = (sd_sprite_image*)malloc(sizeof(sd_sprite_image));
@@ -174,6 +175,8 @@ sd_vga_image* sd_sprite_vga_decode(sd_sprite_image *img) {
         // XXX CREDITS.BK has a bunch of 0 width sprites, for some unknown reason
         return vga;
     }
+    // everything defaults to transparent
+    memset(vga->stencil, 0, img->w*img->h);
     while(i < img->len) {
         // read a word
         uint16_t c = (uint8_t)img->data[i] + ((uint8_t)img->data[i+1] << 8);
@@ -192,6 +195,7 @@ sd_vga_image* sd_sprite_vga_decode(sd_sprite_image *img) {
                     uint8_t b = img->data[i];
                     int pos = ((y * img->w) + x);
                     vga->data[pos] = b;
+                    vga->stencil[pos] = 1;
                     i++; // we read 1 byte
                     x++;
                     data--;

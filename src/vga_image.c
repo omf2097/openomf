@@ -11,12 +11,15 @@ sd_vga_image* sd_vga_image_create(unsigned int w, unsigned int h) {
     img->h = h;
     img->len = w*h;
     img->data = (char*)malloc(w*h);
+    img->stencil = (char*)malloc(w*h);
     memset(img->data, 0, w*h);
+    memset(img->stencil, 1, w*h);
     return img;
 }
 
 void sd_vga_image_delete(sd_vga_image *img) {
     free(img->data);
+    free(img->stencil);
     free(img);
 }
 
@@ -43,6 +46,7 @@ sd_rgba_image* sd_vga_image_decode(sd_vga_image *img, sd_palette *pal, int remap
     for(int y = img->h - 1; y >= 0; y--) {
         for(int x = 0; x < img->w; x++) {
             uint8_t b = img->data[y * img->w + x];
+            uint8_t s = img->stencil[y * img->w + x];
             pos = ((y * img->w) + x) * 4;
             if(remapping > -1) {
                 rgba->data[pos+0] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][0];
@@ -53,7 +57,12 @@ sd_rgba_image* sd_vga_image_decode(sd_vga_image *img, sd_palette *pal, int remap
                 rgba->data[pos+1] = (uint8_t)pal->data[b][1];
                 rgba->data[pos+2] = (uint8_t)pal->data[b][2];
             }
-            rgba->data[pos+3] = (uint8_t)255; // fully opaque
+            // check the stencil to see if this is a real pixel
+            if (s == 1) {
+                rgba->data[pos+3] = (uint8_t)255; // fully opaque
+            } else {
+                rgba->data[pos+3] = (uint8_t)0; // fully transparent
+            }
         }
     }
     return rgba;

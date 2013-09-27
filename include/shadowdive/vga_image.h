@@ -18,6 +18,8 @@ typedef struct sd_vga_image_t {
     unsigned int h;
     unsigned int len;
     char *data;
+    // TODO this should probably be a bitfield, but that is more work
+    char *stencil; // holds 0 or 1 indicating whether a pixel is present
 } sd_vga_image;
 
 sd_vga_image* sd_vga_image_create(unsigned int w, unsigned int h);
