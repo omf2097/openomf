@@ -217,16 +217,19 @@ void mainmenu_tourn(component *c, void *userdata) {
 void mainmenu_enter_menu_config(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     local->mstack[local->mstack_pos++] = &local->config_menu;
+    local->current_menu = &local->config_menu;
 }
 
 void mainmenu_enter_menu_gameplay(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[local->mstack_pos++] = &local->config_menu;
+    local->mstack[local->mstack_pos++] = &local->gameplay_menu;
+    local->current_menu = &local->gameplay_menu;
 }
 
 void mainmenu_enter_menu_video(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     local->mstack[local->mstack_pos++] = &local->video_menu;
+    local->current_menu = &local->video_menu;
 }
 
 void mainmenu_prev_menu(component *c, void *userdata) {
@@ -496,10 +499,11 @@ int mainmenu_create(scene *scene) {
         audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
     }
     
-    // Start stack
+    // Start stack & set main menu to current
     local->mstack_pos = 0;
     local->mstack[local->mstack_pos++] = &local->main_menu;
-    
+    local->current_menu = &local->main_menu;
+
     // Create main menu
     menu_create(&local->main_menu, 165, 5, 151, 119);
     textbutton_create(&local->oneplayer_button, &font_large, "ONE PLAYER GAME");
@@ -625,6 +629,7 @@ int mainmenu_create(scene *scene) {
     menu_select(&local->config_menu, &local->playerone_input_button);
 
     local->config_done_button.click = mainmenu_prev_menu;
+    local->config_done_button.userdata = (void*)scene;
 
     menu_create(&local->video_menu, 165, 5, 151, 119);
     textbutton_create(&local->video_header, &font_large, "VIDEO");
@@ -707,9 +712,8 @@ int mainmenu_create(scene *scene) {
     menu_select(&local->gameplay_menu, &local->speed_slider);
 
     local->gameplay_done_button.click = mainmenu_prev_menu;
+    local->gameplay_done_button.userdata = (void*)scene;
 
-    local->current_menu = &local->main_menu;
-    
     // Set callbacks
     scene_set_event_cb(scene, mainmenu_event);
     scene_set_render_cb(scene, mainmenu_render);
