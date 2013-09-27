@@ -21,13 +21,18 @@
 int game_state_create(game_state *game) {
     game->run = 1;
     vector_create(&game->objects, sizeof(object));
-    game->this_id = SCENE_INTRO;
-    game->next_id = SCENE_INTRO;
-    if(scene_create(&game->sc, game, SCENE_INTRO)) {
-        PERROR("Error while loading scene %d.", SCENE_INTRO);
+    int nscene = SCENE_INTRO;
+    if(scene_create(&game->sc, game, nscene)) {
+        PERROR("Error while loading scene %d.", nscene);
         return 1;
     }
-    intro_create(&game->sc);
+    if(intro_create(&game->sc)) {
+        scene_free(&game->sc);
+        PERROR("Error while creating intro scene.");
+        return 1;
+    }
+    game->this_id = nscene;
+    game->next_id = nscene;
     for(int i = 0; i < 2; i++) {
         game_player_create(&game->players[i]);
     }

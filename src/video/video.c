@@ -141,8 +141,6 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
     
     // A nice quad. Screw you, OpenGL 3!
     fullscreen_quad = glGenLists(1);
