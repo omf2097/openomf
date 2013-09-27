@@ -498,6 +498,9 @@ int mainmenu_create(scene *scene) {
         music_play("resources/MENU.PSM");
         audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
     }
+
+    // Zero out host
+    local->host = NULL;
     
     // Start stack & set main menu to current
     local->mstack_pos = 0;

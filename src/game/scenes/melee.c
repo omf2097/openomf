@@ -116,9 +116,12 @@ void melee_free(scene *scene) {
         /*animationplayer_free(&harplayer_b);*/
     /*}*/
     
+    /*
     for(int i = 0; i < 10; i++) {
         texture_free(&local->harportraits[i]);
     }
+    */
+
     texture_free(&local->feh);
     texture_free(&local->bleh);
     texture_free(&local->select_hilight);
@@ -127,6 +130,7 @@ void melee_free(scene *scene) {
         progressbar_free(&local->bar_agility[i]);
         progressbar_free(&local->bar_endurance[i]);
     }
+    free(local);
 }
 
 void melee_tick(scene *scene) {
