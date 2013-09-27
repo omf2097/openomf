@@ -76,6 +76,14 @@ int game_load_new(game_state *game, int scene_id) {
     // Free old scene
     scene_free(&game->sc);
 
+    object *obj = NULL;
+    iterator it;
+    vector_iter_begin(&game->objects, &it);
+    while((obj = iter_next(&it)) != NULL) {
+        object_free(obj);
+        vector_delete(&game->objects, &it);
+    }
+
     // Initialize new scene with BK data etc.
     if(scene_create(&game->sc, game, scene_id)) {
         PERROR("Error while loading scene %d.", scene_id);
