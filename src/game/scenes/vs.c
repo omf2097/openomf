@@ -178,6 +178,9 @@ int vs_event(scene *scene, SDL_Event *event) {
 
 void vs_render(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
+
+    palette *mpal = bk_get_palette(&scene->bk_data, 0);
+
     // render the right side of the background
     video_render_sprite_flip(&local->player2_background, 160, 0, BLEND_ALPHA, FLIP_HORIZONTAL);
 
@@ -187,18 +190,22 @@ void vs_render(scene *scene) {
     // player 1 HAR
 
     sprite *sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id);
+    sprite_init(sprite, mpal, 0);
     video_render_sprite_flip(&sprite->tex, 160+sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
     // player 2 HAR
     sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id);
+    sprite_init(sprite, mpal, 0);
     video_render_sprite_flip(&sprite->tex, 160+ (sprite->pos.x * -1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
 
     // player 1 portrait
     sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, player1->player_id);
+    sprite_init(sprite, mpal, 0);
     video_render_sprite_flip(&sprite->tex, 0, 200 - sprite->tex.w, BLEND_ALPHA, FLIP_NONE);
 
     // player 2 portrait
     sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, player2->player_id);
+    sprite_init(sprite, mpal, 0);
     video_render_sprite_flip(&sprite->tex, 320 - sprite->tex.w, 200 - sprite->tex.w, BLEND_ALPHA, FLIP_HORIZONTAL);
 
 
@@ -207,6 +214,7 @@ void vs_render(scene *scene) {
         video_render_sprite_flip(&local->arena_select_bg, 55, 150, BLEND_ALPHA, FLIP_NONE);
 
         sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, local->arena);
+        sprite_init(sprite, mpal, 0);
         video_render_sprite_flip(&sprite->tex, 59, 155, BLEND_ALPHA, FLIP_NONE);
 
 
@@ -234,6 +242,7 @@ void vs_render(scene *scene) {
 
     // gantries
     sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 11)->ani, 0);
+    sprite_init(sprite, mpal, 0);
     video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
     video_render_sprite_flip(&sprite->tex, 320 - (sprite->pos.x*-1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
 }
@@ -242,6 +251,9 @@ int vs_create(scene *scene) {
     // Init local data
     vs_local *local = malloc(sizeof(vs_local));
     scene_set_userdata(scene, local);
+
+    palette *mpal = bk_get_palette(&scene->bk_data, 0);
+    fixup_palette(mpal);
 
     game_player *player2 = scene_get_game_player(scene, 1);
 
