@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "game/protos/scene.h"
 #include "video/video.h"
 #include "resources/ids.h"
