@@ -38,6 +38,8 @@ typedef struct melee_local_t {
 
     struct pilot_t pilots[10];
 
+    sprite *harportraits[10];
+
     progress_bar bar_power[2];
     progress_bar bar_agility[2];
     progress_bar bar_endurance[2];
@@ -48,7 +50,6 @@ typedef struct melee_local_t {
     texture feh;
     texture bleh;
     texture select_hilight;
-    texture harportraits[10];
     unsigned int ticks;
     unsigned int hartick;
     unsigned int pulsedir;
@@ -99,6 +100,25 @@ sd_rgba_image* sub_sprite(sd_sprite *sprite, sd_palette *pal, int x, int y, int 
     }
     sd_rgba_image_delete(img);
     return out;
+}
+
+void mask_sprite(sprite *sprite, int x, int y, int w, int h) {
+    sd_vga_image *vga = (sd_vga_image*)sprite->raw_sprite;
+    for(int i = 0; i < vga->h; i++) {
+        for(int j = 0; j < vga->w; j++) {
+            int offset = (i*vga->w)+j;
+            if ((i < y || i > y+h) || (j < x || j > x+w)) {
+                vga->stencil[offset] = 0;
+            } else {
+                if (vga->data[offset] == -48) {
+                    // strip out the black pixels
+                    vga->stencil[offset] = 0;
+                } else {
+                    vga->stencil[offset] = 1;
+                }
+            }
+        }
+    }
 }
 
 void melee_free(scene *scene) {
@@ -416,7 +436,9 @@ void melee_render(scene *scene) {
         video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
         //currently selected HAR
-        /*video_render_sprite_flip(&harportraits[current_a], 11 + (62*column_a), 115 + (42*row_a), BLEND_ALPHA, FLIP_NONE);*/
+        sprite = local->harportraits[5*local->row_a + local->column_a];
+        sprite_init(sprite, mpal, 0); // TODO use the player's palette
+        video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
         /*animationplayer_render(&harplayer_a);*/
 
         // player 1 name
@@ -429,10 +451,12 @@ void melee_render(scene *scene) {
             // currently selected player
             sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_b);
             sprite_init(sprite, mpal, 0);
-            video_render_sprite_flip(&sprite->tex, 320-sprite->tex.w + sprite->pos.x,
+            video_render_sprite_flip(&sprite->tex, 320-(sprite->tex.w + sprite->pos.x),
                     sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
             // currently selected HAR
-            /*video_render_sprite_flip(&harportraits[current_b], 11 + (62*column_b), 115 + (42*row_b), BLEND_ALPHA, FLIP_NONE);*/
+            sprite = local->harportraits[5*local->row_b + local->column_b];
+            sprite_init(sprite, mpal, 0); // TODO use the player's palette
+            video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
             /*animationplayer_render(&harplayer_b);*/
         } else {
             // 'choose your HAR'
@@ -447,6 +471,9 @@ int melee_create(scene *scene) {
     // Init local data
     melee_local *local = malloc(sizeof(melee_local));
     scene_set_userdata(scene, local);
+
+    palette *mpal = bk_get_palette(&scene->bk_data, 0);
+    fixup_palette(mpal);
 
     // TODO read this from MASTER.DAT
     local->pilots[0].power=5;
@@ -504,6 +531,16 @@ int melee_create(scene *scene) {
         /*controller_add_hook(scene->player1.ctrl, scene->player2.ctrl, scene->player2.ctrl->controller_hook);*/
     /*}*/
 
+    sprite *sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);
+    for(int i = 0; i < 10; i++) {
+        int row = i / 5;
+        int col = i % 5;
+        local->harportraits[i] = malloc(sizeof(sprite));
+        //XXX if this isn't inside the loop, it somehow gets corrupted between iterations?!
+        sprite_init(sprite, mpal, 0);
+        sprite_create_custom(local->harportraits[i], sprite->pos, sd_vga_image_clone(sprite->raw_sprite));
+        mask_sprite(local->harportraits[i], 62*col, 42*row, 51, 36);
+    }
 
     const color bar_color = color_create(0, 190, 0, 255);
     const color bar_bg_color = color_create(80, 220, 80, 0);
