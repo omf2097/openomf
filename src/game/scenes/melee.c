@@ -2,7 +2,8 @@
 #include <time.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
-#include <shadowdive/shadowdive.h>
+#include <shadowdive/vga_image.h>
+#include <shadowdive/sprite_image.h>
 #include "utils/log.h"
 #include "game/text/text.h"
 #include "game/text/languages.h"
@@ -14,15 +15,12 @@
 #include "resources/ids.h"
 #include "resources/bk.h"
 #include "resources/animation.h"
+#include "resources/sprite.h"
 #include "game/scenes/melee.h"
 #include "game/scenes/progressbar.h"
 #include "game/menu/menu_background.h"
 
 #define MAX_STAT 20
-
-struct players_t {
-    sd_sprite *sprite;
-};
 
 struct pilot_t {
     int power, agility, endurance;
@@ -79,13 +77,14 @@ void handle_action(scene *scene, int player, int action);
 // extract part of a sprite as a new sprite
 // we need this because the HAR portraits are one single sprite, unlike the player portraits
 // so we need to chunk them up into individual sprites and strip out the black background
-sd_rgba_image* sub_sprite(sd_sprite *sprite, sd_palette *pal, int x, int y, int w, int h) {
+sd_rgba_image* sub_sprite(sprite *sprite, sd_palette *pal, int x, int y, int w, int h) {
     sd_rgba_image *img = 0;
     sd_rgba_image *out = sd_rgba_image_create(w, h);
-    img = sd_sprite_image_decode(sprite->img, pal, -1);
+    img = sd_sprite_image_decode(sprite->raw_sprite, pal, -1);
     for(int i = y; i < y+h; i++) {
         for(int j = x; j < x+w; j++) {
-            int offset = (i*sprite->img->w*4)+(j*4);
+            int sw = ((sd_vga_image*)sprite->raw_sprite)->w;
+            int offset = (i*sw*4)+(j*4);
             int local_offset = ((i-y)*w*4)+((j-x)*4);
             out->data[local_offset]   = (char)img->data[offset];
             out->data[local_offset+1] = (char)img->data[offset+1];
@@ -136,11 +135,11 @@ void melee_free(scene *scene) {
         /*animationplayer_free(&harplayer_b);*/
     /*}*/
     
-    /*
+    
     for(int i = 0; i < 10; i++) {
-        texture_free(&local->harportraits[i]);
+        sprite_free(local->harportraits[i]);
     }
-    */
+    
 
     texture_free(&local->feh);
     texture_free(&local->bleh);
@@ -522,19 +521,19 @@ int melee_create(scene *scene) {
         /*controller_add_hook(scene->player1.ctrl, scene->player2.ctrl, scene->player2.ctrl->controller_hook);*/
     /*}*/
 
-    sprite *sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);
+    sprite *full = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);
     for(int i = 0; i < 10; i++) {
         int row = i / 5;
         int col = i % 5;
         local->harportraits[i] = malloc(sizeof(sprite));
-        sprite_create_custom(local->harportraits[i], sprite->pos, sd_vga_image_clone(sprite->raw_sprite));
+        sprite_create_custom(local->harportraits[i], full->pos, sd_vga_image_clone(full->raw_sprite));
         mask_sprite(local->harportraits[i], 62*col, 42*row, 51, 36);
         sprite_init(local->harportraits[i], mpal, 0);
     }
 
     // Preinit some animations with a palette
     // TODO use the player's palette for some animations/sprites
-    int to_init[5] = {0,1,3,4,5};
+    int to_init[5] = {0,3,4,5};
     for(int i = 0; i < 5; i++) {
         animation_init(&bk_get_info(&scene->bk_data, to_init[i])->ani, mpal, 0);
     }

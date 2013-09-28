@@ -41,4 +41,5 @@ void sprite_reinit(sprite *sp, palette *pal, int remap_id) {
 void sprite_free(sprite *sp) {
 	texture_free(&sp->tex);
 	sd_vga_image_delete((sd_vga_image*)sp->raw_sprite);
+	sp->raw_sprite = NULL;
 }

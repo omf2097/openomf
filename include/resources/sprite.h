@@ -9,7 +9,6 @@ typedef struct sprite_t {
 	vec2i pos;
 	texture tex;
 	void *raw_sprite;
-	int initialized;
 } sprite;
 
 void sprite_create(sprite *sp, void *src);
