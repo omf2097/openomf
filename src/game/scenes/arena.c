@@ -325,6 +325,7 @@ int arena_create(scene *scene) {
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
+        PERROR("Loading HAR %s (%d).", get_id_name(player->har_id), player->har_id);
         object_create(obj, pos[i], vel[i]);
         if(har_create(obj, bk_get_palette(&scene->bk_data, 0), dir[i], player->har_id)) {
             PERROR("Error while attempting to load HAR %s (%d).", 

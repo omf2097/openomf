@@ -189,11 +189,11 @@ void vs_render(scene *scene) {
 
     // player 1 HAR
 
-    sprite *sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id);
+    sprite *sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id - HAR_JAGUAR);
     video_render_sprite_flip(&sprite->tex, 160+sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
     // player 2 HAR
-    sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id);
+    sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id - HAR_JAGUAR);
     video_render_sprite_flip(&sprite->tex, 160+ (sprite->pos.x * -1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
 
     // player 1 portrait

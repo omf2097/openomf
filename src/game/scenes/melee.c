@@ -238,10 +238,10 @@ void handle_action(scene *scene, int player, int action) {
                     local->player_id_a = 5*local->row_a + local->column_a;
                     local->player_id_b = 5*local->row_b + local->column_b;
                 } else {
-                    player1->har_id = 5*local->row_a+local->column_a;
+                    player1->har_id = HAR_JAGUAR + 5*local->row_a+local->column_a;
                     player1->player_id = local->player_id_a;
                     if (player2->selectable) {
-                        player2->har_id = 5*local->row_b+local->column_b;
+                        player2->har_id = HAR_JAGUAR + 5*local->row_b+local->column_b;
                         player2->player_id = local->player_id_b;
                     } else {
                         // randomly pick opponent and HAR
