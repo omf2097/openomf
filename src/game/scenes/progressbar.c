@@ -15,7 +15,8 @@ void progressbar_create_block(progress_bar *bar) {
                          bar->int_bottomright_color, 
                          bar->int_bottomright_color, 
                          bar->int_topleft_color);
-        texture_create_from_img(&bar->block, &tmp);
+        texture_create(&bar->block);
+        texture_init_from_img(&bar->block, &tmp);
         image_free(&tmp);
     }
 }
@@ -52,7 +53,8 @@ void progressbar_create(progress_bar *bar,
                      border_bottomright_color, 
                      border_bottomright_color, 
                      border_topleft_color);
-    texture_create_from_img(&bar->background, &tmp);
+    texture_create(&bar->background);
+    texture_init_from_img(&bar->background, &tmp);
     image_free(&tmp);
     
     // Bar

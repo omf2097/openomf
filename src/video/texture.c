@@ -18,16 +18,25 @@ int texture_upload(texture *tex, const char* data) {
     return 0;
 }
 
-int texture_create(texture *tex, const char *data, unsigned int w, unsigned int h) {
+void texture_create(texture *tex) {
+    tex->w = 0;
+    tex->h = 0;
+    tex->id = 0;
+}
+
+int texture_init(texture *tex, const char *data, unsigned int w, unsigned int h) {
+    if(tex->id != 0) {
+        PERROR("Texture is already loaded. Free/reupload instead!");
+        return 1;
+    }
     tex->w = w;
     tex->h = h;
-    tex->id = 0;
     glGenTextures(1, &tex->id);
     return texture_upload(tex, data);
 }
 
-int texture_create_from_img(texture *tex, const image *img) {
-    return texture_create(tex, img->data, img->w, img->h);
+int texture_init_from_img(texture *tex, const image *img) {
+    return texture_init(tex, img->data, img->w, img->h);
 }
 
 void texture_free(texture *tex) {

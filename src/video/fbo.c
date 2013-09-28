@@ -27,13 +27,12 @@ const char* fbo_get_status(int code) {
 int fbo_create(fbo *fbo, unsigned int w, unsigned int h) {
     // Texture and Renderbuffer object (RBO)
     rbo_create(&fbo->rbo, w, h);
-    texture_create(&fbo->tex, 0, w, h);
+    texture_create(&fbo->tex);
+    texture_init(&fbo->tex, 0, w, h);
     
     // Create FBO
     glGenFramebuffers(1, &fbo->id);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->id);
-    //glDrawBuffer(GL_NONE);
-    //glReadBuffer(GL_NONE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo->tex.id, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fbo->rbo.id);
     

@@ -51,7 +51,8 @@ int font_load(font *font, const char* filename, unsigned int size) {
     for(int i = 0; i < 224; i++) {
         tex = malloc(sizeof(texture));
         sd_font_decode(sdfont, img, i, 0xFF, 0xFF, 0xFF);
-        texture_create(tex, img->data, img->w, img->h);
+        texture_create(tex);
+        texture_init(tex, img->data, img->w, img->h);
         vector_append(&font->textures, &tex);
     }
     

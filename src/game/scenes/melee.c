@@ -350,7 +350,7 @@ void melee_render(scene *scene) {
     int current_a = 5*local->row_a + local->column_a;
     int current_b = 5*local->row_b + local->column_b;
 
-    palette *mpal = bk_get_palette(&scene->bk_data, 0);
+    //palette *mpal = bk_get_palette(&scene->bk_data, 0);
 
     if (local->selection == 0) {
         video_render_sprite_flip(&local->feh, 70, 0, BLEND_ALPHA, FLIP_NONE);
@@ -385,7 +385,6 @@ void melee_render(scene *scene) {
     }
 
     ani = &bk_get_info(&scene->bk_data, 5)->ani;
-    animation_init(ani, mpal, 0);
     if (player2->selectable) {
         video_render_sprite_flip(&animation_get_sprite(ani, 0)->tex, 254, 0, BLEND_ALPHA, FLIP_NONE);
     } else {
@@ -404,20 +403,17 @@ void melee_render(scene *scene) {
         render_highlights(scene);
         for(int i = 0; i < 10; i++) {
             sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, i);
-            sprite_init(sprite, mpal, 0);
             video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
             if (i == current_a) {
                 // render the big portrait
                 sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, i);
-                sprite_init(sprite, mpal, 0);
                 video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
             }
 
             if (player2->selectable && i == current_b) {
                 // render the big portrait
                 sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, i);
-                sprite_init(sprite, mpal, 0);
                 video_render_sprite_flip(&sprite->tex, 320-(sprite->tex.w + sprite->pos.x), sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
             }
         }
@@ -425,19 +421,15 @@ void melee_render(scene *scene) {
         // render the stupid unselected HAR portraits before anything
         // so we can render anything else on top of them
         sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);
-        sprite_init(sprite, mpal, 0);
         video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
-
         render_highlights(scene);
 
         // currently selected player
         sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_a);
-        sprite_init(sprite, mpal, 0);
         video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
 
         //currently selected HAR
         sprite = local->harportraits[5*local->row_a + local->column_a];
-        sprite_init(sprite, mpal, 0); // TODO use the player's palette
         video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
         /*animationplayer_render(&harplayer_a);*/
 
@@ -450,12 +442,10 @@ void melee_render(scene *scene) {
 
             // currently selected player
             sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_b);
-            sprite_init(sprite, mpal, 0);
             video_render_sprite_flip(&sprite->tex, 320-(sprite->tex.w + sprite->pos.x),
                     sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
             // currently selected HAR
             sprite = local->harportraits[5*local->row_b + local->column_b];
-            sprite_init(sprite, mpal, 0); // TODO use the player's palette
             video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
             /*animationplayer_render(&harplayer_b);*/
         } else {
@@ -520,7 +510,8 @@ int melee_create(scene *scene) {
 
     menu_background2_create(&local->feh, 90, 61);
     menu_background2_create(&local->bleh, 160, 43);
-    texture_create(&local->select_hilight, bitmap, 51, 36);
+    texture_create(&local->select_hilight);
+    texture_init(&local->select_hilight, bitmap, 51, 36);
 
     // set up the magic controller hooks
     /*if (scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {*/
@@ -536,10 +527,16 @@ int melee_create(scene *scene) {
         int row = i / 5;
         int col = i % 5;
         local->harportraits[i] = malloc(sizeof(sprite));
-        //XXX if this isn't inside the loop, it somehow gets corrupted between iterations?!
-        sprite_init(sprite, mpal, 0);
         sprite_create_custom(local->harportraits[i], sprite->pos, sd_vga_image_clone(sprite->raw_sprite));
         mask_sprite(local->harportraits[i], 62*col, 42*row, 51, 36);
+        sprite_init(local->harportraits[i], mpal, 0);
+    }
+
+    // Preinit some animations with a palette
+    // TODO use the player's palette for some animations/sprites
+    int to_init[5] = {0,1,3,4,5};
+    for(int i = 0; i < 5; i++) {
+        animation_init(&bk_get_info(&scene->bk_data, to_init[i])->ani, mpal, 0);
     }
 
     const color bar_color = color_create(0, 190, 0, 255);
