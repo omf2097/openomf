@@ -19,9 +19,6 @@ typedef struct player_animation_state_t {
     sound_state *sound_state;
     sd_stringparser *parser;
     int enemy_x, enemy_y;
-
-    void (*del_player)(object *obj, int id);
-    void (*add_player)(object *obj, int id, int mx, int my, int mg);
 } player_animation_state;
 
 void player_create(object *obj);

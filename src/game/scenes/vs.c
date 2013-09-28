@@ -2,13 +2,14 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
 #include "utils/log.h"
+#include "video/video.h"
+#include "resources/ids.h"
 #include "game/text/text.h"
 #include "game/text/languages.h"
 #include "game/protos/scene.h"
-#include "video/video.h"
 #include "game/scenes/vs.h"
-#include "resources/ids.h"
 #include "game/menu/menu_background.h"
+#include "game/game_state.h"
 #include "controller/controller.h"
 #include "controller/keyboard.h"
 
@@ -111,7 +112,7 @@ void vs_handle_action(scene *scene, int action) {
     switch (action) {
         case ACT_KICK:
         case ACT_PUNCH:
-            scene_load_new_scene(scene, SCENE_ARENA0+local->arena);
+            game_state_set_next(SCENE_ARENA0+local->arena);
             break;
         case ACT_UP:
         case ACT_LEFT:
@@ -131,8 +132,8 @@ void vs_handle_action(scene *scene, int action) {
 }
 
 void vs_tick(scene *scene) {
-    game_player *player1 = scene_get_game_player(scene, 0);
-    game_player *player2 = scene_get_game_player(scene, 1);
+    game_player *player1 = game_state_get_player(0);
+    game_player *player2 = game_state_get_player(1);
     ctrl_event *p1 = NULL, *p2 = NULL, *i;
     if(controller_tick(player1->ctrl, &p1) ||
             controller_tick(player2->ctrl, &p2)) {
@@ -145,7 +146,7 @@ void vs_tick(scene *scene) {
         /*if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {*/
             /*net_controller_free(scene->player2.ctrl);*/
         /*}*/
-        scene_load_new_scene(scene, SCENE_MENU);
+        game_state_set_next(SCENE_MENU);
     }
     i = p1;
     if (i) {
@@ -158,10 +159,10 @@ void vs_tick(scene *scene) {
 int vs_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN) {
         if(event->key.keysym.sym == SDLK_ESCAPE) {
-                scene_load_new_scene(scene, SCENE_MELEE);
+            game_state_set_next(SCENE_MELEE);
         } else {
             ctrl_event *p1=NULL, *i;
-            game_player *player1 = scene_get_game_player(scene, 0);
+            game_player *player1 = game_state_get_player(0);
             controller_event(player1->ctrl, event, &p1);
             i = p1;
             if (i) {
@@ -184,8 +185,8 @@ void vs_render(scene *scene) {
     // render the right side of the background
     video_render_sprite_flip(&local->player2_background, 160, 0, BLEND_ALPHA, FLIP_HORIZONTAL);
 
-    game_player *player1 = scene_get_game_player(scene, 0);
-    game_player *player2 = scene_get_game_player(scene, 1);
+    game_player *player1 = game_state_get_player(0);
+    game_player *player2 = game_state_get_player(1);
 
     // player 1 HAR
 
@@ -248,7 +249,7 @@ int vs_create(scene *scene) {
     palette *mpal = bk_get_palette(&scene->bk_data, 0);
     fixup_palette(mpal);
 
-    game_player *player2 = scene_get_game_player(scene, 1);
+    game_player *player2 = game_state_get_player(1);
 
     // clone the left side of the background image
     sd_rgba_image * out = sub_image((sd_vga_image*)scene->bk_data.background.raw_sprite, bk_get_palette(&scene->bk_data, 0), 0, 0, 160, 200);

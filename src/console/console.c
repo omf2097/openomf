@@ -2,6 +2,7 @@
 #include "video/video.h"
 #include "game/menu/menu_background.h"
 #include "game/protos/scene.h"
+#include "game/game_state.h"
 #include "resources/ids.h"
 #include "utils/log.h"
 #include <stdlib.h>
@@ -59,7 +60,7 @@ int console_cmd_clear(scene *scene, void *userdata, int argc, char **argv) {
 }
 
 int console_cmd_quit(scene *scene, void *userdata, int argc, char **argv) {
-    scene_load_new_scene(scene, SCENE_CREDITS);
+    game_state_set_next(SCENE_CREDITS);
     return 0;
 }
 
@@ -93,7 +94,7 @@ int console_cmd_scene(scene *scene, void *userdata, int argc, char **argv) {
         int i;
         if(strtoint(argv[1], &i)) {
             if(scene_is_valid(i)) {
-                scene_load_new_scene(scene, i);
+                game_state_set_next(i);
                 return 0;
             }
         }

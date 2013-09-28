@@ -4,18 +4,20 @@
 #include <SDL2/SDL.h>
 #include <shadowdive/vga_image.h>
 #include <shadowdive/sprite_image.h>
+
 #include "utils/log.h"
-#include "game/text/text.h"
-#include "game/text/languages.h"
 #include "audio/music.h"
 #include "video/video.h"
-#include "game/settings.h"
-#include "game/protos/scene.h"
-#include "game/protos/object.h"
 #include "resources/ids.h"
 #include "resources/bk.h"
 #include "resources/animation.h"
 #include "resources/sprite.h"
+#include "game/text/text.h"
+#include "game/text/languages.h"
+#include "game/settings.h"
+#include "game/game_state.h"
+#include "game/protos/scene.h"
+#include "game/protos/object.h"
 #include "game/scenes/melee.h"
 #include "game/scenes/progressbar.h"
 #include "game/menu/menu_background.h"
@@ -190,8 +192,8 @@ void refresh_pilot_stats(melee_local *local) {
 }
 
 void handle_action(scene *scene, int player, int action) {
-    game_player *player1 = scene_get_game_player(scene, 0);
-    game_player *player2 = scene_get_game_player(scene, 1);
+    game_player *player1 = game_state_get_player(0);
+    game_player *player2 = game_state_get_player(1);
     melee_local *local = scene_get_userdata(scene);
     int *row, *column, *done;
     if (player == 1) {
@@ -251,7 +253,7 @@ void handle_action(scene *scene, int player, int action) {
                         while((i = rand() % 10) == local->player_id_a) {}
                         player2->player_id = i;
                     }
-                    scene_load_new_scene(scene, SCENE_VS);
+                    game_state_set_next(SCENE_VS);
                 }
             }
             break;
@@ -289,11 +291,11 @@ int melee_event(scene *scene, SDL_Event *event) {
                     local->done_a = 0;
                     local->done_b = 0;
                 } else {
-                    scene_load_new_scene(scene, SCENE_MENU);
+                    game_state_set_next(SCENE_MENU);
                 }
             } else {
-                game_player *player1 = scene_get_game_player(scene, 0);
-                game_player *player2 = scene_get_game_player(scene, 1);
+                game_player *player1 = game_state_get_player(0);
+                game_player *player2 = game_state_get_player(1);
                 ctrl_event *p1=NULL, *p2 = NULL, *i;
                 controller_event(player1->ctrl, event, &p1);
                 controller_event(player2->ctrl, event, &p2);
@@ -318,8 +320,8 @@ int melee_event(scene *scene, SDL_Event *event) {
 
 void render_highlights(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
-    /*game_player *player1 = scene_get_game_player(scene, 1);*/
-    game_player *player2 = scene_get_game_player(scene, 1);
+    /*game_player *player1 = game_state_get_player(1);*/
+    game_player *player2 = game_state_get_player(1);
     int trans;
     if (player2->selectable && local->row_a == local->row_b && local->column_a == local->column_b) {
         video_render_char(&local->select_hilight, 11 + (62*local->column_a), 115 + (42*local->row_a), color_create(250-local->ticks, 0, 250-local->ticks, 0));
@@ -345,7 +347,7 @@ void melee_render(scene *scene) {
     animation *ani;
     sprite *sprite;
     melee_local *local = scene_get_userdata(scene);
-    game_player *player2 = scene_get_game_player(scene, 1);
+    game_player *player2 = game_state_get_player(1);
     int current_a = 5*local->row_a + local->column_a;
     int current_b = 5*local->row_b + local->column_b;
 

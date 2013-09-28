@@ -19,6 +19,7 @@
 #include "controller/net_controller.h"
 #include "resources/ids.h"
 #include "game/game_player.h"
+#include "game/game_state.h"
 
 struct resolution_t {
     int w;  int h;  const char *name;
@@ -115,13 +116,10 @@ typedef struct mainmenu_local_t {
 
 // Menu event handlers
 void mainmenu_quit(component *c, void *userdata) {
-    scene *scene = userdata;
-    scene_load_new_scene(scene, SCENE_CREDITS);
+    game_state_set_next(SCENE_CREDITS);
 }
 
 void mainmenu_1v1(component *c, void *userdata) {
-    scene *scene = userdata;
-
     // TODO: Read keys from settings later
 
     // Set up controllers
@@ -129,7 +127,7 @@ void mainmenu_1v1(component *c, void *userdata) {
         // Set up controllers
         controller *ctrl = malloc(sizeof(controller));
         controller_init(ctrl);
-        game_player *player = scene_get_game_player(scene, i);
+        game_player *player = game_state_get_player(i);
         ctrl->har = game_player_get_har(player);
 
         // Set up keyboards
@@ -161,12 +159,10 @@ void mainmenu_1v1(component *c, void *userdata) {
     }
 
     // Load MELEE scene
-    scene_load_new_scene(scene, SCENE_MELEE);
+    game_state_set_next(SCENE_MELEE);
 }
 
 void mainmenu_1v2(component *c, void *userdata) {
-    scene *scene = userdata;
-
     // TODO: Read keys from settings later
 
     // Set up controllers
@@ -174,7 +170,7 @@ void mainmenu_1v2(component *c, void *userdata) {
         // Set up controllers
         controller *ctrl = malloc(sizeof(controller));
         controller_init(ctrl);
-        game_player *player = scene_get_game_player(scene, i);
+        game_player *player = game_state_get_player(i);
         ctrl->har = game_player_get_har(player);
 
         // Set up keyboards
@@ -206,12 +202,11 @@ void mainmenu_1v2(component *c, void *userdata) {
     }
 
     // Load MELEE scene
-    scene_load_new_scene(scene, SCENE_MELEE);
+    game_state_set_next(SCENE_MELEE);
 }
 
 void mainmenu_tourn(component *c, void *userdata) {
-    scene *scene = userdata;
-    scene_load_new_scene(scene, SCENE_MECHLAB);
+    game_state_set_next(SCENE_MECHLAB);
 }
 
 void mainmenu_enter_menu_config(component *c, void *userdata) {
@@ -462,7 +457,7 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
         if(local->current_menu == &local->main_menu) {
             if(menu_selected(&local->main_menu) == &local->quit_button) {
-                scene_load_new_scene(scene, SCENE_CREDITS);
+                game_state_set_next(SCENE_CREDITS);
             } else {
                 menu_select(&local->main_menu, &local->quit_button);
             }

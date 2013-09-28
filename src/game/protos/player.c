@@ -78,6 +78,15 @@ void cmd_music_on(int music) {
     audio_set_volume(TYPE_MUSIC, settings_get()->sound.music_vol/10.0f);
 }
 
+void cmd_spawn_object(object *parent, int id, vec2i pos, int g) {
+    object *obj = malloc(sizeof(object*));
+    object_create(obj, pos, vec2f_create(0,0));
+}
+
+void cmd_destroy_object(object *parent, int id) {
+
+}
+
 // ---------------- Private functions ---------------- 
 
 int isset(sd_stringparser_frame *frame, const char *tag) {
@@ -106,7 +115,6 @@ void player_create(object *obj) {
     obj->animation_state.repeat = 0;
     obj->animation_state.enemy_x = 0;
     obj->animation_state.enemy_y = 0;
-    obj->animation_state.add_player = NULL;
     obj->animation_state.parser = NULL;
     obj->animation_state.sound_state = malloc(sizeof(sound_state));
 }
@@ -197,14 +205,14 @@ void player_run(object *obj) {
         }
     
         // Animation management
-        if(isset(f, "m") && state->add_player != NULL) {
+        if(isset(f, "m")) {
             int mx = isset(f, "mx") ? get(f, "mx") : 0;
             int my = isset(f, "my") ? get(f, "my") : 0;
             int mg = isset(f, "mg") ? get(f, "mg") : 0;
-            state->add_player(obj, get(f, "m"), mx, my, mg);
+            cmd_spawn_object(obj, get(f, "m"), vec2i_create(mx, my), mg);
         }
-        if(isset(f, "md") && state->del_player != NULL) { 
-            state->del_player(obj, get(f, "md"));
+        if(isset(f, "md")) { 
+            cmd_destroy_object(obj, get(f, "md"));
         }
     
         // Handle music and sounds

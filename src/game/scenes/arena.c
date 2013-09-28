@@ -1,4 +1,8 @@
-#include "engine.h"
+#include <SDL2/SDL.h>
+#include <stdlib.h>
+#include <string.h>
+#include <shadowdive/shadowdive.h>
+
 #include "video/texture.h"
 #include "video/video.h"
 #include "game/scenes/arena.h"
@@ -11,6 +15,7 @@
 #include "game/protos/object.h"
 #include "game/score.h"
 #include "game/game_player.h"
+#include "game/game_state.h"
 #include "game/text/text.h"
 #include "game/text/languages.h"
 #include "game/menu/menu.h"
@@ -22,10 +27,6 @@
 #include "controller/net_controller.h"
 #include "resources/ids.h"
 #include "utils/log.h"
-#include <SDL2/SDL.h>
-#include <stdlib.h>
-#include <string.h>
-#include <shadowdive/shadowdive.h>
 
 #define BAR_COLOR_BG color_create(89,40,101,255)
 #define BAR_COLOR_TL_BORDER color_create(60,0,60,255)
@@ -62,16 +63,14 @@ typedef struct arena_local_t {
 // -------- Local callbacks --------
 
 void game_menu_quit(component *c, void *userdata) {
-    scene *scene = userdata;
-
     for(int i = 0; i < 2; i++) {
-        controller *ctrl = game_player_get_ctrl(scene_get_game_player(scene, i));
+        controller *ctrl = game_player_get_ctrl(game_state_get_player(i));
         if(ctrl->type == CTRL_TYPE_NETWORK) {
             net_controller_free(ctrl);
         }
     }
 
-    scene_load_new_scene(scene, SCENE_MENU);
+    game_state_set_next(SCENE_MENU);
 }
 
 void game_menu_return(component *c, void *userdata) {
@@ -93,7 +92,7 @@ void arena_free(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
 
     for(int i = 0; i < 2; i++) {
-        game_player *player = scene_get_game_player(scene, i);
+        game_player *player = game_state_get_player(i);
         game_player_set_har(player, NULL);
         game_player_set_ctrl(player, NULL);
     }
@@ -172,8 +171,8 @@ void arena_tick(scene *scene) {
         // Turn the HARs to face the enemy
         int x1, x2, y1, y2;
         object *har1,*har2;
-        har1 = game_player_get_har(scene_get_game_player(scene, 0));
-        har2 = game_player_get_har(scene_get_game_player(scene, 1));
+        har1 = game_player_get_har(game_state_get_player(0));
+        har2 = game_player_get_har(game_state_get_player(1));
         object_get_pos(har1, &x1, &y1);
         object_get_pos(har2, &x2, &y2);
         if(x1 > x2) {
@@ -210,7 +209,7 @@ int arena_event(scene *scene, SDL_Event *e) {
     } else {
         for(int i = 0; i < 2; i++) {
             ctrl_event *p, *n;
-            game_player *player = scene_get_game_player(scene, i);
+            game_player *player = game_state_get_player(i);
             controller_event(game_player_get_ctrl(player), e, &p);
             n = p;
             if(n) {
@@ -230,7 +229,7 @@ void arena_render(scene *scene) {
     game_player *player[2];
     har *har[2];
     for(int i = 0; i < 2; i++) {
-        player[i] = scene_get_game_player(scene, i);
+        player[i] = game_state_get_player(i);
         har[i] = object_get_userdata(game_player_get_har(player[i]));
     }
     if(har[0] != NULL && har[1] != NULL) {
@@ -319,7 +318,7 @@ int arena_create(scene *scene) {
     // init HARs
     for(int i = 0; i < 2; i++) {
         // Declare some vars
-        game_player *player = scene_get_game_player(scene, i);
+        game_player *player = game_state_get_player(i);
         controller *ctrl = game_player_get_ctrl(player);
         object *obj = malloc(sizeof(object));
 
@@ -343,7 +342,7 @@ int arena_create(scene *scene) {
     /*
     game_player *_player[2];
     for(int i = 0; i < 2; i++) {
-        _player[i] = scene_get_game_player(scene, i);
+        _player[i] = game_state_get_player(i);
     }
     if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
         controller_clear_hooks(game_player_get_ctrl(_player[1]));

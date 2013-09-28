@@ -18,74 +18,81 @@
 #define MS_PER_OMF_TICK 10
 #define MS_PER_OMF_TICK_SLOWEST 16
 
-int game_state_create(game_state *game) {
-    game->run = 1;
-    vector_create(&game->objects, sizeof(object));
+game_state *gamestate = NULL;
+
+int game_state_create() {
+    gamestate = malloc(sizeof(game_state));
+    gamestate->run = 1;
+    vector_create(&gamestate->objects, sizeof(object));
     int nscene = SCENE_INTRO;
-    if(scene_create(&game->sc, game, nscene)) {
+    if(scene_create(&gamestate->sc, nscene)) {
         PERROR("Error while loading scene %d.", nscene);
         return 1;
     }
-    if(intro_create(&game->sc)) {
-        scene_free(&game->sc);
+    if(intro_create(&gamestate->sc)) {
+        scene_free(&gamestate->sc);
         PERROR("Error while creating intro scene.");
         return 1;
     }
-    game->this_id = nscene;
-    game->next_id = nscene;
+    gamestate->this_id = nscene;
+    gamestate->next_id = nscene;
     for(int i = 0; i < 2; i++) {
-        game_player_create(&game->players[i]);
+        game_player_create(&gamestate->players[i]);
     }
     return 0;
 }
 
-void game_state_add_object(game_state *game, object *obj) {
-    vector_append(&game->objects, obj);
+void game_state_add_object(object *obj) {
+    vector_append(&gamestate->objects, obj);
 }
 
-void game_state_set_next(game_state *game, unsigned int next_scene_id) {
-    game->next_id = next_scene_id;
+void game_state_set_next(unsigned int next_scene_id) {
+    gamestate->next_id = next_scene_id;
 }
 
-int game_state_is_running(game_state *game) {
-    return game->run;
+scene* game_state_get_scene() {
+    return &gamestate->sc;
+}
+
+int game_state_is_running() {
+    return gamestate->run;
 }
 
 // Return 0 if event was handled here
-int game_state_handle_event(game_state *game, SDL_Event *event) {
-    if(scene_event(&game->sc, event) == 0) {
+int game_state_handle_event(SDL_Event *event) {
+    if(scene_event(&gamestate->sc, event) == 0) {
         return 0;
     }
     return 1;
 }
 
-void game_state_render(game_state *game) {
+void game_state_render() {
     // Render scene
-    scene_render(&game->sc);
+    scene_render(&gamestate->sc);
 
     // Render objects
     iterator it;
     object *obj = NULL;
-    vector_iter_begin(&game->objects, &it);
+    vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
         object_render(obj);
     }
 }
 
-int game_load_new(game_state *game, int scene_id) {
+int game_load_new(int scene_id) {
     // Free old scene
-    scene_free(&game->sc);
+    scene_free(&gamestate->sc);
 
     object *obj = NULL;
     iterator it;
-    vector_iter_begin(&game->objects, &it);
+    vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
         object_free(obj);
-        vector_delete(&game->objects, &it);
+        vector_delete(&gamestate->objects, &it);
     }
 
     // Initialize new scene with BK data etc.
-    if(scene_create(&game->sc, game, scene_id)) {
+    if(scene_create(&gamestate->sc, scene_id)) {
         PERROR("Error while loading scene %d.", scene_id);
         return 1;
     }
@@ -93,31 +100,31 @@ int game_load_new(game_state *game, int scene_id) {
     // Load scene specifics
     switch(scene_id) {
         case SCENE_INTRO: 
-            if(intro_create(&game->sc)) {
+            if(intro_create(&gamestate->sc)) {
                 PERROR("Error while creating intro scene.");
                 return 1;
             }
             break;
         case SCENE_MENU: 
-            if(mainmenu_create(&game->sc)) {
+            if(mainmenu_create(&gamestate->sc)) {
                 PERROR("Error while creating mainmenu scene.");
                 return 1;
             }
             break;
         case SCENE_CREDITS: 
-            if(credits_create(&game->sc)) {
+            if(credits_create(&gamestate->sc)) {
                 PERROR("Error while creating credits scene.");
                 return 1;
             }
             break;
         case SCENE_MELEE:
-            if(melee_create(&game->sc)) {
+            if(melee_create(&gamestate->sc)) {
                 PERROR("Error while creating melee scene.");
                 return 1;
             } 
             break;
         case SCENE_VS:
-            if(vs_create(&game->sc)) {
+            if(vs_create(&gamestate->sc)) {
                 PERROR("Error while creating VS scene.");
                 return 1;
             }
@@ -131,45 +138,45 @@ int game_load_new(game_state *game, int scene_id) {
         case SCENE_ARENA3:
         case SCENE_ARENA4:
         case SCENE_ARENA5:
-            if(arena_create(&game->sc)) {
+            if(arena_create(&gamestate->sc)) {
                 PERROR("Error while creating arena scene.");
                 return 1;
             } 
             break;
     }
-    game->this_id = scene_id;
-    game->next_id = scene_id;
+    gamestate->this_id = scene_id;
+    gamestate->next_id = scene_id;
     return 0;
 }
 
-void game_state_tick(game_state *game) {
+void game_state_tick() {
     // We want to load another scene
-    if(game->this_id != game->next_id) {
+    if(gamestate->this_id != gamestate->next_id) {
         // If this is the end, set run to 0 so that engine knows to close here
-        if(game->next_id == SCENE_NONE) {
-            game->run = 0;
+        if(gamestate->next_id == SCENE_NONE) {
+            gamestate->run = 0;
             return;
         }
 
         // Load up new scene
-        if(game_load_new(game, game->next_id)) {
+        if(game_load_new(gamestate->next_id)) {
             PERROR("Error while loading new scene! bail.");
-            game->run = 0;
+            gamestate->run = 0;
             return;
         }
     }
 
     // Tick scene
-    scene_tick(&game->sc);
+    scene_tick(&gamestate->sc);
 
     // Tick all objects, clean up if necessary
     object *obj = NULL;
     iterator it;
-    vector_iter_begin(&game->objects, &it);
+    vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
         if(object_finished(obj)) {
             object_free(obj);
-            vector_delete(&game->objects, &it);
+            vector_delete(&gamestate->objects, &it);
             DEBUG("Object is finished, removing.");
         } else {
             object_tick(obj);
@@ -177,31 +184,34 @@ void game_state_tick(game_state *game) {
     }
 }
 
-game_player* game_state_get_player(game_state *game, int player_id) {
-    return &game->players[player_id];
+game_player* game_state_get_player(int player_id) {
+    return &gamestate->players[player_id];
 }
 
-void game_state_free(game_state *game) {
+void game_state_free() {
     // Free objects
     object *obj = NULL;
     iterator it;
-    vector_iter_begin(&game->objects, &it);
+    vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
         object_free(obj);
-        vector_delete(&game->objects, &it);
+        vector_delete(&gamestate->objects, &it);
     }
     
     // Free players
     for(int i = 0; i < 2; i++) {
-        game_player_free(&game->players[i]);
+        game_player_free(&gamestate->players[i]);
     }
 
     // Free scene
-    scene_free(&game->sc);
+    scene_free(&gamestate->sc);
+
+    // Free up state
+    free(gamestate);
 }
 
-unsigned int game_state_ms_per_tick(game_state *game) {
-    switch(game->this_id) {
+unsigned int game_state_ms_per_tick(game_state *gamestate) {
+    switch(gamestate->this_id) {
         case SCENE_ARENA0:
         case SCENE_ARENA1:
         case SCENE_ARENA2:

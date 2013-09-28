@@ -53,21 +53,14 @@ void engine_run() {
     DEBUG("Engine starting.");
 
     // Set up game
-    game_state game;
-    if(game_state_create(&game)) {
+    if(game_state_create()) {
         return;
-    }
-
-    // Init players
-    for(int i = 0; i < 2; i++) {
-        game.players[i].har = NULL;
-        game.players[i].ctrl = NULL;
     }
 
     // Game loop
     unsigned int frame_start = SDL_GetTicks();
     unsigned int omf_wait = 0;
-    while(run && game_state_is_running(&game)) {
+    while(run && game_state_is_running()) {
         // Prepare rendering here
         video_render_prepare();
     
@@ -96,12 +89,12 @@ void engine_run() {
                continue;
             }
             if(console_window_is_open()) {
-                 console_event(&game.sc, &e);
+                 console_event(game_state_get_scene(), &e);
                  continue;
             }
 
             // Send events to scene (if active)
-            if(!game_state_handle_event(&game, &e)) {
+            if(!game_state_handle_event(&e)) {
                 continue;
             }
         }
@@ -109,20 +102,20 @@ void engine_run() {
         // Render scene
         int dt = SDL_GetTicks() - frame_start;
         omf_wait += dt;
-        while(omf_wait > game_state_ms_per_tick(&game)) {
+        while(omf_wait > game_state_ms_per_tick()) {
             // Tick scene
-            game_state_tick(&game);
+            game_state_tick();
 
             // Tick console
             console_tick();
             
             // Handle waiting period leftover time
-            omf_wait -= game_state_ms_per_tick(&game);
+            omf_wait -= game_state_ms_per_tick();
         }
         frame_start = SDL_GetTicks();
 
         // Do the actual rendering jobs
-        game_state_render(&game);
+        game_state_render();
         console_render();
         video_render_finish();
         audio_render(dt);
@@ -143,7 +136,7 @@ void engine_run() {
     }
     
     // Free scene object
-    game_state_free(&game);
+    game_state_free();
     
     DEBUG("Engine stopped.");
 }

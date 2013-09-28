@@ -17,7 +17,6 @@ typedef void (*scene_tick_cb)(scene *scene);
 
 struct scene_t {
     bk bk_data;
-    void *game_state;
     void *userdata;
     scene_free_cb free;
     scene_event_cb event;
@@ -25,7 +24,7 @@ struct scene_t {
     scene_tick_cb tick;
 };
 
-int scene_create(scene *scene, void *game_state, int scene_id);
+int scene_create(scene *scene, int scene_id);
 void scene_free(scene *scene);
 int scene_event(scene *scene, SDL_Event *event);
 void scene_render(scene *scene);
@@ -34,10 +33,6 @@ int scene_is_valid(int id);
 
 void scene_set_userdata(scene *scene, void *userdata);
 void* scene_get_userdata(scene *scene);
-
-void scene_load_new_scene(scene *scene, int scene_id);
-void scene_add_object(scene *scene, object *obj);
-game_player* scene_get_game_player(scene *scene, int player_id);
 
 void scene_set_free_cb(scene *scene, scene_free_cb cbfunc);
 void scene_set_event_cb(scene *scene, scene_event_cb cbfunc);
