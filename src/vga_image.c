@@ -17,6 +17,18 @@ sd_vga_image* sd_vga_image_create(unsigned int w, unsigned int h) {
     return img;
 }
 
+sd_vga_image* sd_vga_image_clone(sd_vga_image *src) {
+    sd_vga_image *dest = (sd_vga_image*)malloc(sizeof(sd_vga_image));
+    dest->w = src->w;
+    dest->h = src->h;
+    dest->len = src->len;
+    dest->data = (char*)malloc(dest->len);
+    dest->stencil = (char*)malloc(dest->len);
+    memcpy(dest->data, src->data, src->len);
+    memcpy(dest->stencil, src->stencil, src->len);
+    return dest;
+}
+
 void sd_vga_image_delete(sd_vga_image *img) {
     free(img->data);
     free(img->stencil);

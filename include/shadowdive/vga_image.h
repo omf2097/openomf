@@ -23,6 +23,7 @@ typedef struct sd_vga_image_t {
 } sd_vga_image;
 
 sd_vga_image* sd_vga_image_create(unsigned int w, unsigned int h);
+sd_vga_image* sd_vga_image_clone(sd_vga_image *src);
 void sd_vga_image_delete(sd_vga_image *img);
 sd_vga_image* sd_vga_image_encode(sd_rgba_image *img, sd_palette *pal, int remapping);
 sd_rgba_image* sd_vga_image_decode(sd_vga_image *img, sd_palette *pal, int remapping);
