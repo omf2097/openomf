@@ -24,7 +24,8 @@ void animation_create(animation *ani, void *src) {
 	for(int i = 0; i < sdani->extra_string_count; i++) {
 		str_create_from_cstr(&tmp_string, sdani->extra_strings[i]);
 		vector_append(&ani->extra_strings, &tmp_string);
-		str_free(&tmp_string);
+		// don't str_free tmp_str here because it will free the pointers
+		// inside it, which vector_append does not copy
 	}
 
 	// Handle sprites

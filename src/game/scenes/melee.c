@@ -248,7 +248,7 @@ void handle_action(scene *scene, int player, int action) {
                     } else {
                         // randomly pick opponent and HAR
                         srand(time(NULL));
-                        player2->har_id = rand() % 10;
+                        player2->har_id = HAR_JAGUAR + rand() % 10;
                         int i;
                         while((i = rand() % 10) == local->player_id_a) {}
                         player2->player_id = i;

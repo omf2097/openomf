@@ -9,10 +9,15 @@ void str_create(str *string) {
 }
 
 void str_create_from_cstr(str *string, const char *cstr) {
-	string->len = strlen(cstr);
-	string->data = malloc(string->len + 1);
-	memcpy(string->data, cstr, string->len);
-	string->data[string->len] = 0;
+	if (cstr) {
+		string->len = strlen(cstr);
+		string->data = malloc(string->len + 1);
+		memcpy(string->data, cstr, string->len);
+		string->data[string->len] = 0;
+	} else {
+		string->len = 0;
+		string->data = NULL;
+	}
 }
 
 void str_create_from_data(str *string, const char *data, size_t len) {
@@ -23,7 +28,9 @@ void str_create_from_data(str *string, const char *data, size_t len) {
 }
 
 void str_free(str *string) {
-	free(string->data);
+	if (string->data) {
+		free(string->data);
+	}
 }
 
 size_t str_size(str *string) {
@@ -31,10 +38,15 @@ size_t str_size(str *string) {
 }
 
 void str_copy(str *string, str *source) {
-	string->data = realloc(string->data, source->len + 1);
-	string->len = source->len;
-	memcpy(string->data, source->data, string->len);
-	string->data[string->len] = 0;
+	if (source->data) {
+		string->data = realloc(string->data, source->len + 1);
+		string->len = source->len;
+		memcpy(string->data, source->data, string->len);
+		string->data[string->len] = 0;
+	} else {
+		string->data = NULL;
+		string->len = 0;
+	}
 }
 
 void str_append(str *string, str *source) {
