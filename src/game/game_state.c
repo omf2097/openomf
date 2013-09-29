@@ -210,7 +210,7 @@ void game_state_free() {
     free(gamestate);
 }
 
-unsigned int game_state_ms_per_tick(game_state *gamestate) {
+unsigned int game_state_ms_per_tick() {
     switch(gamestate->this_id) {
         case SCENE_ARENA0:
         case SCENE_ARENA1:
