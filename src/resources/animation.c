@@ -37,17 +37,19 @@ void animation_create(animation *ani, void *src) {
     }
 }
 
-sprite* animation_get_sprite(animation *ani, int sprite_id) {
-	return (sprite*)vector_get(&ani->sprites, sprite_id);
+animation* create_animation_from_single(sprite *sp, vec2i pos) {
+	animation *a = malloc(sizeof(animation));
+	a->start_pos = pos;
+	str_create_from_cstr(&a->animation_string, "A9999999999");
+	vector_create(&a->collision_coords, sizeof(collision_coord));
+	vector_create(&a->extra_strings, sizeof(str));
+	vector_create(&a->sprites, sizeof(sprite));
+	vector_append(&a->sprites, sp);
+	return a;
 }
 
-void animation_init(animation *ani, palette *pal, int remap_id) {
-	iterator it;
-    vector_iter_begin(&ani->sprites, &it);
-    sprite *tmp_sprite = NULL;
-    while((tmp_sprite = iter_next(&it)) != NULL) {
-        sprite_init(tmp_sprite, pal, remap_id);
-    }
+sprite* animation_get_sprite(animation *ani, int sprite_id) {
+	return (sprite*)vector_get(&ani->sprites, sprite_id);
 }
 
 void animation_free(animation *ani) {

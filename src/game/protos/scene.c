@@ -22,7 +22,11 @@ int scene_create(scene *scene, int scene_id) {
     scene->tick = NULL;
 
     // Init background sprite with palette
-    sprite_init(&scene->bk_data.background, bk_get_palette(&scene->bk_data, 0), 0);
+    object_create(&scene->background, vec2i_create(0,0), vec2f_create(0,0));
+    animation *bgani = create_animation_from_single(sprite_copy(&scene->bk_data.background), vec2i_create(0,0));
+    object_set_animation(&scene->background, bgani);
+    object_set_animation_owner(&scene->background, OWNER_OBJECT);
+    object_set_palette(&scene->background, bk_get_palette(&scene->bk_data, 0), 0);
 
     // Bootstrap animations
     iterator it;
@@ -31,12 +35,12 @@ int scene_create(scene *scene, int scene_id) {
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info*)pair->val;
         if(info->load_on_start || info->probability == 1) {
-            object *obj = malloc(sizeof(object));
-            object_create(obj, info->ani.start_pos, vec2f_create(0,0));
-            object_set_stl(obj, scene->bk_data.sound_translation_table);
-            animation_init(&info->ani, bk_get_palette(&scene->bk_data, 0), 0);
-            object_set_animation(obj, &info->ani);
-            game_state_add_object(obj);
+            object obj;
+            object_create(&obj, info->ani.start_pos, vec2f_create(0,0));
+            object_set_stl(&obj, scene->bk_data.sound_translation_table);
+            object_set_palette(&obj, bk_get_palette(&scene->bk_data, 0), 0);
+            object_set_animation(&obj, &info->ani);
+            game_state_add_object(&obj);
             DEBUG("Scene bootstrap: Animation started.");
         }
     }
@@ -63,7 +67,7 @@ int scene_event(scene *scene, SDL_Event *event) {
 }
 
 void scene_render(scene *scene) {
-    video_render_background(&scene->bk_data.background.tex);
+    object_render(&scene->background);
     if(scene->render != NULL) {
         scene->render(scene);
     }
@@ -80,6 +84,7 @@ void scene_free(scene *scene) {
         scene->free(scene);
     }
     bk_free(&scene->bk_data);
+    object_free(&scene->background);
 }
 
 void scene_set_free_cb(scene *scene, scene_free_cb cbfunc) {

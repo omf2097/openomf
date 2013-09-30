@@ -5,6 +5,8 @@
 #include "resources/sprite.h"
 #include "game/protos/player.h"
 #include "utils/vec.h"
+#include "utils/hashmap.h"
+#include "video/texture.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
 #define OBJECT_NO_GROUP -1
@@ -17,6 +19,11 @@ enum {
 enum {
     OBJECT_FACE_LEFT = -1,
     OBJECT_FACE_RIGHT = 1
+};
+
+enum {
+    OWNER_EXTERNAL,
+    OWNER_OBJECT
 };
 
 typedef struct object_t object;
@@ -37,9 +44,16 @@ struct object_t {
     int group;
     int layers;
     
+    int cur_animation_own;
     animation *cur_animation;
     sprite *cur_sprite;
     char *sound_translation_table;
+
+    int texture_refresh;
+    palette *cur_palette;
+    int cur_remap;
+
+    texture *cur_texture;
 
     player_sprite_state sprite_state;
     player_animation_state animation_state;
@@ -59,9 +73,12 @@ int object_finished(object *obj);
 void object_free(object *obj);
 
 void object_set_stl(object *obj, char *ptr);
-
+void object_set_animation_owner(object *obj, int owner);
 void object_set_animation(object *obj, animation *ani);
 void object_select_sprite(object *obj, int id);
+void object_set_palette(object *obj, palette *pal, int remap);
+
+void object_revalidate(object *obj);
 
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);

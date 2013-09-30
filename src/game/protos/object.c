@@ -1,4 +1,7 @@
 #include <stdlib.h>
+#include <shadowdive/vga_image.h>
+#include <shadowdive/sprite_image.h>
+#include <shadowdive/sprite.h>
 #include "game/protos/object.h"
 #include "video/video.h"
 #include "utils/log.h"
@@ -17,9 +20,14 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->act = NULL;
     obj->gravity = 0.0f;
     obj->direction = OBJECT_FACE_RIGHT;
+    obj->cur_animation_own = OWNER_EXTERNAL;
+    obj->texture_refresh = 0;
+    obj->cur_palette = NULL;
     obj->cur_animation = NULL;
     obj->cur_sprite = NULL;
     obj->sound_translation_table = NULL;
+    obj->cur_texture = NULL;
+    obj->cur_remap = 0;
     player_create(obj);
 }
 
@@ -32,23 +40,66 @@ void object_tick(object *obj) {
     }
 }
 
+void object_revalidate(object *obj) {
+    obj->texture_refresh = 1;
+}
+
 void object_render(object *obj) {
-    if(obj->cur_sprite != NULL) {
-        int y = obj->pos.y + obj->cur_sprite->pos.y;
-        int x = obj->pos.x + obj->cur_sprite->pos.x;
-        if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-            x = obj->pos.x + (obj->cur_sprite->pos.x * object_get_direction(obj)) - object_get_w(obj);
-        }
-        int flipmode = obj->sprite_state.flipmode;
-        if(obj->direction == OBJECT_FACE_LEFT) {
-            flipmode ^= FLIP_HORIZONTAL;
-        }
-        video_render_sprite_flip(
-            &obj->cur_sprite->tex, 
-            x, y,
-            obj->sprite_state.blendmode,
-            flipmode);
+    // Stop here if cur_sprite is NULL
+    if(obj->cur_sprite == NULL)  return;
+
+    // (Re)generate texture if necessary
+    if(obj->cur_texture == NULL) {
+        obj->cur_texture = malloc(sizeof(texture));
+        texture_create(obj->cur_texture);
+        obj->texture_refresh = 1;
     }
+
+    // If palette has changed, load up new texture here
+    if(obj->texture_refresh) {
+        // Load up sprite with defined palette
+        sd_rgba_image *img = sd_vga_image_decode(
+            obj->cur_sprite->raw_sprite, 
+            (sd_palette*)obj->cur_palette, 
+            obj->cur_remap);
+
+        // If texture size differs, free it here
+        if(obj->cur_texture->w != img->w || obj->cur_texture->h != img->h) {
+            texture_free(obj->cur_texture);
+        }
+
+        // If texture is valid, just reupload. We checked for size similarity previously.
+        // If texture is NOT valid, re-create it with a free ID etc.
+        if(texture_is_valid(obj->cur_texture)) {
+            if(texture_upload(obj->cur_texture, img->data)) {
+                PERROR("object_render: Error while uploading to an existing texture!");
+            }
+        } else {
+            if(texture_init(obj->cur_texture, img->data, img->w, img->h)) {
+                PERROR("object_render: Error while creating texture!");
+            }
+        }
+
+        // Delete resources
+        sd_rgba_image_delete(img);
+        obj->texture_refresh = 0;
+    }
+
+    // Render
+    int y = obj->pos.y + obj->cur_sprite->pos.y;
+    int x = obj->pos.x + obj->cur_sprite->pos.x;
+    if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+        x = obj->pos.x + (obj->cur_sprite->pos.x * object_get_direction(obj)) - object_get_w(obj);
+    }
+    int flipmode = obj->sprite_state.flipmode;
+    if(obj->direction == OBJECT_FACE_LEFT) {
+        flipmode ^= FLIP_HORIZONTAL;
+    }
+    video_render_sprite_flip(
+        obj->cur_texture, 
+        x, y,
+        obj->sprite_state.blendmode,
+        flipmode);
 }
 
 void object_act(object *obj, int action) {
@@ -62,19 +113,40 @@ void object_free(object *obj) {
         obj->free(obj);
     }
     player_free(obj);
+    if(obj->cur_animation_own == OWNER_OBJECT) {
+        animation_free(obj->cur_animation);
+        free(obj->cur_animation);
+    }
+    free(obj->cur_texture);
 }
 
 void object_set_stl(object *obj, char *ptr) {
     obj->sound_translation_table = ptr;
 }
 
+void object_set_animation_owner(object *obj, int owner) {
+    obj->cur_animation_own = owner;
+}
+
+void object_set_palette(object *obj, palette *pal, int remap) {
+    obj->cur_palette = pal;
+    obj->cur_remap = remap;
+    obj->texture_refresh = 1;
+}
+
 void object_set_animation(object *obj, animation *ani) {
+    if(obj->cur_animation != NULL && obj->cur_animation_own == OWNER_OBJECT) {
+        animation_free(obj->cur_animation);
+        free(obj->cur_animation);
+    }
     obj->cur_animation = ani;
+    obj->cur_animation_own = OWNER_EXTERNAL;
     player_reload(obj);
 }
 
 void object_select_sprite(object *obj, int id) {
     obj->cur_sprite = animation_get_sprite(obj->cur_animation, id);
+    obj->texture_refresh = 1;
 }
 
 void object_set_userdata(object *obj, void *ptr) { obj->userdata = ptr; }
@@ -107,15 +179,15 @@ void object_set_direction(object *obj, int dir) { obj->direction = dir; }
 int object_get_direction(object *obj) { return obj->direction; }
 
 int object_get_w(object *obj) {
-    if(obj->cur_sprite != NULL) {
-        return obj->cur_sprite->tex.w;
+    if(obj->cur_sprite != NULL && obj->cur_sprite->raw_sprite != NULL) {
+        return ((sd_vga_image*)obj->cur_sprite->raw_sprite)->w;
     }
     return 0;
 }
 
 int object_get_h(object *obj) {
-    if(obj->cur_sprite != NULL) {
-        return obj->cur_sprite->tex.h;
+    if(obj->cur_sprite != NULL && obj->cur_sprite->raw_sprite != NULL) {
+        return ((sd_vga_image*)obj->cur_sprite->raw_sprite)->h;
     }
     return 0;
 }

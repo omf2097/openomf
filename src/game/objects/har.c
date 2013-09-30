@@ -42,10 +42,9 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
 
-    // Set running animation (initialize with palette before setting)
-    animation *idle_animation = &af_get_move(&local->af_data, ANIM_IDLE)->ani;
-    animation_init(idle_animation, pal, 0);
-    object_set_animation(obj, idle_animation);
+    // Set running animation 
+    object_set_animation(obj, &af_get_move(&local->af_data, ANIM_IDLE)->ani);
+    object_set_palette(obj, pal, 0);
 
     // Callbacks and userdata
     object_set_userdata(obj, local);

@@ -21,7 +21,8 @@ typedef struct animation_t {
 
 void animation_create(animation *ani, void *src);
 sprite* animation_get_sprite(animation *ani, int sprite_id);
-void animation_init(animation *ani, palette *pal, int remap_id);
 void animation_free(animation *ani);
+
+animation* create_animation_from_single(sprite *sp, vec2i pos);
 
 #endif // _ANIMATION_H

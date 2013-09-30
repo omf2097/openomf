@@ -7,13 +7,13 @@
 
 typedef struct sprite_t {
 	vec2i pos;
-	texture tex;
 	void *raw_sprite;
 } sprite;
 
 void sprite_create(sprite *sp, void *src);
 void sprite_create_custom(sprite *sp, vec2i pos, void *raw_sprite);
-void sprite_init(sprite *sp, palette *pal, int remap_id);
 void sprite_free(sprite *sp);
+
+sprite* sprite_copy(sprite *src);
 
 #endif // _SPRITE_H

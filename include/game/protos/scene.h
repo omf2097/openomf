@@ -18,6 +18,7 @@ typedef void (*scene_tick_cb)(scene *scene);
 struct scene_t {
     bk bk_data;
     void *userdata;
+    object background;
     scene_free_cb free;
     scene_event_cb event;
     scene_render_cb render;
