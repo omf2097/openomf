@@ -218,6 +218,7 @@ void game_state_free() {
         object_free(obj);
         vector_delete(&gamestate->objects, &it);
     }
+    vector_free(&gamestate->objects);
     
     // Free players
     for(int i = 0; i < 2; i++) {

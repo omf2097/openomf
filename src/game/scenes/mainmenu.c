@@ -357,6 +357,8 @@ void mainmenu_free(scene *scene) {
     menu_free(&local->listen_menu);*/
 
     settings_save();
+
+    free(local);
 }
 
 void mainmenu_tick(scene *scene) {

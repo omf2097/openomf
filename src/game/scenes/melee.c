@@ -135,6 +135,7 @@ void mask_sprite(sprite *sprite, int x, int y, int w, int h) {
 
 void melee_free(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
+    game_player *player2 = game_state_get_player(1);
     /*if (harplayer_a.pobj) {*/
         /*object_free(harplayer_a.pobj);*/
         /*free(harplayer_a.pobj);*/
@@ -161,6 +162,25 @@ void melee_free(scene *scene) {
         progressbar_free(&local->bar_power[i]);
         progressbar_free(&local->bar_agility[i]);
         progressbar_free(&local->bar_endurance[i]);
+    }
+
+    for(int i = 0; i < 10; i++) {
+        object_free(&local->pilots[i].obj);
+        object_free(&local->harportraits_player1[i]);
+        object_free(&local->har_player1[i]);
+        if (player2->selectable) {
+            object_free(&local->harportraits_player2[i]);
+            object_free(&local->har_player2[i]);
+        }
+    }
+
+    free(local->player1_pal);
+    free(local->player2_pal);
+    object_free(&local->player2_placeholder);
+    object_free(&local->unselected_har_portraits);
+    object_free(&local->bigportrait1);
+    if (player2->selectable) {
+        object_free(&local->bigportrait2);
     }
     free(local);
 }
@@ -602,6 +622,7 @@ int melee_create(scene *scene) {
         object_set_animation(&local->harportraits_player1[i], ani);
         object_set_palette(&local->harportraits_player1[i], local->player1_pal, 0);
         object_select_sprite(&local->harportraits_player1[i], 0);
+        object_set_animation_owner(&local->harportraits_player1[i], OWNER_OBJECT);
         if (player2->selectable) {
             spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0));
             mask_sprite(spr, 62*col, 42*row, 51, 36);
@@ -610,6 +631,7 @@ int melee_create(scene *scene) {
             object_set_animation(&local->harportraits_player2[i], ani);
             object_set_palette(&local->harportraits_player2[i], local->player2_pal, 0);
             object_select_sprite(&local->harportraits_player2[i], 0);
+            object_set_animation_owner(&local->harportraits_player2[i], OWNER_OBJECT);
 
             ani = &bk_get_info(&scene->bk_data, 18+i)->ani;
             object_create(&local->har_player2[i], vec2i_create(210,95), vec2f_create(0, 0));
