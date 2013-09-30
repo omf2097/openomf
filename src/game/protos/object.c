@@ -163,6 +163,8 @@ void object_set_animation(object *obj, animation *ani) {
 void object_select_sprite(object *obj, int id) {
     obj->cur_sprite = animation_get_sprite(obj->cur_animation, id);
     obj->texture_refresh = 1;
+    obj->sprite_state.blendmode = BLEND_ALPHA;
+    obj->sprite_state.flipmode = FLIP_NONE;
 }
 
 void object_set_userdata(object *obj, void *ptr) { obj->userdata = ptr; }
