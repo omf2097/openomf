@@ -15,6 +15,7 @@ add_subdirectory(testing)
 
 add_library(shadowdive
     src/af.c
+    src/altpal.c
     src/animation.c
     src/bk.c
     src/bkanim.c
