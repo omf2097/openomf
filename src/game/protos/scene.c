@@ -4,7 +4,13 @@
 #include "resources/ids.h"
 #include "resources/bk_loader.h"
 #include "utils/log.h"
+#include "utils/vec.h"
 #include "game/game_state.h"
+
+// Some internal functions
+void cb_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
+void cb_destroy_object(object *parent, int id, void *userdata);
+
 
 // Loads BK file etc.
 int scene_create(scene *scene, int scene_id) {
@@ -35,12 +41,14 @@ int scene_create(scene *scene, int scene_id) {
     hashmap_pair *pair = NULL;
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info*)pair->val;
-        if(info->load_on_start || info->probability == 1) {
+        if(info->load_on_start || info->probability == 1 || (scene_id == SCENE_INTRO && info->ani.id == 25)) {
             object obj;
             object_create(&obj, info->ani.start_pos, vec2f_create(0,0));
             object_set_stl(&obj, scene->bk_data.sound_translation_table);
             object_set_palette(&obj, bk_get_palette(&scene->bk_data, 0), 0);
             object_set_animation(&obj, &info->ani);
+            object_set_spawn_cb(&obj, cb_spawn_object, (void*)scene);
+            object_set_destroy_cb(&obj, cb_destroy_object, (void*)scene);
             game_state_add_object(&obj);
             DEBUG("Scene bootstrap: Animation started.");
         }
@@ -131,5 +139,23 @@ int scene_is_valid(int id) {
     return 0;
 }
 
+void cb_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
+    scene *s = (scene*)userdata;
 
+    // Get next animation
+    bk_info *info = bk_get_info(&s->bk_data, id);
+    if(info != NULL) {
+        object obj;
+        object_create(&obj, vec2i_add(pos, info->ani.start_pos), vec2f_create(0,0));
+        object_set_stl(&obj, object_get_stl(parent));
+        object_set_palette(&obj, object_get_palette(parent), 0);
+        object_set_animation(&obj, &info->ani);
+        object_set_spawn_cb(&obj, cb_spawn_object, userdata);
+        object_set_destroy_cb(&obj, cb_destroy_object, userdata);
+        game_state_add_object(&obj);
+    }
+}
 
+void cb_destroy_object(object *parent, int id, void *userdata) {
+    game_state_del_object(id);
+}

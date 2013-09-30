@@ -50,12 +50,10 @@ void object_check_texture(object *obj) {
         obj->cur_texture = malloc(sizeof(texture));
         texture_create(obj->cur_texture);
         obj->texture_refresh = 1;
-        DEBUG("Init tex @ object");
     }
 
     // If palette has changed, load up new texture here
     if(obj->texture_refresh) {
-        DEBUG("Load tex @ object");
         // Load up sprite with defined palette
         sd_rgba_image *img = sd_vga_image_decode(
             obj->cur_sprite->raw_sprite, 
@@ -140,6 +138,10 @@ void object_set_stl(object *obj, char *ptr) {
     obj->sound_translation_table = ptr;
 }
 
+char* object_get_stl(object *obj) {
+    return obj->sound_translation_table;
+}
+
 void object_set_animation_owner(object *obj, int owner) {
     obj->cur_animation_own = owner;
 }
@@ -150,6 +152,10 @@ void object_set_palette(object *obj, palette *pal, int remap) {
     obj->texture_refresh = 1;
 }
 
+palette* object_get_palette(object *obj) {
+    return obj->cur_palette;
+}
+
 void object_set_animation(object *obj, animation *ani) {
     if(obj->cur_animation != NULL && obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
@@ -158,6 +164,10 @@ void object_set_animation(object *obj, animation *ani) {
     obj->cur_animation = ani;
     obj->cur_animation_own = OWNER_EXTERNAL;
     player_reload(obj);
+}
+
+animation* object_get_animation(object *obj) {
+    return obj->cur_animation;
 }
 
 void object_select_sprite(object *obj, int id) {
@@ -257,4 +267,14 @@ void object_add_vel(object *obj, float vx, float vy) {
     obj->vel.y += vy;
     object_reset_vstate(obj);
     object_reset_hstate(obj);
+}
+
+void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata) {
+    obj->animation_state.spawn = cbf;
+    obj->animation_state.spawn_userdata = userdata;
+}
+
+void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata) {
+    obj->animation_state.destroy = cbf;
+    obj->animation_state.destroy_userdata = userdata;
 }

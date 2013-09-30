@@ -44,6 +44,27 @@ int game_state_create() {
 
 void game_state_add_object(object *obj) {
     vector_append(&gamestate->objects, obj);
+
+#ifdef DEBUG
+    animation *ani = object_get_animation(obj);
+    DEBUG("Added animation %i to game_state.", ani->id);
+#endif
+}
+
+void game_state_del_object(int anim_id) {
+    iterator it;
+    object *obj;
+    vector_iter_begin(&gamestate->objects, &it);
+    while((obj = iter_next(&it)) != NULL) {
+        animation *ani = object_get_animation(obj);
+        if(ani != NULL && ani->id == anim_id) {
+            object_free(obj);
+            vector_delete(&gamestate->objects, &it);
+            DEBUG("Deleted animation %i from game_state.", anim_id);
+            return;
+        }
+    }
+    DEBUG("Attempted to delete animation %i from game_state, but no such animation was playing.", anim_id);
 }
 
 void game_state_set_next(unsigned int next_scene_id) {

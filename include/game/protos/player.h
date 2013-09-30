@@ -1,9 +1,14 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
+#include "utils/vec.h"
+
 typedef struct sound_state_t sound_state;
 typedef struct object_t object;
 typedef struct sd_stringparser_t sd_stringparser;
+
+typedef void (*object_state_add_cb)(object *parent, int id, vec2i pos, int g, void *userdata);
+typedef void (*object_state_del_cb)(object *parent, int id, void *userdata);
 
 typedef struct player_sprite_state_t {
     int blendmode;
@@ -16,12 +21,15 @@ typedef struct player_animation_state_t {
     unsigned int repeat;
     unsigned int reverse;
     unsigned int end_frame;
+    int previous;
     sound_state *sound_state;
     sd_stringparser *parser;
     int enemy_x, enemy_y;
 
-    void (*del_player)(object *obj, int id);
-    void (*add_player)(object *obj, int id, int mx, int my, int mg);
+    void *spawn_userdata;
+    void *destroy_userdata;
+    object_state_add_cb spawn;
+    object_state_del_cb destroy;
 } player_animation_state;
 
 void player_create(object *obj);

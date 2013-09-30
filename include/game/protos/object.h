@@ -74,10 +74,13 @@ int object_finished(object *obj);
 void object_free(object *obj);
 
 void object_set_stl(object *obj, char *ptr);
+char* object_get_stl(object *obj);
 void object_set_animation_owner(object *obj, int owner);
 void object_set_animation(object *obj, animation *ani);
+animation *object_get_animation(object *obj);
 void object_select_sprite(object *obj, int id);
 void object_set_palette(object *obj, palette *pal, int remap);
+palette* object_get_palette(object *obj);
 
 void object_revalidate(object *obj);
 
@@ -127,5 +130,8 @@ void object_add_pos(object *obj, int px, int py);
 void object_get_vel(object *obj, float *vx, float *vy);
 void object_set_vel(object *obj, float vx, float vy);
 void object_add_vel(object *obj, float vx, float vy);
+
+void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata);
+void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata);
 
 #endif // _OBJECT_H

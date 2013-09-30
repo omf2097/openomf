@@ -1,6 +1,5 @@
 #include <inttypes.h>
 #include <stdlib.h>
-
 #include <shadowdive/stringparser.h>
 
 #include "game/settings.h"
@@ -12,6 +11,7 @@
 #include "game/protos/player.h"
 #include "game/protos/object.h"
 #include "utils/string.h"
+#include "utils/log.h"
 
 // ---------------- Private callbacks ---------------- 
 
@@ -106,9 +106,12 @@ void player_create(object *obj) {
     obj->animation_state.repeat = 0;
     obj->animation_state.enemy_x = 0;
     obj->animation_state.enemy_y = 0;
-    obj->animation_state.add_player = NULL;
-    obj->animation_state.del_player = NULL;
+    obj->animation_state.spawn = NULL;
+    obj->animation_state.spawn_userdata = NULL;
+    obj->animation_state.destroy = NULL;
+    obj->animation_state.destroy_userdata = NULL;
     obj->animation_state.parser = NULL;
+    obj->animation_state.previous = -1;
     obj->animation_state.sound_state = malloc(sizeof(sound_state));
 }
 
@@ -147,6 +150,7 @@ void player_reload(object *obj) {
     // Set player state
     obj->animation_state.ticks = 1;
     obj->animation_state.finished = 0;
+    obj->animation_state.previous = -1;
 }
 
 void player_reset(object *obj) {
@@ -165,7 +169,7 @@ void player_run(object *obj) {
     if(state->end_frame == UINT32_MAX) {
         run_ret = sd_stringparser_run(state->parser, state->ticks - 1);
     } else {
-        run_ret = sd_stringparser_run_frames(state->parser, state->ticks-1, state->end_frame);
+        run_ret = sd_stringparser_run_frames(state->parser, state->ticks - 1, state->end_frame);
     }
 
     // Handle frame
@@ -179,6 +183,13 @@ void player_run(object *obj) {
 
         real_frame = param->letter - 65;
         
+        // See if frame changed
+        int changed = 0;
+        if(param->id != obj->animation_state.previous) {
+            changed = 1;
+        }
+        obj->animation_state.previous = param->id;
+
         // Do something if animation is finished!
         if(param->is_animation_end || state->finished) {
             state->finished = 1;
@@ -187,133 +198,139 @@ void player_run(object *obj) {
                 sd_stringparser_run(state->parser, state->ticks - 1);
                 real_frame = param->letter - 65;
             } else {
+                obj->cur_sprite = NULL;
                 return;
             }
         }
+
+        if(changed) {
+            // Tick management
+            if(isset(f, "d"))   {
+                cmd_tickjump(obj, get(f, "d"));
+                sd_stringparser_reset(state->parser);
+            }
         
-        // Tick management
-        if(isset(f, "d"))   {
-            cmd_tickjump(obj, get(f, "d"));
-            sd_stringparser_reset(state->parser);
-        }
-    
-        // Animation management
-        if(isset(f, "m") && state->add_player != NULL) {
-            int mx = isset(f, "mx") ? get(f, "mx") : 0;
-            int my = isset(f, "my") ? get(f, "my") : 0;
-            int mg = isset(f, "mg") ? get(f, "mg") : 0;
-            state->add_player(obj, get(f, "m"), mx, my, mg);
-        }
-        if(isset(f, "md") && state->del_player != NULL) { 
-            state->del_player(obj, get(f, "md"));
-        }
-    
-        // Handle music and sounds
-        state->sound_state->freq = 1.0f;
-        state->sound_state->pan = 0.0f;
-        state->sound_state->pan_start = 0.0f;
-        state->sound_state->pan_end = 0.0f;
-        if(isset(f, "sf"))  { cmd_sound_freq(obj, get(f, "sf"));      }
-        if(isset(f, "l"))   { cmd_sound_vol(obj, get(f, "l"));        }
-        if(isset(f, "sb"))  { cmd_sound_pan(obj, get(f, "sb"));       }
-        if(isset(f, "sl"))  { cmd_sound_pan_end(obj, get(f, "sl"));   }
-        if(isset(f, "se"))  { cmd_sound_pan_end(obj, get(f, "se")+1); }
-        if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));            }
-        if(isset(f, "smf")) { cmd_music_off();                        }
-        if(isset(f, "s"))   { cmd_sound(obj, get(f, "s"));            }
-        if (isset(f, "v")) {
-            int x = 0, y = 0;
-            if(isset(f, "y-")) {
-                y = get(f, "y-") * -1;
-            } else if(isset(f, "y+")) {
-                y = get(f, "y+");
+            // Animation management
+            if(isset(f, "m") && state->spawn != NULL) {
+                int mx = isset(f, "mx") ? get(f, "mx") : 0;
+                int my = isset(f, "my") ? get(f, "my") : 0;
+                int mg = isset(f, "mg") ? get(f, "mg") : 0;
+                state->spawn(obj, get(f, "m"), vec2i_create(mx, my), mg, state->spawn_userdata);
             }
-            if(isset(f, "x-")) {
-                x = get(f, "x-") * -1 * object_get_direction(obj);
-            } else if(isset(f, "x+")) {
-                x = get(f, "x+") * object_get_direction(obj);
+            if(isset(f, "md") && state->destroy != NULL) { 
+                state->destroy(obj, get(f, "md"), state->destroy_userdata);
             }
-
-            if (x || y) {
-                object_add_vel(obj, x, y);
-            }
-        }
-        /*if (isset(f, "e")) {
-            // x,y relative to *enemy's* position
-            int x = 0, y = 0;
-            if(isset(f, "y-")) {
-                y = get(f, "y-") * -1;
-            } else if(isset(f, "y+")) {
-                y = get(f, "y+");
-            }
-            if(isset(f, "x-")) {
-                x = get(f, "x-") * -1 * object_get_direction(obj);
-            } else if(isset(f, "x+")) {
-                x = get(f, "x+") * object_get_direction(obj);
-            }
-
-            int xpos, ypos;
-            object_get_pos(obj, &xpos, &ypos);
-            int x_dist = dist(xpos, state->enemy_x + x);
-            int y_dist = dist(ypos, state->enemy_y + y);
-            player->slide_op.enabled = 1;
-            player->slide_op.x_per_tick = x_dist / (float)param->duration;
-            player->slide_op.y_per_tick = y_dist / (float)param->duration;
-        }
-        if (isset(f, "v") == 0 && isset(f, "e") == 0 && (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
-            // check for relative X interleaving
-            int x = 0, y = 0;
-            if(isset(f, "y-")) {
-                y = get(f, "y-") * -1;
-            } else if(isset(f, "y+")) {
-                y = get(f, "y+");
-            }
-            if(isset(f, "x-")) {
-                x = get(f, "x-") * -1 * object_get_direction(obj);
-            } else if(isset(f, "x+")) {
-                x = get(f, "x+") * object_get_direction(obj);
-            }
-
-            player->slide_op.enabled = 1;
-            player->slide_op.x_per_tick = x / (float)param->duration;
-            player->slide_op.y_per_tick = y / (float)param->duration;
-        }*/
-
-
-        // Check if next frame contains X=nnn or Y=nnn 
-        /*
-        if(!param->is_final_frame) {
-            sd_stringparser_peek(state->parser, param->id + 1, &n_param);
-            int slide = 0;
-            int xpos, ypos;
-            if(isset(n, "x=")) {
-                slide = get(n, "x=");
-                if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-                    // if the sprite is flipped horizontally, adjust the X coordinates
-                    slide = 320 - slide;
-                }
-                object_get_pos(obj, &xpos, &ypos);
-            }
-            if(isset(n, "y=")) { 
-                slide = get(n, "y=");
-                object_get_pos(obj, &xpos, &ypos);
-            }
-        }*/
         
-        // Set render settings
-        if(real_frame < 25) {
-            object_select_sprite(obj, real_frame);
-            if(obj->cur_sprite != NULL) {
-                obj->sprite_state.flipmode = FLIP_NONE;
-                obj->sprite_state.blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
-                if(isset(f, "r")) {
-                    obj->sprite_state.flipmode |= FLIP_HORIZONTAL;
+            // Handle music and sounds
+            state->sound_state->freq = 1.0f;
+            state->sound_state->pan = 0.0f;
+            state->sound_state->pan_start = 0.0f;
+            state->sound_state->pan_end = 0.0f;
+            if(isset(f, "sf"))  { cmd_sound_freq(obj, get(f, "sf"));      }
+            if(isset(f, "l"))   { cmd_sound_vol(obj, get(f, "l"));        }
+            if(isset(f, "sb"))  { cmd_sound_pan(obj, get(f, "sb"));       }
+            if(isset(f, "sl"))  { cmd_sound_pan_end(obj, get(f, "sl"));   }
+            if(isset(f, "se"))  { cmd_sound_pan_end(obj, get(f, "se")+1); }
+            if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));            }
+            if(isset(f, "smf")) { cmd_music_off();                        }
+            if(isset(f, "s"))   { cmd_sound(obj, get(f, "s"));            }
+            if (isset(f, "v")) {
+                int x = 0, y = 0;
+                if(isset(f, "y-")) {
+                    y = get(f, "y-") * -1;
+                } else if(isset(f, "y+")) {
+                    y = get(f, "y+");
                 }
-                if (isset(f, "f")) {
-                    obj->sprite_state.flipmode |= FLIP_VERTICAL;
+                if(isset(f, "x-")) {
+                    x = get(f, "x-") * -1 * object_get_direction(obj);
+                } else if(isset(f, "x+")) {
+                    x = get(f, "x+") * object_get_direction(obj);
+                }
+
+                if (x || y) {
+                    object_add_vel(obj, x, y);
                 }
             }
-        } 
+            /*if (isset(f, "e")) {
+                // x,y relative to *enemy's* position
+                int x = 0, y = 0;
+                if(isset(f, "y-")) {
+                    y = get(f, "y-") * -1;
+                } else if(isset(f, "y+")) {
+                    y = get(f, "y+");
+                }
+                if(isset(f, "x-")) {
+                    x = get(f, "x-") * -1 * object_get_direction(obj);
+                } else if(isset(f, "x+")) {
+                    x = get(f, "x+") * object_get_direction(obj);
+                }
+
+                int xpos, ypos;
+                object_get_pos(obj, &xpos, &ypos);
+                int x_dist = dist(xpos, state->enemy_x + x);
+                int y_dist = dist(ypos, state->enemy_y + y);
+                player->slide_op.enabled = 1;
+                player->slide_op.x_per_tick = x_dist / (float)param->duration;
+                player->slide_op.y_per_tick = y_dist / (float)param->duration;
+            }
+            if (isset(f, "v") == 0 && isset(f, "e") == 0 && (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
+                // check for relative X interleaving
+                int x = 0, y = 0;
+                if(isset(f, "y-")) {
+                    y = get(f, "y-") * -1;
+                } else if(isset(f, "y+")) {
+                    y = get(f, "y+");
+                }
+                if(isset(f, "x-")) {
+                    x = get(f, "x-") * -1 * object_get_direction(obj);
+                } else if(isset(f, "x+")) {
+                    x = get(f, "x+") * object_get_direction(obj);
+                }
+
+                player->slide_op.enabled = 1;
+                player->slide_op.x_per_tick = x / (float)param->duration;
+                player->slide_op.y_per_tick = y / (float)param->duration;
+            }*/
+
+
+            // Check if next frame contains X=nnn or Y=nnn 
+            /*
+            if(!param->is_final_frame) {
+                sd_stringparser_peek(state->parser, param->id + 1, &n_param);
+                int slide = 0;
+                int xpos, ypos;
+                if(isset(n, "x=")) {
+                    slide = get(n, "x=");
+                    if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+                        // if the sprite is flipped horizontally, adjust the X coordinates
+                        slide = 320 - slide;
+                    }
+                    object_get_pos(obj, &xpos, &ypos);
+                }
+                if(isset(n, "y=")) { 
+                    slide = get(n, "y=");
+                    object_get_pos(obj, &xpos, &ypos);
+                }
+            }*/
+            
+            // Set render settings
+            if(real_frame < 25) {
+                object_select_sprite(obj, real_frame);
+                if(obj->cur_sprite != NULL) {
+                    obj->sprite_state.flipmode = FLIP_NONE;
+                    obj->sprite_state.blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
+                    if(isset(f, "r")) {
+                        obj->sprite_state.flipmode |= FLIP_HORIZONTAL;
+                    }
+                    if (isset(f, "f")) {
+                        obj->sprite_state.flipmode |= FLIP_VERTICAL;
+                    }
+                }
+            } else {
+                obj->cur_sprite = NULL;
+            }
+
+        }
     }
 
     if(state->reverse) {
