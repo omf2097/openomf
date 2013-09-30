@@ -27,6 +27,7 @@
 struct pilot_t {
     int power, agility, endurance;
     int colors[3];
+    object obj;
 };
 
 typedef struct melee_local_t {
@@ -37,7 +38,6 @@ typedef struct melee_local_t {
     int done_a, done_b; // 0-1
 
     palette *player1_pal, *player2_pal;
-
 
     struct pilot_t pilots[10];
 
@@ -403,6 +403,7 @@ void melee_render(scene *scene) {
 
         render_highlights(scene);
         for(int i = 0; i < 10; i++) {
+            object_render(&local->pilots[i].obj);
             /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, i);*/
             /*video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
 
@@ -535,14 +536,22 @@ int melee_create(scene *scene) {
     /*}*/
 
     /*sprite *full = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);*/
-    /*for(int i = 0; i < 10; i++) {*/
+    animation *ani;
+    sprite *spr;
+    for(int i = 0; i < 10; i++) {
+        spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, i));
+        ani = create_animation_from_single(spr, spr->pos);
+        object_create(&local->pilots[i].obj, spr->pos, vec2f_create(0, 0));
+        object_set_animation(&local->pilots[i].obj, ani);
+        object_set_palette(&local->pilots[i].obj, mpal, 0);
+
         /*int row = i / 5;*/
         /*int col = i % 5;*/
         /*local->harportraits[i] = malloc(sizeof(sprite));*/
         /*sprite_create_custom(local->harportraits[i], full->pos, sd_vga_image_clone(full->raw_sprite));*/
         /*mask_sprite(local->harportraits[i], 62*col, 42*row, 51, 36);*/
         /*sprite_init(local->harportraits[i], mpal, 0);*/
-    /*}*/
+    }
 
     // Preinit some animations with a palette
     // TODO use the player's palette for some animations/sprites
