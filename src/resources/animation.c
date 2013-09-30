@@ -2,10 +2,11 @@
 #include <shadowdive/shadowdive.h>
 #include <stdlib.h>
 
-void animation_create(animation *ani, void *src) {
+void animation_create(animation *ani, void *src, int id) {
 	sd_animation *sdani = (sd_animation*)src;
 
 	// Copy simple stuff
+	ani->id = id;
 	ani->start_pos = vec2i_create(sdani->start_x, sdani->start_y);
 	str_create_from_cstr(&ani->animation_string, sdani->anim_string);
 

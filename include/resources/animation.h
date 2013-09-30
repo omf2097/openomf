@@ -12,6 +12,7 @@ typedef struct collision_coord_t {
 } collision_coord;
 
 typedef struct animation_t {
+	int id;
 	vec2i start_pos;
 	vector collision_coords;
 	str animation_string;
@@ -19,7 +20,7 @@ typedef struct animation_t {
 	vector sprites;
 } animation;
 
-void animation_create(animation *ani, void *src);
+void animation_create(animation *ani, void *src, int id);
 sprite* animation_get_sprite(animation *ani, int sprite_id);
 void animation_free(animation *ani);
 

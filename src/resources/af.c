@@ -20,7 +20,7 @@ void af_create(af *a, void *src) {
 	af_move tmp_move;
 	for(int i = 0; i < 70; i++) {
 		if(sdaf->moves[i] != NULL) {
-			af_move_create(&tmp_move, (void*)sdaf->moves[i]);
+			af_move_create(&tmp_move, (void*)sdaf->moves[i], i);
 			hashmap_iput(&a->moves, i, &tmp_move, sizeof(af_move));
 		}
 	}

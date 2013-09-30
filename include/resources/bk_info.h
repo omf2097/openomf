@@ -12,7 +12,7 @@ typedef struct bk_info_t {
     animation ani;
 } bk_info;
 
-void bk_info_create(bk_info *info, void *src);
+void bk_info_create(bk_info *info, void *src, int id);
 void bk_info_free(bk_info *info);
 
 #endif // _BK_INFO_H

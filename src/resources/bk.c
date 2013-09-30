@@ -26,7 +26,7 @@ void bk_create(bk *b, void *src) {
 	bk_info tmp_bk_info;
 	for(int i = 0; i < 50; i++) {
 		if(sdbk->anims[i] != NULL) {
-			bk_info_create(&tmp_bk_info, (void*)sdbk->anims[i]);
+			bk_info_create(&tmp_bk_info, (void*)sdbk->anims[i], i);
 			hashmap_iput(&b->infos, i, &tmp_bk_info, sizeof(bk_info));
 		}
 	}

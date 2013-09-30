@@ -10,7 +10,7 @@ typedef struct af_move_t {
 	str footer_string;
 } af_move;
 
-void af_move_create(af_move *move, void *src);
+void af_move_create(af_move *move, void *src, int id);
 void af_move_free(af_move *move);
 
 #endif // _AF_MOVE_H
