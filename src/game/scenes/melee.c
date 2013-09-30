@@ -26,6 +26,7 @@
 
 struct pilot_t {
     int power, agility, endurance;
+    int colors[3];
 };
 
 typedef struct melee_local_t {
@@ -34,6 +35,8 @@ typedef struct melee_local_t {
     int row_a, row_b; // 0 or 1
     int column_a, column_b; // 0-4
     int done_a, done_b; // 0-1
+
+    palette *player1_pal, *player2_pal;
 
 
     struct pilot_t pilots[10];
@@ -138,9 +141,9 @@ void melee_free(scene *scene) {
     /*}*/
     
     
-    for(int i = 0; i < 10; i++) {
-        sprite_free(local->harportraits[i]);
-    }
+    /*for(int i = 0; i < 10; i++) {*/
+        /*sprite_free(local->harportraits[i]);*/
+    /*}*/
     
 
     texture_free(&local->feh);
@@ -320,7 +323,6 @@ int melee_event(scene *scene, SDL_Event *event) {
 
 void render_highlights(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
-    /*game_player *player1 = game_state_get_player(1);*/
     game_player *player2 = game_state_get_player(1);
     int trans;
     if (player2->selectable && local->row_a == local->row_b && local->column_a == local->column_b) {
@@ -344,14 +346,12 @@ void render_highlights(scene *scene) {
 }
 
 void melee_render(scene *scene) {
-    animation *ani;
-    sprite *sprite;
+    /*animation *ani;*/
+    /*sprite *sprite;*/
     melee_local *local = scene_get_userdata(scene);
     game_player *player2 = game_state_get_player(1);
     int current_a = 5*local->row_a + local->column_a;
     int current_b = 5*local->row_b + local->column_b;
-
-    //palette *mpal = bk_get_palette(&scene->bk_data, 0);
 
     if (local->selection == 0) {
         video_render_sprite_flip(&local->feh, 70, 0, BLEND_ALPHA, FLIP_NONE);
@@ -385,11 +385,11 @@ void melee_render(scene *scene) {
         }
     }
 
-    ani = &bk_get_info(&scene->bk_data, 5)->ani;
+    /*ani = &bk_get_info(&scene->bk_data, 5)->ani;*/
     if (player2->selectable) {
-        video_render_sprite_flip(&animation_get_sprite(ani, 0)->tex, 254, 0, BLEND_ALPHA, FLIP_NONE);
+        /*video_render_sprite_flip(&animation_get_sprite(ani, 0)->tex, 254, 0, BLEND_ALPHA, FLIP_NONE);*/
     } else {
-        video_render_sprite_flip(&animation_get_sprite(ani, 1)->tex, 162, 0, BLEND_ALPHA, FLIP_NONE);
+        /*video_render_sprite_flip(&animation_get_sprite(ani, 1)->tex, 162, 0, BLEND_ALPHA, FLIP_NONE);*/
     }
 
     if (local->selection == 0) {
@@ -403,35 +403,35 @@ void melee_render(scene *scene) {
 
         render_highlights(scene);
         for(int i = 0; i < 10; i++) {
-            sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, i);
-            video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
+            /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, i);*/
+            /*video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
 
             if (i == current_a) {
                 // render the big portrait
-                sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, i);
-                video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
+                /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, i);*/
+                /*video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
             }
 
             if (player2->selectable && i == current_b) {
                 // render the big portrait
-                sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, i);
-                video_render_sprite_flip(&sprite->tex, 320-(sprite->tex.w + sprite->pos.x), sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
+                /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, i);*/
+                /*video_render_sprite_flip(&sprite->tex, 320-(sprite->tex.w + sprite->pos.x), sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);*/
             }
         }
     } else {
         // render the stupid unselected HAR portraits before anything
         // so we can render anything else on top of them
-        sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);
-        video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
+        /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);*/
+        /*video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
         render_highlights(scene);
 
         // currently selected player
-        sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_a);
-        video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
+        /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_a);*/
+        /*video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
 
         //currently selected HAR
-        sprite = local->harportraits[5*local->row_a + local->column_a];
-        video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
+        /*sprite = local->harportraits[5*local->row_a + local->column_a];*/
+        /*video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
         /*animationplayer_render(&harplayer_a);*/
 
         // player 1 name
@@ -442,12 +442,12 @@ void melee_render(scene *scene) {
             font_render_wrapped(&font_small, lang_get(20+local->player_id_b), 320-66, 52, 66, COLOR_BLACK);
 
             // currently selected player
-            sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_b);
-            video_render_sprite_flip(&sprite->tex, 320-(sprite->tex.w + sprite->pos.x),
-                    sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
+            /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, local->player_id_b);*/
+            /*video_render_sprite_flip(&sprite->tex, 320-(sprite->tex.w + sprite->pos.x),*/
+                    /*sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);*/
             // currently selected HAR
-            sprite = local->harportraits[5*local->row_b + local->column_b];
-            video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
+            /*sprite = local->harportraits[5*local->row_b + local->column_b];*/
+            /*video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
             /*animationplayer_render(&harplayer_b);*/
         } else {
             // 'choose your HAR'
@@ -464,15 +464,26 @@ int melee_create(scene *scene) {
     scene_set_userdata(scene, local);
 
     palette *mpal = bk_get_palette(&scene->bk_data, 0);
-    fixup_palette(mpal);
+    /*fixup_palette(mpal);*/
+    palette_set_player_color(mpal, 0, 11, 0);
+    palette_set_player_color(mpal, 0, 11, 1);
+    palette_set_player_color(mpal, 0, 11, 2);
 
     // TODO read this from MASTER.DAT
     local->pilots[0].power=5;
     local->pilots[0].agility=16;
     local->pilots[0].endurance=9;
+    local->pilots[0].colors[0] = 5;
+    local->pilots[0].colors[1] = 11;
+    local->pilots[0].colors[2] = 15;
+
     local->pilots[1].power=13;
     local->pilots[1].agility=9;
     local->pilots[1].endurance=8;
+    local->pilots[1].colors[0] = 10;
+    local->pilots[1].colors[1] = 15;
+    local->pilots[1].colors[2] = 7;
+
     local->pilots[2].power=7;
     local->pilots[2].agility=20;
     local->pilots[2].endurance=4;
@@ -523,22 +534,22 @@ int melee_create(scene *scene) {
         /*controller_add_hook(scene->player1.ctrl, scene->player2.ctrl, scene->player2.ctrl->controller_hook);*/
     /*}*/
 
-    sprite *full = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);
-    for(int i = 0; i < 10; i++) {
-        int row = i / 5;
-        int col = i % 5;
-        local->harportraits[i] = malloc(sizeof(sprite));
-        sprite_create_custom(local->harportraits[i], full->pos, sd_vga_image_clone(full->raw_sprite));
-        mask_sprite(local->harportraits[i], 62*col, 42*row, 51, 36);
-        sprite_init(local->harportraits[i], mpal, 0);
-    }
+    /*sprite *full = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);*/
+    /*for(int i = 0; i < 10; i++) {*/
+        /*int row = i / 5;*/
+        /*int col = i % 5;*/
+        /*local->harportraits[i] = malloc(sizeof(sprite));*/
+        /*sprite_create_custom(local->harportraits[i], full->pos, sd_vga_image_clone(full->raw_sprite));*/
+        /*mask_sprite(local->harportraits[i], 62*col, 42*row, 51, 36);*/
+        /*sprite_init(local->harportraits[i], mpal, 0);*/
+    /*}*/
 
     // Preinit some animations with a palette
     // TODO use the player's palette for some animations/sprites
-    int to_init[5] = {0,3,4,5};
-    for(int i = 0; i < 5; i++) {
-        animation_init(&bk_get_info(&scene->bk_data, to_init[i])->ani, mpal, 0);
-    }
+    /*int to_init[5] = {0,3,4,5};*/
+    /*for(int i = 0; i < 5; i++) {*/
+        /*animation_init(&bk_get_info(&scene->bk_data, to_init[i])->ani, mpal, 0);*/
+    /*}*/
 
     const color bar_color = color_create(0, 190, 0, 255);
     const color bar_bg_color = color_create(80, 220, 80, 0);

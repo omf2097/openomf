@@ -1,4 +1,45 @@
 #include "resources/palette.h"
+#include <string.h>
+#include <stdlib.h>
+
+#include "utils/log.h"
+
+sd_altpal_file *altpals;
+
+int altpals_init() {
+    altpals = sd_altpal_create();
+    return sd_altpals_load(altpals, "resources/ALTPALS.DAT");
+}
+
+void altpals_close() {
+    sd_altpal_delete(altpals);
+}
+
+void palette_set_player_color(palette *palette, int player, int sourcecolor, int destcolor) {
+    int offset;
+    switch(player) {
+        case 0:
+            offset = 0;
+            break;
+        case 1:
+            offset = 16;
+            break;
+        case 3:
+            offset = 256;
+            break;
+    }
+
+    DEBUG("copying 16 bytes into palette at %d", offset+(destcolor*16));
+    memcpy(palette->data+(offset+(destcolor*16)), altpals->palettes[0].data+(sourcecolor*16), 16*3);
+}
+
+palette* palette_copy(palette *src) {
+    palette *new = malloc(sizeof(palette));
+    memcpy(new->data, src->data, 256*3);
+    memcpy(new->remaps, src->remaps, 19*256);
+    return new;
+}
+
 
 void fixup_palette(palette *palette) {
     // XXX just cram some known-good values in the player part of the palette for now

@@ -36,6 +36,9 @@ int engine_init() {
     if(fonts_init()) {
         return 1;
     }
+    if(altpals_init()) {
+        return 1;
+    }
     if(audio_init()) {
         return 1;
     }
@@ -144,6 +147,7 @@ void engine_run() {
 void engine_close() {
     console_close();
     fonts_close();
+    altpals_close();
     lang_close();
     video_close();
     audio_close();

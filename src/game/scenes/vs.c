@@ -190,28 +190,28 @@ void vs_render(scene *scene) {
 
     // player 1 HAR
 
-    sprite *sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id - HAR_JAGUAR);
-    video_render_sprite_flip(&sprite->tex, 160+sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
+    /*sprite *sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id - HAR_JAGUAR);*/
+    /*video_render_sprite_flip(&sprite->tex, 160+sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
 
     // player 2 HAR
-    sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id - HAR_JAGUAR);
-    video_render_sprite_flip(&sprite->tex, 160+ (sprite->pos.x * -1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
+    /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id - HAR_JAGUAR);*/
+    /*video_render_sprite_flip(&sprite->tex, 160+ (sprite->pos.x * -1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);*/
 
     // player 1 portrait
-    sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, player1->player_id);
-    video_render_sprite_flip(&sprite->tex, 0, 200 - sprite->tex.w, BLEND_ALPHA, FLIP_NONE);
+    /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, player1->player_id);*/
+    /*video_render_sprite_flip(&sprite->tex, 0, 200 - sprite->tex.w, BLEND_ALPHA, FLIP_NONE);*/
 
     // player 2 portrait
-    sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, player2->player_id);
-    video_render_sprite_flip(&sprite->tex, 320 - sprite->tex.w, 200 - sprite->tex.w, BLEND_ALPHA, FLIP_HORIZONTAL);
+    /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, player2->player_id);*/
+    /*video_render_sprite_flip(&sprite->tex, 320 - sprite->tex.w, 200 - sprite->tex.w, BLEND_ALPHA, FLIP_HORIZONTAL);*/
 
 
     if (player2->selectable) {
         // arena selection
         video_render_sprite_flip(&local->arena_select_bg, 55, 150, BLEND_ALPHA, FLIP_NONE);
 
-        sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, local->arena);
-        video_render_sprite_flip(&sprite->tex, 59, 155, BLEND_ALPHA, FLIP_NONE);
+        /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, local->arena);*/
+        /*video_render_sprite_flip(&sprite->tex, 59, 155, BLEND_ALPHA, FLIP_NONE);*/
 
         // arena name
         font_render_wrapped(&font_small, lang_get(56+local->arena), 59+72, 153, (211-72)-4, COLOR_GREEN);
@@ -236,9 +236,9 @@ void vs_render(scene *scene) {
     /*}*/
 
     // gantries
-    sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 11)->ani, 0);
-    video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);
-    video_render_sprite_flip(&sprite->tex, 320 - (sprite->pos.x*-1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);
+    /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 11)->ani, 0);*/
+    /*video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
+    /*video_render_sprite_flip(&sprite->tex, 320 - (sprite->pos.x*-1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);*/
 }
 
 int vs_create(scene *scene) {
@@ -263,10 +263,10 @@ int vs_create(scene *scene) {
     }
 
     // Preinit some animations with a palette
-    int to_init[4] = {3,4,5,11};
-    for(int i = 0; i < 4; i++) {
-        animation_init(&bk_get_info(&scene->bk_data, to_init[i])->ani, mpal, 0);
-    }
+    /*int to_init[4] = {3,4,5,11};*/
+    /*for(int i = 0; i < 4; i++) {*/
+        /*animation_init(&bk_get_info(&scene->bk_data, to_init[i])->ani, mpal, 0);*/
+    /*}*/
 
     texture_create(&local->player2_background);
     texture_init(&local->player2_background, out->data, 160, 200);
