@@ -1,6 +1,7 @@
-#include <shadowdive/shadowdive.h>
-#include <shadowdive/internal/reader.h>
-#include <shadowdive/internal/writer.h>
+#include "shadowdive/internal/reader.h"
+#include "shadowdive/internal/writer.h"
+#include "shadowdive/error.h"
+#include "shadowdive/palette.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +15,7 @@ int main(int argc, char **argv) {
         return 1;
     }
  
-    sd_reader *r = sd_reader_open(argv[1]);
+    sd_reader *r = sd_reader_open((const char *)argv[1]);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
     }
