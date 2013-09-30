@@ -26,6 +26,7 @@ int scene_create(scene *scene, int scene_id) {
     animation *bgani = create_animation_from_single(sprite_copy(&scene->bk_data.background), vec2i_create(0,0));
     object_set_animation(&scene->background, bgani);
     object_set_animation_owner(&scene->background, OWNER_OBJECT);
+    object_select_sprite(&scene->background, 0);
     object_set_palette(&scene->background, bk_get_palette(&scene->bk_data, 0), 0);
 
     // Bootstrap animations
@@ -67,7 +68,7 @@ int scene_event(scene *scene, SDL_Event *event) {
 }
 
 void scene_render(scene *scene) {
-    object_render(&scene->background);
+    object_render_neutral(&scene->background);
     if(scene->render != NULL) {
         scene->render(scene);
     }

@@ -66,6 +66,7 @@ struct object_t {
 
 void object_create(object *obj, vec2i pos, vec2f vel);
 void object_render(object *obj);
+void object_render_neutral(object *obj);
 void object_tick(object *obj);
 void object_render(object *obj);
 void object_act(object *obj, int action);

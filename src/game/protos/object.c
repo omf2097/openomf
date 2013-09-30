@@ -44,19 +44,18 @@ void object_revalidate(object *obj) {
     obj->texture_refresh = 1;
 }
 
-void object_render(object *obj) {
-    // Stop here if cur_sprite is NULL
-    if(obj->cur_sprite == NULL)  return;
-
+void object_check_texture(object *obj) {
     // (Re)generate texture if necessary
     if(obj->cur_texture == NULL) {
         obj->cur_texture = malloc(sizeof(texture));
         texture_create(obj->cur_texture);
         obj->texture_refresh = 1;
+        DEBUG("Init tex @ object");
     }
 
     // If palette has changed, load up new texture here
     if(obj->texture_refresh) {
+        DEBUG("Load tex @ object");
         // Load up sprite with defined palette
         sd_rgba_image *img = sd_vga_image_decode(
             obj->cur_sprite->raw_sprite, 
@@ -84,6 +83,13 @@ void object_render(object *obj) {
         sd_rgba_image_delete(img);
         obj->texture_refresh = 0;
     }
+}
+
+void object_render(object *obj) {
+    // Stop here if cur_sprite is NULL
+    if(obj->cur_sprite == NULL)  return;
+
+    object_check_texture(obj);
 
     // Render
     int y = obj->pos.y + obj->cur_sprite->pos.y;
@@ -100,6 +106,13 @@ void object_render(object *obj) {
         x, y,
         obj->sprite_state.blendmode,
         flipmode);
+}
+
+// Renders sprite to left top corner with no special stuff applied
+void object_render_neutral(object *obj) {
+    if(obj->cur_sprite == NULL)  return;
+    object_check_texture(obj);
+    video_render_background(obj->cur_texture);
 }
 
 void object_act(object *obj, int action) {
