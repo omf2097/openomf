@@ -117,8 +117,10 @@ void object_free(object *obj) {
         animation_free(obj->cur_animation);
         free(obj->cur_animation);
     }
-    texture_free(obj->cur_texture);
-    free(obj->cur_texture);
+    if(obj->cur_texture != NULL) {
+        texture_free(obj->cur_texture);
+        free(obj->cur_texture);
+    }
 }
 
 void object_set_stl(object *obj, char *ptr) {
