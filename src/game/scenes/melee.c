@@ -537,13 +537,12 @@ int melee_create(scene *scene) {
 
     /*sprite *full = animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0);*/
     animation *ani;
-    sprite *spr;
     for(int i = 0; i < 10; i++) {
-        spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, i));
-        ani = create_animation_from_single(spr, spr->pos);
-        object_create(&local->pilots[i].obj, spr->pos, vec2f_create(0, 0));
+        ani = &bk_get_info(&scene->bk_data, 3)->ani;
+        object_create(&local->pilots[i].obj, vec2i_create(0,0), vec2f_create(0, 0));
         object_set_animation(&local->pilots[i].obj, ani);
         object_set_palette(&local->pilots[i].obj, mpal, 0);
+        object_select_sprite(&local->pilots[i].obj, i);
 
         /*int row = i / 5;*/
         /*int col = i % 5;*/
