@@ -92,7 +92,7 @@ int get(sd_stringparser_frame *frame, const char *tag) {
     return v->value;
 }
 
-int dist(int a, int b) {
+float dist(float a, float b) {
     return abs((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1 : -1);
 }
 
@@ -113,6 +113,8 @@ void player_create(object *obj) {
     obj->animation_state.parser = NULL;
     obj->animation_state.previous = -1;
     obj->animation_state.sound_state = malloc(sizeof(sound_state));
+    obj->slide_state.timer = 0;
+    obj->slide_state.vel = vec2f_create(0,0);
 }
 
 void player_free(object *obj) {
@@ -164,6 +166,12 @@ void player_run(object *obj) {
     player_animation_state *state = &obj->animation_state;
     if(state->finished) return;
 
+    // Handle slide operation
+    if(obj->slide_state.timer > 0) {
+        obj->pos.x += obj->slide_state.vel.x;
+        obj->pos.y += obj->slide_state.vel.y;
+    }
+
     // Not sure what this does
     int run_ret;
     if(state->end_frame == UINT32_MAX) {
@@ -176,9 +184,9 @@ void player_run(object *obj) {
     if(run_ret == 0) {
         // Handle frame switch
         sd_stringparser_frame *param = &state->parser->current_frame;
-        //sd_stringparser_frame n_param;
+        sd_stringparser_frame n_param;
         sd_stringparser_frame *f = param;
-        //sd_stringparser_frame *n = &n_param;
+        sd_stringparser_frame *n = &n_param;
         int real_frame;
 
         real_frame = param->letter - 65;
@@ -220,7 +228,7 @@ void player_run(object *obj) {
             if(isset(f, "md") && state->destroy != NULL) { 
                 state->destroy(obj, get(f, "md"), state->destroy_userdata);
             }
-        
+
             // Handle music and sounds
             state->sound_state->freq = 1.0f;
             state->sound_state->pan = 0.0f;
@@ -234,6 +242,8 @@ void player_run(object *obj) {
             if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));            }
             if(isset(f, "smf")) { cmd_music_off();                        }
             if(isset(f, "s"))   { cmd_sound(obj, get(f, "s"));            }
+
+            // Handle movement
             if (isset(f, "v")) {
                 int x = 0, y = 0;
                 if(isset(f, "y-")) {
@@ -251,7 +261,7 @@ void player_run(object *obj) {
                     object_add_vel(obj, x, y);
                 }
             }
-            /*if (isset(f, "e")) {
+            if (isset(f, "e")) {
                 // x,y relative to *enemy's* position
                 int x = 0, y = 0;
                 if(isset(f, "y-")) {
@@ -267,11 +277,15 @@ void player_run(object *obj) {
 
                 int xpos, ypos;
                 object_get_pos(obj, &xpos, &ypos);
-                int x_dist = dist(xpos, state->enemy_x + x);
-                int y_dist = dist(ypos, state->enemy_y + y);
-                player->slide_op.enabled = 1;
-                player->slide_op.x_per_tick = x_dist / (float)param->duration;
-                player->slide_op.y_per_tick = y_dist / (float)param->duration;
+                float x_dist = dist(xpos, state->enemy_x + x);
+                float y_dist = dist(ypos, state->enemy_y + y);
+                obj->slide_state.timer = param->duration;
+                obj->slide_state.vel.x = x_dist / (float)param->duration;
+                obj->slide_state.vel.y = y_dist / (float)param->duration;
+                DEBUG("Slide (x,y) = (%f,%f) for %d ticks.", 
+                    obj->slide_state.vel.x, 
+                    obj->slide_state.vel.x, 
+                    param->duration);
             }
             if (isset(f, "v") == 0 && isset(f, "e") == 0 && (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
                 // check for relative X interleaving
@@ -287,31 +301,43 @@ void player_run(object *obj) {
                     x = get(f, "x+") * object_get_direction(obj);
                 }
 
-                player->slide_op.enabled = 1;
-                player->slide_op.x_per_tick = x / (float)param->duration;
-                player->slide_op.y_per_tick = y / (float)param->duration;
-            }*/
+                obj->slide_state.timer = param->duration;
+                obj->slide_state.vel.x = (float)x / (float)param->duration;
+                obj->slide_state.vel.y = (float)y / (float)param->duration;
+                DEBUG("Slide (x,y) = (%f,%f) for %d ticks.", 
+                    obj->slide_state.vel.x, 
+                    obj->slide_state.vel.x, 
+                    param->duration);
+            }
 
 
             // Check if next frame contains X=nnn or Y=nnn 
-            /*
             if(!param->is_final_frame) {
                 sd_stringparser_peek(state->parser, param->id + 1, &n_param);
                 int slide = 0;
-                int xpos, ypos;
+                float xpos = obj->pos.x;
+                float ypos = obj->pos.y;
                 if(isset(n, "x=")) {
                     slide = get(n, "x=");
                     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
                         // if the sprite is flipped horizontally, adjust the X coordinates
                         slide = 320 - slide;
                     }
-                    object_get_pos(obj, &xpos, &ypos);
+                    if(slide != xpos) {
+                        obj->slide_state.vel.x = dist(xpos, slide) / (float)param->duration;
+                        obj->slide_state.timer = param->duration;
+                        DEBUG("Slide X = %f for %d ticks.", obj->slide_state.vel.x, param->duration);
+                    }
                 }
                 if(isset(n, "y=")) { 
                     slide = get(n, "y=");
-                    object_get_pos(obj, &xpos, &ypos);
+                    if(slide != ypos) {
+                        obj->slide_state.vel.y = dist(ypos, slide) / (float)param->duration;
+                        obj->slide_state.timer = param->duration;
+                        DEBUG("Slide Y = %f for %d ticks.", obj->slide_state.vel.y, param->duration);
+                    }
                 }
-            }*/
+            }
             
             // Set render settings
             if(real_frame < 25) {

@@ -250,11 +250,11 @@ void arena_render(scene *scene) {
 
         // Render HAR and pilot names
         font_render(&font_small, lang_get(player[0]->player_id+20), 5, 19, TEXT_COLOR);
-        font_render(&font_small, lang_get(player[0]->har_id+31), 5, 26, TEXT_COLOR);
+        font_render(&font_small, lang_get((player[0]->har_id - HAR_JAGUAR)+31), 5, 26, TEXT_COLOR);
         int p2len = (strlen(lang_get(player[1]->player_id+20))-1) * font_small.w;
         int h2len = (strlen(lang_get(player[1]->har_id+31))-1) * font_small.w;
         font_render(&font_small, lang_get(player[1]->player_id+20), 315-p2len, 19, TEXT_COLOR);
-        font_render(&font_small, lang_get(player[1]->har_id+31), 315-h2len, 26, TEXT_COLOR);
+        font_render(&font_small, lang_get((player[1]->har_id - HAR_JAGUAR)+31), 315-h2len, 26, TEXT_COLOR);
         
         // Render score stuff
         chr_score_render(&local->player1_score);
@@ -333,6 +333,7 @@ int arena_create(scene *scene) {
         }
 
         // Set HAR to controller and game_player
+        game_state_add_object(obj);
         game_player_set_har(player, obj);
         ctrl->har = obj;
     }

@@ -15,6 +15,12 @@ typedef struct player_sprite_state_t {
     int flipmode;
 } player_sprite_state;
 
+typedef struct player_slide_op_t {
+    vec2f vel;
+    int enabled;
+    int timer;
+} player_slide_state;
+
 typedef struct player_animation_state_t {
     unsigned int finished;
     unsigned int ticks;
