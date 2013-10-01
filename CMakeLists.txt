@@ -12,14 +12,8 @@ find_package(confuse)
 find_package(GLEW)
 find_package(Libintl)
 
-IF(MINGW)
-    set(CMAKE_C_FLAGS "-Wall -std=c99 -Werror")
-ELSE(MINGW)
-    set(CMAKE_C_FLAGS "-Wall -std=c99 -Werror")
-ENDIF(MINGW)
-
-set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE")
-set(CMAKE_C_FLAGS_RELEASE "-O2 -march=native")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -Werror -ggdb -DDEBUGMODE")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -Werror -O2 -march=native")
 
 add_executable(openomf 
     src/utils/log.c

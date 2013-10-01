@@ -4,7 +4,7 @@
 #ifdef DEBUGMODE
 #define DEBUG(...) log_print('D', __VA_ARGS__ )
 #else
-#define DEBUG(...) log_print('D', __VA_ARGS__ )
+#define DEBUG(...) 
 #endif
 #define PERROR(...) log_print('E', __VA_ARGS__ )
 

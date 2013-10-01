@@ -46,7 +46,7 @@ int game_state_create() {
 void game_state_add_object(object *obj) {
     vector_append(&gamestate->objects, obj);
 
-#ifdef DEBUG
+#ifdef DEBUGMODE
     animation *ani = object_get_animation(obj);
     DEBUG("Added animation %i to game_state.", ani->id);
 #endif
