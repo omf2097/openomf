@@ -317,6 +317,7 @@ void player_run(object *obj) {
                 int slide = 0;
                 float xpos = obj->pos.x;
                 float ypos = obj->pos.y;
+                obj->slide_state.vel = vec2f_create(0,0);
                 if(isset(n, "x=")) {
                     slide = get(n, "x=");
                     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
