@@ -26,6 +26,7 @@ int scene_create(scene *scene, int scene_id) {
     scene->free = NULL;
     scene->event = NULL;
     scene->render = NULL;
+    scene->render_overlay = NULL;
     scene->tick = NULL;
     scene->startup = NULL;
 
@@ -89,11 +90,14 @@ int scene_event(scene *scene, SDL_Event *event) {
     return 1;
 }
 
-void scene_render_bg(scene *scene) {
-    object_render_neutral(&scene->background);
+void scene_render_overlay(scene *scene) {
+    if(scene->render_overlay != NULL) {
+        scene->render_overlay(scene);
+    }
 }
 
 void scene_render(scene *scene) {
+    object_render_neutral(&scene->background);
     if(scene->render != NULL) {
         scene->render(scene);
     }
@@ -125,38 +129,16 @@ void scene_set_render_cb(scene *scene, scene_render_cb cbfunc) {
     scene->render = cbfunc;
 }
 
+void scene_set_render_overlay_cb(scene *scene, scene_render_overlay_cb cbfunc) {
+    scene->render_overlay = cbfunc;
+}
+
 void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc) {
     scene->startup = cbfunc;
 }
 
 void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc) {
     scene->tick = cbfunc;
-}
-
-int scene_is_valid(int id) {
-    switch(id) {
-        case SCENE_INTRO:
-        case SCENE_MENU:
-        case SCENE_ARENA0:
-        case SCENE_ARENA1:
-        case SCENE_ARENA2:
-        case SCENE_ARENA3:
-        case SCENE_ARENA4:
-        case SCENE_NEWSROOM:
-        case SCENE_END:
-        case SCENE_END1:
-        case SCENE_END2: 
-        case SCENE_CREDITS:
-        case SCENE_MECHLAB:
-        case SCENE_MELEE:
-        case SCENE_VS:
-        case SCENE_NORTHAM:
-        case SCENE_KATUSHAI:
-        case SCENE_WAR:
-        case SCENE_WORLD:
-            return 1;
-    }
-    return 0;
 }
 
 void cb_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {

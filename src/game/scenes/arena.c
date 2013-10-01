@@ -279,8 +279,10 @@ void arena_render(scene *scene) {
         chr_score_format(&local->player2_score, tmp);
         font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
     }
-    
-    // Draw menu if necessary
+}
+
+void arena_render_overlay(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
     if(local->menu_visible) {
         menu_render(&local->game_menu);
         video_render_sprite(&local->tex, 10, 150, BLEND_ALPHA_FULL);
@@ -473,6 +475,7 @@ int arena_create(scene *scene) {
     scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
     scene_set_tick_cb(scene, arena_tick);
+    scene_set_render_overlay_cb(scene, arena_render_overlay);
 
     // All done!
     return 0;

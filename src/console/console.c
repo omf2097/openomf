@@ -93,7 +93,7 @@ int console_cmd_scene(scene *scene, void *userdata, int argc, char **argv) {
     if(argc == 2) {
         int i;
         if(strtoint(argv[1], &i)) {
-            if(scene_is_valid(i)) {
+            if(is_scene(i)) {
                 game_state_set_next(i);
                 return 0;
             }

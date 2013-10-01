@@ -94,7 +94,7 @@ int game_state_handle_event(SDL_Event *event) {
 
 void game_state_render() {
     // Render scene background
-    scene_render_bg(&gamestate->sc);
+    scene_render(&gamestate->sc);
 
     // Render objects
     iterator it;
@@ -105,7 +105,7 @@ void game_state_render() {
     }
 
     // Render scene
-    scene_render(&gamestate->sc);
+    scene_render_overlay(&gamestate->sc);
 }
 
 int game_load_new(int scene_id) {
