@@ -143,7 +143,7 @@ void player_reload(object *obj) {
     
     // Set initial position for sprite
     if(isset(&param, "x=")) {
-        object_set_px(obj, get(&param, "y="));
+        object_set_px(obj, get(&param, "x="));
     }
     if(isset(&param, "y=")) {
         object_set_py(obj, get(&param, "y="));
@@ -153,6 +153,9 @@ void player_reload(object *obj) {
     obj->animation_state.ticks = 1;
     obj->animation_state.finished = 0;
     obj->animation_state.previous = -1;
+
+    // Debug texts
+    DEBUG("Object %d (re)loaded with \"%s\".", obj->cur_animation->id, str_c(&obj->cur_animation->animation_string));
 }
 
 void player_reset(object *obj) {
