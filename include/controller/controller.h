@@ -56,5 +56,6 @@ int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev);
 int controller_tick(controller *ctrl, ctrl_event **ev);
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type));
 void controller_clear_hooks(controller *ctrl);
+void controller_free_chain(ctrl_event *ev);
 
 #endif // _CONTROLLER_H

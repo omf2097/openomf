@@ -222,6 +222,7 @@ int arena_event(scene *scene, SDL_Event *e) {
                     object_act(game_player_get_har(player), n->action);
                 } while((n = n->next));
             }
+            controller_free_chain(p);
         }
         return 0;
     }

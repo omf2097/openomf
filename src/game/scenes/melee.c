@@ -335,6 +335,7 @@ int melee_event(scene *scene, SDL_Event *event) {
                     } while((i = i->next));
                     DEBUG("done");
                 }
+                controller_free_chain(p1);
                 i = p2;
                 if (i) {
                     do {
@@ -342,6 +343,7 @@ int melee_event(scene *scene, SDL_Event *event) {
                     } while((i = i->next));
                     DEBUG("done");
                 }
+                controller_free_chain(p2);
             }
     }
     return 0;

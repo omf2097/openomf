@@ -31,6 +31,14 @@ void controller_clear_hooks(controller *ctrl) {
     }
 }
 
+void controller_free_chain(ctrl_event *ev) {
+    if(ev != NULL) {
+        if(ev->next != NULL) {
+            controller_free_chain(ev->next);
+        }
+        free(ev);
+    }
+}
 
 void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
     // fire any installed hooks

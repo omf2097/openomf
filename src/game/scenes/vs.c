@@ -136,6 +136,8 @@ void vs_tick(scene *scene) {
             vs_handle_action(scene, i->action);
         } while((i = i->next));
     }
+    controller_free_chain(p1);
+    controller_free_chain(p2);
 }
 
 int vs_event(scene *scene, SDL_Event *event) {
@@ -153,6 +155,7 @@ int vs_event(scene *scene, SDL_Event *event) {
                 } while((i = i->next));
                 DEBUG("done");
             }
+            controller_free_chain(p1);
         }
         return 1;
     }
