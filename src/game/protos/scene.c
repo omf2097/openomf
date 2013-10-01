@@ -89,8 +89,11 @@ int scene_event(scene *scene, SDL_Event *event) {
     return 1;
 }
 
-void scene_render(scene *scene) {
+void scene_render_bg(scene *scene) {
     object_render_neutral(&scene->background);
+}
+
+void scene_render(scene *scene) {
     if(scene->render != NULL) {
         scene->render(scene);
     }

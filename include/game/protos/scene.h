@@ -33,6 +33,7 @@ void scene_init(scene *scene);
 void scene_free(scene *scene);
 int scene_event(scene *scene, SDL_Event *event);
 void scene_render(scene *scene);
+void scene_render_bg(scene *scene);
 void scene_tick(scene *scene);
 int scene_startup(scene *scene, int id);
 int scene_is_valid(int id);
