@@ -143,10 +143,10 @@ void player_reload(object *obj) {
     
     // Set initial position for sprite
     if(isset(&param, "x=")) {
-        object_set_px(obj, get(&param, "x="));
+        obj->pos.x = get(&param, "x=");
     }
     if(isset(&param, "y=")) {
-        object_set_py(obj, get(&param, "y="));
+        obj->pos.y = get(&param, "y=");
     }
 
     // Set player state
@@ -256,7 +256,8 @@ void player_run(object *obj) {
                 }
 
                 if (x || y) {
-                    object_add_vel(obj, x, y);
+                    obj->vel.x += x;
+                    obj->vel.y += y;
                 }
             }
             if (isset(f, "e")) {
@@ -273,10 +274,8 @@ void player_run(object *obj) {
                     x = get(f, "x+") * object_get_direction(obj);
                 }
 
-                int xpos, ypos;
-                object_get_pos(obj, &xpos, &ypos);
-                float x_dist = dist(xpos, state->enemy_x + x);
-                float y_dist = dist(ypos, state->enemy_y + y);
+                float x_dist = dist(obj->pos.x, state->enemy_x + x);
+                float y_dist = dist(obj->pos.y, state->enemy_y + y);
                 obj->slide_state.timer = param->duration;
                 obj->slide_state.vel.x = x_dist / (float)param->duration;
                 obj->slide_state.vel.y = y_dist / (float)param->duration;

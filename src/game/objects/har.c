@@ -17,10 +17,9 @@ void har_free(object *obj) {
 
 void har_tick(object *obj) {
     //har *h = object_get_userdata(obj);
-    float vx, vy;
-    object_get_vel(obj, &vx, &vy);
-    obj->pos.x += vx;
-    obj->pos.y += vy;
+    vec2f vel = object_get_vel(obj);
+    obj->pos.x += vel.x;
+    obj->pos.y += vel.y;
 }
 
 void add_input(har *har, char c) {
@@ -132,13 +131,13 @@ void har_act(object *obj, int act_type) {
         case ACT_DOWNLEFT:
             object_set_animation(obj, &af_get_move(&har->af_data, ANIM_CROUCHING)->ani);
             object_set_repeat(obj, 1);
-            object_set_vel(obj, 0, 0);
+            object_set_vel(obj, vec2f_create(0,0));
             break;
         case ACT_STOP:
             if (anim != ANIM_IDLE) {
                 object_set_animation(obj, &af_get_move(&har->af_data, ANIM_IDLE)->ani);
                 object_set_repeat(obj, 1);
-                object_set_vel(obj, 0, 0);
+                object_set_vel(obj, vec2f_create(0,0));
                 obj->slide_state.vel.x = 0;
             }
             break;
@@ -151,7 +150,7 @@ void har_act(object *obj, int act_type) {
             if (direction == OBJECT_FACE_LEFT) {
                 vx = (har->af_data.forward_speed*-1)/(float)320;
             }
-            object_set_vel(obj, vx, 0);
+            object_set_vel(obj, vec2f_create(vx,0));
             break;
         case ACT_RIGHT:
             if (anim != ANIM_WALKING) {
@@ -162,7 +161,7 @@ void har_act(object *obj, int act_type) {
             if (direction == OBJECT_FACE_LEFT) {
                 vx = har->af_data.reverse_speed/(float)320;
             }
-            object_set_vel(obj, vx, 0);
+            object_set_vel(obj, vec2f_create(vx,0));
             break;
     }
 }

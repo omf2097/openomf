@@ -116,27 +116,12 @@ int object_get_layers(object *obj);
 void object_reset_hstate(object *obj);
 void object_reset_vstate(object *obj);
 
-int object_get_w(object *obj);
-int object_get_h(object *obj);
-void object_get_size(object *obj, int *w, int *h);
+vec2i object_get_size(object *obj);
+vec2i object_get_pos(object *obj);
+vec2f object_get_vel(object *obj);
 
-int  object_get_px(object *obj);
-int  object_get_py(object *obj);
-void object_set_px(object *obj, int px);
-void object_set_py(object *obj, int py);
-
-float object_get_vx(object *obj);
-float object_get_vy(object *obj);
-void  object_set_vx(object *obj, float vx);
-void  object_set_vy(object *obj, float vy);
-
-void object_get_pos(object *obj, int *px, int *py);
-void object_set_pos(object *obj, int px, int py);
-void object_add_pos(object *obj, int px, int py);
-
-void object_get_vel(object *obj, float *vx, float *vy);
-void object_set_vel(object *obj, float vx, float vy);
-void object_add_vel(object *obj, float vx, float vy);
+void object_set_pos(object *obj, vec2i pos);
+void object_set_vel(object *obj, vec2f vel);
 
 void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata);
 void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata);

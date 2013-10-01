@@ -108,7 +108,7 @@ void object_render(object *obj) {
     int y = obj->pos.y + obj->cur_sprite->pos.y;
     int x = obj->pos.x + obj->cur_sprite->pos.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = obj->pos.x + (obj->cur_sprite->pos.x * object_get_direction(obj)) - object_get_w(obj);
+        x = obj->pos.x + (obj->cur_sprite->pos.x * object_get_direction(obj)) - object_get_size(obj).x;
     }
     int flipmode = obj->sprite_state.flipmode;
     if(obj->direction == OBJECT_FACE_LEFT) {
@@ -234,67 +234,29 @@ int object_finished(object *obj) { return obj->animation_state.finished; }
 void object_set_direction(object *obj, int dir) { obj->direction = dir; }
 int object_get_direction(object *obj) { return obj->direction; }
 
-int object_get_w(object *obj) {
-    if(obj->cur_sprite != NULL && obj->cur_sprite->raw_sprite != NULL) {
-        return ((sd_vga_image*)obj->cur_sprite->raw_sprite)->w;
+vec2i object_get_size(object *obj) {
+    if(obj->cur_sprite != NULL) {
+        return vec2i_create(
+            ((sd_vga_image*)obj->cur_sprite->raw_sprite)->w,
+            ((sd_vga_image*)obj->cur_sprite->raw_sprite)->h);
     }
-    return 0;
+    return vec2i_create(0,0);
 }
 
-int object_get_h(object *obj) {
-    if(obj->cur_sprite != NULL && obj->cur_sprite->raw_sprite != NULL) {
-        return ((sd_vga_image*)obj->cur_sprite->raw_sprite)->h;
-    }
-    return 0;
+vec2i object_get_pos(object *obj) {
+    return vec2f_to_i(obj->pos);
 }
 
-void object_get_size(object *obj, int *w, int *h) {
-    *w = object_get_w(obj);
-    *h = object_get_h(obj);
+vec2f object_get_vel(object *obj) {
+    return obj->vel;
 }
 
-int  object_get_px(object *obj) { return obj->pos.x; }
-int  object_get_py(object *obj) { return obj->pos.y; }
-void object_set_px(object *obj, int px) { obj->pos.x = px; }
-void object_set_py(object *obj, int py) { obj->pos.y = py; }
-
-float object_get_vx(object *obj) { return obj->vel.x; }
-float object_get_vy(object *obj) { return obj->vel.y; }
-void  object_set_vx(object *obj, float vx) { obj->vel.x = vx; object_reset_hstate(obj); }
-void  object_set_vy(object *obj, float vy) { obj->vel.y = vy; object_reset_vstate(obj); }
-
-void object_get_pos(object *obj, int *px, int *py) {
-    *px = obj->pos.x;
-    *py = obj->pos.y;
+void object_set_pos(object *obj, vec2i pos) {
+    obj->pos = vec2i_to_f(pos);
 }
 
-void object_set_pos(object *obj, int px, int py) {
-    obj->pos.x = px;
-    obj->pos.y = py;
-}
-
-void object_add_pos(object *obj, int px, int py) {
-    obj->pos.x += px;
-    obj->pos.y += py;
-}
-
-void object_get_vel(object *obj, float *vx, float *vy) {
-    *vx = obj->vel.x;
-    *vy = obj->vel.y;
-}
-
-void object_set_vel(object *obj, float vx, float vy) {
-    obj->vel.x = vx;
-    obj->vel.y = vy;
-    object_reset_vstate(obj);
-    object_reset_hstate(obj);
-}
-
-void object_add_vel(object *obj, float vx, float vy) {
-    obj->vel.x += vx;
-    obj->vel.y += vy;
-    object_reset_vstate(obj);
-    object_reset_hstate(obj);
+void object_set_vel(object *obj, vec2f vel) {
+    obj->vel = vel;
 }
 
 void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata) {

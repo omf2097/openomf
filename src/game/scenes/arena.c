@@ -178,18 +178,18 @@ void arena_tick(scene *scene) {
         //har_collision_scene(scene->player2.har, scene);
         
         // Turn the HARs to face the enemy
-        int x1, x2, y1, y2;
+        vec2i pos1, pos2;
         object *har1,*har2;
         har1 = game_player_get_har(game_state_get_player(0));
         har2 = game_player_get_har(game_state_get_player(1));
-        object_get_pos(har1, &x1, &y1);
-        object_get_pos(har2, &x2, &y2);
-        if(x1 > x2) {
+        pos1 = object_get_pos(har1);
+        pos2 = object_get_pos(har2);
+        if(pos1.x > pos2.x) {
             if(object_get_direction(har1) == OBJECT_FACE_RIGHT) {
                 object_set_direction(har1, OBJECT_FACE_LEFT);
                 object_set_direction(har2, OBJECT_FACE_RIGHT);
             }
-        } else if(x1 < x2) {
+        } else if(pos1.x < pos2.x) {
             if(object_get_direction(har1) == OBJECT_FACE_LEFT) {
                 object_set_direction(har1, OBJECT_FACE_RIGHT);
                 object_set_direction(har2, OBJECT_FACE_LEFT);
