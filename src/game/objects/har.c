@@ -11,6 +11,7 @@
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
     af_free(&h->af_data);
+    free(h);
 }
 
 void har_tick(object *har) {

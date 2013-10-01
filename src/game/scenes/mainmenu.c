@@ -126,9 +126,8 @@ void mainmenu_1v1(component *c, void *userdata) {
     for(int i = 0; i < 2; i++) {
         // Set up controllers
         controller *ctrl = malloc(sizeof(controller));
-        controller_init(ctrl);
         game_player *player = game_state_get_player(i);
-        ctrl->har = game_player_get_har(player);
+        controller_init(ctrl);
 
         // Set up keyboards
         keyboard_keys *keys = malloc(sizeof(keyboard_keys));
@@ -169,9 +168,8 @@ void mainmenu_1v2(component *c, void *userdata) {
     for(int i = 0; i < 2; i++) {
         // Set up controllers
         controller *ctrl = malloc(sizeof(controller));
-        controller_init(ctrl);
         game_player *player = game_state_get_player(i);
-        ctrl->har = game_player_get_har(player);
+        controller_init(ctrl);
 
         // Set up keyboards
         keyboard_keys *keys = malloc(sizeof(keyboard_keys));

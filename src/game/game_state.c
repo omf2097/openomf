@@ -67,6 +67,10 @@ void game_state_del_object(int anim_id) {
     DEBUG("Attempted to delete animation %i from game_state, but no such animation was playing.", anim_id);
 }
 
+object* game_state_get_latest_obj() {
+    return vector_get(&gamestate->objects, vector_size(&gamestate->objects)-1);
+}
+
 void game_state_set_next(unsigned int next_scene_id) {
     gamestate->next_id = next_scene_id;
 }

@@ -213,7 +213,7 @@ int arena_event(scene *scene, SDL_Event *e) {
         return menu_handle_event(&local->game_menu, e);
     } else {
         for(int i = 0; i < 2; i++) {
-            ctrl_event *p, *n;
+            /*ctrl_event *p, *n;
             game_player *player = game_state_get_player(i);
             controller_event(game_player_get_ctrl(player), e, &p);
             n = p;
@@ -221,10 +221,11 @@ int arena_event(scene *scene, SDL_Event *e) {
                 do {
                     object_act(game_player_get_har(player), n->action);
                 } while((n = n->next));
-            }
+            }*/
         }
         return 0;
     }
+    return 0;
 }
 
 void arena_render(scene *scene) {
@@ -232,12 +233,14 @@ void arena_render(scene *scene) {
     
     // Set health bar
     game_player *player[2];
+    object *obj[2];
     har *har[2];
     for(int i = 0; i < 2; i++) {
         player[i] = game_state_get_player(i);
-        har[i] = object_get_userdata(game_player_get_har(player[i]));
+        obj[i] = game_player_get_har(player[i]);
+        har[i] = object_get_userdata(obj[i]);
     }
-    if(har[0] != NULL && har[1] != NULL) {
+    if(obj[0] != NULL && obj[1] != NULL) {
         float p1_hp = (float)har[0]->health / (float)har[0]->health_max;
         float p2_hp = (float)har[1]->health / (float)har[1]->health_max;
         progressbar_set(&local->player1_health_bar, p1_hp * 100);
@@ -257,7 +260,7 @@ void arena_render(scene *scene) {
         font_render(&font_small, lang_get(player[0]->player_id+20), 5, 19, TEXT_COLOR);
         font_render(&font_small, lang_get((player[0]->har_id - HAR_JAGUAR)+31), 5, 26, TEXT_COLOR);
         int p2len = (strlen(lang_get(player[1]->player_id+20))-1) * font_small.w;
-        int h2len = (strlen(lang_get(player[1]->har_id+31))-1) * font_small.w;
+        int h2len = (strlen(lang_get((player[1]->har_id - HAR_JAGUAR)+31))-1) * font_small.w;
         font_render(&font_small, lang_get(player[1]->player_id+20), 315-p2len, 19, TEXT_COLOR);
         font_render(&font_small, lang_get((player[1]->har_id - HAR_JAGUAR)+31), 315-h2len, 26, TEXT_COLOR);
         
@@ -330,8 +333,7 @@ int arena_create(scene *scene) {
     for(int i = 0; i < 2; i++) {
         // Declare some vars
         game_player *player = game_state_get_player(i);
-        controller *ctrl = game_player_get_ctrl(player);
-        object *obj = malloc(sizeof(object));
+        object obj;
 
         // load the player's colors into the palette
         palette_set_player_color(local->player_palettes[i], 0, player->colors[2], 0);
@@ -340,18 +342,19 @@ int arena_create(scene *scene) {
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
-        DEBUG("Loading HAR %s (%d).", get_id_name(player->har_id), player->har_id);
-        object_create(obj, pos[i], vel[i]);
-        if(har_create(obj, local->player_palettes[i], dir[i], player->har_id)) {
-            PERROR("Error while attempting to load HAR %s (%d).", 
-                get_id_name(player->har_id), player->har_id);
+        object_create(&obj, pos[i], vel[i]);
+        if(har_create(&obj, local->player_palettes[i], dir[i], player->har_id)) {
             return 1;
         }
 
         // Set HAR to controller and game_player
-        game_state_add_object(obj);
-        game_player_set_har(player, obj);
-        ctrl->har = obj;
+        game_state_add_object(&obj);
+
+        // Get reference to har and set it to
+        // TODO: FIX THIS UGLY, UGLY HACK
+        object *m = game_state_get_latest_obj();
+        game_player_set_har(player, m);
+        game_player_get_ctrl(player)->har = m;
     }
 
     // remove the keyboard hooks

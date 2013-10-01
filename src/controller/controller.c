@@ -10,6 +10,8 @@ typedef struct hook_function_t {
 void controller_init(controller *ctrl) {
     list_create(&ctrl->hooks);
     ctrl->har = NULL;
+    ctrl->handle_fun = NULL;
+    ctrl->tick_fun = NULL;
 }
 
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type)) {
@@ -54,9 +56,15 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
 }
 
 int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
-    return ctrl->handle_fun(ctrl, event, ev);
+    if(ctrl->handle_fun != NULL) {
+        return ctrl->handle_fun(ctrl, event, ev);
+    }
+    return 0;
 }
 
 int controller_tick(controller *ctrl, ctrl_event **ev) {
-    return ctrl->tick_fun(ctrl, ev);
+    if(ctrl->tick_fun != NULL) {
+        return ctrl->tick_fun(ctrl, ev);
+    }
+    return 0;
 }
