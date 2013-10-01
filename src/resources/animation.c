@@ -46,6 +46,7 @@ animation* create_animation_from_single(sprite *sp, vec2i pos) {
 	vector_create(&a->extra_strings, sizeof(str));
 	vector_create(&a->sprites, sizeof(sprite));
 	vector_append(&a->sprites, sp);
+	free(sp);
 	return a;
 }
 
