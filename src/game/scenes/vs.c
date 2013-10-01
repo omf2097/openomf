@@ -216,13 +216,13 @@ int vs_create(scene *scene) {
 
     local->player1_palette = palette_copy(mpal);
     local->player2_palette = palette_copy(mpal);
-    palette_set_player_color(local->player1_palette, 0, player1->colors[2], 0);
-    palette_set_player_color(local->player1_palette, 0, player1->colors[1], 1);
-    palette_set_player_color(local->player1_palette, 0, player1->colors[0], 2);
+    palette_set_player_color(local->player1_palette, player1->colors[2], 0);
+    palette_set_player_color(local->player1_palette, player1->colors[1], 1);
+    palette_set_player_color(local->player1_palette, player1->colors[0], 2);
 
-    palette_set_player_color(local->player2_palette, 0, player2->colors[2], 0);
-    palette_set_player_color(local->player2_palette, 0, player2->colors[1], 1);
-    palette_set_player_color(local->player2_palette, 0, player2->colors[0], 2);
+    palette_set_player_color(local->player2_palette, player2->colors[2], 0);
+    palette_set_player_color(local->player2_palette, player2->colors[1], 1);
+    palette_set_player_color(local->player2_palette, player2->colors[0], 2);
 
     // HAR
     ani = &bk_get_info(&scene->bk_data, 5)->ani;

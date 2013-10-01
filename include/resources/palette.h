@@ -14,9 +14,7 @@ typedef struct palette_h {
 int altpals_init();
 void altpals_close();
  
-void palette_set_player_color(palette *palette, int player, int sourcecolor, int destcolor);
+void palette_set_player_color(palette *palette, int sourcecolor, int destcolor);
 palette* palette_copy(palette *src);
-
-void fixup_palette(palette *palette);
 
 #endif // _PALETTE_H

@@ -343,9 +343,9 @@ int arena_create(scene *scene) {
         object obj;
 
         // load the player's colors into the palette
-        palette_set_player_color(local->player_palettes[i], 0, player->colors[2], 0);
-        palette_set_player_color(local->player_palettes[i], 0, player->colors[1], 1);
-        palette_set_player_color(local->player_palettes[i], 0, player->colors[0], 2);
+        palette_set_player_color(local->player_palettes[i], player->colors[2], 0);
+        palette_set_player_color(local->player_palettes[i], player->colors[1], 1);
+        palette_set_player_color(local->player_palettes[i], player->colors[0], 2);
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
