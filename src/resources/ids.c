@@ -42,7 +42,12 @@ void get_filename_by_id(int id, char *ptr) {
         case PSM_ARENA2:     sprintf(ptr, "%sARENA2.PSM", path);  break;
         case PSM_ARENA3:     sprintf(ptr, "%sARENA3.PSM", path);  break;
         case PSM_ARENA4:     sprintf(ptr, "%sARENA4.PSM", path);  break;
-        default:
+        case DAT_SOUNDS:     sprintf(ptr, "%sSOUNDS.DAT", path);  break;
+        case DAT_ENGLISH:    sprintf(ptr, "%sENGLISH.DAT", path); break;
+        case DAT_GERMAN:     sprintf(ptr, "%sGERMAN.DAT", path);  break;
+        case DAT_GRAPHCHR:   sprintf(ptr, "%sGRAPHCHR.DAT", path); break;
+        case DAT_CHARSMAL:   sprintf(ptr, "%sCHARSMAL.DAT", path); break;
+        default: 
             ptr[0] = 0;
             break;
     }
@@ -87,6 +92,23 @@ char* get_id_name(int id) {
         case PSM_ARENA4:     return "ARENA4.PSM";
         case PSM_MENU:       return "MENU.PSM";
         case PSM_END:        return "END.PSM";
+        case DAT_SOUNDS:     return "SOUNDS.DAT";
+        case DAT_ENGLISH:    return "ENGLISH.DAT";
+        case DAT_GERMAN:     return "GERMAN.DAT";
+        case DAT_CHARSMAL:   return "CHARSMAL.DAT";
+        case DAT_GRAPHCHR:   return "GRAPHCHR.DAT";
     }
     return "UNKNOWN";
+}
+
+int is_scene(int id) {
+    return (id >= SCENE_INTRO && id <= SCENE_WORLD);
+}
+
+int is_har(int id) {
+    return (id >= HAR_JAGUAR && id <= HAR_NOVA);
+}
+
+int is_music(int id) {
+    return (id >= PSM_ARENA0 && id <= PSM_END);
 }

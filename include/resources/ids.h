@@ -41,10 +41,19 @@ enum RESOURCE_ID {
     PSM_ARENA1,
     PSM_ARENA2,
     PSM_ARENA3,
-    PSM_ARENA4
+    PSM_ARENA4,
+    DAT_SOUNDS,
+    DAT_ENGLISH,
+    DAT_GERMAN,
+    DAT_GRAPHCHR,
+    DAT_CHARSMAL
 };
 
 void get_filename_by_id(int id, char *ptr);
 char* get_id_name(int id);
+
+int is_scene(int id);
+int is_har(int id);
+int is_music(int id);
 
 #endif // _IDS_H

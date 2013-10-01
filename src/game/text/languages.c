@@ -2,13 +2,19 @@
 #include "utils/array.h"
 #include "utils/log.h"
 #include "game/text/languages.h"
+#include "resources/ids.h"
 
 array language_strings;
 sd_language *language;
 
 int lang_init() {
+    // Get filename
+    char filename[64];
+    get_filename_by_id(DAT_ENGLISH, filename);
+
+    // Load up language file
     language = sd_language_create();
-    if(sd_language_load(language, "resources/ENGLISH.DAT")) {
+    if(sd_language_load(language, filename)) {
         PERROR("Language file could not be loaded!\n");
         return 1;
     }
@@ -16,6 +22,8 @@ int lang_init() {
     for(int i = 0; i < language->count; i++) {
         array_set(&language_strings, i, language->strings[i].data);
     }
+
+    DEBUG("Loaded language file '%s'.", filename);
     return 0;
 }
 

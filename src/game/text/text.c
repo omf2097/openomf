@@ -1,9 +1,10 @@
-#include "game/text/text.h"
-#include "video/video.h"
-#include "utils/log.h"
 #include <shadowdive/shadowdive.h>
 #include <string.h>
 #include <stdlib.h>
+#include "game/text/text.h"
+#include "video/video.h"
+#include "utils/log.h"
+#include "resources/ids.h"
 
 font font_small;
 font font_large;
@@ -70,14 +71,25 @@ int font_load(font *font, const char* filename, unsigned int size) {
 int fonts_init() {
     font_create(&font_small);
     font_create(&font_large);
-    if (font_load(&font_small, "resources/CHARSMAL.DAT", FONT_SMALL)) {
-        PERROR("Unable to load resources/CHARSMAL.DAT");
+    char filename[64];
+
+    // Load small font
+    get_filename_by_id(DAT_CHARSMAL, filename);
+    if(font_load(&font_small, filename, FONT_SMALL)) {
+        PERROR("Unable to load font file '%s'.", filename);
         return 1;
     }
-    if (font_load(&font_large, "resources/GRAPHCHR.DAT", FONT_BIG)) {
-        PERROR("Unable to load resources/GRAPHCHR.DAT");
+    DEBUG("Loaded font file '%s'", filename);
+
+    // Load big font
+    get_filename_by_id(DAT_GRAPHCHR, filename);
+    if(font_load(&font_large, filename, FONT_BIG)) {
+        PERROR("Unable to load font file '%s'.", filename);
         return 1;
     }
+    DEBUG("Loaded font file '%s'", filename);
+
+    // All done.
     return 0;
 }
 

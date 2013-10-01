@@ -24,10 +24,15 @@ int engine_init() {
     int h = setting->video.screen_h;
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
-    DEBUG("Initializing for %dx%d, fs: %d, vsync: %d", w, h, fs, vsync);
 
     _vsync = vsync;
     if(video_init(w, h, fs, vsync)) {
+        return 1;
+    }
+    if(audio_init()) {
+        return 1;
+    }
+    if(soundloader_init()) {
         return 1;
     }
     if(lang_init()) {
@@ -39,21 +44,17 @@ int engine_init() {
     if(altpals_init()) {
         return 1;
     }
-    if(audio_init()) {
-        return 1;
-    }
-    if(soundloader_init("resources/SOUNDS.DAT")) {
-        return 1;
-    }
     if(console_init()) {
         return 1;
     }
     run = 1;
+
+    DEBUG("Engine initialization successful.");
     return 0;
 }
 
 void engine_run() {
-    DEBUG("Engine starting.");
+    DEBUG(" --- BEGIN GAME LOG ---");
 
     // Set up game
     if(game_state_create()) {
@@ -140,16 +141,17 @@ void engine_run() {
     
     // Free scene object
     game_state_free();
-    
-    DEBUG("Engine stopped.");
+
+    DEBUG(" --- END GAME LOG ---");
 }
 
 void engine_close() {
     console_close();
-    fonts_close();
     altpals_close();
+    fonts_close();
     lang_close();
-    video_close();
-    audio_close();
     soundloader_close();
+    audio_close();
+    video_close();
+    DEBUG("Engine deinit successful.");
 }
