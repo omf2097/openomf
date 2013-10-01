@@ -17,7 +17,6 @@ typedef struct player_sprite_state_t {
 
 typedef struct player_slide_op_t {
     vec2f vel;
-    int enabled;
     int timer;
 } player_slide_state;
 
