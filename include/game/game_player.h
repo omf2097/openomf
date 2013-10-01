@@ -13,6 +13,7 @@ typedef struct game_player_t {
     controller *ctrl;
     texture *portrait;
     int selectable;
+    char colors[3];
 } game_player;
 
 void game_player_create(game_player *gp);

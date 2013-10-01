@@ -58,6 +58,8 @@ typedef struct arena_local_t {
     progress_bar player2_endurance_bar;
     chr_score player1_score;
     chr_score player2_score;
+
+    palette *player_palettes[2];
 } arena_local;
 
 // -------- Local callbacks --------
@@ -117,6 +119,9 @@ void arena_free(scene *scene) {
     progressbar_free(&local->player2_endurance_bar);
     chr_score_free(&local->player1_score);
     chr_score_free(&local->player2_score);
+
+    free(local->player_palettes[0]);
+    free(local->player_palettes[1]);
     
     settings_save();
     
@@ -306,6 +311,12 @@ int arena_create(scene *scene) {
     local = malloc(sizeof(arena_local));
     scene_set_userdata(scene, local);
 
+    // set up palettes
+    palette *mpal = bk_get_palette(&scene->bk_data, 0);
+
+    local->player_palettes[0] = palette_copy(mpal);
+    local->player_palettes[1] = palette_copy(mpal);
+
     // Initial har data
     vec2i pos[2];
     vec2f vel[2];
@@ -322,11 +333,16 @@ int arena_create(scene *scene) {
         controller *ctrl = game_player_get_ctrl(player);
         object *obj = malloc(sizeof(object));
 
+        // load the player's colors into the palette
+        palette_set_player_color(local->player_palettes[i], 0, player->colors[2], 0);
+        palette_set_player_color(local->player_palettes[i], 0, player->colors[1], 1);
+        palette_set_player_color(local->player_palettes[i], 0, player->colors[0], 2);
+
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
         PERROR("Loading HAR %s (%d).", get_id_name(player->har_id), player->har_id);
         object_create(obj, pos[i], vel[i]);
-        if(har_create(obj, bk_get_palette(&scene->bk_data, 0), dir[i], player->har_id)) {
+        if(har_create(obj, local->player_palettes[i], dir[i], player->har_id)) {
             PERROR("Error while attempting to load HAR %s (%d).", 
                 get_id_name(player->har_id), player->har_id);
             return 1;

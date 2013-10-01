@@ -22,6 +22,8 @@ typedef struct vs_local_t {
     object player2_har;
     texture arena_select_bg;
     object arena_select;
+    palette *player1_palette;
+    palette *player2_palette;
     int arena;
 } vs_local;
 
@@ -56,6 +58,8 @@ void vs_free(scene *scene) {
     if (player2->selectable) {
         object_free(&local->arena_select);
     }
+    free(local->player1_palette);
+    free(local->player2_palette);
     free(local);
 }
 
@@ -182,18 +186,27 @@ int vs_create(scene *scene) {
     animation *ani;
 
     palette *mpal = bk_get_palette(&scene->bk_data, 0);
-    fixup_palette(mpal);
+
+    local->player1_palette = palette_copy(mpal);
+    local->player2_palette = palette_copy(mpal);
+    palette_set_player_color(local->player1_palette, 0, player1->colors[2], 0);
+    palette_set_player_color(local->player1_palette, 0, player1->colors[1], 1);
+    palette_set_player_color(local->player1_palette, 0, player1->colors[0], 2);
+
+    palette_set_player_color(local->player2_palette, 0, player2->colors[2], 0);
+    palette_set_player_color(local->player2_palette, 0, player2->colors[1], 1);
+    palette_set_player_color(local->player2_palette, 0, player2->colors[0], 2);
 
     // HAR
     ani = &bk_get_info(&scene->bk_data, 5)->ani;
     object_create(&local->player1_har, vec2i_create(160,0), vec2f_create(0, 0));
     object_set_animation(&local->player1_har, ani);
-    object_set_palette(&local->player1_har, mpal, 0);
+    object_set_palette(&local->player1_har, local->player1_palette, 0);
     object_select_sprite(&local->player1_har, player1->har_id - HAR_JAGUAR);
 
     object_create(&local->player2_har, vec2i_create(160,0), vec2f_create(0, 0));
     object_set_animation(&local->player2_har, ani);
-    object_set_palette(&local->player2_har, mpal, 0);
+    object_set_palette(&local->player2_har, local->player2_palette, 0);
     object_select_sprite(&local->player2_har, player2->har_id - HAR_JAGUAR);
     object_set_direction(&local->player2_har, OBJECT_FACE_LEFT);
 

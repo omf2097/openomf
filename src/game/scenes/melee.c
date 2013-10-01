@@ -71,20 +71,6 @@ typedef struct melee_local_t {
 
 void refresh_pilot_stats(melee_local *local);
 
-/*void melee_switch_animation(scene *scene, object *harplayer, int id, int x, int y) {*/
-    /*object *obj = malloc(sizeof(object));*/
-    /*object_create(obj, x, y, 0, 0);*/
-    /*object_set_gravity(obj, 0.0f);*/
-    /*animationplayer_free(harplayer);*/
-    /*if (harplayer->pobj) {*/
-        /*object_free(harplayer->pobj);*/
-        /*free(harplayer->pobj);*/
-    /*}*/
-    /*animationplayer_create(harplayer, id, array_get(&scene->animations, id), obj);*/
-    /*animationplayer_set_repeat(harplayer, 1);*/
-    /*animationplayer_run(harplayer);*/
-/*}*/
-
 void handle_action(scene *scene, int player, int action);
 
 // extract part of a sprite as a new sprite
@@ -136,24 +122,6 @@ void mask_sprite(sprite *sprite, int x, int y, int w, int h) {
 void melee_free(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
     game_player *player2 = game_state_get_player(1);
-    /*if (harplayer_a.pobj) {*/
-        /*object_free(harplayer_a.pobj);*/
-        /*free(harplayer_a.pobj);*/
-    /*}*/
-    /*animationplayer_free(&harplayer_a);*/
-    /*if (scene->player2.selectable) {*/
-        /*if (harplayer_b.pobj) {*/
-            /*object_free(harplayer_b.pobj);*/
-            /*free(harplayer_b.pobj);*/
-        /*}*/
-        /*animationplayer_free(&harplayer_b);*/
-    /*}*/
-    
-    
-    /*for(int i = 0; i < 10; i++) {*/
-        /*sprite_free(local->harportraits[i]);*/
-    /*}*/
-    
 
     texture_free(&local->feh);
     texture_free(&local->bleh);
@@ -277,6 +245,9 @@ void handle_action(scene *scene, int player, int action) {
                     palette_set_player_color(local->player1_pal, 0, local->pilots[local->player_id_a].colors[0], 2);
                     palette_set_player_color(local->player1_pal, 0, local->pilots[local->player_id_a].colors[1], 1);
                     palette_set_player_color(local->player1_pal, 0, local->pilots[local->player_id_a].colors[2], 0);
+                    player1->colors[0] = local->pilots[local->player_id_a].colors[0];
+                    player1->colors[1] = local->pilots[local->player_id_a].colors[1];
+                    player1->colors[2] = local->pilots[local->player_id_a].colors[2];
 
                     if (player2->selectable) {
                         object_select_sprite(&local->bigportrait2, local->player_id_b);
@@ -284,6 +255,10 @@ void handle_action(scene *scene, int player, int action) {
                         palette_set_player_color(local->player2_pal, 0, local->pilots[local->player_id_b].colors[0], 2);
                         palette_set_player_color(local->player2_pal, 0, local->pilots[local->player_id_b].colors[1], 1);
                         palette_set_player_color(local->player2_pal, 0, local->pilots[local->player_id_b].colors[2], 0);
+
+                        player2->colors[0] = local->pilots[local->player_id_b].colors[0];
+                        player2->colors[1] = local->pilots[local->player_id_b].colors[1];
+                        player2->colors[2] = local->pilots[local->player_id_b].colors[2];
                     }
 
                     // reinialize any textures using the player palette
@@ -309,6 +284,10 @@ void handle_action(scene *scene, int player, int action) {
                         int i;
                         while((i = rand() % 10) == local->player_id_a) {}
                         player2->player_id = i;
+
+                        player2->colors[0] = local->pilots[player2->player_id].colors[0];
+                        player2->colors[1] = local->pilots[player2->player_id].colors[1];
+                        player2->colors[2] = local->pilots[player2->player_id].colors[2];
                     }
                     game_state_set_next(SCENE_VS);
                 }
