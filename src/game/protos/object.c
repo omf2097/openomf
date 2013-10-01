@@ -164,6 +164,17 @@ void object_set_animation(object *obj, animation *ani) {
     obj->cur_animation = ani;
     obj->cur_animation_own = OWNER_EXTERNAL;
     player_reload(obj);
+
+    // Debug texts
+    if(obj->cur_animation->id == -1) {
+        DEBUG("Custom object set to (x,y) = (%f,%f).", 
+            obj->pos.x, obj->pos.y);
+    } else {
+        DEBUG("Animation object %d set to (x,y) = (%f,%f) with \"%s\".", 
+            obj->cur_animation->id,
+            obj->pos.x, obj->pos.y,
+            str_c(&obj->cur_animation->animation_string));
+    }
 }
 
 animation* object_get_animation(object *obj) {
