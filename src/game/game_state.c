@@ -207,7 +207,7 @@ void game_state_tick() {
         if(object_finished(obj)) {
             object_free(obj);
             vector_delete(&gamestate->objects, &it);
-            DEBUG("Object is finished, removing.");
+            DEBUG("Animation object %d is finished, removing.", obj->cur_animation->id);
         } else {
             object_tick(obj);
         }

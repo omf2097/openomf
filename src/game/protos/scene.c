@@ -55,6 +55,9 @@ void scene_init(scene *scene) {
             object_set_stl(&obj, scene->bk_data.sound_translation_table);
             object_set_palette(&obj, bk_get_palette(&scene->bk_data, 0), 0);
             object_set_animation(&obj, &info->ani);
+            if(info->probability == 1) {
+                object_set_repeat(&obj, 1);
+            }
             object_set_spawn_cb(&obj, cb_spawn_object, (void*)scene);
             object_set_destroy_cb(&obj, cb_destroy_object, (void*)scene);
             game_state_add_object(&obj);
@@ -166,6 +169,9 @@ void cb_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
         object_set_animation(&obj, &info->ani);
         object_set_spawn_cb(&obj, cb_spawn_object, userdata);
         object_set_destroy_cb(&obj, cb_destroy_object, userdata);
+        if(info->probability == 1) {
+            object_set_repeat(&obj, 1);
+        }
         game_state_add_object(&obj);
     }
 }

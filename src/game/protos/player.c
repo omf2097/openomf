@@ -209,8 +209,6 @@ void player_run(object *obj) {
 
         // If frame changed, do something
         if(param->id != state->previous) {
-
-
             // Tick management
             if(isset(f, "d"))   {
                 cmd_tickjump(obj, get(f, "d"));
@@ -282,7 +280,8 @@ void player_run(object *obj) {
                 obj->slide_state.timer = param->duration;
                 obj->slide_state.vel.x = x_dist / (float)param->duration;
                 obj->slide_state.vel.y = y_dist / (float)param->duration;
-                DEBUG("Slide (x,y) = (%f,%f) for %d ticks.", 
+                DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.", 
+                    obj->cur_animation->id,
                     obj->slide_state.vel.x, 
                     obj->slide_state.vel.x, 
                     param->duration);
@@ -304,7 +303,8 @@ void player_run(object *obj) {
                 obj->slide_state.timer = param->duration;
                 obj->slide_state.vel.x = (float)x / (float)param->duration;
                 obj->slide_state.vel.y = (float)y / (float)param->duration;
-                DEBUG("Slide (x,y) = (%f,%f) for %d ticks.", 
+                DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.",
+                    obj->cur_animation->id,
                     obj->slide_state.vel.x, 
                     obj->slide_state.vel.x, 
                     param->duration);
@@ -327,7 +327,10 @@ void player_run(object *obj) {
                     if(slide != xpos) {
                         obj->slide_state.vel.x = dist(xpos, slide) / (float)param->duration;
                         obj->slide_state.timer = param->duration;
-                        DEBUG("Slide X = %f for %d ticks.", obj->slide_state.vel.x, param->duration);
+                        DEBUG("Slide object %d for X = %f for a total of %d ticks.", 
+                            obj->cur_animation->id,
+                            obj->slide_state.vel.x, 
+                            param->duration);
                     }
                 }
                 if(isset(n, "y=")) { 
@@ -335,7 +338,10 @@ void player_run(object *obj) {
                     if(slide != ypos) {
                         obj->slide_state.vel.y = dist(ypos, slide) / (float)param->duration;
                         obj->slide_state.timer = param->duration;
-                        DEBUG("Slide Y = %f for %d ticks.", obj->slide_state.vel.y, param->duration);
+                        DEBUG("Slide object %d for Y = %f for a total of %d ticks.", 
+                            obj->cur_animation->id,
+                            obj->slide_state.vel.y, 
+                            param->duration);
                     }
                 }
             }
