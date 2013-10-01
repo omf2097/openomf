@@ -19,7 +19,13 @@ void har_tick(object *obj) {
     //har *h = object_get_userdata(obj);
     vec2f vel = object_get_vel(obj);
     obj->pos.x += vel.x;
-    obj->pos.y += vel.y;
+    obj->pos.y += (vel.y*0.003);
+    if (obj->pos.y > 190) {
+        obj->pos.y = 190;
+        object_set_vel(obj, vec2f_create(vel.x, 0));
+    } else {
+        object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
+    }
 }
 
 void add_input(har *har, char c) {
@@ -123,8 +129,13 @@ void har_act(object *obj, int act_type) {
         }
     }
 
+    if (obj->pos.y < 190) {
+        // airborne
+        return;
+    }
+
     // no moves matched, do player movement
-    float vx;
+    float vx, vy;
     switch (act_type) {
         case ACT_DOWN:
         case ACT_DOWNRIGHT:
@@ -162,6 +173,30 @@ void har_act(object *obj, int act_type) {
                 vx = har->af_data.reverse_speed/(float)320;
             }
             object_set_vel(obj, vec2f_create(vx,0));
+            break;
+        case ACT_UP:
+            vy = (float)har->af_data.jump_speed;
+            object_set_gravity(obj, har->af_data.fall_speed);
+            object_set_vel(obj, vec2f_create(0,vy));
+            break;
+        case ACT_UPLEFT:
+            vy = (float)har->af_data.jump_speed;
+            object_set_gravity(obj, har->af_data.fall_speed);
+            vx = har->af_data.reverse_speed*-1/(float)320;
+            if (direction == OBJECT_FACE_LEFT) {
+                vx = (har->af_data.forward_speed*-1)/(float)320;
+            }
+            object_set_vel(obj, vec2f_create(vx,vy));
+            break;
+        case ACT_UPRIGHT:
+            vy = (float)har->af_data.jump_speed;
+            object_set_gravity(obj, har->af_data.fall_speed);
+            vx = har->af_data.reverse_speed*-1/(float)320;
+            vx = har->af_data.forward_speed/(float)320;
+            if (direction == OBJECT_FACE_LEFT) {
+                vx = har->af_data.reverse_speed/(float)320;
+            }
+            object_set_vel(obj, vec2f_create(vx,vy));
             break;
     }
 }
