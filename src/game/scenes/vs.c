@@ -16,10 +16,12 @@
 
 typedef struct vs_local_t {
     texture player2_background;
-    /*animationplayer welder;*/
-    /*animationplayer scientist;*/
-    /*list child_players;*/
+    object player1_portrait;
+    object player2_portrait;
+    object player1_har;
+    object player2_har;
     texture arena_select_bg;
+    object arena_select;
     int arena;
 } vs_local;
 
@@ -41,70 +43,20 @@ sd_rgba_image* sub_image(sd_vga_image *image, palette *pal, int x, int y, int w,
     return out;
 }
 
-/*void vs_add_ani_player(void *userdata, int id, int mx, int my, int mg) {
-    scene *scene = userdata;
-    animation *ani = &bk_get_info(&scene->bk_data, id)->ani;
-    if(ani != NULL) {
-        animationplayer np;
-        object *obj = malloc(sizeof(object));
-        int welder_x, welder_y;
-        object_get_pos(welder.pobj, &welder_x, &welder_y);
-        object_set_gravity(obj, 0.0f);
-        DEBUG("spawning %id at %d + %d +%d", id, ani->sdani->start_x, mx, welder_x);
-        object_create(obj, ani->sdani->start_x + mx + welder_x, ani->sdani->start_y + my + welder_y, 0, 0);
-        animationplayer_create(&np, id, ani, obj);
-        list_append(&child_players, &np, sizeof(animationplayer));
-        animationplayer_run(&np);
-        return;
-    }
-}
-
-void vs_set_ani_finished(void *userdata, int id) {
-    iterator it;
-    animationplayer *tmp = 0;
-
-    list_iter_begin(&child_players, &it);
-    while((tmp = iter_next(&it)) != NULL) {
-        if(tmp->id == id) {
-            tmp->finished = 1;
-            return;
-        }
-    }
-}
-
-
-
-void vs_post_init(scene *scene) {
-    animation *ani;
-    ani = array_get(&scene->animations, 7);
-    if (ani != NULL) {
-        object *obj = malloc(sizeof(object));
-        object_create(obj, 90, 80, 0, 0);
-        object_set_gravity(obj, 0.0f);
-        animationplayer_create(&welder, 7, ani, obj);
-        welder.userdata = scene;
-        welder.add_player = vs_add_ani_player;
-        welder.del_player = vs_set_ani_finished;
-    } else {
-        DEBUG("could not load welder animation");
-    }
-
-    ani = array_get(&scene->animations, 8);
-    if (ani != NULL) {
-        object *obj = malloc(sizeof(object));
-        object_create(obj, 320-114, 118, 0, 0);
-        object_set_gravity(obj, 0.0f);
-        animationplayer_create(&scientist, 8, ani, obj);
-        scientist.direction = -1;
-    } else {
-        DEBUG("could not load scientist animation");
-    }
-}*/
-
 void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
+    game_player *player2 = game_state_get_player(1);
+
     texture_free(&local->player2_background);
     texture_free(&local->arena_select_bg);
+    object_free(&local->player1_portrait);
+    object_free(&local->player2_portrait);
+    object_free(&local->player1_har);
+    object_free(&local->player2_har);
+    if (player2->selectable) {
+        object_free(&local->arena_select);
+    }
+    free(local);
 }
 
 void vs_handle_action(scene *scene, int action) {
@@ -120,6 +72,7 @@ void vs_handle_action(scene *scene, int action) {
             if (local->arena < 0) {
                 local->arena =4;
             }
+            object_select_sprite(&local->arena_select, local->arena);
             break;
         case ACT_DOWN:
         case ACT_RIGHT:
@@ -127,6 +80,7 @@ void vs_handle_action(scene *scene, int action) {
             if (local->arena > 4) {
                 local->arena = 0;
             }
+            object_select_sprite(&local->arena_select, local->arena);
             break;
     }
 }
@@ -180,8 +134,6 @@ int vs_event(scene *scene, SDL_Event *event) {
 void vs_render(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
 
-    //palette *mpal = bk_get_palette(&scene->bk_data, 0);
-
     // render the right side of the background
     video_render_sprite_flip(&local->player2_background, 160, 0, BLEND_ALPHA, FLIP_HORIZONTAL);
 
@@ -189,29 +141,24 @@ void vs_render(scene *scene) {
     game_player *player2 = game_state_get_player(1);
 
     // player 1 HAR
+    object_render(&local->player1_har);
 
-    /*sprite *sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id - HAR_JAGUAR);*/
-    /*video_render_sprite_flip(&sprite->tex, 160+sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
 
     // player 2 HAR
-    /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 5)->ani, player1->har_id - HAR_JAGUAR);*/
-    /*video_render_sprite_flip(&sprite->tex, 160+ (sprite->pos.x * -1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);*/
+    object_render(&local->player2_har);
 
     // player 1 portrait
-    /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, player1->player_id);*/
-    /*video_render_sprite_flip(&sprite->tex, 0, 200 - sprite->tex.w, BLEND_ALPHA, FLIP_NONE);*/
+    object_render(&local->player1_portrait);
 
     // player 2 portrait
-    /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 4)->ani, player2->player_id);*/
-    /*video_render_sprite_flip(&sprite->tex, 320 - sprite->tex.w, 200 - sprite->tex.w, BLEND_ALPHA, FLIP_HORIZONTAL);*/
+    object_render(&local->player2_portrait);
 
 
     if (player2->selectable) {
         // arena selection
         video_render_sprite_flip(&local->arena_select_bg, 55, 150, BLEND_ALPHA, FLIP_NONE);
 
-        /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 3)->ani, local->arena);*/
-        /*video_render_sprite_flip(&sprite->tex, 59, 155, BLEND_ALPHA, FLIP_NONE);*/
+        object_render(&local->arena_select);
 
         // arena name
         font_render_wrapped(&font_small, lang_get(56+local->arena), 59+72, 153, (211-72)-4, COLOR_GREEN);
@@ -223,33 +170,45 @@ void vs_render(scene *scene) {
         font_render_wrapped(&font_small, lang_get(749+(11*player1->player_id)+player2->player_id), 59, 160, 150, COLOR_YELLOW);
         font_render_wrapped(&font_small, lang_get(870+(11*player2->player_id)+player1->player_id), 320-(59+150), 180, 150, COLOR_YELLOW);
     }
-
-    // welder & scientist
-    /*animationplayer_render(&welder);*/
-    /*animationplayer_render(&scientist);*/
-
-    /*iterator it;*/
-    /*animationplayer *tmp = 0;*/
-    /*list_iter_begin(&child_players, &it);*/
-    /*while((tmp = iter_next(&it)) != NULL) {*/
-        /*animationplayer_render(tmp);*/
-    /*}*/
-
-    // gantries
-    /*sprite = animation_get_sprite(&bk_get_info(&scene->bk_data, 11)->ani, 0);*/
-    /*video_render_sprite_flip(&sprite->tex, sprite->pos.x, sprite->pos.y, BLEND_ALPHA, FLIP_NONE);*/
-    /*video_render_sprite_flip(&sprite->tex, 320 - (sprite->pos.x*-1) - sprite->tex.w, sprite->pos.y, BLEND_ALPHA, FLIP_HORIZONTAL);*/
 }
 
 int vs_create(scene *scene) {
     // Init local data
     vs_local *local = malloc(sizeof(vs_local));
     scene_set_userdata(scene, local);
+    game_player *player1 = game_state_get_player(0);
+    game_player *player2 = game_state_get_player(1);
+
+    animation *ani;
 
     palette *mpal = bk_get_palette(&scene->bk_data, 0);
     fixup_palette(mpal);
 
-    game_player *player2 = game_state_get_player(1);
+    // HAR
+    ani = &bk_get_info(&scene->bk_data, 5)->ani;
+    object_create(&local->player1_har, vec2i_create(160,0), vec2f_create(0, 0));
+    object_set_animation(&local->player1_har, ani);
+    object_set_palette(&local->player1_har, mpal, 0);
+    object_select_sprite(&local->player1_har, player1->har_id - HAR_JAGUAR);
+
+    object_create(&local->player2_har, vec2i_create(160,0), vec2f_create(0, 0));
+    object_set_animation(&local->player2_har, ani);
+    object_set_palette(&local->player2_har, mpal, 0);
+    object_select_sprite(&local->player2_har, player2->har_id - HAR_JAGUAR);
+    object_set_direction(&local->player2_har, OBJECT_FACE_LEFT);
+
+    // PLAYER
+    ani = &bk_get_info(&scene->bk_data, 4)->ani;
+    object_create(&local->player1_portrait, vec2i_create(-10,150), vec2f_create(0, 0));
+    object_set_animation(&local->player1_portrait, ani);
+    object_set_palette(&local->player1_portrait, mpal, 0);
+    object_select_sprite(&local->player1_portrait, player1->player_id);
+
+    object_create(&local->player2_portrait, vec2i_create(330,150), vec2f_create(0, 0));
+    object_set_animation(&local->player2_portrait, ani);
+    object_set_palette(&local->player2_portrait, mpal, 0);
+    object_select_sprite(&local->player2_portrait, player2->player_id);
+    object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
 
     // clone the left side of the background image
     sd_rgba_image * out = sub_image((sd_vga_image*)scene->bk_data.background.raw_sprite, bk_get_palette(&scene->bk_data, 0), 0, 0, 160, 200);
@@ -262,11 +221,47 @@ int vs_create(scene *scene) {
         local->arena = rand() % 5; // srand was done in melee
     }
 
-    // Preinit some animations with a palette
-    /*int to_init[4] = {3,4,5,11};*/
-    /*for(int i = 0; i < 4; i++) {*/
-        /*animation_init(&bk_get_info(&scene->bk_data, to_init[i])->ani, mpal, 0);*/
-    /*}*/
+    //AREBA
+    if (player2->selectable) {
+        ani = &bk_get_info(&scene->bk_data, 3)->ani;
+        object_create(&local->arena_select, vec2i_create(59,155), vec2f_create(0, 0));
+        object_set_animation(&local->arena_select, ani);
+        object_set_palette(&local->arena_select, mpal, 0);
+        object_select_sprite(&local->arena_select, local->arena);
+    }
+
+    object obj;
+    // SCIENTIST
+    ani = &bk_get_info(&scene->bk_data, 8)->ani;
+    object_create(&obj, vec2i_create(320-114,118), vec2f_create(0, 0));
+    object_set_animation(&obj, ani);
+    object_set_palette(&obj, mpal, 0);
+    object_select_sprite(&obj, 0);
+    object_set_direction(&obj, OBJECT_FACE_LEFT);
+    game_state_add_object(&obj);
+
+    //WELDER
+    ani = &bk_get_info(&scene->bk_data, 7)->ani;
+    object_create(&obj, vec2i_create(90,80), vec2f_create(0, 0));
+    object_set_animation(&obj, ani);
+    object_set_palette(&obj, mpal, 0);
+    object_select_sprite(&obj, 0);
+    game_state_add_object(&obj);
+
+    //GANTRIES
+    ani = &bk_get_info(&scene->bk_data, 11)->ani;
+    object_create(&obj, vec2i_create(0,0), vec2f_create(0, 0));
+    object_set_animation(&obj, ani);
+    object_set_palette(&obj, mpal, 0);
+    object_select_sprite(&obj, 0);
+    game_state_add_object(&obj);
+
+    object_create(&obj, vec2i_create(0,0), vec2f_create(0, 0));
+    object_set_animation(&obj, ani);
+    object_set_palette(&obj, mpal, 0);
+    object_select_sprite(&obj, 0);
+    object_set_direction(&obj, OBJECT_FACE_LEFT);
+    game_state_add_object(&obj);
 
     texture_create(&local->player2_background);
     texture_init(&local->player2_background, out->data, 160, 200);
