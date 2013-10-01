@@ -42,6 +42,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
     object_set_layers(obj, LAYER_HAR);
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
+    object_set_stl(obj, local->af_data.sound_translation_table);
 
     // Set running animation 
     object_set_animation(obj, &af_get_move(&local->af_data, ANIM_IDLE)->ani);
