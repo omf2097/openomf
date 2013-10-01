@@ -15,7 +15,7 @@ int lang_init() {
     // Load up language file
     language = sd_language_create();
     if(sd_language_load(language, filename)) {
-        PERROR("Language file could not be loaded!\n");
+        PERROR("Unable to load language file '%s'!", filename);
         return 1;
     }
     array_create(&language_strings);

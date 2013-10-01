@@ -76,7 +76,7 @@ int fonts_init() {
     // Load small font
     get_filename_by_id(DAT_CHARSMAL, filename);
     if(font_load(&font_small, filename, FONT_SMALL)) {
-        PERROR("Unable to load font file '%s'.", filename);
+        PERROR("Unable to load font file '%s'!", filename);
         return 1;
     }
     DEBUG("Loaded font file '%s'", filename);
@@ -84,7 +84,7 @@ int fonts_init() {
     // Load big font
     get_filename_by_id(DAT_GRAPHCHR, filename);
     if(font_load(&font_large, filename, FONT_BIG)) {
-        PERROR("Unable to load font file '%s'.", filename);
+        PERROR("Unable to load font file '%s'!", filename);
         return 1;
     }
     DEBUG("Loaded font file '%s'", filename);

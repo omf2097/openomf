@@ -16,7 +16,7 @@ int soundloader_init() {
     sdf = sd_sounds_create();
     if(sd_sounds_load(sdf, filename)) {
         sd_sounds_delete(sdf);
-        PERROR("Unable to load sounds file %s!", filename);
+        PERROR("Unable to load sounds file '%s'!", filename);
         return 1;
     }
     DEBUG("Loaded sounds file '%s'.", filename);
