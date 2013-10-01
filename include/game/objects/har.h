@@ -44,5 +44,6 @@ int har_create(object *obj, palette *pal, int dir, int har_id);
 void har_tick(object *obj); 
 void har_act(object *obj, int act_type);
 void har_free(object *obj);
+void har_finished(object *obj);
 
 #endif // _HAR_H

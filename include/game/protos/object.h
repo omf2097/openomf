@@ -28,9 +28,11 @@ enum {
 
 typedef struct object_t object;
 
-typedef void (*object_free_cb)(object *object);
-typedef void (*object_act_cb)(object *object, int action);
-typedef void (*object_tick_cb)(object *object);
+typedef void (*object_free_cb)(object *obj);
+typedef void (*object_act_cb)(object *obj, int action);
+typedef void (*object_tick_cb)(object *obj);
+typedef void (*object_collide_cb)(object *a, object *b);
+typedef void (*object_finish_cb)(object *obj);
 
 struct object_t {
     vec2f pos;
@@ -63,6 +65,8 @@ struct object_t {
     object_free_cb free;
     object_act_cb act;
     object_tick_cb tick;
+    object_collide_cb collide;
+    object_finish_cb finish;
 };
 
 void object_create(object *obj, vec2i pos, vec2f vel);
@@ -70,6 +74,7 @@ void object_render(object *obj);
 void object_render_neutral(object *obj);
 void object_tick(object *obj);
 void object_render(object *obj);
+void object_collide(object *a, object *b);
 void object_act(object *obj, int action);
 int object_finished(object *obj);
 void object_free(object *obj);
@@ -95,10 +100,11 @@ void *object_get_userdata(object *obj);
 void object_set_free_cb(object *obj, object_free_cb cbfunc);
 void object_set_act_cb(object *obj, object_act_cb cbfunc);
 void object_set_tick_cb(object *obj, object_tick_cb cbfunc);
+void object_set_collide_cb(object *obj, object_collide_cb cbfunc);
+void object_set_finish_cb(object *obj, object_finish_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);
 int object_get_repeat(object *obj);
-int object_finished(object *obj);
 void object_set_direction(object *obj, int dir);
 int object_get_direction(object *obj);
 

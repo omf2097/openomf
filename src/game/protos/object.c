@@ -7,19 +7,20 @@
 #include "utils/log.h"
 
 void object_create(object *obj, vec2i pos, vec2f vel) {
+    // Position related
     obj->pos = vec2i_to_f(pos);
     obj->vel = vel;
     object_reset_vstate(obj);
     object_reset_hstate(obj);
+    obj->direction = OBJECT_FACE_RIGHT;
+
+    // Physics
     obj->is_static = 0;
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = OBJECT_NO_GROUP;
-    obj->userdata = NULL;
-    obj->tick = NULL;
-    obj->free = NULL;
-    obj->act = NULL;
     obj->gravity = 0.0f;
-    obj->direction = OBJECT_FACE_RIGHT;
+
+    // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;
     obj->texture_refresh = 0;
     obj->cur_palette = NULL;
@@ -29,6 +30,14 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->cur_texture = NULL;
     obj->cur_remap = 0;
     player_create(obj);
+
+    // Callbacks & userdata
+    obj->userdata = NULL;
+    obj->tick = NULL;
+    obj->free = NULL;
+    obj->act = NULL;
+    obj->collide = NULL;
+    obj->finish = NULL;
 }
 
 void object_tick(object *obj) {
@@ -37,6 +46,12 @@ void object_tick(object *obj) {
     }
     if(obj->tick != NULL) {
         obj->tick(obj);
+    }
+}
+
+void object_collide(object *obj, object *b) {
+    if(obj->collide != NULL) {
+        obj->collide(obj,b);
     }
 }
 
@@ -193,6 +208,8 @@ void* object_get_userdata(object *obj) { return obj->userdata; }
 void object_set_free_cb(object *obj, object_free_cb cbfunc) { obj->free = cbfunc; }
 void object_set_act_cb(object *obj, object_act_cb cbfunc) { obj->act = cbfunc; }
 void object_set_tick_cb(object *obj, object_tick_cb cbfunc) { obj->tick = cbfunc; }
+void object_set_collide_cb(object *obj, object_collide_cb cbfunc) { obj->collide = cbfunc; }
+void object_set_finish_cb(object *obj, object_finish_cb cbfunc) { obj->finish = cbfunc; }
 
 void object_set_layers(object *obj, int layers) { obj->layers = layers; }
 void object_set_group(object *obj, int group) { obj->group = group; }

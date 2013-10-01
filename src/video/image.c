@@ -29,6 +29,8 @@ int image_create(image *img, int w, int h) {
 void image_free(image *img) {
     free(img->data);
     img->data = NULL;
+    img->w = 0;
+    img->h = 0;
 }
 
 int image_create_from_sd(image *img, sd_rgba_image *sdimg) {

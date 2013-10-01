@@ -36,11 +36,10 @@ void har_act(object *obj, int act_type) {
     int anim = object_get_animation(obj)->id;
     int direction = object_get_direction(obj);
     DEBUG("current animation is %d %d", anim, ANIM_IDLE);
-    if (!(
-                anim == ANIM_IDLE ||
-                anim == ANIM_CROUCHING ||
-                anim == ANIM_WALKING ||
-                anim == ANIM_JUMPING)) {
+    if (!(anim == ANIM_IDLE ||
+          anim == ANIM_CROUCHING ||
+          anim == ANIM_WALKING ||
+          anim == ANIM_JUMPING)) {
         // doing something else, ignore input
         return;
     }
@@ -124,6 +123,12 @@ void har_act(object *obj, int act_type) {
     }
 }
 
+void har_finished(object *obj) {
+    har *har = object_get_userdata(obj);
+    object_set_animation(obj, &af_get_move(&har->af_data, ANIM_IDLE)->ani);
+    object_set_repeat(obj, 1);
+}
+
 int har_create(object *obj, palette *pal, int dir, int har_id) {
     // Create local data
     har *local = malloc(sizeof(har));
@@ -159,6 +164,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
     object_set_free_cb(obj, har_free);
     object_set_act_cb(obj, har_act);
     object_set_tick_cb(obj, har_tick);
+    object_set_finish_cb(obj, har_finished);
 
     // All done
     DEBUG("Har %s (%d) loaded!", get_id_name(har_id), har_id);

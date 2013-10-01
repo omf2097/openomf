@@ -158,6 +158,7 @@ void player_reload(object *obj) {
 void player_reset(object *obj) {
     obj->animation_state.ticks = 1;
     obj->animation_state.finished = 0;
+    obj->animation_state.previous = -1;
     sd_stringparser_reset(obj->animation_state.parser);
 }
 
@@ -187,31 +188,29 @@ void player_run(object *obj) {
         sd_stringparser_frame n_param;
         sd_stringparser_frame *f = param;
         sd_stringparser_frame *n = &n_param;
-        int real_frame;
-
-        real_frame = param->letter - 65;
-        
-        // See if frame changed
-        int changed = 0;
-        if(param->id != obj->animation_state.previous) {
-            changed = 1;
-        }
-        obj->animation_state.previous = param->id;
+        int real_frame = param->letter - 65;
 
         // Do something if animation is finished!
-        if(param->is_animation_end || state->finished) {
-            state->finished = 1;
+        if(param->is_animation_end) {
             if(state->repeat) {
                 player_reset(obj);
                 sd_stringparser_run(state->parser, state->ticks - 1);
                 real_frame = param->letter - 65;
+            } else if(obj->finish != NULL) {
+                obj->cur_sprite = NULL;
+                obj->finish(obj);
+                return;
             } else {
                 obj->cur_sprite = NULL;
+                state->finished = 1;
                 return;
             }
         }
 
-        if(changed) {
+        // If frame changed, do something
+        if(param->id != state->previous) {
+
+
             // Tick management
             if(isset(f, "d"))   {
                 cmd_tickjump(obj, get(f, "d"));
@@ -220,6 +219,7 @@ void player_run(object *obj) {
         
             // Animation management
             if(isset(f, "m") && state->spawn != NULL) {
+                DEBUG("Spawning %d", get(f, "m"));
                 int mx = isset(f, "mx") ? get(f, "mx") : 0;
                 int my = isset(f, "my") ? get(f, "my") : 0;
                 int mg = isset(f, "mg") ? get(f, "mg") : 0;
@@ -358,6 +358,7 @@ void player_run(object *obj) {
             }
 
         }
+        state->previous = param->id;
     }
 
     if(state->reverse) {
