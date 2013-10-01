@@ -13,6 +13,8 @@
 #include "controller/controller.h"
 #include "controller/keyboard.h"
 
+void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
+void cb_vs_destroy_object(object *parent, int id, void *userdata);
 
 typedef struct vs_local_t {
     texture player2_background;
@@ -26,6 +28,28 @@ typedef struct vs_local_t {
     palette *player2_palette;
     int arena;
 } vs_local;
+
+void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
+    scene *s = (scene*)userdata;
+
+    // Get next animation
+    bk_info *info = bk_get_info(&s->bk_data, id);
+    if(info != NULL) {
+        object obj;
+        object_create(&obj, vec2i_add(pos, vec2f_to_i(parent->pos)), vec2f_create(0,0));
+        object_set_stl(&obj, object_get_stl(parent));
+        object_set_palette(&obj, object_get_palette(parent), 0);
+        object_set_animation(&obj, &info->ani);
+        object_set_spawn_cb(&obj, cb_vs_spawn_object, userdata);
+        object_set_destroy_cb(&obj, cb_vs_destroy_object, userdata);
+        game_state_add_object(&obj);
+    }
+}
+
+void cb_vs_destroy_object(object *parent, int id, void *userdata) {
+    game_state_del_object(id);
+}
+
 
 sd_rgba_image* sub_image(sd_vga_image *image, palette *pal, int x, int y, int w, int h) {
     sd_rgba_image *img = 0;
@@ -259,6 +283,8 @@ int vs_create(scene *scene) {
     object_set_animation(&obj, ani);
     object_set_palette(&obj, mpal, 0);
     object_select_sprite(&obj, 0);
+    object_set_spawn_cb(&obj, cb_vs_spawn_object, (void*)scene);
+    object_set_destroy_cb(&obj, cb_vs_destroy_object, (void*)scene);
     game_state_add_object(&obj);
 
     //GANTRIES

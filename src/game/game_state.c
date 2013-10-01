@@ -34,6 +34,7 @@ int game_state_create() {
         PERROR("Error while creating intro scene.");
         return 1;
     }
+    scene_init(&gamestate->sc);
     gamestate->this_id = nscene;
     gamestate->next_id = nscene;
     for(int i = 0; i < 2; i++) {
@@ -168,6 +169,11 @@ int game_load_new(int scene_id) {
             } 
             break;
     }
+
+    // Zap scene to produce objects & background
+    scene_init(&gamestate->sc);
+
+    // All done.
     gamestate->this_id = scene_id;
     gamestate->next_id = scene_id;
     return 0;

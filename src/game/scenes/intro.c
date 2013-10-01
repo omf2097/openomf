@@ -16,7 +16,16 @@ int intro_event(scene *scene, SDL_Event *e) {
     return 1;
 }
 
+int intro_startup(scene *scene, int id) {
+    switch(id) {
+        case 25:
+            return 1;
+    }
+    return 0;
+}
+
 int intro_create(scene *scene) {
     scene_set_event_cb(scene, intro_event);
+    scene_set_startup_cb(scene, intro_startup);
     return 0;
 }

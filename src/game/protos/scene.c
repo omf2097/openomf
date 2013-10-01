@@ -19,6 +19,7 @@ int scene_create(scene *scene, int scene_id) {
         PERROR("Unable to load BK file %s (%d)!", get_id_name(scene_id), scene_id);
         return 1;
     }
+    scene->id = scene_id;
 
     // Init functions
     scene->userdata = NULL;
@@ -26,7 +27,14 @@ int scene_create(scene *scene, int scene_id) {
     scene->event = NULL;
     scene->render = NULL;
     scene->tick = NULL;
+    scene->startup = NULL;
 
+    // All done.
+    DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
+    return 0;
+}
+
+void scene_init(scene *scene) {
     // Init background sprite with palette
     object_create(&scene->background, vec2i_create(0,0), vec2f_create(0,0));
     animation *bgani = create_animation_from_single(sprite_copy(&scene->bk_data.background), vec2i_create(0,0));
@@ -41,7 +49,7 @@ int scene_create(scene *scene, int scene_id) {
     hashmap_pair *pair = NULL;
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info*)pair->val;
-        if(info->load_on_start || info->probability == 1 || (scene_id == SCENE_INTRO && info->ani.id == 25)) {
+        if(info->load_on_start || info->probability == 1 || scene_startup(scene, info->ani.id)) {
             object obj;
             object_create(&obj, info->ani.start_pos, vec2f_create(0,0));
             object_set_stl(&obj, scene->bk_data.sound_translation_table);
@@ -50,13 +58,9 @@ int scene_create(scene *scene, int scene_id) {
             object_set_spawn_cb(&obj, cb_spawn_object, (void*)scene);
             object_set_destroy_cb(&obj, cb_destroy_object, (void*)scene);
             game_state_add_object(&obj);
-            DEBUG("Scene bootstrap: Animation started.");
+            DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
         }
     }
-
-    // All done.
-    DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
-    return 0;
 }
 
 void scene_set_userdata(scene *scene, void *userdata) {
@@ -65,6 +69,13 @@ void scene_set_userdata(scene *scene, void *userdata) {
 
 void* scene_get_userdata(scene *scene) {
     return scene->userdata;
+}
+
+int scene_startup(scene *scene, int id) {
+    if(scene->startup != NULL) {
+        return scene->startup(scene, id);
+    }
+    return 0;
 }
 
 // Return 0 if event was handled here
@@ -106,6 +117,10 @@ void scene_set_event_cb(scene *scene, scene_event_cb cbfunc) {
 
 void scene_set_render_cb(scene *scene, scene_render_cb cbfunc) {
     scene->render = cbfunc;
+}
+
+void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc) {
+    scene->startup = cbfunc;
 }
 
 void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc) {
