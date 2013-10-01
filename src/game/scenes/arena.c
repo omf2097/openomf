@@ -213,7 +213,7 @@ int arena_event(scene *scene, SDL_Event *e) {
         return menu_handle_event(&local->game_menu, e);
     } else {
         for(int i = 0; i < 2; i++) {
-            /*ctrl_event *p, *n;
+            ctrl_event *p, *n;
             game_player *player = game_state_get_player(i);
             controller_event(game_player_get_ctrl(player), e, &p);
             n = p;
@@ -221,7 +221,7 @@ int arena_event(scene *scene, SDL_Event *e) {
                 do {
                     object_act(game_player_get_har(player), n->action);
                 } while((n = n->next));
-            }*/
+            }
         }
         return 0;
     }

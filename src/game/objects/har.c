@@ -6,6 +6,7 @@
 #include "resources/af_loader.h"
 #include "resources/ids.h"
 #include "resources/animation.h"
+#include "controller/controller.h"
 #include "utils/log.h"
 
 void har_free(object *obj) {
@@ -18,8 +19,109 @@ void har_tick(object *har) {
     //har *h = object_get_userdata(obj);
 }
 
-void har_act(object *har, int act_type) {
-    //har *h = object_get_userdata(obj);
+void add_input(har *har, char c) {
+    // only add it if it is not the current head of the array
+    if (har->inputs[0] == c) {
+        return;
+    }
+
+    // use memmove to move everything over one spot in the array, leaving the first slot free
+    memmove((har->inputs)+1, har->inputs, 9);
+    // write the new first element
+    har->inputs[0] = c;
+}
+
+void har_act(object *obj, int act_type) {
+    har *har = object_get_userdata(obj);
+    int anim = object_get_animation(obj)->id;
+    int direction = object_get_direction(obj);
+    DEBUG("current animation is %d %d", anim, ANIM_IDLE);
+    if (!(
+                anim == ANIM_IDLE ||
+                anim == ANIM_CROUCHING ||
+                anim == ANIM_WALKING ||
+                anim == ANIM_JUMPING)) {
+        // doing something else, ignore input
+        return;
+    }
+
+   // for the reason behind the numbers, look at a numpad sometime
+    switch(act_type) {
+        case ACT_UP:
+            add_input(har, '8');
+            break;
+        case ACT_DOWN:
+            add_input(har, '2');
+            break;
+        case ACT_LEFT:
+            if (direction == OBJECT_FACE_LEFT) {
+                add_input(har, '6');
+            } else {
+                add_input(har, '4');
+            }
+            break;
+        case ACT_RIGHT:
+            if (direction == OBJECT_FACE_LEFT) {
+                add_input(har, '4');
+            } else {
+                add_input(har, '6');
+            }
+            break;
+        case ACT_UPRIGHT:
+            if (direction == OBJECT_FACE_LEFT) {
+                add_input(har, '7');
+            } else {
+                add_input(har, '9');
+            }
+            break;
+        case ACT_UPLEFT:
+            if (direction == OBJECT_FACE_LEFT) {
+                add_input(har, '9');
+            } else {
+                add_input(har, '7');
+            }
+            break;
+        case ACT_DOWNRIGHT:
+            if (direction == OBJECT_FACE_LEFT) {
+                add_input(har, '1');
+            } else {
+                add_input(har, '3');
+            }
+            break;
+        case ACT_DOWNLEFT:
+            if (direction == OBJECT_FACE_LEFT) {
+                add_input(har, '3');
+            } else {
+                add_input(har, '1');
+            }
+            break;
+        case ACT_KICK:
+            add_input(har, 'K');
+            break;
+        case ACT_PUNCH:
+            add_input(har, 'P');
+            break;
+        case ACT_STOP:
+            add_input(har, '5');
+            break;
+    }
+
+    DEBUG("input buffer %s", har->inputs);
+
+    af_move *move;
+    size_t len;
+    for(int i = 0; i < 70; i++) {
+        if((move = af_get_move(&har->af_data, i))) {
+            len = move->move_string.len;
+            if (!strncmp(str_c(&move->move_string), har->inputs, len)) {
+                DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
+                DEBUG("input was %s", har->inputs);
+                object_set_animation(obj, &af_get_move(&har->af_data, i)->ani);
+                object_set_repeat(obj, 0);
+                break;
+            }
+        }
+    }
 }
 
 int har_create(object *obj, palette *pal, int dir, int har_id) {
@@ -47,6 +149,10 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
     // Set running animation 
     object_set_animation(obj, &af_get_move(&local->af_data, ANIM_IDLE)->ani);
     object_set_palette(obj, pal, 0);
+
+    // fill the input buffer with 'pauses'
+    memset(local->inputs, '5', 10);
+    local->inputs[10] = '\0';
 
     // Callbacks and userdata
     object_set_userdata(obj, local);

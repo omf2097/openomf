@@ -37,6 +37,7 @@ typedef struct har_t {
 
     int health_max, health;
     int endurance_max, endurance;
+    char inputs[10];
 } har;
 
 int har_create(object *obj, palette *pal, int dir, int har_id);
