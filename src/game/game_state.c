@@ -162,7 +162,6 @@ int game_load_new(int scene_id) {
         case SCENE_ARENA2:
         case SCENE_ARENA3:
         case SCENE_ARENA4:
-        case SCENE_ARENA5:
             if(arena_create(&gamestate->sc)) {
                 PERROR("Error while creating arena scene.");
                 return 1;
@@ -243,7 +242,6 @@ unsigned int game_state_ms_per_tick() {
         case SCENE_ARENA2:
         case SCENE_ARENA3:
         case SCENE_ARENA4:
-        case SCENE_ARENA5:
             return MS_PER_OMF_TICK_SLOWEST - settings_get()->gameplay.speed;
     }
     return MS_PER_OMF_TICK;

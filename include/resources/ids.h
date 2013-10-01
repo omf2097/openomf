@@ -18,7 +18,6 @@ enum RESOURCE_ID {
     SCENE_ARENA2,
     SCENE_ARENA3,
     SCENE_ARENA4,
-    SCENE_ARENA5,
     SCENE_NORTHAM,
     SCENE_KATUSHAI,
     SCENE_WAR,
@@ -36,6 +35,13 @@ enum RESOURCE_ID {
     HAR_CHRONOS,
     HAR_NOVA,
     HAR_NONE,
+    PSM_MENU,
+    PSM_END,
+    PSM_ARENA0,
+    PSM_ARENA1,
+    PSM_ARENA2,
+    PSM_ARENA3,
+    PSM_ARENA4
 };
 
 void get_filename_by_id(int id, char *ptr);

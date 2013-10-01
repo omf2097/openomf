@@ -121,7 +121,6 @@ int scene_is_valid(int id) {
         case SCENE_ARENA2:
         case SCENE_ARENA3:
         case SCENE_ARENA4:
-        case SCENE_ARENA5:
         case SCENE_NEWSROOM:
         case SCENE_END:
         case SCENE_END1:

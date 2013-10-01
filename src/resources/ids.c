@@ -12,7 +12,6 @@ void get_filename_by_id(int id, char *ptr) {
         case SCENE_ARENA2:   sprintf(ptr, "%sARENA2.BK", path);   break;
         case SCENE_ARENA3:   sprintf(ptr, "%sARENA3.BK", path);   break;
         case SCENE_ARENA4:   sprintf(ptr, "%sARENA4.BK", path);   break;
-        case SCENE_ARENA5:   sprintf(ptr, "%sARENA5.BK", path);   break;
         case SCENE_NEWSROOM: sprintf(ptr, "%sNEWSROOM.BK", path); break;
         case SCENE_END:      sprintf(ptr, "%sEND.BK", path);      break;
         case SCENE_END1:     sprintf(ptr, "%sEND1.BK", path);     break;
@@ -36,6 +35,13 @@ void get_filename_by_id(int id, char *ptr) {
         case HAR_GARGOYLE:   sprintf(ptr, "%sFIGHTR8.AF", path);  break;
         case HAR_CHRONOS:    sprintf(ptr, "%sFIGHTR9.AF", path);  break;
         case HAR_NOVA:       sprintf(ptr, "%sFIGHTR10.AF", path); break;
+        case PSM_MENU:       sprintf(ptr, "%sMENU.PSM", path);    break;
+        case PSM_END:        sprintf(ptr, "%sEND.PSM", path);     break;
+        case PSM_ARENA0:     sprintf(ptr, "%sARENA0.PSM", path);  break;
+        case PSM_ARENA1:     sprintf(ptr, "%sARENA1.PSM", path);  break;
+        case PSM_ARENA2:     sprintf(ptr, "%sARENA2.PSM", path);  break;
+        case PSM_ARENA3:     sprintf(ptr, "%sARENA3.PSM", path);  break;
+        case PSM_ARENA4:     sprintf(ptr, "%sARENA4.PSM", path);  break;
         default:
             ptr[0] = 0;
             break;
@@ -51,7 +57,6 @@ char* get_id_name(int id) {
         case SCENE_ARENA2:   return "ARENA2"; 
         case SCENE_ARENA3:   return "ARENA3";
         case SCENE_ARENA4:   return "ARENA4";
-        case SCENE_ARENA5:   return "ARENA5";
         case SCENE_NEWSROOM: return "NEWSROOM";
         case SCENE_END:      return "END";
         case SCENE_END1:     return "END1";
@@ -75,6 +80,13 @@ char* get_id_name(int id) {
         case HAR_GARGOYLE:   return "GARGOYLE";
         case HAR_CHRONOS:    return "CHRONOS";
         case HAR_NOVA:       return "NOVA";
+        case PSM_ARENA0:     return "ARENA0.PSM";
+        case PSM_ARENA1:     return "ARENA1.PSM";
+        case PSM_ARENA2:     return "ARENA2.PSM";
+        case PSM_ARENA3:     return "ARENA3.PSM";
+        case PSM_ARENA4:     return "ARENA4.PSM";
+        case PSM_MENU:       return "MENU.PSM";
+        case PSM_END:        return "END.PSM";
     }
     return "UNKNOWN";
 }
