@@ -13,24 +13,34 @@ int keyboard_tick(controller *ctrl, ctrl_event **ev) {
     const unsigned char *state = SDL_GetKeyboardState(NULL);
     int handled = 0;
 
-    if (state[k->keys->down]) {
-        controller_cmd(ctrl, ACT_CROUCH, ev);
+    /*if (state[k->keys->down]) {*/
+        /*controller_cmd(ctrl, ACT_CROUCH, ev);*/
+        /*handled = 1;*/
+    /*}*/
+    /*if (state[k->keys->up]) {*/
+        /*controller_cmd(ctrl, ACT_JUMP, ev);*/
+        /*handled = 1;*/
+    /*}*/
+    /*if(state[k->keys->right] && !state[k->keys->left] &&*/
+            /*!state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {*/
+        /*controller_cmd(ctrl, ACT_WALKRIGHT, ev);*/
+        /*handled = 1;*/
+    /*}*/
+    /*if(state[k->keys->left] && !state[k->keys->right] &&*/
+            /*!state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {*/
+        /*controller_cmd(ctrl, ACT_WALKLEFT, ev);*/
+        /*handled = 1;*/
+    /*}*/
+    if (
+            state[k->keys->up] ||
+            state[k->keys->down] ||
+            state[k->keys->left] ||
+            state[k->keys->right] ||
+            state[k->keys->kick] ||
+            state[k->keys->punch]) {
         handled = 1;
     }
-    if (state[k->keys->up]) {
-        controller_cmd(ctrl, ACT_JUMP, ev);
-        handled = 1;
-    }
-    if(state[k->keys->right] && !state[k->keys->left] &&
-            !state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {
-        controller_cmd(ctrl, ACT_WALKRIGHT, ev);
-        handled = 1;
-    }
-    if(state[k->keys->left] && !state[k->keys->right] &&
-            !state[k->keys->down] && !state[k->keys->kick] && !state[k->keys->punch]) {
-        controller_cmd(ctrl, ACT_WALKLEFT, ev);
-        handled = 1;
-    }
+
     if(!handled) {
         controller_cmd(ctrl, ACT_STOP, ev);
     }

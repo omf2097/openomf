@@ -130,6 +130,9 @@ void arena_free(scene *scene) {
 
 void arena_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
+
+    game_player *player1 = game_state_get_player(0);
+    game_player *player2 = game_state_get_player(1);
     
     // Handle scrolling score texts
     chr_score_tick(&local->player1_score);
@@ -137,34 +140,35 @@ void arena_tick(scene *scene) {
 
     // Handle menu, if visible
     if(!local->menu_visible) {
-        /*ctrl_event *p1 = NULL, *p2 = NULL, *i;
-        if(controller_tick(scene->player1.ctrl, &p1) ||
-                controller_tick(scene->player2.ctrl, &p2)) {
+        ctrl_event *p1 = NULL, *p2 = NULL, *i;
+        if(controller_tick(player1->ctrl, &p1) ||
+                controller_tick(player2->ctrl, &p2)) {
             // one of the controllers bailed
 
-            if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
-                net_controller_free(scene->player1.ctrl);
+            if(player1->ctrl->type == CTRL_TYPE_NETWORK) {
+                net_controller_free(player1->ctrl);
             }
 
-            if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {
-                net_controller_free(scene->player2.ctrl);
+            if(player2->ctrl->type == CTRL_TYPE_NETWORK) {
+                net_controller_free(player2->ctrl);
             }
-            scene->next_id = SCENE_MENU;
+            /*scene->next_id = SCENE_MENU;*/
         }
 
         i = p1;
         if (i) {
             do {
-                har_act(scene->player1.har, i->action);
+                object_act(game_player_get_har(player1), i->action);
             } while((i = i->next));
         }
+        controller_free_chain(p1);
         i = p2;
         if (i) {
             do {
-                har_act(scene->player2.har, i->action);
+                object_act(game_player_get_har(player2), i->action);
             } while((i = i->next));
         }
-        */
+        controller_free_chain(p2);
         
         // Collision detections
         //har_collision_har(scene->player1.har, scene->player2.har);

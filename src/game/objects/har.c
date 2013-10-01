@@ -15,8 +15,12 @@ void har_free(object *obj) {
     free(h);
 }
 
-void har_tick(object *har) {
+void har_tick(object *obj) {
     //har *h = object_get_userdata(obj);
+    float vx, vy;
+    object_get_vel(obj, &vx, &vy);
+    obj->pos.x += vx;
+    obj->pos.y += vy;
 }
 
 void add_input(har *har, char c) {
@@ -35,7 +39,6 @@ void har_act(object *obj, int act_type) {
     har *har = object_get_userdata(obj);
     int anim = object_get_animation(obj)->id;
     int direction = object_get_direction(obj);
-    DEBUG("current animation is %d %d", anim, ANIM_IDLE);
     if (!(anim == ANIM_IDLE ||
           anim == ANIM_CROUCHING ||
           anim == ANIM_WALKING ||
@@ -105,8 +108,6 @@ void har_act(object *obj, int act_type) {
             break;
     }
 
-    DEBUG("input buffer %s", har->inputs);
-
     af_move *move;
     size_t len;
     for(int i = 0; i < 70; i++) {
@@ -117,9 +118,52 @@ void har_act(object *obj, int act_type) {
                 DEBUG("input was %s", har->inputs);
                 object_set_animation(obj, &af_get_move(&har->af_data, i)->ani);
                 object_set_repeat(obj, 0);
-                break;
+                har->inputs[0]='\0';
+                return;
             }
         }
+    }
+
+    // no moves matched, do player movement
+    float vx;
+    switch (act_type) {
+        case ACT_DOWN:
+        case ACT_DOWNRIGHT:
+        case ACT_DOWNLEFT:
+            object_set_animation(obj, &af_get_move(&har->af_data, ANIM_CROUCHING)->ani);
+            object_set_repeat(obj, 1);
+            object_set_vel(obj, 0, 0);
+            break;
+        case ACT_STOP:
+            if (anim != ANIM_IDLE) {
+                object_set_animation(obj, &af_get_move(&har->af_data, ANIM_IDLE)->ani);
+                object_set_repeat(obj, 1);
+                object_set_vel(obj, 0, 0);
+                obj->slide_state.vel.x = 0;
+            }
+            break;
+        case ACT_LEFT:
+            if (anim != ANIM_WALKING) {
+                object_set_animation(obj, &af_get_move(&har->af_data, ANIM_WALKING)->ani);
+                object_set_repeat(obj, 1);
+            }
+            vx = har->af_data.reverse_speed*-1/(float)320;
+            if (direction == OBJECT_FACE_LEFT) {
+                vx = (har->af_data.forward_speed*-1)/(float)320;
+            }
+            object_set_vel(obj, vx, 0);
+            break;
+        case ACT_RIGHT:
+            if (anim != ANIM_WALKING) {
+                object_set_animation(obj, &af_get_move(&har->af_data, ANIM_WALKING)->ani);
+                object_set_repeat(obj, 1);
+            }
+            vx = har->af_data.forward_speed/(float)320;
+            if (direction == OBJECT_FACE_LEFT) {
+                vx = har->af_data.reverse_speed/(float)320;
+            }
+            object_set_vel(obj, vx, 0);
+            break;
     }
 }
 
