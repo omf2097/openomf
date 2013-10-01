@@ -1,7 +1,4 @@
-#include "game/physics/intersect.h"
-#include "game/physics/shape_rect.h"
-#include "game/physics/shape_invrect.h"
-#include "utils/log.h"
+#include "game/protos/intersect.h"
 
 int intersect_object_object(object *a, object *b) {
     vec2i pos_a = object_get_pos(a);
@@ -16,8 +13,8 @@ int intersect_object_object(object *a, object *b) {
 }
 
 int intersect_object_point(object *obj, vec2i point) {
-    vec2i pos = object_get_pos(a);
-    vec2i size = object_get_size(a);
+    vec2i pos = object_get_pos(obj);
+    vec2i size = object_get_size(obj);
     return (
         point.x < (pos.x + size.x) &&
         point.y < (pos.y + size.y) &&

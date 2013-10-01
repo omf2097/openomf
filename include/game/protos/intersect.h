@@ -1,8 +1,8 @@
 #ifndef _INTERSECT_H
 #define _INTERSECT_H
 
-#include "game/physics/shape.h"
-
-int shape_intersect(shape *a, vec2i ca, shape *b, vec2i cb);
+int intersect_object_object(object *a, object *b);
+int intersect_object_point(object *obj, vec2i point);
+int intersect_sprite_point(object *obj, vec2i point, int range_color_start, int range_color_end);
 
 #endif // _INTERSECT_H
