@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "game/objects/har.h"
+#include "game/protos/intersect.h"
 #include "resources/af_loader.h"
 #include "resources/ids.h"
 #include "resources/animation.h"
@@ -29,7 +30,9 @@ void har_move(object *obj) {
 }
 
 void har_collide(object *obj, object *target) {
-    DEBUG("HAR to HAR collision!");
+    if(intersect_sprite_hitpoint(obj, target, 1, 47)) {
+        DEBUG("HAR to HAR collision!");
+    }
 }
 
 void har_tick(object *obj) {
