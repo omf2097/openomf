@@ -115,8 +115,6 @@ void engine_run() {
             
             // Handle waiting period leftover time
             omf_wait -= game_state_ms_per_tick();
-
-            DEBUG("wait: %d", omf_wait);
         }
         frame_start = SDL_GetTicks();
 
