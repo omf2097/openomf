@@ -29,17 +29,21 @@ void har_move(object *obj) {
     }
 }
 
-void har_collide(object *obj, object *target) {
-    if(intersect_sprite_hitpoint(obj, target, 1, 47)) {
-        DEBUG("HAR to HAR collision!");
+void har_collide(object *obj_a, object *obj_b) {
+    har *a = object_get_userdata(obj_a);
+    har *b = object_get_userdata(obj_b);
+    if(intersect_sprite_hitpoint(obj_a, obj_b, 1, 47)) {
+        DEBUG("HAR %s to HAR %s collision!", get_id_name(a->id), get_id_name(b->id));
+    }
+    if(intersect_sprite_hitpoint(obj_b, obj_a, 1, 47)) {
+        DEBUG("HAR %s to HAR %s collision!", get_id_name(b->id), get_id_name(a->id));
     }
 }
 
 void har_tick(object *obj) {
     vec2i pos = object_get_pos(obj);
-    if(pos.x <  10) pos.x = 10;
-    if(pos.x > 310) pos.x = 310;
-    if(pos.y > 200) pos.y = 200;
+    if(pos.x <  15) pos.x = 15;
+    if(pos.x > 305) pos.x = 305;
     object_set_pos(obj, pos);
 }
 
@@ -232,6 +236,9 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
         free(local);
         return 1;
     }
+
+    // Save har id
+    local->id = har_id;
 
     // Health, endurance
     local->health_max = local->health = 1000;

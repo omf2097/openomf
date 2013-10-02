@@ -17,7 +17,7 @@
 #include "game/scenes/vs.h"
 
 #define MS_PER_OMF_TICK 10
-#define MS_PER_OMF_TICK_SLOWEST 16
+#define MS_PER_OMF_TICK_SLOWEST 25
 
 game_state *gamestate = NULL;
 
@@ -236,13 +236,14 @@ void game_state_tick() {
     if(gamestate->this_id != gamestate->next_id) {
         // If this is the end, set run to 0 so that engine knows to close here
         if(gamestate->next_id == SCENE_NONE) {
+            DEBUG("Next ID is SCENE_NONE! bailing.");
             gamestate->run = 0;
             return;
         }
 
         // Load up new scene
         if(game_load_new(gamestate->next_id)) {
-            PERROR("Error while loading new scene! bail.");
+            PERROR("Error while loading new scene! bailing.");
             gamestate->run = 0;
             return;
         }
@@ -291,7 +292,7 @@ void game_state_free() {
     free(gamestate);
 }
 
-unsigned int game_state_ms_per_tick() {
+int game_state_ms_per_tick() {
     switch(gamestate->this_id) {
         case SCENE_ARENA0:
         case SCENE_ARENA1:

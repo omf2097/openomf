@@ -62,8 +62,8 @@ void engine_run() {
     }
 
     // Game loop
-    unsigned int frame_start = SDL_GetTicks();
-    unsigned int omf_wait = 0;
+    int frame_start = SDL_GetTicks();
+    int omf_wait = 0;
     while(run && game_state_is_running()) {
         // Prepare rendering here
         video_render_prepare();
@@ -104,7 +104,7 @@ void engine_run() {
         }
 
         // Render scene
-        int dt = SDL_GetTicks() - frame_start;
+        int dt = (SDL_GetTicks() - frame_start);
         omf_wait += dt;
         while(omf_wait > game_state_ms_per_tick()) {
             // Tick scene
@@ -115,6 +115,8 @@ void engine_run() {
             
             // Handle waiting period leftover time
             omf_wait -= game_state_ms_per_tick();
+
+            DEBUG("wait: %d", omf_wait);
         }
         frame_start = SDL_GetTicks();
 

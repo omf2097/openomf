@@ -244,9 +244,7 @@ int object_get_direction(object *obj) { return obj->direction; }
 
 vec2i object_get_size(object *obj) {
     if(obj->cur_sprite != NULL) {
-        return vec2i_create(
-            ((sd_vga_image*)obj->cur_sprite->raw_sprite)->w,
-            ((sd_vga_image*)obj->cur_sprite->raw_sprite)->h);
+        return sprite_get_size(obj->cur_sprite);
     }
     return vec2i_create(0,0);
 }

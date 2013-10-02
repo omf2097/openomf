@@ -19,6 +19,16 @@ void sprite_free(sprite *sp) {
 	sp->raw_sprite = NULL;
 }
 
+vec2i sprite_get_size(sprite *s) {
+	if(s->raw_sprite != NULL) {
+		return vec2i_create(
+			((sd_vga_image*)s->raw_sprite)->w,
+			((sd_vga_image*)s->raw_sprite)->h
+		);
+	}
+	return vec2i_create(0,0);
+}
+
 sprite* sprite_copy(sprite *src) {
 	sprite *new = malloc(sizeof(sprite));
 	new->pos = src->pos;

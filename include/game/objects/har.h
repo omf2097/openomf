@@ -32,6 +32,7 @@ enum {
 };
 
 typedef struct har_t {
+    int id;
     af af_data;
     unsigned int state;
 
