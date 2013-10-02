@@ -53,6 +53,7 @@ add_executable(openomf
     src/game/protos/object.c
     src/game/protos/player.c
     src/game/protos/scene.c
+    src/game/protos/intersect.c
     src/game/objects/har.c
     src/game/scenes/progressbar.c
     src/game/scenes/intro.c

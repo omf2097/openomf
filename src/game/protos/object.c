@@ -38,6 +38,7 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->act = NULL;
     obj->collide = NULL;
     obj->finish = NULL;
+    obj->move = NULL;
 }
 
 void object_tick(object *obj) {
@@ -134,6 +135,12 @@ void object_act(object *obj, int action) {
     }
 }
 
+void object_move(object *obj) {
+    if(obj->move != NULL) {
+        obj->move(obj);
+    }
+}
+
 void object_free(object *obj) {
     if(obj->free != NULL) {
         obj->free(obj);
@@ -210,6 +217,7 @@ void object_set_act_cb(object *obj, object_act_cb cbfunc) { obj->act = cbfunc; }
 void object_set_tick_cb(object *obj, object_tick_cb cbfunc) { obj->tick = cbfunc; }
 void object_set_collide_cb(object *obj, object_collide_cb cbfunc) { obj->collide = cbfunc; }
 void object_set_finish_cb(object *obj, object_finish_cb cbfunc) { obj->finish = cbfunc; }
+void object_set_move_cb(object *obj, object_move_cb cbfunc) { obj->move = cbfunc; }
 
 void object_set_layers(object *obj, int layers) { obj->layers = layers; }
 void object_set_group(object *obj, int group) { obj->group = group; }
@@ -257,6 +265,8 @@ void object_set_pos(object *obj, vec2i pos) {
 
 void object_set_vel(object *obj, vec2f vel) {
     obj->vel = vel;
+    object_reset_hstate(obj);
+    object_reset_vstate(obj);
 }
 
 void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata) {

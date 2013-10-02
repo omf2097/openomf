@@ -7,6 +7,7 @@
 #include "game/settings.h"
 #include "game/protos/scene.h"
 #include "game/protos/object.h"
+#include "game/protos/intersect.h"
 #include "game/scenes/intro.h"
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/credits.h"
@@ -182,6 +183,54 @@ int game_load_new(int scene_id) {
     return 0;
 }
 
+void game_state_call_collide() {
+    object *a, *b;
+    unsigned int size = vector_size(&gamestate->objects);
+    for(int i = 0; i < size; i++) {
+        a = (object*)vector_get(&gamestate->objects, i);
+        for(int k = i+1; k < size; k++) {
+            b = (object*)vector_get(&gamestate->objects, k);
+            if((a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) && 
+                a->layers & b->layers) {
+                if(intersect_object_object(a,b)) {
+                    object_collide(a, b);
+                }
+            }
+        }
+    }
+}
+
+void game_state_cleanup() {
+    object *obj = NULL;
+    iterator it;
+    vector_iter_begin(&gamestate->objects, &it);
+    while((obj = iter_next(&it)) != NULL) {
+        if(object_finished(obj)) {
+            object_free(obj);
+            vector_delete(&gamestate->objects, &it);
+            DEBUG("Animation object %d is finished, removing.", obj->cur_animation->id);
+        }
+    }
+}
+
+void game_state_call_move() {
+    object *obj = NULL;
+    iterator it;
+    vector_iter_begin(&gamestate->objects, &it);
+    while((obj = iter_next(&it)) != NULL) {
+        object_move(obj);
+    }
+}
+
+void game_state_call_tick() {
+    object *obj = NULL;
+    iterator it;
+    vector_iter_begin(&gamestate->objects, &it);
+    while((obj = iter_next(&it)) != NULL) {
+        object_tick(obj);
+    }
+}
+
 void game_state_tick() {
     // We want to load another scene
     if(gamestate->this_id != gamestate->next_id) {
@@ -202,19 +251,17 @@ void game_state_tick() {
     // Tick scene
     scene_tick(&gamestate->sc);
 
-    // Tick all objects, clean up if necessary
-    object *obj = NULL;
-    iterator it;
-    vector_iter_begin(&gamestate->objects, &it);
-    while((obj = iter_next(&it)) != NULL) {
-        if(object_finished(obj)) {
-            object_free(obj);
-            vector_delete(&gamestate->objects, &it);
-            DEBUG("Animation object %d is finished, removing.", obj->cur_animation->id);
-        } else {
-            object_tick(obj);
-        }
-    }
+    // Clean up objects
+    game_state_cleanup();
+
+    // Call object_move for all objects
+    game_state_call_move();
+
+    // Handle physics for all pairs of objects
+    game_state_call_collide();
+
+    // Tick all objects
+    game_state_call_tick();
 }
 
 game_player* game_state_get_player(int player_id) {
@@ -255,48 +302,3 @@ unsigned int game_state_ms_per_tick() {
     }
     return MS_PER_OMF_TICK;
 }
-
-/*
-void game_state_physics_tick(scene *scene) {
-    iterator it;
-    object *a, *b, **t;
-    unsigned int size;
-
-    // Handle movement
-    vector_iter_begin(&global_space->objects, &it);
-    while((t = iter_next(&it)) != NULL) {
-        a = *t;
-        if(!a->is_static) {
-            a->pos.x += a->vel.x;
-            a->pos.y += a->vel.y;
-            a->vel.y += a->gravity;
-        }
-    }
-    
-    // Check for collisions
-    size = vector_size(&global_space->objects);
-    for(int i = 0; i < size; i++) {
-        a = *((object**)vector_get(&global_space->objects, i));
-        for(int k = i+1; k < size; k++) {
-            b = *((object**)vector_get(&global_space->objects, k));
-            if((a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) && 
-                a->layers & b->layers) {
-
-                if(a->col_shape != NULL && b->col_shape != NULL) {
-                    if(shape_intersect(a->col_shape, vec2f_to_i(a->pos), 
-                                       b->col_shape, vec2f_to_i(b->pos))) {
-
-                        // Try calling collision handler for one of the objects
-                        if(a->ev_collision != NULL) {
-                            a->ev_collision(a,b,a->userdata,b->userdata);
-                        } else if(b->ev_collision != NULL) {
-                            b->ev_collision(a,b,a->userdata,b->userdata);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-*/

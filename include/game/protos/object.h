@@ -31,6 +31,7 @@ typedef struct object_t object;
 typedef void (*object_free_cb)(object *obj);
 typedef void (*object_act_cb)(object *obj, int action);
 typedef void (*object_tick_cb)(object *obj);
+typedef void (*object_move_cb)(object *obj);
 typedef void (*object_collide_cb)(object *a, object *b);
 typedef void (*object_finish_cb)(object *obj);
 
@@ -67,12 +68,14 @@ struct object_t {
     object_tick_cb tick;
     object_collide_cb collide;
     object_finish_cb finish;
+    object_move_cb move;
 };
 
 void object_create(object *obj, vec2i pos, vec2f vel);
 void object_render(object *obj);
 void object_render_neutral(object *obj);
 void object_tick(object *obj);
+void object_move(object *obj);
 void object_render(object *obj);
 void object_collide(object *a, object *b);
 void object_act(object *obj, int action);
@@ -102,6 +105,7 @@ void object_set_act_cb(object *obj, object_act_cb cbfunc);
 void object_set_tick_cb(object *obj, object_tick_cb cbfunc);
 void object_set_collide_cb(object *obj, object_collide_cb cbfunc);
 void object_set_finish_cb(object *obj, object_finish_cb cbfunc);
+void object_set_move_cb(object *obj, object_move_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);
 int object_get_repeat(object *obj);

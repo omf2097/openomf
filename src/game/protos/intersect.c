@@ -23,5 +23,5 @@ int intersect_object_point(object *obj, vec2i point) {
 }
 
 int intersect_sprite_point(object *obj, vec2i point, int range_color_start, int range_color_end) {
-
+    return 0;
 }

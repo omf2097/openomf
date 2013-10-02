@@ -15,7 +15,7 @@ void har_free(object *obj) {
     free(h);
 }
 
-void har_tick(object *obj) {
+void har_move(object *obj) {
     //har *h = object_get_userdata(obj);
     vec2f vel = object_get_vel(obj);
     obj->pos.x += vel.x;
@@ -26,6 +26,18 @@ void har_tick(object *obj) {
     } else {
         object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
     }
+}
+
+void har_collide(object *obj, object *target) {
+    DEBUG("HAR to HAR collision!");
+}
+
+void har_tick(object *obj) {
+    vec2i pos = object_get_pos(obj);
+    if(pos.x <  10) pos.x = 10;
+    if(pos.x > 310) pos.x = 310;
+    if(pos.y > 200) pos.y = 200;
+    object_set_pos(obj, pos);
 }
 
 void add_input(har *har, char c) {
@@ -242,6 +254,8 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
     object_set_free_cb(obj, har_free);
     object_set_act_cb(obj, har_act);
     object_set_tick_cb(obj, har_tick);
+    object_set_move_cb(obj, har_move);
+    object_set_collide_cb(obj, har_collide);
     object_set_finish_cb(obj, har_finished);
 
     // All done
