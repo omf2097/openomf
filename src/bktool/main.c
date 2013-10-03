@@ -8,6 +8,7 @@
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 #include <stdint.h>
+#include <string.h>
 #include "../shared/animation_misc.h"
 #include "../shared/conversions.h"
 
