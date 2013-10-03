@@ -96,6 +96,16 @@ float dist(float a, float b) {
     return abs((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1 : -1);
 }
 
+void player_clear_frame(object *obj) {
+    player_sprite_state *s = &obj->sprite_state;
+    s->blendmode = BLEND_ALPHA;
+    s->flipmode = FLIP_NONE;
+    s->method_flags = 0;
+    s->blend_start = 0;
+    s->blend_finish = 0;
+    s->timer = 0;
+}
+
 // ---------------- Public functions ---------------- 
 
 void player_create(object *obj) {
@@ -115,6 +125,7 @@ void player_create(object *obj) {
     obj->animation_state.sound_state = malloc(sizeof(sound_state));
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
+    player_clear_frame(obj);
 }
 
 void player_free(object *obj) {
@@ -165,6 +176,7 @@ void player_reset(object *obj) {
 void player_run(object *obj) {
     // Some vars for easier life
     player_animation_state *state = &obj->animation_state;
+    player_sprite_state *rstate = &obj->sprite_state;
     if(state->finished) return;
 
     // Handle slide operation
@@ -240,6 +252,38 @@ void player_run(object *obj) {
             if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));            }
             if(isset(f, "smf")) { cmd_music_off();                        }
             if(isset(f, "s"))   { cmd_sound(obj, get(f, "s"));            }
+
+            // Blend mode stuff
+            if(isset(f, "b1")) { rstate->method_flags &= 0x2000; }
+            if(isset(f, "b2")) { rstate->method_flags &= 0x4000; }
+            if(isset(f, "bb")) { 
+                rstate->method_flags &= 0x0010; 
+                rstate->blend_finish = get(f, "bb"); 
+            }
+            if(isset(f, "be")) { rstate->method_flags &= 0x0800; }
+            if(isset(f, "bf")) { 
+                rstate->method_flags &= 0x0001; 
+                rstate->blend_finish = get(f, "bf"); 
+            }
+            if(isset(f, "bh")) { rstate->method_flags &= 0x0040; }
+            if(isset(f, "bl")) { 
+                rstate->method_flags &= 0x0008; 
+                rstate->blend_finish = get(f, "bl"); 
+            }
+            if(isset(f, "bm")) { 
+                rstate->method_flags &= 0x0100; 
+                rstate->blend_finish = get(f, "bm"); 
+            }
+            if(isset(f, "bj")) { 
+                rstate->method_flags &= 0x0400; 
+                rstate->blend_finish = get(f, "bj"); 
+            }
+            if(isset(f, "bs")) { 
+                rstate->blend_start = get(f, "bs"); 
+            }
+            if(isset(f, "bu")) { rstate->method_flags &= 0x8000; }
+            if(isset(f, "bw")) { rstate->method_flags &= 0x0080; }
+            if(isset(f, "bx")) { rstate->method_flags &= 0x0002; }
 
             // Handle movement
             if (isset(f, "v")) {
@@ -349,13 +393,13 @@ void player_run(object *obj) {
             if(real_frame < 25) {
                 object_select_sprite(obj, real_frame);
                 if(obj->cur_sprite != NULL) {
-                    obj->sprite_state.flipmode = FLIP_NONE;
-                    obj->sprite_state.blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
+                    player_clear_frame(obj);
+                    rstate->blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
                     if(isset(f, "r")) {
-                        obj->sprite_state.flipmode |= FLIP_HORIZONTAL;
+                        rstate->flipmode |= FLIP_HORIZONTAL;
                     }
                     if (isset(f, "f")) {
-                        obj->sprite_state.flipmode |= FLIP_VERTICAL;
+                        rstate->flipmode |= FLIP_VERTICAL;
                     }
                 }
             } else {
@@ -366,11 +410,15 @@ void player_run(object *obj) {
         state->previous = param->id;
     }
 
+    // Animation ticks
     if(state->reverse) {
         state->ticks--;
     } else {
         state->ticks++;
     }
+
+    // Sprite ticks
+    rstate->timer++;
     
     // All done.
     return;
