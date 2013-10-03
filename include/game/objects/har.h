@@ -5,8 +5,8 @@
 #include "game/protos/object.h"
 #include "utils/list.h"
 
-#define LAYER_HAR 0x01
-#define LAYER_SCRAP 0x02
+#define LAYER_HAR 0x02
+#define LAYER_SCRAP 0x03
 
 // All HARs have these predefined animations
 enum {

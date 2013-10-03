@@ -32,10 +32,11 @@ void har_move(object *obj) {
 void har_collide(object *obj_a, object *obj_b) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
-    if(intersect_sprite_hitpoint(obj_a, obj_b, 1, 47)) {
+
+    if(intersect_sprite_hitpoint(obj_a, obj_b)) {
         DEBUG("HAR %s to HAR %s collision!", get_id_name(a->id), get_id_name(b->id));
     }
-    if(intersect_sprite_hitpoint(obj_b, obj_a, 1, 47)) {
+    if(intersect_sprite_hitpoint(obj_b, obj_a)) {
         DEBUG("HAR %s to HAR %s collision!", get_id_name(b->id), get_id_name(a->id));
     }
 }

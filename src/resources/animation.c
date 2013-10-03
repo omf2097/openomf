@@ -33,7 +33,7 @@ void animation_create(animation *ani, void *src, int id) {
     vector_create(&ani->sprites, sizeof(sprite));
     sprite tmp_sprite;
     for(int i = 0; i < sdani->frame_count; i++) {
-	    sprite_create(&tmp_sprite, (void*)sdani->sprites[i]);
+	    sprite_create(&tmp_sprite, (void*)sdani->sprites[i], i);
 	    vector_append(&ani->sprites, &tmp_sprite);
     }
 }

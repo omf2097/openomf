@@ -4,12 +4,14 @@
 #include <stdlib.h>
 
 void sprite_create_custom(sprite *sp, vec2i pos, void *raw_sprite) {
+	sp->id = -1;
 	sp->pos = pos;
 	sp->raw_sprite = raw_sprite;
 }
 
-void sprite_create(sprite *sp, void *src) {
+void sprite_create(sprite *sp, void *src, int id) {
 	sd_sprite *sdsprite = (sd_sprite*)src;
+	sp->id = id;
 	sp->raw_sprite = (void*)sd_sprite_vga_decode(sdsprite->img);
 	sp->pos = vec2i_create(sdsprite->pos_x, sdsprite->pos_y);
 }

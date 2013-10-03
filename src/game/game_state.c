@@ -190,9 +190,8 @@ void game_state_call_collide() {
         a = (object*)vector_get(&gamestate->objects, i);
         for(int k = i+1; k < size; k++) {
             b = (object*)vector_get(&gamestate->objects, k);
-            if((a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) && 
-                a->layers & b->layers) {
-                if(intersect_object_object(a,b)) {
+            if(a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) {
+                if(a->layers & b->layers) {
                     object_collide(a, b);
                 }
             }

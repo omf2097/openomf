@@ -109,7 +109,7 @@ void object_render(object *obj) {
     int y = obj->pos.y + obj->cur_sprite->pos.y;
     int x = obj->pos.x + obj->cur_sprite->pos.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = obj->pos.x + (obj->cur_sprite->pos.x * object_get_direction(obj)) - object_get_size(obj).x;
+        x = obj->pos.x - obj->cur_sprite->pos.x - object_get_size(obj).x;
     }
     int flipmode = obj->sprite_state.flipmode;
     if(obj->direction == OBJECT_FACE_LEFT) {
