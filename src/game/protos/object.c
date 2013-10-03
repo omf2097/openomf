@@ -6,6 +6,8 @@
 #include "video/video.h"
 #include "utils/log.h"
 
+#define UNUSED(x) (void)(x)
+
 void object_create(object *obj, vec2i pos, vec2f vel) {
     // Position related
     obj->pos = vec2i_to_f(pos);
@@ -103,6 +105,10 @@ void object_render(object *obj) {
     // Stop here if cur_sprite is NULL
     if(obj->cur_sprite == NULL)  return;
 
+    // Something to ease the pain ...
+    player_sprite_state *rstate = &obj->sprite_state;
+
+    // Make sure texture is valid etc.
     object_check_texture(obj);
 
     // Render
@@ -111,15 +117,23 @@ void object_render(object *obj) {
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
         x = obj->pos.x - obj->cur_sprite->pos.x - object_get_size(obj).x;
     }
-    int flipmode = obj->sprite_state.flipmode;
+    int flipmode = rstate->flipmode;
     if(obj->direction == OBJECT_FACE_LEFT) {
         flipmode ^= FLIP_HORIZONTAL;
     }
-    video_render_sprite_flip(
-        obj->cur_texture, 
-        x, y,
-        obj->sprite_state.blendmode,
-        flipmode);
+
+    // Some interesting stuff
+    float moment = rstate->timer / rstate->duration;
+    float b = (rstate->blend_start) 
+        ? (rstate->blend_start + (rstate->blend_finish - rstate->blend_start) * moment)
+        : rstate->blend_finish;
+    float bp = rstate->pal_begin + (rstate->pal_end - rstate->pal_begin) * moment;
+
+    UNUSED(bp);
+    UNUSED(b);
+
+    // Render
+    video_render_sprite_flip(obj->cur_texture, x, y, rstate->blendmode, flipmode);
 }
 
 // Renders sprite to left top corner with no special stuff applied
@@ -154,6 +168,8 @@ void object_free(object *obj) {
         texture_free(obj->cur_texture);
         free(obj->cur_texture);
     }
+    obj->cur_texture = NULL;
+    obj->cur_animation = NULL;
 }
 
 void object_set_stl(object *obj, char *ptr) {

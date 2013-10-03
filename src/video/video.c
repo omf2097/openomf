@@ -230,6 +230,14 @@ void video_set_rendering_mode(int mode) {
             glDisable(GL_STENCIL_TEST);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             break;
+        case BLEND_ALPHA_CONSTANT:
+            // Constant alpha
+            glEnable(GL_BLEND);
+            glEnable(GL_ALPHA_TEST);
+            glDisable(GL_STENCIL_TEST);
+            glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
+            glAlphaFunc(GL_GREATER, 0);
+            break;
         default:
             // Alpha blending. Well, not really blending; we just skip all data where alpha = 0.
             // Set all visible data as 1 on stencil buffer, so that all additive blending effects
@@ -300,17 +308,7 @@ void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mo
     video_render_sprite_flip(tex, sx, sy, rendering_mode, FLIP_NONE);
 }
 
-void video_render_sprite_flip(texture *tex, int sx, int sy, unsigned int rendering_mode, unsigned int flip_mode) {
-    // Set rendering mode
-    video_set_rendering_mode(rendering_mode);
-    
-    // Just draw the texture on screen to the right spot.
-    float w = tex->w / 160.0f;
-    float h = tex->h / 100.0f;
-    float x = -1.0 + 2.0f * sx / 320.0f;
-    float y = 1.0 - sy / 100.0f - h;
-    texture_bind(tex);
-    glBegin(GL_QUADS);
+void video_quads(int flip_mode, float x, float y, float w, float h) {
     switch(flip_mode) {
         case FLIP_NONE:
             // regular draw
@@ -341,7 +339,35 @@ void video_render_sprite_flip(texture *tex, int sx, int sy, unsigned int renderi
             glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y,   0); // Bottom Right
             break;
     }
+}
+
+void video_render_sprite_flip(texture *tex, int sx, int sy, unsigned int rendering_mode, unsigned int flip_mode) {
+    // Set rendering mode
+    video_set_rendering_mode(rendering_mode);
+    
+    // Just draw the texture on screen to the right spot.
+    float w = tex->w / 160.0f;
+    float h = tex->h / 100.0f;
+    float x = -1.0 + 2.0f * sx / 320.0f;
+    float y = 1.0 - sy / 100.0f - h;
+    texture_bind(tex);
+    glBegin(GL_QUADS);
+    video_quads(flip_mode, x, y, w, h);
     glEnd();
+}
+
+void video_render_sprite_flip_alpha(texture *tex, int sx, int sy, unsigned int flip_mode, int alpha) {
+    video_set_rendering_mode(BLEND_ALPHA_CONSTANT);
+    float w = tex->w / 160.0f;
+    float h = tex->h / 100.0f;
+    float x = -1.0 + 2.0f * sx / 320.0f;
+    float y = 1.0 - sy / 100.0f - h;
+    texture_bind(tex);
+    glBegin(GL_QUADS);
+    glColor4f(1.0f, 1.0f, 1.0f, alpha/255.0f);
+    video_quads(flip_mode, x, y, w, h);
+    glEnd();
+    glColor4f(1.0f,1.0f,1.0f,1.0f);
 }
 
 void video_render_colored_quad(int _x, int _y, int _w, int _h, color c) {

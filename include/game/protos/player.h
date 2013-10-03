@@ -17,6 +17,14 @@ typedef struct player_sprite_state_t {
     int blend_start;
     int blend_finish;
     int timer;
+    int duration;
+
+    int pal_ref_index;
+    int pal_entry_count;
+    int pal_start_index;
+    int pal_begin;
+    int pal_end;
+    int pal_tint;
 } player_sprite_state;
 
 typedef struct player_slide_op_t {

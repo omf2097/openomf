@@ -104,6 +104,13 @@ void player_clear_frame(object *obj) {
     s->blend_start = 0;
     s->blend_finish = 0;
     s->timer = 0;
+    s->duration = 0;
+
+    s->pal_begin = 0;
+    s->pal_end = 0;
+    s->pal_ref_index = 0;
+    s->pal_start_index = 0;
+    s->pal_entry_count = 0;
 }
 
 // ---------------- Public functions ---------------- 
@@ -221,6 +228,8 @@ void player_run(object *obj) {
 
         // If frame changed, do something
         if(param->id != state->previous) {
+            player_clear_frame(obj);
+            
             // Tick management
             if(isset(f, "d"))   {
                 cmd_tickjump(obj, get(f, "d"));
@@ -284,6 +293,14 @@ void player_run(object *obj) {
             if(isset(f, "bu")) { rstate->method_flags &= 0x8000; }
             if(isset(f, "bw")) { rstate->method_flags &= 0x0080; }
             if(isset(f, "bx")) { rstate->method_flags &= 0x0002; }
+
+            // Palette tricks
+            if(isset(f, "bpd")) { rstate->pal_ref_index = get(f, "bpd"); }
+            if(isset(f, "bpn")) { rstate->pal_entry_count = get(f, "bpn"); }
+            if(isset(f, "bps")) { rstate->pal_start_index = get(f, "bps"); }
+            if(isset(f, "bpb")) { rstate->pal_begin = get(f, "bpb"); }
+            if(isset(f, "bpd")) { rstate->pal_end = get(f, "bpd"); }
+            if(isset(f, "bz"))  { rstate->pal_tint = get(f, "bz"); }
 
             // Handle movement
             if (isset(f, "v")) {
@@ -393,7 +410,7 @@ void player_run(object *obj) {
             if(real_frame < 25) {
                 object_select_sprite(obj, real_frame);
                 if(obj->cur_sprite != NULL) {
-                    player_clear_frame(obj);
+                    rstate->duration = param->duration;
                     rstate->blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
                     if(isset(f, "r")) {
                         rstate->flipmode |= FLIP_HORIZONTAL;

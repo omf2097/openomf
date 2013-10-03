@@ -10,6 +10,7 @@
 #define BLEND_ADDITIVE 0
 #define BLEND_ALPHA 1
 #define BLEND_ALPHA_FULL 2
+#define BLEND_ALPHA_CONSTANT 3
 
 #define FLIP_NONE 0
 #define FLIP_HORIZONTAL 1
@@ -20,6 +21,7 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync);
 void video_render_prepare();
 void video_render_sprite(texture *texture, int x, int y, unsigned int render_mode);
 void video_render_sprite_flip(texture *texture, int x, int y, unsigned int render_mode, unsigned int flip_mode);
+void video_render_sprite_flip_alpha(texture *tex, int sx, int sy, unsigned int flip_mode, int alpha);
 void video_render_colored_quad(int x, int y, int w, int h, color c);
 void video_render_char(texture *texture, int x, int y, color c);
 void video_render_finish();
