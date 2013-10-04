@@ -16,6 +16,7 @@ set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=i686 -Werror")
 add_executable(bktool src/bktool/main.c src/shared/animation_misc.c src/shared/conversions.c)
 add_executable(aftool src/aftool/main.c src/shared/animation_misc.c src/shared/conversions.c)
 add_executable(bkhtmlprinter src/bkhtmlprinter/main.c)
+add_executable(afhtmlprinter src/afhtmlprinter/main.c)
 add_executable(soundtool src/soundtool/main.c)
 add_executable(musictool src/musictool/main.c)
 add_executable(fonttool src/fonttool/main.c)
@@ -37,12 +38,13 @@ include_directories(
 target_link_libraries(bktool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(aftool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(bkhtmlprinter ${CORELIBS} ${PNG_LIBRARY} ${ZLIB_LIBRARY} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(afhtmlprinter ${CORELIBS} ${PNG_LIBRARY} ${ZLIB_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(soundtool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY} ${AO_LIBRARY})
 target_link_libraries(musictool ${CORELIBS} ${SDL2_LIBRARY} ${DUMB_LIBRARY} ${AO_LIBRARY})
 target_link_libraries(fonttool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(languagetool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 
-INSTALL(TARGETS bktool bkhtmlprinter aftool soundtool musictool fonttool languagetool
+INSTALL(TARGETS bktool afhtmlprinter bkhtmlprinter aftool soundtool musictool fonttool languagetool
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
