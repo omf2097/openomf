@@ -18,7 +18,7 @@ const char *header = "<!DOCTYPE html>\
 <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js'></script>\
 <script type='text/javascript'>\
 $(function() {\
-$(\"#animations\").accordion({});\
+$(\"#animations\").accordion({heightStyle: 'content'});\
 });\
 </script>\
 <style type='text/css'>\
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
                 fprintf(f, "<table><tr><th>X</th><th>Y</th><th>Frame</th></tr>");
                 for(int c = 0; c < ani->col_coord_count; c++) {
                     col_coord *coord = &ani->col_coord_table[c];
-                    fprintf(f, "<tr><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>", coord->x, coord->y, coord->y_ext);
+                    fprintf(f, "<tr><td>%d</td><td>%d</td><td>%d</td></tr>", coord->x, coord->y, coord->y_ext);
                 }
                 fprintf(f, "</table></div>");
             }

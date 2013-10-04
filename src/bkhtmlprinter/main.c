@@ -18,7 +18,7 @@ const char *header = "<!DOCTYPE html>\
 <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js'></script>\
 <script type='text/javascript'>\
 $(function() {\
-$(\"#animations\").accordion({});\
+$(\"#animations\").accordion({heightStyle: 'content'});\
 });\
 </script>\
 <style type='text/css'>\
