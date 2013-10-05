@@ -205,9 +205,9 @@ void game_state_cleanup() {
     vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
         if(object_finished(obj)) {
+            DEBUG("Animation object %d is finished, removing.", obj->cur_animation->id);
             object_free(obj);
             vector_delete(&gamestate->objects, &it);
-            DEBUG("Animation object %d is finished, removing.", obj->cur_animation->id);
         }
     }
 }

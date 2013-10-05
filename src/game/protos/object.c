@@ -62,11 +62,32 @@ void object_revalidate(object *obj) {
     obj->texture_refresh = 1;
 }
 
+int _max(int r, int g, int b) {
+    int max = r;
+    if(g > max) max = g;
+    if(b > max) max = b;
+    return max;
+}
+
+int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+
+int min(int a, int b) {
+    return (a > b) ? b : a;
+}
+
 void object_check_texture(object *obj) {
     // (Re)generate texture if necessary
     if(obj->cur_texture == NULL) {
         obj->cur_texture = malloc(sizeof(texture));
         texture_create(obj->cur_texture);
+        obj->texture_refresh = 1;
+    }
+
+    // Check if we need to do palette stuff on every tick
+    player_sprite_state *rstate = &obj->sprite_state;
+    if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
         obj->texture_refresh = 1;
     }
 
@@ -82,6 +103,46 @@ void object_check_texture(object *obj) {
         if(obj->cur_texture->w != img->w || obj->cur_texture->h != img->h) {
             texture_free(obj->cur_texture);
         }
+/*
+        // Do palette tricks
+        if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
+            float bp = rstate->pal_begin + 
+                ((float)rstate->pal_end - (float)rstate->pal_begin) * 
+                (float)rstate->timer / (float)rstate->duration;
+            sd_vga_image *vga = obj->cur_sprite->raw_sprite;
+            int pix = 0;
+            int m = 0;
+            int r = obj->cur_palette->data[rstate->pal_ref_index][0];
+            int g = obj->cur_palette->data[rstate->pal_ref_index][1];
+            int b = obj->cur_palette->data[rstate->pal_ref_index][2];
+            color s;
+            for(int y = 0; y < img->h; y++) {
+                for(int x = 0; x < img->w; x++) {
+                    pix = vga->data[y * img->w + x];
+                    if(img->data[(y * img->w + x)*4 + 3] == 0) continue;
+                    if(pix >= rstate->pal_start_index && 
+                       pix <= (rstate->pal_start_index + rstate->pal_entry_count)) {
+                        s.r = img->data[(y * img->w + x)*4 + 0];
+                        s.g = img->data[(y * img->w + x)*4 + 1];
+                        s.b = img->data[(y * img->w + x)*4 + 2];
+                        float rr,gr,br;
+                        if(rstate->pal_tint) {
+                            m = _max(s.r, s.g, s.b);
+                            rr = (float)s.r + m/64.0f + bp/64.0f + (float)(r - s.r);
+                            gr = (float)s.g + m/64.0f + bp/64.0f + (float)(g - s.g);
+                            br = (float)s.b + m/64.0f + bp/64.0f + (float)(b - s.b);
+                        } else {
+                            rr = (float)r * (float)bp/64.0f;
+                            gr = s.g * (float)(1 - bp/64.0f) + (float)g * bp/64.0f;
+                            br = s.b * (float)(1 - bp/64.0f) + (float)b * bp/64.0f;
+                        }
+                        img->data[(y * img->w + x)*4 + 0] = max(0, min(63, rr));
+                        img->data[(y * img->w + x)*4 + 1] = max(0, min(63, gr));
+                        img->data[(y * img->w + x)*4 + 2] = max(0, min(63, br));
+                    }
+                }
+            }
+        }*/
 
         // If texture is valid, just reupload. We checked for size similarity previously.
         // If texture is NOT valid, re-create it with a free ID etc.
@@ -123,14 +184,13 @@ void object_render(object *obj) {
     }
 
     // Some interesting stuff
-    float moment = rstate->timer / rstate->duration;
-    float b = (rstate->blend_start) 
-        ? (rstate->blend_start + (rstate->blend_finish - rstate->blend_start) * moment)
-        : rstate->blend_finish;
-    float bp = rstate->pal_begin + (rstate->pal_end - rstate->pal_begin) * moment;
-
-    UNUSED(bp);
-    UNUSED(b);
+    if(rstate->duration > 0) {
+        float moment = rstate->timer / rstate->duration;
+        float b = (rstate->blend_start) 
+            ? (rstate->blend_start + (rstate->blend_finish - rstate->blend_start) * moment)
+            : rstate->blend_finish;
+        UNUSED(b);
+    }
 
     // Render
     video_render_sprite_flip(obj->cur_texture, x, y, rstate->blendmode, flipmode);
