@@ -1,11 +1,16 @@
 language: c
+
 compiler:
   - gcc
   - clang
+  
 before_install:
- - yes | sudo add-apt-repository ppa:rebuntu16/pcsx-reloaded-svn+unofficial
+ - yes | sudo add-apt-repository ppa:openmw/deps
  - sudo apt-get update -qq
- - sudo apt-get install libopenal-dev libglew-dev libsdl2-dev-2.0.0 libconfuse-dev libenet-dev 
+ - sudo apt-get install libopenal-dev libglew-dev libsdl2-static-dev libconfuse-dev libenet-dev 
  - sudo travis/deps.sh
+ 
 script: travis/build.sh
 
+notifications:
+  email: false
