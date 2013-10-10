@@ -19,12 +19,12 @@ typedef struct player_sprite_state_t {
     int timer;
     int duration;
 
-    int pal_ref_index;
-    int pal_entry_count;
-    int pal_start_index;
-    int pal_begin;
-    int pal_end;
-    int pal_tint;
+    int pal_ref_index; // bpd
+    int pal_entry_count; // bpn
+    int pal_start_index; // bps
+    int pal_begin; // bpb
+    int pal_end; // bpd
+    int pal_tint; // bz
 } player_sprite_state;
 
 typedef struct player_slide_op_t {
@@ -52,6 +52,7 @@ typedef struct player_animation_state_t {
 void player_create(object *obj);
 void player_free(object *obj);
 void player_reload(object *obj);
+void player_reload_with_str(object *obj, const char *str);
 void player_reset(object *obj);
 void player_run(object *obj);
 void player_set_repeat(object *obj, int repeat);

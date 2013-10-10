@@ -142,7 +142,7 @@ void player_free(object *obj) {
     free(obj->animation_state.sound_state);
 }
 
-void player_reload(object *obj) {
+void player_reload_with_str(object *obj, const char* custom_str) {
     // Unload old parser, if any
     if(obj->animation_state.parser != NULL) {
         sd_stringparser_delete(obj->animation_state.parser);
@@ -153,7 +153,7 @@ void player_reload(object *obj) {
     obj->animation_state.parser = sd_stringparser_create();
     sd_stringparser_set_string(
         obj->animation_state.parser, 
-        str_c(&obj->cur_animation->animation_string));
+        custom_str);
 
     // Peek parameters
     sd_stringparser_frame param;
@@ -171,6 +171,10 @@ void player_reload(object *obj) {
     obj->animation_state.ticks = 1;
     obj->animation_state.finished = 0;
     obj->animation_state.previous = -1;
+}
+
+void player_reload(object *obj) {
+    player_reload_with_str(obj, str_c(&obj->cur_animation->animation_string));
 }
 
 void player_reset(object *obj) {

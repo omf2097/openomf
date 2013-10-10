@@ -40,7 +40,10 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
 void har_take_damage(object *obj) {
     har *har = object_get_userdata(obj);
     har->health -= 10;
+
+    // Set hit animation
     har_set_ani(obj, ANIM_DAMAGE, 0);
+    object_set_custom_string(obj, "A3-B3-C3-B3-A3");
 }
 
 void har_spawn_scrap(object *obj) {

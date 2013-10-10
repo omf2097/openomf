@@ -87,6 +87,7 @@ char* object_get_stl(object *obj);
 void object_set_animation_owner(object *obj, int owner);
 void object_set_animation(object *obj, animation *ani);
 animation *object_get_animation(object *obj);
+void object_set_custom_string(object *obj, const char *str);
 void object_select_sprite(object *obj, int id);
 void object_set_palette(object *obj, palette *pal, int remap);
 palette* object_get_palette(object *obj);

@@ -275,6 +275,11 @@ void object_set_animation(object *obj, animation *ani) {
     }
 }
 
+void object_set_custom_string(object *obj, const char *str) {
+    player_reload_with_str(obj, str);
+    DEBUG("Set animation string to %s", str);
+}
+
 animation* object_get_animation(object *obj) {
     return obj->cur_animation;
 }
