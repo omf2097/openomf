@@ -3,6 +3,10 @@ OpenOMF
 
 OpenOMF is a Open Source remake of "One Must Fall 2097" by Diversions Entertainment. Since the original DOS game from 1994 still uses IPX networking and is a pain to set up, the community needed a better solution to keep playing the game we love. Together with networking, we try to make it easier to play One Must Fall in original glory on multiple platforms (Linux, Mac OSX, Windows, BSD to name a few), although it might take some time to set it up.
 
+Build status
+------------
+[![Build Status](https://travis-ci.org/omf2097/openomf.png?branch=total_recall)](https://travis-ci.org/omf2097/openomf)
+
 Links
 -----
 * There are some videos of openomf at http://www.youtube.com/user/Katajakasa
