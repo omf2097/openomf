@@ -36,6 +36,7 @@ typedef struct har_t {
     af af_data;
     unsigned int state;
     int close;
+    int damage_done;
 
     int health_max, health;
     int endurance_max, endurance;

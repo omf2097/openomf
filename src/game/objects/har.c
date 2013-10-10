@@ -29,6 +29,14 @@ void har_move(object *obj) {
     }
 }
 
+// Simple helper function
+void har_set_ani(object *obj, int animation_id, int repeat) {
+    har *har = object_get_userdata(obj);
+    object_set_animation(obj, &af_get_move(&har->af_data, animation_id)->ani);
+    object_set_repeat(obj, repeat);
+    har->damage_done = 0;
+}
+
 void har_take_damage(object *har) {
 
 }
@@ -44,18 +52,14 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     int hard_limit = 35; // Stops movement if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
     int anim = object_get_animation(obj_a)->id;
-
-    // If object is jumping, skip this test.
-    if(object_get_vstate(obj_a) == OBJECT_MOVING) {
-        return;
-    }
+    int jumping = (object_get_vstate(obj_a) == OBJECT_MOVING);
 
     // Reset closeness state
     a->close = 0;
 
     // If HARs get too close together, handle it
     if(anim == ANIM_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
-        if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x) {
+        if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x && !jumping) {
             pos_a.x = pos_b.x + hard_limit;
             object_set_pos(obj_a, pos_a);
         }
@@ -64,7 +68,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
         }
     }
     if(anim == ANIM_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
-        if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x) {
+        if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x && !jumping) {
             pos_a.x = pos_b.x - hard_limit;
             object_set_pos(obj_a, pos_a);
         }
@@ -83,10 +87,14 @@ void har_collide(object *obj_a, object *obj_b) {
     har_check_closeness(obj_b, obj_a);
 
     // Check for collisions by sprite collision points
-    if(intersect_sprite_hitpoint(obj_a, obj_b)) {
+    if(a->damage_done == 0 && intersect_sprite_hitpoint(obj_a, obj_b)) {
+        har_take_damage(obj_b);
+        a->damage_done = 1;
         DEBUG("HAR %s to HAR %s collision!", get_id_name(a->id), get_id_name(b->id));
     }
-    if(intersect_sprite_hitpoint(obj_b, obj_a)) {
+    if(b->damage_done == 0 && intersect_sprite_hitpoint(obj_b, obj_a)) {
+        har_take_damage(obj_a);
+        b->damage_done = 1;
         DEBUG("HAR %s to HAR %s collision!", get_id_name(b->id), get_id_name(a->id));
     }
 }
@@ -188,11 +196,10 @@ void har_act(object *obj, int act_type) {
     for(int i = 0; i < 70; i++) {
         if((move = af_get_move(&har->af_data, i))) {
             len = move->move_string.len;
-            if (!strncmp(str_c(&move->move_string), har->inputs, len)) {
+            if(!strncmp(str_c(&move->move_string), har->inputs, len)) {
                 DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
                 DEBUG("input was %s", har->inputs);
-                object_set_animation(obj, &af_get_move(&har->af_data, i)->ani);
-                object_set_repeat(obj, 0);
+                har_set_ani(obj, i, 0);
                 har->inputs[0]='\0';
                 return;
             }
@@ -210,22 +217,19 @@ void har_act(object *obj, int act_type) {
         case ACT_DOWN:
         case ACT_DOWNRIGHT:
         case ACT_DOWNLEFT:
-            object_set_animation(obj, &af_get_move(&har->af_data, ANIM_CROUCHING)->ani);
-            object_set_repeat(obj, 1);
+            har_set_ani(obj, ANIM_CROUCHING, 1);
             object_set_vel(obj, vec2f_create(0,0));
             break;
         case ACT_STOP:
             if (anim != ANIM_IDLE) {
-                object_set_animation(obj, &af_get_move(&har->af_data, ANIM_IDLE)->ani);
-                object_set_repeat(obj, 1);
+                har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_vel(obj, vec2f_create(0,0));
                 obj->slide_state.vel.x = 0;
             }
             break;
         case ACT_LEFT:
             if (anim != ANIM_WALKING) {
-                object_set_animation(obj, &af_get_move(&har->af_data, ANIM_WALKING)->ani);
-                object_set_repeat(obj, 1);
+                har_set_ani(obj, ANIM_WALKING, 1);
             }
             vx = har->af_data.reverse_speed*-1/(float)320;
             if (direction == OBJECT_FACE_LEFT) {
@@ -235,8 +239,7 @@ void har_act(object *obj, int act_type) {
             break;
         case ACT_RIGHT:
             if (anim != ANIM_WALKING) {
-                object_set_animation(obj, &af_get_move(&har->af_data, ANIM_WALKING)->ani);
-                object_set_repeat(obj, 1);
+                har_set_ani(obj, ANIM_WALKING, 1);
             }
             vx = har->af_data.forward_speed/(float)320;
             if (direction == OBJECT_FACE_LEFT) {
@@ -272,14 +275,13 @@ void har_act(object *obj, int act_type) {
 }
 
 void har_finished(object *obj) {
-    har *har = object_get_userdata(obj);
-    object_set_animation(obj, &af_get_move(&har->af_data, ANIM_IDLE)->ani);
-    object_set_repeat(obj, 1);
+    har_set_ani(obj, ANIM_IDLE, 1);
 }
 
 int har_create(object *obj, palette *pal, int dir, int har_id) {
     // Create local data
     har *local = malloc(sizeof(har));
+    object_set_userdata(obj, local);
 
     // Load AF
     if(load_af_file(&local->af_data, har_id)) {
@@ -304,15 +306,14 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
     object_set_stl(obj, local->af_data.sound_translation_table);
 
     // Set running animation 
-    object_set_animation(obj, &af_get_move(&local->af_data, ANIM_IDLE)->ani);
     object_set_palette(obj, pal, 0);
+    har_set_ani(obj, ANIM_IDLE, 1);
 
     // fill the input buffer with 'pauses'
     memset(local->inputs, '5', 10);
     local->inputs[10] = '\0';
 
     // Callbacks and userdata
-    object_set_userdata(obj, local);
     object_set_free_cb(obj, har_free);
     object_set_act_cb(obj, har_act);
     object_set_tick_cb(obj, har_tick);
