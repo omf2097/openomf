@@ -13,7 +13,7 @@ make install
 
 cd ../../libdumb-kataja
 make -f Makefile.linux
-make install
+make -f Makefile.linux install
 
 
 
