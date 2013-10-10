@@ -33,6 +33,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     har *har = object_get_userdata(obj);
     object_set_animation(obj, &af_get_move(&har->af_data, animation_id)->ani);
     object_set_repeat(obj, repeat);
+    object_tick(obj);
     har->damage_done = 0;
 }
 
