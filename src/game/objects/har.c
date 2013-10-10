@@ -37,11 +37,13 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     har->damage_done = 0;
 }
 
-void har_take_damage(object *har) {
-
+void har_take_damage(object *obj) {
+    har *har = object_get_userdata(obj);
+    har->health -= 10;
+    har_set_ani(obj, ANIM_DAMAGE, 0);
 }
 
-void har_spawn_scrap(object *har) {
+void har_spawn_scrap(object *obj) {
 
 }
 
