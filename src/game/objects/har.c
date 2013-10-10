@@ -17,7 +17,6 @@ void har_free(object *obj) {
 }
 
 void har_move(object *obj) {
-    //har *h = object_get_userdata(obj);
     vec2f vel = object_get_vel(obj);
     obj->pos.x += vel.x;
     obj->pos.y += (vel.y*0.003);
@@ -105,6 +104,8 @@ void har_collide(object *obj_a, object *obj_b) {
 }
 
 void har_tick(object *obj) {
+    // Make sure HAR doesn't walk through walls
+    // TODO: Roof!
     vec2i pos = object_get_pos(obj);
     if(pos.x <  15) pos.x = 15;
     if(pos.x > 305) pos.x = 305;
