@@ -119,6 +119,8 @@ int object_get_layers(object *obj);
 
 void object_reset_hstate(object *obj);
 void object_reset_vstate(object *obj);
+int object_get_vstate(object *obj);
+int object_get_hstate(object *obj);
 
 vec2i object_get_size(object *obj);
 vec2i object_get_pos(object *obj);

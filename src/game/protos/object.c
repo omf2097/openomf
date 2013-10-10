@@ -111,7 +111,7 @@ void object_check_texture(object *obj) {
                 (float)rstate->timer / (float)rstate->duration;
             sd_vga_image *vga = obj->cur_sprite->raw_sprite;
             int pix = 0;
-            int m = 0;
+            float m = 0;
             int r = obj->cur_palette->data[rstate->pal_ref_index][0];
             int g = obj->cur_palette->data[rstate->pal_ref_index][1];
             int b = obj->cur_palette->data[rstate->pal_ref_index][2];
@@ -311,6 +311,9 @@ void object_reset_vstate(object *obj) {
 void object_reset_hstate(object *obj) {
     obj->vstate = (obj->vel.y < 0.01f && obj->vel.y > -0.01f) ? OBJECT_STABLE : OBJECT_MOVING;
 }
+
+int object_get_vstate(object *obj) { return obj->vstate; }
+int object_get_hstate(object *obj) { return obj->hstate; }
 
 void object_set_repeat(object *obj, int repeat) { player_set_repeat(obj, repeat); }
 int object_get_repeat(object *obj) { return player_get_repeat(obj); }

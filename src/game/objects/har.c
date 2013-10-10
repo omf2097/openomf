@@ -29,10 +29,60 @@ void har_move(object *obj) {
     }
 }
 
+void har_take_damage(object *har) {
+
+}
+
+void har_spawn_scrap(object *har) {
+
+}
+
+void har_check_closeness(object *obj_a, object *obj_b) {
+    vec2i pos_a = object_get_pos(obj_a);
+    vec2i pos_b = object_get_pos(obj_b);
+    har *a = object_get_userdata(obj_a);
+    int hard_limit = 35; // Stops movement if HARs too close. Harrison-Stetson method value.
+    int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
+    int anim = object_get_animation(obj_a)->id;
+
+    // If object is jumping, skip this test.
+    if(object_get_vstate(obj_a) == OBJECT_MOVING) {
+        return;
+    }
+
+    // Reset closeness state
+    a->close = 0;
+
+    // If HARs get too close together, handle it
+    if(anim == ANIM_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
+        if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x) {
+            pos_a.x = pos_b.x + hard_limit;
+            object_set_pos(obj_a, pos_a);
+        }
+        if(pos_a.x < pos_b.x + soft_limit && pos_a.x > pos_b.x) {
+            a->close = 1;
+        }
+    }
+    if(anim == ANIM_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
+        if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x) {
+            pos_a.x = pos_b.x - hard_limit;
+            object_set_pos(obj_a, pos_a);
+        }
+        if(pos_a.x + soft_limit > pos_b.x && pos_a.x < pos_b.x) {
+            a->close = 1;
+        }
+    }
+}
+
 void har_collide(object *obj_a, object *obj_b) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
 
+    // Check for closeness between HARs and handle it
+    har_check_closeness(obj_a, obj_b);
+    har_check_closeness(obj_b, obj_a);
+
+    // Check for collisions by sprite collision points
     if(intersect_sprite_hitpoint(obj_a, obj_b)) {
         DEBUG("HAR %s to HAR %s collision!", get_id_name(a->id), get_id_name(b->id));
     }
@@ -244,6 +294,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
     // Health, endurance
     local->health_max = local->health = 1000;
     local->endurance_max = local->endurance = 1000;
+    local->close = 0;
 
     // Object related stuff
     object_set_gravity(obj, 1.0f);
