@@ -97,12 +97,25 @@ void game_state_render() {
     // Render scene background
     scene_render(&gamestate->sc);
 
+    // Get har objects
+    object *har[2];
+    har[0] = game_state_get_player(0)->har;
+    har[1] = game_state_get_player(1)->har;
+
     // Render objects
     iterator it;
     object *obj = NULL;
     vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
+        if(obj == har[0] || obj == har[1]) continue;
         object_render(obj);
+    }
+
+    // Render HARs here, to make sure they are drawn on top
+    for(int i = 0; i < 2; i++) {
+        if(har[i] != NULL) {
+            object_render(har[i]);
+        }
     }
 
     // Render scene

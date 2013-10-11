@@ -233,10 +233,10 @@ int arena_event(scene *scene, SDL_Event *e) {
     return 0;
 }
 
-void arena_render(scene *scene) {
+void arena_render_overlay(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
-    
-    // Set health bar
+
+    // Render bars
     game_player *player[2];
     object *obj[2];
     har *har[2];
@@ -279,10 +279,8 @@ void arena_render(scene *scene) {
         chr_score_format(&local->player2_score, tmp);
         font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
     }
-}
 
-void arena_render_overlay(scene *scene) {
-    arena_local *local = scene_get_userdata(scene);
+    // Render menu (if visible)
     if(local->menu_visible) {
         menu_render(&local->game_menu);
         video_render_sprite(&local->tex, 10, 150, BLEND_ALPHA_FULL);
@@ -350,7 +348,7 @@ int arena_create(scene *scene) {
         if(har_create(&obj, local->player_palettes[i], dir[i], player->har_id)) {
             return 1;
         }
-        
+
         // Set HAR to controller and game_player
         game_state_add_object(&obj);
 
@@ -468,7 +466,6 @@ int arena_create(scene *scene) {
     chr_score_create(&local->player2_score, 215, 33, 1.0f); // TODO: Set better coordinates for this
 
     // Callbacks
-    scene_set_render_cb(scene, arena_render);
     scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
     scene_set_tick_cb(scene, arena_tick);
