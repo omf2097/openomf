@@ -35,6 +35,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     object_set_repeat(obj, repeat);
     object_tick(obj);
     har->damage_done = 0;
+    har->damage_received = 0;
 }
 
 void har_take_damage(object *obj) {
@@ -95,11 +96,13 @@ void har_collide(object *obj_a, object *obj_b) {
     if(a->damage_done == 0 && intersect_sprite_hitpoint(obj_a, obj_b)) {
         har_take_damage(obj_b);
         a->damage_done = 1;
+        b->damage_received = 1;
         DEBUG("HAR %s to HAR %s collision!", get_id_name(a->id), get_id_name(b->id));
     }
     if(b->damage_done == 0 && intersect_sprite_hitpoint(obj_b, obj_a)) {
         har_take_damage(obj_a);
         b->damage_done = 1;
+        a->damage_received = 1;
         DEBUG("HAR %s to HAR %s collision!", get_id_name(b->id), get_id_name(a->id));
     }
 }
