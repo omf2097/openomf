@@ -6,6 +6,29 @@
 #include "utils/vector.h"
 #include "utils/string.h"
 
+// All HARs have these predefined animations
+enum {
+    ANIM_JUMPING=1,
+    ANIM_STANDUP,
+    ANIM_STUNNED,
+    ANIM_CROUCHING,
+    ANIM_STANDING_BLOCK,
+    ANIM_CROUCHING_BLOCK,
+    ANIM_BURNING_OIL,
+    ANIM_BLOCKING_SCRAPE,
+    ANIM_DAMAGE,
+    ANIM_WALKING,
+    ANIM_IDLE,
+    ANIM_SCRAP_METAL,
+    ANIM_BOLT,
+    ANIM_SCREW,
+    ANIM_VICTORY=48,
+    ANIM_DEFEAT,
+    ANIM_BLAST1=55,
+    ANIM_BLAST2,
+    ANIM_BLAST3
+};
+
 typedef struct collision_coord_t {
 	vec2i pos;
 	int frame_index;
