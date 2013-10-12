@@ -55,7 +55,7 @@ struct object_t {
     int texture_refresh;
     palette *cur_palette;
     int cur_remap;
-
+    int halt;
     texture *cur_texture;
 
     player_sprite_state sprite_state;
@@ -93,6 +93,9 @@ void object_set_palette(object *obj, palette *pal, int remap);
 palette* object_get_palette(object *obj);
 
 void object_revalidate(object *obj);
+
+void object_set_halt(object *obj, int halt);
+int object_get_halt(object *obj);
 
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);

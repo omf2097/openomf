@@ -1,9 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "game/objects/har.h"
+#include "game/objects/scrap.h"
 #include "game/protos/intersect.h"
+#include "game/game_state.h"
 #include "resources/af_loader.h"
 #include "resources/ids.h"
 #include "resources/animation.h"
@@ -48,7 +51,27 @@ void har_take_damage(object *obj) {
 }
 
 void har_spawn_scrap(object *obj) {
-
+    float amount = 5;
+    float rv = 0.0f;
+    float velx, vely;
+    har *har = object_get_userdata(obj);
+    for(int i = 0; i < amount; i++) {
+        rv = (rand() % 100) / 100.0f - 0.5;
+        velx = 5 * cos(90 + i-(amount) / 2 + rv);
+        vely = -12 * sin(i / amount + rv);
+        vec2i pos = object_get_pos(obj);
+        pos.x -= object_get_size(obj).x / 2;
+        pos.y -= object_get_size(obj).y / 2;
+        object scrap;
+        object_create(&scrap, pos, vec2f_create(velx, vely));
+        object_set_animation(&scrap, &af_get_move(&har->af_data, 12)->ani);
+        object_set_palette(&scrap, object_get_palette(obj), 0);
+        object_set_repeat(&scrap, 1);
+        object_set_gravity(&scrap, 1);
+        scrap_create(&scrap);
+        game_state_add_object(&scrap);
+        DEBUG("Spawning scrap with speed %f,%f @ %d,%d", velx, vely, pos.x, pos.y);
+    }
 }
 
 void har_check_closeness(object *obj_a, object *obj_b) {
@@ -95,12 +118,14 @@ void har_collide(object *obj_a, object *obj_b) {
     // Check for collisions by sprite collision points
     if(a->damage_done == 0 && intersect_sprite_hitpoint(obj_a, obj_b)) {
         har_take_damage(obj_b);
+        har_spawn_scrap(obj_b);
         a->damage_done = 1;
         b->damage_received = 1;
         DEBUG("HAR %s to HAR %s collision!", get_id_name(a->id), get_id_name(b->id));
     }
     if(b->damage_done == 0 && intersect_sprite_hitpoint(obj_b, obj_a)) {
         har_take_damage(obj_a);
+        har_spawn_scrap(obj_a);
         b->damage_done = 1;
         a->damage_received = 1;
         DEBUG("HAR %s to HAR %s collision!", get_id_name(b->id), get_id_name(a->id));

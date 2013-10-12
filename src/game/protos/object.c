@@ -31,6 +31,7 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->sound_translation_table = NULL;
     obj->cur_texture = NULL;
     obj->cur_remap = 0;
+    obj->halt = 0;
     player_create(obj);
 
     // Callbacks & userdata
@@ -44,7 +45,7 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
 }
 
 void object_tick(object *obj) {
-    if(obj->cur_animation != NULL) {
+    if(obj->cur_animation != NULL && obj->halt == 0) {
         player_run(obj);
     }
     if(obj->tick != NULL) {
@@ -316,6 +317,9 @@ void object_reset_vstate(object *obj) {
 void object_reset_hstate(object *obj) {
     obj->vstate = (obj->vel.y < 0.01f && obj->vel.y > -0.01f) ? OBJECT_STABLE : OBJECT_MOVING;
 }
+
+void object_set_halt(object *obj, int halt) { obj->halt = halt; }
+int object_get_halt(object *obj) { return obj->halt; }
 
 int object_get_vstate(object *obj) { return obj->vstate; }
 int object_get_hstate(object *obj) { return obj->hstate; }

@@ -5,6 +5,7 @@
 #include <dumb/dumb.h>
 #include <enet/enet.h>
 #include <string.h>
+#include <time.h>
 
 int main(int argc, char *argv[]) {
     // Check arguments
@@ -35,6 +36,9 @@ int main(int argc, char *argv[]) {
         printf("Error while initializing log!\n");
         return 1;
     }
+
+    // Random seed
+    srand(time(NULL));
     
     // Init config
     if(settings_init()) {
