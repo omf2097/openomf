@@ -32,8 +32,14 @@ void scrap_move(object *obj) {
 
     float dampen = 0.4;
 
-    if(pos.x <  15) pos.x = 15;
-    if(pos.x > 305) pos.x = 305;
+    if(pos.x <  10) {
+    	pos.x = 10;
+    	vel.x = -vel.x * dampen;
+    }
+    if(pos.x > 310) {
+    	pos.x = 310;
+    	vel.x = -vel.x * dampen;
+    }
     if(pos.y > 190) {
     	pos.y = 190;
     	vel.y = -vel.y * dampen;
