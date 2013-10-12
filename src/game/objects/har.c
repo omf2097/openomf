@@ -81,15 +81,13 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     har *a = object_get_userdata(obj_a);
     int hard_limit = 35; // Stops movement if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
-    int anim = object_get_animation(obj_a)->id;
-    int jumping = (object_get_vstate(obj_a) == OBJECT_MOVING);
 
     // Reset closeness state
     a->close = 0;
 
     // If HARs get too close together, handle it
-    if(anim == ANIM_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
-        if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x && !jumping) {
+    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
+        if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x) {
             pos_a.x = pos_b.x + hard_limit;
             object_set_pos(obj_a, pos_a);
         }
@@ -97,8 +95,8 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->close = 1;
         }
     }
-    if(anim == ANIM_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
-        if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x && !jumping) {
+    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
+        if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x) {
             pos_a.x = pos_b.x - hard_limit;
             object_set_pos(obj_a, pos_a);
         }
@@ -122,6 +120,7 @@ void har_collide(object *obj_a, object *obj_b) {
         har_spawn_scrap(obj_b);
         a->damage_done = 1;
         b->damage_received = 1;
+        b->state = STATE_RECOIL;
         DEBUG("HAR %s to HAR %s collision!", get_id_name(a->id), get_id_name(b->id));
     }
     if(b->damage_done == 0 && intersect_sprite_hitpoint(obj_b, obj_a)) {
@@ -129,6 +128,7 @@ void har_collide(object *obj_a, object *obj_b) {
         har_spawn_scrap(obj_a);
         b->damage_done = 1;
         a->damage_received = 1;
+        a->state = STATE_RECOIL;
         DEBUG("HAR %s to HAR %s collision!", get_id_name(b->id), get_id_name(a->id));
     }
 }
@@ -156,12 +156,11 @@ void add_input(har *har, char c) {
 
 void har_act(object *obj, int act_type) {
     har *har = object_get_userdata(obj);
-    int anim = object_get_animation(obj)->id;
     int direction = object_get_direction(obj);
-    if(!(anim == ANIM_IDLE ||
-          anim == ANIM_CROUCHING ||
-          anim == ANIM_WALKING ||
-          anim == ANIM_JUMPING)) {
+    if(!(har->state == STATE_STANDING ||
+         har->state == STATE_CROUCHING ||
+         har->state == STATE_WALKING ||
+         har->state == STATE_JUMPING)) {
         // doing something else, ignore input
         return;
     }
@@ -253,19 +252,24 @@ void har_act(object *obj, int act_type) {
         case ACT_DOWN:
         case ACT_DOWNRIGHT:
         case ACT_DOWNLEFT:
-            har_set_ani(obj, ANIM_CROUCHING, 1);
-            object_set_vel(obj, vec2f_create(0,0));
+            if(har->state != STATE_CROUCHING) {
+                har_set_ani(obj, ANIM_CROUCHING, 1);
+                object_set_vel(obj, vec2f_create(0,0));
+                har->state = STATE_CROUCHING;
+            }
             break;
         case ACT_STOP:
-            if(anim != ANIM_IDLE) {
+            if(har->state != STATE_STANDING) {
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_vel(obj, vec2f_create(0,0));
                 obj->slide_state.vel.x = 0;
+                har->state = STATE_STANDING;
             }
             break;
         case ACT_LEFT:
-            if(anim != ANIM_WALKING) {
+            if(har->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
+                har->state = STATE_WALKING;
             }
             vx = har->af_data.reverse_speed*-1/(float)320;
             if(direction == OBJECT_FACE_LEFT) {
@@ -274,8 +278,9 @@ void har_act(object *obj, int act_type) {
             object_set_vel(obj, vec2f_create(vx,0));
             break;
         case ACT_RIGHT:
-            if(anim != ANIM_WALKING) {
+            if(har->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
+                har->state = STATE_WALKING;
             }
             vx = har->af_data.forward_speed/(float)320;
             if(direction == OBJECT_FACE_LEFT) {
@@ -284,10 +289,12 @@ void har_act(object *obj, int act_type) {
             object_set_vel(obj, vec2f_create(vx,0));
             break;
         case ACT_UP:
+            har->state = STATE_JUMPING;
             vy = (float)har->af_data.jump_speed;
             object_set_vel(obj, vec2f_create(0,vy));
             break;
         case ACT_UPLEFT:
+            har->state = STATE_JUMPING;
             vy = (float)har->af_data.jump_speed;
             vx = har->af_data.reverse_speed*-1/(float)320;
             if(direction == OBJECT_FACE_LEFT) {
@@ -296,6 +303,7 @@ void har_act(object *obj, int act_type) {
             object_set_vel(obj, vec2f_create(vx,vy));
             break;
         case ACT_UPRIGHT:
+            har->state = STATE_JUMPING;
             vy = (float)har->af_data.jump_speed;
             vx = har->af_data.forward_speed/(float)320;
             if(direction == OBJECT_FACE_LEFT) {
@@ -307,7 +315,13 @@ void har_act(object *obj, int act_type) {
 }
 
 void har_finished(object *obj) {
-    har_set_ani(obj, ANIM_IDLE, 1);
+    har *har = object_get_userdata(obj);
+    if(har->state != STATE_CROUCHING) {
+        har->state = STATE_STANDING;
+        har_set_ani(obj, ANIM_IDLE, 1);
+    } else {
+        har_set_ani(obj, ANIM_CROUCHING, 1);
+    }
 }
 
 int har_create(object *obj, palette *pal, int dir, int har_id) {
@@ -329,6 +343,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
     local->health_max = local->health = 1000;
     local->endurance_max = local->endurance = 1000;
     local->close = 0;
+    local->state = STATE_STANDING;
 
     // Object related stuff
     object_set_gravity(obj, local->af_data.fall_speed);
