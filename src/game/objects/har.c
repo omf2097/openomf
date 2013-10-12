@@ -63,8 +63,9 @@ void har_spawn_scrap(object *obj) {
         pos.x -= object_get_size(obj).x / 2;
         pos.y -= object_get_size(obj).y / 2;
         object scrap;
+        int anim_no = rand() % 3 + ANIM_SCRAP_METAL;
         object_create(&scrap, pos, vec2f_create(velx, vely));
-        object_set_animation(&scrap, &af_get_move(&har->af_data, 12)->ani);
+        object_set_animation(&scrap, &af_get_move(&har->af_data, anim_no)->ani);
         object_set_palette(&scrap, object_get_palette(obj), 0);
         object_set_repeat(&scrap, 1);
         object_set_gravity(&scrap, 1);
