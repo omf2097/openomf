@@ -71,7 +71,6 @@ void har_spawn_scrap(object *obj) {
         object_set_gravity(&scrap, 1);
         scrap_create(&scrap);
         game_state_add_object(&scrap);
-        DEBUG("Spawning scrap with speed %f,%f @ %d,%d", velx, vely, pos.x, pos.y);
     }
 }
 

@@ -7,7 +7,7 @@
 #include "utils/list.h"
 
 #define LAYER_HAR 0x02
-#define LAYER_SCRAP 0x03
+#define LAYER_SCRAP 0x04
 
 enum {
     CAT_MISC = 0,
