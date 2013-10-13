@@ -43,7 +43,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
 
 void har_take_damage(object *obj) {
     har *har = object_get_userdata(obj);
-    har->health -= 10;
+    har->health -= 25;
 
     // Set hit animation
     har_set_ani(obj, ANIM_DAMAGE, 0);
@@ -56,12 +56,15 @@ void har_spawn_scrap(object *obj) {
     float velx, vely;
     har *har = object_get_userdata(obj);
     for(int i = 0; i < amount; i++) {
+        // Calculate velocity etc.
         rv = (rand() % 100) / 100.0f - 0.5;
         velx = 5 * cos(90 + i-(amount) / 2 + rv);
         vely = -12 * sin(i / amount + rv);
         vec2i pos = object_get_pos(obj);
         pos.x -= object_get_size(obj).x / 2;
         pos.y -= object_get_size(obj).y / 2;
+
+        // Create the object
         object scrap;
         int anim_no = rand() % 3 + ANIM_SCRAP_METAL;
         object_create(&scrap, pos, vec2f_create(velx, vely));
@@ -69,6 +72,8 @@ void har_spawn_scrap(object *obj) {
         object_set_palette(&scrap, object_get_palette(obj), 0);
         object_set_repeat(&scrap, 1);
         object_set_gravity(&scrap, 1);
+        object_set_layers(&scrap, LAYER_SCRAP);
+        object_tick(&scrap);
         scrap_create(&scrap);
         game_state_add_object(&scrap);
     }
@@ -120,6 +125,7 @@ void har_collide(object *obj_a, object *obj_b) {
         a->damage_done = 1;
         b->damage_received = 1;
         b->state = STATE_RECOIL;
+        obj_b->vel.x = 0.0f;
         DEBUG("HAR %s to HAR %s collision!", get_id_name(a->id), get_id_name(b->id));
     }
     if(b->damage_done == 0 && intersect_sprite_hitpoint(obj_b, obj_a)) {
@@ -128,6 +134,7 @@ void har_collide(object *obj_a, object *obj_b) {
         b->damage_done = 1;
         a->damage_received = 1;
         a->state = STATE_RECOIL;
+        obj_a->vel.x = 0.0f;
         DEBUG("HAR %s to HAR %s collision!", get_id_name(b->id), get_id_name(a->id));
     }
 }
@@ -288,27 +295,36 @@ void har_act(object *obj, int act_type) {
             object_set_vel(obj, vec2f_create(vx,0));
             break;
         case ACT_UP:
-            har->state = STATE_JUMPING;
-            vy = (float)har->af_data.jump_speed;
-            object_set_vel(obj, vec2f_create(0,vy));
+            if(har->state != STATE_JUMPING) {
+                har_set_ani(obj, ANIM_JUMPING, 1);
+                vy = (float)har->af_data.jump_speed;
+                object_set_vel(obj, vec2f_create(0,vy));
+                har->state = STATE_JUMPING;
+            }
             break;
         case ACT_UPLEFT:
-            har->state = STATE_JUMPING;
-            vy = (float)har->af_data.jump_speed;
-            vx = har->af_data.reverse_speed*-1/(float)320;
-            if(direction == OBJECT_FACE_LEFT) {
-                vx = (har->af_data.forward_speed*-1)/(float)320;
+            if(har->state != STATE_JUMPING) {
+                har_set_ani(obj, ANIM_JUMPING, 1);
+                vy = (float)har->af_data.jump_speed;
+                vx = har->af_data.reverse_speed*-1/(float)320;
+                if(direction == OBJECT_FACE_LEFT) {
+                    vx = (har->af_data.forward_speed*-1)/(float)320;
+                }
+                object_set_vel(obj, vec2f_create(vx,vy));
+                har->state = STATE_JUMPING;
             }
-            object_set_vel(obj, vec2f_create(vx,vy));
             break;
         case ACT_UPRIGHT:
-            har->state = STATE_JUMPING;
-            vy = (float)har->af_data.jump_speed;
-            vx = har->af_data.forward_speed/(float)320;
-            if(direction == OBJECT_FACE_LEFT) {
-                vx = har->af_data.reverse_speed/(float)320;
+            if(har->state != STATE_JUMPING) {
+                har_set_ani(obj, ANIM_JUMPING, 1);
+                vy = (float)har->af_data.jump_speed;
+                vx = har->af_data.forward_speed/(float)320;
+                if(direction == OBJECT_FACE_LEFT) {
+                    vx = har->af_data.reverse_speed/(float)320;
+                }
+                object_set_vel(obj, vec2f_create(vx,vy));
+                har->state = STATE_JUMPING;
             }
-            object_set_vel(obj, vec2f_create(vx,vy));
             break;
     }
 }
@@ -323,6 +339,16 @@ void har_finished(object *obj) {
     }
 }
 
+void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
+    iterator it;
+    sprite *s;
+    vector_iter_begin(&ani->sprites, &it);
+    while((s = iter_next(&it)) != NULL) {
+        s->pos.x += fix_x;
+        s->pos.y += fix_y;
+    }
+}
+
 int har_create(object *obj, palette *pal, int dir, int har_id) {
     // Create local data
     har *local = malloc(sizeof(har));
@@ -334,6 +360,9 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
         free(local);
         return 1;
     }
+
+    // Fix some coordinates on jump sprites
+    har_fix_sprite_coords(&af_get_move(&local->af_data, ANIM_JUMPING)->ani, 0, -50);
 
     // Save har id
     local->id = har_id;
