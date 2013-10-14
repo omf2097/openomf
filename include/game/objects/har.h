@@ -36,6 +36,11 @@ enum {
     STATE_DESTRUCTION
 };
 
+enum {
+    DAMAGETYPE_LOW, // Damage to low area of har
+    DAMAGETYPE_HIGH // Damage to high area of har
+};
+
 typedef struct har_t {
     int id;
     af af_data;

@@ -41,16 +41,23 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     har->damage_received = 0;
 }
 
-void har_take_damage(object *obj) {
+void har_take_damage(object *obj, int damage_type) {
     har *har = object_get_userdata(obj);
     har->health -= 25;
 
     // Set hit animation
     har_set_ani(obj, ANIM_DAMAGE, 0);
-    object_set_custom_string(obj, "A3-B3-C3-B3-A3");
+    if(har->state == STATE_CROUCHING) {
+        object_set_custom_string(obj, "G3-H3-I3-H3-G3");
+    } else if(damage_type == DAMAGETYPE_HIGH) {
+        object_set_custom_string(obj, "A3-B3-C3-B3-A3");
+    } else if(damage_type == DAMAGETYPE_LOW) {
+        object_set_custom_string(obj, "D3-E3-F3-E3-D3");
+    }
+    
 }
 
-void har_spawn_scrap(object *obj) {
+void har_spawn_scrap(object *obj, vec2i pos) {
     float amount = 5;
     float rv = 0.0f;
     float velx, vely;
@@ -60,13 +67,10 @@ void har_spawn_scrap(object *obj) {
         rv = (rand() % 100) / 100.0f - 0.5;
         velx = 5 * cos(90 + i-(amount) / 2 + rv);
         vely = -12 * sin(i / amount + rv);
-        vec2i pos = object_get_pos(obj);
-        pos.x -= object_get_size(obj).x / 2;
-        pos.y -= object_get_size(obj).y / 2;
 
         // Create the object
         object scrap;
-        int anim_no = rand() % 3 + ANIM_SCRAP_METAL;
+        int anim_no = rand() % 2 + ANIM_SCRAP_METAL;
         object_create(&scrap, pos, vec2f_create(velx, vely));
         object_set_animation(&scrap, &af_get_move(&har->af_data, anim_no)->ani);
         object_set_palette(&scrap, object_get_palette(obj), 0);
@@ -119,23 +123,36 @@ void har_collide(object *obj_a, object *obj_b) {
     har_check_closeness(obj_b, obj_a);
 
     // Check for collisions by sprite collision points
-    if(a->damage_done == 0 && intersect_sprite_hitpoint(obj_a, obj_b)) {
-        har_take_damage(obj_b);
-        har_spawn_scrap(obj_b);
+    int level = 2;
+    int dmgtype = 0;
+    vec2i hit_coord;
+    if(a->damage_done == 0 && intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord)) {
+        dmgtype = (hit_coord.y > 140) ? DAMAGETYPE_LOW : DAMAGETYPE_HIGH;
+        har_take_damage(obj_b, dmgtype);
+        har_spawn_scrap(obj_b, hit_coord);
         a->damage_done = 1;
         b->damage_received = 1;
         b->state = STATE_RECOIL;
         obj_b->vel.x = 0.0f;
-        DEBUG("HAR %s to HAR %s collision!", get_id_name(a->id), get_id_name(b->id));
+        DEBUG("HAR %s to HAR %s collision at %d,%d!", 
+            get_id_name(a->id), 
+            get_id_name(b->id),
+            hit_coord.x,
+            hit_coord.y);
     }
-    if(b->damage_done == 0 && intersect_sprite_hitpoint(obj_b, obj_a)) {
-        har_take_damage(obj_a);
-        har_spawn_scrap(obj_a);
+    if(b->damage_done == 0 && intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord)) {
+        dmgtype = (hit_coord.y > 140) ? DAMAGETYPE_LOW : DAMAGETYPE_HIGH;
+        har_take_damage(obj_a, dmgtype);
+        har_spawn_scrap(obj_a, hit_coord);
         b->damage_done = 1;
         a->damage_received = 1;
         a->state = STATE_RECOIL;
         obj_a->vel.x = 0.0f;
-        DEBUG("HAR %s to HAR %s collision!", get_id_name(b->id), get_id_name(a->id));
+        DEBUG("HAR %s to HAR %s collision at %d,%d!", 
+            get_id_name(b->id), 
+            get_id_name(a->id),
+            hit_coord.x,
+            hit_coord.y);
     }
 }
 
