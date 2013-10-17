@@ -24,7 +24,7 @@ game_state *gamestate = NULL;
 int game_state_create() {
     gamestate = malloc(sizeof(game_state));
     gamestate->run = 1;
-    vector_create(&gamestate->objects, sizeof(object));
+    vector_create(&gamestate->objects, sizeof(object*));
     int nscene = SCENE_INTRO;
     if(scene_create(&gamestate->sc, nscene)) {
         PERROR("Error while loading scene %d.", nscene);
@@ -45,7 +45,7 @@ int game_state_create() {
 }
 
 void game_state_add_object(object *obj) {
-    vector_append(&gamestate->objects, obj);
+    vector_append(&gamestate->objects, &obj);
 
 #ifdef DEBUGMODE
     animation *ani = object_get_animation(obj);
@@ -55,22 +55,19 @@ void game_state_add_object(object *obj) {
 
 void game_state_del_object(int anim_id) {
     iterator it;
-    object *obj;
+    object **obj;
     vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
-        animation *ani = object_get_animation(obj);
+        animation *ani = object_get_animation(*obj);
         if(ani != NULL && ani->id == anim_id) {
-            object_free(obj);
+            object_free(*obj);
+            free(*obj);
             vector_delete(&gamestate->objects, &it);
             DEBUG("Deleted animation %i from game_state.", anim_id);
             return;
         }
     }
     DEBUG("Attempted to delete animation %i from game_state, but no such animation was playing.", anim_id);
-}
-
-object* game_state_get_latest_obj() {
-    return vector_get(&gamestate->objects, vector_size(&gamestate->objects)-1);
 }
 
 void game_state_set_next(unsigned int next_scene_id) {
@@ -104,11 +101,11 @@ void game_state_render() {
 
     // Render objects
     iterator it;
-    object *obj = NULL;
+    object **obj;
     vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
-        if(obj == har[0] || obj == har[1]) continue;
-        object_render(obj);
+        if(*obj == har[0] || *obj == har[1]) continue;
+        object_render(*obj);
     }
 
     // Render HARs here, to make sure they are drawn on top
@@ -126,11 +123,12 @@ int game_load_new(int scene_id) {
     // Free old scene
     scene_free(&gamestate->sc);
 
-    object *obj = NULL;
+    object **obj;
     iterator it;
     vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
-        object_free(obj);
+        object_free(*obj);
+        free(*obj);
         vector_delete(&gamestate->objects, &it);
     }
 
@@ -200,9 +198,9 @@ void game_state_call_collide() {
     object *a, *b;
     unsigned int size = vector_size(&gamestate->objects);
     for(int i = 0; i < size; i++) {
-        a = (object*)vector_get(&gamestate->objects, i);
+        a = *((object**)vector_get(&gamestate->objects, i));
         for(int k = i+1; k < size; k++) {
-            b = (object*)vector_get(&gamestate->objects, k);
+            b = *((object**)vector_get(&gamestate->objects, k));
             if(a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) {
                 if(a->layers & b->layers) {
                     object_collide(a, b);
@@ -213,33 +211,34 @@ void game_state_call_collide() {
 }
 
 void game_state_cleanup() {
-    object *obj = NULL;
+    object **obj;
     iterator it;
     vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
-        if(object_finished(obj)) {
-            DEBUG("Animation object %d is finished, removing.", obj->cur_animation->id);
-            object_free(obj);
+        if(object_finished(*obj)) {
+            DEBUG("Animation object %d is finished, removing.", (*obj)->cur_animation->id);
+            object_free(*obj);
+            free(*obj);
             vector_delete(&gamestate->objects, &it);
         }
     }
 }
 
 void game_state_call_move() {
-    object *obj = NULL;
+    object **obj;
     iterator it;
     vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
-        object_move(obj);
+        object_move(*obj);
     }
 }
 
 void game_state_call_tick() {
-    object *obj = NULL;
+    object **obj;
     iterator it;
     vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
-        object_tick(obj);
+        object_tick(*obj);
     }
 }
 
@@ -283,11 +282,12 @@ game_player* game_state_get_player(int player_id) {
 
 void game_state_free() {
     // Free objects
-    object *obj = NULL;
+    object **obj;
     iterator it;
     vector_iter_begin(&gamestate->objects, &it);
     while((obj = iter_next(&it)) != NULL) {
-        object_free(obj);
+        object_free(*obj);
+        free(*obj);
         vector_delete(&gamestate->objects, &it);
     }
     vector_free(&gamestate->objects);

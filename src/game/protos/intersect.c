@@ -27,12 +27,12 @@ int intersect_object_point(object *obj, vec2i point) {
 }
 
 int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
-    // Make sure there are hitpoints to check.
-    if(vector_size(&obj->cur_animation->collision_coords) == 0) {
-        return 0;
-    }
     // Make sure both objects have sprites going
     if(obj->cur_sprite == NULL || target->cur_sprite == NULL) {
+        return 0;
+    }
+    // Make sure there are hitpoints to check.
+    if(vector_size(&obj->cur_animation->collision_coords) == 0) {
         return 0;
     }
 

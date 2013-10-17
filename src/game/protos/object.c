@@ -165,7 +165,7 @@ void object_check_texture(object *obj) {
 
 void object_render(object *obj) {
     // Stop here if cur_sprite is NULL
-    if(obj->cur_sprite == NULL)  return;
+    if(obj->cur_sprite == NULL) return;
 
     // Something to ease the pain ...
     player_sprite_state *rstate = &obj->sprite_state;

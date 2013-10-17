@@ -28,6 +28,5 @@ int game_state_ms_per_tick();
 
 void game_state_add_object(object *obj);
 void game_state_del_object(int anim_id);
-object* game_state_get_latest_obj();
 
 #endif // _GAME_STATE_H

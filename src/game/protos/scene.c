@@ -51,17 +51,17 @@ void scene_init(scene *scene) {
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info*)pair->val;
         if(info->load_on_start || info->probability == 1 || scene_startup(scene, info->ani.id)) {
-            object obj;
-            object_create(&obj, info->ani.start_pos, vec2f_create(0,0));
-            object_set_stl(&obj, scene->bk_data.sound_translation_table);
-            object_set_palette(&obj, bk_get_palette(&scene->bk_data, 0), 0);
-            object_set_animation(&obj, &info->ani);
+            object *obj = malloc(sizeof(object));
+            object_create(obj, info->ani.start_pos, vec2f_create(0,0));
+            object_set_stl(obj, scene->bk_data.sound_translation_table);
+            object_set_palette(obj, bk_get_palette(&scene->bk_data, 0), 0);
+            object_set_animation(obj, &info->ani);
             if(info->probability == 1) {
-                object_set_repeat(&obj, 1);
+                object_set_repeat(obj, 1);
             }
-            object_set_spawn_cb(&obj, cb_spawn_object, (void*)scene);
-            object_set_destroy_cb(&obj, cb_destroy_object, (void*)scene);
-            game_state_add_object(&obj);
+            object_set_spawn_cb(obj, cb_spawn_object, (void*)scene);
+            object_set_destroy_cb(obj, cb_destroy_object, (void*)scene);
+            game_state_add_object(obj);
             DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
         }
     }
@@ -147,17 +147,17 @@ void cb_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     // Get next animation
     bk_info *info = bk_get_info(&s->bk_data, id);
     if(info != NULL) {
-        object obj;
-        object_create(&obj, vec2i_add(pos, info->ani.start_pos), vec2f_create(0,0));
-        object_set_stl(&obj, object_get_stl(parent));
-        object_set_palette(&obj, object_get_palette(parent), 0);
-        object_set_animation(&obj, &info->ani);
-        object_set_spawn_cb(&obj, cb_spawn_object, userdata);
-        object_set_destroy_cb(&obj, cb_destroy_object, userdata);
+        object *obj = malloc(sizeof(object));
+        object_create(obj, vec2i_add(pos, info->ani.start_pos), vec2f_create(0,0));
+        object_set_stl(obj, object_get_stl(parent));
+        object_set_palette(obj, object_get_palette(parent), 0);
+        object_set_animation(obj, &info->ani);
+        object_set_spawn_cb(obj, cb_spawn_object, userdata);
+        object_set_destroy_cb(obj, cb_destroy_object, userdata);
         if(info->probability == 1) {
-            object_set_repeat(&obj, 1);
+            object_set_repeat(obj, 1);
         }
-        game_state_add_object(&obj);
+        game_state_add_object(obj);
     }
 }
 

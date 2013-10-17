@@ -335,7 +335,7 @@ int arena_create(scene *scene) {
     for(int i = 0; i < 2; i++) {
         // Declare some vars
         game_player *player = game_state_get_player(i);
-        object obj;
+        object *obj = malloc(sizeof(object));
 
         // load the player's colors into the palette
         palette_set_player_color(local->player_palettes[i], player->colors[2], 0);
@@ -344,19 +344,17 @@ int arena_create(scene *scene) {
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
-        object_create(&obj, pos[i], vec2f_create(0,0));
-        if(har_create(&obj, local->player_palettes[i], dir[i], player->har_id)) {
+        object_create(obj, pos[i], vec2f_create(0,0));
+        if(har_create(obj, local->player_palettes[i], dir[i], player->har_id)) {
             return 1;
         }
 
         // Set HAR to controller and game_player
-        game_state_add_object(&obj);
+        game_state_add_object(obj);
 
-        // Get reference to har and set it to
-        // TODO: FIX THIS UGLY, UGLY HACK
-        object *m = game_state_get_latest_obj();
-        game_player_set_har(player, m);
-        game_player_get_ctrl(player)->har = m;
+        // Set HAR for player
+        game_player_set_har(player, obj);
+        game_player_get_ctrl(player)->har = obj;
     }
 
     // remove the keyboard hooks

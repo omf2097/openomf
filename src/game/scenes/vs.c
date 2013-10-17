@@ -35,14 +35,14 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata
     // Get next animation
     bk_info *info = bk_get_info(&s->bk_data, id);
     if(info != NULL) {
-        object obj;
-        object_create(&obj, vec2i_add(pos, vec2f_to_i(parent->pos)), vec2f_create(0,0));
-        object_set_stl(&obj, object_get_stl(parent));
-        object_set_palette(&obj, object_get_palette(parent), 0);
-        object_set_animation(&obj, &info->ani);
-        object_set_spawn_cb(&obj, cb_vs_spawn_object, userdata);
-        object_set_destroy_cb(&obj, cb_vs_destroy_object, userdata);
-        game_state_add_object(&obj);
+        object *obj = malloc(sizeof(object));
+        object_create(obj, vec2i_add(pos, vec2f_to_i(parent->pos)), vec2f_create(0,0));
+        object_set_stl(obj, object_get_stl(parent));
+        object_set_palette(obj, object_get_palette(parent), 0);
+        object_set_animation(obj, &info->ani);
+        object_set_spawn_cb(obj, cb_vs_spawn_object, userdata);
+        object_set_destroy_cb(obj, cb_vs_destroy_object, userdata);
+        game_state_add_object(obj);
     }
 }
 
@@ -261,7 +261,7 @@ int vs_create(scene *scene) {
         local->arena = rand() % 5; // srand was done in melee
     }
 
-    //AREBA
+    //ARENA
     if (player2->selectable) {
         ani = &bk_get_info(&scene->bk_data, 3)->ani;
         object_create(&local->arena_select, vec2i_create(59,155), vec2f_create(0, 0));
@@ -270,47 +270,53 @@ int vs_create(scene *scene) {
         object_select_sprite(&local->arena_select, local->arena);
     }
 
-    object obj;
+    
     // SCIENTIST
+    object *o_scientist = malloc(sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 8)->ani;
-    object_create(&obj, vec2i_create(320-114,118), vec2f_create(0, 0));
-    object_set_animation(&obj, ani);
-    object_set_palette(&obj, mpal, 0);
-    object_select_sprite(&obj, 0);
-    object_set_direction(&obj, OBJECT_FACE_LEFT);
-    game_state_add_object(&obj);
+    object_create(o_scientist, vec2i_create(320-114,118), vec2f_create(0, 0));
+    object_set_animation(o_scientist, ani);
+    object_set_palette(o_scientist, mpal, 0);
+    object_select_sprite(o_scientist, 0);
+    object_set_direction(o_scientist, OBJECT_FACE_LEFT);
+    game_state_add_object(o_scientist);
 
-    //WELDER
+    // WELDER
+    object *o_welder = malloc(sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 7)->ani;
-    object_create(&obj, vec2i_create(90,80), vec2f_create(0, 0));
-    object_set_animation(&obj, ani);
-    object_set_palette(&obj, mpal, 0);
-    object_select_sprite(&obj, 0);
-    object_set_spawn_cb(&obj, cb_vs_spawn_object, (void*)scene);
-    object_set_destroy_cb(&obj, cb_vs_destroy_object, (void*)scene);
-    game_state_add_object(&obj);
+    object_create(o_welder, vec2i_create(90,80), vec2f_create(0, 0));
+    object_set_animation(o_welder, ani);
+    object_set_palette(o_welder, mpal, 0);
+    object_select_sprite(o_welder, 0);
+    object_set_spawn_cb(o_welder, cb_vs_spawn_object, (void*)scene);
+    object_set_destroy_cb(o_welder, cb_vs_destroy_object, (void*)scene);
+    game_state_add_object(o_welder);
 
-    //GANTRIES
+    // GANTRIES
+    object *o_gantry_a = malloc(sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 11)->ani;
-    object_create(&obj, vec2i_create(0,0), vec2f_create(0, 0));
-    object_set_animation(&obj, ani);
-    object_set_palette(&obj, mpal, 0);
-    object_select_sprite(&obj, 0);
-    game_state_add_object(&obj);
+    object_create(o_gantry_a, vec2i_create(0,0), vec2f_create(0, 0));
+    object_set_animation(o_gantry_a, ani);
+    object_set_palette(o_gantry_a, mpal, 0);
+    object_select_sprite(o_gantry_a, 0);
+    game_state_add_object(o_gantry_a);
 
-    object_create(&obj, vec2i_create(0,0), vec2f_create(0, 0));
-    object_set_animation(&obj, ani);
-    object_set_palette(&obj, mpal, 0);
-    object_select_sprite(&obj, 0);
-    object_set_direction(&obj, OBJECT_FACE_LEFT);
-    game_state_add_object(&obj);
+    object *o_gantry_b = malloc(sizeof(object));
+    object_create(o_gantry_b, vec2i_create(0,0), vec2f_create(0, 0));
+    object_set_animation(o_gantry_b, ani);
+    object_set_palette(o_gantry_b, mpal, 0);
+    object_select_sprite(o_gantry_b, 0);
+    object_set_direction(o_gantry_b, OBJECT_FACE_LEFT);
+    game_state_add_object(o_gantry_b);
 
+    // Background tex
     texture_create(&local->player2_background);
     texture_init(&local->player2_background, out->data, 160, 200);
 
     menu_background2_create(&local->arena_select_bg, 211, 50);
     sd_rgba_image_delete(out);
 
+    // Callbacks
     scene_set_render_cb(scene, vs_render);
     scene_set_event_cb(scene, vs_event);
     scene_set_tick_cb(scene, vs_tick);

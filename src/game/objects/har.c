@@ -46,7 +46,8 @@ void har_take_damage(object *obj, int damage_type) {
     har->health -= 25;
 
     // Set hit animation
-    har_set_ani(obj, ANIM_DAMAGE, 0);
+    object_set_animation(obj, &af_get_move(&har->af_data, ANIM_DAMAGE)->ani);
+    object_set_repeat(obj, 0);
     if(har->state == STATE_CROUCHING) {
         object_set_custom_string(obj, "G3-H3-I3-H3-G3");
     } else if(damage_type == DAMAGETYPE_HIGH) {
@@ -54,7 +55,7 @@ void har_take_damage(object *obj, int damage_type) {
     } else if(damage_type == DAMAGETYPE_LOW) {
         object_set_custom_string(obj, "D3-E3-F3-E3-D3");
     }
-    
+    object_tick(obj);
 }
 
 void har_spawn_scrap(object *obj, vec2i pos) {
@@ -69,17 +70,17 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         vely = -12 * sin(i / amount + rv);
 
         // Create the object
-        object scrap;
-        int anim_no = rand() % 2 + ANIM_SCRAP_METAL;
-        object_create(&scrap, pos, vec2f_create(velx, vely));
-        object_set_animation(&scrap, &af_get_move(&har->af_data, anim_no)->ani);
-        object_set_palette(&scrap, object_get_palette(obj), 0);
-        object_set_repeat(&scrap, 1);
-        object_set_gravity(&scrap, 1);
-        object_set_layers(&scrap, LAYER_SCRAP);
-        object_tick(&scrap);
-        scrap_create(&scrap);
-        game_state_add_object(&scrap);
+        object *scrap = malloc(sizeof(object));
+        int anim_no = rand() % 3 + ANIM_SCRAP_METAL;
+        object_create(scrap, pos, vec2f_create(velx, vely));
+        object_set_animation(scrap, &af_get_move(&har->af_data, anim_no)->ani);
+        object_set_palette(scrap, object_get_palette(obj), 0);
+        object_set_repeat(scrap, 1);
+        object_set_gravity(scrap, 1);
+        object_set_layers(scrap, LAYER_SCRAP);
+        object_tick(scrap);
+        scrap_create(scrap);
+        game_state_add_object(scrap);
     }
 }
 
