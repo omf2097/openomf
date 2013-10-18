@@ -14,9 +14,6 @@ void projectile_free(object *obj) {
 void projectile_move(object *obj) {
     obj->pos.x += obj->vel.x;
     obj->pos.y += obj->vel.y;
-    if(obj->vel.x > 0.01) {
-    	DEBUG("Projectile X = %f", obj->vel.x);
-    }
     
     // If projectile hits the wall, kill it
     // TODO: Seldct correct dispersal animation
