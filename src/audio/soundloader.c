@@ -32,11 +32,13 @@ void soundloader_play(unsigned int sound, sound_state *ss) {
     // Get sound
     sd_sound *sample = sdf->sounds[sound];
     if(sample == 0) {
+        PERROR("Requested sound %d does not exist!", sound);
         return;
     }
     
     // Play sound
     sound_play(sample->data, sample->len, ss);
+    DEBUG("Playing sound %d (len: %d)", sound, sample->len);
 }
 
 void soundloader_close() {

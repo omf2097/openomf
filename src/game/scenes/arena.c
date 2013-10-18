@@ -506,6 +506,9 @@ int arena_create(scene *scene) {
     chr_score_create(&local->player1_score, 4, 33, 1.0f);
     chr_score_create(&local->player2_score, 215, 33, 1.0f); // TODO: Set better coordinates for this
 
+    // TODO: Do something about this hack!
+    scene->bk_data.sound_translation_table[14] = 10; // READY
+
     // Start READY animation
     animation *ready_ani = &bk_get_info(&scene->bk_data, 11)->ani;
     object *ready = malloc(sizeof(object));
