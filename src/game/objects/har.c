@@ -19,18 +19,6 @@ void har_free(object *obj) {
     free(h);
 }
 
-void har_move(object *obj) {
-    vec2f vel = object_get_vel(obj);
-    obj->pos.x += vel.x;
-    obj->pos.y += (vel.y*0.003);
-    if(obj->pos.y > 190) {
-        obj->pos.y = 190;
-        object_set_vel(obj, vec2f_create(vel.x, 0));
-    } else {
-        object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
-    }
-}
-
 // Simple helper function
 void har_set_ani(object *obj, int animation_id, int repeat) {
     har *har = object_get_userdata(obj);
@@ -39,6 +27,33 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     object_tick(obj);
     har->damage_done = 0;
     har->damage_received = 0;
+}
+
+void har_move(object *obj) {
+    vec2f vel = object_get_vel(obj);
+    obj->pos.x += vel.x;
+    obj->pos.y += (vel.y*0.003);
+    if(obj->pos.y > 190) {
+        // We collided with ground, so set vertical velocity to 0 and
+        // make sure object is level with ground
+        obj->pos.y = 190;
+        object_set_vel(obj, vec2f_create(vel.x, 0));
+
+        // Change animation from jump to walk or idle,
+        // depending on horizontal velocity
+        har *har = object_get_userdata(obj);
+        if(har->state == STATE_JUMPING) {
+            if(object_get_hstate(obj) == OBJECT_MOVING) {
+                har->state = STATE_WALKING;
+                har_set_ani(obj, ANIM_WALKING, 1);
+            } else {
+                har->state = STATE_STANDING;
+                har_set_ani(obj, ANIM_IDLE, 1);
+            }
+        }
+    } else {
+        object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
+    }
 }
 
 void har_take_damage(object *obj, int damage_type) {
