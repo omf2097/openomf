@@ -7,6 +7,7 @@
 #include "game/objects/scrap.h"
 #include "game/objects/projectile.h"
 #include "game/protos/intersect.h"
+#include "game/scenes/arena.h"
 #include "game/game_state.h"
 #include "resources/af_loader.h"
 #include "resources/ids.h"
@@ -254,6 +255,12 @@ void har_act(object *obj, int act_type) {
          har->state == STATE_WALKING ||
          har->state == STATE_JUMPING)) {
         // doing something else, ignore input
+        return;
+    }
+
+    // Don't allow movement if arena is starting or ending
+    int arena_state = arena_get_state(game_state_get_scene());
+    if(arena_state == ARENA_STATE_STARTING || arena_state == ARENA_STATE_ENDING) {
         return;
     }
 

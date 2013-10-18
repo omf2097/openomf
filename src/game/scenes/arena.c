@@ -51,6 +51,7 @@ typedef struct arena_local_t {
     component quit_button;
     texture tex;
     int menu_visible;
+    unsigned int state;
     
     progress_bar player1_health_bar;
     progress_bar player2_health_bar;
@@ -86,6 +87,35 @@ void music_slide(component *c, void *userdata, int pos) {
 
 void sound_slide(component *c, void *userdata, int pos) {
     audio_set_volume(TYPE_EFFECT, pos/10.0f);
+}
+
+void scene_fight_anim_done(object *parent) {
+    scene *scene = game_state_get_scene();
+    arena_local *arena = scene_get_userdata(scene);
+
+    // This will release HARs for action
+    arena->state = ARENA_STATE_FIGHTING;
+
+    // Custom object finisher callback requires that we 
+    // mark object as finished manually, if necessary.
+    parent->animation_state.finished = 1; 
+}
+
+void scene_ready_anim_done(object *parent) {
+    // Start FIGHT animation
+    scene *scene = game_state_get_scene();
+    animation *fight_ani = &bk_get_info(&scene->bk_data, 10)->ani;
+    object *fight = malloc(sizeof(object));
+    object_create(fight, fight_ani->start_pos, vec2f_create(0,0));
+    object_set_stl(fight, object_get_stl(parent));
+    object_set_palette(fight, object_get_palette(parent), 0);
+    object_set_animation(fight, fight_ani);
+    object_set_finish_cb(fight, scene_fight_anim_done);
+    game_state_add_object(fight);
+
+    // Custom object finisher callback requires that we 
+    // mark object as finished manually, if necessary.
+    parent->animation_state.finished = 1; 
 }
 
 // -------- Scene callbacks --------
@@ -287,10 +317,20 @@ void arena_render_overlay(scene *scene) {
     }
 }
 
+int arena_get_state(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+    return local->state;
+}
+
+void arena_set_state(scene *scene, int state) {
+    arena_local *local = scene_get_userdata(scene);
+    local->state = state;
+}
+
 int arena_create(scene *scene) {
     settings *setting;
     arena_local *local;
-    
+
     // Load up settings
     setting = settings_get();
     
@@ -318,6 +358,9 @@ int arena_create(scene *scene) {
     // Initialize local struct
     local = malloc(sizeof(arena_local));
     scene_set_userdata(scene, local);
+
+    // Set correct state
+    local->state = ARENA_STATE_STARTING;
 
     // set up palettes
     palette *mpal = bk_get_palette(&scene->bk_data, 0);
@@ -462,6 +505,16 @@ int arena_create(scene *scene) {
                        PROGRESSBAR_LEFT);
     chr_score_create(&local->player1_score, 4, 33, 1.0f);
     chr_score_create(&local->player2_score, 215, 33, 1.0f); // TODO: Set better coordinates for this
+
+    // Start READY animation
+    animation *ready_ani = &bk_get_info(&scene->bk_data, 11)->ani;
+    object *ready = malloc(sizeof(object));
+    object_create(ready, ready_ani->start_pos, vec2f_create(0,0));
+    object_set_stl(ready, scene->bk_data.sound_translation_table);
+    object_set_palette(ready, bk_get_palette(&scene->bk_data, 0), 0);
+    object_set_animation(ready, ready_ani);
+    object_set_finish_cb(ready, scene_ready_anim_done);
+    game_state_add_object(ready);
 
     // Callbacks
     scene_set_event_cb(scene, arena_event);
