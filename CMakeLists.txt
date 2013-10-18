@@ -4,7 +4,6 @@ project(OpenOMF C)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 find_package(SDL2)
 find_package(shadowdive)
-find_package(chipmunk)
 find_package(enet)
 find_package(dumb)
 find_package(OpenGL)
@@ -13,18 +12,10 @@ find_package(confuse)
 find_package(GLEW)
 find_package(Libintl)
 
-IF(MINGW)
-    set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
-ELSE(MINGW)
-    set(CMAKE_C_FLAGS "-Wall -std=c99 -ggdb -Werror -pedantic -DDEBUGMODE")
-ENDIF(MINGW)
-
-set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -ggdb -Werror -DDEBUGMODE")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -O2 -march=native -Werror")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -Werror -ggdb -DDEBUGMODE")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -Werror -O2 -march=native")
 
 add_executable(openomf 
-    src/main.c
-    src/engine.c
     src/utils/log.c
     src/utils/config.c
     src/utils/list.c
@@ -32,6 +23,9 @@ add_executable(openomf
     src/utils/hashmap.c
     src/utils/iterator.c
     src/utils/array.c
+    src/utils/ringbuffer.c
+    src/utils/vec.c
+    src/utils/string.c
     src/video/video.c
     src/video/texture.c
     src/video/fbo.c
@@ -41,27 +35,36 @@ add_executable(openomf
     src/video/image.c
     src/video/color.c
     src/video/glextloader.c
-    src/video/texturelist.c
     src/audio/audio.c
     src/audio/music.c
     src/audio/sound.c
     src/audio/stream.c
     src/audio/soundloader.c
-    src/game/settings.c
-    src/game/scene.c
-    src/game/har.c
-    src/game/particle.c
-    src/game/score.c
-    src/game/animation.c
-    src/game/animationplayer.c
+    src/resources/ids.c
+    src/resources/af.c
+    src/resources/af_loader.c
+    src/resources/af_move.c
+    src/resources/bk.c
+    src/resources/bk_info.c
+    src/resources/bk_loader.c
+    src/resources/palette.c
+    src/resources/sprite.c
+    src/resources/animation.c
+    src/game/protos/object.c
+    src/game/protos/player.c
+    src/game/protos/scene.c
+    src/game/protos/intersect.c
+    src/game/objects/har.c
+    src/game/objects/scrap.c
+    src/game/objects/projectile.c
     src/game/scenes/progressbar.c
     src/game/scenes/intro.c
     src/game/scenes/mainmenu.c
     src/game/scenes/credits.c
     src/game/scenes/arena.c
     src/game/scenes/melee.c
-    src/game/scenes/mechlab.c
     src/game/scenes/vs.c
+    src/game/objects/har.c
     src/game/text/text.c
     src/game/text/languages.c
     src/game/menu/menu.c
@@ -71,11 +74,16 @@ add_executable(openomf
     src/game/menu/textslider.c
     src/game/menu/textinput.c
     src/game/menu/component.c
-    src/game/physics/physics.c
+    src/game/settings.c
+    src/game/score.c
+    src/game/game_state.c
+    src/game/game_player.c
     src/controller/controller.c
     src/controller/keyboard.c
     src/controller/net_controller.c
     src/console/console.c
+    src/main.c
+    src/engine.c
 )
 
 set(COREINCS
@@ -88,7 +96,6 @@ set(COREINCS
     ${CONFUSE_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
-    ${CHIPMUNK_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
 )
 
@@ -101,7 +108,6 @@ set(CORELIBS
     ${CONFUSE_LIBRARY}
     ${GLEW_LIBRARY}
     ${LIBINTL_LIBRARIES}
-    ${CHIPMUNK_LIBRARY}
     ${ENET_LIBRARY}
 )
 

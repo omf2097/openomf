@@ -15,7 +15,8 @@ void progressbar_create_block(progress_bar *bar) {
                          bar->int_bottomright_color, 
                          bar->int_bottomright_color, 
                          bar->int_topleft_color);
-        texture_create_from_img(&bar->block, &tmp);
+        texture_create(&bar->block);
+        texture_init_from_img(&bar->block, &tmp);
         image_free(&tmp);
     }
 }
@@ -40,10 +41,11 @@ void progressbar_create(progress_bar *bar,
     bar->int_bottomright_color = int_bottomright_color;
     bar->int_bg_color = int_bg_color;
     
-    // Temporary image for drawing necessary textures
-    image tmp;
+    texture_create(&bar->block);
+    texture_create(&bar->background);
     
-    // Background
+    // Background,
+    image tmp;
     image_create(&tmp, w, h);
     image_clear(&tmp, bg_color);
     image_rect_bevel(&tmp, 
@@ -52,7 +54,7 @@ void progressbar_create(progress_bar *bar,
                      border_bottomright_color, 
                      border_bottomright_color, 
                      border_topleft_color);
-    texture_create_from_img(&bar->background, &tmp);
+    texture_init_from_img(&bar->background, &tmp);
     image_free(&tmp);
     
     // Bar
@@ -71,10 +73,12 @@ void progressbar_set(progress_bar *bar, unsigned int percentage) {
 }
 
 void progressbar_render(progress_bar *bar) {
-    float prog = bar->percentage / 100.0f;
-    int rw = bar->w - bar->w * prog;
     video_render_sprite(&bar->background, bar->x, bar->y, BLEND_ALPHA_FULL);
-    if(prog > 0) {
-        video_render_sprite(&bar->block, bar->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : rw + 1), bar->y, BLEND_ALPHA_FULL);
+    if(bar->block.w > 0) {
+        video_render_sprite(
+            &bar->block, 
+            bar->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : bar->w - bar->block.w + 1), 
+            bar->y, 
+            BLEND_ALPHA_FULL);
     }
 }

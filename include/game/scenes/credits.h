@@ -1,6 +1,8 @@
 #ifndef _CREDITS_H
 #define _CREDITS_H
 
-void credits_load(scene *scene);
+#include "game/protos/scene.h"
+
+int credits_create(scene *scene);
 
 #endif // _CREDITS_H

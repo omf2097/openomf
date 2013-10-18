@@ -27,7 +27,8 @@ const char* fbo_get_status(int code) {
 int fbo_create(fbo *fbo, unsigned int w, unsigned int h) {
     // Texture and Renderbuffer object (RBO)
     rbo_create(&fbo->rbo, w, h);
-    texture_create(&fbo->tex, 0, w, h);
+    texture_create(&fbo->tex);
+    texture_init(&fbo->tex, 0, w, h);
     
     // Create FBO
     glGenFramebuffers(1, &fbo->id);

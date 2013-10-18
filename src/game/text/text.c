@@ -1,9 +1,10 @@
-#include "game/text/text.h"
-#include "video/video.h"
-#include "utils/log.h"
 #include <shadowdive/shadowdive.h>
 #include <string.h>
 #include <stdlib.h>
+#include "game/text/text.h"
+#include "video/video.h"
+#include "utils/log.h"
+#include "resources/ids.h"
 
 font font_small;
 font font_large;
@@ -51,7 +52,8 @@ int font_load(font *font, const char* filename, unsigned int size) {
     for(int i = 0; i < 224; i++) {
         tex = malloc(sizeof(texture));
         sd_font_decode(sdfont, img, i, 0xFF, 0xFF, 0xFF);
-        texture_create(tex, img->data, img->w, img->h);
+        texture_create(tex);
+        texture_init(tex, img->data, img->w, img->h);
         vector_append(&font->textures, &tex);
     }
     
@@ -69,14 +71,25 @@ int font_load(font *font, const char* filename, unsigned int size) {
 int fonts_init() {
     font_create(&font_small);
     font_create(&font_large);
-    if (font_load(&font_small, "resources/CHARSMAL.DAT", FONT_SMALL)) {
-        PERROR("Unable to load resources/CHARSMAL.DAT");
+    char filename[64];
+
+    // Load small font
+    get_filename_by_id(DAT_CHARSMAL, filename);
+    if(font_load(&font_small, filename, FONT_SMALL)) {
+        PERROR("Unable to load font file '%s'!", filename);
         return 1;
     }
-    if (font_load(&font_large, "resources/GRAPHCHR.DAT", FONT_BIG)) {
-        PERROR("Unable to load resources/GRAPHCHR.DAT");
+    DEBUG("Loaded font file '%s'", filename);
+
+    // Load big font
+    get_filename_by_id(DAT_GRAPHCHR, filename);
+    if(font_load(&font_large, filename, FONT_BIG)) {
+        PERROR("Unable to load font file '%s'!", filename);
         return 1;
     }
+    DEBUG("Loaded font file '%s'", filename);
+
+    // All done.
     return 0;
 }
 
@@ -92,7 +105,7 @@ void font_render_char(font *font, char ch, int x, int y, color c) {
         return;
     }
     tex = vector_get(&font->textures, code);
-    video_render_char(*tex, x, y, c.r, c.g, c.b);
+    video_render_char(*tex, x, y, c);
 }
 
 void font_render_len(font *font, const char *text, int len, int x, int y, color c) {

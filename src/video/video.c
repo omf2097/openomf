@@ -1,5 +1,4 @@
 #include "video/texture.h"
-#include "video/texturelist.h"
 #include "video/video.h"
 #include "video/fbo.h"
 #include "video/rbo.h"
@@ -22,7 +21,7 @@ fbo target;
 unsigned int fullscreen_quad, fullscreen_quad_flipped;
 int screen_w, screen_h;
 
-shaderprogram lights;
+//shaderprogram lights;
 //shaderprogram xbr;
 
 int video_init(int window_w, int window_h, int fullscreen, int vsync) {
@@ -87,7 +86,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     }
     
     // Load shaders
-    shader *lightshow = malloc(sizeof(shader));
+    /*shader *lightshow = malloc(sizeof(shader));
     if(shader_create(lightshow, "shaders/light.ps", SHADER_FRAGMENT)) {
         PERROR("Unable to link shader!");
         shader_debug_log(lightshow);
@@ -107,7 +106,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     }
     shaderprog_debug_log(&lights);
     
-    /*shader *xbrpix = malloc(sizeof(shader));
+    shader *xbrpix = malloc(sizeof(shader));
     if(shader_create(xbrpix, "shaders/xbr.ps", SHADER_FRAGMENT)) {
         PERROR("Unable to link shader!");
         shader_debug_log(xbrpix);
@@ -202,7 +201,6 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
         DEBUG("VSync changed!");
     }
     
-    texturelist_revalidate_all();
     return 0;
 }
 
@@ -231,6 +229,14 @@ void video_set_rendering_mode(int mode) {
             glDisable(GL_ALPHA_TEST);
             glDisable(GL_STENCIL_TEST);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            break;
+        case BLEND_ALPHA_CONSTANT:
+            // Constant alpha
+            glEnable(GL_BLEND);
+            glEnable(GL_ALPHA_TEST);
+            glDisable(GL_STENCIL_TEST);
+            glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
+            glAlphaFunc(GL_GREATER, 0);
             break;
         default:
             // Alpha blending. Well, not really blending; we just skip all data where alpha = 0.
@@ -278,7 +284,7 @@ void video_render_background(texture *tex) {
     texture_unbind();
 }
 
-void video_render_char(texture *tex, int sx, int sy, unsigned char r, unsigned char g, unsigned char b) {
+void video_render_char(texture *tex, int sx, int sy, color c) {
     // Alpha testing
     video_set_rendering_mode(BLEND_ALPHA);
 
@@ -288,31 +294,21 @@ void video_render_char(texture *tex, int sx, int sy, unsigned char r, unsigned c
     float x = -1.0 + 2.0f * sx / 320.0f;
     float y = 1.0 - sy / 100.0f - h;
     texture_bind(tex);
+    glColor3f(c.r/255.0f, c.g/255.0f, c.b/255.0f);
     glBegin(GL_QUADS);
-        glColor3f(r/255.0f,g/255.0f,b/255.0f);
         glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
         glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
         glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
         glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
-        glColor3f(1.0f,1.0f,1.0f);
     glEnd();
+    glColor3f(1.0f,1.0f,1.0f);
 }
 
 void video_render_sprite(texture *tex, int sx, int sy, unsigned int rendering_mode) {
     video_render_sprite_flip(tex, sx, sy, rendering_mode, FLIP_NONE);
 }
 
-void video_render_sprite_flip(texture *tex, int sx, int sy, unsigned int rendering_mode, unsigned int flip_mode) {
-    // Set rendering mode
-    video_set_rendering_mode(rendering_mode);
-    
-    // Just draw the texture on screen to the right spot.
-    float w = tex->w / 160.0f;
-    float h = tex->h / 100.0f;
-    float x = -1.0 + 2.0f * sx / 320.0f;
-    float y = 1.0 - sy / 100.0f - h;
-    texture_bind(tex);
-    glBegin(GL_QUADS);
+void video_quads(int flip_mode, float x, float y, float w, float h) {
     switch(flip_mode) {
         case FLIP_NONE:
             // regular draw
@@ -343,9 +339,57 @@ void video_render_sprite_flip(texture *tex, int sx, int sy, unsigned int renderi
             glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y,   0); // Bottom Right
             break;
     }
+}
+
+void video_render_sprite_flip(texture *tex, int sx, int sy, unsigned int rendering_mode, unsigned int flip_mode) {
+    // Set rendering mode
+    video_set_rendering_mode(rendering_mode);
+    
+    // Just draw the texture on screen to the right spot.
+    float w = tex->w / 160.0f;
+    float h = tex->h / 100.0f;
+    float x = -1.0 + 2.0f * sx / 320.0f;
+    float y = 1.0 - sy / 100.0f - h;
+    texture_bind(tex);
+    glBegin(GL_QUADS);
+    video_quads(flip_mode, x, y, w, h);
     glEnd();
 }
 
+void video_render_sprite_flip_alpha(texture *tex, int sx, int sy, unsigned int flip_mode, int alpha) {
+    video_set_rendering_mode(BLEND_ALPHA_CONSTANT);
+    float w = tex->w / 160.0f;
+    float h = tex->h / 100.0f;
+    float x = -1.0 + 2.0f * sx / 320.0f;
+    float y = 1.0 - sy / 100.0f - h;
+    texture_bind(tex);
+    glBegin(GL_QUADS);
+    glColor4f(1.0f, 1.0f, 1.0f, alpha/255.0f);
+    video_quads(flip_mode, x, y, w, h);
+    glEnd();
+    glColor4f(1.0f,1.0f,1.0f,1.0f);
+}
+
+void video_render_colored_quad(int _x, int _y, int _w, int _h, color c) {
+    // Alpha testing
+    video_set_rendering_mode(BLEND_ALPHA_FULL);
+
+    // Just draw the quad on screen to the right spot.
+    float w = _w / 160.0f;
+    float h = _h / 100.0f;
+    float x = -1.0 + 2.0f * _x / 320.0f;
+    float y = 1.0 - _y / 100.0f - h;
+    glDisable(GL_TEXTURE_2D);
+    glColor4f(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
+    glBegin(GL_QUADS);
+        glVertex3f(x+w, y+h, 0); // Top Right
+        glVertex3f(x,   y+h, 0); // Top Left
+        glVertex3f(x,   y,   0); // Bottom Left
+        glVertex3f(x+w, y,   0); // Bottom Right
+    glEnd();
+    glEnable(GL_TEXTURE_2D);
+    glColor3f(1.0f,1.0f,1.0f);
+}
 
 void video_render_finish() {
     // Render to screen instead of FBO
@@ -387,7 +431,7 @@ void video_render_finish() {
 }
 
 void video_close() {
-    shaderprog_free(&lights);
+    //shaderprog_free(&lights);
     fbo_free(&target);
     glDeleteLists(fullscreen_quad, 1);
     SDL_GL_DeleteContext(glctx);  

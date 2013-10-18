@@ -1,25 +1,20 @@
-#include "game/scene.h"
-#include "game/scenes/intro.h"
 #include <SDL2/SDL.h>
-#include <shadowdive/shadowdive.h>
+#include <stdlib.h>
 
-int intro_init(scene *scene) {
-    return 0;
-}
+#include "game/scenes/intro.h"
+#include "resources/ids.h"
+#include "game/game_state.h"
+#include "utils/log.h"
 
-void intro_deinit(scene *scene) {
-
-}
-
-void intro_tick(scene *scene) {
-
-}
+typedef struct intro_local_t {
+    int ticks;
+} intro_local;
 
 int intro_event(scene *scene, SDL_Event *e) {
     switch(e->type) {
     case SDL_KEYDOWN:
         if(e->key.keysym.sym == SDLK_ESCAPE) {
-            scene->next_id = SCENE_MENU;
+            game_state_set_next(SCENE_MENU);
             return 1;
         }
         break;
@@ -27,14 +22,33 @@ int intro_event(scene *scene, SDL_Event *e) {
     return 1;
 }
 
-void intro_render(scene *scene) {
-
+int intro_startup(scene *scene, int id) {
+    switch(id) {
+        case 25:
+            return 1;
+    }
+    return 0;
 }
 
-void intro_load(scene *scene) {
-    scene->event = intro_event;
-    scene->render = intro_render;
-    scene->init = intro_init;
-    scene->deinit = intro_deinit;
-    scene->tick = intro_tick;
+void intro_tick(scene *scene) {
+    intro_local *local = scene_get_userdata(scene);
+    local->ticks++;
+    if(local->ticks > 2500) {
+        game_state_set_next(SCENE_MENU);
+    }
+}
+
+void intro_free(scene *scene) {
+    free(scene_get_userdata(scene));
+}
+
+int intro_create(scene *scene) {
+    intro_local *local = malloc(sizeof(intro_local));
+    local->ticks = 0;
+    scene_set_userdata(scene, local);
+    scene_set_tick_cb(scene, intro_tick);
+    scene_set_event_cb(scene, intro_event);
+    scene_set_free_cb(scene, intro_free);
+    scene_set_startup_cb(scene, intro_startup);
+    return 0;
 }

@@ -9,15 +9,6 @@ int audio_stream_create(audio_stream *stream) {
     int error;
     while((error = alGetError()) != AL_NO_ERROR);
 
-    // Reserve resources
-    alGenSources(1, &stream->alsource);
-    alGenBuffers(AUDIO_BUFFER_COUNT, stream->albuffers);
-    if(alGetError() != AL_NO_ERROR) {
-        alDeleteSources(1, &stream->alsource);
-        PERROR("Could not create OpenAL buffers!");
-        return 1;
-    }
-    
     // Pick format
     switch(stream->bytes) {
         case 1: switch(stream->channels) {
@@ -30,9 +21,21 @@ int audio_stream_create(audio_stream *stream) {
         }; break;
     };
     if(!stream->alformat) {
+        PERROR("OpenAL: Could not find suitable audio format!");
+        return 1;
+    }
+    
+    // Reserve resources
+    alGenSources(1, &stream->alsource);
+    if(alGetError() != AL_NO_ERROR) {
+        PERROR("OpenAL: Could not create audio source!");
+        return 1;
+    }
+    
+    alGenBuffers(AUDIO_BUFFER_COUNT, stream->albuffers);
+    if(alGetError() != AL_NO_ERROR) {
         alDeleteSources(1, &stream->alsource);
-        alDeleteBuffers(AUDIO_BUFFER_COUNT, stream->albuffers);
-        PERROR("Could not find suitable audio format!");
+        PERROR("OpenAL: Could not create audio buffers!");
         return 1;
     }
     
@@ -51,9 +54,15 @@ void alplay(audio_stream *stream) {
         alSourcefv(stream->alsource, AL_POSITION, pos);
         alSourcef(stream->alsource, AL_GAIN, stream->snd.vol);
         // zero freq is not legal
-        if(stream->snd.freq != 0.0f) { alSourcef(stream->alsource, AL_PITCH, stream->snd.freq); }
+        if(stream->snd.freq != 0.0f) { 
+            alSourcef(stream->alsource, AL_PITCH, stream->snd.freq); 
+        }
     }
     alSourcePlay(stream->alsource);
+    int err = alGetError();
+    if(err != AL_NO_ERROR) {
+        PERROR("OpenAL: Source playback error! %d", err);
+    }
 }
 
 int audio_stream_start(audio_stream *stream) {
@@ -94,7 +103,12 @@ int audio_stream_render(audio_stream *stream, int dt) {
         return 1;
     }
     
-    if(stream->preupdate) { stream->preupdate(stream, dt); }
+    // Clear errors
+    alGetError();
+    
+    if(stream->preupdate) { 
+        stream->preupdate(stream, dt); 
+    }
 
     // See if we have any empty buffers to fill
     int val;

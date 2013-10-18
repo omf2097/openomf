@@ -22,7 +22,8 @@ void menu_background_create(texture *tex, int w, int h) {
         image_line(&img, 0, y, w-1, y, COLOR_MENU_LINE);
     }
     image_rect(&img, 0, 0, w-1, h-1, COLOR_MENU_BORDER);
-    texture_create_from_img(tex, &img);
+    texture_create(tex);
+    texture_init_from_img(tex, &img);
     image_free(&img);
 }
 
@@ -39,6 +40,7 @@ void menu_background2_create(texture *tex, int w, int h) {
     }
     image_rect(&img, 1, 1, w-2, h-2, COLOR_MENU_BORDER2);
     image_rect(&img, 0, 0, w-2, h-2, COLOR_MENU_BORDER1);
-    texture_create_from_img(tex, &img);
+    texture_create(tex);
+    texture_init_from_img(tex, &img);
     image_free(&img);
 }

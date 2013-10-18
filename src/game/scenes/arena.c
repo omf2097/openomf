@@ -1,5 +1,8 @@
-#include "engine.h"
-#include "game/scene.h"
+#include <SDL2/SDL.h>
+#include <stdlib.h>
+#include <string.h>
+#include <shadowdive/shadowdive.h>
+
 #include "video/texture.h"
 #include "video/video.h"
 #include "game/scenes/arena.h"
@@ -8,8 +11,11 @@
 #include "audio/audio.h"
 #include "audio/music.h"
 #include "game/settings.h"
-#include "game/har.h"
+#include "game/objects/har.h"
+#include "game/protos/object.h"
 #include "game/score.h"
+#include "game/game_player.h"
+#include "game/game_state.h"
 #include "game/text/text.h"
 #include "game/text/languages.h"
 #include "game/menu/menu.h"
@@ -17,13 +23,10 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
+#include "controller/controller.h"
 #include "controller/net_controller.h"
+#include "resources/ids.h"
 #include "utils/log.h"
-#include <SDL2/SDL.h>
-#include <stdlib.h>
-#include <string.h>
-#include <chipmunk/chipmunk.h>
-#include <shadowdive/shadowdive.h>
 
 #define BAR_COLOR_BG color_create(89,40,101,255)
 #define BAR_COLOR_TL_BORDER color_create(60,0,60,255)
@@ -48,12 +51,6 @@ typedef struct arena_local_t {
     component quit_button;
     texture tex;
     int menu_visible;
-
-    cpSpace *space;
-    cpShape *line_floor;
-    cpShape *line_wall_left;
-    cpShape *line_wall_right;
-    cpShape *line_ceiling;
     
     progress_bar player1_health_bar;
     progress_bar player2_health_bar;
@@ -61,24 +58,25 @@ typedef struct arena_local_t {
     progress_bar player2_endurance_bar;
     chr_score player1_score;
     chr_score player2_score;
+
+    palette *player_palettes[2];
 } arena_local;
 
+// -------- Local callbacks --------
+
 void game_menu_quit(component *c, void *userdata) {
-    scene *scene = userdata;
-
-    if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
-        net_controller_free(scene->player1.ctrl);
+    for(int i = 0; i < 2; i++) {
+        controller *ctrl = game_player_get_ctrl(game_state_get_player(i));
+        if(ctrl->type == CTRL_TYPE_NETWORK) {
+            net_controller_free(ctrl);
+        }
     }
 
-    if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {
-        net_controller_free(scene->player2.ctrl);
-    }
-
-    scene->next_id = SCENE_MENU;
+    game_state_set_next(SCENE_MENU);
 }
 
 void game_menu_return(component *c, void *userdata) {
-    arena_local *local = ((scene*)userdata)->local;
+    arena_local *local = scene_get_userdata((scene*)userdata);
     local->menu_visible = 0;
 }
 
@@ -90,17 +88,215 @@ void sound_slide(component *c, void *userdata, int pos) {
     audio_set_volume(TYPE_EFFECT, pos/10.0f);
 }
 
-int arena_init(scene *scene) {
+// -------- Scene callbacks --------
+
+void arena_free(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+
+    for(int i = 0; i < 2; i++) {
+        game_player *player = game_state_get_player(i);
+        game_player_set_har(player, NULL);
+        game_player_set_ctrl(player, NULL);
+    }
+    
+    textbutton_free(&local->title_button);
+    textbutton_free(&local->return_button);
+    textslider_free(&local->sound_slider);
+    textslider_free(&local->music_slider);
+    textslider_free(&local->speed_slider);
+    textbutton_free(&local->video_button);
+    textbutton_free(&local->help_button);
+    textbutton_free(&local->quit_button);
+    menu_free(&local->game_menu);
+
+    texture_free(&local->tex);
+
+    music_stop();
+    
+    progressbar_free(&local->player1_health_bar);
+    progressbar_free(&local->player2_health_bar);
+    progressbar_free(&local->player1_endurance_bar);
+    progressbar_free(&local->player2_endurance_bar);
+    chr_score_free(&local->player1_score);
+    chr_score_free(&local->player2_score);
+
+    free(local->player_palettes[0]);
+    free(local->player_palettes[1]);
+    
+    settings_save();
+    
+    free(local);
+}
+
+void arena_tick(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+
+    game_player *player1 = game_state_get_player(0);
+    game_player *player2 = game_state_get_player(1);
+    
+    // Handle scrolling score texts
+    chr_score_tick(&local->player1_score);
+    chr_score_tick(&local->player2_score);
+
+    // Handle menu, if visible
+    if(!local->menu_visible) {
+        ctrl_event *p1 = NULL, *p2 = NULL, *i;
+        if(controller_tick(player1->ctrl, &p1) ||
+                controller_tick(player2->ctrl, &p2)) {
+            // one of the controllers bailed
+
+            if(player1->ctrl->type == CTRL_TYPE_NETWORK) {
+                net_controller_free(player1->ctrl);
+            }
+
+            if(player2->ctrl->type == CTRL_TYPE_NETWORK) {
+                net_controller_free(player2->ctrl);
+            }
+            /*scene->next_id = SCENE_MENU;*/
+        }
+
+        i = p1;
+        if (i) {
+            do {
+                object_act(game_player_get_har(player1), i->action);
+            } while((i = i->next));
+        }
+        controller_free_chain(p1);
+        i = p2;
+        if (i) {
+            do {
+                object_act(game_player_get_har(player2), i->action);
+            } while((i = i->next));
+        }
+        controller_free_chain(p2);
+        
+        // Collision detections
+        //har_collision_har(scene->player1.har, scene->player2.har);
+        //har_collision_har(scene->player2.har, scene->player1.har);
+        // XXX this can't go in har.c because of a typedef loop on OSX
+        //har_collision_scene(scene->player1.har, scene);
+        //har_collision_scene(scene->player2.har, scene);
+        
+        // Turn the HARs to face the enemy
+        vec2i pos1, pos2;
+        object *har1,*har2;
+        har1 = game_player_get_har(game_state_get_player(0));
+        har2 = game_player_get_har(game_state_get_player(1));
+        pos1 = object_get_pos(har1);
+        pos2 = object_get_pos(har2);
+        if(pos1.x > pos2.x) {
+            if(object_get_direction(har1) == OBJECT_FACE_RIGHT) {
+                object_set_direction(har1, OBJECT_FACE_LEFT);
+                object_set_direction(har2, OBJECT_FACE_RIGHT);
+            }
+        } else if(pos1.x < pos2.x) {
+            if(object_get_direction(har1) == OBJECT_FACE_LEFT) {
+                object_set_direction(har1, OBJECT_FACE_RIGHT);
+                object_set_direction(har2, OBJECT_FACE_LEFT);
+            }
+        }
+    }
+}
+
+int arena_event(scene *scene, SDL_Event *e) {
+    arena_local *local = scene_get_userdata(scene);
+
+    switch(e->type) {
+    case SDL_KEYDOWN:
+        if(e->key.keysym.sym == SDLK_ESCAPE) {
+            if (!local->menu_visible) {
+                local->menu_visible = 1;
+            } else {
+                local->menu_visible = 0;
+            }
+            return 1;
+        }
+        break;
+    }
+    if(local->menu_visible) {
+        return menu_handle_event(&local->game_menu, e);
+    } else {
+        for(int i = 0; i < 2; i++) {
+            ctrl_event *p = NULL, *n = NULL;
+            game_player *player = game_state_get_player(i);
+            controller_event(game_player_get_ctrl(player), e, &p);
+            n = p;
+            if(n) {
+                do {
+                    object_act(game_player_get_har(player), n->action);
+                } while((n = n->next));
+            }
+            controller_free_chain(p);
+        }
+        return 0;
+    }
+    return 0;
+}
+
+void arena_render_overlay(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+
+    // Render bars
+    game_player *player[2];
+    object *obj[2];
+    har *har[2];
+    for(int i = 0; i < 2; i++) {
+        player[i] = game_state_get_player(i);
+        obj[i] = game_player_get_har(player[i]);
+        har[i] = object_get_userdata(obj[i]);
+    }
+    if(obj[0] != NULL && obj[1] != NULL) {
+        float p1_hp = (float)har[0]->health / (float)har[0]->health_max;
+        float p2_hp = (float)har[1]->health / (float)har[1]->health_max;
+        progressbar_set(&local->player1_health_bar, p1_hp * 100);
+        progressbar_set(&local->player2_health_bar, p2_hp * 100);
+        progressbar_render(&local->player1_health_bar);
+        progressbar_render(&local->player2_health_bar);
+
+        // Set endurance bar
+        float p1_en = (float)har[0]->endurance / (float)har[0]->endurance_max;
+        float p2_en = (float)har[1]->endurance / (float)har[1]->endurance_max;
+        progressbar_set(&local->player1_endurance_bar, p1_en * 100);
+        progressbar_set(&local->player2_endurance_bar, p2_en * 100);
+        progressbar_render(&local->player1_endurance_bar);
+        progressbar_render(&local->player2_endurance_bar);
+
+        // Render HAR and pilot names
+        font_render(&font_small, lang_get(player[0]->player_id+20), 5, 19, TEXT_COLOR);
+        font_render(&font_small, lang_get((player[0]->har_id - HAR_JAGUAR)+31), 5, 26, TEXT_COLOR);
+        int p2len = (strlen(lang_get(player[1]->player_id+20))-1) * font_small.w;
+        int h2len = (strlen(lang_get((player[1]->har_id - HAR_JAGUAR)+31))-1) * font_small.w;
+        font_render(&font_small, lang_get(player[1]->player_id+20), 315-p2len, 19, TEXT_COLOR);
+        font_render(&font_small, lang_get((player[1]->har_id - HAR_JAGUAR)+31), 315-h2len, 26, TEXT_COLOR);
+        
+        // Render score stuff
+        chr_score_render(&local->player1_score);
+        chr_score_render(&local->player2_score);
+        char tmp[50];
+        chr_score_format(&local->player1_score, tmp);
+        font_render(&font_small, tmp, 5, 33, TEXT_COLOR);
+        int s2len = strlen(tmp) * font_small.w;
+        chr_score_format(&local->player2_score, tmp);
+        font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
+    }
+
+    // Render menu (if visible)
+    if(local->menu_visible) {
+        menu_render(&local->game_menu);
+        video_render_sprite(&local->tex, 10, 150, BLEND_ALPHA_FULL);
+    }
+}
+
+int arena_create(scene *scene) {
     settings *setting;
     arena_local *local;
-    cpVect grav;
     
     // Load up settings
     setting = settings_get();
     
     // Handle music playback
     music_stop();
-    switch (scene->bk->file_id) {
+    switch (scene->bk_data.file_id) {
         case 8:
             music_play("resources/ARENA0.PSM");
             break;
@@ -121,65 +317,67 @@ int arena_init(scene *scene) {
 
     // Initialize local struct
     local = malloc(sizeof(arena_local));
-    scene->local = local;
+    scene_set_userdata(scene, local);
+
+    // set up palettes
+    palette *mpal = bk_get_palette(&scene->bk_data, 0);
+
+    local->player_palettes[0] = palette_copy(mpal);
+    local->player_palettes[1] = palette_copy(mpal);
+
+    // Initial har data
+    vec2i pos[2];
+    int dir[2] = {OBJECT_FACE_RIGHT, OBJECT_FACE_LEFT};
+    pos[0] = vec2i_create(60, 190);
+    pos[1] = vec2i_create(260, 190);
 
     // init HARs
-    har *h1, *h2;
+    for(int i = 0; i < 2; i++) {
+        // Declare some vars
+        game_player *player = game_state_get_player(i);
+        object *obj = malloc(sizeof(object));
 
-    h1 = malloc(sizeof(har));
-    h2 = malloc(sizeof(har));
-    if (har_load(h1, scene->bk->palettes[0], scene->player1.har_id, 60, 190, 1)) {
-        free(h1);
-        free(h2);
-        scene->next_id = SCENE_NONE;
-        return 1;
+        // load the player's colors into the palette
+        palette_set_player_color(local->player_palettes[i], player->colors[2], 0);
+        palette_set_player_color(local->player_palettes[i], player->colors[1], 1);
+        palette_set_player_color(local->player_palettes[i], player->colors[0], 2);
+
+        // Create object and specialize it as HAR.
+        // Errors are unlikely here, but check anyway.
+        object_create(obj, pos[i], vec2f_create(0,0));
+        if(har_create(obj, local->player_palettes[i], dir[i], player->har_id)) {
+            return 1;
+        }
+
+        // Set HAR to controller and game_player
+        game_state_add_object(obj);
+
+        // Set HAR for player
+        game_player_set_har(player, obj);
+        game_player_get_ctrl(player)->har = obj;
     }
-    if (har_load(h2, scene->bk->palettes[0], scene->player2.har_id, 260, 190, -1)) {
-        har_free(h1);
-        free(h2);
-        scene->next_id = SCENE_NONE;
-        return 1;
-    }
-
-    scene_set_player1_har(scene, h1);
-    scene_set_player2_har(scene, h2);
-
-    scene->player1.ctrl->har = h1;
-    scene->player2.ctrl->har = h2;
 
     // remove the keyboard hooks
     // set up the magic HAR hooks
-    if (scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
-        controller_clear_hooks(scene->player2.ctrl);
-        har_add_hook(scene->player2.har, scene->player1.ctrl->har_hook, (void*)scene->player1.ctrl);
+    /*
+    game_player *_player[2];
+    for(int i = 0; i < 2; i++) {
+        _player[i] = game_state_get_player(i);
     }
-
-    if (scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {
-        controller_clear_hooks(scene->player1.ctrl);
-        har_add_hook(scene->player1.har, scene->player2.ctrl->har_hook, (void*)scene->player2.ctrl);
+    if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
+        controller_clear_hooks(game_player_get_ctrl(_player[1]));
+        har_add_hook(
+            game_player_get_har(_player[1]), 
+            game_player_get_ctrl(_player[0])->har_hook, 
+            game_player_get_ctrl(_player[0]));
     }
-
-    
-    // Init physics
-    grav = cpv(0, 10);
-    local->space = cpSpaceNew();
-    cpSpaceSetGravity(local->space, grav);
-    
-    // Arena constraints
-    local->line_floor = cpSegmentShapeNew(local->space->staticBody, cpv(0, 200), cpv(320, 200), 0);
-    local->line_ceiling = cpSegmentShapeNew(local->space->staticBody, cpv(0, 0), cpv(320, 0), 0);
-    local->line_wall_left = cpSegmentShapeNew(local->space->staticBody, cpv(0, 0), cpv(0, 200), 0);
-    local->line_wall_right = cpSegmentShapeNew(local->space->staticBody, cpv(320, 0), cpv(320, 200), 0);
-    cpShapeSetFriction(local->line_floor, 1.0f);
-    cpShapeSetElasticity(local->line_floor, 1.0f);
-    cpSpaceAddShape(local->space, local->line_floor);
-    cpSpaceAddShape(local->space, local->line_ceiling);
-    cpSpaceAddShape(local->space, local->line_wall_left);
-    cpSpaceAddShape(local->space, local->line_wall_right);
-    
-    // Init physics for hars
-    har_init_physics(scene->player1.har, local->space);
-    har_init_physics(scene->player2.har, local->space);
+    if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
+        controller_clear_hooks(game_player_get_ctrl(_player[0]));
+        har_add_hook(
+            game_player_get_har(_player[0]), 
+            game_player_get_ctrl(_player[1])->har_hook, 
+            game_player_get_ctrl(_player[1]));
+    }*/
     
     // Arena menu
     local->menu_visible = 0;
@@ -264,222 +462,13 @@ int arena_init(scene *scene) {
                        PROGRESSBAR_LEFT);
     chr_score_create(&local->player1_score, 4, 33, 1.0f);
     chr_score_create(&local->player2_score, 215, 33, 1.0f); // TODO: Set better coordinates for this
+
+    // Callbacks
+    scene_set_event_cb(scene, arena_event);
+    scene_set_free_cb(scene, arena_free);
+    scene_set_tick_cb(scene, arena_tick);
+    scene_set_render_overlay_cb(scene, arena_render_overlay);
+
+    // All done!
     return 0;
-}
-
-void arena_deinit(scene *scene) {
-    arena_local *local = scene->local;
-    local->menu_visible = 0;
-    scene_set_player1_har(scene, NULL);
-    scene_set_player2_har(scene, NULL);
-    scene_set_player1_ctrl(scene, NULL);
-    scene_set_player2_ctrl(scene, NULL);
-    
-    textbutton_free(&local->title_button);
-    textbutton_free(&local->return_button);
-    textslider_free(&local->sound_slider);
-    textslider_free(&local->music_slider);
-    textslider_free(&local->speed_slider);
-    textbutton_free(&local->video_button);
-    textbutton_free(&local->help_button);
-    textbutton_free(&local->quit_button);
-    menu_free(&local->game_menu);
-
-    texture_free(&local->tex);
-
-    music_stop();
-    
-    progressbar_free(&local->player1_health_bar);
-    progressbar_free(&local->player2_health_bar);
-    progressbar_free(&local->player1_endurance_bar);
-    progressbar_free(&local->player2_endurance_bar);
-    chr_score_free(&local->player1_score);
-    chr_score_free(&local->player2_score);
-    
-    settings_save();
-    
-    cpShapeFree(local->line_floor);
-    cpShapeFree(local->line_ceiling);
-    cpShapeFree(local->line_wall_left);
-    cpShapeFree(local->line_wall_right);
-    cpSpaceFree(local->space);
-    
-    free(scene->local);
-}
-
-void arena_tick(scene *scene) {
-    arena_local *local = scene->local;
-
-    // Tick physics
-    cpSpaceStep(local->space, 0.08); // TODO: This is a guesstimate. Do we even need the real value here ?
-    
-    // Har ticks
-    har_tick(scene->player1.har);
-    har_tick(scene->player2.har);
-    
-    // Handle scrolling score texts
-    chr_score_tick(&local->player1_score);
-    chr_score_tick(&local->player2_score);
-
-    // Handle menu, if visible
-    if(!local->menu_visible) {
-        ctrl_event *p1 = NULL, *p2 = NULL, *i;
-        if(controller_tick(scene->player1.ctrl, &p1) ||
-                controller_tick(scene->player2.ctrl, &p2)) {
-            // one of the controllers bailed
-
-            if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {
-                net_controller_free(scene->player1.ctrl);
-            }
-
-            if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {
-                net_controller_free(scene->player2.ctrl);
-            }
-            scene->next_id = SCENE_MENU;
-        }
-
-        i = p1;
-        if (i) {
-            do {
-                /*DEBUG("har 1 act %d", i->action);*/
-                har_act(scene->player1.har, i->action);
-            } while((i = i->next));
-            /*DEBUG("done");*/
-        }
-        i = p2;
-        if (i) {
-            do {
-                /*DEBUG("har 2 act %d", i->action);*/
-                har_act(scene->player2.har, i->action);
-            } while((i = i->next));
-            /*DEBUG("done");*/
-        }
-        
-        // Collision detections
-        har_collision_har(scene->player1.har, scene->player2.har);
-        har_collision_har(scene->player2.har, scene->player1.har);
-        // XXX this can't go in har.c because of a typedef loop on OSX
-        //har_collision_scene(scene->player1.har, scene);
-        //har_collision_scene(scene->player2.har, scene);
-        
-        // Turn the HARs to face the enemy
-        if (scene->player1.har->phy.pos.x > scene->player2.har->phy.pos.x) {
-            if (scene->player1.har->direction == 1) {
-                har_set_direction(scene->player1.har, -1);
-                har_set_direction(scene->player2.har, 1);
-            }
-        } else if (scene->player1.har->phy.pos.x < scene->player2.har->phy.pos.x) {
-            if (scene->player1.har->direction == -1) {
-                har_set_direction(scene->player1.har, 1);
-                har_set_direction(scene->player2.har, -1);
-            }
-        }
-    }
-}
-
-int arena_event(scene *scene, SDL_Event *e) {
-    arena_local *local = scene->local;
-
-    switch(e->type) {
-    case SDL_KEYDOWN:
-        if(e->key.keysym.sym == SDLK_ESCAPE) {
-            if (!local->menu_visible) {
-                local->menu_visible = 1;
-            } else {
-                local->menu_visible = 0;
-            }
-            return 1;
-        }
-        break;
-    }
-    if(local->menu_visible) {
-        return menu_handle_event(&local->game_menu, e);
-    } else {
-        ctrl_event *p1=NULL, *p2=NULL, *i;
-        controller_event(scene->player1.ctrl, e, &p1);
-        controller_event(scene->player2.ctrl, e, &p2);
-        i = p1;
-        if (i) {
-            do {
-                /*DEBUG("har 1 act %d", i->action);*/
-                har_act(scene->player1.har, i->action);
-            } while((i = i->next));
-            /*DEBUG("done");*/
-        }
-        i = p2;
-        if (i) {
-            do {
-                /*DEBUG("har 2 act %d", i->action);*/
-                har_act(scene->player2.har, i->action);
-            } while((i = i->next));
-            /*DEBUG("done");*/
-        }
-        return 0;
-    }
-}
-
-void arena_render(scene *scene) {
-    arena_local *local = (arena_local*)scene->local;
-
-    // Render hars
-    har_render(scene->player1.har);
-    har_render(scene->player2.har);
-
-    // Debug textures
-    if(scene->player1.har && scene->player1.har->cd_debug_tex.data) {
-        video_render_sprite_flip(&scene->player1.har->cd_debug_tex, -50, -50, BLEND_ALPHA_FULL, FLIP_NONE);
-    }
-    if(scene->player2.har && scene->player2.har->cd_debug_tex.data) {
-        video_render_sprite_flip(&scene->player2.har->cd_debug_tex, -50, -50, BLEND_ALPHA_FULL, FLIP_NONE);
-    }
-    
-    // Set health bar
-    if(scene->player1.har != NULL && scene->player2.har != NULL) {
-        float p1_hp = (float)scene->player1.har->health / (float)scene->player1.har->health_max;
-        float p2_hp = (float)scene->player2.har->health / (float)scene->player2.har->health_max;
-        progressbar_set(&local->player1_health_bar, p1_hp * 100);
-        progressbar_set(&local->player2_health_bar, p2_hp * 100);
-        progressbar_render(&local->player1_health_bar);
-        progressbar_render(&local->player2_health_bar);
-
-        // Set endurance bar
-        float p1_en = (float)scene->player1.har->endurance / (float)scene->player1.har->endurance_max;
-        float p2_en = (float)scene->player2.har->endurance / (float)scene->player2.har->endurance_max;
-        progressbar_set(&local->player1_endurance_bar, p1_en * 100);
-        progressbar_set(&local->player2_endurance_bar, p2_en * 100);
-        progressbar_render(&local->player1_endurance_bar);
-        progressbar_render(&local->player2_endurance_bar);
-
-        // Render HAR and pilot names
-        font_render(&font_small, lang_get(scene->player1.player_id+20), 5, 19, TEXT_COLOR);
-        font_render(&font_small, lang_get(scene->player1.har_id+31), 5, 26, TEXT_COLOR);
-        int p2len = (strlen(lang_get(scene->player2.player_id+20))-1) * font_small.w;
-        int h2len = (strlen(lang_get(scene->player2.har_id+31))-1) * font_small.w;
-        font_render(&font_small, lang_get(scene->player2.player_id+20), 315-p2len, 19, TEXT_COLOR);
-        font_render(&font_small, lang_get(scene->player2.har_id+31), 315-h2len, 26, TEXT_COLOR);
-        
-        // Render score stuff
-        chr_score_render(&local->player1_score);
-        chr_score_render(&local->player2_score);
-        char tmp[50];
-        chr_score_format(&local->player1_score, tmp);
-        font_render(&font_small, tmp, 5, 33, TEXT_COLOR);
-        int s2len = strlen(tmp) * font_small.w;
-        chr_score_format(&local->player2_score, tmp);
-        font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
-    }
-
-    // Draw menu if necessary
-    if(local->menu_visible) {
-        menu_render(&local->game_menu);
-        video_render_sprite(&local->tex, 10, 150, BLEND_ALPHA_FULL);
-    }
-}
-
-void arena_load(scene *scene) {
-    scene->event = arena_event;
-    scene->render = arena_render;
-    scene->init = arena_init;
-    scene->deinit = arena_deinit;
-    scene->tick = arena_tick;
 }

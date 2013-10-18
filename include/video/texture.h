@@ -4,18 +4,16 @@
 #include "video/image.h"
 
 typedef struct texture_t {
-    char *data;
     unsigned int id;
     unsigned int w, h;
-    unsigned int bitmap_w, bitmap_h;
 } texture;
 
-int texture_create(texture *tex, const char *data, unsigned int w, unsigned int h);
-int texture_create_from_img(texture *tex, const image *img);
+void texture_create(texture *tex);
+int texture_init(texture *tex, const char *data, unsigned int w, unsigned int h);
+int texture_init_from_img(texture *tex, const image *img);
+int texture_upload(texture *tex, const char* data);
 void texture_free(texture *tex);
-int texture_valid(texture *tex);
-int texture_revalidate(texture *tex);
-int texture_pix_opaque(texture *tex, unsigned int x, unsigned int y);
+int texture_is_valid(texture *tex);
 void texture_bind(texture *tex);
 void texture_unbind();
 unsigned int texture_size(texture *tex);

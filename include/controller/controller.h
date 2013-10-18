@@ -2,8 +2,27 @@
 #define _CONTROLLER_H
 
 #include <SDL2/SDL.h>
+#include "game/protos/object.h"
+#include "game/objects/har.h"
+#include "utils/list.h"
 
-#include "game/har.h"
+enum {
+    ACT_KICK,
+    ACT_PUNCH,
+    ACT_UP,
+    ACT_UPLEFT,
+    ACT_UPRIGHT,
+    ACT_DOWN,
+    ACT_DOWNLEFT,
+    ACT_DOWNRIGHT,
+    ACT_LEFT,
+    ACT_RIGHT,
+    ACT_STOP,
+    ACT_WALKLEFT,
+    ACT_WALKRIGHT,
+    ACT_CROUCH,
+    ACT_JUMP
+};
 
 enum {
     CTRL_TYPE_KEYBOARD,
@@ -21,7 +40,7 @@ struct ctrl_event_t {
 typedef struct controller_t controller;
 
 struct controller_t {
-    har *har;
+    object *har;
     list hooks;
     int (*tick_fun)(controller *ctrl, ctrl_event **ev);
     int (*handle_fun)(controller *ctrl, SDL_Event *event, ctrl_event **ev);
@@ -32,15 +51,11 @@ struct controller_t {
 };
 
 void controller_init(controller* ctrl);
-
 void controller_cmd(controller* ctrl, int action, ctrl_event **ev);
-
 int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev);
 int controller_tick(controller *ctrl, ctrl_event **ev);
-
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type));
-
 void controller_clear_hooks(controller *ctrl);
-
+void controller_free_chain(ctrl_event *ev);
 
 #endif // _CONTROLLER_H

@@ -1,28 +1,18 @@
-#include <SDL2/SDL.h>
-#include <shadowdive/shadowdive.h>
-#include "utils/log.h"
-#include "game/text/text.h"
-#include "audio/music.h"
-#include "game/scene.h"
+#include <stdlib.h>
+
 #include "game/scenes/credits.h"
+#include "resources/ids.h"
+#include "game/game_state.h"
 
-int credits_init(scene *scene) {
-    scene->loop = 0;
-    return 0;
-}
-
-void credits_deinit(scene *scene) {
-}
-
-void credits_tick(scene *scene) {
-
-}
+typedef struct credits_local_t {
+    int ticks;
+} credits_local;
 
 int credits_event(scene *scene, SDL_Event *e) {
     switch(e->type) {
     case SDL_KEYDOWN:
         if(e->key.keysym.sym == SDLK_ESCAPE) {
-            scene->next_id = SCENE_NONE;
+            game_state_set_next(SCENE_NONE);
             return 1;
         }
         break;
@@ -30,15 +20,25 @@ int credits_event(scene *scene, SDL_Event *e) {
     return 1;
 }
 
-void credits_render(scene *scene) {
-
+void credits_tick(scene *scene) {
+    credits_local *local = scene_get_userdata(scene);
+    local->ticks++;
+    if(local->ticks > 4500) {
+        game_state_set_next(SCENE_NONE);
+    }
 }
 
-void credits_load(scene *scene) {
-    scene->event = credits_event;
-    scene->render = credits_render;
-    scene->init = credits_init;
-    scene->deinit = credits_deinit;
-    scene->tick = credits_tick;
+void credits_free(scene *scene) {
+    free(scene_get_userdata(scene));
+}
+
+int credits_create(scene *scene) {
+    credits_local *local = malloc(sizeof(credits_local));
+    local->ticks = 0;
+    scene_set_userdata(scene, local);
+    scene_set_tick_cb(scene, credits_tick);
+    scene_set_free_cb(scene, credits_free);
+    scene_set_event_cb(scene, credits_event);
+    return 0;
 }
 

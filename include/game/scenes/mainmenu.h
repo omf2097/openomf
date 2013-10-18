@@ -1,6 +1,8 @@
 #ifndef _MAINMENU_H
 #define _MAINMENU_H
 
-void mainmenu_load(scene *scene);
+#include "game/protos/scene.h"
+
+int mainmenu_create(scene *scene);
 
 #endif // _MAINMENU_H

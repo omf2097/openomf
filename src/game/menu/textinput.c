@@ -23,7 +23,8 @@ void textinput_create(component *c, font *font, const char *text, const char *in
     image_create(&img, 15*font->w+2, font->h+3);
     image_clear(&img, COLOR_MENU_BG);
     image_rect(&img, 0, 0, 15*font->w+1, font->h+2, COLOR_MENU_BORDER);
-    texture_create_from_img(&tb->tex, &img);
+    texture_create(&tb->tex);
+    texture_init_from_img(&tb->tex, &img);
     image_free(&img);
     memcpy(tb->buf, initialvalue, strlen(initialvalue)+1);
     c->obj = tb;
@@ -34,6 +35,7 @@ void textinput_create(component *c, font *font, const char *text, const char *in
 
 void textinput_free(component *c) {
     textinput *tb = c->obj;
+    texture_free(&tb->tex);
     free(tb);
     component_free(c);
 }
