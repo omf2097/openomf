@@ -17,7 +17,7 @@
 #include "game/scenes/vs.h"
 
 #define MS_PER_OMF_TICK 10
-#define MS_PER_OMF_TICK_SLOWEST 25
+#define MS_PER_OMF_TICK_SLOWEST 35
 
 game_state *gamestate = NULL;
 

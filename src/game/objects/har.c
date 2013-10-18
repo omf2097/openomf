@@ -5,6 +5,7 @@
 
 #include "game/objects/har.h"
 #include "game/objects/scrap.h"
+#include "game/objects/projectile.h"
 #include "game/protos/intersect.h"
 #include "game/game_state.h"
 #include "resources/af_loader.h"
@@ -27,6 +28,31 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     object_tick(obj);
     har->damage_done = 0;
     har->damage_received = 0;
+}
+
+// Callback for spawning new objects, eg. projectiles
+void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
+    har *har = userdata;
+    af_move *move = af_get_move(&har->af_data, id);
+    if(move != NULL) {
+        vec2i npos;
+        npos.x = parent->pos.x + pos.x + move->ani.start_pos.x;
+        npos.y = parent->pos.y + pos.y + move->ani.start_pos.y;
+
+        object *obj = malloc(sizeof(object));
+        object_create(obj, npos, vec2f_create(0,0));
+        object_set_stl(obj, object_get_stl(parent));
+        object_set_palette(obj, object_get_palette(parent), 0);
+        object_set_animation(obj, &move->ani);
+        // Set all projectiles to their own layer + har layer
+        object_set_layers(obj, LAYER_PROJECTILE|LAYER_HAR); 
+        // To avoid projectile-to-projectile collisions, set them to same group
+        object_set_group(obj, GROUP_PROJECTILE); 
+        object_set_repeat(obj, 1);
+        object_set_direction(obj, object_get_direction(parent));
+        projectile_create(obj);
+        game_state_add_object(obj);
+    }
 }
 
 void har_move(object *obj) {
@@ -130,13 +156,9 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     }
 }
 
-void har_collide(object *obj_a, object *obj_b) {
+void har_collide_with_har(object *obj_a, object *obj_b) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
-
-    // Check for closeness between HARs and handle it
-    har_check_closeness(obj_a, obj_b);
-    har_check_closeness(obj_b, obj_a);
 
     // Check for collisions by sprite collision points
     int level = 2;
@@ -149,27 +171,58 @@ void har_collide(object *obj_a, object *obj_b) {
         a->damage_done = 1;
         b->damage_received = 1;
         b->state = STATE_RECOIL;
-        obj_b->vel.x = 0.0f;
+        vec2f vel = object_get_vel(obj_b);
+        vel.x = 0.0f;
+        object_set_vel(obj_b, vel);
         DEBUG("HAR %s to HAR %s collision at %d,%d!", 
             get_id_name(a->id), 
             get_id_name(b->id),
             hit_coord.x,
             hit_coord.y);
     }
-    if(b->damage_done == 0 && intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord)) {
-        dmgtype = (hit_coord.y > 140) ? DAMAGETYPE_LOW : DAMAGETYPE_HIGH;
-        har_take_damage(obj_a, dmgtype);
-        har_spawn_scrap(obj_a, hit_coord);
-        b->damage_done = 1;
-        a->damage_received = 1;
-        a->state = STATE_RECOIL;
-        obj_a->vel.x = 0.0f;
-        DEBUG("HAR %s to HAR %s collision at %d,%d!", 
-            get_id_name(b->id), 
-            get_id_name(a->id),
+}
+
+void har_collide_with_projectile(object *o_har, object *o_pjt) {
+    har *h = object_get_userdata(o_har);
+
+    // Check for collisions by sprite collision points
+    int level = 1;
+    vec2i hit_coord;
+    if(h->damage_done == 0 && intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
+        har_take_damage(o_har, DAMAGETYPE_HIGH);
+        har_spawn_scrap(o_har, hit_coord);
+        h->damage_received = 1;
+        h->state = STATE_RECOIL;
+        vec2f vel = object_get_vel(o_har);
+        vel.x = 0.0f;
+        object_set_vel(o_har, vel);
+        o_pjt->animation_state.finished = 1;
+        DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!", 
+            object_get_animation(o_pjt)->id, 
+            get_id_name(h->id),
             hit_coord.x,
             hit_coord.y);
     }
+}
+
+void har_collide(object *obj_a, object *obj_b) {
+    // Check if this is projectile to har collision
+    if(object_get_layers(obj_a) & LAYER_PROJECTILE) {
+        har_collide_with_projectile(obj_b, obj_a);
+        return;
+    }
+    if(object_get_layers(obj_b) & LAYER_PROJECTILE) {
+        har_collide_with_projectile(obj_a, obj_b);
+        return;
+    }
+
+    // Check for closeness between HARs and handle it
+    har_check_closeness(obj_a, obj_b);
+    har_check_closeness(obj_b, obj_a);
+
+    // Handle har collisions
+    har_collide_with_har(obj_a, obj_b);
+    har_collide_with_har(obj_b, obj_a);
 }
 
 void har_tick(object *obj) {
@@ -278,9 +331,18 @@ void har_act(object *obj, int act_type) {
             if(!strncmp(str_c(&move->move_string), har->inputs, len)) {
                 DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
                 DEBUG("input was %s", har->inputs);
+
+                // Stop horizontal movement, when move is done
+                // TODO: Make this work better
+                vec2f spd = object_get_vel(obj);
+                spd.x = 0.0f;
+                object_set_vel(obj, spd);
+
+                // Set correct animation etc.
+                // executing_move = 1 prevents new moves while old one is running.
                 har_set_ani(obj, i, 0);
                 har->inputs[0] = '\0';
-                har->executing_move = 1; // Prevents new moves while old one is running
+                har->executing_move = 1;
                 return;
             }
         }
@@ -420,6 +482,9 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
     object_set_stl(obj, local->af_data.sound_translation_table);
+
+    // New object spawner callback
+    object_set_spawn_cb(obj, cb_har_spawn_object, local);
 
     // Set running animation 
     object_set_palette(obj, pal, 0);

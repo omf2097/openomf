@@ -8,8 +8,8 @@
 #include "game/game_state.h"
 
 // Some internal functions
-void cb_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
-void cb_destroy_object(object *parent, int id, void *userdata);
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
+void cb_scene_destroy_object(object *parent, int id, void *userdata);
 
 
 // Loads BK file etc.
@@ -59,8 +59,8 @@ void scene_init(scene *scene) {
             if(info->probability == 1) {
                 object_set_repeat(obj, 1);
             }
-            object_set_spawn_cb(obj, cb_spawn_object, (void*)scene);
-            object_set_destroy_cb(obj, cb_destroy_object, (void*)scene);
+            object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
+            object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
             game_state_add_object(obj);
             DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
         }
@@ -141,7 +141,7 @@ void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc) {
     scene->tick = cbfunc;
 }
 
-void cb_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     scene *s = (scene*)userdata;
 
     // Get next animation
@@ -152,8 +152,8 @@ void cb_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
         object_set_stl(obj, object_get_stl(parent));
         object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &info->ani);
-        object_set_spawn_cb(obj, cb_spawn_object, userdata);
-        object_set_destroy_cb(obj, cb_destroy_object, userdata);
+        object_set_spawn_cb(obj, cb_scene_spawn_object, userdata);
+        object_set_destroy_cb(obj, cb_scene_destroy_object, userdata);
         if(info->probability == 1) {
             object_set_repeat(obj, 1);
         }
@@ -161,6 +161,6 @@ void cb_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     }
 }
 
-void cb_destroy_object(object *parent, int id, void *userdata) {
+void cb_scene_destroy_object(object *parent, int id, void *userdata) {
     game_state_del_object(id);
 }

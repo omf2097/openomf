@@ -8,6 +8,9 @@
 
 #define LAYER_HAR 0x02
 #define LAYER_SCRAP 0x04
+#define LAYER_PROJECTILE 0x08
+
+#define GROUP_PROJECTILE 2
 
 enum {
     CAT_MISC = 0,
@@ -56,9 +59,5 @@ typedef struct har_t {
 } har;
 
 int har_create(object *obj, palette *pal, int dir, int har_id);
-void har_tick(object *obj); 
-void har_act(object *obj, int act_type);
-void har_free(object *obj);
-void har_finished(object *obj);
 
 #endif // _HAR_H
