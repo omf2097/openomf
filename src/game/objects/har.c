@@ -189,6 +189,11 @@ void har_act(object *obj, int act_type) {
         return;
     }
 
+    // Don't allow new moves while we're still executing a previous one.
+    if(har->executing_move) {
+        return;
+    }
+
    // for the reason behind the numbers, look at a numpad sometime
     switch(act_type) {
         case ACT_UP:
@@ -260,6 +265,7 @@ void har_act(object *obj, int act_type) {
                 DEBUG("input was %s", har->inputs);
                 har_set_ani(obj, i, 0);
                 har->inputs[0] = '\0';
+                har->executing_move = 1; // Prevents new moves while old one is running
                 return;
             }
         }
@@ -355,6 +361,7 @@ void har_finished(object *obj) {
     } else {
         har_set_ani(obj, ANIM_CROUCHING, 1);
     }
+    har->executing_move = 0;
 }
 
 void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
@@ -390,6 +397,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
     local->endurance_max = local->endurance = 1000;
     local->close = 0;
     local->state = STATE_STANDING;
+    local->executing_move = 0;
 
     // Object related stuff
     object_set_gravity(obj, local->af_data.fall_speed);
