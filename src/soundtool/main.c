@@ -4,14 +4,38 @@
   * @license MIT
   */
 
-#include <ao/ao.h>
+#include <SDL2/SDL.h>
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 
-int main(int argc, char* argv[]) {
+typedef struct _streamer {
+    char *data;
+    int pos;
+    int size;
+} Streamer;
+
+void stream(void* userdata, Uint8* stream, int len) {
+    Streamer *s = (Streamer*)userdata;
+    int left = s->size - s->pos;
+    len = (len > left) ? left : len;
+    SDL_memcpy(stream, s->data + s->pos, len);
+    s->pos += len;
+    printf("Reading %d, size %d, left %d\n", len, s->size, (s->size-s->pos));
+}
+
+int main(int argc, char *argv[]) {
+    SDL_AudioSpec want, have;
+    SDL_AudioDeviceID dev;
+    Streamer streamer;
     char error[128];
     int retcode = 0;
 
+    // Init SDL Audio
+    if(SDL_Init(SDL_INIT_AUDIO) != 0) {
+        fprintf(stderr, "Error: %s\n", SDL_GetError());
+        return 1;
+    }
+    
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
@@ -74,38 +98,38 @@ int main(int argc, char* argv[]) {
             goto exit_1;
         }
     
-        // Initialize libao
-        ao_initialize();
-        
-        // Some required vars ...
-        int driver;
-        ao_device* output;
-        ao_sample_format format;
+        // Streamer
+        streamer.size = sounds->sounds[id]->len;
+        streamer.pos = 0;
+        streamer.data = sounds->sounds[id]->data;
+    
+        // Initialize required audio
+        SDL_zero(want);
+        want.freq = 8000;
+        want.format = AUDIO_U8;
+        want.channels = 2;
+        want.samples = 4096;
+        want.callback = stream;
+        want.userdata = &streamer;
             
-        // Set format
-        format.bits = 8;
-        format.rate = 8000;
-        format.channels = 1;
-        format.byte_format = AO_FMT_NATIVE;
-        format.matrix = NULL;
-        
-        // Open live output dev
-        driver = ao_default_driver_id();
-        output = ao_open_live(driver, &format, NULL);
-        if(output == NULL) {
-            printf("Unable to open output device!\n");
-            goto exit_2;
+        // Open device, play file
+        dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
+        if(dev == 0) {
+            printf("Failed to open audio dev: %s\n", SDL_GetError());
+            goto exit_0;
+        } else {
+            if(have.format != want.format) {
+                printf("Could not get correct playback format.\n");
+            } else {
+                printf("Starting playback ...\n");
+                SDL_PauseAudioDevice(dev, 0);
+                while(streamer.pos < streamer.size) {
+                    SDL_Delay(100);
+                }
+                printf("All done.\n");
+            }
+            SDL_CloseAudioDevice(dev);
         }
-        
-        // Play
-        printf("Playing ...");
-        ao_play(output, sounds->sounds[id]->data, sounds->sounds[id]->len);
-        printf(" done.\n");
-       
-        // All done, free resources
-        ao_close(output);
-exit_2:
-        ao_shutdown();
     } else {
         printf("Valid sample ID's:\n");
         int k = 0;
@@ -123,6 +147,7 @@ exit_2:
         printf("\n");
     }
     
+
 exit_1:
     sd_sounds_delete(sounds);
 exit_0:
