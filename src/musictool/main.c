@@ -10,7 +10,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#define DELTA (65536.0f / 44100)
+#define PROGRESSBAR_LENGTH 25
+#define CHANNELS 2
+#define FREQUENCY 44100
+#define RESAMPLER 3
+#define DELTA (65536.0f / FREQUENCY)
 
 typedef struct _streamer {
     DUH_SIGRENDERER *renderer;
@@ -27,6 +31,59 @@ void stream(void* userdata, Uint8* stream, int len) {
     if(s->pos >= s->size || s->pos < before) {
         s->ended = 1;
     }
+}
+
+void format_ms(int ticks) {
+    int total_seconds = ticks / 1000;
+    int hours = 0;
+    int minutes = 0;
+    int seconds = 0;
+    
+    if(total_seconds > 3600) {
+        hours = total_seconds / 3600;
+        total_seconds = total_seconds % 3600;
+    }
+    if(total_seconds > 60) {
+        minutes = total_seconds / 60;
+        total_seconds = total_seconds % 60;
+    }
+    seconds = total_seconds;
+    
+    if(hours > 0)
+        printf("%02d:%02d:%02d", hours, minutes, seconds);
+    else {
+        printf("%02d:%02d", minutes, seconds);
+    } 
+}
+
+void show_progress(int width, float progress, int ticks) {
+    int d = progress * width;
+ 
+    printf("%3d%% [", (int)(progress*100));
+    for(int x = 0; x < d; x++) {
+        printf("=");
+    }
+    for(int x = 0; x < (width-d); x++) {
+        printf(" ");
+    }
+    printf("] ");
+    format_ms(ticks);
+    
+    printf("\r");
+}
+
+const char* get_file_ext(const char* filename) {
+    return strrchr(filename, '.') + 1;
+}
+
+const char* resample_filter_name(int id) {
+    switch(id) {
+        case DUMB_RQ_ALIASING: return "Aliasing";
+        case DUMB_RQ_LINEAR: return "Linear";
+        case DUMB_RQ_CUBIC: return "Cubic";
+        case DUMB_RQ_FIR: return "FIR";
+    }
+    return "Unknown";
 }
 
 int main(int argc, char *argv[]) {
@@ -85,14 +142,37 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
     
-    // Load PSM file
-    src_data = dumb_load_psm(file->filename[0], 0);
+    // Load correct file type
+    const char *ext = get_file_ext(file->filename[0]);
+    if(!ext) {
+        printf("Could not find file extension.");
+        goto exit_0;
+    }
+    
+    // Load up file
+    if(strcasecmp(ext, "psm") == 0) {
+        src_data = dumb_load_psm(file->filename[0], 0);
+    } else if(strcasecmp(ext, "mod") == 0) {
+        src_data = dumb_load_mod(file->filename[0], 0);
+    } else if(strcasecmp(ext, "xm") == 0) {
+        src_data = dumb_load_xm(file->filename[0]);
+    } else if(strcasecmp(ext, "s3m") == 0) {
+        src_data = dumb_load_s3m(file->filename[0]);
+    } else if(strcasecmp(ext, "it") == 0) {
+        src_data = dumb_load_it(file->filename[0]);
+    } else {
+        printf("Unknown module format.");
+        goto exit_0;
+    }
+    
+    // Initialize dumb renderer
     if(!src_data) {
         printf("Unable to load file!\n");
         goto exit_0;
     }
-    src_renderer = duh_start_sigrenderer(src_data, 0, 2, 0);
-    printf("File loaded!\n");
+    src_renderer = duh_start_sigrenderer(src_data, 0, CHANNELS, 0);
+    dumb_resampling_quality = RESAMPLER;
+    printf("File '%s' loaded succesfully.\n", file->filename[0]);
     
     // Streamer
     streamer.renderer = src_renderer;
@@ -102,9 +182,9 @@ int main(int argc, char *argv[]) {
     
     // SDL2
     SDL_zero(want);
-    want.freq = 44100;
+    want.freq = FREQUENCY;
     want.format = AUDIO_S16;
-    want.channels = 2;
+    want.channels = CHANNELS;
     want.samples = 4096;
     want.callback = stream;
     want.userdata = &streamer;
@@ -119,14 +199,24 @@ int main(int argc, char *argv[]) {
             goto exit_1;
         }
         
-        printf("Starting playback ...\n");
+        // Some information
+        printf("Resample filter: %s\n", resample_filter_name(dumb_resampling_quality));
+        printf("Frequency:       %d\n", FREQUENCY);
+        printf("Channels:        %d\n", CHANNELS);
+        printf("Extension:       %s\n", get_file_ext(file->filename[0]));
+        
+        // Play file
+        printf("Starting playback.\n");
         SDL_PauseAudioDevice(dev, 0);
+        show_progress(PROGRESSBAR_LENGTH, 0.0f, 0);
+        int time_start = SDL_GetTicks();
         while(!streamer.ended) {
-            SDL_Delay(5000);
-            float seek = ((float)streamer.pos) / ((float)streamer.size) * 100.0f;
-            printf("%d%% played.\n", (int)seek);
+            SDL_Delay(250);
+            float seek = ((float)streamer.pos) / ((float)streamer.size);
+            int ms_played = SDL_GetTicks() - time_start;
+            show_progress(PROGRESSBAR_LENGTH, seek, ms_played);
         }
-        printf("All done.\n");
+        printf("\nAll done.\n");
     }
 
 exit_1:
