@@ -41,6 +41,7 @@ struct object_t {
     int vstate;
     int hstate;
     int direction;
+    float y_percent;
     float gravity;
     
     int is_static;

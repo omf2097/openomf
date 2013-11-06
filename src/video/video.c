@@ -341,7 +341,7 @@ void video_quads(int flip_mode, float x, float y, float w, float h) {
     }
 }
 
-void video_render_sprite_flip(texture *tex, int sx, int sy, unsigned int rendering_mode, unsigned int flip_mode) {
+void video_render_sprite_flip_scale(texture *tex, int sx, int sy, unsigned int rendering_mode, unsigned int flip_mode, float y_percent) {
     // Set rendering mode
     video_set_rendering_mode(rendering_mode);
     
@@ -350,9 +350,10 @@ void video_render_sprite_flip(texture *tex, int sx, int sy, unsigned int renderi
     float h = tex->h / 100.0f;
     float x = -1.0 + 2.0f * sx / 320.0f;
     float y = 1.0 - sy / 100.0f - h;
+    float diff =( h - (h * y_percent))/ 2.0f;
     texture_bind(tex);
     glBegin(GL_QUADS);
-    video_quads(flip_mode, x, y, w, h);
+    video_quads(flip_mode, x, y+diff, w, h * y_percent);
     glEnd();
 }
 

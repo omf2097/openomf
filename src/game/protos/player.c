@@ -325,6 +325,8 @@ void player_run(object *obj) {
                     obj->vel.y += y;
                 }
             }
+            // handle scaling on the Y axis
+            if(isset(f, "y"))   { obj->y_percent = get(f, "y") / 100.0f; }
             if (isset(f, "e")) {
                 // x,y relative to *enemy's* position
                 int x = 0, y = 0;

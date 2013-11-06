@@ -15,6 +15,7 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
     object_reset_vstate(obj);
     object_reset_hstate(obj);
     obj->direction = OBJECT_FACE_RIGHT;
+    obj->y_percent = 1.0;
 
     // Physics
     obj->is_static = 0;
@@ -194,7 +195,7 @@ void object_render(object *obj) {
     }
 
     // Render
-    video_render_sprite_flip(obj->cur_texture, x, y, rstate->blendmode, flipmode);
+    video_render_sprite_flip_scale(obj->cur_texture, x, y, rstate->blendmode, flipmode, obj->y_percent);
 }
 
 // Renders sprite to left top corner with no special stuff applied
