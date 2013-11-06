@@ -448,7 +448,7 @@ void player_run(object *obj) {
 }
 
 void player_set_repeat(object *obj, int repeat) {
-	obj->animation_state.repeat = repeat;
+    obj->animation_state.repeat = repeat;
 }
 
 int player_get_repeat(object *obj) {
@@ -456,7 +456,7 @@ int player_get_repeat(object *obj) {
 }
 
 void player_set_end_frame(object *obj, int end_frame) {
-	obj->animation_state.end_frame = end_frame;
+    obj->animation_state.end_frame = end_frame;
 }
 
 void player_next_frame(object *obj) {
@@ -472,9 +472,9 @@ void player_goto_frame(object *obj, int frame_id) {
 }
 
 int player_get_frame(object *obj) {
-	return sd_stringparser_get_current_frame_id(obj->animation_state.parser);
+    return sd_stringparser_get_current_frame_id(obj->animation_state.parser);
 }
 
 char player_get_frame_letter(object *obj) {
-	return sd_stringparser_get_current_frame_letter(obj->animation_state.parser);
+    return sd_stringparser_get_current_frame_letter(obj->animation_state.parser);
 }

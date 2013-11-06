@@ -6,9 +6,9 @@
 #include "utils/vec.h"
 
 typedef struct sprite_t {
-	int id;
-	vec2i pos;
-	void *raw_sprite;
+    int id;
+    vec2i pos;
+    void *raw_sprite;
 } sprite;
 
 void sprite_create(sprite *sp, void *src, int id);

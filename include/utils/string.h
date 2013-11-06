@@ -4,8 +4,8 @@
 #include <string.h>
 
 typedef struct str_t {
-	size_t len;
-	char* data;
+    size_t len;
+    char* data;
 } str;
 
 void str_create(str *string);

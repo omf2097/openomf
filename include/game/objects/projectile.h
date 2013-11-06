@@ -4,7 +4,7 @@
 #include "game/protos/object.h"
 
 typedef struct projectile_local_t {
-	int _empty;
+    int _empty;
 } projectile_local;
 
 int projectile_create(object *obj);

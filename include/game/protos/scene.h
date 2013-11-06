@@ -18,7 +18,7 @@ typedef void (*scene_tick_cb)(scene *scene);
 typedef int (*scene_startup_cb)(scene *scene, int anim_id);
 
 struct scene_t {
-	int id;
+    int id;
     bk bk_data;
     void *userdata;
     object background;

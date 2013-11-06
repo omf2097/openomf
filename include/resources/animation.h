@@ -30,17 +30,17 @@ enum {
 };
 
 typedef struct collision_coord_t {
-	vec2i pos;
-	int frame_index;
+    vec2i pos;
+    int frame_index;
 } collision_coord;
 
 typedef struct animation_t {
-	int id;
-	vec2i start_pos;
-	vector collision_coords;
-	str animation_string;
-	vector extra_strings;
-	vector sprites;
+    int id;
+    vec2i start_pos;
+    vector collision_coords;
+    str animation_string;
+    vector extra_strings;
+    vector sprites;
 } animation;
 
 void animation_create(animation *ani, void *src, int id);

@@ -7,11 +7,11 @@
 #include "utils/vector.h"
 
 typedef struct bk_t {
-	int file_id;
-	sprite background;
-	hashmap infos;
-	vector palettes;
-	char sound_translation_table[30];
+    int file_id;
+    sprite background;
+    hashmap infos;
+    vector palettes;
+    char sound_translation_table[30];
 } bk;
 
 void bk_create(bk *b, void *src);
