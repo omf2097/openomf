@@ -194,6 +194,7 @@ void player_run(object *obj) {
     if(obj->slide_state.timer > 0) {
         obj->pos.x += obj->slide_state.vel.x;
         obj->pos.y += obj->slide_state.vel.y;
+        obj->slide_state.timer--;
     }
 
     // Not sure what this does
@@ -349,7 +350,7 @@ void player_run(object *obj) {
                 DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.", 
                     obj->cur_animation->id,
                     obj->slide_state.vel.x, 
-                    obj->slide_state.vel.x, 
+                    obj->slide_state.vel.y, 
                     param->duration);
             }
             if (isset(f, "v") == 0 && isset(f, "e") == 0 && (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
@@ -372,7 +373,7 @@ void player_run(object *obj) {
                 DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.",
                     obj->cur_animation->id,
                     obj->slide_state.vel.x, 
-                    obj->slide_state.vel.x, 
+                    obj->slide_state.vel.y, 
                     param->duration);
             }
 
@@ -383,7 +384,9 @@ void player_run(object *obj) {
                 int slide = 0;
                 float xpos = obj->pos.x;
                 float ypos = obj->pos.y;
-                obj->slide_state.vel = vec2f_create(0,0);
+                if(isset(n, "x=") || isset(n, "y=")) {
+                    obj->slide_state.vel = vec2f_create(0,0);
+                }
                 if(isset(n, "x=")) {
                     slide = get(n, "x=");
                     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
