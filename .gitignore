@@ -1,0 +1,9 @@
+build/*.dll
+build/*.exe
+build/*.cmake
+build/Makefile
+build/openomf
+build/resources/
+build/*.txt
+build/*.conf
+build/CMakeFiles/
