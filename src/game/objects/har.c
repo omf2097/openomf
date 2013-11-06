@@ -29,6 +29,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     object_tick(obj);
     har->damage_done = 0;
     har->damage_received = 0;
+    har->executing_move = 0;
 }
 
 // Callback for spawning new objects, eg. projectiles
@@ -124,7 +125,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     vec2i pos_a = object_get_pos(obj_a);
     vec2i pos_b = object_get_pos(obj_b);
     har *a = object_get_userdata(obj_a);
-    har *b = object_get_userdata(obj_a);
+    har *b = object_get_userdata(obj_b);
     int hard_limit = 35; // Stops movement if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
 
@@ -173,9 +174,9 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
             return;
         }
 
-        har_take_damage(obj_b, &move->footer_string, move->damage);
         obj_b->animation_state.enemy_x = obj_a->pos.x;
         obj_b->animation_state.enemy_y = obj_a->pos.y;
+        har_take_damage(obj_b, &move->footer_string, move->damage);
         if (hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord);
         }

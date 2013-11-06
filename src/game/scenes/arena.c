@@ -208,21 +208,28 @@ void arena_tick(scene *scene) {
         //har_collision_scene(scene->player2.har, scene);
         
         // Turn the HARs to face the enemy
-        vec2i pos1, pos2;
-        object *har1,*har2;
-        har1 = game_player_get_har(game_state_get_player(0));
-        har2 = game_player_get_har(game_state_get_player(1));
-        pos1 = object_get_pos(har1);
-        pos2 = object_get_pos(har2);
-        if(pos1.x > pos2.x) {
-            if(object_get_direction(har1) == OBJECT_FACE_RIGHT) {
-                object_set_direction(har1, OBJECT_FACE_LEFT);
-                object_set_direction(har2, OBJECT_FACE_RIGHT);
-            }
-        } else if(pos1.x < pos2.x) {
-            if(object_get_direction(har1) == OBJECT_FACE_LEFT) {
-                object_set_direction(har1, OBJECT_FACE_RIGHT);
-                object_set_direction(har2, OBJECT_FACE_LEFT);
+        object *obj_har1,*obj_har2;
+        obj_har1 = game_player_get_har(game_state_get_player(0));
+        obj_har2 = game_player_get_har(game_state_get_player(1));
+        har *har1, *har2;
+        har1 = obj_har1->userdata;
+        har2 = obj_har2->userdata;
+        if (
+                (har1->state == STATE_STANDING || har1->state == STATE_CROUCHING || har1->state == STATE_WALKING) &&
+                (har2->state == STATE_STANDING || har2->state == STATE_CROUCHING || har2->state == STATE_WALKING)) {
+            vec2i pos1, pos2;
+            pos1 = object_get_pos(obj_har1);
+            pos2 = object_get_pos(obj_har2);
+            if(pos1.x > pos2.x) {
+                if(object_get_direction(obj_har1) == OBJECT_FACE_RIGHT) {
+                    object_set_direction(obj_har1, OBJECT_FACE_LEFT);
+                    object_set_direction(obj_har2, OBJECT_FACE_RIGHT);
+                }
+            } else if(pos1.x < pos2.x) {
+                if(object_get_direction(obj_har1) == OBJECT_FACE_LEFT) {
+                    object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
+                    object_set_direction(obj_har2, OBJECT_FACE_LEFT);
+                }
             }
         }
     }
