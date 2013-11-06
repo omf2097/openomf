@@ -83,20 +83,14 @@ void har_move(object *obj) {
     }
 }
 
-void har_take_damage(object *obj, int damage_type) {
+void har_take_damage(object *obj, str* string, float damage) {
     har *har = object_get_userdata(obj);
-    har->health -= 25;
+    har->health -= damage;
 
     // Set hit animation
     object_set_animation(obj, &af_get_move(&har->af_data, ANIM_DAMAGE)->ani);
     object_set_repeat(obj, 0);
-    if(har->state == STATE_CROUCHING) {
-        object_set_custom_string(obj, "G3-H3-I3-H3-G3");
-    } else if(damage_type == DAMAGETYPE_HIGH) {
-        object_set_custom_string(obj, "A3-B3-C3-B3-A3");
-    } else if(damage_type == DAMAGETYPE_LOW) {
-        object_set_custom_string(obj, "D3-E3-F3-E3-D3");
-    }
+    object_set_custom_string(obj, str_c(string));
     object_tick(obj);
 }
 
@@ -130,8 +124,13 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     vec2i pos_a = object_get_pos(obj_a);
     vec2i pos_b = object_get_pos(obj_b);
     har *a = object_get_userdata(obj_a);
+    har *b = object_get_userdata(obj_a);
     int hard_limit = 35; // Stops movement if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
+
+    if (b->state == STATE_RECOIL || a->state == STATE_RECOIL) {
+        return;
+    }
 
     // Reset closeness state
     a->close = 0;
@@ -163,23 +162,32 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 
     // Check for collisions by sprite collision points
     int level = 2;
-    int dmgtype = 0;
-    vec2i hit_coord;
-    if(a->damage_done == 0 && intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord)) {
-        dmgtype = (hit_coord.y > 140) ? DAMAGETYPE_LOW : DAMAGETYPE_HIGH;
-        har_take_damage(obj_b, dmgtype);
-        har_spawn_scrap(obj_b, hit_coord);
+    af_move *move = af_get_move(&(a->af_data), obj_a->cur_animation->id);
+    vec2i hit_coord = vec2i_create(0, 0);
+    if(a->damage_done == 0 &&
+            (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord) ||
+             move->category == CAT_CLOSE)) {
+        if (move->next_move) {
+            object_set_animation(obj_a, &af_get_move(&a->af_data, move->next_move)->ani);
+            object_set_repeat(obj_a, 0);
+            return;
+        }
+
+        har_take_damage(obj_b, &move->footer_string, move->damage);
+        obj_b->animation_state.enemy_x = obj_a->pos.x;
+        obj_b->animation_state.enemy_y = obj_a->pos.y;
+        if (hit_coord.x != 0 || hit_coord.y != 0) {
+            har_spawn_scrap(obj_b, hit_coord);
+        }
         a->damage_done = 1;
         b->damage_received = 1;
         b->state = STATE_RECOIL;
-        vec2f vel = object_get_vel(obj_b);
-        vel.x = 0.0f;
-        object_set_vel(obj_b, vel);
         DEBUG("HAR %s to HAR %s collision at %d,%d!", 
             get_id_name(a->id), 
             get_id_name(b->id),
             hit_coord.x,
             hit_coord.y);
+        DEBUG("HAR %s animation set to %s", get_id_name(b->id), str_c(&move->footer_string));
     }
 }
 
@@ -190,7 +198,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     int level = 1;
     vec2i hit_coord;
     if(h->damage_done == 0 && intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
-        har_take_damage(o_har, DAMAGETYPE_HIGH);
+        af_move *move = af_get_move(&(h->af_data), o_pjt->cur_animation->id);
+        har_take_damage(o_har, &move->footer_string, move->damage);
         har_spawn_scrap(o_har, hit_coord);
         h->damage_received = 1;
         h->state = STATE_RECOIL;
@@ -203,6 +212,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             get_id_name(h->id),
             hit_coord.x,
             hit_coord.y);
+        DEBUG("HAR %s animation set to %s", get_id_name(h->id), str_c(&move->footer_string));
     }
 }
 
@@ -336,6 +346,18 @@ void har_act(object *obj, int act_type) {
         if((move = af_get_move(&har->af_data, i))) {
             len = move->move_string.len;
             if(!strncmp(str_c(&move->move_string), har->inputs, len)) {
+                if (move->category == CAT_CLOSE && har->close != 1) {
+                    // not standing close enough
+                    continue;
+                }
+                if (move->category == CAT_JUMPING && har->state != STATE_JUMPING) {
+                    // not jumping
+                    continue;
+                }
+                if (move->category != CAT_JUMPING && har->state == STATE_JUMPING) {
+                    // jumping but this move is not a jumping move
+                    continue;
+                }
                 DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
                 DEBUG("input was %s", har->inputs);
 
