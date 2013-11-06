@@ -12,9 +12,23 @@ find_package(confuse)
 find_package(GLEW)
 find_package(Libintl)
 
-set(CMAKE_C_FLAGS "-Wall -std=c99 -Werror -ggdb -DDEBUGMODE")
-set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -Werror -ggdb -DDEBUGMODE")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -std=c99 -Werror -O2 -march=native")
+# These flags are used for all builds
+set(CORE_FLAGS "-Wall -std=c99 -Werror")
+
+# Options
+OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
+
+# If we want to build support for vorbis streaming, find these too
+IF(USE_OGGVORBIS)
+    find_package(ogg)
+    find_package(vorbis)
+    set(CORE_FLAGS "${CORE_FLAGS} -DUSE_OGGVORBIS")
+ENDIF(USE_OGGVORBIS)
+
+# Build flags
+set(CMAKE_C_FLAGS "${CORE_FLAGS} -ggdb -DDEBUGMODE")
+set(CMAKE_C_FLAGS_DEBUG "${CORE_FLAGS} -ggdb -DDEBUGMODE")
+set(CMAKE_C_FLAGS_RELEASE "${CORE_FLAGS} -O2 -march=native")
 
 add_executable(openomf 
     src/utils/log.c
@@ -112,10 +126,23 @@ set(CORELIBS
     ${ENET_LIBRARY}
 )
 
+# If we support ogg vorbis, add library includes etc.
+IF(USE_OGGVORBIS)
+    set(COREINCS ${COREINCS} ${OGG_INCLUDE_DIR} ${VORBIS_INCLUDE_DIR})
+    set(CORELIBS ${CORELIBS} ${OGG_LIBRARY} ${VORBIS_LIBRARY} )
+ENDIF(USE_OGGVORBIS)
+
+# MingW build should add mingw32 lib
 IF(MINGW)
-    set(CORELIBS mingw32 ${CORELIBS} ws2_32 winmm)
+    set(CORELIBS mingw32 ${CORELIBS})
 ENDIF(MINGW)
 
+# On windows, add winsock2 and winmm
+IF(WIN32)
+    set(CORELIBS ${CORELIBS} ws2_32 winmm)
+ENDIF(WIN32)
+
+# On unix platforms, add libm (sometimes needed, it seems)
 IF(UNIX)
     SET(CORELIBS ${CORELIBS} -lm)
 ENDIF(UNIX)
