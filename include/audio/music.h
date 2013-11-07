@@ -1,7 +1,7 @@
 #ifndef _MUSIC_H
 #define _MUSIC_H
 
-#include "audio/stream.h"
+#include "audio/source.h"
 
 int music_play(const char *filename);
 void music_stop();

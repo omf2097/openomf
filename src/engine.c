@@ -25,11 +25,14 @@ int engine_init() {
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
 
+    // Right now we only have one audio sink, so select that one.
+    int sink_id = 0;
+
     _vsync = vsync;
     if(video_init(w, h, fs, vsync)) {
         return 1;
     }
-    if(audio_init()) {
+    if(audio_init(sink_id)) {
         return 1;
     }
     if(soundloader_init()) {
@@ -122,7 +125,7 @@ void engine_run() {
         game_state_render();
         console_render();
         video_render_finish();
-        audio_render(dt);
+        audio_render();
         
         // If screenshot requested, do it here.
         if(take_screenshot) {

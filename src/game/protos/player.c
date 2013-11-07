@@ -75,7 +75,8 @@ void cmd_music_on(int music) {
         case 6: music_play("resources/ARENA3.PSM"); break;
         case 7: music_play("resources/ARENA4.PSM"); break;
     }
-    audio_set_volume(TYPE_MUSIC, settings_get()->sound.music_vol/10.0f);
+    // TODO: Audio: Implement this
+    //audio_set_volume(TYPE_MUSIC, settings_get()->sound.music_vol/10.0f);
 }
 
 // ---------------- Private functions ---------------- 

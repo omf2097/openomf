@@ -551,7 +551,8 @@ int mainmenu_create(scene *scene) {
     // Force music playback
     if(!music_playing()) {
         music_play("resources/MENU.PSM");
-        audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
+        // TODO: Audio: Implement this
+        //audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
     }
 
     // Zero out host

@@ -1,154 +1,68 @@
+#include <stdlib.h>
 #include "audio/stream.h"
-#include "audio/sound.h"
 #include "utils/log.h"
-#include <AL/al.h>
-#include <AL/alc.h>
 
-int audio_stream_create(audio_stream *stream) {
-    // Dump old errors
-    int error;
-    while((error = alGetError()) != AL_NO_ERROR);
-
-    // Pick format
-    switch(stream->bytes) {
-        case 1: switch(stream->channels) {
-            case 1: stream->alformat = AL_FORMAT_MONO8; break;
-            case 2: stream->alformat = AL_FORMAT_STEREO8; break;
-        }; break;
-        case 2: switch(stream->channels) {
-            case 1: stream->alformat = AL_FORMAT_MONO16; break;
-            case 2: stream->alformat = AL_FORMAT_STEREO16; break;
-        }; break;
-    };
-    if(!stream->alformat) {
-        PERROR("OpenAL: Could not find suitable audio format!");
-        return 1;
-    }
-    
-    // Reserve resources
-    alGenSources(1, &stream->alsource);
-    if(alGetError() != AL_NO_ERROR) {
-        PERROR("OpenAL: Could not create audio source!");
-        return 1;
-    }
-    
-    alGenBuffers(AUDIO_BUFFER_COUNT, stream->albuffers);
-    if(alGetError() != AL_NO_ERROR) {
-        alDeleteSources(1, &stream->alsource);
-        PERROR("OpenAL: Could not create audio buffers!");
-        return 1;
-    }
-    
-    // Set playing as 0. If playing = 1 and we lose data from buffers, 
-    // this will reset playback & refill buffers.
-    stream->playing = 0;
-    
-    // All done
-    return 0;
+void stream_init(audio_stream *stream, audio_sink *sink, audio_source *src) {
+	stream->src = src;
+    stream->sink = sink;
+	stream->userdata = NULL;
+	stream->update = NULL;
+	stream->close = NULL;
+    stream->play = NULL;
+    stream->stop = NULL;
+	stream->status = STREAM_STATUS_STOPPED;
 }
 
-void alplay(audio_stream *stream) {
-    if(stream->type == TYPE_EFFECT) {
-        // apply sound effects
-        float pos[] = {stream->snd.pan, 0.0f, 0.0f}; 
-        alSourcefv(stream->alsource, AL_POSITION, pos);
-        alSourcef(stream->alsource, AL_GAIN, stream->snd.vol);
-        // zero freq is not legal
-        if(stream->snd.freq != 0.0f) { 
-            alSourcef(stream->alsource, AL_PITCH, stream->snd.freq); 
-        }
-    }
-    alSourcePlay(stream->alsource);
-    int err = alGetError();
-    if(err != AL_NO_ERROR) {
-        PERROR("OpenAL: Source playback error! %d", err);
-    }
+void stream_render(audio_stream *stream) {
+	if(stream->update != NULL) {
+		stream->update(stream);
+	}
 }
 
-int audio_stream_start(audio_stream *stream) {
-    char buf[AUDIO_BUFFER_SIZE];
-    int ret;
-    unsigned int i;
-    for(i = 0; i < AUDIO_BUFFER_COUNT; i++) {
-        ret = stream->update(stream, buf, AUDIO_BUFFER_SIZE);
-        alBufferData(stream->albuffers[i], stream->alformat, buf, ret, stream->frequency);
-    }
-    alSourceQueueBuffers(stream->alsource, AUDIO_BUFFER_COUNT, stream->albuffers);
-    alplay(stream);
-    stream->playing = 1;
-    return 0;
+void stream_free(audio_stream *stream) {
+	if(stream->close != NULL) {
+		stream->close(stream);
+	}
 }
 
-int alplaying(audio_stream *stream) {
-    ALenum state;
-    alGetSourcei(stream->alsource, AL_SOURCE_STATE, &state);
-    return (state == AL_PLAYING);
+void stream_play(audio_stream *stream) {
+	if(stream->play != NULL && stream->status == STREAM_STATUS_STOPPED) {
+		stream->play(stream);
+		stream->status = STREAM_STATUS_PLAYING;
+	}
 }
 
-void audio_stream_stop(audio_stream *stream) {
-    stream->playing = 0;
-    alSourceStop(stream->alsource);
+void stream_stop(audio_stream *stream) {
+	if(stream->stop != NULL && stream->status == STREAM_STATUS_PLAYING) {
+		stream->stop(stream);
+		stream->status = STREAM_STATUS_STOPPED;
+	}
 }
 
-int audio_stream_playing(audio_stream *stream) {
-    return stream->playing;
-}
-void audio_stream_set_volume(audio_stream *stream, float vol) {
-    alSourcef(stream->alsource, AL_GAIN, vol);
+int stream_get_status(audio_stream *stream) {
+	return stream->status;
 }
 
-int audio_stream_render(audio_stream *stream, int dt) {
-    // Don't do anything unless playback has been started
-    if(!stream->playing) {
-        return 1;
-    }
-    
-    // Clear errors
-    alGetError();
-    
-    if(stream->preupdate) { 
-        stream->preupdate(stream, dt); 
-    }
-
-    // See if we have any empty buffers to fill
-    int val;
-    alGetSourcei(stream->alsource, AL_BUFFERS_PROCESSED, &val);
-    if(val <= 0) {
-        return 0;
-    }
-
-    // Handle buffer filling and loading
-    char buf[AUDIO_BUFFER_SIZE];
-    ALuint bufno;
-    int ret = 0;
-    int first = val;
-    while(val--) {
-        // Fill buffer & re-queue
-        ret = stream->update(stream, buf, AUDIO_BUFFER_SIZE);
-        if(ret <= 0 && val == first-1) {
-            stream->playing = 0;
-            return 1;
-        }
-        
-        alSourceUnqueueBuffers(stream->alsource, 1, &bufno);
-        alBufferData(bufno, stream->alformat, buf, ret, stream->frequency);
-        alSourceQueueBuffers(stream->alsource, 1, &bufno);
-        if(alGetError() != AL_NO_ERROR) {
-            PERROR("OpenAL: Error buffering!");
-        }
-    }
-    
-    // If stream has stopped because of empty buffers, restart playback.
-    if(stream->playing && !alplaying(stream)) {
-        alplay(stream);
-    }
-    
-    // All done!
-    return 0;
+void stream_set_userdata(audio_stream *stream, void *userdata) {
+	stream->userdata = userdata;
 }
 
-void audio_stream_free(audio_stream *stream) {
-    // Free resources
-    alDeleteSources(1, &stream->alsource);
-    alDeleteBuffers(AUDIO_BUFFER_COUNT, stream->albuffers);
+void* stream_get_userdata(audio_stream *stream) {
+	return stream->userdata;
+}
+
+void stream_set_update_cb(audio_stream *stream, stream_update_cb cbfunc) {
+	stream->update = cbfunc;
+}
+
+void stream_set_close_cb(audio_stream *stream, stream_close_cb cbfunc) {
+	stream->close = cbfunc;
+}
+
+void stream_set_play_cb(audio_stream *stream, stream_play_cb cbfunc) {
+	stream->play = cbfunc;
+}
+
+void stream_set_stop_cb(audio_stream *stream, stream_stop_cb cbfunc) {
+	stream->stop = cbfunc;
 }

@@ -82,11 +82,13 @@ void game_menu_return(component *c, void *userdata) {
 }
 
 void music_slide(component *c, void *userdata, int pos) {
-    audio_set_volume(TYPE_MUSIC, pos/10.0f);
+    // TODO: Audio: Implement this
+    //audio_set_volume(TYPE_MUSIC, pos/10.0f);
 }
 
 void sound_slide(component *c, void *userdata, int pos) {
-    audio_set_volume(TYPE_EFFECT, pos/10.0f);
+    // TODO: Audio: Implement this
+    //audio_set_volume(TYPE_EFFECT, pos/10.0f);
 }
 
 void scene_fight_anim_done(object *parent) {
@@ -365,7 +367,8 @@ int arena_create(scene *scene) {
             music_play("resources/ARENA4.PSM");
             break;
     }
-    audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
+    // TODO: Audio: Implement this
+    //audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
 
     // Initialize local struct
     local = malloc(sizeof(arena_local));

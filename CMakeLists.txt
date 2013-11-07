@@ -53,8 +53,14 @@ add_executable(openomf
     src/audio/audio.c
     src/audio/music.c
     src/audio/sound.c
+    src/audio/sink.c
     src/audio/stream.c
+    src/audio/source.c
     src/audio/soundloader.c
+    src/audio/sinks/openal_sink.c
+    src/audio/sinks/openal_stream.c
+    src/audio/sources/dumb_source.c
+    src/audio/sources/vorbis_source.c
     src/resources/ids.c
     src/resources/af.c
     src/resources/af_loader.c
