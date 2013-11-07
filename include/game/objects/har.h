@@ -7,8 +7,10 @@
 #include "utils/list.h"
 
 #define LAYER_HAR 0x02
-#define LAYER_SCRAP 0x04
-#define LAYER_PROJECTILE 0x08
+#define LAYER_HAR1 0x04
+#define LAYER_HAR2 0x08
+#define LAYER_SCRAP 0x10
+#define LAYER_PROJECTILE 0x20
 
 #define GROUP_PROJECTILE 2
 
@@ -46,6 +48,7 @@ enum {
 
 typedef struct har_t {
     int id;
+    int player_id;
     af af_data;
     unsigned int state;
     unsigned int executing_move;
@@ -58,6 +61,6 @@ typedef struct har_t {
     char inputs[10];
 } har;
 
-int har_create(object *obj, palette *pal, int dir, int har_id);
+int har_create(object *obj, palette *pal, int dir, int har_id, int player_id);
 
 #endif // _HAR_H

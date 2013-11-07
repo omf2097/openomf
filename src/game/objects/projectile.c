@@ -8,7 +8,7 @@ void projectile_tick(object *obj) {
 }
 
 void projectile_free(object *obj) {
-    free(object_get_userdata(obj));
+    /*free(object_get_userdata(obj));*/
 }
 
 void projectile_move(object *obj) {
@@ -29,7 +29,8 @@ void projectile_move(object *obj) {
 
 int projectile_create(object *obj) {
     projectile_local *local = malloc(sizeof(projectile_local));
-    object_set_userdata(obj, local);
+    // srore the HAR in here instead
+    /*object_set_userdata(obj, local);*/
     local->_empty = 0;
 
     object_set_tick_cb(obj, projectile_tick);

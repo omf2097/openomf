@@ -53,7 +53,7 @@ void game_state_add_object(object *obj) {
 #endif
 }
 
-void game_state_del_object(int anim_id) {
+void game_state_del_animation(int anim_id) {
     iterator it;
     object **obj;
     vector_iter_begin(&gamestate->objects, &it);
@@ -68,6 +68,20 @@ void game_state_del_object(int anim_id) {
         }
     }
     DEBUG("Attempted to delete animation %i from game_state, but no such animation was playing.", anim_id);
+}
+
+void game_state_del_object(object *target) {
+    iterator it;
+    object **obj;
+    vector_iter_begin(&gamestate->objects, &it);
+    while((obj = iter_next(&it)) != NULL) {
+        if(target == *obj) {
+            object_free(*obj);
+            free(*obj);
+            vector_delete(&gamestate->objects, &it);
+            return;
+        }
+    }
 }
 
 void game_state_set_next(unsigned int next_scene_id) {

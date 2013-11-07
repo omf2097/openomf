@@ -3,6 +3,7 @@
 #include "game/menu/menu_background.h"
 #include "game/protos/scene.h"
 #include "game/game_state.h"
+#include "game/scenes/arena.h"
 #include "resources/ids.h"
 #include "utils/log.h"
 #include <stdlib.h>
@@ -102,30 +103,36 @@ int console_cmd_scene(scene *scene, void *userdata, int argc, char **argv) {
     return 1;
 }
 
-/*int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
+int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
     // change har
     if(argc == 2) {
         int i;
         if(strtoint(argv[1], &i)) {
-            har *h = &scene_get_game_player(scene, 0)->har;
-            int hx, hy;
-            int hd = h->direction;
-            object_get_pos(&h->pobj, &hx, &hy);
-            if(h != NULL) {
-                har_free(h);
-                free(h);
-                scene->player1.har = NULL;
+            game_player *player = game_state_get_player(0);
+            object *har_obj = game_player_get_har(player);
+            object *obj = malloc(sizeof(object));
+            vec2i pos = object_get_pos(har_obj);
+            int hd = object_get_direction(har_obj);
+            object_create(obj, pos, vec2f_create(0,0));
+            player->har_id = HAR_JAGUAR + i;
+            if(har_create(obj, arena_get_player_palette(scene, player->player_id), hd, player->har_id, player->player_id)) {
+                return 1;
             }
-            h = malloc(sizeof(har));
-            har_load(h, scene->bk->palettes[0], i, hd);
-            har_init(h, hx, hy);
-            scene_set_player1_har(scene, h);
-            scene->player1.ctrl->har = h;
+
+            // Set HAR to controller and game_player
+            game_state_add_object(obj);
+
+            game_state_del_object(har_obj);
+
+            // Set HAR for player
+            game_player_set_har(player, obj);
+            game_player_get_ctrl(player)->har = obj;
+ 
             return 0;
         }
     }
     return 1;
-}*/
+}
 
 int console_cd_debug(scene *scene, void *userdata, int argc, char **argv) {
     /*if (scene->player1.har) {*/
@@ -470,7 +477,7 @@ int console_init() {
     console_add_cmd("exit",  &console_cmd_quit,  "quit the game");
     console_add_cmd("help",  &console_cmd_help,  "show all commands");
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
-    /*console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");*/
+    console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
     console_add_cmd("cd-debug",&console_cd_debug,   "toggle collision detection debugging");
     /*console_add_cmd("connect", &console_cmd_connect,   "connect to provided IP");*/
     /*console_add_cmd("listen", &console_cmd_listen,   "wait for a network connection, times out after 5 seconds");*/

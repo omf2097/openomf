@@ -43,11 +43,12 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
 
         object *obj = malloc(sizeof(object));
         object_create(obj, npos, vec2f_create(0,0));
+        object_set_userdata(obj, har);
         object_set_stl(obj, object_get_stl(parent));
         object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &move->ani);
         // Set all projectiles to their own layer + har layer
-        object_set_layers(obj, LAYER_PROJECTILE|LAYER_HAR); 
+        object_set_layers(obj, LAYER_PROJECTILE|(har->player_id == 0 ? LAYER_HAR2 : LAYER_HAR1)); 
         // To avoid projectile-to-projectile collisions, set them to same group
         object_set_group(obj, GROUP_PROJECTILE); 
         object_set_repeat(obj, 1);
@@ -194,14 +195,17 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
+    har *prog_owner = object_get_userdata(o_pjt);
 
     // Check for collisions by sprite collision points
     int level = 1;
     vec2i hit_coord;
     if(h->damage_done == 0 && intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
-        af_move *move = af_get_move(&(h->af_data), o_pjt->cur_animation->id);
+        af_move *move = af_get_move(&(prog_owner->af_data), o_pjt->cur_animation->id);
         har_take_damage(o_har, &move->footer_string, move->damage);
         har_spawn_scrap(o_har, hit_coord);
+        o_har->animation_state.enemy_x = o_pjt->pos.x;
+        o_har->animation_state.enemy_y = o_pjt->pos.y;
         h->damage_received = 1;
         h->state = STATE_RECOIL;
         vec2f vel = object_get_vel(o_har);
@@ -481,7 +485,7 @@ void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
     }
 }
 
-int har_create(object *obj, palette *pal, int dir, int har_id) {
+int har_create(object *obj, palette *pal, int dir, int har_id, int player_id) {
     // Create local data
     har *local = malloc(sizeof(har));
     object_set_userdata(obj, local);
@@ -498,6 +502,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
 
     // Save har id
     local->id = har_id;
+    local->player_id = player_id;
 
     // Health, endurance
     local->health_max = local->health = 1000;
@@ -508,7 +513,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id) {
 
     // Object related stuff
     object_set_gravity(obj, local->af_data.fall_speed);
-    object_set_layers(obj, LAYER_HAR);
+    object_set_layers(obj, LAYER_HAR | (player_id == 0 ? LAYER_HAR1 : LAYER_HAR2));
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
     object_set_stl(obj, local->af_data.sound_translation_table);

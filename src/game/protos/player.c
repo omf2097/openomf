@@ -247,6 +247,7 @@ void player_run(object *obj) {
                 int mx = isset(f, "mx") ? get(f, "mx") : 0;
                 int my = isset(f, "my") ? get(f, "my") : 0;
                 int mg = isset(f, "mg") ? get(f, "mg") : 0;
+                DEBUG("projectile gravity was %d", mg);
                 state->spawn(obj, get(f, "m"), vec2i_create(mx, my), mg, state->spawn_userdata);
             }
             if(isset(f, "md") && state->destroy != NULL) { 

@@ -27,6 +27,7 @@ game_player* game_state_get_player(int player_id);
 int game_state_ms_per_tick();
 
 void game_state_add_object(object *obj);
-void game_state_del_object(int anim_id);
+void game_state_del_object(object *obj);
+void game_state_del_animation(int anim_id);
 
 #endif // _GAME_STATE_H

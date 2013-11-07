@@ -162,5 +162,5 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userd
 }
 
 void cb_scene_destroy_object(object *parent, int id, void *userdata) {
-    game_state_del_object(id);
+    game_state_del_animation(id);
 }

@@ -47,7 +47,7 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata
 }
 
 void cb_vs_destroy_object(object *parent, int id, void *userdata) {
-    game_state_del_object(id);
+    game_state_del_animation(id);
 }
 
 
