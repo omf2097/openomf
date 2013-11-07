@@ -47,11 +47,12 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_set_stl(obj, object_get_stl(parent));
         object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &move->ani);
+        object_set_gravity(obj, g/10);
         // Set all projectiles to their own layer + har layer
         object_set_layers(obj, LAYER_PROJECTILE|(har->player_id == 0 ? LAYER_HAR2 : LAYER_HAR1)); 
         // To avoid projectile-to-projectile collisions, set them to same group
         object_set_group(obj, GROUP_PROJECTILE); 
-        object_set_repeat(obj, 1);
+        object_set_repeat(obj, 0);
         object_set_direction(obj, object_get_direction(parent));
         projectile_create(obj);
         game_state_add_object(obj);

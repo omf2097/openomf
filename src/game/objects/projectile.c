@@ -13,7 +13,7 @@ void projectile_free(object *obj) {
 
 void projectile_move(object *obj) {
     obj->pos.x += obj->vel.x;
-    obj->pos.y += obj->vel.y;
+    obj->pos.y += obj->vel.y + obj->gravity;
     
     // If projectile hits the wall, kill it
     // TODO: Seldct correct dispersal animation
@@ -24,6 +24,9 @@ void projectile_move(object *obj) {
     if(obj->pos.x > 310) {
         obj->pos.x = 310;
         obj->animation_state.finished = 1;
+    }
+    if(obj->pos.y > 190) {
+        obj->pos.y = 190;
     }
 }
 
