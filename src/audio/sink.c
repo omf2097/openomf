@@ -7,7 +7,7 @@ void sink_init(audio_sink *sink) {
 	sink->close = NULL;
 	sink->format_stream = NULL;
 
-	vector_create(&sink->streams, sizeof(audio_stream*));
+	vector_create(&sink->streams, sizeof(audio_stream));
 }
 
 void sink_format_stream(audio_sink *sink, audio_stream *stream) {
@@ -15,20 +15,20 @@ void sink_format_stream(audio_sink *sink, audio_stream *stream) {
 }
 
 void sink_play(audio_sink *sink, audio_source *src) {
-	audio_stream *stream = malloc(sizeof(audio_stream));
-	stream_init(stream, sink, src);
-	sink_format_stream(sink, stream);
-	vector_append(&sink->streams, stream);
-	stream_play(stream);
+	audio_stream stream;
+	stream_init(&stream, sink, src);
+	sink_format_stream(sink, &stream);
+	stream_play(&stream);
+	vector_append(&sink->streams, &stream);
 }
 
 void sink_stop(audio_sink *sink, audio_source *src) {
 	iterator it;
 	vector_iter_begin(&sink->streams, &it);
-	audio_stream **stream;
+	audio_stream *stream;
 	while((stream = iter_next(&it)) != NULL) {
-		if((*stream)->src == src) {
-			stream_stop(*stream);
+		if(stream->src == src) {
+			stream_stop(stream);
 			vector_delete(&sink->streams, &it);
 		}
 	}
@@ -37,14 +37,13 @@ void sink_stop(audio_sink *sink, audio_source *src) {
 void sink_render(audio_sink *sink) {
 	iterator it;
 	vector_iter_begin(&sink->streams, &it);
-	audio_stream **stream;
+	audio_stream *stream;
 	while((stream = iter_next(&it)) != NULL) {
-		if(stream_get_status(*stream) == STREAM_STATUS_FINISHED) {
+		if(stream_get_status(stream) == STREAM_STATUS_FINISHED) {
 			vector_delete(&sink->streams, &it);
-			stream_free(*stream);
-			free(*stream);
+			stream_free(stream);
 		} else {
-            stream_render(*stream);
+            stream_render(stream);
 		}
 	}
 }
@@ -53,11 +52,10 @@ void sink_free(audio_sink *sink) {
 	// Free streams
 	iterator it;
 	vector_iter_begin(&sink->streams, &it);
-	audio_stream **stream;
+	audio_stream *stream;
 	while((stream = iter_next(&it)) != NULL) {
-		stream_stop(*stream);
-		stream_free(*stream);
-		free(*stream);
+		stream_stop(stream);
+		stream_free(stream);
 	}
 	vector_free(&sink->streams);
 

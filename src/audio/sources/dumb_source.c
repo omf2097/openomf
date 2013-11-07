@@ -9,7 +9,6 @@ typedef struct dumb_source_t {
 } dumb_source;
 
 int dumb_source_update(audio_source *src, char *buffer, int len) {
-    DEBUG("Rendering %d bytes", len);
 	dumb_source *local = source_get_userdata(src);
 	float delta = 65536.0f / source_get_frequency(src);
 	int bps = source_get_channels(src) * source_get_bytes(src);
@@ -22,7 +21,6 @@ int dumb_source_update(audio_source *src, char *buffer, int len) {
             len / bps, // Size
             buffer
         ) * bps;
-    DEBUG("Rendered %d bytes", ret);
     return ret;
 }
 
@@ -31,6 +29,7 @@ void dumb_source_close(audio_source *src) {
     duh_end_sigrenderer(local->renderer);
     unload_duh(local->data);
     free(local);
+    DEBUG("Libdumb source closed.");
 }
 
 int dumb_source_init(audio_source *src, const char* file) {
@@ -56,7 +55,7 @@ int dumb_source_init(audio_source *src, const char* file) {
 	source_set_close_cb(src, dumb_source_close);
 
     // Some debug info
-    DEBUG("libDumb Source: Loaded file '%s' succesfully.", file);
+    DEBUG("Libdumb Source: Loaded file '%s' succesfully.", file);
 
 	// All done
 	return 0;

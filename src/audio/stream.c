@@ -3,18 +3,18 @@
 #include "utils/log.h"
 
 void stream_init(audio_stream *stream, audio_sink *sink, audio_source *src) {
-	stream->src = src;
-    stream->sink = sink;
 	stream->userdata = NULL;
 	stream->update = NULL;
 	stream->close = NULL;
     stream->play = NULL;
     stream->stop = NULL;
 	stream->status = STREAM_STATUS_STOPPED;
+	stream->src = src;
+    stream->sink = sink;
 }
 
 void stream_render(audio_stream *stream) {
-	if(stream->update != NULL) {
+	if(stream->update != NULL && stream->status == STREAM_STATUS_PLAYING) {
 		stream->update(stream);
 	}
 }
@@ -29,6 +29,7 @@ void stream_play(audio_stream *stream) {
 	if(stream->play != NULL && stream->status == STREAM_STATUS_STOPPED) {
 		stream->play(stream);
 		stream->status = STREAM_STATUS_PLAYING;
+		DEBUG("Stream set as STREAM_STATUS_PLAYING");
 	}
 }
 
@@ -36,6 +37,7 @@ void stream_stop(audio_stream *stream) {
 	if(stream->stop != NULL && stream->status == STREAM_STATUS_PLAYING) {
 		stream->stop(stream);
 		stream->status = STREAM_STATUS_STOPPED;
+		DEBUG("Stream set as STREAM_STATUS_STOPPED");
 	}
 }
 

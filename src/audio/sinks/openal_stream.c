@@ -4,7 +4,7 @@
 #include "audio/sinks/openal_stream.h"
 #include "utils/log.h"
 
-#define AUDIO_BUFFER_COUNT 2
+#define AUDIO_BUFFER_COUNT 3
 #define AUDIO_BUFFER_SIZE 8192
 
 typedef struct openal_stream_t {
@@ -62,11 +62,13 @@ void openal_stream_update(audio_stream *stream) {
             alSourceUnqueueBuffers(local->source, 1, &n);
             alBufferData(n, local->format, buf, ret, source_get_frequency(stream->src));
             alSourceQueueBuffers(local->source, 1, &n);
-            if(alGetError() != AL_NO_ERROR) {
-                PERROR("OpenAL Stream: Error buffering!");
+
+            // Check for any errors
+            int err = alGetError();
+            if(err != AL_NO_ERROR) {
+                PERROR("OpenAL Stream: Error %d while buffering!", err);
             }
         }
-        DEBUG("Updating buffer %d with %d bytes", n, ret);
     }
 }
 

@@ -17,15 +17,14 @@ enum {
 };
 
 typedef struct audio_stream_t {
-	audio_source *src;
-    audio_sink *sink;
 	int status;
-
 	void *userdata;
 	stream_update_cb update;
 	stream_close_cb close;
 	stream_play_cb play;
 	stream_stop_cb stop;
+	audio_source *src;
+    audio_sink *sink;
 } audio_stream;
 
 void stream_init(audio_stream *stream, audio_sink *sink, audio_source *src);
