@@ -4,8 +4,8 @@
 #include "audio/sinks/openal_stream.h"
 #include "utils/log.h"
 
-#define AUDIO_BUFFER_COUNT 3
-#define AUDIO_BUFFER_SIZE 8192
+#define AUDIO_BUFFER_COUNT 2
+#define AUDIO_BUFFER_SIZE 16384
 
 typedef struct openal_stream_t {
 	unsigned int source;
@@ -69,6 +69,13 @@ void openal_stream_update(audio_stream *stream) {
                 PERROR("OpenAL Stream: Error %d while buffering!", err);
             }
         }
+    }
+
+    // Make sure we are playing stream
+    ALenum state;
+    alGetSourcei(local->source, AL_SOURCE_STATE, &state);
+    if(state != AL_PLAYING) {
+        alSourcePlay(local->source);
     }
 }
 

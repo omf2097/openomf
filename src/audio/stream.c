@@ -29,7 +29,6 @@ void stream_play(audio_stream *stream) {
 	if(stream->play != NULL && stream->status == STREAM_STATUS_STOPPED) {
 		stream->play(stream);
 		stream->status = STREAM_STATUS_PLAYING;
-		DEBUG("Stream set as STREAM_STATUS_PLAYING");
 	}
 }
 
@@ -37,7 +36,6 @@ void stream_stop(audio_stream *stream) {
 	if(stream->stop != NULL && stream->status == STREAM_STATUS_PLAYING) {
 		stream->stop(stream);
 		stream->status = STREAM_STATUS_STOPPED;
-		DEBUG("Stream set as STREAM_STATUS_STOPPED");
 	}
 }
 
