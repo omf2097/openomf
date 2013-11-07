@@ -135,7 +135,7 @@ set(CORELIBS
 # If we support ogg vorbis, add library includes etc.
 IF(USE_OGGVORBIS)
     set(COREINCS ${COREINCS} ${OGG_INCLUDE_DIR} ${VORBIS_INCLUDE_DIR})
-    set(CORELIBS ${CORELIBS} ${OGG_LIBRARY} ${VORBIS_LIBRARY} )
+    set(CORELIBS ${CORELIBS} ${VORBISFILE_LIBRARY} ${VORBIS_LIBRARY} ${OGG_LIBRARY})
 ENDIF(USE_OGGVORBIS)
 
 # MingW build should add mingw32 lib
