@@ -6,7 +6,7 @@
 #include "video/video.h"
 #include "audio/audio.h"
 #include "audio/sound_state.h"
-#include "audio/soundloader.h"
+#include "audio/sound.h"
 #include "audio/music.h"
 #include "game/protos/player.h"
 #include "game/protos/object.h"
@@ -20,7 +20,7 @@ void cmd_tickjump(object *obj, int tick) {
 }
 
 void cmd_sound(object *obj, int sound) {
-    soundloader_play(obj->sound_translation_table[sound] - 1, obj->animation_state.sound_state);
+    sound_play(obj->sound_translation_table[sound] - 1/*, obj->animation_state.sound_state*/);
 }
 
  // -100 to 100, 0 is the middle

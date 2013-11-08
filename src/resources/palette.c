@@ -1,18 +1,30 @@
-#include "resources/palette.h"
 #include <string.h>
 #include <stdlib.h>
-
+#include "resources/palette.h"
+#include "resources/ids.h"
 #include "utils/log.h"
 
-sd_altpal_file *altpals;
+sd_altpal_file *altpals = NULL;
 
 int altpals_init() {
+    // Get filename
+    char filename[64];
+    get_filename_by_id(DAT_ALTPALS, filename);
+
     altpals = sd_altpal_create();
-    return sd_altpals_load(altpals, "resources/ALTPALS.DAT");
+    if(sd_altpals_load(altpals, filename)) {
+        sd_altpal_delete(altpals);
+        PERROR("Unable to load altpals file '%s'!", filename);
+        return 1;
+    }
+    DEBUG("Loaded altpals file '%s'.", filename);
+    return 0;
 }
 
 void altpals_close() {
-    sd_altpal_delete(altpals);
+    if(altpals != NULL) {
+        sd_altpal_delete(altpals);
+    }
 }
 
 void palette_set_player_color(palette *palette, int sourcecolor, int destcolor) {

@@ -46,7 +46,8 @@ enum RESOURCE_ID {
     DAT_ENGLISH,
     DAT_GERMAN,
     DAT_GRAPHCHR,
-    DAT_CHARSMAL
+    DAT_CHARSMAL,
+    DAT_ALTPALS
 };
 
 void get_filename_by_id(int id, char *ptr);

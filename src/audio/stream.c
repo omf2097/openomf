@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "audio/stream.h"
+#include "audio/source.h"
 #include "utils/log.h"
 
 void stream_init(audio_stream *stream, audio_sink *sink, audio_source *src) {
@@ -13,6 +14,10 @@ void stream_init(audio_stream *stream, audio_sink *sink, audio_source *src) {
     stream->sink = sink;
 }
 
+void stream_set_finished(audio_stream *stream) {
+	stream->status = STREAM_STATUS_FINISHED;
+}
+
 void stream_render(audio_stream *stream) {
 	if(stream->update != NULL && stream->status == STREAM_STATUS_PLAYING) {
 		stream->update(stream);
@@ -22,6 +27,8 @@ void stream_render(audio_stream *stream) {
 void stream_free(audio_stream *stream) {
 	if(stream->close != NULL) {
 		stream->close(stream);
+		source_free(stream->src);
+		free(stream->src);
 	}
 }
 

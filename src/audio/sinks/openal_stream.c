@@ -20,14 +20,15 @@ void openal_stream_play(audio_stream *stream) {
     char buf[AUDIO_BUFFER_SIZE];
     for(int i = 0; i < AUDIO_BUFFER_COUNT; i++) {
         int ret = source_update(stream->src, buf, AUDIO_BUFFER_SIZE);
-        alBufferData(
-            local->buffers[i], 
-            local->format, 
-            buf, 
-            ret, 
-            source_get_frequency(stream->src));
+        if(ret > 0) { 
+            alBufferData(
+                local->buffers[i], 
+                local->format, 
+                buf, ret, 
+                source_get_frequency(stream->src));
+            alSourceQueueBuffers(local->source, 1, &local->buffers[i]);
+        }
     }
-    alSourceQueueBuffers(local->source, AUDIO_BUFFER_COUNT, local->buffers);
 
     // Start playback
     alSourcePlay(local->source);
@@ -68,6 +69,8 @@ void openal_stream_update(audio_stream *stream) {
             if(err != AL_NO_ERROR) {
                 PERROR("OpenAL Stream: Error %d while buffering!", err);
             }
+        } else {
+            stream_set_finished(stream);
         }
     }
 
@@ -81,6 +84,7 @@ void openal_stream_update(audio_stream *stream) {
 
 void openal_stream_close(audio_stream *stream) {
     openal_stream *local = stream_get_userdata(stream);
+    alSourceStop(local->source);
     alDeleteSources(1, &local->source);
     alDeleteBuffers(AUDIO_BUFFER_COUNT, local->buffers);
     free(local);

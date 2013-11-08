@@ -1,7 +1,7 @@
 #ifndef _SINK_H
 #define _SINK_H
 
-#include "utils/vector.h"
+#include "utils/hashmap.h"
 #include "audio/stream.h"
 #include "audio/source.h"
 
@@ -11,15 +11,15 @@ typedef void (*sink_format_stream_cb)(audio_sink *sink, audio_stream *stream);
 typedef void (*sink_close_cb)(audio_sink *sink);
 
 typedef struct audio_sink_t {
-	vector streams;
+	hashmap streams;
 	void *userdata;
 	sink_close_cb close;
 	sink_format_stream_cb format_stream;
 } audio_sink;
 
 void sink_init(audio_sink *sink);
-void sink_play(audio_sink *sink, audio_source *src);
-void sink_stop(audio_sink *sink, audio_source *src);
+unsigned int sink_play(audio_sink *sink, audio_source *src);
+void sink_stop(audio_sink *sink, unsigned int sid);
 void sink_free(audio_sink *sink);
 void sink_render(audio_sink *sink);
 void sink_format_stream(audio_sink *sink, audio_stream *stream);

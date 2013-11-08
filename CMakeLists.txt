@@ -56,11 +56,11 @@ add_executable(openomf
     src/audio/sink.c
     src/audio/stream.c
     src/audio/source.c
-    src/audio/soundloader.c
     src/audio/sinks/openal_sink.c
     src/audio/sinks/openal_stream.c
     src/audio/sources/dumb_source.c
     src/audio/sources/vorbis_source.c
+    src/audio/sources/raw_source.c
     src/resources/ids.c
     src/resources/af.c
     src/resources/af_loader.c
@@ -71,6 +71,7 @@ add_executable(openomf
     src/resources/palette.c
     src/resources/sprite.c
     src/resources/animation.c
+    src/resources/sounds_loader.c
     src/game/protos/object.c
     src/game/protos/player.c
     src/game/protos/scene.c

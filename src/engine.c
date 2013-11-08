@@ -1,10 +1,9 @@
 #include "engine.h"
 #include "utils/log.h"
 #include "utils/config.h"
-#include "audio/stream.h"
 #include "audio/audio.h"
 #include "audio/music.h"
-#include "audio/soundloader.h"
+#include "resources/sounds_loader.h"
 #include "video/texture.h"
 #include "video/video.h"
 #include "game/text/languages.h"
@@ -35,7 +34,7 @@ int engine_init() {
     if(audio_init(sink_id)) {
         return 1;
     }
-    if(soundloader_init()) {
+    if(sounds_loader_init()) {
         return 1;
     }
     if(lang_init()) {
@@ -153,7 +152,7 @@ void engine_close() {
     altpals_close();
     fonts_close();
     lang_close();
-    soundloader_close();
+    sounds_loader_close();
     audio_close();
     video_close();
     DEBUG("Engine deinit successful.");

@@ -47,6 +47,7 @@ void get_filename_by_id(int id, char *ptr) {
         case DAT_GERMAN:     sprintf(ptr, "%sGERMAN.DAT", path);  break;
         case DAT_GRAPHCHR:   sprintf(ptr, "%sGRAPHCHR.DAT", path); break;
         case DAT_CHARSMAL:   sprintf(ptr, "%sCHARSMAL.DAT", path); break;
+        case DAT_ALTPALS:    sprintf(ptr, "%sALTPALS.DAT", path); break;
         default: 
             ptr[0] = 0;
             break;

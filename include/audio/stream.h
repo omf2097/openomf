@@ -32,6 +32,7 @@ void stream_render(audio_stream *stream);
 void stream_free(audio_stream *stream);
 void stream_play(audio_stream *stream);
 void stream_stop(audio_stream *stream);
+void stream_set_finished(audio_stream *stream);
 int stream_get_status(audio_stream *stream);
 
 void stream_set_userdata(audio_stream *stream, void *userdata);
