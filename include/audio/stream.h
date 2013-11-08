@@ -11,19 +11,19 @@ typedef void (*stream_update_cb)(audio_stream *stream);
 typedef void (*stream_close_cb)(audio_stream *stream);
 
 enum {
-	STREAM_STATUS_PLAYING,
-	STREAM_STATUS_STOPPED,
-	STREAM_STATUS_FINISHED
+    STREAM_STATUS_PLAYING,
+    STREAM_STATUS_STOPPED,
+    STREAM_STATUS_FINISHED
 };
 
 typedef struct audio_stream_t {
-	int status;
-	void *userdata;
-	stream_update_cb update;
-	stream_close_cb close;
-	stream_play_cb play;
-	stream_stop_cb stop;
-	audio_source *src;
+    int status;
+    void *userdata;
+    stream_update_cb update;
+    stream_close_cb close;
+    stream_play_cb play;
+    stream_stop_cb stop;
+    audio_source *src;
     audio_sink *sink;
 } audio_stream;
 

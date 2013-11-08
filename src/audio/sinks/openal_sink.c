@@ -6,12 +6,12 @@
 #include "utils/log.h"
 
 typedef struct openal_sink_t {
-	ALCdevice *device;
-	ALCcontext *context;
+    ALCdevice *device;
+    ALCcontext *context;
 } openal_sink;
 
 void openal_sink_close(audio_sink *sink) {
-	openal_sink *local = sink_get_userdata(sink);
+    openal_sink *local = sink_get_userdata(sink);
     alcMakeContextCurrent(0);
     alcDestroyContext(local->context);
     alcCloseDevice(local->device);
@@ -23,9 +23,9 @@ void openal_sink_format_stream(audio_sink *sink, audio_stream *stream) {
 }
 
 int openal_sink_init(audio_sink *sink) {
-	openal_sink *local = malloc(sizeof(openal_sink));
+    openal_sink *local = malloc(sizeof(openal_sink));
 
-	// Open device and create context
+    // Open device and create context
     local->device = alcOpenDevice(0);
     if(!local->device) {
         PERROR("Could not open audio playback device!");

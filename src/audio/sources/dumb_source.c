@@ -10,10 +10,10 @@ typedef struct dumb_source_t {
 } dumb_source;
 
 int dumb_source_update(audio_source *src, char *buffer, int len) {
-	dumb_source *local = source_get_userdata(src);
-	float delta = 65536.0f / source_get_frequency(src);
-	int bps = source_get_channels(src) * source_get_bytes(src);
-	int ret = duh_render(
+    dumb_source *local = source_get_userdata(src);
+    float delta = 65536.0f / source_get_frequency(src);
+    int bps = source_get_channels(src) * source_get_bytes(src);
+    int ret = duh_render(
             local->renderer, 
             source_get_bytes(src) * 8, // Bits
             0,  // Unsign
@@ -34,9 +34,9 @@ void dumb_source_close(audio_source *src) {
 }
 
 int dumb_source_init(audio_source *src, const char* file) {
-	dumb_source *local = malloc(sizeof(dumb_source));
+    dumb_source *local = malloc(sizeof(dumb_source));
 
-	// Load file and initialize renderer
+    // Load file and initialize renderer
     char *ext = strrchr(file, '.') + 1;
     if(strcasecmp(ext, "psm") == 0) {
         local->data = dumb_load_psm(file, 0);
@@ -63,16 +63,16 @@ int dumb_source_init(audio_source *src, const char* file) {
     source_set_bytes(src, 2);
     source_set_channels(src, 2);
 
-	// Set callbacks
-	source_set_userdata(src, local);
-	source_set_update_cb(src, dumb_source_update);
-	source_set_close_cb(src, dumb_source_close);
+    // Set callbacks
+    source_set_userdata(src, local);
+    source_set_update_cb(src, dumb_source_update);
+    source_set_close_cb(src, dumb_source_close);
 
     // Some debug info
     DEBUG("Libdumb Source: Loaded file '%s' succesfully.", file);
 
-	// All done
-	return 0;
+    // All done
+    return 0;
 
 error_0:
     free(local);

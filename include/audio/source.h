@@ -10,9 +10,9 @@ typedef struct audio_source_t {
     int frequency;
     int channels;
     int bytes;
-	void *userdata;
-	source_update_cb update;
-	source_close_cb close;
+    void *userdata;
+    source_update_cb update;
+    source_close_cb close;
 } audio_source;
 
 void source_init(audio_source *src);

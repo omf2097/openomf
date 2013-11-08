@@ -8,7 +8,7 @@
 #define AUDIO_BUFFER_SIZE 16384
 
 typedef struct openal_stream_t {
-	unsigned int source;
+    unsigned int source;
     unsigned int buffers[AUDIO_BUFFER_COUNT];
     int format;
 } openal_stream;
