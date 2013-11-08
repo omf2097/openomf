@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <dumb/dumb.h>
 #include "audio/sources/dumb_source.h"
 #include "utils/log.h"
@@ -36,11 +37,24 @@ int dumb_source_init(audio_source *src, const char* file) {
 	dumb_source *local = malloc(sizeof(dumb_source));
 
 	// Load file and initialize renderer
-    local->data = dumb_load_psm(file, 0);
+    char *ext = strrchr(file, '.') + 1;
+    if(strcasecmp(ext, "psm") == 0) {
+        local->data = dumb_load_psm(file, 0);
+    } else if(strcasecmp(ext, "s3m") == 0) {
+        local->data = dumb_load_s3m(file);
+    } else if(strcasecmp(ext, "mod") == 0) {
+        local->data = dumb_load_mod(file, 0);
+    } else if(strcasecmp(ext, "it") == 0) {
+        local->data = dumb_load_it(file);
+    } else if(strcasecmp(ext, "xm") == 0) {
+        local->data = dumb_load_xm(file);
+    } else {
+        PERROR("Libdumb Source: No suitable module decoder found.");
+        goto error_0;
+    }
     if(!local->data) {
-        PERROR("Error while loading PSM file!");
-        free(local);
-        return 1;
+        PERROR("Libdumb Source: Error while loading module file!");
+        goto error_0;
     }
     local->renderer = duh_start_sigrenderer(local->data, 0, 2, 0);
     
@@ -59,4 +73,8 @@ int dumb_source_init(audio_source *src, const char* file) {
 
 	// All done
 	return 0;
+
+error_0:
+    free(local);
+    return 1;
 }
