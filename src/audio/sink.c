@@ -26,6 +26,7 @@ unsigned int sink_play(audio_sink *sink, audio_source *src) {
 	stream_play(&stream);
 	unsigned int new_key = gid_gen();
 	hashmap_iput(&sink->streams, new_key, &stream, sizeof(audio_stream));
+	DEBUG("Added sound key %d", new_key);
 	return new_key;
 }
 
@@ -54,8 +55,9 @@ void sink_render(audio_sink *sink) {
 		stream = pair->val;
 		if(stream_get_status(stream) == STREAM_STATUS_FINISHED) {
 			key = *(unsigned int *)pair->key;
-			hashmap_idel(&sink->streams, key);
+			DEBUG("Removing sound key %d", key);
 			stream_free(stream);
+			hashmap_idel(&sink->streams, key);
 		} else {
             stream_render(stream);
 		}

@@ -4,7 +4,7 @@
 #include "audio/sinks/openal_stream.h"
 #include "utils/log.h"
 
-#define AUDIO_BUFFER_COUNT 2
+#define AUDIO_BUFFER_COUNT 4
 #define AUDIO_BUFFER_SIZE 16384
 
 typedef struct openal_stream_t {

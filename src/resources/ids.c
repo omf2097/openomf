@@ -1,9 +1,38 @@
-#include "resources/ids.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include "resources/ids.h"
+#include "game/settings.h"
+#include "utils/log.h"
+
+struct music_override_t {
+    int id;
+    const char *name;
+};
 
 void get_filename_by_id(int id, char *ptr) {
     const char* path = "resources/";
+
+    // Declare music overrides
+    settings *s = settings_get();
+    struct music_override_t overrides[] = {
+        {PSM_ARENA0, s->sound.music_arena0},
+        {PSM_ARENA1, s->sound.music_arena1},
+        {PSM_ARENA2, s->sound.music_arena2},
+        {PSM_ARENA3, s->sound.music_arena3},
+        {PSM_ARENA4, s->sound.music_arena4},
+        {PSM_MENU,   s->sound.music_menu},
+        {PSM_END,    s->sound.music_end}
+    };
+
+    for(int i = 0; i < 7; i++) {
+        if(id == overrides[i].id && strlen(overrides[i].name) > 0) {
+            DEBUG("Overriding %s to %s.", get_id_name(id), overrides[i].name);
+            sprintf(ptr, "%s", overrides[i].name);
+            return;
+        }
+    }
+
     switch(id) {
         case SCENE_INTRO:    sprintf(ptr, "%sINTRO.BK", path);    break;
         case SCENE_MENU:     sprintf(ptr, "%sMAIN.BK", path);     break;

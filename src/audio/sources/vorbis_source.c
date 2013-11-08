@@ -30,20 +30,24 @@ const char* vorbis_text_error(int id) {
 
 int vorbis_source_update(audio_source *src, char *buffer, int len) {
     vorbis_source *local = source_get_userdata(src);
-    int ret = ov_read(
-            &local->src_file, 
-            buffer, // Output buffer
-            len, // Output buffer length
-            0, // endian byte packing
-            2, // Word size
-            1, // Signedness, signed.
-            &local->current_section // number of the current logical bitstream
-        );
-    if(ret < 0) {
-        DEBUG("Vorbis Source: Error %d while streaming: %s.", ret, vorbis_text_error(ret));
-        return 0;
+
+    int read = 0;
+    int ret;
+    while(read < len) {
+        ret = ov_read(
+                &local->src_file, 
+                buffer+read, len-read, // Output buffer & length
+                0, 2, 1, // endian byte packing, word size (2), signedness (signed)
+                &local->current_section); // number of the current logical bitstream
+        read += ret;
+        if(ret < 0) {
+            DEBUG("Vorbis Source: Error %d while streaming: %s.", ret, vorbis_text_error(ret));
+            return read;
+        } else if(ret == 0) {
+            return read;
+        }
     }
-    return ret;
+    return read;
 }
 
 void vorbis_source_close(audio_source *src) {

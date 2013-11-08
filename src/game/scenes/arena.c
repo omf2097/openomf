@@ -350,23 +350,15 @@ int arena_create(scene *scene) {
     
     // Handle music playback
     music_stop();
-    switch (scene->bk_data.file_id) {
-        case 8:
-            music_play("resources/ARENA0.PSM");
-            break;
-        case 16:
-            music_play("resources/ARENA1.PSM");
-            break;
-        case 32:
-            music_play("resources/ARENA2.PSM");
-            break;
-        case 64:
-            music_play("resources/ARENA3.PSM");
-            break;
-        case 128:
-            music_play("resources/ARENA4.PSM");
-            break;
+    char music_filename[64];
+    switch(scene->bk_data.file_id) {
+        case 8:   get_filename_by_id(PSM_ARENA0, music_filename); break;
+        case 16:  get_filename_by_id(PSM_ARENA1, music_filename); break;
+        case 32:  get_filename_by_id(PSM_ARENA2, music_filename); break;
+        case 64:  get_filename_by_id(PSM_ARENA3, music_filename); break;
+        case 128: get_filename_by_id(PSM_ARENA4, music_filename); break;
     }
+    music_play(music_filename);
     // TODO: Audio: Implement this
     //audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
 
