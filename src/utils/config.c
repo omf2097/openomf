@@ -4,7 +4,7 @@
 #include <string.h>
 #include <confuse.h>
 
-cfg_t *cfg=NULL;
+cfg_t *cfg = NULL;
 
 vector cfg_opts;
 int cfg_opts_init = 0;
@@ -45,26 +45,36 @@ void conf_addstring(char *name, char *default_val) {
     conf_append_opt(&cfg_opts, &new_opt);
 }
 
-int conf_init(const char *filename) {
+int conf_init_internal(const char *filename) {
     conf_ensure_opt_init();
     cfg = cfg_init((cfg_opt_t*)cfg_opts.data, 0);
     int ret = cfg_parse(cfg, filename);
     if(ret == CFG_FILE_ERROR) {
         PERROR("Error while attempting to read config file '%s' !", filename);
-        DEBUG("Trying to write a default config file to '%s'", filename);
-        if (!conf_write_config(filename)) {
-            conf_init(filename);
-        } else {
-            cfg_free(cfg);
-            return 1;
-        }
+        return 1;
     } else if(ret == CFG_PARSE_ERROR) {
         PERROR("Error while attempting to parse config file '%s' !", filename);
-        cfg_free(cfg);
         return 1;
     }
     DEBUG("Config file '%s' read!", filename);
     return 0;
+}
+
+int conf_init(const char *filename) {
+    int ret = conf_init_internal(filename);
+    if(ret == 1) {
+        DEBUG("Trying to write a default config file.");
+        if(!conf_write_config(filename)) {
+            return conf_init_internal(filename);
+        } else {
+            goto error_0;
+        }
+    }
+    return 0;
+
+error_0:
+    cfg_free(cfg);
+    return 1;
 }
 
 int conf_write_config(const char *filename) {
