@@ -6,7 +6,7 @@
 #include "audio/sound.h"
 #include "resources/sounds_loader.h"
 
-void sound_play(int id) {
+void sound_play(int id, float volume, float panning, float pitch) {
     // Get sample data
     char *buf;
     int len;
@@ -18,6 +18,6 @@ void sound_play(int id) {
     audio_source *src = malloc(sizeof(audio_source));
     source_init(src);
     raw_source_init(src, buf, len);
-    sink_play(audio_get_sink(), src);
+    sink_play_set(audio_get_sink(), src, volume, panning, pitch);
 }
 

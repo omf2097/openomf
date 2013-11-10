@@ -55,6 +55,12 @@ void stream_stop(audio_stream *stream) {
     }
 }
 
+void stream_apply(audio_stream *stream) {
+	if(stream->apply != NULL) {
+		stream->apply(stream);
+	}
+}
+
 int stream_get_status(audio_stream *stream) {
     return stream->status;
 }
@@ -81,4 +87,8 @@ void stream_set_play_cb(audio_stream *stream, stream_play_cb cbfunc) {
 
 void stream_set_stop_cb(audio_stream *stream, stream_stop_cb cbfunc) {
     stream->stop = cbfunc;
+}
+
+void stream_set_apply_cb(audio_stream *stream, stream_apply_cb cbfunc) {
+	stream->apply = cbfunc;
 }

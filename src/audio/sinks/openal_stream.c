@@ -13,6 +13,20 @@ typedef struct openal_stream_t {
     int format;
 } openal_stream;
 
+void openal_stream_apply(audio_stream *stream) {
+    openal_stream *local = stream_get_userdata(stream);
+
+    // Handle panning here (only if mono)
+    if(source_get_channels(stream->src) == 1) {
+        float pos[] = {stream->panning, 0.0f, 0.0f};
+        alSourcefv(local->source, AL_POSITION, pos);
+    }
+
+    // Volume and pitch
+    alSourcef(local->source, AL_GAIN, stream->volume);
+    alSourcef(local->source, AL_PITCH, stream->pitch);
+}
+
 void openal_stream_play(audio_stream *stream) {
     openal_stream *local = stream_get_userdata(stream);
 
@@ -29,6 +43,9 @@ void openal_stream_play(audio_stream *stream) {
             alSourceQueueBuffers(local->source, 1, &local->buffers[i]);
         }
     }
+
+    // Set volume etc.
+    openal_stream_apply(stream);
 
     // Start playback
     alSourcePlay(local->source);
@@ -138,6 +155,7 @@ int openal_stream_init(audio_stream *stream, audio_sink *sink) {
     stream_set_close_cb(stream, openal_stream_close);
     stream_set_play_cb(stream, openal_stream_play);
     stream_set_stop_cb(stream, openal_stream_stop);
+    stream_set_apply_cb(stream, openal_stream_apply);
     
     // All done
     return 0;

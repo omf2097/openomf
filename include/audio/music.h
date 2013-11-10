@@ -6,5 +6,6 @@
 int music_play(const char *filename);
 void music_stop();
 int music_playing();
+void music_set_volume(float volume);
 
 #endif // _MUSIC_H

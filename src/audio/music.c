@@ -56,6 +56,10 @@ error_0:
     return 1;
 }
 
+void music_set_volume(float volume) {
+    sink_set_stream_volume(audio_get_sink(), music_id, volume);
+}
+
 void music_stop() {
     if(music_id == 0) return;
     sink_stop(audio_get_sink(), music_id);

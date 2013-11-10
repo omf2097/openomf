@@ -82,8 +82,7 @@ void game_menu_return(component *c, void *userdata) {
 }
 
 void music_slide(component *c, void *userdata, int pos) {
-    // TODO: Audio: Implement this
-    //audio_set_volume(TYPE_MUSIC, pos/10.0f);
+    music_set_volume(pos/10.0f);
 }
 
 void sound_slide(component *c, void *userdata, int pos) {
@@ -359,8 +358,7 @@ int arena_create(scene *scene) {
         case 128: get_filename_by_id(PSM_ARENA4, music_filename); break;
     }
     music_play(music_filename);
-    // TODO: Audio: Implement this
-    //audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
+    music_set_volume(settings_get()->sound.music_vol/10.0f);
 
     // Initialize local struct
     local = malloc(sizeof(arena_local));

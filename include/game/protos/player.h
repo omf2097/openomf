@@ -3,7 +3,6 @@
 
 #include "utils/vec.h"
 
-typedef struct sound_state_t sound_state;
 typedef struct object_t object;
 typedef struct sd_stringparser_t sd_stringparser;
 
@@ -39,7 +38,6 @@ typedef struct player_animation_state_t {
     unsigned int reverse;
     unsigned int end_frame;
     int previous;
-    sound_state *sound_state;
     sd_stringparser *parser;
     int enemy_x, enemy_y;
 

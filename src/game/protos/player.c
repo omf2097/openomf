@@ -4,14 +4,28 @@
 
 #include "game/settings.h"
 #include "video/video.h"
-#include "audio/audio.h"
-#include "audio/sound_state.h"
+#include "audio/sink.h"
 #include "audio/sound.h"
 #include "audio/music.h"
+#include "resources/ids.h"
 #include "game/protos/player.h"
 #include "game/protos/object.h"
 #include "utils/string.h"
 #include "utils/log.h"
+
+// --------------------- Helpers ---------------------
+
+static int clamp(int val, int min, int max) {
+    if(val > max) return max;
+    if(val < min) return min;
+    return val;
+}
+
+static float clampf(float val, float min, float max) {
+    if(val > max) return max;
+    if(val < min) return min;
+    return val;
+}
 
 // ---------------- Private callbacks ---------------- 
 
@@ -19,64 +33,31 @@ void cmd_tickjump(object *obj, int tick) {
     obj->animation_state.ticks = tick;
 }
 
-void cmd_sound(object *obj, int sound) {
-    sound_play(obj->sound_translation_table[sound] - 1/*, obj->animation_state.sound_state*/);
-}
-
- // -100 to 100, 0 is the middle
-void cmd_sound_pan(object *obj, int pan) {
-    sound_state *snd = obj->animation_state.sound_state;
-    if(pan < -100) { pan = -100; }
-    if(pan > 100) { pan = 100; }
-    snd->pan_start = ((char)pan)/100.0f;
-    snd->pan_end = snd->pan_start;
-}
-
- // -100 to 100, 0 is the middle
-void cmd_sound_pan_end(object *obj, int pan) {
-    sound_state *snd = obj->animation_state.sound_state;
-    if(pan < -100) { pan = -100; }
-    if(pan > 100) { pan = 100; }
-    snd->pan_end = ((char)pan)/100.0f;
-    snd->pan = snd->pan_start;
-}
-
-// between 0 and 100 (capped to 100)
-void cmd_sound_vol(object *obj, int vol) {
-    sound_state *snd = obj->animation_state.sound_state;
-    if(vol < 0) { vol = 0; }
-    if(vol > 100) { vol = 100; }
-    snd->vol = vol/100.0f * (settings_get()->sound.sound_vol/10.0f);
-}
-
-// between -16 and 239
-void cmd_sound_freq(object *obj, int f) {
-    sound_state *snd = obj->animation_state.sound_state;
-    if(f < -16) { f = -16; }
-    if(f > 239) { f = 239; }
-    float nf = (f/239.0f)*3.0f + 1.0f; // 3x freq multiplier seems to be close to omf
-    if(nf < 0.5f) { nf = 0.5f; }
-    if(nf > 2.0f) { nf = 2.0f; }
-    snd->freq = nf;
-}
-
 void cmd_music_off() {
     music_stop();
 }
 
 void cmd_music_on(int music) {
+    // 0 is special case; stops playback
+    if(music == 0) {
+        music_stop();
+        return;
+    }
+
+    // Find file we want to play
+    char filename[64];
     switch(music) {
         case 0: music_stop(); break;
-        case 1: music_play("resources/END.PSM"); break;
-        case 2: music_play("resources/MENU.PSM"); break;
-        case 3: music_play("resources/ARENA0.PSM"); break;
-        case 4: music_play("resources/ARENA1.PSM"); break;
-        case 5: music_play("resources/ARENA2.PSM"); break;
-        case 6: music_play("resources/ARENA3.PSM"); break;
-        case 7: music_play("resources/ARENA4.PSM"); break;
+        case 1: get_filename_by_id(PSM_END, filename); break;
+        case 2: get_filename_by_id(PSM_MENU, filename); break;
+        case 3: get_filename_by_id(PSM_ARENA0, filename); break;
+        case 4: get_filename_by_id(PSM_ARENA1, filename); break;
+        case 5: get_filename_by_id(PSM_ARENA2, filename); break;
+        case 6: get_filename_by_id(PSM_ARENA3, filename); break;
+        case 7: get_filename_by_id(PSM_ARENA4, filename); break;
     }
-    // TODO: Audio: Implement this
-    //audio_set_volume(TYPE_MUSIC, settings_get()->sound.music_vol/10.0f);
+    music_play(filename);
+    music_set_volume(settings_get()->sound.music_vol/10.0f);
 }
 
 // ---------------- Private functions ---------------- 
@@ -130,7 +111,6 @@ void player_create(object *obj) {
     obj->animation_state.destroy_userdata = NULL;
     obj->animation_state.parser = NULL;
     obj->animation_state.previous = -1;
-    obj->animation_state.sound_state = malloc(sizeof(sound_state));
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
     player_clear_frame(obj);
@@ -140,7 +120,6 @@ void player_free(object *obj) {
     if(obj->animation_state.parser != NULL) {
         sd_stringparser_delete(obj->animation_state.parser);
     }
-    free(obj->animation_state.sound_state);
 }
 
 void player_reload_with_str(object *obj, const char* custom_str) {
@@ -255,19 +234,34 @@ void player_run(object *obj) {
                 state->destroy(obj, get(f, "md"), state->destroy_userdata);
             }
 
-            // Handle music and sounds
-            state->sound_state->freq = 1.0f;
-            state->sound_state->pan = 0.0f;
-            state->sound_state->pan_start = 0.0f;
-            state->sound_state->pan_end = 0.0f;
-            if(isset(f, "sf"))  { cmd_sound_freq(obj, get(f, "sf"));      }
-            if(isset(f, "l"))   { cmd_sound_vol(obj, get(f, "l"));        }
-            if(isset(f, "sb"))  { cmd_sound_pan(obj, get(f, "sb"));       }
-            if(isset(f, "sl"))  { cmd_sound_pan_end(obj, get(f, "sl"));   }
-            if(isset(f, "se"))  { cmd_sound_pan_end(obj, get(f, "se")+1); }
-            if(isset(f, "smo")) { cmd_music_on(get(f, "smo"));            }
-            if(isset(f, "smf")) { cmd_music_off();                        }
-            if(isset(f, "s"))   { cmd_sound(obj, get(f, "s"));            }
+            // Music playback
+            if(isset(f, "smo")) { 
+                cmd_music_on(get(f, "smo"));
+            }
+            if(isset(f, "smf")) { 
+                cmd_music_off();
+            }
+
+            // Sound playback
+            if(isset(f, "s")) {
+                float pitch = PITCH_DEFAULT;
+                float volume = VOLUME_DEFAULT * (settings_get()->sound.sound_vol/10.0f);
+                float panning = PANNING_DEFAULT;
+                if(isset(f, "sf")) {
+                    int p = clamp(get(f, "sf"), -16, 239);
+                    pitch = clampf((p/239.0f)*3.0f + 1.0f, PITCH_MIN, PITCH_MAX);
+                }
+                if(isset(f, "l")) {
+                    int v = clamp(get(f, "l"), 0, 100);
+                    volume = (v / 100.0f) * (settings_get()->sound.sound_vol/10.0f);
+                }
+                if(isset(f, "sb")) {
+                    panning = clamp(get(f, "sb"), -100, 100) / 100.0f;
+                }
+                sound_play(
+                    obj->sound_translation_table[get(f, "s")] - 1,
+                    volume, panning, pitch);
+            }
 
             // Blend mode stuff
             if(isset(f, "b1")) { rstate->method_flags &= 0x2000; }
