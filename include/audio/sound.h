@@ -1,9 +1,6 @@
 #ifndef _SOUND_H
 #define _SOUND_H
 
-#include "audio/stream.h"
-#include "audio/sound_state.h"
-
-int sound_play(const char *data, unsigned int len, sound_state *ss);
+void sound_play(int id, float volume, float panning, float pitch);
 
 #endif // _SOUND_H

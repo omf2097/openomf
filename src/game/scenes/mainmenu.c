@@ -550,8 +550,10 @@ int mainmenu_create(scene *scene) {
     
     // Force music playback
     if(!music_playing()) {
-        music_play("resources/MENU.PSM");
-        audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
+        char filename[64];
+        get_filename_by_id(PSM_MENU, filename);
+        music_play(filename);
+        music_set_volume(settings_get()->sound.music_vol/10.0f);
     }
 
     // Zero out host

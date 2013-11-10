@@ -82,11 +82,12 @@ void game_menu_return(component *c, void *userdata) {
 }
 
 void music_slide(component *c, void *userdata, int pos) {
-    audio_set_volume(TYPE_MUSIC, pos/10.0f);
+    music_set_volume(pos/10.0f);
 }
 
 void sound_slide(component *c, void *userdata, int pos) {
-    audio_set_volume(TYPE_EFFECT, pos/10.0f);
+    // TODO: Audio: Implement this
+    //audio_set_volume(TYPE_EFFECT, pos/10.0f);
 }
 
 void scene_fight_anim_done(object *parent) {
@@ -348,24 +349,16 @@ int arena_create(scene *scene) {
     
     // Handle music playback
     music_stop();
-    switch (scene->bk_data.file_id) {
-        case 8:
-            music_play("resources/ARENA0.PSM");
-            break;
-        case 16:
-            music_play("resources/ARENA1.PSM");
-            break;
-        case 32:
-            music_play("resources/ARENA2.PSM");
-            break;
-        case 64:
-            music_play("resources/ARENA3.PSM");
-            break;
-        case 128:
-            music_play("resources/ARENA4.PSM");
-            break;
+    char music_filename[64];
+    switch(scene->bk_data.file_id) {
+        case 8:   get_filename_by_id(PSM_ARENA0, music_filename); break;
+        case 16:  get_filename_by_id(PSM_ARENA1, music_filename); break;
+        case 32:  get_filename_by_id(PSM_ARENA2, music_filename); break;
+        case 64:  get_filename_by_id(PSM_ARENA3, music_filename); break;
+        case 128: get_filename_by_id(PSM_ARENA4, music_filename); break;
     }
-    audio_set_volume(TYPE_MUSIC, setting->sound.music_vol/10.0f);
+    music_play(music_filename);
+    music_set_volume(settings_get()->sound.music_vol/10.0f);
 
     // Initialize local struct
     local = malloc(sizeof(arena_local));

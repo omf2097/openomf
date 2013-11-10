@@ -1,40 +1,54 @@
 #ifndef _STREAM_H
 #define _STREAM_H
 
-#include "audio/sound_state.h"
-
-#define AUDIO_BUFFER_COUNT 3
-#define AUDIO_BUFFER_SIZE 32768
-
+typedef struct audio_sink_t audio_sink;
 typedef struct audio_stream_t audio_stream;
+typedef struct audio_source_t audio_source;
+
+typedef void (*stream_play_cb)(audio_stream *stream);
+typedef void (*stream_stop_cb)(audio_stream *stream);
+typedef void (*stream_update_cb)(audio_stream *stream);
+typedef void (*stream_apply_cb)(audio_stream *stream);
+typedef void (*stream_close_cb)(audio_stream *stream);
 
 enum {
-    TYPE_MUSIC,
-    TYPE_EFFECT
+    STREAM_STATUS_PLAYING,
+    STREAM_STATUS_STOPPED,
+    STREAM_STATUS_FINISHED
 };
 
-struct audio_stream_t {
-    unsigned int alsource;
-    unsigned int albuffers[AUDIO_BUFFER_COUNT];
-    int alformat;
-    int frequency;
-    int channels;
-    int bytes;
-    int type;
-    int playing;
-    sound_state snd;
+typedef struct audio_stream_t {
+    int status;
+    float panning;
+    float volume;
+    float pitch;
+
     void *userdata;
-    void (*preupdate)(audio_stream *stream, int dt);
-    int (*update)(audio_stream *stream, char *buf, int len);
-    void (*close)(audio_stream *stream);
-};
+    stream_update_cb update;
+    stream_close_cb close;
+    stream_play_cb play;
+    stream_stop_cb stop;
+    stream_apply_cb apply;
 
-int audio_stream_create(audio_stream *stream);
-int audio_stream_start(audio_stream *stream);
-int audio_stream_render(audio_stream *stream, int dt);
-void audio_stream_free(audio_stream *stream);
-void audio_stream_stop(audio_stream *stream);
-int audio_stream_playing(audio_stream *stream);
-void audio_stream_set_volume(audio_stream *stream, float vol);
+    audio_source *src;
+    audio_sink *sink;
+} audio_stream;
+
+void stream_init(audio_stream *stream, audio_sink *sink, audio_source *src);
+void stream_render(audio_stream *stream);
+void stream_free(audio_stream *stream);
+void stream_play(audio_stream *stream);
+void stream_stop(audio_stream *stream);
+void stream_apply(audio_stream *stream);
+void stream_set_finished(audio_stream *stream);
+int stream_get_status(audio_stream *stream);
+
+void stream_set_userdata(audio_stream *stream, void *userdata);
+void* stream_get_userdata(audio_stream *stream);
+void stream_set_update_cb(audio_stream *stream, stream_update_cb cbfunc);
+void stream_set_close_cb(audio_stream *stream, stream_close_cb cbfunc);
+void stream_set_play_cb(audio_stream *stream, stream_play_cb cbfunc);
+void stream_set_stop_cb(audio_stream *stream, stream_stop_cb cbfunc);
+void stream_set_apply_cb(audio_stream *stream, stream_apply_cb cbfunc);
 
 #endif // _STREAM_H

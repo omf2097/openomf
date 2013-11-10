@@ -50,7 +50,14 @@ const field f_sound[] = {
     F_BOOL(settings_sound, stereo_on,       1),
     F_BOOL(settings_sound, stereo_reversed, 0),
     F_INT(settings_sound,  sound_vol,       5),
-    F_INT(settings_sound,  music_vol,       5)
+    F_INT(settings_sound,  music_vol,       5),
+    F_STRING(settings_sound, music_arena0, ""),
+    F_STRING(settings_sound, music_arena1, ""),
+    F_STRING(settings_sound, music_arena2, ""),
+    F_STRING(settings_sound, music_arena3, ""),
+    F_STRING(settings_sound, music_arena4, ""),
+    F_STRING(settings_sound, music_end,    ""),
+    F_STRING(settings_sound, music_menu,   "")
 };
 
 const field f_gameplay[] = {

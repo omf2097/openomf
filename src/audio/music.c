@@ -1,81 +1,75 @@
+#include <stdlib.h>
+#include <string.h>
 #include "audio/music.h"
-#include "audio/stream.h"
 #include "audio/audio.h"
+#include "audio/sources/dumb_source.h"
 #include "utils/log.h"
-#include <AL/al.h>
-#include <AL/alc.h>
-#include <dumb/dumb.h>
+#ifdef USE_OGGVORBIS
+#include "audio/sources/vorbis_source.h"
+#endif // USE_OGGVORBIS
 
-typedef struct music_file_t {
-    DUH_SIGRENDERER *renderer;
-    DUH *data;
-    float delta;
-    int bps;
-} music_file;
-
-int music_update(audio_stream *stream, char *buf, int len) {
-    music_file *mf = (music_file*)stream->userdata;
-    return duh_render(mf->renderer, 16, 0, 1.0f, mf->delta, len / mf->bps, buf) * mf->bps;
-}
-
-void music_close(audio_stream *stream) {
-    music_file *mf = (music_file*)stream->userdata;
-    duh_end_sigrenderer(mf->renderer);
-    unload_duh(mf->data);
-    free(mf);
-}
+unsigned int music_id = 0;
 
 int music_play(const char *filename) {
-    DUH *data = dumb_load_psm(filename, 0);
-    if(!data) {
-        PERROR("Error while loading PSM file!");
-        return 1;
+    audio_source *music_src = malloc(sizeof(audio_source));
+    source_init(music_src);
+
+    // Find ext
+    char *ext = strrchr(filename, '.') + 1;
+    if(ext == NULL || ext == filename) {
+        PERROR("Couldn't find extension for music file!");
+        goto error_0;
     }
-    
-    // Open renderer
-    DUH_SIGRENDERER *renderer = duh_start_sigrenderer(data, 0, 2, 0);
-    
-    // Music file struct for userdata
-    music_file *mf = malloc(sizeof(music_file));
-    mf->data = data;
-    mf->renderer = renderer;
-    mf->delta = 65536.0f / 44100;
-    mf->bps = 2 * 2;
-    
-    // Create stream
-    audio_stream stream;
-    stream.frequency = 44100;
-    stream.channels = 2;
-    stream.bytes = 2;
-    stream.type = TYPE_MUSIC;
-    stream.userdata = (void*)mf;
-    stream.preupdate = NULL;
-    stream.update = music_update;
-    stream.close = music_close;
-    
-    // Create openal stream
-    if(audio_stream_create(&stream)) {
-        unload_duh(mf->data);
-        free(mf);
-        return 1;
+
+    // Open correct source
+    if(strcasecmp(ext, "psm") == 0) {
+        dumb_source_init(music_src, filename);
+    } else if(strcasecmp(ext, "s3m") == 0) {
+        dumb_source_init(music_src, filename);
+    } else if(strcasecmp(ext, "mod") == 0) {
+        dumb_source_init(music_src, filename);
+    } else if(strcasecmp(ext, "it") == 0) {
+        dumb_source_init(music_src, filename);
+    } else if(strcasecmp(ext, "xm") == 0) {
+        dumb_source_init(music_src, filename);
     }
-    
-    // Play
-    audio_play(&stream);
-    
+#ifdef USE_OGGVORBIS
+    else if(strcasecmp(ext, "ogg") == 0) {
+        vorbis_source_init(music_src, filename);
+    }
+#endif // USE_OGGVORBIS
+    else {
+        PERROR("No suitable music streamer found.");
+        goto error_0;
+    }
+
+    // Source settings
+    source_set_loop(music_src, 1);
+
+    // Start playback
+    music_id = sink_play(audio_get_sink(), music_src);
+
     // All done
     return 0;
+error_0:
+    free(music_src);
+    return 1;
+}
+
+void music_set_volume(float volume) {
+    sink_set_stream_volume(audio_get_sink(), music_id, volume);
 }
 
 void music_stop() {
-    audio_stream *stream = audio_get_music();
-    if(stream) {
-        audio_stream_stop(stream);
-    }
+    if(music_id == 0) return;
+    sink_stop(audio_get_sink(), music_id);
+    music_id = 0;
 }
 
 int music_playing() {
-    audio_stream *stream = audio_get_music();
-    if(!stream) return 0;
-    return audio_stream_playing(stream);
+    if(music_id == 0) {
+        return 0;
+    }
+
+    return 1;
 }

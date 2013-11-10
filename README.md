@@ -35,9 +35,17 @@ To compile:
 
 ```
 $ cd build
-$ cmake ..
+$ cmake -DCMAKE_BUILD_TYPE=Release ..
 $ make
 ```
+
+Some useful CMake flags:
+
+| Flag                      | Description                          | Choices       | Default |
+| ------------------------- | ------------------------------------ | ------------- | ------- |
+| CMAKE_BUILD_TYPE          | Chooses between build types          | Debug/Release | Debug   |
+| USE_OGGVORBIS             | Selects Vorbis support               | On/Off        | Off     |
+| USE_LTO                   | Selects Link time optimizations flag | On/Off        | Off     |
 
 Data Files
 ----------

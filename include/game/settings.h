@@ -23,6 +23,13 @@ typedef struct settings_sound_t {
     int stereo_reversed;
     int sound_vol;
     int music_vol;
+    char *music_arena0;
+    char *music_arena1;
+    char *music_arena2;
+    char *music_arena3;
+    char *music_arena4;
+    char *music_end;
+    char *music_menu;
 } settings_sound;
 
 typedef struct settings_video_t {
