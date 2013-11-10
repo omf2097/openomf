@@ -109,13 +109,11 @@ static void hashmap_del_key(hashmap *hm, const void *key, unsigned int keylen) {
     // If node was found, handle delete
     if(found) {
         if(prev != NULL) {
+            // If node is not first in chain, set correct links
             prev->next = node->next;
         } else {
-            if(node->next != NULL) {
-                hm->buckets[index].first = node->next;
-            } else {
-                hm->buckets[index].first = NULL;
-            }
+            // If node is first in chain, set possible next entry as first
+            hm->buckets[index].first = node->next;
         }
         hm->alloc.cfree(node->pair.key);
         hm->alloc.cfree(node->pair.val);
