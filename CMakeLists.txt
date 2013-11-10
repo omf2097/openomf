@@ -17,6 +17,7 @@ set(CORE_FLAGS "-Wall -std=c99 -Werror")
 
 # Options
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
+OPTION(USE_LTO "Use LTO for binary" OFF)
 
 # If we want to build support for vorbis streaming, find these too
 IF(USE_OGGVORBIS)
@@ -24,6 +25,11 @@ IF(USE_OGGVORBIS)
     find_package(vorbis)
     set(CORE_FLAGS "${CORE_FLAGS} -DUSE_OGGVORBIS")
 ENDIF(USE_OGGVORBIS)
+
+# Check if we want to use LTO
+IF(USE_LTO)
+    set(CORE_FLAGS "${CORE_FLAGS} -flto")
+ENDIF(USE_LTO)
 
 # Build flags
 set(CMAKE_C_FLAGS "${CORE_FLAGS} -ggdb -DDEBUGMODE")
