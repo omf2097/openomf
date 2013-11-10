@@ -10,6 +10,7 @@ typedef struct audio_source_t {
     int frequency;
     int channels;
     int bytes;
+    int loop;
     void *userdata;
     source_update_cb update;
     source_close_cb close;
@@ -22,10 +23,12 @@ void source_free(audio_source *src);
 void source_set_channels(audio_source *src, int channels);
 void source_set_bytes(audio_source *src, int bytes);
 void source_set_frequency(audio_source *src, int frequency);
+void source_set_loop(audio_source *src, int loop);
 
 int source_get_channels(audio_source *src);
 int source_get_bytes(audio_source *src);
 int source_get_frequency(audio_source *src);
+int source_get_loop(audio_source *src);
 
 void source_set_userdata(audio_source *src, void *userdata);
 void* source_get_userdata(audio_source *src);

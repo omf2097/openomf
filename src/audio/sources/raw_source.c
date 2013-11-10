@@ -9,6 +9,8 @@ typedef struct raw_source_t {
     int pos;
 } raw_source;
 
+// TODO: Implement looping if necessary
+
 int raw_source_update(audio_source *src, char *buffer, int len) {
     raw_source *local = source_get_userdata(src);
     int data_left = local->len - local->pos;

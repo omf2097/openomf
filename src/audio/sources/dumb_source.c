@@ -7,12 +7,25 @@
 typedef struct dumb_source_t {
     DUH_SIGRENDERER *renderer;
     DUH *data;
+    long vlen;
+    long vpos;
 } dumb_source;
 
 int dumb_source_update(audio_source *src, char *buffer, int len) {
     dumb_source *local = source_get_userdata(src);
+
+    // Get deltatime and bitrate
     float delta = 65536.0f / source_get_frequency(src);
     int bps = source_get_channels(src) * source_get_bytes(src);
+
+    // If looping is off, and if we have played the whole file, stop here.
+    long pos = duh_sigrenderer_get_position(local->renderer);
+    if(pos < local->vpos && !src->loop) {
+        return 0;
+    }
+    local->vpos = pos;
+
+    // ... otherwise get more data.
     int ret = duh_render(
             local->renderer, 
             source_get_bytes(src) * 8, // Bits
@@ -57,6 +70,8 @@ int dumb_source_init(audio_source *src, const char* file) {
         goto error_0;
     }
     local->renderer = duh_start_sigrenderer(local->data, 0, 2, 0);
+    local->vlen = duh_get_length(local->data);
+    local->vpos = 0;
     
     // Audio information
     source_set_frequency(src, 44100);

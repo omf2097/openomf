@@ -28,7 +28,7 @@ const char* vorbis_text_error(int id) {
     }
 }
 
-int vorbis_source_update(audio_source *src, char *buffer, int len) {
+int vorbis_stream(audio_source *src, char *buffer, int len) {
     vorbis_source *local = source_get_userdata(src);
 
     int read = 0;
@@ -48,6 +48,16 @@ int vorbis_source_update(audio_source *src, char *buffer, int len) {
         }
     }
     return read;
+}
+
+int vorbis_source_update(audio_source *src, char *buffer, int len) {
+    vorbis_source *local = source_get_userdata(src);
+    int got = vorbis_stream(src, buffer, len);
+    if(got == 0 && src->loop) {
+        ov_raw_seek(&local->src_file, 0);
+        return vorbis_stream(src, buffer, len);
+    }
+    return got;
 }
 
 void vorbis_source_close(audio_source *src) {

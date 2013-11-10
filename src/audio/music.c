@@ -43,6 +43,9 @@ int music_play(const char *filename) {
         goto error_0;
     }
 
+    // Source settings
+    source_set_loop(music_src, 1);
+
     // Start playback
     music_id = sink_play(audio_get_sink(), music_src);
 
