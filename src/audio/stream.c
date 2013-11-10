@@ -3,12 +3,18 @@
 #include "audio/source.h"
 #include "utils/log.h"
 
-void stream_init(audio_stream *stream, audio_sink *sink, audio_source *src) {
-    stream->userdata = NULL;
-    stream->update = NULL;
+void stream_nullify(audio_stream *stream) {
     stream->close = NULL;
     stream->play = NULL;
     stream->stop = NULL;
+    stream->update = NULL;
+    stream->userdata = NULL;
+    stream->src = NULL;
+    stream->sink = NULL;
+}
+
+void stream_init(audio_stream *stream, audio_sink *sink, audio_source *src) {
+    stream_nullify(stream);
     stream->status = STREAM_STATUS_STOPPED;
     stream->src = src;
     stream->sink = sink;
@@ -27,9 +33,12 @@ void stream_render(audio_stream *stream) {
 void stream_free(audio_stream *stream) {
     if(stream->close != NULL) {
         stream->close(stream);
+    }
+    if(stream->src != NULL) {
         source_free(stream->src);
         free(stream->src);
     }
+    stream_nullify(stream);
 }
 
 void stream_play(audio_stream *stream) {

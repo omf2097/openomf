@@ -12,7 +12,9 @@ typedef struct raw_source_t {
 int raw_source_update(audio_source *src, char *buffer, int len) {
     raw_source *local = source_get_userdata(src);
     int data_left = local->len - local->pos;
-    if(data_left == 0) return 0;
+    if(data_left == 0) {
+        return 0;
+    }
     int real_len = (len > data_left) ? data_left : len;
     memcpy(buffer, local->buf + local->pos, real_len);
     local->pos += real_len;
@@ -20,7 +22,9 @@ int raw_source_update(audio_source *src, char *buffer, int len) {
 }
 
 void raw_source_close(audio_source *src) {
-    free(source_get_userdata(src));
+    raw_source *local = source_get_userdata(src);
+    DEBUG("Raw Source: Closed (len: %d).", local->len);
+    free(local);
 }
 
 int raw_source_init(audio_source *src, char* buffer, int len) {

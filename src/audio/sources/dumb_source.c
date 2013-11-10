@@ -30,7 +30,7 @@ void dumb_source_close(audio_source *src) {
     duh_end_sigrenderer(local->renderer);
     unload_duh(local->data);
     free(local);
-    DEBUG("Libdumb source closed.");
+    DEBUG("Libdumb Source: Closed.");
 }
 
 int dumb_source_init(audio_source *src, const char* file) {

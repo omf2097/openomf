@@ -111,7 +111,11 @@ static void hashmap_del_key(hashmap *hm, const void *key, unsigned int keylen) {
         if(prev != NULL) {
             prev->next = node->next;
         } else {
-            hm->buckets[index].first = NULL;
+            if(node->next != NULL) {
+                hm->buckets[index].first = node->next;
+            } else {
+                hm->buckets[index].first = NULL;
+            }
         }
         hm->alloc.cfree(node->pair.key);
         hm->alloc.cfree(node->pair.val);

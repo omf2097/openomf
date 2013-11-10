@@ -48,15 +48,11 @@ void sink_render(audio_sink *sink) {
     iterator it;
     hashmap_iter_begin(&sink->streams, &it);
     audio_stream *stream;
-    unsigned int key;
     hashmap_pair *pair;
     while((pair = iter_next(&it)) != NULL) {
         stream = *((audio_stream**)pair->val);
         if(stream_get_status(stream) == STREAM_STATUS_FINISHED) {
-            key = *(unsigned int *)pair->key;
-            stream_free(stream);
-            free(stream);
-            hashmap_idel(&sink->streams, key);
+            sink_stop(sink, *(unsigned int *)pair->key);
         } else {
             stream_render(stream);
         }
@@ -70,9 +66,10 @@ void sink_free(audio_sink *sink) {
     audio_stream *stream;
     hashmap_pair *pair;
     while((pair = iter_next(&it)) != NULL) {
-        stream = pair->val;
+        stream = *((audio_stream**)pair->val);
         stream_stop(stream);
         stream_free(stream);
+        free(stream);
     }
     hashmap_free(&sink->streams);
 
