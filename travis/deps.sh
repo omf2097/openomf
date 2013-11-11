@@ -2,18 +2,23 @@
 
 cd travis/
 git clone https://github.com/omf2097/libShadowDive.git
-git clone https://github.com/omf2097/libdumb-kataja.git
+git clone https://github.com/omf2097/dumb.git
 
 cd libShadowDive
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 make install
 
-cd ../../libdumb-kataja
-make -f Makefile.linux
-make -f Makefile.linux install
+cd ../../dumb
+git checkout ttv-cmake
+mkdir dumb/cmake/build/
+cd dumb/cmake/build/
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+make install
+
 
 
 
