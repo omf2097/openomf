@@ -5,7 +5,7 @@ OpenOMF is a Open Source remake of "One Must Fall 2097" by Diversions Entertainm
 
 Build status
 ------------
-[![Build Status](https://travis-ci.org/omf2097/openomf.png?branch=total_recall)](https://travis-ci.org/omf2097/openomf)
+[![Build Status](https://travis-ci.org/omf2097/openomf.png?branch=master)](https://travis-ci.org/omf2097/openomf)
 
 Links
 -----
@@ -18,7 +18,7 @@ Dependencies
 ------------
 
 * libShadowDive: https://github.com/omf2097/libShadowDive
-* libdumb: https://github.com/omf2097/libdumb-kataja
+* libdumb: https://github.com/omf2097/dumb
 * SDL2: http://www.libsdl.org/tmp/download-2.0.php
 * OpenAL: http://kcat.strangesoft.net/openal.html
 * confuse: http://www.nongnu.org/confuse/
