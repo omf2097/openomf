@@ -18,7 +18,7 @@ Dependencies
 ------------
 
 * libShadowDive: https://github.com/omf2097/libShadowDive
-* libdumb: https://github.com/omf2097/dumb
+* libdumb: https://bitbucket.org/kode54/dumb
 * SDL2: http://www.libsdl.org/tmp/download-2.0.php
 * OpenAL: http://kcat.strangesoft.net/openal.html
 * confuse: http://www.nongnu.org/confuse/
