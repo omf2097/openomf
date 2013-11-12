@@ -34,7 +34,7 @@ ENDIF(USE_LTO)
 # Build flags
 set(CMAKE_C_FLAGS "${CORE_FLAGS} -ggdb -DDEBUGMODE")
 set(CMAKE_C_FLAGS_DEBUG "${CORE_FLAGS} -ggdb -DDEBUGMODE")
-set(CMAKE_C_FLAGS_RELEASE "${CORE_FLAGS} -O2 -march=native")
+set(CMAKE_C_FLAGS_RELEASE "${CORE_FLAGS} -O2 -s -march=native")
 
 add_executable(openomf 
     src/utils/log.c
