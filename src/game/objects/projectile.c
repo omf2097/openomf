@@ -2,6 +2,10 @@
 #include "game/objects/projectile.h"
 #include "utils/log.h"
 
+typedef struct projectile_local_t {
+    int _empty;
+} projectile_local;
+
 void projectile_tick(object *obj) {
     //projectile_local *local = object_get_userdata(obj);
     // TODO: Implement this

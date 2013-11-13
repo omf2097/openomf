@@ -4,6 +4,10 @@
 #define SCRAP_KEEPALIVE 80
 #define IS_ZERO(n) (n < 0.1 && n > -0.1)
 
+typedef struct scrap_local_t {
+    int tick;
+} scrap_local;
+
 void scrap_tick(object *obj) {
     scrap_local *local = object_get_userdata(obj);
 

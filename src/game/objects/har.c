@@ -108,6 +108,10 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         velx = 5 * cos(90 + i-(amount) / 2 + rv);
         vely = -12 * sin(i / amount + rv);
 
+        // Make sure scrap has somekind of velocity
+        // (to prevent floating scrap objects)
+        if(vely < 0.1 && vely > -0.1) vely += 0.2;
+
         // Create the object
         object *scrap = malloc(sizeof(object));
         int anim_no = rand() % 3 + ANIM_SCRAP_METAL;
