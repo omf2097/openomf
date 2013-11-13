@@ -9,6 +9,7 @@
 #include "game/text/languages.h"
 #include "game/game_state.h"
 #include "game/settings.h"
+#include "game/ticktimer.h"
 #include "console/console.h"
 #include <SDL2/SDL.h>
 
@@ -49,6 +50,7 @@ int engine_init() {
     if(console_init()) {
         return 1;
     }
+    ticktimer_init();
     run = 1;
 
     DEBUG("Engine initialization successful.");
@@ -109,6 +111,9 @@ void engine_run() {
         int dt = (SDL_GetTicks() - frame_start);
         omf_wait += dt;
         while(omf_wait > game_state_ms_per_tick()) {
+            // Tick timers
+            ticktimer_run();
+
             // Tick scene
             game_state_tick();
 
@@ -148,6 +153,7 @@ void engine_run() {
 }
 
 void engine_close() {
+    ticktimer_close();
     console_close();
     altpals_close();
     fonts_close();

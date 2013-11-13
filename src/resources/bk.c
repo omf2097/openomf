@@ -45,6 +45,10 @@ palette* bk_get_palette(bk *b, int id) {
     return vector_get(&b->palettes, id);
 }
 
+char* bk_get_stl(bk *b) {
+    return b->sound_translation_table;
+}
+
 void bk_free(bk *b) {
     sprite_free(&b->background);
     vector_free(&b->palettes);

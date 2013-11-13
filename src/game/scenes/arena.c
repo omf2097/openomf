@@ -16,6 +16,7 @@
 #include "game/score.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
+#include "game/ticktimer.h"
 #include "game/text/text.h"
 #include "game/text/languages.h"
 #include "game/menu/menu.h"
@@ -102,17 +103,22 @@ void scene_fight_anim_done(object *parent) {
     parent->animation_state.finished = 1; 
 }
 
-void scene_ready_anim_done(object *parent) {
+void scene_fight_anim_start(void *userdata) {
     // Start FIGHT animation
     scene *scene = game_state_get_scene();
     animation *fight_ani = &bk_get_info(&scene->bk_data, 10)->ani;
     object *fight = malloc(sizeof(object));
     object_create(fight, fight_ani->start_pos, vec2f_create(0,0));
-    object_set_stl(fight, object_get_stl(parent));
-    object_set_palette(fight, object_get_palette(parent), 0);
+    object_set_stl(fight, bk_get_stl(&scene->bk_data));
+    object_set_palette(fight, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(fight, fight_ani);
     object_set_finish_cb(fight, scene_fight_anim_done);
     game_state_add_object(fight);
+}
+
+void scene_ready_anim_done(object *parent) {
+    // Wait a moment before loading FIGHT animation
+    ticktimer_add(10, scene_fight_anim_start, NULL);
 
     // Custom object finisher callback requires that we 
     // mark object as finished manually, if necessary.
@@ -200,13 +206,6 @@ void arena_tick(scene *scene) {
             } while((i = i->next));
         }
         controller_free_chain(p2);
-        
-        // Collision detections
-        //har_collision_har(scene->player1.har, scene->player2.har);
-        //har_collision_har(scene->player2.har, scene->player1.har);
-        // XXX this can't go in har.c because of a typedef loop on OSX
-        //har_collision_scene(scene->player1.har, scene);
-        //har_collision_scene(scene->player2.har, scene);
         
         // Turn the HARs to face the enemy
         object *obj_har1,*obj_har2;
