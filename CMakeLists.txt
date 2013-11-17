@@ -10,7 +10,14 @@ find_package(OpenGL)
 find_package(OpenAL)
 find_package(confuse)
 find_package(GLEW)
-find_package(Libintl)
+
+# When building with MingW, do not look for Libintl 
+IF(MINGW)
+    set(LIBINTL_INCLUDE_DIR "")
+    set(LIBINTL_LIBRARIES "")
+ELSE(MINGW)
+    find_package(Libintl)
+ENDIF(MINGW)
 
 # These flags are used for all builds
 set(CORE_FLAGS "-Wall -std=c99 -Werror")
