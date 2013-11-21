@@ -51,10 +51,29 @@ typedef struct settings_gameplay_t {
     int rounds;
 } settings_gameplay;
 
+typedef struct settings_keyboard_t {
+    // Player one
+    char *key1_up;
+    char *key1_down;
+    char *key1_left;
+    char *key1_right;
+    char *key1_kick;
+    char *key1_punch;
+
+    // Player two
+    char *key2_up;
+    char *key2_down;
+    char *key2_left;
+    char *key2_right;
+    char *key2_kick;
+    char *key2_punch;
+} settings_keyboard;
+
 typedef struct settings_t {
     settings_video video;
     settings_sound sound;
     settings_gameplay gameplay;
+    settings_keyboard keys;
 } settings;
 
 int settings_write_defaults();

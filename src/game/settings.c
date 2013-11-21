@@ -70,6 +70,24 @@ const field f_gameplay[] = {
     F_INT(settings_gameplay,  rounds,      1)
 };
 
+const field f_keyboard[] = {
+    // Player one
+    F_STRING(settings_keyboard, key1_up,    "Up"),
+    F_STRING(settings_keyboard, key1_down,  "Down"),
+    F_STRING(settings_keyboard, key1_left,  "Left"),
+    F_STRING(settings_keyboard, key1_right, "Right"),
+    F_STRING(settings_keyboard, key1_kick,  "Right Shift"),
+    F_STRING(settings_keyboard, key1_punch, "Return"),
+
+    // Player two
+    F_STRING(settings_keyboard, key2_up,    "W"),
+    F_STRING(settings_keyboard, key2_down,  "S"),
+    F_STRING(settings_keyboard, key2_left,  "A"),
+    F_STRING(settings_keyboard, key2_right, "D"),
+    F_STRING(settings_keyboard, key2_kick,  "Left Ctrl"),
+    F_STRING(settings_keyboard, key2_punch, "Left Shift")
+};
+
 int *fieldint(void *st, int offset) {
     return (int*)((char*)st + offset);
 }
@@ -189,6 +207,7 @@ int settings_init() {
     settings_add_fields(f_video, NFIELDS(f_video));
     settings_add_fields(f_sound, NFIELDS(f_sound));
     settings_add_fields(f_gameplay, NFIELDS(f_gameplay));
+    settings_add_fields(f_keyboard, NFIELDS(f_keyboard));
     return conf_init("openomf.conf");
 }
 
@@ -196,11 +215,13 @@ void settings_load() {
     settings_load_fields(&_settings.video, f_video, NFIELDS(f_video));
     settings_load_fields(&_settings.sound, f_sound, NFIELDS(f_sound));
     settings_load_fields(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
+    settings_load_fields(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
 }
 void settings_save() {
     settings_save_fields(&_settings.video, f_video, NFIELDS(f_video));
     settings_save_fields(&_settings.sound, f_sound, NFIELDS(f_sound));
     settings_save_fields(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
+    settings_save_fields(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
     if(conf_write_config("openomf.conf")) {
         PERROR("Failed to write config file!\n");
     }
@@ -209,6 +230,7 @@ void settings_free() {
     settings_free_strings(&_settings.video, f_video, NFIELDS(f_video));
     settings_free_strings(&_settings.sound, f_sound, NFIELDS(f_sound));
     settings_free_strings(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
+    settings_free_strings(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
     conf_close();
 }
 
