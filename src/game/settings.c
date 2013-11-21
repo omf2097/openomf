@@ -12,7 +12,8 @@
 
 #define NFIELDS(struct_) sizeof(struct_)/sizeof(field)
 
-settings _settings;
+static settings _settings;
+static const char *settings_path;
 
 typedef enum field_type_t {
     TYPE_INT, 
@@ -192,23 +193,24 @@ void settings_free_strings(void *st, const field *fields, int nfields) {
     }
 }
 
-int settings_write_defaults() {
+int settings_write_defaults(const char *path) {
     int r = 0;
-    settings_init();
-    if(conf_write_config("openomf.conf")) {
+    settings_init(path);
+    if(conf_write_config(path)) {
         r = 1;
     }
     settings_free();
     return r;
 }
 
-int settings_init() {
+int settings_init(const char *path) {
+    settings_path = path;
     memset(&_settings, 0, sizeof(settings));
     settings_add_fields(f_video, NFIELDS(f_video));
     settings_add_fields(f_sound, NFIELDS(f_sound));
     settings_add_fields(f_gameplay, NFIELDS(f_gameplay));
     settings_add_fields(f_keyboard, NFIELDS(f_keyboard));
-    return conf_init("openomf.conf");
+    return conf_init(settings_path);
 }
 
 void settings_load() {
@@ -217,15 +219,17 @@ void settings_load() {
     settings_load_fields(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
     settings_load_fields(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
 }
+
 void settings_save() {
     settings_save_fields(&_settings.video, f_video, NFIELDS(f_video));
     settings_save_fields(&_settings.sound, f_sound, NFIELDS(f_sound));
     settings_save_fields(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
     settings_save_fields(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
-    if(conf_write_config("openomf.conf")) {
+    if(conf_write_config(settings_path)) {
         PERROR("Failed to write config file!\n");
     }
 }
+
 void settings_free() {
     settings_free_strings(&_settings.video, f_video, NFIELDS(f_video));
     settings_free_strings(&_settings.sound, f_sound, NFIELDS(f_sound));
@@ -233,7 +237,6 @@ void settings_free() {
     settings_free_strings(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
     conf_close();
 }
-
 
 settings *settings_get() {
     return &_settings;
