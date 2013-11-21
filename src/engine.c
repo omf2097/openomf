@@ -1,3 +1,4 @@
+#include <SDL2/SDL.h>
 #include "engine.h"
 #include "utils/log.h"
 #include "utils/config.h"
@@ -11,11 +12,10 @@
 #include "game/settings.h"
 #include "game/ticktimer.h"
 #include "console/console.h"
-#include <SDL2/SDL.h>
 
-int run = 0;
-int _vsync = 0;
-int take_screenshot = 0;
+int _vsync = 0; // Needed in video.c
+static int run = 0;
+static int take_screenshot = 0;
 
 int engine_init() {
     settings *setting = settings_get();
@@ -28,33 +28,51 @@ int engine_init() {
     // Right now we only have one audio sink, so select that one.
     int sink_id = 0;
 
+    // Initialize everything.
     _vsync = vsync;
     if(video_init(w, h, fs, vsync)) {
-        return 1;
+        goto exit_0;
     }
     if(audio_init(sink_id)) {
-        return 1;
+        goto exit_1;
     }
     if(sounds_loader_init()) {
-        return 1;
+        goto exit_2;
     }
     if(lang_init()) {
-        return 1;
+        goto exit_3;
     }
     if(fonts_init()) {
-        return 1;
+        goto exit_4;
     }
     if(altpals_init()) {
-        return 1;
+        goto exit_5;
     }
     if(console_init()) {
-        return 1;
+        goto exit_6;
     }
     ticktimer_init();
+    
+    // Return successfully
     run = 1;
-
     DEBUG("Engine initialization successful.");
     return 0;
+
+    // If something failed, close in correct order
+exit_6:
+    altpals_close();
+exit_5:
+    fonts_close();
+exit_4:
+    lang_close();
+exit_3:
+    sounds_loader_close();
+exit_2:
+    audio_close();
+exit_1:
+    video_close();
+exit_0:
+    return 1;
 }
 
 void engine_run() {

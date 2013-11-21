@@ -11,6 +11,9 @@ int log_init(const char *filename) {
         handle = stdout;
     } else {
         handle = fopen(filename, "w");
+        if(handle == NULL) {
+            return 1;
+        }
     }
     return 0;
 }

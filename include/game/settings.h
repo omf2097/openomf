@@ -76,8 +76,8 @@ typedef struct settings_t {
     settings_keyboard keys;
 } settings;
 
-int settings_write_defaults();
-int settings_init();
+int settings_write_defaults(const char *path);
+int settings_init(const char *path);
 void settings_free();
 
 void settings_load();
