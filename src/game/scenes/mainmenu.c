@@ -423,6 +423,9 @@ void mainmenu_free(scene *scene) {
     textbutton_free(&local->input_config_done_button);
     menu_free(&local->input_config_menu);
 
+    textbutton_free(&local->input_presskey_header);
+    menu_free(&local->input_presskey_menu);
+
     /*textbutton_free(&local->net_header);
     textbutton_free(&local->net_connect_button);
     textbutton_free(&local->net_listen_button);
