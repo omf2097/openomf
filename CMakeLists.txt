@@ -170,5 +170,10 @@ IF(UNIX)
     SET(CORELIBS ${CORELIBS} -lm)
 ENDIF(UNIX)
 
+# On Travis, add more libs
+IF(TRAVIS)
+    SET(CORELIBS ${CORELIBS} -lasound -lpulse -lXi -lXrandr -lXss -lXinerama -lXcursor)
+ENDIF(TRAVIS)
+
 include_directories(${COREINCS})
 target_link_libraries(openomf ${CORELIBS})
