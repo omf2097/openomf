@@ -29,10 +29,10 @@ struct audio_stream_t {
     stream_apply_cb apply;
 
     audio_source *src;
-    audio_sink *sink;
+    struct audio_sink *sink;
 };
 
-void stream_init(audio_stream *stream, audio_sink *sink, audio_source *src);
+void stream_init(audio_stream *stream, struct audio_sink *sink, audio_source *src);
 void stream_render(audio_stream *stream);
 void stream_free(audio_stream *stream);
 void stream_play(audio_stream *stream);
