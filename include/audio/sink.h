@@ -17,15 +17,17 @@
 #define PANNING_MIN -1.0f
 #define PITCH_MIN 0.5f
 
+typedef struct audio_sink_t audio_sink;
+
 typedef void (*sink_format_stream_cb)(audio_sink *sink, audio_stream *stream);
 typedef void (*sink_close_cb)(audio_sink *sink);
 
-typedef struct audio_sink_t {
+struct audio_sink_t {
     hashmap streams;
     void *userdata;
     sink_close_cb close;
     sink_format_stream_cb format_stream;
-} audio_sink;
+};
 
 void sink_init(audio_sink *sink);
 unsigned int sink_play(audio_sink *sink, audio_source *src);
