@@ -2,7 +2,6 @@
 #include "utils/log.h"
 #include "game/settings.h"
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_filesystem.h>
 #include <dumb/dumb.h>
 #include <enet/enet.h>
 #include <string.h>
