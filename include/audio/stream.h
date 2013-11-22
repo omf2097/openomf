@@ -2,7 +2,6 @@
 #define _STREAM_H
 
 typedef struct audio_stream_t audio_stream;
-typedef struct audio_sink_t audio_sink;
 
 typedef void (*stream_play_cb)(audio_stream *stream);
 typedef void (*stream_stop_cb)(audio_stream *stream);
