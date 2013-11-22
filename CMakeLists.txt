@@ -172,7 +172,7 @@ ENDIF(UNIX)
 
 # On Travis, add more libs
 IF(TRAVIS)
-    SET(CORELIBS ${CORELIBS} -lasound -lpulse -lXi -lXrandr -lXss -lXinerama -lXcursor)
+    SET(CORELIBS ${CORELIBS} -lasound -lpulse -lpulse-simple -lXi -lXrandr -lXss -lXinerama -lXcursor)
 ENDIF(TRAVIS)
 
 include_directories(${COREINCS})
