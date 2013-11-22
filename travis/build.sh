@@ -2,5 +2,5 @@
 
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OGGVORBIS=On -DDEBUGMODE ..
+cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OGGVORBIS=On -DDEBUGMODE=1 ..
 make
