@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
+#ifdef __linux__
+#include <strings.h> // strcasecmp
+#endif // __linux__
 #include "audio/music.h"
 #include "audio/audio.h"
 #include "audio/sources/dumb_source.h"
