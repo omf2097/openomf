@@ -38,6 +38,11 @@ IF(USE_LTO)
     set(CORE_FLAGS "${CORE_FLAGS} -flto")
 ENDIF(USE_LTO)
 
+# On Travis, compile in c11 mode
+IF(TRAVIS)
+    SET(${CORE_FLAGS} "-Wall -std=c11 -Werror")
+ENDIF(TRAVIS)
+
 # Build flags
 set(CMAKE_C_FLAGS "${CORE_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG "${CORE_FLAGS} -ggdb -DDEBUGMODE")
