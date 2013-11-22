@@ -532,7 +532,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id, int player_id) {
 
     // fill the input buffer with 'pauses'
     memset(local->inputs, '5', 10);
-    local->inputs[10] = '\0';
+    local->inputs[9] = '\0';
 
     // Callbacks and userdata
     object_set_free_cb(obj, har_free);
