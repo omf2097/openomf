@@ -40,7 +40,7 @@ ENDIF(USE_LTO)
 
 # On Travis, compile in c11 mode
 IF(TRAVIS)
-    SET(${CORE_FLAGS} "-Wall -std=c11 -Werror")
+    SET(CORE_FLAGS "-Wall -std=c11 -Werror")
 ENDIF(TRAVIS)
 
 # Build flags
