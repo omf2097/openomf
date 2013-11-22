@@ -40,7 +40,7 @@ ENDIF(USE_LTO)
 
 # On Travis, compile in c11 mode
 IF(TRAVIS)
-    IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    IF("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
         SET(CORE_FLAGS "-Wall -std=c11 -Werror")
     ENDIF()
 ENDIF(TRAVIS)
