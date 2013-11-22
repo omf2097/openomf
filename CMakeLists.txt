@@ -38,6 +38,13 @@ IF(USE_LTO)
     set(CORE_FLAGS "${CORE_FLAGS} -flto")
 ENDIF(USE_LTO)
 
+# On Travis, compile in c11 mode
+IF(TRAVIS)
+    IF("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+        SET(CORE_FLAGS "-Wall -std=c11 -Werror")
+    ENDIF()
+ENDIF(TRAVIS)
+
 # Build flags
 set(CMAKE_C_FLAGS "${CORE_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG "${CORE_FLAGS} -ggdb -DDEBUGMODE")
@@ -169,6 +176,11 @@ ENDIF(WIN32)
 IF(UNIX)
     SET(CORELIBS ${CORELIBS} -lm)
 ENDIF(UNIX)
+
+# On Travis, add more libs
+IF(TRAVIS)
+    SET(CORELIBS ${CORELIBS} -lasound -lpulse -lpulse-simple -lXi -lXrandr -lXss -lXinerama -lXcursor)
+ENDIF(TRAVIS)
 
 include_directories(${COREINCS})
 target_link_libraries(openomf ${CORELIBS})

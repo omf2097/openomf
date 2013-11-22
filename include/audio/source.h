@@ -6,7 +6,7 @@ typedef struct audio_source_t audio_source;
 typedef int (*source_update_cb)(audio_source *src, char *buffer, int len);
 typedef void (*source_close_cb)(audio_source *src);
 
-typedef struct audio_source_t {
+struct audio_source_t {
     int frequency;
     int channels;
     int bytes;
@@ -14,7 +14,7 @@ typedef struct audio_source_t {
     void *userdata;
     source_update_cb update;
     source_close_cb close;
-} audio_source;
+};
 
 void source_init(audio_source *src);
 int source_update(audio_source *src, char *buffer, int len);

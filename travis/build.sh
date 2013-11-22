@@ -2,4 +2,5 @@
 
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OGGVORBIS=On ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_OGGVORBIS=On -DTRAVIS=On ..
+make

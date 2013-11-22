@@ -1,9 +1,9 @@
 #ifndef _STREAM_H
 #define _STREAM_H
 
-typedef struct audio_sink_t audio_sink;
 typedef struct audio_stream_t audio_stream;
 typedef struct audio_source_t audio_source;
+typedef struct audio_sink_t audio_sink;
 
 typedef void (*stream_play_cb)(audio_stream *stream);
 typedef void (*stream_stop_cb)(audio_stream *stream);
@@ -17,7 +17,7 @@ enum {
     STREAM_STATUS_FINISHED
 };
 
-typedef struct audio_stream_t {
+struct audio_stream_t {
     int status;
     float panning;
     float volume;
@@ -32,7 +32,7 @@ typedef struct audio_stream_t {
 
     audio_source *src;
     audio_sink *sink;
-} audio_stream;
+};
 
 void stream_init(audio_stream *stream, audio_sink *sink, audio_source *src);
 void stream_render(audio_stream *stream);
