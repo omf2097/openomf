@@ -1,11 +1,3 @@
-#include "console/console.h"
-#include "video/video.h"
-#include "game/menu/menu_background.h"
-#include "game/protos/scene.h"
-#include "game/game_state.h"
-#include "game/scenes/arena.h"
-#include "resources/ids.h"
-#include "utils/log.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -13,12 +5,47 @@
 #include <enet/enet.h>
 #include <controller/keyboard.h>
 #include <controller/net_controller.h>
+#include "console/console.h"
+#include "game/menu/menu_background.h"
+#include "game/protos/scene.h"
+#include "game/game_state.h"
+#include "game/scenes/arena.h"
+#include "game/text/text.h"
+#include "resources/ids.h"
+#include "utils/log.h"
+#include "utils/list.h"
+#include "utils/hashmap.h"
+#include "video/video.h"
+
 
 #define HISTORY_MAX 100
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
 #define BUFFER_DEC(b) (((b) + sizeof(con->output) - 1) % sizeof(con->output))
 
-console *con = NULL;
+typedef struct console_t {
+    font font;
+    list history;
+    int histpos;
+    int histpos_changed;
+    char output[4810];
+    unsigned int output_head, output_tail, output_pos;
+    int output_overflowing;
+    char input[41];
+    texture background;
+    int isopen;
+    int ypos;
+    unsigned int ticks, dir;
+    hashmap cmds; // string -> command
+} console;
+
+typedef struct command_t {
+    command_func func;
+    void *userdata;
+    const char *doc;
+} command;
+
+// Console State
+static console *con = NULL;
 
 int strtoint(char *input, int *output) {
     char *end;

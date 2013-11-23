@@ -11,6 +11,7 @@
 #include "game/game_state.h"
 #include "game/settings.h"
 #include "game/ticktimer.h"
+#include "game/text/text.h"
 #include "console/console.h"
 
 int _vsync = 0; // Needed in video.c
