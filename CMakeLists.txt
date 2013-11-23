@@ -52,6 +52,10 @@ set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CORE_FLAGS} -g -O2")
 set(CMAKE_C_FLAGS_RELEASE "${CORE_FLAGS} -O2 -s -march=native")
 set(CMAKE_C_FLAGS_MINSIZEREL "${CORE_FLAGS} -Os -s -march=native")
 
+# Testing stuff
+enable_testing()
+add_subdirectory(testing)
+
 add_executable(openomf 
     src/utils/log.c
     src/utils/config.c
