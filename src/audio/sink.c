@@ -59,16 +59,25 @@ void sink_stop(audio_sink *sink, unsigned int sid) {
 }
 
 void sink_render(audio_sink *sink) {
+    unsigned int todel[64];
+    int dpos = 0;
     iterator it;
+
+    // Walk through the streams
     hashmap_iter_begin(&sink->streams, &it);
     hashmap_pair *pair;
     while((pair = iter_next(&it)) != NULL) {
         audio_stream *stream = *((audio_stream**)pair->val);
-        if(stream_get_status(stream) == STREAM_STATUS_FINISHED) {
-            sink_stop(sink, *(unsigned int *)pair->key);
-        } else {
-            stream_render(stream);
+        unsigned int key = *(unsigned int *)pair->key;
+        stream_render(stream);
+        if(stream_get_status(stream) == STREAM_STATUS_FINISHED && dpos < 64) {
+            todel[dpos++] = key;
         }
+    }
+
+    // Delete stopped streams (if any)
+    for(int i = 0; i < dpos; i++) {
+        sink_stop(sink, todel[i]);
     }
 }
 

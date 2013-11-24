@@ -258,9 +258,8 @@ void player_run(object *obj) {
                 if(isset(f, "sb")) {
                     panning = clamp(get(f, "sb"), -100, 100) / 100.0f;
                 }
-                sound_play(
-                    obj->sound_translation_table[get(f, "s")] - 1,
-                    volume, panning, pitch);
+                int sound_id = obj->sound_translation_table[get(f, "s")] - 1;
+                sound_play(sound_id, volume, panning, pitch);
             }
 
             // Blend mode stuff

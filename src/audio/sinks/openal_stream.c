@@ -93,10 +93,12 @@ void openal_stream_update(audio_stream *stream) {
     }
 
     // Make sure we are playing stream
-    ALenum state;
-    alGetSourcei(local->source, AL_SOURCE_STATE, &state);
-    if(state != AL_PLAYING) {
-        alSourcePlay(local->source);
+    if(stream_get_status(stream) == STREAM_STATUS_PLAYING) {
+        ALenum state;
+        alGetSourcei(local->source, AL_SOURCE_STATE, &state);
+        if(state != AL_PLAYING) {
+            alSourcePlay(local->source);
+        }
     }
 }
 
@@ -136,17 +138,14 @@ int openal_stream_init(audio_stream *stream, audio_sink *sink) {
     alGenSources(1, &local->source);
     if(alGetError() != AL_NO_ERROR) {
         PERROR("OpenAL Stream: Could not create audio source!");
-        free(local);
-        return 1;
+        goto exit_0;
     }
     
     // Generate buffers
     alGenBuffers(AUDIO_BUFFER_COUNT, local->buffers);
     if(alGetError() != AL_NO_ERROR) {
-        alDeleteSources(1, &local->source);
-        free(local);
         PERROR("OpenAL Stream: Could not create audio buffers!");
-        return 1;
+        goto exit_1;
     }
 
     // Set callbacks etc.
@@ -159,4 +158,11 @@ int openal_stream_init(audio_stream *stream, audio_sink *sink) {
     
     // All done
     return 0;
+
+    // Error exits
+exit_1:
+    alDeleteSources(1, &local->source);
+exit_0:
+    free(local);
+    return 1;
 }
