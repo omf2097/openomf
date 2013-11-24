@@ -110,7 +110,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
 
         // Make sure scrap has somekind of velocity
         // (to prevent floating scrap objects)
-        if(vely < 0.1 && vely > -0.1) vely += 0.2;
+        if(vely < 0.1 && vely > -0.1) vely += 0.21;
 
         // Create the object
         object *scrap = malloc(sizeof(object));

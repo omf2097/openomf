@@ -50,12 +50,16 @@ void scrap_move(object *obj) {
         vel.x = vel.x * dampen;
     }
     if(IS_ZERO(vel.x)) vel.x = 0;
-    if(IS_ZERO(vel.y)) vel.y = 0;
+    //if(IS_ZERO(vel.y) && pos.y >= 188) vel.y = 0;
     object_set_pos(obj, pos);
     object_set_vel(obj, vel);
 
     // If object is at rest, just halt animation
-    if(IS_ZERO(vel.x) && vel.y < obj->gravity * 1.1 && vel.y > obj->gravity * -1.1) {
+    if(pos.y >= 185 && 
+        IS_ZERO(vel.x) && 
+        vel.y < obj->gravity * 1.1 && 
+        vel.y > obj->gravity * -1.1) 
+    {
         object_set_halt(obj, 1);
     }
 }
