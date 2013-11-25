@@ -125,6 +125,53 @@ void scene_ready_anim_done(object *parent) {
     parent->animation_state.finished = 1; 
 }
 
+void scene_youwin_anim_done(object *parent) {
+    // Custom object finisher callback requires that we
+    // mark object as finished manually, if necessary.
+    parent->animation_state.finished = 1;
+}
+
+void scene_youwin_anim_start(void *userdata) {
+    // Start FIGHT animation
+    scene *scene = game_state_get_scene();
+    arena_local *arena = scene_get_userdata(scene);
+    animation *youwin_ani = &bk_get_info(&scene->bk_data, 9)->ani;
+    object *youwin = malloc(sizeof(object));
+    object_create(youwin, youwin_ani->start_pos, vec2f_create(0,0));
+    object_set_stl(youwin, bk_get_stl(&scene->bk_data));
+    object_set_palette(youwin, bk_get_palette(&scene->bk_data, 0), 0);
+    object_set_animation(youwin, youwin_ani);
+    object_set_finish_cb(youwin, scene_youwin_anim_done);
+    game_state_add_object(youwin);
+
+    // This will release HARs for action
+    arena->state = ARENA_STATE_ENDING;
+}
+
+void scene_youlose_anim_done(object *parent) {
+    // Custom object finisher callback requires that we
+    // mark object as finished manually, if necessary.
+    parent->animation_state.finished = 1;
+}
+
+void scene_youlose_anim_start(void *userdata) {
+    // Start FIGHT animation
+    scene *scene = game_state_get_scene();
+    arena_local *arena = scene_get_userdata(scene);
+    animation *youlose_ani = &bk_get_info(&scene->bk_data, 8)->ani;
+    object *youlose = malloc(sizeof(object));
+    object_create(youlose, youlose_ani->start_pos, vec2f_create(0,0));
+    object_set_stl(youlose, bk_get_stl(&scene->bk_data));
+    object_set_palette(youlose, bk_get_palette(&scene->bk_data, 0), 0);
+    object_set_animation(youlose, youlose_ani);
+    object_set_finish_cb(youlose, scene_youlose_anim_done);
+    game_state_add_object(youlose);
+
+    // This will release HARs for action
+    arena->state = ARENA_STATE_ENDING;
+}
+
+
 // -------- Scene callbacks --------
 
 void arena_free(scene *scene) {
@@ -230,6 +277,15 @@ void arena_tick(scene *scene) {
                     object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
                     object_set_direction(obj_har2, OBJECT_FACE_LEFT);
                 }
+            }
+        }
+
+        // Display you win/lose animation
+        if(local->state != ARENA_STATE_ENDING) {
+            if(har1->health <= 0) {
+                scene_youlose_anim_start(NULL);
+            } else if(har2->health <= 0) {
+                scene_youwin_anim_start(NULL);
             }
         }
     }
