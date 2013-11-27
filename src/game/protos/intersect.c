@@ -64,8 +64,6 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         // Skip coords that don't belong to the frame we are checking
         if(cc->frame_index != obj->cur_sprite->id) continue;
 
-        DEBUG("cc x,y=(%d,%d)", cc->pos.x, cc->pos.y);
-
         // Convert coords to target sprite local space
         int t = (object_get_direction(obj) == OBJECT_FACE_RIGHT)
                 ? (pos_a.x + cc->pos.x)
