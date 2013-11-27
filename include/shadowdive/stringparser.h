@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-typedef void* sd_stringparser_tag_list;
 typedef void* sd_stringparser_frame_list;
 
 typedef struct sd_stringparser_tag_info_t {
@@ -51,13 +50,19 @@ typedef struct sd_stringparser_frame_t {
 
 typedef struct sd_stringparser_t {
     char *string;
-    sd_stringparser_tag_list tag_list;
     sd_stringparser_frame_list frame_list;
     
     /* current_frame is not available until sd_stringparser_run has been called first */
     int is_frame_ready;
     sd_stringparser_frame current_frame;
 } sd_stringparser;
+
+
+
+/* stringparser API */
+
+void sd_stringparser_lib_init(void);
+void sd_stringparser_lib_deinit(void);
 
 sd_stringparser* sd_stringparser_create();
 void sd_stringparser_delete(sd_stringparser *parser);
