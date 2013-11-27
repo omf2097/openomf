@@ -171,23 +171,34 @@ void hashmap_idel(hashmap *hm, unsigned int key) {
     hashmap_del_key(hm, (char*)&key, sizeof(unsigned int));
 }
 
+static void _hashmap_seek_next(hashmap *hm, iterator *iter) {
+    do {
+        iter->vnow = hm->buckets[iter->inow++].first;
+    } while(iter->vnow == NULL && iter->inow < BUCKETS_SIZE(hm->buckets_x));
+}
+
 static void* hashmap_iter_next(iterator *iter) {
     hashmap_node *tmp = NULL;
     hashmap *hm = (hashmap*)iter->data;
 
+    // Find next non-empty bucket
     if(iter->vnow == NULL) {
-        do {
-            iter->vnow = hm->buckets[iter->inow].first;
-            iter->inow++;
-        } while(iter->vnow == NULL && iter->inow < BUCKETS_SIZE(hm->buckets_x));
+        _hashmap_seek_next(hm, iter);
+        return iter->vnow;
     }
-    
-    if(iter->vnow != NULL) {
-        tmp = (hashmap_node*)iter->vnow;
+
+    // We already are in a non-empty bucket. See if it has any
+    // other non-empty buckets in list. If it does, return it.
+    tmp = (hashmap_node*)iter->vnow;
+    if(tmp->next != NULL) {
         iter->vnow = tmp->next;
-        return &tmp->pair;
+        return tmp->next;
     }
-    return NULL;
+
+    // We are in the end of the list for this bucket.
+    // Find next non-empty bucket.
+    _hashmap_seek_next(hm, iter);
+    return iter->vnow;
 }
 
 void hashmap_iter_begin(hashmap *hm, iterator *iter) {
