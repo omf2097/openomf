@@ -68,7 +68,7 @@ unsigned int hashmap_reserved(hashmap *hm) {
 }
 
 static void hashmap_add_key(hashmap *hm, const void *key, unsigned int keylen, void *val, unsigned int vallen) {
-    unsigned int index = fnv_32a_buf(key, strlen(key), hm->buckets_x);
+    unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
 
     // Create new node, copy data
     hashmap_node *node = (hashmap_node*)hm->alloc.cmalloc(sizeof(hashmap_node));
@@ -86,7 +86,7 @@ static void hashmap_add_key(hashmap *hm, const void *key, unsigned int keylen, v
 }
 
 static void hashmap_del_key(hashmap *hm, const void *key, unsigned int keylen) {
-    unsigned int index = fnv_32a_buf(key, strlen(key), hm->buckets_x);
+    unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
     
     // Get node
     hashmap_node *node = hm->buckets[index].first;
@@ -122,7 +122,7 @@ static void hashmap_del_key(hashmap *hm, const void *key, unsigned int keylen) {
 }
 
 static int hashmap_get_key(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen) {
-    unsigned int index = fnv_32a_buf(key, strlen(key), hm->buckets_x);
+    unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
     
     // Set defaults for error cases
     *val = NULL;
@@ -171,10 +171,53 @@ void hashmap_idel(hashmap *hm, unsigned int key) {
     hashmap_del_key(hm, (char*)&key, sizeof(unsigned int));
 }
 
+void hashmap_delete(hashmap *hm, iterator *iter) {
+    int index = iter->inow - 1;
+
+    // Find correct node
+    hashmap_node *node = hm->buckets[index].first;
+    hashmap_node *prev = NULL;
+    hashmap_node *seek = iter->vnow;
+    if(node == NULL || seek == NULL) return;
+
+    // Find the node we want to delete
+    int found = 0;
+    while(node) {
+        if(node == seek) {
+            found = 1;
+            break;
+        }
+        prev = node;
+        node = node->next;
+    }
+    
+    // If node was found, handle delete
+    if(found) {
+        // If node is not first in chain, set correct links
+        // Otherwise set possible next entry as first
+        if(prev != NULL) {
+            prev->next = node->next;
+        } else {
+            hm->buckets[index].first = node->next;
+        }
+
+        // Make sure we have a good iterator
+        iter->vnow = prev;
+
+        // Alld one, free up memory.
+        hm->alloc.cfree(node->pair.key);
+        hm->alloc.cfree(node->pair.val);
+        hm->alloc.cfree(node);
+    }
+}
+
 static void _hashmap_seek_next(hashmap *hm, iterator *iter) {
     do {
         iter->vnow = hm->buckets[iter->inow++].first;
     } while(iter->vnow == NULL && iter->inow < BUCKETS_SIZE(hm->buckets_x));
+    if(iter->inow >= BUCKETS_SIZE(hm->buckets_x)) {
+        iter->ended = 1;
+    }
 }
 
 static void* hashmap_iter_next(iterator *iter) {
@@ -184,7 +227,11 @@ static void* hashmap_iter_next(iterator *iter) {
     // Find next non-empty bucket
     if(iter->vnow == NULL) {
         _hashmap_seek_next(hm, iter);
-        return iter->vnow;
+        if(iter->vnow == NULL) {
+            return NULL;
+        }
+        tmp = (hashmap_node*)iter->vnow;
+        return &tmp->pair;
     }
 
     // We already are in a non-empty bucket. See if it has any
@@ -192,13 +239,17 @@ static void* hashmap_iter_next(iterator *iter) {
     tmp = (hashmap_node*)iter->vnow;
     if(tmp->next != NULL) {
         iter->vnow = tmp->next;
-        return tmp->next;
+        return &tmp->next->pair;
     }
 
     // We are in the end of the list for this bucket.
     // Find next non-empty bucket.
     _hashmap_seek_next(hm, iter);
-    return iter->vnow;
+    if(iter->vnow == NULL) {
+        return NULL;
+    }
+    tmp = (hashmap_node*)iter->vnow;
+    return &tmp->pair;
 }
 
 void hashmap_iter_begin(hashmap *hm, iterator *iter) {
