@@ -181,7 +181,7 @@ void settings_save_fields(void *st, const field *fields, int nfields) {
 }
 
 void settings_free_strings(void *st, const field *fields, int nfields) {
-    for(int i=0;i < nfields;++i) {
+    for(int i = 0; i < nfields; ++i) {
         const field *f = &fields[i];
         if(f->type == TYPE_STRING) {
             char **s = fieldstr(st, f->offset);

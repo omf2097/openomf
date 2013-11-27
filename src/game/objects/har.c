@@ -181,8 +181,13 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
     af_move *move = af_get_move(&(a->af_data), obj_a->cur_animation->id);
     vec2i hit_coord = vec2i_create(0, 0);
     if(a->damage_done == 0 &&
-            (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord) ||
-             move->category == CAT_CLOSE)) {
+#ifdef DEBUGMODE
+            (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord, &a->debug_img)
+#else
+            (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord)
+#endif
+            || move->category == CAT_CLOSE)) 
+    {
         if (move->next_move) {
             object_set_animation(obj_a, &af_get_move(&a->af_data, move->next_move)->ani);
             object_set_repeat(obj_a, 0);
@@ -214,7 +219,13 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     // Check for collisions by sprite collision points
     int level = 1;
     vec2i hit_coord;
-    if(h->damage_done == 0 && intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
+    if(h->damage_done == 0 && 
+#ifdef DEBUGMODE
+            intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord, &h->debug_img))
+#else
+            intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord))
+#endif
+    {
         af_move *move = af_get_move(&(prog_owner->af_data), o_pjt->cur_animation->id);
         har_take_damage(o_har, &move->footer_string, move->damage);
         har_spawn_scrap(o_har, hit_coord);

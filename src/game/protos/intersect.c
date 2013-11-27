@@ -26,7 +26,12 @@ int intersect_object_point(object *obj, vec2i point) {
         point.y > pos.y);
 }
 
-int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
+#ifdef DEBUGMODE
+int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point, image *di) 
+#else
+int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) 
+#endif
+{
     // Make sure both objects have sprites going
     if(obj->cur_sprite == NULL || target->cur_sprite == NULL) {
         return 0;
@@ -65,6 +70,15 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
                 : (pos_a.x + (size_a.x - cc->pos.x));
         int xcoord = t - pos_b.x;
         int ycoord = (pos_a.y + (-cc->pos.y)) - pos_b.y;
+
+// TODO: Use correct coordinates
+#ifdef DEBUGMODE
+        image_set_pixel(
+            di, 
+            xcoord - pos_b.x, 
+            ycoord, 
+            color_create(255,0,0,255));
+#endif
 
         // Make sure that the hitpixel is within the area of the target sprite
         if(xcoord < 0 || xcoord >= size_b.x) continue;
