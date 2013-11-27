@@ -96,19 +96,23 @@ void vs_handle_action(scene *scene, int action) {
             break;
         case ACT_UP:
         case ACT_LEFT:
-            local->arena--;
-            if (local->arena < 0) {
-                local->arena =4;
+            if(game_state_get_player(1)->selectable) {
+                local->arena--;
+                if (local->arena < 0) {
+                    local->arena =4;
+                }
+                object_select_sprite(&local->arena_select, local->arena);
             }
-            object_select_sprite(&local->arena_select, local->arena);
             break;
         case ACT_DOWN:
         case ACT_RIGHT:
-            local->arena++;
-            if (local->arena > 4) {
-                local->arena = 0;
+            if(game_state_get_player(1)->selectable) {
+                local->arena++;
+                if (local->arena > 4) {
+                    local->arena = 0;
+                }
+                object_select_sprite(&local->arena_select, local->arena);
             }
-            object_select_sprite(&local->arena_select, local->arena);
             break;
     }
 }
