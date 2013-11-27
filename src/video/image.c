@@ -54,10 +54,10 @@ void image_line(image *img, unsigned int x0, unsigned int y0, unsigned int x1, u
  
     while(1) {
         image_set_pixel(img, x0, y0, c);
-        if (x0 == x1 && y0 == y1) break;
+        if(x0 == x1 && y0 == y1) break;
         e2 = err;
-        if (e2 > -dx) { err -= dy; x0 += sx; }
-        if (e2 <  dy) { err += dx; y0 += sy; }
+        if(e2 > -dx) { err -= dy; x0 += sx; }
+        if(e2 <  dy) { err += dx; y0 += sy; }
     }
 }
 

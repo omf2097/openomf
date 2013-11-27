@@ -15,9 +15,18 @@
 #include "controller/controller.h"
 #include "utils/log.h"
 
+// For debug layer rendering
+#ifdef DEBUGMODE
+#include "video/video.h"
+#endif
+
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
     af_free(&h->af_data);
+#ifdef DEBUGMODE
+    texture_free(&h->debug_tex);
+    image_free(&h->debug_img);
+#endif
     free(h);
 }
 
@@ -490,6 +499,17 @@ void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
     }
 }
 
+#ifdef DEBUGMODE
+void har_debug(object *obj) {
+    har *h = object_get_userdata(obj);
+    if(h->debug_enabled == 0) return;
+    texture_init_from_img(&h->debug_tex, &h->debug_img);
+    video_render_sprite(&h->debug_tex, 0, 0, BLEND_ALPHA_FULL);
+    texture_free(&h->debug_tex);
+    image_clear(&h->debug_img, color_create(0,0,0,0));
+}
+#endif
+
 int har_create(object *obj, palette *pal, int dir, int har_id, int player_id) {
     // Create local data
     har *local = malloc(sizeof(har));
@@ -541,6 +561,14 @@ int har_create(object *obj, palette *pal, int dir, int har_id, int player_id) {
     object_set_move_cb(obj, har_move);
     object_set_collide_cb(obj, har_collide);
     object_set_finish_cb(obj, har_finished);
+
+#ifdef DEBUGMODE
+    object_set_debug_cb(obj, har_debug);
+    texture_create(&local->debug_tex);
+    image_create(&local->debug_img, 320, 200);
+    image_clear(&local->debug_img, color_create(0,0,0,0));
+    local->debug_enabled = 0;
+#endif
 
     // All done
     DEBUG("Har %s (%d) loaded!", get_id_name(har_id), har_id);

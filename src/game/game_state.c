@@ -129,6 +129,15 @@ void game_state_render() {
         }
     }
 
+    // If we are in debug mode, handle HAR debug layers
+#ifdef DEBUGMODE
+    for(int i = 0; i < 2; i++) {
+        if(har[i] != NULL) {
+            object_debug(har[i]);
+        }
+    }
+#endif
+
     // Render scene
     scene_render_overlay(&gamestate->sc);
 }

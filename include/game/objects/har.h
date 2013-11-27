@@ -6,6 +6,12 @@
 #include "game/protos/object.h"
 #include "utils/list.h"
 
+// For debug texture stuff
+#ifdef DEBUGMODE
+#include "video/texture.h"
+#include "video/image.h"
+#endif
+
 #define LAYER_HAR 0x02
 #define LAYER_HAR1 0x04
 #define LAYER_HAR2 0x08
@@ -59,6 +65,12 @@ typedef struct har_t {
     int health_max, health;
     int endurance_max, endurance;
     char inputs[10];
+
+#ifdef DEBUGMODE
+    texture debug_tex;
+    image debug_img;
+    int debug_enabled;
+#endif
 } har;
 
 int har_create(object *obj, palette *pal, int dir, int har_id, int player_id);

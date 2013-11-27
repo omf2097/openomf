@@ -17,7 +17,6 @@
 #include "utils/hashmap.h"
 #include "video/video.h"
 
-
 #define HISTORY_MAX 100
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
 #define BUFFER_DEC(b) (((b) + sizeof(con->output) - 1) % sizeof(con->output))
@@ -161,16 +160,15 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
     return 1;
 }
 
+#ifdef DEBUGMODE
 int console_cd_debug(scene *scene, void *userdata, int argc, char **argv) {
-    /*if (scene->player1.har) {*/
-        /*scene->player1.har->cd_debug_enabled = 1;*/
-    /*}*/
-
-    /*if (scene->player2.har) {*/
-        /*scene->player2.har->cd_debug_enabled = 1;*/
-    /*}*/
+    for(int i = 0; i < 2; i++) {
+        har *har = object_get_userdata(game_state_get_player(i)->har);
+        har->debug_enabled = !har->debug_enabled;
+    }
     return 0;
 }
+#endif
 
 /*int console_cmd_connect(scene *scene, void *userdata, int argc, char **argv) {
     ENetHost *client;
@@ -505,7 +503,9 @@ int console_init() {
     console_add_cmd("help",  &console_cmd_help,  "show all commands");
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
     console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
-    console_add_cmd("cd-debug",&console_cd_debug,   "toggle collision detection debugging");
+#ifdef DEBUGMODE
+    console_add_cmd("cd-debug", &console_cd_debug, "toggle collision detection debugging");
+#endif
     /*console_add_cmd("connect", &console_cmd_connect,   "connect to provided IP");*/
     /*console_add_cmd("listen", &console_cmd_listen,   "wait for a network connection, times out after 5 seconds");*/
     

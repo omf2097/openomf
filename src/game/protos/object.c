@@ -43,6 +43,7 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->collide = NULL;
     obj->finish = NULL;
     obj->move = NULL;
+    obj->debug = NULL;
 }
 
 void object_tick(object *obj) {
@@ -51,6 +52,12 @@ void object_tick(object *obj) {
     }
     if(obj->tick != NULL) {
         obj->tick(obj);
+    }
+}
+
+void object_debug(object *obj) {
+    if(obj->debug != NULL) {
+        obj->debug(obj);
     }
 }
 
@@ -200,7 +207,7 @@ void object_render(object *obj) {
 
 // Renders sprite to left top corner with no special stuff applied
 void object_render_neutral(object *obj) {
-    if(obj->cur_sprite == NULL)  return;
+    if(obj->cur_sprite == NULL) return;
     object_check_texture(obj);
     video_render_background(obj->cur_texture);
 }
@@ -301,6 +308,7 @@ void object_set_tick_cb(object *obj, object_tick_cb cbfunc) { obj->tick = cbfunc
 void object_set_collide_cb(object *obj, object_collide_cb cbfunc) { obj->collide = cbfunc; }
 void object_set_finish_cb(object *obj, object_finish_cb cbfunc) { obj->finish = cbfunc; }
 void object_set_move_cb(object *obj, object_move_cb cbfunc) { obj->move = cbfunc; }
+void object_set_debug_cb(object *obj, object_debug_cb cbfunc) { obj->debug = cbfunc; }
 
 void object_set_layers(object *obj, int layers) { obj->layers = layers; }
 void object_set_group(object *obj, int group) { obj->group = group; }
