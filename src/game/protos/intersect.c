@@ -64,20 +64,22 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         // Skip coords that don't belong to the frame we are checking
         if(cc->frame_index != obj->cur_sprite->id) continue;
 
+        DEBUG("cc x,y=(%d,%d)", cc->pos.x, cc->pos.y);
+
         // Convert coords to target sprite local space
         int t = (object_get_direction(obj) == OBJECT_FACE_RIGHT)
                 ? (pos_a.x + cc->pos.x)
                 : (pos_a.x + (size_a.x - cc->pos.x));
         int xcoord = t - pos_b.x;
-        int ycoord = (pos_a.y + (-cc->pos.y)) - pos_b.y;
+        int ycoord = (pos_a.y + size_a.y + cc->pos.y) - pos_b.y;
 
 // TODO: Use correct coordinates
 #ifdef DEBUGMODE
         image_set_pixel(
             di, 
-            xcoord - pos_b.x, 
-            ycoord, 
-            color_create(255,0,0,255));
+            xcoord + pos_b.x, 
+            ycoord + pos_b.y, 
+            color_create(255,32,32,255));
 #endif
 
         // Make sure that the hitpixel is within the area of the target sprite
@@ -85,7 +87,7 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         if(ycoord < 0 || ycoord >= size_b.y) continue;
 
         // Get hitpixel
-        sd_vga_image *vga = (sd_vga_image*)obj->cur_sprite->raw_sprite;
+        sd_vga_image *vga = (sd_vga_image*)target->cur_sprite->raw_sprite;
         if(vga->stencil[ycoord * size_b.x + xcoord] == 1) {
             hcoords[found++] = vec2i_create(xcoord, ycoord);
             if(found >= level) {
@@ -95,7 +97,7 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
                     sum.y += hcoords[k].y;
                 }
                 point->x = (sum.x / level) + pos_b.x;
-                point->y = (size_b.y - (sum.y / level)) + pos_b.y;
+                point->y = (sum.y / level) + pos_b.y;
                 return 1;
             }
         }

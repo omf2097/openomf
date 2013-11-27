@@ -217,7 +217,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *prog_owner = object_get_userdata(o_pjt);
 
     // Check for collisions by sprite collision points
-    int level = 1;
+    int level = 2;
     vec2i hit_coord;
     if(h->damage_done == 0 && 
 #ifdef DEBUGMODE
