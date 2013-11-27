@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "shadowdive/stringparser.h"
 #include "utils/log.h"
 #include "game/settings.h"
 #include <SDL2/SDL.h>
@@ -66,6 +67,9 @@ int main(int argc, char *argv[]) {
     // Random seed
     srand(time(NULL));
 
+    // Init stringparser
+    sd_stringparser_lib_init();
+
     // Init config
     if(settings_init(config_path)) {
         goto exit_0;
@@ -111,6 +115,7 @@ exit_1:
     settings_save();
     settings_free();
 exit_0:
+    sd_stringparser_lib_deinit();
     DEBUG("Exit.");
     log_close();
 #ifndef DEBUGMODE
