@@ -37,12 +37,13 @@ typedef struct field_t {
 } field;
 
 const field f_video[] = {
-    F_INT(settings_video,  resindex,     0),
-    F_INT(settings_video,  screen_w,   320),
-    F_INT(settings_video,  screen_h,   200),
-    F_BOOL(settings_video, vsync,        0),
-    F_BOOL(settings_video, fullscreen,   0),
-    F_INT(settings_video,  scaling,      0)
+    F_INT(settings_video,  resindex,        0),
+    F_INT(settings_video,  screen_w,      320),
+    F_INT(settings_video,  screen_h,      200),
+    F_BOOL(settings_video, vsync,           0),
+    F_BOOL(settings_video, fullscreen,      0),
+    F_INT(settings_video,  scaling,         0),
+    F_BOOL(settings_video, instant_console, 0)
 };
 
 const field f_sound[] = {

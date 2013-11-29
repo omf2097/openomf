@@ -10,6 +10,7 @@
 #include "game/protos/scene.h"
 #include "game/game_state.h"
 #include "game/scenes/arena.h"
+#include "game/settings.h"
 #include "game/text/text.h"
 #include "resources/ids.h"
 #include "utils/log.h"
@@ -585,8 +586,10 @@ void console_render() {
 void console_tick() {
     if (con->isopen && con->ypos < 100) {
         con->ypos+=4;
+        if(settings_get()->video.instant_console) { con->ypos = 100; }
     } else if (!con->isopen && con->ypos > 0) {
         con->ypos-=4;
+        if(settings_get()->video.instant_console) { con->ypos = 0; }
     }
     if(!con->dir) {
         con->ticks++;

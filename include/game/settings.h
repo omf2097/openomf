@@ -39,6 +39,7 @@ typedef struct settings_video_t {
     int vsync;
     int fullscreen;
     int scaling;
+    int instant_console;
 } settings_video;
 
 typedef struct settings_gameplay_t {
