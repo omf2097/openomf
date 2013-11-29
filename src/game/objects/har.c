@@ -44,12 +44,41 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     har *har = userdata;
+
+    vec2i npos;
+    npos.x = parent->pos.x + pos.x;
+    npos.y = parent->pos.y + pos.y;
+
+    // If this is a scrap item, handle it as such ...
+    if(id == ANIM_SCRAP_METAL || id == ANIM_BOLT || id == ANIM_SCREW) {
+        // Calculate velocity etc.
+        float velx, vely;
+        float rv = (rand() % 100) / 100.0f - 0.5;
+        velx = 5 * cos(70 + rv);
+        vely = -3 * sin(rv);
+        if(vely < 0.1 && vely > -0.1)
+            vely += 0.21;
+
+        // Create the object
+        object *scrap = malloc(sizeof(object));
+        object_create(scrap, npos, vec2f_create(velx, vely));
+        object_set_animation(scrap, &af_get_move(&har->af_data, id)->ani);
+        object_set_palette(scrap, object_get_palette(parent), 0);
+        object_set_stl(scrap, object_get_stl(parent));
+        object_set_repeat(scrap, 1);
+        object_set_gravity(scrap, 1);
+        object_set_layers(scrap, LAYER_SCRAP);
+        object_tick(scrap);
+        scrap_create(scrap);
+        game_state_add_object(scrap);
+        return;
+    }
+
+    // ... otherwise expect it is a projectile
     af_move *move = af_get_move(&har->af_data, id);
     if(move != NULL) {
-        vec2i npos;
-        npos.x = parent->pos.x + pos.x + move->ani.start_pos.x;
-        npos.y = parent->pos.y + pos.y + move->ani.start_pos.y;
-
+        npos.x += move->ani.start_pos.x;
+        npos.y += move->ani.start_pos.y;
         object *obj = malloc(sizeof(object));
         object_create(obj, npos, vec2f_create(0,0));
         object_set_userdata(obj, har);
@@ -127,6 +156,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_create(scrap, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(&har->af_data, anim_no)->ani);
         object_set_palette(scrap, object_get_palette(obj), 0);
+        object_set_stl(scrap, object_get_stl(obj));
         object_set_repeat(scrap, 1);
         object_set_gravity(scrap, 1);
         object_set_layers(scrap, LAYER_SCRAP);
