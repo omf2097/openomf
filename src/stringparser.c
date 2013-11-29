@@ -630,6 +630,8 @@ int sd_stringparser_set_string(sd_stringparser *parser, const char *string) {
     if(parser->string) free(parser->string);
     parser->string = sd_strdup(string);
 
+    sd_stringparser_reset(parser);
+
     int frames=0;
     parse_string(parser, cb_count_frame, NULL, &frames);
     sd_framelist_resize(parser->frame_list, frames);
