@@ -64,7 +64,7 @@ typedef struct har_t {
 
     int health_max, health;
     int endurance_max, endurance;
-    char inputs[10];
+    char inputs[11];
 
 #ifdef DEBUGMODE
     texture debug_tex;
@@ -74,5 +74,6 @@ typedef struct har_t {
 } har;
 
 int har_create(object *obj, palette *pal, int dir, int har_id, int player_id);
+void har_set_ani(object *obj, int animation_id, int repeat);
 
 #endif // _HAR_H
