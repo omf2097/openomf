@@ -6,6 +6,7 @@ void af_move_create(af_move *move, void *src, int id) {
     str_create_from_cstr(&move->move_string, sdmv->move_string);
     str_create_from_cstr(&move->footer_string, sdmv->footer_string);
     move->next_move = sdmv->unknown[12];
+    move->successor_id = sdmv->unknown[16];
     move->category = sdmv->unknown[13];
     move->damage = sdmv->unknown[17] / 2.0f;
     animation_create(&move->ani, sdmv->animation, id);

@@ -214,7 +214,7 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
-    har *prog_owner = object_get_userdata(o_pjt);
+    har *prog_owner = projectile_get_har(o_pjt);
 
     // Check for collisions by sprite collision points
     int level = 2;
@@ -237,6 +237,14 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         vel.x = 0.0f;
         object_set_vel(o_har, vel);
         o_pjt->animation_state.finished = 1;
+
+        if (move->successor_id) {
+            object_set_animation(o_pjt, &af_get_move(&prog_owner->af_data, move->successor_id)->ani);
+            object_set_repeat(o_pjt, 0);
+            object_set_vel(o_pjt, vec2f_create(0,0));
+            o_pjt->animation_state.finished = 0;
+        }
+
         DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!", 
             object_get_animation(o_pjt)->id, 
             get_id_name(h->id),

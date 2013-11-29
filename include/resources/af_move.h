@@ -7,6 +7,7 @@
 typedef struct af_move_t {
     animation ani;
     uint8_t next_move;
+    uint8_t successor_id;
     uint8_t category;
     float damage;
     str move_string;
