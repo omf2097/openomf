@@ -127,6 +127,7 @@ void har_move(object *obj) {
 void har_take_damage(object *obj, str* string, float damage) {
     har *har = object_get_userdata(obj);
     har->health -= damage;
+    if(har->health <= 0) { har->health = 0; }
 
     // Set hit animation
     object_set_animation(obj, &af_get_move(&har->af_data, ANIM_DAMAGE)->ani);
