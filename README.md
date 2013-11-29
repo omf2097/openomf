@@ -54,6 +54,12 @@ License
 -------
 OpenOMF is developed under the MIT License. Please read LICENSE for more information.
 
+Contribute
+----------
+You may submit patches to this project by forking this repository and making a pull request.
+
+If you want to become a regular contributor, please contact us on [IRC](irc://chat.freenode.net/omf).
+
 Contact
 -------
 Join us on [#omf](http://webchat.freenode.net?channels=omf) on [irc.freenode.net](irc://chat.freenode.net/omf) if you want to get in contact with us.
