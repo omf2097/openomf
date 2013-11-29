@@ -111,6 +111,7 @@ void player_create(object *obj) {
     obj->animation_state.destroy_userdata = NULL;
     obj->animation_state.parser = NULL;
     obj->animation_state.previous = -1;
+    obj->animation_state.parser = sd_stringparser_create();
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
     player_clear_frame(obj);
@@ -123,14 +124,7 @@ void player_free(object *obj) {
 }
 
 void player_reload_with_str(object *obj, const char* custom_str) {
-    // Unload old parser, if any
-    if(obj->animation_state.parser != NULL) {
-        sd_stringparser_delete(obj->animation_state.parser);
-        obj->animation_state.parser = NULL;
-    }
-
-    // Load new parser
-    obj->animation_state.parser = sd_stringparser_create();
+    // Load new animation string
     sd_stringparser_set_string(
         obj->animation_state.parser, 
         custom_str);
