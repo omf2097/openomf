@@ -22,6 +22,7 @@ uint32_t sd_read_udword(sd_reader *reader);
 int8_t sd_read_byte(sd_reader *reader);
 int16_t sd_read_word(sd_reader *reader);
 int32_t sd_read_dword(sd_reader *reader);
+float sd_read_float(sd_reader *reader);
 
 uint8_t sd_peek_ubyte(sd_reader *reader);
 uint16_t sd_peek_uword(sd_reader *reader);
@@ -29,6 +30,7 @@ uint32_t sd_peek_udword(sd_reader *reader);
 int8_t sd_peek_byte(sd_reader *reader);
 int16_t sd_peek_word(sd_reader *reader);
 int32_t sd_peek_dword(sd_reader *reader);
+float sd_peek_float(sd_reader *reader);
 
 /**
   * Compare following nbytes amount of data and given buffer. Does not advance file pointer.

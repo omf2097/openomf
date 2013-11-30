@@ -102,6 +102,12 @@ int32_t sd_read_dword(sd_reader *reader) {
     return d;
 }
 
+float sd_read_float(sd_reader *reader) {
+    float f;
+    sd_read_buf(reader, (char*)&f, 4);
+    return f;
+}
+
 uint8_t sd_peek_ubyte(sd_reader *reader) {
     uint8_t d;
     sd_peek_buf(reader, (char*)&d, 1);
@@ -136,6 +142,12 @@ int32_t sd_peek_dword(sd_reader *reader) {
     int32_t d;
     sd_peek_buf(reader, (char*)&d, 4);
     return d;
+}
+
+float sd_peek_float(sd_reader *reader) {
+    float f;
+    sd_peek_buf(reader, (char*)&f, 4);
+    return f;
 }
 
 int sd_match(sd_reader *reader, char *buf, unsigned int nbytes) {
