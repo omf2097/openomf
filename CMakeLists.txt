@@ -30,6 +30,7 @@ add_library(shadowdive
     src/stringparser.c
     src/vga_image.c
     src/language.c
+    src/tournament.c
     src/internal/reader.c
     src/internal/writer.c
     src/internal/helpers.c
@@ -42,6 +43,7 @@ add_executable(test_font test/test_fonts.c)
 add_executable(test_stringparser test/test_stringparser.c)
 add_executable(test_language test/test_language.c)
 add_executable(altpals test/altpals.c)
+add_executable(test_tourn test/test_tourn.c)
 
 target_link_libraries(test_main shadowdive)
 target_link_libraries(test_sounds shadowdive)
@@ -50,6 +52,7 @@ target_link_libraries(test_font shadowdive)
 target_link_libraries(test_stringparser shadowdive)
 target_link_libraries(test_language shadowdive)
 target_link_libraries(altpals shadowdive)
+target_link_libraries(test_tourn shadowdive)
 
 FILE(GLOB H_FILES "include/shadowdive/*.h")
 INSTALL(FILES ${H_FILES} DESTINATION include/shadowdive/)
