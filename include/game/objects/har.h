@@ -59,6 +59,7 @@ typedef struct har_t {
     unsigned int state;
     unsigned int executing_move;
     int close;
+    int hard_close;
     int damage_done; // Damage was done this animation
     int damage_received; // Damage was received this animation
 

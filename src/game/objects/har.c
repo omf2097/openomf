@@ -172,7 +172,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     vec2i pos_b = object_get_pos(obj_b);
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
-    int hard_limit = 35; // Stops movement if HARs too close. Harrison-Stetson method value.
+    int hard_limit = 35; // Push opponent if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
 
     if (b->state == STATE_RECOIL || a->state == STATE_RECOIL) {
@@ -181,24 +181,29 @@ void har_check_closeness(object *obj_a, object *obj_b) {
 
     // Reset closeness state
     a->close = 0;
+    a->hard_close = 0;
 
     // If HARs get too close together, handle it
     if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
         if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x) {
-            pos_a.x = pos_b.x + hard_limit;
-            object_set_pos(obj_a, pos_a);
+            pos_b.x = pos_a.x - hard_limit;
+            object_set_pos(obj_b, pos_b);
+            a->hard_close = 1;
         }
         if(pos_a.x < pos_b.x + soft_limit && pos_a.x > pos_b.x) {
             a->close = 1;
+            a->hard_close = 1;
         }
     }
     if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
         if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x) {
-            pos_a.x = pos_b.x - hard_limit;
-            object_set_pos(obj_a, pos_a);
+            pos_b.x = pos_a.x + hard_limit;
+            object_set_pos(obj_b, pos_b);
+            a->hard_close = 1;
         }
         if(pos_a.x + soft_limit > pos_b.x && pos_a.x < pos_b.x) {
             a->close = 1;
+            a->hard_close = 1;
         }
     }
 }
@@ -476,22 +481,24 @@ void har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_WALKING, 1);
                 har->state = STATE_WALKING;
             }
-            vx = har->af_data.reverse_speed*-1/(float)320;
             if(direction == OBJECT_FACE_LEFT) {
                 vx = (har->af_data.forward_speed*-1)/(float)320;
+            } else {
+                vx = har->af_data.reverse_speed*-1/(float)320;
             }
-            object_set_vel(obj, vec2f_create(vx,0));
+            object_set_vel(obj, vec2f_create(vx*(har->hard_close ? 0.5 : 1.0),0));
             break;
         case ACT_RIGHT:
             if(har->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
                 har->state = STATE_WALKING;
             }
-            vx = har->af_data.forward_speed/(float)320;
             if(direction == OBJECT_FACE_LEFT) {
                 vx = har->af_data.reverse_speed/(float)320;
+            } else {
+                vx = har->af_data.forward_speed/(float)320;
             }
-            object_set_vel(obj, vec2f_create(vx,0));
+            object_set_vel(obj, vec2f_create(vx*(har->hard_close ? 0.5 : 1.0),0));
             break;
         case ACT_UP:
             if(har->state != STATE_JUMPING) {
@@ -583,6 +590,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id, int player_id) {
     local->health_max = local->health = 1000;
     local->endurance_max = local->endurance = 1000;
     local->close = 0;
+    local->hard_close =  0;
     local->state = STATE_STANDING;
     local->executing_move = 0;
 
