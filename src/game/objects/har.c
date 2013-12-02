@@ -209,6 +209,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
 }
 
 void har_collide_with_har(object *obj_a, object *obj_b) {
+    sd_stringparser_frame frame_b;
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
 
@@ -238,17 +239,34 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
         }
         a->damage_done = 1;
         b->damage_received = 1;
-        b->state = STATE_RECOIL;
+
+        // XXX   a hackish way to determine if a HAR is fallen or not
+        sd_stringparser_peek(obj_b->animation_state.parser, sd_stringparser_num_frames(obj_b->animation_state.parser)-1, &frame_b);
+        if(frame_b.duration > 100) {
+            b->state = STATE_FALLEN;
+        } else {
+            b->state = STATE_RECOIL;
+        }
         DEBUG("HAR %s to HAR %s collision at %d,%d!", 
             get_id_name(a->id), 
             get_id_name(b->id),
             hit_coord.x,
             hit_coord.y);
         DEBUG("HAR %s animation set to %s", get_id_name(b->id), str_c(&move->footer_string));
+#ifdef DEBUGMODE
+        DEBUG("UNKNOWN %d %d %d %d | %d %d %d %d | %d %d %d %d | %d %d %d %d | %d %d %d %d | %d",
+              move->unknown[0], move->unknown[1], move->unknown[2], move->unknown[3],
+              move->unknown[4], move->unknown[5], move->unknown[6], move->unknown[7],
+              move->unknown[8], move->unknown[9], move->unknown[10], move->unknown[11],
+              move->unknown[12], move->unknown[13], move->unknown[14], move->unknown[15],
+              move->unknown[16], move->unknown[17], move->unknown[18], move->unknown[19],
+              move->unknown[20]);
+#endif
     }
 }
 
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
+    sd_stringparser_frame frame_h;
     har *h = object_get_userdata(o_har);
     har *prog_owner = projectile_get_har(o_pjt);
 
@@ -268,7 +286,14 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         o_har->animation_state.enemy_x = o_pjt->pos.x;
         o_har->animation_state.enemy_y = o_pjt->pos.y;
         h->damage_received = 1;
-        h->state = STATE_RECOIL;
+
+        // XXX   a hackish way to determine if a HAR is fallen or not
+        sd_stringparser_peek(o_har->animation_state.parser, sd_stringparser_num_frames(o_har->animation_state.parser)-1, &frame_h);
+        if(frame_h.duration > 100) {
+            h->state = STATE_FALLEN;
+        } else {
+            h->state = STATE_RECOIL;
+        }
         vec2f vel = object_get_vel(o_har);
         vel.x = 0.0f;
         object_set_vel(o_har, vel);
@@ -311,12 +336,19 @@ void har_collide(object *obj_a, object *obj_b) {
 }
 
 void har_tick(object *obj) {
+    har *har = object_get_userdata(obj);
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
     if(pos.x <  15) pos.x = 15;
     if(pos.x > 305) pos.x = 305;
     object_set_pos(obj, pos);
+
+    // Make the HAR get up
+    if(har->state == STATE_FALLEN && obj->animation_state.parser->current_frame.is_final_frame) {
+        har->state = STATE_STANDING_UP;
+        har_set_ani(obj, ANIM_STANDUP, 0);
+    }
 }
 
 void add_input(har *har, char c) {

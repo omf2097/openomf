@@ -10,6 +10,9 @@ void af_move_create(af_move *move, void *src, int id) {
     move->category = sdmv->unknown[13];
     move->damage = sdmv->unknown[17] / 2.0f;
     animation_create(&move->ani, sdmv->animation, id);
+#ifdef DEBUGMODE
+    memcpy(move->unknown, sdmv->unknown, sizeof(move->unknown));
+#endif
 }
 
 void af_move_free(af_move *move) {

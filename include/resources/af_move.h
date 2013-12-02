@@ -12,6 +12,9 @@ typedef struct af_move_t {
     float damage;
     str move_string;
     str footer_string;
+#ifdef DEBUGMODE
+    char unknown[21];
+#endif
 } af_move;
 
 void af_move_create(af_move *move, void *src, int id);
