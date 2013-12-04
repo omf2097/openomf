@@ -14,24 +14,34 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    printf("enemy count: %d\n", trn->enemy_count);
+    printf("enemy count   : %d\n", trn->enemy_count);
+    printf("v.text. offset: %d\n", trn->victory_text_offset);
+    printf("BK name       : %s\n", trn->bk_name);
+    printf("win multipl.  : %f\n", trn->winnings_multiplier);
+    printf("Reg fee       : %d\n", trn->registration_free);
+    printf("initial value : %d\n", trn->assumed_initial_value);
+    printf("ID            : %d\n", trn->tournament_id);
 
-    printf("a          : %d\n", trn->unknown_a);
-    printf("v.text.off.: %d\n", trn->victory_text_offset);
-
-    printf("bk_name    : %s\n", trn->bk_name);
-
-    printf("win multip.: %f\n", trn->winnings_multiplier);
-    printf("b          : %d\n", trn->unknown_b);
-
-    printf("reg fee    : %d\n", trn->registration_free);
-    printf("init. val  : %d\n", trn->assumed_initial_value);
-    printf("ID         : %d\n", trn->tournament_id);
-
-    // Print offsets (temporary)
-    printf("Offset section:\n");
-    for(int i = 0; i < trn->enemy_count + 1; i++) {
-        printf(" - Offset %d: %d\n", i, trn->offset_list[i]);
+    // Print enemy data
+    printf("Enemies:");
+    for(int i = 0; i < trn->enemy_count; i++) {
+        printf("[%d] %s:\n", i, trn->enemies[i]->name);
+        printf("  - Wins:     %d\n", trn->enemies[i]->wins);
+        printf("  - Losses:   %d\n", trn->enemies[i]->losses);
+        printf("  - Robot ID: %d\n", trn->enemies[i]->robot_id);
+        printf("  - Offense:  %d\n", trn->enemies[i]->offense);
+        printf("  - Defense:  %d\n", trn->enemies[i]->defense);
+        printf("  - Money:    %d\n", trn->enemies[i]->money);
+        printf("  - Color:    %d,%d,%d\n", 
+            trn->enemies[i]->color_1,
+            trn->enemies[i]->color_2,
+            trn->enemies[i]->color_3);
+        printf("  - Stats:    ");
+        for(int k = 0; k < 8; k++) {
+            printf("%02X ", (uint8_t)trn->enemies[i]->stats[k]);
+        }
+        printf("\n");
+        printf("  - Quote:    %s\n", trn->enemies[i]->english_quote);
     }
     
     sd_tournament_delete(trn);
