@@ -5,8 +5,7 @@
 extern "C" {
 #endif
 
-#include "palette.h"
-#include "sprite.h"
+#include "shadowdive.h"
 
 #define MAX_PIC_PHOTOS 256
 

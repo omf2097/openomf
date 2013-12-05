@@ -6,6 +6,7 @@
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/pic.h"
 
+
 sd_pic_file* sd_pic_create() {
     sd_pic_file *pic = malloc(sizeof(sd_pic_file));
     for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
@@ -20,6 +21,7 @@ void free_photos(sd_pic_file *pic) {
             if(pic->photos[i]->sprite)
                 sd_sprite_delete(pic->photos[i]->sprite);
             free(pic->photos[i]);
+            pic->photos[i] = NULL;
         }
     }
 }
@@ -64,7 +66,7 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         // Read palette
         memset((void*)&pic->photos[i]->pal, 0, sizeof(sd_palette));
         char d[3];
-        for(int k = 0; k < 48; k++) {
+        for(int k = 208; k < 256; k++) {
             sd_read_buf(r, d, 3);
             pic->photos[i]->pal.data[k][0] = ((d[0] << 2) | (d[0] >> 4));
             pic->photos[i]->pal.data[k][1] = ((d[1] << 2) | (d[1] >> 4));
@@ -80,6 +82,10 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         if(sd_sprite_load(r, pic->photos[i]->sprite) != SD_SUCCESS) {
             goto error_1;
         }
+
+        // Fix length and width
+        pic->photos[i]->sprite->img->h++;
+        pic->photos[i]->sprite->img->w++;
     }
 
     sd_reader_close(r);
