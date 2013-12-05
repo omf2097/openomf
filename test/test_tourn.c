@@ -17,7 +17,7 @@ const char *language_names[] = {
 
 int main(int argc, char **argv) {
     if(argc < 2) {
-        printf("test_tourn <tournamentfile> [-d logodump.tga]\n");
+        printf("test_tourn <tournamentfile> [-d logodump.ppm]\n");
         return 0;
     }
 
