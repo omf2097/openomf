@@ -28,5 +28,6 @@ typedef struct sd_reader_t sd_reader;
 #include "shadowdive/af.h"
 #include "shadowdive/altpal.h"
 #include "shadowdive/tournament.h"
+#include "shadowdive/pic.h"
 
 #endif // _SD_SHADOWDIVE_H
