@@ -13,10 +13,13 @@ Right now Shadowdive can handle following file formats:
 * Language files (ENGLISH.DAT,GERMAN.DAT)
 * Sound data file (SOUNDS.DAT)
 * Characters for both big and small fonts (GRAPHCHR.DAT, CHARSMAL.DAT)
+* Pilot image files (*.PIC) (Only reading supported)
+* Tournament data files (*.TRN) (Only reading supported)
 
 Following formats are still TODO:
 * Character save files (*.CHR)
-* Tournament data files (*.TRN)
+* Tournament data files (*.TRN) writing
+* Pilot image files (*.PIC) writing
 
 Other files:
 * OMF music files are in PSM module format, and can be opened with libdumb.
