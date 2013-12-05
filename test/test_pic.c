@@ -7,15 +7,17 @@
 
 int main(int argc, char *argv[]) {
     if(argc < 2) {
-        printf("test_pic <picfile> [-d basename]\n");
+        printf("test_pic <picfile> [-d basename bkfile]\n");
         return 0;
     }
     int dump = 0;
     char *basename = 0;
-    if(argc == 4) {
+    char *bkfile = 0;
+    if(argc == 5) {
         if(strcmp(argv[2], "-d") == 0) {
             dump = 1;
             basename = (char*)argv[3];
+            bkfile = (char*)argv[4];
         }
     }
 
@@ -30,12 +32,21 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("Loaded file %s\n", argv[1]);
-    printf("Photo count: %d\n", pic->photo_count);
-
+    printf("Loaded file '%s'\n", argv[1]);
+    
+    sd_bk_file *bk = NULL;
     if(dump) {
+        bk = sd_bk_create();
+        if(sd_bk_load(bk, bkfile) != SD_SUCCESS) {
+            printf("Could not load BK file!\n");
+            goto error_0;
+        } else {
+            printf("Loaded file '%s'.\n", bkfile);
+        }
         printf("Dump flag used! Dumping sprites ...\n");
     }
+
+    printf("Photo count: %d\n", pic->photo_count);
 
     for(int i = 0; i < pic->photo_count; i++) {
         if(!dump) {
@@ -58,7 +69,7 @@ int main(int argc, char *argv[]) {
             printf(" * Dumping to '%s' ... ", filename);
             sd_rgba_image *img = sd_sprite_image_decode(
                 pic->photos[i]->sprite->img,
-                &pic->photos[i]->pal,
+                bk->palettes[0],
                 -1);
             sd_rgba_image_to_ppm(img, filename);
             sd_rgba_image_delete(img);
@@ -66,7 +77,13 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
+    if(dump) {
+        sd_bk_delete(bk);
+    }
     sd_pic_delete(pic);
     return 0;
+
+error_0:
+    sd_pic_delete(pic);
+    return 1;
 }
