@@ -2,28 +2,47 @@
 #include <stdio.h>
 #include <string.h>
 
+const char *language_names[] = {
+    "English",
+    "German",
+    "French",
+    "Spanish",
+    "Mexican",
+    "Italian",
+    "Polish",
+    "Russian",
+    "Undef",
+    "Undef"
+};
+
 int main(int argc, char **argv) {
     if(argc < 2) {
-        printf("test_tourn <tournamentfile>\n");
+        printf("test_tourn <tournamentfile> [-d logodump.tga]\n");
         return 0;
     }
+
+    // Get logodump path
+    int dumplogo = 0;
+    const char *dumpfile = (char*)argv[3];
+    if(argc == 4) {
+        if(strcmp(argv[2], "-d") == 0) {
+            dumplogo = 1;
+        }
+    }
     
+    // Open tournament file
     sd_tournament_file *trn = sd_tournament_create();
-    if(sd_tournament_load(trn, argv[1])) {
+    int ret = sd_tournament_load(trn, argv[1]);
+    if(ret == SD_FILE_OPEN_ERROR) {
         printf("Tournament file could not be loaded!\n");
+        return 1;
+    } else if(ret == SD_FILE_PARSE_ERROR) {
+        printf("Invalid file format!\n");
         return 1;
     }
 
-    printf("enemy count   : %d\n", trn->enemy_count);
-    printf("v.text. offset: %d\n", trn->victory_text_offset);
-    printf("BK name       : %s\n", trn->bk_name);
-    printf("win multipl.  : %f\n", trn->winnings_multiplier);
-    printf("Reg fee       : %d\n", trn->registration_free);
-    printf("initial value : %d\n", trn->assumed_initial_value);
-    printf("ID            : %d\n", trn->tournament_id);
-
     // Print enemy data
-    printf("Enemies:");
+    printf("Enemies:\n");
     for(int i = 0; i < trn->enemy_count; i++) {
         printf("[%d] %s:\n", i, trn->enemies[i]->name);
         printf("  - Wins:     %d\n", trn->enemies[i]->wins);
@@ -41,9 +60,46 @@ int main(int argc, char **argv) {
             printf("%02X ", (uint8_t)trn->enemies[i]->stats[k]);
         }
         printf("\n");
-        printf("  - Quote:    %s\n", trn->enemies[i]->english_quote);
+        for(int k = 0; k < MAX_TRN_LOCALES; k++) {
+            if(trn->enemies[i]->quote[k] == NULL) continue;
+            printf("  - %s quote: %s\n", 
+                language_names[k], 
+                trn->enemies[i]->quote[k]);
+        }
     }
     
+    printf("\nTournament details:\n");
+    printf("Enemy count         : %d\n", trn->enemy_count);
+    printf("BK name             : %s\n", trn->bk_name);
+    printf("Winnings multiplier : %f\n", trn->winnings_multiplier);
+    printf("Registration fee    : %d\n", trn->registration_free);
+    printf("Initial value       : %d\n", trn->assumed_initial_value);
+    printf("ID                  : %d\n", trn->tournament_id);
+    printf("PIC file            : %s\n", trn->pic_file);
+
+    printf("\nLocales:\n");
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        printf("\n[%d] Locale '%s':\n", i, language_names[i]);
+        printf("  - Logo: length = %d, size = (%d,%d), pos = (%d,%d)\n",
+            trn->locales[i]->logo->img->len,
+            trn->locales[i]->logo->img->w, 
+            trn->locales[i]->logo->img->h,
+            trn->locales[i]->logo->pos_x, 
+            trn->locales[i]->logo->pos_y);
+        printf("  - Title: %s\n", trn->locales[i]->title);
+        printf("  - Description: %s\n", trn->locales[i]->description);
+    }
+
+
+    // See if logo dump was requested, and do so if it was
+    if(dumplogo) {
+        printf("\nDumping logo to '%s'.\n", dumpfile);
+        sd_rgba_image *out = sd_sprite_image_decode(
+            trn->locales[0]->logo->img, &trn->pal, -1);
+        sd_rgba_image_to_ppm(out, dumpfile);
+        sd_rgba_image_delete(out);
+    }
+
     sd_tournament_delete(trn);
     return 0;
 }

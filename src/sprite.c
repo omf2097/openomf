@@ -26,7 +26,7 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
     sprite->index = sd_read_ubyte(r);
     sprite->missing = sd_read_ubyte(r);
     sprite->img = sd_sprite_image_create(width, height, len);
-    if (sprite->missing == 0) {
+    if(sprite->missing == 0) {
         // sprite data follows
         sd_read_buf(r, sprite->img->data, len);
     } else {

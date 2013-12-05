@@ -21,9 +21,7 @@ typedef struct sd_palette_t {
 } sd_palette;
 
 unsigned char sd_palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, sd_palette *pal);
-
 void sd_palette_to_gimp_palette(char *filename, sd_palette *palette);
-
 int sd_palette_load(sd_reader *reader, sd_palette *palette);
 void sd_palette_save(sd_writer *writer, sd_palette *palette);
 

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "shadowdive/error.h"
 #include "shadowdive/internal/reader.h"
@@ -7,12 +8,45 @@
 #include "shadowdive/tournament.h"
 
 #define ENEMY_BLOCK_LENGTH 428
+#define UNUSED(x) (void)x;
 
 sd_tournament_file* sd_tournament_create() {
     sd_tournament_file *trn = malloc(sizeof(sd_tournament_file));
-    trn->enemies = NULL;
-    trn->enemy_count = 0;
+    for(int i = 0; i < MAX_TRN_ENEMIES; i++) {
+        trn->enemies[i] = NULL;
+    }
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        trn->locales[i] = NULL;
+    }
     return trn;
+}
+
+static void free_enemies(sd_tournament_file *trn) {
+    for(int i = 0; i < MAX_TRN_ENEMIES; i++) {
+        if(trn->enemies[i]) {
+            for(int k = 0; k < MAX_TRN_LOCALES; k++) {
+                if(trn->enemies[i]->quote[k])
+                    free(trn->enemies[i]->quote[k]);
+            }
+            free(trn->enemies[i]);
+            trn->enemies[i] = NULL;
+        }
+    }
+}
+
+static void free_locales(sd_tournament_file *trn) {
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        if(trn->locales[i]) {
+            if(trn->locales[i]->logo)
+                sd_sprite_delete(trn->locales[i]->logo);
+            if(trn->locales[i]->description)
+                free(trn->locales[i]->description);
+            if(trn->locales[i]->title)
+                free(trn->locales[i]->title);
+            free(trn->locales[i]);
+            trn->locales[i] = NULL;
+        }
+    }
 }
 
 int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
@@ -21,9 +55,16 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
+    // Make sure that the file looks at least relatively okay
+    // TODO: Add other checks.
+    if(sd_reader_filesize(r) < 1582) {
+        goto error_0;
+    }
+
+    // Read tournament data
     trn->enemy_count = sd_read_word(r);
     sd_skip(r, 2);
-    trn->victory_text_offset = sd_read_dword(r);
+    int victory_text_offset = sd_read_dword(r);
     sd_read_buf(r, trn->bk_name, 14);
     trn->winnings_multiplier = sd_read_float(r);
     sd_skip(r, 4);
@@ -33,16 +74,13 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Read enemy block offsets
     sd_reader_set(r, 300);
-    int offset_list[trn->enemy_count + 1];
+    int offset_list[256]; // Should be large enough
     for(int i = 0; i < trn->enemy_count + 1; i++) {
         offset_list[i] = sd_read_dword(r);
     }
 
-    // Format data
-    trn->enemies = malloc(sizeof(sd_tournament_enemy*) * trn->enemy_count);
-
     // Read enemy data
-    char ebuf[ENEMY_BLOCK_LENGTH];
+    char ebuf[482];
     sd_tournament_enemy *enemy;
     for(int i = 0; i < trn->enemy_count; i++) {
         trn->enemies[i] = malloc(sizeof(sd_tournament_enemy));
@@ -71,12 +109,73 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         enemy->color_2 =   *(uint8_t*) (ebuf + 45);
         enemy->color_3 =   *(uint8_t*) (ebuf + 46);
 
+        // Read quotes
+        for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+            enemy->quote[i] = NULL;
+            int quote_len = sd_read_word(r);
+            if(quote_len > 0) {
+                enemy->quote[i] = malloc(quote_len);
+                sd_read_buf(r, enemy->quote[i], quote_len);
+            }
+        }
 
-        // Read quote
-        int quote_len = sd_read_word(r);
-        enemy->english_quote = malloc(quote_len);
-        sd_read_buf(r, enemy->english_quote, quote_len);
+        // Check for errors
+        if(!sd_reader_ok(r)) {
+            goto error_1;
+        }
     }
+
+    // Seek sprite start offset
+    sd_reader_set(r, offset_list[trn->enemy_count]);
+
+    // Allocate locales
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        trn->locales[i] = malloc(sizeof(sd_tournament_locale));
+        trn->locales[i]->logo = NULL;
+        trn->locales[i]->description = NULL;
+        trn->locales[i]->title = NULL;
+    }
+
+    // Load logos to locales
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        trn->locales[i]->logo = sd_sprite_create();
+        if(sd_sprite_load(r, trn->locales[i]->logo) != SD_SUCCESS) {
+            goto error_2;
+        }
+    }
+
+    // Read palette. Only 40 colors are defined, starting
+    // from palette position 128. Remember to convert VGA pal.
+    memset((void*)&trn->pal, 0, sizeof(sd_palette));
+    char d[3];
+    for(int i = 128; i < 168; i++) {
+        sd_read_buf(r, d, 3);
+        trn->pal.data[i][0] = ((d[0] << 2) | (d[0] >> 4));
+        trn->pal.data[i][1] = ((d[1] << 2) | (d[1] >> 4));
+        trn->pal.data[i][2] = ((d[2] << 2) | (d[2] >> 4));
+    }
+
+    // Read pic filename
+    int pic_file_len = sd_read_word(r);
+    sd_read_buf(r, trn->pic_file, pic_file_len);
+
+    // Read tournament descriptions
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        int title_len = sd_read_word(r);
+        trn->locales[i]->title = malloc(title_len);
+        sd_read_buf(r, trn->locales[i]->title, title_len);
+
+        int desc_len = sd_read_word(r);
+        trn->locales[i]->description = malloc(desc_len);
+        sd_read_buf(r, trn->locales[i]->description, desc_len);
+    }
+
+    // Make sure we are in correct position
+    if(sd_reader_pos(r) != victory_text_offset) {
+        goto error_2;
+    }
+
+    printf("POS = %ld\n", sd_reader_pos(r));
 
 /*
     // Print strings at the end
@@ -93,6 +192,16 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     // Close & return
     sd_reader_close(r);
     return SD_SUCCESS;
+
+error_2:
+    free_locales(trn);
+
+error_1:
+    free_enemies(trn);
+
+error_0:
+    sd_reader_close(r);
+    return SD_FILE_PARSE_ERROR;
 }
 
 int sd_tournament_save(sd_tournament_file *trn, const char *filename) {
@@ -100,10 +209,7 @@ int sd_tournament_save(sd_tournament_file *trn, const char *filename) {
 }
 
 void sd_tournament_delete(sd_tournament_file *trn) {
-    for(int i = 0; i < trn->enemy_count; i++) {
-        free(trn->enemies[i]->english_quote);
-        free(trn->enemies[i]);
-    }
-    free(trn->enemies);
+    free_locales(trn);
+    free_enemies(trn);
     free(trn);
 }

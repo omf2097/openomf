@@ -1,12 +1,30 @@
 #ifndef _TOURNAMENT_H
 #define _TOURNAMENT_H
 
-#include <stdint.h>
-#include <float.h>
-
 #ifdef __cplusplus 
 extern "C" {
 #endif
+
+#include <stdint.h>
+#include <float.h>
+#include "palette.h"
+#include "sprite.h"
+
+#define MAX_TRN_ENEMIES 256
+#define MAX_TRN_LOCALES 10
+
+enum {
+    TRN_LANG_ENGLISH = 0,
+    TRN_LANG_GERMAN,
+    TRN_LANG_FRENCH,
+    TRN_LANG_SPANISH,
+    TRN_LANG_MEXICAN,
+    TRN_LANG_ITALIAN,
+    TRN_LANG_POLISH,
+    TRN_LANG_RUSSIAN,
+    TRN_LANG_UNDEF_1,
+    TRN_LANG_UNDEF_2
+};
 
 typedef struct sd_tournament_enemy_t {
     uint32_t unknown_a;
@@ -21,28 +39,28 @@ typedef struct sd_tournament_enemy_t {
     uint8_t color_1;
     uint8_t color_2;
     uint8_t color_3;
-
-    char *english_quote;
+    char *quote[MAX_TRN_LOCALES];
 } sd_tournament_enemy;
+
+typedef struct sd_tournament_locale_t {
+    sd_sprite *logo;
+    char *title;
+    char *description;
+} sd_tournament_locale;
 
 typedef struct sd_tournament_file_t {
     int16_t enemy_count;
-    int32_t victory_text_offset; // ???
     char bk_name[14];
     float winnings_multiplier;
     int32_t registration_free; 
     int32_t assumed_initial_value; 
-    int32_t tournament_id; 
+    int32_t tournament_id;
+    char pic_file[14];
 
-    sd_tournament_enemy **enemies;
+    sd_tournament_enemy *enemies[MAX_TRN_ENEMIES];
+    sd_tournament_locale *locales[MAX_TRN_LOCALES];
 
-    // Offsets section starts at 300 (0x12C) ?
-    // Data section starts at 300 + enemy_count * 4
-    // Player info starts at offset_list[0] and ends at offset_list[player_count+1]
-    // From this point, maybe image data ?
-    // Parts of data section may be XORred ?
-    // Victory text section at victory_text_offset
-
+    sd_palette pal;
 } sd_tournament_file;
 
 sd_tournament_file* sd_tournament_create();
