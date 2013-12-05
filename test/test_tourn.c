@@ -23,10 +23,11 @@ int main(int argc, char **argv) {
 
     // Get logodump path
     int dumplogo = 0;
-    const char *dumpfile = (char*)argv[3];
+    char *dumpfile = 0;
     if(argc == 4) {
         if(strcmp(argv[2], "-d") == 0) {
             dumplogo = 1;
+            dumpfile = (char*)argv[3];
         }
     }
     
