@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "shadowdive/error.h"
 #include "shadowdive/internal/reader.h"
@@ -8,7 +7,6 @@
 #include "shadowdive/tournament.h"
 
 #define ENEMY_BLOCK_LENGTH 428
-#define UNUSED(x) (void)x;
 
 sd_tournament_file* sd_tournament_create() {
     sd_tournament_file *trn = malloc(sizeof(sd_tournament_file));
@@ -43,6 +41,12 @@ static void free_locales(sd_tournament_file *trn) {
                 free(trn->locales[i]->description);
             if(trn->locales[i]->title)
                 free(trn->locales[i]->title);
+            for(int har = 0; har < 11; har++) {
+                for(int page = 0; page < 10; page++) {
+                    if(trn->locales[i]->end_texts[har][page])
+                        free(trn->locales[i]->end_texts[har][page]);
+                }
+            }
             free(trn->locales[i]);
             trn->locales[i] = NULL;
         }
@@ -134,6 +138,11 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         trn->locales[i]->logo = NULL;
         trn->locales[i]->description = NULL;
         trn->locales[i]->title = NULL;
+        for(int har = 0; har < 11; har++) {
+            for(int page = 0; page < 10; page++) {
+                trn->locales[i]->end_texts[har][page] = NULL;
+            }
+        }
     }
 
     // Load logos to locales
@@ -175,19 +184,18 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         goto error_2;
     }
 
-    printf("POS = %ld\n", sd_reader_pos(r));
-
-/*
-    // Print strings at the end
-    printf("\nVictory texts:\n");
-    sd_reader_set(r, trn->victory_text_offset);
-    while(sd_reader_pos(r) < sd_reader_filesize(r)) {
-        len = sd_read_word(r);
-        if(len == 0) break;
-        char buf[len];
-        sd_read_buf(r, buf, len);
-        printf("[%d] %s\n", len, buf);
-    }*/
+    // Load texts
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        for(int har = 0; har < 11; har++) {
+            for(int page = 0; page < 10; page++) {
+                int page_len = sd_read_word(r);
+                if(page_len > 0) {
+                    trn->locales[i]->end_texts[har][page] = malloc(page_len);
+                    sd_read_buf(r, trn->locales[i]->end_texts[har][page], page_len);
+                }
+            }
+        }
+    }
 
     // Close & return
     sd_reader_close(r);

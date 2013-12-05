@@ -79,6 +79,10 @@ int main(int argc, char **argv) {
 
     printf("\nLocales:\n");
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        // Make sure the locale is valid
+        if(trn->locales[i]->title[0] == 0) continue;
+
+        // Print locale information
         printf("\n[%d] Locale '%s':\n", i, language_names[i]);
         printf("  - Logo: length = %d, size = (%d,%d), pos = (%d,%d)\n",
             trn->locales[i]->logo->img->len,
@@ -87,6 +91,24 @@ int main(int argc, char **argv) {
             trn->locales[i]->logo->pos_x, 
             trn->locales[i]->logo->pos_y);
         printf("  - Title: %s\n", trn->locales[i]->title);
+
+        // Print victory text pages
+        printf("  - Text pages:\n");
+        for(int har = 0; har < 11; har++) {
+            for(int page = 0; page < 10; page++) {
+                if(trn->locales[i]->end_texts[har][page] != NULL
+                    && trn->locales[i]->end_texts[har][page][0] != 0) 
+                {
+                    printf("    * Page (%d,%d): %s\n", 
+                        har, 
+                        page, 
+                        trn->locales[i]->end_texts[har][page]);
+                }
+                
+            }
+        }
+
+        // Description
         printf("  - Description: %s\n", trn->locales[i]->description);
     }
 

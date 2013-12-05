@@ -46,6 +46,7 @@ typedef struct sd_tournament_locale_t {
     sd_sprite *logo;
     char *title;
     char *description;
+    char *end_texts[11][10];
 } sd_tournament_locale;
 
 typedef struct sd_tournament_file_t {
