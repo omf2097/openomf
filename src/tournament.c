@@ -131,7 +131,26 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         // Skip 1
         enemy->flags =       *(uint8_t*) (ebuf + 178);
         // Skip 1
+        memcpy(enemy->reqs, ebuf + 180, 10);
+        memcpy(enemy->attitude, ebuf + 190, 6);
+        memcpy(enemy->unk_block_d, ebuf + 196, 6);
 
+        enemy->ap_throw =    *(uint16_t*)(ebuf + 202);
+        enemy->ap_special =  *(uint16_t*)(ebuf + 204);
+        enemy->ap_jump =     *(uint16_t*)(ebuf + 206);
+        enemy->ap_high =     *(uint16_t*)(ebuf + 208);
+        enemy->ap_low =      *(uint16_t*)(ebuf + 210);
+        enemy->ap_middle =   *(uint16_t*)(ebuf + 212);
+        enemy->pref_jump =   *(uint16_t*)(ebuf + 214);
+        enemy->pref_fwd =    *(uint16_t*)(ebuf + 216);
+        enemy->pref_back =   *(uint16_t*)(ebuf + 218);
+        memcpy(enemy->unk_block_e, ebuf + 220, 4);
+        enemy->learning =    *(float*)   (ebuf + 224);
+        enemy->forget =      *(float*)   (ebuf + 228);
+        memcpy(enemy->unk_block_f, ebuf + 232, 18);
+        enemy->winnings =    *(uint32_t*)(ebuf + 256);
+        memcpy(enemy->unk_block_g, ebuf + 260, 166);
+        enemy->photo_id =    *(uint16_t*)(ebuf + 426);
 
         // Read quotes
         for(int i = 0; i < MAX_TRN_LOCALES; i++) {

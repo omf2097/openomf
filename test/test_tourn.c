@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
             trn->enemies[i]->color_1,
             trn->enemies[i]->color_2,
             trn->enemies[i]->color_3);
+
         printf("  - Stats:       ");
         print_bytes(trn->enemies[i]->stats, 8, 10, 0);
         printf("\n");
@@ -90,23 +91,52 @@ int main(int argc, char **argv) {
         printf("\n");
         printf("  - Flags:       %d\n", trn->enemies[i]->flags);
 
+        printf("  - Reqs:        ");
+        print_bytes((char*)trn->enemies[i]->reqs, 10, 16, 0);
         printf("\n");
+        printf("  - Attitude:    ");
+        print_bytes((char*)trn->enemies[i]->attitude, 6, 16, 0);
+        printf("\n");
+        printf("  - unk_block_d: ");
+        print_bytes(trn->enemies[i]->unk_block_d, 6, 16, 0);
+        printf("\n");
+
+        printf("  - AP Throw:    %d\n", trn->enemies[i]->ap_throw);
+        printf("  - AP Special:  %d\n", trn->enemies[i]->ap_special);
+        printf("  - AP Jump:     %d\n", trn->enemies[i]->ap_jump);
+        printf("  - AP High:     %d\n", trn->enemies[i]->ap_high);
+        printf("  - AP Low:      %d\n", trn->enemies[i]->ap_low);
+        printf("  - AP Middle:   %d\n", trn->enemies[i]->ap_middle);
+
+        printf("  - Pref jump    %d\n", trn->enemies[i]->pref_jump);
+        printf("  - Pref fwd     %d\n", trn->enemies[i]->pref_fwd);
+        printf("  - Pref back    %d\n", trn->enemies[i]->pref_back);
+
+        printf("  - unk_block_e: ");
+        print_bytes(trn->enemies[i]->unk_block_d, 4, 16, 0);
+        printf("\n");
+
+        printf("  - Learning     %f\n", trn->enemies[i]->learning);
+        printf("  - Forget       %f\n", trn->enemies[i]->forget);
+        printf("  - Winnings     %d\n", trn->enemies[i]->winnings);
+        printf("  - Photo ID     %d\n", trn->enemies[i]->photo_id);
+
+        printf("  - unk_block_f: ");
+        print_bytes(trn->enemies[i]->unk_block_f, 24, 26, 0);
+        printf("\n");
+        printf("  - unk_block_g:\n");
+        print_bytes(trn->enemies[i]->unk_block_g, 166, 16, 5);
+        printf("\n");
+
         for(int k = 0; k < MAX_TRN_LOCALES; k++) {
             if(trn->enemies[i]->quote[k] == NULL) continue;
             printf("  - %s quote: %s\n", 
                 language_names[k], 
                 trn->enemies[i]->quote[k]);
         }
+
+        printf("\n");
     }
-    
-    printf("\nTournament details:\n");
-    printf("Enemy count         : %d\n", trn->enemy_count);
-    printf("BK name             : %s\n", trn->bk_name);
-    printf("Winnings multiplier : %f\n", trn->winnings_multiplier);
-    printf("Registration fee    : %d\n", trn->registration_free);
-    printf("Initial value       : %d\n", trn->assumed_initial_value);
-    printf("ID                  : %d\n", trn->tournament_id);
-    printf("PIC file            : %s\n", trn->pic_file);
 
     printf("\nLocales:\n");
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
@@ -143,6 +173,14 @@ int main(int argc, char **argv) {
         printf("  - Description: %s\n", trn->locales[i]->description);
     }
 
+    printf("\nTournament details:\n");
+    printf("  - Enemy count         : %d\n", trn->enemy_count);
+    printf("  - BK name             : %s\n", trn->bk_name);
+    printf("  - Winnings multiplier : %f\n", trn->winnings_multiplier);
+    printf("  - Registration fee    : %d\n", trn->registration_free);
+    printf("  - Initial value       : %d\n", trn->assumed_initial_value);
+    printf("  - ID                  : %d\n", trn->tournament_id);
+    printf("  - PIC file            : %s\n", trn->pic_file);
 
     // See if logo dump was requested, and do so if it was
     if(dumplogo) {
