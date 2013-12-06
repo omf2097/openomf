@@ -16,6 +16,7 @@ sd_tournament_file* sd_tournament_create() {
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         trn->locales[i] = NULL;
     }
+    trn->pic_file = NULL;
     return trn;
 }
 
@@ -51,6 +52,16 @@ static void free_locales(sd_tournament_file *trn) {
             trn->locales[i] = NULL;
         }
     }
+}
+
+char *read_variable_str(sd_reader *r) {
+    int len = sd_read_uword(r);
+    char *str = NULL;
+    if(len > 0) {
+        str = (char*)malloc(len);
+        sd_read_buf(r, str, len);
+    }
+    return str;
 }
 
 int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
@@ -114,12 +125,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
         // Read quotes
         for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-            enemy->quote[i] = NULL;
-            int quote_len = sd_read_word(r);
-            if(quote_len > 0) {
-                enemy->quote[i] = malloc(quote_len);
-                sd_read_buf(r, enemy->quote[i], quote_len);
-            }
+            enemy->quote[i] = read_variable_str(r);
         }
 
         // Check for errors
@@ -164,18 +170,12 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     }
 
     // Read pic filename
-    int pic_file_len = sd_read_word(r);
-    sd_read_buf(r, trn->pic_file, pic_file_len);
+    trn->pic_file = read_variable_str(r);
 
     // Read tournament descriptions
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        int title_len = sd_read_word(r);
-        trn->locales[i]->title = malloc(title_len);
-        sd_read_buf(r, trn->locales[i]->title, title_len);
-
-        int desc_len = sd_read_word(r);
-        trn->locales[i]->description = malloc(desc_len);
-        sd_read_buf(r, trn->locales[i]->description, desc_len);
+        trn->locales[i]->title = read_variable_str(r);
+        trn->locales[i]->description = read_variable_str(r);
     }
 
     // Make sure we are in correct position
@@ -187,11 +187,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         for(int har = 0; har < 11; har++) {
             for(int page = 0; page < 10; page++) {
-                int page_len = sd_read_word(r);
-                if(page_len > 0) {
-                    trn->locales[i]->end_texts[har][page] = malloc(page_len);
-                    sd_read_buf(r, trn->locales[i]->end_texts[har][page], page_len);
-                }
+                trn->locales[i]->end_texts[har][page] = read_variable_str(r);
             }
         }
     }
@@ -218,5 +214,7 @@ int sd_tournament_save(sd_tournament_file *trn, const char *filename) {
 void sd_tournament_delete(sd_tournament_file *trn) {
     free_locales(trn);
     free_enemies(trn);
+    if(trn->pic_file != NULL)
+        free(trn->pic_file);
     free(trn);
 }

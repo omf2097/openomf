@@ -56,7 +56,7 @@ typedef struct sd_tournament_file_t {
     int32_t registration_free; 
     int32_t assumed_initial_value; 
     int32_t tournament_id;
-    char pic_file[14];
+    char *pic_file;
 
     sd_tournament_enemy *enemies[MAX_TRN_ENEMIES];
     sd_tournament_locale *locales[MAX_TRN_LOCALES];
