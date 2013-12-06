@@ -15,6 +15,21 @@ const char *language_names[] = {
     "Undef"
 };
 
+void print_bytes(char *buf, int len, int line, int padding) {
+    for(int k = 0; k < padding; k++) {
+        printf(" ");
+    }
+    for(int i = 1; i <= len; i++) {
+        printf("%02x ", (uint8_t)buf[i]);
+        if(i % line == 0) {
+            printf("\n");
+            for(int k = 0; k < padding; k++) {
+                printf(" ");
+            }
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     if(argc < 2) {
         printf("test_tourn <tournamentfile> [-d logodump.ppm]\n");
@@ -46,20 +61,35 @@ int main(int argc, char **argv) {
     printf("Enemies:\n");
     for(int i = 0; i < trn->enemy_count; i++) {
         printf("[%d] %s:\n", i, trn->enemies[i]->name);
-        printf("  - Wins:     %d\n", trn->enemies[i]->wins);
-        printf("  - Losses:   %d\n", trn->enemies[i]->losses);
-        printf("  - Robot ID: %d\n", trn->enemies[i]->robot_id);
-        printf("  - Offense:  %d\n", trn->enemies[i]->offense);
-        printf("  - Defense:  %d\n", trn->enemies[i]->defense);
-        printf("  - Money:    %d\n", trn->enemies[i]->money);
-        printf("  - Color:    %d,%d,%d\n", 
+        printf("  - Wins:        %d\n", trn->enemies[i]->wins);
+        printf("  - Losses:      %d\n", trn->enemies[i]->losses);
+        printf("  - Robot ID:    %d\n", trn->enemies[i]->robot_id);
+        printf("  - Offense:     %d\n", trn->enemies[i]->offense);
+        printf("  - Defense:     %d\n", trn->enemies[i]->defense);
+        printf("  - Money:       %d\n", trn->enemies[i]->money);
+        printf("  - Color:       %d,%d,%d\n", 
             trn->enemies[i]->color_1,
             trn->enemies[i]->color_2,
             trn->enemies[i]->color_3);
-        printf("  - Stats:    ");
-        for(int k = 0; k < 8; k++) {
-            printf("%02X ", (uint8_t)trn->enemies[i]->stats[k]);
-        }
+        printf("  - Stats:       ");
+        print_bytes(trn->enemies[i]->stats, 8, 10, 0);
+        printf("\n");
+        printf("  - unk_block_a:\n");
+        print_bytes(trn->enemies[i]->unk_block_a, 107, 16, 5);
+        printf("\n");
+        printf("  - Force arena: %d\n", trn->enemies[i]->force_arena);
+        printf("  - unk_block_b: ");
+        print_bytes(trn->enemies[i]->unk_block_a, 3, 16, 0);
+        printf("\n");
+        printf("  - Movement:    %d\n", trn->enemies[i]->movement);
+        printf("  - unk_block_c: ");
+        print_bytes(trn->enemies[i]->unk_block_c, 6, 16, 0);
+        printf("\n");
+        printf("  - Enhancement: ");
+        print_bytes(trn->enemies[i]->enhancements, 11, 16, 0);
+        printf("\n");
+        printf("  - Flags:       %d\n", trn->enemies[i]->flags);
+
         printf("\n");
         for(int k = 0; k < MAX_TRN_LOCALES; k++) {
             if(trn->enemies[i]->quote[k] == NULL) continue;

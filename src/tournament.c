@@ -110,18 +110,28 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         }
 
         // Set vars
-        enemy->unknown_a = *(uint32_t*)(ebuf + 00);
+        enemy->unknown_a =   *(uint32_t*)(ebuf + 00);
         memcpy(enemy->name,  ebuf + 4, 18);
-        enemy->wins =      *(uint16_t*)(ebuf + 22);
-        enemy->losses =    *(uint16_t*)(ebuf + 24);
-        enemy->robot_id =  *(uint16_t*)(ebuf + 26);
+        enemy->wins =        *(uint16_t*)(ebuf + 22);
+        enemy->losses =      *(uint16_t*)(ebuf + 24);
+        enemy->robot_id =    *(uint16_t*)(ebuf + 26);
         memcpy(enemy->stats, ebuf + 28, 8);
-        enemy->offense =   *(uint16_t*)(ebuf + 36);
-        enemy->defense =   *(uint16_t*)(ebuf + 38);
-        enemy->money =     *(uint32_t*)(ebuf + 40);
-        enemy->color_1 =   *(uint8_t*) (ebuf + 44);
-        enemy->color_2 =   *(uint8_t*) (ebuf + 45);
-        enemy->color_3 =   *(uint8_t*) (ebuf + 46);
+        enemy->offense =     *(uint16_t*)(ebuf + 36);
+        enemy->defense =     *(uint16_t*)(ebuf + 38);
+        enemy->money =       *(uint32_t*)(ebuf + 40);
+        enemy->color_1 =     *(uint8_t*) (ebuf + 44);
+        enemy->color_2 =     *(uint8_t*) (ebuf + 45);
+        enemy->color_3 =     *(uint8_t*) (ebuf + 46);
+        memcpy(enemy->unk_block_a, ebuf + 47, 107);
+        enemy->force_arena = *(uint16_t*)(ebuf + 154);
+        memcpy(enemy->unk_block_b, ebuf + 156, 3);
+        enemy->movement =    *(uint8_t*) (ebuf + 159);
+        memcpy(enemy->unk_block_c, ebuf + 160, 6);
+        memcpy(enemy->enhancements, ebuf + 166, 11);
+        // Skip 1
+        enemy->flags =       *(uint8_t*) (ebuf + 178);
+        // Skip 1
+
 
         // Read quotes
         for(int i = 0; i < MAX_TRN_LOCALES; i++) {

@@ -39,6 +39,14 @@ typedef struct sd_tournament_enemy_t {
     uint8_t color_1;
     uint8_t color_2;
     uint8_t color_3;
+    char unk_block_a[107];
+    uint16_t force_arena;
+    char unk_block_b[3];
+    uint8_t movement;
+    char unk_block_c[6];
+    char enhancements[11];
+    uint8_t flags;
+
     char *quote[MAX_TRN_LOCALES];
 } sd_tournament_enemy;
 

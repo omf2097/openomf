@@ -3,8 +3,6 @@
 #include <string.h>
 #include <shadowdive/shadowdive.h>
 
-#define UNUSED(x) (void)(x)
-
 int main(int argc, char *argv[]) {
     if(argc < 2) {
         printf("test_pic <picfile> [-d basename bkfile]\n");
