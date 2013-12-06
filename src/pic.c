@@ -66,7 +66,7 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         // Read palette
         memset((void*)&pic->photos[i]->pal, 0, sizeof(sd_palette));
         char d[3];
-        for(int k = 208; k < 256; k++) {
+        for(int k = 0; k < 48; k++) {
             sd_read_buf(r, d, 3);
             pic->photos[i]->pal.data[k][0] = ((d[0] << 2) | (d[0] >> 4));
             pic->photos[i]->pal.data[k][1] = ((d[1] << 2) | (d[1] >> 4));

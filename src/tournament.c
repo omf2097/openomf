@@ -66,8 +66,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     }
 
     // Read tournament data
-    trn->enemy_count = sd_read_word(r);
-    sd_skip(r, 2);
+    trn->enemy_count = sd_read_dword(r);
     int victory_text_offset = sd_read_dword(r);
     sd_read_buf(r, trn->bk_name, 14);
     trn->winnings_multiplier = sd_read_float(r);
