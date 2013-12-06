@@ -42,6 +42,8 @@ struct resolution_t {
     {2560,  1600,   "2560x1600"}
 };
 
+typedef struct resolution_t resolution;
+
 enum {
     ROLE_SERVER,
     ROLE_CLIENT
@@ -58,6 +60,10 @@ typedef struct mainmenu_local_t {
     char input_key_labels[6][100];
     int input_presskey_ready_ticks;
     int input_selected_player;
+
+    char custom_resolution_label[40];
+    vec2i custom_resolution;
+    int is_custom_resolution;
 
     menu *current_menu;
     menu main_menu;
@@ -202,6 +208,18 @@ void update_keys(mainmenu_local *local, int player) {
     }
 }
 
+resolution *find_resolution_by_settings(settings *s) {
+    int w = s->video.screen_w;
+    int h = s->video.screen_h;
+
+    for(int i = 0;i < sizeof(_resolutions)/sizeof(resolution);i++) {
+        if(w == _resolutions[i].w && h == _resolutions[i].h) {
+            return &_resolutions[i];
+        }
+    }
+    return NULL;
+}
+
 // Menu event handlers
 void mainmenu_quit(component *c, void *userdata) {
     game_state_set_next(SCENE_CREDITS);
@@ -312,9 +330,21 @@ void video_confirm_cancel_clicked(component *c, void *userdata) {
 }
 
 void resolution_toggled(component *c, void *userdata, int pos) {
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
     settings_video *v = &settings_get()->video;
-    v->screen_w = _resolutions[pos].w;
-    v->screen_h = _resolutions[pos].h;
+    if(local->is_custom_resolution) {
+        // The first index is always the custom resolution
+        if(pos == 0) {
+            v->screen_w = local->custom_resolution.x;
+            v->screen_h = local->custom_resolution.y;
+        } else {
+            v->screen_w = _resolutions[pos-1].w;
+            v->screen_h = _resolutions[pos-1].h;
+        }
+    } else {
+        v->screen_w = _resolutions[pos].w;
+        v->screen_h = _resolutions[pos].h;
+    }
 }
 
 /*
@@ -806,10 +836,30 @@ int mainmenu_create(scene *scene) {
 
     menu_create(&local->video_menu, 165, 5, 151, 119);
     textbutton_create(&local->video_header, &font_large, "VIDEO");
-    textselector_create(&local->resolution_toggle, &font_large, "RES:", _resolutions[0].name);
-    for(int i=1;i < sizeof(_resolutions)/sizeof(struct resolution_t); ++i) {
+    resolution *res = find_resolution_by_settings(setting);
+    if(res) {
+        textselector_create(&local->resolution_toggle, &font_large, "RES:", _resolutions[0].name);
+        local->is_custom_resolution = 0;
+    } else {
+        sprintf(local->custom_resolution_label, "%ux%u", setting->video.screen_w, setting->video.screen_h);
+        textselector_create(&local->resolution_toggle, &font_large, "RES:", local->custom_resolution_label);
+        local->custom_resolution.x = setting->video.screen_w;
+        local->custom_resolution.y = setting->video.screen_h;
+        local->is_custom_resolution = 1;
+    }
+    for(int i = local->is_custom_resolution ? 0 : 1;i < sizeof(_resolutions)/sizeof(resolution); ++i) {
         textselector_add_option(&local->resolution_toggle, _resolutions[i].name);
     }
+    if(!local->is_custom_resolution) {
+        textselector *t = local->resolution_toggle.obj;
+        for(int i = 0;i < vector_size(&t->options);i++) {
+            if(res->name == *(const char**)vector_get(&t->options, i)) {
+                textselector_set_pos(&local->resolution_toggle, i);
+                break;
+            }
+        }
+    }
+
     textselector_create(&local->vsync_toggle, &font_large, "VSYNC:", "OFF");
     textselector_add_option(&local->vsync_toggle, "ON");
     textselector_create(&local->fullscreen_toggle, &font_large, "FULLSCREEN:", "OFF");
@@ -884,7 +934,7 @@ int mainmenu_create(scene *scene) {
     
     // video options
     local->resolution_toggle.toggle = resolution_toggled;
-    textselector_bindvar(&local->resolution_toggle, &setting->video.resindex);
+    local->resolution_toggle.userdata = (void*)scene;
     textselector_bindvar(&local->vsync_toggle, &setting->video.vsync);
     textselector_bindvar(&local->fullscreen_toggle, &setting->video.fullscreen);
     textselector_bindvar(&local->scaling_toggle, &setting->video.scaling);

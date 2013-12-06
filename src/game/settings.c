@@ -37,7 +37,6 @@ typedef struct field_t {
 } field;
 
 const field f_video[] = {
-    F_INT(settings_video,  resindex,        1),
     F_INT(settings_video,  screen_w,      640),
     F_INT(settings_video,  screen_h,      400),
     F_BOOL(settings_video, vsync,           0),

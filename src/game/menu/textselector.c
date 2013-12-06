@@ -102,3 +102,13 @@ void textselector_bindvar(component *c, int *var) {
     textselector *tb = c->obj;
     tb->pos = (var ? var : &tb->pos_);
 }
+
+int textselector_get_pos(component *c) {
+    textselector *tb = c->obj;
+    return *tb->pos;
+}
+
+void textselector_set_pos(component *c, int pos) {
+    textselector *tb = c->obj;
+    *tb->pos = pos;
+}

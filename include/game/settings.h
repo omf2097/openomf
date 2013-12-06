@@ -33,7 +33,6 @@ typedef struct settings_sound_t {
 } settings_sound;
 
 typedef struct settings_video_t {
-    int resindex;
     int screen_w;
     int screen_h;
     int vsync;
