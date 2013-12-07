@@ -13,6 +13,7 @@ Right now Shadowdive can handle following file formats:
 * Language files (ENGLISH.DAT,GERMAN.DAT)
 * Sound data file (SOUNDS.DAT)
 * Characters for both big and small fonts (GRAPHCHR.DAT, CHARSMAL.DAT)
+* Score file (SCORES.DAT)
 * Pilot image files (*.PIC) (Only reading supported)
 * Tournament data files (*.TRN) (Only reading supported)
 
