@@ -22,11 +22,8 @@ int main(int argc, char *argv[]) {
     // Open pic file
     sd_pic_file *pic = sd_pic_create();
     int ret = sd_pic_load(pic, argv[1]);
-    if(ret == SD_FILE_OPEN_ERROR) {
-        printf("PIC file could not be loaded!\n");
-        return 1;
-    } else if(ret == SD_FILE_PARSE_ERROR) {
-        printf("Invalid file format!\n");
+    if(ret != SD_SUCCESS) {
+        printf("Shadowdive error %d: %s\n", ret, sd_get_error(ret));
         return 1;
     }
 

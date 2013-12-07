@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-void sd_get_error(char *message, int errorcode);
+const char* sd_get_error(int errorcode);
 
 #ifdef __cplusplus
 }

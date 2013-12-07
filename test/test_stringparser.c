@@ -6,7 +6,6 @@
 
 void test_state_variables(const char *anim_str) {
     sd_stringparser *parser = sd_stringparser_create();
-    char err_msg[256];
 
     int err = sd_stringparser_set_string(parser, anim_str);
     if(err == 0) 
@@ -62,8 +61,7 @@ void test_state_variables(const char *anim_str) {
             }
         }
     } else {
-        sd_get_error(err_msg, err);
-        printf("Animation string parser error: %s (%s)\n", err_msg, anim_str);
+        printf("Animation string parser error: %s (%s)\n", sd_get_error(err), anim_str);
     }
 
     sd_stringparser_delete(parser);
@@ -72,11 +70,9 @@ void test_state_variables(const char *anim_str) {
 void test_anim_string(sd_stringparser *parser, const char *str) {
     // execute anim and print result
     unsigned int ticks = 0;
-    char err_msg[100];
     int err = sd_stringparser_set_string(parser, str);
     if(err) {
-        sd_get_error(err_msg, err);
-        printf("Animation string parser error: %s (%s)\n", err_msg, str);
+        printf("Animation string parser error: %s (%s)\n", sd_get_error(err), str);
     } else {
         sd_stringparser_run(parser, ticks);
         sd_stringparser_prettyprint(parser);
@@ -86,12 +82,10 @@ void test_anim_string(sd_stringparser *parser, const char *str) {
 
 void test_broken_string(sd_stringparser *parser) {
     unsigned int ticks = 0;
-    char err_msg[100];
     const char *broken_string = "x+4zcubs21l50zp";
     int err = sd_stringparser_set_string(parser, broken_string);
     if(err) {
-        sd_get_error(err_msg, err);
-        printf("Animation string parser error: %s (%s)\n", err_msg, broken_string);
+        printf("Animation string parser error: %s (%s)\n", sd_get_error(err), broken_string);
     } else {
         sd_stringparser_run(parser, ticks);
         printf("broken string test passed\n\n");

@@ -49,11 +49,8 @@ int main(int argc, char **argv) {
     // Open tournament file
     sd_tournament_file *trn = sd_tournament_create();
     int ret = sd_tournament_load(trn, argv[1]);
-    if(ret == SD_FILE_OPEN_ERROR) {
-        printf("Tournament file could not be loaded!\n");
-        return 1;
-    } else if(ret == SD_FILE_PARSE_ERROR) {
-        printf("Invalid file format!\n");
+    if(ret != SD_SUCCESS) {
+        printf("Shadowdive error %d: %s\n", ret, sd_get_error(ret));
         return 1;
     }
 

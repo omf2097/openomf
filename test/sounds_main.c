@@ -11,10 +11,8 @@ int main(int argc, char **argv) {
 
     sd_sound_file *sf = sd_sounds_create();
     int ret = sd_sounds_load(sf, argv[1]);
-    if(ret != 0) {
-        char error[100];
-        sd_get_error(error, ret);
-        printf("Error: %s\n", error);
+    if(ret != SD_SUCCESS) {
+        printf("Shadowdive error %d: %s\n", ret, sd_get_error(ret));
         return 1;
     }
 
