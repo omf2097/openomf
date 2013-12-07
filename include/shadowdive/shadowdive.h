@@ -30,5 +30,6 @@ typedef struct sd_reader_t sd_reader;
 #include "shadowdive/tournament.h"
 #include "shadowdive/pic.h"
 #include "shadowdive/score.h"
+#include "shadowdive/chr.h"
 
 #endif // _SD_SHADOWDIVE_H

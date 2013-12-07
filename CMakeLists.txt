@@ -34,6 +34,7 @@ add_library(shadowdive
     src/tournament.c
     src/pic.c
     src/score.c
+    src/chr.c
     src/internal/reader.c
     src/internal/memreader.c
     src/internal/writer.c
@@ -50,6 +51,7 @@ add_executable(test_altpals test/altpals.c)
 add_executable(test_tourn test/test_tourn.c)
 add_executable(test_pic test/test_pic.c)
 add_executable(test_score test/test_score.c)
+add_executable(test_chr test/test_chr.c)
 
 target_link_libraries(test_main shadowdive)
 target_link_libraries(test_sounds shadowdive)
@@ -61,6 +63,7 @@ target_link_libraries(test_altpals shadowdive)
 target_link_libraries(test_tourn shadowdive)
 target_link_libraries(test_pic shadowdive)
 target_link_libraries(test_score shadowdive)
+target_link_libraries(test_chr shadowdive)
 
 FILE(GLOB H_FILES "include/shadowdive/*.h")
 INSTALL(FILES ${H_FILES} DESTINATION include/shadowdive/)
