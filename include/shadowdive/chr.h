@@ -24,10 +24,13 @@ typedef struct sd_chr_file_t {
     uint8_t color_1;
     uint8_t color_2;
     uint8_t color_3;
-
     char trn_name[13];
     char trn_desc[30];
     char trn_image[13];
+    uint8_t difficulty;
+    char enhancements[11];
+    uint16_t enemies_inc_unranked;
+    uint16_t enemies_ex_unranked;
 } sd_chr_file;
 
 sd_chr_file* sd_chr_create();

@@ -39,10 +39,19 @@ int main(int argc, char *argv[]) {
         chr->color_2,
         chr->color_3);
 
-    printf(" - Trn Name:  %s\n", chr->trn_name);
-    printf(" - Trn Desc:  %s\n", chr->trn_desc);
-    printf(" - Trn Image: %s\n", chr->trn_image);
-    // TODO
+    printf(" - TRN Name:  %s\n", chr->trn_name);
+    printf(" - TRN Desc:  %s\n", chr->trn_desc);
+    printf(" - TRN Image: %s\n", chr->trn_image);
+    
+    printf(" - Diffic.:   %d\n", chr->difficulty);
+    printf(" - Enemy ex:  %d\n", chr->enemies_ex_unranked);
+    printf(" - Enemy inc: %d\n", chr->enemies_inc_unranked);
+
+    printf(" - Enh:       ");
+    for(int i = 0; i < 11; i++) {
+        printf("%02X ", chr->enhancements[i]);
+    }
+    printf("\n");
 
     sd_chr_delete(chr);
     return 0;

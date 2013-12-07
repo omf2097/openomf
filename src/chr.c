@@ -71,6 +71,14 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     sd_mread_buf(mr, chr->trn_desc, 31);
     sd_mread_buf(mr, chr->trn_image, 13);
 
+    sd_mskip(mr, 51);
+    chr->difficulty = sd_mread_ubyte(mr);
+    sd_mskip(mr, 10);
+    sd_mread_buf(mr, chr->enhancements, 11);
+    sd_mskip(mr, 69);
+    chr->enemies_inc_unranked = sd_mread_uword(mr);
+    chr->enemies_ex_unranked = sd_mread_uword(mr);
+
     // Close & return
     sd_reader_close(r);
     return SD_SUCCESS;

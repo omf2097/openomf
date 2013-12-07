@@ -3,12 +3,7 @@
 
 #include <stdint.h>
 
-typedef struct sd_mreader_t {
-    char *buf;
-    int owned;
-    long len;
-    long pos;
-} sd_mreader;
+typedef struct sd_mreader_t sd_mreader;
 
 sd_mreader* sd_mreader_open(char *buf);
 sd_mreader* sd_mreader_open_from_reader(sd_reader *reader, int len);
