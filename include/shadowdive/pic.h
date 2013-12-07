@@ -1,5 +1,5 @@
-#ifndef _PIC_H
-#define _PIC_H
+#ifndef _SD_PIC_H
+#define _SD_PIC_H
 
 #ifdef __cplusplus 
 extern "C" {
@@ -30,4 +30,4 @@ void sd_pic_delete(sd_pic_file *pic);
 }
 #endif
 
-#endif // _PIC_H
+#endif // _SD_PIC_H

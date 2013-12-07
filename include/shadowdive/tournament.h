@@ -1,5 +1,5 @@
-#ifndef _TOURNAMENT_H
-#define _TOURNAMENT_H
+#ifndef _SD_TOURNAMENT_H
+#define _SD_TOURNAMENT_H
 
 #ifdef __cplusplus 
 extern "C" {
@@ -100,4 +100,4 @@ void sd_tournament_delete(sd_tournament_file *trn);
 }
 #endif
 
-#endif // _TOURNAMENT_H
+#endif // _SD_TOURNAMENT_H
