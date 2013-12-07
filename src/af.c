@@ -1,23 +1,23 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/animation.h"
 #include "shadowdive/error.h"
 #include "shadowdive/move.h"
 #include "shadowdive/af.h"
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
 
 void sd_af_postprocess(sd_af_file *af) {
     char *table[1000] = {0}; // temporary lookup table
     sd_animation *anim;
     // fix NULL pointers for any 'missing' sprites
     for(int i = 0; i < 70; i++) {
-        if(af->moves[i]) {
+        if(af->moves[i] != NULL) {
             anim = af->moves[i]->animation;
             for(int j = 0; j < anim->frame_count; j++) {
-                if (anim->sprites[j]->missing > 0) {
-                    if (table[anim->sprites[j]->index]) {
+                if(anim->sprites[j]->missing > 0) {
+                    if(table[anim->sprites[j]->index]) {
                         anim->sprites[j]->img->data = table[anim->sprites[j]->index];
                     }
                 } else {
@@ -31,7 +31,35 @@ void sd_af_postprocess(sd_af_file *af) {
 sd_af_file* sd_af_create() {
     sd_af_file *af = (sd_af_file*)malloc(sizeof(sd_af_file));
     memset(af->moves, 0, sizeof(af->moves));
+    memset(af->soundtable, 0, sizeof(af->soundtable));
+    af->file_id = 0;
+    af->unknown_a = 0;
+    af->endurance = 0;
+    af->unknown_b = 0;
+    af->power = 0;
+    af->forward_speed = 0;
+    af->reverse_speed = 0;
+    af->jump_speed = 0;
+    af->fall_speed = 0;
+    af->unknown_c = 0;
     return af;
+}
+
+void sd_af_set_move(sd_af_file *af, int index, sd_move *move) {
+    if(index < 0 || index >= MAX_AF_MOVES || af == NULL)
+        return;
+
+    if(af->moves[index] != NULL) {
+        sd_move_delete(af->moves[index]);
+    }
+    af->moves[index] = move;
+}
+
+sd_move* sd_af_get_move(sd_af_file *af, int index) {
+    if(index < 0 || index >= MAX_AF_MOVES || af == NULL)
+        return NULL;
+
+    return af->moves[index];
 }
 
 int sd_af_load(sd_af_file *af, const char *filename) {
@@ -57,7 +85,7 @@ int sd_af_load(sd_af_file *af, const char *filename) {
     uint8_t moveno = 0;
     while(1) {
         moveno = sd_read_ubyte(r);
-        if(moveno >= 70 || !sd_reader_ok(r)) {
+        if(moveno >= MAX_AF_MOVES || !sd_reader_ok(r)) {
             break;
         }
 
@@ -72,6 +100,7 @@ int sd_af_load(sd_af_file *af, const char *filename) {
     // Read soundtable
     sd_read_buf(r, af->soundtable, 30);
 
+    // Fix missing sprites
     sd_af_postprocess(af);
 
     // Close & return
@@ -98,16 +127,17 @@ int sd_af_save(sd_af_file *af, const char* filename) {
     sd_write_uword(w, af->unknown_c);
 
     // Write animations
-    for(uint8_t i = 0; i < 70; i++) {
+    for(uint8_t i = 0; i < MAX_AF_MOVES; i++) {
         if(af->moves[i]) {
             sd_write_ubyte(w, i);
             sd_move_save(w, af->moves[i]);
         }
     }
 
-    sd_write_ubyte(w, 250); // end of animations
+    // This marks the end of animations
+    sd_write_ubyte(w, 250); 
 
-    // soundtable
+    // Soundtable
     sd_write_buf(w, af->soundtable, 30);
 
     // All done!
@@ -116,8 +146,10 @@ int sd_af_save(sd_af_file *af, const char* filename) {
 }
 
 void sd_af_delete(sd_af_file *af) {
-    for(int i = 0; i < 70; i++) {
-        if(af->moves[i]) {
+    if(af == NULL)
+        return;
+    for(int i = 0; i < MAX_AF_MOVES; i++) {
+        if(af->moves[i] != NULL) {
             sd_move_delete(af->moves[i]);
         }
     }

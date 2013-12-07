@@ -147,7 +147,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         memcpy(enemy->unk_block_e, ebuf + 220, 4);
         enemy->learning =    *(float*)   (ebuf + 224);
         enemy->forget =      *(float*)   (ebuf + 228);
-        memcpy(enemy->unk_block_f, ebuf + 232, 18);
+        memcpy(enemy->unk_block_f, ebuf + 232, 24);
         enemy->winnings =    *(uint32_t*)(ebuf + 256);
         memcpy(enemy->unk_block_g, ebuf + 260, 166);
         enemy->photo_id =    *(uint16_t*)(ebuf + 426);
