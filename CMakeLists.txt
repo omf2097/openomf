@@ -35,6 +35,7 @@ add_library(shadowdive
     src/pic.c
     src/score.c
     src/internal/reader.c
+    src/internal/memreader.c
     src/internal/writer.c
     src/internal/helpers.c
 )

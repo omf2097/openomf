@@ -3,6 +3,7 @@
 
 #include "shadowdive/error.h"
 #include "shadowdive/internal/reader.h"
+#include "shadowdive/internal/memreader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/tournament.h"
 
@@ -94,7 +95,6 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     }
 
     // Read enemy data
-    char ebuf[482];
     sd_tournament_enemy *enemy;
     for(int i = 0; i < trn->enemy_count; i++) {
         trn->enemies[i] = malloc(sizeof(sd_tournament_enemy));
@@ -103,54 +103,54 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         // Find data length
         sd_reader_set(r, offset_list[i]);
 
-        // de-xor data :)
-        uint8_t xorkey = ENEMY_BLOCK_LENGTH & 0xFF;
-        for(int k = 0; k < ENEMY_BLOCK_LENGTH; k++) {
-            ebuf[k] = xorkey++ ^ sd_read_byte(r);
-        }
+        // Open memory reader and XOR 
+        sd_mreader *mr = sd_mreader_open_from_reader(r, ENEMY_BLOCK_LENGTH);
+        sd_mreader_xor(mr, ENEMY_BLOCK_LENGTH & 0xFF);
 
-        // Set vars
-        enemy->unknown_a =   *(uint32_t*)(ebuf + 00);
-        memcpy(enemy->name,  ebuf + 4, 18);
-        enemy->wins =        *(uint16_t*)(ebuf + 22);
-        enemy->losses =      *(uint16_t*)(ebuf + 24);
-        enemy->robot_id =    *(uint16_t*)(ebuf + 26);
-        memcpy(enemy->stats, ebuf + 28, 8);
-        enemy->offense =     *(uint16_t*)(ebuf + 36);
-        enemy->defense =     *(uint16_t*)(ebuf + 38);
-        enemy->money =       *(uint32_t*)(ebuf + 40);
-        enemy->color_1 =     *(uint8_t*) (ebuf + 44);
-        enemy->color_2 =     *(uint8_t*) (ebuf + 45);
-        enemy->color_3 =     *(uint8_t*) (ebuf + 46);
-        memcpy(enemy->unk_block_a, ebuf + 47, 107);
-        enemy->force_arena = *(uint16_t*)(ebuf + 154);
-        memcpy(enemy->unk_block_b, ebuf + 156, 3);
-        enemy->movement =    *(uint8_t*) (ebuf + 159);
-        memcpy(enemy->unk_block_c, ebuf + 160, 6);
-        memcpy(enemy->enhancements, ebuf + 166, 11);
-        // Skip 1
-        enemy->flags =       *(uint8_t*) (ebuf + 178);
-        // Skip 1
-        memcpy(enemy->reqs, ebuf + 180, 10);
-        memcpy(enemy->attitude, ebuf + 190, 6);
-        memcpy(enemy->unk_block_d, ebuf + 196, 6);
+        // Set vars 
+        enemy->unknown_a =   sd_mread_udword(mr);
+        sd_mread_buf(mr, enemy->name, 18);
+        enemy->wins =        sd_mread_uword(mr);
+        enemy->losses =      sd_mread_uword(mr);
+        enemy->robot_id =    sd_mread_uword(mr);
+        sd_mread_buf(mr, enemy->stats, 8);
+        enemy->offense =     sd_mread_uword(mr);
+        enemy->defense =     sd_mread_uword(mr);
+        enemy->money =       sd_mread_udword(mr);
+        enemy->color_1 =     sd_mread_ubyte(mr);
+        enemy->color_2 =     sd_mread_ubyte(mr);
+        enemy->color_3 =     sd_mread_ubyte(mr);
+        sd_mread_buf(mr, enemy->unk_block_a, 107);
+        enemy->force_arena = sd_mread_uword(mr);
+        sd_mread_buf(mr, enemy->unk_block_b, 3);
+        enemy->movement =    sd_mread_ubyte(mr);
+        sd_mread_buf(mr, enemy->unk_block_c, 6);
+        sd_mread_buf(mr, enemy->enhancements, 11);
+        sd_mskip(mr, 1);
+        enemy->flags =       sd_mread_ubyte(mr);
+        sd_mskip(mr, 1);
+        sd_mread_buf(mr, (char*)enemy->reqs, 10);
+        sd_mread_buf(mr, (char*)enemy->attitude, 6);
+        sd_mread_buf(mr, enemy->unk_block_d, 6);
+        enemy->ap_throw =    sd_mread_uword(mr);
+        enemy->ap_special =  sd_mread_uword(mr);
+        enemy->ap_jump =     sd_mread_uword(mr);
+        enemy->ap_high =     sd_mread_uword(mr);
+        enemy->ap_low =      sd_mread_uword(mr);
+        enemy->ap_middle =   sd_mread_uword(mr);
+        enemy->pref_jump =   sd_mread_uword(mr);
+        enemy->pref_fwd =    sd_mread_uword(mr);
+        enemy->pref_back =   sd_mread_uword(mr);
+        sd_mread_buf(mr, enemy->unk_block_e, 4);
+        enemy->learning =    sd_mread_float(mr);
+        enemy->forget =      sd_mread_float(mr);
+        sd_mread_buf(mr, enemy->unk_block_f, 24);
+        enemy->winnings =    sd_mread_udword(mr);
+        sd_mread_buf(mr, enemy->unk_block_g, 166);
+        enemy->photo_id =    sd_mread_uword(mr);
 
-        enemy->ap_throw =    *(uint16_t*)(ebuf + 202);
-        enemy->ap_special =  *(uint16_t*)(ebuf + 204);
-        enemy->ap_jump =     *(uint16_t*)(ebuf + 206);
-        enemy->ap_high =     *(uint16_t*)(ebuf + 208);
-        enemy->ap_low =      *(uint16_t*)(ebuf + 210);
-        enemy->ap_middle =   *(uint16_t*)(ebuf + 212);
-        enemy->pref_jump =   *(uint16_t*)(ebuf + 214);
-        enemy->pref_fwd =    *(uint16_t*)(ebuf + 216);
-        enemy->pref_back =   *(uint16_t*)(ebuf + 218);
-        memcpy(enemy->unk_block_e, ebuf + 220, 4);
-        enemy->learning =    *(float*)   (ebuf + 224);
-        enemy->forget =      *(float*)   (ebuf + 228);
-        memcpy(enemy->unk_block_f, ebuf + 232, 24);
-        enemy->winnings =    *(uint32_t*)(ebuf + 256);
-        memcpy(enemy->unk_block_g, ebuf + 260, 166);
-        enemy->photo_id =    *(uint16_t*)(ebuf + 426);
+        // Close memory buffer reader
+        sd_mreader_close(mr);
 
         // Read quotes
         for(int i = 0; i < MAX_TRN_LOCALES; i++) {
