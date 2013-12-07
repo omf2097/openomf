@@ -6,7 +6,28 @@ extern "C" {
 #endif
 
 typedef struct sd_chr_file_t {
-    int tmp;
+    char name[17];
+    uint16_t wins;
+    uint16_t losses;
+    uint8_t rank;
+    uint8_t har;
+    uint8_t arm_power;
+    uint8_t leg_power;
+    uint8_t arm_speed;
+    uint8_t leg_speed;
+    uint8_t armor;
+    uint8_t stun_resistance;
+    uint8_t power;
+    uint8_t agility;
+    uint8_t endurance;
+    uint32_t credits;
+    uint8_t color_1;
+    uint8_t color_2;
+    uint8_t color_3;
+
+    char trn_name[13];
+    char trn_desc[30];
+    char trn_image[13];
 } sd_chr_file;
 
 sd_chr_file* sd_chr_create();

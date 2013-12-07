@@ -19,7 +19,29 @@ int main(int argc, char *argv[]) {
 
     // Dump file header data
     printf("Loaded file '%s'\n", argv[1]);
-    
+    printf(" - Name:      %s\n", chr->name);
+    printf(" - Wins:      %d\n", chr->wins);
+    printf(" - Losses:    %d\n", chr->losses);
+    printf(" - Rank:      %d\n", chr->rank);
+    printf(" - Har:       %d\n", chr->har);
+    printf(" - Arm Power: %d\n", chr->arm_power);
+    printf(" - Leg Power: %d\n", chr->leg_power);
+    printf(" - Arm Speed: %d\n", chr->arm_speed);
+    printf(" - Leg Speed: %d\n", chr->leg_speed);
+    printf(" - Armor:     %d\n", chr->armor);
+    printf(" - Stun Res.: %d\n", chr->stun_resistance);
+    printf(" - Power:     %d\n", chr->power);
+    printf(" - Agility:   %d\n", chr->agility);
+    printf(" - Endurance: %d\n", chr->endurance);
+    printf(" - Credits:   %d\n", chr->credits);
+    printf(" - Color:     (%d,%d,%d)\n", 
+        chr->color_1,
+        chr->color_2,
+        chr->color_3);
+
+    printf(" - Trn Name:  %s\n", chr->trn_name);
+    printf(" - Trn Desc:  %s\n", chr->trn_desc);
+    printf(" - Trn Image: %s\n", chr->trn_image);
     // TODO
 
     sd_chr_delete(chr);

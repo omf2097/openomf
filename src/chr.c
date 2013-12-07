@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "shadowdive/error.h"
 #include "shadowdive/internal/reader.h"
@@ -7,8 +8,18 @@
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/chr.h"
 
+#define UNUSED(x) (void)(x)
+
 sd_chr_file* sd_chr_create() {
     sd_chr_file *chr = malloc(sizeof(sd_chr_file));
+    memset(chr->name, 0, sizeof(chr->name));
+    memset(chr->trn_name, 0, sizeof(chr->trn_name));
+    memset(chr->trn_desc, 0, sizeof(chr->trn_desc));
+    memset(chr->trn_image, 0, sizeof(chr->trn_image));
+    chr->wins = 0;
+    chr->losses = 0;
+    chr->rank = 0;
+    chr->har = 0;
     return chr;
 }
 
@@ -18,7 +29,44 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    // TODO
+    // Make sure this looks like a CHR
+    if(sd_read_udword(r) != 0xAFAEADAD) {
+        return SD_FILE_PARSE_ERROR;
+    }
+
+    // Read player information
+    sd_mreader *mr = sd_mreader_open_from_reader(r, 448);
+    sd_mreader_xor(mr, 0xB0);
+
+    // Get player stats
+    sd_mread_buf(mr, chr->name, 16);
+    chr->losses = sd_mread_uword(mr);
+    chr->wins = sd_mread_uword(mr);
+    chr->rank = sd_mread_ubyte(mr);
+    chr->har = sd_mread_ubyte(mr);
+
+    uint16_t stats_a = sd_mread_uword(mr);
+    uint16_t stats_b = sd_mread_uword(mr);
+    uint16_t stats_c = sd_mread_uword(mr);
+    uint8_t stats_d = sd_mread_ubyte(mr);
+
+    UNUSED(stats_a);
+    UNUSED(stats_b);
+    UNUSED(stats_c);
+    UNUSED(stats_d);
+
+    // TODO: Handle these
+
+    chr->credits = sd_mread_udword(mr);
+    chr->color_1 = sd_mread_ubyte(mr);
+    chr->color_2 = sd_mread_ubyte(mr);
+    chr->color_3 = sd_mread_ubyte(mr);
+
+    sd_mskip(mr, 7); // Unknown
+
+    sd_mread_buf(mr, chr->trn_name, 13);
+    sd_mread_buf(mr, chr->trn_desc, 31);
+    sd_mread_buf(mr, chr->trn_image, 13);
 
     // Close & return
     sd_reader_close(r);
