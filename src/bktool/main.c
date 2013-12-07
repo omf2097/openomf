@@ -528,8 +528,8 @@ int main(int argc, char *argv[]) {
     // Load file
     sd_bk_file *bk = sd_bk_create();
     int ret = sd_bk_load(bk, file->filename[0]);
-    if(ret) {
-        printf("Unable to load BK file! Make sure the file exists and is a valid BK file.\n");
+    if(ret != SD_SUCCESS) {
+        printf("Unable to load BK file! [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_1;
     }
     

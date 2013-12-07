@@ -27,7 +27,6 @@ int main(int argc, char *argv[]) {
     SDL_AudioSpec want, have;
     SDL_AudioDeviceID dev;
     Streamer streamer;
-    char error[128];
     int retcode = 0;
 
     // Init SDL Audio
@@ -83,8 +82,7 @@ int main(int argc, char *argv[]) {
     sd_sound_file *sounds = sd_sounds_create();
     retcode = sd_sounds_load(sounds, file->filename[0]);
     if(retcode) {
-        sd_get_error(error, retcode);
-        printf("Error: %s\n", error);
+        printf("Error %d: %s\n", retcode, sd_get_error(retcode));
         goto exit_1;
     }
     

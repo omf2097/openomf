@@ -279,9 +279,7 @@ void move_get_key(sd_move *mv, sd_animation *ani, const char **key, int kcount, 
                 sd_stringparser *parser = sd_stringparser_create();
                 int err = sd_stringparser_set_string(parser, ani->anim_string);
                 if(err) {
-                    char err_msg[255];
-                    sd_get_error(err_msg, err);
-                    printf("Animation string parser error: %s (%s)\n", err_msg, ani->anim_string);
+                    printf("Animation string parser error: %s (%s)\n", sd_get_error(err), ani->anim_string);
                 } else {
                     sd_stringparser_prettyprint(parser);
                 }
@@ -581,8 +579,8 @@ int main(int argc, char* argv[]) {
     // Load file
     sd_af_file *af = sd_af_create();
     int ret = sd_af_load(af, file->filename[0]);
-    if(ret) {
-        printf("Unable to load AF file! Make sure the file exists and is a valid AF file.\n");
+    if(ret != SD_SUCCESS) {
+        printf("Unable to load AF file! [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_1;
     }
     
@@ -590,8 +588,8 @@ int main(int argc, char* argv[]) {
     sd_bk_file *bk = sd_bk_create();
     if(palette->count > 0) {
         int ret = sd_bk_load(bk, palette->filename[0]);
-        if(ret) {
-            printf("Unable to load Palette BK file! Make sure the file exists and is a valid BK file.\n");
+        if(ret != SD_SUCCESS) {
+            printf("Unable to load Palette BK file! [%d] %s\n", ret, sd_get_error(ret));
             goto exit_2;
         }
     }

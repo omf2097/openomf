@@ -53,8 +53,9 @@ int main(int argc, char *argv[]) {
     
     // Get strings
     sd_language *language = sd_language_create();
-    if(sd_language_load(language, file->filename[0])) {
-        printf("Language file could not be loaded!\n");
+    int ret = sd_language_load(language, file->filename[0]);
+    if(ret != SD_SUCCESS) {
+        printf("Language file could not be loaded! Error [%d] %s\n", ret, sd_get_error(ret));
         goto exit_0;
     }
     

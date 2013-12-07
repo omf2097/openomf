@@ -201,9 +201,7 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
                 sd_stringparser *parser = sd_stringparser_create();
                 int err = sd_stringparser_set_string(parser, ani->anim_string);
                 if(err) {
-                    char err_msg[255];
-                    sd_get_error(err_msg, err);
-                    printf("Animation string parser error: %s (%s)\n", err_msg, ani->anim_string);
+                    printf("Animation string parser error: %s (%s)\n", sd_get_error(err), ani->anim_string);
                 } else {
                     sd_stringparser_prettyprint(parser);
                 }
@@ -220,9 +218,7 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
                         sd_stringparser *parser = sd_stringparser_create();
                         int err = sd_stringparser_set_string(parser, ani->extra_strings[tmp]);
                         if(err) {
-                            char err_msg[255];
-                            sd_get_error(err_msg, err);
-                            printf("Animation string parser error: %s (%s)\n", err_msg, ani->extra_strings[tmp]);
+                            printf("Animation string parser error: %s (%s)\n", sd_get_error(err), ani->extra_strings[tmp]);
                         } else {
                             sd_stringparser_prettyprint(parser);
                         }

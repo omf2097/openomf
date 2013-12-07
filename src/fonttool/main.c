@@ -130,8 +130,9 @@ int main(int argc, char* argv[]) {
     
     // Load fonts
     sd_font *font = sd_font_create();
-    if(sd_font_load(font, file->filename[0], _fs)) {
-        printf("Couldn't load small font file!\n");
+    int ret = sd_font_load(font, file->filename[0], _fs);
+    if(ret != SD_SUCCESS) {
+        printf("Couldn't load small font file! Error [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_2;
     }
     
