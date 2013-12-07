@@ -1,18 +1,21 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "shadowdive/rgba_image.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/error.h"
 #include "shadowdive/fonts.h"
-#include <stdlib.h>
-
-#include <stdio.h>
 
 sd_font* sd_font_create() {
-    return (sd_font*)malloc(sizeof(sd_font));
+    sd_font *font = malloc(sizeof(sd_font));
+    memset(font, 0, sizeof(sd_font));
+    return font;
 }
 
 void sd_font_delete(sd_font *font) {
-    if(font) { free(font); }
+    if(font == NULL) return;
+    free(font); 
 }
 
 int sd_font_load(sd_font *font, const char *file, unsigned int font_h) {
@@ -40,7 +43,9 @@ int sd_font_save(sd_font *font, const char *file) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    // TODO: Implement this
+    for(int i = 0; i < 224; i++) {
+        sd_write_buf(w, font->chars[i].data, font->h);
+    }
     
     sd_writer_close(w);
     return SD_SUCCESS;
