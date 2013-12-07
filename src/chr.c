@@ -40,8 +40,9 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
 
     // Get player stats
     sd_mread_buf(mr, chr->name, 16);
-    chr->losses = sd_mread_uword(mr);
+    sd_mskip(mr, 2);
     chr->wins = sd_mread_uword(mr);
+    chr->losses = sd_mread_uword(mr);
     chr->rank = sd_mread_ubyte(mr);
     chr->har = sd_mread_ubyte(mr);
 
@@ -49,20 +50,22 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     uint16_t stats_b = sd_mread_uword(mr);
     uint16_t stats_c = sd_mread_uword(mr);
     uint8_t stats_d = sd_mread_ubyte(mr);
+    chr->arm_power = (stats_a >> 0) & 0x1F;
+    chr->leg_power = (stats_a >> 5) & 0x1F;
+    chr->arm_speed = (stats_a >> 10) & 0x1F;
+    chr->leg_speed = (stats_b >> 0) & 0x1F;
+    chr->armor     = (stats_b >> 5) & 0x1F;
+    chr->stun_resistance = (stats_b >> 10) & 0x1F;
+    chr->power = (stats_c >> 0) & 0x7F;
+    chr->agility = (stats_c >> 7) & 0x7F;
+    chr->endurance = (stats_d >> 0) & 0x7F;
 
-    UNUSED(stats_a);
-    UNUSED(stats_b);
-    UNUSED(stats_c);
-    UNUSED(stats_d);
-
-    // TODO: Handle these
+    sd_mskip(mr, 5);
 
     chr->credits = sd_mread_udword(mr);
     chr->color_1 = sd_mread_ubyte(mr);
     chr->color_2 = sd_mread_ubyte(mr);
     chr->color_3 = sd_mread_ubyte(mr);
-
-    sd_mskip(mr, 7); // Unknown
 
     sd_mread_buf(mr, chr->trn_name, 13);
     sd_mread_buf(mr, chr->trn_desc, 31);
