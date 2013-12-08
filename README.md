@@ -16,9 +16,10 @@ Right now Shadowdive can handle following file formats:
 * Score file (SCORES.DAT)
 * Pilot image files (*.PIC) (Only reading supported)
 * Tournament data files (*.TRN) (Only reading supported)
+* Character save files (*.CHR) (Only reading supported)
 
 Following formats are still TODO:
-* Character save files (*.CHR)
+* Character save files (*.CHR) writing
 * Tournament data files (*.TRN) writing
 * Pilot image files (*.PIC) writing
 
