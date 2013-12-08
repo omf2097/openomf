@@ -12,18 +12,12 @@
 
 sd_chr_file* sd_chr_create() {
     sd_chr_file *chr = malloc(sizeof(sd_chr_file));
-    memset(chr->name, 0, sizeof(chr->name));
-    memset(chr->trn_name, 0, sizeof(chr->trn_name));
-    memset(chr->trn_desc, 0, sizeof(chr->trn_desc));
-    memset(chr->trn_image, 0, sizeof(chr->trn_image));
-    chr->wins = 0;
-    chr->losses = 0;
-    chr->rank = 0;
-    chr->har = 0;
+    memset(chr, 0, sizeof(sd_chr_file));
     return chr;
 }
 
 int sd_chr_load(sd_chr_file *chr, const char *filename) {
+    sd_mreader *mr;
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
@@ -31,11 +25,11 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
 
     // Make sure this looks like a CHR
     if(sd_read_udword(r) != 0xAFAEADAD) {
-        return SD_FILE_PARSE_ERROR;
+        goto error_0;
     }
 
     // Read player information
-    sd_mreader *mr = sd_mreader_open_from_reader(r, 448);
+    mr = sd_mreader_open_from_reader(r, 444);
     sd_mreader_xor(mr, 0xB0);
 
     // Get player stats
@@ -79,9 +73,56 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     chr->enemies_inc_unranked = sd_mread_uword(mr);
     chr->enemies_ex_unranked = sd_mread_uword(mr);
 
+    // Close memory reader, we're done with the user block.
+    sd_mreader_close(mr);
+
+    // Read enemies block
+    mr = sd_mreader_open_from_reader(r, 68 * chr->enemies_inc_unranked);
+    sd_mreader_xor(mr, (chr->enemies_inc_unranked * 68) & 0xFF);
+
+    // Handle enemy data
+    for(int i = 0; i < chr->enemies_inc_unranked; i++) {
+        // Reserve & zero out
+        chr->enemies[i] = malloc(sizeof(sd_chr_enemy));
+        memset(chr->enemies[i], 0, sizeof(sd_chr_enemy));
+
+        // Read enemy data
+        sd_mread_buf(mr, chr->enemies[i]->name, 16);
+        sd_mskip(mr, 2);
+        chr->enemies[i]->wins = sd_mread_uword(mr);
+        chr->enemies[i]->losses = sd_mread_uword(mr);
+        chr->enemies[i]->rank = sd_mread_ubyte(mr);
+        chr->enemies[i]->har = sd_mread_ubyte(mr);
+
+        
+        sd_mskip(mr, 44);
+    }
+
+    // Close memory reader for enemy data block
+    sd_mreader_close(mr);
+
+    // Load sprite
+    chr->photo = sd_sprite_create();
+    int ret = sd_sprite_load(r, chr->photo);
+    if(ret != SD_SUCCESS) {
+        goto error_1;
+    }
+
     // Close & return
     sd_reader_close(r);
     return SD_SUCCESS;
+
+error_1:
+    for(int i = 0; i < chr->enemies_inc_unranked; i++) {
+        if(chr->enemies[i] != NULL) {
+            free(chr->enemies[i]);
+        }
+    }
+    sd_sprite_delete(chr->photo);
+
+error_0:
+    sd_reader_close(r);
+    return SD_FILE_PARSE_ERROR;
 }
 
 int sd_chr_save(sd_chr_file *chr, const char *filename) {
@@ -98,5 +139,11 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
 }
 
 void sd_chr_delete(sd_chr_file *chr) {
+    for(int i = 0; i < chr->enemies_inc_unranked; i++) {
+        if(chr->enemies[i] != NULL) {
+            free(chr->enemies[i]);
+        }
+    }
+    sd_sprite_delete(chr->photo);
     free(chr);
 }
