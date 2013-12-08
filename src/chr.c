@@ -93,7 +93,6 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         chr->enemies[i]->losses = sd_mread_uword(mr);
         chr->enemies[i]->rank = sd_mread_ubyte(mr);
         chr->enemies[i]->har = sd_mread_ubyte(mr);
-
         
         sd_mskip(mr, 44);
     }
