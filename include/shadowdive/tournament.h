@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
-#include <float.h>
 #include "palette.h"
 #include "sprite.h"
 

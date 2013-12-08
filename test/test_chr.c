@@ -18,9 +18,21 @@ const char *har_list[] = {
 };
 
 int main(int argc, char *argv[]) {
-    if(argc < 2) {
-        printf("test_chr <chrfile>\n");
+    if(argc < 2 || argc == 3 || argc == 4) {
+        printf("test_chr <chrfile> [-d filename.ppm palettefile.bk]\n");
         return 0;
+    }
+
+    // Get output dump path
+    int dump = 0;
+    char *dumpout = NULL;
+    char *bkfile = NULL;
+    if(argc == 5) {
+        if(strcmp(argv[2], "-d") == 0) {
+            dump = 1;
+            dumpout = argv[3];
+            bkfile = argv[4];
+        }
     }
 
     // Open pic file
@@ -31,8 +43,32 @@ int main(int argc, char *argv[]) {
         return 1;
     } 
 
-    // Dump file header data
     printf("Loaded file '%s'\n", argv[1]);
+
+    if(dump) {
+        sd_bk_file *bk = sd_bk_create();
+        int ret = sd_bk_load(bk, bkfile);
+        if(ret != SD_SUCCESS) {
+            printf("Could not load BK file! %s (%d)\n", sd_get_error(ret), ret);
+            
+            return 1;
+        } else {
+            printf("Loaded file '%s'.\n", bkfile);
+        }
+
+        printf("Dumping portrait to '%s'!\n", dumpout);
+        sd_rgba_image *img = sd_sprite_image_decode(
+            chr->photo->img, bk->palettes[0], -1);
+        sd_rgba_image_to_ppm(img, dumpout);
+        sd_rgba_image_delete(img);
+
+        sd_bk_delete(bk);
+        sd_chr_delete(chr);
+        return 0;
+    }
+
+    // Dump file header data
+    
     printf("\n");
     printf("Player data:\n");
     printf(" - Name:      %s\n", chr->name);
@@ -80,6 +116,9 @@ int main(int argc, char *argv[]) {
         chr->photo->pos_y);
     printf("   * Length = %d\n", 
         chr->photo->img->len);
+    printf("   * I/M = %u/%u\n",
+        chr->photo->index,
+        chr->photo->missing);
 
     // Enemy data
     printf("\nEnemies:\n");

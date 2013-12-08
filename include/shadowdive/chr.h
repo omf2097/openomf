@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "palette.h"
 #include "sprite.h"
 
 #define MAX_CHR_ENEMIES 256
@@ -43,6 +44,7 @@ typedef struct sd_chr_file_t {
     char enhancements[11];
     uint16_t enemies_inc_unranked;
     uint16_t enemies_ex_unranked;
+    sd_palette pal;
     sd_sprite *photo;
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES];
 } sd_chr_file;

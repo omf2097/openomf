@@ -101,12 +101,29 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     // Close memory reader for enemy data block
     sd_mreader_close(mr);
 
+    // Read HAR palette
+    memset((void*)&chr->pal, 0, sizeof(sd_palette));
+    char d[3];
+    for(int k = 0; k < 48; k++) {
+        sd_read_buf(r, d, 3);
+        chr->pal.data[k][0] = ((d[0] << 2) | (d[0] >> 4));
+        chr->pal.data[k][1] = ((d[1] << 2) | (d[1] >> 4));
+        chr->pal.data[k][2] = ((d[2] << 2) | (d[2] >> 4));
+    }
+
+    // No idea what this is. TODO: Find out.
+    sd_skip(r, 4);
+
     // Load sprite
     chr->photo = sd_sprite_create();
     int ret = sd_sprite_load(r, chr->photo);
     if(ret != SD_SUCCESS) {
         goto error_1;
     }
+
+    // Fix photo size
+    chr->photo->img->w++;
+    chr->photo->img->h++;
 
     // Close & return
     sd_reader_close(r);
