@@ -10,6 +10,7 @@ Screenshots
 ![HAR selection screen](https://github.com/omf2097/openomf/raw/master/screenshots/botsel.png "HAR selection screen")
 ![hangar screen](https://github.com/omf2097/openomf/raw/master/screenshots/hangar.png "Hangar Screen")
 ![in game](https://github.com/omf2097/openomf/raw/master/screenshots/ingame.png "In Game")
+![in game 2](https://github.com/omf2097/openomf/raw/master/screenshots/ingame2.png "In Game 2")
 
 Links
 -----
