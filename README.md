@@ -42,8 +42,9 @@ To compile:
 ```
 $ mkdir build
 $ cd build
-$ cmake -DCMAKE_BUILD_TYPE=Release ..
+$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DUSE_OGGVORBIS=1 ..
 $ make
+$ make install
 ```
 
 Some useful CMake flags:
@@ -51,8 +52,8 @@ Some useful CMake flags:
 | Flag                      | Description                          | Choices       | Default |
 | ------------------------- | ------------------------------------ | ------------- | ------- |
 | CMAKE_BUILD_TYPE          | Chooses between build types          | Debug/Release | Debug   |
+| CMAKE_INSTALL_PREFIX      | Installation path                    | -             | -       |
 | USE_OGGVORBIS             | Selects Vorbis support               | On/Off        | Off     |
-| USE_LTO                   | Selects Link time optimizations flag | On/Off        | Off     |
 
 Data Files
 ----------
