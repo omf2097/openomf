@@ -516,6 +516,17 @@ void har_act(object *obj, int act_type) {
                     h->state = STATE_DESTRUCTION;
                 }
 
+                // make the other har participate in the scrap/destruction
+                if (move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
+                    int opp_id = h->player_id ? 0 : 1;
+                    af_move *move = af_get_move(&(h->af_data), obj->cur_animation->id);
+                    object *opp = game_player_get_har(game_state_get_player(opp_id));
+                    object_set_animation(opp, &af_get_move(&((har*)opp->userdata)->af_data, ANIM_DAMAGE)->ani);
+                    object_set_repeat(opp, 0);
+                    object_set_custom_string(opp, str_c(&move->footer_string));
+                    object_tick(opp);
+                }
+
                 return;
             }
         }
