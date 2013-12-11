@@ -342,11 +342,12 @@ void har_tick(object *obj) {
     }
 
     // Stop HAR from sliding if touching the ground
-    if((har->state != STATE_JUMPING && har->state != STATE_WALKING) ||
-        (har->state != STATE_JUMPING && har->executing_move)) {
-        vec2f vel = object_get_vel(obj);
-        vel.x = 0;
-        object_set_vel(obj, vel);
+    if(har->state != STATE_JUMPING) {
+        if(har->state != STATE_WALKING || har->executing_move) {
+            vec2f vel = object_get_vel(obj);
+            vel.x = 0;
+            object_set_vel(obj, vel);
+        }
     }
 }
 
@@ -579,7 +580,8 @@ void har_act(object *obj, int act_type) {
 void har_finished(object *obj) {
     har *har = object_get_userdata(obj);
     if(har->state != STATE_CROUCHING) {
-        har->state = STATE_STANDING;
+        // Don't transition to standing state while in midair
+        if(har->state != STATE_JUMPING) { har->state = STATE_STANDING; }
         har_set_ani(obj, ANIM_IDLE, 1);
     } else {
         har_set_ani(obj, ANIM_CROUCHING, 1);
