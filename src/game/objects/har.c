@@ -129,11 +129,14 @@ void har_take_damage(object *obj, str* string, float damage) {
     har->health -= damage;
     if(har->health <= 0) { har->health = 0; }
 
-    // Set hit animation
-    object_set_animation(obj, &af_get_move(&har->af_data, ANIM_DAMAGE)->ani);
-    object_set_repeat(obj, 0);
-    object_set_custom_string(obj, str_c(string));
-    object_tick(obj);
+    // chronos' stasis does not have a hit animation
+    if (string->data) {
+        // Set hit animation
+        object_set_animation(obj, &af_get_move(&har->af_data, ANIM_DAMAGE)->ani);
+        object_set_repeat(obj, 0);
+        object_set_custom_string(obj, str_c(string));
+        object_tick(obj);
+    }
 }
 
 void har_spawn_scrap(object *obj, vec2i pos) {
@@ -184,7 +187,8 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     a->hard_close = 0;
 
     // If HARs get too close together, handle it
-    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
+    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT &&
+            (b->state != STATE_JUMPING && b->state != STATE_RECOIL)) {
         if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x) {
             pos_b.x = pos_a.x - hard_limit;
             object_set_pos(obj_b, pos_b);
@@ -195,7 +199,8 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
     }
-    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
+    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT &&
+            (b->state != STATE_JUMPING && b->state != STATE_RECOIL)) {
         if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x) {
             pos_b.x = pos_a.x + hard_limit;
             object_set_pos(obj_b, pos_b);
@@ -272,6 +277,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 #endif
     {
         af_move *move = af_get_move(&(prog_owner->af_data), o_pjt->cur_animation->id);
+
         har_take_damage(o_har, &move->footer_string, move->damage);
         har_spawn_scrap(o_har, hit_coord);
         o_har->animation_state.enemy_x = o_pjt->pos.x;
@@ -280,10 +286,12 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         // XXX   a hackish way to determine if a HAR is fallen or not
         sd_stringparser_peek(o_har->animation_state.parser, sd_stringparser_num_frames(o_har->animation_state.parser)-1, &frame_h);
-        if(frame_h.duration > 100) {
-            h->state = STATE_FALLEN;
-        } else {
-            h->state = STATE_RECOIL;
+        if (move->footer_string.data) { // hack for chronos' stasis
+            if(frame_h.duration > 100) {
+                h->state = STATE_FALLEN;
+            } else {
+                h->state = STATE_RECOIL;
+            }
         }
         vec2f vel = object_get_vel(o_har);
         vel.x = 0.0f;
@@ -293,7 +301,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         if (move->successor_id) {
             object_set_animation(o_pjt, &af_get_move(&prog_owner->af_data, move->successor_id)->ani);
             object_set_repeat(o_pjt, 0);
-            object_set_vel(o_pjt, vec2f_create(0,0));
+            /*object_set_vel(o_pjt, vec2f_create(0,0));*/
             o_pjt->animation_state.finished = 0;
         }
 
