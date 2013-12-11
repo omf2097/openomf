@@ -32,18 +32,18 @@ void har_free(object *obj) {
 
 // Simple helper function
 void har_set_ani(object *obj, int animation_id, int repeat) {
-    har *har = object_get_userdata(obj);
-    object_set_animation(obj, &af_get_move(&har->af_data, animation_id)->ani);
+    har *h = object_get_userdata(obj);
+    object_set_animation(obj, &af_get_move(&h->af_data, animation_id)->ani);
     object_set_repeat(obj, repeat);
     object_tick(obj);
-    har->damage_done = 0;
-    har->damage_received = 0;
-    har->executing_move = 0;
+    h->damage_done = 0;
+    h->damage_received = 0;
+    h->executing_move = 0;
 }
 
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
-    har *har = userdata;
+    har *h = userdata;
 
     vec2i npos;
     npos.x = parent->pos.x + pos.x;
@@ -62,7 +62,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         // Create the object
         object *scrap = malloc(sizeof(object));
         object_create(scrap, npos, vec2f_create(velx, vely));
-        object_set_animation(scrap, &af_get_move(&har->af_data, id)->ani);
+        object_set_animation(scrap, &af_get_move(&h->af_data, id)->ani);
         object_set_palette(scrap, object_get_palette(parent), 0);
         object_set_stl(scrap, object_get_stl(parent));
         object_set_repeat(scrap, 1);
@@ -75,19 +75,19 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
     }
 
     // ... otherwise expect it is a projectile
-    af_move *move = af_get_move(&har->af_data, id);
+    af_move *move = af_get_move(&h->af_data, id);
     if(move != NULL) {
         npos.x += move->ani.start_pos.x;
         npos.y += move->ani.start_pos.y;
         object *obj = malloc(sizeof(object));
         object_create(obj, npos, vec2f_create(0,0));
-        object_set_userdata(obj, har);
+        object_set_userdata(obj, h);
         object_set_stl(obj, object_get_stl(parent));
         object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &move->ani);
         object_set_gravity(obj, g/10);
         // Set all projectiles to their own layer + har layer
-        object_set_layers(obj, LAYER_PROJECTILE|(har->player_id == 0 ? LAYER_HAR2 : LAYER_HAR1)); 
+        object_set_layers(obj, LAYER_PROJECTILE|(h->player_id == 0 ? LAYER_HAR2 : LAYER_HAR1)); 
         // To avoid projectile-to-projectile collisions, set them to same group
         object_set_group(obj, GROUP_PROJECTILE); 
         object_set_repeat(obj, 0);
@@ -109,13 +109,13 @@ void har_move(object *obj) {
 
         // Change animation from jump to walk or idle,
         // depending on horizontal velocity
-        har *har = object_get_userdata(obj);
-        if(har->state == STATE_JUMPING) {
+        har *h = object_get_userdata(obj);
+        if(h->state == STATE_JUMPING) {
             if(object_get_hstate(obj) == OBJECT_MOVING) {
-                har->state = STATE_WALKING;
+                h->state = STATE_WALKING;
                 har_set_ani(obj, ANIM_WALKING, 1);
             } else {
-                har->state = STATE_STANDING;
+                h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
             }
         }
@@ -125,14 +125,14 @@ void har_move(object *obj) {
 }
 
 void har_take_damage(object *obj, str* string, float damage) {
-    har *har = object_get_userdata(obj);
-    har->health -= damage;
-    if(har->health <= 0) { har->health = 0; }
+    har *h = object_get_userdata(obj);
+    h->health -= damage;
+    if(h->health <= 0) { h->health = 0; }
 
     // chronos' stasis does not have a hit animation
     if (string->data) {
         // Set hit animation
-        object_set_animation(obj, &af_get_move(&har->af_data, ANIM_DAMAGE)->ani);
+        object_set_animation(obj, &af_get_move(&h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(obj, 0);
         object_set_custom_string(obj, str_c(string));
         object_tick(obj);
@@ -143,7 +143,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
     float amount = 5;
     float rv = 0.0f;
     float velx, vely;
-    har *har = object_get_userdata(obj);
+    har *h = object_get_userdata(obj);
     for(int i = 0; i < amount; i++) {
         // Calculate velocity etc.
         rv = (rand() % 100) / 100.0f - 0.5;
@@ -158,7 +158,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object *scrap = malloc(sizeof(object));
         int anim_no = rand() % 3 + ANIM_SCRAP_METAL;
         object_create(scrap, pos, vec2f_create(velx, vely));
-        object_set_animation(scrap, &af_get_move(&har->af_data, anim_no)->ani);
+        object_set_animation(scrap, &af_get_move(&h->af_data, anim_no)->ani);
         object_set_palette(scrap, object_get_palette(obj), 0);
         object_set_stl(scrap, object_get_stl(obj));
         object_set_repeat(scrap, 1);
@@ -333,7 +333,7 @@ void har_collide(object *obj_a, object *obj_b) {
 }
 
 void har_tick(object *obj) {
-    har *har = object_get_userdata(obj);
+    har *h = object_get_userdata(obj);
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
@@ -342,14 +342,14 @@ void har_tick(object *obj) {
     object_set_pos(obj, pos);
 
     // Make the HAR get up
-    if(har->state == STATE_FALLEN && obj->animation_state.parser->current_frame.is_final_frame) {
-        har->state = STATE_STANDING_UP;
+    if(h->state == STATE_FALLEN && obj->animation_state.parser->current_frame.is_final_frame) {
+        h->state = STATE_STANDING_UP;
         har_set_ani(obj, ANIM_STANDUP, 0);
     }
 
     // Stop HAR from sliding if touching the ground
-    if(har->state != STATE_JUMPING) {
-        if(har->state != STATE_WALKING || har->executing_move) {
+    if(h->state != STATE_JUMPING) {
+        if(h->state != STATE_WALKING || h->executing_move) {
             vec2f vel = object_get_vel(obj);
             vel.x = 0;
             object_set_vel(obj, vel);
@@ -357,27 +357,27 @@ void har_tick(object *obj) {
     }
 }
 
-void add_input(har *har, char c) {
+void add_input(har *h, char c) {
     // only add it if it is not the current head of the array
-    if(har->inputs[0] == c) {
+    if(h->inputs[0] == c) {
         return;
     }
 
     // use memmove to move everything over one spot in the array, leaving the first slot free
-    memmove((har->inputs)+1, har->inputs, 9);
+    memmove((h->inputs)+1, h->inputs, 9);
     // write the new first element
-    har->inputs[0] = c;
+    h->inputs[0] = c;
 }
 
 void har_act(object *obj, int act_type) {
-    har *har = object_get_userdata(obj);
+    har *h = object_get_userdata(obj);
     int direction = object_get_direction(obj);
-    if(!(har->state == STATE_STANDING ||
-         har->state == STATE_CROUCHING ||
-         har->state == STATE_WALKING ||
-         har->state == STATE_JUMPING ||
-         har->state == STATE_VICTORY ||
-         har->state == STATE_SCRAP)) {
+    if(!(h->state == STATE_STANDING ||
+         h->state == STATE_CROUCHING ||
+         h->state == STATE_WALKING ||
+         h->state == STATE_JUMPING ||
+         h->state == STATE_VICTORY ||
+         h->state == STATE_SCRAP)) {
         // doing something else, ignore input
         return;
     }
@@ -389,7 +389,7 @@ void har_act(object *obj, int act_type) {
     }
 
     // Don't allow new moves while we're still executing a previous one.
-    if(har->executing_move) {
+    if(h->executing_move) {
         DEBUG("already executing move");
         return;
     }
@@ -397,92 +397,92 @@ void har_act(object *obj, int act_type) {
    // for the reason behind the numbers, look at a numpad sometime
     switch(act_type) {
         case ACT_UP:
-            add_input(har, '8');
+            add_input(h, '8');
             break;
         case ACT_DOWN:
-            add_input(har, '2');
+            add_input(h, '2');
             break;
         case ACT_LEFT:
             if(direction == OBJECT_FACE_LEFT) {
-                add_input(har, '6');
+                add_input(h, '6');
             } else {
-                add_input(har, '4');
+                add_input(h, '4');
             }
             break;
         case ACT_RIGHT:
             if(direction == OBJECT_FACE_LEFT) {
-                add_input(har, '4');
+                add_input(h, '4');
             } else {
-                add_input(har, '6');
+                add_input(h, '6');
             }
             break;
         case ACT_UPRIGHT:
             if(direction == OBJECT_FACE_LEFT) {
-                add_input(har, '7');
+                add_input(h, '7');
             } else {
-                add_input(har, '9');
+                add_input(h, '9');
             }
             break;
         case ACT_UPLEFT:
             if(direction == OBJECT_FACE_LEFT) {
-                add_input(har, '9');
+                add_input(h, '9');
             } else {
-                add_input(har, '7');
+                add_input(h, '7');
             }
             break;
         case ACT_DOWNRIGHT:
             if(direction == OBJECT_FACE_LEFT) {
-                add_input(har, '1');
+                add_input(h, '1');
             } else {
-                add_input(har, '3');
+                add_input(h, '3');
             }
             break;
         case ACT_DOWNLEFT:
             if(direction == OBJECT_FACE_LEFT) {
-                add_input(har, '3');
+                add_input(h, '3');
             } else {
-                add_input(har, '1');
+                add_input(h, '1');
             }
             break;
         case ACT_KICK:
-            add_input(har, 'K');
+            add_input(h, 'K');
             break;
         case ACT_PUNCH:
-            add_input(har, 'P');
+            add_input(h, 'P');
             break;
         case ACT_STOP:
-            add_input(har, '5');
+            add_input(h, '5');
             break;
     }
 
     af_move *move;
     size_t len;
     for(int i = 0; i < 70; i++) {
-        if((move = af_get_move(&har->af_data, i))) {
+        if((move = af_get_move(&h->af_data, i))) {
             len = move->move_string.len;
-            if(!strncmp(str_c(&move->move_string), har->inputs, len)) {
-                if (move->category == CAT_CLOSE && har->close != 1) {
+            if(!strncmp(str_c(&move->move_string), h->inputs, len)) {
+                if (move->category == CAT_CLOSE && h->close != 1) {
                     // not standing close enough
                     continue;
                 }
-                if (move->category == CAT_JUMPING && har->state != STATE_JUMPING) {
+                if (move->category == CAT_JUMPING && h->state != STATE_JUMPING) {
                     // not jumping
                     continue;
                 }
-                if (move->category != CAT_JUMPING && har->state == STATE_JUMPING) {
+                if (move->category != CAT_JUMPING && h->state == STATE_JUMPING) {
                     // jumping but this move is not a jumping move
                     continue;
                 }
-                if (move->category != CAT_SCRAP && har->state == STATE_VICTORY) {
+                if (move->category != CAT_SCRAP && h->state == STATE_VICTORY) {
                     continue;
                 }
 
-                if (move->category != CAT_DESTRUCTION && har->state == STATE_SCRAP) {
+                if (move->category != CAT_DESTRUCTION && h->state == STATE_SCRAP) {
                     continue;
                 }
 
                 DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
-                DEBUG("input was %s", har->inputs);
+                DEBUG("input was %s", h->inputs);
 
 #ifdef DEBUGMODE
         DEBUG("UNKNOWN %d %d %d %d | %d %d %d %d | %d %d %d %d | %d %d %d %d | %d %d %d %d | %d",
@@ -503,17 +503,17 @@ void har_act(object *obj, int act_type) {
                 // Set correct animation etc.
                 // executing_move = 1 prevents new moves while old one is running.
                 har_set_ani(obj, i, 0);
-                har->inputs[0] = '\0';
-                har->executing_move = 1;
+                h->inputs[0] = '\0';
+                h->executing_move = 1;
 
                 if (move->category == CAT_SCRAP) {
                     DEBUG("going to scrap state");
-                    har->state = STATE_SCRAP;
-                    har->executing_move = 0;
+                    h->state = STATE_SCRAP;
+                    h->executing_move = 0;
                 }
                 if (move->category == CAT_DESTRUCTION) {
                     DEBUG("going to destruction state");
-                    har->state = STATE_DESTRUCTION;
+                    h->state = STATE_DESTRUCTION;
                 }
 
                 return;
@@ -536,97 +536,97 @@ void har_act(object *obj, int act_type) {
         case ACT_DOWN:
         case ACT_DOWNRIGHT:
         case ACT_DOWNLEFT:
-            if(har->state != STATE_CROUCHING) {
+            if(h->state != STATE_CROUCHING) {
                 har_set_ani(obj, ANIM_CROUCHING, 1);
                 object_set_vel(obj, vec2f_create(0,0));
-                har->state = STATE_CROUCHING;
+                h->state = STATE_CROUCHING;
             }
             break;
         case ACT_STOP:
-            if(har->state != STATE_STANDING) {
+            if(h->state != STATE_STANDING) {
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_vel(obj, vec2f_create(0,0));
                 obj->slide_state.vel.x = 0;
-                har->state = STATE_STANDING;
+                h->state = STATE_STANDING;
             }
             break;
         case ACT_LEFT:
-            if(har->state != STATE_WALKING) {
+            if(h->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
-                har->state = STATE_WALKING;
+                h->state = STATE_WALKING;
             }
             if(direction == OBJECT_FACE_LEFT) {
-                vx = (har->af_data.forward_speed*-1)/(float)320;
+                vx = (h->af_data.forward_speed*-1)/(float)320;
             } else {
-                vx = har->af_data.reverse_speed*-1/(float)320;
+                vx = h->af_data.reverse_speed*-1/(float)320;
             }
-            object_set_vel(obj, vec2f_create(vx*(har->hard_close ? 0.5 : 1.0),0));
+            object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
             break;
         case ACT_RIGHT:
-            if(har->state != STATE_WALKING) {
+            if(h->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
-                har->state = STATE_WALKING;
+                h->state = STATE_WALKING;
             }
             if(direction == OBJECT_FACE_LEFT) {
-                vx = har->af_data.reverse_speed/(float)320;
+                vx = h->af_data.reverse_speed/(float)320;
             } else {
-                vx = har->af_data.forward_speed/(float)320;
+                vx = h->af_data.forward_speed/(float)320;
             }
-            object_set_vel(obj, vec2f_create(vx*(har->hard_close ? 0.5 : 1.0),0));
+            object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
             break;
         case ACT_UP:
-            if(har->state != STATE_JUMPING) {
+            if(h->state != STATE_JUMPING) {
                 har_set_ani(obj, ANIM_JUMPING, 1);
-                vy = (float)har->af_data.jump_speed;
+                vy = (float)h->af_data.jump_speed;
                 object_set_vel(obj, vec2f_create(0,vy));
-                har->state = STATE_JUMPING;
+                h->state = STATE_JUMPING;
             }
             break;
         case ACT_UPLEFT:
-            if(har->state != STATE_JUMPING) {
+            if(h->state != STATE_JUMPING) {
                 har_set_ani(obj, ANIM_JUMPING, 1);
-                vy = (float)har->af_data.jump_speed;
-                vx = har->af_data.reverse_speed*-1/(float)320;
+                vy = (float)h->af_data.jump_speed;
+                vx = h->af_data.reverse_speed*-1/(float)320;
                 if(direction == OBJECT_FACE_LEFT) {
-                    vx = (har->af_data.forward_speed*-1)/(float)320;
+                    vx = (h->af_data.forward_speed*-1)/(float)320;
                 }
                 object_set_vel(obj, vec2f_create(vx,vy));
-                har->state = STATE_JUMPING;
+                h->state = STATE_JUMPING;
             }
             break;
         case ACT_UPRIGHT:
-            if(har->state != STATE_JUMPING) {
+            if(h->state != STATE_JUMPING) {
                 har_set_ani(obj, ANIM_JUMPING, 1);
-                vy = (float)har->af_data.jump_speed;
-                vx = har->af_data.forward_speed/(float)320;
+                vy = (float)h->af_data.jump_speed;
+                vx = h->af_data.forward_speed/(float)320;
                 if(direction == OBJECT_FACE_LEFT) {
-                    vx = har->af_data.reverse_speed/(float)320;
+                    vx = h->af_data.reverse_speed/(float)320;
                 }
                 object_set_vel(obj, vec2f_create(vx,vy));
-                har->state = STATE_JUMPING;
+                h->state = STATE_JUMPING;
             }
             break;
     }
 }
 
 void har_finished(object *obj) {
-    har *har = object_get_userdata(obj);
-    if (har->state == STATE_SCRAP || har->state == STATE_DESTRUCTION) {
+    har *h = object_get_userdata(obj);
+    if (h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play vistory animation again, but do not allow any more moves to be executed
-        har->state = STATE_DONE;
+        h->state = STATE_DONE;
         har_set_ani(obj, ANIM_VICTORY, 0);
-    } else if (har->state == STATE_VICTORY || har->state == STATE_DONE) {
+    } else if (h->state == STATE_VICTORY || h->state == STATE_DONE) {
         // end the arena
         DEBUG("ending arena!");
         game_state_set_next(SCENE_MENU);
-    } else if(har->state != STATE_CROUCHING) {
+    } else if(h->state != STATE_CROUCHING) {
         // Don't transition to standing state while in midair
-        if(har->state != STATE_JUMPING) { har->state = STATE_STANDING; }
+        if(h->state != STATE_JUMPING) { h->state = STATE_STANDING; }
         har_set_ani(obj, ANIM_IDLE, 1);
     } else {
         har_set_ani(obj, ANIM_CROUCHING, 1);
     }
-    har->executing_move = 0;
+    h->executing_move = 0;
 }
 
 void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
