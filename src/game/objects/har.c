@@ -178,7 +178,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     int hard_limit = 35; // Push opponent if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
 
-    if (b->state == STATE_RECOIL || a->state == STATE_RECOIL) {
+    if (b->state == STATE_RECOIL || a->state == STATE_RECOIL || b->state == STATE_JUMPING || a->state == STATE_JUMPING || a->state == STATE_FALLEN || b->state == STATE_FALLEN) {
         return;
     }
 
@@ -187,8 +187,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     a->hard_close = 0;
 
     // If HARs get too close together, handle it
-    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT &&
-            (b->state != STATE_JUMPING && b->state != STATE_RECOIL)) {
+    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
         if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x) {
             pos_b.x = pos_a.x - hard_limit;
             object_set_pos(obj_b, pos_b);
@@ -199,8 +198,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
     }
-    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT &&
-            (b->state != STATE_JUMPING && b->state != STATE_RECOIL)) {
+    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
         if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x) {
             pos_b.x = pos_a.x + hard_limit;
             object_set_pos(obj_b, pos_b);
