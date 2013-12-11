@@ -521,6 +521,8 @@ void har_act(object *obj, int act_type) {
                     int opp_id = h->player_id ? 0 : 1;
                     af_move *move = af_get_move(&(h->af_data), obj->cur_animation->id);
                     object *opp = game_player_get_har(game_state_get_player(opp_id));
+                    opp->animation_state.enemy_x = obj->pos.x;
+                    opp->animation_state.enemy_y = obj->pos.y;
                     object_set_animation(opp, &af_get_move(&((har*)opp->userdata)->af_data, ANIM_DAMAGE)->ani);
                     object_set_repeat(opp, 0);
                     object_set_custom_string(opp, str_c(&move->footer_string));
