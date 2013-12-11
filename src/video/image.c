@@ -62,7 +62,7 @@ void image_line(image *img, unsigned int x0, unsigned int y0, unsigned int x1, u
 }
 
 void image_set_pixel(image *img, unsigned int x, unsigned int y, color c) {
-    if(x > img->w || y > img->h) return;
+    if(x >= img->w || y >= img->h) return;
     img->data[(y * img->w + x) * 4 + 0] = c.r;
     img->data[(y * img->w + x) * 4 + 1] = c.g;
     img->data[(y * img->w + x) * 4 + 2] = c.b;
