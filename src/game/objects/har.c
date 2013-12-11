@@ -253,15 +253,6 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
             hit_coord.x,
             hit_coord.y);
         DEBUG("HAR %s animation set to %s", get_id_name(b->id), str_c(&move->footer_string));
-#ifdef DEBUGMODE
-        DEBUG("UNKNOWN %d %d %d %d | %d %d %d %d | %d %d %d %d | %d %d %d %d | %d %d %d %d | %d",
-              move->unknown[0], move->unknown[1], move->unknown[2], move->unknown[3],
-              move->unknown[4], move->unknown[5], move->unknown[6], move->unknown[7],
-              move->unknown[8], move->unknown[9], move->unknown[10], move->unknown[11],
-              move->unknown[12], move->unknown[13], move->unknown[14], move->unknown[15],
-              move->unknown[16], move->unknown[17], move->unknown[18], move->unknown[19],
-              move->unknown[20]);
-#endif
     }
 }
 
@@ -348,6 +339,14 @@ void har_tick(object *obj) {
     if(har->state == STATE_FALLEN && obj->animation_state.parser->current_frame.is_final_frame) {
         har->state = STATE_STANDING_UP;
         har_set_ani(obj, ANIM_STANDUP, 0);
+    }
+
+    // Stop HAR from sliding if touching the ground
+    if((har->state != STATE_JUMPING && har->state != STATE_WALKING) ||
+        (har->state != STATE_JUMPING && har->executing_move)) {
+        vec2f vel = object_get_vel(obj);
+        vel.x = 0;
+        object_set_vel(obj, vel);
     }
 }
 
@@ -467,10 +466,20 @@ void har_act(object *obj, int act_type) {
                 DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
                 DEBUG("input was %s", har->inputs);
 
+#ifdef DEBUGMODE
+        DEBUG("UNKNOWN %d %d %d %d | %d %d %d %d | %d %d %d %d | %d %d %d %d | %d %d %d %d | %d",
+              move->unknown[0], move->unknown[1], move->unknown[2], move->unknown[3],
+              move->unknown[4], move->unknown[5], move->unknown[6], move->unknown[7],
+              move->unknown[8], move->unknown[9], move->unknown[10], move->unknown[11],
+              move->unknown[12], move->unknown[13], move->unknown[14], move->unknown[15],
+              move->unknown[16], move->unknown[17], move->unknown[18], move->unknown[19],
+              move->unknown[20]);
+#endif
+
                 // Stop horizontal movement, when move is done
                 // TODO: Make this work better
                 vec2f spd = object_get_vel(obj);
-                spd.x = 0.0f;
+                //spd.x = 0.0f;
                 object_set_vel(obj, spd);
 
                 // Set correct animation etc.
