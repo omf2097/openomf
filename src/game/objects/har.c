@@ -375,19 +375,22 @@ void har_act(object *obj, int act_type) {
     if(!(har->state == STATE_STANDING ||
          har->state == STATE_CROUCHING ||
          har->state == STATE_WALKING ||
-         har->state == STATE_JUMPING)) {
+         har->state == STATE_JUMPING ||
+         har->state == STATE_VICTORY ||
+         har->state == STATE_SCRAP)) {
         // doing something else, ignore input
         return;
     }
 
     // Don't allow movement if arena is starting or ending
     int arena_state = arena_get_state(game_state_get_scene());
-    if(arena_state == ARENA_STATE_STARTING || arena_state == ARENA_STATE_ENDING) {
+    if(arena_state == ARENA_STATE_STARTING) {
         return;
     }
 
     // Don't allow new moves while we're still executing a previous one.
     if(har->executing_move) {
+        DEBUG("already executing move");
         return;
     }
 
@@ -470,6 +473,14 @@ void har_act(object *obj, int act_type) {
                     // jumping but this move is not a jumping move
                     continue;
                 }
+                if (move->category != CAT_SCRAP && har->state == STATE_VICTORY) {
+                    continue;
+                }
+
+                if (move->category != CAT_DESTRUCTION && har->state == STATE_SCRAP) {
+                    continue;
+                }
+
                 DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
                 DEBUG("input was %s", har->inputs);
 
@@ -494,6 +505,17 @@ void har_act(object *obj, int act_type) {
                 har_set_ani(obj, i, 0);
                 har->inputs[0] = '\0';
                 har->executing_move = 1;
+
+                if (move->category == CAT_SCRAP) {
+                    DEBUG("going to scrap state");
+                    har->state = STATE_SCRAP;
+                    har->executing_move = 0;
+                }
+                if (move->category == CAT_DESTRUCTION) {
+                    DEBUG("going to destruction state");
+                    har->state = STATE_DESTRUCTION;
+                }
+
                 return;
             }
         }
@@ -501,6 +523,10 @@ void har_act(object *obj, int act_type) {
 
     if(obj->pos.y < 190) {
         // airborne
+        return;
+    }
+
+    if(arena_state == ARENA_STATE_ENDING) {
         return;
     }
 
@@ -585,7 +611,15 @@ void har_act(object *obj, int act_type) {
 
 void har_finished(object *obj) {
     har *har = object_get_userdata(obj);
-    if(har->state != STATE_CROUCHING) {
+    if (har->state == STATE_SCRAP || har->state == STATE_DESTRUCTION) {
+        // play vistory animation again, but do not allow any more moves to be executed
+        har->state = STATE_DONE;
+        har_set_ani(obj, ANIM_VICTORY, 0);
+    } else if (har->state == STATE_VICTORY || har->state == STATE_DONE) {
+        // end the arena
+        DEBUG("ending arena!");
+        game_state_set_next(SCENE_MENU);
+    } else if(har->state != STATE_CROUCHING) {
         // Don't transition to standing state while in midair
         if(har->state != STATE_JUMPING) { har->state = STATE_STANDING; }
         har_set_ani(obj, ANIM_IDLE, 1);

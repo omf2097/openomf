@@ -282,23 +282,21 @@ void arena_tick(scene *scene) {
 
         // Display you win/lose animation
         if(local->state != ARENA_STATE_ENDING) {
-            if(har1->health <= 0) {
-                scene_youlose_anim_start(NULL);
-            } else if(har2->health <= 0) {
-                scene_youwin_anim_start(NULL);
-            }
 
             // Har victory animation
-            object *o_har1 = game_state_get_player(0)->har;
-            object *o_har2 = game_state_get_player(1)->har;
-            har *har1 = object_get_userdata(o_har1);
-            har *har2 = object_get_userdata(o_har2);
             if(har2->health <= 0) {
-                har_set_ani(o_har1, ANIM_VICTORY, 1);
-                har_set_ani(o_har2, ANIM_DEFEAT, 1);
+                scene_youwin_anim_start(NULL);
+                har_set_ani(obj_har1, ANIM_VICTORY, 1);
+                har_set_ani(obj_har2, ANIM_DEFEAT, 1);
+                har1->state = STATE_VICTORY;
+                har2->state = STATE_DEFEAT;
             } else if(har1->health <= 0) {
-                har_set_ani(o_har2, ANIM_VICTORY, 1);
-                har_set_ani(o_har1, ANIM_DEFEAT, 1);
+                scene_youlose_anim_start(NULL);
+                har_set_ani(obj_har2, ANIM_VICTORY, 1);
+                har_set_ani(obj_har1, ANIM_DEFEAT, 1);
+                har2->state = STATE_VICTORY;
+                har1->state = STATE_DEFEAT;
+
             }
         }
     }

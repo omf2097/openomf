@@ -46,7 +46,8 @@ enum {
     STATE_VICTORY,
     STATE_DEFEAT,
     STATE_SCRAP,
-    STATE_DESTRUCTION
+    STATE_DESTRUCTION,
+    STATE_DONE // destruction or scrap has completed
 };
 
 enum {

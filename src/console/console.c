@@ -161,6 +161,29 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
     return 1;
 }
 
+int console_cmd_win(scene *scene, void *userdata, int argc, char **argv) {
+    if(argc == 1) {
+        game_player *player = game_state_get_player(1);
+        object *har_obj = game_player_get_har(player);
+        har *har = object_get_userdata(har_obj);
+        har->health = 0;
+        return 0;
+    }
+    return 1;
+}
+
+int console_cmd_lose(scene *scene, void *userdata, int argc, char **argv) {
+    if(argc == 1) {
+        game_player *player = game_state_get_player(0);
+        object *har_obj = game_player_get_har(player);
+        har *har = object_get_userdata(har_obj);
+        har->health = 0;
+        return 0;
+    }
+    return 1;
+}
+
+
 #ifdef DEBUGMODE
 int console_cd_debug(scene *scene, void *userdata, int argc, char **argv) {
     for(int i = 0; i < 2; i++) {
@@ -504,6 +527,8 @@ int console_init() {
     console_add_cmd("help",  &console_cmd_help,  "show all commands");
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
     console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
+    console_add_cmd("win",   &console_cmd_win,   "Set the other player's health to 0");
+    console_add_cmd("lose",   &console_cmd_lose,   "Set your health to 0");
 #ifdef DEBUGMODE
     console_add_cmd("cd-debug", &console_cd_debug, "toggle collision detection debugging");
 #endif
