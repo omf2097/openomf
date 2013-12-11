@@ -47,10 +47,6 @@ void image_clear(image *img, color c) {
 
 // Bresenham
 void image_line(image *img, int x0, int y0, int x1, int y1, color c) {
-    CHECK_COORD_BOUNDS(x0, img->w);
-    CHECK_COORD_BOUNDS(x1, img->w);
-    CHECK_COORD_BOUNDS(y0, img->h);
-    CHECK_COORD_BOUNDS(y1, img->h);
     int dx = abs(x1 - x0);
     int sx = (x0 < x1) ? 1 : -1;
     int dy = abs(y1 - y0);
