@@ -222,8 +222,14 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     // If HARs get too close together, handle it
     if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
         if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x) {
-            pos_b.x = pos_a.x - hard_limit;
-            object_set_pos(obj_b, pos_b);
+            // don't allow hars to overlap in the corners
+            if (pos_b.x > 15) {
+                pos_b.x = pos_a.x - hard_limit;
+                object_set_pos(obj_b, pos_b);
+            } else {
+                pos_a.x = pos_b.x + hard_limit;
+                object_set_pos(obj_a, pos_a);
+            }
             a->hard_close = 1;
         }
         if(pos_a.x < pos_b.x + soft_limit && pos_a.x > pos_b.x) {
@@ -233,8 +239,14 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     }
     if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
         if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x) {
-            pos_b.x = pos_a.x + hard_limit;
-            object_set_pos(obj_b, pos_b);
+            // don't allow hars to overlap in the corners
+            if (pos_b.x < 305) {
+                pos_b.x = pos_a.x + hard_limit;
+                object_set_pos(obj_b, pos_b);
+            } else {
+                pos_a.x = pos_b.x - hard_limit;
+                object_set_pos(obj_a, pos_a);
+            }
             a->hard_close = 1;
         }
         if(pos_a.x + soft_limit > pos_b.x && pos_a.x < pos_b.x) {
