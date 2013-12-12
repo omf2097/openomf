@@ -451,6 +451,10 @@ static int rn_int(int *pos, const char *str) {
         (*pos)++;
         opos++;
     }
+    // Fixed: Allow for integers prefixed with '+' sign
+    if(str[*pos] == '+') {
+        (*pos)++;
+    }
     while(str[*pos] >= '0' && str[*pos] <= '9') {
         buf[opos] = str[*pos];
         (*pos)++;
