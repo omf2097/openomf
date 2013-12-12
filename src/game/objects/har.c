@@ -44,13 +44,13 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     har *h = userdata;
-
     vec2i npos;
-    npos.x = parent->pos.x + pos.x;
-    npos.y = parent->pos.y + pos.y;
 
     // If this is a scrap item, handle it as such ...
     if(id == ANIM_SCRAP_METAL || id == ANIM_BOLT || id == ANIM_SCREW) {
+        npos.x = parent->pos.x + pos.x;
+        npos.y = parent->pos.y + pos.y;
+
         // Calculate velocity etc.
         float velx, vely;
         float rv = (rand() % 100) / 100.0f - 0.5;
@@ -77,8 +77,10 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
     // ... otherwise expect it is a projectile
     af_move *move = af_get_move(&h->af_data, id);
     if(move != NULL) {
-        npos.x += move->ani.start_pos.x;
-        npos.y += move->ani.start_pos.y;
+        npos.x = parent->pos.x 
+                 + (object_get_direction(parent) == OBJECT_FACE_LEFT ? -pos.x : pos.x)
+                 + move->ani.start_pos.x;
+        npos.y = parent->pos.y + pos.y + move->ani.start_pos.y;
         object *obj = malloc(sizeof(object));
         object_create(obj, npos, vec2f_create(0,0));
         object_set_userdata(obj, h);
