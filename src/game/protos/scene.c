@@ -28,6 +28,7 @@ int scene_create(scene *scene, int scene_id) {
     scene->render = NULL;
     scene->render_overlay = NULL;
     scene->tick = NULL;
+    scene->input_tick = NULL;
     scene->startup = NULL;
 
     // All done.
@@ -109,6 +110,12 @@ void scene_tick(scene *scene) {
     }
 }
 
+void scene_input_tick(scene *scene) {
+    if(scene->input_tick != NULL) {
+        scene->input_tick(scene);
+    }
+}
+
 void scene_free(scene *scene) {
     if(scene->free != NULL) {
         scene->free(scene);
@@ -139,6 +146,10 @@ void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc) {
 
 void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc) {
     scene->tick = cbfunc;
+}
+
+void scene_set_input_tick_cb(scene *scene, scene_tick_cb cbfunc) {
+    scene->input_tick = cbfunc;
 }
 
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {

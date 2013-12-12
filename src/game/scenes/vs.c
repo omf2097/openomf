@@ -118,32 +118,7 @@ void vs_handle_action(scene *scene, int action) {
 }
 
 void vs_tick(scene *scene) {
-    /*game_player *player1 = game_state_get_player(0);
-    game_player *player2 = game_state_get_player(1);*/
-    ctrl_event *p1 = NULL, *p2 = NULL, *i;
-
-    // Don't tick controller here, it makes the arena selection scroll extremely fast
-    /*if(controller_tick(player1->ctrl, &p1) ||
-            controller_tick(player2->ctrl, &p2)) {*/
-        // one of the controllers bailed
-
-        /*if(scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {*/
-            /*net_controller_free(scene->player1.ctrl);*/
-        /*}*/
-
-        /*if(scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {*/
-            /*net_controller_free(scene->player2.ctrl);*/
-        /*}*/
-        /*game_state_set_next(SCENE_MENU);*/
-    /*}*/
-    i = p1;
-    if (i) {
-        do {
-            vs_handle_action(scene, i->action);
-        } while((i = i->next));
-    }
-    controller_free_chain(p1);
-    controller_free_chain(p2);
+    // TODO remove this?
 }
 
 int vs_event(scene *scene, SDL_Event *event) {

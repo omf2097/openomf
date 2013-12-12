@@ -3,6 +3,7 @@
 #include "controller/keyboard.h"
 #include "utils/log.h"
 #include "resources/ids.h"
+#include "console/console.h"
 #include "game/game_state.h"
 #include "game/settings.h"
 #include "game/protos/scene.h"
@@ -282,6 +283,9 @@ void game_state_tick() {
             return;
         }
     }
+
+    // Tick input. If console is opened, do not tick the controllers.
+    if(!console_window_is_open()) { scene_input_tick(&gamestate->sc); }
 
     // Tick scene
     scene_tick(&gamestate->sc);
