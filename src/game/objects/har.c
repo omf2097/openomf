@@ -131,8 +131,19 @@ void har_take_damage(object *obj, str* string, float damage) {
     h->health -= damage;
     if(h->health <= 0) { h->health = 0; }
 
+    h->endurance -= damage * 20;
+    if(h->endurance <= 0) {
+        if (h->state == STATE_STUNNED) {
+            // refill endurance
+            h->endurance = h->endurance_max;
+        } else {
+            h->endurance = 0;
+        }
+    }
+
     // chronos' stasis does not have a hit animation
     if (string->data) {
+        h->state = STATE_RECOIL;
         // Set hit animation
         object_set_animation(obj, &af_get_move(&h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(obj, 0);
@@ -297,8 +308,6 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
         sd_stringparser_peek(obj_b->animation_state.parser, sd_stringparser_num_frames(obj_b->animation_state.parser)-1, &frame_b);
         if(frame_b.duration > 100) {
             b->state = STATE_FALLEN;
-        } else {
-            b->state = STATE_RECOIL;
         }
         DEBUG("HAR %s to HAR %s collision at %d,%d!", 
             get_id_name(a->id), 
@@ -411,6 +420,10 @@ void har_tick(object *obj) {
             vel.x = 0;
             object_set_vel(obj, vel);
         }
+    }
+
+    if (h->endurance < h->endurance_max && !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN || h->state == STATE_STANDING_UP)) {
+        h->endurance += 2;
     }
 }
 
@@ -697,6 +710,9 @@ void har_finished(object *obj) {
         // end the arena
         DEBUG("ending arena!");
         game_state_set_next(SCENE_MENU);
+    } else if ((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance <= 0) {
+        h->state = STATE_STUNNED;
+        har_set_ani(obj, ANIM_STUNNED, 1);
     } else if(h->state != STATE_CROUCHING) {
         // Don't transition to standing state while in midair
         if(h->state != STATE_JUMPING) { h->state = STATE_STANDING; }
@@ -757,7 +773,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id, int player_id) {
 
     // Health, endurance
     local->health_max = local->health = 1000;
-    local->endurance_max = local->endurance = 1000;
+    local->endurance_max = local->endurance = 5000;
     local->close = 0;
     local->hard_close =  0;
     local->state = STATE_STANDING;
