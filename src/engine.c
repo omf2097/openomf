@@ -107,22 +107,21 @@ void engine_run() {
             }
         
             // Console events
-            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
-               if (console_window_is_open()) {
-                   console_window_close();
-               } else {
-                   console_window_open();
-               }
-               continue;
-            }
-            if(console_window_is_open()) {
-                 console_event(game_state_get_scene(), &e);
-                 continue;
+            if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
+                if(console_window_is_open()) {
+                    console_window_close();
+                } else {
+                    console_window_open();
+                }
+                continue;
             }
 
-            // Send events to scene (if active)
-            if(!game_state_handle_event(&e)) {
-                continue;
+            // If console windows is open, pass events to console. 
+            // Otherwise to the objects. 
+            if(console_window_is_open()) {
+                console_event(game_state_get_scene(), &e);
+            } else {
+                game_state_handle_event(&e);
             }
         }
 

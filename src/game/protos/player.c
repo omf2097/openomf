@@ -174,9 +174,14 @@ void player_run(object *obj) {
     // Not sure what this does
     int run_ret;
     if(state->end_frame == UINT32_MAX) {
-        run_ret = sd_stringparser_run(state->parser, state->ticks - 1);
+        run_ret = sd_stringparser_run(
+            state->parser, 
+            state->ticks - 1);
     } else {
-        run_ret = sd_stringparser_run_frames(state->parser, state->ticks - 1, state->end_frame);
+        run_ret = sd_stringparser_run_frames(
+            state->parser, 
+            state->ticks - 1, 
+            state->end_frame);
     }
 
     // Handle frame
@@ -220,8 +225,12 @@ void player_run(object *obj) {
                 int mx = isset(f, "mx") ? get(f, "mx") : 0;
                 int my = isset(f, "my") ? get(f, "my") : 0;
                 int mg = isset(f, "mg") ? get(f, "mg") : 0;
-                DEBUG("Spawning %d, with g = %d, pos = (%d,%d)",  get(f, "m"), mg, mx, my);
-                state->spawn(obj, get(f, "m"), vec2i_create(mx, my), mg, state->spawn_userdata);
+                DEBUG("Spawning %d, with g = %d, pos = (%d,%d)", 
+                    get(f, "m"), mg, mx, my);
+                state->spawn(
+                    obj, get(f, "m"), 
+                    vec2i_create(mx, my), mg, 
+                    state->spawn_userdata);
             }
             if(isset(f, "md") && state->destroy != NULL) { 
                 state->destroy(obj, get(f, "md"), state->destroy_userdata);
@@ -315,7 +324,9 @@ void player_run(object *obj) {
                 }
             }
             // handle scaling on the Y axis
-            if(isset(f, "y"))   { obj->y_percent = get(f, "y") / 100.0f; }
+            if(isset(f, "y")) { 
+                obj->y_percent = get(f, "y") / 100.0f; 
+            }
             if (isset(f, "e")) {
                 // x,y relative to *enemy's* position
                 int x = 0, y = 0;
@@ -341,7 +352,9 @@ void player_run(object *obj) {
                     obj->slide_state.vel.y, 
                     param->duration);
             }
-            if (isset(f, "v") == 0 && isset(f, "e") == 0 && (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
+            if (isset(f, "v") == 0 && 
+                isset(f, "e") == 0 && 
+                (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
                 // check for relative X interleaving
                 int x = 0, y = 0;
                 if(isset(f, "y-")) {

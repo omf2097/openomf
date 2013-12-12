@@ -324,14 +324,14 @@ void video_quads(int flip_mode, float x, float y, float w, float h) {
             glTexCoord2f(1.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
             glTexCoord2f(0.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
             break;
-      case FLIP_VERTICAL:
+        case FLIP_VERTICAL:
             // vert flip
             glTexCoord2f(0.0f, 1.0f); glVertex3f(x+w, y+h, 0); // Top Right
             glTexCoord2f(1.0f, 1.0f); glVertex3f(x,   y+h, 0); // Top Left
             glTexCoord2f(1.0f, 0.0f); glVertex3f(x,   y,   0); // Bottom Left
             glTexCoord2f(0.0f, 0.0f); glVertex3f(x+w, y,   0); // Bottom Right
             break;
-      case FLIP_VERTICAL|FLIP_HORIZONTAL:
+        case FLIP_VERTICAL|FLIP_HORIZONTAL:
             // both flip
             glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y+h, 0); // Top Right
             glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y+h, 0); // Top Left

@@ -135,6 +135,10 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
     if(argc == 2) {
         int i;
         if(strtoint(argv[1], &i)) {
+            if(i < 0 || i > 10) {
+                return 1;
+            }
+
             game_player *player = game_state_get_player(0);
             object *har_obj = game_player_get_har(player);
             object *obj = malloc(sizeof(object));
