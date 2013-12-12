@@ -696,10 +696,18 @@ void har_finished(object *obj) {
 void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
     iterator it;
     sprite *s;
+    // Fix sprite positions
     vector_iter_begin(&ani->sprites, &it);
     while((s = iter_next(&it)) != NULL) {
         s->pos.x += fix_x;
         s->pos.y += fix_y;
+    }
+    // Fix collisions coordinates
+    collision_coord *c;
+    vector_iter_begin(&ani->collision_coords, &it);
+    while((c = iter_next(&it)) != NULL) {
+        c->pos.x += fix_x;
+        c->pos.y += fix_y;
     }
 }
 
