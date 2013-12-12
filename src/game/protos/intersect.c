@@ -76,6 +76,8 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         // Also note that the hit pixel position during jumps is innacurate because hacks
         int ycoord = (pos_a.y + size_a.y + cc->pos.y) - pos_b.y;
 
+        ycoord -= (obj->cur_sprite->pos.y + size_a.y);
+
 // TODO: Use correct coordinates
 #ifdef DEBUGMODE
         image_set_pixel(
