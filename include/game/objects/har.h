@@ -60,6 +60,7 @@ typedef struct har_t {
     int player_id;
     af af_data;
     unsigned int state;
+    unsigned int blocking;
     unsigned int executing_move;
     int close;
     int hard_close;

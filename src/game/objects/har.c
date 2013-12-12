@@ -170,6 +170,37 @@ void har_spawn_scrap(object *obj, vec2i pos) {
     }
 }
 
+void har_block(object *obj, vec2i hit_coord) {
+    har *h = obj->userdata;
+    if (h->state == STATE_WALKING) {
+        object_set_animation(obj, &af_get_move(&h->af_data, ANIM_STANDING_BLOCK)->ani);
+    } else {
+        object_set_animation(obj, &af_get_move(&h->af_data, ANIM_CROUCHING_BLOCK)->ani);
+    }
+    // the HARs have a lame blank frame in their animation string, so use a custom one
+    object_set_custom_string(obj, "A5");
+    object_set_repeat(obj, 0);
+    object_tick(obj);
+    // blocking spark
+    if (h->damage_received) {
+        // don't make another scrape
+        return;
+    }
+    object *scrape = malloc(sizeof(object));
+    object_create(scrape, hit_coord, vec2f_create(0, 0));
+    object_set_animation(scrape, &af_get_move(&h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
+    object_set_palette(scrape, object_get_palette(obj), 0);
+    object_set_stl(scrape, object_get_stl(obj));
+    object_set_direction(scrape, object_get_direction(obj));
+    object_set_repeat(scrape, 0);
+    object_set_gravity(scrape, 0);
+    object_set_layers(scrape, LAYER_SCRAP);
+    object_tick(scrape);
+    object_tick(scrape);
+    game_state_add_object(scrape);
+    h->damage_received = 1;
+}
+
 void har_check_closeness(object *obj_a, object *obj_b) {
     vec2i pos_a = object_get_pos(obj_a);
     vec2i pos_b = object_get_pos(obj_b);
@@ -228,6 +259,11 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 #endif
             || move->category == CAT_CLOSE)) 
     {
+        if (b->blocking && (b->state == STATE_WALKING || b->state == STATE_CROUCHING)) {
+            har_block(obj_b, hit_coord);
+            return;
+        }
+
         if (move->next_move) {
             object_set_animation(obj_a, &af_get_move(&a->af_data, move->next_move)->ani);
             object_set_repeat(obj_a, 0);
@@ -256,6 +292,8 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
             hit_coord.x,
             hit_coord.y);
         DEBUG("HAR %s animation set to %s", get_id_name(b->id), str_c(&move->footer_string));
+    } else if (a->damage_done) {
+        DEBUG("move already hit");
     }
 }
 
@@ -274,6 +312,11 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord))
 #endif
     {
+        if (h->blocking) {
+            har_block(o_har, hit_coord);
+            return;
+        }
+
         af_move *move = af_get_move(&(prog_owner->af_data), o_pjt->cur_animation->id);
 
         har_take_damage(o_har, &move->footer_string, move->damage);
@@ -390,7 +433,6 @@ void har_act(object *obj, int act_type) {
 
     // Don't allow new moves while we're still executing a previous one.
     if(h->executing_move) {
-        DEBUG("already executing move");
         return;
     }
 
@@ -545,10 +587,17 @@ void har_act(object *obj, int act_type) {
 
     // no moves matched, do player movement
     float vx, vy;
+    h->blocking = 0;
     switch(act_type) {
-        case ACT_DOWN:
         case ACT_DOWNRIGHT:
+            if(act_type == ACT_DOWNRIGHT && direction == OBJECT_FACE_LEFT) {
+                h->blocking = 1;
+            }
         case ACT_DOWNLEFT:
+            if(act_type == ACT_DOWNLEFT && direction == OBJECT_FACE_RIGHT) {
+                h->blocking = 1;
+            }
+        case ACT_DOWN:
             if(h->state != STATE_CROUCHING) {
                 har_set_ani(obj, ANIM_CROUCHING, 1);
                 object_set_vel(obj, vec2f_create(0,0));
@@ -571,6 +620,7 @@ void har_act(object *obj, int act_type) {
             if(direction == OBJECT_FACE_LEFT) {
                 vx = (h->af_data.forward_speed*-1)/(float)320;
             } else {
+                h->blocking = 1;
                 vx = h->af_data.reverse_speed*-1/(float)320;
             }
             object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
@@ -581,6 +631,7 @@ void har_act(object *obj, int act_type) {
                 h->state = STATE_WALKING;
             }
             if(direction == OBJECT_FACE_LEFT) {
+                h->blocking = 1;
                 vx = h->af_data.reverse_speed/(float)320;
             } else {
                 vx = h->af_data.forward_speed/(float)320;
