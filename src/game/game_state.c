@@ -114,6 +114,13 @@ void game_state_render() {
     har[0] = game_state_get_player(0)->har;
     har[1] = game_state_get_player(1)->har;
 
+    // Render passive HARs here
+    for(int i = 0; i < 2; i++) {
+        if(har[i] != NULL && !har_is_active(har[i])) {
+            object_render(har[i]);
+        }
+    }
+
     // Render objects
     iterator it;
     object **obj;
@@ -123,9 +130,9 @@ void game_state_render() {
         object_render(*obj);
     }
 
-    // Render HARs here, to make sure they are drawn on top
+    // Render active HARs here
     for(int i = 0; i < 2; i++) {
-        if(har[i] != NULL) {
+        if(har[i] != NULL && har_is_active(har[i])) {
             object_render(har[i]);
         }
     }

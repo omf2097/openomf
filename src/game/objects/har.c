@@ -43,6 +43,11 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     h->flinching = 0;
 }
 
+int har_is_active(object *obj) {
+    har *h = object_get_userdata(obj);
+    return h->executing_move;
+}
+
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     har *h = userdata;

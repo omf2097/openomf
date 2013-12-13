@@ -82,4 +82,6 @@ typedef struct har_t {
 int har_create(object *obj, palette *pal, int dir, int har_id, int player_id);
 void har_set_ani(object *obj, int animation_id, int repeat);
 
+int har_is_active(object *obj);
+
 #endif // _HAR_H
