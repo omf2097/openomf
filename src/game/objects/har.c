@@ -39,6 +39,8 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     h->damage_done = 0;
     h->damage_received = 0;
     h->executing_move = 0;
+    h->blocking = 0;
+    h->fliching = 0;
 }
 
 // Callback for spawning new objects, eg. projectiles
@@ -138,6 +140,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         object_set_repeat(obj, 0);
         object_set_custom_string(obj, str_c(string));
         object_tick(obj);
+        h->fliching = 1;
     }
 }
 
@@ -400,6 +403,13 @@ void har_tick(object *obj) {
             object_set_vel(obj, vel);
         }
     }
+    if(h->fliching) {
+        vec2f push = object_get_vel(obj);
+        // The infamous stretson-harrison method
+        // XXX TODO is there a non-hardcoded value that we could use?
+        push.x = 4.0f * -object_get_direction(obj);
+        object_set_vel(obj, push);
+    }
 }
 
 void add_input(har *h, char c) {
@@ -529,13 +539,13 @@ void har_act(object *obj, int act_type) {
                 DEBUG("input was %s", h->inputs);
 
 #ifdef DEBUGMODE
-        DEBUG("UNKNOWN %d %d %d %d | %d %d %d %d | %d %d %d %d | %d %d %d %d | %d %d %d %d | %d",
-              move->unknown[0], move->unknown[1], move->unknown[2], move->unknown[3],
-              move->unknown[4], move->unknown[5], move->unknown[6], move->unknown[7],
-              move->unknown[8], move->unknown[9], move->unknown[10], move->unknown[11],
-              move->unknown[12], move->unknown[13], move->unknown[14], move->unknown[15],
-              move->unknown[16], move->unknown[17], move->unknown[18], move->unknown[19],
-              move->unknown[20]);
+        DEBUG("UNKNOWN %u %u %u %u | %u %u %u %u | %u %u %u %u | %u %u %u %u | %u %u %u %u | %u",
+              move->unknown[0]&0xFF, move->unknown[1]&0xFF, move->unknown[2]&0xFF, move->unknown[3]&0xFF,
+              move->unknown[4]&0xFF, move->unknown[5]&0xFF, move->unknown[6]&0xFF, move->unknown[7]&0xFF,
+              move->unknown[8]&0xFF, move->unknown[9]&0xFF, move->unknown[10]&0xFF, move->unknown[11]&0xFF,
+              move->unknown[12]&0xFF, move->unknown[13]&0xFF, move->unknown[14]&0xFF, move->unknown[15]&0xFF,
+              move->unknown[16]&0xFF, move->unknown[17]&0xFF, move->unknown[18]&0xFF, move->unknown[19]&0xFF,
+              move->unknown[20]&0xFF);
 #endif
 
                 // Stop horizontal movement, when move is done
@@ -693,6 +703,7 @@ void har_finished(object *obj) {
         har_set_ani(obj, ANIM_CROUCHING, 1);
     }
     h->executing_move = 0;
+    h->fliching = 0;
 }
 
 void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
