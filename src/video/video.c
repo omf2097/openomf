@@ -170,12 +170,12 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     }
     
     // Show some info
-    DEBUG("Video Init OK");
-    DEBUG(" * SDL2 Driver: %s", SDL_GetCurrentVideoDriver());
-    DEBUG(" * Vendor:      %s", glGetString(GL_VENDOR));
-    DEBUG(" * Renderer:    %s", glGetString(GL_RENDERER));
-    DEBUG(" * Version:     %s", glGetString(GL_VERSION));
-    DEBUG(" * GLSL:        %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    INFO("Video Init OK");
+    INFO(" * SDL2 Driver: %s", SDL_GetCurrentVideoDriver());
+    INFO(" * Vendor:      %s", glGetString(GL_VENDOR));
+    INFO(" * Renderer:    %s", glGetString(GL_RENDERER));
+    INFO(" * Version:     %s", glGetString(GL_VERSION));
+    INFO(" * GLSL:        %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
     return 0;
 }
 
@@ -437,5 +437,5 @@ void video_close() {
     glDeleteLists(fullscreen_quad, 1);
     SDL_GL_DeleteContext(glctx);  
     SDL_DestroyWindow(window);
-    DEBUG("Video deinit.");
+    INFO("Video deinit.");
 }

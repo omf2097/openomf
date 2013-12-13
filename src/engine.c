@@ -56,7 +56,7 @@ int engine_init() {
     
     // Return successfully
     run = 1;
-    DEBUG("Engine initialization successful.");
+    INFO("Engine initialization successful.");
     return 0;
 
     // If something failed, close in correct order
@@ -77,7 +77,7 @@ exit_0:
 }
 
 void engine_run() {
-    DEBUG(" --- BEGIN GAME LOG ---");
+    INFO(" --- BEGIN GAME LOG ---");
 
     // Set up game
     if(game_state_create()) {
@@ -167,7 +167,7 @@ void engine_run() {
     // Free scene object
     game_state_free();
 
-    DEBUG(" --- END GAME LOG ---");
+    INFO(" --- END GAME LOG ---");
 }
 
 void engine_close() {
@@ -179,5 +179,5 @@ void engine_close() {
     sounds_loader_close();
     audio_close();
     video_close();
-    DEBUG("Engine deinit successful.");
+    INFO("Engine deinit successful.");
 }

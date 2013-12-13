@@ -10,15 +10,17 @@
 
 int main(int argc, char *argv[]) {
     // Get path
-#ifdef DEBUGMODE
+
     char *path = "";
-#else
+
+    // Disable SDL_GetPrefPath for now, it seems to be somewhat buggy
+/*
     char *path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
     if(path == NULL) {
         printf("Error: %s\n", SDL_GetError());
         return 1;
     }
-#endif
+*/
 
     // Config path
     char config_path[strlen(path)+32];
@@ -86,26 +88,26 @@ int main(int argc, char *argv[]) {
     }
     SDL_version sdl_linked;
     SDL_GetVersion(&sdl_linked);
-    DEBUG("Found SDL v%d.%d.%d", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
-    DEBUG("Running on platform: %s", SDL_GetPlatform());
+    INFO("Found SDL v%d.%d.%d", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
+    INFO("Running on platform: %s", SDL_GetPlatform());
 
     if(SDL_InitSubSystem(SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER|SDL_INIT_HAPTIC)) {
         PERROR("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_1;
     }
-    DEBUG("Found %d joysticks attached", SDL_NumJoysticks());
+    INFO("Found %d joysticks attached", SDL_NumJoysticks());
     SDL_Joystick *joy;
     for (int i = 0; i < SDL_NumJoysticks(); i++) {
         joy = SDL_JoystickOpen(0);
         if (joy) {
-            DEBUG("Opened Joystick %d", i);
-            DEBUG(" * Name:              %s", SDL_JoystickNameForIndex(i));
-            DEBUG(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
-            DEBUG(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
-            DEBUG(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
-            DEBUG(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
+            INFO("Opened Joystick %d", i);
+            INFO(" * Name:              %s", SDL_JoystickNameForIndex(i));
+            INFO(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
+            INFO(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
+            INFO(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
+            INFO(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
         } else {
-            DEBUG("Joystick %d is unsupported", i);
+            INFO("Joystick %d is unsupported", i);
         }
 
         if (SDL_JoystickGetAttached(joy)) {
@@ -140,7 +142,7 @@ exit_1:
     settings_free();
 exit_0:
     sd_stringparser_lib_deinit();
-    DEBUG("Exit.");
+    INFO("Exit.");
     log_close();
 #ifndef DEBUGMODE
     SDL_free(path);

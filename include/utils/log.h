@@ -7,6 +7,7 @@
 #define DEBUG(...) 
 #endif
 #define PERROR(...) log_print('E', __VA_ARGS__ )
+#define INFO(...) log_print('I', __VA_ARGS__ )
 
 void log_print(char mode, char *fmt, ...);
 int log_init(const char *filename);

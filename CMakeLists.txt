@@ -11,20 +11,20 @@ find_package(OpenAL)
 find_package(confuse)
 find_package(GLEW)
 
+# These flags are used for all builds
+set(CORE_FLAGS "-Wall -std=c99 -Werror")
+
 # When building with MingW, do not look for Libintl 
 IF(MINGW)
     set(LIBINTL_INCLUDE_DIR "")
     set(LIBINTL_LIBRARIES "")
+    set(CORE_FLAGS "${CORE_FLAGS} -static-libgcc")
 ELSE(MINGW)
     find_package(Libintl)
 ENDIF(MINGW)
 
-# These flags are used for all builds
-set(CORE_FLAGS "-Wall -std=c99 -Werror")
-
 # Options
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
-OPTION(USE_LTO "Use LTO for binary" OFF)
 
 # If we want to build support for vorbis streaming, find these too
 IF(USE_OGGVORBIS)
@@ -32,11 +32,6 @@ IF(USE_OGGVORBIS)
     find_package(vorbis)
     set(CORE_FLAGS "${CORE_FLAGS} -DUSE_OGGVORBIS")
 ENDIF(USE_OGGVORBIS)
-
-# Check if we want to use LTO
-IF(USE_LTO)
-    set(CORE_FLAGS "${CORE_FLAGS} -flto")
-ENDIF(USE_LTO)
 
 # On Travis, compile in c11 mode
 IF(TRAVIS)
@@ -51,6 +46,13 @@ set(CMAKE_C_FLAGS_DEBUG "${CORE_FLAGS} -ggdb -DDEBUGMODE")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CORE_FLAGS} -g -O2")
 set(CMAKE_C_FLAGS_RELEASE "${CORE_FLAGS} -O2 -s -march=native")
 set(CMAKE_C_FLAGS_MINSIZEREL "${CORE_FLAGS} -Os -s -march=native")
+
+# Don't show console on mingw in release builds
+IF(MINGW)
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -mwindows")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -mwindows")
+    set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -mwindows")
+ENDIF(MINGW)
 
 # Testing stuff
 enable_testing()

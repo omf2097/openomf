@@ -16,6 +16,7 @@ void openal_sink_close(audio_sink *sink) {
     alcDestroyContext(local->context);
     alcCloseDevice(local->device);
     free(local);
+    INFO("OpenAL Sink closed.");
 }
 
 void openal_sink_format_stream(audio_sink *sink, audio_stream *stream) {
@@ -41,10 +42,10 @@ int openal_sink_init(audio_sink *sink) {
     sink_set_format_stream_cb(sink, openal_sink_format_stream);
 
     // Some log stuff
-    DEBUG("OpenAL Audio Sink:");
-    DEBUG(" * Vendor:      %s", alGetString(AL_VENDOR));
-    DEBUG(" * Renderer:    %s", alGetString(AL_RENDERER));
-    DEBUG(" * Version:     %s", alGetString(AL_VERSION));
+    INFO("OpenAL Audio Sink:");
+    INFO(" * Vendor:      %s", alGetString(AL_VENDOR));
+    INFO(" * Renderer:    %s", alGetString(AL_RENDERER));
+    INFO(" * Version:     %s", alGetString(AL_VERSION));
 
     // All done
     return 0;

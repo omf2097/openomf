@@ -41,7 +41,7 @@ int audio_init(int sink_id) {
     struct sink_info_t si = sinks[sink_id];
 
     // Inform user
-    DEBUG("Initializing audio sink '%s'.", audio_get_sink_name(sink_id));
+    INFO("Initializing audio sink '%s'.", audio_get_sink_name(sink_id));
 
     // Init sink
     _global_sink = malloc(sizeof(audio_sink));
@@ -62,6 +62,7 @@ void audio_close() {
     }
     free(_global_sink);
     _global_sink = NULL;
+    INFO("Audio deinit.");
 }
 
 audio_sink* audio_get_sink() {
