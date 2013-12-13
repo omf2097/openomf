@@ -151,7 +151,7 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
             }
 
             // Set HAR to controller and game_player
-            game_state_add_object(obj);
+            game_state_add_object(obj, RENDER_LAYER_MIDDLE);
 
             game_state_del_object(har_obj);
 

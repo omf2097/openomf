@@ -77,7 +77,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
-        game_state_add_object(scrap);
+        game_state_add_object(scrap, RENDER_LAYER_MIDDLE);
         return;
     }
 
@@ -102,7 +102,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_set_repeat(obj, 0);
         object_set_direction(obj, object_get_direction(parent));
         projectile_create(obj);
-        game_state_add_object(obj);
+        game_state_add_object(obj, RENDER_LAYER_MIDDLE);
     }
 }
 
@@ -188,7 +188,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
-        game_state_add_object(scrap);
+        game_state_add_object(scrap, RENDER_LAYER_MIDDLE);
     }
 
     // scrap metal
@@ -215,7 +215,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
-        game_state_add_object(scrap);
+        game_state_add_object(scrap, RENDER_LAYER_MIDDLE);
     }
 
 }
@@ -247,7 +247,7 @@ void har_block(object *obj, vec2i hit_coord) {
     object_set_layers(scrape, LAYER_SCRAP);
     object_tick(scrape);
     object_tick(scrape);
-    game_state_add_object(scrape);
+    game_state_add_object(scrape, RENDER_LAYER_MIDDLE);
     h->damage_received = 1;
     h->flinching = 1;
 }

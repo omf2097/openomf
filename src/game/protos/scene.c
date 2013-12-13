@@ -62,7 +62,7 @@ void scene_init(scene *scene) {
             }
             object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
             object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
-            game_state_add_object(obj);
+            game_state_add_object(obj, RENDER_LAYER_BOTTOM);
             DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
         }
     }
@@ -168,7 +168,7 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userd
         if(info->probability == 1) {
             object_set_repeat(obj, 1);
         }
-        game_state_add_object(obj);
+        game_state_add_object(obj, RENDER_LAYER_BOTTOM);
     }
 }
 

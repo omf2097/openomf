@@ -42,7 +42,7 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata
         object_set_animation(obj, &info->ani);
         object_set_spawn_cb(obj, cb_vs_spawn_object, userdata);
         object_set_destroy_cb(obj, cb_vs_destroy_object, userdata);
-        game_state_add_object(obj);
+        game_state_add_object(obj, RENDER_LAYER_MIDDLE);
     }
 }
 
@@ -257,7 +257,7 @@ int vs_create(scene *scene) {
     object_set_palette(o_scientist, mpal, 0);
     object_select_sprite(o_scientist, 0);
     object_set_direction(o_scientist, OBJECT_FACE_LEFT);
-    game_state_add_object(o_scientist);
+    game_state_add_object(o_scientist, RENDER_LAYER_MIDDLE);
 
     // WELDER
     object *o_welder = malloc(sizeof(object));
@@ -268,7 +268,7 @@ int vs_create(scene *scene) {
     object_select_sprite(o_welder, 0);
     object_set_spawn_cb(o_welder, cb_vs_spawn_object, (void*)scene);
     object_set_destroy_cb(o_welder, cb_vs_destroy_object, (void*)scene);
-    game_state_add_object(o_welder);
+    game_state_add_object(o_welder, RENDER_LAYER_MIDDLE);
 
     // GANTRIES
     object *o_gantry_a = malloc(sizeof(object));
@@ -277,7 +277,7 @@ int vs_create(scene *scene) {
     object_set_animation(o_gantry_a, ani);
     object_set_palette(o_gantry_a, mpal, 0);
     object_select_sprite(o_gantry_a, 0);
-    game_state_add_object(o_gantry_a);
+    game_state_add_object(o_gantry_a, RENDER_LAYER_MIDDLE);
 
     object *o_gantry_b = malloc(sizeof(object));
     object_create(o_gantry_b, vec2i_create(0,0), vec2f_create(0, 0));
@@ -285,7 +285,7 @@ int vs_create(scene *scene) {
     object_set_palette(o_gantry_b, mpal, 0);
     object_select_sprite(o_gantry_b, 0);
     object_set_direction(o_gantry_b, OBJECT_FACE_LEFT);
-    game_state_add_object(o_gantry_b);
+    game_state_add_object(o_gantry_b, RENDER_LAYER_MIDDLE);
 
     // Background tex
     texture_create(&local->player2_background);

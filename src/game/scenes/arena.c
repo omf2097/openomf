@@ -113,7 +113,7 @@ void scene_fight_anim_start(void *userdata) {
     object_set_palette(fight, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(fight, fight_ani);
     object_set_finish_cb(fight, scene_fight_anim_done);
-    game_state_add_object(fight);
+    game_state_add_object(fight, RENDER_LAYER_TOP);
 }
 
 void scene_ready_anim_done(object *parent) {
@@ -142,7 +142,7 @@ void scene_youwin_anim_start(void *userdata) {
     object_set_palette(youwin, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(youwin, youwin_ani);
     object_set_finish_cb(youwin, scene_youwin_anim_done);
-    game_state_add_object(youwin);
+    game_state_add_object(youwin, RENDER_LAYER_TOP);
 
     // This will release HARs for action
     arena->state = ARENA_STATE_ENDING;
@@ -165,7 +165,7 @@ void scene_youlose_anim_start(void *userdata) {
     object_set_palette(youlose, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(youlose, youlose_ani);
     object_set_finish_cb(youlose, scene_youlose_anim_done);
-    game_state_add_object(youlose);
+    game_state_add_object(youlose, RENDER_LAYER_TOP);
 
     // This will release HARs for action
     arena->state = ARENA_STATE_ENDING;
@@ -469,7 +469,7 @@ int arena_create(scene *scene) {
         }
 
         // Set HAR to controller and game_player
-        game_state_add_object(obj);
+        game_state_add_object(obj, RENDER_LAYER_MIDDLE);
 
         // Set HAR for player
         game_player_set_har(player, obj);
@@ -593,7 +593,7 @@ int arena_create(scene *scene) {
     object_set_palette(ready, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(ready, ready_ani);
     object_set_finish_cb(ready, scene_ready_anim_done);
-    game_state_add_object(ready);
+    game_state_add_object(ready, RENDER_LAYER_TOP);
 
     // Callbacks
     scene_set_event_cb(scene, arena_event);
