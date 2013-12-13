@@ -88,7 +88,31 @@ int main(int argc, char *argv[]) {
     SDL_GetVersion(&sdl_linked);
     DEBUG("Found SDL v%d.%d.%d", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
     DEBUG("Running on platform: %s", SDL_GetPlatform());
-    
+
+    if(SDL_InitSubSystem(SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER|SDL_INIT_HAPTIC)) {
+        PERROR("SDL2 Initialization failed: %s", SDL_GetError());
+        goto exit_1;
+    }
+    DEBUG("Found %d joysticks attached", SDL_NumJoysticks());
+    SDL_Joystick *joy;
+    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        joy = SDL_JoystickOpen(0);
+        if (joy) {
+            DEBUG("Opened Joystick %d", i);
+            DEBUG(" * Name:              %s", SDL_JoystickNameForIndex(i));
+            DEBUG(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
+            DEBUG(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
+            DEBUG(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
+            DEBUG(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
+        } else {
+            DEBUG("Joystick %d is unsupported", i);
+        }
+
+        if (SDL_JoystickGetAttached(joy)) {
+            /*SDL_JoystickClose(joy);*/
+        }
+    }
+
     // Init enet
     if(enet_initialize() != 0) {
         PERROR("Failed to initialize enet");

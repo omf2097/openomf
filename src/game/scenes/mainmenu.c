@@ -17,6 +17,7 @@
 #include "game/menu/textinput.h"
 #include "controller/controller.h"
 #include "controller/keyboard.h"
+#include "controller/joystick.h"
 #include "controller/net_controller.h"
 #include "resources/ids.h"
 #include "game/game_player.h"
@@ -185,6 +186,40 @@ void _setup_keyboard(int players) {
         }
     }
 }
+
+void _setup_joystick(int players) {
+    controller *ctrl = malloc(sizeof(controller));
+    game_player *player = game_state_get_player(0);
+    controller_init(ctrl);
+
+    joystick_create(ctrl, 0);
+    game_player_set_ctrl(player, ctrl);
+    game_player_set_selectable(player, 0);
+
+
+    ctrl = malloc(sizeof(controller));
+    player = game_state_get_player(1);
+    controller_init(ctrl);
+
+    // Set up keyboards
+    settings_keyboard *k = &settings_get()->keys;
+    keyboard_keys *keys = malloc(sizeof(keyboard_keys));
+
+    keys->up = SDL_GetScancodeFromName(k->key2_up);
+    keys->down = SDL_GetScancodeFromName(k->key2_down);
+    keys->left = SDL_GetScancodeFromName(k->key2_left);
+    keys->right = SDL_GetScancodeFromName(k->key2_right);
+    keys->punch = SDL_GetScancodeFromName(k->key2_punch);
+    keys->kick = SDL_GetScancodeFromName(k->key2_kick);
+
+    keyboard_create(ctrl, keys);
+
+    // Set up player controller
+    game_player_set_ctrl(player, ctrl);
+
+}
+
+
 
 char *dupestr(const char *s) {
     return strcpy(malloc(strlen(s)+1), s);

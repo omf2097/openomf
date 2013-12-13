@@ -122,25 +122,22 @@ void vs_tick(scene *scene) {
 }
 
 int vs_event(scene *scene, SDL_Event *event) {
-    if(event->type == SDL_KEYDOWN) {
-        if(event->key.keysym.sym == SDLK_ESCAPE) {
-            game_state_set_next(SCENE_MELEE);
-        } else {
-            ctrl_event *p1=NULL, *i;
-            game_player *player1 = game_state_get_player(0);
-            controller_event(player1->ctrl, event, &p1);
-            i = p1;
-            if (i) {
-                do {
-                    vs_handle_action(scene, i->action);
-                } while((i = i->next));
-                DEBUG("done");
-            }
-            controller_free_chain(p1);
-        }
+    if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
+        game_state_set_next(SCENE_MELEE);
         return 1;
     }
-    return 0;
+    ctrl_event *p1=NULL, *i;
+    game_player *player1 = game_state_get_player(0);
+    controller_event(player1->ctrl, event, &p1);
+    i = p1;
+    if (i) {
+        do {
+            vs_handle_action(scene, i->action);
+        } while((i = i->next));
+        DEBUG("done");
+    }
+    controller_free_chain(p1);
+    return 1;
 }
 
 void vs_render(scene *scene) {

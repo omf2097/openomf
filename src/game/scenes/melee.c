@@ -307,44 +307,42 @@ void handle_action(scene *scene, int player, int action) {
 
 int melee_event(scene *scene, SDL_Event *event) {
     melee_local *local = scene_get_userdata(scene);
-    if(event->type == SDL_KEYDOWN) {
-        if (event->key.keysym.sym == SDLK_ESCAPE) {
-                if (local->selection == 1) {
-                    // restore the player selection
-                    local->column_a = local->player_id_a % 5;
-                    local->row_a = local->player_id_a / 5;
-                    local->column_b = local->player_id_b % 5;
-                    local->row_b = local->player_id_b / 5;
+    if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
+        if (local->selection == 1) {
+            // restore the player selection
+            local->column_a = local->player_id_a % 5;
+            local->row_a = local->player_id_a / 5;
+            local->column_b = local->player_id_b % 5;
+            local->row_b = local->player_id_b / 5;
 
-                    local->selection = 0;
-                    local->done_a = 0;
-                    local->done_b = 0;
-                } else {
-                    game_state_set_next(SCENE_MENU);
-                }
-            } else {
-                game_player *player1 = game_state_get_player(0);
-                game_player *player2 = game_state_get_player(1);
-                ctrl_event *p1=NULL, *p2 = NULL, *i;
-                controller_event(player1->ctrl, event, &p1);
-                controller_event(player2->ctrl, event, &p2);
-                i = p1;
-                if (i) {
-                    do {
-                        handle_action(scene, 1, i->action);
-                    } while((i = i->next));
-                    DEBUG("done");
-                }
-                controller_free_chain(p1);
-                i = p2;
-                if (i) {
-                    do {
-                        handle_action(scene, 2, i->action);
-                    } while((i = i->next));
-                    DEBUG("done");
-                }
-                controller_free_chain(p2);
-            }
+            local->selection = 0;
+            local->done_a = 0;
+            local->done_b = 0;
+        } else {
+            game_state_set_next(SCENE_MENU);
+        }
+    } else {
+        game_player *player1 = game_state_get_player(0);
+        game_player *player2 = game_state_get_player(1);
+        ctrl_event *p1=NULL, *p2 = NULL, *i;
+        controller_event(player1->ctrl, event, &p1);
+        controller_event(player2->ctrl, event, &p2);
+        i = p1;
+        if (i) {
+            do {
+                handle_action(scene, 1, i->action);
+            } while((i = i->next));
+            DEBUG("done");
+        }
+        controller_free_chain(p1);
+        i = p2;
+        if (i) {
+            do {
+                handle_action(scene, 2, i->action);
+            } while((i = i->next));
+            DEBUG("done");
+        }
+        controller_free_chain(p2);
     }
     return 0;
 }

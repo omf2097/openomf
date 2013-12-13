@@ -129,6 +129,7 @@ add_executable(openomf
     src/game/ticktimer.c
     src/controller/controller.c
     src/controller/keyboard.c
+    src/controller/joystick.c
     src/controller/net_controller.c
     src/console/console.c
     src/main.c
