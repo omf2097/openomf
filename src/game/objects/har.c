@@ -188,7 +188,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
-        game_state_add_object(scrap, RENDER_LAYER_MIDDLE);
+        game_state_add_object(scrap, RENDER_LAYER_TOP);
     }
 
     // scrap metal
@@ -215,7 +215,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
-        game_state_add_object(scrap, RENDER_LAYER_MIDDLE);
+        game_state_add_object(scrap, RENDER_LAYER_TOP);
     }
 
 }
