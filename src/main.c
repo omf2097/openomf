@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (SDL_JoystickGetAttached(joy)) {
-            /*SDL_JoystickClose(joy);*/
+            SDL_JoystickClose(joy);
         }
     }
 
