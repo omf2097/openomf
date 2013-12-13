@@ -40,7 +40,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     h->damage_received = 0;
     h->executing_move = 0;
     h->blocking = 0;
-    h->fliching = 0;
+    h->flinching = 0;
 }
 
 // Callback for spawning new objects, eg. projectiles
@@ -151,7 +151,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         object_set_repeat(obj, 0);
         object_set_custom_string(obj, str_c(string));
         object_tick(obj);
-        h->fliching = 1;
+        h->flinching = 1;
     }
 }
 
@@ -215,6 +215,7 @@ void har_block(object *obj, vec2i hit_coord) {
     object_tick(scrape);
     game_state_add_object(scrape);
     h->damage_received = 1;
+    h->flinching = 1;
 }
 
 void har_check_closeness(object *obj_a, object *obj_b) {
@@ -424,7 +425,7 @@ void har_tick(object *obj) {
             object_set_vel(obj, vel);
         }
     }
-    if(h->fliching) {
+    if(h->flinching) {
         vec2f push = object_get_vel(obj);
         // The infamous stretson-harrison method
         // XXX TODO is there a non-hardcoded value that we could use?
@@ -731,7 +732,7 @@ void har_finished(object *obj) {
         har_set_ani(obj, ANIM_CROUCHING, 1);
     }
     h->executing_move = 0;
-    h->fliching = 0;
+    h->flinching = 0;
 }
 
 void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {

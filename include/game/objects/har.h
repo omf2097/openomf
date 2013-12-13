@@ -62,7 +62,7 @@ typedef struct har_t {
     unsigned int state;
     unsigned int blocking;
     unsigned int executing_move;
-    unsigned int fliching;
+    unsigned int flinching;
     int close;
     int hard_close;
     int damage_done; // Damage was done this animation
