@@ -54,7 +54,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
     vec2i npos;
 
     // If this is a scrap item, handle it as such ...
-    if(id == ANIM_SCRAP_METAL || id == ANIM_BOLT || id == ANIM_SCREW) {
+    if(id == ANIM_SCRAP_METAL || id == ANIM_BOLT || id == ANIM_SCREW || id == ANIM_BURNING_OIL) {
         npos.x = parent->pos.x + pos.x;
         npos.y = parent->pos.y + pos.y;
 
@@ -165,6 +165,34 @@ void har_spawn_scrap(object *obj, vec2i pos) {
     float rv = 0.0f;
     float velx, vely;
     har *h = object_get_userdata(obj);
+    // burning oil
+    for(int i = 0; i < amount; i++) {
+        // Calculate velocity etc.
+        rv = (rand() % 100) / 100.0f - 0.5;
+        velx = 5 * cos(90 + i-(amount) / 2 + rv);
+        vely = -12 * sin(i / amount + rv);
+
+        // Make sure scrap has somekind of velocity
+        // (to prevent floating scrap objects)
+        if(vely < 0.1 && vely > -0.1) vely += 0.21;
+
+        // Create the object
+        object *scrap = malloc(sizeof(object));
+        int anim_no = ANIM_BURNING_OIL;
+        object_create(scrap, pos, vec2f_create(velx, vely));
+        object_set_animation(scrap, &af_get_move(&h->af_data, anim_no)->ani);
+        object_set_palette(scrap, object_get_palette(obj), 0);
+        object_set_stl(scrap, object_get_stl(obj));
+        object_set_repeat(scrap, 0);
+        object_set_gravity(scrap, 1);
+        object_set_layers(scrap, LAYER_SCRAP);
+        object_tick(scrap);
+        scrap_create(scrap);
+        game_state_add_object(scrap);
+    }
+
+    // scrap metal
+    amount = 2;
     for(int i = 0; i < amount; i++) {
         // Calculate velocity etc.
         rv = (rand() % 100) / 100.0f - 0.5;
@@ -189,6 +217,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         scrap_create(scrap);
         game_state_add_object(scrap);
     }
+
 }
 
 void har_block(object *obj, vec2i hit_coord) {
