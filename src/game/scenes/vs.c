@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
-#include <shadowdive/shadowdive.h>
 #include "utils/log.h"
 #include "video/video.h"
 #include "resources/ids.h"
@@ -151,7 +150,6 @@ void vs_render(scene *scene) {
 
     // player 1 HAR
     object_render(&local->player1_har);
-
 
     // player 2 HAR
     object_render(&local->player2_har);

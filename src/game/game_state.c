@@ -13,7 +13,7 @@
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/credits.h"
 #include "game/scenes/arena.h"
-//#include "game/scenes/mechlab.h"
+#include "game/scenes/mechlab.h"
 #include "game/scenes/melee.h"
 #include "game/scenes/vs.h"
 
@@ -231,8 +231,11 @@ int game_load_new(int scene_id) {
             }
             break;
         case SCENE_MECHLAB:
-            /*mechlab_load(&game->sc);
-            break;*/
+            if(mechlab_create(&gamestate->sc)) {
+                PERROR("Error while creating Mechlab scene.");
+                return 1;
+            }
+            break;
         case SCENE_ARENA0:
         case SCENE_ARENA1:
         case SCENE_ARENA2:
