@@ -47,7 +47,7 @@ int write_png(FILE *fp, char *data, int w, int h) {
     // Get row pointers
     char *rows[h];
     for(int i = 0; i < h; i++) {
-        rows[i] = data + (i * w)*4;
+        rows[i] = data + (i * w) * 4;
     }
     
     // Init
@@ -58,9 +58,15 @@ int write_png(FILE *fp, char *data, int w, int h) {
     
     // Write header. RGB, 8bits per channel
     setjmp(png_jmpbuf(png_ptr));
-    png_set_IHDR(png_ptr, info_ptr, w, h,
-                 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+    png_set_IHDR(png_ptr, 
+                 info_ptr, 
+                 w, 
+                 h,
+                 8, 
+                 PNG_COLOR_TYPE_RGBA, 
+                 PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_BASE, 
+                 PNG_FILTER_TYPE_BASE);
     png_write_info(png_ptr, info_ptr);
     
     // Write data
@@ -148,14 +154,14 @@ int main(int argc, char *argv[]) {
         printf("Error while opening background file for writing!");
         goto exit_1;
     }
-    sd_rgba_image *bg = sd_vga_image_decode(bk->background, bk->palettes[0], 0);
+    sd_rgba_image *bg = sd_vga_image_decode(bk->background, bk->palettes[0], -1);
     write_png(fp, bg->data, bg->w, bg->h);
     sd_rgba_image_delete(bg);
     fclose(fp);
     
     // Print header to file
     fprintf(f, "%s", header);
-    fprintf(f, "<h1>%s</h1>", file->filename[0]);
+    fprintf(f, "<h1>%s</h1>", name->sval[0]);
     
     // Root
     fprintf(f, "<h2>General information</h2><table><tr><th>Key</th><th>Value</th></tr>");
@@ -188,6 +194,8 @@ int main(int argc, char *argv[]) {
             fprintf(f, "</table>");
         }
     }
+
+    fflush(f);
     
     // Animations
     fprintf(f, "<h2>Animations</h2><div id=\"animations\">");
@@ -239,7 +247,7 @@ int main(int argc, char *argv[]) {
                 sd_sprite *sprite = ani->sprites[b];
                 
                 // Write sprite
-                if(sprite->img->len > 0 && sprite->img->w > 0 && sprite->img->h > 0) {
+                if(sprite->img->len > 0 && sprite->img->w > 1 && sprite->img->h > 1) {
                     sprintf(namebuf, "%s/%s_sprite_%d_%d.png", outdir->sval[0], name->sval[0], m, b);
                     fp = fopen(namebuf, "wb");
                     sd_rgba_image *img = sd_sprite_image_decode(sprite->img, bk->palettes[0], 0);

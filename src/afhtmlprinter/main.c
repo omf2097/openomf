@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
     
     // Print header to file
     fprintf(f, "%s", header);
-    fprintf(f, "<h1>%s</h1>", file->filename[0]);
+    fprintf(f, "<h1>%s</h1>", name->sval[0]);
     
     // Root
     fprintf(f, "<h2>General information</h2><table><tr><th>Key</th><th>Value</th></tr>");
@@ -181,10 +181,28 @@ int main(int argc, char *argv[]) {
             fprintf(f, "<table><tr><th>Key</th><th>Value</th></tr>");
             fprintf(f, "<tr><td>Move string</td><td>%s</td></tr>", afm->move_string);
             fprintf(f, "<tr><td>Footer string</td><td>%s</td></tr>", afm->footer_string);
-            
+            fprintf(f, "<tr><td>Unknown move header</td><td>");
+            for(int h = 0; h < 21; h++) {
+                if(afm->unknown[h] > 0) {
+                    fprintf(f, "<strong>");
+                }
+                fprintf(f, "%02X ", afm->unknown[h]);
+                if(afm->unknown[h] > 0) {
+                    fprintf(f, "</strong>");
+                }
+            }
+            fprintf(f, "</td></tr>");
+
             fprintf(f, "<tr><td>Start X</td><td>%d</td></tr>", ani->start_x);
             fprintf(f, "<tr><td>Start Y</td><td>%d</td></tr>", ani->start_y);
             fprintf(f, "<tr><td>Animation string</td><td>%s</td></tr>", ani->anim_string);
+            fprintf(f, "<tr><td>Unknown animation header</td><td>");
+            for(int h = 0; h < 4; h++) {
+                fprintf(f, "%02X ", ani->unknown_a[h]);
+            }
+            fprintf(f, "</td></tr>");
+
+
             fprintf(f, "</table></div>");
             
             // Extra strings
