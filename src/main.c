@@ -44,7 +44,8 @@ int main(int argc, char *argv[]) {
             return 0;
         } else if(strcmp(argv[1], "-w") == 0) {
             if(settings_write_defaults(config_path)) {
-                printf("Failed to write config file to '%s'!\n", config_path);
+                fprintf(stderr, "Failed to write config file to '%s'!\n", config_path);
+                fflush(stderr);
                 return 1;
             } else {
                 printf("Config file written to '%s'!\n", config_path);
@@ -56,12 +57,14 @@ int main(int argc, char *argv[]) {
     // Init log
 #ifdef DEBUGMODE
     if(log_init(0)) {
-        printf("Error while initializing log!\n");
+        fprintf(stderr, "Error while initializing log!\n");
+        fflush(stderr);
         return 1;
     }
 #else
     if(log_init(logfile_path)) {
-        printf("Error while initializing log '%s'!\n", logfile_path);
+        fprintf(stderr, "Error while initializing log '%s'!\n", logfile_path);
+        fflush(stderr);
         return 1;
     }
 #endif
