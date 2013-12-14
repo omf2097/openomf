@@ -6,7 +6,7 @@ Note! If you wish to compile OpenOMF from sources yourself, begin from 1). If yo
 1. Dependencies
 ---------------
 
-Most of the libraries that OpenOMF requires are pretty standard and often easily available in eg. linux distro repositories. However, you may need to download and install [libShadowDive](https://github.com/omf2097/libShadowDive)and the latest [libdumb](https://bitbucket.org/kode54/dumb). Your distro may have the packages for at least libdumb, but those are likely old and may not work with OpenOMF.
+Most of the libraries that OpenOMF requires are pretty standard and often easily available in eg. linux distro repositories. However, you may need to download and install [libShadowDive](https://github.com/omf2097/libShadowDive) and the latest [libdumb](https://bitbucket.org/kode54/dumb). Your distro may have the packages for at least libdumb, but those are likely old and may not work with OpenOMF.
 
 Some common packagemanager commands for receiving the other deps below:
 
@@ -26,7 +26,7 @@ Latest OpenOMF source can be acquired with the "git clone" command below.
 git clone https://github.com/omf2097/openomf.git
 ```
 
-Note that the latest source does not necessarily compile, or it may have bugs. To retrieve the latest source that WILL compile but may be out of date, see the [releases](https://github.com/omf2097/openomf/releases) section of openomf project in github.
+Note that the latest sources do not necessarily compile or they may have bugs. To retrieve the latest source that compiles but will be out of date, see the [releases](https://github.com/omf2097/openomf/releases) section of OpenOMF project in github.
 
 3. Compiling
 ------------
@@ -49,7 +49,7 @@ Some useful CMake flags:
 | CMAKE_INSTALL_PREFIX      | Installation path                    | -             | -       |
 | USE_OGGVORBIS             | Selects Vorbis support               | On/Off        | Off     |
 
-Ogg vorbis support is required, if you wish to replace original OMF soundtracks with OGG files. Otherwise the switch is optional.
+Ogg Vorbis support is required, if you wish to replace original OMF soundtracks with OGG files. Otherwise the switch is optional.
 
 4. Data Files
 -------------
