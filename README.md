@@ -1,7 +1,9 @@
-OpenOMF [![Build Status](https://travis-ci.org/omf2097/openomf.png?branch=master)](https://travis-ci.org/omf2097/openomf)
+OpenOMF Readme [![Build Status](https://travis-ci.org/omf2097/openomf.png?branch=master)](https://travis-ci.org/omf2097/openomf)
 =======
 
 OpenOMF is a Open Source remake of "One Must Fall 2097" by Diversions Entertainment. Since the original DOS game from 1994 still uses IPX networking and is a pain to set up, the community needed a better solution to keep playing the game we love. Together with networking, we try to make it easier to play One Must Fall in original glory on multiple platforms (Linux, Mac OSX, Windows, BSD to name a few), although it might take some time to set it up.
+
+For installing & compiling, please see [INSTALL.md](https://github.com/omf2097/openomf/blob/master/INSTALL.md).
 
 Screenshots
 -----------
@@ -33,33 +35,6 @@ Dependencies
 * Enet: http://enet.bespin.org/
 
 Several of these are probably available as packages for your operating system, but some you will have to install from source.
-
-Compiling
----------
-
-To compile:
-
-```
-$ mkdir build
-$ cd build
-$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DUSE_OGGVORBIS=1 ..
-$ make
-$ make install
-```
-
-Some useful CMake flags:
-
-| Flag                      | Description                          | Choices       | Default |
-| ------------------------- | ------------------------------------ | ------------- | ------- |
-| CMAKE_BUILD_TYPE          | Chooses between build types          | Debug/Release | Debug   |
-| CMAKE_INSTALL_PREFIX      | Installation path                    | -             | -       |
-| USE_OGGVORBIS             | Selects Vorbis support               | On/Off        | Off     |
-
-Data Files
-----------
-OpenOMF uses the original data files from original game using libShadowDive. Since One Must Fall 2079 is freeware the files are obtainable from http://omf2097.com/
-
-The OMF resource files should be put in build/resources.
 
 License
 -------
