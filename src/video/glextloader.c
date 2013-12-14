@@ -8,6 +8,6 @@ int glext_init() {
         PERROR("Failed to initialize GLEW: %s.", glewGetErrorString(err));
         return 1;
     }
-    DEBUG("GLEW Initialized.");
+    INFO("GLEW Initialized.");
     return 0;
 }

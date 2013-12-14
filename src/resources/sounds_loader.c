@@ -18,7 +18,7 @@ int sounds_loader_init() {
         PERROR("Unable to load sounds file '%s'!", filename);
         return 1;
     }
-    DEBUG("Loaded sounds file '%s'.", filename);
+    INFO("Loaded sounds file '%s'.", filename);
     return 0;
 }
 

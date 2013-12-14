@@ -23,7 +23,7 @@ int lang_init() {
         array_set(&language_strings, i, language->strings[i].data);
     }
 
-    DEBUG("Loaded language file '%s'.", filename);
+    INFO("Loaded language file '%s'.", filename);
     return 0;
 }
 

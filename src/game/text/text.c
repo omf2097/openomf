@@ -79,7 +79,7 @@ int fonts_init() {
         PERROR("Unable to load font file '%s'!", filename);
         return 1;
     }
-    DEBUG("Loaded font file '%s'", filename);
+    INFO("Loaded font file '%s'", filename);
 
     // Load big font
     get_filename_by_id(DAT_GRAPHCHR, filename);
@@ -87,7 +87,7 @@ int fonts_init() {
         PERROR("Unable to load font file '%s'!", filename);
         return 1;
     }
-    DEBUG("Loaded font file '%s'", filename);
+    INFO("Loaded font file '%s'", filename);
 
     // All done.
     return 0;

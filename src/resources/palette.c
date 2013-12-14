@@ -17,7 +17,7 @@ int altpals_init() {
         PERROR("Unable to load altpals file '%s'!", filename);
         return 1;
     }
-    DEBUG("Loaded altpals file '%s'.", filename);
+    INFO("Loaded altpals file '%s'.", filename);
     return 0;
 }
 
