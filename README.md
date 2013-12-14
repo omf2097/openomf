@@ -38,7 +38,7 @@ Several of these are probably available as packages for your operating system, b
 
 License
 -------
-OpenOMF is developed under the MIT License. Please read LICENSE for more information.
+OpenOMF is developed under the MIT License. Please read [LICENSE](https://github.com/omf2097/openomf/blob/master/LICENSE) for more information.
 
 Contribute
 ----------

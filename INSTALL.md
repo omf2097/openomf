@@ -11,19 +11,20 @@ Most of the libraries that OpenOMF requires are pretty standard and often easily
 Some common packagemanager commands for receiving the other deps below:
 
 Debian:
-'''
+```
 apt-get install libsdl2-dev libopenal-dev libglew-dev libconfuse-dev libenet-dev
-'''
+```
 
+TODO: Add Gentoo, others ?
 
 2. Acquiring the sources
 ------------------------
 
 Latest OpenOMF source can be acquired with the "git clone" command below. 
 
-'''
+```
 git clone https://github.com/omf2097/openomf.git
-'''
+```
 
 Note that the latest source does not necessarily compile, or it may have bugs. To retrieve the latest source that WILL compile but may be out of date, see the [releases](https://github.com/omf2097/openomf/releases) section of openomf project in github.
 
