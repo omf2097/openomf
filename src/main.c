@@ -148,7 +148,9 @@ exit_0:
     INFO("Exit.");
     log_close();
 #ifndef DEBUGMODE
+    /*
     SDL_free(path);
+    */
 #endif
     return 0;
 }
