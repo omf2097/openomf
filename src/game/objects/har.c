@@ -747,15 +747,14 @@ void har_act(object *obj, int act_type) {
                     vx = (h->af_data.forward_speed*-1)/(float)320;
                 }
                 object_set_vel(obj, vec2f_create(vx,vy));
-                object_set_tick_pos(obj, 100);
                 object_set_stride(obj, 7); 
                 if(object_get_direction(obj) == OBJECT_FACE_RIGHT) {
                     // If we are jumping backwards, start animation from end
                     // at -100 frames (seems to be about right)
                     object_set_playback_direction(obj, PLAY_BACKWARDS);
-                    object_set_tick_pos(obj, -100);
+                    object_set_tick_pos(obj, -110);
                 } else {
-                    object_set_tick_pos(obj, 100);
+                    object_set_tick_pos(obj, 110);
                 }
                 h->state = STATE_JUMPING;
             }
@@ -775,9 +774,9 @@ void har_act(object *obj, int act_type) {
                     // If we are jumping backwards, start animation from end
                     // at -100 frames (seems to be about right)
                     object_set_playback_direction(obj, PLAY_BACKWARDS);
-                    object_set_tick_pos(obj, -100);
+                    object_set_tick_pos(obj, -110);
                 } else {
-                    object_set_tick_pos(obj, 100);
+                    object_set_tick_pos(obj, 110);
                     
                 }
                 h->state = STATE_JUMPING;

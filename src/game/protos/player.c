@@ -434,10 +434,10 @@ void player_run(object *obj) {
                     rstate->duration = param->duration;
                     rstate->blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
                     if(isset(f, "r")) {
-                        rstate->flipmode |= FLIP_HORIZONTAL;
+                        rstate->flipmode ^= FLIP_HORIZONTAL;
                     }
                     if(isset(f, "f")) {
-                        rstate->flipmode |= FLIP_VERTICAL;
+                        rstate->flipmode ^= FLIP_VERTICAL;
                     }
                 }
             } else {
@@ -460,6 +460,11 @@ void player_run(object *obj) {
     
     // All done.
     return;
+}
+
+void player_jump_to_tick(object *obj, int tick) {
+    sd_stringparser_goto_tick(obj->animation_state.parser, tick);
+    obj->animation_state.ticks = tick;
 }
 
 unsigned int player_get_len_ticks(object *obj) {

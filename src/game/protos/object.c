@@ -81,9 +81,9 @@ void object_tick(object *obj) {
 void object_set_tick_pos(object *obj, int tick) {
     if(obj->cur_animation != NULL && obj->halt == 0) {
         if(tick < 0) {
-            obj->animation_state.ticks = player_get_len_ticks(obj) + tick;
+            player_jump_to_tick(obj, player_get_len_ticks(obj) + tick);
         } else {
-            obj->animation_state.ticks = tick;
+            player_jump_to_tick(obj, tick);
         }
     }
 }
