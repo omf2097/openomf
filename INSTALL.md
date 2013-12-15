@@ -49,7 +49,7 @@ Some useful CMake flags:
 | CMAKE_INSTALL_PREFIX      | Installation path                    | -             | -       |
 | USE_OGGVORBIS             | Selects Vorbis support               | On/Off        | Off     |
 
-Ogg Vorbis support is required, if you wish to replace original OMF soundtracks with OGG files. Otherwise the switch is optional.
+Ogg Vorbis support is required if you wish to replace original OMF soundtracks with OGG files. Otherwise the switch is optional.
 
 4. Data Files
 -------------
