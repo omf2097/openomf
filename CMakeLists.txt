@@ -12,9 +12,10 @@ find_package(confuse)
 find_package(GLEW)
 
 # These flags are used for all builds
-set(CORE_FLAGS "-Wall -std=c99 -Werror")
+set(CORE_FLAGS "-Wall -std=c11 -Werror")
 
-# When building with MingW, do not look for Libintl 
+# When building with MingW, do not look for Libintl
+# Also, use static libgcc when on mingw
 IF(MINGW)
     set(LIBINTL_INCLUDE_DIR "")
     set(LIBINTL_LIBRARIES "")
@@ -32,13 +33,6 @@ IF(USE_OGGVORBIS)
     find_package(vorbis)
     set(CORE_FLAGS "${CORE_FLAGS} -DUSE_OGGVORBIS")
 ENDIF(USE_OGGVORBIS)
-
-# On Travis, compile in c11 mode
-IF(TRAVIS)
-    IF("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-        SET(CORE_FLAGS "-Wall -std=c11 -Werror")
-    ENDIF()
-ENDIF(TRAVIS)
 
 # Build flags
 set(CMAKE_C_FLAGS "${CORE_FLAGS}")

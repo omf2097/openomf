@@ -5,9 +5,6 @@ compiler:
   - clang
   
 before_install:
- - yes | sudo add-apt-repository ppa:openmw/deps
- - sudo apt-get update -qq
- - sudo apt-get --force-yes install libopenal-dev libglew-dev libsdl2-static-dev libconfuse-dev libenet-dev libogg-dev libvorbis-dev
  - chmod +x travis/deps.sh
  - chmod +x travis/build.sh
  - sudo travis/deps.sh

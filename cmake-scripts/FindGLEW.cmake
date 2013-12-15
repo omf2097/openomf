@@ -6,7 +6,7 @@ IF(WIN32)
         /usr/include
     )
     FIND_LIBRARY(GLEW_LIBRARY
-        NAMES glew GLEW glew32 glew32s
+        NAMES glew GLEW glew32 glew32s glew32.dll
         PATHS
         /usr/local/lib
         /usr/lib64
