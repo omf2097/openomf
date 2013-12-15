@@ -700,6 +700,29 @@ int sd_stringparser_goto_frame_tick(sd_stringparser *parser, unsigned int frame,
     return 0;
 }
 
+int sd_stringparser_goto_tick(sd_stringparser *parser, unsigned int ticks) {
+    frame_list *frames = parser->frame_list;
+    
+    unsigned int next_frame_time=0;
+    int i;
+    for(i = 0;i < frames->num_frames;++i) {
+        next_frame_time += frames->frames[i].duration;
+        if(ticks < next_frame_time) {
+            break;
+        }
+    }
+    
+    // reached the end of the animation, return an error
+    if(i == frames->num_frames) {
+        return 1;
+    }
+    
+    frames->last_tick = ticks;
+    frames->next_frame = i;
+    
+    return 0;
+}
+
 
 int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringparser_frame *out_frame) {
     out_frame->parser = parser;
