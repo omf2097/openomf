@@ -150,6 +150,13 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
                 return 1;
             }
 
+#ifdef DEBUGMODE
+            // Copy debugging setting over
+            har *new_har = object_get_userdata(obj);
+            har *old_har = object_get_userdata(har_obj);
+            new_har->debug_enabled = old_har->debug_enabled;
+#endif
+
             // Set HAR to controller and game_player
             game_state_add_object(obj, RENDER_LAYER_MIDDLE);
 
