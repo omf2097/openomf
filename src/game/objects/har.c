@@ -40,6 +40,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     har *h = object_get_userdata(obj);
     object_set_animation(obj, &af_get_move(&h->af_data, animation_id)->ani);
     object_set_repeat(obj, repeat);
+    object_set_stride(obj, 1);
     object_tick(obj);
     h->damage_done = 0;
     h->damage_received = 0;
@@ -732,6 +733,7 @@ void har_act(object *obj, int act_type) {
                 object_set_gravity(obj, h->af_data.fall_speed * FUDGEFACTOR);
                 vy = (float)h->af_data.jump_speed * FUDGEFACTOR;
                 object_set_vel(obj, vec2f_create(0,vy));
+                object_set_tick_pos(obj, 100);
                 h->state = STATE_JUMPING;
             }
             break;
@@ -745,6 +747,15 @@ void har_act(object *obj, int act_type) {
                     vx = (h->af_data.forward_speed*-1)/(float)320;
                 }
                 object_set_vel(obj, vec2f_create(vx,vy));
+                object_set_stride(obj, 7); 
+                if(object_get_direction(obj) == OBJECT_FACE_RIGHT) {
+                    // If we are jumping backwards, start animation from end
+                    // at -100 frames (seems to be about right)
+                    object_set_playback_direction(obj, PLAY_BACKWARDS);
+                    object_set_tick_pos(obj, -110);
+                } else {
+                    object_set_tick_pos(obj, 110);
+                }
                 h->state = STATE_JUMPING;
             }
             break;
@@ -758,6 +769,16 @@ void har_act(object *obj, int act_type) {
                     vx = h->af_data.reverse_speed/(float)320;
                 }
                 object_set_vel(obj, vec2f_create(vx,vy));
+                object_set_stride(obj, 7); // Pass 10 frames per tick
+                if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+                    // If we are jumping backwards, start animation from end
+                    // at -100 frames (seems to be about right)
+                    object_set_playback_direction(obj, PLAY_BACKWARDS);
+                    object_set_tick_pos(obj, -110);
+                } else {
+                    object_set_tick_pos(obj, 110);
+                    
+                }
                 h->state = STATE_JUMPING;
             }
             break;

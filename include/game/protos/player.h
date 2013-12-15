@@ -34,6 +34,7 @@ typedef struct player_slide_op_t {
 typedef struct player_animation_state_t {
     unsigned int finished;
     unsigned int ticks;
+    unsigned int ticks_len;
     unsigned int repeat;
     unsigned int reverse;
     unsigned int end_frame;
@@ -59,6 +60,8 @@ void player_set_end_frame(object *obj, int end_frame);
 void player_next_frame(object *obj);
 void player_goto_frame(object *obj, int frame_id);
 int player_get_frame(object *obj);
+void player_jump_to_tick(object *obj, int tick);
 char player_get_frame_letter(object *obj);
+unsigned int player_get_len_ticks(object *obj);
 
 #endif // _PLAYER_H

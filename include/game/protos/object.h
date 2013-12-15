@@ -26,6 +26,11 @@ enum {
     OWNER_OBJECT
 };
 
+enum {
+    PLAY_BACKWARDS,
+    PLAY_FORWARDS
+};
+
 typedef struct object_t object;
 
 typedef void (*object_free_cb)(object *obj);
@@ -58,6 +63,7 @@ struct object_t {
     palette *cur_palette;
     int cur_remap;
     int halt;
+    int stride;
     texture *cur_texture;
 
     player_sprite_state sprite_state;
@@ -79,12 +85,16 @@ void object_render(object *obj);
 void object_render_neutral(object *obj);
 void object_debug(object *obj);
 void object_tick(object *obj);
+void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
 void object_render(object *obj);
 void object_collide(object *a, object *b);
 void object_act(object *obj, int action);
 int object_finished(object *obj);
 void object_free(object *obj);
+
+void object_set_stride(object *obj, int stride);
+void object_set_playback_direction(object *obj, int dir);
 
 void object_set_stl(object *obj, char *ptr);
 char* object_get_stl(object *obj);
