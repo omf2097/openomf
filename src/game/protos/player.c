@@ -111,6 +111,7 @@ void player_create(object *obj) {
     obj->animation_state.destroy_userdata = NULL;
     obj->animation_state.parser = NULL;
     obj->animation_state.previous = -1;
+    obj->animation_state.ticks_len = 0;
     obj->animation_state.parser = sd_stringparser_create();
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
@@ -129,6 +130,15 @@ void player_reload_with_str(object *obj, const char* custom_str) {
         obj->animation_state.parser, 
         custom_str);
 
+    // Find string length
+    sd_stringparser_frame tmp;
+    obj->animation_state.ticks_len = 0;
+    int frames = sd_stringparser_num_frames(obj->animation_state.parser);
+    for(int i = 0; i < frames; i++) {
+        sd_stringparser_peek(obj->animation_state.parser, i, &tmp);
+        obj->animation_state.ticks_len += tmp.duration;
+    }
+
     // Peek parameters
     sd_stringparser_frame param;
     sd_stringparser_peek(obj->animation_state.parser, 0, &param);
@@ -145,6 +155,7 @@ void player_reload_with_str(object *obj, const char* custom_str) {
     obj->animation_state.ticks = 1;
     obj->animation_state.finished = 0;
     obj->animation_state.previous = -1;
+    obj->animation_state.reverse = 0;
 }
 
 void player_reload(object *obj) {
@@ -425,7 +436,7 @@ void player_run(object *obj) {
                     if(isset(f, "r")) {
                         rstate->flipmode |= FLIP_HORIZONTAL;
                     }
-                    if (isset(f, "f")) {
+                    if(isset(f, "f")) {
                         rstate->flipmode |= FLIP_VERTICAL;
                     }
                 }
@@ -449,6 +460,10 @@ void player_run(object *obj) {
     
     // All done.
     return;
+}
+
+unsigned int player_get_len_ticks(object *obj) {
+    return obj->animation_state.ticks_len;
 }
 
 void player_set_repeat(object *obj, int repeat) {

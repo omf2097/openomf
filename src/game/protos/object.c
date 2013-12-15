@@ -33,6 +33,7 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->cur_texture = NULL;
     obj->cur_remap = 0;
     obj->halt = 0;
+    obj->stride = 1;
     player_create(obj);
 
     // Callbacks & userdata
@@ -46,12 +47,44 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->debug = NULL;
 }
 
+void object_set_stride(object *obj, int stride) {
+    if(stride < 1) {
+        stride = 1;
+    }
+    obj->stride = stride;
+}
+
+void object_set_playback_direction(object *obj, int dir) {
+    if(dir != PLAY_FORWARDS && dir != PLAY_BACKWARDS) {
+        dir = PLAY_FORWARDS;
+    }
+    if(dir == PLAY_BACKWARDS) {
+        obj->animation_state.reverse = 1;
+    } else {
+        obj->animation_state.reverse = 0;
+    }
+}
+
 void object_tick(object *obj) {
     if(obj->cur_animation != NULL && obj->halt == 0) {
-        player_run(obj);
+        for(int i = 0; i < obj->stride; i++)
+            player_run(obj);
     }
     if(obj->tick != NULL) {
         obj->tick(obj);
+    }
+}
+
+/*
+ * If negative, sets position to end - ticks, otherwise start + ticks.
+ */
+void object_set_tick_pos(object *obj, int tick) {
+    if(obj->cur_animation != NULL && obj->halt == 0) {
+        if(tick < 0) {
+            obj->animation_state.ticks = player_get_len_ticks(obj) + tick;
+        } else {
+            obj->animation_state.ticks = tick;
+        }
     }
 }
 
