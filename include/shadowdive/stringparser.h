@@ -91,6 +91,9 @@ int sd_stringparser_run_frames(sd_stringparser *parser, unsigned int ticks, unsi
 /* Jump to frame, the starting tick of the frame is stored in ticks, may return error */
 int sd_stringparser_goto_frame(sd_stringparser *parser, unsigned int frame, unsigned int *ticks);
 
+/* Jump to tick, may return error */
+int sd_stringparser_goto_tick(sd_stringparser *parser, unsigned int ticks);
+
 /* Explicitly set the current frame and ticks (Warning: dangerous function) */
 int sd_stringparser_goto_frame_tick(sd_stringparser *parser, unsigned int frame, unsigned int ticks);
 
