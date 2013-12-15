@@ -377,6 +377,11 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
         a->damage_done = 1;
         b->damage_received = 1;
 
+        if (move->category == CAT_CLOSE) {
+            // never flinch from a throw
+            b->flinching = 0;
+        }
+
         DEBUG("HAR %s to HAR %s collision at %d,%d!", 
             get_id_name(a->id), 
             get_id_name(b->id),
@@ -477,11 +482,12 @@ void har_tick(object *obj) {
         }
     }
     if(h->flinching) {
-        /*vec2f push = object_get_vel(obj);*/
+        vec2f push = object_get_vel(obj);
         // The infamous stretson-harrison method
         // XXX TODO is there a non-hardcoded value that we could use?
-        /*push.x = 4.0f * -object_get_direction(obj);*/
-        /*object_set_vel(obj, push);*/
+        push.x = 4.0f * -object_get_direction(obj);
+        object_set_vel(obj, push);
+        h->flinching = 0;
     }
 
     if (h->endurance < h->endurance_max && !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN || h->state == STATE_STANDING_UP)) {
