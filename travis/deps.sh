@@ -3,8 +3,8 @@
 sudo apt-get --force-yes install libopenal-dev libglew-dev libsdl2-static-dev libconfuse-dev libenet-dev libogg-dev libvorbis-dev
 
 cd travis/
-git clone https://github.com/omf2097/libShadowDive.git
-git clone https://bitbucket.org/kode54/dumb.git
+git clone --depth=1 https://github.com/omf2097/libShadowDive.git
+git clone --depth=1 https://bitbucket.org/kode54/dumb.git
 
 cd libShadowDive
 mkdir build
