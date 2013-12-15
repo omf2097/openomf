@@ -21,9 +21,6 @@ fbo target;
 unsigned int fullscreen_quad, fullscreen_quad_flipped;
 int screen_w, screen_h;
 
-//shaderprogram lights;
-//shaderprogram xbr;
-
 int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     screen_w = window_w;
     screen_h = window_h;
@@ -36,8 +33,6 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);                                               
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);   
 
     // Open window
     window = SDL_CreateWindow(
@@ -84,57 +79,6 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
             DEBUG("VSync enabled!");
         }
     }
-    
-    // Load shaders
-    /*shader *lightshow = malloc(sizeof(shader));
-    if(shader_create(lightshow, "shaders/light.ps", SHADER_FRAGMENT)) {
-        PERROR("Unable to link shader!");
-        shader_debug_log(lightshow);
-        SDL_DestroyWindow(window);
-        return 1;
-    }
-    shader_debug_log(lightshow);
-    
-    // Load shaderprogram
-    shaderprog_create(&lights);
-    shaderprog_attach(&lights, lightshow);
-    if(shaderprog_link(&lights)) {
-        PERROR("Unable to link shaderprogram!");
-        shaderprog_debug_log(&lights);
-        SDL_DestroyWindow(window);
-        return 1;
-    }
-    shaderprog_debug_log(&lights);
-    
-    shader *xbrpix = malloc(sizeof(shader));
-    if(shader_create(xbrpix, "shaders/xbr.ps", SHADER_FRAGMENT)) {
-        PERROR("Unable to link shader!");
-        shader_debug_log(xbrpix);
-        SDL_DestroyWindow(window);
-        return 1;
-    }
-    shader_debug_log(xbrpix);
-    
-    shader *xbrver = malloc(sizeof(shader));
-    if(shader_create(xbrver, "shaders/xbr.vs", SHADER_VERTEX)) {
-        PERROR("Unable to link shader!");
-        shader_debug_log(xbrver);
-        SDL_DestroyWindow(window);
-        return 1;
-    }
-    shader_debug_log(xbrver);
-    
-    // Load shaderprogram
-    shaderprog_create(&xbr);
-    shaderprog_attach(&xbr, xbrpix);
-    shaderprog_attach(&xbr, xbrver);
-    if(shaderprog_link(&xbr)) {
-        PERROR("Unable to link shaderprogram!");
-        shaderprog_debug_log(&xbr);
-        SDL_DestroyWindow(window);
-        return 1;
-    }
-    shaderprog_debug_log(&xbr);*/
     
     // Enable textures
     glEnable(GL_TEXTURE_2D);
@@ -412,17 +356,9 @@ void video_render_finish() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    // TODO: Enable shaders
-    //shaderprog_use(&xbr, 1);
-    //shaderprog_use(&lights, 1);
     
     // Draw textured quad
     glCallList(fullscreen_quad);
-    
-    // TODO: Disable shaders
-    //shaderprog_use(&xbr, 0);
-    //shaderprog_use(&lights, 0);
     
     // unbind
     texture_unbind();
@@ -432,7 +368,6 @@ void video_render_finish() {
 }
 
 void video_close() {
-    //shaderprog_free(&lights);
     fbo_free(&target);
     glDeleteLists(fullscreen_quad, 1);
     SDL_GL_DeleteContext(glctx);  
