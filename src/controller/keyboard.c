@@ -55,15 +55,11 @@ int keyboard_tick(controller *ctrl, ctrl_event **ev) {
 }
 
 int keyboard_handle(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
-    // Do not handle keyboard here since it makes the movements unresponsive
-    //if (event->type == SDL_KEYUP && (event->key.keysym.sym == k->keys->kick || event->key.keysym.sym == k->keys->punch)) {
-    //    return 1;
-    //}
-    //if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) {
-
-    //}
-    keyboard_tick(ctrl, ev);
-    return 0;
+    if (event->type == SDL_KEYDOWN) {
+        keyboard_tick(ctrl, ev);
+        return 0;
+    }
+    return 1;
 }
 
 void keyboard_create(controller *ctrl, keyboard_keys *keys) {
