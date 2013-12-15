@@ -691,6 +691,16 @@ int sd_stringparser_goto_frame(sd_stringparser *parser, unsigned int frame, unsi
     }
 }
 
+int sd_stringparser_goto_frame_tick(sd_stringparser *parser, unsigned int frame, unsigned int ticks) {
+    frame_list *frames = parser->frame_list;
+    
+    frames->last_tick = ticks;
+    frames->next_frame = frame;
+    
+    return 0;
+}
+
+
 int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringparser_frame *out_frame) {
     out_frame->parser = parser;
     unsigned int frames = ((frame_list*)parser->frame_list)->num_frames;
