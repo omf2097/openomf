@@ -389,13 +389,6 @@ void player_run(object *obj) {
                     param->duration);
             }
 
-            if (isset(f, "k")) {
-                // knockback. this might possibly take a number, but none of the footer strings that use it seem to pass one
-                // examples are crouching roundhouse for electra, katana and chronos
-                // XXX we don't need to knockback on the X axis here because the flinch code will do that
-                obj->vel.y -= 7;
-            }
-
             // Check if next frame contains X=nnn or Y=nnn 
             if(!param->is_final_frame) {
                 sd_stringparser_peek(state->parser, param->id + 1, &n_param);

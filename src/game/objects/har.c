@@ -186,6 +186,8 @@ void har_take_damage(object *obj, str* string, float damage) {
 
     // chronos' stasis does not have a hit animation
     if (string->data) {
+        sd_stringparser_frame f;
+        const sd_stringparser_tag_value *v;
         h->state = STATE_RECOIL;
         // Set hit animation
         object_set_animation(obj, &af_get_move(&h->af_data, ANIM_DAMAGE)->ani);
@@ -193,6 +195,13 @@ void har_take_damage(object *obj, str* string, float damage) {
         object_set_custom_string(obj, str_c(string));
         object_tick(obj);
         h->flinching = 1;
+        // XXX hack - if the first frame has the 'k' tag, treat it as some vertical knockback
+        // we can't do this in player.c because it breaks the jaguar leap, which also uses the 'k' tag.
+        sd_stringparser_peek(obj->animation_state.parser, 0, &f);
+        sd_stringparser_get_tag(f.parser, f.id, "k", &v);
+        if (v->is_set) {
+                obj->vel.y -= 7;
+        }
     }
 }
 
