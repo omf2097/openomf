@@ -87,8 +87,7 @@ void music_slide(component *c, void *userdata, int pos) {
 }
 
 void sound_slide(component *c, void *userdata, int pos) {
-    // TODO: Audio: Implement this
-    //audio_set_volume(TYPE_EFFECT, pos/10.0f);
+    sound_set_volume(pos/10.0f);
 }
 
 void scene_fight_anim_done(object *parent) {

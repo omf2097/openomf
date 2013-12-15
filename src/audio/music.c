@@ -12,6 +12,7 @@
 #endif // USE_OGGVORBIS
 
 unsigned int music_id = 0;
+float music_volume = VOLUME_DEFAULT;
 
 int music_play(const char *filename) {
     audio_source *music_src = malloc(sizeof(audio_source));
@@ -51,6 +52,7 @@ int music_play(const char *filename) {
 
     // Start playback
     music_id = sink_play(audio_get_sink(), music_src);
+    sink_set_stream_volume(audio_get_sink(), music_id, music_volume);
 
     // All done
     return 0;
@@ -60,7 +62,8 @@ error_0:
 }
 
 void music_set_volume(float volume) {
-    sink_set_stream_volume(audio_get_sink(), music_id, volume);
+    music_volume = volume;
+    sink_set_stream_volume(audio_get_sink(), music_id, music_volume);
 }
 
 void music_stop() {

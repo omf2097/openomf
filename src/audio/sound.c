@@ -6,6 +6,8 @@
 #include "audio/sound.h"
 #include "resources/sounds_loader.h"
 
+float sound_volume = VOLUME_DEFAULT;
+
 void sound_play(int id, float volume, float panning, float pitch) {
     // Get sample data
     char *buf;
@@ -18,6 +20,11 @@ void sound_play(int id, float volume, float panning, float pitch) {
     audio_source *src = malloc(sizeof(audio_source));
     source_init(src);
     raw_source_init(src, buf, len);
-    sink_play_set(audio_get_sink(), src, volume, panning, pitch);
+    unsigned int sound_id = sink_play_set(audio_get_sink(), src, volume, panning, pitch);
+    sink_set_stream_volume(audio_get_sink(), sound_id, sound_volume);
+
 }
 
+void sound_set_volume(float volume) {
+    sound_volume = volume;
+}
