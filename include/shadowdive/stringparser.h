@@ -91,6 +91,9 @@ int sd_stringparser_run_frames(sd_stringparser *parser, unsigned int ticks, unsi
 /* Jump to frame, the starting tick of the frame is stored in ticks, may return error */
 int sd_stringparser_goto_frame(sd_stringparser *parser, unsigned int frame, unsigned int *ticks);
 
+/* Explicitly set the current frame and ticks (Warning: dangerous function) */
+int sd_stringparser_goto_frame_tick(sd_stringparser *parser, unsigned int frame, unsigned int ticks);
+
 int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringparser_frame *out_frame);
 
 /* Return 0 if the tag was found, otherwise return 1 */
