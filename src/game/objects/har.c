@@ -355,7 +355,7 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
     har *b = object_get_userdata(obj_b);
 
     // Check for collisions by sprite collision points
-    int level = 2;
+    int level = 1;
     af_move *move = af_get_move(&(a->af_data), obj_a->cur_animation->id);
     vec2i hit_coord = vec2i_create(0, 0);
     if(a->damage_done == 0 &&
