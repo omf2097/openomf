@@ -174,8 +174,8 @@ void vs_render(scene *scene) {
         font_render_wrapped(&font_small, lang_get(66+local->arena), 59+72, 161, (211-72)-4, COLOR_GREEN);
 
     } else {
-        font_render_wrapped(&font_small, lang_get(749+(11*player1->player_id)+player2->player_id), 59, 160, 150, COLOR_YELLOW);
-        font_render_wrapped(&font_small, lang_get(870+(11*player2->player_id)+player1->player_id), 320-(59+150), 180, 150, COLOR_YELLOW);
+        font_render_wrapped(&font_small, lang_get(749+(11*player1->pilot_id)+player2->pilot_id), 59, 160, 150, COLOR_YELLOW);
+        font_render_wrapped(&font_small, lang_get(870+(11*player2->pilot_id)+player1->pilot_id), 320-(59+150), 180, 150, COLOR_YELLOW);
     }
 }
 
@@ -218,12 +218,12 @@ int vs_create(scene *scene) {
     object_create(&local->player1_portrait, vec2i_create(-10,150), vec2f_create(0, 0));
     object_set_animation(&local->player1_portrait, ani);
     object_set_palette(&local->player1_portrait, mpal, 0);
-    object_select_sprite(&local->player1_portrait, player1->player_id);
+    object_select_sprite(&local->player1_portrait, player1->pilot_id);
 
     object_create(&local->player2_portrait, vec2i_create(330,150), vec2f_create(0, 0));
     object_set_animation(&local->player2_portrait, ani);
     object_set_palette(&local->player2_portrait, mpal, 0);
-    object_select_sprite(&local->player2_portrait, player2->player_id);
+    object_select_sprite(&local->player2_portrait, player2->pilot_id);
     object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
 
     // clone the left side of the background image

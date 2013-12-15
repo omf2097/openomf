@@ -58,6 +58,7 @@ enum {
 typedef struct har_t {
     int id;
     int player_id;
+    int pilot_id;
     af af_data;
     unsigned int state;
     unsigned int blocking;
@@ -79,7 +80,7 @@ typedef struct har_t {
 #endif
 } har;
 
-int har_create(object *obj, palette *pal, int dir, int har_id, int player_id);
+int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int player_id);
 void har_set_ani(object *obj, int animation_id, int repeat);
 
 int har_is_active(object *obj);

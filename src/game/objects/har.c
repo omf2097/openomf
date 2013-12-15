@@ -853,7 +853,7 @@ void har_debug(object *obj) {
 }
 #endif
 
-int har_create(object *obj, palette *pal, int dir, int har_id, int player_id) {
+int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int player_id) {
     // Create local data
     har *local = malloc(sizeof(har));
     object_set_userdata(obj, local);
@@ -871,6 +871,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id, int player_id) {
     // Save har id
     local->id = har_id;
     local->player_id = player_id;
+    local->pilot_id = pilot_id;
 
     // Health, endurance
     local->health_max = local->health = 1000;

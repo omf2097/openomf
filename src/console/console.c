@@ -146,7 +146,7 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
             int hd = object_get_direction(har_obj);
             object_create(obj, pos, vec2f_create(0,0));
             player->har_id = HAR_JAGUAR + i;
-            if(har_create(obj, arena_get_player_palette(scene, 0), hd, player->har_id, player->player_id)) {
+            if(har_create(obj, arena_get_player_palette(scene, 0), hd, player->har_id, player->pilot_id, 0)) {
                 return 1;
             }
 

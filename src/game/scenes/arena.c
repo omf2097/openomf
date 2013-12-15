@@ -370,11 +370,11 @@ void arena_render_overlay(scene *scene) {
         progressbar_render(&local->player2_endurance_bar);
 
         // Render HAR and pilot names
-        font_render(&font_small, lang_get(player[0]->player_id+20), 5, 19, TEXT_COLOR);
+        font_render(&font_small, lang_get(player[0]->pilot_id+20), 5, 19, TEXT_COLOR);
         font_render(&font_small, lang_get((player[0]->har_id - HAR_JAGUAR)+31), 5, 26, TEXT_COLOR);
-        int p2len = (strlen(lang_get(player[1]->player_id+20))-1) * font_small.w;
+        int p2len = (strlen(lang_get(player[1]->pilot_id+20))-1) * font_small.w;
         int h2len = (strlen(lang_get((player[1]->har_id - HAR_JAGUAR)+31))-1) * font_small.w;
-        font_render(&font_small, lang_get(player[1]->player_id+20), 315-p2len, 19, TEXT_COLOR);
+        font_render(&font_small, lang_get(player[1]->pilot_id+20), 315-p2len, 19, TEXT_COLOR);
         font_render(&font_small, lang_get((player[1]->har_id - HAR_JAGUAR)+31), 315-h2len, 26, TEXT_COLOR);
         
         // Render score stuff
@@ -463,7 +463,7 @@ int arena_create(scene *scene) {
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
         object_create(obj, pos[i], vec2f_create(0,0));
-        if(har_create(obj, local->player_palettes[i], dir[i], player->har_id, player->player_id)) {
+        if(har_create(obj, local->player_palettes[i], dir[i], player->har_id, player->pilot_id, i)) {
             return 1;
         }
 

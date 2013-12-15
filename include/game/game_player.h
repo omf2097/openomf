@@ -7,8 +7,8 @@
 #include "video/texture.h"
 
 typedef struct game_player_t {
-    int har_id;
-    int player_id;
+    int har_id; // 0 to 10
+    int pilot_id; // 0 to 9
     object *har;
     controller *ctrl;
     texture *portrait;

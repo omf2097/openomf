@@ -55,8 +55,8 @@ typedef struct melee_local_t {
     progress_bar bar_agility[2];
     progress_bar bar_endurance[2];
 
-    int player_id_a;
-    int player_id_b;
+    int pilot_id_a;
+    int pilot_id_b;
 
     texture feh;
     texture bleh;
@@ -237,28 +237,28 @@ void handle_action(scene *scene, int player, int action) {
                 local->done_b = 0;
                 if (local->selection == 0) {
                     local->selection = 1;
-                    local->player_id_a = 5*local->row_a + local->column_a;
-                    local->player_id_b = 5*local->row_b + local->column_b;
+                    local->pilot_id_a = 5*local->row_a + local->column_a;
+                    local->pilot_id_b = 5*local->row_b + local->column_b;
 
-                    object_select_sprite(&local->bigportrait1, local->player_id_a);
+                    object_select_sprite(&local->bigportrait1, local->pilot_id_a);
                     // update the player palette
-                    palette_set_player_color(local->player1_pal, local->pilots[local->player_id_a].colors[0], 2);
-                    palette_set_player_color(local->player1_pal, local->pilots[local->player_id_a].colors[1], 1);
-                    palette_set_player_color(local->player1_pal, local->pilots[local->player_id_a].colors[2], 0);
-                    player1->colors[0] = local->pilots[local->player_id_a].colors[0];
-                    player1->colors[1] = local->pilots[local->player_id_a].colors[1];
-                    player1->colors[2] = local->pilots[local->player_id_a].colors[2];
+                    palette_set_player_color(local->player1_pal, local->pilots[local->pilot_id_a].colors[0], 2);
+                    palette_set_player_color(local->player1_pal, local->pilots[local->pilot_id_a].colors[1], 1);
+                    palette_set_player_color(local->player1_pal, local->pilots[local->pilot_id_a].colors[2], 0);
+                    player1->colors[0] = local->pilots[local->pilot_id_a].colors[0];
+                    player1->colors[1] = local->pilots[local->pilot_id_a].colors[1];
+                    player1->colors[2] = local->pilots[local->pilot_id_a].colors[2];
 
                     if (player2->selectable) {
-                        object_select_sprite(&local->bigportrait2, local->player_id_b);
+                        object_select_sprite(&local->bigportrait2, local->pilot_id_b);
                         // update the player palette
-                        palette_set_player_color(local->player2_pal, local->pilots[local->player_id_b].colors[0], 2);
-                        palette_set_player_color(local->player2_pal, local->pilots[local->player_id_b].colors[1], 1);
-                        palette_set_player_color(local->player2_pal, local->pilots[local->player_id_b].colors[2], 0);
+                        palette_set_player_color(local->player2_pal, local->pilots[local->pilot_id_b].colors[0], 2);
+                        palette_set_player_color(local->player2_pal, local->pilots[local->pilot_id_b].colors[1], 1);
+                        palette_set_player_color(local->player2_pal, local->pilots[local->pilot_id_b].colors[2], 0);
 
-                        player2->colors[0] = local->pilots[local->player_id_b].colors[0];
-                        player2->colors[1] = local->pilots[local->player_id_b].colors[1];
-                        player2->colors[2] = local->pilots[local->player_id_b].colors[2];
+                        player2->colors[0] = local->pilots[local->pilot_id_b].colors[0];
+                        player2->colors[1] = local->pilots[local->pilot_id_b].colors[1];
+                        player2->colors[2] = local->pilots[local->pilot_id_b].colors[2];
                     }
 
                     // reinialize any textures using the player palette
@@ -273,21 +273,21 @@ void handle_action(scene *scene, int player, int action) {
 
                 } else {
                     player1->har_id = HAR_JAGUAR + 5*local->row_a+local->column_a;
-                    player1->player_id = local->player_id_a;
+                    player1->pilot_id = local->pilot_id_a;
                     if (player2->selectable) {
                         player2->har_id = HAR_JAGUAR + 5*local->row_b+local->column_b;
-                        player2->player_id = local->player_id_b;
+                        player2->pilot_id = local->pilot_id_b;
                     } else {
                         // randomly pick opponent and HAR
                         srand(time(NULL));
                         player2->har_id = HAR_JAGUAR + rand() % 10;
                         int i;
-                        while((i = rand() % 10) == local->player_id_a) {}
-                        player2->player_id = i;
+                        while((i = rand() % 10) == local->pilot_id_a) {}
+                        player2->pilot_id = i;
 
-                        player2->colors[0] = local->pilots[player2->player_id].colors[0];
-                        player2->colors[1] = local->pilots[player2->player_id].colors[1];
-                        player2->colors[2] = local->pilots[player2->player_id].colors[2];
+                        player2->colors[0] = local->pilots[player2->pilot_id].colors[0];
+                        player2->colors[1] = local->pilots[player2->pilot_id].colors[1];
+                        player2->colors[2] = local->pilots[player2->pilot_id].colors[2];
                     }
                     game_state_set_next(SCENE_VS);
                 }
@@ -310,10 +310,10 @@ int melee_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
         if (local->selection == 1) {
             // restore the player selection
-            local->column_a = local->player_id_a % 5;
-            local->row_a = local->player_id_a / 5;
-            local->column_b = local->player_id_b % 5;
-            local->row_b = local->player_id_b / 5;
+            local->column_a = local->pilot_id_a % 5;
+            local->row_a = local->pilot_id_a / 5;
+            local->column_b = local->pilot_id_b % 5;
+            local->row_b = local->pilot_id_b / 5;
 
             local->selection = 0;
             local->done_a = 0;
@@ -442,11 +442,11 @@ void melee_render(scene *scene) {
         object_render(&local->har_player1[5*local->row_a + local->column_a]);
 
         // player 1 name
-        font_render_wrapped(&font_small, lang_get(20+local->player_id_a), 0, 52, 66, COLOR_BLACK);
+        font_render_wrapped(&font_small, lang_get(20+local->pilot_id_a), 0, 52, 66, COLOR_BLACK);
 
         if (player2->selectable) {
             // player 2 name
-            font_render_wrapped(&font_small, lang_get(20+local->player_id_b), 320-66, 52, 66, COLOR_BLACK);
+            font_render_wrapped(&font_small, lang_get(20+local->pilot_id_b), 320-66, 52, 66, COLOR_BLACK);
 
             // currently selected player
             object_render(&local->bigportrait2);
