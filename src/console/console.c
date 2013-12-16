@@ -194,6 +194,17 @@ int console_cmd_lose(scene *scene, void *userdata, int argc, char **argv) {
     return 1;
 }
 
+int console_cmd_stun(scene *scene, void *userdata, int argc, char **argv) {
+    if(argc == 1) {
+        game_player *player = game_state_get_player(1);
+        object *har_obj = game_player_get_har(player);
+        har *har = object_get_userdata(har_obj);
+        har->endurance = 0;
+        har->state = STATE_RECOIL;
+        return 0;
+    }
+    return 1;
+}
 
 #ifdef DEBUGMODE
 int console_cd_debug(scene *scene, void *userdata, int argc, char **argv) {
@@ -540,6 +551,7 @@ int console_init() {
     console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
     console_add_cmd("win",   &console_cmd_win,   "Set the other player's health to 0");
     console_add_cmd("lose",   &console_cmd_lose,   "Set your health to 0");
+    console_add_cmd("stun",   &console_cmd_stun,   "Stun the other player");
 #ifdef DEBUGMODE
     console_add_cmd("cd-debug", &console_cd_debug, "toggle collision detection debugging");
 #endif
