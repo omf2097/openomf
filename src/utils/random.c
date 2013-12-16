@@ -3,6 +3,8 @@
 
 // A simple psuedorandom number generator
 
+typedef struct random_t random;
+
 static random rand = { 1 };
 
 void random_seed(random *r, uint32_t seed) {
