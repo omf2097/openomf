@@ -12,7 +12,26 @@ find_package(confuse)
 find_package(GLEW)
 
 # These flags are used for all builds
-set(CORE_FLAGS "-Wall -std=c11 -Werror")
+set(CORE_FLAGS "-Wall -Werror")
+
+# Check available compiler
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    if(CMAKE_C_COMPILER_VERSION VERSION_LESS 4.8)
+        set(CORE_FLAGS "${CORE_FLAGS} -std=c99")
+    elseif(CMAKE_C_COMPILER_VERSION VERSION_LESS 4.6)
+        message(FATAL_ERROR "GCC version must be at least 4.6!")
+    else()
+        set(CORE_FLAGS "${CORE_FLAGS} -std=c11")
+    endif()
+elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    set(CORE_FLAGS "${CORE_FLAGS} -std=c11")
+    if(CMAKE_C_COMPILER_VERSION VERSION_LESS 3.2)
+        message(FATAL_ERROR "Clang version must be at least 3.2!")
+    endif()
+else()
+    set(CORE_FLAGS "${CORE_FLAGS} -std=c11")
+    message(WARNING "Unsupported compiler!")
+endif()
 
 # When building with MingW, do not look for Libintl
 # Also, use static libgcc when on mingw
