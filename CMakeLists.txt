@@ -82,6 +82,7 @@ add_executable(openomf
     src/utils/ringbuffer.c
     src/utils/vec.c
     src/utils/string.c
+    src/utils/random.c
     src/video/video.c
     src/video/texture.c
     src/video/fbo.c

@@ -1,12 +1,14 @@
-#include "engine.h"
-#include "shadowdive/stringparser.h"
-#include "utils/log.h"
-#include "game/settings.h"
+#include <string.h>
+#include <time.h>
 #include <SDL2/SDL.h>
 #include <dumb/dumb.h>
 #include <enet/enet.h>
-#include <string.h>
-#include <time.h>
+
+#include "engine.h"
+#include "shadowdive/stringparser.h"
+#include "utils/log.h"
+#include "utils/random.h"
+#include "game/settings.h"
 
 int main(int argc, char *argv[]) {
     // Get path
@@ -70,7 +72,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     // Random seed
-    srand(time(NULL));
+    rand_seed(time(NULL));
 
     // Init stringparser
     sd_stringparser_lib_init();

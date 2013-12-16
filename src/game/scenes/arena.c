@@ -228,20 +228,29 @@ void arena_tick(scene *scene) {
         har1 = obj_har1->userdata;
         har2 = obj_har2->userdata;
         if (
-                (har1->state == STATE_STANDING || har1->state == STATE_CROUCHING || har1->state == STATE_WALKING) &&
-                (har2->state == STATE_STANDING || har2->state == STATE_CROUCHING || har2->state == STATE_WALKING)) {
+                (har1->state == STATE_STANDING || har1->state == STATE_CROUCHING || har1->state == STATE_WALKING || har1->state == STATE_STUNNED) &&
+                (har2->state == STATE_STANDING || har2->state == STATE_CROUCHING || har2->state == STATE_WALKING || har2->state == STATE_STUNNED)) {
+            // XXX if the other har is stunned, turn the non stunned HAR to face it, but never turn a stunned HAR
             vec2i pos1, pos2;
             pos1 = object_get_pos(obj_har1);
             pos2 = object_get_pos(obj_har2);
             if(pos1.x > pos2.x) {
-                if(object_get_direction(obj_har1) == OBJECT_FACE_RIGHT) {
-                    object_set_direction(obj_har1, OBJECT_FACE_LEFT);
-                    object_set_direction(obj_har2, OBJECT_FACE_RIGHT);
+                if(object_get_direction(obj_har1) == OBJECT_FACE_RIGHT || object_get_direction(obj_har2) == OBJECT_FACE_LEFT) {
+                    if (har1->state != STATE_STUNNED) {
+                        object_set_direction(obj_har1, OBJECT_FACE_LEFT);
+                    }
+                    if (har2->state != STATE_STUNNED) {
+                        object_set_direction(obj_har2, OBJECT_FACE_RIGHT);
+                    }
                 }
             } else if(pos1.x < pos2.x) {
-                if(object_get_direction(obj_har1) == OBJECT_FACE_LEFT) {
-                    object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
-                    object_set_direction(obj_har2, OBJECT_FACE_LEFT);
+                if(object_get_direction(obj_har1) == OBJECT_FACE_LEFT || object_get_direction(obj_har2) == OBJECT_FACE_RIGHT) {
+                    if (har1->state != STATE_STUNNED) {
+                        object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
+                    }
+                    if (har2->state != STATE_STUNNED) {
+                        object_set_direction(obj_har2, OBJECT_FACE_LEFT);
+                    }
                 }
             }
         }

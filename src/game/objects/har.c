@@ -14,6 +14,7 @@
 #include "resources/animation.h"
 #include "controller/controller.h"
 #include "utils/log.h"
+#include "utils/random.h"
 
 // For debug layer rendering
 #ifdef DEBUGMODE
@@ -66,7 +67,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
 
         // Calculate velocity etc.
         float velx, vely;
-        float rv = (rand() % 100) / 100.0f - 0.5;
+        float rv = rand_int(100) / 100.0f - 0.5;
         velx = 5 * cos(70 + rv);
         vely = -3 * sin(rv);
         if(vely < 0.1 && vely > -0.1)
@@ -213,7 +214,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
     // burning oil
     for(int i = 0; i < amount; i++) {
         // Calculate velocity etc.
-        rv = (rand() % 100) / 100.0f - 0.5;
+        rv = rand_int(100) / 100.0f - 0.5;
         velx = 5 * cos(90 + i-(amount) / 2 + rv);
         vely = -12 * sin(i / amount + rv);
 
@@ -240,7 +241,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
     amount = 2;
     for(int i = 0; i < amount; i++) {
         // Calculate velocity etc.
-        rv = (rand() % 100) / 100.0f - 0.5;
+        rv = rand_int(100) / 100.0f - 0.5;
         velx = 5 * cos(90 + i-(amount) / 2 + rv);
         vely = -12 * sin(i / amount + rv);
 
@@ -250,7 +251,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
 
         // Create the object
         object *scrap = malloc(sizeof(object));
-        int anim_no = rand() % 3 + ANIM_SCRAP_METAL;
+        int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
         object_create(scrap, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(&h->af_data, anim_no)->ani);
         object_set_palette(scrap, object_get_palette(obj), 0);
