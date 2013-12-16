@@ -6,6 +6,7 @@
 #include <shadowdive/sprite_image.h>
 
 #include "utils/log.h"
+#include "utils/random.h"
 #include "audio/music.h"
 #include "video/video.h"
 #include "resources/ids.h"
@@ -279,10 +280,9 @@ void handle_action(scene *scene, int player, int action) {
                         player2->pilot_id = local->pilot_id_b;
                     } else {
                         // randomly pick opponent and HAR
-                        srand(time(NULL));
-                        player2->har_id = HAR_JAGUAR + rand() % 10;
+                        player2->har_id = HAR_JAGUAR + rand_int(10);
                         int i;
-                        while((i = rand() % 10) == local->pilot_id_a) {}
+                        while((i = rand_int(10)) == local->pilot_id_a) {}
                         player2->pilot_id = i;
 
                         player2->colors[0] = local->pilots[player2->pilot_id].colors[0];

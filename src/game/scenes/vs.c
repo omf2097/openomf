@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 #include "utils/log.h"
+#include "utils/random.h"
 #include "video/video.h"
 #include "resources/ids.h"
 #include "game/text/text.h"
@@ -234,7 +235,7 @@ int vs_create(scene *scene) {
         local->arena = 0;
     } else {
         // pick a random arena for 1 player mode
-        local->arena = rand() % 5; // srand was done in melee
+        local->arena = rand_int(5); // srand was done in melee
     }
 
     //ARENA
