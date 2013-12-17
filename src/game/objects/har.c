@@ -494,7 +494,7 @@ void har_tick(object *obj) {
     }
     if(h->flinching) {
         vec2f push = object_get_vel(obj);
-        // The infamous stretson-harrison method
+        // The infamous Harrison-Stetson method
         // XXX TODO is there a non-hardcoded value that we could use?
         push.x = 4.0f * -object_get_direction(obj);
         object_set_vel(obj, push);
@@ -827,7 +827,7 @@ void har_finished(object *obj) {
     } else if ((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance <= 0) {
         h->state = STATE_STUNNED;
         har_set_ani(obj, ANIM_STUNNED, 1);
-        // XXX the harrision-stretson method was applied here
+        // XXX The Harrison-Stetson method was applied here
         ticktimer_add(100, har_stunned_done, obj);
     } else if(h->state != STATE_CROUCHING) {
         // Don't transition to standing state while in midair
