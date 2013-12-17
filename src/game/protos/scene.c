@@ -47,6 +47,7 @@ void scene_init(scene *scene) {
 
     // init shadow buffer
     image_create(&scene->shadow_buffer_img, 320, 200);
+    texture_create(&scene->shadow_buffer_tex);
 
     // Bootstrap animations
     iterator it;
@@ -110,9 +111,12 @@ void scene_render(scene *scene) {
 
 void scene_render_shadows(scene *scene) {
     // draw shadows
-    texture_init_from_img(&scene->shadow_buffer_tex, &scene->shadow_buffer_img);
+    if(texture_is_valid(&scene->shadow_buffer_tex)) {
+        texture_upload(&scene->shadow_buffer_tex, scene->shadow_buffer_img.data);
+    } else {
+        texture_init_from_img(&scene->shadow_buffer_tex, &scene->shadow_buffer_img);
+    }
     video_render_sprite(&scene->shadow_buffer_tex, 0, 0, BLEND_ALPHA_FULL);
-    texture_free(&scene->shadow_buffer_tex);
     image_clear(&scene->shadow_buffer_img, color_create(0,0,0,0));
 }
 
@@ -134,6 +138,8 @@ void scene_free(scene *scene) {
     }
     bk_free(&scene->bk_data);
     object_free(&scene->background);
+    image_free(&scene->shadow_buffer_img);
+    texture_free(&scene->shadow_buffer_tex);
 }
 
 void scene_set_free_cb(scene *scene, scene_free_cb cbfunc) {
