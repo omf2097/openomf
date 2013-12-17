@@ -213,6 +213,8 @@ void arena_free(scene *scene) {
 
 void arena_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
+    game_player *player1 = game_state_get_player(0);
+    game_player *player2 = game_state_get_player(1);
 
     // Handle scrolling score texts
     chr_score_tick(&local->player1_score);
@@ -275,6 +277,20 @@ void arena_tick(scene *scene) {
             }
         }
     }
+
+    // allow enemy HARs to move during a network game
+    ctrl_event *i = player1->ctrl->extra_events;
+    if (i) {
+        do {
+            object_act(game_player_get_har(player1), i->action);
+        } while((i = i->next));
+    }
+    i = player2->ctrl->extra_events;
+    if (i) {
+        do {
+            object_act(game_player_get_har(player2), i->action);
+        } while((i = i->next));
+    }
 }
 
 void arena_input_tick(scene *scene) {
@@ -302,19 +318,6 @@ void arena_input_tick(scene *scene) {
             } while((i = i->next));
         }
         controller_free_chain(p2);
-
-        i = player1->ctrl->extra_events;
-        if (i) {
-            do {
-                object_act(game_player_get_har(player1), i->action);
-            } while((i = i->next));
-        }
-        i = player2->ctrl->extra_events;
-        if (i) {
-            do {
-                object_act(game_player_get_har(player2), i->action);
-            } while((i = i->next));
-        }
     }
 }
 
