@@ -4,7 +4,7 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 
-void textslider_create(component *c, font *font, const char *text, unsigned int positions) {
+void textslider_create(component *c, font *font, const char *text, unsigned int positions, int has_off) {
     component_create(c);
     textslider *tb;
     tb = malloc(sizeof(textslider));
@@ -14,6 +14,7 @@ void textslider_create(component *c, font *font, const char *text, unsigned int 
     tb->dir = 0;
     tb->pos_ = 1;
     tb->pos = &tb->pos_;
+    tb->has_off = has_off;
     tb->positions = positions;
     c->obj = tb;
     c->render = textslider_render;
@@ -35,15 +36,22 @@ void textslider_render(component *c) {
     int xoff;
     sprintf(buf, "%s ", tb->text);
     chars = strlen(buf);
-    for(int i = 0; i < tb->positions; i++) {
-        if (i+1 > *tb->pos) {
-            buf[chars+i] = '|';
-        } else {
-            buf[chars+i] = 127;
+    if (tb->has_off && *tb->pos == 0) {
+        buf[chars] = 'O';
+        buf[chars+1] = 'F';
+        buf[chars+2] = 'F';
+        buf[chars+3] = '\0';
+    } else {
+        for(int i = 0; i < tb->positions; i++) {
+            if (i+1 > *tb->pos) {
+                buf[chars+i] = '|';
+            } else {
+                buf[chars+i] = 127;
+            }
         }
+        // null terminator
+        buf[chars+tb->positions] = '\0';
     }
-    // null terminator
-    buf[chars+tb->positions] = '\0';
     chars = strlen(buf);
     width = chars*tb->font->w;
     xoff = (c->w - width)/2;
@@ -73,7 +81,9 @@ int textslider_event(component *c, SDL_Event *event) {
                 return 0;
             } else  if(event->key.keysym.sym == SDLK_LEFT) {
                 (*tb->pos)--;
-                if (*tb->pos < 1) {
+                if (tb->has_off && *tb->pos <= 0) {
+                    *tb->pos = 0;
+                } else if (*tb->pos < 1) {
                     *tb->pos = 1;
                 }
                 if(c->slide != NULL) {
