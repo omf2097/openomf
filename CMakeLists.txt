@@ -6,7 +6,7 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 set(COMMON_FLAGS "-Wall -std=c99 -pedantic -Werror")
 set(CMAKE_C_FLAGS "${COMMON_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG "${COMMON_FLAGS} -ggdb")
-set(CMAKE_C_FLAGS_RELEASE "${COMMON_FLAGS} -Os -march=native")
+set(CMAKE_C_FLAGS_RELEASE "${COMMON_FLAGS} -O2")
 
 link_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(include/)
