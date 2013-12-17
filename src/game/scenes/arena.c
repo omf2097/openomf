@@ -497,9 +497,9 @@ int arena_create(scene *scene) {
     menu_create(&local->game_menu, 70, 5, 181, 117);
     textbutton_create(&local->title_button, &font_large, "OMF 2097");
     textbutton_create(&local->return_button, &font_large, "RETURN TO GAME");
-    textslider_create(&local->sound_slider, &font_large, "SOUND", 10);
-    textslider_create(&local->music_slider, &font_large, "MUSIC", 10);
-    textslider_create(&local->speed_slider, &font_large, "SPEED", 10);
+    textslider_create(&local->sound_slider, &font_large, "SOUND", 10, 1);
+    textslider_create(&local->music_slider, &font_large, "MUSIC", 10, 1);
+    textslider_create(&local->speed_slider, &font_large, "SPEED", 10, 0);
     textbutton_create(&local->video_button, &font_large, "VIDEO OPTIONS");
     textbutton_create(&local->help_button, &font_large, "HELP");
     textbutton_create(&local->quit_button, &font_large, "QUIT");

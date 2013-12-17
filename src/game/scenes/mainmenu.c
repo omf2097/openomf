@@ -112,8 +112,8 @@ typedef struct mainmenu_local_t {
     component playerone_input_button;
     component playertwo_input_button;
     component video_options_button;
-    component sound_toggle;
-    component music_toggle;
+    component sound_slider;
+    component music_slider;
     component stereo_toggle;
     component config_done_button;
 
@@ -382,6 +382,14 @@ void resolution_toggled(component *c, void *userdata, int pos) {
     }
 }
 
+void menu_music_slide(component *c, void *userdata, int pos) {
+    music_set_volume(pos/10.0f);
+}
+
+void menu_sound_slide(component *c, void *userdata, int pos) {
+    sound_set_volume(pos/10.0f);
+}
+
 /*
 void mainmenu_connect_to_ip(component *c, void *userdata) {
     ENetAddress address;
@@ -453,8 +461,8 @@ void mainmenu_free(scene *scene) {
     textbutton_free(&local->playerone_input_button);
     textbutton_free(&local->playertwo_input_button);
     textbutton_free(&local->video_options_button);
-    textselector_free(&local->sound_toggle);
-    textselector_free(&local->music_toggle);
+    textslider_free(&local->sound_slider);
+    textslider_free(&local->music_slider);
     textselector_free(&local->stereo_toggle);
     textbutton_free(&local->config_done_button);
     menu_free(&local->config_menu);
@@ -838,10 +846,8 @@ int mainmenu_create(scene *scene) {
     textbutton_create(&local->playerone_input_button, &font_large, "PLAYER 1 INPUT");
     textbutton_create(&local->playertwo_input_button, &font_large, "PLAYER 2 INPUT");
     textbutton_create(&local->video_options_button, &font_large, "VIDEO OPTIONS");
-    textselector_create(&local->sound_toggle, &font_large, "SOUND", "OFF");
-    textselector_add_option(&local->sound_toggle, "ON");
-    textselector_create(&local->music_toggle, &font_large, "MUSIC", "OFF");
-    textselector_add_option(&local->music_toggle, "ON");
+    textslider_create(&local->sound_slider, &font_large, "SOUND", 10, 1);
+    textslider_create(&local->music_slider, &font_large, "MUSIC", 10, 1);
     textselector_create(&local->stereo_toggle, &font_large, "STEREO", "NORMAL");
     textselector_add_option(&local->stereo_toggle, "REVERSED");
     textbutton_create(&local->config_done_button, &font_large, "DONE");
@@ -849,8 +855,8 @@ int mainmenu_create(scene *scene) {
     menu_attach(&local->config_menu, &local->playerone_input_button, 11);
     menu_attach(&local->config_menu, &local->playertwo_input_button, 11);
     menu_attach(&local->config_menu, &local->video_options_button, 11);
-    menu_attach(&local->config_menu, &local->sound_toggle, 11);
-    menu_attach(&local->config_menu, &local->music_toggle, 11);
+    menu_attach(&local->config_menu, &local->sound_slider, 11);
+    menu_attach(&local->config_menu, &local->music_slider, 11);
     menu_attach(&local->config_menu, &local->stereo_toggle, 11);
     menu_attach(&local->config_menu, &local->config_done_button, 11);
 
@@ -933,11 +939,11 @@ int mainmenu_create(scene *scene) {
 
     menu_create(&local->gameplay_menu, 165, 5, 151, 119);
     textbutton_create(&local->gameplay_header, &font_large, "GAMEPLAY");
-    textslider_create(&local->speed_slider, &font_large, "SPEED", 10);
+    textslider_create(&local->speed_slider, &font_large, "SPEED", 10, 0);
     textselector_create(&local->fightmode_toggle, &font_large, "FIGHT MODE", "NORMAL");
     textselector_add_option(&local->fightmode_toggle, "HYPER");
-    textslider_create(&local->powerone_slider, &font_large, "POWER 1", 8);
-    textslider_create(&local->powertwo_slider, &font_large, "POWER 2", 8);
+    textslider_create(&local->powerone_slider, &font_large, "POWER 1", 8, 0);
+    textslider_create(&local->powertwo_slider, &font_large, "POWER 2", 8, 0);
     textselector_create(&local->hazards_toggle, &font_large, "HAZARDS", "OFF");
     textselector_add_option(&local->hazards_toggle, "ON");
     textselector_create(&local->cpu_toggle, &font_large, "CPU:", "PUNCHING BAG");
@@ -963,8 +969,10 @@ int mainmenu_create(scene *scene) {
     menu_attach(&local->gameplay_menu, &local->gameplay_done_button, 11);
     
     // sound options
-    textselector_bindvar(&local->sound_toggle, &setting->sound.sound_on);
-    textselector_bindvar(&local->music_toggle, &setting->sound.music_on);
+    local->sound_slider.slide = menu_sound_slide;
+    local->music_slider.slide = menu_music_slide;
+    textslider_bindvar(&local->sound_slider, &setting->sound.sound_vol);
+    textslider_bindvar(&local->music_slider, &setting->sound.music_vol);
     textselector_bindvar(&local->stereo_toggle, &setting->sound.stereo_reversed);
     
     // video options

@@ -13,10 +13,11 @@ struct textslider_t {
     int dir;
     int pos_;
     int *pos;
+    int has_off;
     int positions;
 };
 
-void textslider_create(component *c, font *font, const char *text, unsigned int positions);
+void textslider_create(component *c, font *font, const char *text, unsigned int positions, int has_off);
 void textslider_free(component *c);
 void textslider_render(component *c);
 int textslider_event(component *c, SDL_Event *event);

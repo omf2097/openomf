@@ -134,6 +134,22 @@ void game_state_render() {
         }
     }
 
+    // cast HAR shadows
+    for(int i = 0; i < 2; i++) {
+        if(har[i] != NULL) {
+            object_render_shadow(har[i], &gamestate->sc.shadow_buffer_img);
+        }
+    }
+
+    // cast object shadows (scrap, projectiles, etc)
+    vector_iter_begin(&gamestate->objects, &it);
+    while((robj = iter_next(&it)) != NULL) {
+        object_render_shadow(robj->obj, &gamestate->sc.shadow_buffer_img);
+    }
+
+    // render the shadow laywe
+    scene_render_shadows(&gamestate->sc);
+
     // Render passive HARs here
     for(int i = 0; i < 2; i++) {
         if(har[i] != NULL && !har_is_active(har[i])) {

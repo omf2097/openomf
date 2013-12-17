@@ -84,6 +84,9 @@ void engine_run() {
         return;
     }
 
+    // apply volume settings
+    sound_set_volume(settings_get()->sound.sound_vol/10.0f);
+
     // Game loop
     int frame_start = SDL_GetTicks();
     int omf_wait = 0;
