@@ -322,6 +322,27 @@ void game_state_call_tick() {
     }
 }
 
+void game_state_tick_controllers() {
+    for(int i = 0; i < game_state_get_num_players(); i++) {
+        game_player *gp = game_state_get_player(i);
+        controller *c = game_player_get_ctrl(gp);
+        if(c) {
+            controller_tick(c, &c->extra_events);
+        }
+    }
+}
+
+void game_state_ctrl_events_free() {
+    for(int i = 0; i < game_state_get_num_players(); i++) {
+        game_player *gp = game_state_get_player(i);
+        controller *c = game_player_get_ctrl(gp);
+        if(c) {
+            controller_free_chain(c->extra_events);
+            c->extra_events = NULL;
+        }
+    }
+}
+
 void game_state_tick() {
     // We want to load another scene
     if(gamestate->this_id != gamestate->next_id) {
@@ -340,8 +361,11 @@ void game_state_tick() {
         }
     }
 
-    // Tick input. If console is opened, do not tick the controllers.
-    if(!console_window_is_open()) { scene_input_tick(&gamestate->sc); }
+    // Tick controllers
+    game_state_tick_controllers();
+
+    // Poll input. If console is opened, do not poll the controllers.
+    if(!console_window_is_open()) { scene_input_poll(&gamestate->sc); }
 
     // Tick scene
     scene_tick(&gamestate->sc);
@@ -358,6 +382,9 @@ void game_state_tick() {
     // Tick all objects
     game_state_call_tick();
 
+    // Free extra controller events
+    game_state_ctrl_events_free();
+
     // Increment tick
     gamestate->tick++;
 }
@@ -368,6 +395,10 @@ unsigned int game_state_get_tick() {
 
 game_player* game_state_get_player(int player_id) {
     return &gamestate->players[player_id];
+}
+
+int game_state_get_num_players() {
+    return sizeof(gamestate->players)/sizeof(game_player);
 }
 
 void game_state_free() {

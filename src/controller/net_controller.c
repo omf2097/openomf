@@ -1,6 +1,7 @@
+#include <stdio.h>
+
 #include "controller/net_controller.h"
 #include "utils/log.h"
-#include <stdio.h>
 
 typedef struct wtf_t {
     ENetHost *host;
@@ -38,6 +39,7 @@ int net_controller_tick(controller *ctrl, ctrl_event **ev) {
     ENetEvent event;
     wtf *data = ctrl->data;
     ENetHost *host = data->host;
+    int handled = 0;
     if (enet_host_service(host, &event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
@@ -47,6 +49,7 @@ int net_controller_tick(controller *ctrl, ctrl_event **ev) {
                     int action = atoi((char*)event.packet->data+1);
                     DEBUG("sending action %d to controller", action);
                     controller_cmd(ctrl, action, ev);
+                    handled = 1;
                 } else {
                     // dispatch it to the HAR
                     /*har_parse_command(ctrl->har, (char*)event.packet->data);*/
@@ -62,11 +65,10 @@ int net_controller_tick(controller *ctrl, ctrl_event **ev) {
                 break;
         }
     }
+    if(!handled) {
+        controller_cmd(ctrl, ACT_STOP, ev);
+    }
     return 0;
-}
-
-int net_controller_handle(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
-    return 1;
 }
 
 void har_hook(char* buf, void *userdata) {
@@ -115,7 +117,6 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer) {
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
-    ctrl->handle_fun = &net_controller_handle;
     ctrl->har_hook = &har_hook;
     ctrl->controller_hook = &controller_hook;
 }

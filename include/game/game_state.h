@@ -32,6 +32,7 @@ scene* game_state_get_scene();
 int game_state_is_running();
 void game_state_set_next(unsigned int next_scene_id);
 game_player* game_state_get_player(int player_id);
+int game_state_get_num_players();
 int game_state_ms_per_tick();
 
 void game_state_add_object(object *obj, int layer);

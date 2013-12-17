@@ -321,6 +321,24 @@ void mainmenu_enter_menu_video_confirm(component *c, void *userdata) {
     local->current_menu = &local->video_confirm_menu;
 }
 
+void mainmenu_enter_menu_net(component *c, void *userdata) {
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
+    local->mstack[local->mstack_pos++] = &local->net_menu;
+    local->current_menu = &local->net_menu;
+}
+
+void mainmenu_enter_menu_connect(component *c, void *userdata) {
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
+    local->mstack[local->mstack_pos++] = &local->connect_menu;
+    local->current_menu = &local->connect_menu;
+}
+
+void mainmenu_enter_menu_listen(component *c, void *userdata) {
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
+    local->mstack[local->mstack_pos++] = &local->listen_menu;
+    local->current_menu = &local->listen_menu;
+}
+
 void mainmenu_prev_menu(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     local->mstack[--local->mstack_pos] = NULL;
@@ -390,57 +408,60 @@ void menu_sound_slide(component *c, void *userdata, int pos) {
     sound_set_volume(pos/10.0f);
 }
 
-/*
+
 void mainmenu_connect_to_ip(component *c, void *userdata) {
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
     ENetAddress address;
-    char *addr = textinput_value(&connect_ip_input);
-    host = enet_host_create(NULL, 1, 2, 0, 0);
-    role = ROLE_CLIENT;
-    if (host == NULL) {
+    char *addr = textinput_value(&local->connect_ip_input);
+    local->host = enet_host_create(NULL, 1, 2, 0, 0);
+    local->role = ROLE_CLIENT;
+    if (local->host == NULL) {
         DEBUG("Failed to initialize ENet client");
         return;
     }
-    connect_ip_input.disabled = 1;
-    connect_ip_button.disabled = 1;
-    menu_select(&connect_menu, &connect_ip_cancel_button);
+    local->connect_ip_input.disabled = 1;
+    local->connect_ip_button.disabled = 1;
+    menu_select(&local->connect_menu, &local->connect_ip_cancel_button);
 
     enet_address_set_host(&address, addr);
     address.port = 1337;
 
-    ENetPeer *peer = enet_host_connect(host, &address, 2, 0);
+    ENetPeer *peer = enet_host_connect(local->host, &address, 2, 0);
 
     if (peer == NULL) {
         DEBUG("Unable to connect to %s", addr);
-        enet_host_destroy(host);
-        host = NULL;
+        enet_host_destroy(local->host);
+        local->host = NULL;
     }
-    time(&connect_start);
+    time(&local->connect_start);
 }
 
 void mainmenu_cancel_connection(component *c, void *userdata) {
-    if (host) {
-        enet_host_destroy(host);
-        host = NULL;
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
+    if (local->host) {
+        enet_host_destroy(local->host);
+        local->host = NULL;
     }
-    connect_ip_input.disabled = 0;
-    connect_ip_button.disabled = 0;
-    menu_select(&connect_menu, &connect_ip_button);
+    local->connect_ip_input.disabled = 0;
+    local->connect_ip_button.disabled = 0;
+    menu_select(&local->connect_menu, &local->connect_ip_button);
     mainmenu_prev_menu(c, userdata);
 }
 
 void mainmenu_listen_for_connections(component *c, void *userdata) {
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
     ENetAddress address;
     address.host = ENET_HOST_ANY;
     address.port = 1337;
-    host = enet_host_create(&address, 1, 2, 0, 0);
-    role = ROLE_SERVER;
-    if (host == NULL) {
+    local->host = enet_host_create(&address, 1, 2, 0, 0);
+    local->role = ROLE_SERVER;
+    if (local->host == NULL) {
         DEBUG("Failed to initialize ENet client");
         return;
     }
-    mainmenu_enter_menu(c, userdata);
+    mainmenu_enter_menu_listen(c, userdata);
 }
-*/
+
 
 void mainmenu_free(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
@@ -499,7 +520,7 @@ void mainmenu_free(scene *scene) {
     textbutton_free(&local->input_presskey_header);
     menu_free(&local->input_presskey_menu);
 
-    /*textbutton_free(&local->net_header);
+    textbutton_free(&local->net_header);
     textbutton_free(&local->net_connect_button);
     textbutton_free(&local->net_listen_button);
     textbutton_free(&local->net_done_button);
@@ -512,7 +533,7 @@ void mainmenu_free(scene *scene) {
 
     textbutton_free(&local->listen_button);
     textbutton_free(&local->listen_cancel_button);
-    menu_free(&local->listen_menu);*/
+    menu_free(&local->listen_menu);
 
     settings_save();
 
@@ -604,30 +625,32 @@ void mainmenu_tick(scene *scene) {
         }
     }
 
-/*
+
     // Handle network
-    if (host) {
+    if (local->host) {
         ENetEvent event;
-        if (enet_host_service(host, &event, 0) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
+        if (enet_host_service(local->host, &event, 0) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
             ENetPacket * packet = enet_packet_create("0", 2,  ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(event.peer, 0, packet);
-            enet_host_flush(host);
-            if (role == ROLE_SERVER) {
+            enet_host_flush(local->host);
+            if (local->role == ROLE_SERVER) {
                 DEBUG("client connected!");
                 controller *player1_ctrl, *player2_ctrl;
                 keyboard_keys *keys;
+                game_player *p1 = game_state_get_player(0);
+                game_player *p2 = game_state_get_player(1);
 
-                scene->player1.har_id = HAR_JAGUAR;
-                scene->player1.player_id = 0;
-                scene->player2.har_id = HAR_JAGUAR;
-                scene->player2.player_id = 0;
+                p1->har_id = HAR_JAGUAR;
+                p1->pilot_id = 0;
+                p2->har_id = HAR_JAGUAR;
+                p2->pilot_id = 0;
 
                 player1_ctrl = malloc(sizeof(controller));
                 controller_init(player1_ctrl);
-                player1_ctrl->har = scene->player1.har;
+                player1_ctrl->har = p1->har;
                 player2_ctrl = malloc(sizeof(controller));
                 controller_init(player2_ctrl);
-                player2_ctrl->har = scene->player2.har;
+                player2_ctrl->har = p2->har;
 
                 // Player 1 controller -- Keyboard
                 keys = malloc(sizeof(keyboard_keys));
@@ -638,34 +661,36 @@ void mainmenu_tick(scene *scene) {
                 keys->punch = SDL_SCANCODE_RETURN;
                 keys->kick = SDL_SCANCODE_RSHIFT;
                 keyboard_create(player1_ctrl, keys);
-                scene_set_player1_ctrl(scene, player1_ctrl);
+                game_player_set_ctrl(p1, player1_ctrl);
 
                 // Player 2 controller -- Network
-                net_controller_create(player2_ctrl, host, event.peer);
-                scene_set_player2_ctrl(scene, player2_ctrl);
-                host = NULL;
-                scene->player2.selectable = 1;
-                scene->next_id = SCENE_MELEE;
-            } else if (role == ROLE_CLIENT) {
+                net_controller_create(player2_ctrl, local->host, event.peer);
+                game_player_set_ctrl(p2, player2_ctrl);
+                local->host = NULL;
+                game_player_set_selectable(p2, 1);
+                game_state_set_next(SCENE_MELEE);
+            } else if (local->role == ROLE_CLIENT) {
                 DEBUG("connected to server!");
                 controller *player1_ctrl, *player2_ctrl;
                 keyboard_keys *keys;
+                game_player *p1 = game_state_get_player(0);
+                game_player *p2 = game_state_get_player(1);
 
-                scene->player1.har_id = HAR_JAGUAR;
-                scene->player1.player_id = 0;
-                scene->player2.har_id = HAR_JAGUAR;
-                scene->player2.player_id = 0;
+                p1->har_id = HAR_JAGUAR;
+                p1->pilot_id = 0;
+                p2->har_id = HAR_JAGUAR;
+                p2->pilot_id = 0;
 
                 player1_ctrl = malloc(sizeof(controller));
                 controller_init(player1_ctrl);
-                player1_ctrl->har = scene->player1.har;
+                player1_ctrl->har = p1->har;
                 player2_ctrl = malloc(sizeof(controller));
                 controller_init(player2_ctrl);
-                player2_ctrl->har = scene->player2.har;
+                player2_ctrl->har = p2->har;
 
                 // Player 1 controller -- Network
-                net_controller_create(player1_ctrl, host, event.peer);
-                scene_set_player1_ctrl(scene, player1_ctrl);
+                net_controller_create(player1_ctrl, local->host, event.peer);
+                game_player_set_ctrl(p1, player1_ctrl);
 
                 // Player 2 controller -- Keyboard
                 keys = malloc(sizeof(keyboard_keys));
@@ -676,19 +701,19 @@ void mainmenu_tick(scene *scene) {
                 keys->punch = SDL_SCANCODE_RETURN;
                 keys->kick = SDL_SCANCODE_RSHIFT;
                 keyboard_create(player2_ctrl, keys);
-                scene_set_player2_ctrl(scene, player2_ctrl);
-                host = NULL;
-                scene->player2.selectable = 1;
-                scene->next_id = SCENE_MELEE;
+                game_player_set_ctrl(p2, player2_ctrl);
+                local->host = NULL;
+                game_player_set_selectable(p2, 1);
+                game_state_set_next(SCENE_MELEE);
             }
         } else {
-            if (role == ROLE_CLIENT && difftime(time(NULL), connect_start) > 5.0) {
+            if (local->role == ROLE_CLIENT && difftime(time(NULL), local->connect_start) > 5.0) {
                 DEBUG("connection timed out");
 
-                mainmenu_cancel_connection(&connect_ip_cancel_button, NULL);
+                mainmenu_cancel_connection(&local->connect_ip_cancel_button, scene);
             }
         }
-    }*/
+    }
 }
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
@@ -771,7 +796,7 @@ int mainmenu_create(scene *scene) {
     local->tourn_button.disabled = 0;
     local->config_button.disabled = 0;
     local->gameplay_button.disabled = 0;
-    local->net_button.disabled = 1;
+    local->net_button.disabled = 0;
     local->help_button.disabled = 1;
     local->demo_button.disabled = 1;
     local->scoreboard_button.disabled = 1;
@@ -787,12 +812,12 @@ int mainmenu_create(scene *scene) {
     local->tourn_button.click = mainmenu_tourn;
     local->config_button.userdata = (void*)scene;
     local->config_button.click = mainmenu_enter_menu_config;
-    //local->net_button.userdata = (void*)&local->net_menu;
-    //local->net_button.click = mainmenu_enter_menu;
+    local->net_button.userdata = (void*)scene;
+    local->net_button.click = mainmenu_enter_menu_net;
     local->gameplay_button.userdata = (void*)scene;
     local->gameplay_button.click = mainmenu_enter_menu_gameplay;
 
-/*
+
     // network play menu
     menu_create(&local->net_menu, 165, 5, 151, 119);
     textbutton_create(&local->net_header, &font_large, "NETWORK PLAY");
@@ -804,15 +829,16 @@ int mainmenu_create(scene *scene) {
     menu_attach(&local->net_menu, &local->net_listen_button, 55),
     menu_attach(&local->net_menu, &local->net_done_button, 11),
 
-    local->net_listen_button.userdata = (void*)&local->listen_menu;
+    local->net_listen_button.userdata = scene;
     local->net_listen_button.click = mainmenu_listen_for_connections;
 
     local->net_header.disabled = 1;
     menu_select(&local->net_menu, &local->net_connect_button);
 
-    local->net_connect_button.userdata = (void*)&local->connect_menu;
-    local->net_connect_button.click = mainmenu_enter_menu;
+    local->net_connect_button.userdata = scene;
+    local->net_connect_button.click = mainmenu_enter_menu_connect;
 
+    local->net_done_button.userdata = scene;
     local->net_done_button.click = mainmenu_prev_menu;
 
     // connect menu
@@ -824,9 +850,10 @@ int mainmenu_create(scene *scene) {
     menu_attach(&local->connect_menu, &local->connect_ip_button, 11),
     menu_attach(&local->connect_menu, &local->connect_ip_cancel_button, 11),
 
-    local->connect_ip_button.userdata = (void*)&local->connect_menu;
+    local->connect_ip_button.userdata = scene;
     local->connect_ip_button.click = mainmenu_connect_to_ip;
 
+    local->connect_ip_cancel_button.userdata = scene;
     local->connect_ip_cancel_button.click = mainmenu_cancel_connection;
 
     // listen menu
@@ -838,8 +865,9 @@ int mainmenu_create(scene *scene) {
     local->listen_button.disabled = 1;
     menu_select(&local->listen_menu, &local->listen_cancel_button);
 
+    local->listen_cancel_button.userdata = scene;
     local->listen_cancel_button.click = mainmenu_cancel_connection;
-*/
+
     // create configuration menu
     menu_create(&local->config_menu, 165, 5, 151, 119);
     textbutton_create(&local->config_header, &font_large, "CONFIGURATION");

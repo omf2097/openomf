@@ -156,7 +156,26 @@ void melee_free(scene *scene) {
 
 void melee_tick(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
+    game_player *player1 = game_state_get_player(0);
     game_player *player2 = game_state_get_player(1);
+    ctrl_event *i = NULL;
+
+    // Handle extra controller inputs
+    i = player1->ctrl->extra_events;
+    if (i) {
+        do {
+            handle_action(scene, 1, i->action);
+        } while((i = i->next));
+        DEBUG("done");
+    }
+    i = player2->ctrl->extra_events;
+    if (i) {
+        do {
+            handle_action(scene, 2, i->action);
+        } while((i = i->next));
+        DEBUG("done");
+    }
+
     if(!local->pulsedir) {
         local->ticks++;
     } else {
@@ -469,7 +488,11 @@ int melee_create(scene *scene) {
     memset(local, 0, sizeof(melee_local));
     scene_set_userdata(scene, local);
 
+    game_player *player1 = game_state_get_player(0);
     game_player *player2 = game_state_get_player(1);
+
+    controller *player1_ctrl = game_player_get_ctrl(player1);
+    controller *player2_ctrl = game_player_get_ctrl(player2);
 
     palette *mpal = bk_get_palette(&scene->bk_data, 0);
     local->player1_pal = palette_copy(mpal);
@@ -568,13 +591,15 @@ int melee_create(scene *scene) {
     texture_init(&local->select_hilight, bitmap, 51, 36);
 
     // set up the magic controller hooks
-    /*if (scene->player1.ctrl->type == CTRL_TYPE_NETWORK) {*/
-        /*controller_add_hook(scene->player2.ctrl, scene->player1.ctrl, scene->player1.ctrl->controller_hook);*/
-    /*}*/
+    if(player1_ctrl && player2_ctrl) {
+        if(player1_ctrl->type == CTRL_TYPE_NETWORK) {
+            controller_add_hook(player2_ctrl, player1_ctrl, player1_ctrl->controller_hook);
+        }
 
-    /*if (scene->player2.ctrl->type == CTRL_TYPE_NETWORK) {*/
-        /*controller_add_hook(scene->player1.ctrl, scene->player2.ctrl, scene->player2.ctrl->controller_hook);*/
-    /*}*/
+        if (player2_ctrl->type == CTRL_TYPE_NETWORK) {
+            controller_add_hook(player1_ctrl, player2_ctrl, player2_ctrl->controller_hook);
+        }
+    }
 
     animation *ani;
     sprite *spr;

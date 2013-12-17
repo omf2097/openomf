@@ -15,7 +15,7 @@ void joystick_free(controller *ctrl) {
     free(k);
 }
 
-int joystick_tick(controller *ctrl, ctrl_event **ev) {
+int joystick_poll(controller *ctrl, ctrl_event **ev) {
     joystick *k = ctrl->data;
 
     /*
@@ -138,7 +138,7 @@ int joystick_tick(controller *ctrl, ctrl_event **ev) {
     return 0;
 }
 
-int joystick_handle(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
+int joystick_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
     // Do not handle joystick here since it makes the movements unresponsive
     //if (event->type == SDL_KEYUP && (event->key.keysym.sym == k->keys->kick || event->key.keysym.sym == k->keys->punch)) {
     //    return 1;
@@ -146,7 +146,7 @@ int joystick_handle(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
     //if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) {
 
     //}
-    joystick_tick(ctrl, ev);
+    joystick_poll(ctrl, ev);
     return 0;
 }
 
@@ -155,8 +155,8 @@ void joystick_create(controller *ctrl, int joystick_id) {
     /*k->keys = keys;*/
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_GAMEPAD;
-    ctrl->tick_fun = &joystick_tick;
-    ctrl->handle_fun = &joystick_handle;
+    ctrl->poll_fun = &joystick_poll;
+    ctrl->event_fun = &joystick_event;
 
     k->joy = SDL_JoystickOpen(joystick_id);
 

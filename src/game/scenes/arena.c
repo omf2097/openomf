@@ -285,18 +285,8 @@ void arena_input_tick(scene *scene) {
 
     if(!local->menu_visible) {
         ctrl_event *p1 = NULL, *p2 = NULL, *i;
-        if(controller_tick(player1->ctrl, &p1) ||
-                controller_tick(player2->ctrl, &p2)) {
-            // one of the controllers bailed
-
-            if(player1->ctrl->type == CTRL_TYPE_NETWORK) {
-                net_controller_free(player1->ctrl);
-            }
-
-            if(player2->ctrl->type == CTRL_TYPE_NETWORK) {
-                net_controller_free(player2->ctrl);
-            }
-        }
+        controller_poll(player1->ctrl, &p1);
+        controller_poll(player2->ctrl, &p2);
 
         i = p1;
         if (i) {
@@ -312,6 +302,19 @@ void arena_input_tick(scene *scene) {
             } while((i = i->next));
         }
         controller_free_chain(p2);
+
+        i = player1->ctrl->extra_events;
+        if (i) {
+            do {
+                object_act(game_player_get_har(player1), i->action);
+            } while((i = i->next));
+        }
+        i = player2->ctrl->extra_events;
+        if (i) {
+            do {
+                object_act(game_player_get_har(player2), i->action);
+            } while((i = i->next));
+        }
     }
 }
 
@@ -593,7 +596,7 @@ int arena_create(scene *scene) {
     scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
     scene_set_tick_cb(scene, arena_tick);
-    scene_set_input_tick_cb(scene, arena_input_tick);
+    scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
 
     // All done!
