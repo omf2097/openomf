@@ -10,6 +10,7 @@
 typedef struct game_state_t {
     unsigned int run;
     unsigned int this_id, next_id;
+    unsigned int tick;
     scene sc;
     vector objects;
     game_player players[2];
@@ -26,6 +27,7 @@ void game_state_free();
 int game_state_handle_event(SDL_Event *event);
 void game_state_render();
 void game_state_tick();
+unsigned int game_state_get_tick();
 scene* game_state_get_scene();
 int game_state_is_running();
 void game_state_set_next(unsigned int next_scene_id);

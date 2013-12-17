@@ -30,6 +30,7 @@ typedef struct {
 int game_state_create() {
     gamestate = malloc(sizeof(game_state));
     gamestate->run = 1;
+    gamestate->tick = 0;
     vector_create(&gamestate->objects, sizeof(render_obj));
     int nscene = SCENE_INTRO;
     if(scene_create(&gamestate->sc, nscene)) {
@@ -356,6 +357,13 @@ void game_state_tick() {
 
     // Tick all objects
     game_state_call_tick();
+
+    // Increment tick
+    gamestate->tick++;
+}
+
+unsigned int game_state_get_tick() {
+    return gamestate->tick;
 }
 
 game_player* game_state_get_player(int player_id) {
