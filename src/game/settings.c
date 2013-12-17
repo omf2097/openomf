@@ -46,9 +46,6 @@ const field f_video[] = {
 };
 
 const field f_sound[] = {
-    F_BOOL(settings_sound, sound_on,        1),
-    F_BOOL(settings_sound, music_on,        1),
-    F_BOOL(settings_sound, stereo_on,       1),
     F_BOOL(settings_sound, stereo_reversed, 0),
     F_INT(settings_sound,  sound_vol,       5),
     F_INT(settings_sound,  music_vol,       5),
