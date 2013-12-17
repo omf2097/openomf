@@ -34,6 +34,7 @@ void object_create(object *obj, vec2i pos, vec2f vel) {
     obj->cur_remap = 0;
     obj->halt = 0;
     obj->stride = 1;
+    obj->cast_shadow = 0;
     player_create(obj);
 
     // Callbacks & userdata
@@ -243,6 +244,64 @@ void object_render_neutral(object *obj) {
     if(obj->cur_sprite == NULL) return;
     object_check_texture(obj);
     video_render_background(obj->cur_texture);
+}
+
+// Renders sprite's shadow to a shadow buffer
+void object_render_shadow(object *obj, image *shadow_buffer) {
+    if(obj->cur_sprite == NULL || !obj->cast_shadow) {
+        return;
+    }
+    sd_vga_image *vga = (sd_vga_image*)obj->cur_sprite->raw_sprite;
+    char *stencil = vga->stencil;
+    player_sprite_state *rstate = &obj->sprite_state;
+    int w = vga->w;
+    int h = vga->h;
+    int y = 190;
+    int x = obj->pos.x + obj->cur_sprite->pos.x;
+    int flipmode = rstate->flipmode;
+    if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+        x = obj->pos.x - obj->cur_sprite->pos.x - object_get_size(obj).x;
+        flipmode ^= FLIP_HORIZONTAL;
+    }
+
+    ///TODO smarter code to make this less branchy on flipmode
+    if (flipmode & FLIP_VERTICAL) {
+        // only render every third line of the sprite, to emulate the shadow being cast onto the floor
+        for (int i = 0; i < h; i+=3) {
+            y--;
+            for (int j = 0; j < w; j++) {
+
+                if (stencil[(i*w)+j]) {
+                    switch(flipmode) {
+                        case FLIP_VERTICAL:
+                            image_set_pixel(shadow_buffer, x+j, y, color_create(0,0,0,100));
+                            break;
+                        case FLIP_VERTICAL|FLIP_HORIZONTAL:
+                            image_set_pixel(shadow_buffer, x+(w-j), y, color_create(0,0,0,100));
+                            break;
+                    }
+                }
+            }
+        }
+    } else {
+        // only render every third line of the sprite, to emulate the shadow being cast onto the floor
+        for (int i = h-1; i >= 0; i-=3) {
+            y--;
+            for (int j = 0; j < w; j++) {
+                if (stencil[(i*w)+j]) {
+                    switch(flipmode) {
+                        case FLIP_NONE:
+                            image_set_pixel(shadow_buffer, x+j, y, color_create(0,0,0,100));
+                            break;
+                        case FLIP_HORIZONTAL:
+                            image_set_pixel(shadow_buffer, x+(w-j), y, color_create(0,0,0,100));
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 void object_act(object *obj, int action) {

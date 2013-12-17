@@ -108,6 +108,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         // To avoid projectile-to-projectile collisions, set them to same group
         object_set_group(obj, GROUP_PROJECTILE); 
         object_set_repeat(obj, 0);
+        obj->cast_shadow = 1;
         object_set_direction(obj, object_get_direction(parent));
         projectile_create(obj);
         game_state_add_object(obj, RENDER_LAYER_MIDDLE);
@@ -261,6 +262,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_set_gravity(scrap, 1);
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
+        scrap->cast_shadow = 1;
         scrap_create(scrap);
         game_state_add_object(scrap, RENDER_LAYER_TOP);
     }
@@ -904,6 +906,7 @@ int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
     object_set_stl(obj, local->af_data.sound_translation_table);
+    obj->cast_shadow = 1;
 
     // New object spawner callback
     object_set_spawn_cb(obj, cb_har_spawn_object, local);

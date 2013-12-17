@@ -45,6 +45,9 @@ void scene_init(scene *scene) {
     object_select_sprite(&scene->background, 0);
     object_set_palette(&scene->background, bk_get_palette(&scene->bk_data, 0), 0);
 
+    // init shadow buffer
+    image_create(&scene->shadow_buffer_img, 320, 200);
+
     // Bootstrap animations
     iterator it;
     hashmap_iter_begin(&scene->bk_data.infos, &it);
@@ -99,9 +102,18 @@ void scene_render_overlay(scene *scene) {
 
 void scene_render(scene *scene) {
     object_render_neutral(&scene->background);
+
     if(scene->render != NULL) {
         scene->render(scene);
     }
+}
+
+void scene_render_shadows(scene *scene) {
+    // draw shadows
+    texture_init_from_img(&scene->shadow_buffer_tex, &scene->shadow_buffer_img);
+    video_render_sprite(&scene->shadow_buffer_tex, 0, 0, BLEND_ALPHA_FULL);
+    texture_free(&scene->shadow_buffer_tex);
+    image_clear(&scene->shadow_buffer_img, color_create(0,0,0,0));
 }
 
 void scene_tick(scene *scene) {

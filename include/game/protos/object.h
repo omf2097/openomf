@@ -64,6 +64,7 @@ struct object_t {
     int cur_remap;
     int halt;
     int stride;
+    int cast_shadow;
     texture *cur_texture;
 
     player_sprite_state sprite_state;
@@ -83,6 +84,7 @@ struct object_t {
 void object_create(object *obj, vec2i pos, vec2f vel);
 void object_render(object *obj);
 void object_render_neutral(object *obj);
+void object_render_shadow(object *obj, image *shadow_buffer);
 void object_debug(object *obj);
 void object_tick(object *obj);
 void object_set_tick_pos(object *obj, int tick);
