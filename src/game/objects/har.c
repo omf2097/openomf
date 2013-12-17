@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "game/ticktimer.h"
 #include "game/objects/har.h"
 #include "game/objects/scrap.h"
 #include "game/objects/projectile.h"
@@ -801,6 +802,18 @@ void har_act(object *obj, int act_type) {
     }
 }
 
+void har_stunned_done(void *userdata) {
+    object *har_obj = userdata;
+    har *h = object_get_userdata(har_obj);
+
+    if (h->state == STATE_STUNNED) {
+        // refill endurance
+        h->endurance = h->endurance_max;
+        h->state = STATE_STANDING;
+        har_set_ani(har_obj, ANIM_IDLE, 1);
+    }
+}
+
 void har_finished(object *obj) {
     har *h = object_get_userdata(obj);
     if (h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
@@ -814,6 +827,8 @@ void har_finished(object *obj) {
     } else if ((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance <= 0) {
         h->state = STATE_STUNNED;
         har_set_ani(obj, ANIM_STUNNED, 1);
+        // XXX the harrision-stretson method was applied here
+        ticktimer_add(100, har_stunned_done, obj);
     } else if(h->state != STATE_CROUCHING) {
         // Don't transition to standing state while in midair
         if(h->state != STATE_JUMPING) { h->state = STATE_STANDING; }

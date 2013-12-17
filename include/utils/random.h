@@ -10,6 +10,7 @@ struct random_t {
 };
 
 void random_seed(struct random_t *r, uint32_t seed);
+uint32_t random_get_seed(struct random_t *r);
 
 /* Return a random integer in 0 <= r < upperbound */
 uint32_t random_int(struct random_t *r, uint32_t upperbound);
@@ -17,8 +18,9 @@ uint32_t random_int(struct random_t *r, uint32_t upperbound);
 /* Return a random integer in 0 <= r <= UINT_MAX */
 uint32_t random_intmax(struct random_t *r);
 
+
 /* Same as the above but keeps an internal state
- * Use as a replacement of rand()
+ * Use as a replacement for rand()
 */
 void rand_seed(uint32_t seed);
 uint32_t rand_get_seed(void);
