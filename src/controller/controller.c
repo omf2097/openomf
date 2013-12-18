@@ -9,8 +9,10 @@ typedef struct hook_function_t {
 
 void controller_init(controller *ctrl) {
     list_create(&ctrl->hooks);
+    ctrl->extra_events = NULL;
     ctrl->har = NULL;
-    ctrl->handle_fun = NULL;
+    ctrl->event_fun = NULL;
+    ctrl->poll_fun = NULL;
     ctrl->tick_fun = NULL;
 }
 
@@ -56,7 +58,7 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
         (*ev)->next = NULL;
     } else {
         i = *ev;
-        while (i->next) {}
+        while (i->next) { i = i->next; }
         i->next = malloc(sizeof(ctrl_event));
         i->next->action = action;
         i->next->next = NULL;
@@ -64,8 +66,8 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
 }
 
 int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
-    if(ctrl->handle_fun != NULL) {
-        return ctrl->handle_fun(ctrl, event, ev);
+    if(ctrl->event_fun != NULL) {
+        return ctrl->event_fun(ctrl, event, ev);
     }
     return 0;
 }
@@ -73,6 +75,13 @@ int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
 int controller_tick(controller *ctrl, ctrl_event **ev) {
     if(ctrl->tick_fun != NULL) {
         return ctrl->tick_fun(ctrl, ev);
+    }
+    return 0;
+}
+
+int controller_poll(controller *ctrl, ctrl_event **ev) {
+    if(ctrl->poll_fun != NULL) {
+        return ctrl->poll_fun(ctrl, ev);
     }
     return 0;
 }

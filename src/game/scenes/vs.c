@@ -118,7 +118,16 @@ void vs_handle_action(scene *scene, int action) {
 }
 
 void vs_tick(scene *scene) {
-    // TODO remove this?
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    ctrl_event *i = NULL;
+    // Handle extra controller inputs
+    i = player1->ctrl->extra_events;
+    if (i) {
+        do {
+            vs_handle_action(scene, i->action);
+        } while((i = i->next));
+        DEBUG("done");
+    }
 }
 
 int vs_event(scene *scene, SDL_Event *event) {

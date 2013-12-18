@@ -8,7 +8,7 @@ void keyboard_free(controller *ctrl) {
     free(k);
 }
 
-int keyboard_tick(controller *ctrl, ctrl_event **ev) {
+int keyboard_poll(controller *ctrl, ctrl_event **ev) {
     keyboard *k = ctrl->data;
     const unsigned char *state = SDL_GetKeyboardState(NULL);
     int handled = 0;
@@ -54,7 +54,7 @@ int keyboard_tick(controller *ctrl, ctrl_event **ev) {
     return 0;
 }
 
-int keyboard_handle(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
+int keyboard_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
     keyboard *k = ctrl->data;
     SDL_Scancode sc = event->key.keysym.scancode;
 
@@ -91,7 +91,7 @@ void keyboard_create(controller *ctrl, keyboard_keys *keys) {
     k->keys = keys;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_KEYBOARD;
-    ctrl->tick_fun = &keyboard_tick;
-    ctrl->handle_fun = &keyboard_handle;
+    ctrl->poll_fun = &keyboard_poll;
+    ctrl->event_fun = &keyboard_event;
     /*controller_add_hook(ctrl, &hook);*/
 }

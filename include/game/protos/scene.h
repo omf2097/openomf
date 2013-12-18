@@ -17,7 +17,7 @@ typedef int (*scene_event_cb)(scene *scene, SDL_Event *event);
 typedef void (*scene_render_cb)(scene *scene);
 typedef void (*scene_render_overlay_cb)(scene *scene);
 typedef void (*scene_tick_cb)(scene *scene);
-typedef void (*scene_input_tick_cb)(scene *scene);
+typedef void (*scene_input_poll_cb)(scene *scene);
 typedef int (*scene_startup_cb)(scene *scene, int anim_id);
 
 struct scene_t {
@@ -31,7 +31,7 @@ struct scene_t {
     scene_render_cb render;
     scene_render_overlay_cb render_overlay;
     scene_tick_cb tick;
-    scene_input_tick_cb input_tick;
+    scene_input_poll_cb input_poll;
     scene_startup_cb startup;
     image shadow_buffer_img;
     texture shadow_buffer_tex;
@@ -45,7 +45,7 @@ void scene_render_overlay(scene *scene);
 void scene_render(scene *scene);
 void scene_render_shadows(scene *scene);
 void scene_tick(scene *scene);
-void scene_input_tick(scene *scene);
+void scene_input_poll(scene *scene);
 int scene_startup(scene *scene, int id);
 
 void scene_set_userdata(scene *scene, void *userdata);
@@ -56,7 +56,7 @@ void scene_set_event_cb(scene *scene, scene_event_cb cbfunc);
 void scene_set_render_cb(scene *scene, scene_render_cb cbfunc);
 void scene_set_render_overlay_cb(scene *scene, scene_render_overlay_cb cbfunc);
 void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc);
-void scene_set_input_tick_cb(scene *scene, scene_input_tick_cb cbfunc);
+void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc);
 void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc);
 
 #endif // _SCENE_H

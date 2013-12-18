@@ -217,6 +217,9 @@ void arena_free(scene *scene) {
 
 void arena_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
+    game_state *gs = scene->gs;
+    game_player *player1 = game_state_get_player(gs, 0);
+    game_player *player2 = game_state_get_player(gs, 1);
 
     // Handle scrolling score texts
     chr_score_tick(&local->player1_score);
@@ -279,6 +282,20 @@ void arena_tick(scene *scene) {
             }
         }
     }
+
+    // allow enemy HARs to move during a network game
+    ctrl_event *i = player1->ctrl->extra_events;
+    if (i) {
+        do {
+            object_act(game_player_get_har(player1), i->action);
+        } while((i = i->next));
+    }
+    i = player2->ctrl->extra_events;
+    if (i) {
+        do {
+            object_act(game_player_get_har(player2), i->action);
+        } while((i = i->next));
+    }
 }
 
 void arena_input_tick(scene *scene) {
@@ -289,18 +306,8 @@ void arena_input_tick(scene *scene) {
 
     if(!local->menu_visible) {
         ctrl_event *p1 = NULL, *p2 = NULL, *i;
-        if(controller_tick(player1->ctrl, &p1) ||
-                controller_tick(player2->ctrl, &p2)) {
-            // one of the controllers bailed
-
-            if(player1->ctrl->type == CTRL_TYPE_NETWORK) {
-                net_controller_free(player1->ctrl);
-            }
-
-            if(player2->ctrl->type == CTRL_TYPE_NETWORK) {
-                net_controller_free(player2->ctrl);
-            }
-        }
+        controller_poll(player1->ctrl, &p1);
+        controller_poll(player2->ctrl, &p2);
 
         i = p1;
         if (i) {
@@ -597,7 +604,7 @@ int arena_create(scene *scene) {
     scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
     scene_set_tick_cb(scene, arena_tick);
-    scene_set_input_tick_cb(scene, arena_input_tick);
+    scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
 
     // All done!
