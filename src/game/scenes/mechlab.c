@@ -58,7 +58,7 @@ void panelbutton_create(object *pb, unsigned int npb, scene *scene, unsigned int
     for(int i = 0;i < npb; i++) {
         sprite *button_spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, anim)->ani, i));
         animation *button_ani = create_animation_from_single(button_spr, vec2i_create(0,0));
-        object_create(&pb[i], button_spr->pos, vec2f_create(0,0));
+        object_create(&pb[i], pb->gs, button_spr->pos, vec2f_create(0,0));
         object_set_animation(&pb[i], button_ani);
         object_set_palette(&pb[i], mpal, 0);
         object_select_sprite(&pb[i], 0);
@@ -142,7 +142,7 @@ int mechlab_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN) {
         switch(event->key.keysym.sym) {
             case SDLK_ESCAPE:
-                game_state_set_next(SCENE_MENU);
+                game_state_set_next(scene->gs, SCENE_MENU);
                 break;
 
             case SDLK_RETURN:
@@ -214,7 +214,7 @@ int mechlab_create(scene *scene) {
     for(int i = 0; i < sizeof(bg_ani)/sizeof(animation*); i++) {
         sprite *spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 14)->ani, i));
         bg_ani[i] = create_animation_from_single(spr, spr->pos);
-        object_create(&local->bg_obj[i], vec2i_create(0,0), vec2f_create(0,0));
+        object_create(&local->bg_obj[i], scene->gs, vec2i_create(0,0), vec2f_create(0,0));
         object_set_animation(&local->bg_obj[i], bg_ani[i]);
         object_set_palette(&local->bg_obj[i], mpal, 0);
         object_select_sprite(&local->bg_obj[i], 0);
@@ -225,7 +225,7 @@ int mechlab_create(scene *scene) {
     // Init the panel
     sprite *panel_spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 2));
     panel_ani = create_animation_from_single(panel_spr, panel_spr->pos);
-    object_create(&local->panel_obj, vec2i_create(0,0), vec2f_create(0,0));
+    object_create(&local->panel_obj, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
     object_set_animation(&local->panel_obj, panel_ani);
     object_set_palette(&local->panel_obj, mpal, 0);
     object_select_sprite(&local->panel_obj, 0);
@@ -247,7 +247,7 @@ int mechlab_create(scene *scene) {
     local->hand.prev_sel = 0;
     local->hand.moving = 0;
     local->hand.move_interp = 0;
-    object_create(&local->hand.obj, vec2i_create(0,0), vec2f_create(0,0));
+    object_create(&local->hand.obj, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
     object_set_userdata(&local->hand.obj, local);
     object_set_animation(&local->hand.obj, &bk_get_info(&scene->bk_data, 29)->ani);
     object_set_palette(&local->hand.obj, mpal, 0);

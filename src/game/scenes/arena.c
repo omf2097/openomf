@@ -67,14 +67,15 @@ typedef struct arena_local_t {
 // -------- Local callbacks --------
 
 void game_menu_quit(component *c, void *userdata) {
+    scene *s = userdata;
     for(int i = 0; i < 2; i++) {
-        controller *ctrl = game_player_get_ctrl(game_state_get_player(i));
+        controller *ctrl = game_player_get_ctrl(game_state_get_player(s->gs, i));
         if(ctrl->type == CTRL_TYPE_NETWORK) {
             net_controller_free(ctrl);
         }
     }
 
-    game_state_set_next(SCENE_MENU);
+    game_state_set_next(s->gs, SCENE_MENU);
 }
 
 void game_menu_return(component *c, void *userdata) {
@@ -91,7 +92,7 @@ void sound_slide(component *c, void *userdata, int pos) {
 }
 
 void scene_fight_anim_done(object *parent) {
-    scene *scene = game_state_get_scene();
+    scene *scene = game_state_get_scene(parent->gs);
     arena_local *arena = scene_get_userdata(scene);
 
     // This will release HARs for action
@@ -104,20 +105,21 @@ void scene_fight_anim_done(object *parent) {
 
 void scene_fight_anim_start(void *userdata) {
     // Start FIGHT animation
-    scene *scene = game_state_get_scene();
+    game_state *gs = userdata;
+    scene *scene = game_state_get_scene(gs);
     animation *fight_ani = &bk_get_info(&scene->bk_data, 10)->ani;
     object *fight = malloc(sizeof(object));
-    object_create(fight, fight_ani->start_pos, vec2f_create(0,0));
+    object_create(fight, gs, fight_ani->start_pos, vec2f_create(0,0));
     object_set_stl(fight, bk_get_stl(&scene->bk_data));
     object_set_palette(fight, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(fight, fight_ani);
     object_set_finish_cb(fight, scene_fight_anim_done);
-    game_state_add_object(fight, RENDER_LAYER_TOP);
+    game_state_add_object(gs, fight, RENDER_LAYER_TOP);
 }
 
 void scene_ready_anim_done(object *parent) {
     // Wait a moment before loading FIGHT animation
-    ticktimer_add(10, scene_fight_anim_start, NULL);
+    ticktimer_add(10, scene_fight_anim_start, parent->gs);
 
     // Custom object finisher callback requires that we 
     // mark object as finished manually, if necessary.
@@ -132,16 +134,17 @@ void scene_youwin_anim_done(object *parent) {
 
 void scene_youwin_anim_start(void *userdata) {
     // Start FIGHT animation
-    scene *scene = game_state_get_scene();
+    game_state *gs = userdata;
+    scene *scene = game_state_get_scene(gs);
     arena_local *arena = scene_get_userdata(scene);
     animation *youwin_ani = &bk_get_info(&scene->bk_data, 9)->ani;
     object *youwin = malloc(sizeof(object));
-    object_create(youwin, youwin_ani->start_pos, vec2f_create(0,0));
+    object_create(youwin, gs, youwin_ani->start_pos, vec2f_create(0,0));
     object_set_stl(youwin, bk_get_stl(&scene->bk_data));
     object_set_palette(youwin, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(youwin, youwin_ani);
     object_set_finish_cb(youwin, scene_youwin_anim_done);
-    game_state_add_object(youwin, RENDER_LAYER_TOP);
+    game_state_add_object(gs, youwin, RENDER_LAYER_TOP);
 
     // This will release HARs for action
     arena->state = ARENA_STATE_ENDING;
@@ -155,16 +158,17 @@ void scene_youlose_anim_done(object *parent) {
 
 void scene_youlose_anim_start(void *userdata) {
     // Start FIGHT animation
-    scene *scene = game_state_get_scene();
+    game_state *gs = userdata;
+    scene *scene = game_state_get_scene(gs);
     arena_local *arena = scene_get_userdata(scene);
     animation *youlose_ani = &bk_get_info(&scene->bk_data, 8)->ani;
     object *youlose = malloc(sizeof(object));
-    object_create(youlose, youlose_ani->start_pos, vec2f_create(0,0));
+    object_create(youlose, gs, youlose_ani->start_pos, vec2f_create(0,0));
     object_set_stl(youlose, bk_get_stl(&scene->bk_data));
     object_set_palette(youlose, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(youlose, youlose_ani);
     object_set_finish_cb(youlose, scene_youlose_anim_done);
-    game_state_add_object(youlose, RENDER_LAYER_TOP);
+    game_state_add_object(gs, youlose, RENDER_LAYER_TOP);
 
     // This will release HARs for action
     arena->state = ARENA_STATE_ENDING;
@@ -177,7 +181,7 @@ void arena_free(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
 
     for(int i = 0; i < 2; i++) {
-        game_player *player = game_state_get_player(i);
+        game_player *player = game_state_get_player(scene->gs, i);
         game_player_set_har(player, NULL);
         game_player_set_ctrl(player, NULL);
     }
@@ -213,8 +217,9 @@ void arena_free(scene *scene) {
 
 void arena_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
-    game_player *player1 = game_state_get_player(0);
-    game_player *player2 = game_state_get_player(1);
+    game_state *gs = scene->gs;
+    game_player *player1 = game_state_get_player(gs, 0);
+    game_player *player2 = game_state_get_player(gs, 1);
 
     // Handle scrolling score texts
     chr_score_tick(&local->player1_score);
@@ -224,8 +229,8 @@ void arena_tick(scene *scene) {
     if(!local->menu_visible) {
         // Turn the HARs to face the enemy
         object *obj_har1,*obj_har2;
-        obj_har1 = game_player_get_har(game_state_get_player(0));
-        obj_har2 = game_player_get_har(game_state_get_player(1));
+        obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
+        obj_har2 = game_player_get_har(game_state_get_player(scene->gs, 1));
         har *har1, *har2;
         har1 = obj_har1->userdata;
         har2 = obj_har2->userdata;
@@ -262,13 +267,13 @@ void arena_tick(scene *scene) {
 
             // Har victory animation
             if(har2->health <= 0) {
-                scene_youwin_anim_start(NULL);
+                scene_youwin_anim_start(scene->gs);
                 har_set_ani(obj_har1, ANIM_VICTORY, 1);
                 har_set_ani(obj_har2, ANIM_DEFEAT, 1);
                 har1->state = STATE_VICTORY;
                 har2->state = STATE_DEFEAT;
             } else if(har1->health <= 0) {
-                scene_youlose_anim_start(NULL);
+                scene_youlose_anim_start(scene->gs);
                 har_set_ani(obj_har2, ANIM_VICTORY, 1);
                 har_set_ani(obj_har1, ANIM_DEFEAT, 1);
                 har2->state = STATE_VICTORY;
@@ -296,8 +301,8 @@ void arena_tick(scene *scene) {
 void arena_input_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
 
-    game_player *player1 = game_state_get_player(0);
-    game_player *player2 = game_state_get_player(1);
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    game_player *player2 = game_state_get_player(scene->gs, 1);
 
     if(!local->menu_visible) {
         ctrl_event *p1 = NULL, *p2 = NULL, *i;
@@ -350,7 +355,7 @@ void arena_render_overlay(scene *scene) {
     object *obj[2];
     har *har[2];
     for(int i = 0; i < 2; i++) {
-        player[i] = game_state_get_player(i);
+        player[i] = game_state_get_player(scene->gs, i);
         obj[i] = game_player_get_har(player[i]);
         har[i] = object_get_userdata(obj[i]);
     }
@@ -453,7 +458,7 @@ int arena_create(scene *scene) {
     // init HARs
     for(int i = 0; i < 2; i++) {
         // Declare some vars
-        game_player *player = game_state_get_player(i);
+        game_player *player = game_state_get_player(scene->gs, i);
         object *obj = malloc(sizeof(object));
 
         // load the player's colors into the palette
@@ -463,13 +468,13 @@ int arena_create(scene *scene) {
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
-        object_create(obj, pos[i], vec2f_create(0,0));
+        object_create(obj, scene->gs, pos[i], vec2f_create(0,0));
         if(har_create(obj, local->player_palettes[i], dir[i], player->har_id, player->pilot_id, i)) {
             return 1;
         }
 
         // Set HAR to controller and game_player
-        game_state_add_object(obj, RENDER_LAYER_MIDDLE);
+        game_state_add_object(scene->gs, obj, RENDER_LAYER_MIDDLE);
 
         // Set HAR for player
         game_player_set_har(player, obj);
@@ -588,12 +593,12 @@ int arena_create(scene *scene) {
     // Start READY animation
     animation *ready_ani = &bk_get_info(&scene->bk_data, 11)->ani;
     object *ready = malloc(sizeof(object));
-    object_create(ready, ready_ani->start_pos, vec2f_create(0,0));
+    object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0,0));
     object_set_stl(ready, scene->bk_data.sound_translation_table);
     object_set_palette(ready, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(ready, ready_ani);
     object_set_finish_cb(ready, scene_ready_anim_done);
-    game_state_add_object(ready, RENDER_LAYER_TOP);
+    game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP);
 
     // Callbacks
     scene_set_event_cb(scene, arena_event);

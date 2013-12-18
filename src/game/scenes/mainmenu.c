@@ -149,12 +149,12 @@ typedef struct mainmenu_local_t {
     int mstack_pos;
 } mainmenu_local;
 
-void _setup_keyboard(int players) {
+void _setup_keyboard(game_state *gs, int players) {
     settings_keyboard *k = &settings_get()->keys;
     for(int i = 0; i < 2; i++) {
         // Set up controllers
         controller *ctrl = malloc(sizeof(controller));
-        game_player *player = game_state_get_player(i);
+        game_player *player = game_state_get_player(gs, i);
         controller_init(ctrl);
 
         // Set up keyboards
@@ -187,9 +187,9 @@ void _setup_keyboard(int players) {
     }
 }
 
-void _setup_joystick(int players) {
+void _setup_joystick(game_state *gs, int players) {
     controller *ctrl = malloc(sizeof(controller));
-    game_player *player = game_state_get_player(0);
+    game_player *player = game_state_get_player(gs, 0);
     controller_init(ctrl);
 
     joystick_create(ctrl, 0);
@@ -198,7 +198,7 @@ void _setup_joystick(int players) {
 
 
     ctrl = malloc(sizeof(controller));
-    player = game_state_get_player(1);
+    player = game_state_get_player(gs, 1);
     controller_init(ctrl);
 
     // Set up keyboards
@@ -257,27 +257,33 @@ resolution *find_resolution_by_settings(settings *s) {
 
 // Menu event handlers
 void mainmenu_quit(component *c, void *userdata) {
-    game_state_set_next(SCENE_CREDITS);
+    scene *s = userdata;
+    game_state_set_next(s->gs, SCENE_CREDITS);
 }
 
 void mainmenu_1v1(component *c, void *userdata) {
+    scene *s = userdata;
+
     // Set up controllers
-    _setup_keyboard(1);
+    _setup_keyboard(s->gs, 1);
 
     // Load MELEE scene
-    game_state_set_next(SCENE_MELEE);
+    game_state_set_next(s->gs, SCENE_MELEE);
 }
 
 void mainmenu_1v2(component *c, void *userdata) {
+    scene *s = userdata;
+
     // Set up controllers
-    _setup_keyboard(2);
+    _setup_keyboard(s->gs, 2);
 
     // Load MELEE scene
-    game_state_set_next(SCENE_MELEE);
+    game_state_set_next(s->gs, SCENE_MELEE);
 }
 
 void mainmenu_tourn(component *c, void *userdata) {
-    game_state_set_next(SCENE_MECHLAB);
+    scene *s = userdata;
+    game_state_set_next(s->gs, SCENE_MECHLAB);
 }
 
 void mainmenu_enter_menu_config(component *c, void *userdata) {
@@ -542,6 +548,7 @@ void mainmenu_free(scene *scene) {
 
 void mainmenu_tick(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
+    game_state *gs = scene->gs;
 
     // Tick menu
     menu_tick(local->current_menu);
@@ -637,8 +644,8 @@ void mainmenu_tick(scene *scene) {
                 DEBUG("client connected!");
                 controller *player1_ctrl, *player2_ctrl;
                 keyboard_keys *keys;
-                game_player *p1 = game_state_get_player(0);
-                game_player *p2 = game_state_get_player(1);
+                game_player *p1 = game_state_get_player(gs, 0);
+                game_player *p2 = game_state_get_player(gs, 1);
 
                 p1->har_id = HAR_JAGUAR;
                 p1->pilot_id = 0;
@@ -668,13 +675,13 @@ void mainmenu_tick(scene *scene) {
                 game_player_set_ctrl(p2, player2_ctrl);
                 local->host = NULL;
                 game_player_set_selectable(p2, 1);
-                game_state_set_next(SCENE_MELEE);
+                game_state_set_next(gs, SCENE_MELEE);
             } else if (local->role == ROLE_CLIENT) {
                 DEBUG("connected to server!");
                 controller *player1_ctrl, *player2_ctrl;
                 keyboard_keys *keys;
-                game_player *p1 = game_state_get_player(0);
-                game_player *p2 = game_state_get_player(1);
+                game_player *p1 = game_state_get_player(gs, 0);
+                game_player *p2 = game_state_get_player(gs, 1);
 
                 p1->har_id = HAR_JAGUAR;
                 p1->pilot_id = 0;
@@ -704,7 +711,7 @@ void mainmenu_tick(scene *scene) {
                 game_player_set_ctrl(p2, player2_ctrl);
                 local->host = NULL;
                 game_player_set_selectable(p2, 1);
-                game_state_set_next(SCENE_MELEE);
+                game_state_set_next(gs, SCENE_MELEE);
             }
         } else {
             if (local->role == ROLE_CLIENT && difftime(time(NULL), local->connect_start) > 5.0) {
@@ -722,7 +729,7 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
         if(local->current_menu == &local->main_menu) {
             if(menu_selected(&local->main_menu) == &local->quit_button) {
-                game_state_set_next(SCENE_CREDITS);
+                game_state_set_next(scene->gs, SCENE_CREDITS);
             } else {
                 menu_select(&local->main_menu, &local->quit_button);
             }

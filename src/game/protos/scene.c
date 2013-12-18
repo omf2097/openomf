@@ -5,21 +5,22 @@
 #include "resources/bk_loader.h"
 #include "utils/log.h"
 #include "utils/vec.h"
-#include "game/game_state.h"
+#include "game/game_player.h"
+#include "game/game_state_type.h"
 
 // Some internal functions
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
 void cb_scene_destroy_object(object *parent, int id, void *userdata);
 
-
 // Loads BK file etc.
-int scene_create(scene *scene, int scene_id) {
+int scene_create(scene *scene, game_state *gs, int scene_id) {
     // Load BK
     if(scene_id == SCENE_NONE || load_bk_file(&scene->bk_data, scene_id)) {
         PERROR("Unable to load BK file %s (%d)!", get_id_name(scene_id), scene_id);
         return 1;
     }
     scene->id = scene_id;
+    scene->gs = gs;
 
     // Init functions
     scene->userdata = NULL;
@@ -38,7 +39,7 @@ int scene_create(scene *scene, int scene_id) {
 
 void scene_init(scene *scene) {
     // Init background sprite with palette
-    object_create(&scene->background, vec2i_create(0,0), vec2f_create(0,0));
+    object_create(&scene->background, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
     animation *bgani = create_animation_from_single(sprite_copy(&scene->bk_data.background), vec2i_create(0,0));
     object_set_animation(&scene->background, bgani);
     object_set_animation_owner(&scene->background, OWNER_OBJECT);
@@ -57,7 +58,7 @@ void scene_init(scene *scene) {
         bk_info *info = (bk_info*)pair->val;
         if(info->load_on_start || info->probability == 1 || scene_startup(scene, info->ani.id)) {
             object *obj = malloc(sizeof(object));
-            object_create(obj, info->ani.start_pos, vec2f_create(0,0));
+            object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
             object_set_stl(obj, scene->bk_data.sound_translation_table);
             object_set_palette(obj, bk_get_palette(&scene->bk_data, 0), 0);
             object_set_animation(obj, &info->ani);
@@ -66,7 +67,7 @@ void scene_init(scene *scene) {
             }
             object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
             object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
-            game_state_add_object(obj, RENDER_LAYER_BOTTOM);
+            game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
             DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
         }
     }
@@ -177,7 +178,7 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userd
     bk_info *info = bk_get_info(&s->bk_data, id);
     if(info != NULL) {
         object *obj = malloc(sizeof(object));
-        object_create(obj, vec2i_add(pos, info->ani.start_pos), vec2f_create(0,0));
+        object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vec2f_create(0,0));
         object_set_stl(obj, object_get_stl(parent));
         object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &info->ani);
@@ -186,10 +187,10 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userd
         if(info->probability == 1) {
             object_set_repeat(obj, 1);
         }
-        game_state_add_object(obj, RENDER_LAYER_BOTTOM);
+        game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM);
     }
 }
 
 void cb_scene_destroy_object(object *parent, int id, void *userdata) {
-    game_state_del_animation(id);
+    game_state_del_animation(parent->gs, id);
 }

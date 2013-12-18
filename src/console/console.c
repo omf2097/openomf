@@ -88,7 +88,7 @@ int console_cmd_clear(scene *scene, void *userdata, int argc, char **argv) {
 }
 
 int console_cmd_quit(scene *scene, void *userdata, int argc, char **argv) {
-    game_state_set_next(SCENE_CREDITS);
+    game_state_set_next(scene->gs, SCENE_CREDITS);
     return 0;
 }
 
@@ -122,7 +122,7 @@ int console_cmd_scene(scene *scene, void *userdata, int argc, char **argv) {
         int i;
         if(strtoint(argv[1], &i)) {
             if(is_scene(i)) {
-                game_state_set_next(i);
+                game_state_set_next(scene->gs, i);
                 return 0;
             }
         }
@@ -139,12 +139,12 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
                 return 1;
             }
 
-            game_player *player = game_state_get_player(0);
+            game_player *player = game_state_get_player(scene->gs, 0);
             object *har_obj = game_player_get_har(player);
             object *obj = malloc(sizeof(object));
             vec2i pos = object_get_pos(har_obj);
             int hd = object_get_direction(har_obj);
-            object_create(obj, pos, vec2f_create(0,0));
+            object_create(obj, scene->gs, pos, vec2f_create(0,0));
             player->har_id = HAR_JAGUAR + i;
             if(har_create(obj, arena_get_player_palette(scene, 0), hd, player->har_id, player->pilot_id, 0)) {
                 return 1;
@@ -158,9 +158,9 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
 #endif
 
             // Set HAR to controller and game_player
-            game_state_add_object(obj, RENDER_LAYER_MIDDLE);
+            game_state_add_object(scene->gs, obj, RENDER_LAYER_MIDDLE);
 
-            game_state_del_object(har_obj);
+            game_state_del_object(scene->gs, har_obj);
 
             // Set HAR for player
             game_player_set_har(player, obj);
@@ -174,7 +174,7 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
 
 int console_cmd_win(scene *scene, void *userdata, int argc, char **argv) {
     if(argc == 1) {
-        game_player *player = game_state_get_player(1);
+        game_player *player = game_state_get_player(scene->gs, 1);
         object *har_obj = game_player_get_har(player);
         har *har = object_get_userdata(har_obj);
         har->health = 0;
@@ -185,7 +185,7 @@ int console_cmd_win(scene *scene, void *userdata, int argc, char **argv) {
 
 int console_cmd_lose(scene *scene, void *userdata, int argc, char **argv) {
     if(argc == 1) {
-        game_player *player = game_state_get_player(0);
+        game_player *player = game_state_get_player(scene->gs, 0);
         object *har_obj = game_player_get_har(player);
         har *har = object_get_userdata(har_obj);
         har->health = 0;
@@ -196,7 +196,7 @@ int console_cmd_lose(scene *scene, void *userdata, int argc, char **argv) {
 
 int console_cmd_stun(scene *scene, void *userdata, int argc, char **argv) {
     if(argc == 1) {
-        game_player *player = game_state_get_player(1);
+        game_player *player = game_state_get_player(scene->gs, 1);
         object *har_obj = game_player_get_har(player);
         har *har = object_get_userdata(har_obj);
         har->endurance = 0;
@@ -209,7 +209,7 @@ int console_cmd_stun(scene *scene, void *userdata, int argc, char **argv) {
 #ifdef DEBUGMODE
 int console_cd_debug(scene *scene, void *userdata, int argc, char **argv) {
     for(int i = 0; i < 2; i++) {
-        har *har = object_get_userdata(game_state_get_player(i)->har);
+        har *har = object_get_userdata(game_state_get_player(scene->gs, i)->har);
         har->debug_enabled = !har->debug_enabled;
     }
     return 0;

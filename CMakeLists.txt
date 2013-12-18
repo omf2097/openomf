@@ -59,8 +59,8 @@ ENDIF(USE_OGGVORBIS)
 set(CMAKE_C_FLAGS "${CORE_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG "${CORE_FLAGS} -ggdb -DDEBUGMODE")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CORE_FLAGS} -g -O2")
-set(CMAKE_C_FLAGS_RELEASE "${CORE_FLAGS} -O2 -s -march=native")
-set(CMAKE_C_FLAGS_MINSIZEREL "${CORE_FLAGS} -Os -s -march=native")
+set(CMAKE_C_FLAGS_RELEASE "${CORE_FLAGS} -O2 -s")
+set(CMAKE_C_FLAGS_MINSIZEREL "${CORE_FLAGS} -Os -s")
 
 # Don't show console on mingw in release builds
 IF(MINGW)
