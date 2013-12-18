@@ -76,7 +76,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
 
         // Create the object
         object *scrap = malloc(sizeof(object));
-        object_create(scrap, npos, vec2f_create(velx, vely));
+        object_create(scrap, parent->gs, npos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(&h->af_data, id)->ani);
         object_set_palette(scrap, object_get_palette(parent), 0);
         object_set_stl(scrap, object_get_stl(parent));
@@ -85,7 +85,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
-        game_state_add_object(scrap, RENDER_LAYER_MIDDLE);
+        game_state_add_object(parent->gs, scrap, RENDER_LAYER_MIDDLE);
         return;
     }
 
@@ -97,7 +97,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
                  + move->ani.start_pos.x;
         npos.y = parent->pos.y + pos.y + move->ani.start_pos.y;
         object *obj = malloc(sizeof(object));
-        object_create(obj, npos, vec2f_create(0,0));
+        object_create(obj, parent->gs, npos, vec2f_create(0,0));
         object_set_userdata(obj, h);
         object_set_stl(obj, object_get_stl(parent));
         object_set_palette(obj, object_get_palette(parent), 0);
@@ -111,7 +111,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         obj->cast_shadow = 1;
         object_set_direction(obj, object_get_direction(parent));
         projectile_create(obj);
-        game_state_add_object(obj, RENDER_LAYER_MIDDLE);
+        game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE);
     }
 }
 
@@ -227,7 +227,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         // Create the object
         object *scrap = malloc(sizeof(object));
         int anim_no = ANIM_BURNING_OIL;
-        object_create(scrap, pos, vec2f_create(velx, vely));
+        object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(&h->af_data, anim_no)->ani);
         object_set_palette(scrap, object_get_palette(obj), 0);
         object_set_stl(scrap, object_get_stl(obj));
@@ -236,7 +236,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
-        game_state_add_object(scrap, RENDER_LAYER_TOP);
+        game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP);
     }
 
     // scrap metal
@@ -254,7 +254,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         // Create the object
         object *scrap = malloc(sizeof(object));
         int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
-        object_create(scrap, pos, vec2f_create(velx, vely));
+        object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(&h->af_data, anim_no)->ani);
         object_set_palette(scrap, object_get_palette(obj), 0);
         object_set_stl(scrap, object_get_stl(obj));
@@ -264,7 +264,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_tick(scrap);
         scrap->cast_shadow = 1;
         scrap_create(scrap);
-        game_state_add_object(scrap, RENDER_LAYER_TOP);
+        game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP);
     }
 
 }
@@ -286,7 +286,7 @@ void har_block(object *obj, vec2i hit_coord) {
         return;
     }
     object *scrape = malloc(sizeof(object));
-    object_create(scrape, hit_coord, vec2f_create(0, 0));
+    object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
     object_set_animation(scrape, &af_get_move(&h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
     object_set_palette(scrape, object_get_palette(obj), 0);
     object_set_stl(scrape, object_get_stl(obj));
@@ -296,7 +296,7 @@ void har_block(object *obj, vec2i hit_coord) {
     object_set_layers(scrape, LAYER_SCRAP);
     object_tick(scrape);
     object_tick(scrape);
-    game_state_add_object(scrape, RENDER_LAYER_MIDDLE);
+    game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE);
     h->damage_received = 1;
     h->flinching = 1;
 }
@@ -534,7 +534,7 @@ void har_act(object *obj, int act_type) {
     }
 
     // Don't allow movement if arena is starting or ending
-    int arena_state = arena_get_state(game_state_get_scene());
+    int arena_state = arena_get_state(game_state_get_scene(obj->gs));
     if(arena_state == ARENA_STATE_STARTING) {
         return;
     }
@@ -670,7 +670,7 @@ void har_act(object *obj, int act_type) {
                 if (move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
                     int opp_id = h->player_id ? 0 : 1;
                     af_move *move = af_get_move(&(h->af_data), obj->cur_animation->id);
-                    object *opp = game_player_get_har(game_state_get_player(opp_id));
+                    object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
                     opp->animation_state.enemy_x = obj->pos.x;
                     opp->animation_state.enemy_y = obj->pos.y;
                     object_set_animation(opp, &af_get_move(&((har*)opp->userdata)->af_data, ANIM_DAMAGE)->ani);
@@ -825,7 +825,7 @@ void har_finished(object *obj) {
     } else if (h->state == STATE_VICTORY || h->state == STATE_DONE) {
         // end the arena
         DEBUG("ending arena!");
-        game_state_set_next(SCENE_MENU);
+        game_state_set_next(obj->gs, SCENE_MENU);
     } else if ((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance <= 0) {
         h->state = STATE_STUNNED;
         har_set_ani(obj, ANIM_STUNNED, 1);

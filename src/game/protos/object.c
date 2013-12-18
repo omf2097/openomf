@@ -3,12 +3,16 @@
 #include <shadowdive/sprite_image.h>
 #include <shadowdive/sprite.h>
 #include "game/protos/object.h"
+#include "game/game_state_type.h"
 #include "video/video.h"
 #include "utils/log.h"
 
 #define UNUSED(x) (void)(x)
 
-void object_create(object *obj, vec2i pos, vec2f vel) {
+void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
+    // State
+    obj->gs = gs;
+
     // Position related
     obj->pos = vec2i_to_f(pos);
     obj->vel = vel;

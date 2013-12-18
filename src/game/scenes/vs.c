@@ -36,18 +36,18 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata
     bk_info *info = bk_get_info(&s->bk_data, id);
     if(info != NULL) {
         object *obj = malloc(sizeof(object));
-        object_create(obj, vec2i_add(pos, vec2f_to_i(parent->pos)), vec2f_create(0,0));
+        object_create(obj, parent->gs, vec2i_add(pos, vec2f_to_i(parent->pos)), vec2f_create(0,0));
         object_set_stl(obj, object_get_stl(parent));
         object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &info->ani);
         object_set_spawn_cb(obj, cb_vs_spawn_object, userdata);
         object_set_destroy_cb(obj, cb_vs_destroy_object, userdata);
-        game_state_add_object(obj, RENDER_LAYER_MIDDLE);
+        game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE);
     }
 }
 
 void cb_vs_destroy_object(object *parent, int id, void *userdata) {
-    game_state_del_animation(id);
+    game_state_del_animation(parent->gs, id);
 }
 
 
@@ -71,7 +71,7 @@ sd_rgba_image* sub_image(sd_vga_image *image, palette *pal, int x, int y, int w,
 
 void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
-    game_player *player2 = game_state_get_player(1);
+    game_player *player2 = game_state_get_player(scene->gs, 1);
 
     texture_free(&local->player2_background);
     texture_free(&local->arena_select_bg);
@@ -92,11 +92,11 @@ void vs_handle_action(scene *scene, int action) {
     switch (action) {
         case ACT_KICK:
         case ACT_PUNCH:
-            game_state_set_next(SCENE_ARENA0+local->arena);
+            game_state_set_next(scene->gs, SCENE_ARENA0+local->arena);
             break;
         case ACT_UP:
         case ACT_LEFT:
-            if(game_state_get_player(1)->selectable) {
+            if(game_state_get_player(scene->gs, 1)->selectable) {
                 local->arena--;
                 if (local->arena < 0) {
                     local->arena =4;
@@ -106,7 +106,7 @@ void vs_handle_action(scene *scene, int action) {
             break;
         case ACT_DOWN:
         case ACT_RIGHT:
-            if(game_state_get_player(1)->selectable) {
+            if(game_state_get_player(scene->gs, 1)->selectable) {
                 local->arena++;
                 if (local->arena > 4) {
                     local->arena = 0;
@@ -123,11 +123,11 @@ void vs_tick(scene *scene) {
 
 int vs_event(scene *scene, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
-        game_state_set_next(SCENE_MELEE);
+        game_state_set_next(scene->gs, SCENE_MELEE);
         return 1;
     }
     ctrl_event *p1=NULL, *i;
-    game_player *player1 = game_state_get_player(0);
+    game_player *player1 = game_state_get_player(scene->gs, 0);
     controller_event(player1->ctrl, event, &p1);
     i = p1;
     if (i) {
@@ -146,8 +146,8 @@ void vs_render(scene *scene) {
     // render the right side of the background
     video_render_sprite_flip(&local->player2_background, 160, 0, BLEND_ALPHA, FLIP_HORIZONTAL);
 
-    game_player *player1 = game_state_get_player(0);
-    game_player *player2 = game_state_get_player(1);
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    game_player *player2 = game_state_get_player(scene->gs, 1);
 
     // player 1 HAR
     object_render(&local->player1_har);
@@ -184,8 +184,8 @@ int vs_create(scene *scene) {
     // Init local data
     vs_local *local = malloc(sizeof(vs_local));
     scene_set_userdata(scene, local);
-    game_player *player1 = game_state_get_player(0);
-    game_player *player2 = game_state_get_player(1);
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    game_player *player2 = game_state_get_player(scene->gs, 1);
 
     animation *ani;
 
@@ -203,12 +203,12 @@ int vs_create(scene *scene) {
 
     // HAR
     ani = &bk_get_info(&scene->bk_data, 5)->ani;
-    object_create(&local->player1_har, vec2i_create(160,0), vec2f_create(0, 0));
+    object_create(&local->player1_har, scene->gs, vec2i_create(160,0), vec2f_create(0, 0));
     object_set_animation(&local->player1_har, ani);
     object_set_palette(&local->player1_har, local->player1_palette, 0);
     object_select_sprite(&local->player1_har, player1->har_id - HAR_JAGUAR);
 
-    object_create(&local->player2_har, vec2i_create(160,0), vec2f_create(0, 0));
+    object_create(&local->player2_har, scene->gs, vec2i_create(160,0), vec2f_create(0, 0));
     object_set_animation(&local->player2_har, ani);
     object_set_palette(&local->player2_har, local->player2_palette, 0);
     object_select_sprite(&local->player2_har, player2->har_id - HAR_JAGUAR);
@@ -216,12 +216,12 @@ int vs_create(scene *scene) {
 
     // PLAYER
     ani = &bk_get_info(&scene->bk_data, 4)->ani;
-    object_create(&local->player1_portrait, vec2i_create(-10,150), vec2f_create(0, 0));
+    object_create(&local->player1_portrait, scene->gs, vec2i_create(-10,150), vec2f_create(0, 0));
     object_set_animation(&local->player1_portrait, ani);
     object_set_palette(&local->player1_portrait, mpal, 0);
     object_select_sprite(&local->player1_portrait, player1->pilot_id);
 
-    object_create(&local->player2_portrait, vec2i_create(330,150), vec2f_create(0, 0));
+    object_create(&local->player2_portrait, scene->gs, vec2i_create(330,150), vec2f_create(0, 0));
     object_set_animation(&local->player2_portrait, ani);
     object_set_palette(&local->player2_portrait, mpal, 0);
     object_select_sprite(&local->player2_portrait, player2->pilot_id);
@@ -241,7 +241,7 @@ int vs_create(scene *scene) {
     //ARENA
     if (player2->selectable) {
         ani = &bk_get_info(&scene->bk_data, 3)->ani;
-        object_create(&local->arena_select, vec2i_create(59,155), vec2f_create(0, 0));
+        object_create(&local->arena_select, scene->gs, vec2i_create(59,155), vec2f_create(0, 0));
         object_set_animation(&local->arena_select, ani);
         object_set_palette(&local->arena_select, mpal, 0);
         object_select_sprite(&local->arena_select, local->arena);
@@ -251,40 +251,40 @@ int vs_create(scene *scene) {
     // SCIENTIST
     object *o_scientist = malloc(sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 8)->ani;
-    object_create(o_scientist, vec2i_create(320-114,118), vec2f_create(0, 0));
+    object_create(o_scientist, scene->gs, vec2i_create(320-114,118), vec2f_create(0, 0));
     object_set_animation(o_scientist, ani);
     object_set_palette(o_scientist, mpal, 0);
     object_select_sprite(o_scientist, 0);
     object_set_direction(o_scientist, OBJECT_FACE_LEFT);
-    game_state_add_object(o_scientist, RENDER_LAYER_MIDDLE);
+    game_state_add_object(scene->gs, o_scientist, RENDER_LAYER_MIDDLE);
 
     // WELDER
     object *o_welder = malloc(sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 7)->ani;
-    object_create(o_welder, vec2i_create(90,80), vec2f_create(0, 0));
+    object_create(o_welder, scene->gs, vec2i_create(90,80), vec2f_create(0, 0));
     object_set_animation(o_welder, ani);
     object_set_palette(o_welder, mpal, 0);
     object_select_sprite(o_welder, 0);
     object_set_spawn_cb(o_welder, cb_vs_spawn_object, (void*)scene);
     object_set_destroy_cb(o_welder, cb_vs_destroy_object, (void*)scene);
-    game_state_add_object(o_welder, RENDER_LAYER_MIDDLE);
+    game_state_add_object(scene->gs, o_welder, RENDER_LAYER_MIDDLE);
 
     // GANTRIES
     object *o_gantry_a = malloc(sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 11)->ani;
-    object_create(o_gantry_a, vec2i_create(0,0), vec2f_create(0, 0));
+    object_create(o_gantry_a, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(o_gantry_a, ani);
     object_set_palette(o_gantry_a, mpal, 0);
     object_select_sprite(o_gantry_a, 0);
-    game_state_add_object(o_gantry_a, RENDER_LAYER_MIDDLE);
+    game_state_add_object(scene->gs, o_gantry_a, RENDER_LAYER_MIDDLE);
 
     object *o_gantry_b = malloc(sizeof(object));
-    object_create(o_gantry_b, vec2i_create(0,0), vec2f_create(0, 0));
+    object_create(o_gantry_b, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(o_gantry_b, ani);
     object_set_palette(o_gantry_b, mpal, 0);
     object_select_sprite(o_gantry_b, 0);
     object_set_direction(o_gantry_b, OBJECT_FACE_LEFT);
-    game_state_add_object(o_gantry_b, RENDER_LAYER_MIDDLE);
+    game_state_add_object(scene->gs, o_gantry_b, RENDER_LAYER_MIDDLE);
 
     // Background tex
     texture_create(&local->player2_background);

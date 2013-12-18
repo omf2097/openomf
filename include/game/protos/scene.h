@@ -5,10 +5,12 @@
 #include "controller/controller.h"
 #include "game/protos/object.h"
 #include "game/game_player.h"
+#include "game/game_state.h"
 #include "resources/bk.h"
 
 typedef struct scene_t scene;
 typedef struct game_player_t game_player;
+typedef struct game_state_t game_state;
 
 typedef void (*scene_free_cb)(scene *scene);
 typedef int (*scene_event_cb)(scene *scene, SDL_Event *event);
@@ -19,6 +21,7 @@ typedef void (*scene_input_tick_cb)(scene *scene);
 typedef int (*scene_startup_cb)(scene *scene, int anim_id);
 
 struct scene_t {
+    game_state *gs;
     int id;
     bk bk_data;
     void *userdata;
@@ -34,7 +37,7 @@ struct scene_t {
     texture shadow_buffer_tex;
 };
 
-int scene_create(scene *scene, int scene_id);
+int scene_create(scene *scene, game_state *gs, int scene_id);
 void scene_init(scene *scene);
 void scene_free(scene *scene);
 int scene_event(scene *scene, SDL_Event *event);

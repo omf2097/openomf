@@ -14,7 +14,7 @@ int intro_event(scene *scene, SDL_Event *e) {
     switch(e->type) {
     case SDL_KEYDOWN:
         if(e->key.keysym.sym == SDLK_ESCAPE) {
-            game_state_set_next(SCENE_MENU);
+            game_state_set_next(scene->gs, SCENE_MENU);
             return 1;
         }
         break;
@@ -34,7 +34,7 @@ void intro_tick(scene *scene) {
     intro_local *local = scene_get_userdata(scene);
     local->ticks++;
     if(local->ticks > 2500) {
-        game_state_set_next(SCENE_MENU);
+        game_state_set_next(scene->gs, SCENE_MENU);
     }
 }
 

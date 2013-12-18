@@ -80,7 +80,8 @@ void engine_run() {
     INFO(" --- BEGIN GAME LOG ---");
 
     // Set up game
-    if(game_state_create()) {
+    game_state *gs = malloc(sizeof(game_state));
+    if(game_state_create(gs)) {
         return;
     }
 
@@ -90,7 +91,7 @@ void engine_run() {
     // Game loop
     int frame_start = SDL_GetTicks();
     int omf_wait = 0;
-    while(run && game_state_is_running()) {
+    while(run && game_state_is_running(gs)) {
         // Prepare rendering here
         video_render_prepare();
     
@@ -122,32 +123,32 @@ void engine_run() {
             // If console windows is open, pass events to console. 
             // Otherwise to the objects. 
             if(console_window_is_open()) {
-                console_event(game_state_get_scene(), &e);
+                console_event(game_state_get_scene(gs), &e);
             } else {
-                game_state_handle_event(&e);
+                game_state_handle_event(gs, &e);
             }
         }
 
         // Render scene
         int dt = (SDL_GetTicks() - frame_start);
         omf_wait += dt;
-        while(omf_wait > game_state_ms_per_tick()) {
+        while(omf_wait > game_state_ms_per_tick(gs)) {
             // Tick timers
             ticktimer_run();
 
             // Tick scene
-            game_state_tick();
+            game_state_tick(gs);
 
             // Tick console
             console_tick();
             
             // Handle waiting period leftover time
-            omf_wait -= game_state_ms_per_tick();
+            omf_wait -= game_state_ms_per_tick(gs);
         }
         frame_start = SDL_GetTicks();
 
         // Do the actual rendering jobs
-        game_state_render();
+        game_state_render(gs);
         console_render();
         video_render_finish();
         audio_render();
@@ -168,7 +169,8 @@ void engine_run() {
     }
     
     // Free scene object
-    game_state_free();
+    game_state_free(gs);
+    free(gs);
 
     INFO(" --- END GAME LOG ---");
 }

@@ -32,6 +32,7 @@ enum {
 };
 
 typedef struct object_t object;
+typedef struct game_state_t game_state;
 
 typedef void (*object_free_cb)(object *obj);
 typedef void (*object_act_cb)(object *obj, int action);
@@ -42,6 +43,8 @@ typedef void (*object_finish_cb)(object *obj);
 typedef void (*object_debug_cb)(object *obj);
 
 struct object_t {
+    game_state *gs;
+
     vec2f pos;
     vec2f vel;
     int vstate;
@@ -81,7 +84,7 @@ struct object_t {
     object_debug_cb debug;
 };
 
-void object_create(object *obj, vec2i pos, vec2f vel);
+void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
 void object_render(object *obj);
 void object_render_neutral(object *obj);
 void object_render_shadow(object *obj, image *shadow_buffer);

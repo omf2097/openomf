@@ -12,7 +12,7 @@ int credits_event(scene *scene, SDL_Event *e) {
     switch(e->type) {
     case SDL_KEYDOWN:
         if(e->key.keysym.sym == SDLK_ESCAPE) {
-            game_state_set_next(SCENE_NONE);
+            game_state_set_next(scene->gs, SCENE_NONE);
             return 1;
         }
         break;
@@ -24,7 +24,7 @@ void credits_tick(scene *scene) {
     credits_local *local = scene_get_userdata(scene);
     local->ticks++;
     if(local->ticks > 4500) {
-        game_state_set_next(SCENE_NONE);
+        game_state_set_next(scene->gs, SCENE_NONE);
     }
 }
 
