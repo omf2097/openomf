@@ -1,5 +1,6 @@
-#include "resources/bk.h"
+#include <string.h>
 #include <shadowdive/shadowdive.h>
+#include "resources/bk.h"
 
 void bk_create(bk *b, void *src) {
     sd_bk_file *sdbk = (sd_bk_file*)src;

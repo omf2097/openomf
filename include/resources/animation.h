@@ -4,7 +4,7 @@
 #include "resources/sprite.h"
 #include "utils/vec.h"
 #include "utils/vector.h"
-#include "utils/string.h"
+#include "utils/str.h"
 
 // All HARs have these predefined animations
 enum {

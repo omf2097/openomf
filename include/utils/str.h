@@ -1,7 +1,7 @@
 #ifndef _UTIL_STRING_H
 #define _UTIL_STRING_H
 
-#include <string.h>
+#include <stddef.h>
 
 typedef struct str_t {
     size_t len;
@@ -15,12 +15,20 @@ void str_free(str *string);
 
 size_t str_size(str *string);
 
-void str_copy(str *string, str *source);
-void str_append(str *string, str *source);
-void str_prepend(str *string, str *source);
+void str_copy(str *dst, str *src);
+void str_append(str *dst, str *src);
+void str_prepend(str *dst, str *src);
 
-size_t str_first_of(str *string, char find, int *pos);
-size_t str_last_of(str *string, char find, int *pos);
+int str_first_of(str *string, char find, size_t *pos);
+int str_last_of(str *string, char find, size_t *pos);
+
+int str_equal(str *string, str *string_b);
+
+void str_toupper(str *string);
+void str_tolower(str *string);
+
+char str_at(str *string, size_t pos);
+int str_cmp(str *string, str *string_b);
 
 int str_to_int(str *string, int *result);
 int str_to_long(str *string, long *result);

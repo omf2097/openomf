@@ -10,7 +10,7 @@
 #include "resources/ids.h"
 #include "game/protos/player.h"
 #include "game/protos/object.h"
-#include "utils/string.h"
+#include "utils/str.h"
 #include "utils/log.h"
 
 // --------------------- Helpers ---------------------

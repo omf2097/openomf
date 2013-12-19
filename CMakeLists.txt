@@ -70,7 +70,6 @@ IF(MINGW)
 ENDIF(MINGW)
 
 # Testing stuff
-enable_testing()
 add_subdirectory(testing)
 
 add_executable(openomf 
@@ -83,7 +82,7 @@ add_executable(openomf
     src/utils/array.c
     src/utils/ringbuffer.c
     src/utils/vec.c
-    src/utils/string.c
+    src/utils/str.c
     src/utils/random.c
     src/video/video.c
     src/video/texture.c

@@ -4,8 +4,16 @@ IF(CUNIT_FOUND)
     include_directories(${CUNIT_INCLUDE_DIR} . ../include/)
     set(LIBS ${CUNIT_LIBRARY})
 
-    add_executable(test_hashmap test_hashmap.c ../src/utils/hashmap.c)
-    target_link_libraries(test_hashmap ${LIBS})
-    add_test(test_hashmap ${EXECUTABLE_OUTPUT_PATH}/test_hashmap)
+    add_executable(test_main 
+        test_main.c
+        test_str.c
+        test_hashmap.c
+        ../src/utils/hashmap.c
+        ../src/utils/str.c
+    )
+
+    target_link_libraries(test_main ${LIBS})
+
+    add_custom_target(test test_main)
 ENDIF(CUNIT_FOUND)
 

@@ -1,5 +1,6 @@
-#include "resources/af_move.h"
+#include <string.h>
 #include <shadowdive/shadowdive.h>
+#include "resources/af_move.h"
 
 void af_move_create(af_move *move, void *src, int id) {
     sd_move *sdmv = (sd_move*)src;

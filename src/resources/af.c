@@ -1,5 +1,6 @@
-#include "resources/af.h"
+#include <string.h>
 #include <shadowdive/shadowdive.h>
+#include "resources/af.h"
 
 void af_create(af *a, void *src) {
     sd_af_file *sdaf = (sd_af_file*)src;

@@ -2,7 +2,7 @@
 #define _AF_MOVE_H
 
 #include "resources/animation.h"
-#include "utils/string.h"
+#include "utils/str.h"
 
 typedef struct af_move_t {
     animation ani;
