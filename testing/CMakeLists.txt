@@ -11,6 +11,11 @@ IF(CUNIT_FOUND)
         ../src/utils/hashmap.c
         ../src/utils/str.c
     )
+    
+    # On unix platforms, add libm (sometimes needed, it seems)
+    IF(UNIX)
+        SET(LIBS ${LIBS} -lm)
+    ENDIF(UNIX)
 
     target_link_libraries(test_main ${LIBS})
 
