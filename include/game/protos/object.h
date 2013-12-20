@@ -40,6 +40,7 @@ typedef void (*object_tick_cb)(object *obj);
 typedef void (*object_move_cb)(object *obj);
 typedef void (*object_collide_cb)(object *a, object *b);
 typedef void (*object_finish_cb)(object *obj);
+typedef int  (*object_serialize_cb)(object *obj, char *buf);
 typedef void (*object_debug_cb)(object *obj);
 
 struct object_t {
@@ -81,6 +82,7 @@ struct object_t {
     object_collide_cb collide;
     object_finish_cb finish;
     object_move_cb move;
+    object_serialize_cb serialize;
     object_debug_cb debug;
 };
 
@@ -97,6 +99,9 @@ void object_collide(object *a, object *b);
 void object_act(object *obj, int action);
 int object_finished(object *obj);
 void object_free(object *obj);
+
+int object_serialize(object *obj, char *buf);
+int object_unserialize(object *obj, char *buf, int len);
 
 void object_set_stride(object *obj, int stride);
 void object_set_playback_direction(object *obj, int dir);
@@ -130,6 +135,7 @@ void object_set_collide_cb(object *obj, object_collide_cb cbfunc);
 void object_set_finish_cb(object *obj, object_finish_cb cbfunc);
 void object_set_move_cb(object *obj, object_move_cb cbfunc);
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc);
+void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);
 int object_get_repeat(object *obj);

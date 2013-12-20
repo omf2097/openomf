@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <shadowdive/vga_image.h>
 #include <shadowdive/sprite_image.h>
 #include <shadowdive/sprite.h>
@@ -8,6 +9,21 @@
 #include "utils/log.h"
 
 #define UNUSED(x) (void)(x)
+
+// For serialization, packed for network.
+typedef struct __attribute__((__packed__)) object_serialization_t {
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    uint8_t direction;
+    uint8_t is_static;
+    int group;
+    int layers;
+    float gravity;
+    // etc
+} object_serialization;
+
 
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // State
@@ -49,7 +65,52 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->collide = NULL;
     obj->finish = NULL;
     obj->move = NULL;
+    obj->serialize = NULL;
     obj->debug = NULL;
+}
+
+/*
+ * Serializes the object to a buffer. Returns the length of data written.
+ * This will call the specialized objects, eg. har or projectile for their 
+ * serialization data. Should return -1 on errors.
+ */
+int object_serialize(object *obj, char *buf) {
+    int rlen = 0;
+
+    object_serialization ser;
+
+    // TODO: Set ser attrs here
+
+    // Copy serialization data to buffer
+    memcpy(buf, &ser, sizeof(object_serialization));
+    rlen += sizeof(object_serialization);
+
+    // Serialize the underlying object
+    if(obj->serialize != NULL) {
+        rlen += obj->serialize(obj, (char*)(buf + rlen));
+    }
+
+    // Return serialized length
+    return rlen;
+}
+
+/* 
+ * Unserializes the data from buffer to an object. Returns the data read
+ * from the buffer. This will NOT create any specialization, because that
+ * would require object to know about all possibly specializations.
+ * Should return -1 on errors.
+ */
+int object_unserialize(object *obj, char *buf, int len) {
+    if(len < sizeof(object_serialization)) {
+        return -1;
+    }
+
+    object_serialization ser;
+    memcpy(&ser, buf, sizeof(object_serialization));
+
+    // TODO: Set object attrs here
+
+    return sizeof(object_serialization);
 }
 
 void object_set_stride(object *obj, int stride) {
@@ -405,6 +466,7 @@ void object_set_collide_cb(object *obj, object_collide_cb cbfunc) { obj->collide
 void object_set_finish_cb(object *obj, object_finish_cb cbfunc) { obj->finish = cbfunc; }
 void object_set_move_cb(object *obj, object_move_cb cbfunc) { obj->move = cbfunc; }
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc) { obj->debug = cbfunc; }
+void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc) { obj->serialize = cbfunc; }
 
 void object_set_layers(object *obj, int layers) { obj->layers = layers; }
 void object_set_group(object *obj, int group) { obj->group = group; }
