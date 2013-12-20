@@ -8,6 +8,12 @@
 #include "game/game_player.h"
 #include "game/game_state_type.h"
 
+// For serialization, packed for network.
+typedef struct __attribute__((__packed__)) scene_serialization_t {
+    int file_id;
+    int id;
+} scene_serialization;
+
 // Some internal functions
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
 void cb_scene_destroy_object(object *parent, int id, void *userdata);
@@ -71,6 +77,50 @@ void scene_init(scene *scene) {
             DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
         }
     }
+}
+
+/*
+ * Serializes the scene to a buffer. Returns the length of data written.
+ * This will call the specialized scenes (eg. arena) for their 
+ * serialization data. Should return -1 on errors.
+ */
+int scene_serialize(scene *sc, char *buf) {
+    int rlen = 0;
+
+    scene_serialization ser;
+
+    // TODO: Set ser attrs here
+
+    // Copy serialization data to buffer
+    memcpy(buf, &ser, sizeof(scene_serialization));
+    rlen += sizeof(scene_serialization);
+
+    // Serialize the underlying object
+    if(sc->serialize != NULL) {
+        rlen += sc->serialize(sc, (char*)(buf + rlen));
+    }
+
+    // Return serialized length
+    return rlen;
+}
+
+/* 
+ * Unserializes the data from buffer to a scene. Returns the amount of data read
+ * from the buffer. This will NOT create any specialization, because that
+ * would require scene to know about all possibly specializations.
+ * Should return -1 on errors.
+ */
+int scene_unserialize(scene *sc, char *buf, int len) {
+    if(len < sizeof(scene_serialization)) {
+        return -1;
+    }
+
+    scene_serialization ser;
+    memcpy(&ser, buf, sizeof(scene_serialization));
+
+    // TODO: Set scene attrs here
+
+    return sizeof(scene_serialization);
 }
 
 void scene_set_userdata(scene *scene, void *userdata) {
@@ -169,6 +219,10 @@ void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc) {
 
 void scene_set_input_poll_cb(scene *scene, scene_tick_cb cbfunc) {
     scene->input_poll = cbfunc;
+}
+
+void scene_set_serialize_cb(scene *scene, scene_serialize_cb cbfunc) {
+    scene->serialize = cbfunc;
 }
 
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {

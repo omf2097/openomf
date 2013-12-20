@@ -12,6 +12,7 @@
 
 // For serialization, packed for network.
 typedef struct __attribute__((__packed__)) object_serialization_t {
+    int file_id;
     float pos_x;
     float pos_y;
     float vel_x;
@@ -95,7 +96,7 @@ int object_serialize(object *obj, char *buf) {
 }
 
 /* 
- * Unserializes the data from buffer to an object. Returns the data read
+ * Unserializes the data from buffer to an object. Returns the amount of data read
  * from the buffer. This will NOT create any specialization, because that
  * would require object to know about all possibly specializations.
  * Should return -1 on errors.
