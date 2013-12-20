@@ -42,6 +42,7 @@ typedef void (*object_move_cb)(object *obj);
 typedef void (*object_collide_cb)(object *a, object *b);
 typedef void (*object_finish_cb)(object *obj);
 typedef int  (*object_serialize_cb)(object *obj, serial *ser);
+typedef int  (*object_unserialize_cb)(object *obj, serial *ser);
 typedef void (*object_debug_cb)(object *obj);
 
 struct object_t {
@@ -84,6 +85,7 @@ struct object_t {
     object_finish_cb finish;
     object_move_cb move;
     object_serialize_cb serialize;
+    object_serialize_cb unserialize;
     object_debug_cb debug;
 };
 
@@ -137,6 +139,7 @@ void object_set_finish_cb(object *obj, object_finish_cb cbfunc);
 void object_set_move_cb(object *obj, object_move_cb cbfunc);
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc);
 void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc);
+void object_set_unserialize_cb(object *obj, object_serialize_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);
 int object_get_repeat(object *obj);

@@ -8,8 +8,10 @@
 #include "game/objects/scrap.h"
 #include "game/objects/projectile.h"
 #include "game/protos/intersect.h"
+#include "game/protos/object_specializer.h"
 #include "game/scenes/arena.h"
 #include "game/game_state.h"
+#include "game/serial.h"
 #include "resources/af_loader.h"
 #include "resources/ids.h"
 #include "resources/animation.h"
@@ -24,6 +26,25 @@
 
 #define FUDGEFACTOR 0.003f
 #define IS_ZERO(n) (n < 0.8 && n > -0.8)
+
+// For serialization, packed for network.
+typedef struct __attribute__((__packed__)) har_serialization_t {
+    int id;
+    int player_id;
+    int pilot_id;
+    int state;
+    int blocking;
+    int executing_move;
+    int flinching;
+    int close;
+    int hard_close;
+    int damage_done;
+    int damage_received;
+    int health_max;
+    int health;
+    int endurance_max;
+    int endurance;
+} har_serialization;
 
 void har_finished(object *obj);
 
@@ -871,10 +892,60 @@ void har_debug(object *obj) {
 }
 #endif
 
-int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int player_id) {
-    // Create local data
+int har_serialize(object *obj, serial *ser) {
+    har *h = object_get_userdata(obj);
+
+    // Set serialization data
+    har_serialization s;
+    s.id = h->id;
+    s.player_id = h->player_id;
+    // ...
+    // TODO: Set the other ser attrs here
+
+    // Copy serialization data to buffer
+    uint8_t specialization_id = SPECID_HAR;
+    serial_write(ser, (char*)&specialization_id, 1); // Write specialization ID
+    serial_write(ser, (char*)&s, sizeof(har_serialization));
+
+    // Return success
+    return 0;
+}
+
+int har_unserialize(object *obj, serial *ser) {
+    har *h = object_get_userdata(obj);
+
+    if(serial_len(ser) < sizeof(har_serialization)) {
+        return 1;
+    }
+
+    // Extract serialization data from buffer
+    har_serialization s;
+    serial_read(ser, (char*)&s, sizeof(har_serialization));
+
+    // At this point, the HAR object should already be bootstrapped
+    // meaning that it has local memory. Nothing else has been done, though!
+    // So we should load AF file etc. here.
+    // TODO: Do all this
+
+    h->id = s.id;
+    h->player_id = s.id;
+    // TODO: Set other scene attrs from serialization here
+
+    // Return success
+    return 0;
+}
+
+void har_bootstrap(object *obj) {
     har *local = malloc(sizeof(har));
     object_set_userdata(obj, local);
+    object_set_serialize_cb(obj, har_serialize);
+    object_set_unserialize_cb(obj, har_unserialize);
+}
+
+int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int player_id) {
+    // Create local data
+    har_bootstrap(obj);
+    har *local = object_get_userdata(obj);
 
     // Load AF
     if(load_af_file(&local->af_data, har_id)) {

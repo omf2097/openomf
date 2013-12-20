@@ -4,6 +4,7 @@
 #include <shadowdive/sprite_image.h>
 #include <shadowdive/sprite.h>
 #include "game/protos/object.h"
+#include "game/protos/object_specializer.h"
 #include "game/game_state_type.h"
 #include "video/video.h"
 #include "utils/log.h"
@@ -67,6 +68,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->finish = NULL;
     obj->move = NULL;
     obj->serialize = NULL;
+    obj->unserialize = NULL;
     obj->debug = NULL;
 }
 
@@ -94,16 +96,35 @@ int object_serialize(object *obj, serial *ser) {
 /* 
  * Unserializes the data from buffer to a specialized object. 
  * Should return 1 on error, 0 on success.
+ * Serial reder position should be set to correct position before calling this.
  */
 int object_unserialize(object *obj, serial *ser) {
     if(serial_len(ser) < sizeof(object_serialization)) {
         return 1;
     }
 
+    // Read object_t serialized data and handle it
     object_serialization o;
     serial_read(ser, (char*)&o, sizeof(object_serialization));
 
-    // TODO: Set object attrs here
+    // TODO: unserialize data here for object_t
+
+    // Read the specialization ID from ther serial "stream".
+    // This should be a one byte long. For values, check
+    // object_specializer.h
+    uint8_t specialization_id;
+    serial_read(ser, (char*)&specialization_id, 1);
+
+    // This should automatically bootstrap the object so that it has at least
+    // unserialize function callback and local memory allocated
+    object_auto_specialize(obj, specialization_id);
+    
+    // Now, if the object has unserialize function, call it with
+    // serialization data. serial object should be pointing to the 
+    // start of that data.
+    if(obj->unserialize != NULL) {
+        obj->unserialize(obj, ser);
+    }
 
     // Return success
     return 0;
@@ -463,6 +484,7 @@ void object_set_finish_cb(object *obj, object_finish_cb cbfunc) { obj->finish = 
 void object_set_move_cb(object *obj, object_move_cb cbfunc) { obj->move = cbfunc; }
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc) { obj->debug = cbfunc; }
 void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc) { obj->serialize = cbfunc; }
+void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc) { obj->unserialize = cbfunc; }
 
 void object_set_layers(object *obj, int layers) { obj->layers = layers; }
 void object_set_group(object *obj, int group) { obj->group = group; }

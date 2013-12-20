@@ -91,11 +91,6 @@ int scene_serialize(scene *sc, serial *ser) {
     // Copy serialization data to buffer
     serial_write(ser, (char*)&s, sizeof(scene_serialization));
 
-    // Serialize the underlying object
-    if(sc->serialize != NULL) {
-        sc->serialize(sc, ser);
-    }
-
     // Return success
     return 0;
 }
@@ -103,6 +98,7 @@ int scene_serialize(scene *sc, serial *ser) {
 /* 
  * Unserializes the data from buffer to a specialized object. 
  * Should return 1 on error, 0 on success.
+ * Serial reder position should be set to correct position before calling this.
  */
 int scene_unserialize(scene *sc, serial *ser) {
     if(serial_len(ser) < sizeof(scene_serialization)) {
@@ -215,10 +211,6 @@ void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc) {
 
 void scene_set_input_poll_cb(scene *scene, scene_tick_cb cbfunc) {
     scene->input_poll = cbfunc;
-}
-
-void scene_set_serialize_cb(scene *scene, scene_serialize_cb cbfunc) {
-    scene->serialize = cbfunc;
 }
 
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {

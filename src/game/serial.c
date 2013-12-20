@@ -4,6 +4,7 @@
 
 void serial_create(serial *s) {
     s->len = 0;
+    s->rpos = 0;
     s->data = NULL;
 }
 
@@ -27,9 +28,14 @@ size_t serial_len(serial *s) {
     return s->len;
 }
 
+void serial_read_reset(serial *s) {
+    s->rpos = 0;
+}
+
 void serial_read(serial *s, char *buf, int len) {
     if(len > s->len) {
         len = s->len;
     }
     memcpy(buf, s->data, len);
+    s->rpos += len;
 }

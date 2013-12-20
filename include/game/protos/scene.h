@@ -20,7 +20,6 @@ typedef void (*scene_render_overlay_cb)(scene *scene);
 typedef void (*scene_tick_cb)(scene *scene);
 typedef void (*scene_input_poll_cb)(scene *scene);
 typedef int (*scene_startup_cb)(scene *scene, int anim_id);
-typedef int (*scene_serialize_cb)(scene *scene, serial *ser);
 
 struct scene_t {
     game_state *gs;
@@ -35,7 +34,6 @@ struct scene_t {
     scene_tick_cb tick;
     scene_input_poll_cb input_poll;
     scene_startup_cb startup;
-    scene_serialize_cb serialize;
     image shadow_buffer_img;
     texture shadow_buffer_tex;
 };
@@ -64,6 +62,5 @@ void scene_set_render_overlay_cb(scene *scene, scene_render_overlay_cb cbfunc);
 void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc);
 void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc);
 void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc);
-void scene_set_serialize_cb(scene *scene, scene_serialize_cb cbfunc);
 
 #endif // _SCENE_H

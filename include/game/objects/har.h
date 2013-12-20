@@ -80,9 +80,9 @@ typedef struct har_t {
 #endif
 } har;
 
+void har_bootstrap(object *obj);
 int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int player_id);
 void har_set_ani(object *obj, int animation_id, int repeat);
-
 int har_is_active(object *obj);
 
 #endif // _HAR_H

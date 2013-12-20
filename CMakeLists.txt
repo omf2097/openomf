@@ -119,6 +119,7 @@ add_executable(openomf
     src/game/protos/player.c
     src/game/protos/scene.c
     src/game/protos/intersect.c
+    src/game/protos/object_specializer.c
     src/game/objects/har.c
     src/game/objects/scrap.c
     src/game/objects/projectile.c
