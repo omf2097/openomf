@@ -6,6 +6,7 @@
 #include "game/protos/object.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
+#include "game/serial.h"
 #include "resources/bk.h"
 
 typedef struct scene_t scene;
@@ -19,7 +20,7 @@ typedef void (*scene_render_overlay_cb)(scene *scene);
 typedef void (*scene_tick_cb)(scene *scene);
 typedef void (*scene_input_poll_cb)(scene *scene);
 typedef int (*scene_startup_cb)(scene *scene, int anim_id);
-typedef int (*scene_serialize_cb)(scene *scene, char *buf);
+typedef int (*scene_serialize_cb)(scene *scene, serial *ser);
 
 struct scene_t {
     game_state *gs;
@@ -50,8 +51,8 @@ void scene_tick(scene *scene);
 void scene_input_poll(scene *scene);
 int scene_startup(scene *scene, int id);
 
-int scene_serialize(scene *scene, char *buf);
-int scene_unserialize(scene *scene, char *buf, int len);
+int scene_serialize(scene *scene, serial *ser);
+int scene_unserialize(scene *scene, serial *ser);
 
 void scene_set_userdata(scene *scene, void *userdata);
 void* scene_get_userdata(scene *scene);

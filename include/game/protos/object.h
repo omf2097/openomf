@@ -7,6 +7,7 @@
 #include "utils/vec.h"
 #include "utils/hashmap.h"
 #include "video/texture.h"
+#include "game/serial.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
 #define OBJECT_NO_GROUP -1
@@ -40,7 +41,7 @@ typedef void (*object_tick_cb)(object *obj);
 typedef void (*object_move_cb)(object *obj);
 typedef void (*object_collide_cb)(object *a, object *b);
 typedef void (*object_finish_cb)(object *obj);
-typedef int  (*object_serialize_cb)(object *obj, char *buf);
+typedef int  (*object_serialize_cb)(object *obj, serial *ser);
 typedef void (*object_debug_cb)(object *obj);
 
 struct object_t {
@@ -100,8 +101,8 @@ void object_act(object *obj, int action);
 int object_finished(object *obj);
 void object_free(object *obj);
 
-int object_serialize(object *obj, char *buf);
-int object_unserialize(object *obj, char *buf, int len);
+int object_serialize(object *obj, serial *ser);
+int object_unserialize(object *obj, serial *ser);
 
 void object_set_stride(object *obj, int stride);
 void object_set_playback_direction(object *obj, int dir);

@@ -80,47 +80,43 @@ void scene_init(scene *scene) {
 }
 
 /*
- * Serializes the scene to a buffer. Returns the length of data written.
- * This will call the specialized scenes (eg. arena) for their 
- * serialization data. Should return -1 on errors.
+ * Serializes the scene to a buffer. Should return 1 on error, 0 on success
+ * This will call the specialized scenes, (eg. arena) for their 
+ * serialization data. 
  */
-int scene_serialize(scene *sc, char *buf) {
-    int rlen = 0;
-
-    scene_serialization ser;
-
+int scene_serialize(scene *sc, serial *ser) {
+    scene_serialization s;
     // TODO: Set ser attrs here
 
     // Copy serialization data to buffer
-    memcpy(buf, &ser, sizeof(scene_serialization));
-    rlen += sizeof(scene_serialization);
+    serial_write(ser, (char*)&s, sizeof(scene_serialization));
 
     // Serialize the underlying object
     if(sc->serialize != NULL) {
-        rlen += sc->serialize(sc, (char*)(buf + rlen));
+        sc->serialize(sc, ser);
     }
 
-    // Return serialized length
-    return rlen;
+    // Return success
+    return 0;
 }
 
 /* 
- * Unserializes the data from buffer to a scene. Returns the amount of data read
- * from the buffer. This will NOT create any specialization, because that
- * would require scene to know about all possibly specializations.
- * Should return -1 on errors.
+ * Unserializes the data from buffer to a specialized object. 
+ * Should return 1 on error, 0 on success.
  */
-int scene_unserialize(scene *sc, char *buf, int len) {
-    if(len < sizeof(scene_serialization)) {
-        return -1;
+int scene_unserialize(scene *sc, serial *ser) {
+    if(serial_len(ser) < sizeof(scene_serialization)) {
+        return 1;
     }
 
-    scene_serialization ser;
-    memcpy(&ser, buf, sizeof(scene_serialization));
+    // Extract serialization data from buffer
+    scene_serialization s;
+    serial_read(ser, (char*)&s, sizeof(scene_serialization));
 
-    // TODO: Set scene attrs here
+    // TODO: Set scene attrs from serialization here
 
-    return sizeof(scene_serialization);
+    // Return success
+    return 0;
 }
 
 void scene_set_userdata(scene *scene, void *userdata) {

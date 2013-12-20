@@ -71,47 +71,42 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 }
 
 /*
- * Serializes the object to a buffer. Returns the length of data written.
+ * Serializes the object to a buffer. Should return 1 on error, 0 on success
  * This will call the specialized objects, eg. har or projectile for their 
- * serialization data. Should return -1 on errors.
+ * serialization data. 
  */
-int object_serialize(object *obj, char *buf) {
-    int rlen = 0;
-
-    object_serialization ser;
-
+int object_serialize(object *obj, serial *ser) {
+    object_serialization o;
     // TODO: Set ser attrs here
 
     // Copy serialization data to buffer
-    memcpy(buf, &ser, sizeof(object_serialization));
-    rlen += sizeof(object_serialization);
+    serial_write(ser, (char*)&o, sizeof(object_serialization));
 
     // Serialize the underlying object
     if(obj->serialize != NULL) {
-        rlen += obj->serialize(obj, (char*)(buf + rlen));
+        obj->serialize(obj, ser);
     }
 
-    // Return serialized length
-    return rlen;
+    // Return success
+    return 0;
 }
 
 /* 
- * Unserializes the data from buffer to an object. Returns the amount of data read
- * from the buffer. This will NOT create any specialization, because that
- * would require object to know about all possibly specializations.
- * Should return -1 on errors.
+ * Unserializes the data from buffer to a specialized object. 
+ * Should return 1 on error, 0 on success.
  */
-int object_unserialize(object *obj, char *buf, int len) {
-    if(len < sizeof(object_serialization)) {
-        return -1;
+int object_unserialize(object *obj, serial *ser) {
+    if(serial_len(ser) < sizeof(object_serialization)) {
+        return 1;
     }
 
-    object_serialization ser;
-    memcpy(&ser, buf, sizeof(object_serialization));
+    object_serialization o;
+    serial_read(ser, (char*)&o, sizeof(object_serialization));
 
     // TODO: Set object attrs here
 
-    return sizeof(object_serialization);
+    // Return success
+    return 0;
 }
 
 void object_set_stride(object *obj, int stride) {
