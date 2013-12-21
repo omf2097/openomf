@@ -8,6 +8,7 @@ void serial_create(serial *s) {
     s->data = NULL;
 }
 
+// TODO: Optimize writing
 void serial_write(serial *s, char *buf, int len) {
     if(s->data == NULL) {
         s->data = malloc(len);
@@ -16,6 +17,20 @@ void serial_write(serial *s, char *buf, int len) {
         s->data = realloc(s->data, s->len + len);
         memcpy(s->data + s->len, buf, len);
     }
+}
+
+// TODO: Add conversions (htons, etc.)!
+
+void serial_write_int(serial *s, int v) {
+    serial_write(s, (char*)&v, sizeof(v));
+}
+
+void serial_write_long(serial *s, long v) {
+    serial_write(s, (char*)&v, sizeof(v));
+}
+
+void serial_write_float(serial *s, float v) {
+    serial_write(s, (char*)&v, sizeof(v));
 }
 
 void serial_free(serial *s) {
@@ -38,4 +53,22 @@ void serial_read(serial *s, char *buf, int len) {
     }
     memcpy(buf, s->data, len);
     s->rpos += len;
+}
+
+int serial_read_int(serial *s) {
+    int v;
+    serial_read(s, (char*)&v, sizeof(v));
+    return v;
+}
+
+long serial_read_long(serial *s) {
+    long v;
+    serial_read(s, (char*)&v, sizeof(v));
+    return v;
+}
+
+float serial_read_float(serial *s) {
+    float v;
+    serial_read(s, (char*)&v, sizeof(v));
+    return v;
 }

@@ -11,22 +11,6 @@
 
 #define UNUSED(x) (void)(x)
 
-// For serialization, packed for network.
-typedef struct __attribute__((__packed__)) object_serialization_t {
-    int file_id;
-    float pos_x;
-    float pos_y;
-    float vel_x;
-    float vel_y;
-    uint8_t direction;
-    uint8_t is_static;
-    int group;
-    int layers;
-    float gravity;
-    // etc
-} object_serialization;
-
-
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // State
     obj->gs = gs;
@@ -78,11 +62,11 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
  * serialization data. 
  */
 int object_serialize(object *obj, serial *ser) {
-    object_serialization o;
-    // TODO: Set ser attrs here
-
-    // Copy serialization data to buffer
-    serial_write(ser, (char*)&o, sizeof(object_serialization));
+    // TODO: Write other attributes too
+    serial_write_float(ser, obj->pos.x);
+    serial_write_float(ser, obj->pos.y);
+    serial_write_float(ser, obj->vel.x);
+    serial_write_float(ser, obj->vel.y);
 
     // Serialize the underlying object
     if(obj->serialize != NULL) {
@@ -99,21 +83,15 @@ int object_serialize(object *obj, serial *ser) {
  * Serial reder position should be set to correct position before calling this.
  */
 int object_unserialize(object *obj, serial *ser) {
-    if(serial_len(ser) < sizeof(object_serialization)) {
-        return 1;
-    }
-
-    // Read object_t serialized data and handle it
-    object_serialization o;
-    serial_read(ser, (char*)&o, sizeof(object_serialization));
-
-    // TODO: unserialize data here for object_t
+    // TODO: Read object_t data
+    obj->pos.x = serial_read_float(ser);
+    obj->pos.y = serial_read_float(ser);
+    obj->vel.x = serial_read_float(ser);
+    obj->vel.y = serial_read_float(ser);
 
     // Read the specialization ID from ther serial "stream".
-    // This should be a one byte long. For values, check
-    // object_specializer.h
-    uint8_t specialization_id;
-    serial_read(ser, (char*)&specialization_id, 1);
+    // This should be an int.
+    int specialization_id = serial_read_int(ser);
 
     // This should automatically bootstrap the object so that it has at least
     // unserialize function callback and local memory allocated

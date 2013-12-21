@@ -8,12 +8,6 @@
 #include "game/game_player.h"
 #include "game/game_state_type.h"
 
-// For serialization, packed for network.
-typedef struct __attribute__((__packed__)) scene_serialization_t {
-    int file_id;
-    int id;
-} scene_serialization;
-
 // Some internal functions
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
 void cb_scene_destroy_object(object *parent, int id, void *userdata);
@@ -84,12 +78,9 @@ void scene_init(scene *scene) {
  * This will call the specialized scenes, (eg. arena) for their 
  * serialization data. 
  */
-int scene_serialize(scene *sc, serial *ser) {
-    scene_serialization s;
-    // TODO: Set ser attrs here
-
-    // Copy serialization data to buffer
-    serial_write(ser, (char*)&s, sizeof(scene_serialization));
+int scene_serialize(scene *s, serial *ser) {
+    // TODO: Write attributes
+    serial_write_int(ser, s->id);
 
     // Return success
     return 0;
@@ -100,16 +91,9 @@ int scene_serialize(scene *sc, serial *ser) {
  * Should return 1 on error, 0 on success.
  * Serial reder position should be set to correct position before calling this.
  */
-int scene_unserialize(scene *sc, serial *ser) {
-    if(serial_len(ser) < sizeof(scene_serialization)) {
-        return 1;
-    }
-
-    // Extract serialization data from buffer
-    scene_serialization s;
-    serial_read(ser, (char*)&s, sizeof(scene_serialization));
-
-    // TODO: Set scene attrs from serialization here
+int scene_unserialize(scene *s, serial *ser) {
+    // TODO: Read attributes
+    s->id = serial_read_int(ser);
 
     // Return success
     return 0;
