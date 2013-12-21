@@ -130,6 +130,7 @@ add_executable(openomf
     src/game/scenes/melee.c
     src/game/scenes/vs.c
     src/game/scenes/mechlab.c
+    src/game/scenes/newsroom.c
     src/game/objects/har.c
     src/game/text/text.c
     src/game/text/languages.c

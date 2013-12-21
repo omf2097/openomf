@@ -24,7 +24,7 @@ void log_close() {
     }
 }
 
-void log_print(char mode, char *fmt, ...) {
+void log_print(char mode, const char *fmt, ...) {
     fprintf(handle, "[%c] ", mode);
     va_list args;
     va_start(args, fmt);

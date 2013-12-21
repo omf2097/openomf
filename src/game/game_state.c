@@ -14,6 +14,7 @@
 #include "game/scenes/credits.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/mechlab.h"
+#include "game/scenes/newsroom.h"
 #include "game/scenes/melee.h"
 #include "game/scenes/vs.h"
 
@@ -257,6 +258,12 @@ int game_load_new(game_state *gs, int scene_id) {
         case SCENE_MECHLAB:
             if(mechlab_create(gs->sc)) {
                 PERROR("Error while creating Mechlab scene.");
+                return 1;
+            }
+            break;
+        case SCENE_NEWSROOM:
+            if(newsroom_create(gs->sc)) {
+                PERROR("Error while creating Newsroom scene.");
                 return 1;
             }
             break;

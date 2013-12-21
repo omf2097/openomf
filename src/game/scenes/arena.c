@@ -174,6 +174,16 @@ void scene_youlose_anim_start(void *userdata) {
     arena->state = ARENA_STATE_ENDING;
 }
 
+void arena_end_cb(void *userdata) {
+    // after the match ends, switch the newsroom
+    DEBUG("switching to newsroom");
+    scene *sc = userdata;
+    //arena_local *local = scene_get_userdata(sc);
+    game_state *gs = sc->gs;
+
+    // XXX TODO take victory pose screenshot for the newsroom
+    game_state_set_next(gs, SCENE_NEWSROOM);
+}
 
 // -------- Scene callbacks --------
 
@@ -272,13 +282,16 @@ void arena_tick(scene *scene) {
                 har_set_ani(obj_har2, ANIM_DEFEAT, 1);
                 har1->state = STATE_VICTORY;
                 har2->state = STATE_DEFEAT;
+                // switch to the newsroom after some delay
+                ticktimer_add(120, arena_end_cb, scene);
             } else if(har1->health <= 0) {
                 scene_youlose_anim_start(scene->gs);
                 har_set_ani(obj_har2, ANIM_VICTORY, 1);
                 har_set_ani(obj_har1, ANIM_DEFEAT, 1);
                 har2->state = STATE_VICTORY;
                 har1->state = STATE_DEFEAT;
-
+                // switch to the newsroom after some delay
+                ticktimer_add(120, arena_end_cb, scene);
             }
         }
     }

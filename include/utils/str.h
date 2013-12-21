@@ -15,11 +15,14 @@ void str_free(str *string);
 
 size_t str_size(str *string);
 
+void str_substr(str *dst, str *src, size_t start, size_t end);
 void str_copy(str *dst, str *src);
 void str_append(str *dst, str *src);
+void str_append_c(str *dst, const char *src);
 void str_prepend(str *dst, str *src);
 
 int str_first_of(str *string, char find, size_t *pos);
+int str_next_of(str *string, char find, size_t *pos);
 int str_last_of(str *string, char find, size_t *pos);
 
 int str_equal(str *string, str *string_b);

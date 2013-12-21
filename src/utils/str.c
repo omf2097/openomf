@@ -40,6 +40,19 @@ size_t str_size(str *string) {
     return string->len;
 }
 
+void str_substr(str *dst, str *src, size_t start, size_t end) {
+    if(src->data) {
+        size_t len = end - start;
+        dst->data = realloc(dst->data, len + 1);
+        dst->len = len;
+        memcpy(dst->data, src->data + start, len);
+        dst->data[len] = 0;
+    } else {
+        dst->data = NULL;
+        dst->len = 0;
+    }
+}
+
 void str_copy(str *dst, str *src) {
     if(src->data) {
         dst->data = realloc(dst->data, src->len + 1);
@@ -59,6 +72,14 @@ void str_append(str *dst, str *src) {
     dst->data[dst->len] = 0;
 }
 
+void str_append_c(str *dst, const char *src) {
+    size_t srclen = strlen(src);
+    dst->data = realloc(dst->data, dst->len + srclen + 1);
+    memcpy(dst->data + dst->len, src, srclen);
+    dst->len += srclen;
+    dst->data[dst->len] = 0;
+}
+
 void str_prepend(str *dst, str *src) {
     dst->data = realloc(dst->data, dst->len + src->len + 1);
     memmove(dst->data + src->len, dst->data, dst->len);
@@ -69,6 +90,16 @@ void str_prepend(str *dst, str *src) {
 
 int str_first_of(str *string, char find, size_t *pos) {
     for(size_t i = 0; i < string->len; i++) {
+        if(string->data[i] == find) {
+            *pos = i;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int str_next_of(str *string, char find, size_t *pos) {
+    for(size_t i = *pos; i < string->len; i++) {
         if(string->data[i] == find) {
             *pos = i;
             return 1;
