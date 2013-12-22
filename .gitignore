@@ -8,3 +8,4 @@ build/*.txt
 build/*.conf
 build/CMakeFiles/
 build/music/
+build/
