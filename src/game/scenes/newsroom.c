@@ -24,19 +24,22 @@ typedef struct newsroom_local_t {
     int sex1, sex2;
 } newsroom_local;
 
-
 void newsroom_fixup_str(newsroom_local *local) {
 
-    // replace ~1 with winners name
-    // ~2 with losers name
-    // ~3 with winners har name
-    // ~4 with losers har name
-    // ~5 with Stadium
-    // ~6 with The
-    // ~7 with Her
-    // ~8 with She
-    // ~10 with Her
-    // ~11 with She
+    /*
+     * Substitution table
+
+       1= Player1 - Crystal
+       2= Player2 - Steffan
+       3= HAR1 - jaguar
+       4= HAR2 - shadow
+       5= Arena - power plant
+       6= His/Her P1 - Her
+       7= Him/Her P1 - Her
+       8= He/She P1 - She
+       10= Him/Her P2 - Him
+       11= He/She P2 - He
+    */
 
     const char *text = NULL;
 
