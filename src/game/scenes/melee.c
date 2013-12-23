@@ -217,12 +217,10 @@ void handle_action(scene *scene, int player, int action) {
     melee_local *local = scene_get_userdata(scene);
     int *row, *column, *done;
     if (player == 1) {
-        DEBUG("event for player 1");
         row = &local->row_a;
         column = &local->column_a;
         done = &local->done_a;
     } else {
-        DEBUG("event for player 2");
         row = &local->row_b;
         column = &local->column_b;
         done = &local->done_b;
