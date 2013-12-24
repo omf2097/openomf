@@ -136,12 +136,12 @@ int net_controller_update(controller *ctrl, serial *serial) {
     ENetPeer *peer = data->peer;
     ENetHost *host = data->host;
     ENetPacket *packet;
-    int et = EVENT_TYPE_HB;
+    int et = EVENT_TYPE_SYNC;
     char *buf = malloc(serial->len+sizeof(int));
 
     memcpy(buf, (char*)&et, sizeof(int));
     // need to copy here because enet will free this packet
-    memcpy(buf, serial->data, serial->len);
+    memcpy(buf+sizeof(int), serial->data, serial->len);
 
     packet = enet_packet_create(buf, serial->len, ENET_PACKET_FLAG_RELIABLE);
     if (peer) {
