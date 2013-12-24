@@ -152,7 +152,9 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
         DEBUG("object has no special unserializer");
     }
 
-    // TODO Initialize animation state
+    // Init animation with correct string and tick
+    player_reload_with_str(obj, anim_str);
+    player_jump_to_tick(obj, ticks);
 
     // Return success
     return 0;
