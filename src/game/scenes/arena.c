@@ -293,7 +293,7 @@ void arena_tick(scene *scene) {
             if(i->type == EVENT_TYPE_ACTION) {
                 need_sync += object_act(game_player_get_har(player1), i->event_data.action);
             } else if (i->type == EVENT_TYPE_SYNC) {
-                game_state_unserialize(scene->gs, i->event_data.ser);
+                game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player1->ctrl));
                 // fix the palettes
                 object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                 object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
@@ -309,7 +309,7 @@ void arena_tick(scene *scene) {
             if(i->type == EVENT_TYPE_ACTION) {
                 need_sync += object_act(game_player_get_har(player2), i->event_data.action);
             } else if (i->type == EVENT_TYPE_SYNC) {
-                game_state_unserialize(scene->gs, i->event_data.ser);
+                game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player2->ctrl));
                 // fix the palettes
                 object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                 object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
@@ -359,7 +359,7 @@ void arena_input_tick(scene *scene) {
                 if(i->type == EVENT_TYPE_ACTION) {
                     need_sync += object_act(game_player_get_har(player1), i->event_data.action);
                 } else if (i->type == EVENT_TYPE_SYNC) {
-                    game_state_unserialize(scene->gs, i->event_data.ser);
+                    game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player1->ctrl));
                     // fix the palettes
                     object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                     object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
@@ -376,7 +376,7 @@ void arena_input_tick(scene *scene) {
                 if(i->type == EVENT_TYPE_ACTION) {
                     need_sync += object_act(game_player_get_har(player2), i->event_data.action);
                 } else if (i->type == EVENT_TYPE_SYNC) {
-                    game_state_unserialize(scene->gs, i->event_data.ser);
+                    game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player2->ctrl));
                     // fix the palettes
                     object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                     object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);

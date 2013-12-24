@@ -461,8 +461,10 @@ int game_state_serialize(game_state *gs, serial *ser) {
     return 0;
 }
 
-int game_state_unserialize(game_state *gs, serial *ser) {
-    serial_read_int(ser);
+int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
+    int oldtick = gs->tick;
+    gs->tick = serial_read_int(ser);
+    int endtick = gs->tick + (rtt / 2);
     rand_seed(serial_read_int(ser));
 
     for(int i = 0; i < 2; i++) {
@@ -484,8 +486,25 @@ int game_state_unserialize(game_state *gs, serial *ser) {
         // Set HAR for player
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
+
+        // XXX this is a hack because the arena holds the player palette!
+        // after this function returns, the arena will restore the palette
+        // but we need it when we replay time, apparently
+        object_set_palette(obj, bk_get_palette(&gs->sc->bk_data, 0), 0);
+
         DEBUG("HAR %d is now %p", i, (void*)player->har);
     }
+    // tick things back to the current time
+    DEBUG("replaying %d ticks", endtick - gs->tick);
+    DEBUG("adjusting clock from %d to %d", oldtick, endtick);
+    while (gs->tick <= endtick) {
+        game_state_cleanup(gs);
+        game_state_call_move(gs);
+        game_state_call_collide(gs);
+        game_state_call_tick(gs);
+        gs->tick++;
+    }
+
     return 0;
 }
 
