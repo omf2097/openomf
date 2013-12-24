@@ -667,7 +667,7 @@ void mainmenu_tick(scene *scene) {
                 game_player_set_ctrl(p1, player1_ctrl);
 
                 // Player 2 controller -- Network
-                net_controller_create(player2_ctrl, local->host, event.peer);
+                net_controller_create(player2_ctrl, local->host, event.peer, ROLE_SERVER);
                 game_player_set_ctrl(p2, player2_ctrl);
                 local->host = NULL;
                 game_player_set_selectable(p2, 1);
@@ -692,7 +692,7 @@ void mainmenu_tick(scene *scene) {
                 player2_ctrl->har = p2->har;
 
                 // Player 1 controller -- Network
-                net_controller_create(player1_ctrl, local->host, event.peer);
+                net_controller_create(player1_ctrl, local->host, event.peer, ROLE_CLIENT);
                 game_player_set_ctrl(p1, player1_ctrl);
 
                 // Player 2 controller -- Keyboard

@@ -5,7 +5,7 @@
 #include <SDL2/SDL.h>
 #include <enet/enet.h>
 
-void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer);
+void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int id);
 void net_controller_free(controller *ctrl);
 int net_controller_get_rtt(controller *ctrl);
 

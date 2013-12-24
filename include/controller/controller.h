@@ -34,6 +34,7 @@ enum {
 enum {
     EVENT_TYPE_ACTION,
     EVENT_TYPE_SYNC,
+    EVENT_TYPE_HB,
     EVENT_TYPE_CLOSE
 };
 

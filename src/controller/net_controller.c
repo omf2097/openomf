@@ -6,6 +6,7 @@
 typedef struct wtf_t {
     ENetHost *host;
     ENetPeer *peer;
+    int id;
     int last_hb;
     int outstanding_hb;
     int rtt;
@@ -41,29 +42,57 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     ENetEvent event;
     wtf *data = ctrl->data;
     ENetHost *host = data->host;
+    ENetPeer *peer = data->peer;
+    serial *ser;
     int handled = 0;
     if (enet_host_service(host, &event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
-                if (event.packet->data[0] == 'k') {
-                    // dispatch keypress to scene
-                    int action = atoi((char*)event.packet->data+1);
-                    controller_cmd(ctrl, action, ev);
-                    handled = 1;
-                } else if (event.packet->data[0] == 't') {
-                    // got a tick
-                    int start = atoi((char*)event.packet->data+1);
-                    data->rtt = abs(start - ticks);
-                    data->outstanding_hb = 0;
-                    data->last_hb = ticks;
-                } else {
-                    serial *ser = malloc(sizeof(serial));
-                    serial_create(ser);
-                    ser->data = malloc(event.packet->dataLength);
-                    ser->len = event.packet->dataLength;
-                    memcpy(ser->data, event.packet->data, event.packet->dataLength);
-                    controller_sync(ctrl, ser, ev);
-                    handled = 1;
+                ser = malloc(sizeof(serial));
+                serial_create(ser);
+                ser->data = malloc(event.packet->dataLength);
+                ser->len = event.packet->dataLength;
+                memcpy(ser->data, event.packet->data, event.packet->dataLength);
+                switch(serial_read_int(ser)) {
+                    case EVENT_TYPE_ACTION:
+                        {
+                            // dispatch keypress to scene
+                            int action = serial_read_int(ser);
+                            controller_cmd(ctrl, action, ev);
+                            handled = 1;
+                            serial_free(ser);
+                            free(ser);
+                        }
+                        break;
+                    case EVENT_TYPE_HB:
+                        {
+                            // got a tick
+                            int id = serial_read_int(ser);
+                            if (id == data->id) {
+                                int start = serial_read_int(ser);
+                                data->rtt = abs(start - ticks);
+                                data->outstanding_hb = 0;
+                                data->last_hb = ticks;
+                                serial_free(ser);
+                            } else {
+                                // a heartbeat from the peer, bounce it back
+                                ENetPacket *packet;
+                                packet = enet_packet_create(ser->data, ser->len, ENET_PACKET_FLAG_RELIABLE);
+                                if (peer) {
+                                    enet_peer_send(peer, 0, packet);
+                                    enet_host_flush (host);
+                                }
+                            }
+                            free(ser);
+                        }
+                        break;
+                    case EVENT_TYPE_SYNC:
+                        controller_sync(ctrl, ser, ev);
+                        handled = 1;
+                        break;
+                    default:
+                        serial_free(ser);
+                        free(ser);
                 }
                 enet_packet_destroy(event.packet);
                 break;
@@ -79,11 +108,13 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     }
     if ((data->last_hb == -1 || ticks - data->last_hb > 10) && !data->outstanding_hb) {
         data->outstanding_hb = 1;
-        char buf[10];
-        ENetPeer *peer = data->peer;
+        serial ser;
         ENetPacket *packet;
-        sprintf(buf, "t%d", ticks);
-        packet = enet_packet_create(buf, strlen (buf) + 1, ENET_PACKET_FLAG_RELIABLE);
+        serial_create(&ser);
+        serial_write_int(&ser, EVENT_TYPE_HB);
+        serial_write_int(&ser, data->id);
+        serial_write_int(&ser, ticks);
+        packet = enet_packet_create(ser.data, ser.len, ENET_PACKET_FLAG_RELIABLE);
         if (peer) {
             enet_peer_send(peer, 0, packet);
             enet_host_flush (host);
@@ -105,8 +136,10 @@ int net_controller_update(controller *ctrl, serial *serial) {
     ENetPeer *peer = data->peer;
     ENetHost *host = data->host;
     ENetPacket *packet;
-    char *buf = malloc(serial->len);
+    int et = EVENT_TYPE_HB;
+    char *buf = malloc(serial->len+sizeof(int));
 
+    memcpy(buf, (char*)&et, sizeof(int));
     // need to copy here because enet will free this packet
     memcpy(buf, serial->data, serial->len);
 
@@ -139,7 +172,7 @@ void har_hook(char* buf, void *userdata) {
 }
 
 void controller_hook(controller *ctrl, int action) {
-    char buf[10];
+    serial ser;
     wtf *data = ctrl->data;
     ENetPeer *peer = data->peer;
     ENetHost *host = data->host;
@@ -148,9 +181,12 @@ void controller_hook(controller *ctrl, int action) {
         // not interested
         return;
     }
+    serial_create(&ser);
+    serial_write_int(&ser, EVENT_TYPE_ACTION);
+    serial_write_int(&ser, action);
     /*DEBUG("controller hook fired with %d", action);*/
-    sprintf(buf, "k%d", action);
-    packet = enet_packet_create(buf, strlen (buf) + 1, ENET_PACKET_FLAG_RELIABLE);
+    /*sprintf(buf, "k%d", action);*/
+    packet = enet_packet_create(ser.data, ser.len, ENET_PACKET_FLAG_RELIABLE);
     if (peer) {
         enet_peer_send(peer, 0, packet);
         enet_host_flush (host);
@@ -161,11 +197,15 @@ void controller_hook(controller *ctrl, int action) {
 
 int net_controller_get_rtt(controller *ctrl) {
     wtf *data = ctrl->data;
+    if (data->last_hb == -1) {
+        return -1;
+    }
     return data->rtt;
 }
 
-void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer) {
+void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int id) {
     wtf *data = malloc(sizeof(wtf));
+    data->id = id;
     data->host = host;
     data->peer = peer;
     data->last_hb = -1;
