@@ -10,7 +10,7 @@ void serial_create(serial *s) {
 }
 
 // TODO: Optimize writing
-void serial_write(serial *s, char *buf, int len) {
+void serial_write(serial *s, const char *buf, int len) {
     if(s->data == NULL) {
         s->data = malloc(len);
         memcpy(s->data, buf, len);

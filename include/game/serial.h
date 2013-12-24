@@ -10,7 +10,7 @@ typedef struct serial_t {
 } serial;
 
 void serial_create(serial *s);
-void serial_write(serial *s, char *buf, int len);
+void serial_write(serial *s, const char *buf, int len);
 void serial_write_int(serial *s, int v);
 void serial_write_long(serial *s, long v);
 void serial_write_float(serial *s, float v);

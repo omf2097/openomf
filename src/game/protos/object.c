@@ -73,7 +73,11 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int(ser, obj->stride);
     serial_write_int(ser, obj->cur_animation->id);
 
-
+    // Write animation state
+    const char *anim_str = player_get_str(obj);
+    serial_write_int(ser, strlen(anim_str)+1);
+    serial_write(ser, anim_str, strlen(anim_str)+1);
+    serial_write_int(ser, (int)obj->animation_state.ticks);
 
     // Serialize the underlying object
     if(obj->serialize != NULL) {
@@ -107,6 +111,13 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->stride = serial_read_int(ser);
     int animation_id = serial_read_int(ser);
 
+    // Read animation state
+    int anim_str_len = serial_read_int(ser);
+    char anim_str[anim_str_len];
+    serial_read(ser, anim_str, anim_str_len);
+    unsigned int ticks = (unsigned int)serial_read_int(ser);
+    DEBUG("Animation state: [%d] %s, ticks = %d", anim_str_len, anim_str, ticks);
+
     // Read the specialization ID from ther serial "stream".
     // This should be an int.
     int specialization_id = serial_read_int(ser);
@@ -124,7 +135,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
         DEBUG("object has no special unserializer");
     }
 
-    // TODO unserialize the animation player
+    // TODO Initialize animation state
 
     // Return success
     return 0;
