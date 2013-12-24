@@ -64,13 +64,28 @@ set(CMAKE_C_FLAGS_MINSIZEREL "${CORE_FLAGS} -Os -s")
 
 # Don't show console on mingw in release builds
 IF(MINGW)
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -mwindows")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -mwindows")
-    set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -mwindows")
+    IF(NOT STANDALONE_SERVER)
+        set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -mwindows")
+        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -mwindows")
+        set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -mwindows")
+    ENDIF(NOT STANDALONE_SERVER)
 ENDIF(MINGW)
 
 # Testing stuff
 add_subdirectory(testing)
+
+IF(STANDALONE_SERVER)
+    add_definitions( -DSTANDALONE_SERVER )
+    set(STANDALONE_SRC
+        src/main_net.c
+        src/engine_net.c
+    )
+ELSE(STANDALONE_SERVER)
+    set(STANDALONE_SRC
+        src/main.c
+        src/engine.c
+    )
+ENDIF(STANDALONE_SERVER)
 
 add_executable(openomf 
     src/utils/log.c
@@ -152,8 +167,7 @@ add_executable(openomf
     src/controller/joystick.c
     src/controller/net_controller.c
     src/console/console.c
-    src/main.c
-    src/engine.c
+    ${STANDALONE_SRC}
 )
 
 set(COREINCS
