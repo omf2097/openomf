@@ -24,7 +24,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->y_percent = 1.0;
 
     // Physics
-    obj->is_static = 0;
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = OBJECT_NO_GROUP;
     obj->gravity = 0.0f;
@@ -73,6 +72,8 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int(ser, obj->layers);
     serial_write_int(ser, obj->stride);
     serial_write_int(ser, obj->cur_animation->id);
+
+
 
     // Serialize the underlying object
     if(obj->serialize != NULL) {
@@ -489,9 +490,7 @@ void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc) { obj-
 void object_set_layers(object *obj, int layers) { obj->layers = layers; }
 void object_set_group(object *obj, int group) { obj->group = group; }
 void object_set_gravity(object *obj, float gravity) { obj->gravity = gravity; }
-void object_set_static(object *obj, int is_static) { obj->is_static = is_static; }
 
-int object_is_static(object *obj) { return obj->is_static; }
 int object_get_gravity(object *obj) { return obj->gravity; }
 int object_get_group(object *obj) { return obj->group; }
 int object_get_layers(object *obj) { return obj->layers; }

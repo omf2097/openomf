@@ -56,7 +56,6 @@ struct object_t {
     float y_percent;
     float gravity;
     
-    int is_static;
     int group;
     int layers;
     
@@ -127,7 +126,6 @@ int object_get_halt(object *obj);
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);
 void object_set_gravity(object *obj, float gravity);
-void object_set_static(object *obj, int is_static);
 
 void object_set_userdata(object *obj, void *ptr);
 void *object_get_userdata(object *obj);
@@ -146,7 +144,6 @@ int object_get_repeat(object *obj);
 void object_set_direction(object *obj, int dir);
 int object_get_direction(object *obj);
 
-int object_is_static(object *obj);
 int object_get_gravity(object *obj);
 int object_get_group(object *obj);
 int object_get_layers(object *obj);
