@@ -7,5 +7,6 @@
 
 void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer);
 void net_controller_free(controller *ctrl);
+int net_controller_get_rtt(controller *ctrl);
 
 #endif // _NET_CONTROLLER_H

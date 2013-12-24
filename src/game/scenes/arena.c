@@ -468,11 +468,12 @@ void arena_render_overlay(scene *scene) {
         // Render HAR and pilot names
         font_render(&font_small, lang_get(player[0]->pilot_id+20), 5, 19, TEXT_COLOR);
         font_render(&font_small, lang_get((player[0]->har_id - HAR_JAGUAR)+31), 5, 26, TEXT_COLOR);
+
         int p2len = (strlen(lang_get(player[1]->pilot_id+20))-1) * font_small.w;
         int h2len = (strlen(lang_get((player[1]->har_id - HAR_JAGUAR)+31))-1) * font_small.w;
         font_render(&font_small, lang_get(player[1]->pilot_id+20), 315-p2len, 19, TEXT_COLOR);
         font_render(&font_small, lang_get((player[1]->har_id - HAR_JAGUAR)+31), 315-h2len, 26, TEXT_COLOR);
-        
+
         // Render score stuff
         chr_score_render(&local->player1_score);
         chr_score_render(&local->player2_score);
@@ -482,6 +483,16 @@ void arena_render_overlay(scene *scene) {
         int s2len = strlen(tmp) * font_small.w;
         chr_score_format(&local->player2_score, tmp);
         font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
+
+        // render ping, if player is networked
+        if (player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
+            sprintf(buf, "ping %u", net_controller_get_rtt(player[0]->ctrl));
+            font_render(&font_small, buf, 5, 40, TEXT_COLOR);
+        }
+        if (player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
+            sprintf(buf, "ping %u", net_controller_get_rtt(player[1]->ctrl));
+            font_render(&font_small, buf, 315-(strlen(buf)*font_small.w), 40, TEXT_COLOR);
+        }
     }
 
     // Render menu (if visible)

@@ -100,9 +100,9 @@ int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
     return 0;
 }
 
-int controller_tick(controller *ctrl, ctrl_event **ev) {
+int controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     if(ctrl->tick_fun != NULL) {
-        return ctrl->tick_fun(ctrl, ev);
+        return ctrl->tick_fun(ctrl, ticks, ev);
     }
     return 0;
 }

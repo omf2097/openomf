@@ -131,7 +131,6 @@ void vs_tick(scene *scene) {
                 return;
             }
         } while((i = i->next));
-        DEBUG("done");
     }
 }
 
@@ -153,7 +152,6 @@ int vs_event(scene *scene, SDL_Event *event) {
                 return 1;
             }
         } while((i = i->next));
-        DEBUG("done");
     }
     controller_free_chain(p1);
     return 1;

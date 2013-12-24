@@ -280,6 +280,7 @@ int game_load_new(game_state *gs, int scene_id) {
     // All done.
     gs->this_id = scene_id;
     gs->next_id = scene_id;
+    gs->tick = 0;
     return 0;
 }
 
@@ -336,7 +337,7 @@ void game_state_tick_controllers(game_state *gs) {
         game_player *gp = game_state_get_player(gs, i);
         controller *c = game_player_get_ctrl(gp);
         if(c) {
-            controller_tick(c, &c->extra_events);
+            controller_tick(c, gs->tick, &c->extra_events);
         }
     }
 }
@@ -461,7 +462,7 @@ int game_state_serialize(game_state *gs, serial *ser) {
 }
 
 int game_state_unserialize(game_state *gs, serial *ser) {
-    gs->tick = serial_read_int(ser);
+    serial_read_int(ser);
     rand_seed(serial_read_int(ser));
 
     for(int i = 0; i < 2; i++) {
