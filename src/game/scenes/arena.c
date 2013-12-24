@@ -284,18 +284,26 @@ void arena_tick(scene *scene) {
         }
     }
 
+    int need_sync = 0;
     // allow enemy HARs to move during a network game
     ctrl_event *i = player1->ctrl->extra_events;
     if (i) {
         do {
-            object_act(game_player_get_har(player1), i->action);
+            need_sync += object_act(game_player_get_har(player1), i->action);
         } while((i = i->next));
     }
     i = player2->ctrl->extra_events;
     if (i) {
         do {
-            object_act(game_player_get_har(player2), i->action);
+            need_sync += object_act(game_player_get_har(player2), i->action);
         } while((i = i->next));
+    }
+    if (need_sync && gs->role == ROLE_SERVER && (player1->ctrl->type == CTRL_TYPE_NETWORK ||  player2->ctrl->type == CTRL_TYPE_NETWORK)) {
+        // some of the moves did something interesting and we should synchronize the peer
+        serial ser;
+        serial_create(&ser);
+        game_state_serialize(scene->gs, &ser);
+        serial_free(&ser);
     }
 }
 
@@ -311,19 +319,27 @@ void arena_input_tick(scene *scene) {
         controller_poll(player2->ctrl, &p2);
 
         i = p1;
+        int need_sync = 0;
         if (i) {
             do {
-                object_act(game_player_get_har(player1), i->action);
+                need_sync += object_act(game_player_get_har(player1), i->action);
             } while((i = i->next));
         }
         controller_free_chain(p1);
         i = p2;
         if (i) {
             do {
-                object_act(game_player_get_har(player2), i->action);
+                need_sync += object_act(game_player_get_har(player2), i->action);
             } while((i = i->next));
         }
         controller_free_chain(p2);
+        if (need_sync && scene->gs->role == ROLE_SERVER && (player1->ctrl->type == CTRL_TYPE_NETWORK ||  player2->ctrl->type == CTRL_TYPE_NETWORK)) {
+            // some of the moves did something interesting and we should synchronize the peer
+            serial ser;
+            serial_create(&ser);
+            game_state_serialize(scene->gs, &ser);
+            serial_free(&ser);
+        }
     }
 }
 
@@ -476,8 +492,14 @@ int arena_create(scene *scene) {
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
+
+        if (scene_load_har(scene, i, player->har_id)) {
+            return 1;
+        }
+
         object_create(obj, scene->gs, pos[i], vec2f_create(0,0));
-        if(har_create(obj, local->player_palettes[i], dir[i], player->har_id, player->pilot_id, i)) {
+        object_set_palette(obj, local->player_palettes[i], 0);
+        if(har_create(obj, scene->af_data[i], dir[i], player->har_id, player->pilot_id, i)) {
             return 1;
         }
 

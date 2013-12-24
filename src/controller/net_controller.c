@@ -71,6 +71,10 @@ int net_controller_tick(controller *ctrl, ctrl_event **ev) {
     return 0;
 }
 
+int net_controller_update(controller *ctrl, serial *serial) {
+    return 0;
+}
+
 void har_hook(char* buf, void *userdata) {
     controller *ctrl = userdata;
     wtf *data = ctrl->data;
@@ -117,6 +121,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer) {
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
+    ctrl->update_fun = &net_controller_update;
     ctrl->har_hook = &har_hook;
     ctrl->controller_hook = &controller_hook;
 }

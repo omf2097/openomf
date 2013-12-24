@@ -25,6 +25,7 @@ struct scene_t {
     game_state *gs;
     int id;
     bk bk_data;
+    af *af_data[2];
     void *userdata;
     object background;
     scene_free_cb free;
@@ -39,6 +40,7 @@ struct scene_t {
 };
 
 int scene_create(scene *scene, game_state *gs, int scene_id);
+int scene_load_har(scene *scene, int player_id, int har_id);
 void scene_init(scene *scene);
 void scene_free(scene *scene);
 int scene_event(scene *scene, SDL_Event *event);

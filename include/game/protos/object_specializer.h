@@ -4,6 +4,7 @@
 typedef struct object_t object;
 
 enum {
+    SPECID_NONE = 0,
     SPECID_HAR = 0,
     SPECID_PROJECTILE,
 };

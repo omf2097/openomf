@@ -14,6 +14,7 @@ void controller_init(controller *ctrl) {
     ctrl->event_fun = NULL;
     ctrl->poll_fun = NULL;
     ctrl->tick_fun = NULL;
+    ctrl->update_fun = NULL;
 }
 
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type)) {
@@ -75,6 +76,13 @@ int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
 int controller_tick(controller *ctrl, ctrl_event **ev) {
     if(ctrl->tick_fun != NULL) {
         return ctrl->tick_fun(ctrl, ev);
+    }
+    return 0;
+}
+
+int controller_update(controller *ctrl, serial *state) {
+    if(ctrl->update_fun != NULL) {
+        return ctrl->update_fun(ctrl, state);
     }
     return 0;
 }

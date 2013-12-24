@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include "game/protos/object.h"
 #include "game/objects/har.h"
+#include "game/serial.h"
 #include "utils/list.h"
 
 enum {
@@ -46,6 +47,7 @@ struct controller_t {
     int (*tick_fun)(controller *ctrl, ctrl_event **ev);
     int (*poll_fun)(controller *ctrl, ctrl_event **ev);
     int (*event_fun)(controller *ctrl, SDL_Event *event, ctrl_event **ev);
+    int (*update_fun)(controller *ctrl, serial *state);
     void (*har_hook)(char* buf, void *userdata);
     void (*controller_hook)(controller *ctrl, int action);
     void *data;
@@ -57,6 +59,7 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev);
 int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev);
 int controller_poll(controller *ctrl, ctrl_event **ev);
 int controller_tick(controller *ctrl, ctrl_event **ev);
+int controller_update(controller *ctrl, serial *state);
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type));
 void controller_clear_hooks(controller *ctrl);
 void controller_free_chain(ctrl_event *ev);

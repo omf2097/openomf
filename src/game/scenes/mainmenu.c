@@ -45,11 +45,6 @@ struct resolution_t {
 
 typedef struct resolution_t resolution;
 
-enum {
-    ROLE_SERVER,
-    ROLE_CLIENT
-};
-
 typedef struct mainmenu_local_t {
     time_t connect_start;
 
@@ -142,7 +137,6 @@ typedef struct mainmenu_local_t {
     component gameplay_done_button;
 
     ENetHost *host;
-    int role;
 
     // Menu stack
     menu *mstack[10];
@@ -416,11 +410,12 @@ void menu_sound_slide(component *c, void *userdata, int pos) {
 
 
 void mainmenu_connect_to_ip(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
+    scene *s = (scene*)userdata;
+    mainmenu_local *local = scene_get_userdata(s);
     ENetAddress address;
     char *addr = textinput_value(&local->connect_ip_input);
     local->host = enet_host_create(NULL, 1, 2, 0, 0);
-    local->role = ROLE_CLIENT;
+    s->gs->role = ROLE_CLIENT;
     if (local->host == NULL) {
         DEBUG("Failed to initialize ENet client");
         return;
@@ -455,12 +450,13 @@ void mainmenu_cancel_connection(component *c, void *userdata) {
 }
 
 void mainmenu_listen_for_connections(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
+    scene *s = (scene*)userdata;
+    mainmenu_local *local = scene_get_userdata(s);
     ENetAddress address;
     address.host = ENET_HOST_ANY;
     address.port = 1337;
     local->host = enet_host_create(&address, 1, 2, 0, 0);
-    local->role = ROLE_SERVER;
+    s->gs->role = ROLE_SERVER;
     if (local->host == NULL) {
         DEBUG("Failed to initialize ENet client");
         return;
@@ -640,7 +636,7 @@ void mainmenu_tick(scene *scene) {
             ENetPacket * packet = enet_packet_create("0", 2,  ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(event.peer, 0, packet);
             enet_host_flush(local->host);
-            if (local->role == ROLE_SERVER) {
+            if (gs->role == ROLE_SERVER) {
                 DEBUG("client connected!");
                 controller *player1_ctrl, *player2_ctrl;
                 keyboard_keys *keys;
@@ -676,7 +672,7 @@ void mainmenu_tick(scene *scene) {
                 local->host = NULL;
                 game_player_set_selectable(p2, 1);
                 game_state_set_next(gs, SCENE_MELEE);
-            } else if (local->role == ROLE_CLIENT) {
+            } else if (gs->role == ROLE_CLIENT) {
                 DEBUG("connected to server!");
                 controller *player1_ctrl, *player2_ctrl;
                 keyboard_keys *keys;
@@ -714,7 +710,7 @@ void mainmenu_tick(scene *scene) {
                 game_state_set_next(gs, SCENE_MELEE);
             }
         } else {
-            if (local->role == ROLE_CLIENT && difftime(time(NULL), local->connect_start) > 5.0) {
+            if (gs->role == ROLE_CLIENT && difftime(time(NULL), local->connect_start) > 5.0) {
                 DEBUG("connection timed out");
 
                 mainmenu_cancel_connection(&local->connect_ip_cancel_button, scene);

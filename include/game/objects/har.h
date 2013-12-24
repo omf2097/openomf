@@ -59,7 +59,7 @@ typedef struct har_t {
     int id;
     int player_id;
     int pilot_id;
-    af af_data;
+    af *af_data;
     unsigned int state;
     unsigned int blocking;
     unsigned int executing_move;
@@ -81,7 +81,7 @@ typedef struct har_t {
 } har;
 
 void har_bootstrap(object *obj);
-int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int player_id);
+int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id);
 void har_set_ani(object *obj, int animation_id, int repeat);
 int har_is_active(object *obj);
 

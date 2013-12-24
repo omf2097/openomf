@@ -10,6 +10,7 @@ typedef struct game_state_t {
     unsigned int run;
     unsigned int this_id, next_id;
     unsigned int tick;
+    unsigned int role;
     scene *sc;
     vector objects;
     game_player *players[2];

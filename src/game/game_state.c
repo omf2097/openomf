@@ -2,6 +2,7 @@
 #include <SDL2/SDL.h>
 #include "controller/keyboard.h"
 #include "utils/log.h"
+#include "game/serial.h"
 #include "resources/ids.h"
 #include "console/console.h"
 #include "game/game_state.h"
@@ -28,6 +29,7 @@ typedef struct {
 int game_state_create(game_state *gs) {
     gs->run = 1;
     gs->tick = 0;
+    gs->role = ROLE_CLIENT;
     vector_create(&gs->objects, sizeof(render_obj));
     int nscene = SCENE_INTRO;
     gs->sc = malloc(sizeof(scene));
@@ -441,4 +443,19 @@ int game_state_ms_per_tick(game_state *gs) {
             return MS_PER_OMF_TICK_SLOWEST - settings_get()->gameplay.speed;
     }
     return MS_PER_OMF_TICK;
+}
+
+int game_state_serialize(game_state *gs, serial *ser) {
+    // serialize tick time and random seed, so client can reply state from this point
+    serial_write_int(ser, game_state_get_tick(gs));
+    serial_write_int(ser, rand_get_seed());
+
+    object *har[2];
+    har[0] = game_state_get_player(gs, 0)->har;
+    har[1] = game_state_get_player(gs, 1)->har;
+
+    object_serialize(har[0], ser);
+    object_serialize(har[1], ser);
+    DEBUG("scene serialized to %d bytes", serial_len(ser));
+    return 0;
 }

@@ -2,6 +2,7 @@
 #include <string.h>
 #include "game/serial.h"
 
+// TODO we should probably have some reasonable initial size, so we don't realloc like crazy
 void serial_create(serial *s) {
     s->len = 0;
     s->rpos = 0;
@@ -17,6 +18,7 @@ void serial_write(serial *s, char *buf, int len) {
         s->data = realloc(s->data, s->len + len);
         memcpy(s->data + s->len, buf, len);
     }
+    s->len += len;
 }
 
 // TODO: Add conversions (htons, etc.)!
@@ -36,6 +38,9 @@ void serial_write_float(serial *s, float v) {
 void serial_free(serial *s) {
     if(s->data != NULL) {
         free(s->data);
+        s->data = NULL;
+        s->len = 0;
+        s->rpos = 0;
     }
 }
 

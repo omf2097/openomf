@@ -67,10 +67,17 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_float(ser, obj->pos.y);
     serial_write_float(ser, obj->vel.x);
     serial_write_float(ser, obj->vel.y);
+    serial_write_float(ser, obj->gravity);
+    serial_write_int(ser, obj->direction);
+    serial_write_int(ser, obj->group);
+    serial_write_int(ser, obj->layers);
+    serial_write_int(ser, obj->stride);
 
     // Serialize the underlying object
     if(obj->serialize != NULL) {
         obj->serialize(obj, ser);
+    } else {
+        serial_write_int(ser, SPECID_NONE);
     }
 
     // Return success
@@ -82,12 +89,17 @@ int object_serialize(object *obj, serial *ser) {
  * Should return 1 on error, 0 on success.
  * Serial reder position should be set to correct position before calling this.
  */
-int object_unserialize(object *obj, serial *ser) {
+int object_unserialize(object *obj, serial *ser, game_state *gs) {
     // TODO: Read object_t data
     obj->pos.x = serial_read_float(ser);
     obj->pos.y = serial_read_float(ser);
     obj->vel.x = serial_read_float(ser);
     obj->vel.y = serial_read_float(ser);
+    obj->gravity = serial_read_float(ser);
+    obj->direction = serial_read_int(ser);
+    obj->group = serial_read_int(ser);
+    obj->layers = serial_read_int(ser);
+    obj->stride = serial_read_int(ser);
 
     // Read the specialization ID from ther serial "stream".
     // This should be an int.
@@ -101,7 +113,7 @@ int object_unserialize(object *obj, serial *ser) {
     // serialization data. serial object should be pointing to the 
     // start of that data.
     if(obj->unserialize != NULL) {
-        obj->unserialize(obj, ser);
+        obj->unserialize(obj, ser, gs);
     }
 
     // Return success
@@ -364,10 +376,11 @@ void object_render_shadow(object *obj, image *shadow_buffer) {
 
 }
 
-void object_act(object *obj, int action) {
+int object_act(object *obj, int action) {
     if(obj->act != NULL) {
-        obj->act(obj, action);
+        return obj->act(obj, action);
     }
+    return 1;
 }
 
 void object_move(object *obj) {

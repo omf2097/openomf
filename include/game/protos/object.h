@@ -36,13 +36,13 @@ typedef struct object_t object;
 typedef struct game_state_t game_state;
 
 typedef void (*object_free_cb)(object *obj);
-typedef void (*object_act_cb)(object *obj, int action);
+typedef int  (*object_act_cb)(object *obj, int action);
 typedef void (*object_tick_cb)(object *obj);
 typedef void (*object_move_cb)(object *obj);
 typedef void (*object_collide_cb)(object *a, object *b);
 typedef void (*object_finish_cb)(object *obj);
 typedef int  (*object_serialize_cb)(object *obj, serial *ser);
-typedef int  (*object_unserialize_cb)(object *obj, serial *ser);
+typedef int  (*object_unserialize_cb)(object *obj, serial *ser, game_state *gs);
 typedef void (*object_debug_cb)(object *obj);
 
 struct object_t {
@@ -85,7 +85,7 @@ struct object_t {
     object_finish_cb finish;
     object_move_cb move;
     object_serialize_cb serialize;
-    object_serialize_cb unserialize;
+    object_unserialize_cb unserialize;
     object_debug_cb debug;
 };
 
@@ -99,12 +99,12 @@ void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
 void object_render(object *obj);
 void object_collide(object *a, object *b);
-void object_act(object *obj, int action);
+int object_act(object *obj, int action);
 int object_finished(object *obj);
 void object_free(object *obj);
 
 int object_serialize(object *obj, serial *ser);
-int object_unserialize(object *obj, serial *ser);
+int object_unserialize(object *obj, serial *ser, game_state *gs);
 
 void object_set_stride(object *obj, int stride);
 void object_set_playback_direction(object *obj, int dir);
@@ -139,7 +139,7 @@ void object_set_finish_cb(object *obj, object_finish_cb cbfunc);
 void object_set_move_cb(object *obj, object_move_cb cbfunc);
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc);
 void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc);
-void object_set_unserialize_cb(object *obj, object_serialize_cb cbfunc);
+void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);
 int object_get_repeat(object *obj);

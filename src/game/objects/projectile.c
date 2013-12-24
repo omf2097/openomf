@@ -12,9 +12,9 @@ void projectile_tick(object *obj) {
     har *prog_owner = local->har;
 
     if(obj->animation_state.finished) {
-        af_move *move = af_get_move(&(prog_owner->af_data), obj->cur_animation->id);
+        af_move *move = af_get_move(prog_owner->af_data, obj->cur_animation->id);
         if (move->successor_id) {
-            object_set_animation(obj, &af_get_move(&prog_owner->af_data, move->successor_id)->ani);
+            object_set_animation(obj, &af_get_move(prog_owner->af_data, move->successor_id)->ani);
             object_set_repeat(obj, 0);
             object_set_vel(obj, vec2f_create(0,0));
             obj->animation_state.finished = 0;

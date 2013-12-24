@@ -7,6 +7,7 @@
 #include "utils/vec.h"
 #include "game/game_player.h"
 #include "game/game_state_type.h"
+#include "resources/af_loader.h"
 
 // Some internal functions
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
@@ -21,6 +22,8 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     }
     scene->id = scene_id;
     scene->gs = gs;
+    scene->af_data[0] = NULL;
+    scene->af_data[1] = NULL;
 
     // Init functions
     scene->userdata = NULL;
@@ -34,6 +37,21 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
 
     // All done.
     DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
+    return 0;
+}
+
+int scene_load_har(scene *scene, int player_id, int har_id) {
+    if (scene->af_data[player_id]) {
+        af_free(scene->af_data[player_id]);
+        free(scene->af_data[player_id]);
+    }
+
+    scene->af_data[player_id] = malloc(sizeof(af));
+
+    if(load_af_file(scene->af_data[player_id], har_id)) {
+        PERROR("Unable to load HAR %s (%d)!", get_id_name(har_id), har_id);
+        return 1;
+    }
     return 0;
 }
 
@@ -79,8 +97,7 @@ void scene_init(scene *scene) {
  * serialization data. 
  */
 int scene_serialize(scene *s, serial *ser) {
-    // TODO: Write attributes
-    serial_write_int(ser, s->id);
+    game_state_serialize(s->gs, ser);
 
     // Return success
     return 0;
@@ -164,6 +181,14 @@ void scene_free(scene *scene) {
         scene->free(scene);
     }
     bk_free(&scene->bk_data);
+    if (scene->af_data[0]) {
+        af_free(scene->af_data[0]);
+        free(scene->af_data[0]);
+    }
+    if (scene->af_data[1]) {
+        af_free(scene->af_data[1]);
+        free(scene->af_data[1]);
+    }
     object_free(&scene->background);
     image_free(&scene->shadow_buffer_img);
     texture_free(&scene->shadow_buffer_tex);
