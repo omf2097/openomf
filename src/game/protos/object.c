@@ -104,12 +104,29 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->pos.y = serial_read_float(ser);
     obj->vel.x = serial_read_float(ser);
     obj->vel.y = serial_read_float(ser);
+    object_reset_vstate(obj);
+    object_reset_hstate(obj);
     obj->gravity = serial_read_float(ser);
     obj->direction = serial_read_int(ser);
     obj->group = serial_read_int(ser);
     obj->layers = serial_read_int(ser);
     obj->stride = serial_read_int(ser);
     int animation_id = serial_read_int(ser);
+
+    // Other stuff not included in serialization
+    obj->y_percent = 1.0;
+    obj->cur_animation_own = OWNER_EXTERNAL;
+    obj->texture_refresh = 0;
+    obj->cur_palette = NULL;
+    obj->cur_animation = NULL;
+    obj->cur_sprite = NULL;
+    obj->sound_translation_table = NULL;
+    obj->cur_texture = NULL;
+    obj->cur_remap = 0;
+    obj->halt = 0;
+    obj->stride = 1;
+    obj->cast_shadow = 0;
+    player_create(obj);
 
     // Read animation state
     int anim_str_len = serial_read_int(ser);
