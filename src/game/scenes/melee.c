@@ -164,16 +164,24 @@ void melee_tick(scene *scene) {
     i = player1->ctrl->extra_events;
     if (i) {
         do {
-            handle_action(scene, 1, i->action);
+            if(i->type == EVENT_TYPE_ACTION) {
+                handle_action(scene, 1, i->event_data.action);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return;
+            }
         } while((i = i->next));
-        DEBUG("done");
     }
     i = player2->ctrl->extra_events;
     if (i) {
         do {
-            handle_action(scene, 2, i->action);
+            if(i->type == EVENT_TYPE_ACTION) {
+                handle_action(scene, 2, i->event_data.action);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return;
+            }
         } while((i = i->next));
-        DEBUG("done");
     }
 
     if(!local->pulsedir) {
@@ -347,17 +355,25 @@ int melee_event(scene *scene, SDL_Event *event) {
         i = p1;
         if (i) {
             do {
-                handle_action(scene, 1, i->action);
+                if(i->type == EVENT_TYPE_ACTION) {
+                    handle_action(scene, 1, i->event_data.action);
+                } else if (i->type == EVENT_TYPE_CLOSE) {
+                    game_state_set_next(scene->gs, SCENE_MENU);
+                    return 0;
+                }
             } while((i = i->next));
-            DEBUG("done");
         }
         controller_free_chain(p1);
         i = p2;
         if (i) {
             do {
-                handle_action(scene, 2, i->action);
+                if(i->type == EVENT_TYPE_ACTION) {
+                    handle_action(scene, 2, i->event_data.action);
+                } else if (i->type == EVENT_TYPE_CLOSE) {
+                    game_state_set_next(scene->gs, SCENE_MENU);
+                    return 0;
+                }
             } while((i = i->next));
-            DEBUG("done");
         }
         controller_free_chain(p2);
     }

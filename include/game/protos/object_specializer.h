@@ -7,6 +7,7 @@ enum {
     SPECID_NONE = 0,
     SPECID_HAR = 0,
     SPECID_PROJECTILE,
+    SPECID_SCRAP
 };
 
 int object_auto_specialize(object *obj, int specialization_id);

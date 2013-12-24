@@ -42,7 +42,7 @@ typedef void (*object_move_cb)(object *obj);
 typedef void (*object_collide_cb)(object *a, object *b);
 typedef void (*object_finish_cb)(object *obj);
 typedef int  (*object_serialize_cb)(object *obj, serial *ser);
-typedef int  (*object_unserialize_cb)(object *obj, serial *ser, game_state *gs);
+typedef int  (*object_unserialize_cb)(object *obj, serial *ser, int animation_id, game_state *gs);
 typedef void (*object_debug_cb)(object *obj);
 
 struct object_t {

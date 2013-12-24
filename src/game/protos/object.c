@@ -72,6 +72,7 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int(ser, obj->group);
     serial_write_int(ser, obj->layers);
     serial_write_int(ser, obj->stride);
+    serial_write_int(ser, obj->cur_animation->id);
 
     // Serialize the underlying object
     if(obj->serialize != NULL) {
@@ -79,6 +80,8 @@ int object_serialize(object *obj, serial *ser) {
     } else {
         serial_write_int(ser, SPECID_NONE);
     }
+
+    // TODO serialize the animation player
 
     // Return success
     return 0;
@@ -90,6 +93,7 @@ int object_serialize(object *obj, serial *ser) {
  * Serial reder position should be set to correct position before calling this.
  */
 int object_unserialize(object *obj, serial *ser, game_state *gs) {
+    DEBUG("unserializing object");
     // TODO: Read object_t data
     obj->pos.x = serial_read_float(ser);
     obj->pos.y = serial_read_float(ser);
@@ -100,6 +104,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->group = serial_read_int(ser);
     obj->layers = serial_read_int(ser);
     obj->stride = serial_read_int(ser);
+    int animation_id = serial_read_int(ser);
 
     // Read the specialization ID from ther serial "stream".
     // This should be an int.
@@ -108,13 +113,17 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     // This should automatically bootstrap the object so that it has at least
     // unserialize function callback and local memory allocated
     object_auto_specialize(obj, specialization_id);
-    
+
     // Now, if the object has unserialize function, call it with
     // serialization data. serial object should be pointing to the 
     // start of that data.
     if(obj->unserialize != NULL) {
-        obj->unserialize(obj, ser, gs);
+        obj->unserialize(obj, ser, animation_id, gs);
+    } else {
+        DEBUG("object has no special unserializer");
     }
+
+    // TODO unserialize the animation player
 
     // Return success
     return 0;

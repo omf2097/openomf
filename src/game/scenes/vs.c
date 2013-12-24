@@ -124,7 +124,12 @@ void vs_tick(scene *scene) {
     i = player1->ctrl->extra_events;
     if (i) {
         do {
-            vs_handle_action(scene, i->action);
+            if(i->type == EVENT_TYPE_ACTION) {
+                vs_handle_action(scene, i->event_data.action);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return;
+            }
         } while((i = i->next));
         DEBUG("done");
     }
@@ -141,7 +146,12 @@ int vs_event(scene *scene, SDL_Event *event) {
     i = p1;
     if (i) {
         do {
-            vs_handle_action(scene, i->action);
+            if(i->type == EVENT_TYPE_ACTION) {
+                vs_handle_action(scene, i->event_data.action);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return 1;
+            }
         } while((i = i->next));
         DEBUG("done");
     }

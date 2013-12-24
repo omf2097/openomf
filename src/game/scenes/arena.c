@@ -290,13 +290,33 @@ void arena_tick(scene *scene) {
     ctrl_event *i = player1->ctrl->extra_events;
     if (i) {
         do {
-            need_sync += object_act(game_player_get_har(player1), i->action);
+            if(i->type == EVENT_TYPE_ACTION) {
+                need_sync += object_act(game_player_get_har(player1), i->event_data.action);
+            } else if (i->type == EVENT_TYPE_SYNC) {
+                game_state_unserialize(scene->gs, i->event_data.ser);
+                // fix the palettes
+                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
+                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return;
+            }
         } while((i = i->next));
     }
     i = player2->ctrl->extra_events;
     if (i) {
         do {
-            need_sync += object_act(game_player_get_har(player2), i->action);
+            if(i->type == EVENT_TYPE_ACTION) {
+                need_sync += object_act(game_player_get_har(player2), i->event_data.action);
+            } else if (i->type == EVENT_TYPE_SYNC) {
+                game_state_unserialize(scene->gs, i->event_data.ser);
+                // fix the palettes
+                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
+                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return;
+            }
         } while((i = i->next));
     }
     if (need_sync && gs->role == ROLE_SERVER && (player1->ctrl->type == CTRL_TYPE_NETWORK ||  player2->ctrl->type == CTRL_TYPE_NETWORK)) {
@@ -304,6 +324,19 @@ void arena_tick(scene *scene) {
         serial ser;
         serial_create(&ser);
         game_state_serialize(scene->gs, &ser);
+        if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
+            controller_update(player1->ctrl, &ser);
+        }
+
+        if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
+            controller_update(player2->ctrl, &ser);
+        }
+
+        /*serial_read_reset(&ser);*/
+        /*game_state_unserialize(scene->gs, &ser);*/
+        // fix the palettes
+        /*object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);*/
+        /*object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);*/
         serial_free(&ser);
     }
 }
@@ -323,14 +356,34 @@ void arena_input_tick(scene *scene) {
         int need_sync = 0;
         if (i) {
             do {
-                need_sync += object_act(game_player_get_har(player1), i->action);
+                if(i->type == EVENT_TYPE_ACTION) {
+                    need_sync += object_act(game_player_get_har(player1), i->event_data.action);
+                } else if (i->type == EVENT_TYPE_SYNC) {
+                    game_state_unserialize(scene->gs, i->event_data.ser);
+                    // fix the palettes
+                    object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
+                    object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+                } else if (i->type == EVENT_TYPE_CLOSE) {
+                    game_state_set_next(scene->gs, SCENE_MENU);
+                    return;
+                }
             } while((i = i->next));
         }
         controller_free_chain(p1);
         i = p2;
         if (i) {
             do {
-                need_sync += object_act(game_player_get_har(player2), i->action);
+                if(i->type == EVENT_TYPE_ACTION) {
+                    need_sync += object_act(game_player_get_har(player2), i->event_data.action);
+                } else if (i->type == EVENT_TYPE_SYNC) {
+                    game_state_unserialize(scene->gs, i->event_data.ser);
+                    // fix the palettes
+                    object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
+                    object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+                } else if (i->type == EVENT_TYPE_CLOSE) {
+                    game_state_set_next(scene->gs, SCENE_MENU);
+                    return;
+                }
             } while((i = i->next));
         }
         controller_free_chain(p2);
@@ -339,6 +392,18 @@ void arena_input_tick(scene *scene) {
             serial ser;
             serial_create(&ser);
             game_state_serialize(scene->gs, &ser);
+            if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
+                controller_update(player1->ctrl, &ser);
+            }
+
+            if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
+                controller_update(player2->ctrl, &ser);
+            }
+            /*serial_read_reset(&ser);*/
+            /*game_state_unserialize(scene->gs, &ser);*/
+            // fix the palettes
+            /*object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);*/
+            /*object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);*/
             serial_free(&ser);
         }
     }

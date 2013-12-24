@@ -35,6 +35,7 @@ game_player* game_state_get_player(game_state *gs, int player_id);
 int game_state_num_players(game_state *gs);
 int game_state_ms_per_tick(game_state *gs);
 int game_state_serialize(game_state *gs, serial *ser);
+int game_state_unserialize(game_state *gs, serial *ser);
 
 void game_state_add_object(game_state *gs, object *obj, int layer);
 void game_state_del_object(game_state *gs, object *obj);

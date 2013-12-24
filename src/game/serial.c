@@ -53,11 +53,14 @@ void serial_read_reset(serial *s) {
 }
 
 void serial_read(serial *s, char *buf, int len) {
-    if(len > s->len) {
-        len = s->len;
+    if(len + s->rpos  > s->len) {
+        len = s->len - s->rpos;
     }
-    memcpy(buf, s->data, len);
+    memcpy(buf, s->data+s->rpos, len);
     s->rpos += len;
+    if (s->rpos > s->len) {
+        s->rpos = s->len;
+    }
 }
 
 int serial_read_int(serial *s) {

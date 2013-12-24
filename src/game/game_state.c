@@ -459,3 +459,33 @@ int game_state_serialize(game_state *gs, serial *ser) {
     DEBUG("scene serialized to %d bytes", serial_len(ser));
     return 0;
 }
+
+int game_state_unserialize(game_state *gs, serial *ser) {
+    gs->tick = serial_read_int(ser);
+    rand_seed(serial_read_int(ser));
+
+    for(int i = 0; i < 2; i++) {
+        // Declare some vars
+        game_player *player = game_state_get_player(gs, i);
+        DEBUG("HAR %d was %p", i, (void*)player->har);
+        game_state_del_object(gs, player->har);
+        object *obj = malloc(sizeof(object));
+
+        // Create object and specialize it as HAR.
+        // Errors are unlikely here, but check anyway.
+
+        object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0,0));
+        object_unserialize(obj, ser, gs);
+
+        // Set HAR to controller and game_player
+        game_state_add_object(gs, obj, RENDER_LAYER_MIDDLE);
+
+        // Set HAR for player
+        game_player_set_har(player, obj);
+        game_player_get_ctrl(player)->har = obj;
+        DEBUG("HAR %d is now %p", i, (void*)player->har);
+    }
+    return 0;
+}
+
+

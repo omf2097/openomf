@@ -31,10 +31,20 @@ enum {
     CTRL_TYPE_NETWORK,
 };
 
+enum {
+    EVENT_TYPE_ACTION,
+    EVENT_TYPE_SYNC,
+    EVENT_TYPE_CLOSE
+};
+
 typedef struct ctrl_event_t ctrl_event;
 
 struct ctrl_event_t {
-    int action;
+    int type;
+    union {
+        int action;
+        serial *ser;
+    } event_data;
     ctrl_event *next;
 };
 
@@ -56,6 +66,8 @@ struct controller_t {
 
 void controller_init(controller* ctrl);
 void controller_cmd(controller* ctrl, int action, ctrl_event **ev);
+void controller_sync(controller *ctrl, serial *ser, ctrl_event **ev);
+void controller_close(controller* ctrl, ctrl_event **ev);
 int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev);
 int controller_poll(controller *ctrl, ctrl_event **ev);
 int controller_tick(controller *ctrl, ctrl_event **ev);

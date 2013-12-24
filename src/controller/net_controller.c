@@ -51,14 +51,20 @@ int net_controller_tick(controller *ctrl, ctrl_event **ev) {
                     controller_cmd(ctrl, action, ev);
                     handled = 1;
                 } else {
-                    // dispatch it to the HAR
-                    /*har_parse_command(ctrl->har, (char*)event.packet->data);*/
+                    DEBUG("got sync event of length %d",  event.packet->dataLength);
+                    serial *ser = malloc(sizeof(serial));
+                    serial_create(ser);
+                    ser->data = malloc(event.packet->dataLength);
+                    ser->len = event.packet->dataLength;
+                    memcpy(ser->data, event.packet->data, event.packet->dataLength);
+                    controller_sync(ctrl, ser, ev);
                 }
                 enet_packet_destroy(event.packet);
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
                 DEBUG("peer disconnected!");
                 data->disconnected = 1;
+                controller_close(ctrl, ev);
                 return 1; // bail the fuck out
                 break;
             default:
@@ -72,6 +78,23 @@ int net_controller_tick(controller *ctrl, ctrl_event **ev) {
 }
 
 int net_controller_update(controller *ctrl, serial *serial) {
+    wtf *data = ctrl->data;
+    ENetPeer *peer = data->peer;
+    ENetHost *host = data->host;
+    ENetPacket *packet;
+    char *buf = malloc(serial->len);
+
+    // need to copy here because enet will free this packet
+    memcpy(buf, serial->data, serial->len);
+
+    packet = enet_packet_create(buf, serial->len, ENET_PACKET_FLAG_RELIABLE);
+    if (peer) {
+        enet_peer_send(peer, 0, packet);
+        enet_host_flush(host);
+    } else {
+        DEBUG("peer is null~");
+    }
+
     return 0;
 }
 
@@ -102,7 +125,7 @@ void controller_hook(controller *ctrl, int action) {
         // not interested
         return;
     }
-    DEBUG("controller hook fired with %d", action);
+    /*DEBUG("controller hook fired with %d", action);*/
     sprintf(buf, "k%d", action);
     packet = enet_packet_create(buf, strlen (buf) + 1, ENET_PACKET_FLAG_RELIABLE);
     if (peer) {

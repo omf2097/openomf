@@ -907,23 +907,25 @@ int har_serialize(object *obj, serial *ser) {
     return 0;
 }
 
-int har_unserialize(object *obj, serial *ser, game_state *gs) {
+int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) {
 
     int har_id = serial_read_int(ser);
     int player_id = serial_read_int(ser);
     int pilot_id = serial_read_int(ser);
     af *af_data;
 
+    DEBUG("unserializing HAR %d for player %d", har_id - HAR_JAGUAR, player_id);
+
     // find the AF data in the scene
 
-    if (gs->sc->af_data[player_id]->id == har_id) {
+    if (gs->sc->af_data[player_id]->id == har_id - HAR_JAGUAR) {
         af_data = gs->sc->af_data[player_id];
     } else {
+        DEBUG("expected har %d, got %d", har_id - HAR_JAGUAR, gs->sc->af_data[player_id]->id);
         // HAR IDs do not match!
         // TODO maybe the other player changed their HAR, who knows
         return 1;
     }
-
 
     har_create(obj, af_data, obj->direction, har_id, pilot_id, player_id);
 
@@ -931,10 +933,6 @@ int har_unserialize(object *obj, serial *ser, game_state *gs) {
     // we are unserializing a state update for a HAR, we expect it to have the AF data already loaded into RAM, we're just updating the volatile attributes
 
     // TODO sanity check pilot/player/HAR IDs
-    /*h->id = serial_read_int(ser);*/
-    /*h->id = har_id;*/
-    /*h->player_id = serial_read_int(ser);*/
-    /*h->pilot_id = serial_read_int(ser);*/
     h->state = serial_read_int(ser);
     h->blocking = serial_read_int(ser);
     h->executing_move = serial_read_int(ser);
@@ -946,21 +944,26 @@ int har_unserialize(object *obj, serial *ser, game_state *gs) {
     h->health = serial_read_int(ser);
     h->endurance = serial_read_int(ser);
 
+    object_set_repeat(obj, 0); // XXX hack to undo the repeat set in har_create
+
+    DEBUG("har animation id is %d", animation_id);
+
+    object_set_animation(obj, &af_get_move(af_data, animation_id)->ani);
+
     // Return success
     return 0;
 }
 
 void har_bootstrap(object *obj) {
-    har *local = malloc(sizeof(har));
-    object_set_userdata(obj, local);
     object_set_serialize_cb(obj, har_serialize);
     object_set_unserialize_cb(obj, har_unserialize);
 }
 
 int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id) {
     // Create local data
+    har *local = malloc(sizeof(har));
+    object_set_userdata(obj, local);
     har_bootstrap(obj);
-    har *local = object_get_userdata(obj);
 
     local->af_data = af_data;
 
