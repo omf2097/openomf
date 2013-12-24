@@ -757,6 +757,7 @@ int har_act(object *obj, int act_type) {
                 object_set_vel(obj, vec2f_create(0,vy));
                 object_set_tick_pos(obj, 100);
                 h->state = STATE_JUMPING;
+                return 1;
             }
             break;
         case ACT_UPLEFT:
@@ -779,6 +780,7 @@ int har_act(object *obj, int act_type) {
                     object_set_tick_pos(obj, 110);
                 }
                 h->state = STATE_JUMPING;
+                return 1;
             }
             break;
         case ACT_UPRIGHT:
@@ -802,6 +804,7 @@ int har_act(object *obj, int act_type) {
                     
                 }
                 h->state = STATE_JUMPING;
+                return 1;
             }
             break;
     }
