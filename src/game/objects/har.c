@@ -38,6 +38,12 @@ void har_free(object *obj) {
     free(h);
 }
 
+void har_fire_hook(har *h, int action) {
+    if (h->hook_cb) {
+        h->hook_cb(action, h->hook_cb_data);
+    }
+}
+
 // Simple helper function
 void har_set_ani(object *obj, int animation_id, int repeat) {
     har *h = object_get_userdata(obj);
@@ -133,13 +139,14 @@ void har_move(object *obj) {
         // depending on horizontal velocity
         object_set_gravity(obj, 1);
         if(h->state == STATE_JUMPING) {
-            if(object_get_hstate(obj) == OBJECT_MOVING) {
-                h->state = STATE_WALKING;
-                har_set_ani(obj, ANIM_WALKING, 1);
-            } else {
+            /*if(object_get_hstate(obj) == OBJECT_MOVING) {*/
+                /*h->state = STATE_WALKING;*/
+                /*har_set_ani(obj, ANIM_WALKING, 1);*/
+            /*} else {*/
                 h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
-            }
+                har_fire_hook(h, ACT_STOP);
+            /*}*/
         } else if (h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.4;
             vec2f vel = object_get_vel(obj);
@@ -519,12 +526,6 @@ void add_input(har *h, char c) {
     memmove((h->inputs)+1, h->inputs, 9);
     // write the new first element
     h->inputs[0] = c;
-}
-
-void har_fire_hook(har *h, int action) {
-    if (h->hook_cb) {
-        h->hook_cb(action, h->hook_cb_data);
-    }
 }
 
 int har_act(object *obj, int act_type) {

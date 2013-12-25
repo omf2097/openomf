@@ -57,6 +57,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 switch(serial_read_int(ser)) {
                     case EVENT_TYPE_ACTION:
                         {
+                            DEBUG("ACTION");
                             // dispatch keypress to scene
                             int action = serial_read_int(ser);
                             controller_cmd(ctrl, action, ev);
@@ -67,6 +68,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                         break;
                     case EVENT_TYPE_HB:
                         {
+                            DEBUG("HEARTBEAT");
                             // got a tick
                             int id = serial_read_int(ser);
                             if (id == data->id) {
@@ -107,7 +109,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 break;
         }
     }
-    if ((data->last_hb == -1 || ticks - data->last_hb > 10) && !data->outstanding_hb) {
+    if ((data->last_hb == -1 || ticks - data->last_hb > 20) && !data->outstanding_hb) {
         data->outstanding_hb = 1;
         serial ser;
         ENetPacket *packet;
