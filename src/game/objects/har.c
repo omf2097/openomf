@@ -545,6 +545,8 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
+    int oldstate = h->state;
+
    // for the reason behind the numbers, look at a numpad sometime
     switch(act_type) {
         case ACT_UP:
@@ -757,7 +759,6 @@ int har_act(object *obj, int act_type) {
                 object_set_vel(obj, vec2f_create(0,vy));
                 object_set_tick_pos(obj, 100);
                 h->state = STATE_JUMPING;
-                return 1;
             }
             break;
         case ACT_UPLEFT:
@@ -780,7 +781,6 @@ int har_act(object *obj, int act_type) {
                     object_set_tick_pos(obj, 110);
                 }
                 h->state = STATE_JUMPING;
-                return 1;
             }
             break;
         case ACT_UPRIGHT:
@@ -804,9 +804,13 @@ int har_act(object *obj, int act_type) {
                     
                 }
                 h->state = STATE_JUMPING;
-                return 1;
             }
             break;
+    }
+
+    if (oldstate != h->state) {
+        // hey we changed state, that's interesting, right?
+        return 1;
     }
 
     // XXX if we got here, we were just moving around

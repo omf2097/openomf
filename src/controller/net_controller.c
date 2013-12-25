@@ -8,6 +8,7 @@ typedef struct wtf_t {
     ENetPeer *peer;
     int id;
     int last_hb;
+    int last_action;
     int outstanding_hb;
     int rtt;
     int disconnected;
@@ -44,7 +45,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     ENetHost *host = data->host;
     ENetPeer *peer = data->peer;
     serial *ser;
-    int handled = 0;
+    /*int handled = 0;*/
     if (enet_host_service(host, &event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
@@ -59,7 +60,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             // dispatch keypress to scene
                             int action = serial_read_int(ser);
                             controller_cmd(ctrl, action, ev);
-                            handled = 1;
+                            /*handled = 1;*/
                             serial_free(ser);
                             free(ser);
                         }
@@ -88,7 +89,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                         break;
                     case EVENT_TYPE_SYNC:
                         controller_sync(ctrl, ser, ev);
-                        handled = 1;
+                        /*handled = 1;*/
                         break;
                     default:
                         serial_free(ser);
@@ -125,9 +126,9 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
         }
     }
 
-    if(!handled) {
-        controller_cmd(ctrl, ACT_STOP, ev);
-    }
+    /*if(!handled) {*/
+        /*controller_cmd(ctrl, ACT_STOP, ev);*/
+    /*}*/
     return 0;
 }
 
@@ -177,10 +178,11 @@ void controller_hook(controller *ctrl, int action) {
     ENetPeer *peer = data->peer;
     ENetHost *host = data->host;
     ENetPacket *packet;
-    if (action == ACT_STOP) {
-        // not interested
+    if (action == ACT_STOP && data->last_action == ACT_STOP) {
+        data->last_action = -1;
         return;
     }
+    data->last_action = action;
     serial_create(&ser);
     serial_write_int(&ser, EVENT_TYPE_ACTION);
     serial_write_int(&ser, action);
@@ -209,6 +211,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->host = host;
     data->peer = peer;
     data->last_hb = -1;
+    data->last_action = ACT_STOP;
     data->outstanding_hb = 0;
     data->rtt = 0;
     ctrl->data = data;

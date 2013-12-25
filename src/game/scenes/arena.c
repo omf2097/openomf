@@ -331,12 +331,6 @@ void arena_tick(scene *scene) {
         if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
             controller_update(player2->ctrl, &ser);
         }
-
-        /*serial_read_reset(&ser);*/
-        /*game_state_unserialize(scene->gs, &ser);*/
-        // fix the palettes
-        /*object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);*/
-        /*object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);*/
         serial_free(&ser);
     }
 }
@@ -399,11 +393,6 @@ void arena_input_tick(scene *scene) {
             if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
                 controller_update(player2->ctrl, &ser);
             }
-            /*serial_read_reset(&ser);*/
-            /*game_state_unserialize(scene->gs, &ser);*/
-            // fix the palettes
-            /*object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);*/
-            /*object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);*/
             serial_free(&ser);
         }
     }
@@ -588,27 +577,20 @@ int arena_create(scene *scene) {
         game_player_get_ctrl(player)->har = obj;
     }
 
-    // remove the keyboard hooks
-    // set up the magic HAR hooks
-    /*
-    game_player *_player[2];
-    for(int i = 0; i < 2; i++) {
-        _player[i] = game_state_get_player(i);
+    // remove the keyboard hooks if we're the server
+
+    if (scene->gs->role == ROLE_SERVER) {
+        game_player *_player[2];
+        for(int i = 0; i < 2; i++) {
+            _player[i] = game_state_get_player(scene->gs, i);
+        }
+        if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
+            controller_clear_hooks(game_player_get_ctrl(_player[1]));
+        }
+        if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
+            controller_clear_hooks(game_player_get_ctrl(_player[0]));
+        }
     }
-    if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
-        controller_clear_hooks(game_player_get_ctrl(_player[1]));
-        har_add_hook(
-            game_player_get_har(_player[1]), 
-            game_player_get_ctrl(_player[0])->har_hook, 
-            game_player_get_ctrl(_player[0]));
-    }
-    if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
-        controller_clear_hooks(game_player_get_ctrl(_player[0]));
-        har_add_hook(
-            game_player_get_har(_player[0]), 
-            game_player_get_ctrl(_player[1])->har_hook, 
-            game_player_get_ctrl(_player[1]));
-    }*/
     
     // Arena menu
     local->menu_visible = 0;
