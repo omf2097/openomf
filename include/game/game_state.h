@@ -22,7 +22,7 @@ enum {
     ROLE_SERVER
 };
 
-int game_state_create(game_state *gs);
+int game_state_create(game_state *gs, int connect_server);
 void game_state_free(game_state *gs);
 int game_state_handle_event(game_state *gs, SDL_Event *event);
 void game_state_render(game_state *gs);

@@ -14,6 +14,8 @@ int main(int argc, char *argv[]) {
     // Get path
 
     char *path = "";
+    char *ip = NULL;
+    int connect_server = 0;
 
     // Disable SDL_GetPrefPath for now, it seems to be somewhat buggy
 /*
@@ -43,6 +45,7 @@ int main(int argc, char *argv[]) {
             printf("Arguments:\n");
             printf("-h      Prints this help\n");
             printf("-w      Writes a config file\n");
+            printf("-c ip   Connect to ip\n");
             return 0;
         } else if(strcmp(argv[1], "-w") == 0) {
             if(settings_write_defaults(config_path)) {
@@ -53,6 +56,11 @@ int main(int argc, char *argv[]) {
                 printf("Config file written to '%s'!\n", config_path);
             }
             return 0;
+        } else if(strcmp(argv[1], "-c") == 0) {
+            if(argc >= 3) {
+                ip = strcpy(malloc(strlen(argv[2])+1), argv[2]);
+            }
+            connect_server = 1;
         }
     }
 
@@ -82,6 +90,10 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
     settings_load();
+
+    if(ip) {
+        settings_get()->net.net_server_ip = ip;
+    }
 
     // Init SDL2
 #ifdef STANDALONE_SERVER
@@ -139,7 +151,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Run
-    engine_run();
+    engine_run(connect_server);
     
     // Close everything
     engine_close();

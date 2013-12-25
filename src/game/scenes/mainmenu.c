@@ -1093,6 +1093,12 @@ int mainmenu_create(scene *scene) {
     scene_set_free_cb(scene, mainmenu_free);
     scene_set_tick_cb(scene, mainmenu_tick);
 
+    if(scene->gs->connect_server) {
+        component_click(&local->net_button);
+        component_click(&local->net_connect_button);
+        mainmenu_connect_to_ip(NULL, scene);
+    }
+
     // All done
     return 0;
 }

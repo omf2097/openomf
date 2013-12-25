@@ -10,6 +10,7 @@ void component_create(component *c) {
     c->selected = 0;
     c->disabled = 0;
     c->obj = NULL;
+    c->userdata = NULL;
     
     // Function pointers
     c->render = NULL;
@@ -32,4 +33,10 @@ void component_layout(component *c, int x, int y, int w, int h) {
     c->y = y;
     c->w = w;
     c->h = h;
+}
+
+void component_click(component *c){
+    if(c->click) {
+        c->click(c, c->userdata);
+    }
 }

@@ -26,20 +26,29 @@ typedef struct {
     object *obj;
 } render_obj;
 
-int game_state_create(game_state *gs) {
+int game_state_create(game_state *gs, int connect_server) {
     gs->run = 1;
     gs->tick = 0;
     gs->role = ROLE_CLIENT;
+    gs->connect_server = connect_server;
     vector_create(&gs->objects, sizeof(render_obj));
-    int nscene = SCENE_INTRO;
+    int nscene = connect_server ? SCENE_MENU : SCENE_INTRO;
     gs->sc = malloc(sizeof(scene));
     if(scene_create(gs->sc, gs, nscene)) {
         PERROR("Error while loading scene %d.", nscene);
         goto error_0;
     }
-    if(intro_create(gs->sc)) {
-        PERROR("Error while creating intro scene.");
-        goto error_1;
+    if(connect_server) {
+        // if connecting to the server, jump straight to the menu
+        if(mainmenu_create(gs->sc)) {
+            PERROR("Error while creating menu scene.");
+            goto error_1;
+        }
+    } else {
+        if(intro_create(gs->sc)) {
+            PERROR("Error while creating intro scene.");
+            goto error_1;
+        }
     }
     scene_init(gs->sc);
     gs->this_id = nscene;
