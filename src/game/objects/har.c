@@ -521,6 +521,12 @@ void add_input(har *h, char c) {
     h->inputs[0] = c;
 }
 
+void har_fire_hook(har *h, int action) {
+    if (h->hook_cb) {
+        h->hook_cb(action, h->hook_cb_data);
+    }
+}
+
 int har_act(object *obj, int act_type) {
     har *h = object_get_userdata(obj);
     int direction = object_get_direction(obj);
@@ -634,10 +640,73 @@ int har_act(object *obj, int act_type) {
                     continue;
                 }
 
-                DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
-                DEBUG("input was %s", h->inputs);
+                /*DEBUG("matched move %d with string %s", i, str_c(&move->move_string));*/
+                /*DEBUG("input was %s", h->inputs);*/
+                char *s = (char*)str_c(&move->move_string);
+                while(*s != '\0') {
+                    switch(*s) {
+                        case '1':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_DOWNRIGHT);
+                            } else {
+                                har_fire_hook(h, ACT_DOWNLEFT);
+                            }
+                            break;
+                        case '2':
+                            har_fire_hook(h, ACT_DOWN);
+                            break;
+                        case '3':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_DOWNLEFT);
+                            } else {
+                                har_fire_hook(h, ACT_DOWNRIGHT);
+                            }
+                            break;
+                        case '4':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_RIGHT);
+                            } else {
+                                har_fire_hook(h, ACT_LEFT);
+                            }
+                            break;
+                        case '5':
+                            har_fire_hook(h, ACT_STOP);
+                            break;
+                        case '6':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_LEFT);
+                            } else {
+                                har_fire_hook(h, ACT_RIGHT);
+                            }
+                            break;
+                        case '7':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_UPRIGHT);
+                            } else {
+                                har_fire_hook(h, ACT_UPLEFT);
+                            }
+                            break;
+                        case '8':
+                            har_fire_hook(h, ACT_UP);
+                            break;
+                        case '9':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_UPLEFT);
+                            } else {
+                                har_fire_hook(h, ACT_UPRIGHT);
+                            }
+                            break;
+                        case 'K':
+                            har_fire_hook(h, ACT_KICK);
+                            break;
+                        case 'P':
+                            har_fire_hook(h, ACT_PUNCH);
+                            break;
+                    }
+                    s++;
+                }
 
-#ifdef DEBUGMODE
+#ifdef DEBUGMODE_STFU
         DEBUG("UNKNOWN %u %u %u %u | %u %u %u %u | %u %u %u %u | %u %u %u %u | %u %u %u %u | %u",
               move->unknown[0]&0xFF, move->unknown[1]&0xFF, move->unknown[2]&0xFF, move->unknown[3]&0xFF,
               move->unknown[4]&0xFF, move->unknown[5]&0xFF, move->unknown[6]&0xFF, move->unknown[7]&0xFF,
@@ -703,18 +772,33 @@ int har_act(object *obj, int act_type) {
     h->blocking = 0;
     switch(act_type) {
         case ACT_DOWNRIGHT:
-            if(act_type == ACT_DOWNRIGHT && direction == OBJECT_FACE_LEFT) {
+            if(direction == OBJECT_FACE_LEFT) {
                 h->blocking = 1;
             }
+            if(h->state != STATE_CROUCHING) {
+                har_set_ani(obj, ANIM_CROUCHING, 1);
+                object_set_vel(obj, vec2f_create(0,0));
+                h->state = STATE_CROUCHING;
+                har_fire_hook(h, ACT_DOWNRIGHT);
+            }
+            break;
         case ACT_DOWNLEFT:
-            if(act_type == ACT_DOWNLEFT && direction == OBJECT_FACE_RIGHT) {
+            if(direction == OBJECT_FACE_RIGHT) {
                 h->blocking = 1;
             }
+            if(h->state != STATE_CROUCHING) {
+                har_set_ani(obj, ANIM_CROUCHING, 1);
+                object_set_vel(obj, vec2f_create(0,0));
+                h->state = STATE_CROUCHING;
+                har_fire_hook(h, ACT_DOWNLEFT);
+            }
+            break;
         case ACT_DOWN:
             if(h->state != STATE_CROUCHING) {
                 har_set_ani(obj, ANIM_CROUCHING, 1);
                 object_set_vel(obj, vec2f_create(0,0));
                 h->state = STATE_CROUCHING;
+                har_fire_hook(h, ACT_DOWN);
             }
             break;
         case ACT_STOP:
@@ -723,12 +807,14 @@ int har_act(object *obj, int act_type) {
                 object_set_vel(obj, vec2f_create(0,0));
                 obj->slide_state.vel.x = 0;
                 h->state = STATE_STANDING;
+                har_fire_hook(h, ACT_STOP);
             }
             break;
         case ACT_LEFT:
             if(h->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
                 h->state = STATE_WALKING;
+                har_fire_hook(h, ACT_LEFT);
             }
             if(direction == OBJECT_FACE_LEFT) {
                 vx = (h->af_data->forward_speed*-1)/(float)320;
@@ -742,6 +828,7 @@ int har_act(object *obj, int act_type) {
             if(h->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
                 h->state = STATE_WALKING;
+                har_fire_hook(h, ACT_RIGHT);
             }
             if(direction == OBJECT_FACE_LEFT) {
                 h->blocking = 1;
@@ -759,6 +846,7 @@ int har_act(object *obj, int act_type) {
                 object_set_vel(obj, vec2f_create(0,vy));
                 object_set_tick_pos(obj, 100);
                 h->state = STATE_JUMPING;
+                har_fire_hook(h, ACT_UP);
             }
             break;
         case ACT_UPLEFT:
@@ -781,6 +869,7 @@ int har_act(object *obj, int act_type) {
                     object_set_tick_pos(obj, 110);
                 }
                 h->state = STATE_JUMPING;
+                har_fire_hook(h, ACT_UPLEFT);
             }
             break;
         case ACT_UPRIGHT:
@@ -804,6 +893,7 @@ int har_act(object *obj, int act_type) {
                     
                 }
                 h->state = STATE_JUMPING;
+                har_fire_hook(h, ACT_UPRIGHT);
             }
             break;
     }
@@ -943,6 +1033,11 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
     return 0;
 }
 
+void har_install_hook(har *h, har_hook_cb hook, void *data) {
+    h->hook_cb = hook;
+    h->hook_cb_data = data;
+}
+
 void har_bootstrap(object *obj) {
     object_set_serialize_cb(obj, har_serialize);
     object_set_unserialize_cb(obj, har_unserialize);
@@ -968,6 +1063,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->hard_close =  0;
     local->state = STATE_STANDING;
     local->executing_move = 0;
+
+    local->hook_cb = NULL;
+    local->hook_cb_data = NULL;
 
     // Object related stuff
     /*object_set_gravity(obj, local->af_data->fall_speed);*/

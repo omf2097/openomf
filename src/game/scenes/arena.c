@@ -176,6 +176,28 @@ void scene_youlose_anim_start(void *userdata) {
     arena->state = ARENA_STATE_ENDING;
 }
 
+void maybe_install_har_hooks(scene *scene) {
+    if (scene->gs->role == ROLE_CLIENT) {
+        object *obj_har1,*obj_har2;
+        obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
+        obj_har2 = game_player_get_har(game_state_get_player(scene->gs, 1));
+        har *har1, *har2;
+        har1 = obj_har1->userdata;
+        har2 = obj_har2->userdata;
+
+        game_player *_player[2];
+        for(int i = 0; i < 2; i++) {
+            _player[i] = game_state_get_player(scene->gs, i);
+        }
+        if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
+            har_install_hook(har2, &net_controller_har_hook, _player[0]->ctrl);
+        }
+        if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
+            har_install_hook(har1, &net_controller_har_hook, _player[1]->ctrl);
+        }
+    }
+}
+
 
 // -------- Scene callbacks --------
 
@@ -297,6 +319,7 @@ void arena_tick(scene *scene) {
                 // fix the palettes
                 object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                 object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+                maybe_install_har_hooks(scene);
             } else if (i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return;
@@ -313,6 +336,7 @@ void arena_tick(scene *scene) {
                 // fix the palettes
                 object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                 object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+                maybe_install_har_hooks(scene);
             } else if (i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return;
@@ -357,6 +381,7 @@ void arena_input_tick(scene *scene) {
                     // fix the palettes
                     object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                     object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+                    maybe_install_har_hooks(scene);
                 } else if (i->type == EVENT_TYPE_CLOSE) {
                     game_state_set_next(scene->gs, SCENE_MENU);
                     return;
@@ -374,6 +399,7 @@ void arena_input_tick(scene *scene) {
                     // fix the palettes
                     object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                     object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+                    maybe_install_har_hooks(scene);
                 } else if (i->type == EVENT_TYPE_CLOSE) {
                     game_state_set_next(scene->gs, SCENE_MENU);
                     return;
@@ -577,20 +603,20 @@ int arena_create(scene *scene) {
         game_player_get_ctrl(player)->har = obj;
     }
 
-    // remove the keyboard hooks if we're the server
+    // remove the keyboard hooks
 
-    if (scene->gs->role == ROLE_SERVER) {
-        game_player *_player[2];
-        for(int i = 0; i < 2; i++) {
-            _player[i] = game_state_get_player(scene->gs, i);
-        }
-        if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
-            controller_clear_hooks(game_player_get_ctrl(_player[1]));
-        }
-        if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
-            controller_clear_hooks(game_player_get_ctrl(_player[0]));
-        }
+    game_player *_player[2];
+    for(int i = 0; i < 2; i++) {
+        _player[i] = game_state_get_player(scene->gs, i);
     }
+    if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
+        controller_clear_hooks(game_player_get_ctrl(_player[1]));
+    }
+    if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
+        controller_clear_hooks(game_player_get_ctrl(_player[0]));
+    }
+
+    maybe_install_har_hooks(scene);
     
     // Arena menu
     local->menu_visible = 0;

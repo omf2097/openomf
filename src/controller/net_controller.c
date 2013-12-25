@@ -205,6 +205,32 @@ int net_controller_get_rtt(controller *ctrl) {
     return data->rtt;
 }
 
+void net_controller_har_hook(int action, void *cb_data) {
+    controller *ctrl = cb_data;
+    wtf *data = ctrl->data;
+    serial ser;
+    ENetPeer *peer = data->peer;
+    ENetHost *host = data->host;
+    ENetPacket *packet;
+    if (action == ACT_STOP && data->last_action == ACT_STOP) {
+        data->last_action = -1;
+        return;
+    }
+    data->last_action = action;
+    serial_create(&ser);
+    serial_write_int(&ser, EVENT_TYPE_ACTION);
+    serial_write_int(&ser, action);
+    /*DEBUG("controller hook fired with %d", action);*/
+    /*sprintf(buf, "k%d", action);*/
+    packet = enet_packet_create(ser.data, ser.len, ENET_PACKET_FLAG_RELIABLE);
+    if (peer) {
+        enet_peer_send(peer, 0, packet);
+        enet_host_flush (host);
+    } else {
+        DEBUG("peer is null~");
+    }
+}
+
 void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int id) {
     wtf *data = malloc(sizeof(wtf));
     data->id = id;

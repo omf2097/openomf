@@ -55,6 +55,8 @@ enum {
     DAMAGETYPE_HIGH // Damage to high area of har
 };
 
+typedef void (*har_hook_cb)(int action, void *data);
+
 typedef struct har_t {
     int id;
     int player_id;
@@ -73,6 +75,10 @@ typedef struct har_t {
     int endurance_max, endurance;
     char inputs[11];
 
+    har_hook_cb hook_cb;
+    void *hook_cb_data;
+
+
 #ifdef DEBUGMODE
     texture debug_tex;
     image debug_img;
@@ -80,6 +86,7 @@ typedef struct har_t {
 #endif
 } har;
 
+void har_install_hook(har *h, har_hook_cb hook, void *data);
 void har_bootstrap(object *obj);
 int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id);
 void har_set_ani(object *obj, int animation_id, int repeat);
