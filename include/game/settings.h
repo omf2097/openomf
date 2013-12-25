@@ -66,11 +66,17 @@ typedef struct settings_keyboard_t {
     char *key2_punch;
 } settings_keyboard;
 
+typedef struct settings_network_t {
+    char *net_server_ip;
+} settings_network;
+
+
 typedef struct settings_t {
     settings_video video;
     settings_sound sound;
     settings_gameplay gameplay;
     settings_keyboard keys;
+    settings_network net;
 } settings;
 
 int settings_write_defaults(const char *path);

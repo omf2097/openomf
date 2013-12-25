@@ -86,6 +86,10 @@ const field f_keyboard[] = {
     F_STRING(settings_keyboard, key2_punch, "Left Shift")
 };
 
+const field f_net[] = {
+    F_STRING(settings_network, net_server_ip, "localhost")
+};
+
 int *fieldint(void *st, int offset) {
     return (int*)((char*)st + offset);
 }
@@ -207,6 +211,7 @@ int settings_init(const char *path) {
     settings_add_fields(f_sound, NFIELDS(f_sound));
     settings_add_fields(f_gameplay, NFIELDS(f_gameplay));
     settings_add_fields(f_keyboard, NFIELDS(f_keyboard));
+    settings_add_fields(f_net, NFIELDS(f_net));
     return conf_init(settings_path);
 }
 
@@ -215,6 +220,7 @@ void settings_load() {
     settings_load_fields(&_settings.sound, f_sound, NFIELDS(f_sound));
     settings_load_fields(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
     settings_load_fields(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
+    settings_load_fields(&_settings.net, f_net, NFIELDS(f_net));
 }
 
 void settings_save() {
@@ -222,6 +228,7 @@ void settings_save() {
     settings_save_fields(&_settings.sound, f_sound, NFIELDS(f_sound));
     settings_save_fields(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
     settings_save_fields(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
+    settings_save_fields(&_settings.net, f_net, NFIELDS(f_net));
     if(conf_write_config(settings_path)) {
         PERROR("Failed to write config file!\n");
     }
@@ -232,6 +239,7 @@ void settings_free() {
     settings_free_strings(&_settings.sound, f_sound, NFIELDS(f_sound));
     settings_free_strings(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
     settings_free_strings(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
+    settings_free_strings(&_settings.net, f_net, NFIELDS(f_net));
     conf_close();
 }
 

@@ -414,6 +414,8 @@ void mainmenu_connect_to_ip(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata(s);
     ENetAddress address;
     char *addr = textinput_value(&local->connect_ip_input);
+    free(settings_get()->net.net_server_ip);
+    settings_get()->net.net_server_ip = dupestr(addr);
     local->host = enet_host_create(NULL, 1, 2, 0, 0);
     s->gs->role = ROLE_CLIENT;
     if (local->host == NULL) {
@@ -827,10 +829,10 @@ int mainmenu_create(scene *scene) {
     textbutton_create(&local->net_connect_button, &font_large, "CONNECT TO SERVER");
     textbutton_create(&local->net_listen_button, &font_large, "START SERVER");
     textbutton_create(&local->net_done_button, &font_large, "DONE");
-    menu_attach(&local->net_menu, &local->net_header, 33),
-    menu_attach(&local->net_menu, &local->net_connect_button, 11),
-    menu_attach(&local->net_menu, &local->net_listen_button, 55),
-    menu_attach(&local->net_menu, &local->net_done_button, 11),
+    menu_attach(&local->net_menu, &local->net_header, 33);
+    menu_attach(&local->net_menu, &local->net_connect_button, 11);
+    menu_attach(&local->net_menu, &local->net_listen_button, 55);
+    menu_attach(&local->net_menu, &local->net_done_button, 11);
 
     local->net_listen_button.userdata = scene;
     local->net_listen_button.click = mainmenu_listen_for_connections;
@@ -846,12 +848,12 @@ int mainmenu_create(scene *scene) {
 
     // connect menu
     menu_create(&local->connect_menu, 10, 80, 300, 50);
-    textinput_create(&local->connect_ip_input, &font_large, "Host/IP", "");
+    textinput_create(&local->connect_ip_input, &font_large, "Host/IP", setting->net.net_server_ip);
     textbutton_create(&local->connect_ip_button, &font_large, "CONNECT");
     textbutton_create(&local->connect_ip_cancel_button, &font_large, "CANCEL");
-    menu_attach(&local->connect_menu, &local->connect_ip_input, 11),
-    menu_attach(&local->connect_menu, &local->connect_ip_button, 11),
-    menu_attach(&local->connect_menu, &local->connect_ip_cancel_button, 11),
+    menu_attach(&local->connect_menu, &local->connect_ip_input, 11);
+    menu_attach(&local->connect_menu, &local->connect_ip_button, 11);
+    menu_attach(&local->connect_menu, &local->connect_ip_cancel_button, 11);
 
     local->connect_ip_button.userdata = scene;
     local->connect_ip_button.click = mainmenu_connect_to_ip;
@@ -863,8 +865,8 @@ int mainmenu_create(scene *scene) {
     menu_create(&local->listen_menu, 10, 80, 300, 50);
     textbutton_create(&local->listen_button, &font_large, "Waiting for connection...");
     textbutton_create(&local->listen_cancel_button, &font_large, "CANCEL");
-    menu_attach(&local->listen_menu, &local->listen_button, 11),
-    menu_attach(&local->listen_menu, &local->listen_cancel_button, 11),
+    menu_attach(&local->listen_menu, &local->listen_button, 11);
+    menu_attach(&local->listen_menu, &local->listen_cancel_button, 11);
     local->listen_button.disabled = 1;
     menu_select(&local->listen_menu, &local->listen_cancel_button);
 
