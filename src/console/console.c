@@ -235,7 +235,7 @@ int console_cd_debug(scene *scene, void *userdata, int argc, char **argv) {
             return 1;
         }
         enet_address_set_host(&address, argv[1]);
-        address.port = 1337;
+        address.port = 2097;
 
         peer = enet_host_connect(client, &address, 2, 0);
 
@@ -300,7 +300,7 @@ int console_cmd_listen(scene *scene, void *userdata, int argc, char **argv) {
     ENetEvent event;
 
     address.host = ENET_HOST_ANY;
-    address.port = 1337;
+    address.port = 2097;
 
     server = enet_host_create(&address, 1, 2, 0, 0);
     if (server == NULL) {

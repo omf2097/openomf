@@ -425,7 +425,7 @@ void mainmenu_connect_to_ip(component *c, void *userdata) {
     menu_select(&local->connect_menu, &local->connect_ip_cancel_button);
 
     enet_address_set_host(&address, addr);
-    address.port = 1337;
+    address.port = 2097;
 
     ENetPeer *peer = enet_host_connect(local->host, &address, 2, 0);
 
@@ -454,7 +454,7 @@ void mainmenu_listen_for_connections(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata(s);
     ENetAddress address;
     address.host = ENET_HOST_ANY;
-    address.port = 1337;
+    address.port = 2097;
     local->host = enet_host_create(&address, 1, 2, 0, 0);
     s->gs->role = ROLE_SERVER;
     if (local->host == NULL) {
