@@ -57,7 +57,6 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 switch(serial_read_int(ser)) {
                     case EVENT_TYPE_ACTION:
                         {
-                            DEBUG("ACTION");
                             // dispatch keypress to scene
                             int action = serial_read_int(ser);
                             controller_cmd(ctrl, action, ev);
@@ -68,7 +67,6 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                         break;
                     case EVENT_TYPE_HB:
                         {
-                            DEBUG("HEARTBEAT");
                             // got a tick
                             int id = serial_read_int(ser);
                             if (id == data->id) {
