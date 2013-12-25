@@ -1,3 +1,4 @@
+#include <signal.h> // signal()
 #include <SDL2/SDL.h>
 #include "engine.h"
 #include "utils/log.h"
@@ -18,7 +19,12 @@ int _vsync = 0; // Needed in video.c
 static int run = 0;
 static int take_screenshot = 0;
 
+void exit_handler(int s) {
+    run = 0;
+}
+
 int engine_init() {
+#ifndef STANDALONE_SERVER
     settings *setting = settings_get();
     
     int w = setting->video.screen_w;
@@ -37,6 +43,8 @@ int engine_init() {
     if(audio_init(sink_id)) {
         goto exit_1;
     }
+#endif
+
     if(sounds_loader_init()) {
         goto exit_2;
     }
@@ -69,15 +77,24 @@ exit_4:
 exit_3:
     sounds_loader_close();
 exit_2:
+
+#ifndef STANDALONE_SERVER
     audio_close();
 exit_1:
     video_close();
 exit_0:
+#endif
+
     return 1;
 }
 
 void engine_run() {
     INFO(" --- BEGIN GAME LOG ---");
+
+#ifdef STANDALONE_SERVER
+    // Init interrupt signal handler
+    signal (SIGINT, exit_handler);
+#endif
 
     // Set up game
     game_state *gs = malloc(sizeof(game_state));
@@ -85,16 +102,20 @@ void engine_run() {
         return;
     }
 
+#ifndef STANDALONE_SERVER
     // apply volume settings
     sound_set_volume(settings_get()->sound.sound_vol/10.0f);
+#endif
 
     // Game loop
     int frame_start = SDL_GetTicks();
     int omf_wait = 0;
     while(run && game_state_is_running(gs)) {
+
+#ifndef STANDALONE_SERVER
         // Prepare rendering here
         video_render_prepare();
-    
+
         // Handle events
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
@@ -128,6 +149,7 @@ void engine_run() {
                 game_state_handle_event(gs, &e);
             }
         }
+#endif
 
         // Render scene
         int dt = (SDL_GetTicks() - frame_start);
@@ -147,6 +169,7 @@ void engine_run() {
         }
         frame_start = SDL_GetTicks();
 
+#ifndef STANDALONE_SERVER
         // Do the actual rendering jobs
         game_state_render(gs);
         console_render();
@@ -161,7 +184,10 @@ void engine_run() {
             image_free(&img);
             take_screenshot = 0;
         }
-        
+#else
+        // ignore "unused variable" warning
+        (void)take_screenshot;
+#endif
         // Delay stuff a bit if vsync is off
         if(!_vsync && run) {
             SDL_Delay(1);
@@ -182,7 +208,9 @@ void engine_close() {
     fonts_close();
     lang_close();
     sounds_loader_close();
+#ifndef STANDALONE_SERVER
     audio_close();
     video_close();
+#endif
     INFO("Engine deinit successful.");
 }

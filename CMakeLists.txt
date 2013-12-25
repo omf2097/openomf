@@ -47,6 +47,7 @@ ENDIF(MINGW)
 
 # Options
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
+OPTION(STANDALONE_SERVER "Build standalone server" OFF)
 
 # If we want to build support for vorbis streaming, find these too
 IF(USE_OGGVORBIS)
@@ -54,6 +55,10 @@ IF(USE_OGGVORBIS)
     find_package(vorbis)
     set(CORE_FLAGS "${CORE_FLAGS} -DUSE_OGGVORBIS")
 ENDIF(USE_OGGVORBIS)
+
+IF(STANDALONE_SERVER)
+    add_definitions( -DSTANDALONE_SERVER )
+ENDIF(STANDALONE_SERVER)
 
 # Build flags
 set(CMAKE_C_FLAGS "${CORE_FLAGS}")
@@ -73,19 +78,6 @@ ENDIF(MINGW)
 
 # Testing stuff
 add_subdirectory(testing)
-
-IF(STANDALONE_SERVER)
-    add_definitions( -DSTANDALONE_SERVER )
-    set(STANDALONE_SRC
-        src/main_net.c
-        src/engine_net.c
-    )
-ELSE(STANDALONE_SERVER)
-    set(STANDALONE_SRC
-        src/main.c
-        src/engine.c
-    )
-ENDIF(STANDALONE_SERVER)
 
 add_executable(openomf 
     src/utils/log.c
@@ -167,7 +159,8 @@ add_executable(openomf
     src/controller/joystick.c
     src/controller/net_controller.c
     src/console/console.c
-    ${STANDALONE_SRC}
+    src/main.c
+    src/engine.c
 )
 
 set(COREINCS
