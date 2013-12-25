@@ -12,6 +12,8 @@
 
 #define NFIELDS(struct_) sizeof(struct_)/sizeof(field)
 
+#define S_2_F(struct_, field) {struct_, field, NFIELDS(field)}
+
 static settings _settings;
 static const char *settings_path;
 
@@ -35,6 +37,12 @@ typedef struct field_t {
     field_default def;
     int offset;
 } field;
+
+typedef struct struct_to_field_t {
+    void *_struct;
+    const field *fields;
+    int num_fields;
+} struct_to_field;
 
 const field f_video[] = {
     F_INT(settings_video,  screen_w,      640),
@@ -88,6 +96,15 @@ const field f_keyboard[] = {
 
 const field f_net[] = {
     F_STRING(settings_network, net_server_ip, "localhost")
+};
+
+// Map struct to field
+const struct_to_field struct_to_fields[] = {
+    S_2_F(&_settings.video, f_video),
+    S_2_F(&_settings.sound, f_sound),
+    S_2_F(&_settings.gameplay, f_gameplay),
+    S_2_F(&_settings.keys, f_keyboard),
+    S_2_F(&_settings.net, f_net)
 };
 
 int *fieldint(void *st, int offset) {
@@ -207,39 +224,35 @@ int settings_write_defaults(const char *path) {
 int settings_init(const char *path) {
     settings_path = path;
     memset(&_settings, 0, sizeof(settings));
-    settings_add_fields(f_video, NFIELDS(f_video));
-    settings_add_fields(f_sound, NFIELDS(f_sound));
-    settings_add_fields(f_gameplay, NFIELDS(f_gameplay));
-    settings_add_fields(f_keyboard, NFIELDS(f_keyboard));
-    settings_add_fields(f_net, NFIELDS(f_net));
+    for(int i = 0;i < sizeof(struct_to_fields)/sizeof(struct_to_field);i++) {
+        const struct_to_field *s2f = &struct_to_fields[i];
+        settings_add_fields(s2f->fields, s2f->num_fields);
+    }
     return conf_init(settings_path);
 }
 
 void settings_load() {
-    settings_load_fields(&_settings.video, f_video, NFIELDS(f_video));
-    settings_load_fields(&_settings.sound, f_sound, NFIELDS(f_sound));
-    settings_load_fields(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
-    settings_load_fields(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
-    settings_load_fields(&_settings.net, f_net, NFIELDS(f_net));
+    for(int i = 0;i < sizeof(struct_to_fields)/sizeof(struct_to_field);i++) {
+        const struct_to_field *s2f = &struct_to_fields[i];
+        settings_load_fields(s2f->_struct, s2f->fields, s2f->num_fields);
+    }
 }
 
 void settings_save() {
-    settings_save_fields(&_settings.video, f_video, NFIELDS(f_video));
-    settings_save_fields(&_settings.sound, f_sound, NFIELDS(f_sound));
-    settings_save_fields(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
-    settings_save_fields(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
-    settings_save_fields(&_settings.net, f_net, NFIELDS(f_net));
+    for(int i = 0;i < sizeof(struct_to_fields)/sizeof(struct_to_field);i++) {
+        const struct_to_field *s2f = &struct_to_fields[i];
+        settings_save_fields(s2f->_struct, s2f->fields, s2f->num_fields);
+    }
     if(conf_write_config(settings_path)) {
         PERROR("Failed to write config file!\n");
     }
 }
 
 void settings_free() {
-    settings_free_strings(&_settings.video, f_video, NFIELDS(f_video));
-    settings_free_strings(&_settings.sound, f_sound, NFIELDS(f_sound));
-    settings_free_strings(&_settings.gameplay, f_gameplay, NFIELDS(f_gameplay));
-    settings_free_strings(&_settings.keys, f_keyboard, NFIELDS(f_keyboard));
-    settings_free_strings(&_settings.net, f_net, NFIELDS(f_net));
+    for(int i = 0;i < sizeof(struct_to_fields)/sizeof(struct_to_field);i++) {
+        const struct_to_field *s2f = &struct_to_fields[i];
+        settings_free_strings(s2f->_struct, s2f->fields, s2f->num_fields);
+    }
     conf_close();
 }
 
