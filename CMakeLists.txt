@@ -47,7 +47,7 @@ ENDIF(MINGW)
 
 # Options
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
-OPTION(STANDALONE_SERVER "Build standalone server" OFF)
+OPTION(SERVER_ONLY "Do not build the game binary" OFF)
 
 # If we want to build support for vorbis streaming, find these too
 IF(USE_OGGVORBIS)
@@ -56,10 +56,6 @@ IF(USE_OGGVORBIS)
     set(CORE_FLAGS "${CORE_FLAGS} -DUSE_OGGVORBIS")
 ENDIF(USE_OGGVORBIS)
 
-IF(STANDALONE_SERVER)
-    add_definitions( -DSTANDALONE_SERVER )
-ENDIF(STANDALONE_SERVER)
-
 # Build flags
 set(CMAKE_C_FLAGS "${CORE_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG "${CORE_FLAGS} -ggdb -DDEBUGMODE")
@@ -67,19 +63,10 @@ set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CORE_FLAGS} -g -O2")
 set(CMAKE_C_FLAGS_RELEASE "${CORE_FLAGS} -O2 -s")
 set(CMAKE_C_FLAGS_MINSIZEREL "${CORE_FLAGS} -Os -s")
 
-# Don't show console on mingw in release builds
-IF(MINGW)
-    IF(NOT STANDALONE_SERVER)
-        set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -mwindows")
-        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -mwindows")
-        set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -mwindows")
-    ENDIF(NOT STANDALONE_SERVER)
-ENDIF(MINGW)
-
 # Testing stuff
 add_subdirectory(testing)
 
-add_executable(openomf 
+set(OPENOMF_SRC
     src/utils/log.c
     src/utils/config.c
     src/utils/list.c
@@ -215,4 +202,20 @@ IF(TRAVIS)
 ENDIF(TRAVIS)
 
 include_directories(${COREINCS})
-target_link_libraries(openomf ${CORELIBS})
+
+# Build the server binary
+add_executable(openomf_server ${OPENOMF_SRC})
+set_target_properties(openomf_server PROPERTIES COMPILE_DEFINITIONS "STANDALONE_SERVER=1")
+target_link_libraries(openomf_server ${CORELIBS})
+
+# Build the game binary
+IF(NOT SERVER_ONLY)
+    add_executable(openomf ${OPENOMF_SRC})
+    # Don't show console on mingw in release builds
+    IF(MINGW)
+        IF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+            set_target_properties(openomf PROPERTIES LINK_FLAGS "-mwindows")
+        ENDIF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    ENDIF(MINGW)
+    target_link_libraries(openomf ${CORELIBS})
+ENDIF(NOT SERVER_ONLY)
