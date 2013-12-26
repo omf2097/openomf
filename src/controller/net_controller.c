@@ -144,7 +144,7 @@ int net_controller_update(controller *ctrl, serial *serial) {
     // need to copy here because enet will free this packet
     memcpy(buf+sizeof(int), serial->data, serial->len);
 
-    packet = enet_packet_create(buf, serial->len, ENET_PACKET_FLAG_RELIABLE);
+    packet = enet_packet_create(buf, serial->len+4, ENET_PACKET_FLAG_RELIABLE);
     if (peer) {
         enet_peer_send(peer, 0, packet);
         enet_host_flush(host);

@@ -124,7 +124,6 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->cur_texture = NULL;
     obj->cur_remap = 0;
     obj->halt = 0;
-    obj->stride = 1;
     obj->cast_shadow = 0;
     player_create(obj);
 
