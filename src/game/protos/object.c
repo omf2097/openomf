@@ -497,10 +497,10 @@ void object_set_animation(object *obj, animation *ani) {
         DEBUG("Custom object set to (x,y) = (%f,%f).", 
             obj->pos.x, obj->pos.y);
     } else {
-        DEBUG("Animation object %d set to (x,y) = (%f,%f) with \"%s\".", 
-            obj->cur_animation->id,
-            obj->pos.x, obj->pos.y,
-            str_c(&obj->cur_animation->animation_string));
+        /*DEBUG("Animation object %d set to (x,y) = (%f,%f) with \"%s\".", */
+            /*obj->cur_animation->id,*/
+            /*obj->pos.x, obj->pos.y,*/
+            /*str_c(&obj->cur_animation->animation_string));*/
     }
 }
 

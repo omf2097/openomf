@@ -641,11 +641,13 @@ int har_act(object *obj, int act_type) {
                     continue;
                 }
 
-                /*DEBUG("matched move %d with string %s", i, str_c(&move->move_string));*/
+                DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
                 /*DEBUG("input was %s", h->inputs);*/
-                char *s = (char*)str_c(&move->move_string);
-                while(*s != '\0') {
-                    switch(*s) {
+
+                // we have to serialize these inputs in reverse, so walk the string backwards
+                char *s = (char*)str_c(&move->move_string); // start
+                for (int j = str_size(&move->move_string)-1; j >=0; j--) { 
+                    switch(s[j]) {
                         case '1':
                             if(direction == OBJECT_FACE_LEFT) {
                                 har_fire_hook(h, ACT_DOWNRIGHT);
@@ -704,7 +706,6 @@ int har_act(object *obj, int act_type) {
                             har_fire_hook(h, ACT_PUNCH);
                             break;
                     }
-                    s++;
                 }
 
 #ifdef DEBUGMODE_STFU
@@ -994,7 +995,7 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
     int pilot_id = serial_read_int(ser);
     af *af_data;
 
-    DEBUG("unserializing HAR %d for player %d", har_id - HAR_JAGUAR, player_id);
+    /*DEBUG("unserializing HAR %d for player %d", har_id - HAR_JAGUAR, player_id);*/
 
     // find the AF data in the scene
 

@@ -315,7 +315,7 @@ void game_state_cleanup(game_state *gs) {
     vector_iter_begin(&gs->objects, &it);
     while((robj = iter_next(&it)) != NULL) {
         if(object_finished(robj->obj)) {
-            DEBUG("Animation object %d is finished, removing.", robj->obj->cur_animation->id);
+            /*DEBUG("Animation object %d is finished, removing.", robj->obj->cur_animation->id);*/
             object_free(robj->obj);
             free(robj->obj);
             vector_delete(&gs->objects, &it);
