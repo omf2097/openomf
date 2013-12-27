@@ -1026,7 +1026,7 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
 
     object_set_repeat(obj, 0); // XXX hack to undo the repeat set in har_create
 
-    DEBUG("har animation id is %d", animation_id);
+    DEBUG("har animation id is %d with state %d", animation_id, h->state);
 
     object_set_animation(obj, &af_get_move(af_data, animation_id)->ani);
 
@@ -1104,6 +1104,5 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 #endif
 
     // All done
-    DEBUG("Har %s (%d) loaded!", get_id_name(har_id), har_id);
     return 0;
 }

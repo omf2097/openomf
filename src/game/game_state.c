@@ -479,7 +479,6 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     for(int i = 0; i < 2; i++) {
         // Declare some vars
         game_player *player = game_state_get_player(gs, i);
-        DEBUG("HAR %d was %p", i, (void*)player->har);
         game_state_del_object(gs, player->har);
         object *obj = malloc(sizeof(object));
 
@@ -501,11 +500,10 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         // but we need it when we replay time, apparently
         object_set_palette(obj, bk_get_palette(&gs->sc->bk_data, 0), 0);
 
-        DEBUG("HAR %d is now %p", i, (void*)player->har);
     }
     // tick things back to the current time
     DEBUG("replaying %d ticks", endtick - gs->tick);
-    DEBUG("adjusting clock from %d to %d", oldtick, endtick);
+    DEBUG("adjusting clock from %d to %d (%d)", oldtick, endtick, rtt / 2);
     while (gs->tick <= endtick) {
         game_state_cleanup(gs);
         game_state_call_move(gs);

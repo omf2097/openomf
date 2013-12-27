@@ -80,7 +80,7 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int(ser, (int)obj->animation_state.ticks);
     serial_write_int(ser, (int)obj->animation_state.reverse);
 
-    DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d", strlen(anim_str)+1, anim_str, obj->animation_state.ticks, obj->stride, obj->animation_state.reverse);
+    DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);
 
     // Serialize the underlying object
     if(obj->serialize != NULL) {
@@ -109,7 +109,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->vel.y = serial_read_float(ser);
     object_reset_vstate(obj);
     object_reset_hstate(obj);
-    obj->gravity = serial_read_float(ser);
+    float gravity = serial_read_float(ser);
     obj->direction = serial_read_int(ser);
     obj->group = serial_read_int(ser);
     obj->layers = serial_read_int(ser);
@@ -162,11 +162,14 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     }
 
 
-    // deserializing hars can reset this, so we have to set this late
+    // deserializing hars can reset these, so we have to set this late
     obj->stride = stride;
+    object_set_gravity(obj, gravity);
 
 
-    DEBUG("Animation state: [%d] %s, ticks = %d, stride = %d, direction = %d", anim_str_len, anim_str, obj->animation_state.ticks, obj->stride, reverse);
+    DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);
+
+
 
     // Return success
     return 0;
