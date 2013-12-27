@@ -78,6 +78,9 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int(ser, strlen(anim_str)+1);
     serial_write(ser, anim_str, strlen(anim_str)+1);
     serial_write_int(ser, (int)obj->animation_state.ticks);
+    serial_write_int(ser, (int)obj->animation_state.reverse);
+
+    DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d", strlen(anim_str)+1, anim_str, obj->animation_state.ticks, obj->stride, obj->animation_state.reverse);
 
     // Serialize the underlying object
     if(obj->serialize != NULL) {
@@ -110,7 +113,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->direction = serial_read_int(ser);
     obj->group = serial_read_int(ser);
     obj->layers = serial_read_int(ser);
-    obj->stride = serial_read_int(ser);
+    int stride = serial_read_int(ser);
     int animation_id = serial_read_int(ser);
 
     // Other stuff not included in serialization
@@ -132,7 +135,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     char anim_str[anim_str_len];
     serial_read(ser, anim_str, anim_str_len);
     unsigned int ticks = (unsigned int)serial_read_int(ser);
-    DEBUG("Animation state: [%d] %s, ticks = %d", anim_str_len, anim_str, ticks);
+    int reverse = serial_read_int(ser);
 
     // Read the specialization ID from ther serial "stream".
     // This should be an int.
@@ -154,6 +157,16 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     // Init animation with correct string and tick
     player_reload_with_str(obj, anim_str);
     player_jump_to_tick(obj, ticks);
+    if (reverse) {
+        object_set_playback_direction(obj, PLAY_BACKWARDS);
+    }
+
+
+    // deserializing hars can reset this, so we have to set this late
+    obj->stride = stride;
+
+
+    DEBUG("Animation state: [%d] %s, ticks = %d, stride = %d, direction = %d", anim_str_len, anim_str, obj->animation_state.ticks, obj->stride, reverse);
 
     // Return success
     return 0;
