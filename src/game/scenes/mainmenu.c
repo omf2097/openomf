@@ -1093,10 +1093,13 @@ int mainmenu_create(scene *scene) {
     scene_set_free_cb(scene, mainmenu_free);
     scene_set_tick_cb(scene, mainmenu_tick);
 
-    if(scene->gs->connect_server) {
+    if(scene->gs->net_mode == NET_MODE_CLIENT) {
         component_click(&local->net_button);
         component_click(&local->net_connect_button);
-        mainmenu_connect_to_ip(NULL, scene);
+        component_click(&local->connect_ip_button);
+    } else if(scene->gs->net_mode == NET_MODE_SERVER) {
+        component_click(&local->net_button);
+        component_click(&local->net_listen_button);
     }
 
     // All done

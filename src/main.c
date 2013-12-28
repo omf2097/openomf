@@ -8,6 +8,7 @@
 #include "shadowdive/stringparser.h"
 #include "utils/log.h"
 #include "utils/random.h"
+#include "game/game_state.h"
 #include "game/settings.h"
 
 int main(int argc, char *argv[]) {
@@ -15,7 +16,7 @@ int main(int argc, char *argv[]) {
 
     char *path = "";
     char *ip = NULL;
-    int connect_server = 0;
+    int net_mode = NET_MODE_NONE;
 
     // Disable SDL_GetPrefPath for now, it seems to be somewhat buggy
 /*
@@ -43,9 +44,10 @@ int main(int argc, char *argv[]) {
             return 0;
         } else if(strcmp(argv[1], "-h") == 0) {
             printf("Arguments:\n");
-            printf("-h      Prints this help\n");
-            printf("-w      Writes a config file\n");
-            printf("-c ip   Connect to ip\n");
+            printf("-h       Prints this help\n");
+            printf("-w       Writes a config file\n");
+            printf("-c <ip>  Connect to server\n");
+            printf("-l       Start server\n");
             return 0;
         } else if(strcmp(argv[1], "-w") == 0) {
             if(settings_write_defaults(config_path)) {
@@ -60,7 +62,9 @@ int main(int argc, char *argv[]) {
             if(argc >= 3) {
                 ip = strcpy(malloc(strlen(argv[2])+1), argv[2]);
             }
-            connect_server = 1;
+            net_mode = NET_MODE_CLIENT;
+        } else if(strcmp(argv[1], "-l") == 0) {
+            net_mode = NET_MODE_SERVER;
         }
     }
 
@@ -151,7 +155,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Run
-    engine_run(connect_server);
+    engine_run(net_mode);
     
     // Close everything
     engine_close();

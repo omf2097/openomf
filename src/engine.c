@@ -88,7 +88,7 @@ exit_0:
     return 1;
 }
 
-void engine_run(int connect_server) {
+void engine_run(int net_mode) {
     INFO(" --- BEGIN GAME LOG ---");
 
 #ifdef STANDALONE_SERVER
@@ -98,7 +98,7 @@ void engine_run(int connect_server) {
 
     // Set up game
     game_state *gs = malloc(sizeof(game_state));
-    if(game_state_create(gs, connect_server)) {
+    if(game_state_create(gs, net_mode)) {
         return;
     }
 
