@@ -247,11 +247,14 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
             if(i->type == EVENT_TYPE_ACTION) {
                 if (player->ctrl->type == CTRL_TYPE_NETWORK) {
                     if (!game_state_rewind(scene->gs, net_controller_get_rtt(player->ctrl))) {
-                        need_sync += object_act(game_player_get_har(player), i->event_data.action);
+                        do {
+                            need_sync += object_act(game_player_get_har(player), i->event_data.action);
+                        } while ((i = i->next) && i->type == EVENT_TYPE_ACTION);
                         game_state_replay(scene->gs, net_controller_get_rtt(player->ctrl));
                         object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                         object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
                         maybe_install_har_hooks(scene);
+                        // XXX do we need to continue her, since we screwed with 'i'?
                     }
                 } else {
                     need_sync += object_act(game_player_get_har(player), i->event_data.action);
@@ -266,7 +269,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return 0;
             }
-        } while((i = i->next));
+        } while(i && (i = i->next));
     }
     return need_sync;
 }

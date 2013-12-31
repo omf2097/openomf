@@ -46,7 +46,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     ENetPeer *peer = data->peer;
     serial *ser;
     /*int handled = 0;*/
-    if (enet_host_service(host, &event, 0) > 0) {
+    while (enet_host_service(host, &event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
                 ser = malloc(sizeof(serial));
@@ -159,14 +159,14 @@ void har_hook(char* buf, void *userdata) {
     controller *ctrl = userdata;
     wtf *data = ctrl->data;
     ENetPeer *peer = data->peer;
-    ENetHost *host = data->host;
+    /*ENetHost *host = data->host;*/
     data->disconnected = 0;
     ENetPacket * packet;
 
     packet = enet_packet_create(buf, strlen (buf) + 1, ENET_PACKET_FLAG_RELIABLE);
     if (peer) {
         enet_peer_send(peer, 0, packet);
-        enet_host_flush (host);
+        /*enet_host_flush (host);*/
     } else {
         DEBUG("peer is null~");
     }
