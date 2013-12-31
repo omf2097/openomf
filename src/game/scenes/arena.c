@@ -313,7 +313,14 @@ void arena_tick(scene *scene) {
     if (i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                need_sync += object_act(game_player_get_har(player1), i->event_data.action);
+                if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
+                    if (!game_state_rewind(scene->gs, net_controller_get_rtt(player1->ctrl))) {
+                        need_sync += object_act(game_player_get_har(player1), i->event_data.action);
+                        // TODO replay the game again
+                    }
+                } else {
+                    need_sync += object_act(game_player_get_har(player1), i->event_data.action);
+                }
             } else if (i->type == EVENT_TYPE_SYNC) {
                 game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player1->ctrl));
                 // fix the palettes
@@ -330,7 +337,14 @@ void arena_tick(scene *scene) {
     if (i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                need_sync += object_act(game_player_get_har(player2), i->event_data.action);
+                if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
+                    if (!game_state_rewind(scene->gs, net_controller_get_rtt(player2->ctrl))) {
+                        need_sync += object_act(game_player_get_har(player2), i->event_data.action);
+                        // TODO replay the game again
+                    }
+                } else {
+                    need_sync += object_act(game_player_get_har(player2), i->event_data.action);
+                }
             } else if (i->type == EVENT_TYPE_SYNC) {
                 game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player2->ctrl));
                 // fix the palettes
@@ -375,7 +389,14 @@ void arena_input_tick(scene *scene) {
         if (i) {
             do {
                 if(i->type == EVENT_TYPE_ACTION) {
+                if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
+                    if (!game_state_rewind(scene->gs, net_controller_get_rtt(player1->ctrl))) {
+                        need_sync += object_act(game_player_get_har(player1), i->event_data.action);
+                        // TODO replay the game again
+                    }
+                } else {
                     need_sync += object_act(game_player_get_har(player1), i->event_data.action);
+                }
                 } else if (i->type == EVENT_TYPE_SYNC) {
                     game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player1->ctrl));
                     // fix the palettes
@@ -393,7 +414,14 @@ void arena_input_tick(scene *scene) {
         if (i) {
             do {
                 if(i->type == EVENT_TYPE_ACTION) {
-                    need_sync += object_act(game_player_get_har(player2), i->event_data.action);
+                    if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
+                        if (!game_state_rewind(scene->gs, net_controller_get_rtt(player2->ctrl))) {
+                            need_sync += object_act(game_player_get_har(player2), i->event_data.action);
+                            // TODO replay the game again
+                        }
+                    } else {
+                        need_sync += object_act(game_player_get_har(player2), i->event_data.action);
+                    }
                 } else if (i->type == EVENT_TYPE_SYNC) {
                     game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player2->ctrl));
                     // fix the palettes

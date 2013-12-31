@@ -40,6 +40,10 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->halt = 0;
     obj->stride = 1;
     obj->cast_shadow = 0;
+    obj->age = 0;
+    for(int i = 0; i < OBJECT_EVENT_BUFFER_SIZE; i++) {
+        serial_create(&obj->event_buffer[i]);
+    }
     player_create(obj);
 
     // Callbacks & userdata
@@ -81,7 +85,7 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int16(ser, (int)obj->animation_state.ticks);
     serial_write_int8(ser, (int)obj->animation_state.reverse);
 
-    DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);
+    /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
 
     // Serialize the underlying object
     if(obj->serialize != NULL) {
@@ -204,6 +208,14 @@ void object_tick(object *obj) {
     if(obj->tick != NULL) {
         obj->tick(obj);
     }
+
+    obj->age++;
+
+    // serialize to the ring buffer
+    int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
+    serial_free(&obj->event_buffer[pos]);
+    object_serialize(obj, &obj->event_buffer[pos]);
+
 }
 
 /*
@@ -436,9 +448,16 @@ void object_render_shadow(object *obj, image *shadow_buffer) {
 
 int object_act(object *obj, int action) {
     if(obj->act != NULL) {
-        return obj->act(obj, action);
+        int res = obj->act(obj, action);
+        if (res) {
+            // serialize to the ring buffer
+            int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
+            serial_free(&obj->event_buffer[pos]);
+            object_serialize(obj, &obj->event_buffer[pos]);
+        }
+        return res;
     }
-    return 1;
+    return 0;
 }
 
 void object_move(object *obj) {
@@ -585,6 +604,22 @@ void object_set_vel(object *obj, vec2f vel) {
     obj->vel = vel;
     object_reset_hstate(obj);
     object_reset_vstate(obj);
+}
+
+uint32_t object_get_age(object *obj) {
+    return obj->age;
+}
+
+serial* object_get_last_serialization_point(object *obj) {
+    return object_get_serialization_point(obj, 0);
+}
+
+serial* object_get_serialization_point(object *obj, unsigned int ticks_ago) {
+    if (ticks_ago > OBJECT_EVENT_BUFFER_SIZE || ticks_ago > obj->age) {
+        return NULL;
+    }
+    int pos = (obj->age - ticks_ago) % OBJECT_EVENT_BUFFER_SIZE;
+    return & obj->event_buffer[pos];
 }
 
 void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata) {

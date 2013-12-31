@@ -842,7 +842,7 @@ int har_act(object *obj, int act_type) {
             break;
         case ACT_UP:
             if(h->state != STATE_JUMPING) {
-                har_set_ani(obj, ANIM_JUMPING, 1);
+                har_set_ani(obj, ANIM_JUMPING, 0);
                 object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
                 vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
                 object_set_vel(obj, vec2f_create(0,vy));
@@ -853,7 +853,7 @@ int har_act(object *obj, int act_type) {
             break;
         case ACT_UPLEFT:
             if(h->state != STATE_JUMPING) {
-                har_set_ani(obj, ANIM_JUMPING, 1);
+                har_set_ani(obj, ANIM_JUMPING, 0);
                 vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
                 vx = h->af_data->reverse_speed*-1/(float)320;
                 object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
@@ -876,7 +876,7 @@ int har_act(object *obj, int act_type) {
             break;
         case ACT_UPRIGHT:
             if(h->state != STATE_JUMPING) {
-                har_set_ani(obj, ANIM_JUMPING, 1);
+                har_set_ani(obj, ANIM_JUMPING, 0);
                 vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
                 vx = h->af_data->forward_speed/(float)320;
                 object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);

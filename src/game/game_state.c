@@ -464,8 +464,16 @@ int game_state_serialize(game_state *gs, serial *ser) {
     har[0] = game_state_get_player(gs, 0)->har;
     har[1] = game_state_get_player(gs, 1)->har;
 
-    object_serialize(har[0], ser);
-    object_serialize(har[1], ser);
+    serial *harser;
+
+    harser = object_get_last_serialization_point(har[0]);
+    serial_write(ser, harser->data, harser->len);
+    harser = object_get_last_serialization_point(har[1]);
+    serial_write(ser, harser->data, harser->len);
+
+
+    /*object_serialize(har[0], ser);*/
+    /*object_serialize(har[1], ser);*/
     DEBUG("scene serialized to %d bytes", serial_len(ser));
     return 0;
 }
@@ -510,6 +518,79 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         game_state_call_collide(gs);
         game_state_call_tick(gs);
         gs->tick++;
+    }
+
+    return 0;
+}
+
+int game_state_rewind(game_state *gs, int rtt) {
+    int ticks = rtt/2;
+    gs->tick -= ticks;
+    if (ticks > OBJECT_EVENT_BUFFER_SIZE) {
+        // too stale, reject it
+        return 1;
+    }
+
+    object *har[2];
+    har[0] = game_state_get_player(gs, 0)->har;
+    har[1] = game_state_get_player(gs, 1)->har;
+
+    if (object_get_age(har[0]) < ticks || object_get_age(har[1]) < ticks) {
+        // event is older than our HARs, should not be possible, so drop it as invalid
+        return 1;
+    }
+
+    /*render_obj *robj;*/
+    /*iterator it;*/
+
+    // cull any non-hars younger than 'ticks', rewind the others
+    /*vector_iter_begin(&gs->objects, &it);
+    while((robj = iter_next(&it)) != NULL) {
+        if (robj->obj == har[0] || robj->obj == har[1]) {
+            // TODO handle other scene objects here
+            if(object_get_age(robj->obj) >= ticks) {
+                object *obj = malloc(sizeof(object));
+                object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0,0));
+                object_unserialize(obj, , gs);
+
+                game_state_add_object(gs, obj, robj->layer);
+            }
+            object_free(robj->obj);
+            free(robj->obj);
+            vector_delete(&gs->objects, &it);
+        }
+    }*/
+    for(int i = 0; i < 2; i++) {
+        // Declare some vars
+        game_player *player = game_state_get_player(gs, i);
+        object *oldobject = player->har;
+        serial *ser = object_get_serialization_point(player->har, ticks);
+        if (ser == NULL || ser->data == NULL) {
+            DEBUG("holy shit, event buffer has a NULL entry for this!");
+            continue;
+        }
+        object *obj = malloc(sizeof(object));
+
+        // Create object and specialize it as HAR.
+        // Errors are unlikely here, but check anyway.
+
+        object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0,0));
+        object_unserialize(obj, ser, gs);
+
+        // Set HAR to controller and game_player
+        game_state_add_object(gs, obj, RENDER_LAYER_MIDDLE);
+
+        // Set HAR for player
+        game_player_set_har(player, obj);
+        game_player_get_ctrl(player)->har = obj;
+
+        // XXX this is a hack because the arena holds the player palette!
+        // after this function returns, the arena will restore the palette
+        // but we need it when we replay time, apparently
+        object_set_palette(obj, bk_get_palette(&gs->sc->bk_data, 0), 0);
+
+        game_state_del_object(gs, oldobject);
+
     }
 
     return 0;

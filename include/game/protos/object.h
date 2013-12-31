@@ -12,6 +12,8 @@
 #define OBJECT_DEFAULT_LAYER 0x01
 #define OBJECT_NO_GROUP -1
 
+#define OBJECT_EVENT_BUFFER_SIZE 16
+
 enum {
     OBJECT_STABLE = 0,
     OBJECT_MOVING
@@ -75,6 +77,12 @@ struct object_t {
     player_sprite_state sprite_state;
     player_animation_state animation_state;
     player_slide_state slide_state;
+
+    // state ringbuffer
+    uint32_t age;
+    // should cover the last 400ms (25 * 16 = 400)
+    // if the user's ping is > 800ms they're pretty screwed
+    serial event_buffer[OBJECT_EVENT_BUFFER_SIZE];
 
     void *userdata;
     object_free_cb free;
@@ -159,6 +167,10 @@ vec2f object_get_vel(object *obj);
 
 void object_set_pos(object *obj, vec2i pos);
 void object_set_vel(object *obj, vec2f vel);
+
+uint32_t object_get_age(object *obj);
+serial* object_get_last_serialization_point(object *obj);
+serial* object_get_serialization_point(object *obj, unsigned int ticks_ago);
 
 void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata);
 void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata);
