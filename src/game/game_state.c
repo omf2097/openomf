@@ -524,6 +524,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
 }
 
 int game_state_rewind(game_state *gs, int rtt) {
+    int endtick = gs->tick;
     int ticks = rtt/2;
     gs->tick -= ticks;
     if (ticks > OBJECT_EVENT_BUFFER_SIZE) {
@@ -591,6 +592,16 @@ int game_state_rewind(game_state *gs, int rtt) {
 
         game_state_del_object(gs, oldobject);
 
+    }
+
+    DEBUG("replaying %d ticks", ticks);
+    DEBUG("adjusting clock from %d to %d (%d)", gs->tick, endtick, ticks);
+    while (gs->tick <= endtick) {
+        game_state_cleanup(gs);
+        game_state_call_move(gs);
+        game_state_call_collide(gs);
+        game_state_call_tick(gs);
+        gs->tick++;
     }
 
     return 0;
