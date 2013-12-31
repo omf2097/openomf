@@ -457,8 +457,8 @@ int game_state_ms_per_tick(game_state *gs) {
 
 int game_state_serialize(game_state *gs, serial *ser) {
     // serialize tick time and random seed, so client can reply state from this point
-    serial_write_int(ser, game_state_get_tick(gs));
-    serial_write_int(ser, rand_get_seed());
+    serial_write_int32(ser, game_state_get_tick(gs));
+    serial_write_int32(ser, rand_get_seed());
 
     object *har[2];
     har[0] = game_state_get_player(gs, 0)->har;
@@ -472,9 +472,9 @@ int game_state_serialize(game_state *gs, serial *ser) {
 
 int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     int oldtick = gs->tick;
-    gs->tick = serial_read_int(ser);
+    gs->tick = serial_read_int32(ser);
     int endtick = gs->tick + (rtt / 2);
-    rand_seed(serial_read_int(ser));
+    rand_seed(serial_read_int32(ser));
 
     for(int i = 0; i < 2; i++) {
         // Declare some vars

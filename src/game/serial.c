@@ -1,6 +1,27 @@
 #include <stdlib.h>
 #include <string.h>
+#include <arpa/inet.h> // for htonl and friends
 #include "game/serial.h"
+#include "utils/log.h"
+#include <stdio.h>
+
+
+// taken from http://stackoverflow.com/questions/10620601/portable-serialisation-of-ieee754-floating-point-values
+float htonf(float val) {
+    uint32_t rep;
+    memcpy(&rep, &val, sizeof rep);
+    rep = htonl(rep);
+    memcpy(&val, &rep, sizeof rep);
+    return val;
+}
+
+float ntohf(float val) {
+    uint32_t rep;
+    memcpy(&rep, &val, sizeof rep);
+    rep = ntohl(rep);
+    memcpy(&val, &rep, sizeof rep);
+    return val;
+}
 
 // TODO we should probably have some reasonable initial size, so we don't realloc like crazy
 void serial_create(serial *s) {
@@ -21,18 +42,23 @@ void serial_write(serial *s, const char *buf, int len) {
     s->len += len;
 }
 
-// TODO: Add conversions (htons, etc.)!
-
-void serial_write_int(serial *s, int v) {
+void serial_write_int8(serial *s, int8_t v) {
     serial_write(s, (char*)&v, sizeof(v));
 }
 
-void serial_write_long(serial *s, long v) {
-    serial_write(s, (char*)&v, sizeof(v));
+void serial_write_int16(serial *s, int16_t v) {
+    int16_t t = htons(v);
+    serial_write(s, (char*)&t, sizeof(t));
+}
+
+void serial_write_int32(serial *s, int32_t v) {
+    int32_t t = htonl(v);
+    serial_write(s, (char*)&t, sizeof(t));
 }
 
 void serial_write_float(serial *s, float v) {
-    serial_write(s, (char*)&v, sizeof(v));
+    float t = htonf(v);
+    serial_write(s, (char*)&t, sizeof(t));
 }
 
 void serial_free(serial *s) {
@@ -63,20 +89,26 @@ void serial_read(serial *s, char *buf, int len) {
     }
 }
 
-int serial_read_int(serial *s) {
-    int v;
+int8_t serial_read_int8(serial *s) {
+    int8_t v;
     serial_read(s, (char*)&v, sizeof(v));
     return v;
 }
 
-long serial_read_long(serial *s) {
-    long v;
+int16_t serial_read_int16(serial *s) {
+    int16_t v;
     serial_read(s, (char*)&v, sizeof(v));
-    return v;
+    return ntohs(v);
+}
+
+int32_t serial_read_int32(serial *s) {
+    int32_t v;
+    serial_read(s, (char*)&v, sizeof(v));
+    return ntohl(v);
 }
 
 float serial_read_float(serial *s) {
     float v;
     serial_read(s, (char*)&v, sizeof(v));
-    return v;
+    return ntohf(v);
 }

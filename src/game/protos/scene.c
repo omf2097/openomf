@@ -132,7 +132,7 @@ int scene_serialize(scene *s, serial *ser) {
  */
 int scene_unserialize(scene *s, serial *ser) {
     // TODO: Read attributes
-    s->id = serial_read_int(ser);
+    s->id = serial_read_int8(ser);
 
     // Return success
     return 0;

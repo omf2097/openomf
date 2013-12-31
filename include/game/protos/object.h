@@ -52,12 +52,12 @@ struct object_t {
     vec2f vel;
     int vstate;
     int hstate;
-    int direction;
+    int8_t direction;
     float y_percent;
     float gravity;
     
-    int group;
-    int layers;
+    int8_t group;
+    uint8_t layers;
     
     int cur_animation_own;
     animation *cur_animation;
@@ -68,7 +68,7 @@ struct object_t {
     palette *cur_palette;
     int cur_remap;
     int halt;
-    int stride;
+    uint8_t stride;
     int cast_shadow;
     texture *cur_texture;
 

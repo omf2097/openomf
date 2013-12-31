@@ -67,18 +67,19 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_float(ser, obj->vel.x);
     serial_write_float(ser, obj->vel.y);
     serial_write_float(ser, obj->gravity);
-    serial_write_int(ser, obj->direction);
-    serial_write_int(ser, obj->group);
-    serial_write_int(ser, obj->layers);
-    serial_write_int(ser, obj->stride);
-    serial_write_int(ser, obj->cur_animation->id);
+    serial_write_int8(ser, obj->direction);
+    serial_write_int8(ser, obj->group);
+    serial_write_int8(ser, obj->layers);
+    serial_write_int8(ser, obj->stride);
+    serial_write_int8(ser, object_get_repeat(obj));
+    serial_write_int8(ser, obj->cur_animation->id);
 
     // Write animation state
     const char *anim_str = player_get_str(obj);
-    serial_write_int(ser, strlen(anim_str)+1);
+    serial_write_int16(ser, strlen(anim_str)+1);
     serial_write(ser, anim_str, strlen(anim_str)+1);
-    serial_write_int(ser, (int)obj->animation_state.ticks);
-    serial_write_int(ser, (int)obj->animation_state.reverse);
+    serial_write_int16(ser, (int)obj->animation_state.ticks);
+    serial_write_int8(ser, (int)obj->animation_state.reverse);
 
     DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);
 
@@ -86,7 +87,7 @@ int object_serialize(object *obj, serial *ser) {
     if(obj->serialize != NULL) {
         obj->serialize(obj, ser);
     } else {
-        serial_write_int(ser, SPECID_NONE);
+        serial_write_int8(ser, SPECID_NONE);
     }
 
     // TODO serialize the animation player
@@ -110,11 +111,12 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     object_reset_vstate(obj);
     object_reset_hstate(obj);
     float gravity = serial_read_float(ser);
-    obj->direction = serial_read_int(ser);
-    obj->group = serial_read_int(ser);
-    obj->layers = serial_read_int(ser);
-    int stride = serial_read_int(ser);
-    int animation_id = serial_read_int(ser);
+    obj->direction = serial_read_int8(ser);
+    obj->group = serial_read_int8(ser);
+    obj->layers = serial_read_int8(ser);
+    uint8_t stride = serial_read_int8(ser);
+    uint8_t repeat = serial_read_int8(ser);
+    uint8_t animation_id = serial_read_int8(ser);
 
     // Other stuff not included in serialization
     obj->y_percent = 1.0;
@@ -131,15 +133,15 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     player_create(obj);
 
     // Read animation state
-    int anim_str_len = serial_read_int(ser);
+    uint16_t anim_str_len = serial_read_int16(ser);
     char anim_str[anim_str_len];
     serial_read(ser, anim_str, anim_str_len);
-    unsigned int ticks = (unsigned int)serial_read_int(ser);
-    int reverse = serial_read_int(ser);
+    uint16_t ticks = (uint16_t)serial_read_int16(ser);
+    uint8_t reverse = serial_read_int8(ser);
 
     // Read the specialization ID from ther serial "stream".
     // This should be an int.
-    int specialization_id = serial_read_int(ser);
+    int specialization_id = serial_read_int8(ser);
 
     // This should automatically bootstrap the object so that it has at least
     // unserialize function callback and local memory allocated
@@ -165,6 +167,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     // deserializing hars can reset these, so we have to set this late
     obj->stride = stride;
     object_set_gravity(obj, gravity);
+    object_set_repeat(obj, repeat);
 
 
     DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);

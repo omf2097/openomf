@@ -964,22 +964,22 @@ int har_serialize(object *obj, serial *ser) {
     har *h = object_get_userdata(obj);
 
     // Specialization
-    serial_write_int(ser, SPECID_HAR);
+    serial_write_int8(ser, SPECID_HAR);
 
     // Set serialization data
-    serial_write_int(ser, h->id);
-    serial_write_int(ser, h->player_id);
-    serial_write_int(ser, h->pilot_id);
-    serial_write_int(ser, h->state);
-    serial_write_int(ser, h->blocking);
-    serial_write_int(ser, h->executing_move);
-    serial_write_int(ser, h->flinching);
-    serial_write_int(ser, h->close);
-    serial_write_int(ser, h->hard_close);
-    serial_write_int(ser, h->damage_done);
-    serial_write_int(ser, h->damage_received);
-    serial_write_int(ser, h->health);
-    serial_write_int(ser, h->endurance);
+    serial_write_int16(ser, h->id);
+    serial_write_int8(ser, h->player_id);
+    serial_write_int8(ser, h->pilot_id);
+    serial_write_int8(ser, h->state);
+    serial_write_int8(ser, h->blocking);
+    serial_write_int8(ser, h->executing_move);
+    serial_write_int8(ser, h->flinching);
+    serial_write_int8(ser, h->close);
+    serial_write_int8(ser, h->hard_close);
+    serial_write_int8(ser, h->damage_done);
+    serial_write_int8(ser, h->damage_received);
+    serial_write_int16(ser, h->health);
+    serial_write_int16(ser, h->endurance);
 
     // ...
     // TODO: Set the other ser attrs here
@@ -990,9 +990,9 @@ int har_serialize(object *obj, serial *ser) {
 
 int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) {
 
-    int har_id = serial_read_int(ser);
-    int player_id = serial_read_int(ser);
-    int pilot_id = serial_read_int(ser);
+    int har_id = serial_read_int16(ser);
+    int player_id = serial_read_int8(ser);
+    int pilot_id = serial_read_int8(ser);
     af *af_data;
 
     /*DEBUG("unserializing HAR %d for player %d", har_id - HAR_JAGUAR, player_id);*/
@@ -1014,16 +1014,16 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
     // we are unserializing a state update for a HAR, we expect it to have the AF data already loaded into RAM, we're just updating the volatile attributes
 
     // TODO sanity check pilot/player/HAR IDs
-    h->state = serial_read_int(ser);
-    h->blocking = serial_read_int(ser);
-    h->executing_move = serial_read_int(ser);
-    h->flinching = serial_read_int(ser);
-    h->close = serial_read_int(ser);
-    h->hard_close = serial_read_int(ser);
-    h->damage_done = serial_read_int(ser);
-    h->damage_received = serial_read_int(ser);
-    h->health = serial_read_int(ser);
-    h->endurance = serial_read_int(ser);
+    h->state = serial_read_int8(ser);
+    h->blocking = serial_read_int8(ser);
+    h->executing_move = serial_read_int8(ser);
+    h->flinching = serial_read_int8(ser);
+    h->close = serial_read_int8(ser);
+    h->hard_close = serial_read_int8(ser);
+    h->damage_done = serial_read_int8(ser);
+    h->damage_received = serial_read_int8(ser);
+    h->health = serial_read_int16(ser);
+    h->endurance = serial_read_int16(ser);
 
     object_set_repeat(obj, 0); // XXX hack to undo the repeat set in har_create
 
