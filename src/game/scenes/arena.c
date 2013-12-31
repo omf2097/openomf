@@ -239,6 +239,60 @@ void arena_free(scene *scene) {
     free(local);
 }
 
+int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
+    arena_local *local = scene_get_userdata(scene);
+    int need_sync = 0;
+    if (i) {
+        do {
+            if(i->type == EVENT_TYPE_ACTION) {
+                if (player->ctrl->type == CTRL_TYPE_NETWORK) {
+                    if (!game_state_rewind(scene->gs, net_controller_get_rtt(player->ctrl))) {
+                        need_sync += object_act(game_player_get_har(player), i->event_data.action);
+                        // TODO replay the game again
+                        object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
+                        object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+                        maybe_install_har_hooks(scene);
+                    }
+                } else {
+                    need_sync += object_act(game_player_get_har(player), i->event_data.action);
+                }
+            } else if (i->type == EVENT_TYPE_SYNC) {
+                game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player->ctrl));
+                // fix the palettes
+                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
+                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+                maybe_install_har_hooks(scene);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return 0;
+            }
+        } while((i = i->next));
+    }
+    return need_sync;
+}
+
+void arena_maybe_sync(scene *scene, int need_sync) {
+    game_state *gs = scene->gs;
+    game_player *player1 = game_state_get_player(gs, 0);
+    game_player *player2 = game_state_get_player(gs, 1);
+
+    if (need_sync && gs->role == ROLE_SERVER && (player1->ctrl->type == CTRL_TYPE_NETWORK ||  player2->ctrl->type == CTRL_TYPE_NETWORK)) {
+        // some of the moves did something interesting and we should synchronize the peer
+        serial ser;
+        serial_create(&ser);
+        game_state_serialize(scene->gs, &ser);
+        if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
+            controller_update(player1->ctrl, &ser);
+        }
+
+        if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
+            controller_update(player2->ctrl, &ser);
+        }
+        serial_free(&ser);
+    }
+}
+
+
 void arena_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
@@ -309,68 +363,9 @@ void arena_tick(scene *scene) {
 
     int need_sync = 0;
     // allow enemy HARs to move during a network game
-    ctrl_event *i = player1->ctrl->extra_events;
-    if (i) {
-        do {
-            if(i->type == EVENT_TYPE_ACTION) {
-                if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
-                    if (!game_state_rewind(scene->gs, net_controller_get_rtt(player1->ctrl))) {
-                        need_sync += object_act(game_player_get_har(player1), i->event_data.action);
-                        // TODO replay the game again
-                    }
-                } else {
-                    need_sync += object_act(game_player_get_har(player1), i->event_data.action);
-                }
-            } else if (i->type == EVENT_TYPE_SYNC) {
-                game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player1->ctrl));
-                // fix the palettes
-                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
-                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
-                maybe_install_har_hooks(scene);
-            } else if (i->type == EVENT_TYPE_CLOSE) {
-                game_state_set_next(scene->gs, SCENE_MENU);
-                return;
-            }
-        } while((i = i->next));
-    }
-    i = player2->ctrl->extra_events;
-    if (i) {
-        do {
-            if(i->type == EVENT_TYPE_ACTION) {
-                if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
-                    if (!game_state_rewind(scene->gs, net_controller_get_rtt(player2->ctrl))) {
-                        need_sync += object_act(game_player_get_har(player2), i->event_data.action);
-                        // TODO replay the game again
-                    }
-                } else {
-                    need_sync += object_act(game_player_get_har(player2), i->event_data.action);
-                }
-            } else if (i->type == EVENT_TYPE_SYNC) {
-                game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player2->ctrl));
-                // fix the palettes
-                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
-                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
-                maybe_install_har_hooks(scene);
-            } else if (i->type == EVENT_TYPE_CLOSE) {
-                game_state_set_next(scene->gs, SCENE_MENU);
-                return;
-            }
-        } while((i = i->next));
-    }
-    if (need_sync && gs->role == ROLE_SERVER && (player1->ctrl->type == CTRL_TYPE_NETWORK ||  player2->ctrl->type == CTRL_TYPE_NETWORK)) {
-        // some of the moves did something interesting and we should synchronize the peer
-        serial ser;
-        serial_create(&ser);
-        game_state_serialize(scene->gs, &ser);
-        if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
-            controller_update(player1->ctrl, &ser);
-        }
-
-        if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
-            controller_update(player2->ctrl, &ser);
-        }
-        serial_free(&ser);
-    }
+    need_sync += arena_handle_events(scene, player1, player1->ctrl->extra_events);
+    need_sync += arena_handle_events(scene, player2, player2->ctrl->extra_events);
+    arena_maybe_sync(scene, need_sync);
 }
 
 void arena_input_tick(scene *scene) {
@@ -380,75 +375,16 @@ void arena_input_tick(scene *scene) {
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
     if(!local->menu_visible) {
-        ctrl_event *p1 = NULL, *p2 = NULL, *i;
+        ctrl_event *p1 = NULL, *p2 = NULL;
         controller_poll(player1->ctrl, &p1);
         controller_poll(player2->ctrl, &p2);
 
-        i = p1;
         int need_sync = 0;
-        if (i) {
-            do {
-                if(i->type == EVENT_TYPE_ACTION) {
-                if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
-                    if (!game_state_rewind(scene->gs, net_controller_get_rtt(player1->ctrl))) {
-                        need_sync += object_act(game_player_get_har(player1), i->event_data.action);
-                        // TODO replay the game again
-                    }
-                } else {
-                    need_sync += object_act(game_player_get_har(player1), i->event_data.action);
-                }
-                } else if (i->type == EVENT_TYPE_SYNC) {
-                    game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player1->ctrl));
-                    // fix the palettes
-                    object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
-                    object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
-                    maybe_install_har_hooks(scene);
-                } else if (i->type == EVENT_TYPE_CLOSE) {
-                    game_state_set_next(scene->gs, SCENE_MENU);
-                    return;
-                }
-            } while((i = i->next));
-        }
+        need_sync += arena_handle_events(scene, player1, p1);
+        need_sync += arena_handle_events(scene, player2, p2);
         controller_free_chain(p1);
-        i = p2;
-        if (i) {
-            do {
-                if(i->type == EVENT_TYPE_ACTION) {
-                    if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
-                        if (!game_state_rewind(scene->gs, net_controller_get_rtt(player2->ctrl))) {
-                            need_sync += object_act(game_player_get_har(player2), i->event_data.action);
-                            // TODO replay the game again
-                        }
-                    } else {
-                        need_sync += object_act(game_player_get_har(player2), i->event_data.action);
-                    }
-                } else if (i->type == EVENT_TYPE_SYNC) {
-                    game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player2->ctrl));
-                    // fix the palettes
-                    object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
-                    object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
-                    maybe_install_har_hooks(scene);
-                } else if (i->type == EVENT_TYPE_CLOSE) {
-                    game_state_set_next(scene->gs, SCENE_MENU);
-                    return;
-                }
-            } while((i = i->next));
-        }
         controller_free_chain(p2);
-        if (need_sync && scene->gs->role == ROLE_SERVER && (player1->ctrl->type == CTRL_TYPE_NETWORK ||  player2->ctrl->type == CTRL_TYPE_NETWORK)) {
-            // some of the moves did something interesting and we should synchronize the peer
-            serial ser;
-            serial_create(&ser);
-            game_state_serialize(scene->gs, &ser);
-            if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
-                controller_update(player1->ctrl, &ser);
-            }
-
-            if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
-                controller_update(player2->ctrl, &ser);
-            }
-            serial_free(&ser);
-        }
+        arena_maybe_sync(scene, need_sync);
     }
 }
 
