@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
-#include <arpa/inet.h> // for htonl and friends
+#if defined(WIN32) || defined(_WIN32)
+    #include <winsock.h> // for htonl and friends
+#else
+    #include <arpa/inet.h> // for htonl and friends
+#endif
 #include "game/serial.h"
 #include "utils/log.h"
 #include <stdio.h>
