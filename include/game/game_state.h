@@ -44,6 +44,7 @@ int game_state_serialize(game_state *gs, serial *ser);
 int game_state_unserialize(game_state *gs, serial *ser, int rtt);
 
 int game_state_rewind(game_state *gs, int rtt);
+void game_state_replay(game_state *gs, int rtt);
 
 void game_state_add_object(game_state *gs, object *obj, int layer);
 void game_state_del_object(game_state *gs, object *obj);

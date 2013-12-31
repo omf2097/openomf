@@ -524,7 +524,6 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
 }
 
 int game_state_rewind(game_state *gs, int rtt) {
-    int endtick = gs->tick;
     int ticks = rtt/2;
     gs->tick -= ticks;
     if (ticks > OBJECT_EVENT_BUFFER_SIZE) {
@@ -594,6 +593,15 @@ int game_state_rewind(game_state *gs, int rtt) {
 
     }
 
+    return 0;
+}
+
+void game_state_replay(game_state *gs, int rtt) {
+    int ticks = rtt/2;
+    int endtick = gs->tick + ticks;
+
+    // TODO we need to replay the non-client HAR correctly here, right now we discard all inputs received in the last 'ticks' ticks
+
     DEBUG("replaying %d ticks", ticks);
     DEBUG("adjusting clock from %d to %d (%d)", gs->tick, endtick, ticks);
     while (gs->tick <= endtick) {
@@ -603,8 +611,6 @@ int game_state_rewind(game_state *gs, int rtt) {
         game_state_call_tick(gs);
         gs->tick++;
     }
-
-    return 0;
 }
 
 
