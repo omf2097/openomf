@@ -980,6 +980,7 @@ int har_serialize(object *obj, serial *ser) {
     serial_write_int8(ser, h->damage_received);
     serial_write_int16(ser, h->health);
     serial_write_int16(ser, h->endurance);
+    serial_write(ser, h->inputs, 10);
 
     // ...
     // TODO: Set the other ser attrs here
@@ -1024,6 +1025,7 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
     h->damage_received = serial_read_int8(ser);
     h->health = serial_read_int16(ser);
     h->endurance = serial_read_int16(ser);
+    serial_read(ser, h->inputs, 10);
 
     object_set_repeat(obj, 0); // XXX hack to undo the repeat set in har_create
 
