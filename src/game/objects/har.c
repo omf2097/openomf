@@ -414,7 +414,7 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
-    har *prog_owner = projectile_get_har(o_pjt);
+    af *prog_owner_af_data = projectile_get_af_data(o_pjt);
 
     // Check for collisions by sprite collision points
     int level = 2;
@@ -431,7 +431,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             return;
         }
 
-        af_move *move = af_get_move(prog_owner->af_data, o_pjt->cur_animation->id);
+        af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
 
         har_take_damage(o_har, &move->footer_string, move->damage);
         har_spawn_scrap(o_har, hit_coord);
@@ -445,7 +445,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         o_pjt->animation_state.finished = 1;
 
         if (move->successor_id) {
-            object_set_animation(o_pjt, &af_get_move(prog_owner->af_data, move->successor_id)->ani);
+            object_set_animation(o_pjt, &af_get_move(prog_owner_af_data, move->successor_id)->ani);
             object_set_repeat(o_pjt, 0);
             /*object_set_vel(o_pjt, vec2f_create(0,0));*/
             o_pjt->animation_state.finished = 0;
