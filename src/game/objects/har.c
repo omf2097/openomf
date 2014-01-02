@@ -1027,11 +1027,15 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
     h->endurance = serial_read_int16(ser);
     serial_read(ser, h->inputs, 10);
 
-    object_set_repeat(obj, 0); // XXX hack to undo the repeat set in har_create
-
-    DEBUG("har animation id is %d with state %d", animation_id, h->state);
+    DEBUG("har animation id is %d with state %d with %d", animation_id, h->state, h->executing_move);
 
     object_set_animation(obj, &af_get_move(af_data, animation_id)->ani);
+
+    if (h->executing_move && (animation_id == ANIM_IDLE || animation_id == ANIM_CROUCHING)) {
+        // XXX this is a hack to fix a bug we can't find
+        DEBUG("============== HACK ATTACK =========================");
+        h->executing_move = 0;
+    }
 
     // Return success
     return 0;
