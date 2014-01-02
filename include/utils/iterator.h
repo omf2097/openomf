@@ -7,9 +7,9 @@ struct iterator_t {
     void *data;
     void *vnow;
     int inow;
+    int ended;
     void* (*next)(iterator*);
     void* (*prev)(iterator*);
-    int ended;
 };
 
 void* iter_next(iterator *iterator);

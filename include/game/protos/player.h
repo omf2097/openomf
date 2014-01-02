@@ -32,15 +32,15 @@ typedef struct player_slide_op_t {
 } player_slide_state;
 
 typedef struct player_animation_state_t {
-    uint8_t finished;
     uint32_t ticks;
     uint32_t ticks_len;
-    uint8_t repeat;
-    uint8_t reverse;
     uint32_t end_frame;
     int previous;
     sd_stringparser *parser;
     uint16_t enemy_x, enemy_y;
+    uint8_t repeat;
+    uint8_t reverse;
+    uint8_t finished;
 
     void *spawn_userdata;
     void *destroy_userdata;

@@ -58,22 +58,22 @@ enum {
 typedef void (*har_hook_cb)(int action, void *data);
 
 typedef struct har_t {
-    int id;
-    int player_id;
-    int pilot_id;
+    uint8_t id;
+    uint8_t player_id;
+    uint8_t pilot_id;
+    uint8_t state;
+    uint8_t blocking;
+    uint8_t executing_move;
+    uint8_t flinching;
+    uint8_t close;
     af *af_data;
-    unsigned int state;
-    unsigned int blocking;
-    unsigned int executing_move;
-    unsigned int flinching;
-    int close;
-    int hard_close;
-    int damage_done; // Damage was done this animation
-    int damage_received; // Damage was received this animation
+    uint8_t damage_done; // Damage was done this animation
+    uint8_t damage_received; // Damage was received this animation
 
-    int health_max, health;
-    int endurance_max, endurance;
+    int16_t health_max, health;
+    int16_t endurance_max, endurance;
     char inputs[11];
+    uint8_t hard_close;
 
     har_hook_cb hook_cb;
     void *hook_cb_data;
@@ -82,7 +82,7 @@ typedef struct har_t {
 #ifdef DEBUGMODE
     texture debug_tex;
     image debug_img;
-    int debug_enabled;
+    uint8_t debug_enabled;
 #endif
 } har;
 

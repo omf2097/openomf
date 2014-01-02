@@ -52,26 +52,29 @@ struct object_t {
 
     vec2f pos;
     vec2f vel;
-    int vstate;
-    int hstate;
+    uint8_t vstate;
+    uint8_t hstate;
     int8_t direction;
+    int8_t group;
+
     float y_percent;
     float gravity;
     
-    int8_t group;
     uint8_t layers;
     
-    int cur_animation_own;
+    uint8_t cur_animation_own;
+
+    uint8_t texture_refresh;
+
     animation *cur_animation;
     sprite *cur_sprite;
     char *sound_translation_table;
 
-    int texture_refresh;
     palette *cur_palette;
-    int cur_remap;
-    int halt;
+    uint8_t cur_remap;
+    uint8_t halt;
     uint8_t stride;
-    int cast_shadow;
+    uint8_t cast_shadow;
     texture *cur_texture;
 
     player_sprite_state sprite_state;

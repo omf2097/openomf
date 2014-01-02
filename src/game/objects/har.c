@@ -185,7 +185,7 @@ void har_take_damage(object *obj, str* string, float damage) {
     h->health -= damage;
     if(h->health <= 0) { h->health = 0; }
 
-    h->endurance -= damage * 20;
+    h->endurance -= damage * 8;
     if(h->endurance <= 0) {
         if (h->state == STATE_STUNNED) {
             // refill endurance
@@ -512,7 +512,7 @@ void har_tick(object *obj) {
     }
 
     if (h->endurance < h->endurance_max && !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN || h->state == STATE_STANDING_UP)) {
-        h->endurance += 2;
+        h->endurance += 1;
     }
 }
 
@@ -1065,8 +1065,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->pilot_id = pilot_id;
 
     // Health, endurance
-    local->health_max = local->health = 1000;
-    local->endurance_max = local->endurance = 5000;
+    local->health_max = local->health = 100;
+    local->endurance_max = local->endurance = 400;
     local->close = 0;
     local->hard_close =  0;
     local->state = STATE_STANDING;
