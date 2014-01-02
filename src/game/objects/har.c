@@ -182,16 +182,23 @@ void har_move(object *obj) {
 
 void har_take_damage(object *obj, str* string, float damage) {
     har *h = object_get_userdata(obj);
+    int oldhealth = h->health;
     h->health -= damage;
     if(h->health <= 0) { h->health = 0; }
 
-    h->endurance -= damage * 8;
-    if(h->endurance <= 0) {
-        if (h->state == STATE_STUNNED) {
-            // refill endurance
-            h->endurance = h->endurance_max;
-        } else {
-            h->endurance = 0;
+    if (oldhealth <= 0) {
+        // har has no health left and is left only with endurance.
+        // one hit will end them
+        h->endurance = 0;
+    } else {
+        h->endurance -= damage * 8;
+        if(h->endurance <= 0) {
+            if (h->state == STATE_STUNNED) {
+                // refill endurance
+                h->endurance = h->endurance_max;
+            } else {
+                h->endurance = 0;
+            }
         }
     }
 
@@ -511,7 +518,7 @@ void har_tick(object *obj) {
         h->flinching = 0;
     }
 
-    if (h->endurance < h->endurance_max && !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN || h->state == STATE_STANDING_UP)) {
+    if (h->endurance < h->endurance_max && !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
         h->endurance += 1;
     }
 }

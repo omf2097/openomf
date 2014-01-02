@@ -347,13 +347,13 @@ void arena_tick(scene *scene) {
         if(local->state != ARENA_STATE_ENDING) {
 
             // Har victory animation
-            if(har2->health <= 0) {
+            if(har2->health <= 0 && har2->endurance <= 0) {
                 scene_youwin_anim_start(scene->gs);
                 har_set_ani(obj_har1, ANIM_VICTORY, 1);
                 har_set_ani(obj_har2, ANIM_DEFEAT, 1);
                 har1->state = STATE_VICTORY;
                 har2->state = STATE_DEFEAT;
-            } else if(har1->health <= 0) {
+            } else if(har1->health <= 0 && har2->endurance <= 0) {
                 scene_youlose_anim_start(scene->gs);
                 har_set_ani(obj_har2, ANIM_VICTORY, 1);
                 har_set_ani(obj_har1, ANIM_DEFEAT, 1);
