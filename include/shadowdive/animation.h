@@ -10,8 +10,8 @@ extern "C" {
 typedef struct col_coord_t {
     int16_t x;
     uint8_t x_ext; 
-    int16_t y;
     uint8_t y_ext;
+    int16_t y;
 } col_coord;
 
 typedef struct sd_animation_t {
@@ -21,11 +21,11 @@ typedef struct sd_animation_t {
     char unknown_a[4];
     uint16_t col_coord_count;
     uint8_t frame_count;
+    uint8_t extra_string_count;
     col_coord *col_coord_table;
 
     // String header
     char *anim_string;
-    uint8_t extra_string_count;
 
     // Extra strings
     char **extra_strings;

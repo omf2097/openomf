@@ -34,9 +34,9 @@ typedef struct sd_vga_image_t sd_vga_image;
 typedef struct sd_bk_file_t {
     uint32_t file_id;
     uint8_t unknown_a;
+    uint8_t num_palettes;
     sd_bk_anim *anims[MAX_BK_ANIMS];
     sd_vga_image *background;
-    uint8_t num_palettes;
     sd_palette *palettes[MAX_BK_PALETTES];
     char soundtable[30];
 } sd_bk_file;
