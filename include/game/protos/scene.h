@@ -6,6 +6,7 @@
 #include "game/protos/object.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
+#include "game/serial.h"
 #include "resources/bk.h"
 
 typedef struct scene_t scene;
@@ -24,6 +25,7 @@ struct scene_t {
     game_state *gs;
     int id;
     bk bk_data;
+    af *af_data[2];
     void *userdata;
     object background;
     scene_free_cb free;
@@ -38,6 +40,7 @@ struct scene_t {
 };
 
 int scene_create(scene *scene, game_state *gs, int scene_id);
+int scene_load_har(scene *scene, int player_id, int har_id);
 void scene_init(scene *scene);
 void scene_free(scene *scene);
 int scene_event(scene *scene, SDL_Event *event);
@@ -47,6 +50,9 @@ void scene_render_shadows(scene *scene);
 void scene_tick(scene *scene);
 void scene_input_poll(scene *scene);
 int scene_startup(scene *scene, int id);
+
+int scene_serialize(scene *scene, serial *ser);
+int scene_unserialize(scene *scene, serial *ser);
 
 void scene_set_userdata(scene *scene, void *userdata);
 void* scene_get_userdata(scene *scene);

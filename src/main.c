@@ -8,12 +8,15 @@
 #include "shadowdive/stringparser.h"
 #include "utils/log.h"
 #include "utils/random.h"
+#include "game/game_state.h"
 #include "game/settings.h"
 
 int main(int argc, char *argv[]) {
     // Get path
 
     char *path = "";
+    char *ip = NULL;
+    int net_mode = NET_MODE_NONE;
 
     // Disable SDL_GetPrefPath for now, it seems to be somewhat buggy
 /*
@@ -41,8 +44,10 @@ int main(int argc, char *argv[]) {
             return 0;
         } else if(strcmp(argv[1], "-h") == 0) {
             printf("Arguments:\n");
-            printf("-h      Prints this help\n");
-            printf("-w      Writes a config file\n");
+            printf("-h       Prints this help\n");
+            printf("-w       Writes a config file\n");
+            printf("-c <ip>  Connect to server\n");
+            printf("-l       Start server\n");
             return 0;
         } else if(strcmp(argv[1], "-w") == 0) {
             if(settings_write_defaults(config_path)) {
@@ -53,11 +58,18 @@ int main(int argc, char *argv[]) {
                 printf("Config file written to '%s'!\n", config_path);
             }
             return 0;
+        } else if(strcmp(argv[1], "-c") == 0) {
+            if(argc >= 3) {
+                ip = strcpy(malloc(strlen(argv[2])+1), argv[2]);
+            }
+            net_mode = NET_MODE_CLIENT;
+        } else if(strcmp(argv[1], "-l") == 0) {
+            net_mode = NET_MODE_SERVER;
         }
     }
 
     // Init log
-#ifdef DEBUGMODE
+#if defined(DEBUGMODE) || defined(STANDALONE_SERVER)
     if(log_init(0)) {
         fprintf(stderr, "Error while initializing log!\n");
         fflush(stderr);
@@ -82,12 +94,17 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
     settings_load();
-    
-    // Init libDumb
-    dumb_register_stdfiles();
-    
+
+    if(ip) {
+        settings_get()->net.net_server_ip = ip;
+    }
+
     // Init SDL2
+#ifdef STANDALONE_SERVER
+    if(SDL_Init(SDL_INIT_TIMER)) {
+#else
     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER)) {
+#endif
         PERROR("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_1;
     }
@@ -96,6 +113,7 @@ int main(int argc, char *argv[]) {
     INFO("Found SDL v%d.%d.%d", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
     INFO("Running on platform: %s", SDL_GetPlatform());
 
+#ifndef STANDALONE_SERVER
     if(SDL_InitSubSystem(SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER|SDL_INIT_HAPTIC)) {
         PERROR("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_1;
@@ -120,6 +138,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // Init libDumb
+    dumb_register_stdfiles();
+#endif
+
     // Init enet
     if(enet_initialize() != 0) {
         PERROR("Failed to initialize enet");
@@ -133,7 +155,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Run
-    engine_run();
+    engine_run(net_mode);
     
     // Close everything
     engine_close();

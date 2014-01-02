@@ -30,5 +30,6 @@ struct component_t {
 void component_create(component *c);
 void component_free(component *c);
 void component_layout(component *c, int x, int y, int w, int h);
+void component_click(component *c);
 
 #endif // _COMPONENT_H

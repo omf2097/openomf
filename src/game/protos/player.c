@@ -501,3 +501,7 @@ int player_get_frame(object *obj) {
 char player_get_frame_letter(object *obj) {
     return sd_stringparser_get_current_frame_letter(obj->animation_state.parser);
 }
+
+const char* player_get_str(object *obj) {
+    return obj->animation_state.parser->string;
+}

@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <shadowdive/shadowdive.h>
 
@@ -28,6 +29,7 @@
 #include "controller/net_controller.h"
 #include "resources/ids.h"
 #include "utils/log.h"
+#include "utils/random.h"
 
 #define BAR_COLOR_BG color_create(89,40,101,255)
 #define BAR_COLOR_TL_BORDER color_create(60,0,60,255)
@@ -185,6 +187,28 @@ void arena_end_cb(void *userdata) {
     game_state_set_next(gs, SCENE_NEWSROOM);
 }
 
+void maybe_install_har_hooks(scene *scene) {
+    if (scene->gs->role == ROLE_CLIENT) {
+        object *obj_har1,*obj_har2;
+        obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
+        obj_har2 = game_player_get_har(game_state_get_player(scene->gs, 1));
+        har *har1, *har2;
+        har1 = obj_har1->userdata;
+        har2 = obj_har2->userdata;
+
+        game_player *_player[2];
+        for(int i = 0; i < 2; i++) {
+            _player[i] = game_state_get_player(scene->gs, i);
+        }
+        if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
+            har_install_hook(har2, &net_controller_har_hook, _player[0]->ctrl);
+        }
+        if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
+            har_install_hook(har1, &net_controller_har_hook, _player[1]->ctrl);
+        }
+    }
+}
+
 // -------- Scene callbacks --------
 
 void arena_free(scene *scene) {
@@ -224,6 +248,63 @@ void arena_free(scene *scene) {
     
     free(local);
 }
+
+int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
+    arena_local *local = scene_get_userdata(scene);
+    int need_sync = 0;
+    if (i) {
+        do {
+            if(i->type == EVENT_TYPE_ACTION) {
+                if (player->ctrl->type == CTRL_TYPE_NETWORK) {
+                    if (!game_state_rewind(scene->gs, net_controller_get_rtt(player->ctrl))) {
+                        do {
+                            need_sync += object_act(game_player_get_har(player), i->event_data.action);
+                        } while ((i = i->next) && i->type == EVENT_TYPE_ACTION);
+                        game_state_replay(scene->gs, net_controller_get_rtt(player->ctrl));
+                        object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
+                        object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+                        maybe_install_har_hooks(scene);
+                        // XXX do we need to continue her, since we screwed with 'i'?
+                    }
+                } else {
+                    need_sync += object_act(game_player_get_har(player), i->event_data.action);
+                }
+            } else if (i->type == EVENT_TYPE_SYNC) {
+                game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player->ctrl));
+                // fix the palettes
+                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
+                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
+                maybe_install_har_hooks(scene);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return 0;
+            }
+        } while(i && (i = i->next));
+    }
+    return need_sync;
+}
+
+void arena_maybe_sync(scene *scene, int need_sync) {
+    game_state *gs = scene->gs;
+    game_player *player1 = game_state_get_player(gs, 0);
+    game_player *player2 = game_state_get_player(gs, 1);
+
+    if (need_sync && gs->role == ROLE_SERVER && (player1->ctrl->type == CTRL_TYPE_NETWORK ||  player2->ctrl->type == CTRL_TYPE_NETWORK)) {
+        // some of the moves did something interesting and we should synchronize the peer
+        serial ser;
+        serial_create(&ser);
+        game_state_serialize(scene->gs, &ser);
+        if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
+            controller_update(player1->ctrl, &ser);
+        }
+
+        if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
+            controller_update(player2->ctrl, &ser);
+        }
+        serial_free(&ser);
+    }
+}
+
 
 void arena_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
@@ -276,7 +357,7 @@ void arena_tick(scene *scene) {
         if(local->state != ARENA_STATE_ENDING) {
 
             // Har victory animation
-            if(har2->health <= 0) {
+            if(har2->health <= 0 && har2->endurance <= 0) {
                 scene_youwin_anim_start(scene->gs);
                 har_set_ani(obj_har1, ANIM_VICTORY, 1);
                 har_set_ani(obj_har2, ANIM_DEFEAT, 1);
@@ -284,7 +365,7 @@ void arena_tick(scene *scene) {
                 har2->state = STATE_DEFEAT;
                 // switch to the newsroom after some delay
                 ticktimer_add(120, arena_end_cb, scene);
-            } else if(har1->health <= 0) {
+            } else if(har1->health <= 0 && har2->endurance <= 0) {
                 scene_youlose_anim_start(scene->gs);
                 har_set_ani(obj_har2, ANIM_VICTORY, 1);
                 har_set_ani(obj_har1, ANIM_DEFEAT, 1);
@@ -296,19 +377,11 @@ void arena_tick(scene *scene) {
         }
     }
 
+    int need_sync = 0;
     // allow enemy HARs to move during a network game
-    ctrl_event *i = player1->ctrl->extra_events;
-    if (i) {
-        do {
-            object_act(game_player_get_har(player1), i->action);
-        } while((i = i->next));
-    }
-    i = player2->ctrl->extra_events;
-    if (i) {
-        do {
-            object_act(game_player_get_har(player2), i->action);
-        } while((i = i->next));
-    }
+    need_sync += arena_handle_events(scene, player1, player1->ctrl->extra_events);
+    need_sync += arena_handle_events(scene, player2, player2->ctrl->extra_events);
+    arena_maybe_sync(scene, need_sync);
 }
 
 void arena_input_tick(scene *scene) {
@@ -318,24 +391,16 @@ void arena_input_tick(scene *scene) {
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
     if(!local->menu_visible) {
-        ctrl_event *p1 = NULL, *p2 = NULL, *i;
+        ctrl_event *p1 = NULL, *p2 = NULL;
         controller_poll(player1->ctrl, &p1);
         controller_poll(player2->ctrl, &p2);
 
-        i = p1;
-        if (i) {
-            do {
-                object_act(game_player_get_har(player1), i->action);
-            } while((i = i->next));
-        }
+        int need_sync = 0;
+        need_sync += arena_handle_events(scene, player1, p1);
+        need_sync += arena_handle_events(scene, player2, p2);
         controller_free_chain(p1);
-        i = p2;
-        if (i) {
-            do {
-                object_act(game_player_get_har(player2), i->action);
-            } while((i = i->next));
-        }
         controller_free_chain(p2);
+        arena_maybe_sync(scene, need_sync);
     }
 }
 
@@ -366,6 +431,13 @@ void arena_render_overlay(scene *scene) {
     // Render bars
     game_player *player[2];
     object *obj[2];
+
+
+    char buf[40];
+    sprintf(buf, "%u", game_state_get_tick(scene->gs));
+    font_render(&font_small, buf, 160, 0, TEXT_COLOR);
+    sprintf(buf, "%u", rand_get_seed());
+    font_render(&font_small, buf, 120, 8, TEXT_COLOR);
     har *har[2];
     for(int i = 0; i < 2; i++) {
         player[i] = game_state_get_player(scene->gs, i);
@@ -391,11 +463,12 @@ void arena_render_overlay(scene *scene) {
         // Render HAR and pilot names
         font_render(&font_small, lang_get(player[0]->pilot_id+20), 5, 19, TEXT_COLOR);
         font_render(&font_small, lang_get((player[0]->har_id - HAR_JAGUAR)+31), 5, 26, TEXT_COLOR);
+
         int p2len = (strlen(lang_get(player[1]->pilot_id+20))-1) * font_small.w;
         int h2len = (strlen(lang_get((player[1]->har_id - HAR_JAGUAR)+31))-1) * font_small.w;
         font_render(&font_small, lang_get(player[1]->pilot_id+20), 315-p2len, 19, TEXT_COLOR);
         font_render(&font_small, lang_get((player[1]->har_id - HAR_JAGUAR)+31), 315-h2len, 26, TEXT_COLOR);
-        
+
         // Render score stuff
         chr_score_render(&local->player1_score);
         chr_score_render(&local->player2_score);
@@ -405,6 +478,16 @@ void arena_render_overlay(scene *scene) {
         int s2len = strlen(tmp) * font_small.w;
         chr_score_format(&local->player2_score, tmp);
         font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
+
+        // render ping, if player is networked
+        if (player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
+            sprintf(buf, "ping %u", net_controller_get_rtt(player[0]->ctrl));
+            font_render(&font_small, buf, 5, 40, TEXT_COLOR);
+        }
+        if (player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
+            sprintf(buf, "ping %u", net_controller_get_rtt(player[1]->ctrl));
+            font_render(&font_small, buf, 315-(strlen(buf)*font_small.w), 40, TEXT_COLOR);
+        }
     }
 
     // Render menu (if visible)
@@ -481,8 +564,14 @@ int arena_create(scene *scene) {
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
+
+        if (scene_load_har(scene, i, player->har_id)) {
+            return 1;
+        }
+
         object_create(obj, scene->gs, pos[i], vec2f_create(0,0));
-        if(har_create(obj, local->player_palettes[i], dir[i], player->har_id, player->pilot_id, i)) {
+        object_set_palette(obj, local->player_palettes[i], 0);
+        if(har_create(obj, scene->af_data[i], dir[i], player->har_id, player->pilot_id, i)) {
             return 1;
         }
 
@@ -495,26 +584,19 @@ int arena_create(scene *scene) {
     }
 
     // remove the keyboard hooks
-    // set up the magic HAR hooks
-    /*
+
     game_player *_player[2];
     for(int i = 0; i < 2; i++) {
-        _player[i] = game_state_get_player(i);
+        _player[i] = game_state_get_player(scene->gs, i);
     }
     if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
         controller_clear_hooks(game_player_get_ctrl(_player[1]));
-        har_add_hook(
-            game_player_get_har(_player[1]), 
-            game_player_get_ctrl(_player[0])->har_hook, 
-            game_player_get_ctrl(_player[0]));
     }
     if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
         controller_clear_hooks(game_player_get_ctrl(_player[0]));
-        har_add_hook(
-            game_player_get_har(_player[0]), 
-            game_player_get_ctrl(_player[1])->har_hook, 
-            game_player_get_ctrl(_player[1]));
-    }*/
+    }
+
+    maybe_install_har_hooks(scene);
     
     // Arena menu
     local->menu_visible = 0;

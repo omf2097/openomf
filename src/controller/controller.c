@@ -14,6 +14,7 @@ void controller_init(controller *ctrl) {
     ctrl->event_fun = NULL;
     ctrl->poll_fun = NULL;
     ctrl->tick_fun = NULL;
+    ctrl->update_fun = NULL;
 }
 
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type)) {
@@ -38,6 +39,10 @@ void controller_free_chain(ctrl_event *ev) {
         if(ev->next != NULL) {
             controller_free_chain(ev->next);
         }
+        if (ev->type == EVENT_TYPE_SYNC) {
+            serial_free(ev->event_data.ser);
+            free(ev->event_data.ser);
+        }
         free(ev);
     }
 }
@@ -54,15 +59,38 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
     }
     if (*ev == NULL) {
         *ev = malloc(sizeof(ctrl_event));
-        (*ev)->action = action;
+        (*ev)->type = EVENT_TYPE_ACTION;
+        (*ev)->event_data.action = action;
         (*ev)->next = NULL;
     } else {
         i = *ev;
         while (i->next) { i = i->next; }
         i->next = malloc(sizeof(ctrl_event));
-        i->next->action = action;
+        i->next->type = EVENT_TYPE_ACTION;
+        i->next->event_data.action = action;
         i->next->next = NULL;
     }
+}
+
+void controller_sync(controller *ctrl, serial *ser, ctrl_event **ev) {
+    if (*ev != NULL) {
+        // a sync event obsoletes all previous events
+        controller_free_chain(*ev);
+    }
+    *ev = malloc(sizeof(ctrl_event));
+    (*ev)->type = EVENT_TYPE_SYNC;
+    (*ev)->event_data.ser = ser;
+    (*ev)->next = NULL;
+}
+
+void controller_close(controller *ctrl, ctrl_event **ev) {
+    if (*ev != NULL) {
+        // a close event obsoletes all previous events
+        controller_free_chain(*ev);
+    }
+    *ev = malloc(sizeof(ctrl_event));
+    (*ev)->type = EVENT_TYPE_CLOSE;
+    (*ev)->next = NULL;
 }
 
 int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
@@ -72,9 +100,16 @@ int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
     return 0;
 }
 
-int controller_tick(controller *ctrl, ctrl_event **ev) {
+int controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     if(ctrl->tick_fun != NULL) {
-        return ctrl->tick_fun(ctrl, ev);
+        return ctrl->tick_fun(ctrl, ticks, ev);
+    }
+    return 0;
+}
+
+int controller_update(controller *ctrl, serial *state) {
+    if(ctrl->update_fun != NULL) {
+        return ctrl->update_fun(ctrl, state);
     }
     return 0;
 }

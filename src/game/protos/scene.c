@@ -7,6 +7,7 @@
 #include "utils/vec.h"
 #include "game/game_player.h"
 #include "game/game_state_type.h"
+#include "resources/af_loader.h"
 
 // Some internal functions
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
@@ -21,6 +22,8 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     }
     scene->id = scene_id;
     scene->gs = gs;
+    scene->af_data[0] = NULL;
+    scene->af_data[1] = NULL;
 
     // Init functions
     scene->userdata = NULL;
@@ -34,6 +37,43 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
 
     // All done.
     DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
+    return 0;
+}
+
+void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
+    iterator it;
+    sprite *s;
+    // Fix sprite positions
+    vector_iter_begin(&ani->sprites, &it);
+    while((s = iter_next(&it)) != NULL) {
+        s->pos.x += fix_x;
+        s->pos.y += fix_y;
+    }
+    // Fix collisions coordinates
+    collision_coord *c;
+    vector_iter_begin(&ani->collision_coords, &it);
+    while((c = iter_next(&it)) != NULL) {
+        c->pos.x += fix_x;
+        c->pos.y += fix_y;
+    }
+}
+
+int scene_load_har(scene *scene, int player_id, int har_id) {
+    if (scene->af_data[player_id]) {
+        af_free(scene->af_data[player_id]);
+        free(scene->af_data[player_id]);
+    }
+
+    scene->af_data[player_id] = malloc(sizeof(af));
+
+    if(load_af_file(scene->af_data[player_id], har_id)) {
+        PERROR("Unable to load HAR %s (%d)!", get_id_name(har_id), har_id);
+        return 1;
+    }
+
+    // Fix some coordinates on jump sprites
+    har_fix_sprite_coords(&af_get_move(scene->af_data[player_id], ANIM_JUMPING)->ani, 0, -50);
+
     return 0;
 }
 
@@ -71,6 +111,31 @@ void scene_init(scene *scene) {
             DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
         }
     }
+}
+
+/*
+ * Serializes the scene to a buffer. Should return 1 on error, 0 on success
+ * This will call the specialized scenes, (eg. arena) for their 
+ * serialization data. 
+ */
+int scene_serialize(scene *s, serial *ser) {
+    game_state_serialize(s->gs, ser);
+
+    // Return success
+    return 0;
+}
+
+/* 
+ * Unserializes the data from buffer to a specialized object. 
+ * Should return 1 on error, 0 on success.
+ * Serial reder position should be set to correct position before calling this.
+ */
+int scene_unserialize(scene *s, serial *ser) {
+    // TODO: Read attributes
+    s->id = serial_read_int8(ser);
+
+    // Return success
+    return 0;
 }
 
 void scene_set_userdata(scene *scene, void *userdata) {
@@ -138,6 +203,14 @@ void scene_free(scene *scene) {
         scene->free(scene);
     }
     bk_free(&scene->bk_data);
+    if (scene->af_data[0]) {
+        af_free(scene->af_data[0]);
+        free(scene->af_data[0]);
+    }
+    if (scene->af_data[1]) {
+        af_free(scene->af_data[1]);
+        free(scene->af_data[1]);
+    }
     object_free(&scene->background);
     image_free(&scene->shadow_buffer_img);
     texture_free(&scene->shadow_buffer_tex);

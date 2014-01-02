@@ -45,11 +45,6 @@ struct resolution_t {
 
 typedef struct resolution_t resolution;
 
-enum {
-    ROLE_SERVER,
-    ROLE_CLIENT
-};
-
 typedef struct mainmenu_local_t {
     time_t connect_start;
 
@@ -142,7 +137,6 @@ typedef struct mainmenu_local_t {
     component gameplay_done_button;
 
     ENetHost *host;
-    int role;
 
     // Menu stack
     menu *mstack[10];
@@ -416,11 +410,14 @@ void menu_sound_slide(component *c, void *userdata, int pos) {
 
 
 void mainmenu_connect_to_ip(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
+    scene *s = (scene*)userdata;
+    mainmenu_local *local = scene_get_userdata(s);
     ENetAddress address;
     char *addr = textinput_value(&local->connect_ip_input);
+    free(settings_get()->net.net_server_ip);
+    settings_get()->net.net_server_ip = dupestr(addr);
     local->host = enet_host_create(NULL, 1, 2, 0, 0);
-    local->role = ROLE_CLIENT;
+    s->gs->role = ROLE_CLIENT;
     if (local->host == NULL) {
         DEBUG("Failed to initialize ENet client");
         return;
@@ -430,7 +427,7 @@ void mainmenu_connect_to_ip(component *c, void *userdata) {
     menu_select(&local->connect_menu, &local->connect_ip_cancel_button);
 
     enet_address_set_host(&address, addr);
-    address.port = 1337;
+    address.port = 2097;
 
     ENetPeer *peer = enet_host_connect(local->host, &address, 2, 0);
 
@@ -455,14 +452,15 @@ void mainmenu_cancel_connection(component *c, void *userdata) {
 }
 
 void mainmenu_listen_for_connections(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
+    scene *s = (scene*)userdata;
+    mainmenu_local *local = scene_get_userdata(s);
     ENetAddress address;
     address.host = ENET_HOST_ANY;
-    address.port = 1337;
+    address.port = 2097;
     local->host = enet_host_create(&address, 1, 2, 0, 0);
-    local->role = ROLE_SERVER;
+    s->gs->role = ROLE_SERVER;
     if (local->host == NULL) {
-        DEBUG("Failed to initialize ENet client");
+        DEBUG("Failed to initialize ENet server");
         return;
     }
     mainmenu_enter_menu_listen(c, userdata);
@@ -640,7 +638,7 @@ void mainmenu_tick(scene *scene) {
             ENetPacket * packet = enet_packet_create("0", 2,  ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(event.peer, 0, packet);
             enet_host_flush(local->host);
-            if (local->role == ROLE_SERVER) {
+            if (gs->role == ROLE_SERVER) {
                 DEBUG("client connected!");
                 controller *player1_ctrl, *player2_ctrl;
                 keyboard_keys *keys;
@@ -671,12 +669,12 @@ void mainmenu_tick(scene *scene) {
                 game_player_set_ctrl(p1, player1_ctrl);
 
                 // Player 2 controller -- Network
-                net_controller_create(player2_ctrl, local->host, event.peer);
+                net_controller_create(player2_ctrl, local->host, event.peer, ROLE_SERVER);
                 game_player_set_ctrl(p2, player2_ctrl);
                 local->host = NULL;
                 game_player_set_selectable(p2, 1);
                 game_state_set_next(gs, SCENE_MELEE);
-            } else if (local->role == ROLE_CLIENT) {
+            } else if (gs->role == ROLE_CLIENT) {
                 DEBUG("connected to server!");
                 controller *player1_ctrl, *player2_ctrl;
                 keyboard_keys *keys;
@@ -696,7 +694,7 @@ void mainmenu_tick(scene *scene) {
                 player2_ctrl->har = p2->har;
 
                 // Player 1 controller -- Network
-                net_controller_create(player1_ctrl, local->host, event.peer);
+                net_controller_create(player1_ctrl, local->host, event.peer, ROLE_CLIENT);
                 game_player_set_ctrl(p1, player1_ctrl);
 
                 // Player 2 controller -- Keyboard
@@ -714,7 +712,7 @@ void mainmenu_tick(scene *scene) {
                 game_state_set_next(gs, SCENE_MELEE);
             }
         } else {
-            if (local->role == ROLE_CLIENT && difftime(time(NULL), local->connect_start) > 5.0) {
+            if (gs->role == ROLE_CLIENT && difftime(time(NULL), local->connect_start) > 5.0) {
                 DEBUG("connection timed out");
 
                 mainmenu_cancel_connection(&local->connect_ip_cancel_button, scene);
@@ -831,10 +829,10 @@ int mainmenu_create(scene *scene) {
     textbutton_create(&local->net_connect_button, &font_large, "CONNECT TO SERVER");
     textbutton_create(&local->net_listen_button, &font_large, "START SERVER");
     textbutton_create(&local->net_done_button, &font_large, "DONE");
-    menu_attach(&local->net_menu, &local->net_header, 33),
-    menu_attach(&local->net_menu, &local->net_connect_button, 11),
-    menu_attach(&local->net_menu, &local->net_listen_button, 55),
-    menu_attach(&local->net_menu, &local->net_done_button, 11),
+    menu_attach(&local->net_menu, &local->net_header, 33);
+    menu_attach(&local->net_menu, &local->net_connect_button, 11);
+    menu_attach(&local->net_menu, &local->net_listen_button, 55);
+    menu_attach(&local->net_menu, &local->net_done_button, 11);
 
     local->net_listen_button.userdata = scene;
     local->net_listen_button.click = mainmenu_listen_for_connections;
@@ -850,12 +848,12 @@ int mainmenu_create(scene *scene) {
 
     // connect menu
     menu_create(&local->connect_menu, 10, 80, 300, 50);
-    textinput_create(&local->connect_ip_input, &font_large, "Host/IP", "");
+    textinput_create(&local->connect_ip_input, &font_large, "Host/IP", setting->net.net_server_ip);
     textbutton_create(&local->connect_ip_button, &font_large, "CONNECT");
     textbutton_create(&local->connect_ip_cancel_button, &font_large, "CANCEL");
-    menu_attach(&local->connect_menu, &local->connect_ip_input, 11),
-    menu_attach(&local->connect_menu, &local->connect_ip_button, 11),
-    menu_attach(&local->connect_menu, &local->connect_ip_cancel_button, 11),
+    menu_attach(&local->connect_menu, &local->connect_ip_input, 11);
+    menu_attach(&local->connect_menu, &local->connect_ip_button, 11);
+    menu_attach(&local->connect_menu, &local->connect_ip_cancel_button, 11);
 
     local->connect_ip_button.userdata = scene;
     local->connect_ip_button.click = mainmenu_connect_to_ip;
@@ -867,8 +865,8 @@ int mainmenu_create(scene *scene) {
     menu_create(&local->listen_menu, 10, 80, 300, 50);
     textbutton_create(&local->listen_button, &font_large, "Waiting for connection...");
     textbutton_create(&local->listen_cancel_button, &font_large, "CANCEL");
-    menu_attach(&local->listen_menu, &local->listen_button, 11),
-    menu_attach(&local->listen_menu, &local->listen_cancel_button, 11),
+    menu_attach(&local->listen_menu, &local->listen_button, 11);
+    menu_attach(&local->listen_menu, &local->listen_cancel_button, 11);
     local->listen_button.disabled = 1;
     menu_select(&local->listen_menu, &local->listen_cancel_button);
 
@@ -1094,6 +1092,15 @@ int mainmenu_create(scene *scene) {
     scene_set_render_overlay_cb(scene, mainmenu_render);
     scene_set_free_cb(scene, mainmenu_free);
     scene_set_tick_cb(scene, mainmenu_tick);
+
+    if(scene->gs->net_mode == NET_MODE_CLIENT) {
+        component_click(&local->net_button);
+        component_click(&local->net_connect_button);
+        component_click(&local->connect_ip_button);
+    } else if(scene->gs->net_mode == NET_MODE_SERVER) {
+        component_click(&local->net_button);
+        component_click(&local->net_listen_button);
+    }
 
     // All done
     return 0;

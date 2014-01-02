@@ -8,6 +8,9 @@
 
 float sound_volume = VOLUME_DEFAULT;
 
+#ifdef STANDALONE_SERVER
+void sound_play(int id, float volume, float panning, float pitch) {}
+#else
 void sound_play(int id, float volume, float panning, float pitch) {
     // Get sample data
     char *buf;
@@ -24,6 +27,7 @@ void sound_play(int id, float volume, float panning, float pitch) {
     sink_set_stream_volume(audio_get_sink(), sound_id, sound_volume);
 
 }
+#endif
 
 void sound_set_volume(float volume) {
     sound_volume = volume;

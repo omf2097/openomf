@@ -6,8 +6,8 @@
 
 typedef struct shaderprogram_t {
     unsigned int id;
-    vector shaders;
     int linked;
+    vector shaders;
 } shaderprogram;
 
 void shaderprog_create(shaderprogram *prog);

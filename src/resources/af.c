@@ -6,6 +6,7 @@ void af_create(af *a, void *src) {
     sd_af_file *sdaf = (sd_af_file*)src;
 
     // Trivial stuff
+    a->id = sdaf->file_id;
     a->endurance = sdaf->endurance;
     a->power = sdaf->power;
     a->forward_speed = sdaf->forward_speed;

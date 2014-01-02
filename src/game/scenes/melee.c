@@ -164,16 +164,24 @@ void melee_tick(scene *scene) {
     i = player1->ctrl->extra_events;
     if (i) {
         do {
-            handle_action(scene, 1, i->action);
+            if(i->type == EVENT_TYPE_ACTION) {
+                handle_action(scene, 1, i->event_data.action);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return;
+            }
         } while((i = i->next));
-        DEBUG("done");
     }
     i = player2->ctrl->extra_events;
     if (i) {
         do {
-            handle_action(scene, 2, i->action);
+            if(i->type == EVENT_TYPE_ACTION) {
+                handle_action(scene, 2, i->event_data.action);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return;
+            }
         } while((i = i->next));
-        DEBUG("done");
     }
 
     if(!local->pulsedir) {
@@ -217,12 +225,10 @@ void handle_action(scene *scene, int player, int action) {
     melee_local *local = scene_get_userdata(scene);
     int *row, *column, *done;
     if (player == 1) {
-        DEBUG("event for player 1");
         row = &local->row_a;
         column = &local->column_a;
         done = &local->done_a;
     } else {
-        DEBUG("event for player 2");
         row = &local->row_b;
         column = &local->column_b;
         done = &local->done_b;
@@ -349,17 +355,25 @@ int melee_event(scene *scene, SDL_Event *event) {
         i = p1;
         if (i) {
             do {
-                handle_action(scene, 1, i->action);
+                if(i->type == EVENT_TYPE_ACTION) {
+                    handle_action(scene, 1, i->event_data.action);
+                } else if (i->type == EVENT_TYPE_CLOSE) {
+                    game_state_set_next(scene->gs, SCENE_MENU);
+                    return 0;
+                }
             } while((i = i->next));
-            DEBUG("done");
         }
         controller_free_chain(p1);
         i = p2;
         if (i) {
             do {
-                handle_action(scene, 2, i->action);
+                if(i->type == EVENT_TYPE_ACTION) {
+                    handle_action(scene, 2, i->event_data.action);
+                } else if (i->type == EVENT_TYPE_CLOSE) {
+                    game_state_set_next(scene->gs, SCENE_MENU);
+                    return 0;
+                }
             } while((i = i->next));
-            DEBUG("done");
         }
         controller_free_chain(p2);
     }

@@ -140,13 +140,20 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
             }
 
             game_player *player = game_state_get_player(scene->gs, 0);
+
             object *har_obj = game_player_get_har(player);
             object *obj = malloc(sizeof(object));
             vec2i pos = object_get_pos(har_obj);
             int hd = object_get_direction(har_obj);
             object_create(obj, scene->gs, pos, vec2f_create(0,0));
             player->har_id = HAR_JAGUAR + i;
-            if(har_create(obj, arena_get_player_palette(scene, 0), hd, player->har_id, player->pilot_id, 0)) {
+            if (scene_load_har(scene, 0, player->har_id)) {
+                return 1;
+            }
+
+            object_set_palette(obj, arena_get_player_palette(scene, 0), 0);
+
+            if(har_create(obj, scene->af_data[0], hd, player->har_id, player->pilot_id, 0)) {
                 return 1;
             }
 
@@ -228,7 +235,7 @@ int console_cd_debug(scene *scene, void *userdata, int argc, char **argv) {
             return 1;
         }
         enet_address_set_host(&address, argv[1]);
-        address.port = 1337;
+        address.port = 2097;
 
         peer = enet_host_connect(client, &address, 2, 0);
 
@@ -293,7 +300,7 @@ int console_cmd_listen(scene *scene, void *userdata, int argc, char **argv) {
     ENetEvent event;
 
     address.host = ENET_HOST_ANY;
-    address.port = 1337;
+    address.port = 2097;
 
     server = enet_host_create(&address, 1, 2, 0, 0);
     if (server == NULL) {

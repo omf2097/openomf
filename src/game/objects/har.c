@@ -8,8 +8,10 @@
 #include "game/objects/scrap.h"
 #include "game/objects/projectile.h"
 #include "game/protos/intersect.h"
+#include "game/protos/object_specializer.h"
 #include "game/scenes/arena.h"
 #include "game/game_state.h"
+#include "game/serial.h"
 #include "resources/af_loader.h"
 #include "resources/ids.h"
 #include "resources/animation.h"
@@ -29,7 +31,6 @@ void har_finished(object *obj);
 
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
-    af_free(&h->af_data);
 #ifdef DEBUGMODE
     texture_free(&h->debug_tex);
     image_free(&h->debug_img);
@@ -37,10 +38,16 @@ void har_free(object *obj) {
     free(h);
 }
 
+void har_fire_hook(har *h, int action) {
+    if (h->hook_cb) {
+        h->hook_cb(action, h->hook_cb_data);
+    }
+}
+
 // Simple helper function
 void har_set_ani(object *obj, int animation_id, int repeat) {
     har *h = object_get_userdata(obj);
-    object_set_animation(obj, &af_get_move(&h->af_data, animation_id)->ani);
+    object_set_animation(obj, &af_get_move(h->af_data, animation_id)->ani);
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
     object_tick(obj);
@@ -77,7 +84,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         // Create the object
         object *scrap = malloc(sizeof(object));
         object_create(scrap, parent->gs, npos, vec2f_create(velx, vely));
-        object_set_animation(scrap, &af_get_move(&h->af_data, id)->ani);
+        object_set_animation(scrap, &af_get_move(h->af_data, id)->ani);
         object_set_palette(scrap, object_get_palette(parent), 0);
         object_set_stl(scrap, object_get_stl(parent));
         object_set_repeat(scrap, 1);
@@ -90,7 +97,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
     }
 
     // ... otherwise expect it is a projectile
-    af_move *move = af_get_move(&h->af_data, id);
+    af_move *move = af_get_move(h->af_data, id);
     if(move != NULL) {
         npos.x = parent->pos.x 
                  + (object_get_direction(parent) == OBJECT_FACE_LEFT ? -pos.x : pos.x)
@@ -132,13 +139,14 @@ void har_move(object *obj) {
         // depending on horizontal velocity
         object_set_gravity(obj, 1);
         if(h->state == STATE_JUMPING) {
-            if(object_get_hstate(obj) == OBJECT_MOVING) {
-                h->state = STATE_WALKING;
-                har_set_ani(obj, ANIM_WALKING, 1);
-            } else {
+            /*if(object_get_hstate(obj) == OBJECT_MOVING) {*/
+                /*h->state = STATE_WALKING;*/
+                /*har_set_ani(obj, ANIM_WALKING, 1);*/
+            /*} else {*/
                 h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
-            }
+                har_fire_hook(h, ACT_STOP);
+            /*}*/
         } else if (h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.4;
             vec2f vel = object_get_vel(obj);
@@ -174,16 +182,23 @@ void har_move(object *obj) {
 
 void har_take_damage(object *obj, str* string, float damage) {
     har *h = object_get_userdata(obj);
+    int oldhealth = h->health;
     h->health -= damage;
     if(h->health <= 0) { h->health = 0; }
 
-    h->endurance -= damage * 20;
-    if(h->endurance <= 0) {
-        if (h->state == STATE_STUNNED) {
-            // refill endurance
-            h->endurance = h->endurance_max;
-        } else {
-            h->endurance = 0;
+    if (oldhealth <= 0) {
+        // har has no health left and is left only with endurance.
+        // one hit will end them
+        h->endurance = 0;
+    } else {
+        h->endurance -= damage * 8;
+        if(h->endurance <= 0) {
+            if (h->state == STATE_STUNNED) {
+                // refill endurance
+                h->endurance = h->endurance_max;
+            } else {
+                h->endurance = 0;
+            }
         }
     }
 
@@ -193,7 +208,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         const sd_stringparser_tag_value *v;
         h->state = STATE_RECOIL;
         // Set hit animation
-        object_set_animation(obj, &af_get_move(&h->af_data, ANIM_DAMAGE)->ani);
+        object_set_animation(obj, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(obj, 0);
         object_set_custom_string(obj, str_c(string));
         object_tick(obj);
@@ -228,7 +243,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object *scrap = malloc(sizeof(object));
         int anim_no = ANIM_BURNING_OIL;
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
-        object_set_animation(scrap, &af_get_move(&h->af_data, anim_no)->ani);
+        object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_palette(scrap, object_get_palette(obj), 0);
         object_set_stl(scrap, object_get_stl(obj));
         object_set_repeat(scrap, 0);
@@ -255,7 +270,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object *scrap = malloc(sizeof(object));
         int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
-        object_set_animation(scrap, &af_get_move(&h->af_data, anim_no)->ani);
+        object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_palette(scrap, object_get_palette(obj), 0);
         object_set_stl(scrap, object_get_stl(obj));
         object_set_repeat(scrap, 1);
@@ -272,9 +287,9 @@ void har_spawn_scrap(object *obj, vec2i pos) {
 void har_block(object *obj, vec2i hit_coord) {
     har *h = obj->userdata;
     if (h->state == STATE_WALKING) {
-        object_set_animation(obj, &af_get_move(&h->af_data, ANIM_STANDING_BLOCK)->ani);
+        object_set_animation(obj, &af_get_move(h->af_data, ANIM_STANDING_BLOCK)->ani);
     } else {
-        object_set_animation(obj, &af_get_move(&h->af_data, ANIM_CROUCHING_BLOCK)->ani);
+        object_set_animation(obj, &af_get_move(h->af_data, ANIM_CROUCHING_BLOCK)->ani);
     }
     // the HARs have a lame blank frame in their animation string, so use a custom one
     object_set_custom_string(obj, "A5");
@@ -287,7 +302,7 @@ void har_block(object *obj, vec2i hit_coord) {
     }
     object *scrape = malloc(sizeof(object));
     object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
-    object_set_animation(scrape, &af_get_move(&h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
+    object_set_animation(scrape, &af_get_move(h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
     object_set_palette(scrape, object_get_palette(obj), 0);
     object_set_stl(scrape, object_get_stl(obj));
     object_set_direction(scrape, object_get_direction(obj));
@@ -360,7 +375,7 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 
     // Check for collisions by sprite collision points
     int level = 1;
-    af_move *move = af_get_move(&(a->af_data), obj_a->cur_animation->id);
+    af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
     vec2i hit_coord = vec2i_create(0, 0);
     if(a->damage_done == 0 &&
 #ifdef DEBUGMODE
@@ -376,7 +391,7 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
         }
 
         if (move->next_move) {
-            object_set_animation(obj_a, &af_get_move(&a->af_data, move->next_move)->ani);
+            object_set_animation(obj_a, &af_get_move(a->af_data, move->next_move)->ani);
             object_set_repeat(obj_a, 0);
             return;
         }
@@ -406,7 +421,7 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
-    har *prog_owner = projectile_get_har(o_pjt);
+    af *prog_owner_af_data = projectile_get_af_data(o_pjt);
 
     // Check for collisions by sprite collision points
     int level = 2;
@@ -423,7 +438,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             return;
         }
 
-        af_move *move = af_get_move(&(prog_owner->af_data), o_pjt->cur_animation->id);
+        af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
 
         har_take_damage(o_har, &move->footer_string, move->damage);
         har_spawn_scrap(o_har, hit_coord);
@@ -437,7 +452,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         o_pjt->animation_state.finished = 1;
 
         if (move->successor_id) {
-            object_set_animation(o_pjt, &af_get_move(&prog_owner->af_data, move->successor_id)->ani);
+            object_set_animation(o_pjt, &af_get_move(prog_owner_af_data, move->successor_id)->ani);
             object_set_repeat(o_pjt, 0);
             /*object_set_vel(o_pjt, vec2f_create(0,0));*/
             o_pjt->animation_state.finished = 0;
@@ -503,8 +518,8 @@ void har_tick(object *obj) {
         h->flinching = 0;
     }
 
-    if (h->endurance < h->endurance_max && !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN || h->state == STATE_STANDING_UP)) {
-        h->endurance += 2;
+    if (h->endurance < h->endurance_max && !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
+        h->endurance += 1;
     }
 }
 
@@ -520,7 +535,7 @@ void add_input(har *h, char c) {
     h->inputs[0] = c;
 }
 
-void har_act(object *obj, int act_type) {
+int har_act(object *obj, int act_type) {
     har *h = object_get_userdata(obj);
     int direction = object_get_direction(obj);
     if(!(h->state == STATE_STANDING ||
@@ -530,19 +545,21 @@ void har_act(object *obj, int act_type) {
          h->state == STATE_VICTORY ||
          h->state == STATE_SCRAP)) {
         // doing something else, ignore input
-        return;
+        return 0;
     }
 
     // Don't allow movement if arena is starting or ending
     int arena_state = arena_get_state(game_state_get_scene(obj->gs));
     if(arena_state == ARENA_STATE_STARTING) {
-        return;
+        return 0;
     }
 
     // Don't allow new moves while we're still executing a previous one.
     if(h->executing_move) {
-        return;
+        return 0;
     }
+
+    int oldstate = h->state;
 
    // for the reason behind the numbers, look at a numpad sometime
     switch(act_type) {
@@ -608,7 +625,7 @@ void har_act(object *obj, int act_type) {
     af_move *move;
     size_t len;
     for(int i = 0; i < 70; i++) {
-        if((move = af_get_move(&h->af_data, i))) {
+        if((move = af_get_move(h->af_data, i))) {
             len = move->move_string.len;
             if(!strncmp(str_c(&move->move_string), h->inputs, len)) {
                 if (move->category == CAT_CLOSE && h->close != 1) {
@@ -632,9 +649,73 @@ void har_act(object *obj, int act_type) {
                 }
 
                 DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
-                DEBUG("input was %s", h->inputs);
+                /*DEBUG("input was %s", h->inputs);*/
 
-#ifdef DEBUGMODE
+                // we have to serialize these inputs in reverse, so walk the string backwards
+                char *s = (char*)str_c(&move->move_string); // start
+                for (int j = str_size(&move->move_string)-1; j >=0; j--) { 
+                    switch(s[j]) {
+                        case '1':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_DOWNRIGHT);
+                            } else {
+                                har_fire_hook(h, ACT_DOWNLEFT);
+                            }
+                            break;
+                        case '2':
+                            har_fire_hook(h, ACT_DOWN);
+                            break;
+                        case '3':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_DOWNLEFT);
+                            } else {
+                                har_fire_hook(h, ACT_DOWNRIGHT);
+                            }
+                            break;
+                        case '4':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_RIGHT);
+                            } else {
+                                har_fire_hook(h, ACT_LEFT);
+                            }
+                            break;
+                        case '5':
+                            har_fire_hook(h, ACT_STOP);
+                            break;
+                        case '6':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_LEFT);
+                            } else {
+                                har_fire_hook(h, ACT_RIGHT);
+                            }
+                            break;
+                        case '7':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_UPRIGHT);
+                            } else {
+                                har_fire_hook(h, ACT_UPLEFT);
+                            }
+                            break;
+                        case '8':
+                            har_fire_hook(h, ACT_UP);
+                            break;
+                        case '9':
+                            if(direction == OBJECT_FACE_LEFT) {
+                                har_fire_hook(h, ACT_UPLEFT);
+                            } else {
+                                har_fire_hook(h, ACT_UPRIGHT);
+                            }
+                            break;
+                        case 'K':
+                            har_fire_hook(h, ACT_KICK);
+                            break;
+                        case 'P':
+                            har_fire_hook(h, ACT_PUNCH);
+                            break;
+                    }
+                }
+
+#ifdef DEBUGMODE_STFU
         DEBUG("UNKNOWN %u %u %u %u | %u %u %u %u | %u %u %u %u | %u %u %u %u | %u %u %u %u | %u",
               move->unknown[0]&0xFF, move->unknown[1]&0xFF, move->unknown[2]&0xFF, move->unknown[3]&0xFF,
               move->unknown[4]&0xFF, move->unknown[5]&0xFF, move->unknown[6]&0xFF, move->unknown[7]&0xFF,
@@ -669,28 +750,30 @@ void har_act(object *obj, int act_type) {
                 // make the other har participate in the scrap/destruction
                 if (move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
                     int opp_id = h->player_id ? 0 : 1;
-                    af_move *move = af_get_move(&(h->af_data), obj->cur_animation->id);
+                    af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
                     object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
                     opp->animation_state.enemy_x = obj->pos.x;
                     opp->animation_state.enemy_y = obj->pos.y;
-                    object_set_animation(opp, &af_get_move(&((har*)opp->userdata)->af_data, ANIM_DAMAGE)->ani);
+                    object_set_animation(opp, &af_get_move(((har*)opp->userdata)->af_data, ANIM_DAMAGE)->ani);
                     object_set_repeat(opp, 0);
                     object_set_custom_string(opp, str_c(&move->footer_string));
                     object_tick(opp);
                 }
 
-                return;
+                // we actually did something interesting
+                // return 1 so we can use this as sync point for netplay
+                return 1;
             }
         }
     }
 
     if(obj->pos.y < 190) {
         // airborne
-        return;
+        return 0;
     }
 
     if(arena_state == ARENA_STATE_ENDING) {
-        return;
+        return 0;
     }
 
     // no moves matched, do player movement
@@ -698,18 +781,33 @@ void har_act(object *obj, int act_type) {
     h->blocking = 0;
     switch(act_type) {
         case ACT_DOWNRIGHT:
-            if(act_type == ACT_DOWNRIGHT && direction == OBJECT_FACE_LEFT) {
+            if(direction == OBJECT_FACE_LEFT) {
                 h->blocking = 1;
             }
+            if(h->state != STATE_CROUCHING) {
+                har_set_ani(obj, ANIM_CROUCHING, 1);
+                object_set_vel(obj, vec2f_create(0,0));
+                h->state = STATE_CROUCHING;
+                har_fire_hook(h, ACT_DOWNRIGHT);
+            }
+            break;
         case ACT_DOWNLEFT:
-            if(act_type == ACT_DOWNLEFT && direction == OBJECT_FACE_RIGHT) {
+            if(direction == OBJECT_FACE_RIGHT) {
                 h->blocking = 1;
             }
+            if(h->state != STATE_CROUCHING) {
+                har_set_ani(obj, ANIM_CROUCHING, 1);
+                object_set_vel(obj, vec2f_create(0,0));
+                h->state = STATE_CROUCHING;
+                har_fire_hook(h, ACT_DOWNLEFT);
+            }
+            break;
         case ACT_DOWN:
             if(h->state != STATE_CROUCHING) {
                 har_set_ani(obj, ANIM_CROUCHING, 1);
                 object_set_vel(obj, vec2f_create(0,0));
                 h->state = STATE_CROUCHING;
+                har_fire_hook(h, ACT_DOWN);
             }
             break;
         case ACT_STOP:
@@ -718,18 +816,20 @@ void har_act(object *obj, int act_type) {
                 object_set_vel(obj, vec2f_create(0,0));
                 obj->slide_state.vel.x = 0;
                 h->state = STATE_STANDING;
+                har_fire_hook(h, ACT_STOP);
             }
             break;
         case ACT_LEFT:
             if(h->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
                 h->state = STATE_WALKING;
+                har_fire_hook(h, ACT_LEFT);
             }
             if(direction == OBJECT_FACE_LEFT) {
-                vx = (h->af_data.forward_speed*-1)/(float)320;
+                vx = (h->af_data->forward_speed*-1)/(float)320;
             } else {
                 h->blocking = 1;
-                vx = h->af_data.reverse_speed*-1/(float)320;
+                vx = h->af_data->reverse_speed*-1/(float)320;
             }
             object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
             break;
@@ -737,33 +837,35 @@ void har_act(object *obj, int act_type) {
             if(h->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
                 h->state = STATE_WALKING;
+                har_fire_hook(h, ACT_RIGHT);
             }
             if(direction == OBJECT_FACE_LEFT) {
                 h->blocking = 1;
-                vx = h->af_data.reverse_speed/(float)320;
+                vx = h->af_data->reverse_speed/(float)320;
             } else {
-                vx = h->af_data.forward_speed/(float)320;
+                vx = h->af_data->forward_speed/(float)320;
             }
             object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
             break;
         case ACT_UP:
             if(h->state != STATE_JUMPING) {
-                har_set_ani(obj, ANIM_JUMPING, 1);
-                object_set_gravity(obj, h->af_data.fall_speed * FUDGEFACTOR);
-                vy = (float)h->af_data.jump_speed * FUDGEFACTOR;
+                har_set_ani(obj, ANIM_JUMPING, 0);
+                object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
+                vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
                 object_set_vel(obj, vec2f_create(0,vy));
                 object_set_tick_pos(obj, 100);
                 h->state = STATE_JUMPING;
+                har_fire_hook(h, ACT_UP);
             }
             break;
         case ACT_UPLEFT:
             if(h->state != STATE_JUMPING) {
-                har_set_ani(obj, ANIM_JUMPING, 1);
-                vy = (float)h->af_data.jump_speed * FUDGEFACTOR;
-                vx = h->af_data.reverse_speed*-1/(float)320;
-                object_set_gravity(obj, h->af_data.fall_speed * FUDGEFACTOR);
+                har_set_ani(obj, ANIM_JUMPING, 0);
+                vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
+                vx = h->af_data->reverse_speed*-1/(float)320;
+                object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
                 if(direction == OBJECT_FACE_LEFT) {
-                    vx = (h->af_data.forward_speed*-1)/(float)320;
+                    vx = (h->af_data->forward_speed*-1)/(float)320;
                 }
                 object_set_vel(obj, vec2f_create(vx,vy));
                 object_set_stride(obj, 7); 
@@ -776,16 +878,17 @@ void har_act(object *obj, int act_type) {
                     object_set_tick_pos(obj, 110);
                 }
                 h->state = STATE_JUMPING;
+                har_fire_hook(h, ACT_UPLEFT);
             }
             break;
         case ACT_UPRIGHT:
             if(h->state != STATE_JUMPING) {
-                har_set_ani(obj, ANIM_JUMPING, 1);
-                vy = (float)h->af_data.jump_speed * FUDGEFACTOR;
-                vx = h->af_data.forward_speed/(float)320;
-                object_set_gravity(obj, h->af_data.fall_speed * FUDGEFACTOR);
+                har_set_ani(obj, ANIM_JUMPING, 0);
+                vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
+                vx = h->af_data->forward_speed/(float)320;
+                object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
                 if(direction == OBJECT_FACE_LEFT) {
-                    vx = h->af_data.reverse_speed/(float)320;
+                    vx = h->af_data->reverse_speed/(float)320;
                 }
                 object_set_vel(obj, vec2f_create(vx,vy));
                 object_set_stride(obj, 7); // Pass 10 frames per tick
@@ -799,9 +902,20 @@ void har_act(object *obj, int act_type) {
                     
                 }
                 h->state = STATE_JUMPING;
+                har_fire_hook(h, ACT_UPRIGHT);
             }
             break;
     }
+
+    if (oldstate != h->state) {
+        // hey we changed state, that's interesting, right?
+        return 1;
+    }
+
+    // XXX if we got here, we were just moving around
+    // it is not clear if we need to trigger a netplay sync here
+    // maybe at least jumping would be nice
+    return 0;
 }
 
 void har_stunned_done(void *userdata) {
@@ -842,24 +956,6 @@ void har_finished(object *obj) {
     h->flinching = 0;
 }
 
-void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
-    iterator it;
-    sprite *s;
-    // Fix sprite positions
-    vector_iter_begin(&ani->sprites, &it);
-    while((s = iter_next(&it)) != NULL) {
-        s->pos.x += fix_x;
-        s->pos.y += fix_y;
-    }
-    // Fix collisions coordinates
-    collision_coord *c;
-    vector_iter_begin(&ani->collision_coords, &it);
-    while((c = iter_next(&it)) != NULL) {
-        c->pos.x += fix_x;
-        c->pos.y += fix_y;
-    }
-}
-
 #ifdef DEBUGMODE
 void har_debug(object *obj) {
     har *h = object_get_userdata(obj);
@@ -871,20 +967,104 @@ void har_debug(object *obj) {
 }
 #endif
 
-int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int player_id) {
-    // Create local data
-    har *local = malloc(sizeof(har));
-    object_set_userdata(obj, local);
+int har_serialize(object *obj, serial *ser) {
+    har *h = object_get_userdata(obj);
 
-    // Load AF
-    if(load_af_file(&local->af_data, har_id)) {
-        PERROR("Unable to load HAR %s (%d)!", get_id_name(har_id), har_id);
-        free(local);
+    // Specialization
+    serial_write_int8(ser, SPECID_HAR);
+
+    // Set serialization data
+    serial_write_int16(ser, h->id);
+    serial_write_int8(ser, h->player_id);
+    serial_write_int8(ser, h->pilot_id);
+    serial_write_int8(ser, h->state);
+    serial_write_int8(ser, h->blocking);
+    serial_write_int8(ser, h->executing_move);
+    serial_write_int8(ser, h->flinching);
+    serial_write_int8(ser, h->close);
+    serial_write_int8(ser, h->hard_close);
+    serial_write_int8(ser, h->damage_done);
+    serial_write_int8(ser, h->damage_received);
+    serial_write_int16(ser, h->health);
+    serial_write_int16(ser, h->endurance);
+    serial_write(ser, h->inputs, 10);
+
+    // ...
+    // TODO: Set the other ser attrs here
+
+    // Return success
+    return 0;
+}
+
+int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) {
+
+    int har_id = serial_read_int16(ser);
+    int player_id = serial_read_int8(ser);
+    int pilot_id = serial_read_int8(ser);
+    af *af_data;
+
+    /*DEBUG("unserializing HAR %d for player %d", har_id - HAR_JAGUAR, player_id);*/
+
+    // find the AF data in the scene
+
+    if (gs->sc->af_data[player_id]->id == har_id - HAR_JAGUAR) {
+        af_data = gs->sc->af_data[player_id];
+    } else {
+        DEBUG("expected har %d, got %d", har_id - HAR_JAGUAR, gs->sc->af_data[player_id]->id);
+        // HAR IDs do not match!
+        // TODO maybe the other player changed their HAR, who knows
         return 1;
     }
 
-    // Fix some coordinates on jump sprites
-    har_fix_sprite_coords(&af_get_move(&local->af_data, ANIM_JUMPING)->ani, 0, -50);
+    har_create(obj, af_data, obj->direction, har_id, pilot_id, player_id);
+
+    har *h = object_get_userdata(obj);
+    // we are unserializing a state update for a HAR, we expect it to have the AF data already loaded into RAM, we're just updating the volatile attributes
+
+    // TODO sanity check pilot/player/HAR IDs
+    h->state = serial_read_int8(ser);
+    h->blocking = serial_read_int8(ser);
+    h->executing_move = serial_read_int8(ser);
+    h->flinching = serial_read_int8(ser);
+    h->close = serial_read_int8(ser);
+    h->hard_close = serial_read_int8(ser);
+    h->damage_done = serial_read_int8(ser);
+    h->damage_received = serial_read_int8(ser);
+    h->health = serial_read_int16(ser);
+    h->endurance = serial_read_int16(ser);
+    serial_read(ser, h->inputs, 10);
+
+    DEBUG("har animation id is %d with state %d with %d", animation_id, h->state, h->executing_move);
+
+    object_set_animation(obj, &af_get_move(af_data, animation_id)->ani);
+
+    if (h->executing_move && (animation_id == ANIM_IDLE || animation_id == ANIM_CROUCHING)) {
+        // XXX this is a hack to fix a bug we can't find
+        DEBUG("============== HACK ATTACK =========================");
+        h->executing_move = 0;
+    }
+
+    // Return success
+    return 0;
+}
+
+void har_install_hook(har *h, har_hook_cb hook, void *data) {
+    h->hook_cb = hook;
+    h->hook_cb_data = data;
+}
+
+void har_bootstrap(object *obj) {
+    object_set_serialize_cb(obj, har_serialize);
+    object_set_unserialize_cb(obj, har_unserialize);
+}
+
+int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id) {
+    // Create local data
+    har *local = malloc(sizeof(har));
+    object_set_userdata(obj, local);
+    har_bootstrap(obj);
+
+    local->af_data = af_data;
 
     // Save har id
     local->id = har_id;
@@ -892,27 +1072,29 @@ int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int
     local->pilot_id = pilot_id;
 
     // Health, endurance
-    local->health_max = local->health = 1000;
-    local->endurance_max = local->endurance = 5000;
+    local->health_max = local->health = 100;
+    local->endurance_max = local->endurance = 400;
     local->close = 0;
     local->hard_close =  0;
     local->state = STATE_STANDING;
     local->executing_move = 0;
 
+    local->hook_cb = NULL;
+    local->hook_cb_data = NULL;
+
     // Object related stuff
-    /*object_set_gravity(obj, local->af_data.fall_speed);*/
+    /*object_set_gravity(obj, local->af_data->fall_speed);*/
     object_set_gravity(obj, 1);
     object_set_layers(obj, LAYER_HAR | (player_id == 0 ? LAYER_HAR1 : LAYER_HAR2));
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
-    object_set_stl(obj, local->af_data.sound_translation_table);
+    object_set_stl(obj, local->af_data->sound_translation_table);
     obj->cast_shadow = 1;
 
     // New object spawner callback
     object_set_spawn_cb(obj, cb_har_spawn_object, local);
 
     // Set running animation 
-    object_set_palette(obj, pal, 0);
     har_set_ani(obj, ANIM_IDLE, 1);
 
     // fill the input buffer with 'pauses'
@@ -936,6 +1118,5 @@ int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int
 #endif
 
     // All done
-    DEBUG("Har %s (%d) loaded!", get_id_name(har_id), har_id);
     return 0;
 }

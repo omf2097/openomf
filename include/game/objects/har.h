@@ -55,34 +55,41 @@ enum {
     DAMAGETYPE_HIGH // Damage to high area of har
 };
 
-typedef struct har_t {
-    int id;
-    int player_id;
-    int pilot_id;
-    af af_data;
-    unsigned int state;
-    unsigned int blocking;
-    unsigned int executing_move;
-    unsigned int flinching;
-    int close;
-    int hard_close;
-    int damage_done; // Damage was done this animation
-    int damage_received; // Damage was received this animation
+typedef void (*har_hook_cb)(int action, void *data);
 
-    int health_max, health;
-    int endurance_max, endurance;
+typedef struct har_t {
+    uint8_t id;
+    uint8_t player_id;
+    uint8_t pilot_id;
+    uint8_t state;
+    uint8_t blocking;
+    uint8_t executing_move;
+    uint8_t flinching;
+    uint8_t close;
+    af *af_data;
+    uint8_t damage_done; // Damage was done this animation
+    uint8_t damage_received; // Damage was received this animation
+
+    int16_t health_max, health;
+    int16_t endurance_max, endurance;
     char inputs[11];
+    uint8_t hard_close;
+
+    har_hook_cb hook_cb;
+    void *hook_cb_data;
+
 
 #ifdef DEBUGMODE
     texture debug_tex;
     image debug_img;
-    int debug_enabled;
+    uint8_t debug_enabled;
 #endif
 } har;
 
-int har_create(object *obj, palette *pal, int dir, int har_id, int pilot_id, int player_id);
+void har_install_hook(har *h, har_hook_cb hook, void *data);
+void har_bootstrap(object *obj);
+int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id);
 void har_set_ani(object *obj, int animation_id, int repeat);
-
 int har_is_active(object *obj);
 
 #endif // _HAR_H

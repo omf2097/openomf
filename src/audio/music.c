@@ -11,6 +11,16 @@
 #include "audio/sources/vorbis_source.h"
 #endif // USE_OGGVORBIS
 
+#ifdef STANDALONE_SERVER
+int music_play(const char *filename) {
+    return 0;
+}
+void music_set_volume(float volume) {}
+void music_stop() {}
+int music_playing() {
+    return 1;
+}
+#else
 unsigned int music_id = 0;
 float music_volume = VOLUME_DEFAULT;
 
@@ -79,3 +89,5 @@ int music_playing() {
 
     return 1;
 }
+#endif
+

@@ -7,9 +7,12 @@
 #include "utils/vec.h"
 #include "utils/hashmap.h"
 #include "video/texture.h"
+#include "game/serial.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
 #define OBJECT_NO_GROUP -1
+
+#define OBJECT_EVENT_BUFFER_SIZE 16
 
 enum {
     OBJECT_STABLE = 0,
@@ -35,11 +38,13 @@ typedef struct object_t object;
 typedef struct game_state_t game_state;
 
 typedef void (*object_free_cb)(object *obj);
-typedef void (*object_act_cb)(object *obj, int action);
+typedef int  (*object_act_cb)(object *obj, int action);
 typedef void (*object_tick_cb)(object *obj);
 typedef void (*object_move_cb)(object *obj);
 typedef void (*object_collide_cb)(object *a, object *b);
 typedef void (*object_finish_cb)(object *obj);
+typedef int  (*object_serialize_cb)(object *obj, serial *ser);
+typedef int  (*object_unserialize_cb)(object *obj, serial *ser, int animation_id, game_state *gs);
 typedef void (*object_debug_cb)(object *obj);
 
 struct object_t {
@@ -47,32 +52,40 @@ struct object_t {
 
     vec2f pos;
     vec2f vel;
-    int vstate;
-    int hstate;
-    int direction;
+    uint8_t vstate;
+    uint8_t hstate;
+    int8_t direction;
+    int8_t group;
+
     float y_percent;
     float gravity;
     
-    int is_static;
-    int group;
-    int layers;
+    uint8_t layers;
     
-    int cur_animation_own;
+    uint8_t cur_animation_own;
+
+    uint8_t texture_refresh;
+
     animation *cur_animation;
     sprite *cur_sprite;
     char *sound_translation_table;
 
-    int texture_refresh;
     palette *cur_palette;
-    int cur_remap;
-    int halt;
-    int stride;
-    int cast_shadow;
+    uint8_t cur_remap;
+    uint8_t halt;
+    uint8_t stride;
+    uint8_t cast_shadow;
     texture *cur_texture;
 
     player_sprite_state sprite_state;
     player_animation_state animation_state;
     player_slide_state slide_state;
+
+    // state ringbuffer
+    uint32_t age;
+    // should cover the last 400ms (25 * 16 = 400)
+    // if the user's ping is > 800ms they're pretty screwed
+    serial event_buffer[OBJECT_EVENT_BUFFER_SIZE];
 
     void *userdata;
     object_free_cb free;
@@ -81,6 +94,8 @@ struct object_t {
     object_collide_cb collide;
     object_finish_cb finish;
     object_move_cb move;
+    object_serialize_cb serialize;
+    object_unserialize_cb unserialize;
     object_debug_cb debug;
 };
 
@@ -94,9 +109,12 @@ void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
 void object_render(object *obj);
 void object_collide(object *a, object *b);
-void object_act(object *obj, int action);
+int object_act(object *obj, int action);
 int object_finished(object *obj);
 void object_free(object *obj);
+
+int object_serialize(object *obj, serial *ser);
+int object_unserialize(object *obj, serial *ser, game_state *gs);
 
 void object_set_stride(object *obj, int stride);
 void object_set_playback_direction(object *obj, int dir);
@@ -119,7 +137,6 @@ int object_get_halt(object *obj);
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);
 void object_set_gravity(object *obj, float gravity);
-void object_set_static(object *obj, int is_static);
 
 void object_set_userdata(object *obj, void *ptr);
 void *object_get_userdata(object *obj);
@@ -130,13 +147,14 @@ void object_set_collide_cb(object *obj, object_collide_cb cbfunc);
 void object_set_finish_cb(object *obj, object_finish_cb cbfunc);
 void object_set_move_cb(object *obj, object_move_cb cbfunc);
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc);
+void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc);
+void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);
 int object_get_repeat(object *obj);
 void object_set_direction(object *obj, int dir);
 int object_get_direction(object *obj);
 
-int object_is_static(object *obj);
 int object_get_gravity(object *obj);
 int object_get_group(object *obj);
 int object_get_layers(object *obj);
@@ -152,6 +170,10 @@ vec2f object_get_vel(object *obj);
 
 void object_set_pos(object *obj, vec2i pos);
 void object_set_vel(object *obj, vec2f vel);
+
+uint32_t object_get_age(object *obj);
+serial* object_get_last_serialization_point(object *obj);
+serial* object_get_serialization_point(object *obj, unsigned int ticks_ago);
 
 void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata);
 void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata);

@@ -5,6 +5,7 @@
 #include "utils/hashmap.h"
 
 typedef struct af_t {
+    unsigned int id;
     unsigned int endurance;
     unsigned int power;
     int forward_speed;
