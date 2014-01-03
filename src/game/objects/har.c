@@ -854,6 +854,10 @@ int har_act(object *obj, int act_type) {
                 h->blocking = 1;
                 vx = h->af_data->reverse_speed*-1/(float)320;
             }
+            // fire hook when changing walking direction
+            if(object_get_vel(obj).x > 0) {
+                har_fire_hook(obj, ACT_LEFT);
+            }
             object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
             break;
         case ACT_RIGHT:
@@ -867,6 +871,10 @@ int har_act(object *obj, int act_type) {
                 vx = h->af_data->reverse_speed/(float)320;
             } else {
                 vx = h->af_data->forward_speed/(float)320;
+            }
+            // fire hook when changing walking direction
+            if(object_get_vel(obj).x < 0) {
+                har_fire_hook(obj, ACT_RIGHT);
             }
             object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
             break;
