@@ -29,12 +29,14 @@ void net_controller_free(controller *ctrl) {
                 case ENET_EVENT_TYPE_DISCONNECT:
                     DEBUG("got disconnect notice");
                     // peer has acknowledged the disconnect
+                    goto done;
                     break;
                 default:
                     break;
             }
         }
     }
+done:
     enet_host_destroy(data->host);
     free(data);
 }

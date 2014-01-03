@@ -463,6 +463,7 @@ void mainmenu_listen_for_connections(component *c, void *userdata) {
         DEBUG("Failed to initialize ENet server");
         return;
     }
+    enet_socket_set_option(local->host->socket, ENET_SOCKOPT_REUSEADDR, 1);
     mainmenu_enter_menu_listen(c, userdata);
 }
 
@@ -822,6 +823,14 @@ int mainmenu_create(scene *scene) {
     local->gameplay_button.userdata = (void*)scene;
     local->gameplay_button.click = mainmenu_enter_menu_gameplay;
 
+    // destroy any leftover controllers
+    controller *ctrl;
+    for (int i = 0; i < 2; i++) {
+       if ((ctrl = game_player_get_ctrl(game_state_get_player(scene->gs, i)))) {
+           DEBUG("freeing controller");
+           game_player_set_ctrl(game_state_get_player(scene->gs, i), NULL);
+       }
+    }
 
     // network play menu
     menu_create(&local->net_menu, 165, 5, 151, 119);

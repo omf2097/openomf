@@ -35,6 +35,10 @@ int game_state_create(game_state *gs, int net_mode) {
     vector_create(&gs->objects, sizeof(render_obj));
     int nscene = (net_mode == NET_MODE_NONE ? SCENE_INTRO : SCENE_MENU);
     gs->sc = malloc(sizeof(scene));
+    for(int i = 0; i < 2; i++) {
+        gs->players[i] = malloc(sizeof(game_player));
+        game_player_create(gs->players[i]);
+    }
     if(scene_create(gs->sc, gs, nscene)) {
         PERROR("Error while loading scene %d.", nscene);
         goto error_0;
@@ -54,10 +58,6 @@ int game_state_create(game_state *gs, int net_mode) {
     scene_init(gs->sc);
     gs->this_id = nscene;
     gs->next_id = nscene;
-    for(int i = 0; i < 2; i++) {
-        gs->players[i] = malloc(sizeof(game_player));
-        game_player_create(gs->players[i]);
-    }
     return 0;
 
 error_1:

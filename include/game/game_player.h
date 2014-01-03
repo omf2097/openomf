@@ -4,6 +4,7 @@
 #include "game/protos/object.h"
 #include "controller/controller.h"
 #include "controller/keyboard.h"
+#include "controller/net_controller.h"
 #include "video/texture.h"
 
 typedef struct game_player_t {

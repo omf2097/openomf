@@ -70,13 +70,6 @@ typedef struct arena_local_t {
 
 void game_menu_quit(component *c, void *userdata) {
     scene *s = userdata;
-    for(int i = 0; i < 2; i++) {
-        controller *ctrl = game_player_get_ctrl(game_state_get_player(s->gs, i));
-        if(ctrl->type == CTRL_TYPE_NETWORK) {
-            net_controller_free(ctrl);
-        }
-    }
-
     game_state_set_next(s->gs, SCENE_MENU);
 }
 
@@ -258,12 +251,14 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 if (player->ctrl->type == CTRL_TYPE_NETWORK) {
                     if (!game_state_rewind(scene->gs, net_controller_get_rtt(player->ctrl))) {
                         do {
-                            need_sync += object_act(game_player_get_har(player), i->event_data.action);
+                            object_act(game_player_get_har(player), i->event_data.action);
                         } while ((i = i->next) && i->type == EVENT_TYPE_ACTION);
                         game_state_replay(scene->gs, net_controller_get_rtt(player->ctrl));
                         object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                         object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
                         maybe_install_har_hooks(scene);
+                        // always trigger a synchronization, since if the client's move did not actually happen, we want to rewind them ASAP
+                        need_sync = 1;
                         // XXX do we need to continue her, since we screwed with 'i'?
                     }
                 } else {
