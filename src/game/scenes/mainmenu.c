@@ -1111,6 +1111,9 @@ int mainmenu_create(scene *scene) {
         component_click(&local->net_listen_button);
     }
 
+    // clear it, so this only happens the first time
+    scene->gs->net_mode = NET_MODE_NONE;
+
     // All done
     return 0;
 }

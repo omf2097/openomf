@@ -162,7 +162,6 @@ void har_hook(char* buf, void *userdata) {
     wtf *data = ctrl->data;
     ENetPeer *peer = data->peer;
     /*ENetHost *host = data->host;*/
-    data->disconnected = 0;
     ENetPacket * packet;
 
     packet = enet_packet_create(buf, strlen (buf) + 1, ENET_PACKET_FLAG_RELIABLE);
@@ -241,6 +240,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->last_hb = -1;
     data->last_action = ACT_STOP;
     data->outstanding_hb = 0;
+    data->disconnected = 0;
     data->rtt = 0;
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_NETWORK;
