@@ -28,6 +28,7 @@
 #define IS_ZERO(n) (n < 0.8 && n > -0.8)
 
 void har_finished(object *obj);
+int har_act(object *obj, int act_type);
 
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
@@ -48,7 +49,7 @@ void har_fire_hook(object *obj, int action) {
     h->act_buf[pos].count++;
     h->act_buf[pos].age = obj->age;;
 
-    printf("Action buffer for age %d is", pos);
+    printf("Action buffer for age %d is", obj->age);
     for (int i = 0; i < h->act_buf[pos].count; i++) {
         printf(" %u", h->act_buf[pos].actions[i]);
     }
@@ -535,7 +536,10 @@ void har_tick(object *obj) {
 
     int act_pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
     if (h->act_buf[act_pos].age == obj->age) {
-        DEBUG("Replaying %d inputs", h->act_buf[act_pos].count);
+        DEBUG("REPLAYING %d inputs", h->act_buf[act_pos].count);
+        for (int i = 0; i < h->act_buf[act_pos].count; i++) {
+            har_act(obj, h->act_buf[act_pos].actions[i]);
+        }
     } else {
         // clear the action buffer because we're onto a new tick
         h->act_buf[act_pos].count = 0;
