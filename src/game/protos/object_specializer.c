@@ -6,7 +6,7 @@
 int object_auto_specialize(object *obj, int specialization_id) {
     switch(specialization_id) {
         case SPECID_HAR:
-            DEBUG("Object is specialized as a HAR");
+            /*DEBUG("Object is specialized as a HAR");*/
             har_bootstrap(obj);
             return 0;
         case SPECID_PROJECTILE:

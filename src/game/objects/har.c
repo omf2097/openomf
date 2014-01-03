@@ -1057,7 +1057,7 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
     h->endurance = serial_read_int16(ser);
     serial_read(ser, h->inputs, 10);
 
-    DEBUG("har animation id is %d with state %d with %d", animation_id, h->state, h->executing_move);
+    /*DEBUG("har animation id is %d with state %d with %d", animation_id, h->state, h->executing_move);*/
 
     object_set_animation(obj, &af_get_move(af_data, animation_id)->ani);
 

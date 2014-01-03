@@ -65,7 +65,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
  * serialization data. 
  */
 int object_serialize(object *obj, serial *ser) {
-    // TODO: Write other attributes too
     serial_write_float(ser, obj->pos.x);
     serial_write_float(ser, obj->pos.y);
     serial_write_float(ser, obj->vel.x);
@@ -95,8 +94,6 @@ int object_serialize(object *obj, serial *ser) {
         serial_write_int8(ser, SPECID_NONE);
     }
 
-    // TODO serialize the animation player
-
     // Return success
     return 0;
 }
@@ -107,8 +104,6 @@ int object_serialize(object *obj, serial *ser) {
  * Serial reder position should be set to correct position before calling this.
  */
 int object_unserialize(object *obj, serial *ser, game_state *gs) {
-    DEBUG("unserializing object");
-    // TODO: Read object_t data
     obj->pos.x = serial_read_float(ser);
     obj->pos.y = serial_read_float(ser);
     obj->vel.x = serial_read_float(ser);
@@ -176,7 +171,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     object_set_repeat(obj, repeat);
 
 
-    DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);
+    /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
 
 
 
