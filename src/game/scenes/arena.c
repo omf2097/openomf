@@ -365,7 +365,7 @@ void arena_tick(scene *scene) {
                 har2->state = STATE_DEFEAT;
                 // switch to the newsroom after some delay
                 ticktimer_add(120, arena_end_cb, scene);
-            } else if(har1->health <= 0 && har2->endurance <= 0) {
+            } else if(har1->health <= 0 && har1->endurance <= 0) {
                 scene_youlose_anim_start(scene->gs);
                 har_set_ani(obj_har2, ANIM_VICTORY, 1);
                 har_set_ani(obj_har1, ANIM_DEFEAT, 1);
