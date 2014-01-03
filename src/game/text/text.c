@@ -144,7 +144,13 @@ void font_render_wrapped(font *font, const char *text, int x, int y, int w, colo
                 tmpstop = strchr(stop+1, ' ');
                 if (tmpstop == NULL) {
                     stop = end-1;
-                    break;
+                    // last line is too long
+                    if ((stop - start) > maxlen) {
+                        stop = strrchr(start, ' ');
+                        break;
+                    } else {
+                        break;
+                    }
                 } else if ((tmpstop - start) > maxlen) {
                     break;
                 } else {
@@ -154,7 +160,7 @@ void font_render_wrapped(font *font, const char *text, int x, int y, int w, colo
             int len = stop - start;
             int xoff = (w - font->w*len)/2;
             font_render_len(font, start, len, x + xoff, y + yoff, c);
-            yoff += font->h+1;
+            yoff += font->h;
             start = stop+1;
             stop = start;
         }
