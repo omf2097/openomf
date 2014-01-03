@@ -875,6 +875,10 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
                 vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
+                if (h->state == STATE_CROUCHING) {
+                    // jumping frop crouch makes you jump 25% higher
+                    vy = vy * 1.25;
+                }
                 object_set_vel(obj, vec2f_create(0,vy));
                 object_set_tick_pos(obj, 100);
                 h->state = STATE_JUMPING;
@@ -886,6 +890,11 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
                 vx = h->af_data->reverse_speed*-1/(float)320;
+                if (h->state == STATE_CROUCHING) {
+                    // jumping frop crouch makes you jump 25% higher
+                    vy = vy * 1.25;
+                    vx = vx * 1.25;
+                }
                 object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
                 if(direction == OBJECT_FACE_LEFT) {
                     vx = (h->af_data->forward_speed*-1)/(float)320;
@@ -909,6 +918,11 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
                 vx = h->af_data->forward_speed/(float)320;
+                if (h->state == STATE_CROUCHING) {
+                    // jumping frop crouch makes you jump 25% higher
+                    vy = vy * 1.25;
+                    vx = vx * 1.25;
+                }
                 object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
                 if(direction == OBJECT_FACE_LEFT) {
                     vx = h->af_data->reverse_speed/(float)320;
