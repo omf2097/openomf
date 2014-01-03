@@ -76,6 +76,7 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int8(ser, obj->layers);
     serial_write_int8(ser, obj->stride);
     serial_write_int8(ser, object_get_repeat(obj));
+    serial_write_int32(ser, obj->age);
     serial_write_int8(ser, obj->cur_animation->id);
 
     // Write animation state
@@ -120,6 +121,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->layers = serial_read_int8(ser);
     uint8_t stride = serial_read_int8(ser);
     uint8_t repeat = serial_read_int8(ser);
+    obj->age = serial_read_int32(ser);
     uint8_t animation_id = serial_read_int8(ser);
 
     // Other stuff not included in serialization
@@ -201,6 +203,7 @@ void object_set_playback_direction(object *obj, int dir) {
 }
 
 void object_tick(object *obj) {
+    obj->age++;
     if(obj->cur_animation != NULL && obj->halt == 0) {
         for(int i = 0; i < obj->stride; i++)
             player_run(obj);
@@ -208,8 +211,6 @@ void object_tick(object *obj) {
     if(obj->tick != NULL) {
         obj->tick(obj);
     }
-
-    obj->age++;
 
     // serialize to the ring buffer
     int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;

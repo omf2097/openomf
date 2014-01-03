@@ -38,10 +38,21 @@ void har_free(object *obj) {
     free(h);
 }
 
-void har_fire_hook(har *h, int action) {
+void har_fire_hook(object *obj, int action) {
+    har *h = object_get_userdata(obj);
     if (h->hook_cb) {
         h->hook_cb(action, h->hook_cb_data);
     }
+    int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
+    h->act_buf[pos].actions[h->act_buf[pos].count] = (unsigned char)action;
+    h->act_buf[pos].count++;
+    h->act_buf[pos].age = obj->age;;
+
+    printf("Action buffer for age %d is", pos);
+    for (int i = 0; i < h->act_buf[pos].count; i++) {
+        printf(" %u", h->act_buf[pos].actions[i]);
+    }
+    printf("\n");
 }
 
 // Simple helper function
@@ -145,7 +156,7 @@ void har_move(object *obj) {
             /*} else {*/
                 h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
-                har_fire_hook(h, ACT_STOP);
+                har_fire_hook(obj, ACT_STOP);
             /*}*/
         } else if (h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.4;
@@ -521,6 +532,14 @@ void har_tick(object *obj) {
     if (h->endurance < h->endurance_max && !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
         h->endurance += 1;
     }
+
+    int act_pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
+    if (h->act_buf[act_pos].age == obj->age) {
+        DEBUG("Replaying %d inputs", h->act_buf[act_pos].count);
+    } else {
+        // clear the action buffer because we're onto a new tick
+        h->act_buf[act_pos].count = 0;
+    }
 }
 
 void add_input(har *h, char c) {
@@ -657,60 +676,60 @@ int har_act(object *obj, int act_type) {
                     switch(s[j]) {
                         case '1':
                             if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(h, ACT_DOWNRIGHT);
+                                har_fire_hook(obj, ACT_DOWNRIGHT);
                             } else {
-                                har_fire_hook(h, ACT_DOWNLEFT);
+                                har_fire_hook(obj, ACT_DOWNLEFT);
                             }
                             break;
                         case '2':
-                            har_fire_hook(h, ACT_DOWN);
+                            har_fire_hook(obj, ACT_DOWN);
                             break;
                         case '3':
                             if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(h, ACT_DOWNLEFT);
+                                har_fire_hook(obj, ACT_DOWNLEFT);
                             } else {
-                                har_fire_hook(h, ACT_DOWNRIGHT);
+                                har_fire_hook(obj, ACT_DOWNRIGHT);
                             }
                             break;
                         case '4':
                             if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(h, ACT_RIGHT);
+                                har_fire_hook(obj, ACT_RIGHT);
                             } else {
-                                har_fire_hook(h, ACT_LEFT);
+                                har_fire_hook(obj, ACT_LEFT);
                             }
                             break;
                         case '5':
-                            har_fire_hook(h, ACT_STOP);
+                            har_fire_hook(obj, ACT_STOP);
                             break;
                         case '6':
                             if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(h, ACT_LEFT);
+                                har_fire_hook(obj, ACT_LEFT);
                             } else {
-                                har_fire_hook(h, ACT_RIGHT);
+                                har_fire_hook(obj, ACT_RIGHT);
                             }
                             break;
                         case '7':
                             if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(h, ACT_UPRIGHT);
+                                har_fire_hook(obj, ACT_UPRIGHT);
                             } else {
-                                har_fire_hook(h, ACT_UPLEFT);
+                                har_fire_hook(obj, ACT_UPLEFT);
                             }
                             break;
                         case '8':
-                            har_fire_hook(h, ACT_UP);
+                            har_fire_hook(obj, ACT_UP);
                             break;
                         case '9':
                             if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(h, ACT_UPLEFT);
+                                har_fire_hook(obj, ACT_UPLEFT);
                             } else {
-                                har_fire_hook(h, ACT_UPRIGHT);
+                                har_fire_hook(obj, ACT_UPRIGHT);
                             }
                             break;
                         case 'K':
-                            har_fire_hook(h, ACT_KICK);
+                            har_fire_hook(obj, ACT_KICK);
                             break;
                         case 'P':
-                            har_fire_hook(h, ACT_PUNCH);
+                            har_fire_hook(obj, ACT_PUNCH);
                             break;
                     }
                 }
@@ -788,7 +807,7 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_CROUCHING, 1);
                 object_set_vel(obj, vec2f_create(0,0));
                 h->state = STATE_CROUCHING;
-                har_fire_hook(h, ACT_DOWNRIGHT);
+                har_fire_hook(obj, ACT_DOWNRIGHT);
             }
             break;
         case ACT_DOWNLEFT:
@@ -799,7 +818,7 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_CROUCHING, 1);
                 object_set_vel(obj, vec2f_create(0,0));
                 h->state = STATE_CROUCHING;
-                har_fire_hook(h, ACT_DOWNLEFT);
+                har_fire_hook(obj, ACT_DOWNLEFT);
             }
             break;
         case ACT_DOWN:
@@ -807,7 +826,7 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_CROUCHING, 1);
                 object_set_vel(obj, vec2f_create(0,0));
                 h->state = STATE_CROUCHING;
-                har_fire_hook(h, ACT_DOWN);
+                har_fire_hook(obj, ACT_DOWN);
             }
             break;
         case ACT_STOP:
@@ -816,14 +835,14 @@ int har_act(object *obj, int act_type) {
                 object_set_vel(obj, vec2f_create(0,0));
                 obj->slide_state.vel.x = 0;
                 h->state = STATE_STANDING;
-                har_fire_hook(h, ACT_STOP);
+                har_fire_hook(obj, ACT_STOP);
             }
             break;
         case ACT_LEFT:
             if(h->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
                 h->state = STATE_WALKING;
-                har_fire_hook(h, ACT_LEFT);
+                har_fire_hook(obj, ACT_LEFT);
             }
             if(direction == OBJECT_FACE_LEFT) {
                 vx = (h->af_data->forward_speed*-1)/(float)320;
@@ -837,7 +856,7 @@ int har_act(object *obj, int act_type) {
             if(h->state != STATE_WALKING) {
                 har_set_ani(obj, ANIM_WALKING, 1);
                 h->state = STATE_WALKING;
-                har_fire_hook(h, ACT_RIGHT);
+                har_fire_hook(obj, ACT_RIGHT);
             }
             if(direction == OBJECT_FACE_LEFT) {
                 h->blocking = 1;
@@ -855,7 +874,7 @@ int har_act(object *obj, int act_type) {
                 object_set_vel(obj, vec2f_create(0,vy));
                 object_set_tick_pos(obj, 100);
                 h->state = STATE_JUMPING;
-                har_fire_hook(h, ACT_UP);
+                har_fire_hook(obj, ACT_UP);
             }
             break;
         case ACT_UPLEFT:
@@ -878,7 +897,7 @@ int har_act(object *obj, int act_type) {
                     object_set_tick_pos(obj, 110);
                 }
                 h->state = STATE_JUMPING;
-                har_fire_hook(h, ACT_UPLEFT);
+                har_fire_hook(obj, ACT_UPLEFT);
             }
             break;
         case ACT_UPRIGHT:
@@ -902,7 +921,7 @@ int har_act(object *obj, int act_type) {
                     
                 }
                 h->state = STATE_JUMPING;
-                har_fire_hook(h, ACT_UPRIGHT);
+                har_fire_hook(obj, ACT_UPRIGHT);
             }
             break;
     }
@@ -1058,6 +1077,12 @@ void har_bootstrap(object *obj) {
     object_set_unserialize_cb(obj, har_unserialize);
 }
 
+void har_copy_actions(object *new, object *old) {
+    har *h_new = object_get_userdata(new);
+    har *h_old = object_get_userdata(old);
+    memcpy(h_new->act_buf, h_old->act_buf, sizeof(action_buffer) * OBJECT_EVENT_BUFFER_SIZE);
+}
+
 int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id) {
     // Create local data
     har *local = malloc(sizeof(har));
@@ -1108,6 +1133,11 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_move_cb(obj, har_move);
     object_set_collide_cb(obj, har_collide);
     object_set_finish_cb(obj, har_finished);
+
+    for (int i = 0; i < OBJECT_EVENT_BUFFER_SIZE; i++) {
+        local->act_buf[i].count = 0;
+        local->act_buf[i].age = 0;
+    }
 
 #ifdef DEBUGMODE
     object_set_debug_cb(obj, har_debug);

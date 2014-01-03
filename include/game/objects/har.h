@@ -57,6 +57,12 @@ enum {
 
 typedef void (*har_hook_cb)(int action, void *data);
 
+typedef struct action_buffer_t {
+    char actions[10];
+    uint8_t count;
+    uint32_t age;
+} action_buffer;
+
 typedef struct har_t {
     uint8_t id;
     uint8_t player_id;
@@ -78,6 +84,8 @@ typedef struct har_t {
     har_hook_cb hook_cb;
     void *hook_cb_data;
 
+    action_buffer act_buf[OBJECT_EVENT_BUFFER_SIZE];
+
 
 #ifdef DEBUGMODE
     texture debug_tex;
@@ -91,5 +99,6 @@ void har_bootstrap(object *obj);
 int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id);
 void har_set_ani(object *obj, int animation_id, int repeat);
 int har_is_active(object *obj);
+void har_copy_actions(object *new, object *old);
 
 #endif // _HAR_H

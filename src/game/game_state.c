@@ -584,10 +584,12 @@ int game_state_rewind(game_state *gs, int rtt) {
         object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0,0));
         object_unserialize(obj, ser, gs);
 
-        // Set HAR to controller and game_player
         game_state_add_object(gs, obj, RENDER_LAYER_MIDDLE);
 
-        // Set HAR for player
+        // copy over the ringbuffer of actions
+        har_copy_actions(obj, oldobject);
+
+        // Set HAR for player and controller
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
 
