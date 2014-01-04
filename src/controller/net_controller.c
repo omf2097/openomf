@@ -80,7 +80,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             } else {
                                 // a heartbeat from the peer, bounce it back
                                 ENetPacket *packet;
-                                packet = enet_packet_create(ser->data, ser->len, ENET_PACKET_FLAG_RELIABLE);
+                                packet = enet_packet_create(ser->data, ser->len, 0);
                                 if (peer) {
                                     enet_peer_send(peer, 0, packet);
                                     enet_host_flush (host);
@@ -117,7 +117,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
         serial_write_int8(&ser, EVENT_TYPE_HB);
         serial_write_int8(&ser, data->id);
         serial_write_int32(&ser, ticks);
-        packet = enet_packet_create(ser.data, ser.len, ENET_PACKET_FLAG_RELIABLE);
+        packet = enet_packet_create(ser.data, ser.len, 0);
         if (peer) {
             enet_peer_send(peer, 0, packet);
             enet_host_flush (host);
@@ -146,7 +146,7 @@ int net_controller_update(controller *ctrl, serial *serial) {
     // need to copy here because enet will free this packet
     memcpy(buf+sizeof(et), serial->data, serial->len);
 
-    packet = enet_packet_create(buf, serial->len+4, ENET_PACKET_FLAG_RELIABLE);
+    packet = enet_packet_create(buf, serial->len+4, 0);
     if (peer) {
         enet_peer_send(peer, 0, packet);
         enet_host_flush(host);
