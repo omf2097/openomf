@@ -209,7 +209,7 @@ void game_state_render(game_state *gs) {
     }
 #endif
 
-    // Render scene
+    // Render scene overlay (menus, etc.)
     scene_render_overlay(gs->sc);
 }
 
