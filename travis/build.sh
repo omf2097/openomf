@@ -4,7 +4,7 @@ mkdir build
 cd build
 
 cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_OGGVORBIS=On -DTRAVIS=On ..
-make && testing/test_main && make clean
+make && make test && make clean
 
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_OGGVORBIS=On -DTRAVIS=On ..
-make && testing/test_main
+cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OGGVORBIS=On -DTRAVIS=On ..
+make && make test

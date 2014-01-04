@@ -486,7 +486,9 @@ int game_state_serialize(game_state *gs, serial *ser) {
 }
 
 int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
+#ifdef DEBUGMODE
     int oldtick = gs->tick;
+#endif
     gs->tick = serial_read_int32(ser);
     int endtick = gs->tick + (rtt / 2);
     rand_seed(serial_read_int32(ser));
