@@ -14,6 +14,13 @@ find_package(GLEW)
 # These flags are used for all builds
 set(CORE_FLAGS "-Wall -Werror")
 
+# This is a quick hack to force glew go static.
+# TODO: Do this better!
+option(GLEWSTATIC "Use static GLEW" OFF)
+if(GLEWSTATIC)
+   set(CORE_FLAGS "${CORE_FLAGS} -DGLEW_STATIC")
+endif(GLEWSTATIC)
+
 # Check available compiler
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_C_COMPILER_VERSION VERSION_LESS 4.8)
