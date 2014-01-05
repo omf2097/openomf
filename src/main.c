@@ -5,6 +5,10 @@
 #include <dumb/dumb.h>
 #include <enet/enet.h>
 
+#if defined(_WIN32) || defined(WIN32)
+#include <Shlobj.h> //SHCreateDirectoryEx
+#endif
+
 #include "engine.h"
 #include "shadowdive/stringparser.h"
 #include "utils/log.h"
@@ -20,13 +24,17 @@ int main(int argc, char *argv[]) {
     char *ip = NULL;
     int net_mode = NET_MODE_NONE;
 
-
-#ifndef DEBUGMODE
     path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
     if(path == NULL) {
         printf("Error getting config path: %s\n", SDL_GetError());
         return 1;
     }
+
+    #if defined(_WIN32) || defined(WIN32)
+        // Ensure the path exists before continuing on
+        // XXX shouldn't SDL_GetPrefPath automatically create the path if it doesn't exist?
+        SHCreateDirectoryEx(NULL, path, NULL);
+    #endif
 
     // where is the openomf binary, if this call fails we will look for resources in ./resources
     char *base_path = SDL_GetBasePath();
@@ -49,7 +57,6 @@ int main(int argc, char *argv[]) {
         // any other platform will look in ./resources
         SDL_free(base_path);
     }
-#endif
 
     // Config path
     char config_path[strlen(path)+32];
@@ -59,9 +66,7 @@ int main(int argc, char *argv[]) {
     char logfile_path[strlen(path)+32];
     sprintf(logfile_path, "%s%s", path, "openomf.log");
 
-#ifndef DEBUGMODE
     SDL_free(path);
-#endif
 
     // Check arguments
     if(argc >= 2) {
