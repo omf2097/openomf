@@ -21,12 +21,13 @@ void progressbar_create_block(progress_bar *bar) {
     }
 }
 
-void progressbar_create(progress_bar *bar,     
+void progressbar_create_flashing(progress_bar *bar,
                        unsigned int x, unsigned int y,
                        unsigned int w, unsigned int h,
                        color border_topleft_color,
                        color border_bottomright_color,
                        color bg_color,
+                       color bg_color_alt,
                        color int_topleft_color,
                        color int_bottomright_color,
                        color int_bg_color,
@@ -43,6 +44,7 @@ void progressbar_create(progress_bar *bar,
     
     texture_create(&bar->block);
     texture_create(&bar->background);
+    texture_create(&bar->background_alt);
     
     // Background,
     image tmp;
@@ -56,7 +58,18 @@ void progressbar_create(progress_bar *bar,
                      border_topleft_color);
     texture_init_from_img(&bar->background, &tmp);
     image_free(&tmp);
-    
+
+    image_create(&tmp, w, h);
+    image_clear(&tmp, bg_color_alt);
+    image_rect_bevel(&tmp, 
+                     0, 0, w-1, h-1, 
+                     border_topleft_color, 
+                     border_bottomright_color, 
+                     border_bottomright_color, 
+                     border_topleft_color);
+    texture_init_from_img(&bar->background_alt, &tmp);
+    image_free(&tmp);
+
     // Bar
     progressbar_create_block(bar);
 }
@@ -72,8 +85,12 @@ void progressbar_set(progress_bar *bar, unsigned int percentage) {
     progressbar_create_block(bar);
 }
 
-void progressbar_render(progress_bar *bar) {
-    video_render_sprite(&bar->background, bar->x, bar->y, BLEND_ALPHA_FULL);
+void progressbar_render_flashing(progress_bar *bar, int flip) {
+    if (flip) {
+        video_render_sprite(&bar->background_alt, bar->x, bar->y, BLEND_ALPHA_FULL);
+    } else {
+        video_render_sprite(&bar->background, bar->x, bar->y, BLEND_ALPHA_FULL);
+    }
     if(bar->block.w > 0) {
         video_render_sprite(
             &bar->block, 

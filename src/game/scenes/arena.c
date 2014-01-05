@@ -452,8 +452,18 @@ void arena_render_overlay(scene *scene) {
         float p2_en = (float)har[1]->endurance / (float)har[1]->endurance_max;
         progressbar_set(&local->player1_endurance_bar, p1_en * 100);
         progressbar_set(&local->player2_endurance_bar, p2_en * 100);
-        progressbar_render(&local->player1_endurance_bar);
-        progressbar_render(&local->player2_endurance_bar);
+
+        if (p1_en * 100 < 50 && scene->gs->tick % 8 < 4) {
+            progressbar_render_flashing(&local->player1_endurance_bar, 1);
+        } else {
+            progressbar_render(&local->player1_endurance_bar);
+        }
+
+        if (p2_en * 100 < 50 && scene->gs->tick % 8 < 4) {
+            progressbar_render_flashing(&local->player2_endurance_bar, 1);
+        } else {
+            progressbar_render(&local->player2_endurance_bar);
+        }
 
         // Render HAR and pilot names
         font_render(&font_small, lang_get(player[0]->pilot_id+20), 5, 19, TEXT_COLOR);
@@ -656,20 +666,22 @@ int arena_create(scene *scene) {
                        HEALTHBAR_COLOR_BR_BORDER,
                        HEALTHBAR_COLOR_BG,
                        PROGRESSBAR_LEFT);
-    progressbar_create(&local->player1_endurance_bar, 
+    progressbar_create_flashing(&local->player1_endurance_bar, 
                        5, 14, 100, 4, 
                        BAR_COLOR_TL_BORDER, 
                        BAR_COLOR_BR_BORDER, 
                        BAR_COLOR_BG, 
+                       BAR_COLOR_BR_BORDER, 
                        ENDURANCEBAR_COLOR_TL_BORDER,
                        ENDURANCEBAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_BG,
                        PROGRESSBAR_RIGHT);
-    progressbar_create(&local->player2_endurance_bar, 
+    progressbar_create_flashing(&local->player2_endurance_bar, 
                        215, 14, 100, 4, 
                        BAR_COLOR_TL_BORDER, 
                        BAR_COLOR_BR_BORDER, 
                        BAR_COLOR_BG, 
+                       BAR_COLOR_BR_BORDER, 
                        ENDURANCEBAR_COLOR_TL_BORDER,
                        ENDURANCEBAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_BG,
