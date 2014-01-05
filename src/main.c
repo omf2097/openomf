@@ -1,4 +1,5 @@
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 #include <SDL2/SDL.h>
 #include <dumb/dumb.h>
@@ -10,6 +11,7 @@
 #include "utils/random.h"
 #include "game/game_state.h"
 #include "game/settings.h"
+#include "resources/ids.h"
 
 int main(int argc, char *argv[]) {
     // Get path
@@ -18,14 +20,36 @@ int main(int argc, char *argv[]) {
     char *ip = NULL;
     int net_mode = NET_MODE_NONE;
 
-    // Disable SDL_GetPrefPath for now, it seems to be somewhat buggy
-/*
-    char *path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
+
+#ifndef DEBUGMODE
+    path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
     if(path == NULL) {
-        printf("Error: %s\n", SDL_GetError());
+        printf("Error getting config path: %s\n", SDL_GetError());
         return 1;
     }
-*/
+
+    // where is the openomf binary, if this call fails we will look for resources in ./resources
+    char *base_path = SDL_GetBasePath();
+    char resource_path[strlen(base_path) + 32];
+    if(path != NULL) {
+        const char *platform = SDL_GetPlatform();
+        if (!strcasecmp(platform, "Windows")) {
+            // on windows, the resources will be in ./resources, relative to the binary
+            sprintf(resource_path, "%s%s", base_path, "resources/");
+            set_resource_path(resource_path);
+        } else if (!strcasecmp(platform, "Linux")) {
+            // on linux, the resources will be in ../share/openomf, relative to the binary
+            // so if openomf is installed to /usr/local/bin, the resources will be in /usr/local/share/openomf
+            sprintf(resource_path, "%s%s", base_path, "../share/openomf/");
+            set_resource_path(resource_path);
+        } else if (!strcasecmp(platform, "Mac OS X")) {
+            // on OSX, GetBasePath returns the 'Resources' directory if run from an app bundle, so we can use this as-is
+            set_resource_path(base_path);
+        }
+        // any other platform will look in ./resources
+        SDL_free(base_path);
+    }
+#endif
 
     // Config path
     char config_path[strlen(path)+32];
@@ -34,6 +58,10 @@ int main(int argc, char *argv[]) {
     // Logfile path
     char logfile_path[strlen(path)+32];
     sprintf(logfile_path, "%s%s", path, "openomf.log");
+
+#ifndef DEBUGMODE
+    SDL_free(path);
+#endif
 
     // Check arguments
     if(argc >= 2) {

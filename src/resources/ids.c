@@ -5,14 +5,19 @@
 #include "game/settings.h"
 #include "utils/log.h"
 
+static const char *resource_path = "resources/";
+
 struct music_override_t {
     int id;
     const char *name;
 };
 
-void get_filename_by_id(int id, char *ptr) {
-    const char* path = "resources/";
+void set_resource_path(const char *path) {
+    resource_path = path;
+}
 
+void get_filename_by_id(int id, char *ptr) {
+    const char *path = resource_path;
     // Declare music overrides
     settings *s = settings_get();
     struct music_override_t overrides[] = {

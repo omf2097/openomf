@@ -50,6 +50,7 @@ enum RESOURCE_ID {
     DAT_ALTPALS
 };
 
+void set_resource_path(const char *path);
 void get_filename_by_id(int id, char *ptr);
 char* get_id_name(int id);
 
