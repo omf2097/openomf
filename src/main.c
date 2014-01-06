@@ -36,9 +36,10 @@ int main(int argc, char *argv[]) {
         SHCreateDirectoryEx(NULL, path, NULL);
     #endif
 
+#ifndef DEBUGMODE
     // where is the openomf binary, if this call fails we will look for resources in ./resources
     char *base_path = SDL_GetBasePath();
-    char resource_path[strlen(base_path) + 32];
+    char *resource_path = malloc(strlen(base_path) + 32);
     if(path != NULL) {
         const char *platform = SDL_GetPlatform();
         if (!strcasecmp(platform, "Windows")) {
@@ -52,18 +53,20 @@ int main(int argc, char *argv[]) {
             set_resource_path(resource_path);
         } else if (!strcasecmp(platform, "Mac OS X")) {
             // on OSX, GetBasePath returns the 'Resources' directory if run from an app bundle, so we can use this as-is
-            set_resource_path(base_path);
+            sprintf(resource_path, "%s", base_path);
+            set_resource_path(resource_path);
         }
         // any other platform will look in ./resources
         SDL_free(base_path);
     }
+#endif
 
     // Config path
-    char config_path[strlen(path)+32];
+    char *config_path = malloc(strlen(path)+32);
     sprintf(config_path, "%s%s", path, "openomf.conf");
 
     // Logfile path
-    char logfile_path[strlen(path)+32];
+    char *logfile_path = malloc(strlen(path)+32);
     sprintf(logfile_path, "%s%s", path, "openomf.log");
 
     SDL_free(path);
@@ -204,10 +207,10 @@ exit_0:
     sd_stringparser_lib_deinit();
     INFO("Exit.");
     log_close();
+    free(config_path);
+    free(logfile_path);
 #ifndef DEBUGMODE
-    /*
-    SDL_free(path);
-    */
+    free(resource_path);
 #endif
     return 0;
 }
