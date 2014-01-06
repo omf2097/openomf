@@ -12,6 +12,8 @@
 #include "../shared/animation_misc.h"
 #include "../shared/conversions.h"
 
+void move_info(sd_move *mv, sd_animation *ani, int move);
+
 int check_move_sprite(sd_af_file *af, int move, int sprite) {
     if(move > 70 || move < 0 || af->moves[move] == 0) {
         printf("animation #%d does not exist.\n", move);
@@ -146,6 +148,15 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                             sprite = 0;
                         }
                         changed = 1;
+                        break;
+                    case SDLK_p:
+                        {
+                            // print the move info
+                            sd_move *mv = af->moves[i];
+                            sd_animation *ani = mv->animation;
+                            move_info(mv, ani, i);
+                            changed = 0;
+                        }
                         break;
                     default:
                         changed = 0;
