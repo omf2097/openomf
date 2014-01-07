@@ -6,7 +6,7 @@
 #include <enet/enet.h>
 
 #if defined(_WIN32) || defined(WIN32)
-#include <Shlobj.h> //SHCreateDirectoryEx
+#include <shlobj.h> //SHCreateDirectoryEx
 #endif
 
 #include "engine.h"
