@@ -404,6 +404,9 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 
         obj_b->animation_state.enemy_x = obj_a->pos.x;
         obj_b->animation_state.enemy_y = obj_a->pos.y;
+        obj_a->animation_state.enemy_x = obj_b->pos.x;
+        obj_a->animation_state.enemy_y = obj_b->pos.y;
+
         har_take_damage(obj_b, &move->footer_string, move->damage);
         if (b->hit_hook_cb) {
             b->hit_hook_cb(b->player_id, a->player_id, move, b->hit_hook_cb_data);
