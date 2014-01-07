@@ -342,6 +342,14 @@ void arena_tick(scene *scene) {
         har *har1, *har2;
         har1 = obj_har1->userdata;
         har2 = obj_har2->userdata;
+
+        // keep enemy positions in sync
+        // TODO can we do this with pointers instead?
+        obj_har1->animation_state.enemy_x = obj_har2->pos.x;
+        obj_har1->animation_state.enemy_y = obj_har2->pos.y;
+        obj_har2->animation_state.enemy_x = obj_har1->pos.x;
+        obj_har2->animation_state.enemy_y = obj_har1->pos.y;
+
         if (
                 (har1->state == STATE_STANDING || har1->state == STATE_CROUCHING || har1->state == STATE_WALKING || har1->state == STATE_STUNNED) &&
                 (har2->state == STATE_STANDING || har2->state == STATE_CROUCHING || har2->state == STATE_WALKING || har2->state == STATE_STUNNED)) {
@@ -380,6 +388,8 @@ void arena_tick(scene *scene) {
                 har_set_ani(obj_har2, ANIM_DEFEAT, 1);
                 har1->state = STATE_VICTORY;
                 har2->state = STATE_DEFEAT;
+                chr_score *score = &local->player1_score;
+                chr_score_interrupt(score, object_get_pos(obj_har1));
                 // switch to the newsroom after some delay
                 ticktimer_add(120, arena_end_cb, scene);
             } else if(har1->health <= 0 && har1->endurance <= 0) {
@@ -388,6 +398,8 @@ void arena_tick(scene *scene) {
                 har_set_ani(obj_har1, ANIM_DEFEAT, 1);
                 har2->state = STATE_VICTORY;
                 har1->state = STATE_DEFEAT;
+                chr_score *score = &local->player2_score;
+                chr_score_interrupt(score, object_get_pos(obj_har2));
                 // switch to the newsroom after some delay
                 ticktimer_add(120, arena_end_cb, scene);
             }

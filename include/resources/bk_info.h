@@ -9,6 +9,7 @@ typedef struct bk_info_t {
     unsigned int load_on_start;
     unsigned int probability;
     unsigned int hazard_damage;
+    str footer_string;
     animation ani;
 } bk_info;
 

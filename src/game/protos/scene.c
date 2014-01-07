@@ -96,7 +96,7 @@ void scene_init(scene *scene) {
     hashmap_pair *pair = NULL;
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info*)pair->val;
-        if(info->load_on_start || info->probability == 1 || scene_startup(scene, info->ani.id)) {
+        if(info->load_on_start == 255 || info->probability == 1 || scene_startup(scene, info->ani.id)) {
             object *obj = malloc(sizeof(object));
             object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
             object_set_stl(obj, scene->bk_data.sound_translation_table);
@@ -187,6 +187,31 @@ void scene_render_shadows(scene *scene) {
 }
 
 void scene_tick(scene *scene) {
+    iterator it;
+    hashmap_iter_begin(&scene->bk_data.infos, &it);
+    hashmap_pair *pair = NULL;
+    while((pair = iter_next(&it)) != NULL) {
+        bk_info *info = (bk_info*)pair->val;
+        if(info->probability > 1) {
+            if (rand_int(info->probability) == 99) {
+                // TODO don't spawn it if we already have this animation running
+                object *obj = malloc(sizeof(object));
+                object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
+                object_set_stl(obj, scene->bk_data.sound_translation_table);
+                object_set_palette(obj, bk_get_palette(&scene->bk_data, 0), 0);
+                object_set_animation(obj, &info->ani);
+                object_set_userdata(obj, &scene->bk_data);
+                object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
+                object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
+                game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
+                object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
+                object_set_group(obj, GROUP_PROJECTILE);
+
+                DEBUG("Scene tick: Animation with probability %d started.", info->probability, info->ani.id);
+            }
+        }
+    }
+
     if(scene->tick != NULL) {
         scene->tick(scene);
     }
