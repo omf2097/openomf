@@ -17,6 +17,7 @@
 #define LAYER_HAR2 0x08
 #define LAYER_SCRAP 0x10
 #define LAYER_PROJECTILE 0x20
+#define LAYER_HAZARD 0x40
 
 #define GROUP_PROJECTILE 2
 

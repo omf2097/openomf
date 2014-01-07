@@ -48,12 +48,6 @@ void har_fire_hook(object *obj, int action) {
     h->act_buf[pos].actions[h->act_buf[pos].count] = (unsigned char)action;
     h->act_buf[pos].count++;
     h->act_buf[pos].age = obj->age;;
-
-    printf("Action buffer for age %d is", obj->age);
-    for (int i = 0; i < h->act_buf[pos].count; i++) {
-        printf(" %u", h->act_buf[pos].actions[i]);
-    }
-    printf("\n");
 }
 
 // Simple helper function
@@ -441,7 +435,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     // Check for collisions by sprite collision points
     int level = 2;
     vec2i hit_coord;
-    if(h->damage_done == 0 && 
+    if(
 #ifdef DEBUGMODE
             intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord, &h->debug_img))
 #else
@@ -485,6 +479,35 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     }
 }
 
+void har_collide_with_hazard(object *o_har, object *o_pjt) {
+    har *h = object_get_userdata(o_har);
+    bk *bk_data = object_get_userdata(o_pjt);
+
+    // Check for collisions by sprite collision points
+    int level = 2;
+    vec2i hit_coord;
+    if(!h->damage_received &&
+#ifdef DEBUGMODE
+            intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord, &h->debug_img))
+#else
+            intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord))
+#endif
+    {
+        DEBUG("hazard hit");
+
+        bk_info *anim = bk_get_info(bk_data, o_pjt->cur_animation->id);
+
+        har_take_damage(o_har, &anim->footer_string, anim->hazard_damage);
+        /*if (h->hit_hook_cb) {*/
+            /*h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);*/
+        /*}*/
+        har_spawn_scrap(o_har, hit_coord);
+        o_har->animation_state.enemy_x = o_pjt->pos.x;
+        o_har->animation_state.enemy_y = o_pjt->pos.y;
+        h->damage_received = 1;
+    }
+}
+
 void har_collide(object *obj_a, object *obj_b) {
     // Check if this is projectile to har collision
     if(object_get_layers(obj_a) & LAYER_PROJECTILE) {
@@ -495,6 +518,18 @@ void har_collide(object *obj_a, object *obj_b) {
         har_collide_with_projectile(obj_a, obj_b);
         return;
     }
+
+    if(object_get_layers(obj_a) & LAYER_HAZARD) {
+        /*DEBUG("har collided with hazard");*/
+        har_collide_with_hazard(obj_b, obj_a);
+        return;
+    }
+    if(object_get_layers(obj_b) & LAYER_HAZARD) {
+        /*DEBUG("har collided with hazard");*/
+        har_collide_with_hazard(obj_a, obj_b);
+        return;
+    }
+
 
     // Check for closeness between HARs and handle it
     har_check_closeness(obj_a, obj_b);

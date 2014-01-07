@@ -9,8 +9,10 @@ void bk_info_create(bk_info *info, void *src, int id) {
     info->load_on_start = sdinfo->load_on_start;
     info->probability = sdinfo->probability;
     info->hazard_damage = sdinfo->hazard_damage;
+    str_create_from_cstr(&info->footer_string, sdinfo->unknown_data);
 }
 
 void bk_info_free(bk_info *info) {
     animation_free(&info->ani);
+    str_free(&info->footer_string);
 }
