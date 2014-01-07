@@ -184,12 +184,19 @@ void arena_hit_hook(int hittee, int hitter, af_move *move, void *data) {
     scene *scene = data;
     arena_local *local = scene_get_userdata(scene);
     chr_score *score;
+    chr_score *otherscore;
+    object *hit_har;
     if (hitter == 0) {
         score = &local->player1_score;
+        otherscore = &local->player2_score;
+        hit_har = game_player_get_har(game_state_get_player(scene->gs, 1));
     } else {
         score = &local->player2_score;
+        otherscore = &local->player1_score;
+        hit_har = game_player_get_har(game_state_get_player(scene->gs, 0));
     }
-    score->score += move->points;
+    chr_score_hit(score, move->points);
+    chr_score_interrupt(otherscore, object_get_pos(hit_har));
 }
 
 void maybe_install_har_hooks(scene *scene) {
@@ -492,12 +499,6 @@ void arena_render_overlay(scene *scene) {
         // Render score stuff
         chr_score_render(&local->player1_score);
         chr_score_render(&local->player2_score);
-        char tmp[50];
-        chr_score_format(&local->player1_score, tmp);
-        font_render(&font_small, tmp, 5, 33, TEXT_COLOR);
-        chr_score_format(&local->player2_score, tmp);
-        int s2len = strlen(tmp) * font_small.w;
-        font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
 
         // render ping, if player is networked
         if (player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
@@ -701,8 +702,8 @@ int arena_create(scene *scene) {
                        ENDURANCEBAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_BG,
                        PROGRESSBAR_LEFT);
-    chr_score_create(&local->player1_score, 4, 33, 1.0f);
-    chr_score_create(&local->player2_score, 215, 33, 1.0f); // TODO: Set better coordinates for this
+    chr_score_create(&local->player1_score, 5, 33, OBJECT_FACE_RIGHT, 1.0f);
+    chr_score_create(&local->player2_score, 315, 33, OBJECT_FACE_LEFT, 1.0f); // TODO: Set better coordinates for this
 
     // TODO: Do something about this hack!
     scene->bk_data.sound_translation_table[14] = 10; // READY

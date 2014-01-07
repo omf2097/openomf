@@ -1,8 +1,12 @@
 #ifndef _SCORE_H
 #define _SCORE_H
 
+#include <string.h>
+#include <stdlib.h>
 #include "utils/list.h"
 #include "video/texture.h"
+#include "game/protos/object.h"
+#include "game/text/text.h"
 
 enum {
     SCORE_EV_PUNCH = 0,
@@ -14,25 +18,24 @@ enum {
 typedef struct chr_score_t {
     int score;
     int x,y;
+    int direction;
     float multiplier;
     list texts;
     texture scoretex;
-    
+
     int consecutive_hits;
+    int consecutive_hit_score;
     int combo_hits;
 } chr_score;
 
-void chr_score_create(chr_score *score, int x, int y, float multiplier);
+void chr_score_create(chr_score *score, int x, int y, int direction, float multiplier);
 void chr_score_free(chr_score *score);
 void chr_score_tick(chr_score *score);
 void chr_score_render(chr_score *score);
 
-// Helper function for formatting the score
-void chr_score_format(chr_score *score, char *buf);
-
 // These are just quick plans, may change.
-void chr_score_move(chr_score *score, int move);
+void chr_score_hit(chr_score *score, int points);
 void chr_score_victory(chr_score *score, int health);
-void chr_score_interrupt(chr_score *score);
+void chr_score_interrupt(chr_score *score, vec2i pos);
 
 #endif // _SCORE_H
