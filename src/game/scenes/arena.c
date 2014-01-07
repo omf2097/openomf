@@ -180,26 +180,41 @@ void arena_end_cb(void *userdata) {
     game_state_set_next(gs, SCENE_NEWSROOM);
 }
 
-void maybe_install_har_hooks(scene *scene) {
-    if (scene->gs->role == ROLE_CLIENT) {
-        object *obj_har1,*obj_har2;
-        obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
-        obj_har2 = game_player_get_har(game_state_get_player(scene->gs, 1));
-        har *har1, *har2;
-        har1 = obj_har1->userdata;
-        har2 = obj_har2->userdata;
+void arena_hit_hook(int hittee, int hitter, af_move *move, void *data) {
+    scene *scene = data;
+    arena_local *local = scene_get_userdata(scene);
+    chr_score *score;
+    if (hitter == 0) {
+        score = &local->player1_score;
+    } else {
+        score = &local->player2_score;
+    }
+    score->score += move->points;
+}
 
+void maybe_install_har_hooks(scene *scene) {
+    object *obj_har1,*obj_har2;
+    obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
+    obj_har2 = game_player_get_har(game_state_get_player(scene->gs, 1));
+    har *har1, *har2;
+    har1 = obj_har1->userdata;
+    har2 = obj_har2->userdata;
+
+    if (scene->gs->role == ROLE_CLIENT) {
         game_player *_player[2];
         for(int i = 0; i < 2; i++) {
             _player[i] = game_state_get_player(scene->gs, i);
         }
         if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
-            har_install_hook(har2, &net_controller_har_hook, _player[0]->ctrl);
+            har_install_action_hook(har2, &net_controller_har_hook, _player[0]->ctrl);
         }
         if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
-            har_install_hook(har1, &net_controller_har_hook, _player[1]->ctrl);
+            har_install_action_hook(har1, &net_controller_har_hook, _player[1]->ctrl);
         }
     }
+
+    har_install_hit_hook(har1, &arena_hit_hook, scene);
+    har_install_hit_hook(har2, &arena_hit_hook, scene);
 }
 
 // -------- Scene callbacks --------
@@ -480,8 +495,8 @@ void arena_render_overlay(scene *scene) {
         char tmp[50];
         chr_score_format(&local->player1_score, tmp);
         font_render(&font_small, tmp, 5, 33, TEXT_COLOR);
-        int s2len = strlen(tmp) * font_small.w;
         chr_score_format(&local->player2_score, tmp);
+        int s2len = strlen(tmp) * font_small.w;
         font_render(&font_small, tmp, 315-s2len, 33, TEXT_COLOR);
 
         // render ping, if player is networked

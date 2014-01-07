@@ -9,6 +9,7 @@ typedef struct af_move_t {
     uint8_t next_move;
     uint8_t successor_id;
     uint8_t category;
+    uint16_t points;
     float damage;
     str move_string;
     str footer_string;

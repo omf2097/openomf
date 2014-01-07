@@ -41,8 +41,8 @@ void har_free(object *obj) {
 
 void har_fire_hook(object *obj, int action) {
     har *h = object_get_userdata(obj);
-    if (h->hook_cb) {
-        h->hook_cb(action, h->hook_cb_data);
+    if (h->action_hook_cb) {
+        h->action_hook_cb(action, h->action_hook_cb_data);
     }
     int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
     h->act_buf[pos].actions[h->act_buf[pos].count] = (unsigned char)action;
@@ -411,6 +411,9 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
         obj_b->animation_state.enemy_x = obj_a->pos.x;
         obj_b->animation_state.enemy_y = obj_a->pos.y;
         har_take_damage(obj_b, &move->footer_string, move->damage);
+        if (b->hit_hook_cb) {
+            b->hit_hook_cb(b->player_id, a->player_id, move, b->hit_hook_cb_data);
+        }
         if (hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord);
         }
@@ -453,6 +456,9 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
 
         har_take_damage(o_har, &move->footer_string, move->damage);
+        if (h->hit_hook_cb) {
+            h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);
+        }
         har_spawn_scrap(o_har, hit_coord);
         o_har->animation_state.enemy_x = o_pjt->pos.x;
         o_har->animation_state.enemy_y = o_pjt->pos.y;
@@ -1093,9 +1099,14 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
     return 0;
 }
 
-void har_install_hook(har *h, har_hook_cb hook, void *data) {
-    h->hook_cb = hook;
-    h->hook_cb_data = data;
+void har_install_action_hook(har *h, har_action_hook_cb hook, void *data) {
+    h->action_hook_cb = hook;
+    h->action_hook_cb_data = data;
+}
+
+void har_install_hit_hook(har *h, har_hit_hook_cb hook, void *data) {
+    h->hit_hook_cb = hook;
+    h->hit_hook_cb_data = data;
 }
 
 void har_bootstrap(object *obj) {
@@ -1130,8 +1141,12 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->state = STATE_STANDING;
     local->executing_move = 0;
 
-    local->hook_cb = NULL;
-    local->hook_cb_data = NULL;
+    local->action_hook_cb = NULL;
+    local->action_hook_cb_data = NULL;
+
+    local->hit_hook_cb = NULL;
+    local->hit_hook_cb_data = NULL;
+
 
     // Object related stuff
     /*object_set_gravity(obj, local->af_data->fall_speed);*/

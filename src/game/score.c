@@ -64,7 +64,28 @@ void chr_score_tick(chr_score *score) {
 }
 
 void chr_score_format(chr_score *score, char *buf) {
-    sprintf(buf, "%d", score->score); // TODO: Add "," etc.
+    int len;
+    int millions = 0;
+    int thousands = 0;
+    if (score->score >= 100000000) {
+        millions = score->score / 1000000;
+        len = sprintf(buf, "%d,", millions);
+        buf += len;
+    }
+    if (score->score >= 1000) {
+        thousands = (score->score - (millions * 1000000)) / 1000;
+        if (millions) {
+            len = sprintf(buf, "%03d,", thousands);
+        } else {
+            len = sprintf(buf, "%d,", thousands);
+        }
+        buf += len;
+    }
+    if (millions || thousands) {
+        sprintf(buf, "%03d",  (score->score - (millions * 1000000) - (thousands * 1000)));
+    } else {
+        sprintf(buf, "%d",  (score->score - (millions * 1000000) - (thousands * 1000)));
+    }
 }
 
 void chr_score_render(chr_score *score) {
