@@ -388,6 +388,8 @@ void arena_tick(scene *scene) {
                 har_set_ani(obj_har2, ANIM_DEFEAT, 1);
                 har1->state = STATE_VICTORY;
                 har2->state = STATE_DEFEAT;
+                chr_score *score = &local->player1_score;
+                chr_score_interrupt(score, object_get_pos(obj_har1));
                 // switch to the newsroom after some delay
                 ticktimer_add(120, arena_end_cb, scene);
             } else if(har1->health <= 0 && har1->endurance <= 0) {
@@ -396,6 +398,8 @@ void arena_tick(scene *scene) {
                 har_set_ani(obj_har1, ANIM_DEFEAT, 1);
                 har2->state = STATE_VICTORY;
                 har1->state = STATE_DEFEAT;
+                chr_score *score = &local->player2_score;
+                chr_score_interrupt(score, object_get_pos(obj_har2));
                 // switch to the newsroom after some delay
                 ticktimer_add(120, arena_end_cb, scene);
             }
