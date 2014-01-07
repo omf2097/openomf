@@ -132,8 +132,8 @@ void har_move(object *obj) {
     vec2f vel = object_get_vel(obj);
     obj->pos.x += vel.x;
     obj->pos.y += vel.y;
+    har *h = object_get_userdata(obj);
     if(obj->pos.y > 190) {
-        har *h = object_get_userdata(obj);
         if (h->state != STATE_FALLEN) {
             // We collided with ground, so set vertical velocity to 0 and
             // make sure object is level with ground
@@ -182,7 +182,9 @@ void har_move(object *obj) {
             object_set_vel(obj, vel);
         }
     } else {
-        object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
+        if (h->state != STATE_DEFEAT) {
+            object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
+        }
     }
 }
 
@@ -402,11 +404,6 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
             return;
         }
 
-        obj_b->animation_state.enemy_x = obj_a->pos.x;
-        obj_b->animation_state.enemy_y = obj_a->pos.y;
-        obj_a->animation_state.enemy_x = obj_b->pos.x;
-        obj_a->animation_state.enemy_y = obj_b->pos.y;
-
         har_take_damage(obj_b, &move->footer_string, move->damage);
         if (b->hit_hook_cb) {
             b->hit_hook_cb(b->player_id, a->player_id, move, b->hit_hook_cb_data);
@@ -457,8 +454,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);
         }
         har_spawn_scrap(o_har, hit_coord);
-        o_har->animation_state.enemy_x = o_pjt->pos.x;
-        o_har->animation_state.enemy_y = o_pjt->pos.y;
         h->damage_received = 1;
 
         vec2f vel = object_get_vel(o_har);
@@ -505,8 +500,6 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
             /*h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);*/
         /*}*/
         har_spawn_scrap(o_har, hit_coord);
-        o_har->animation_state.enemy_x = o_pjt->pos.x;
-        o_har->animation_state.enemy_y = o_pjt->pos.y;
         h->damage_received = 1;
     }
 }
@@ -548,9 +541,11 @@ void har_tick(object *obj) {
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
-    if(pos.x <  15) pos.x = 15;
-    if(pos.x > 305) pos.x = 305;
-    object_set_pos(obj, pos);
+    if (h->state != STATE_DEFEAT) {
+        if(pos.x <  15) pos.x = 15;
+        if(pos.x > 305) pos.x = 305;
+        object_set_pos(obj, pos);
+    }
 
     if (pos.y < 190 && h->state == STATE_RECOIL) {
         DEBUG("switching to fallen");
@@ -819,8 +814,6 @@ int har_act(object *obj, int act_type) {
                     int opp_id = h->player_id ? 0 : 1;
                     af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
                     object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
-                    opp->animation_state.enemy_x = obj->pos.x;
-                    opp->animation_state.enemy_y = obj->pos.y;
                     object_set_animation(opp, &af_get_move(((har*)opp->userdata)->af_data, ANIM_DAMAGE)->ani);
                     object_set_repeat(opp, 0);
                     object_set_custom_string(opp, str_c(&move->footer_string));

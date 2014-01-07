@@ -342,6 +342,14 @@ void arena_tick(scene *scene) {
         har *har1, *har2;
         har1 = obj_har1->userdata;
         har2 = obj_har2->userdata;
+
+        // keep enemy positions in sync
+        // TODO can we do this with pointers instead?
+        obj_har1->animation_state.enemy_x = obj_har2->pos.x;
+        obj_har1->animation_state.enemy_y = obj_har2->pos.y;
+        obj_har2->animation_state.enemy_x = obj_har1->pos.x;
+        obj_har2->animation_state.enemy_y = obj_har1->pos.y;
+
         if (
                 (har1->state == STATE_STANDING || har1->state == STATE_CROUCHING || har1->state == STATE_WALKING || har1->state == STATE_STUNNED) &&
                 (har2->state == STATE_STANDING || har2->state == STATE_CROUCHING || har2->state == STATE_WALKING || har2->state == STATE_STUNNED)) {
