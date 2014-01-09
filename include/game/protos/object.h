@@ -50,6 +50,7 @@ typedef void (*object_debug_cb)(object *obj);
 struct object_t {
     game_state *gs;
 
+    vec2f start;
     vec2f pos;
     vec2f vel;
     uint8_t vstate;

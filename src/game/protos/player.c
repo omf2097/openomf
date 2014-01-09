@@ -124,6 +124,20 @@ void player_free(object *obj) {
     }
 }
 
+int next_frame_with_tag(sd_stringparser *parser, int current_frame, const char *tag, sd_stringparser_frame *f) {
+    int frames = sd_stringparser_num_frames(parser);
+    int res = 0;
+    for(int i = current_frame + 1; i < frames; i++) {
+        sd_stringparser_peek(parser, i, f);
+        if(isset(f, tag)) {
+            return res;
+        }
+        res += f->duration;
+    }
+    f = NULL;
+    return 0;
+}
+
 void player_reload_with_str(object *obj, const char* custom_str) {
     // Load new animation string
     sd_stringparser_set_string(
@@ -145,10 +159,35 @@ void player_reload_with_str(object *obj, const char* custom_str) {
     
     // Set initial position for sprite
     if(isset(&param, "x=")) {
-        obj->pos.x = get(&param, "x=");
+        DEBUG("INIT x=%d, start.x=%d =? %d", get(&param, "x="), (int)obj->start.x, (int)(obj->start.x + get(&param, "x=")));
+        obj->pos.x = obj->start.x + get(&param, "x=");
+        sd_stringparser_frame n;
+        int r;
+        float xpos = obj->pos.x;
+        if((r =next_frame_with_tag(obj->animation_state.parser, 0, "x=", &n))) {
+            int next_x = get(&n, "x=");
+            DEBUG("Next x= tag is at frame %d with value %d in %d ticks", n.id, next_x, r);
+            int slide = next_x;
+            if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+                // if the sprite is flipped horizontally, adjust the X coordinates
+                slide = 320 - slide;
+            }
+            slide += obj->start.x;
+            DEBUG("dist(%d, %d) -> %d", (int)xpos, slide, (int)dist(xpos, slide));
+            if(slide != xpos) {
+                obj->slide_state.vel.x = dist(xpos, slide) / (float)param.duration + r;
+                obj->slide_state.timer = param.duration + r;
+                DEBUG("Slide object %d for X = %f for a total of %d ticks.", 
+                        obj->cur_animation->id,
+                        obj->slide_state.vel.x, 
+                        param.duration + r);
+            }
+
+        }
     }
     if(isset(&param, "y=")) {
-        obj->pos.y = get(&param, "y=");
+        DEBUG("INIT y=%d, start.y=%d =? %d", get(&param, "y="), (int)obj->start.y, (int)(obj->start.y + get(&param, "y=")));
+        obj->pos.y = obj->start.y + get(&param, "y=");
     }
 
     // Set player state
@@ -390,8 +429,9 @@ void player_run(object *obj) {
             }
 
             // Check if next frame contains X=nnn or Y=nnn 
-            if(!param->is_final_frame) {
-                sd_stringparser_peek(state->parser, param->id + 1, &n_param);
+            /*if(!param->is_final_frame) {*/
+                /*sd_stringparser_peek(state->parser, param->id + 1, &n_param);*/
+            n = f;
                 int slide = 0;
                 float xpos = obj->pos.x;
                 float ypos = obj->pos.y;
@@ -399,11 +439,43 @@ void player_run(object *obj) {
                     obj->slide_state.vel = vec2f_create(0,0);
                 }
                 if(isset(n, "x=")) {
+
+                    DEBUG("UP x=%d, start.x=%d =? %d", get(param, "x="), (int)obj->start.x, (int)(obj->start.x + get(param, "x=")));
+                    sd_stringparser_frame n2;
+                    int r;
+                    if((r =next_frame_with_tag(obj->animation_state.parser, n->id, "x=", &n2))) {
+                        int next_x = get(&n2, "x=");
+                        DEBUG("Next x= tag is at frame %d with value %d in %d ticks", n2.id, next_x, r);
+                        int slide = next_x;
+                        if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+                            // if the sprite is flipped horizontally, adjust the X coordinates
+                            slide = 320 - slide;
+                        }
+                        slide += obj->start.x;
+                        DEBUG("dist(%d, %d) -> %d", (int)xpos, slide, (int)dist(xpos, slide));
+                        if(slide != xpos) {
+                            obj->slide_state.vel.x = dist(xpos, slide) / (float)(param->duration + r);
+                            obj->slide_state.timer = param->duration + r;
+                            DEBUG("Slide object %d for X = %f for a total of %d ticks.", 
+                                    obj->cur_animation->id,
+                                    obj->slide_state.vel.x, 
+                                    param->duration + r);
+                        }
+
+                    }
+
+
+
+
+                    /*
+                    DEBUG("x=%d, start.x=%d =? %d", get(n, "x="), (int)obj->start.x, (int)(obj->start.x + get(n, "x=")));
                     slide = get(n, "x=");
                     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
                         // if the sprite is flipped horizontally, adjust the X coordinates
                         slide = 320 - slide;
                     }
+                    slide += obj->start.x;
+                    DEBUG("dist(%d, %d) -> %d", (int)xpos, slide, dist(xpos, slide));
                     if(slide != xpos) {
                         obj->slide_state.vel.x = dist(xpos, slide) / (float)param->duration;
                         obj->slide_state.timer = param->duration;
@@ -411,10 +483,11 @@ void player_run(object *obj) {
                             obj->cur_animation->id,
                             obj->slide_state.vel.x, 
                             param->duration);
-                    }
+                    }*/
                 }
                 if(isset(n, "y=")) { 
-                    slide = get(n, "y=");
+                    DEBUG("y=%d, start.y=%d =? %d", get(n, "y="), (int)obj->start.y, (int)(obj->start.y + get(n, "y=")));
+                    slide = obj->start.y + get(n, "y=");
                     if(slide != ypos) {
                         obj->slide_state.vel.y = dist(ypos, slide) / (float)param->duration;
                         obj->slide_state.timer = param->duration;
@@ -424,7 +497,7 @@ void player_run(object *obj) {
                             param->duration);
                     }
                 }
-            }
+            /*}*/
             
             // Set render settings
             if(real_frame < 25) {

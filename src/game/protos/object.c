@@ -17,6 +17,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     // Position related
     obj->pos = vec2i_to_f(pos);
+    // remember the place we were spawned, the x= and y= tags are relative to that
+    obj->start = vec2i_to_f(pos);
     obj->vel = vel;
     object_reset_vstate(obj);
     object_reset_hstate(obj);

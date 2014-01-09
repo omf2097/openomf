@@ -272,7 +272,7 @@ int vs_create(scene *scene) {
     object_set_animation(o_scientist, ani);
     object_set_palette(o_scientist, mpal, 0);
     object_select_sprite(o_scientist, 0);
-    object_set_direction(o_scientist, OBJECT_FACE_LEFT);
+    /*object_set_direction(o_scientist, OBJECT_FACE_LEFT);*/
     game_state_add_object(scene->gs, o_scientist, RENDER_LAYER_MIDDLE);
 
     // WELDER
