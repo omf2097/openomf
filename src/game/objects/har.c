@@ -480,6 +480,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 void har_collide_with_hazard(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
     bk *bk_data = object_get_userdata(o_pjt);
+    bk_info *anim = bk_get_info(bk_data, o_pjt->cur_animation->id);
 
     // Check for collisions by sprite collision points
     int level = 2;
@@ -491,7 +492,6 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
             intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord))
 #endif
     {
-        bk_info *anim = bk_get_info(bk_data, o_pjt->cur_animation->id);
 
         har_take_damage(o_har, &anim->footer_string, anim->hazard_damage);
         /*if (h->hit_hook_cb) {*/
@@ -499,6 +499,20 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
         /*}*/
         har_spawn_scrap(o_har, hit_coord);
         h->damage_received = 1;
+    } else if (anim->chain_hit &&
+#ifdef DEBUGMODE
+            intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord, &h->debug_img))
+#else
+            intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord))
+#endif
+    {
+        // we can punch this! Only set on fire pit orb
+        anim = bk_get_info(bk_data, anim->chain_hit);
+        o_pjt->animation_state.enemy_x = o_har->animation_state.enemy_x;
+        o_pjt->animation_state.enemy_y = o_har->animation_state.enemy_y;
+        object_set_animation(o_pjt, &anim->ani);
+        object_set_repeat(o_pjt, 0);
+        o_pjt->animation_state.finished = 0;
     }
 }
 
