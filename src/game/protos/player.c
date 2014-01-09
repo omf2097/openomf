@@ -12,6 +12,7 @@
 #include "game/protos/object.h"
 #include "utils/str.h"
 #include "utils/log.h"
+#include "utils/random.h"
 
 // --------------------- Helpers ---------------------
 
@@ -237,8 +238,34 @@ void player_run(object *obj) {
         
             // Animation management
             if(isset(f, "m") && state->spawn != NULL) {
-                int mx = isset(f, "mx") ? get(f, "mx") : 0;
-                int my = isset(f, "my") ? get(f, "my") : 0;
+                int mx = 0;
+                if (isset(f, "mrx")) {
+                    int mrx = get(f, "mrx");
+                    int mm = isset(f, "mm") ? get(f, "mm") : mrx;
+                    mx = rand_int(320 - 2*mm) + mrx;
+                    DEBUG("randomized mx as %d", mx);
+                } else if(isset(f, "mx")) {
+                    mx = get(f, "mx");
+                } else if(isset(f, "mx+")) {
+                    mx = obj->start.x + get(f, "mx+");
+                } else if(isset(f, "mx-")) {
+                    mx = obj->start.x + get(f, "mx-");
+                }
+
+                int my = 0;
+                if (isset(f, "mry")) {
+                    int mry = get(f, "mry");
+                    int mm = isset(f, "mm") ? get(f, "mm") : mry;
+                    my = rand_int(320 - 2*mm) + mry;
+                    DEBUG("randomized my as %d", my);
+                } else if(isset(f, "my")) {
+                    my = get(f, "my");
+                } else if(isset(f, "my+")) {
+                    my = obj->start.y + get(f, "my+");
+                } else if(isset(f, "my-")) {
+                    my = obj->start.y + get(f, "my-");
+                }
+
                 int mg = isset(f, "mg") ? get(f, "mg") : 0;
                 DEBUG("Spawning %d, with g = %d, pos = (%d,%d)", 
                     get(f, "m"), mg, mx, my);
