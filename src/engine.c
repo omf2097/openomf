@@ -60,7 +60,6 @@ int engine_init() {
     if(console_init()) {
         goto exit_6;
     }
-    ticktimer_init();
     
     // Return successfully
     run = 1;
@@ -155,9 +154,6 @@ void engine_run(int net_mode) {
         int dt = (SDL_GetTicks() - frame_start);
         omf_wait += dt;
         while(omf_wait > game_state_ms_per_tick(gs)) {
-            // Tick timers
-            ticktimer_run();
-
             // Tick scene
             game_state_tick(gs);
 
@@ -202,7 +198,6 @@ void engine_run(int net_mode) {
 }
 
 void engine_close() {
-    ticktimer_close();
     console_close();
     altpals_close();
     fonts_close();

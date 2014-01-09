@@ -5,6 +5,7 @@
 
 typedef struct scene_t scene;
 typedef struct game_player_t game_player;
+typedef struct ticktimer_t ticktimer;
 
 typedef struct game_state_t {
     unsigned int run;
@@ -15,6 +16,7 @@ typedef struct game_state_t {
     scene *sc;
     vector objects;
     game_player *players[2];
+    ticktimer *tick_timer;
 } game_state;
 
 #endif // _GAME_STATE_TYPE_H

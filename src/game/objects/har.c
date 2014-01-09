@@ -1038,7 +1038,7 @@ void har_finished(object *obj) {
         h->state = STATE_STUNNED;
         har_set_ani(obj, ANIM_STUNNED, 1);
         // XXX The Harrison-Stetson method was applied here
-        ticktimer_add(100, har_stunned_done, obj);
+        ticktimer_add(&game_state_get_scene(obj->gs)->tick_timer, 100, har_stunned_done, obj);
     } else if(h->state != STATE_CROUCHING) {
         // Don't transition to standing state while in midair
         if(h->state != STATE_JUMPING) { h->state = STATE_STANDING; }

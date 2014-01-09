@@ -7,6 +7,7 @@
 #include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/serial.h"
+#include "game/ticktimer.h"
 #include "resources/bk.h"
 
 typedef struct scene_t scene;
@@ -37,6 +38,7 @@ struct scene_t {
     scene_startup_cb startup;
     image shadow_buffer_img;
     texture shadow_buffer_tex;
+    ticktimer tick_timer;
 };
 
 int scene_create(scene *scene, game_state *gs, int scene_id);

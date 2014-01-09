@@ -7,6 +7,7 @@
 #include "console/console.h"
 #include "game/game_state.h"
 #include "game/settings.h"
+#include "game/ticktimer.h"
 #include "game/protos/scene.h"
 #include "game/protos/object.h"
 #include "game/protos/intersect.h"
@@ -33,6 +34,8 @@ int game_state_create(game_state *gs, int net_mode) {
     gs->role = ROLE_CLIENT;
     gs->net_mode = net_mode;
     vector_create(&gs->objects, sizeof(render_obj));
+    gs->tick_timer = malloc(sizeof(ticktimer));
+    ticktimer_init(gs->tick_timer);
     int nscene = (net_mode == NET_MODE_NONE ? SCENE_INTRO : SCENE_MENU);
     gs->sc = malloc(sizeof(scene));
     for(int i = 0; i < 2; i++) {
@@ -370,6 +373,9 @@ void game_state_ctrl_events_free(game_state *gs) {
 }
 
 void game_state_tick(game_state *gs) {
+    // Tick timers
+    ticktimer_run(gs->tick_timer);
+
     // We want to load another scene
     if(gs->this_id != gs->next_id) {
         // If this is the end, set run to 0 so that engine knows to close here
@@ -448,6 +454,10 @@ void game_state_free(game_state *gs) {
     // Free scene
     scene_free(gs->sc);
     free(gs->sc);
+
+    // Free ticktimer
+    ticktimer_close(gs->tick_timer);
+    free(gs->tick_timer);
 }
 
 int game_state_ms_per_tick(game_state *gs) {
@@ -460,6 +470,10 @@ int game_state_ms_per_tick(game_state *gs) {
             return MS_PER_OMF_TICK_SLOWEST - settings_get()->gameplay.speed;
     }
     return MS_PER_OMF_TICK;
+}
+
+ticktimer *game_state_get_ticktimer(game_state *gs) {
+    return gs->tick_timer;
 }
 
 int game_state_serialize(game_state *gs, serial *ser) {

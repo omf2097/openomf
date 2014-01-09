@@ -111,6 +111,9 @@ void scene_init(scene *scene) {
             DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
         }
     }
+
+    // init tick timer
+    ticktimer_init(&scene->tick_timer);
 }
 
 /*
@@ -187,6 +190,9 @@ void scene_render_shadows(scene *scene) {
 }
 
 void scene_tick(scene *scene) {
+    // Tick timers
+    ticktimer_run(&scene->tick_timer);
+
     iterator it;
     hashmap_iter_begin(&scene->bk_data.infos, &it);
     hashmap_pair *pair = NULL;
@@ -239,6 +245,7 @@ void scene_free(scene *scene) {
     object_free(&scene->background);
     image_free(&scene->shadow_buffer_img);
     texture_free(&scene->shadow_buffer_tex);
+    ticktimer_close(&scene->tick_timer);
 }
 
 void scene_set_free_cb(scene *scene, scene_free_cb cbfunc) {

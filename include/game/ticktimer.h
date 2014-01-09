@@ -1,11 +1,17 @@
 #ifndef _TICKTIMER_H
 #define _TICKTIMER_H
 
+#include "utils/vector.h"
+
+typedef struct ticktimer_t {
+    vector units;
+} ticktimer;
+
 typedef void (*ticktimer_cb)(void *userdata);
 
-void ticktimer_init();
-void ticktimer_add(int ticks, ticktimer_cb cb, void *userdata);
-void ticktimer_run();
-void ticktimer_close();
+void ticktimer_init(ticktimer *tt);
+void ticktimer_add(ticktimer *tt, int ticks, ticktimer_cb cb, void *userdata);
+void ticktimer_run(ticktimer *tt);
+void ticktimer_close(ticktimer *tt);
 
 #endif // _TICKTIMER_H

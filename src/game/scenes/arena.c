@@ -114,7 +114,7 @@ void scene_fight_anim_start(void *userdata) {
 
 void scene_ready_anim_done(object *parent) {
     // Wait a moment before loading FIGHT animation
-    ticktimer_add(10, scene_fight_anim_start, parent->gs);
+    ticktimer_add(&game_state_get_scene(parent->gs)->tick_timer, 10, scene_fight_anim_start, parent->gs);
 
     // Custom object finisher callback requires that we 
     // mark object as finished manually, if necessary.
@@ -328,6 +328,7 @@ void arena_tick(scene *scene) {
     game_state *gs = scene->gs;
     game_player *player1 = game_state_get_player(gs, 0);
     game_player *player2 = game_state_get_player(gs, 1);
+    ticktimer *tt = &scene->tick_timer;
 
     // Handle scrolling score texts
     chr_score_tick(&local->player1_score);
@@ -391,7 +392,7 @@ void arena_tick(scene *scene) {
                 chr_score *score = &local->player1_score;
                 chr_score_interrupt(score, object_get_pos(obj_har1));
                 // switch to the newsroom after some delay
-                ticktimer_add(120, arena_end_cb, scene);
+                ticktimer_add(tt, 120, arena_end_cb, scene);
             } else if(har1->health <= 0 && har1->endurance <= 0) {
                 scene_youlose_anim_start(scene->gs);
                 har_set_ani(obj_har2, ANIM_VICTORY, 1);
@@ -401,7 +402,7 @@ void arena_tick(scene *scene) {
                 chr_score *score = &local->player2_score;
                 chr_score_interrupt(score, object_get_pos(obj_har2));
                 // switch to the newsroom after some delay
-                ticktimer_add(120, arena_end_cb, scene);
+                ticktimer_add(tt, 120, arena_end_cb, scene);
             }
         }
     }
