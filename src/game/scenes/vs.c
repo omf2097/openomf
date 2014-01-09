@@ -268,11 +268,11 @@ int vs_create(scene *scene) {
     // SCIENTIST
     object *o_scientist = malloc(sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 8)->ani;
-    object_create(o_scientist, scene->gs, vec2i_create(320-114,118), vec2f_create(0, 0));
+    object_create(o_scientist, scene->gs, vec2i_create(280,118), vec2f_create(0, 0));
     object_set_animation(o_scientist, ani);
     object_set_palette(o_scientist, mpal, 0);
     object_select_sprite(o_scientist, 0);
-    /*object_set_direction(o_scientist, OBJECT_FACE_LEFT);*/
+    object_set_direction(o_scientist, OBJECT_FACE_LEFT);
     game_state_add_object(scene->gs, o_scientist, RENDER_LAYER_MIDDLE);
 
     // WELDER
