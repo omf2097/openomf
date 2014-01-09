@@ -249,7 +249,7 @@ void player_run(object *obj) {
                 } else if(isset(f, "mx+")) {
                     mx = obj->start.x + get(f, "mx+");
                 } else if(isset(f, "mx-")) {
-                    mx = obj->start.x + get(f, "mx-");
+                    mx = obj->start.x - get(f, "mx-");
                 }
 
                 int my = 0;
@@ -263,7 +263,7 @@ void player_run(object *obj) {
                 } else if(isset(f, "my+")) {
                     my = obj->start.y + get(f, "my+");
                 } else if(isset(f, "my-")) {
-                    my = obj->start.y + get(f, "my-");
+                    my = obj->start.y - get(f, "my-");
                 }
 
                 int mg = isset(f, "mg") ? get(f, "mg") : 0;
