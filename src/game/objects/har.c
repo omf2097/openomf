@@ -491,8 +491,6 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
             intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord))
 #endif
     {
-        DEBUG("hazard hit");
-
         bk_info *anim = bk_get_info(bk_data, o_pjt->cur_animation->id);
 
         har_take_damage(o_har, &anim->footer_string, anim->hazard_damage);
