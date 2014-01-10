@@ -220,10 +220,11 @@ ENDIF(TRAVIS)
 
 include_directories(${COREINCS})
 
-# Build the server binary
-add_executable(openomf_server ${OPENOMF_SRC})
-set_target_properties(openomf_server PROPERTIES COMPILE_DEFINITIONS "STANDALONE_SERVER=1")
-target_link_libraries(openomf_server ${CORELIBS})
+# Build the server binary 
+# XXX uncomment this later when we start working on the dedicated server
+#add_executable(openomf_server ${OPENOMF_SRC})
+#set_target_properties(openomf_server PROPERTIES COMPILE_DEFINITIONS "STANDALONE_SERVER=1")
+#target_link_libraries(openomf_server ${CORELIBS})
 
 # Build the game binary
 IF(NOT SERVER_ONLY)
