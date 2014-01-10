@@ -57,6 +57,8 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
     object_tick(obj);
+    // update this so mx/my have correct origins
+    obj->start = obj->pos;
     h->damage_done = 0;
     h->damage_received = 0;
     h->executing_move = 0;
@@ -72,13 +74,9 @@ int har_is_active(object *obj) {
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     har *h = userdata;
-    vec2i npos;
 
     // If this is a scrap item, handle it as such ...
     if(id == ANIM_SCRAP_METAL || id == ANIM_BOLT || id == ANIM_SCREW || id == ANIM_BURNING_OIL) {
-        npos.x = parent->pos.x + pos.x;
-        npos.y = parent->pos.y + pos.y;
-
         // Calculate velocity etc.
         float velx, vely;
         float rv = rand_int(100) / 100.0f - 0.5;
@@ -89,7 +87,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
 
         // Create the object
         object *scrap = malloc(sizeof(object));
-        object_create(scrap, parent->gs, npos, vec2f_create(velx, vely));
+        object_create(scrap, parent->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, id)->ani);
         object_set_palette(scrap, object_get_palette(parent), 0);
         object_set_stl(scrap, object_get_stl(parent));
@@ -105,12 +103,8 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
     // ... otherwise expect it is a projectile
     af_move *move = af_get_move(h->af_data, id);
     if(move != NULL) {
-        npos.x = parent->pos.x 
-                 + (object_get_direction(parent) == OBJECT_FACE_LEFT ? -pos.x : pos.x)
-                 + move->ani.start_pos.x;
-        npos.y = parent->pos.y + pos.y + move->ani.start_pos.y;
         object *obj = malloc(sizeof(object));
-        object_create(obj, parent->gs, npos, vec2f_create(0,0));
+        object_create(obj, parent->gs, pos, vec2f_create(0,0));
         object_set_userdata(obj, h);
         object_set_stl(obj, object_get_stl(parent));
         object_set_palette(obj, object_get_palette(parent), 0);
@@ -182,9 +176,7 @@ void har_move(object *obj) {
             object_set_vel(obj, vel);
         }
     } else {
-        if (h->state != STATE_DEFEAT) {
-            object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
-        }
+        object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
     }
 }
 

@@ -245,11 +245,7 @@ void player_run(object *obj) {
                     mx = rand_int(320 - 2*mm) + mrx;
                     DEBUG("randomized mx as %d", mx);
                 } else if(isset(f, "mx")) {
-                    mx = get(f, "mx");
-                } else if(isset(f, "mx+")) {
-                    mx = obj->start.x + get(f, "mx+");
-                } else if(isset(f, "mx-")) {
-                    mx = obj->start.x - get(f, "mx-");
+                    mx = obj->start.x + (get(f, "mx") * object_get_direction(obj));
                 }
 
                 int my = 0;
@@ -259,11 +255,7 @@ void player_run(object *obj) {
                     my = rand_int(320 - 2*mm) + mry;
                     DEBUG("randomized my as %d", my);
                 } else if(isset(f, "my")) {
-                    my = get(f, "my");
-                } else if(isset(f, "my+")) {
-                    my = obj->start.y + get(f, "my+");
-                } else if(isset(f, "my-")) {
-                    my = obj->start.y - get(f, "my-");
+                    my = obj->start.y + get(f, "my");
                 }
 
                 int mg = isset(f, "mg") ? get(f, "mg") : 0;
@@ -410,11 +402,9 @@ void player_run(object *obj) {
                     x = get(f, "x+") * object_get_direction(obj);
                 }
 
-                float x_dist = dist(obj->pos.x, state->enemy_x + x);
-                float y_dist = dist(obj->pos.y, state->enemy_y + y);
                 obj->slide_state.timer = param->duration;
-                obj->slide_state.vel.x = (float)x_dist / (float)param->duration;
-                obj->slide_state.vel.y = (float)y_dist / (float)param->duration;
+                obj->slide_state.vel.x = (float)x / (float)param->duration;
+                obj->slide_state.vel.y = (float)y / (float)param->duration;
                 DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.",
                     obj->cur_animation->id,
                     obj->slide_state.vel.x, 
