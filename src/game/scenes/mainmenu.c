@@ -799,7 +799,7 @@ int mainmenu_create(scene *scene) {
     menu_attach(&local->main_menu, &local->quit_button, 11);
 
     // Status
-    local->tourn_button.disabled = 0;
+    local->tourn_button.disabled = 1;
     local->config_button.disabled = 0;
     local->gameplay_button.disabled = 0;
     local->net_button.disabled = 0;
