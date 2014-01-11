@@ -722,6 +722,7 @@ int har_act(object *obj, int act_type) {
         if((move = af_get_move(h->af_data, i))) {
             len = move->move_string.len;
             if(!strncmp(str_c(&move->move_string), h->inputs, len)) {
+                sd_stringparser_frame f = obj->animation_state.parser->current_frame;
                 if (move->category == CAT_CLOSE && h->close != 1) {
                     // not standing close enough
                     continue;
@@ -734,17 +735,16 @@ int har_act(object *obj, int act_type) {
                     // jumping but this move is not a jumping move
                     continue;
                 }
-                if (move->category != CAT_SCRAP && h->state == STATE_VICTORY) {
+                if (move->category == CAT_SCRAP && h->state != STATE_VICTORY) {
                     continue;
                 }
 
-                if (move->category != CAT_DESTRUCTION && h->state == STATE_SCRAP) {
+                if (move->category == CAT_DESTRUCTION && h->state != STATE_SCRAP) {
                     continue;
                 }
 
                 if (h->executing_move) {
                     // check if the current frame allows chaining
-                   sd_stringparser_frame f = obj->animation_state.parser->current_frame;
                    int allowed = 0;
                    if (frame_isset(&f, "jn") && i == frame_get(&f, "jn")) {
                        allowed = 1;
@@ -762,6 +762,16 @@ int har_act(object *obj, int act_type) {
                                break;
                            case CAT_HIGH:
                                if (frame_isset(&f, "jh")) {
+                                   allowed = 1;
+                               }
+                               break;
+                           case CAT_SCRAP:
+                               if (frame_isset(&f, "jf")) {
+                                   allowed = 1;
+                               }
+                               break;
+                           case CAT_DESTRUCTION:
+                               if (frame_isset(&f, "jf2")) {
                                    allowed = 1;
                                }
                                break;
@@ -866,7 +876,6 @@ int har_act(object *obj, int act_type) {
                 if (move->category == CAT_SCRAP) {
                     DEBUG("going to scrap state");
                     h->state = STATE_SCRAP;
-                    h->executing_move = 0;
                 }
                 if (move->category == CAT_DESTRUCTION) {
                     DEBUG("going to destruction state");

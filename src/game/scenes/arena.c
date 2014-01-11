@@ -440,21 +440,27 @@ void arena_tick(scene *scene) {
                 har_set_ani(obj_har1, ANIM_VICTORY, 1);
                 har_set_ani(obj_har2, ANIM_DEFEAT, 1);
                 har1->state = STATE_VICTORY;
+                har1->executing_move = 1;
                 har2->state = STATE_DEFEAT;
+                object_set_vel(obj_har2, vec2f_create(0, 0));
+                object_set_gravity(obj_har2, 0);
                 chr_score *score = &local->player1_score;
                 chr_score_interrupt(score, object_get_pos(obj_har1));
                 // switch to the newsroom after some delay
-                ticktimer_add(tt, 120, arena_end_cb, scene);
+                ticktimer_add(tt, 300, arena_end_cb, scene);
             } else if(har1->health <= 0 && har1->endurance <= 0) {
                 scene_youlose_anim_start(scene->gs);
                 har_set_ani(obj_har2, ANIM_VICTORY, 1);
                 har_set_ani(obj_har1, ANIM_DEFEAT, 1);
                 har2->state = STATE_VICTORY;
+                har2->executing_move = 1;
                 har1->state = STATE_DEFEAT;
+                object_set_vel(obj_har1, vec2f_create(0, 0));
+                object_set_gravity(obj_har1, 0);
                 chr_score *score = &local->player2_score;
                 chr_score_interrupt(score, object_get_pos(obj_har2));
                 // switch to the newsroom after some delay
-                ticktimer_add(tt, 120, arena_end_cb, scene);
+                ticktimer_add(tt, 300, arena_end_cb, scene);
             }
         }
     }
