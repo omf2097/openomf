@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "game/ticktimer.h"
 #include "game/objects/har.h"
 #include "game/objects/scrap.h"
 #include "game/objects/projectile.h"
@@ -37,6 +36,17 @@ void har_free(object *obj) {
     image_free(&h->debug_img);
 #endif
     free(h);
+}
+
+void har_stunned_done(object *har_obj) {
+    har *h = object_get_userdata(har_obj);
+
+    if (h->state == STATE_STUNNED) {
+        // refill endurance
+        h->endurance = h->endurance_max;
+        h->state = STATE_STANDING;
+        har_set_ani(har_obj, ANIM_IDLE, 1);
+    }
 }
 
 void har_fire_hook(object *obj, int action) {
@@ -399,6 +409,10 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
         if (b->hit_hook_cb) {
             b->hit_hook_cb(b->player_id, a->player_id, move, b->hit_hook_cb_data);
         }
+        if (b->state == STATE_RECOIL) {
+            // back the attacker off a little
+            a->flinching = 1;
+        }
         har_take_damage(obj_b, &move->footer_string, move->damage);
         if (hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord);
@@ -554,6 +568,13 @@ void har_tick(object *obj) {
     if (pos.y < 190 && h->state == STATE_RECOIL) {
         DEBUG("switching to fallen");
         h->state = STATE_FALLEN;
+    }
+
+    if (h->state == STATE_STUNNED) {
+        h->stun_timer++;
+        if (h->stun_timer > 100) {
+            har_stunned_done(obj);
+        }
     }
 
     // Stop HAR from sliding if touching the ground
@@ -1048,18 +1069,6 @@ int har_act(object *obj, int act_type) {
     return 0;
 }
 
-void har_stunned_done(void *userdata) {
-    object *har_obj = userdata;
-    har *h = object_get_userdata(har_obj);
-
-    if (h->state == STATE_STUNNED) {
-        // refill endurance
-        h->endurance = h->endurance_max;
-        h->state = STATE_STANDING;
-        har_set_ani(har_obj, ANIM_IDLE, 1);
-    }
-}
-
 void har_finished(object *obj) {
     har *h = object_get_userdata(obj);
     if (h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
@@ -1072,9 +1081,9 @@ void har_finished(object *obj) {
         game_state_set_next(obj->gs, SCENE_MENU);
     } else if ((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance <= 0) {
         h->state = STATE_STUNNED;
+        h->stun_timer = 0;
         har_set_ani(obj, ANIM_STUNNED, 1);
         // XXX The Harrison-Stetson method was applied here
-        ticktimer_add(&game_state_get_scene(obj->gs)->tick_timer, 100, har_stunned_done, obj);
     } else if (h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) {
         if (h->recover_hook_cb) {
             h->recover_hook_cb(h->player_id, h->recover_hook_cb_data);
@@ -1239,6 +1248,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     local->recover_hook_cb = NULL;
     local->recover_hook_cb_data = NULL;
+
+    local->stun_timer = 0;
 
     // Object related stuff
     /*object_set_gravity(obj, local->af_data->fall_speed);*/

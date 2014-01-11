@@ -84,6 +84,8 @@ typedef struct har_t {
     char inputs[11];
     uint8_t hard_close;
 
+    uint8_t stun_timer;
+
     har_action_hook_cb action_hook_cb;
     void *action_hook_cb_data;
 

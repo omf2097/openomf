@@ -374,6 +374,35 @@ void arena_tick(scene *scene) {
         obj_har2->animation_state.enemy_x = obj_har1->pos.x;
         obj_har2->animation_state.enemy_y = obj_har1->pos.y;
 
+        if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
+            iterator it;
+            hashmap_iter_begin(&scene->bk_data.infos, &it);
+            hashmap_pair *pair = NULL;
+            while((pair = iter_next(&it)) != NULL) {
+                bk_info *info = (bk_info*)pair->val;
+                if(info->probability > 1) {
+                    if (rand_int(info->probability) == 1) {
+                        // TODO don't spawn it if we already have this animation running
+                        object *obj = malloc(sizeof(object));
+                        object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
+                        object_set_stl(obj, scene->bk_data.sound_translation_table);
+                        object_set_palette(obj, bk_get_palette(&scene->bk_data, 0), 0);
+                        object_set_animation(obj, &info->ani);
+                        object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
+                        object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
+                        game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
+                        object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
+                        object_set_group(obj, GROUP_PROJECTILE);
+                        object_set_userdata(obj, &scene->bk_data);
+                        // TODO for the desert, there's a bunch of extra animation strgins for the different plane formations
+                        // we should randomly pick one, rather than always using the first
+
+                        DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
+                    }
+                }
+            }
+        }
+
         if (
                 (har1->state == STATE_STANDING || har1->state == STATE_CROUCHING || har1->state == STATE_WALKING || har1->state == STATE_STUNNED) &&
                 (har2->state == STATE_STANDING || har2->state == STATE_CROUCHING || har2->state == STATE_WALKING || har2->state == STATE_STUNNED)) {

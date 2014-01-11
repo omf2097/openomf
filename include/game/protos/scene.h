@@ -66,5 +66,7 @@ void scene_set_render_overlay_cb(scene *scene, scene_render_overlay_cb cbfunc);
 void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc);
 void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc);
 void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc);
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
+void cb_scene_destroy_object(object *parent, int id, void *userdata);
 
 #endif // _SCENE_H
