@@ -601,6 +601,18 @@ void add_input(har *h, char c) {
     h->inputs[0] = c;
 }
 
+int frame_isset(sd_stringparser_frame *frame, const char *tag) {
+    const sd_stringparser_tag_value *v;
+    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
+    return v->is_set;
+}
+
+int frame_get(sd_stringparser_frame *frame, const char *tag) {
+    const sd_stringparser_tag_value *v;
+    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
+    return v->value;
+}
+
 int har_act(object *obj, int act_type) {
     har *h = object_get_userdata(obj);
     int direction = object_get_direction(obj);
@@ -617,11 +629,6 @@ int har_act(object *obj, int act_type) {
     // Don't allow movement if arena is starting or ending
     int arena_state = arena_get_state(game_state_get_scene(obj->gs));
     if(arena_state == ARENA_STATE_STARTING) {
-        return 0;
-    }
-
-    // Don't allow new moves while we're still executing a previous one.
-    if(h->executing_move) {
         return 0;
     }
 
@@ -712,6 +719,38 @@ int har_act(object *obj, int act_type) {
 
                 if (move->category != CAT_DESTRUCTION && h->state == STATE_SCRAP) {
                     continue;
+                }
+
+                if (h->executing_move) {
+                    // check if the current frame allows chaining
+                   sd_stringparser_frame f = obj->animation_state.parser->current_frame;
+                   int allowed = 0;
+                   if (frame_isset(&f, "jn") && i == frame_get(&f, "jn")) {
+                       allowed = 1;
+                   } else {
+                       switch (move->category) {
+                           case CAT_LOW:
+                               if (frame_isset(&f, "jl")) {
+                                   allowed = 1;
+                               }
+                               break;
+                           case CAT_MEDIUM:
+                               if (frame_isset(&f, "jm")) {
+                                   allowed = 1;
+                               }
+                               break;
+                           case CAT_HIGH:
+                               if (frame_isset(&f, "jh")) {
+                                   allowed = 1;
+                               }
+                               break;
+                       }
+                   }
+                   if (!allowed) {
+                       // not allowed
+                       continue;
+                   }
+                   DEBUG("CHAINING");
                 }
 
                 DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
@@ -829,6 +868,11 @@ int har_act(object *obj, int act_type) {
                 return 1;
             }
         }
+    }
+
+    // Don't allow new movement while we're still executing a move
+    if(h->executing_move) {
+        return 0;
     }
 
     if(obj->pos.y < 190) {

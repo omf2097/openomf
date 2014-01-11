@@ -24,9 +24,9 @@
 enum {
     CAT_MISC = 0,
     CAT_CLOSE = 2,
-    CAT_CROUCH = 4,
-    CAT_STANDING = 5,
-    CAT_WALKING, // may also include standing
+    CAT_LOW = 4,
+    CAT_MEDIUM = 5,
+    CAT_HIGH,
     CAT_JUMPING,
     CAT_PROJECTILE,
     CAT_BASIC,
