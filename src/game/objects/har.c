@@ -356,7 +356,9 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
         if(pos_a.x < pos_b.x + soft_limit && pos_a.x > pos_b.x) {
-            a->close = 1;
+            if (b->state == STATE_STANDING || b->state == STATE_CROUCHING) {
+                a->close = 1;
+            }
             a->hard_close = 1;
         }
     }
@@ -373,7 +375,9 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
         if(pos_a.x + soft_limit > pos_b.x && pos_a.x < pos_b.x) {
-            a->close = 1;
+            if (b->state == STATE_STANDING || b->state == STATE_CROUCHING) {
+                a->close = 1;
+            }
             a->hard_close = 1;
         }
     }
@@ -393,11 +397,15 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 #else
             (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord)
 #endif
-            || move->category == CAT_CLOSE)) 
+            || move->category == CAT_CLOSE))
     {
         if (b->blocking && (b->state == STATE_WALKING || b->state == STATE_CROUCHING)) {
             har_block(obj_b, hit_coord);
             return;
+        }
+
+        if (move->category == CAT_CLOSE) {
+          a->close = 0;
         }
 
         if (move->next_move) {
