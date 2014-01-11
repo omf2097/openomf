@@ -26,6 +26,7 @@ typedef struct chr_score_t {
     int consecutive_hits;
     int consecutive_hit_score;
     int combo_hits;
+    int combo_hit_score;
 } chr_score;
 
 void chr_score_create(chr_score *score, int x, int y, int direction, float multiplier);
@@ -36,6 +37,7 @@ void chr_score_render(chr_score *score);
 // These are just quick plans, may change.
 void chr_score_hit(chr_score *score, int points);
 void chr_score_victory(chr_score *score, int health);
+void chr_score_end_combo(chr_score *score, vec2i pos);
 void chr_score_interrupt(chr_score *score, vec2i pos);
 
 #endif // _SCORE_H

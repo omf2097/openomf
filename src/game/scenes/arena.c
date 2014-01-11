@@ -186,6 +186,7 @@ void arena_hit_hook(int hittee, int hitter, af_move *move, void *data) {
     chr_score *score;
     chr_score *otherscore;
     object *hit_har;
+    har *h;
     if (hitter == 0) {
         score = &local->player1_score;
         otherscore = &local->player2_score;
@@ -195,8 +196,27 @@ void arena_hit_hook(int hittee, int hitter, af_move *move, void *data) {
         otherscore = &local->player1_score;
         hit_har = game_player_get_har(game_state_get_player(scene->gs, 0));
     }
+    h = hit_har->userdata;
+    if (h->state == STATE_RECOIL) {
+        DEBUG("COMBO!");
+    }
     chr_score_hit(score, move->points);
     chr_score_interrupt(otherscore, object_get_pos(hit_har));
+}
+
+void arena_recover_hook(int player_id, void *data) {
+    scene *scene = data;
+    arena_local *local = scene_get_userdata(scene);
+    chr_score *score;
+    object *o_har;
+    if (player_id == 0) {
+        score = &local->player2_score;
+        o_har = game_player_get_har(game_state_get_player(scene->gs, 1));
+    } else {
+        score = &local->player1_score;
+        o_har = game_player_get_har(game_state_get_player(scene->gs, 0));
+    }
+    chr_score_end_combo(score, object_get_pos(o_har));
 }
 
 void maybe_install_har_hooks(scene *scene) {
@@ -222,6 +242,9 @@ void maybe_install_har_hooks(scene *scene) {
 
     har_install_hit_hook(har1, &arena_hit_hook, scene);
     har_install_hit_hook(har2, &arena_hit_hook, scene);
+
+    har_install_recover_hook(har1, &arena_recover_hook, scene);
+    har_install_recover_hook(har2, &arena_recover_hook, scene);
 }
 
 // -------- Scene callbacks --------

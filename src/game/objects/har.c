@@ -396,10 +396,10 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
             return;
         }
 
-        har_take_damage(obj_b, &move->footer_string, move->damage);
         if (b->hit_hook_cb) {
             b->hit_hook_cb(b->player_id, a->player_id, move, b->hit_hook_cb_data);
         }
+        har_take_damage(obj_b, &move->footer_string, move->damage);
         if (hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord);
         }
@@ -1031,6 +1031,12 @@ void har_finished(object *obj) {
         har_set_ani(obj, ANIM_STUNNED, 1);
         // XXX The Harrison-Stetson method was applied here
         ticktimer_add(&game_state_get_scene(obj->gs)->tick_timer, 100, har_stunned_done, obj);
+    } else if (h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) {
+        if (h->recover_hook_cb) {
+            h->recover_hook_cb(h->player_id, h->recover_hook_cb_data);
+        }
+        h->state = STATE_STANDING;
+        har_set_ani(obj, ANIM_IDLE, 1);
     } else if(h->state != STATE_CROUCHING) {
         // Don't transition to standing state while in midair
         if(h->state != STATE_JUMPING) { h->state = STATE_STANDING; }
@@ -1144,6 +1150,11 @@ void har_install_hit_hook(har *h, har_hit_hook_cb hook, void *data) {
     h->hit_hook_cb_data = data;
 }
 
+void har_install_recover_hook(har *h, har_recover_hook_cb hook, void *data) {
+    h->recover_hook_cb = hook;
+    h->recover_hook_cb_data = data;
+}
+
 void har_bootstrap(object *obj) {
     object_set_serialize_cb(obj, har_serialize);
     object_set_unserialize_cb(obj, har_unserialize);
@@ -1182,6 +1193,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->hit_hook_cb = NULL;
     local->hit_hook_cb_data = NULL;
 
+    local->recover_hook_cb = NULL;
+    local->recover_hook_cb_data = NULL;
 
     // Object related stuff
     /*object_set_gravity(obj, local->af_data->fall_speed);*/

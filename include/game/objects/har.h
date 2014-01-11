@@ -58,6 +58,7 @@ enum {
 
 typedef void (*har_action_hook_cb)(int action, void *data);
 typedef void (*har_hit_hook_cb)(int hittee_id, int hitter_id, af_move *move,  void *data);
+typedef void (*har_recover_hook_cb)(int player_id, void *data);
 
 typedef struct action_buffer_t {
     char actions[10];
@@ -86,8 +87,11 @@ typedef struct har_t {
     har_action_hook_cb action_hook_cb;
     void *action_hook_cb_data;
 
-		har_hit_hook_cb hit_hook_cb;
+    har_hit_hook_cb hit_hook_cb;
     void *hit_hook_cb_data;
+
+    har_recover_hook_cb recover_hook_cb;
+    void *recover_hook_cb_data;
 
     action_buffer act_buf[OBJECT_EVENT_BUFFER_SIZE];
 
@@ -101,6 +105,7 @@ typedef struct har_t {
 
 void har_install_action_hook(har *h, har_action_hook_cb hook, void *data);
 void har_install_hit_hook(har *h, har_hit_hook_cb hook, void *data);
+void har_install_recover_hook(har *h, har_recover_hook_cb hook, void *data);
 void har_bootstrap(object *obj);
 int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id);
 void har_set_ani(object *obj, int animation_id, int repeat);

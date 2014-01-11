@@ -139,6 +139,8 @@ void chr_score_hit(chr_score *score, int points) {
     score->score += points;
     score->consecutive_hits++;
     score->consecutive_hit_score += points;
+    score->combo_hits++;
+    score->combo_hit_score += points;
 }
 
 void chr_score_victory(chr_score *score, int health) {
@@ -156,4 +158,18 @@ void chr_score_interrupt(chr_score *score, vec2i pos) {
     }
     score->consecutive_hits = 0;
     score->consecutive_hit_score = 0;
+}
+
+void chr_score_end_combo(chr_score *score, vec2i pos) {
+    // enemy recovered control, end any combos
+    char *text = malloc(64);
+    if (score->combo_hits > 1) {
+        int len = sprintf(text, "%d hit combo ", score->combo_hits);
+        chr_score_format(score->combo_hit_score*4, text+len);
+        // XXX hardcode the y coordinate for now
+        chr_score_add(score, text, score->combo_hit_score*4, vec2i_create(pos.x, 130));
+    }
+    score->combo_hits = 0;
+    score->combo_hit_score = 0;
+
 }
