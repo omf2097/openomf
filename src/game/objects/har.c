@@ -356,7 +356,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
         if(pos_a.x < pos_b.x + soft_limit && pos_a.x > pos_b.x) {
-            if (b->state == STATE_STANDING || b->state == STATE_CROUCHING) {
+            if (b->state == STATE_STANDING || b->state == STATE_WALKING || b->state == STATE_CROUCHING) {
                 a->close = 1;
             }
             a->hard_close = 1;
@@ -375,7 +375,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
         if(pos_a.x + soft_limit > pos_b.x && pos_a.x < pos_b.x) {
-            if (b->state == STATE_STANDING || b->state == STATE_CROUCHING) {
+            if (b->state == STATE_STANDING || b->state == STATE_WALKING || b->state == STATE_CROUCHING) {
                 a->close = 1;
             }
             a->hard_close = 1;
@@ -386,6 +386,11 @@ void har_check_closeness(object *obj_a, object *obj_b) {
 void har_collide_with_har(object *obj_a, object *obj_b) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
+
+    if (b->state == STATE_FALLEN || b->state == STATE_STANDING_UP) {
+        // can't hit em while they're down
+        return;
+    }
 
     // Check for collisions by sprite collision points
     int level = 1;
@@ -576,6 +581,9 @@ void har_tick(object *obj) {
     if (pos.y < 190 && h->state == STATE_RECOIL) {
         DEBUG("switching to fallen");
         h->state = STATE_FALLEN;
+        if (h->recover_hook_cb) {
+            h->recover_hook_cb(h->player_id, h->recover_hook_cb_data);
+        }
     }
 
     if (h->state == STATE_STUNNED) {
@@ -1101,7 +1109,7 @@ void har_finished(object *obj) {
         h->stun_timer = 0;
         har_set_ani(obj, ANIM_STUNNED, 1);
         // XXX The Harrison-Stetson method was applied here
-    } else if (h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) {
+    } else if (h->state == STATE_RECOIL) {
         if (h->recover_hook_cb) {
             h->recover_hook_cb(h->player_id, h->recover_hook_cb_data);
         }
