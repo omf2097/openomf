@@ -451,6 +451,11 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
     af *prog_owner_af_data = projectile_get_af_data(o_pjt);
 
+    if (h->state == STATE_FALLEN || h->state == STATE_STANDING_UP) {
+        // can't hit em while they're down
+        return;
+    }
+
     // Check for collisions by sprite collision points
     int level = 2;
     vec2i hit_coord;
@@ -500,6 +505,16 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
     bk *bk_data = object_get_userdata(o_pjt);
     bk_info *anim = bk_get_info(bk_data, o_pjt->cur_animation->id);
+
+    if (h->state == STATE_FALLEN || h->state == STATE_STANDING_UP) {
+        // can't hit em while they're down
+        return;
+    }
+
+    if (h->state == STATE_VICTORY || h->state == STATE_DEFEAT || h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION || h->state == STATE_DONE) {
+        // Hazards should not affect HARs at the end of a match
+        return;
+    }
 
     // Check for collisions by sprite collision points
     int level = 2;
@@ -1105,6 +1120,9 @@ void har_finished(object *obj) {
         DEBUG("ending arena!");
         game_state_set_next(obj->gs, SCENE_MENU);
     } else if ((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance <= 0) {
+        if (h->state == STATE_RECOIL && h->recover_hook_cb) {
+            h->recover_hook_cb(h->player_id, h->recover_hook_cb_data);
+        }
         h->state = STATE_STUNNED;
         h->stun_timer = 0;
         har_set_ani(obj, ANIM_STUNNED, 1);

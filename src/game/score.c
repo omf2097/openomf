@@ -44,6 +44,7 @@ void chr_score_create(chr_score *score, int x, int y,  int direction, float mult
     score->consecutive_hits = 0;
     score->consecutive_hit_score = 0;
     score->combo_hits = 0;
+    score->combo_hit_score = 0;
     score->multiplier = multiplier;
     list_create(&score->texts);
 }
