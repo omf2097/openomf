@@ -176,8 +176,13 @@ void har_move(object *obj) {
                     IS_ZERO(vel.x) &&
                     obj->animation_state.parser->current_frame.is_final_frame) {
                 if (h->state == STATE_FALLEN) {
-                    h->state = STATE_STANDING_UP;
-                    har_set_ani(obj, ANIM_STANDUP, 0);
+                    if (h->health <= 0 && h->endurance <= 0) {
+                        h->state = STATE_DEFEAT;
+                        har_set_ani(obj, ANIM_DEFEAT, 0);
+                    } else {
+                        h->state = STATE_STANDING_UP;
+                        har_set_ani(obj, ANIM_STANDUP, 0);
+                    }
                 } else {
                     har_finished(obj);
                 }
@@ -220,7 +225,17 @@ void har_take_damage(object *obj, str* string, float damage) {
         // Set hit animation
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(obj, 0);
-        object_set_custom_string(obj, str_c(string));
+        if (h->health <= 0 && h->endurance <= 0) {
+            // taken from MASTER.DAT
+            char *final = "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM2";
+            char *str = malloc(str_size(string) + strlen(final));
+            // append the 'final knockback' string to the hit string
+            sprintf(str, "%s%s", string->data, final);
+            object_set_custom_string(obj, str);
+            free(str);
+        } else {
+            object_set_custom_string(obj, str_c(string));
+        }
         object_tick(obj);
         h->flinching = 1;
         // XXX hack - if the first frame has the 'k' tag, treat it as some vertical knockback
@@ -1119,6 +1134,9 @@ void har_finished(object *obj) {
         // end the arena
         DEBUG("ending arena!");
         game_state_set_next(obj->gs, SCENE_MENU);
+    } else if (h->state == STATE_RECOIL && h->endurance <= 0 && h->health <= 0) {
+        h->state = STATE_DEFEAT;
+        har_set_ani(obj, ANIM_DEFEAT, 0);
     } else if ((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance <= 0) {
         if (h->state == STATE_RECOIL && h->recover_hook_cb) {
             h->recover_hook_cb(h->player_id, h->recover_hook_cb_data);

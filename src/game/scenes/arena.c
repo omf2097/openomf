@@ -445,7 +445,7 @@ void arena_tick(scene *scene) {
         if(local->state != ARENA_STATE_ENDING) {
 
             // Har victory animation
-            if(har2->health <= 0 && har2->endurance <= 0) {
+            if(har2->health <= 0 && har2->endurance <= 0 && har2->state == STATE_DEFEAT) {
                 // XXX need a smarter way to detect if a player is networked or local
                 if(game_state_get_player(gs, 0)->ctrl->type != CTRL_TYPE_NETWORK &&
                    game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
@@ -467,7 +467,7 @@ void arena_tick(scene *scene) {
                 chr_score_interrupt(score, object_get_pos(obj_har1));
                 // switch to the newsroom after some delay
                 ticktimer_add(tt, 300, arena_end_cb, scene);
-            } else if(har1->health <= 0 && har1->endurance <= 0) {
+            } else if(har1->health <= 0 && har1->endurance <= 0 && har1->state == STATE_DEFEAT) {
                 if(game_state_get_player(gs, 0)->ctrl->type != CTRL_TYPE_NETWORK &&
                    game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
                     scene_youlose_anim_start(scene->gs);
