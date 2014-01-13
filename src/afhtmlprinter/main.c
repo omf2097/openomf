@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
                 if(afm->unknown[h] > 0) {
                     fprintf(f, "<strong>");
                 }
-                fprintf(f, "%02X ", afm->unknown[h]);
+                fprintf(f, "%02X ", (uint8_t)afm->unknown[h]);
                 if(afm->unknown[h] > 0) {
                     fprintf(f, "</strong>");
                 }
