@@ -16,7 +16,7 @@ Screenshots
 
 Links
 -----
-* There are some videos of openomf at http://www.youtube.com/channel/UCibZgyX7WUddZA8MpACAI8w
+* There are some videos of openomf at http://www.youtube.com/user/openomf
 * We have a forum thread at http://omf.justinoakley.com/viewtopic.php?t=312299
 * Our official wiki & documentation is at http://www.omf2097.com/wiki/doku.php?id=openomf:start
 * We can also be reached on IRC (freenode) at #omf.
