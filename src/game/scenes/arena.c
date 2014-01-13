@@ -394,8 +394,18 @@ void arena_tick(scene *scene) {
                         object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
                         object_set_group(obj, GROUP_PROJECTILE);
                         object_set_userdata(obj, &scene->bk_data);
-                        // TODO for the desert, there's a bunch of extra animation strgins for the different plane formations
-                        // we should randomly pick one, rather than always using the first
+                        if (info->ani.extra_string_count > 0) {
+                            // For the desert, there's a bunch of extra animation strgins for
+                            // the different plane formations.
+                            // Pick one, rather than always use the first
+
+                            int r = rand_int(info->ani.extra_string_count);
+                            if (r > 0) {
+                                str *s = vector_get(&info->ani.extra_strings, r);
+                                object_set_custom_string(obj, str_c(s));
+                            }
+                        }
+
 
                         DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
                     }

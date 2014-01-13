@@ -19,6 +19,7 @@ void animation_create(animation *ani, void *src, int id) {
         vector_append(&ani->collision_coords, &tmp_coord);
     }
 
+    ani->extra_string_count = sdani->extra_string_count;
     // Copy extra strings
     vector_create(&ani->extra_strings, sizeof(str));
     str tmp_string;

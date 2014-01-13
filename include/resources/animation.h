@@ -39,6 +39,7 @@ typedef struct animation_t {
     vec2i start_pos;
     vector collision_coords;
     str animation_string;
+    uint8_t extra_string_count;
     vector extra_strings;
     vector sprites;
 } animation;
