@@ -21,7 +21,7 @@
 #include "game/scenes/vs.h"
 
 #define MS_PER_OMF_TICK 10
-#define MS_PER_OMF_TICK_SLOWEST 35
+#define MS_PER_OMF_TICK_SLOWEST 150
 
 typedef struct {
     int layer;
@@ -467,7 +467,7 @@ int game_state_ms_per_tick(game_state *gs) {
         case SCENE_ARENA2:
         case SCENE_ARENA3:
         case SCENE_ARENA4:
-            return MS_PER_OMF_TICK_SLOWEST - settings_get()->gameplay.speed;
+            return MS_PER_OMF_TICK_SLOWEST / settings_get()->gameplay.speed;
     }
     return MS_PER_OMF_TICK;
 }
