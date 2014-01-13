@@ -446,7 +446,16 @@ void arena_tick(scene *scene) {
 
             // Har victory animation
             if(har2->health <= 0 && har2->endurance <= 0) {
-                scene_youwin_anim_start(scene->gs);
+                // XXX need a smarter way to detect if a player is networked or local
+                if(game_state_get_player(gs, 0)->ctrl->type != CTRL_TYPE_NETWORK &&
+                   game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
+                    scene_youwin_anim_start(scene->gs);
+                } else if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK &&
+                          game_state_get_player(gs, 1)->ctrl->type != CTRL_TYPE_NETWORK) {
+                    scene_youlose_anim_start(scene->gs);
+                } else {
+                    scene_youwin_anim_start(scene->gs);
+                }
                 har_set_ani(obj_har1, ANIM_VICTORY, 1);
                 har_set_ani(obj_har2, ANIM_DEFEAT, 1);
                 har1->state = STATE_VICTORY;
@@ -459,7 +468,20 @@ void arena_tick(scene *scene) {
                 // switch to the newsroom after some delay
                 ticktimer_add(tt, 300, arena_end_cb, scene);
             } else if(har1->health <= 0 && har1->endurance <= 0) {
-                scene_youlose_anim_start(scene->gs);
+                if(game_state_get_player(gs, 0)->ctrl->type != CTRL_TYPE_NETWORK &&
+                   game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
+                    scene_youlose_anim_start(scene->gs);
+                } else if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK &&
+                          game_state_get_player(gs, 1)->ctrl->type != CTRL_TYPE_NETWORK) {
+                    scene_youwin_anim_start(scene->gs);
+                } else {
+                    if(game_player_get_selectable(game_state_get_player(gs, 1))) {
+                        // XXX in two player mode, "you win" should always be displayed
+                        scene_youwin_anim_start(scene->gs);
+                    } else {
+                        scene_youlose_anim_start(scene->gs);
+                    }
+                }
                 har_set_ani(obj_har2, ANIM_VICTORY, 1);
                 har_set_ani(obj_har1, ANIM_DEFEAT, 1);
                 har2->state = STATE_VICTORY;
