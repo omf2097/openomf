@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
             
             // Frames
             fprintf(f, "<div class=\"iblock\"><h4>Frames</h4>");
-            fprintf(f, "<table><tr><th>#</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Index</th><th>Missing</th><th>Sprite</th></tr>");
+            fprintf(f, "<table><tr><th>#</th><th>A-Z</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Index</th><th>Missing</th><th>Sprite</th></tr>");
             for(int b = 0; b < ani->frame_count; b++) {
                 sd_sprite *sprite = ani->sprites[b];
                 
@@ -246,8 +246,9 @@ int main(int argc, char *argv[]) {
                 }
                 
                 // Print html
-                fprintf(f, "<tr><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td><img src=\"%s\" /></td></tr>", 
+                fprintf(f, "<tr><td>%d<td>%c</td></td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td><img src=\"%s\" /></td></tr>", 
                     b,
+                    b + 'A',
                     sprite->pos_x,
                     sprite->pos_y,
                     sprite->img->w,
