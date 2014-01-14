@@ -60,7 +60,12 @@ void log_msgbox(char mode, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vsnprintf(log_msgbox_buffer, sizeof(log_msgbox_buffer), fmt, args);
-    SDL_ShowSimpleMessageBox(style, modestr, log_msgbox_buffer, NULL);
+    if(SDL_ShowSimpleMessageBox(style, modestr, log_msgbox_buffer, NULL) != 0) {
+        // if the message box failed, fallback to fprintf
+        fprintf(handle, "[%c] ", mode);
+        vfprintf(handle, fmt, args);
+        fprintf(handle, "\n");
+    }
     va_end(args);
 }
 #endif
