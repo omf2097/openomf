@@ -68,6 +68,7 @@ typedef struct settings_keyboard_t {
 
 typedef struct settings_network_t {
     char *net_server_ip;
+    int net_server_port;
 } settings_network;
 
 
