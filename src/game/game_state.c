@@ -33,6 +33,7 @@ int game_state_create(game_state *gs, int net_mode) {
     gs->tick = 0;
     gs->role = ROLE_CLIENT;
     gs->net_mode = net_mode;
+    gs->speed = settings_get()->gameplay.speed;
     vector_create(&gs->objects, sizeof(render_obj));
     gs->tick_timer = malloc(sizeof(ticktimer));
     ticktimer_init(gs->tick_timer);
@@ -81,6 +82,11 @@ void game_state_add_object(game_state *gs, object *obj, int layer) {
     animation *ani = object_get_animation(obj);
     DEBUG("Added animation %i to game_state on layer %d.", ani->id, layer);
 #endif
+}
+
+void game_state_set_speed(game_state *gs, int speed) {
+    DEBUG("game speed set to %d", speed);
+    gs->speed = speed;
 }
 
 void game_state_del_animation(game_state *gs, int anim_id) {
@@ -356,7 +362,7 @@ void game_state_tick_controllers(game_state *gs) {
         game_player *gp = game_state_get_player(gs, i);
         controller *c = game_player_get_ctrl(gp);
         if(c) {
-            controller_tick(c, gs->tick, &c->extra_events);
+            controller_tick(c, gs->int_tick, &c->extra_events);
         }
     }
 }
@@ -419,6 +425,7 @@ void game_state_tick(game_state *gs) {
 
     // Increment tick
     gs->tick++;
+    gs->int_tick++;
 }
 
 unsigned int game_state_get_tick(game_state *gs) {
@@ -467,7 +474,7 @@ int game_state_ms_per_tick(game_state *gs) {
         case SCENE_ARENA2:
         case SCENE_ARENA3:
         case SCENE_ARENA4:
-            return MS_PER_OMF_TICK_SLOWEST / settings_get()->gameplay.speed;
+            return MS_PER_OMF_TICK_SLOWEST / gs->speed;
     }
     return MS_PER_OMF_TICK;
 }

@@ -86,6 +86,11 @@ void sound_slide(component *c, void *userdata, int pos) {
     sound_set_volume(pos/10.0f);
 }
 
+void arena_speed_slide(component *c, void *userdata, int pos) {
+    scene *sc = userdata;
+    game_state_set_speed(sc->gs, pos);
+}
+
 void scene_fight_anim_done(object *parent) {
     scene *scene = game_state_get_scene(parent->gs);
     arena_local *arena = scene_get_userdata(scene);
@@ -245,6 +250,14 @@ void maybe_install_har_hooks(scene *scene) {
 
     har_install_recover_hook(har1, &arena_recover_hook, scene);
     har_install_recover_hook(har2, &arena_recover_hook, scene);
+}
+
+int is_netplay(scene *scene) {
+    if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
+            game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
+        return 1;
+    }
+    return 0;
 }
 
 // -------- Scene callbacks --------
@@ -751,6 +764,12 @@ int arena_create(scene *scene) {
     
     // gameplay options
     textslider_bindvar(&local->speed_slider, &setting->gameplay.speed);
+    local->speed_slider.userdata = (void*)scene;
+    local->speed_slider.slide = arena_speed_slide;
+    if (is_netplay(scene)) {
+        // no changing the speed during netplay
+        local->speed_slider.disabled = 1;
+    }
 
     local->title_button.disabled = 1;
 

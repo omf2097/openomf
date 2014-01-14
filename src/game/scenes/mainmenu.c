@@ -408,6 +408,10 @@ void menu_sound_slide(component *c, void *userdata, int pos) {
     sound_set_volume(pos/10.0f);
 }
 
+void menu_speed_slide(component *c, void *userdata, int pos) {
+    scene *sc = userdata;
+    game_state_set_speed(sc->gs, pos);
+}
 
 void mainmenu_connect_to_ip(component *c, void *userdata) {
     scene *s = (scene*)userdata;
@@ -646,6 +650,9 @@ void mainmenu_tick(scene *scene) {
                 game_player *p1 = game_state_get_player(gs, 0);
                 game_player *p2 = game_state_get_player(gs, 1);
 
+                // force the speed to 3
+                game_state_set_speed(scene->gs, 3);
+
                 p1->har_id = HAR_JAGUAR;
                 p1->pilot_id = 0;
                 p2->har_id = HAR_JAGUAR;
@@ -681,6 +688,9 @@ void mainmenu_tick(scene *scene) {
                 keyboard_keys *keys;
                 game_player *p1 = game_state_get_player(gs, 0);
                 game_player *p2 = game_state_get_player(gs, 1);
+
+                // force the speed to 3
+                game_state_set_speed(scene->gs, 3);
 
                 p1->har_id = HAR_JAGUAR;
                 p1->pilot_id = 0;
@@ -766,6 +776,8 @@ int mainmenu_create(scene *scene) {
         music_play(filename);
         music_set_volume(settings_get()->sound.music_vol/10.0f);
     }
+
+    game_state_set_speed(scene->gs, settings_get()->gameplay.speed);
 
     // Zero out host
     local->host = NULL;
@@ -1083,6 +1095,9 @@ int mainmenu_create(scene *scene) {
 
     local->gameplay_header.disabled = 1;
     menu_select(&local->gameplay_menu, &local->speed_slider);
+
+    local->speed_slider.userdata = (void*)scene;
+    local->speed_slider.slide = menu_speed_slide;
 
     local->gameplay_done_button.click = mainmenu_prev_menu;
     local->gameplay_done_button.userdata = (void*)scene;

@@ -50,5 +50,6 @@ void game_state_replay(game_state *gs, int rtt);
 void game_state_add_object(game_state *gs, object *obj, int layer);
 void game_state_del_object(game_state *gs, object *obj);
 void game_state_del_animation(game_state *gs, int anim_id);
+void game_state_set_speed(game_state *gs, int speed);
 
 #endif // _GAME_STATE_H
