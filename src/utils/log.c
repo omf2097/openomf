@@ -41,9 +41,9 @@ void log_print(char mode, const char *fmt, ...) {
 void log_msgbox(char mode, const char *fmt, ...) {
     const char *modestr = "Message";
     switch(mode) {
-        case 'E': modestr = "Error";
-        case 'I': modestr = "Info";
-        case 'D': modestr = "Debug";
+        case 'E': modestr = "Error"; break;
+        case 'I': modestr = "Info"; break;
+        case 'D': modestr = "Debug"; break;
     }
 
     va_list args;
