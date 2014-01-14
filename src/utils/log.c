@@ -40,17 +40,27 @@ void log_print(char mode, const char *fmt, ...) {
 #ifndef STANDALONE_SERVER
 void log_msgbox(char mode, const char *fmt, ...) {
     const char *modestr = "Message";
+    unsigned int style = SDL_MESSAGEBOX_INFORMATION;
+
     switch(mode) {
-        case 'E': modestr = "Error"; break;
-        case 'I': modestr = "Info"; break;
-        case 'D': modestr = "Debug"; break;
+        case 'E':
+            style = SDL_MESSAGEBOX_ERROR;
+            modestr = "Error";
+            break;
+        case 'I':
+            style = SDL_MESSAGEBOX_INFORMATION;
+            modestr = "Info";
+            break;
+        case 'D':
+            style = SDL_MESSAGEBOX_INFORMATION;
+            modestr = "Debug";
+            break;
     }
 
     va_list args;
     va_start(args, fmt);
     vsnprintf(log_msgbox_buffer, sizeof(log_msgbox_buffer), fmt, args);
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-                             modestr, log_msgbox_buffer, NULL);
+    SDL_ShowSimpleMessageBox(style, modestr, log_msgbox_buffer, NULL);
     va_end(args);
 }
 #endif
