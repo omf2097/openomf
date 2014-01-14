@@ -42,11 +42,11 @@ controller* game_player_get_ctrl(game_player *gp) {
     return gp->ctrl;
 }
 
-void game_player_set_portrait(game_player *gp, texture *portrait) {
+void game_player_set_portrait(game_player *gp, surface *portrait) {
     gp->portrait = portrait;
 }
 
-texture* game_player_get_portrait(game_player *gp) {
+surface* game_player_get_portrait(game_player *gp) {
     return gp->portrait;
 }
 

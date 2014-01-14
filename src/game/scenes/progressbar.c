@@ -15,8 +15,7 @@ void progressbar_create_block(progress_bar *bar) {
                          bar->int_bottomright_color, 
                          bar->int_bottomright_color, 
                          bar->int_topleft_color);
-        texture_create(&bar->block);
-        texture_init_from_img(&bar->block, &tmp);
+        surface_create_from_image(&bar->block, &tmp);
         image_free(&tmp);
     }
 }
@@ -42,10 +41,6 @@ void progressbar_create_flashing(progress_bar *bar,
     bar->int_bottomright_color = int_bottomright_color;
     bar->int_bg_color = int_bg_color;
     
-    texture_create(&bar->block);
-    texture_create(&bar->background);
-    texture_create(&bar->background_alt);
-    
     // Background,
     image tmp;
     image_create(&tmp, w, h);
@@ -56,7 +51,7 @@ void progressbar_create_flashing(progress_bar *bar,
                      border_bottomright_color, 
                      border_bottomright_color, 
                      border_topleft_color);
-    texture_init_from_img(&bar->background, &tmp);
+    surface_create_from_image(&bar->background, &tmp);
     image_free(&tmp);
 
     image_create(&tmp, w, h);
@@ -67,7 +62,7 @@ void progressbar_create_flashing(progress_bar *bar,
                      border_bottomright_color, 
                      border_bottomright_color, 
                      border_topleft_color);
-    texture_init_from_img(&bar->background_alt, &tmp);
+    surface_create_from_image(&bar->background_alt, &tmp);
     image_free(&tmp);
 
     // Bar
@@ -75,13 +70,13 @@ void progressbar_create_flashing(progress_bar *bar,
 }
 
 void progressbar_free(progress_bar *bar) {
-    texture_free(&bar->background);
-    texture_free(&bar->block);
+    surface_free(&bar->background);
+    surface_free(&bar->block);
 }
 
 void progressbar_set(progress_bar *bar, unsigned int percentage) {
     bar->percentage = (percentage > 100 ? 100 : percentage);
-    texture_free(&bar->block);
+    surface_free(&bar->block);
     progressbar_create_block(bar);
 }
 

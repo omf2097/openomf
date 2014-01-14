@@ -6,10 +6,10 @@ find_package(SDL2)
 find_package(shadowdive)
 find_package(enet)
 find_package(dumb)
-find_package(OpenGL)
+#find_package(OpenGL)
 find_package(OpenAL)
 find_package(confuse)
-find_package(GLEW)
+#find_package(GLEW)
 
 # These flags are used for all builds
 set(CORE_FLAGS "-Wall -Werror")
@@ -95,14 +95,9 @@ set(OPENOMF_SRC
     src/utils/str.c
     src/utils/random.c
     src/video/video.c
-    src/video/texture.c
-    src/video/fbo.c
-    src/video/shader.c
-    src/video/shaderprogram.c
-    src/video/rbo.c
+    src/video/surface.c
     src/video/image.c
     src/video/color.c
-    src/video/glextloader.c
     src/audio/audio.c
     src/audio/music.c
     src/audio/sound.c

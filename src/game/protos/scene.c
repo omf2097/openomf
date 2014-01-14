@@ -35,6 +35,9 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->input_poll = NULL;
     scene->startup = NULL;
 
+    // Set palette
+    video_set_base_palette(bk_get_palette(&scene->bk_data, 0));
+
     // All done.
     DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
     return 0;
@@ -88,7 +91,6 @@ void scene_init(scene *scene) {
 
     // init shadow buffer
     image_create(&scene->shadow_buffer_img, 320, 200);
-    texture_create(&scene->shadow_buffer_tex);
 
     // Bootstrap animations
     iterator it;
@@ -180,13 +182,11 @@ void scene_render(scene *scene) {
 
 void scene_render_shadows(scene *scene) {
     // draw shadows
-    if(texture_is_valid(&scene->shadow_buffer_tex)) {
-        texture_upload(&scene->shadow_buffer_tex, scene->shadow_buffer_img.data);
-    } else {
-        texture_init_from_img(&scene->shadow_buffer_tex, &scene->shadow_buffer_img);
-    }
-    video_render_sprite(&scene->shadow_buffer_tex, 0, 0, BLEND_ALPHA_FULL);
+    surface_create_from_image(&scene->shadow_buffer_surface, &scene->shadow_buffer_img);
+    video_render_sprite(&scene->shadow_buffer_surface, 0, 0, BLEND_ALPHA_FULL);
+    surface_free(&scene->shadow_buffer_surface);
     image_clear(&scene->shadow_buffer_img, color_create(0,0,0,0));
+    
 }
 
 void scene_tick(scene *scene) {
@@ -219,7 +219,6 @@ void scene_free(scene *scene) {
     }
     object_free(&scene->background);
     image_free(&scene->shadow_buffer_img);
-    texture_free(&scene->shadow_buffer_tex);
     ticktimer_close(&scene->tick_timer);
 }
 

@@ -32,7 +32,6 @@ int har_act(object *obj, int act_type);
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
 #ifdef DEBUGMODE
-    texture_free(&h->debug_tex);
     image_free(&h->debug_img);
 #endif
     free(h);
@@ -1166,9 +1165,9 @@ void har_finished(object *obj) {
 void har_debug(object *obj) {
     har *h = object_get_userdata(obj);
     if(h->debug_enabled == 0) return;
-    texture_init_from_img(&h->debug_tex, &h->debug_img);
-    video_render_sprite(&h->debug_tex, 0, 0, BLEND_ALPHA_FULL);
-    texture_free(&h->debug_tex);
+    surface_create_from_image(&h->debug_surface, &h->debug_img);
+    video_render_sprite(&h->debug_surface, 0, 0, BLEND_ALPHA_FULL);
+    surface_free(&h->debug_surface);
     image_clear(&h->debug_img, color_create(0,0,0,0));
 }
 #endif
@@ -1346,7 +1345,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 #ifdef DEBUGMODE
     object_set_debug_cb(obj, har_debug);
-    texture_create(&local->debug_tex);
     image_create(&local->debug_img, 320, 200);
     image_clear(&local->debug_img, color_create(0,0,0,0));
     local->debug_enabled = 0;

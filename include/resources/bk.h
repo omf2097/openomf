@@ -2,7 +2,6 @@
 #define _BK_H
 
 #include "resources/bk_info.h"
-#include "video/texture.h"
 #include "utils/hashmap.h"
 #include "utils/vector.h"
 

@@ -18,7 +18,7 @@ struct textinput_t {
     int dir;
     int pos_;
     int *pos;
-    texture tex;
+    surface sur;
     char buf[50];
 };
 

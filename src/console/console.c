@@ -31,7 +31,7 @@ typedef struct console_t {
     unsigned int output_head, output_tail, output_pos;
     int output_overflowing;
     char input[41];
-    texture background;
+    surface background;
     int isopen;
     int ypos;
     unsigned int ticks, dir;
@@ -569,7 +569,7 @@ int console_init() {
 }
 
 void console_close() {
-    texture_free(&con->background);
+    surface_free(&con->background);
     list_free(&con->history);
     hashmap_free(&con->cmds);
     free(con);

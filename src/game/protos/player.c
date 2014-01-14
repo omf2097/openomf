@@ -324,7 +324,8 @@ void player_run(object *obj) {
                 rstate->blend_finish = get(f, "bj"); 
             }
             if(isset(f, "bs")) { 
-                rstate->blend_start = get(f, "bs"); 
+                rstate->blend_start = get(f, "bs");
+                DEBUG("BLEND START");
             }
             if(isset(f, "bu")) { rstate->method_flags &= 0x8000; }
             if(isset(f, "bw")) { rstate->method_flags &= 0x0080; }

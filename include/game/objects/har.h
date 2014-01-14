@@ -8,7 +8,7 @@
 
 // For debug texture stuff
 #ifdef DEBUGMODE
-#include "video/texture.h"
+#include "video/surface.h"
 #include "video/image.h"
 #endif
 
@@ -99,7 +99,7 @@ typedef struct har_t {
 
 
 #ifdef DEBUGMODE
-    texture debug_tex;
+    surface debug_surface;
     image debug_img;
     uint8_t debug_enabled;
 #endif

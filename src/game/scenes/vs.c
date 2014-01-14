@@ -17,12 +17,12 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata
 void cb_vs_destroy_object(object *parent, int id, void *userdata);
 
 typedef struct vs_local_t {
-    texture player2_background;
+    surface player2_background;
     object player1_portrait;
     object player2_portrait;
     object player1_har;
     object player2_har;
-    texture arena_select_bg;
+    surface arena_select_bg;
     object arena_select;
     palette *player1_palette;
     palette *player2_palette;
@@ -50,31 +50,12 @@ void cb_vs_destroy_object(object *parent, int id, void *userdata) {
     game_state_del_animation(parent->gs, id);
 }
 
-
-sd_rgba_image* sub_image(sd_vga_image *image, palette *pal, int x, int y, int w, int h) {
-    sd_rgba_image *img = 0;
-    sd_rgba_image *out = sd_rgba_image_create(w, h);
-    img = sd_vga_image_decode(image, (sd_palette*)pal, -1);
-    for(int i = y; i < y+h; i++) {
-        for(int j = x; j < x+w; j++) {
-            int offset = (i*image->w*4)+(j*4);
-            int local_offset = ((i-y)*w*4)+((j-x)*4);
-            out->data[local_offset]   = (char)img->data[offset];
-            out->data[local_offset+1] = (char)img->data[offset+1];
-            out->data[local_offset+2] = (char)img->data[offset+2];
-            out->data[local_offset+3] = (char)img->data[offset+3];
-        }
-    }
-    sd_rgba_image_delete(img);
-    return out;
-}
-
 void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    texture_free(&local->player2_background);
-    texture_free(&local->arena_select_bg);
+    surface_free(&local->player2_background);
+    surface_free(&local->arena_select_bg);
     object_free(&local->player1_portrait);
     object_free(&local->player2_portrait);
     object_free(&local->player1_har);
@@ -245,7 +226,7 @@ int vs_create(scene *scene) {
     object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
 
     // clone the left side of the background image
-    sd_rgba_image * out = sub_image((sd_vga_image*)scene->bk_data.background.raw_sprite, bk_get_palette(&scene->bk_data, 0), 0, 0, 160, 200);
+    surface_sub(&local->player2_background, scene->bk_data.background.data, 0, 0, 160, 200);
 
     if (player2->selectable) {
         // player1 gets to choose, start at arena
@@ -304,11 +285,7 @@ int vs_create(scene *scene) {
     game_state_add_object(scene->gs, o_gantry_b, RENDER_LAYER_MIDDLE);
 
     // Background tex
-    texture_create(&local->player2_background);
-    texture_init(&local->player2_background, out->data, 160, 200);
-
     menu_background2_create(&local->arena_select_bg, 211, 50);
-    sd_rgba_image_delete(out);
 
     // Callbacks
     scene_set_render_cb(scene, vs_render);

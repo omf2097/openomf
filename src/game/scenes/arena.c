@@ -4,7 +4,7 @@
 #include <string.h>
 #include <shadowdive/shadowdive.h>
 
-#include "video/texture.h"
+#include "video/surface.h"
 #include "video/video.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/progressbar.h"
@@ -52,7 +52,7 @@ typedef struct arena_local_t {
     component video_button;
     component help_button;
     component quit_button;
-    texture tex;
+    surface sur;
     int menu_visible;
     unsigned int state;
     
@@ -281,7 +281,7 @@ void arena_free(scene *scene) {
     textbutton_free(&local->quit_button);
     menu_free(&local->game_menu);
 
-    texture_free(&local->tex);
+    surface_free(&local->sur);
 
     music_stop();
     
@@ -630,7 +630,7 @@ void arena_render_overlay(scene *scene) {
     // Render menu (if visible)
     if(local->menu_visible) {
         menu_render(&local->game_menu);
-        video_render_sprite(&local->tex, 10, 150, BLEND_ALPHA_FULL);
+        video_render_sprite(&local->sur, 10, 150, BLEND_ALPHA_FULL);
     }
 }
 
@@ -783,7 +783,7 @@ int arena_create(scene *scene) {
 
     // background for the 'help' at the bottom of the screen
     // TODO support rendering text onto it
-    menu_background_create(&local->tex, 301, 37);
+    menu_background_create(&local->sur, 301, 37);
     
     // Health bars
     progressbar_create(&local->player1_health_bar, 

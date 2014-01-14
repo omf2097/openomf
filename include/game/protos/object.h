@@ -6,7 +6,7 @@
 #include "game/protos/player.h"
 #include "utils/vec.h"
 #include "utils/hashmap.h"
-#include "video/texture.h"
+#include "video/surface.h"
 #include "game/serial.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
@@ -76,7 +76,7 @@ struct object_t {
     uint8_t halt;
     uint8_t stride;
     uint8_t cast_shadow;
-    texture *cur_texture;
+    surface *cur_surface;
 
     player_sprite_state sprite_state;
     player_animation_state animation_state;

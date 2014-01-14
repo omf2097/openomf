@@ -6,7 +6,7 @@
 #include "audio/audio.h"
 #include "audio/music.h"
 #include "resources/sounds_loader.h"
-#include "video/texture.h"
+#include "video/surface.h"
 #include "video/video.h"
 #include "game/text/languages.h"
 #include "game/game_state.h"

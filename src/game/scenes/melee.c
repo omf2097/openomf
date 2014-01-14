@@ -59,9 +59,9 @@ typedef struct melee_local_t {
     int pilot_id_a;
     int pilot_id_b;
 
-    texture feh;
-    texture bleh;
-    texture select_hilight;
+    surface feh;
+    surface bleh;
+    surface select_hilight;
     unsigned int ticks;
     unsigned int hartick;
     unsigned int pulsedir;
@@ -74,46 +74,19 @@ void refresh_pilot_stats(melee_local *local);
 
 void handle_action(scene *scene, int player, int action);
 
-// extract part of a sprite as a new sprite
-// we need this because the HAR portraits are one single sprite, unlike the player portraits
-// so we need to chunk them up into individual sprites and strip out the black background
-sd_rgba_image* sub_sprite(sprite *sprite, sd_palette *pal, int x, int y, int w, int h) {
-    sd_rgba_image *img = 0;
-    sd_rgba_image *out = sd_rgba_image_create(w, h);
-    img = sd_sprite_image_decode(sprite->raw_sprite, pal, -1);
-    for(int i = y; i < y+h; i++) {
-        for(int j = x; j < x+w; j++) {
-            int sw = ((sd_vga_image*)sprite->raw_sprite)->w;
-            int offset = (i*sw*4)+(j*4);
-            int local_offset = ((i-y)*w*4)+((j-x)*4);
-            out->data[local_offset]   = (char)img->data[offset];
-            out->data[local_offset+1] = (char)img->data[offset+1];
-            out->data[local_offset+2] = (char)img->data[offset+2];
-            if (!out->data[local_offset] && !out->data[local_offset+1] && !out->data[local_offset+2]) {
-                // all three colors are black, set the pixel to be transparent!
-                out->data[local_offset+3] = 0;
-            } else {
-                out->data[local_offset+3] = (char)img->data[offset+3];
-            }
-        }
-    }
-    sd_rgba_image_delete(img);
-    return out;
-}
-
 void mask_sprite(sprite *sprite, int x, int y, int w, int h) {
-    sd_vga_image *vga = (sd_vga_image*)sprite->raw_sprite;
+    surface *vga = sprite->data;
     for(int i = 0; i < vga->h; i++) {
         for(int j = 0; j < vga->w; j++) {
             int offset = (i*vga->w)+j;
             if ((i < y || i > y+h) || (j < x || j > x+w)) {
-                vga->stencil[offset] = 0;
+                sprite->stencil[offset] = 0;
             } else {
                 if (vga->data[offset] == -48) {
                     // strip out the black pixels
-                    vga->stencil[offset] = 0;
+                    sprite->stencil[offset] = 0;
                 } else {
-                    vga->stencil[offset] = 1;
+                    sprite->stencil[offset] = 1;
                 }
             }
         }
@@ -124,9 +97,9 @@ void melee_free(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    texture_free(&local->feh);
-    texture_free(&local->bleh);
-    texture_free(&local->select_hilight);
+    surface_free(&local->feh);
+    surface_free(&local->bleh);
+    surface_free(&local->select_hilight);
     for(int i = 0;i < 2;i++) {
         progressbar_free(&local->bar_power[i]);
         progressbar_free(&local->bar_agility[i]);
@@ -287,7 +260,7 @@ void handle_action(scene *scene, int player, int action) {
                         player2->colors[2] = local->pilots[local->pilot_id_b].colors[2];
                     }
 
-                    // reinialize any textures using the player palette
+                    // reinialize any surfaces using the player palette
                     for(int i = 0; i < 10; i++) {
                         object_revalidate(&local->harportraits_player1[i]);
                         object_revalidate(&local->har_player1[i]);
@@ -601,8 +574,7 @@ int melee_create(scene *scene) {
 
     menu_background2_create(&local->feh, 90, 61);
     menu_background2_create(&local->bleh, 160, 43);
-    texture_create(&local->select_hilight);
-    texture_init(&local->select_hilight, bitmap, 51, 36);
+    surface_create_from_data(&local->select_hilight, SURFACE_TYPE_RGBA, 51, 36, bitmap);
 
     // set up the magic controller hooks
     if(player1_ctrl && player2_ctrl) {
