@@ -47,12 +47,16 @@ enum RESOURCE_ID {
     DAT_GERMAN,
     DAT_GRAPHCHR,
     DAT_CHARSMAL,
-    DAT_ALTPALS
+    DAT_ALTPALS,
+    NUMBER_OF_RESOURCES
 };
 
 void set_resource_path(const char *path);
 void get_filename_by_id(int id, char *ptr);
 char* get_id_name(int id);
+
+// returns 0 if there are no missing files, otherwise 1 is returned
+int validate_resource_path(char *missingfile);
 
 int is_scene(int id);
 int is_har(int id);

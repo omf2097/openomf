@@ -1,11 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "resources/ids.h"
 #include "game/settings.h"
 #include "utils/log.h"
 
+#if defined(_WIN32) || defined(WIN32)
+static const char *resource_path = "resources\\";
+#else
 static const char *resource_path = "resources/";
+#endif
 
 struct music_override_t {
     int id;
@@ -14,6 +19,17 @@ struct music_override_t {
 
 void set_resource_path(const char *path) {
     resource_path = path;
+}
+
+int validate_resource_path(char *missingfile) {
+    for(int i = 0;i < NUMBER_OF_RESOURCES;i++) {
+        missingfile[0] = 0;
+        get_filename_by_id(i, missingfile);
+        if(missingfile[0] && access(missingfile, F_OK ) == -1) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 void get_filename_by_id(int id, char *ptr) {

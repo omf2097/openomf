@@ -19,22 +19,21 @@
 
 int main(int argc, char *argv[]) {
     // Get path
-
     char *path = "";
     char *ip = NULL;
     int net_mode = NET_MODE_NONE;
 
     path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
     if(path == NULL) {
-        printf("Error getting config path: %s\n", SDL_GetError());
+        PERROR("Error getting config path: %s", SDL_GetError());
         return 1;
     }
 
-    #if defined(_WIN32) || defined(WIN32)
-        // Ensure the path exists before continuing on
-        // XXX shouldn't SDL_GetPrefPath automatically create the path if it doesn't exist?
-        SHCreateDirectoryEx(NULL, path, NULL);
-    #endif
+#if defined(_WIN32) || defined(WIN32)
+    // Ensure the path exists before continuing on
+    // XXX shouldn't SDL_GetPrefPath automatically create the path if it doesn't exist?
+    SHCreateDirectoryEx(NULL, path, NULL);
+#endif
 
 #ifndef DEBUGMODE
     // where is the openomf binary, if this call fails we will look for resources in ./resources
@@ -44,7 +43,7 @@ int main(int argc, char *argv[]) {
         const char *platform = SDL_GetPlatform();
         if (!strcasecmp(platform, "Windows")) {
             // on windows, the resources will be in ./resources, relative to the binary
-            sprintf(resource_path, "%s%s", base_path, "resources/");
+            sprintf(resource_path, "%s%s", base_path, "resources\\");
             set_resource_path(resource_path);
         } else if (!strcasecmp(platform, "Linux")) {
             // on linux, the resources will be in ../share/openomf, relative to the binary
@@ -87,11 +86,10 @@ int main(int argc, char *argv[]) {
             return 0;
         } else if(strcmp(argv[1], "-w") == 0) {
             if(settings_write_defaults(config_path)) {
-                fprintf(stderr, "Failed to write config file to '%s'!\n", config_path);
-                fflush(stderr);
+                PERROR("Failed to write config file to '%s'!", config_path);
                 return 1;
             } else {
-                printf("Config file written to '%s'!\n", config_path);
+                INFO("Config file written to '%s'!", config_path);
             }
             return 0;
         } else if(strcmp(argv[1], "-c") == 0) {
@@ -107,14 +105,12 @@ int main(int argc, char *argv[]) {
     // Init log
 #if defined(DEBUGMODE) || defined(STANDALONE_SERVER)
     if(log_init(0)) {
-        fprintf(stderr, "Error while initializing log!\n");
-        fflush(stderr);
+        PERROR("Error while initializing log!");
         return 1;
     }
 #else
     if(log_init(logfile_path)) {
-        fprintf(stderr, "Error while initializing log '%s'!\n", logfile_path);
-        fflush(stderr);
+        PERROR("Error while initializing log '%s'!", logfile_path);
         return 1;
     }
 #endif
@@ -127,9 +123,17 @@ int main(int argc, char *argv[]) {
 
     // Init config
     if(settings_init(config_path)) {
+        PERROR("Failed to initialize settings file");
         goto exit_0;
     }
     settings_load();
+
+    // Make sure the required resource files exist
+    char missingfile[64];
+    if(validate_resource_path(missingfile)) {
+        PERROR("Resource file does not exist: %s", missingfile);
+        goto exit_0;
+    }
 
     if(ip) {
         settings_get()->net.net_server_ip = ip;

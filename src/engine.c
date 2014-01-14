@@ -92,7 +92,7 @@ void engine_run(int net_mode) {
 
 #ifdef STANDALONE_SERVER
     // Init interrupt signal handler
-    signal (SIGINT, exit_handler);
+    signal(SIGINT, exit_handler);
 #endif
 
     // Set up game
