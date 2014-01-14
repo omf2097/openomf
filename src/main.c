@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
         if(strcmp(argv[1], "-v") == 0) {
             printf("OpenOMF v0.1\n");
             printf("Source available at https://github.com/omf2097/ (MIT License)\n");
-            printf("(C) 2013 Tuomas Virtanen\n");
+            printf("(C) 2097 Tuomas Virtanen, Andrew Thompson and others\n");
             return 0;
         } else if(strcmp(argv[1], "-h") == 0) {
             printf("Arguments:\n");
