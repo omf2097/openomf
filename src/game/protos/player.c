@@ -96,6 +96,35 @@ void player_clear_frame(object *obj) {
     s->pal_entry_count = 0;
 }
 
+int next_frame_with_tag(sd_stringparser *parser, int current_frame, const char *tag, sd_stringparser_frame *f) {
+    int frames = sd_stringparser_num_frames(parser);
+    int res = 0;
+    for(int i = current_frame + 1; i < frames; i++) {
+        sd_stringparser_peek(parser, i, f);
+        if(isset(f, tag)) {
+            return res;
+        }
+        res += f->duration;
+    }
+    f = NULL;
+    return -1;
+}
+
+int next_frame_with_sprite(sd_stringparser *parser, int current_frame, int sprite, sd_stringparser_frame *f) {
+    int frames = sd_stringparser_num_frames(parser);
+    int res = 0;
+    for(int i = current_frame + 1; i < frames; i++) {
+        sd_stringparser_peek(parser, i, f);
+        if (f->letter == sprite + 'A') {
+            return res;
+        }
+        res += f->duration;
+    }
+    f = NULL;
+    return -1;
+}
+
+
 // ---------------- Public functions ---------------- 
 
 void player_create(object *obj) {
@@ -123,20 +152,6 @@ void player_free(object *obj) {
     if(obj->animation_state.parser != NULL) {
         sd_stringparser_delete(obj->animation_state.parser);
     }
-}
-
-int next_frame_with_tag(sd_stringparser *parser, int current_frame, const char *tag, sd_stringparser_frame *f) {
-    int frames = sd_stringparser_num_frames(parser);
-    int res = 0;
-    for(int i = current_frame + 1; i < frames; i++) {
-        sd_stringparser_peek(parser, i, f);
-        if(isset(f, tag)) {
-            return res;
-        }
-        res += f->duration;
-    }
-    f = NULL;
-    return -1;
 }
 
 void player_reload_with_str(object *obj, const char* custom_str) {
@@ -174,6 +189,40 @@ void player_reset(object *obj) {
     obj->animation_state.finished = 0;
     obj->animation_state.previous = -1;
     sd_stringparser_reset(obj->animation_state.parser);
+}
+
+void player_set_delay(object *obj, int delay) {
+    //try to spread <delay> ticks over the 'startup' frames; those that don't spawn projectiles or have hit coordinates
+    int r;
+    sd_stringparser_frame n;
+    int frames = 99;
+    // find the first frame that spawns a projectile, if any
+    if((r =next_frame_with_tag(obj->animation_state.parser, 0, "m", &n)) >= 0) {
+        frames = n.id;
+    }
+
+    // find the first frame with hit coordinates
+    iterator it;
+    collision_coord *cc;
+    vector_iter_begin(&obj->cur_animation->collision_coords, &it);
+    while((cc = iter_next(&it)) != NULL) {
+        if((r = next_frame_with_sprite(obj->animation_state.parser, 0, cc->frame_index, &n)) >= 0) {
+            if (n.id < frames) {
+                frames = n.id;
+            }
+        }
+    }
+
+    DEBUG("animation has %d initializer frames", frames);
+
+    for(int i = 0; i < frames; i++) {
+        int olddur;
+        sd_stringparser_peek(obj->animation_state.parser, i, &n);
+        olddur = n.duration;
+        sd_stringparser_set_frame_duration(obj->animation_state.parser, i, n.duration + (delay/frames));
+        sd_stringparser_peek(obj->animation_state.parser, i, &n);
+        DEBUG("changed duration of frame %d from %d to %d", i, olddur, n.duration);
+    }
 }
 
 void player_run(object *obj) {

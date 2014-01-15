@@ -168,7 +168,7 @@ void _setup_keyboard(game_state *gs, int players) {
             keys->punch = SDL_GetScancodeFromName(k->key2_punch);
             keys->kick = SDL_GetScancodeFromName(k->key2_kick);
         }
-        keyboard_create(ctrl, keys);
+        keyboard_create(ctrl, keys, 0);
 
         // Set up player controller
         game_player_set_ctrl(player, ctrl);
@@ -206,7 +206,7 @@ void _setup_joystick(game_state *gs, int players) {
     keys->punch = SDL_GetScancodeFromName(k->key2_punch);
     keys->kick = SDL_GetScancodeFromName(k->key2_kick);
 
-    keyboard_create(ctrl, keys);
+    keyboard_create(ctrl, keys, 0);
 
     // Set up player controller
     game_player_set_ctrl(player, ctrl);
@@ -673,7 +673,7 @@ void mainmenu_tick(scene *scene) {
                 keys->right = SDL_SCANCODE_RIGHT;
                 keys->punch = SDL_SCANCODE_RETURN;
                 keys->kick = SDL_SCANCODE_RSHIFT;
-                keyboard_create(player1_ctrl, keys);
+                keyboard_create(player1_ctrl, keys, 0);
                 game_player_set_ctrl(p1, player1_ctrl);
 
                 // Player 2 controller -- Network
@@ -716,7 +716,7 @@ void mainmenu_tick(scene *scene) {
                 keys->right = SDL_SCANCODE_RIGHT;
                 keys->punch = SDL_SCANCODE_RETURN;
                 keys->kick = SDL_SCANCODE_RSHIFT;
-                keyboard_create(player2_ctrl, keys);
+                keyboard_create(player2_ctrl, keys, 0);
                 game_player_set_ctrl(p2, player2_ctrl);
                 local->host = NULL;
                 game_player_set_selectable(p2, 1);

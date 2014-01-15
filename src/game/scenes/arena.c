@@ -307,11 +307,11 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if (player->ctrl->type == CTRL_TYPE_NETWORK) {
-                    if (!game_state_rewind(scene->gs, net_controller_get_rtt(player->ctrl))) {
+                    if (!game_state_rewind(scene->gs, player->ctrl->rtt)) {
                         do {
                             object_act(game_player_get_har(player), i->event_data.action);
                         } while ((i = i->next) && i->type == EVENT_TYPE_ACTION);
-                        game_state_replay(scene->gs, net_controller_get_rtt(player->ctrl));
+                        game_state_replay(scene->gs, player->ctrl->rtt);
                         object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                         object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
                         maybe_install_har_hooks(scene);
@@ -323,7 +323,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                     need_sync += object_act(game_player_get_har(player), i->event_data.action);
                 }
             } else if (i->type == EVENT_TYPE_SYNC) {
-                game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player->ctrl));
+                game_state_unserialize(scene->gs, i->event_data.ser, player->ctrl->rtt);
                 // fix the palettes
                 object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
                 object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
@@ -387,6 +387,9 @@ void arena_tick(scene *scene) {
         obj_har2->animation_state.enemy_x = obj_har1->pos.x;
         obj_har2->animation_state.enemy_y = obj_har1->pos.y;
 
+        har1->delay = player2->ctrl->rtt / 2;
+        har2->delay = player1->ctrl->rtt / 2;
+
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
             iterator it;
             hashmap_iter_begin(&scene->bk_data.infos, &it);
@@ -427,8 +430,8 @@ void arena_tick(scene *scene) {
         }
 
         if (
-                (har1->state == STATE_STANDING || har1->state == STATE_CROUCHING || har1->state == STATE_WALKING || har1->state == STATE_STUNNED) &&
-                (har2->state == STATE_STANDING || har2->state == STATE_CROUCHING || har2->state == STATE_WALKING || har2->state == STATE_STUNNED)) {
+                (har1->state == STATE_STANDING || har_is_crouching(har1) || har_is_walking(har1) || har1->state == STATE_STUNNED) &&
+                (har2->state == STATE_STANDING || har_is_crouching(har1) || har_is_walking(har2) || har2->state == STATE_STUNNED)) {
             // XXX if the other har is stunned, turn the non stunned HAR to face it, but never turn a stunned HAR
             vec2i pos1, pos2;
             pos1 = object_get_pos(obj_har1);
@@ -618,11 +621,11 @@ void arena_render_overlay(scene *scene) {
 
         // render ping, if player is networked
         if (player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
-            sprintf(buf, "ping %u", net_controller_get_rtt(player[0]->ctrl));
+            sprintf(buf, "ping %u", player[0]->ctrl->rtt);
             font_render(&font_small, buf, 5, 40, TEXT_COLOR);
         }
         if (player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
-            sprintf(buf, "ping %u", net_controller_get_rtt(player[1]->ctrl));
+            sprintf(buf, "ping %u", player[1]->ctrl->rtt);
             font_render(&font_small, buf, 315-(strlen(buf)*font_small.w), 40, TEXT_COLOR);
         }
     }

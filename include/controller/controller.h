@@ -8,21 +8,18 @@
 #include "utils/list.h"
 
 enum {
-    ACT_KICK,
-    ACT_PUNCH,
-    ACT_UP,
-    ACT_UPLEFT,
-    ACT_UPRIGHT,
-    ACT_DOWN,
-    ACT_DOWNLEFT,
-    ACT_DOWNRIGHT,
-    ACT_LEFT,
-    ACT_RIGHT,
-    ACT_STOP,
-    ACT_WALKLEFT,
-    ACT_WALKRIGHT,
-    ACT_CROUCH,
-    ACT_JUMP
+    ACT_STOP = 0,
+    ACT_KICK = 2,
+    ACT_PUNCH = 4,
+    ACT_UP = 8,
+    ACT_UPLEFT = 16,
+    ACT_UPRIGHT = 32,
+    ACT_DOWN = 64,
+    ACT_DOWNLEFT = 128,
+    ACT_DOWNRIGHT = 256,
+    ACT_LEFT = 512,
+    ACT_RIGHT = 1024,
+    ACT_FLUSH = 2048
 };
 
 enum {
@@ -63,6 +60,7 @@ struct controller_t {
     void (*controller_hook)(controller *ctrl, int action);
     void *data;
     int type;
+    int rtt;
 };
 
 void controller_init(controller* ctrl);

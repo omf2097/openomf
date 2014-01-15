@@ -118,6 +118,7 @@ int object_serialize(object *obj, serial *ser);
 int object_unserialize(object *obj, serial *ser, game_state *gs);
 
 void object_set_stride(object *obj, int stride);
+void object_set_delay(object *obj, int delay);
 void object_set_playback_direction(object *obj, int dir);
 
 void object_set_stl(object *obj, char *ptr);

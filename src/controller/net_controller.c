@@ -10,7 +10,6 @@ typedef struct wtf_t {
     int last_hb;
     int last_action;
     int outstanding_hb;
-    int rtt;
     int disconnected;
 } wtf;
 
@@ -60,7 +59,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                     case EVENT_TYPE_ACTION:
                         {
                             // dispatch keypress to scene
-                            int action = serial_read_int8(ser);
+                            int action = serial_read_int16(ser);
                             controller_cmd(ctrl, action, ev);
                             /*handled = 1;*/
                             serial_free(ser);
@@ -73,7 +72,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             int id = serial_read_int8(ser);
                             if (id == data->id) {
                                 int start = serial_read_int32(ser);
-                                data->rtt = abs(start - ticks);
+                                ctrl->rtt = abs(start - ticks);
                                 data->outstanding_hb = 0;
                                 data->last_hb = ticks;
                                 serial_free(ser);
@@ -109,7 +108,8 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 break;
         }
     }
-    if ((data->last_hb == -1 || ticks - data->last_hb > 20) && !data->outstanding_hb) {
+
+    if ((data->last_hb == -1 || ticks - data->last_hb > 20) || !data->outstanding_hb) {
         data->outstanding_hb = 1;
         serial ser;
         ENetPacket *packet;
@@ -157,22 +157,6 @@ int net_controller_update(controller *ctrl, serial *serial) {
     return 0;
 }
 
-void har_hook(char* buf, void *userdata) {
-    controller *ctrl = userdata;
-    wtf *data = ctrl->data;
-    ENetPeer *peer = data->peer;
-    /*ENetHost *host = data->host;*/
-    ENetPacket * packet;
-
-    packet = enet_packet_create(buf, strlen (buf) + 1, ENET_PACKET_FLAG_RELIABLE);
-    if (peer) {
-        enet_peer_send(peer, 0, packet);
-        /*enet_host_flush (host);*/
-    } else {
-        DEBUG("peer is null~");
-    }
-}
-
 void controller_hook(controller *ctrl, int action) {
     serial ser;
     wtf *data = ctrl->data;
@@ -186,7 +170,7 @@ void controller_hook(controller *ctrl, int action) {
     data->last_action = action;
     serial_create(&ser);
     serial_write_int8(&ser, EVENT_TYPE_ACTION);
-    serial_write_int8(&ser, action);
+    serial_write_int16(&ser, action);
     /*DEBUG("controller hook fired with %d", action);*/
     /*sprintf(buf, "k%d", action);*/
     packet = enet_packet_create(ser.data, ser.len, ENET_PACKET_FLAG_RELIABLE);
@@ -196,14 +180,6 @@ void controller_hook(controller *ctrl, int action) {
     } else {
         DEBUG("peer is null~");
     }
-}
-
-int net_controller_get_rtt(controller *ctrl) {
-    wtf *data = ctrl->data;
-    if (data->last_hb == -1) {
-        return -1;
-    }
-    return data->rtt;
 }
 
 void net_controller_har_hook(int action, void *cb_data) {
@@ -217,16 +193,20 @@ void net_controller_har_hook(int action, void *cb_data) {
         data->last_action = -1;
         return;
     }
+    if (action == ACT_FLUSH) {
+        enet_host_flush(host);
+        return;
+    }
     data->last_action = action;
     serial_create(&ser);
     serial_write_int8(&ser, EVENT_TYPE_ACTION);
-    serial_write_int8(&ser, action);
+    serial_write_int16(&ser, action);
     /*DEBUG("controller hook fired with %d", action);*/
     /*sprintf(buf, "k%d", action);*/
     packet = enet_packet_create(ser.data, ser.len, ENET_PACKET_FLAG_RELIABLE);
     if (peer) {
         enet_peer_send(peer, 0, packet);
-        enet_host_flush (host);
+        /*enet_host_flush (host);*/
     } else {
         DEBUG("peer is null~");
     }
@@ -241,11 +221,9 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->last_action = ACT_STOP;
     data->outstanding_hb = 0;
     data->disconnected = 0;
-    data->rtt = 0;
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
     ctrl->update_fun = &net_controller_update;
-    ctrl->har_hook = &har_hook;
     ctrl->controller_hook = &controller_hook;
 }

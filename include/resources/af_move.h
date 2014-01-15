@@ -5,6 +5,7 @@
 #include "utils/str.h"
 
 typedef struct af_move_t {
+    int id;
     animation ani;
     uint8_t next_move;
     uint8_t successor_id;

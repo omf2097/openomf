@@ -63,7 +63,13 @@ void har_fire_hook(object *obj, int action) {
 // Simple helper function
 void har_set_ani(object *obj, int animation_id, int repeat) {
     har *h = object_get_userdata(obj);
-    object_set_animation(obj, &af_get_move(h->af_data, animation_id)->ani);
+    af_move *move = af_get_move(h->af_data, animation_id);
+    char *s = (char*)str_c(&move->move_string);
+    object_set_animation(obj, &move->ani);
+    if (s != NULL && strcasecmp(s, "!") && strcasecmp(s, "0") /*&& h->delay > 0*/) {
+        DEBUG("delaying move %d %s by %d ticks", move->id, s, h->delay);
+        object_set_delay(obj, h->delay);
+    }
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
     object_tick(obj);
@@ -72,13 +78,26 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     h->damage_done = 0;
     h->damage_received = 0;
     h->executing_move = 0;
-    h->blocking = 0;
     h->flinching = 0;
 }
 
 int har_is_active(object *obj) {
     har *h = object_get_userdata(obj);
     return h->executing_move;
+}
+
+int har_is_walking(har *h) {
+    if (h->state == STATE_WALKTO || h->state == STATE_WALKFROM) {
+        return 1;
+    }
+    return 0;
+}
+
+int har_is_crouching(har *h) {
+    if (h->state == STATE_CROUCHING || h->state == STATE_CROUCHBLOCK) {
+        return 1;
+    }
+    return 0;
 }
 
 // Callback for spawning new objects, eg. projectiles
@@ -156,6 +175,7 @@ void har_move(object *obj) {
                 h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
                 har_fire_hook(obj, ACT_STOP);
+                har_fire_hook(obj, ACT_FLUSH);
             /*}*/
         } else if (h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.4;
@@ -311,7 +331,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
 
 void har_block(object *obj, vec2i hit_coord) {
     har *h = obj->userdata;
-    if (h->state == STATE_WALKING) {
+    if (h->state == STATE_WALKFROM) {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_STANDING_BLOCK)->ani);
     } else {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_CROUCHING_BLOCK)->ani);
@@ -358,7 +378,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     a->hard_close = 0;
 
     // If HARs get too close together, handle it
-    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
+    if(har_is_walking(a) && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
         if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x) {
             // don't allow hars to overlap in the corners
             if (pos_b.x > 15) {
@@ -371,13 +391,13 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
         if(pos_a.x < pos_b.x + soft_limit && pos_a.x > pos_b.x) {
-            if (b->state == STATE_STANDING || b->state == STATE_WALKING || b->state == STATE_CROUCHING) {
+            if (b->state == STATE_STANDING || har_is_walking(b) || har_is_crouching(b)) {
                 a->close = 1;
             }
             a->hard_close = 1;
         }
     }
-    if(a->state == STATE_WALKING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
+    if(har_is_walking(a) && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
         if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x) {
             // don't allow hars to overlap in the corners
             if (pos_b.x < 305) {
@@ -390,7 +410,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
         if(pos_a.x + soft_limit > pos_b.x && pos_a.x < pos_b.x) {
-            if (b->state == STATE_STANDING || b->state == STATE_WALKING || b->state == STATE_CROUCHING) {
+            if (b->state == STATE_STANDING || har_is_walking(b) || har_is_crouching(b)) {
                 a->close = 1;
             }
             a->hard_close = 1;
@@ -419,7 +439,7 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 #endif
             || move->category == CAT_CLOSE))
     {
-        if (b->blocking && (b->state == STATE_WALKING || b->state == STATE_CROUCHING)) {
+        if (b->state == STATE_WALKFROM || b->state == STATE_CROUCHBLOCK) {
             har_block(obj_b, hit_coord);
             return;
         }
@@ -481,7 +501,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord))
 #endif
     {
-        if (h->blocking) {
+        if (h->state == STATE_WALKFROM || h->state == STATE_CROUCHBLOCK) {
             har_block(o_har, hit_coord);
             return;
         }
@@ -625,7 +645,7 @@ void har_tick(object *obj) {
 
     // Stop HAR from sliding if touching the ground
     if(h->state != STATE_JUMPING && h->state != STATE_FALLEN && h->state != STATE_RECOIL) {
-        if(h->state != STATE_WALKING || h->executing_move) {
+        if(!har_is_walking(h) || h->executing_move) {
             vec2f vel = object_get_vel(obj);
             vel.x = 0;
             object_set_vel(obj, vel);
@@ -656,16 +676,79 @@ void har_tick(object *obj) {
     }
 }
 
-void add_input(har *h, char c) {
+void add_input_to_buffer(char *buf, char c) {
     // only add it if it is not the current head of the array
-    if(h->inputs[0] == c) {
+    if(buf[0] == c) {
         return;
     }
 
     // use memmove to move everything over one spot in the array, leaving the first slot free
-    memmove((h->inputs)+1, h->inputs, 9);
+    memmove((buf)+1, buf, 9);
     // write the new first element
-    h->inputs[0] = c;
+    buf[0] = c;
+}
+
+void add_input(char *buf, int act_type, int direction) {
+   // for the reason behind the numbers, look at a numpad sometime
+    switch(act_type) {
+        case ACT_UP:
+            add_input_to_buffer(buf, '8');
+            break;
+        case ACT_DOWN:
+            add_input_to_buffer(buf, '2');
+            break;
+        case ACT_LEFT:
+            if(direction == OBJECT_FACE_LEFT) {
+                add_input_to_buffer(buf, '6');
+            } else {
+                add_input_to_buffer(buf, '4');
+            }
+            break;
+        case ACT_RIGHT:
+            if(direction == OBJECT_FACE_LEFT) {
+                add_input_to_buffer(buf, '4');
+            } else {
+                add_input_to_buffer(buf, '6');
+            }
+            break;
+        case ACT_UPRIGHT:
+            if(direction == OBJECT_FACE_LEFT) {
+                add_input_to_buffer(buf, '7');
+            } else {
+                add_input_to_buffer(buf, '9');
+            }
+            break;
+        case ACT_UPLEFT:
+            if(direction == OBJECT_FACE_LEFT) {
+                add_input_to_buffer(buf, '9');
+            } else {
+                add_input_to_buffer(buf, '7');
+            }
+            break;
+        case ACT_DOWNRIGHT:
+            if(direction == OBJECT_FACE_LEFT) {
+                add_input_to_buffer(buf, '1');
+            } else {
+                add_input_to_buffer(buf, '3');
+            }
+            break;
+        case ACT_DOWNLEFT:
+            if(direction == OBJECT_FACE_LEFT) {
+                add_input_to_buffer(buf, '3');
+            } else {
+                add_input_to_buffer(buf, '1');
+            }
+            break;
+        case ACT_KICK:
+            add_input_to_buffer(buf, 'K');
+            break;
+        case ACT_PUNCH:
+            add_input_to_buffer(buf, 'P');
+            break;
+        case ACT_STOP:
+            add_input_to_buffer(buf, '5');
+            break;
+    }
 }
 
 int frame_isset(sd_stringparser_frame *frame, const char *tag) {
@@ -680,94 +763,14 @@ int frame_get(sd_stringparser_frame *frame, const char *tag) {
     return v->value;
 }
 
-int har_act(object *obj, int act_type) {
+af_move* match_move(object *obj, char *inputs) {
     har *h = object_get_userdata(obj);
-    int direction = object_get_direction(obj);
-    if(!(h->state == STATE_STANDING ||
-         h->state == STATE_CROUCHING ||
-         h->state == STATE_WALKING ||
-         h->state == STATE_JUMPING ||
-         h->state == STATE_VICTORY ||
-         h->state == STATE_SCRAP)) {
-        // doing something else, ignore input
-        return 0;
-    }
-
-    // Don't allow movement if arena is starting or ending
-    int arena_state = arena_get_state(game_state_get_scene(obj->gs));
-    if(arena_state == ARENA_STATE_STARTING) {
-        return 0;
-    }
-
-    int oldstate = h->state;
-
-   // for the reason behind the numbers, look at a numpad sometime
-    switch(act_type) {
-        case ACT_UP:
-            add_input(h, '8');
-            break;
-        case ACT_DOWN:
-            add_input(h, '2');
-            break;
-        case ACT_LEFT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input(h, '6');
-            } else {
-                add_input(h, '4');
-            }
-            break;
-        case ACT_RIGHT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input(h, '4');
-            } else {
-                add_input(h, '6');
-            }
-            break;
-        case ACT_UPRIGHT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input(h, '7');
-            } else {
-                add_input(h, '9');
-            }
-            break;
-        case ACT_UPLEFT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input(h, '9');
-            } else {
-                add_input(h, '7');
-            }
-            break;
-        case ACT_DOWNRIGHT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input(h, '1');
-            } else {
-                add_input(h, '3');
-            }
-            break;
-        case ACT_DOWNLEFT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input(h, '3');
-            } else {
-                add_input(h, '1');
-            }
-            break;
-        case ACT_KICK:
-            add_input(h, 'K');
-            break;
-        case ACT_PUNCH:
-            add_input(h, 'P');
-            break;
-        case ACT_STOP:
-            add_input(h, '5');
-            break;
-    }
-
-    af_move *move;
+    af_move *move = NULL;
     size_t len;
     for(int i = 0; i < 70; i++) {
         if((move = af_get_move(h->af_data, i))) {
             len = move->move_string.len;
-            if(!strncmp(str_c(&move->move_string), h->inputs, len)) {
+            if(!strncmp(str_c(&move->move_string), inputs, len)) {
                 sd_stringparser_frame f = obj->animation_state.parser->current_frame;
                 if (move->category == CAT_CLOSE && h->close != 1) {
                     // not standing close enough
@@ -832,118 +835,192 @@ int har_act(object *obj, int act_type) {
 
                 DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
                 /*DEBUG("input was %s", h->inputs);*/
-
-                // we have to serialize these inputs in reverse, so walk the string backwards
-                char *s = (char*)str_c(&move->move_string); // start
-                for (int j = str_size(&move->move_string)-1; j >=0; j--) { 
-                    switch(s[j]) {
-                        case '1':
-                            if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(obj, ACT_DOWNRIGHT);
-                            } else {
-                                har_fire_hook(obj, ACT_DOWNLEFT);
-                            }
-                            break;
-                        case '2':
-                            har_fire_hook(obj, ACT_DOWN);
-                            break;
-                        case '3':
-                            if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(obj, ACT_DOWNLEFT);
-                            } else {
-                                har_fire_hook(obj, ACT_DOWNRIGHT);
-                            }
-                            break;
-                        case '4':
-                            if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(obj, ACT_RIGHT);
-                            } else {
-                                har_fire_hook(obj, ACT_LEFT);
-                            }
-                            break;
-                        case '5':
-                            har_fire_hook(obj, ACT_STOP);
-                            break;
-                        case '6':
-                            if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(obj, ACT_LEFT);
-                            } else {
-                                har_fire_hook(obj, ACT_RIGHT);
-                            }
-                            break;
-                        case '7':
-                            if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(obj, ACT_UPRIGHT);
-                            } else {
-                                har_fire_hook(obj, ACT_UPLEFT);
-                            }
-                            break;
-                        case '8':
-                            har_fire_hook(obj, ACT_UP);
-                            break;
-                        case '9':
-                            if(direction == OBJECT_FACE_LEFT) {
-                                har_fire_hook(obj, ACT_UPLEFT);
-                            } else {
-                                har_fire_hook(obj, ACT_UPRIGHT);
-                            }
-                            break;
-                        case 'K':
-                            har_fire_hook(obj, ACT_KICK);
-                            break;
-                        case 'P':
-                            har_fire_hook(obj, ACT_PUNCH);
-                            break;
-                    }
-                }
-
-#ifdef DEBUGMODE_STFU
-        DEBUG("UNKNOWN %u %u %u %u | %u %u %u %u | %u %u %u %u | %u %u %u %u | %u %u %u %u | %u",
-              move->unknown[0]&0xFF, move->unknown[1]&0xFF, move->unknown[2]&0xFF, move->unknown[3]&0xFF,
-              move->unknown[4]&0xFF, move->unknown[5]&0xFF, move->unknown[6]&0xFF, move->unknown[7]&0xFF,
-              move->unknown[8]&0xFF, move->unknown[9]&0xFF, move->unknown[10]&0xFF, move->unknown[11]&0xFF,
-              move->unknown[12]&0xFF, move->unknown[13]&0xFF, move->unknown[14]&0xFF, move->unknown[15]&0xFF,
-              move->unknown[16]&0xFF, move->unknown[17]&0xFF, move->unknown[18]&0xFF, move->unknown[19]&0xFF,
-              move->unknown[20]&0xFF);
-#endif
-
-                // Stop horizontal movement, when move is done
-                // TODO: Make this work better
-                vec2f spd = object_get_vel(obj);
-                //spd.x = 0.0f;
-                object_set_vel(obj, spd);
-
-                // Set correct animation etc.
-                // executing_move = 1 prevents new moves while old one is running.
-                har_set_ani(obj, i, 0);
-                h->inputs[0] = '\0';
-                h->executing_move = 1;
-
-                if (move->category == CAT_SCRAP) {
-                    DEBUG("going to scrap state");
-                    h->state = STATE_SCRAP;
-                }
-                if (move->category == CAT_DESTRUCTION) {
-                    DEBUG("going to destruction state");
-                    h->state = STATE_DESTRUCTION;
-                }
-
-                // make the other har participate in the scrap/destruction
-                if (move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
-                    int opp_id = h->player_id ? 0 : 1;
-                    af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
-                    object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
-                    object_set_animation(opp, &af_get_move(((har*)opp->userdata)->af_data, ANIM_DAMAGE)->ani);
-                    object_set_repeat(opp, 0);
-                    object_set_custom_string(opp, str_c(&move->footer_string));
-                    object_tick(opp);
-                }
-
-                // we actually did something interesting
-                // return 1 so we can use this as sync point for netplay
-                return 1;
+                return move;
             }
         }
+    }
+    return NULL;
+}
+
+int maybe_har_change_state(int oldstate, int direction, int act_type) {
+    int state = 0;
+    switch(act_type) {
+        case ACT_DOWNRIGHT:
+            if (direction == OBJECT_FACE_LEFT) {
+                state = STATE_CROUCHBLOCK;
+            } else {
+                state = STATE_CROUCHING;
+            }
+            break;
+        case ACT_DOWNLEFT:
+            if (direction == OBJECT_FACE_RIGHT) {
+                state = STATE_CROUCHBLOCK;
+            } else {
+                state = STATE_CROUCHING;
+            }
+            break;
+        case ACT_DOWN:
+            state = STATE_CROUCHING;
+            break;
+        case ACT_STOP:
+            state = STATE_STANDING;
+            break;
+        case ACT_LEFT:
+            if (direction == OBJECT_FACE_LEFT) {
+                state = STATE_WALKTO;
+            } else {
+                state = STATE_WALKFROM;
+            }
+            break;
+        case ACT_RIGHT:
+            if (direction == OBJECT_FACE_RIGHT) {
+                state = STATE_WALKTO;
+            } else {
+                state = STATE_WALKFROM;
+            }
+            break;
+        case ACT_UP:
+            state = STATE_JUMPING;
+            break;
+        case ACT_UPLEFT:
+            state = STATE_JUMPING;
+            break;
+        case ACT_UPRIGHT:
+            state = STATE_JUMPING;
+            break;
+    }
+    if (oldstate != state) {
+        // we changed state
+        return state;
+    }
+    return 0;
+}
+
+int har_act(object *obj, int act_type) {
+    har *h = object_get_userdata(obj);
+    int direction = object_get_direction(obj);
+    if(!(h->state == STATE_STANDING ||
+         har_is_walking(h) ||
+         har_is_crouching(h) ||
+         h->state == STATE_JUMPING ||
+         h->state == STATE_VICTORY ||
+         h->state == STATE_SCRAP)) {
+        // doing something else, ignore input
+        return 0;
+    }
+
+    // Don't allow movement if arena is starting or ending
+    int arena_state = arena_get_state(game_state_get_scene(obj->gs));
+    if(arena_state == ARENA_STATE_STARTING) {
+        return 0;
+    }
+
+    int oldstate = h->state;
+
+    add_input(h->inputs, act_type, direction);
+
+    af_move *move = match_move(obj, h->inputs);
+
+    if (move) {
+        char *s = (char*)str_c(&move->move_string); // start
+        for (int j = str_size(&move->move_string)-1; j >=0; j--) { 
+            switch(s[j]) {
+                case '1':
+                    if(direction == OBJECT_FACE_LEFT) {
+                        har_fire_hook(obj, ACT_DOWNRIGHT);
+                    } else {
+                        har_fire_hook(obj, ACT_DOWNLEFT);
+                    }
+                    break;
+                case '2':
+                    har_fire_hook(obj, ACT_DOWN);
+                    break;
+                case '3':
+                    if(direction == OBJECT_FACE_LEFT) {
+                        har_fire_hook(obj, ACT_DOWNLEFT);
+                    } else {
+                        har_fire_hook(obj, ACT_DOWNRIGHT);
+                    }
+                    break;
+                case '4':
+                    if(direction == OBJECT_FACE_LEFT) {
+                        har_fire_hook(obj, ACT_RIGHT);
+                    } else {
+                        har_fire_hook(obj, ACT_LEFT);
+                    }
+                    break;
+                case '5':
+                    har_fire_hook(obj, ACT_STOP);
+                    break;
+                case '6':
+                    if(direction == OBJECT_FACE_LEFT) {
+                        har_fire_hook(obj, ACT_LEFT);
+                    } else {
+                        har_fire_hook(obj, ACT_RIGHT);
+                    }
+                    break;
+                case '7':
+                    if(direction == OBJECT_FACE_LEFT) {
+                        har_fire_hook(obj, ACT_UPRIGHT);
+                    } else {
+                        har_fire_hook(obj, ACT_UPLEFT);
+                    }
+                    break;
+                case '8':
+                    har_fire_hook(obj, ACT_UP);
+                    break;
+                case '9':
+                    if(direction == OBJECT_FACE_LEFT) {
+                        har_fire_hook(obj, ACT_UPLEFT);
+                    } else {
+                        har_fire_hook(obj, ACT_UPRIGHT);
+                    }
+                    break;
+                case 'K':
+                    har_fire_hook(obj, ACT_KICK);
+                    break;
+                case 'P':
+                    har_fire_hook(obj, ACT_PUNCH);
+                    break;
+            }
+        }
+        har_fire_hook(obj, ACT_FLUSH);
+
+        // Stop horizontal movement, when move is done
+        // TODO: Make this work better
+        vec2f spd = object_get_vel(obj);
+        //spd.x = 0.0f;
+        object_set_vel(obj, spd);
+
+        // Set correct animation etc.
+        // executing_move = 1 prevents new moves while old one is running.
+        har_set_ani(obj, move->id, 0);
+        h->inputs[0] = '\0';
+        h->executing_move = 1;
+
+        if (move->category == CAT_SCRAP) {
+            DEBUG("going to scrap state");
+            h->state = STATE_SCRAP;
+        }
+        if (move->category == CAT_DESTRUCTION) {
+            DEBUG("going to destruction state");
+            h->state = STATE_DESTRUCTION;
+        }
+
+        // make the other har participate in the scrap/destruction
+        if (move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
+            int opp_id = h->player_id ? 0 : 1;
+            af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
+            object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
+            object_set_animation(opp, &af_get_move(((har*)opp->userdata)->af_data, ANIM_DAMAGE)->ani);
+            object_set_repeat(opp, 0);
+            object_set_custom_string(opp, str_c(&move->footer_string));
+            object_tick(opp);
+        }
+
+        // we actually did something interesting
+        // return 1 so we can use this as sync point for netplay
+        return 1;
     }
 
     // Don't allow new movement while we're still executing a move
@@ -960,167 +1037,66 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
-    // no moves matched, do player movement
     float vx, vy;
-    h->blocking = 0;
-    switch(act_type) {
-        case ACT_DOWNRIGHT:
-            if(direction == OBJECT_FACE_LEFT) {
-                h->blocking = 1;
-            }
-            if(h->state != STATE_CROUCHING) {
+    // no moves matched, do player movement
+    int newstate;
+    if ((newstate = maybe_har_change_state(h->state, direction, act_type))) {
+        h->state = newstate;
+        switch(newstate) {
+            case STATE_CROUCHBLOCK:
                 har_set_ani(obj, ANIM_CROUCHING, 1);
                 object_set_vel(obj, vec2f_create(0,0));
-                h->state = STATE_CROUCHING;
-                har_fire_hook(obj, ACT_DOWNRIGHT);
-            }
-            break;
-        case ACT_DOWNLEFT:
-            if(direction == OBJECT_FACE_RIGHT) {
-                h->blocking = 1;
-            }
-            if(h->state != STATE_CROUCHING) {
+                break;
+            case STATE_CROUCHING:
                 har_set_ani(obj, ANIM_CROUCHING, 1);
                 object_set_vel(obj, vec2f_create(0,0));
-                h->state = STATE_CROUCHING;
-                har_fire_hook(obj, ACT_DOWNLEFT);
-            }
-            break;
-        case ACT_DOWN:
-            if(h->state != STATE_CROUCHING) {
-                har_set_ani(obj, ANIM_CROUCHING, 1);
-                object_set_vel(obj, vec2f_create(0,0));
-                h->state = STATE_CROUCHING;
-                har_fire_hook(obj, ACT_DOWN);
-            }
-            break;
-        case ACT_STOP:
-            if(h->state != STATE_STANDING) {
+                break;
+            case STATE_STANDING:
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_vel(obj, vec2f_create(0,0));
                 obj->slide_state.vel.x = 0;
-                h->state = STATE_STANDING;
-                har_fire_hook(obj, ACT_STOP);
-            }
-            break;
-        case ACT_LEFT:
-            if(h->state != STATE_WALKING) {
+                break;
+            case STATE_WALKTO:
                 har_set_ani(obj, ANIM_WALKING, 1);
-                h->state = STATE_WALKING;
-                har_fire_hook(obj, ACT_LEFT);
-            }
-            if(direction == OBJECT_FACE_LEFT) {
-                vx = (h->af_data->forward_speed*-1)/(float)320;
-            } else {
-                h->blocking = 1;
-                vx = h->af_data->reverse_speed*-1/(float)320;
-            }
-            // fire hook when changing walking direction
-            if(object_get_vel(obj).x > 0) {
-                har_fire_hook(obj, ACT_LEFT);
-            }
-            object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
-            break;
-        case ACT_RIGHT:
-            if(h->state != STATE_WALKING) {
+                vx = (h->af_data->forward_speed*direction)/(float)320;
+                object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
+                break;
+            case STATE_WALKFROM:
                 har_set_ani(obj, ANIM_WALKING, 1);
-                h->state = STATE_WALKING;
-                har_fire_hook(obj, ACT_RIGHT);
-            }
-            if(direction == OBJECT_FACE_LEFT) {
-                h->blocking = 1;
-                vx = h->af_data->reverse_speed/(float)320;
-            } else {
-                vx = h->af_data->forward_speed/(float)320;
-            }
-            // fire hook when changing walking direction
-            if(object_get_vel(obj).x < 0) {
-                har_fire_hook(obj, ACT_RIGHT);
-            }
-            object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
-            break;
-        case ACT_UP:
-            if(h->state != STATE_JUMPING) {
+                vx = (h->af_data->reverse_speed*direction*-1)/(float)320;
+                object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
+                break;
+            case STATE_JUMPING:
                 har_set_ani(obj, ANIM_JUMPING, 0);
-                object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
+                vx = 0.0f;
                 vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
-                if (h->state == STATE_CROUCHING) {
-                    // jumping frop crouch makes you jump 25% higher
-                    vy = vy * 1.25;
+                if ((act_type == ACT_UPLEFT && direction == OBJECT_FACE_LEFT) ||
+                        (act_type == ACT_UPRIGHT && direction == OBJECT_FACE_RIGHT)) {
+                    vx = (h->af_data->forward_speed*direction)/(float)320;
+                    object_set_tick_pos(obj, 110);
+                    object_set_stride(obj, 7); // Pass 10 frames per tick
+                } else if (act_type == ACT_UPLEFT || act_type == ACT_UPRIGHT) {
+                    // If we are jumping backwards, start animation from end
+                    // at -100 frames (seems to be about right)
+                    object_set_playback_direction(obj, PLAY_BACKWARDS);
+                    object_set_tick_pos(obj, -110);
+                    vx = (h->af_data->reverse_speed*direction*-1)/(float)320;
+                    object_set_stride(obj, 7); // Pass 10 frames per tick
                 }
-                object_set_vel(obj, vec2f_create(0,vy));
-                object_set_tick_pos(obj, 100);
-                h->state = STATE_JUMPING;
-                har_fire_hook(obj, ACT_UP);
-            }
-            break;
-        case ACT_UPLEFT:
-            if(h->state != STATE_JUMPING) {
-                har_set_ani(obj, ANIM_JUMPING, 0);
-                vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
-                vx = h->af_data->reverse_speed*-1/(float)320;
-                if (h->state == STATE_CROUCHING) {
+                if (oldstate == STATE_CROUCHING || oldstate == STATE_CROUCHBLOCK) {
                     // jumping frop crouch makes you jump 25% higher
                     vy = vy * 1.25;
                     vx = vx * 1.25;
                 }
                 object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
-                if(direction == OBJECT_FACE_LEFT) {
-                    vx = (h->af_data->forward_speed*-1)/(float)320;
-                }
                 object_set_vel(obj, vec2f_create(vx,vy));
-                object_set_stride(obj, 7); 
-                if(object_get_direction(obj) == OBJECT_FACE_RIGHT) {
-                    // If we are jumping backwards, start animation from end
-                    // at -100 frames (seems to be about right)
-                    object_set_playback_direction(obj, PLAY_BACKWARDS);
-                    object_set_tick_pos(obj, -110);
-                } else {
-                    object_set_tick_pos(obj, 110);
-                }
-                h->state = STATE_JUMPING;
-                har_fire_hook(obj, ACT_UPLEFT);
-            }
-            break;
-        case ACT_UPRIGHT:
-            if(h->state != STATE_JUMPING) {
-                har_set_ani(obj, ANIM_JUMPING, 0);
-                vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
-                vx = h->af_data->forward_speed/(float)320;
-                if (h->state == STATE_CROUCHING) {
-                    // jumping frop crouch makes you jump 25% higher
-                    vy = vy * 1.25;
-                    vx = vx * 1.25;
-                }
-                object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
-                if(direction == OBJECT_FACE_LEFT) {
-                    vx = h->af_data->reverse_speed/(float)320;
-                }
-                object_set_vel(obj, vec2f_create(vx,vy));
-                object_set_stride(obj, 7); // Pass 10 frames per tick
-                if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-                    // If we are jumping backwards, start animation from end
-                    // at -100 frames (seems to be about right)
-                    object_set_playback_direction(obj, PLAY_BACKWARDS);
-                    object_set_tick_pos(obj, -110);
-                } else {
-                    object_set_tick_pos(obj, 110);
-                    
-                }
-                h->state = STATE_JUMPING;
-                har_fire_hook(obj, ACT_UPRIGHT);
-            }
-            break;
-    }
-
-    if (oldstate != h->state) {
-        // hey we changed state, that's interesting, right?
+                break;
+        }
+        har_fire_hook(obj, act_type);
+        har_fire_hook(obj, ACT_FLUSH);
         return 1;
     }
 
-    // XXX if we got here, we were just moving around
-    // it is not clear if we need to trigger a netplay sync here
-    // maybe at least jumping would be nice
     return 0;
 }
 
@@ -1151,7 +1127,7 @@ void har_finished(object *obj) {
         }
         h->state = STATE_STANDING;
         har_set_ani(obj, ANIM_IDLE, 1);
-    } else if(h->state != STATE_CROUCHING) {
+    } else if(h->state != STATE_CROUCHING && h->state != STATE_CROUCHBLOCK) {
         // Don't transition to standing state while in midair
         if(h->state != STATE_JUMPING) { h->state = STATE_STANDING; }
         har_set_ani(obj, ANIM_IDLE, 1);
@@ -1184,7 +1160,6 @@ int har_serialize(object *obj, serial *ser) {
     serial_write_int8(ser, h->player_id);
     serial_write_int8(ser, h->pilot_id);
     serial_write_int8(ser, h->state);
-    serial_write_int8(ser, h->blocking);
     serial_write_int8(ser, h->executing_move);
     serial_write_int8(ser, h->flinching);
     serial_write_int8(ser, h->close);
@@ -1229,7 +1204,6 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
 
     // TODO sanity check pilot/player/HAR IDs
     h->state = serial_read_int8(ser);
-    h->blocking = serial_read_int8(ser);
     h->executing_move = serial_read_int8(ser);
     h->flinching = serial_read_int8(ser);
     h->close = serial_read_int8(ser);
@@ -1300,6 +1274,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->hard_close =  0;
     local->state = STATE_STANDING;
     local->executing_move = 0;
+
+    local->delay = 0;
 
     local->action_hook_cb = NULL;
     local->action_hook_cb_data = NULL;

@@ -188,6 +188,10 @@ void object_set_stride(object *obj, int stride) {
     obj->stride = stride;
 }
 
+void object_set_delay(object *obj, int delay) {
+    player_set_delay(obj, delay);
+}
+
 void object_set_playback_direction(object *obj, int dir) {
     if(dir != PLAY_FORWARDS && dir != PLAY_BACKWARDS) {
         dir = PLAY_FORWARDS;

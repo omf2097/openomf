@@ -36,9 +36,11 @@ enum {
 };
 
 enum {
-    STATE_STANDING,
-    STATE_WALKING,
+    STATE_STANDING = 1,
+    STATE_WALKTO,
+    STATE_WALKFROM,
     STATE_CROUCHING,
+    STATE_CROUCHBLOCK,
     STATE_JUMPING,
     STATE_RECOIL,
     STATE_FALLEN,
@@ -71,7 +73,6 @@ typedef struct har_t {
     uint8_t player_id;
     uint8_t pilot_id;
     uint8_t state;
-    uint8_t blocking;
     uint8_t executing_move;
     uint8_t flinching;
     uint8_t close;
@@ -85,6 +86,7 @@ typedef struct har_t {
     uint8_t hard_close;
 
     uint8_t stun_timer;
+    uint8_t delay; // used for 'stretching' frames in netplay
 
     har_action_hook_cb action_hook_cb;
     void *action_hook_cb_data;
@@ -112,6 +114,8 @@ void har_bootstrap(object *obj);
 int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id);
 void har_set_ani(object *obj, int animation_id, int repeat);
 int har_is_active(object *obj);
+int har_is_crouching(har *h);
+int har_is_walking(har *h);
 void har_copy_actions(object *new, object *old);
 
 #endif // _HAR_H

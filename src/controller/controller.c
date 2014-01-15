@@ -15,6 +15,7 @@ void controller_init(controller *ctrl) {
     ctrl->poll_fun = NULL;
     ctrl->tick_fun = NULL;
     ctrl->update_fun = NULL;
+    ctrl->rtt = 0;
 }
 
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type)) {

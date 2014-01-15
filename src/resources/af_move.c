@@ -6,6 +6,7 @@ void af_move_create(af_move *move, void *src, int id) {
     sd_move *sdmv = (sd_move*)src;
     str_create_from_cstr(&move->move_string, sdmv->move_string);
     str_create_from_cstr(&move->footer_string, sdmv->footer_string);
+    move->id = id;
     move->next_move = sdmv->unknown[12];
     move->successor_id = sdmv->unknown[16];
     move->category = sdmv->unknown[13];

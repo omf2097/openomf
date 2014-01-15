@@ -8,47 +8,70 @@ void keyboard_free(controller *ctrl) {
     free(k);
 }
 
-int keyboard_poll(controller *ctrl, ctrl_event **ev) {
+int keyboard_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     keyboard *k = ctrl->data;
+    k->tick = ticks;
+    int i = ticks % KEYBOARD_INPUT_BUFFER_SIZE;
     const unsigned char *state = SDL_GetKeyboardState(NULL);
-    int handled = 0;
+    k->buffer[i] = ACT_STOP;
 
     if ( state[k->keys->left] && state[k->keys->up]) {
-        controller_cmd(ctrl, ACT_UPLEFT, ev);
-        handled = 1;
+        k->buffer[i] |= ACT_UPLEFT;
     } else if ( state[k->keys->left] && state[k->keys->down]) {
-        controller_cmd(ctrl, ACT_DOWNLEFT, ev);
-        handled = 1;
+        k->buffer[i] |= ACT_DOWNLEFT;
     } else  if ( state[k->keys->right] && state[k->keys->up]) {
-        controller_cmd(ctrl, ACT_UPRIGHT, ev);
-        handled = 1;
+        k->buffer[i] |= ACT_UPRIGHT;
     } else  if ( state[k->keys->right] && state[k->keys->down]) {
-        controller_cmd(ctrl, ACT_DOWNRIGHT, ev);
-        handled = 1;
+        k->buffer[i] |= ACT_DOWNRIGHT;
     } else if ( state[k->keys->right]) {
-        controller_cmd(ctrl, ACT_RIGHT, ev);
-        handled = 1;
+        k->buffer[i] |= ACT_RIGHT;
     } else if ( state[k->keys->left]) {
-        controller_cmd(ctrl, ACT_LEFT, ev);
-        handled = 1;
+        k->buffer[i] |= ACT_LEFT;
     } else if ( state[k->keys->up]) {
-        controller_cmd(ctrl, ACT_UP, ev);
-        handled = 1;
+        k->buffer[i] |= ACT_UP;
     } else if ( state[k->keys->down]) {
-        controller_cmd(ctrl, ACT_DOWN, ev);
-        handled = 1;
+        k->buffer[i] |= ACT_DOWN;
     }
 
     if (state[k->keys->punch]) {
-        controller_cmd(ctrl, ACT_PUNCH, ev);
-        handled = 1;
+        k->buffer[i] |= ACT_PUNCH;
     } else if (state[k->keys->kick]) {
-        controller_cmd(ctrl, ACT_KICK, ev);
-        handled = 1;
+        k->buffer[i] |= ACT_KICK;
     }
 
-    // If key was handled here, return 0. Otherwise 1.
-    if(!handled) {
+    return 0;
+}
+
+int keyboard_poll(controller *ctrl, ctrl_event **ev) {
+    keyboard *k = ctrl->data;
+    int i = (k->tick - k->delay) % KEYBOARD_INPUT_BUFFER_SIZE;
+    uint16_t input = k->buffer[i];
+
+    if (input & ACT_UPLEFT) {
+        controller_cmd(ctrl, ACT_UPLEFT, ev);
+    } else if (input & ACT_DOWNLEFT) {
+        controller_cmd(ctrl, ACT_DOWNLEFT, ev);
+    } else  if (input & ACT_UPRIGHT) {
+        controller_cmd(ctrl, ACT_UPRIGHT, ev);
+    } else  if (input & ACT_DOWNRIGHT) {
+        controller_cmd(ctrl, ACT_DOWNRIGHT, ev);
+    } else if (input & ACT_RIGHT) {
+        controller_cmd(ctrl, ACT_RIGHT, ev);
+    } else if (input & ACT_LEFT) {
+        controller_cmd(ctrl, ACT_LEFT, ev);
+    } else if (input & ACT_UP) {
+        controller_cmd(ctrl, ACT_UP, ev);
+    } else if (input & ACT_DOWN) {
+        controller_cmd(ctrl, ACT_DOWN, ev);
+    }
+
+    if (input & ACT_PUNCH) {
+        controller_cmd(ctrl, ACT_PUNCH, ev);
+    } else if (input & ACT_KICK) {
+        controller_cmd(ctrl, ACT_KICK, ev);
+    }
+
+    if(input == ACT_STOP) {
         controller_cmd(ctrl, ACT_STOP, ev);
     }
     return 0;
@@ -86,12 +109,25 @@ int keyboard_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
     return 1;
 }
 
-void keyboard_create(controller *ctrl, keyboard_keys *keys) {
+void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
     keyboard *k = malloc(sizeof(keyboard));
     k->keys = keys;
+    k->delay = delay;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_KEYBOARD;
     ctrl->poll_fun = &keyboard_poll;
     ctrl->event_fun = &keyboard_event;
+    ctrl->tick_fun = &keyboard_tick;
+    for (int i = 0; i < KEYBOARD_INPUT_BUFFER_SIZE; i++) {
+        k->buffer[i] = ACT_STOP;
+    }
     /*controller_add_hook(ctrl, &hook);*/
+}
+
+void keyboard_set_delay(controller *ctrl, int delay) {
+    keyboard *k = ctrl->data;
+    if (delay != k->delay && delay < 10 && delay > 0) {
+        DEBUG("Keyboard input delay changed: %d -> %d", k->delay, delay);
+        k->delay = delay;
+    }
 }

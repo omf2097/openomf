@@ -64,5 +64,6 @@ int player_get_frame(object *obj);
 void player_jump_to_tick(object *obj, int tick);
 char player_get_frame_letter(object *obj);
 unsigned int player_get_len_ticks(object *obj);
+void player_set_delay(object *obj, int delay);
 
 #endif // _PLAYER_H
