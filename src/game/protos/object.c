@@ -375,13 +375,13 @@ void object_move(object *obj) {
     }
 }
 
-void object_palette_transform(object *obj, palette *pal) {
+int object_palette_transform(object *obj, screen_palette *pal) {
     player_sprite_state *rstate = &obj->sprite_state;
     if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
         float bp = ((float)rstate->pal_begin) + 
             ((float)rstate->pal_end - (float)rstate->pal_begin) * 
             ((float)rstate->timer / (float)rstate->duration);
-
+/*
         DEBUG("Palette transform: level(begin=%d,end=%d), range(start=%d,count=%d), tint = %d, reference = %d, level = %f, tick = %d / %d",
             rstate->pal_begin, rstate->pal_end,
             rstate->pal_start_index, rstate->pal_entry_count,
@@ -389,7 +389,7 @@ void object_palette_transform(object *obj, palette *pal) {
             rstate->pal_ref_index,
             bp,
             rstate->timer, rstate->duration);
-
+*/
         color b;
         b.r = pal->data[rstate->pal_ref_index][0];
         b.g = pal->data[rstate->pal_ref_index][1];
@@ -397,7 +397,7 @@ void object_palette_transform(object *obj, palette *pal) {
 
         uint8_t m;
         float u;
-        float k = bp / 64.0f;
+        float k = bp / 255.0f;
         for(int i = rstate->pal_start_index; i < rstate->pal_start_index + rstate->pal_entry_count; i++) {
             if(rstate->pal_tint) {
                 m = max3(pal->data[i][0], pal->data[i][1], pal->data[i][2]);
@@ -410,8 +410,10 @@ void object_palette_transform(object *obj, palette *pal) {
                 pal->data[i][1] = max(0, min(255, pal->data[i][1] * (1 - k) + (b.g * k)));
                 pal->data[i][2] = max(0, min(255, pal->data[i][2] * (1 - k) + (b.b * k)));
             }
-        } 
+        }
+        return 1;
     }
+    return 0;
 }
 
 void object_free(object *obj) {

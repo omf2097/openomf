@@ -147,8 +147,19 @@ void game_state_render(game_state *gs) {
 
     // Do palette transformations
     vector_iter_begin(&gs->objects, &it);
+    int pal_changed = 0;
+    screen_palette *scr_pal = video_get_pal_ref();
     while((robj = iter_next(&it)) != NULL) {
-        object_palette_transform(robj->obj, video_get_pal_ref());
+        if(object_palette_transform(robj->obj, scr_pal) == 1) {
+            pal_changed = 1;
+        }
+    }
+
+    // If changes were made to palette, then 
+    // all resources that depend on it must be redrawn.
+    // This will take care of it.
+    if(pal_changed) {
+        scr_pal->version++;
     }
 
     // Render scene background

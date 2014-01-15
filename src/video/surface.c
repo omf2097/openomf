@@ -14,6 +14,11 @@ void surface_create(surface *sur, int type, int w, int h) {
     sur->w = w;
     sur->h = h;
     sur->type = type;
+
+    sur->cache_version = 0;
+    sur->cache_tex = NULL;
+    sur->cache_remap_table = NULL;
+    sur->cache_refresh_flag = 0;
 }
 
 void surface_create_from_data(surface *sur, int type, int w, int h, const char *src) {
@@ -37,6 +42,10 @@ void surface_free(surface *sur) {
     if(sur->stencil != NULL) {
         free(sur->stencil);
         sur->stencil = NULL;
+    }
+    if(sur->cache_tex != NULL) {
+        SDL_DestroyTexture(sur->cache_tex);
+        sur->cache_tex = NULL;
     }
 }
 
@@ -71,9 +80,15 @@ void surface_sub(surface *dst, surface *src, int x, int y, int w, int h) {
     }
 }
 
-SDL_Texture* surface_to_sdl(surface *sur, SDL_Renderer *renderer, palette *pal, int remap) {
+void surface_force_refresh(surface *sur) {
+    sur->cache_refresh_flag = 1;
+}
+
+void surface_refresh_cache(surface *sur, 
+                           SDL_Renderer *renderer, 
+                           screen_palette *pal, 
+                           char *remap_table) {
     SDL_Surface *s;
-    SDL_Texture *ret;
     if(sur->type == SURFACE_TYPE_RGBA) {
         s = SDL_CreateRGBSurfaceFrom(
             sur->data,
@@ -86,7 +101,7 @@ SDL_Texture* surface_to_sdl(surface *sur, SDL_Renderer *renderer, palette *pal, 
             0x00FF0000,
             0xFF000000
         );
-        ret = SDL_CreateTextureFromSurface(renderer, s);
+        sur->cache_tex = SDL_CreateTextureFromSurface(renderer, s);
         SDL_FreeSurface(s);
     } else {
         char *tmp = malloc(sur->w * sur->h * 4);
@@ -94,8 +109,8 @@ SDL_Texture* surface_to_sdl(surface *sur, SDL_Renderer *renderer, palette *pal, 
         uint8_t idx = 0;
         for(int i = 0; i < sur->w * sur->h; i++) {
             n = i * 4;
-            if(remap > -1) {
-                idx = (uint8_t)pal->remaps[remap][(uint8_t)sur->data[i]];
+            if(remap_table != NULL) {
+                idx = (uint8_t)remap_table[(uint8_t)sur->data[i]];
             } else {
                 idx = (uint8_t)sur->data[i];
             }
@@ -115,9 +130,38 @@ SDL_Texture* surface_to_sdl(surface *sur, SDL_Renderer *renderer, palette *pal, 
             0x00FF0000,
             0xFF000000
         );
-        ret = SDL_CreateTextureFromSurface(renderer, s);
+        sur->cache_tex = SDL_CreateTextureFromSurface(renderer, s);
         SDL_FreeSurface(s);
         free(tmp);
     }
-    return ret;
+
+    sur->cache_version = pal->version;
+    sur->cache_remap_table = remap_table;
+    sur->cache_refresh_flag = 0;
+}
+
+SDL_Texture* surface_to_sdl(surface *sur, 
+                            SDL_Renderer *renderer, 
+                            screen_palette *pal, 
+                            char *remap_table,
+                            int *status) {
+
+    // If the cache is old, or there is no cached texture, regenerate it now
+    if(sur->cache_remap_table != remap_table
+       || sur->cache_version < pal->version
+       || sur->cache_tex == NULL
+       || sur->cache_refresh_flag == 1) {
+
+        if(sur->cache_tex != NULL) {
+            SDL_DestroyTexture(sur->cache_tex);
+        }
+
+        surface_refresh_cache(sur, renderer, pal, remap_table);
+        *status = 1;
+    } else {
+        *status = 0;
+    }
+
+    // Return reference to cache. Texture must NOT be freed outside surface!
+    return sur->cache_tex;
 }

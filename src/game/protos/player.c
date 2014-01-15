@@ -340,10 +340,10 @@ void player_run(object *obj) {
                 rstate->pal_entry_count = 48;
             }
             if(isset(f, "bpp")) { 
-                rstate->pal_end = get(f, "bpp");
-                rstate->pal_begin = get(f, "bpp"); 
+                rstate->pal_end = get(f, "bpp") * 4;
+                rstate->pal_begin = get(f, "bpp") * 4; 
             }
-            if(isset(f, "bpb")) { rstate->pal_begin = get(f, "bpb"); }
+            if(isset(f, "bpb")) { rstate->pal_begin = get(f, "bpb") * 4; }
             if(isset(f, "bz"))  { rstate->pal_tint = 1; }
 
             // Handle movement

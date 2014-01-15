@@ -14,7 +14,10 @@ typedef struct {
     int fs;
     int vsync;
     palette *base_palette;
-    palette *hw_palette;
+    screen_palette *cur_palette;
+
+    int cache_hits;
+    int cache_regens;
 } video_state;
 
 static video_state state;
@@ -24,8 +27,13 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     state.h = window_h;
     state.fs = fullscreen;
     state.vsync = vsync;
-    state.hw_palette = malloc(sizeof(palette));
+    state.cur_palette = malloc(sizeof(screen_palette));
     state.base_palette = malloc(sizeof(palette));
+    state.cur_palette->version = 1;
+    memset(state.cur_palette->data, 0, 768);
+
+    state.cache_regens = 0;
+    state.cache_hits = 0;
 
     // Open window
     state.window = SDL_CreateWindow(
@@ -128,34 +136,41 @@ void video_screenshot(image *img) {
 
 void video_set_base_palette(const palette *src) {
     memcpy(state.base_palette, src, sizeof(palette));
-    memcpy(state.hw_palette, src, sizeof(palette));
-}
-
-void video_reset_base_palette() {
-    memcpy(state.hw_palette->data, state.base_palette->data, 768);
+    memcpy(state.cur_palette->data, src->data, 768);
 }
 
 void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount) {
-    memcpy(state.hw_palette->data + dst_start * 3, 
+    memcpy(state.cur_palette->data + dst_start * 3, 
            src->data + src_start * 3, 
            amount * 3);
 }
 
-palette* video_get_pal_ref() {
-    return state.hw_palette;
+screen_palette* video_get_pal_ref() {
+    return state.cur_palette;
+}
+
+void handle_cache_flag(int cache_state) {
+    if(cache_state == 1) {
+        state.cache_regens++;
+    } else {
+        state.cache_hits++;
+    }
 }
 
 void video_render_prepare() {
     SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
     SDL_RenderClear(state.renderer);
-    video_reset_base_palette();
+
+    // Reset palette
+    memcpy(state.cur_palette->data, state.base_palette->data, 768);
 }
 
 void video_render_background(surface *sur) {
-    SDL_Texture *bg = surface_to_sdl(sur, state.renderer, state.hw_palette, -1);
+    int cache_state;
+    SDL_Texture *bg = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, &cache_state);
+    handle_cache_flag(cache_state);
     SDL_SetTextureBlendMode(bg, SDL_BLENDMODE_NONE);
     SDL_RenderCopy(state.renderer, bg, NULL, NULL);
-    SDL_DestroyTexture(bg);
 }
 
 void video_render_char(surface *sur, int sx, int sy, color c) {
@@ -165,11 +180,12 @@ void video_render_char(surface *sur, int sx, int sy, color c) {
     dst.w = sur->w;
     dst.h = sur->h;
 
-    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.hw_palette, -1);
+    int cache_state;
+    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, &cache_state);
+    handle_cache_flag(cache_state);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
     SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
     SDL_RenderCopy(state.renderer, tex, NULL, &dst);
-    SDL_DestroyTexture(tex);
 }
 
 void video_render_sprite(surface *sur, int sx, int sy, unsigned int rendering_mode) {
@@ -183,7 +199,9 @@ void video_render_sprite_flip_scale(surface *sur, int sx, int sy, unsigned int r
     dst.w = sur->w;
     dst.h = sur->h;
 
-    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.hw_palette, -1);
+    int cache_state;
+    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, &cache_state);
+    handle_cache_flag(cache_state);
     switch(rendering_mode) {
         case BLEND_ADDITIVE:
             SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
@@ -197,7 +215,6 @@ void video_render_sprite_flip_scale(surface *sur, int sx, int sy, unsigned int r
     if(flip_mode & FLIP_HORIZONTAL) flip |= SDL_FLIP_HORIZONTAL;
     if(flip_mode & FLIP_VERTICAL) flip |= SDL_FLIP_VERTICAL;
     SDL_RenderCopyEx(state.renderer, tex, NULL, &dst, 0, NULL, flip);
-    SDL_DestroyTexture(tex);
 }
 
 void video_render_finish() {
@@ -207,6 +224,7 @@ void video_render_finish() {
 void video_close() {
     SDL_DestroyRenderer(state.renderer);
     SDL_DestroyWindow(state.window);
-    free(state.hw_palette);
+    free(state.cur_palette);
     INFO("Video deinit.");
+    DEBUG("Total of %d cache hits and %d cache regens.", state.cache_hits, state.cache_regens);
 }
