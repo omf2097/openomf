@@ -3,6 +3,7 @@
 
 #include "resources/animation.h"
 #include "resources/sprite.h"
+#include "resources/palette.h"
 #include "game/protos/player.h"
 #include "utils/vec.h"
 #include "utils/hashmap.h"
@@ -108,6 +109,7 @@ void object_debug(object *obj);
 void object_tick(object *obj);
 void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
+void object_palette_transform(object *obj, palette *pal);
 void object_render(object *obj);
 void object_collide(object *a, object *b);
 int object_act(object *obj, int action);

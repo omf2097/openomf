@@ -13,6 +13,7 @@ typedef struct {
     int h;
     int fs;
     int vsync;
+    palette *base_palette;
     palette *hw_palette;
 } video_state;
 
@@ -24,6 +25,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     state.fs = fullscreen;
     state.vsync = vsync;
     state.hw_palette = malloc(sizeof(palette));
+    state.base_palette = malloc(sizeof(palette));
 
     // Open window
     state.window = SDL_CreateWindow(
@@ -125,7 +127,12 @@ void video_screenshot(image *img) {
 }
 
 void video_set_base_palette(const palette *src) {
+    memcpy(state.base_palette, src, sizeof(palette));
     memcpy(state.hw_palette, src, sizeof(palette));
+}
+
+void video_reset_base_palette() {
+    memcpy(state.hw_palette->data, state.base_palette->data, 768);
 }
 
 void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount) {
@@ -134,13 +141,17 @@ void video_copy_pal_range(const palette *src, int src_start, int dst_start, int 
            amount * 3);
 }
 
+palette* video_get_pal_ref() {
+    return state.hw_palette;
+}
+
 void video_render_prepare() {
     SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
     SDL_RenderClear(state.renderer);
 }
 
 void video_render_background(surface *sur) {
-    SDL_Texture *bg = surface_to_sdl(sur, state.renderer, state.hw_palette, 0);
+    SDL_Texture *bg = surface_to_sdl(sur, state.renderer, state.hw_palette, -1);
     SDL_SetTextureBlendMode(bg, SDL_BLENDMODE_NONE);
     SDL_RenderCopy(state.renderer, bg, NULL, NULL);
     SDL_DestroyTexture(bg);

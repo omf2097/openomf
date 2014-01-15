@@ -31,5 +31,7 @@ void video_screenshot(image *img);
 
 void video_set_base_palette(const palette *src);
 void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount);
+palette* video_get_pal_ref();
+void video_reset_base_palette();
 
 #endif // _VIDEO_H

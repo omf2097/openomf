@@ -5,6 +5,7 @@
 #include "game/serial.h"
 #include "resources/ids.h"
 #include "console/console.h"
+#include "video/video.h"
 #include "game/game_state.h"
 #include "game/settings.h"
 #include "game/ticktimer.h"
@@ -143,6 +144,15 @@ int game_state_handle_event(game_state *gs, SDL_Event *event) {
 void game_state_render(game_state *gs) {
     iterator it;
     render_obj *robj;
+
+    // Reset base palette
+    video_reset_base_palette();
+
+    // Do palette transformations
+    vector_iter_begin(&gs->objects, &it);
+    while((robj = iter_next(&it)) != NULL) {
+        object_palette_transform(robj->obj, video_get_pal_ref());
+    }
 
     // Render scene background
     scene_render(gs->sc);

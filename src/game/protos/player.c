@@ -94,6 +94,7 @@ void player_clear_frame(object *obj) {
     s->pal_ref_index = 0;
     s->pal_start_index = 0;
     s->pal_entry_count = 0;
+    s->pal_tint = 0;
 }
 
 // ---------------- Public functions ---------------- 
@@ -325,7 +326,6 @@ void player_run(object *obj) {
             }
             if(isset(f, "bs")) { 
                 rstate->blend_start = get(f, "bs");
-                DEBUG("BLEND START");
             }
             if(isset(f, "bu")) { rstate->method_flags &= 0x8000; }
             if(isset(f, "bw")) { rstate->method_flags &= 0x0080; }
@@ -335,9 +335,12 @@ void player_run(object *obj) {
             if(isset(f, "bpd")) { rstate->pal_ref_index = get(f, "bpd"); }
             if(isset(f, "bpn")) { rstate->pal_entry_count = get(f, "bpn"); }
             if(isset(f, "bps")) { rstate->pal_start_index = get(f, "bps"); }
+            if(isset(f, "bpp")) { 
+                rstate->pal_end = get(f, "bpp");
+                rstate->pal_begin = get(f, "bpp"); 
+            }
             if(isset(f, "bpb")) { rstate->pal_begin = get(f, "bpb"); }
-            if(isset(f, "bpd")) { rstate->pal_end = get(f, "bpd"); }
-            if(isset(f, "bz"))  { rstate->pal_tint = get(f, "bz"); }
+            if(isset(f, "bz"))  { rstate->pal_tint = 1; }
 
             // Handle movement
             if (isset(f, "v")) {
