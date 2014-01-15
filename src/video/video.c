@@ -96,7 +96,7 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
 
     // Set window size if necessary
     if(window_w != state.w || window_h != state.h || fullscreen != state.fs) {
-        SDL_SetWindowSize(state.window, state.w, state.h);
+        SDL_SetWindowSize(state.window, window_w, window_h);
     }
     
     // VSync change; reset renderer.
