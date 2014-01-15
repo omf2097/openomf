@@ -148,6 +148,7 @@ palette* video_get_pal_ref() {
 void video_render_prepare() {
     SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
     SDL_RenderClear(state.renderer);
+    video_reset_base_palette();
 }
 
 void video_render_background(surface *sur) {
@@ -187,11 +188,8 @@ void video_render_sprite_flip_scale(surface *sur, int sx, int sy, unsigned int r
         case BLEND_ADDITIVE:
             SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
             break;
-        case BLEND_ALPHA:
-        case BLEND_ALPHA_FULL:
-            SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-            break;
         default:
+            SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
             break;
     }
     

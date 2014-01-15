@@ -378,43 +378,30 @@ void object_move(object *obj) {
 void object_palette_transform(object *obj, palette *pal) {
     player_sprite_state *rstate = &obj->sprite_state;
     if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
-        float bp = rstate->pal_begin + 
-            (rstate->pal_end - rstate->pal_begin) * 
-            (rstate->timer / rstate->duration);
+        float bp = ((float)rstate->pal_begin) + 
+            ((float)rstate->pal_end - (float)rstate->pal_begin) * 
+            ((float)rstate->timer / (float)rstate->duration);
 
-        DEBUG("Palette transform: level(begin=%d,end=%d), range(start=%d,count=%d), tint = %d, reference = %d",
+        DEBUG("Palette transform: level(begin=%d,end=%d), range(start=%d,count=%d), tint = %d, reference = %d, level = %f, tick = %d / %d",
             rstate->pal_begin, rstate->pal_end,
             rstate->pal_start_index, rstate->pal_entry_count,
             rstate->pal_tint,
-            rstate->pal_ref_index);
+            rstate->pal_ref_index,
+            bp,
+            rstate->timer, rstate->duration);
 
         color b;
         b.r = pal->data[rstate->pal_ref_index][0];
         b.g = pal->data[rstate->pal_ref_index][1];
         b.b = pal->data[rstate->pal_ref_index][2];
 
-        color s;
-        uint8_t m;
+
+        float k = bp / 64.0f;
         for(int i = rstate->pal_start_index; i < rstate->pal_start_index + rstate->pal_entry_count; i++) {
-            s.r = pal->data[i][0];
-            s.g = pal->data[i][1];
-            s.b = pal->data[i][2];
 
-            color r;
-            if(rstate->pal_tint) {
-                m = _max(s.r, s.g, s.b);
-                r.r = s.r + m/64.0f + bp/64.0f + (b.r - s.r);
-                r.g = s.g + m/64.0f + bp/64.0f + (b.g - s.g);
-                r.b = s.b + m/64.0f + bp/64.0f + (b.b - s.b);
-            } else {
-                r.r = b.r * bp/64.0f;
-                r.g = s.g * (1 - bp/64.0f) + b.g * bp/64.0f;
-                r.b = s.b * (1 - bp/64.0f) + b.b * bp/64.0f;
-            }
-
-            pal->data[i][0] = max(0, min(63, r.r));
-            pal->data[i][1] = max(0, min(63, r.g));
-            pal->data[i][2] = max(0, min(63, r.b));
+            pal->data[i][0] = b.r * k;
+            pal->data[i][1] = b.g * k;
+            pal->data[i][2] = b.b * k;
         } 
     }
 }

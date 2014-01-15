@@ -145,9 +145,6 @@ void game_state_render(game_state *gs) {
     iterator it;
     render_obj *robj;
 
-    // Reset base palette
-    video_reset_base_palette();
-
     // Do palette transformations
     vector_iter_begin(&gs->objects, &it);
     while((robj = iter_next(&it)) != NULL) {
