@@ -1,8 +1,5 @@
 #include <stdio.h>
 #include <stdarg.h>
-#ifndef STANDALONE_SERVER
-#include <SDL2/SDL.h>
-#endif
 #include "utils/log.h"
 
 FILE *handle = 0;
