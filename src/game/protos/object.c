@@ -263,6 +263,9 @@ void object_render(object *obj) {
     // Stop here if cur_sprite is NULL
     if(obj->cur_sprite == NULL) return;
 
+    // Set current surface
+    obj->cur_surface = obj->cur_sprite->data;
+
     // Something to ease the pain ...
     player_sprite_state *rstate = &obj->sprite_state;
 
@@ -292,7 +295,8 @@ void object_render(object *obj) {
 
 // Renders sprite to left top corner with no special stuff applied
 void object_render_neutral(object *obj) {
-    if(obj->cur_sprite == NULL) return;
+    obj->cur_surface = obj->cur_sprite->data;
+    if(obj->cur_surface == NULL) return;
     video_render_background(obj->cur_surface);
 }
 
@@ -379,10 +383,6 @@ void object_free(object *obj) {
     if(obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
         free(obj->cur_animation);
-    }
-    if(obj->cur_surface != NULL) {
-        surface_free(obj->cur_surface);
-        free(obj->cur_surface);
     }
     obj->cur_surface = NULL;
     obj->cur_animation = NULL;

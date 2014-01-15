@@ -23,15 +23,13 @@ void video_render_prepare();
 void video_render_sprite(surface *sur, int x, int y, unsigned int render_mode);
 void video_render_sprite_flip_scale(surface *sur, int x, int y, unsigned int render_mode, unsigned int flip_mode, float y_percent);
 #define video_render_sprite_flip(tex, sx, sy, render_mode, flip_mode) video_render_sprite_flip_scale(tex, sx, sy, render_mode, flip_mode, 1.0)
-void video_render_sprite_flip_alpha(surface *sur, int sx, int sy, unsigned int flip_mode, int alpha);
-void video_render_colored_quad(int x, int y, int w, int h, color c);
 void video_render_char(surface *sur, int x, int y, color c);
 void video_render_finish();
 void video_render_background(surface *sur);
 void video_close();
 void video_screenshot(image *img);
 
-void video_set_base_palette(palette *src);
-void video_copy_pal_range(palette *src, int start, int end);
+void video_set_base_palette(const palette *src);
+void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount);
 
 #endif // _VIDEO_H

@@ -9,7 +9,6 @@ typedef struct sprite_t {
     int id;
     vec2i pos;
     surface *data;
-    char *stencil;
 } sprite;
 
 void sprite_create(sprite *sp, void *src, int id);

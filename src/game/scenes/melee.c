@@ -74,19 +74,18 @@ void refresh_pilot_stats(melee_local *local);
 
 void handle_action(scene *scene, int player, int action);
 
-void mask_sprite(sprite *sprite, int x, int y, int w, int h) {
-    surface *vga = sprite->data;
+void mask_sprite(surface *vga, int x, int y, int w, int h) {
     for(int i = 0; i < vga->h; i++) {
         for(int j = 0; j < vga->w; j++) {
-            int offset = (i*vga->w)+j;
+            int offset = (i * vga->w) + j;
             if ((i < y || i > y+h) || (j < x || j > x+w)) {
-                sprite->stencil[offset] = 0;
+                vga->stencil[offset] = 0;
             } else {
                 if (vga->data[offset] == -48) {
                     // strip out the black pixels
-                    sprite->stencil[offset] = 0;
+                    vga->stencil[offset] = 0;
                 } else {
-                    sprite->stencil[offset] = 1;
+                    vga->stencil[offset] = 1;
                 }
             }
         }
@@ -606,7 +605,7 @@ int melee_create(scene *scene) {
         int row = i / 5;
         int col = i % 5;
         spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0));
-        mask_sprite(spr, 62*col, 42*row, 51, 36);
+        mask_sprite(spr->data, 62*col, 42*row, 51, 36);
         ani = create_animation_from_single(spr, spr->pos);
         object_create(&local->harportraits_player1[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(&local->harportraits_player1[i], ani);
@@ -615,7 +614,7 @@ int melee_create(scene *scene) {
         object_set_animation_owner(&local->harportraits_player1[i], OWNER_OBJECT);
         if (player2->selectable) {
             spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0));
-            mask_sprite(spr, 62*col, 42*row, 51, 36);
+            mask_sprite(spr->data, 62*col, 42*row, 51, 36);
             ani = create_animation_from_single(spr, spr->pos);
             object_create(&local->harportraits_player2[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(&local->harportraits_player2[i], ani);

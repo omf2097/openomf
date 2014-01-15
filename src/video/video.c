@@ -124,162 +124,71 @@ void video_screenshot(image *img) {
     }
 }
 
-void video_set_base_palette(palette *src) {
+void video_set_base_palette(const palette *src) {
     memcpy(state.hw_palette, src, sizeof(palette));
 }
 
-void video_copy_pal_range(palette *src, int start, int end) {
-    memcpy(state.hw_palette->data, src->data + start * 3, (end - start) * 3);
+void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount) {
+    memcpy(state.hw_palette->data + dst_start * 3, 
+           src->data + src_start * 3, 
+           amount * 3);
 }
 
-void video_set_rendering_mode(int mode) {
-
+void video_render_prepare() {
+    SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
+    SDL_RenderClear(state.renderer);
 }
 
-void video_render_prepare() {/*
-    // Switch to FBO rendering
-    texture_unbind();
-    fbo_bind(&target);
-
-    // Set state
-    glEnable(GL_STENCIL_TEST);
-    glDisable(GL_BLEND);
-    glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0);
-
-    // Clear stuff
-    glClear(GL_COLOR_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
-    glClearStencil(0);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glViewport(0.0f, 0.0f, NATIVE_W, NATIVE_H);
-    glLoadIdentity();
-
-    // Set mode
-    video_set_rendering_mode(BLEND_ALPHA);
-    */
+void video_render_background(surface *sur) {
+    SDL_Texture *bg = surface_to_sdl(sur, state.renderer, state.hw_palette, 0);
+    SDL_SetTextureBlendMode(bg, SDL_BLENDMODE_NONE);
+    SDL_RenderCopy(state.renderer, bg, NULL, NULL);
+    SDL_DestroyTexture(bg);
 }
 
-void video_render_background(surface *sur) {/*
-    // Handle background separately
-    glStencilFunc(GL_ALWAYS, 0, 0);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-    texture_bind(tex);
-    glCallList(fullscreen_quad_flipped);
-    texture_unbind();
-    */
-}
+void video_render_char(surface *sur, int sx, int sy, color c) {
+    SDL_Rect dst;
+    dst.x = sx;
+    dst.y = sy;
+    dst.w = sur->w;
+    dst.h = sur->h;
 
-void video_render_char(surface *sur, int sx, int sy, color c) {/*
-    // Alpha testing
-    video_set_rendering_mode(BLEND_ALPHA);
-
-    // Just draw the texture on screen to the right spot.
-    float w = tex->w / 160.0f;
-    float h = tex->h / 100.0f;
-    float x = -1.0 + 2.0f * sx / 320.0f;
-    float y = 1.0 - sy / 100.0f - h;
-    texture_bind(tex);
-    glColor3f(c.r/255.0f, c.g/255.0f, c.b/255.0f);
-    glBegin(GL_QUADS);
-        glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
-        glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
-        glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
-        glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
-    glEnd();
-    glColor3f(1.0f,1.0f,1.0f);*/
+    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.hw_palette, -1);
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
+    SDL_RenderCopy(state.renderer, tex, NULL, &dst);
+    SDL_DestroyTexture(tex);
 }
 
 void video_render_sprite(surface *sur, int sx, int sy, unsigned int rendering_mode) {
     video_render_sprite_flip(sur, sx, sy, rendering_mode, FLIP_NONE);
 }
 
-void video_quads(int flip_mode, float x, float y, float w, float h) {/*
-    switch(flip_mode) {
-        case FLIP_NONE:
-            // regular draw
-            glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
-            glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
-            glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
-            glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
-            break;
-        case FLIP_HORIZONTAL:
-            // horizontal flip
-            glTexCoord2f(0.0f, 0.0f); glVertex3f(x+w, y+h, 0); // Top Right
-            glTexCoord2f(1.0f, 0.0f); glVertex3f(x,   y+h, 0); // Top Left
-            glTexCoord2f(1.0f, 1.0f); glVertex3f(x,   y,   0); // Bottom Left
-            glTexCoord2f(0.0f, 1.0f); glVertex3f(x+w, y,   0); // Bottom Right
-            break;
-        case FLIP_VERTICAL:
-            // vert flip
-            glTexCoord2f(0.0f, 1.0f); glVertex3f(x+w, y+h, 0); // Top Right
-            glTexCoord2f(1.0f, 1.0f); glVertex3f(x,   y+h, 0); // Top Left
-            glTexCoord2f(1.0f, 0.0f); glVertex3f(x,   y,   0); // Bottom Left
-            glTexCoord2f(0.0f, 0.0f); glVertex3f(x+w, y,   0); // Bottom Right
-            break;
-        case FLIP_VERTICAL|FLIP_HORIZONTAL:
-            // both flip
-            glTexCoord2f(1.0f, 1.0f); glVertex3f(x+w, y+h, 0); // Top Right
-            glTexCoord2f(0.0f, 1.0f); glVertex3f(x,   y+h, 0); // Top Left
-            glTexCoord2f(0.0f, 0.0f); glVertex3f(x,   y,   0); // Bottom Left
-            glTexCoord2f(1.0f, 0.0f); glVertex3f(x+w, y,   0); // Bottom Right
-            break;
-    }*/
-}
-
 void video_render_sprite_flip_scale(surface *sur, int sx, int sy, unsigned int rendering_mode, unsigned int flip_mode, float y_percent) {
-    /*
-    // Set rendering mode
-    video_set_rendering_mode(rendering_mode);
+    SDL_Rect dst;
+    dst.x = sx;
+    dst.y = sy;
+    dst.w = sur->w;
+    dst.h = sur->h;
+
+    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.hw_palette, -1);
+    switch(rendering_mode) {
+        case BLEND_ADDITIVE:
+            SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
+            break;
+        case BLEND_ALPHA:
+        case BLEND_ALPHA_FULL:
+            SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+            break;
+        default:
+            break;
+    }
     
-    // Just draw the texture on screen to the right spot.
-    float w = tex->w / 160.0f;
-    float h = tex->h / 100.0f;
-    float x = -1.0 + 2.0f * sx / 320.0f;
-    float y = 1.0 - sy / 100.0f - h;
-    float diff =( h - (h * y_percent))/ 2.0f;
-    texture_bind(tex);
-    glBegin(GL_QUADS);
-    video_quads(flip_mode, x, y+diff, w, h * y_percent);
-    glEnd();*/
-}
-
-void video_render_sprite_flip_alpha(surface *sur, int sx, int sy, unsigned int flip_mode, int alpha) {
-    /*
-    video_set_rendering_mode(BLEND_ALPHA_CONSTANT);
-    float w = tex->w / 160.0f;
-    float h = tex->h / 100.0f;
-    float x = -1.0 + 2.0f * sx / 320.0f;
-    float y = 1.0 - sy / 100.0f - h;
-    texture_bind(tex);
-    glBegin(GL_QUADS);
-    glColor4f(1.0f, 1.0f, 1.0f, alpha/255.0f);
-    video_quads(flip_mode, x, y, w, h);
-    glEnd();
-    glColor4f(1.0f,1.0f,1.0f,1.0f);
-    */
-}
-
-void video_render_colored_quad(int _x, int _y, int _w, int _h, color c) {
-    /*
-    // Alpha testing
-    video_set_rendering_mode(BLEND_ALPHA_FULL);
-
-    // Just draw the quad on screen to the right spot.
-    float w = _w / 160.0f;
-    float h = _h / 100.0f;
-    float x = -1.0 + 2.0f * _x / 320.0f;
-    float y = 1.0 - _y / 100.0f - h;
-    glDisable(GL_TEXTURE_2D);
-    glColor4f(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
-    glBegin(GL_QUADS);
-        glVertex3f(x+w, y+h, 0); // Top Right
-        glVertex3f(x,   y+h, 0); // Top Left
-        glVertex3f(x,   y,   0); // Bottom Left
-        glVertex3f(x+w, y,   0); // Bottom Right
-    glEnd();
-    glEnable(GL_TEXTURE_2D);
-    glColor3f(1.0f,1.0f,1.0f);
-    */
+    SDL_RendererFlip flip = 0;
+    if(flip_mode & FLIP_HORIZONTAL) flip |= SDL_FLIP_HORIZONTAL;
+    if(flip_mode & FLIP_VERTICAL) flip |= SDL_FLIP_VERTICAL;
+    SDL_RenderCopyEx(state.renderer, tex, NULL, &dst, 0, NULL, flip);
+    SDL_DestroyTexture(tex);
 }
 
 void video_render_finish() {
