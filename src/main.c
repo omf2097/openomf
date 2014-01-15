@@ -17,6 +17,29 @@
 #include "game/settings.h"
 #include "resources/ids.h"
 
+#ifdef STANDALONE_SERVER
+void err_msgbox(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    fprintf(stderr, "... Exiting\n");
+    va_end(args);
+}
+#else
+char err_msgbox_buffer[1024];
+void err_msgbox(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(err_msgbox_buffer, sizeof(err_msgbox_buffer), fmt, args);
+    if(SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", err_msgbox_buffer, NULL) != 0) {
+        // if the message box failed, fallback to fprintf
+        vfprintf(stderr, fmt, args);
+        fprintf(stderr, "... Exiting\n");
+    }
+    va_end(args);
+}
+#endif
+
 int main(int argc, char *argv[]) {
     // Get path
     char *path = "";
@@ -25,14 +48,21 @@ int main(int argc, char *argv[]) {
 
     path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
     if(path == NULL) {
-        PERROR("Error getting config path: %s", SDL_GetError());
+        err_msgbox("Error getting config path: %s", SDL_GetError());
         return 1;
     }
 
 #if defined(_WIN32) || defined(WIN32)
     // Ensure the path exists before continuing on
     // XXX shouldn't SDL_GetPrefPath automatically create the path if it doesn't exist?
-    SHCreateDirectoryEx(NULL, path, NULL);
+    int sherr = SHCreateDirectoryEx(NULL, path, NULL);
+    if(sherr == ERROR_FILE_EXISTS) {
+        err_msgbox("Please delete this file and relaunch OpenOMF: %s", path);
+        return 1;
+    } else if(sherr != ERROR_SUCCESS && sherr != ERROR_ALREADY_EXISTS) {
+        err_msgbox("Failed to create config path: %s", path);
+        return 1;
+    }
 #endif
 
 #ifndef DEBUGMODE
@@ -86,10 +116,10 @@ int main(int argc, char *argv[]) {
             return 0;
         } else if(strcmp(argv[1], "-w") == 0) {
             if(settings_write_defaults(config_path)) {
-                PERROR("Failed to write config file to '%s'!", config_path);
+                fprintf(stderr, "Failed to write config file to '%s'!", config_path);
                 return 1;
             } else {
-                INFO("Config file written to '%s'!", config_path);
+                printf("Config file written to '%s'!", config_path);
             }
             return 0;
         } else if(strcmp(argv[1], "-c") == 0) {
@@ -105,12 +135,12 @@ int main(int argc, char *argv[]) {
     // Init log
 #if defined(DEBUGMODE) || defined(STANDALONE_SERVER)
     if(log_init(0)) {
-        PERROR("Error while initializing log!");
+        err_msgbox("Error while initializing log!");
         return 1;
     }
 #else
     if(log_init(logfile_path)) {
-        PERROR("Error while initializing log '%s'!", logfile_path);
+        err_msgbox("Error while initializing log '%s'!", logfile_path);
         return 1;
     }
 #endif
@@ -123,7 +153,7 @@ int main(int argc, char *argv[]) {
 
     // Init config
     if(settings_init(config_path)) {
-        PERROR("Failed to initialize settings file");
+        err_msgbox("Failed to initialize settings file");
         goto exit_0;
     }
     settings_load();
@@ -131,7 +161,7 @@ int main(int argc, char *argv[]) {
     // Make sure the required resource files exist
     char missingfile[64];
     if(validate_resource_path(missingfile)) {
-        PERROR("Resource file does not exist: %s", missingfile);
+        err_msgbox("Resource file does not exist: %s", missingfile);
         goto exit_0;
     }
 
@@ -145,7 +175,7 @@ int main(int argc, char *argv[]) {
 #else
     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER)) {
 #endif
-        PERROR("SDL2 Initialization failed: %s", SDL_GetError());
+        err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_1;
     }
     SDL_version sdl_linked;
@@ -155,7 +185,7 @@ int main(int argc, char *argv[]) {
 
 #ifndef STANDALONE_SERVER
     if(SDL_InitSubSystem(SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER|SDL_INIT_HAPTIC)) {
-        PERROR("SDL2 Initialization failed: %s", SDL_GetError());
+        err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_1;
     }
     INFO("Found %d joysticks attached", SDL_NumJoysticks());
@@ -184,13 +214,13 @@ int main(int argc, char *argv[]) {
 
     // Init enet
     if(enet_initialize() != 0) {
-        PERROR("Failed to initialize enet");
+        err_msgbox("Failed to initialize enet");
         goto exit_2;
     }
     
     // Initialize engine
     if(engine_init()) {
-        PERROR("Failed to initialize game engine.");
+        err_msgbox("Failed to initialize game engine.");
         goto exit_3;
     }
     
