@@ -401,7 +401,7 @@ void object_palette_transform(object *obj, palette *pal) {
         for(int i = rstate->pal_start_index; i < rstate->pal_start_index + rstate->pal_entry_count; i++) {
             if(rstate->pal_tint) {
                 m = max3(pal->data[i][0], pal->data[i][1], pal->data[i][2]);
-                u = m / 64.0f;
+                u = m / 255.0f;
                 pal->data[i][0] = max(0, min(255, pal->data[i][0] + u * k * (b.r - pal->data[i][0])));
                 pal->data[i][1] = max(0, min(255, pal->data[i][1] + u * k * (b.g - pal->data[i][1])));
                 pal->data[i][2] = max(0, min(255, pal->data[i][2] + u * k * (b.b - pal->data[i][2])));
