@@ -244,7 +244,7 @@ void object_revalidate(object *obj) {
     obj->texture_refresh = 1;
 }
 
-int _max(int r, int g, int b) {
+int max3(int r, int g, int b) {
     int max = r;
     if(g > max) max = g;
     if(b > max) max = b;
@@ -395,13 +395,21 @@ void object_palette_transform(object *obj, palette *pal) {
         b.g = pal->data[rstate->pal_ref_index][1];
         b.b = pal->data[rstate->pal_ref_index][2];
 
-
+        uint8_t m;
+        float u;
         float k = bp / 64.0f;
         for(int i = rstate->pal_start_index; i < rstate->pal_start_index + rstate->pal_entry_count; i++) {
-
-            pal->data[i][0] = b.r * k;
-            pal->data[i][1] = b.g * k;
-            pal->data[i][2] = b.b * k;
+            if(rstate->pal_tint) {
+                m = max3(pal->data[i][0], pal->data[i][1], pal->data[i][2]);
+                u = m / 64.0f;
+                pal->data[i][0] = pal->data[i][0] + u * k * (b.r - pal->data[i][0]);
+                pal->data[i][1] = pal->data[i][1] + u * k * (b.g - pal->data[i][1]);
+                pal->data[i][2] = pal->data[i][2] + u * k * (b.b - pal->data[i][2]);
+            } else {
+                pal->data[i][0] = pal->data[i][0] * (1 - k) + (b.r * k);
+                pal->data[i][1] = pal->data[i][1] * (1 - k) + (b.g * k);
+                pal->data[i][2] = pal->data[i][2] * (1 - k) + (b.b * k);
+            }
         } 
     }
 }
