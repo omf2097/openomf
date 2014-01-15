@@ -111,7 +111,6 @@ void scene_fight_anim_start(void *userdata) {
     object *fight = malloc(sizeof(object));
     object_create(fight, gs, fight_ani->start_pos, vec2f_create(0,0));
     object_set_stl(fight, bk_get_stl(&scene->bk_data));
-    object_set_palette(fight, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(fight, fight_ani);
     object_set_finish_cb(fight, scene_fight_anim_done);
     game_state_add_object(gs, fight, RENDER_LAYER_TOP);
@@ -141,7 +140,6 @@ void scene_youwin_anim_start(void *userdata) {
     object *youwin = malloc(sizeof(object));
     object_create(youwin, gs, youwin_ani->start_pos, vec2f_create(0,0));
     object_set_stl(youwin, bk_get_stl(&scene->bk_data));
-    object_set_palette(youwin, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(youwin, youwin_ani);
     object_set_finish_cb(youwin, scene_youwin_anim_done);
     game_state_add_object(gs, youwin, RENDER_LAYER_TOP);
@@ -165,7 +163,6 @@ void scene_youlose_anim_start(void *userdata) {
     object *youlose = malloc(sizeof(object));
     object_create(youlose, gs, youlose_ani->start_pos, vec2f_create(0,0));
     object_set_stl(youlose, bk_get_stl(&scene->bk_data));
-    object_set_palette(youlose, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(youlose, youlose_ani);
     object_set_finish_cb(youlose, scene_youlose_anim_done);
     game_state_add_object(gs, youlose, RENDER_LAYER_TOP);
@@ -301,7 +298,6 @@ void arena_free(scene *scene) {
 }
 
 int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
-    arena_local *local = scene_get_userdata(scene);
     int need_sync = 0;
     if (i) {
         do {
@@ -312,8 +308,6 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                             object_act(game_player_get_har(player), i->event_data.action);
                         } while ((i = i->next) && i->type == EVENT_TYPE_ACTION);
                         game_state_replay(scene->gs, net_controller_get_rtt(player->ctrl));
-                        object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
-                        object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
                         maybe_install_har_hooks(scene);
                         // always trigger a synchronization, since if the client's move did not actually happen, we want to rewind them ASAP
                         need_sync = 1;
@@ -324,9 +318,6 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 }
             } else if (i->type == EVENT_TYPE_SYNC) {
                 game_state_unserialize(scene->gs, i->event_data.ser, net_controller_get_rtt(player->ctrl));
-                // fix the palettes
-                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
-                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
                 maybe_install_har_hooks(scene);
             } else if (i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
@@ -399,7 +390,6 @@ void arena_tick(scene *scene) {
                         object *obj = malloc(sizeof(object));
                         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
                         object_set_stl(obj, scene->bk_data.sound_translation_table);
-                        object_set_palette(obj, bk_get_palette(&scene->bk_data, 0), 0);
                         object_set_animation(obj, &info->ani);
                         object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
                         object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
@@ -710,7 +700,6 @@ int arena_create(scene *scene) {
         }
 
         object_create(obj, scene->gs, pos[i], vec2f_create(0,0));
-        object_set_palette(obj, local->player_palettes[i], 0);
         if(har_create(obj, scene->af_data[i], dir[i], player->har_id, player->pilot_id, i)) {
             return 1;
         }
@@ -838,7 +827,6 @@ int arena_create(scene *scene) {
     object *ready = malloc(sizeof(object));
     object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0,0));
     object_set_stl(ready, scene->bk_data.sound_translation_table);
-    object_set_palette(ready, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(ready, ready_ani);
     object_set_finish_cb(ready, scene_ready_anim_done);
     game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP);

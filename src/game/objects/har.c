@@ -98,7 +98,6 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object *scrap = malloc(sizeof(object));
         object_create(scrap, parent->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, id)->ani);
-        object_set_palette(scrap, object_get_palette(parent), 0);
         object_set_stl(scrap, object_get_stl(parent));
         object_set_repeat(scrap, 1);
         object_set_gravity(scrap, 1);
@@ -116,7 +115,6 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_create(obj, parent->gs, pos, vec2f_create(0,0));
         object_set_userdata(obj, h);
         object_set_stl(obj, object_get_stl(parent));
-        object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &move->ani);
         object_set_gravity(obj, g/50);
         // Set all projectiles to their own layer + har layer
@@ -268,7 +266,6 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         int anim_no = ANIM_BURNING_OIL;
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
-        object_set_palette(scrap, object_get_palette(obj), 0);
         object_set_stl(scrap, object_get_stl(obj));
         object_set_repeat(scrap, 0);
         object_set_gravity(scrap, 1);
@@ -295,7 +292,6 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
-        object_set_palette(scrap, object_get_palette(obj), 0);
         object_set_stl(scrap, object_get_stl(obj));
         object_set_repeat(scrap, 1);
         object_set_gravity(scrap, 1);
@@ -327,7 +323,6 @@ void har_block(object *obj, vec2i hit_coord) {
     object *scrape = malloc(sizeof(object));
     object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
     object_set_animation(scrape, &af_get_move(h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
-    object_set_palette(scrape, object_get_palette(obj), 0);
     object_set_stl(scrape, object_get_stl(obj));
     object_set_direction(scrape, object_get_direction(obj));
     object_set_repeat(scrape, 0);

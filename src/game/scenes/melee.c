@@ -261,16 +261,6 @@ void handle_action(scene *scene, int player, int action) {
                         player2->colors[2] = local->pilots[local->pilot_id_b].colors[2];
                     }
 
-                    // reinialize any surfaces using the player palette
-                    for(int i = 0; i < 10; i++) {
-                        object_revalidate(&local->harportraits_player1[i]);
-                        object_revalidate(&local->har_player1[i]);
-                        if (player2->selectable) {
-                            object_revalidate(&local->harportraits_player2[i]);
-                            object_revalidate(&local->har_player2[i]);
-                        }
-                    }
-
                 } else {
                     player1->har_id = HAR_JAGUAR + 5*local->row_a+local->column_a;
                     player1->pilot_id = local->pilot_id_a;
@@ -595,13 +585,11 @@ int melee_create(scene *scene) {
         ani = &bk_get_info(&scene->bk_data, 3)->ani;
         object_create(&local->pilots[i].obj, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
         object_set_animation(&local->pilots[i].obj, ani);
-        object_set_palette(&local->pilots[i].obj, mpal, 0);
         object_select_sprite(&local->pilots[i].obj, i);
 
         ani = &bk_get_info(&scene->bk_data, 18+i)->ani;
         object_create(&local->har_player1[i], scene->gs, vec2i_create(110,95), vec2f_create(0, 0));
         object_set_animation(&local->har_player1[i], ani);
-        object_set_palette(&local->har_player1[i], local->player1_pal, 0);
         object_select_sprite(&local->har_player1[i], 0);
         object_set_repeat(&local->har_player1[i], 1);
 
@@ -612,7 +600,6 @@ int melee_create(scene *scene) {
         ani = create_animation_from_single(spr, spr->pos);
         object_create(&local->harportraits_player1[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(&local->harportraits_player1[i], ani);
-        object_set_palette(&local->harportraits_player1[i], local->player1_pal, 0);
         object_select_sprite(&local->harportraits_player1[i], 0);
         object_set_animation_owner(&local->harportraits_player1[i], OWNER_OBJECT);
         if (player2->selectable) {
@@ -621,14 +608,12 @@ int melee_create(scene *scene) {
             ani = create_animation_from_single(spr, spr->pos);
             object_create(&local->harportraits_player2[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(&local->harportraits_player2[i], ani);
-            object_set_palette(&local->harportraits_player2[i], local->player2_pal, 0);
             object_select_sprite(&local->harportraits_player2[i], 0);
             object_set_animation_owner(&local->harportraits_player2[i], OWNER_OBJECT);
 
             ani = &bk_get_info(&scene->bk_data, 18+i)->ani;
             object_create(&local->har_player2[i], scene->gs, vec2i_create(210,95), vec2f_create(0, 0));
             object_set_animation(&local->har_player2[i], ani);
-            object_set_palette(&local->har_player2[i], local->player2_pal, 0);
             object_select_sprite(&local->har_player2[i], 0);
             object_set_repeat(&local->har_player2[i], 1);
             object_set_direction(&local->har_player2[i], OBJECT_FACE_LEFT);
@@ -638,13 +623,11 @@ int melee_create(scene *scene) {
     ani = &bk_get_info(&scene->bk_data, 4)->ani;
     object_create(&local->bigportrait1, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(&local->bigportrait1, ani);
-    object_set_palette(&local->bigportrait1, mpal, 0);
     object_select_sprite(&local->bigportrait1, 0);
 
     if (player2->selectable) {
         object_create(&local->bigportrait2, scene->gs, vec2i_create(320,0), vec2f_create(0, 0));
         object_set_animation(&local->bigportrait2, ani);
-        object_set_palette(&local->bigportrait2, mpal, 0);
         object_select_sprite(&local->bigportrait2, 4);
         object_set_direction(&local->bigportrait2, OBJECT_FACE_LEFT);
     }
@@ -652,7 +635,6 @@ int melee_create(scene *scene) {
     ani = &bk_get_info(&scene->bk_data, 5)->ani;
     object_create(&local->player2_placeholder, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(&local->player2_placeholder, ani);
-    object_set_palette(&local->player2_placeholder, mpal, 0);
     if (player2->selectable) {
         object_select_sprite(&local->player2_placeholder, 0);
     } else {
@@ -662,7 +644,6 @@ int melee_create(scene *scene) {
     ani = &bk_get_info(&scene->bk_data, 1)->ani;
     object_create(&local->unselected_har_portraits, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(&local->unselected_har_portraits, ani);
-    object_set_palette(&local->unselected_har_portraits, mpal, 0);
     object_select_sprite(&local->unselected_har_portraits, 0);
 
     const color bar_color = color_create(0, 190, 0, 255);

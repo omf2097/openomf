@@ -32,8 +32,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;
-    obj->texture_refresh = 0;
-    obj->cur_palette = NULL;
     obj->cur_animation = NULL;
     obj->cur_sprite = NULL;
     obj->sound_translation_table = NULL;
@@ -124,7 +122,6 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     // Other stuff not included in serialization
     obj->y_percent = 1.0;
     obj->cur_animation_own = OWNER_EXTERNAL;
-    obj->cur_palette = NULL;
     obj->cur_animation = NULL;
     obj->cur_sprite = NULL;
     obj->sound_translation_table = NULL;
@@ -238,10 +235,6 @@ void object_collide(object *obj, object *b) {
     if(obj->collide != NULL) {
         obj->collide(obj,b);
     }
-}
-
-void object_revalidate(object *obj) {
-    obj->texture_refresh = 1;
 }
 
 int max3(int r, int g, int b) {
@@ -441,16 +434,6 @@ void object_set_animation_owner(object *obj, int owner) {
     obj->cur_animation_own = owner;
 }
 
-void object_set_palette(object *obj, palette *pal, int remap) {
-    obj->cur_palette = pal;
-    obj->cur_remap = remap;
-    obj->texture_refresh = 1;
-}
-
-palette* object_get_palette(object *obj) {
-    return obj->cur_palette;
-}
-
 void object_set_animation(object *obj, animation *ani) {
     if(obj->cur_animation != NULL && obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
@@ -483,7 +466,6 @@ animation* object_get_animation(object *obj) {
 
 void object_select_sprite(object *obj, int id) {
     obj->cur_sprite = animation_get_sprite(obj->cur_animation, id);
-    obj->texture_refresh = 1;
     obj->sprite_state.blendmode = BLEND_ALPHA;
     obj->sprite_state.flipmode = FLIP_NONE;
 }

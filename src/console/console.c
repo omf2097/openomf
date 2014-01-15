@@ -151,8 +151,6 @@ int console_cmd_har(scene *scene, void *userdata, int argc, char **argv) {
                 return 1;
             }
 
-            object_set_palette(obj, arena_get_player_palette(scene, 0), 0);
-
             if(har_create(obj, scene->af_data[0], hd, player->har_id, player->pilot_id, 0)) {
                 return 1;
             }

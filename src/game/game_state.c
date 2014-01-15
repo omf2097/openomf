@@ -33,6 +33,7 @@ int game_state_create(game_state *gs, int net_mode) {
     gs->run = 1;
     gs->tick = 0;
     gs->role = ROLE_CLIENT;
+    gs->next_requires_refresh = 0;
     gs->net_mode = net_mode;
     gs->speed = settings_get()->gameplay.speed;
     vector_create(&gs->objects, sizeof(render_obj));
@@ -152,6 +153,7 @@ void game_state_render(game_state *gs) {
     while((robj = iter_next(&it)) != NULL) {
         if(object_palette_transform(robj->obj, scr_pal) == 1) {
             pal_changed = 1;
+            gs->next_requires_refresh = 1;
         }
     }
 
@@ -160,6 +162,11 @@ void game_state_render(game_state *gs) {
     // This will take care of it.
     if(pal_changed) {
         scr_pal->version++;
+    } else if(gs->next_requires_refresh) {
+        // Because of caching, we might sometimes get stuck to
+        // a bad/old frame. This hack will fix it.
+        scr_pal->version++;
+        gs->next_requires_refresh = 0;
     }
 
     // Render scene background
@@ -550,12 +557,6 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         // Set HAR for player
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
-
-        // XXX this is a hack because the arena holds the player palette!
-        // after this function returns, the arena will restore the palette
-        // but we need it when we replay time, apparently
-        object_set_palette(obj, bk_get_palette(&gs->sc->bk_data, 0), 0);
-
     }
     // tick things back to the current time
     DEBUG("replaying %d ticks", endtick - gs->tick);
@@ -633,11 +634,6 @@ int game_state_rewind(game_state *gs, int rtt) {
         // Set HAR for player and controller
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
-
-        // XXX this is a hack because the arena holds the player palette!
-        // after this function returns, the arena will restore the palette
-        // but we need it when we replay time, apparently
-        object_set_palette(obj, bk_get_palette(&gs->sc->bk_data, 0), 0);
 
         game_state_del_object(gs, oldobject);
 

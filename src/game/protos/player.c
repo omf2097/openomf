@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <shadowdive/stringparser.h>
 
+#include "game/game_state.h"
+#include "game/game_player.h"
 #include "game/settings.h"
 #include "video/video.h"
 #include "audio/sink.h"
@@ -335,8 +337,8 @@ void player_run(object *obj) {
             if(isset(f, "bpd")) { rstate->pal_ref_index = get(f, "bpd"); }
             if(isset(f, "bpn")) { rstate->pal_entry_count = get(f, "bpn"); }
             if(isset(f, "bps")) { rstate->pal_start_index = get(f, "bps"); }
-            if(isset(f, "bpf")) { 
-                rstate->pal_start_index = 0; // TODO: This should be 48 if this is HAR 2
+            if(isset(f, "bpf")) {
+                rstate->pal_start_index = (game_state_get_player(obj->gs, 0)->har == obj) ? 0 : 48; 
                 rstate->pal_entry_count = 48;
             }
             if(isset(f, "bpp")) { 

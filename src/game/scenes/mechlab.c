@@ -54,13 +54,11 @@ typedef struct mechlab_local_t {
 } mechlab_local;
 
 void panelbutton_create(object *pb, unsigned int npb, scene *scene, unsigned int anim) {
-    palette *mpal = bk_get_palette(&scene->bk_data, 0);
     for(int i = 0;i < npb; i++) {
         sprite *button_spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, anim)->ani, i));
         animation *button_ani = create_animation_from_single(button_spr, vec2i_create(0,0));
         object_create(&pb[i], pb->gs, button_spr->pos, vec2f_create(0,0));
         object_set_animation(&pb[i], button_ani);
-        object_set_palette(&pb[i], mpal, 0);
         object_select_sprite(&pb[i], 0);
         object_set_repeat(&pb[i], 1);
         object_set_animation_owner(&pb[i], OWNER_OBJECT);
@@ -206,7 +204,6 @@ void mechlab_hand_finished(object *hand_obj) {
 int mechlab_create(scene *scene) {
     // Alloc
     mechlab_local *local = malloc(sizeof(mechlab_local));
-    palette *mpal = bk_get_palette(&scene->bk_data, 0);
     animation *bg_ani[3];
     animation *panel_ani;
 
@@ -216,7 +213,6 @@ int mechlab_create(scene *scene) {
         bg_ani[i] = create_animation_from_single(spr, spr->pos);
         object_create(&local->bg_obj[i], scene->gs, vec2i_create(0,0), vec2f_create(0,0));
         object_set_animation(&local->bg_obj[i], bg_ani[i]);
-        object_set_palette(&local->bg_obj[i], mpal, 0);
         object_select_sprite(&local->bg_obj[i], 0);
         object_set_repeat(&local->bg_obj[i], 1);
         object_set_animation_owner(&local->bg_obj[i], OWNER_OBJECT);
@@ -227,7 +223,6 @@ int mechlab_create(scene *scene) {
     panel_ani = create_animation_from_single(panel_spr, panel_spr->pos);
     object_create(&local->panel_obj, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
     object_set_animation(&local->panel_obj, panel_ani);
-    object_set_palette(&local->panel_obj, mpal, 0);
     object_select_sprite(&local->panel_obj, 0);
     object_set_repeat(&local->panel_obj, 1);
     object_set_animation_owner(&local->panel_obj, OWNER_OBJECT);
@@ -250,7 +245,6 @@ int mechlab_create(scene *scene) {
     object_create(&local->hand.obj, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
     object_set_userdata(&local->hand.obj, local);
     object_set_animation(&local->hand.obj, &bk_get_info(&scene->bk_data, 29)->ani);
-    object_set_palette(&local->hand.obj, mpal, 0);
     object_set_repeat(&local->hand.obj, 0);
     mechlab_hand_sel_button(local);
     object_set_finish_cb(&local->hand.obj, mechlab_hand_finished);

@@ -66,13 +66,10 @@ struct object_t {
     
     uint8_t cur_animation_own;
 
-    uint8_t texture_refresh;
-
     animation *cur_animation;
     sprite *cur_sprite;
     char *sound_translation_table;
 
-    palette *cur_palette;
     uint8_t cur_remap;
     uint8_t halt;
     uint8_t stride;
@@ -129,10 +126,6 @@ void object_set_animation(object *obj, animation *ani);
 animation *object_get_animation(object *obj);
 void object_set_custom_string(object *obj, const char *str);
 void object_select_sprite(object *obj, int id);
-void object_set_palette(object *obj, palette *pal, int remap);
-palette* object_get_palette(object *obj);
-
-void object_revalidate(object *obj);
 
 void object_set_halt(object *obj, int halt);
 int object_get_halt(object *obj);

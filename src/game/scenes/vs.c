@@ -24,8 +24,6 @@ typedef struct vs_local_t {
     object player2_har;
     surface arena_select_bg;
     object arena_select;
-    palette *player1_palette;
-    palette *player2_palette;
     int arena;
 } vs_local;
 
@@ -38,7 +36,6 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata
         object *obj = malloc(sizeof(object));
         object_create(obj, parent->gs, vec2i_add(pos, vec2f_to_i(parent->pos)), vec2f_create(0,0));
         object_set_stl(obj, object_get_stl(parent));
-        object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &info->ani);
         object_set_spawn_cb(obj, cb_vs_spawn_object, userdata);
         object_set_destroy_cb(obj, cb_vs_destroy_object, userdata);
@@ -63,8 +60,6 @@ void vs_free(scene *scene) {
     if (player2->selectable) {
         object_free(&local->arena_select);
     }
-    free(local->player1_palette);
-    free(local->player2_palette);
     free(local);
 }
 
@@ -188,9 +183,6 @@ int vs_create(scene *scene) {
     animation *ani;
 
     palette *mpal = video_get_base_palette();
-
-    local->player1_palette = palette_copy(mpal);
-    local->player2_palette = palette_copy(mpal);
     palette_set_player_color(mpal, 0, player1->colors[2], 0);
     palette_set_player_color(mpal, 0, player1->colors[1], 1);
     palette_set_player_color(mpal, 0, player1->colors[0], 2);
@@ -203,12 +195,10 @@ int vs_create(scene *scene) {
     ani = &bk_get_info(&scene->bk_data, 5)->ani;
     object_create(&local->player1_har, scene->gs, vec2i_create(160,0), vec2f_create(0, 0));
     object_set_animation(&local->player1_har, ani);
-    object_set_palette(&local->player1_har, local->player1_palette, 0);
     object_select_sprite(&local->player1_har, player1->har_id - HAR_JAGUAR);
 
     object_create(&local->player2_har, scene->gs, vec2i_create(160,0), vec2f_create(0, 0));
     object_set_animation(&local->player2_har, ani);
-    object_set_palette(&local->player2_har, local->player2_palette, 0);
     object_select_sprite(&local->player2_har, player2->har_id - HAR_JAGUAR);
     object_set_direction(&local->player2_har, OBJECT_FACE_LEFT);
 
@@ -216,12 +206,10 @@ int vs_create(scene *scene) {
     ani = &bk_get_info(&scene->bk_data, 4)->ani;
     object_create(&local->player1_portrait, scene->gs, vec2i_create(-10,150), vec2f_create(0, 0));
     object_set_animation(&local->player1_portrait, ani);
-    object_set_palette(&local->player1_portrait, mpal, 0);
     object_select_sprite(&local->player1_portrait, player1->pilot_id);
 
     object_create(&local->player2_portrait, scene->gs, vec2i_create(330,150), vec2f_create(0, 0));
     object_set_animation(&local->player2_portrait, ani);
-    object_set_palette(&local->player2_portrait, mpal, 0);
     object_select_sprite(&local->player2_portrait, player2->pilot_id);
     object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
 
@@ -241,7 +229,6 @@ int vs_create(scene *scene) {
         ani = &bk_get_info(&scene->bk_data, 3)->ani;
         object_create(&local->arena_select, scene->gs, vec2i_create(59,155), vec2f_create(0, 0));
         object_set_animation(&local->arena_select, ani);
-        object_set_palette(&local->arena_select, mpal, 0);
         object_select_sprite(&local->arena_select, local->arena);
     }
 
@@ -251,7 +238,6 @@ int vs_create(scene *scene) {
     ani = &bk_get_info(&scene->bk_data, 8)->ani;
     object_create(o_scientist, scene->gs, vec2i_create(280,118), vec2f_create(0, 0));
     object_set_animation(o_scientist, ani);
-    object_set_palette(o_scientist, mpal, 0);
     object_select_sprite(o_scientist, 0);
     object_set_direction(o_scientist, OBJECT_FACE_LEFT);
     game_state_add_object(scene->gs, o_scientist, RENDER_LAYER_MIDDLE);
@@ -261,7 +247,6 @@ int vs_create(scene *scene) {
     ani = &bk_get_info(&scene->bk_data, 7)->ani;
     object_create(o_welder, scene->gs, vec2i_create(90,80), vec2f_create(0, 0));
     object_set_animation(o_welder, ani);
-    object_set_palette(o_welder, mpal, 0);
     object_select_sprite(o_welder, 0);
     object_set_spawn_cb(o_welder, cb_vs_spawn_object, (void*)scene);
     object_set_destroy_cb(o_welder, cb_vs_destroy_object, (void*)scene);
@@ -272,14 +257,12 @@ int vs_create(scene *scene) {
     ani = &bk_get_info(&scene->bk_data, 11)->ani;
     object_create(o_gantry_a, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(o_gantry_a, ani);
-    object_set_palette(o_gantry_a, mpal, 0);
     object_select_sprite(o_gantry_a, 0);
     game_state_add_object(scene->gs, o_gantry_a, RENDER_LAYER_MIDDLE);
 
     object *o_gantry_b = malloc(sizeof(object));
     object_create(o_gantry_b, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(o_gantry_b, ani);
-    object_set_palette(o_gantry_b, mpal, 0);
     object_select_sprite(o_gantry_b, 0);
     object_set_direction(o_gantry_b, OBJECT_FACE_LEFT);
     game_state_add_object(scene->gs, o_gantry_b, RENDER_LAYER_MIDDLE);

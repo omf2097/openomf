@@ -87,7 +87,6 @@ void scene_init(scene *scene) {
     object_set_animation(&scene->background, bgani);
     object_set_animation_owner(&scene->background, OWNER_OBJECT);
     object_select_sprite(&scene->background, 0);
-    object_set_palette(&scene->background, bk_get_palette(&scene->bk_data, 0), 0);
 
     // init shadow buffer
     image_create(&scene->shadow_buffer_img, 320, 200);
@@ -102,7 +101,6 @@ void scene_init(scene *scene) {
             object *obj = malloc(sizeof(object));
             object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
             object_set_stl(obj, scene->bk_data.sound_translation_table);
-            object_set_palette(obj, bk_get_palette(&scene->bk_data, 0), 0);
             object_set_animation(obj, &info->ani);
             if(info->probability == 1) {
                 object_set_repeat(obj, 1);
@@ -259,7 +257,6 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userd
         object *obj = malloc(sizeof(object));
         object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vec2f_create(0,0));
         object_set_stl(obj, object_get_stl(parent));
-        object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &info->ani);
         object_set_spawn_cb(obj, cb_scene_spawn_object, userdata);
         object_set_destroy_cb(obj, cb_scene_destroy_object, userdata);
