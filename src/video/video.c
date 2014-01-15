@@ -134,9 +134,18 @@ void video_screenshot(image *img) {
     }
 }
 
+void video_force_pal_refresh() {
+    memcpy(state.cur_palette->data, state.base_palette->data, 768);
+    state.cur_palette->version++;
+}
+
 void video_set_base_palette(const palette *src) {
     memcpy(state.base_palette, src, sizeof(palette));
     memcpy(state.cur_palette->data, src->data, 768);
+}
+
+palette *video_get_base_palette() {
+    return state.base_palette;
 }
 
 void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount) {

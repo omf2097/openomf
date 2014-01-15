@@ -240,9 +240,11 @@ void handle_action(scene *scene, int player, int action) {
 
                     object_select_sprite(&local->bigportrait1, local->pilot_id_a);
                     // update the player palette
-                    palette_set_player_color(local->player1_pal, local->pilots[local->pilot_id_a].colors[0], 2);
-                    palette_set_player_color(local->player1_pal, local->pilots[local->pilot_id_a].colors[1], 1);
-                    palette_set_player_color(local->player1_pal, local->pilots[local->pilot_id_a].colors[2], 0);
+                    palette *base_pal = video_get_base_palette();
+                    palette_set_player_color(base_pal, 0, local->pilots[local->pilot_id_a].colors[0], 2);
+                    palette_set_player_color(base_pal, 0, local->pilots[local->pilot_id_a].colors[1], 1);
+                    palette_set_player_color(base_pal, 0, local->pilots[local->pilot_id_a].colors[2], 0);
+                    video_force_pal_refresh();
                     player1->colors[0] = local->pilots[local->pilot_id_a].colors[0];
                     player1->colors[1] = local->pilots[local->pilot_id_a].colors[1];
                     player1->colors[2] = local->pilots[local->pilot_id_a].colors[2];
@@ -250,10 +252,10 @@ void handle_action(scene *scene, int player, int action) {
                     if (player2->selectable) {
                         object_select_sprite(&local->bigportrait2, local->pilot_id_b);
                         // update the player palette
-                        palette_set_player_color(local->player2_pal, local->pilots[local->pilot_id_b].colors[0], 2);
-                        palette_set_player_color(local->player2_pal, local->pilots[local->pilot_id_b].colors[1], 1);
-                        palette_set_player_color(local->player2_pal, local->pilots[local->pilot_id_b].colors[2], 0);
-
+                        palette_set_player_color(base_pal, 1, local->pilots[local->pilot_id_b].colors[0], 2);
+                        palette_set_player_color(base_pal, 1, local->pilots[local->pilot_id_b].colors[1], 1);
+                        palette_set_player_color(base_pal, 1, local->pilots[local->pilot_id_b].colors[2], 0);
+                        video_force_pal_refresh();
                         player2->colors[0] = local->pilots[local->pilot_id_b].colors[0];
                         player2->colors[1] = local->pilots[local->pilot_id_b].colors[1];
                         player2->colors[2] = local->pilots[local->pilot_id_b].colors[2];
@@ -480,12 +482,13 @@ int melee_create(scene *scene) {
     controller *player1_ctrl = game_player_get_ctrl(player1);
     controller *player2_ctrl = game_player_get_ctrl(player2);
 
-    palette *mpal = bk_get_palette(&scene->bk_data, 0);
+    palette *mpal = video_get_base_palette();
     local->player1_pal = palette_copy(mpal);
     local->player2_pal = palette_copy(mpal);
-    palette_set_player_color(mpal, 8, 0);
-    palette_set_player_color(mpal, 8, 1);
-    palette_set_player_color(mpal, 8, 2);
+    palette_set_player_color(mpal, 0, 8, 0);
+    palette_set_player_color(mpal, 0, 8, 1);
+    palette_set_player_color(mpal, 0, 8, 2);
+    video_force_pal_refresh();
 
     // TODO read this from MASTER.DAT
     // XXX the colors are eyeballed

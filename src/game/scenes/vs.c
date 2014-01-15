@@ -187,17 +187,17 @@ int vs_create(scene *scene) {
 
     animation *ani;
 
-    palette *mpal = bk_get_palette(&scene->bk_data, 0);
+    palette *mpal = video_get_base_palette();
 
     local->player1_palette = palette_copy(mpal);
     local->player2_palette = palette_copy(mpal);
-    palette_set_player_color(local->player1_palette, player1->colors[2], 0);
-    palette_set_player_color(local->player1_palette, player1->colors[1], 1);
-    palette_set_player_color(local->player1_palette, player1->colors[0], 2);
-
-    palette_set_player_color(local->player2_palette, player2->colors[2], 0);
-    palette_set_player_color(local->player2_palette, player2->colors[1], 1);
-    palette_set_player_color(local->player2_palette, player2->colors[0], 2);
+    palette_set_player_color(mpal, 0, player1->colors[2], 0);
+    palette_set_player_color(mpal, 0, player1->colors[1], 1);
+    palette_set_player_color(mpal, 0, player1->colors[0], 2);
+    palette_set_player_color(mpal, 1, player2->colors[2], 0);
+    palette_set_player_color(mpal, 1, player2->colors[1], 1);
+    palette_set_player_color(mpal, 1, player2->colors[0], 2);
+    video_force_pal_refresh();
 
     // HAR
     ani = &bk_get_info(&scene->bk_data, 5)->ani;

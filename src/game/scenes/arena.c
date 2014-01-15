@@ -695,9 +695,12 @@ int arena_create(scene *scene) {
         object *obj = malloc(sizeof(object));
 
         // load the player's colors into the palette
-        palette_set_player_color(local->player_palettes[i], player->colors[2], 0);
-        palette_set_player_color(local->player_palettes[i], player->colors[1], 1);
-        palette_set_player_color(local->player_palettes[i], player->colors[0], 2);
+
+        palette *base_pal = video_get_base_palette();
+        palette_set_player_color(base_pal, i, player->colors[2], 0);
+        palette_set_player_color(base_pal, i, player->colors[1], 1);
+        palette_set_player_color(base_pal, i, player->colors[0], 2);
+        video_force_pal_refresh();
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
