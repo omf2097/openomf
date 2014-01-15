@@ -402,13 +402,13 @@ void object_palette_transform(object *obj, palette *pal) {
             if(rstate->pal_tint) {
                 m = max3(pal->data[i][0], pal->data[i][1], pal->data[i][2]);
                 u = m / 64.0f;
-                pal->data[i][0] = pal->data[i][0] + u * k * (b.r - pal->data[i][0]);
-                pal->data[i][1] = pal->data[i][1] + u * k * (b.g - pal->data[i][1]);
-                pal->data[i][2] = pal->data[i][2] + u * k * (b.b - pal->data[i][2]);
+                pal->data[i][0] = max(0, min(255, pal->data[i][0] + u * k * (b.r - pal->data[i][0])));
+                pal->data[i][1] = max(0, min(255, pal->data[i][1] + u * k * (b.g - pal->data[i][1])));
+                pal->data[i][2] = max(0, min(255, pal->data[i][2] + u * k * (b.b - pal->data[i][2])));
             } else {
-                pal->data[i][0] = pal->data[i][0] * (1 - k) + (b.r * k);
-                pal->data[i][1] = pal->data[i][1] * (1 - k) + (b.g * k);
-                pal->data[i][2] = pal->data[i][2] * (1 - k) + (b.b * k);
+                pal->data[i][0] = max(0, min(255, pal->data[i][0] * (1 - k) + (b.r * k)));
+                pal->data[i][1] = max(0, min(255, pal->data[i][1] * (1 - k) + (b.g * k)));
+                pal->data[i][2] = max(0, min(255, pal->data[i][2] * (1 - k) + (b.b * k)));
             }
         } 
     }

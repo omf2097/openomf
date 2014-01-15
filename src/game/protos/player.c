@@ -335,6 +335,10 @@ void player_run(object *obj) {
             if(isset(f, "bpd")) { rstate->pal_ref_index = get(f, "bpd"); }
             if(isset(f, "bpn")) { rstate->pal_entry_count = get(f, "bpn"); }
             if(isset(f, "bps")) { rstate->pal_start_index = get(f, "bps"); }
+            if(isset(f, "bpf")) { 
+                rstate->pal_start_index = 0; // TODO: This should be 48 if this is HAR 2
+                rstate->pal_entry_count = 48;
+            }
             if(isset(f, "bpp")) { 
                 rstate->pal_end = get(f, "bpp");
                 rstate->pal_begin = get(f, "bpp"); 
