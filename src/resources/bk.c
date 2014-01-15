@@ -10,14 +10,12 @@ void bk_create(bk *b, void *src) {
     b->file_id = sdbk->file_id;
 
     // Copy VGA image
-    surface *bk_surface = malloc(sizeof(surface));
     surface_create_from_data(
-        bk_surface, 
+        &b->background, 
         SURFACE_TYPE_PALETTE, 
         sdbk->background->w, 
         sdbk->background->h, 
         sdbk->background->data);
-    sprite_create_custom(&b->background, vec2i_create(0,0), bk_surface);
 
     // Copy sound translation table
     memcpy(b->sound_translation_table, sdbk->soundtable, 30);
@@ -57,7 +55,7 @@ char* bk_get_stl(bk *b) {
 }
 
 void bk_free(bk *b) {
-    sprite_free(&b->background);
+    surface_free(&b->background);
     vector_free(&b->palettes);
 
     // Free info structs

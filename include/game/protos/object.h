@@ -70,6 +70,7 @@ struct object_t {
     sprite *cur_sprite;
     char *sound_translation_table;
 
+    uint8_t pal_offset;
     uint8_t cur_remap;
     uint8_t halt;
     uint8_t stride;

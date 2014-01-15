@@ -16,6 +16,7 @@ typedef struct {
     unsigned int cache_version;
     char *cache_remap_table;
     char cache_refresh_flag;
+    uint8_t cache_pal_offset;
 } surface;
 
 enum {
@@ -33,6 +34,7 @@ SDL_Texture* surface_to_sdl(surface *sur,
                             SDL_Renderer *renderer, 
                             screen_palette *pal, 
                             char *remap_table,
+                            uint8_t pal_offset,
                             int *cache_status);
 void surface_force_refresh(surface *sur);
 

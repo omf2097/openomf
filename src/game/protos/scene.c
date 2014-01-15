@@ -81,13 +81,6 @@ int scene_load_har(scene *scene, int player_id, int har_id) {
 }
 
 void scene_init(scene *scene) {
-    // Init background sprite with palette
-    object_create(&scene->background, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
-    animation *bgani = create_animation_from_single(sprite_copy(&scene->bk_data.background), vec2i_create(0,0));
-    object_set_animation(&scene->background, bgani);
-    object_set_animation_owner(&scene->background, OWNER_OBJECT);
-    object_select_sprite(&scene->background, 0);
-
     // init shadow buffer
     image_create(&scene->shadow_buffer_img, 320, 200);
 
@@ -171,7 +164,7 @@ void scene_render_overlay(scene *scene) {
 }
 
 void scene_render(scene *scene) {
-    object_render_neutral(&scene->background);
+    video_render_background(&scene->bk_data.background);
 
     if(scene->render != NULL) {
         scene->render(scene);
@@ -215,7 +208,6 @@ void scene_free(scene *scene) {
         af_free(scene->af_data[1]);
         free(scene->af_data[1]);
     }
-    object_free(&scene->background);
     image_free(&scene->shadow_buffer_img);
     ticktimer_close(&scene->tick_timer);
 }

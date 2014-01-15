@@ -7,7 +7,7 @@
 
 typedef struct bk_t {
     int file_id;
-    sprite background;
+    surface background;
     hashmap infos;
     vector palettes;
     char sound_translation_table[30];

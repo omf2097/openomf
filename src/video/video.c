@@ -176,7 +176,7 @@ void video_render_prepare() {
 
 void video_render_background(surface *sur) {
     int cache_state;
-    SDL_Texture *bg = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, &cache_state);
+    SDL_Texture *bg = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, 0, &cache_state);
     handle_cache_flag(cache_state);
     SDL_SetTextureBlendMode(bg, SDL_BLENDMODE_NONE);
     SDL_RenderCopy(state.renderer, bg, NULL, NULL);
@@ -190,7 +190,7 @@ void video_render_char(surface *sur, int sx, int sy, color c) {
     dst.h = sur->h;
 
     int cache_state;
-    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, &cache_state);
+    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, 0, &cache_state);
     handle_cache_flag(cache_state);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
     SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
@@ -209,7 +209,7 @@ void video_render_sprite_flip_scale(surface *sur, int sx, int sy, unsigned int r
     dst.h = sur->h;
 
     int cache_state;
-    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, &cache_state);
+    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, 0, &cache_state);
     handle_cache_flag(cache_state);
     switch(rendering_mode) {
         case BLEND_ADDITIVE:

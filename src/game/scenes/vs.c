@@ -214,7 +214,7 @@ int vs_create(scene *scene) {
     object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
 
     // clone the left side of the background image
-    surface_sub(&local->player2_background, scene->bk_data.background.data, 0, 0, 160, 200);
+    surface_sub(&local->player2_background, &scene->bk_data.background, 0, 0, 160, 200);
 
     if (player2->selectable) {
         // player1 gets to choose, start at arena

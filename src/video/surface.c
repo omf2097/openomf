@@ -19,6 +19,7 @@ void surface_create(surface *sur, int type, int w, int h) {
     sur->cache_tex = NULL;
     sur->cache_remap_table = NULL;
     sur->cache_refresh_flag = 0;
+    sur->cache_pal_offset = 0;
 }
 
 void surface_create_from_data(surface *sur, int type, int w, int h, const char *src) {
@@ -87,7 +88,8 @@ void surface_force_refresh(surface *sur) {
 void surface_refresh_cache(surface *sur, 
                            SDL_Renderer *renderer, 
                            screen_palette *pal, 
-                           char *remap_table) {
+                           char *remap_table,
+                           uint8_t pal_offset) {
     SDL_Surface *s;
     if(sur->type == SURFACE_TYPE_RGBA) {
         s = SDL_CreateRGBSurfaceFrom(
@@ -110,9 +112,9 @@ void surface_refresh_cache(surface *sur,
         for(int i = 0; i < sur->w * sur->h; i++) {
             n = i * 4;
             if(remap_table != NULL) {
-                idx = (uint8_t)remap_table[(uint8_t)sur->data[i]];
+                idx = (uint8_t)remap_table[(uint8_t)sur->data[i]] + pal_offset;
             } else {
-                idx = (uint8_t)sur->data[i];
+                idx = (uint8_t)sur->data[i] + pal_offset;
             }
             *(tmp + n + 0) = pal->data[idx][0];
             *(tmp + n + 1) = pal->data[idx][1];
@@ -138,25 +140,28 @@ void surface_refresh_cache(surface *sur,
     sur->cache_version = pal->version;
     sur->cache_remap_table = remap_table;
     sur->cache_refresh_flag = 0;
+    sur->cache_pal_offset = pal_offset;
 }
 
 SDL_Texture* surface_to_sdl(surface *sur, 
                             SDL_Renderer *renderer, 
                             screen_palette *pal, 
                             char *remap_table,
+                            uint8_t pal_offset,
                             int *status) {
 
     // If the cache is old, or there is no cached texture, regenerate it now
     if(sur->cache_remap_table != remap_table
        || sur->cache_version < pal->version
        || sur->cache_tex == NULL
-       || sur->cache_refresh_flag == 1) {
+       || sur->cache_refresh_flag == 1
+       || sur->cache_pal_offset != pal_offset) {
 
         if(sur->cache_tex != NULL) {
             SDL_DestroyTexture(sur->cache_tex);
         }
 
-        surface_refresh_cache(sur, renderer, pal, remap_table);
+        surface_refresh_cache(sur, renderer, pal, remap_table, pal_offset);
         *status = 1;
     } else {
         *status = 0;
