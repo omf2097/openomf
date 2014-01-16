@@ -67,7 +67,7 @@ unsigned int hashmap_reserved(hashmap *hm) {
     return hm->reserved;
 }
 
-static void hashmap_add_key(hashmap *hm, const void *key, unsigned int keylen, void *val, unsigned int vallen) {
+void hashmap_put(hashmap *hm, const void *key, unsigned int keylen, void *val, unsigned int vallen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
 
     // Create new node, copy data
@@ -85,7 +85,7 @@ static void hashmap_add_key(hashmap *hm, const void *key, unsigned int keylen, v
     hm->reserved++;
 }
 
-static void hashmap_del_key(hashmap *hm, const void *key, unsigned int keylen) {
+void hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
     
     // Get node
@@ -121,7 +121,7 @@ static void hashmap_del_key(hashmap *hm, const void *key, unsigned int keylen) {
     }
 }
 
-static int hashmap_get_key(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen) {
+int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
     
     // Set defaults for error cases
@@ -148,27 +148,27 @@ static int hashmap_get_key(hashmap *hm, const void *key, unsigned int keylen, vo
 }
 
 void hashmap_sput(hashmap *hm, const char *key, void *value, unsigned int value_len) {
-    hashmap_add_key(hm, key, strlen(key)+1, value, value_len);
+    hashmap_put(hm, key, strlen(key)+1, value, value_len);
 }
 
 void hashmap_iput(hashmap *hm, unsigned int key, void *value, unsigned int value_len) {
-    hashmap_add_key(hm, (char*)&key, sizeof(unsigned int), value, value_len);
+    hashmap_put(hm, (char*)&key, sizeof(unsigned int), value, value_len);
 }
 
 int hashmap_sget(hashmap *hm, const char *key, void **value, unsigned int *value_len) {
-    return hashmap_get_key(hm, (void*)key, strlen(key)+1, value, value_len);
+    return hashmap_get(hm, (void*)key, strlen(key)+1, value, value_len);
 }
 
 int hashmap_iget(hashmap *hm, unsigned int key, void **value, unsigned int *value_len) {
-    return hashmap_get_key(hm, (void*)&key, sizeof(unsigned int), value, value_len);
+    return hashmap_get(hm, (void*)&key, sizeof(unsigned int), value, value_len);
 }
 
 void hashmap_sdel(hashmap *hm, const char *key) {
-    hashmap_del_key(hm, key, strlen(key)+1);
+    hashmap_del(hm, key, strlen(key)+1);
 }
 
 void hashmap_idel(hashmap *hm, unsigned int key) {
-    hashmap_del_key(hm, (char*)&key, sizeof(unsigned int));
+    hashmap_del(hm, (char*)&key, sizeof(unsigned int));
 }
 
 void hashmap_delete(hashmap *hm, iterator *iter) {
