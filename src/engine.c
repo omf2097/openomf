@@ -160,6 +160,9 @@ void engine_run(int net_mode) {
 
             // Tick console
             console_tick();
+
+            // Handle cache
+            tcache_tick();
             
             // Handle waiting period leftover time
             omf_wait -= game_state_ms_per_tick(gs);

@@ -137,6 +137,11 @@ void video_force_pal_refresh() {
 
 void video_set_base_palette(const palette *src) {
     memcpy(state.base_palette, src, sizeof(palette));
+
+    // Since the whole base palette was reset, we
+    // might as well clear the cache, since most everything
+    // is likely to be old.
+    tcache_clear();
 }
 
 palette *video_get_base_palette() {

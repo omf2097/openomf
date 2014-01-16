@@ -35,9 +35,6 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->input_poll = NULL;
     scene->startup = NULL;
 
-    // Set palette
-    video_set_base_palette(bk_get_palette(&scene->bk_data, 0));
-
     // All done.
     DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
     return 0;
@@ -81,6 +78,9 @@ int scene_load_har(scene *scene, int player_id, int har_id) {
 }
 
 void scene_init(scene *scene) {
+    // Set palette
+    video_set_base_palette(bk_get_palette(&scene->bk_data, 0));
+    
     // init shadow buffer
     image_create(&scene->shadow_buffer_img, 320, 200);
 
