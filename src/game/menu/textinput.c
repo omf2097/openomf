@@ -48,7 +48,7 @@ void textinput_render(component *c) {
     chars = strlen(tb->buf);
     width = 15*tb->font->w;
     xoff = (c->w - width)/2;
-    video_render_sprite(&tb->sur, c->x + xoff-2, c->y -2, BLEND_ALPHA_FULL);
+    video_render_sprite(&tb->sur, c->x + xoff-2, c->y -2, BLEND_ALPHA_FULL, 0);
     if(c->selected) {
         int t = tb->ticks / 2;
         if (chars > 0) {

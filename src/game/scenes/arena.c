@@ -620,7 +620,7 @@ void arena_render_overlay(scene *scene) {
     // Render menu (if visible)
     if(local->menu_visible) {
         menu_render(&local->game_menu);
-        video_render_sprite(&local->sur, 10, 150, BLEND_ALPHA_FULL);
+        video_render_sprite(&local->sur, 10, 150, BLEND_ALPHA_FULL, 0);
     }
 }
 
@@ -685,7 +685,6 @@ int arena_create(scene *scene) {
         object *obj = malloc(sizeof(object));
 
         // load the player's colors into the palette
-
         palette *base_pal = video_get_base_palette();
         palette_set_player_color(base_pal, i, player->colors[2], 0);
         palette_set_player_color(base_pal, i, player->colors[1], 1);

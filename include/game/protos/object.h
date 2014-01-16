@@ -101,7 +101,6 @@ struct object_t {
 
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
 void object_render(object *obj);
-void object_render_neutral(object *obj);
 void object_render_shadow(object *obj, image *shadow_buffer);
 void object_debug(object *obj);
 void object_tick(object *obj);
@@ -155,6 +154,9 @@ int object_get_direction(object *obj);
 int object_get_gravity(object *obj);
 int object_get_group(object *obj);
 int object_get_layers(object *obj);
+
+void object_set_pal_offset(object *obj, int offset);
+int object_get_pal_offset(object *obj);
 
 void object_reset_hstate(object *obj);
 void object_reset_vstate(object *obj);

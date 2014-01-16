@@ -137,7 +137,7 @@ void vs_render(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
 
     // render the right side of the background
-    video_render_sprite_flip(&local->player2_background, 160, 0, BLEND_ALPHA, FLIP_HORIZONTAL);
+    video_render_sprite_flip_scale(&local->player2_background, 160, 0, BLEND_ALPHA, 0, FLIP_HORIZONTAL, 1.0);
 
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
@@ -157,7 +157,7 @@ void vs_render(scene *scene) {
 
     if (player2->selectable) {
         // arena selection
-        video_render_sprite_flip(&local->arena_select_bg, 55, 150, BLEND_ALPHA, FLIP_NONE);
+        video_render_sprite(&local->arena_select_bg, 55, 150, BLEND_ALPHA, 0);
 
         object_render(&local->arena_select);
 

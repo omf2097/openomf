@@ -104,7 +104,7 @@ void font_render_char(font *font, char ch, int x, int y, color c) {
         return;
     }
     sur = vector_get(&font->surfaces, code);
-    video_render_char(*sur, x, y, c);
+    video_render_sprite_tint(*sur, x, y, c, 0);
 }
 
 void font_render_len(font *font, const char *text, int len, int x, int y, color c) {

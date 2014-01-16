@@ -284,14 +284,7 @@ void object_render(object *obj) {
     }
 
     // Render
-    video_render_sprite_flip_scale(obj->cur_surface, x, y, rstate->blendmode, flipmode, obj->y_percent);
-}
-
-// Renders sprite to left top corner with no special stuff applied
-void object_render_neutral(object *obj) {
-    obj->cur_surface = obj->cur_sprite->data;
-    if(obj->cur_surface == NULL) return;
-    video_render_background(obj->cur_surface);
+    video_render_sprite_flip_scale(obj->cur_surface, x, y, rstate->blendmode, obj->pal_offset, flipmode, obj->y_percent);
 }
 
 // Renders sprite's shadow to a shadow buffer
@@ -490,6 +483,9 @@ void object_set_gravity(object *obj, float gravity) { obj->gravity = gravity; }
 int object_get_gravity(object *obj) { return obj->gravity; }
 int object_get_group(object *obj) { return obj->group; }
 int object_get_layers(object *obj) { return obj->layers; }
+
+void object_set_pal_offset(object *obj, int offset) { obj->pal_offset = offset; }
+int object_get_pal_offset(object *obj) { return obj->pal_offset; }
 
 void object_reset_vstate(object *obj) {
     obj->hstate = (obj->vel.x < 0.01f && obj->vel.x > -0.01f) ? OBJECT_STABLE : OBJECT_MOVING;

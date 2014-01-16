@@ -1161,7 +1161,7 @@ void har_debug(object *obj) {
     har *h = object_get_userdata(obj);
     if(h->debug_enabled == 0) return;
     surface_create_from_image(&h->debug_surface, &h->debug_img);
-    video_render_sprite(&h->debug_surface, 0, 0, BLEND_ALPHA_FULL);
+    video_render_sprite(&h->debug_surface, 0, 0, BLEND_ALPHA_FULL, 0);
     surface_free(&h->debug_surface);
     image_clear(&h->debug_img, color_create(0,0,0,0));
 }
@@ -1305,6 +1305,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->recover_hook_cb_data = NULL;
 
     local->stun_timer = 0;
+
+    // Set palette offset 0 for player1, 48 for player2
+    object_set_pal_offset(obj, player_id * 48);
 
     // Object related stuff
     /*object_set_gravity(obj, local->af_data->fall_speed);*/

@@ -22,10 +22,15 @@
 int video_init(int window_w, int window_h, int fullscreen, int vsync); // Create window etc.
 int video_reinit(int window_w, int window_h, int fullscreen, int vsync);
 void video_render_prepare();
-void video_render_sprite(surface *sur, int x, int y, unsigned int render_mode);
-void video_render_sprite_flip_scale(surface *sur, int x, int y, unsigned int render_mode, unsigned int flip_mode, float y_percent);
-#define video_render_sprite_flip(tex, sx, sy, render_mode, flip_mode) video_render_sprite_flip_scale(tex, sx, sy, render_mode, flip_mode, 1.0)
-void video_render_char(surface *sur, int x, int y, color c);
+void video_render_sprite(surface *sur, int x, int y, unsigned int render_mode, int pal_offset);
+void video_render_sprite_flip_scale(surface *sur, 
+                                    int x, 
+                                    int y,
+                                    unsigned int render_mode, 
+                                    int pal_offset,
+                                    unsigned int flip_mode, 
+                                    float y_percent);
+void video_render_sprite_tint(surface *sur, int x, int y, color c, int pal_offset);
 void video_render_finish();
 void video_render_background(surface *sur);
 void video_close();

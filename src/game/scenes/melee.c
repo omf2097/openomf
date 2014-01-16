@@ -346,7 +346,11 @@ void render_highlights(scene *scene) {
     game_player *player2 = game_state_get_player(scene->gs, 1);
     int trans;
     if (player2->selectable && local->row_a == local->row_b && local->column_a == local->column_b) {
-        video_render_char(&local->select_hilight, 11 + (62*local->column_a), 115 + (42*local->row_a), color_create(250-local->ticks, 0, 250-local->ticks, 0));
+        video_render_sprite_tint(&local->select_hilight, 
+                                11 + (62*local->column_a), 
+                                115 + (42*local->row_a), 
+                                color_create(250-local->ticks, 0, 250-local->ticks, 0),
+                                0);
     } else {
         if (player2->selectable) {
             if (local->done_b) {
@@ -354,14 +358,22 @@ void render_highlights(scene *scene) {
             } else {
                 trans = 250 - local->ticks;
             }
-            video_render_char(&local->select_hilight, 11 + (62*local->column_b), 115 + (42*local->row_b), color_create(0, 0, trans, 0));
+            video_render_sprite_tint(&local->select_hilight, 
+                                    11 + (62*local->column_b), 
+                                    115 + (42*local->row_b), 
+                                    color_create(0, 0, trans, 0),
+                                    0);
         }
         if (local->done_a) {
-                trans = 250;
-            } else {
-                trans = 250 - local->ticks;
-            }
-        video_render_char(&local->select_hilight, 11 + (62*local->column_a), 115 + (42*local->row_a), color_create(trans, 0, 0, 0));
+            trans = 250;
+        } else {
+            trans = 250 - local->ticks;
+        }
+        video_render_sprite_tint(&local->select_hilight, 
+                                11 + (62*local->column_a), 
+                                115 + (42*local->row_a), 
+                                color_create(trans, 0, 0, 0),
+                                0);
     }
 }
 
@@ -372,8 +384,8 @@ void melee_render(scene *scene) {
     int current_b = 5*local->row_b + local->column_b;
 
     if (local->selection == 0) {
-        video_render_sprite_flip(&local->feh, 70, 0, BLEND_ALPHA, FLIP_NONE);
-        video_render_sprite_flip(&local->bleh, 0, 62, BLEND_ALPHA, FLIP_NONE);
+        video_render_sprite(&local->feh, 70, 0, BLEND_ALPHA, 0);
+        video_render_sprite(&local->bleh, 0, 62, BLEND_ALPHA, 0);
 
         // player bio
         font_render_wrapped(&font_small, lang_get(135+current_a), 4, 66, 152, COLOR_GREEN);
@@ -386,8 +398,8 @@ void melee_render(scene *scene) {
         progressbar_render(&local->bar_endurance[0]);
 
         if (player2->selectable) {
-            video_render_sprite_flip(&local->feh, 320-70-local->feh.w, 0, BLEND_ALPHA, FLIP_NONE);
-            video_render_sprite_flip(&local->bleh, 320-local->bleh.w, 62, BLEND_ALPHA, FLIP_NONE);
+            video_render_sprite(&local->feh, 320-70-local->feh.w, 0, BLEND_ALPHA, 0);
+            video_render_sprite(&local->bleh, 320-local->bleh.w, 62, BLEND_ALPHA, 0);
             // player bio
             font_render_wrapped(&font_small, lang_get(135+current_b), 320-local->bleh.w+4, 66, 152, COLOR_GREEN);
             // player stats

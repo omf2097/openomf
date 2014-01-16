@@ -149,7 +149,7 @@ void newsroom_overlay_render(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
 
     if(str_size(&local->news_str) > 0) {
-        video_render_sprite_flip(&local->news_bg, 20, 140, BLEND_ALPHA_FULL, FLIP_NONE);
+        video_render_sprite(&local->news_bg, 20, 140, BLEND_ALPHA_FULL, 0);
         font_render_wrapped(&font_small, str_c(&local->news_str), 30, 150, 250, COLOR_YELLOW);
     }
 }
