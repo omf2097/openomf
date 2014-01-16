@@ -5,10 +5,6 @@
 #define IS_ZERO(n) (n < 0.1 && n > -0.1)
 
 
-void scrap_free(object *obj) {
-    free(object_get_userdata(obj));
-}
-
 // TODO: This is kind of quick and dirty, think of something better.
 void scrap_move(object *obj) {
     vec2f vel = object_get_vel(obj);
@@ -51,7 +47,6 @@ void scrap_move(object *obj) {
 }
 
 int scrap_create(object *obj) {
-    object_set_free_cb(obj, scrap_free);
     object_set_move_cb(obj, scrap_move);
 
     return 0;

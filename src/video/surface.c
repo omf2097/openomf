@@ -71,29 +71,15 @@ void surface_sub(surface *dst, surface *src, int x, int y, int w, int h) {
     }
 }
 
-SDL_Texture* surface_to_sdl(surface *sur, 
-                            SDL_Renderer *renderer, 
-                            screen_palette *pal, 
-                            char *remap_table,
-                            uint8_t pal_offset) {
-    SDL_Surface *s;
-    SDL_Texture *ret = NULL;
+void surface_to_rgba(surface *sur,
+                     char *dst,
+                     screen_palette *pal, 
+                     char *remap_table,
+                     uint8_t pal_offset) {
+
     if(sur->type == SURFACE_TYPE_RGBA) {
-        s = SDL_CreateRGBSurfaceFrom(
-            sur->data,
-            sur->w,
-            sur->h,
-            32,
-            sur->w * 4,
-            0x000000FF,
-            0x0000FF00,
-            0x00FF0000,
-            0xFF000000
-        );
-        ret = SDL_CreateTextureFromSurface(renderer, s);
-        SDL_FreeSurface(s);
+        memcpy(dst, sur->data, sur->w * sur->h * 4);
     } else {
-        char *tmp = malloc(sur->w * sur->h * 4);
         int n = 0;
         uint8_t idx = 0;
         for(int i = 0; i < sur->w * sur->h; i++) {
@@ -103,25 +89,10 @@ SDL_Texture* surface_to_sdl(surface *sur,
             } else {
                 idx = (uint8_t)sur->data[i] + pal_offset;
             }
-            *(tmp + n + 0) = pal->data[idx][0];
-            *(tmp + n + 1) = pal->data[idx][1];
-            *(tmp + n + 2) = pal->data[idx][2];
-            *(tmp + n + 3) = (sur->stencil[i] == 1) ? 0xFF : 0;
+            *(dst + n + 0) = pal->data[idx][0];
+            *(dst + n + 1) = pal->data[idx][1];
+            *(dst + n + 2) = pal->data[idx][2];
+            *(dst + n + 3) = (sur->stencil[i] == 1) ? 0xFF : 0;
         }
-        s = SDL_CreateRGBSurfaceFrom(
-            tmp,
-            sur->w,
-            sur->h,
-            32,
-            sur->w*4,
-            0x000000FF,
-            0x0000FF00,
-            0x00FF0000,
-            0xFF000000
-        );
-        ret = SDL_CreateTextureFromSurface(renderer, s);
-        SDL_FreeSurface(s);
-        free(tmp);
     }
-    return ret;
 }

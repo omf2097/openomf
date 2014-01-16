@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "game/scenes/progressbar.h"
 #include "video/image.h"
 #include "video/video.h"

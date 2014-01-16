@@ -3,7 +3,7 @@
 #include "utils/hashmap.h"
 #include "utils/log.h"
 
-#define CACHE_LIFETIME 10
+#define CACHE_LIFETIME 25
 
 typedef struct tcache_entry_key_t {
     surface *c_surface;
@@ -104,7 +104,18 @@ SDL_Texture* tcache_get(surface *sur,
         tcache_entry_value new_entry;
         new_entry.age = 0;
         new_entry.pal_version = pal->version;
-        new_entry.tex = surface_to_sdl(sur, renderer, pal, remap_table, pal_offset);
+        new_entry.tex = SDL_CreateTexture(renderer, 
+                                          SDL_PIXELFORMAT_ABGR8888,
+                                          SDL_TEXTUREACCESS_STREAMING,
+                                          sur->w,
+                                          sur->h);
+
+        // Render surface to texture
+        char *pixels;
+        int pitch;
+        SDL_LockTexture(new_entry.tex, NULL, (void**)&pixels, &pitch);
+        surface_to_rgba(sur, pixels, pal, remap_table, pal_offset);
+        SDL_UnlockTexture(new_entry.tex);
         
         // Return value
         ret = new_entry.tex;
@@ -116,10 +127,18 @@ SDL_Texture* tcache_get(surface *sur,
     } else {
         // Palette used is old, we need to update the texture
         if(val->pal_version != pal->version) {
-            SDL_DestroyTexture(val->tex);
-            val->tex = surface_to_sdl(sur, renderer, pal, remap_table, pal_offset);
+            // Update texture contents with updated surface
+            char *pixels;
+            int pitch;
+            SDL_LockTexture(val->tex, NULL, (void**)&pixels, &pitch);
+            surface_to_rgba(sur, pixels, pal, remap_table, pal_offset);
+            SDL_UnlockTexture(val->tex);
+
+            //  Set correct age and latest palette version
             val->age = 0;
             val->pal_version = pal->version;
+
+            // Keep statistics up-to-date :)
             cache->misses++;
         } else {
             cache->hits++;
