@@ -307,18 +307,12 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if (player->ctrl->type == CTRL_TYPE_NETWORK) {
-                    if (!game_state_rewind(scene->gs, player->ctrl->rtt)) {
-                        do {
-                            object_act(game_player_get_har(player), i->event_data.action);
-                        } while ((i = i->next) && i->type == EVENT_TYPE_ACTION);
-                        game_state_replay(scene->gs, player->ctrl->rtt);
-                        object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
-                        object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
-                        maybe_install_har_hooks(scene);
-                        // always trigger a synchronization, since if the client's move did not actually happen, we want to rewind them ASAP
-                        need_sync = 1;
-                        // XXX do we need to continue her, since we screwed with 'i'?
-                    }
+                    do {
+                        object_act(game_player_get_har(player), i->event_data.action);
+                    } while ((i = i->next) && i->type == EVENT_TYPE_ACTION);
+                    // always trigger a synchronization, since if the client's move did not actually happen, we want to rewind them ASAP
+                    need_sync = 1;
+                    // XXX do we need to continue here, since we screwed with 'i'?
                 } else {
                     need_sync += object_act(game_player_get_har(player), i->event_data.action);
                 }

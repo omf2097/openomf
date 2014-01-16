@@ -213,13 +213,25 @@ void player_set_delay(object *obj, int delay) {
         }
     }
 
+    if (!frames) {
+        return;
+    }
+
     DEBUG("animation has %d initializer frames", frames);
 
+    int delay_per_frame = delay/frames;
+    int rem = delay % frames;
     for(int i = 0; i < frames; i++) {
         int olddur;
         sd_stringparser_peek(obj->animation_state.parser, i, &n);
         olddur = n.duration;
-        sd_stringparser_set_frame_duration(obj->animation_state.parser, i, n.duration + (delay/frames));
+        int newduration = n.duration + delay_per_frame;
+        if (rem) {
+            newduration++;
+            rem--;
+        }
+
+        sd_stringparser_set_frame_duration(obj->animation_state.parser, i, newduration);
         sd_stringparser_peek(obj->animation_state.parser, i, &n);
         DEBUG("changed duration of frame %d from %d to %d", i, olddur, n.duration);
     }
