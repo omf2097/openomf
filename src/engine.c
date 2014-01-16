@@ -8,6 +8,7 @@
 #include "resources/sounds_loader.h"
 #include "video/surface.h"
 #include "video/video.h"
+#include "video/tcache.h"
 #include "game/text/languages.h"
 #include "game/game_state.h"
 #include "game/settings.h"
@@ -15,7 +16,6 @@
 #include "game/text/text.h"
 #include "console/console.h"
 
-int _vsync = 0; // Needed in video.c
 static int run = 0;
 static int take_screenshot = 0;
 
@@ -36,7 +36,7 @@ int engine_init() {
     int sink_id = 0;
 
     // Initialize everything.
-    _vsync = vsync;
+    tcache_init();
     if(video_init(w, h, fs, vsync)) {
         goto exit_0;
     }
@@ -82,6 +82,7 @@ exit_2:
 exit_1:
     video_close();
 exit_0:
+    tcache_close();
 #endif
 
     return 1;
@@ -184,10 +185,6 @@ void engine_run(int net_mode) {
         // ignore "unused variable" warning
         (void)take_screenshot;
 #endif
-        // Delay stuff a bit if vsync is off
-        if(!_vsync && run) {
-            SDL_Delay(1);
-        }
     }
     
     // Free scene object
@@ -206,6 +203,7 @@ void engine_close() {
 #ifndef STANDALONE_SERVER
     audio_close();
     video_close();
+    tcache_close();
 #endif
     INFO("Engine deinit successful.");
 }

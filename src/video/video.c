@@ -1,5 +1,6 @@
 #include "video/video.h"
 #include "video/image.h"
+#include "video/tcache.h"
 #include "utils/log.h"
 #include "utils/list.h"
 #include "resources/palette.h"
@@ -15,9 +16,6 @@ typedef struct {
     int vsync;
     palette *base_palette;
     screen_palette *cur_palette;
-
-    int cache_hits;
-    int cache_regens;
 } video_state;
 
 static video_state state;
@@ -31,9 +29,6 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     state.base_palette = malloc(sizeof(palette));
     state.cur_palette->version = 1;
     memset(state.cur_palette->data, 0, 768);
-
-    state.cache_regens = 0;
-    state.cache_hits = 0;
 
     // Open window
     state.window = SDL_CreateWindow(
@@ -114,6 +109,7 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
             renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
         }
         SDL_DestroyRenderer(state.renderer);
+        tcache_clear(); // Clear cache, because renderer changed.
         state.renderer = SDL_CreateRenderer(state.window, -1, renderer_flags);
         SDL_RenderSetLogicalSize(state.renderer, NATIVE_W, NATIVE_H);
     }
@@ -141,7 +137,6 @@ void video_force_pal_refresh() {
 
 void video_set_base_palette(const palette *src) {
     memcpy(state.base_palette, src, sizeof(palette));
-    memcpy(state.cur_palette->data, src->data, 768);
 }
 
 palette *video_get_base_palette() {
@@ -158,26 +153,16 @@ screen_palette* video_get_pal_ref() {
     return state.cur_palette;
 }
 
-void handle_cache_flag(int cache_state) {
-    if(cache_state == 1) {
-        state.cache_regens++;
-    } else {
-        state.cache_hits++;
-    }
-}
-
 void video_render_prepare() {
     SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
     SDL_RenderClear(state.renderer);
 
-    // Reset palette
+    // Reset palette, if necessary
     memcpy(state.cur_palette->data, state.base_palette->data, 768);
 }
 
 void video_render_background(surface *sur) {
-    int cache_state;
-    SDL_Texture *bg = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, 0, &cache_state);
-    handle_cache_flag(cache_state);
+    SDL_Texture *bg = tcache_get(sur, state.renderer, state.cur_palette, NULL, 0);
     SDL_SetTextureBlendMode(bg, SDL_BLENDMODE_NONE);
     SDL_RenderCopy(state.renderer, bg, NULL, NULL);
 }
@@ -189,9 +174,7 @@ void video_render_char(surface *sur, int sx, int sy, color c) {
     dst.w = sur->w;
     dst.h = sur->h;
 
-    int cache_state;
-    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, 0, &cache_state);
-    handle_cache_flag(cache_state);
+    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, 0);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
     SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
     SDL_RenderCopy(state.renderer, tex, NULL, &dst);
@@ -208,9 +191,7 @@ void video_render_sprite_flip_scale(surface *sur, int sx, int sy, unsigned int r
     dst.w = sur->w;
     dst.h = sur->h;
 
-    int cache_state;
-    SDL_Texture *tex = surface_to_sdl(sur, state.renderer, state.cur_palette, NULL, 0, &cache_state);
-    handle_cache_flag(cache_state);
+    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, 0);
     switch(rendering_mode) {
         case BLEND_ADDITIVE:
             SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
@@ -228,6 +209,9 @@ void video_render_sprite_flip_scale(surface *sur, int sx, int sy, unsigned int r
 
 void video_render_finish() {
     SDL_RenderPresent(state.renderer);
+    if(!state.vsync) {
+        SDL_Delay(1);
+    }
 }
 
 void video_close() {
@@ -235,5 +219,4 @@ void video_close() {
     SDL_DestroyWindow(state.window);
     free(state.cur_palette);
     INFO("Video deinit.");
-    DEBUG("Total of %d cache hits and %d cache regens.", state.cache_hits, state.cache_regens);
 }
