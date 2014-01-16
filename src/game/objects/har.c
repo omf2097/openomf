@@ -248,7 +248,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         if (h->health <= 0 && h->endurance <= 0) {
             // taken from MASTER.DAT
             char *final = "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM2";
-            char *str = malloc(str_size(string) + strlen(final));
+            char *str = malloc(str_size(string) + strlen(final) + 1);
             // append the 'final knockback' string to the hit string
             sprintf(str, "%s%s", string->data, final);
             object_set_custom_string(obj, str);
