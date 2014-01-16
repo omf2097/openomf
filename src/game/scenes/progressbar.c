@@ -6,7 +6,7 @@
 void progressbar_create_block(progress_bar *bar) {
     float prog = bar->percentage / 100.0f;
     int w = bar->w * prog;
-    if(w > 0 && bar->h > 0) {
+    if(w > 1 && bar->h > 1) {
         image tmp;
         image_create(&tmp, w, bar->h);
         image_clear(&tmp, bar->int_bg_color);
@@ -93,7 +93,7 @@ void progressbar_set(progress_bar *bar, unsigned int percentage) {
 }
 
 void progressbar_render_flashing(progress_bar *bar, int flip) {
-    if (flip) {
+    if(flip) {
         video_render_sprite(&bar->background_alt, bar->x, bar->y, BLEND_ALPHA, 0);
     } else {
         video_render_sprite(&bar->background, bar->x, bar->y, BLEND_ALPHA, 0);

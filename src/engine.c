@@ -113,9 +113,6 @@ void engine_run(int net_mode) {
     while(run && game_state_is_running(gs)) {
 
 #ifndef STANDALONE_SERVER
-        // Prepare rendering here
-        video_render_prepare();
-
         // Handle events
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
@@ -171,6 +168,7 @@ void engine_run(int net_mode) {
 
 #ifndef STANDALONE_SERVER
         // Do the actual rendering jobs
+        video_render_prepare();
         game_state_render(gs);
         console_render();
         video_render_finish();
