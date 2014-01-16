@@ -93,16 +93,16 @@ void progressbar_set(progress_bar *bar, unsigned int percentage) {
 
 void progressbar_render_flashing(progress_bar *bar, int flip) {
     if (flip) {
-        video_render_sprite(&bar->background_alt, bar->x, bar->y, BLEND_ALPHA_FULL, 0);
+        video_render_sprite(&bar->background_alt, bar->x, bar->y, BLEND_ALPHA, 0);
     } else {
-        video_render_sprite(&bar->background, bar->x, bar->y, BLEND_ALPHA_FULL, 0);
+        video_render_sprite(&bar->background, bar->x, bar->y, BLEND_ALPHA, 0);
     }
     if(bar->block != NULL) {
         video_render_sprite(
             bar->block, 
             bar->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : bar->w - bar->block->w + 1), 
             bar->y, 
-            BLEND_ALPHA_FULL,
+            BLEND_ALPHA,
             0);
     }
 }

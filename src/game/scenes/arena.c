@@ -620,7 +620,7 @@ void arena_render_overlay(scene *scene) {
     // Render menu (if visible)
     if(local->menu_visible) {
         menu_render(&local->game_menu);
-        video_render_sprite(&local->sur, 10, 150, BLEND_ALPHA_FULL, 0);
+        video_render_sprite(&local->sur, 10, 150, BLEND_ALPHA, 0);
     }
 }
 

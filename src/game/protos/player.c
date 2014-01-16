@@ -87,7 +87,7 @@ void player_clear_frame(object *obj) {
     s->flipmode = FLIP_NONE;
     s->method_flags = 0;
     s->blend_start = 0;
-    s->blend_finish = 0;
+    s->blend_finish = 0xFF;
     s->timer = 0;
     s->duration = 0;
 
@@ -117,6 +117,7 @@ void player_create(object *obj) {
     obj->animation_state.previous = -1;
     obj->animation_state.ticks_len = 0;
     obj->animation_state.parser = sd_stringparser_create();
+    obj->animation_state.gate_value = 0;
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
     player_clear_frame(obj);
@@ -234,9 +235,11 @@ void player_run(object *obj) {
             player_clear_frame(obj);
             
             // Tick management
-            if(isset(f, "d"))   {
-                cmd_tickjump(obj, get(f, "d"));
-                sd_stringparser_reset(state->parser);
+            if(isset(f, "d")) {
+                if(get(f, "d") != obj->animation_state.gate_value) {
+                    cmd_tickjump(obj, 1);
+                    sd_stringparser_reset(state->parser);
+                }
             }
         
             // Animation management

@@ -263,28 +263,36 @@ void object_render(object *obj) {
     // Something to ease the pain ...
     player_sprite_state *rstate = &obj->sprite_state;
 
-    // Render
+    // Position
     int y = obj->pos.y + obj->cur_sprite->pos.y;
     int x = obj->pos.x + obj->cur_sprite->pos.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
         x = obj->pos.x - obj->cur_sprite->pos.x - object_get_size(obj).x;
     }
+
+    // Flip to face the right direction
     int flipmode = rstate->flipmode;
     if(obj->direction == OBJECT_FACE_LEFT) {
         flipmode ^= FLIP_HORIZONTAL;
     }
 
-    // Some interesting stuff
-    if(rstate->duration > 0) {
-        float moment = rstate->timer / rstate->duration;
-        float b = (rstate->blend_start) 
-            ? (rstate->blend_start + (rstate->blend_finish - rstate->blend_start) * moment)
-            : rstate->blend_finish;
-        UNUSED(b);
+    // Blend start / blend finish
+    uint8_t opacity = rstate->blend_finish;
+    if(rstate->duration > 0 && rstate->blend_start != 0) {
+        float moment = (float)rstate->timer / (float)rstate->duration;
+        float d = ((float)rstate->blend_finish - (float)rstate->blend_start) * moment;
+        opacity = rstate->blend_start + d;
     }
 
     // Render
-    video_render_sprite_flip_scale(obj->cur_surface, x, y, rstate->blendmode, obj->pal_offset, flipmode, obj->y_percent);
+    video_render_sprite_flip_scale_opacity(
+        obj->cur_surface, 
+        x, y, 
+        rstate->blendmode, 
+        obj->pal_offset, 
+        flipmode, 
+        obj->y_percent,
+        opacity);
 }
 
 // Renders sprite's shadow to a shadow buffer
@@ -524,6 +532,9 @@ vec2f object_get_vel(object *obj) {
 void object_set_pos(object *obj, vec2i pos) {
     obj->pos = vec2i_to_f(pos);
 }
+
+void object_set_gate_value(object *obj, int gate_value) { obj->animation_state.gate_value = gate_value; }
+int object_get_gate_value(object *obj) { return obj->animation_state.gate_value; }
 
 void object_set_vel(object *obj, vec2f vel) {
     obj->vel = vel;

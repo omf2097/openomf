@@ -174,7 +174,7 @@ void scene_render(scene *scene) {
 void scene_render_shadows(scene *scene) {
     // draw shadows
     surface_create_from_image(&scene->shadow_buffer_surface, &scene->shadow_buffer_img);
-    video_render_sprite(&scene->shadow_buffer_surface, 0, 0, BLEND_ALPHA_FULL, 0);
+    video_render_sprite(&scene->shadow_buffer_surface, 0, 0, BLEND_ALPHA, 0);
     surface_free(&scene->shadow_buffer_surface);
     image_clear(&scene->shadow_buffer_img, color_create(0,0,0,0));
     

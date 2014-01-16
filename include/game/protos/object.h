@@ -155,6 +155,9 @@ int object_get_gravity(object *obj);
 int object_get_group(object *obj);
 int object_get_layers(object *obj);
 
+void object_set_gate_value(object *obj, int gate_value);
+int object_get_gate_value(object *obj);
+
 void object_set_pal_offset(object *obj, int offset);
 int object_get_pal_offset(object *obj);
 

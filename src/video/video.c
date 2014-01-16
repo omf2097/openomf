@@ -172,31 +172,21 @@ void video_render_background(surface *sur) {
     SDL_RenderCopy(state.renderer, bg, NULL, NULL);
 }
 
-void video_render_sprite_tint(surface *sur, int sx, int sy, color c, int pal_offset) {
+void video_render_helper(
+            SDL_Texture *tex, 
+            int sx,
+            int sy,
+            int w,
+            int h,
+            unsigned int rendering_mode, 
+            unsigned int flip_mode) {
+
     SDL_Rect dst;
     dst.x = sx;
     dst.y = sy;
-    dst.w = sur->w;
-    dst.h = sur->h;
+    dst.w = w;
+    dst.h = h;
 
-    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
-    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-    SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
-    SDL_RenderCopy(state.renderer, tex, NULL, &dst);
-}
-
-void video_render_sprite(surface *sur, int sx, int sy, unsigned int rendering_mode, int pal_offset) {
-    video_render_sprite_flip_scale(sur, sx, sy, rendering_mode, pal_offset, FLIP_NONE, 1.0);
-}
-
-void video_render_sprite_flip_scale(surface *sur, int sx, int sy, unsigned int rendering_mode, int pal_offset, unsigned int flip_mode, float y_percent) {
-    SDL_Rect dst;
-    dst.x = sx;
-    dst.y = sy;
-    dst.w = sur->w;
-    dst.h = sur->h;
-
-    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
     switch(rendering_mode) {
         case BLEND_ADDITIVE:
             SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
@@ -210,6 +200,51 @@ void video_render_sprite_flip_scale(surface *sur, int sx, int sy, unsigned int r
     if(flip_mode & FLIP_HORIZONTAL) flip |= SDL_FLIP_HORIZONTAL;
     if(flip_mode & FLIP_VERTICAL) flip |= SDL_FLIP_VERTICAL;
     SDL_RenderCopyEx(state.renderer, tex, NULL, &dst, 0, NULL, flip);
+}
+
+void video_render_sprite_tint(
+            surface *sur, 
+            int sx, 
+            int sy, 
+            color c, 
+            int pal_offset) {
+
+    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
+    SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
+    video_render_helper(tex, sx, sy, sur->w, sur->h, BLEND_ALPHA, 0);
+}
+
+void video_render_sprite(surface *sur, int sx, int sy, unsigned int rendering_mode, int pal_offset) {
+    video_render_sprite_flip_scale(sur, sx, sy, rendering_mode, pal_offset, FLIP_NONE, 1.0);
+}
+
+void video_render_sprite_flip_scale(
+            surface *sur, 
+            int sx, 
+            int sy, 
+            unsigned int rendering_mode, 
+            int pal_offset, 
+            unsigned int flip_mode, 
+            float y_percent) {
+
+    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
+    video_render_helper(tex, sx, sy, sur->w, sur->h, rendering_mode, flip_mode);
+}
+
+void video_render_sprite_flip_scale_opacity(
+            surface *sur, 
+            int sx, 
+            int sy, 
+            unsigned int rendering_mode, 
+            int pal_offset, 
+            unsigned int flip_mode, 
+            float y_percent, 
+            uint8_t opacity) {
+
+
+    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
+    SDL_SetTextureAlphaMod(tex, opacity);
+    video_render_helper(tex, sx, sy, sur->w, sur->h, rendering_mode, flip_mode);
 }
 
 void video_render_finish() {

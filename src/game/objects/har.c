@@ -99,8 +99,8 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_create(scrap, parent->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, id)->ani);
         object_set_stl(scrap, object_get_stl(parent));
-        object_set_repeat(scrap, 1);
         object_set_gravity(scrap, 1);
+        object_set_pal_offset(scrap, object_get_pal_offset(parent));
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
@@ -117,6 +117,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &move->ani);
         object_set_gravity(obj, g/50);
+        object_set_pal_offset(obj, object_get_pal_offset(parent));
         // Set all projectiles to their own layer + har layer
         object_set_layers(obj, LAYER_PROJECTILE|(h->player_id == 0 ? LAYER_HAR2 : LAYER_HAR1)); 
         // To avoid projectile-to-projectile collisions, set them to same group
@@ -267,7 +268,6 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_repeat(scrap, 0);
         object_set_gravity(scrap, 1);
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
@@ -293,8 +293,8 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_repeat(scrap, 1);
         object_set_gravity(scrap, 1);
+        object_set_pal_offset(scrap, object_get_pal_offset(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap->cast_shadow = 1;
@@ -1161,7 +1161,7 @@ void har_debug(object *obj) {
     har *h = object_get_userdata(obj);
     if(h->debug_enabled == 0) return;
     surface_create_from_image(&h->debug_surface, &h->debug_img);
-    video_render_sprite(&h->debug_surface, 0, 0, BLEND_ALPHA_FULL, 0);
+    video_render_sprite(&h->debug_surface, 0, 0, BLEND_ALPHA, 0);
     surface_free(&h->debug_surface);
     image_clear(&h->debug_img, color_create(0,0,0,0));
 }

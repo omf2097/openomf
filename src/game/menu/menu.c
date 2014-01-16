@@ -68,7 +68,7 @@ void menu_attach(menu *menu, component *c, int h) {
 void menu_render(menu *menu) {
     iterator it;
     component **tmp;
-    video_render_sprite(&menu->sur, menu->x, menu->y, BLEND_ALPHA_FULL, 0);
+    video_render_sprite(&menu->sur, menu->x, menu->y, BLEND_ALPHA, 0);
     vector_iter_begin(&menu->objs, &it);
     while((tmp = iter_next(&it)) != NULL) {
         (*tmp)->render(*tmp);
