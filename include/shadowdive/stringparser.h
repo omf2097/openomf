@@ -118,6 +118,8 @@ int sd_stringparser_get_current_frame_id(sd_stringparser *parser);
 
 char sd_stringparser_get_current_frame_letter(sd_stringparser *parser);
 
+void sd_stringparser_set_frame_duration(sd_stringparser *parser, unsigned int frame, unsigned int diration);
+
 #ifdef __cplusplus
 }
 #endif

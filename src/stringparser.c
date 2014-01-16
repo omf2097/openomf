@@ -744,6 +744,14 @@ int sd_stringparser_peek(sd_stringparser *parser, unsigned int frame, sd_stringp
     return 1;
 }
 
+void sd_stringparser_set_frame_duration(sd_stringparser *parser, unsigned int frame, unsigned int duration) {
+    unsigned int frames = ((frame_list*)parser->frame_list)->num_frames;
+    if (frame < frames) {
+        anim_frame *f = &((frame_list*)parser->frame_list)->frames[frame];
+        f->duration = duration;
+    }
+}
+
 /* Return 0 if the tag was found, otherwise return 1 */
 int sd_stringparser_get_tag(sd_stringparser *parser, unsigned int frame, const char *tag, const sd_stringparser_tag_value **out_tag) {
     unsigned int frames = ((frame_list*)parser->frame_list)->num_frames;
