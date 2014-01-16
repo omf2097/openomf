@@ -511,7 +511,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     int oldtick = gs->tick;
 #endif
     gs->tick = serial_read_int32(ser);
-    int endtick = gs->tick + (rtt / 2);
+    int endtick = gs->tick + ceil(rtt / 2.0f);
     rand_seed(serial_read_int32(ser));
 
     for(int i = 0; i < 2; i++) {
@@ -541,7 +541,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     }
     // tick things back to the current time
     DEBUG("replaying %d ticks", endtick - gs->tick);
-    DEBUG("adjusting clock from %d to %d (%d)", oldtick, endtick, rtt / 2);
+    DEBUG("adjusting clock from %d to %d (%d)", oldtick, endtick, ceil(rtt / 2.0f));
     while (gs->tick <= endtick) {
         game_state_cleanup(gs);
         game_state_call_move(gs);

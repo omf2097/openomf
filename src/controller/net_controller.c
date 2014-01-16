@@ -148,7 +148,7 @@ int net_controller_update(controller *ctrl, serial *serial) {
 
     packet = enet_packet_create(buf, serial->len+4, 0);
     if (peer) {
-        enet_peer_send(peer, 0, packet);
+        enet_peer_send(peer, 1, packet);
         enet_host_flush(host);
     } else {
         DEBUG("peer is null~");
@@ -175,7 +175,7 @@ void controller_hook(controller *ctrl, int action) {
     /*sprintf(buf, "k%d", action);*/
     packet = enet_packet_create(ser.data, ser.len, ENET_PACKET_FLAG_RELIABLE);
     if (peer) {
-        enet_peer_send(peer, 0, packet);
+        enet_peer_send(peer, 1, packet);
         enet_host_flush (host);
     } else {
         DEBUG("peer is null~");
@@ -205,7 +205,7 @@ void net_controller_har_hook(int action, void *cb_data) {
     /*sprintf(buf, "k%d", action);*/
     packet = enet_packet_create(ser.data, ser.len, ENET_PACKET_FLAG_RELIABLE);
     if (peer) {
-        enet_peer_send(peer, 0, packet);
+        enet_peer_send(peer, 1, packet);
         /*enet_host_flush (host);*/
     } else {
         DEBUG("peer is null~");

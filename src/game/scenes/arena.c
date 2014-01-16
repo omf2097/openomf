@@ -381,8 +381,8 @@ void arena_tick(scene *scene) {
         obj_har2->animation_state.enemy_x = obj_har1->pos.x;
         obj_har2->animation_state.enemy_y = obj_har1->pos.y;
 
-        har1->delay = player2->ctrl->rtt / 2;
-        har2->delay = player1->ctrl->rtt / 2;
+        har1->delay = ceil(player2->ctrl->rtt / 2.0f);
+        har2->delay = ceil(player1->ctrl->rtt / 2.0f);
 
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
             iterator it;
