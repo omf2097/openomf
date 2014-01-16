@@ -156,8 +156,8 @@ screen_palette* video_get_pal_ref() {
 }
 
 void video_render_prepare() {
-    SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
-    SDL_RenderClear(state.renderer);
+    //SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
+    //SDL_RenderClear(state.renderer);
 
     // Reset palette
     memcpy(state.cur_palette->data, state.base_palette->data, 768);

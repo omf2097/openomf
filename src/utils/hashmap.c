@@ -40,7 +40,7 @@ void hashmap_create(hashmap *hm, int n_size) {
     hashmap_create_with_allocator(hm, n_size, alloc);
 }
 
-void hashmap_free(hashmap *hm) {
+void hashmap_clear(hashmap *hm) {
     hashmap_node *node = NULL;
     hashmap_node *tmp = NULL;
     for(unsigned int i = 0; i < BUCKETS_SIZE(hm->buckets_x); i++) {
@@ -51,8 +51,14 @@ void hashmap_free(hashmap *hm) {
             hm->alloc.cfree(tmp->pair.key);
             hm->alloc.cfree(tmp->pair.val);
             hm->alloc.cfree(tmp);
+            hm->reserved--;
         }
+        hm->buckets[i].first = NULL;
     }
+}
+
+void hashmap_free(hashmap *hm) {
+    hashmap_clear(hm);
     hm->alloc.cfree(hm->buckets);
     hm->buckets = NULL;
     hm->buckets_x = 0;
@@ -118,6 +124,7 @@ void hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
         hm->alloc.cfree(node->pair.key);
         hm->alloc.cfree(node->pair.val);
         hm->alloc.cfree(node);
+        hm->reserved--;
     }
 }
 
@@ -208,6 +215,7 @@ void hashmap_delete(hashmap *hm, iterator *iter) {
         hm->alloc.cfree(node->pair.key);
         hm->alloc.cfree(node->pair.val);
         hm->alloc.cfree(node);
+        hm->reserved--;
     }
 }
 

@@ -46,5 +46,6 @@ void hashmap_sdel(hashmap *hashmap, const char *key);
 void hashmap_idel(hashmap *hashmap, unsigned int key);
 void hashmap_iter_begin(hashmap *hashmap, iterator *iter);
 void hashmap_delete(hashmap *hashmap, iterator *iter);
+void hashmap_clear(hashmap *hashmap);
 
 #endif // _HASHMAP_H

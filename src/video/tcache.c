@@ -58,8 +58,8 @@ void tcache_clear() {
     while((pair = iter_next(&it)) != NULL) {
         tcache_entry_value *entry = pair->val;
         SDL_DestroyTexture(entry->tex);
-        hashmap_delete(&cache->entries, &it);
     }
+    hashmap_clear(&cache->entries);
 }
 
 void tcache_tick() {
@@ -114,11 +114,15 @@ SDL_Texture* tcache_get(surface *sur,
                                           sur->h);
 
         // Render surface to texture
-        char *pixels;
+        void *pixels;
         int pitch;
-        SDL_LockTexture(new_entry.tex, NULL, (void**)&pixels, &pitch);
-        surface_to_rgba(sur, pixels, pal, remap_table, pal_offset);
-        SDL_UnlockTexture(new_entry.tex);
+        int s = SDL_LockTexture(new_entry.tex, NULL, &pixels, &pitch);
+        if(s == 0) {
+            surface_to_rgba(sur, pixels, pal, remap_table, pal_offset);
+            SDL_UnlockTexture(new_entry.tex);
+        } else {
+            PERROR("Unable to lock texture for writing!");
+        }
         
         // Return value
         ret = new_entry.tex;
@@ -131,11 +135,15 @@ SDL_Texture* tcache_get(surface *sur,
         // Palette used is old, we need to update the texture
         if(val->pal_version != pal->version) {
             // Update texture contents with updated surface
-            char *pixels;
+            void *pixels;
             int pitch;
-            SDL_LockTexture(val->tex, NULL, (void**)&pixels, &pitch);
-            surface_to_rgba(sur, pixels, pal, remap_table, pal_offset);
-            SDL_UnlockTexture(val->tex);
+            int s = SDL_LockTexture(val->tex, NULL, &pixels, &pitch);
+            if(s == 0) {
+                surface_to_rgba(sur, pixels, pal, remap_table, pal_offset);
+                SDL_UnlockTexture(val->tex);
+            } else {
+                PERROR("Unable to lock texture for writing!");
+            }
 
             //  Set correct age and latest palette version
             val->age = 0;
