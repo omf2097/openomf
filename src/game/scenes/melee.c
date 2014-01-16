@@ -38,7 +38,6 @@ typedef struct melee_local_t {
     int column_a, column_b; // 0-4
     int done_a, done_b; // 0-1
 
-    palette *player1_pal, *player2_pal;
     object bigportrait1;
     object bigportrait2;
     object player2_placeholder;
@@ -115,8 +114,6 @@ void melee_free(scene *scene) {
         }
     }
 
-    free(local->player1_pal);
-    free(local->player2_pal);
     object_free(&local->player2_placeholder);
     object_free(&local->unselected_har_portraits);
     object_free(&local->bigportrait1);
@@ -473,8 +470,6 @@ int melee_create(scene *scene) {
     controller *player2_ctrl = game_player_get_ctrl(player2);
 
     palette *mpal = video_get_base_palette();
-    local->player1_pal = palette_copy(mpal);
-    local->player2_pal = palette_copy(mpal);
     palette_set_player_color(mpal, 0, 8, 0);
     palette_set_player_color(mpal, 0, 8, 1);
     palette_set_player_color(mpal, 0, 8, 2);
