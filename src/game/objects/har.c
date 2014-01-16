@@ -66,7 +66,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     af_move *move = af_get_move(h->af_data, animation_id);
     char *s = (char*)str_c(&move->move_string);
     object_set_animation(obj, &move->ani);
-    if (s != NULL && strcasecmp(s, "!") && strcasecmp(s, "0") /*&& h->delay > 0*/) {
+    if (s != NULL && strcasecmp(s, "!") && strcasecmp(s, "0") && h->delay > 0) {
         DEBUG("delaying move %d %s by %d ticks", move->id, s, h->delay);
         object_set_delay(obj, h->delay);
     }
