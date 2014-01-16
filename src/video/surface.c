@@ -85,9 +85,16 @@ void surface_to_rgba(surface *sur,
         for(int i = 0; i < sur->w * sur->h; i++) {
             n = i * 4;
             if(remap_table != NULL) {
-                idx = (uint8_t)remap_table[(uint8_t)sur->data[i]] + pal_offset;
+                idx = (uint8_t)remap_table[(uint8_t)sur->data[i]];
             } else {
-                idx = (uint8_t)sur->data[i] + pal_offset;
+                idx = (uint8_t)sur->data[i];
+            }
+            // TODO: This is kind of a hack. Since the pal_offset
+            // is only ever used for player 2 har, we can safely
+            // make some assumptions. therefore, only apply offset,
+            // if the color we are handling is between 0 and 48 (har colors).
+            if(idx < 48) {
+                idx += pal_offset;
             }
             *(dst + n + 0) = pal->data[idx][0];
             *(dst + n + 1) = pal->data[idx][1];

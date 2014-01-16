@@ -137,11 +137,8 @@ void video_force_pal_refresh() {
 
 void video_set_base_palette(const palette *src) {
     memcpy(state.base_palette, src, sizeof(palette));
-
-    // Since the whole base palette was reset, we
-    // might as well clear the cache, since most everything
-    // is likely to be old.
-    tcache_clear();
+    memcpy(state.cur_palette->data, state.base_palette->data, 768);
+    state.cur_palette->version++;
 }
 
 palette *video_get_base_palette() {
@@ -162,7 +159,7 @@ void video_render_prepare() {
     SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
     SDL_RenderClear(state.renderer);
 
-    // Reset palette, if necessary
+    // Reset palette
     memcpy(state.cur_palette->data, state.base_palette->data, 768);
 }
 

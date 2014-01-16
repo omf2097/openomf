@@ -8,6 +8,7 @@
 typedef struct tcache_entry_key_t {
     surface *c_surface;
     char *c_remap_table;
+    uint16_t w,h;
     uint8_t c_pal_offset;
 } tcache_entry_key;
 
@@ -96,6 +97,8 @@ SDL_Texture* tcache_get(surface *sur,
     key.c_pal_offset = pal_offset;
     key.c_remap_table = remap_table;
     key.c_surface = sur;
+    key.w = sur->w;
+    key.h = sur->h;
 
     // Attempt to find appropriate surface
     tcache_entry_value *val = tcache_get_entry(&key);

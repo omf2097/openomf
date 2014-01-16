@@ -6,6 +6,7 @@
 #include "resources/ids.h"
 #include "console/console.h"
 #include "video/video.h"
+#include "video/tcache.h"
 #include "game/game_state.h"
 #include "game/settings.h"
 #include "game/ticktimer.h"
@@ -252,6 +253,10 @@ int game_load_new(game_state *gs, int scene_id) {
     scene_free(gs->sc);
     free(gs->sc);
 
+    // Clear up old video cache objects
+    tcache_clear();
+
+    // Remove old objects
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
