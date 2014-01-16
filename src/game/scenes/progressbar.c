@@ -5,7 +5,7 @@
 void progressbar_create_block(progress_bar *bar) {
     float prog = bar->percentage / 100.0f;
     int w = bar->w * prog;
-    if(w > 0) {
+    if(w > 0 && bar->h > 0) {
         image tmp;
         image_create(&tmp, w, bar->h);
         image_clear(&tmp, bar->int_bg_color);
@@ -15,7 +15,8 @@ void progressbar_create_block(progress_bar *bar) {
                          bar->int_bottomright_color, 
                          bar->int_bottomright_color, 
                          bar->int_topleft_color);
-        surface_create_from_image(&bar->block, &tmp);
+        bar->block = malloc(sizeof(surface));
+        surface_create_from_image(bar->block, &tmp);
         image_free(&tmp);
     }
 }
@@ -40,7 +41,8 @@ void progressbar_create_flashing(progress_bar *bar,
     bar->int_topleft_color = int_topleft_color;
     bar->int_bottomright_color = int_bottomright_color;
     bar->int_bg_color = int_bg_color;
-    
+    bar->block = NULL;
+
     // Background,
     image tmp;
     image_create(&tmp, w, h);
@@ -71,12 +73,21 @@ void progressbar_create_flashing(progress_bar *bar,
 
 void progressbar_free(progress_bar *bar) {
     surface_free(&bar->background);
-    surface_free(&bar->block);
+    surface_free(&bar->background_alt);
+    if(bar->block != NULL) {
+        surface_free(bar->block);
+        free(bar->block);
+        bar->block = NULL;
+    }
 }
 
 void progressbar_set(progress_bar *bar, unsigned int percentage) {
     bar->percentage = (percentage > 100 ? 100 : percentage);
-    surface_free(&bar->block);
+    if(bar->block != NULL) {
+        surface_free(bar->block);
+        free(bar->block);
+        bar->block = NULL;
+    }
     progressbar_create_block(bar);
 }
 
@@ -86,10 +97,10 @@ void progressbar_render_flashing(progress_bar *bar, int flip) {
     } else {
         video_render_sprite(&bar->background, bar->x, bar->y, BLEND_ALPHA_FULL);
     }
-    if(bar->block.w > 0) {
+    if(bar->block != NULL) {
         video_render_sprite(
-            &bar->block, 
-            bar->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : bar->w - bar->block.w + 1), 
+            bar->block, 
+            bar->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : bar->w - bar->block->w + 1), 
             bar->y, 
             BLEND_ALPHA_FULL);
     }

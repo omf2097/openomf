@@ -17,7 +17,6 @@ typedef struct newsroom_local_t {
     int news_id;
     int screen;
     surface news_bg;
-    surface ss;
     str news_str;
     str pilot1, pilot2;
     str har1, har2;
@@ -138,7 +137,6 @@ void newsroom_free(scene *scene) {
     str_free(&local->pilot2);
     str_free(&local->har1);
     str_free(&local->har2);
-    surface_free(&local->ss);
     free(local);
 }
 

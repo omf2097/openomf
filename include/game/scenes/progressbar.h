@@ -12,7 +12,7 @@ typedef struct progress_bar_t progress_bar;
 struct progress_bar_t {
     surface background;
     surface background_alt;
-    surface block;
+    surface *block;
     unsigned int w,h,x,y;
     int orientation;
     unsigned int percentage;
