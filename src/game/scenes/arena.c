@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include <shadowdive/shadowdive.h>
 
 #include "video/texture.h"

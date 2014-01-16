@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 #include <SDL2/SDL.h>
 #include "controller/keyboard.h"
 #include "utils/log.h"
