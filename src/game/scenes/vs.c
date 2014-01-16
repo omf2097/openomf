@@ -201,6 +201,7 @@ int vs_create(scene *scene) {
     object_set_animation(&local->player2_har, ani);
     object_select_sprite(&local->player2_har, player2->har_id - HAR_JAGUAR);
     object_set_direction(&local->player2_har, OBJECT_FACE_LEFT);
+    object_set_pal_offset(&local->player2_har, 48);
 
     // PLAYER
     ani = &bk_get_info(&scene->bk_data, 4)->ani;
