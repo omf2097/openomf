@@ -270,7 +270,7 @@ int game_load_new(game_state *gs, int scene_id) {
     gs->sc = malloc(sizeof(scene));
     if(scene_create(gs->sc, gs, scene_id)) {
         PERROR("Error while loading scene %d.", scene_id);
-        return 1;
+        goto error_0;
     }
 
     // Load scene specifics
@@ -278,43 +278,43 @@ int game_load_new(game_state *gs, int scene_id) {
         case SCENE_INTRO: 
             if(intro_create(gs->sc)) {
                 PERROR("Error while creating intro scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_MENU: 
             if(mainmenu_create(gs->sc)) {
                 PERROR("Error while creating mainmenu scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_CREDITS: 
             if(credits_create(gs->sc)) {
                 PERROR("Error while creating credits scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_MELEE:
             if(melee_create(gs->sc)) {
                 PERROR("Error while creating melee scene.");
-                return 1;
+                goto error_1;
             } 
             break;
         case SCENE_VS:
             if(vs_create(gs->sc)) {
                 PERROR("Error while creating VS scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_MECHLAB:
             if(mechlab_create(gs->sc)) {
                 PERROR("Error while creating Mechlab scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_NEWSROOM:
             if(newsroom_create(gs->sc)) {
                 PERROR("Error while creating Newsroom scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_ARENA0:
@@ -324,7 +324,7 @@ int game_load_new(game_state *gs, int scene_id) {
         case SCENE_ARENA4:
             if(arena_create(gs->sc)) {
                 PERROR("Error while creating arena scene.");
-                return 1;
+                goto error_1;
             } 
             break;
     }
@@ -337,6 +337,12 @@ int game_load_new(game_state *gs, int scene_id) {
     gs->next_id = scene_id;
     gs->tick = 0;
     return 0;
+
+error_1:
+    scene_free(gs->sc);
+error_0:
+    free(gs->sc);
+    return 1;
 }
 
 void game_state_call_collide(game_state *gs) {

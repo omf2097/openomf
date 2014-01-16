@@ -30,14 +30,10 @@ void surface_create_from_image(surface *sur, image *img) {
 }
 
 void surface_free(surface *sur) {
-    if(sur->data != NULL) {
-        free(sur->data);
-        sur->data = NULL;
-    }
-    if(sur->stencil != NULL) {
-        free(sur->stencil);
-        sur->stencil = NULL;
-    }
+    free(sur->data);
+    free(sur->stencil);
+    sur->stencil = NULL;
+    sur->data = NULL;
 }
 
 void surface_copy(surface *dst, surface *src) {

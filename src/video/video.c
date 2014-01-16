@@ -255,5 +255,6 @@ void video_close() {
     SDL_DestroyRenderer(state.renderer);
     SDL_DestroyWindow(state.window);
     free(state.cur_palette);
+    free(state.base_palette);
     INFO("Video deinit.");
 }
