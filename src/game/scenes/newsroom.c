@@ -6,7 +6,7 @@
 #include "utils/random.h"
 #include "utils/str.h"
 #include "utils/log.h"
-#include "video/texture.h"
+#include "video/surface.h"
 #include "video/video.h"
 
 // newsroom text starts at 87 in english.dat
@@ -16,8 +16,7 @@
 typedef struct newsroom_local_t {
     int news_id;
     int screen;
-    texture news_bg;
-    texture ss;
+    surface news_bg;
     str news_str;
     str pilot1, pilot2;
     str har1, har2;
@@ -132,13 +131,12 @@ void newsroom_set_names(newsroom_local *local,
 // newsroom callbacks
 void newsroom_free(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
-    texture_free(&local->news_bg);
+    surface_free(&local->news_bg);
     str_free(&local->news_str);
     str_free(&local->pilot1);
     str_free(&local->pilot2);
     str_free(&local->har1);
     str_free(&local->har2);
-    texture_free(&local->ss);
     free(local);
 }
 
@@ -151,7 +149,7 @@ void newsroom_overlay_render(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
 
     if(str_size(&local->news_str) > 0) {
-        video_render_sprite_flip(&local->news_bg, 20, 140, BLEND_ALPHA_FULL, FLIP_NONE);
+        video_render_sprite(&local->news_bg, 20, 140, BLEND_ALPHA, 0);
         font_render_wrapped(&font_small, str_c(&local->news_str), 30, 150, 250, COLOR_YELLOW);
     }
 }
@@ -188,7 +186,6 @@ int newsroom_create(scene *scene) {
     str_create(&local->pilot2);
     str_create(&local->har1);
     str_create(&local->har2);
-    texture_create(&local->ss);
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);

@@ -1,9 +1,9 @@
 #ifndef _MENU_BACKGROUND_H
 #define _MENU_BACKGROUND_H
 
-#include "video/texture.h"
+#include "video/surface.h"
 
-void menu_background_create(texture *tex, int w, int h);
-void menu_background2_create(texture *tex, int w, int h);
+void menu_background_create(surface *sur, int w, int h);
+void menu_background2_create(surface *sur, int w, int h);
 
 #endif // _MENU_BACKGROUND_H

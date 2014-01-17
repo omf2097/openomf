@@ -5,7 +5,7 @@
 #include <math.h>
 #include <shadowdive/shadowdive.h>
 
-#include "video/texture.h"
+#include "video/surface.h"
 #include "video/video.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/progressbar.h"
@@ -53,7 +53,7 @@ typedef struct arena_local_t {
     component video_button;
     component help_button;
     component quit_button;
-    texture tex;
+    surface sur;
     int menu_visible;
     unsigned int state;
     
@@ -61,7 +61,9 @@ typedef struct arena_local_t {
     progress_bar player2_health_bar;
     progress_bar player1_endurance_bar;
     progress_bar player2_endurance_bar;
-    palette *player_palettes[2];
+
+    chr_score player1_score;
+    chr_score player2_score;
 } arena_local;
 
 // -------- Local callbacks --------
@@ -109,7 +111,6 @@ void scene_fight_anim_start(void *userdata) {
     object *fight = malloc(sizeof(object));
     object_create(fight, gs, fight_ani->start_pos, vec2f_create(0,0));
     object_set_stl(fight, bk_get_stl(&scene->bk_data));
-    object_set_palette(fight, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(fight, fight_ani);
     object_set_finish_cb(fight, scene_fight_anim_done);
     game_state_add_object(gs, fight, RENDER_LAYER_TOP);
@@ -139,7 +140,6 @@ void scene_youwin_anim_start(void *userdata) {
     object *youwin = malloc(sizeof(object));
     object_create(youwin, gs, youwin_ani->start_pos, vec2f_create(0,0));
     object_set_stl(youwin, bk_get_stl(&scene->bk_data));
-    object_set_palette(youwin, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(youwin, youwin_ani);
     object_set_finish_cb(youwin, scene_youwin_anim_done);
     game_state_add_object(gs, youwin, RENDER_LAYER_TOP);
@@ -163,7 +163,6 @@ void scene_youlose_anim_start(void *userdata) {
     object *youlose = malloc(sizeof(object));
     object_create(youlose, gs, youlose_ani->start_pos, vec2f_create(0,0));
     object_set_stl(youlose, bk_get_stl(&scene->bk_data));
-    object_set_palette(youlose, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(youlose, youlose_ani);
     object_set_finish_cb(youlose, scene_youlose_anim_done);
     game_state_add_object(gs, youlose, RENDER_LAYER_TOP);
@@ -306,7 +305,7 @@ void arena_free(scene *scene) {
     textbutton_free(&local->quit_button);
     menu_free(&local->game_menu);
 
-    texture_free(&local->tex);
+    surface_free(&local->sur);
 
     music_stop();
     
@@ -315,16 +314,12 @@ void arena_free(scene *scene) {
     progressbar_free(&local->player1_endurance_bar);
     progressbar_free(&local->player2_endurance_bar);
 
-    free(local->player_palettes[0]);
-    free(local->player_palettes[1]);
-    
     settings_save();
     
     free(local);
 }
 
 int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
-    arena_local *local = scene_get_userdata(scene);
     int need_sync = 0;
     if (i) {
         do {
@@ -341,9 +336,6 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 }
             } else if (i->type == EVENT_TYPE_SYNC) {
                 game_state_unserialize(scene->gs, i->event_data.ser, player->ctrl->rtt);
-                // fix the palettes
-                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 0)), local->player_palettes[0], 0);
-                object_set_palette(game_player_get_har(game_state_get_player(scene->gs, 1)), local->player_palettes[1], 0);
                 maybe_install_har_hooks(scene);
             } else if (i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
@@ -397,7 +389,6 @@ void arena_tick(scene *scene) {
                         object *obj = malloc(sizeof(object));
                         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
                         object_set_stl(obj, scene->bk_data.sound_translation_table);
-                        object_set_palette(obj, bk_get_palette(&scene->bk_data, 0), 0);
                         object_set_animation(obj, &info->ani);
                         object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
                         object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
@@ -628,7 +619,7 @@ void arena_render_overlay(scene *scene) {
     // Render menu (if visible)
     if(local->menu_visible) {
         menu_render(&local->game_menu);
-        video_render_sprite(&local->tex, 10, 150, BLEND_ALPHA_FULL);
+        video_render_sprite(&local->sur, 10, 150, BLEND_ALPHA, 0);
     }
 }
 
@@ -640,11 +631,6 @@ int arena_get_state(scene *scene) {
 void arena_set_state(scene *scene, int state) {
     arena_local *local = scene_get_userdata(scene);
     local->state = state;
-}
-
-palette* arena_get_player_palette(scene* scene, int player_id) {
-    arena_local *local = scene_get_userdata(scene);
-    return local->player_palettes[player_id];
 }
 
 int arena_create(scene *scene) {
@@ -674,12 +660,6 @@ int arena_create(scene *scene) {
     // Set correct state
     local->state = ARENA_STATE_STARTING;
 
-    // set up palettes
-    palette *mpal = bk_get_palette(&scene->bk_data, 0);
-
-    local->player_palettes[0] = palette_copy(mpal);
-    local->player_palettes[1] = palette_copy(mpal);
-
     // Initial har data
     vec2i pos[2];
     int dir[2] = {OBJECT_FACE_RIGHT, OBJECT_FACE_LEFT};
@@ -693,9 +673,11 @@ int arena_create(scene *scene) {
         object *obj = malloc(sizeof(object));
 
         // load the player's colors into the palette
-        palette_set_player_color(local->player_palettes[i], player->colors[2], 0);
-        palette_set_player_color(local->player_palettes[i], player->colors[1], 1);
-        palette_set_player_color(local->player_palettes[i], player->colors[0], 2);
+        palette *base_pal = video_get_base_palette();
+        palette_set_player_color(base_pal, i, player->colors[2], 0);
+        palette_set_player_color(base_pal, i, player->colors[1], 1);
+        palette_set_player_color(base_pal, i, player->colors[0], 2);
+        video_force_pal_refresh();
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
@@ -705,7 +687,6 @@ int arena_create(scene *scene) {
         }
 
         object_create(obj, scene->gs, pos[i], vec2f_create(0,0));
-        object_set_palette(obj, local->player_palettes[i], 0);
         if(har_create(obj, scene->af_data[i], dir[i], player->har_id, player->pilot_id, i)) {
             return 1;
         }
@@ -781,7 +762,7 @@ int arena_create(scene *scene) {
 
     // background for the 'help' at the bottom of the screen
     // TODO support rendering text onto it
-    menu_background_create(&local->tex, 301, 37);
+    menu_background_create(&local->sur, 301, 37);
     
     // Health bars
     progressbar_create(&local->player1_health_bar, 
@@ -833,7 +814,6 @@ int arena_create(scene *scene) {
     object *ready = malloc(sizeof(object));
     object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0,0));
     object_set_stl(ready, scene->bk_data.sound_translation_table);
-    object_set_palette(ready, bk_get_palette(&scene->bk_data, 0), 0);
     object_set_animation(ready, ready_ani);
     object_set_finish_cb(ready, scene_ready_anim_done);
     game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP);

@@ -11,26 +11,26 @@ font font_large;
 
 void font_create(font *font) {
     font->size = FONT_UNDEFINED;
-    vector_create(&font->textures, sizeof(texture*));
+    vector_create(&font->surfaces, sizeof(surface*));
 }
 
 void font_free(font *font) {
     font->size = FONT_UNDEFINED;
     iterator it;
-    vector_iter_begin(&font->textures, &it);
-    texture **tex = NULL;
-    while((tex = iter_next(&it)) != NULL) {
-        texture_free(*tex);
-        free(*tex);
+    vector_iter_begin(&font->surfaces, &it);
+    surface **sur = NULL;
+    while((sur = iter_next(&it)) != NULL) {
+        surface_free(*sur);
+        free(*sur);
     }
-    vector_free(&font->textures);
+    vector_free(&font->surfaces);
 }
 
 int font_load(font *font, const char* filename, unsigned int size) {
     sd_rgba_image *img;
     sd_font *sdfont;
     int pixsize;
-    texture *tex;
+    surface *sur;
     
     // Find vertical size
     switch(size) {
@@ -50,11 +50,10 @@ int font_load(font *font, const char* filename, unsigned int size) {
     // Load into textures
     img = sd_rgba_image_create(pixsize, pixsize);
     for(int i = 0; i < 224; i++) {
-        tex = malloc(sizeof(texture));
+        sur = malloc(sizeof(surface));
         sd_font_decode(sdfont, img, i, 0xFF, 0xFF, 0xFF);
-        texture_create(tex);
-        texture_init(tex, img->data, img->w, img->h);
-        vector_append(&font->textures, &tex);
+        surface_create_from_data(sur, SURFACE_TYPE_RGBA, img->w, img->h, img->data);
+        vector_append(&font->surfaces, &sur);
     }
     
     // Set font info vars
@@ -100,12 +99,12 @@ void fonts_close() {
 
 void font_render_char(font *font, char ch, int x, int y, color c) {
     int code = ch - 32;
-    texture **tex = NULL;
+    surface **sur = NULL;
     if (code < 0) {
         return;
     }
-    tex = vector_get(&font->textures, code);
-    video_render_char(*tex, x, y, c);
+    sur = vector_get(&font->surfaces, code);
+    video_render_sprite_tint(*sur, x, y, c, 0);
 }
 
 void font_render_len(font *font, const char *text, int len, int x, int y, color c) {

@@ -1,5 +1,5 @@
 #include "game/score.h"
-#include "video/texture.h"
+#include "video/surface.h"
 #include <stdio.h>
 
 #define TEXT_COLOR color_create(186,250,250,255)

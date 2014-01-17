@@ -3,10 +3,11 @@
 
 #include "resources/animation.h"
 #include "resources/sprite.h"
+#include "video/screen_palette.h"
 #include "game/protos/player.h"
 #include "utils/vec.h"
 #include "utils/hashmap.h"
-#include "video/texture.h"
+#include "video/surface.h"
 #include "game/serial.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
@@ -65,18 +66,16 @@ struct object_t {
     
     uint8_t cur_animation_own;
 
-    uint8_t texture_refresh;
-
     animation *cur_animation;
     sprite *cur_sprite;
     char *sound_translation_table;
 
-    palette *cur_palette;
+    uint8_t pal_offset;
     uint8_t cur_remap;
     uint8_t halt;
     uint8_t stride;
     uint8_t cast_shadow;
-    texture *cur_texture;
+    surface *cur_surface;
 
     player_sprite_state sprite_state;
     player_animation_state animation_state;
@@ -102,12 +101,12 @@ struct object_t {
 
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
 void object_render(object *obj);
-void object_render_neutral(object *obj);
 void object_render_shadow(object *obj, image *shadow_buffer);
 void object_debug(object *obj);
 void object_tick(object *obj);
 void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
+int object_palette_transform(object *obj, screen_palette *pal);
 void object_render(object *obj);
 void object_collide(object *a, object *b);
 int object_act(object *obj, int action);
@@ -128,10 +127,6 @@ void object_set_animation(object *obj, animation *ani);
 animation *object_get_animation(object *obj);
 void object_set_custom_string(object *obj, const char *str);
 void object_select_sprite(object *obj, int id);
-void object_set_palette(object *obj, palette *pal, int remap);
-palette* object_get_palette(object *obj);
-
-void object_revalidate(object *obj);
 
 void object_set_halt(object *obj, int halt);
 int object_get_halt(object *obj);
@@ -160,6 +155,12 @@ int object_get_direction(object *obj);
 int object_get_gravity(object *obj);
 int object_get_group(object *obj);
 int object_get_layers(object *obj);
+
+void object_set_gate_value(object *obj, int gate_value);
+int object_get_gate_value(object *obj);
+
+void object_set_pal_offset(object *obj, int offset);
+int object_get_pal_offset(object *obj);
 
 void object_reset_hstate(object *obj);
 void object_reset_vstate(object *obj);

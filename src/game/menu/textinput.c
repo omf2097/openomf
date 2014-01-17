@@ -23,8 +23,7 @@ void textinput_create(component *c, font *font, const char *text, const char *in
     image_create(&img, 15*font->w+2, font->h+3);
     image_clear(&img, COLOR_MENU_BG);
     image_rect(&img, 0, 0, 15*font->w+1, font->h+2, COLOR_MENU_BORDER);
-    texture_create(&tb->tex);
-    texture_init_from_img(&tb->tex, &img);
+    surface_create_from_image(&tb->sur, &img);
     image_free(&img);
     memcpy(tb->buf, initialvalue, strlen(initialvalue)+1);
     c->obj = tb;
@@ -35,7 +34,7 @@ void textinput_create(component *c, font *font, const char *text, const char *in
 
 void textinput_free(component *c) {
     textinput *tb = c->obj;
-    texture_free(&tb->tex);
+    surface_free(&tb->sur);
     free(tb);
     component_free(c);
 }
@@ -49,7 +48,7 @@ void textinput_render(component *c) {
     chars = strlen(tb->buf);
     width = 15*tb->font->w;
     xoff = (c->w - width)/2;
-    video_render_sprite(&tb->tex, c->x + xoff-2, c->y -2, BLEND_ALPHA_FULL);
+    video_render_sprite(&tb->sur, c->x + xoff-2, c->y -2, BLEND_ALPHA, 0);
     if(c->selected) {
         int t = tb->ticks / 2;
         if (chars > 0) {

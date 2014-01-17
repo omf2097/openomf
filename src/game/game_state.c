@@ -6,6 +6,8 @@
 #include "game/serial.h"
 #include "resources/ids.h"
 #include "console/console.h"
+#include "video/video.h"
+#include "video/tcache.h"
 #include "game/game_state.h"
 #include "game/settings.h"
 #include "game/ticktimer.h"
@@ -33,17 +35,24 @@ int game_state_create(game_state *gs, int net_mode) {
     gs->run = 1;
     gs->tick = 0;
     gs->role = ROLE_CLIENT;
+    gs->next_requires_refresh = 0;
     gs->net_mode = net_mode;
     gs->speed = settings_get()->gameplay.speed;
     vector_create(&gs->objects, sizeof(render_obj));
+
+    // Timer 
     gs->tick_timer = malloc(sizeof(ticktimer));
     ticktimer_init(gs->tick_timer);
-    int nscene = (net_mode == NET_MODE_NONE ? SCENE_INTRO : SCENE_MENU);
+    
+    // Set up players
     gs->sc = malloc(sizeof(scene));
     for(int i = 0; i < 2; i++) {
         gs->players[i] = malloc(sizeof(game_player));
         game_player_create(gs->players[i]);
     }
+
+    // Select correct starting scene and load resources
+    int nscene = (net_mode == NET_MODE_NONE ? SCENE_INTRO : SCENE_MENU);
     if(scene_create(gs->sc, gs, nscene)) {
         PERROR("Error while loading scene %d.", nscene);
         goto error_0;
@@ -60,7 +69,11 @@ int game_state_create(game_state *gs, int net_mode) {
             goto error_1;
         }
     }
+
+    // Initialize scene
     scene_init(gs->sc);
+
+    // All done
     gs->this_id = nscene;
     gs->next_id = nscene;
     return 0;
@@ -145,6 +158,29 @@ void game_state_render(game_state *gs) {
     iterator it;
     render_obj *robj;
 
+    // Do palette transformations
+    vector_iter_begin(&gs->objects, &it);
+    int pal_changed = 0;
+    screen_palette *scr_pal = video_get_pal_ref();
+    while((robj = iter_next(&it)) != NULL) {
+        if(object_palette_transform(robj->obj, scr_pal) == 1) {
+            pal_changed = 1;
+            gs->next_requires_refresh = 1;
+        }
+    }
+
+    // If changes were made to palette, then 
+    // all resources that depend on it must be redrawn.
+    // This will take care of it.
+    if(pal_changed) {
+        scr_pal->version++;
+    } else if(gs->next_requires_refresh) {
+        // Because of caching, we might sometimes get stuck to
+        // a bad/old frame. This hack will fix it.
+        scr_pal->version++;
+        gs->next_requires_refresh = 0;
+    }
+
     // Render scene background
     scene_render(gs->sc);
 
@@ -228,6 +264,10 @@ int game_load_new(game_state *gs, int scene_id) {
     scene_free(gs->sc);
     free(gs->sc);
 
+    // Clear up old video cache objects
+    tcache_clear();
+
+    // Remove old objects
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
@@ -241,7 +281,7 @@ int game_load_new(game_state *gs, int scene_id) {
     gs->sc = malloc(sizeof(scene));
     if(scene_create(gs->sc, gs, scene_id)) {
         PERROR("Error while loading scene %d.", scene_id);
-        return 1;
+        goto error_0;
     }
 
     // Load scene specifics
@@ -249,43 +289,43 @@ int game_load_new(game_state *gs, int scene_id) {
         case SCENE_INTRO: 
             if(intro_create(gs->sc)) {
                 PERROR("Error while creating intro scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_MENU: 
             if(mainmenu_create(gs->sc)) {
                 PERROR("Error while creating mainmenu scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_CREDITS: 
             if(credits_create(gs->sc)) {
                 PERROR("Error while creating credits scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_MELEE:
             if(melee_create(gs->sc)) {
                 PERROR("Error while creating melee scene.");
-                return 1;
+                goto error_1;
             } 
             break;
         case SCENE_VS:
             if(vs_create(gs->sc)) {
                 PERROR("Error while creating VS scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_MECHLAB:
             if(mechlab_create(gs->sc)) {
                 PERROR("Error while creating Mechlab scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_NEWSROOM:
             if(newsroom_create(gs->sc)) {
                 PERROR("Error while creating Newsroom scene.");
-                return 1;
+                goto error_1;
             }
             break;
         case SCENE_ARENA0:
@@ -295,7 +335,7 @@ int game_load_new(game_state *gs, int scene_id) {
         case SCENE_ARENA4:
             if(arena_create(gs->sc)) {
                 PERROR("Error while creating arena scene.");
-                return 1;
+                goto error_1;
             } 
             break;
     }
@@ -308,6 +348,12 @@ int game_load_new(game_state *gs, int scene_id) {
     gs->next_id = scene_id;
     gs->tick = 0;
     return 0;
+
+error_1:
+    scene_free(gs->sc);
+error_0:
+    free(gs->sc);
+    return 1;
 }
 
 void game_state_call_collide(game_state *gs) {
@@ -452,16 +498,16 @@ void game_state_free(game_state *gs) {
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
-    
+
+    // Free scene
+    scene_free(gs->sc);
+    free(gs->sc);
+
     // Free players
     for(int i = 0; i < 2; i++) {
         game_player_free(gs->players[i]);
         free(gs->players[i]);
     }
-
-    // Free scene
-    scene_free(gs->sc);
-    free(gs->sc);
 
     // Free ticktimer
     ticktimer_close(gs->tick_timer);
@@ -533,12 +579,6 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         // Set HAR for player
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
-
-        // XXX this is a hack because the arena holds the player palette!
-        // after this function returns, the arena will restore the palette
-        // but we need it when we replay time, apparently
-        object_set_palette(obj, bk_get_palette(&gs->sc->bk_data, 0), 0);
-
     }
 
     chr_score_unserialize(game_player_get_score(game_state_get_player(gs, 0)), ser);
@@ -620,11 +660,6 @@ int game_state_rewind(game_state *gs, int rtt) {
         // Set HAR for player and controller
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
-
-        // XXX this is a hack because the arena holds the player palette!
-        // after this function returns, the arena will restore the palette
-        // but we need it when we replay time, apparently
-        object_set_palette(obj, bk_get_palette(&gs->sc->bk_data, 0), 0);
 
         game_state_del_object(gs, oldobject);
 

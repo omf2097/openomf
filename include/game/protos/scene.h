@@ -9,6 +9,7 @@
 #include "game/serial.h"
 #include "game/ticktimer.h"
 #include "resources/bk.h"
+#include "video/surface.h"
 
 typedef struct scene_t scene;
 typedef struct game_player_t game_player;
@@ -28,7 +29,6 @@ struct scene_t {
     bk bk_data;
     af *af_data[2];
     void *userdata;
-    object background;
     scene_free_cb free;
     scene_event_cb event;
     scene_render_cb render;
@@ -37,7 +37,7 @@ struct scene_t {
     scene_input_poll_cb input_poll;
     scene_startup_cb startup;
     image shadow_buffer_img;
-    texture shadow_buffer_tex;
+    surface shadow_buffer_surface;
     ticktimer tick_timer;
 };
 

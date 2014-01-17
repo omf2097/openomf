@@ -1,4 +1,4 @@
-#include "video/texture.h"
+#include "video/surface.h"
 #include "video/video.h"
 #include "game/menu/menu.h"
 #include "game/menu/menu_background.h"
@@ -11,13 +11,13 @@ void menu_create(menu *menu, int x, int y, int w, int h) {
     menu->y = y;
     menu->w = w;
     menu->h = h;
-    menu_background_create(&menu->tex, w, h);
+    menu_background_create(&menu->sur, w, h);
     menu->selected = 0;
 }
 
 void menu_free(menu *menu) {
     vector_free(&menu->objs);
-    texture_free(&menu->tex);
+    surface_free(&menu->sur);
 }
 
 int menu_get_ypos(menu *menu) {
@@ -68,7 +68,7 @@ void menu_attach(menu *menu, component *c, int h) {
 void menu_render(menu *menu) {
     iterator it;
     component **tmp;
-    video_render_sprite(&menu->tex, menu->x, menu->y, BLEND_ALPHA_FULL);
+    video_render_sprite(&menu->sur, menu->x, menu->y, BLEND_ALPHA, 0);
     vector_iter_begin(&menu->objs, &it);
     while((tmp = iter_next(&it)) != NULL) {
         (*tmp)->render(*tmp);

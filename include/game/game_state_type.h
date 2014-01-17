@@ -14,6 +14,7 @@ typedef struct game_state_t {
     unsigned int int_tick; // never adjusted, used in ping calculation
     unsigned int role;
     unsigned int speed;
+    int next_requires_refresh; // If next frame requires a texture refresh, this should be set to 1
     int net_mode; // NET_MODE_NONE, NET_MODE_CLIENT, NET_MODE_SERVER
     scene *sc;
     vector objects;

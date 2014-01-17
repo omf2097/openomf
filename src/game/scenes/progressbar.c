@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "game/scenes/progressbar.h"
 #include "video/image.h"
 #include "video/video.h"
@@ -5,7 +6,7 @@
 void progressbar_create_block(progress_bar *bar) {
     float prog = bar->percentage / 100.0f;
     int w = bar->w * prog;
-    if(w > 0) {
+    if(w > 1 && bar->h > 1) {
         image tmp;
         image_create(&tmp, w, bar->h);
         image_clear(&tmp, bar->int_bg_color);
@@ -15,8 +16,8 @@ void progressbar_create_block(progress_bar *bar) {
                          bar->int_bottomright_color, 
                          bar->int_bottomright_color, 
                          bar->int_topleft_color);
-        texture_create(&bar->block);
-        texture_init_from_img(&bar->block, &tmp);
+        bar->block = malloc(sizeof(surface));
+        surface_create_from_image(bar->block, &tmp);
         image_free(&tmp);
     }
 }
@@ -41,11 +42,8 @@ void progressbar_create_flashing(progress_bar *bar,
     bar->int_topleft_color = int_topleft_color;
     bar->int_bottomright_color = int_bottomright_color;
     bar->int_bg_color = int_bg_color;
-    
-    texture_create(&bar->block);
-    texture_create(&bar->background);
-    texture_create(&bar->background_alt);
-    
+    bar->block = NULL;
+
     // Background,
     image tmp;
     image_create(&tmp, w, h);
@@ -56,7 +54,7 @@ void progressbar_create_flashing(progress_bar *bar,
                      border_bottomright_color, 
                      border_bottomright_color, 
                      border_topleft_color);
-    texture_init_from_img(&bar->background, &tmp);
+    surface_create_from_image(&bar->background, &tmp);
     image_free(&tmp);
 
     image_create(&tmp, w, h);
@@ -67,7 +65,7 @@ void progressbar_create_flashing(progress_bar *bar,
                      border_bottomright_color, 
                      border_bottomright_color, 
                      border_topleft_color);
-    texture_init_from_img(&bar->background_alt, &tmp);
+    surface_create_from_image(&bar->background_alt, &tmp);
     image_free(&tmp);
 
     // Bar
@@ -75,27 +73,37 @@ void progressbar_create_flashing(progress_bar *bar,
 }
 
 void progressbar_free(progress_bar *bar) {
-    texture_free(&bar->background);
-    texture_free(&bar->block);
+    surface_free(&bar->background);
+    surface_free(&bar->background_alt);
+    if(bar->block != NULL) {
+        surface_free(bar->block);
+        free(bar->block);
+        bar->block = NULL;
+    }
 }
 
 void progressbar_set(progress_bar *bar, unsigned int percentage) {
     bar->percentage = (percentage > 100 ? 100 : percentage);
-    texture_free(&bar->block);
+    if(bar->block != NULL) {
+        surface_free(bar->block);
+        free(bar->block);
+        bar->block = NULL;
+    }
     progressbar_create_block(bar);
 }
 
 void progressbar_render_flashing(progress_bar *bar, int flip) {
-    if (flip) {
-        video_render_sprite(&bar->background_alt, bar->x, bar->y, BLEND_ALPHA_FULL);
+    if(flip) {
+        video_render_sprite(&bar->background_alt, bar->x, bar->y, BLEND_ALPHA, 0);
     } else {
-        video_render_sprite(&bar->background, bar->x, bar->y, BLEND_ALPHA_FULL);
+        video_render_sprite(&bar->background, bar->x, bar->y, BLEND_ALPHA, 0);
     }
-    if(bar->block.w > 0) {
+    if(bar->block != NULL) {
         video_render_sprite(
-            &bar->block, 
-            bar->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : bar->w - bar->block.w + 1), 
+            bar->block, 
+            bar->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : bar->w - bar->block->w + 1), 
             bar->y, 
-            BLEND_ALPHA_FULL);
+            BLEND_ALPHA,
+            0);
     }
 }

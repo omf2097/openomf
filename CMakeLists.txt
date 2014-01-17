@@ -6,20 +6,11 @@ find_package(SDL2)
 find_package(shadowdive)
 find_package(enet)
 find_package(dumb)
-find_package(OpenGL)
 find_package(OpenAL)
 find_package(confuse)
-find_package(GLEW)
 
 # These flags are used for all builds
 set(CORE_FLAGS "-Wall -Werror")
-
-# This is a quick hack to force glew go static.
-# TODO: Do this better!
-option(GLEWSTATIC "Use static GLEW" OFF)
-if(GLEWSTATIC)
-   set(CORE_FLAGS "${CORE_FLAGS} -DGLEW_STATIC")
-endif(GLEWSTATIC)
 
 # Check available compiler
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -95,14 +86,10 @@ set(OPENOMF_SRC
     src/utils/str.c
     src/utils/random.c
     src/video/video.c
-    src/video/texture.c
-    src/video/fbo.c
-    src/video/shader.c
-    src/video/shaderprogram.c
-    src/video/rbo.c
+    src/video/surface.c
     src/video/image.c
+    src/video/tcache.c
     src/video/color.c
-    src/video/glextloader.c
     src/audio/audio.c
     src/audio/music.c
     src/audio/sound.c
@@ -173,9 +160,7 @@ set(COREINCS
     ${SHADOWDIVE_INCLUDE_DIR} 
     ${DUMB_INCLUDE_DIR} 
     ${OPENAL_INCLUDE_DIR} 
-    ${OPENGL_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
-    ${GLEW_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
 )
@@ -184,10 +169,8 @@ set(CORELIBS
     ${SDL2_LIBRARY} 
     ${SHADOWDIVE_LIBRARY} 
     ${DUMB_LIBRARY} 
-    ${OPENGL_LIBRARY} 
     ${OPENAL_LIBRARY}
     ${CONFUSE_LIBRARY}
-    ${GLEW_LIBRARY}
     ${LIBINTL_LIBRARIES}
     ${ENET_LIBRARY}
 )

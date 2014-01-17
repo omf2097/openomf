@@ -5,7 +5,7 @@
 #include "controller/controller.h"
 #include "controller/keyboard.h"
 #include "controller/net_controller.h"
-#include "video/texture.h"
+#include "video/surface.h"
 #include "game/score.h"
 
 typedef struct game_player_t {
@@ -13,7 +13,7 @@ typedef struct game_player_t {
     int pilot_id; // 0 to 9
     object *har;
     controller *ctrl;
-    texture *portrait;
+    surface *portrait;
     int selectable;
     char colors[3];
     chr_score score;
@@ -26,8 +26,8 @@ void game_player_set_har(game_player *gp, object *har);
 object* game_player_get_har(game_player *gp);
 void game_player_set_ctrl(game_player *gp, controller *ctrl);
 controller* game_player_get_ctrl(game_player *gp);
-void game_player_set_portrait(game_player *gp, texture *portrait);
-texture* game_player_get_portrait(game_player *gp);
+void game_player_set_portrait(game_player *gp, surface *portrait);
+surface* game_player_get_portrait(game_player *gp);
 void game_player_set_selectable(game_player *gp, int selectable);
 int game_player_get_selectable(game_player *gp);
 chr_score* game_player_get_score(game_player *gp);

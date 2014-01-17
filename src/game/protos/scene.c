@@ -35,6 +35,9 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->input_poll = NULL;
     scene->startup = NULL;
 
+    // Set base palette
+    video_set_base_palette(bk_get_palette(&scene->bk_data, 0));
+
     // All done.
     DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
     return 0;
@@ -78,17 +81,8 @@ int scene_load_har(scene *scene, int player_id, int har_id) {
 }
 
 void scene_init(scene *scene) {
-    // Init background sprite with palette
-    object_create(&scene->background, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
-    animation *bgani = create_animation_from_single(sprite_copy(&scene->bk_data.background), vec2i_create(0,0));
-    object_set_animation(&scene->background, bgani);
-    object_set_animation_owner(&scene->background, OWNER_OBJECT);
-    object_select_sprite(&scene->background, 0);
-    object_set_palette(&scene->background, bk_get_palette(&scene->bk_data, 0), 0);
-
     // init shadow buffer
     image_create(&scene->shadow_buffer_img, 320, 200);
-    texture_create(&scene->shadow_buffer_tex);
 
     // Bootstrap animations
     iterator it;
@@ -100,7 +94,6 @@ void scene_init(scene *scene) {
             object *obj = malloc(sizeof(object));
             object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
             object_set_stl(obj, scene->bk_data.sound_translation_table);
-            object_set_palette(obj, bk_get_palette(&scene->bk_data, 0), 0);
             object_set_animation(obj, &info->ani);
             if(info->probability == 1) {
                 object_set_repeat(obj, 1);
@@ -171,7 +164,7 @@ void scene_render_overlay(scene *scene) {
 }
 
 void scene_render(scene *scene) {
-    object_render_neutral(&scene->background);
+    video_render_background(&scene->bk_data.background);
 
     if(scene->render != NULL) {
         scene->render(scene);
@@ -180,13 +173,11 @@ void scene_render(scene *scene) {
 
 void scene_render_shadows(scene *scene) {
     // draw shadows
-    if(texture_is_valid(&scene->shadow_buffer_tex)) {
-        texture_upload(&scene->shadow_buffer_tex, scene->shadow_buffer_img.data);
-    } else {
-        texture_init_from_img(&scene->shadow_buffer_tex, &scene->shadow_buffer_img);
-    }
-    video_render_sprite(&scene->shadow_buffer_tex, 0, 0, BLEND_ALPHA_FULL);
+    surface_create_from_image(&scene->shadow_buffer_surface, &scene->shadow_buffer_img);
+    video_render_sprite(&scene->shadow_buffer_surface, 0, 0, BLEND_ALPHA, 0);
+    surface_free(&scene->shadow_buffer_surface);
     image_clear(&scene->shadow_buffer_img, color_create(0,0,0,0));
+    
 }
 
 void scene_tick(scene *scene) {
@@ -217,9 +208,7 @@ void scene_free(scene *scene) {
         af_free(scene->af_data[1]);
         free(scene->af_data[1]);
     }
-    object_free(&scene->background);
     image_free(&scene->shadow_buffer_img);
-    texture_free(&scene->shadow_buffer_tex);
     ticktimer_close(&scene->tick_timer);
 }
 
@@ -260,7 +249,6 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userd
         object *obj = malloc(sizeof(object));
         object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vec2f_create(0,0));
         object_set_stl(obj, object_get_stl(parent));
-        object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &info->ani);
         object_set_spawn_cb(obj, cb_scene_spawn_object, userdata);
         object_set_destroy_cb(obj, cb_scene_destroy_object, userdata);

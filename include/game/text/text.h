@@ -2,7 +2,6 @@
 #define _TEXT_H
 
 #include "utils/vector.h"
-#include "video/texture.h"
 #include "video/color.h"
 
 enum {
@@ -16,7 +15,7 @@ typedef struct font_t font;
 struct font_t {
     int size;
     int w,h;
-    vector textures;
+    vector surfaces;
 };
 
 // globals, yay

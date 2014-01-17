@@ -32,7 +32,6 @@ int har_act(object *obj, int act_type);
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
 #ifdef DEBUGMODE
-    texture_free(&h->debug_tex);
     image_free(&h->debug_img);
 #endif
     free(h);
@@ -118,10 +117,9 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object *scrap = malloc(sizeof(object));
         object_create(scrap, parent->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, id)->ani);
-        object_set_palette(scrap, object_get_palette(parent), 0);
         object_set_stl(scrap, object_get_stl(parent));
-        object_set_repeat(scrap, 1);
         object_set_gravity(scrap, 1);
+        object_set_pal_offset(scrap, object_get_pal_offset(parent));
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
@@ -136,9 +134,9 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_create(obj, parent->gs, pos, vec2f_create(0,0));
         object_set_userdata(obj, h);
         object_set_stl(obj, object_get_stl(parent));
-        object_set_palette(obj, object_get_palette(parent), 0);
         object_set_animation(obj, &move->ani);
         object_set_gravity(obj, g/50);
+        object_set_pal_offset(obj, object_get_pal_offset(parent));
         // Set all projectiles to their own layer + har layer
         object_set_layers(obj, LAYER_PROJECTILE|(h->player_id == 0 ? LAYER_HAR2 : LAYER_HAR1)); 
         // To avoid projectile-to-projectile collisions, set them to same group
@@ -289,9 +287,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         int anim_no = ANIM_BURNING_OIL;
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
-        object_set_palette(scrap, object_get_palette(obj), 0);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_repeat(scrap, 0);
         object_set_gravity(scrap, 1);
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
@@ -316,10 +312,9 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
-        object_set_palette(scrap, object_get_palette(obj), 0);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_repeat(scrap, 1);
         object_set_gravity(scrap, 1);
+        object_set_pal_offset(scrap, object_get_pal_offset(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap->cast_shadow = 1;
@@ -348,7 +343,6 @@ void har_block(object *obj, vec2i hit_coord) {
     object *scrape = malloc(sizeof(object));
     object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
     object_set_animation(scrape, &af_get_move(h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
-    object_set_palette(scrape, object_get_palette(obj), 0);
     object_set_stl(scrape, object_get_stl(obj));
     object_set_direction(scrape, object_get_direction(obj));
     object_set_repeat(scrape, 0);
@@ -1142,9 +1136,9 @@ void har_finished(object *obj) {
 void har_debug(object *obj) {
     har *h = object_get_userdata(obj);
     if(h->debug_enabled == 0) return;
-    texture_init_from_img(&h->debug_tex, &h->debug_img);
-    video_render_sprite(&h->debug_tex, 0, 0, BLEND_ALPHA_FULL);
-    texture_free(&h->debug_tex);
+    surface_create_from_image(&h->debug_surface, &h->debug_img);
+    video_render_sprite(&h->debug_surface, 0, 0, BLEND_ALPHA, 0);
+    surface_free(&h->debug_surface);
     image_clear(&h->debug_img, color_create(0,0,0,0));
 }
 #endif
@@ -1288,6 +1282,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     local->stun_timer = 0;
 
+    // Set palette offset 0 for player1, 48 for player2
+    object_set_pal_offset(obj, player_id * 48);
+
     // Object related stuff
     /*object_set_gravity(obj, local->af_data->fall_speed);*/
     object_set_gravity(obj, 1);
@@ -1322,7 +1319,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 #ifdef DEBUGMODE
     object_set_debug_cb(obj, har_debug);
-    texture_create(&local->debug_tex);
     image_create(&local->debug_img, 320, 200);
     image_clear(&local->debug_img, color_create(0,0,0,0));
     local->debug_enabled = 0;

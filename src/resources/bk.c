@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>
 #include <shadowdive/shadowdive.h>
 #include "resources/bk.h"
 
@@ -9,9 +10,12 @@ void bk_create(bk *b, void *src) {
     b->file_id = sdbk->file_id;
 
     // Copy VGA image
-    sd_vga_image *raw_image = sd_vga_image_create(sdbk->background->w, sdbk->background->h);
-    memcpy(raw_image->data, sdbk->background->data, raw_image->len);
-    sprite_create_custom(&b->background, vec2i_create(0,0), raw_image);
+    surface_create_from_data(
+        &b->background, 
+        SURFACE_TYPE_PALETTE, 
+        sdbk->background->w, 
+        sdbk->background->h, 
+        sdbk->background->data);
 
     // Copy sound translation table
     memcpy(b->sound_translation_table, sdbk->soundtable, 30);
@@ -51,7 +55,7 @@ char* bk_get_stl(bk *b) {
 }
 
 void bk_free(bk *b) {
-    sprite_free(&b->background);
+    surface_free(&b->background);
     vector_free(&b->palettes);
 
     // Free info structs

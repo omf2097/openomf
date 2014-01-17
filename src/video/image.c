@@ -117,7 +117,7 @@ void image_write_tga(image *img, const char *filename) {
     header.origin_y = 0;
     header.width = img->w;
     header.height = img->h;
-    header.depth = 24;
+    header.depth = 32;
     header.descriptor = 0;
     fwrite(&header, sizeof(tga_header), 1, fp);
     

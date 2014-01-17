@@ -11,7 +11,7 @@
 #define COLOR_MENU_BORDER2 color_create(0,93,0,255)
 #define COLOR_MENU_BG     color_create(4,4,16,210)
 
-void menu_background_create(texture *tex, int w, int h) {
+void menu_background_create(surface *s, int w, int h) {
     image img;
     image_create(&img, w, h);
     image_clear(&img, COLOR_MENU_BG);
@@ -22,13 +22,12 @@ void menu_background_create(texture *tex, int w, int h) {
         image_line(&img, 0, y, w-1, y, COLOR_MENU_LINE);
     }
     image_rect(&img, 0, 0, w-1, h-1, COLOR_MENU_BORDER);
-    texture_create(tex);
-    texture_init_from_img(tex, &img);
+    surface_create_from_image(s, &img);
     image_free(&img);
 }
 
 // the *other* style menu background
-void menu_background2_create(texture *tex, int w, int h) {
+void menu_background2_create(surface *s, int w, int h) {
     image img;
     image_create(&img, w, h);
     image_clear(&img, COLOR_MENU_BG);
@@ -40,7 +39,6 @@ void menu_background2_create(texture *tex, int w, int h) {
     }
     image_rect(&img, 1, 1, w-2, h-2, COLOR_MENU_BORDER2);
     image_rect(&img, 0, 0, w-2, h-2, COLOR_MENU_BORDER1);
-    texture_create(tex);
-    texture_init_from_img(tex, &img);
+    surface_create_from_image(s, &img);
     image_free(&img);
 }

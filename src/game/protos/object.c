@@ -32,13 +32,12 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;
-    obj->texture_refresh = 0;
-    obj->cur_palette = NULL;
     obj->cur_animation = NULL;
     obj->cur_sprite = NULL;
     obj->sound_translation_table = NULL;
-    obj->cur_texture = NULL;
-    obj->cur_remap = 0;
+    obj->cur_surface = NULL;
+    obj->cur_remap = -1;
+    obj->pal_offset = 0;
     obj->halt = 0;
     obj->stride = 1;
     obj->cast_shadow = 0;
@@ -124,12 +123,10 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     // Other stuff not included in serialization
     obj->y_percent = 1.0;
     obj->cur_animation_own = OWNER_EXTERNAL;
-    obj->texture_refresh = 0;
-    obj->cur_palette = NULL;
     obj->cur_animation = NULL;
     obj->cur_sprite = NULL;
     obj->sound_translation_table = NULL;
-    obj->cur_texture = NULL;
+    obj->cur_surface = NULL;
     obj->cur_remap = 0;
     obj->halt = 0;
     obj->cast_shadow = 0;
@@ -245,11 +242,7 @@ void object_collide(object *obj, object *b) {
     }
 }
 
-void object_revalidate(object *obj) {
-    obj->texture_refresh = 1;
-}
-
-int _max(int r, int g, int b) {
+int max3(int r, int g, int b) {
     int max = r;
     if(g > max) max = g;
     if(b > max) max = b;
@@ -264,130 +257,46 @@ int min(int a, int b) {
     return (a > b) ? b : a;
 }
 
-void object_check_texture(object *obj) {
-    // (Re)generate texture if necessary
-    if(obj->cur_texture == NULL) {
-        obj->cur_texture = malloc(sizeof(texture));
-        texture_create(obj->cur_texture);
-        obj->texture_refresh = 1;
-    }
-
-    // Check if we need to do palette stuff on every tick
-    player_sprite_state *rstate = &obj->sprite_state;
-    if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
-        obj->texture_refresh = 1;
-    }
-
-    // If palette has changed, load up new texture here
-    if(obj->texture_refresh) {
-        // Load up sprite with defined palette
-        sd_rgba_image *img = sd_vga_image_decode(
-            obj->cur_sprite->raw_sprite, 
-            (sd_palette*)obj->cur_palette, 
-            obj->cur_remap);
-
-        // If texture size differs, free it here
-        if(obj->cur_texture->w != img->w || obj->cur_texture->h != img->h) {
-            texture_free(obj->cur_texture);
-        }
-/*
-        // Do palette tricks
-        if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
-            float bp = rstate->pal_begin + 
-                ((float)rstate->pal_end - (float)rstate->pal_begin) * 
-                (float)rstate->timer / (float)rstate->duration;
-            sd_vga_image *vga = obj->cur_sprite->raw_sprite;
-            int pix = 0;
-            float m = 0;
-            int r = obj->cur_palette->data[rstate->pal_ref_index][0];
-            int g = obj->cur_palette->data[rstate->pal_ref_index][1];
-            int b = obj->cur_palette->data[rstate->pal_ref_index][2];
-            color s;
-            for(int y = 0; y < img->h; y++) {
-                for(int x = 0; x < img->w; x++) {
-                    pix = vga->data[y * img->w + x];
-                    if(img->data[(y * img->w + x)*4 + 3] == 0) continue;
-                    if(pix >= rstate->pal_start_index && 
-                       pix <= (rstate->pal_start_index + rstate->pal_entry_count)) {
-                        s.r = img->data[(y * img->w + x)*4 + 0];
-                        s.g = img->data[(y * img->w + x)*4 + 1];
-                        s.b = img->data[(y * img->w + x)*4 + 2];
-                        float rr,gr,br;
-                        if(rstate->pal_tint) {
-                            m = _max(s.r, s.g, s.b);
-                            rr = (float)s.r + m/64.0f + bp/64.0f + (float)(r - s.r);
-                            gr = (float)s.g + m/64.0f + bp/64.0f + (float)(g - s.g);
-                            br = (float)s.b + m/64.0f + bp/64.0f + (float)(b - s.b);
-                        } else {
-                            rr = (float)r * (float)bp/64.0f;
-                            gr = s.g * (float)(1 - bp/64.0f) + (float)g * bp/64.0f;
-                            br = s.b * (float)(1 - bp/64.0f) + (float)b * bp/64.0f;
-                        }
-                        img->data[(y * img->w + x)*4 + 0] = max(0, min(63, rr));
-                        img->data[(y * img->w + x)*4 + 1] = max(0, min(63, gr));
-                        img->data[(y * img->w + x)*4 + 2] = max(0, min(63, br));
-                    }
-                }
-            }
-        }*/
-
-        // If texture is valid, just reupload. We checked for size similarity previously.
-        // If texture is NOT valid, re-create it with a free ID etc.
-        if(texture_is_valid(obj->cur_texture)) {
-            if(texture_upload(obj->cur_texture, img->data)) {
-                PERROR("object_render: Error while uploading to an existing texture!");
-            }
-        } else {
-            if(texture_init(obj->cur_texture, img->data, img->w, img->h)) {
-                PERROR("object_render: Error while creating texture!");
-            }
-        }
-
-        // Delete resources
-        sd_rgba_image_delete(img);
-        obj->texture_refresh = 0;
-    }
-}
-
 void object_render(object *obj) {
     // Stop here if cur_sprite is NULL
     if(obj->cur_sprite == NULL) return;
 
+    // Set current surface
+    obj->cur_surface = obj->cur_sprite->data;
+
     // Something to ease the pain ...
     player_sprite_state *rstate = &obj->sprite_state;
 
-    // Make sure texture is valid etc.
-    object_check_texture(obj);
-
-    // Render
+    // Position
     int y = obj->pos.y + obj->cur_sprite->pos.y;
     int x = obj->pos.x + obj->cur_sprite->pos.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
         x = obj->pos.x - obj->cur_sprite->pos.x - object_get_size(obj).x;
     }
+
+    // Flip to face the right direction
     int flipmode = rstate->flipmode;
     if(obj->direction == OBJECT_FACE_LEFT) {
         flipmode ^= FLIP_HORIZONTAL;
     }
 
-    // Some interesting stuff
-    if(rstate->duration > 0) {
-        float moment = rstate->timer / rstate->duration;
-        float b = (rstate->blend_start) 
-            ? (rstate->blend_start + (rstate->blend_finish - rstate->blend_start) * moment)
-            : rstate->blend_finish;
-        UNUSED(b);
+    // Blend start / blend finish
+    uint8_t opacity = rstate->blend_finish;
+    if(rstate->duration > 0 && rstate->blend_start != 0) {
+        float moment = (float)rstate->timer / (float)rstate->duration;
+        float d = ((float)rstate->blend_finish - (float)rstate->blend_start) * moment;
+        opacity = rstate->blend_start + d;
     }
 
     // Render
-    video_render_sprite_flip_scale(obj->cur_texture, x, y, rstate->blendmode, flipmode, obj->y_percent);
-}
-
-// Renders sprite to left top corner with no special stuff applied
-void object_render_neutral(object *obj) {
-    if(obj->cur_sprite == NULL) return;
-    object_check_texture(obj);
-    video_render_background(obj->cur_texture);
+    video_render_sprite_flip_scale_opacity(
+        obj->cur_surface, 
+        x, y, 
+        rstate->blendmode, 
+        obj->pal_offset, 
+        flipmode, 
+        obj->y_percent,
+        opacity);
 }
 
 // Renders sprite's shadow to a shadow buffer
@@ -395,11 +304,9 @@ void object_render_shadow(object *obj, image *shadow_buffer) {
     if(obj->cur_sprite == NULL || !obj->cast_shadow) {
         return;
     }
-    sd_vga_image *vga = (sd_vga_image*)obj->cur_sprite->raw_sprite;
-    char *stencil = vga->stencil;
+    surface *sur = obj->cur_sprite->data;
     player_sprite_state *rstate = &obj->sprite_state;
-    int w = vga->w;
-    int h = vga->h;
+    vec2i size = sprite_get_size(obj->cur_sprite);
     int y = 190;
     int x = obj->pos.x + obj->cur_sprite->pos.x;
     int flipmode = rstate->flipmode;
@@ -411,17 +318,16 @@ void object_render_shadow(object *obj, image *shadow_buffer) {
     ///TODO smarter code to make this less branchy on flipmode
     if (flipmode & FLIP_VERTICAL) {
         // only render every third line of the sprite, to emulate the shadow being cast onto the floor
-        for (int i = 0; i < h; i+=3) {
+        for (int i = 0; i < size.y; i+=3) {
             y--;
-            for (int j = 0; j < w; j++) {
-
-                if (stencil[(i*w)+j]) {
+            for (int j = 0; j < size.x; j++) {
+                if (sur->data[(i * size.x) + j]) {
                     switch(flipmode) {
                         case FLIP_VERTICAL:
-                            image_set_pixel(shadow_buffer, x+j, y, color_create(0,0,0,100));
+                            image_set_pixel(shadow_buffer, x + j, y, color_create(0,0,0,100));
                             break;
                         case FLIP_VERTICAL|FLIP_HORIZONTAL:
-                            image_set_pixel(shadow_buffer, x+(w-j), y, color_create(0,0,0,100));
+                            image_set_pixel(shadow_buffer, x + (size.x - j), y, color_create(0,0,0,100));
                             break;
                     }
                 }
@@ -429,16 +335,16 @@ void object_render_shadow(object *obj, image *shadow_buffer) {
         }
     } else {
         // only render every third line of the sprite, to emulate the shadow being cast onto the floor
-        for (int i = h-1; i >= 0; i-=3) {
+        for (int i = size.y - 1; i >= 0; i-=3) {
             y--;
-            for (int j = 0; j < w; j++) {
-                if (stencil[(i*w)+j]) {
+            for (int j = 0; j < size.x; j++) {
+                if (sur->data[(i * size.x) + j]) {
                     switch(flipmode) {
                         case FLIP_NONE:
-                            image_set_pixel(shadow_buffer, x+j, y, color_create(0,0,0,100));
+                            image_set_pixel(shadow_buffer, x + j, y, color_create(0,0,0,100));
                             break;
                         case FLIP_HORIZONTAL:
-                            image_set_pixel(shadow_buffer, x+(w-j), y, color_create(0,0,0,100));
+                            image_set_pixel(shadow_buffer, x + (size.x - j), y, color_create(0,0,0,100));
                             break;
                     }
                 }
@@ -468,6 +374,47 @@ void object_move(object *obj) {
     }
 }
 
+int object_palette_transform(object *obj, screen_palette *pal) {
+    player_sprite_state *rstate = &obj->sprite_state;
+    if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
+        float bp = ((float)rstate->pal_begin) + 
+            ((float)rstate->pal_end - (float)rstate->pal_begin) * 
+            ((float)rstate->timer / (float)rstate->duration);
+/*
+        DEBUG("Palette transform: level(begin=%d,end=%d), range(start=%d,count=%d), tint = %d, reference = %d, level = %f, tick = %d / %d",
+            rstate->pal_begin, rstate->pal_end,
+            rstate->pal_start_index, rstate->pal_entry_count,
+            rstate->pal_tint,
+            rstate->pal_ref_index,
+            bp,
+            rstate->timer, rstate->duration);
+*/
+        color b;
+        b.r = pal->data[rstate->pal_ref_index][0];
+        b.g = pal->data[rstate->pal_ref_index][1];
+        b.b = pal->data[rstate->pal_ref_index][2];
+
+        uint8_t m;
+        float u;
+        float k = bp / 255.0f;
+        for(int i = rstate->pal_start_index; i < rstate->pal_start_index + rstate->pal_entry_count; i++) {
+            if(rstate->pal_tint) {
+                m = max3(pal->data[i][0], pal->data[i][1], pal->data[i][2]);
+                u = m / 255.0f;
+                pal->data[i][0] = max(0, min(255, pal->data[i][0] + u * k * (b.r - pal->data[i][0])));
+                pal->data[i][1] = max(0, min(255, pal->data[i][1] + u * k * (b.g - pal->data[i][1])));
+                pal->data[i][2] = max(0, min(255, pal->data[i][2] + u * k * (b.b - pal->data[i][2])));
+            } else {
+                pal->data[i][0] = max(0, min(255, pal->data[i][0] * (1 - k) + (b.r * k)));
+                pal->data[i][1] = max(0, min(255, pal->data[i][1] * (1 - k) + (b.g * k)));
+                pal->data[i][2] = max(0, min(255, pal->data[i][2] * (1 - k) + (b.b * k)));
+            }
+        }
+        return 1;
+    }
+    return 0;
+}
+
 void object_free(object *obj) {
     if(obj->free != NULL) {
         obj->free(obj);
@@ -477,11 +424,7 @@ void object_free(object *obj) {
         animation_free(obj->cur_animation);
         free(obj->cur_animation);
     }
-    if(obj->cur_texture != NULL) {
-        texture_free(obj->cur_texture);
-        free(obj->cur_texture);
-    }
-    obj->cur_texture = NULL;
+    obj->cur_surface = NULL;
     obj->cur_animation = NULL;
 }
 
@@ -495,16 +438,6 @@ char* object_get_stl(object *obj) {
 
 void object_set_animation_owner(object *obj, int owner) {
     obj->cur_animation_own = owner;
-}
-
-void object_set_palette(object *obj, palette *pal, int remap) {
-    obj->cur_palette = pal;
-    obj->cur_remap = remap;
-    obj->texture_refresh = 1;
-}
-
-palette* object_get_palette(object *obj) {
-    return obj->cur_palette;
 }
 
 void object_set_animation(object *obj, animation *ani) {
@@ -539,7 +472,6 @@ animation* object_get_animation(object *obj) {
 
 void object_select_sprite(object *obj, int id) {
     obj->cur_sprite = animation_get_sprite(obj->cur_animation, id);
-    obj->texture_refresh = 1;
     obj->sprite_state.blendmode = BLEND_ALPHA;
     obj->sprite_state.flipmode = FLIP_NONE;
 }
@@ -563,6 +495,9 @@ void object_set_gravity(object *obj, float gravity) { obj->gravity = gravity; }
 int object_get_gravity(object *obj) { return obj->gravity; }
 int object_get_group(object *obj) { return obj->group; }
 int object_get_layers(object *obj) { return obj->layers; }
+
+void object_set_pal_offset(object *obj, int offset) { obj->pal_offset = offset; }
+int object_get_pal_offset(object *obj) { return obj->pal_offset; }
 
 void object_reset_vstate(object *obj) {
     obj->hstate = (obj->vel.x < 0.01f && obj->vel.x > -0.01f) ? OBJECT_STABLE : OBJECT_MOVING;
@@ -601,6 +536,9 @@ vec2f object_get_vel(object *obj) {
 void object_set_pos(object *obj, vec2i pos) {
     obj->pos = vec2i_to_f(pos);
 }
+
+void object_set_gate_value(object *obj, int gate_value) { obj->animation_state.gate_value = gate_value; }
+int object_get_gate_value(object *obj) { return obj->animation_state.gate_value; }
 
 void object_set_vel(object *obj, vec2f vel) {
     obj->vel = vel;

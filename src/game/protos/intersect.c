@@ -102,12 +102,12 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
 #endif
 
         // Get hitpixel
-        sd_vga_image *vga = (sd_vga_image*)target->cur_sprite->raw_sprite;
-        int hitpoint = (ycoord * vga->w) + xcoord;
+        surface *sfc = target->cur_sprite->data;
+        int hitpoint = (ycoord * sfc->w) + xcoord;
         if (object_get_direction(target) == OBJECT_FACE_LEFT) {
-            hitpoint = (ycoord * vga->w) + (vga->w - xcoord);
+            hitpoint = (ycoord * sfc->w) + (sfc->w - xcoord);
         }
-        if(vga->stencil[hitpoint] == 1) {
+        if(sfc->stencil[hitpoint] > 0) {
             hcoords[found++] = vec2i_create(xcoord, ycoord);
             if(found >= level) {
                 vec2f sum = vec2f_create(0,0);

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <shadowdive/stringparser.h>
 
+#include "game/game_state.h"
+#include "game/game_player.h"
 #include "game/settings.h"
 #include "video/video.h"
 #include "audio/sink.h"
@@ -85,7 +87,7 @@ void player_clear_frame(object *obj) {
     s->flipmode = FLIP_NONE;
     s->method_flags = 0;
     s->blend_start = 0;
-    s->blend_finish = 0;
+    s->blend_finish = 0xFF;
     s->timer = 0;
     s->duration = 0;
 
@@ -94,6 +96,7 @@ void player_clear_frame(object *obj) {
     s->pal_ref_index = 0;
     s->pal_start_index = 0;
     s->pal_entry_count = 0;
+    s->pal_tint = 0;
 }
 
 int next_frame_with_tag(sd_stringparser *parser, int current_frame, const char *tag, sd_stringparser_frame *f) {
@@ -143,6 +146,7 @@ void player_create(object *obj) {
     obj->animation_state.previous = -1;
     obj->animation_state.ticks_len = 0;
     obj->animation_state.parser = sd_stringparser_create();
+    obj->animation_state.gate_value = 0;
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
     player_clear_frame(obj);
@@ -292,9 +296,11 @@ void player_run(object *obj) {
             player_clear_frame(obj);
             
             // Tick management
-            if(isset(f, "d"))   {
-                cmd_tickjump(obj, get(f, "d"));
-                sd_stringparser_reset(state->parser);
+            if(isset(f, "d")) {
+                if(get(f, "d") != obj->animation_state.gate_value) {
+                    cmd_tickjump(obj, 1);
+                    sd_stringparser_reset(state->parser);
+                }
             }
         
             // Animation management
@@ -385,7 +391,7 @@ void player_run(object *obj) {
                 rstate->blend_finish = get(f, "bj"); 
             }
             if(isset(f, "bs")) { 
-                rstate->blend_start = get(f, "bs"); 
+                rstate->blend_start = get(f, "bs");
             }
             if(isset(f, "bu")) { rstate->method_flags &= 0x8000; }
             if(isset(f, "bw")) { rstate->method_flags &= 0x0080; }
@@ -395,9 +401,16 @@ void player_run(object *obj) {
             if(isset(f, "bpd")) { rstate->pal_ref_index = get(f, "bpd"); }
             if(isset(f, "bpn")) { rstate->pal_entry_count = get(f, "bpn"); }
             if(isset(f, "bps")) { rstate->pal_start_index = get(f, "bps"); }
-            if(isset(f, "bpb")) { rstate->pal_begin = get(f, "bpb"); }
-            if(isset(f, "bpd")) { rstate->pal_end = get(f, "bpd"); }
-            if(isset(f, "bz"))  { rstate->pal_tint = get(f, "bz"); }
+            if(isset(f, "bpf")) {
+                rstate->pal_start_index = (game_state_get_player(obj->gs, 0)->har == obj) ? 0 : 48; 
+                rstate->pal_entry_count = 48;
+            }
+            if(isset(f, "bpp")) { 
+                rstate->pal_end = get(f, "bpp") * 4;
+                rstate->pal_begin = get(f, "bpp") * 4; 
+            }
+            if(isset(f, "bpb")) { rstate->pal_begin = get(f, "bpb") * 4; }
+            if(isset(f, "bz"))  { rstate->pal_tint = 1; }
 
             // Handle movement
             if (isset(f, "v")) {

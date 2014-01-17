@@ -6,8 +6,9 @@
 #include "audio/audio.h"
 #include "audio/music.h"
 #include "resources/sounds_loader.h"
-#include "video/texture.h"
+#include "video/surface.h"
 #include "video/video.h"
+#include "video/tcache.h"
 #include "game/text/languages.h"
 #include "game/game_state.h"
 #include "game/settings.h"
@@ -15,7 +16,6 @@
 #include "game/text/text.h"
 #include "console/console.h"
 
-int _vsync = 0; // Needed in video.c
 static int run = 0;
 static int take_screenshot = 0;
 
@@ -36,7 +36,7 @@ int engine_init() {
     int sink_id = 0;
 
     // Initialize everything.
-    _vsync = vsync;
+    tcache_init();
     if(video_init(w, h, fs, vsync)) {
         goto exit_0;
     }
@@ -82,6 +82,7 @@ exit_2:
 exit_1:
     video_close();
 exit_0:
+    tcache_close();
 #endif
 
     return 1;
@@ -112,9 +113,6 @@ void engine_run(int net_mode) {
     while(run && game_state_is_running(gs)) {
 
 #ifndef STANDALONE_SERVER
-        // Prepare rendering here
-        video_render_prepare();
-
         // Handle events
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
@@ -159,6 +157,9 @@ void engine_run(int net_mode) {
 
             // Tick console
             console_tick();
+
+            // Handle cache
+            tcache_tick();
             
             // Handle waiting period leftover time
             omf_wait -= game_state_ms_per_tick(gs);
@@ -167,6 +168,7 @@ void engine_run(int net_mode) {
 
 #ifndef STANDALONE_SERVER
         // Do the actual rendering jobs
+        video_render_prepare();
         game_state_render(gs);
         console_render();
         video_render_finish();
@@ -184,10 +186,6 @@ void engine_run(int net_mode) {
         // ignore "unused variable" warning
         (void)take_screenshot;
 #endif
-        // Delay stuff a bit if vsync is off
-        if(!_vsync && run) {
-            SDL_Delay(1);
-        }
     }
     
     // Free scene object
@@ -206,6 +204,7 @@ void engine_close() {
 #ifndef STANDALONE_SERVER
     audio_close();
     video_close();
+    tcache_close();
 #endif
     INFO("Engine deinit successful.");
 }

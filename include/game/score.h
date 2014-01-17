@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "utils/list.h"
-#include "video/texture.h"
+#include "video/surface.h"
 #include "game/protos/object.h"
 #include "game/text/text.h"
 
@@ -21,7 +21,6 @@ typedef struct chr_score_t {
     int direction;
     float multiplier;
     list texts;
-    texture scoretex;
 
     int consecutive_hits;
     int consecutive_hit_score;

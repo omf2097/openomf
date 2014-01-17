@@ -1,7 +1,7 @@
 #ifndef _PROGRESSBAR_H
 #define _PROGRESSBAR_H
 
-#include "video/texture.h"
+#include "video/surface.h"
 #include "video/color.h"
 
 typedef struct progress_bar_t progress_bar;
@@ -10,9 +10,9 @@ typedef struct progress_bar_t progress_bar;
 #define PROGRESSBAR_RIGHT 1
 
 struct progress_bar_t {
-    texture background;
-    texture background_alt;
-    texture block;
+    surface background;
+    surface background_alt;
+    surface *block;
     unsigned int w,h,x,y;
     int orientation;
     unsigned int percentage;
