@@ -62,8 +62,6 @@ typedef struct arena_local_t {
     progress_bar player2_endurance_bar;
     chr_score player1_score;
     chr_score player2_score;
-
-    palette *player_palettes[2];
 } arena_local;
 
 // -------- Local callbacks --------
@@ -289,9 +287,6 @@ void arena_free(scene *scene) {
     chr_score_free(&local->player1_score);
     chr_score_free(&local->player2_score);
 
-    free(local->player_palettes[0]);
-    free(local->player_palettes[1]);
-    
     settings_save();
     
     free(local);
@@ -634,11 +629,6 @@ void arena_set_state(scene *scene, int state) {
     local->state = state;
 }
 
-palette* arena_get_player_palette(scene* scene, int player_id) {
-    arena_local *local = scene_get_userdata(scene);
-    return local->player_palettes[player_id];
-}
-
 int arena_create(scene *scene) {
     settings *setting;
     arena_local *local;
@@ -665,12 +655,6 @@ int arena_create(scene *scene) {
 
     // Set correct state
     local->state = ARENA_STATE_STARTING;
-
-    // set up palettes
-    palette *mpal = bk_get_palette(&scene->bk_data, 0);
-
-    local->player_palettes[0] = palette_copy(mpal);
-    local->player_palettes[1] = palette_copy(mpal);
 
     // Initial har data
     vec2i pos[2];

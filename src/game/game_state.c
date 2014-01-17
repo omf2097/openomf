@@ -38,14 +38,20 @@ int game_state_create(game_state *gs, int net_mode) {
     gs->net_mode = net_mode;
     gs->speed = settings_get()->gameplay.speed;
     vector_create(&gs->objects, sizeof(render_obj));
+
+    // Timer 
     gs->tick_timer = malloc(sizeof(ticktimer));
     ticktimer_init(gs->tick_timer);
-    int nscene = (net_mode == NET_MODE_NONE ? SCENE_INTRO : SCENE_MENU);
+    
+    // Set up players
     gs->sc = malloc(sizeof(scene));
     for(int i = 0; i < 2; i++) {
         gs->players[i] = malloc(sizeof(game_player));
         game_player_create(gs->players[i]);
     }
+
+    // Select correct starting scene and load resources
+    int nscene = (net_mode == NET_MODE_NONE ? SCENE_INTRO : SCENE_MENU);
     if(scene_create(gs->sc, gs, nscene)) {
         PERROR("Error while loading scene %d.", nscene);
         goto error_0;
@@ -62,7 +68,11 @@ int game_state_create(game_state *gs, int net_mode) {
             goto error_1;
         }
     }
+    
+    // Initialize scene
     scene_init(gs->sc);
+
+    // All done
     gs->this_id = nscene;
     gs->next_id = nscene;
     return 0;
