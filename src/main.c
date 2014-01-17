@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
     // Get path
     char *path = "";
     char *ip = NULL;
+    unsigned short port = 0;
     int net_mode = NET_MODE_NONE;
 
     path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
@@ -109,10 +110,10 @@ int main(int argc, char *argv[]) {
             return 0;
         } else if(strcmp(argv[1], "-h") == 0) {
             printf("Arguments:\n");
-            printf("-h       Prints this help\n");
-            printf("-w       Writes a config file\n");
-            printf("-c <ip>  Connect to server\n");
-            printf("-l       Start server\n");
+            printf("-h              Prints this help\n");
+            printf("-w              Writes a config file\n");
+            printf("-c [ip] [port]  Connect to server\n");
+            printf("-l [port]       Start server\n");
             return 0;
         } else if(strcmp(argv[1], "-w") == 0) {
             if(settings_write_defaults(config_path)) {
@@ -126,8 +127,14 @@ int main(int argc, char *argv[]) {
             if(argc >= 3) {
                 ip = strcpy(malloc(strlen(argv[2])+1), argv[2]);
             }
+            if(argc >= 4) {
+                port = atoi(argv[3]);
+            }
             net_mode = NET_MODE_CLIENT;
         } else if(strcmp(argv[1], "-l") == 0) {
+            if(argc >= 3) {
+                port = atoi(argv[2]);
+            }
             net_mode = NET_MODE_SERVER;
         }
     }
@@ -167,6 +174,10 @@ int main(int argc, char *argv[]) {
 
     if(ip) {
         settings_get()->net.net_server_ip = ip;
+    }
+
+    if(port > 0) {
+        settings_get()->net.net_server_port = port;
     }
 
     // Init SDL2
