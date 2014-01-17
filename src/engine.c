@@ -17,7 +17,10 @@
 #include "console/console.h"
 
 static int run = 0;
+#ifndef STANDALONE_SERVER
 static int take_screenshot = 0;
+static int enable_screen_updates = 1;
+#endif
 
 void exit_handler(int s) {
     run = 0;
@@ -126,6 +129,22 @@ void engine_run(int net_mode) {
                         take_screenshot = 1;
                     }
                     break;
+                case SDL_WINDOWEVENT:
+                    switch(e.window.event) {
+                        case SDL_WINDOWEVENT_MINIMIZED:
+                        case SDL_WINDOWEVENT_HIDDEN:
+                            enable_screen_updates = 0;
+                            DEBUG("Window hidden/minimized; screen rendering disabled.");
+                            break;
+                        case SDL_WINDOWEVENT_MAXIMIZED:
+                        case SDL_WINDOWEVENT_RESTORED:
+                        case SDL_WINDOWEVENT_EXPOSED:
+                        case SDL_WINDOWEVENT_SHOWN:
+                            enable_screen_updates = 1;
+                            DEBUG("Window shown/exposed/maximized/restored; screen rendering enabled.");
+                            break;
+                    }
+                    break;
             }
         
             // Console events
@@ -167,25 +186,33 @@ void engine_run(int net_mode) {
         frame_start = SDL_GetTicks();
 
 #ifndef STANDALONE_SERVER
-        // Do the actual rendering jobs
-        video_render_prepare();
-        game_state_render(gs);
-        console_render();
-        video_render_finish();
+        // Handle audio
         audio_render();
-        
-        // If screenshot requested, do it here.
-        if(take_screenshot) {
-            image img;
-            video_screenshot(&img);
-            image_write_tga(&img, "screenshot.tga");
-            image_free(&img);
-            take_screenshot = 0;
+
+        // Do the actual video rendering jobs
+        if(enable_screen_updates) {
+
+            video_render_prepare();
+            game_state_render(gs);
+            console_render();
+            video_render_finish();
+            
+            // If screenshot requested, do it here.
+            if(take_screenshot) {
+                image img;
+                video_screenshot(&img);
+                image_write_tga(&img, "screenshot.tga");
+                image_free(&img);
+                take_screenshot = 0;
+            }
+        } else {
+            // If screen updates are disabled, then wait until next global tick
+            SDL_Delay(game_state_ms_per_tick(gs) - omf_wait);
         }
 #else
-        // ignore "unused variable" warning
-        (void)take_screenshot;
-#endif
+        // In standalone, just wait for next global tick.
+        SDL_Delay(game_state_ms_per_tick(gs) - omf_wait);
+#endif // STANDALONE_SERVER
     }
     
     // Free scene object
