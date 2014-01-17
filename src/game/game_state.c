@@ -34,6 +34,7 @@ typedef struct {
 int game_state_create(game_state *gs, int net_mode) {
     gs->run = 1;
     gs->tick = 0;
+    gs->int_tick = 0;
     gs->role = ROLE_CLIENT;
     gs->next_requires_refresh = 0;
     gs->net_mode = net_mode;
