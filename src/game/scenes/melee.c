@@ -617,6 +617,7 @@ int melee_create(scene *scene) {
             object_set_animation(&local->harportraits_player2[i], ani);
             object_select_sprite(&local->harportraits_player2[i], 0);
             object_set_animation_owner(&local->harportraits_player2[i], OWNER_OBJECT);
+            object_set_pal_offset(&local->harportraits_player2[i], 48);
 
             ani = &bk_get_info(&scene->bk_data, 18+i)->ani;
             object_create(&local->har_player2[i], scene->gs, vec2i_create(210,95), vec2f_create(0, 0));
@@ -624,6 +625,7 @@ int melee_create(scene *scene) {
             object_select_sprite(&local->har_player2[i], 0);
             object_set_repeat(&local->har_player2[i], 1);
             object_set_direction(&local->har_player2[i], OBJECT_FACE_LEFT);
+            object_set_pal_offset(&local->har_player2[i], 48);
         }
     }
 
