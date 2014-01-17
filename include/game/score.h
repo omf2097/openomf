@@ -35,10 +35,11 @@ void chr_score_free(chr_score *score);
 void chr_score_tick(chr_score *score);
 void chr_score_render(chr_score *score);
 
-// These are just quick plans, may change.
 void chr_score_hit(chr_score *score, int points);
 void chr_score_victory(chr_score *score, int health);
-void chr_score_end_combo(chr_score *score, vec2i pos);
-void chr_score_interrupt(chr_score *score, vec2i pos);
+int chr_score_end_combo(chr_score *score, vec2i pos);
+int chr_score_interrupt(chr_score *score, vec2i pos);
 
+void chr_score_serialize(chr_score *score, serial *ser);
+void chr_score_unserialize(chr_score *score, serial *ser);
 #endif // _SCORE_H

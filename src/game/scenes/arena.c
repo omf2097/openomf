@@ -183,6 +183,35 @@ void arena_end_cb(void *userdata) {
     game_state_set_next(gs, SCENE_NEWSROOM);
 }
 
+int is_netplay(scene *scene) {
+    if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
+            game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
+        return 1;
+    }
+    return 0;
+}
+
+void arena_maybe_sync(scene *scene, int need_sync) {
+    game_state *gs = scene->gs;
+    game_player *player1 = game_state_get_player(gs, 0);
+    game_player *player2 = game_state_get_player(gs, 1);
+
+    if (need_sync && gs->role == ROLE_SERVER && (player1->ctrl->type == CTRL_TYPE_NETWORK ||  player2->ctrl->type == CTRL_TYPE_NETWORK)) {
+        // some of the moves did something interesting and we should synchronize the peer
+        serial ser;
+        serial_create(&ser);
+        game_state_serialize(scene->gs, &ser);
+        if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
+            controller_update(player1->ctrl, &ser);
+        }
+
+        if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
+            controller_update(player2->ctrl, &ser);
+        }
+        serial_free(&ser);
+    }
+}
+
 void arena_hit_hook(int hittee, int hitter, af_move *move, void *data) {
     scene *scene = data;
     chr_score *score;
@@ -204,6 +233,7 @@ void arena_hit_hook(int hittee, int hitter, af_move *move, void *data) {
     }
     chr_score_hit(score, move->points);
     chr_score_interrupt(otherscore, object_get_pos(hit_har));
+    arena_maybe_sync(scene, 1);
 }
 
 void arena_recover_hook(int player_id, void *data) {
@@ -217,7 +247,9 @@ void arena_recover_hook(int player_id, void *data) {
         score = game_player_get_score(game_state_get_player(scene->gs, 0));
         o_har = game_player_get_har(game_state_get_player(scene->gs, 0));
     }
-    chr_score_end_combo(score, object_get_pos(o_har));
+    if(chr_score_end_combo(score, object_get_pos(o_har))) {
+        arena_maybe_sync(scene, 1);
+    }
 }
 
 void maybe_install_har_hooks(scene *scene) {
@@ -241,6 +273,10 @@ void maybe_install_har_hooks(scene *scene) {
         }
     }
 
+    if (is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
+        // only the server keeps score
+        return;
+    }
     har_install_hit_hook(har1, &arena_hit_hook, scene);
     har_install_hit_hook(har2, &arena_hit_hook, scene);
 
@@ -248,13 +284,6 @@ void maybe_install_har_hooks(scene *scene) {
     har_install_recover_hook(har2, &arena_recover_hook, scene);
 }
 
-int is_netplay(scene *scene) {
-    if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
-            game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
-        return 1;
-    }
-    return 0;
-}
 
 // -------- Scene callbacks --------
 
@@ -324,28 +353,6 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
     }
     return need_sync;
 }
-
-void arena_maybe_sync(scene *scene, int need_sync) {
-    game_state *gs = scene->gs;
-    game_player *player1 = game_state_get_player(gs, 0);
-    game_player *player2 = game_state_get_player(gs, 1);
-
-    if (need_sync && gs->role == ROLE_SERVER && (player1->ctrl->type == CTRL_TYPE_NETWORK ||  player2->ctrl->type == CTRL_TYPE_NETWORK)) {
-        // some of the moves did something interesting and we should synchronize the peer
-        serial ser;
-        serial_create(&ser);
-        game_state_serialize(scene->gs, &ser);
-        if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
-            controller_update(player1->ctrl, &ser);
-        }
-
-        if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
-            controller_update(player2->ctrl, &ser);
-        }
-        serial_free(&ser);
-    }
-}
-
 
 void arena_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);

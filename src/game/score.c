@@ -56,13 +56,6 @@ void chr_score_set_pos(chr_score *score, int x, int y, int direction) {
 }
 
 void chr_score_free(chr_score *score) {
-    // Free textures
-    iterator it;
-    score_text *t;
-    list_iter_begin(&score->texts, &it);
-    while((t = iter_next(&it)) != NULL) {
-        free(&t->text);
-    } 
     list_free(&score->texts);
 }
 
@@ -130,14 +123,14 @@ void chr_score_render(chr_score *score) {
     }
 }
 
-void chr_score_add(chr_score *score, char *text, int points, vec2i pos) {
+void chr_score_add(chr_score *score, char *text, int points, vec2i pos, float position) {
     // Create texture
     // Add texture to list, set position to 1.0f, set points
     score_text s;
     s.text = text;
     s.points = points;
     s.start = pos;
-    s.position = 1.0f;
+    s.position = position;
 
     list_append(&score->texts, &s, sizeof(score_text));
 }
@@ -154,29 +147,77 @@ void chr_score_victory(chr_score *score, int health) {
     // Add texts for scrap bonus, perfect round, whatever
 }
 
-void chr_score_interrupt(chr_score *score, vec2i pos) {
+int chr_score_interrupt(chr_score *score, vec2i pos) {
     // Enemy interrupted somehow, show consecutive hits or whatevera
     char *text = malloc(64);
+    int ret = 0;
     if (score->consecutive_hits > 3) {
+        ret = 1;
         int len = sprintf(text, "%d consecutive hits ", score->consecutive_hits);
         chr_score_format(score->consecutive_hit_score, text+len);
         // XXX hardcode the y coordinate for now
-        chr_score_add(score, text, score->consecutive_hit_score, vec2i_create(pos.x, 130));
+        chr_score_add(score, text, score->consecutive_hit_score, vec2i_create(pos.x, 130), 1.0f);
     }
     score->consecutive_hits = 0;
     score->consecutive_hit_score = 0;
+    return ret;
 }
 
-void chr_score_end_combo(chr_score *score, vec2i pos) {
+int chr_score_end_combo(chr_score *score, vec2i pos) {
     // enemy recovered control, end any combos
     char *text = malloc(64);
+    int ret = 0;
     if (score->combo_hits > 1) {
+        ret = 1;
         int len = sprintf(text, "%d hit combo ", score->combo_hits);
         chr_score_format(score->combo_hit_score*4, text+len);
         // XXX hardcode the y coordinate for now
-        chr_score_add(score, text, score->combo_hit_score*4, vec2i_create(pos.x, 130));
+        chr_score_add(score, text, score->combo_hit_score*4, vec2i_create(pos.x, 130), 1.0f);
     }
     score->combo_hits = 0;
     score->combo_hit_score = 0;
+    return ret;
+}
 
+void chr_score_serialize(chr_score *score, serial *ser) {
+    serial_write_int32(ser, score->score);
+    serial_write_int8(ser, score->texts.size);
+    iterator it;
+    score_text *t;
+
+    list_iter_begin(&score->texts, &it);
+    while((t = iter_next(&it)) != NULL) {
+        serial_write_int8(ser, strlen(t->text)+1);
+        serial_write(ser, t->text, strlen(t->text)+1);
+        serial_write_float(ser, t->position);
+        serial_write_int16(ser, t->start.x);
+        serial_write_int16(ser, t->start.y);
+        serial_write_int32(ser, t->points);
+    }
+}
+
+void chr_score_unserialize(chr_score *score, serial *ser) {
+    score->score = serial_read_int32(ser);
+    uint8_t count = serial_read_int8(ser);
+    uint16_t text_len;
+    char *text;
+    float pos;
+    int x, y;
+    int points;
+
+    // clean it out
+    chr_score_free(score);
+    list_create(&score->texts);
+
+    for (int i = 0; i < count; i++) {
+        text_len = serial_read_int8(ser);
+        text = malloc(text_len);
+        serial_read(ser, text, text_len);
+        pos = serial_read_float(ser);
+        x = serial_read_int16(ser);
+        y = serial_read_int16(ser);
+        points = serial_read_int32(ser);
+
+        chr_score_add(score, text, points, vec2i_create(x, y), pos);
+    }
 }

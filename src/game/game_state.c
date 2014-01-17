@@ -500,9 +500,9 @@ int game_state_serialize(game_state *gs, serial *ser) {
     harser = object_get_last_serialization_point(har[1]);
     serial_write(ser, harser->data, harser->len);
 
+    chr_score_serialize(game_player_get_score(game_state_get_player(gs, 0)), ser);
+    chr_score_serialize(game_player_get_score(game_state_get_player(gs, 1)), ser);
 
-    /*object_serialize(har[0], ser);*/
-    /*object_serialize(har[1], ser);*/
     DEBUG("scene serialized to %d bytes", serial_len(ser));
     return 0;
 }
@@ -540,6 +540,10 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         object_set_palette(obj, bk_get_palette(&gs->sc->bk_data, 0), 0);
 
     }
+
+    chr_score_unserialize(game_player_get_score(game_state_get_player(gs, 0)), ser);
+    chr_score_unserialize(game_player_get_score(game_state_get_player(gs, 1)), ser);
+
     // tick things back to the current time
     DEBUG("replaying %d ticks", endtick - gs->tick);
     DEBUG("adjusting clock from %d to %d (%d)", oldtick, endtick, ceil(rtt / 2.0f));
