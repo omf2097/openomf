@@ -10,7 +10,7 @@ find_package(OpenAL)
 find_package(confuse)
 
 # These flags are used for all builds
-set(CORE_FLAGS "-Wall -Werror")
+set(CORE_FLAGS "-Wall")
 
 # Check available compiler
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -59,7 +59,7 @@ ENDIF(USE_OGGVORBIS)
 
 # Build flags
 set(CMAKE_C_FLAGS "${CORE_FLAGS}")
-set(CMAKE_C_FLAGS_DEBUG "${CORE_FLAGS} -ggdb -DDEBUGMODE")
+set(CMAKE_C_FLAGS_DEBUG "${CORE_FLAGS} -ggdb -DDEBUGMODE -Werror")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CORE_FLAGS} -g -O2")
 set(CMAKE_C_FLAGS_RELEASE "${CORE_FLAGS} -O2")
 set(CMAKE_C_FLAGS_MINSIZEREL "${CORE_FLAGS} -Os")
