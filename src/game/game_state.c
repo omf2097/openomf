@@ -68,7 +68,7 @@ int game_state_create(game_state *gs, int net_mode) {
             goto error_1;
         }
     }
-    
+
     // Initialize scene
     scene_init(gs->sc);
 
@@ -497,16 +497,16 @@ void game_state_free(game_state *gs) {
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
-    
+
+    // Free scene
+    scene_free(gs->sc);
+    free(gs->sc);
+
     // Free players
     for(int i = 0; i < 2; i++) {
         game_player_free(gs->players[i]);
         free(gs->players[i]);
     }
-
-    // Free scene
-    scene_free(gs->sc);
-    free(gs->sc);
 
     // Free ticktimer
     ticktimer_close(gs->tick_timer);
