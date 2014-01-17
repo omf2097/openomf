@@ -61,9 +61,6 @@ typedef struct arena_local_t {
     progress_bar player2_health_bar;
     progress_bar player1_endurance_bar;
     progress_bar player2_endurance_bar;
-    chr_score player1_score;
-    chr_score player2_score;
-
     palette *player_palettes[2];
 } arena_local;
 
@@ -188,18 +185,17 @@ void arena_end_cb(void *userdata) {
 
 void arena_hit_hook(int hittee, int hitter, af_move *move, void *data) {
     scene *scene = data;
-    arena_local *local = scene_get_userdata(scene);
     chr_score *score;
     chr_score *otherscore;
     object *hit_har;
     har *h;
     if (hitter == 0) {
-        score = &local->player1_score;
-        otherscore = &local->player2_score;
+        score = game_player_get_score(game_state_get_player(scene->gs, 0));
+        otherscore = game_player_get_score(game_state_get_player(scene->gs, 1));
         hit_har = game_player_get_har(game_state_get_player(scene->gs, 1));
     } else {
-        score = &local->player2_score;
-        otherscore = &local->player1_score;
+        score = game_player_get_score(game_state_get_player(scene->gs, 1));
+        otherscore = game_player_get_score(game_state_get_player(scene->gs, 0));
         hit_har = game_player_get_har(game_state_get_player(scene->gs, 0));
     }
     h = hit_har->userdata;
@@ -212,14 +208,13 @@ void arena_hit_hook(int hittee, int hitter, af_move *move, void *data) {
 
 void arena_recover_hook(int player_id, void *data) {
     scene *scene = data;
-    arena_local *local = scene_get_userdata(scene);
     chr_score *score;
     object *o_har;
     if (player_id == 0) {
-        score = &local->player2_score;
+        score = game_player_get_score(game_state_get_player(scene->gs, 1));
         o_har = game_player_get_har(game_state_get_player(scene->gs, 1));
     } else {
-        score = &local->player1_score;
+        score = game_player_get_score(game_state_get_player(scene->gs, 0));
         o_har = game_player_get_har(game_state_get_player(scene->gs, 0));
     }
     chr_score_end_combo(score, object_get_pos(o_har));
@@ -290,8 +285,6 @@ void arena_free(scene *scene) {
     progressbar_free(&local->player2_health_bar);
     progressbar_free(&local->player1_endurance_bar);
     progressbar_free(&local->player2_endurance_bar);
-    chr_score_free(&local->player1_score);
-    chr_score_free(&local->player2_score);
 
     free(local->player_palettes[0]);
     free(local->player_palettes[1]);
@@ -362,8 +355,8 @@ void arena_tick(scene *scene) {
     ticktimer *tt = &scene->tick_timer;
 
     // Handle scrolling score texts
-    chr_score_tick(&local->player1_score);
-    chr_score_tick(&local->player2_score);
+    chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 0)));
+    chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 1)));
 
     // Handle menu, if visible
     if(!local->menu_visible) {
@@ -474,7 +467,7 @@ void arena_tick(scene *scene) {
                 har2->state = STATE_DEFEAT;
                 object_set_vel(obj_har2, vec2f_create(0, 0));
                 object_set_gravity(obj_har2, 0);
-                chr_score *score = &local->player1_score;
+                chr_score *score = game_player_get_score(game_state_get_player(gs, 0));
                 chr_score_interrupt(score, object_get_pos(obj_har1));
                 // switch to the newsroom after some delay
                 ticktimer_add(tt, 300, arena_end_cb, scene);
@@ -500,7 +493,7 @@ void arena_tick(scene *scene) {
                 har1->state = STATE_DEFEAT;
                 object_set_vel(obj_har1, vec2f_create(0, 0));
                 object_set_gravity(obj_har1, 0);
-                chr_score *score = &local->player2_score;
+                chr_score *score = game_player_get_score(game_state_get_player(gs, 1));
                 chr_score_interrupt(score, object_get_pos(obj_har2));
                 // switch to the newsroom after some delay
                 ticktimer_add(tt, 300, arena_end_cb, scene);
@@ -611,8 +604,8 @@ void arena_render_overlay(scene *scene) {
         font_render(&font_small, lang_get((player[1]->har_id - HAR_JAGUAR)+31), 315-h2len, 26, TEXT_COLOR);
 
         // Render score stuff
-        chr_score_render(&local->player1_score);
-        chr_score_render(&local->player2_score);
+        chr_score_render(game_player_get_score(player[0]));
+        chr_score_render(game_player_get_score(player[1]));
 
         // render ping, if player is networked
         if (player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
@@ -822,8 +815,8 @@ int arena_create(scene *scene) {
                        ENDURANCEBAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_BG,
                        PROGRESSBAR_LEFT);
-    chr_score_create(&local->player1_score, 5, 33, OBJECT_FACE_RIGHT, 1.0f);
-    chr_score_create(&local->player2_score, 315, 33, OBJECT_FACE_LEFT, 1.0f); // TODO: Set better coordinates for this
+    chr_score_set_pos(game_player_get_score(_player[0]), 5, 33, OBJECT_FACE_RIGHT);
+    chr_score_set_pos(game_player_get_score(_player[1]), 315, 33, OBJECT_FACE_LEFT); // TODO: Set better coordinates for this
 
     // TODO: Do something about this hack!
     scene->bk_data.sound_translation_table[14] = 10; // READY

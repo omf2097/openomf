@@ -6,6 +6,7 @@
 #include "controller/keyboard.h"
 #include "controller/net_controller.h"
 #include "video/texture.h"
+#include "game/score.h"
 
 typedef struct game_player_t {
     int har_id; // HAR_JAGUAR to HAR_NOVA
@@ -15,6 +16,7 @@ typedef struct game_player_t {
     texture *portrait;
     int selectable;
     char colors[3];
+    chr_score score;
 } game_player;
 
 void game_player_create(game_player *gp);
@@ -28,5 +30,6 @@ void game_player_set_portrait(game_player *gp, texture *portrait);
 texture* game_player_get_portrait(game_player *gp);
 void game_player_set_selectable(game_player *gp, int selectable);
 int game_player_get_selectable(game_player *gp);
+chr_score* game_player_get_score(game_player *gp);
 
 #endif // _GAME_PLAYER_H

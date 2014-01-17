@@ -36,17 +36,23 @@ vec2i interpolate(vec2i start, vec2i end, float fraction) {
     return vec2i_create(nx, ny);
 }
 
-void chr_score_create(chr_score *score, int x, int y,  int direction, float multiplier) {
+void chr_score_create(chr_score *score, float multiplier) {
     score->score = 0;
-    score->x = x;
-    score->y = y;
-    score->direction = direction;
+    score->x = 0;
+    score->y = 0;
+    score->direction = OBJECT_FACE_RIGHT;
     score->consecutive_hits = 0;
     score->consecutive_hit_score = 0;
     score->combo_hits = 0;
     score->combo_hit_score = 0;
     score->multiplier = multiplier;
     list_create(&score->texts);
+}
+
+void chr_score_set_pos(chr_score *score, int x, int y, int direction) {
+    score->x = x;
+    score->y = y;
+    score->direction = direction;
 }
 
 void chr_score_free(chr_score *score) {

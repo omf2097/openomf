@@ -12,10 +12,11 @@ void game_player_create(game_player *gp) {
     gp->colors[0] = 8;
     gp->colors[1] = 8;
     gp->colors[2] = 8;
+    chr_score_create(&gp->score, 1.0f);
 }
 
 void game_player_free(game_player *gp) {
-
+    chr_score_free(&gp->score);
 }
 
 void game_player_set_har(game_player *gp, object *har) {
@@ -56,4 +57,8 @@ void game_player_set_selectable(game_player *gp, int selectable) {
 
 int game_player_get_selectable(game_player *gp) {
     return gp->selectable;
+}
+
+chr_score* game_player_get_score(game_player *gp) {
+    return &gp->score;
 }

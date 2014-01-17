@@ -29,7 +29,8 @@ typedef struct chr_score_t {
     int combo_hit_score;
 } chr_score;
 
-void chr_score_create(chr_score *score, int x, int y, int direction, float multiplier);
+void chr_score_create(chr_score *score, float multiplier);
+void chr_score_set_pos(chr_score *score, int x, int y, int direction);
 void chr_score_free(chr_score *score);
 void chr_score_tick(chr_score *score);
 void chr_score_render(chr_score *score);
