@@ -554,12 +554,13 @@ void arena_render_overlay(scene *scene) {
     game_player *player[2];
     object *obj[2];
 
-
     char buf[40];
+#ifdef DEBUGMODE
     sprintf(buf, "%u", game_state_get_tick(scene->gs));
     font_render(&font_small, buf, 160, 0, TEXT_COLOR);
     sprintf(buf, "%u", rand_get_seed());
     font_render(&font_small, buf, 120, 8, TEXT_COLOR);
+#endif
     har *har[2];
     for(int i = 0; i < 2; i++) {
         player[i] = game_state_get_player(scene->gs, i);
