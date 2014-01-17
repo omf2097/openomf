@@ -73,7 +73,7 @@ unsigned int hashmap_reserved(hashmap *hm) {
     return hm->reserved;
 }
 
-void hashmap_put(hashmap *hm, const void *key, unsigned int keylen, void *val, unsigned int vallen) {
+void* hashmap_put(hashmap *hm, const void *key, unsigned int keylen, void *val, unsigned int vallen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
 
     // Create new node, copy data
@@ -89,6 +89,10 @@ void hashmap_put(hashmap *hm, const void *key, unsigned int keylen, void *val, u
     node->next = hm->buckets[index].first;
     hm->buckets[index].first = node;
     hm->reserved++;
+
+    // Return a pointer to the newly allocated value
+    // for convenience
+    return node->pair.val;
 }
 
 void hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {

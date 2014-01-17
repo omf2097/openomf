@@ -27,10 +27,10 @@ typedef struct tcache_t {
 static tcache *cache = NULL;
 
 // Helper method for getting cache entry
-void tcache_add_entry(tcache_entry_key *key, tcache_entry_value *val) {
-    hashmap_put(&cache->entries, 
-                (void*)key, sizeof(tcache_entry_key),
-                (void*)val, sizeof(tcache_entry_value));
+tcache_entry_value* tcache_add_entry(tcache_entry_key *key, tcache_entry_value *val) {
+    return hashmap_put(&cache->entries, 
+                      (void*)key, sizeof(tcache_entry_key),
+                      (void*)val, sizeof(tcache_entry_value));
 }
 
 // Helper method for setting cache entry
@@ -90,7 +90,6 @@ SDL_Texture* tcache_get(surface *sur,
                         screen_palette *pal, 
                         char *remap_table,
                         uint8_t pal_offset) {
-    SDL_Texture *ret = NULL;
 
     // Form a key
     tcache_entry_key key;
@@ -102,8 +101,14 @@ SDL_Texture* tcache_get(surface *sur,
 
     // Attempt to find appropriate surface
     tcache_entry_value *val = tcache_get_entry(&key);
+    if(val != NULL && val->pal_version == pal->version) {
+        cache->hits++;
+        return val->tex;
+    }
+
+    // If there was no fitting surface tex in the cache at all,
+    // then we need to create one
     if(val == NULL) {
-        // Create a new entry
         tcache_entry_value new_entry;
         new_entry.age = 0;
         new_entry.pal_version = pal->version;
@@ -112,52 +117,21 @@ SDL_Texture* tcache_get(surface *sur,
                                           SDL_TEXTUREACCESS_STREAMING,
                                           sur->w,
                                           sur->h);
-
-        // Render surface to texture
-        void *pixels;
-        int pitch;
-        int s = SDL_LockTexture(new_entry.tex, NULL, &pixels, &pitch);
-        if(s == 0) {
-            surface_to_rgba(sur, pixels, pal, remap_table, pal_offset);
-            SDL_UnlockTexture(new_entry.tex);
-        } else {
-            PERROR("Unable to lock texture for writing!");
-        }
-        
-        // Return value
-        ret = new_entry.tex;
-
-        // Add new entry to cache
-        tcache_add_entry(&key, &new_entry);
-
-        cache->misses++;
-    } else {
-        // Palette used is old, we need to update the texture
-        if(val->pal_version != pal->version) {
-            // Update texture contents with updated surface
-            void *pixels;
-            int pitch;
-            int s = SDL_LockTexture(val->tex, NULL, &pixels, &pitch);
-            if(s == 0) {
-                surface_to_rgba(sur, pixels, pal, remap_table, pal_offset);
-                SDL_UnlockTexture(val->tex);
-            } else {
-                PERROR("Unable to lock texture for writing!");
-            }
-
-            //  Set correct age and latest palette version
-            val->age = 0;
-            val->pal_version = pal->version;
-
-            // Keep statistics up-to-date :)
-            cache->misses++;
-        } else {
-            cache->hits++;
-        }
-
-        // Return cached texture
-        ret = val->tex;
+        val = tcache_add_entry(&key, &new_entry);
     }
 
-    return ret;
+    // We have a texture either from the cache, or we just created one.
+    // Either one, it needs to be updated. Let's do it now.
+    void *pixels;
+    int pitch;
+    int s = SDL_LockTexture(val->tex, NULL, &pixels, &pitch);
+    if(s == 0) {
+        surface_to_rgba(sur, pixels, pal, remap_table, pal_offset);
+        SDL_UnlockTexture(val->tex);
+    } else {
+        PERROR("Unable to lock texture for writing!");
+    }
+
+    cache->misses++;
+    return val->tex;
 }
