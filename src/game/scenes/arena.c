@@ -806,6 +806,10 @@ int arena_create(scene *scene) {
     chr_score_set_pos(game_player_get_score(_player[0]), 5, 33, OBJECT_FACE_RIGHT);
     chr_score_set_pos(game_player_get_score(_player[1]), 315, 33, OBJECT_FACE_LEFT); // TODO: Set better coordinates for this
 
+    // Reset the score
+    chr_score_reset(game_player_get_score(_player[0]));
+    chr_score_reset(game_player_get_score(_player[1]));
+
     // TODO: Do something about this hack!
     scene->bk_data.sound_translation_table[14] = 10; // READY
 
