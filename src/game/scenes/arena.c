@@ -466,7 +466,8 @@ void arena_tick(scene *scene) {
                 object_set_vel(obj_har2, vec2f_create(0, 0));
                 object_set_gravity(obj_har2, 0);
                 chr_score *score = game_player_get_score(game_state_get_player(gs, 0));
-                chr_score_interrupt(score, object_get_pos(obj_har1));
+                arena_maybe_sync(scene,
+                        chr_score_interrupt(score, object_get_pos(obj_har1)));
                 // switch to the newsroom after some delay
                 ticktimer_add(tt, 300, arena_end_cb, scene);
             } else if(har1->health <= 0 && har1->endurance <= 0 && har1->state == STATE_DEFEAT) {
@@ -492,7 +493,8 @@ void arena_tick(scene *scene) {
                 object_set_vel(obj_har1, vec2f_create(0, 0));
                 object_set_gravity(obj_har1, 0);
                 chr_score *score = game_player_get_score(game_state_get_player(gs, 1));
-                chr_score_interrupt(score, object_get_pos(obj_har2));
+                arena_maybe_sync(scene,
+                        chr_score_interrupt(score, object_get_pos(obj_har2)));
                 // switch to the newsroom after some delay
                 ticktimer_add(tt, 300, arena_end_cb, scene);
             }
