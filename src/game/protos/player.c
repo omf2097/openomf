@@ -402,8 +402,14 @@ void player_run(object *obj) {
             if(isset(f, "bpn")) { rstate->pal_entry_count = get(f, "bpn"); }
             if(isset(f, "bps")) { rstate->pal_start_index = get(f, "bps"); }
             if(isset(f, "bpf")) {
-                rstate->pal_start_index = (game_state_get_player(obj->gs, 0)->har == obj) ? 0 : 48; 
-                rstate->pal_entry_count = 48;
+                // Exact values come from master.dat
+                if(game_state_get_player(obj->gs, 0)->har == obj) {
+                    rstate->pal_start_index =  1;
+                    rstate->pal_entry_count = 47;
+                } else {
+                    rstate->pal_start_index =  48;
+                    rstate->pal_entry_count = 48;
+                }
             }
             if(isset(f, "bpp")) { 
                 rstate->pal_end = get(f, "bpp") * 4;
