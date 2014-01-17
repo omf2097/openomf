@@ -282,7 +282,7 @@ void object_render(object *obj) {
 
     // Blend start / blend finish
     uint8_t opacity = rstate->blend_finish;
-    if(rstate->duration > 0 && rstate->blend_start != 0) {
+    if(rstate->duration > 0) {
         float moment = (float)rstate->timer / (float)rstate->duration;
         float d = ((float)rstate->blend_finish - (float)rstate->blend_start) * moment;
         opacity = rstate->blend_start + d;

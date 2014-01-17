@@ -86,7 +86,7 @@ void player_clear_frame(object *obj) {
     s->blendmode = BLEND_ALPHA;
     s->flipmode = FLIP_NONE;
     s->method_flags = 0;
-    s->blend_start = 0;
+    s->blend_start = 0xFF;
     s->blend_finish = 0xFF;
     s->timer = 0;
     s->duration = 0;
@@ -417,6 +417,18 @@ void player_run(object *obj) {
             }
             if(isset(f, "bpb")) { rstate->pal_begin = get(f, "bpb") * 4; }
             if(isset(f, "bz"))  { rstate->pal_tint = 1; }
+
+            // The following is a hack. We don't REALLY know what these tags do.
+            // However, they are only used in CREDITS.BK, so we can just interpret
+            // then as we see fit, as long as stuff works.
+            if(isset(f, "bd") && f->duration >= 50) {
+                rstate->blend_start = 0xFF;
+                rstate->blend_finish = 0;
+                if(isset(f, "bc")) {
+                    rstate->blend_start = 0;
+                    rstate->blend_finish = 0xFF;
+                }
+            }
 
             // Handle movement
             if (isset(f, "v")) {
