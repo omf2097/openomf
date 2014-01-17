@@ -93,15 +93,15 @@ SDL_Texture* tcache_get(surface *sur,
 
     // Form a key
     tcache_entry_key key;
-    key.c_pal_offset = pal_offset;
-    key.c_remap_table = remap_table;
+    key.c_pal_offset = (sur->type == SURFACE_TYPE_RGBA) ? 0 : pal_offset;
+    key.c_remap_table = (sur->type == SURFACE_TYPE_RGBA) ? 0 : remap_table;
     key.c_surface = sur;
     key.w = sur->w;
     key.h = sur->h;
 
     // Attempt to find appropriate surface
     tcache_entry_value *val = tcache_get_entry(&key);
-    if(val != NULL && val->pal_version == pal->version) {
+    if(val != NULL && (val->pal_version == pal->version || sur->type == SURFACE_TYPE_RGBA)) {
         cache->hits++;
         return val->tex;
     }
@@ -110,8 +110,6 @@ SDL_Texture* tcache_get(surface *sur,
     // then we need to create one
     if(val == NULL) {
         tcache_entry_value new_entry;
-        new_entry.age = 0;
-        new_entry.pal_version = pal->version;
         new_entry.tex = SDL_CreateTexture(renderer, 
                                           SDL_PIXELFORMAT_ABGR8888,
                                           SDL_TEXTUREACCESS_STREAMING,
@@ -132,6 +130,11 @@ SDL_Texture* tcache_get(surface *sur,
         PERROR("Unable to lock texture for writing!");
     }
 
+    // Set correct age and palette version
+    val->age = 0;
+    val->pal_version = pal->version;
+
+    // Do some statistics stuff
     cache->misses++;
     return val->tex;
 }
