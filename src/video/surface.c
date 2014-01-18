@@ -40,6 +40,8 @@ int surface_get_type(surface *sur) {
     return sur->type;
 }
 
+// Copies a surface to a new surface
+// Note! New surface will be created here; there is no need to pre-create it
 void surface_copy(surface *dst, surface *src) {
     surface_create(dst, src->type, src->w, src->h);
 
@@ -53,6 +55,8 @@ void surface_copy(surface *dst, surface *src) {
     }
 }
 
+// Copies a an area of old surface to a new surface
+// Note! New surface will be created here; there is no need to pre-create it
 void surface_sub(surface *dst, surface *src, int x, int y, int w, int h) {
     surface_create(dst, src->type, w, h);
     int bytes = (src->type == SURFACE_TYPE_RGBA) ? 4 : 1;
@@ -71,6 +75,7 @@ void surface_sub(surface *dst, surface *src, int x, int y, int w, int h) {
     }
 }
 
+// Converts an existing surface to RGBA
 void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset) {
     // If the surface already is RGBA, then just skip
     if(sur->type == SURFACE_TYPE_RGBA) {
@@ -88,6 +93,7 @@ void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset) 
     sur->type = SURFACE_TYPE_RGBA;
 }
 
+// Creates a new RGBA surface
 void surface_to_rgba(surface *sur,
                      char *dst,
                      screen_palette *pal, 
