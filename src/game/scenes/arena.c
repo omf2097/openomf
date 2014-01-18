@@ -56,6 +56,7 @@ typedef struct arena_local_t {
     surface sur;
     int menu_visible;
     unsigned int state;
+    int ending_ticks;
     
     progress_bar player1_health_bar;
     progress_bar player2_health_bar;
@@ -171,10 +172,9 @@ void scene_youlose_anim_start(void *userdata) {
     arena->state = ARENA_STATE_ENDING;
 }
 
-void arena_end_cb(void *userdata) {
+void arena_end(scene *sc) {
     // after the match ends, switch the newsroom
     DEBUG("switching to newsroom");
-    scene *sc = userdata;
     //arena_local *local = scene_get_userdata(sc);
     game_state *gs = sc->gs;
 
@@ -351,7 +351,6 @@ void arena_tick(scene *scene) {
     game_state *gs = scene->gs;
     game_player *player1 = game_state_get_player(gs, 0);
     game_player *player2 = game_state_get_player(gs, 1);
-    ticktimer *tt = &scene->tick_timer;
 
     // Handle scrolling score texts
     chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 0)));
@@ -445,7 +444,6 @@ void arena_tick(scene *scene) {
 
         // Display you win/lose animation
         if(local->state != ARENA_STATE_ENDING) {
-
             // Har victory animation
             if(har2->health <= 0 && har2->endurance <= 0 && har2->state == STATE_DEFEAT) {
                 // XXX need a smarter way to detect if a player is networked or local
@@ -468,8 +466,7 @@ void arena_tick(scene *scene) {
                 chr_score *score = game_player_get_score(game_state_get_player(gs, 0));
                 arena_maybe_sync(scene,
                         chr_score_interrupt(score, object_get_pos(obj_har1)));
-                // switch to the newsroom after some delay
-                ticktimer_add(tt, 300, arena_end_cb, scene);
+                local->ending_ticks = 0;
             } else if(har1->health <= 0 && har1->endurance <= 0 && har1->state == STATE_DEFEAT) {
                 if(game_state_get_player(gs, 0)->ctrl->type != CTRL_TYPE_NETWORK &&
                    game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
@@ -495,8 +492,22 @@ void arena_tick(scene *scene) {
                 chr_score *score = game_player_get_score(game_state_get_player(gs, 1));
                 arena_maybe_sync(scene,
                         chr_score_interrupt(score, object_get_pos(obj_har2)));
-                // switch to the newsroom after some delay
-                ticktimer_add(tt, 300, arena_end_cb, scene);
+                local->ending_ticks = 0;
+            }
+        } else if(local->state == ARENA_STATE_ENDING) {
+            // increment tick if the HAR isn't doing scrap/destruction and if the score isn't scrolling
+            if(har1->state == STATE_SCRAP || har1->state == STATE_DESTRUCTION ||
+               har2->state == STATE_SCRAP || har2->state == STATE_DESTRUCTION) {
+                // spare some ticks to show the victory pose after doing a scrap/desstruction
+                local->ending_ticks = 80;
+
+            } else if(chr_score_get_num_texts(game_player_get_score(game_state_get_player(gs, 0))) == 0 &&
+                      chr_score_get_num_texts(game_player_get_score(game_state_get_player(gs, 1))) == 0) {
+                // only tick if the score isn't scrolling
+                local->ending_ticks++;
+            }
+            if(local->ending_ticks == 150) {
+                arena_end(scene);
             }
         }
     }
@@ -662,6 +673,7 @@ int arena_create(scene *scene) {
 
     // Set correct state
     local->state = ARENA_STATE_STARTING;
+    local->ending_ticks = 0;
 
     // Initial har data
     vec2i pos[2];

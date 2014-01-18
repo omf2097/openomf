@@ -67,6 +67,10 @@ void chr_score_set_pos(chr_score *score, int x, int y, int direction) {
     score->direction = direction;
 }
 
+unsigned int chr_score_get_num_texts(chr_score *score) {
+    return list_size(&score->texts);
+}
+
 void chr_score_free(chr_score *score) {
     list_free(&score->texts);
 }
