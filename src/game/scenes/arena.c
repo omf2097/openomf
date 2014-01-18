@@ -535,7 +535,7 @@ void arena_tick(scene *scene) {
                     int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
                     object_create(scrap, gs, pos, vec2f_create(velx, vely));
                     object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
-                    object_set_gravity(scrap, 0.2f);
+                    object_set_gravity(scrap, 0.4f);
                     object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
                     object_set_layers(scrap, LAYER_SCRAP);
                     object_tick(scrap);
