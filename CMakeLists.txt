@@ -150,6 +150,7 @@ set(OPENOMF_SRC
     src/controller/joystick.c
     src/controller/net_controller.c
     src/console/console.c
+    src/console/console_cmd.c
     src/main.c
     src/engine.c
 )
