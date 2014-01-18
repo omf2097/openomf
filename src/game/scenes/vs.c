@@ -17,7 +17,6 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata
 void cb_vs_destroy_object(object *parent, int id, void *userdata);
 
 typedef struct vs_local_t {
-    surface player2_background;
     object player1_portrait;
     object player2_portrait;
     object player1_har;
@@ -51,7 +50,6 @@ void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    surface_free(&local->player2_background);
     surface_free(&local->arena_select_bg);
     object_free(&local->player1_portrait);
     object_free(&local->player2_portrait);
@@ -136,9 +134,6 @@ int vs_event(scene *scene, SDL_Event *event) {
 void vs_render(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
 
-    // render the right side of the background
-    video_render_sprite_flip_scale(&local->player2_background, 160, 0, BLEND_ALPHA, 0, FLIP_HORIZONTAL, 1.0);
-
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
@@ -215,7 +210,12 @@ int vs_create(scene *scene) {
     object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
 
     // clone the left side of the background image
-    surface_sub(&local->player2_background, &scene->bk_data.background, 0, 0, 160, 200);
+    surface_sub(&scene->bk_data.background, // DST Surface
+                &scene->bk_data.background, // SRC Surface
+                160, 0, // DST
+                0, 0, // SRC
+                160, 200, // Size
+                SUB_METHOD_MIRROR); // Flip the right side horizontally
 
     if (player2->selectable) {
         // player1 gets to choose, start at arena

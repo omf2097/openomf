@@ -55,21 +55,38 @@ void surface_copy(surface *dst, surface *src) {
     }
 }
 
-// Copies a an area of old surface to a new surface
-// Note! New surface will be created here; there is no need to pre-create it
-void surface_sub(surface *dst, surface *src, int x, int y, int w, int h) {
-    surface_create(dst, src->type, w, h);
-    int bytes = (src->type == SURFACE_TYPE_RGBA) ? 4 : 1;
+// Copies a an area of old surface to an entirely new surface
+void surface_sub(surface *dst, 
+                 surface *src, 
+                 int dst_x, int dst_y,
+                 int src_x, int src_y, 
+                 int w, int h,
+                 int method) {
 
-    for(int i = y; i < y + h; i++) {
-        for(int j = x; j < x + w; j++) {
-            int offset = (i * src->w * bytes) + (j * bytes);
-            int local_offset = ((i - y) * w * bytes) + ((j - x) * bytes);
+    // Make sure the source and destination are of the same type.
+    if(dst->type != src->type) {
+        return;
+    }
+
+    // Copy!
+    int bytes = (src->type == SURFACE_TYPE_RGBA) ? 4 : 1;
+    int src_offset,dst_offset;
+    for(int y = 0; y < h; y++) {
+        for(int x = 0; x < w; x++) {
+            src_offset = (src_x + x + (src_y + y) * src->w) * bytes;
+            switch(method) {
+                case SUB_METHOD_MIRROR:
+                    dst_offset = (w - (dst_x + x) + (dst_y + y) * dst->w) * bytes;
+                    break;
+                default:
+                    dst_offset = (dst_x + x + (dst_y + y) * dst->w) * bytes;
+                    break;
+            }
             for(int m = 0; m < bytes; m++) {
-                dst->data[local_offset+m] = src->data[offset+m];
+                dst->data[dst_offset + m] = src->data[src_offset + m];
             }
             if(bytes == 1) {
-                dst->stencil[local_offset] = src->stencil[offset];
+                dst->stencil[dst_offset] = src->stencil[src_offset];
             }
         }
     }
