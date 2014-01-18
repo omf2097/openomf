@@ -173,10 +173,12 @@ int main(int argc, char *argv[]) {
     }
 
     if(ip) {
+        DEBUG("IP overridden to %s", ip);
         settings_get()->net.net_server_ip = ip;
     }
 
-    if(port > 0) {
+    if(port > 0 && port < 0xFFFF) {
+        DEBUG("Port overridden to %u", port&0xFFFF);
         settings_get()->net.net_server_port = port;
     }
 
