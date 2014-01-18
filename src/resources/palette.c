@@ -27,9 +27,13 @@ void altpals_close() {
     }
 }
 
-void palette_set_player_color(palette *palette, int player, int sourcecolor, int destcolor) {
-    DEBUG("Copying 16 bytes into palette at %d", destcolor*16+player*48);
-    memcpy(palette->data+destcolor*16+player*48, altpals->palettes[0].data+(sourcecolor*16), 16*3);
+void palette_set_player_color(palette *palette, int player, int srccolor, int dstcolor) {
+    int dst = dstcolor * 16 + player * 48;
+    int src = srccolor * 16;
+    char iz[3];
+    memcpy(iz, palette->data, 3);
+    memcpy(palette->data + dst, altpals->palettes[0].data + src, 16 * 3);
+    memcpy(palette->data, iz, 3);
 }
 
 palette* palette_copy(palette *src) {
