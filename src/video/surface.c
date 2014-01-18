@@ -76,7 +76,7 @@ void surface_sub(surface *dst,
             src_offset = (src_x + x + (src_y + y) * src->w) * bytes;
             switch(method) {
                 case SUB_METHOD_MIRROR:
-                    dst_offset = (w - (dst_x + x) + (dst_y + y) * dst->w) * bytes;
+                    dst_offset = (dst_x + (w - x - 1) + (dst_y + y) * dst->w) * bytes;
                     break;
                 default:
                     dst_offset = (dst_x + x + (dst_y + y) * dst->w) * bytes;
