@@ -23,6 +23,8 @@ void surface_create_from_data(surface *sur, int type, int w, int h, const char *
 void surface_copy(surface *dst, surface *src);
 void surface_free(surface *sur);
 void surface_sub(surface *dst, surface *src, int x, int y, int w, int h);
+void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset);
+int surface_get_type(surface *sur);
 void surface_to_rgba(surface *sur,
                      char *dst,
                      screen_palette *pal, 

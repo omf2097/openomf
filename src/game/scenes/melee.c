@@ -650,10 +650,13 @@ int melee_create(scene *scene) {
         object_select_sprite(&local->player2_placeholder, 1);
     }
 
-    ani = &bk_get_info(&scene->bk_data, 1)->ani;
+    spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0));
+    surface_convert_to_rgba(spr->data, video_get_pal_ref(), 0);
+    ani = create_animation_from_single(spr, spr->pos);
     object_create(&local->unselected_har_portraits, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(&local->unselected_har_portraits, ani);
     object_select_sprite(&local->unselected_har_portraits, 0);
+    object_set_animation_owner(&local->unselected_har_portraits, OWNER_OBJECT);
 
     const color bar_color = color_create(0, 190, 0, 255);
     const color bar_bg_color = color_create(80, 220, 80, 0);

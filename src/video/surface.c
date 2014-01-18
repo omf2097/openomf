@@ -36,6 +36,10 @@ void surface_free(surface *sur) {
     sur->data = NULL;
 }
 
+int surface_get_type(surface *sur) {
+    return sur->type;
+}
+
 void surface_copy(surface *dst, surface *src) {
     surface_create(dst, src->type, src->w, src->h);
 
@@ -65,6 +69,23 @@ void surface_sub(surface *dst, surface *src, int x, int y, int w, int h) {
             }
         }
     }
+}
+
+void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset) {
+    // If the surface already is RGBA, then just skip
+    if(sur->type == SURFACE_TYPE_RGBA) {
+        return;
+    }
+
+    char *pixels = malloc(sur->w * sur->h * 4);
+    surface_to_rgba(sur, pixels, pal, NULL, pal_offset);
+
+    // Free old ddata
+    free(sur->data);
+    free(sur->stencil);
+    sur->data = pixels;
+    sur->stencil = NULL;
+    sur->type = SURFACE_TYPE_RGBA;
 }
 
 void surface_to_rgba(surface *sur,
