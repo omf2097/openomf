@@ -124,7 +124,7 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
 
 void video_screenshot(image *img) {
     image_create(img, state.w, state.h);
-    int ret = SDL_RenderReadPixels(state.renderer, NULL, SDL_PIXELFORMAT_RGBA8888, img->data, img->w * 4);
+    int ret = SDL_RenderReadPixels(state.renderer, NULL, SDL_PIXELFORMAT_ABGR8888, img->data, img->w * 4);
     if(ret != 0) {
         PERROR("Unable to read pixels from rendertarget: %s", SDL_GetError());
     }

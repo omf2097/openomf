@@ -117,12 +117,20 @@ void image_write_tga(image *img, const char *filename) {
     header.origin_y = 0;
     header.width = img->w;
     header.height = img->h;
-    header.depth = 32;
+    header.depth = 24;
     header.descriptor = 0;
     fwrite(&header, sizeof(tga_header), 1, fp);
     
     // Write data
-    fwrite(img->data, img->w * img->h * 4, 1, fp);
+    char *d = 0;
+    for(int y = img->h-1; y >= 0; y--) {
+        for(int x = 0; x < img->w; x++) {
+            d = img->data + (y * img->w + x) * 4;
+            fwrite(d+2, 1, 1, fp);
+            fwrite(d+1, 1, 1, fp);
+            fwrite(d+0, 1, 1, fp);
+        }
+    }
     
     // Free file
     fclose(fp);
