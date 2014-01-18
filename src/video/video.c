@@ -14,8 +14,11 @@ typedef struct {
     int h;
     int fs;
     int vsync;
+
+    // Palettes
     palette *base_palette;
     screen_palette *cur_palette;
+    SDL_Texture *target;
 } video_state;
 
 static video_state state;
@@ -25,6 +28,8 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     state.h = window_h;
     state.fs = fullscreen;
     state.vsync = vsync;
+
+    // Clear palettes
     state.cur_palette = malloc(sizeof(screen_palette));
     state.base_palette = malloc(sizeof(palette));
     state.cur_palette->version = 1;
@@ -73,6 +78,13 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
             DEBUG("Fullscreen enabled!");
         }
     }
+
+    // Set up surfaces etc.
+    state.target = SDL_CreateTexture(
+        state.renderer,
+        SDL_PIXELFORMAT_ABGR8888,
+        SDL_TEXTUREACCESS_TARGET,
+        NATIVE_W, NATIVE_H);
 
     // Get renderer data
     SDL_RendererInfo rinfo;
@@ -149,6 +161,7 @@ void video_copy_pal_range(const palette *src, int src_start, int dst_start, int 
     memcpy(state.cur_palette->data + dst_start * 3, 
            src->data + src_start * 3, 
            amount * 3);
+    state.cur_palette->version++;
 }
 
 screen_palette* video_get_pal_ref() {
@@ -156,8 +169,10 @@ screen_palette* video_get_pal_ref() {
 }
 
 void video_render_prepare() {
-    //SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
-    //SDL_RenderClear(state.renderer);
+    // Set default render target, and clear it up as transparent
+    SDL_SetRenderTarget(state.renderer, state.target);
+    SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 0);
+    SDL_RenderClear(state.renderer);
 
     // Reset palette
     memcpy(state.cur_palette->data, state.base_palette->data, 768);
@@ -165,7 +180,6 @@ void video_render_prepare() {
 
 void video_render_background(surface *sur) {
     SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, 0);
-    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_NONE);
     SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
     SDL_SetTextureAlphaMod(tex, 0xFF);
     SDL_RenderCopy(state.renderer, tex, NULL, NULL);
@@ -177,7 +191,7 @@ void video_render_helper(
             int sy,
             int w,
             int h,
-            unsigned int rendering_mode, 
+            unsigned int blend_mode,
             unsigned int flip_mode,
             float scale_y) {
 
@@ -187,17 +201,13 @@ void video_render_helper(
     dst.h = h * scale_y;
     dst.x = sx;
     dst.y = sy + (h - dst.h) / 2;
-
-    // Select correct rendering mode
-    switch(rendering_mode) {
-        case BLEND_ADDITIVE:
-            SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
-            break;
-        default:
-            SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-            break;
-    }
     
+    if(blend_mode == BLEND_ADDITIVE) {
+        SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
+    } else {
+        SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+    }
+
     // Flipping
     SDL_RendererFlip flip = 0;
     if(flip_mode & FLIP_HORIZONTAL) flip |= SDL_FLIP_HORIZONTAL;
@@ -239,7 +249,7 @@ void video_render_sprite_tint(
     SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
     SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
     SDL_SetTextureAlphaMod(tex, 0xFF);
-    video_render_helper(tex, sx, sy, sur->w, sur->h, BLEND_ALPHA, 0, 1.0);
+    video_render_helper(tex, sx, sy, sur->w, sur->h, BLEND_ALPHA, FLIP_NONE, 1.0);
 }
 
 void video_render_sprite(surface *sur, int sx, int sy, unsigned int rendering_mode, int pal_offset) {
@@ -271,7 +281,6 @@ void video_render_sprite_flip_scale_opacity(
             float y_percent, 
             uint8_t opacity) {
 
-
     SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
     SDL_SetTextureAlphaMod(tex, opacity);
     SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
@@ -279,6 +288,11 @@ void video_render_sprite_flip_scale_opacity(
 }
 
 void video_render_finish() {
+    // Copy the default target texture over
+    SDL_SetRenderTarget(state.renderer, NULL);
+    SDL_RenderCopy(state.renderer, state.target, NULL, NULL);
+
+    // Flip
     SDL_RenderPresent(state.renderer);
     if(!state.vsync) {
         SDL_Delay(1);
@@ -286,6 +300,7 @@ void video_render_finish() {
 }
 
 void video_close() {
+    SDL_DestroyTexture(state.target);
     SDL_DestroyRenderer(state.renderer);
     SDL_DestroyWindow(state.window);
     free(state.cur_palette);

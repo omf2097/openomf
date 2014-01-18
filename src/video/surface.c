@@ -40,6 +40,16 @@ int surface_get_type(surface *sur) {
     return sur->type;
 }
 
+void surface_copy_ex(surface *dst, surface *src) {
+    if(src->type != dst->type) {
+        return;
+    }
+    int size = src->w * src->h * ((src->type == SURFACE_TYPE_PALETTE) ? 1 : 4);
+    memcpy(dst->data, src->data, size);
+    if(src->stencil != NULL)
+        memcpy(dst->stencil, src->stencil, src->w * src->h);
+}
+
 // Copies a surface to a new surface
 // Note! New surface will be created here; there is no need to pre-create it
 void surface_copy(surface *dst, surface *src) {
@@ -87,6 +97,34 @@ void surface_sub(surface *dst,
             }
             if(bytes == 1) {
                 dst->stencil[dst_offset] = src->stencil[src_offset];
+            }
+        }
+    }
+}
+
+void surface_additive_blit(surface *dst,
+                           surface *src,
+                           int dst_x, int dst_y,
+                           palette *remap_pal) {
+
+    // Both surfaces must be paletted
+    if(dst->type != SURFACE_TYPE_PALETTE || src->type != SURFACE_TYPE_PALETTE) {
+        return;
+    }
+
+    int src_offset,dst_offset;
+    uint8_t src_index, dst_index;
+    for(int y = 0; y < src->h; y++) {
+        DEBUG("LINE %d", y);
+        for(int x = 0; x < src->w; x++) {
+            src_offset = x + y * src->w;
+            dst_offset = dst_x + x + (dst_y + y) * dst->w;
+            src_index = src->data[src_offset];
+            dst_index = dst->data[src_offset];
+            if(src_index > 18) {
+                DEBUG("ERROR! SRC INDEX TOO HIGH!");
+            } else {
+                dst->data[dst_offset] = remap_pal->remaps[src_index][dst_index];
             }
         }
     }
@@ -142,4 +180,18 @@ void surface_to_rgba(surface *sur,
             *(dst + n + 3) = (sur->stencil[i] == 1) ? 0xFF : 0;
         }
     }
+}
+
+// Copies surface to an existing texture.
+// Note, texture has to be streaming type
+void surface_to_texture(surface *src,
+                        SDL_Texture *tex,
+                        screen_palette *pal, 
+                        char *remap_table,
+                        uint8_t pal_offset) {
+    void *pixels;
+    int pitch;
+    SDL_LockTexture(tex, NULL, &pixels, &pitch);
+    surface_to_rgba(src, pixels, pal, remap_table, pal_offset);
+    SDL_UnlockTexture(tex);
 }

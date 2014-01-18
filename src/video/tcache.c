@@ -115,20 +115,13 @@ SDL_Texture* tcache_get(surface *sur,
                                           SDL_TEXTUREACCESS_STREAMING,
                                           sur->w,
                                           sur->h);
+        SDL_SetTextureBlendMode(new_entry.tex, SDL_BLENDMODE_BLEND);
         val = tcache_add_entry(&key, &new_entry);
     }
 
     // We have a texture either from the cache, or we just created one.
     // Either one, it needs to be updated. Let's do it now.
-    void *pixels;
-    int pitch;
-    int s = SDL_LockTexture(val->tex, NULL, &pixels, &pitch);
-    if(s == 0) {
-        surface_to_rgba(sur, pixels, pal, remap_table, pal_offset);
-        SDL_UnlockTexture(val->tex);
-    } else {
-        PERROR("Unable to lock texture for writing!");
-    }
+    surface_to_texture(sur, val->tex, pal, remap_table, pal_offset);
 
     // Set correct age and palette version
     val->age = 0;
