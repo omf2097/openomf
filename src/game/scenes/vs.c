@@ -210,6 +210,7 @@ int vs_create(scene *scene) {
     object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
 
     // clone the left side of the background image
+    // Note! We are touching the scene-wide background surface!
     surface_sub(&scene->bk_data.background, // DST Surface
                 &scene->bk_data.background, // SRC Surface
                 160, 0, // DST
@@ -225,8 +226,8 @@ int vs_create(scene *scene) {
         local->arena = rand_int(5); // srand was done in melee
     }
 
-    //ARENA
-    if (player2->selectable) {
+    // Arena
+    if(player2->selectable) {
         ani = &bk_get_info(&scene->bk_data, 3)->ani;
         object_create(&local->arena_select, scene->gs, vec2i_create(59,155), vec2f_create(0, 0));
         object_set_animation(&local->arena_select, ani);
