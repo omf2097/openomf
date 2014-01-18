@@ -160,7 +160,7 @@ void engine_run(int net_mode) {
             // If console windows is open, pass events to console. 
             // Otherwise to the objects. 
             if(console_window_is_open()) {
-                console_event(game_state_get_scene(gs), &e);
+                console_event(gs, &e);
             } else {
                 game_state_handle_event(gs, &e);
             }

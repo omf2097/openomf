@@ -2,14 +2,14 @@
 #define _CONSOLE_H
 
 #include <SDL2/SDL.h>
-#include "game/protos/scene.h"
+#include "game/game_state_type.h"
 
 // return 0 on success, otherwise return error code
-typedef int(*command_func)(scene *scene, void *userdata, int argc, char **argv);
+typedef int(*command_func)(game_state *scene, void *userdata, int argc, char **argv);
 
 int console_init();
 void console_close();
-void console_event(scene *scene, SDL_Event *event);
+void console_event(game_state *scene, SDL_Event *event);
 void console_render();
 void console_tick();
 void console_add_cmd(const char *name, command_func func, const char *doc);

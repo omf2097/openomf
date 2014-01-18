@@ -48,7 +48,7 @@ void console_add_history(const char *input, unsigned int len) {
     con->histpos = -1;
 }
 
-void console_handle_line(scene *scene) {
+void console_handle_line(game_state *gs) {
     if(con->input[0] == '\0') {
         console_output_addline(">");
     } else {
@@ -62,7 +62,7 @@ void console_handle_line(scene *scene) {
             make_argv(con->input, argv);
             if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
                 command *cmd = val;
-                int err = cmd->func(scene, cmd->userdata, argc, argv);
+                int err = cmd->func(gs, cmd->userdata, argc, argv);
                 if(err == 0)
                 {
                     console_output_add("> ");
@@ -221,7 +221,7 @@ void console_close() {
     free(con);
 }
 
-void console_event(scene *scene, SDL_Event *e) {
+void console_event(game_state *gs, SDL_Event *e) {
     if (e->type == SDL_KEYDOWN) {
         unsigned char code = e->key.keysym.sym;
         unsigned char len = strlen(con->input);
@@ -248,7 +248,7 @@ void console_event(scene *scene, SDL_Event *e) {
             }
         } else if (state[SDL_SCANCODE_RETURN]) {
             // send the input somewhere and clear the input line
-            console_handle_line(scene);
+            console_handle_line(gs);
             con->input[0] = '\0';
         } else if(state[SDL_SCANCODE_PAGEUP]) {
             console_output_scroll_up(1);
