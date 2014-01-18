@@ -299,7 +299,6 @@ void object_render(object *obj) {
         opacity);
 }
 
-// Renders sprite's shadow to a shadow buffer
 void object_render_shadow(object *obj) {
     if(obj->cur_sprite == NULL || !obj->cast_shadow) {
         return;
@@ -345,15 +344,7 @@ int object_palette_transform(object *obj, screen_palette *pal) {
         float bp = ((float)rstate->pal_begin) + 
             ((float)rstate->pal_end - (float)rstate->pal_begin) * 
             ((float)rstate->timer / (float)rstate->duration);
-/*
-        DEBUG("Palette transform: level(begin=%d,end=%d), range(start=%d,count=%d), tint = %d, reference = %d, level = %f, tick = %d / %d",
-            rstate->pal_begin, rstate->pal_end,
-            rstate->pal_start_index, rstate->pal_entry_count,
-            rstate->pal_tint,
-            rstate->pal_ref_index,
-            bp,
-            rstate->timer, rstate->duration);
-*/
+
         color b;
         b.r = pal->data[rstate->pal_ref_index][0];
         b.g = pal->data[rstate->pal_ref_index][1];
