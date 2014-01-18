@@ -12,7 +12,7 @@ Some common packagemanager commands for receiving the other deps below:
 
 Debian:
 ```
-apt-get install libsdl2-dev libopenal-dev libglew-dev libconfuse-dev libenet-dev
+apt-get install libsdl2-dev libopenal-dev libconfuse-dev libenet-dev
 ```
 
 TODO: Add Gentoo, others ?

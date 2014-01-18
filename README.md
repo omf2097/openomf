@@ -29,7 +29,6 @@ Dependencies
 * SDL2: http://www.libsdl.org/tmp/download-2.0.php
 * OpenAL: http://kcat.strangesoft.net/openal.html
 * confuse: http://www.nongnu.org/confuse/
-* GLEW: http://glew.sourceforge.net/
 * Gettext (if you have problems with libintl)
 * Enet: http://enet.bespin.org/
 

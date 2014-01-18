@@ -6,7 +6,6 @@ compiler:
 
 before_install:
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
- - sudo add-apt-repository ppa:openmw/deps -y
  - sudo apt-get update -qq
  - sudo apt-get install -qq libcunit1 libcunit1-dev
  - if test $CC = gcc; then sudo apt-get install -qq gcc-4.8; fi
