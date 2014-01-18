@@ -36,8 +36,6 @@ struct scene_t {
     scene_tick_cb tick;
     scene_input_poll_cb input_poll;
     scene_startup_cb startup;
-    image shadow_buffer_img;
-    surface shadow_buffer_surface;
     ticktimer tick_timer;
 };
 
@@ -48,7 +46,6 @@ void scene_free(scene *scene);
 int scene_event(scene *scene, SDL_Event *event);
 void scene_render_overlay(scene *scene);
 void scene_render(scene *scene);
-void scene_render_shadows(scene *scene);
 void scene_tick(scene *scene);
 void scene_input_poll(scene *scene);
 int scene_startup(scene *scene, int id);

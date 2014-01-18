@@ -200,6 +200,32 @@ void video_render_helper(
     SDL_RenderCopyEx(state.renderer, tex, NULL, &dst, 0, NULL, flip);
 }
 
+void video_render_sprite_shadow(surface *sur, int sx, int pal_offset, unsigned int flip_mode) {
+    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
+
+    // Set rendering mode for shadow. We want sprite pixels black, with some opacity.
+    SDL_SetTextureColorMod(tex, 0, 0, 0);
+    SDL_SetTextureAlphaMod(tex, 64);
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+
+    // Position & correct height
+    float scale_y = 0.25f;
+    SDL_Rect dst;
+    dst.w = sur->w;
+    dst.h = sur->h * scale_y;
+    dst.x = sx;
+    dst.y = (190 - sur->h) + (sur->h - dst.h);
+
+    SDL_RendererFlip flip = 0;
+    if(flip_mode & FLIP_HORIZONTAL) flip |= SDL_FLIP_HORIZONTAL;
+    if(flip_mode & FLIP_VERTICAL) flip |= SDL_FLIP_VERTICAL;
+    SDL_RenderCopyEx(state.renderer, tex, NULL, &dst, 0, NULL, flip);
+
+    // Restore rendering mode
+    SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
+    SDL_SetTextureAlphaMod(tex, 0xFF);
+}
+
 void video_render_sprite_tint(
             surface *sur, 
             int sx, 

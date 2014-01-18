@@ -81,9 +81,6 @@ int scene_load_har(scene *scene, int player_id, int har_id) {
 }
 
 void scene_init(scene *scene) {
-    // init shadow buffer
-    image_create(&scene->shadow_buffer_img, 320, 200);
-
     // Bootstrap animations
     iterator it;
     hashmap_iter_begin(&scene->bk_data.infos, &it);
@@ -171,15 +168,6 @@ void scene_render(scene *scene) {
     }
 }
 
-void scene_render_shadows(scene *scene) {
-    // draw shadows
-    surface_create_from_image(&scene->shadow_buffer_surface, &scene->shadow_buffer_img);
-    video_render_sprite(&scene->shadow_buffer_surface, 0, 0, BLEND_ALPHA, 0);
-    surface_free(&scene->shadow_buffer_surface);
-    image_clear(&scene->shadow_buffer_img, color_create(0,0,0,0));
-    
-}
-
 void scene_tick(scene *scene) {
     // Tick timers
     ticktimer_run(&scene->tick_timer);
@@ -208,7 +196,6 @@ void scene_free(scene *scene) {
         af_free(scene->af_data[1]);
         free(scene->af_data[1]);
     }
-    image_free(&scene->shadow_buffer_img);
     ticktimer_close(&scene->tick_timer);
 }
 

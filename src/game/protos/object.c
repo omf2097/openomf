@@ -300,58 +300,23 @@ void object_render(object *obj) {
 }
 
 // Renders sprite's shadow to a shadow buffer
-void object_render_shadow(object *obj, image *shadow_buffer) {
+void object_render_shadow(object *obj) {
     if(obj->cur_sprite == NULL || !obj->cast_shadow) {
         return;
     }
-    surface *sur = obj->cur_sprite->data;
-    player_sprite_state *rstate = &obj->sprite_state;
-    vec2i size = sprite_get_size(obj->cur_sprite);
-    int y = 190;
+
+    int flipmode = obj->sprite_state.flipmode;
     int x = obj->pos.x + obj->cur_sprite->pos.x;
-    int flipmode = rstate->flipmode;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
         x = obj->pos.x - obj->cur_sprite->pos.x - object_get_size(obj).x;
         flipmode ^= FLIP_HORIZONTAL;
     }
 
-    ///TODO smarter code to make this less branchy on flipmode
-    if (flipmode & FLIP_VERTICAL) {
-        // only render every third line of the sprite, to emulate the shadow being cast onto the floor
-        for (int i = 0; i < size.y; i+=3) {
-            y--;
-            for (int j = 0; j < size.x; j++) {
-                if (sur->data[(i * size.x) + j]) {
-                    switch(flipmode) {
-                        case FLIP_VERTICAL:
-                            image_set_pixel(shadow_buffer, x + j, y, color_create(0,0,0,100));
-                            break;
-                        case FLIP_VERTICAL|FLIP_HORIZONTAL:
-                            image_set_pixel(shadow_buffer, x + (size.x - j), y, color_create(0,0,0,100));
-                            break;
-                    }
-                }
-            }
-        }
-    } else {
-        // only render every third line of the sprite, to emulate the shadow being cast onto the floor
-        for (int i = size.y - 1; i >= 0; i-=3) {
-            y--;
-            for (int j = 0; j < size.x; j++) {
-                if (sur->data[(i * size.x) + j]) {
-                    switch(flipmode) {
-                        case FLIP_NONE:
-                            image_set_pixel(shadow_buffer, x + j, y, color_create(0,0,0,100));
-                            break;
-                        case FLIP_HORIZONTAL:
-                            image_set_pixel(shadow_buffer, x + (size.x - j), y, color_create(0,0,0,100));
-                            break;
-                    }
-                }
-            }
-        }
-    }
-
+    video_render_sprite_shadow(
+        obj->cur_sprite->data,
+        x,
+        obj->pal_offset,
+        flipmode);
 }
 
 int object_act(object *obj, int action) {

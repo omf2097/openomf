@@ -101,7 +101,7 @@ struct object_t {
 
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
 void object_render(object *obj);
-void object_render_shadow(object *obj, image *shadow_buffer);
+void object_render_shadow(object *obj);
 void object_debug(object *obj);
 void object_tick(object *obj);
 void object_set_tick_pos(object *obj, int tick);
