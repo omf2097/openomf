@@ -259,14 +259,14 @@ int vs_create(scene *scene) {
     object_create(o_gantry_a, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(o_gantry_a, ani);
     object_select_sprite(o_gantry_a, 0);
-    game_state_add_object(scene->gs, o_gantry_a, RENDER_LAYER_MIDDLE);
+    game_state_add_object(scene->gs, o_gantry_a, RENDER_LAYER_TOP);
 
     object *o_gantry_b = malloc(sizeof(object));
-    object_create(o_gantry_b, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
+    object_create(o_gantry_b, scene->gs, vec2i_create(320,0), vec2f_create(0, 0));
     object_set_animation(o_gantry_b, ani);
     object_select_sprite(o_gantry_b, 0);
     object_set_direction(o_gantry_b, OBJECT_FACE_LEFT);
-    game_state_add_object(scene->gs, o_gantry_b, RENDER_LAYER_MIDDLE);
+    game_state_add_object(scene->gs, o_gantry_b, RENDER_LAYER_TOP);
 
     // Background tex
     menu_background2_create(&local->arena_select_bg, 211, 50);
