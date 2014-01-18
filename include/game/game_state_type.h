@@ -3,6 +3,23 @@
 
 #include "utils/vector.h"
 
+enum {
+    RENDER_LAYER_BOTTOM = 0,
+    RENDER_LAYER_MIDDLE,
+    RENDER_LAYER_TOP
+};
+
+enum {
+    ROLE_CLIENT,
+    ROLE_SERVER
+};
+
+enum {
+    NET_MODE_NONE,
+    NET_MODE_CLIENT,
+    NET_MODE_SERVER
+};
+
 typedef struct scene_t scene;
 typedef struct game_player_t game_player;
 typedef struct ticktimer_t ticktimer;

@@ -34,6 +34,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->tick = NULL;
     scene->input_poll = NULL;
     scene->startup = NULL;
+    scene->prio_override = NULL;
 
     // Set base palette
     video_set_base_palette(bk_get_palette(&scene->bk_data, 0));
@@ -97,7 +98,9 @@ void scene_init(scene *scene) {
             }
             object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
             object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
-            game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
+            int o_prio = scene_anim_prio_override(scene, info->ani.id);
+            o_prio = (o_prio != -1) ? o_prio : RENDER_LAYER_BOTTOM;
+            game_state_add_object(scene->gs, obj, o_prio);
             DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
         }
     }
@@ -168,6 +171,13 @@ void scene_render(scene *scene) {
     }
 }
 
+int scene_anim_prio_override(scene *scene, int anim_id) {
+    if(scene->prio_override != NULL) {
+        return scene->prio_override(scene, anim_id);
+    }
+    return -1;
+}
+
 void scene_tick(scene *scene) {
     // Tick timers
     ticktimer_run(&scene->tick_timer);
@@ -221,6 +231,10 @@ void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc) {
 
 void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc) {
     scene->tick = cbfunc;
+}
+
+void scene_set_anim_prio_override_cb(scene *scene, scene_anim_prio_override_cb cbfunc) {
+    scene->prio_override = cbfunc;
 }
 
 void scene_set_input_poll_cb(scene *scene, scene_tick_cb cbfunc) {

@@ -42,6 +42,14 @@ void intro_free(scene *scene) {
     free(scene_get_userdata(scene));
 }
 
+int intro_anim_override(scene *scene, int anim_id) {
+    switch(anim_id) {
+        case 25:
+            return RENDER_LAYER_TOP;
+    }
+    return -1;
+}
+
 int intro_create(scene *scene) {
     intro_local *local = malloc(sizeof(intro_local));
     local->ticks = 0;
@@ -50,5 +58,6 @@ int intro_create(scene *scene) {
     scene_set_event_cb(scene, intro_event);
     scene_set_free_cb(scene, intro_free);
     scene_set_startup_cb(scene, intro_startup);
+    scene_set_anim_prio_override_cb(scene, intro_anim_override);
     return 0;
 }
