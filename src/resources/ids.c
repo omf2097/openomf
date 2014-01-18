@@ -152,6 +152,10 @@ char* get_id_name(int id) {
     return "UNKNOWN";
 }
 
+int is_arena(int id) {
+    return (id >= SCENE_ARENA0 && id <= SCENE_ARENA4);
+}
+
 int is_scene(int id) {
     return (id >= SCENE_INTRO && id <= SCENE_WORLD);
 }

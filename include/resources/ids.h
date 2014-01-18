@@ -58,6 +58,7 @@ char* get_id_name(int id);
 // returns 0 if there are no missing files, otherwise 1 is returned
 int validate_resource_path(char *missingfile);
 
+int is_arena(int id);
 int is_scene(int id);
 int is_har(int id);
 int is_music(int id);

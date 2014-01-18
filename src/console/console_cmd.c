@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "game/scenes/arena.h"
 #include "console/console.h"
 #include "console/console_type.h"
 #include "resources/ids.h"
@@ -179,6 +180,15 @@ int console_cmd_stun(game_state *gs, void *userdata, int argc, char **argv) {
     return 1;
 }
 
+int console_cmd_rein(game_state *gs, void *userdata, int argc, char **argv) {
+    scene *sc = game_state_get_scene(gs);
+    if(is_arena(sc->id)) {
+        arena_toggle_rein(sc);
+        return 0;
+    }
+    return 1;
+}
+
 void console_init_cmd() {
     // Add console commands
     console_add_cmd("h",     &console_cmd_history,  "show command history");
@@ -192,6 +202,7 @@ void console_init_cmd() {
     console_add_cmd("win",   &console_cmd_win,   "Set the other player's health to 0");
     console_add_cmd("lose",   &console_cmd_lose,   "Set your health to 0");
     console_add_cmd("stun",   &console_cmd_stun,   "Stun the other player");
+    console_add_cmd("rein",   &console_cmd_rein,   "R-E-I-N!");
 #ifdef DEBUGMODE
     console_add_cmd("cd-debug", &console_cd_debug, "toggle collision detection debugging");
 #endif

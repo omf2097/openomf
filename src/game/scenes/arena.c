@@ -14,6 +14,7 @@
 #include "audio/music.h"
 #include "game/settings.h"
 #include "game/objects/har.h"
+#include "game/objects/scrap.h"
 #include "game/protos/object.h"
 #include "game/score.h"
 #include "game/game_player.h"
@@ -65,6 +66,8 @@ typedef struct arena_local_t {
 
     chr_score player1_score;
     chr_score player2_score;
+
+    int rein_enabled;
 } arena_local;
 
 // -------- Local callbacks --------
@@ -510,6 +513,38 @@ void arena_tick(scene *scene) {
                 arena_end(scene);
             }
         }
+
+        // Pour some rein!
+        if(local->rein_enabled) {
+            if(rand_intmax() / (double)UINT_MAX > 0.65) {
+                vec2i pos = vec2i_create(rand_int(NATIVE_W), -10);
+                for(int harnum = 0;harnum < game_state_num_players(gs);harnum++) {
+                    object *h_obj = game_state_get_player(gs, harnum)->har;
+                    har *h = object_get_userdata(h_obj);
+                    // Calculate velocity etc.
+                    float rv = rand_intmax() / (double)UINT_MAX - 0.5;
+                    float velx = rv;
+                    float vely = -12 * sin(0 / 2 + rv);
+
+                    // Make sure scrap has somekind of velocity
+                    // (to prevent floating scrap objects)
+                    if(vely < 0.1 && vely > -0.1) vely += 0.21;
+
+                    // Create the object
+                    object *scrap = malloc(sizeof(object));
+                    int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
+                    object_create(scrap, gs, pos, vec2f_create(velx, vely));
+                    object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
+                    object_set_gravity(scrap, 0.2f);
+                    object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
+                    object_set_layers(scrap, LAYER_SCRAP);
+                    object_tick(scrap);
+                    scrap->cast_shadow = 1;
+                    scrap_create(scrap);
+                    game_state_add_object(gs, scrap, RENDER_LAYER_TOP);
+                }
+            }
+        }
     }
 
     int need_sync = 0;
@@ -647,6 +682,11 @@ void arena_set_state(scene *scene, int state) {
     local->state = state;
 }
 
+void arena_toggle_rein(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+    local->rein_enabled = !local->rein_enabled;
+}
+
 int arena_create(scene *scene) {
     settings *setting;
     arena_local *local;
@@ -674,6 +714,7 @@ int arena_create(scene *scene) {
     // Set correct state
     local->state = ARENA_STATE_STARTING;
     local->ending_ticks = 0;
+    local->rein_enabled = 0;
 
     // Initial har data
     vec2i pos[2];
