@@ -47,6 +47,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     }
     player_create(obj);
 
+    obj->custom_str = NULL;
+
     // Callbacks & userdata
     obj->userdata = NULL;
     obj->tick = NULL;
@@ -80,9 +82,14 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int8(ser, obj->cur_animation->id);
 
     // Write animation state
-    const char *anim_str = player_get_str(obj);
-    serial_write_int16(ser, strlen(anim_str)+1);
-    serial_write(ser, anim_str, strlen(anim_str)+1);
+    if (obj->custom_str) {
+        const char *anim_str = player_get_str(obj);
+        serial_write_int16(ser, strlen(obj->custom_str)+1);
+        serial_write(ser, anim_str, strlen(obj->custom_str)+1);
+    } else {
+        // using regular animation string from animation
+        serial_write_int16(ser, 0);
+    }
     serial_write_int16(ser, (int)obj->animation_state.ticks);
     serial_write_int8(ser, (int)obj->animation_state.reverse);
 
@@ -157,7 +164,11 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     }
 
     // Init animation with correct string and tick
-    player_reload_with_str(obj, anim_str);
+    if (anim_str_len > 0) {
+        // server is using a custom string
+        DEBUG("serialized object has custom animation string %s", anim_str);
+        player_reload_with_str(obj, anim_str);
+    }
     player_jump_to_tick(obj, ticks);
     if (reverse) {
         object_set_playback_direction(obj, PLAY_BACKWARDS);
@@ -401,6 +412,10 @@ void object_set_animation(object *obj, animation *ani) {
         animation_free(obj->cur_animation);
         free(obj->cur_animation);
     }
+    if (obj->custom_str != NULL) {
+        free(obj->custom_str);
+    }
+    obj->custom_str = NULL;
     obj->cur_animation = ani;
     obj->cur_animation_own = OWNER_EXTERNAL;
     player_reload(obj);
@@ -418,6 +433,8 @@ void object_set_animation(object *obj, animation *ani) {
 }
 
 void object_set_custom_string(object *obj, const char *str) {
+
+    obj->custom_str = strcpy(malloc(strlen(str)+1), str);
     player_reload_with_str(obj, str);
     DEBUG("Set animation string to %s", str);
 }

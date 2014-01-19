@@ -326,8 +326,8 @@ void player_run(object *obj) {
                 }
 
                 int mg = isset(f, "mg") ? get(f, "mg") : 0;
-                DEBUG("Spawning %d, with g = %d, pos = (%d,%d)", 
-                    get(f, "m"), mg, mx, my);
+                /*DEBUG("Spawning %d, with g = %d, pos = (%d,%d)", */
+                    /*get(f, "m"), mg, mx, my);*/
                 state->spawn(
                     obj, get(f, "m"), 
                     vec2i_create(mx, my), mg, 
@@ -472,11 +472,11 @@ void player_run(object *obj) {
                 obj->slide_state.timer = param->duration;
                 obj->slide_state.vel.x = x_dist / (float)param->duration;
                 obj->slide_state.vel.y = y_dist / (float)param->duration;
-                DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.", 
-                    obj->cur_animation->id,
-                    obj->slide_state.vel.x, 
-                    obj->slide_state.vel.y, 
-                    param->duration);
+                /*DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.", */
+                    /*obj->cur_animation->id,*/
+                    /*obj->slide_state.vel.x, */
+                    /*obj->slide_state.vel.y, */
+                    /*param->duration);*/
             }
             if (isset(f, "v") == 0 && 
                 isset(f, "e") == 0 && 
@@ -497,11 +497,11 @@ void player_run(object *obj) {
                 obj->slide_state.timer = param->duration;
                 obj->slide_state.vel.x = (float)x / (float)param->duration;
                 obj->slide_state.vel.y = (float)y / (float)param->duration;
-                DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.",
-                    obj->cur_animation->id,
-                    obj->slide_state.vel.x, 
-                    obj->slide_state.vel.y, 
-                    param->duration);
+                /*DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.",*/
+                    /*obj->cur_animation->id,*/
+                    /*obj->slide_state.vel.x, */
+                    /*obj->slide_state.vel.y, */
+                    /*param->duration);*/
             }
 
             if(isset(f, "x=") || isset(f, "y=")) {
@@ -517,10 +517,10 @@ void player_run(object *obj) {
                     if(slide != obj->pos.x) {
                         obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(param->duration + r);
                         obj->slide_state.timer = param->duration + r;
-                        DEBUG("Slide object %d for X = %f for a total of %d ticks.",
-                                obj->cur_animation->id,
-                                obj->slide_state.vel.x,
-                                param->duration + r);
+                        /*DEBUG("Slide object %d for X = %f for a total of %d ticks.",*/
+                                /*obj->cur_animation->id,*/
+                                /*obj->slide_state.vel.x,*/
+                                /*param->duration + r);*/
                     }
 
                 }
@@ -535,10 +535,10 @@ void player_run(object *obj) {
                     if(slide != obj->pos.y) {
                         obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(param->duration + r);
                         obj->slide_state.timer = param->duration + r;
-                        DEBUG("Slide object %d for Y = %f for a total of %d ticks.",
-                                obj->cur_animation->id,
-                                obj->slide_state.vel.y,
-                                param->duration + r);
+                        /*DEBUG("Slide object %d for Y = %f for a total of %d ticks.",*/
+                                /*obj->cur_animation->id,*/
+                                /*obj->slide_state.vel.y,*/
+                                /*param->duration + r);*/
                     }
 
                 }

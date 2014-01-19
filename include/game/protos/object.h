@@ -87,6 +87,8 @@ struct object_t {
     // if the user's ping is > 800ms they're pretty screwed
     serial event_buffer[OBJECT_EVENT_BUFFER_SIZE];
 
+    char *custom_str;
+
     void *userdata;
     object_free_cb free;
     object_act_cb act;

@@ -18,7 +18,6 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, int g, void *userdata) {
         if(info->probability == 1) {
             object_set_repeat(obj, 1);
         }
-        DEBUG("hazard spawned child");
         object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
         object_set_group(obj, GROUP_PROJECTILE);
         object_set_userdata(obj, object_get_userdata(parent));
@@ -52,7 +51,6 @@ int hazard_serialize(object *obj, serial *ser) {
 }
 
 int hazard_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) {
-    DEBUG("unserializing hazard");
     bk *bk_data = &gs->sc->bk_data;
     hazard_create(obj, gs->sc);
     object_set_userdata(obj, bk_data);
@@ -62,7 +60,6 @@ int hazard_unserialize(object *obj, serial *ser, int animation_id, game_state *g
 }
 
 void hazard_bootstrap(object *obj) {
-    DEBUG("bootstrapping hazard");
     object_set_serialize_cb(obj, hazard_serialize);
     object_set_unserialize_cb(obj, hazard_unserialize);
 }

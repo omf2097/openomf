@@ -93,7 +93,7 @@ void game_state_add_object(game_state *gs, object *obj, int layer) {
     o.layer = layer;
     vector_append(&gs->objects, &o);
 
-#ifdef DEBUGMODE
+#ifdef DEBUGMODE_STFU
     animation *ani = object_get_animation(obj);
     DEBUG("Added animation %i to game_state on layer %d.", ani->id, layer);
 #endif
@@ -591,6 +591,16 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         game_player_get_ctrl(player)->har = obj;
     }
 
+    // ensure the HARs know each other's positions
+    object *obj_har1,*obj_har2;
+    obj_har1 = game_player_get_har(game_state_get_player(gs, 0));
+    obj_har2 = game_player_get_har(game_state_get_player(gs, 1));
+
+    obj_har1->animation_state.enemy_x = obj_har2->pos.x;
+    obj_har1->animation_state.enemy_y = obj_har2->pos.y;
+    obj_har2->animation_state.enemy_x = obj_har1->pos.x;
+    obj_har2->animation_state.enemy_y = obj_har1->pos.y;
+
     // clean out any current projectiles/hazards
     iterator it;
     vector_iter_begin(&gs->objects, &it);
@@ -610,6 +620,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         int layer = serial_read_int8(ser);
         object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0,0));
         object_unserialize(obj, ser, gs);
+        DEBUG("newly added object finish status %d", object_finished(obj));
 
         game_state_add_object(gs, obj, layer);
     }
@@ -629,6 +640,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         game_state_call_tick(gs);
         gs->tick++;
     }
+    DEBUG("replay done");
 
     return 0;
 }
