@@ -115,17 +115,12 @@ void surface_additive_blit(surface *dst,
     int src_offset,dst_offset;
     uint8_t src_index, dst_index;
     for(int y = 0; y < src->h; y++) {
-        DEBUG("LINE %d", y);
         for(int x = 0; x < src->w; x++) {
             src_offset = x + y * src->w;
             dst_offset = dst_x + x + (dst_y + y) * dst->w;
             src_index = src->data[src_offset];
             dst_index = dst->data[src_offset];
-            if(src_index > 18) {
-                DEBUG("ERROR! SRC INDEX TOO HIGH!");
-            } else {
-                dst->data[dst_offset] = remap_pal->remaps[src_index][dst_index];
-            }
+            dst->data[dst_offset] = remap_pal->remaps[src_index][dst_index];
         }
     }
 }
