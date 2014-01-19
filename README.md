@@ -3,16 +3,9 @@ OpenOMF Readme [![Build Status](https://travis-ci.org/omf2097/openomf.png?branch
 
 OpenOMF is a Open Source remake of "One Must Fall 2097" by Diversions Entertainment. Since the original DOS game from 1994 still uses IPX networking and is a pain to set up, the community needed a better solution to keep playing the game we love. Together with networking, we try to make it easier to play One Must Fall in original glory on multiple platforms (Linux, Mac OSX, Windows, BSD to name a few), although it might take some time to set it up.
 
-For installing & compiling, please see [INSTALL.md](https://github.com/omf2097/openomf/blob/master/INSTALL.md).
+For mode detailed information about the project, please see [http://omf2097.github.io/openomf/](http://omf2097.github.io/openomf/).
 
-Screenshots
------------
-![main menu](https://github.com/omf2097/openomf/raw/master/screenshots/menu.png "Main Menu")
-![character selection screen](https://github.com/omf2097/openomf/raw/master/screenshots/p1.png "Character Selection Screen")
-![HAR selection screen](https://github.com/omf2097/openomf/raw/master/screenshots/botsel.png "HAR selection screen")
-![hangar screen](https://github.com/omf2097/openomf/raw/master/screenshots/hangar.png "Hangar Screen")
-![in game](https://github.com/omf2097/openomf/raw/master/screenshots/ingame.png "In Game")
-![in game 2](https://github.com/omf2097/openomf/raw/master/screenshots/ingame2.png "In Game 2")
+For installing & compiling, please see [INSTALL.md](https://github.com/omf2097/openomf/blob/master/INSTALL.md).
 
 Links
 -----
