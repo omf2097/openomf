@@ -72,7 +72,12 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             int id = serial_read_int8(ser);
                             if (id == data->id) {
                                 int start = serial_read_int32(ser);
-                                ctrl->rtt = abs(start - ticks);
+                                int newrtt = abs(start - ticks);
+                                if (newrtt > ctrl->rtt) {
+                                    ctrl->rtt++;
+                                } else if (newrtt < ctrl->rtt) {
+                                    ctrl->rtt--;
+                                }
                                 data->outstanding_hb = 0;
                                 data->last_hb = ticks;
                                 serial_free(ser);
