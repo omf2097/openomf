@@ -390,6 +390,9 @@ void arena_spawn_hazard(scene *scene) {
                     }
                 }
 
+                // XXX without this, the object does not unserialize correctly in netplay
+                object_tick(obj);
+
 
                 DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
                 changed++;
