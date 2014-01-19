@@ -15,6 +15,7 @@
 #include "game/settings.h"
 #include "game/objects/har.h"
 #include "game/objects/scrap.h"
+#include "game/objects/hazard.h"
 #include "game/protos/object.h"
 #include "game/score.h"
 #include "game/game_player.h"
@@ -349,6 +350,56 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
     return need_sync;
 }
 
+void arena_spawn_hazard(scene *scene) {
+    iterator it;
+    hashmap_iter_begin(&scene->bk_data.infos, &it);
+    hashmap_pair *pair = NULL;
+
+    if (is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
+        // only the server spawns hazards
+        return;
+    }
+
+    int changed = 0;
+
+    while((pair = iter_next(&it)) != NULL) {
+        bk_info *info = (bk_info*)pair->val;
+        if(info->probability > 1) {
+            if (rand_int(info->probability) == 1) {
+                // TODO don't spawn it if we already have this animation running
+                object *obj = malloc(sizeof(object));
+                object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
+                object_set_stl(obj, scene->bk_data.sound_translation_table);
+                object_set_animation(obj, &info->ani);
+                /*object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);*/
+                /*object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);*/
+                hazard_create(obj, scene);
+                game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
+                object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
+                object_set_group(obj, GROUP_PROJECTILE);
+                object_set_userdata(obj, &scene->bk_data);
+                if (info->ani.extra_string_count > 0) {
+                    // For the desert, there's a bunch of extra animation strgins for
+                    // the different plane formations.
+                    // Pick one, rather than always use the first
+
+                    int r = rand_int(info->ani.extra_string_count);
+                    if (r > 0) {
+                        str *s = vector_get(&info->ani.extra_strings, r);
+                        object_set_custom_string(obj, str_c(s));
+                    }
+                }
+
+
+                DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
+                changed++;
+            }
+        }
+    }
+
+    arena_maybe_sync(scene, changed);
+}
+
 void arena_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
@@ -380,41 +431,7 @@ void arena_tick(scene *scene) {
         har2->delay = ceil(player1->ctrl->rtt / 2.0f);
 
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
-            iterator it;
-            hashmap_iter_begin(&scene->bk_data.infos, &it);
-            hashmap_pair *pair = NULL;
-            while((pair = iter_next(&it)) != NULL) {
-                bk_info *info = (bk_info*)pair->val;
-                if(info->probability > 1) {
-                    if (rand_int(info->probability) == 1) {
-                        // TODO don't spawn it if we already have this animation running
-                        object *obj = malloc(sizeof(object));
-                        object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
-                        object_set_stl(obj, scene->bk_data.sound_translation_table);
-                        object_set_animation(obj, &info->ani);
-                        object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
-                        object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
-                        game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
-                        object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
-                        object_set_group(obj, GROUP_PROJECTILE);
-                        object_set_userdata(obj, &scene->bk_data);
-                        if (info->ani.extra_string_count > 0) {
-                            // For the desert, there's a bunch of extra animation strgins for
-                            // the different plane formations.
-                            // Pick one, rather than always use the first
-
-                            int r = rand_int(info->ani.extra_string_count);
-                            if (r > 0) {
-                                str *s = vector_get(&info->ani.extra_strings, r);
-                                object_set_custom_string(obj, str_c(s));
-                            }
-                        }
-
-
-                        DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
-                    }
-                }
-            }
+            arena_spawn_hazard(scene);
         }
 
         if (

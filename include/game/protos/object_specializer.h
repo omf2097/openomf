@@ -5,8 +5,9 @@ typedef struct object_t object;
 
 enum {
     SPECID_NONE = 0,
-    SPECID_HAR = 0,
+    SPECID_HAR = 1,
     SPECID_PROJECTILE,
+    SPECID_HAZARD,
     SPECID_SCRAP
 };
 

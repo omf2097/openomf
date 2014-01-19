@@ -8,5 +8,6 @@ typedef struct har_t har;
 
 int projectile_create(object *obj);
 af *projectile_get_af_data(object *obj);
+void projectile_bootstrap(object *obj);
 
 #endif // _PROJECTILE_H

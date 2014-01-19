@@ -257,17 +257,6 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userd
             object_set_repeat(obj, 1);
         }
 
-        if(object_get_layers(parent) & LAYER_HAZARD) {
-            DEBUG("spawning hazard child");
-            object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
-            object_set_group(obj, GROUP_PROJECTILE);
-            object_set_userdata(obj, object_get_userdata(parent));
-            if (s->bk_data.file_id == 128 && id == 14) {
-                // XXX hack because we don't understand the ms and md tags
-                // without this, the 'bullet damage' sprite in the desert spawns at 0,0
-                obj->pos = parent->pos;
-            }
-        }
         game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM);
     }
 }

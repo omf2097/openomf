@@ -537,10 +537,29 @@ int game_state_serialize(game_state *gs, serial *ser) {
     harser = object_get_last_serialization_point(har[1]);
     serial_write(ser, harser->data, harser->len);
 
+    serial objects;
+    serial_create(&objects);
+
+    // serialize any HAZARD or PROJECTILE objects
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    render_obj *robj;
+    uint8_t count = 0;
+    while((robj = iter_next(&it)) != NULL) {
+        if (robj->obj->group == GROUP_PROJECTILE) {
+            serial_write_int8(&objects, robj->layer);
+            object_serialize(robj->obj, &objects);
+            count++;
+        }
+    }
+    serial_write_int8(ser, count);
+
+    serial_write(ser, objects.data, objects.len);
+    serial_free(&objects);
+
     chr_score_serialize(game_player_get_score(game_state_get_player(gs, 0)), ser);
     chr_score_serialize(game_player_get_score(game_state_get_player(gs, 1)), ser);
 
-    DEBUG("scene serialized to %d bytes", serial_len(ser));
     return 0;
 }
 
@@ -571,6 +590,31 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
     }
+
+    // clean out any current projectiles/hazards
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    render_obj *robj;
+    while((robj = iter_next(&it)) != NULL) {
+        if (robj->obj->group == GROUP_PROJECTILE) {
+            object_free(robj->obj);
+            free(robj->obj);
+            vector_delete(&gs->objects, &it);
+        }
+    }
+
+    uint8_t count = serial_read_int8(ser);
+
+    for (int i = 0; i < count; i++) {
+        object *obj = malloc(sizeof(object));
+        int layer = serial_read_int8(ser);
+        object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0,0));
+        object_unserialize(obj, ser, gs);
+
+        game_state_add_object(gs, obj, layer);
+    }
+
+
 
     chr_score_unserialize(game_player_get_score(game_state_get_player(gs, 0)), ser);
     chr_score_unserialize(game_player_get_score(game_state_get_player(gs, 1)), ser);
