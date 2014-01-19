@@ -265,12 +265,11 @@ void har_take_damage(object *obj, str* string, float damage) {
         }
     }
 }
-
-void har_spawn_scrap(object *obj, vec2i pos) {
-    float amount = 5;
+void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity) {
     float rv = 0.0f;
     float velx, vely;
     har *h = object_get_userdata(obj);
+
     // burning oil
     for(int i = 0; i < amount; i++) {
         // Calculate velocity etc.
@@ -288,12 +287,21 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_gravity(scrap, 1);
+        object_set_gravity(scrap, gravity);
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
         game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP);
     }
+
+}
+
+void har_spawn_scrap(object *obj, vec2i pos) {
+    float amount = 5;
+    float rv = 0.0f;
+    float velx, vely;
+    har *h = object_get_userdata(obj);
+    har_spawn_oil(obj, pos, amount, 1);
 
     // scrap metal
     amount = 2;
@@ -632,6 +640,11 @@ void har_tick(object *obj) {
 
     if (h->state == STATE_STUNNED) {
         h->stun_timer++;
+        if(h->stun_timer % 10 == 0) {
+            vec2i pos = object_get_pos(obj);
+            pos.y -= 60;
+            har_spawn_oil(obj, pos, 5, 0.5f);
+        }
         if (h->stun_timer > 100) {
             har_stunned_done(obj);
         }
@@ -1114,7 +1127,6 @@ void har_finished(object *obj) {
         h->state = STATE_STUNNED;
         h->stun_timer = 0;
         har_set_ani(obj, ANIM_STUNNED, 1);
-        // XXX The Harrison-Stetson method was applied here
     } else if (h->state == STATE_RECOIL) {
         if (h->recover_hook_cb) {
             h->recover_hook_cb(h->player_id, h->recover_hook_cb_data);
