@@ -516,13 +516,13 @@ void arena_tick(scene *scene) {
 
         // Pour some rein!
         if(local->rein_enabled) {
-            if(rand_intmax() / (double)UINT_MAX > 0.65) {
+            if(rand_float() > 0.65f) {
                 vec2i pos = vec2i_create(rand_int(NATIVE_W), -10);
                 for(int harnum = 0;harnum < game_state_num_players(gs);harnum++) {
                     object *h_obj = game_state_get_player(gs, harnum)->har;
                     har *h = object_get_userdata(h_obj);
                     // Calculate velocity etc.
-                    float rv = rand_intmax() / (double)UINT_MAX - 0.5;
+                    float rv = rand_float() - 0.5f;
                     float velx = rv;
                     float vely = -12 * sin(0 / 2 + rv);
 
