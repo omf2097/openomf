@@ -88,6 +88,7 @@ struct object_t {
     serial event_buffer[OBJECT_EVENT_BUFFER_SIZE];
 
     char *custom_str;
+    uint8_t singleton;
 
     void *userdata;
     object_free_cb free;

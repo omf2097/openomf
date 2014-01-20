@@ -29,6 +29,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = OBJECT_NO_GROUP;
     obj->gravity = 0.0f;
+    obj->singleton = 0;
 
     // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;

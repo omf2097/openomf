@@ -91,6 +91,19 @@ void game_state_add_object(game_state *gs, object *obj, int layer) {
     render_obj o;
     o.obj = obj;
     o.layer = layer;
+    animation *new_ani = object_get_animation(obj);
+    if (obj->singleton) {
+        iterator it;
+        render_obj *robj;
+        vector_iter_begin(&gs->objects, &it);
+        while((robj = iter_next(&it)) != NULL) {
+            animation *ani = object_get_animation(robj->obj);
+            if(ani != NULL && ani->id == new_ani->id && robj->obj->singleton) {
+                object_free(obj);
+                return;
+            }
+        }
+    }
     vector_append(&gs->objects, &o);
 
 #ifdef DEBUGMODE_STFU

@@ -255,6 +255,22 @@ void arena_recover_hook(int player_id, void *data) {
     }
 }
 
+void arena_wall_hit_hook(int player_id, int wall, void *data) {
+    scene *scene = data;
+    object *o_har = game_player_get_har(game_state_get_player(scene->gs, player_id));
+    if (scene->id == SCENE_ARENA4 && o_har->pos.y < 190) {
+        // desert always shows the 'hit' animation when you touch the wall
+        bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
+        object *obj = malloc(sizeof(object));
+        object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
+        object_set_stl(obj, scene->bk_data.sound_translation_table);
+        object_set_animation(obj, &info->ani);
+        object_set_custom_string(obj, "brwA1-brwB1-brwD1-brwE0-brwD4-brwC2-brwB2-brwA2");
+        obj->singleton = 1;
+        game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
+    }
+}
+
 void maybe_install_har_hooks(scene *scene) {
     object *obj_har1,*obj_har2;
     obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
@@ -275,6 +291,9 @@ void maybe_install_har_hooks(scene *scene) {
             har_install_action_hook(har1, &net_controller_har_hook, _player[1]->ctrl);
         }
     }
+
+    har_install_wall_hit_hook(har1, &arena_wall_hit_hook, scene);
+    har_install_wall_hit_hook(har2, &arena_wall_hit_hook, scene);
 
     if (is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
         // only the server keeps score
@@ -375,6 +394,7 @@ void arena_spawn_hazard(scene *scene) {
                 /*object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);*/
                 hazard_create(obj, scene);
                 game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
+                obj->singleton = 1;
                 object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
                 object_set_group(obj, GROUP_PROJECTILE);
                 object_set_userdata(obj, &scene->bk_data);

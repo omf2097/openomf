@@ -625,9 +625,22 @@ void har_tick(object *obj) {
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
     if (h->state != STATE_DEFEAT) {
-        if(pos.x <  15) pos.x = 15;
-        if(pos.x > 305) pos.x = 305;
+        int wall = 0;
+        int hit = 0;
+        if(pos.x <  15) {
+            pos.x = 15;
+            hit = 1;
+        }
+        if(pos.x > 305) {
+            pos.x = 305;
+            wall = 1;
+            hit = 1;
+        }
         object_set_pos(obj, pos);
+
+        if (hit && h->wall_hit_hook_cb) {
+            h->wall_hit_hook_cb(h->player_id, wall, h->hit_hook_cb_data);
+        }
     }
 
     if (pos.y < 190 && h->state == STATE_RECOIL) {
@@ -1249,6 +1262,11 @@ void har_install_recover_hook(har *h, har_recover_hook_cb hook, void *data) {
     h->recover_hook_cb_data = data;
 }
 
+void har_install_wall_hit_hook(har *h, har_wall_hit_hook_cb hook, void *data) {
+    h->wall_hit_hook_cb = hook;
+    h->wall_hit_hook_cb_data = data;
+}
+
 void har_bootstrap(object *obj) {
     object_set_serialize_cb(obj, har_serialize);
     object_set_unserialize_cb(obj, har_unserialize);
@@ -1291,6 +1309,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     local->recover_hook_cb = NULL;
     local->recover_hook_cb_data = NULL;
+
+    local->wall_hit_hook_cb = NULL;
+    local->wall_hit_hook_cb_data = NULL;
 
     local->stun_timer = 0;
 
