@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdlib.h>
 #include "utils/miscmath.h"
 
 int clamp(int val, int min, int max) {
