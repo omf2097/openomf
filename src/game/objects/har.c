@@ -639,7 +639,7 @@ void har_tick(object *obj) {
         object_set_pos(obj, pos);
 
         if (hit && h->wall_hit_hook_cb) {
-            h->wall_hit_hook_cb(h->player_id, wall, h->hit_hook_cb_data);
+            h->wall_hit_hook_cb(h->player_id, wall, h->wall_hit_hook_cb_data);
         }
     }
 
