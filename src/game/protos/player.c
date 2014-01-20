@@ -36,10 +36,11 @@ void player_clear_frame(object *obj) {
     s->blendmode = BLEND_ALPHA;
     s->flipmode = FLIP_NONE;
     s->method_flags = 0;
-    s->blend_start = 0xFF;
-    s->blend_finish = 0xFF;
     s->timer = 0;
     s->duration = 0;
+
+    s->blend_start = 0xFF;
+    s->blend_finish = 0xFF;
 
     s->pal_begin = 0;
     s->pal_end = 0;

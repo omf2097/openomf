@@ -135,6 +135,3 @@ void list_iter_end(list *list, iterator *iter) {
     iter->prev = list_iter_prev;
     iter->ended = (list->first == NULL);
 }
-
-
-

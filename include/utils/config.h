@@ -20,4 +20,4 @@ void conf_setfloat(const char *name, double val);
 void conf_setbool(const char *name, int val);
 void conf_setstring(const char *name, const char *val);
 
-#endif
+#endif // _CONFIG_H

@@ -260,4 +260,3 @@ void settings_free() {
 settings *settings_get() {
     return &_settings;
 }
-

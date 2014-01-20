@@ -31,4 +31,3 @@ uint32_t rand_get_seed(void) { return random_get_seed(&rand_state); }
 uint32_t rand_int(uint32_t upperbound) { return random_int(&rand_state, upperbound); }
 uint32_t rand_intmax(void) { return random_intmax(&rand_state);  }
 float rand_float(void) { return random_float(&rand_state); }
-

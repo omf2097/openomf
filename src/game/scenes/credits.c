@@ -48,4 +48,3 @@ int credits_create(scene *scene) {
 
     return 0;
 }
-

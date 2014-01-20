@@ -24,4 +24,3 @@ int object_auto_specialize(object *obj, int specialization_id) {
             return 1;
     }
 }
-

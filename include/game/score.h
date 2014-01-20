@@ -43,4 +43,5 @@ int chr_score_interrupt(chr_score *score, vec2i pos);
 
 void chr_score_serialize(chr_score *score, serial *ser);
 void chr_score_unserialize(chr_score *score, serial *ser);
+
 #endif // _SCORE_H

@@ -63,5 +63,3 @@ void hazard_bootstrap(object *obj) {
     object_set_serialize_cb(obj, hazard_serialize);
     object_set_unserialize_cb(obj, hazard_unserialize);
 }
-
-

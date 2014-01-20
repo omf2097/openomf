@@ -90,4 +90,3 @@ void settings_save();
 settings *settings_get();
 
 #endif // _SETTINGS_H
-

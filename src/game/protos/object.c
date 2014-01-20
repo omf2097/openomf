@@ -221,7 +221,6 @@ void object_tick(object *obj) {
     int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
     serial_free(&obj->event_buffer[pos]);
     object_serialize(obj, &obj->event_buffer[pos]);
-
 }
 
 /*
@@ -491,8 +490,12 @@ void object_set_pos(object *obj, vec2i pos) {
     obj->pos = vec2i_to_f(pos);
 }
 
-void object_set_gate_value(object *obj, int gate_value) { obj->animation_state.gate_value = gate_value; }
-int object_get_gate_value(object *obj) { return obj->animation_state.gate_value; }
+void object_set_gate_value(object *obj, int gate_value) { 
+    obj->animation_state.gate_value = gate_value; 
+}
+int object_get_gate_value(object *obj) { 
+    return obj->animation_state.gate_value; 
+}
 
 void object_set_vel(object *obj, vec2f vel) {
     obj->vel = vel;

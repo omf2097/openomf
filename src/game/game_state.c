@@ -202,7 +202,7 @@ void game_state_render(game_state *gs) {
         scr_pal->version++;
     } else if(gs->next_requires_refresh) {
         // Because of caching, we might sometimes get stuck to
-        // a bad/old frame. This hack will fix it.
+        // a bad/old frame. This will fix it.
         scr_pal->version++;
         gs->next_requires_refresh = 0;
     }
@@ -767,5 +767,3 @@ void game_state_replay(game_state *gs, int rtt) {
         gs->tick++;
     }
 }
-
-

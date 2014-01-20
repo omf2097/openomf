@@ -35,5 +35,3 @@ void lang_close() {
 const char* lang_get(unsigned int id) {
     return (const char*)array_get(&language_strings, id);
 }
-
-

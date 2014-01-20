@@ -283,4 +283,3 @@ int vs_create(scene *scene) {
 
     return 0;
 }
-

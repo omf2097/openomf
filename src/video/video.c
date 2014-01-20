@@ -88,7 +88,8 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     INFO(" * Driver: %s", SDL_GetCurrentVideoDriver());
     INFO(" * Renderer: %s", rinfo.name);
     INFO(" * Accelerated: %s", (rinfo.flags & SDL_RENDERER_ACCELERATED) ? "Yes" : "No");
-    INFO(" * VSync: %s", (rinfo.flags & SDL_RENDERER_PRESENTVSYNC) ? "Yes" : "No");
+    INFO(" * VSync support: %s", (rinfo.flags & SDL_RENDERER_PRESENTVSYNC) ? "Yes" : "No");
+    INFO(" * Target support: %s", (rinfo.flags & SDL_RENDERER_TARGETTEXTURE) ? "Yes" : "No");
     return 0;
 }
 
