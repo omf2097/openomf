@@ -159,6 +159,9 @@ int object_get_gravity(object *obj);
 int object_get_group(object *obj);
 int object_get_layers(object *obj);
 
+void object_set_shadow(object *obj, int enable);
+int object_get_shadow(object *obj);
+
 void object_set_gate_value(object *obj, int gate_value);
 int object_get_gate_value(object *obj);
 

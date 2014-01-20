@@ -471,6 +471,9 @@ int object_finished(object *obj) { return obj->animation_state.finished; }
 void object_set_direction(object *obj, int dir) { obj->direction = dir; }
 int object_get_direction(object *obj) { return obj->direction; }
 
+void object_set_shadow(object *obj, int enable) { obj->cast_shadow = enable; }
+int object_get_shadow(object *obj) { return obj->cast_shadow; }
+
 vec2i object_get_size(object *obj) {
     if(obj->cur_sprite != NULL) {
         return sprite_get_size(obj->cur_sprite);

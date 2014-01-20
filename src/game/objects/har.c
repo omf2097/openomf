@@ -28,6 +28,7 @@
 
 void har_finished(object *obj);
 int har_act(object *obj, int act_type);
+void har_spawn_scrap(object *obj, vec2i pos);
 
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
@@ -105,25 +106,16 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
 
     // If this is a scrap item, handle it as such ...
     if(id == ANIM_SCRAP_METAL || id == ANIM_BOLT || id == ANIM_SCREW || id == ANIM_BURNING_OIL) {
-        // Calculate velocity etc.
-        float velx, vely;
-        float rv = rand_int(100) / 100.0f - 0.5;
-        velx = 5 * cos(70 + rv);
-        vely = -3 * sin(rv);
-        if(vely < 0.1 && vely > -0.1)
-            vely += 0.21;
+        // If the scrap obviously has a wrong starting position, fix it
+        if(pos.x == 0 && pos.y == 0) {
+            vec2i p_size = object_get_size(parent);
+            vec2i p_pos = object_get_pos(parent);
+            pos.x = p_pos.x + p_size.x / 2;
+            pos.y = p_pos.y + p_size.y / 2;
+        }
 
-        // Create the object
-        object *scrap = malloc(sizeof(object));
-        object_create(scrap, parent->gs, pos, vec2f_create(velx, vely));
-        object_set_animation(scrap, &af_get_move(h->af_data, id)->ani);
-        object_set_stl(scrap, object_get_stl(parent));
-        object_set_gravity(scrap, 1);
-        object_set_pal_offset(scrap, object_get_pal_offset(parent));
-        object_set_layers(scrap, LAYER_SCRAP);
-        object_tick(scrap);
-        scrap_create(scrap);
-        game_state_add_object(parent->gs, scrap, RENDER_LAYER_MIDDLE);
+        // Use our existing function for spawning scrap
+        har_spawn_scrap(parent, pos);
         return;
     }
 
@@ -142,7 +134,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         // To avoid projectile-to-projectile collisions, set them to same group
         object_set_group(obj, GROUP_PROJECTILE); 
         object_set_repeat(obj, 0);
-        obj->cast_shadow = 1;
+        object_set_shadow(obj, 1);
         object_set_direction(obj, object_get_direction(parent));
         projectile_create(obj);
         game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE);
@@ -325,7 +317,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
         object_set_pal_offset(scrap, object_get_pal_offset(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
-        scrap->cast_shadow = 1;
+        object_set_shadow(scrap, 1);
         scrap_create(scrap);
         game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP);
     }
@@ -1325,7 +1317,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
     object_set_stl(obj, local->af_data->sound_translation_table);
-    obj->cast_shadow = 1;
+    object_set_shadow(obj, 1);
 
     // New object spawner callback
     object_set_spawn_cb(obj, cb_har_spawn_object, local);
