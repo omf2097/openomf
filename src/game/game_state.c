@@ -47,7 +47,7 @@ int game_state_create(game_state *gs, int net_mode) {
 
     // Used for crossfades
     gs->next_wait_ticks = 0;
-    gs->this_wait_ticks = FRAME_WAIT_TICKS;
+    gs->this_wait_ticks = 0;
 
     // Timer 
     gs->tick_timer = malloc(sizeof(ticktimer));

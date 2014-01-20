@@ -17,6 +17,7 @@
 #include "console/console.h"
 
 static int run = 0;
+static int start_timeout = 30;
 #ifndef STANDALONE_SERVER
 static int take_screenshot = 0;
 static int enable_screen_updates = 1;
@@ -92,11 +93,33 @@ exit_0:
 }
 
 void engine_run(int net_mode) {
+    SDL_Event e;
+
     INFO(" --- BEGIN GAME LOG ---");
 
 #ifdef STANDALONE_SERVER
     // Init interrupt signal handler
     signal(SIGINT, exit_handler);
+#endif
+
+#ifndef STANDALONE_SERVER
+    // Game start timeout.
+    // Wait a moment so that people are mentally prepared
+    // (with the recording software on) for the game to start :)
+    while(start_timeout > 0) {
+        start_timeout--;
+        while(SDL_PollEvent(&e)) {
+            if(e.type == SDL_QUIT) {
+                return;
+            }
+        }
+        video_render_prepare();
+        video_render_finish();
+        continue;
+    }
+
+    // apply volume settings
+    sound_set_volume(settings_get()->sound.sound_vol/10.0f);
 #endif
 
     // Set up game
@@ -105,11 +128,6 @@ void engine_run(int net_mode) {
         return;
     }
 
-#ifndef STANDALONE_SERVER
-    // apply volume settings
-    sound_set_volume(settings_get()->sound.sound_vol/10.0f);
-#endif
-
     // Game loop
     int frame_start = SDL_GetTicks();
     int omf_wait = 0;
@@ -117,7 +135,6 @@ void engine_run(int net_mode) {
 
 #ifndef STANDALONE_SERVER
         // Handle events
-        SDL_Event e;
         while(SDL_PollEvent(&e)) {
             // Handle other events
             switch(e.type) {
