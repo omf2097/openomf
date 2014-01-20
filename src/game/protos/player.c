@@ -13,55 +13,9 @@
 #include "game/protos/player.h"
 #include "game/protos/object.h"
 #include "utils/str.h"
+#include "utils/miscmath.h"
 #include "utils/log.h"
 #include "utils/random.h"
-
-// --------------------- Helpers ---------------------
-
-static int clamp(int val, int min, int max) {
-    if(val > max) return max;
-    if(val < min) return min;
-    return val;
-}
-
-static float clampf(float val, float min, float max) {
-    if(val > max) return max;
-    if(val < min) return min;
-    return val;
-}
-
-// ---------------- Private callbacks ---------------- 
-
-void cmd_tickjump(object *obj, int tick) {
-    obj->animation_state.ticks = tick;
-}
-
-void cmd_music_off() {
-    music_stop();
-}
-
-void cmd_music_on(int music) {
-    // 0 is special case; stops playback
-    if(music == 0) {
-        music_stop();
-        return;
-    }
-
-    // Find file we want to play
-    char filename[64];
-    switch(music) {
-        case 0: music_stop(); break;
-        case 1: get_filename_by_id(PSM_END, filename); break;
-        case 2: get_filename_by_id(PSM_MENU, filename); break;
-        case 3: get_filename_by_id(PSM_ARENA0, filename); break;
-        case 4: get_filename_by_id(PSM_ARENA1, filename); break;
-        case 5: get_filename_by_id(PSM_ARENA2, filename); break;
-        case 6: get_filename_by_id(PSM_ARENA3, filename); break;
-        case 7: get_filename_by_id(PSM_ARENA4, filename); break;
-    }
-    music_play(filename);
-    music_set_volume(settings_get()->sound.music_vol/10.0f);
-}
 
 // ---------------- Private functions ---------------- 
 
@@ -75,10 +29,6 @@ int get(sd_stringparser_frame *frame, const char *tag) {
     const sd_stringparser_tag_value *v;
     sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
     return v->value;
-}
-
-float dist(float a, float b) {
-    return abs((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1 : -1);
 }
 
 void player_clear_frame(object *obj) {
@@ -109,7 +59,6 @@ int next_frame_with_tag(sd_stringparser *parser, int current_frame, const char *
         }
         res += f->duration;
     }
-    f = NULL;
     return -1;
 }
 
@@ -123,7 +72,6 @@ int next_frame_with_sprite(sd_stringparser *parser, int current_frame, int sprit
         }
         res += f->duration;
     }
-    f = NULL;
     return -1;
 }
 
@@ -298,7 +246,7 @@ void player_run(object *obj) {
             // Tick management
             if(isset(f, "d")) {
                 if(get(f, "d") != obj->animation_state.gate_value) {
-                    cmd_tickjump(obj, 1);
+                    state->ticks = 1;
                     sd_stringparser_reset(state->parser);
                 }
             }
@@ -339,10 +287,27 @@ void player_run(object *obj) {
 
             // Music playback
             if(isset(f, "smo")) { 
-                cmd_music_on(get(f, "smo"));
+                if(get(f, "smo") == 0) {
+                    music_stop();
+                    return;
+                }
+
+                // Find file we want to play
+                char filename[64];
+                switch(get(f, "smo")) {
+                    case 1: get_filename_by_id(PSM_END, filename); break;
+                    case 2: get_filename_by_id(PSM_MENU, filename); break;
+                    case 3: get_filename_by_id(PSM_ARENA0, filename); break;
+                    case 4: get_filename_by_id(PSM_ARENA1, filename); break;
+                    case 5: get_filename_by_id(PSM_ARENA2, filename); break;
+                    case 6: get_filename_by_id(PSM_ARENA3, filename); break;
+                    case 7: get_filename_by_id(PSM_ARENA4, filename); break;
+                }
+                music_play(filename);
+                music_set_volume(settings_get()->sound.music_vol/10.0f);
             }
             if(isset(f, "smf")) { 
-                cmd_music_off();
+                music_stop();
             }
 
             // Sound playback
@@ -421,13 +386,10 @@ void player_run(object *obj) {
             // The following is a hack. We don't REALLY know what these tags do.
             // However, they are only used in CREDITS.BK, so we can just interpret
             // then as we see fit, as long as stuff works.
-            if(isset(f, "bd") && f->duration >= 50) {
-                rstate->blend_start = 0xFF;
+            if(isset(f, "bc") && f->duration >= 50) {
+                rstate->blend_start = 0;
+            } else if(isset(f, "bd") && f->duration >= 30) {
                 rstate->blend_finish = 0;
-                if(isset(f, "bc")) {
-                    rstate->blend_start = 0;
-                    rstate->blend_finish = 0xFF;
-                }
             }
 
             // Handle movement

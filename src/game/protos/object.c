@@ -1,13 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
-#include <shadowdive/vga_image.h>
-#include <shadowdive/sprite_image.h>
 #include <shadowdive/sprite.h>
 #include "game/protos/object.h"
 #include "game/protos/object_specializer.h"
 #include "game/game_state_type.h"
 #include "video/video.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 
 #define UNUSED(x) (void)(x)
 
@@ -175,16 +174,12 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
         object_set_playback_direction(obj, PLAY_BACKWARDS);
     }
 
-
     // deserializing hars can reset these, so we have to set this late
     obj->stride = stride;
     object_set_gravity(obj, gravity);
     object_set_repeat(obj, repeat);
 
-
     /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
-
-
 
     // Return success
     return 0;
@@ -252,21 +247,6 @@ void object_collide(object *obj, object *b) {
     if(obj->collide != NULL) {
         obj->collide(obj,b);
     }
-}
-
-int max3(int r, int g, int b) {
-    int max = r;
-    if(g > max) max = g;
-    if(b > max) max = b;
-    return max;
-}
-
-int max(int a, int b) {
-    return (a > b) ? a : b;
-}
-
-int min(int a, int b) {
-    return (a > b) ? b : a;
 }
 
 void object_render(object *obj) {
@@ -369,13 +349,13 @@ int object_palette_transform(object *obj, screen_palette *pal) {
             if(rstate->pal_tint) {
                 m = max3(pal->data[i][0], pal->data[i][1], pal->data[i][2]);
                 u = m / 255.0f;
-                pal->data[i][0] = max(0, min(255, pal->data[i][0] + u * k * (b.r - pal->data[i][0])));
-                pal->data[i][1] = max(0, min(255, pal->data[i][1] + u * k * (b.g - pal->data[i][1])));
-                pal->data[i][2] = max(0, min(255, pal->data[i][2] + u * k * (b.b - pal->data[i][2])));
+                pal->data[i][0] = max2(0, min2(255, pal->data[i][0] + u * k * (b.r - pal->data[i][0])));
+                pal->data[i][1] = max2(0, min2(255, pal->data[i][1] + u * k * (b.g - pal->data[i][1])));
+                pal->data[i][2] = max2(0, min2(255, pal->data[i][2] + u * k * (b.b - pal->data[i][2])));
             } else {
-                pal->data[i][0] = max(0, min(255, pal->data[i][0] * (1 - k) + (b.r * k)));
-                pal->data[i][1] = max(0, min(255, pal->data[i][1] * (1 - k) + (b.g * k)));
-                pal->data[i][2] = max(0, min(255, pal->data[i][2] * (1 - k) + (b.b * k)));
+                pal->data[i][0] = max2(0, min2(255, pal->data[i][0] * (1 - k) + (b.r * k)));
+                pal->data[i][1] = max2(0, min2(255, pal->data[i][1] * (1 - k) + (b.g * k)));
+                pal->data[i][2] = max2(0, min2(255, pal->data[i][2] * (1 - k) + (b.b * k)));
             }
         }
         return 1;
