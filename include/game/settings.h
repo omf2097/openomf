@@ -36,6 +36,7 @@ typedef struct settings_video_t {
     int fullscreen;
     int scaling;
     int instant_console;
+    int crossfade_on;
 } settings_video;
 
 typedef struct settings_gameplay_t {

@@ -106,6 +106,9 @@ void engine_run(int net_mode) {
     // Game start timeout.
     // Wait a moment so that people are mentally prepared
     // (with the recording software on) for the game to start :)
+    if(!settings_get()->video.crossfade_on) {
+        start_timeout = 0;
+    }
     while(start_timeout > 0) {
         start_timeout--;
         while(SDL_PollEvent(&e)) {

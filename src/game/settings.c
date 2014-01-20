@@ -50,7 +50,8 @@ const field f_video[] = {
     F_BOOL(settings_video, vsync,           0),
     F_BOOL(settings_video, fullscreen,      0),
     F_INT(settings_video,  scaling,         0),
-    F_BOOL(settings_video, instant_console, 0)
+    F_BOOL(settings_video, instant_console, 0),
+    F_BOOL(settings_video, crossfade_on,    1)
 };
 
 const field f_sound[] = {
@@ -95,8 +96,8 @@ const field f_keyboard[] = {
 };
 
 const field f_net[] = {
-    F_STRING(settings_network, net_server_ip, "localhost"),
-    F_INT(settings_network, net_server_port, 2097)
+    F_STRING(settings_network, net_server_ip,   "localhost"),
+    F_INT(settings_network,    net_server_port, 2097)
 };
 
 // Map struct to field

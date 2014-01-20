@@ -14,7 +14,9 @@ typedef struct intro_local_t {
 int intro_event(scene *scene, SDL_Event *e) {
     switch(e->type) {
     case SDL_KEYDOWN:
-        if(e->key.keysym.sym == SDLK_ESCAPE) {
+        if(e->key.keysym.sym == SDLK_ESCAPE ||
+           e->key.keysym.sym == SDLK_RETURN ||
+           e->key.keysym.sym == SDLK_KP_ENTER) {
             game_state_set_next(scene->gs, SCENE_MENU);
             return 1;
         }

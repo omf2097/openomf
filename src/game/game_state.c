@@ -446,7 +446,7 @@ void game_state_tick(game_state *gs) {
     ticktimer_run(gs->tick_timer);
 
     // We want to load another scene
-    if(gs->this_id != gs->next_id && gs->next_wait_ticks <= 1) {
+    if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
         // If this is the end, set run to 0 so that engine knows to close here
         if(gs->next_id == SCENE_NONE) {
             DEBUG("Next ID is SCENE_NONE! bailing.");
@@ -460,7 +460,12 @@ void game_state_tick(game_state *gs) {
             gs->run = 0;
             return;
         }
-        gs->this_wait_ticks = FRAME_WAIT_TICKS;
+        if(settings_get()->video.crossfade_on) {
+            gs->this_wait_ticks = FRAME_WAIT_TICKS;
+        } else {
+            gs->this_wait_ticks = 0;
+            gs->next_wait_ticks = 0;
+        }
     }
 
     // Set scene crossfade values
