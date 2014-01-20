@@ -87,7 +87,7 @@ error_0:
     return 1;
 }
 
-void game_state_add_object(game_state *gs, object *obj, int layer) {
+int game_state_add_object(game_state *gs, object *obj, int layer) {
     render_obj o;
     o.obj = obj;
     o.layer = layer;
@@ -100,7 +100,7 @@ void game_state_add_object(game_state *gs, object *obj, int layer) {
             animation *ani = object_get_animation(robj->obj);
             if(ani != NULL && ani->id == new_ani->id && robj->obj->singleton) {
                 object_free(obj);
-                return;
+                return 1;
             }
         }
     }
@@ -110,6 +110,7 @@ void game_state_add_object(game_state *gs, object *obj, int layer) {
     animation *ani = object_get_animation(obj);
     DEBUG("Added animation %i to game_state on layer %d.", ani->id, layer);
 #endif
+    return 0;
 }
 
 void game_state_set_speed(game_state *gs, int speed) {
