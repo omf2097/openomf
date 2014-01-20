@@ -90,6 +90,8 @@ set(OPENOMF_SRC
     src/video/image.c
     src/video/tcache.c
     src/video/color.c
+    src/video/video_hw.c
+    src/video/video_soft.c
     src/audio/audio.c
     src/audio/music.c
     src/audio/sound.c

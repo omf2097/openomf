@@ -1,8 +1,9 @@
 #include <stdlib.h>
 
 #include "game/scenes/credits.h"
-#include "resources/ids.h"
 #include "game/game_state.h"
+#include "video/video.h"
+#include "resources/ids.h"
 
 typedef struct credits_local_t {
     int ticks;
@@ -35,10 +36,16 @@ void credits_free(scene *scene) {
 int credits_create(scene *scene) {
     credits_local *local = malloc(sizeof(credits_local));
     local->ticks = 0;
+
+    // Callbacks
     scene_set_userdata(scene, local);
     scene_set_tick_cb(scene, credits_tick);
     scene_set_free_cb(scene, credits_free);
     scene_set_event_cb(scene, credits_event);
+
+    // Pick renderer
+    video_select_renderer(VIDEO_RENDERER_HW);
+
     return 0;
 }
 

@@ -40,6 +40,14 @@ int surface_get_type(surface *sur) {
     return sur->type;
 }
 
+void surface_clear(surface *sur) {
+    if(sur->type == SURFACE_TYPE_RGBA) {
+        memset(sur->data, 0, sur->w*sur->h*4);
+    } else {
+        memset(sur->data, 0, sur->w*sur->h);
+    }
+}
+
 void surface_copy_ex(surface *dst, surface *src) {
     if(src->type != dst->type) {
         return;
@@ -105,7 +113,8 @@ void surface_sub(surface *dst,
 void surface_additive_blit(surface *dst,
                            surface *src,
                            int dst_x, int dst_y,
-                           palette *remap_pal) {
+                           palette *remap_pal,
+                           SDL_RendererFlip flip) {
 
     // Both surfaces must be paletted
     if(dst->type != SURFACE_TYPE_PALETTE || src->type != SURFACE_TYPE_PALETTE) {
@@ -116,18 +125,57 @@ void surface_additive_blit(surface *dst,
     uint8_t src_index, dst_index;
     for(int y = 0; y < src->h; y++) {
         for(int x = 0; x < src->w; x++) {
-            src_offset = x + y * src->w;
+            src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - x : x) + 
+                         ((flip & SDL_FLIP_VERTICAL) ? src->h - y : y) * src->w;
             dst_offset = dst_x + x + (dst_y + y) * dst->w;
-            src_index = src->data[src_offset];
-            dst_index = dst->data[src_offset];
-            dst->data[dst_offset] = remap_pal->remaps[src_index][dst_index];
+            if(dst->stencil[dst_offset] == 1) {
+                if(dst_x + x >= dst->w 
+                    || dst_y + y >= dst->h 
+                    || dst_x + x < 0 
+                    || dst_y + y < 0) continue;
+                if(src->data[src_offset] == 0)
+                    continue;
+
+                src_index = src->data[src_offset]+3;
+                dst_index = dst->data[dst_offset];
+
+                dst->data[dst_offset] = remap_pal->remaps[src_index][dst_index];
+            }
+        }
+    }
+}
+
+void surface_alpha_blit(surface *dst,
+                        surface *src,
+                        int dst_x, int dst_y,
+                        SDL_RendererFlip flip) {
+
+    // Both surfaces must be paletted
+    if(dst->type != SURFACE_TYPE_PALETTE || src->type != SURFACE_TYPE_PALETTE) {
+        return;
+    }
+
+    int src_offset,dst_offset;
+    for(int y = 0; y < src->h; y++) {
+        for(int x = 0; x < src->w; x++) {
+            src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - x : x) + 
+                         ((flip & SDL_FLIP_VERTICAL) ? src->h - y : y) * src->w;
+            if(src->stencil[src_offset] == 1) {
+                if(dst_x + x >= dst->w 
+                    || dst_y + y >= dst->h 
+                    || dst_x + x < 0 
+                    || dst_y + y < 0) continue;
+                dst_offset = dst_x + x + (dst_y + y) * dst->w;
+                dst->data[dst_offset] = src->data[src_offset];
+                dst->stencil[dst_offset] = 1;
+            }
         }
     }
 }
 
 // Converts an existing surface to RGBA
 void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset) {
-    // If the surface already is RGBA, then just skip
+    // Just skip the surface if it already is rgba
     if(sur->type == SURFACE_TYPE_RGBA) {
         return;
     }
@@ -135,7 +183,7 @@ void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset) 
     char *pixels = malloc(sur->w * sur->h * 4);
     surface_to_rgba(sur, pixels, pal, NULL, pal_offset);
 
-    // Free old ddata
+    // Free old data
     free(sur->data);
     free(sur->stencil);
     sur->data = pixels;

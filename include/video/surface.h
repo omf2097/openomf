@@ -30,6 +30,7 @@ void surface_create_from_data(surface *sur, int type, int w, int h, const char *
 void surface_copy(surface *dst, surface *src);
 void surface_copy_ex(surface *dst, surface *src);
 void surface_free(surface *sur);
+void surface_clear(surface *sur);
 void surface_sub(surface *dst, 
                  surface *src,
                  int dst_x, int dst_y,
@@ -46,7 +47,12 @@ void surface_to_rgba(surface *sur,
 void surface_additive_blit(surface *dst,
                            surface *src,
                            int dst_x, int dst_y,
-                           palette *remap_pal);
+                           palette *remap_pal,
+                           SDL_RendererFlip flip);
+void surface_alpha_blit(surface *dst,
+                        surface *src,
+                        int dst_x, int dst_y,
+                        SDL_RendererFlip flip);
 void surface_to_texture(surface *src,
                         SDL_Texture *tex,
                         screen_palette *pal, 

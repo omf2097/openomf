@@ -682,6 +682,9 @@ int melee_create(scene *scene) {
     scene_set_free_cb(scene, melee_free);
     scene_set_tick_cb(scene, melee_tick);
 
+    // Pick renderer
+    video_select_renderer(VIDEO_RENDERER_HW);
+
     // All done
     return 0;
 }

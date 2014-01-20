@@ -4,22 +4,11 @@
 #include "utils/log.h"
 #include "utils/list.h"
 #include "resources/palette.h"
+#include "video/video_state.h"
+#include "video/video_hw.h"
+#include "video/video_soft.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
-
-typedef struct {
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    int w;
-    int h;
-    int fs;
-    int vsync;
-
-    // Palettes
-    palette *base_palette;
-    screen_palette *cur_palette;
-    SDL_Texture *target;
-} video_state;
 
 static video_state state;
 
@@ -79,12 +68,9 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         }
     }
 
-    // Set up surfaces etc.
-    state.target = SDL_CreateTexture(
-        state.renderer,
-        SDL_PIXELFORMAT_ABGR8888,
-        SDL_TEXTUREACCESS_TARGET,
-        NATIVE_W, NATIVE_H);
+    // Init hardware renderer
+    state.cur_renderer = VIDEO_RENDERER_HW;
+    video_hw_init(&state);
 
     // Get renderer data
     SDL_RendererInfo rinfo;
@@ -121,7 +107,6 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
             renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
         }
         SDL_DestroyRenderer(state.renderer);
-        tcache_clear(); // Clear cache, because renderer changed.
         state.renderer = SDL_CreateRenderer(state.window, -1, renderer_flags);
         SDL_RenderSetLogicalSize(state.renderer, NATIVE_W, NATIVE_H);
     }
@@ -131,7 +116,26 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
     state.fs = fullscreen;
     state.w = window_w;
     state.h = window_h;
+
+    state.cb.render_reinit(&state);
     return 0;
+}
+
+void video_select_renderer(int renderer) {
+    if(renderer == state.cur_renderer) {
+        return;
+    }
+    state.cur_renderer = renderer;
+    switch(renderer) {
+        case VIDEO_RENDERER_QUIRKS:
+            state.cb.render_close(&state);
+            video_soft_init(&state);
+            break;
+        case VIDEO_RENDERER_HW:
+            state.cb.render_close(&state);
+            video_hw_init(&state);
+            break;
+    }
 }
 
 void video_screenshot(image *img) {
@@ -169,62 +173,16 @@ screen_palette* video_get_pal_ref() {
 }
 
 void video_render_prepare() {
-    // Set default render target, and clear it up as transparent
-    SDL_SetRenderTarget(state.renderer, state.target);
-    SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 0);
-    SDL_RenderClear(state.renderer);
-
     // Reset palette
     memcpy(state.cur_palette->data, state.base_palette->data, 768);
+    state.cb.render_prepare(&state);
 }
 
 void video_render_background(surface *sur) {
-    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, 0);
-    SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
-    SDL_SetTextureAlphaMod(tex, 0xFF);
-    SDL_RenderCopy(state.renderer, tex, NULL, NULL);
-}
-
-void video_render_helper(
-            SDL_Texture *tex, 
-            int sx,
-            int sy,
-            int w,
-            int h,
-            unsigned int blend_mode,
-            unsigned int flip_mode,
-            float scale_y) {
-
-    // Size & pois
-    SDL_Rect dst;
-    dst.w = w;
-    dst.h = h * scale_y;
-    dst.x = sx;
-    dst.y = sy + (h - dst.h) / 2;
-    
-    if(blend_mode == BLEND_ADDITIVE) {
-        SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_ADD);
-    } else {
-        SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-    }
-
-    // Flipping
-    SDL_RendererFlip flip = 0;
-    if(flip_mode & FLIP_HORIZONTAL) flip |= SDL_FLIP_HORIZONTAL;
-    if(flip_mode & FLIP_VERTICAL) flip |= SDL_FLIP_VERTICAL;
-
-    // Okay, render now.
-    SDL_RenderCopyEx(state.renderer, tex, NULL, &dst, 0, NULL, flip);
+    state.cb.render_background(&state, sur);
 }
 
 void video_render_sprite_shadow(surface *sur, int sx, int pal_offset, unsigned int flip_mode) {
-    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
-
-    // Set rendering mode for shadow. We want sprite pixels black, with some opacity.
-    SDL_SetTextureColorMod(tex, 0, 0, 0);
-    SDL_SetTextureAlphaMod(tex, 64);
-    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-
     // Position & correct height
     float scale_y = 0.25f;
     SDL_Rect dst;
@@ -233,66 +191,104 @@ void video_render_sprite_shadow(surface *sur, int sx, int pal_offset, unsigned i
     dst.x = sx;
     dst.y = (190 - sur->h) + (sur->h - dst.h);
 
+    // Flip mode
     SDL_RendererFlip flip = 0;
     if(flip_mode & FLIP_HORIZONTAL) flip |= SDL_FLIP_HORIZONTAL;
     if(flip_mode & FLIP_VERTICAL) flip |= SDL_FLIP_VERTICAL;
-    SDL_RenderCopyEx(state.renderer, tex, NULL, &dst, 0, NULL, flip);
+
+    // Render
+    state.cb.render_shadow(&state, sur, &dst, pal_offset, flip);
 }
 
 void video_render_sprite_tint(
-            surface *sur, 
-            int sx, 
-            int sy, 
-            color c, 
-            int pal_offset) {
+        surface *sur, 
+        int sx, 
+        int sy, 
+        color c, 
+        int pal_offset) {
 
-    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
-    SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
-    SDL_SetTextureAlphaMod(tex, 0xFF);
-    video_render_helper(tex, sx, sy, sur->w, sur->h, BLEND_ALPHA, FLIP_NONE, 1.0);
+    // Position & correct height
+    SDL_Rect dst;
+    dst.w = sur->w;
+    dst.h = sur->h;
+    dst.x = sx;
+    dst.y = sy;
+
+    // Render
+    state.cb.render_tint(&state, sur, &dst, c, pal_offset);
 }
 
-void video_render_sprite(surface *sur, int sx, int sy, unsigned int rendering_mode, int pal_offset) {
-    video_render_sprite_flip_scale(sur, sx, sy, rendering_mode, pal_offset, FLIP_NONE, 1.0f);
+// Wrapper
+void video_render_sprite(
+        surface *sur, 
+        int sx, 
+        int sy, 
+        unsigned int rendering_mode, 
+        int pal_offset) {
+
+    video_render_sprite_flip_scale_opacity(
+        sur,
+        sx, sy,
+        rendering_mode,
+        pal_offset,
+        FLIP_NONE,
+        1.0f,
+        255);
 }
 
+// Wrapper
 void video_render_sprite_flip_scale(
-            surface *sur, 
-            int sx, 
-            int sy, 
-            unsigned int rendering_mode, 
-            int pal_offset, 
-            unsigned int flip_mode, 
-            float y_percent) {
+        surface *sur, 
+        int sx, 
+        int sy, 
+        unsigned int rendering_mode, 
+        int pal_offset, 
+        unsigned int flip_mode, 
+        float y_percent) {
 
-    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
-    SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
-    SDL_SetTextureAlphaMod(tex, 0xFF);
-    video_render_helper(tex, sx, sy, sur->w, sur->h, rendering_mode, flip_mode, y_percent);
+    video_render_sprite_flip_scale_opacity(
+        sur,
+        sx, sy,
+        rendering_mode,
+        pal_offset,
+        flip_mode,
+        y_percent,
+        255);
 }
 
 void video_render_sprite_flip_scale_opacity(
-            surface *sur, 
-            int sx, 
-            int sy, 
-            unsigned int rendering_mode, 
-            int pal_offset, 
-            unsigned int flip_mode, 
-            float y_percent, 
-            uint8_t opacity) {
+        surface *sur, 
+        int sx, 
+        int sy, 
+        unsigned int rendering_mode, 
+        int pal_offset, 
+        unsigned int flip_mode, 
+        float y_percent, 
+        uint8_t opacity) {
 
-    SDL_Texture *tex = tcache_get(sur, state.renderer, state.cur_palette, NULL, pal_offset);
-    SDL_SetTextureAlphaMod(tex, opacity);
-    SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
-    video_render_helper(tex, sx, sy, sur->w, sur->h, rendering_mode, flip_mode, y_percent);
+    // Position
+    SDL_Rect dst;
+    dst.w = sur->w;
+    dst.h = sur->h * y_percent;
+    dst.x = sx;
+    dst.y = sy + (sur->h - dst.h) / 2;
+
+    // Flipping
+    SDL_RendererFlip flip = 0;
+    if(flip_mode & FLIP_HORIZONTAL) flip |= SDL_FLIP_HORIZONTAL;
+    if(flip_mode & FLIP_VERTICAL) flip |= SDL_FLIP_VERTICAL;
+
+    // Blend mode
+    SDL_BlendMode blend_mode = SDL_BLENDMODE_BLEND;
+    if(rendering_mode == BLEND_ADDITIVE)
+        blend_mode = SDL_BLENDMODE_ADD;
+
+    // Render
+    state.cb.render_fso(&state, sur, &dst, blend_mode, pal_offset, flip, opacity);
 }
 
 void video_render_finish() {
-    // Copy the default target texture over
-    SDL_SetRenderTarget(state.renderer, NULL);
-    SDL_RenderCopy(state.renderer, state.target, NULL, NULL);
-
-    // Flip
+    state.cb.render_finish(&state);
     SDL_RenderPresent(state.renderer);
     if(!state.vsync) {
         SDL_Delay(1);
@@ -300,7 +296,7 @@ void video_render_finish() {
 }
 
 void video_close() {
-    SDL_DestroyTexture(state.target);
+    state.cb.render_close(&state);
     SDL_DestroyRenderer(state.renderer);
     SDL_DestroyWindow(state.window);
     free(state.cur_palette);

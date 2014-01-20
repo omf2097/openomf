@@ -3,6 +3,7 @@
 #include "console/console.h"
 #include "console/console_type.h"
 #include "resources/ids.h"
+#include "video/video.h"
 
 // utils
 int strtoint(char *input, int *output) {
@@ -189,6 +190,19 @@ int console_cmd_rein(game_state *gs, void *userdata, int argc, char **argv) {
     return 1;
 }
 
+int console_cmd_renderer(game_state *gs, void *userdata, int argc, char **argv) {
+    if(argc == 2) {
+        int i;
+        if(strtoint(argv[1], &i)) {
+            if(i == 0 || i == 1) {
+                video_select_renderer(i);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
 void console_init_cmd() {
     // Add console commands
     console_add_cmd("h",     &console_cmd_history,  "show command history");
@@ -200,9 +214,10 @@ void console_init_cmd() {
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
     console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
     console_add_cmd("win",   &console_cmd_win,   "Set the other player's health to 0");
-    console_add_cmd("lose",   &console_cmd_lose,   "Set your health to 0");
-    console_add_cmd("stun",   &console_cmd_stun,   "Stun the other player");
-    console_add_cmd("rein",   &console_cmd_rein,   "R-E-I-N!");
+    console_add_cmd("lose",  &console_cmd_lose,   "Set your health to 0");
+    console_add_cmd("stun",  &console_cmd_stun,   "Stun the other player");
+    console_add_cmd("rein",  &console_cmd_rein,   "R-E-I-N!");
+    console_add_cmd("rdr",   &console_cmd_renderer, "Renderer (0=sw,1=hw)");
 #ifdef DEBUGMODE
     console_add_cmd("cd-debug", &console_cd_debug, "toggle collision detection debugging");
 #endif

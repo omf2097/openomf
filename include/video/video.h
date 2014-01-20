@@ -21,6 +21,11 @@ enum VIDEO_FLIP_MODE {
     FLIP_VERTICAL
 };
 
+enum VIDEO_RENDERER {
+    VIDEO_RENDERER_QUIRKS,
+    VIDEO_RENDERER_HW,
+};
+
 int video_init(int window_w, int window_h, int fullscreen, int vsync); // Create window etc.
 int video_reinit(int window_w, int window_h, int fullscreen, int vsync);
 
@@ -63,8 +68,9 @@ void video_render_sprite_flip_scale_opacity(
     float y_percent,
     uint8_t opacity);
 
-void video_render_background(surface *sur);
+void video_select_renderer(int renderer);
 
+void video_render_background(surface *sur);
 void video_render_prepare();
 void video_render_finish();
 void video_close();

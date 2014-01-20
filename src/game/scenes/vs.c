@@ -277,6 +277,10 @@ int vs_create(scene *scene) {
     scene_set_event_cb(scene, vs_event);
     scene_set_tick_cb(scene, vs_tick);
     scene_set_free_cb(scene, vs_free);
+
+    // Pick renderer
+    video_select_renderer(VIDEO_RENDERER_HW);
+
     return 0;
 }
 

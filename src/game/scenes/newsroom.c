@@ -206,5 +206,9 @@ int newsroom_create(scene *scene) {
     scene_set_render_overlay_cb(scene, newsroom_overlay_render);
     scene_set_free_cb(scene, newsroom_free);
     scene_set_tick_cb(scene, newsroom_tick);
+
+    // Pick renderer
+    video_select_renderer(VIDEO_RENDERER_HW);
+    
     return 0;
 }

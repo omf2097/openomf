@@ -7,6 +7,7 @@
 #include "game/text/text.h"
 #include "game/game_state.h"
 #include "utils/log.h"
+#include "video/video.h"
 #include "resources/ids.h"
 
 /*
@@ -14,7 +15,6 @@
 #include "utils/log.h"
 #include "game/text/text.h"
 #include "audio/music.h"
-#include "video/video.h"
 #include "game/settings.h"
 #include "game/scene.h"
 #include "game/menu/menu.h"
@@ -256,5 +256,9 @@ int mechlab_create(scene *scene) {
     scene_set_render_cb(scene, mechlab_render);
     scene_set_free_cb(scene, mechlab_free);
     scene_set_tick_cb(scene, mechlab_tick);
+
+    // Pick renderer
+    video_select_renderer(VIDEO_RENDERER_HW);
+    
     return 0;
 }

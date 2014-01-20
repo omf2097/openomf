@@ -951,6 +951,9 @@ int arena_create(scene *scene) {
     scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
 
+    // Pick renderer
+    video_select_renderer(VIDEO_RENDERER_HW);
+
     // All done!
     return 0;
 }

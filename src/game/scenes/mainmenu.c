@@ -1112,7 +1112,6 @@ int mainmenu_create(scene *scene) {
 
     // Set callbacks
     scene_set_event_cb(scene, mainmenu_event);
-    //scene_set_render_cb(scene, mainmenu_render);
     scene_set_render_overlay_cb(scene, mainmenu_render);
     scene_set_free_cb(scene, mainmenu_free);
     scene_set_tick_cb(scene, mainmenu_tick);
@@ -1128,6 +1127,9 @@ int mainmenu_create(scene *scene) {
 
     // clear it, so this only happens the first time
     scene->gs->net_mode = NET_MODE_NONE;
+
+    // Pick renderer
+    video_select_renderer(VIDEO_RENDERER_HW);
 
     // All done
     return 0;
