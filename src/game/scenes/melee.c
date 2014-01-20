@@ -67,6 +67,10 @@ typedef struct melee_local_t {
 
     object *harplayer_a;
     object *harplayer_b;
+
+    // nova selection cheat
+    unsigned char har_selected[2][10];
+    unsigned char katana_down_count[2];
 } melee_local;
 
 void refresh_pilot_stats(melee_local *local);
@@ -221,8 +225,21 @@ void handle_action(scene *scene, int player, int action) {
             }
             break;
         case ACT_UP:
+            if(*row == 1) {
+                *row = 0;
+            }
+            break;
         case ACT_DOWN:
-            *row = *row == 0 ? 1 : 0;
+            if(*row == 0) {
+                *row = 1;
+            }
+            // nova selection cheat
+            if(*row == 1 && *column == 0) {
+                local->katana_down_count[player-1]++;
+                if(local->katana_down_count[player-1] > 11) {
+                    local->katana_down_count[player-1] = 11;
+                }
+            }
             break;
         case ACT_KICK:
         case ACT_PUNCH:
@@ -259,10 +276,30 @@ void handle_action(scene *scene, int player, int action) {
                     }
 
                 } else {
-                    player1->har_id = HAR_JAGUAR + 5*local->row_a+local->column_a;
+                    int nova_activated[2] = {1, 1};
+                    for(int i = 0;i < 2;i++) {
+                        for(int j = 0;j < 10;j++) {
+                            if(local->har_selected[i][j] == 0) {
+                                nova_activated[i] = 0;
+                                break;
+                            }
+                        }
+                        if(local->katana_down_count[i] < 11) {
+                            nova_activated[i] = 0;
+                        }
+                    }
+                    if(nova_activated[0] && local->row_a == 1 && local->column_a == 2) {
+                        player1->har_id = HAR_NOVA;
+                    } else {
+                        player1->har_id = HAR_JAGUAR + 5*local->row_a+local->column_a;
+                    }
                     player1->pilot_id = local->pilot_id_a;
                     if (player2->selectable) {
-                        player2->har_id = HAR_JAGUAR + 5*local->row_b+local->column_b;
+                        if(nova_activated[1] && local->row_b == 1 && local->column_b == 2) {
+                            player2->har_id = HAR_NOVA;
+                        } else {
+                            player2->har_id = HAR_JAGUAR + 5*local->row_b+local->column_b;
+                        }
                         player2->pilot_id = local->pilot_id_b;
                     } else {
                         // randomly pick opponent and HAR
@@ -281,11 +318,16 @@ void handle_action(scene *scene, int player, int action) {
             break;
     }
 
-    if (local->selection == 0) {
+    if(local->selection == 0) {
         object_select_sprite(&local->bigportrait1, 5*local->row_a + local->column_a);
         if (player2->selectable) {
             object_select_sprite(&local->bigportrait2, 5*local->row_b + local->column_b);
         }
+    }
+
+    // nova selection cheat
+    if(local->selection == 1) {
+        local->har_selected[player-1][5 * (*row) + *column] = 1;
     }
 
     refresh_pilot_stats(local);
@@ -675,6 +717,10 @@ int melee_create(scene *scene) {
         progressbar_set(&local->bar_endurance[i], 50);
     }
     refresh_pilot_stats(local);
+
+    // initialize nova selection cheat
+    memset(&local->har_selected, 0, sizeof(local->har_selected));
+    memset(&local->katana_down_count, 0, sizeof(local->katana_down_count));
 
     // Set callbacks
     scene_set_event_cb(scene, melee_event);
