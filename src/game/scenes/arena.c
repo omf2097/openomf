@@ -292,7 +292,7 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
             object_set_stl(obj2, scene->bk_data.sound_translation_table);
             object_set_animation(obj2, &info->ani);
             object_tick(obj2);
-            int res = game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP);
+            game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP);
         }
     }
 }
