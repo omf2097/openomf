@@ -252,6 +252,10 @@ void handle_action(scene *scene, int player, int action) {
                     local->pilot_id_a = 5*local->row_a + local->column_a;
                     local->pilot_id_b = 5*local->row_b + local->column_b;
 
+                    // nova selection cheat
+                    local->har_selected[0][local->pilot_id_a] = 1;
+                    local->har_selected[1][local->pilot_id_b] = 1;
+
                     object_select_sprite(&local->bigportrait1, local->pilot_id_a);
                     // update the player palette
                     palette *base_pal = video_get_base_palette();
@@ -274,7 +278,6 @@ void handle_action(scene *scene, int player, int action) {
                         player2->colors[1] = local->pilots[local->pilot_id_b].colors[1];
                         player2->colors[2] = local->pilots[local->pilot_id_b].colors[2];
                     }
-
                 } else {
                     int nova_activated[2] = {1, 1};
                     for(int i = 0;i < 2;i++) {
