@@ -265,7 +265,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         }
     }
 }
-void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity) {
+void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer) {
     float rv = 0.0f;
     float velx, vely;
     har *h = object_get_userdata(obj);
@@ -291,7 +291,7 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity) {
         object_set_layers(scrap, LAYER_SCRAP);
         object_tick(scrap);
         scrap_create(scrap);
-        game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP);
+        game_state_add_object(obj->gs, scrap, layer);
     }
 
 }
@@ -301,7 +301,7 @@ void har_spawn_scrap(object *obj, vec2i pos) {
     float rv = 0.0f;
     float velx, vely;
     har *h = object_get_userdata(obj);
-    har_spawn_oil(obj, pos, amount, 1);
+    har_spawn_oil(obj, pos, amount, 1, RENDER_LAYER_TOP);
 
     // scrap metal
     amount = 2;
@@ -643,7 +643,7 @@ void har_tick(object *obj) {
         if(h->stun_timer % 10 == 0) {
             vec2i pos = object_get_pos(obj);
             pos.y -= 60;
-            har_spawn_oil(obj, pos, 5, 0.5f);
+            har_spawn_oil(obj, pos, 5, 0.5f, RENDER_LAYER_BOTTOM);
         }
         if (h->stun_timer > 100) {
             har_stunned_done(obj);
