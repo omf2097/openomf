@@ -30,6 +30,7 @@ struct scene_t {
     bk bk_data;
     af *af_data[2];
     void *userdata;
+
     scene_free_cb free;
     scene_event_cb event;
     scene_render_cb render;

@@ -26,6 +26,10 @@
 #define MS_PER_OMF_TICK 10
 #define MS_PER_OMF_TICK_SLOWEST 150
 
+// How long the scene waits after order to move to another scene
+// Used for crossfades
+#define FRAME_WAIT_TICKS 30
+
 typedef struct {
     int layer;
     object *obj;
@@ -40,6 +44,10 @@ int game_state_create(game_state *gs, int net_mode) {
     gs->net_mode = net_mode;
     gs->speed = settings_get()->gameplay.speed;
     vector_create(&gs->objects, sizeof(render_obj));
+
+    // Used for crossfades
+    gs->next_wait_ticks = 0;
+    gs->this_wait_ticks = FRAME_WAIT_TICKS;
 
     // Timer 
     gs->tick_timer = malloc(sizeof(ticktimer));
@@ -150,7 +158,10 @@ void game_state_del_object(game_state *gs, object *target) {
 }
 
 void game_state_set_next(game_state *gs, unsigned int next_scene_id) {
-    gs->next_id = next_scene_id;
+    if(gs->next_wait_ticks <= 0) {
+        gs->next_wait_ticks = FRAME_WAIT_TICKS;
+        gs->next_id = next_scene_id;
+    }
 }
 
 scene* game_state_get_scene(game_state *gs) {
@@ -174,9 +185,9 @@ void game_state_render(game_state *gs) {
     render_obj *robj;
 
     // Do palette transformations
-    vector_iter_begin(&gs->objects, &it);
-    int pal_changed = 0;
     screen_palette *scr_pal = video_get_pal_ref();
+    int pal_changed = 0;
+    vector_iter_begin(&gs->objects, &it);
     while((robj = iter_next(&it)) != NULL) {
         if(object_palette_transform(robj->obj, scr_pal) == 1) {
             pal_changed = 1;
@@ -435,7 +446,7 @@ void game_state_tick(game_state *gs) {
     ticktimer_run(gs->tick_timer);
 
     // We want to load another scene
-    if(gs->this_id != gs->next_id) {
+    if(gs->this_id != gs->next_id && gs->next_wait_ticks <= 1) {
         // If this is the end, set run to 0 so that engine knows to close here
         if(gs->next_id == SCENE_NONE) {
             DEBUG("Next ID is SCENE_NONE! bailing.");
@@ -449,6 +460,17 @@ void game_state_tick(game_state *gs) {
             gs->run = 0;
             return;
         }
+        gs->this_wait_ticks = FRAME_WAIT_TICKS;
+    }
+
+    // Set scene crossfade values
+    if(gs->next_wait_ticks > 0) {
+        gs->next_wait_ticks--;
+        video_set_fade((float)gs->next_wait_ticks / (float)FRAME_WAIT_TICKS);
+    }
+    if(gs->this_wait_ticks > 0) {
+        gs->this_wait_ticks--;
+        video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
     }
 
     // Tick controllers

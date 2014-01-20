@@ -13,7 +13,10 @@ typedef struct video_state_t {
     int h;
     int fs;
     int vsync;
+
     int cur_renderer;
+    float fade;
+    SDL_Texture *target;
 
     // Palettes
     palette *base_palette;

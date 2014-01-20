@@ -17,6 +17,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     state.h = window_h;
     state.fs = fullscreen;
     state.vsync = vsync;
+    state.fade = 1.0f;
 
     // Clear palettes
     state.cur_palette = malloc(sizeof(screen_palette));
@@ -67,6 +68,12 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
             DEBUG("Fullscreen enabled!");
         }
     }
+
+    // Target texture
+    state.target = SDL_CreateTexture(state.renderer,
+                                     SDL_PIXELFORMAT_ABGR8888,
+                                     SDL_TEXTUREACCESS_TARGET,
+                                     320, 200);
 
     // Init hardware renderer
     state.cur_renderer = VIDEO_RENDERER_HW;
@@ -138,6 +145,10 @@ void video_select_renderer(int renderer) {
     }
 }
 
+void video_set_fade(float fade) {
+    state.fade = fade;
+}
+
 void video_screenshot(image *img) {
     image_create(img, state.w, state.h);
     int ret = SDL_RenderReadPixels(state.renderer, NULL, SDL_PIXELFORMAT_ABGR8888, img->data, img->w * 4);
@@ -175,6 +186,7 @@ screen_palette* video_get_pal_ref() {
 void video_render_prepare() {
     // Reset palette
     memcpy(state.cur_palette->data, state.base_palette->data, 768);
+    SDL_SetRenderTarget(state.renderer, state.target);
     state.cb.render_prepare(&state);
 }
 
@@ -289,6 +301,13 @@ void video_render_sprite_flip_scale_opacity(
 
 void video_render_finish() {
     state.cb.render_finish(&state);
+
+    SDL_SetRenderTarget(state.renderer, NULL);
+    uint8_t v = 255.0f * state.fade;
+    SDL_SetTextureColorMod(state.target, v, v, v);
+    SDL_RenderCopy(state.renderer, state.target, NULL, NULL);
+    SDL_SetTextureColorMod(state.target, 0xFF, 0xFF, 0xFF);
+
     SDL_RenderPresent(state.renderer);
     if(!state.vsync) {
         SDL_Delay(1);
@@ -297,6 +316,7 @@ void video_render_finish() {
 
 void video_close() {
     state.cb.render_close(&state);
+    SDL_DestroyTexture(state.target);
     SDL_DestroyRenderer(state.renderer);
     SDL_DestroyWindow(state.window);
     free(state.cur_palette);

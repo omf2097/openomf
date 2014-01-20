@@ -76,6 +76,8 @@ void video_render_finish();
 void video_close();
 void video_screenshot(image *img);
 
+void video_set_fade(float fade);
+
 void video_set_base_palette(const palette *src);
 palette *video_get_base_palette();
 void video_force_pal_refresh();
