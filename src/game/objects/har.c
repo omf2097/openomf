@@ -237,10 +237,13 @@ void har_take_damage(object *obj, str* string, float damage) {
         object_set_repeat(obj, 0);
         if (h->health <= 0 && h->endurance <= 0) {
             // taken from MASTER.DAT
-            char *final = "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM2";
+            // XXX changed the last frame to 200 ticks to ensure the HAR falls down
+            char *final = "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM200";
             char *str = malloc(str_size(string) + strlen(final) + 1);
-            // append the 'final knockback' string to the hit string
-            sprintf(str, "%s%s", string->data, final);
+            // append the 'final knockback' string to the hit string, replacing the final frame
+            sprintf(str, "%s", string->data);
+            char *last = strrchr(str, '-');
+            sprintf(last, "%s", final);
             object_set_custom_string(obj, str);
             free(str);
         } else {
