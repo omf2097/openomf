@@ -107,10 +107,12 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
     // If this is a scrap item, handle it as such ...
     if(id == ANIM_SCRAP_METAL || id == ANIM_BOLT || id == ANIM_SCREW || id == ANIM_BURNING_OIL) {
         // If the scrap obviously has a wrong starting position, fix it
-        if(pos.x == 0 && pos.y == 0) {
-            vec2i p_size = object_get_size(parent);
-            vec2i p_pos = object_get_pos(parent);
+        vec2i p_size = object_get_size(parent);
+        vec2i p_pos = object_get_pos(parent);
+        if(pos.x == 0) {
             pos.x = p_pos.x + p_size.x / 2;
+        }
+        if(pos.y == 0) {
             pos.y = p_pos.y + p_size.y / 2;
         }
 
