@@ -100,6 +100,13 @@ int har_is_crouching(har *h) {
     return 0;
 }
 
+int har_is_blocking(har *h) {
+    if ((h->state == STATE_CROUCHBLOCK || h->state == STATE_WALKFROM) && h->executing_move == 0) {
+        return 1;
+    }
+    return 0;
+}
+
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     har *h = userdata;
@@ -438,7 +445,7 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
 #endif
             || move->category == CAT_CLOSE))
     {
-        if (b->state == STATE_WALKFROM || b->state == STATE_CROUCHBLOCK) {
+        if (har_is_blocking(b)) {
             har_block(obj_b, hit_coord);
             return;
         }
@@ -500,7 +507,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord))
 #endif
     {
-        if (h->state == STATE_WALKFROM || h->state == STATE_CROUCHBLOCK) {
+        if (har_is_blocking(h)) {
             har_block(o_har, hit_coord);
             return;
         }
