@@ -41,11 +41,11 @@ void hashmap_iput(hashmap *hashmap, unsigned int key, void *value, unsigned int 
 int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen);
 int hashmap_sget(hashmap *hashmap, const char *key, void **value, unsigned int *value_len);
 int hashmap_iget(hashmap *hashmap, unsigned int key, void **value, unsigned int *value_len);
-void hashmap_del(hashmap *hm, const void *key, unsigned int keylen);
+int hashmap_del(hashmap *hm, const void *key, unsigned int keylen);
 void hashmap_sdel(hashmap *hashmap, const char *key);
 void hashmap_idel(hashmap *hashmap, unsigned int key);
 void hashmap_iter_begin(hashmap *hashmap, iterator *iter);
-void hashmap_delete(hashmap *hashmap, iterator *iter);
+int hashmap_delete(hashmap *hashmap, iterator *iter);
 void hashmap_clear(hashmap *hashmap);
 
 #endif // _HASHMAP_H

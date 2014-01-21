@@ -25,8 +25,8 @@ uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int x) {
 void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
     hm->alloc = alloc;
     hm->buckets_x = n_size;
-    hm->buckets = hm->alloc.cmalloc(BUCKETS_SIZE(hm->buckets_x) * sizeof(hashmap_bucket));
-    for(int i = 0; i < BUCKETS_SIZE(hm->buckets_x); i++) {
+    hm->buckets = hm->alloc.cmalloc(hashmap_size(hm) * sizeof(hashmap_bucket));
+    for(int i = 0; i < hashmap_size(hm); i++) {
         hm->buckets[i].first = NULL;
     }
     hm->reserved = 0;
@@ -43,7 +43,7 @@ void hashmap_create(hashmap *hm, int n_size) {
 void hashmap_clear(hashmap *hm) {
     hashmap_node *node = NULL;
     hashmap_node *tmp = NULL;
-    for(unsigned int i = 0; i < BUCKETS_SIZE(hm->buckets_x); i++) {
+    for(unsigned int i = 0; i < hashmap_size(hm); i++) {
         node = hm->buckets[i].first;
         while(node != NULL) {
             tmp = node;
@@ -95,13 +95,13 @@ void* hashmap_put(hashmap *hm, const void *key, unsigned int keylen, void *val, 
     return node->pair.val;
 }
 
-void hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
+int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
     
     // Get node
     hashmap_node *node = hm->buckets[index].first;
     hashmap_node *prev = NULL;
-    if(node == NULL) return;
+    if(node == NULL) return 1;
     
     // Find the node we want to delete
     int found = 0;
@@ -129,7 +129,9 @@ void hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
         hm->alloc.cfree(node->pair.val);
         hm->alloc.cfree(node);
         hm->reserved--;
+        return 0;
     }
+    return 1;
 }
 
 int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen) {
@@ -182,14 +184,14 @@ void hashmap_idel(hashmap *hm, unsigned int key) {
     hashmap_del(hm, (char*)&key, sizeof(unsigned int));
 }
 
-void hashmap_delete(hashmap *hm, iterator *iter) {
+int hashmap_delete(hashmap *hm, iterator *iter) {
     int index = iter->inow - 1;
 
     // Find correct node
     hashmap_node *node = hm->buckets[index].first;
     hashmap_node *prev = NULL;
     hashmap_node *seek = iter->vnow;
-    if(node == NULL || seek == NULL) return;
+    if(node == NULL || seek == NULL) return 1;
 
     // Find the node we want to delete
     int found = 0;
@@ -208,31 +210,35 @@ void hashmap_delete(hashmap *hm, iterator *iter) {
         // Otherwise set possible next entry as first
         if(prev != NULL) {
             prev->next = node->next;
+            iter->vnow = prev;
         } else {
             hm->buckets[index].first = node->next;
+            iter->vnow = NULL;
+            iter->inow--;
         }
-
-        // Make sure we have a good iterator
-        iter->vnow = prev;
 
         // Alld one, free up memory.
         hm->alloc.cfree(node->pair.key);
         hm->alloc.cfree(node->pair.val);
         hm->alloc.cfree(node);
         hm->reserved--;
+        return 0;
     }
+    return 1;
 }
 
 static void _hashmap_seek_next(hashmap *hm, iterator *iter) {
+    if(iter->inow >= hashmap_size(hm)) {
+        iter->vnow = NULL;
+        iter->ended = 1;
+        return;
+    }
     do {
         iter->vnow = hm->buckets[iter->inow++].first;
-    } while(iter->vnow == NULL && iter->inow < BUCKETS_SIZE(hm->buckets_x));
-    if(iter->inow >= BUCKETS_SIZE(hm->buckets_x)) {
-        iter->ended = 1;
-    }
+    } while(iter->vnow == NULL && iter->inow < hashmap_size(hm));
 }
 
-static void* hashmap_iter_next(iterator *iter) {
+void* hashmap_iter_next(iterator *iter) {
     hashmap_node *tmp = NULL;
     hashmap *hm = (hashmap*)iter->data;
 

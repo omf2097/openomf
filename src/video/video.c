@@ -73,7 +73,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     
     // Set fullscreen if needed
     if(state.fs) {
-        if(SDL_SetWindowFullscreen(state.window, 1) != 0) {
+        if(SDL_SetWindowFullscreen(state.window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
             PERROR("Could not set fullscreen mode!");
         } else {
             DEBUG("Fullscreen enabled!");
@@ -109,7 +109,7 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
     
     // Set fullscreen if necessary
     if(fullscreen != state.fs) {
-        if(SDL_SetWindowFullscreen(state.window, fullscreen ? SDL_TRUE : SDL_FALSE) != 0) {
+        if(SDL_SetWindowFullscreen(state.window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) != 0) {
             PERROR("Could not set fullscreen mode!");
         } else {
             DEBUG("Fullscreen changed!");

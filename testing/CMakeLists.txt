@@ -9,6 +9,7 @@ IF(CUNIT_FOUND)
         test_str.c
         test_hashmap.c
         ../src/utils/hashmap.c
+        ../src/utils/iterator.c
         ../src/utils/str.c
     )
     
