@@ -53,10 +53,10 @@ void surface_alpha_blit(surface *dst,
                         surface *src,
                         int dst_x, int dst_y,
                         SDL_RendererFlip flip);
-void surface_to_texture(surface *src,
-                        SDL_Texture *tex,
-                        screen_palette *pal, 
-                        char *remap_table,
-                        uint8_t pal_offset);
+int surface_to_texture(surface *src,
+                       SDL_Texture *tex,
+                       screen_palette *pal,
+                       char *remap_table,
+                       uint8_t pal_offset);
 
 #endif // _SURFACE_H

@@ -12,12 +12,23 @@
 
 static video_state state;
 
+void reset_targets() {
+    if(state.target != NULL) {
+        SDL_DestroyTexture(state.target);
+    }
+    state.target = SDL_CreateTexture(state.renderer,
+                                     SDL_PIXELFORMAT_ABGR8888,
+                                     SDL_TEXTUREACCESS_TARGET,
+                                     NATIVE_W, NATIVE_H);
+}
+
 int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     state.w = window_w;
     state.h = window_h;
     state.fs = fullscreen;
     state.vsync = vsync;
     state.fade = 1.0f;
+    state.target = NULL;
 
     // Clear palettes
     state.cur_palette = malloc(sizeof(screen_palette));
@@ -69,11 +80,8 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         }
     }
 
-    // Target texture
-    state.target = SDL_CreateTexture(state.renderer,
-                                     SDL_PIXELFORMAT_ABGR8888,
-                                     SDL_TEXTUREACCESS_TARGET,
-                                     320, 200);
+    // Set rendertargets
+    reset_targets();
 
     // Init hardware renderer
     state.cur_renderer = VIDEO_RENDERER_HW;
@@ -94,6 +102,11 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
 }
 
 int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
+    // Set window size if necessary
+    if(window_w != state.w || window_h != state.h || fullscreen != state.fs) {
+        SDL_SetWindowSize(state.window, window_w, window_h);
+    }
+    
     // Set fullscreen if necessary
     if(fullscreen != state.fs) {
         if(SDL_SetWindowFullscreen(state.window, fullscreen ? SDL_TRUE : SDL_FALSE) != 0) {
@@ -103,11 +116,6 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
         }
     }
 
-    // Set window size if necessary
-    if(window_w != state.w || window_h != state.h || fullscreen != state.fs) {
-        SDL_SetWindowSize(state.window, window_w, window_h);
-    }
-    
     // VSync change; reset renderer.
     if(vsync != state.vsync) {
         int renderer_flags = SDL_RENDERER_ACCELERATED;
@@ -124,6 +132,10 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
     state.fs = fullscreen;
     state.w = window_w;
     state.h = window_h;
+
+    // Clear texture cache and reset rendertarget, just in case
+    reset_targets();
+    tcache_clear();
 
     state.cb.render_reinit(&state);
     return 0;

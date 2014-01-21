@@ -7,7 +7,7 @@ void hw_render_close(video_state *state) {
 }
 
 void hw_render_reinit(video_state *state) {
-    tcache_clear();
+    
 }
 
 void hw_render_prepare(video_state *state) {
