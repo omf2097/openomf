@@ -102,13 +102,6 @@ typedef struct har_t {
     void *wall_hit_hook_cb_data;
 
     action_buffer act_buf[OBJECT_EVENT_BUFFER_SIZE];
-
-
-#ifdef DEBUGMODE
-    surface debug_surface;
-    image debug_img;
-    uint8_t debug_enabled;
-#endif
 } har;
 
 void har_install_action_hook(har *h, har_action_hook_cb hook, void *data);

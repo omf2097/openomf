@@ -18,11 +18,6 @@
 #include "utils/log.h"
 #include "utils/random.h"
 
-// For debug layer rendering
-#ifdef DEBUGMODE
-#include "video/video.h"
-#endif
-
 #define FUDGEFACTOR 0.003f
 #define IS_ZERO(n) (n < 0.8 && n > -0.8)
 
@@ -32,9 +27,6 @@ void har_spawn_scrap(object *obj, vec2i pos);
 
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
-#ifdef DEBUGMODE
-    image_free(&h->debug_img);
-#endif
     free(h);
 }
 
@@ -431,13 +423,9 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
     vec2i hit_coord = vec2i_create(0, 0);
     if(a->damage_done == 0 &&
-#ifdef DEBUGMODE
-            (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord, &a->debug_img)
-#else
             (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord)
-#endif
-            || move->category == CAT_CLOSE))
-    {
+            || move->category == CAT_CLOSE)) {
+
         if (b->state == STATE_WALKFROM || b->state == STATE_CROUCHBLOCK) {
             har_block(obj_b, hit_coord);
             return;
@@ -493,13 +481,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     // Check for collisions by sprite collision points
     int level = 2;
     vec2i hit_coord;
-    if(
-#ifdef DEBUGMODE
-            intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord, &h->debug_img))
-#else
-            intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord))
-#endif
-    {
+    if(intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
+
         if (h->state == STATE_WALKFROM || h->state == STATE_CROUCHBLOCK) {
             har_block(o_har, hit_coord);
             return;
@@ -553,13 +536,7 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
     // Check for collisions by sprite collision points
     int level = 2;
     vec2i hit_coord;
-    if(!h->damage_received &&
-#ifdef DEBUGMODE
-            intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord, &h->debug_img))
-#else
-            intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord))
-#endif
-    {
+    if(!h->damage_received && intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
 
         har_take_damage(o_har, &anim->footer_string, anim->hazard_damage);
         /*if (h->hit_hook_cb) {*/
@@ -567,13 +544,7 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
         /*}*/
         har_spawn_scrap(o_har, hit_coord);
         h->damage_received = 1;
-    } else if (anim->chain_hit &&
-#ifdef DEBUGMODE
-            intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord, &h->debug_img))
-#else
-            intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord))
-#endif
-    {
+    } else if (anim->chain_hit && intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord)) {
         // we can punch this! Only set on fire pit orb
         anim = bk_get_info(bk_data, anim->chain_hit);
         o_pjt->animation_state.enemy_x = o_har->animation_state.enemy_x;
@@ -1154,17 +1125,6 @@ void har_finished(object *obj) {
     h->flinching = 0;
 }
 
-#ifdef DEBUGMODE
-void har_debug(object *obj) {
-    har *h = object_get_userdata(obj);
-    if(h->debug_enabled == 0) return;
-    surface_create_from_image(&h->debug_surface, &h->debug_img);
-    video_render_sprite(&h->debug_surface, 0, 0, BLEND_ALPHA, 0);
-    surface_free(&h->debug_surface);
-    image_clear(&h->debug_img, color_create(0,0,0,0));
-}
-#endif
-
 int har_serialize(object *obj, serial *ser) {
     har *h = object_get_userdata(obj);
 
@@ -1341,18 +1301,12 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_move_cb(obj, har_move);
     object_set_collide_cb(obj, har_collide);
     object_set_finish_cb(obj, har_finished);
+    //object_set_debug_cb(obj, har_debug);
 
     for (int i = 0; i < OBJECT_EVENT_BUFFER_SIZE; i++) {
         local->act_buf[i].count = 0;
         local->act_buf[i].age = 0;
     }
-
-#ifdef DEBUGMODE
-    object_set_debug_cb(obj, har_debug);
-    image_create(&local->debug_img, 320, 200);
-    image_clear(&local->debug_img, color_create(0,0,0,0));
-    local->debug_enabled = 0;
-#endif
 
     // All done
     return 0;

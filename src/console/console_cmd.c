@@ -22,17 +22,6 @@ int sort_command_by_name(const void *a, const void *b) {
     return strcmp((*h1)->key, (*h2)->key);
 }
 
-// Handle console commands
-#ifdef DEBUGMODE
-int console_cd_debug(game_state *gs, void *userdata, int argc, char **argv) {
-    for(int i = 0; i < 2; i++) {
-        har *har = object_get_userdata(game_state_get_player(gs, i)->har);
-        har->debug_enabled = !har->debug_enabled;
-    }
-    return 0;
-}
-#endif
-
 int console_cmd_history(game_state *gs, void *userdata, int argc, char **argv) {
     iterator it;
     char *input;
@@ -125,13 +114,6 @@ int console_cmd_har(game_state *gs, void *userdata, int argc, char **argv) {
                 return 1;
             }
 
-#ifdef DEBUGMODE
-            // Copy debugging setting over
-            har *new_har = object_get_userdata(obj);
-            har *old_har = object_get_userdata(har_obj);
-            new_har->debug_enabled = old_har->debug_enabled;
-#endif
-
             // Set HAR to controller and game_player
             game_state_add_object(gs, obj, RENDER_LAYER_MIDDLE);
 
@@ -218,7 +200,4 @@ void console_init_cmd() {
     console_add_cmd("stun",  &console_cmd_stun,   "Stun the other player");
     console_add_cmd("rein",  &console_cmd_rein,   "R-E-I-N!");
     console_add_cmd("rdr",   &console_cmd_renderer, "Renderer (0=sw,1=hw)");
-#ifdef DEBUGMODE
-    console_add_cmd("cd-debug", &console_cd_debug, "toggle collision detection debugging");
-#endif
 }

@@ -26,12 +26,8 @@ int intersect_object_point(object *obj, vec2i point) {
         point.y > pos.y);
 }
 
-#ifdef DEBUGMODE
-int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point, image *di) 
-#else
-int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) 
-#endif
-{
+
+int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
     // Make sure both objects have sprites going
     if(obj->cur_sprite == NULL || target->cur_sprite == NULL) {
         return 0;
@@ -78,28 +74,9 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
 
         ycoord -= (obj->cur_sprite->pos.y + size_a.y);
 
-// TODO: Use correct coordinates
-#ifdef DEBUGMODE
-        image_set_pixel(
-            di,
-            xcoord + pos_b.x,
-            ycoord + pos_b.y,
-            color_create(32,255,32,255));
-        image_rect(di, pos_b.x, pos_b.y, size_b.x, size_b.y, color_create(255,32,32,255));
-        image_rect(di, pos_a.x, pos_a.y, size_a.x, size_a.y, color_create(32,32,255,255));
-#endif
-
         // Make sure that the hitpixel is within the area of the target sprite
         if(xcoord < 0 || xcoord >= size_b.x) continue;
         if(ycoord < 0 || ycoord >= size_b.y) continue;
-
-#ifdef DEBUGMODE
-        image_set_pixel(
-            di,
-            xcoord + pos_b.x,
-            ycoord + pos_b.y,
-            color_create(255,32,32,255));
-#endif
 
         // Get hitpixel
         surface *sfc = target->cur_sprite->data;
