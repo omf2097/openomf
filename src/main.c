@@ -45,9 +45,11 @@ int main(int argc, char *argv[]) {
     // Get path
     char *path = NULL;
     char *ip = NULL;
-    char *resource_path = NULL;
     unsigned short port = 0;
     int net_mode = NET_MODE_NONE;
+#ifndef DEBUGMODE
+    char *resource_path = NULL;
+#endif
 
     // if openomf.conf exists in the current directory, switch to portable mode
     if(access("openomf.conf", F_OK) != -1) {

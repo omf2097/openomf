@@ -424,7 +424,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     }
 }
 
-void har_collide_with_har(object *obj_a, object *obj_b) {
+void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
 
@@ -449,6 +449,20 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
             har_block(obj_b, hit_coord);
             return;
         }
+
+        vec2i hit_coord2 = vec2i_create(0, 0);
+
+        if(b->damage_done == 0 && loop == 0 &&
+#ifdef DEBUGMODE
+            intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2, &b->debug_img))
+#else
+            intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2))
+#endif
+            {
+                DEBUG("both hars hit at the same time!");
+                har_collide_with_har(obj_b, obj_a, 1);
+            }
+
 
         if (move->category == CAT_CLOSE) {
           a->close = 0;
@@ -619,8 +633,8 @@ void har_collide(object *obj_a, object *obj_b) {
     har_check_closeness(obj_b, obj_a);
 
     // Handle har collisions
-    har_collide_with_har(obj_a, obj_b);
-    har_collide_with_har(obj_b, obj_a);
+    har_collide_with_har(obj_a, obj_b, 0);
+    har_collide_with_har(obj_b, obj_a, 0);
 }
 
 void har_tick(object *obj) {
