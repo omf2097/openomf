@@ -102,6 +102,7 @@ SDL_Texture* tcache_get(surface *sur,
     // Attempt to find appropriate surface
     tcache_entry_value *val = tcache_get_entry(&key);
     if(val != NULL && (val->pal_version == pal->version || sur->type == SURFACE_TYPE_RGBA)) {
+        val->age = 0;
         cache->hits++;
         return val->tex;
     }
