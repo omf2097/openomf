@@ -92,8 +92,11 @@ int har_is_crouching(har *h) {
     return 0;
 }
 
-int har_is_blocking(har *h) {
-    if ((h->state == STATE_CROUCHBLOCK || h->state == STATE_WALKFROM) && h->executing_move == 0) {
+int har_is_blocking(har *h, af_move *move) {
+    if (h->state == STATE_CROUCHBLOCK && move->category != CAT_JUMPING && h->executing_move == 0) {
+        return 1;
+    }
+    if (h->state == STATE_WALKFROM && move->category != CAT_LOW && h->executing_move == 0) {
         return 1;
     }
     return 0;
@@ -482,7 +485,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord)
             || move->category == CAT_CLOSE)) {
 
-        if (har_is_blocking(b)) {
+        if (har_is_blocking(b, move)) {
             har_block(obj_b, hit_coord);
             return;
         }
@@ -551,12 +554,11 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     int level = 2;
     vec2i hit_coord;
     if(intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
-        if (har_is_blocking(h)) {
+        af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
+        if (har_is_blocking(h, move)) {
             har_block(o_har, hit_coord);
             return;
         }
-
-        af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
 
         // is the HAR invulnerable to this kind of attack?
         if (har_is_invincible(o_har, move)) {
