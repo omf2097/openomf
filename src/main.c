@@ -1,6 +1,7 @@
 #include <string.h>
 #include <strings.h>
 #include <time.h>
+#include <unistd.h>
 #include <SDL2/SDL.h>
 #include <dumb/dumb.h>
 #include <enet/enet.h>
@@ -42,54 +43,63 @@ void err_msgbox(const char *fmt, ...) {
 
 int main(int argc, char *argv[]) {
     // Get path
-    char *path = "";
+    char *path = NULL;
     char *ip = NULL;
+    char *resource_path = NULL;
     unsigned short port = 0;
     int net_mode = NET_MODE_NONE;
 
-    path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
-    if(path == NULL) {
-        err_msgbox("Error getting config path: %s", SDL_GetError());
-        return 1;
-    }
+    // if openomf.conf exists in the current directory, switch to portable mode
+    if(access("openomf.conf", F_OK) != -1) {
+        // USB stick (portable) mode
+        path = SDL_malloc(1);
+        path[0] = 0;
+    } else {
+        // Non-portable mode
+        path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
+        if(path == NULL) {
+            err_msgbox("Error getting config path: %s", SDL_GetError());
+            return 1;
+        }
 
 #if defined(_WIN32) || defined(WIN32)
-    // Ensure the path exists before continuing on
-    // XXX shouldn't SDL_GetPrefPath automatically create the path if it doesn't exist?
-    int sherr = SHCreateDirectoryEx(NULL, path, NULL);
-    if(sherr == ERROR_FILE_EXISTS) {
-        err_msgbox("Please delete this file and relaunch OpenOMF: %s", path);
-        return 1;
-    } else if(sherr != ERROR_SUCCESS && sherr != ERROR_ALREADY_EXISTS) {
-        err_msgbox("Failed to create config path: %s", path);
-        return 1;
-    }
+        // Ensure the path exists before continuing on
+        // XXX shouldn't SDL_GetPrefPath automatically create the path if it doesn't exist?
+        int sherr = SHCreateDirectoryEx(NULL, path, NULL);
+        if(sherr == ERROR_FILE_EXISTS) {
+            err_msgbox("Please delete this file and relaunch OpenOMF: %s", path);
+            return 1;
+        } else if(sherr != ERROR_SUCCESS && sherr != ERROR_ALREADY_EXISTS) {
+            err_msgbox("Failed to create config path: %s", path);
+            return 1;
+        }
 #endif
 
 #ifndef DEBUGMODE
-    // where is the openomf binary, if this call fails we will look for resources in ./resources
-    char *base_path = SDL_GetBasePath();
-    char *resource_path = malloc(strlen(base_path) + 32);
-    if(path != NULL) {
-        const char *platform = SDL_GetPlatform();
-        if (!strcasecmp(platform, "Windows")) {
-            // on windows, the resources will be in ./resources, relative to the binary
-            sprintf(resource_path, "%s%s", base_path, "resources\\");
-            set_resource_path(resource_path);
-        } else if (!strcasecmp(platform, "Linux")) {
-            // on linux, the resources will be in ../share/openomf, relative to the binary
-            // so if openomf is installed to /usr/local/bin, the resources will be in /usr/local/share/openomf
-            sprintf(resource_path, "%s%s", base_path, "../share/openomf/");
-            set_resource_path(resource_path);
-        } else if (!strcasecmp(platform, "Mac OS X")) {
-            // on OSX, GetBasePath returns the 'Resources' directory if run from an app bundle, so we can use this as-is
-            sprintf(resource_path, "%s", base_path);
-            set_resource_path(resource_path);
+        // where is the openomf binary, if this call fails we will look for resources in ./resources
+        char *base_path = SDL_GetBasePath();
+        resource_path = malloc(strlen(base_path) + 32);
+        if(base_path != NULL) {
+            const char *platform = SDL_GetPlatform();
+            if (!strcasecmp(platform, "Windows")) {
+                // on windows, the resources will be in ./resources, relative to the binary
+                sprintf(resource_path, "%s%s", base_path, "resources\\");
+                set_resource_path(resource_path);
+            } else if (!strcasecmp(platform, "Linux")) {
+                // on linux, the resources will be in ../share/openomf, relative to the binary
+                // so if openomf is installed to /usr/local/bin, the resources will be in /usr/local/share/openomf
+                sprintf(resource_path, "%s%s", base_path, "../share/openomf/");
+                set_resource_path(resource_path);
+            } else if (!strcasecmp(platform, "Mac OS X")) {
+                // on OSX, GetBasePath returns the 'Resources' directory if run from an app bundle, so we can use this as-is
+                sprintf(resource_path, "%s", base_path);
+                set_resource_path(resource_path);
+            }
+            // any other platform will look in ./resources
+            SDL_free(base_path);
         }
-        // any other platform will look in ./resources
-        SDL_free(base_path);
-    }
 #endif
+    } // if(access("openomf.conf", F_OK) != -1)
 
     // Config path
     char *config_path = malloc(strlen(path)+32);
@@ -257,7 +267,9 @@ exit_0:
     free(config_path);
     free(logfile_path);
 #ifndef DEBUGMODE
-    free(resource_path);
+    if(resource_path) {
+        free(resource_path);
+    }
 #endif
     return 0;
 }
