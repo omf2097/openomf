@@ -28,6 +28,8 @@ enum VIDEO_RENDERER {
 
 int video_init(int window_w, int window_h, int fullscreen, int vsync); // Create window etc.
 int video_reinit(int window_w, int window_h, int fullscreen, int vsync);
+void video_reinit_renderer();
+void video_get_state(int *w, int *h, int *fs, int *vsync);
 
 void video_render_sprite(
     surface *sur, 

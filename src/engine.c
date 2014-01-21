@@ -138,6 +138,7 @@ void engine_run(int net_mode) {
 
 #ifndef STANDALONE_SERVER
         // Handle events
+        int check_fs;
         while(SDL_PollEvent(&e)) {
             // Handle other events
             switch(e.type) {
@@ -152,16 +153,28 @@ void engine_run(int net_mode) {
                 case SDL_WINDOWEVENT:
                     switch(e.window.event) {
                         case SDL_WINDOWEVENT_MINIMIZED:
-                        case SDL_WINDOWEVENT_HIDDEN:
+                            DEBUG("MINIMIZED");
                             enable_screen_updates = 0;
-                            DEBUG("Window hidden/minimized; screen rendering disabled.");
+                            break;
+                        case SDL_WINDOWEVENT_HIDDEN:
+                            DEBUG("HIDDEN");
+                            enable_screen_updates = 0;
                             break;
                         case SDL_WINDOWEVENT_MAXIMIZED:
+                            DEBUG("MAXIMIZED");
+                            enable_screen_updates = 1;
+                            break;
                         case SDL_WINDOWEVENT_RESTORED:
-                        case SDL_WINDOWEVENT_EXPOSED:
+                            video_get_state(NULL, NULL, &check_fs, NULL);
+                            if(check_fs) {
+                                video_reinit_renderer();
+                            }
+                            DEBUG("RESTORED");
+                            enable_screen_updates = 1;
+                            break;
                         case SDL_WINDOWEVENT_SHOWN:
                             enable_screen_updates = 1;
-                            DEBUG("Window shown/exposed/maximized/restored; screen rendering enabled.");
+                            DEBUG("SHOWN");
                             break;
                     }
                     break;

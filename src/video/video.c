@@ -49,6 +49,17 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         return 1;
     }
 
+    // Set fullscreen if needed
+    if(state.fs) {
+        if(SDL_SetWindowFullscreen(state.window, SDL_WINDOW_FULLSCREEN) != 0) {
+            PERROR("Could not set fullscreen mode!");
+        } else {
+            DEBUG("Fullscreen enabled!");
+        }
+    } else {
+        SDL_SetWindowFullscreen(state.window, 0);
+    }
+
     // Form flags
     int renderer_flags = SDL_RENDERER_ACCELERATED;
     if(state.vsync) {
@@ -70,15 +81,6 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
 
     // Disable screensaver :/
     SDL_DisableScreenSaver();
-    
-    // Set fullscreen if needed
-    if(state.fs) {
-        if(SDL_SetWindowFullscreen(state.window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
-            PERROR("Could not set fullscreen mode!");
-        } else {
-            DEBUG("Fullscreen enabled!");
-        }
-    }
 
     // Set rendertargets
     reset_targets();
@@ -101,30 +103,55 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     return 0;
 }
 
+void video_reinit_renderer() {
+    // Clear old texture cache entries
+    tcache_clear();
+
+    // Kill old renderer
+    SDL_DestroyRenderer(state.renderer);
+
+    // Create a new renderer
+    int renderer_flags = SDL_RENDERER_ACCELERATED;
+    if(state.vsync) {
+         renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
+    }
+    state.renderer = SDL_CreateRenderer(state.window, -1, renderer_flags);
+    SDL_RenderSetLogicalSize(state.renderer, NATIVE_W, NATIVE_H);
+
+     // Reset rendertarget
+    reset_targets();
+}
+
 int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
+    int changed = 0;
+
     // Set window size if necessary
     if(window_w != state.w || window_h != state.h || fullscreen != state.fs) {
         SDL_SetWindowSize(state.window, window_w, window_h);
+        DEBUG("Changing resolution to %dx%d", window_w, window_h);
+        changed = 1;
     }
     
     // Set fullscreen if necessary
     if(fullscreen != state.fs) {
-        if(SDL_SetWindowFullscreen(state.window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) != 0) {
+        if(SDL_SetWindowFullscreen(state.window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0) != 0) {
             PERROR("Could not set fullscreen mode!");
         } else {
             DEBUG("Fullscreen changed!");
         }
+        changed = 1;
     }
 
-    // VSync change; reset renderer.
+    // Center window if we are changing into or in window mode
+    if(!fullscreen && changed) {
+        SDL_SetWindowPosition(state.window, 
+                              SDL_WINDOWPOS_CENTERED, 
+                              SDL_WINDOWPOS_CENTERED);
+    }
+
+    // Check for vsync changes
     if(vsync != state.vsync) {
-        int renderer_flags = SDL_RENDERER_ACCELERATED;
-        if(vsync) {
-            renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
-        }
-        SDL_DestroyRenderer(state.renderer);
-        state.renderer = SDL_CreateRenderer(state.window, -1, renderer_flags);
-        SDL_RenderSetLogicalSize(state.renderer, NATIVE_W, NATIVE_H);
+        changed = 1;
     }
 
     // Set video state
@@ -133,12 +160,28 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
     state.w = window_w;
     state.h = window_h;
 
-    // Clear texture cache and reset rendertarget, just in case
-    reset_targets();
-    tcache_clear();
+    // If any settings changed, reinit the screen
+    if(changed) {
+        video_reinit_renderer();
+    }
 
     state.cb.render_reinit(&state);
     return 0;
+}
+
+void video_get_state(int *w, int *h, int *fs, int *vsync) {
+    if(w != NULL) {
+        *w = state.w;
+    }
+    if(h != NULL) {
+        *h = state.h;
+    }
+    if(fs != NULL) {
+        *fs = state.fs;
+    }
+    if(vsync != NULL) {
+        *vsync = state.vsync;
+    }
 }
 
 void video_select_renderer(int renderer) {
