@@ -99,6 +99,55 @@ int har_is_blocking(har *h) {
     return 0;
 }
 
+int frame_isset(sd_stringparser_frame *frame, const char *tag) {
+    const sd_stringparser_tag_value *v;
+    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
+    return v->is_set;
+}
+
+int frame_get(sd_stringparser_frame *frame, const char *tag) {
+    const sd_stringparser_tag_value *v;
+    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
+    return v->value;
+}
+
+int har_is_invincible(object *obj, af_move *move) {
+    sd_stringparser_frame f = obj->animation_state.parser->current_frame;
+    if (frame_isset(&f, "zz")) {
+        // blocks everything
+        return 1;
+    }
+    switch (move->category) {
+        // XX 'zg' is not handled here, but the game doesn't use it...
+        case CAT_LOW:
+            if (frame_isset(&f, "zl")) {
+                return 1;
+            }
+            break;
+        case CAT_MEDIUM:
+            if (frame_isset(&f, "zm")) {
+                return 1;
+            }
+            break;
+        case CAT_HIGH:
+            if (frame_isset(&f, "zh")) {
+                return 1;
+            }
+            break;
+        case CAT_JUMPING:
+            if (frame_isset(&f, "zj")) {
+                return 1;
+            }
+            break;
+        case CAT_PROJECTILE:
+            if (frame_isset(&f, "zp")) {
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
+
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     har *h = userdata;
@@ -438,6 +487,11 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             return;
         }
 
+        // is the HAR invulnerable to this kind of attack?
+        if (har_is_invincible(obj_b, move)) {
+            return;
+        }
+
         vec2i hit_coord2 = vec2i_create(0, 0);
 
         if(b->damage_done == 0 && loop == 0 && intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2)) {
@@ -503,6 +557,11 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         }
 
         af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
+
+        // is the HAR invulnerable to this kind of attack?
+        if (har_is_invincible(o_har, move)) {
+            return;
+        }
 
         har_take_damage(o_har, &move->footer_string, move->damage);
         if (h->hit_hook_cb) {
@@ -751,18 +810,6 @@ void add_input(char *buf, int act_type, int direction) {
             add_input_to_buffer(buf, '5');
             break;
     }
-}
-
-int frame_isset(sd_stringparser_frame *frame, const char *tag) {
-    const sd_stringparser_tag_value *v;
-    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
-    return v->is_set;
-}
-
-int frame_get(sd_stringparser_frame *frame, const char *tag) {
-    const sd_stringparser_tag_value *v;
-    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
-    return v->value;
 }
 
 af_move* match_move(object *obj, char *inputs) {
