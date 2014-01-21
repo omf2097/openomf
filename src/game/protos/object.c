@@ -141,8 +141,10 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
 
     // Read animation state
     uint16_t anim_str_len = serial_read_int16(ser);
-    char anim_str[anim_str_len];
-    serial_read(ser, anim_str, anim_str_len);
+    char anim_str[anim_str_len+1];
+    if(anim_str_len > 0) {
+        serial_read(ser, anim_str, anim_str_len);
+    }
     uint16_t ticks = (uint16_t)serial_read_int16(ser);
     uint8_t reverse = serial_read_int8(ser);
 

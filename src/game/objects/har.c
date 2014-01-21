@@ -92,6 +92,13 @@ int har_is_crouching(har *h) {
     return 0;
 }
 
+int har_is_blocking(har *h) {
+    if ((h->state == STATE_CROUCHBLOCK || h->state == STATE_WALKFROM) && h->executing_move == 0) {
+        return 1;
+    }
+    return 0;
+}
+
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     har *h = userdata;
@@ -409,7 +416,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     }
 }
 
-void har_collide_with_har(object *obj_a, object *obj_b) {
+void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
 
@@ -426,10 +433,18 @@ void har_collide_with_har(object *obj_a, object *obj_b) {
             (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord)
             || move->category == CAT_CLOSE)) {
 
-        if (b->state == STATE_WALKFROM || b->state == STATE_CROUCHBLOCK) {
+        if (har_is_blocking(b)) {
             har_block(obj_b, hit_coord);
             return;
         }
+
+        vec2i hit_coord2 = vec2i_create(0, 0);
+
+        if(b->damage_done == 0 && loop == 0 && intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2)) {
+            DEBUG("both hars hit at the same time!");
+            har_collide_with_har(obj_b, obj_a, 1);
+        }
+
 
         if (move->category == CAT_CLOSE) {
           a->close = 0;
@@ -482,8 +497,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     int level = 2;
     vec2i hit_coord;
     if(intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
-
-        if (h->state == STATE_WALKFROM || h->state == STATE_CROUCHBLOCK) {
+        if (har_is_blocking(h)) {
             har_block(o_har, hit_coord);
             return;
         }
@@ -583,8 +597,8 @@ void har_collide(object *obj_a, object *obj_b) {
     har_check_closeness(obj_b, obj_a);
 
     // Handle har collisions
-    har_collide_with_har(obj_a, obj_b);
-    har_collide_with_har(obj_b, obj_a);
+    har_collide_with_har(obj_a, obj_b, 0);
+    har_collide_with_har(obj_b, obj_a, 0);
 }
 
 void har_tick(object *obj) {
