@@ -259,17 +259,7 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
     scene *scene = data;
     object *o_har = game_player_get_har(game_state_get_player(scene->gs, player_id));
     har *h = object_get_userdata(o_har);
-    if (scene->id == SCENE_ARENA4 && o_har->pos.y < 190) {
-        // desert always shows the 'hit' animation when you touch the wall
-        bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
-        object *obj = malloc(sizeof(object));
-        object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
-        object_set_stl(obj, scene->bk_data.sound_translation_table);
-        object_set_animation(obj, &info->ani);
-        object_set_custom_string(obj, "brwA1-brwB1-brwD1-brwE0-brwD4-brwC2-brwB2-brwA2");
-        obj->singleton = 1;
-        game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
-    } else if (scene->id == SCENE_ARENA2 && o_har->pos.y < 190 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
+    if (scene->id == SCENE_ARENA2 && o_har->pos.y < 190 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
         bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
         object *obj = malloc(sizeof(object));
         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
@@ -294,6 +284,31 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
             object_tick(obj2);
             game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP);
         }
+        return;
+    }
+
+    if (scene->id == SCENE_ARENA4 && o_har->pos.y < 190) {
+        // desert always shows the 'hit' animation when you touch the wall
+        bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
+        object *obj = malloc(sizeof(object));
+        object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
+        object_set_stl(obj, scene->bk_data.sound_translation_table);
+        object_set_animation(obj, &info->ani);
+        object_set_custom_string(obj, "brwA1-brwB1-brwD1-brwE0-brwD4-brwC2-brwB2-brwA2");
+        obj->singleton = 1;
+        game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
+    }
+
+    DEBUG("velocity %d", abs(o_har->vel.x));
+
+    if ((h->state == STATE_FALLEN || h->state == STATE_RECOIL) && abs(o_har->vel.x) > 5) {
+        o_har->vel.x = 0.f;
+        h->state = STATE_RECOIL;
+        // Set hit animation
+        object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
+        object_set_repeat(o_har, 0);
+        // from MASTER.DAT
+        object_set_custom_string(o_har, "hQ10-x-3Q5-x-2L5-x-2M900");
     }
 }
 
