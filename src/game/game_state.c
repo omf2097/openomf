@@ -495,6 +495,9 @@ void game_state_tick(game_state *gs) {
         float shake_x = sin(gs->screen_shake_horizontal) * 5 * ((float)gs->screen_shake_horizontal / 15);
         float shake_y = sin(gs->screen_shake_vertical) * 5 * ((float)gs->screen_shake_vertical / 15);
         video_move_target((int)shake_x, (int)shake_y);
+    } else {
+        // XXX Ocasionally the screen does not return back to normal position
+        video_move_target(0, 0);
     }
 
     // Tick controllers

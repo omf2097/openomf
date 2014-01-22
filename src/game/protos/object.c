@@ -29,6 +29,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->group = OBJECT_NO_GROUP;
     obj->gravity = 0.0f;
     obj->singleton = 0;
+    obj->orbit = 0;
+    obj->orbit_tick = M_PI/2.0f;
 
     // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;

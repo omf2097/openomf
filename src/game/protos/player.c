@@ -514,6 +514,12 @@ void player_run(object *obj) {
 
                 }
             }
+            if(isset(f, "as")) {
+                // make the object move around the screen in a circular motion until end of frame
+                obj->orbit = 1;
+            } else {
+                obj->orbit = 0;
+            }
 
             // Set render settings
             if(real_frame < 25) {

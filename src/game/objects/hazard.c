@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 #include "game/objects/hazard.h"
 #include "game/protos/object_specializer.h"
 #include "utils/log.h"
@@ -33,10 +34,20 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, int g, void *userdata) {
     }
 }
 
+void hazard_move(object *obj) {
+    if(obj->orbit) {
+        // Make this object orbit around the center of the arena
+        obj->pos.x += 4*sin(obj->orbit_tick);
+        obj->pos.y += 2*cos(obj->orbit_tick);
+        obj->orbit_tick += 0.04f;
+    }
+}
+
 int hazard_create(object *obj, scene *scene) {
 
     object_set_spawn_cb(obj, hazard_spawn_cb, (void*)scene);
     object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
+    object_set_move_cb(obj, hazard_move);
 
     hazard_bootstrap(obj);
 

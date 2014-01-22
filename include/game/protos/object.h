@@ -58,6 +58,8 @@ struct object_t {
     uint8_t hstate;
     int8_t direction;
     int8_t group;
+    int8_t orbit;
+    float orbit_tick;
 
     float y_percent;
     float gravity;
