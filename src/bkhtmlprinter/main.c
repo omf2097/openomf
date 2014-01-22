@@ -7,6 +7,7 @@
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 #include <stdint.h>
+#include <string.h>
 #include <png.h>
 
 const char *header = "<!DOCTYPE html>\
@@ -37,6 +38,40 @@ h4 { font-size: 14px; font-weight: bold; }\
 </style>\
 </head>\
 <body>";
+
+static const char *arena_anim_names[] = {
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "Round",
+    "Number",
+    "You Lose",
+    "You Win",
+    "Fight", // 10
+    "Ready",
+    "",
+    "",
+    "",
+    "", // 15
+    "",
+    "",
+    "",
+    "",
+    "Left Wall Hit", // 20
+    "Right Wall Hit",
+    "",
+    "",
+    "Dust 1",
+    "Dust 2", // 25
+    "Dust 3",
+    "Match marker",
+    "",
+    "",
+    "",
+};
 
 const char *footer = "</body></html>";
 
@@ -203,7 +238,22 @@ int main(int argc, char *argv[]) {
         if(bk->anims[m]) {
             sd_bk_anim *bka = bk->anims[m];
             sd_animation *ani = bka->animation;
-            fprintf(f, "<h3>Animation %d</h3><div class=\"animation\">", m);
+
+            char anim_name[32];
+            anim_name[0] = 0;
+            switch(bk->file_id) {
+                case 8:
+                case 16:
+                case 32:
+                case 64:
+                case 128:
+                    if(strlen(arena_anim_names[m]) > 0) {
+                        sprintf(anim_name, ": %s", arena_anim_names[m]);
+                    }
+                    break;
+            }
+
+            fprintf(f, "<h3>Animation %d %s</h3><div class=\"animation\">", m, anim_name);
             fprintf(f, "<div class=\"iblock\"><h4>General information</h4>");
             fprintf(f, "<table><tr><th>Key</th><th>Value</th></tr>");
             fprintf(f, "<tr><td>Null</td><td>%d</td></tr>", bka->null);

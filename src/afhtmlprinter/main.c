@@ -7,6 +7,7 @@
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
 #include <stdint.h>
+#include <string.h>
 #include <png.h>
 
 const char *header = "<!DOCTYPE html>\
@@ -37,6 +38,59 @@ h4 { font-size: 14px; font-weight: bold; }\
 </style>\
 </head>\
 <body>";
+
+static const char *unk_header_names[] = {
+    "N/A",
+    "N/A", // 1
+    "N/A",
+    "N/A",
+    "N/A",
+    "N/A",
+    "N/A",
+    "N/A",
+    "N/A",
+    "N/A",
+    "N/A", // 10
+    "N/A",
+    "Next animation if hit",
+    "Category",
+    "N/A",
+    "Scrap amount",
+    "Successor ID",
+    "Damage",
+    "N/A",
+    "N/A",
+    "Score"
+};
+
+static const char *anim_names_a[] = {
+    "",
+    "Jumping",
+    "Getting up",
+    "Stunned",
+    "Crouching",
+    "Standing block", // 5
+    "Crouching block", 
+    "Burning oil",
+    "Blocking scrape",
+    "Damage",
+    "Walking", // 10
+    "Idle", 
+    "Scrap",
+    "Bolt",
+    "Screw"
+};
+
+static const char *anim_names_b[] = {
+    "Victory",
+    "Loss"
+};
+
+static const char *anim_names_c[] = {
+    "Blast 1",
+    "Blast 2",
+    "Blast 3"
+};
 
 const char *footer = "</body></html>";
 
@@ -176,13 +230,30 @@ int main(int argc, char *argv[]) {
         if(af->moves[m]) {
             sd_move *afm = af->moves[m];
             sd_animation *ani = afm->animation;
-            fprintf(f, "<h3>Animation %d</h3><div class=\"animation\">", m);
+
+            char anim_name[32];
+            anim_name[0] = 0;
+            if(m > 0 && m <= 14) {
+                sprintf(anim_name, ": %s", anim_names_a[m]);
+            } else if(m == 48 || m == 49) {
+                sprintf(anim_name, ": %s", anim_names_b[m-48]);
+            } else if(m >= 55 && m <= 57) {
+                sprintf(anim_name, ": %s", anim_names_c[m-55]);
+            }
+
+
+            fprintf(f, "<h3>Animation %d %s</h3><div class=\"animation\">", m, anim_name);
             fprintf(f, "<div class=\"iblock\"><h4>General information</h4>");
             fprintf(f, "<table><tr><th>Key</th><th>Value</th></tr>");
             fprintf(f, "<tr><td>Move string</td><td>%s</td></tr>", afm->move_string);
             fprintf(f, "<tr><td>Footer string</td><td>%s</td></tr>", afm->footer_string);
-            fprintf(f, "<tr><td>Unknown move header</td><td>");
+            fprintf(f, "<tr><td>Move header</td><td>");
+            fprintf(f, "<table><tr><th>#</th><th>Name</th><th>Value</th></tr>");
             for(int h = 0; h < 21; h++) {
+                fprintf(f, "<tr>");
+                fprintf(f, "<td>%d</td>", h);
+                fprintf(f, "<td>%s</td>", unk_header_names[h]);
+                fprintf(f, "<td>");
                 if(afm->unknown[h] > 0) {
                     fprintf(f, "<strong>");
                 }
@@ -190,7 +261,10 @@ int main(int argc, char *argv[]) {
                 if(afm->unknown[h] > 0) {
                     fprintf(f, "</strong>");
                 }
+                fprintf(f, "</td>");
+                fprintf(f, "</tr>");
             }
+            fprintf(f, "</table>");
             fprintf(f, "</td></tr>");
 
             fprintf(f, "<tr><td>Start X</td><td>%d</td></tr>", ani->start_x);
