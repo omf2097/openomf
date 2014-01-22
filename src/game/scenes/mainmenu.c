@@ -666,13 +666,14 @@ void mainmenu_tick(scene *scene) {
                 player2_ctrl->har = p2->har;
 
                 // Player 1 controller -- Keyboard
+                settings_keyboard *k = &settings_get()->keys;
                 keys = malloc(sizeof(keyboard_keys));
-                keys->up = SDL_SCANCODE_UP;
-                keys->down = SDL_SCANCODE_DOWN;
-                keys->left = SDL_SCANCODE_LEFT;
-                keys->right = SDL_SCANCODE_RIGHT;
-                keys->punch = SDL_SCANCODE_RETURN;
-                keys->kick = SDL_SCANCODE_RSHIFT;
+                keys->up = SDL_GetScancodeFromName(k->key1_up);
+                keys->down = SDL_GetScancodeFromName(k->key1_down);
+                keys->left = SDL_GetScancodeFromName(k->key1_left);
+                keys->right = SDL_GetScancodeFromName(k->key1_right);
+                keys->punch = SDL_GetScancodeFromName(k->key1_punch);
+                keys->kick = SDL_GetScancodeFromName(k->key1_kick);
                 keyboard_create(player1_ctrl, keys, 0);
                 game_player_set_ctrl(p1, player1_ctrl);
 
@@ -709,13 +710,14 @@ void mainmenu_tick(scene *scene) {
                 game_player_set_ctrl(p1, player1_ctrl);
 
                 // Player 2 controller -- Keyboard
+                settings_keyboard *k = &settings_get()->keys;
                 keys = malloc(sizeof(keyboard_keys));
-                keys->up = SDL_SCANCODE_UP;
-                keys->down = SDL_SCANCODE_DOWN;
-                keys->left = SDL_SCANCODE_LEFT;
-                keys->right = SDL_SCANCODE_RIGHT;
-                keys->punch = SDL_SCANCODE_RETURN;
-                keys->kick = SDL_SCANCODE_RSHIFT;
+                keys->up = SDL_GetScancodeFromName(k->key1_up);
+                keys->down = SDL_GetScancodeFromName(k->key1_down);
+                keys->left = SDL_GetScancodeFromName(k->key1_left);
+                keys->right = SDL_GetScancodeFromName(k->key1_right);
+                keys->punch = SDL_GetScancodeFromName(k->key1_punch);
+                keys->kick = SDL_GetScancodeFromName(k->key1_kick);
                 keyboard_create(player2_ctrl, keys, 0);
                 game_player_set_ctrl(p2, player2_ctrl);
                 local->host = NULL;
