@@ -12,6 +12,7 @@ void af_move_create(af_move *move, void *src, int id) {
     move->category = sdmv->unknown[13];
     move->damage = sdmv->unknown[17] / 2.0f;
     move->points = sdmv->unknown[20] * 400;
+    move->scrap_amount = sdmv->unknown[15];
     animation_create(&move->ani, sdmv->animation, id);
 #ifdef DEBUGMODE
     memcpy(move->unknown, sdmv->unknown, sizeof(move->unknown));

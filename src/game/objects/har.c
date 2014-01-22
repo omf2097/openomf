@@ -23,7 +23,7 @@
 
 void har_finished(object *obj);
 int har_act(object *obj, int act_type);
-void har_spawn_scrap(object *obj, vec2i pos);
+void har_spawn_scrap(object *obj, vec2i pos, int amount);
 
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
@@ -172,7 +172,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         }
 
         // Use our existing function for spawning scrap
-        har_spawn_scrap(parent, pos);
+        har_spawn_scrap(parent, pos, 12);
         return;
     }
 
@@ -326,7 +326,7 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
     for(int i = 0; i < amount; i++) {
         // Calculate velocity etc.
         rv = rand_int(100) / 100.0f - 0.5;
-        velx = 5 * cos(90 + i-(amount) / 2 + rv);
+        velx = (5 * cos(90 + i-(amount) / 2 + rv)) * object_get_direction(obj);
         vely = -12 * sin(i / amount + rv);
 
         // Make sure scrap has somekind of velocity
@@ -348,20 +348,29 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
 
 }
 
-void har_spawn_scrap(object *obj, vec2i pos) {
-    float amount = 5;
+void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     float rv = 0.0f;
     float velx, vely;
+    // wild ass guess
+    int oil_amount = amount / 3;
     har *h = object_get_userdata(obj);
-    har_spawn_oil(obj, pos, amount, 1, RENDER_LAYER_TOP);
+    har_spawn_oil(obj, pos, oil_amount, 1, RENDER_LAYER_TOP);
 
     // scrap metal
-    amount = 2;
-    for(int i = 0; i < amount; i++) {
+    // TODO this assumes the default scrap level and does not consider BIG[1-9]
+    int scrap_amount = 0;
+    if (amount > 11 && amount < 14) {
+        scrap_amount = 1;
+    } else if (amount > 13 && amount < 16) {
+        scrap_amount = 2;
+    } else if (amount > 15) {
+        scrap_amount = 3;
+    }
+    for(int i = 0; i < scrap_amount; i++) {
         // Calculate velocity etc.
         rv = rand_int(100) / 100.0f - 0.5;
-        velx = 5 * cos(90 + i-(amount) / 2 + rv);
-        vely = -12 * sin(i / amount + rv);
+        velx = (5 * cos(90 + i-(scrap_amount) / 2 + rv)) * object_get_direction(obj);
+        vely = -12 * sin(i / scrap_amount + rv);
 
         // Make sure scrap has somekind of velocity
         // (to prevent floating scrap objects)
@@ -526,7 +535,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         }
         har_take_damage(obj_b, &move->footer_string, move->damage);
         if (hit_coord.x != 0 || hit_coord.y != 0) {
-            har_spawn_scrap(obj_b, hit_coord);
+            har_spawn_scrap(obj_b, hit_coord, move->scrap_amount);
         }
         a->damage_done = 1;
         b->damage_received = 1;
@@ -573,7 +582,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         if (h->hit_hook_cb) {
             h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);
         }
-        har_spawn_scrap(o_har, hit_coord);
+        har_spawn_scrap(o_har, hit_coord, move->scrap_amount);
         h->damage_received = 1;
 
         vec2f vel = object_get_vel(o_har);
@@ -621,7 +630,7 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
         /*if (h->hit_hook_cb) {*/
             /*h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);*/
         /*}*/
-        har_spawn_scrap(o_har, hit_coord);
+        har_spawn_scrap(o_har, hit_coord, 9);
         h->damage_received = 1;
     } else if (anim->chain_hit && intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord)) {
         // we can punch this! Only set on fire pit orb
