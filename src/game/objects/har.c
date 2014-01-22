@@ -158,19 +158,19 @@ int har_is_invincible(object *obj, af_move *move) {
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     har *h = userdata;
+    vec2i p_pos = object_get_pos(parent);
+
+    // can't do this in object, because it hoses the intro
+    if(pos.x == 0) {
+        pos.x = p_pos.x;// + p_size.x / 2;
+    }
+    if(pos.y == 0) {
+        pos.y = p_pos.y;//y + p_size.y / 2;
+    }
+
 
     // If this is a scrap item, handle it as such ...
     if(id == ANIM_SCRAP_METAL || id == ANIM_BOLT || id == ANIM_SCREW || id == ANIM_BURNING_OIL) {
-        // If the scrap obviously has a wrong starting position, fix it
-        /*vec2i p_size = object_get_size(parent);*/
-        vec2i p_pos = object_get_pos(parent);
-        if(pos.x == 0) {
-            pos.x = p_pos.x;// + p_size.x / 2;
-        }
-        if(pos.y == 0) {
-            pos.y = p_pos.y;//y + p_size.y / 2;
-        }
-
         // Use our existing function for spawning scrap
         har_spawn_scrap(parent, pos, 12);
         return;
