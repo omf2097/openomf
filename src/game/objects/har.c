@@ -240,7 +240,6 @@ void har_move(object *obj) {
             }
 
             if(pos.y >= 185 && 
-                    IS_ZERO(vel.x) &&
                     obj->animation_state.parser->current_frame.is_final_frame) {
                 if (h->state == STATE_FALLEN) {
                     if (h->health <= 0 && h->endurance <= 0) {
