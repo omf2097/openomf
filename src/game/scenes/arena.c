@@ -273,7 +273,10 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
             object_set_repeat(o_har, 0);
             // from MASTER.DAT
             object_set_custom_string(o_har, "hQ1-hQ7-x-3Q5-x-2L5-x-2M900");
-            scene->gs->screen_shake_horizontal = 12;
+            scene->gs->screen_shake_horizontal = 4*o_har->vel.x;
+            if(scene->gs->screen_shake_horizontal == 0) {
+                scene->gs->screen_shake_horizontal = 16;
+            }
 
             // spawn the electricity on top of the HAR
             // TODO this doesn't track the har's position well...
@@ -303,14 +306,14 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
     DEBUG("velocity %d", abs(o_har->vel.x));
 #endif
     if ((h->state == STATE_FALLEN || h->state == STATE_RECOIL) && abs(o_har->vel.x) > 5) {
-        o_har->vel.x = 0.f;
         h->state = STATE_RECOIL;
         // Set hit animation
         object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(o_har, 0);
-        scene->gs->screen_shake_horizontal = 12;
+        scene->gs->screen_shake_horizontal = 4*o_har->vel.x;
         // from MASTER.DAT
         object_set_custom_string(o_har, "hQ10-x-3Q5-x-2L5-x-2M900");
+        o_har->vel.x = 0.f;
     }
 }
 
