@@ -353,13 +353,9 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
 // HAR is doing destruction. If there is any way to do this better,
 // this should be changed.
 int is_destruction(game_state *gs) {
-    object *obj_a = game_state_get_player(gs, 0)->har;
-    object *obj_b = game_state_get_player(gs, 1)->har;
-    har *har_a = object_get_userdata(obj_a);
-    har *har_b = object_get_userdata(obj_b);
-    af_move *move_a = af_get_move(har_a->af_data, obj_a->cur_animation->id);
-    af_move *move_b = af_get_move(har_b->af_data, obj_b->cur_animation->id);
-    return (move_a->category == CAT_DESTRUCTION || move_b->category == CAT_DESTRUCTION);
+    har *har_a = object_get_userdata(game_state_get_player(gs, 0)->har);
+    har *har_b = object_get_userdata(game_state_get_player(gs, 1)->har);
+    return (har_a->state == STATE_DESTRUCTION || har_b->state == STATE_DESTRUCTION);
 }
 
 void har_spawn_scrap(object *obj, vec2i pos, int amount) {
