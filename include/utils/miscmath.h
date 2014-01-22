@@ -1,6 +1,8 @@
 #ifndef _MISCMATH_H
 #define _MISCMATH_H
 
+#define MISC_PI 3.14159265f
+
 int max3(int a, int b, int c);
 float dist(float a, float b);
 float clampf(float val, float _min, float _max);
