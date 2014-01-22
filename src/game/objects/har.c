@@ -761,7 +761,11 @@ void har_tick(object *obj) {
         vec2f push = object_get_vel(obj);
         // The infamous Harrison-Stetson method
         // XXX TODO is there a non-hardcoded value that we could use?
-        push.x = 4.0f * -object_get_direction(obj);
+        if(h->executing_move == 0 && (h->state == STATE_CROUCHBLOCK || h->state == STATE_WALKFROM)) {
+            push.x = 1.0f * -object_get_direction(obj);
+        } else {
+            push.x = 4.0f * -object_get_direction(obj);
+        }
         object_set_vel(obj, push);
         h->flinching = 0;
     }
