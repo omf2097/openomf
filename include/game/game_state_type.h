@@ -33,6 +33,9 @@ typedef struct game_state_t {
     unsigned int role;
     unsigned int speed;
 
+    // For screen shaking
+    int screen_shake_left;
+
     // Crossfade state
     int next_wait_ticks;
     int this_wait_ticks;

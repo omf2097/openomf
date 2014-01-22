@@ -14,8 +14,11 @@ typedef struct video_state_t {
     int fs;
     int vsync;
 
-    int cur_renderer;
     float fade;
+    int target_move_x;
+    int target_move_y;
+
+    int cur_renderer;
     SDL_Texture *target;
 
     // Palettes

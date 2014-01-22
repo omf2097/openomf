@@ -29,6 +29,8 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     state.vsync = vsync;
     state.fade = 1.0f;
     state.target = NULL;
+    state.target_move_x = 0;
+    state.target_move_y = 0;
 
     // Clear palettes
     state.cur_palette = malloc(sizeof(screen_palette));
@@ -178,6 +180,11 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
 
     state.cb.render_reinit(&state);
     return 0;
+}
+
+void video_move_target(int x, int y) {
+    state.target_move_x = x;
+    state.target_move_y = y;
 }
 
 void video_get_state(int *w, int *h, int *fs, int *vsync) {
@@ -372,7 +379,12 @@ void video_render_finish() {
     SDL_SetRenderTarget(state.renderer, NULL);
     uint8_t v = 255.0f * state.fade;
     SDL_SetTextureColorMod(state.target, v, v, v);
-    SDL_RenderCopy(state.renderer, state.target, NULL, NULL);
+    SDL_Rect dst;
+    dst.x = state.target_move_x;
+    dst.y = state.target_move_y;
+    dst.w = NATIVE_W;
+    dst.h = NATIVE_H;
+    SDL_RenderCopy(state.renderer, state.target, NULL, &dst);
     SDL_SetTextureColorMod(state.target, 0xFF, 0xFF, 0xFF);
 
     SDL_RenderPresent(state.renderer);

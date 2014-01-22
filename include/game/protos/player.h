@@ -13,10 +13,12 @@ typedef struct player_sprite_state_t {
     int blendmode;
     int flipmode;
     int method_flags;
-    int blend_start;
-    int blend_finish;
     int timer;
     int duration;
+    int screen_shake;
+
+    int blend_start;
+    int blend_finish;
 
     int pal_ref_index; // bpd
     int pal_entry_count; // bpn

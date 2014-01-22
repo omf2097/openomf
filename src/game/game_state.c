@@ -45,6 +45,9 @@ int game_state_create(game_state *gs, int net_mode) {
     gs->speed = settings_get()->gameplay.speed;
     vector_create(&gs->objects, sizeof(render_obj));
 
+    // For screen shake
+    gs->screen_shake_left = 0;
+
     // Used for crossfades
     gs->next_wait_ticks = 0;
     gs->this_wait_ticks = 0;
@@ -476,6 +479,13 @@ void game_state_tick(game_state *gs) {
     if(gs->this_wait_ticks > 0) {
         gs->this_wait_ticks--;
         video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
+    }
+
+    // Change the screen shake value downwards
+    if(gs->screen_shake_left > 0) {
+        gs->screen_shake_left--;
+        float shake = sin(gs->screen_shake_left) * 5 * ((float)gs->screen_shake_left / 15);
+        video_move_target((int)shake, 0);
     }
 
     // Tick controllers

@@ -39,6 +39,8 @@ void player_clear_frame(object *obj) {
     s->timer = 0;
     s->duration = 0;
 
+    s->screen_shake = 0;
+
     s->blend_start = 0xFF;
     s->blend_finish = 0xFF;
 
@@ -334,29 +336,30 @@ void player_run(object *obj) {
             // Blend mode stuff
             if(isset(f, "b1")) { rstate->method_flags &= 0x2000; }
             if(isset(f, "b2")) { rstate->method_flags &= 0x4000; }
-            if(isset(f, "bb")) { 
-                rstate->method_flags &= 0x0010; 
-                rstate->blend_finish = get(f, "bb"); 
+            if(isset(f, "bb")) {
+                rstate->method_flags &= 0x0010;
+                rstate->blend_finish = get(f, "bb");
+                rstate->screen_shake = get(f, "bb");
             }
             if(isset(f, "be")) { rstate->method_flags &= 0x0800; }
-            if(isset(f, "bf")) { 
-                rstate->method_flags &= 0x0001; 
-                rstate->blend_finish = get(f, "bf"); 
+            if(isset(f, "bf")) {
+                rstate->method_flags &= 0x0001;
+                rstate->blend_finish = get(f, "bf");
             }
             if(isset(f, "bh")) { rstate->method_flags &= 0x0040; }
-            if(isset(f, "bl")) { 
-                rstate->method_flags &= 0x0008; 
-                rstate->blend_finish = get(f, "bl"); 
+            if(isset(f, "bl")) {
+                rstate->method_flags &= 0x0008;
+                rstate->blend_finish = get(f, "bl");
             }
-            if(isset(f, "bm")) { 
-                rstate->method_flags &= 0x0100; 
-                rstate->blend_finish = get(f, "bm"); 
+            if(isset(f, "bm")) {
+                rstate->method_flags &= 0x0100;
+                rstate->blend_finish = get(f, "bm");
             }
-            if(isset(f, "bj")) { 
-                rstate->method_flags &= 0x0400; 
-                rstate->blend_finish = get(f, "bj"); 
+            if(isset(f, "bj")) {
+                rstate->method_flags &= 0x0400;
+                rstate->blend_finish = get(f, "bj");
             }
-            if(isset(f, "bs")) { 
+            if(isset(f, "bs")) {
                 rstate->blend_start = get(f, "bs");
             }
             if(isset(f, "bu")) { rstate->method_flags &= 0x8000; }

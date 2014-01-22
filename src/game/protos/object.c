@@ -219,6 +219,11 @@ void object_tick(object *obj) {
         obj->tick(obj);
     }
 
+    if(obj->sprite_state.screen_shake > 0) {
+        obj->gs->screen_shake_left = obj->sprite_state.screen_shake * 4;
+        obj->sprite_state.screen_shake = 0;
+    }
+
     // serialize to the ring buffer
     int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
     serial_free(&obj->event_buffer[pos]);
