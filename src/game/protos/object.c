@@ -220,7 +220,7 @@ void object_tick(object *obj) {
     }
 
     if(obj->sprite_state.screen_shake > 0) {
-        obj->gs->screen_shake_left = obj->sprite_state.screen_shake * 4;
+        obj->gs->screen_shake_vertical = obj->sprite_state.screen_shake * 4;
         obj->sprite_state.screen_shake = 0;
     }
 

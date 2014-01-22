@@ -46,7 +46,8 @@ int game_state_create(game_state *gs, int net_mode) {
     vector_create(&gs->objects, sizeof(render_obj));
 
     // For screen shake
-    gs->screen_shake_left = 0;
+    gs->screen_shake_horizontal = 0;
+    gs->screen_shake_vertical = 0;
 
     // Used for crossfades
     gs->next_wait_ticks = 0;
@@ -482,10 +483,18 @@ void game_state_tick(game_state *gs) {
     }
 
     // Change the screen shake value downwards
-    if(gs->screen_shake_left > 0) {
-        gs->screen_shake_left--;
-        float shake = sin(gs->screen_shake_left) * 5 * ((float)gs->screen_shake_left / 15);
-        video_move_target((int)shake, 0);
+    if(gs->screen_shake_horizontal > 0) {
+        gs->screen_shake_horizontal--;
+    }
+
+    if(gs->screen_shake_vertical > 0) {
+        gs->screen_shake_vertical--;
+    }
+
+    if (gs->screen_shake_horizontal > 0 || gs->screen_shake_vertical > 0) {
+        float shake_x = sin(gs->screen_shake_horizontal) * 5 * ((float)gs->screen_shake_horizontal / 15);
+        float shake_y = sin(gs->screen_shake_vertical) * 5 * ((float)gs->screen_shake_vertical / 15);
+        video_move_target((int)shake_x, (int)shake_y);
     }
 
     // Tick controllers
