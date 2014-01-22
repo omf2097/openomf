@@ -520,13 +520,16 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         return;
     }
 
+    sd_stringparser_frame f = obj_a->animation_state.parser->current_frame;
+
     // Check for collisions by sprite collision points
     int level = 1;
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
     vec2i hit_coord = vec2i_create(0, 0);
     if(a->damage_done == 0 &&
             (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord)
-            || move->category == CAT_CLOSE)) {
+            || move->category == CAT_CLOSE ||
+            (frame_isset(&f, "ue") && b->state != STATE_JUMPING))) {
 
         if (har_is_blocking(b, move)) {
             har_block(obj_b, hit_coord);
