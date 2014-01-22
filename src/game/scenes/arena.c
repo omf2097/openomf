@@ -299,9 +299,9 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
         obj->singleton = 1;
         game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
     }
-
+#ifdef DEBUGMODE_STFU
     DEBUG("velocity %d", abs(o_har->vel.x));
-
+#endif
     if ((h->state == STATE_FALLEN || h->state == STATE_RECOIL) && abs(o_har->vel.x) > 5) {
         o_har->vel.x = 0.f;
         h->state = STATE_RECOIL;

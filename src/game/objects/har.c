@@ -240,24 +240,17 @@ void har_move(object *obj) {
             }
 
             // prevent har from sliding after defeat
-            if(obj->animation_state.parser->current_frame.is_final_frame) {
-                if (h->health <= 0 && h->endurance <= 0) {
-                    h->state = STATE_DEFEAT;
-                    har_set_ani(obj, ANIM_DEFEAT, 0);
-                }
-            }
-
-            if(pos.y >= 185 && 
-                    IS_ZERO(vel.x) &&
-                    obj->animation_state.parser->current_frame.is_final_frame) {
+            if(h->state != STATE_DEFEAT &&
+               h->health <= 0 && h->endurance <= 0 &&
+               obj->animation_state.parser->current_frame.is_final_frame) {
+                h->state = STATE_DEFEAT;
+                har_set_ani(obj, ANIM_DEFEAT, 0);
+            } else if(pos.y >= 185 &&
+                      IS_ZERO(vel.x) &&
+                      obj->animation_state.parser->current_frame.is_final_frame) {
                 if (h->state == STATE_FALLEN) {
-                    if (h->health <= 0 && h->endurance <= 0) {
-                        h->state = STATE_DEFEAT;
-                        har_set_ani(obj, ANIM_DEFEAT, 0);
-                    } else {
-                        h->state = STATE_STANDING_UP;
-                        har_set_ani(obj, ANIM_STANDUP, 0);
-                    }
+                    h->state = STATE_STANDING_UP;
+                    har_set_ani(obj, ANIM_STANDUP, 0);
                 } else {
                     har_finished(obj);
                 }
