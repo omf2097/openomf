@@ -39,6 +39,8 @@ void player_clear_frame(object *obj) {
     s->timer = 0;
     s->duration = 0;
 
+    s->disable_gravity = 0;
+
     s->screen_shake_horizontal = 0;
     s->screen_shake_vertical = 0;
 
@@ -256,6 +258,11 @@ void player_run(object *obj) {
                     state->ticks = 1;
                     sd_stringparser_reset(state->parser);
                 }
+            }
+
+            // Hover flag
+            if(isset(f, "h")) {
+                rstate->disable_gravity = 1;
             }
         
             // Animation management
