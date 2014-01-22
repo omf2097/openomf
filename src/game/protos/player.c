@@ -133,6 +133,9 @@ void player_reload_with_str(object *obj, const char* custom_str) {
     obj->animation_state.finished = 0;
     obj->animation_state.previous = -1;
     obj->animation_state.reverse = 0;
+
+    obj->slide_state.timer = 0;
+    obj->slide_state.vel = vec2f_create(0,0);
 }
 
 void player_reload(object *obj) {

@@ -267,7 +267,7 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
         object_set_animation(obj, &info->ani);
         obj->singleton = 1;
         if (game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM) == 0) {
-            h->state = STATE_RECOIL;
+            h->state = STATE_FALLEN;
             // Set hit animation
             object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
             object_set_repeat(o_har, 0);
