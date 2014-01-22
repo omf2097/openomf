@@ -347,6 +347,19 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
 
 }
 
+// TODO: This is kind of a hack. It's used to check if either 
+// HAR is doing destruction. If there is any way to do this better,
+// this should be changed.
+int is_destruction(game_state *gs) {
+    object *obj_a = game_state_get_player(gs, 0)->har;
+    object *obj_b = game_state_get_player(gs, 1)->har;
+    har *har_a = object_get_userdata(obj_a);
+    har *har_b = object_get_userdata(obj_b);
+    af_move *move_a = af_get_move(har_a->af_data, obj_a->cur_animation->id);
+    af_move *move_b = af_get_move(har_b->af_data, obj_b->cur_animation->id);
+    return (move_a->category == CAT_DESTRUCTION || move_b->category == CAT_DESTRUCTION);
+}
+
 void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     float rv = 0.0f;
     float velx, vely;
@@ -358,7 +371,10 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     // scrap metal
     // TODO this assumes the default scrap level and does not consider BIG[1-9]
     int scrap_amount = 0;
-    if (amount > 11 && amount < 14) {
+    int destr = is_destruction(obj->gs);
+    if(destr) {
+        scrap_amount = 30;
+    } else if (amount > 11 && amount < 14) {
         scrap_amount = 1;
     } else if (amount > 13 && amount < 16) {
         scrap_amount = 2;
@@ -370,6 +386,12 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         rv = rand_int(100) / 100.0f - 0.5;
         velx = (5 * cos(90 + i-(scrap_amount) / 2 + rv)) * object_get_direction(obj);
         vely = -12 * sin(i / scrap_amount + rv);
+
+        // Make destruction moves look more impressive :P
+        if(destr) {
+            velx *= 5;
+            vely *= 5;
+        }
 
         // Make sure scrap has somekind of velocity
         // (to prevent floating scrap objects)
