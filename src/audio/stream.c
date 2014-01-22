@@ -4,6 +4,7 @@
 #include "utils/log.h"
 
 void stream_nullify(audio_stream *stream) {
+    stream->apply = NULL;
     stream->close = NULL;
     stream->play = NULL;
     stream->stop = NULL;
