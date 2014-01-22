@@ -17,6 +17,9 @@ void af_create(af *a, void *src) {
     // Sound translation table
     memcpy(a->sound_translation_table, sdaf->soundtable, 30);
 
+    // Set defaults like master.dat
+    a->sound_translation_table[27] = 0;
+
     // Moves
     hashmap_create(&a->moves, 8);
     af_move tmp_move;
