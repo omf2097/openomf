@@ -273,6 +273,7 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
             object_set_repeat(o_har, 0);
             // from MASTER.DAT
             object_set_custom_string(o_har, "hQ1-hQ7-x-3Q5-x-2L5-x-2M900");
+            scene->gs->screen_shake_horizontal = 12;
 
             // spawn the electricity on top of the HAR
             // TODO this doesn't track the har's position well...
@@ -307,6 +308,7 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
         // Set hit animation
         object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(o_har, 0);
+        scene->gs->screen_shake_horizontal = 12;
         // from MASTER.DAT
         object_set_custom_string(o_har, "hQ10-x-3Q5-x-2L5-x-2M900");
     }

@@ -39,7 +39,8 @@ void player_clear_frame(object *obj) {
     s->timer = 0;
     s->duration = 0;
 
-    s->screen_shake = 0;
+    s->screen_shake_horizontal = 0;
+    s->screen_shake_vertical = 0;
 
     s->blend_start = 0xFF;
     s->blend_finish = 0xFF;
@@ -342,7 +343,7 @@ void player_run(object *obj) {
             if(isset(f, "bb")) {
                 rstate->method_flags &= 0x0010;
                 rstate->blend_finish = get(f, "bb");
-                rstate->screen_shake = get(f, "bb");
+                rstate->screen_shake_vertical = get(f, "bb");
             }
             if(isset(f, "be")) { rstate->method_flags &= 0x0800; }
             if(isset(f, "bf")) {
@@ -353,6 +354,7 @@ void player_run(object *obj) {
             if(isset(f, "bl")) {
                 rstate->method_flags &= 0x0008;
                 rstate->blend_finish = get(f, "bl");
+                rstate->screen_shake_horizontal = get(f, "bl");
             }
             if(isset(f, "bm")) {
                 rstate->method_flags &= 0x0100;

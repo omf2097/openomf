@@ -15,7 +15,8 @@ typedef struct player_sprite_state_t {
     int method_flags;
     int timer;
     int duration;
-    int screen_shake;
+    int screen_shake_horizontal;
+    int screen_shake_vertical;
 
     int blend_start;
     int blend_finish;

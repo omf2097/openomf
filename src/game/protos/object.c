@@ -219,9 +219,14 @@ void object_tick(object *obj) {
         obj->tick(obj);
     }
 
-    if(obj->sprite_state.screen_shake > 0) {
-        obj->gs->screen_shake_vertical = obj->sprite_state.screen_shake * 4;
-        obj->sprite_state.screen_shake = 0;
+    if(obj->sprite_state.screen_shake_vertical > 0) {
+        obj->gs->screen_shake_vertical = obj->sprite_state.screen_shake_vertical * 4;
+        obj->sprite_state.screen_shake_vertical = 0;
+    }
+
+    if(obj->sprite_state.screen_shake_horizontal > 0) {
+        obj->gs->screen_shake_horizontal = obj->sprite_state.screen_shake_horizontal * 4;
+        obj->sprite_state.screen_shake_horizontal = 0;
     }
 
     // serialize to the ring buffer
