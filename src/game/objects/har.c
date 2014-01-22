@@ -239,7 +239,16 @@ void har_move(object *obj) {
                 vel.x = 0.0;
             }
 
+            // prevent har from sliding after defeat
+            if(obj->animation_state.parser->current_frame.is_final_frame) {
+                if (h->health <= 0 && h->endurance <= 0) {
+                    h->state = STATE_DEFEAT;
+                    har_set_ani(obj, ANIM_DEFEAT, 0);
+                }
+            }
+
             if(pos.y >= 185 && 
+                    IS_ZERO(vel.x) &&
                     obj->animation_state.parser->current_frame.is_final_frame) {
                 if (h->state == STATE_FALLEN) {
                     if (h->health <= 0 && h->endurance <= 0) {
@@ -475,7 +484,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
         if(pos_a.x < pos_b.x + soft_limit && pos_a.x > pos_b.x) {
-            if (b->state == STATE_STANDING || har_is_walking(b) || har_is_crouching(b)) {
+            if (b->state == STATE_STANDING || b->state == STATE_STUNNED || har_is_walking(b) || har_is_crouching(b)) {
                 a->close = 1;
             }
             a->hard_close = 1;
@@ -494,7 +503,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
         if(pos_a.x + soft_limit > pos_b.x && pos_a.x < pos_b.x) {
-            if (b->state == STATE_STANDING || har_is_walking(b) || har_is_crouching(b)) {
+            if (b->state == STATE_STANDING || b->state == STATE_STUNNED || har_is_walking(b) || har_is_crouching(b)) {
                 a->close = 1;
             }
             a->hard_close = 1;
