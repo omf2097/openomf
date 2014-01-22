@@ -51,12 +51,13 @@ enum RESOURCE_ID {
     NUMBER_OF_RESOURCES
 };
 
+void set_default_resource_path();
 void set_resource_path(const char *path);
-void get_filename_by_id(int id, char *ptr);
-char* get_id_name(int id);
+const char *get_filename_by_id(int id);
+const char* get_id_name(int id);
 
 // returns 0 if there are no missing files, otherwise 1 is returned
-int validate_resource_path(char *missingfile);
+int validate_resource_path(const char **missingfile);
 
 int is_arena(int id);
 int is_scene(int id);

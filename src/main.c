@@ -47,23 +47,22 @@ int main(int argc, char *argv[]) {
     char *ip = NULL;
     unsigned short port = 0;
     int net_mode = NET_MODE_NONE;
-#ifndef DEBUGMODE
-    char *resource_path = NULL;
-#endif
+    int portable_mode = 0;
 
     // if openomf.conf exists in the current directory, switch to portable mode
     if(access("openomf.conf", F_OK) != -1) {
         // USB stick (portable) mode
+        portable_mode = 1;
         path = SDL_malloc(1);
         path[0] = 0;
     } else {
         // Non-portable mode
+        portable_mode = 0;
         path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
         if(path == NULL) {
             err_msgbox("Error getting config path: %s", SDL_GetError());
             return 1;
         }
-
 #if defined(_WIN32) || defined(WIN32)
         // Ensure the path exists before continuing on
         // XXX shouldn't SDL_GetPrefPath automatically create the path if it doesn't exist?
@@ -76,32 +75,7 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 #endif
-
-#ifndef DEBUGMODE
-        // where is the openomf binary, if this call fails we will look for resources in ./resources
-        char *base_path = SDL_GetBasePath();
-        resource_path = malloc(strlen(base_path) + 32);
-        if(base_path != NULL) {
-            const char *platform = SDL_GetPlatform();
-            if (!strcasecmp(platform, "Windows")) {
-                // on windows, the resources will be in ./resources, relative to the binary
-                sprintf(resource_path, "%s%s", base_path, "resources\\");
-                set_resource_path(resource_path);
-            } else if (!strcasecmp(platform, "Linux")) {
-                // on linux, the resources will be in ../share/openomf, relative to the binary
-                // so if openomf is installed to /usr/local/bin, the resources will be in /usr/local/share/openomf
-                sprintf(resource_path, "%s%s", base_path, "../share/openomf/");
-                set_resource_path(resource_path);
-            } else if (!strcasecmp(platform, "Mac OS X")) {
-                // on OSX, GetBasePath returns the 'Resources' directory if run from an app bundle, so we can use this as-is
-                sprintf(resource_path, "%s", base_path);
-                set_resource_path(resource_path);
-            }
-            // any other platform will look in ./resources
-            SDL_free(base_path);
-        }
-#endif
-    } // if(access("openomf.conf", F_OK) != -1)
+    }
 
     // Config path
     char *config_path = malloc(strlen(path)+32);
@@ -177,9 +151,44 @@ int main(int argc, char *argv[]) {
     }
     settings_load();
 
+    // Init resource path
+    if(portable_mode) {
+        set_default_resource_path();
+    } else {
+#ifndef DEBUGMODE
+        // where is the openomf binary, if this call fails we will look for resources in ./resources
+        char *base_path = SDL_GetBasePath();
+        if(base_path != NULL) {
+            char *resource_path = malloc(strlen(base_path) + 32);
+            const char *platform = SDL_GetPlatform();
+            if (!strcasecmp(platform, "Windows")) {
+                // on windows, the resources will be in ./resources, relative to the binary
+                sprintf(resource_path, "%s%s", base_path, "resources\\");
+                set_resource_path(resource_path);
+            } else if (!strcasecmp(platform, "Linux")) {
+                // on linux, the resources will be in ../share/openomf, relative to the binary
+                // so if openomf is installed to /usr/local/bin, the resources will be in /usr/local/share/openomf
+                sprintf(resource_path, "%s%s", base_path, "../share/openomf/");
+                set_resource_path(resource_path);
+            } else if (!strcasecmp(platform, "Mac OS X")) {
+                // on OSX, GetBasePath returns the 'Resources' directory if run from an app bundle, so we can use this as-is
+                sprintf(resource_path, "%s", base_path);
+                set_resource_path(resource_path);
+            }
+            // any other platform will look in ./resources
+            SDL_free(base_path);
+            free(resource_path);
+        } else {
+            set_default_resource_path();
+        }
+#else
+        set_default_resource_path();
+#endif
+    }
+
     // Make sure the required resource files exist
-    char missingfile[64];
-    if(validate_resource_path(missingfile)) {
+    const char *missingfile = NULL;
+    if(validate_resource_path(&missingfile)) {
         err_msgbox("Resource file does not exist: %s", missingfile);
         goto exit_0;
     }
@@ -268,10 +277,6 @@ exit_0:
     log_close();
     free(config_path);
     free(logfile_path);
-#ifndef DEBUGMODE
-    if(resource_path) {
-        free(resource_path);
-    }
-#endif
+    set_resource_path(NULL);
     return 0;
 }

@@ -8,8 +8,8 @@ sd_sound_file *sound_data = NULL;
 
 int sounds_loader_init() {
     // Get filename
-    char filename[64];
-    get_filename_by_id(DAT_SOUNDS, filename);
+    const char *filename;
+    filename = get_filename_by_id(DAT_SOUNDS);
 
     // Load sounds
     sound_data = sd_sounds_create();

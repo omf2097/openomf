@@ -777,13 +777,13 @@ int arena_create(scene *scene) {
     
     // Handle music playback
     music_stop();
-    char music_filename[64];
+    const char *music_filename = NULL;
     switch(scene->bk_data.file_id) {
-        case 8:   get_filename_by_id(PSM_ARENA0, music_filename); break;
-        case 16:  get_filename_by_id(PSM_ARENA1, music_filename); break;
-        case 32:  get_filename_by_id(PSM_ARENA2, music_filename); break;
-        case 64:  get_filename_by_id(PSM_ARENA3, music_filename); break;
-        case 128: get_filename_by_id(PSM_ARENA4, music_filename); break;
+        case 8:   music_filename = get_filename_by_id(PSM_ARENA0); break;
+        case 16:  music_filename = get_filename_by_id(PSM_ARENA1); break;
+        case 32:  music_filename = get_filename_by_id(PSM_ARENA2); break;
+        case 64:  music_filename = get_filename_by_id(PSM_ARENA3); break;
+        case 128: music_filename = get_filename_by_id(PSM_ARENA4); break;
     }
     music_play(music_filename);
     music_set_volume(settings_get()->sound.music_vol/10.0f);

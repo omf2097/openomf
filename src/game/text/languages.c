@@ -9,8 +9,8 @@ sd_language *language;
 
 int lang_init() {
     // Get filename
-    char filename[64];
-    get_filename_by_id(DAT_ENGLISH, filename);
+    const char *filename;
+    filename = get_filename_by_id(DAT_ENGLISH);
 
     // Load up language file
     language = sd_language_create();

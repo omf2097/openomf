@@ -3,8 +3,8 @@
 
 int load_af_file(af *a, int id) {
     // Get directory + filename
-    char filename[64];
-    get_filename_by_id(id, filename);
+    const char *filename;
+    filename = get_filename_by_id(id);
 
     // Load up AF file from libSD
     sd_af_file *tmp = sd_af_create();

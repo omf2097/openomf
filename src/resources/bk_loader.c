@@ -3,8 +3,8 @@
 
 int load_bk_file(bk *b, int id) {
     // Get directory + filename
-    char filename[64];
-    get_filename_by_id(id, filename);
+    const char *filename;
+    filename = get_filename_by_id(id);
 
     // Load up BK file from libSD
     sd_bk_file *tmp = sd_bk_create();

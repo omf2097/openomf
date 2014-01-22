@@ -6,34 +6,83 @@
 #include "game/settings.h"
 #include "utils/log.h"
 
-#if defined(_WIN32) || defined(WIN32)
-static const char *resource_path = "resources\\";
-#else
-static const char *resource_path = "resources/";
-#endif
+static char *filename_mem = NULL;
+static char *filename_table[NUMBER_OF_RESOURCES];
 
 struct music_override_t {
     int id;
     const char *name;
 };
 
-void set_resource_path(const char *path) {
-    resource_path = path;
+static const char *get_filename(int id);
+
+void set_default_resource_path() {
+#if defined(_WIN32) || defined(WIN32)
+    set_resource_path("resources\\");
+#else
+    set_resource_path("resources/");
+#endif
 }
 
-int validate_resource_path(char *missingfile) {
+void set_resource_path(const char *path) {
+    int pathlen = 0;
+    int memreq = 0;
+    int pos = 0;
+
+    if(filename_mem != NULL) {
+        free(filename_mem);
+        filename_mem = NULL;
+    }
+    if(path == NULL) {
+        return;
+    }
+
+    // Calculate the amount of memory required for the filename table
+    pathlen = strlen(path);
     for(int i = 0;i < NUMBER_OF_RESOURCES;i++) {
-        missingfile[0] = 0;
-        get_filename_by_id(i, missingfile);
-        if(missingfile[0] && access(missingfile, F_OK ) == -1) {
+        const char *fname = get_filename(i);
+        if(fname != NULL) {
+            memreq += pathlen + strlen(fname) + 1;
+        }
+    }
+    // Allocate the table
+    filename_mem = malloc(memreq);
+
+    // Initialize the filename table
+    for(int i = 0;i < NUMBER_OF_RESOURCES;i++) {
+        const char *fname = get_filename(i);
+        int len = 0;
+        if(fname == NULL) {
+            filename_table[i] = NULL;
+        } else {
+            len = pathlen + strlen(fname) + 1;
+            filename_table[i] = &filename_mem[pos];
+            strcpy(filename_table[i], path);
+            strcat(filename_table[i], fname);
+        }
+        pos += len;
+    }
+}
+
+int validate_resource_path(const char **missingfile) {
+    for(int i = 0;i < NUMBER_OF_RESOURCES;i++) {
+        *missingfile = get_filename_by_id(i);
+        if(*missingfile && access(*missingfile, F_OK ) == -1) {
             return 1;
         }
     }
     return 0;
 }
 
-void get_filename_by_id(int id, char *ptr) {
-    const char *path = resource_path;
+const char *get_filename_by_id(int id) {
+    if(filename_mem) {
+        return filename_table[id];
+    } else {
+        return NULL;
+    }
+}
+
+static const char *get_filename(int id) {
     // Declare music overrides
     settings *s = settings_get();
     struct music_override_t overrides[] = {
@@ -49,62 +98,60 @@ void get_filename_by_id(int id, char *ptr) {
     for(int i = 0; i < 7; i++) {
         if(id == overrides[i].id && strlen(overrides[i].name) > 0) {
             DEBUG("Overriding %s to %s.", get_id_name(id), overrides[i].name);
-            sprintf(ptr, "%s", overrides[i].name);
-            return;
+            return overrides[i].name;
         }
     }
 
     switch(id) {
-        case SCENE_INTRO:    sprintf(ptr, "%sINTRO.BK", path);    break;
-        case SCENE_MENU:     sprintf(ptr, "%sMAIN.BK", path);     break;
-        case SCENE_ARENA0:   sprintf(ptr, "%sARENA0.BK", path);   break;
-        case SCENE_ARENA1:   sprintf(ptr, "%sARENA1.BK", path);   break;
-        case SCENE_ARENA2:   sprintf(ptr, "%sARENA2.BK", path);   break;
-        case SCENE_ARENA3:   sprintf(ptr, "%sARENA3.BK", path);   break;
-        case SCENE_ARENA4:   sprintf(ptr, "%sARENA4.BK", path);   break;
-        case SCENE_NEWSROOM: sprintf(ptr, "%sNEWSROOM.BK", path); break;
-        case SCENE_END:      sprintf(ptr, "%sEND.BK", path);      break;
-        case SCENE_END1:     sprintf(ptr, "%sEND1.BK", path);     break;
-        case SCENE_END2:     sprintf(ptr, "%sEND2.BK", path);     break;
-        case SCENE_CREDITS:  sprintf(ptr, "%sCREDITS.BK", path);  break;
-        case SCENE_MECHLAB:  sprintf(ptr, "%sMECHLAB.BK", path);  break;
-        case SCENE_MELEE:    sprintf(ptr, "%sMELEE.BK", path);    break;
-        case SCENE_VS:       sprintf(ptr, "%sVS.BK", path);       break;
-        case SCENE_NORTHAM:  sprintf(ptr, "%sNORTH_AM.BK", path); break;
-        case SCENE_KATUSHAI: sprintf(ptr, "%sKATUSHAI.BK", path); break;
-        case SCENE_WAR:      sprintf(ptr, "%sWAR.BK", path);      break;
-        case SCENE_WORLD:    sprintf(ptr, "%sWORLD.BK", path);    break;
-        case HAR_JAGUAR:     sprintf(ptr, "%sFIGHTR0.AF", path);  break;
-        case HAR_SHADOW:     sprintf(ptr, "%sFIGHTR1.AF", path);  break;
-        case HAR_THORN:      sprintf(ptr, "%sFIGHTR2.AF", path);  break;
-        case HAR_PYROS:      sprintf(ptr, "%sFIGHTR3.AF", path);  break;
-        case HAR_ELECTRA:    sprintf(ptr, "%sFIGHTR4.AF", path);  break;
-        case HAR_KATANA:     sprintf(ptr, "%sFIGHTR5.AF", path);  break;
-        case HAR_SHREDDER:   sprintf(ptr, "%sFIGHTR6.AF", path);  break;
-        case HAR_FLAIL:      sprintf(ptr, "%sFIGHTR7.AF", path);  break;
-        case HAR_GARGOYLE:   sprintf(ptr, "%sFIGHTR8.AF", path);  break;
-        case HAR_CHRONOS:    sprintf(ptr, "%sFIGHTR9.AF", path);  break;
-        case HAR_NOVA:       sprintf(ptr, "%sFIGHTR10.AF", path); break;
-        case PSM_MENU:       sprintf(ptr, "%sMENU.PSM", path);    break;
-        case PSM_END:        sprintf(ptr, "%sEND.PSM", path);     break;
-        case PSM_ARENA0:     sprintf(ptr, "%sARENA0.PSM", path);  break;
-        case PSM_ARENA1:     sprintf(ptr, "%sARENA1.PSM", path);  break;
-        case PSM_ARENA2:     sprintf(ptr, "%sARENA2.PSM", path);  break;
-        case PSM_ARENA3:     sprintf(ptr, "%sARENA3.PSM", path);  break;
-        case PSM_ARENA4:     sprintf(ptr, "%sARENA4.PSM", path);  break;
-        case DAT_SOUNDS:     sprintf(ptr, "%sSOUNDS.DAT", path);  break;
-        case DAT_ENGLISH:    sprintf(ptr, "%sENGLISH.DAT", path); break;
-        case DAT_GERMAN:     sprintf(ptr, "%sGERMAN.DAT", path);  break;
-        case DAT_GRAPHCHR:   sprintf(ptr, "%sGRAPHCHR.DAT", path); break;
-        case DAT_CHARSMAL:   sprintf(ptr, "%sCHARSMAL.DAT", path); break;
-        case DAT_ALTPALS:    sprintf(ptr, "%sALTPALS.DAT", path); break;
-        default: 
-            ptr[0] = 0;
-            break;
+        case SCENE_INTRO:    return "INTRO.BK";
+        case SCENE_MENU:     return "MAIN.BK";
+        case SCENE_ARENA0:   return "ARENA0.BK";
+        case SCENE_ARENA1:   return "ARENA1.BK";
+        case SCENE_ARENA2:   return "ARENA2.BK";
+        case SCENE_ARENA3:   return "ARENA3.BK";
+        case SCENE_ARENA4:   return "ARENA4.BK";
+        case SCENE_NEWSROOM: return "NEWSROOM.BK";
+        case SCENE_END:      return "END.BK";
+        case SCENE_END1:     return "END1.BK";
+        case SCENE_END2:     return "END2.BK";
+        case SCENE_CREDITS:  return "CREDITS.BK";
+        case SCENE_MECHLAB:  return "MECHLAB.BK";
+        case SCENE_MELEE:    return "MELEE.BK";
+        case SCENE_VS:       return "VS.BK";
+        case SCENE_NORTHAM:  return "NORTH_AM.BK";
+        case SCENE_KATUSHAI: return "KATUSHAI.BK";
+        case SCENE_WAR:      return "WAR.BK";
+        case SCENE_WORLD:    return "WORLD.BK";
+        case HAR_JAGUAR:     return "FIGHTR0.AF";
+        case HAR_SHADOW:     return "FIGHTR1.AF";
+        case HAR_THORN:      return "FIGHTR2.AF";
+        case HAR_PYROS:      return "FIGHTR3.AF";
+        case HAR_ELECTRA:    return "FIGHTR4.AF";
+        case HAR_KATANA:     return "FIGHTR5.AF";
+        case HAR_SHREDDER:   return "FIGHTR6.AF";
+        case HAR_FLAIL:      return "FIGHTR7.AF";
+        case HAR_GARGOYLE:   return "FIGHTR8.AF";
+        case HAR_CHRONOS:    return "FIGHTR9.AF";
+        case HAR_NOVA:       return "FIGHTR10.AF";
+        case PSM_MENU:       return "MENU.PSM";
+        case PSM_END:        return "END.PSM";
+        case PSM_ARENA0:     return "ARENA0.PSM";
+        case PSM_ARENA1:     return "ARENA1.PSM";
+        case PSM_ARENA2:     return "ARENA2.PSM";
+        case PSM_ARENA3:     return "ARENA3.PSM";
+        case PSM_ARENA4:     return "ARENA4.PSM";
+        case DAT_SOUNDS:     return "SOUNDS.DAT";
+        case DAT_ENGLISH:    return "ENGLISH.DAT";
+        case DAT_GERMAN:     return "GERMAN.DAT";
+        case DAT_GRAPHCHR:   return "GRAPHCHR.DAT";
+        case DAT_CHARSMAL:   return "CHARSMAL.DAT";
+        case DAT_ALTPALS:    return "ALTPALS.DAT";
+        default: break;
     }
+    return NULL;
 }
 
-char* get_id_name(int id) {
+const char* get_id_name(int id) {
     switch(id) {
         case SCENE_INTRO:    return "INTRO";
         case SCENE_MENU:     return "MAIN";

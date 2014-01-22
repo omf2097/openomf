@@ -8,8 +8,8 @@ sd_altpal_file *altpals = NULL;
 
 int altpals_init() {
     // Get filename
-    char filename[64];
-    get_filename_by_id(DAT_ALTPALS, filename);
+    const char *filename;
+    filename = get_filename_by_id(DAT_ALTPALS);
 
     altpals = sd_altpal_create();
     if(sd_altpals_load(altpals, filename)) {
