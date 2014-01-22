@@ -60,6 +60,11 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
         SDL_SetWindowFullscreen(state.window, 0);
     }
 
+    // Clear window surface
+    SDL_Surface *screen = SDL_GetWindowSurface(state.window);
+    SDL_FillRect(screen, NULL, SDL_MapRGBA(screen->format, 0, 0, 0, 255));
+    SDL_UpdateWindowSurface(state.window);
+
     // Form flags
     int renderer_flags = SDL_RENDERER_ACCELERATED;
     if(state.vsync) {
@@ -139,6 +144,12 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
         } else {
             DEBUG("Fullscreen changed!");
         }
+
+        // Clear window surface
+        SDL_Surface *screen = SDL_GetWindowSurface(state.window);
+        SDL_FillRect(screen, NULL, SDL_MapRGBA(screen->format, 0, 0, 0, 255));
+        SDL_UpdateWindowSurface(state.window);
+
         changed = 1;
     }
 
