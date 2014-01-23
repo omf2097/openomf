@@ -750,7 +750,11 @@ void arena_render_overlay(scene *scene) {
 
         // Render score stuff
         chr_score_render(game_player_get_score(player[0]));
-        chr_score_render(game_player_get_score(player[1]));
+
+        // Do not render player 2 score in 1 player mode
+        if(game_player_get_selectable(player[1])) {
+            chr_score_render(game_player_get_score(player[1]));
+        }
 
         // render ping, if player is networked
         if (player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
