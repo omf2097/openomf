@@ -54,6 +54,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     obj->custom_str = NULL;
 
+    random_seed(&obj->rand_state, rand_intmax()),
+
     // Callbacks & userdata
     obj->userdata = NULL;
     obj->tick = NULL;
@@ -84,6 +86,7 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int8(ser, obj->stride);
     serial_write_int8(ser, object_get_repeat(obj));
     serial_write_int32(ser, obj->age);
+    serial_write_int32(ser, random_get_seed(&obj->rand_state));
     serial_write_int8(ser, obj->cur_animation->id);
 
     // Write animation state
@@ -130,6 +133,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     uint8_t stride = serial_read_int8(ser);
     uint8_t repeat = serial_read_int8(ser);
     obj->age = serial_read_int32(ser);
+    random_seed(&obj->rand_state, serial_read_int32(ser));
     uint8_t animation_id = serial_read_int8(ser);
 
     // Other stuff not included in serialization

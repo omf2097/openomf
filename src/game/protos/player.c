@@ -271,7 +271,7 @@ void player_run(object *obj) {
                 if (isset(f, "mrx")) {
                     int mrx = get(f, "mrx");
                     int mm = isset(f, "mm") ? get(f, "mm") : mrx;
-                    mx = rand_int(320 - 2*mm) + mrx;
+                    mx = random_int(&obj->rand_state, 320 - 2*mm) + mrx;
                     DEBUG("randomized mx as %d", mx);
                 } else if(isset(f, "mx")) {
                     mx = obj->start.x + (get(f, "mx") * object_get_direction(obj));
@@ -281,7 +281,7 @@ void player_run(object *obj) {
                 if (isset(f, "mry")) {
                     int mry = get(f, "mry");
                     int mm = isset(f, "mm") ? get(f, "mm") : mry;
-                    my = rand_int(320 - 2*mm) + mry;
+                    my = random_int(&obj->rand_state, 320 - 2*mm) + mry;
                     DEBUG("randomized my as %d", my);
                 } else if(isset(f, "my")) {
                     my = obj->start.y + get(f, "my");

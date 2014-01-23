@@ -7,6 +7,7 @@
 #include "game/protos/player.h"
 #include "utils/vec.h"
 #include "utils/hashmap.h"
+#include "utils/random.h"
 #include "video/surface.h"
 #include "game/serial.h"
 
@@ -64,6 +65,8 @@ struct object_t {
     vec2f orbit_dest_dir;
     vec2f orbit_pos;
     vec2f orbit_pos_vary;
+
+    struct random_t rand_state;
 
     float y_percent;
     float gravity;
