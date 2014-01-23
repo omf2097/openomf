@@ -88,6 +88,7 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int32(ser, obj->age);
     serial_write_int32(ser, random_get_seed(&obj->rand_state));
     serial_write_int8(ser, obj->cur_animation->id);
+    serial_write_int8(ser, obj->pal_offset);
 
     // Write animation state
     if (obj->custom_str) {
@@ -135,6 +136,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->age = serial_read_int32(ser);
     random_seed(&obj->rand_state, serial_read_int32(ser));
     uint8_t animation_id = serial_read_int8(ser);
+    uint8_t pal_offset = serial_read_int8(ser);
 
     // Other stuff not included in serialization
     obj->y_percent = 1.0;
@@ -189,6 +191,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->stride = stride;
     object_set_gravity(obj, gravity);
     object_set_repeat(obj, repeat);
+    object_set_pal_offset(obj, pal_offset);
 
     /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
 
