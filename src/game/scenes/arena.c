@@ -512,7 +512,10 @@ void arena_tick(scene *scene) {
         har2->delay = ceil(player1->ctrl->rtt / 2.0f);
 
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
-            arena_spawn_hazard(scene);
+            settings *setting = settings_get();
+            if (setting->gameplay.hazards_on) {
+                arena_spawn_hazard(scene);
+            }
         }
 
         if (
