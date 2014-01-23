@@ -260,7 +260,7 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
     scene *scene = data;
     object *o_har = game_player_get_har(game_state_get_player(scene->gs, player_id));
     har *h = object_get_userdata(o_har);
-    if (scene->id == SCENE_ARENA2 && o_har->pos.y < 190 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
+    if (scene->id == SCENE_ARENA2 && o_har->pos.y < 190 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL) && abs(o_har->vel.x) >= 1) {
         bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
         object *obj = malloc(sizeof(object));
         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
