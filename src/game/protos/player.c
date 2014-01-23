@@ -473,8 +473,8 @@ void player_run(object *obj) {
                 }
 
                 obj->slide_state.timer = param->duration;
-                obj->slide_state.vel.x = (float)x / (float)param->duration;
-                obj->slide_state.vel.y = (float)y / (float)param->duration;
+                obj->slide_state.vel.x = (float)x;
+                obj->slide_state.vel.y = (float)y;
                 /*DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.",*/
                     /*obj->cur_animation->id,*/
                     /*obj->slide_state.vel.x, */
