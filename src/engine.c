@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <signal.h> // signal()
 #include <SDL2/SDL.h>
 #include "engine.h"
@@ -21,6 +22,7 @@ static int start_timeout = 30;
 #ifndef STANDALONE_SERVER
 static int take_screenshot = 0;
 static int enable_screen_updates = 1;
+static char screenshot_filename[128];
 #endif
 
 void exit_handler(int s) {
@@ -236,7 +238,8 @@ void engine_run(int net_mode) {
             if(take_screenshot) {
                 image img;
                 video_screenshot(&img);
-                image_write_tga(&img, "screenshot.tga");
+                sprintf(screenshot_filename, "screenshot_%u.tga", SDL_GetTicks());
+                image_write_tga(&img, screenshot_filename);
                 image_free(&img);
                 take_screenshot = 0;
             }
