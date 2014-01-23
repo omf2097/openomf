@@ -30,7 +30,10 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->gravity = 0.0f;
     obj->singleton = 0;
     obj->orbit = 0;
-    obj->orbit_tick = MISC_PI/2.0f;
+    obj->orbit_tick = MATH_PI/2.0f;
+    obj->orbit_dest = obj->start;
+    obj->orbit_pos = obj->start;
+    obj->orbit_pos_vary = vec2f_create(0, 0);
 
     // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;

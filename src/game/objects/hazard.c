@@ -3,7 +3,13 @@
 #include "game/objects/hazard.h"
 #include "game/protos/object_specializer.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "game/protos/scene.h"
+
+int orb_almost_there(vec2f a, vec2f  b) {
+    vec2f dir = vec2f_sub(a, b);
+    return (dir.x >= -2.0f && dir.x <= 2.0f && dir.y >= -2.0f && dir.y <= 2.0f);
+}
 
 void hazard_tick(object *obj) {
     bk *bk_data = (bk*)object_get_userdata(obj);
@@ -17,7 +23,26 @@ void hazard_tick(object *obj) {
         }
     }
     if(obj->orbit) {
-        obj->orbit_tick += 0.04f;
+        obj->orbit_tick += MATH_PI/32;
+        if(obj->orbit_tick >= MATH_PI*2) {
+            obj->orbit_tick -= MATH_PI*2;
+        }
+        if(orb_almost_there(obj->orbit_dest, obj->orbit_pos)) {
+            // XXX come up with a better equation to randomize the destination
+            obj->orbit_pos = obj->pos;
+            obj->orbit_pos_vary = vec2f_create(0, 0);
+            float mag;
+            int limit = 10;
+            do {
+                obj->orbit_dest = vec2f_create(rand_float()*320.0f, rand_float()*200.0f);
+                obj->orbit_dest_dir = vec2f_sub(obj->orbit_dest, obj->orbit_pos);
+                mag = sqrtf(obj->orbit_dest_dir.x*obj->orbit_dest_dir.x + obj->orbit_dest_dir.y*obj->orbit_dest_dir.y);
+                limit--;
+            } while(mag < 80.0f && limit > 0);
+
+            obj->orbit_dest_dir.x /= mag;
+            obj->orbit_dest_dir.y /= mag;
+        }
     }
 }
 
@@ -52,8 +77,12 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, int g, void *userdata) {
 void hazard_move(object *obj) {
     if(obj->orbit) {
         // Make this object orbit around the center of the arena
-        obj->pos.x += 4*sin(obj->orbit_tick);
-        obj->pos.y += 2*cos(obj->orbit_tick);
+        obj->pos.x = obj->orbit_pos.x+obj->orbit_pos_vary.x;
+        obj->pos.y = obj->orbit_pos.y+obj->orbit_pos_vary.y;
+        obj->orbit_pos.x += 2*obj->orbit_dest_dir.x;
+        obj->orbit_pos.y += 2*obj->orbit_dest_dir.y;
+        obj->orbit_pos_vary.x += sin(obj->orbit_tick)*0.2f;
+        obj->orbit_pos_vary.y += cos(obj->orbit_tick)*0.6f;
     }
 }
 
