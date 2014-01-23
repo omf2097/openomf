@@ -43,11 +43,12 @@ $ make install
 
 Some useful CMake flags:
 
-| Flag                      | Description                          | Choices       | Default |
-| ------------------------- | ------------------------------------ | ------------- | ------- |
-| CMAKE_BUILD_TYPE          | Chooses between build types          | Debug/Release | Debug   |
-| CMAKE_INSTALL_PREFIX      | Installation path                    | -             | -       |
-| USE_OGGVORBIS             | Selects Vorbis support               | On/Off        | Off     |
+| Flag                      | Description                          | Choices         | Default |
+| ------------------------- | ------------------------------------ | --------------- | ------- |
+| CMAKE_BUILD_TYPE          | Chooses between build types          | -/Debug/Release | -       |
+| CMAKE_INSTALL_PREFIX      | Installation path                    | -               | -       |
+| USE_OGGVORBIS             | Selects Vorbis support               | On/Off          | Off     |
+| USE_PNG                   | Selects PNG screenshot support       | On/Off          | Off     |
 
 Ogg Vorbis support is required if you wish to replace original OMF soundtracks with OGG files. Otherwise the switch is optional.
 
