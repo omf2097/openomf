@@ -193,6 +193,8 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_set_repeat(obj, 0);
         object_set_shadow(obj, 1);
         object_set_direction(obj, object_get_direction(parent));
+        obj->animation_state.enemy_x = parent->animation_state.enemy_x;
+        obj->animation_state.enemy_y = parent->animation_state.enemy_y;
         projectile_create(obj);
         game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE);
     }
