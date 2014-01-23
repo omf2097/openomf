@@ -165,12 +165,7 @@ int image_write_png(image *img, const char *filename) {
     // Get row pointers
     char *rows[img->h];
     for(int y = 0; y < img->h; y++) {
-        rows[y] = malloc(img->w * 3);
-        for(int x = 0; x < img->w; x++) {
-            rows[y][x * 3 + 0] = img->data[y * img->w + x * 4 + 0];
-            rows[y][x * 3 + 1] = img->data[y * img->w + x * 4 + 1];
-            rows[y][x * 3 + 2] = img->data[y * img->w + x * 4 + 2];
-        }
+        rows[y] = img->data + (y * img->w * 4);
     }
     
     // Init
@@ -186,7 +181,7 @@ int image_write_png(image *img, const char *filename) {
                  img->w, 
                  img->h,
                  8, 
-                 PNG_COLOR_TYPE_RGB, 
+                 PNG_COLOR_TYPE_RGBA, 
                  PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_BASE, 
                  PNG_FILTER_TYPE_BASE);
@@ -199,11 +194,6 @@ int image_write_png(image *img, const char *filename) {
     // End
     setjmp(png_jmpbuf(png_ptr));
     png_write_end(png_ptr, NULL);
-
-    // Free memory
-    for(int i = 0; i < img->h; i++) {
-        free(rows[i]);
-    }
 
     // Free file
     fclose(fp);

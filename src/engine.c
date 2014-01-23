@@ -238,8 +238,18 @@ void engine_run(int net_mode) {
             if(take_screenshot) {
                 image img;
                 video_screenshot(&img);
-                sprintf(screenshot_filename, "screenshot_%u.tga", SDL_GetTicks());
-                image_write_tga(&img, screenshot_filename);
+                int scr_ret = 0;
+                if(image_supports_png()) {
+                    sprintf(screenshot_filename, "screenshot_%u.png", SDL_GetTicks());
+                    scr_ret = image_write_png(&img, screenshot_filename);
+                } else {
+                    sprintf(screenshot_filename, "screenshot_%u.tga", SDL_GetTicks());
+                    scr_ret= image_write_tga(&img, screenshot_filename);
+                }
+                if(scr_ret) {
+                    PERROR("Screenshot write operation failed (%s)", screenshot_filename);
+                }
+
                 image_free(&img);
                 take_screenshot = 0;
             }
