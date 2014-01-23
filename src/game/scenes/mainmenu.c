@@ -418,8 +418,8 @@ void mainmenu_connect_to_ip(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata(s);
     ENetAddress address;
     char *addr = textinput_value(&local->connect_ip_input);
-    free(settings_get()->net.net_server_ip);
-    settings_get()->net.net_server_ip = dupestr(addr);
+    free(settings_get()->net.net_connect_ip);
+    settings_get()->net.net_connect_ip = dupestr(addr);
     local->host = enet_host_create(NULL, 1, 2, 0, 0);
     s->gs->role = ROLE_CLIENT;
     if (local->host == NULL) {
@@ -431,7 +431,7 @@ void mainmenu_connect_to_ip(component *c, void *userdata) {
     menu_select(&local->connect_menu, &local->connect_ip_cancel_button);
 
     enet_address_set_host(&address, addr);
-    address.port = settings_get()->net.net_server_port;
+    address.port = settings_get()->net.net_connect_port;
 
     ENetPeer *peer = enet_host_connect(local->host, &address, 2, 0);
 
@@ -460,7 +460,7 @@ void mainmenu_listen_for_connections(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata(s);
     ENetAddress address;
     address.host = ENET_HOST_ANY;
-    address.port = settings_get()->net.net_server_port;
+    address.port = settings_get()->net.net_listen_port;
     local->host = enet_host_create(&address, 1, 2, 0, 0);
     s->gs->role = ROLE_SERVER;
     if (local->host == NULL) {
@@ -871,7 +871,7 @@ int mainmenu_create(scene *scene) {
 
     // connect menu
     menu_create(&local->connect_menu, 10, 80, 300, 50);
-    textinput_create(&local->connect_ip_input, &font_large, "Host/IP", setting->net.net_server_ip);
+    textinput_create(&local->connect_ip_input, &font_large, "Host/IP", setting->net.net_connect_ip);
     textbutton_create(&local->connect_ip_button, &font_large, "CONNECT");
     textbutton_create(&local->connect_ip_cancel_button, &font_large, "CANCEL");
     menu_attach(&local->connect_menu, &local->connect_ip_input, 11);

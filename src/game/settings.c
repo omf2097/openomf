@@ -96,8 +96,9 @@ const field f_keyboard[] = {
 };
 
 const field f_net[] = {
-    F_STRING(settings_network, net_server_ip,   "localhost"),
-    F_INT(settings_network,    net_server_port, 2097)
+    F_STRING(settings_network, net_connect_ip,   "localhost"),
+    F_INT(settings_network,    net_connect_port, 2097),
+    F_INT(settings_network,    net_listen_port, 2097)
 };
 
 // Map struct to field

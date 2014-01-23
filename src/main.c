@@ -45,7 +45,8 @@ int main(int argc, char *argv[]) {
     // Get path
     char *path = NULL;
     char *ip = NULL;
-    unsigned short port = 0;
+    unsigned short connect_port = 0;
+    unsigned short listen_port = 0;
     int net_mode = NET_MODE_NONE;
     int portable_mode = 0;
 
@@ -114,12 +115,12 @@ int main(int argc, char *argv[]) {
                 ip = strcpy(malloc(strlen(argv[2])+1), argv[2]);
             }
             if(argc >= 4) {
-                port = atoi(argv[3]);
+                connect_port = atoi(argv[3]);
             }
             net_mode = NET_MODE_CLIENT;
         } else if(strcmp(argv[1], "-l") == 0) {
             if(argc >= 3) {
-                port = atoi(argv[2]);
+                listen_port = atoi(argv[2]);
             }
             net_mode = NET_MODE_SERVER;
         }
@@ -194,13 +195,18 @@ int main(int argc, char *argv[]) {
     }
 
     if(ip) {
-        DEBUG("IP overridden to %s", ip);
-        settings_get()->net.net_server_ip = ip;
+        DEBUG("Connect IP overridden to %s", ip);
+        settings_get()->net.net_connect_ip = ip;
     }
 
-    if(port > 0 && port < 0xFFFF) {
-        DEBUG("Port overridden to %u", port&0xFFFF);
-        settings_get()->net.net_server_port = port;
+    if(connect_port > 0 && connect_port < 0xFFFF) {
+        DEBUG("Connect Port overridden to %u", connect_port&0xFFFF);
+        settings_get()->net.net_connect_port = connect_port;
+    }
+
+    if(listen_port > 0 && listen_port < 0xFFFF) {
+        DEBUG("Listen Port overridden to %u", listen_port&0xFFFF);
+        settings_get()->net.net_listen_port = listen_port;
     }
 
     // Init SDL2
