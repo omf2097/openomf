@@ -499,9 +499,6 @@ void game_state_tick(game_state *gs) {
         video_move_target(0, 0);
     }
 
-    // Tick controllers
-    game_state_tick_controllers(gs);
-
     // Poll input. If console is opened, do not poll the controllers.
     if(!console_window_is_open()) { scene_input_poll(gs->sc); }
 

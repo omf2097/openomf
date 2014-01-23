@@ -4,7 +4,7 @@
 #include "controller/controller.h"
 #include <SDL2/SDL.h>
 
-#define KEYBOARD_INPUT_BUFFER_SIZE 10
+#define KEYBOARD_INPUT_BUFFER_SIZE 16
 
 typedef struct keyboard_keys_t keyboard_keys;
 typedef struct keyboard_t keyboard;
@@ -23,6 +23,7 @@ struct keyboard_t {
     uint16_t buffer[KEYBOARD_INPUT_BUFFER_SIZE];
     uint32_t tick;
     uint8_t delay;
+    uint8_t queued;
 };
 
 void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay);

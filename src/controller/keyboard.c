@@ -11,7 +11,11 @@ void keyboard_free(controller *ctrl) {
 int keyboard_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     keyboard *k = ctrl->data;
     k->tick = ticks;
-    int i = ticks % KEYBOARD_INPUT_BUFFER_SIZE;
+    if(k->queued == KEYBOARD_INPUT_BUFFER_SIZE) {
+        return 0;
+    }
+    int i = k->queued;
+    k->queued++;
     const unsigned char *state = SDL_GetKeyboardState(NULL);
     k->buffer[i] = ACT_STOP;
 
@@ -44,35 +48,38 @@ int keyboard_tick(controller *ctrl, int ticks, ctrl_event **ev) {
 
 int keyboard_poll(controller *ctrl, ctrl_event **ev) {
     keyboard *k = ctrl->data;
-    int i = (k->tick - k->delay) % KEYBOARD_INPUT_BUFFER_SIZE;
-    uint16_t input = k->buffer[i];
+    int i = 0;
+    while(k->queued > 0) {
+        uint16_t input = k->buffer[i];
+        if (input & ACT_UPLEFT) {
+            controller_cmd(ctrl, ACT_UPLEFT, ev);
+        } else if (input & ACT_DOWNLEFT) {
+            controller_cmd(ctrl, ACT_DOWNLEFT, ev);
+        } else  if (input & ACT_UPRIGHT) {
+            controller_cmd(ctrl, ACT_UPRIGHT, ev);
+        } else  if (input & ACT_DOWNRIGHT) {
+            controller_cmd(ctrl, ACT_DOWNRIGHT, ev);
+        } else if (input & ACT_RIGHT) {
+            controller_cmd(ctrl, ACT_RIGHT, ev);
+        } else if (input & ACT_LEFT) {
+            controller_cmd(ctrl, ACT_LEFT, ev);
+        } else if (input & ACT_UP) {
+            controller_cmd(ctrl, ACT_UP, ev);
+        } else if (input & ACT_DOWN) {
+            controller_cmd(ctrl, ACT_DOWN, ev);
+        }
 
-    if (input & ACT_UPLEFT) {
-        controller_cmd(ctrl, ACT_UPLEFT, ev);
-    } else if (input & ACT_DOWNLEFT) {
-        controller_cmd(ctrl, ACT_DOWNLEFT, ev);
-    } else  if (input & ACT_UPRIGHT) {
-        controller_cmd(ctrl, ACT_UPRIGHT, ev);
-    } else  if (input & ACT_DOWNRIGHT) {
-        controller_cmd(ctrl, ACT_DOWNRIGHT, ev);
-    } else if (input & ACT_RIGHT) {
-        controller_cmd(ctrl, ACT_RIGHT, ev);
-    } else if (input & ACT_LEFT) {
-        controller_cmd(ctrl, ACT_LEFT, ev);
-    } else if (input & ACT_UP) {
-        controller_cmd(ctrl, ACT_UP, ev);
-    } else if (input & ACT_DOWN) {
-        controller_cmd(ctrl, ACT_DOWN, ev);
-    }
+        if (input & ACT_PUNCH) {
+            controller_cmd(ctrl, ACT_PUNCH, ev);
+        } else if (input & ACT_KICK) {
+            controller_cmd(ctrl, ACT_KICK, ev);
+        }
 
-    if (input & ACT_PUNCH) {
-        controller_cmd(ctrl, ACT_PUNCH, ev);
-    } else if (input & ACT_KICK) {
-        controller_cmd(ctrl, ACT_KICK, ev);
-    }
-
-    if(input == ACT_STOP) {
-        controller_cmd(ctrl, ACT_STOP, ev);
+        if(input == ACT_STOP) {
+            controller_cmd(ctrl, ACT_STOP, ev);
+        }
+        k->queued--;
+        i++;
     }
     return 0;
 }
@@ -113,6 +120,7 @@ void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
     keyboard *k = malloc(sizeof(keyboard));
     k->keys = keys;
     k->delay = delay;
+    k->queued = 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_KEYBOARD;
     ctrl->poll_fun = &keyboard_poll;

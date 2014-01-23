@@ -199,6 +199,8 @@ void engine_run(int net_mode) {
             }
         }
 #endif
+        // Tick controllers
+        game_state_tick_controllers(gs);
 
         // Render scene
         int dt = (SDL_GetTicks() - frame_start);
