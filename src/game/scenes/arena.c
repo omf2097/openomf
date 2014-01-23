@@ -183,7 +183,8 @@ void arena_end(scene *sc) {
     game_state *gs = sc->gs;
 
     // XXX TODO take victory pose screenshot for the newsroom
-    game_state_set_next(gs, SCENE_NEWSROOM);
+    //game_state_set_next(gs, SCENE_NEWSROOM);
+    game_state_set_next(gs, SCENE_MENU);
 }
 
 int is_netplay(scene *scene) {
