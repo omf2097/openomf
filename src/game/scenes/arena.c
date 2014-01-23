@@ -287,6 +287,9 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
             object_set_animation(obj2, &info->ani);
             object_tick(obj2);
             game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP);
+        } else {
+            object_free(obj);
+            free(obj);
         }
         return;
     }
@@ -439,29 +442,32 @@ void arena_spawn_hazard(scene *scene) {
                 /*object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);*/
                 /*object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);*/
                 hazard_create(obj, scene);
-                game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
                 obj->singleton = 1;
-                object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
-                object_set_group(obj, GROUP_PROJECTILE);
-                object_set_userdata(obj, &scene->bk_data);
-                if (info->ani.extra_string_count > 0) {
-                    // For the desert, there's a bunch of extra animation strgins for
-                    // the different plane formations.
-                    // Pick one, rather than always use the first
+                if (game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM) == 0) {
+                    object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
+                    object_set_group(obj, GROUP_PROJECTILE);
+                    object_set_userdata(obj, &scene->bk_data);
+                    if (info->ani.extra_string_count > 0) {
+                        // For the desert, there's a bunch of extra animation strgins for
+                        // the different plane formations.
+                        // Pick one, rather than always use the first
 
-                    int r = rand_int(info->ani.extra_string_count);
-                    if (r > 0) {
-                        str *s = vector_get(&info->ani.extra_strings, r);
-                        object_set_custom_string(obj, str_c(s));
+                        int r = rand_int(info->ani.extra_string_count);
+                        if (r > 0) {
+                            str *s = vector_get(&info->ani.extra_strings, r);
+                            object_set_custom_string(obj, str_c(s));
+                        }
                     }
+
+                    // XXX without this, the object does not unserialize correctly in netplay
+                    object_tick(obj);
+
+                    DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
+                    changed++;
+                } else {
+                    object_free(obj);
+                    free(obj);
                 }
-
-                // XXX without this, the object does not unserialize correctly in netplay
-                object_tick(obj);
-
-
-                DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
-                changed++;
             }
         }
     }

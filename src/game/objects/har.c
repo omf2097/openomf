@@ -654,6 +654,10 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
         /*if (h->hit_hook_cb) {*/
             /*h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);*/
         /*}*/
+        if (anim->chain_no_hit) {
+            object_set_animation(o_pjt, &bk_get_info(bk_data, anim->chain_no_hit)->ani);
+            object_set_repeat(o_pjt, 0);
+        }
         har_spawn_scrap(o_har, hit_coord, 9);
         h->damage_received = 1;
     } else if (anim->chain_hit && intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord)) {

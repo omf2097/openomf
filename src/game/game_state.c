@@ -111,7 +111,6 @@ int game_state_add_object(game_state *gs, object *obj, int layer) {
         while((robj = iter_next(&it)) != NULL) {
             animation *ani = object_get_animation(robj->obj);
             if(ani != NULL && ani->id == new_ani->id && robj->obj->singleton) {
-                object_free(obj);
                 return 1;
             }
         }
