@@ -6,6 +6,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+// If png support is enabled, include header
+#ifdef USE_PNG
+#include <png.h>
+#endif
+
 #define CHECK_COORD_BOUNDS(n, x) n = (n >= x ? (x-1) : (n < 0 ? 0 : n))
 
 typedef struct __attribute__ ((__packed__)) tga_header_t {
@@ -98,11 +103,11 @@ void image_filled_rect(image *img, int x, int y, int w, int h, color c) {
     }
 }
 
-void image_write_tga(image *img, const char *filename) {
+int image_write_tga(image *img, const char *filename) {
     // Open file
     FILE *fp = fopen(filename, "wb");
     if(fp == NULL) {
-        return;
+        return 1; // error
     }
     
     // Write header
@@ -134,5 +139,76 @@ void image_write_tga(image *img, const char *filename) {
     
     // Free file
     fclose(fp);
+    return 0; // Success
 }
- 
+
+int image_supports_png() {
+#ifdef USE_PNG
+    return 1;
+#else
+    return 0;
+#endif
+}
+
+int image_write_png(image *img, const char *filename) {
+#ifdef USE_PNG
+    // Open file
+    FILE *fp = fopen(filename, "wb");
+    if(fp == NULL) {
+        return 1;
+    }
+
+    // PNG stuff
+    png_structp png_ptr;
+    png_infop info_ptr;
+    
+    // Get row pointers
+    char *rows[img->h];
+    for(int y = 0; y < img->h; y++) {
+        rows[y] = malloc(img->w * 3);
+        for(int x = 0; x < img->w; x++) {
+            rows[y][x * 3 + 0] = img->data[y * img->w + x * 4 + 0];
+            rows[y][x * 3 + 1] = img->data[y * img->w + x * 4 + 1];
+            rows[y][x * 3 + 2] = img->data[y * img->w + x * 4 + 2];
+        }
+    }
+    
+    // Init
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    info_ptr = png_create_info_struct(png_ptr);
+    setjmp(png_jmpbuf(png_ptr));
+    png_init_io(png_ptr, fp);
+    
+    // Write header. RGB, 8bits per channel
+    setjmp(png_jmpbuf(png_ptr));
+    png_set_IHDR(png_ptr, 
+                 info_ptr, 
+                 img->w, 
+                 img->h,
+                 8, 
+                 PNG_COLOR_TYPE_RGB, 
+                 PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_BASE, 
+                 PNG_FILTER_TYPE_BASE);
+    png_write_info(png_ptr, info_ptr);
+    
+    // Write data
+    setjmp(png_jmpbuf(png_ptr));
+    png_write_image(png_ptr, (void*)rows);
+    
+    // End
+    setjmp(png_jmpbuf(png_ptr));
+    png_write_end(png_ptr, NULL);
+
+    // Free memory
+    for(int i = 0; i < img->h; i++) {
+        free(rows[i]);
+    }
+
+    // Free file
+    fclose(fp);
+    return 0; // Success
+#else
+    return 1; // PNG not supported, report failure
+#endif
+}

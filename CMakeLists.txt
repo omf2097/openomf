@@ -48,6 +48,7 @@ ENDIF(MINGW)
 
 # Options
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
+OPTION(USE_PNG "Add support for PNG screenshots" OFF)
 OPTION(SERVER_ONLY "Do not build the game binary" OFF)
 
 # If we want to build support for vorbis streaming, find these too
@@ -56,6 +57,12 @@ IF(USE_OGGVORBIS)
     find_package(vorbis)
     set(CORE_FLAGS "${CORE_FLAGS} -DUSE_OGGVORBIS")
 ENDIF(USE_OGGVORBIS)
+
+IF(USE_PNG)
+    find_package(PNG)
+    find_package(ZLIB)
+    set(CORE_FLAGS "${CORE_FLAGS} -DUSE_PNG")
+ENDIF(USE_PNG)
 
 # Build flags
 set(CMAKE_C_FLAGS "${CORE_FLAGS}")
@@ -185,6 +192,12 @@ IF(USE_OGGVORBIS)
     set(COREINCS ${COREINCS} ${OGG_INCLUDE_DIR} ${VORBIS_INCLUDE_DIR})
     set(CORELIBS ${CORELIBS} ${VORBISFILE_LIBRARY} ${VORBIS_LIBRARY} ${OGG_LIBRARY})
 ENDIF(USE_OGGVORBIS)
+
+# If we support PNG, add library incs etc.
+IF(USE_PNG)
+    set(COREINCS ${COREINCS} ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
+    set(CORELIBS ${CORELIBS} ${PNG_LIBRARY} ${ZLIB_LIBRARY})
+ENDIF(USE_PNG)
 
 # MingW build should add mingw32 lib
 IF(MINGW)
