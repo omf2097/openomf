@@ -5,6 +5,18 @@
 #include "utils/log.h"
 #include "game/protos/scene.h"
 
+void hazard_tick(object *obj) {
+    bk *bk_data = (bk*)object_get_userdata(obj);
+
+    if(obj->animation_state.finished) {
+        bk_info *anim = bk_get_info(bk_data, obj->cur_animation->id);
+        if (anim->chain_no_hit) {
+            object_set_animation(obj, &bk_get_info(bk_data, anim->chain_no_hit)->ani);
+            object_set_repeat(obj, 0);
+            obj->animation_state.finished = 0;
+        }
+    }
+}
 
 void hazard_spawn_cb(object *parent, int id, vec2i pos, int g, void *userdata) {
     scene *s = (scene*)userdata;
@@ -48,6 +60,7 @@ int hazard_create(object *obj, scene *scene) {
     object_set_spawn_cb(obj, hazard_spawn_cb, (void*)scene);
     object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
     object_set_move_cb(obj, hazard_move);
+    object_set_tick_cb(obj, hazard_tick);
 
     hazard_bootstrap(obj);
 
