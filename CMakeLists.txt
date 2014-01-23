@@ -238,3 +238,8 @@ IF(NOT SERVER_ONLY)
     ENDIF(MINGW)
     target_link_libraries(openomf ${CORELIBS})
 ENDIF(NOT SERVER_ONLY)
+
+# Installation
+INSTALL(TARGETS openomf
+    RUNTIME DESTINATION bin
+)
