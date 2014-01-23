@@ -614,7 +614,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         vec2f vel = object_get_vel(o_har);
         vel.x = 0.0f;
         object_set_vel(o_har, vel);
-        o_pjt->animation_state.finished = 1;
 
         if (move->successor_id) {
             object_set_animation(o_pjt, &af_get_move(prog_owner_af_data, move->successor_id)->ani);
