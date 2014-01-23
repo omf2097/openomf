@@ -56,7 +56,10 @@ Ogg Vorbis support is required if you wish to replace original OMF soundtracks w
 -------------
 OpenOMF loads the original data files from the original OMF:2097 game using libShadowDive. Since One Must Fall 2079 is freeware, the files are obtainable for free from [www.omf2097.com](http://www.omf2097.com/pub/files/omf/omf2097.rar).
 
-The OMF resource files should be put in resources/ subdirectory. Only BK,AF,PIC,TRN,PSM and DAT files are required, others may be removed.
+On linux in debug mode, or on windows in any mode, the OMF resource files should be put in resources/ subdirectory. Only BK,AF,PIC,TRN,PSM and DAT files are required, others may be removed.
+
+On linux in release mode, the resources should be located in ../share/openomf/. So if your binary is
+in /usr/local/bin, the resources should be put in /usr/local/share/openomf/.
 
 5. Play the game!
 -----------------
