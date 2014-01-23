@@ -17,6 +17,7 @@ typedef struct game_player_t {
     int selectable;
     char colors[3];
     chr_score score;
+    int god;
 } game_player;
 
 void game_player_create(game_player *gp);

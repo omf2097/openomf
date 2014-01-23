@@ -185,6 +185,23 @@ int console_cmd_renderer(game_state *gs, void *userdata, int argc, char **argv) 
     return 1;
 }
 
+
+int console_cmd_god(game_state *gs, void *userdata, int argc, char **argv) {
+    game_player *p1 = game_state_get_player(gs, 0);
+    game_player *p2 = game_state_get_player(gs, 1);
+
+    p1->god = !p1->god;
+    p2->god = !p2->god;
+
+    if(p1->god) {
+        console_output_addline("God mode ON");
+    } else {
+        console_output_addline("God mode OFF");
+    }
+
+    return 0;
+}
+
 void console_init_cmd() {
     // Add console commands
     console_add_cmd("h",     &console_cmd_history,  "show command history");
@@ -200,4 +217,5 @@ void console_init_cmd() {
     console_add_cmd("stun",  &console_cmd_stun,   "Stun the other player");
     console_add_cmd("rein",  &console_cmd_rein,   "R-E-I-N!");
     console_add_cmd("rdr",   &console_cmd_renderer, "Renderer (0=sw,1=hw)");
+    console_add_cmd("god",   &console_cmd_god,  "Enable god mode");
 }

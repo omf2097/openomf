@@ -16,6 +16,9 @@ void hazard_tick(object *obj) {
             obj->animation_state.finished = 0;
         }
     }
+    if(obj->orbit) {
+        obj->orbit_tick += 0.04f;
+    }
 }
 
 void hazard_spawn_cb(object *parent, int id, vec2i pos, int g, void *userdata) {
@@ -51,7 +54,6 @@ void hazard_move(object *obj) {
         // Make this object orbit around the center of the arena
         obj->pos.x += 4*sin(obj->orbit_tick);
         obj->pos.y += 2*cos(obj->orbit_tick);
-        obj->orbit_tick += 0.04f;
     }
 }
 

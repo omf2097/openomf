@@ -13,6 +13,7 @@ void game_player_create(game_player *gp) {
     gp->colors[1] = 8;
     gp->colors[2] = 8;
     chr_score_create(&gp->score, 1.0f);
+    gp->god = 0;
 }
 
 void game_player_free(game_player *gp) {

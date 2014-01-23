@@ -268,7 +268,9 @@ void har_move(object *obj) {
 void har_take_damage(object *obj, str* string, float damage) {
     har *h = object_get_userdata(obj);
     int oldhealth = h->health;
-    h->health -= damage;
+    if(!game_state_get_player(obj->gs, h->player_id)->god) {
+        h->health -= damage;
+    }
     if(h->health <= 0) { h->health = 0; }
 
     if (oldhealth <= 0) {
