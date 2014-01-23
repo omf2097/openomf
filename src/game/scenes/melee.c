@@ -505,9 +505,19 @@ void melee_render(scene *scene) {
             // currently selected HAR
             object_render(&local->harportraits_player2[5*local->row_b + local->column_b]);
             object_render(&local->har_player2[5*local->row_b + local->column_b]);
+
+            // render HAR name (Har1 VS. Har2)
+            char vstext[48];
+            strcpy(vstext, get_id_name(HAR_JAGUAR + 5*local->row_a + local->column_a));
+            strcat(vstext, " VS. ");
+            strcat(vstext, get_id_name(HAR_JAGUAR + 5*local->row_b + local->column_b));
+            font_render_wrapped(&font_small, vstext, 80, 107, 150, COLOR_BLACK);
         } else {
             // 'choose your HAR'
             font_render_wrapped(&font_small, lang_get(186), 160, 97, 160, COLOR_GREEN);
+
+            // render HAR name
+            font_render_wrapped(&font_small, get_id_name(HAR_JAGUAR + 5*local->row_a + local->column_a), 130, 107, 66, COLOR_BLACK);
         }
     }
 }
