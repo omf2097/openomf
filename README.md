@@ -28,12 +28,25 @@ Following formats are still TODO:
 Other files:
 * OMF music files are in PSM module format, and can be opened with libdumb.
 
+Dependencies
+---------------
+
+CMake is required for building this package.
+
+Some common package manager commands for receiving the dependencies:
+
+Debian:
+```
+apt-get install cmake
+```
+
 Compiling
 ---------
 
 To compile:
 
 ```
+$ mkdir -p build
 $ cd build
 $ cmake -DCMAKE_RELEASE_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
 $ make
