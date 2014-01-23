@@ -440,6 +440,11 @@ void arena_spawn_hazard(scene *scene) {
                 object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
                 object_set_stl(obj, scene->bk_data.sound_translation_table);
                 object_set_animation(obj, &info->ani);
+                if (scene->id == SCENE_ARENA3 && info->ani.id == 0) {
+                    // XXX fire pit orb has a bug whwre it double spawns. Use a custom animation string to avoid it
+                    // it mioght be to do with the 'mp' tag, which we don't currently understand
+                    object_set_custom_string(obj, "Z3-mx+160my+100m15mp10Z1-Z300");
+                }
                 /*object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);*/
                 /*object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);*/
                 hazard_create(obj, scene);
