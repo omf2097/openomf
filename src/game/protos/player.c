@@ -528,6 +528,11 @@ void player_run(object *obj) {
                 obj->orbit = 0;
             }
 
+            if(isset(f, "at")) {
+                // set the object's X position to be behind the opponent
+                obj->pos.x = obj->animation_state.enemy_x + (15 * object_get_direction(obj));
+            }
+
             // Set render settings
             if(real_frame < 25) {
                 object_select_sprite(obj, real_frame);
