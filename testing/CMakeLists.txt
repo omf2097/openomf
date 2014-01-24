@@ -8,7 +8,9 @@ IF(CUNIT_FOUND)
         test_main.c
         test_str.c
         test_hashmap.c
+        test_vector.c
         ../src/utils/hashmap.c
+        ../src/utils/vector.c
         ../src/utils/iterator.c
         ../src/utils/str.c
     )

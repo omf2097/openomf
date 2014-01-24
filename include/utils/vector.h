@@ -13,16 +13,17 @@ typedef struct vector_t {
     allocator alloc;
 } vector;
 
+typedef int (*vector_compare_func)(const void*, const void*);
+
 void vector_create_with_allocator(vector *vector, unsigned int block_size, allocator alloc);
 void vector_create(vector *vector, unsigned int block_size);
 void vector_free(vector *vector);
 void* vector_get(vector *vector, unsigned int key);
-void vector_append(vector *vector, const void *value);
-void vector_prepend(vector *vector, const void *value);
-void vector_reserve(vector *vector, unsigned int blocks);
-void vector_sort(vector *vector, int (*compar)(const void*, const void*));
+int vector_append(vector *vector, const void *value);
+int vector_prepend(vector *vector, const void *value);
+void vector_sort(vector *vector, vector_compare_func cf);
 unsigned int vector_size(vector *vector);
-void vector_delete(vector *vector, iterator *iterator);
+int vector_delete(vector *vector, iterator *iterator);
 void vector_iter_begin(vector *vector, iterator *iter);
 void vector_iter_end(vector *vector, iterator *iter);
 

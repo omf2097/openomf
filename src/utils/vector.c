@@ -34,6 +34,7 @@ void vector_free(vector *vec) {
     vec->reserved = 0;
     vec->block_size = 0;
     vec->alloc.cfree(vec->data);
+    vec->data = NULL;
 }
 
 void* vector_get(vector *vec, unsigned int key) {
@@ -43,42 +44,45 @@ void* vector_get(vector *vec, unsigned int key) {
     return (char*)(vec->data + vec->block_size * key);
 }
 
-void vector_grow(vector *vec) {
-    vec->data = vec->alloc.crealloc(vec->data, vec->reserved * vec->block_size * vec->inc_factor);
+int vector_grow(vector *vec) {
+    void *ndata = vec->alloc.crealloc(vec->data, vec->reserved * vec->block_size * vec->inc_factor);
+    if(ndata == NULL) return 1;
+    vec->data = ndata;
     vec->reserved = vec->reserved * vec->inc_factor;
+    return 0;
 }
 
-void vector_append(vector *vec, const void *value) {
+int vector_append(vector *vec, const void *value) {
     if(vec->blocks >= vec->reserved) {
-        vector_grow(vec);
+        if(vector_grow(vec)) {
+            return 1;
+        }
     }
     void *dst = (char*)(vec->data + vec->blocks * vec->block_size);
     memcpy(dst, value, vec->block_size);
     vec->blocks++;
+    return 0;
 }
 
-void vector_prepend(vector *vec, const void *value) {
+int vector_prepend(vector *vec, const void *value) {
     if(vec->blocks >= vec->reserved) {
-        vector_grow(vec);
+        if(vector_grow(vec)) {
+            return 1;
+        }
     }
     char *dst = (char*)(vec->data + vec->block_size);
     memmove(dst, vec->data, vec->block_size * vec->blocks);
     memcpy(dst, value, vec->block_size);
     vec->blocks++;
-}
-
-void vector_reserve(vector *vec, unsigned int blocks) {
-    if(blocks > vec->reserved) {
-        vec->data = vec->alloc.crealloc(vec->data, blocks * vec->block_size);
-    }
+    return 0;
 }
 
 unsigned int vector_size(vector *vec) {
     return vec->blocks;
 }
 
-void vector_delete(vector *vec, iterator *iter) {
-    if(vec->blocks == 0) return;
+int vector_delete(vector *vec, iterator *iter) {
+    if(vec->blocks == 0) return 1;
     
     // Since last iteration already changed the "now" value, find the real "now" here.
     int real;
@@ -106,10 +110,13 @@ void vector_delete(vector *vec, iterator *iter) {
     if(vec->blocks > 0) {
         vec->blocks--;
     }
+
+    // Return success
+    return 0;
 }
 
-void vector_sort(vector *vec, int (*compar)(const void*, const void*)) {
-    qsort(vec->data, vec->blocks, vec->block_size, compar);
+void vector_sort(vector *vec, vector_compare_func cf) {
+    qsort(vec->data, vec->blocks, vec->block_size, cf);
 }
 
 void* vector_iter_next(iterator *iter) {
