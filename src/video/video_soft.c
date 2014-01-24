@@ -46,6 +46,7 @@ void soft_render_finish(video_state *state) {
     tex = SDL_CreateTextureFromSurface(state->renderer, low_s);
     SDL_RenderCopy(state->renderer, tex, NULL, NULL);
     SDL_DestroyTexture(tex);
+    SDL_FreeSurface(low_s);
 
     // Blit upper
     tex = SDL_CreateTextureFromSurface(state->renderer, sr->higher);

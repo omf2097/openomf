@@ -196,14 +196,13 @@ void video_select_renderer(int renderer) {
     if(renderer == state.cur_renderer) {
         return;
     }
+    state.cb.render_close(&state);
     state.cur_renderer = renderer;
     switch(renderer) {
         case VIDEO_RENDERER_QUIRKS:
-            state.cb.render_close(&state);
             video_soft_init(&state);
             break;
         case VIDEO_RENDERER_HW:
-            state.cb.render_close(&state);
             video_hw_init(&state);
             break;
     }
