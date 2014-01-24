@@ -47,9 +47,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->stride = 1;
     obj->cast_shadow = 0;
     obj->age = 0;
-    for(int i = 0; i < OBJECT_EVENT_BUFFER_SIZE; i++) {
-        serial_create(&obj->event_buffer[i]);
-    }
     player_create(obj);
 
     obj->custom_str = NULL;
@@ -240,11 +237,6 @@ void object_tick(object *obj) {
         obj->gs->screen_shake_horizontal = obj->sprite_state.screen_shake_horizontal * 4;
         obj->sprite_state.screen_shake_horizontal = 0;
     }
-
-    // serialize to the ring buffer
-    int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
-    serial_free(&obj->event_buffer[pos]);
-    object_serialize(obj, &obj->event_buffer[pos]);
 }
 
 /*
@@ -336,12 +328,6 @@ void object_render_shadow(object *obj) {
 int object_act(object *obj, int action) {
     if(obj->act != NULL) {
         int res = obj->act(obj, action);
-        if (res) {
-            // serialize to the ring buffer
-            int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
-            serial_free(&obj->event_buffer[pos]);
-            object_serialize(obj, &obj->event_buffer[pos]);
-        }
         return res;
     }
     return 0;
@@ -400,6 +386,9 @@ void object_free(object *obj) {
     if(obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
         free(obj->cur_animation);
+    }
+    if (obj->custom_str) {
+        free(obj->custom_str);
     }
     obj->cur_surface = NULL;
     obj->cur_animation = NULL;
@@ -538,18 +527,6 @@ void object_set_vel(object *obj, vec2f vel) {
 
 uint32_t object_get_age(object *obj) {
     return obj->age;
-}
-
-serial* object_get_last_serialization_point(object *obj) {
-    return object_get_serialization_point(obj, 0);
-}
-
-serial* object_get_serialization_point(object *obj, unsigned int ticks_ago) {
-    if (ticks_ago > OBJECT_EVENT_BUFFER_SIZE || ticks_ago > obj->age) {
-        return NULL;
-    }
-    int pos = (obj->age - ticks_ago) % OBJECT_EVENT_BUFFER_SIZE;
-    return & obj->event_buffer[pos];
 }
 
 void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata) {

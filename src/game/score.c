@@ -72,6 +72,13 @@ unsigned int chr_score_get_num_texts(chr_score *score) {
 }
 
 void chr_score_free(chr_score *score) {
+    iterator it;
+    score_text *t;
+
+    list_iter_begin(&score->texts, &it);
+    while((t = iter_next(&it)) != NULL) {
+        free(t->text);
+    }
     list_free(&score->texts);
 }
 
@@ -165,9 +172,9 @@ void chr_score_victory(chr_score *score, int health) {
 
 int chr_score_interrupt(chr_score *score, vec2i pos) {
     // Enemy interrupted somehow, show consecutive hits or whatevera
-    char *text = malloc(64);
     int ret = 0;
     if (score->consecutive_hits > 3) {
+        char *text = malloc(64);
         ret = 1;
         int len = sprintf(text, "%d consecutive hits ", score->consecutive_hits);
         chr_score_format(score->consecutive_hit_score, text+len);
@@ -181,9 +188,9 @@ int chr_score_interrupt(chr_score *score, vec2i pos) {
 
 int chr_score_end_combo(chr_score *score, vec2i pos) {
     // enemy recovered control, end any combos
-    char *text = malloc(64);
     int ret = 0;
     if (score->combo_hits > 1) {
+        char *text = malloc(64);
         ret = 1;
         int len = sprintf(text, "%d hit combo ", score->combo_hits);
         chr_score_format(score->combo_hit_score*4, text+len);

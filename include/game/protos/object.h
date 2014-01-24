@@ -92,9 +92,6 @@ struct object_t {
 
     // state ringbuffer
     uint32_t age;
-    // should cover the last 400ms (25 * 16 = 400)
-    // if the user's ping is > 800ms they're pretty screwed
-    serial event_buffer[OBJECT_EVENT_BUFFER_SIZE];
 
     char *custom_str;
     uint8_t singleton;

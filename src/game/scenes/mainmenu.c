@@ -505,6 +505,11 @@ void mainmenu_free(scene *scene) {
     textbutton_free(&local->video_done_button);
     menu_free(&local->video_menu);
 
+    textbutton_free(&local->video_confirm_header);
+    textbutton_free(&local->video_confirm_cancel);
+    textbutton_free(&local->video_confirm_ok);
+    menu_free(&local->video_confirm_menu);
+
     textbutton_free(&local->gameplay_header);
     textslider_free(&local->speed_slider);
     textselector_free(&local->fightmode_toggle);
