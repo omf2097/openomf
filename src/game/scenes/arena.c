@@ -519,27 +519,29 @@ void arena_tick(scene *scene) {
         }
 
         if (
-                (har1->state == STATE_STANDING || har_is_crouching(har1) || har_is_walking(har1) || har1->state == STATE_STUNNED) &&
-                (har2->state == STATE_STANDING || har_is_crouching(har1) || har_is_walking(har2) || har2->state == STATE_STUNNED)) {
-            // XXX if the other har is stunned, turn the non stunned HAR to face it, but never turn a stunned HAR
+                (har1->state == STATE_STANDING || har_is_crouching(har1) || har_is_walking(har1) || har1->state == STATE_STUNNED || har1->state == STATE_FALLEN || har1->state == STATE_RECOIL || har1->state == STATE_STANDING_UP) &&
+                (har2->state == STATE_STANDING || har_is_crouching(har1) || har_is_walking(har2) || har2->state == STATE_STUNNED || har2->state == STATE_FALLEN || har2->state == STATE_RECOIL || har1->state == STATE_STANDING_UP)) {
+            // XXX if the other har is stunned, turn the non stunned HAR to face it, but never turn a stunned or recoiling HAR
+            // TODO this isn't actually entirely correct, if jaguar does an overhead throw immediately followed by a crouching kick, jag should change direction before the second move
+            // right now, if there's no recovery time between moves, we don't change direction. A HAR hook would be nice for this.
             vec2i pos1, pos2;
             pos1 = object_get_pos(obj_har1);
             pos2 = object_get_pos(obj_har2);
             if(pos1.x > pos2.x) {
                 if(object_get_direction(obj_har1) == OBJECT_FACE_RIGHT || object_get_direction(obj_har2) == OBJECT_FACE_LEFT) {
-                    if (har1->state != STATE_STUNNED) {
+                    if (har1->state != STATE_STUNNED && har1->state != STATE_FALLEN && har1->state != STATE_RECOIL && har1->executing_move == 0) {
                         object_set_direction(obj_har1, OBJECT_FACE_LEFT);
                     }
-                    if (har2->state != STATE_STUNNED) {
+                    if (har2->state != STATE_STUNNED && har2->state != STATE_FALLEN && har2->state != STATE_RECOIL && har1->executing_move == 0) {
                         object_set_direction(obj_har2, OBJECT_FACE_RIGHT);
                     }
                 }
             } else if(pos1.x < pos2.x) {
                 if(object_get_direction(obj_har1) == OBJECT_FACE_LEFT || object_get_direction(obj_har2) == OBJECT_FACE_RIGHT) {
-                    if (har1->state != STATE_STUNNED) {
+                    if (har1->state != STATE_STUNNED && har1->state != STATE_FALLEN && har1->state != STATE_RECOIL && har1->executing_move == 0) {
                         object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
                     }
-                    if (har2->state != STATE_STUNNED) {
+                    if (har2->state != STATE_STUNNED && har2->state != STATE_FALLEN && har2->state != STATE_RECOIL && har1->executing_move == 0) {
                         object_set_direction(obj_har2, OBJECT_FACE_LEFT);
                     }
                 }

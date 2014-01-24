@@ -546,6 +546,12 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
           a->close = 0;
         }
 
+        if ((b->state == STATE_STUNNED || b->state == STATE_RECOIL) && object_get_direction(obj_a) == object_get_direction(obj_b)) {
+            // opponent is stunned and facing the same way we are, backwards
+            // so flip them around
+            object_set_direction(obj_b, object_get_direction(obj_a) * -1);
+        }
+
         if (move->next_move) {
             object_set_animation(obj_a, &af_get_move(a->af_data, move->next_move)->ani);
             object_set_repeat(obj_a, 0);
