@@ -304,7 +304,10 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
         object_set_animation(obj, &info->ani);
         object_set_custom_string(obj, "brwA1-brwB1-brwD1-brwE0-brwD4-brwC2-brwB2-brwA2");
         obj->singleton = 1;
-        game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM);
+        if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM) != 0) {
+            object_free(obj);
+            free(obj);
+        }
     }
 #ifdef DEBUGMODE_STFU
     DEBUG("velocity %d", abs(o_har->vel.x));
