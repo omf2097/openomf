@@ -97,6 +97,9 @@ exit_0:
 void engine_run(int net_mode) {
     SDL_Event e;
 
+    //if mouse_visible_ticks <= 0, hide mouse
+    int mouse_visible_ticks = 1000;
+
     INFO(" --- BEGIN GAME LOG ---");
 
 #ifdef STANDALONE_SERVER
@@ -152,6 +155,10 @@ void engine_run(int net_mode) {
                         take_screenshot = 1;
                     }
                     break;
+                case SDL_MOUSEMOTION:
+                    mouse_visible_ticks = 1000;
+                    SDL_ShowCursor(1);
+                    break;
                 case SDL_WINDOWEVENT:
                     switch(e.window.event) {
                         case SDL_WINDOWEVENT_MINIMIZED:
@@ -198,6 +205,14 @@ void engine_run(int net_mode) {
                 console_event(gs, &e);
             } else {
                 game_state_handle_event(gs, &e);
+            }
+        }
+
+        // hide mouse after n ticks
+        if(mouse_visible_ticks > 0) {
+            mouse_visible_ticks -= SDL_GetTicks() - frame_start;
+            if(mouse_visible_ticks <= 0) {
+                SDL_ShowCursor(0);
             }
         }
 #endif
