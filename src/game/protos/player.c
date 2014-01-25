@@ -423,6 +423,7 @@ void player_run(object *obj) {
                 }
 
                 if (x || y) {
+                    DEBUG("x vel %d, y vel %d", x, y);
                     obj->vel.x += x;
                     obj->vel.y += y;
                 }
@@ -532,6 +533,12 @@ void player_run(object *obj) {
                 // set the object's X position to be behind the opponent
                 obj->pos.x = obj->animation_state.enemy_x + (15 * object_get_direction(obj));
             }
+
+            if(isset(f, "ar")) {
+                // reverse direction
+                object_set_direction(obj, object_get_direction(obj) * -1);
+            }
+
 
             // Set render settings
             if(real_frame < 25) {

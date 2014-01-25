@@ -716,18 +716,28 @@ void har_tick(object *obj) {
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
     if (h->state != STATE_DEFEAT) {
+        sd_stringparser_frame f = obj->animation_state.parser->current_frame;
+        int wall_flag = frame_isset(&f, "aw");
         int wall = 0;
         int hit = 0;
         if(pos.x <  15) {
             pos.x = 15;
             hit = 1;
-        }
-        if(pos.x > 305) {
+        } else if(pos.x > 305) {
             pos.x = 305;
             wall = 1;
             hit = 1;
         }
+
         object_set_pos(obj, pos);
+
+        if (hit && wall_flag) {
+            af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
+            if (move->next_move) {
+                DEBUG("wall hit chaining to next animation");
+                har_set_ani(obj, move->next_move, 0);
+            }
+        }
 
         if (hit && h->wall_hit_hook_cb) {
             h->wall_hit_hook_cb(h->player_id, wall, h->wall_hit_hook_cb_data);
@@ -756,7 +766,7 @@ void har_tick(object *obj) {
 
     // Stop HAR from sliding if touching the ground
     if(h->state != STATE_JUMPING && h->state != STATE_FALLEN && h->state != STATE_RECOIL) {
-        if(!har_is_walking(h) || h->executing_move) {
+        if(!har_is_walking(h) && h->executing_move == 0) {
             vec2f vel = object_get_vel(obj);
             vel.x = 0;
             object_set_vel(obj, vel);
@@ -1092,7 +1102,7 @@ int har_act(object *obj, int act_type) {
         // Stop horizontal movement, when move is done
         // TODO: Make this work better
         vec2f spd = object_get_vel(obj);
-        //spd.x = 0.0f;
+        spd.x = 0.0f;
         object_set_vel(obj, spd);
 
         // Set correct animation etc.
