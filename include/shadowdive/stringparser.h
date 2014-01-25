@@ -57,6 +57,7 @@ typedef struct sd_stringparser_t {
     sd_stringparser_frame current_frame;
 } sd_stringparser;
 
+/* Leak detector only works if DEBUGMODE is defined */
 typedef struct sd_stringparser_alloc_t {
     int line;
     unsigned int alloced;
@@ -68,9 +69,10 @@ typedef struct sd_stringparser_mem_t {
 } sd_stringparser_mem;
 
 /* stringparser API */
-
 void sd_stringparser_lib_init(void);
 void sd_stringparser_lib_deinit(void);
+
+/* Leak detector only works if DEBUGMODE is defined */
 sd_stringparser_mem *sd_stringparser_mem_usage(void);
 
 sd_stringparser* sd_stringparser_create();
