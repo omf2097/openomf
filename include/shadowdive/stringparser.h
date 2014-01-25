@@ -57,12 +57,21 @@ typedef struct sd_stringparser_t {
     sd_stringparser_frame current_frame;
 } sd_stringparser;
 
+typedef struct sd_stringparser_alloc_t {
+    int line;
+    unsigned int alloced;
+    unsigned int freed;
+} sd_stringparser_alloc;
 
+typedef struct sd_stringparser_mem_t {
+    sd_stringparser_alloc allocs[1000];
+} sd_stringparser_mem;
 
 /* stringparser API */
 
 void sd_stringparser_lib_init(void);
 void sd_stringparser_lib_deinit(void);
+sd_stringparser_mem *sd_stringparser_mem_usage(void);
 
 sd_stringparser* sd_stringparser_create();
 void sd_stringparser_delete(sd_stringparser *parser);

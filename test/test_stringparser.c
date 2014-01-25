@@ -1,7 +1,11 @@
+// DEBUGMODE enables the leak detector
+#ifndef DEBUGMODE
+#define DEBUGMODE
+#endif
+
 #include <shadowdive/shadowdive.h>
 #include <stdio.h>
 #include <string.h>
-
 
 
 void test_state_variables(const char *anim_str) {
@@ -92,6 +96,22 @@ void test_broken_string(sd_stringparser *parser) {
     }
 }
 
+void find_leak()
+{
+    sd_stringparser_mem *mem = sd_stringparser_mem_usage();
+    for(int i = 0;i < sizeof(mem->allocs)/sizeof(sd_stringparser_alloc);i++){
+        unsigned int alloced = mem->allocs[i].alloced;
+        unsigned int freed = mem->allocs[i].freed;
+        if(alloced > freed) {
+            unsigned int leak = alloced - freed;
+            printf("Leak detected at line %d, amount %u\n", mem->allocs[i].line, leak);
+        } else if(alloced < freed) {
+            unsigned int overfree = freed - alloced;
+            printf("Overfree detected at line %d, amount %u\n", mem->allocs[i].line, overfree);
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     char buf[256];
     char *ext;
@@ -102,10 +122,13 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    sd_stringparser_lib_init();
     if(strcmp(argv[1], "--testvar") == 0) {
         test_state_variables("brA20-bs200B200-bf200C200");
         printf("\n\n");
         test_state_variables("brA20-bs200B200-bf200C200-d1B10");
+        sd_stringparser_lib_deinit();
+        find_leak();
         return 0;
     }
 
@@ -173,6 +196,9 @@ int main(int argc, char **argv) {
     }
 
     sd_stringparser_delete(parser);
+    sd_stringparser_lib_deinit();
+
+    find_leak();
 
     return 0;
 }

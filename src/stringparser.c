@@ -229,6 +229,58 @@ static const sd_stringparser_tag_info tags[] = {
     {"zz", 0, "Invulnerable to any attacks?"}
 };
 
+sd_stringparser_mem *sd_stringparser_mem_usage(void) {
+    static sd_stringparser_mem m;
+    return &m;
+}
+
+// Leak detector
+#ifdef DEBUGMODE
+typedef struct alloc_header_t {
+    size_t line;
+    size_t size;
+} alloc_header;
+
+static void *malloc_hook(size_t size, const char *file, int line) {
+    sd_stringparser_mem_usage()->allocs[line].alloced += size;
+    alloc_header *m = malloc(size + sizeof(alloc_header));
+    m->line = line;
+    m->size = size;
+    return m+1;
+}
+
+static void free_hook(void *ptr, const char *file, int line) {
+    if(ptr != NULL) {
+        alloc_header *m = ((alloc_header*)ptr) - 1;
+        sd_stringparser_mem_usage()->allocs[m->line].freed += m->size;
+        free(m);
+    }
+}
+static void *realloc_hook(void *ptr, size_t size, const char *file, int line) {
+    if(ptr == NULL) {
+        return malloc_hook(size, file, line);
+    } else {
+        alloc_header *m = ((alloc_header*)ptr) - 1;
+        sd_stringparser_mem_usage()->allocs[m->line].alloced -= m->size;
+        sd_stringparser_mem_usage()->allocs[m->line].alloced += size;
+        m = realloc(m, size + sizeof(alloc_header));
+        m->size = size;
+        return m+1;
+    }
+}
+
+#define malloc(s) malloc_hook(s, __FILE__, __LINE__)
+#define free(p) free_hook(p, __FILE__, __LINE__)
+#define realloc(p, s) realloc_hook(p, s, __FILE__, __LINE__)
+#endif
+
+static char *sd_stringparser_strdup(const char *s) {
+    size_t len = strlen(s)+1;
+    char *p = malloc(len);
+
+    return p ? memcpy(p, s, len) : NULL;
+}
+
 static void sd_taglist_add_tag(tag_list *list, const sd_stringparser_tag_info *attrib) {
     tag_list **plist = &list;
     const char *ptag = attrib->tag;
@@ -328,6 +380,8 @@ static void sd_framelist_resize(frame_list *list, int frames) {
     list->num_frames = frames;
     for (int i = frames;i < prev_num_frames;++i) {
         sd_taglist_delete(&list->frames[i].tag_list);
+        free(list->frames[i].tag_params);
+        free(list->frames[i].tags);
     }
     if(frames > 0) {
         list->frames = realloc(list->frames, frames*sizeof(anim_frame));
@@ -632,7 +686,7 @@ void sd_stringparser_delete(sd_stringparser *parser) {
 
 int sd_stringparser_set_string(sd_stringparser *parser, const char *string) {
     if(parser->string) free(parser->string);
-    parser->string = sd_strdup(string);
+    parser->string = sd_stringparser_strdup(string);
 
     sd_stringparser_reset(parser);
 
@@ -838,9 +892,13 @@ void sd_stringparser_lib_init(void) {
     for(int i = 0; i < tag_count; ++i) {
         sd_taglist_add_tag(static_taglist, &tags[i]);
     }
+    for(int i = 0;i < sizeof(sd_stringparser_mem_usage()->allocs)/sizeof(sd_stringparser_alloc);i++) {
+        sd_stringparser_mem_usage()->allocs[i].line = i;
+        sd_stringparser_mem_usage()->allocs[i].alloced = 0;
+        sd_stringparser_mem_usage()->allocs[i].freed = 0;
+    }
 }
 
 void sd_stringparser_lib_deinit(void) {
-    free(static_taglist);
     static_taglist = NULL;
 }
