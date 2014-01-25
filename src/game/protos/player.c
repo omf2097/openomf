@@ -254,10 +254,11 @@ void player_run(object *obj) {
             
             // Tick management
             if(isset(f, "d")) {
-                if(get(f, "d") != obj->animation_state.gate_value) {
-                    state->ticks = 1;
+                // XXX gate value is wrong, or useless
+                /*if(get(f, "d") != obj->animation_state.gate_value) {*/
+                    state->ticks = get(f, "d");
                     sd_stringparser_reset(state->parser);
-                }
+                /*}*/
             }
 
             // Hover flag
