@@ -738,7 +738,7 @@ void har_tick(object *obj) {
         if (hit && wall_flag) {
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
             if (move->next_move) {
-                DEBUG("wall hit chaining to next animation");
+                DEBUG("wall hit chaining to next animation %d", move->next_move);
                 har_set_ani(obj, move->next_move, 0);
             }
         }
@@ -1103,17 +1103,19 @@ int har_act(object *obj, int act_type) {
         }
         har_fire_hook(obj, ACT_FLUSH);
 
-        // Stop horizontal movement, when move is done
-        // TODO: Make this work better
-        vec2f spd = object_get_vel(obj);
-        spd.x = 0.0f;
-        object_set_vel(obj, spd);
-
         // Set correct animation etc.
         // executing_move = 1 prevents new moves while old one is running.
         har_set_ani(obj, move->id, 0);
         h->inputs[0] = '\0';
         h->executing_move = 1;
+
+        // Stop horizontal movement, when move is done
+        // TODO: Make this work better
+        vec2f spd = object_get_vel(obj);
+        if (h->state != STATE_JUMPING) {
+            spd.x = 0.0f;
+        }
+        object_set_vel(obj, spd);
 
         if (move->category == CAT_SCRAP) {
             DEBUG("going to scrap state");

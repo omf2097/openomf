@@ -263,7 +263,10 @@ void player_run(object *obj) {
             // Hover flag
             if(isset(f, "h")) {
                 rstate->disable_gravity = 1;
+            } else {
+                rstate->disable_gravity = 0;
             }
+
         
             // Animation management
             if(isset(f, "m") && state->spawn != NULL) {
