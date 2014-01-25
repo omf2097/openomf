@@ -65,6 +65,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
 
     if (move->category == CAT_JUMPING) {
         h->state = STATE_JUMPING;
+        object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
     }
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
