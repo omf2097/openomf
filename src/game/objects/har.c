@@ -62,6 +62,10 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
         DEBUG("delaying move %d %s by %d ticks", move->id, s, h->delay);
         object_set_delay(obj, h->delay);
     }
+
+    if (move->category == CAT_JUMPING) {
+        h->state = STATE_JUMPING;
+    }
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
     object_tick(obj);
