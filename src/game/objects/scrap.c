@@ -9,7 +9,7 @@
 void scrap_move(object *obj) {
     vec2f vel = object_get_vel(obj);
     vec2i pos = object_get_pos(obj);
-    if(object_get_gate_value(obj) > 0) {
+    if(object_is_rewind_tag_disabled(obj) > 0) {
         return;
     }
 
@@ -42,7 +42,7 @@ void scrap_move(object *obj) {
         vel.y < obj->gravity * 1.1 && 
         vel.y > obj->gravity * -1.1) 
     {
-        object_set_gate_value(obj, 1);
+        object_disable_rewind_tag(obj, 1);
     }
 }
 

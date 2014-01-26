@@ -512,11 +512,12 @@ void object_set_pos(object *obj, vec2i pos) {
     obj->pos = vec2i_to_f(pos);
 }
 
-void object_set_gate_value(object *obj, int gate_value) { 
-    obj->animation_state.gate_value = gate_value; 
+void object_disable_rewind_tag(object *obj, int disable_d) { 
+    obj->animation_state.disable_d = disable_d; 
 }
-int object_get_gate_value(object *obj) { 
-    return obj->animation_state.gate_value; 
+
+int object_is_rewind_tag_disabled(object *obj) {
+    return obj->animation_state.disable_d;
 }
 
 void object_set_vel(object *obj, vec2f vel) {

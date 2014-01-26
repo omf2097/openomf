@@ -168,8 +168,8 @@ int object_get_layers(object *obj);
 void object_set_shadow(object *obj, int enable);
 int object_get_shadow(object *obj);
 
-void object_set_gate_value(object *obj, int gate_value);
-int object_get_gate_value(object *obj);
+void object_disable_rewind_tag(object *obj, int disable_d);
+int object_is_rewind_tag_disabled(object *obj);
 
 void object_set_pal_offset(object *obj, int offset);
 int object_get_pal_offset(object *obj);

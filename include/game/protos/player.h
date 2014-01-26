@@ -46,7 +46,7 @@ typedef struct player_animation_state_t {
     uint8_t repeat;
     uint8_t reverse;
     uint8_t finished;
-    uint16_t gate_value;
+    uint8_t disable_d;
 
     void *spawn_userdata;
     void *destroy_userdata;
