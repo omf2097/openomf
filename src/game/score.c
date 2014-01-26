@@ -97,28 +97,20 @@ void chr_score_tick(chr_score *score) {
     } 
 }
 
-void chr_score_format(int score, char *buf) {
-    int len;
-    int millions = 0;
-    int thousands = 0;
-    if (score >= 100000000) {
-        millions = score / 1000000;
-        len = sprintf(buf, "%d,", millions);
-        buf += len;
+void chr_score_format(unsigned int score, char *buf) {
+    unsigned int n = 0;
+    unsigned int scale = 1;
+    while(score >= 1000) {
+        n = n + scale * (score % 1000);
+        score /= 1000;
+        scale *= 1000;
     }
-    if (score >= 1000) {
-        thousands = (score - (millions * 1000000)) / 1000;
-        if (millions) {
-            len = sprintf(buf, "%03d,", thousands);
-        } else {
-            len = sprintf(buf, "%d,", thousands);
-        }
-        buf += len;
-    }
-    if (millions || thousands) {
-        sprintf(buf, "%03d",  (score - (millions * 1000000) - (thousands * 1000)));
-    } else {
-        sprintf(buf, "%d",  (score - (millions * 1000000) - (thousands * 1000)));
+    int len = sprintf(buf, "%u", score);
+    while(scale != 1) {
+        scale /= 1000;
+        score = n / scale;
+        n = n  % scale;
+        len += sprintf(buf + len, ",%03u", score);
     }
 }
 
