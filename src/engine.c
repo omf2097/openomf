@@ -190,13 +190,14 @@ void engine_run(int net_mode) {
             }
         
             // Console events
-            if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
-                if(console_window_is_open()) {
+            if(e.type == SDL_KEYDOWN) {
+                if(console_window_is_open() && (e.key.keysym.sym == SDLK_TAB || e.key.keysym.sym == SDLK_ESCAPE)) {
                     console_window_close();
-                } else {
+                    continue;
+                } else if(e.key.keysym.sym == SDLK_TAB) {
                     console_window_open();
+                    continue;
                 }
-                continue;
             }
 
             // If console windows is open, pass events to console. 

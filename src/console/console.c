@@ -225,34 +225,34 @@ void console_event(game_state *gs, SDL_Event *e) {
     if (e->type == SDL_KEYDOWN) {
         unsigned char code = e->key.keysym.sym;
         unsigned char len = strlen(con->input);
-        const unsigned char *state = SDL_GetKeyboardState(NULL);
+        unsigned char scancode = e->key.keysym.scancode;
         /*if ((code >= SDLK_a && code <= SDLK_z) || (code >= SDLK_0 && code <= SDLK_9) || code == SDLK_SPACE || code == SDLK) {*/
         // SDLK_UP and SDLK_DOWN does not work here
-        if(state[SDL_SCANCODE_UP]) {
+        if(scancode == SDL_SCANCODE_UP) {
             if(con->histpos < HISTORY_MAX && con->histpos < (signed int)(list_size(&con->history)-1)) {
                 con->histpos++;
                 con->histpos_changed = 1;
             }
-        } else if(state[SDL_SCANCODE_DOWN]) {
+        } else if(scancode == SDL_SCANCODE_DOWN) {
             if(con->histpos > -1) {
                 con->histpos--;
                 con->histpos_changed = 1;
             }
-        } else if(state[SDL_SCANCODE_LEFT]) {
+        } else if(scancode == SDL_SCANCODE_LEFT) {
             // TODO move cursor to the left
-        } else if(state[SDL_SCANCODE_RIGHT]) {
+        } else if(scancode == SDL_SCANCODE_RIGHT) {
             // TODO move cursor to the right
-        } else if (state[SDL_SCANCODE_BACKSPACE] || state[SDL_SCANCODE_DELETE]) {
+        } else if (scancode == SDL_SCANCODE_BACKSPACE || scancode == SDL_SCANCODE_DELETE) {
             if (len > 0) {
                 con->input[len-1] = '\0';
             }
-        } else if (state[SDL_SCANCODE_RETURN]) {
+        } else if (scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) {
             // send the input somewhere and clear the input line
             console_handle_line(gs);
             con->input[0] = '\0';
-        } else if(state[SDL_SCANCODE_PAGEUP]) {
+        } else if(scancode == SDL_SCANCODE_PAGEUP) {
             console_output_scroll_up(1);
-        } else if(state[SDL_SCANCODE_PAGEDOWN]) {
+        } else if(scancode == SDL_SCANCODE_PAGEDOWN) {
             console_output_scroll_down(1);
         } else if (code >= 32 && code <= 126) {
             if (len < sizeof(con->input)-1) {
