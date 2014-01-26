@@ -191,10 +191,15 @@ void engine_run(int net_mode) {
         
             // Console events
             if(e.type == SDL_KEYDOWN) {
-                if(console_window_is_open() && (e.key.keysym.sym == SDLK_TAB || e.key.keysym.sym == SDLK_ESCAPE)) {
+                if(console_window_is_open() && (e.key.keysym.scancode == SDL_SCANCODE_GRAVE ||
+                                                e.key.keysym.sym == SDLK_BACKQUOTE ||
+                                                e.key.keysym.sym == SDLK_TAB ||
+                                                e.key.keysym.sym == SDLK_ESCAPE)) {
                     console_window_close();
                     continue;
-                } else if(e.key.keysym.sym == SDLK_TAB) {
+                } else if(e.key.keysym.sym == SDLK_TAB ||
+                          e.key.keysym.sym == SDLK_BACKQUOTE ||
+                          e.key.keysym.scancode == SDL_SCANCODE_GRAVE) {
                     console_window_open();
                     continue;
                 }
