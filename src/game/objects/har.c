@@ -959,6 +959,23 @@ af_move* match_move(object *obj, char *inputs) {
     }
     return NULL;
 }
+af_move* scrap_destruction_cheat(object *obj, char *inputs) {
+    har *h = object_get_userdata(obj);
+    for(int i = 0; i < 70; i++) {
+        af_move *move;
+        if((move = af_get_move(h->af_data, i))) {
+            if (move->category == CAT_SCRAP && h->state == STATE_VICTORY && inputs[0] == 'K') {
+                return move;
+            }
+
+            if (move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && inputs[0] == 'P') {
+                return move;
+            }
+        }
+    }
+    return NULL;
+}
+
 
 int maybe_har_change_state(int oldstate, int direction, int act_type) {
     int state = 0;
@@ -1038,6 +1055,10 @@ int har_act(object *obj, int act_type) {
     add_input(h->inputs, act_type, direction);
 
     af_move *move = match_move(obj, h->inputs);
+
+    if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL && (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
+        move = scrap_destruction_cheat(obj, h->inputs);
+    }
 
     if (move) {
         char *s = (char*)str_c(&move->move_string); // start
