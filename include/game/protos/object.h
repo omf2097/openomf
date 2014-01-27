@@ -59,6 +59,10 @@ struct object_t {
     uint8_t hstate;
     int8_t direction;
     int8_t group;
+
+    int8_t hit_frames;
+    int8_t can_hit;
+
     int8_t orbit;
     float orbit_tick;
     vec2f orbit_dest;

@@ -29,6 +29,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->group = OBJECT_NO_GROUP;
     obj->gravity = 0.0f;
     obj->singleton = 0;
+
+    // Fire orb wandering
     obj->orbit = 0;
     obj->orbit_tick = MATH_PI/2.0f;
     obj->orbit_dest = obj->start;
@@ -51,7 +53,11 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     obj->custom_str = NULL;
 
-    random_seed(&obj->rand_state, rand_intmax()),
+    random_seed(&obj->rand_state, rand_intmax());
+
+    // For enabling hit on the current and the next n-1 frames
+    obj->hit_frames = 0;
+    obj->can_hit = 0;
 
     // Callbacks & userdata
     obj->userdata = NULL;
@@ -86,6 +92,8 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int32(ser, random_get_seed(&obj->rand_state));
     serial_write_int8(ser, obj->cur_animation->id);
     serial_write_int8(ser, obj->pal_offset);
+    serial_write_int8(ser, obj->hit_frames);
+    serial_write_int8(ser, obj->can_hit);
 
     // Write animation state
     if (obj->custom_str) {
@@ -134,6 +142,8 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     random_seed(&obj->rand_state, serial_read_int32(ser));
     uint8_t animation_id = serial_read_int8(ser);
     uint8_t pal_offset = serial_read_int8(ser);
+    int8_t hit_frames = serial_read_int8(ser);
+    int8_t can_hit = serial_read_int8(ser);
 
     // Other stuff not included in serialization
     obj->y_percent = 1.0;
@@ -189,6 +199,8 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     object_set_gravity(obj, gravity);
     object_set_repeat(obj, repeat);
     object_set_pal_offset(obj, pal_offset);
+    obj->hit_frames = hit_frames;
+    obj->can_hit = can_hit;
 
     /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
 

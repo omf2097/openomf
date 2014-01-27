@@ -139,6 +139,9 @@ void player_reload_with_str(object *obj, const char* custom_str) {
 
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
+
+    obj->hit_frames = 0;
+    obj->can_hit = 0;
 }
 
 void player_reload(object *obj) {
@@ -251,7 +254,7 @@ void player_run(object *obj) {
         // If frame changed, do something
         if(param->id != state->previous) {
             player_clear_frame(obj);
-            
+
             // Tick management
             if(isset(f, "d")) {
                 if(!obj->animation_state.disable_d) {
@@ -530,6 +533,14 @@ void player_run(object *obj) {
                 obj->orbit = 1;
             } else {
                 obj->orbit = 0;
+            }
+            if(isset(f, "q")) {
+                // Enable hit on the current and the next n-1 frames.
+                obj->hit_frames = get(f, "q");
+            }
+            if(obj->hit_frames > 0) {
+                obj->can_hit = 1;
+                obj->hit_frames--;
             }
 
             if(isset(f, "at")) {
