@@ -43,6 +43,16 @@ void fire_hooks(har *h, har_event event) {
     }
 }
 
+
+void har_event_jump(har *h, int direction) {
+    // direction is -1, 0 or 1, for backwards, up and forwards
+    har_event event;
+    event.type = HAR_EVENT_JUMP;
+    event.player_id = h->player_id;
+    event.direction = direction;
+
+    fire_hooks(h, event);
+}
 void har_event_attack(har *h, af_move *move) {
     har_event event;
     event.type = HAR_EVENT_ATTACK;
@@ -344,6 +354,7 @@ void har_move(object *obj) {
                 har_set_ani(obj, ANIM_IDLE, 1);
                 har_action_hook(obj, ACT_STOP);
                 har_action_hook(obj, ACT_FLUSH);
+                har_event_land(h);
             /*}*/
         } else if (h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.4;
@@ -373,6 +384,7 @@ void har_move(object *obj) {
                 if (h->state == STATE_FALLEN) {
                     h->state = STATE_STANDING_UP;
                     har_set_ani(obj, ANIM_STANDUP, 0);
+                    har_event_land(h);
                 } else {
                     har_finished(obj);
                 }
@@ -1359,11 +1371,13 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 vx = 0.0f;
                 vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
+                int jump_dir = 0;
                 if ((act_type == ACT_UPLEFT && direction == OBJECT_FACE_LEFT) ||
                         (act_type == ACT_UPRIGHT && direction == OBJECT_FACE_RIGHT)) {
                     vx = (h->af_data->forward_speed*direction)/(float)320;
                     object_set_tick_pos(obj, 110);
                     object_set_stride(obj, 7); // Pass 10 frames per tick
+                    jump_dir = 1;
                 } else if (act_type == ACT_UPLEFT || act_type == ACT_UPRIGHT) {
                     // If we are jumping backwards, start animation from end
                     // at -100 frames (seems to be about right)
@@ -1371,6 +1385,7 @@ int har_act(object *obj, int act_type) {
                     object_set_tick_pos(obj, -110);
                     vx = (h->af_data->reverse_speed*direction*-1)/(float)320;
                     object_set_stride(obj, 7); // Pass 10 frames per tick
+                    jump_dir = -1;
                 }
                 if (oldstate == STATE_CROUCHING || oldstate == STATE_CROUCHBLOCK) {
                     // jumping frop crouch makes you jump 25% higher
@@ -1379,6 +1394,7 @@ int har_act(object *obj, int act_type) {
                 }
                 object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
                 object_set_vel(obj, vec2f_create(vx,vy));
+                har_event_jump(h, jump_dir);
                 break;
         }
         har_action_hook(obj, act_type);
@@ -1410,6 +1426,7 @@ void har_finished(object *obj) {
         h->state = STATE_STUNNED;
         h->stun_timer = 0;
         har_set_ani(obj, ANIM_STUNNED, 1);
+        har_event_stun(h);
     } else if (h->state == STATE_RECOIL) {
         har_event_recover(h);
         h->state = STATE_STANDING;

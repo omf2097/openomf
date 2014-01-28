@@ -77,6 +77,7 @@ typedef struct har_event_t {
         af_move *move; // for attack/hit
         bk_info *info; // for hazard hit
         int wall; // for hit wall
+        int direction; // jump direction
     };
 } har_event;
 
