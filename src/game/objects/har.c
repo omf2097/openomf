@@ -27,7 +27,121 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount);
 
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
+    list_free(&h->har_hooks);
     free(h);
+}
+
+/* hooks */
+
+void fire_hooks(har *h, har_event event) {
+    iterator it;
+    har_hook *hook;
+
+    list_iter_begin(&h->har_hooks, &it);
+    while((hook = iter_next(&it)) != NULL) {
+        hook->cb(event, hook->data);
+    }
+}
+
+void har_event_attack(har *h, af_move *move) {
+    har_event event;
+    event.type = HAR_EVENT_ATTACK;
+    event.player_id = h->player_id;
+    event.move = move;
+
+    fire_hooks(h, event);
+}
+
+void har_event_take_hit(har *h, af_move *move) {
+    har_event event;
+    event.type = HAR_EVENT_TAKE_HIT;
+    event.player_id = h->player_id;
+    event.move = move;
+
+    fire_hooks(h, event);
+}
+
+void har_event_land_hit(har *h, af_move *move) {
+    har_event event;
+    event.type = HAR_EVENT_LAND_HIT;
+    event.player_id = h->player_id;
+    event.move = move;
+
+    fire_hooks(h, event);
+}
+
+void har_event_hazard_hit(har *h, bk_info *info) {
+    har_event event;
+    event.type = HAR_EVENT_HAZARD_HIT;
+    event.player_id = h->player_id;
+    event.info = info;
+
+    fire_hooks(h, event);
+}
+
+void har_event_stun(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_STUN;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
+void har_event_recover(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_RECOVER;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
+void har_event_hit_wall(har *h, int wall) {
+    har_event event;
+    event.type = HAR_EVENT_HIT_WALL;
+    event.player_id = h->player_id;
+    event.wall = wall;
+
+    fire_hooks(h, event);
+}
+
+void har_event_land(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_LAND;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
+void har_event_defeat(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_DEFEAT;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
+void har_event_scrap(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_SCRAP;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
+void har_event_destruction(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_DESTRUCTION;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
+void har_event_done(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_DONE;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
 }
 
 void har_stunned_done(object *har_obj) {
@@ -41,7 +155,7 @@ void har_stunned_done(object *har_obj) {
     }
 }
 
-void har_fire_hook(object *obj, int action) {
+void har_action_hook(object *obj, int action) {
     har *h = object_get_userdata(obj);
     if (h->action_hook_cb) {
         h->action_hook_cb(action, h->action_hook_cb_data);
@@ -228,8 +342,8 @@ void har_move(object *obj) {
             /*} else {*/
                 h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
-                har_fire_hook(obj, ACT_STOP);
-                har_fire_hook(obj, ACT_FLUSH);
+                har_action_hook(obj, ACT_STOP);
+                har_action_hook(obj, ACT_FLUSH);
             /*}*/
         } else if (h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.4;
@@ -252,6 +366,7 @@ void har_move(object *obj) {
                obj->animation_state.parser->current_frame.is_final_frame) {
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, ANIM_DEFEAT, 0);
+                har_event_defeat(h);
             } else if(pos.y >= 185 &&
                       IS_ZERO(vel.x) &&
                       obj->animation_state.parser->current_frame.is_final_frame) {
@@ -524,12 +639,6 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     int level = 1;
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
     vec2i hit_coord = vec2i_create(0, 0);
-
-    if(obj_a->can_hit) {
-        a->damage_done = 0;
-        obj_a->can_hit = 0;
-        obj_a->hit_frames = 0;
-    }
     if(a->damage_done == 0 &&
             (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord)
             || move->category == CAT_CLOSE ||
@@ -569,9 +678,9 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             return;
         }
 
-        if (b->hit_hook_cb) {
-            b->hit_hook_cb(b->player_id, a->player_id, move, b->hit_hook_cb_data);
-        }
+        har_event_take_hit(b, move);
+        har_event_land_hit(a, move);
+
         if (b->state == STATE_RECOIL) {
             // back the attacker off a little
             a->flinching = 1;
@@ -621,10 +730,33 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             return;
         }
 
-        har_take_damage(o_har, &move->footer_string, move->damage);
-        if (h->hit_hook_cb) {
-            h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);
+        int damage = 0;
+
+        if (move->successor_id) {
+            af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
+            if (!move->footer_string.data) {
+                DEBUG("using sucessor footer string %s", str_c(&next_move->footer_string));
+                har_take_damage(o_har, &next_move->footer_string, move->damage);
+                damage = 1;
+            }
+            object_set_animation(o_pjt, &next_move->ani);
+            object_set_repeat(o_pjt, 0);
+            /*object_set_vel(o_pjt, vec2f_create(0,0));*/
+            o_pjt->animation_state.finished = 0;
         }
+
+        if (!damage) {
+            har_take_damage(o_har, &move->footer_string, move->damage);
+        }
+
+        har_event_take_hit(h, move);
+        // lol
+        har *other = object_get_userdata(game_state_get_player(o_har->gs, abs(h->player_id - 1))->har);
+        har_event_land_hit(other, move);
+
+        /*if (h->hit_hook_cb) {*/
+            /*h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);*/
+        /*}*/
         har_spawn_scrap(o_har, hit_coord, move->scrap_amount);
         h->damage_received = 1;
 
@@ -633,7 +765,12 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         object_set_vel(o_har, vel);
 
         if (move->successor_id) {
-            object_set_animation(o_pjt, &af_get_move(prog_owner_af_data, move->successor_id)->ani);
+            af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
+            if (!move->footer_string.data) {
+                DEBUG("using sucessor footer string %s", str_c(&next_move->footer_string));
+                object_set_custom_string(o_har, str_c(&next_move->footer_string));
+            }
+            object_set_animation(o_pjt, &next_move->ani);
             object_set_repeat(o_pjt, 0);
             /*object_set_vel(o_pjt, vec2f_create(0,0));*/
             o_pjt->animation_state.finished = 0;
@@ -669,9 +806,7 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
     if(!h->damage_received && intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
 
         har_take_damage(o_har, &anim->footer_string, anim->hazard_damage);
-        /*if (h->hit_hook_cb) {*/
-            /*h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);*/
-        /*}*/
+        har_event_hazard_hit(h, anim);
         if (anim->chain_no_hit) {
             object_set_animation(o_pjt, &bk_get_info(bk_data, anim->chain_no_hit)->ani);
             object_set_repeat(o_pjt, 0);
@@ -750,17 +885,21 @@ void har_tick(object *obj) {
             }
         }
 
-        if (hit && h->wall_hit_hook_cb) {
-            h->wall_hit_hook_cb(h->player_id, wall, h->wall_hit_hook_cb_data);
+        if (hit) {
+            har_event_hit_wall(h, wall);
         }
+    }
+
+    if ((h->state == STATE_VICTORY || h->state == STATE_DONE) && 
+               obj->animation_state.parser->current_frame.is_final_frame && obj->animation_state.entered_frame == 1) {
+        // match is over
+        har_event_done(h);
     }
 
     if (pos.y < 190 && h->state == STATE_RECOIL) {
         DEBUG("switching to fallen");
         h->state = STATE_FALLEN;
-        if (h->recover_hook_cb) {
-            h->recover_hook_cb(h->player_id, h->recover_hook_cb_data);
-        }
+        har_event_recover(h);
     }
 
     if (h->state == STATE_STUNNED) {
@@ -1072,64 +1211,64 @@ int har_act(object *obj, int act_type) {
             switch(s[j]) {
                 case '1':
                     if(direction == OBJECT_FACE_LEFT) {
-                        har_fire_hook(obj, ACT_DOWNRIGHT);
+                        har_action_hook(obj, ACT_DOWNRIGHT);
                     } else {
-                        har_fire_hook(obj, ACT_DOWNLEFT);
+                        har_action_hook(obj, ACT_DOWNLEFT);
                     }
                     break;
                 case '2':
-                    har_fire_hook(obj, ACT_DOWN);
+                    har_action_hook(obj, ACT_DOWN);
                     break;
                 case '3':
                     if(direction == OBJECT_FACE_LEFT) {
-                        har_fire_hook(obj, ACT_DOWNLEFT);
+                        har_action_hook(obj, ACT_DOWNLEFT);
                     } else {
-                        har_fire_hook(obj, ACT_DOWNRIGHT);
+                        har_action_hook(obj, ACT_DOWNRIGHT);
                     }
                     break;
                 case '4':
                     if(direction == OBJECT_FACE_LEFT) {
-                        har_fire_hook(obj, ACT_RIGHT);
+                        har_action_hook(obj, ACT_RIGHT);
                     } else {
-                        har_fire_hook(obj, ACT_LEFT);
+                        har_action_hook(obj, ACT_LEFT);
                     }
                     break;
                 case '5':
-                    har_fire_hook(obj, ACT_STOP);
+                    har_action_hook(obj, ACT_STOP);
                     break;
                 case '6':
                     if(direction == OBJECT_FACE_LEFT) {
-                        har_fire_hook(obj, ACT_LEFT);
+                        har_action_hook(obj, ACT_LEFT);
                     } else {
-                        har_fire_hook(obj, ACT_RIGHT);
+                        har_action_hook(obj, ACT_RIGHT);
                     }
                     break;
                 case '7':
                     if(direction == OBJECT_FACE_LEFT) {
-                        har_fire_hook(obj, ACT_UPRIGHT);
+                        har_action_hook(obj, ACT_UPRIGHT);
                     } else {
-                        har_fire_hook(obj, ACT_UPLEFT);
+                        har_action_hook(obj, ACT_UPLEFT);
                     }
                     break;
                 case '8':
-                    har_fire_hook(obj, ACT_UP);
+                    har_action_hook(obj, ACT_UP);
                     break;
                 case '9':
                     if(direction == OBJECT_FACE_LEFT) {
-                        har_fire_hook(obj, ACT_UPLEFT);
+                        har_action_hook(obj, ACT_UPLEFT);
                     } else {
-                        har_fire_hook(obj, ACT_UPRIGHT);
+                        har_action_hook(obj, ACT_UPRIGHT);
                     }
                     break;
                 case 'K':
-                    har_fire_hook(obj, ACT_KICK);
+                    har_action_hook(obj, ACT_KICK);
                     break;
                 case 'P':
-                    har_fire_hook(obj, ACT_PUNCH);
+                    har_action_hook(obj, ACT_PUNCH);
                     break;
             }
         }
-        har_fire_hook(obj, ACT_FLUSH);
+        har_action_hook(obj, ACT_FLUSH);
 
         // Set correct animation etc.
         // executing_move = 1 prevents new moves while old one is running.
@@ -1148,10 +1287,13 @@ int har_act(object *obj, int act_type) {
         if (move->category == CAT_SCRAP) {
             DEBUG("going to scrap state");
             h->state = STATE_SCRAP;
-        }
-        if (move->category == CAT_DESTRUCTION) {
+            har_event_scrap(h);
+        } else if (move->category == CAT_DESTRUCTION) {
             DEBUG("going to destruction state");
             h->state = STATE_DESTRUCTION;
+            har_event_destruction(h);
+        } else {
+            har_event_attack(h, move);
         }
 
         // make the other har participate in the scrap/destruction
@@ -1239,8 +1381,8 @@ int har_act(object *obj, int act_type) {
                 object_set_vel(obj, vec2f_create(vx,vy));
                 break;
         }
-        har_fire_hook(obj, act_type);
-        har_fire_hook(obj, ACT_FLUSH);
+        har_action_hook(obj, act_type);
+        har_action_hook(obj, ACT_FLUSH);
         return 1;
     }
 
@@ -1260,17 +1402,16 @@ void har_finished(object *obj) {
     } else if (h->state == STATE_RECOIL && h->endurance <= 0 && h->health <= 0) {
         h->state = STATE_DEFEAT;
         har_set_ani(obj, ANIM_DEFEAT, 0);
+        har_event_defeat(h);
     } else if ((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance <= 0) {
-        if (h->state == STATE_RECOIL && h->recover_hook_cb) {
-            h->recover_hook_cb(h->player_id, h->recover_hook_cb_data);
+        if (h->state == STATE_RECOIL) {
+            har_event_recover(h);
         }
         h->state = STATE_STUNNED;
         h->stun_timer = 0;
         har_set_ani(obj, ANIM_STUNNED, 1);
     } else if (h->state == STATE_RECOIL) {
-        if (h->recover_hook_cb) {
-            h->recover_hook_cb(h->player_id, h->recover_hook_cb_data);
-        }
+        har_event_recover(h);
         h->state = STATE_STANDING;
         har_set_ani(obj, ANIM_IDLE, 1);
     } else if(h->state != STATE_CROUCHING && h->state != STATE_CROUCHBLOCK) {
@@ -1368,19 +1509,14 @@ void har_install_action_hook(har *h, har_action_hook_cb hook, void *data) {
     h->action_hook_cb_data = data;
 }
 
-void har_install_hit_hook(har *h, har_hit_hook_cb hook, void *data) {
-    h->hit_hook_cb = hook;
-    h->hit_hook_cb_data = data;
-}
+void har_install_hook(har *h, har_hook_cb hook, void *data) {
+    har_hook hk;
+    hk.cb = hook;
+    hk.data = data;
+    list_append(&h->har_hooks, &hk, sizeof(har_hook));
 
-void har_install_recover_hook(har *h, har_recover_hook_cb hook, void *data) {
-    h->recover_hook_cb = hook;
-    h->recover_hook_cb_data = data;
-}
-
-void har_install_wall_hit_hook(har *h, har_wall_hit_hook_cb hook, void *data) {
-    h->wall_hit_hook_cb = hook;
-    h->wall_hit_hook_cb_data = data;
+    /*h->hook_cb = hook;*/
+    /*h->hook_cb_data = data;*/
 }
 
 void har_bootstrap(object *obj) {
@@ -1420,14 +1556,10 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->action_hook_cb = NULL;
     local->action_hook_cb_data = NULL;
 
-    local->hit_hook_cb = NULL;
-    local->hit_hook_cb_data = NULL;
+    /*local->hook_cb = NULL;*/
+    /*local->hook_cb_data = NULL;*/
 
-    local->recover_hook_cb = NULL;
-    local->recover_hook_cb_data = NULL;
-
-    local->wall_hit_hook_cb = NULL;
-    local->wall_hit_hook_cb_data = NULL;
+    list_create(&local->har_hooks);
 
     local->stun_timer = 0;
 

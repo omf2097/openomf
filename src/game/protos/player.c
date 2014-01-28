@@ -89,6 +89,7 @@ void player_create(object *obj) {
     obj->animation_state.end_frame = UINT32_MAX;
     obj->animation_state.ticks = 1;
     obj->animation_state.finished = 0;
+    obj->animation_state.entered_frame = 0;
     obj->animation_state.repeat = 0;
     obj->animation_state.enemy_x = 0;
     obj->animation_state.enemy_y = 0;
@@ -251,9 +252,11 @@ void player_run(object *obj) {
             }
         }
 
+        state->entered_frame = 0;
         // If frame changed, do something
         if(param->id != state->previous) {
             player_clear_frame(obj);
+            state->entered_frame = 1;
 
             // Tick management
             if(isset(f, "d")) {

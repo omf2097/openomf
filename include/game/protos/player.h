@@ -41,6 +41,7 @@ typedef struct player_animation_state_t {
     uint32_t ticks_len;
     uint32_t end_frame;
     int previous;
+    int entered_frame;
     sd_stringparser *parser;
     uint16_t enemy_x, enemy_y;
     uint8_t repeat;

@@ -2,6 +2,7 @@
 #define _HAR_H
 
 #include "resources/af.h"
+#include "resources/bk.h"
 #include "resources/animation.h"
 #include "game/protos/object.h"
 #include "utils/list.h"
@@ -54,14 +55,43 @@ enum {
 };
 
 enum {
+    HAR_EVENT_JUMP,
+    HAR_EVENT_ATTACK, // Executed a move, may not hit
+    HAR_EVENT_LAND_HIT, // Landed a hit on the opponent
+    HAR_EVENT_TAKE_HIT, // Hit by HAR or projectile
+    HAR_EVENT_HAZARD_HIT, // Hit by hazard
+    HAR_EVENT_STUN,
+    HAR_EVENT_RECOVER, // regained control after recoil/stun
+    HAR_EVENT_HIT_WALL, // Touched a wall
+    HAR_EVENT_LAND, // Touched the floor
+    HAR_EVENT_DEFEAT,
+    HAR_EVENT_SCRAP,
+    HAR_EVENT_DESTRUCTION,
+    HAR_EVENT_DONE // match done, no more scrap/destruction
+};
+
+typedef struct har_event_t {
+    uint8_t type;
+    uint8_t player_id;
+    union {
+        af_move *move; // for attack/hit
+        bk_info *info; // for hazard hit
+        int wall; // for hit wall
+    };
+} har_event;
+
+enum {
     DAMAGETYPE_LOW, // Damage to low area of har
     DAMAGETYPE_HIGH // Damage to high area of har
 };
 
 typedef void (*har_action_hook_cb)(int action, void *data);
-typedef void (*har_hit_hook_cb)(int hittee_id, int hitter_id, af_move *move,  void *data);
-typedef void (*har_recover_hook_cb)(int player_id, void *data);
-typedef void (*har_wall_hit_hook_cb)(int player_id, int side, void *data);
+typedef void (*har_hook_cb)(har_event event, void *data);
+
+typedef struct har_hook_t {
+    har_hook_cb cb;
+    void *data;
+} har_hook;
 
 typedef struct action_buffer_t {
     char actions[10];
@@ -89,25 +119,20 @@ typedef struct har_t {
     uint8_t stun_timer;
     uint8_t delay; // used for 'stretching' frames in netplay
 
+
+    list har_hooks;
+
     har_action_hook_cb action_hook_cb;
     void *action_hook_cb_data;
 
-    har_hit_hook_cb hit_hook_cb;
-    void *hit_hook_cb_data;
-
-    har_recover_hook_cb recover_hook_cb;
-    void *recover_hook_cb_data;
-
-    har_wall_hit_hook_cb wall_hit_hook_cb;
-    void *wall_hit_hook_cb_data;
+    //har_hook_cb hook_cb;
+    //void *hook_cb_data;
 
     action_buffer act_buf[OBJECT_EVENT_BUFFER_SIZE];
 } har;
 
 void har_install_action_hook(har *h, har_action_hook_cb hook, void *data);
-void har_install_hit_hook(har *h, har_hit_hook_cb hook, void *data);
-void har_install_recover_hook(har *h, har_recover_hook_cb hook, void *data);
-void har_install_wall_hit_hook(har *h, har_wall_hit_hook_cb hook, void *data);
+void har_install_hook(har *h, har_hook_cb hook, void *data);
 void har_bootstrap(object *obj);
 int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id);
 void har_set_ani(object *obj, int animation_id, int repeat);

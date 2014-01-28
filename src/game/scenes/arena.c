@@ -140,7 +140,6 @@ void scene_youwin_anim_start(void *userdata) {
     // Start FIGHT animation
     game_state *gs = userdata;
     scene *scene = game_state_get_scene(gs);
-    arena_local *arena = scene_get_userdata(scene);
     animation *youwin_ani = &bk_get_info(&scene->bk_data, 9)->ani;
     object *youwin = malloc(sizeof(object));
     object_create(youwin, gs, youwin_ani->start_pos, vec2f_create(0,0));
@@ -150,7 +149,7 @@ void scene_youwin_anim_start(void *userdata) {
     game_state_add_object(gs, youwin, RENDER_LAYER_TOP);
 
     // This will release HARs for action
-    arena->state = ARENA_STATE_ENDING;
+    /*arena->state = ARENA_STATE_ENDING;*/
 }
 
 void scene_youlose_anim_done(object *parent) {
@@ -163,7 +162,6 @@ void scene_youlose_anim_start(void *userdata) {
     // Start FIGHT animation
     game_state *gs = userdata;
     scene *scene = game_state_get_scene(gs);
-    arena_local *arena = scene_get_userdata(scene);
     animation *youlose_ani = &bk_get_info(&scene->bk_data, 8)->ani;
     object *youlose = malloc(sizeof(object));
     object_create(youlose, gs, youlose_ani->start_pos, vec2f_create(0,0));
@@ -173,7 +171,7 @@ void scene_youlose_anim_start(void *userdata) {
     game_state_add_object(gs, youlose, RENDER_LAYER_TOP);
 
     // This will release HARs for action
-    arena->state = ARENA_STATE_ENDING;
+    /*arena->state = ARENA_STATE_ENDING;*/
 }
 
 void arena_end(scene *sc) {
@@ -216,13 +214,17 @@ void arena_maybe_sync(scene *scene, int need_sync) {
     }
 }
 
-void arena_hit_hook(int hittee, int hitter, af_move *move, void *data) {
-    scene *scene = data;
+void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
     chr_score *score;
     chr_score *otherscore;
     object *hit_har;
     har *h;
-    if (hitter == 0) {
+
+    if (is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
+        return; // netplay clients do not keep score
+    }
+
+    if (hittee == 1) {
         score = game_player_get_score(game_state_get_player(scene->gs, 0));
         otherscore = game_player_get_score(game_state_get_player(scene->gs, 1));
         hit_har = game_player_get_har(game_state_get_player(scene->gs, 1));
@@ -240,10 +242,14 @@ void arena_hit_hook(int hittee, int hitter, af_move *move, void *data) {
     arena_maybe_sync(scene, 1);
 }
 
-void arena_recover_hook(int player_id, void *data) {
-    scene *scene = data;
+void arena_har_recover_hook(int player_id, scene *scene) {
     chr_score *score;
     object *o_har;
+
+    if (is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
+        return; // netplay clients do not keep score
+    }
+
     if (player_id == 0) {
         score = game_player_get_score(game_state_get_player(scene->gs, 1));
         o_har = game_player_get_har(game_state_get_player(scene->gs, 1));
@@ -256,8 +262,7 @@ void arena_recover_hook(int player_id, void *data) {
     }
 }
 
-void arena_wall_hit_hook(int player_id, int wall, void *data) {
-    scene *scene = data;
+void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     object *o_har = game_player_get_har(game_state_get_player(scene->gs, player_id));
     har *h = object_get_userdata(o_har);
     if (scene->id == SCENE_ARENA2 && o_har->pos.y < 190 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL) && abs(o_har->vel.x) >= 1) {
@@ -296,6 +301,7 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
     }
 
     if (scene->id == SCENE_ARENA4 && o_har->pos.y < 190) {
+        DEBUG("hit desert wall %d", wall);
         // desert always shows the 'hit' animation when you touch the wall
         bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
         object *obj = malloc(sizeof(object));
@@ -324,6 +330,73 @@ void arena_wall_hit_hook(int player_id, int wall, void *data) {
     }
 }
 
+void arena_har_defeat_hook(int player_id, scene *scene) {
+    game_state *gs = scene->gs;
+    int other_player_id = abs(player_id - 1);
+    object *winner  = game_player_get_har(game_state_get_player(scene->gs, other_player_id));
+    object *loser   = game_player_get_har(game_state_get_player(scene->gs, player_id));
+    har *winner_har = object_get_userdata(winner);
+    // XXX need a smarter way to detect if a player is networked or local
+    if(game_state_get_player(gs, other_player_id)->ctrl->type != CTRL_TYPE_NETWORK &&
+            game_state_get_player(gs, player_id)->ctrl->type == CTRL_TYPE_NETWORK) {
+        scene_youlose_anim_start(scene->gs);
+    } else if(game_state_get_player(gs, other_player_id)->ctrl->type == CTRL_TYPE_NETWORK &&
+            game_state_get_player(gs, player_id)->ctrl->type != CTRL_TYPE_NETWORK) {
+        scene_youwin_anim_start(scene->gs);
+    } else {
+        if(game_player_get_selectable(game_state_get_player(gs, 1))) {
+            // XXX in two player mode, "you win" should always be displayed
+            scene_youwin_anim_start(scene->gs);
+        } else {
+            if (player_id == 1) {
+                scene_youwin_anim_start(scene->gs);
+            } else {
+                scene_youlose_anim_start(scene->gs);
+            }
+        }
+    }
+    har_set_ani(winner, ANIM_VICTORY, 1);
+    winner_har->state = STATE_VICTORY;
+    winner_har->executing_move = 1;
+    object_set_vel(loser, vec2f_create(0, 0));
+    object_set_gravity(loser, 0);
+    chr_score *score = game_player_get_score(game_state_get_player(gs, other_player_id));
+    arena_maybe_sync(scene,
+            chr_score_interrupt(score, object_get_pos(winner)));
+}
+
+void arena_har_hook(har_event event, void *data) {
+    scene *scene = data;
+    arena_local *arena = scene_get_userdata(scene);
+    switch (event.type) {
+        case HAR_EVENT_TAKE_HIT:
+            arena_har_take_hit_hook(event.player_id, event.move, scene);
+            break;
+        case HAR_EVENT_HIT_WALL:
+            arena_har_hit_wall_hook(event.player_id, event.wall, scene);
+            break;
+        case HAR_EVENT_RECOVER:
+            arena_har_recover_hook(event.player_id, scene);
+            break;
+        case HAR_EVENT_DEFEAT:
+            arena_har_defeat_hook(event.player_id, scene);
+            break;
+        case HAR_EVENT_SCRAP:
+            DEBUG("SCRAP!");
+            arena->ending_ticks = 0;
+            break;
+        case HAR_EVENT_DESTRUCTION:
+            DEBUG("DESTRUCTION!");
+            arena->ending_ticks = 0;
+            break;
+        case HAR_EVENT_DONE:
+            DEBUG("DONE!");
+            arena->ending_ticks = 0;
+            arena->state = ARENA_STATE_ENDING;
+            break;
+    }
+}
+
 void maybe_install_har_hooks(scene *scene) {
     object *obj_har1,*obj_har2;
     obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
@@ -345,18 +418,8 @@ void maybe_install_har_hooks(scene *scene) {
         }
     }
 
-    har_install_wall_hit_hook(har1, &arena_wall_hit_hook, scene);
-    har_install_wall_hit_hook(har2, &arena_wall_hit_hook, scene);
-
-    if (is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
-        // only the server keeps score
-        return;
-    }
-    har_install_hit_hook(har1, &arena_hit_hook, scene);
-    har_install_hit_hook(har2, &arena_hit_hook, scene);
-
-    har_install_recover_hook(har1, &arena_recover_hook, scene);
-    har_install_recover_hook(har2, &arena_recover_hook, scene);
+    har_install_hook(har1, &arena_har_hook, scene);
+    har_install_hook(har2, &arena_har_hook, scene);
 }
 
 
@@ -551,59 +614,7 @@ void arena_tick(scene *scene) {
             }
         }
 
-        // Display you win/lose animation
-        if(local->state != ARENA_STATE_ENDING) {
-            // Har victory animation
-            if(har2->health <= 0 && har2->endurance <= 0 && har2->state == STATE_DEFEAT) {
-                // XXX need a smarter way to detect if a player is networked or local
-                if(game_state_get_player(gs, 0)->ctrl->type != CTRL_TYPE_NETWORK &&
-                   game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
-                    scene_youwin_anim_start(scene->gs);
-                } else if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK &&
-                          game_state_get_player(gs, 1)->ctrl->type != CTRL_TYPE_NETWORK) {
-                    scene_youlose_anim_start(scene->gs);
-                } else {
-                    scene_youwin_anim_start(scene->gs);
-                }
-                har_set_ani(obj_har1, ANIM_VICTORY, 1);
-                har_set_ani(obj_har2, ANIM_DEFEAT, 1);
-                har1->state = STATE_VICTORY;
-                har1->executing_move = 1;
-                har2->state = STATE_DEFEAT;
-                object_set_vel(obj_har2, vec2f_create(0, 0));
-                object_set_gravity(obj_har2, 0);
-                chr_score *score = game_player_get_score(game_state_get_player(gs, 0));
-                arena_maybe_sync(scene,
-                        chr_score_interrupt(score, object_get_pos(obj_har1)));
-                local->ending_ticks = 0;
-            } else if(har1->health <= 0 && har1->endurance <= 0 && har1->state == STATE_DEFEAT) {
-                if(game_state_get_player(gs, 0)->ctrl->type != CTRL_TYPE_NETWORK &&
-                   game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
-                    scene_youlose_anim_start(scene->gs);
-                } else if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK &&
-                          game_state_get_player(gs, 1)->ctrl->type != CTRL_TYPE_NETWORK) {
-                    scene_youwin_anim_start(scene->gs);
-                } else {
-                    if(game_player_get_selectable(game_state_get_player(gs, 1))) {
-                        // XXX in two player mode, "you win" should always be displayed
-                        scene_youwin_anim_start(scene->gs);
-                    } else {
-                        scene_youlose_anim_start(scene->gs);
-                    }
-                }
-                har_set_ani(obj_har2, ANIM_VICTORY, 1);
-                har_set_ani(obj_har1, ANIM_DEFEAT, 1);
-                har2->state = STATE_VICTORY;
-                har2->executing_move = 1;
-                har1->state = STATE_DEFEAT;
-                object_set_vel(obj_har1, vec2f_create(0, 0));
-                object_set_gravity(obj_har1, 0);
-                chr_score *score = game_player_get_score(game_state_get_player(gs, 1));
-                arena_maybe_sync(scene,
-                        chr_score_interrupt(score, object_get_pos(obj_har2)));
-                local->ending_ticks = 0;
-            }
-        } else if(local->state == ARENA_STATE_ENDING) {
+        if(local->state == ARENA_STATE_ENDING) {
             // increment tick if the HAR isn't doing scrap/destruction and if the score isn't scrolling
             if(har1->state == STATE_SCRAP || har1->state == STATE_DESTRUCTION ||
                har2->state == STATE_SCRAP || har2->state == STATE_DESTRUCTION) {
