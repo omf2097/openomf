@@ -152,6 +152,7 @@ int net_controller_update(controller *ctrl, serial *serial) {
     memcpy(buf+sizeof(et), serial->data, serial->len);
 
     packet = enet_packet_create(buf, serial->len+4, 0);
+    free(buf);
     if (peer) {
         enet_peer_send(peer, 1, packet);
         enet_host_flush(host);

@@ -860,6 +860,7 @@ int arena_create(scene *scene) {
         // Errors are unlikely here, but check anyway.
 
         if (scene_load_har(scene, i, player->har_id)) {
+            free(obj);
             return 1;
         }
 

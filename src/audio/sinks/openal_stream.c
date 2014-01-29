@@ -131,7 +131,7 @@ int openal_stream_init(audio_stream *stream, audio_sink *sink) {
     };
     if(!local->format) {
         PERROR("OpenAL Stream: Could not find suitable audio format!");
-        return 1;
+        goto exit_0;
     }
     
     // Generate a source

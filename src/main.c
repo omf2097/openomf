@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
     unsigned short listen_port = 0;
     int net_mode = NET_MODE_NONE;
     int portable_mode = 0;
+    int ret = 0;
 
     // if openomf.conf exists in the current directory, switch to portable mode
     if(access("openomf.conf", F_OK) != -1) {
@@ -94,22 +95,23 @@ int main(int argc, char *argv[]) {
             printf("OpenOMF v0.6\n");
             printf("Source available at https://github.com/omf2097/ (MIT License)\n");
             printf("(C) 2097 Tuomas Virtanen, Andrew Thompson, Hunter and others\n");
-            return 0;
+            goto exit_0;
         } else if(strcmp(argv[1], "-h") == 0) {
             printf("Arguments:\n");
             printf("-h              Prints this help\n");
             printf("-w              Writes a config file\n");
             printf("-c [ip] [port]  Connect to server\n");
             printf("-l [port]       Start server\n");
-            return 0;
+            goto exit_0;
         } else if(strcmp(argv[1], "-w") == 0) {
             if(settings_write_defaults(config_path)) {
                 fprintf(stderr, "Failed to write config file to '%s'!", config_path);
-                return 1;
+                ret = 1;
+                goto exit_0;
             } else {
                 printf("Config file written to '%s'!", config_path);
+                goto exit_0;
             }
-            return 0;
         } else if(strcmp(argv[1], "-c") == 0) {
             if(argc >= 3) {
                 ip = strcpy(malloc(strlen(argv[2])+1), argv[2]);
@@ -130,12 +132,12 @@ int main(int argc, char *argv[]) {
 #if defined(DEBUGMODE) || defined(STANDALONE_SERVER)
     if(log_init(0)) {
         err_msgbox("Error while initializing log!");
-        return 1;
+        goto exit_0;
     }
 #else
     if(log_init(logfile_path)) {
         err_msgbox("Error while initializing log '%s'!", logfile_path);
-        return 1;
+        goto exit_0;
     }
 #endif
 
@@ -148,7 +150,7 @@ int main(int argc, char *argv[]) {
     // Init config
     if(settings_init(config_path)) {
         err_msgbox("Failed to initialize settings file");
-        goto exit_0;
+        goto exit_1;
     }
     settings_load();
 
@@ -191,7 +193,7 @@ int main(int argc, char *argv[]) {
     const char *missingfile = NULL;
     if(validate_resource_path(&missingfile)) {
         err_msgbox("Resource file does not exist: %s", missingfile);
-        goto exit_0;
+        goto exit_1;
     }
 
     if(ip) {
@@ -216,7 +218,7 @@ int main(int argc, char *argv[]) {
     if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER)) {
 #endif
         err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
-        goto exit_1;
+        goto exit_2;
     }
     SDL_version sdl_linked;
     SDL_GetVersion(&sdl_linked);
@@ -226,7 +228,7 @@ int main(int argc, char *argv[]) {
 #ifndef STANDALONE_SERVER
     if(SDL_InitSubSystem(SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER|SDL_INIT_HAPTIC)) {
         err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
-        goto exit_1;
+        goto exit_2;
     }
     INFO("Found %d joysticks attached", SDL_NumJoysticks());
     SDL_Joystick *joy;
@@ -255,13 +257,13 @@ int main(int argc, char *argv[]) {
     // Init enet
     if(enet_initialize() != 0) {
         err_msgbox("Failed to initialize enet");
-        goto exit_2;
+        goto exit_3;
     }
     
     // Initialize engine
     if(engine_init()) {
         err_msgbox("Failed to initialize game engine.");
-        goto exit_3;
+        goto exit_4;
     }
     
     // Run
@@ -269,20 +271,24 @@ int main(int argc, char *argv[]) {
     
     // Close everything
     engine_close();
-exit_3:
+exit_4:
     enet_deinitialize();
-exit_2:
+exit_3:
     SDL_Quit();
-exit_1:
+exit_2:
     dumb_exit();
     settings_save();
     settings_free();
-exit_0:
+exit_1:
     sd_stringparser_lib_deinit();
     INFO("Exit.");
     log_close();
+exit_0:
+    if (ip) {
+        free(ip);
+    }
     free(config_path);
     free(logfile_path);
     set_resource_path(NULL);
-    return 0;
+    return ret;
 }

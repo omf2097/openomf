@@ -66,7 +66,7 @@ void surface_copy(surface *dst, surface *src) {
     int size = src->w * src->h * ((src->type == SURFACE_TYPE_PALETTE) ? 1 : 4);
     memcpy(dst->data, src->data, size);
 
-    if(src->stencil != NULL) {
+    if(src->stencil != NULL && dst->stencil != NULL) {
         memcpy(dst->stencil, src->stencil, src->w * src->h);
     } else {
         dst->stencil = NULL;

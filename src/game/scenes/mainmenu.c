@@ -607,6 +607,8 @@ void mainmenu_tick(scene *scene) {
                         } else if(selected == &local->input_kick_button) {
                             free(k->key1_kick);
                             k->key1_kick = keyname;
+                        } else {
+                            free(keyname);
                         }
                         update_keys(local, 1);
                     } else if(local->input_selected_player == 2) {
@@ -628,8 +630,12 @@ void mainmenu_tick(scene *scene) {
                         } else if(selected == &local->input_kick_button) {
                             free(k->key2_kick);
                             k->key2_kick = keyname;
+                        } else {
+                            free(keyname);
                         }
                         update_keys(local, 2);
+                    } else {
+                        free(keyname);
                     }
                     mainmenu_prev_menu(&local->input_presskey_header, scene);
                     break;
