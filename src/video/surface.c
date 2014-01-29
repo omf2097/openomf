@@ -158,8 +158,8 @@ void surface_alpha_blit(surface *dst,
     int src_offset,dst_offset;
     for(int y = 0; y < src->h; y++) {
         for(int x = 0; x < src->w; x++) {
-            src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - x : x) + 
-                         ((flip & SDL_FLIP_VERTICAL) ? src->h - y : y) * src->w;
+            src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - 1 - x : x) +
+                         ((flip & SDL_FLIP_VERTICAL) ? src->h - 1 - y : y) * src->w;
             if(src->stencil[src_offset] == 1) {
                 if(dst_x + x >= dst->w 
                     || dst_y + y >= dst->h 
