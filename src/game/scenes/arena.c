@@ -339,10 +339,10 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     // XXX need a smarter way to detect if a player is networked or local
     if(game_state_get_player(gs, other_player_id)->ctrl->type != CTRL_TYPE_NETWORK &&
             game_state_get_player(gs, player_id)->ctrl->type == CTRL_TYPE_NETWORK) {
-        scene_youlose_anim_start(scene->gs);
+        scene_youwin_anim_start(scene->gs);
     } else if(game_state_get_player(gs, other_player_id)->ctrl->type == CTRL_TYPE_NETWORK &&
             game_state_get_player(gs, player_id)->ctrl->type != CTRL_TYPE_NETWORK) {
-        scene_youwin_anim_start(scene->gs);
+        scene_youlose_anim_start(scene->gs);
     } else {
         if(game_player_get_selectable(game_state_get_player(gs, 1))) {
             // XXX in two player mode, "you win" should always be displayed
