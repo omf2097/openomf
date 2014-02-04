@@ -50,6 +50,7 @@ void chr_score_reset(chr_score *score) {
     score_text *t;
 
     score->score = 0;
+    score->wins = 0;
     score->consecutive_hits = 0;
     score->consecutive_hit_score = 0;
     score->combo_hits = 0;
@@ -160,6 +161,7 @@ void chr_score_hit(chr_score *score, int points) {
 
 void chr_score_victory(chr_score *score, int health) {
     // Add texts for scrap bonus, perfect round, whatever
+    score->wins++;
 }
 
 int chr_score_interrupt(chr_score *score, vec2i pos) {

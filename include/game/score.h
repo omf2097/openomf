@@ -17,6 +17,7 @@ enum {
 
 typedef struct chr_score_t {
     int score;
+    int wins;
     int x,y;
     int direction;
     float multiplier;

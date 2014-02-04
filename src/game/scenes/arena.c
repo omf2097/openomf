@@ -68,6 +68,12 @@ typedef struct arena_local_t {
     chr_score player1_score;
     chr_score player2_score;
 
+    int round;
+    int rounds;
+    int over;
+
+    object *player_rounds[2][4];
+
     int rein_enabled;
 } arena_local;
 
@@ -183,6 +189,53 @@ void arena_end(scene *sc) {
     // XXX TODO take victory pose screenshot for the newsroom
     //game_state_set_next(gs, SCENE_NEWSROOM);
     game_state_set_next(gs, SCENE_MENU);
+}
+
+void arena_reset(scene *sc) {
+    arena_local *local = scene_get_userdata(sc);
+    local->round++;
+    local->state = ARENA_STATE_STARTING;
+
+    // Initial har data
+    vec2i pos[2];
+    int dir[2] = {OBJECT_FACE_RIGHT, OBJECT_FACE_LEFT};
+    pos[0] = vec2i_create(60, 190);
+    pos[1] = vec2i_create(260, 190);
+
+    // init HARs
+    for(int i = 0; i < 2; i++) {
+        // Declare some vars
+        game_player *player = game_state_get_player(sc->gs, i);
+        object *har_obj = game_player_get_har(player);
+        har *h = object_get_userdata(har_obj);
+        h->state = STATE_STANDING;
+        har_set_ani(har_obj, ANIM_IDLE, 1);
+        h->health = h->health_max;
+        h->endurance = h->endurance_max;
+        object_set_pos(har_obj, pos[i]);
+        object_set_vel(har_obj, vec2f_create(0, 0));
+        object_set_gravity(har_obj, 1);
+        object_set_direction(har_obj, dir[i]);
+    }
+
+    sc->bk_data.sound_translation_table[3] = 23 + local->round; // NUMBER
+    // TODO dedup
+    animation *round_ani = &bk_get_info(&sc->bk_data, 6)->ani;
+    object *round = malloc(sizeof(object));
+    object_create(round, sc->gs, round_ani->start_pos, vec2f_create(0,0));
+    object_set_stl(round, sc->bk_data.sound_translation_table);
+    object_set_animation(round, round_ani);
+    object_set_finish_cb(round, scene_ready_anim_done);
+    game_state_add_object(sc->gs, round, RENDER_LAYER_TOP);
+
+    animation *number_ani = &bk_get_info(&sc->bk_data, 7)->ani;
+    object *number = malloc(sizeof(object));
+    object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0,0));
+    object_set_stl(number, sc->bk_data.sound_translation_table);
+    object_set_animation(number, number_ani);
+    /*object_set_finish_cb(number, scene_ready_anim_done);*/
+    game_state_add_object(sc->gs, number, RENDER_LAYER_TOP);
+
 }
 
 int is_netplay(scene *scene) {
@@ -333,6 +386,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
 
 void arena_har_defeat_hook(int player_id, scene *scene) {
     game_state *gs = scene->gs;
+    arena_local *local = scene_get_userdata(scene);
     int other_player_id = abs(player_id - 1);
     object *winner  = game_player_get_har(game_state_get_player(scene->gs, other_player_id));
     object *loser   = game_player_get_har(game_state_get_player(scene->gs, player_id));
@@ -356,12 +410,22 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
             }
         }
     }
-    har_set_ani(winner, ANIM_VICTORY, 1);
-    winner_har->state = STATE_VICTORY;
+    chr_score *score = game_player_get_score(game_state_get_player(gs, other_player_id));
+    object_select_sprite(local->player_rounds[other_player_id][score->wins], 0);
+    score->wins++;
+    if (score->wins >= ceil(local->rounds/2.0f)) {
+        har_set_ani(winner, ANIM_VICTORY, 1);
+        winner_har->state = STATE_VICTORY;
+        local->over = 1;
+    } else {
+        har_set_ani(winner, ANIM_VICTORY, 1);
+        // can't do scrap/destruct except on final round
+        winner_har->state = STATE_DONE;
+    }
     winner_har->executing_move = 1;
     object_set_vel(loser, vec2f_create(0, 0));
+    object_set_vel(winner, vec2f_create(0, 0));
     object_set_gravity(loser, 0);
-    chr_score *score = game_player_get_score(game_state_get_player(gs, other_player_id));
     arena_maybe_sync(scene,
             chr_score_interrupt(score, object_get_pos(winner)));
 }
@@ -627,7 +691,9 @@ void arena_tick(scene *scene) {
                 // only tick if the score isn't scrolling
                 local->ending_ticks++;
             }
-            if(local->ending_ticks == 150) {
+            if (!local->over && local->ending_ticks == 50) {
+                arena_reset(scene);
+            } else if(local->ending_ticks == 150) {
                 arena_end(scene);
             }
         }
@@ -785,6 +851,14 @@ void arena_render_overlay(scene *scene) {
             sprintf(buf, "ping %u", player[1]->ctrl->rtt);
             font_render(&font_small, buf, 315-(strlen(buf)*font_small.w), 40, TEXT_COLOR);
         }
+
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (local->player_rounds[i][j]) {
+                    object_render(local->player_rounds[i][j]);
+                }
+            }
+        }
     }
 
     // Render menu (if visible)
@@ -827,7 +901,7 @@ int arena_create(scene *scene) {
         case 128: music_filename = get_filename_by_id(PSM_ARENA4); break;
     }
     music_play(music_filename);
-    music_set_volume(settings_get()->sound.music_vol/10.0f);
+    music_set_volume(setting->sound.music_vol/10.0f);
 
     // Initialize local struct
     local = malloc(sizeof(arena_local));
@@ -837,6 +911,26 @@ int arena_create(scene *scene) {
     local->state = ARENA_STATE_STARTING;
     local->ending_ticks = 0;
     local->rein_enabled = 0;
+
+    local->round = 0;
+    switch (setting->gameplay.rounds) {
+        case 0:
+            local->rounds = 1;
+            break;
+        case 1:
+            local->rounds = 3;
+            break;
+        case 2:
+            local->rounds = 5;
+            break;
+        case 3:
+            local->rounds = 7;
+            break;
+        default:
+            local->rounds = 1;
+            break;
+    }
+    local->over = 0;
 
     // Initial har data
     vec2i pos[2];
@@ -876,6 +970,21 @@ int arena_create(scene *scene) {
         // Set HAR for player
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
+        for (int j = 0; j < 4; j++) {
+            if (j < ceil(local->rounds / 2.0f)) {
+                local->player_rounds[i][j] = malloc(sizeof(object));
+                int xoff = 110 + 9 * j;
+                if (i == 1) {
+                    xoff = 210 - 9 * j;
+                }
+                animation *ani = &bk_get_info(&scene->bk_data, 27)->ani;
+                object_create(local->player_rounds[i][j], scene->gs, vec2i_create(xoff ,9), vec2f_create(0, 0));
+                object_set_animation(local->player_rounds[i][j], ani);
+                object_select_sprite(local->player_rounds[i][j], 1);
+            } else {
+                local->player_rounds[i][j] = NULL;
+            }
+        }
     }
 
     // remove the keyboard hooks
@@ -991,15 +1100,37 @@ int arena_create(scene *scene) {
 
     // TODO: Do something about this hack!
     scene->bk_data.sound_translation_table[14] = 10; // READY
+    scene->bk_data.sound_translation_table[15] = 16; // ROUND
+    scene->bk_data.sound_translation_table[3] = 23 + local->round; // NUMBER
 
-    // Start READY animation
-    animation *ready_ani = &bk_get_info(&scene->bk_data, 11)->ani;
-    object *ready = malloc(sizeof(object));
-    object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0,0));
-    object_set_stl(ready, scene->bk_data.sound_translation_table);
-    object_set_animation(ready, ready_ani);
-    object_set_finish_cb(ready, scene_ready_anim_done);
-    game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP);
+    if (local->rounds == 1) {
+        // Start READY animation
+        animation *ready_ani = &bk_get_info(&scene->bk_data, 11)->ani;
+        object *ready = malloc(sizeof(object));
+        object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0,0));
+        object_set_stl(ready, scene->bk_data.sound_translation_table);
+        object_set_animation(ready, ready_ani);
+        object_set_finish_cb(ready, scene_ready_anim_done);
+        game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP);
+    } else {
+        animation *round_ani = &bk_get_info(&scene->bk_data, 6)->ani;
+        object *round = malloc(sizeof(object));
+        object_create(round, scene->gs, round_ani->start_pos, vec2f_create(0,0));
+        object_set_stl(round, scene->bk_data.sound_translation_table);
+        object_set_animation(round, round_ani);
+        object_set_finish_cb(round, scene_ready_anim_done);
+        game_state_add_object(scene->gs, round, RENDER_LAYER_TOP);
+
+        animation *number_ani = &bk_get_info(&scene->bk_data, 7)->ani;
+        object *number = malloc(sizeof(object));
+        object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0,0));
+        object_set_stl(number, scene->bk_data.sound_translation_table);
+        object_set_animation(number, number_ani);
+        /*object_set_finish_cb(number, scene_ready_anim_done);*/
+        game_state_add_object(scene->gs, number, RENDER_LAYER_TOP);
+
+    }
+
 
     // Callbacks
     scene_set_event_cb(scene, arena_event);
