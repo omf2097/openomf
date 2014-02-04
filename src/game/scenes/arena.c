@@ -283,6 +283,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             if(scene->gs->screen_shake_horizontal == 0) {
                 scene->gs->screen_shake_horizontal = 16;
             }
+            object_set_vel(obj, vec2f_create(0, 0));
 
             // spawn the electricity on top of the HAR
             // TODO this doesn't track the har's position well...
