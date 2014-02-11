@@ -15,12 +15,23 @@
 #
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
- 
+
+
+SET(LIBINTL_SEARCH_PATHS
+    /usr/local/opt/
+    /usr/local/
+    /usr/
+)
+
 if(LIBINTL_INCLUDE_DIR AND LIBINTL_LIB_FOUND)
   set(Libintl_FIND_QUIETLY TRUE)
 endif(LIBINTL_INCLUDE_DIR AND LIBINTL_LIB_FOUND)
  
-find_path(LIBINTL_INCLUDE_DIR libintl.h)
+find_path(LIBINTL_INCLUDE_DIR libintl.h
+    HINTS
+    PATH_SUFFIXES gettext/include
+    PATHS ${LIBINTL_SEARCH_PATHS}
+)
  
 set(LIBINTL_LIB_FOUND FALSE)
  
@@ -32,7 +43,15 @@ if(LIBINTL_INCLUDE_DIR)
     set(LIBINTL_LIBRARIES)
     set(LIBINTL_LIB_FOUND TRUE)
   else (LIBINTL_LIBC_HAS_DGETTEXT)
-    find_library(LIBINTL_LIBRARIES NAMES intl libintl )
+    find_library(LIBINTL_LIBRARIES NAMES intl  )
+    
+    find_library(LIBINTL_LIBRARIES 
+      NAMES intl libintl
+      HINTS
+      PATH_SUFFIXES gettext/lib
+      PATHS ${LIBINTL_SEARCH_PATHS}
+    )
+
     if(LIBINTL_LIBRARIES)
       set(LIBINTL_LIB_FOUND TRUE)
     endif(LIBINTL_LIBRARIES)
