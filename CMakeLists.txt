@@ -46,12 +46,6 @@ ELSE(MINGW)
     find_package(Libintl)
 ENDIF(MINGW)
 
-# On Mac a special flag is required to link OpenAL correctly
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-   # Mac OS X specific code
-   set(CORE_FLAGS "${CORE_FLAGS} -framework OpenAL")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
 # Options
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_PNG "Add support for PNG screenshots" OFF)
