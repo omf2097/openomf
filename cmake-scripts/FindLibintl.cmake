@@ -44,7 +44,7 @@ if(LIBINTL_INCLUDE_DIR)
     set(LIBINTL_LIB_FOUND TRUE)
   else (LIBINTL_LIBC_HAS_DGETTEXT)
     find_library(LIBINTL_LIBRARIES 
-      NAMES intl libintl
+      NAMES intl
       HINTS
       PATH_SUFFIXES gettext/lib
       PATHS ${LIBINTL_SEARCH_PATHS}
