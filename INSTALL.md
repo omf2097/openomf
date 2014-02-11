@@ -15,6 +15,14 @@ Debian:
 apt-get install libsdl2-dev libopenal-dev libconfuse-dev libenet-dev
 ```
 
+Mac OS X (Homebrew):
+```
+brew install sdl2
+brew install confuse
+brew install enet
+brew install gettext
+```
+
 TODO: Add Gentoo, others ?
 
 2. Acquiring the sources
@@ -34,7 +42,7 @@ Note that the latest sources do not necessarily compile or they may have bugs. T
 To compile:
 
 ```
-$ mkdir build
+$ mkdir -p build
 $ cd build
 $ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
 $ make
@@ -60,6 +68,8 @@ On linux in debug mode, or on windows in any mode, the OMF resource files should
 
 On linux in release mode, the resources should be located in ../share/openomf/. So if your binary is
 in /usr/local/bin, the resources should be put in /usr/local/share/openomf/.
+
+On mac, the resources should be put into the resources/ subdirectory.
 
 5. Play the game!
 -----------------
