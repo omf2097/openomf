@@ -43,15 +43,12 @@ if(LIBINTL_INCLUDE_DIR)
     set(LIBINTL_LIBRARIES)
     set(LIBINTL_LIB_FOUND TRUE)
   else (LIBINTL_LIBC_HAS_DGETTEXT)
-    find_library(LIBINTL_LIBRARIES NAMES intl  )
-    
     find_library(LIBINTL_LIBRARIES 
       NAMES intl libintl
       HINTS
       PATH_SUFFIXES gettext/lib
       PATHS ${LIBINTL_SEARCH_PATHS}
     )
-
     if(LIBINTL_LIBRARIES)
       set(LIBINTL_LIB_FOUND TRUE)
     endif(LIBINTL_LIBRARIES)
