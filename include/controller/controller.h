@@ -26,6 +26,7 @@ enum {
     CTRL_TYPE_KEYBOARD,
     CTRL_TYPE_GAMEPAD,
     CTRL_TYPE_NETWORK,
+    CTRL_TYPE_AI
 };
 
 enum {
@@ -56,7 +57,7 @@ struct controller_t {
     int (*poll_fun)(controller *ctrl, ctrl_event **ev);
     int (*event_fun)(controller *ctrl, SDL_Event *event, ctrl_event **ev);
     int (*update_fun)(controller *ctrl, serial *state);
-    void (*har_hook)(char* buf, void *userdata);
+    int (*har_hook)(controller *ctrl, har_event event);
     void (*controller_hook)(controller *ctrl, int action);
     void *data;
     int type;
@@ -71,6 +72,7 @@ int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev);
 int controller_poll(controller *ctrl, ctrl_event **ev);
 int controller_tick(controller *ctrl, int ticks, ctrl_event **ev);
 int controller_update(controller *ctrl, serial *state);
+int controller_har_hook(controller *ctrl, har_event event);
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type));
 void controller_clear_hooks(controller *ctrl);
 void controller_free_chain(ctrl_event *ev);

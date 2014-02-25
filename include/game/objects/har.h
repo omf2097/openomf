@@ -100,7 +100,10 @@ typedef struct action_buffer_t {
     uint32_t age;
 } action_buffer;
 
+typedef struct game_player_t game_player;
+
 typedef struct har_t {
+    game_player *gp;
     uint8_t id;
     uint8_t player_id;
     uint8_t pilot_id;
@@ -119,7 +122,6 @@ typedef struct har_t {
 
     uint8_t stun_timer;
     uint8_t delay; // used for 'stretching' frames in netplay
-
 
     list har_hooks;
 

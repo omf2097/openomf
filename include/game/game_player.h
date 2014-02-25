@@ -5,6 +5,7 @@
 #include "controller/controller.h"
 #include "controller/keyboard.h"
 #include "controller/net_controller.h"
+#include "controller/ai_controller.h"
 #include "video/surface.h"
 #include "game/score.h"
 

@@ -41,6 +41,10 @@ void fire_hooks(har *h, har_event event) {
     while((hook = iter_next(&it)) != NULL) {
         hook->cb(event, hook->data);
     }
+    controller *ctrl = game_player_get_ctrl(h->gp);
+    if(object_get_userdata(ctrl->har) == h) {
+        controller_har_hook(ctrl, event);
+    }
 }
 
 
@@ -1558,6 +1562,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_userdata(obj, local);
     har_bootstrap(obj);
 
+    local->gp = game_state_get_player(obj->gs, player_id);
     local->af_data = af_data;
 
     // Save har id
