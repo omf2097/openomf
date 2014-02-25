@@ -455,9 +455,11 @@ void arena_har_hook(har_event event, void *data) {
             arena->ending_ticks = 0;
             break;
         case HAR_EVENT_DONE:
-            DEBUG("DONE!");
-            arena->ending_ticks = 0;
-            arena->state = ARENA_STATE_ENDING;
+            if (arena->state != ARENA_STATE_ENDING) {
+                DEBUG("DONE!");
+                arena->ending_ticks = 0;
+                arena->state = ARENA_STATE_ENDING;
+            }
             break;
     }
 }
