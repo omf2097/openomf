@@ -21,6 +21,7 @@ typedef struct move_stat_t {
     int value;
     int attempts;
     int consecutive;
+    int last_dist;
 } move_stat;
 
 typedef struct ai_t {
@@ -35,8 +36,7 @@ typedef struct ai_t {
     af_move *selected_move;
     int move_str_pos;
     move_stat move_stats[70];
-    int last_dist;
-    int enemy_last_hp;
+    int blocked;
 } ai;
 
 
@@ -91,21 +91,32 @@ int ai_har_event(controller *ctrl, har_event event) {
     ai *a = ctrl->data;
     //object *o = ctrl->har;
     //har *h = object_get_userdata(o);
+    //object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
+    //har *h_enemy = object_get_userdata(o_enemy);
 
     if(event.type == HAR_EVENT_LAND_HIT) {
         move_stat *ms = &a->move_stats[event.move->id];
-        if(++ms->value > 10) {
+
+        if (ms->max_hit_dist == -1 || ms->last_dist > ms->max_hit_dist){
+            ms->max_hit_dist = ms->last_dist;
+        }
+
+        if (ms->min_hit_dist == -1 || ms->last_dist < ms->min_hit_dist){
+            ms->min_hit_dist = ms->last_dist;
+        }
+
+        ms->value++;
+        if(ms->value > 10) {
             ms->value = 10;
         }
-
-        if (ms->max_hit_dist == -1 || a->last_dist > ms->max_hit_dist){
-            ms->max_hit_dist = a->last_dist;
+    } else if(event.type == HAR_EVENT_ENEMY_BLOCK) {
+        move_stat *ms = &a->move_stats[event.move->id];
+        if(!a->blocked) {
+            a->blocked = 1;
+            ms->value--;
         }
-
-        if (ms->min_hit_dist == -1 || a->last_dist < ms->min_hit_dist){
-            ms->min_hit_dist = a->last_dist;
-        }
-    } else if(event.type == HAR_EVENT_ATTACK) {
+    }
+    else if(event.type == HAR_EVENT_ATTACK) {
         a->selected_move = NULL;
     }
     return 0;
@@ -161,7 +172,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
     object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
-    har *h_enemy = object_get_userdata(o_enemy);
+    //har *h_enemy = object_get_userdata(o_enemy);
 
     if(a->selected_move) {
         // finish doing the selected move first
@@ -187,21 +198,15 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
             if((move = af_get_move(h->af_data, i))) {
                 move_stat *ms = &a->move_stats[i];
                 if(is_valid_move(move, h)) {
-                    int value = ms->value + rand_int(5);
+                    int value = ms->value + rand_int(10);
                     if (ms->min_hit_dist != -1){
-                        if (a->last_dist < ms->max_hit_dist && a->last_dist > ms->min_hit_dist){
+                        if (ms->last_dist < ms->max_hit_dist+5 && ms->last_dist > ms->min_hit_dist+5){
                             value += 2;
-                        } else if (a->last_dist > ms->max_hit_dist+5){
+                        } else if (ms->last_dist > ms->max_hit_dist+10){
                             value -= 3;
                         }
                     }
-                    if(a->enemy_last_hp != -1) {
-                        if(a->enemy_last_hp < h_enemy->health) {
-                            value += 1;
-                        } else {
-                            value -= 3;
-                        }
-                    }
+
                     value -= ms->attempts/2;
                     value -= ms->consecutive*2;
 
@@ -225,8 +230,8 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
             // do the move
             a->selected_move = selected_move;
             a->move_str_pos = str_size(&selected_move->move_string)-1;
-            a->last_dist = abs(o->pos.x - o_enemy->pos.x);
-            a->enemy_last_hp = h_enemy->health;
+            a->move_stats[a->selected_move->id].last_dist = abs(o->pos.x - o_enemy->pos.x);
+            a->blocked = 0;
             DEBUG("AI selected move %s", str_c(&selected_move->move_string));
         }
     } else {
@@ -281,9 +286,9 @@ void ai_controller_create(controller *ctrl, int difficulty) {
     for(int i = 0;i < 70;i++) {
         a->move_stats[i].max_hit_dist = -1;
         a->move_stats[i].min_hit_dist = -1;
+        a->move_stats[i].last_dist = -1;
     }
-    a->last_dist = -1;
-    a->enemy_last_hp = -1;
+    a->blocked = 0;
 
     ctrl->data = a;
     ctrl->type = CTRL_TYPE_AI;

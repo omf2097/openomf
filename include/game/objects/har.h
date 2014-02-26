@@ -57,6 +57,7 @@ enum {
 enum {
     HAR_EVENT_JUMP,
     HAR_EVENT_ATTACK, // Executed a move, may not hit
+    HAR_EVENT_ENEMY_BLOCK, // Opponent blocked your move
     HAR_EVENT_LAND_HIT, // Landed a hit on the opponent
     HAR_EVENT_TAKE_HIT, // Hit by HAR or projectile
     HAR_EVENT_HAZARD_HIT, // Hit by hazard
@@ -142,6 +143,7 @@ void har_set_ani(object *obj, int animation_id, int repeat);
 int har_is_active(object *obj);
 int har_is_crouching(har *h);
 int har_is_walking(har *h);
+int har_is_blocking(har *h, af_move *move);
 void har_copy_actions(object *new, object *old);
 
 #endif // _HAR_H
