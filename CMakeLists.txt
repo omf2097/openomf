@@ -49,7 +49,7 @@ ENDIF(MINGW)
 # Options
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_PNG "Add support for PNG screenshots" OFF)
-OPTION(SERVER_ONLY "Do not build the game binary" OFF)
+#OPTION(SERVER_ONLY "Do not build the game binary" OFF)
 
 # If we want to build support for vorbis streaming, find these too
 IF(USE_OGGVORBIS)
