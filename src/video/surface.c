@@ -128,11 +128,11 @@ void surface_additive_blit(surface *dst,
             src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - x : x) + 
                          ((flip & SDL_FLIP_VERTICAL) ? src->h - y : y) * src->w;
             dst_offset = dst_x + x + (dst_y + y) * dst->w;
+            if(dst_x + x >= dst->w
+                || dst_y + y >= dst->h
+                || dst_x + x < 0
+                || dst_y + y < 0) continue;
             if(dst->stencil[dst_offset] == 1) {
-                if(dst_x + x >= dst->w 
-                    || dst_y + y >= dst->h 
-                    || dst_x + x < 0 
-                    || dst_y + y < 0) continue;
                 if(src->data[src_offset] == 0)
                     continue;
 
@@ -160,11 +160,11 @@ void surface_alpha_blit(surface *dst,
         for(int x = 0; x < src->w; x++) {
             src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - 1 - x : x) +
                          ((flip & SDL_FLIP_VERTICAL) ? src->h - 1 - y : y) * src->w;
+            if(dst_x + x >= dst->w
+                || dst_y + y >= dst->h
+                || dst_x + x < 0
+                || dst_y + y < 0) continue;
             if(src->stencil[src_offset] == 1) {
-                if(dst_x + x >= dst->w 
-                    || dst_y + y >= dst->h 
-                    || dst_x + x < 0 
-                    || dst_y + y < 0) continue;
                 dst_offset = dst_x + x + (dst_y + y) * dst->w;
                 dst->data[dst_offset] = src->data[src_offset];
                 dst->stencil[dst_offset] = 1;
