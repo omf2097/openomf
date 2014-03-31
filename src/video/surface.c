@@ -125,20 +125,24 @@ void surface_additive_blit(surface *dst,
     uint8_t src_index, dst_index;
     for(int y = 0; y < src->h; y++) {
         for(int x = 0; x < src->w; x++) {
-            src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - x : x) + 
-                         ((flip & SDL_FLIP_VERTICAL) ? src->h - y : y) * src->w;
-            dst_offset = dst_x + x + (dst_y + y) * dst->w;
+            // If pixel offscreen, skip
             if(dst_x + x >= dst->w
                 || dst_y + y >= dst->h
                 || dst_x + x < 0
                 || dst_y + y < 0) continue;
+
+            // Calculate pixel offsets
+            src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - x : x) + 
+                         ((flip & SDL_FLIP_VERTICAL) ? src->h - y : y) * src->w;
+            dst_offset = dst_x + x + (dst_y + y) * dst->w;
+
+            // Do blit, if pixel is visible on stencil
             if(dst->stencil[dst_offset] == 1) {
                 if(src->data[src_offset] == 0)
                     continue;
 
                 src_index = src->data[src_offset]+3;
                 dst_index = dst->data[dst_offset];
-
                 dst->data[dst_offset] = remap_pal->remaps[src_index][dst_index];
             }
         }
@@ -158,14 +162,19 @@ void surface_alpha_blit(surface *dst,
     int src_offset,dst_offset;
     for(int y = 0; y < src->h; y++) {
         for(int x = 0; x < src->w; x++) {
-            src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - 1 - x : x) +
-                         ((flip & SDL_FLIP_VERTICAL) ? src->h - 1 - y : y) * src->w;
+            // If pixel offscreen, skip
             if(dst_x + x >= dst->w
                 || dst_y + y >= dst->h
                 || dst_x + x < 0
                 || dst_y + y < 0) continue;
+
+            // Calculate offsets
+            src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - 1 - x : x) +
+                         ((flip & SDL_FLIP_VERTICAL) ? src->h - 1 - y : y) * src->w;
+            dst_offset = dst_x + x + (dst_y + y) * dst->w;
+
+            // If pixel is visible on stencil, do blit
             if(src->stencil[src_offset] == 1) {
-                dst_offset = dst_x + x + (dst_y + y) * dst->w;
                 dst->data[dst_offset] = src->data[src_offset];
                 dst->stencil[dst_offset] = 1;
             }
