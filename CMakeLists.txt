@@ -93,6 +93,7 @@ set(OPENOMF_SRC
     src/utils/str.c
     src/utils/random.c
     src/utils/miscmath.c
+    src/utils/scandir.c
     src/video/video.c
     src/video/surface.c
     src/video/image.c

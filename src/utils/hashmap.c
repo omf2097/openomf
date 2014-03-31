@@ -73,11 +73,13 @@ unsigned int hashmap_reserved(hashmap *hm) {
     return hm->reserved;
 }
 
-void* hashmap_put(hashmap *hm, const void *key, unsigned int keylen, void *val, unsigned int vallen) {
+void* hashmap_put(hashmap *hm,
+                  const void *key, unsigned int keylen,
+                  const void *val, unsigned int vallen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
 
     // Create new node, copy data
-    hashmap_node *node = (hashmap_node*)hm->alloc.cmalloc(sizeof(hashmap_node));
+    hashmap_node *node = hm->alloc.cmalloc(sizeof(hashmap_node));
     node->pair.keylen = keylen;
     node->pair.vallen = vallen;
     node->pair.key = hm->alloc.cmalloc(keylen);
