@@ -8,17 +8,18 @@ sd_sound_file *sound_data = NULL;
 
 int sounds_loader_init() {
     // Get filename
-    const char *filename;
-    filename = get_filename_by_id(DAT_SOUNDS);
+    char *filename = get_path_by_id(DAT_SOUNDS);
 
     // Load sounds
     sound_data = sd_sounds_create();
     if(sd_sounds_load(sound_data, filename)) {
         sd_sounds_delete(sound_data);
         PERROR("Unable to load sounds file '%s'!", filename);
+        free(filename);
         return 1;
     }
     INFO("Loaded sounds file '%s'.", filename);
+    free(filename);
     return 0;
 }
 

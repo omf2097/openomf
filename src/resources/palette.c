@@ -8,16 +8,17 @@ sd_altpal_file *altpals = NULL;
 
 int altpals_init() {
     // Get filename
-    const char *filename;
-    filename = get_filename_by_id(DAT_ALTPALS);
+    char *filename = get_path_by_id(DAT_ALTPALS);
 
     altpals = sd_altpal_create();
     if(sd_altpals_load(altpals, filename)) {
         sd_altpal_delete(altpals);
         PERROR("Unable to load altpals file '%s'!", filename);
+        free(filename);
         return 1;
     }
     INFO("Loaded altpals file '%s'.", filename);
+    free(filename);
     return 0;
 }
 

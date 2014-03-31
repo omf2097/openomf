@@ -790,9 +790,9 @@ int mainmenu_create(scene *scene) {
     
     // Force music playback
     if(!music_playing()) {
-        const char *filename;
-        filename = get_filename_by_id(PSM_MENU);
+        char *filename = get_path_by_id(PSM_MENU);
         music_play(filename);
+        free(filename);
         music_set_volume(settings_get()->sound.music_vol/10.0f);
     }
 

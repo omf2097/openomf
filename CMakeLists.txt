@@ -93,7 +93,6 @@ set(OPENOMF_SRC
     src/utils/str.c
     src/utils/random.c
     src/utils/miscmath.c
-    src/utils/scandir.c
     src/video/video.c
     src/video/surface.c
     src/video/image.c
@@ -123,6 +122,7 @@ set(OPENOMF_SRC
     src/resources/sprite.c
     src/resources/animation.c
     src/resources/sounds_loader.c
+    src/resources/global_paths.c
     src/game/protos/object.c
     src/game/protos/player.c
     src/game/protos/scene.c

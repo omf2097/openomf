@@ -894,16 +894,19 @@ int arena_create(scene *scene) {
     
     // Handle music playback
     music_stop();
-    const char *music_filename = NULL;
+    char *music_filename = NULL;
     switch(scene->bk_data.file_id) {
-        case 8:   music_filename = get_filename_by_id(PSM_ARENA0); break;
-        case 16:  music_filename = get_filename_by_id(PSM_ARENA1); break;
-        case 32:  music_filename = get_filename_by_id(PSM_ARENA2); break;
-        case 64:  music_filename = get_filename_by_id(PSM_ARENA3); break;
-        case 128: music_filename = get_filename_by_id(PSM_ARENA4); break;
+        case 8:   music_filename = get_path_by_id(PSM_ARENA0); break;
+        case 16:  music_filename = get_path_by_id(PSM_ARENA1); break;
+        case 32:  music_filename = get_path_by_id(PSM_ARENA2); break;
+        case 64:  music_filename = get_path_by_id(PSM_ARENA3); break;
+        case 128: music_filename = get_path_by_id(PSM_ARENA4); break;
     }
-    music_play(music_filename);
-    music_set_volume(setting->sound.music_vol/10.0f);
+    if(music_filename != NULL) {
+        music_play(music_filename);
+        music_set_volume(setting->sound.music_vol/10.0f);
+        free(music_filename);
+    }
 
     // Initialize local struct
     local = malloc(sizeof(arena_local));
