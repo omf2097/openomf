@@ -18,9 +18,6 @@
 #include "game/settings.h"
 #include "resources/ids.h"
 
-
-#include "utils/hashmap.h"
-
 #ifdef STANDALONE_SERVER
 void err_msgbox(const char *fmt, ...) {
     va_list args;
