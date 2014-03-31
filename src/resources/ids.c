@@ -3,86 +3,42 @@
 #include <string.h>
 #include <unistd.h>
 #include "resources/ids.h"
+#include "resources/global_paths.h"
 #include "game/settings.h"
 #include "utils/log.h"
-
-static char *filename_mem = NULL;
-static char *filename_table[NUMBER_OF_RESOURCES];
 
 struct music_override_t {
     int id;
     const char *name;
 };
 
-static const char *get_filename(int id);
-
-void set_default_resource_path() {
-#if defined(_WIN32) || defined(WIN32)
-    set_resource_path("resources\\");
-#else
-    set_resource_path("resources/");
-#endif
-}
-
-void set_resource_path(const char *path) {
-    int pathlen = 0;
-    int memreq = 0;
-    int pos = 0;
-
-    if(filename_mem != NULL) {
-        free(filename_mem);
-        filename_mem = NULL;
-    }
-    if(path == NULL) {
-        return;
-    }
-
-    // Calculate the amount of memory required for the filename table
-    pathlen = strlen(path);
-    for(int i = 0;i < NUMBER_OF_RESOURCES;i++) {
-        const char *fname = get_filename(i);
-        if(fname != NULL) {
-            memreq += pathlen + strlen(fname) + 1;
+int validate_resource_path(char **missingfile) {
+    for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        *missingfile = get_path_by_id(i);
+        if(*missingfile != NULL) {
+            if(access(*missingfile, F_OK) == -1) {
+                return 1;
+            }
+            free(*missingfile);
         }
     }
-    // Allocate the table
-    filename_mem = malloc(memreq);
-
-    // Initialize the filename table
-    for(int i = 0;i < NUMBER_OF_RESOURCES;i++) {
-        const char *fname = get_filename(i);
-        int len = 0;
-        if(fname == NULL) {
-            filename_table[i] = NULL;
-        } else {
-            len = pathlen + strlen(fname) + 1;
-            filename_table[i] = &filename_mem[pos];
-            strcpy(filename_table[i], path);
-            strcat(filename_table[i], fname);
-        }
-        pos += len;
-    }
-}
-
-int validate_resource_path(const char **missingfile) {
-    for(int i = 0;i < NUMBER_OF_RESOURCES;i++) {
-        *missingfile = get_filename_by_id(i);
-        if(*missingfile && access(*missingfile, F_OK ) == -1) {
-            return 1;
-        }
-    }
+    *missingfile = NULL;
     return 0;
 }
 
-const char *get_filename_by_id(int id) {
-    if(filename_mem) {
-        return filename_table[id];
-    } else {
-        return NULL;
+char* get_path_by_id(int id) {
+    const char *path = global_path_get(RESOURCE_PATH);
+    const char *filename = get_file_by_id(id);
+    if(filename != NULL && path != NULL) {
+        int len = strlen(path) + strlen(filename) + 1;
+        char *out = malloc(len);
+        sprintf(out, "%s%s", path, filename);
+        return out;
     }
+    return NULL;
 }
 
-static const char *get_filename(int id) {
+const char* get_file_by_id(int id) {
     // Declare music overrides
     settings *s = settings_get();
     struct music_override_t overrides[] = {

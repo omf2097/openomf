@@ -16,6 +16,7 @@
 #include "utils/random.h"
 #include "game/game_state.h"
 #include "game/settings.h"
+#include "resources/global_paths.h"
 #include "resources/ids.h"
 
 #ifdef STANDALONE_SERVER
@@ -79,18 +80,12 @@ int main(int argc, char *argv[]) {
 #endif
     }
 
-    // Config path
-    char *config_path = malloc(strlen(path)+32);
-    sprintf(config_path, "%s%s", path, "openomf.conf");
+    // Init some paths
+    global_paths_init();
+    global_path_build(CONFIG_PATH, path, "openomf.conf");
+    global_path_build(LOG_PATH, path, "openomf.log");
 
-    // Logfile path
-    char *logfile_path = malloc(strlen(path)+32);
-    sprintf(logfile_path, "%s%s", path, "openomf.log");
-
-    // Plugin path
-    char *plugin_path = malloc(strlen(path)+32);
-    sprintf(plugin_path, "%s%s", path, "plugins/");
-
+    // Free SDL reserved path
     SDL_free(path);
 
     // Check arguments
@@ -108,12 +103,12 @@ int main(int argc, char *argv[]) {
             printf("-l [port]       Start server\n");
             goto exit_0;
         } else if(strcmp(argv[1], "-w") == 0) {
-            if(settings_write_defaults(config_path)) {
-                fprintf(stderr, "Failed to write config file to '%s'!", config_path);
+            if(settings_write_defaults(global_path_get(CONFIG_PATH))) {
+                fprintf(stderr, "Failed to write config file to '%s'!", global_path_get(CONFIG_PATH));
                 ret = 1;
                 goto exit_0;
             } else {
-                printf("Config file written to '%s'!", config_path);
+                printf("Config file written to '%s'!", global_path_get(CONFIG_PATH));
                 goto exit_0;
             }
         } else if(strcmp(argv[1], "-c") == 0) {
@@ -139,17 +134,11 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 #else
-    if(log_init(logfile_path)) {
-        err_msgbox("Error while initializing log '%s'!", logfile_path);
+    if(log_init(global_path_get(LOG_PATH))) {
+        err_msgbox("Error while initializing log '%s'!", get_global_path(LOG_PATH));
         goto exit_0;
     }
 #endif
-
-    // Print paths to debug
-    DEBUG("Paths:");
-    DEBUG(" * Config: %s", config_path);
-    DEBUG(" * Logfile: %s", logfile_path);
-    DEBUG(" * Plugins: %s", plugin_path);
 
     // Random seed
     rand_seed(time(NULL));
@@ -158,75 +147,85 @@ int main(int argc, char *argv[]) {
     sd_stringparser_lib_init();
 
     // Init config
-    if(settings_init(config_path)) {
+    if(settings_init(global_path_get(CONFIG_PATH))) {
         err_msgbox("Failed to initialize settings file");
         goto exit_1;
     }
     settings_load();
 
-    // Init resource path
-    if(portable_mode) {
-        set_default_resource_path();
+    // Set default resource and plugins paths
+    if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+        global_path_set(RESOURCE_PATH, "resources\\");
+        global_path_set(PLUGIN_PATH, "plugins\\");
     } else {
+        global_path_set(RESOURCE_PATH, "resources/");
+        global_path_set(PLUGIN_PATH, "plugins/");
+    }
+
+    // If we are not in debug mode, and not in portable mode,
+    // set proper paths. If something fails, use the already set
+    // defaults.
 #ifndef DEBUGMODE
+    if(!portable_mode) {
         // where is the openomf binary, if this call fails we will look for resources in ./resources
         char *base_path = SDL_GetBasePath();
         if(base_path != NULL) {
-            char *resource_path = malloc(strlen(base_path) + 32);
-            const char *platform = SDL_GetPlatform();
-            if (!strcasecmp(platform, "Windows")) {
+            if (!strcasecmp(SDL_GetPlatform(), "Windows")) {
                 // on windows, the resources will be in ./resources, relative to the binary
-                sprintf(resource_path, "%s%s", base_path, "resources\\");
-                set_resource_path(resource_path);
-            } else if (!strcasecmp(platform, "Linux")) {
+                global_path_build(RESOURCE_PATH, base_path, "resources\\");
+                global_path_build(PLUGIN_PATH, base_path, "plugins\\");
+            } else if (!strcasecmp(SDL_GetPlatform(), "Linux")) {
                 // on linux, the resources will be in ../share/openomf, relative to the binary
-                // so if openomf is installed to /usr/local/bin, the resources will be in /usr/local/share/openomf
-                sprintf(resource_path, "%s%s", base_path, "../share/openomf/");
-                set_resource_path(resource_path);
-            } else if (!strcasecmp(platform, "Mac OS X")) {
-                // on OSX, GetBasePath returns the 'Resources' directory if run from an app bundle, so we can use this as-is
-                sprintf(resource_path, "%s", base_path);
-                set_resource_path(resource_path);
+                // so if openomf is installed to /usr/local/bin, 
+                // the resources will be in /usr/local/share/openomf
+                global_path_build(RESOURCE_PATH, base_path, "../share/openomf/");
+                global_path_set(PLUGIN_PATH, "/usr/lib/openomf/");
+            } else if (!strcasecmp(SDL_GetPlatform(), "Mac OS X")) {
+                // on OSX, GetBasePath returns the 'Resources' directory 
+                // if run from an app bundle, so we can use this as-is
+                global_path_set(RESOURCE_PATH, base_path);
+                global_path_build(PLUGIN_PATH, base_path, "plugins/");
             }
             // any other platform will look in ./resources
             SDL_free(base_path);
-            free(resource_path);
-        } else {
-            set_default_resource_path();
         }
-#else
-        set_default_resource_path();
-#endif
     }
+#else
+    // This disables warnings about unused variable
+    (void)(portable_mode);
+#endif
+
+    // Print all paths if debug mode is on
+    global_paths_print_debug();
 
     // Make sure the required resource files exist
-    const char *missingfile = NULL;
+    char *missingfile = NULL;
     if(validate_resource_path(&missingfile)) {
         err_msgbox("Resource file does not exist: %s", missingfile);
+        free(missingfile);
         goto exit_1;
     }
 
+    // Network game override stuff
     if(ip) {
         DEBUG("Connect IP overridden to %s", ip);
         settings_get()->net.net_connect_ip = ip;
     }
-
     if(connect_port > 0 && connect_port < 0xFFFF) {
         DEBUG("Connect Port overridden to %u", connect_port&0xFFFF);
         settings_get()->net.net_connect_port = connect_port;
     }
-
     if(listen_port > 0 && listen_port < 0xFFFF) {
         DEBUG("Listen Port overridden to %u", listen_port&0xFFFF);
         settings_get()->net.net_listen_port = listen_port;
     }
 
     // Init SDL2
-#ifdef STANDALONE_SERVER
-    if(SDL_Init(SDL_INIT_TIMER)) {
-#else
-    if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER)) {
+    unsigned int sdl_flags = SDL_INIT_TIMER;
+#ifndef STANDALONE_SERVER
+    sdl_flags |= SDL_INIT_VIDEO;
 #endif
+    if(SDL_Init(sdl_flags)) {
         err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_2;
     }
@@ -297,8 +296,6 @@ exit_0:
     if (ip) {
         free(ip);
     }
-    free(config_path);
-    free(logfile_path);
-    set_resource_path(NULL);
+    global_paths_close();
     return ret;
 }

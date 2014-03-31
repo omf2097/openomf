@@ -1,4 +1,5 @@
 #include <shadowdive/shadowdive.h>
+#include <stdlib.h>
 #include "utils/array.h"
 #include "utils/log.h"
 #include "game/text/languages.h"
@@ -9,21 +10,24 @@ sd_language *language;
 
 int lang_init() {
     // Get filename
-    const char *filename;
-    filename = get_filename_by_id(DAT_ENGLISH);
+    char *filename = get_path_by_id(DAT_ENGLISH);
 
     // Load up language file
     language = sd_language_create();
     if(sd_language_load(language, filename)) {
         PERROR("Unable to load language file '%s'!", filename);
+        free(filename);
         return 1;
     }
+
+    // Load language strings
     array_create(&language_strings);
     for(int i = 0; i < language->count; i++) {
         array_set(&language_strings, i, language->strings[i].data);
     }
 
     INFO("Loaded language file '%s'.", filename);
+    free(filename);
     return 0;
 }
 

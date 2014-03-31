@@ -70,23 +70,27 @@ int font_load(font *font, const char* filename, unsigned int size) {
 int fonts_init() {
     font_create(&font_small);
     font_create(&font_large);
-    const char *filename;
+    char *filename = NULL;
 
     // Load small font
-    filename = get_filename_by_id(DAT_CHARSMAL);
+    filename = get_path_by_id(DAT_CHARSMAL);
     if(font_load(&font_small, filename, FONT_SMALL)) {
         PERROR("Unable to load font file '%s'!", filename);
+        free(filename);
         return 1;
     }
     INFO("Loaded font file '%s'", filename);
+    free(filename);
 
     // Load big font
-    filename = get_filename_by_id(DAT_GRAPHCHR);
+    filename = get_path_by_id(DAT_GRAPHCHR);
     if(font_load(&font_large, filename, FONT_BIG)) {
         PERROR("Unable to load font file '%s'!", filename);
+        free(filename);
         return 1;
     }
     INFO("Loaded font file '%s'", filename);
+    free(filename);
 
     // All done.
     return 0;
