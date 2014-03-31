@@ -168,7 +168,13 @@ void _setup_keyboard(game_state *gs, int players) {
             keys->punch = SDL_GetScancodeFromName(k->key2_punch);
             keys->kick = SDL_GetScancodeFromName(k->key2_kick);
         }
-        keyboard_create(ctrl, keys, 0);
+
+        // If in one player mode, create an AI controller
+        if(i == 1 && players == 1) {
+            ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
+        } else {
+            keyboard_create(ctrl, keys, 0);
+        }
 
         // Set up player controller
         game_player_set_ctrl(player, ctrl);

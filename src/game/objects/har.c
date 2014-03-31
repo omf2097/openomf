@@ -41,6 +41,10 @@ void fire_hooks(har *h, har_event event) {
     while((hook = iter_next(&it)) != NULL) {
         hook->cb(event, hook->data);
     }
+    controller *ctrl = game_player_get_ctrl(h->gp);
+    if(object_get_userdata(ctrl->har) == h) {
+        controller_har_hook(ctrl, event);
+    }
 }
 
 
@@ -61,6 +65,16 @@ void har_event_attack(har *h, af_move *move) {
 
     fire_hooks(h, event);
 }
+
+void har_event_enemy_block(har *h, af_move *move) {
+    har_event event;
+    event.type = HAR_EVENT_ENEMY_BLOCK;
+    event.player_id = h->player_id;
+    event.move = move;
+
+    fire_hooks(h, event);
+}
+
 
 void har_event_take_hit(har *h, af_move *move) {
     har_event event;
@@ -662,6 +676,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             (frame_isset(&f, "ue") && b->state != STATE_JUMPING))) {
 
         if (har_is_blocking(b, move)) {
+            har_event_enemy_block(a, move);
             har_block(obj_b, hit_coord);
             return;
         }
@@ -726,6 +741,8 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
     af *prog_owner_af_data = projectile_get_af_data(o_pjt);
+    // lol
+    har *other = object_get_userdata(game_state_get_player(o_har->gs, abs(h->player_id - 1))->har);
 
     if (h->state == STATE_FALLEN || h->state == STATE_STANDING_UP) {
         // can't hit em while they're down
@@ -738,6 +755,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     if(intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
         af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
         if (har_is_blocking(h, move)) {
+            har_event_enemy_block(other, move);
             har_block(o_har, hit_coord);
             return;
         }
@@ -767,8 +785,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         }
 
         har_event_take_hit(h, move);
-        // lol
-        har *other = object_get_userdata(game_state_get_player(o_har->gs, abs(h->player_id - 1))->har);
         har_event_land_hit(other, move);
 
         /*if (h->hit_hook_cb) {*/
@@ -1558,6 +1574,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_userdata(obj, local);
     har_bootstrap(obj);
 
+    local->gp = game_state_get_player(obj->gs, player_id);
     local->af_data = af_data;
 
     // Save har id

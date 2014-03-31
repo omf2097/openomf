@@ -15,6 +15,7 @@ void controller_init(controller *ctrl) {
     ctrl->poll_fun = NULL;
     ctrl->tick_fun = NULL;
     ctrl->update_fun = NULL;
+    ctrl->har_hook = NULL;
     ctrl->rtt = 0;
 }
 
@@ -118,6 +119,13 @@ int controller_update(controller *ctrl, serial *state) {
 int controller_poll(controller *ctrl, ctrl_event **ev) {
     if(ctrl->poll_fun != NULL) {
         return ctrl->poll_fun(ctrl, ev);
+    }
+    return 0;
+}
+
+int controller_har_hook(controller *ctrl, har_event event) {
+    if(ctrl->har_hook != NULL) {
+        return ctrl->har_hook(ctrl, event);
     }
     return 0;
 }

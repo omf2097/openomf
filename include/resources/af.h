@@ -2,7 +2,6 @@
 #define _AF_H
 
 #include "resources/af_move.h"
-#include "utils/hashmap.h"
 
 typedef struct af_t {
     unsigned int id;
@@ -12,7 +11,7 @@ typedef struct af_t {
     int reverse_speed;
     int jump_speed;
     int fall_speed;
-    hashmap moves;
+    af_move moves[70];
     char sound_translation_table[30];
 } af;
 
