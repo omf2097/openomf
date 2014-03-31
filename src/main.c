@@ -18,6 +18,9 @@
 #include "game/settings.h"
 #include "resources/ids.h"
 
+
+#include "utils/hashmap.h"
+
 #ifdef STANDALONE_SERVER
 void err_msgbox(const char *fmt, ...) {
     va_list args;
@@ -87,6 +90,10 @@ int main(int argc, char *argv[]) {
     char *logfile_path = malloc(strlen(path)+32);
     sprintf(logfile_path, "%s%s", path, "openomf.log");
 
+    // Plugin path
+    char *plugin_path = malloc(strlen(path)+32);
+    sprintf(plugin_path, "%s%s", path, "plugins/");
+
     SDL_free(path);
 
     // Check arguments
@@ -140,6 +147,12 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 #endif
+
+    // Print paths to debug
+    DEBUG("Paths:");
+    DEBUG(" * Config: %s", config_path);
+    DEBUG(" * Logfile: %s", logfile_path);
+    DEBUG(" * Plugins: %s", plugin_path);
 
     // Random seed
     rand_seed(time(NULL));
