@@ -18,7 +18,7 @@
 #include "game/settings.h"
 #include "resources/global_paths.h"
 #include "resources/ids.h"
-#include "resources/plugins.h"
+#include "plugins/plugins.h"
 
 #ifdef STANDALONE_SERVER
 void err_msgbox(const char *fmt, ...) {
