@@ -13,6 +13,7 @@
 #include "resources/animation.h"
 #include "controller/controller.h"
 #include "utils/log.h"
+#include "utils/vec.h"
 #include "utils/random.h"
 
 typedef struct move_stat_t {
@@ -167,12 +168,39 @@ int is_valid_move(af_move *move, har *h) {
     return 0;
 }
 
+void ai_block_projectile(ai *a) {
+    /*object *proj;
+    unsigned int size = vector_size(&gs->objects);
+    for(int i = 0; i < size; i++) {
+        a = ((render_obj*)vector_get(&gs->objects, i))->obj;
+    }*/
+}
+
 int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
     object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
-    //har *h_enemy = object_get_userdata(o_enemy);
+    har *h_enemy = object_get_userdata(o_enemy);
+
+    // Try to block har
+    // XXX TODO get maximum move distance from the animation object
+    if(fabsf(o_enemy->pos.x - o->pos.x) < 100) {
+        if(h_enemy->executing_move) {
+            if(har_is_crouching(h_enemy)) {
+                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWNLEFT : ACT_DOWNRIGHT);
+                controller_cmd(ctrl, a->cur_act, ev);
+            } else {
+                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT);
+                controller_cmd(ctrl, a->cur_act, ev);
+            }
+        }
+        return 0;
+    }
+
+
+    // Try to block projectiles
+    ai_block_projectile(a);
 
     if(a->selected_move) {
         // finish doing the selected move first
