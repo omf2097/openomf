@@ -124,6 +124,7 @@ set(OPENOMF_SRC
     src/resources/animation.c
     src/resources/sounds_loader.c
     src/resources/global_paths.c
+    src/resources/plugins.c
     src/game/protos/object.c
     src/game/protos/player.c
     src/game/protos/scene.c

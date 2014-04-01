@@ -18,6 +18,7 @@
 #include "game/settings.h"
 #include "resources/global_paths.h"
 #include "resources/ids.h"
+#include "resources/plugins.h"
 
 #ifdef STANDALONE_SERVER
 void err_msgbox(const char *fmt, ...) {
@@ -206,6 +207,9 @@ int main(int argc, char *argv[]) {
         goto exit_1;
     }
 
+    // Find plugins and make sure they are valid
+    plugins_init();
+
     // Network game override stuff
     if(ip) {
         DEBUG("Connect IP overridden to %s", ip);
@@ -296,6 +300,7 @@ exit_0:
     if (ip) {
         free(ip);
     }
+    plugins_close();
     global_paths_close();
     return ret;
 }
