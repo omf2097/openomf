@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
     }
 #else
     if(log_init(global_path_get(LOG_PATH))) {
-        err_msgbox("Error while initializing log '%s'!", get_global_path(LOG_PATH));
+        err_msgbox("Error while initializing log '%s'!", global_path_get(LOG_PATH));
         goto exit_0;
     }
 #endif
