@@ -2,6 +2,7 @@
 #include "video/tcache.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
+#include "plugins/plugins.h"
 
 #define CACHE_LIFETIME 25
 
@@ -22,6 +23,8 @@ typedef struct tcache_t {
     hashmap entries;
     unsigned int hits;
     unsigned int misses;
+    scaler_plugin scaler;
+    int scale_factor;
 } tcache;
 
 static tcache *cache = NULL;
@@ -46,6 +49,9 @@ tcache_entry_value* tcache_get_entry(tcache_entry_key *key) {
 void tcache_init() {
     cache = malloc(sizeof(tcache));
     hashmap_create(&cache->entries, 6);
+    // TODO: Get these two from settings
+    //cache->scaler;
+    cache->scale_factor = 1;
     cache->hits = 0;
     cache->misses = 0;
     DEBUG("Texture cache initialized.");
@@ -114,8 +120,8 @@ SDL_Texture* tcache_get(surface *sur,
         new_entry.tex = SDL_CreateTexture(renderer, 
                                           SDL_PIXELFORMAT_ABGR8888,
                                           SDL_TEXTUREACCESS_STREAMING,
-                                          sur->w,
-                                          sur->h);
+                                          sur->w * cache->scale_factor,
+                                          sur->h * cache->scale_factor);
         SDL_SetTextureBlendMode(new_entry.tex, SDL_BLENDMODE_BLEND);
         val = tcache_add_entry(&key, &new_entry);
     }
