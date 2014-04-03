@@ -88,6 +88,9 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync, int scale_
     // Set rendertargets
     reset_targets();
 
+    // Init texture cache
+    tcache_init(scale_factor);
+
     // Init hardware renderer
     state.cur_renderer = VIDEO_RENDERER_HW;
     video_hw_init(&state);
@@ -364,6 +367,12 @@ void video_render_sprite_flip_scale_opacity(
     state.cb.render_fso(&state, sur, &dst, blend_mode, pal_offset, flip, opacity);
 }
 
+// Called on every game tick
+void video_tick() {
+    tcache_tick();     
+}
+
+// Called after frame has been rendered
 void video_render_finish() {
     state.cb.render_finish(&state);
 
@@ -391,5 +400,6 @@ void video_close() {
     SDL_DestroyWindow(state.window);
     free(state.cur_palette);
     free(state.base_palette);
+    tcache_close();
     INFO("Video deinit.");
 }

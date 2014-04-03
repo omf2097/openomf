@@ -73,6 +73,7 @@ void video_render_sprite_flip_scale_opacity(
 
 void video_select_renderer(int renderer);
 
+void video_tick();
 void video_render_background(surface *sur);
 void video_render_prepare();
 void video_render_finish();

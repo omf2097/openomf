@@ -9,7 +9,6 @@
 #include "resources/sounds_loader.h"
 #include "video/surface.h"
 #include "video/video.h"
-#include "video/tcache.h"
 #include "game/text/languages.h"
 #include "game/game_state.h"
 #include "game/settings.h"
@@ -43,7 +42,6 @@ int engine_init() {
     int sink_id = 0;
 
     // Initialize everything.
-    tcache_init(scale_factor);
     if(video_init(w, h, fs, vsync, scale_factor)) {
         goto exit_0;
     }
@@ -82,16 +80,18 @@ exit_4:
     lang_close();
 exit_3:
     sounds_loader_close();
-exit_2:
 
+exit_2:
 #ifndef STANDALONE_SERVER
     audio_close();
-exit_1:
-    video_close();
-exit_0:
-    tcache_close();
 #endif
 
+exit_1:
+#ifndef STANDALONE_SERVER
+    video_close();
+#endif
+
+exit_0:
     return 1;
 }
 
@@ -236,9 +236,9 @@ void engine_run(int net_mode) {
             // Tick console
             console_tick();
 
-            // Handle cache
-            tcache_tick();
-            
+            // Tick video (tcache)
+            video_tick();
+
             // Handle waiting period leftover time
             omf_wait -= game_state_ms_per_tick(gs);
         }
@@ -301,7 +301,6 @@ void engine_close() {
 #ifndef STANDALONE_SERVER
     audio_close();
     video_close();
-    tcache_close();
 #endif
     INFO("Engine deinit successful.");
 }
