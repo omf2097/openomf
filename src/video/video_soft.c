@@ -3,7 +3,8 @@
 #include "utils/log.h"
 
 typedef struct soft_renderer_t {
-    char tmp[320*200*4];
+    char *tmp_normal;
+    char *tmp_scaling;
     surface lower;
     SDL_Surface *higher;
 } soft_renderer;
@@ -24,6 +25,8 @@ void soft_render_close(video_state *state) {
     soft_renderer *sr = state->userdata;
     SDL_FreeSurface(sr->higher);
     surface_free(&sr->lower);
+    free(sr->tmp_normal);
+    free(sr->tmp_scaling);
     free(sr);
 }
 
@@ -42,23 +45,20 @@ void soft_render_finish(video_state *state) {
     SDL_Surface *low_s;
 
     // Blit lower
-    surface_to_rgba(&sr->lower, sr->tmp, state->cur_palette, NULL, 0);
+    surface_to_rgba(&sr->lower, sr->tmp_normal, state->cur_palette, NULL, 0);
 
     // Scale if necessary
     if(state->scale_factor > 1) {
         int nw = 320 * state->scale_factor;
         int nh = 200 * state->scale_factor;
-        char *new = malloc(nw * nh * 4);
-        scaler_scale(&state->scaler, sr->tmp, new, 320, 200, state->scale_factor);
-        low_s = surface_from_pixels(new, nw, nh);
-        tex = SDL_CreateTextureFromSurface(state->renderer, low_s);
-        free(new);
+        scaler_scale(&state->scaler, sr->tmp_normal, sr->tmp_scaling, 320, 200, state->scale_factor);
+        low_s = surface_from_pixels(sr->tmp_scaling, nw, nh);
     } else {
-        low_s = surface_from_pixels(sr->tmp, 320, 200);
-        tex = SDL_CreateTextureFromSurface(state->renderer, low_s);
+        low_s = surface_from_pixels(sr->tmp_normal, 320, 200);
     }
 
     // Make a texture
+    tex = SDL_CreateTextureFromSurface(state->renderer, low_s);
     SDL_RenderCopy(state->renderer, tex, NULL, NULL);
     SDL_DestroyTexture(tex);
     SDL_FreeSurface(low_s);
@@ -97,8 +97,8 @@ void soft_render_sprite_fso(
             surface_alpha_blit(&sr->lower, sur, dst->x, dst->y, flip_mode);
         }
     } else {
-        surface_to_rgba(sur, sr->tmp, state->cur_palette, NULL, 0);
-        SDL_Surface *s = surface_from_pixels(sr->tmp, sur->w, sur->h);
+        surface_to_rgba(sur, sr->tmp_normal, state->cur_palette, NULL, 0);
+        SDL_Surface *s = surface_from_pixels(sr->tmp_normal, sur->w, sur->h);
         SDL_SetSurfaceAlphaMod(s, opacity);
         SDL_SetSurfaceBlendMode(s, SDL_BLENDMODE_BLEND);
         SDL_BlitSurface(s, NULL, sr->higher, dst);
@@ -113,8 +113,8 @@ void soft_render_sprite_tint(
                     int pal_offset) {
 
     soft_renderer *sr = state->userdata;
-    surface_to_rgba(sur, sr->tmp, state->cur_palette, NULL, 0);
-    SDL_Surface *s = surface_from_pixels(sr->tmp, sur->w, sur->h);
+    surface_to_rgba(sur, sr->tmp_normal, state->cur_palette, NULL, 0);
+    SDL_Surface *s = surface_from_pixels(sr->tmp_normal, sur->w, sur->h);
 
     SDL_SetSurfaceColorMod(s, c.r, c.g, c.b);
     SDL_SetSurfaceAlphaMod(s, 0xFF);
@@ -145,8 +145,18 @@ void video_soft_init(video_state *state) {
                                     0xFF000000);
     SDL_SetSurfaceRLE(sr->higher, 1);
     surface_create(&sr->lower, SURFACE_TYPE_PALETTE, 320, 200);
+
+    // Preallocate memory for more efficient drawing
+    sr->tmp_normal = malloc(320 * 200 * 4);
+    sr->tmp_scaling = NULL;
+    if(state->scale_factor > 1) {
+        sr->tmp_scaling = malloc(320 * 200 * 4 * state->scale_factor * state->scale_factor);
+    }
+
+    // Set as userdata
     state->userdata = sr;
 
+    // Bind functions
     state->cb.render_close = soft_render_close;
     state->cb.render_reinit = soft_render_reinit;
     state->cb.render_prepare = soft_render_prepare;
