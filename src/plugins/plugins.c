@@ -128,7 +128,8 @@ int plugins_get_list_by_type(list *tlist, const char* type) {
         if(_plugins[i].handle != NULL 
            && strcmp(_plugins[i].get_type(), type) == 0)
         {
-            list_append(tlist, &_plugins[i], sizeof(base_plugin));
+            void *ptr = &_plugins[i];
+            list_append(tlist,&ptr,sizeof(base_plugin*));
             count++;
         }
     }

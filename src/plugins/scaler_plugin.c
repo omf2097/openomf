@@ -16,7 +16,7 @@ int scaler_is_factor_available(scaler_plugin *scaler, int factor) {
     return 0;
 }
 
-int scaler_get_factors_list(scaler_plugin *scaler, const int** factors) {
+int scaler_get_factors_list(scaler_plugin *scaler, int** factors) {
     if(scaler->get_factors_list != NULL) {
         return scaler->get_factors_list(factors);
     }
