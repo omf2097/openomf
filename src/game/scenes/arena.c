@@ -808,7 +808,7 @@ void arena_render_overlay(scene *scene) {
     sprintf(buf, "%u", game_state_get_tick(scene->gs));
     font_render(&font_small, buf, 160, 0, TEXT_COLOR);
     sprintf(buf, "%u", rand_get_seed());
-    font_render(&font_small, buf, 120, 8, TEXT_COLOR);
+    font_render(&font_small, buf, 130, 8, TEXT_COLOR);
 #endif
     har *har[2];
     for(int i = 0; i < 2; i++) {
@@ -993,9 +993,9 @@ int arena_create(scene *scene) {
         for (int j = 0; j < 4; j++) {
             if (j < ceil(local->rounds / 2.0f)) {
                 local->player_rounds[i][j] = malloc(sizeof(object));
-                int xoff = 110 + 9 * j;
+                int xoff = 110 + 9 * j + 1 + j;
                 if (i == 1) {
-                    xoff = 210 - 9 * j;
+                    xoff = 210 - 9 * j - 1 - j;
                 }
                 animation *ani = &bk_get_info(&scene->bk_data, 27)->ani;
                 object_create(local->player_rounds[i][j], scene->gs, vec2i_create(xoff ,9), vec2f_create(0, 0));
