@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-int scandir(list *dlist, const char *dir) {
+int scan_directory(list *dlist, const char *dir) {
     DIR *dp;
     struct dirent *entry;
     if((dp = opendir(dir)) == NULL) {
@@ -18,7 +18,7 @@ int scandir(list *dlist, const char *dir) {
     return 0;
 }
 
-int scandir_prefix(list *dlist, const char *dir, const char *prefix) {
+int scan_directory_prefix(list *dlist, const char *dir, const char *prefix) {
     DIR *dp;
     struct dirent *entry;
     if((dp = opendir(dir)) == NULL) {

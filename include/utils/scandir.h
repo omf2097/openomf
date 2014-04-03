@@ -3,7 +3,7 @@
 
 #include "utils/list.h"
 
-int scandir(list *dlist, const char *dir);
-int scandir_prefix(list *dlist, const char *dir, const char *prefix);
+int scan_directory(list *dlist, const char *dir);
+int scan_directory_prefix(list *dlist, const char *dir, const char *prefix);
 
 #endif // _SCANDIR_H

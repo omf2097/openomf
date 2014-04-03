@@ -29,7 +29,7 @@ void plugins_init() {
 
     // Find all files from the plugin path
     list_create(&scanned);
-    if(scandir(&scanned, global_path_get(PLUGIN_PATH))) {
+    if(scan_directory(&scanned, global_path_get(PLUGIN_PATH))) {
         PERROR("Error while attempting to open plugin directory.");
         return;
     }
