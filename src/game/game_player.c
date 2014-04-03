@@ -15,6 +15,7 @@ void game_player_create(game_player *gp) {
     chr_score_create(&gp->score, 1.0f);
     gp->god = 0;
     gp->ez_destruct = 0;
+    gp->sp_wins = 0;
 }
 
 void game_player_free(game_player *gp) {

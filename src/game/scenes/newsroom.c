@@ -2,6 +2,7 @@
 #include "game/menu/menu_background.h"
 #include "game/text/languages.h"
 #include "game/text/text.h"
+#include "game/settings.h"
 #include "resources/ids.h"
 #include "utils/random.h"
 #include "utils/str.h"
@@ -21,6 +22,7 @@ typedef struct newsroom_local_t {
     str pilot1, pilot2;
     str har1, har2;
     int sex1, sex2;
+    int won;
 } newsroom_local;
 
 void newsroom_fixup_str(newsroom_local *local) {
@@ -165,7 +167,42 @@ int newsroom_event(scene *scene, SDL_Event *event) {
                 local->screen++;
                 newsroom_fixup_str(local);
                 if(local->screen >= 2) {
+                  if (local->won) {
+                    // pick a new player
+                    game_player *p1 = game_state_get_player(scene->gs, 0);
+                    game_player *p2 = game_state_get_player(scene->gs, 1);
+                    DEBUG("wins are %d", p1->sp_wins);
+                    if (p1->sp_wins == (4094 ^ (2 << p1->pilot_id)))  {
+                      // won the game
+                      game_state_set_next(scene->gs, SCENE_END);
+                    } else {
+                      if (p1->sp_wins == (2046 ^ (2 << p1->pilot_id))) {
+                        // everyone but kriessack
+                        p2->pilot_id = 10;
+                        p2->har_id = HAR_NOVA;
+                      } else {
+                        // pick an opponent we have not yet beaten
+                        while(1) {
+                          int i = rand_int(10);
+                          if ((2 << i) & p1->sp_wins || i == p1->pilot_id) {
+                            continue;
+                          }
+                          p2->pilot_id = i;
+                          p2->har_id = HAR_JAGUAR + rand_int(10);
+                          break;
+                        }
+                      }
+                      // make a new AI controller
+                      controller *ctrl = malloc(sizeof(controller));
+                      controller_init(ctrl);
+                      ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
+                      game_player_set_ctrl(p2, ctrl);
+                      // TODO set player's colors
+                      game_state_set_next(scene->gs, SCENE_VS);
+                    }
+                  } else {
                     game_state_set_next(scene->gs, SCENE_MENU);
+                  }
                 }
                 break;
         }
@@ -173,6 +210,21 @@ int newsroom_event(scene *scene, SDL_Event *event) {
         return 1;
     }
     return 0;
+}
+
+int pilot_sex(int pilot_id) {
+  switch (pilot_id) {
+    case 0:
+      // Crystal
+    case 7:
+      // Angel
+    case 8:
+      // Cossette
+      return PILOT_SEX_FEMALE;
+    default:
+      // everyone else is male
+      return PILOT_SEX_MALE;
+  }
 }
 
 int newsroom_create(scene *scene) {
@@ -190,6 +242,12 @@ int newsroom_create(scene *scene) {
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
 
+    local->won = 1;
+    if (p2->sp_wins > 0) {
+      // AI won, player lost
+      local->won = 0;
+    }
+
     // XXX TODO get the real sex of pilot
     // XXX TODO strip spaces from the end of the pilots name
     // XXX TODO set winner/loser names properly
@@ -197,7 +255,7 @@ int newsroom_create(scene *scene) {
                               lang_get(20+p2->pilot_id),
                               get_id_name(p1->har_id),
                               get_id_name(p2->har_id),
-                              PILOT_SEX_MALE, PILOT_SEX_MALE);
+                              pilot_sex(p1->pilot_id), pilot_sex(p2->pilot_id));
     newsroom_fixup_str(local);
 
     // Set callbacks

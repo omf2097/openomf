@@ -42,14 +42,16 @@ void chr_score_create(chr_score *score, float multiplier) {
     score->y = 0;
     score->direction = OBJECT_FACE_RIGHT;
     list_create(&score->texts);
-    chr_score_reset(score);
+    chr_score_reset(score, 1);
 }
 
-void chr_score_reset(chr_score *score) {
+void chr_score_reset(chr_score *score, int wipe) {
     iterator it;
     score_text *t;
 
-    score->score = 0;
+    if (wipe) {
+        score->score = 0;
+    }
     score->wins = 0;
     score->consecutive_hits = 0;
     score->consecutive_hit_score = 0;

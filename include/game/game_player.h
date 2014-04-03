@@ -20,6 +20,7 @@ typedef struct game_player_t {
     chr_score score;
     int god;
     int ez_destruct;
+    int sp_wins;
 } game_player;
 
 void game_player_create(game_player *gp);

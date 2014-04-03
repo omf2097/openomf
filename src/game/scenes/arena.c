@@ -180,6 +180,21 @@ void scene_youlose_anim_start(void *userdata) {
     /*arena->state = ARENA_STATE_ENDING;*/
 }
 
+int is_netplay(scene *scene) {
+    if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
+            game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
+        return 1;
+    }
+    return 0;
+}
+
+int is_singleplayer(scene *scene) {
+    if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_AI) {
+        return 1;
+    }
+    return 0;
+}
+
 void arena_end(scene *sc) {
     // after the match ends, switch the newsroom
     DEBUG("switching to newsroom");
@@ -187,8 +202,11 @@ void arena_end(scene *sc) {
     game_state *gs = sc->gs;
 
     // XXX TODO take victory pose screenshot for the newsroom
-    //game_state_set_next(gs, SCENE_NEWSROOM);
-    game_state_set_next(gs, SCENE_MENU);
+    if (is_singleplayer(sc)) {
+      game_state_set_next(gs, SCENE_NEWSROOM);
+    } else {
+      game_state_set_next(gs, SCENE_MENU);
+    }
 }
 
 void arena_reset(scene *sc) {
@@ -236,14 +254,6 @@ void arena_reset(scene *sc) {
     /*object_set_finish_cb(number, scene_ready_anim_done);*/
     game_state_add_object(sc->gs, number, RENDER_LAYER_TOP);
 
-}
-
-int is_netplay(scene *scene) {
-    if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
-            game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
-        return 1;
-    }
-    return 0;
 }
 
 void arena_maybe_sync(scene *scene, int need_sync) {
@@ -388,18 +398,20 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     game_state *gs = scene->gs;
     arena_local *local = scene_get_userdata(scene);
     int other_player_id = abs(player_id - 1);
-    object *winner  = game_player_get_har(game_state_get_player(scene->gs, other_player_id));
-    object *loser   = game_player_get_har(game_state_get_player(scene->gs, player_id));
+    game_player *player_winner = game_state_get_player(scene->gs, other_player_id);
+    game_player *player_loser = game_state_get_player(scene->gs, player_id);
+    object *winner  = game_player_get_har(player_winner);
+    object *loser   = game_player_get_har(player_loser);
     har *winner_har = object_get_userdata(winner);
     // XXX need a smarter way to detect if a player is networked or local
-    if(game_state_get_player(gs, other_player_id)->ctrl->type != CTRL_TYPE_NETWORK &&
-            game_state_get_player(gs, player_id)->ctrl->type == CTRL_TYPE_NETWORK) {
+    if(player_winner->ctrl->type != CTRL_TYPE_NETWORK &&
+            player_loser->ctrl->type == CTRL_TYPE_NETWORK) {
         scene_youwin_anim_start(scene->gs);
-    } else if(game_state_get_player(gs, other_player_id)->ctrl->type == CTRL_TYPE_NETWORK &&
-            game_state_get_player(gs, player_id)->ctrl->type != CTRL_TYPE_NETWORK) {
+    } else if(player_winner->ctrl->type == CTRL_TYPE_NETWORK &&
+            player_loser->ctrl->type != CTRL_TYPE_NETWORK) {
         scene_youlose_anim_start(scene->gs);
     } else {
-        if(game_player_get_selectable(game_state_get_player(gs, 1))) {
+        if (!is_singleplayer(scene)) {
             // XXX in two player mode, "you win" should always be displayed
             scene_youwin_anim_start(scene->gs);
         } else {
@@ -417,6 +429,9 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         har_set_ani(winner, ANIM_VICTORY, 1);
         winner_har->state = STATE_VICTORY;
         local->over = 1;
+        if (is_singleplayer(scene)) {
+          player_winner->sp_wins |= 2 << player_loser->pilot_id;
+        }
     } else {
         har_set_ani(winner, ANIM_VICTORY, 1);
         // can't do scrap/destruct except on final round
@@ -498,7 +513,7 @@ void arena_free(scene *scene) {
     for(int i = 0; i < 2; i++) {
         game_player *player = game_state_get_player(scene->gs, i);
         game_player_set_har(player, NULL);
-        game_player_set_ctrl(player, NULL);
+        //game_player_set_ctrl(player, NULL);
     }
     
     textbutton_free(&local->title_button);
@@ -1100,8 +1115,8 @@ int arena_create(scene *scene) {
     chr_score_set_pos(game_player_get_score(_player[1]), 315, 33, OBJECT_FACE_LEFT); // TODO: Set better coordinates for this
 
     // Reset the score
-    chr_score_reset(game_player_get_score(_player[0]));
-    chr_score_reset(game_player_get_score(_player[1]));
+    chr_score_reset(game_player_get_score(_player[0]), !is_singleplayer(scene));
+    chr_score_reset(game_player_get_score(_player[1]), 1);
 
     // TODO: Do something about this hack!
     scene->bk_data.sound_translation_table[14] = 10; // READY

@@ -219,7 +219,7 @@ int vs_create(scene *scene) {
                 SUB_METHOD_MIRROR); // Flip the right side horizontally
 
     if (player2->selectable) {
-        // player1 gets to choose, start at arena
+        // player1 gets to choose, start at arena 0
         local->arena = 0;
     } else {
         // pick a random arena for 1 player mode
