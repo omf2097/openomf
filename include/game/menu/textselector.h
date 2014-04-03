@@ -20,11 +20,12 @@ struct textselector_t {
 void textselector_create(component *c, font *font, const char *text, const char *initialoption);
 void textselector_add_option(component *c, const char *option);
 void textselector_free(component *c);
+void textselector_clear_options(component *c);
 void textselector_render(component *c);
 int textselector_event(component *c, SDL_Event *event);
 void textselector_tick(component *c);
 void textselector_bindvar(component *c, int *var);
-
+const char* textselector_get_current_text(component *c);
 int textselector_get_pos(component *c);
 void textselector_set_pos(component *c, int pos);
 

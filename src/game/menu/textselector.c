@@ -22,6 +22,11 @@ void textselector_create(component *c, font *font, const char *text, const char 
     c->tick = textselector_tick;
 }
 
+void textselector_clear_options(component *c) {
+    textselector *tb = c->obj;
+    vector_clear(&tb->options);
+}
+
 void textselector_add_option(component *c, const char *value) {
     textselector *tb = c->obj;
     vector_append(&tb->options, &value);
@@ -32,6 +37,11 @@ void textselector_free(component *c) {
     vector_free(&tb->options);
     free(tb);
     component_free(c);
+}
+
+const char* textselector_get_current_text(component *c) {
+    textselector *tb = c->obj;
+    return (char*)(*(void**)vector_get(&tb->options, *tb->pos));
 }
 
 void textselector_render(component *c) {
