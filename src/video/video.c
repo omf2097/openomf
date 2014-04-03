@@ -54,6 +54,7 @@ int video_init(int window_w,
     state.target_move_y = 0;
     
     // Load scaler (if any)
+    strcpy(state.scaler_name, scaler_name);
     if(video_load_scaler(scaler_name, scale_factor)) {
         DEBUG("Scaler \"%s\" plugin not found; using Nearest neighbour scaling.", scaler_name);
         state.scale_factor = 1;
@@ -171,6 +172,15 @@ int video_reinit(int window_w,
 
     // Tells if something has changed in video settings
     int changed = 0;
+
+    // Check scaler
+    if(strcmp(scaler_name, state.scaler_name) != 0) {
+        strcpy(state.scaler_name, scaler_name);
+        changed = 1;
+    }
+    if(scale_factor != state.scale_factor) {
+        changed = 1;
+    }
 
     // Set window size if necessary
     if(window_w != state.w || window_h != state.h || fullscreen != state.fs) {

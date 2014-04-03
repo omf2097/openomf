@@ -787,9 +787,6 @@ void scaler_toggled(component *c, void *userdata, int pos) {
     mainmenu_local *local = userdata;
     settings_video *v = &settings_get()->video;
 
-    // Reset scaling factor to 1
-    v->scale_factor = 1;
-
     // Set scaler
     v->scaler = realloc(v->scaler, strlen(textselector_get_current_text(c))+1);
     strcpy(v->scaler, textselector_get_current_text(c));
@@ -799,6 +796,7 @@ void scaler_toggled(component *c, void *userdata, int pos) {
         textselector_clear_options(&local->scale_factor_toggle);
         textselector_add_option(&local->scale_factor_toggle, "1");
         local->scale_factor_toggle.disabled = 1;
+        v->scale_factor = 1;
     } else {
         local->scale_factor_toggle.disabled = 0;
 
@@ -812,10 +810,16 @@ void scaler_toggled(component *c, void *userdata, int pos) {
             sprintf(local->scaling_factor_labels[i], "%d", list[i]);
             textselector_add_option(&local->scale_factor_toggle, local->scaling_factor_labels[i]);
         }
+
+        // Select first scale factor from the list
+        v->scale_factor = list[0];
     }
 
     // If scaler is "Nearest", disable factor toggle
     local->scale_factor_toggle.disabled = (textselector_get_pos(c) == 0);
+
+    // Reinig after algorithm change
+    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
 }
 
 void scaling_factor_toggled(component *c, void *userdata, int pos) {
@@ -828,6 +832,9 @@ void scaling_factor_toggled(component *c, void *userdata, int pos) {
     plugins_get_scaler(&scaler, v->scaler);
     scaler_get_factors_list(&scaler, &list);
     v->scale_factor = list[pos];
+
+    // Reinit after factor change
+    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
 }
 
 // Init menus
