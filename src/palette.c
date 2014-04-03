@@ -8,9 +8,9 @@ int sd_palette_load(sd_reader *reader, sd_palette *palette) {
     char d[3];
     for(int i = 0; i < 256; i++) {
         sd_read_buf(reader, d, 3);
-        palette->data[i][0] = ((d[0] << 2) | (d[0] >> 4));
-        palette->data[i][1] = ((d[1] << 2) | (d[1] >> 4));
-        palette->data[i][2] = ((d[2] << 2) | (d[2] >> 4));
+        palette->data[i][0] = ((d[0] << 2) | ((d[0] & 0x30) >> 4));
+        palette->data[i][1] = ((d[1] << 2) | ((d[1] & 0x30) >> 4));
+        palette->data[i][2] = ((d[2] << 2) | ((d[2] & 0x30) >> 4));
     }
     sd_read_buf(reader, (char*)palette->remaps, 19*256);
     return SD_SUCCESS;
