@@ -37,13 +37,14 @@ int engine_init() {
     int h = setting->video.screen_h;
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
+    int scale_factor = setting->video.scale_factor;
 
     // Right now we only have one audio sink, so select that one.
     int sink_id = 0;
 
     // Initialize everything.
-    tcache_init();
-    if(video_init(w, h, fs, vsync)) {
+    tcache_init(scale_factor);
+    if(video_init(w, h, fs, vsync, scale_factor)) {
         goto exit_0;
     }
     if(audio_init(sink_id)) {

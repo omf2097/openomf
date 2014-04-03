@@ -5,6 +5,7 @@
 #include "resources/palette.h"
 #include "video/screen_palette.h" 
 #include "video/video_ops.h"
+#include "plugins/scaler_plugin.h"
 
 typedef struct video_state_t {
     SDL_Window *window;
@@ -13,6 +14,9 @@ typedef struct video_state_t {
     int h;
     int fs;
     int vsync;
+
+    int scale_factor;
+    scaler_plugin scaler;
 
     float fade;
     int target_move_x;

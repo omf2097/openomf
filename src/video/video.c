@@ -22,7 +22,7 @@ void reset_targets() {
                                      NATIVE_W, NATIVE_H);
 }
 
-int video_init(int window_w, int window_h, int fullscreen, int vsync) {
+int video_init(int window_w, int window_h, int fullscreen, int vsync, int scale_factor) {
     state.w = window_w;
     state.h = window_h;
     state.fs = fullscreen;
@@ -31,6 +31,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     state.target = NULL;
     state.target_move_x = 0;
     state.target_move_y = 0;
+    state.scale_factor = scale_factor;
 
     // Clear palettes
     state.cur_palette = malloc(sizeof(screen_palette));
@@ -124,7 +125,7 @@ void video_reinit_renderer() {
     reset_targets();
 }
 
-int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
+int video_reinit(int window_w, int window_h, int fullscreen, int vsync, int scale_factor) {
     int changed = 0;
 
     // Set window size if necessary
@@ -162,6 +163,7 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
     state.fs = fullscreen;
     state.w = window_w;
     state.h = window_h;
+    state.scale_factor = scale_factor;
 
     // If any settings changed, reinit the screen
     if(changed) {

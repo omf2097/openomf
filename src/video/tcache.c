@@ -46,12 +46,12 @@ tcache_entry_value* tcache_get_entry(tcache_entry_key *key) {
     return val;
 }
 
-void tcache_init() {
+void tcache_init(int scale_factor) {
     cache = malloc(sizeof(tcache));
     hashmap_create(&cache->entries, 6);
     // TODO: Get these two from settings
     //cache->scaler;
-    cache->scale_factor = 1;
+    cache->scale_factor = scale_factor;
     cache->hits = 0;
     cache->misses = 0;
     DEBUG("Texture cache initialized.");

@@ -5,7 +5,7 @@
 #include "video/surface.h"
 #include "video/screen_palette.h"
 
-void tcache_init();
+void tcache_init(int scale_factor);
 void tcache_close();
 void tcache_clear();
 SDL_Texture* tcache_get(surface *sur, 
