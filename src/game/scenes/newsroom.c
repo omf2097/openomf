@@ -25,6 +25,20 @@ typedef struct newsroom_local_t {
     int won;
 } newsroom_local;
 
+char *object_pronoun(int sex) {
+  if (sex == PILOT_SEX_MALE) {
+    return "Him";
+  }
+  return "Her";
+}
+
+char *subject_pronoun(int sex) {
+  if (sex == PILOT_SEX_MALE) {
+    return "He";
+  }
+  return "She";
+}
+
 void newsroom_fixup_str(newsroom_local *local) {
 
     /*
@@ -69,11 +83,11 @@ void newsroom_fixup_str(newsroom_local *local) {
             case '1':
                 if(nn == '0') {
                     // ~10
-                    str_append_c(&local->news_str, "Her");
+                    str_append_c(&local->news_str, object_pronoun(local->sex2));
                     pos++;
                 } else if(nn == '1') {
                     // ~11
-                    str_append_c(&local->news_str, "She");
+                    str_append_c(&local->news_str, subject_pronoun(local->sex2));
                     pos++;
                 } else {
                     // ~1
@@ -96,10 +110,10 @@ void newsroom_fixup_str(newsroom_local *local) {
                 str_append_c(&local->news_str, "The");
                 break;
             case '7':
-                str_append_c(&local->news_str, "Her");
+                str_append_c(&local->news_str, object_pronoun(local->sex1));
                 break;
             case '8':
-                str_append_c(&local->news_str, "She");
+                str_append_c(&local->news_str, subject_pronoun(local->sex1));
                 break;
             case '9':
                 str_append_c(&local->news_str, "WTF");
