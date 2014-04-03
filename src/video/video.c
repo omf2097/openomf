@@ -26,6 +26,9 @@ void reset_targets() {
 
 int video_load_scaler(const char* name, int scale_factor) {
     scaler_init(&state.scaler);
+    if(scale_factor <= 1) {
+        return 0;
+    }
     if(plugins_get_scaler(&state.scaler, name)) {
         return 1;
     }
@@ -52,7 +55,7 @@ int video_init(int window_w,
     
     // Load scaler (if any)
     if(video_load_scaler(scaler_name, scale_factor)) {
-        DEBUG("Scaler \"%s\" plugin not found; using Nearest neighbour scaling.");
+        DEBUG("Scaler \"%s\" plugin not found; using Nearest neighbour scaling.", scaler_name);
         state.scale_factor = 1;
     } else {
         DEBUG("Scaler \"%s\" loaded w/ factor %d", scaler_name, scale_factor);
