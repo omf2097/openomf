@@ -1052,6 +1052,20 @@ int mainmenu_create(scene *scene) {
     list_free(&mlist);
     local->scale_factor_toggle.disabled = !plugin_found;
 
+    if(plugin_found) {
+        // Get scaling factors
+        int *plist;
+        scaler_plugin scaler;
+        scaler_init(&scaler);
+        plugins_get_scaler(&scaler, setting->video.scaler);
+        int plen = scaler_get_factors_list(&scaler, &plist);
+        textselector_clear_options(&local->scale_factor_toggle);
+        for(int i = 0; i < plen; i++) {
+            sprintf(local->scaling_factor_labels[i], "%d", plist[i]);
+            textselector_add_option(&local->scale_factor_toggle, local->scaling_factor_labels[i]);
+        }
+    }
+
     textbutton_create(&local->video_done_button, &font_large, "DONE");
     menu_attach(&local->video_menu, &local->video_header, 22);
     menu_attach(&local->video_menu, &local->resolution_toggle, 11);
