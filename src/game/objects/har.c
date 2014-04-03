@@ -385,6 +385,9 @@ void har_move(object *obj) {
                 vel.x = 0.0;
             }
 
+            object_set_pos(obj, pos);
+            object_set_vel(obj, vel);
+
             // prevent har from sliding after defeat
             if(h->state != STATE_DEFEAT &&
                h->health <= 0 && h->endurance <= 0 &&
@@ -403,8 +406,6 @@ void har_move(object *obj) {
                     har_finished(obj);
                 }
             }
-            object_set_pos(obj, pos);
-            object_set_vel(obj, vel);
         }
     } else {
         object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
