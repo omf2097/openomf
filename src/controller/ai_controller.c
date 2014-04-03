@@ -38,6 +38,9 @@ typedef struct ai_t {
     int move_str_pos;
     move_stat move_stats[70];
     int blocked;
+
+    // a vector of projectile object*
+    vector projectiles;
 } ai;
 
 
@@ -126,6 +129,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 
 void ai_controller_free(controller *ctrl) {
     ai *a = ctrl->data;
+    vector_free(&a->projectiles);
     free(a);
 }
 
@@ -168,22 +172,14 @@ int is_valid_move(af_move *move, har *h) {
     return 0;
 }
 
-void ai_block_projectile(ai *a) {
-    /*object *proj;
-    unsigned int size = vector_size(&gs->objects);
-    for(int i = 0; i < size; i++) {
-        a = ((render_obj*)vector_get(&gs->objects, i))->obj;
-    }*/
-}
-
-int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
+// return 1 on block
+int ai_block_har(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
     object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
     har *h_enemy = object_get_userdata(o_enemy);
 
-    // Try to block har
     // XXX TODO get maximum move distance from the animation object
     if(fabsf(o_enemy->pos.x - o->pos.x) < 100) {
         if(h_enemy->executing_move) {
@@ -194,13 +190,60 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
                 a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT);
                 controller_cmd(ctrl, a->cur_act, ev);
             }
+            return 1;
         }
+    }
+    return 0;
+}
+
+int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
+    ai *a = ctrl->data;
+    object *o = ctrl->har;
+
+    vector_clear(&a->projectiles);
+    game_state_get_projectiles(o->gs, &a->projectiles);
+
+    iterator it;
+    object **o_tmp;
+    vector_iter_begin(&a->projectiles, &it);
+    while((o_tmp = iter_next(&it)) != NULL) {
+        object *o_prj = *o_tmp;
+        if(projectile_get_owner(o_prj) == o)  {
+            continue;
+        }
+        if(o_prj->cur_sprite) {
+            vec2i pos_prj = vec2i_add(object_get_pos(o_prj), o_prj->cur_sprite->pos);
+            vec2i size_prj = object_get_size(o_prj);
+            if (object_get_direction(o_prj) == OBJECT_FACE_LEFT) {
+                pos_prj.x = object_get_pos(o_prj).x + ((o_prj->cur_sprite->pos.x * -1) - size_prj.x);
+            }
+            if(fabsf(pos_prj.x - o->pos.x) < 120) {
+                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWNLEFT : ACT_DOWNRIGHT);
+                controller_cmd(ctrl, a->cur_act, ev);
+                return 1;
+            }
+        }
+
+    }
+
+    return 0;
+}
+
+int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
+    ai *a = ctrl->data;
+    object *o = ctrl->har;
+    har *h = object_get_userdata(o);
+    object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
+
+    // Try to block har
+    if(ai_block_har(ctrl, ev)) {
         return 0;
     }
 
-
     // Try to block projectiles
-    ai_block_projectile(a);
+    if(ai_block_projectile(ctrl, ev)) {
+        return 0;
+    }
 
     if(a->selected_move) {
         // finish doing the selected move first
@@ -317,6 +360,7 @@ void ai_controller_create(controller *ctrl, int difficulty) {
         a->move_stats[i].last_dist = -1;
     }
     a->blocked = 0;
+    vector_create(&a->projectiles, sizeof(object*));
 
     ctrl->data = a;
     ctrl->type = CTRL_TYPE_AI;

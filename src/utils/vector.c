@@ -37,6 +37,10 @@ void vector_free(vector *vec) {
     vec->data = NULL;
 }
 
+void vector_clear(vector *vec) {
+    vec->blocks = 0;
+}
+
 void* vector_get(vector *vec, unsigned int key) {
     if(key >= vec->blocks) {
         return NULL;

@@ -6,6 +6,7 @@
 #include "utils/log.h"
 
 typedef struct projectile_local_t {
+    object *owner;
     af *af_data;
 } projectile_local;
 
@@ -89,6 +90,7 @@ void projectile_bootstrap(object *obj) {
 int projectile_create(object *obj) {
     projectile_local *local = malloc(sizeof(projectile_local));
     // strore the HAR in here instead
+    local->owner = obj;
     local->af_data = ((har*)object_get_userdata(obj))->af_data;
     object_set_userdata(obj, local);
 
@@ -104,3 +106,8 @@ int projectile_create(object *obj) {
 af *projectile_get_af_data(object *obj) {
     return ((projectile_local*)object_get_userdata(obj))->af_data;
 }
+
+object *projectile_get_owner(object *obj) {
+    return ((projectile_local*)object_get_userdata(obj))->owner;
+}
+
