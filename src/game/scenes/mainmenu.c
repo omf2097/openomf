@@ -22,6 +22,7 @@
 #include "resources/ids.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
+#include "plugins/plugins.h"
 
 struct resolution_t {
     int w;  int h;  const char *name;
@@ -56,6 +57,7 @@ typedef struct mainmenu_local_t {
     char input_key_labels[6][100];
     int input_presskey_ready_ticks;
     int input_selected_player;
+    char scaling_factor_labels[16][3];
 
     char custom_resolution_label[40];
     vec2i custom_resolution;
@@ -99,7 +101,8 @@ typedef struct mainmenu_local_t {
     component resolution_toggle;
     component vsync_toggle;
     component fullscreen_toggle;
-    component scaling_toggle;
+    component scaler_toggle;
+    component scale_factor_toggle;
     component video_done_button;
 
     menu config_menu;
@@ -507,7 +510,8 @@ void mainmenu_free(scene *scene) {
     textselector_free(&local->resolution_toggle);
     textselector_free(&local->vsync_toggle);
     textselector_free(&local->fullscreen_toggle);
-    textselector_free(&local->scaling_toggle);
+    textselector_free(&local->scale_factor_toggle);
+    textselector_free(&local->scaler_toggle);
     textbutton_free(&local->video_done_button);
     menu_free(&local->video_menu);
 
@@ -779,6 +783,53 @@ void mainmenu_render(scene *scene) {
     menu_render(local->current_menu);
 }
 
+void scaler_toggled(component *c, void *userdata, int pos) {
+    mainmenu_local *local = userdata;
+    settings_video *v = &settings_get()->video;
+
+    // Reset scaling factor to 1
+    v->scale_factor = 1;
+
+    // Set scaler
+    v->scaler = realloc(v->scaler, strlen(textselector_get_current_text(c))+1);
+    strcpy(v->scaler, textselector_get_current_text(c));
+
+    // If scaler is NEAREST, set factor to 1 and disable
+    if(textselector_get_pos(c) == 0) {
+        textselector_clear_options(&local->scale_factor_toggle);
+        textselector_add_option(&local->scale_factor_toggle, "1");
+        local->scale_factor_toggle.disabled = 1;
+    } else {
+        local->scale_factor_toggle.disabled = 0;
+
+        int *list;
+        scaler_plugin scaler;
+        scaler_init(&scaler);
+        plugins_get_scaler(&scaler, v->scaler);
+        int len = scaler_get_factors_list(&scaler, &list);
+        textselector_clear_options(&local->scale_factor_toggle);
+        for(int i = 0; i < len; i++) {
+            sprintf(local->scaling_factor_labels[i], "%d", list[i]);
+            textselector_add_option(&local->scale_factor_toggle, local->scaling_factor_labels[i]);
+        }
+    }
+
+    // If scaler is "Nearest", disable factor toggle
+    local->scale_factor_toggle.disabled = (textselector_get_pos(c) == 0);
+}
+
+void scaling_factor_toggled(component *c, void *userdata, int pos) {
+    //mainmenu_local *local = userdata;
+    settings_video *v = &settings_get()->video;
+
+    int *list;
+    scaler_plugin scaler;
+    scaler_init(&scaler);
+    plugins_get_scaler(&scaler, v->scaler);
+    scaler_get_factors_list(&scaler, &list);
+    v->scale_factor = list[pos];
+}
+
 // Init menus
 int mainmenu_create(scene *scene) {
     // Init local data
@@ -978,15 +1029,36 @@ int mainmenu_create(scene *scene) {
     textselector_add_option(&local->vsync_toggle, "ON");
     textselector_create(&local->fullscreen_toggle, &font_large, "FULLSCREEN:", "OFF");
     textselector_add_option(&local->fullscreen_toggle, "ON");
-    textselector_create(&local->scaling_toggle, &font_large, "SCALING:", "STRETCH");
-    textselector_add_option(&local->scaling_toggle, "ASPECT");
-    textselector_add_option(&local->scaling_toggle, "HQX");
+    textselector_create(&local->scaler_toggle, &font_large, "SCALER:", "NEAREST");
+    textselector_create(&local->scale_factor_toggle, &font_large, "SCALING FACTOR:", "1");
+
+    // Get scalers
+    list mlist;
+    list_create(&mlist);
+    plugins_get_list_by_type(&mlist, "scaler");
+    iterator it;
+    list_iter_begin(&mlist, &it);
+    base_plugin **plugin;
+    int i = 1;
+    int plugin_found = 0;
+    while((plugin = iter_next(&it)) != NULL) {
+        textselector_add_option(&local->scaler_toggle, (*plugin)->get_name());
+        if(strcmp((*plugin)->get_name(), setting->video.scaler) == 0) {
+            textselector_set_pos(&local->scaler_toggle, i);
+            plugin_found = 1;
+        }
+        i++;
+    }
+    list_free(&mlist);
+    local->scale_factor_toggle.disabled = !plugin_found;
+
     textbutton_create(&local->video_done_button, &font_large, "DONE");
     menu_attach(&local->video_menu, &local->video_header, 22);
     menu_attach(&local->video_menu, &local->resolution_toggle, 11);
     menu_attach(&local->video_menu, &local->vsync_toggle, 11);
     menu_attach(&local->video_menu, &local->fullscreen_toggle, 11);
-    menu_attach(&local->video_menu, &local->scaling_toggle, 11);
+    menu_attach(&local->video_menu, &local->scaler_toggle, 11);
+    menu_attach(&local->video_menu, &local->scale_factor_toggle, 11);
     menu_attach(&local->video_menu, &local->video_done_button, 11);
     local->video_header.disabled = 1;
     local->video_done_button.click = video_done_clicked;
@@ -1053,7 +1125,10 @@ int mainmenu_create(scene *scene) {
     local->resolution_toggle.userdata = (void*)scene;
     textselector_bindvar(&local->vsync_toggle, &setting->video.vsync);
     textselector_bindvar(&local->fullscreen_toggle, &setting->video.fullscreen);
-    textselector_bindvar(&local->scaling_toggle, &setting->video.scaling);
+    local->scaler_toggle.toggle = scaler_toggled;
+    local->scaler_toggle.userdata = local;
+    local->scale_factor_toggle.toggle = scaling_factor_toggled;
+    local->scale_factor_toggle.userdata = local;
 
     // input config menu
     menu_create(&local->input_config_menu, 165, 5, 151, 119);
