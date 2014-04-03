@@ -919,6 +919,8 @@ int mainmenu_create(scene *scene) {
            DEBUG("freeing controller");
            game_player_set_ctrl(game_state_get_player(scene->gs, i), NULL);
        }
+       // reset any single player data
+       game_state_get_player(scene->gs, i)->sp_wins = 0;
     }
 
     // network play menu
