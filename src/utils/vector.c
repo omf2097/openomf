@@ -29,6 +29,10 @@ void vector_create_with_allocator(vector *vec, unsigned int block_size, allocato
     vector_init(vec);
 }
 
+void vector_clear(vector *vec) {
+    vec->blocks = 0;
+}
+
 void vector_free(vector *vec) {
     vec->blocks = 0;
     vec->reserved = 0;
