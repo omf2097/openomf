@@ -2,7 +2,6 @@
 #include "video/tcache.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
-#include "plugins/plugins.h"
 
 #define CACHE_LIFETIME 25
 
@@ -23,8 +22,9 @@ typedef struct tcache_t {
     hashmap entries;
     unsigned int hits;
     unsigned int misses;
-    scaler_plugin scaler;
-    int scale_factor;
+    uint8_t scale_factor;
+    scaler_plugin *scaler;
+    SDL_Renderer *renderer;
 } tcache;
 
 static tcache *cache = NULL;
@@ -46,15 +46,22 @@ tcache_entry_value* tcache_get_entry(tcache_entry_key *key) {
     return val;
 }
 
-void tcache_init(int scale_factor) {
+void tcache_init(SDL_Renderer *renderer, int scale_factor, scaler_plugin *scaler) {
     cache = malloc(sizeof(tcache));
     hashmap_create(&cache->entries, 6);
-    // TODO: Get these two from settings
-    //cache->scaler;
+    cache->renderer = renderer;
+    cache->scaler = scaler;
     cache->scale_factor = scale_factor;
     cache->hits = 0;
     cache->misses = 0;
     DEBUG("Texture cache initialized.");
+}
+
+void tcache_reinit(SDL_Renderer *renderer, int scale_factor, scaler_plugin *scaler) {
+    cache->renderer = renderer;
+    cache->scaler = scaler;
+    cache->scale_factor = scale_factor;
+    tcache_clear();
 }
 
 void tcache_clear() {
@@ -92,7 +99,6 @@ void tcache_close() {
 }
 
 SDL_Texture* tcache_get(surface *sur, 
-                        SDL_Renderer *renderer, 
                         screen_palette *pal, 
                         char *remap_table,
                         uint8_t pal_offset) {
@@ -117,7 +123,7 @@ SDL_Texture* tcache_get(surface *sur,
     // then we need to create one
     if(val == NULL) {
         tcache_entry_value new_entry;
-        new_entry.tex = SDL_CreateTexture(renderer, 
+        new_entry.tex = SDL_CreateTexture(cache->renderer, 
                                           SDL_PIXELFORMAT_ABGR8888,
                                           SDL_TEXTUREACCESS_STREAMING,
                                           sur->w * cache->scale_factor,
@@ -128,7 +134,23 @@ SDL_Texture* tcache_get(surface *sur,
 
     // We have a texture either from the cache, or we just created one.
     // Either one, it needs to be updated. Let's do it now.
-    surface_to_texture(sur, val->tex, pal, remap_table, pal_offset);
+    // Also, scale surface if necessary
+    if(cache->scale_factor > 1) {
+        char *raw = malloc(sur->w * sur->h * 4);
+        surface scaled;
+        surface_create(&scaled, 
+                       SURFACE_TYPE_RGBA, 
+                       sur->w * cache->scale_factor, 
+                       sur->h * cache->scale_factor);
+        
+        surface_to_rgba(sur, raw, pal, remap_table, pal_offset);
+        scaler_scale(cache->scaler, raw, scaled.data, sur->w, sur->h, cache->scale_factor);
+        surface_to_texture(&scaled, val->tex, pal, remap_table, pal_offset);
+        surface_free(&scaled);
+        free(raw);
+    } else {
+        surface_to_texture(sur, val->tex, pal, remap_table, pal_offset);
+    }
 
     // Set correct age and palette version
     val->age = 0;

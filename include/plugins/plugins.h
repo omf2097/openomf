@@ -8,7 +8,7 @@
 void plugins_init();
 void plugins_close();
 
-scaler_plugin plugins_get_scaler(const char* name);
+int plugins_get_scaler(scaler_plugin *scaler, const char* name);
 
 int plugins_get_list_by_type(list *tlist, const char* type);
 

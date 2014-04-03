@@ -7,6 +7,7 @@
 #include "video/video_state.h"
 #include "video/video_hw.h"
 #include "video/video_soft.h"
+#include "plugins/plugins.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 
@@ -19,10 +20,27 @@ void reset_targets() {
     state.target = SDL_CreateTexture(state.renderer,
                                      SDL_PIXELFORMAT_ABGR8888,
                                      SDL_TEXTUREACCESS_TARGET,
-                                     NATIVE_W, NATIVE_H);
+                                     NATIVE_W * state.scale_factor, 
+                                     NATIVE_H * state.scale_factor);
 }
 
-int video_init(int window_w, int window_h, int fullscreen, int vsync, int scale_factor) {
+int video_load_scaler(const char* name, int scale_factor) {
+    scaler_init(&state.scaler);
+    if(plugins_get_scaler(&state.scaler, name)) {
+        return 1;
+    }
+    if(!scaler_is_factor_available(&state.scaler, scale_factor)) {
+        return 1;
+    }
+    return 0;
+}
+
+int video_init(int window_w,
+               int window_h,
+               int fullscreen,
+               int vsync,
+               const char* scaler_name,
+               int scale_factor) {
     state.w = window_w;
     state.h = window_h;
     state.fs = fullscreen;
@@ -31,7 +49,15 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync, int scale_
     state.target = NULL;
     state.target_move_x = 0;
     state.target_move_y = 0;
-    state.scale_factor = scale_factor;
+    
+    // Load scaler (if any)
+    if(video_load_scaler(scaler_name, scale_factor)) {
+        DEBUG("Scaler \"%s\" plugin not found; using Nearest neighbour scaling.");
+        state.scale_factor = 1;
+    } else {
+        DEBUG("Scaler \"%s\" loaded w/ factor %d", scaler_name, scale_factor);
+        state.scale_factor = scale_factor;
+    }
 
     // Clear palettes
     state.cur_palette = malloc(sizeof(screen_palette));
@@ -80,7 +106,9 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync, int scale_
     }
 
     // Default resolution for renderer. This will them get scaled up to screen size.
-    SDL_RenderSetLogicalSize(state.renderer, NATIVE_W, NATIVE_H);
+    SDL_RenderSetLogicalSize(state.renderer, 
+                             NATIVE_W * state.scale_factor, 
+                             NATIVE_H * state.scale_factor);
 
     // Disable screensaver :/
     SDL_DisableScreenSaver();
@@ -89,7 +117,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync, int scale_
     reset_targets();
 
     // Init texture cache
-    tcache_init(scale_factor);
+    tcache_init(state.renderer, state.scale_factor, &state.scaler);
 
     // Init hardware renderer
     state.cur_renderer = VIDEO_RENDERER_HW;
@@ -122,13 +150,23 @@ void video_reinit_renderer() {
          renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
     }
     state.renderer = SDL_CreateRenderer(state.window, -1, renderer_flags);
-    SDL_RenderSetLogicalSize(state.renderer, NATIVE_W, NATIVE_H);
+    SDL_RenderSetLogicalSize(state.renderer, 
+                             NATIVE_W * state.scale_factor, 
+                             NATIVE_H * state.scale_factor);
+    tcache_reinit(state.renderer, state.scale_factor, &state.scaler);
 
      // Reset rendertarget
     reset_targets();
 }
 
-int video_reinit(int window_w, int window_h, int fullscreen, int vsync, int scale_factor) {
+int video_reinit(int window_w,
+                 int window_h,
+                 int fullscreen,
+                 int vsync,
+                 const char* scaler_name,
+                 int scale_factor) {
+
+    // Tells if something has changed in video settings
     int changed = 0;
 
     // Set window size if necessary
@@ -166,7 +204,15 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync, int scal
     state.fs = fullscreen;
     state.w = window_w;
     state.h = window_h;
-    state.scale_factor = scale_factor;
+
+    // Load scaler
+    if(video_load_scaler(scaler_name, scale_factor)) {
+        DEBUG("Scaler %s plugin not found; using Nearest neighbour scaling.");
+        state.scale_factor = 1;
+    } else {
+        DEBUG("Scaler %s loaded w/ factor %d", scaler_name, scale_factor);
+        state.scale_factor = scale_factor;
+    }
 
     // If any settings changed, reinit the screen
     if(changed) {
@@ -178,8 +224,8 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync, int scal
 }
 
 void video_move_target(int x, int y) {
-    state.target_move_x = x;
-    state.target_move_y = y;
+    state.target_move_x = x * state.scale_factor;
+    state.target_move_y = y * state.scale_factor;
 }
 
 void video_get_state(int *w, int *h, int *fs, int *vsync) {
@@ -380,10 +426,10 @@ void video_render_finish() {
     uint8_t v = 255.0f * state.fade;
     SDL_SetTextureColorMod(state.target, v, v, v);
     SDL_Rect dst;
-    dst.x = state.target_move_x;
-    dst.y = state.target_move_y;
-    dst.w = NATIVE_W;
-    dst.h = NATIVE_H;
+    dst.x = state.target_move_x * state.scale_factor;
+    dst.y = state.target_move_y * state.scale_factor;
+    dst.w = NATIVE_W * state.scale_factor;
+    dst.h = NATIVE_H * state.scale_factor;
     SDL_RenderCopy(state.renderer, state.target, NULL, &dst);
     SDL_SetTextureColorMod(state.target, 0xFF, 0xFF, 0xFF);
 

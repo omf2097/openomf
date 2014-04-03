@@ -42,7 +42,20 @@ void soft_render_finish(video_state *state) {
 
     // Blit lower
     surface_to_rgba(&sr->lower, sr->tmp, state->cur_palette, NULL, 0);
-    SDL_Surface *low_s = surface_from_pixels(sr->tmp, 320, 200);
+    SDL_Surface *low_s;
+
+    // Scale if necessary
+    if(state->scale_factor > 1) {
+        int nw = 320 * state->scale_factor;
+        int nh = 200 * state->scale_factor;
+        char *new = malloc(nw * nh * 4);
+        scaler_scale(&state->scaler, sr->tmp, new, 320, 200, state->scale_factor);
+        low_s = surface_from_pixels(new, nw, nh);
+    } else {
+        low_s = surface_from_pixels(sr->tmp, 320, 200);
+    }
+
+    // Make a texture
     tex = SDL_CreateTextureFromSurface(state->renderer, low_s);
     SDL_RenderCopy(state->renderer, tex, NULL, NULL);
     SDL_DestroyTexture(tex);

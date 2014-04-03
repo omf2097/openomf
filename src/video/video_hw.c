@@ -18,11 +18,18 @@ void hw_render_finish(video_state *state) {
 
 }
 
+void hw_scale_rect(video_state *state, SDL_Rect *rct) {
+    rct->w = rct->w * state->scale_factor;
+    rct->h = rct->h * state->scale_factor;
+    rct->x = rct->x * state->scale_factor;
+    rct->y = rct->y * state->scale_factor;
+}
+
 void hw_render_background(
                     video_state *state,
                     surface *sur) {
 
-    SDL_Texture *tex = tcache_get(sur, state->renderer, state->cur_palette, NULL, 0);
+    SDL_Texture *tex = tcache_get(sur, state->cur_palette, NULL, 0);
     SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
     SDL_SetTextureAlphaMod(tex, 0xFF);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
@@ -38,7 +45,8 @@ void hw_render_sprite_fso(
                     SDL_RendererFlip flip_mode, 
                     uint8_t opacity) {
 
-    SDL_Texture *tex = tcache_get(sur, state->renderer, state->cur_palette, NULL, pal_offset);
+    hw_scale_rect(state, dst);
+    SDL_Texture *tex = tcache_get(sur, state->cur_palette, NULL, pal_offset);
     SDL_SetTextureAlphaMod(tex, opacity);
     SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
     SDL_SetTextureBlendMode(tex, blend_mode);
@@ -52,7 +60,8 @@ void hw_render_sprite_tint(
                     color c, 
                     int pal_offset) {
 
-    SDL_Texture *tex = tcache_get(sur, state->renderer, state->cur_palette, NULL, pal_offset);
+    hw_scale_rect(state, dst);
+    SDL_Texture *tex = tcache_get(sur, state->cur_palette, NULL, pal_offset);
     SDL_SetTextureColorMod(tex, c.r, c.g, c.b);
     SDL_SetTextureAlphaMod(tex, 0xFF);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
@@ -66,7 +75,8 @@ void hw_render_sprite_shadow(
                     int pal_offset,
                     SDL_RendererFlip flip_mode) {
 
-    SDL_Texture *tex = tcache_get(sur, state->renderer, state->cur_palette, NULL, pal_offset);
+    hw_scale_rect(state, dst);
+    SDL_Texture *tex = tcache_get(sur, state->cur_palette, NULL, pal_offset);
     SDL_SetTextureColorMod(tex, 0, 0, 0);
     SDL_SetTextureAlphaMod(tex, 96);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);

@@ -103,31 +103,22 @@ void plugins_init() {
     INFO("%d plugins found.", _plugins_count);
 }
 
-scaler_plugin plugins_get_scaler(const char* name) {
-    // Clear up a new scaler struct
-    scaler_plugin sp;
-    sp.base = NULL;
-    sp.is_factor_available = NULL;
-    sp.get_factors_list = NULL;
-    sp.get_color_format = NULL;
-    sp.scale = NULL;
-
+int plugins_get_scaler(scaler_plugin *scaler, const char* name) {
     // Search for a scaler with given name
     for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
         if(_plugins[i].handle != NULL
            && strcmp(_plugins[i].get_name(), name) == 0
            && strcmp(_plugins[i].get_type(), "scaler") == 0) 
         {
-            sp.base = &_plugins[i];
-            sp.is_factor_available = SDL_LoadFunction(sp.base->handle, "scaler_is_factor_available");
-            sp.get_factors_list = SDL_LoadFunction(sp.base->handle, "scaler_get_factors_list");
-            sp.get_color_format = SDL_LoadFunction(sp.base->handle, "scaler_get_color_format");
-            sp.scale = SDL_LoadFunction(sp.base->handle, "scaler_handle");
+            scaler->base = &_plugins[i];
+            scaler->is_factor_available = SDL_LoadFunction(scaler->base->handle, "scaler_is_factor_available");
+            scaler->get_factors_list = SDL_LoadFunction(scaler->base->handle, "scaler_get_factors_list");
+            scaler->get_color_format = SDL_LoadFunction(scaler->base->handle, "scaler_get_color_format");
+            scaler->scale = SDL_LoadFunction(scaler->base->handle, "scaler_handle");
+            return 0;
         }
     }
-
-    // All done.
-    return sp;
+    return 1;
 }
 
 int plugins_get_list_by_type(list *tlist, const char* type) {

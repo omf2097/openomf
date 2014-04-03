@@ -26,8 +26,18 @@ enum VIDEO_RENDERER {
     VIDEO_RENDERER_HW,
 };
 
-int video_init(int window_w, int window_h, int fullscreen, int vsync, int scale_factor); // Create window etc.
-int video_reinit(int window_w, int window_h, int fullscreen, int vsync, int scale_factor);
+int video_init(int window_w,
+               int window_h,
+               int fullscreen,
+               int vsync,
+               const char* scaler_name,
+               int scale_factor);
+int video_reinit(int window_w,
+                 int window_h,
+                 int fullscreen,
+                 int vsync,
+                 const char* scaler_name,
+                 int scale_factor);
 void video_reinit_renderer();
 void video_get_state(int *w, int *h, int *fs, int *vsync);
 void video_move_target(int x, int y);

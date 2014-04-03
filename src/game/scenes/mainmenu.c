@@ -362,7 +362,7 @@ void inputmenu_set_key(component *c, void *userdata) {
 void video_done_clicked(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata); 
     settings_video *v = &settings_get()->video;
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scale_factor);
+    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
     mainmenu_prev_menu(c, userdata);
     
     if(local->old_video_settings.screen_w != v->screen_w || 
@@ -384,7 +384,7 @@ void video_confirm_cancel_clicked(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata); 
     settings_video *v = &settings_get()->video;
     *v = local->old_video_settings;
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scale_factor);
+    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
     mainmenu_prev_menu(c, userdata);
 }
 

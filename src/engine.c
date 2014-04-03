@@ -37,12 +37,13 @@ int engine_init() {
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
     int scale_factor = setting->video.scale_factor;
+    char *scaler = setting->video.scaler;
 
     // Right now we only have one audio sink, so select that one.
     int sink_id = 0;
 
     // Initialize everything.
-    if(video_init(w, h, fs, vsync, scale_factor)) {
+    if(video_init(w, h, fs, vsync, scaler, scale_factor)) {
         goto exit_0;
     }
     if(audio_init(sink_id)) {

@@ -237,10 +237,10 @@ void surface_to_rgba(surface *sur,
 // Copies surface to an existing texture.
 // Note, texture has to be streaming type
 int surface_to_texture(surface *src,
-                        SDL_Texture *tex,
-                        screen_palette *pal, 
-                        char *remap_table,
-                        uint8_t pal_offset) {
+                       SDL_Texture *tex,
+                       screen_palette *pal, 
+                       char *remap_table,
+                       uint8_t pal_offset) {
     void *pixels;
     int pitch;
     if(SDL_LockTexture(tex, NULL, &pixels, &pitch) == 0) {
