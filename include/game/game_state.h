@@ -23,6 +23,7 @@ int game_state_is_running(game_state *gs);
 void game_state_set_next(game_state *gs, unsigned int next_scene_id);
 game_player* game_state_get_player(game_state *gs, int player_id);
 int game_state_num_players(game_state *gs);
+void game_state_init_demo(game_state *gs);
 int game_state_ms_per_tick(game_state *gs);
 ticktimer* game_state_get_ticktimer(game_state *gs);
 int game_state_serialize(game_state *gs, serial *ser);

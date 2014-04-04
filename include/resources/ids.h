@@ -62,4 +62,6 @@ int is_scene(int id);
 int is_har(int id);
 int is_music(int id);
 
+int rand_arena();
+
 #endif // _IDS_H

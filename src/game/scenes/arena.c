@@ -195,6 +195,14 @@ int is_singleplayer(scene *scene) {
     return 0;
 }
 
+int is_demoplay(scene *scene) {
+    if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_AI &&
+       game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_AI) {
+        return 1;
+    }
+    return 0;
+}
+
 void arena_end(scene *sc) {
     // after the match ends, switch the newsroom
     DEBUG("switching to newsroom");
@@ -202,7 +210,11 @@ void arena_end(scene *sc) {
     game_state *gs = sc->gs;
 
     // XXX TODO take victory pose screenshot for the newsroom
-    if (is_singleplayer(sc)) {
+    if (is_demoplay(sc)) {
+        game_state_init_demo(gs);
+        game_state_set_next(gs, rand_arena());
+    }
+    else if (is_singleplayer(sc)) {
       game_state_set_next(gs, SCENE_NEWSROOM);
     } else {
       game_state_set_next(gs, SCENE_MENU);

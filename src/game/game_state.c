@@ -555,6 +555,26 @@ int game_state_num_players(game_state *gs) {
     return sizeof(gs->players)/sizeof(game_player*);
 }
 
+void game_state_init_demo(game_state *gs) {
+    // Set up player controller
+    for(int i = 0;i < game_state_num_players(gs);i++) {
+        controller *ctrl = malloc(sizeof(controller));
+        controller_init(ctrl);
+
+        game_player *player = game_state_get_player(gs, i);
+        ai_controller_create(ctrl, 4);
+        game_player_set_ctrl(player, ctrl);
+        game_player_set_selectable(player, 1);
+
+        // XXX TODO set proper colors
+        player->colors[0] = 0;
+        player->colors[1] = 0;
+        player->colors[2] = 0;
+        player->pilot_id = rand_int(10);
+        player->har_id = HAR_JAGUAR + rand_int(11);
+    }
+}
+
 void game_state_free(game_state *gs) {
     // Free objects
     render_obj *robj;

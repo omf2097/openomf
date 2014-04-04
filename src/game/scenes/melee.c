@@ -663,8 +663,8 @@ int melee_create(scene *scene) {
     refresh_pilot_stats(local);
 
     // initialize nova selection cheat
-    memset(&local->har_selected, 0, sizeof(local->har_selected));
-    memset(&local->katana_down_count, 0, sizeof(local->katana_down_count));
+    memset(local->har_selected, 0, sizeof(local->har_selected));
+    memset(local->katana_down_count, 0, sizeof(local->katana_down_count));
 
     // Set callbacks
     scene_set_event_cb(scene, melee_event);

@@ -289,6 +289,15 @@ void mainmenu_tourn(component *c, void *userdata) {
     game_state_set_next(s->gs, SCENE_MECHLAB);
 }
 
+void mainmenu_demo(component *c, void *userdata) {
+    scene *s = userdata;
+
+    // Set up controllers
+    game_state_init_demo(s->gs);
+
+    game_state_set_next(s->gs, rand_arena());
+}
+
 void mainmenu_enter_menu_config(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     local->mstack[local->mstack_pos++] = &local->config_menu;
@@ -893,7 +902,7 @@ int mainmenu_create(scene *scene) {
     local->gameplay_button.disabled = 0;
     local->net_button.disabled = 0;
     local->help_button.disabled = 1;
-    local->demo_button.disabled = 1;
+    local->demo_button.disabled = 0;
     local->scoreboard_button.disabled = 1;
 
     // Events
@@ -911,6 +920,8 @@ int mainmenu_create(scene *scene) {
     local->net_button.click = mainmenu_enter_menu_net;
     local->gameplay_button.userdata = (void*)scene;
     local->gameplay_button.click = mainmenu_enter_menu_gameplay;
+    local->demo_button.userdata = (void*)scene;
+    local->demo_button.click = mainmenu_demo;
 
     // destroy any leftover controllers
     controller *ctrl;

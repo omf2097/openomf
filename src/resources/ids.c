@@ -6,6 +6,7 @@
 #include "resources/global_paths.h"
 #include "game/settings.h"
 #include "utils/log.h"
+#include "utils/random.h"
 
 struct music_override_t {
     int id;
@@ -169,4 +170,8 @@ int is_har(int id) {
 
 int is_music(int id) {
     return (id >= PSM_ARENA0 && id <= PSM_END);
+}
+
+int rand_arena() {
+   return SCENE_ARENA0 + rand_int(5);
 }

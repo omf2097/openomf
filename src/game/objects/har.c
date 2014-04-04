@@ -800,7 +800,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         if (move->successor_id) {
             af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
-            if (!move->footer_string.data) {
+            if (!move->footer_string.data && next_move->footer_string.data) {
                 DEBUG("using sucessor footer string %s", str_c(&next_move->footer_string));
                 object_set_custom_string(o_har, str_c(&next_move->footer_string));
             }
