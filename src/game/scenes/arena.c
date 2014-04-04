@@ -152,7 +152,7 @@ void scene_youwin_anim_start(void *userdata) {
     object_set_stl(youwin, bk_get_stl(&scene->bk_data));
     object_set_animation(youwin, youwin_ani);
     object_set_finish_cb(youwin, scene_youwin_anim_done);
-    game_state_add_object(gs, youwin, RENDER_LAYER_TOP);
+    game_state_add_object(gs, youwin, RENDER_LAYER_MIDDLE);
 
     // This will release HARs for action
     /*arena->state = ARENA_STATE_ENDING;*/
@@ -174,7 +174,7 @@ void scene_youlose_anim_start(void *userdata) {
     object_set_stl(youlose, bk_get_stl(&scene->bk_data));
     object_set_animation(youlose, youlose_ani);
     object_set_finish_cb(youlose, scene_youlose_anim_done);
-    game_state_add_object(gs, youlose, RENDER_LAYER_TOP);
+    game_state_add_object(gs, youlose, RENDER_LAYER_MIDDLE);
 
     // This will release HARs for action
     /*arena->state = ARENA_STATE_ENDING;*/
