@@ -3,7 +3,7 @@
 
 typedef struct pilot_t {
     int power, agility, endurance;
-    int colors[3];
+    char colors[3];
     void *userdata;
 } pilot;
 

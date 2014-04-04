@@ -5,6 +5,7 @@
 #include "utils/log.h"
 #include "game/serial.h"
 #include "resources/ids.h"
+#include "resources/pilots.h"
 #include "console/console.h"
 #include "video/video.h"
 #include "video/tcache.h"
@@ -566,12 +567,16 @@ void game_state_init_demo(game_state *gs) {
         game_player_set_ctrl(player, ctrl);
         game_player_set_selectable(player, 1);
 
-        // XXX TODO set proper colors
-        player->colors[0] = 0;
-        player->colors[1] = 0;
-        player->colors[2] = 0;
+        // select random pilot and har
         player->pilot_id = rand_int(10);
         player->har_id = HAR_JAGUAR + rand_int(11);
+
+        // set proper color
+        pilot pilot_info;
+        pilot_get_info(&pilot_info, player->pilot_id);
+        player->colors[0] = pilot_info.colors[0];
+        player->colors[1] = pilot_info.colors[1];
+        player->colors[2] = pilot_info.colors[2];
     }
 }
 
