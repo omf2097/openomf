@@ -211,13 +211,12 @@ void arena_end(scene *sc) {
 
     // XXX TODO take victory pose screenshot for the newsroom
     if (is_demoplay(sc)) {
-        game_state_init_demo(gs);
-        game_state_set_next(gs, rand_arena());
+        game_state_set_next(gs, SCENE_MENU);
     }
     else if (is_singleplayer(sc)) {
-      game_state_set_next(gs, SCENE_NEWSROOM);
+        game_state_set_next(gs, SCENE_NEWSROOM);
     } else {
-      game_state_set_next(gs, SCENE_MENU);
+        game_state_set_next(gs, SCENE_MENU);
     }
 }
 
@@ -1162,7 +1161,6 @@ int arena_create(scene *scene) {
         game_state_add_object(scene->gs, number, RENDER_LAYER_TOP);
 
     }
-
 
     // Callbacks
     scene_set_event_cb(scene, arena_event);

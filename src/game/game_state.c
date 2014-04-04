@@ -559,10 +559,9 @@ int game_state_num_players(game_state *gs) {
 void game_state_init_demo(game_state *gs) {
     // Set up player controller
     for(int i = 0;i < game_state_num_players(gs);i++) {
+        game_player *player = game_state_get_player(gs, i);
         controller *ctrl = malloc(sizeof(controller));
         controller_init(ctrl);
-
-        game_player *player = game_state_get_player(gs, i);
         ai_controller_create(ctrl, 4);
         game_player_set_ctrl(player, ctrl);
         game_player_set_selectable(player, 1);
@@ -570,6 +569,7 @@ void game_state_init_demo(game_state *gs) {
         // select random pilot and har
         player->pilot_id = rand_int(10);
         player->har_id = HAR_JAGUAR + rand_int(11);
+        chr_score_reset(&player->score, 1);
 
         // set proper color
         pilot pilot_info;
