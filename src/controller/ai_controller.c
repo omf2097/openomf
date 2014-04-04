@@ -200,9 +200,6 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
 
-    vector_clear(&a->projectiles);
-    game_state_get_projectiles(o->gs, &a->projectiles);
-
     iterator it;
     object **o_tmp;
     vector_iter_begin(&a->projectiles, &it);
@@ -234,6 +231,10 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
     object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
+
+    // Grab all projectiles on screen
+    vector_clear(&a->projectiles);
+    game_state_get_projectiles(o->gs, &a->projectiles);
 
     // Try to block har
     if(ai_block_har(ctrl, ev)) {
