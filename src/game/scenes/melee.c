@@ -11,6 +11,7 @@
 #include "video/video.h"
 #include "resources/ids.h"
 #include "resources/bk.h"
+#include "resources/pilots.h"
 #include "resources/animation.h"
 #include "resources/sprite.h"
 #include "game/text/text.h"
@@ -25,12 +26,6 @@
 
 #define MAX_STAT 20
 
-struct pilot_t {
-    int power, agility, endurance;
-    int colors[3];
-    object obj;
-};
-
 typedef struct melee_local_t {
 
     int selection; // 0 for player, 1 for HAR
@@ -43,7 +38,7 @@ typedef struct melee_local_t {
     object player2_placeholder;
     object unselected_har_portraits;
 
-    struct pilot_t pilots[10];
+    object pilots[10];
 
     object harportraits_player1[10];
     object harportraits_player2[10];
@@ -109,7 +104,7 @@ void melee_free(scene *scene) {
     }
 
     for(int i = 0; i < 10; i++) {
-        object_free(&local->pilots[i].obj);
+        object_free(&local->pilots[i]);
         object_free(&local->harportraits_player1[i]);
         object_free(&local->har_player1[i]);
         if (player2->selectable) {
@@ -184,12 +179,16 @@ void melee_tick(scene *scene) {
 void refresh_pilot_stats(melee_local *local) {
     int current_a = 5*local->row_a + local->column_a;
     int current_b = 5*local->row_b + local->column_b;
-    progressbar_set(&local->bar_power[0], (local->pilots[current_a].power*100)/MAX_STAT);
-    progressbar_set(&local->bar_agility[0], (local->pilots[current_a].agility*100)/MAX_STAT);
-    progressbar_set(&local->bar_endurance[0], (local->pilots[current_a].endurance*100)/MAX_STAT);
-    progressbar_set(&local->bar_power[1], (local->pilots[current_b].power*100)/MAX_STAT);
-    progressbar_set(&local->bar_agility[1], (local->pilots[current_b].agility*100)/MAX_STAT);
-    progressbar_set(&local->bar_endurance[1], (local->pilots[current_b].endurance*100)/MAX_STAT);
+    pilot p_a, p_b;
+
+    pilot_get_info(&p_a, current_a);
+    pilot_get_info(&p_b, current_b);
+    progressbar_set(&local->bar_power[0], (p_a.power*100)/MAX_STAT);
+    progressbar_set(&local->bar_agility[0], (p_a.agility*100)/MAX_STAT);
+    progressbar_set(&local->bar_endurance[0], (p_a.endurance*100)/MAX_STAT);
+    progressbar_set(&local->bar_power[1], (p_b.power*100)/MAX_STAT);
+    progressbar_set(&local->bar_agility[1], (p_b.agility*100)/MAX_STAT);
+    progressbar_set(&local->bar_endurance[1], (p_b.endurance*100)/MAX_STAT);
 }
 
 void handle_action(scene *scene, int player, int action) {
@@ -259,24 +258,27 @@ void handle_action(scene *scene, int player, int action) {
                     object_select_sprite(&local->bigportrait1, local->pilot_id_a);
                     // update the player palette
                     palette *base_pal = video_get_base_palette();
-                    palette_set_player_color(base_pal, 0, local->pilots[local->pilot_id_a].colors[0], 2);
-                    palette_set_player_color(base_pal, 0, local->pilots[local->pilot_id_a].colors[1], 1);
-                    palette_set_player_color(base_pal, 0, local->pilots[local->pilot_id_a].colors[2], 0);
+                    pilot p_a;
+                    pilot_get_info(&p_a, local->pilot_id_a);
+                    palette_set_player_color(base_pal, 0, p_a.colors[0], 2);
+                    palette_set_player_color(base_pal, 0, p_a.colors[1], 1);
+                    palette_set_player_color(base_pal, 0, p_a.colors[2], 0);
                     video_force_pal_refresh();
-                    player1->colors[0] = local->pilots[local->pilot_id_a].colors[0];
-                    player1->colors[1] = local->pilots[local->pilot_id_a].colors[1];
-                    player1->colors[2] = local->pilots[local->pilot_id_a].colors[2];
+                    player1->colors[0] = p_a.colors[0];
+                    player1->colors[1] = p_a.colors[1];
+                    player1->colors[2] = p_a.colors[2];
 
                     if (player2->selectable) {
                         object_select_sprite(&local->bigportrait2, local->pilot_id_b);
                         // update the player palette
-                        palette_set_player_color(base_pal, 1, local->pilots[local->pilot_id_b].colors[0], 2);
-                        palette_set_player_color(base_pal, 1, local->pilots[local->pilot_id_b].colors[1], 1);
-                        palette_set_player_color(base_pal, 1, local->pilots[local->pilot_id_b].colors[2], 0);
+                        pilot_get_info(&p_a, local->pilot_id_a);
+                        palette_set_player_color(base_pal, 1, p_a.colors[0], 2);
+                        palette_set_player_color(base_pal, 1, p_a.colors[1], 1);
+                        palette_set_player_color(base_pal, 1, p_a.colors[2], 0);
                         video_force_pal_refresh();
-                        player2->colors[0] = local->pilots[local->pilot_id_b].colors[0];
-                        player2->colors[1] = local->pilots[local->pilot_id_b].colors[1];
-                        player2->colors[2] = local->pilots[local->pilot_id_b].colors[2];
+                        player2->colors[0] = p_a.colors[0];
+                        player2->colors[1] = p_a.colors[1];
+                        player2->colors[2] = p_a.colors[2];
                     }
                 } else {
                     int nova_activated[2] = {1, 1};
@@ -311,9 +313,11 @@ void handle_action(scene *scene, int player, int action) {
                         while((i = rand_int(10)) == local->pilot_id_a) {}
                         player2->pilot_id = i;
 
-                        player2->colors[0] = local->pilots[player2->pilot_id].colors[0];
-                        player2->colors[1] = local->pilots[player2->pilot_id].colors[1];
-                        player2->colors[2] = local->pilots[player2->pilot_id].colors[2];
+                        pilot p_a;
+                        pilot_get_info(&p_a, player2->pilot_id);
+                        player2->colors[0] = p_a.colors[0];
+                        player2->colors[1] = p_a.colors[1];
+                        player2->colors[2] = p_a.colors[2];
                     }
                     game_state_set_next(scene->gs, SCENE_VS);
                 }
@@ -473,7 +477,7 @@ void melee_render(scene *scene) {
 
         render_highlights(scene);
         for(int i = 0; i < 10; i++) {
-            object_render(&local->pilots[i].obj);
+            object_render(&local->pilots[i]);
         }
         object_render(&local->bigportrait1);
         if (player2->selectable) {
@@ -542,79 +546,6 @@ int melee_create(scene *scene) {
     palette_set_player_color(mpal, 0, 8, 2);
     video_force_pal_refresh();
 
-    // TODO read this from MASTER.DAT
-    // XXX the colors are eyeballed
-    local->pilots[0].power=5;
-    local->pilots[0].agility=16;
-    local->pilots[0].endurance=9;
-    local->pilots[0].colors[0] = 5;
-    local->pilots[0].colors[1] = 11;
-    local->pilots[0].colors[2] = 15;
-
-    local->pilots[1].power=13;
-    local->pilots[1].agility=9;
-    local->pilots[1].endurance=8;
-    local->pilots[1].colors[0] = 10;
-    local->pilots[1].colors[1] = 15;
-    local->pilots[1].colors[2] = 7;
-
-    local->pilots[2].power=7;
-    local->pilots[2].agility=20;
-    local->pilots[2].endurance=4;
-    local->pilots[2].colors[0] = 11;
-    local->pilots[2].colors[1] = 12;
-    local->pilots[2].colors[2] = 8;
-
-
-    local->pilots[3].power=9;
-    local->pilots[3].agility=7;
-    local->pilots[3].endurance=15;
-    local->pilots[3].colors[0] = 8;
-    local->pilots[3].colors[1] = 15;
-    local->pilots[3].colors[2] = 12;
-
-    local->pilots[4].power=20;
-    local->pilots[4].agility=1;
-    local->pilots[4].endurance=8;
-    local->pilots[4].colors[0] = 4;
-    local->pilots[4].colors[1] = 7;
-    local->pilots[4].colors[2] = 14;
-
-    local->pilots[5].power=9;
-    local->pilots[5].agility=10;
-    local->pilots[5].endurance=11;
-    local->pilots[5].colors[0] = 1;
-    local->pilots[5].colors[1] = 7;
-    local->pilots[5].colors[2] = 6;
-
-    local->pilots[6].power=10;
-    local->pilots[6].agility=1;
-    local->pilots[6].endurance=20;
-    local->pilots[6].colors[0] = 8;
-    local->pilots[6].colors[1] = 6;
-    local->pilots[6].colors[2] = 14;
-
-    local->pilots[7].power=7;
-    local->pilots[7].agility=10;
-    local->pilots[7].endurance=13;
-    local->pilots[7].colors[0] = 0;
-    local->pilots[7].colors[1] = 15;
-    local->pilots[7].colors[2] = 7;
-
-    local->pilots[8].power=14;
-    local->pilots[8].agility=8;
-    local->pilots[8].endurance=8;
-    local->pilots[8].colors[0] = 0;
-    local->pilots[8].colors[1] = 8;
-    local->pilots[8].colors[2] = 2;
-
-    local->pilots[9].power=14;
-    local->pilots[9].agility=4;
-    local->pilots[9].endurance=12;
-    local->pilots[9].colors[0] = 9;
-    local->pilots[9].colors[1] = 10;
-    local->pilots[9].colors[2] = 4;
-
     memset(&bitmap, 255, 51*36*4);
     local->ticks = 0;
     local->pulsedir = 0;
@@ -645,9 +576,9 @@ int melee_create(scene *scene) {
     sprite *spr;
     for(int i = 0; i < 10; i++) {
         ani = &bk_get_info(&scene->bk_data, 3)->ani;
-        object_create(&local->pilots[i].obj, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
-        object_set_animation(&local->pilots[i].obj, ani);
-        object_select_sprite(&local->pilots[i].obj, i);
+        object_create(&local->pilots[i], scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
+        object_set_animation(&local->pilots[i], ani);
+        object_select_sprite(&local->pilots[i], i);
 
         ani = &bk_get_info(&scene->bk_data, 18+i)->ani;
         object_create(&local->har_player1[i], scene->gs, vec2i_create(110,95), vec2f_create(0, 0));

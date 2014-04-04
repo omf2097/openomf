@@ -4,6 +4,7 @@
 #include "game/text/text.h"
 #include "game/settings.h"
 #include "resources/ids.h"
+#include "resources/pilots.h"
 #include "utils/random.h"
 #include "utils/str.h"
 #include "utils/log.h"
@@ -206,6 +207,12 @@ int newsroom_event(scene *scene, SDL_Event *event) {
                           break;
                         }
                       }
+                      pilot p;
+                      pilot_get_info(&p, p2->pilot_id);
+                      p2->colors[0] = p.colors[0];
+                      p2->colors[1] = p.colors[1];
+                      p2->colors[2] = p.colors[2];
+
                       // make a new AI controller
                       controller *ctrl = malloc(sizeof(controller));
                       controller_init(ctrl);

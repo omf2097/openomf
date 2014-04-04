@@ -120,6 +120,7 @@ set(OPENOMF_SRC
     src/resources/bk_info.c
     src/resources/bk_loader.c
     src/resources/palette.c
+    src/resources/pilots.c
     src/resources/sprite.c
     src/resources/animation.c
     src/resources/sounds_loader.c
