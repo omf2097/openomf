@@ -17,6 +17,7 @@
 #include "game/scenes/intro.h"
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/credits.h"
+#include "game/scenes/cutscene.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/newsroom.h"
@@ -366,7 +367,13 @@ int game_load_new(game_state *gs, int scene_id) {
             if(arena_create(gs->sc)) {
                 PERROR("Error while creating arena scene.");
                 goto error_1;
-            } 
+            }
+            break;
+        default:
+            if(cutscene_create(gs->sc)) {
+                PERROR("Error while creating cut scene.");
+                goto error_1;
+            }
             break;
     }
 

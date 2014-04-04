@@ -139,6 +139,7 @@ set(OPENOMF_SRC
     src/game/scenes/intro.c
     src/game/scenes/mainmenu.c
     src/game/scenes/credits.c
+    src/game/scenes/cutscene.c
     src/game/scenes/arena.c
     src/game/scenes/melee.c
     src/game/scenes/vs.c
