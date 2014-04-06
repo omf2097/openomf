@@ -4,7 +4,7 @@ sudo apt-get --force-yes install libopenal-dev libconfuse-dev libpng-dev libenet
 
 # remove the 2 lines below and add libsdl2-dev to apt-get if travis updates sdl to 2.0.1+
 wget http://libsdl.org/release/SDL2-2.0.3.tar.gz -O - | tar xz
-cd SDL2-2.0.1 && ./configure --prefix=$PREFIX && make -j5 && sudo make install
+cd SDL2-2.0.3 && ./configure --prefix=$PREFIX && make -j5 && sudo make install
   
 cd travis/
 git clone --depth=1 https://github.com/omf2097/libShadowDive.git
