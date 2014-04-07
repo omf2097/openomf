@@ -159,6 +159,16 @@ void player_reset(object *obj) {
     sd_stringparser_reset(obj->animation_state.parser);
 }
 
+int player_frame_isset(object *obj, const char *tag) {
+    sd_stringparser_frame f = obj->animation_state.parser->current_frame;
+    return isset(&f, tag);
+}
+
+int player_frame_get(object *obj, const char *tag) {
+    sd_stringparser_frame f = obj->animation_state.parser->current_frame;
+    return get(&f, tag);
+}
+
 void player_set_delay(object *obj, int delay) {
     //try to spread <delay> ticks over the 'startup' frames; those that don't spawn projectiles or have hit coordinates
     int r;

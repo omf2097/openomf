@@ -477,21 +477,18 @@ void arena_har_hook(har_event event, void *data) {
             break;
         case HAR_EVENT_DEFEAT:
             arena_har_defeat_hook(event.player_id, scene);
-            break;
-        case HAR_EVENT_SCRAP:
-            DEBUG("SCRAP!");
-            arena->ending_ticks = 0;
-            break;
-        case HAR_EVENT_DESTRUCTION:
-            DEBUG("DESTRUCTION!");
-            arena->ending_ticks = 0;
-            break;
-        case HAR_EVENT_DONE:
             if (arena->state != ARENA_STATE_ENDING) {
-                DEBUG("DONE!");
                 arena->ending_ticks = 0;
                 arena->state = ARENA_STATE_ENDING;
             }
+            break;
+        case HAR_EVENT_SCRAP:
+            break;
+        case HAR_EVENT_DESTRUCTION:
+            DEBUG("DESTRUCTION!");
+            break;
+        case HAR_EVENT_DONE:
+                DEBUG("DONE!");
             break;
     }
 }
@@ -707,21 +704,18 @@ void arena_tick(scene *scene) {
         }
 
         if(local->state == ARENA_STATE_ENDING) {
-            // increment tick if the HAR isn't doing scrap/destruction and if the score isn't scrolling
-            if(har1->state == STATE_SCRAP || har1->state == STATE_DESTRUCTION ||
-               har2->state == STATE_SCRAP || har2->state == STATE_DESTRUCTION) {
-                // spare some ticks to show the victory pose after doing a scrap/desstruction
-                local->ending_ticks = 80;
-
-            } else if(chr_score_get_num_texts(game_player_get_score(game_state_get_player(gs, 0))) == 0 &&
-                      chr_score_get_num_texts(game_player_get_score(game_state_get_player(gs, 1))) == 0) {
-                // only tick if the score isn't scrolling
+            // TODO any 'score' sliders onscreen should also block ending....
+            if (player_frame_isset(obj_har1, "be") || player_frame_isset(obj_har2, "be")) {
+                DEBUG("blocking ending");
+            } else {
                 local->ending_ticks++;
             }
-            if (!local->over && local->ending_ticks == 50) {
-                arena_reset(scene);
-            } else if(local->ending_ticks == 150) {
-                arena_end(scene);
+            if(local->ending_ticks > 20) {
+                if (!local->over) {
+                    arena_reset(scene);
+                } else {
+                    arena_end(scene);
+                }
             }
         }
 

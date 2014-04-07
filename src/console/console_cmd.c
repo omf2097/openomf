@@ -122,6 +122,8 @@ int console_cmd_har(game_state *gs, void *userdata, int argc, char **argv) {
             // Set HAR for player
             game_player_set_har(player, obj);
             game_player_get_ctrl(player)->har = obj;
+            game_player_get_har(player)->animation_state.enemy = game_player_get_har(game_state_get_player(gs, 1));
+            game_player_get_har(game_state_get_player(gs, 1))->animation_state.enemy = game_player_get_har(player);
 
             return 0;
         }

@@ -255,49 +255,35 @@ int har_is_blocking(har *h, af_move *move) {
     }
     return 0;
 }
-
-int frame_isset(sd_stringparser_frame *frame, const char *tag) {
-    const sd_stringparser_tag_value *v;
-    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
-    return v->is_set;
-}
-
-int frame_get(sd_stringparser_frame *frame, const char *tag) {
-    const sd_stringparser_tag_value *v;
-    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
-    return v->value;
-}
-
 int har_is_invincible(object *obj, af_move *move) {
-    sd_stringparser_frame f = obj->animation_state.parser->current_frame;
-    if (frame_isset(&f, "zz")) {
+    if (player_frame_isset(obj, "zz")) {
         // blocks everything
         return 1;
     }
     switch (move->category) {
         // XX 'zg' is not handled here, but the game doesn't use it...
         case CAT_LOW:
-            if (frame_isset(&f, "zl")) {
+            if (player_frame_isset(obj, "zl")) {
                 return 1;
             }
             break;
         case CAT_MEDIUM:
-            if (frame_isset(&f, "zm")) {
+            if (player_frame_isset(obj, "zm")) {
                 return 1;
             }
             break;
         case CAT_HIGH:
-            if (frame_isset(&f, "zh")) {
+            if (player_frame_isset(obj, "zh")) {
                 return 1;
             }
             break;
         case CAT_JUMPING:
-            if (frame_isset(&f, "zj")) {
+            if (player_frame_isset(obj, "zj")) {
                 return 1;
             }
             break;
         case CAT_PROJECTILE:
-            if (frame_isset(&f, "zp")) {
+            if (player_frame_isset(obj, "zp")) {
                 return 1;
             }
             break;
@@ -661,9 +647,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
 
-    sd_stringparser_frame f = obj_a->animation_state.parser->current_frame;
-
-    if (frame_isset(&f, "ua")) {
+    if (player_frame_isset(obj_a, "ua")) {
         obj_b->sprite_state.disable_gravity=1;
     }
 
@@ -685,7 +669,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     if(a->damage_done == 0 &&
             (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord)
             || move->category == CAT_CLOSE ||
-            (frame_isset(&f, "ue") && b->state != STATE_JUMPING))) {
+            (player_frame_isset(obj_a, "ue") && b->state != STATE_JUMPING))) {
 
         if (har_is_blocking(b, move)) {
             har_event_enemy_block(a, move);
@@ -906,8 +890,7 @@ void har_tick(object *obj) {
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
     if (h->state != STATE_DEFEAT) {
-        sd_stringparser_frame f = obj->animation_state.parser->current_frame;
-        int wall_flag = frame_isset(&f, "aw");
+        int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
         int hit = 0;
         if(pos.x <  15) {
@@ -1078,7 +1061,6 @@ af_move* match_move(object *obj, char *inputs) {
         if((move = af_get_move(h->af_data, i))) {
             len = move->move_string.len;
             if(!strncmp(str_c(&move->move_string), inputs, len)) {
-                sd_stringparser_frame f = obj->animation_state.parser->current_frame;
                 if (move->category == CAT_CLOSE && h->close != 1) {
                     // not standing close enough
                     continue;
@@ -1102,32 +1084,32 @@ af_move* match_move(object *obj, char *inputs) {
                 if (h->executing_move) {
                     // check if the current frame allows chaining
                    int allowed = 0;
-                   if (frame_isset(&f, "jn") && i == frame_get(&f, "jn")) {
+                   if (player_frame_isset(obj, "jn") && i == player_frame_get(obj, "jn")) {
                        allowed = 1;
                    } else {
                        switch (move->category) {
                            case CAT_LOW:
-                               if (frame_isset(&f, "jl")) {
+                               if (player_frame_isset(obj, "jl")) {
                                    allowed = 1;
                                }
                                break;
                            case CAT_MEDIUM:
-                               if (frame_isset(&f, "jm")) {
+                               if (player_frame_isset(obj, "jm")) {
                                    allowed = 1;
                                }
                                break;
                            case CAT_HIGH:
-                               if (frame_isset(&f, "jh")) {
+                               if (player_frame_isset(obj, "jh")) {
                                    allowed = 1;
                                }
                                break;
                            case CAT_SCRAP:
-                               if (frame_isset(&f, "jf")) {
+                               if (player_frame_isset(obj, "jf")) {
                                    allowed = 1;
                                }
                                break;
                            case CAT_DESTRUCTION:
-                               if (frame_isset(&f, "jf2")) {
+                               if (player_frame_isset(obj, "jf2")) {
                                    allowed = 1;
                                }
                                break;
