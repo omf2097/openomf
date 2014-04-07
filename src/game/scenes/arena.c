@@ -660,13 +660,6 @@ void arena_tick(scene *scene) {
         har1 = obj_har1->userdata;
         har2 = obj_har2->userdata;
 
-        // keep enemy positions in sync
-        // TODO can we do this with pointers instead?
-        obj_har1->animation_state.enemy_x = obj_har2->pos.x;
-        obj_har1->animation_state.enemy_y = obj_har2->pos.y;
-        obj_har2->animation_state.enemy_x = obj_har1->pos.x;
-        obj_har2->animation_state.enemy_y = obj_har1->pos.y;
-
         har1->delay = ceil(player2->ctrl->rtt / 2.0f);
         har2->delay = ceil(player1->ctrl->rtt / 2.0f);
 
@@ -1030,6 +1023,9 @@ int arena_create(scene *scene) {
     if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
         controller_clear_hooks(game_player_get_ctrl(_player[0]));
     }
+
+    game_player_get_har(_player[0])->animation_state.enemy = game_player_get_har(_player[1]);
+    game_player_get_har(_player[1])->animation_state.enemy = game_player_get_har(_player[0]);
 
     maybe_install_har_hooks(scene);
     

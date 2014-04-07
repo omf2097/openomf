@@ -43,7 +43,6 @@ typedef struct player_animation_state_t {
     int previous;
     int entered_frame;
     sd_stringparser *parser;
-    uint16_t enemy_x, enemy_y;
     uint8_t repeat;
     uint8_t reverse;
     uint8_t finished;
@@ -51,6 +50,7 @@ typedef struct player_animation_state_t {
 
     void *spawn_userdata;
     void *destroy_userdata;
+    object *enemy;
     object_state_add_cb spawn;
     object_state_del_cb destroy;
 } player_animation_state;

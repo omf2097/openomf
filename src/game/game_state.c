@@ -694,10 +694,8 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     obj_har1 = game_player_get_har(game_state_get_player(gs, 0));
     obj_har2 = game_player_get_har(game_state_get_player(gs, 1));
 
-    obj_har1->animation_state.enemy_x = obj_har2->pos.x;
-    obj_har1->animation_state.enemy_y = obj_har2->pos.y;
-    obj_har2->animation_state.enemy_x = obj_har1->pos.x;
-    obj_har2->animation_state.enemy_y = obj_har1->pos.y;
+    obj_har1->animation_state.enemy = obj_har2;
+    obj_har2->animation_state.enemy = obj_har1;
 
     // clean out any current projectiles/hazards
     iterator it;

@@ -91,8 +91,6 @@ void player_create(object *obj) {
     obj->animation_state.finished = 0;
     obj->animation_state.entered_frame = 0;
     obj->animation_state.repeat = 0;
-    obj->animation_state.enemy_x = 0;
-    obj->animation_state.enemy_y = 0;
     obj->animation_state.spawn = NULL;
     obj->animation_state.spawn_userdata = NULL;
     obj->animation_state.destroy = NULL;
@@ -102,6 +100,7 @@ void player_create(object *obj) {
     obj->animation_state.ticks_len = 0;
     obj->animation_state.parser = sd_stringparser_create();
     obj->animation_state.disable_d = 0;
+    obj->animation_state.enemy = NULL;
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
     player_clear_frame(obj);
@@ -421,6 +420,16 @@ void player_run(object *obj) {
             }
 
             // Handle movement
+            if(isset(f, "ox")) {
+                DEBUG("changing X from %f to %f", obj->pos.x, obj->pos.x+get(f, "ox"));
+                /*obj->pos.x += get(f, "ox");*/
+            }
+
+            if(isset(f, "oy")) {
+                DEBUG("changing Y from %f to %f", obj->pos.y, obj->pos.y+get(f, "oy"));
+                /*obj->pos.y += get(f, "oy");*/
+            }
+
             if (isset(f, "v")) {
                 int x = 0, y = 0;
                 if(isset(f, "y-")) {
@@ -440,6 +449,15 @@ void player_run(object *obj) {
                     obj->vel.y += y;
                 }
             }
+
+            if (isset(f, "bu") && obj->vel.y < 0.0f) {
+                float x_dist = dist(obj->pos.x, 160);
+                // assume that bu is used in conjunction with 'vy-X' and that we want to land in the center of the arena
+                obj->slide_state.vel.x = x_dist / (obj->vel.y*-2);
+                obj->slide_state.timer = obj->vel.y*-2;
+            }
+
+
             // handle scaling on the Y axis
             if(isset(f, "y")) { 
                 obj->y_percent = get(f, "y") / 100.0f; 
@@ -458,8 +476,8 @@ void player_run(object *obj) {
                     x = get(f, "x+") * object_get_direction(obj);
                 }
 
-                float x_dist = dist(obj->pos.x, state->enemy_x + x);
-                float y_dist = dist(obj->pos.y, state->enemy_y + y);
+                float x_dist = dist(obj->pos.x, state->enemy->pos.x + x);
+                float y_dist = dist(obj->pos.y, state->enemy->pos.y + y);
                 obj->slide_state.timer = param->duration;
                 obj->slide_state.vel.x = x_dist / (float)param->duration;
                 obj->slide_state.vel.y = y_dist / (float)param->duration;
@@ -551,7 +569,7 @@ void player_run(object *obj) {
 
             if(isset(f, "at")) {
                 // set the object's X position to be behind the opponent
-                obj->pos.x = obj->animation_state.enemy_x + (15 * object_get_direction(obj));
+                obj->pos.x = obj->animation_state.enemy->pos.x + (15 * object_get_direction(obj));
             }
 
             if(isset(f, "ar")) {

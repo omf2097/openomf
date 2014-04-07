@@ -336,8 +336,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_set_repeat(obj, 0);
         object_set_shadow(obj, 1);
         object_set_direction(obj, object_get_direction(parent));
-        obj->animation_state.enemy_x = parent->animation_state.enemy_x;
-        obj->animation_state.enemy_y = parent->animation_state.enemy_y;
+        obj->animation_state.enemy = parent->animation_state.enemy;
         projectile_create(obj);
         game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE);
     }
@@ -855,8 +854,7 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
     } else if (anim->chain_hit && intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord)) {
         // we can punch this! Only set on fire pit orb
         anim = bk_get_info(bk_data, anim->chain_hit);
-        o_pjt->animation_state.enemy_x = o_har->animation_state.enemy_x;
-        o_pjt->animation_state.enemy_y = o_har->animation_state.enemy_y;
+        o_pjt->animation_state.enemy = o_har->animation_state.enemy;
         object_set_animation(o_pjt, &anim->ani);
         object_set_repeat(o_pjt, 0);
         o_pjt->animation_state.finished = 0;
