@@ -78,6 +78,9 @@ sd_stringparser_mem *sd_stringparser_mem_usage(void);
 sd_stringparser* sd_stringparser_create();
 void sd_stringparser_delete(sd_stringparser *parser);
 
+/* Fetches information about a specific tag */
+int tag_info(const char* tag, int *req_param, const char **desc);
+
 /* Parses the string and construct an animation list internally, may return error */
 int sd_stringparser_set_string(sd_stringparser *parser, const char *string);
 

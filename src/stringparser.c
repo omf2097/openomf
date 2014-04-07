@@ -229,6 +229,19 @@ static const sd_stringparser_tag_info tags[] = {
     {"zz", 0, "Invulnerable to any attacks?"}
 };
 
+int tag_info(const char* tag, int *req_param, const char **desc) {
+    int tags_size = sizeof(tags) / sizeof(tags[0]);
+    for(int i = 0; i < tags_size; i++) {
+        if(strcmp(tag, tags[i].tag) == 0) {
+            *req_param = tags[i].has_param;
+            *desc = tags[i].description;
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
 sd_stringparser_mem *sd_stringparser_mem_usage(void) {
     static sd_stringparser_mem m;
     return &m;
