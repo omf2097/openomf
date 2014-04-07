@@ -451,7 +451,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     winner_har->executing_move = 1;
     object_set_vel(loser, vec2f_create(0, 0));
     object_set_vel(winner, vec2f_create(0, 0));
-    object_set_gravity(loser, 0);
+    //object_set_gravity(loser, 0);
     arena_maybe_sync(scene,
             chr_score_interrupt(score, object_get_pos(winner)));
 }

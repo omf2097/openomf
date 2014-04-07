@@ -271,7 +271,7 @@ void handle_action(scene *scene, int player, int action) {
                     if (player2->selectable) {
                         object_select_sprite(&local->bigportrait2, local->pilot_id_b);
                         // update the player palette
-                        pilot_get_info(&p_a, local->pilot_id_a);
+                        pilot_get_info(&p_a, local->pilot_id_b);
                         palette_set_player_color(base_pal, 1, p_a.colors[0], 2);
                         palette_set_player_color(base_pal, 1, p_a.colors[1], 1);
                         palette_set_player_color(base_pal, 1, p_a.colors[2], 0);

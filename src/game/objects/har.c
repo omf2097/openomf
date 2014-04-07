@@ -655,12 +655,17 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
 
+    sd_stringparser_frame f = obj_a->animation_state.parser->current_frame;
+
+    if (frame_isset(&f, "ua")) {
+        obj_b->sprite_state.disable_gravity=1;
+    }
+
     if (b->state == STATE_FALLEN || b->state == STATE_STANDING_UP) {
         // can't hit em while they're down
         return;
     }
 
-    sd_stringparser_frame f = obj_a->animation_state.parser->current_frame;
 
     // Check for collisions by sprite collision points
     int level = 1;
