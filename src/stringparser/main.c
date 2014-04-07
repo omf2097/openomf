@@ -73,11 +73,22 @@ int main(int argc, char* argv[]) {
         goto exit_0;
     }
 
+    const char *str = *astr->sval;
+    int from_stdin = 0;
+
+    if (strcmp("-", *astr->sval) == 0) {
+        from_stdin = 1;
+        char *tmp_str = malloc(512);
+        fgets(tmp_str, 512, stdin);
+        // throttle the newline
+        tmp_str[strlen(tmp_str)-1] = '\0';
+        str = tmp_str;
+    }
+
     // Print some data
-    printf("Parsing \"%s\".\n\n", *astr->sval);
+    printf("Parsing \"%s\".\n\n", str);
 
     // Walk through the string
-    const char *str = *astr->sval;
     char test[4];
     int len = strlen(str);
     int i = 0;
@@ -134,6 +145,9 @@ int main(int argc, char* argv[]) {
     }
 
 exit_0:
+    if (from_stdin) {
+        free((char*)str);
+    }
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     return 0;
 }
