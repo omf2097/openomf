@@ -217,15 +217,15 @@ static const sd_stringparser_tag_info tags[] = {
     {"vsy", 0, NULL},
     {"w",   0, NULL},
 
-    {"x-", 1, "Decrement X coordinate by N?"},
-    {"x+", 1, "Increment X coordinate by N?"},
-    {"x=", 1, "Interpolate X coordinate to N by next frame?"},
+    {"x-", 1, "Decrement X coordinate by N"},
+    {"x+", 1, "Increment X coordinate by N"},
+    {"x=", 1, "Interpolate X coordinate to N by next frame"},
     {"x",  1, "Set X to N (N defaults to 100)?"}, // if unspecified a value of 100 is assumed
 
-    {"y-", 1, "Decrement Y coordinate by N?"},
-    {"y+", 1, "Increment Y coordinate by N?"},
-    {"y=", 1, "Interpolate to Y coordinate to N by next frame"},
-    {"y",  1, "Set Y coordinatr to N (N defaults to 100)?"}, // if unspecified a value of 100 is assumed
+    {"y-", 1, "Decrement Y coordinate by N"},
+    {"y+", 1, "Increment Y coordinate by N"},
+    {"y=", 1, "Interpolate Y coordinate to N by next frame"},
+    {"y",  1, "Set Y to N (N defaults to 100)?"}, // if unspecified a value of 100 is assumed
 
     {"zg", 0, "Never used?"},
     {"zh", 0, "Never used?"},
