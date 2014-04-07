@@ -22,6 +22,7 @@ add_executable(soundtool src/soundtool/main.c)
 add_executable(musictool src/musictool/main.c)
 add_executable(fonttool src/fonttool/main.c)
 add_executable(languagetool src/languagetool/main.c)
+add_executable(omf_parse src/stringparser/main.c)
 
 set(CORELIBS ${ARGTABLE2_LIBRARY})
 IF(MINGW)
@@ -52,7 +53,7 @@ target_link_libraries(soundtool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY
 target_link_libraries(musictool ${CORELIBS} ${SDL2_LIBRARY} ${DUMB_LIBRARY})
 target_link_libraries(fonttool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(languagetool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
-
+target_link_libraries(omf_parse ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 
 INSTALL(TARGETS bktool afhtmlprinter bkhtmlprinter aftool soundtool musictool fonttool languagetool
     RUNTIME DESTINATION bin
