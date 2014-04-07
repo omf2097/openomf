@@ -218,6 +218,13 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
 
 int har_is_active(object *obj) {
     har *h = object_get_userdata(obj);
+    // during scrap/destruction, the defeated har should be rendered frontmost
+    if (h->state == STATE_DEFEAT) {
+        return 1;
+    }
+    if (h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION || h->state == STATE_VICTORY) {
+        return 0;
+    }
     return h->executing_move;
 }
 

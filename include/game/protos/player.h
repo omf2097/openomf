@@ -37,7 +37,7 @@ typedef struct player_slide_op_t {
 } player_slide_state;
 
 typedef struct player_enemy_slide_op_t {
-    vec2f vel;
+    vec2i dest;
     int timer;
     int duration;
 } player_enemy_slide_state;

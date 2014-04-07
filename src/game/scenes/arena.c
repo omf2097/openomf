@@ -203,10 +203,14 @@ int is_demoplay(scene *scene) {
     return 0;
 }
 
+int is_twoplayer(scene *scene) {
+    if (!is_demoplay(scene) && !is_netplay(scene) && !is_singleplayer(scene)) {
+        return 1;
+    }
+    return 0;
+}
+
 void arena_end(scene *sc) {
-    // after the match ends, switch the newsroom
-    DEBUG("switching to newsroom");
-    //arena_local *local = scene_get_userdata(sc);
     game_state *gs = sc->gs;
 
     // XXX TODO take victory pose screenshot for the newsroom
@@ -215,6 +219,8 @@ void arena_end(scene *sc) {
     }
     else if (is_singleplayer(sc)) {
         game_state_set_next(gs, SCENE_NEWSROOM);
+    } else if (is_twoplayer(sc)) {
+        game_state_set_next(gs, SCENE_MELEE);
     } else {
         game_state_set_next(gs, SCENE_MENU);
     }
