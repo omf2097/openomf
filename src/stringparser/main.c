@@ -84,13 +84,15 @@ int main(int argc, char* argv[]) {
 
     char otemp[2048];
     otemp[0] = 0;
+    int frame_number = 1;
     while(i < len) {
         if(str[i] >= 'A' && str[i] <= 'Z') {
             char frame = str[i];
             i++;
             int flen = read_next_int(str, &i);
             int ikey = (int)(frame-65);
-            printf("Frame: '%c%d' (%d = %d)\n", frame, flen, ikey, flen);
+            printf("%d. Frame %d: '%c%d'\n", frame_number, ikey, frame, flen);
+            frame_number++;
             printf(otemp);
             printf("\n");
             otemp[0] = 0;
