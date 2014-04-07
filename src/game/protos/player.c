@@ -140,6 +140,10 @@ void player_reload_with_str(object *obj, const char* custom_str) {
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
 
+    obj->enemy_slide_state.timer = 0;
+    obj->enemy_slide_state.vel = vec2f_create(0,0);
+    obj->enemy_slide_state.duration = 0;
+
     obj->hit_frames = 0;
     obj->can_hit = 0;
 }
@@ -212,6 +216,17 @@ void player_run(object *obj) {
         obj->pos.x += obj->slide_state.vel.x;
         obj->pos.y += obj->slide_state.vel.y;
         obj->slide_state.timer--;
+    }
+
+    if(obj->enemy_slide_state.timer > 0) {
+        obj->enemy_slide_state.duration++;
+        float old_x, old_y;
+        old_x = obj->pos.x;
+        old_y = obj->pos.y;
+        obj->pos.x = obj->animation_state.enemy->pos.x +  (obj->enemy_slide_state.vel.x * obj->enemy_slide_state.duration);
+        obj->pos.y = obj->animation_state.enemy->pos.y +  (obj->enemy_slide_state.vel.y * obj->enemy_slide_state.duration);
+        obj->enemy_slide_state.timer--;
+        DEBUG("enemy slide %f, %f -> %f, %f", old_x, old_y, obj->pos.x, obj->pos.y);
     }
 
     // Not sure what this does
@@ -430,6 +445,13 @@ void player_run(object *obj) {
                 /*obj->pos.y += get(f, "oy");*/
             }
 
+            if (isset(f, "bm")) {
+                // hack because we don't have 'walk to other HAR' implemented
+                obj->pos.x = state->enemy->pos.x;
+                obj->pos.y = state->enemy->pos.y;
+                player_next_frame(state->enemy);
+            }
+
             if (isset(f, "v")) {
                 int x = 0, y = 0;
                 if(isset(f, "y-")) {
@@ -476,16 +498,19 @@ void player_run(object *obj) {
                     x = get(f, "x+") * object_get_direction(obj);
                 }
 
-                float x_dist = dist(obj->pos.x, state->enemy->pos.x + x);
-                float y_dist = dist(obj->pos.y, state->enemy->pos.y + y);
-                obj->slide_state.timer = param->duration;
-                obj->slide_state.vel.x = x_dist / (float)param->duration;
-                obj->slide_state.vel.y = y_dist / (float)param->duration;
-                /*DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.", */
-                    /*obj->cur_animation->id,*/
-                    /*obj->slide_state.vel.x, */
-                    /*obj->slide_state.vel.y, */
-                    /*param->duration);*/
+                if (x || y) {
+                    float x_dist = dist(obj->pos.x, state->enemy->pos.x + x);
+                    float y_dist = dist(obj->pos.y, state->enemy->pos.y + y);
+                    obj->enemy_slide_state.timer = param->duration;
+                    obj->enemy_slide_state.duration = 0;
+                    obj->enemy_slide_state.vel.x = x_dist / (float)param->duration;
+                    obj->enemy_slide_state.vel.y = y_dist / (float)param->duration;
+                    /*DEBUG("ENEMY Slide object %d for (x,y) = (%f,%f) for %d ticks. (%d,%d) %f, %%f", 
+                            obj->cur_animation->id,
+                            obj->enemy_slide_state.vel.x, 
+                            obj->enemy_slide_state.vel.y, 
+                            param->duration, x, y, x_dist, y_dist);*/
+                }
             }
             if (isset(f, "v") == 0 && 
                 isset(f, "e") == 0 && 

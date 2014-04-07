@@ -93,6 +93,7 @@ struct object_t {
     player_sprite_state sprite_state;
     player_animation_state animation_state;
     player_slide_state slide_state;
+    player_enemy_slide_state enemy_slide_state;
 
     // state ringbuffer
     uint32_t age;
