@@ -54,7 +54,6 @@ void chr_score_reset(chr_score *score, int wipe) {
 
     if (wipe) {
         score->score = 0;
-        score->wins = 0;
     }
     score->rounds = 0;
     score->done = 0;
@@ -67,6 +66,10 @@ void chr_score_reset(chr_score *score, int wipe) {
         free(t->text);
         list_delete(&score->texts, &it);
     }
+}
+
+void chr_score_reset_wins(chr_score *score) {
+    score->wins = 0;
 }
 
 void chr_score_set_pos(chr_score *score, int x, int y, int direction) {

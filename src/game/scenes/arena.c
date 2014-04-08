@@ -1131,6 +1131,12 @@ int arena_create(scene *scene) {
     chr_score_reset(game_player_get_score(_player[0]), !is_singleplayer(scene));
     chr_score_reset(game_player_get_score(_player[1]), 1);
 
+    // Reset the win counter in single player mode
+    if(is_singleplayer(scene)) {
+        chr_score_reset_wins(game_player_get_score(_player[0]));
+        chr_score_reset_wins(game_player_get_score(_player[1]));
+    }
+
     // TODO: Do something about this hack!
     scene->bk_data.sound_translation_table[14] = 10; // READY
     scene->bk_data.sound_translation_table[15] = 16; // ROUND

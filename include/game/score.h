@@ -35,6 +35,7 @@ typedef struct chr_score_t {
 
 void chr_score_create(chr_score *score, float multiplier);
 void chr_score_reset(chr_score *score, int wipe);
+void chr_score_reset_wins(chr_score *score);
 void chr_score_set_pos(chr_score *score, int x, int y, int direction);
 unsigned int chr_score_get_num_texts(chr_score *score);
 void chr_score_free(chr_score *score);
