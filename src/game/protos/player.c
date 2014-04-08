@@ -40,6 +40,7 @@ void player_clear_frame(object *obj) {
     s->duration = 0;
 
     s->disable_gravity = 0;
+    s->disable_gravity_this_frame = 0;
 
     s->screen_shake_horizontal = 0;
     s->screen_shake_vertical = 0;
@@ -293,6 +294,14 @@ void player_run(object *obj) {
                 rstate->disable_gravity = 0;
             }
 
+            if(isset(f, "ua")) {
+                obj->animation_state.enemy->sprite_state.disable_gravity = 1;
+                obj->animation_state.enemy->sprite_state.disable_gravity_this_frame = 1;
+            }
+            if(rstate->disable_gravity_this_frame) {
+                rstate->disable_gravity = 0;
+                rstate->disable_gravity_this_frame = 0;
+            }
         
             // Animation management
             if(isset(f, "m") && state->spawn != NULL) {
