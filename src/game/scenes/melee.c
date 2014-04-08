@@ -530,9 +530,9 @@ void melee_render(scene *scene) {
         chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
         chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
         char winstext[48];
-        snprintf(winstext, 48, "Win: %d", s1->wins);
+        snprintf(winstext, 48, "Wins: %d", s1->wins);
         font_render(&font_small, winstext, 8, 107, COLOR_BLACK);
-        snprintf(winstext, 48, "Win: %d", s2->wins);
+        snprintf(winstext, 48, "Wins: %d", s2->wins);
         font_render(&font_small, winstext, 312-(strlen(winstext)*font_small.w), 107, COLOR_BLACK);
     }
 }
