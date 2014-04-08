@@ -524,6 +524,16 @@ void melee_render(scene *scene) {
             font_render_wrapped(&font_small, get_id_name(HAR_JAGUAR + 5*local->row_a + local->column_a), 130, 107, 66, COLOR_BLACK);
         }
     }
+
+    if (player2->selectable) {
+        chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
+        chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
+        char winstext[48];
+        snprintf(winstext, 48, "Win: %d", s1->wins);
+        font_render(&font_small, winstext, 8, 107, COLOR_BLACK);
+        snprintf(winstext, 48, "Win: %d", s2->wins);
+        font_render(&font_small, winstext, 312-(strlen(winstext)*font_small.w), 107, COLOR_BLACK);
+    }
 }
 
 int melee_create(scene *scene) {
@@ -539,6 +549,14 @@ int melee_create(scene *scene) {
 
     controller *player1_ctrl = game_player_get_ctrl(player1);
     controller *player2_ctrl = game_player_get_ctrl(player2);
+
+    // 2 player can jump back to melee, so play the menu music if it isn't already
+    if(!music_playing()) {
+        char *filename = get_path_by_id(PSM_MENU);
+        music_play(filename);
+        free(filename);
+        music_set_volume(settings_get()->sound.music_vol/10.0f);
+    }
 
     palette *mpal = video_get_base_palette();
     palette_set_player_color(mpal, 0, 8, 0);

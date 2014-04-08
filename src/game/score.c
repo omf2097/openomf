@@ -54,6 +54,7 @@ void chr_score_reset(chr_score *score, int wipe) {
 
     if (wipe) {
         score->score = 0;
+        score->wins = 0;
     }
     score->rounds = 0;
     score->done = 0;
@@ -155,7 +156,7 @@ void chr_score_render(chr_score *score) {
         if (score->direction == OBJECT_FACE_LEFT) {
             pos = interpolate(vec2i_create(score->x-64, score->y), t->start, t->position);
         }
-        font_render(&font_small, t->text, pos.x-(strlen(t->text)/2), pos.y, TEXT_COLOR);
+        font_render(&font_small, t->text, pos.x-((strlen(t->text)*font_small.w)/2), pos.y, TEXT_COLOR);
         lastage = t->age;
     }
 }
@@ -183,7 +184,7 @@ void chr_score_hit(chr_score *score, int points) {
 
 void chr_score_victory(chr_score *score, int health) {
     // Add texts for scrap bonus, perfect round, whatever
-    //score->wins++;
+    score->wins++;
     char *text;
     if (health == 100) {
         text = malloc(64);
