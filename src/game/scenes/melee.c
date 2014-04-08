@@ -1,6 +1,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <SDL2/SDL.h>
 #include <shadowdive/vga_image.h>
 #include <shadowdive/sprite_image.h>
