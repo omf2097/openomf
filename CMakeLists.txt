@@ -55,7 +55,7 @@ target_link_libraries(fonttool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY}
 target_link_libraries(languagetool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(omf_parse ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 
-INSTALL(TARGETS bktool afhtmlprinter bkhtmlprinter aftool soundtool musictool fonttool languagetool
+INSTALL(TARGETS bktool afhtmlprinter bkhtmlprinter omf_parse aftool soundtool musictool fonttool languagetool
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
