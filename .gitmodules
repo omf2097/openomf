@@ -1,0 +1,6 @@
+[submodule "libShadowDive"]
+	path = libShadowDive
+	url = http://github.com/omf2097/libShadowDive
+[submodule "dumb"]
+	path = dumb
+	url = https://bitbucket.org/kode54/dumb.git
