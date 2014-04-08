@@ -917,7 +917,7 @@ void har_tick(object *obj) {
         }
     }
 
-    if ((h->state == STATE_VICTORY || h->state == STATE_DONE) && 
+    if ((h->state == STATE_DONE) &&
                obj->animation_state.parser->current_frame.is_final_frame && obj->animation_state.entered_frame == 1) {
         // match is over
         har_event_done(h);

@@ -17,7 +17,8 @@ enum {
 
 typedef struct chr_score_t {
     int score;
-    int wins;
+    int done;
+    int rounds;
     int x,y;
     int direction;
     float multiplier;
@@ -27,6 +28,8 @@ typedef struct chr_score_t {
     int consecutive_hit_score;
     int combo_hits;
     int combo_hit_score;
+    int scrap;
+    int destruction;
 } chr_score;
 
 void chr_score_create(chr_score *score, float multiplier);
@@ -36,9 +39,13 @@ unsigned int chr_score_get_num_texts(chr_score *score);
 void chr_score_free(chr_score *score);
 void chr_score_tick(chr_score *score);
 void chr_score_render(chr_score *score);
+int chr_score_onscreen(chr_score *score);
 
 void chr_score_hit(chr_score *score, int points);
 void chr_score_victory(chr_score *score, int health);
+void chr_score_scrap(chr_score *score);
+void chr_score_destruction(chr_score *score);
+void chr_score_done(chr_score *score);
 int chr_score_end_combo(chr_score *score, vec2i pos);
 int chr_score_interrupt(chr_score *score, vec2i pos);
 

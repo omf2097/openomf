@@ -1,14 +1,17 @@
 #include "game/score.h"
 #include "video/surface.h"
+#include "utils/log.h"
 #include <stdio.h>
 
 #define TEXT_COLOR color_create(186,250,250,255)
+#define SLIDER_DISTANCE 50
 
 typedef struct score_text_t {
     char *text;
     float position; // Position of text between middle of screen and (x,y). 1.0 at middle, 0.0 at end
     vec2i start;
     int points;
+    int age;
 } score_text;
 
 int base_scores[] = {
@@ -52,7 +55,8 @@ void chr_score_reset(chr_score *score, int wipe) {
     if (wipe) {
         score->score = 0;
     }
-    score->wins = 0;
+    score->rounds = 0;
+    score->done = 0;
     score->consecutive_hits = 0;
     score->consecutive_hit_score = 0;
     score->combo_hits = 0;
@@ -74,6 +78,10 @@ unsigned int chr_score_get_num_texts(chr_score *score) {
     return list_size(&score->texts);
 }
 
+int chr_score_onscreen(chr_score *score) {
+    return list_size(&score->texts) > 0;
+}
+
 void chr_score_free(chr_score *score) {
     iterator it;
     score_text *t;
@@ -88,15 +96,21 @@ void chr_score_free(chr_score *score) {
 void chr_score_tick(chr_score *score) {
     iterator it;
     score_text *t;
+    int lastage = -1;
     
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
+        // don't allow them to get too close together, if a bunch are added at once
+        if (lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
+            break;
+        }
         t->position -= 0.01f;
         if(t->position < 0.0f) {
             score->score += t->points;
             free(t->text);
             list_delete(&score->texts, &it);
         }
+        lastage = t->age++;
     } 
 }
 
@@ -130,14 +144,19 @@ void chr_score_render(chr_score *score) {
 
     iterator it;
     score_text *t;
+    int lastage = -1;
 
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
+        if (lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
+            break;
+        }
         vec2i pos = interpolate(vec2i_create(score->x, score->y), t->start, t->position);
         if (score->direction == OBJECT_FACE_LEFT) {
             pos = interpolate(vec2i_create(score->x-64, score->y), t->start, t->position);
         }
         font_render(&font_small, t->text, pos.x-(strlen(t->text)/2), pos.y, TEXT_COLOR);
+        lastage = t->age;
     }
 }
 
@@ -149,6 +168,7 @@ void chr_score_add(chr_score *score, char *text, int points, vec2i pos, float po
     s.points = points;
     s.start = pos;
     s.position = position;
+    s.age = 0;
 
     list_append(&score->texts, &s, sizeof(score_text));
 }
@@ -163,7 +183,48 @@ void chr_score_hit(chr_score *score, int points) {
 
 void chr_score_victory(chr_score *score, int health) {
     // Add texts for scrap bonus, perfect round, whatever
-    score->wins++;
+    //score->wins++;
+    char *text;
+    if (health == 100) {
+        text = malloc(64);
+        int len = sprintf(text, "perfect round ");
+        chr_score_format(40000, text+len);
+        // XXX hardcode the y coordinate for now
+        chr_score_add(score, text, 40000, vec2i_create(160, 100), 1.0f);
+    }
+    text = malloc(64);
+
+    int len = sprintf(text, "vitality ");
+    chr_score_format(40000 * (health / 100), text+len);
+    // XXX hardcode the y coordinate for now
+    chr_score_add(score, text, 40000 * (health / 100), vec2i_create(160, 100), 1.0f);
+}
+
+void chr_score_scrap(chr_score *score) {
+    score->scrap = 1;
+}
+
+void chr_score_destruction(chr_score *score) {
+    score->destruction = 1;
+}
+
+void chr_score_done(chr_score *score) {
+    if (!score->done) {
+        score->done = 1;
+        if (score->destruction) {
+            char *text = malloc(64);
+            int len = sprintf(text, "destruction bonus ");
+            chr_score_format(40000, text+len);
+            // XXX hardcode the y coordinate for now
+            chr_score_add(score, text, 40000, vec2i_create(160, 100), 1.0f);
+        } else if (score->scrap) {
+            char *text = malloc(64);
+            int len = sprintf(text, "scrap bonus ");
+            chr_score_format(20000, text+len);
+            // XXX hardcode the y coordinate for now
+            chr_score_add(score, text, 20000, vec2i_create(160, 100), 1.0f);
+        }
+    }
 }
 
 int chr_score_interrupt(chr_score *score, vec2i pos) {
@@ -200,6 +261,9 @@ int chr_score_end_combo(chr_score *score, vec2i pos) {
 
 void chr_score_serialize(chr_score *score, serial *ser) {
     serial_write_int32(ser, score->score);
+    serial_write_int32(ser, score->done);
+    serial_write_int32(ser, score->scrap);
+    serial_write_int32(ser, score->destruction);
     serial_write_int8(ser, score->texts.size);
     iterator it;
     score_text *t;
@@ -217,6 +281,9 @@ void chr_score_serialize(chr_score *score, serial *ser) {
 
 void chr_score_unserialize(chr_score *score, serial *ser) {
     score->score = serial_read_int32(ser);
+    score->done = serial_read_int32(ser);
+    score->scrap = serial_read_int32(ser);
+    score->destruction = serial_read_int32(ser);
     uint8_t count = serial_read_int8(ser);
     uint16_t text_len;
     char *text;

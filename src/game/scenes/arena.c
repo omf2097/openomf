@@ -440,10 +440,11 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         }
     }
     chr_score *score = game_player_get_score(game_state_get_player(gs, other_player_id));
-    object_select_sprite(local->player_rounds[other_player_id][score->wins], 0);
-    score->wins++;
-    if (score->wins >= ceil(local->rounds/2.0f)) {
+    object_select_sprite(local->player_rounds[other_player_id][score->rounds], 0);
+    score->rounds++;
+    if (score->rounds >= ceil(local->rounds/2.0f)) {
         har_set_ani(winner, ANIM_VICTORY, 1);
+        chr_score_victory(score, winner_har->health);
         winner_har->state = STATE_VICTORY;
         local->over = 1;
         if (is_singleplayer(scene)) {
@@ -465,6 +466,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
 void arena_har_hook(har_event event, void *data) {
     scene *scene = data;
     arena_local *arena = scene_get_userdata(scene);
+    chr_score *score = game_player_get_score(game_state_get_player(scene->gs, event.player_id));
     switch (event.type) {
         case HAR_EVENT_TAKE_HIT:
             arena_har_take_hit_hook(event.player_id, event.move, scene);
@@ -483,12 +485,15 @@ void arena_har_hook(har_event event, void *data) {
             }
             break;
         case HAR_EVENT_SCRAP:
+            chr_score_scrap(score);
             break;
         case HAR_EVENT_DESTRUCTION:
+            chr_score_destruction(score);
             DEBUG("DESTRUCTION!");
             break;
         case HAR_EVENT_DONE:
-                DEBUG("DONE!");
+            chr_score_done(score);
+            DEBUG("DONE!");
             break;
     }
 }
@@ -704,9 +709,10 @@ void arena_tick(scene *scene) {
         }
 
         if(local->state == ARENA_STATE_ENDING) {
-            // TODO any 'score' sliders onscreen should also block ending....
-            if (player_frame_isset(obj_har1, "be") || player_frame_isset(obj_har2, "be")) {
-                DEBUG("blocking ending");
+            chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
+            chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
+            if (player_frame_isset(obj_har1, "be") || player_frame_isset(obj_har2, "be") || chr_score_onscreen(s1) || chr_score_onscreen(s2)) {
+                /*DEBUG("blocking ending");*/
             } else {
                 local->ending_ticks++;
             }
