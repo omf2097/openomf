@@ -5,6 +5,7 @@
 
 #define TEXT_COLOR color_create(186,250,250,255)
 #define SLIDER_DISTANCE 50
+#define SLIDER_HANG_TIME 25
 
 typedef struct score_text_t {
     char *text;
@@ -108,7 +109,9 @@ void chr_score_tick(chr_score *score) {
         if (lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
             break;
         }
-        t->position -= 0.01f;
+        if (t->age > SLIDER_HANG_TIME) {
+            t->position -= 0.01f;
+        }
         if(t->position < 0.0f) {
             score->score += t->points;
             free(t->text);
@@ -149,17 +152,18 @@ void chr_score_render(chr_score *score) {
     iterator it;
     score_text *t;
     int lastage = -1;
+    vec2i pos;
 
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
         if (lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
             break;
         }
-        vec2i pos = interpolate(vec2i_create(score->x, score->y), t->start, t->position);
+        pos = interpolate(vec2i_create(score->x, score->y), t->start, t->position);
         if (score->direction == OBJECT_FACE_LEFT) {
-            pos = interpolate(vec2i_create(score->x-64, score->y), t->start, t->position);
+            pos = interpolate(vec2i_create(score->x-(strlen(t->text)*font_small.w), score->y), t->start, t->position);
         }
-        font_render(&font_small, t->text, pos.x-((strlen(t->text)*font_small.w)/2), pos.y, TEXT_COLOR);
+        font_render(&font_small, t->text, pos.x, pos.y, TEXT_COLOR);
         lastage = t->age;
     }
 }
@@ -171,6 +175,8 @@ void chr_score_add(chr_score *score, char *text, int points, vec2i pos, float po
     s.text = text;
     s.points = points;
     s.start = pos;
+    // center correctly initially, but end up justified
+    s.start.x -= ((strlen(s.text)*font_small.w)/2);
     s.position = position;
     s.age = 0;
 
