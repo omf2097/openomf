@@ -199,7 +199,7 @@ void chr_score_victory(chr_score *score, int health) {
     text = malloc(64);
 
     int len = sprintf(text, "vitality ");
-    chr_score_format(40000 * (health / 100), text+len);
+    chr_score_format(trunc(40000 * (health / 100.0f)), text+len);
     // XXX hardcode the y coordinate for now
     chr_score_add(score, text, 40000 * (health / 100), vec2i_create(160, 100), 1.0f);
 }
