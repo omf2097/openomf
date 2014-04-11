@@ -172,6 +172,17 @@ int is_valid_move(af_move *move, har *h) {
     return 0;
 }
 
+int maybe(int difficulty) {
+    // make chance of blocking exponentially better as the difficulty inreases
+    int a = rand_int(49);
+    int b = difficulty*difficulty;
+    /*DEBUG("%d, %d < %d : %s", difficulty, a, b, a < b ? "true" : "false");*/
+    if(a < b) {
+        return 1;
+    }
+    return 0;
+}
+
 // return 1 on block
 int ai_block_har(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
@@ -182,7 +193,7 @@ int ai_block_har(controller *ctrl, ctrl_event **ev) {
 
     // XXX TODO get maximum move distance from the animation object
     if(fabsf(o_enemy->pos.x - o->pos.x) < 100) {
-        if(h_enemy->executing_move) {
+        if(h_enemy->executing_move && maybe(a->difficulty)) {
             if(har_is_crouching(h_enemy)) {
                 a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWNLEFT : ACT_DOWNRIGHT);
                 controller_cmd(ctrl, a->cur_act, ev);
@@ -208,7 +219,7 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
         if(projectile_get_owner(o_prj) == o)  {
             continue;
         }
-        if(o_prj->cur_sprite) {
+        if(o_prj->cur_sprite && maybe(a->difficulty)) {
             vec2i pos_prj = vec2i_add(object_get_pos(o_prj), o_prj->cur_sprite->pos);
             vec2i size_prj = object_get_size(o_prj);
             if (object_get_direction(o_prj) == OBJECT_FACE_LEFT) {
