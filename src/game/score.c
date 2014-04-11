@@ -2,6 +2,7 @@
 #include "video/surface.h"
 #include "utils/log.h"
 #include <stdio.h>
+#include <math.h>
 
 #define TEXT_COLOR color_create(186,250,250,255)
 #define SLIDER_DISTANCE 50
