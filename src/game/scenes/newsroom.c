@@ -3,6 +3,7 @@
 #include "game/text/languages.h"
 #include "game/text/text.h"
 #include "game/settings.h"
+#include "audio/music.h"
 #include "resources/ids.h"
 #include "resources/pilots.h"
 #include "utils/random.h"
@@ -259,6 +260,12 @@ int newsroom_create(scene *scene) {
     str_create(&local->pilot2);
     str_create(&local->har1);
     str_create(&local->har2);
+
+    if(!music_playing()) {
+        char *filename = get_path_by_id(PSM_MENU);
+        music_play(filename);
+        free(filename);
+    }
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
