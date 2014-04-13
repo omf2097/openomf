@@ -463,19 +463,42 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
             chr_score_interrupt(score, object_get_pos(winner)));
 }
 
+void arena_maybe_turn_har(int player_id, scene* scene) {
+    int other_player_id = abs(player_id - 1);
+    object *obj_har1 = game_player_get_har(game_state_get_player(scene->gs, player_id));
+    object *obj_har2 = game_player_get_har(game_state_get_player(scene->gs, other_player_id));
+    if (obj_har1->pos.x > obj_har2->pos.x) {
+        object_set_direction(obj_har1, OBJECT_FACE_LEFT);
+    } else {
+        object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
+    }
+
+    // there isn;t an idle event hook, so do the best we can...
+    har *har2 = obj_har2->userdata;
+    if (har2->state == STATE_STANDING || har_is_crouching(har2) || har_is_walking(har2)) {
+        object_set_direction(obj_har2, object_get_direction(obj_har1) * -1);
+    }
+}
+
 void arena_har_hook(har_event event, void *data) {
     scene *scene = data;
     arena_local *arena = scene_get_userdata(scene);
     chr_score *score = game_player_get_score(game_state_get_player(scene->gs, event.player_id));
     switch (event.type) {
         case HAR_EVENT_TAKE_HIT:
+            arena_maybe_turn_har(event.player_id, scene);
             arena_har_take_hit_hook(event.player_id, event.move, scene);
             break;
         case HAR_EVENT_HIT_WALL:
             arena_har_hit_wall_hook(event.player_id, event.wall, scene);
             break;
+        case HAR_EVENT_ATTACK:
+        case HAR_EVENT_LAND:
+            arena_maybe_turn_har(event.player_id, scene);
+            break;
         case HAR_EVENT_RECOVER:
             arena_har_recover_hook(event.player_id, scene);
+            arena_maybe_turn_har(event.player_id, scene);
             break;
         case HAR_EVENT_DEFEAT:
             arena_har_defeat_hook(event.player_id, scene);
@@ -677,37 +700,6 @@ void arena_tick(scene *scene) {
                 arena_spawn_hazard(scene);
             }
         }
-
-        if (
-                (har1->state == STATE_STANDING || har_is_crouching(har1) || har_is_walking(har1) || har1->state == STATE_STUNNED || har1->state == STATE_FALLEN || har1->state == STATE_RECOIL || har1->state == STATE_STANDING_UP) &&
-                (har2->state == STATE_STANDING || har_is_crouching(har1) || har_is_walking(har2) || har2->state == STATE_STUNNED || har2->state == STATE_FALLEN || har2->state == STATE_RECOIL || har1->state == STATE_STANDING_UP)) {
-            // XXX if the other har is stunned, turn the non stunned HAR to face it, but never turn a stunned or recoiling HAR
-            // TODO this isn't actually entirely correct, if jaguar does an overhead throw immediately followed by a crouching kick, jag should change direction before the second move
-            // right now, if there's no recovery time between moves, we don't change direction. A HAR hook would be nice for this.
-            vec2i pos1, pos2;
-            pos1 = object_get_pos(obj_har1);
-            pos2 = object_get_pos(obj_har2);
-            if(pos1.x > pos2.x) {
-                if(object_get_direction(obj_har1) == OBJECT_FACE_RIGHT || object_get_direction(obj_har2) == OBJECT_FACE_LEFT) {
-                    if (har1->state != STATE_STUNNED && har1->state != STATE_FALLEN && har1->state != STATE_RECOIL && har1->executing_move == 0) {
-                        object_set_direction(obj_har1, OBJECT_FACE_LEFT);
-                    }
-                    if (har2->state != STATE_STUNNED && har2->state != STATE_FALLEN && har2->state != STATE_RECOIL && har1->executing_move == 0) {
-                        object_set_direction(obj_har2, OBJECT_FACE_RIGHT);
-                    }
-                }
-            } else if(pos1.x < pos2.x) {
-                if(object_get_direction(obj_har1) == OBJECT_FACE_LEFT || object_get_direction(obj_har2) == OBJECT_FACE_RIGHT) {
-                    if (har1->state != STATE_STUNNED && har1->state != STATE_FALLEN && har1->state != STATE_RECOIL && har1->executing_move == 0) {
-                        object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
-                    }
-                    if (har2->state != STATE_STUNNED && har2->state != STATE_FALLEN && har2->state != STATE_RECOIL && har1->executing_move == 0) {
-                        object_set_direction(obj_har2, OBJECT_FACE_LEFT);
-                    }
-                }
-            }
-        }
-
         if(local->state == ARENA_STATE_ENDING) {
             chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
             chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
