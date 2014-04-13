@@ -56,6 +56,7 @@ enum {
 
 enum {
     HAR_EVENT_JUMP,
+    HAR_EVENT_AIR_TURN,
     HAR_EVENT_WALK,
     HAR_EVENT_ATTACK, // Executed a move, may not hit
     HAR_EVENT_ENEMY_BLOCK, // Opponent blocked your move

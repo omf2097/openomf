@@ -488,6 +488,9 @@ void arena_har_hook(har_event event, void *data) {
         case HAR_EVENT_WALK:
             arena_maybe_turn_har(event.player_id, scene);
             break;
+        case HAR_EVENT_AIR_TURN:
+            arena_maybe_turn_har(event.player_id, scene);
+            break;
         case HAR_EVENT_TAKE_HIT:
             arena_maybe_turn_har(event.player_id, scene);
             arena_har_take_hit_hook(event.player_id, event.move, scene);

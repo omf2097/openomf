@@ -58,6 +58,14 @@ void har_event_jump(har *h, int direction) {
     fire_hooks(h, event);
 }
 
+void har_event_air_turn(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_AIR_TURN;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
 void har_event_walk(har *h, int direction) {
     // direction is -1, 1, for backwards and forwards
     har_event event;
@@ -1352,6 +1360,22 @@ int har_act(object *obj, int act_type) {
 
     if(obj->pos.y < 190) {
         // airborne
+
+        // Send an event if the har tries to turn in the air by pressing either left/right/downleft/downright
+        int opp_id = h->player_id ? 0 : 1;
+        object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
+        if(act_type == ACT_LEFT || act_type == ACT_RIGHT || act_type == ACT_DOWNLEFT || act_type == ACT_DOWNRIGHT) {
+            if(object_get_pos(obj).x > object_get_pos(opp).x) {
+                if(direction != OBJECT_FACE_LEFT) {
+                    har_event_air_turn(h);
+                }
+            } else {
+                if(direction != OBJECT_FACE_RIGHT) {
+                    har_event_air_turn(h);
+                }
+            }
+        }
+
         return 0;
     }
 
