@@ -463,7 +463,25 @@ void game_state_ctrl_events_free(game_state *gs) {
     }
 }
 
-void game_state_tick(game_state *gs) {
+// This function is always called with the same interval, and game speed does not affect it
+void game_state_static_tick(game_state *gs) {
+    // Set scene crossfade values
+    if(gs->next_wait_ticks > 0) {
+        gs->next_wait_ticks--;
+        video_set_fade((float)gs->next_wait_ticks / (float)FRAME_WAIT_TICKS);
+    }
+    if(gs->this_wait_ticks > 0) {
+        gs->this_wait_ticks--;
+        video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
+    }
+
+    // Poll input. If console is opened, do not poll the controllers.
+    if(!console_window_is_open()) { scene_input_poll(gs->sc); }
+
+}
+
+// This function is called when the game speed requires it
+void game_state_dynamic_tick(game_state *gs) {
     // Tick timers
     ticktimer_run(gs->tick_timer);
 
@@ -490,16 +508,6 @@ void game_state_tick(game_state *gs) {
         }
     }
 
-    // Set scene crossfade values
-    if(gs->next_wait_ticks > 0) {
-        gs->next_wait_ticks--;
-        video_set_fade((float)gs->next_wait_ticks / (float)FRAME_WAIT_TICKS);
-    }
-    if(gs->this_wait_ticks > 0) {
-        gs->this_wait_ticks--;
-        video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
-    }
-
     // Change the screen shake value downwards
     if(gs->screen_shake_horizontal > 0) {
         gs->screen_shake_horizontal--;
@@ -517,9 +525,6 @@ void game_state_tick(game_state *gs) {
         // XXX Ocasionally the screen does not return back to normal position
         video_move_target(0, 0);
     }
-
-    // Poll input. If console is opened, do not poll the controllers.
-    if(!console_window_is_open()) { scene_input_poll(gs->sc); }
 
     // Tick scene
     scene_tick(gs->sc);
@@ -607,7 +612,7 @@ void game_state_free(game_state *gs) {
     free(gs->tick_timer);
 }
 
-int game_state_ms_per_tick(game_state *gs) {
+int game_state_ms_per_dyntick(game_state *gs) {
     switch(gs->this_id) {
         case SCENE_ARENA0:
         case SCENE_ARENA1:

@@ -140,7 +140,8 @@ void engine_run(int net_mode) {
 
     // Game loop
     int frame_start = SDL_GetTicks();
-    int omf_wait = 0;
+    int dynamic_wait = 0;
+    int static_wait = 0;
     while(run && game_state_is_running(gs)) {
 
 #ifndef STANDALONE_SERVER
@@ -229,10 +230,11 @@ void engine_run(int net_mode) {
 
         // Render scene
         int dt = (SDL_GetTicks() - frame_start);
-        omf_wait += dt;
-        while(omf_wait > game_state_ms_per_tick(gs)) {
-            // Tick scene
-            game_state_tick(gs);
+        dynamic_wait += dt;
+        static_wait += dt;
+        while(static_wait > 10) {
+            // Static tick for gamestate
+            game_state_static_tick(gs);
 
             // Tick console
             console_tick();
@@ -240,8 +242,14 @@ void engine_run(int net_mode) {
             // Tick video (tcache)
             video_tick();
 
+            static_wait -= 10;
+        }
+        while(dynamic_wait > game_state_ms_per_dyntick(gs)) {
+            // Tick scene
+            game_state_dynamic_tick(gs);
+
             // Handle waiting period leftover time
-            omf_wait -= game_state_ms_per_tick(gs);
+            dynamic_wait -= game_state_ms_per_dyntick(gs);
         }
         frame_start = SDL_GetTicks();
 
@@ -277,12 +285,12 @@ void engine_run(int net_mode) {
                 take_screenshot = 0;
             }
         } else {
-            // If screen updates are disabled, then wait until next global tick
-            SDL_Delay(game_state_ms_per_tick(gs) - omf_wait);
+            // If screen updates are disabled, then wait
+            SDL_Delay(1);
         }
 #else
-        // In standalone, just wait for next global tick.
-        SDL_Delay(game_state_ms_per_tick(gs) - omf_wait);
+        // In standalone, just wait.
+        SDL_Delay(1);
 #endif // STANDALONE_SERVER
     }
     
