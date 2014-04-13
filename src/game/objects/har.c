@@ -57,6 +57,17 @@ void har_event_jump(har *h, int direction) {
 
     fire_hooks(h, event);
 }
+
+void har_event_walk(har *h, int direction) {
+    // direction is -1, 1, for backwards and forwards
+    har_event event;
+    event.type = HAR_EVENT_WALK;
+    event.player_id = h->player_id;
+    event.direction = direction;
+
+    fire_hooks(h, event);
+}
+
 void har_event_attack(har *h, af_move *move) {
     har_event event;
     event.type = HAR_EVENT_ATTACK;
@@ -1371,11 +1382,13 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_WALKING, 1);
                 vx = (h->af_data->forward_speed*direction)/(float)320;
                 object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
+                har_event_walk(h, 1);
                 break;
             case STATE_WALKFROM:
                 har_set_ani(obj, ANIM_WALKING, 1);
                 vx = (h->af_data->reverse_speed*direction*-1)/(float)320;
                 object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
+                har_event_walk(h, -1);
                 break;
             case STATE_JUMPING:
                 har_set_ani(obj, ANIM_JUMPING, 0);

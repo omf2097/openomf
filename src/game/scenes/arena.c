@@ -485,6 +485,9 @@ void arena_har_hook(har_event event, void *data) {
     arena_local *arena = scene_get_userdata(scene);
     chr_score *score = game_player_get_score(game_state_get_player(scene->gs, event.player_id));
     switch (event.type) {
+        case HAR_EVENT_WALK:
+            arena_maybe_turn_har(event.player_id, scene);
+            break;
         case HAR_EVENT_TAKE_HIT:
             arena_maybe_turn_har(event.player_id, scene);
             arena_har_take_hit_hook(event.player_id, event.move, scene);
