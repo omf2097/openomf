@@ -1,4 +1,5 @@
 #include "game/settings.h"
+#include "controller/controller.h"
 #include "utils/config.h"
 #include "utils/log.h"
 #include <stddef.h> //offsetof
@@ -81,6 +82,7 @@ const field f_gameplay[] = {
 
 const field f_keyboard[] = {
     // Player one
+    F_INT(settings_keyboard, ctrl_type1,  CTRL_TYPE_KEYBOARD),
     F_STRING(settings_keyboard, key1_up,    "Up"),
     F_STRING(settings_keyboard, key1_down,  "Down"),
     F_STRING(settings_keyboard, key1_left,  "Left"),
@@ -89,6 +91,7 @@ const field f_keyboard[] = {
     F_STRING(settings_keyboard, key1_punch, "Return"),
 
     // Player two
+    F_INT(settings_keyboard, ctrl_type2,  CTRL_TYPE_KEYBOARD),
     F_STRING(settings_keyboard, key2_up,    "W"),
     F_STRING(settings_keyboard, key2_down,  "S"),
     F_STRING(settings_keyboard, key2_left,  "A"),

@@ -2,6 +2,7 @@
 #define _COMPONENT_H
 
 #include <SDL2/SDL.h>
+#include "controller/controller.h"
 
 typedef struct component_t component;
 
@@ -19,6 +20,7 @@ struct component_t {
     
     void (*render)(component *c);
     int (*event)(component *c, SDL_Event *event);
+    int (*action)(component *c, int action);
     void (*layout)(component *c, int x, int y, int w, int h);
     void (*tick)(component *c);
     

@@ -23,5 +23,6 @@ component* menu_selected(menu *menu);
 void menu_render(menu *menu);
 void menu_tick(menu *menu);
 int menu_handle_event(menu *menu, SDL_Event *event);
+int menu_handle_action(menu *menu, int action);
 
 #endif // _MENU_H

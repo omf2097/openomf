@@ -23,6 +23,7 @@ void textselector_free(component *c);
 void textselector_clear_options(component *c);
 void textselector_render(component *c);
 int textselector_event(component *c, SDL_Event *event);
+int textselector_action(component *c, int action);
 void textselector_tick(component *c);
 void textselector_bindvar(component *c, int *var);
 const char* textselector_get_current_text(component *c);

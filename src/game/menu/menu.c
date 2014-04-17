@@ -111,6 +111,37 @@ int menu_handle_event(menu *menu, SDL_Event *event) {
     return 1;
 }
 
+int menu_handle_action(menu *menu, int action) {
+    component **c;
+    c = vector_get(&menu->objs, menu->selected);
+
+    if(action == ACT_DOWN || action == ACT_UP) {
+        (*c)->selected = 0;
+        do {
+            if(action == ACT_DOWN) {
+                menu->selected++;
+            }
+            if(action == ACT_UP) {
+                menu->selected--;
+            }
+            // wrap around
+            if(menu->selected < 0) menu->selected = vector_size(&menu->objs) - 1;
+            if(menu->selected >= vector_size(&menu->objs)) menu->selected = 0;
+
+            // Update selected component
+            c = vector_get(&menu->objs, menu->selected);
+        } while ((*c)->disabled);
+        (*c)->selected = 1;
+        return 0;
+    }
+
+    if(!(*c)->action(*c, action)) {
+        return 0;
+    }
+    
+    return 1;
+}
+
 void menu_tick(menu *menu) {
     iterator it;
     component **tmp;

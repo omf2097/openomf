@@ -19,6 +19,7 @@ void textslider_create(component *c, font *font, const char *text, unsigned int 
     c->obj = tb;
     c->render = textslider_render;
     c->event = textslider_event;
+    c->action = textslider_action;
     c->tick = textslider_tick;
 }
 
@@ -67,30 +68,41 @@ void textslider_render(component *c) {
 
 int textslider_event(component *c, SDL_Event *event) {
     // Handle selection
-    textslider *tb = c->obj;
     switch(event->type) {
         case SDL_KEYDOWN:
             if(event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_RIGHT) {
-                (*tb->pos)++;
-                if (*tb->pos >= tb->positions) {
-                    *tb->pos = tb->positions;
-                }
-                if(c->slide != NULL) {
-                    c->slide(c, c->userdata, *tb->pos);
-                }
+                textslider_action(c, ACT_RIGHT);
                 return 0;
             } else  if(event->key.keysym.sym == SDLK_LEFT) {
-                (*tb->pos)--;
-                if (tb->has_off && *tb->pos <= 0) {
-                    *tb->pos = 0;
-                } else if (*tb->pos < 1) {
-                    *tb->pos = 1;
-                }
-                if(c->slide != NULL) {
-                    c->slide(c, c->userdata, *tb->pos);
-                }
+                textslider_action(c, ACT_LEFT);
                 return 0;
             }
+    }
+    return 1;
+}
+
+int textslider_action(component *c, int action) {
+    textslider *tb = c->obj;
+    if (action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
+        (*tb->pos)++;
+        if (*tb->pos >= tb->positions) {
+            *tb->pos = tb->positions;
+        }
+        if(c->slide != NULL) {
+            c->slide(c, c->userdata, *tb->pos);
+        }
+        return 0;
+    } else  if(action == ACT_LEFT) {
+        (*tb->pos)--;
+        if (tb->has_off && *tb->pos <= 0) {
+            *tb->pos = 0;
+        } else if (*tb->pos < 1) {
+            *tb->pos = 1;
+        }
+        if(c->slide != NULL) {
+            c->slide(c, c->userdata, *tb->pos);
+        }
+        return 0;
     }
     return 1;
 }

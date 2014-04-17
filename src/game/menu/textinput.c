@@ -8,6 +8,7 @@
 #define COLOR_MENU_BORDER color_create(0,0,243,255)
 #define COLOR_MENU_BG     color_create(4,4,16,210)
 
+int textinput_action(component *c, int action);
 
 void textinput_create(component *c, font *font, const char *text, const char *initialvalue) {
     component_create(c);
@@ -29,6 +30,7 @@ void textinput_create(component *c, font *font, const char *text, const char *in
     c->obj = tb;
     c->render = textinput_render;
     c->event = textinput_event;
+    c->action = textinput_action;
     c->tick = textinput_tick;
 }
 
@@ -92,6 +94,10 @@ int textinput_event(component *c, SDL_Event *e) {
 
         }
     }
+    return 1;
+}
+
+int textinput_action(component *c, int action) {
     return 1;
 }
 

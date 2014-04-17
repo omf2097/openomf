@@ -14,6 +14,7 @@ void textbutton_create(component *c, font *font, const char *text) {
     c->obj = tb;
     c->render = textbutton_render;
     c->event = textbutton_event;
+    c->action = textbutton_action;
     c->tick = textbutton_tick;
 }
 
@@ -48,6 +49,17 @@ int textbutton_event(component *c, SDL_Event *event) {
                 }
                 return 0;
             }
+    }
+    return 1;
+}
+
+int textbutton_action(component *c, int action) {
+    // Handle selection
+    if(action == ACT_KICK || action == ACT_PUNCH) {
+        if(c->click != NULL) {
+            c->click(c, c->userdata);
+        }
+        return 0;
     }
     return 1;
 }

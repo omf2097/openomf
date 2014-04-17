@@ -19,6 +19,7 @@ void textselector_create(component *c, font *font, const char *text, const char 
     c->obj = tb;
     c->render = textselector_render;
     c->event = textselector_event;
+    c->action = textselector_action;
     c->tick = textselector_tick;
 }
 
@@ -67,28 +68,39 @@ void textselector_render(component *c) {
 
 int textselector_event(component *c, SDL_Event *event) {
     // Handle selection
-    textselector *tb = c->obj;
     switch(event->type) {
         case SDL_KEYDOWN:
             if(event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_RIGHT) {
-                (*tb->pos)++;
-                if (*tb->pos >= vector_size(&tb->options)) {
-                    *tb->pos = 0;
-                }
-                if(c->toggle != NULL) {
-                    c->toggle(c, c->userdata, *tb->pos);
-                }
+                textselector_action(c, ACT_RIGHT);
                 return 0;
             } else  if(event->key.keysym.sym == SDLK_LEFT) {
-                (*tb->pos)--;
-                if (*tb->pos < 0) {
-                    *tb->pos = vector_size(&tb->options) -1;
-                }
-                if(c->toggle != NULL) {
-                    c->toggle(c, c->userdata, *tb->pos);
-                }
+                textselector_action(c, ACT_LEFT);
                 return 0;
             }
+    }
+    return 1;
+}
+
+int textselector_action(component *c, int action) {
+    textselector *tb = c->obj;
+    if (action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
+        (*tb->pos)++;
+        if (*tb->pos >= vector_size(&tb->options)) {
+            *tb->pos = 0;
+        }
+        if(c->toggle != NULL) {
+            c->toggle(c, c->userdata, *tb->pos);
+        }
+        return 0;
+    } else  if(action == ACT_LEFT) {
+        (*tb->pos)--;
+        if (*tb->pos < 0) {
+            *tb->pos = vector_size(&tb->options) -1;
+        }
+        if(c->toggle != NULL) {
+            c->toggle(c, c->userdata, *tb->pos);
+        }
+        return 0;
     }
     return 1;
 }
