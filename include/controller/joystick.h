@@ -8,17 +8,17 @@ typedef struct joystick_keys_t joystick_keys;
 typedef struct joystick_t joystick;
 
 struct joystick_keys_t {
-    int up;
-    int down;
-    int left;
-    int right;
+    int x_axis;
+    int y_axis;
     int punch;
     int kick;
 };
 
 struct joystick_t {
-    SDL_Joystick *joy;
+    SDL_GameController *joy;
     joystick_keys *keys;
+    int last;
+    int current;
 };
 
 void joystick_create(controller *ctrl, int joystick_id);

@@ -244,16 +244,21 @@ int main(int argc, char *argv[]) {
         goto exit_2;
     }
     INFO("Found %d joysticks attached", SDL_NumJoysticks());
+    SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
     SDL_Joystick *joy;
+    char guidstr[33];
     for (int i = 0; i < SDL_NumJoysticks(); i++) {
-        joy = SDL_JoystickOpen(0);
+        joy = SDL_JoystickOpen(i);
         if (joy) {
+            SDL_JoystickGUID guid = SDL_JoystickGetGUID(joy);
+            SDL_JoystickGetGUIDString(guid, guidstr, 33);
             INFO("Opened Joystick %d", i);
             INFO(" * Name:              %s", SDL_JoystickNameForIndex(i));
             INFO(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
             INFO(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
             INFO(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
             INFO(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
+            INFO(" * GUID          :    %s", guidstr);
         } else {
             INFO("Joystick %d is unsupported", i);
         }

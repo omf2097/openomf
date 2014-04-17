@@ -562,6 +562,8 @@ void arena_free(scene *scene) {
         game_player *player = game_state_get_player(scene->gs, i);
         game_player_set_har(player, NULL);
         //game_player_set_ctrl(player, NULL);
+        controller_set_repeat(game_player_get_ctrl(player), 0);
+
     }
     
     textbutton_free(&local->title_button);
@@ -1027,6 +1029,9 @@ int arena_create(scene *scene) {
     if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
         controller_clear_hooks(game_player_get_ctrl(_player[0]));
     }
+
+    controller_set_repeat(game_player_get_ctrl(_player[0]), 1);
+    controller_set_repeat(game_player_get_ctrl(_player[1]), 1);
 
     game_player_get_har(_player[0])->animation_state.enemy = game_player_get_har(_player[1]);
     game_player_get_har(_player[1])->animation_state.enemy = game_player_get_har(_player[0]);

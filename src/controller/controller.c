@@ -17,6 +17,7 @@ void controller_init(controller *ctrl) {
     ctrl->update_fun = NULL;
     ctrl->har_hook = NULL;
     ctrl->rtt = 0;
+    ctrl->repeat = 0;
 }
 
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type)) {
@@ -128,4 +129,8 @@ int controller_har_hook(controller *ctrl, har_event event) {
         return ctrl->har_hook(ctrl, event);
     }
     return 0;
+}
+
+void controller_set_repeat(controller *ctrl, int repeat) {
+    ctrl->repeat = repeat;
 }

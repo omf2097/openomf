@@ -8,7 +8,7 @@
 #include "utils/list.h"
 
 enum {
-    ACT_STOP = 0,
+    ACT_STOP = 1,
     ACT_KICK = 2,
     ACT_PUNCH = 4,
     ACT_UP = 8,
@@ -62,6 +62,7 @@ struct controller_t {
     void *data;
     int type;
     int rtt;
+    int repeat;
 };
 
 void controller_init(controller* ctrl);
@@ -76,5 +77,6 @@ int controller_har_hook(controller *ctrl, har_event event);
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type));
 void controller_clear_hooks(controller *ctrl);
 void controller_free_chain(ctrl_event *ev);
+void controller_set_repeat(controller *ctrl, int repeat);
 
 #endif // _CONTROLLER_H
