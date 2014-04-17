@@ -19,6 +19,7 @@
 #include "resources/global_paths.h"
 #include "resources/ids.h"
 #include "plugins/plugins.h"
+#include "controller/gamecontrollerdb.h"
 
 #ifdef STANDALONE_SERVER
 void err_msgbox(const char *fmt, ...) {
@@ -244,7 +245,8 @@ int main(int argc, char *argv[]) {
         goto exit_2;
     }
     INFO("Found %d joysticks attached", SDL_NumJoysticks());
-    SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
+    SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
+    SDL_GameControllerAddMappingsFromRW(rw, 0);
     SDL_Joystick *joy;
     char guidstr[33];
     for (int i = 0; i < SDL_NumJoysticks(); i++) {
