@@ -215,7 +215,7 @@ void arena_end(scene *sc) {
 
     // XXX TODO take victory pose screenshot for the newsroom
     if (is_demoplay(sc)) {
-        game_state_set_next(gs, SCENE_MENU);
+        game_state_set_next(gs, rand_arena());
     }
     else if (is_singleplayer(sc)) {
         game_state_set_next(gs, SCENE_NEWSROOM);
@@ -916,6 +916,11 @@ int arena_create(scene *scene) {
 
     // Load up settings
     setting = settings_get();
+
+    // Initialize Demo
+    if(is_demoplay(scene)) {
+        game_state_init_demo(scene->gs);
+    }
     
     // Handle music playback
     music_stop();
