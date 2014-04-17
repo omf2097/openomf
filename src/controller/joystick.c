@@ -33,21 +33,21 @@ int joystick_poll(controller *ctrl, ctrl_event **ev) {
 
     // joystick input
     // TODO there's no tolerances here, my gamepas has a square hole for the joysticks so it is easy to get the stick into the corner
-    if (x_axis == LEFT && y_axis == UP) {
+    if (x_axis <= LEFT/2 && y_axis <= UP/2) {
         joystick_cmd(ctrl, ACT_UPLEFT, ev);
-    } else if (x_axis == LEFT && y_axis == DOWN) {
+    } else if (x_axis <= LEFT/2 && y_axis >= DOWN/2) {
         joystick_cmd(ctrl, ACT_DOWNLEFT, ev);
-    } else if (x_axis == RIGHT && y_axis == UP) {
+    } else if (x_axis >= RIGHT/2 && y_axis <= UP/2) {
         joystick_cmd(ctrl, ACT_UPRIGHT, ev);
-    } else if (x_axis == RIGHT && y_axis == DOWN) {
+    } else if (x_axis >= RIGHT/2 && y_axis >= DOWN/2) {
         joystick_cmd(ctrl, ACT_DOWNRIGHT, ev);
-    } else if (x_axis == RIGHT) {
+    } else if (x_axis >= RIGHT/2) {
         joystick_cmd(ctrl, ACT_RIGHT, ev);
-    } else if (x_axis == LEFT) {
+    } else if (x_axis <= LEFT/2) {
         joystick_cmd(ctrl, ACT_LEFT, ev);
-    } else if (y_axis == UP) {
+    } else if (y_axis <= UP/2) {
         joystick_cmd(ctrl, ACT_UP, ev);
-    } else if (y_axis == DOWN) {
+    } else if (y_axis >= DOWN/2) {
         joystick_cmd(ctrl, ACT_DOWN, ev);
     }
 
@@ -83,8 +83,8 @@ void joystick_create(controller *ctrl, int joystick_id) {
     k->keys = malloc(sizeof(joystick_keys));
     k->keys->x_axis = SDL_CONTROLLER_AXIS_LEFTX;
     k->keys->y_axis = SDL_CONTROLLER_AXIS_LEFTY;
-    k->keys->kick = SDL_CONTROLLER_BUTTON_A;
-    k->keys->punch = SDL_CONTROLLER_BUTTON_B;
+    k->keys->punch = SDL_CONTROLLER_BUTTON_A;
+    k->keys->kick = SDL_CONTROLLER_BUTTON_B;
     k->last = 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_GAMEPAD;
