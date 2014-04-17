@@ -228,12 +228,14 @@ void chr_score_done(chr_score *score) {
             chr_score_format(40000, text+len);
             // XXX hardcode the y coordinate for now
             chr_score_add(score, text, 40000, vec2i_create(160, 100), 1.0f);
+            score->destruction = 0;
         } else if (score->scrap) {
             char *text = malloc(64);
             int len = sprintf(text, "scrap bonus ");
             chr_score_format(20000, text+len);
             // XXX hardcode the y coordinate for now
             chr_score_add(score, text, 20000, vec2i_create(160, 100), 1.0f);
+            score->scrap = 0;
         }
     }
 }
