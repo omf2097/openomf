@@ -83,6 +83,7 @@ const field f_gameplay[] = {
 const field f_keyboard[] = {
     // Player one
     F_INT(settings_keyboard, ctrl_type1,  CTRL_TYPE_KEYBOARD),
+    F_STRING(settings_keyboard, joy_name1,  "None"),
     F_STRING(settings_keyboard, key1_up,    "Up"),
     F_STRING(settings_keyboard, key1_down,  "Down"),
     F_STRING(settings_keyboard, key1_left,  "Left"),
@@ -93,6 +94,7 @@ const field f_keyboard[] = {
 
     // Player two
     F_INT(settings_keyboard, ctrl_type2,  CTRL_TYPE_KEYBOARD),
+    F_STRING(settings_keyboard, joy_name2,  "None"),
     F_STRING(settings_keyboard, key2_up,    "W"),
     F_STRING(settings_keyboard, key2_down,  "S"),
     F_STRING(settings_keyboard, key2_left,  "A"),

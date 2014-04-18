@@ -609,14 +609,15 @@ void _setup_ai(game_state *gs, int player_id) {
     game_player_set_selectable(player, 0);
 }
 
-void _setup_joystick(game_state *gs, int player_id, int joystick) {
+int _setup_joystick(game_state *gs, int player_id, const char *joyname) {
     controller *ctrl = malloc(sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);
 
-    joystick_create(ctrl, joystick);
+    int res = joystick_create(ctrl, joystick_name_to_id(joyname));
     game_player_set_ctrl(player, ctrl);
     game_player_set_selectable(player, 1);
+    return res;
 }
 
 void reconfigure_controller(game_state *gs) {
@@ -624,7 +625,11 @@ void reconfigure_controller(game_state *gs) {
     if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(gs, 0);
     } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(gs, 0, 0);
+        if (!_setup_joystick(gs, 0, k->joy_name1)) {
+            // fallback on the good old keyboard
+            k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
+            reconfigure_controller(gs);
+        }
     }
 }
 

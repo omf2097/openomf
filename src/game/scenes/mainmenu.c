@@ -202,7 +202,7 @@ void mainmenu_1v1(component *c, void *userdata) {
     if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 0);
     } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(s->gs, 0, 0);
+        _setup_joystick(s->gs, 0, k->joy_name1);
     }
 
     _setup_ai(s->gs, 1);
@@ -218,14 +218,14 @@ void mainmenu_1v2(component *c, void *userdata) {
     if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 0);
     } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(s->gs, 0, 0);
+        _setup_joystick(s->gs, 0, k->joy_name1);
     }
 
 
     if (k->ctrl_type2 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 1);
     } else if (k->ctrl_type2 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(s->gs, 1, 0);
+        _setup_joystick(s->gs, 1, k->joy_name2);
     }
 
     // Load MELEE scene
@@ -343,8 +343,12 @@ void mainmenu_set_joystick1(component *c, void *userdata) {
     settings_keyboard *k = &settings_get()->keys;
     if(local->input_selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
+        free(k->joy_name1);
+        k->joy_name1 = dupestr(SDL_GameControllerNameForIndex(joystick_nth_id(1)));
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
+        free(k->joy_name2);
+        k->joy_name2 = dupestr(SDL_GameControllerNameForIndex(joystick_nth_id(1)));
     }
     reconfigure_controller(((scene*) userdata)->gs);
 }
@@ -354,8 +358,12 @@ void mainmenu_set_joystick2(component *c, void *userdata) {
     settings_keyboard *k = &settings_get()->keys;
     if(local->input_selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
+        free(k->joy_name1);
+        k->joy_name1 = dupestr(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
+        free(k->joy_name2);
+        k->joy_name2 = dupestr(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
     }
     reconfigure_controller(((scene*) userdata)->gs);
 }
@@ -839,9 +847,7 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
         if (i) {
             do {
                 if(i->type == EVENT_TYPE_ACTION) {
-                        DEBUG("ACTION");
                     if (i->event_data.action == ACT_ESC) {
-                        DEBUG("ESC");
                         if(local->current_menu == &local->main_menu) {
                             if(menu_selected(&local->main_menu) == &local->quit_button) {
                                 game_state_set_next(scene->gs, SCENE_CREDITS);
@@ -850,7 +856,6 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
                             }
                             return 1;
                         } else {
-                            DEBUG("go up");
                             if(local->host) {
                                 enet_host_destroy(local->host);
                                 local->host = NULL;
@@ -1276,11 +1281,18 @@ int mainmenu_create(scene *scene) {
     local->input_custom_keyboard.click = mainmenu_enter_custom_keyboard_config;
     local->input_custom_keyboard.userdata = (void*)scene;
 
+    int jcount = joystick_count();
     local->input_joystick1.click = mainmenu_set_joystick1;
     local->input_joystick1.userdata = (void*)scene;
+    if (jcount < 1) {
+        local->input_joystick1.disabled = 1;
+    }
 
     local->input_joystick2.click = mainmenu_set_joystick2;
     local->input_joystick2.userdata = (void*)scene;
+    if (jcount < 2) {
+        local->input_joystick2.disabled = 1;
+    }
 
     menu_create(&local->input_custom_keyboard_menu, 165, 5, 151, 119);
     textbutton_create(&local->input_custom_keyboard_header, &font_large, "CUSTOM INPUT SETUP");

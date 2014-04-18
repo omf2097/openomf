@@ -23,6 +23,48 @@ void joystick_cmd(controller *ctrl, int action, ctrl_event **ev) {
     k->current |= action;
 }
 
+int joystick_count() {
+    int valid_joysticks = 0;
+    SDL_Joystick *joy;
+    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        joy = SDL_JoystickOpen(i);
+        if (joy) {
+            valid_joysticks++;
+        }
+        if (SDL_JoystickGetAttached(joy)) {
+            SDL_JoystickClose(joy);
+        }
+    }
+    return valid_joysticks;
+}
+
+int joystick_nth_id(int n) {
+    SDL_Joystick *joy;
+    int c = 0;
+    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        joy = SDL_JoystickOpen(i);
+        if (joy) {
+            c++;
+            if (SDL_JoystickGetAttached(joy)) {
+                SDL_JoystickClose(joy);
+            }
+            if (c == n) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+int joystick_name_to_id(const char *name) {
+    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+        if (!strcmp(name, SDL_GameControllerNameForIndex(i))) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 int joystick_poll(controller *ctrl, ctrl_event **ev) {
     joystick *k = ctrl->data;
 
@@ -105,7 +147,7 @@ int joystick_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
     return 0;
 }
 
-void joystick_create(controller *ctrl, int joystick_id) {
+int joystick_create(controller *ctrl, int joystick_id) {
     joystick *k = malloc(sizeof(joystick));
     k->keys = malloc(sizeof(joystick_keys));
     k->keys->x_axis = SDL_CONTROLLER_AXIS_LEFTX;
@@ -124,5 +166,10 @@ void joystick_create(controller *ctrl, int joystick_id) {
     ctrl->event_fun = &joystick_event;
 
     k->joy = SDL_GameControllerOpen(joystick_id);
+    if (k->joy) {
+        return 1;
+    }
+    DEBUG("failed to open joystick: %s", SDL_GetError());
+    return 0;
 
 }

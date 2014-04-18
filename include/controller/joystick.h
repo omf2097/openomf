@@ -23,7 +23,12 @@ struct joystick_t {
     int current;
 };
 
-void joystick_create(controller *ctrl, int joystick_id);
+int joystick_create(controller *ctrl, int joystick_id);
 void joystick_free(controller *ctrl);
+
+
+int joystick_count();
+int joystick_nth_id(int n);
+int joystick_name_to_id(const char *name);
 
 #endif // _joystick_H
