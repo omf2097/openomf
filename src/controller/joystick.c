@@ -58,7 +58,7 @@ int joystick_nth_id(int n) {
 
 int joystick_name_to_id(const char *name) {
     for (int i = 0; i < SDL_NumJoysticks(); i++) {
-        if (!strcmp(name, SDL_GameControllerNameForIndex(i))) {
+        if (!strcmp(name, SDL_JoystickNameForIndex(i))) {
             return i;
         }
     }

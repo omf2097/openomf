@@ -345,11 +345,11 @@ void mainmenu_set_joystick1(component *c, void *userdata) {
     if(local->input_selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
         free(k->joy_name1);
-        k->joy_name1 = dupestr(SDL_GameControllerNameForIndex(joystick_nth_id(1)));
+        k->joy_name1 = dupestr(SDL_JoystickNameForIndex(joystick_nth_id(1)));
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
         free(k->joy_name2);
-        k->joy_name2 = dupestr(SDL_GameControllerNameForIndex(joystick_nth_id(1)));
+        k->joy_name2 = dupestr(SDL_JoystickNameForIndex(joystick_nth_id(1)));
     }
     reconfigure_controller(((scene*) userdata)->gs);
 }
