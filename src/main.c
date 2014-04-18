@@ -246,7 +246,7 @@ int main(int argc, char *argv[]) {
     }
     INFO("Found %d joysticks attached", SDL_NumJoysticks());
     SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
-    SDL_GameControllerAddMappingsFromRW(rw, 0);
+    SDL_GameControllerAddMappingsFromRW(rw, 1);
     SDL_Joystick *joy;
     char guidstr[33];
     for (int i = 0; i < SDL_NumJoysticks(); i++) {
