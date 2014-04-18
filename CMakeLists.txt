@@ -9,8 +9,6 @@ set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer -Werror")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
 set(CMAKE_C_FLAGS_MINSIZEREL "-Os")
 
-set(SHADOWDIVE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include PARENT_SCOPE)
-
 link_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(include/)
 
