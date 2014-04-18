@@ -176,60 +176,66 @@ void newsroom_overlay_render(scene *scene) {
 int newsroom_event(scene *scene, SDL_Event *event) {
     newsroom_local *local = scene_get_userdata(scene);
 
-    if(event->type == SDL_KEYDOWN) {
-        switch(event->key.keysym.sym) {
-            case SDLK_ESCAPE:
-            case SDLK_RETURN:
-                local->screen++;
-                newsroom_fixup_str(local);
-                if(local->screen >= 2) {
-                  if (local->won) {
-                    // pick a new player
-                    game_player *p1 = game_state_get_player(scene->gs, 0);
-                    game_player *p2 = game_state_get_player(scene->gs, 1);
-                    DEBUG("wins are %d", p1->sp_wins);
-                    if (p1->sp_wins == (4094 ^ (2 << p1->pilot_id)))  {
-                      // won the game
-                      game_state_set_next(scene->gs, SCENE_END);
-                    } else {
-                      if (p1->sp_wins == (2046 ^ (2 << p1->pilot_id))) {
-                        // everyone but kriessack
-                        p2->pilot_id = 10;
-                        p2->har_id = HAR_NOVA;
-                      } else {
-                        // pick an opponent we have not yet beaten
-                        while(1) {
-                          int i = rand_int(10);
-                          if ((2 << i) & p1->sp_wins || i == p1->pilot_id) {
-                            continue;
-                          }
-                          p2->pilot_id = i;
-                          p2->har_id = HAR_JAGUAR + rand_int(10);
-                          break;
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    ctrl_event *p1=NULL, *i;
+    controller_event(player1->ctrl, event, &p1);
+    i = p1;
+    if (i) {
+        do {
+            if(i->type == EVENT_TYPE_ACTION) {
+                if (
+                        i->event_data.action == ACT_ESC ||
+                        i->event_data.action == ACT_KICK ||
+                        i->event_data.action == ACT_PUNCH) {
+                    local->screen++;
+                    newsroom_fixup_str(local);
+                    if(local->screen >= 2) {
+                        if (local->won) {
+                            // pick a new player
+                            game_player *p1 = game_state_get_player(scene->gs, 0);
+                            game_player *p2 = game_state_get_player(scene->gs, 1);
+                            DEBUG("wins are %d", p1->sp_wins);
+                            if (p1->sp_wins == (4094 ^ (2 << p1->pilot_id)))  {
+                                // won the game
+                                game_state_set_next(scene->gs, SCENE_END);
+                            } else {
+                                if (p1->sp_wins == (2046 ^ (2 << p1->pilot_id))) {
+                                    // everyone but kriessack
+                                    p2->pilot_id = 10;
+                                    p2->har_id = HAR_NOVA;
+                                } else {
+                                    // pick an opponent we have not yet beaten
+                                    while(1) {
+                                        int i = rand_int(10);
+                                        if ((2 << i) & p1->sp_wins || i == p1->pilot_id) {
+                                            continue;
+                                        }
+                                        p2->pilot_id = i;
+                                        p2->har_id = HAR_JAGUAR + rand_int(10);
+                                        break;
+                                    }
+                                }
+                                pilot p;
+                                pilot_get_info(&p, p2->pilot_id);
+                                p2->colors[0] = p.colors[0];
+                                p2->colors[1] = p.colors[1];
+                                p2->colors[2] = p.colors[2];
+
+                                // make a new AI controller
+                                controller *ctrl = malloc(sizeof(controller));
+                                controller_init(ctrl);
+                                ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
+                                game_player_set_ctrl(p2, ctrl);
+                                // TODO set player's colors
+                                game_state_set_next(scene->gs, SCENE_VS);
+                            }
+                        } else {
+                            game_state_set_next(scene->gs, SCENE_MENU);
                         }
-                      }
-                      pilot p;
-                      pilot_get_info(&p, p2->pilot_id);
-                      p2->colors[0] = p.colors[0];
-                      p2->colors[1] = p.colors[1];
-                      p2->colors[2] = p.colors[2];
-
-                      // make a new AI controller
-                      controller *ctrl = malloc(sizeof(controller));
-                      controller_init(ctrl);
-                      ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
-                      game_player_set_ctrl(p2, ctrl);
-                      // TODO set player's colors
-                      game_state_set_next(scene->gs, SCENE_VS);
                     }
-                  } else {
-                    game_state_set_next(scene->gs, SCENE_MENU);
-                  }
                 }
-                break;
-        }
-
-        return 1;
+            }
+        } while((i = i->next));
     }
     return 0;
 }

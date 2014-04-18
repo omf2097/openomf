@@ -2,6 +2,7 @@
 #include <math.h>
 #include <SDL2/SDL.h>
 #include "controller/keyboard.h"
+#include "controller/joystick.h"
 #include "utils/log.h"
 #include "game/serial.h"
 #include "resources/ids.h"
@@ -65,6 +66,8 @@ int game_state_create(game_state *gs, int net_mode) {
         gs->players[i] = malloc(sizeof(game_player));
         game_player_create(gs->players[i]);
     }
+
+    reconfigure_controller(gs);
 
     // Select correct starting scene and load resources
     int nscene = (net_mode == NET_MODE_NONE ? SCENE_INTRO : SCENE_MENU);
@@ -559,6 +562,70 @@ game_player* game_state_get_player(game_state *gs, int player_id) {
 
 int game_state_num_players(game_state *gs) {
     return sizeof(gs->players)/sizeof(game_player*);
+}
+
+void _setup_keyboard(game_state *gs, int player_id) {
+    settings_keyboard *k = &settings_get()->keys;
+    // Set up controller
+    controller *ctrl = malloc(sizeof(controller));
+    game_player *player = game_state_get_player(gs, player_id);
+    controller_init(ctrl);
+
+    // Set up keyboards
+    keyboard_keys *keys = malloc(sizeof(keyboard_keys));
+    if(player_id == 0) {
+        keys->up = SDL_GetScancodeFromName(k->key1_up);
+        keys->down = SDL_GetScancodeFromName(k->key1_down);
+        keys->left = SDL_GetScancodeFromName(k->key1_left);
+        keys->right = SDL_GetScancodeFromName(k->key1_right);
+        keys->punch = SDL_GetScancodeFromName(k->key1_punch);
+        keys->kick = SDL_GetScancodeFromName(k->key1_kick);
+        keys->escape = SDL_GetScancodeFromName(k->key1_escape);
+    } else {
+        keys->up = SDL_GetScancodeFromName(k->key2_up);
+        keys->down = SDL_GetScancodeFromName(k->key2_down);
+        keys->left = SDL_GetScancodeFromName(k->key2_left);
+        keys->right = SDL_GetScancodeFromName(k->key2_right);
+        keys->punch = SDL_GetScancodeFromName(k->key2_punch);
+        keys->kick = SDL_GetScancodeFromName(k->key2_kick);
+        keys->escape = SDL_GetScancodeFromName(k->key2_escape);
+    }
+
+    keyboard_create(ctrl, keys, 0);
+
+    // Set up player controller
+    game_player_set_ctrl(player, ctrl);
+    game_player_set_selectable(player, 1);
+}
+
+void _setup_ai(game_state *gs, int player_id) {
+    controller *ctrl = malloc(sizeof(controller));
+    game_player *player = game_state_get_player(gs, player_id);
+    controller_init(ctrl);
+
+    ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
+
+    game_player_set_ctrl(player, ctrl);
+    game_player_set_selectable(player, 0);
+}
+
+void _setup_joystick(game_state *gs, int player_id, int joystick) {
+    controller *ctrl = malloc(sizeof(controller));
+    game_player *player = game_state_get_player(gs, player_id);
+    controller_init(ctrl);
+
+    joystick_create(ctrl, joystick);
+    game_player_set_ctrl(player, ctrl);
+    game_player_set_selectable(player, 1);
+}
+
+void reconfigure_controller(game_state *gs) {
+    settings_keyboard *k = &settings_get()->keys;
+    if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
+        _setup_keyboard(gs, 0);
+    } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
+        _setup_joystick(gs, 0, 0);
+    }
 }
 
 void game_state_init_demo(game_state *gs) {

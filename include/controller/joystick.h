@@ -13,6 +13,7 @@ struct joystick_keys_t {
     int dpad[4];
     int punch;
     int kick;
+    int escape;
 };
 
 struct joystick_t {

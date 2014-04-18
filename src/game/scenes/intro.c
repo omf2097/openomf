@@ -11,16 +11,22 @@ typedef struct intro_local_t {
     int ticks;
 } intro_local;
 
-int intro_event(scene *scene, SDL_Event *e) {
-    switch(e->type) {
-    case SDL_KEYDOWN:
-        if(e->key.keysym.sym == SDLK_ESCAPE ||
-           e->key.keysym.sym == SDLK_RETURN ||
-           e->key.keysym.sym == SDLK_KP_ENTER) {
-            game_state_set_next(scene->gs, SCENE_MENU);
-            return 1;
-        }
-        break;
+int intro_event(scene *scene, SDL_Event *event) {
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    ctrl_event *p1=NULL, *i;
+    controller_event(player1->ctrl, event, &p1);
+    i = p1;
+    if (i) {
+        do {
+            if(i->type == EVENT_TYPE_ACTION) {
+                if (
+                        i->event_data.action == ACT_ESC ||
+                        i->event_data.action == ACT_KICK ||
+                        i->event_data.action == ACT_PUNCH) {
+                    game_state_set_next(scene->gs, SCENE_MENU);
+                }
+            }
+        } while((i = i->next));
     }
     return 1;
 }

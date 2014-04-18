@@ -80,30 +80,6 @@ int menu_handle_event(menu *menu, SDL_Event *event) {
     component **c;
     c = vector_get(&menu->objs, menu->selected);
 
-    // Handle selection
-    switch(event->type) {
-        case SDL_KEYDOWN:
-            if(event->key.keysym.sym == SDLK_DOWN || event->key.keysym.sym == SDLK_UP) {
-                (*c)->selected = 0;
-                do {
-                    if(event->key.keysym.sym == SDLK_DOWN) {
-                        menu->selected++;
-                    }
-                    if(event->key.keysym.sym == SDLK_UP) {
-                        menu->selected--;
-                    }
-                    // wrap around
-                    if(menu->selected < 0) menu->selected = vector_size(&menu->objs) - 1;
-                    if(menu->selected >= vector_size(&menu->objs)) menu->selected = 0;
-
-                    // Update selected component
-                    c = vector_get(&menu->objs, menu->selected);
-                } while ((*c)->disabled);
-                (*c)->selected = 1;
-                return 0;
-            }
-    }
-
     if(!(*c)->event(*c, event)) {
         return 0;
     }

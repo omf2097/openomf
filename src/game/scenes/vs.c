@@ -109,10 +109,6 @@ void vs_tick(scene *scene) {
 }
 
 int vs_event(scene *scene, SDL_Event *event) {
-    if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
-        game_state_set_next(scene->gs, SCENE_MELEE);
-        return 1;
-    }
     ctrl_event *p1=NULL, *i;
     game_player *player1 = game_state_get_player(scene->gs, 0);
     controller_event(player1->ctrl, event, &p1);
@@ -120,7 +116,12 @@ int vs_event(scene *scene, SDL_Event *event) {
     if (i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                vs_handle_action(scene, i->event_data.action);
+                if (i->event_data.action == ACT_ESC) {
+                    game_state_set_next(scene->gs, SCENE_MELEE);
+                    return 1;
+                } else {
+                    vs_handle_action(scene, i->event_data.action);
+                }
             } else if (i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return 1;

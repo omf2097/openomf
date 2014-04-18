@@ -40,16 +40,6 @@ void textbutton_render(component *c) {
 }
 
 int textbutton_event(component *c, SDL_Event *event) {
-    // Handle selection
-    switch(event->type) {
-        case SDL_KEYDOWN:
-            if(event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_KP_ENTER) {
-                if(c->click != NULL) {
-                    c->click(c, c->userdata);
-                }
-                return 0;
-            }
-    }
     return 1;
 }
 

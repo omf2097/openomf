@@ -343,51 +343,51 @@ void handle_action(scene *scene, int player, int action) {
 
 int melee_event(scene *scene, SDL_Event *event) {
     melee_local *local = scene_get_userdata(scene);
-    if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
-        if (local->selection == 1) {
-            // restore the player selection
-            local->column_a = local->pilot_id_a % 5;
-            local->row_a = local->pilot_id_a / 5;
-            local->column_b = local->pilot_id_b % 5;
-            local->row_b = local->pilot_id_b / 5;
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    game_player *player2 = game_state_get_player(scene->gs, 1);
+    ctrl_event *p1=NULL, *p2 = NULL, *i;
+    controller_event(player1->ctrl, event, &p1);
+    controller_event(player2->ctrl, event, &p2);
+    i = p1;
+    if (i) {
+        do {
+            if(i->type == EVENT_TYPE_ACTION) {
+                if (i->event_data.action == ACT_ESC) {
+                    if (local->selection == 1) {
+                        // restore the player selection
+                        local->column_a = local->pilot_id_a % 5;
+                        local->row_a = local->pilot_id_a / 5;
+                        local->column_b = local->pilot_id_b % 5;
+                        local->row_b = local->pilot_id_b / 5;
 
-            local->selection = 0;
-            local->done_a = 0;
-            local->done_b = 0;
-        } else {
-            game_state_set_next(scene->gs, SCENE_MENU);
-        }
-    } else {
-        game_player *player1 = game_state_get_player(scene->gs, 0);
-        game_player *player2 = game_state_get_player(scene->gs, 1);
-        ctrl_event *p1=NULL, *p2 = NULL, *i;
-        controller_event(player1->ctrl, event, &p1);
-        controller_event(player2->ctrl, event, &p2);
-        i = p1;
-        if (i) {
-            do {
-                if(i->type == EVENT_TYPE_ACTION) {
+                        local->selection = 0;
+                        local->done_a = 0;
+                        local->done_b = 0;
+                    } else {
+                        game_state_set_next(scene->gs, SCENE_MENU);
+                    }
+                } else {
                     handle_action(scene, 1, i->event_data.action);
-                } else if (i->type == EVENT_TYPE_CLOSE) {
-                    game_state_set_next(scene->gs, SCENE_MENU);
-                    return 0;
                 }
-            } while((i = i->next));
-        }
-        controller_free_chain(p1);
-        i = p2;
-        if (i) {
-            do {
-                if(i->type == EVENT_TYPE_ACTION) {
-                    handle_action(scene, 2, i->event_data.action);
-                } else if (i->type == EVENT_TYPE_CLOSE) {
-                    game_state_set_next(scene->gs, SCENE_MENU);
-                    return 0;
-                }
-            } while((i = i->next));
-        }
-        controller_free_chain(p2);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return 0;
+            }
+        } while((i = i->next));
     }
+    controller_free_chain(p1);
+    i = p2;
+    if (i) {
+        do {
+            if(i->type == EVENT_TYPE_ACTION) {
+                handle_action(scene, 2, i->event_data.action);
+            } else if (i->type == EVENT_TYPE_CLOSE) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                return 0;
+            }
+        } while((i = i->next));
+    }
+    controller_free_chain(p2);
     return 0;
 }
 

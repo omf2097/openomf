@@ -81,6 +81,10 @@ int joystick_poll(controller *ctrl, ctrl_event **ev) {
         joystick_cmd(ctrl, ACT_KICK, ev);
     }
 
+    if (SDL_GameControllerGetButton(k->joy, k->keys->escape)) {
+        joystick_cmd(ctrl, ACT_ESC, ev);
+    }
+
     if (k->current == 0) {
         joystick_cmd(ctrl, ACT_STOP, ev);
     }
@@ -112,6 +116,7 @@ void joystick_create(controller *ctrl, int joystick_id) {
     k->keys->dpad[3] = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
     k->keys->punch = SDL_CONTROLLER_BUTTON_A;
     k->keys->kick = SDL_CONTROLLER_BUTTON_B;
+    k->keys->escape = SDL_CONTROLLER_BUTTON_START;
     k->last = 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_GAMEPAD;

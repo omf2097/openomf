@@ -154,59 +154,6 @@ typedef struct mainmenu_local_t {
     int mstack_pos;
 } mainmenu_local;
 
-void _setup_keyboard(game_state *gs, int player_id) {
-    settings_keyboard *k = &settings_get()->keys;
-    // Set up controller
-    controller *ctrl = malloc(sizeof(controller));
-    game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
-
-    // Set up keyboards
-    keyboard_keys *keys = malloc(sizeof(keyboard_keys));
-    if(player_id == 0) {
-        keys->up = SDL_GetScancodeFromName(k->key1_up);
-        keys->down = SDL_GetScancodeFromName(k->key1_down);
-        keys->left = SDL_GetScancodeFromName(k->key1_left);
-        keys->right = SDL_GetScancodeFromName(k->key1_right);
-        keys->punch = SDL_GetScancodeFromName(k->key1_punch);
-        keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-    } else {
-        keys->up = SDL_GetScancodeFromName(k->key2_up);
-        keys->down = SDL_GetScancodeFromName(k->key2_down);
-        keys->left = SDL_GetScancodeFromName(k->key2_left);
-        keys->right = SDL_GetScancodeFromName(k->key2_right);
-        keys->punch = SDL_GetScancodeFromName(k->key2_punch);
-        keys->kick = SDL_GetScancodeFromName(k->key2_kick);
-    }
-
-    keyboard_create(ctrl, keys, 0);
-
-    // Set up player controller
-    game_player_set_ctrl(player, ctrl);
-    game_player_set_selectable(player, 1);
-}
-
-void _setup_ai(game_state *gs, int player_id) {
-    controller *ctrl = malloc(sizeof(controller));
-    game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
-
-    ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
-
-    game_player_set_ctrl(player, ctrl);
-    game_player_set_selectable(player, 0);
-}
-
-void _setup_joystick(game_state *gs, int player_id, int joystick) {
-    controller *ctrl = malloc(sizeof(controller));
-    game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
-
-    joystick_create(ctrl, joystick);
-    game_player_set_ctrl(player, ctrl);
-    game_player_set_selectable(player, 1);
-}
-
 char *dupestr(const char *s) {
     return strcpy(malloc(strlen(s)+1), s);
 }
@@ -299,6 +246,12 @@ void mainmenu_demo(component *c, void *userdata) {
     game_state_set_next(s->gs, rand_arena());
 }
 
+void mainmenu_prev_menu(component *c, void *userdata) {
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
+    local->mstack[--local->mstack_pos] = NULL;
+    local->current_menu = local->mstack[local->mstack_pos - 1];
+}
+
 void mainmenu_enter_menu_config(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     local->mstack[local->mstack_pos++] = &local->config_menu;
@@ -328,6 +281,8 @@ void mainmenu_set_right_keyboard(component *c, void *userdata) {
         free(k->key1_kick);
         k->key1_kick = dupestr(SDL_GetScancodeName(SDL_SCANCODE_RSHIFT));
         update_keys(local, 1);
+        k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
+        reconfigure_controller(((scene*) userdata)->gs);
     } else  if(local->input_selected_player == 2) {
         free(k->key2_up);
         k->key2_up = dupestr(SDL_GetScancodeName(SDL_SCANCODE_UP));
@@ -342,6 +297,7 @@ void mainmenu_set_right_keyboard(component *c, void *userdata) {
         free(k->key2_kick);
         k->key2_kick = dupestr(SDL_GetScancodeName(SDL_SCANCODE_RSHIFT));
         update_keys(local, 2);
+        k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
     }
 }
 
@@ -362,6 +318,8 @@ void mainmenu_set_left_keyboard(component *c, void *userdata) {
         free(k->key1_kick);
         k->key1_kick = dupestr(SDL_GetScancodeName(SDL_SCANCODE_LCTRL));
         update_keys(local, 1);
+        k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
+        reconfigure_controller(((scene*) userdata)->gs);
     } else  if(local->input_selected_player == 2) {
         free(k->key2_up);
         k->key2_up = dupestr(SDL_GetScancodeName(SDL_SCANCODE_W));
@@ -375,6 +333,7 @@ void mainmenu_set_left_keyboard(component *c, void *userdata) {
         k->key2_punch = dupestr(SDL_GetScancodeName(SDL_SCANCODE_LSHIFT));
         free(k->key2_kick);
         k->key2_kick = dupestr(SDL_GetScancodeName(SDL_SCANCODE_LCTRL));
+        k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
         update_keys(local, 2);
     }
 }
@@ -387,6 +346,7 @@ void mainmenu_set_joystick1(component *c, void *userdata) {
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
     }
+    reconfigure_controller(((scene*) userdata)->gs);
 }
 
 void mainmenu_set_joystick2(component *c, void *userdata) {
@@ -397,12 +357,25 @@ void mainmenu_set_joystick2(component *c, void *userdata) {
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
     }
+    reconfigure_controller(((scene*) userdata)->gs);
 }
 
 void mainmenu_enter_custom_keyboard_config(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     local->mstack[local->mstack_pos++] = &local->input_custom_keyboard_menu;
     local->current_menu = &local->input_custom_keyboard_menu;
+}
+
+void mainmenu_apply_custom_input_config(component *c, void *userdata) {
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
+    settings_keyboard *k = &settings_get()->keys;
+    if(local->input_selected_player == 1) {
+        k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
+    } else {
+        k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
+    }
+    reconfigure_controller(((scene*) userdata)->gs);
+    mainmenu_prev_menu(c, userdata);
 }
 
 void mainmenu_enter_playerone_input_config(component *c, void *userdata) {
@@ -450,12 +423,6 @@ void mainmenu_enter_menu_listen(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     local->mstack[local->mstack_pos++] = &local->listen_menu;
     local->current_menu = &local->listen_menu;
-}
-
-void mainmenu_prev_menu(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[--local->mstack_pos] = NULL;
-    local->current_menu = local->mstack[local->mstack_pos - 1];
 }
 
 void inputmenu_set_key(component *c, void *userdata) {
@@ -862,40 +829,45 @@ void mainmenu_tick(scene *scene) {
 int mainmenu_event(scene *scene, SDL_Event *event) {
     mainmenu_local *local = scene_get_userdata(scene);
 
-    if(event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
-        if(local->current_menu == &local->main_menu) {
-            if(menu_selected(&local->main_menu) == &local->quit_button) {
-                game_state_set_next(scene->gs, SCENE_CREDITS);
-            } else {
-                menu_select(&local->main_menu, &local->quit_button);
-            }
-            return 1;
-        } else {
-            if(local->host) {
-                enet_host_destroy(local->host);
-                local->host = NULL;
-            }
-            local->mstack[--local->mstack_pos] = NULL;
-            local->current_menu = local->mstack[local->mstack_pos-1];
-            return 1;
-        }
-    } else {
-        game_player *player1 = game_state_get_player(scene->gs, 0);
-        if (player1->ctrl->type == CTRL_TYPE_GAMEPAD) {
-            ctrl_event *p1=NULL, *i;
-            controller_event(player1->ctrl, event, &p1);
-            i = p1;
-            if (i) {
-                do {
-                    if(i->type == EVENT_TYPE_ACTION) {
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    if (player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
+            (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN
+             && keyboard_binds_key(player1->ctrl, event))) {
+        ctrl_event *p1=NULL, *i;
+        controller_event(player1->ctrl, event, &p1);
+        i = p1;
+        if (i) {
+            do {
+                if(i->type == EVENT_TYPE_ACTION) {
+                        DEBUG("ACTION");
+                    if (i->event_data.action == ACT_ESC) {
+                        DEBUG("ESC");
+                        if(local->current_menu == &local->main_menu) {
+                            if(menu_selected(&local->main_menu) == &local->quit_button) {
+                                game_state_set_next(scene->gs, SCENE_CREDITS);
+                            } else {
+                                menu_select(&local->main_menu, &local->quit_button);
+                            }
+                            return 1;
+                        } else {
+                            DEBUG("go up");
+                            if(local->host) {
+                                enet_host_destroy(local->host);
+                                local->host = NULL;
+                            }
+                            local->mstack[--local->mstack_pos] = NULL;
+                            local->current_menu = local->mstack[local->mstack_pos-1];
+                            return 1;
+                        }
+                    } else {
                         menu_handle_action(local->current_menu, i->event_data.action);
                     }
-                } while((i = i->next));
-            }
-            controller_free_chain(p1);
+                }
+            } while((i = i->next));
         }
-        return menu_handle_event(local->current_menu, event);
+        controller_free_chain(p1);
     }
+    return menu_handle_event(local->current_menu, event);
 }
 
 void mainmenu_render(scene *scene) {
@@ -1045,11 +1017,7 @@ int mainmenu_create(scene *scene) {
        game_state_get_player(scene->gs, i)->sp_wins = 0;
     }
 
-    if (setting->keys.ctrl_type1 == CTRL_TYPE_KEYBOARD) {
-        _setup_keyboard(scene->gs, 0);
-    } else if (setting->keys.ctrl_type1 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(scene->gs, 0, 0);
-    }
+    reconfigure_controller(scene->gs);
 
     // network play menu
     menu_create(&local->net_menu, 165, 5, 151, 119);
@@ -1353,7 +1321,7 @@ int mainmenu_create(scene *scene) {
     local->input_kick_button.click = inputmenu_set_key;
     local->input_kick_button.userdata = (void*)scene;
 
-    local->input_config_done_button.click = mainmenu_prev_menu;
+    local->input_config_done_button.click = mainmenu_apply_custom_input_config;
     local->input_config_done_button.userdata = (void*)scene;
 
     // input press key menu

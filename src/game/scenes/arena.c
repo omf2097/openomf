@@ -86,6 +86,8 @@ void game_menu_quit(component *c, void *userdata) {
 
 void game_menu_return(component *c, void *userdata) {
     arena_local *local = scene_get_userdata((scene*)userdata);
+    game_player *player1 = game_state_get_player(((scene*)userdata)->gs, 0);
+    controller_set_repeat(game_player_get_ctrl(player1), 1);
     local->menu_visible = 0;
 }
 
@@ -785,23 +787,33 @@ void arena_input_tick(scene *scene) {
     }
 }
 
-int arena_event(scene *scene, SDL_Event *e) {
+int arena_event(scene *scene, SDL_Event *event) {
     arena_local *local = scene_get_userdata(scene);
 
-    switch(e->type) {
-    case SDL_KEYDOWN:
-        if(e->key.keysym.sym == SDLK_ESCAPE) {
-            if (!local->menu_visible) {
-                local->menu_visible = 1;
-            } else {
-                local->menu_visible = 0;
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    ctrl_event *p1=NULL, *i;
+    controller_event(player1->ctrl, event, &p1);
+    i = p1;
+    if (i) {
+        do {
+            if(i->type == EVENT_TYPE_ACTION) {
+                if (
+                        i->event_data.action == ACT_ESC) {
+
+                    if (!local->menu_visible) {
+                        controller_set_repeat(game_player_get_ctrl(player1), 0);
+                        local->menu_visible = 1;
+                    } else {
+                        controller_set_repeat(game_player_get_ctrl(player1), 1);
+                        local->menu_visible = 0;
+                    }
+                } else {
+                    if(local->menu_visible) {
+                        return menu_handle_action(&local->game_menu, i->event_data.action);
+                    }
+                }
             }
-            return 1;
-        }
-        break;
-    }
-    if(local->menu_visible) {
-        return menu_handle_event(&local->game_menu, e);
+        } while((i = i->next));
     }
     return 0;
 }

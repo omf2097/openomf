@@ -39,25 +39,34 @@ int cutscene_next_scene(scene *scene) {
   }
 }
 
-int cutscene_event(scene *scene, SDL_Event *e) {
+int cutscene_event(scene *scene, SDL_Event *event) {
     cutscene_local *local = scene_get_userdata(scene);
-    switch(e->type) {
-    case SDL_KEYDOWN:
-        if(e->key.keysym.sym == SDLK_RETURN) {
-          if (strlen(local->current) + local->pos < local->len) {
-            local->pos += strlen(local->current)+1;
-            local->current += strlen(local->current)+1;
-            char * p;
-            if ((p = strchr(local->current, '\n'))) {
-              // null out the byte
-              *p = '\0';
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    ctrl_event *p1=NULL, *i;
+    controller_event(player1->ctrl, event, &p1);
+    i = p1;
+    if (i) {
+        do {
+            if(i->type == EVENT_TYPE_ACTION) {
+                if (
+                        i->event_data.action == ACT_KICK ||
+                        i->event_data.action == ACT_PUNCH) {
+
+                    if (strlen(local->current) + local->pos < local->len) {
+                        local->pos += strlen(local->current)+1;
+                        local->current += strlen(local->current)+1;
+                        char * p;
+                        if ((p = strchr(local->current, '\n'))) {
+                            // null out the byte
+                            *p = '\0';
+                        }
+                    } else {
+                        game_state_set_next(scene->gs, cutscene_next_scene(scene));
+                    }
+                    return 1;
+                }
             }
-          } else {
-            game_state_set_next(scene->gs, cutscene_next_scene(scene));
-          }
-          return 1;
-        }
-        break;
+        } while((i = i->next));
     }
     return 1;
 }

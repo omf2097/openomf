@@ -111,9 +111,28 @@ int keyboard_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
         } else if (sc == k->keys->kick) {
             controller_cmd(ctrl, ACT_KICK, ev);
         }
+        if (sc == k->keys->escape) {
+            controller_cmd(ctrl, ACT_ESC, ev);
+        }
         return 0;
     }
     return 1;
+}
+
+int keyboard_binds_key(controller *ctrl, SDL_Event *event) {
+    keyboard *k = ctrl->data;
+    SDL_Scancode sc = event->key.keysym.scancode;
+    if (
+            sc == k->keys->up ||
+            sc == k->keys->down ||
+            sc == k->keys->left ||
+            sc == k->keys->right ||
+            sc == k->keys->kick ||
+            sc == k->keys->punch ||
+            sc == k->keys->escape) {
+        return 1;
+    }
+    return 0;
 }
 
 void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {

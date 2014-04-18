@@ -16,6 +16,7 @@ struct keyboard_keys_t {
     int right;
     int punch;
     int kick;
+    int escape;
 };
 
 struct keyboard_t {
@@ -29,5 +30,6 @@ struct keyboard_t {
 void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay);
 void keyboard_free(controller *ctrl);
 void keyboard_set_delay(controller *ctrl, int delay);
+int keyboard_binds_key(controller *ctrl, SDL_Event *event);
 
 #endif // _KEYBOARD_H

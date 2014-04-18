@@ -67,17 +67,6 @@ void textslider_render(component *c) {
 }
 
 int textslider_event(component *c, SDL_Event *event) {
-    // Handle selection
-    switch(event->type) {
-        case SDL_KEYDOWN:
-            if(event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_RIGHT) {
-                textslider_action(c, ACT_RIGHT);
-                return 0;
-            } else  if(event->key.keysym.sym == SDLK_LEFT) {
-                textslider_action(c, ACT_LEFT);
-                return 0;
-            }
-    }
     return 1;
 }
 

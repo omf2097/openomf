@@ -18,8 +18,9 @@ enum {
     ACT_DOWNLEFT = 128,
     ACT_DOWNRIGHT = 256,
     ACT_LEFT = 512,
-    ACT_RIGHT = 1024,
-    ACT_FLUSH = 2048
+    ACT_ESC = 1024,
+    ACT_RIGHT = 2048,
+    ACT_FLUSH = 4096
 };
 
 enum {

@@ -60,6 +60,7 @@ typedef struct settings_keyboard_t {
     char *key1_right;
     char *key1_kick;
     char *key1_punch;
+    char *key1_escape;
 
     // Player two
     int ctrl_type2;
@@ -69,6 +70,7 @@ typedef struct settings_keyboard_t {
     char *key2_right;
     char *key2_kick;
     char *key2_punch;
+    char *key2_escape;
 } settings_keyboard;
 
 typedef struct settings_network_t {

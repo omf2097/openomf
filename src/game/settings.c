@@ -89,6 +89,7 @@ const field f_keyboard[] = {
     F_STRING(settings_keyboard, key1_right, "Right"),
     F_STRING(settings_keyboard, key1_kick,  "Right Shift"),
     F_STRING(settings_keyboard, key1_punch, "Return"),
+    F_STRING(settings_keyboard, key1_escape, "Escape"),
 
     // Player two
     F_INT(settings_keyboard, ctrl_type2,  CTRL_TYPE_KEYBOARD),
@@ -97,7 +98,8 @@ const field f_keyboard[] = {
     F_STRING(settings_keyboard, key2_left,  "A"),
     F_STRING(settings_keyboard, key2_right, "D"),
     F_STRING(settings_keyboard, key2_kick,  "Left Ctrl"),
-    F_STRING(settings_keyboard, key2_punch, "Left Shift")
+    F_STRING(settings_keyboard, key2_punch, "Left Shift"),
+    F_STRING(settings_keyboard, key2_escape, "Escape")
 };
 
 const field f_net[] = {
