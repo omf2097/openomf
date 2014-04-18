@@ -182,6 +182,12 @@ void scene_youlose_anim_start(void *userdata) {
     /*arena->state = ARENA_STATE_ENDING;*/
 }
 
+void arena_repeat_controller(void *userdata) {
+    game_state *gs = userdata;
+    game_player *player1 = game_state_get_player(gs, 0);
+    controller_set_repeat(game_player_get_ctrl(player1), 1);
+}
+
 int is_netplay(scene *scene) {
     if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
             game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
@@ -477,7 +483,7 @@ void arena_maybe_turn_har(int player_id, scene* scene) {
 
     // there isn;t an idle event hook, so do the best we can...
     har *har2 = obj_har2->userdata;
-    if (har2->state == STATE_STANDING || har_is_crouching(har2) || har_is_walking(har2)) {
+    if ((har2->state == STATE_STANDING || har_is_crouching(har2) || har_is_walking(har2)) && !har2->executing_move) {
         object_set_direction(obj_har2, object_get_direction(obj_har1) * -1);
     }
 }
@@ -797,24 +803,26 @@ int arena_event(scene *scene, SDL_Event *event) {
     if (i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                if (
-                        i->event_data.action == ACT_ESC) {
-
+                if (i->event_data.action == ACT_ESC) {
                     if (!local->menu_visible) {
                         controller_set_repeat(game_player_get_ctrl(player1), 0);
                         local->menu_visible = 1;
+                        break;
                     } else {
-                        controller_set_repeat(game_player_get_ctrl(player1), 1);
+                        // wait a minute before re-eneabling repeat mode so the menu can close
+                        ticktimer_add(&game_state_get_scene(scene->gs)->tick_timer, 10, arena_repeat_controller, scene->gs);
                         local->menu_visible = 0;
+                        break;
                     }
                 } else {
                     if(local->menu_visible) {
-                        return menu_handle_action(&local->game_menu, i->event_data.action);
+                        menu_handle_action(&local->game_menu, i->event_data.action);
                     }
                 }
             }
         } while((i = i->next));
     }
+    controller_free_chain(p1);
     return 0;
 }
 

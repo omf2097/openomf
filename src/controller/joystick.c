@@ -17,7 +17,9 @@ void joystick_free(controller *ctrl) {
 
 void joystick_cmd(controller *ctrl, int action, ctrl_event **ev) {
     joystick *k = ctrl->data;
-    if (ctrl->repeat || !(k->last & action)) {
+    if (ctrl->repeat) {
+        controller_cmd(ctrl, action, ev);
+    } else if (!(k->last & action)) {
         controller_cmd(ctrl, action, ev);
     }
     k->current |= action;
