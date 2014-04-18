@@ -28,6 +28,7 @@ int intro_event(scene *scene, SDL_Event *event) {
             }
         } while((i = i->next));
     }
+    controller_free_chain(p1);
     return 1;
 }
 

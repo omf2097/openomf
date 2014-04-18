@@ -20,11 +20,11 @@ int credits_event(scene *scene, SDL_Event *event) {
                 if (
                         i->event_data.action == ACT_ESC) {
                     game_state_set_next(scene->gs, SCENE_NONE);
-                    return 1;
                 }
             }
         } while((i = i->next));
     }
+    controller_free_chain(p1);
     return 1;
 }
 

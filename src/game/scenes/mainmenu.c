@@ -122,6 +122,7 @@ typedef struct mainmenu_local_t {
     component input_custom_keyboard;
     component input_joystick1;
     component input_joystick2;
+    component input_done_button;
 
     menu input_custom_keyboard_menu;
     component input_custom_keyboard_header;
@@ -611,6 +612,15 @@ void mainmenu_free(scene *scene) {
     menu_free(&local->gameplay_menu);
 
     textbutton_free(&local->input_config_header);
+    textbutton_free(&local->input_right_keyboard);
+    textbutton_free(&local->input_left_keyboard);
+    textbutton_free(&local->input_custom_keyboard);
+    textbutton_free(&local->input_joystick1);
+    textbutton_free(&local->input_joystick2);
+    textbutton_free(&local->input_done_button);
+    menu_free(&local->input_config_menu);
+
+    textbutton_free(&local->input_custom_keyboard_header);
     textbutton_free(&local->input_up_button);
     textbutton_free(&local->input_down_button);
     textbutton_free(&local->input_left_button);
@@ -618,7 +628,7 @@ void mainmenu_free(scene *scene) {
     textbutton_free(&local->input_punch_button);
     textbutton_free(&local->input_kick_button);
     textbutton_free(&local->input_config_done_button);
-    menu_free(&local->input_config_menu);
+    menu_free(&local->input_custom_keyboard_menu);
 
     textbutton_free(&local->input_presskey_header);
     menu_free(&local->input_presskey_menu);
@@ -854,7 +864,6 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
                             } else {
                                 menu_select(&local->main_menu, &local->quit_button);
                             }
-                            return 1;
                         } else {
                             if(local->host) {
                                 enet_host_destroy(local->host);
@@ -862,7 +871,6 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
                             }
                             local->mstack[--local->mstack_pos] = NULL;
                             local->current_menu = local->mstack[local->mstack_pos-1];
-                            return 1;
                         }
                     } else {
                         menu_handle_action(local->current_menu, i->event_data.action);
@@ -1263,12 +1271,14 @@ int mainmenu_create(scene *scene) {
     textbutton_create(&local->input_custom_keyboard, &font_large, "CUSTOM KEYBOARD");
     textbutton_create(&local->input_joystick1, &font_large, "JOYSTICK 1");
     textbutton_create(&local->input_joystick2, &font_large, "JOYSTICK 2");
+    textbutton_create(&local->input_done_button, &font_large, "DONE");
     menu_attach(&local->input_config_menu, &local->input_config_header, 22);
     menu_attach(&local->input_config_menu, &local->input_right_keyboard, 11);
     menu_attach(&local->input_config_menu, &local->input_left_keyboard, 11);
     menu_attach(&local->input_config_menu, &local->input_custom_keyboard, 11);
     menu_attach(&local->input_config_menu, &local->input_joystick1, 11);
-    menu_attach(&local->input_config_menu, &local->input_joystick2, 11);
+    menu_attach(&local->input_config_menu, &local->input_joystick2, 33);
+    menu_attach(&local->input_config_menu, &local->input_done_button, 11);
 
     menu_select(&local->input_config_menu, &local->input_right_keyboard);
 
@@ -1293,6 +1303,9 @@ int mainmenu_create(scene *scene) {
     if (jcount < 2) {
         local->input_joystick2.disabled = 1;
     }
+
+    local->input_done_button.click = mainmenu_prev_menu;
+    local->input_done_button.userdata = (void*)scene;
 
     menu_create(&local->input_custom_keyboard_menu, 165, 5, 151, 119);
     textbutton_create(&local->input_custom_keyboard_header, &font_large, "CUSTOM INPUT SETUP");

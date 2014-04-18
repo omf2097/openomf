@@ -675,6 +675,7 @@ void game_state_free(game_state *gs) {
 
     // Free players
     for(int i = 0; i < 2; i++) {
+        game_player_set_ctrl(gs->players[i], NULL);
         game_player_free(gs->players[i]);
         free(gs->players[i]);
     }
