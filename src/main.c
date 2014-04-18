@@ -244,9 +244,16 @@ int main(int argc, char *argv[]) {
         err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_2;
     }
-    INFO("Found %d joysticks attached", SDL_NumJoysticks());
     SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
     SDL_GameControllerAddMappingsFromRW(rw, 1);
+    char *gamecontrollerdbpath = malloc(128);
+    snprintf(gamecontrollerdbpath, 128, "%s/gamecontrollerdb.txt", global_path_get(RESOURCE_PATH));
+    int mappings_loaded = SDL_GameControllerAddMappingsFromFile(gamecontrollerdbpath);
+    if (mappings_loaded > 0) {
+        DEBUG("loaded %d mappings from %s", mappings_loaded, gamecontrollerdbpath);
+    }
+    free(gamecontrollerdbpath);
+    INFO("Found %d joysticks attached", SDL_NumJoysticks());
     SDL_Joystick *joy;
     char guidstr[33];
     for (int i = 0; i < SDL_NumJoysticks(); i++) {
