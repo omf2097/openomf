@@ -1,28 +1,43 @@
 cmake_minimum_required(VERSION 2.6)
 project(OpenOMF C)
-
-add_subdirectory(external)
-
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
+
+# Options
+OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
+OPTION(USE_PNG "Add support for PNG screenshots" OFF)
+OPTION(USE_SUBMODULES "Add libsd and libdumb as submodules" ON)
+#OPTION(SERVER_ONLY "Do not build the game binary" OFF)
+
+# System packages
 find_package(SDL2)
 find_package(enet)
 find_package(OpenAL)
 find_package(confuse)
 
+# Only search for submodules if we want them
+IF(USE_SUBMODULES)
+    add_subdirectory(external)
+    MESSAGE(STATUS "Using submodule dumb: ${DUMB_INCLUDE_DIR}")
+    MESSAGE(STATUS "Using submodule shadowdive: ${SHADOWDIVE_INCLUDE_DIR}")
+ELSE()
+    find_package(dumb)
+    find_package(shadowdive)
+ENDIF()
+
 # These flags are used for all builds
-set(CORE_FLAGS "-Wall")
+set(CMAKE_C_FLAGS "-Wall")
 
 # Check available compiler
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_C_COMPILER_VERSION VERSION_LESS 4.8)
-        set(CORE_FLAGS "${CORE_FLAGS} -std=c99")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
     elseif(CMAKE_C_COMPILER_VERSION VERSION_LESS 4.6)
         message(FATAL_ERROR "GCC version must be at least 4.6!")
     else()
-        set(CORE_FLAGS "${CORE_FLAGS} -std=c11")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
     endif()
 elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-    set(CORE_FLAGS "${CORE_FLAGS} -std=c11")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
     # On travis CMAKE_C_COMPILER_VERSION returns an empty string!
     if("${CMAKE_C_COMPILER_VERSION}" STREQUAL "")
         message(WARNING "Could not determine the version of your Clang compiler")
@@ -32,7 +47,7 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
         endif()
     endif()
 else()
-    set(CORE_FLAGS "${CORE_FLAGS} -std=c11")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
     message(WARNING "Unsupported compiler!")
 endif()
 
@@ -41,35 +56,29 @@ endif()
 IF(MINGW)
     set(LIBINTL_INCLUDE_DIR "")
     set(LIBINTL_LIBRARIES "")
-    set(CORE_FLAGS "${CORE_FLAGS} -static-libgcc")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
 ELSE(MINGW)
     find_package(Libintl)
 ENDIF(MINGW)
-
-# Options
-OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
-OPTION(USE_PNG "Add support for PNG screenshots" OFF)
-#OPTION(SERVER_ONLY "Do not build the game binary" OFF)
 
 # If we want to build support for vorbis streaming, find these too
 IF(USE_OGGVORBIS)
     find_package(ogg)
     find_package(vorbis)
-    set(CORE_FLAGS "${CORE_FLAGS} -DUSE_OGGVORBIS")
-ENDIF(USE_OGGVORBIS)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_OGGVORBIS")
+ENDIF()
 
 IF(USE_PNG)
     find_package(PNG)
     find_package(ZLIB)
-    set(CORE_FLAGS "${CORE_FLAGS} -DUSE_PNG")
-ENDIF(USE_PNG)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_PNG")
+ENDIF()
 
 # Build flags
-set(CMAKE_C_FLAGS "${CORE_FLAGS}")
-set(CMAKE_C_FLAGS_DEBUG "${CORE_FLAGS} -ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CORE_FLAGS} -g -O2")
-set(CMAKE_C_FLAGS_RELEASE "${CORE_FLAGS} -O2")
-set(CMAKE_C_FLAGS_MINSIZEREL "${CORE_FLAGS} -Os")
+set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer")
+set(CMAKE_C_FLAGS_RELEASE "-O2")
+set(CMAKE_C_FLAGS_MINSIZEREL "-Os")
 
 # Only strip on GCC (clang does not appreciate)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -176,22 +185,29 @@ set(OPENOMF_SRC
 set(COREINCS
     include
     ${SDL2_INCLUDE_DIR} 
-    ${SHADOWDIVE_INCLUDE_DIR} 
     ${OPENAL_INCLUDE_DIR} 
     ${CONFUSE_INCLUDE_DIR}
+    ${SHADOWDIVE_INCLUDE_DIR}
+    ${DUMB_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
 )
 
 set(CORELIBS 
     ${SDL2_LIBRARY} 
-    shadowdive
-    dumb
     ${OPENAL_LIBRARY}
     ${CONFUSE_LIBRARY}
     ${LIBINTL_LIBRARIES}
     ${ENET_LIBRARY}
 )
+
+# If we use submodules, then search shadowdive and dumb by name
+# Other wise we need to use finder script paths
+IF(USE_SUBMODULES)
+    set(CORELIBS ${CORELIBS} shadowdive dumb)
+ELSE()
+    set(CORELIBS ${CORELIBS} ${SHADOWDIVE_LIBRARY} ${DUMB_LIBRARY})
+ENDIF()
 
 # If we support ogg vorbis, add library includes etc.
 IF(USE_OGGVORBIS)
