@@ -4,7 +4,7 @@ IF(CUNIT_FOUND)
     include_directories(${CUNIT_INCLUDE_DIR} . ../include/)
     set(LIBS ${CUNIT_LIBRARY})
 
-    add_executable(test_main 
+    add_executable(openomf_test_main 
         test_main.c
         test_str.c
         test_hashmap.c
@@ -20,8 +20,8 @@ IF(CUNIT_FOUND)
         SET(LIBS ${LIBS} -lm)
     ENDIF(UNIX)
 
-    target_link_libraries(test_main ${LIBS})
+    target_link_libraries(openomf_test_main ${LIBS})
 
-    add_custom_target(test test_main)
+    add_custom_target(test openomf_test_main)
 ENDIF(CUNIT_FOUND)
 

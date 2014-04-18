@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
 project(OpenOMF C)
 
+add_subdirectory(external)
+
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 find_package(SDL2)
-find_package(shadowdive)
 find_package(enet)
-find_package(dumb)
 find_package(OpenAL)
 find_package(confuse)
 
@@ -177,7 +177,6 @@ set(COREINCS
     include
     ${SDL2_INCLUDE_DIR} 
     ${SHADOWDIVE_INCLUDE_DIR} 
-    ${DUMB_INCLUDE_DIR} 
     ${OPENAL_INCLUDE_DIR} 
     ${CONFUSE_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
@@ -186,8 +185,8 @@ set(COREINCS
 
 set(CORELIBS 
     ${SDL2_LIBRARY} 
-    ${SHADOWDIVE_LIBRARY} 
-    ${DUMB_LIBRARY} 
+    shadowdive
+    dumb
     ${OPENAL_LIBRARY}
     ${CONFUSE_LIBRARY}
     ${LIBINTL_LIBRARIES}
