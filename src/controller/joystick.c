@@ -30,9 +30,14 @@ int joystick_poll(controller *ctrl, ctrl_event **ev) {
 
     Sint16 x_axis = SDL_GameControllerGetAxis(k->joy, k->keys->x_axis);
     Sint16 y_axis = SDL_GameControllerGetAxis(k->joy, k->keys->y_axis);
+    int dpadup = SDL_GameControllerGetButton(k->joy, k->keys->dpad[0]);
+    int dpaddown = SDL_GameControllerGetButton(k->joy, k->keys->dpad[1]);
+    int dpadleft = SDL_GameControllerGetButton(k->joy, k->keys->dpad[2]);
+    int dpadright = SDL_GameControllerGetButton(k->joy, k->keys->dpad[3]);
 
     // joystick input
-    // TODO there's no tolerances here, my gamepas has a square hole for the joysticks so it is easy to get the stick into the corner
+    // TODO the devide by 2 should be a 'dead zone' variable that can be set in the option menu but this devide works well 99% of the time.
+    // Analog Stick (Axis 1) Movement
     if (x_axis <= LEFT/2 && y_axis <= UP/2) {
         joystick_cmd(ctrl, ACT_UPLEFT, ev);
     } else if (x_axis <= LEFT/2 && y_axis >= DOWN/2) {
@@ -48,6 +53,24 @@ int joystick_poll(controller *ctrl, ctrl_event **ev) {
     } else if (y_axis <= UP/2) {
         joystick_cmd(ctrl, ACT_UP, ev);
     } else if (y_axis >= DOWN/2) {
+        joystick_cmd(ctrl, ACT_DOWN, ev);
+    }
+
+    if (dpadup && dpadleft) {
+        joystick_cmd(ctrl, ACT_UPLEFT, ev);
+    } else if (dpaddown && dpadleft) {
+        joystick_cmd(ctrl, ACT_DOWNLEFT, ev);
+    } else if (dpadup && dpadright) {
+        joystick_cmd(ctrl, ACT_UPRIGHT, ev);
+    } else if (dpaddown && dpadright) {
+        joystick_cmd(ctrl, ACT_DOWNRIGHT, ev);
+    } else if (dpadright) {
+        joystick_cmd(ctrl, ACT_RIGHT, ev);
+    } else if (dpadleft) {
+        joystick_cmd(ctrl, ACT_LEFT, ev);
+    } else if (dpadup) {
+        joystick_cmd(ctrl, ACT_UP, ev);
+    } else if (dpaddown) {
         joystick_cmd(ctrl, ACT_DOWN, ev);
     }
 
@@ -83,6 +106,10 @@ void joystick_create(controller *ctrl, int joystick_id) {
     k->keys = malloc(sizeof(joystick_keys));
     k->keys->x_axis = SDL_CONTROLLER_AXIS_LEFTX;
     k->keys->y_axis = SDL_CONTROLLER_AXIS_LEFTY;
+    k->keys->dpad[0] = SDL_CONTROLLER_BUTTON_DPAD_UP;
+    k->keys->dpad[1] = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+    k->keys->dpad[2] = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+    k->keys->dpad[3] = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
     k->keys->punch = SDL_CONTROLLER_BUTTON_A;
     k->keys->kick = SDL_CONTROLLER_BUTTON_B;
     k->last = 0;

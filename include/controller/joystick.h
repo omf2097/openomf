@@ -10,6 +10,7 @@ typedef struct joystick_t joystick;
 struct joystick_keys_t {
     int x_axis;
     int y_axis;
+    int dpad[4];
     int punch;
     int kick;
 };
