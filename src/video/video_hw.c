@@ -78,8 +78,11 @@ void hw_render_sprite_shadow(
     hw_scale_rect(state, dst);
     SDL_Texture *tex = tcache_get(sur, state->cur_palette, NULL, pal_offset);
     SDL_SetTextureColorMod(tex, 0, 0, 0);
-    SDL_SetTextureAlphaMod(tex, 96);
+    SDL_SetTextureAlphaMod(tex, 50);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+    SDL_RenderCopyEx(state->renderer, tex, NULL, dst, 0, NULL, flip_mode);
+    dst->x += 1;
+    dst->y += 1;
     SDL_RenderCopyEx(state->renderer, tex, NULL, dst, 0, NULL, flip_mode);
 }
 
