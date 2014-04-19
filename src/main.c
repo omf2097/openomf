@@ -3,7 +3,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <SDL2/SDL.h>
-#include <dumb/dumb.h>
+#include <dumb.h>
 #include <enet/enet.h>
 
 #if defined(_WIN32) || defined(WIN32)
