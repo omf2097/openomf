@@ -32,7 +32,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt);
 
 void _setup_keyboard(game_state *gs, int player_id);
 void _setup_ai(game_state *gs, int player_id);
-int _setup_joystick(game_state *gs, int player_id, const char *joyname);
+int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offset);
 void reconfigure_controller(game_state *gs);
 
 int game_state_rewind(game_state *gs, int rtt);

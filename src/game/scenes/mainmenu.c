@@ -203,7 +203,7 @@ void mainmenu_1v1(component *c, void *userdata) {
     if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 0);
     } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(s->gs, 0, k->joy_name1);
+        _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
     }
 
     _setup_ai(s->gs, 1);
@@ -219,14 +219,14 @@ void mainmenu_1v2(component *c, void *userdata) {
     if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 0);
     } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(s->gs, 0, k->joy_name1);
+        _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
     }
 
 
     if (k->ctrl_type2 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 1);
     } else if (k->ctrl_type2 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(s->gs, 1, k->joy_name2);
+        _setup_joystick(s->gs, 1, k->joy_name2, k->joy_offset2);
     }
 
     // Load MELEE scene
@@ -346,10 +346,12 @@ void mainmenu_set_joystick1(component *c, void *userdata) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
         free(k->joy_name1);
         k->joy_name1 = dupestr(SDL_JoystickNameForIndex(joystick_nth_id(1)));
+        k->joy_offset1 = joystick_offset(joystick_nth_id(1), k->joy_name1);
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
         free(k->joy_name2);
         k->joy_name2 = dupestr(SDL_JoystickNameForIndex(joystick_nth_id(1)));
+        k->joy_offset2 = joystick_offset(joystick_nth_id(1), k->joy_name2);
     }
     reconfigure_controller(((scene*) userdata)->gs);
 }
@@ -361,10 +363,12 @@ void mainmenu_set_joystick2(component *c, void *userdata) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
         free(k->joy_name1);
         k->joy_name1 = dupestr(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
+        k->joy_offset1= joystick_offset(joystick_nth_id(2), k->joy_name1);
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
         free(k->joy_name2);
         k->joy_name2 = dupestr(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
+        k->joy_offset2= joystick_offset(joystick_nth_id(2), k->joy_name2);
     }
     reconfigure_controller(((scene*) userdata)->gs);
 }

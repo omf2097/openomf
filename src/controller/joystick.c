@@ -58,10 +58,23 @@ int joystick_nth_id(int n) {
     return -1;
 }
 
-int joystick_name_to_id(const char *name) {
+int joystick_offset(int id, const char *name) {
+    int offset = 0;
+    for (int i = 0; i < id; i++) {
+        if (i != id && !strcmp(name, SDL_JoystickNameForIndex(i)))
+            offset++;
+    }
+    return offset;
+}
+
+int joystick_name_to_id(const char *name, int offset) {
     for (int i = 0; i < SDL_NumJoysticks(); i++) {
         if (!strcmp(name, SDL_JoystickNameForIndex(i))) {
-            return i;
+            if (offset) {
+                offset--;
+            } else {
+                return i;
+            }
         }
     }
     return -1;
