@@ -40,6 +40,7 @@ int main(int argc, char* argv[]) {
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,astr,end};
     const char* progname = "omf_parse";
+    int from_stdin = 0;
     
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -74,7 +75,6 @@ int main(int argc, char* argv[]) {
     }
 
     const char *str = *astr->sval;
-    int from_stdin = 0;
 
     if (strcmp("-", *astr->sval) == 0) {
         from_stdin = 1;
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
             int ikey = (int)(frame-65);
             printf("%d. Frame %d: '%c%d'\n", frame_number, ikey, frame, flen);
             frame_number++;
-            printf(otemp);
+            printf("%s", otemp);
             printf("\n");
             otemp[0] = 0;
             i++;
