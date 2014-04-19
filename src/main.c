@@ -244,6 +244,9 @@ int main(int argc, char *argv[]) {
         err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_2;
     }
+
+    // Attempt to find gamecontrollerdb.txt, either from resources or from 
+    // built-in header
     SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
     SDL_GameControllerAddMappingsFromRW(rw, 1);
     char *gamecontrollerdbpath = malloc(128);
@@ -253,6 +256,8 @@ int main(int argc, char *argv[]) {
         DEBUG("loaded %d mappings from %s", mappings_loaded, gamecontrollerdbpath);
     }
     free(gamecontrollerdbpath);
+
+    // Load up joysticks
     INFO("Found %d joysticks attached", SDL_NumJoysticks());
     SDL_Joystick *joy;
     char guidstr[33];

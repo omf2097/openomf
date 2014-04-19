@@ -22,6 +22,13 @@ void reset_targets() {
                                      SDL_TEXTUREACCESS_TARGET,
                                      NATIVE_W * state.scale_factor, 
                                      NATIVE_H * state.scale_factor);
+
+    // Update target with black pixels
+    int size = NATIVE_W * state.scale_factor * NATIVE_H * state.scale_factor * 4;
+    char *pixels = malloc(size);
+    memset(pixels, 0, size);
+    SDL_UpdateTexture(state.target, NULL, pixels, NATIVE_W * state.scale_factor * 4);
+    free(pixels);
 }
 
 int video_load_scaler(const char* name, int scale_factor) {
@@ -433,19 +440,33 @@ void video_tick() {
 
 // Called after frame has been rendered
 void video_render_finish() {
+    // Tell software/hardware renderer to finish up whatever it was doing
     state.cb.render_finish(&state);
 
+    // Set our rendertarget to screen buffer.
     SDL_SetRenderTarget(state.renderer, NULL);
+
+    // Clear screen (borders)
+    SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
+    SDL_RenderClear(state.renderer);
+
+    // Handle fading by color modulation
     uint8_t v = 255.0f * state.fade;
     SDL_SetTextureColorMod(state.target, v, v, v);
+
+    // Set screen position. take into account scaling and target moves (screen shakes)
     SDL_Rect dst;
     dst.x = state.target_move_x * state.scale_factor;
     dst.y = state.target_move_y * state.scale_factor;
     dst.w = NATIVE_W * state.scale_factor;
     dst.h = NATIVE_H * state.scale_factor;
     SDL_RenderCopy(state.renderer, state.target, NULL, &dst);
+
+    // Reset color modulation to normal
     SDL_SetTextureColorMod(state.target, 0xFF, 0xFF, 0xFF);
 
+    // Flip buffers. If vsync is off, we should sleep here
+    // so hat our main loop doesn't eat up all cpu :)
     SDL_RenderPresent(state.renderer);
     if(!state.vsync) {
         SDL_Delay(1);
