@@ -3,7 +3,7 @@
 #ifdef __linux__
 #include <strings.h> // strcasecmp
 #endif // __linux__
-#include <dumb/dumb.h>
+#include <dumb.h>
 #include "audio/sources/dumb_source.h"
 #include "utils/log.h"
 
