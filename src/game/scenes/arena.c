@@ -1025,12 +1025,14 @@ int arena_create(scene *scene) {
         // Set HAR for player
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
+
+        // Create round tokens
         for (int j = 0; j < 4; j++) {
             if (j < ceil(local->rounds / 2.0f)) {
                 local->player_rounds[i][j] = malloc(sizeof(object));
-                int xoff = 110 + 9 * j + 1 + j;
+                int xoff = 110 + 9 * j + 3 + j;
                 if (i == 1) {
-                    xoff = 210 - 9 * j - 1 - j;
+                    xoff = 210 - 9 * j - 3 - j;
                 }
                 animation *ani = &bk_get_info(&scene->bk_data, 27)->ani;
                 object_create(local->player_rounds[i][j], scene->gs, vec2i_create(xoff ,9), vec2f_create(0, 0));

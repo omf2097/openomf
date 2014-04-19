@@ -492,7 +492,7 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
         velx = (5 * cos(90 + i-(amount) / 2 + rv)) * object_get_direction(obj);
         vely = -12 * sin(i / amount + rv);
 
-        // Make sure scrap has somekind of velocity
+        // Make sure the oil drops have somekind of velocity
         // (to prevent floating scrap objects)
         if(vely < 0.1 && vely > -0.1) vely += 0.21;
 
