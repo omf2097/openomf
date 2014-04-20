@@ -6,6 +6,7 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_PNG "Add support for PNG screenshots" OFF)
 OPTION(USE_SUBMODULES "Add libsd and libdumb as submodules" ON)
+OPTION(USE_RELEASE_SUBMODULES "Build the submodules in release mode. Enable this option if debug build segfaults on mainmenu." OFF)
 #OPTION(SERVER_ONLY "Do not build the game binary" OFF)
 
 # System packages
@@ -16,7 +17,21 @@ find_package(confuse)
 
 # Only search for submodules if we want them
 IF(USE_SUBMODULES)
+    # XXX workaround for Mingw 32 bit 4.6.X - 4.8.X compilers
+    # In debug build, the game segfaults inside libdumb's SSE resampling code while loading the mainmenu.
+    # Using release build of libdumb works around that problem.
+    # If anybody could track down why that segfault occurs I would appreciate it
+    if(USE_RELEASE_SUBMODULES)
+        set(XXX_OLD_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+        set(CMAKE_BUILD_TYPE "Release")
+    endif()
     add_subdirectory(external)
+    if(USE_RELEASE_SUBMODULES)
+        set_target_properties(dumb PROPERTIES DEBUG_POSTFIX "")
+        set_target_properties(shadowdive PROPERTIES DEBUG_POSTFIX "")
+        set(CMAKE_BUILD_TYPE ${XXX_OLD_BUILD_TYPE})
+    endif()
+
     MESSAGE(STATUS "Using submodule dumb: ${DUMB_INCLUDE_DIR}")
     MESSAGE(STATUS "Using submodule shadowdive: ${SHADOWDIVE_INCLUDE_DIR}")
 ELSE()
