@@ -133,6 +133,26 @@ void ai_controller_free(controller *ctrl) {
     free(a);
 }
 
+int is_special_move(af_move *move) {
+    const char *move_string = str_c(&move->move_string);
+    if (
+            !strcmp("K", move_string) ||
+            !strcmp("K1", move_string) ||
+            !strcmp("K2", move_string) ||
+            !strcmp("K3", move_string) ||
+            !strcmp("K4", move_string) ||
+            !strcmp("K6", move_string) ||
+            !strcmp("P", move_string) ||
+            !strcmp("P1", move_string) ||
+            !strcmp("P2", move_string) ||
+            !strcmp("P3", move_string) ||
+            !strcmp("P4", move_string) ||
+            !strcmp("P6", move_string)) {
+        return 0;
+    }
+    return 1;
+}
+
 int is_valid_move(af_move *move, har *h) {
     if(move->category == CAT_CLOSE && h->close != 1) {
         // not standing close enough
@@ -176,7 +196,7 @@ int maybe(int difficulty) {
     // make chance of blocking exponentially better as the difficulty inreases
     int a = rand_int(49);
     int b = difficulty*difficulty;
-    /*DEBUG("%d, %d < %d : %s", difficulty, a, b, a < b ? "true" : "false");*/
+    /*DEBUG("maybe %d, %d < %d : %s", difficulty, a, b, a < b ? "true" : "false");*/
     if(a < b) {
         return 1;
     }
@@ -293,10 +313,15 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
                     value -= ms->attempts/2;
                     value -= ms->consecutive*2;
 
+                    if (is_special_move(move) && !maybe(a->difficulty)) {
+                        DEBUG("skipping special move %s because of difficulty", str_c(&move->move_string));
+                        continue;
+                    }
+
                     if (selected_move == NULL){
                         selected_move = move;
                         top_value = value;
-                    } else if (value > top_value){
+                    } else if (value > top_value) {
                         selected_move = move;
                         top_value = value;
                     }
