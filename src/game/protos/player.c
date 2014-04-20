@@ -624,7 +624,7 @@ void player_run(object *obj) {
                     }
                 }
             } else {
-                obj->cur_sprite = NULL;
+                object_select_sprite(obj, -1);
             }
 
         }

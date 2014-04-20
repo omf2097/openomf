@@ -82,6 +82,7 @@ struct object_t {
     animation *cur_animation;
     sprite *cur_sprite;
     char *sound_translation_table;
+    uint8_t sprite_override; //< Tells whether cur_sprite should be kept constant regardless of anim string.
 
     uint8_t pal_offset;
     uint8_t cur_remap;
@@ -141,6 +142,7 @@ void object_set_animation(object *obj, animation *ani);
 animation *object_get_animation(object *obj);
 void object_set_custom_string(object *obj, const char *str);
 void object_select_sprite(object *obj, int id);
+void object_set_sprite_override(object *obj, int override);
 
 void object_set_halt(object *obj, int halt);
 int object_get_halt(object *obj);
