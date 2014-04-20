@@ -58,6 +58,7 @@ struct controller_t {
     int (*poll_fun)(controller *ctrl, ctrl_event **ev);
     int (*event_fun)(controller *ctrl, SDL_Event *event, ctrl_event **ev);
     int (*update_fun)(controller *ctrl, serial *state);
+    int (*rumble_fun)(controller *ctrl, float magnitude, int duration);
     int (*har_hook)(controller *ctrl, har_event event);
     void (*controller_hook)(controller *ctrl, int action);
     void *data;
@@ -79,5 +80,6 @@ void controller_add_hook(controller *ctrl, controller *source, void(*fp)(control
 void controller_clear_hooks(controller *ctrl);
 void controller_free_chain(ctrl_event *ev);
 void controller_set_repeat(controller *ctrl, int repeat);
+int controller_rumble(controller *ctrl, float magnitude, int duration);
 
 #endif // _CONTROLLER_H

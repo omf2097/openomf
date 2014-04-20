@@ -4,6 +4,7 @@
 #include "controller/keyboard.h"
 #include "controller/joystick.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "game/serial.h"
 #include "resources/ids.h"
 #include "resources/pilots.h"
@@ -524,6 +525,13 @@ void game_state_dynamic_tick(game_state *gs) {
         float shake_x = sin(gs->screen_shake_horizontal) * 5 * ((float)gs->screen_shake_horizontal / 15);
         float shake_y = sin(gs->screen_shake_vertical) * 5 * ((float)gs->screen_shake_vertical / 15);
         video_move_target((int)shake_x, (int)shake_y);
+        for(int i = 0; i < game_state_num_players(gs); i++) {
+            game_player *gp = game_state_get_player(gs, i);
+            controller *c = game_player_get_ctrl(gp);
+            if(c) {
+                controller_rumble(c, max2(gs->screen_shake_horizontal, gs->screen_shake_vertical)/12.0f, max2(gs->screen_shake_horizontal, gs->screen_shake_vertical) * game_state_ms_per_dyntick(gs));
+            }
+        }
     } else {
         // XXX Ocasionally the screen does not return back to normal position
         video_move_target(0, 0);

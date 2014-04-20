@@ -18,7 +18,9 @@ struct joystick_keys_t {
 
 struct joystick_t {
     SDL_GameController *joy;
+    SDL_Haptic *haptic;
     joystick_keys *keys;
+    int rumble;
     int last;
     int current;
 };

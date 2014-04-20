@@ -10,6 +10,9 @@
 
 void joystick_free(controller *ctrl) {
     joystick *k = ctrl->data;
+    if (k->haptic) {
+        SDL_HapticClose(k->haptic);
+    }
     SDL_GameControllerClose(k->joy);
     free(k->keys);
     free(k);
@@ -162,6 +165,12 @@ int joystick_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
     return 0;
 }
 
+int joystick_rumble(controller *ctrl, float magnitude, int duration) {
+    joystick *k = ctrl->data;
+    SDL_HapticRumblePlay(k->haptic, magnitude, duration);
+    return 0;
+}
+
 int joystick_create(controller *ctrl, int joystick_id) {
     joystick *k = malloc(sizeof(joystick));
     k->keys = malloc(sizeof(joystick_keys));
@@ -175,6 +184,7 @@ int joystick_create(controller *ctrl, int joystick_id) {
     k->keys->kick = SDL_CONTROLLER_BUTTON_B;
     k->keys->escape = SDL_CONTROLLER_BUTTON_START;
     k->last = 0;
+    k->rumble= 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_GAMEPAD;
     ctrl->poll_fun = &joystick_poll;
@@ -182,8 +192,24 @@ int joystick_create(controller *ctrl, int joystick_id) {
 
     k->joy = SDL_GameControllerOpen(joystick_id);
     if (k->joy) {
+        k->haptic = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(k->joy));
+        if (k->haptic) {
+            if (SDL_HapticRumbleSupported(k->haptic)) {
+                if (SDL_HapticRumbleInit(k->haptic) == 0) {
+                    k->rumble = 1;
+                    ctrl->rumble_fun = joystick_rumble;
+                } else {
+                    DEBUG("Failed to initialize rumble: %s", SDL_GetError());
+                }
+            } else {
+                DEBUG("Rumble not supported");
+            }
+        } else {
+            DEBUG("Haptic not supported");
+        }
         return 1;
     }
+
     DEBUG("failed to open joystick: %s", SDL_GetError());
     return 0;
 

@@ -16,6 +16,7 @@ void controller_init(controller *ctrl) {
     ctrl->tick_fun = NULL;
     ctrl->update_fun = NULL;
     ctrl->har_hook = NULL;
+    ctrl->rumble_fun = NULL;
     ctrl->rtt = 0;
     ctrl->repeat = 0;
 }
@@ -133,4 +134,11 @@ int controller_har_hook(controller *ctrl, har_event event) {
 
 void controller_set_repeat(controller *ctrl, int repeat) {
     ctrl->repeat = repeat;
+}
+
+int controller_rumble(controller *ctrl, float magnitude, int duration) {
+    if(ctrl->rumble_fun != NULL) {
+        return ctrl->rumble_fun(ctrl, magnitude, duration);
+    }
+    return 0;
 }
