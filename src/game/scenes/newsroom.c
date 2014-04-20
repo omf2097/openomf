@@ -277,10 +277,26 @@ int newsroom_create(scene *scene) {
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
 
-    local->won = 1;
+    int health = 0;
     if (p2->sp_wins > 0) {
-      // AI won, player lost
-      local->won = 0;
+        // AI won, player lost
+        local->won = 0;
+        health = game_player_get_score(p2)->health;
+    } else {
+        local->won = 1;
+        health = game_player_get_score(p1)->health;
+    }
+
+    DEBUG("health is %d", health);
+
+    if (health > 40 && local->won == 1) {
+        local->news_id = rand_int(6)*2;
+    } else if (local->won == 1) {
+        local->news_id = 12+rand_int(6)*2;
+    } else if (health < 40 && local->won == 0) {
+        local->news_id = 38+rand_int(5)*2;
+    } else {
+        local->news_id = 24+rand_int(7)*2;
     }
 
     // XXX TODO get the real sex of pilot

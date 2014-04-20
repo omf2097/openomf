@@ -195,6 +195,7 @@ void chr_score_hit(chr_score *score, int points) {
 void chr_score_victory(chr_score *score, int health) {
     // Add texts for scrap bonus, perfect round, whatever
     score->wins++;
+    score->health = health;
     char *text;
     if (health == 100) {
         text = malloc(64);

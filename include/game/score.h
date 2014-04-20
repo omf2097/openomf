@@ -20,6 +20,7 @@ typedef struct chr_score_t {
     int done;
     int rounds;
     int wins;
+    int health;
     int x,y;
     int direction;
     float multiplier;
