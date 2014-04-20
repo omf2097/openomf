@@ -41,6 +41,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->cur_animation_own = OWNER_EXTERNAL;
     obj->cur_animation = NULL;
     obj->cur_sprite = NULL;
+    obj->sprite_override = 0;
     obj->sound_translation_table = NULL;
     obj->cur_surface = NULL;
     obj->cur_remap = -1;
@@ -88,6 +89,7 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int8(ser, obj->layers);
     serial_write_int8(ser, obj->stride);
     serial_write_int8(ser, object_get_repeat(obj));
+    serial_write_int8(ser, obj->sprite_override);
     serial_write_int32(ser, obj->age);
     serial_write_int32(ser, random_get_seed(&obj->rand_state));
     serial_write_int8(ser, obj->cur_animation->id);
@@ -138,6 +140,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->layers = serial_read_int8(ser);
     uint8_t stride = serial_read_int8(ser);
     uint8_t repeat = serial_read_int8(ser);
+    obj->sprite_override = serial_read_int8(ser);
     obj->age = serial_read_int32(ser);
     random_seed(&obj->rand_state, serial_read_int32(ser));
     uint8_t animation_id = serial_read_int8(ser);
@@ -444,20 +447,41 @@ void object_set_animation(object *obj, animation *ani) {
 }
 
 void object_set_custom_string(object *obj, const char *str) {
-
     obj->custom_str = strcpy(malloc(strlen(str)+1), str);
     player_reload_with_str(obj, str);
     DEBUG("Set animation string to %s", str);
 }
 
+/** Returns a pointer to the currently playing animation
+  * \param obj Object handle
+  * \return animation* Pointer to current animation
+  */
 animation* object_get_animation(object *obj) {
     return obj->cur_animation;
 }
 
+/** Selects sprite to show. Note! Animation string will override this!
+  * \param obj Object handle
+  * \param id Sprite ID (starting from 0). Negative values will set sprite to nonexistent (NULL).
+  */
 void object_select_sprite(object *obj, int id) {
-    obj->cur_sprite = animation_get_sprite(obj->cur_animation, id);
-    obj->sprite_state.blendmode = BLEND_ALPHA;
-    obj->sprite_state.flipmode = FLIP_NONE;
+    if(!obj->sprite_override) {
+        if(id < 0) {
+            obj->cur_sprite = NULL;
+        } else {
+            obj->cur_sprite = animation_get_sprite(obj->cur_animation, id);
+            obj->sprite_state.blendmode = BLEND_ALPHA;
+            obj->sprite_state.flipmode = FLIP_NONE;
+        }
+    }
+}
+
+/** Tell object to NOT change currently selected sprite, even if animation string tells it to.
+  * \param obj Object handle
+  * \param override Set override (1|0)
+  */
+void object_set_sprite_override(object *obj, int override) {
+    obj->sprite_override = override;
 }
 
 void object_set_userdata(object *obj, void *ptr) { obj->userdata = ptr; }

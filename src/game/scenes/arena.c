@@ -276,9 +276,9 @@ void arena_reset(scene *sc) {
     object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0,0));
     object_set_stl(number, sc->bk_data.sound_translation_table);
     object_set_animation(number, number_ani);
-    /*object_set_finish_cb(number, scene_ready_anim_done);*/
+    object_select_sprite(number, local->round);
+    object_set_sprite_override(number, 1);
     game_state_add_object(sc->gs, number, RENDER_LAYER_TOP);
-
 }
 
 void arena_maybe_sync(scene *scene, int need_sync) {
@@ -1195,7 +1195,7 @@ int arena_create(scene *scene) {
         object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0,0));
         object_set_stl(number, scene->bk_data.sound_translation_table);
         object_set_animation(number, number_ani);
-        /*object_set_finish_cb(number, scene_ready_anim_done);*/
+        object_select_sprite(number, local->round);
         game_state_add_object(scene->gs, number, RENDER_LAYER_TOP);
 
     }
