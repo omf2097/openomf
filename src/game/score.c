@@ -48,6 +48,7 @@ void chr_score_create(chr_score *score, float multiplier) {
     score->direction = OBJECT_FACE_RIGHT;
     list_create(&score->texts);
     chr_score_reset(score, 1);
+    chr_score_reset_wins(score);
 }
 
 void chr_score_reset(chr_score *score, int wipe) {
