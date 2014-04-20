@@ -20,7 +20,7 @@ void joystick_free(controller *ctrl) {
 
 void joystick_cmd(controller *ctrl, int action, ctrl_event **ev) {
     joystick *k = ctrl->data;
-    if (ctrl->repeat) {
+    if (ctrl->repeat && action != ACT_KICK && action != ACT_PUNCH && action != ACT_ESC) {
         controller_cmd(ctrl, action, ev);
     } else if (!(k->last & action)) {
         controller_cmd(ctrl, action, ev);

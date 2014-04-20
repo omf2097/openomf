@@ -600,9 +600,19 @@ void arena_free(scene *scene) {
 
 int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
     int need_sync = 0;
+    arena_local *local = scene_get_userdata(scene);
     if (i) {
         do {
-            if(i->type == EVENT_TYPE_ACTION) {
+            if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC && player == game_state_get_player(scene->gs, 0)) {
+                // toggle menu
+                local->menu_visible = !local->menu_visible;
+                controller_set_repeat(game_player_get_ctrl(player), !local->menu_visible);
+                DEBUG("local menu %d, controller repeat %d", local->menu_visible, game_player_get_ctrl(player)->repeat);
+            } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && player == game_state_get_player(scene->gs, 0)) {
+                DEBUG("menu event %d", i->event_data.action);
+                // menu events
+                menu_handle_action(&local->game_menu, i->event_data.action);
+            } else if(i->type == EVENT_TYPE_ACTION) {
                 if (player->ctrl->type == CTRL_TYPE_NETWORK) {
                     do {
                         object_act(game_player_get_har(player), i->event_data.action);
@@ -697,71 +707,68 @@ void arena_tick(scene *scene) {
     chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 0)));
     chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 1)));
 
-    // Handle menu, if visible
-    if(!local->menu_visible) {
-        // Turn the HARs to face the enemy
-        object *obj_har1,*obj_har2;
-        obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
-        obj_har2 = game_player_get_har(game_state_get_player(scene->gs, 1));
-        har *har1, *har2;
-        har1 = obj_har1->userdata;
-        har2 = obj_har2->userdata;
+    // Turn the HARs to face the enemy
+    object *obj_har1,*obj_har2;
+    obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
+    obj_har2 = game_player_get_har(game_state_get_player(scene->gs, 1));
+    har *har1, *har2;
+    har1 = obj_har1->userdata;
+    har2 = obj_har2->userdata;
 
-        har1->delay = ceil(player2->ctrl->rtt / 2.0f);
-        har2->delay = ceil(player1->ctrl->rtt / 2.0f);
+    har1->delay = ceil(player2->ctrl->rtt / 2.0f);
+    har2->delay = ceil(player1->ctrl->rtt / 2.0f);
 
-        if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
-            settings *setting = settings_get();
-            if (setting->gameplay.hazards_on) {
-                arena_spawn_hazard(scene);
-            }
+    if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
+        settings *setting = settings_get();
+        if (setting->gameplay.hazards_on) {
+            arena_spawn_hazard(scene);
         }
-        if(local->state == ARENA_STATE_ENDING) {
-            chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
-            chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
-            if (player_frame_isset(obj_har1, "be") || player_frame_isset(obj_har2, "be") || chr_score_onscreen(s1) || chr_score_onscreen(s2)) {
-                /*DEBUG("blocking ending");*/
+    }
+    if(local->state == ARENA_STATE_ENDING) {
+        chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
+        chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
+        if (player_frame_isset(obj_har1, "be") || player_frame_isset(obj_har2, "be") || chr_score_onscreen(s1) || chr_score_onscreen(s2)) {
+            /*DEBUG("blocking ending");*/
+        } else {
+            local->ending_ticks++;
+        }
+        if(local->ending_ticks > 20) {
+            if (!local->over) {
+                arena_reset(scene);
             } else {
-                local->ending_ticks++;
-            }
-            if(local->ending_ticks > 20) {
-                if (!local->over) {
-                    arena_reset(scene);
-                } else {
-                    arena_end(scene);
-                }
+                arena_end(scene);
             }
         }
+    }
 
-        // Pour some rein!
-        if(local->rein_enabled) {
-            if(rand_float() > 0.65f) {
-                vec2i pos = vec2i_create(rand_int(NATIVE_W), -10);
-                for(int harnum = 0;harnum < game_state_num_players(gs);harnum++) {
-                    object *h_obj = game_state_get_player(gs, harnum)->har;
-                    har *h = object_get_userdata(h_obj);
-                    // Calculate velocity etc.
-                    float rv = rand_float() - 0.5f;
-                    float velx = rv;
-                    float vely = -12 * sin(0 / 2 + rv);
+    // Pour some rein!
+    if(local->rein_enabled) {
+        if(rand_float() > 0.65f) {
+            vec2i pos = vec2i_create(rand_int(NATIVE_W), -10);
+            for(int harnum = 0;harnum < game_state_num_players(gs);harnum++) {
+                object *h_obj = game_state_get_player(gs, harnum)->har;
+                har *h = object_get_userdata(h_obj);
+                // Calculate velocity etc.
+                float rv = rand_float() - 0.5f;
+                float velx = rv;
+                float vely = -12 * sin(0 / 2 + rv);
 
-                    // Make sure scrap has somekind of velocity
-                    // (to prevent floating scrap objects)
-                    if(vely < 0.1 && vely > -0.1) vely += 0.21;
+                // Make sure scrap has somekind of velocity
+                // (to prevent floating scrap objects)
+                if(vely < 0.1 && vely > -0.1) vely += 0.21;
 
-                    // Create the object
-                    object *scrap = malloc(sizeof(object));
-                    int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
-                    object_create(scrap, gs, pos, vec2f_create(velx, vely));
-                    object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
-                    object_set_gravity(scrap, 0.4f);
-                    object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
-                    object_set_layers(scrap, LAYER_SCRAP);
-                    object_tick(scrap);
-                    scrap->cast_shadow = 1;
-                    scrap_create(scrap);
-                    game_state_add_object(gs, scrap, RENDER_LAYER_TOP);
-                }
+                // Create the object
+                object *scrap = malloc(sizeof(object));
+                int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
+                object_create(scrap, gs, pos, vec2f_create(velx, vely));
+                object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
+                object_set_gravity(scrap, 0.4f);
+                object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
+                object_set_layers(scrap, LAYER_SCRAP);
+                object_tick(scrap);
+                scrap->cast_shadow = 1;
+                scrap_create(scrap);
+                game_state_add_object(gs, scrap, RENDER_LAYER_TOP);
             }
         }
     }
@@ -774,56 +781,19 @@ void arena_tick(scene *scene) {
 }
 
 void arena_input_tick(scene *scene) {
-    arena_local *local = scene_get_userdata(scene);
-
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    if(!local->menu_visible) {
-        ctrl_event *p1 = NULL, *p2 = NULL;
-        controller_poll(player1->ctrl, &p1);
-        controller_poll(player2->ctrl, &p2);
+    ctrl_event *p1 = NULL, *p2 = NULL;
+    controller_poll(player1->ctrl, &p1);
+    controller_poll(player2->ctrl, &p2);
 
-        int need_sync = 0;
-        need_sync += arena_handle_events(scene, player1, p1);
-        need_sync += arena_handle_events(scene, player2, p2);
-        controller_free_chain(p1);
-        controller_free_chain(p2);
-        arena_maybe_sync(scene, need_sync);
-    }
-}
-
-int arena_event(scene *scene, SDL_Event *event) {
-    arena_local *local = scene_get_userdata(scene);
-
-    game_player *player1 = game_state_get_player(scene->gs, 0);
-    ctrl_event *p1=NULL, *i;
-    controller_event(player1->ctrl, event, &p1);
-    i = p1;
-    if (i) {
-        do {
-            if(i->type == EVENT_TYPE_ACTION) {
-                if (i->event_data.action == ACT_ESC) {
-                    if (!local->menu_visible) {
-                        controller_set_repeat(game_player_get_ctrl(player1), 0);
-                        local->menu_visible = 1;
-                        break;
-                    } else {
-                        // wait a minute before re-eneabling repeat mode so the menu can close
-                        ticktimer_add(&game_state_get_scene(scene->gs)->tick_timer, 10, arena_repeat_controller, scene->gs);
-                        local->menu_visible = 0;
-                        break;
-                    }
-                } else {
-                    if(local->menu_visible) {
-                        menu_handle_action(&local->game_menu, i->event_data.action);
-                    }
-                }
-            }
-        } while((i = i->next));
-    }
+    int need_sync = 0;
+    need_sync += arena_handle_events(scene, player1, p1);
+    need_sync += arena_handle_events(scene, player2, p2);
     controller_free_chain(p1);
-    return 0;
+    controller_free_chain(p2);
+    arena_maybe_sync(scene, need_sync);
 }
 
 void arena_render_overlay(scene *scene) {
@@ -1201,7 +1171,6 @@ int arena_create(scene *scene) {
     }
 
     // Callbacks
-    scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
     scene_set_tick_cb(scene, arena_tick);
     scene_set_input_poll_cb(scene, arena_input_tick);

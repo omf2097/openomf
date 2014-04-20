@@ -21,15 +21,12 @@ struct keyboard_keys_t {
 
 struct keyboard_t {
     keyboard_keys *keys;
-    uint16_t buffer[KEYBOARD_INPUT_BUFFER_SIZE];
-    uint32_t tick;
-    uint8_t delay;
-    uint8_t queued;
+    int last;
+    int current;
 };
 
 void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay);
 void keyboard_free(controller *ctrl);
-void keyboard_set_delay(controller *ctrl, int delay);
 int keyboard_binds_key(controller *ctrl, SDL_Event *event);
 
 #endif // _KEYBOARD_H
