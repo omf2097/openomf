@@ -40,6 +40,13 @@ size_t str_size(str *string) {
     return string->len;
 }
 
+void str_remove_at(str *string, size_t pos) {
+   for(size_t i = pos; i < string->len - 1; i++) {
+       string->data[i] = string->data[i + 1];
+   }
+   string->len--;
+}
+
 void str_substr(str *dst, str *src, size_t start, size_t end) {
     if(src->data) {
         size_t len = end - start;

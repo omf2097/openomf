@@ -143,6 +143,14 @@ void newsroom_set_names(newsroom_local *local,
     str_create_from_cstr(&local->har2, har2);
     local->sex1 = sex1;
     local->sex2 = sex2;
+
+    // Remove the whitespace at the end of pilots name
+    if(isspace(str_at(&local->pilot1, str_size(&local->pilot1)-1))) {
+        str_remove_at(&local->pilot1, str_size(&local->pilot1)-1);
+    }
+    if(isspace(str_at(&local->pilot2, str_size(&local->pilot2)-1))) {
+        str_remove_at(&local->pilot2, str_size(&local->pilot2)-1);
+    }
 }
 
 

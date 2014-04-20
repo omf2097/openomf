@@ -20,6 +20,7 @@ void str_copy(str *dst, str *src);
 void str_append(str *dst, str *src);
 void str_append_c(str *dst, const char *src);
 void str_prepend(str *dst, str *src);
+void str_remove_at(str *string, size_t pos);
 
 int str_first_of(str *string, char find, size_t *pos);
 int str_next_of(str *string, char find, size_t *pos);
