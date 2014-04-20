@@ -154,12 +154,22 @@ int is_special_move(af_move *move) {
 }
 
 int is_valid_move(af_move *move, har *h) {
-    if(move->category == CAT_CLOSE && h->close != 1) {
-        // not standing close enough
-        return 0;
+    // If category is any of these, and bot is not close, then
+    // do not try to execute any of them. This attempts 
+    // to make the HARs close up instead of standing in place 
+    // wawing their hands towards each other. Not a perfect solution.
+    switch(move->category) {
+        case CAT_CLOSE:
+        case CAT_LOW:
+        case CAT_MEDIUM:
+        case CAT_HIGH:
+            // Only allow handwaving if close or jumping
+            if(!h->close && h->state != STATE_JUMPING) {
+                return 0;
+            }
     }
     if(move->category == CAT_JUMPING && h->state != STATE_JUMPING) {
-        // not jumping
+        // not jumping but trying to execute a jumping move
         return 0;
     }
     if(move->category != CAT_JUMPING && h->state == STATE_JUMPING) {
