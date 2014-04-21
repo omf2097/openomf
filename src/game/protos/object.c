@@ -326,6 +326,11 @@ void object_render_shadow(object *obj) {
         return;
     }
 
+    // Scale of the sprite on Y axis should be less than the 
+    // height of the sprite because of lighting effects
+    float scale_y = 0.25f;
+
+    // Determine X
     int flipmode = obj->sprite_state.flipmode;
     int x = obj->pos.x + obj->cur_sprite->pos.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
@@ -333,11 +338,19 @@ void object_render_shadow(object *obj) {
         flipmode ^= FLIP_HORIZONTAL;
     }
 
-    video_render_sprite_shadow(
-        obj->cur_sprite->data,
-        x,
-        obj->pal_offset,
-        flipmode);
+    // Determine Y
+    surface *sur = obj->cur_sprite->data;
+    int y = (190 - sur->h) + (sur->h - (sur->h * scale_y));
+
+    // Render shadow object twice with different offsets, so that
+    // the shadows seem a bit blobbier and shadow-y
+    for(int i = 0; i < 2; i++) {
+        video_render_sprite_shadow(
+            obj->cur_sprite->data,
+            x+i, y+i, scale_y,
+            obj->pal_offset,
+            flipmode);
+    }
 }
 
 int object_act(object *obj, int action) {

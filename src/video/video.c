@@ -328,14 +328,13 @@ void video_render_background(surface *sur) {
     state.cb.render_background(&state, sur);
 }
 
-void video_render_sprite_shadow(surface *sur, int sx, int pal_offset, unsigned int flip_mode) {
+void video_render_sprite_shadow(surface *sur, int sx, int sy, float scale_y, int pal_offset, unsigned int flip_mode) {
     // Position & correct height
-    float scale_y = 0.25f;
     SDL_Rect dst;
     dst.w = sur->w;
     dst.h = sur->h * scale_y;
     dst.x = sx;
-    dst.y = (190 - sur->h) + (sur->h - dst.h);
+    dst.y = sy;
 
     // Flip mode
     SDL_RendererFlip flip = 0;

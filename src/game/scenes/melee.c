@@ -469,11 +469,11 @@ void melee_render(scene *scene) {
 
     if (local->selection == 0) {
         // player 1 name
-        font_render_wrapped(&font_small, lang_get(20+current_a), 0, 52, 66, COLOR_BLACK);
+        font_render_wrapped_shadowed(&font_small, lang_get(20+current_a), 0, 52, 66, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
 
         if (player2->selectable) {
             // player 2 name
-            font_render_wrapped(&font_small, lang_get(20+current_b), 320-66, 52, 66, COLOR_BLACK);
+            font_render_wrapped_shadowed(&font_small, lang_get(20+current_b), 320-66, 52, 66, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
         }
 
         render_highlights(scene);
@@ -498,11 +498,11 @@ void melee_render(scene *scene) {
         object_render(&local->har_player1[5*local->row_a + local->column_a]);
 
         // player 1 name
-        font_render_wrapped(&font_small, lang_get(20+local->pilot_id_a), 0, 52, 66, COLOR_BLACK);
+        font_render_wrapped_shadowed(&font_small, lang_get(20+local->pilot_id_a), 0, 52, 66, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
 
         if (player2->selectable) {
             // player 2 name
-            font_render_wrapped(&font_small, lang_get(20+local->pilot_id_b), 320-66, 52, 66, COLOR_BLACK);
+            font_render_wrapped_shadowed(&font_small, lang_get(20+local->pilot_id_b), 320-66, 52, 66, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
 
             // currently selected player
             object_render(&local->bigportrait2);
@@ -516,13 +516,13 @@ void melee_render(scene *scene) {
             strcpy(vstext, get_id_name(HAR_JAGUAR + 5*local->row_a + local->column_a));
             strcat(vstext, " VS. ");
             strcat(vstext, get_id_name(HAR_JAGUAR + 5*local->row_b + local->column_b));
-            font_render_wrapped(&font_small, vstext, 80, 107, 150, COLOR_BLACK);
+            font_render_wrapped_shadowed(&font_small, vstext, 80, 107, 150, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
         } else {
             // 'choose your HAR'
             font_render_wrapped(&font_small, lang_get(186), 160, 97, 160, COLOR_GREEN);
 
             // render HAR name
-            font_render_wrapped(&font_small, get_id_name(HAR_JAGUAR + 5*local->row_a + local->column_a), 130, 107, 66, COLOR_BLACK);
+            font_render_wrapped_shadowed(&font_small, get_id_name(HAR_JAGUAR + 5*local->row_a + local->column_a), 130, 107, 66, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
         }
     }
 
@@ -531,9 +531,9 @@ void melee_render(scene *scene) {
         chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
         char winstext[48];
         snprintf(winstext, 48, "Wins: %d", s1->wins);
-        font_render(&font_small, winstext, 8, 107, COLOR_BLACK);
+        font_render_shadowed(&font_small, winstext, 8, 107, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
         snprintf(winstext, 48, "Wins: %d", s2->wins);
-        font_render(&font_small, winstext, 312-(strlen(winstext)*font_small.w), 107, COLOR_BLACK);
+        font_render_shadowed(&font_small, winstext, 312-(strlen(winstext)*font_small.w), 107, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
     }
 }
 

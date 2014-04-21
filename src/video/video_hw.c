@@ -81,9 +81,6 @@ void hw_render_sprite_shadow(
     SDL_SetTextureAlphaMod(tex, 50);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
     SDL_RenderCopyEx(state->renderer, tex, NULL, dst, 0, NULL, flip_mode);
-    dst->x += 1;
-    dst->y += 1;
-    SDL_RenderCopyEx(state->renderer, tex, NULL, dst, 0, NULL, flip_mode);
 }
 
 void video_hw_init(video_state *state) {

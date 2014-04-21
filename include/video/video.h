@@ -52,6 +52,8 @@ void video_render_sprite(
 void video_render_sprite_shadow(
     surface *sur, 
     int x,
+    int y,
+    float scale_y, 
     int pal_offset,
     unsigned int flip_mode);
 

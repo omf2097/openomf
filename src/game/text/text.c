@@ -102,19 +102,42 @@ void fonts_close() {
 }
 
 void font_render_char(font *font, char ch, int x, int y, color c) {
+    font_render_char_shadowed(font, ch, x, y, c, 0);
+}
+
+void font_render_char_shadowed(font *font, char ch, int x, int y, color c, int shadow_flags) {
+    // Make sure code is valid
     int code = ch - 32;
     surface **sur = NULL;
     if (code < 0) {
         return;
     }
+
+    // Get font face
     sur = vector_get(&font->surfaces, code);
+
+    // Handle shadows if necessary
+    if(shadow_flags & TEXT_SHADOW_RIGHT)
+        video_render_sprite_shadow(*sur, x+1, y, 1.0f, 0, FLIP_NONE);
+    if(shadow_flags & TEXT_SHADOW_LEFT)
+       video_render_sprite_shadow(*sur, x-1, y, 1.0f, 0, FLIP_NONE);
+    if(shadow_flags & TEXT_SHADOW_BOTTOM)
+        video_render_sprite_shadow(*sur, x, y+1, 1.0f, 0, FLIP_NONE);
+    if(shadow_flags & TEXT_SHADOW_TOP)
+        video_render_sprite_shadow(*sur, x, y-1, 1.0f, 0, FLIP_NONE);
+
+    // Handle the font face itself
     video_render_sprite_tint(*sur, x, y, c, 0);
 }
 
 void font_render_len(font *font, const char *text, int len, int x, int y, color c) {
+    font_render_len_shadowed(font, text, len, x, y, c, 0);
+}
+
+void font_render_len_shadowed(font *font, const char *text, int len, int x, int y, color c, int shadow_flags) {
     int pos_x = x;
     for(int i = 0; i < len; i++) {
-        font_render_char(font, text[i], pos_x, y, c);
+        font_render_char_shadowed(font, text[i], pos_x, y, c, shadow_flags);
         pos_x += font->w;
     }
 }
@@ -124,14 +147,23 @@ void font_render(font *font, const char *text, int x, int y, color c) {
     font_render_len(font, text, len, x, y, c);
 }
 
+void font_render_shadowed(font *font, const char *text, int x, int y, color c, int shadow_flags) {
+    int len = strlen(text);
+    font_render_len_shadowed(font, text, len, x, y, c, shadow_flags);
+}
+
 void font_render_wrapped(font *font, const char *text, int x, int y, int w, color c) {
+    font_render_wrapped_shadowed(font, text, x, y, w, c, 0);
+}
+
+void font_render_wrapped_shadowed(font *font, const char *text, int x, int y, int w, color c, int shadow_flags) {
     int len = strlen(text);
     if (font->w*len < w) {
         // short enough text that we don't need to wrap
 
         // render it centered, at least for now
         int xoff = (w - font->w*len)/2;
-        font_render_len(font, text, len, x + xoff, y, c);
+        font_render_len_shadowed(font, text, len, x + xoff, y, c, shadow_flags);
     } else {
         // ok, we actually have to do some real work
         // look ma, no mallocs!
@@ -162,7 +194,7 @@ void font_render_wrapped(font *font, const char *text, int x, int y, int w, colo
             }
             int len = stop - start;
             int xoff = (w - font->w*len)/2;
-            font_render_len(font, start, len, x + xoff, y + yoff, c);
+            font_render_len_shadowed(font, start, len, x + xoff, y + yoff, c, shadow_flags);
             yoff += font->h;
             start = stop+1;
             stop = start;
