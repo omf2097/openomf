@@ -172,6 +172,8 @@ int object_get_gravity(object *obj);
 int object_get_group(object *obj);
 int object_get_layers(object *obj);
 
+int object_is_airborne(object *obj);
+
 void object_set_shadow(object *obj, int enable);
 int object_get_shadow(object *obj);
 

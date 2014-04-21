@@ -490,8 +490,12 @@ void arena_maybe_turn_har(int player_id, scene* scene) {
 
 void arena_har_hook(har_event event, void *data) {
     scene *scene = data;
+    int other_player_id = abs(event.player_id - 1);
     arena_local *arena = scene_get_userdata(scene);
     chr_score *score = game_player_get_score(game_state_get_player(scene->gs, event.player_id));
+    object *obj_har1 = game_player_get_har(game_state_get_player(scene->gs, event.player_id));
+    object *obj_har2 = game_player_get_har(game_state_get_player(scene->gs, other_player_id));
+    har *har2 = obj_har2->userdata;
     switch (event.type) {
         case HAR_EVENT_WALK:
             arena_maybe_turn_har(event.player_id, scene);
@@ -500,19 +504,27 @@ void arena_har_hook(har_event event, void *data) {
             arena_maybe_turn_har(event.player_id, scene);
             break;
         case HAR_EVENT_TAKE_HIT:
-            arena_maybe_turn_har(event.player_id, scene);
+            if(af_get_move(har2->af_data, obj_har2->cur_animation->id)->category != CAT_CLOSE) {
+                arena_maybe_turn_har(event.player_id, scene);
+            }
             arena_har_take_hit_hook(event.player_id, event.move, scene);
             break;
         case HAR_EVENT_HIT_WALL:
             arena_har_hit_wall_hook(event.player_id, event.wall, scene);
             break;
         case HAR_EVENT_ATTACK:
+            if(!object_is_airborne(obj_har1)) {
+                arena_maybe_turn_har(event.player_id, scene);
+            }
+            break;
         case HAR_EVENT_LAND:
             arena_maybe_turn_har(event.player_id, scene);
             break;
         case HAR_EVENT_RECOVER:
             arena_har_recover_hook(event.player_id, scene);
-            arena_maybe_turn_har(event.player_id, scene);
+            if(!object_is_airborne(obj_har1)) {
+                arena_maybe_turn_har(event.player_id, scene);
+            }
             break;
         case HAR_EVENT_DEFEAT:
             arena_har_defeat_hook(event.player_id, scene);

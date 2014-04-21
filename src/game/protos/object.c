@@ -588,3 +588,8 @@ void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata)
     obj->animation_state.destroy = cbf;
     obj->animation_state.destroy_userdata = userdata;
 }
+
+int object_is_airborne(object *obj) {
+    return obj->pos.y < 190.0f;
+}
+
