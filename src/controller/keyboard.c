@@ -46,6 +46,10 @@ int keyboard_poll(controller *ctrl, ctrl_event **ev) {
         keyboard_cmd(ctrl, ACT_KICK, ev);
     }
 
+    if (state[k->keys->escape]) {
+        keyboard_cmd(ctrl, ACT_ESC, ev);
+    }
+
     if (k->current == 0) {
         keyboard_cmd(ctrl, ACT_STOP, ev);
     }

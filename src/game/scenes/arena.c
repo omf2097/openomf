@@ -608,7 +608,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 local->menu_visible = !local->menu_visible;
                 controller_set_repeat(game_player_get_ctrl(player), !local->menu_visible);
                 DEBUG("local menu %d, controller repeat %d", local->menu_visible, game_player_get_ctrl(player)->repeat);
-            } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && player == game_state_get_player(scene->gs, 0)) {
+            } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && player == game_state_get_player(scene->gs, 0) && !is_demoplay(scene)) {
                 DEBUG("menu event %d", i->event_data.action);
                 // menu events
                 menu_handle_action(&local->game_menu, i->event_data.action);
@@ -794,6 +794,41 @@ void arena_input_tick(scene *scene) {
     controller_free_chain(p1);
     controller_free_chain(p2);
     arena_maybe_sync(scene, need_sync);
+}
+
+int arena_event(scene *scene, SDL_Event *e) {
+    arena_local *local = scene_get_userdata(scene);
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    // set up some basic controls so you can enter/use the menu in demo mode
+    if (e->type == SDL_KEYDOWN && is_demoplay(scene)) {
+        if(e->key.keysym.sym == SDLK_ESCAPE) {
+            local->menu_visible = !local->menu_visible;
+            controller_set_repeat(game_player_get_ctrl(player1), !local->menu_visible);
+        } else if (local->menu_visible) {
+            int action = 0;
+            switch (e->key.keysym.sym) {
+                case SDLK_UP:
+                    action = ACT_UP;
+                    break;
+                case SDLK_DOWN:
+                    action = ACT_DOWN;
+                    break;
+                case SDLK_LEFT:
+                    action = ACT_LEFT;
+                    break;
+                case SDLK_RIGHT:
+                    action = ACT_RIGHT;
+                    break;
+                case SDLK_RETURN:
+                    action = ACT_PUNCH;
+                    break;
+            }
+            if (action) {
+                menu_handle_action(&local->game_menu, action);
+            }
+        }
+    }
+    return 0;
 }
 
 void arena_render_overlay(scene *scene) {
@@ -1171,6 +1206,7 @@ int arena_create(scene *scene) {
     }
 
     // Callbacks
+    scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
     scene_set_tick_cb(scene, arena_tick);
     scene_set_input_poll_cb(scene, arena_input_tick);
