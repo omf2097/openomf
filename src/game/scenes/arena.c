@@ -809,36 +809,9 @@ void arena_input_tick(scene *scene) {
 }
 
 int arena_event(scene *scene, SDL_Event *e) {
-    arena_local *local = scene_get_userdata(scene);
-    game_player *player1 = game_state_get_player(scene->gs, 0);
-    // set up some basic controls so you can enter/use the menu in demo mode
-    if (e->type == SDL_KEYDOWN && is_demoplay(scene)) {
-        if(e->key.keysym.sym == SDLK_ESCAPE) {
-            local->menu_visible = !local->menu_visible;
-            controller_set_repeat(game_player_get_ctrl(player1), !local->menu_visible);
-        } else if (local->menu_visible) {
-            int action = 0;
-            switch (e->key.keysym.sym) {
-                case SDLK_UP:
-                    action = ACT_UP;
-                    break;
-                case SDLK_DOWN:
-                    action = ACT_DOWN;
-                    break;
-                case SDLK_LEFT:
-                    action = ACT_LEFT;
-                    break;
-                case SDLK_RIGHT:
-                    action = ACT_RIGHT;
-                    break;
-                case SDLK_RETURN:
-                    action = ACT_PUNCH;
-                    break;
-            }
-            if (action) {
-                menu_handle_action(&local->game_menu, action);
-            }
-        }
+    // ESC during demo mode jumps you back to the main menu
+    if (e->type == SDL_KEYDOWN && is_demoplay(scene) && e->key.keysym.sym == SDLK_ESCAPE) {
+            game_state_set_next(scene->gs, SCENE_MENU);
     }
     return 0;
 }
