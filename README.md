@@ -16,7 +16,7 @@ Links
 
 Project goals
 -------------
-1. At first, as faithful a game binary to the original as possible. When this is reached, then new features.
+1. At first, as faithful a game binary to the original as possible. When this is reached, we can work on new features.
 2. Better game controller support (new gamepads etc.)
 3. Better networking support (dosbox IPX/SPX routing is annoying to set up + the original game will run slowly). At first only 1 vs. 1 matches; later maybe full multiplayer tournaments and stuff :)
 4. Support for new graphics and audio. The game already supports loading alternate audio files. Support for alternate sprites is coming after the game is otherwise working okay.
