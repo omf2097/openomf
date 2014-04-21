@@ -24,6 +24,7 @@ typedef struct vs_local_t {
     surface arena_select_bg;
     object arena_select;
     int arena;
+    char vs_str[128];
 } vs_local;
 
 void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
@@ -151,6 +152,9 @@ void vs_render(scene *scene) {
     object_render(&local->player2_portrait);
 
 
+    font_render(&font_small, local->vs_str, 160-((strlen(local->vs_str)*font_small.w)/2), 0, COLOR_YELLOW);
+
+
     if (player2->selectable) {
         // arena selection
         video_render_sprite(&local->arena_select_bg, 55, 150, BLEND_ALPHA, 0);
@@ -175,6 +179,8 @@ int vs_create(scene *scene) {
     scene_set_userdata(scene, local);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
+
+    snprintf(local->vs_str, 128, "%s VS. %s", lang_get(20+player1->pilot_id), lang_get(20+player2->pilot_id));
 
     animation *ani;
 
