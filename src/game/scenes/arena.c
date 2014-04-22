@@ -267,7 +267,7 @@ void arena_reset(scene *sc) {
     }
 
     sc->bk_data.sound_translation_table[3] = 23 + local->round; // NUMBER
-    // TODO dedup
+    // ROUND animation
     animation *round_ani = &bk_get_info(&sc->bk_data, 6)->ani;
     object *round = malloc(sizeof(object));
     object_create(round, sc->gs, round_ani->start_pos, vec2f_create(0,0));
@@ -276,6 +276,7 @@ void arena_reset(scene *sc) {
     object_set_finish_cb(round, scene_ready_anim_done);
     game_state_add_object(sc->gs, round, RENDER_LAYER_TOP);
 
+    // Round number
     animation *number_ani = &bk_get_info(&sc->bk_data, 7)->ani;
     object *number = malloc(sizeof(object));
     object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0,0));
@@ -291,7 +292,10 @@ void arena_maybe_sync(scene *scene, int need_sync) {
     game_player *player1 = game_state_get_player(gs, 0);
     game_player *player2 = game_state_get_player(gs, 1);
 
-    if (need_sync && gs->role == ROLE_SERVER && (player1->ctrl->type == CTRL_TYPE_NETWORK ||  player2->ctrl->type == CTRL_TYPE_NETWORK)) {
+    if(need_sync
+        && gs->role == ROLE_SERVER
+        && (player1->ctrl->type == CTRL_TYPE_NETWORK || player2->ctrl->type == CTRL_TYPE_NETWORK)) {
+
         // some of the moves did something interesting and we should synchronize the peer
         serial ser;
         serial_create(&ser);
@@ -299,7 +303,6 @@ void arena_maybe_sync(scene *scene, int need_sync) {
         if (player1->ctrl->type == CTRL_TYPE_NETWORK) {
             controller_update(player1->ctrl, &ser);
         }
-
         if (player2->ctrl->type == CTRL_TYPE_NETWORK) {
             controller_update(player2->ctrl, &ser);
         }
@@ -750,7 +753,10 @@ void arena_tick(scene *scene, int paused) {
         if(local->state == ARENA_STATE_ENDING) {
             chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
             chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
-            if (player_frame_isset(obj_har1, "be") || player_frame_isset(obj_har2, "be") || chr_score_onscreen(s1) || chr_score_onscreen(s2)) {
+            if (player_frame_isset(obj_har1, "be")
+                || player_frame_isset(obj_har2, "be")
+                || chr_score_onscreen(s1)
+                || chr_score_onscreen(s2)) {
                 /*DEBUG("blocking ending");*/
             } else {
                 local->ending_ticks++;
@@ -828,7 +834,7 @@ void arena_input_tick(scene *scene) {
 int arena_event(scene *scene, SDL_Event *e) {
     // ESC during demo mode jumps you back to the main menu
     if (e->type == SDL_KEYDOWN && is_demoplay(scene) && e->key.keysym.sym == SDLK_ESCAPE) {
-            game_state_set_next(scene->gs, SCENE_MENU);
+        game_state_set_next(scene->gs, SCENE_MENU);
     }
     return 0;
 }
@@ -1189,6 +1195,7 @@ int arena_create(scene *scene) {
         object_set_finish_cb(ready, scene_ready_anim_done);
         game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP);
     } else {
+        // ROUND
         animation *round_ani = &bk_get_info(&scene->bk_data, 6)->ani;
         object *round = malloc(sizeof(object));
         object_create(round, scene->gs, round_ani->start_pos, vec2f_create(0,0));
@@ -1197,6 +1204,7 @@ int arena_create(scene *scene) {
         object_set_finish_cb(round, scene_ready_anim_done);
         game_state_add_object(scene->gs, round, RENDER_LAYER_TOP);
 
+        // Number
         animation *number_ani = &bk_get_info(&scene->bk_data, 7)->ani;
         object *number = malloc(sizeof(object));
         object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0,0));
@@ -1204,7 +1212,6 @@ int arena_create(scene *scene) {
         object_set_animation(number, number_ani);
         object_select_sprite(number, local->round);
         game_state_add_object(scene->gs, number, RENDER_LAYER_TOP);
-
     }
 
     // Callbacks
