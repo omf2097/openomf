@@ -179,6 +179,7 @@ set(OPENOMF_SRC
     src/game/menu/textselector.c
     src/game/menu/textslider.c
     src/game/menu/textinput.c
+    src/game/menu/dialog.c
     src/game/menu/component.c
     src/game/settings.c
     src/game/score.c

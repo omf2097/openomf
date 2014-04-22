@@ -10,6 +10,7 @@
 #include "game/protos/scene.h"
 #include "game/scenes/vs.h"
 #include "game/menu/menu_background.h"
+#include "game/menu/dialog.h"
 #include "game/game_state.h"
 #include "controller/controller.h"
 #include "controller/keyboard.h"
@@ -26,6 +27,7 @@ typedef struct vs_local_t {
     object arena_select;
     int arena;
     char vs_str[128];
+    dialog quit_dialog;
 } vs_local;
 
 void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
@@ -52,6 +54,7 @@ void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
+    dialog_free(&local->quit_dialog);
     surface_free(&local->arena_select_bg);
     object_free(&local->player1_portrait);
     object_free(&local->player2_portrait);
@@ -65,35 +68,40 @@ void vs_free(scene *scene) {
 
 void vs_handle_action(scene *scene, int action) {
     vs_local *local = scene_get_userdata(scene);
-    switch (action) {
-        case ACT_KICK:
-        case ACT_PUNCH:
-            game_state_set_next(scene->gs, SCENE_ARENA0+local->arena);
-            break;
-        case ACT_UP:
-        case ACT_LEFT:
-            if(game_state_get_player(scene->gs, 1)->selectable) {
-                local->arena--;
-                if (local->arena < 0) {
-                    local->arena =4;
+    if(dialog_is_visible(&local->quit_dialog)) {
+        dialog_event(&local->quit_dialog, action);
+    } else {
+        switch (action) {
+            case ACT_KICK:
+            case ACT_PUNCH:
+                game_state_set_next(scene->gs, SCENE_ARENA0+local->arena);
+                break;
+            case ACT_UP:
+            case ACT_LEFT:
+                if(game_state_get_player(scene->gs, 1)->selectable) {
+                    local->arena--;
+                    if (local->arena < 0) {
+                        local->arena =4;
+                    }
+                    object_select_sprite(&local->arena_select, local->arena);
                 }
-                object_select_sprite(&local->arena_select, local->arena);
-            }
-            break;
-        case ACT_DOWN:
-        case ACT_RIGHT:
-            if(game_state_get_player(scene->gs, 1)->selectable) {
-                local->arena++;
-                if (local->arena > 4) {
-                    local->arena = 0;
+                break;
+            case ACT_DOWN:
+            case ACT_RIGHT:
+                if(game_state_get_player(scene->gs, 1)->selectable) {
+                    local->arena++;
+                    if (local->arena > 4) {
+                        local->arena = 0;
+                    }
+                    object_select_sprite(&local->arena_select, local->arena);
                 }
-                object_select_sprite(&local->arena_select, local->arena);
-            }
-            break;
+                break;
+        }
     }
 }
 
 void vs_tick(scene *scene, int paused) {
+    vs_local *local = scene->userdata;
     game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *i = NULL;
     // Handle extra controller inputs
@@ -108,9 +116,14 @@ void vs_tick(scene *scene, int paused) {
             }
         } while((i = i->next));
     }
+
+    if(dialog_is_visible(&local->quit_dialog)) {
+        dialog_tick(&local->quit_dialog);
+    }
 }
 
 int vs_event(scene *scene, SDL_Event *event) {
+    vs_local *local = scene->userdata;
     ctrl_event *p1=NULL, *i;
     game_player *player1 = game_state_get_player(scene->gs, 0);
     controller_event(player1->ctrl, event, &p1);
@@ -119,7 +132,11 @@ int vs_event(scene *scene, SDL_Event *event) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if (i->event_data.action == ACT_ESC) {
-                    game_state_set_next(scene->gs, SCENE_MELEE);
+                    if(dialog_is_visible(&local->quit_dialog)) {
+                        dialog_event(&local->quit_dialog, i->event_data.action);
+                    } else {
+                        dialog_show(&local->quit_dialog, 1);
+                    }
                     return 1;
                 } else {
                     vs_handle_action(scene, i->event_data.action);
@@ -171,6 +188,20 @@ void vs_render(scene *scene) {
     } else {
         font_render_wrapped(&font_small, lang_get(749+(11*player1->pilot_id)+player2->pilot_id), 59, 160, 150, COLOR_YELLOW);
         font_render_wrapped(&font_small, lang_get(870+(11*player2->pilot_id)+player1->pilot_id), 320-(59+150), 180, 150, COLOR_YELLOW);
+    }
+}
+
+void vs_render_overlay(scene *scene) {
+    vs_local *local = scene_get_userdata(scene);
+    if(dialog_is_visible(&local->quit_dialog)) {
+        dialog_render(&local->quit_dialog);
+    }
+}
+
+void vs_quit_dialog_clicked(dialog *dlg, dialog_result result, void *userdata){
+    scene *sc = userdata;
+    if(result == DIALOG_RESULT_YES) {
+        game_state_set_next(sc->gs, SCENE_MELEE);
     }
 }
 
@@ -280,8 +311,14 @@ int vs_create(scene *scene) {
     // Background tex
     menu_background2_create(&local->arena_select_bg, 211, 50);
 
+    // Quit Dialog
+    dialog_create(&local->quit_dialog, DIALOG_STYLE_YES_NO, "ARE YOU SURE YOU WANT TO QUIT THIS GAME?", 72, 60);
+    local->quit_dialog.userdata = scene;
+    local->quit_dialog.clicked = vs_quit_dialog_clicked;
+
     // Callbacks
     scene_set_render_cb(scene, vs_render);
+    scene_set_render_overlay_cb(scene, vs_render_overlay);
     scene_set_event_cb(scene, vs_event);
     scene_set_tick_cb(scene, vs_tick);
     scene_set_free_cb(scene, vs_free);

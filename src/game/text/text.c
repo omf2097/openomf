@@ -101,6 +101,59 @@ void fonts_close() {
     font_free(&font_large);
 }
 
+void font_get_wrapped_size(font *font, const char *text, int max_w, int *out_w, int *out_h) {
+    int textlen = strlen(text);
+    if (font->w*textlen < max_w) {
+        // short enough text that we don't need to wrap
+        *out_w = font->w*textlen;
+        *out_h = font->h;
+    } else {
+        // ok, we actually have to do some real work
+        // look ma, no mallocs!
+        char *end = strchr(text, '\0');
+        const char *start = text;
+        const char *stop = start;
+        const char *tmpstop;
+        int maxlen = max_w/font->w;
+        int yoff = 0;
+        int is_last_line = 0;
+
+        *out_w = 0;
+        *out_h = 0;
+        while (start != end) {
+            while(1) {
+                tmpstop = strchr(stop+1, ' ');
+                if (tmpstop == NULL) {
+                    stop = end-1;
+                    is_last_line = 1;
+                    // last line is too long
+                    if ((stop - start) > maxlen) {
+                        stop = strrchr(start, ' ');
+                        if(stop == NULL) {
+                            stop = end-1;
+                        }
+                        break;
+                    } else {
+                        break;
+                    }
+                } else if ((tmpstop - start) > maxlen) {
+                    break;
+                } else {
+                    stop = tmpstop;
+                }
+            }
+            int len = (stop - start) + (is_last_line?1:0);
+            if(*out_w < len*font->w) {
+                *out_w = len*font->w;
+            }
+            yoff += font->h;
+            start = stop+1;
+            stop = start;
+        }
+        *out_h = yoff;
+    }
+}
+
 void font_render_char(font *font, char ch, int x, int y, color c) {
     font_render_char_shadowed(font, ch, x, y, c, 0);
 }
@@ -173,15 +226,20 @@ void font_render_wrapped_shadowed(font *font, const char *text, int x, int y, in
         const char *tmpstop;
         int maxlen = w/font->w;
         int yoff = 0;
+        int is_last_line = 0;
 
         while (start != end) {
             while(1) {
                 tmpstop = strchr(stop+1, ' ');
                 if (tmpstop == NULL) {
                     stop = end-1;
+                    is_last_line = 1;
                     // last line is too long
                     if ((stop - start) > maxlen) {
                         stop = strrchr(start, ' ');
+                        if(stop == NULL) {
+                            stop = end-1;
+                        }
                         break;
                     } else {
                         break;
@@ -194,7 +252,7 @@ void font_render_wrapped_shadowed(font *font, const char *text, int x, int y, in
             }
             int len = stop - start;
             int xoff = (w - font->w*len)/2;
-            font_render_len_shadowed(font, start, len, x + xoff, y + yoff, c, shadow_flags);
+            font_render_len_shadowed(font, start, len + (is_last_line?1:0), x + xoff, y + yoff, c, shadow_flags);
             yoff += font->h;
             start = stop+1;
             stop = start;

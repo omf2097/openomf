@@ -1,4 +1,6 @@
 #include "game/menu/textbutton.h"
+#include "game/menu/menu_background.h"
+#include "video/video.h"
 #include <stdlib.h>
 #include <string.h>
 #include <SDL2/SDL.h>
@@ -11,6 +13,8 @@ void textbutton_create(component *c, font *font, const char *text) {
     tb->font = font;
     tb->ticks = 0;
     tb->dir = 0;
+    tb->border_enabled = 0;
+    tb->border_created = 0;
     c->obj = tb;
     c->render = textbutton_render;
     c->event = textbutton_event;
@@ -20,6 +24,9 @@ void textbutton_create(component *c, font *font, const char *text) {
 
 void textbutton_free(component *c) {
     textbutton *tb = c->obj;
+    if(tb->border_created) {
+        surface_free(&tb->border);
+    }
     free(tb);
     component_free(c);
 }
@@ -36,6 +43,9 @@ void textbutton_render(component *c) {
         font_render(tb->font, tb->text, c->x + xoff, c->y, color_create(121, 121, 121, 255));
     } else {
         font_render(tb->font, tb->text, c->x + xoff, c->y, color_create(0, 121, 0, 255));
+    }
+    if(tb->border_enabled) {
+        video_render_sprite(&tb->border, c->x + xoff-4, c->y-2, BLEND_ALPHA, 0);
     }
 }
 
@@ -67,4 +77,25 @@ void textbutton_tick(component *c) {
     if(tb->ticks == 0) {
         tb->dir = 0;
     }
+}
+
+void textbutton_set_border(component *c, color col) {
+    textbutton *tb = c->obj;
+    tb->border_enabled = 1;
+    tb->border_color = col;
+    if(tb->border_created) {
+        // destroy the old border first
+        surface_free(&tb->border);
+    }
+
+    // create new border
+    int chars = strlen(tb->text);
+    int width = chars*tb->font->w;
+    menu_background_border_create(&tb->border, width+6, tb->font->h+3);
+    tb->border_created = 1;
+}
+
+void textbutton_remove_border(component *c) {
+    textbutton *tb = c->obj;
+    tb->border_enabled = 0;
 }

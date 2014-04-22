@@ -42,3 +42,13 @@ void menu_background2_create(surface *s, int w, int h) {
     surface_create_from_image(s, &img);
     image_free(&img);
 }
+
+// create a transparent background with only the borders
+void menu_background_border_create(surface *s, int w, int h) {
+    image img;
+    image_create(&img, w, h);
+    image_clear(&img, color_create(0,0,0,0));
+    image_rect(&img, 0, 0, w-1, h-1, COLOR_MENU_BORDER);
+    surface_create_from_image(s, &img);
+    image_free(&img);
+}

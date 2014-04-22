@@ -34,6 +34,7 @@ extern font font_large;
 
 int fonts_init();
 void fonts_close();
+void font_get_wrapped_size(font *font, const char *text, int max_w, int *out_w, int *out_h);
 void font_render_char(font *font, char ch, int x, int y, color c);
 void font_render_char_shadowed(font *font, char ch, int x, int y, color c, int shadow_flags);
 void font_render_len(font *font, const char *text, int len, int x, int y, color c);

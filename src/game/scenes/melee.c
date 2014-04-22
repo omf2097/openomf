@@ -69,8 +69,6 @@ typedef struct melee_local_t {
     unsigned char katana_down_count[2];
 } melee_local;
 
-void refresh_pilot_stats(melee_local *local);
-
 void handle_action(scene *scene, int player, int action);
 
 void mask_sprite(surface *vga, int x, int y, int w, int h) {
