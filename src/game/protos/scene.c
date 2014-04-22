@@ -32,7 +32,6 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->render = NULL;
     scene->render_overlay = NULL;
     scene->tick = NULL;
-    scene->static_tick = NULL;
     scene->input_poll = NULL;
     scene->startup = NULL;
     scene->prio_override = NULL;
@@ -179,18 +178,14 @@ int scene_anim_prio_override(scene *scene, int anim_id) {
     return -1;
 }
 
-void scene_tick(scene *scene) {
+void scene_tick(scene *scene, int paused) {
     // Tick timers
-    ticktimer_run(&scene->tick_timer);
+    if(!paused) {
+        ticktimer_run(&scene->tick_timer);
+    }
 
     if(scene->tick != NULL) {
-        scene->tick(scene);
-    }
-}
-
-void scene_static_tick(scene *scene) {
-    if(scene->static_tick != NULL) {
-        scene->static_tick(scene);
+        scene->tick(scene, paused);
     }
 }
 
@@ -240,15 +235,11 @@ void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc) {
     scene->tick = cbfunc;
 }
 
-void scene_set_static_tick_cb(scene *scene, scene_static_tick_cb cbfunc) {
-    scene->static_tick = cbfunc;
-}
-
 void scene_set_anim_prio_override_cb(scene *scene, scene_anim_prio_override_cb cbfunc) {
     scene->prio_override = cbfunc;
 }
 
-void scene_set_input_poll_cb(scene *scene, scene_tick_cb cbfunc) {
+void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc) {
     scene->input_poll = cbfunc;
 }
 

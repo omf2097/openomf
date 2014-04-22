@@ -166,7 +166,7 @@ void newsroom_free(scene *scene) {
     free(local);
 }
 
-void newsroom_tick(scene *scene) {
+void newsroom_tick(scene *scene, int paused) {
 
 
 }

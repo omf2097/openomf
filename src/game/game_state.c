@@ -551,14 +551,8 @@ void game_state_dynamic_tick(game_state *gs) {
         video_move_target(0, 0);
     }
 
-    if(!game_state_is_paused(gs)) {
-        // Tick scene
-        scene_tick(gs->sc);
-    }
-
-    // Static ticks are always called regardless of the pause status
-    // This function is currently used for ticking the net controller
-    scene_static_tick(gs->sc);
+    // Tick scene
+    scene_tick(gs->sc, game_state_is_paused(gs));
 
     if(!game_state_is_paused(gs)) {
         // Clean up objects

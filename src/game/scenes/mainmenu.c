@@ -657,7 +657,7 @@ void mainmenu_free(scene *scene) {
     free(local);
 }
 
-void mainmenu_tick(scene *scene) {
+void mainmenu_tick(scene *scene, int paused) {
     mainmenu_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
 

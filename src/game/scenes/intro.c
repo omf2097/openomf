@@ -40,7 +40,7 @@ int intro_startup(scene *scene, int id) {
     return 0;
 }
 
-void intro_tick(scene *scene) {
+void intro_tick(scene *scene, int paused) {
     intro_local *local = scene_get_userdata(scene);
     local->ticks++;
     if(local->ticks > 2500) {

@@ -89,7 +89,7 @@ void mechlab_free(scene *scene) {
     free(local);
 }
 
-void mechlab_tick(scene *scene) {
+void mechlab_tick(scene *scene, int paused) {
     mechlab_local *local = scene_get_userdata(scene);
 
     if(local->hand.moving) {

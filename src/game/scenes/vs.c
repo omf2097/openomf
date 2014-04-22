@@ -93,7 +93,7 @@ void vs_handle_action(scene *scene, int action) {
     }
 }
 
-void vs_tick(scene *scene) {
+void vs_tick(scene *scene, int paused) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *i = NULL;
     // Handle extra controller inputs

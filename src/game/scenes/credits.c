@@ -28,7 +28,7 @@ int credits_event(scene *scene, SDL_Event *event) {
     return 1;
 }
 
-void credits_tick(scene *scene) {
+void credits_tick(scene *scene, int paused) {
     credits_local *local = scene_get_userdata(scene);
     local->ticks++;
     if(local->ticks > 4500) {

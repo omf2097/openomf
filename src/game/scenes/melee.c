@@ -123,7 +123,7 @@ void melee_free(scene *scene) {
     free(local);
 }
 
-void melee_tick(scene *scene) {
+void melee_tick(scene *scene, int paused) {
     melee_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
