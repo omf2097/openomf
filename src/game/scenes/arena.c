@@ -798,9 +798,15 @@ void arena_tick(scene *scene) {
 
 // Static ticks are always called regardless of the pause/unpause status
 void arena_static_tick(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
     game_player *player1 = game_state_get_player(gs, 0);
     game_player *player2 = game_state_get_player(gs, 1);
+
+    // XXX HACK - tick the menu multiple times to make the selected text blink faster
+    for(int i=0;i<4;i++) {
+        menu_tick(&local->game_menu);
+    }
 
     int need_sync = 0;
     // allow enemy HARs to move during a network game
