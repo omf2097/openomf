@@ -30,6 +30,14 @@ typedef struct vs_local_t {
     dialog quit_dialog;
 } vs_local;
 
+int vs_is_netplay(scene *scene) {
+    if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
+       game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
+        return 1;
+    }
+    return 0;
+}
+
 void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     scene *s = (scene*)userdata;
 
@@ -134,7 +142,7 @@ int vs_event(scene *scene, SDL_Event *event) {
                 if (i->event_data.action == ACT_ESC) {
                     if(dialog_is_visible(&local->quit_dialog)) {
                         dialog_event(&local->quit_dialog, i->event_data.action);
-                    } else {
+                    } else if(!vs_is_netplay(scene)) {
                         dialog_show(&local->quit_dialog, 1);
                     }
                     return 1;
