@@ -66,7 +66,7 @@ int intro_create(scene *scene) {
 
     // Callbacks
     scene_set_userdata(scene, local);
-    scene_set_tick_cb(scene, intro_tick);
+    scene_set_dynamic_tick_cb(scene, intro_tick);
     scene_set_event_cb(scene, intro_event);
     scene_set_free_cb(scene, intro_free);
     scene_set_startup_cb(scene, intro_startup);

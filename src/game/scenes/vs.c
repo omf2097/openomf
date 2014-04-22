@@ -328,7 +328,7 @@ int vs_create(scene *scene) {
     scene_set_render_cb(scene, vs_render);
     scene_set_render_overlay_cb(scene, vs_render_overlay);
     scene_set_event_cb(scene, vs_event);
-    scene_set_tick_cb(scene, vs_tick);
+    scene_set_dynamic_tick_cb(scene, vs_tick);
     scene_set_free_cb(scene, vs_free);
 
     // Pick renderer

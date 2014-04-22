@@ -1210,7 +1210,7 @@ int arena_create(scene *scene) {
     // Callbacks
     scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
-    scene_set_tick_cb(scene, arena_tick);
+    scene_set_dynamic_tick_cb(scene, arena_tick);
     scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
 

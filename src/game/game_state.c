@@ -552,7 +552,7 @@ void game_state_dynamic_tick(game_state *gs) {
     }
 
     // Tick scene
-    scene_tick(gs->sc, game_state_is_paused(gs));
+    scene_dynamic_tick(gs->sc, game_state_is_paused(gs));
 
     if(!game_state_is_paused(gs)) {
         // Clean up objects

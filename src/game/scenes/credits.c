@@ -46,7 +46,7 @@ int credits_create(scene *scene) {
 
     // Callbacks
     scene_set_userdata(scene, local);
-    scene_set_tick_cb(scene, credits_tick);
+    scene_set_dynamic_tick_cb(scene, credits_tick);
     scene_set_free_cb(scene, credits_free);
     scene_set_event_cb(scene, credits_event);
 

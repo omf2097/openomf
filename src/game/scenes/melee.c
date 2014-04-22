@@ -687,7 +687,7 @@ int melee_create(scene *scene) {
     scene_set_event_cb(scene, melee_event);
     scene_set_render_cb(scene, melee_render);
     scene_set_free_cb(scene, melee_free);
-    scene_set_tick_cb(scene, melee_tick);
+    scene_set_dynamic_tick_cb(scene, melee_tick);
 
     // Pick renderer
     video_select_renderer(VIDEO_RENDERER_HW);

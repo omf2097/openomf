@@ -10,20 +10,6 @@
 #include "video/video.h"
 #include "resources/ids.h"
 
-/*
-#include "engine.h"
-#include "utils/log.h"
-#include "game/text/text.h"
-#include "audio/music.h"
-#include "game/settings.h"
-#include "game/scene.h"
-#include "game/menu/menu.h"
-#include "game/menu/textbutton.h"
-#include "game/menu/textselector.h"
-#include "game/menu/textslider.h"
-*/
-
-
 #define NPANELBUTTON(p) sizeof(p)/sizeof(object)
 
 typedef struct mechlab_hand_t {
@@ -255,7 +241,7 @@ int mechlab_create(scene *scene) {
     scene_set_event_cb(scene, mechlab_event);
     scene_set_render_cb(scene, mechlab_render);
     scene_set_free_cb(scene, mechlab_free);
-    scene_set_tick_cb(scene, mechlab_tick);
+    scene_set_dynamic_tick_cb(scene, mechlab_tick);
 
     // Pick renderer
     video_select_renderer(VIDEO_RENDERER_HW);

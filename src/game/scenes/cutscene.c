@@ -143,7 +143,6 @@ int cutscene_create(scene *scene) {
 
     // Callbacks
     scene_set_userdata(scene, local);
-    /*scene_set_tick_cb(scene, cutscene_tick);*/
     scene_set_free_cb(scene, cutscene_free);
     scene_set_event_cb(scene, cutscene_event);
     scene_set_render_overlay_cb(scene, cutscene_render_overlay);
