@@ -226,7 +226,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     }
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
-    object_tick(obj);
+    object_dynamic_tick(obj);
     // update this so mx/my have correct origins
     obj->start = obj->pos;
     h->damage_done = 0;
@@ -469,7 +469,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         } else {
             object_set_custom_string(obj, str_c(string));
         }
-        object_tick(obj);
+        object_dynamic_tick(obj);
         h->flinching = 1;
         // XXX hack - if the first frame has the 'k' tag, treat it as some vertical knockback
         // we can't do this in player.c because it breaks the jaguar leap, which also uses the 'k' tag.
@@ -504,7 +504,7 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
         object_set_stl(scrap, object_get_stl(obj));
         object_set_gravity(scrap, gravity);
         object_set_layers(scrap, LAYER_SCRAP);
-        object_tick(scrap);
+        object_dynamic_tick(scrap);
         scrap_create(scrap);
         game_state_add_object(obj->gs, scrap, layer);
     }
@@ -566,7 +566,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         object_set_gravity(scrap, 1);
         object_set_pal_offset(scrap, object_get_pal_offset(obj));
         object_set_layers(scrap, LAYER_SCRAP);
-        object_tick(scrap);
+        object_dynamic_tick(scrap);
         object_set_shadow(scrap, 1);
         scrap_create(scrap);
         game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP);
@@ -584,7 +584,7 @@ void har_block(object *obj, vec2i hit_coord) {
     // the HARs have a lame blank frame in their animation string, so use a custom one
     object_set_custom_string(obj, "A5");
     object_set_repeat(obj, 0);
-    object_tick(obj);
+    object_dynamic_tick(obj);
     // blocking spark
     if (h->damage_received) {
         // don't make another scrape
@@ -598,8 +598,8 @@ void har_block(object *obj, vec2i hit_coord) {
     object_set_repeat(scrape, 0);
     object_set_gravity(scrape, 0);
     object_set_layers(scrape, LAYER_SCRAP);
-    object_tick(scrape);
-    object_tick(scrape);
+    object_dynamic_tick(scrape);
+    object_dynamic_tick(scrape);
     game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE);
     h->damage_received = 1;
     h->flinching = 1;
@@ -1345,7 +1345,7 @@ int har_act(object *obj, int act_type) {
             object_set_animation(opp, &af_get_move(((har*)opp->userdata)->af_data, ANIM_DAMAGE)->ani);
             object_set_repeat(opp, 0);
             object_set_custom_string(opp, str_c(&move->footer_string));
-            object_tick(opp);
+            object_dynamic_tick(opp);
         }
 
         // we actually did something interesting
@@ -1653,7 +1653,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // Callbacks and userdata
     object_set_free_cb(obj, har_free);
     object_set_act_cb(obj, har_act);
-    object_set_tick_cb(obj, har_tick);
+    object_set_dynamic_tick_cb(obj, har_tick);
     object_set_move_cb(obj, har_move);
     object_set_collide_cb(obj, har_collide);
     object_set_finish_cb(obj, har_finished);

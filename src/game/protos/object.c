@@ -62,7 +62,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     // Callbacks & userdata
     obj->userdata = NULL;
-    obj->tick = NULL;
+    obj->dynamic_tick = NULL;
+    obj->static_tick = NULL;
     obj->free = NULL;
     obj->act = NULL;
     obj->collide = NULL;
@@ -233,14 +234,14 @@ void object_set_playback_direction(object *obj, int dir) {
     }
 }
 
-void object_tick(object *obj) {
+void object_dynamic_tick(object *obj) {
     obj->age++;
     if(obj->cur_animation != NULL && obj->halt == 0) {
         for(int i = 0; i < obj->stride; i++)
             player_run(obj);
     }
-    if(obj->tick != NULL) {
-        obj->tick(obj);
+    if(obj->dynamic_tick != NULL) {
+        obj->dynamic_tick(obj);
     }
 
     if(obj->sprite_state.screen_shake_vertical > 0) {
@@ -251,6 +252,12 @@ void object_tick(object *obj) {
     if(obj->sprite_state.screen_shake_horizontal > 0) {
         obj->gs->screen_shake_horizontal = obj->sprite_state.screen_shake_horizontal * 4;
         obj->sprite_state.screen_shake_horizontal = 0;
+    }
+}
+
+void object_static_tick(object *obj) {
+    if(obj->static_tick != NULL) {
+        obj->static_tick(obj);
     }
 }
 
@@ -501,7 +508,8 @@ void object_set_userdata(object *obj, void *ptr) { obj->userdata = ptr; }
 void* object_get_userdata(object *obj) { return obj->userdata; }
 void object_set_free_cb(object *obj, object_free_cb cbfunc) { obj->free = cbfunc; }
 void object_set_act_cb(object *obj, object_act_cb cbfunc) { obj->act = cbfunc; }
-void object_set_tick_cb(object *obj, object_tick_cb cbfunc) { obj->tick = cbfunc; }
+void object_set_static_tick_cb(object *obj, object_tick_cb cbfunc) { obj->static_tick = cbfunc; }
+void object_set_dynamic_tick_cb(object *obj, object_tick_cb cbfunc) { obj->dynamic_tick = cbfunc; }
 void object_set_collide_cb(object *obj, object_collide_cb cbfunc) { obj->collide = cbfunc; }
 void object_set_finish_cb(object *obj, object_finish_cb cbfunc) { obj->finish = cbfunc; }
 void object_set_move_cb(object *obj, object_move_cb cbfunc) { obj->move = cbfunc; }

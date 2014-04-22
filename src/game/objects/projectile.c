@@ -94,7 +94,7 @@ int projectile_create(object *obj) {
     local->af_data = ((har*)object_get_userdata(obj))->af_data;
     object_set_userdata(obj, local);
 
-    object_set_tick_cb(obj, projectile_tick);
+    object_set_dynamic_tick_cb(obj, projectile_tick);
     object_set_free_cb(obj, projectile_free);
     object_set_move_cb(obj, projectile_move);
 

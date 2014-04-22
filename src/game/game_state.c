@@ -30,6 +30,11 @@
 #define MS_PER_OMF_TICK 10
 #define MS_PER_OMF_TICK_SLOWEST 150
 
+enum {
+    TICK_DYNAMIC = 0,
+    TICK_STATIC,
+};
+
 // How long the scene waits after order to move to another scene
 // Used for crossfades
 #define FRAME_WAIT_TICKS 30
@@ -442,15 +447,6 @@ void game_state_call_move(game_state *gs) {
     }
 }
 
-void game_state_call_tick(game_state *gs) {
-    render_obj *robj;
-    iterator it;
-    vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        object_tick(robj->obj);
-    }
-}
-
 void game_state_tick_controllers(game_state *gs) {
     for(int i = 0; i < game_state_num_players(gs); i++) {
         game_player *gp = game_state_get_player(gs, i);
@@ -472,6 +468,20 @@ void game_state_ctrl_events_free(game_state *gs) {
     }
 }
 
+// This function is called with changing interval, depending on the value of game speed
+void game_state_call_tick(game_state *gs, int mode) {
+    render_obj *robj;
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    while((robj = iter_next(&it)) != NULL) {
+        if(mode == TICK_DYNAMIC) {
+            object_dynamic_tick(robj->obj);
+        } else {
+            object_static_tick(robj->obj);
+        }
+    }
+}
+
 // This function is always called with the same interval, and game speed does not affect it
 void game_state_static_tick(game_state *gs) {
     // Set scene crossfade values
@@ -487,6 +497,8 @@ void game_state_static_tick(game_state *gs) {
     // Poll input. If console is opened, do not poll the controllers.
     if(!console_window_is_open()) { scene_input_poll(gs->sc); }
 
+    // Call static tick functions
+    game_state_call_tick(gs, TICK_STATIC);
 }
 
 // This function is called when the game speed requires it
@@ -559,7 +571,7 @@ void game_state_dynamic_tick(game_state *gs) {
         game_state_call_collide(gs);
 
         // Tick all objects
-        game_state_call_tick(gs);
+        game_state_call_tick(gs, TICK_DYNAMIC);
 
         // Increment tick
         gs->tick++;
@@ -825,7 +837,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         game_state_cleanup(gs);
         game_state_call_move(gs);
         game_state_call_collide(gs);
-        game_state_call_tick(gs);
+        game_state_call_tick(gs, TICK_DYNAMIC);
         gs->tick++;
     }
     DEBUG("replay done");

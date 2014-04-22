@@ -115,7 +115,7 @@ void mechlab_tick(scene *scene) {
             local->hand.prev_sel = local->hand.sel;
         }
     } else if(local->hand.pressing)  {
-        object_tick(&local->hand.obj);
+        object_dynamic_tick(&local->hand.obj);
     }
 }
 
@@ -197,7 +197,7 @@ void mechlab_hand_finished(object *hand_obj) {
     mechlab_local *local = object_get_userdata(hand_obj);
     local->hand.pressing = 0;
     player_reset(&local->hand.obj);
-    object_tick(&local->hand.obj);
+    object_dynamic_tick(&local->hand.obj);
 }
 
 // Init mechlab
@@ -248,7 +248,7 @@ int mechlab_create(scene *scene) {
     object_set_repeat(&local->hand.obj, 0);
     mechlab_hand_sel_button(local);
     object_set_finish_cb(&local->hand.obj, mechlab_hand_finished);
-    object_tick(&local->hand.obj);
+    object_dynamic_tick(&local->hand.obj);
 
     // Set callbacks
     scene_set_userdata(scene, local);

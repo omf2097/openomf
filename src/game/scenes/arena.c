@@ -385,7 +385,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             object_create(obj2, scene->gs, vec2i_create(o_har->pos.x, o_har->pos.y), vec2f_create(0, 0));
             object_set_stl(obj2, scene->bk_data.sound_translation_table);
             object_set_animation(obj2, &info->ani);
-            object_tick(obj2);
+            object_dynamic_tick(obj2);
             game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP);
         } else {
             object_free(obj);
@@ -704,7 +704,7 @@ void arena_spawn_hazard(scene *scene) {
                     }
 
                     // XXX without this, the object does not unserialize correctly in netplay
-                    object_tick(obj);
+                    object_dynamic_tick(obj);
 
                     DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
                     changed++;
@@ -787,7 +787,7 @@ void arena_tick(scene *scene) {
                 object_set_gravity(scrap, 0.4f);
                 object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
                 object_set_layers(scrap, LAYER_SCRAP);
-                object_tick(scrap);
+                object_dynamic_tick(scrap);
                 scrap->cast_shadow = 1;
                 scrap_create(scrap);
                 game_state_add_object(gs, scrap, RENDER_LAYER_TOP);

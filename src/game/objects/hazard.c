@@ -91,7 +91,7 @@ int hazard_create(object *obj, scene *scene) {
     object_set_spawn_cb(obj, hazard_spawn_cb, (void*)scene);
     object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
     object_set_move_cb(obj, hazard_move);
-    object_set_tick_cb(obj, hazard_tick);
+    object_set_dynamic_tick_cb(obj, hazard_tick);
 
     hazard_bootstrap(obj);
 
