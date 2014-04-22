@@ -26,6 +26,7 @@ typedef struct ticktimer_t ticktimer;
 
 typedef struct game_state_t {
     unsigned int run;
+    unsigned int paused;
     unsigned int this_id;
     unsigned int next_id;
     unsigned int tick;

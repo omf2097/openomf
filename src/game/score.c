@@ -244,6 +244,10 @@ void chr_score_done(chr_score *score) {
     }
 }
 
+void chr_score_clear_done(chr_score *score) {
+    score->done = 0;
+}
+
 int chr_score_interrupt(chr_score *score, vec2i pos) {
     // Enemy interrupted somehow, show consecutive hits or whatevera
     int ret = 0;

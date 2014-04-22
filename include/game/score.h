@@ -49,6 +49,7 @@ void chr_score_victory(chr_score *score, int health);
 void chr_score_scrap(chr_score *score);
 void chr_score_destruction(chr_score *score);
 void chr_score_done(chr_score *score);
+void chr_score_clear_done(chr_score *score);
 int chr_score_end_combo(chr_score *score, vec2i pos);
 int chr_score_interrupt(chr_score *score, vec2i pos);
 

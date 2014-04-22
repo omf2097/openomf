@@ -41,6 +41,7 @@ typedef struct {
 
 int game_state_create(game_state *gs, int net_mode) {
     gs->run = 1;
+    gs->paused = 0;
     gs->tick = 0;
     gs->int_tick = 0;
     gs->role = ROLE_CLIENT;
@@ -57,10 +58,6 @@ int game_state_create(game_state *gs, int net_mode) {
     gs->next_wait_ticks = 0;
     gs->this_wait_ticks = 0;
 
-    // Timer 
-    gs->tick_timer = malloc(sizeof(ticktimer));
-    ticktimer_init(gs->tick_timer);
-    
     // Set up players
     gs->sc = malloc(sizeof(scene));
     for(int i = 0; i < 2; i++) {
@@ -188,8 +185,16 @@ scene* game_state_get_scene(game_state *gs) {
     return gs->sc;
 }
 
-int game_state_is_running(game_state *gs) {
+unsigned int game_state_is_running(game_state *gs) {
     return gs->run;
+}
+
+unsigned int game_state_is_paused(game_state *gs) {
+    return gs->paused;
+}
+
+void game_state_set_paused(game_state *gs, unsigned int paused) {
+    gs->paused = paused;
 }
 
 // Return 0 if event was handled here
@@ -486,9 +491,6 @@ void game_state_static_tick(game_state *gs) {
 
 // This function is called when the game speed requires it
 void game_state_dynamic_tick(game_state *gs) {
-    // Tick timers
-    ticktimer_run(gs->tick_timer);
-
     // We want to load another scene
     if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
         // If this is the end, set run to 0 so that engine knows to close here
@@ -537,26 +539,36 @@ void game_state_dynamic_tick(game_state *gs) {
         video_move_target(0, 0);
     }
 
-    // Tick scene
-    scene_tick(gs->sc);
+    if(!game_state_is_paused(gs)) {
+        // Tick scene
+        scene_tick(gs->sc);
+    }
 
-    // Clean up objects
-    game_state_cleanup(gs);
+    // Static ticks are always called regardless of the pause status
+    // This function is currently used for ticking the net controller
+    scene_static_tick(gs->sc);
 
-    // Call object_move for all objects
-    game_state_call_move(gs);
+    if(!game_state_is_paused(gs)) {
+        // Clean up objects
+        game_state_cleanup(gs);
 
-    // Handle physics for all pairs of objects
-    game_state_call_collide(gs);
+        // Call object_move for all objects
+        game_state_call_move(gs);
 
-    // Tick all objects
-    game_state_call_tick(gs);
+        // Handle physics for all pairs of objects
+        game_state_call_collide(gs);
+
+        // Tick all objects
+        game_state_call_tick(gs);
+
+        // Increment tick
+        gs->tick++;
+    }
 
     // Free extra controller events
     game_state_ctrl_events_free(gs);
 
-    // Increment tick
-    gs->tick++;
+    // int_tick is used for ping calculation so it shouldn't be touched
     gs->int_tick++;
 }
 
@@ -687,10 +699,6 @@ void game_state_free(game_state *gs) {
         game_player_free(gs->players[i]);
         free(gs->players[i]);
     }
-
-    // Free ticktimer
-    ticktimer_close(gs->tick_timer);
-    free(gs->tick_timer);
 }
 
 int game_state_ms_per_dyntick(game_state *gs) {
@@ -705,14 +713,11 @@ int game_state_ms_per_dyntick(game_state *gs) {
     return MS_PER_OMF_TICK;
 }
 
-ticktimer *game_state_get_ticktimer(game_state *gs) {
-    return gs->tick_timer;
-}
-
 int game_state_serialize(game_state *gs, serial *ser) {
     // serialize tick time and random seed, so client can reply state from this point
     serial_write_int32(ser, game_state_get_tick(gs));
     serial_write_int32(ser, rand_get_seed());
+    serial_write_int32(ser, game_state_is_paused(gs));
 
     object *har[2];
     har[0] = game_state_get_player(gs, 0)->har;
@@ -754,6 +759,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     gs->tick = serial_read_int32(ser);
     int endtick = gs->tick + ceil(rtt / 2.0f);
     rand_seed(serial_read_int32(ser));
+    game_state_set_paused(gs, serial_read_int32(ser));
 
     for(int i = 0; i < 2; i++) {
         // Declare some vars

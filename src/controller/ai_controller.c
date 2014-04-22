@@ -273,6 +273,9 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     har *h = object_get_userdata(o);
     object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
 
+    // Do not run AI while the game is paused
+    if(game_state_is_paused(o->gs)) { return 0; }
+
     // Grab all projectiles on screen
     vector_clear(&a->projectiles);
     game_state_get_projectiles(o->gs, &a->projectiles);

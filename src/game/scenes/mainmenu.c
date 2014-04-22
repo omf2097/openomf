@@ -788,6 +788,7 @@ void mainmenu_tick(scene *scene) {
                 keys->right = SDL_GetScancodeFromName(k->key1_right);
                 keys->punch = SDL_GetScancodeFromName(k->key1_punch);
                 keys->kick = SDL_GetScancodeFromName(k->key1_kick);
+                keys->escape = SDL_GetScancodeFromName(k->key1_escape);
                 keyboard_create(player1_ctrl, keys, 0);
                 game_player_set_ctrl(p1, player1_ctrl);
 
@@ -832,6 +833,7 @@ void mainmenu_tick(scene *scene) {
                 keys->right = SDL_GetScancodeFromName(k->key1_right);
                 keys->punch = SDL_GetScancodeFromName(k->key1_punch);
                 keys->kick = SDL_GetScancodeFromName(k->key1_kick);
+                keys->escape = SDL_GetScancodeFromName(k->key1_escape);
                 keyboard_create(player2_ctrl, keys, 0);
                 game_player_set_ctrl(p2, player2_ctrl);
                 local->host = NULL;

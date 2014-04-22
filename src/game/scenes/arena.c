@@ -77,6 +77,8 @@ typedef struct arena_local_t {
     int rein_enabled;
 } arena_local;
 
+void arena_maybe_sync(scene *scene, int need_sync);
+
 // -------- Local callbacks --------
 
 void game_menu_quit(component *c, void *userdata) {
@@ -89,6 +91,8 @@ void game_menu_return(component *c, void *userdata) {
     game_player *player1 = game_state_get_player(((scene*)userdata)->gs, 0);
     controller_set_repeat(game_player_get_ctrl(player1), 1);
     local->menu_visible = 0;
+    game_state_set_paused(((scene*)userdata)->gs, 0);
+    arena_maybe_sync(userdata, 1);
 }
 
 void music_slide(component *c, void *userdata, int pos) {
@@ -259,6 +263,7 @@ void arena_reset(scene *sc) {
         object_set_vel(har_obj, vec2f_create(0, 0));
         object_set_gravity(har_obj, 1);
         object_set_direction(har_obj, dir[i]);
+        chr_score_clear_done(&player->score);
     }
 
     sc->bk_data.sound_translation_table[3] = 23 + local->round; // NUMBER
@@ -578,6 +583,8 @@ void maybe_install_har_hooks(scene *scene) {
 void arena_free(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
 
+    game_state_set_paused(scene->gs, 0);
+
     for(int i = 0; i < 2; i++) {
         game_player *player = game_state_get_player(scene->gs, i);
         game_player_set_har(player, NULL);
@@ -618,6 +625,8 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
             if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC && player == game_state_get_player(scene->gs, 0)) {
                 // toggle menu
                 local->menu_visible = !local->menu_visible;
+                game_state_set_paused(scene->gs, local->menu_visible);
+                need_sync = 1;
                 controller_set_repeat(game_player_get_ctrl(player), !local->menu_visible);
                 DEBUG("local menu %d, controller repeat %d", local->menu_visible, game_player_get_ctrl(player)->repeat);
             } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && player == game_state_get_player(scene->gs, 0) && !is_demoplay(scene)) {
@@ -636,6 +645,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                     need_sync += object_act(game_player_get_har(player), i->event_data.action);
                 }
             } else if (i->type == EVENT_TYPE_SYNC) {
+                DEBUG("sync");
                 game_state_unserialize(scene->gs, i->event_data.ser, player->ctrl->rtt);
                 maybe_install_har_hooks(scene);
             } else if (i->type == EVENT_TYPE_CLOSE) {
@@ -784,6 +794,13 @@ void arena_tick(scene *scene) {
             }
         }
     }
+}
+
+// Static ticks are always called regardless of the pause/unpause status
+void arena_static_tick(scene *scene) {
+    game_state *gs = scene->gs;
+    game_player *player1 = game_state_get_player(gs, 0);
+    game_player *player2 = game_state_get_player(gs, 1);
 
     int need_sync = 0;
     // allow enemy HARs to move during a network game
@@ -815,6 +832,7 @@ int arena_event(scene *scene, SDL_Event *e) {
     if (e->type == SDL_KEYDOWN && is_demoplay(scene)) {
         if(e->key.keysym.sym == SDLK_ESCAPE) {
             local->menu_visible = !local->menu_visible;
+            game_state_set_paused(scene->gs, local->menu_visible);
             controller_set_repeat(game_player_get_ctrl(player1), !local->menu_visible);
         } else if (local->menu_visible) {
             int action = 0;
@@ -1221,6 +1239,7 @@ int arena_create(scene *scene) {
     scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
     scene_set_tick_cb(scene, arena_tick);
+    scene_set_static_tick_cb(scene, arena_static_tick);
     scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
 

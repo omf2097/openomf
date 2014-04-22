@@ -32,6 +32,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->render = NULL;
     scene->render_overlay = NULL;
     scene->tick = NULL;
+    scene->static_tick = NULL;
     scene->input_poll = NULL;
     scene->startup = NULL;
     scene->prio_override = NULL;
@@ -187,6 +188,12 @@ void scene_tick(scene *scene) {
     }
 }
 
+void scene_static_tick(scene *scene) {
+    if(scene->static_tick != NULL) {
+        scene->static_tick(scene);
+    }
+}
+
 void scene_input_poll(scene *scene) {
     if(scene->input_poll != NULL) {
         scene->input_poll(scene);
@@ -231,6 +238,10 @@ void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc) {
 
 void scene_set_tick_cb(scene *scene, scene_tick_cb cbfunc) {
     scene->tick = cbfunc;
+}
+
+void scene_set_static_tick_cb(scene *scene, scene_static_tick_cb cbfunc) {
+    scene->static_tick = cbfunc;
 }
 
 void scene_set_anim_prio_override_cb(scene *scene, scene_anim_prio_override_cb cbfunc) {
