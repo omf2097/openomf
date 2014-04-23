@@ -179,6 +179,19 @@ void game_state_get_projectiles(game_state *gs, vector *obj_proj) {
     }
 }
 
+void game_state_clear_hazards_projectiles(game_state *gs) {
+    iterator it;
+    render_obj *robj;
+    vector_iter_begin(&gs->objects, &it);
+    while((robj = iter_next(&it)) != NULL) {
+        if(object_get_group(robj->obj) == GROUP_PROJECTILE) {
+            object_free(robj->obj);
+            free(robj->obj);
+            vector_delete(&gs->objects, &it);
+        }
+    }
+}
+
 void game_state_set_next(game_state *gs, unsigned int next_scene_id) {
     if(gs->next_wait_ticks <= 0) {
         gs->next_wait_ticks = FRAME_WAIT_TICKS;

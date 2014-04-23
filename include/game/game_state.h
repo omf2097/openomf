@@ -45,5 +45,6 @@ void game_state_del_object(game_state *gs, object *obj);
 void game_state_del_animation(game_state *gs, int anim_id);
 void game_state_set_speed(game_state *gs, int speed);
 void game_state_get_projectiles(game_state *gs, vector *obj_proj);
+void game_state_clear_hazards_projectiles(game_state *gs);
 
 #endif // _GAME_STATE_H

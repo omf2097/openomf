@@ -246,6 +246,9 @@ void arena_reset(scene *sc) {
     local->round++;
     local->state = ARENA_STATE_STARTING;
 
+    // Kill all hazards and projectiles
+    game_state_clear_hazards_projectiles(sc->gs);
+
     // Initial har data
     vec2i pos[2];
     int dir[2] = {OBJECT_FACE_RIGHT, OBJECT_FACE_LEFT};
