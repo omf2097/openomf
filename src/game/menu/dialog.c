@@ -1,3 +1,4 @@
+#include <string.h>
 #include "video/video.h"
 #include "utils/log.h"
 #include "game/menu/menu_background.h"
@@ -16,8 +17,9 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     dlg->visible = 0;
     dlg->userdata = NULL;
     dlg->clicked = NULL;
-    strcpy(dlg->text, text);
-    font_get_wrapped_size(&font_small, text, MAX_WIDTH, &w, &h);
+    strncpy(dlg->text, text, sizeof(dlg->text)-1);
+    dlg->text[sizeof(dlg->text)-1] = 0;
+    font_get_wrapped_size(&font_small, dlg->text, MAX_WIDTH, &w, &h);
     menu_background_create(&dlg->background, MAX_WIDTH+30, h+24+font_large.h);
 
     if(style == DIALOG_STYLE_YES_NO) {
