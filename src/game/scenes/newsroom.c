@@ -1,5 +1,6 @@
 #include "game/scenes/newsroom.h"
 #include "game/menu/menu_background.h"
+#include "game/menu/dialog.h"
 #include "game/text/languages.h"
 #include "game/text/text.h"
 #include "game/settings.h"
@@ -25,6 +26,7 @@ typedef struct newsroom_local_t {
     str har1, har2;
     int sex1, sex2;
     int won;
+    dialog continue_dialog;
 } newsroom_local;
 
 char *object_pronoun(int sex) {
@@ -163,6 +165,7 @@ void newsroom_free(scene *scene) {
     str_free(&local->pilot2);
     str_free(&local->har1);
     str_free(&local->har2);
+    dialog_free(&local->continue_dialog);
     free(local);
 }
 
@@ -178,8 +181,25 @@ void newsroom_overlay_render(scene *scene) {
         video_render_sprite(&local->news_bg, 20, 140, BLEND_ALPHA, 0);
         font_render_wrapped(&font_small, str_c(&local->news_str), 30, 150, 250, COLOR_YELLOW);
     }
+    if(dialog_is_visible(&local->continue_dialog)) {
+        dialog_render(&local->continue_dialog);
+    }
 }
 
+void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result, void *userdata){
+    scene *sc = userdata;
+    if(result == DIALOG_RESULT_NO) {
+        game_state_set_next(sc->gs, SCENE_MENU);
+    } else if (result == DIALOG_RESULT_YES) {
+        // XXX reusing the old AI controller doesn't seem to work
+        game_player *p2 = game_state_get_player(sc->gs, 1);
+        controller *ctrl = malloc(sizeof(controller));
+        controller_init(ctrl);
+        ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
+        game_player_set_ctrl(p2, ctrl);
+        game_state_set_next(sc->gs, SCENE_VS);
+    }
+}
 
 int newsroom_event(scene *scene, SDL_Event *event) {
     newsroom_local *local = scene_get_userdata(scene);
@@ -191,7 +211,9 @@ int newsroom_event(scene *scene, SDL_Event *event) {
     if (i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                if (
+                if(dialog_is_visible(&local->continue_dialog)) {
+                    dialog_event(&local->continue_dialog, i->event_data.action);
+                } else if (
                         i->event_data.action == ACT_ESC ||
                         i->event_data.action == ACT_KICK ||
                         i->event_data.action == ACT_PUNCH) {
@@ -234,11 +256,10 @@ int newsroom_event(scene *scene, SDL_Event *event) {
                                 controller_init(ctrl);
                                 ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
                                 game_player_set_ctrl(p2, ctrl);
-                                // TODO set player's colors
                                 game_state_set_next(scene->gs, SCENE_VS);
                             }
                         } else {
-                            game_state_set_next(scene->gs, SCENE_MENU);
+                            dialog_show(&local->continue_dialog, 1);
                         }
                     }
                 }
@@ -316,6 +337,12 @@ int newsroom_create(scene *scene) {
                               get_id_name(p2->har_id),
                               pilot_sex(p1->pilot_id), pilot_sex(p2->pilot_id));
     newsroom_fixup_str(local);
+
+
+    // Continue Dialog
+    dialog_create(&local->continue_dialog, DIALOG_STYLE_YES_NO, "DO YOU WISH TO CONTINUE?", 72, 60);
+    local->continue_dialog.userdata = scene;
+    local->continue_dialog.clicked = newsroom_continue_dialog_clicked;
 
     // Set callbacks
     scene_set_userdata(scene, local);
