@@ -17,6 +17,7 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     dlg->visible = 0;
     dlg->userdata = NULL;
     dlg->clicked = NULL;
+    dlg->canceled = NULL;
     strncpy(dlg->text, text, sizeof(dlg->text)-1);
     dlg->text[sizeof(dlg->text)-1] = 0;
     font_get_wrapped_size(&font_small, dlg->text, MAX_WIDTH, &w, &h);
@@ -100,11 +101,11 @@ void dialog_tick(dialog *dlg) {
 void dialog_event(dialog *dlg, int action) {
     if(!dlg->visible) { return; }
     if(action == ACT_LEFT || action == ACT_RIGHT) {
-        if(dlg->yes->selected) {
+        if(dlg->yes && dlg->yes->selected) {
             dlg->yes->selected = 0;
             dlg->no->selected = 1;
             dlg->result = DIALOG_RESULT_NO;
-        } else if(dlg->no->selected) {
+        } else if(dlg->no && dlg->no->selected) {
             dlg->yes->selected = 1;
             dlg->no->selected = 0;
             dlg->result = DIALOG_RESULT_YES_OK;
@@ -115,6 +116,9 @@ void dialog_event(dialog *dlg, int action) {
         }
         dlg->visible = 0;
     } else if(action == ACT_ESC) {
+        if(dlg->canceled) {
+            dlg->canceled(dlg, dlg->userdata);
+        }
         dlg->visible = 0;
     }
 }
