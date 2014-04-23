@@ -10,6 +10,12 @@
 
 #define UNUSED(x) (void)(x)
 
+/** Creates a new, empty object.
+  * \param obj Object handle
+  * \param gs Game state handle
+  * \param pos Initial position
+  * \param vel Initial velocity
+  */
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // State
     obj->gs = gs;
@@ -409,6 +415,9 @@ int object_palette_transform(object *obj, screen_palette *pal) {
     return 0;
 }
 
+/** Frees the object and all resources attached to it (even the animation, if it is owned by the object)
+  * \param obj Object handle
+  */
 void object_free(object *obj) {
     if(obj->free != NULL) {
         obj->free(obj);
@@ -425,18 +434,34 @@ void object_free(object *obj) {
     obj->cur_animation = NULL;
 }
 
+/** Sets a pointer to a sound translation table. Note! Does NOT copy!
+  * \param obj Object handle
+  * \param ptr Pointer to the STL (30 byte char array)
+  */
 void object_set_stl(object *obj, char *ptr) {
     obj->sound_translation_table = ptr;
 }
 
+/** Returns a pointer to the sound translation table (30 byte char array)
+  * \param obj Object handle
+  * \return Pointer to the sound translation table
+  */
 char* object_get_stl(object *obj) {
     return obj->sound_translation_table;
 }
 
+/** Sets the owner of the animation. If OWNER_OBJECT, the object will free animation on object_free().
+  * \param obj Object handle
+  * \param owner Owner of the object (OWNER_EXTERNAL, OWNER_OBJECT)
+  */
 void object_set_animation_owner(object *obj, int owner) {
     obj->cur_animation_own = owner;
 }
 
+/** Sets an animation for object. It will automatically start playing on first tick.
+  * \param obj Object handle
+  * \param ani Animation to attach
+  */
 void object_set_animation(object *obj, animation *ani) {
     if(obj->cur_animation != NULL && obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
@@ -462,6 +487,10 @@ void object_set_animation(object *obj, animation *ani) {
     }
 }
 
+/** Sets a new animation string to currently playing animation
+  * \param obj Object handle
+  * \param str New animation string
+  */
 void object_set_custom_string(object *obj, const char *str) {
     obj->custom_str = strcpy(malloc(strlen(str)+1), str);
     player_reload_with_str(obj, str);
