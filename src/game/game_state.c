@@ -495,7 +495,12 @@ void game_state_static_tick(game_state *gs) {
     }
 
     // Poll input. If console is opened, do not poll the controllers.
-    if(!console_window_is_open()) { scene_input_poll(gs->sc); }
+    if(!console_window_is_open()) { 
+        scene_input_poll(gs->sc); 
+    }
+
+    // Call static ticks for scene
+    scene_static_tick(gs->sc, game_state_is_paused(gs));
 
     // Call static tick functions
     game_state_call_tick(gs, TICK_STATIC);

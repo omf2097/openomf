@@ -722,7 +722,7 @@ void arena_spawn_hazard(scene *scene) {
     arena_maybe_sync(scene, changed);
 }
 
-void arena_tick(scene *scene, int paused) {
+void arena_dynamic_tick(scene *scene, int paused) {
     arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
     game_player *player1 = game_state_get_player(gs, 0);
@@ -803,16 +803,16 @@ void arena_tick(scene *scene, int paused) {
         }
     } // if(!paused)
 
-    // XXX HACK - tick the menu multiple times to make the selected text blink faster
-    for(int i=0;i<4;i++) {
-        menu_tick(&local->game_menu);
-    }
-
     int need_sync = 0;
     // allow enemy HARs to move during a network game
     need_sync += arena_handle_events(scene, player1, player1->ctrl->extra_events);
     need_sync += arena_handle_events(scene, player2, player2->ctrl->extra_events);
     arena_maybe_sync(scene, need_sync);
+}
+
+void arena_static_tick(scene *scene, int paused) {
+    arena_local *local = scene_get_userdata(scene);
+    menu_tick(&local->game_menu);
 }
 
 void arena_input_tick(scene *scene) {
@@ -1217,7 +1217,8 @@ int arena_create(scene *scene) {
     // Callbacks
     scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
-    scene_set_dynamic_tick_cb(scene, arena_tick);
+    scene_set_dynamic_tick_cb(scene, arena_dynamic_tick);
+    scene_set_static_tick_cb(scene, arena_static_tick);
     scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
 
