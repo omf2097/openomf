@@ -209,6 +209,8 @@ void font_render_wrapped(font *font, const char *text, int x, int y, int w, colo
     font_render_wrapped_shadowed(font, text, x, y, w, c, 0);
 }
 
+// XXX If you modify this function please also reflect the changes onto font_get_wrapped_size().
+// XXX TODO - Handle newlines
 void font_render_wrapped_shadowed(font *font, const char *text, int x, int y, int w, color c, int shadow_flags) {
     int len = strlen(text);
     if (font->w*len < w) {
