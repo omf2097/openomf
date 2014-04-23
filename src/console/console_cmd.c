@@ -202,6 +202,12 @@ int console_cmd_god(game_state *gs, void *userdata, int argc, char **argv) {
     return 0;
 }
 
+int console_kreissack(game_state *gs, void *userdata, int argc, char **argv) {
+    game_player *p1 = game_state_get_player(gs, 0);
+    p1->sp_wins = (2046 ^ (2 << p1->pilot_id));
+    return 0;
+}
+
 int console_cmd_ez_destruct(game_state *gs, void *userdata, int argc, char **argv) {
     for(int i = 0;i < game_state_num_players(gs);i++) {
         game_player *gp = game_state_get_player(gs, i);
@@ -232,5 +238,6 @@ void console_init_cmd() {
     console_add_cmd("rein",  &console_cmd_rein,   "R-E-I-N!");
     console_add_cmd("rdr",   &console_cmd_renderer, "Renderer (0=sw,1=hw)");
     console_add_cmd("god",   &console_cmd_god,  "Enable god mode");
+    console_add_cmd("kreissack",   &console_kreissack,  "Fight Kreissack");
     console_add_cmd("ez-destruct",  &console_cmd_ez_destruct,  "Punch = destruction, kick = scrap");
 }

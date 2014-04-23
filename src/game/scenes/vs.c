@@ -9,6 +9,7 @@
 #include "game/text/languages.h"
 #include "game/protos/scene.h"
 #include "game/scenes/vs.h"
+#include "game/settings.h"
 #include "game/menu/menu_background.h"
 #include "game/menu/dialog.h"
 #include "game/game_state.h"
@@ -28,6 +29,7 @@ typedef struct vs_local_t {
     int arena;
     char vs_str[128];
     dialog quit_dialog;
+    dialog too_pathetic_dialog;
 } vs_local;
 
 int vs_is_netplay(scene *scene) {
@@ -194,7 +196,9 @@ void vs_render(scene *scene) {
 
         // arena description
         font_render_wrapped(&font_small, lang_get(66+local->arena), 56+72, 160, (211-72)-4, COLOR_GREEN);
-
+    } else if (player2->pilot_id == 10 && settings_get()->gameplay.difficulty < 2) {
+        // kriessack, but not on Veteran or higher
+        font_render_wrapped(&font_small, lang_get(747), 59, 160, 200, COLOR_YELLOW);
     } else {
         font_render_wrapped(&font_small, lang_get(749+(11*player1->pilot_id)+player2->pilot_id), 59, 160, 150, COLOR_YELLOW);
         font_render_wrapped(&font_small, lang_get(870+(11*player2->pilot_id)+player1->pilot_id), 320-(59+150), 180, 150, COLOR_YELLOW);
@@ -205,6 +209,10 @@ void vs_render_overlay(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
     if(dialog_is_visible(&local->quit_dialog)) {
         dialog_render(&local->quit_dialog);
+    }
+
+    if(dialog_is_visible(&local->too_pathetic_dialog)) {
+        dialog_render(&local->too_pathetic_dialog);
     }
 }
 
@@ -325,6 +333,18 @@ int vs_create(scene *scene) {
     dialog_create(&local->quit_dialog, DIALOG_STYLE_YES_NO, "ARE YOU SURE YOU WANT TO QUIT THIS GAME?", 72, 60);
     local->quit_dialog.userdata = scene;
     local->quit_dialog.clicked = vs_quit_dialog_clicked;
+
+    // Too Pathetic Dialog
+    char insult[512];
+    snprintf(insult, 512, lang_get(748), "Veteran", "Major Kreissack");
+    dialog_create(&local->too_pathetic_dialog, DIALOG_STYLE_OK, insult, 72, 60);
+    local->too_pathetic_dialog.userdata = scene;
+    local->too_pathetic_dialog.clicked = vs_quit_dialog_clicked;
+
+    if (player2->pilot_id == 10 && settings_get()->gameplay.difficulty < 2) {
+        // kriessack, but not on Veteran or higher
+        dialog_show(&local->too_pathetic_dialog, 1);
+    }
 
     // Callbacks
     scene_set_render_cb(scene, vs_render);
