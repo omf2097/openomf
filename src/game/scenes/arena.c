@@ -465,15 +465,21 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     object_select_sprite(local->player_rounds[other_player_id][score->rounds], 0);
     score->rounds++;
     if (score->rounds >= ceil(local->rounds/2.0f)) {
-        har_set_ani(winner, ANIM_VICTORY, 1);
+        har_set_ani(winner, ANIM_VICTORY, 0);
         chr_score_victory(score, winner_har->health);
         winner_har->state = STATE_VICTORY;
         local->over = 1;
         if (is_singleplayer(scene)) {
           player_winner->sp_wins |= 2 << player_loser->pilot_id;
+          if (player_loser->pilot_id == 10) {
+              // can't scrap/destruct kreissack
+              winner_har->state = STATE_DONE;
+              // major go boom
+              har_set_ani(loser, 47, 1);
+          }
         }
     } else {
-        har_set_ani(winner, ANIM_VICTORY, 1);
+        har_set_ani(winner, ANIM_VICTORY, 0);
         // can't do scrap/destruct except on final round
         winner_har->state = STATE_DONE;
     }
