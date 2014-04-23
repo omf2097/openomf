@@ -108,8 +108,7 @@ void vs_handle_action(scene *scene, int action) {
     }
 }
 
-void vs_tick(scene *scene, int paused) {
-    vs_local *local = scene->userdata;
+void vs_dynamic_tick(scene *scene, int paused) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *i = NULL;
     // Handle extra controller inputs
@@ -124,7 +123,10 @@ void vs_tick(scene *scene, int paused) {
             }
         } while((i = i->next));
     }
+}
 
+void vs_static_tick(scene *scene, int paused) {
+    vs_local *local = scene->userdata;
     if(dialog_is_visible(&local->quit_dialog)) {
         dialog_tick(&local->quit_dialog);
     }
@@ -328,7 +330,8 @@ int vs_create(scene *scene) {
     scene_set_render_cb(scene, vs_render);
     scene_set_render_overlay_cb(scene, vs_render_overlay);
     scene_set_event_cb(scene, vs_event);
-    scene_set_dynamic_tick_cb(scene, vs_tick);
+    scene_set_dynamic_tick_cb(scene, vs_dynamic_tick);
+    scene_set_static_tick_cb(scene, vs_static_tick);
     scene_set_free_cb(scene, vs_free);
 
     // Pick renderer
