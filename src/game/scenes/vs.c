@@ -78,7 +78,9 @@ void vs_free(scene *scene) {
 
 void vs_handle_action(scene *scene, int action) {
     vs_local *local = scene_get_userdata(scene);
-    if(dialog_is_visible(&local->quit_dialog)) {
+    if(dialog_is_visible(&local->too_pathetic_dialog)) {
+        dialog_event(&local->too_pathetic_dialog, action);
+    } else if(dialog_is_visible(&local->quit_dialog)) {
         dialog_event(&local->quit_dialog, action);
     } else {
         switch (action) {
@@ -129,7 +131,9 @@ void vs_dynamic_tick(scene *scene, int paused) {
 
 void vs_static_tick(scene *scene, int paused) {
     vs_local *local = scene->userdata;
-    if(dialog_is_visible(&local->quit_dialog)) {
+    if(dialog_is_visible(&local->too_pathetic_dialog)) {
+        dialog_tick(&local->too_pathetic_dialog);
+    } else if(dialog_is_visible(&local->quit_dialog)) {
         dialog_tick(&local->quit_dialog);
     }
 }
@@ -144,7 +148,9 @@ int vs_event(scene *scene, SDL_Event *event) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if (i->event_data.action == ACT_ESC) {
-                    if(dialog_is_visible(&local->quit_dialog)) {
+                    if(dialog_is_visible(&local->too_pathetic_dialog)) {
+                        dialog_event(&local->too_pathetic_dialog, i->event_data.action);
+                    } else if(dialog_is_visible(&local->quit_dialog)) {
                         dialog_event(&local->quit_dialog, i->event_data.action);
                     } else if(!vs_is_netplay(scene)) {
                         dialog_show(&local->quit_dialog, 1);
@@ -221,6 +227,11 @@ void vs_quit_dialog_clicked(dialog *dlg, dialog_result result, void *userdata){
     if(result == DIALOG_RESULT_YES_OK) {
         game_state_set_next(sc->gs, SCENE_MELEE);
     }
+}
+
+void vs_too_pathetic_dialog_clicked(dialog *dlg, dialog_result result, void *userdata){
+    scene *sc = userdata;
+    game_state_set_next(sc->gs, SCENE_MENU);
 }
 
 int vs_create(scene *scene) {
@@ -339,7 +350,7 @@ int vs_create(scene *scene) {
     snprintf(insult, 512, lang_get(748), "Veteran", "Major Kreissack");
     dialog_create(&local->too_pathetic_dialog, DIALOG_STYLE_OK, insult, 72, 60);
     local->too_pathetic_dialog.userdata = scene;
-    local->too_pathetic_dialog.clicked = vs_quit_dialog_clicked;
+    local->too_pathetic_dialog.clicked = vs_too_pathetic_dialog_clicked;
 
     if (player2->pilot_id == 10 && settings_get()->gameplay.difficulty < 2) {
         // kriessack, but not on Veteran or higher
