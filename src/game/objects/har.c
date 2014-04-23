@@ -21,6 +21,9 @@
 #define FUDGEFACTOR 0.003f
 #define IS_ZERO(n) (n < 0.8 && n > -0.8)
 
+#define WALL_LEFT 20
+#define WALL_RIGHT 300
+
 void har_finished(object *obj);
 int har_act(object *obj, int act_type);
 void har_spawn_scrap(object *obj, vec2i pos, int amount);
@@ -908,11 +911,11 @@ void har_tick(object *obj) {
         int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
         int hit = 0;
-        if(pos.x <  20) {
-            pos.x = 20;
+        if(pos.x <  WALL_LEFT) {
+            pos.x = WALL_LEFT;
             hit = 1;
-        } else if(pos.x > 300) {
-            pos.x = 300;
+        } else if(pos.x > WALL_RIGHT) {
+            pos.x = WALL_RIGHT;
             wall = 1;
             hit = 1;
         }

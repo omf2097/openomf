@@ -45,6 +45,9 @@
 #define ENDURANCEBAR_COLOR_BR_BORDER color_create(0,69,93,255)
 #define TEXT_COLOR color_create(186,250,250,255)
 
+#define HAR1_START_POS 110
+#define HAR2_START_POS 211
+
 typedef struct arena_local_t {
     menu game_menu;
     component title_button;
@@ -246,8 +249,8 @@ void arena_reset(scene *sc) {
     // Initial har data
     vec2i pos[2];
     int dir[2] = {OBJECT_FACE_RIGHT, OBJECT_FACE_LEFT};
-    pos[0] = vec2i_create(60, 190);
-    pos[1] = vec2i_create(260, 190);
+    pos[0] = vec2i_create(HAR1_START_POS, 190);
+    pos[1] = vec2i_create(HAR2_START_POS, 190);
 
     // init HARs
     for(int i = 0; i < 2; i++) {
@@ -1003,8 +1006,8 @@ int arena_create(scene *scene) {
     // Initial har data
     vec2i pos[2];
     int dir[2] = {OBJECT_FACE_RIGHT, OBJECT_FACE_LEFT};
-    pos[0] = vec2i_create(60, 190);
-    pos[1] = vec2i_create(260, 190);
+    pos[0] = vec2i_create(HAR1_START_POS, 190);
+    pos[1] = vec2i_create(HAR2_START_POS, 190);
 
     // init HARs
     for(int i = 0; i < 2; i++) {
