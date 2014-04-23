@@ -9,6 +9,8 @@
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
 #define BUFFER_DEC(b) (((b) + sizeof(con->output) - 1) % sizeof(con->output))
 
+#define CURSOR_STR "\x7f"
+
 // Console State
 console *con = NULL;
 
@@ -210,7 +212,29 @@ int console_init() {
     menu_background_create(&con->background, 322, 101);
  
     console_init_cmd();
-    
+
+    // Print the header
+    for(int i=0;i<37;i++) {
+        console_output_add(CURSOR_STR);
+    }
+    console_output_addline("");
+    console_output_addline(CURSOR_STR "                                   " CURSOR_STR "\n"
+                           CURSOR_STR " OpenOMF Debug Console Cheat Sheet " CURSOR_STR "\n"
+                           CURSOR_STR "                                   " CURSOR_STR "\n"
+                           CURSOR_STR " PageUp - Scroll Up                " CURSOR_STR "\n"
+                           CURSOR_STR " PageDn - Scroll Down              " CURSOR_STR "\n"
+                           CURSOR_STR " Up     - Reissue Previous Command " CURSOR_STR "\n"
+                           CURSOR_STR " Down   - Reissue Next Command     " CURSOR_STR "\n"
+                           CURSOR_STR " Enter  - Execute Current Command  " CURSOR_STR "\n"
+                           CURSOR_STR " --------------------------------- " CURSOR_STR "\n"
+                           CURSOR_STR " Type in Help to explore more      " CURSOR_STR "\n"
+                           CURSOR_STR " --------------------------------- " CURSOR_STR "\n"
+                           CURSOR_STR "                                   " CURSOR_STR);
+    for(int i=0;i<37;i++) {
+        console_output_add(CURSOR_STR);
+    }
+    console_output_addline("\n");
+
     return 0;
 }
 
@@ -279,7 +303,7 @@ void console_render() {
         // input line
         font_render(&font_small, con->input, 0 , con->ypos - 7, color_create(121, 121, 121, 255));
         //cursor
-        font_render(&font_small, "", strlen(con->input)*font_small.w , con->ypos - 7, color_create(121 - t, 121 - t, 121 - t, 255));
+        font_render(&font_small, CURSOR_STR, strlen(con->input)*font_small.w , con->ypos - 7, color_create(121 - t, 121 - t, 121 - t, 255));
         console_output_render();
     }
 }
