@@ -908,11 +908,11 @@ void har_tick(object *obj) {
         int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
         int hit = 0;
-        if(pos.x <  15) {
-            pos.x = 15;
+        if(pos.x <  20) {
+            pos.x = 20;
             hit = 1;
-        } else if(pos.x > 305) {
-            pos.x = 305;
+        } else if(pos.x > 300) {
+            pos.x = 300;
             wall = 1;
             hit = 1;
         }
