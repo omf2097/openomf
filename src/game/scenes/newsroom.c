@@ -169,9 +169,9 @@ void newsroom_free(scene *scene) {
     free(local);
 }
 
-void newsroom_tick(scene *scene, int paused) {
-
-
+void newsroom_static_tick(scene *scene, int paused) {
+    newsroom_local *local = scene_get_userdata(scene);
+    dialog_tick(&local->continue_dialog);
 }
 
 void newsroom_overlay_render(scene *scene) {
@@ -194,6 +194,7 @@ void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result, void *u
         // XXX reusing the old AI controller doesn't seem to work
         game_player *p2 = game_state_get_player(sc->gs, 1);
         controller *ctrl = malloc(sizeof(controller));
+        p2->sp_wins = 0;
         controller_init(ctrl);
         ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
         game_player_set_ctrl(p2, ctrl);
@@ -349,7 +350,7 @@ int newsroom_create(scene *scene) {
     scene_set_event_cb(scene, newsroom_event);
     scene_set_render_overlay_cb(scene, newsroom_overlay_render);
     scene_set_free_cb(scene, newsroom_free);
-    scene_set_dynamic_tick_cb(scene, newsroom_tick);
+    scene_set_static_tick_cb(scene, newsroom_static_tick);
 
     // Pick renderer
     video_select_renderer(VIDEO_RENDERER_HW);
