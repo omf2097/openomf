@@ -190,7 +190,7 @@ void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result, void *u
     scene *sc = userdata;
     if(result == DIALOG_RESULT_NO) {
         game_state_set_next(sc->gs, SCENE_MENU);
-    } else if (result == DIALOG_RESULT_YES) {
+    } else if (result == DIALOG_RESULT_YES_OK) {
         // XXX reusing the old AI controller doesn't seem to work
         game_player *p2 = game_state_get_player(sc->gs, 1);
         controller *ctrl = malloc(sizeof(controller));

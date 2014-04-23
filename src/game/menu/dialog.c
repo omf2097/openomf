@@ -32,14 +32,14 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
         component_layout(dlg->yes, x + 54, x + h + 6, 8, 8);
         component_layout(dlg->no, x + 114, x + h + 6, 8, 8);
         dlg->yes->selected = 1;
-        dlg->result = DIALOG_RESULT_YES;
+        dlg->result = DIALOG_RESULT_YES_OK;
     } else if(style == DIALOG_STYLE_OK) {
         dlg->ok = malloc(sizeof(component));
         textbutton_create(dlg->ok, &font_large, "OK");
         textbutton_set_border(dlg->ok, COLOR_BLUE);
         component_layout(dlg->ok, x + 84, x + h + 6, 8, 8);
         dlg->ok->selected = 1;
-        dlg->result = DIALOG_RESULT_OK;
+        dlg->result = DIALOG_RESULT_YES_OK;
     }
 }
 
@@ -107,7 +107,7 @@ void dialog_event(dialog *dlg, int action) {
         } else if(dlg->no->selected) {
             dlg->yes->selected = 1;
             dlg->no->selected = 0;
-            dlg->result = DIALOG_RESULT_YES;
+            dlg->result = DIALOG_RESULT_YES_OK;
         }
     } else if(action == ACT_PUNCH || action == ACT_KICK) {
         if(dlg->clicked) {

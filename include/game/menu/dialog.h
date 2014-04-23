@@ -11,9 +11,8 @@ typedef enum dialog_style_t {
 } dialog_style;
 
 typedef enum dialog_result_t {
-    DIALOG_RESULT_YES,
-    DIALOG_RESULT_NO,
-    DIALOG_RESULT_OK
+    DIALOG_RESULT_YES_OK,
+    DIALOG_RESULT_NO
 } dialog_result;
 
 typedef struct component_t component;
