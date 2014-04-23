@@ -29,15 +29,15 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
         textbutton_create(dlg->no, &font_large, "NO");
         textbutton_set_border(dlg->yes, COLOR_BLUE);
         textbutton_set_border(dlg->no, COLOR_BLUE);
-        component_layout(dlg->yes, x + 54, x+h+6, 8, 8);
-        component_layout(dlg->no, x + 114, x+h+6, 8, 8);
+        component_layout(dlg->yes, x + 54, x + h + 6, 8, 8);
+        component_layout(dlg->no, x + 114, x + h + 6, 8, 8);
         dlg->yes->selected = 1;
         dlg->result = DIALOG_RESULT_YES;
     } else if(style == DIALOG_STYLE_OK) {
         dlg->ok = malloc(sizeof(component));
         textbutton_create(dlg->ok, &font_large, "OK");
         textbutton_set_border(dlg->ok, COLOR_BLUE);
-        component_layout(dlg->ok, x + 84, y + 30, 8, 8);
+        component_layout(dlg->ok, x + 84, x + h + 6, 8, 8);
         dlg->ok->selected = 1;
         dlg->result = DIALOG_RESULT_OK;
     }
