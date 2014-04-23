@@ -536,6 +536,18 @@ int object_get_direction(object *obj) { return obj->direction; }
 void object_set_shadow(object *obj, int enable) { obj->cast_shadow = enable; }
 int object_get_shadow(object *obj) { return obj->cast_shadow; }
 
+int object_w(object *obj) { return object_get_size(obj).x; }
+int object_h(object *obj) { return object_get_size(obj).y; }
+int object_px(object *obj) { return vec2f_to_i(obj->pos).x; }
+int object_py(object *obj) { return vec2f_to_i(obj->pos).y; }
+float object_vx(object *obj) { return obj->vel.x; }
+float object_vy(object *obj) { return obj->vel.y; }
+
+void object_set_px(object *obj, int val) { obj->pos.x = val; }
+void object_set_py(object *obj, int val) { obj->pos.y = val; }
+void object_set_vx(object *obj, float val) { obj->vel.x = val; }
+void object_set_vy(object *obj, float val) { obj->vel.y = val; }
+
 vec2i object_get_size(object *obj) {
     if(obj->cur_sprite != NULL) {
         return sprite_get_size(obj->cur_sprite);

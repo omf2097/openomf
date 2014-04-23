@@ -186,6 +186,18 @@ vec2f object_get_vel(object *obj);
 void object_set_pos(object *obj, vec2i pos);
 void object_set_vel(object *obj, vec2f vel);
 
+int object_w(object *obj);
+int object_h(object *obj);
+int object_px(object *obj);
+int object_py(object *obj);
+float object_vx(object *obj);
+float object_vy(object *obj);
+
+void object_set_px(object *obj, int val);
+void object_set_py(object *obj, int val);
+void object_set_vx(object *obj, float val);
+void object_set_vy(object *obj, float val);
+
 uint32_t object_get_age(object *obj);
 serial* object_get_last_serialization_point(object *obj);
 serial* object_get_serialization_point(object *obj, unsigned int ticks_ago);
