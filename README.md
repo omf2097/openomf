@@ -34,6 +34,12 @@ Dependencies
 * Gettext (if you have problems with libintl)
 * Enet: http://enet.bespin.org/
 
+Optional:
+* libvorbis: https://www.xiph.org/downloads/
+* libogg: https://www.xiph.org/downloads/
+* libpng: http://www.libpng.org/pub/png/libpng.html
+* zlib: http://www.zlib.net/
+
 Several of these are probably available as packages for your operating system, but some you will have to install from source.
 
 License
