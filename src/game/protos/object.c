@@ -19,8 +19,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // remember the place we were spawned, the x= and y= tags are relative to that
     obj->start = vec2i_to_f(pos);
     obj->vel = vel;
-    object_reset_vstate(obj);
-    object_reset_hstate(obj);
     obj->direction = OBJECT_FACE_RIGHT;
     obj->y_percent = 1.0;
 
@@ -133,8 +131,6 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->pos.y = serial_read_float(ser);
     obj->vel.x = serial_read_float(ser);
     obj->vel.y = serial_read_float(ser);
-    object_reset_vstate(obj);
-    object_reset_hstate(obj);
     float gravity = serial_read_float(ser);
     obj->direction = serial_read_int8(ser);
     obj->group = serial_read_int8(ser);
@@ -528,18 +524,8 @@ int object_get_layers(object *obj) { return obj->layers; }
 void object_set_pal_offset(object *obj, int offset) { obj->pal_offset = offset; }
 int object_get_pal_offset(object *obj) { return obj->pal_offset; }
 
-void object_reset_vstate(object *obj) {
-    obj->hstate = (obj->vel.x < 0.01f && obj->vel.x > -0.01f) ? OBJECT_STABLE : OBJECT_MOVING;
-}
-void object_reset_hstate(object *obj) {
-    obj->vstate = (obj->vel.y < 0.01f && obj->vel.y > -0.01f) ? OBJECT_STABLE : OBJECT_MOVING;
-}
-
 void object_set_halt(object *obj, int halt) { obj->halt = halt; }
 int object_get_halt(object *obj) { return obj->halt; }
-
-int object_get_vstate(object *obj) { return obj->vstate; }
-int object_get_hstate(object *obj) { return obj->hstate; }
 
 void object_set_repeat(object *obj, int repeat) { player_set_repeat(obj, repeat); }
 int object_get_repeat(object *obj) { return player_get_repeat(obj); }
@@ -579,8 +565,6 @@ int object_is_rewind_tag_disabled(object *obj) {
 
 void object_set_vel(object *obj, vec2f vel) {
     obj->vel = vel;
-    object_reset_hstate(obj);
-    object_reset_vstate(obj);
 }
 
 uint32_t object_get_age(object *obj) {

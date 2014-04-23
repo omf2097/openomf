@@ -17,11 +17,6 @@
 #define OBJECT_EVENT_BUFFER_SIZE 16
 
 enum {
-    OBJECT_STABLE = 0,
-    OBJECT_MOVING
-};
-
-enum {
     OBJECT_FACE_LEFT = -1,
     OBJECT_FACE_RIGHT = 1
 };
@@ -55,8 +50,6 @@ struct object_t {
     vec2f start;
     vec2f pos;
     vec2f vel;
-    uint8_t vstate;
-    uint8_t hstate;
     int8_t direction;
     int8_t group;
 
@@ -185,11 +178,6 @@ int object_is_rewind_tag_disabled(object *obj);
 
 void object_set_pal_offset(object *obj, int offset);
 int object_get_pal_offset(object *obj);
-
-void object_reset_hstate(object *obj);
-void object_reset_vstate(object *obj);
-int object_get_vstate(object *obj);
-int object_get_hstate(object *obj);
 
 vec2i object_get_size(object *obj);
 vec2i object_get_pos(object *obj);
