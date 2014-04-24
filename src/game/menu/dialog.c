@@ -5,7 +5,7 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/dialog.h"
 
-#define MAX_WIDTH 148
+#define MAX_WIDTH 160
 
 void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int y) {
     int w, h;

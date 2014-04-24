@@ -1,5 +1,6 @@
 #include <shadowdive/shadowdive.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include "game/text/text.h"
 #include "video/video.h"
@@ -102,17 +103,24 @@ void fonts_close() {
 }
 
 void font_get_wrapped_size(font *font, const char *text, int max_w, int *out_w, int *out_h) {
-    int textlen = strlen(text);
-    if (font->w*textlen < max_w) {
+    int len = strlen(text);
+    int has_newline = 0;
+    for(int i = 0;i < len;i++) {
+        if(text[i] == '\n' || text[i] == '\r') {
+            has_newline = 1;
+            break;
+        }
+    }
+    if (!has_newline && font->w*len < max_w) {
         // short enough text that we don't need to wrap
-        *out_w = font->w*textlen;
+        *out_w = font->w*len;
         *out_h = font->h;
     } else {
         // ok, we actually have to do some real work
         // look ma, no mallocs!
-        char *end = strchr(text, '\0');
         const char *start = text;
         const char *stop = start;
+        const char *end = &start[len];
         const char *tmpstop;
         int maxlen = max_w/font->w;
         int yoff = 0;
@@ -121,30 +129,37 @@ void font_get_wrapped_size(font *font, const char *text, int max_w, int *out_w, 
         *out_w = 0;
         *out_h = 0;
         while (start != end) {
+            stop = tmpstop = start;
             while(1) {
-                tmpstop = strchr(stop+1, ' ');
-                if (tmpstop == NULL) {
-                    stop = end-1;
+                // rules:
+                // 1. split lines by whitespaces
+                // 2. pack as many words as possible into a line
+                // 3. a line must be no more than maxlen long
+                if(*stop == 0) {
+                    // the end
                     is_last_line = 1;
-                    // last line is too long
-                    if ((stop - start) > maxlen) {
-                        stop = strrchr(start, ' ');
-                        if(stop == NULL) {
-                            stop = end-1;
-                        }
+                    stop--;
+                    break;
+                }
+                if(*stop == '\n' || *stop == '\r') {
+                    if(stop - start > maxlen) {
+                        stop = tmpstop;
+                    }
+                    break;
+                }
+                if(isspace(*stop)) {
+                    if(stop - start > maxlen) {
+                        stop = tmpstop;
                         break;
                     } else {
-                        break;
+                        tmpstop = stop;
                     }
-                } else if ((tmpstop - start) > maxlen) {
-                    break;
-                } else {
-                    stop = tmpstop;
                 }
+                stop++;
             }
-            int len = (stop - start) + (is_last_line?1:0);
-            if(*out_w < len*font->w) {
-                *out_w = len*font->w;
+            int linelen = (stop - start) + (is_last_line?1:0);
+            if(*out_w < linelen*font->w) {
+                *out_w = linelen*font->w;
             }
             yoff += font->h;
             start = stop+1;
@@ -218,10 +233,16 @@ void font_render_wrapped(font *font, const char *text, int x, int y, int w, colo
 }
 
 // XXX If you modify this function please also reflect the changes onto font_get_wrapped_size().
-// XXX TODO - Handle newlines
 void font_render_wrapped_shadowed(font *font, const char *text, int x, int y, int w, color c, int shadow_flags) {
     int len = strlen(text);
-    if (font->w*len < w) {
+    int has_newline = 0;
+    for(int i = 0;i < len;i++) {
+        if(text[i] == '\n' || text[i] == '\r') {
+            has_newline = 1;
+            break;
+        }
+    }
+    if(!has_newline && font->w*len < w) {
         // short enough text that we don't need to wrap
 
         // render it centered, at least for now
@@ -230,42 +251,53 @@ void font_render_wrapped_shadowed(font *font, const char *text, int x, int y, in
     } else {
         // ok, we actually have to do some real work
         // look ma, no mallocs!
-        char *end = strchr(text, '\0');
         const char *start = text;
         const char *stop = start;
+        const char *end = &start[len];
         const char *tmpstop;
         int maxlen = w/font->w;
         int yoff = 0;
         int is_last_line = 0;
 
-        while (start != end) {
+        while(start != end) {
+            stop = tmpstop = start;
             while(1) {
-                tmpstop = strchr(stop+1, ' ');
-                if (tmpstop == NULL) {
-                    stop = end-1;
+                // rules:
+                // 1. split lines by whitespaces
+                // 2. pack as many words as possible into a line
+                // 3. a line must be no more than maxlen long
+                if(*stop == 0) {
+                    // the end
                     is_last_line = 1;
-                    // last line is too long
-                    if ((stop - start) > maxlen) {
-                        stop = strrchr(start, ' ');
-                        if(stop == NULL) {
-                            stop = end-1;
-                        }
+                    stop--;
+                    break;
+                }
+                if(*stop == '\n' || *stop == '\r') {
+                    if(stop - start > maxlen) {
+                        stop = tmpstop;
+                    }
+                    break;
+                }
+                if(isspace(*stop)) {
+                    if(stop - start > maxlen) {
+                        stop = tmpstop;
                         break;
                     } else {
-                        break;
+                        tmpstop = stop;
                     }
-                } else if ((tmpstop - start) > maxlen) {
-                    break;
-                } else {
-                    stop = tmpstop;
                 }
+                stop++;
             }
-            int len = stop - start;
-            int xoff = (w - font->w*len)/2;
-            if(shadow_flags & TEXT_SHADOW_TOP) yoff++;
-            font_render_len_shadowed(font, start, len + (is_last_line?1:0), x + xoff, y + yoff, c, shadow_flags);
+            int linelen = stop - start;
+            int xoff = (w - font->w*linelen)/2;
+            if(shadow_flags & TEXT_SHADOW_TOP) {
+                yoff++;
+            }
+            font_render_len_shadowed(font, start, linelen + (is_last_line?1:0), x + xoff, y + yoff, c, shadow_flags);
             yoff += font->h;
-            if(shadow_flags & TEXT_SHADOW_BOTTOM) yoff++;
+            if(shadow_flags & TEXT_SHADOW_BOTTOM) {
+                yoff++;
+            }
             start = stop+1;
             stop = start;
         }
