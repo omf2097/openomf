@@ -188,7 +188,7 @@ void vs_render(scene *scene) {
     object_render(&local->player2_portrait);
 
 
-    font_render(&font_small, local->vs_str, 160-((strlen(local->vs_str)*font_small.w)/2), 0, COLOR_YELLOW);
+    font_render_shadowed(&font_small, local->vs_str, 160-((strlen(local->vs_str)*font_small.w)/2), 0, COLOR_YELLOW, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
 
 
     if (player2->selectable) {
