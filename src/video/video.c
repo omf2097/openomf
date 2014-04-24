@@ -328,23 +328,6 @@ void video_render_background(surface *sur) {
     state.cb.render_background(&state, sur);
 }
 
-void video_render_sprite_shadow(surface *sur, int sx, int sy, float scale_y, int pal_offset, unsigned int flip_mode) {
-    // Position & correct height
-    SDL_Rect dst;
-    dst.w = sur->w;
-    dst.h = sur->h * scale_y;
-    dst.x = sx;
-    dst.y = sy;
-
-    // Flip mode
-    SDL_RendererFlip flip = 0;
-    if(flip_mode & FLIP_HORIZONTAL) flip |= SDL_FLIP_HORIZONTAL;
-    if(flip_mode & FLIP_VERTICAL) flip |= SDL_FLIP_VERTICAL;
-
-    // Render
-    state.cb.render_shadow(&state, sur, &dst, pal_offset, flip);
-}
-
 void video_render_sprite_tint(
         surface *sur, 
         int sx, 
@@ -360,7 +343,13 @@ void video_render_sprite_tint(
     dst.y = sy;
 
     // Render
-    state.cb.render_tint(&state, sur, &dst, c, pal_offset);
+    state.cb.render_fsot(
+        &state,
+        sur,
+        &dst,
+        SDL_BLENDMODE_BLEND,
+        pal_offset,
+        0, 255, c); // pal_offset, opacity, tint
 }
 
 // Wrapper
@@ -411,6 +400,28 @@ void video_render_sprite_flip_scale_opacity(
         float y_percent, 
         uint8_t opacity) {
 
+    video_render_sprite_flip_scale_opacity_tint(
+        sur,
+        sx, sy,
+        rendering_mode,
+        pal_offset,
+        flip_mode,
+        y_percent,
+        opacity,
+        color_create(0xFF, 0xFF, 0xFF, 0xFF));
+}
+
+void video_render_sprite_flip_scale_opacity_tint(
+        surface *sur, 
+        int sx, 
+        int sy,
+        unsigned int rendering_mode, 
+        int pal_offset,
+        unsigned int flip_mode, 
+        float y_percent,
+        uint8_t opacity,
+        color tint) {
+
     // Position
     SDL_Rect dst;
     dst.w = sur->w;
@@ -429,7 +440,7 @@ void video_render_sprite_flip_scale_opacity(
         blend_mode = SDL_BLENDMODE_ADD;
 
     // Render
-    state.cb.render_fso(&state, sur, &dst, blend_mode, pal_offset, flip, opacity);
+    state.cb.render_fsot(&state, sur, &dst, blend_mode, pal_offset, flip, opacity, tint);
 }
 
 // Called on every game tick

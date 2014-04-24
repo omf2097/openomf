@@ -898,13 +898,29 @@ void arena_render_overlay(scene *scene) {
         }
 
         // Render HAR and pilot names
-        font_render(&font_small, lang_get(player[0]->pilot_id+20), 5, 19, TEXT_COLOR);
-        font_render(&font_small, lang_get((player[0]->har_id - HAR_JAGUAR)+31), 5, 26, TEXT_COLOR);
+        font_render_shadowed(&font_small,
+                            lang_get(player[0]->pilot_id+20),
+                            5, 19,
+                            TEXT_COLOR,
+                            TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
+        font_render_shadowed(&font_small,
+                            lang_get((player[0]->har_id - HAR_JAGUAR)+31),
+                            5, 26,
+                            TEXT_COLOR,
+                            TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
 
         int p2len = (strlen(lang_get(player[1]->pilot_id+20))-1) * font_small.w;
         int h2len = (strlen(lang_get((player[1]->har_id - HAR_JAGUAR)+31))-1) * font_small.w;
-        font_render(&font_small, lang_get(player[1]->pilot_id+20), 315-p2len, 19, TEXT_COLOR);
-        font_render(&font_small, lang_get((player[1]->har_id - HAR_JAGUAR)+31), 315-h2len, 26, TEXT_COLOR);
+        font_render_shadowed(&font_small, 
+                            lang_get(player[1]->pilot_id+20), 
+                            315-p2len, 19, 
+                            TEXT_COLOR, 
+                            TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
+        font_render_shadowed(&font_small,
+                            lang_get((player[1]->har_id - HAR_JAGUAR)+31),
+                            315-h2len, 26,
+                            TEXT_COLOR,
+                            TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
 
         // Render score stuff
         chr_score_render(game_player_get_score(player[0]));

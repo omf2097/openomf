@@ -336,7 +336,7 @@ void object_render_shadow(object *obj) {
     }
 
     // Scale of the sprite on Y axis should be less than the 
-    // height of the sprite because of lighting effects
+    // height of the sprite because of light position
     float scale_y = 0.25f;
 
     // Determine X
@@ -349,16 +349,20 @@ void object_render_shadow(object *obj) {
 
     // Determine Y
     surface *sur = obj->cur_sprite->data;
-    int y = (190 - sur->h) + (sur->h - (sur->h * scale_y));
+    int y = (157 - sur->h) + (sur->h - (sur->h * scale_y));
 
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_render_sprite_shadow(
+        video_render_sprite_flip_scale_opacity_tint(
             obj->cur_sprite->data,
-            x+i, y+i, scale_y,
+            x+i, y+i,
+            BLEND_ALPHA,
             obj->pal_offset,
-            flipmode);
+            flipmode,
+            scale_y,
+            50,
+            color_create(0,0,0,255));
     }
 }
 

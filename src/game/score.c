@@ -147,10 +147,10 @@ void chr_score_render(chr_score *score) {
     char tmp[50];
     chr_score_format(score->score, tmp);
     if (score->direction == OBJECT_FACE_RIGHT) {
-        font_render(&font_small, tmp, score->x, score->y, TEXT_COLOR);
+        font_render_shadowed(&font_small, tmp, score->x, score->y, TEXT_COLOR, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
     } else {
         int s2len = strlen(tmp) * font_small.w;
-        font_render(&font_small, tmp, score->x-s2len, score->y, TEXT_COLOR);
+        font_render_shadowed(&font_small, tmp, score->x-s2len, score->y, TEXT_COLOR, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
     }
 
     iterator it;
@@ -167,7 +167,7 @@ void chr_score_render(chr_score *score) {
         if (score->direction == OBJECT_FACE_LEFT) {
             pos = interpolate(vec2i_create(score->x-(strlen(t->text)*font_small.w), score->y), t->start, t->position);
         }
-        font_render(&font_small, t->text, pos.x, pos.y, TEXT_COLOR);
+        font_render_shadowed(&font_small, t->text, pos.x, pos.y, TEXT_COLOR, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
         lastage = t->age;
     }
 }

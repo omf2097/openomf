@@ -77,17 +77,19 @@ void soft_render_background(
     surface_alpha_blit(&sr->lower, sur, 0, 0, 0);
 }
 
-void soft_render_sprite_fso(
+void soft_render_sprite_fsot(
                     video_state *state,
                     surface *sur, 
                     SDL_Rect *dst,
                     SDL_BlendMode blend_mode, 
                     int pal_offset, 
                     SDL_RendererFlip flip_mode, 
-                    uint8_t opacity) {
+                    uint8_t opacity,
+                    color color_mod) {
 
     // No scaling,
     // No opacity for paletted surfaces
+    // No color modulation for paletted surfaces
 
     soft_renderer *sr = state->userdata;
     if(sur->type == SURFACE_TYPE_PALETTE) {
@@ -100,37 +102,10 @@ void soft_render_sprite_fso(
         surface_to_rgba(sur, sr->tmp_normal, state->cur_palette, NULL, 0);
         SDL_Surface *s = surface_from_pixels(sr->tmp_normal, sur->w, sur->h);
         SDL_SetSurfaceAlphaMod(s, opacity);
+        SDL_SetSurfaceColorMod(s, color_mod.r, color_mod.g, color_mod.b);
         SDL_SetSurfaceBlendMode(s, SDL_BLENDMODE_BLEND);
         SDL_BlitSurface(s, NULL, sr->higher, dst);
     }
-}
-
-void soft_render_sprite_tint(
-                    video_state *state,
-                    surface *sur, 
-                    SDL_Rect *dst, 
-                    color c, 
-                    int pal_offset) {
-
-    soft_renderer *sr = state->userdata;
-    surface_to_rgba(sur, sr->tmp_normal, state->cur_palette, NULL, 0);
-    SDL_Surface *s = surface_from_pixels(sr->tmp_normal, sur->w, sur->h);
-
-    SDL_SetSurfaceColorMod(s, c.r, c.g, c.b);
-    SDL_SetSurfaceAlphaMod(s, 0xFF);
-    SDL_SetSurfaceBlendMode(s, SDL_BLENDMODE_BLEND);
-
-    SDL_BlitSurface(sr->higher, NULL, s, dst);
-}
-
-void soft_render_sprite_shadow(
-                    video_state *state,
-                    surface *sur, 
-                    SDL_Rect *dst, 
-                    int pal_offset,
-                    SDL_RendererFlip flip_mode) {
-
-    return; // NO-OP for now
 }
 
 void video_soft_init(video_state *state) {
@@ -161,9 +136,7 @@ void video_soft_init(video_state *state) {
     state->cb.render_reinit = soft_render_reinit;
     state->cb.render_prepare = soft_render_prepare;
     state->cb.render_finish = soft_render_finish;
-    state->cb.render_fso = soft_render_sprite_fso;
-    state->cb.render_tint = soft_render_sprite_tint;
-    state->cb.render_shadow = soft_render_sprite_shadow;
+    state->cb.render_fsot = soft_render_sprite_fsot;
     state->cb.render_background = soft_render_background;
     DEBUG("Switched to software renderer.");
 }

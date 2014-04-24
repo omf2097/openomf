@@ -43,61 +43,61 @@ void video_get_state(int *w, int *h, int *fs, int *vsync);
 void video_move_target(int x, int y);
 
 void video_render_sprite(
-    surface *sur, 
-    int x, 
-    int y, 
-    unsigned int render_mode, 
-    int pal_offset);
-
-void video_render_sprite_shadow(
-    surface *sur, 
+    surface *sur,
     int x,
     int y,
-    float scale_y, 
-    int pal_offset,
-    unsigned int flip_mode);
+    unsigned int render_mode,
+    int pal_offset);
 
 void video_render_sprite_flip_scale(
-    surface *sur, 
-    int x, 
+    surface *sur,
+    int x,
     int y,
-    unsigned int render_mode, 
+    unsigned int render_mode,
     int pal_offset,
-    unsigned int flip_mode, 
+    unsigned int flip_mode,
     float y_percent);
 
 void video_render_sprite_tint(
-    surface *sur, 
-    int x, 
-    int y, 
-    color c, 
+    surface *sur,
+    int x,
+    int y,
+    color c,
     int pal_offset);
 
 void video_render_sprite_flip_scale_opacity(
-    surface *sur, 
-    int x, 
+    surface *sur,
+    int x,
     int y,
-    unsigned int render_mode, 
+    unsigned int render_mode,
     int pal_offset,
-    unsigned int flip_mode, 
+    unsigned int flip_mode,
     float y_percent,
     uint8_t opacity);
 
-void video_select_renderer(int renderer);
+void video_render_sprite_flip_scale_opacity_tint(
+    surface *sur,
+    int x,
+    int y,
+    unsigned int render_mode,
+    int pal_offset,
+    unsigned int flip_mode,
+    float y_percent,
+    uint8_t opacity,
+    color tint);
 
+void video_select_renderer(int renderer);
 void video_tick();
 void video_render_background(surface *sur);
 void video_render_prepare();
 void video_render_finish();
 void video_close();
 void video_screenshot(image *img);
-
 void video_set_fade(float fade);
 
 void video_set_base_palette(const palette *src);
 palette *video_get_base_palette();
 void video_force_pal_refresh();
-
 void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount);
 screen_palette* video_get_pal_ref();
 
