@@ -348,8 +348,8 @@ void object_render_shadow(object *obj) {
     }
 
     // Determine Y
-    surface *sur = obj->cur_sprite->data;
-    int y = (157 - sur->h) + (sur->h - (sur->h * scale_y));
+    float temp = object_h(obj) * scale_y;
+    int y = 190 - temp - (object_h(obj) - temp) / 2;
 
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
@@ -376,10 +376,7 @@ int object_act(object *obj, int action) {
 
 void object_move(object *obj) {
     if(obj->sprite_state.disable_gravity) {
-        vec2f vel = object_get_vel(obj);
-        vel.x = 0.0f;
-        vel.y = 0.0f;
-        object_set_vel(obj, vel);
+        object_set_vel(obj, vec2f_create(0,0));
     }
     if(obj->move != NULL) {
         obj->move(obj);
