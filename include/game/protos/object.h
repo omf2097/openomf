@@ -70,9 +70,10 @@ struct object_t {
 
     struct random_t rand_state;
 
-    int video_effects;
     float y_percent;
     float gravity;
+
+    int video_effects;
 
     uint8_t layers;
     uint8_t cur_animation_own;

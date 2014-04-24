@@ -980,10 +980,28 @@ void har_tick(object *obj) {
         h->flinching = 0;
     }
 
+    // Endurance restore
     if (h->endurance < h->endurance_max && !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
         h->endurance += 1;
     }
 
+    // Leave shadow trail
+    if(player_frame_isset(obj, "ub")) {
+        if(obj->age % 2 == 0) {
+            sprite *nsp = sprite_copy(obj->cur_sprite);
+            object *nobj = malloc(sizeof(object));
+            object_create(nobj, obj->gs, object_get_pos(obj), vec2f_create(0,0));
+            object_set_stl(nobj, object_get_stl(obj));
+            object_set_animation(nobj, create_animation_from_single(nsp, obj->cur_animation->start_pos));
+            object_set_animation_owner(nobj, OWNER_OBJECT);
+            object_set_custom_string(nobj, "bs100A1-bf0A15");
+            object_set_effects(nobj, EFFECT_SHADOW);
+            object_dynamic_tick(nobj);
+            game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM);
+        }
+    }
+
+    // Network motion replay
     int act_pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
     if (h->act_buf[act_pos].age == obj->age) {
         DEBUG("REPLAYING %d inputs", h->act_buf[act_pos].count);

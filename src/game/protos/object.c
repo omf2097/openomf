@@ -34,6 +34,9 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->gravity = 0.0f;
     obj->singleton = 0;
 
+    // Video effect stuff
+    obj->video_effects = 0;
+
     // Fire orb wandering
     obj->orbit = 0;
     obj->orbit_tick = MATH_PI/2.0f;
@@ -238,19 +241,23 @@ void object_set_playback_direction(object *obj, int dir) {
 
 void object_dynamic_tick(object *obj) {
     obj->age++;
+
+    // Run animation player
     if(obj->cur_animation != NULL && obj->halt == 0) {
         for(int i = 0; i < obj->stride; i++)
             player_run(obj);
     }
+
+    // Tick object implementation
     if(obj->dynamic_tick != NULL) {
         obj->dynamic_tick(obj);
     }
 
+    // Handle screen shakes, V & H
     if(obj->sprite_state.screen_shake_vertical > 0) {
         obj->gs->screen_shake_vertical = obj->sprite_state.screen_shake_vertical * 4;
         obj->sprite_state.screen_shake_vertical = 0;
     }
-
     if(obj->sprite_state.screen_shake_horizontal > 0) {
         obj->gs->screen_shake_horizontal = obj->sprite_state.screen_shake_horizontal * 4;
         obj->sprite_state.screen_shake_horizontal = 0;
