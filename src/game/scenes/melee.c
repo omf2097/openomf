@@ -447,11 +447,11 @@ void melee_render(scene *scene) {
         video_render_sprite(&local->bleh, 0, 62, BLEND_ALPHA, 0);
 
         // player bio
-        font_render_wrapped(&font_small, lang_get(135+current_a), 4, 66, 152, COLOR_GREEN);
+        font_render_wrapped_shadowed(&font_small, lang_get(135+current_a), 4, 66, 152, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
         // player stats
-        font_render(&font_small, lang_get(216), 74+27, 4, COLOR_GREEN);
-        font_render(&font_small, lang_get(217), 74+19, 22, COLOR_GREEN);
-        font_render(&font_small, lang_get(218), 74+12, 40, COLOR_GREEN);
+        font_render_shadowed(&font_small, lang_get(216), 74+27, 4, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
+        font_render_shadowed(&font_small, lang_get(217), 74+19, 22, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
+        font_render_shadowed(&font_small, lang_get(218), 74+12, 40, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
         progressbar_render(&local->bar_power[0]);
         progressbar_render(&local->bar_agility[0]);
         progressbar_render(&local->bar_endurance[0]);
@@ -460,17 +460,17 @@ void melee_render(scene *scene) {
             video_render_sprite(&local->feh, 320-70-local->feh.w, 0, BLEND_ALPHA, 0);
             video_render_sprite(&local->bleh, 320-local->bleh.w, 62, BLEND_ALPHA, 0);
             // player bio
-            font_render_wrapped(&font_small, lang_get(135+current_b), 320-local->bleh.w+4, 66, 152, COLOR_GREEN);
+            font_render_wrapped_shadowed(&font_small, lang_get(135+current_b), 320-local->bleh.w+4, 66, 152, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
             // player stats
-            font_render(&font_small, lang_get(216), 320-66-local->feh.w+27, 4, COLOR_GREEN);
-            font_render(&font_small, lang_get(217), 320-66-local->feh.w+19, 22, COLOR_GREEN);
-            font_render(&font_small, lang_get(218), 320-66-local->feh.w+12, 40, COLOR_GREEN);
+            font_render_shadowed(&font_small, lang_get(216), 320-66-local->feh.w+27, 4, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
+            font_render_shadowed(&font_small, lang_get(217), 320-66-local->feh.w+19, 22, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
+            font_render_shadowed(&font_small, lang_get(218), 320-66-local->feh.w+12, 40, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
             progressbar_render(&local->bar_power[1]);
             progressbar_render(&local->bar_agility[1]);
             progressbar_render(&local->bar_endurance[1]);
         } else {
             // 'choose your pilot'
-            font_render_wrapped(&font_small, lang_get(187), 160, 97, 160, COLOR_GREEN);
+            font_render_wrapped_shadowed(&font_small, lang_get(187), 160, 97, 160, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
         }
     }
 
@@ -528,7 +528,7 @@ void melee_render(scene *scene) {
             font_render_wrapped_shadowed(&font_small, vstext, 80, 107, 150, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
         } else {
             // 'choose your HAR'
-            font_render_wrapped(&font_small, lang_get(186), 160, 97, 160, COLOR_GREEN);
+            font_render_wrapped_shadowed(&font_small, lang_get(186), 160, 97, 160, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
 
             // render HAR name
             font_render_wrapped_shadowed(&font_small, get_id_name(HAR_JAGUAR + 5*local->row_a + local->column_a), 130, 107, 66, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);

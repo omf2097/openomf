@@ -172,19 +172,19 @@ void font_render_char_shadowed(font *font, char ch, int x, int y, color c, int s
     // Handle shadows if necessary
     if(shadow_flags & TEXT_SHADOW_RIGHT)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x+1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 75, c 
+            *sur, x+1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 85, c 
         );
     if(shadow_flags & TEXT_SHADOW_LEFT)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x-1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 75, c 
+            *sur, x-1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 85, c 
         );
     if(shadow_flags & TEXT_SHADOW_BOTTOM)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x, y+1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 75, c 
+            *sur, x, y+1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 85, c 
         );
     if(shadow_flags & TEXT_SHADOW_TOP)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x, y-1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 75, c 
+            *sur, x, y-1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 85, c 
         );
 
     // Handle the font face itself
@@ -262,8 +262,10 @@ void font_render_wrapped_shadowed(font *font, const char *text, int x, int y, in
             }
             int len = stop - start;
             int xoff = (w - font->w*len)/2;
+            if(shadow_flags & TEXT_SHADOW_TOP) yoff++;
             font_render_len_shadowed(font, start, len + (is_last_line?1:0), x + xoff, y + yoff, c, shadow_flags);
             yoff += font->h;
+            if(shadow_flags & TEXT_SHADOW_BOTTOM) yoff++;
             start = stop+1;
             stop = start;
         }
