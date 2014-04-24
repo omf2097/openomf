@@ -31,6 +31,11 @@ enum {
     PLAY_FORWARDS
 };
 
+enum {
+    EFFECT_NONE = 0,
+    EFFECT_SHADOW = 0x1,
+};
+
 typedef struct object_t object;
 typedef struct game_state_t game_state;
 
@@ -65,11 +70,11 @@ struct object_t {
 
     struct random_t rand_state;
 
+    int video_effects;
     float y_percent;
     float gravity;
 
     uint8_t layers;
-
     uint8_t cur_animation_own;
 
     animation *cur_animation;
@@ -141,6 +146,9 @@ void object_set_sprite_override(object *obj, int override);
 
 void object_set_halt(object *obj, int halt);
 int object_get_halt(object *obj);
+
+void object_set_effects(object *obj, int effects);
+int object_get_effects(object *obj);
 
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);

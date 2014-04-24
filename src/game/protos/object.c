@@ -288,6 +288,14 @@ void object_collide(object *obj, object *b) {
     }
 }
 
+void object_set_effects(object *obj, int effects) {
+    obj->video_effects = effects;
+}
+
+int object_get_effects(object *obj) {
+    return obj->video_effects;
+}
+
 void object_render(object *obj) {
     // Stop here if cur_sprite is NULL
     if(obj->cur_sprite == NULL) return;
@@ -319,15 +327,22 @@ void object_render(object *obj) {
         opacity = rstate->blend_start + d;
     }
 
+    // Tint color
+    color tint = color_create(0xFF, 0xFF, 0xFF, 0xFF);
+    if(obj->video_effects & EFFECT_SHADOW) {
+        tint = color_create(0, 0, 0, 0xFF);
+    }
+
     // Render
-    video_render_sprite_flip_scale_opacity(
+    video_render_sprite_flip_scale_opacity_tint(
         obj->cur_surface,
         x, y,
         rstate->blendmode,
         obj->pal_offset,
         flipmode,
         obj->y_percent,
-        opacity);
+        opacity,
+        tint);
 }
 
 void object_render_shadow(object *obj) {
