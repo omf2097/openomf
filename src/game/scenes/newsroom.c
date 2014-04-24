@@ -191,13 +191,10 @@ void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result, void *u
     if(result == DIALOG_RESULT_NO) {
         game_state_set_next(sc->gs, SCENE_MENU);
     } else if (result == DIALOG_RESULT_YES_OK) {
-        // XXX reusing the old AI controller doesn't seem to work
+        // Resetting p2->sp_wins here allows the game to progress,
+        // otherwise you get stuck with the same opponent
         game_player *p2 = game_state_get_player(sc->gs, 1);
-        controller *ctrl = malloc(sizeof(controller));
         p2->sp_wins = 0;
-        controller_init(ctrl);
-        ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
-        game_player_set_ctrl(p2, ctrl);
         game_state_set_next(sc->gs, SCENE_VS);
     }
 }

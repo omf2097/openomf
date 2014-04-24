@@ -39,8 +39,8 @@ typedef struct ai_t {
     move_stat move_stats[70];
     int blocked;
 
-    // a vector of projectile object*
-    vector projectiles;
+    // all projectiles currently on screen (vector of projectile object*)
+    vector active_projectiles;
 } ai;
 
 
@@ -93,43 +93,50 @@ int char_to_act(int ch, int direction) {
 
 int ai_har_event(controller *ctrl, har_event event) {
     ai *a = ctrl->data;
+    move_stat *ms;
     //object *o = ctrl->har;
     //har *h = object_get_userdata(o);
     //object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
     //har *h_enemy = object_get_userdata(o_enemy);
 
-    if(event.type == HAR_EVENT_LAND_HIT) {
-        move_stat *ms = &a->move_stats[event.move->id];
+    switch(event.type) {
+        case HAR_EVENT_LAND_HIT:
+            ms = &a->move_stats[event.move->id];
 
-        if (ms->max_hit_dist == -1 || ms->last_dist > ms->max_hit_dist){
-            ms->max_hit_dist = ms->last_dist;
-        }
+            if (ms->max_hit_dist == -1 || ms->last_dist > ms->max_hit_dist){
+                ms->max_hit_dist = ms->last_dist;
+            }
 
-        if (ms->min_hit_dist == -1 || ms->last_dist < ms->min_hit_dist){
-            ms->min_hit_dist = ms->last_dist;
-        }
+            if (ms->min_hit_dist == -1 || ms->last_dist < ms->min_hit_dist){
+                ms->min_hit_dist = ms->last_dist;
+            }
 
-        ms->value++;
-        if(ms->value > 10) {
-            ms->value = 10;
-        }
-    } else if(event.type == HAR_EVENT_ENEMY_BLOCK) {
-        move_stat *ms = &a->move_stats[event.move->id];
-        if(!a->blocked) {
-            a->blocked = 1;
-            ms->value--;
-        }
+            ms->value++;
+            if(ms->value > 10) {
+                ms->value = 10;
+            }
+            break;
+
+        case HAR_EVENT_ENEMY_BLOCK:
+            ms = &a->move_stats[event.move->id];
+            if(!a->blocked) {
+                a->blocked = 1;
+                ms->value--;
+            }
+            break;
+
+        case HAR_EVENT_ATTACK:
+            a->selected_move = NULL;
+            break;
     }
-    else if(event.type == HAR_EVENT_ATTACK) {
-        a->selected_move = NULL;
-    }
+
     return 0;
 }
 
 
 void ai_controller_free(controller *ctrl) {
     ai *a = ctrl->data;
-    vector_free(&a->projectiles);
+    vector_free(&a->active_projectiles);
     free(a);
 }
 
@@ -243,7 +250,7 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
 
     iterator it;
     object **o_tmp;
-    vector_iter_begin(&a->projectiles, &it);
+    vector_iter_begin(&a->active_projectiles, &it);
     while((o_tmp = iter_next(&it)) != NULL) {
         object *o_prj = *o_tmp;
         if(projectile_get_owner(o_prj) == o)  {
@@ -276,9 +283,20 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     // Do not run AI while the game is paused
     if(game_state_is_paused(o->gs)) { return 0; }
 
+    // Do not run AI while match is starting or ending
+    // XXX this prevents the AI from doing scrap/destruction moves
+    // XXX this could be fixed by providing a "scene changed" event
+    if(is_arena(game_state_get_scene(o->gs)->id) &&
+       arena_get_state(game_state_get_scene(o->gs)) != ARENA_STATE_FIGHTING) {
+
+        // null out selected move to fix the "AI not moving problem"
+        a->selected_move = NULL;
+        return 0;
+    }
+
     // Grab all projectiles on screen
-    vector_clear(&a->projectiles);
-    game_state_get_projectiles(o->gs, &a->projectiles);
+    vector_clear(&a->active_projectiles);
+    game_state_get_projectiles(o->gs, &a->active_projectiles);
 
     // Try to block har
     if(ai_block_har(ctrl, ev)) {
@@ -410,7 +428,7 @@ void ai_controller_create(controller *ctrl, int difficulty) {
         a->move_stats[i].last_dist = -1;
     }
     a->blocked = 0;
-    vector_create(&a->projectiles, sizeof(object*));
+    vector_create(&a->active_projectiles, sizeof(object*));
 
     ctrl->data = a;
     ctrl->type = CTRL_TYPE_AI;
