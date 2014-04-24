@@ -31,7 +31,7 @@ void surface_copy(surface *dst, surface *src);
 void surface_copy_ex(surface *dst, surface *src);
 void surface_free(surface *sur);
 void surface_clear(surface *sur);
-void surface_sub(surface *dst, 
+void surface_sub(surface *dst,
                  surface *src,
                  int dst_x, int dst_y,
                  int src_x, int src_y,
@@ -41,7 +41,7 @@ void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset);
 int surface_get_type(surface *sur);
 void surface_to_rgba(surface *sur,
                      char *dst,
-                     screen_palette *pal, 
+                     screen_palette *pal,
                      char *remap_table,
                      uint8_t pal_offset);
 void surface_additive_blit(surface *dst,

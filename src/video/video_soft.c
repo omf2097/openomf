@@ -10,9 +10,9 @@ typedef struct soft_renderer_t {
 } soft_renderer;
 
 SDL_Surface* surface_from_pixels(char *pixels, int w, int h) {
-    return SDL_CreateRGBSurfaceFrom(pixels, 
-                                    w, h, 
-                                    32, 
+    return SDL_CreateRGBSurfaceFrom(pixels,
+                                    w, h,
+                                    32,
                                     w*4,
                                     0x000000FF,
                                     0x0000FF00,
@@ -79,11 +79,11 @@ void soft_render_background(
 
 void soft_render_sprite_fsot(
                     video_state *state,
-                    surface *sur, 
+                    surface *sur,
                     SDL_Rect *dst,
-                    SDL_BlendMode blend_mode, 
-                    int pal_offset, 
-                    SDL_RendererFlip flip_mode, 
+                    SDL_BlendMode blend_mode,
+                    int pal_offset,
+                    SDL_RendererFlip flip_mode,
                     uint8_t opacity,
                     color color_mod) {
 
@@ -110,7 +110,7 @@ void soft_render_sprite_fsot(
 
 void video_soft_init(video_state *state) {
     soft_renderer *sr = malloc(sizeof(soft_renderer));
-    sr->higher = SDL_CreateRGBSurface(0, 
+    sr->higher = SDL_CreateRGBSurface(0,
                                     320,
                                     200,
                                     32,

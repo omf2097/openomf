@@ -74,10 +74,10 @@ void surface_copy(surface *dst, surface *src) {
 }
 
 // Copies a an area of old surface to an entirely new surface
-void surface_sub(surface *dst, 
-                 surface *src, 
+void surface_sub(surface *dst,
+                 surface *src,
                  int dst_x, int dst_y,
-                 int src_x, int src_y, 
+                 int src_x, int src_y,
                  int w, int h,
                  int method) {
 
@@ -132,7 +132,7 @@ void surface_additive_blit(surface *dst,
                 || dst_y + y < 0) continue;
 
             // Calculate pixel offsets
-            src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - x : x) + 
+            src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - x : x) +
                          ((flip & SDL_FLIP_VERTICAL) ? src->h - y : y) * src->w;
             dst_offset = dst_x + x + (dst_y + y) * dst->w;
 
@@ -203,7 +203,7 @@ void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset) 
 // Creates a new RGBA surface
 void surface_to_rgba(surface *sur,
                      char *dst,
-                     screen_palette *pal, 
+                     screen_palette *pal,
                      char *remap_table,
                      uint8_t pal_offset) {
 
@@ -238,7 +238,7 @@ void surface_to_rgba(surface *sur,
 // Note, texture has to be streaming type
 int surface_to_texture(surface *src,
                        SDL_Texture *tex,
-                       screen_palette *pal, 
+                       screen_palette *pal,
                        char *remap_table,
                        uint8_t pal_offset) {
     void *pixels;

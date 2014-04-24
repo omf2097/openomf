@@ -11,13 +11,13 @@ void component_create(component *c) {
     c->disabled = 0;
     c->obj = NULL;
     c->userdata = NULL;
-    
+
     // Function pointers
     c->render = NULL;
     c->event = NULL;
     c->layout = component_layout;
     c->tick = NULL;
-    
+
     // Event functions
     c->click = NULL;
     c->toggle = NULL;

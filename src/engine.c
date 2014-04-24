@@ -31,7 +31,7 @@ void exit_handler(int s) {
 int engine_init() {
 #ifndef STANDALONE_SERVER
     settings *setting = settings_get();
-    
+
     int w = setting->video.screen_w;
     int h = setting->video.screen_h;
     int fs = setting->video.fullscreen;
@@ -66,7 +66,7 @@ int engine_init() {
     if(console_init()) {
         goto exit_6;
     }
-    
+
     // Return successfully
     run = 1;
     INFO("Engine initialization successful.");
@@ -191,7 +191,7 @@ void engine_run(int net_mode) {
                     }
                     break;
             }
-        
+
             // Console events
             if(e.type == SDL_KEYDOWN) {
                 if(console_window_is_open() && (e.key.keysym.scancode == SDL_SCANCODE_GRAVE ||
@@ -208,8 +208,8 @@ void engine_run(int net_mode) {
                 }
             }
 
-            // If console windows is open, pass events to console. 
-            // Otherwise to the objects. 
+            // If console windows is open, pass events to console.
+            // Otherwise to the objects.
             if(console_window_is_open()) {
                 console_event(gs, &e);
             } else {
@@ -264,7 +264,7 @@ void engine_run(int net_mode) {
             game_state_render(gs);
             console_render();
             video_render_finish();
-            
+    
             // If screenshot requested, do it here.
             if(take_screenshot) {
                 image img;
@@ -293,7 +293,7 @@ void engine_run(int net_mode) {
         SDL_Delay(1);
 #endif // STANDALONE_SERVER
     }
-    
+
     // Free scene object
     game_state_free(gs);
     free(gs);

@@ -17,7 +17,7 @@
 #include "utils/log.h"
 #include "utils/random.h"
 
-// ---------------- Private functions ---------------- 
+// ---------------- Private functions ----------------
 
 int isset(sd_stringparser_frame *frame, const char *tag) {
     const sd_stringparser_tag_value *v;
@@ -82,7 +82,7 @@ int next_frame_with_sprite(sd_stringparser *parser, int current_frame, int sprit
 }
 
 
-// ---------------- Public functions ---------------- 
+// ---------------- Public functions ----------------
 
 void player_create(object *obj) {
     obj->animation_state.reverse = 0;
@@ -115,7 +115,7 @@ void player_free(object *obj) {
 void player_reload_with_str(object *obj, const char* custom_str) {
     // Load new animation string
     sd_stringparser_set_string(
-        obj->animation_state.parser, 
+        obj->animation_state.parser,
         custom_str);
 
     // Find string length
@@ -239,12 +239,12 @@ void player_run(object *obj) {
     int run_ret;
     if(state->end_frame == UINT32_MAX) {
         run_ret = sd_stringparser_run(
-            state->parser, 
+            state->parser,
             state->ticks - 1);
     } else {
         run_ret = sd_stringparser_run_frames(
-            state->parser, 
-            state->ticks - 1, 
+            state->parser,
+            state->ticks - 1,
             state->end_frame);
     }
 
@@ -296,7 +296,7 @@ void player_run(object *obj) {
             if(isset(f, "ua")) {
                 obj->animation_state.enemy->sprite_state.disable_gravity = 1;
             }
-        
+
             // Animation management
             if(isset(f, "m") && state->spawn != NULL) {
                 int mx = 0;
@@ -323,16 +323,16 @@ void player_run(object *obj) {
                 /*DEBUG("Spawning %d, with g = %d, pos = (%d,%d)", */
                     /*get(f, "m"), mg, mx, my);*/
                 state->spawn(
-                    obj, get(f, "m"), 
-                    vec2i_create(mx, my), mg, 
+                    obj, get(f, "m"),
+                    vec2i_create(mx, my), mg,
                     state->spawn_userdata);
             }
-            if(isset(f, "md") && state->destroy != NULL) { 
+            if(isset(f, "md") && state->destroy != NULL) {
                 state->destroy(obj, get(f, "md"), state->destroy_userdata);
             }
 
             // Music playback
-            if(isset(f, "smo")) { 
+            if(isset(f, "smo")) {
                 if(get(f, "smo") == 0) {
                     music_stop();
                     return;
@@ -355,7 +355,7 @@ void player_run(object *obj) {
                     music_set_volume(settings_get()->sound.music_vol/10.0f);
                 }
             }
-            if(isset(f, "smf")) { 
+            if(isset(f, "smf")) {
                 music_stop();
             }
 
@@ -427,9 +427,9 @@ void player_run(object *obj) {
                     rstate->pal_entry_count = 48;
                 }
             }
-            if(isset(f, "bpp")) { 
+            if(isset(f, "bpp")) {
                 rstate->pal_end = get(f, "bpp") * 4;
-                rstate->pal_begin = get(f, "bpp") * 4; 
+                rstate->pal_begin = get(f, "bpp") * 4;
             }
             if(isset(f, "bpb")) { rstate->pal_begin = get(f, "bpb") * 4; }
             if(isset(f, "bz"))  { rstate->pal_tint = 1; }
@@ -490,8 +490,8 @@ void player_run(object *obj) {
 
 
             // handle scaling on the Y axis
-            if(isset(f, "y")) { 
-                obj->y_percent = get(f, "y") / 100.0f; 
+            if(isset(f, "y")) {
+                obj->y_percent = get(f, "y") / 100.0f;
             }
             if (isset(f, "e")) {
                 // x,y relative to *enemy's* position
@@ -512,15 +512,15 @@ void player_run(object *obj) {
                     obj->enemy_slide_state.duration = 0;
                     obj->enemy_slide_state.dest.x = x;
                     obj->enemy_slide_state.dest.y = y;
-                    /*DEBUG("ENEMY Slide object %d for (x,y) = (%f,%f) for %d ticks. (%d,%d) %f, %%f", 
+                    /*DEBUG("ENEMY Slide object %d for (x,y) = (%f,%f) for %d ticks. (%d,%d) %f, %%f",
                             obj->cur_animation->id,
-                            obj->enemy_slide_state.vel.x, 
-                            obj->enemy_slide_state.vel.y, 
+                            obj->enemy_slide_state.vel.x,
+                            obj->enemy_slide_state.vel.y,
                             param->duration, x, y, x_dist, y_dist);*/
                 }
             }
-            if (isset(f, "v") == 0 && 
-                isset(f, "e") == 0 && 
+            if (isset(f, "v") == 0 &&
+                isset(f, "e") == 0 &&
                 (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
                 // check for relative X interleaving
                 int x = 0, y = 0;
@@ -640,7 +640,7 @@ void player_run(object *obj) {
 
     // Sprite ticks
     rstate->timer++;
-    
+
     // All done.
     return;
 }

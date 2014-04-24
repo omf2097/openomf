@@ -108,7 +108,7 @@ int plugins_get_scaler(scaler_plugin *scaler, const char* name) {
     for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
         if(_plugins[i].handle != NULL
            && strcmp(_plugins[i].get_name(), name) == 0
-           && strcmp(_plugins[i].get_type(), "scaler") == 0) 
+           && strcmp(_plugins[i].get_type(), "scaler") == 0)
         {
             scaler->base = &_plugins[i];
             scaler->is_factor_available = SDL_LoadFunction(scaler->base->handle, "scaler_is_factor_available");
@@ -125,7 +125,7 @@ int plugins_get_list_by_type(list *tlist, const char* type) {
     // Search for a scaler with given type
     int count = 0;
     for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
-        if(_plugins[i].handle != NULL 
+        if(_plugins[i].handle != NULL
            && strcmp(_plugins[i].get_type(), type) == 0)
         {
             void *ptr = &_plugins[i];

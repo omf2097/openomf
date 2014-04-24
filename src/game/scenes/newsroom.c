@@ -354,6 +354,6 @@ int newsroom_create(scene *scene) {
 
     // Pick renderer
     video_select_renderer(VIDEO_RENDERER_HW);
-    
+
     return 0;
 }

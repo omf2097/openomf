@@ -112,8 +112,8 @@ void scene_init(scene *scene) {
 
 /*
  * Serializes the scene to a buffer. Should return 1 on error, 0 on success
- * This will call the specialized scenes, (eg. arena) for their 
- * serialization data. 
+ * This will call the specialized scenes, (eg. arena) for their
+ * serialization data.
  */
 int scene_serialize(scene *s, serial *ser) {
     game_state_serialize(s->gs, ser);
@@ -122,8 +122,8 @@ int scene_serialize(scene *s, serial *ser) {
     return 0;
 }
 
-/* 
- * Unserializes the data from buffer to a specialized object. 
+/*
+ * Unserializes the data from buffer to a specialized object.
  * Should return 1 on error, 0 on success.
  * Serial reder position should be set to correct position before calling this.
  */

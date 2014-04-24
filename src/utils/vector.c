@@ -87,7 +87,7 @@ unsigned int vector_size(vector *vec) {
 
 int vector_delete(vector *vec, iterator *iter) {
     if(vec->blocks == 0) return 1;
-    
+
     // Since last iteration already changed the "now" value, find the real "now" here.
     int real;
     if(iter->next == NULL) {
@@ -95,21 +95,21 @@ int vector_delete(vector *vec, iterator *iter) {
     } else {
         real = iter->inow - 1;
     }
-    
+
     // If this is NOT the last entry, we need to do memmove.
     if(real+1 < vec->blocks) {
         void *dst = vec->data + real * vec->block_size;
         void *src = vec->data + (real + 1) * vec->block_size;
         unsigned int size = (vec->blocks - 1 - real) * vec->block_size;
         memmove(dst, src, size);
-        
+
         // If we are iterating forwards, moving an entry will hop iterator forwards by two.
         // We will fix this issue by hopping backwards by one.
         if(iter->prev == NULL) {
             iter->inow--;
         }
     }
-    
+
     // We deleted an entry, so blocks-1
     if(vec->blocks > 0) {
         vec->blocks--;

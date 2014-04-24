@@ -113,8 +113,8 @@ const char* get_id_name(int id) {
         case SCENE_INTRO:    return "INTRO";
         case SCENE_MENU:     return "MAIN";
         case SCENE_ARENA0:   return "ARENA0";
-        case SCENE_ARENA1:   return "ARENA1"; 
-        case SCENE_ARENA2:   return "ARENA2"; 
+        case SCENE_ARENA1:   return "ARENA1";
+        case SCENE_ARENA2:   return "ARENA2";
         case SCENE_ARENA3:   return "ARENA3";
         case SCENE_ARENA4:   return "ARENA4";
         case SCENE_NEWSROOM: return "NEWSROOM";

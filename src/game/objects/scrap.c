@@ -37,10 +37,10 @@ void scrap_move(object *obj) {
     object_set_vel(obj, vel);
 
     // If object is at rest, just halt animation
-    if(pos.y >= 185 && 
-        IS_ZERO(vel.x) && 
-        vel.y < obj->gravity * 1.1 && 
-        vel.y > obj->gravity * -1.1) 
+    if(pos.y >= 185 &&
+        IS_ZERO(vel.x) &&
+        vel.y < obj->gravity * 1.1 &&
+        vel.y > obj->gravity * -1.1)
     {
         object_disable_rewind_tag(obj, 1);
     }

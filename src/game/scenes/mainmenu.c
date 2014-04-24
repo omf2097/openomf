@@ -447,20 +447,20 @@ void inputmenu_set_key(component *c, void *userdata) {
 }
 
 void video_done_clicked(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata); 
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
     settings_video *v = &settings_get()->video;
     video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
     mainmenu_prev_menu(c, userdata);
-    
-    if(local->old_video_settings.screen_w != v->screen_w || 
+
+    if(local->old_video_settings.screen_w != v->screen_w ||
         local->old_video_settings.screen_h != v->screen_h ||
         local->old_video_settings.fullscreen != v->fullscreen) {
         // Resolution confirmation dialog
         mainmenu_enter_menu_video_confirm(c, userdata);
         time(&local->video_accept_timer);
         local->video_accept_secs = 20;
-        if(sprintf(local->video_accept_label, 
-                   "ACCEPT NEW RESOLUTION? %d", 
+        if(sprintf(local->video_accept_label,
+                   "ACCEPT NEW RESOLUTION? %d",
                    local->video_accept_secs) > 0) {
             ((textbutton*)local->video_confirm_header.obj)->text = local->video_accept_label;
         }
@@ -468,7 +468,7 @@ void video_done_clicked(component *c, void *userdata) {
 }
 
 void video_confirm_cancel_clicked(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata); 
+    mainmenu_local *local = scene_get_userdata((scene*)userdata);
     settings_video *v = &settings_get()->video;
     *v = local->old_video_settings;
     video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
@@ -669,15 +669,15 @@ void mainmenu_tick(scene *scene, int paused) {
         if(difftime(time(NULL), local->video_accept_timer) >= 1.0) {
             time(&local->video_accept_timer);
             local->video_accept_secs--;
-            if(sprintf(local->video_accept_label, 
-                       "ACCEPT NEW RESOLUTION? %d", 
+            if(sprintf(local->video_accept_label,
+                       "ACCEPT NEW RESOLUTION? %d",
                        local->video_accept_secs) > 0) {
                 ((textbutton*)local->video_confirm_header.obj)->text = local->video_accept_label;
             }
         }
         if(local->video_accept_secs == 0) {
             local->video_confirm_cancel.click(
-                &local->video_confirm_cancel, 
+                &local->video_confirm_cancel,
                 local->video_confirm_cancel.userdata);
         }
     }
@@ -956,7 +956,7 @@ int mainmenu_create(scene *scene) {
 
     // Load settings
     settings *setting = settings_get();
-    
+
     // Force music playback
     if(!music_playing()) {
         char *filename = get_path_by_id(PSM_MENU);
@@ -969,7 +969,7 @@ int mainmenu_create(scene *scene) {
 
     // Zero out host
     local->host = NULL;
-    
+
     // Start stack & set main menu to current
     local->mstack_pos = 0;
     local->mstack[local->mstack_pos++] = &local->main_menu;
@@ -1202,7 +1202,7 @@ int mainmenu_create(scene *scene) {
     local->video_done_button.click = video_done_clicked;
     local->video_done_button.userdata = (void*)scene;
     menu_select(&local->video_menu, &local->resolution_toggle);
-    
+
     // Video confirmation dialog
     local->video_accept_secs = 0;
     menu_create(&local->video_confirm_menu, 10, 80, 300, 40);
@@ -1212,7 +1212,7 @@ int mainmenu_create(scene *scene) {
     menu_attach(&local->video_confirm_menu, &local->video_confirm_header, 11);
     menu_attach(&local->video_confirm_menu, &local->video_confirm_cancel, 11);
     menu_attach(&local->video_confirm_menu, &local->video_confirm_ok, 11);
-    
+
     local->video_confirm_header.disabled = 1;
     menu_select(&local->video_confirm_menu, &local->video_confirm_cancel);
     local->video_confirm_cancel.click = video_confirm_cancel_clicked;
@@ -1250,14 +1250,14 @@ int mainmenu_create(scene *scene) {
     menu_attach(&local->gameplay_menu, &local->cpu_toggle, 11);
     menu_attach(&local->gameplay_menu, &local->round_toggle, 11);
     menu_attach(&local->gameplay_menu, &local->gameplay_done_button, 11);
-    
+
     // sound options
     local->sound_slider.slide = menu_sound_slide;
     local->music_slider.slide = menu_music_slide;
     textslider_bindvar(&local->sound_slider, &setting->sound.sound_vol);
     textslider_bindvar(&local->music_slider, &setting->sound.music_vol);
     textselector_bindvar(&local->stereo_toggle, &setting->sound.stereo_reversed);
-    
+
     // video options
     local->resolution_toggle.toggle = resolution_toggled;
     local->resolution_toggle.userdata = (void*)scene;

@@ -174,7 +174,7 @@ int str_to_long(str *string, long *result) {
 }
 
 const char* str_c(str *string) {
-    // At the moment, the internal representation of 
+    // At the moment, the internal representation of
     // string is compatible with C strings. So just return
     // a pointer to that data
     return string->data;

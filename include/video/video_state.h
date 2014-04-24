@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "resources/palette.h"
-#include "video/screen_palette.h" 
+#include "video/screen_palette.h"
 #include "video/video_ops.h"
 #include "plugins/scaler_plugin.h"
 

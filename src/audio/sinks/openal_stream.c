@@ -41,11 +41,11 @@ void openal_stream_play(audio_stream *stream) {
     char buf[AUDIO_BUFFER_SIZE];
     for(int i = 0; i < AUDIO_BUFFER_COUNT; i++) {
         int ret = source_update(stream->src, buf, AUDIO_BUFFER_SIZE);
-        if(ret > 0) { 
+        if(ret > 0) {
             alBufferData(
-                local->buffers[i], 
-                local->format, 
-                buf, ret, 
+                local->buffers[i],
+                local->format,
+                buf, ret,
                 source_get_frequency(stream->src));
             alSourceQueueBuffers(local->source, 1, &local->buffers[i]);
         }
@@ -140,14 +140,14 @@ int openal_stream_init(audio_stream *stream, audio_sink *sink) {
         PERROR("OpenAL Stream: Could not find suitable audio format!");
         goto exit_0;
     }
-    
+
     // Generate a source
     alGenSources(1, &local->source);
     if(alGetError() != AL_NO_ERROR) {
         PERROR("OpenAL Stream: Could not create audio source!");
         goto exit_0;
     }
-    
+
     // Generate buffers
     alGenBuffers(AUDIO_BUFFER_COUNT, local->buffers);
     if(alGetError() != AL_NO_ERROR) {
@@ -162,7 +162,7 @@ int openal_stream_init(audio_stream *stream, audio_sink *sink) {
     stream_set_play_cb(stream, openal_stream_play);
     stream_set_stop_cb(stream, openal_stream_stop);
     stream_set_apply_cb(stream, openal_stream_apply);
-    
+
     // All done
     return 0;
 

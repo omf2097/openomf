@@ -81,8 +81,8 @@ int conf_write_config(const char *filename) {
     conf_ensure_opt_init();
     FILE *fp = fopen(filename, "w");
     if(fp != NULL) {
-        if(cfg == NULL) { 
-            cfg_t *tmp = cfg_init((cfg_opt_t*)cfg_opts.data, 0);  
+        if(cfg == NULL) {
+            cfg_t *tmp = cfg_init((cfg_opt_t*)cfg_opts.data, 0); 
             cfg_print(tmp, fp);
             cfg_free(tmp);
         } else {
@@ -127,8 +127,8 @@ void conf_setstring(const char *name, const char *val) {
 }
 
 void conf_close() {
-    if(cfg) { 
-        cfg_free(cfg); 
+    if(cfg) {
+        cfg_free(cfg);
         cfg = NULL;
     }
     if(cfg_opts_init) {

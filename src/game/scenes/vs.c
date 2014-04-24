@@ -302,7 +302,7 @@ int vs_create(scene *scene) {
         object_select_sprite(&local->arena_select, local->arena);
     }
 
-    
+
     // SCIENTIST
     object *o_scientist = malloc(sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 8)->ani;

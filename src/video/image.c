@@ -55,10 +55,10 @@ void image_line(image *img, int x0, int y0, int x1, int y1, color c) {
     int dx = abs(x1 - x0);
     int sx = (x0 < x1) ? 1 : -1;
     int dy = abs(y1 - y0);
-    int sy = (y0 < y1) ? 1 : -1; 
+    int sy = (y0 < y1) ? 1 : -1;
     int err = (dx > dy ? dx : -dy) / 2;
     int e2;
- 
+
     while(1) {
         image_set_pixel(img, x0, y0, c);
         if(x0 == x1 && y0 == y1) break;
@@ -84,10 +84,10 @@ void image_rect(image *img, int x, int y, int w, int h, color c) {
     image_line(img, x, y, x, y+h, c);
 }
 
-void image_rect_bevel(image *img, 
-                      int x, int y, 
-                      int w, int h, 
-                      color ctop, color cright, 
+void image_rect_bevel(image *img,
+                      int x, int y,
+                      int w, int h,
+                      color ctop, color cright,
                       color cbottom, color cleft) {
     image_line(img, x, y, x+w, y, ctop);
     image_line(img, x, y+h, x+w, y+h, cbottom);
@@ -109,7 +109,7 @@ int image_write_tga(image *img, const char *filename) {
     if(fp == NULL) {
         return 1; // error
     }
-    
+
     // Write header
     tga_header header;
     header.id = 0;
@@ -125,7 +125,7 @@ int image_write_tga(image *img, const char *filename) {
     header.depth = 24;
     header.descriptor = 0;
     fwrite(&header, sizeof(tga_header), 1, fp);
-    
+
     // Write data
     char *d = 0;
     for(int y = img->h-1; y >= 0; y--) {
@@ -136,7 +136,7 @@ int image_write_tga(image *img, const char *filename) {
             fwrite(d+0, 1, 1, fp);
         }
     }
-    
+
     // Free file
     fclose(fp);
     return 0; // Success
@@ -161,36 +161,36 @@ int image_write_png(image *img, const char *filename) {
     // PNG stuff
     png_structp png_ptr;
     png_infop info_ptr;
-    
+
     // Get row pointers
     char *rows[img->h];
     for(int y = 0; y < img->h; y++) {
         rows[y] = img->data + (y * img->w * 4);
     }
-    
+
     // Init
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     info_ptr = png_create_info_struct(png_ptr);
     setjmp(png_jmpbuf(png_ptr));
     png_init_io(png_ptr, fp);
-    
+
     // Write header. RGB, 8bits per channel
     setjmp(png_jmpbuf(png_ptr));
-    png_set_IHDR(png_ptr, 
-                 info_ptr, 
-                 img->w, 
+    png_set_IHDR(png_ptr,
+                 info_ptr,
+                 img->w,
                  img->h,
-                 8, 
-                 PNG_COLOR_TYPE_RGBA, 
+                 8,
+                 PNG_COLOR_TYPE_RGBA,
                  PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE, 
+                 PNG_COMPRESSION_TYPE_BASE,
                  PNG_FILTER_TYPE_BASE);
     png_write_info(png_ptr, info_ptr);
-    
+
     // Write data
     setjmp(png_jmpbuf(png_ptr));
     png_write_image(png_ptr, (void*)rows);
-    
+
     // End
     setjmp(png_jmpbuf(png_ptr));
     png_write_end(png_ptr, NULL);

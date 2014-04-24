@@ -19,7 +19,7 @@ static settings _settings;
 static const char *settings_path;
 
 typedef enum field_type_t {
-    TYPE_INT, 
+    TYPE_INT,
     TYPE_FLOAT,
     TYPE_BOOL,
     TYPE_STRING
@@ -141,15 +141,15 @@ void settings_add_fields(const field *fields, int nfields) {
             case TYPE_INT:
                 conf_addint(f->name, f->def.i);
                 break;
-                
+        
             case TYPE_FLOAT:
                 conf_addfloat(f->name, f->def.f);
                 break;
-                
+        
             case TYPE_BOOL:
                 conf_addbool(f->name, f->def.b);
                 break;
-                
+        
             case TYPE_STRING:
                 conf_addstring(f->name, f->def.s);
                 break;
@@ -164,15 +164,15 @@ void settings_load_fields(void *st, const field *fields, int nfields) {
             case TYPE_INT:
                 *fieldint(st, f->offset) = conf_int(f->name);
                 break;
-                
+        
             case TYPE_FLOAT:
                 *fieldfloat(st, f->offset) = conf_float(f->name);
                 break;
-                
+        
             case TYPE_BOOL:
                 *fieldbool(st, f->offset) = conf_bool(f->name);
                 break;
-                
+        
             case TYPE_STRING:
                 {
                     // make a copy of the string
@@ -196,15 +196,15 @@ void settings_save_fields(void *st, const field *fields, int nfields) {
             case TYPE_INT:
                 conf_setint(f->name, *fieldint(st, f->offset));
                 break;
-                
+        
             case TYPE_FLOAT:
                 conf_setfloat(f->name, *fieldfloat(st, f->offset));
                 break;
-                
+        
             case TYPE_BOOL:
                 conf_setbool(f->name, *fieldbool(st, f->offset));
                 break;
-                
+        
             case TYPE_STRING:
                 conf_setstring(f->name, *fieldstr(st, f->offset));
                 break;
@@ -217,8 +217,8 @@ void settings_free_strings(void *st, const field *fields, int nfields) {
         const field *f = &fields[i];
         if(f->type == TYPE_STRING) {
             char **s = fieldstr(st, f->offset);
-            if(*s) { 
-                free(*s); 
+            if(*s) {
+                free(*s);
                 *s = NULL;
             }
         }

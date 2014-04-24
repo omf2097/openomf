@@ -83,7 +83,7 @@ int menu_handle_event(menu *menu, SDL_Event *event) {
     if(!(*c)->event(*c, event)) {
         return 0;
     }
-    
+
     return 1;
 }
 
@@ -114,7 +114,7 @@ int menu_handle_action(menu *menu, int action) {
     if(!(*c)->action(*c, action)) {
         return 0;
     }
-    
+
     return 1;
 }
 

@@ -11,7 +11,7 @@ unsigned int gid_gen() {
 audio_stream* sink_get_stream(audio_sink *sink, unsigned int sid) {
     audio_stream **s;
     unsigned int len;
-    if(hashmap_iget(&sink->streams, sid, (void**)&s, &len) != 0) { 
+    if(hashmap_iget(&sink->streams, sid, (void**)&s, &len) != 0) {
     	return NULL;
     }
     return *s;
@@ -32,7 +32,7 @@ unsigned int sink_play(audio_sink *sink, audio_source *src) {
 	return sink_play_set(sink, src, VOLUME_DEFAULT, PANNING_DEFAULT, PITCH_DEFAULT);
 }
 
-unsigned int sink_play_set(audio_sink *sink, 
+unsigned int sink_play_set(audio_sink *sink,
 						   audio_source *src,
 						   float volume,
 						   float panning,

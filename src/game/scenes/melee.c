@@ -405,9 +405,9 @@ void render_highlights(scene *scene) {
     game_player *player2 = game_state_get_player(scene->gs, 1);
     int trans;
     if (player2->selectable && local->row_a == local->row_b && local->column_a == local->column_b) {
-        video_render_sprite_tint(&local->select_hilight, 
-                                11 + (62*local->column_a), 
-                                115 + (42*local->row_a), 
+        video_render_sprite_tint(&local->select_hilight,
+                                11 + (62*local->column_a),
+                                115 + (42*local->row_a),
                                 color_create(250-local->ticks, 0, 250-local->ticks, 0),
                                 0);
     } else {
@@ -417,9 +417,9 @@ void render_highlights(scene *scene) {
             } else {
                 trans = 250 - local->ticks;
             }
-            video_render_sprite_tint(&local->select_hilight, 
-                                    11 + (62*local->column_b), 
-                                    115 + (42*local->row_b), 
+            video_render_sprite_tint(&local->select_hilight,
+                                    11 + (62*local->column_b),
+                                    115 + (42*local->row_b),
                                     color_create(0, 0, trans, 0),
                                     0);
         }
@@ -428,9 +428,9 @@ void render_highlights(scene *scene) {
         } else {
             trans = 250 - local->ticks;
         }
-        video_render_sprite_tint(&local->select_hilight, 
-                                11 + (62*local->column_a), 
-                                115 + (42*local->row_a), 
+        video_render_sprite_tint(&local->select_hilight,
+                                11 + (62*local->column_a),
+                                115 + (42*local->row_a),
                                 color_create(trans, 0, 0, 0),
                                 0);
     }

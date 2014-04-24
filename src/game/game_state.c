@@ -238,7 +238,7 @@ void game_state_render(game_state *gs) {
         }
     }
 
-    // If changes were made to palette, then 
+    // If changes were made to palette, then
     // all resources that depend on it must be redrawn.
     // This will take care of it.
     if(pal_changed) {
@@ -345,19 +345,19 @@ int game_load_new(game_state *gs, int scene_id) {
 
     // Load scene specifics
     switch(scene_id) {
-        case SCENE_INTRO: 
+        case SCENE_INTRO:
             if(intro_create(gs->sc)) {
                 PERROR("Error while creating intro scene.");
                 goto error_1;
             }
             break;
-        case SCENE_MENU: 
+        case SCENE_MENU:
             if(mainmenu_create(gs->sc)) {
                 PERROR("Error while creating mainmenu scene.");
                 goto error_1;
             }
             break;
-        case SCENE_CREDITS: 
+        case SCENE_CREDITS:
             if(credits_create(gs->sc)) {
                 PERROR("Error while creating credits scene.");
                 goto error_1;
@@ -367,7 +367,7 @@ int game_load_new(game_state *gs, int scene_id) {
             if(melee_create(gs->sc)) {
                 PERROR("Error while creating melee scene.");
                 goto error_1;
-            } 
+            }
             break;
         case SCENE_VS:
             if(vs_create(gs->sc)) {
@@ -508,8 +508,8 @@ void game_state_static_tick(game_state *gs) {
     }
 
     // Poll input. If console is opened, do not poll the controllers.
-    if(!console_window_is_open()) { 
-        scene_input_poll(gs->sc); 
+    if(!console_window_is_open()) {
+        scene_input_poll(gs->sc);
     }
 
     // Call static ticks for scene

@@ -35,7 +35,7 @@ int vorbis_stream(audio_source *src, char *buffer, int len) {
     int ret;
     while(read < len) {
         ret = ov_read(
-                &local->src_file, 
+                &local->src_file,
                 buffer+read, len-read, // Output buffer & length
                 0, 2, 1, // endian byte packing, word size (2), signedness (signed)
                 &local->current_section); // number of the current logical bitstream
@@ -96,7 +96,7 @@ int vorbis_source_init(audio_source *src, const char* file) {
     source_set_close_cb(src, vorbis_source_close);
 
     // Some debug info
-    DEBUG("Vorbis Source: Loaded file '%s' succesfully (%d Hz, %d ch).", 
+    DEBUG("Vorbis Source: Loaded file '%s' succesfully (%d Hz, %d ch).",
         file, vi->rate, vi->channels);
     while(*comment_ptr) {
         DEBUG(" * Comment: %s", *comment_ptr);

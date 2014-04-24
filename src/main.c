@@ -178,12 +178,12 @@ int main(int argc, char *argv[]) {
                 global_path_build(PLUGIN_PATH, base_path, "plugins\\");
             } else if (!strcasecmp(SDL_GetPlatform(), "Linux")) {
                 // on linux, the resources will be in ../share/openomf, relative to the binary
-                // so if openomf is installed to /usr/local/bin, 
+                // so if openomf is installed to /usr/local/bin,
                 // the resources will be in /usr/local/share/openomf
                 global_path_build(RESOURCE_PATH, base_path, "../share/openomf/");
                 global_path_set(PLUGIN_PATH, "/usr/lib/openomf/");
             } else if (!strcasecmp(SDL_GetPlatform(), "Mac OS X")) {
-                // on OSX, GetBasePath returns the 'Resources' directory 
+                // on OSX, GetBasePath returns the 'Resources' directory
                 // if run from an app bundle, so we can use this as-is
                 global_path_set(RESOURCE_PATH, base_path);
                 global_path_build(PLUGIN_PATH, base_path, "plugins/");
@@ -245,7 +245,7 @@ int main(int argc, char *argv[]) {
         goto exit_2;
     }
 
-    // Attempt to find gamecontrollerdb.txt, either from resources or from 
+    // Attempt to find gamecontrollerdb.txt, either from resources or from
     // built-in header
     SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
     SDL_GameControllerAddMappingsFromRW(rw, 1);
@@ -291,16 +291,16 @@ int main(int argc, char *argv[]) {
         err_msgbox("Failed to initialize enet");
         goto exit_3;
     }
-    
+
     // Initialize engine
     if(engine_init()) {
         err_msgbox("Failed to initialize game engine.");
         goto exit_4;
     }
-    
+
     // Run
     engine_run(net_mode);
-    
+
     // Close everything
     engine_close();
 exit_4:

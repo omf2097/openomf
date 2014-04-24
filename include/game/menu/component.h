@@ -17,13 +17,13 @@ struct component_t {
     int disabled;
     void *obj;
     void *userdata;
-    
+
     void (*render)(component *c);
     int (*event)(component *c, SDL_Event *event);
     int (*action)(component *c, int action);
     void (*layout)(component *c, int x, int y, int w, int h);
     void (*tick)(component *c);
-    
+
     void (*click)(component *c, void *userdata);
     void (*toggle)(component *c, void *userdata, int option);
     void (*slide)(component *c, void *userdata, int pos);

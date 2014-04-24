@@ -20,7 +20,7 @@ void reset_targets() {
     state.target = SDL_CreateTexture(state.renderer,
                                      SDL_PIXELFORMAT_ABGR8888,
                                      SDL_TEXTUREACCESS_TARGET,
-                                     NATIVE_W * state.scale_factor, 
+                                     NATIVE_W * state.scale_factor,
                                      NATIVE_H * state.scale_factor);
 
     // Update target with black pixels
@@ -59,7 +59,7 @@ int video_init(int window_w,
     state.target = NULL;
     state.target_move_x = 0;
     state.target_move_y = 0;
-    
+
     // Load scaler (if any)
     strcpy(state.scaler_name, scaler_name);
     if(video_load_scaler(scaler_name, scale_factor)) {
@@ -108,8 +108,8 @@ int video_init(int window_w,
 
     // Create renderer
     state.renderer = SDL_CreateRenderer(
-        state.window, 
-        -1, 
+        state.window,
+        -1,
         renderer_flags);
     if(state.renderer == NULL) {
         PERROR("Could not create renderer: %s", SDL_GetError());
@@ -117,8 +117,8 @@ int video_init(int window_w,
     }
 
     // Default resolution for renderer. This will them get scaled up to screen size.
-    SDL_RenderSetLogicalSize(state.renderer, 
-                             NATIVE_W * state.scale_factor, 
+    SDL_RenderSetLogicalSize(state.renderer,
+                             NATIVE_W * state.scale_factor,
                              NATIVE_H * state.scale_factor);
 
     // Disable screensaver :/
@@ -161,8 +161,8 @@ void video_reinit_renderer() {
          renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
     }
     state.renderer = SDL_CreateRenderer(state.window, -1, renderer_flags);
-    SDL_RenderSetLogicalSize(state.renderer, 
-                             NATIVE_W * state.scale_factor, 
+    SDL_RenderSetLogicalSize(state.renderer,
+                             NATIVE_W * state.scale_factor,
                              NATIVE_H * state.scale_factor);
     tcache_reinit(state.renderer, state.scale_factor, &state.scaler);
 
@@ -195,7 +195,7 @@ int video_reinit(int window_w,
         DEBUG("Changing resolution to %dx%d", window_w, window_h);
         changed = 1;
     }
-    
+
     // Set fullscreen if necessary
     if(fullscreen != state.fs) {
         if(SDL_SetWindowFullscreen(state.window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0) != 0) {
@@ -209,8 +209,8 @@ int video_reinit(int window_w,
 
     // Center window if we are changing into or in window mode
     if(!fullscreen && changed) {
-        SDL_SetWindowPosition(state.window, 
-                              SDL_WINDOWPOS_CENTERED, 
+        SDL_SetWindowPosition(state.window,
+                              SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED);
     }
 
@@ -307,8 +307,8 @@ palette *video_get_base_palette() {
 }
 
 void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount) {
-    memcpy(state.cur_palette->data + dst_start * 3, 
-           src->data + src_start * 3, 
+    memcpy(state.cur_palette->data + dst_start * 3,
+           src->data + src_start * 3,
            amount * 3);
     state.cur_palette->version++;
 }
@@ -329,10 +329,10 @@ void video_render_background(surface *sur) {
 }
 
 void video_render_sprite_tint(
-        surface *sur, 
-        int sx, 
-        int sy, 
-        color c, 
+        surface *sur,
+        int sx,
+        int sy,
+        color c,
         int pal_offset) {
 
     // Position & correct height
@@ -354,10 +354,10 @@ void video_render_sprite_tint(
 
 // Wrapper
 void video_render_sprite(
-        surface *sur, 
-        int sx, 
-        int sy, 
-        unsigned int rendering_mode, 
+        surface *sur,
+        int sx,
+        int sy,
+        unsigned int rendering_mode,
         int pal_offset) {
 
     video_render_sprite_flip_scale_opacity(
@@ -372,12 +372,12 @@ void video_render_sprite(
 
 // Wrapper
 void video_render_sprite_flip_scale(
-        surface *sur, 
-        int sx, 
-        int sy, 
-        unsigned int rendering_mode, 
-        int pal_offset, 
-        unsigned int flip_mode, 
+        surface *sur,
+        int sx,
+        int sy,
+        unsigned int rendering_mode,
+        int pal_offset,
+        unsigned int flip_mode,
         float y_percent) {
 
     video_render_sprite_flip_scale_opacity(
@@ -391,13 +391,13 @@ void video_render_sprite_flip_scale(
 }
 
 void video_render_sprite_flip_scale_opacity(
-        surface *sur, 
-        int sx, 
-        int sy, 
-        unsigned int rendering_mode, 
-        int pal_offset, 
-        unsigned int flip_mode, 
-        float y_percent, 
+        surface *sur,
+        int sx,
+        int sy,
+        unsigned int rendering_mode,
+        int pal_offset,
+        unsigned int flip_mode,
+        float y_percent,
         uint8_t opacity) {
 
     video_render_sprite_flip_scale_opacity_tint(
@@ -412,12 +412,12 @@ void video_render_sprite_flip_scale_opacity(
 }
 
 void video_render_sprite_flip_scale_opacity_tint(
-        surface *sur, 
-        int sx, 
+        surface *sur,
+        int sx,
         int sy,
-        unsigned int rendering_mode, 
+        unsigned int rendering_mode,
         int pal_offset,
-        unsigned int flip_mode, 
+        unsigned int flip_mode,
         float y_percent,
         uint8_t opacity,
         color tint) {
@@ -445,7 +445,7 @@ void video_render_sprite_flip_scale_opacity_tint(
 
 // Called on every game tick
 void video_tick() {
-    tcache_tick();     
+    tcache_tick();
 }
 
 // Called after frame has been rendered

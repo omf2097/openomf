@@ -32,7 +32,7 @@ void projectile_move(object *obj) {
     obj->pos.x += obj->vel.x;
     obj->vel.y += obj->gravity;
     obj->pos.y += obj->vel.y;
-    
+
     float dampen = 0.7f;
 
     // If projectile hits the wall, kill it

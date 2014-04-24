@@ -31,7 +31,7 @@ int font_load(font *font, const char* filename, unsigned int size) {
     sd_font *sdfont;
     int pixsize;
     surface *sur;
-    
+
     // Find vertical size
     switch(size) {
         case FONT_BIG: pixsize = 8; break;
@@ -39,14 +39,14 @@ int font_load(font *font, const char* filename, unsigned int size) {
         default:
             return 1;
     }
-    
+
     // Open font file
     sdfont = sd_font_create();
     if(sd_font_load(sdfont, filename, pixsize)) {
         sd_font_delete(sdfont);
         return 2;
     }
-    
+
     // Load into textures
     img = sd_rgba_image_create(pixsize, pixsize);
     for(int i = 0; i < 224; i++) {
@@ -55,12 +55,12 @@ int font_load(font *font, const char* filename, unsigned int size) {
         surface_create_from_data(sur, SURFACE_TYPE_RGBA, img->w, img->h, img->data);
         vector_append(&font->surfaces, &sur);
     }
-    
+
     // Set font info vars
     font->w = pixsize;
     font->h = pixsize;
     font->size = size;
-    
+
     // Free resources
     sd_rgba_image_delete(img);
     sd_font_delete(sdfont);

@@ -106,7 +106,7 @@ void chr_score_tick(chr_score *score) {
     iterator it;
     score_text *t;
     int lastage = -1;
-    
+
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
         // don't allow them to get too close together, if a bunch are added at once
@@ -122,7 +122,7 @@ void chr_score_tick(chr_score *score) {
             list_delete(&score->texts, &it);
         }
         lastage = t->age++;
-    } 
+    }
 }
 
 void chr_score_format(unsigned int score, char *buf) {

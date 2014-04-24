@@ -34,7 +34,7 @@ void controller_clear_hooks(controller *ctrl) {
     list_iter_begin(&ctrl->hooks, &it);
     while((tmp = iter_next(&it)) != NULL) {
         free(*tmp);
-        list_delete(&ctrl->hooks, &it); 
+        list_delete(&ctrl->hooks, &it);
     }
 }
 
@@ -56,7 +56,7 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
     iterator it;
     hook_function **p = 0;
     ctrl_event *i;
-    
+
     list_iter_begin(&ctrl->hooks, &it);
     while((p = iter_next(&it)) != NULL) {
         ((*p)->fp)((*p)->source, action);

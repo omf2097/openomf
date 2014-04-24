@@ -8,7 +8,7 @@
 #define PERROR(...) log_print('E', __FUNCTION__, __VA_ARGS__ )
 #define INFO(...) log_print('I', __FUNCTION__, __VA_ARGS__ )
 #else
-#define DEBUG(...) 
+#define DEBUG(...)
 #define PERROR(...) log_print('E', NULL, __VA_ARGS__ )
 #define INFO(...) log_print('I', NULL, __VA_ARGS__ )
 #endif

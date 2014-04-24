@@ -67,9 +67,9 @@ struct object_t {
 
     float y_percent;
     float gravity;
-    
+
     uint8_t layers;
-    
+
     uint8_t cur_animation_own;
 
     animation *cur_animation;

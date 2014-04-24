@@ -6,7 +6,7 @@ FILE *handle = 0;
 
 int log_init(const char *filename) {
     if(handle) return 1;
-    
+
     if(filename == 0) {
         handle = stdout;
     } else {

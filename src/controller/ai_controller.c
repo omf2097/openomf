@@ -155,8 +155,8 @@ int is_special_move(af_move *move) {
 
 int is_valid_move(af_move *move, har *h) {
     // If category is any of these, and bot is not close, then
-    // do not try to execute any of them. This attempts 
-    // to make the HARs close up instead of standing in place 
+    // do not try to execute any of them. This attempts
+    // to make the HARs close up instead of standing in place
     // wawing their hands towards each other. Not a perfect solution.
     switch(move->category) {
         case CAT_CLOSE:

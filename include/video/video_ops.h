@@ -18,11 +18,11 @@ typedef void (*render_background_cb)(
 
 typedef void (*render_sprite_fsot_cb)(
                     video_state *state,
-                    surface *sur, 
+                    surface *sur,
                     SDL_Rect *dst,
-                    SDL_BlendMode blend_mode, 
-                    int pal_offset, 
-                    SDL_RendererFlip flip_mode, 
+                    SDL_BlendMode blend_mode,
+                    int pal_offset,
+                    SDL_RendererFlip flip_mode,
                     uint8_t opacity,
                     color tint);
 

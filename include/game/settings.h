@@ -2,14 +2,14 @@
 #define _SETTINGS_H
 
 typedef enum fight_mode_t {
-    FIGHT_MODE_NORMAL, 
+    FIGHT_MODE_NORMAL,
     FIGHT_MODE_HYPER
 } fight_mode;
 
 typedef enum difficulty_t {
-    PUNCHING_BAG, 
-    ROOKIE, 
-    VETERAN, 
+    PUNCHING_BAG,
+    ROOKIE,
+    VETERAN,
     WORLD_CLASS,
     CHAMPION,
     DEADLY,

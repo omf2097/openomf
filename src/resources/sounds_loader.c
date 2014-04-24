@@ -27,7 +27,7 @@ int sounds_loader_get(int id, char **buffer, int *len) {
     // Make sure the data is ok and sound exists
     if(sound_data == NULL) return 1;
     if(id > sound_data->sound_count) return 1;
-    
+
     // Get sound
     sd_sound *sample = sound_data->sounds[id];
     if(sample == NULL) {

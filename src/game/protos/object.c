@@ -80,8 +80,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
 /*
  * Serializes the object to a buffer. Should return 1 on error, 0 on success
- * This will call the specialized objects, eg. har or projectile for their 
- * serialization data. 
+ * This will call the specialized objects, eg. har or projectile for their
+ * serialization data.
  */
 int object_serialize(object *obj, serial *ser) {
     serial_write_float(ser, obj->pos.x);
@@ -127,8 +127,8 @@ int object_serialize(object *obj, serial *ser) {
     return 0;
 }
 
-/* 
- * Unserializes the data from buffer to a specialized object. 
+/*
+ * Unserializes the data from buffer to a specialized object.
  * Should return 1 on error, 0 on success.
  * Serial reder position should be set to correct position before calling this.
  */
@@ -181,7 +181,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     object_auto_specialize(obj, specialization_id);
 
     // Now, if the object has unserialize function, call it with
-    // serialization data. serial object should be pointing to the 
+    // serialization data. serial object should be pointing to the
     // start of that data.
     if(obj->unserialize != NULL) {
         obj->unserialize(obj, ser, animation_id, gs);
@@ -321,11 +321,11 @@ void object_render(object *obj) {
 
     // Render
     video_render_sprite_flip_scale_opacity(
-        obj->cur_surface, 
-        x, y, 
-        rstate->blendmode, 
-        obj->pal_offset, 
-        flipmode, 
+        obj->cur_surface,
+        x, y,
+        rstate->blendmode,
+        obj->pal_offset,
+        flipmode,
         obj->y_percent,
         opacity);
 }
@@ -335,7 +335,7 @@ void object_render_shadow(object *obj) {
         return;
     }
 
-    // Scale of the sprite on Y axis should be less than the 
+    // Scale of the sprite on Y axis should be less than the
     // height of the sprite because of light position
     float scale_y = 0.25f;
 
@@ -389,8 +389,8 @@ void object_move(object *obj) {
 int object_palette_transform(object *obj, screen_palette *pal) {
     player_sprite_state *rstate = &obj->sprite_state;
     if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
-        float bp = ((float)rstate->pal_begin) + 
-            ((float)rstate->pal_end - (float)rstate->pal_begin) * 
+        float bp = ((float)rstate->pal_begin) +
+            ((float)rstate->pal_end - (float)rstate->pal_begin) *
             ((float)rstate->timer / (float)rstate->duration);
 
         color b;
@@ -481,7 +481,7 @@ void object_set_animation(object *obj, animation *ani) {
 
     // Debug texts
     if(obj->cur_animation->id == -1) {
-        DEBUG("Custom object set to (x,y) = (%f,%f).", 
+        DEBUG("Custom object set to (x,y) = (%f,%f).",
             obj->pos.x, obj->pos.y);
     } else {
         /*DEBUG("Animation object %d set to (x,y) = (%f,%f) with \"%s\".", */
@@ -600,8 +600,8 @@ void object_set_pos(object *obj, vec2i pos) {
     obj->pos = vec2i_to_f(pos);
 }
 
-void object_disable_rewind_tag(object *obj, int disable_d) { 
-    obj->animation_state.disable_d = disable_d; 
+void object_disable_rewind_tag(object *obj, int disable_d) {
+    obj->animation_state.disable_d = disable_d;
 }
 
 int object_is_rewind_tag_disabled(object *obj) {

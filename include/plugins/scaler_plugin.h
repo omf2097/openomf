@@ -15,7 +15,7 @@ void scaler_init(scaler_plugin *scaler);
 int scaler_is_factor_available(scaler_plugin *scaler, int factor);
 int scaler_get_factors_list(scaler_plugin *scaler, int** factors);
 int scaler_get_color_format(scaler_plugin *scaler);
-int scaler_scale(scaler_plugin *scaler, 
+int scaler_scale(scaler_plugin *scaler,
                  const char* in,
                  char* out,
                  int w, int h,

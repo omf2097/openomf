@@ -30,7 +30,7 @@ int dumb_source_update(audio_source *src, char *buffer, int len) {
 
     // ... otherwise get more data.
     int ret = duh_render(
-            local->renderer, 
+            local->renderer,
             source_get_bytes(src) * 8, // Bits
             0,  // Unsign
             1.0f, // Volume
@@ -75,7 +75,7 @@ int dumb_source_init(audio_source *src, const char* file) {
     local->renderer = duh_start_sigrenderer(local->data, 0, 2, 0);
     local->vlen = duh_get_length(local->data);
     local->vpos = 0;
-    
+
     // Audio information
     source_set_frequency(src, 44100);
     source_set_bytes(src, 2);

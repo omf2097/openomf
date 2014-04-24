@@ -62,7 +62,7 @@ typedef struct arena_local_t {
     int menu_visible;
     unsigned int state;
     int ending_ticks;
-    
+
     progress_bar player1_health_bar;
     progress_bar player2_health_bar;
     progress_bar player1_endurance_bar;
@@ -118,9 +118,9 @@ void scene_fight_anim_done(object *parent) {
     // This will release HARs for action
     arena->state = ARENA_STATE_FIGHTING;
 
-    // Custom object finisher callback requires that we 
+    // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
-    parent->animation_state.finished = 1; 
+    parent->animation_state.finished = 1;
 }
 
 void scene_fight_anim_start(void *userdata) {
@@ -140,9 +140,9 @@ void scene_ready_anim_done(object *parent) {
     // Wait a moment before loading FIGHT animation
     ticktimer_add(&game_state_get_scene(parent->gs)->tick_timer, 10, scene_fight_anim_start, parent->gs);
 
-    // Custom object finisher callback requires that we 
+    // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
-    parent->animation_state.finished = 1; 
+    parent->animation_state.finished = 1;
 }
 
 void scene_youwin_anim_done(object *parent) {
@@ -607,7 +607,7 @@ void arena_free(scene *scene) {
         controller_set_repeat(game_player_get_ctrl(player), 0);
 
     }
-    
+
     textbutton_free(&local->title_button);
     textbutton_free(&local->return_button);
     textslider_free(&local->sound_slider);
@@ -621,14 +621,14 @@ void arena_free(scene *scene) {
     surface_free(&local->sur);
 
     music_stop();
-    
+
     progressbar_free(&local->player1_health_bar);
     progressbar_free(&local->player2_health_bar);
     progressbar_free(&local->player1_endurance_bar);
     progressbar_free(&local->player2_endurance_bar);
 
     settings_save();
-    
+
     free(local);
 }
 
@@ -911,10 +911,10 @@ void arena_render_overlay(scene *scene) {
 
         int p2len = (strlen(lang_get(player[1]->pilot_id+20))-1) * font_small.w;
         int h2len = (strlen(lang_get((player[1]->har_id - HAR_JAGUAR)+31))-1) * font_small.w;
-        font_render_shadowed(&font_small, 
-                            lang_get(player[1]->pilot_id+20), 
-                            315-p2len, 19, 
-                            TEXT_COLOR, 
+        font_render_shadowed(&font_small,
+                            lang_get(player[1]->pilot_id+20),
+                            315-p2len, 19,
+                            TEXT_COLOR,
                             TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
         font_render_shadowed(&font_small,
                             lang_get((player[1]->har_id - HAR_JAGUAR)+31),
@@ -982,7 +982,7 @@ int arena_create(scene *scene) {
     if(is_demoplay(scene)) {
         game_state_init_demo(scene->gs);
     }
-    
+
     // Handle music playback
     music_stop();
     char *music_filename = NULL;
@@ -1105,7 +1105,7 @@ int arena_create(scene *scene) {
     game_player_get_har(_player[1])->animation_state.enemy = game_player_get_har(_player[0]);
 
     maybe_install_har_hooks(scene);
-    
+
     // Arena menu
     local->menu_visible = 0;
     menu_create(&local->game_menu, 70, 5, 181, 117);
@@ -1126,13 +1126,13 @@ int arena_create(scene *scene) {
     menu_attach(&local->game_menu, &local->video_button, 11);
     menu_attach(&local->game_menu, &local->help_button, 11);
     menu_attach(&local->game_menu, &local->quit_button, 11);
-    
+
     // sound options
     local->sound_slider.slide = sound_slide;
     local->music_slider.slide = music_slide;
     textslider_bindvar(&local->sound_slider, &setting->sound.sound_vol);
     textslider_bindvar(&local->music_slider, &setting->sound.music_vol);
-    
+
     // gameplay options
     textslider_bindvar(&local->speed_slider, &setting->gameplay.speed);
     local->speed_slider.userdata = (void*)scene;
@@ -1155,42 +1155,42 @@ int arena_create(scene *scene) {
     // background for the 'help' at the bottom of the screen
     // TODO support rendering text onto it
     menu_background_create(&local->sur, 301, 37);
-    
+
     // Health bars
-    progressbar_create(&local->player1_health_bar, 
-                       5, 5, 100, 8, 
-                       BAR_COLOR_TL_BORDER, 
-                       BAR_COLOR_BR_BORDER, 
-                       BAR_COLOR_BG, 
+    progressbar_create(&local->player1_health_bar,
+                       5, 5, 100, 8,
+                       BAR_COLOR_TL_BORDER,
+                       BAR_COLOR_BR_BORDER,
+                       BAR_COLOR_BG,
                        HEALTHBAR_COLOR_TL_BORDER,
                        HEALTHBAR_COLOR_BR_BORDER,
                        HEALTHBAR_COLOR_BG,
                        PROGRESSBAR_RIGHT);
-    progressbar_create(&local->player2_health_bar, 
-                       215, 5, 100, 8, 
-                       BAR_COLOR_TL_BORDER, 
-                       BAR_COLOR_BR_BORDER, 
-                       BAR_COLOR_BG, 
+    progressbar_create(&local->player2_health_bar,
+                       215, 5, 100, 8,
+                       BAR_COLOR_TL_BORDER,
+                       BAR_COLOR_BR_BORDER,
+                       BAR_COLOR_BG,
                        HEALTHBAR_COLOR_TL_BORDER,
                        HEALTHBAR_COLOR_BR_BORDER,
                        HEALTHBAR_COLOR_BG,
                        PROGRESSBAR_LEFT);
-    progressbar_create_flashing(&local->player1_endurance_bar, 
-                       5, 14, 100, 4, 
-                       BAR_COLOR_TL_BORDER, 
-                       BAR_COLOR_BR_BORDER, 
-                       BAR_COLOR_BG, 
-                       BAR_COLOR_BR_BORDER, 
+    progressbar_create_flashing(&local->player1_endurance_bar,
+                       5, 14, 100, 4,
+                       BAR_COLOR_TL_BORDER,
+                       BAR_COLOR_BR_BORDER,
+                       BAR_COLOR_BG,
+                       BAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_TL_BORDER,
                        ENDURANCEBAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_BG,
                        PROGRESSBAR_RIGHT);
-    progressbar_create_flashing(&local->player2_endurance_bar, 
-                       215, 14, 100, 4, 
-                       BAR_COLOR_TL_BORDER, 
-                       BAR_COLOR_BR_BORDER, 
-                       BAR_COLOR_BG, 
-                       BAR_COLOR_BR_BORDER, 
+    progressbar_create_flashing(&local->player2_endurance_bar,
+                       215, 14, 100, 4,
+                       BAR_COLOR_TL_BORDER,
+                       BAR_COLOR_BR_BORDER,
+                       BAR_COLOR_BG,
+                       BAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_TL_BORDER,
                        ENDURANCEBAR_COLOR_BR_BORDER,
                        ENDURANCEBAR_COLOR_BG,

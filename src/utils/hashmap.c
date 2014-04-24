@@ -86,7 +86,7 @@ void* hashmap_put(hashmap *hm,
     node->pair.val = hm->alloc.cmalloc(vallen);
     memcpy(node->pair.key, key, keylen);
     memcpy(node->pair.val, val, vallen);
-    
+
     // Set new node as first
     node->next = hm->buckets[index].first;
     hm->buckets[index].first = node;
@@ -99,12 +99,12 @@ void* hashmap_put(hashmap *hm,
 
 int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
-    
+
     // Get node
     hashmap_node *node = hm->buckets[index].first;
     hashmap_node *prev = NULL;
     if(node == NULL) return 1;
-    
+
     // Find the node we want to delete
     int found = 0;
     while(node) {
@@ -117,7 +117,7 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
         prev = node;
         node = node->next;
     }
-    
+
     // If node was found, handle delete
     if(found) {
         if(prev != NULL) {
@@ -138,15 +138,15 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
 
 int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
-    
+
     // Set defaults for error cases
     *val = NULL;
     *vallen = 0;
-    
+
     // Get node
     hashmap_node *node = hm->buckets[index].first;
     if(node == NULL) return 1;
-    
+
     // Find the node we want
     while(node) {
         if(node->pair.keylen == keylen) {
@@ -158,7 +158,7 @@ int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, u
         }
         node = node->next;
     }
-    
+
     return 1;
 }
 
@@ -205,7 +205,7 @@ int hashmap_delete(hashmap *hm, iterator *iter) {
         prev = node;
         node = node->next;
     }
-    
+
     // If node was found, handle delete
     if(found) {
         // If node is not first in chain, set correct links

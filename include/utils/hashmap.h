@@ -15,10 +15,10 @@ struct hashmap_pair_t {
 };
 
 struct hashmap_node_t {
-    hashmap_pair pair; 
+    hashmap_pair pair;
     hashmap_node *next;
 };
- 
+
 struct hashmap_bucket_t {
     hashmap_node *first;
 };

@@ -210,7 +210,7 @@ int console_init() {
     list_create(&con->history);
     hashmap_create(&con->cmds, 8);
     menu_background_create(&con->background, 322, 101);
- 
+
     console_init_cmd();
 
     // Print the header
@@ -283,7 +283,7 @@ void console_event(game_state *gs, SDL_Event *e) {
                 con->input[len+1] = '\0';
                 con->input[len] = code;
             }
-        } 
+        }
     }
 }
 

@@ -345,9 +345,9 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_set_gravity(obj, g/50);
         object_set_pal_offset(obj, object_get_pal_offset(parent));
         // Set all projectiles to their own layer + har layer
-        object_set_layers(obj, LAYER_PROJECTILE|(h->player_id == 0 ? LAYER_HAR2 : LAYER_HAR1)); 
+        object_set_layers(obj, LAYER_PROJECTILE|(h->player_id == 0 ? LAYER_HAR2 : LAYER_HAR1));
         // To avoid projectile-to-projectile collisions, set them to same group
-        object_set_group(obj, GROUP_PROJECTILE); 
+        object_set_group(obj, GROUP_PROJECTILE);
         object_set_repeat(obj, 0);
         object_set_shadow(obj, 1);
         object_set_direction(obj, object_get_direction(parent));
@@ -514,7 +514,7 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
 
 }
 
-// TODO: This is kind of a hack. It's used to check if either 
+// TODO: This is kind of a hack. It's used to check if either
 // HAR is doing destruction. If there is any way to do this better,
 // this should be changed.
 int is_destruction(game_state *gs) {
@@ -743,8 +743,8 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             b->flinching = 0;
         }
 
-        DEBUG("HAR %s to HAR %s collision at %d,%d!", 
-            get_id_name(a->id), 
+        DEBUG("HAR %s to HAR %s collision at %d,%d!",
+            get_id_name(a->id),
             get_id_name(b->id),
             hit_coord.x,
             hit_coord.y);
@@ -823,8 +823,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             o_pjt->animation_state.finished = 0;
         }
 
-        DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!", 
-            object_get_animation(o_pjt)->id, 
+        DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!",
+            object_get_animation(o_pjt)->id,
             get_id_name(h->id),
             hit_coord.x,
             hit_coord.y);
@@ -1251,7 +1251,7 @@ int har_act(object *obj, int act_type) {
 
     if (move) {
         char *s = (char*)str_c(&move->move_string); // start
-        for (int j = str_size(&move->move_string)-1; j >=0; j--) { 
+        for (int j = str_size(&move->move_string)-1; j >=0; j--) {
             switch(s[j]) {
                 case '1':
                     if(direction == OBJECT_FACE_LEFT) {
@@ -1646,7 +1646,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // New object spawner callback
     object_set_spawn_cb(obj, cb_har_spawn_object, local);
 
-    // Set running animation 
+    // Set running animation
     har_set_ani(obj, ANIM_IDLE, 1);
 
     // fill the input buffer with 'pauses'
