@@ -19,10 +19,10 @@ int intro_event(scene *scene, SDL_Event *event) {
     if (i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                if (
-                        i->event_data.action == ACT_ESC ||
-                        i->event_data.action == ACT_KICK ||
-                        i->event_data.action == ACT_PUNCH) {
+                if(i->event_data.action == ACT_ESC ||
+                    i->event_data.action == ACT_KICK ||
+                    i->event_data.action == ACT_PUNCH) {
+
                     game_state_set_next(scene->gs, SCENE_MENU);
                 }
             }
