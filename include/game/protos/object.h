@@ -34,6 +34,7 @@ enum {
 enum {
     EFFECT_NONE = 0,
     EFFECT_SHADOW = 0x1,
+    EFFECT_DARK_TINT = 0x2,
 };
 
 typedef struct object_t object;

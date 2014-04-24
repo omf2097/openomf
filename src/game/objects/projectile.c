@@ -22,6 +22,14 @@ void projectile_tick(object *obj) {
             obj->animation_state.finished = 0;
         }
     }
+
+    // Note! If we ever add more effects, this will need to be changed!
+    // XXX: Make this better.
+    if(player_frame_isset(obj, "bt")) {
+        object_set_effects(obj, EFFECT_DARK_TINT);
+    } else {
+        object_set_effects(obj, EFFECT_NONE);
+    }
 }
 
 void projectile_free(object *obj) {

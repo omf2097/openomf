@@ -985,6 +985,14 @@ void har_tick(object *obj) {
         h->endurance += 1;
     }
 
+    // Note! If we ever add more effects, this will need to be changed!
+    // XXX: Make this better.
+    if(player_frame_isset(obj, "bt")) {
+        object_set_effects(obj, EFFECT_DARK_TINT);
+    } else {
+        object_set_effects(obj, EFFECT_NONE);
+    }
+
     // Leave shadow trail
     // IF trail is on, copy current sprite to a new animation, and set animation string
     // to show the sprite with animation string that interpolates opacity down
@@ -1000,6 +1008,7 @@ void har_tick(object *obj) {
             object_set_animation_owner(nobj, OWNER_OBJECT);
             object_set_custom_string(nobj, "bs100A1-bf0A15");
             object_set_effects(nobj, EFFECT_SHADOW);
+            object_set_direction(nobj, object_get_direction(obj));
             object_dynamic_tick(nobj);
             game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM);
         }

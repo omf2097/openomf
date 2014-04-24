@@ -337,7 +337,10 @@ void object_render(object *obj) {
     // Tint color
     color tint = color_create(0xFF, 0xFF, 0xFF, 0xFF);
     if(obj->video_effects & EFFECT_SHADOW) {
-        tint = color_create(0, 0, 0, 0xFF);
+        tint = color_create(0x20, 0x20, 0x20, 0xFF);
+    }
+    if(obj->video_effects & EFFECT_DARK_TINT) {
+        tint = color_create(0x60, 0x60, 0x60, 0xFF);
     }
 
     // Render
