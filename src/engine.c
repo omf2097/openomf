@@ -9,10 +9,10 @@
 #include "resources/sounds_loader.h"
 #include "video/surface.h"
 #include "video/video.h"
-#include "game/text/languages.h"
+#include "resources/languages.h"
 #include "game/game_state.h"
-#include "game/settings.h"
-#include "game/ticktimer.h"
+#include "game/utils/settings.h"
+#include "game/utils/ticktimer.h"
 #include "game/text/text.h"
 #include "console/console.h"
 

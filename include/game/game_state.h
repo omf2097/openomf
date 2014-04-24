@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include "utils/vector.h"
 #include "utils/random.h"
-#include "game/serial.h"
+#include "game/utils/serial.h"
 #include "game/game_state_type.h"
 
 typedef struct scene_t scene;

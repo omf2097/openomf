@@ -5,7 +5,7 @@
 #else
     #include <arpa/inet.h> // for htonl and friends
 #endif
-#include "game/serial.h"
+#include "game/utils/serial.h"
 #include "utils/log.h"
 #include <stdio.h>
 

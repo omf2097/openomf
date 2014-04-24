@@ -6,8 +6,8 @@
 #include "game/protos/object.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
-#include "game/serial.h"
-#include "game/ticktimer.h"
+#include "game/utils/serial.h"
+#include "game/utils/ticktimer.h"
 #include "resources/bk.h"
 #include "video/surface.h"
 

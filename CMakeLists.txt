@@ -149,6 +149,7 @@ set(OPENOMF_SRC
     src/resources/animation.c
     src/resources/sounds_loader.c
     src/resources/global_paths.c
+    src/resources/languages.c
     src/plugins/plugins.c
     src/plugins/scaler_plugin.c
     src/game/protos/object.c
@@ -160,7 +161,6 @@ set(OPENOMF_SRC
     src/game/objects/scrap.c
     src/game/objects/projectile.c
     src/game/objects/hazard.c
-    src/game/scenes/progressbar.c
     src/game/scenes/intro.c
     src/game/scenes/mainmenu.c
     src/game/scenes/credits.c
@@ -172,7 +172,6 @@ set(OPENOMF_SRC
     src/game/scenes/newsroom.c
     src/game/objects/har.c
     src/game/text/text.c
-    src/game/text/languages.c
     src/game/menu/menu.c
     src/game/menu/menu_background.c
     src/game/menu/textbutton.c
@@ -181,12 +180,13 @@ set(OPENOMF_SRC
     src/game/menu/textinput.c
     src/game/menu/dialog.c
     src/game/menu/component.c
-    src/game/settings.c
-    src/game/score.c
     src/game/game_state.c
     src/game/game_player.c
-    src/game/ticktimer.c
-    src/game/serial.c
+    src/game/utils/ticktimer.c
+    src/game/utils/serial.c
+    src/game/utils/settings.c
+    src/game/utils/score.c
+    src/game/utils/progressbar.c
     src/controller/controller.c
     src/controller/keyboard.c
     src/controller/joystick.c

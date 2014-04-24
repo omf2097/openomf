@@ -10,7 +10,7 @@
 #include "game/protos/object_specializer.h"
 #include "game/scenes/arena.h"
 #include "game/game_state.h"
-#include "game/serial.h"
+#include "game/utils/serial.h"
 #include "resources/af_loader.h"
 #include "resources/ids.h"
 #include "resources/animation.h"

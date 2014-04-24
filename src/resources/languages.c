@@ -1,8 +1,9 @@
 #include <shadowdive/shadowdive.h>
 #include <stdlib.h>
+
+#include "resources/languages.h"
 #include "utils/array.h"
 #include "utils/log.h"
-#include "game/text/languages.h"
 #include "resources/ids.h"
 
 array language_strings;

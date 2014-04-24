@@ -1,4 +1,4 @@
-#include "game/score.h"
+#include "game/utils/score.h"
 #include "video/surface.h"
 #include "utils/log.h"
 #include <stdio.h>

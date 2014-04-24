@@ -2,7 +2,7 @@
 #include "console/console.h"
 #include "console/console_type.h"
 #include "game/menu/menu_background.h"
-#include "game/settings.h"
+#include "game/utils/settings.h"
 #include "video/video.h"
 
 #define HISTORY_MAX 100

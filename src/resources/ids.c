@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "resources/ids.h"
 #include "resources/global_paths.h"
-#include "game/settings.h"
+#include "game/utils/settings.h"
 #include "utils/log.h"
 #include "utils/random.h"
 

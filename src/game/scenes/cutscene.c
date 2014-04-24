@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "game/scenes/cutscene.h"
-#include "game/text/languages.h"
+#include "resources/languages.h"
 #include "game/text/text.h"
 #include "game/game_state.h"
 #include "audio/music.h"

@@ -16,13 +16,13 @@
 #include "resources/animation.h"
 #include "resources/sprite.h"
 #include "game/text/text.h"
-#include "game/text/languages.h"
-#include "game/settings.h"
+#include "resources/languages.h"
+#include "game/utils/settings.h"
 #include "game/game_state.h"
 #include "game/protos/scene.h"
 #include "game/protos/object.h"
 #include "game/scenes/melee.h"
-#include "game/scenes/progressbar.h"
+#include "game/utils/progressbar.h"
 #include "game/menu/menu_background.h"
 
 #define MAX_STAT 20

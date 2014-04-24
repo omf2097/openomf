@@ -9,7 +9,7 @@
 #include "utils/hashmap.h"
 #include "utils/random.h"
 #include "video/surface.h"
-#include "game/serial.h"
+#include "game/utils/serial.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
 #define OBJECT_NO_GROUP -1

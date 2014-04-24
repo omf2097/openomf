@@ -8,7 +8,7 @@
 #include "audio/audio.h"
 #include "audio/music.h"
 #include "video/video.h"
-#include "game/settings.h"
+#include "game/utils/settings.h"
 #include "game/scenes/mainmenu.h"
 #include "game/menu/menu.h"
 #include "game/menu/textbutton.h"

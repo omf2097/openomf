@@ -7,7 +7,7 @@
 #include "controller/net_controller.h"
 #include "controller/ai_controller.h"
 #include "video/surface.h"
-#include "game/score.h"
+#include "game/utils/score.h"
 
 typedef struct game_player_t {
     int har_id; // HAR_JAGUAR to HAR_NOVA

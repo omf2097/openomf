@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "game/ticktimer.h"
+#include "game/utils/ticktimer.h"
 #include "utils/vector.h"
 
 typedef struct ticktimer_unit_t {

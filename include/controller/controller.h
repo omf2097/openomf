@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include "game/protos/object.h"
 #include "game/objects/har.h"
-#include "game/serial.h"
+#include "game/utils/serial.h"
 #include "utils/list.h"
 
 enum {

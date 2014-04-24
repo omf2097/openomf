@@ -15,7 +15,7 @@
 #include "utils/log.h"
 #include "utils/random.h"
 #include "game/game_state.h"
-#include "game/settings.h"
+#include "game/utils/settings.h"
 #include "resources/global_paths.h"
 #include "resources/ids.h"
 #include "plugins/plugins.h"

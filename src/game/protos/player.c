@@ -4,7 +4,7 @@
 
 #include "game/game_state.h"
 #include "game/game_player.h"
-#include "game/settings.h"
+#include "game/utils/settings.h"
 #include "video/video.h"
 #include "audio/sink.h"
 #include "audio/sound.h"
