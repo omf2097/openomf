@@ -86,6 +86,8 @@ void arena_maybe_sync(scene *scene, int need_sync);
 
 void game_menu_quit(component *c, void *userdata) {
     scene *s = userdata;
+    chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 0)), 1);
+    chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 1)), 1);
     game_state_set_next(s->gs, SCENE_MENU);
 }
 
