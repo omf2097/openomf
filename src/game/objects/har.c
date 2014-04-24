@@ -986,6 +986,10 @@ void har_tick(object *obj) {
     }
 
     // Leave shadow trail
+    // IF trail is on, copy current sprite to a new animation, and set animation string
+    // to show the sprite with animation string that interpolates opacity down
+    // Mark new object as the owner of the animation, so that the animation gets
+    // removed when the object is finished.
     if(player_frame_isset(obj, "ub")) {
         if(obj->age % 2 == 0) {
             sprite *nsp = sprite_copy(obj->cur_sprite);
