@@ -545,11 +545,11 @@ void game_state_dynamic_tick(game_state *gs) {
     }
 
     // Change the screen shake value downwards
-    if(gs->screen_shake_horizontal > 0) {
+    if(gs->screen_shake_horizontal > 0 && !gs->paused) {
         gs->screen_shake_horizontal--;
     }
 
-    if(gs->screen_shake_vertical > 0) {
+    if(gs->screen_shake_vertical > 0 && !gs->paused) {
         gs->screen_shake_vertical--;
     }
 
