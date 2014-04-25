@@ -111,12 +111,12 @@ void dialog_event(dialog *dlg, int action) {
         }
     } else if(action == ACT_PUNCH || action == ACT_KICK) {
         if(dlg->clicked) {
-            dlg->clicked(dlg, dlg->result, dlg->userdata);
+            dlg->clicked(dlg, dlg->result);
         }
         dlg->visible = 0;
     } else if(action == ACT_ESC) {
         if(dlg->clicked) {
-            dlg->clicked(dlg, DIALOG_RESULT_CANCEL, dlg->userdata);
+            dlg->clicked(dlg, DIALOG_RESULT_CANCEL);
         }
         dlg->visible = 0;
     }

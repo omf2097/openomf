@@ -186,8 +186,8 @@ void newsroom_overlay_render(scene *scene) {
     }
 }
 
-void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result, void *userdata){
-    scene *sc = userdata;
+void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result){
+    scene *sc = dlg->userdata;
     if(result == DIALOG_RESULT_NO) {
         game_state_set_next(sc->gs, SCENE_MENU);
     } else if (result == DIALOG_RESULT_YES_OK) {

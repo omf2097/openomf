@@ -19,7 +19,7 @@ typedef enum dialog_result_t {
 typedef struct component_t component;
 typedef struct dialog_t dialog;
 
-typedef void (*dialog_clicked_cb)(dialog*, dialog_result result, void *userdata);
+typedef void (*dialog_clicked_cb)(dialog*, dialog_result result);
 
 typedef struct dialog_t {
     int x;

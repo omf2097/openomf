@@ -222,15 +222,15 @@ void vs_render_overlay(scene *scene) {
     }
 }
 
-void vs_quit_dialog_clicked(dialog *dlg, dialog_result result, void *userdata){
-    scene *sc = userdata;
+void vs_quit_dialog_clicked(dialog *dlg, dialog_result result){
+    scene *sc = dlg->userdata;
     if(result == DIALOG_RESULT_YES_OK) {
         game_state_set_next(sc->gs, SCENE_MELEE);
     }
 }
 
-void vs_too_pathetic_dialog_clicked(dialog *dlg, dialog_result result, void *userdata){
-    scene *sc = userdata;
+void vs_too_pathetic_dialog_clicked(dialog *dlg, dialog_result result){
+    scene *sc = dlg->userdata;
     game_state_set_next(sc->gs, SCENE_MENU);
 }
 
