@@ -193,8 +193,11 @@ void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result){
     } else if (result == DIALOG_RESULT_YES_OK) {
         // Resetting p2->sp_wins here allows the game to progress,
         // otherwise you get stuck with the same opponent
+        game_player *p1 = game_state_get_player(sc->gs, 0);
         game_player *p2 = game_state_get_player(sc->gs, 1);
         p2->sp_wins = 0;
+        chr_score_reset(game_player_get_score(p1), 1);
+        chr_score_reset_wins(game_player_get_score(p1));
         game_state_set_next(sc->gs, SCENE_VS);
     }
 }
