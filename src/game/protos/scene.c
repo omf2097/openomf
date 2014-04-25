@@ -94,9 +94,6 @@ void scene_init(scene *scene) {
             object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
             object_set_stl(obj, scene->bk_data.sound_translation_table);
             object_set_animation(obj, &info->ani);
-            if(info->probability == 1) {
-                object_set_repeat(obj, 1);
-            }
             object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
             object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
             int o_prio = scene_anim_prio_override(scene, info->ani.id);
