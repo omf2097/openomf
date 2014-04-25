@@ -10,7 +10,9 @@ extern "C" {
 typedef struct sd_score_entry_t {
     uint32_t score;
     char name[16]; // NULL terminated
-    uint32_t pilot_id;
+    uint32_t har_id:6;
+    uint32_t pilot_id:6;
+    uint32_t padding:20;
 } sd_score_entry;
 
 typedef struct sd_score_t {
