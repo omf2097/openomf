@@ -281,8 +281,8 @@ void player_run(object *obj) {
             // Tick management
             if(isset(f, "d")) {
                 if(!obj->animation_state.disable_d) {
-                    state->ticks = get(f, "d");
-                    sd_stringparser_reset(state->parser);
+                    state->ticks = get(f, "d") + 1;
+                    sd_stringparser_goto_tick(state->parser, state->ticks);
                 }
             }
 
