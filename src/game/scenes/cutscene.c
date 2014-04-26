@@ -73,12 +73,19 @@ int cutscene_event(scene *scene, SDL_Event *event) {
 }
 
 void cutscene_render_overlay(scene *scene) {
-  cutscene_local *local = scene_get_userdata(scene);
-  font_render_wrapped(&font_small, local->current, local->text_x, local->text_y, local->text_width, local->color);
+    cutscene_local *local = scene_get_userdata(scene);
+    font_render_wrapped(&font_small, local->current, local->text_x, local->text_y, local->text_width, local->color);
 }
 
 void cutscene_free(scene *scene) {
     free(scene_get_userdata(scene));
+}
+
+void cutscene_music(int id) {
+    music_stop();
+    char *filename = get_path_by_id(id);
+    music_play(filename);
+    free(filename);
 }
 
 int cutscene_create(scene *scene) {
@@ -86,15 +93,10 @@ int cutscene_create(scene *scene) {
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
 
-    const char *text = NULL;
+    const char *text = "";
     switch (scene->id) {
       case SCENE_END:
-        {
-          music_stop();
-          char *filename = get_path_by_id(PSM_END);
-          music_play(filename);
-          free(filename);
-        }
+        cutscene_music(PSM_END);
         text = lang_get(END_TEXT);
         local->text_x = 10;
         local->text_y = 5;
