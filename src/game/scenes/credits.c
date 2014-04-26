@@ -40,6 +40,14 @@ void credits_free(scene *scene) {
     free(scene_get_userdata(scene));
 }
 
+void credits_startup(scene *scene, int id, int *m_load, int *m_repeat) {
+    switch(id) {
+        case 20:
+            *m_load = 1;
+            return;
+    }
+}
+
 int credits_create(scene *scene) {
     credits_local *local = malloc(sizeof(credits_local));
     local->ticks = 0;
@@ -48,6 +56,7 @@ int credits_create(scene *scene) {
     scene_set_userdata(scene, local);
     scene_set_dynamic_tick_cb(scene, credits_tick);
     scene_set_free_cb(scene, credits_free);
+    scene_set_startup_cb(scene, credits_startup);
     scene_set_event_cb(scene, credits_event);
 
     // Pick renderer
