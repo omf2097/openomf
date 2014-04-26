@@ -267,6 +267,7 @@ void arena_reset(scene *sc) {
         har_set_ani(har_obj, ANIM_IDLE, 1);
         h->health = h->health_max;
         h->endurance = h->endurance_max;
+        h->air_attacked = 0;
         object_set_pos(har_obj, pos[i]);
         object_set_vel(har_obj, vec2f_create(0, 0));
         object_set_gravity(har_obj, 1);
