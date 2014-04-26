@@ -1521,7 +1521,12 @@ void har_finished(object *obj) {
         har_set_ani(obj, ANIM_IDLE, 1);
     } else if(h->state != STATE_CROUCHING && h->state != STATE_CROUCHBLOCK) {
         // Don't transition to standing state while in midair
-        if(h->state != STATE_JUMPING) { h->state = STATE_STANDING; }
+        if(object_is_airborne(obj) && h->state == STATE_FALLEN) {
+            // XXX if we don't switch to STATE_JUMPING after getting damaged in the air, then the HAR_LAND_EVENT will never get fired.
+            h->state = STATE_JUMPING;
+        } else if(h->state != STATE_JUMPING) {
+            h->state = STATE_STANDING;
+        }
         har_set_ani(obj, ANIM_IDLE, 1);
     } else {
         har_set_ani(obj, ANIM_CROUCHING, 1);
