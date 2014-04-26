@@ -184,6 +184,16 @@ void newsroom_overlay_render(scene *scene) {
     if(dialog_is_visible(&local->continue_dialog)) {
         dialog_render(&local->continue_dialog);
     }
+
+    // Render screencapture
+    har_screencaps *caps = &(game_state_get_player(scene->gs, (local->won ? 0 : 1))->screencaps);
+    if(local->screen == 0) {
+        if(caps->last_strike_ok)
+            video_render_sprite_size(&caps->last_strike_screen, 165, 15, SCREENCAP_W, SCREENCAP_H);
+    } else {
+        if(caps->max_damage_ok)
+            video_render_sprite_size(&caps->max_damage_screen, 165, 15, SCREENCAP_W, SCREENCAP_H);
+    }
 }
 
 void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result){

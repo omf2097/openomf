@@ -49,6 +49,11 @@ void video_render_sprite(
     unsigned int render_mode,
     int pal_offset);
 
+void video_render_sprite_size(
+        surface *sur,
+        int sx, int sy,
+        int sw, int sh);
+
 void video_render_sprite_flip_scale(
     surface *sur,
     int x,
@@ -93,6 +98,7 @@ void video_render_prepare();
 void video_render_finish();
 void video_close();
 void video_screenshot(image *img);
+int video_area_capture(surface *sur, int x, int y, int w, int h);
 void video_set_fade(float fade);
 
 void video_set_base_palette(const palette *src);

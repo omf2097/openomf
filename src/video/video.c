@@ -291,6 +291,31 @@ void video_screenshot(image *img) {
     }
 }
 
+int video_area_capture(surface *sur, int x, int y, int w, int h) {
+    float scale_x = (float)state.w / NATIVE_W;
+    float scale_y = (float)state.h / NATIVE_H;
+
+    // Correct position (take scaling into account)
+    SDL_Rect r;
+    r.x = x * scale_x;
+    r.y = y * scale_y;
+    r.w = w * scale_x;
+    r.h = h * scale_y;
+
+    // Create a new surface
+    surface_create(sur, SURFACE_TYPE_RGBA, r.w, r.h);
+
+    // Read pixels
+    int ret = SDL_RenderReadPixels(state.renderer, &r, SDL_PIXELFORMAT_ABGR8888, sur->data, sur->w * 4);
+    if(ret != 0) {
+        surface_free(sur);
+        PERROR("Unable to read pixels from renderer: %s", SDL_GetError());
+        return 1;
+    }
+
+    return 0;
+}
+
 void video_force_pal_refresh() {
     memcpy(state.cur_palette->data, state.base_palette->data, 768);
     state.cur_palette->version++;
@@ -409,6 +434,30 @@ void video_render_sprite_flip_scale_opacity(
         y_percent,
         opacity,
         color_create(0xFF, 0xFF, 0xFF, 0xFF));
+}
+
+void video_render_sprite_size(
+        surface *sur,
+        int sx, int sy,
+        int sw, int sh) {
+
+    // Position
+    SDL_Rect dst;
+    dst.w = sw;
+    dst.h = sh;
+    dst.x = sx;
+    dst.y = sy;
+
+    // Render
+    state.cb.render_fsot(
+        &state,
+        sur,
+        &dst,
+        SDL_BLENDMODE_BLEND, // blendmode
+        0, // Pal offset
+        0, // flip
+        0xFF, // opacity
+        color_create(0xFF, 0xFF, 0xFF, 0xFF)); // tint
 }
 
 void video_render_sprite_flip_scale_opacity_tint(

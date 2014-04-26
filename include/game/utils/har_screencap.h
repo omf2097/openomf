@@ -4,11 +4,16 @@
 #include "game/protos/object.h"
 #include "video/surface.h"
 
+#define SCREENCAP_W 140
+#define SCREENCAP_H 100
+
 // There should be screencaps for each HAR/player
 typedef struct {
     float max_damage_value;
-    surface *max_damage_screen;
-    surface *last_strike_screen;
+    surface max_damage_screen;
+    int max_damage_ok;
+    surface last_strike_screen;
+    int last_strike_ok;
 } har_screencaps;
 
 void har_screencaps_create(har_screencaps *caps);

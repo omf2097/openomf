@@ -441,7 +441,7 @@ void har_take_damage(object *obj, str* string, float damage) {
 
         // Take screencapture of the enemy har
         game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
-        har_screencaps_capture_last(other_player->screencaps, other_player->har);
+        har_screencaps_capture_last(&other_player->screencaps, other_player->har);
     } else {
         h->endurance -= damage * 8;
         if(h->endurance <= 0) {
@@ -455,7 +455,7 @@ void har_take_damage(object *obj, str* string, float damage) {
 
         // Take screencapture of the enemy har
         game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
-        har_screencaps_capture_dmg(other_player->screencaps, other_player->har, damage);
+        har_screencaps_capture_dmg(&other_player->screencaps, other_player->har, damage);
     }
 
     // chronos' stasis does not have a hit animation

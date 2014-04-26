@@ -22,7 +22,7 @@ typedef struct game_player_t {
     int god;
     int ez_destruct;
     int sp_wins;
-    har_screencaps *screencaps;
+    har_screencaps screencaps;
 } game_player;
 
 void game_player_create(game_player *gp);
