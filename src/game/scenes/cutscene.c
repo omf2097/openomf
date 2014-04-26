@@ -81,6 +81,18 @@ void cutscene_free(scene *scene) {
     free(scene_get_userdata(scene));
 }
 
+void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
+    if(scene->id == SCENE_END || scene->id == SCENE_END1) {
+        if(id == 1) {
+            *m_load = 1;
+        }
+    } else if(scene->id == SCENE_END2) {
+        if(id == 1 || id == 11) {
+            *m_load = 1;
+        }
+    }
+}
+
 void cutscene_music(int id) {
     music_stop();
     char *filename = get_path_by_id(id);
@@ -103,12 +115,15 @@ int cutscene_create(scene *scene) {
         local->text_width = 300;
         local->color = COLOR_YELLOW;
         break;
+
       case SCENE_END1:
         text = lang_get(END1_TEXT+p1->pilot_id);
         local->text_x = 10;
         local->text_y = 160;
         local->text_width = 300;
         local->color = COLOR_RED;
+
+        // Pilot face
         animation *ani = &bk_get_info(&scene->bk_data, 3)->ani;
         object *obj = malloc(sizeof(object));
         object_create(obj, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
@@ -116,12 +131,15 @@ int cutscene_create(scene *scene) {
         object_select_sprite(obj, p1->pilot_id);
         obj->halt=1;
         game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP);
+
+        // Face effects
         ani = &bk_get_info(&scene->bk_data, 10+p1->pilot_id)->ani;
         obj = malloc(sizeof(object));
         object_create(obj, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
         object_set_animation(obj, ani);
         game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP);
         break;
+
       case SCENE_END2:
         text = lang_get(END2_TEXT+p1->pilot_id);
         local->text_x = 10;
@@ -147,6 +165,7 @@ int cutscene_create(scene *scene) {
     scene_set_userdata(scene, local);
     scene_set_free_cb(scene, cutscene_free);
     scene_set_event_cb(scene, cutscene_event);
+    scene_set_startup_cb(scene, cutscene_startup);
     scene_set_render_overlay_cb(scene, cutscene_render_overlay);
 
     // Pick renderer
