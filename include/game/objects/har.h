@@ -5,6 +5,7 @@
 #include "resources/bk.h"
 #include "resources/animation.h"
 #include "game/protos/object.h"
+#include "game/objects/arena_constraints.h"
 #include "utils/list.h"
 
 // For debug texture stuff

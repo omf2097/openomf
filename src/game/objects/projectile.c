@@ -4,6 +4,7 @@
 #include "game/game_state.h"
 #include "game/game_player.h"
 #include "utils/log.h"
+#include "game/objects/arena_constraints.h"
 
 typedef struct projectile_local_t {
     object *owner;
@@ -44,16 +45,16 @@ void projectile_move(object *obj) {
     float dampen = 0.7f;
 
     // If projectile hits the wall, kill it
-    if(obj->pos.x < 10) {
-        obj->pos.x = 10;
+    if(obj->pos.x < ARENA_LEFT_WALL) {
+        obj->pos.x = ARENA_LEFT_WALL;
         obj->animation_state.finished = 1;
     }
-    if(obj->pos.x > 310) {
-        obj->pos.x = 310;
+    if(obj->pos.x > ARENA_RIGHT_WALL) {
+        obj->pos.x = ARENA_RIGHT_WALL;
         obj->animation_state.finished = 1;
     }
-    if(obj->pos.y > 190) {
-        obj->pos.y = 190;
+    if(obj->pos.y > ARENA_FLOOR) {
+        obj->pos.y = ARENA_FLOOR;
         obj->vel.y = -obj->vel.y * dampen;
     }
 }

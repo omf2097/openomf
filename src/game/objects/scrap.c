@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "game/objects/scrap.h"
+#include "game/objects/arena_constraints.h"
 
 #define SCRAP_KEEPALIVE 220
 #define IS_ZERO(n) (n < 0.1 && n > -0.1)
@@ -19,16 +20,16 @@ void scrap_move(object *obj) {
 
     float dampen = 0.4;
 
-    if(pos.x <  10) {
-        pos.x = 10;
+    if(pos.x <  ARENA_LEFT_WALL) {
+        pos.x = ARENA_LEFT_WALL;
         vel.x = -vel.x * dampen;
     }
-    if(pos.x > 310) {
-        pos.x = 310;
+    if(pos.x > ARENA_RIGHT_WALL) {
+        pos.x = ARENA_RIGHT_WALL;
         vel.x = -vel.x * dampen;
     }
-    if(pos.y > 190) {
-        pos.y = 190;
+    if(pos.y > ARENA_FLOOR) {
+        pos.y = ARENA_FLOOR;
         vel.y = -vel.y * dampen;
         vel.x = vel.x * dampen;
     }
@@ -37,7 +38,7 @@ void scrap_move(object *obj) {
     object_set_vel(obj, vel);
 
     // If object is at rest, just halt animation
-    if(pos.y >= 185 &&
+    if(pos.y >= (ARENA_FLOOR-5) &&
         IS_ZERO(vel.x) &&
         vel.y < obj->gravity * 1.1 &&
         vel.y > obj->gravity * -1.1)

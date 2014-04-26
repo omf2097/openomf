@@ -6,6 +6,7 @@
 #include "game/objects/har.h"
 #include "game/objects/scrap.h"
 #include "game/objects/projectile.h"
+#include "game/objects/arena_constraints.h"
 #include "game/protos/intersect.h"
 #include "game/protos/object_specializer.h"
 #include "game/scenes/arena.h"
@@ -20,9 +21,6 @@
 
 #define FUDGEFACTOR 0.003f
 #define IS_ZERO(n) (n < 0.8 && n > -0.8)
-
-#define WALL_LEFT 20
-#define WALL_RIGHT 300
 
 void har_finished(object *obj);
 int har_act(object *obj, int act_type);
@@ -362,11 +360,11 @@ void har_move(object *obj) {
     obj->pos.x += vel.x;
     obj->pos.y += vel.y;
     har *h = object_get_userdata(obj);
-    if(obj->pos.y > 190) {
+    if(obj->pos.y > ARENA_FLOOR) {
         if (h->state != STATE_FALLEN) {
             // We collided with ground, so set vertical velocity to 0 and
             // make sure object is level with ground
-            obj->pos.y = 190;
+            obj->pos.y = ARENA_FLOOR;
             object_set_vel(obj, vec2f_create(vel.x, 0));
         }
 
@@ -388,14 +386,14 @@ void har_move(object *obj) {
             float dampen = 0.4;
             vec2f vel = object_get_vel(obj);
             vec2i pos = object_get_pos(obj);
-            if(pos.y > 190) {
+            if(pos.y > ARENA_FLOOR) {
                 // TODO spawn clouds of dust
-                pos.y = 190;
+                pos.y = ARENA_FLOOR;
                 vel.y = -vel.y * dampen;
                 vel.x = vel.x * dampen;
             }
 
-            if (pos.x <= 15 || pos.x >= 305) {
+            if (pos.x <= ARENA_LEFT_WALL || pos.x >= ARENA_RIGHT_WALL) {
                 vel.x = 0.0;
             }
 
@@ -409,7 +407,7 @@ void har_move(object *obj) {
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, ANIM_DEFEAT, 0);
                 har_event_defeat(h);
-            } else if(pos.y >= 185 &&
+            } else if(pos.y >= (ARENA_FLOOR-5) &&
                       IS_ZERO(vel.x) &&
                       obj->animation_state.parser->current_frame.is_final_frame) {
                 if (h->state == STATE_FALLEN) {
@@ -641,7 +639,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     if(har_is_walking(a) && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
         if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x) {
             // don't allow hars to overlap in the corners
-            if (pos_b.x > 15) {
+            if (pos_b.x > ARENA_LEFT_WALL) {
                 pos_b.x = pos_a.x - hard_limit;
                 object_set_pos(obj_b, pos_b);
             } else {
@@ -660,7 +658,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     if(har_is_walking(a) && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
         if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x) {
             // don't allow hars to overlap in the corners
-            if (pos_b.x < 305) {
+            if (pos_b.x < ARENA_RIGHT_WALL) {
                 pos_b.x = pos_a.x + hard_limit;
                 object_set_pos(obj_b, pos_b);
             } else {
@@ -924,11 +922,11 @@ void har_tick(object *obj) {
         int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
         int hit = 0;
-        if(pos.x <  WALL_LEFT) {
-            pos.x = WALL_LEFT;
+        if(pos.x <  ARENA_LEFT_WALL) {
+            pos.x = ARENA_LEFT_WALL;
             hit = 1;
-        } else if(pos.x > WALL_RIGHT) {
-            pos.x = WALL_RIGHT;
+        } else if(pos.x > ARENA_RIGHT_WALL) {
+            pos.x = ARENA_RIGHT_WALL;
             wall = 1;
             hit = 1;
         }
@@ -954,7 +952,7 @@ void har_tick(object *obj) {
         har_event_done(h);
     }
 
-    if (pos.y < 190 && h->state == STATE_RECOIL) {
+    if (pos.y < ARENA_FLOOR && h->state == STATE_RECOIL) {
         DEBUG("switching to fallen");
         h->state = STATE_FALLEN;
         har_event_recover(h);
@@ -1410,7 +1408,7 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
-    if(obj->pos.y < 190) {
+    if(obj->pos.y < ARENA_FLOOR) {
         // airborne
 
         // Send an event if the har tries to turn in the air by pressing either left/right/downleft/downright
