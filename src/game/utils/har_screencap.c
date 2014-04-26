@@ -29,8 +29,14 @@ void har_screencaps_reset(har_screencaps *caps) {
 
 int _capture(surface *sur, object *obj) {
     // Find screencap position
-    int x = object_px(obj) - (SCREENCAP_W - object_w(obj)) / 2;
-    int y = object_py(obj) - (SCREENCAP_H - object_h(obj)) / 2;
+    int mx = 0;
+    if(object_get_direction(obj) == OBJECT_FACE_LEFT)
+        mx -= 20;
+    else
+        mx += 20;
+
+    int x = (object_px(obj)+mx) - (SCREENCAP_W - object_w(obj)) / 2;
+    int y = (object_py(obj)-object_h(obj)) - (SCREENCAP_H - object_h(obj)) / 2;
     if(x < 0) x = 0;
     if(y < 0) y = 0;
     if(x + SCREENCAP_W >= NATIVE_W) x = NATIVE_W - SCREENCAP_W;

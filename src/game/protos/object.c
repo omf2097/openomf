@@ -3,6 +3,7 @@
 #include <shadowdive/sprite.h>
 #include "game/protos/object.h"
 #include "game/protos/object_specializer.h"
+#include "game/objects/arena_constraints.h"
 #include "game/game_state_type.h"
 #include "video/video.h"
 #include "utils/log.h"
@@ -603,23 +604,16 @@ void object_set_py(object *obj, int val) { obj->pos.y = val; }
 void object_set_vx(object *obj, float val) { obj->vel.x = val; }
 void object_set_vy(object *obj, float val) { obj->vel.y = val; }
 
+vec2i object_get_pos(object *obj) { return vec2f_to_i(obj->pos); }
+vec2f object_get_vel(object *obj) { return obj->vel; }
+void object_set_pos(object *obj, vec2i pos) { obj->pos = vec2i_to_f(pos); }
+void object_set_vel(object *obj, vec2f vel) { obj->vel = vel; }
+
 vec2i object_get_size(object *obj) {
     if(obj->cur_sprite != NULL) {
         return sprite_get_size(obj->cur_sprite);
     }
     return vec2i_create(0,0);
-}
-
-vec2i object_get_pos(object *obj) {
-    return vec2f_to_i(obj->pos);
-}
-
-vec2f object_get_vel(object *obj) {
-    return obj->vel;
-}
-
-void object_set_pos(object *obj, vec2i pos) {
-    obj->pos = vec2i_to_f(pos);
 }
 
 void object_disable_rewind_tag(object *obj, int disable_d) {
@@ -628,10 +622,6 @@ void object_disable_rewind_tag(object *obj, int disable_d) {
 
 int object_is_rewind_tag_disabled(object *obj) {
     return obj->animation_state.disable_d;
-}
-
-void object_set_vel(object *obj, vec2f vel) {
-    obj->vel = vel;
 }
 
 uint32_t object_get_age(object *obj) {
@@ -649,6 +639,6 @@ void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata)
 }
 
 int object_is_airborne(object *obj) {
-    return obj->pos.y < 190.0f;
+    return obj->pos.y < ARENA_FLOOR;
 }
 
