@@ -1270,6 +1270,11 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
+    // don't allow multiple special moves in the air
+    if(h->air_attacked) {
+        return 0;
+    }
+
     int oldstate = h->state;
 
     add_input(h->inputs, act_type, direction);
@@ -1402,10 +1407,12 @@ int har_act(object *obj, int act_type) {
             if(object_get_pos(obj).x > object_get_pos(opp).x) {
                 if(direction != OBJECT_FACE_LEFT) {
                     har_event_air_turn(h);
+                    return 1;
                 }
             } else {
                 if(direction != OBJECT_FACE_RIGHT) {
                     har_event_air_turn(h);
+                    return 1;
                 }
             }
         }
@@ -1540,6 +1547,7 @@ int har_serialize(object *obj, serial *ser) {
     serial_write_int8(ser, h->hard_close);
     serial_write_int8(ser, h->damage_done);
     serial_write_int8(ser, h->damage_received);
+    serial_write_int8(ser, h->air_attacked);
     serial_write_int16(ser, h->health);
     serial_write_int16(ser, h->endurance);
     serial_write(ser, h->inputs, 10);
@@ -1584,6 +1592,7 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
     h->hard_close = serial_read_int8(ser);
     h->damage_done = serial_read_int8(ser);
     h->damage_received = serial_read_int8(ser);
+    h->air_attacked = serial_read_int8(ser);
     h->health = serial_read_int16(ser);
     h->endurance = serial_read_int16(ser);
     serial_read(ser, h->inputs, 10);
@@ -1649,6 +1658,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->hard_close =  0;
     local->state = STATE_STANDING;
     local->executing_move = 0;
+    local->air_attacked = 0;
 
     local->delay = 0;
 

@@ -117,6 +117,7 @@ typedef struct har_t {
     af *af_data;
     uint8_t damage_done; // Damage was done this animation
     uint8_t damage_received; // Damage was received this animation
+    uint8_t air_attacked;
 
     int16_t health_max, health;
     int16_t endurance_max, endurance;
