@@ -483,6 +483,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         }
     }
 }
+
 void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer) {
     float rv = 0.0f;
     float velx, vely;
@@ -574,7 +575,6 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         scrap_create(scrap);
         game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP);
     }
-
 }
 
 void har_block(object *obj, vec2i hit_coord) {

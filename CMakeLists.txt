@@ -187,6 +187,7 @@ set(OPENOMF_SRC
     src/game/utils/settings.c
     src/game/utils/score.c
     src/game/utils/progressbar.c
+    src/game/utils/har_screencap.c
     src/controller/controller.c
     src/controller/keyboard.c
     src/controller/joystick.c
