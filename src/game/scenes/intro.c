@@ -32,12 +32,12 @@ int intro_event(scene *scene, SDL_Event *event) {
     return 1;
 }
 
-int intro_startup(scene *scene, int id) {
+void intro_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     switch(id) {
         case 25:
-            return 1;
+            *m_load = 1;
+            return;
     }
-    return 0;
 }
 
 void intro_tick(scene *scene, int paused) {

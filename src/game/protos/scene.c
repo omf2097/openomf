@@ -83,17 +83,26 @@ int scene_load_har(scene *scene, int player_id, int har_id) {
 }
 
 void scene_init(scene *scene) {
+    int m_load;
+    int m_repeat;
+
     // Bootstrap animations
     iterator it;
     hashmap_iter_begin(&scene->bk_data.infos, &it);
     hashmap_pair *pair = NULL;
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info*)pair->val;
-        if(info->load_on_start == 255 || info->probability == 1 || scene_startup(scene, info->ani.id)) {
+
+        // Ask scene if this animation should be played on start
+        scene_startup(scene, info->ani.id, &m_load, &m_repeat);
+
+        // Start up animations
+        if(info->load_on_start == 255 || m_load) {
             object *obj = malloc(sizeof(object));
             object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
             object_set_stl(obj, scene->bk_data.sound_translation_table);
             object_set_animation(obj, &info->ani);
+            object_set_repeat(obj, m_repeat);
             object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
             object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
             int o_prio = scene_anim_prio_override(scene, info->ani.id);
@@ -140,11 +149,12 @@ void* scene_get_userdata(scene *scene) {
     return scene->userdata;
 }
 
-int scene_startup(scene *scene, int id) {
+void scene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
+    *m_load = 0;
+    *m_repeat = 0;
     if(scene->startup != NULL) {
-        return scene->startup(scene, id);
+        scene->startup(scene, id, m_load, m_repeat);
     }
-    return 0;
 }
 
 // Return 0 if event was handled here

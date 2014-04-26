@@ -21,7 +21,7 @@ typedef void (*scene_render_cb)(scene *scene);
 typedef void (*scene_render_overlay_cb)(scene *scene);
 typedef void (*scene_tick_cb)(scene *scene, int paused);
 typedef void (*scene_input_poll_cb)(scene *scene);
-typedef int (*scene_startup_cb)(scene *scene, int anim_id);
+typedef void (*scene_startup_cb)(scene *scene, int anim_id, int *m_load, int *m_repeat);
 typedef int (*scene_anim_prio_override_cb)(scene *scene, int anim_id);
 
 struct scene_t {
@@ -53,7 +53,7 @@ void scene_render(scene *scene);
 void scene_dynamic_tick(scene *scene, int paused);
 void scene_static_tick(scene *scene, int paused);
 void scene_input_poll(scene *scene);
-int scene_startup(scene *scene, int id);
+void scene_startup(scene *scene, int id, int *m_load, int *m_startup);
 int scene_anim_prio_override(scene *scene, int anim_id);
 
 int scene_serialize(scene *scene, serial *ser);
