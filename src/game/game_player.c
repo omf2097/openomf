@@ -13,6 +13,7 @@ void game_player_create(game_player *gp) {
     gp->colors[1] = 8;
     gp->colors[2] = 8;
     chr_score_create(&gp->score, 1.0f);
+    har_screencaps_create(gp->screencaps);
     gp->god = 0;
     gp->ez_destruct = 0;
     gp->sp_wins = 0;
@@ -20,6 +21,7 @@ void game_player_create(game_player *gp) {
 
 void game_player_free(game_player *gp) {
     chr_score_free(&gp->score);
+    har_screencaps_free(gp->screencaps);
 }
 
 void game_player_set_har(game_player *gp, object *har) {

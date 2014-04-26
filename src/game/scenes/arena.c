@@ -1220,6 +1220,10 @@ int arena_create(scene *scene) {
         chr_score_reset_wins(game_player_get_score(_player[1]));
     }
 
+    // Reset screencaps
+    har_screencaps_reset(_player[0]->screencaps);
+    har_screencaps_reset(_player[1]->screencaps);
+
     // TODO: Do something about this hack!
     scene->bk_data.sound_translation_table[14] = 10; // READY
     scene->bk_data.sound_translation_table[15] = 16; // ROUND

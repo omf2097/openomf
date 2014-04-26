@@ -277,6 +277,7 @@ int har_is_blocking(har *h, af_move *move) {
     }
     return 0;
 }
+
 int har_is_invincible(object *obj, af_move *move) {
     if (player_frame_isset(obj, "zz")) {
         // blocks everything
@@ -325,7 +326,6 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
     if(pos.y == 0) {
         pos.y = p_pos.y;//y + p_size.y / 2;
     }
-
 
     // If this is a scrap item, handle it as such ...
     if(id == ANIM_SCRAP_METAL || id == ANIM_BOLT || id == ANIM_SCREW || id == ANIM_BURNING_OIL) {
@@ -438,6 +438,10 @@ void har_take_damage(object *obj, str* string, float damage) {
         // har has no health left and is left only with endurance.
         // one hit will end them
         h->endurance = 0;
+
+        // Take screencapture of the enemy har
+        game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
+        har_screencaps_capture_last(other_player->screencaps, other_player->har);
     } else {
         h->endurance -= damage * 8;
         if(h->endurance <= 0) {
@@ -448,6 +452,10 @@ void har_take_damage(object *obj, str* string, float damage) {
                 h->endurance = 0;
             }
         }
+
+        // Take screencapture of the enemy har
+        game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
+        har_screencaps_capture_dmg(other_player->screencaps, other_player->har, damage);
     }
 
     // chronos' stasis does not have a hit animation
@@ -616,7 +624,12 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     int hard_limit = 35; // Push opponent if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
 
-    if (b->state == STATE_RECOIL || a->state == STATE_RECOIL || b->state == STATE_JUMPING || a->state == STATE_JUMPING || a->state == STATE_FALLEN || b->state == STATE_FALLEN) {
+    if (b->state == STATE_RECOIL 
+        || a->state == STATE_RECOIL 
+        || b->state == STATE_JUMPING 
+        || a->state == STATE_JUMPING 
+        || b->state == STATE_FALLEN 
+        || a->state == STATE_FALLEN) {
         return;
     }
 

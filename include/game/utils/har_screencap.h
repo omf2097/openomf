@@ -13,6 +13,7 @@ typedef struct {
 
 void har_screencaps_create(har_screencaps *caps);
 void har_screencaps_free(har_screencaps *caps);
+void har_screencaps_reset(har_screencaps *caps);
 
 // This should be used every time a HAR damages another HAR
 // Screenshot routines should only fire, if damage is higher than last time

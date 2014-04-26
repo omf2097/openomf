@@ -8,6 +8,7 @@
 #include "controller/ai_controller.h"
 #include "video/surface.h"
 #include "game/utils/score.h"
+#include "game/utils/har_screencap.h"
 
 typedef struct game_player_t {
     int har_id; // HAR_JAGUAR to HAR_NOVA
@@ -21,6 +22,7 @@ typedef struct game_player_t {
     int god;
     int ez_destruct;
     int sp_wins;
+    har_screencaps *screencaps;
 } game_player;
 
 void game_player_create(game_player *gp);
