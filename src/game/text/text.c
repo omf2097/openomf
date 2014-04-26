@@ -136,9 +136,21 @@ void font_get_wrapped_size(font *font, const char *text, int max_w, int *out_w, 
                 // 2. pack as many words as possible into a line
                 // 3. a line must be no more than maxlen long
                 if(*stop == 0) {
-                    // the end
-                    is_last_line = 1;
-                    stop--;
+                    // hit the end
+                    if(stop - start > maxlen) {
+                        // the current line exceeds max len
+                        if(tmpstop - start > maxlen) {
+                            // this line cannot not be word-wrapped because it contains a word that exceeds maxlen, we'll let it pass
+                            stop--;
+                            is_last_line = 1;
+                        } else {
+                            // this line can be word-wrapped, go back to previous saved location
+                            stop = tmpstop;
+                        }
+                    } else {
+                        stop--;
+                        is_last_line = 1;
+                    }
                     break;
                 }
                 if(*stop == '\n' || *stop == '\r') {
@@ -267,9 +279,21 @@ void font_render_wrapped_shadowed(font *font, const char *text, int x, int y, in
                 // 2. pack as many words as possible into a line
                 // 3. a line must be no more than maxlen long
                 if(*stop == 0) {
-                    // the end
-                    is_last_line = 1;
-                    stop--;
+                    // hit the end
+                    if(stop - start > maxlen) {
+                        // the current line exceeds max len
+                        if(tmpstop - start > maxlen) {
+                            // this line cannot not be word-wrapped because it contains a word that exceeds maxlen, we'll let it pass
+                            stop--;
+                            is_last_line = 1;
+                        } else {
+                            // this line can be word-wrapped, go back to previous saved location
+                            stop = tmpstop;
+                        }
+                    } else {
+                        stop--;
+                        is_last_line = 1;
+                    }
                     break;
                 }
                 if(*stop == '\n' || *stop == '\r') {
