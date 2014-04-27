@@ -1,4 +1,5 @@
 #include "game/utils/score.h"
+#include "game/utils/formatting.h"
 #include "video/surface.h"
 #include "utils/log.h"
 #include <stdio.h>
@@ -125,27 +126,10 @@ void chr_score_tick(chr_score *score) {
     }
 }
 
-void chr_score_format(unsigned int score, char *buf) {
-    unsigned int n = 0;
-    unsigned int scale = 1;
-    while(score >= 1000) {
-        n = n + scale * (score % 1000);
-        score /= 1000;
-        scale *= 1000;
-    }
-    int len = sprintf(buf, "%u", score);
-    while(scale != 1) {
-        scale /= 1000;
-        score = n / scale;
-        n = n  % scale;
-        len += sprintf(buf + len, ",%03u", score);
-    }
-}
-
 void chr_score_render(chr_score *score) {
     // Render all texts in list to right spot
     char tmp[50];
-    chr_score_format(score->score, tmp);
+    score_format(score->score, tmp);
     if (score->direction == OBJECT_FACE_RIGHT) {
         font_render_shadowed(&font_small, tmp, score->x, score->y, TEXT_COLOR, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
     } else {
@@ -203,14 +187,14 @@ void chr_score_victory(chr_score *score, int health) {
     if (health == 100) {
         text = malloc(64);
         int len = sprintf(text, "perfect round ");
-        chr_score_format(40000, text+len);
+        score_format(40000, text+len);
         // XXX hardcode the y coordinate for now
         chr_score_add(score, text, 40000, vec2i_create(160, 100), 1.0f);
     }
     text = malloc(64);
 
     int len = sprintf(text, "vitality ");
-    chr_score_format(trunc(40000 * (health / 100.0f)), text+len);
+    score_format(trunc(40000 * (health / 100.0f)), text+len);
     // XXX hardcode the y coordinate for now
     chr_score_add(score, text, 40000 * (health / 100), vec2i_create(160, 100), 1.0f);
 }
@@ -229,14 +213,14 @@ void chr_score_done(chr_score *score) {
         if (score->destruction) {
             char *text = malloc(64);
             int len = sprintf(text, "destruction bonus ");
-            chr_score_format(40000, text+len);
+            score_format(40000, text+len);
             // XXX hardcode the y coordinate for now
             chr_score_add(score, text, 40000, vec2i_create(160, 100), 1.0f);
             score->destruction = 0;
         } else if (score->scrap) {
             char *text = malloc(64);
             int len = sprintf(text, "scrap bonus ");
-            chr_score_format(20000, text+len);
+            score_format(20000, text+len);
             // XXX hardcode the y coordinate for now
             chr_score_add(score, text, 20000, vec2i_create(160, 100), 1.0f);
             score->scrap = 0;
@@ -255,7 +239,7 @@ int chr_score_interrupt(chr_score *score, vec2i pos) {
         char *text = malloc(64);
         ret = 1;
         int len = sprintf(text, "%d consecutive hits ", score->consecutive_hits);
-        chr_score_format(score->consecutive_hit_score, text+len);
+        score_format(score->consecutive_hit_score, text+len);
         // XXX hardcode the y coordinate for now
         chr_score_add(score, text, score->consecutive_hit_score, vec2i_create(pos.x, 130), 1.0f);
     }
@@ -271,7 +255,7 @@ int chr_score_end_combo(chr_score *score, vec2i pos) {
         char *text = malloc(64);
         ret = 1;
         int len = sprintf(text, "%d hit combo ", score->combo_hits);
-        chr_score_format(score->combo_hit_score*4, text+len);
+        score_format(score->combo_hit_score*4, text+len);
         // XXX hardcode the y coordinate for now
         chr_score_add(score, text, score->combo_hit_score*4, vec2i_create(pos.x, 130), 1.0f);
     }

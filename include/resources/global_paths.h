@@ -6,6 +6,7 @@ enum {
     PLUGIN_PATH,
     LOG_PATH,
     CONFIG_PATH,
+    SCORE_PATH,
     NUMBER_OF_PATHS
 };
 

@@ -86,6 +86,7 @@ int main(int argc, char *argv[]) {
     global_paths_init();
     global_path_build(CONFIG_PATH, path, "openomf.conf");
     global_path_build(LOG_PATH, path, "openomf.log");
+    global_path_build(SCORE_PATH, path, "SCORES.DAT");
 
     // Free SDL reserved path
     SDL_free(path);

@@ -3,6 +3,8 @@
 
 extern const char *difficulty_choices[];
 extern const char *round_types[];
+extern const char *pilot_names[];
+extern const char *har_names[];
 
 enum {
     DIFFICULTY_AI_PUNCHING_BAG = 0,

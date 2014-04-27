@@ -12,6 +12,7 @@ const char* global_path_name(int path_id) {
         case PLUGIN_PATH: return "PLUGIN_PATH";
         case CONFIG_PATH: return "CONFIG_PATH";
         case LOG_PATH: return "LOG_PATH";
+        case SCORE_PATH: return "SCORES_PATH";
     }
     return "UNKNOWN";
 }

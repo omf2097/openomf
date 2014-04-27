@@ -151,6 +151,7 @@ set(OPENOMF_SRC
     src/resources/global_paths.c
     src/resources/languages.c
     src/resources/fonts.c
+    src/resources/scores.c
     src/plugins/plugins.c
     src/plugins/scaler_plugin.c
     src/game/protos/object.c
@@ -191,6 +192,7 @@ set(OPENOMF_SRC
     src/game/utils/score.c
     src/game/utils/progressbar.c
     src/game/utils/har_screencap.c
+    src/game/utils/formatting.c
     src/controller/controller.c
     src/controller/keyboard.c
     src/controller/joystick.c
