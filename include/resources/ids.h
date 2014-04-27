@@ -21,6 +21,7 @@ enum RESOURCE_ID {
     SCENE_KATUSHAI,
     SCENE_WAR,
     SCENE_WORLD,
+    SCENE_SCOREBOARD, // Points to menu bk file
     SCENE_NONE,
     HAR_JAGUAR,
     HAR_SHADOW,

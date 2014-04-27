@@ -48,6 +48,23 @@ void surface_clear(surface *sur) {
     }
 }
 
+// Fills the whole surface with color
+void surface_fill(surface *sur, color c) {
+    // Only for RGBA for now
+    if(sur->type == SURFACE_TYPE_PALETTE) {
+        return;
+    }
+
+    // Fill
+    DEBUG("FILL %d", sur->w*sur->h);
+    for(int i = 0; i < sur->w * sur->h; i++) {
+        sur->data[i*4+0] = c.r;
+        sur->data[i*4+1] = c.g;
+        sur->data[i*4+2] = c.b;
+        sur->data[i*4+3] = c.a;
+    }
+}
+
 void surface_copy_ex(surface *dst, surface *src) {
     if(src->type != dst->type) {
         return;

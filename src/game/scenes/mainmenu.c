@@ -247,6 +247,11 @@ void mainmenu_demo(component *c, void *userdata) {
     game_state_set_next(s->gs, rand_arena());
 }
 
+void mainmenu_soreboard(component *c, void *userdata) {
+    scene *s = userdata;
+    game_state_set_next(s->gs, SCENE_SCOREBOARD);
+}
+
 void mainmenu_prev_menu(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     local->mstack[--local->mstack_pos] = NULL;
@@ -1005,7 +1010,7 @@ int mainmenu_create(scene *scene) {
     local->net_button.disabled = 0;
     local->help_button.disabled = 1;
     local->demo_button.disabled = 0;
-    local->scoreboard_button.disabled = 1;
+    local->scoreboard_button.disabled = 0;
 
     // Events
     local->quit_button.userdata = (void*)scene;
@@ -1024,6 +1029,8 @@ int mainmenu_create(scene *scene) {
     local->gameplay_button.click = mainmenu_enter_menu_gameplay;
     local->demo_button.userdata = (void*)scene;
     local->demo_button.click = mainmenu_demo;
+    local->scoreboard_button.userdata = (void*)scene;
+    local->scoreboard_button.click = mainmenu_soreboard;
 
     // destroy any leftover controllers
     controller *ctrl;

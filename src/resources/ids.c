@@ -62,6 +62,7 @@ const char* get_file_by_id(int id) {
     switch(id) {
         case SCENE_INTRO:    return "INTRO.BK";
         case SCENE_MENU:     return "MAIN.BK";
+        case SCENE_SCOREBOARD: return "MAIN.BK";
         case SCENE_ARENA0:   return "ARENA0.BK";
         case SCENE_ARENA1:   return "ARENA1.BK";
         case SCENE_ARENA2:   return "ARENA2.BK";
@@ -112,6 +113,7 @@ const char* get_id_name(int id) {
     switch(id) {
         case SCENE_INTRO:    return "INTRO";
         case SCENE_MENU:     return "MAIN";
+        case SCENE_SCOREBOARD: return "SCOREBOARD";
         case SCENE_ARENA0:   return "ARENA0";
         case SCENE_ARENA1:   return "ARENA1";
         case SCENE_ARENA2:   return "ARENA2";

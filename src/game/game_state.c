@@ -26,6 +26,7 @@
 #include "game/scenes/newsroom.h"
 #include "game/scenes/melee.h"
 #include "game/scenes/vs.h"
+#include "game/scenes/scoreboard.h"
 
 #define MS_PER_OMF_TICK 10
 #define MS_PER_OMF_TICK_SLOWEST 150
@@ -354,6 +355,12 @@ int game_load_new(game_state *gs, int scene_id) {
         case SCENE_MENU:
             if(mainmenu_create(gs->sc)) {
                 PERROR("Error while creating mainmenu scene.");
+                goto error_1;
+            }
+            break;
+        case SCENE_SCOREBOARD:
+            if(scoreboard_create(gs->sc)) {
+                PERROR("Error while creating scoreboard scene.");
                 goto error_1;
             }
             break;

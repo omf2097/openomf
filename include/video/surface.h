@@ -31,6 +31,7 @@ void surface_copy(surface *dst, surface *src);
 void surface_copy_ex(surface *dst, surface *src);
 void surface_free(surface *sur);
 void surface_clear(surface *sur);
+void surface_fill(surface *sur, color c);
 void surface_sub(surface *dst,
                  surface *src,
                  int dst_x, int dst_y,
