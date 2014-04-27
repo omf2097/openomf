@@ -32,8 +32,7 @@ int cutscene_next_scene(scene *scene) {
     case SCENE_END1:
       return SCENE_END2;
     case SCENE_END2:
-      music_stop();
-      return SCENE_MENU;
+      return SCENE_SCOREBOARD;
     default:
       return SCENE_NONE;
   }
