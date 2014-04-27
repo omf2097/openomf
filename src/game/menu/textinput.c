@@ -86,12 +86,22 @@ int textinput_event(component *c, SDL_Event *e) {
             // TODO move cursor to the left
         } else if(state[SDL_SCANCODE_RIGHT]) {
             // TODO move cursor to the right
+        } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
+            if(SDL_HasClipboardText()) {
+                char* clip_text = SDL_GetClipboardText();
+                int c_size = strlen(clip_text);
+                if((c_size + len) > sizeof(tb->buf)-1) {
+                    c_size = sizeof(tb->buf) - 1 - len;
+                }
+                memcpy(tb->buf + len, clip_text, c_size);
+                len += c_size;
+                tb->buf[len] = 0;
+            }
         } else if (code >= 32 && code <= 126) {
             if (len < sizeof(tb->buf)-1) {
                 tb->buf[len+1] = '\0';
                 tb->buf[len] = code;
             }
-
         }
     }
     return 1;
