@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "video/video.h"
 #include "video/surface.h"
@@ -28,6 +29,33 @@ void scoreboard_free(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
     surface_free(&local->black_surface);
     free(local);
+}
+
+void handle_scoreboard_save(scoreboard_local *local) {
+    int slot = 0;
+    for(int i = 0; i < 20; i++) {
+        unsigned int ex_score = local->data.entries[local->page][i].score;
+        unsigned int my_score = local->pending_data.score;
+        if(ex_score < my_score) {
+            slot = i;
+            break;
+        }
+    }
+
+    // Move next entries forward by one slot
+    memmove(
+        &local->data.entries[local->page][slot+1],
+        &local->data.entries[local->page][slot],
+        sizeof(score_entry) * (20 - slot - 1));
+
+    // Copy new entry to the right spot
+    memcpy(
+        &local->data.entries[local->page][slot],
+        &local->pending_data,
+        sizeof(score_entry));
+
+    // Write to file
+    scores_write(&local->data);
 }
 
 int scoreboard_event(scene *scene, SDL_Event *event) {
@@ -62,18 +90,17 @@ int scoreboard_event(scene *scene, SDL_Event *event) {
             if(i->type == EVENT_TYPE_ACTION) {
                 // If there is pending data, and name has been given, save
                 if(local->has_pending_data
-                   && strlen(local->pending_data.name) > 0
-                   && (i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH)) {
+                        && strlen(local->pending_data.name) > 0
+                        && (i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH)) {
 
-                    DEBUG("SAVE DATA HERE");
+                    handle_scoreboard_save(local);
                     local->has_pending_data = 0;
 
                 // If there is no data, and confirm is clicked, don't save
                 } else if (local->has_pending_data == 1
-                          && strlen(local->pending_data.name) == 0
-                          && (i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH)) {
+                        && strlen(local->pending_data.name) == 0
+                        && (i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH)) {
 
-                    DEBUG("CANCEL DATA ENTRY");
                     local->has_pending_data = 0;
 
                 // Normal exit routine
@@ -148,7 +175,7 @@ void scoreboard_render_overlay(scene *scene) {
 int found_pending_score(scene *scene) {
     if(game_state_get_player(scene->gs, 1)->ctrl != NULL
         && game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_AI
-        && game_state_get_player(scene->gs, 1)->score.score > 0) {
+        && game_state_get_player(scene->gs, 0)->score.score > 0) {
         return 1;
     }
     return 0;
@@ -178,7 +205,7 @@ int scoreboard_create(scene *scene) {
     local->has_pending_data = 0;
     if(found_pending_score(scene)) {
         DEBUG("FOUND PENDING SCORE");
-        unsigned int score = game_state_get_player(scene->gs, 1)->score.score;
+        unsigned int score = game_state_get_player(scene->gs, 0)->score.score;
         if(score_fits_scoreboard(local, score)) {
             local->has_pending_data = 1;
             local->pending_data.score = score;
