@@ -8,11 +8,13 @@
 #include "game/common_defines.h"
 #include "game/text/text.h"
 #include "game/utils/formatting.h"
+#include "game/utils/settings.h"
 #include "game/scenes/scoreboard.h"
 
 #define MAX_PAGES (NUMBER_OF_ROUND_TYPES-1)
 #define TEXT_COLOR_HEADER color_create(80, 220, 80, 0xFF)
 #define TEXT_COLOR_SCORES color_create(0xFF, 0xFF, 0xFF, 0xFF)
+#define CURSOR_STR "\x7f"
 
 typedef struct scoreboard_local_t {
     surface black_surface;
@@ -30,6 +32,27 @@ void scoreboard_free(scene *scene) {
 
 int scoreboard_event(scene *scene, SDL_Event *event) {
     scoreboard_local *local = scene_get_userdata(scene);
+
+    // If we are in writing mode, try handling text input
+    if(local->has_pending_data && event->type == SDL_KEYDOWN) {
+        unsigned char code = event->key.keysym.sym;
+        unsigned char len = strlen(local->pending_data.name);
+        unsigned char scancode = event->key.keysym.scancode;
+        if(scancode == SDL_SCANCODE_BACKSPACE || scancode == SDL_SCANCODE_DELETE) {
+            if(len > 0) {
+                local->pending_data.name[len-1] = 0;
+            }
+            return 1;
+        } else if(code >= 32 && code <= 126) {
+            if(len < sizeof(local->pending_data.name)-1) {
+                local->pending_data.name[len+1] = 0;
+                local->pending_data.name[len] = code;
+            }
+            return 1;
+        }
+    }
+
+    // Otherwise, try this stuff
     game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *p1 = NULL, *i;
     controller_event(player1->ctrl, event, &p1);
@@ -37,7 +60,24 @@ int scoreboard_event(scene *scene, SDL_Event *event) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                if(i->event_data.action == ACT_ESC ||
+                // If there is pending data, and name has been given, save
+                if(local->has_pending_data
+                   && strlen(local->pending_data.name) > 0
+                   && (i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH)) {
+
+                    DEBUG("SAVE DATA HERE");
+                    local->has_pending_data = 0;
+
+                // If there is no data, and confirm is clicked, don't save
+                } else if (local->has_pending_data == 1
+                          && strlen(local->pending_data.name) == 0
+                          && (i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH)) {
+
+                    DEBUG("CANCEL DATA ENTRY");
+                    local->has_pending_data = 0;
+
+                // Normal exit routine
+                } else if(i->event_data.action == ACT_ESC ||
                     i->event_data.action == ACT_KICK ||
                     i->event_data.action == ACT_PUNCH) {
 
@@ -59,6 +99,7 @@ void scoreboard_render_overlay(scene *scene) {
     video_render_sprite_size(&local->black_surface, 0, 0, 320, 200);
     char row[128];
     char score_text[15];
+    char temp_name[17];
 
     // Header text
     sprintf(row, "SCOREBOARD - %s", round_types[local->page]);
@@ -72,20 +113,35 @@ void scoreboard_render_overlay(scene *scene) {
     // Scores information
     unsigned int score, har_id, pilot_id;
     char *player_name;
+    int entry = 0;
+    int found_slot = 0;
     for(int r = 0; r < 20; r++) {
-        score = local->data.entries[local->page][r].score;
-        har_id = local->data.entries[local->page][r].har_id;
-        pilot_id = local->data.entries[local->page][r].pilot_id;
-        player_name = local->data.entries[local->page][r].name;
-        if(score > 0) {
-            score_format(score, score_text);
+        score = local->data.entries[local->page][entry].score;
+        row[0] = 0;
+        if(local->has_pending_data && score < local->pending_data.score && !found_slot) {
+            sprintf(temp_name, "%s%s", local->pending_data.name, CURSOR_STR);
+            score_format(local->pending_data.score, score_text);
             sprintf(row, "%-18s%-9s%-9s%11s",
-                player_name,
-                har_names[har_id],
-                pilot_names[pilot_id],
+                temp_name,
+                har_names[local->pending_data.har_id],
+                pilot_names[local->pending_data.pilot_id],
                 score_text);
-            font_render(&font_small, row, 20, 30 + r*8, TEXT_COLOR_SCORES);
+            found_slot = 1;
+        } else {
+            har_id = local->data.entries[local->page][entry].har_id;
+            pilot_id = local->data.entries[local->page][entry].pilot_id;
+            player_name = local->data.entries[local->page][entry].name;
+            if(score > 0) {
+                score_format(score, score_text);
+                sprintf(row, "%-18s%-9s%-9s%11s",
+                    player_name,
+                    har_names[har_id],
+                    pilot_names[pilot_id],
+                    score_text);
+            }
+            entry++;
         }
+        font_render(&font_small, row, 20, 30 + r*8, TEXT_COLOR_SCORES);
     }
 }
 
@@ -98,10 +154,19 @@ int found_pending_score(scene *scene) {
     return 0;
 }
 
+int score_fits_scoreboard(scoreboard_local *local, unsigned int score) {
+    for(int i = 0; i < 20; i++) {
+        if(score > local->data.entries[local->page][i].score) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int scoreboard_create(scene *scene) {
     // Init local data
     scoreboard_local *local = malloc(sizeof(scoreboard_local));
-    local->page = 0;
+    local->page = settings_get()->gameplay.rounds;
 
     // Load scores
     if(scores_read(&local->data) == 1) {
@@ -110,12 +175,24 @@ int scoreboard_create(scene *scene) {
     }
 
     // Check for pending score
+    local->has_pending_data = 0;
     if(found_pending_score(scene)) {
-        local->has_pending_data = 1;
-        local->pending_data.score = game_state_get_player(scene->gs, 1)->score.score;
-        local->pending_data.har_id = 0; // TODO: FIX
-        local->pending_data.pilot_id = 0; // TODO: FIX
-        local->pending_data.name[0] = 0;
+        DEBUG("FOUND PENDING SCORE");
+        unsigned int score = game_state_get_player(scene->gs, 1)->score.score;
+        if(score_fits_scoreboard(local, score)) {
+            local->has_pending_data = 1;
+            local->pending_data.score = score;
+            local->pending_data.har_id = 0; // TODO: FIX
+            local->pending_data.pilot_id = 0; // TODO: FIX
+            local->pending_data.name[0] = 0;
+            DEBUG("SCORE FITS SCOREBOARD");
+        } else {
+            DEBUG("SCORE DOES NOT FIT SCOREBOARD");
+        }
+
+        // Wipe old score data
+        chr_score *player_score = game_player_get_score(game_state_get_player(scene->gs, 0));
+        chr_score_reset(player_score, 1);
     }
 
     // Create a surface that has an appropriate alpha for darkening the screen a bit
