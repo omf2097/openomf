@@ -150,6 +150,7 @@ set(OPENOMF_SRC
     src/resources/sounds_loader.c
     src/resources/global_paths.c
     src/resources/languages.c
+    src/resources/fonts.c
     src/plugins/plugins.c
     src/plugins/scaler_plugin.c
     src/game/protos/object.c

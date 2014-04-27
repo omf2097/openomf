@@ -3,20 +3,7 @@
 
 #include "utils/vector.h"
 #include "video/color.h"
-
-enum {
-    FONT_UNDEFINED,
-    FONT_BIG,
-    FONT_SMALL
-};
-
-typedef struct font_t font;
-
-struct font_t {
-    int size;
-    int w,h;
-    vector surfaces;
-};
+#include "resources/fonts.h"
 
 enum {
     TEXT_SHADOW_TOP = 0x1,
@@ -28,12 +15,6 @@ enum {
     TEXT_SHADOW_ALL = 0xF
 };
 
-// globals, yay
-extern font font_small;
-extern font font_large;
-
-int fonts_init();
-void fonts_close();
 void font_get_wrapped_size(font *font, const char *text, int max_w, int *out_w, int *out_h);
 void font_render_char(font *font, char ch, int x, int y, color c);
 void font_render_char_shadowed(font *font, char ch, int x, int y, color c, int shadow_flags);
