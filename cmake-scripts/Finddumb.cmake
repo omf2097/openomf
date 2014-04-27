@@ -5,7 +5,7 @@ SET(DUMB_SEARCH_PATHS
     /opt
 )
 
-FIND_PATH(DUMB_INCLUDE_DIR dumb/dumb.h 
+FIND_PATH(DUMB_INCLUDE_DIR dumb.h
     HINTS ${DUMB_ROOT}
     PATH_SUFFIXES include include/dumb
     PATHS ${DUMB_SEARCH_PATHS}
