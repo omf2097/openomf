@@ -177,14 +177,6 @@ void newsroom_static_tick(scene *scene, int paused) {
 void newsroom_overlay_render(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
 
-    if(str_size(&local->news_str) > 0) {
-        video_render_sprite(&local->news_bg, 20, 140, BLEND_ALPHA, 0);
-        font_render_wrapped(&font_small, str_c(&local->news_str), 30, 150, 250, COLOR_YELLOW);
-    }
-    if(dialog_is_visible(&local->continue_dialog)) {
-        dialog_render(&local->continue_dialog);
-    }
-
     // Render screencapture
     har_screencaps *caps = &(game_state_get_player(scene->gs, (local->won ? 0 : 1))->screencaps);
     if(local->screen == 0) {
@@ -193,6 +185,17 @@ void newsroom_overlay_render(scene *scene) {
     } else {
         if(caps->ok[SCREENCAP_BLOW])
             video_render_sprite_size(&caps->cap[SCREENCAP_BLOW], 165, 15, SCREENCAP_W, SCREENCAP_H);
+    }
+
+    // Render text
+    if(str_size(&local->news_str) > 0) {
+        video_render_sprite(&local->news_bg, 20, 140, BLEND_ALPHA, 0);
+        font_render_wrapped(&font_small, str_c(&local->news_str), 30, 150, 250, COLOR_YELLOW);
+    }
+
+    // Dialog
+    if(dialog_is_visible(&local->continue_dialog)) {
+        dialog_render(&local->continue_dialog);
     }
 }
 
