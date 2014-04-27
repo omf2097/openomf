@@ -60,7 +60,7 @@ void scoreboard_render_overlay(scene *scene) {
 
     // Header text
     sprintf(row, "SCOREBOARD - %s", round_types[local->page]);
-    int title_x = 65 + (local->page == 0 ? 10 : 0);
+    int title_x = 62 + (local->page == 0 ? 8 : 0);
     font_render(&font_large, row, title_x, 5, TEXT_COLOR_HEADER);
 
     // Column names
