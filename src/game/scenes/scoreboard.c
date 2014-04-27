@@ -1,11 +1,16 @@
+#include <stdio.h>
+
 #include "video/video.h"
 #include "video/surface.h"
 #include "resources/ids.h"
 #include "utils/log.h"
 #include "game/common_defines.h"
+#include "game/text/text.h"
 #include "game/scenes/scoreboard.h"
 
 #define MAX_PAGES (NUMBER_OF_ROUND_TYPES-1)
+#define TEXT_COLOR_HEADER color_create(80, 220, 80, 0xFF)
+#define TEXT_COLOR_SCORES color_creatE(0xFF, 0xFF, 0xFF, 0xFF)
 
 typedef struct scoreboard_local_t {
     surface black_surface;
@@ -49,6 +54,16 @@ int scoreboard_event(scene *scene, SDL_Event *event) {
 void scoreboard_render_overlay(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
     video_render_sprite_size(&local->black_surface, 0, 0, 320, 200);
+    char row[128];
+
+    // Header text
+    sprintf(row, "SCOREBOARD - %s", round_types[local->page]);
+    int title_x = 65 + (local->page == 0 ? 10 : 0);
+    font_render(&font_large, row, title_x, 5, TEXT_COLOR_HEADER);
+
+    // Column names
+    sprintf(row, "%-16s %-8s %-8s %11s", "PLAYER NAME", "ROBOT", "PILOT", "SCORE");
+    font_render(&font_small, row, 20, 20, TEXT_COLOR_HEADER);
 }
 
 int scoreboard_create(scene *scene) {
