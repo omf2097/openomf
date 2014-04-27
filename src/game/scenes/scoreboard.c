@@ -42,10 +42,8 @@ int scoreboard_event(scene *scene, SDL_Event *event) {
                     game_state_set_next(scene->gs, SCENE_MENU);
                 } else if(i->event_data.action == ACT_LEFT) {
                     local->page = (local->page > 0) ? local->page-1 : 0;
-                    DEBUG("PAGE %d", local->page);
                 } else if(i->event_data.action == ACT_RIGHT) {
                     local->page = (local->page < MAX_PAGES) ? local->page+1 : MAX_PAGES;
-                    DEBUG("PAGE %d", local->page);
                 }
             } 
         } while((i = i->next));
