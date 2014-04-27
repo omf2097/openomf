@@ -17,6 +17,8 @@
 typedef struct scoreboard_local_t {
     surface black_surface;
     scoreboard data;
+    score_entry pending_data;
+    int has_pending_data;
     int page;
 } scoreboard_local;
 
@@ -87,6 +89,15 @@ void scoreboard_render_overlay(scene *scene) {
     }
 }
 
+int found_pending_score(scene *scene) {
+    if(game_state_get_player(scene->gs, 1)->ctrl != NULL
+        && game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_AI
+        && game_state_get_player(scene->gs, 1)->score.score > 0) {
+        return 1;
+    }
+    return 0;
+}
+
 int scoreboard_create(scene *scene) {
     // Init local data
     scoreboard_local *local = malloc(sizeof(scoreboard_local));
@@ -96,6 +107,15 @@ int scoreboard_create(scene *scene) {
     if(scores_read(&local->data) == 1) {
         scores_clear(&local->data);
         DEBUG("No score data found; using empty score array.");
+    }
+
+    // Check for pending score
+    if(found_pending_score(scene)) {
+        local->has_pending_data = 1;
+        local->pending_data.score = game_state_get_player(scene->gs, 1)->score.score;
+        local->pending_data.har_id = 0; // TODO: FIX
+        local->pending_data.pilot_id = 0; // TODO: FIX
+        local->pending_data.name[0] = 0;
     }
 
     // Create a surface that has an appropriate alpha for darkening the screen a bit
