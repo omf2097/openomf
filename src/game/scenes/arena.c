@@ -227,10 +227,28 @@ int is_twoplayer(scene *scene) {
     return 0;
 }
 
+void arena_screengrab_winner(scene* sc) {
+    game_state *gs = sc->gs;
+
+    // take victory pose screenshot for the newsroom
+    har *h1 = object_get_userdata(game_state_get_player(gs, 0)->har);
+    if(h1->state == STATE_VICTORY || h1->state == STATE_DONE) {
+        har_screencaps_capture(
+            &game_state_get_player(gs, 0)->screencaps, 
+            game_state_get_player(gs, 0)->har, 
+            SCREENCAP_POSE);
+    } else {
+        har_screencaps_capture(
+            &game_state_get_player(gs, 1)->screencaps, 
+            game_state_get_player(gs, 1)->har, 
+            SCREENCAP_POSE);
+    }
+}
+
 void arena_end(scene *sc) {
     game_state *gs = sc->gs;
 
-    // XXX TODO take victory pose screenshot for the newsroom
+    // Switch scene
     if (is_demoplay(sc)) {
         game_state_set_next(gs, rand_arena());
     }
@@ -784,6 +802,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 /*DEBUG("blocking ending");*/
             } else {
                 local->ending_ticks++;
+            }
+            if(local->ending_ticks == 18) {
+                arena_screengrab_winner(scene);
             }
             if(local->ending_ticks > 20) {
                 if (!local->over) {

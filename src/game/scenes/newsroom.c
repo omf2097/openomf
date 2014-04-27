@@ -188,11 +188,11 @@ void newsroom_overlay_render(scene *scene) {
     // Render screencapture
     har_screencaps *caps = &(game_state_get_player(scene->gs, (local->won ? 0 : 1))->screencaps);
     if(local->screen == 0) {
-        if(caps->last_strike_ok)
-            video_render_sprite_size(&caps->last_strike_screen, 165, 15, SCREENCAP_W, SCREENCAP_H);
+        if(caps->ok[SCREENCAP_POSE])
+            video_render_sprite_size(&caps->cap[SCREENCAP_POSE], 165, 15, SCREENCAP_W, SCREENCAP_H);
     } else {
-        if(caps->max_damage_ok)
-            video_render_sprite_size(&caps->max_damage_screen, 165, 15, SCREENCAP_W, SCREENCAP_H);
+        if(caps->ok[SCREENCAP_BLOW])
+            video_render_sprite_size(&caps->cap[SCREENCAP_BLOW], 165, 15, SCREENCAP_W, SCREENCAP_H);
     }
 }
 
