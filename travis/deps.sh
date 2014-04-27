@@ -8,7 +8,7 @@ cd SDL2-2.0.3 && ./configure --prefix=$PREFIX && make -j5 && sudo make install
   
 cd travis/
 git clone --depth=1 https://github.com/omf2097/libShadowDive.git
-git clone --depth=1 https://bitbucket.org/kode54/dumb.git
+git clone --depth=1 https://github.com/kode54/dumb.git
 
 cd libShadowDive
 mkdir build
