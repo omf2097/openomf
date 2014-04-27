@@ -8,6 +8,7 @@
 #include "audio/audio.h"
 #include "audio/music.h"
 #include "video/video.h"
+#include "game/common_defines.h"
 #include "game/utils/settings.h"
 #include "game/scenes/mainmenu.h"
 #include "game/menu/menu.h"
@@ -1236,17 +1237,14 @@ int mainmenu_create(scene *scene) {
     textslider_create(&local->powertwo_slider, &font_large, "POWER 2", 8, 0);
     textselector_create(&local->hazards_toggle, &font_large, "HAZARDS", "OFF");
     textselector_add_option(&local->hazards_toggle, "ON");
-    textselector_create(&local->cpu_toggle, &font_large, "CPU:", "PUNCHING BAG");
-    textselector_add_option(&local->cpu_toggle, "ROOKIE");
-    textselector_add_option(&local->cpu_toggle, "VETERAN");
-    textselector_add_option(&local->cpu_toggle, "WORLD CLASS");
-    textselector_add_option(&local->cpu_toggle, "CHAMPION");
-    textselector_add_option(&local->cpu_toggle, "DEADLY");
-    textselector_add_option(&local->cpu_toggle, "ULTIMATE");
-    textselector_create(&local->round_toggle, &font_large, "", "ONE ROUND");
-    textselector_add_option(&local->round_toggle, "BEST 2 OF 3");
-    textselector_add_option(&local->round_toggle, "BEST 3 OF 5");
-    textselector_add_option(&local->round_toggle, "BEST 4 OF 7");
+    textselector_create(&local->cpu_toggle, &font_large, "CPU:", difficulty_choices[0]);
+    for(int i = 1; i < NUMBER_OF_DIFFICULTY_AI; i++) {
+        textselector_add_option(&local->cpu_toggle, difficulty_choices[i]);
+    }
+    textselector_create(&local->round_toggle, &font_large, "", round_types[0]);
+    for(int i = 1; i < NUMBER_OF_ROUND_TYPES; i++) {
+        textselector_add_option(&local->round_toggle, round_types[i]);
+    }
     textbutton_create(&local->gameplay_done_button, &font_large, "DONE");
     menu_attach(&local->gameplay_menu, &local->gameplay_header, 22);
     menu_attach(&local->gameplay_menu, &local->speed_slider, 11);

@@ -183,6 +183,7 @@ set(OPENOMF_SRC
     src/game/menu/component.c
     src/game/game_state.c
     src/game/game_player.c
+    src/game/common_defines.c
     src/game/utils/ticktimer.c
     src/game/utils/serial.c
     src/game/utils/settings.c

@@ -56,7 +56,6 @@ void surface_fill(surface *sur, color c) {
     }
 
     // Fill
-    DEBUG("FILL %d", sur->w*sur->h);
     for(int i = 0; i < sur->w * sur->h; i++) {
         sur->data[i*4+0] = c.r;
         sur->data[i*4+1] = c.g;
