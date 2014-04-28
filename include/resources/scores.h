@@ -13,7 +13,7 @@ typedef struct scoreboard_t {
 } scoreboard;
 
 int scores_read(scoreboard *sb);
-void scores_write(scoreboard *sb);
+int scores_write(scoreboard *sb);
 void scores_clear(scoreboard *sb);
 
 #endif // _SCORES_H

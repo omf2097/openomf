@@ -42,6 +42,23 @@ error_0:
     return 1;
 }
 
-void scores_write(scoreboard *sb) {
+int scores_write(scoreboard *sb) {
+    sd_score* score_file = sd_score_create();
 
+    // Convert data
+    for(int i = 0; i < 4; i++) {
+        for(int m = 0; m < 20; m++) {
+            score_file->scores[i][m].score = sb->entries[i][m].score;
+            score_file->scores[i][m].har_id = sb->entries[i][m].har_id;
+            score_file->scores[i][m].pilot_id = sb->entries[i][m].pilot_id;
+            strcpy(score_file->scores[i][m].name, sb->entries[i][m].name);
+        }
+    }
+
+    // Save
+    sd_score_save(score_file, global_path_get(SCORE_PATH));
+
+    // All done
+    sd_score_delete(score_file);
+    return 0;
 }
