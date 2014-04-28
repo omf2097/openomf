@@ -291,5 +291,7 @@ add_subdirectory(packaging)
 
 # Installation
 INSTALL(TARGETS openomf
-    RUNTIME DESTINATION bin
+    RUNTIME
+    DESTINATION bin
+    COMPONENT Binaries
 )
