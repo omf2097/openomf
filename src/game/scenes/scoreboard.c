@@ -205,21 +205,18 @@ int scoreboard_create(scene *scene) {
     local->has_pending_data = 0;
     if(found_pending_score(scene)) {
         DEBUG("FOUND PENDING SCORE");
-        unsigned int score = game_state_get_player(scene->gs, 0)->score.score;
+        game_player *player = game_state_get_player(scene->gs, 0);
+        unsigned int score = player->score.score;
         if(score_fits_scoreboard(local, score)) {
             local->has_pending_data = 1;
             local->pending_data.score = score;
-            local->pending_data.har_id = 0; // TODO: FIX
-            local->pending_data.pilot_id = 0; // TODO: FIX
+            local->pending_data.har_id = player->har_id - HAR_JAGUAR;
+            local->pending_data.pilot_id = player->pilot_id;
             local->pending_data.name[0] = 0;
-            DEBUG("SCORE FITS SCOREBOARD");
-        } else {
-            DEBUG("SCORE DOES NOT FIT SCOREBOARD");
         }
 
         // Wipe old score data
-        chr_score *player_score = game_player_get_score(game_state_get_player(scene->gs, 0));
-        chr_score_reset(player_score, 1);
+        chr_score_reset(game_player_get_score(player), 1);
     }
 
     // Create a surface that has an appropriate alpha for darkening the screen a bit
