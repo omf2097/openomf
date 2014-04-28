@@ -204,7 +204,6 @@ int scoreboard_create(scene *scene) {
     // Check for pending score
     local->has_pending_data = 0;
     if(found_pending_score(scene)) {
-        DEBUG("FOUND PENDING SCORE");
         game_player *player = game_state_get_player(scene->gs, 0);
         unsigned int score = player->score.score;
         if(score_fits_scoreboard(local, score)) {
