@@ -104,14 +104,19 @@ int scoreboard_event(scene *scene, SDL_Event *event) {
                     local->has_pending_data = 0;
 
                 // Normal exit routine
-                } else if(i->event_data.action == ACT_ESC ||
-                    i->event_data.action == ACT_KICK ||
-                    i->event_data.action == ACT_PUNCH) {
+                // Only allow if there is no pending data.
+                } else if(!local->has_pending_data && 
+                    (i->event_data.action == ACT_ESC ||
+                     i->event_data.action == ACT_KICK ||
+                     i->event_data.action == ACT_PUNCH)) {
 
                     game_state_set_next(scene->gs, SCENE_MENU);
-                } else if(i->event_data.action == ACT_LEFT) {
+
+                // If left or right button is pressed, change page
+                // but only if we are not in input mode.
+                } else if(!local->has_pending_data && i->event_data.action == ACT_LEFT) {
                     local->page = (local->page > 0) ? local->page-1 : 0;
-                } else if(i->event_data.action == ACT_RIGHT) {
+                } else if(!local->has_pending_data && i->event_data.action == ACT_RIGHT) {
                     local->page = (local->page < MAX_PAGES) ? local->page+1 : MAX_PAGES;
                 }
             } 
@@ -145,6 +150,10 @@ void scoreboard_render_overlay(scene *scene) {
     for(int r = 0; r < 20; r++) {
         score = local->data.entries[local->page][entry].score;
         row[0] = 0;
+
+        // If this slot is the slot where the new, pending score data should be written,
+        // show pending data and text input field. Otherwise just show next line of 
+        // original saved score data.
         if(local->has_pending_data && score < local->pending_data.score && !found_slot) {
             sprintf(temp_name, "%s%s", local->pending_data.name, CURSOR_STR);
             score_format(local->pending_data.score, score_text);
@@ -172,6 +181,7 @@ void scoreboard_render_overlay(scene *scene) {
     }
 }
 
+// Attempts to check for any score that is pending from a finished single player game
 int found_pending_score(scene *scene) {
     if(game_state_get_player(scene->gs, 1)->ctrl != NULL
         && game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_AI
@@ -181,6 +191,7 @@ int found_pending_score(scene *scene) {
     return 0;
 }
 
+// Check if score is high enough to be put on high score list
 int score_fits_scoreboard(scoreboard_local *local, unsigned int score) {
     for(int i = 0; i < 20; i++) {
         if(score > local->data.entries[local->page][i].score) {
@@ -214,7 +225,7 @@ int scoreboard_create(scene *scene) {
             local->pending_data.name[0] = 0;
         }
 
-        // Wipe old score data
+        // Wipe old score data, whether it was written on scoreboard or not.
         chr_score_reset(game_player_get_score(player), 1);
     }
 
