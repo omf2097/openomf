@@ -3,6 +3,7 @@ project(OpenOMF C)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
 # Options
+OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_PNG "Add support for PNG screenshots" OFF)
 OPTION(USE_SUBMODULES "Add libsd and libdumb as submodules" ON)
@@ -96,13 +97,15 @@ set(CMAKE_C_FLAGS_RELEASE "-O2")
 set(CMAKE_C_FLAGS_MINSIZEREL "-Os")
 
 # Only strip on GCC (clang does not appreciate)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+IF(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wl,-s")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
-endif()
+ENDIF()
 
 # Testing stuff
-add_subdirectory(testing)
+IF(USE_TESTS)
+    add_subdirectory(testing)
+ENDIF()
 
 set(OPENOMF_SRC
     src/utils/log.c
@@ -283,7 +286,12 @@ IF(NOT SERVER_ONLY)
     target_link_libraries(openomf ${CORELIBS})
 ENDIF(NOT SERVER_ONLY)
 
+# Packaging
+add_subdirectory(packaging)
+
 # Installation
 INSTALL(TARGETS openomf
-    RUNTIME DESTINATION bin
+    RUNTIME
+    DESTINATION bin
+    COMPONENT Binaries
 )
