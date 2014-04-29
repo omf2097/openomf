@@ -16,5 +16,7 @@ before_install:
 before_script:
 - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SUBMODULES=On -DUSE_OGGVORBIS=On -DUSE_PNG=On .
 
+script: make
+
 notifications:
   email: false
