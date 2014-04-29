@@ -12,7 +12,6 @@ before_install:
  - if test $CC = gcc; then sudo apt-get install -qq gcc-4.8; fi
  - if test $CC = gcc; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 20; fi
  - if test $CC = gcc; then sudo update-alternatives --config gcc; fi
- - chmod +x travis/build.sh
 
 before_script:
 - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SUBMODULES=On -DUSE_OGGVORBIS=On -DUSE_PNG=On .
