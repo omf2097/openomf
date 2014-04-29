@@ -85,6 +85,7 @@ void plugins_init() {
                 continue;
             }
 
+#ifdef DEBUGMODE
             // Print some debug information
             base_plugin *tmp = &_plugins[_plugins_count];
             DEBUG(" * File: %s", plugin_file);
@@ -92,6 +93,7 @@ void plugins_init() {
             DEBUG("   - Author: %s", tmp->get_author());
             DEBUG("   - License: %s", tmp->get_license());
             DEBUG("   - Type: %s", tmp->get_type());
+#endif
             _plugins_count++;
         }
     }
