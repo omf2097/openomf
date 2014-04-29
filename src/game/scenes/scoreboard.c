@@ -132,6 +132,7 @@ void scoreboard_render_overlay(scene *scene) {
     char row[128];
     char score_text[15];
     char temp_name[17];
+    const char* score_row_format = "%-18s%-9s%-9s%11s";
 
     // Header text
     sprintf(row, "SCOREBOARD - %s", round_types[local->page]);
@@ -139,7 +140,7 @@ void scoreboard_render_overlay(scene *scene) {
     font_render(&font_large, row, title_x, 5, TEXT_COLOR_HEADER);
 
     // Column names
-    sprintf(row, "%-18s%-9s%-9s%11s", "PLAYER NAME", "ROBOT", "PILOT", "SCORE");
+    sprintf(row, score_row_format, "PLAYER NAME", "ROBOT", "PILOT", "SCORE");
     font_render(&font_small, row, 20, 20, TEXT_COLOR_HEADER);
 
     // Scores information
@@ -157,7 +158,8 @@ void scoreboard_render_overlay(scene *scene) {
         if(local->has_pending_data && score < local->pending_data.score && !found_slot) {
             sprintf(temp_name, "%s%s", local->pending_data.name, CURSOR_STR);
             score_format(local->pending_data.score, score_text);
-            sprintf(row, "%-18s%-9s%-9s%11s",
+            sprintf(row,
+                score_row_format,
                 temp_name,
                 har_names[local->pending_data.har_id],
                 pilot_names[local->pending_data.pilot_id],
@@ -169,7 +171,8 @@ void scoreboard_render_overlay(scene *scene) {
             player_name = local->data.entries[local->page][entry].name;
             if(score > 0) {
                 score_format(score, score_text);
-                sprintf(row, "%-18s%-9s%-9s%11s",
+                sprintf(row,
+                    score_row_format,
                     player_name,
                     har_names[har_id],
                     pilot_names[pilot_id],
