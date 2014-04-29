@@ -14,9 +14,9 @@ before_install:
  - if test $CC = gcc; then sudo update-alternatives --config gcc; fi
 
 before_script:
-- cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SUBMODULES=On -DUSE_OGGVORBIS=On -DUSE_PNG=On .
+- cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SUBMODULES=On -DUSE_OGGVORBIS=On -DUSE_PNG=On -DUSE_TESTS=On .
 
-script: make
+script: make && make test
 
 notifications:
   email: false
