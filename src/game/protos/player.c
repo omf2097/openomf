@@ -212,6 +212,7 @@ void player_set_delay(object *obj, int delay) {
         sd_stringparser_set_frame_duration(obj->animation_state.parser, i, newduration);
         sd_stringparser_peek(obj->animation_state.parser, i, &n);
         DEBUG("changed duration of frame %d from %d to %d", i, olddur, n.duration);
+        (void)(olddur); // Fixes compile complaints :P
     }
 }
 
