@@ -12,6 +12,7 @@
 #include "video/video.h"
 #include "video/tcache.h"
 #include "game/game_state.h"
+#include "game/common_defines.h"
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
 #include "game/protos/scene.h"
@@ -696,7 +697,7 @@ void game_state_init_demo(game_state *gs) {
 
         // select random pilot and har
         player->pilot_id = rand_int(10);
-        player->har_id = HAR_JAGUAR + rand_int(11);
+        player->har_id = rand_int(11);
         chr_score_reset(&player->score, 1);
 
         // set proper color

@@ -293,23 +293,23 @@ void handle_action(scene *scene, int player, int action) {
                         }
                     }
                     if(nova_activated[0] && local->row_a == 1 && local->column_a == 2) {
-                        player1->har_id = HAR_NOVA;
+                        player1->har_id = HAR_NAME_NOVA;
                     } else {
-                        player1->har_id = HAR_JAGUAR + 5*local->row_a+local->column_a;
+                        player1->har_id = 5*local->row_a+local->column_a;
                     }
                     player1->pilot_id = local->pilot_id_a;
                     if (player2->selectable) {
                         if(nova_activated[1] && local->row_b == 1 && local->column_b == 2) {
-                            player2->har_id = HAR_NOVA;
+                            player2->har_id = HAR_NAME_NOVA;
                         } else {
-                            player2->har_id = HAR_JAGUAR + 5*local->row_b+local->column_b;
+                            player2->har_id = 5*local->row_b+local->column_b;
                         }
                         player2->pilot_id = local->pilot_id_b;
                     } else {
                         if (player1->sp_wins == (2046 ^ (2 << player1->pilot_id))) {
                             // everyone but kriessack
                             player2->pilot_id = 10;
-                            player2->har_id = HAR_NOVA;
+                            player2->har_id = HAR_NAME_NOVA;
                         } else {
                             // pick an opponent we have not yet beaten
                             while(1) {
@@ -318,7 +318,7 @@ void handle_action(scene *scene, int player, int action) {
                                     continue;
                                 }
                                 player2->pilot_id = i;
-                                player2->har_id = HAR_JAGUAR + rand_int(10);
+                                player2->har_id = rand_int(10);
                                 break;
                             }
                         }
@@ -522,16 +522,16 @@ void melee_render(scene *scene) {
 
             // render HAR name (Har1 VS. Har2)
             char vstext[48];
-            strcpy(vstext, get_id_name(HAR_JAGUAR + 5*local->row_a + local->column_a));
+            strcpy(vstext, har_get_name(5*local->row_a + local->column_a));
             strcat(vstext, " VS. ");
-            strcat(vstext, get_id_name(HAR_JAGUAR + 5*local->row_b + local->column_b));
+            strcat(vstext, har_get_name(5*local->row_b + local->column_b));
             font_render_wrapped_shadowed(&font_small, vstext, 80, 107, 150, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
         } else {
             // 'choose your HAR'
             font_render_wrapped_shadowed(&font_small, lang_get(186), 160, 97, 160, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
 
             // render HAR name
-            font_render_wrapped_shadowed(&font_small, get_id_name(HAR_JAGUAR + 5*local->row_a + local->column_a), 130, 107, 66, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
+            font_render_wrapped_shadowed(&font_small, har_get_name(5*local->row_a + local->column_a), 130, 107, 66, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
         }
     }
 

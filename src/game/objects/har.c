@@ -11,9 +11,9 @@
 #include "game/protos/object_specializer.h"
 #include "game/scenes/arena.h"
 #include "game/game_state.h"
+#include "game/common_defines.h"
 #include "game/utils/serial.h"
 #include "resources/af_loader.h"
-#include "resources/ids.h"
 #include "resources/animation.h"
 #include "controller/controller.h"
 #include "utils/log.h"
@@ -683,7 +683,6 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         return;
     }
 
-
     // Check for collisions by sprite collision points
     int level = 1;
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
@@ -753,11 +752,13 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         }
 
         DEBUG("HAR %s to HAR %s collision at %d,%d!",
-            get_id_name(a->id),
-            get_id_name(b->id),
+            har_get_name(a->id),
+            har_get_name(b->id),
             hit_coord.x,
             hit_coord.y);
-        DEBUG("HAR %s animation set to %s", get_id_name(b->id), str_c(&move->footer_string));
+        DEBUG("HAR %s animation set to %s",
+            har_get_name(b->id),
+            str_c(&move->footer_string));
     }
 }
 
@@ -834,10 +835,12 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!",
             object_get_animation(o_pjt)->id,
-            get_id_name(h->id),
+            har_get_name(h->id),
             hit_coord.x,
             hit_coord.y);
-        DEBUG("HAR %s animation set to %s", get_id_name(h->id), str_c(&move->footer_string));
+        DEBUG("HAR %s animation set to %s",
+            har_get_name(h->id),
+            str_c(&move->footer_string));
     }
 }
 
@@ -1581,14 +1584,14 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
     int pilot_id = serial_read_int8(ser);
     af *af_data;
 
-    /*DEBUG("unserializing HAR %d for player %d", har_id - HAR_JAGUAR, player_id);*/
+    /*DEBUG("unserializing HAR %d for player %d", har_id, player_id);*/
 
     // find the AF data in the scene
 
-    if (gs->sc->af_data[player_id]->id == har_id - HAR_JAGUAR) {
+    if (gs->sc->af_data[player_id]->id == har_id) {
         af_data = gs->sc->af_data[player_id];
     } else {
-        DEBUG("expected har %d, got %d", har_id - HAR_JAGUAR, gs->sc->af_data[player_id]->id);
+        DEBUG("expected har %d, got %d", har_id, gs->sc->af_data[player_id]->id);
         // HAR IDs do not match!
         // TODO maybe the other player changed their HAR, who knows
         return 1;

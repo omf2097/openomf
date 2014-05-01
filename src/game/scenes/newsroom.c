@@ -246,7 +246,7 @@ int newsroom_event(scene *scene, SDL_Event *event) {
                                 if (p1->sp_wins == (2046 ^ (2 << p1->pilot_id))) {
                                     // everyone but kriessack
                                     p2->pilot_id = 10;
-                                    p2->har_id = HAR_NOVA;
+                                    p2->har_id = HAR_NAME_NOVA;
                                 } else {
                                     // pick an opponent we have not yet beaten
                                     while(1) {
@@ -255,7 +255,7 @@ int newsroom_event(scene *scene, SDL_Event *event) {
                                             continue;
                                         }
                                         p2->pilot_id = i;
-                                        p2->har_id = HAR_JAGUAR + rand_int(10);
+                                        p2->har_id = rand_int(10);
                                         break;
                                     }
                                 }
@@ -347,11 +347,11 @@ int newsroom_create(scene *scene) {
     // XXX TODO set winner/loser names properly
     newsroom_set_names(local, lang_get(20+p1->pilot_id),
                               lang_get(20+p2->pilot_id),
-                              get_id_name(p1->har_id),
-                              get_id_name(p2->har_id),
-                              pilot_sex(p1->pilot_id), pilot_sex(p2->pilot_id));
+                              har_get_name(p1->har_id),
+                              har_get_name(p2->har_id),
+                              pilot_sex(p1->pilot_id),
+                              pilot_sex(p2->pilot_id));
     newsroom_fixup_str(local);
-
 
     // Continue Dialog
     dialog_create(&local->continue_dialog, DIALOG_STYLE_YES_NO, "DO YOU WISH TO CONTINUE?", 72, 60);

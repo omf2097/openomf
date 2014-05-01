@@ -3,11 +3,11 @@
 #include "video/video.h"
 #include "resources/ids.h"
 #include "resources/bk_loader.h"
+#include "resources/af_loader.h"
 #include "utils/log.h"
 #include "utils/vec.h"
 #include "game/game_player.h"
 #include "game/game_state_type.h"
-#include "resources/af_loader.h"
 
 // Some internal functions
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
@@ -15,9 +15,16 @@ void cb_scene_destroy_object(object *parent, int id, void *userdata);
 
 // Loads BK file etc.
 int scene_create(scene *scene, game_state *gs, int scene_id) {
+    if(scene_id == SCENE_NONE) {
+        return 1;
+    }
+
     // Load BK
-    if(scene_id == SCENE_NONE || load_bk_file(&scene->bk_data, scene_id)) {
-        PERROR("Unable to load BK file %s (%d)!", get_id_name(scene_id), scene_id);
+    int resource_id = scene_to_resource(scene_id);
+    if(load_bk_file(&scene->bk_data, resource_id)) {
+        PERROR("Unable to load scene %s (%s)!",
+            scene_get_name(scene_id),
+            get_resource_name(resource_id));
         return 1;
     }
     scene->id = scene_id;
@@ -41,7 +48,9 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     video_set_base_palette(bk_get_palette(&scene->bk_data, 0));
 
     // All done.
-    DEBUG("Loaded BK file %s (%d).", get_id_name(scene_id), scene_id);
+    DEBUG("Loaded scene %s (%s).",
+        scene_get_name(scene_id),
+        get_resource_name(resource_id));
     return 0;
 }
 
@@ -64,21 +73,26 @@ void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
 }
 
 int scene_load_har(scene *scene, int player_id, int har_id) {
-    if (scene->af_data[player_id]) {
+    if(scene->af_data[player_id]) {
         af_free(scene->af_data[player_id]);
         free(scene->af_data[player_id]);
     }
-
     scene->af_data[player_id] = malloc(sizeof(af));
 
-    if(load_af_file(scene->af_data[player_id], har_id)) {
-        PERROR("Unable to load HAR %s (%d)!", get_id_name(har_id), har_id);
+    int resource_id = har_to_resource(har_id);
+    if(load_af_file(scene->af_data[player_id], resource_id)) {
+        PERROR("Unable to load HAR %s (%s)!",
+            har_get_name(har_id),
+            get_resource_name(resource_id));
         return 1;
     }
 
     // Fix some coordinates on jump sprites
     har_fix_sprite_coords(&af_get_move(scene->af_data[player_id], ANIM_JUMPING)->ani, 0, -50);
 
+    DEBUG("Loaded HAR %s (%s).",
+        har_get_name(har_id),
+        get_resource_name(resource_id));
     return 0;
 }
 

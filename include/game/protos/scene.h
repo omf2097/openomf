@@ -6,6 +6,7 @@
 #include "game/protos/object.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
+#include "game/common_defines.h"
 #include "game/utils/serial.h"
 #include "game/utils/ticktimer.h"
 #include "resources/bk.h"

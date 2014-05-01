@@ -135,7 +135,7 @@ void scoreboard_render_overlay(scene *scene) {
     const char* score_row_format = "%-18s%-9s%-9s%11s";
 
     // Header text
-    sprintf(row, "SCOREBOARD - %s", round_types[local->page]);
+    sprintf(row, "SCOREBOARD - %s", round_get_name(local->page));
     int title_x = 62 + (local->page == 0 ? 8 : 0);
     font_render(&font_large, row, title_x, 5, TEXT_COLOR_HEADER);
 
@@ -161,8 +161,8 @@ void scoreboard_render_overlay(scene *scene) {
             sprintf(row,
                 score_row_format,
                 temp_name,
-                har_names[local->pending_data.har_id],
-                pilot_names[local->pending_data.pilot_id],
+                har_get_name(local->pending_data.har_id),
+                pilot_get_name(local->pending_data.pilot_id),
                 score_text);
             found_slot = 1;
         } else {
@@ -174,8 +174,8 @@ void scoreboard_render_overlay(scene *scene) {
                 sprintf(row,
                     score_row_format,
                     player_name,
-                    har_names[har_id],
-                    pilot_names[pilot_id],
+                    har_get_name(har_id),
+                    pilot_get_name(pilot_id),
                     score_text);
             }
             entry++;
@@ -223,7 +223,7 @@ int scoreboard_create(scene *scene) {
         if(score_fits_scoreboard(local, score)) {
             local->has_pending_data = 1;
             local->pending_data.score = score;
-            local->pending_data.har_id = player->har_id - HAR_JAGUAR;
+            local->pending_data.har_id = player->har_id;
             local->pending_data.pilot_id = player->pilot_id;
             local->pending_data.name[0] = 0;
         }

@@ -773,9 +773,9 @@ void mainmenu_tick(scene *scene, int paused) {
                 // force the speed to 3
                 game_state_set_speed(scene->gs, 5);
 
-                p1->har_id = HAR_JAGUAR;
+                p1->har_id = HAR_NAME_JAGUAR;
                 p1->pilot_id = 0;
-                p2->har_id = HAR_JAGUAR;
+                p2->har_id = HAR_NAME_JAGUAR;
                 p2->pilot_id = 0;
 
                 player1_ctrl = malloc(sizeof(controller));
@@ -814,9 +814,9 @@ void mainmenu_tick(scene *scene, int paused) {
                 // force the speed to 3
                 game_state_set_speed(scene->gs, 5);
 
-                p1->har_id = HAR_JAGUAR;
+                p1->har_id = HAR_NAME_JAGUAR;
                 p1->pilot_id = 0;
-                p2->har_id = HAR_JAGUAR;
+                p2->har_id = HAR_NAME_JAGUAR;
                 p2->pilot_id = 0;
 
                 player1_ctrl = malloc(sizeof(controller));
@@ -1237,13 +1237,13 @@ int mainmenu_create(scene *scene) {
     textslider_create(&local->powertwo_slider, &font_large, "POWER 2", 8, 0);
     textselector_create(&local->hazards_toggle, &font_large, "HAZARDS", "OFF");
     textselector_add_option(&local->hazards_toggle, "ON");
-    textselector_create(&local->cpu_toggle, &font_large, "CPU:", difficulty_choices[0]);
-    for(int i = 1; i < NUMBER_OF_DIFFICULTY_AI; i++) {
-        textselector_add_option(&local->cpu_toggle, difficulty_choices[i]);
+    textselector_create(&local->cpu_toggle, &font_large, "CPU:", ai_difficulty_get_name(0));
+    for(int i = 1; i < NUMBER_OF_AI_DIFFICULTY_TYPES; i++) {
+        textselector_add_option(&local->cpu_toggle, ai_difficulty_get_name(i));
     }
-    textselector_create(&local->round_toggle, &font_large, "", round_types[0]);
+    textselector_create(&local->round_toggle, &font_large, "", round_get_name(0));
     for(int i = 1; i < NUMBER_OF_ROUND_TYPES; i++) {
-        textselector_add_option(&local->round_toggle, round_types[i]);
+        textselector_add_option(&local->round_toggle, round_get_name(i));
     }
     textbutton_create(&local->gameplay_done_button, &font_large, "DONE");
     menu_attach(&local->gameplay_menu, &local->gameplay_header, 22);

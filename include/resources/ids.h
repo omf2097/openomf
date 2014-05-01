@@ -2,39 +2,36 @@
 #define _IDS_H
 
 enum RESOURCE_ID {
-    SCENE_INTRO = 0,
-    SCENE_MENU,
-    SCENE_END,
-    SCENE_END1,
-    SCENE_END2,
-    SCENE_CREDITS,
-    SCENE_MECHLAB,
-    SCENE_VS,
-    SCENE_MELEE,
-    SCENE_NEWSROOM,
-    SCENE_ARENA0,
-    SCENE_ARENA1,
-    SCENE_ARENA2,
-    SCENE_ARENA3,
-    SCENE_ARENA4,
-    SCENE_NORTHAM,
-    SCENE_KATUSHAI,
-    SCENE_WAR,
-    SCENE_WORLD,
-    SCENE_SCOREBOARD, // Points to menu bk file
-    SCENE_NONE,
-    HAR_JAGUAR,
-    HAR_SHADOW,
-    HAR_THORN,
-    HAR_PYROS,
-    HAR_ELECTRA,
-    HAR_KATANA,
-    HAR_SHREDDER,
-    HAR_FLAIL,
-    HAR_GARGOYLE,
-    HAR_CHRONOS,
-    HAR_NOVA,
-    HAR_NONE,
+    BK_INTRO = 0,
+    BK_MENU,
+    BK_END,
+    BK_END1,
+    BK_END2,
+    BK_CREDITS,
+    BK_MECHLAB,
+    BK_VS,
+    BK_MELEE,
+    BK_NEWSROOM,
+    BK_ARENA0,
+    BK_ARENA1,
+    BK_ARENA2,
+    BK_ARENA3,
+    BK_ARENA4,
+    BK_NORTHAM,
+    BK_KATUSHAI,
+    BK_WAR,
+    BK_WORLD,
+    AF_JAGUAR,
+    AF_SHADOW,
+    AF_THORN,
+    AF_PYROS,
+    AF_ELECTRA,
+    AF_KATANA,
+    AF_SHREDDER,
+    AF_FLAIL,
+    AF_GARGOYLE,
+    AF_CHRONOS,
+    AF_NOVA,
     PSM_MENU,
     PSM_END,
     PSM_ARENA0,
@@ -44,24 +41,23 @@ enum RESOURCE_ID {
     PSM_ARENA4,
     DAT_SOUNDS,
     DAT_ENGLISH,
-    DAT_GERMAN,
     DAT_GRAPHCHR,
     DAT_CHARSMAL,
     DAT_ALTPALS,
     NUMBER_OF_RESOURCES
 };
 
-const char* get_file_by_id(int id);
-const char* get_id_name(int id);
+const char* get_resource_file(unsigned int id);
+const char* get_resource_name(unsigned int id);
 char* get_path_by_id(int id);
 
 // returns 0 if there are no missing files, otherwise 1 is returned
 int validate_resource_path(char **missingfile);
 
-int is_arena(int id);
-int is_scene(int id);
-int is_har(int id);
-int is_music(int id);
+int is_arena(unsigned int id);
+int is_scene(unsigned int id);
+int is_har(unsigned int id);
+int is_music(unsigned int id);
 
 int rand_arena();
 

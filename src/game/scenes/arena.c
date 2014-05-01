@@ -937,20 +937,20 @@ void arena_render_overlay(scene *scene) {
                             TEXT_COLOR,
                             TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
         font_render_shadowed(&font_small,
-                            lang_get((player[0]->har_id - HAR_JAGUAR)+31),
+                            lang_get((player[0]->har_id)+31),
                             5, 26,
                             TEXT_COLOR,
                             TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
 
         int p2len = (strlen(lang_get(player[1]->pilot_id+20))-1) * font_small.w;
-        int h2len = (strlen(lang_get((player[1]->har_id - HAR_JAGUAR)+31))-1) * font_small.w;
+        int h2len = (strlen(lang_get((player[1]->har_id)+31))-1) * font_small.w;
         font_render_shadowed(&font_small,
                             lang_get(player[1]->pilot_id+20),
                             315-p2len, 19,
                             TEXT_COLOR,
                             TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
         font_render_shadowed(&font_small,
-                            lang_get((player[1]->har_id - HAR_JAGUAR)+31),
+                            lang_get((player[1]->har_id)+31),
                             315-h2len, 26,
                             TEXT_COLOR,
                             TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
