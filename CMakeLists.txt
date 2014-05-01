@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 2.6)
 project(OpenOMF C)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
+set(VERSION_MAJOR "0")
+set(VERSION_MINOR "6")
+set(VERSION_PATCH "5")
+SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+
 # Options
 OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
@@ -41,7 +46,7 @@ ELSE()
 ENDIF()
 
 # These flags are used for all builds
-set(CMAKE_C_FLAGS "-Wall")
+set(CMAKE_C_FLAGS "-Wall -DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH}")
 
 # Check available compiler
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
