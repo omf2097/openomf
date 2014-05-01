@@ -293,14 +293,14 @@ void handle_action(scene *scene, int player, int action) {
                         }
                     }
                     if(nova_activated[0] && local->row_a == 1 && local->column_a == 2) {
-                        player1->har_id = HAR_NAME_NOVA;
+                        player1->har_id = HAR_NOVA;
                     } else {
                         player1->har_id = 5*local->row_a+local->column_a;
                     }
                     player1->pilot_id = local->pilot_id_a;
                     if (player2->selectable) {
                         if(nova_activated[1] && local->row_b == 1 && local->column_b == 2) {
-                            player2->har_id = HAR_NAME_NOVA;
+                            player2->har_id = HAR_NOVA;
                         } else {
                             player2->har_id = 5*local->row_b+local->column_b;
                         }
@@ -309,7 +309,7 @@ void handle_action(scene *scene, int player, int action) {
                         if (player1->sp_wins == (2046 ^ (2 << player1->pilot_id))) {
                             // everyone but kriessack
                             player2->pilot_id = 10;
-                            player2->har_id = HAR_NAME_NOVA;
+                            player2->har_id = HAR_NOVA;
                         } else {
                             // pick an opponent we have not yet beaten
                             while(1) {

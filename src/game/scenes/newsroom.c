@@ -246,7 +246,7 @@ int newsroom_event(scene *scene, SDL_Event *event) {
                                 if (p1->sp_wins == (2046 ^ (2 << p1->pilot_id))) {
                                     // everyone but kriessack
                                     p2->pilot_id = 10;
-                                    p2->har_id = HAR_NAME_NOVA;
+                                    p2->har_id = HAR_NOVA;
                                 } else {
                                     // pick an opponent we have not yet beaten
                                     while(1) {

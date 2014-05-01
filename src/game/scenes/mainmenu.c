@@ -773,9 +773,9 @@ void mainmenu_tick(scene *scene, int paused) {
                 // force the speed to 3
                 game_state_set_speed(scene->gs, 5);
 
-                p1->har_id = HAR_NAME_JAGUAR;
+                p1->har_id = HAR_JAGUAR;
                 p1->pilot_id = 0;
-                p2->har_id = HAR_NAME_JAGUAR;
+                p2->har_id = HAR_JAGUAR;
                 p2->pilot_id = 0;
 
                 player1_ctrl = malloc(sizeof(controller));
@@ -814,9 +814,9 @@ void mainmenu_tick(scene *scene, int paused) {
                 // force the speed to 3
                 game_state_set_speed(scene->gs, 5);
 
-                p1->har_id = HAR_NAME_JAGUAR;
+                p1->har_id = HAR_JAGUAR;
                 p1->pilot_id = 0;
-                p2->har_id = HAR_NAME_JAGUAR;
+                p2->har_id = HAR_JAGUAR;
                 p2->pilot_id = 0;
 
                 player1_ctrl = malloc(sizeof(controller));
