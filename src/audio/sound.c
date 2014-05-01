@@ -6,7 +6,7 @@
 #include "audio/sound.h"
 #include "resources/sounds_loader.h"
 
-float sound_volume = VOLUME_DEFAULT;
+static float _sound_volume = VOLUME_DEFAULT;
 
 #ifdef STANDALONE_SERVER
 void sound_play(int id, float volume, float panning, float pitch) {}
@@ -24,11 +24,11 @@ void sound_play(int id, float volume, float panning, float pitch) {
     source_init(src);
     raw_source_init(src, buf, len);
     unsigned int sound_id = sink_play_set(audio_get_sink(), src, volume, panning, pitch);
-    sink_set_stream_volume(audio_get_sink(), sound_id, sound_volume);
+    sink_set_stream_volume(audio_get_sink(), sound_id, _sound_volume);
 
 }
 #endif
 
 void sound_set_volume(float volume) {
-    sound_volume = volume;
+    _sound_volume = volume;
 }

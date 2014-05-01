@@ -311,12 +311,6 @@ int newsroom_create(scene *scene) {
     str_create(&local->har1);
     str_create(&local->har2);
 
-    if(!music_playing()) {
-        char *filename = get_path_by_id(PSM_MENU);
-        music_play(filename);
-        free(filename);
-    }
-
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
 
@@ -364,6 +358,9 @@ int newsroom_create(scene *scene) {
     scene_set_render_overlay_cb(scene, newsroom_overlay_render);
     scene_set_free_cb(scene, newsroom_free);
     scene_set_static_tick_cb(scene, newsroom_static_tick);
+
+    // Start correct music
+    music_play(PSM_MENU);
 
     // Pick renderer
     video_select_renderer(VIDEO_RENDERER_HW);

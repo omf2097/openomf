@@ -338,23 +338,7 @@ void player_run(object *obj) {
                     music_stop();
                     return;
                 }
-
-                // Find file we want to play
-                char *filename = NULL;
-                switch(get(f, "smo")) {
-                    case 1: filename = get_path_by_id(PSM_END); break;
-                    case 2: filename = get_path_by_id(PSM_MENU); break;
-                    case 3: filename = get_path_by_id(PSM_ARENA0); break;
-                    case 4: filename = get_path_by_id(PSM_ARENA1); break;
-                    case 5: filename = get_path_by_id(PSM_ARENA2); break;
-                    case 6: filename = get_path_by_id(PSM_ARENA3); break;
-                    case 7: filename = get_path_by_id(PSM_ARENA4); break;
-                }
-                if(filename != NULL) {
-                    music_play(filename);
-                    free(filename);
-                    music_set_volume(settings_get()->sound.music_vol/10.0f);
-                }
+                music_play(PSM_END + (get(f, "smo") - 1));
             }
             if(isset(f, "smf")) {
                 music_stop();

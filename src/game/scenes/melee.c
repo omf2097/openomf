@@ -560,14 +560,6 @@ int melee_create(scene *scene) {
     controller *player1_ctrl = game_player_get_ctrl(player1);
     controller *player2_ctrl = game_player_get_ctrl(player2);
 
-    // 2 player can jump back to melee, so play the menu music if it isn't already
-    if(!music_playing()) {
-        char *filename = get_path_by_id(PSM_MENU);
-        music_play(filename);
-        free(filename);
-        music_set_volume(settings_get()->sound.music_vol/10.0f);
-    }
-
     palette *mpal = video_get_base_palette();
     palette_set_player_color(mpal, 0, 8, 0);
     palette_set_player_color(mpal, 0, 8, 1);
@@ -699,6 +691,9 @@ int melee_create(scene *scene) {
     scene_set_render_cb(scene, melee_render);
     scene_set_free_cb(scene, melee_free);
     scene_set_dynamic_tick_cb(scene, melee_tick);
+
+    // Play correct music
+    music_play(PSM_MENU);
 
     // Pick renderer
     video_select_renderer(VIDEO_RENDERER_HW);

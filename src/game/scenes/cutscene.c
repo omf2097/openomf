@@ -92,13 +92,6 @@ void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     }
 }
 
-void cutscene_music(int id) {
-    music_stop();
-    char *filename = get_path_by_id(id);
-    music_play(filename);
-    free(filename);
-}
-
 int cutscene_create(scene *scene) {
     cutscene_local *local = malloc(sizeof(cutscene_local));
 
@@ -107,7 +100,7 @@ int cutscene_create(scene *scene) {
     const char *text = "";
     switch (scene->id) {
       case SCENE_END:
-        cutscene_music(PSM_END);
+        music_play(PSM_END);
         text = lang_get(END_TEXT);
         local->text_x = 10;
         local->text_y = 5;

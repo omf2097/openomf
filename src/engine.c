@@ -49,6 +49,8 @@ int engine_init() {
     if(audio_init(sink_id)) {
         goto exit_1;
     }
+    sound_set_volume(setting->sound.sound_vol/10.0f);
+    music_set_volume(setting->sound.music_vol/10.0f);
 #endif
 
     if(sounds_loader_init()) {

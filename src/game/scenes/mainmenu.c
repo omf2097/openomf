@@ -962,15 +962,6 @@ int mainmenu_create(scene *scene) {
 
     // Load settings
     settings *setting = settings_get();
-
-    // Force music playback
-    if(!music_playing()) {
-        char *filename = get_path_by_id(PSM_MENU);
-        music_play(filename);
-        free(filename);
-        music_set_volume(settings_get()->sound.music_vol/10.0f);
-    }
-
     game_state_set_speed(scene->gs, settings_get()->gameplay.speed);
 
     // Zero out host
@@ -1408,6 +1399,9 @@ int mainmenu_create(scene *scene) {
 
     // clear it, so this only happens the first time
     scene->gs->net_mode = NET_MODE_NONE;
+
+    // Make sure we have music playing
+    music_play(PSM_MENU);
 
     // Pick renderer
     video_select_renderer(VIDEO_RENDERER_HW);

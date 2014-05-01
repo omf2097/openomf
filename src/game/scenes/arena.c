@@ -1032,19 +1032,12 @@ int arena_create(scene *scene) {
     }
 
     // Handle music playback
-    music_stop();
-    char *music_filename = NULL;
     switch(scene->bk_data.file_id) {
-        case 8:   music_filename = get_path_by_id(PSM_ARENA0); break;
-        case 16:  music_filename = get_path_by_id(PSM_ARENA1); break;
-        case 32:  music_filename = get_path_by_id(PSM_ARENA2); break;
-        case 64:  music_filename = get_path_by_id(PSM_ARENA3); break;
-        case 128: music_filename = get_path_by_id(PSM_ARENA4); break;
-    }
-    if(music_filename != NULL) {
-        music_play(music_filename);
-        music_set_volume(setting->sound.music_vol/10.0f);
-        free(music_filename);
+        case 8:   music_play(PSM_ARENA0); break;
+        case 16:  music_play(PSM_ARENA1); break;
+        case 32:  music_play(PSM_ARENA2); break;
+        case 64:  music_play(PSM_ARENA3); break;
+        case 128: music_play(PSM_ARENA4); break;
     }
 
     // Initialize local struct
