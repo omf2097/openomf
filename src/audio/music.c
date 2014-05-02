@@ -3,11 +3,12 @@
 #ifdef __linux__
 #include <strings.h> // strcasecmp
 #endif // __linux__
-#include "resources/ids.h"
+#include "resources/pathmanager.h"
 #include "audio/music.h"
 #include "audio/audio.h"
 #include "audio/sources/dumb_source.h"
 #include "utils/log.h"
+#include "game/utils/settings.h"
 #ifdef USE_OGGVORBIS
 #include "audio/sources/vorbis_source.h"
 #endif // USE_OGGVORBIS
@@ -19,9 +20,37 @@ void music_stop() {}
 int music_playing() { return 1; }
 #else // STANDALONE_SERVER
 
+struct music_override_t {
+    int id;
+    const char *name;
+};
+
 static unsigned int _music_stream_id = 0;
 static unsigned int _music_resource_id = 0;
 static float _music_volume = VOLUME_DEFAULT;
+
+const char* get_file_or_override(unsigned int id) {
+    // Declare music overrides
+    settings *s = settings_get();
+    struct music_override_t overrides[] = {
+        {PSM_ARENA0, s->sound.music_arena0},
+        {PSM_ARENA1, s->sound.music_arena1},
+        {PSM_ARENA2, s->sound.music_arena2},
+        {PSM_ARENA3, s->sound.music_arena3},
+        {PSM_ARENA4, s->sound.music_arena4},
+        {PSM_MENU,   s->sound.music_menu},
+        {PSM_END,    s->sound.music_end}
+    };
+
+    for(int i = 0; i < 7; i++) {
+        if(id == overrides[i].id && strlen(overrides[i].name) > 0) {
+            DEBUG("Overriding %s to %s.", get_resource_name(id), overrides[i].name);
+            return overrides[i].name;
+        }
+    }
+
+    return pm_get_resource_path(id);
+}
 
 int music_play(unsigned int id) {
     // Check if the wanted music is already playing
@@ -34,8 +63,8 @@ int music_play(unsigned int id) {
     source_init(music_src);
 
     // Find path & ext
-    char* filename = get_path_by_id(id);
-    char* ext = strrchr(filename, '.') + 1;
+    const char* filename = get_file_or_override(id);
+    const char* ext = strrchr(filename, '.') + 1;
     if(ext == NULL || ext == filename) {
         PERROR("Couldn't find extension for music file!");
         goto error_0;
@@ -75,11 +104,9 @@ int music_play(unsigned int id) {
     sink_set_stream_volume(audio_get_sink(), _music_stream_id, _music_volume);
 
     // All done
-    free(filename);
     return 0;
 
 error_0:
-    free(filename);
     free(music_src);
     return 1;
 }

@@ -10,6 +10,8 @@ const char* scene_get_name(unsigned int id);
 int har_to_resource(unsigned int id);
 int scene_to_resource(unsigned int id);
 
+int rand_arena();
+
 enum {
     SCENE_NONE = 0,
     SCENE_INTRO,

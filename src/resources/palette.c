@@ -2,23 +2,22 @@
 #include <stdlib.h>
 #include "resources/palette.h"
 #include "resources/ids.h"
+#include "resources/pathmanager.h"
 #include "utils/log.h"
 
 sd_altpal_file *altpals = NULL;
 
 int altpals_init() {
     // Get filename
-    char *filename = get_path_by_id(DAT_ALTPALS);
+    const char *filename = pm_get_resource_path(DAT_ALTPALS);
 
     altpals = sd_altpal_create();
     if(sd_altpals_load(altpals, filename)) {
         sd_altpal_delete(altpals);
         PERROR("Unable to load altpals file '%s'!", filename);
-        free(filename);
         return 1;
     }
     INFO("Loaded altpals file '%s'.", filename);
-    free(filename);
     return 0;
 }
 

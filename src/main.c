@@ -5,69 +5,31 @@
 #include <SDL2/SDL.h>
 #include <dumb.h>
 #include <enet/enet.h>
-
-#if defined(_WIN32) || defined(WIN32)
-#include <shlobj.h> //SHCreateDirectoryEx
-#endif
-
+#include <shadowdive/stringparser.h>
 #include "engine.h"
-#include "shadowdive/stringparser.h"
 #include "utils/log.h"
 #include "utils/random.h"
 #include "utils/msgbox.h"
 #include "game/game_state.h"
 #include "game/utils/settings.h"
-#include "resources/global_paths.h"
+#include "resources/pathmanager.h"
 #include "resources/ids.h"
 #include "plugins/plugins.h"
 #include "controller/gamecontrollerdb.h"
 
 int main(int argc, char *argv[]) {
     // Get path
-    char *path = NULL;
     char *ip = NULL;
     unsigned short connect_port = 0;
     unsigned short listen_port = 0;
     int net_mode = NET_MODE_NONE;
-    int portable_mode = 0;
     int ret = 0;
 
-    // if openomf.conf exists in the current directory, switch to portable mode
-    if(access("openomf.conf", F_OK) != -1) {
-        // USB stick (portable) mode
-        portable_mode = 1;
-        path = SDL_malloc(1);
-        path[0] = 0;
-    } else {
-        // Non-portable mode
-        portable_mode = 0;
-        path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
-        if(path == NULL) {
-            err_msgbox("Error getting config path: %s", SDL_GetError());
-            return 1;
-        }
-#if defined(_WIN32) || defined(WIN32)
-        // Ensure the path exists before continuing on
-        // XXX shouldn't SDL_GetPrefPath automatically create the path if it doesn't exist?
-        int sherr = SHCreateDirectoryEx(NULL, path, NULL);
-        if(sherr == ERROR_FILE_EXISTS) {
-            err_msgbox("Please delete this file and relaunch OpenOMF: %s", path);
-            return 1;
-        } else if(sherr != ERROR_SUCCESS && sherr != ERROR_ALREADY_EXISTS) {
-            err_msgbox("Failed to create config path: %s", path);
-            return 1;
-        }
-#endif
+    // Path manager
+    if(pm_init() != 0) {
+        err_msgbox(pm_get_errormsg());
+        return 1;
     }
-
-    // Init some paths
-    global_paths_init();
-    global_path_build(CONFIG_PATH, path, "openomf.conf");
-    global_path_build(LOG_PATH, path, "openomf.log");
-    global_path_build(SCORE_PATH, path, "SCORES.DAT");
-
-    // Free SDL reserved path
-    SDL_free(path);
 
     // Check arguments
     if(argc >= 2) {
@@ -79,19 +41,9 @@ int main(int argc, char *argv[]) {
         } else if(strcmp(argv[1], "-h") == 0) {
             printf("Arguments:\n");
             printf("-h              Prints this help\n");
-            printf("-w              Writes a config file\n");
             printf("-c [ip] [port]  Connect to server\n");
             printf("-l [port]       Start server\n");
             goto exit_0;
-        } else if(strcmp(argv[1], "-w") == 0) {
-            if(settings_write_defaults(global_path_get(CONFIG_PATH))) {
-                fprintf(stderr, "Failed to write config file to '%s'!", global_path_get(CONFIG_PATH));
-                ret = 1;
-                goto exit_0;
-            } else {
-                printf("Config file written to '%s'!", global_path_get(CONFIG_PATH));
-                goto exit_0;
-            }
         } else if(strcmp(argv[1], "-c") == 0) {
             if(argc >= 3) {
                 ip = strcpy(malloc(strlen(argv[2])+1), argv[2]);
@@ -115,14 +67,17 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 #else
-    if(log_init(global_path_get(LOG_PATH))) {
-        err_msgbox("Error while initializing log '%s'!", global_path_get(LOG_PATH));
+    if(log_init(pm_get_local_path(LOG_PATH))) {
+        err_msgbox("Error while initializing log '%s'!", pm_get_local_path(LOG_PATH));
         goto exit_0;
     }
 #endif
 
     // Simple header
     INFO("Starting OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
+
+    // Dump pathmanager log
+    pm_log();
 
     // Random seed
     rand_seed(time(NULL));
@@ -131,64 +86,11 @@ int main(int argc, char *argv[]) {
     sd_stringparser_lib_init();
 
     // Init config
-    if(settings_init(global_path_get(CONFIG_PATH))) {
+    if(settings_init(pm_get_local_path(CONFIG_PATH))) {
         err_msgbox("Failed to initialize settings file");
         goto exit_1;
     }
     settings_load();
-
-    // Set default resource and plugins paths
-    if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
-        global_path_set(RESOURCE_PATH, "resources\\");
-        global_path_set(PLUGIN_PATH, "plugins\\");
-    } else {
-        global_path_set(RESOURCE_PATH, "resources/");
-        global_path_set(PLUGIN_PATH, "plugins/");
-    }
-
-    // If we are not in debug mode, and not in portable mode,
-    // set proper paths. If something fails, use the already set
-    // defaults.
-#ifndef DEBUGMODE
-    if(!portable_mode) {
-        // where is the openomf binary, if this call fails we will look for resources in ./resources
-        char *base_path = SDL_GetBasePath();
-        if(base_path != NULL) {
-            if (!strcasecmp(SDL_GetPlatform(), "Windows")) {
-                // on windows, the resources will be in ./resources, relative to the binary
-                global_path_build(RESOURCE_PATH, base_path, "resources\\");
-                global_path_build(PLUGIN_PATH, base_path, "plugins\\");
-            } else if (!strcasecmp(SDL_GetPlatform(), "Linux")) {
-                // on linux, the resources will be in ../share/openomf, relative to the binary
-                // so if openomf is installed to /usr/local/bin,
-                // the resources will be in /usr/local/share/openomf
-                global_path_build(RESOURCE_PATH, base_path, "../share/openomf/");
-                global_path_set(PLUGIN_PATH, "/usr/lib/openomf/");
-            } else if (!strcasecmp(SDL_GetPlatform(), "Mac OS X")) {
-                // on OSX, GetBasePath returns the 'Resources' directory
-                // if run from an app bundle, so we can use this as-is
-                global_path_set(RESOURCE_PATH, base_path);
-                global_path_build(PLUGIN_PATH, base_path, "plugins/");
-            }
-            // any other platform will look in ./resources
-            SDL_free(base_path);
-        }
-    }
-#else
-    // This disables warnings about unused variable
-    (void)(portable_mode);
-#endif
-
-    // Print all paths if debug mode is on
-    global_paths_print_debug();
-
-    // Make sure the required resource files exist
-    char *missingfile = NULL;
-    if(validate_resource_path(&missingfile)) {
-        err_msgbox("Resource file does not exist: %s", missingfile);
-        free(missingfile);
-        goto exit_1;
-    }
 
     // Find plugins and make sure they are valid
     plugins_init();
@@ -232,7 +134,7 @@ int main(int argc, char *argv[]) {
     SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
     SDL_GameControllerAddMappingsFromRW(rw, 1);
     char *gamecontrollerdbpath = malloc(128);
-    snprintf(gamecontrollerdbpath, 128, "%s/gamecontrollerdb.txt", global_path_get(RESOURCE_PATH));
+    snprintf(gamecontrollerdbpath, 128, "%s/gamecontrollerdb.txt", pm_get_local_path(RESOURCE_PATH));
     int mappings_loaded = SDL_GameControllerAddMappingsFromFile(gamecontrollerdbpath);
     if (mappings_loaded > 0) {
         DEBUG("loaded %d mappings from %s", mappings_loaded, gamecontrollerdbpath);
@@ -302,6 +204,6 @@ exit_0:
         free(ip);
     }
     plugins_close();
-    global_paths_close();
+    pm_free();
     return ret;
 }

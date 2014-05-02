@@ -49,16 +49,10 @@ enum RESOURCE_ID {
 
 const char* get_resource_file(unsigned int id);
 const char* get_resource_name(unsigned int id);
-char* get_path_by_id(int id);
-
-// returns 0 if there are no missing files, otherwise 1 is returned
-int validate_resource_path(char **missingfile);
 
 int is_arena(unsigned int id);
 int is_scene(unsigned int id);
 int is_har(unsigned int id);
 int is_music(unsigned int id);
-
-int rand_arena();
 
 #endif // _IDS_H

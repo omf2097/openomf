@@ -2,24 +2,23 @@
 #include <shadowdive/shadowdive.h>
 #include "resources/sounds_loader.h"
 #include "resources/ids.h"
+#include "resources/pathmanager.h"
 #include "utils/log.h"
 
 sd_sound_file *sound_data = NULL;
 
 int sounds_loader_init() {
     // Get filename
-    char *filename = get_path_by_id(DAT_SOUNDS);
+    const char *filename = pm_get_resource_path(DAT_SOUNDS);
 
     // Load sounds
     sound_data = sd_sounds_create();
     if(sd_sounds_load(sound_data, filename)) {
         sd_sounds_delete(sound_data);
         PERROR("Unable to load sounds file '%s'!", filename);
-        free(filename);
         return 1;
     }
     INFO("Loaded sounds file '%s'.", filename);
-    free(filename);
     return 0;
 }
 

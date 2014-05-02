@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "plugins/plugins.h"
-#include "resources/global_paths.h"
+#include "resources/pathmanager.h"
 #include "utils/scandir.h"
 #include "utils/list.h"
 #include "utils/log.h"
@@ -29,7 +29,7 @@ void plugins_init() {
 
     // Find all files from the plugin path
     list_create(&scanned);
-    if(scan_directory(&scanned, global_path_get(PLUGIN_PATH))) {
+    if(scan_directory(&scanned, pm_get_local_path(PLUGIN_PATH))) {
         PERROR("Error while attempting to open plugin directory.");
         return;
     }
@@ -48,9 +48,9 @@ void plugins_init() {
             }
 
             // Open the plugin file
-            int psize = strlen(global_path_get(PLUGIN_PATH)) + strlen(plugin_file) + 1;
+            int psize = strlen(pm_get_local_path(PLUGIN_PATH)) + strlen(plugin_file) + 1;
             plugin_path = malloc(psize);
-            sprintf(plugin_path, "%s%s", global_path_get(PLUGIN_PATH), plugin_file);
+            sprintf(plugin_path, "%s%s", pm_get_local_path(PLUGIN_PATH), plugin_file);
             handle = SDL_LoadObject(plugin_path);
             free(plugin_path);
 

@@ -5,6 +5,7 @@
 #include "video/surface.h"
 #include "resources/ids.h"
 #include "resources/fonts.h"
+#include "resources/pathmanager.h"
 
 font font_small;
 font font_large;
@@ -71,25 +72,23 @@ int font_load(font *font, const char* filename, unsigned int size) {
 int fonts_init() {
     font_create(&font_small);
     font_create(&font_large);
-    char *filename = NULL;
+    const char *filename = NULL;
 
     // Load small font
-    filename = get_path_by_id(DAT_CHARSMAL);
+    filename = pm_get_resource_path(DAT_CHARSMAL);
     if(font_load(&font_small, filename, FONT_SMALL)) {
         PERROR("Unable to load font file '%s'!", filename);
         goto error_2;
     }
     INFO("Loaded font file '%s'", filename);
-    free(filename);
 
     // Load big font
-    filename = get_path_by_id(DAT_GRAPHCHR);
+    filename = pm_get_resource_path(DAT_GRAPHCHR);
     if(font_load(&font_large, filename, FONT_BIG)) {
         PERROR("Unable to load font file '%s'!", filename);
         goto error_1;
     }
     INFO("Loaded font file '%s'", filename);
-    free(filename);
 
     // All done.
     fonts_loaded = 1;
@@ -99,7 +98,6 @@ error_2:
     font_free(&font_small);
 error_1:
     font_free(&font_large);
-    free(filename);
     return 1;
 }
 

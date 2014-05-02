@@ -1,64 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
+
 #include <string.h>
-#include <unistd.h>
 #include "resources/ids.h"
-#include "resources/global_paths.h"
 #include "game/utils/settings.h"
 #include "utils/log.h"
-#include "utils/random.h"
-
-struct music_override_t {
-    int id;
-    const char *name;
-};
-
-int validate_resource_path(char **missingfile) {
-    for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        *missingfile = get_path_by_id(i);
-        if(*missingfile != NULL) {
-            if(access(*missingfile, F_OK) == -1) {
-                return 1;
-            }
-            free(*missingfile);
-        }
-    }
-    *missingfile = NULL;
-    return 0;
-}
-
-char* get_path_by_id(int id) {
-    const char *path = global_path_get(RESOURCE_PATH);
-    const char *filename = get_resource_file(id);
-    if(filename != NULL && path != NULL) {
-        int len = strlen(path) + strlen(filename) + 1;
-        char *out = malloc(len);
-        sprintf(out, "%s%s", path, filename);
-        return out;
-    }
-    return NULL;
-}
 
 const char* get_resource_file(unsigned int id) {
-    // Declare music overrides
-    settings *s = settings_get();
-    struct music_override_t overrides[] = {
-        {PSM_ARENA0, s->sound.music_arena0},
-        {PSM_ARENA1, s->sound.music_arena1},
-        {PSM_ARENA2, s->sound.music_arena2},
-        {PSM_ARENA3, s->sound.music_arena3},
-        {PSM_ARENA4, s->sound.music_arena4},
-        {PSM_MENU,   s->sound.music_menu},
-        {PSM_END,    s->sound.music_end}
-    };
-
-    for(int i = 0; i < 7; i++) {
-        if(id == overrides[i].id && strlen(overrides[i].name) > 0) {
-            DEBUG("Overriding %s to %s.", get_resource_name(id), overrides[i].name);
-            return overrides[i].name;
-        }
-    }
-
     switch(id) {
         case BK_INTRO:       return "INTRO.BK";
         case BK_MENU:        return "MAIN.BK";
@@ -170,8 +116,4 @@ int is_har(unsigned int id) {
 
 int is_music(unsigned int id) {
     return (id >= PSM_MENU && id <= PSM_ARENA4);
-}
-
-int rand_arena() {
-   return BK_ARENA0 + rand_int(5);
 }

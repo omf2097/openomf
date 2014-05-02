@@ -56,7 +56,7 @@ int conf_init_internal(const char *filename) {
         PERROR("Error while attempting to parse config file '%s' !", filename);
         return 1;
     }
-    DEBUG("Config file '%s' read!", filename);
+    INFO("Configfile read!");
     return 0;
 }
 

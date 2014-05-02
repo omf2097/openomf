@@ -1,23 +1,20 @@
 #include <shadowdive/shadowdive.h>
-#include <stdlib.h>
-
 #include "resources/languages.h"
+#include "resources/pathmanager.h"
 #include "utils/array.h"
 #include "utils/log.h"
-#include "resources/ids.h"
 
 array language_strings;
 sd_language *language;
 
 int lang_init() {
     // Get filename
-    char *filename = get_path_by_id(DAT_ENGLISH);
+    const char *filename = pm_get_resource_path(DAT_ENGLISH);
 
     // Load up language file
     language = sd_language_create();
     if(sd_language_load(language, filename)) {
         PERROR("Unable to load language file '%s'!", filename);
-        free(filename);
         return 1;
     }
 
@@ -28,7 +25,6 @@ int lang_init() {
     }
 
     INFO("Loaded language file '%s'.", filename);
-    free(filename);
     return 0;
 }
 

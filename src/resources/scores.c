@@ -1,7 +1,7 @@
 #include <string.h>
 #include <shadowdive/shadowdive.h>
 #include "utils/log.h"
-#include "resources/global_paths.h"
+#include "resources/pathmanager.h"
 #include "resources/scores.h"
 
 void scores_clear(scoreboard *sb) {
@@ -17,7 +17,7 @@ void scores_clear(scoreboard *sb) {
 
 int scores_read(scoreboard *sb) {
     sd_score* score_file = sd_score_create();
-    if(sd_score_load(score_file, global_path_get(SCORE_PATH)) != SD_SUCCESS) {
+    if(sd_score_load(score_file, pm_get_local_path(SCORE_PATH)) != SD_SUCCESS) {
         PERROR("Failure while attempting to open scores file!");
         goto error_0;
     }
@@ -56,7 +56,7 @@ int scores_write(scoreboard *sb) {
     }
 
     // Save
-    sd_score_save(score_file, global_path_get(SCORE_PATH));
+    sd_score_save(score_file, pm_get_local_path(SCORE_PATH));
 
     // All done
     sd_score_delete(score_file);

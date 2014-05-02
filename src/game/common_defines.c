@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include "game/common_defines.h"
 #include "resources/ids.h"
+#include "utils/random.h"
 
 static const char *ai_difficulty_names[] = {
     "PUNCHING BAG",
@@ -70,6 +71,10 @@ static const char* scene_type_names[] = {
     "SCENE_WORLD",
     "SCENE_SCOREBOARD",
 };
+
+int rand_arena() {
+   return SCENE_ARENA0 + rand_int(5);
+}
 
 const char* ai_difficulty_get_name(unsigned int id) {
     if(id >= NUMBER_OF_AI_DIFFICULTY_TYPES) {
