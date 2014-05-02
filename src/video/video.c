@@ -1,3 +1,7 @@
+#include <SDL2/SDL.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "video/video.h"
 #include "video/image.h"
 #include "video/tcache.h"
@@ -8,8 +12,6 @@
 #include "video/video_hw.h"
 #include "video/video_soft.h"
 #include "plugins/plugins.h"
-#include <SDL2/SDL.h>
-#include <stdlib.h>
 
 static video_state state;
 
@@ -76,9 +78,13 @@ int video_init(int window_w,
     state.cur_palette->version = 1;
     memset(state.cur_palette->data, 0, 768);
 
+    // Form title string
+    char title[32];
+    sprintf(title, "OpenOMF v%d.%d.%d\n", V_MAJOR, V_MINOR, V_PATCH);
+
     // Open window
     state.window = SDL_CreateWindow(
-        "OpenOMF",
+        title,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         window_w,

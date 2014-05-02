@@ -94,8 +94,8 @@ int main(int argc, char *argv[]) {
     // Check arguments
     if(argc >= 2) {
         if(strcmp(argv[1], "-v") == 0) {
-            printf("OpenOMF v0.6.5\n");
-            printf("Source available at https://github.com/omf2097/ (MIT License)\n");
+            printf("OpenOMF v%d.%d.%d\n", V_MAJOR, V_MINOR, V_PATCH);
+            printf("Source available at https://github.com/omf2097/ under MIT License\n");
             printf("(C) 2097 Tuomas Virtanen, Andrew Thompson, Hunter and others\n");
             goto exit_0;
         } else if(strcmp(argv[1], "-h") == 0) {
@@ -142,6 +142,9 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 #endif
+
+    // Simple header
+    INFO("Starting OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
 
     // Random seed
     rand_seed(time(NULL));
