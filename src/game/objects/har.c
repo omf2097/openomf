@@ -726,7 +726,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
 
         if (move->category == CAT_CLOSE) {
-          a->close = 0;
+            a->close = 0;
         }
 
         if ((b->state == STATE_STUNNED || b->state == STATE_RECOIL) && object_get_direction(obj_a) == object_get_direction(obj_b)) {
@@ -820,9 +820,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         har_event_take_hit(h, move);
         har_event_land_hit(other, move);
 
-        /*if (h->hit_hook_cb) {*/
-            /*h->hit_hook_cb(h->player_id, abs(h->player_id - 1), move, h->hit_hook_cb_data);*/
-        /*}*/
         har_spawn_scrap(o_har, hit_coord, move->scrap_amount);
         h->damage_received = 1;
 
@@ -872,7 +869,6 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
     int level = 2;
     vec2i hit_coord;
     if(!h->damage_received && intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
-
         har_take_damage(o_har, &anim->footer_string, anim->hazard_damage);
         har_event_hazard_hit(h, anim);
         if (anim->chain_no_hit) {
@@ -881,7 +877,7 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
         }
         har_spawn_scrap(o_har, hit_coord, 9);
         h->damage_received = 1;
-    } else if (anim->chain_hit && intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord)) {
+    } else if(anim->chain_hit && intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord)) {
         // we can punch this! Only set on fire pit orb
         anim = bk_get_info(bk_data, anim->chain_hit);
         o_pjt->animation_state.enemy = o_har->animation_state.enemy;
@@ -902,17 +898,15 @@ void har_collide(object *obj_a, object *obj_b) {
         return;
     }
 
+    // Check if this is hazard to har collision
     if(object_get_layers(obj_a) & LAYER_HAZARD) {
-        /*DEBUG("har collided with hazard");*/
         har_collide_with_hazard(obj_b, obj_a);
         return;
     }
     if(object_get_layers(obj_b) & LAYER_HAZARD) {
-        /*DEBUG("har collided with hazard");*/
         har_collide_with_hazard(obj_a, obj_b);
         return;
     }
-
 
     // Check for closeness between HARs and handle it
     har_check_closeness(obj_a, obj_b);
@@ -956,8 +950,9 @@ void har_tick(object *obj) {
         }
     }
 
-    if ((h->state == STATE_DONE) &&
-               obj->animation_state.parser->current_frame.is_final_frame && obj->animation_state.entered_frame == 1) {
+    if ((h->state == STATE_DONE) 
+        && obj->animation_state.parser->current_frame.is_final_frame
+        && obj->animation_state.entered_frame == 1) {
         // match is over
         har_event_done(h);
     }
@@ -988,11 +983,14 @@ void har_tick(object *obj) {
             object_set_vel(obj, vel);
         }
     }
+
     if(h->flinching) {
         vec2f push = object_get_vel(obj);
         // The infamous Harrison-Stetson method
         // XXX TODO is there a non-hardcoded value that we could use?
         if(h->executing_move == 0 && (h->state == STATE_CROUCHBLOCK || h->state == STATE_WALKFROM)) {
+            push.x = 1.0f * -object_get_direction(obj);
+        } else if (h->executing_move == 1) {
             push.x = 1.0f * -object_get_direction(obj);
         } else {
             push.x = 4.0f * -object_get_direction(obj);
