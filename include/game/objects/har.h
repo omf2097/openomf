@@ -119,6 +119,7 @@ typedef struct har_t {
     uint8_t damage_done; // Damage was done this animation
     uint8_t damage_received; // Damage was received this animation
     uint8_t air_attacked;
+    uint8_t is_wallhugging;
 
     int16_t health_max, health;
     int16_t endurance_max, endurance;
@@ -132,9 +133,6 @@ typedef struct har_t {
 
     har_action_hook_cb action_hook_cb;
     void *action_hook_cb_data;
-
-    //har_hook_cb hook_cb;
-    //void *hook_cb_data;
 
     action_buffer act_buf[OBJECT_EVENT_BUFFER_SIZE];
 } har;
