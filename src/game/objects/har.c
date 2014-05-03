@@ -360,6 +360,15 @@ void har_move(object *obj) {
     obj->pos.x += vel.x;
     obj->pos.y += vel.y;
     har *h = object_get_userdata(obj);
+
+    // Check for wall hits
+    if(obj->pos.x <= ARENA_LEFT_WALL || obj->pos.x >= ARENA_RIGHT_WALL) {
+        h->is_wallhugging = 1;
+    } else {
+        h->is_wallhugging = 0;
+    }
+
+    // Handle floor collisions
     if(obj->pos.y > ARENA_FLOOR) {
         if (h->state != STATE_FALLEN) {
             // We collided with ground, so set vertical velocity to 0 and
@@ -735,7 +744,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         har_event_take_hit(b, move);
         har_event_land_hit(a, move);
 
-        if (b->state == STATE_RECOIL) {
+        if (b->state == STATE_RECOIL || b->is_wallhugging) {
             // back the attacker off a little
             a->flinching = 1;
         }
@@ -1677,6 +1686,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->state = STATE_STANDING;
     local->executing_move = 0;
     local->air_attacked = 0;
+    local->is_wallhugging = 0;
 
     local->delay = 0;
 

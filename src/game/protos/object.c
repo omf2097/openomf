@@ -409,6 +409,8 @@ void object_move(object *obj) {
     }
 }
 
+// This does palette transformations to the WHOLE screen palette
+// and affects all objects!
 int object_palette_transform(object *obj, screen_palette *pal) {
     player_sprite_state *rstate = &obj->sprite_state;
     if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
