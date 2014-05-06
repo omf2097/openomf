@@ -215,12 +215,12 @@ void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result){
     }
 }
 
-int newsroom_event(scene *scene, SDL_Event *event) {
+void newsroom_input_tick(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
 
     game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *p1=NULL, *i;
-    controller_event(player1->ctrl, event, &p1);
+    controller_poll(player1->ctrl, &p1);
     i = p1;
     if (i) {
         do {
@@ -281,7 +281,6 @@ int newsroom_event(scene *scene, SDL_Event *event) {
         } while((i = i->next));
     }
     controller_free_chain(p1);
-    return 0;
 }
 
 int pilot_sex(int pilot_id) {
@@ -354,7 +353,7 @@ int newsroom_create(scene *scene) {
 
     // Set callbacks
     scene_set_userdata(scene, local);
-    scene_set_event_cb(scene, newsroom_event);
+    scene_set_input_poll_cb(scene, newsroom_input_tick);
     scene_set_render_overlay_cb(scene, newsroom_overlay_render);
     scene_set_free_cb(scene, newsroom_free);
     scene_set_static_tick_cb(scene, newsroom_static_tick);

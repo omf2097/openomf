@@ -138,11 +138,11 @@ void vs_static_tick(scene *scene, int paused) {
     }
 }
 
-int vs_event(scene *scene, SDL_Event *event) {
+void vs_input_tick(scene *scene) {
     vs_local *local = scene->userdata;
     ctrl_event *p1=NULL, *i;
     game_player *player1 = game_state_get_player(scene->gs, 0);
-    controller_event(player1->ctrl, event, &p1);
+    controller_poll(player1->ctrl, &p1);
     i = p1;
     if (i) {
         do {
@@ -155,18 +155,15 @@ int vs_event(scene *scene, SDL_Event *event) {
                     } else if(!vs_is_netplay(scene)) {
                         dialog_show(&local->quit_dialog, 1);
                     }
-                    return 1;
                 } else {
                     vs_handle_action(scene, i->event_data.action);
                 }
             } else if (i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
-                return 1;
             }
         } while((i = i->next));
     }
     controller_free_chain(p1);
-    return 1;
 }
 
 void vs_render(scene *scene) {
@@ -360,7 +357,7 @@ int vs_create(scene *scene) {
     // Callbacks
     scene_set_render_cb(scene, vs_render);
     scene_set_render_overlay_cb(scene, vs_render_overlay);
-    scene_set_event_cb(scene, vs_event);
+    scene_set_input_poll_cb(scene, vs_input_tick);
     scene_set_dynamic_tick_cb(scene, vs_dynamic_tick);
     scene_set_static_tick_cb(scene, vs_static_tick);
     scene_set_free_cb(scene, vs_free);

@@ -79,11 +79,14 @@ int scoreboard_event(scene *scene, SDL_Event *event) {
             return 1;
         }
     }
+    return 1;
+}
 
-    // Otherwise, try this stuff
+void scoreboard_input_tick(scene*scene) {
+    scoreboard_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *p1 = NULL, *i;
-    controller_event(player1->ctrl, event, &p1);
+    controller_poll(player1->ctrl, &p1);
     i = p1;
     if(i) {
         do {
@@ -123,7 +126,6 @@ int scoreboard_event(scene *scene, SDL_Event *event) {
         } while((i = i->next));
     }
     controller_free_chain(p1);
-    return 1;
 }
 
 void scoreboard_render_overlay(scene *scene) {
@@ -239,6 +241,7 @@ int scoreboard_create(scene *scene) {
     // Set callbacks
     scene_set_userdata(scene, local);
     scene_set_event_cb(scene, scoreboard_event);
+    scene_set_input_poll_cb(scene, scoreboard_input_tick);
     scene_set_render_overlay_cb(scene, scoreboard_render_overlay);
     scene_set_free_cb(scene, scoreboard_free);
     video_select_renderer(VIDEO_RENDERER_HW);

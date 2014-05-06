@@ -9,23 +9,26 @@ typedef struct credits_local_t {
     int ticks;
 } credits_local;
 
-int credits_event(scene *scene, SDL_Event *event) {
+void credits_input_tick(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
-    ctrl_event *p1=NULL, *i;
-    controller_event(player1->ctrl, event, &p1);
+
+    ctrl_event *p1 = NULL, *i;
+    controller_poll(player1->ctrl, &p1);
+
     i = p1;
     if (i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                if (
-                        i->event_data.action == ACT_ESC) {
+                if(i->event_data.action == ACT_ESC ||
+                    i->event_data.action == ACT_KICK ||
+                    i->event_data.action == ACT_PUNCH) {
+
                     game_state_set_next(scene->gs, SCENE_NONE);
                 }
             }
         } while((i = i->next));
     }
     controller_free_chain(p1);
-    return 1;
 }
 
 void credits_tick(scene *scene, int paused) {
@@ -57,7 +60,7 @@ int credits_create(scene *scene) {
     scene_set_dynamic_tick_cb(scene, credits_tick);
     scene_set_free_cb(scene, credits_free);
     scene_set_startup_cb(scene, credits_startup);
-    scene_set_event_cb(scene, credits_event);
+    scene_set_input_poll_cb(scene, credits_input_tick);
 
     // Pick renderer
     video_select_renderer(VIDEO_RENDERER_HW);

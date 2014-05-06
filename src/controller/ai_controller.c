@@ -277,6 +277,9 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
 int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
+    if (!o) {
+        return 1;
+    }
     har *h = object_get_userdata(o);
     object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
 

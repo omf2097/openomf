@@ -58,42 +58,6 @@ int keyboard_poll(controller *ctrl, ctrl_event **ev) {
     return 0;
 }
 
-int keyboard_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
-    keyboard *k = ctrl->data;
-    SDL_Scancode sc = event->key.keysym.scancode;
-
-
-    if(event->type == SDL_KEYDOWN) {
-        if ( sc == k->keys->left && sc == k->keys->up) {
-            controller_cmd(ctrl, ACT_UPLEFT, ev);
-        } else if ( sc == k->keys->left && sc == k->keys->down) {
-            controller_cmd(ctrl, ACT_DOWNLEFT, ev);
-        } else  if ( sc == k->keys->right && sc == k->keys->up) {
-            controller_cmd(ctrl, ACT_UPRIGHT, ev);
-        } else  if ( sc == k->keys->right && sc == k->keys->down) {
-            controller_cmd(ctrl, ACT_DOWNRIGHT, ev);
-        } else if ( sc == k->keys->right) {
-            controller_cmd(ctrl, ACT_RIGHT, ev);
-        } else if ( sc == k->keys->left) {
-            controller_cmd(ctrl, ACT_LEFT, ev);
-        } else if ( sc == k->keys->up) {
-            controller_cmd(ctrl, ACT_UP, ev);
-        } else if ( sc == k->keys->down) {
-            controller_cmd(ctrl, ACT_DOWN, ev);
-        }
-        if (sc == k->keys->punch) {
-            controller_cmd(ctrl, ACT_PUNCH, ev);
-        } else if (sc == k->keys->kick) {
-            controller_cmd(ctrl, ACT_KICK, ev);
-        }
-        if (sc == k->keys->escape) {
-            controller_cmd(ctrl, ACT_ESC, ev);
-        }
-        return 0;
-    }
-    return 1;
-}
-
 int keyboard_binds_key(controller *ctrl, SDL_Event *event) {
     keyboard *k = ctrl->data;
     SDL_Scancode sc = event->key.keysym.scancode;
@@ -116,5 +80,4 @@ void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_KEYBOARD;
     ctrl->poll_fun = &keyboard_poll;
-    ctrl->event_fun = &keyboard_event;
 }
