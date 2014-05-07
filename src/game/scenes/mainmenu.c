@@ -856,6 +856,41 @@ void mainmenu_tick(scene *scene, int paused) {
     }
 }
 
+void mainmenu_input_tick(scene *scene) {
+    mainmenu_local *local = scene_get_userdata(scene);
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+
+    ctrl_event *p1 = NULL, *i;
+    controller_poll(player1->ctrl, &p1);
+
+    i = p1;
+    if (i) {
+        do {
+            if(i->type == EVENT_TYPE_ACTION) {
+                if (i->event_data.action == ACT_ESC) {
+                    if(local->current_menu == &local->main_menu) {
+                        if(menu_selected(&local->main_menu) == &local->quit_button) {
+                            game_state_set_next(scene->gs, SCENE_CREDITS);
+                        } else {
+                            menu_select(&local->main_menu, &local->quit_button);
+                        }
+                    } else {
+                        if(local->host) {
+                            enet_host_destroy(local->host);
+                            local->host = NULL;
+                        }
+                        local->mstack[--local->mstack_pos] = NULL;
+                        local->current_menu = local->mstack[local->mstack_pos-1];
+                    }
+                } else {
+                    menu_handle_action(local->current_menu, i->event_data.action);
+                }
+            }
+        } while((i = i->next));
+    }
+    controller_free_chain(p1);
+}
+
 int mainmenu_event(scene *scene, SDL_Event *event) {
     mainmenu_local *local = scene_get_userdata(scene);
 
@@ -863,34 +898,8 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
     if (player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
             (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN
              && keyboard_binds_key(player1->ctrl, event))) {
-        ctrl_event *p1=NULL, *i;
-        controller_event(player1->ctrl, event, &p1);
-        i = p1;
-        if (i) {
-            do {
-                if(i->type == EVENT_TYPE_ACTION) {
-                    if (i->event_data.action == ACT_ESC) {
-                        if(local->current_menu == &local->main_menu) {
-                            if(menu_selected(&local->main_menu) == &local->quit_button) {
-                                game_state_set_next(scene->gs, SCENE_CREDITS);
-                            } else {
-                                menu_select(&local->main_menu, &local->quit_button);
-                            }
-                        } else {
-                            if(local->host) {
-                                enet_host_destroy(local->host);
-                                local->host = NULL;
-                            }
-                            local->mstack[--local->mstack_pos] = NULL;
-                            local->current_menu = local->mstack[local->mstack_pos-1];
-                        }
-                    } else {
-                        menu_handle_action(local->current_menu, i->event_data.action);
-                    }
-                }
-            } while((i = i->next));
-        }
-        controller_free_chain(p1);
+        // these events will be handled by polling
+        return 1;
     }
     return menu_handle_event(local->current_menu, event);
 }
@@ -1384,6 +1393,7 @@ int mainmenu_create(scene *scene) {
 
     // Set callbacks
     scene_set_event_cb(scene, mainmenu_event);
+    scene_set_input_poll_cb(scene, mainmenu_input_tick);
     scene_set_render_overlay_cb(scene, mainmenu_render);
     scene_set_free_cb(scene, mainmenu_free);
     scene_set_dynamic_tick_cb(scene, mainmenu_tick);

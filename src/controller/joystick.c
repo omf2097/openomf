@@ -153,18 +153,6 @@ int joystick_poll(controller *ctrl, ctrl_event **ev) {
     return 0;
 }
 
-int joystick_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
-    // Do not handle joystick here since it makes the movements unresponsive
-    //if (event->type == SDL_KEYUP && (event->key.keysym.sym == k->keys->kick || event->key.keysym.sym == k->keys->punch)) {
-    //    return 1;
-    //}
-    //if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) {
-
-    //}
-    joystick_poll(ctrl, ev);
-    return 0;
-}
-
 int joystick_rumble(controller *ctrl, float magnitude, int duration) {
     joystick *k = ctrl->data;
     SDL_HapticRumblePlay(k->haptic, magnitude, duration);
@@ -188,7 +176,6 @@ int joystick_create(controller *ctrl, int joystick_id) {
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_GAMEPAD;
     ctrl->poll_fun = &joystick_poll;
-    ctrl->event_fun = &joystick_event;
 
     k->joy = SDL_GameControllerOpen(joystick_id);
     if (k->joy) {

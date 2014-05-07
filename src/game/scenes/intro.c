@@ -11,10 +11,12 @@ typedef struct intro_local_t {
     int ticks;
 } intro_local;
 
-int intro_event(scene *scene, SDL_Event *event) {
+void intro_input_tick(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
-    ctrl_event *p1=NULL, *i;
-    controller_event(player1->ctrl, event, &p1);
+
+    ctrl_event *p1 = NULL, *i;
+    controller_poll(player1->ctrl, &p1);
+
     i = p1;
     if (i) {
         do {
@@ -29,7 +31,6 @@ int intro_event(scene *scene, SDL_Event *event) {
         } while((i = i->next));
     }
     controller_free_chain(p1);
-    return 1;
 }
 
 void intro_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -67,7 +68,7 @@ int intro_create(scene *scene) {
     // Callbacks
     scene_set_userdata(scene, local);
     scene_set_dynamic_tick_cb(scene, intro_tick);
-    scene_set_event_cb(scene, intro_event);
+    scene_set_input_poll_cb(scene, intro_input_tick);
     scene_set_free_cb(scene, intro_free);
     scene_set_startup_cb(scene, intro_startup);
     scene_set_anim_prio_override_cb(scene, intro_anim_override);

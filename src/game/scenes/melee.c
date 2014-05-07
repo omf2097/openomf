@@ -350,13 +350,13 @@ void handle_action(scene *scene, int player, int action) {
     refresh_pilot_stats(local);
 }
 
-int melee_event(scene *scene, SDL_Event *event) {
+void melee_input_tick(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
     ctrl_event *p1=NULL, *p2 = NULL, *i;
-    controller_event(player1->ctrl, event, &p1);
-    controller_event(player2->ctrl, event, &p2);
+    controller_poll(player1->ctrl, &p1);
+    controller_poll(player2->ctrl, &p2);
     i = p1;
     if (i) {
         do {
@@ -380,7 +380,6 @@ int melee_event(scene *scene, SDL_Event *event) {
                 }
             } else if (i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
-                return 0;
             }
         } while((i = i->next));
     }
@@ -392,12 +391,10 @@ int melee_event(scene *scene, SDL_Event *event) {
                 handle_action(scene, 2, i->event_data.action);
             } else if (i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
-                return 0;
             }
         } while((i = i->next));
     }
     controller_free_chain(p2);
-    return 0;
 }
 
 void render_highlights(scene *scene) {
@@ -687,7 +684,7 @@ int melee_create(scene *scene) {
     memset(local->katana_down_count, 0, sizeof(local->katana_down_count));
 
     // Set callbacks
-    scene_set_event_cb(scene, melee_event);
+    scene_set_input_poll_cb(scene, melee_input_tick);
     scene_set_render_cb(scene, melee_render);
     scene_set_free_cb(scene, melee_free);
     scene_set_dynamic_tick_cb(scene, melee_tick);

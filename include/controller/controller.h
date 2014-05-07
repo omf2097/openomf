@@ -1,7 +1,6 @@
 #ifndef _CONTROLLER_H
 #define _CONTROLLER_H
 
-#include <SDL2/SDL.h>
 #include "game/protos/object.h"
 #include "game/objects/har.h"
 #include "game/utils/serial.h"
@@ -56,7 +55,6 @@ struct controller_t {
     ctrl_event *extra_events;
     int (*tick_fun)(controller *ctrl, int ticks, ctrl_event **ev);
     int (*poll_fun)(controller *ctrl, ctrl_event **ev);
-    int (*event_fun)(controller *ctrl, SDL_Event *event, ctrl_event **ev);
     int (*update_fun)(controller *ctrl, serial *state);
     int (*rumble_fun)(controller *ctrl, float magnitude, int duration);
     int (*har_hook)(controller *ctrl, har_event event);
@@ -71,7 +69,6 @@ void controller_init(controller* ctrl);
 void controller_cmd(controller* ctrl, int action, ctrl_event **ev);
 void controller_sync(controller *ctrl, serial *ser, ctrl_event **ev);
 void controller_close(controller* ctrl, ctrl_event **ev);
-int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev);
 int controller_poll(controller *ctrl, ctrl_event **ev);
 int controller_tick(controller *ctrl, int ticks, ctrl_event **ev);
 int controller_update(controller *ctrl, serial *state);

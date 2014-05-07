@@ -38,11 +38,13 @@ int cutscene_next_scene(scene *scene) {
   }
 }
 
-int cutscene_event(scene *scene, SDL_Event *event) {
+void cutscene_input_tick(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *p1=NULL, *i;
-    controller_event(player1->ctrl, event, &p1);
+
+    controller_poll(player1->ctrl, &p1);
+
     i = p1;
     if (i) {
         do {
@@ -62,13 +64,11 @@ int cutscene_event(scene *scene, SDL_Event *event) {
                     } else {
                         game_state_set_next(scene->gs, cutscene_next_scene(scene));
                     }
-                    return 1;
                 }
             }
         } while((i = i->next));
     }
     controller_free_chain(p1);
-    return 1;
 }
 
 void cutscene_render_overlay(scene *scene) {
@@ -156,7 +156,7 @@ int cutscene_create(scene *scene) {
     // Callbacks
     scene_set_userdata(scene, local);
     scene_set_free_cb(scene, cutscene_free);
-    scene_set_event_cb(scene, cutscene_event);
+    scene_set_input_poll_cb(scene, cutscene_input_tick);
     scene_set_startup_cb(scene, cutscene_startup);
     scene_set_render_overlay_cb(scene, cutscene_render_overlay);
 

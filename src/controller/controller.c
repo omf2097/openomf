@@ -11,7 +11,6 @@ void controller_init(controller *ctrl) {
     list_create(&ctrl->hooks);
     ctrl->extra_events = NULL;
     ctrl->har = NULL;
-    ctrl->event_fun = NULL;
     ctrl->poll_fun = NULL;
     ctrl->tick_fun = NULL;
     ctrl->update_fun = NULL;
@@ -95,13 +94,6 @@ void controller_close(controller *ctrl, ctrl_event **ev) {
     *ev = malloc(sizeof(ctrl_event));
     (*ev)->type = EVENT_TYPE_CLOSE;
     (*ev)->next = NULL;
-}
-
-int controller_event(controller *ctrl, SDL_Event *event, ctrl_event **ev) {
-    if(ctrl->event_fun != NULL) {
-        return ctrl->event_fun(ctrl, event, ev);
-    }
-    return 0;
 }
 
 int controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
