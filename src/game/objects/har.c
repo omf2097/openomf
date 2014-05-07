@@ -626,16 +626,77 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     vec2i pos_b = object_get_pos(obj_b);
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
+    sprite *sprite_a = obj_a->cur_sprite;
+    sprite *sprite_b = obj_b->cur_sprite;
     int hard_limit = 35; // Push opponent if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
 
-    if (b->state == STATE_RECOIL 
-        || a->state == STATE_RECOIL 
-        || b->state == STATE_JUMPING 
-        || a->state == STATE_JUMPING 
-        || b->state == STATE_FALLEN 
+    if (b->state == STATE_RECOIL
+        || a->state == STATE_RECOIL
+        || b->state == STATE_FALLEN
+        || b->state == STATE_JUMPING
+        || a->state == STATE_DEFEAT
+        || b->state == STATE_DEFEAT
         || a->state == STATE_FALLEN) {
         return;
+    }
+
+    vec2i size_b = sprite_get_size(sprite_b);
+
+    // the 50 here is to reverse the damage done in har_fix_sprite_coords
+    int y1 = pos_a.y + sprite_a->pos.y + 50;
+    int y2 = pos_b.y - size_b.y;
+
+    // handle one HAR landing on top of another
+    // XXX make this code less redundant
+    if (a->state == STATE_JUMPING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
+        if(pos_a.x <= pos_b.x + hard_limit && pos_a.x >= pos_b.x && y1 >= y2) {
+            if (pos_b.x == ARENA_LEFT_WALL) {
+                pos_a.x = pos_b.x + hard_limit;
+                object_set_pos(obj_a, pos_a);
+            } else  {
+                // landed in front of the HAR, push opponent back
+                pos_b.x = pos_b.x - obj_a->vel.y/2;
+                object_set_pos(obj_b, pos_b);
+                pos_a.x = pos_a.x + obj_a->vel.y/2;
+                object_set_pos(obj_a, pos_a);
+            }
+        } else if (pos_a.x + hard_limit >= pos_b.x && pos_a.x <= pos_b.x && y1 >= y2) {
+            if (pos_b.x == ARENA_LEFT_WALL) {
+                pos_a.x = pos_b.x + hard_limit;
+                object_set_pos(obj_a, pos_a);
+            } else  {
+                // landed behind of the HAR, push opponent forwards
+                pos_b.x = pos_b.x + obj_a->vel.y;
+                object_set_pos(obj_b, pos_b);
+                pos_a.x = pos_a.x - obj_a->vel.y/2;
+                object_set_pos(obj_a, pos_a);
+            }
+        }
+    } else if (a->state == STATE_JUMPING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
+        if(pos_a.x + hard_limit >= pos_b.x && pos_a.x <= pos_b.x && y1 >= y2) {
+            if (pos_b.x == ARENA_RIGHT_WALL) {
+                pos_a.x = pos_b.x - hard_limit;
+                object_set_pos(obj_a, pos_a);
+            } else {
+            // landed in front of the HAR, push opponent back
+            pos_b.x = pos_b.x + obj_a->vel.y/2;
+            object_set_pos(obj_b, pos_b);
+            pos_a.x = pos_a.x - obj_a->vel.y/2;
+            object_set_pos(obj_a, pos_a);
+            }
+        } else if(pos_a.x <= pos_b.x + hard_limit && pos_a.x >= pos_b.x && y1 >= y2) {
+            if (pos_b.x == ARENA_RIGHT_WALL) {
+                pos_a.x = pos_b.x - hard_limit;
+                object_set_pos(obj_a, pos_a);
+            } else {
+                // landed behind of the HAR, push opponent forwards
+                pos_b.x = pos_b.x - obj_a->vel.y/2;
+                object_set_pos(obj_b, pos_b);
+                pos_a.x = pos_a.x + obj_a->vel.y/2;
+                object_set_pos(obj_a, pos_a);
+            }
+        }
     }
 
     // Reset closeness state
