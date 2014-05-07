@@ -113,7 +113,7 @@ void scoreboard_input_tick(scene*scene) {
                      i->event_data.action == ACT_KICK ||
                      i->event_data.action == ACT_PUNCH)) {
 
-                    game_state_set_next(scene->gs, SCENE_MENU);
+                    game_state_set_next(scene->gs, scene->gs->next_next_id);
 
                 // If left or right button is pressed, change page
                 // but only if we are not in input mode.

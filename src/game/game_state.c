@@ -197,6 +197,7 @@ void game_state_clear_hazards_projectiles(game_state *gs) {
 void game_state_set_next(game_state *gs, unsigned int next_scene_id) {
     if(gs->next_wait_ticks <= 0) {
         gs->next_wait_ticks = FRAME_WAIT_TICKS;
+        gs->next_next_id = SCENE_MENU;
         gs->next_id = next_scene_id;
     }
 }

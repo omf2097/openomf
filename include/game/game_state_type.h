@@ -29,6 +29,7 @@ typedef struct game_state_t {
     unsigned int paused;
     unsigned int this_id;
     unsigned int next_id;
+    unsigned int next_next_id;
     unsigned int tick;
     unsigned int int_tick; // never adjusted, used in ping calculation
     unsigned int role;
