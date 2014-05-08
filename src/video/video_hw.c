@@ -32,7 +32,7 @@ void hw_render_background(
     SDL_Texture *tex = tcache_get(sur, state->cur_palette, NULL, 0);
     SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
     SDL_SetTextureAlphaMod(tex, 0xFF);
-    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_NONE);
     SDL_RenderCopy(state->renderer, tex, NULL, NULL);
 }
 
