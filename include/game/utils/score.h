@@ -23,7 +23,7 @@ typedef struct chr_score_t {
     int health;
     int x,y;
     int direction;
-    float multiplier;
+    int difficulty;
     list texts;
 
     int consecutive_hits;
@@ -34,7 +34,8 @@ typedef struct chr_score_t {
     int destruction;
 } chr_score;
 
-void chr_score_create(chr_score *score, float multiplier);
+void chr_score_create(chr_score *score);
+void chr_score_set_difficulty(chr_score *score, int difficulty);
 void chr_score_reset(chr_score *score, int wipe);
 void chr_score_reset_wins(chr_score *score);
 void chr_score_set_pos(chr_score *score, int x, int y, int direction);

@@ -207,6 +207,9 @@ void mainmenu_1v1(component *c, void *userdata) {
         _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
     }
 
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)), settings_get()->gameplay.difficulty);
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 1)), settings_get()->gameplay.difficulty);
+
     _setup_ai(s->gs, 1);
 
     // Load MELEE scene
@@ -229,6 +232,9 @@ void mainmenu_1v2(component *c, void *userdata) {
     } else if (k->ctrl_type2 == CTRL_TYPE_GAMEPAD) {
         _setup_joystick(s->gs, 1, k->joy_name2, k->joy_offset2);
     }
+
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)), AI_DIFFICULTY_CHAMPION);
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 1)), AI_DIFFICULTY_CHAMPION);
 
     // Load MELEE scene
     game_state_set_next(s->gs, SCENE_MELEE);
@@ -803,6 +809,10 @@ void mainmenu_tick(scene *scene, int paused) {
                 game_player_set_ctrl(p2, player2_ctrl);
                 local->host = NULL;
                 game_player_set_selectable(p2, 1);
+
+                chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);
+                chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)), AI_DIFFICULTY_CHAMPION);
+
                 game_state_set_next(gs, SCENE_MELEE);
             } else if (gs->role == ROLE_CLIENT) {
                 DEBUG("connected to server!");
@@ -844,6 +854,10 @@ void mainmenu_tick(scene *scene, int paused) {
                 game_player_set_ctrl(p2, player2_ctrl);
                 local->host = NULL;
                 game_player_set_selectable(p2, 1);
+
+                chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);
+                chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)), AI_DIFFICULTY_CHAMPION);
+
                 game_state_set_next(gs, SCENE_MELEE);
             }
         } else {
@@ -1042,6 +1056,8 @@ int mainmenu_create(scene *scene) {
        }
        // reset any single player data
        game_state_get_player(scene->gs, i)->sp_wins = 0;
+       chr_score_reset(game_player_get_score(game_state_get_player(scene->gs, i)), 1);
+       chr_score_reset_wins(game_player_get_score(game_state_get_player(scene->gs, i)));
     }
 
     reconfigure_controller(scene->gs);

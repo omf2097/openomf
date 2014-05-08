@@ -9,6 +9,9 @@
 #define SLIDER_DISTANCE 50
 #define SLIDER_HANG_TIME 25
 
+#define SCRAP 100000
+#define DESTRUCTION 200000
+
 typedef struct score_text_t {
     char *text;
     float position; // Position of text between middle of screen and (x,y). 1.0 at middle, 0.0 at end
@@ -17,23 +20,14 @@ typedef struct score_text_t {
     int age;
 } score_text;
 
-int base_scores[] = {
-    800,
-    1200,
-    2800,
-    100000,
-    100000,
-    100000,
-};
-
 float multipliers[] = {
-    0.4,
-    0.8,
-    1.2,
-    1.6,
-    2.0,
-    3.0,
-    4.0
+    0.2, // punching bag
+    0.4, // rookie
+    0.6, // veteran
+    0.8, // world class
+    1.0, // champion
+    1.2, // deadly
+    1.4  // ultimate
 };
 
 vec2i interpolate(vec2i start, vec2i end, float fraction) {
@@ -42,14 +36,18 @@ vec2i interpolate(vec2i start, vec2i end, float fraction) {
     return vec2i_create(nx, ny);
 }
 
-void chr_score_create(chr_score *score, float multiplier) {
-    score->multiplier = multiplier;
+void chr_score_create(chr_score *score) {
+    score->difficulty = 0; // will be set later
     score->x = 0;
     score->y = 0;
     score->direction = OBJECT_FACE_RIGHT;
     list_create(&score->texts);
     chr_score_reset(score, 1);
     chr_score_reset_wins(score);
+}
+
+void chr_score_set_difficulty(chr_score *score, int difficulty) {
+    score->difficulty = difficulty;
 }
 
 void chr_score_reset(chr_score *score, int wipe) {
@@ -172,6 +170,7 @@ void chr_score_add(chr_score *score, char *text, int points, vec2i pos, float po
 }
 
 void chr_score_hit(chr_score *score, int points) {
+    points = points * multipliers[score->difficulty];
     score->score += points;
     score->consecutive_hits++;
     score->consecutive_hit_score += points;
@@ -187,16 +186,18 @@ void chr_score_victory(chr_score *score, int health) {
     if (health == 100) {
         text = malloc(64);
         int len = sprintf(text, "perfect round ");
-        score_format(40000, text+len);
+        int points = DESTRUCTION * multipliers[score->difficulty];
+        score_format(points, text+len);
         // XXX hardcode the y coordinate for now
-        chr_score_add(score, text, 40000, vec2i_create(160, 100), 1.0f);
+        chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
     }
     text = malloc(64);
 
     int len = sprintf(text, "vitality ");
-    score_format(trunc(40000 * (health / 100.0f)), text+len);
+    int points = trunc((DESTRUCTION * multipliers[score->difficulty]) * (health / 100.0f));
+    score_format(points, text+len);
     // XXX hardcode the y coordinate for now
-    chr_score_add(score, text, 40000 * (health / 100), vec2i_create(160, 100), 1.0f);
+    chr_score_add(score, text, points * (health / 100), vec2i_create(160, 100), 1.0f);
 }
 
 void chr_score_scrap(chr_score *score) {
@@ -213,16 +214,18 @@ void chr_score_done(chr_score *score) {
         if (score->destruction) {
             char *text = malloc(64);
             int len = sprintf(text, "destruction bonus ");
-            score_format(40000, text+len);
+            int points = DESTRUCTION * multipliers[score->difficulty];
+            score_format(points, text+len);
             // XXX hardcode the y coordinate for now
-            chr_score_add(score, text, 40000, vec2i_create(160, 100), 1.0f);
+            chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
             score->destruction = 0;
         } else if (score->scrap) {
             char *text = malloc(64);
             int len = sprintf(text, "scrap bonus ");
-            score_format(20000, text+len);
+            int points = SCRAP * multipliers[score->difficulty];
+            score_format(points, text+len);
             // XXX hardcode the y coordinate for now
-            chr_score_add(score, text, 20000, vec2i_create(160, 100), 1.0f);
+            chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
             score->scrap = 0;
         }
     }

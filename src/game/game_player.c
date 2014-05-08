@@ -12,7 +12,7 @@ void game_player_create(game_player *gp) {
     gp->colors[0] = 8;
     gp->colors[1] = 8;
     gp->colors[2] = 8;
-    chr_score_create(&gp->score, 1.0f);
+    chr_score_create(&gp->score);
     har_screencaps_create(&gp->screencaps);
     gp->god = 0;
     gp->ez_destruct = 0;
