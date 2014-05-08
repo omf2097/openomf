@@ -65,6 +65,7 @@ void vs_free(scene *scene) {
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
     dialog_free(&local->quit_dialog);
+    dialog_free(&local->too_pathetic_dialog);
     surface_free(&local->arena_select_bg);
     object_free(&local->player1_portrait);
     object_free(&local->player2_portrait);

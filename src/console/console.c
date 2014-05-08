@@ -207,6 +207,7 @@ int console_init() {
     con->output_pos = 0;
     con->output_overflowing = 0;
     con->histpos = -1;
+    con->histpos_changed = 0;
     list_create(&con->history);
     hashmap_create(&con->cmds, 8);
     menu_background_create(&con->background, 322, 101);

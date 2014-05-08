@@ -77,6 +77,7 @@ int keyboard_binds_key(controller *ctrl, SDL_Event *event) {
 void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
     keyboard *k = malloc(sizeof(keyboard));
     k->keys = keys;
+    k->last = 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_KEYBOARD;
     ctrl->poll_fun = &keyboard_poll;

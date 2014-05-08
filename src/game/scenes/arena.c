@@ -636,7 +636,13 @@ void arena_free(scene *scene) {
         //game_player_set_ctrl(player, NULL);
         controller_set_repeat(game_player_get_ctrl(player), 0);
 
+        for (int j = 0; j < 4; j++) {
+            if (j < ceil(local->rounds / 2.0f)) {
+                free(local->player_rounds[i][j]);
+            }
+        }
     }
+
 
     textbutton_free(&local->title_button);
     textbutton_free(&local->return_button);

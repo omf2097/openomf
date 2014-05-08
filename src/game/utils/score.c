@@ -117,12 +117,12 @@ void chr_score_tick(chr_score *score) {
         if (t->age > SLIDER_HANG_TIME) {
             t->position -= 0.01f;
         }
+        lastage = t->age++;
         if(t->position < 0.0f) {
             score->score += t->points;
             free(t->text);
             list_delete(&score->texts, &it);
         }
-        lastage = t->age++;
     }
 }
 
