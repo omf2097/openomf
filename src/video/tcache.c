@@ -154,6 +154,10 @@ SDL_Texture* tcache_get(surface *sur,
         surface_to_texture(sur, val->tex, pal, remap_table, pal_offset);
     }
 
+    // Set correct age and palette version
+    val->age = 0;
+    val->pal_version = pal->version;
+
     // Do some statistics stuff
     cache->misses++;
     return val->tex;
