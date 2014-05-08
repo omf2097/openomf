@@ -123,6 +123,8 @@ SDL_Texture* tcache_get(surface *sur,
     // then we need to create one
     if(val == NULL) {
         tcache_entry_value new_entry;
+        new_entry.age = 0;
+        new_entry.pal_version = pal->version;
         new_entry.tex = SDL_CreateTexture(cache->renderer,
                                           SDL_PIXELFORMAT_ABGR8888,
                                           SDL_TEXTUREACCESS_STREAMING,
@@ -151,10 +153,6 @@ SDL_Texture* tcache_get(surface *sur,
     } else {
         surface_to_texture(sur, val->tex, pal, remap_table, pal_offset);
     }
-
-    // Set correct age and palette version
-    val->age = 0;
-    val->pal_version = pal->version;
 
     // Do some statistics stuff
     cache->misses++;
