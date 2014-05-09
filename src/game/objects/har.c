@@ -1210,7 +1210,7 @@ af_move* match_move(object *obj, char *inputs) {
                     continue;
                 }
 
-                if (h->executing_move) {
+                if (h->executing_move && ! h->enqueued) {
                     // check if the current frame allows chaining
                    int allowed = 0;
                    if (player_frame_isset(obj, "jn") && i == player_frame_get(obj, "jn")) {
@@ -1244,6 +1244,12 @@ af_move* match_move(object *obj, char *inputs) {
                                break;
                        }
                    }
+                   if (obj->animation_state.ticks >= obj->animation_state.ticks_len) {
+                       DEBUG("enqueueing %d %s",  i, str_c(&move->move_string));
+                       h->enqueued = i;
+                       return NULL;
+                   }
+
                    if (!allowed) {
                        // not allowed
                        continue;
@@ -1576,7 +1582,13 @@ int har_act(object *obj, int act_type) {
 
 void har_finished(object *obj) {
     har *h = object_get_userdata(obj);
-    if (h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
+    if (h->enqueued) {
+        DEBUG("playing enqueued animation %d", h->enqueued);
+        har_set_ani(obj, h->enqueued, 0);
+        h->enqueued = 0;
+        h->executing_move=1;
+        return;
+    } else if (h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play vistory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;
         har_set_ani(obj, ANIM_VICTORY, 0);
@@ -1748,6 +1760,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->is_wallhugging = 0;
 
     local->delay = 0;
+
+    local->enqueued = 0;
 
     local->action_hook_cb = NULL;
     local->action_hook_cb_data = NULL;
