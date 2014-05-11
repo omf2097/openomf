@@ -247,10 +247,14 @@ void arena_screengrab_winner(scene* sc) {
 
 void arena_end(scene *sc) {
     game_state *gs = sc->gs;
+    int next_id;
 
     // Switch scene
     if (is_demoplay(sc)) {
-        game_state_set_next(gs, rand_arena());
+        do {
+            next_id = rand_arena();
+        } while(next_id == sc->id);
+        game_state_set_next(gs, next_id);
     }
     else if (is_singleplayer(sc)) {
         game_state_set_next(gs, SCENE_NEWSROOM);
