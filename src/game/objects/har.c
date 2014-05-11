@@ -1010,6 +1010,11 @@ void har_tick(object *obj) {
             har_event_hit_wall(h, wall);
         }
     }
+    
+    // Reset air_attacked when not in the air to prevent HAR from freezing
+    if (!object_is_airborne(obj)) {
+        h->air_attacked = 0;
+    }
 
     if ((h->state == STATE_DONE) 
         && obj->animation_state.parser->current_frame.is_final_frame
