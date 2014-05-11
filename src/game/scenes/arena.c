@@ -564,15 +564,18 @@ void arena_har_hook(har_event event, void *data) {
             break;
         case HAR_EVENT_LAND:
             arena_maybe_turn_har(event.player_id, scene);
-            har1->air_attacked = 0;
-            DEBUG("LAND %u", event.player_id);
             arena_maybe_sync(scene, 1);
+            DEBUG("LAND %u", event.player_id);
+            break;
+        case HAR_EVENT_AIR_ATTACK_DONE:
+            har1->air_attacked = 0;
+            arena_maybe_sync(scene, 1);
+            DEBUG("AIR_ATTACK_DONE %u", event.player_id);
             break;
         case HAR_EVENT_RECOVER:
             arena_har_recover_hook(event.player_id, scene);
             if(!object_is_airborne(obj_har1)) {
                 arena_maybe_turn_har(event.player_id, scene);
-                har1->air_attacked = 0;
                 DEBUG("RECOVER %u", event.player_id);
             }
             break;

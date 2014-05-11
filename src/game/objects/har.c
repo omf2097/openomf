@@ -77,6 +77,14 @@ void har_event_walk(har *h, int direction) {
     fire_hooks(h, event);
 }
 
+void har_event_air_attack_done(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_AIR_ATTACK_DONE;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
 void har_event_attack(har *h, af_move *move) {
     har_event event;
     event.type = HAR_EVENT_ATTACK;
@@ -1013,7 +1021,10 @@ void har_tick(object *obj) {
     
     // Reset air_attacked when not in the air to prevent HAR from freezing
     if (!object_is_airborne(obj)) {
-        h->air_attacked = 0;
+        if(h->air_attacked) {
+            har_event_air_attack_done(h);
+            h->air_attacked = 0;
+        }
     }
 
     if ((h->state == STATE_DONE) 

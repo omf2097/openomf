@@ -59,6 +59,7 @@ enum {
     HAR_EVENT_JUMP,
     HAR_EVENT_AIR_TURN,
     HAR_EVENT_WALK,
+    HAR_EVENT_AIR_ATTACK_DONE, // Touched the floor after executing a move in the air
     HAR_EVENT_ATTACK, // Executed a move, may not hit
     HAR_EVENT_ENEMY_BLOCK, // Opponent blocked your move
     HAR_EVENT_LAND_HIT, // Landed a hit on the opponent
