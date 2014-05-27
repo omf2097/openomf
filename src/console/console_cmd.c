@@ -22,7 +22,7 @@ int sort_command_by_name(const void *a, const void *b) {
     return strcmp((*h1)->key, (*h2)->key);
 }
 
-int console_cmd_history(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_history(game_state *gs, int argc, char **argv) {
     iterator it;
     char *input;
     char buf[sizeof(con->input)];
@@ -37,7 +37,7 @@ int console_cmd_history(game_state *gs, void *userdata, int argc, char **argv) {
     return 0;
 }
 
-int console_cmd_clear(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_clear(game_state *gs, int argc, char **argv) {
     con->output[0] = '\0';
     con->output_head = 0;
     con->output_tail = 0;
@@ -46,12 +46,12 @@ int console_cmd_clear(game_state *gs, void *userdata, int argc, char **argv) {
     return 0;
 }
 
-int console_cmd_quit(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_quit(game_state *gs, int argc, char **argv) {
     game_state_set_next(gs, SCENE_CREDITS);
     return 0;
 }
 
-int console_cmd_help(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_help(game_state *gs, int argc, char **argv) {
     // print list of commands
     vector sorted;
     iterator it;
@@ -75,7 +75,7 @@ int console_cmd_help(game_state *gs, void *userdata, int argc, char **argv) {
     return 0;
 }
 
-int console_cmd_scene(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_scene(game_state *gs, int argc, char **argv) {
     // change scene
     if(argc == 2) {
         int i;
@@ -89,7 +89,7 @@ int console_cmd_scene(game_state *gs, void *userdata, int argc, char **argv) {
     return 1;
 }
 
-int console_cmd_har(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_har(game_state *gs, int argc, char **argv) {
     // change har
     if(argc == 2) {
         int i;
@@ -131,7 +131,7 @@ int console_cmd_har(game_state *gs, void *userdata, int argc, char **argv) {
     return 1;
 }
 
-int console_cmd_win(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_win(game_state *gs, int argc, char **argv) {
     if(argc == 1) {
         game_player *player = game_state_get_player(gs, 1);
         object *har_obj = game_player_get_har(player);
@@ -142,7 +142,7 @@ int console_cmd_win(game_state *gs, void *userdata, int argc, char **argv) {
     return 1;
 }
 
-int console_cmd_lose(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_lose(game_state *gs, int argc, char **argv) {
     if(argc == 1) {
         game_player *player = game_state_get_player(gs, 0);
         object *har_obj = game_player_get_har(player);
@@ -153,7 +153,7 @@ int console_cmd_lose(game_state *gs, void *userdata, int argc, char **argv) {
     return 1;
 }
 
-int console_cmd_stun(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_stun(game_state *gs, int argc, char **argv) {
     if(argc == 1) {
         game_player *player = game_state_get_player(gs, 1);
         object *har_obj = game_player_get_har(player);
@@ -165,7 +165,7 @@ int console_cmd_stun(game_state *gs, void *userdata, int argc, char **argv) {
     return 1;
 }
 
-int console_cmd_rein(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_rein(game_state *gs, int argc, char **argv) {
     scene *sc = game_state_get_scene(gs);
     if(is_arena(sc->id)) {
         arena_toggle_rein(sc);
@@ -174,7 +174,7 @@ int console_cmd_rein(game_state *gs, void *userdata, int argc, char **argv) {
     return 1;
 }
 
-int console_cmd_renderer(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_renderer(game_state *gs, int argc, char **argv) {
     if(argc == 2) {
         int i;
         if(strtoint(argv[1], &i)) {
@@ -188,7 +188,7 @@ int console_cmd_renderer(game_state *gs, void *userdata, int argc, char **argv) 
 }
 
 
-int console_cmd_god(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_god(game_state *gs, int argc, char **argv) {
     for(int i = 0;i < game_state_num_players(gs);i++) {
         game_player *gp = game_state_get_player(gs, i);
         gp->god = !gp->god;
@@ -202,13 +202,13 @@ int console_cmd_god(game_state *gs, void *userdata, int argc, char **argv) {
     return 0;
 }
 
-int console_kreissack(game_state *gs, void *userdata, int argc, char **argv) {
+int console_kreissack(game_state *gs, int argc, char **argv) {
     game_player *p1 = game_state_get_player(gs, 0);
     p1->sp_wins = (2046 ^ (2 << p1->pilot_id));
     return 0;
 }
 
-int console_cmd_ez_destruct(game_state *gs, void *userdata, int argc, char **argv) {
+int console_cmd_ez_destruct(game_state *gs, int argc, char **argv) {
     for(int i = 0;i < game_state_num_players(gs);i++) {
         game_player *gp = game_state_get_player(gs, i);
         gp->ez_destruct = !gp->ez_destruct;

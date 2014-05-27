@@ -22,7 +22,6 @@ typedef struct console_t {
 
 typedef struct command_t {
     command_func func;
-    void *userdata;
     const char *doc;
 } command;
 

@@ -64,7 +64,7 @@ void console_handle_line(game_state *gs) {
             make_argv(con->input, argv);
             if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
                 command *cmd = val;
-                int err = cmd->func(gs, cmd->userdata, argc, argv);
+                int err = cmd->func(gs, argc, argv);
                 if(err == 0)
                 {
                     console_output_add("> ");
@@ -333,31 +333,12 @@ void console_tick() {
 void console_add_cmd(const char *name, command_func func, const char *doc) {
     command c;
     c.func = func;
-    c.userdata = NULL;
     c.doc = doc;
     hashmap_sput(&con->cmds, name, &c, sizeof(command));
 }
 
 void console_remove_cmd(const char *name) {
     hashmap_sdel(&con->cmds, name);
-}
-
-void console_set_userdata(const char *name, void *userdata) {
-    void *val;
-    unsigned int len;
-    if(!hashmap_sget(&con->cmds, name, &val, &len)) {
-        command *c = val;
-        c->userdata = userdata;
-    }
-}
-
-void *console_get_userdata(const char *name) {
-    void *val;
-    unsigned int len;
-    if(!hashmap_sget(&con->cmds, name, &val, &len)) {
-        return val;
-    }
-    return NULL;
 }
 
 int console_window_is_open() {
