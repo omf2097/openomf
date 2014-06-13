@@ -19,7 +19,7 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     dlg->clicked = NULL;
     strncpy(dlg->text, text, sizeof(dlg->text)-1);
     dlg->text[sizeof(dlg->text)-1] = 0;
-    font_get_wrapped_size(&font_small, dlg->text, MAX_WIDTH, &w, &h);
+    font_get_wrapped_size_shadowed(&font_small, dlg->text, MAX_WIDTH, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM, &w, &h);
     menu_background_create(&dlg->background, MAX_WIDTH+30, h+24+font_large.h);
 
     if(style == DIALOG_STYLE_YES_NO) {
@@ -80,7 +80,7 @@ void dialog_render(dialog *dlg) {
     if(dlg->ok) {
         textbutton_render(dlg->ok);
     }
-    font_render_wrapped(&font_small, dlg->text, dlg->x+15, dlg->y+3, MAX_WIDTH, COLOR_GREEN);
+    font_render_wrapped_shadowed(&font_small, dlg->text, dlg->x+15, dlg->y+3, MAX_WIDTH, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
 }
 
 
