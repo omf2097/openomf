@@ -4,6 +4,8 @@
 #include "audio/source.h"
 
 int music_play(unsigned int id);
+/* Equivalent to music_stop() + music_play() */
+int music_reload();
 void music_stop();
 int music_playing();
 void music_set_volume(float volume);

@@ -114,6 +114,7 @@ typedef struct mainmenu_local_t {
     component sound_slider;
     component music_slider;
     component stereo_toggle;
+    component mono_toggle;
     component config_done_button;
 
     menu input_config_menu;
@@ -513,6 +514,10 @@ void menu_sound_slide(component *c, void *userdata, int pos) {
     sound_set_volume(pos/10.0f);
 }
 
+void menu_mono_toggle(component *c, void *userdata, int options) {
+    music_reload();
+}
+
 void menu_speed_slide(component *c, void *userdata, int pos) {
     scene *sc = userdata;
     game_state_set_speed(sc->gs, pos);
@@ -599,6 +604,7 @@ void mainmenu_free(scene *scene) {
     textslider_free(&local->sound_slider);
     textslider_free(&local->music_slider);
     textselector_free(&local->stereo_toggle);
+    textselector_free(&local->mono_toggle);
     textbutton_free(&local->config_done_button);
     menu_free(&local->config_menu);
 
@@ -1122,14 +1128,17 @@ int mainmenu_create(scene *scene) {
     textslider_create(&local->music_slider, &font_large, "MUSIC", 10, 1);
     textselector_create(&local->stereo_toggle, &font_large, "STEREO", "NORMAL");
     textselector_add_option(&local->stereo_toggle, "REVERSED");
+    textselector_create(&local->mono_toggle, &font_large, "MONO", "OFF");
+    textselector_add_option(&local->mono_toggle, "ON");
     textbutton_create(&local->config_done_button, &font_large, "DONE");
-    menu_attach(&local->config_menu, &local->config_header, 33);
+    menu_attach(&local->config_menu, &local->config_header, 22);
     menu_attach(&local->config_menu, &local->playerone_input_button, 11);
     menu_attach(&local->config_menu, &local->playertwo_input_button, 11);
     menu_attach(&local->config_menu, &local->video_options_button, 11);
     menu_attach(&local->config_menu, &local->sound_slider, 11);
     menu_attach(&local->config_menu, &local->music_slider, 11);
     menu_attach(&local->config_menu, &local->stereo_toggle, 11);
+    menu_attach(&local->config_menu, &local->mono_toggle, 11);
     menu_attach(&local->config_menu, &local->config_done_button, 11);
 
     local->playerone_input_button.userdata = (void*)scene;
@@ -1278,6 +1287,8 @@ int mainmenu_create(scene *scene) {
     textslider_bindvar(&local->sound_slider, &setting->sound.sound_vol);
     textslider_bindvar(&local->music_slider, &setting->sound.music_vol);
     textselector_bindvar(&local->stereo_toggle, &setting->sound.stereo_reversed);
+    textselector_bindvar(&local->mono_toggle, &setting->sound.music_mono);
+    local->mono_toggle.toggle = menu_mono_toggle;
 
     // video options
     local->resolution_toggle.toggle = resolution_toggled;

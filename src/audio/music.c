@@ -112,6 +112,12 @@ error_0:
     return 1;
 }
 
+int music_reload() {
+    unsigned int old_res_id = _music_resource_id;
+    music_stop();
+    return music_play(old_res_id);
+}
+
 void music_set_volume(float volume) {
     _music_volume = volume;
     if(_music_stream_id != 0) {
