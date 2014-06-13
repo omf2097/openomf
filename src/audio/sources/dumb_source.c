@@ -49,7 +49,7 @@ void dumb_source_close(audio_source *src) {
     DEBUG("Libdumb Source: Closed.");
 }
 
-int dumb_source_init(audio_source *src, const char* file) {
+int dumb_source_init(audio_source *src, const char* file, int channels) {
     dumb_source *local = malloc(sizeof(dumb_source));
 
     // Load file and initialize renderer
@@ -72,14 +72,14 @@ int dumb_source_init(audio_source *src, const char* file) {
         PERROR("Libdumb Source: Error while loading module file!");
         goto error_0;
     }
-    local->renderer = duh_start_sigrenderer(local->data, 0, 2, 0);
+    local->renderer = duh_start_sigrenderer(local->data, 0, channels, 0);
     local->vlen = duh_get_length(local->data);
     local->vpos = 0;
 
     // Audio information
     source_set_frequency(src, 44100);
     source_set_bytes(src, 2);
-    source_set_channels(src, 2);
+    source_set_channels(src, channels);
 
     // Set callbacks
     source_set_userdata(src, local);

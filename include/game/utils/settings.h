@@ -18,6 +18,7 @@ typedef enum difficulty_t {
 
 typedef struct settings_sound_t {
     int stereo_reversed;
+    int music_mono;
     int sound_vol;
     int music_vol;
     char *music_arena0;

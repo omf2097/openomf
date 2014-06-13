@@ -53,6 +53,7 @@ const char* get_file_or_override(unsigned int id) {
 }
 
 int music_play(unsigned int id) {
+    int channels = settings_get()->sound.music_mono ? 1 : 2;
     // Check if the wanted music is already playing
     if(id == _music_resource_id && _music_stream_id != 0) {
         return 0;
@@ -72,15 +73,15 @@ int music_play(unsigned int id) {
 
     // Open correct source
     if(strcasecmp(ext, "psm") == 0) {
-        dumb_source_init(music_src, filename);
+        dumb_source_init(music_src, filename, channels);
     } else if(strcasecmp(ext, "s3m") == 0) {
-        dumb_source_init(music_src, filename);
+        dumb_source_init(music_src, filename, channels);
     } else if(strcasecmp(ext, "mod") == 0) {
-        dumb_source_init(music_src, filename);
+        dumb_source_init(music_src, filename, channels);
     } else if(strcasecmp(ext, "it") == 0) {
-        dumb_source_init(music_src, filename);
+        dumb_source_init(music_src, filename, channels);
     } else if(strcasecmp(ext, "xm") == 0) {
-        dumb_source_init(music_src, filename);
+        dumb_source_init(music_src, filename, channels);
     }
 #ifdef USE_OGGVORBIS
     else if(strcasecmp(ext, "ogg") == 0) {
