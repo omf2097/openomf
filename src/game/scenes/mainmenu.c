@@ -113,7 +113,6 @@ typedef struct mainmenu_local_t {
     component video_options_button;
     component sound_slider;
     component music_slider;
-    component stereo_toggle;
     component mono_toggle;
     component config_done_button;
 
@@ -603,7 +602,6 @@ void mainmenu_free(scene *scene) {
     textbutton_free(&local->video_options_button);
     textslider_free(&local->sound_slider);
     textslider_free(&local->music_slider);
-    textselector_free(&local->stereo_toggle);
     textselector_free(&local->mono_toggle);
     textbutton_free(&local->config_done_button);
     menu_free(&local->config_menu);
@@ -1126,18 +1124,15 @@ int mainmenu_create(scene *scene) {
     textbutton_create(&local->video_options_button, &font_large, "VIDEO OPTIONS");
     textslider_create(&local->sound_slider, &font_large, "SOUND", 10, 1);
     textslider_create(&local->music_slider, &font_large, "MUSIC", 10, 1);
-    textselector_create(&local->stereo_toggle, &font_large, "STEREO", "NORMAL");
-    textselector_add_option(&local->stereo_toggle, "REVERSED");
     textselector_create(&local->mono_toggle, &font_large, "MONO", "OFF");
     textselector_add_option(&local->mono_toggle, "ON");
     textbutton_create(&local->config_done_button, &font_large, "DONE");
-    menu_attach(&local->config_menu, &local->config_header, 22);
+    menu_attach(&local->config_menu, &local->config_header, 33);
     menu_attach(&local->config_menu, &local->playerone_input_button, 11);
     menu_attach(&local->config_menu, &local->playertwo_input_button, 11);
     menu_attach(&local->config_menu, &local->video_options_button, 11);
     menu_attach(&local->config_menu, &local->sound_slider, 11);
     menu_attach(&local->config_menu, &local->music_slider, 11);
-    menu_attach(&local->config_menu, &local->stereo_toggle, 11);
     menu_attach(&local->config_menu, &local->mono_toggle, 11);
     menu_attach(&local->config_menu, &local->config_done_button, 11);
 
@@ -1286,7 +1281,6 @@ int mainmenu_create(scene *scene) {
     local->music_slider.slide = menu_music_slide;
     textslider_bindvar(&local->sound_slider, &setting->sound.sound_vol);
     textslider_bindvar(&local->music_slider, &setting->sound.music_vol);
-    textselector_bindvar(&local->stereo_toggle, &setting->sound.stereo_reversed);
     textselector_bindvar(&local->mono_toggle, &setting->sound.music_mono);
     local->mono_toggle.toggle = menu_mono_toggle;
 
