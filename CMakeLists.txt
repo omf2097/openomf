@@ -3,8 +3,8 @@ project(ShadowDive C)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
-set(CMAKE_C_FLAGS "-Wall -std=c99 -pedantic")
-set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE -fno-omit-frame-pointer -Werror")
+set(CMAKE_C_FLAGS "-Wall -std=c99 -DUSE_INTERNAL")
+set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE -fno-omit-frame-pointer -pedantic -Werror")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer -Werror")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
 set(CMAKE_C_FLAGS_MINSIZEREL "-Os")

@@ -4,17 +4,37 @@
 #include "shadowdive/sprite.h"
 #include <stdlib.h>
 
-sd_sprite* sd_sprite_create() {
-    sd_sprite *sprite = (sd_sprite*)malloc(sizeof(sd_sprite));
+int sd_sprite_create(sd_sprite *sprite) {
+    if(sprite == NULL) {
+        return SD_INVALID_INPUT;
+    }
+    
+    sprite->pos_x = 0;
+    sprite->pos_y = 0;
+    sprite->index = 0;
+    sprite->missing = 0;
     sprite->img = NULL;
-    return sprite;
+    return SD_SUCCESS;
 }
 
-void sd_sprite_delete(sd_sprite *sprite) {
-    if (sprite->img) {
-        sd_sprite_image_delete(sprite->img, sprite->missing);
+int sd_sprite_copy(sd_sprite *sprite, const sd_sprite *src) {
+    memcpy(sprite, src, sizeof(sd_sprite));
+    sd_sprite_image *new = malloc(sizeof(sd_sprite_image));
+    if(new == NULL) {
+        return SD_OUT_OF_MEMORY;
     }
-    free(sprite);
+    int ret = sd_sprite_image_copy(new, sprite->img);
+    if(ret != SD_SUCCESS) {
+        return ret;
+    }
+    sprite->img = new;
+    return SD_SUCCESS;
+}
+
+void sd_sprite_free(sd_sprite *sprite) {
+    if(sprite->img != NULL) {
+        sd_sprite_image_free(sprite->img, sprite->missing);
+    }
 }
 
 int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {

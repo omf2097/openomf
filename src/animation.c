@@ -1,52 +1,111 @@
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/internal/helpers.h"
+#include "shadowdive/colcoord.h"
 #include "shadowdive/animation.h"
 #include "shadowdive/sprite.h"
 #include "shadowdive/error.h"
 #include <stdlib.h>
 #include <string.h>
 
-sd_animation* sd_animation_create() {
-    sd_animation *ani = (sd_animation*)malloc(sizeof(sd_animation));
-    ani->col_coord_table = NULL;
-    ani->anim_string = NULL;
-    ani->extra_strings = NULL;
-    ani->sprites = NULL;
-    return ani;
+int sd_animation_create(sd_animation *ani) {
+    if(ani == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
+    ani->start_x = 0;
+    ani->start_y = 0;
+    ani->null = 0;
+    ani->col_coord_count = 0;
+    ani->sprite_count = 0;
+    ani->extra_string_count = 0;
+    
+    for(int i = 0; i < SD_SPRITE_COLCOORD_COUNT_MAX; i++) {
+        col_coord_create(ani->col_coord_table[i]);
+    }
+    for(int i = 0; i < SD_SPRITE_COUNT_MAX; i++) {
+        ani->sprites[i] = NULL;
+    }
+    memset(ani->anim_string, 0, SD_ANIMATION_STRING_MAX);
+    for(int i = 0; i < SD_SPRITE_EXTRASTR_COUNT_MAX; i++) {
+        memset(ani->extra_strings[i], 0, SD_EXTRA_STRING_MAX);
+    }
+    return SD_SUCCESS;
 }
 
-void sd_animation_delete(sd_animation *anim) {
-    if(anim->col_coord_table)
-        free(anim->col_coord_table);
-    if(anim->anim_string)
-        free(anim->anim_string);
-    if(anim->extra_strings) {
-        for(int i = 0; i < anim->extra_string_count; i++) {
-            free(anim->extra_strings[i]);
+int sd_animation_copy(sd_animation *ani, const sd_animation *src) {
+    int ret;
+    memcpy(ani, src, sizeof(sd_animation));
+
+    // Copy sprites
+    for(int i = 0; i < ani->sprite_count; i++) {
+        sd_sprite *new = malloc(sizeof(sd_sprite));
+        if(new == NULL) {
+            return SD_OUT_OF_MEMORY;
         }
-        free(anim->extra_strings);
-    }
-    if(anim->sprites) {
-        for(int i = 0; i < anim->frame_count; i++) {
-            sd_sprite_delete(anim->sprites[i]);
+        ret = sd_sprite_copy(new, ani->sprites[i]);
+        if(ret != SD_SUCCESS) {
+            return ret;
         }
-        free(anim->sprites);
+        ani->sprites[i] = new;
     }
-    free(anim);
+    return SD_SUCCESS;
 }
 
-void sd_animation_set_anim_string(sd_animation *ani, const char *str) {
-    alloc_or_realloc((void**)&ani->anim_string, strlen(str)+1);
+void sd_animation_free(sd_animation *anim) {
+    for(int i = 0; i < anim->sprite_count; i++) {
+        sd_sprite_free(anim->sprites[i]);
+    }
+}
+
+int sd_animation_set_anim_string(sd_animation *ani, const char *str) {
+    if(strlen(str) >= SD_ANIMATION_STRING_MAX) {
+        return SD_INVALID_INPUT;
+    }
     strcpy(ani->anim_string, str);
+    return SD_SUCCESS;
 }
 
-void sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) {
-    if(num < 0 || num >= ani->extra_string_count) {
-        return;
+int sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) {
+    if(num < 0 || num >= SD_SPRITE_EXTRASTR_COUNT_MAX) {
+        return SD_INVALID_INPUT;
     }
-    alloc_or_realloc((void**)&ani->extra_strings[num], strlen(str)+1);
+    if(strlen(str) >= SD_EXTRA_STRING_MAX) {
+        return SD_INVALID_INPUT;
+    }
     strcpy(ani->extra_strings[num], str);
+    return SD_SUCCESS;
+}
+
+int sd_animation_set_sprite(sd_animation *anim, int num, const sd_sprite *sprite) {
+    if(num < 0 || num >= anim->sprite_count) {
+        return SD_INVALID_INPUT;
+    }
+    if(anim->sprites[num] != NULL) {
+        free(anim->sprites[num]);
+    }
+    anim->sprites[num] = malloc(sizeof(sd_sprite));
+    if(anim->sprites[num] == NULL) {
+        return SD_OUT_OF_MEMORY;
+    }
+    memcpy(anim->sprites[num], sprite, sizeof(sd_sprite));
+
+    return SD_SUCCESS;
+}
+
+int sd_animation_push_sprite(sd_animation *anim, const sd_sprite *sprite) {
+
+}
+
+int sd_animation_pop_sprite(sd_animation *anim, sd_sprite *sprite) {
+
+}
+
+sd_sprite* sd_animation_get_sprite(sd_animation *anim, int num) {
+    if(num < 0 || num >= SD_SPRITE_EXTRASTR_COUNT_MAX) {
+        return NULL;
+    }
+    return anim->sprites[num];
 }
 
 int sd_animation_load(sd_reader *r, sd_animation *ani) {
@@ -55,7 +114,7 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     ani->start_y = sd_read_word(r);
     sd_read_buf(r, ani->unknown_a, 4);
     ani->col_coord_count = sd_read_uword(r);
-    ani->frame_count = sd_read_ubyte(r);
+    ani->sprite_count = sd_read_ubyte(r);
     
     // Read collision point data
     ani->col_coord_table = (col_coord*)malloc(sizeof(col_coord)*ani->col_coord_count);
@@ -73,11 +132,7 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
 
     // Animation string header
     uint16_t anim_string_len = sd_read_uword(r);
-    ani->anim_string = (char*)malloc(anim_string_len + 1);
-    sd_read_buf(r, ani->anim_string, anim_string_len + 1);
-    if(ani->anim_string[anim_string_len] != 0) {
-        return SD_FILE_PARSE_ERROR;
-    }
+    sd_read_buf(r, ani->anim_string, anim_string_len);
 
     // Extra animation strings
     ani->extra_string_count = sd_read_ubyte(r);

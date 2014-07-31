@@ -8,6 +8,45 @@
 #include "shadowdive/move.h"
 #include "shadowdive/af.h"
 
+int sd_af_create(sd_af_file *af) {
+    if(af == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
+    memset(af->moves, 0, sizeof(af->moves));
+    memset(af->soundtable, 0, sizeof(af->soundtable));
+    af->file_id = 0;
+    af->unknown_a = 0;
+    af->endurance = 0;
+    af->unknown_b = 0;
+    af->power = 0;
+    af->forward_speed = 0;
+    af->reverse_speed = 0;
+    af->jump_speed = 0;
+    af->fall_speed = 0;
+    af->unknown_c = 0;
+    af->unknown_d = 0;
+    return 0;
+}
+
+void sd_af_set_move(sd_af_file *af, int index, sd_move *move) {
+    if(af == NULL || index < 0 || index >= MAX_AF_MOVES) {
+        return;
+    }
+    if(af->moves[index] != NULL) {
+        sd_move_free(af->moves[index]);
+    }
+    af->moves[index] = malloc(sizeof(sd_move));
+    memcpy(af->moves[index], move, sizeof(sd_move));
+}
+
+sd_move* sd_af_get_move(sd_af_file *af, int index) {
+    if(af == NULL || index < 0 || index >= MAX_AF_MOVES) {
+        return NULL;
+    }
+    return af->moves[index];
+}
+
 void sd_af_postprocess(sd_af_file *af) {
     char *table[1000] = {0}; // temporary lookup table
     sd_animation *anim;
@@ -28,41 +67,9 @@ void sd_af_postprocess(sd_af_file *af) {
     }
 }
 
-sd_af_file* sd_af_create() {
-    sd_af_file *af = (sd_af_file*)malloc(sizeof(sd_af_file));
-    memset(af->moves, 0, sizeof(af->moves));
-    memset(af->soundtable, 0, sizeof(af->soundtable));
-    af->file_id = 0;
-    af->unknown_a = 0;
-    af->endurance = 0;
-    af->unknown_b = 0;
-    af->power = 0;
-    af->forward_speed = 0;
-    af->reverse_speed = 0;
-    af->jump_speed = 0;
-    af->fall_speed = 0;
-    af->unknown_c = 0;
-    return af;
-}
-
-void sd_af_set_move(sd_af_file *af, int index, sd_move *move) {
-    if(index < 0 || index >= MAX_AF_MOVES || af == NULL)
-        return;
-
-    if(af->moves[index] != NULL) {
-        sd_move_delete(af->moves[index]);
-    }
-    af->moves[index] = move;
-}
-
-sd_move* sd_af_get_move(sd_af_file *af, int index) {
-    if(index < 0 || index >= MAX_AF_MOVES || af == NULL)
-        return NULL;
-
-    return af->moves[index];
-}
-
 int sd_af_load(sd_af_file *af, const char *filename) {
+    int ret;
+
     // Initialize reader
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
@@ -71,15 +78,16 @@ int sd_af_load(sd_af_file *af, const char *filename) {
 
     // Header
     af->file_id = sd_read_uword(r);
-    af->unknown_a = sd_read_uword(r);
+    af->unknown_a = sd_read_uword(r); // Always 10
     af->endurance = sd_read_udword(r);
-    af->unknown_b = sd_read_ubyte(r); // TODO: Find out what this is
+    af->unknown_b = sd_read_ubyte(r); // Always 1 or 2
     af->power = sd_read_uword(r);
     af->forward_speed = sd_read_dword(r);
     af->reverse_speed = sd_read_dword(r);
     af->jump_speed = sd_read_dword(r);
     af->fall_speed = sd_read_dword(r);
-    af->unknown_c = sd_read_uword(r); // TODO: Find out what this is
+    af->unknown_c = sd_read_ubyte(r); // Always 0x32 ?
+    af->unknown_d = sd_read_ubyte(r); // Always 0x14 ?
 
     // Read animations
     uint8_t moveno = 0;
@@ -90,9 +98,16 @@ int sd_af_load(sd_af_file *af, const char *filename) {
         }
 
         // Read move
-        af->moves[moveno] = sd_move_create();
-        int ret = sd_move_load(r, af->moves[moveno]);
-        if(ret != 0) {
+        af->moves[moveno] = malloc(sizeof(sd_move));
+        if(af->moves[moveno] == NULL) {
+            return SD_OUT_OF_MEMORY;
+        }
+        ret = sd_move_create(af->moves[moveno]);
+        if(ret != SD_SUCCESS) {
+            return ret;
+        }
+        ret = sd_move_load(r, af->moves[moveno]);
+        if(ret != SD_SUCCESS) {
             return ret;
         }
     }
@@ -124,11 +139,12 @@ int sd_af_save(sd_af_file *af, const char* filename) {
     sd_write_dword(w, af->reverse_speed);
     sd_write_dword(w, af->jump_speed);
     sd_write_dword(w, af->fall_speed);
-    sd_write_uword(w, af->unknown_c);
+    sd_write_ubyte(w, af->unknown_c);
+    sd_write_ubyte(w, af->unknown_d);
 
     // Write animations
     for(uint8_t i = 0; i < MAX_AF_MOVES; i++) {
-        if(af->moves[i]) {
+        if(af->moves[i] != NULL) {
             sd_write_ubyte(w, i);
             sd_move_save(w, af->moves[i]);
         }
@@ -145,12 +161,14 @@ int sd_af_save(sd_af_file *af, const char* filename) {
     return SD_SUCCESS;
 }
 
-void sd_af_delete(sd_af_file *af) {
-    if(af == NULL)
+void sd_af_free(sd_af_file *af) {
+    if(af == NULL) {
         return;
+    }
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         if(af->moves[i] != NULL) {
-            sd_move_delete(af->moves[i]);
+            sd_move_free(af->moves[i]);
+            free(af->moves[i]);
         }
     }
     free(af);

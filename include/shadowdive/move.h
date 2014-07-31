@@ -1,36 +1,59 @@
 #ifndef _SD_MOVE_H
 #define _SD_MOVE_H
 
+#ifdef USE_INTERNAL
+#include "shadowdive/internal/reader.h"
+#include "shadowdive/internal/writer.h"
+#endif
+
+#include "shadowdive/animation.h"
+
 #ifdef __cplusplus 
 extern "C" {
 #endif
 
-#ifndef _SD_WRITER_H
-typedef struct sd_writer_t sd_writer;
-#endif
+#define SD_MOVE_STRING_MAX 21
+#define SD_FOOTER_STRING_MAX 512
 
-#ifndef _SD_READER_H
-typedef struct sd_reader_t sd_reader;
-#endif
-
-#ifndef _SD_ANIMATION_H
-typedef struct sd_animation_t sd_animation;
-#endif
-
-typedef struct sd_move_t {
+typedef struct {
     sd_animation *animation;
-    char unknown[21];
-    char move_string[21];
-    char *footer_string;
+    
+    uint16_t unknown_0;
+    uint16_t unknown_2;
+    uint8_t unknown_3;
+    uint8_t unknown_4;
+    uint8_t unknown_5;
+    uint8_t unknown_6;
+    uint8_t unknown_7;
+    uint8_t unknown_8;
+    uint8_t unknown_9;
+    uint8_t unknown_10;
+    uint8_t unknown_11;
+    uint8_t next_anim_id;
+    uint8_t category;
+    uint8_t unknown_14;
+    uint8_t scrap_amount;
+    uint8_t successor_id;
+    uint8_t damage_amount;
+    uint8_t unknown_18;
+    uint8_t unknown_19;
+    uint8_t points;
+
+    char move_string[SD_MOVE_STRING_MAX];
+    char footer_string[SD_FOOTER_STRING_MAX];
 } sd_move;
 
-sd_move* sd_move_create();
-void sd_move_delete(sd_move *move);
+int sd_move_create(sd_move* move);
+void sd_move_free(sd_move *move);
+
+int sd_move_set_animation(sd_move *move, const sd_animation *animation);
+int sd_move_set_footer_string(sd_move *move, const char *str);
+int sd_move_set_move_string(sd_move *move, const char *str);
+
+#ifdef USE_INTERNAL
 int sd_move_load(sd_reader *reader, sd_move *move);
 void sd_move_save(sd_writer *writer, sd_move *move);
-
-void sd_move_set_animation(sd_move *move, sd_animation *animation);
-void sd_move_set_footer_string(sd_move *move, const char *str);
+#endif
 
 #ifdef __cplusplus
 }

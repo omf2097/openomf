@@ -6,20 +6,17 @@
 #ifndef _SD_AF_H
 #define _SD_AF_H
 
+#include <stdint.h>
+#include "shadowdive/move.h"
+
 #ifdef __cplusplus 
 extern "C" {
-#endif
-
-#include <stdint.h>
-
-#ifndef _SD_MOVE_H
-typedef struct sd_move_t sd_move;
 #endif
 
 // This is hardcoded, do not change (unless you want to change the file format, of course).
 #define MAX_AF_MOVES 70
 
-typedef struct sd_af_file_t {
+typedef struct {
     uint16_t file_id;
     uint16_t unknown_a;
     uint32_t endurance;
@@ -29,7 +26,8 @@ typedef struct sd_af_file_t {
     int32_t reverse_speed;
     int32_t jump_speed;
     int32_t fall_speed;
-    uint16_t unknown_c;
+    uint8_t unknown_c;
+    uint8_t unknown_d;
 
     sd_move *moves[MAX_AF_MOVES];
     char soundtable[30];
@@ -37,9 +35,10 @@ typedef struct sd_af_file_t {
 
 /*! \brief Create AF container
  * Creates the AF container struct, allocated memory etc.
- * \return AF container struct pointer
+ * \param af AF struct pointer. Must be created using sd_af_create().
+ * \return SD_SUCCESS for success, anything else for error
  */
-sd_af_file* sd_af_create();
+int sd_af_create(sd_af_file *af);
 
 /*! \ brief Set move
  * Sets a HAR move to a given index in a AF file structure.
@@ -58,7 +57,7 @@ void sd_af_set_move(sd_af_file *af, int index, sd_move *move);
 sd_move* sd_af_get_move(sd_af_file *af, int index);
 
 /*! \brief Load AF file
- * Loads the given AF file to memory. Note! Do not load twice to the same AF structure.
+ * Loads the given AF file to memory. The structure should be initialized with sd_af_create() before this.
  * \param af AF struct pointer. Must be created using sd_af_create().
  * \param filename Name of the AF file.
  * \return SD_SUCCESS on success, or SD_FILE_OPEN_ERROR or SD_FILE_PARSE_ERROR on failure.
@@ -77,7 +76,7 @@ int sd_af_save(sd_af_file *af, const char* filename);
  * Frees up the af struct memory.
  * \param af AF struct pointer. Must be created using sd_af_create().
  */
-void sd_af_delete(sd_af_file *af);
+void sd_af_free(sd_af_file *af);
 
 #ifdef __cplusplus
 }

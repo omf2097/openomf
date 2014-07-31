@@ -13,6 +13,10 @@ const char* sd_get_error(int errorcode) {
         return "Parser error";
     case SD_ANIM_INVALID_STRING:
         return "Invalid animation string";
+    case SD_OUT_OF_MEMORY:
+        return "Out of memory";
+    case SD_INVALID_INPUT:
+        return "Invalid input data";
     default:
         return "Unknown errorcode.";
     }
