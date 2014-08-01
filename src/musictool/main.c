@@ -10,6 +10,7 @@
 #include <string.h>
 
 #ifdef USE_MODPLUG
+    #define MODPLUG_STATIC
     #include <libmodplug/modplug.h>
 #else
     #include <dumb/dumb.h>
@@ -18,11 +19,14 @@
 #define PROGRESSBAR_LENGTH 25
 #define CHANNELS 2
 #define FREQUENCY 44100
-#define RESAMPLER 3
 #define DELTA (65536.0f / FREQUENCY)
 
 typedef struct _streamer {
+#ifdef USE_MODPLUG
+    ModPlugFile *renderer;
+#else
     DUH_SIGRENDERER *renderer;
+#endif
     int pos;
     int size;
     int ended;
@@ -31,8 +35,17 @@ typedef struct _streamer {
 void stream(void* userdata, Uint8* stream, int len) {
     Streamer *s = (Streamer*)userdata;
     int before = s->pos;
+    
+#ifdef USE_MODPLUG
+    int got = ModPlug_Read(s->renderer, stream, 4096*4);
+    if(got == 0) {
+        s->ended = 1;
+    }
+#else
     duh_render(s->renderer, 16, 0, 1.0f, DELTA, len/4, stream);
     s->pos = duh_sigrenderer_get_position(s->renderer);
+#endif
+  
     if(s->pos >= s->size || s->pos < before) {
         s->ended = 1;
     }
@@ -81,25 +94,53 @@ const char* get_file_ext(const char* filename) {
     return strrchr(filename, '.') + 1;
 }
 
-const char* resample_filter_name(int id) {
-    switch(id) {
-        case DUMB_RQ_ALIASING: return "Aliasing";
-        case DUMB_RQ_LINEAR: return "Linear";
-        case DUMB_RQ_CUBIC: return "Cubic";
-        case DUMB_RQ_FIR: return "FIR";
+char* get_file_data(const char *filename, size_t *size) {
+    FILE *handle;
+    char *data;
+
+    // open handle, return NULL on error
+    handle = fopen(filename, "rb");
+    if(handle == NULL) {
+        return NULL;
     }
-    return "Unknown";
+    
+    // Find size
+    fseek(handle, 0L, SEEK_END);
+    (*size) = ftell(handle);
+    rewind(handle);
+    
+    // Read all data
+    data = (char*)malloc(*size);
+    fread(data, *size, sizeof(char), handle);
+    fclose(handle);
+
+    // Return data
+    return data;
 }
 
 int main(int argc, char *argv[]) {
-    DUH *src_data;
-    DUH_SIGRENDERER *src_renderer;
+    // PSM reader stuff
+#ifdef USE_MODPLUG
+    ModPlug_Settings settings;
+    char *src_data = NULL;
+    size_t src_size;
+    ModPlugFile *src_renderer = NULL;
+#else
+    DUH *src_data = NULL;
+    DUH_SIGRENDERER *src_renderer = NULL;
+#endif
+
+    // SDL playback stuff
     SDL_AudioSpec want, have;
     SDL_AudioDeviceID dev;
     Streamer streamer;
 
     // Init libs
+#ifdef USE_MODPLUG
+#else
     dumb_register_stdfiles();
+#endif
+
     if(SDL_Init(SDL_INIT_AUDIO) != 0) {
         fprintf(stderr, "Error: %s\n", SDL_GetError());
         return 1;
@@ -154,6 +195,33 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
     
+#ifdef USE_MODPLUG
+    src_data = get_file_data(file->filename[0], &src_size);
+    if(src_data == NULL) {
+        printf("Unable to load file!\n");
+        goto exit_0;
+    }
+    
+    ModPlug_GetSettings(&settings);
+    settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
+    settings.mChannels = CHANNELS;
+    settings.mBits = 16;
+    settings.mFrequency = FREQUENCY;
+    ModPlug_SetSettings(&settings);
+    
+    src_renderer = ModPlug_Load(src_data, src_size);
+    if(!src_renderer) {
+        printf("Unable to load file!\n");
+        goto exit_0;
+    }
+    
+    // Streamer
+    streamer.renderer = src_renderer;
+    streamer.size = src_size;
+    streamer.pos = 0;
+    streamer.ended = 0;
+
+#else // USE_MODPLUG
     // Load up file
     if(strcasecmp(ext, "psm") == 0) {
         src_data = dumb_load_psm(file->filename[0], 0);
@@ -176,14 +244,15 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
     src_renderer = duh_start_sigrenderer(src_data, 0, CHANNELS, 0);
-    dumb_resampling_quality = RESAMPLER;
-    printf("File '%s' loaded succesfully.\n", file->filename[0]);
     
     // Streamer
     streamer.renderer = src_renderer;
     streamer.size = duh_get_length(src_data);
     streamer.pos = 0;
     streamer.ended = 0;
+#endif // USE_MODPLUG
+    
+    printf("File '%s' loaded succesfully.\n", file->filename[0]);
     
     // SDL2
     SDL_zero(want);
@@ -205,7 +274,6 @@ int main(int argc, char *argv[]) {
         }
         
         // Some information
-        printf("Resample filter: %s\n", resample_filter_name(dumb_resampling_quality));
         printf("Frequency:       %d\n", FREQUENCY);
         printf("Channels:        %d\n", CHANNELS);
         printf("Extension:       %s\n", get_file_ext(file->filename[0]));
@@ -226,8 +294,15 @@ int main(int argc, char *argv[]) {
 
 exit_1:
     SDL_CloseAudioDevice(dev);
-    duh_end_sigrenderer(src_renderer);
+#ifdef USE_MODPLUG
+    if(src_renderer)
+        ModPlug_Unload(src_renderer);
+    free(src_data);
+#else
+    if(src_renderer)
+        duh_end_sigrenderer(src_renderer);
     unload_duh(src_data);
+#endif
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     SDL_Quit();
