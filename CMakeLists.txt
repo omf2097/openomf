@@ -2,17 +2,25 @@ cmake_minimum_required(VERSION 2.6)
 project(omf2097-tools C)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
+
+OPTION(USE_MODPLUG "Use modplug instead of bumb for music." OFF)
+
+set(CMAKE_C_FLAGS "-Wall -std=c99")
+set(CMAKE_C_FLAGS_DEBUG "-ggdb -Werror")
+set(CMAKE_C_FLAGS_RELEASE "-O2")
+
 find_package(SDL2)
 find_package(argtable2)
 find_package(shadowdive)
-find_package(dumb)
 find_package(PNG)
 find_package(sqlite)
 
-set(COMMON_FLAGS "-Wall -std=c99 -Werror")
-set(CMAKE_C_FLAGS "${COMMON_FLAGS} -ggdb")
-set(CMAKE_C_FLAGS_DEBUG "${COMMON_FLAGS} -ggdb")
-set(CMAKE_C_FLAGS_RELEASE "${COMMON_FLAGS} -O2")
+IF(USE_MODPLUG)
+    find_package(modplug)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_MODPLUG")
+ELSE()
+    find_package(dumb)
+ENDIF()
 
 add_executable(bktool src/bktool/main.c src/shared/animation_misc.c src/shared/conversions.c)
 add_executable(aftool src/aftool/main.c src/shared/animation_misc.c src/shared/conversions.c)
@@ -28,7 +36,7 @@ add_executable(afdiff src/afdiff/main.c)
 set(CORELIBS ${ARGTABLE2_LIBRARY})
 IF(MINGW)
     set(CORELIBS mingw32 ${CORELIBS})
-ENDIF(MINGW)
+ENDIF()
 
 include_directories(
     ${SDL2_INCLUDE_DIR}
@@ -44,7 +52,7 @@ IF(SQLITE_FOUND)
     )
     add_executable(stringtool src/stringtool/main.c)
     target_link_libraries(stringtool ${CORELIBS} ${SHADOWDIVE_LIBRARY} ${SQLITE_LIBRARY})
-ENDIF(SQLITE_FOUND)
+ENDIF()
 
 target_link_libraries(bktool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(aftool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})

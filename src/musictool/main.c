@@ -5,10 +5,15 @@
   */
 
 #include <argtable2.h>
-#include <dumb/dumb.h>
 #include <SDL2/SDL.h>
 #include <stdint.h>
 #include <string.h>
+
+#ifdef USE_MODPLUG
+    #include <libmodplug/modplug.h>
+#else
+    #include <dumb/dumb.h>
+#endif
 
 #define PROGRESSBAR_LENGTH 25
 #define CHANNELS 2
