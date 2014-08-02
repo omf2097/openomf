@@ -13,6 +13,9 @@
 #define INFO(...) log_print('I', NULL, __VA_ARGS__ )
 #endif
 
+#define LOGTICK(x) _log_tick = x;
+extern unsigned int _log_tick;
+
 void log_print(char mode, const char* fn, const char *fmt, ...);
 int log_init(const char *filename);
 void log_close();

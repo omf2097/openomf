@@ -596,6 +596,7 @@ void game_state_dynamic_tick(game_state *gs) {
 
         // Increment tick
         gs->tick++;
+        LOGTICK(gs->tick);
     }
 
     // Free extra controller events

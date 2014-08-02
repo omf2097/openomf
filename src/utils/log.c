@@ -3,6 +3,7 @@
 #include "utils/log.h"
 
 FILE *handle = 0;
+unsigned int _log_tick = 0;
 
 int log_init(const char *filename) {
     if(handle) return 1;
@@ -26,9 +27,9 @@ void log_close() {
 
 void log_print(char mode, const char *fn, const char *fmt, ...) {
     if(fn != NULL) {
-        fprintf(handle, "[%c] %s(): ", mode, fn);
+        fprintf(handle, "[%7u][%c] %s(): ", _log_tick, mode, fn);
     } else {
-        fprintf(handle, "[%c] ", mode);
+        fprintf(handle, "[%7u][%c] ", _log_tick, mode);
     }
     va_list args;
     va_start(args, fmt);
