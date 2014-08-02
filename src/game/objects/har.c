@@ -417,8 +417,8 @@ void har_move(object *obj) {
             object_set_pos(obj, pos);
             object_set_vel(obj, vel);
 
-            // prevent har from sliding after defeat
-            if(h->state != STATE_DEFEAT &&
+            // prevent har from sliding after defeat, unless they're 'fallen'
+            if(h->state != STATE_DEFEAT && h->state != STATE_FALLEN &&
                h->health <= 0 && h->endurance <= 0 &&
                obj->animation_state.parser->current_frame.is_final_frame) {
                 h->state = STATE_DEFEAT;
@@ -428,9 +428,16 @@ void har_move(object *obj) {
                       IS_ZERO(vel.x) &&
                       obj->animation_state.parser->current_frame.is_final_frame) {
                 if (h->state == STATE_FALLEN) {
-                    h->state = STATE_STANDING_UP;
-                    har_set_ani(obj, ANIM_STANDUP, 0);
-                    har_event_land(h);
+                    if (h->health <= 0 && h->endurance <= 0) {
+                        // fallen, but done bouncing
+                        h->state = STATE_DEFEAT;
+                        har_set_ani(obj, ANIM_DEFEAT, 0);
+                        har_event_defeat(h);
+                    } else {
+                        h->state = STATE_STANDING_UP;
+                        har_set_ani(obj, ANIM_STANDUP, 0);
+                        har_event_land(h);
+                    }
                 } else {
                     har_finished(obj);
                 }
@@ -490,6 +497,25 @@ void har_take_damage(object *obj, str* string, float damage) {
             sprintf(last, "%s", final);
             object_set_custom_string(obj, str);
             free(str);
+            if (object_is_airborne(obj)) {
+                // airborne defeat
+                obj->vel.y = -7;
+                object_set_stride(obj, 1);
+                h->state = STATE_FALLEN;
+            }
+        } else if (object_is_airborne(obj)) {
+            DEBUG("airborne knockback");
+            char *final = "-L2-M5-L2 ";
+            char *str = malloc(str_size(string) + strlen(final) + 1);
+            // append the 'airborne knockback' string to the hit string, replacing the final frame
+            sprintf(str, "%s", string->data);
+            char *last = strrchr(str, '-');
+            sprintf(last, "%s", final);
+            object_set_custom_string(obj, str);
+            obj->vel.y = -7;
+            free(str);
+            h->state = STATE_FALLEN;
+            object_set_stride(obj, 1);
         } else {
             object_set_custom_string(obj, str_c(string));
         }
@@ -1633,10 +1659,13 @@ void har_finished(object *obj) {
         if(object_is_airborne(obj) && h->state == STATE_FALLEN) {
             // XXX if we don't switch to STATE_JUMPING after getting damaged in the air, then the HAR_LAND_EVENT will never get fired.
             h->state = STATE_JUMPING;
+            har_set_ani(obj, ANIM_JUMPING, 0);
         } else if(h->state != STATE_JUMPING) {
             h->state = STATE_STANDING;
+            har_set_ani(obj, ANIM_IDLE, 1);
+        } else {
+            har_set_ani(obj, ANIM_IDLE, 1);
         }
-        har_set_ani(obj, ANIM_IDLE, 1);
     } else {
         har_set_ani(obj, ANIM_CROUCHING, 1);
     }
