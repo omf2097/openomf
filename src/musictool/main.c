@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
     
     // Streamer
     streamer.renderer = src_renderer;
-    streamer.size = src_size;
+    streamer.size = ModPlug_GetLength(src_renderer);
     streamer.pos = 0;
     streamer.ended = 0;
 
@@ -287,6 +287,9 @@ int main(int argc, char *argv[]) {
             SDL_Delay(250);
             float seek = ((float)streamer.pos) / ((float)streamer.size);
             int ms_played = SDL_GetTicks() - time_start;
+#ifdef USE_MODPLUG
+            streamer.pos = ms_played;
+#endif
             show_progress(PROGRESSBAR_LENGTH, seek, ms_played);
         }
         printf("\nAll done.\n");
