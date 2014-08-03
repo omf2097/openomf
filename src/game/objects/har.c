@@ -652,7 +652,9 @@ void har_block(object *obj, vec2i hit_coord) {
     object_dynamic_tick(scrape);
     game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE);
     h->damage_received = 1;
-    h->flinching = 1;
+    if (h->state == STATE_CROUCHBLOCK) {
+        h->flinching = 1;
+    }
 }
 
 void har_check_closeness(object *obj_a, object *obj_b) {
@@ -804,6 +806,9 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         if (har_is_blocking(b, move)) {
             har_event_enemy_block(a, move);
             har_block(obj_b, hit_coord);
+            if (b->is_wallhugging) {
+                a->flinching = 1;
+            }
             return;
         }
 
@@ -853,6 +858,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         if (move->category == CAT_CLOSE) {
             // never flinch from a throw
             b->flinching = 0;
+            a->flinching = 0;
         }
 
         DEBUG("HAR %s to HAR %s collision at %d,%d!",
@@ -1080,7 +1086,14 @@ void har_tick(object *obj) {
 
     // Stop HAR from sliding if touching the ground
     if(h->state != STATE_JUMPING && h->state != STATE_FALLEN && h->state != STATE_RECOIL) {
-        if(!har_is_walking(h) && h->executing_move == 0) {
+        //af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
+        if (h->state == STATE_CROUCHBLOCK) {
+            vec2f vel = object_get_vel(obj);
+            if (vel.x != 0.0f) {
+                vel.x -= 0.2f * -object_get_direction(obj);
+            }
+            object_set_vel(obj, vel);
+        } else if(!har_is_walking(h) && h->executing_move == 0) {
             vec2f vel = object_get_vel(obj);
             vel.x = 0;
             object_set_vel(obj, vel);
@@ -1092,9 +1105,9 @@ void har_tick(object *obj) {
         // The infamous Harrison-Stetson method
         // XXX TODO is there a non-hardcoded value that we could use?
         if(h->executing_move == 0 && (h->state == STATE_CROUCHBLOCK || h->state == STATE_WALKFROM)) {
-            push.x = 1.0f * -object_get_direction(obj);
+            push.x = 8.0f * -object_get_direction(obj);
         } else if (h->executing_move == 1) {
-            push.x = 1.0f * -object_get_direction(obj);
+            push.x = 4.0f * -object_get_direction(obj);
         } else {
             push.x = 4.0f * -object_get_direction(obj);
         }
@@ -1668,6 +1681,7 @@ void har_finished(object *obj) {
         }
     } else {
         har_set_ani(obj, ANIM_CROUCHING, 1);
+        object_set_vel(obj, vec2f_create(0, 0));
     }
     h->executing_move = 0;
     h->flinching = 0;
