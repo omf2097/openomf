@@ -40,6 +40,66 @@ int vs_is_netplay(scene *scene) {
     return 0;
 }
 
+int vs_is_singleplayer(scene *scene) {
+    if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_AI) {
+        return 1;
+    }
+    return 0;
+}
+
+vec2i spawn_position(int index, int scientist) {
+    switch (index) {
+        case 0:
+            // top left gantry
+            if (scientist) {
+                return vec2i_create(90,80);
+            }
+            switch (rand_int(3)) {
+                case 0:
+                    // middle
+                    return vec2i_create(90,80);
+                case 1:
+                    // left arm
+                    return vec2i_create(30,80);
+                case 2:
+                    // right arm
+                    return vec2i_create(120,80);
+            }
+        case 1:
+            // top right gantry
+            if (scientist) {
+                return vec2i_create(230,80);
+            }
+            switch (rand_int(3)) {
+                case 0:
+                    // middle
+                    return vec2i_create(230,80);
+                case 1:
+                    // left arm
+                    return vec2i_create(200,80);
+                case 2:
+                    //right arm
+                    return vec2i_create(260,80);
+            }
+        case 2:
+            // middle left gantry
+            return vec2i_create(90, 118);
+        case 3:
+            // middle right gantry
+            return vec2i_create(230,118);
+            //return vec2i_create(280,118);
+        // only welder can use the following
+        case 4:
+            // bottom left gantry
+            return vec2i_create(90,150);
+        case 5:
+            // bottom right gantry
+            return vec2i_create(230,150);
+        default:
+            return vec2i_create(160, 200);
+    }
+}
+
 void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
     scene *s = (scene*)userdata;
 
@@ -153,8 +213,11 @@ void vs_input_tick(scene *scene) {
                         dialog_event(&local->too_pathetic_dialog, i->event_data.action);
                     } else if(dialog_is_visible(&local->quit_dialog)) {
                         dialog_event(&local->quit_dialog, i->event_data.action);
-                    } else if(!vs_is_netplay(scene)) {
+                    } else if(vs_is_singleplayer(scene) && player1->sp_wins != 0) {
+                        // there's an active singleplayer campaign, confirm quitting
                         dialog_show(&local->quit_dialog, 1);
+                    } else {
+                        game_state_set_next(scene->gs, SCENE_MELEE);
                     }
                 } else {
                     vs_handle_action(scene, i->event_data.action);
@@ -302,22 +365,37 @@ int vs_create(scene *scene) {
 
 
     // SCIENTIST
+    int scientistpos = rand_int(4);
+    vec2i scientistcoord = spawn_position(scientistpos, 1);
+    if (scientistpos % 2) {
+        scientistcoord.x += 50;
+    } else {
+        scientistcoord.x -= 50;
+    }
     object *o_scientist = malloc(sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 8)->ani;
-    object_create(o_scientist, scene->gs, vec2i_create(280,118), vec2f_create(0, 0));
+    object_create(o_scientist, scene->gs, scientistcoord, vec2f_create(0, 0));
     object_set_animation(o_scientist, ani);
     object_select_sprite(o_scientist, 0);
-    object_set_direction(o_scientist, OBJECT_FACE_LEFT);
+    object_set_direction(o_scientist, scientistpos % 2 ? OBJECT_FACE_LEFT : OBJECT_FACE_RIGHT);
     game_state_add_object(scene->gs, o_scientist, RENDER_LAYER_MIDDLE);
 
     // WELDER
+    int welderpos = rand_int(6);
+    // welder can't be on the same gantry or the same *side* as the scientist
+    // he also can't be on the same 'level'
+    // but he has 10 possible starting positions
+    while ((welderpos % 2)  == (scientistpos % 2) || (scientistpos < 2 && welderpos < 2) || (scientistpos > 1 && welderpos > 1 && welderpos < 4)) {
+        welderpos = rand_int(6);
+    }
     object *o_welder = malloc(sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 7)->ani;
-    object_create(o_welder, scene->gs, vec2i_create(90,80), vec2f_create(0, 0));
+    object_create(o_welder, scene->gs, spawn_position(welderpos, 0), vec2f_create(0, 0));
     object_set_animation(o_welder, ani);
     object_select_sprite(o_welder, 0);
     object_set_spawn_cb(o_welder, cb_vs_spawn_object, (void*)scene);
     object_set_destroy_cb(o_welder, cb_vs_destroy_object, (void*)scene);
+    object_set_direction(o_welder, welderpos % 2 ? OBJECT_FACE_LEFT : OBJECT_FACE_RIGHT);
     game_state_add_object(scene->gs, o_welder, RENDER_LAYER_MIDDLE);
 
     // GANTRIES
