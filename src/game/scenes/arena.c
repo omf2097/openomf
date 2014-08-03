@@ -113,7 +113,8 @@ void arena_speed_slide(component *c, void *userdata, int pos) {
     game_state_set_speed(sc->gs, pos);
 }
 
-void scene_fight_anim_done(object *parent) {
+void scene_fight_anim_done(void *userdata) {
+    object *parent = userdata;
     scene *scene = game_state_get_scene(parent->gs);
     arena_local *arena = scene_get_userdata(scene);
 
@@ -122,7 +123,7 @@ void scene_fight_anim_done(object *parent) {
 
     // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
-    parent->animation_state.finished = 1;
+    //parent->animation_state.finished = 1;
 }
 
 void scene_fight_anim_start(void *userdata) {
@@ -134,8 +135,9 @@ void scene_fight_anim_start(void *userdata) {
     object_create(fight, gs, fight_ani->start_pos, vec2f_create(0,0));
     object_set_stl(fight, bk_get_stl(&scene->bk_data));
     object_set_animation(fight, fight_ani);
-    object_set_finish_cb(fight, scene_fight_anim_done);
+    //object_set_finish_cb(fight, scene_fight_anim_done);
     game_state_add_object(gs, fight, RENDER_LAYER_TOP);
+    ticktimer_add(&scene->tick_timer, 24, scene_fight_anim_done, fight);
 }
 
 void scene_ready_anim_done(object *parent) {

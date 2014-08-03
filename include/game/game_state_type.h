@@ -48,7 +48,6 @@ typedef struct game_state_t {
     scene *sc;
     vector objects;
     game_player *players[2];
-    ticktimer *tick_timer;
 } game_state;
 
 #endif // _GAME_STATE_TYPE_H
