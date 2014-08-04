@@ -1,3 +1,5 @@
+#ifdef USE_OPENAL
+
 // On Apple OS (Mac and IOS), al.h and alc.h are in nonstandard locations
 #ifdef __APPLE__
 #include <al.h>
@@ -173,3 +175,5 @@ exit_0:
     free(local);
     return 1;
 }
+
+#endif // USE_OPENAL

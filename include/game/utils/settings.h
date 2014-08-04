@@ -17,6 +17,7 @@ typedef enum difficulty_t {
 } difficulty;
 
 typedef struct settings_sound_t {
+    char *sink;
     int music_mono;
     int sound_vol;
     int music_vol;

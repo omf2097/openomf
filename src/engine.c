@@ -38,15 +38,22 @@ int engine_init() {
     int vsync = setting->video.vsync;
     int scale_factor = setting->video.scale_factor;
     char *scaler = setting->video.scaler;
-
-    // Right now we only have one audio sink, so select that one.
-    int sink_id = 0;
+    const char *audiosink = setting->sound.sink;
 
     // Initialize everything.
     if(video_init(w, h, fs, vsync, scaler, scale_factor)) {
         goto exit_0;
     }
-    if(audio_init(sink_id)) {
+    if(!audio_is_sink_available(audiosink)) {
+        const char *prev_sink = audiosink;
+        audiosink = audio_get_first_sink_name();
+        if(audiosink == NULL) {
+            INFO("Could not find requested sink '%s'. No other sink available; disabling audio.", prev_sink);
+        } else {
+            INFO("Could not find requested sink '%s'. Falling back to '%s'.", prev_sink, audiosink);
+        }
+    }
+    if(audio_init(audiosink)) {
         goto exit_1;
     }
     sound_set_volume(setting->sound.sound_vol/10.0f);

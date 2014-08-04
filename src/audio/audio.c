@@ -1,10 +1,9 @@
 #include <stdlib.h>
+#include <string.h>
 #include "audio/audio.h"
 #include "audio/sink.h"
 #include "audio/sinks/openal_sink.h"
 #include "utils/log.h"
-
-#define SINK_COUNT 1
 
 audio_sink *_global_sink = NULL;
 
@@ -12,36 +11,78 @@ struct sink_info_t {
     int (*sink_init_fn)(audio_sink *sink);
     const char* name;
 } sinks[] = {
+#ifdef USE_OPENAL
     {openal_sink_init, "openal"},
+#endif // USE_OPENAL
+#ifdef USE_SDLAUDIO
+    {sdl_sink_init, "sdl"},
+#endif // USE_SDLAUDIO
+    {0, 0}
 };
 
 int audio_get_sink_count() {
-    return SINK_COUNT;
+    int count = 0;
+    int sink_id = 0;
+    while(sinks[sink_id++].name != 0) {
+        count++;
+    }
+    return count;
 }
 
 const char* audio_get_sink_name(int sink_id) {
     // Get sink
-    if(sink_id < 0 || sink_id >= SINK_COUNT) {
+    if(sink_id < 0 || sink_id >= audio_get_sink_count()) {
         return NULL;
     }
-    struct sink_info_t si = sinks[sink_id];
+    return sinks[sink_id].name;
+}
 
-    return si.name;
+const char* audio_get_first_sink_name() {
+    if(audio_get_sink_count() > 0) {
+        return sinks[0].name;
+    }
+    return NULL;
+}
+
+int audio_is_sink_available(const char* sink_name) {
+    for(int i = 0; i < audio_get_sink_count(); i++) {
+        if(strcmp(sink_name, sinks[i].name) == 0) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 void audio_render() {
-    sink_render(_global_sink);
+    if(_global_sink != NULL) {
+        sink_render(_global_sink);
+    }
 }
 
-int audio_init(int sink_id) {
-    // Get sink
-    if(sink_id < 0 || sink_id >= SINK_COUNT) {
+int audio_init(const char* sink_name) {
+    struct sink_info_t si;
+    int found = 0;
+
+    // If null sink given, disable audio
+    if(sink_name == NULL) {
+        INFO("Audio sink NOT initialized; audio not available.");
+        return 0;
+    }
+
+    // Find requested sink
+    for(int i = 0; i < audio_get_sink_count(); i++) {
+        if(strcmp(sink_name, sinks[i].name) == 0) {
+            si = sinks[i];
+            found = 1;
+        }
+    }
+    if(!found) {
+        PERROR("Requested audio sink was not found!");
         return 1;
     }
-    struct sink_info_t si = sinks[sink_id];
 
     // Inform user
-    INFO("Initializing audio sink '%s'.", audio_get_sink_name(sink_id));
+    INFO("Using audio sink '%s'.", si.name);
 
     // Init sink
     _global_sink = malloc(sizeof(audio_sink));
@@ -53,16 +94,17 @@ int audio_init(int sink_id) {
     }
 
     // Success
+    INFO("Audio system initialized.");
     return 0;
 }
 
 void audio_close() {
     if(_global_sink != NULL) {
         sink_free(_global_sink);
+        free(_global_sink);
+        _global_sink = NULL;
+        INFO("Audio system closed.");
     }
-    free(_global_sink);
-    _global_sink = NULL;
-    INFO("Audio deinit.");
 }
 
 audio_sink* audio_get_sink() {

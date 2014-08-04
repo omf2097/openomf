@@ -12,6 +12,13 @@ static float _sound_volume = VOLUME_DEFAULT;
 void sound_play(int id, float volume, float panning, float pitch) {}
 #else
 void sound_play(int id, float volume, float panning, float pitch) {
+    audio_sink *sink = audio_get_sink();
+
+    // If there is no sink, do nothing
+    if(sink == NULL) {
+        return;
+    }
+
     // Get sample data
     char *buf;
     int len;
@@ -23,8 +30,8 @@ void sound_play(int id, float volume, float panning, float pitch) {
     audio_source *src = malloc(sizeof(audio_source));
     source_init(src);
     raw_source_init(src, buf, len);
-    unsigned int sound_id = sink_play_set(audio_get_sink(), src, volume, panning, pitch);
-    sink_set_stream_volume(audio_get_sink(), sound_id, _sound_volume);
+    unsigned int sound_id = sink_play_set(sink, src, volume, panning, pitch);
+    sink_set_stream_volume(sink, sound_id, _sound_volume);
 
 }
 #endif

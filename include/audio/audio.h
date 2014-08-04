@@ -11,8 +11,9 @@
 
 int audio_get_sink_count();
 const char* audio_get_sink_name(int id);
-
-int audio_init(int sink_id);
+int audio_is_sink_available(const char* sink_name);
+const char* audio_get_first_sink_name();
+int audio_init(const char* sink_name);
 void audio_render();
 void audio_close();
 

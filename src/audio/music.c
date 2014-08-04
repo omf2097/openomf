@@ -59,6 +59,13 @@ const char* get_file_or_override(unsigned int id) {
 }
 
 int music_play(unsigned int id) {
+    audio_sink *sink = audio_get_sink();
+
+    // If there is no sink, do nothing
+    if(sink == NULL) {
+        return 0;
+    }
+
     int channels = settings_get()->sound.music_mono ? 1 : 2;
     (void)(channels);
     // Check if the wanted music is already playing
@@ -115,8 +122,8 @@ int music_play(unsigned int id) {
 
     // Start playback
     _music_resource_id = id;
-    _music_stream_id = sink_play(audio_get_sink(), music_src);
-    sink_set_stream_volume(audio_get_sink(), _music_stream_id, _music_volume);
+    _music_stream_id = sink_play(sink, music_src);
+    sink_set_stream_volume(sink, _music_stream_id, _music_volume);
 
     // All done
     return 0;
@@ -133,17 +140,26 @@ int music_reload() {
 }
 
 void music_set_volume(float volume) {
+    audio_sink *sink = audio_get_sink();
+    if(sink == NULL) {
+        return;
+    }
+
     _music_volume = volume;
     if(_music_stream_id != 0) {
-        sink_set_stream_volume(audio_get_sink(), _music_stream_id, _music_volume);
+        sink_set_stream_volume(sink, _music_stream_id, _music_volume);
     }
 }
 
 void music_stop() {
+    audio_sink *sink = audio_get_sink();
+    if(sink == NULL) {
+        return;
+    }
     if(_music_stream_id == 0) {
         return;
     }
-    sink_stop(audio_get_sink(), _music_stream_id);
+    sink_stop(sink, _music_stream_id);
     _music_stream_id = 0;
 }
 

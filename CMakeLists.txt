@@ -13,18 +13,19 @@ OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_DUMB "Use libdumb for module playback" ON)
 OPTION(USE_MODPLUG "Use libmodplug for module playback" OFF)
 OPTION(USE_PNG "Add support for PNG screenshots" OFF)
+OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
 OPTION(USE_SUBMODULES "Add libsd and libdumb as submodules" ON)
 OPTION(USE_RELEASE_SUBMODULES "Build the submodules in release mode. Enable this option if debug build segfaults on mainmenu." OFF)
 #OPTION(SERVER_ONLY "Do not build the game binary" OFF)
 
-# System packages
+# System packages (hard dependencies)
 find_package(SDL2)
 find_package(enet)
-find_package(OpenAL)
 find_package(confuse)
 
 # These flags are used for all builds
-set(CMAKE_C_FLAGS "-Wall -DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH}")
+set(CMAKE_C_FLAGS "-Wall")
+add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH})
 
 # Check available compiler
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -75,15 +76,23 @@ ENDIF()
 
 IF(USE_SUBMODULES)
     MESSAGE(STATUS "USE_SUBMODULES=1 flag automatically forces USE_DUMB=1.")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_DUMB")
+    add_definitions(-DUSE_DUMB)
 ELSEIF(USE_DUMB)
     find_package(dumb)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_DUMB")
+    add_definitions(-DUSE_DUMB)
 ELSEIF(USE_MODPLUG)
     find_package(modplug)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_MODPLUG")
+    add_definitions(-DUSE_MODPLUG)
 ELSE()
-    MESSAGE(STATUS "Note! No module player backend. Music will not play!")
+    MESSAGE(STATUS "Note! No module player backend. Music will not play.")
+ENDIF()
+
+# Audio sink selection
+IF(USE_OPENAL)
+    find_package(OpenAL)
+    add_definitions(-DUSE_OPENAL)
+ELSE()
+    MESSAGE(STATUS "Note! No audio sink selected; Music/sounds will not play.")
 ENDIF()
 
 # When building with MingW, do not look for Libintl
@@ -100,13 +109,13 @@ ENDIF()
 IF(USE_OGGVORBIS)
     find_package(ogg)
     find_package(vorbis)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_OGGVORBIS")
+    add_definitions(-DUSE_OGGVORBIS)
 ENDIF()
 
 IF(USE_PNG)
     find_package(PNG)
     find_package(ZLIB)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_PNG")
+    add_definitions(-DUSE_PNG)
 ENDIF()
 
 # Build flags
@@ -231,7 +240,6 @@ set(OPENOMF_SRC
 set(COREINCS
     include
     ${SDL2_INCLUDE_DIR} 
-    ${OPENAL_INCLUDE_DIR} 
     ${CONFUSE_INCLUDE_DIR}
     ${SHADOWDIVE_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
@@ -240,7 +248,6 @@ set(COREINCS
 
 set(CORELIBS 
     ${SDL2_LIBRARY} 
-    ${OPENAL_LIBRARY}
     ${CONFUSE_LIBRARY}
     ${LIBINTL_LIBRARIES}
     ${ENET_LIBRARY}
@@ -265,32 +272,38 @@ ELSEIF(USE_MODPLUG)
     set(COREINCS ${COREINCS} ${MODPLUG_INCLUDE_DIR})
 ENDIF()
 
+# Audio sinks
+IF(USE_OPENAL)
+    set(CORELIBS ${CORELIBS} ${OPENAL_LIBRARY})
+    set(COREINCS ${COREINCS} ${OPENAL_INCLUDE_DIR})
+ENDIF()
+
 # If we support ogg vorbis, add library includes etc.
 IF(USE_OGGVORBIS)
     set(COREINCS ${COREINCS} ${OGG_INCLUDE_DIR} ${VORBIS_INCLUDE_DIR})
     set(CORELIBS ${CORELIBS} ${VORBISFILE_LIBRARY} ${VORBIS_LIBRARY} ${OGG_LIBRARY})
-ENDIF(USE_OGGVORBIS)
+ENDIF()
 
 # If we support PNG, add library incs etc.
 IF(USE_PNG)
     set(COREINCS ${COREINCS} ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
     set(CORELIBS ${CORELIBS} ${PNG_LIBRARY} ${ZLIB_LIBRARY})
-ENDIF(USE_PNG)
+ENDIF()
 
 # MingW build should add mingw32 lib
 IF(MINGW)
     set(CORELIBS mingw32 ${CORELIBS})
-ENDIF(MINGW)
+ENDIF()
 
 # On windows, add winsock2 and winmm
 IF(WIN32)
     set(CORELIBS ${CORELIBS} ws2_32 winmm)
-ENDIF(WIN32)
+ENDIF()
 
 # On unix platforms, add libm (sometimes needed, it seems)
 IF(UNIX)
     SET(CORELIBS ${CORELIBS} -lm)
-ENDIF(UNIX)
+ENDIF()
 
 include_directories(${COREINCS})
 

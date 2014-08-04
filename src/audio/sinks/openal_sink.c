@@ -1,3 +1,5 @@
+#ifdef USE_OPENAL
+
 // On Apple OS (Mac and IOS), al.h and alc.h are in nonstandard locations
 #ifdef __APPLE__
 #include <al.h>
@@ -57,3 +59,5 @@ int openal_sink_init(audio_sink *sink) {
     // All done
     return 0;
 }
+
+#endif // USE_OPENAL
