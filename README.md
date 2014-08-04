@@ -5,8 +5,6 @@ OpenOMF is a Open Source remake of "One Must Fall 2097" by Diversions Entertainm
 
 For mode detailed information about the project, please see [http://omf2097.github.io/openomf/](http://omf2097.github.io/openomf/).
 
-For installing & compiling, please see [INSTALL.md](https://github.com/omf2097/openomf/blob/master/INSTALL.md).
-
 Links
 -----
 * There are some videos of openomf at http://www.youtube.com/user/openomf
@@ -23,28 +21,9 @@ Project goals
 5. Enhanced tournament mode!
 6. Enjoying challenges in reverse-engineering and coding :)
 
-Dependencies
+Installation
 ------------
-
-Required:
-* libShadowDive: https://github.com/omf2097/libShadowDive
-* SDL2 (>=2.0.2): http://www.libsdl.org/download-2.0.php
-* confuse: http://www.nongnu.org/confuse/
-* Gettext (if you have problems with libintl)
-* Enet: http://enet.bespin.org/
-
-Recommended:
-* OpenAL: http://kcat.strangesoft.net/openal.html (for audio)
-* libdumb: https://bitbucket.org/kode54/dumb (for module music)
-
-Optional:
-* libvorbis: https://www.xiph.org/downloads/
-* libogg: https://www.xiph.org/downloads/
-* libpng: http://www.libpng.org/pub/png/libpng.html (for .PNG screenshots)
-* zlib: http://www.zlib.net/
-* libmodplug to replace libdumb, if libdumb is not available (Note! Current upstream versions of modplug do not yet play PSM files correctly!)
-
-Several of these are probably available as packages for your operating system, but some you will have to install from source.
+For installing & compiling, please see [INSTALL.md](https://github.com/omf2097/openomf/blob/master/INSTALL.md).
 
 License
 -------

@@ -6,6 +6,26 @@ Note! If you wish to compile OpenOMF from sources yourself, begin from 1). If yo
 1. Dependencies
 ---------------
 
+Required:
+* libShadowDive: https://github.com/omf2097/libShadowDive
+* SDL2 (>=2.0.2): http://www.libsdl.org/download-2.0.php
+* confuse: http://www.nongnu.org/confuse/
+* Gettext (if you have problems with libintl)
+* Enet: http://enet.bespin.org/
+
+Recommended:
+* OpenAL: http://kcat.strangesoft.net/openal.html (for audio)
+* libdumb: https://bitbucket.org/kode54/dumb (for module music)
+
+Optional:
+* libvorbis: https://www.xiph.org/downloads/
+* libogg: https://www.xiph.org/downloads/
+* libpng: http://www.libpng.org/pub/png/libpng.html (for .PNG screenshots)
+* zlib: http://www.zlib.net/
+* libmodplug to replace libdumb, if libdumb is not available (Note! Current upstream versions of modplug do not yet play PSM files correctly!)
+
+Several of these are probably available as packages for your operating system, but some you will have to install from source.
+
 Most of the libraries that OpenOMF requires are pretty standard and often easily available in eg. linux distro repositories. However, you may need to download and install [libShadowDive](https://github.com/omf2097/libShadowDive) and the latest [libdumb](https://bitbucket.org/kode54/dumb). Your distro may have the packages for at least libdumb, but those are likely old and may not work with OpenOMF.
 
 Some common packagemanager commands for receiving the other deps below:
