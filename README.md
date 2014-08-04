@@ -26,21 +26,21 @@ Project goals
 Dependencies
 ------------
 
-Hard dependencies
+Required:
 * libShadowDive: https://github.com/omf2097/libShadowDive
 * SDL2 (>=2.0.2): http://www.libsdl.org/download-2.0.php
 * confuse: http://www.nongnu.org/confuse/
 * Gettext (if you have problems with libintl)
 * Enet: http://enet.bespin.org/
 
-Highly recommended:
+Recommended:
 * OpenAL: http://kcat.strangesoft.net/openal.html (for audio)
 * libdumb: https://bitbucket.org/kode54/dumb (for module music)
 
 Optional:
 * libvorbis: https://www.xiph.org/downloads/
 * libogg: https://www.xiph.org/downloads/
-* libpng: http://www.libpng.org/pub/png/libpng.html
+* libpng: http://www.libpng.org/pub/png/libpng.html (for .PNG screenshots)
 * zlib: http://www.zlib.net/
 * libmodplug to replace libdumb, if libdumb is not available (Note! Current upstream versions of modplug do not yet play PSM files correctly!)
 
