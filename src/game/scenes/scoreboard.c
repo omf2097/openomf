@@ -82,7 +82,7 @@ int scoreboard_event(scene *scene, SDL_Event *event) {
     return 1;
 }
 
-void scoreboard_input_tick(scene*scene) {
+void scoreboard_input_tick(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *p1 = NULL, *i;
