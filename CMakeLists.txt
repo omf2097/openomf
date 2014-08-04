@@ -10,6 +10,8 @@ SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 # Options
 OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
+OPTION(USE_DUMB "Use libdumb for module playback" ON)
+OPTION(USE_MODPLUG "Use libmodplug for module playback" OFF)
 OPTION(USE_PNG "Add support for PNG screenshots" OFF)
 OPTION(USE_SUBMODULES "Add libsd and libdumb as submodules" ON)
 OPTION(USE_RELEASE_SUBMODULES "Build the submodules in release mode. Enable this option if debug build segfaults on mainmenu." OFF)
@@ -20,30 +22,6 @@ find_package(SDL2)
 find_package(enet)
 find_package(OpenAL)
 find_package(confuse)
-
-# Only search for submodules if we want them
-IF(USE_SUBMODULES)
-    # XXX workaround for Mingw 32 bit 4.6.X - 4.8.X compilers
-    # In debug build, the game segfaults inside libdumb's SSE resampling code while loading the mainmenu.
-    # Using release build of libdumb works around that problem.
-    # If anybody could track down why that segfault occurs I would appreciate it
-    if(USE_RELEASE_SUBMODULES)
-        set(XXX_OLD_BUILD_TYPE ${CMAKE_BUILD_TYPE})
-        set(CMAKE_BUILD_TYPE "Release")
-    endif()
-    add_subdirectory(external)
-    if(USE_RELEASE_SUBMODULES)
-        set_target_properties(dumb PROPERTIES DEBUG_POSTFIX "")
-        set_target_properties(shadowdive PROPERTIES DEBUG_POSTFIX "")
-        set(CMAKE_BUILD_TYPE ${XXX_OLD_BUILD_TYPE})
-    endif()
-
-    MESSAGE(STATUS "Using submodule dumb: ${DUMB_INCLUDE_DIR}")
-    MESSAGE(STATUS "Using submodule shadowdive: ${SHADOWDIVE_INCLUDE_DIR}")
-ELSE()
-    find_package(dumb)
-    find_package(shadowdive)
-ENDIF()
 
 # These flags are used for all builds
 set(CMAKE_C_FLAGS "-Wall -DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH}")
@@ -72,15 +50,51 @@ else()
     message(WARNING "Unsupported compiler!")
 endif()
 
+# Only search for submodules if we want them
+IF(USE_SUBMODULES)
+    # XXX workaround for Mingw 32 bit 4.6.X - 4.8.X compilers
+    # In debug build, the game segfaults inside libdumb's SSE resampling code while loading the mainmenu.
+    # Using release build of libdumb works around that problem.
+    # If anybody could track down why that segfault occurs I would appreciate it
+    if(USE_RELEASE_SUBMODULES)
+        set(XXX_OLD_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+        set(CMAKE_BUILD_TYPE "Release")
+    endif()
+    add_subdirectory(external)
+    if(USE_RELEASE_SUBMODULES)
+        set_target_properties(dumb PROPERTIES DEBUG_POSTFIX "")
+        set_target_properties(shadowdive PROPERTIES DEBUG_POSTFIX "")
+        set(CMAKE_BUILD_TYPE ${XXX_OLD_BUILD_TYPE})
+    endif()
+
+    MESSAGE(STATUS "Using submodule dumb: ${DUMB_INCLUDE_DIR}")
+    MESSAGE(STATUS "Using submodule shadowdive: ${SHADOWDIVE_INCLUDE_DIR}")
+ELSE()
+    find_package(shadowdive)
+ENDIF()
+
+IF(USE_SUBMODULES)
+    MESSAGE(STATUS "USE_SUBMODULES=1 flag automatically forces USE_DUMB=1.")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_DUMB")
+ELSEIF(USE_DUMB)
+    find_package(dumb)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_DUMB")
+ELSEIF(USE_MODPLUG)
+    find_package(modplug)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_MODPLUG")
+ELSE()
+    MESSAGE(STATUS "Note! No module player backend. Music will not play!")
+ENDIF()
+
 # When building with MingW, do not look for Libintl
 # Also, use static libgcc when on mingw
 IF(MINGW)
     set(LIBINTL_INCLUDE_DIR "")
     set(LIBINTL_LIBRARIES "")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
-ELSE(MINGW)
+ELSE()
     find_package(Libintl)
-ENDIF(MINGW)
+ENDIF()
 
 # If we want to build support for vorbis streaming, find these too
 IF(USE_OGGVORBIS)
@@ -143,6 +157,7 @@ set(OPENOMF_SRC
     src/audio/sinks/openal_sink.c
     src/audio/sinks/openal_stream.c
     src/audio/sources/dumb_source.c
+    src/audio/sources/modplug_source.c
     src/audio/sources/vorbis_source.c
     src/audio/sources/raw_source.c
     src/resources/ids.c
@@ -219,7 +234,6 @@ set(COREINCS
     ${OPENAL_INCLUDE_DIR} 
     ${CONFUSE_INCLUDE_DIR}
     ${SHADOWDIVE_INCLUDE_DIR}
-    ${DUMB_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
 )
@@ -232,12 +246,23 @@ set(CORELIBS
     ${ENET_LIBRARY}
 )
 
-# If we use submodules, then search shadowdive and dumb by name
-# Other wise we need to use finder script paths
+# Shadowdive
 IF(USE_SUBMODULES)
-    set(CORELIBS ${CORELIBS} shadowdive dumb)
+    set(CORELIBS ${CORELIBS} shadowdive)
 ELSE()
-    set(CORELIBS ${CORELIBS} ${SHADOWDIVE_LIBRARY} ${DUMB_LIBRARY})
+    set(CORELIBS ${CORELIBS} ${SHADOWDIVE_LIBRARY})
+ENDIF()
+
+# Handle module playback library
+IF(USE_SUBMODULES)
+    set(CORELIBS ${CORELIBS} dumb)
+    set(COREINCS ${COREINCS} ${DUMB_INCLUDE_DIR})
+ELSEIF(USE_DUMB)
+    set(CORELIBS ${CORELIBS} ${DUMB_LIBRARY})
+    set(COREINCS ${COREINCS} ${DUMB_INCLUDE_DIR})
+ELSEIF(USE_MODPLUG)
+    set(CORELIBS ${CORELIBS} ${MODPLUG_LIBRARY})
+    set(COREINCS ${COREINCS} ${MODPLUG_INCLUDE_DIR})
 ENDIF()
 
 # If we support ogg vorbis, add library includes etc.

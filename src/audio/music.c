@@ -6,9 +6,15 @@
 #include "resources/pathmanager.h"
 #include "audio/music.h"
 #include "audio/audio.h"
-#include "audio/sources/dumb_source.h"
 #include "utils/log.h"
 #include "game/utils/settings.h"
+
+#ifdef USE_DUMB
+#include "audio/sources/dumb_source.h"
+#endif
+#ifdef USE_MODPLUG
+#include "audio/sources/modplug_source.h"
+#endif
 #ifdef USE_OGGVORBIS
 #include "audio/sources/vorbis_source.h"
 #endif // USE_OGGVORBIS
@@ -54,6 +60,7 @@ const char* get_file_or_override(unsigned int id) {
 
 int music_play(unsigned int id) {
     int channels = settings_get()->sound.music_mono ? 1 : 2;
+    (void)(channels);
     // Check if the wanted music is already playing
     if(id == _music_resource_id && _music_stream_id != 0) {
         return 0;
@@ -71,24 +78,31 @@ int music_play(unsigned int id) {
         goto error_0;
     }
 
-    // Open correct source
-    if(strcasecmp(ext, "psm") == 0) {
-        dumb_source_init(music_src, filename, channels);
-    } else if(strcasecmp(ext, "s3m") == 0) {
-        dumb_source_init(music_src, filename, channels);
-    } else if(strcasecmp(ext, "mod") == 0) {
-        dumb_source_init(music_src, filename, channels);
-    } else if(strcasecmp(ext, "it") == 0) {
-        dumb_source_init(music_src, filename, channels);
-    } else if(strcasecmp(ext, "xm") == 0) {
-        dumb_source_init(music_src, filename, channels);
+    // Try to open as module file
+    int failed = 1;
+    if(strcasecmp(ext, "psm") == 0
+       || strcasecmp(ext, "s3m") == 0
+       || strcasecmp(ext, "mod") == 0
+       || strcasecmp(ext, "it") == 0
+       || strcasecmp(ext, "xm") == 0)
+    {
+#if USE_DUMB
+        failed = dumb_source_init(music_src, filename, channels);
+#endif
+#if USE_MODPLUG
+        failed = modplug_source_init(music_src, filename, channels);
+#endif
     }
+
+    // Try to open as Ogg vorbis
 #ifdef USE_OGGVORBIS
-    else if(strcasecmp(ext, "ogg") == 0) {
-        vorbis_source_init(music_src, filename);
+    if(strcasecmp(ext, "ogg") == 0) {
+        failed = vorbis_source_init(music_src, filename);
     }
 #endif // USE_OGGVORBIS
-    else {
+
+    // Handle opening failure
+    if(failed) {
         PERROR("No suitable music streamer found for format '%s'.", ext);
         goto error_0;
     }

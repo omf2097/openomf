@@ -1,3 +1,5 @@
+#ifdef USE_DUMB
+
 #include <stdlib.h>
 #include <string.h>
 #ifdef __linux__
@@ -96,3 +98,5 @@ error_0:
     free(local);
     return 1;
 }
+
+#endif // USE_DUMB

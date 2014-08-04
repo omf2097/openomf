@@ -2,8 +2,11 @@
 #include <strings.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <SDL2/SDL.h>
+#ifdef USE_DUMB
 #include <dumb.h>
+#endif
 #include <enet/enet.h>
 #include <shadowdive/stringparser.h>
 #include "engine.h"
@@ -167,8 +170,11 @@ int main(int argc, char *argv[]) {
     }
 
     // Init libDumb
+#ifdef USE_DUMB
     dumb_register_stdfiles();
-#endif
+#endif // USE_DUMB
+
+#endif // STANDALONE_SERVER
 
     // Init enet
     if(enet_initialize() != 0) {
@@ -192,7 +198,9 @@ exit_4:
 exit_3:
     SDL_Quit();
 exit_2:
+#ifdef USE_DUMB
     dumb_exit();
+#endif
     settings_save();
     settings_free();
 exit_1:
