@@ -23,7 +23,8 @@ brew install enet
 brew install gettext
 ```
 
-TODO: Add Gentoo, others ?
+Gentoo:
+We have an experimental gentoo portage overlay at https://github.com/omf2097/openomf-overlay
 
 2. Acquiring the sources
 ------------------------
@@ -57,10 +58,17 @@ Some useful CMake flags:
 | CMAKE_INSTALL_PREFIX      | Installation path                       | -               | -       |
 | USE_OGGVORBIS             | Selects Vorbis support                  | On/Off          | Off     |
 | USE_PNG                   | Selects PNG screenshot support          | On/Off          | Off     |
+| USE_OPENAL                | Selects OpenAL support                  | On/Off          | On      |
+| USE_DUMB                  | Selects libdumb support                 | On/Off          | On      |
+| USE_MODPLUG               | Selects libmodplug support              | On/Off          | Off     |
 | USE_SUBMODULES            | Pull in libdumb and libsd as submodules | On/Off          | On      |
 | USE_RELEASE_SUBMODULES    | Build libdumb and libsd in Release mode | On/Off          | Off     |
 
 Ogg Vorbis support is required if you wish to replace original OMF soundtracks with OGG files. Otherwise the switch is optional.
+
+Only one module playback library should be enabled. So either do USE_DUMB=On or USE_MODPLUG=On, but not both. If both are selected, only dumb will be used. If USE_SUBMODULES is enabled, USE_DUMB=On and USE_MODPLUG=Off will be forced.
+
+It is technically possible to select more than one audio sink, or none. Currently only one audio sink is supported (OpenAL). If all audio sinks are off, then no audio will be played. This will also of course reduce cpu usage a bit.
 
 4. Data Files
 -------------
