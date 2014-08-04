@@ -43,7 +43,8 @@ brew install enet
 brew install gettext
 ```
 
-Gentoo:
+### Gentoo:
+
 We have an experimental gentoo portage overlay at https://github.com/omf2097/openomf-overlay
 
 2. Acquiring the sources
