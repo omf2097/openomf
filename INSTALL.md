@@ -6,7 +6,9 @@ Note! If you wish to compile OpenOMF from sources yourself, begin from 1). If yo
 1. Dependencies
 ---------------
 
-Required:
+### Libraries
+
+Required;
 * libShadowDive: https://github.com/omf2097/libShadowDive
 * SDL2 (>=2.0.2): http://www.libsdl.org/download-2.0.php
 * confuse: http://www.nongnu.org/confuse/
@@ -24,18 +26,17 @@ Optional:
 * zlib: http://www.zlib.net/
 * libmodplug to replace libdumb, if libdumb is not available (Note! Current upstream versions of modplug do not yet play PSM files correctly!)
 
-Several of these are probably available as packages for your operating system, but some you will have to install from source.
+[libShadowDive](https://github.com/omf2097/libShadowDive) is our own library for handling OMF:2097 file formats. It is probably not in any repositories by default, and so you may need to compile it yourself. It is also possible to pull this in as a submodule; please see USE_SUBMODULES cmake flag for that.
 
-Most of the libraries that OpenOMF requires are pretty standard and often easily available in eg. linux distro repositories. However, you may need to download and install [libShadowDive](https://github.com/omf2097/libShadowDive) and the latest [libdumb](https://bitbucket.org/kode54/dumb). Your distro may have the packages for at least libdumb, but those are likely old and may not work with OpenOMF.
+[libdumb](https://bitbucket.org/kode54/dumb) is required for PSM module playback. Modplug may also be used, but the current upstream version isn't quite yet up to correct PSM playback. It is also possible to pull libdumb in as a submodule; please see USE_SUBMODULES cmake flag for that.
 
-Some common packagemanager commands for receiving the other deps below:
-
-Debian:
+### Debian
+On debian, it is possible to pull some libraries using apt-get.
 ```
 apt-get install libsdl2-dev libopenal-dev libconfuse-dev libenet-dev
 ```
 
-Mac OS X (Homebrew):
+### Mac OS X (Homebrew):
 ```
 brew install sdl2
 brew install confuse
@@ -44,7 +45,6 @@ brew install gettext
 ```
 
 ### Gentoo:
-
 We have an experimental gentoo portage overlay at https://github.com/omf2097/openomf-overlay
 
 2. Acquiring the sources
@@ -61,7 +61,7 @@ Note that the latest sources do not necessarily compile or they may have bugs. T
 3. Compiling
 ------------
 
-To compile:
+To compile (change install prefix if necessary):
 
 ```
 $ mkdir -p build
