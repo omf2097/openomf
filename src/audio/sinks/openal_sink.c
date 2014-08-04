@@ -14,7 +14,7 @@
 #include "audio/sinks/openal_stream.h"
 #include "utils/log.h"
 
-typedef struct openal_sink_t {
+typedef struct {
     ALCdevice *device;
     ALCcontext *context;
 } openal_sink;
