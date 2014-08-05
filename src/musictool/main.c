@@ -37,7 +37,7 @@ void stream(void* userdata, Uint8* stream, int len) {
     int before = s->pos;
     
 #ifdef USE_MODPLUG
-    int got = ModPlug_Read(s->renderer, stream, 4096*4);
+    int got = ModPlug_Read(s->renderer, stream, len);
     if(got == 0) {
         s->ended = 1;
     }
