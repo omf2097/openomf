@@ -15,6 +15,7 @@ int sd_af_create(sd_af_file *af) {
 
     memset(af->moves, 0, sizeof(af->moves));
     memset(af->soundtable, 0, sizeof(af->soundtable));
+
     af->file_id = 0;
     af->unknown_a = 0;
     af->endurance = 0;
@@ -26,18 +27,61 @@ int sd_af_create(sd_af_file *af) {
     af->fall_speed = 0;
     af->unknown_c = 0;
     af->unknown_d = 0;
-    return 0;
+
+    return SD_SUCCESS;
 }
 
-void sd_af_set_move(sd_af_file *af, int index, sd_move *move) {
+int sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
+    int ret;
+    if(dst == NULL || src == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
+    dst->file_id = src->file_id;
+    dst->unknown_a = src->unknown_a;
+    dst->endurance = src->endurance;
+    dst->unknown_b = src->unknown_b;
+    dst->power = src->power;
+    dst->forward_speed = src->forward_speed;
+    dst->reverse_speed = src->reverse_speed;
+    dst->jump_speed = src->jump_speed
+    dst->fall_speed = src->fall_speed;
+    dst->unknown_c = src->unknown_c;
+    dst->unknown_d = src->unknown_d;
+
+    memcpy(dst->soundtable, src->soundtable, sizeof(src->soundtable));
+
+    for(int i = 0; i < MAX_AF_MOVES; i++) {
+        dst->moves[i] = NULL;
+        if(src->moves[i] != NULL) {
+            if((dst->moves[i] = malloc(sizeof(sd_move))) == NULL) {
+                return SD_OUT_OF_MEMORY;
+            }
+            if((ret = sd_move_copy(dst->moves[i], src->moves[i])) != SD_SUCCESS) {
+                return ret;
+            }
+        }
+    }
+
+    return SD_SUCCESS;
+}
+
+int sd_af_set_move(sd_af_file *af, int index, const sd_move *move) {
+    int ret;
     if(af == NULL || index < 0 || index >= MAX_AF_MOVES) {
-        return;
+        return SD_INVALID_INPUT;
     }
     if(af->moves[index] != NULL) {
         sd_move_free(af->moves[index]);
+        free(af->moves[index]);
     }
-    af->moves[index] = malloc(sizeof(sd_move));
-    memcpy(af->moves[index], move, sizeof(sd_move));
+    if((af->moves[index] = malloc(sizeof(sd_move))) == NULL) {
+        return SD_OUT_OF_MEMORY;
+    }
+    if((ret = sd_move_copy(af->moves[index], move)) != SD_SUCCESS) {
+        return ret;
+    }
+    return SD_SUCCESS;
 }
 
 sd_move* sd_af_get_move(sd_af_file *af, int index) {
@@ -98,16 +142,13 @@ int sd_af_load(sd_af_file *af, const char *filename) {
         }
 
         // Read move
-        af->moves[moveno] = malloc(sizeof(sd_move));
-        if(af->moves[moveno] == NULL) {
+        if((af->moves[moveno] = malloc(sizeof(sd_move))) == NULL) {
             return SD_OUT_OF_MEMORY;
         }
-        ret = sd_move_create(af->moves[moveno]);
-        if(ret != SD_SUCCESS) {
+        if((ret = sd_move_create(af->moves[moveno])) != SD_SUCCESS) {
             return ret;
         }
-        ret = sd_move_load(r, af->moves[moveno]);
-        if(ret != SD_SUCCESS) {
+        if((ret = sd_move_load(r, af->moves[moveno]))) != SD_SUCCESS) {
             return ret;
         }
     }
@@ -123,7 +164,7 @@ int sd_af_load(sd_af_file *af, const char *filename) {
     return SD_SUCCESS;
 }
 
-int sd_af_save(sd_af_file *af, const char* filename) {
+int sd_af_save(const sd_af_file *af, const char* filename) {
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
         return SD_FILE_OPEN_ERROR;
@@ -162,14 +203,11 @@ int sd_af_save(sd_af_file *af, const char* filename) {
 }
 
 void sd_af_free(sd_af_file *af) {
-    if(af == NULL) {
-        return;
-    }
+    if(af == NULL) return;
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         if(af->moves[i] != NULL) {
             sd_move_free(af->moves[i]);
             free(af->moves[i]);
         }
     }
-    free(af);
 }

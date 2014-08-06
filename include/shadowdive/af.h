@@ -13,7 +13,6 @@
 extern "C" {
 #endif
 
-// This is hardcoded, do not change (unless you want to change the file format, of course).
 #define MAX_AF_MOVES 70
 
 typedef struct {
@@ -29,52 +28,61 @@ typedef struct {
     uint8_t unknown_c;
     uint8_t unknown_d;
 
-    sd_move *moves[MAX_AF_MOVES];
+    sd_move moves[MAX_AF_MOVES];
     char soundtable[30];
 } sd_af_file;
 
-/*! \brief Create AF container
- * Creates the AF container struct, allocated memory etc.
- * \param af AF struct pointer. Must be created using sd_af_create().
- * \return SD_SUCCESS for success, anything else for error
+/*! \brief Initialize AF container
+ * Initializes the AF container with empty values. When saved, this will create an empty AF file.
+ * \param af Allocated AF struct pointer.
+ * \return SD_SUCCESS or errorcode.
  */
 int sd_af_create(sd_af_file *af);
 
+/*! \brief Copy AF structure
+ * Copies a valid AF structure. Note: Source structure must be valid.
+ * \param dst Destination AF struct pointer.
+ * \param src Source AF struct pointer.
+ * \return SD_SUCCESS or errorcode.
+ */
+int sd_af_copy(sd_af_file *dst, const sd_af_file *src);
+
 /*! \ brief Set move
  * Sets a HAR move to a given index in a AF file structure.
- * \param af AF struct pointer. Must be created using sd_af_create().
- * \param index Index of the move. Must be 0 <= index <= 69.
- * \param move Sd_move pointer will be copied, so do not free the sd_move after setting it!
+ * \param af AF struct pointer.
+ * \param index Index of the move.
+ * \param move sd_move struct. This will be copied.
+ * \return SD_SUCCESS or errorcode.
  */ 
-void sd_af_set_move(sd_af_file *af, int index, sd_move *move);
+int sd_af_set_move(sd_af_file *af, int index, const sd_move *move);
 
 /*! \ brief Get move
- * Gets a HAR move from an index in AF file structure
- * \param af AF struct pointer. Must be created using sd_af_create().
+ * Gets a HAR move from an index in AF file structure.
+ * \param af AF struct pointer.
  * \param index Index of the move. Must be 0 <= index <= 69.
- * \return sd_move pointer in success, or NULL in failure.
+ * \return sd_move pointer in success, or NULL if failure.
  */ 
 sd_move* sd_af_get_move(sd_af_file *af, int index);
 
 /*! \brief Load AF file
  * Loads the given AF file to memory. The structure should be initialized with sd_af_create() before this.
- * \param af AF struct pointer. Must be created using sd_af_create().
+ * \param af AF struct pointer.
  * \param filename Name of the AF file.
- * \return SD_SUCCESS on success, or SD_FILE_OPEN_ERROR or SD_FILE_PARSE_ERROR on failure.
+ * \return SD_SUCCESS or errorcode.
  */
 int sd_af_load(sd_af_file *af, const char *filename);
 
 /*! \brief Save AF file
  * Saves the given AF file from memory to a file on disk.
- * \param af AF struct pointer. Must be created using sd_af_create().
+ * \param af AF struct pointer.
  * \param filename Name of the AF file to save into.
- * \return SD_SUCCESS on success, or SD_FILE_OPEN_ERROR on failure.
+ * \return SD_SUCCESS or errorcode.
  */
-int sd_af_save(sd_af_file *af, const char* filename);
+int sd_af_save(const sd_af_file *af, const char* filename);
 
 /*! \brief Free AF container
- * Frees up the af struct memory.
- * \param af AF struct pointer. Must be created using sd_af_create().
+ * Frees up all memory reserved by the AF container. All contents will be freed, all pointers to contents will be invalid.
+ * \param af AF struct pointer.
  */
 void sd_af_free(sd_af_file *af);
 

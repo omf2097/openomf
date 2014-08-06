@@ -3,18 +3,24 @@ project(ShadowDive C)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
-set(CMAKE_C_FLAGS "-Wall -std=c99 -DUSE_INTERNAL")
+set(CMAKE_C_FLAGS "-Wall -std=c99")
 set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE -fno-omit-frame-pointer -pedantic -Werror")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer -Werror")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
 set(CMAKE_C_FLAGS_MINSIZEREL "-Os")
+add_definitions(-DSD_USE_INTERNAL)
+
+OPTION(BUILD_TESTS "Build unittests" OFF)
+OPTION(BUILD_OLD_TESTS "Build old test programs" OFF)
 
 include(${CMAKE_MODULE_PATH}/CMakeLists-emscripten.cmake)
 link_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(include/)
 
-enable_testing()
-add_subdirectory(testing)
+IF(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(testing)
+ENDIF()
 
 add_library(shadowdive
     src/af.c
@@ -43,7 +49,7 @@ add_library(shadowdive
     src/internal/helpers.c
 )
 
-if(NOT LIBSHADOWDIVE_LIBRARY_ONLY)
+IF(BUILD_OLD_TESTS)
     add_executable(test_main test/test_main.c)
     add_executable(test_sounds test/sounds_main.c)
     add_executable(test_roundtrip test/roundtrip.c)
@@ -67,7 +73,7 @@ if(NOT LIBSHADOWDIVE_LIBRARY_ONLY)
     target_link_libraries(test_pic shadowdive)
     target_link_libraries(test_score shadowdive)
     target_link_libraries(test_chr shadowdive)
-endif()
+ENDIF()
 
 FILE(GLOB H_FILES "include/shadowdive/*.h")
 INSTALL(FILES ${H_FILES} DESTINATION include/shadowdive/)

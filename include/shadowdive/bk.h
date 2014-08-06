@@ -6,53 +6,55 @@
 #ifndef _SD_BK_H
 #define _SD_BK_H
 
+#include <stdint.h>
+#include "shadowdive/palette.h"
+#include "shadowdive/bkanim.h"
+#include "shadowdive/vga_image.h"
+
 #ifdef __cplusplus 
 extern "C" {
-#endif
-
-#include <stdint.h>
-
-#ifndef _SD_PALETTE_H
-typedef struct sd_palette_t sd_palette;
-#endif
-
-#ifndef _SD_ANIMATION_H
-typedef struct sd_bk_anim_t sd_bk_anim;
-#endif
-
-#ifndef _SD_VGA_IMAGE_H
-typedef struct sd_vga_image_t sd_vga_image;
 #endif
 
 // This is hardcoded to file format. Do not change.
 #define MAX_BK_ANIMS 50
 
-// This can be changed (maximum of 255)
-// 64 should be enough, though
-#define MAX_BK_PALETTES 64
+// 8 palettes ought to be enough for everybody
+#define MAX_BK_PALETTES 8
 
-typedef struct sd_bk_file_t {
+typedef struct {
     uint32_t file_id;
     uint8_t unknown_a;
-    uint8_t num_palettes;
+    uint8_t palette_count;
+
     sd_bk_anim *anims[MAX_BK_ANIMS];
     sd_vga_image *background;
     sd_palette *palettes[MAX_BK_PALETTES];
+
     char soundtable[30];
 } sd_bk_file;
 
-/*! \brief Create BK container
- * Creates the BK container struct, allocated memory etc.
- * \return BK container struct pointer
+/*! \brief Initialize BK container
+ * Initializes the BK container with empty values. When saved, this will create an empty BK file.
+ * \param af Allocated BK struct pointer.
+ * \return SD_SUCCESS or errorcode.
  */
-sd_bk_file* sd_bk_create();
+int sd_bk_create(sd_bk_file *bk);
+
+/*! \brief Copy BK structure
+ * Copies a valid BK structure. Note: Source structure must be valid.
+ * \param dst Destination BK struct pointer.
+ * \param src Source BK struct pointer.
+ * \return SD_SUCCESS or errorcode.
+ */
+int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src);
 
 /*! \brief Set background image
  * Sets the background image of the BK file.
  * \param bk BK struct pointer.
- * \param img VGA image data struct. Note! pointer will be copied.
+ * \param img VGA image data struct.
+ * \return SD_SUCCESS or errorcode.
  */
-void sd_bk_set_background(sd_bk_file *bk, sd_vga_image *img);
+int sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img);
 
 /*! \brief Get background image
  * Gets the background image of the BK file.
@@ -65,9 +67,10 @@ sd_vga_image* sd_bk_get_background(sd_bk_file *bk);
  * Sets a BK animation in BK file structure. 
  * \param bk BK struct pointer.
  * \param index Animation index. Must be 0 <= index <= 49
- * \param anim Animation pointer. May be NULL.
+ * \param anim Animation pointer.
+ * \return SD_SUCCESS or errorcode.
  */
-void sd_bk_set_anim(sd_bk_file *bk, int index, sd_bk_anim *anim);
+int sd_bk_set_anim(sd_bk_file *bk, int index, const sd_bk_anim *anim);
 
 /*! \brief Get bk animation
  * Gets a BK animation from BK file structure. 
@@ -80,23 +83,23 @@ sd_bk_anim* sd_bk_get_anim(sd_bk_file *bk, int index);
 /*! \brief Set palette
  * Sets a palette to index in BK file structure.
  * \param bk BK struct pointer.
- * \param index Palette index. Must be 0 <= index <= 63
- * \param palette A Valid sd_palette object pointer. Must be reserved with malloc.
+ * \param index Palette index.
+ * \param palette A Valid sd_palette object pointer.
  */
-void sd_bk_set_palette(sd_bk_file *bk, int index, sd_palette *palette);
+void sd_bk_set_palette(sd_bk_file *bk, int index, const sd_palette *palette);
 
 /*! \brief Push palette
  * Pushes a palette to the end of the palette list
  * \param bk BK struct pointer.
- * \param palette A Valid sd_palette object pointer. Must be reserved with malloc.
+ * \param palette A Valid sd_palette object pointer.
  */
-void sd_bk_push_palette(sd_bk_file *bk, sd_palette *palette);
+int sd_bk_push_palette(sd_bk_file *bk, const sd_palette *palette);
 
 /*! \brief Pop palette
  * Pops a palette from the end of the palette list
  * \param bk BK struct pointer.
  */
-void sd_bk_pop_palette(sd_bk_file *bk);
+int sd_bk_pop_palette(sd_bk_file *bk);
 
 /*! \brief Get palette
  * Gets a palette from BK file structure. 
@@ -120,13 +123,13 @@ int sd_bk_load(sd_bk_file *bk, const char *filename);
  * \param filename Name of the BK file to save into.
  * \return SD_SUCCESS on success, or SD_FILE_OPEN_ERROR on failure.
  */
-int sd_bk_save(sd_bk_file *bk, const char* filename);
+int sd_bk_save(const sd_bk_file *bk, const char* filename);
 
 /*! \brief Free BK container
  * Frees up the bk struct memory.
  * \param bk BK struct pointer.
  */
-void sd_bk_delete(sd_bk_file *bk);
+void sd_bk_free(sd_bk_file *bk);
 
 #ifdef __cplusplus
 }

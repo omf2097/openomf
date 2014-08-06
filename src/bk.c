@@ -11,26 +11,6 @@
 #include "shadowdive/error.h"
 #include "shadowdive/bk.h"
 
-void sd_bk_postprocess(sd_bk_file *bk) {
-    char *table[1000] = {0}; // temporary lookup table
-    sd_animation *anim;
-    // fix NULL pointers for any 'missing' sprites
-    for(int i = 0; i < MAX_BK_ANIMS; i++) {
-        if(bk->anims[i] != NULL) {
-            anim = bk->anims[i]->animation;
-            for(int j = 0; j < anim->frame_count; j++) {
-                if(anim->sprites[j]->missing > 0) {
-                    if(table[anim->sprites[j]->index]) {
-                        anim->sprites[j]->img->data = table[anim->sprites[j]->index];
-                    }
-                } else {
-                    table[anim->sprites[j]->index] = anim->sprites[j]->img->data;
-                }
-            }
-        }
-    }
-}
-
 sd_bk_file* sd_bk_create() {
     sd_bk_file *bk = (sd_bk_file*)malloc(sizeof(sd_bk_file));
     memset(bk->anims, 0, sizeof(bk->anims));
@@ -41,6 +21,26 @@ sd_bk_file* sd_bk_create() {
     bk->unknown_a = 0;
     bk->num_palettes = 0;
     return bk;
+}
+
+void sd_bk_postprocess(sd_bk_file *bk) {
+    char *table[1000] = {0}; // temporary lookup table
+    sd_animation *anim;
+    // fix NULL pointers for any 'missing' sprites
+    for(int i = 0; i < MAX_BK_ANIMS; i++) {
+        if(bk->anims[i] != NULL) {
+            anim = bk->anims[i]->animation;
+            for(int j = 0; j < anim->frame_count; j++) {
+                if(anim->sprites[j]->missing > 0) {
+                    if(table[anim->sprites[j]->index]) {
+                        anim->sprites[j]->data = table[anim->sprites[j]->index];
+                    }
+                } else {
+                    table[anim->sprites[j]->index] = anim->sprites[j]->data;
+                }
+            }
+        }
+    }
 }
 
 int sd_bk_load(sd_bk_file *bk, const char *filename) {

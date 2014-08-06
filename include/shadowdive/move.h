@@ -1,12 +1,12 @@
 #ifndef _SD_MOVE_H
 #define _SD_MOVE_H
 
-#ifdef USE_INTERNAL
-#include "shadowdive/internal/reader.h"
-#include "shadowdive/internal/writer.h"
-#endif
-
+#include <stdint.h>
 #include "shadowdive/animation.h"
+#ifdef SD_USE_INTERNAL
+    #include "shadowdive/internal/reader.h"
+    #include "shadowdive/internal/writer.h"
+#endif
 
 #ifdef __cplusplus 
 extern "C" {
@@ -43,16 +43,18 @@ typedef struct {
     char footer_string[SD_FOOTER_STRING_MAX];
 } sd_move;
 
-int sd_move_create(sd_move* move);
+int sd_move_create(sd_move *move);
+int sd_move_copy(sd_move *dst, const sd_move *src);
 void sd_move_free(sd_move *move);
 
 int sd_move_set_animation(sd_move *move, const sd_animation *animation);
+sd_animation* sd_move_get_animation(const sd_move *move);
 int sd_move_set_footer_string(sd_move *move, const char *str);
 int sd_move_set_move_string(sd_move *move, const char *str);
 
-#ifdef USE_INTERNAL
+#ifdef SD_USE_INTERNAL
 int sd_move_load(sd_reader *reader, sd_move *move);
-void sd_move_save(sd_writer *writer, sd_move *move);
+void sd_move_save(sd_writer *writer, const sd_move *move);
 #endif
 
 #ifdef __cplusplus
