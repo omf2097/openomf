@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "shadowdive.h"
+#include "shadowdive/sprite.h"
 
 #define MAX_PIC_PHOTOS 256
 
@@ -21,7 +21,7 @@ typedef struct sd_pic_file_t {
     sd_pic_photo *photos[MAX_PIC_PHOTOS];
 } sd_pic_file;
 
-sd_pic_file* sd_pic_create();
+int sd_pic_create(sd_pic_file *pic);
 int sd_pic_load(sd_pic_file *pic, const char *filename);
 int sd_pic_save(sd_pic_file *pic, const char *filename);
 void sd_pic_delete(sd_pic_file *pic);

@@ -13,21 +13,8 @@ int sd_af_create(sd_af_file *af) {
         return SD_INVALID_INPUT;
     }
 
-    memset(af->moves, 0, sizeof(af->moves));
-    memset(af->soundtable, 0, sizeof(af->soundtable));
-
-    af->file_id = 0;
-    af->unknown_a = 0;
-    af->endurance = 0;
-    af->unknown_b = 0;
-    af->power = 0;
-    af->forward_speed = 0;
-    af->reverse_speed = 0;
-    af->jump_speed = 0;
-    af->fall_speed = 0;
-    af->unknown_c = 0;
-    af->unknown_d = 0;
-
+    // Clear everything
+    memset(af, 0, sizeof(sd_af_file));
     return SD_SUCCESS;
 }
 
@@ -37,6 +24,10 @@ int sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
         return SD_INVALID_INPUT;
     }
 
+    // Clear destination
+    memset(dst, 0, sizeof(sd_af_file));
+
+    // Copy the basic stuff
     dst->file_id = src->file_id;
     dst->unknown_a = src->unknown_a;
     dst->endurance = src->endurance;
@@ -44,15 +35,16 @@ int sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
     dst->power = src->power;
     dst->forward_speed = src->forward_speed;
     dst->reverse_speed = src->reverse_speed;
-    dst->jump_speed = src->jump_speed
+    dst->jump_speed = src->jump_speed;
     dst->fall_speed = src->fall_speed;
     dst->unknown_c = src->unknown_c;
     dst->unknown_d = src->unknown_d;
 
+    // Copy soundtable
     memcpy(dst->soundtable, src->soundtable, sizeof(src->soundtable));
 
+    // Copy move animations
     for(int i = 0; i < MAX_AF_MOVES; i++) {
-        dst->moves[i] = NULL;
         if(src->moves[i] != NULL) {
             if((dst->moves[i] = malloc(sizeof(sd_move))) == NULL) {
                 return SD_OUT_OF_MEMORY;
@@ -74,6 +66,9 @@ int sd_af_set_move(sd_af_file *af, int index, const sd_move *move) {
     if(af->moves[index] != NULL) {
         sd_move_free(af->moves[index]);
         free(af->moves[index]);
+    }
+    if(move == NULL) {
+        return SD_SUCCESS;
     }
     if((af->moves[index] = malloc(sizeof(sd_move))) == NULL) {
         return SD_OUT_OF_MEMORY;
@@ -98,13 +93,13 @@ void sd_af_postprocess(sd_af_file *af) {
     for(int i = 0; i < 70; i++) {
         if(af->moves[i] != NULL) {
             anim = af->moves[i]->animation;
-            for(int j = 0; j < anim->frame_count; j++) {
+            for(int j = 0; j < anim->sprite_count; j++) {
                 if(anim->sprites[j]->missing > 0) {
                     if(table[anim->sprites[j]->index]) {
-                        anim->sprites[j]->img->data = table[anim->sprites[j]->index];
+                        anim->sprites[j]->data = table[anim->sprites[j]->index];
                     }
                 } else {
-                    table[anim->sprites[j]->index] = anim->sprites[j]->img->data;
+                    table[anim->sprites[j]->index] = anim->sprites[j]->data;
                 }
             }
         }
@@ -113,10 +108,11 @@ void sd_af_postprocess(sd_af_file *af) {
 
 int sd_af_load(sd_af_file *af, const char *filename) {
     int ret;
+    uint8_t moveno = 0;
+    sd_reader *r;
 
     // Initialize reader
-    sd_reader *r = sd_reader_open(filename);
-    if(!r) {
+    if(!(r = sd_reader_open(filename))) {
         return SD_FILE_OPEN_ERROR;
     }
 
@@ -134,7 +130,6 @@ int sd_af_load(sd_af_file *af, const char *filename) {
     af->unknown_d = sd_read_ubyte(r); // Always 0x14 ?
 
     // Read animations
-    uint8_t moveno = 0;
     while(1) {
         moveno = sd_read_ubyte(r);
         if(moveno >= MAX_AF_MOVES || !sd_reader_ok(r)) {
@@ -148,7 +143,7 @@ int sd_af_load(sd_af_file *af, const char *filename) {
         if((ret = sd_move_create(af->moves[moveno])) != SD_SUCCESS) {
             return ret;
         }
-        if((ret = sd_move_load(r, af->moves[moveno]))) != SD_SUCCESS) {
+        if((ret = sd_move_load(r, af->moves[moveno])) != SD_SUCCESS) {
             return ret;
         }
     }

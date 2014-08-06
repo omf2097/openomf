@@ -1,35 +1,28 @@
-#include "shadowdive/internal/reader.h"
-#include "shadowdive/internal/writer.h"
+#include <stdlib.h>
+#include <string.h>
+
 #include "shadowdive/internal/helpers.h"
 #include "shadowdive/colcoord.h"
 #include "shadowdive/animation.h"
 #include "shadowdive/sprite.h"
 #include "shadowdive/error.h"
-#include <stdlib.h>
-#include <string.h>
 
 int sd_animation_create(sd_animation *ani) {
     if(ani == NULL) {
         return SD_INVALID_INPUT;
     }
-
-    ani->start_x = 0;
-    ani->start_y = 0;
-    ani->null = 0;
-    ani->coord_count = 0;
-    ani->sprite_count = 0;
-    ani->extra_string_count = 0;
-    
-    memset(ani->coord_table, 0, sizeof(ani->coord_table));
-    memset(ani->sprites, 9, sizeof(ani->sprites));
-    memset(ani->anim_string, 0, sizeof(ani->anim_string));
-    memset(ani->extra_strings, 0, sizeof(ani->extra_strings));
-
+    memset(ani, 0, sizeof(sd_animation));
     return SD_SUCCESS;
 }
 
 int sd_animation_copy(sd_animation *dst, const sd_animation *src) {
     int ret;
+    if(dst == NULL || src == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
+    // Clear destination
+    memset(dst, 0, sizeof(sd_animation));
 
     // Copy source
     dst->start_x = src->start_x;
@@ -51,11 +44,9 @@ int sd_animation_copy(sd_animation *dst, const sd_animation *src) {
             if((dst->sprites[i] = malloc(sizeof(sd_sprite))) == NULL) {
                 return SD_OUT_OF_MEMORY;
             }
-            if((ret = sd_sprite_copy(dst->sprites[i], src->sprites[i]) != SD_SUCCESS) {
+            if((ret = sd_sprite_copy(dst->sprites[i], src->sprites[i])) != SD_SUCCESS) {
                 return ret;
             }
-        } else {
-            dst->sprites[i] = NULL;
         }
     }
     return SD_SUCCESS;
@@ -126,7 +117,7 @@ int sd_animation_set_sprite(sd_animation *anim, int num, const sd_sprite *sprite
         return SD_INVALID_INPUT;
     }
     if(anim->sprites[num] != NULL) {
-        sd_animation_free(anim->sprites[num]);
+        sd_sprite_free(anim->sprites[num]);
         free(anim->sprites[num]);
     }
     if((anim->sprites[num] = malloc(sizeof(sd_sprite))) == NULL) {
@@ -196,25 +187,23 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     }
 
     // Animation string header
-    uint16_t anim_string_len = sd_read_uword(r);
-    sd_read_buf(r, ani->anim_string, anim_string_len);
+    sd_read_str(r, ani->anim_string);
 
     // Extra animation strings
     ani->extra_string_count = sd_read_ubyte(r);
     for(int i = 0; i < ani->extra_string_count; i++) {
-        uint16_t size = sd_read_uword(r);
-        sd_read_buf(r, ani->extra_strings[i], size);
+        sd_read_str(r, ani->extra_strings[i]);
     }
 
     // Sprites
-    for(int i = 0; i < ani->frame_count; i++) {
+    for(int i = 0; i < ani->sprite_count; i++) {
         if((ani->sprites[i] = malloc(sizeof(sd_sprite))) == NULL) {
             return SD_OUT_OF_MEMORY;
         }
-        if((ret = sd_sprite_create(ani->sprites[i]))) != SD_SUCCESS) {
+        if((ret = sd_sprite_create(ani->sprites[i])) != SD_SUCCESS) {
             return ret;
         }
-        if((ret = sd_sprite_load(r, ani->sprites[i]))) != SD_SUCCESS) {
+        if((ret = sd_sprite_load(r, ani->sprites[i])) != SD_SUCCESS) {
             return ret;
         }
     }
@@ -224,7 +213,6 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
 }
 
 void sd_animation_save(sd_writer *w, const sd_animation *ani) {
-    uint16_t size;
     uint32_t tmp;
 
     // Animation header
@@ -247,18 +235,12 @@ void sd_animation_save(sd_writer *w, const sd_animation *ani) {
     }
 
     // Animation string header
-    size = strlen(ani->anim_string);
-    sd_write_uword(w, size);
-    sd_write_buf(w, ani->anim_string, size);
-    sd_write_ubyte(w, 0);
+    sd_write_str(w, ani->anim_string);
 
     // Extra animation strings
     sd_write_ubyte(w, ani->extra_string_count);
     for(int i = 0; i < ani->extra_string_count; i++) {
-        size = strlen(ani->extra_strings[i]);
-        sd_write_uword(w, size);
-        sd_write_buf(w, ani->extra_strings[i], size);
-        sd_write_ubyte(w, 0);
+        sd_write_str(w, ani->extra_strings[i]);
     }
 
     // Sprites

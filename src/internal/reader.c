@@ -163,3 +163,11 @@ void sd_skip(sd_reader *reader, unsigned int nbytes) {
     fseek(reader->handle, nbytes, SEEK_CUR);
 }
 
+void sd_read_str(sd_reader *reader, char *str) {
+    uint16_t size = sd_read_uword(reader);
+    if(size > 0) {
+        sd_read_buf(reader, str, size);
+    } else {
+        str[0] = 0;
+    }
+}

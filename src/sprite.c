@@ -1,43 +1,36 @@
-#include "shadowdive/internal/reader.h"
-#include "shadowdive/internal/writer.h"
+#include <stdlib.h>
+#include <string.h>
+
 #include "shadowdive/error.h"
 #include "shadowdive/sprite.h"
 #include "shadowdive/palette.h"
-#include <stdlib.h>
 
 int sd_sprite_create(sd_sprite *sprite) {
     if(sprite == NULL) {
         return SD_INVALID_INPUT;
     }
-    
-    sprite->pos_x = 0;
-    sprite->pos_y = 0;
-    sprite->index = 0;
-    sprite->missing = 1; // By default, sprite has no data
-    sprite->width = 0;
-    sprite->height = 0;
-    sprite->len = 0;
-    sprite->data = NULL;
+    memset(sprite, 0, sizeof(sd_sprite));
     return SD_SUCCESS;
 }
 
 int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
-    int ret;
     if(dst == NULL || src == NULL) {
         return SD_INVALID_INPUT;
     } 
 
-    dst->pos_x = src->pos_X;
+    // Clear destination
+    memset(dst, 0, sizeof(sd_sprite));
+
+    dst->pos_x = src->pos_x;
     dst->pos_y = src->pos_y;
     dst->index = src->index;
     dst->missing = src->missing;
     dst->width = src->width;
     dst->height = src->height;
     dst->len = src->len;
-    dst->data = NULL;
 
     if(src->data != NULL) {
-        if((dst->data = malloc(src->len))) == NULL) {
+        if((dst->data = malloc(src->len)) == NULL) {
             return SD_OUT_OF_MEMORY;
         }
         memcpy(dst->data, src->data, src->len);
@@ -48,6 +41,9 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
 
 void sd_sprite_free(sd_sprite *sprite) {
     if(sprite == NULL) return;
+
+    // Only attempt to free if there IS something to free
+    // AND sprite data belongs to this sprite
     if(sprite->data != NULL && !sprite->missing) {
         free(sprite->data);
     }
@@ -64,7 +60,7 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
 
     // Copy sprite data, if there is any.
     if(sprite->missing == 0) {
-        if((sprite->data = malloc(sprite->len))) == NULL) {
+        if((sprite->data = malloc(sprite->len)) == NULL) {
             return SD_OUT_OF_MEMORY;
         }
         sd_read_buf(r, sprite->data, sprite->len);
@@ -118,15 +114,15 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_pal
 
     // Walk through the RGBA data
     for(int pos = 0; pos <= rgb_size; pos+= 4) {
-        uint8_t r = img->data[pos];
-        uint8_t g = img->data[pos+1];
-        uint8_t b = img->data[pos+2];
-        uint8_t a = img->data[pos+3];
+        uint8_t r = src->data[pos];
+        uint8_t g = src->data[pos+1];
+        uint8_t b = src->data[pos+2];
+        uint8_t a = src->data[pos+3];
 
         // ignore anytjhing but fully opaque pixels
         if (a == 255) {
-            int16_t x = (pos/4) % img->w;
-            int16_t y = (pos/4) / img->w;
+            int16_t x = (pos/4) % src->w;
+            int16_t y = (pos/4) / src->w;
             if (y != lasty) {
                 // new row
                 c = (y*4)+2;
@@ -190,11 +186,11 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_pal
     buf[i++] = 0;
 
     // Copy data
-    dst->width = img->w;
-    dst->height = img->h;
+    dst->width = src->w;
+    dst->height = src->h;
     dst->len = i;
     dst->missing = 0;
-    if((dst->data = malloc(i))) == NULL) {
+    if((dst->data = malloc(i)) == NULL) {
         ret = SD_OUT_OF_MEMORY;
         goto done;
     }
@@ -211,7 +207,7 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const sd_pal
     int i = 0;
     uint16_t c = 0;
     uint16_t data = 0;
-    char op;
+    char op = 0;
 
     // Make sure we aren't being fed BS
     if(src == NULL || dst == NULL || pal == NULL) {
@@ -282,7 +278,6 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
     uint16_t x = 0;
     uint16_t y = 0;
     int i = 0;
-    int ret = SD_SUCCESS;
     uint16_t c = 0;
     uint16_t data = 0;
     char op = 0;

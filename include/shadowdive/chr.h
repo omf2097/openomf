@@ -1,12 +1,12 @@
 #ifndef _SD_CHR_H
 #define _SD_CHR_H
 
+#include "palette.h"
+#include "sprite.h"
+
 #ifdef __cplusplus 
 extern "C" {
 #endif
-
-#include "palette.h"
-#include "sprite.h"
 
 #define MAX_CHR_ENEMIES 256
 
@@ -49,10 +49,10 @@ typedef struct sd_chr_file_t {
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES];
 } sd_chr_file;
 
-sd_chr_file* sd_chr_create();
+int sd_chr_create(sd_chr_file *chr);
 int sd_chr_load(sd_chr_file *chr, const char *filename);
 int sd_chr_save(sd_chr_file *chr, const char *filename);
-void sd_chr_delete(sd_chr_file *chr);
+void sd_chr_free(sd_chr_file *chr);
 
 #ifdef __cplusplus
 }

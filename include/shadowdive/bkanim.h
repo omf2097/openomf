@@ -8,6 +8,8 @@
     #include "shadowdive/internal/writer.h"
 #endif
 
+#define SD_BK_FOOTER_STRING_MAX 512
+
 #ifdef __cplusplus 
 extern "C" {
 #endif
@@ -19,8 +21,7 @@ typedef struct {
     uint8_t load_on_start;
     uint16_t probability;
     uint8_t hazard_damage;
-    char* unknown_data;
-
+    char footer_string[SD_BK_FOOTER_STRING_MAX];
     sd_animation *animation;
 } sd_bk_anim;
 
@@ -28,7 +29,7 @@ int sd_bk_anim_create(sd_bk_anim *bka);
 int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src);
 void sd_bk_anim_free(sd_bk_anim *bka);
 
-void set_bk_anim_string(sd_bk_anim *bka, const char *data);
+int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data);
 
 #ifdef SD_USE_INTERNAL
 int sd_bk_anim_load(sd_reader *reader, sd_bk_anim *bka);

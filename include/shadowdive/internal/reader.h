@@ -33,6 +33,11 @@ int32_t sd_peek_dword(sd_reader *reader);
 float sd_peek_float(sd_reader *reader);
 
 /**
+ * Reads a string from file. uword size + variable str + nullbyte.
+ */
+void sd_read_str(sd_reader *reader, char *str);
+
+/**
   * Compare following nbytes amount of data and given buffer. Does not advance file pointer.
   */
 int sd_match(sd_reader *reader, char *buf, unsigned int nbytes);

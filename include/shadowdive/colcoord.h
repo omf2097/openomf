@@ -1,6 +1,8 @@
 #ifndef _COL_COORD_H
 #define _COL_COORD_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus 
 extern "C" {
 #endif

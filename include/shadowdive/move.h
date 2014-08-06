@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 #define SD_MOVE_STRING_MAX 21
-#define SD_FOOTER_STRING_MAX 512
+#define SD_MOVE_FOOTER_STRING_MAX 512
 
 typedef struct {
     sd_animation *animation;
@@ -40,7 +40,7 @@ typedef struct {
     uint8_t points;
 
     char move_string[SD_MOVE_STRING_MAX];
-    char footer_string[SD_FOOTER_STRING_MAX];
+    char footer_string[SD_MOVE_FOOTER_STRING_MAX];
 } sd_move;
 
 int sd_move_create(sd_move *move);
