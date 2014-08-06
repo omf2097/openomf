@@ -46,7 +46,7 @@ int sd_sprite_vga_decode(
 
 #ifdef SD_USE_INTERNAL
 int sd_sprite_load(sd_reader *reader, sd_sprite *sprite);
-void sd_sprite_save(sd_writer *writer, const sd_sprite *sprite);
+int sd_sprite_save(sd_writer *writer, const sd_sprite *sprite);
 #endif
 
 #ifdef __cplusplus

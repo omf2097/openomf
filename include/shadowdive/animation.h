@@ -58,7 +58,7 @@ sd_sprite* sd_animation_get_sprite(sd_animation *animation, int num);
 
 #ifdef SD_USE_INTERNAL
 int sd_animation_load(sd_reader *reader, sd_animation *animation);
-void sd_animation_save(sd_writer *writer, const sd_animation *animation);
+int sd_animation_save(sd_writer *writer, const sd_animation *animation);
 #endif
 
 #ifdef __cplusplus

@@ -121,9 +121,16 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     return SD_SUCCESS;
 }
 
-void sd_move_save(sd_writer *w, const sd_move *move) {
+int sd_move_save(sd_writer *w, const sd_move *move) {
+    int ret;
+    if(w == NULL || move == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     // Save animation
-    sd_animation_save(w, move->animation);
+    if((ret = sd_animation_save(w, move->animation)) != SD_SUCCESS) {
+        return ret;
+    }
 
     // Move header
     sd_write_uword(w, move->unknown_0);
@@ -152,6 +159,8 @@ void sd_move_save(sd_writer *w, const sd_move *move) {
 
     // Save footer string
     sd_write_str(w, move->footer_string);
+
+    return SD_SUCCESS;
 }
 
 int sd_move_set_animation(sd_move *move, const sd_animation *animation) {

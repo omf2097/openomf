@@ -33,7 +33,7 @@ int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data);
 
 #ifdef SD_USE_INTERNAL
 int sd_bk_anim_load(sd_reader *reader, sd_bk_anim *bka);
-void sd_bk_anim_save(sd_writer *writer, const sd_bk_anim *bka);
+int sd_bk_anim_save(sd_writer *writer, const sd_bk_anim *bka);
 #endif
 
 #ifdef __cplusplus

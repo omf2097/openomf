@@ -82,7 +82,12 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     return SD_SUCCESS;
 }
 
-void sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
+int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
+    int ret;
+    if(w == NULL || bka == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     // Write BK specific header
     sd_write_ubyte(w, bka->null);
     sd_write_ubyte(w, bka->chain_hit);
@@ -93,7 +98,11 @@ void sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     sd_write_str(w, bka->footer_string);
 
     // Write animation
-    sd_animation_save(w, bka->animation);
+    if((ret = sd_animation_save(w, bka->animation)) != SD_SUCCESS) {
+        return ret;
+    }
+
+    return SD_SUCCESS;
 }
 
 int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data) {

@@ -54,7 +54,7 @@ int sd_move_set_move_string(sd_move *move, const char *str);
 
 #ifdef SD_USE_INTERNAL
 int sd_move_load(sd_reader *reader, sd_move *move);
-void sd_move_save(sd_writer *writer, const sd_move *move);
+int sd_move_save(sd_writer *writer, const sd_move *move);
 #endif
 
 #ifdef __cplusplus

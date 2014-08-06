@@ -164,6 +164,7 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
     long rpos = 0;
     long opos = 0;
     sd_writer *w;
+    int ret;
 
     if(!(w = sd_writer_open(filename))) {
         return SD_FILE_OPEN_ERROR;
@@ -189,7 +190,9 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
             opos = sd_writer_pos(w); // remember where we need to fill in the blank
             sd_write_udword(w, 0); // write a 0 as a placeholder
             sd_write_ubyte(w, i);
-            sd_bk_anim_save(w, bk->anims[i]);
+            if((ret = sd_bk_anim_save(w, bk->anims[i])) != SD_SUCCESS) {
+                return ret;
+            }
             rpos = sd_writer_pos(w);
             sd_writer_seek_start(w, opos);
             sd_write_udword(w, rpos); // write the actual size

@@ -160,8 +160,10 @@ int sd_af_load(sd_af_file *af, const char *filename) {
 }
 
 int sd_af_save(const sd_af_file *af, const char* filename) {
-    sd_writer *w = sd_writer_open(filename);
-    if(!w) {
+    int ret;
+    sd_writer *w;
+
+    if(!(w = sd_writer_open(filename))) {
         return SD_FILE_OPEN_ERROR;
     }
 
@@ -182,7 +184,9 @@ int sd_af_save(const sd_af_file *af, const char* filename) {
     for(uint8_t i = 0; i < MAX_AF_MOVES; i++) {
         if(af->moves[i] != NULL) {
             sd_write_ubyte(w, i);
-            sd_move_save(w, af->moves[i]);
+            if((ret = sd_move_save(w, af->moves[i])) != SD_SUCCESS) {
+                return ret;
+            }
         }
     }
 

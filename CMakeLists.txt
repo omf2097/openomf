@@ -18,7 +18,6 @@ link_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(include/)
 
 IF(BUILD_TESTS)
-    enable_testing()
     add_subdirectory(testing)
 ENDIF()
 

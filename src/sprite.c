@@ -74,17 +74,21 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
     return SD_SUCCESS;
 }
 
-void sd_sprite_save(sd_writer *writer, const sd_sprite *sprite) {
-    sd_write_uword(writer, sprite->len);
-    sd_write_word(writer, sprite->pos_x);
-    sd_write_word(writer, sprite->pos_y);
-    sd_write_uword(writer, sprite->width);
-    sd_write_uword(writer, sprite->height);
-    sd_write_ubyte(writer, sprite->index);
-    sd_write_ubyte(writer, sprite->missing);
-    if(!sprite->missing) {
-        sd_write_buf(writer, sprite->data, sprite->len);
+int sd_sprite_save(sd_writer *w, const sd_sprite *sprite) {
+    if(w == NULL || sprite == NULL) {
+        return SD_INVALID_INPUT;
     }
+    sd_write_uword(w, sprite->len);
+    sd_write_word(w, sprite->pos_x);
+    sd_write_word(w, sprite->pos_y);
+    sd_write_uword(w, sprite->width);
+    sd_write_uword(w, sprite->height);
+    sd_write_ubyte(w, sprite->index);
+    sd_write_ubyte(w, sprite->missing);
+    if(!sprite->missing) {
+        sd_write_buf(w, sprite->data, sprite->len);
+    }
+    return SD_SUCCESS;
 }
 
 int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_palette *pal, int remapping) {

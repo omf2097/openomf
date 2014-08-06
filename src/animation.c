@@ -212,8 +212,12 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     return SD_SUCCESS;
 }
 
-void sd_animation_save(sd_writer *w, const sd_animation *ani) {
+int sd_animation_save(sd_writer *w, const sd_animation *ani) {
+    int ret;
     uint32_t tmp;
+    if(ani == NULL || w == NULL) {
+        return SD_INVALID_INPUT;
+    }
 
     // Animation header
     sd_write_word(w, ani->start_x);
@@ -245,7 +249,11 @@ void sd_animation_save(sd_writer *w, const sd_animation *ani) {
 
     // Sprites
     for(int i = 0; i < ani->sprite_count; i++) {
-        sd_sprite_save(w, ani->sprites[i]);
+        if((ret = sd_sprite_save(w, ani->sprites[i])) != SD_SUCCESS) {
+            return ret;
+        }
     }
+
+    return SD_SUCCESS;
 }
 
