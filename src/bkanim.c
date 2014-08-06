@@ -96,7 +96,7 @@ void sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     sd_animation_save(w, bka->animation);
 }
 
-int set_bk_anim_string(sd_bk_anim *bka, const char *data) {
+int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data) {
     if(strlen(data) >= SD_BK_FOOTER_STRING_MAX-1) {
         return SD_INVALID_INPUT;
     }

@@ -92,7 +92,7 @@ typedef struct sd_tournament_file_t {
 int sd_tournament_create(sd_tournament_file *trn);
 int sd_tournament_load(sd_tournament_file *trn, const char *filename);
 int sd_tournament_save(sd_tournament_file *trn, const char *filename);
-void sd_tournament_delete(sd_tournament_file *trn);
+void sd_tournament_free(sd_tournament_file *trn);
 
 #ifdef __cplusplus
 }
