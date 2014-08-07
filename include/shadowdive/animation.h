@@ -17,7 +17,7 @@ extern "C" {
 #define SD_EXTRA_STRING_MAX 512
 
 #define SD_SPRITE_COUNT_MAX 255
-#define SD_COLCOORD_COUNT_MAX 128
+#define SD_COLCOORD_COUNT_MAX 256
 #define SD_EXTRASTR_COUNT_MAX 10
 
 typedef struct {
