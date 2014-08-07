@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "shadowdive/error.h"
 #include "shadowdive/internal/reader.h"

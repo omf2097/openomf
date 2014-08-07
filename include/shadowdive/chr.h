@@ -10,7 +10,7 @@ extern "C" {
 
 #define MAX_CHR_ENEMIES 256
 
-typedef struct sd_chr_enemy_t {
+typedef struct {
     char name[17];
     uint16_t wins;
     uint16_t losses;
@@ -18,7 +18,7 @@ typedef struct sd_chr_enemy_t {
     uint8_t har;
 } sd_chr_enemy;
 
-typedef struct sd_chr_file_t {
+typedef struct {
     char name[17];
     uint16_t wins;
     uint16_t losses;

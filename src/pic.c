@@ -1,11 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "shadowdive/error.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/error.h"
 #include "shadowdive/pic.h"
-
 
 int sd_pic_create(sd_pic_file *pic) {
     if(pic == NULL) {
@@ -16,6 +15,7 @@ int sd_pic_create(sd_pic_file *pic) {
 }
 
 void free_photos(sd_pic_file *pic) {
+    if(pic == NULL) return;
     for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
         if(pic->photos[i]) {
             if(pic->photos[i]->sprite) {
@@ -28,6 +28,10 @@ void free_photos(sd_pic_file *pic) {
 }
 
 int sd_pic_load(sd_pic_file *pic, const char *filename) {
+    if(pic == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
@@ -102,11 +106,14 @@ error_0:
 }
 
 int sd_pic_save(sd_pic_file *pic, const char *filename) {
+    if(pic == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     return SD_FILE_OPEN_ERROR;
 }
 
-void sd_pic_delete(sd_pic_file *pic) {
+void sd_pic_free(sd_pic_file *pic) {
     free_photos(pic);
-    free(pic);
 }
 

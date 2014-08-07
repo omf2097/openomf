@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "shadowdive/error.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/memreader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/error.h"
 #include "shadowdive/tournament.h"
 
 #define ENEMY_BLOCK_LENGTH 428
@@ -62,6 +62,10 @@ char *read_variable_str(sd_reader *r) {
 }
 
 int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
+    if(trn == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
@@ -234,10 +238,14 @@ error_0:
 }
 
 int sd_tournament_save(sd_tournament_file *trn, const char *filename) {
+    if(trn == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
     return SD_FILE_OPEN_ERROR;
 }
 
 void sd_tournament_free(sd_tournament_file *trn) {
+    if(trn == NULL) return;
     free_locales(trn);
     free_enemies(trn);
     if(trn->pic_file != NULL) {

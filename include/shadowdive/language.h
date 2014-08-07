@@ -5,18 +5,18 @@
 extern "C" {
 #endif
 
-typedef struct sd_lang_string_t {
+typedef struct {
     char description[33];
     char *data;
 } sd_lang_string;
 
-typedef struct sd_language_t {
+typedef struct {
     unsigned int count;
     sd_lang_string *strings;
 } sd_language;
 
-sd_language* sd_language_create();
-void sd_language_delete(sd_language *language);
+int sd_language_create(sd_language *language);
+void sd_language_free(sd_language *language);
 int sd_language_load(sd_language *language, const char *filename);
 int sd_language_save(sd_language *language, const char *filename);
 
