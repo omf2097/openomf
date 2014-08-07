@@ -224,7 +224,6 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
 int move_key_get_id(const char* key) {
     if(strcmp(key, "unknown_0") == 0) return 30;
     if(strcmp(key, "unknown_2") == 0) return 31;
-    if(strcmp(key, "unknown_3") == 0) return 32;
     if(strcmp(key, "unknown_4") == 0) return 33;
     if(strcmp(key, "unknown_5") == 0) return 34;
     if(strcmp(key, "unknown_6") == 0) return 35;
@@ -255,7 +254,6 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
 
         case 30: move->unknown_0 = conv_uword(value); break;
         case 31: move->unknown_2 = conv_uword(value); break;
-        case 32: move->unknown_3 = conv_ubyte(value); break;
         case 33: move->unknown_4 = conv_ubyte(value); break;
         case 34: move->unknown_5 = conv_ubyte(value); break;
         case 35: move->unknown_6 = conv_ubyte(value); break;
@@ -298,7 +296,6 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
     switch(kn) {
         case 30: printf("%d\n", move->unknown_0);
         case 31: printf("%d\n", move->unknown_2);
-        case 32: printf("%d\n", move->unknown_3);
         case 33: printf("%d\n", move->unknown_4);
         case 34: printf("%d\n", move->unknown_5);
         case 35: printf("%d\n", move->unknown_6);
@@ -349,7 +346,6 @@ void move_keylist() {
 
     printf("* unknown_0\n");
     printf("* unknown_2\n");
-    printf("* unknown_3\n");
     printf("* unknown_4\n");
     printf("* unknown_5\n");
     printf("* unknown_6\n");
@@ -379,7 +375,6 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
     printf("\nAF specific footer:\n");
     printf(" * unknown_0:       %d\n", move->unknown_0);
     printf(" * unknown_2:       %d\n", move->unknown_2);
-    printf(" * unknown_3:       %d\n", move->unknown_3);
     printf(" * unknown_4:       %d\n", move->unknown_4);
     printf(" * unknown_5:       %d\n", move->unknown_5);
     printf(" * unknown_6:       %d\n", move->unknown_6);
