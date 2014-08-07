@@ -7,6 +7,7 @@ IF(CUNIT_FOUND)
     add_executable(test_lib
         test_lib.c
         test_af.c
+        test_bk.c
     )
 
     IF(UNIX)

@@ -3,6 +3,7 @@
 #include <shadowdive/shadowdive.h>
 
 void af_test_suite(CU_pSuite suite);
+void bk_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -11,11 +12,13 @@ int main(int argc, char **argv) {
         return CU_get_error();
     }
 
-    // Init suite
-    suite = CU_add_suite("Shadowdive", NULL, NULL);
+    suite = CU_add_suite("AF Reading and writing", NULL, NULL);
     if(suite == NULL) goto end;
     af_test_suite(suite);
 
+    suite = CU_add_suite("BK Reading and writing", NULL, NULL);
+    if(suite == NULL) goto end;
+    bk_test_suite(suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);

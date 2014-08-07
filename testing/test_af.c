@@ -63,8 +63,8 @@ void test_af_roundtrip(void) {
     CU_ASSERT(ret == SD_SUCCESS);
 
     // Copy move to AF file
-    //ret = sd_af_set_move(&new, 0, &move);
-    //CU_ASSERT(ret == SD_SUCCESS);
+    ret = sd_af_set_move(&new, 0, &move);
+    CU_ASSERT(ret == SD_SUCCESS);
 
     // Roundtripping
     ret = sd_af_create(&loaded);
@@ -81,7 +81,7 @@ void test_af_roundtrip(void) {
     CU_ASSERT_NSTRING_EQUAL(loaded.soundtable, new.soundtable, 30);
 
     // Make sure ID 0 exists in moves
-   /* CU_ASSERT_PTR_NOT_NULL(new.moves[0]);
+    CU_ASSERT_PTR_NOT_NULL(new.moves[0]);
     CU_ASSERT_PTR_NOT_NULL(loaded.moves[0]);
 
     // Check strings from move 0
@@ -90,7 +90,7 @@ void test_af_roundtrip(void) {
 
     // Check that animation seems correct
     CU_ASSERT_STRING_EQUAL(new.moves[0]->animation->anim_string, loaded.moves[0]->animation->anim_string);
-    CU_ASSERT(new.moves[0]->animation->extra_string_count == 2);*/
+    CU_ASSERT(new.moves[0]->animation->extra_string_count == 2);
 
     sd_af_free(&new);
     sd_af_free(&loaded);
