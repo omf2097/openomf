@@ -48,6 +48,7 @@ int base_info_diff(sd_af_file *a, sd_af_file *b) {
     d_found |= int_diff(" * Jump speed", VNAME(jump_speed));
     d_found |= int_diff(" * Fall speed", VNAME(fall_speed));
     d_found |= int_diff(" * Unknown C", VNAME(unknown_c));
+    d_found |= int_diff(" * Unknown D", VNAME(unknown_d));
     if(!d_found) {
         printf(" * No differences in header information.\n");
     }
@@ -59,7 +60,7 @@ int anim_header_diff(sd_animation *a, sd_animation *b) {
     printf("   * Common animation header:\n");
     d_found |= int_diff("     + Start X", VNAME(start_x));
     d_found |= int_diff("     + Start Y", VNAME(start_y));
-    d_found |= int_diff("     + Sprite count:", VNAME(frame_count));
+    d_found |= int_diff("     + Sprite count:", VNAME(sprite_count));
     d_found |= int_diff("     + Extra string count", VNAME(extra_string_count));
     d_found |= str_diff("     + Animation string", VNAME(anim_string));
     return d_found;
@@ -138,7 +139,7 @@ int af_diff(sd_af_file *a, sd_af_file *b) {
 }
 
 int main(int argc, char* argv[]) {
-    sd_af_file *af_a, *af_b;
+    sd_af_file af_a, af_b;
     int ret;
 
     // commandline argument parser options
@@ -185,29 +186,29 @@ int main(int argc, char* argv[]) {
     }
     
     // Load A file
-    af_a = sd_af_create();
-    ret = sd_af_load(af_a, afile->filename[0]);
+    sd_af_create(&af_a);
+    ret = sd_af_load(&af_a, afile->filename[0]);
     if(ret != SD_SUCCESS) {
         printf("Unable to load AF file! [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_1;
     }
 
     // Load B file
-    af_b = sd_af_create();
-    ret = sd_af_load(af_b, bfile->filename[0]);
+    sd_af_create(&af_b);
+    ret = sd_af_load(&af_b, bfile->filename[0]);
     if(ret != SD_SUCCESS) {
         printf("Unable to load AF file! [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_2;
     }
 
     // Do the diff!
-    af_diff(af_a, af_b);
+    af_diff(&af_a, &af_b);
     
     // Quit
 exit_2:
-    sd_af_delete(af_b);
+    sd_af_free(&af_b);
 exit_1:
-    sd_af_delete(af_a);
+    sd_af_free(&af_a);
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     return 0;
