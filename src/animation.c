@@ -165,6 +165,9 @@ sd_sprite* sd_animation_get_sprite(sd_animation *anim, int num) {
 
 int sd_animation_load(sd_reader *r, sd_animation *ani) {
     int ret;
+    uint32_t tmp;
+    int32_t a,b;
+    uint16_t size;
 
     // Animation header
     ani->start_x = sd_read_word(r);
@@ -174,8 +177,6 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     ani->sprite_count = sd_read_ubyte(r);
     
     // Read collision point data
-    uint32_t tmp;
-    int32_t a,b;
     for(int i = 0; i < ani->coord_count; i++) {
         tmp = sd_read_udword(r);
         a = tmp & 0xffff;
@@ -187,12 +188,24 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     }
 
     // Animation string header
-    sd_read_str(r, ani->anim_string);
+    size = sd_read_uword(r);
+    if(size > 0) {
+        sd_read_buf(r, ani->anim_string, size+1);
+    }
+    if(ani->anim_string[size] != 0) {
+        return SD_FILE_PARSE_ERROR;
+    }
 
     // Extra animation strings
     ani->extra_string_count = sd_read_ubyte(r);
     for(int i = 0; i < ani->extra_string_count; i++) {
-        sd_read_str(r, ani->extra_strings[i]);
+        size = sd_read_uword(r);
+        if(size > 0) {
+            sd_read_buf(r, ani->extra_strings[i], size+1);
+        }
+        if(ani->extra_strings[i][size] != 0) {
+            return SD_FILE_PARSE_ERROR;
+        }
     }
 
     // Sprites
@@ -215,6 +228,8 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
 int sd_animation_save(sd_writer *w, const sd_animation *ani) {
     int ret;
     uint32_t tmp;
+    uint16_t size;
+
     if(ani == NULL || w == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -239,12 +254,18 @@ int sd_animation_save(sd_writer *w, const sd_animation *ani) {
     }
 
     // Animation string header
-    sd_write_str(w, ani->anim_string);
+    size = strlen(ani->anim_string);
+    sd_write_uword(w, size);
+    sd_write_buf(w, ani->anim_string, size);
+    sd_write_ubyte(w, 0);
 
     // Extra animation strings
     sd_write_ubyte(w, ani->extra_string_count);
     for(int i = 0; i < ani->extra_string_count; i++) {
-        sd_write_str(w, ani->extra_strings[i]);
+        size = strlen(ani->extra_strings[i]);
+        sd_write_uword(w, size);
+        sd_write_buf(w, ani->extra_strings[i], size);
+        sd_write_ubyte(w, 0);
     }
 
     // Sprites

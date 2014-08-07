@@ -74,6 +74,7 @@ void sd_move_free(sd_move *move) {
 
 int sd_move_load(sd_reader *r, sd_move *move) {
     int ret;
+    uint16_t size;
 
     // Read animation
     if((move->animation = malloc(sizeof(sd_animation))) == NULL) {
@@ -112,7 +113,13 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     sd_read_buf(r, move->move_string, 21);
 
     // Footer string
-    sd_read_str(r, move->footer_string);
+    size = sd_read_uword(r);
+    if(size > 0) {
+        sd_read_buf(r, move->footer_string, size);
+    }
+    if(move->footer_string[size-1] != 0) {
+        return SD_FILE_PARSE_ERROR;
+    }
 
     // Return success if reader is still ok
     if(!sd_reader_ok(r)) {
@@ -123,6 +130,8 @@ int sd_move_load(sd_reader *r, sd_move *move) {
 
 int sd_move_save(sd_writer *w, const sd_move *move) {
     int ret;
+    uint16_t size;
+
     if(w == NULL || move == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -158,7 +167,13 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     sd_write_buf(w, move->move_string, 21);
 
     // Save footer string
-    sd_write_str(w, move->footer_string);
+    size = strlen(move->footer_string);
+    if(size > 0) {
+        sd_write_uword(w, size+1);
+        sd_write_buf(w, move->footer_string, size+1);
+    } else {
+        sd_write_uword(w, 0);
+    }
 
     return SD_SUCCESS;
 }

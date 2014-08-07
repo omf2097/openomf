@@ -57,6 +57,7 @@ void sd_bk_anim_free(sd_bk_anim *bka) {
 
 int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     int ret;
+    uint16_t size;
 
     // BK Specific animation header
     bka->null = sd_read_ubyte(r);
@@ -65,7 +66,15 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     bka->load_on_start = sd_read_ubyte(r);
     bka->probability = sd_read_uword(r);
     bka->hazard_damage = sd_read_ubyte(r);
-    sd_read_str(r, bka->footer_string);
+
+    // Footer string
+    size = sd_read_uword(r);
+    if(size > 0) {
+        sd_read_buf(r, bka->footer_string, size);
+    }
+    if(bka->footer_string[size-1] != 0) {
+        return SD_FILE_PARSE_ERROR;
+    }
 
     // Initialize animation
     if((bka->animation = malloc(sizeof(sd_animation))) == NULL) {
@@ -84,6 +93,8 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
 
 int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     int ret;
+    uint16_t size;
+
     if(w == NULL || bka == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -95,7 +106,15 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     sd_write_ubyte(w, bka->load_on_start);
     sd_write_uword(w, bka->probability);
     sd_write_ubyte(w, bka->hazard_damage);
-    sd_write_str(w, bka->footer_string);
+
+    // Save footer string
+    size = strlen(bka->footer_string);
+    if(size > 0) {
+        sd_write_uword(w, size+1);
+        sd_write_buf(w, bka->footer_string, size+1);
+    } else {
+        sd_write_uword(w, 0);
+    }
 
     // Write animation
     if((ret = sd_animation_save(w, bka->animation)) != SD_SUCCESS) {

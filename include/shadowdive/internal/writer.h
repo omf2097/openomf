@@ -43,9 +43,4 @@ void sd_write_dword(sd_writer *writer, int32_t data);
  */
 void sd_write_fill(sd_writer *writer, char content, int len);
 
-/**
- * Writes length (2b) + string (variable) + nullbyte (1b)
- */
-void sd_write_str(sd_writer *writer, const char *str);
-
 #endif // _SD_WRITER_H
