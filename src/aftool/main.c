@@ -19,7 +19,7 @@ int check_move_sprite(sd_af_file *af, int move, int sprite) {
         printf("animation #%d does not exist.\n", move);
         return 0;
     }
-    if(sprite < 0 || af->moves[move]->animation->sprites[sprite] == 0 || sprite >= af->moves[move]->animation->frame_count) {
+    if(sprite < 0 || af->moves[move]->animation->sprites[sprite] == 0 || sprite >= af->moves[move]->animation->sprite_count) {
         printf("Sprite #%d does not exist.\n", sprite);
         return 0;
     }
@@ -58,7 +58,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
         return;
     }
     
-    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->img->w, s->img->h, s->img->len);
+    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->width, s->height, s->len);
     
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     
@@ -74,9 +74,10 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
         return;
     }
 
-    sd_rgba_image *img = sd_sprite_image_decode(s->img, bk->palettes[0], -1);
+    sd_rgba_image img;
+    sd_sprite_rgba_decode(&img, s, bk->palettes[0], -1);
 
-    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img->data, img->w, img->h, 32, img->w*4,
+    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img.data, img.w, img.h, 32, img.w*4,
             rmask, gmask, bmask, amask))) {
         printf("Could not create surface: %s\n", SDL_GetError());
         return;
@@ -88,12 +89,12 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
     }
 
     SDL_FreeSurface(surface);
-    sd_rgba_image_delete(img);
+    sd_rgba_image_free(&img);
 
     rect.x = s->pos_x + 160;
     rect.y = s->pos_y + 100;
-    rect.w = s->img->w;
-    rect.h = s->img->h;
+    rect.w = s->width;
+    rect.h = s->height;
     
     dstrect.x = 0;
     dstrect.y = 0;
@@ -110,14 +111,14 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                 int changed = 0;
                 switch (e.key.keysym.sym) {
                     case SDLK_RIGHT:
-                        sprite = (sprite+1) % af->moves[anim]->animation->frame_count;
-                        printf("sprite is now %u\n", sprite);
+                        sprite = (sprite+1) % af->moves[anim]->animation->sprite_count;
+                        printf("sprite is now %d\n", sprite);
                         changed = 1;
                         break;
                     case SDLK_LEFT:
                         sprite--;
                         if (sprite < 0) {
-                            sprite = af->moves[anim]->animation->frame_count - 1;
+                            sprite = af->moves[anim]->animation->sprite_count - 1;
                         }
                         changed = 1;
                         break;
@@ -130,7 +131,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                             printf("no more animations\n");
                         } else {
                             anim = i;
-                            printf("UP: animation is now %u\n", anim);
+                            printf("UP: animation is now %d\n", anim);
                             sprite = 0;
                         }
                         changed = 1;
@@ -144,7 +145,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                             printf("no previous animations\n");
                         } else {
                             anim = i;
-                            printf("DOWN: animation is now %u\n", anim);
+                            printf("DOWN: animation is now %d\n", anim);
                             sprite = 0;
                         }
                         changed = 1;
@@ -163,10 +164,10 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                 }
                 if (changed) {
                     s = af->moves[anim]->animation->sprites[sprite];
-                    img = sd_sprite_image_decode(s->img, bk->palettes[0], -1);
-                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->img->w, s->img->h, s->img->len);
+                    sd_sprite_rgba_decode(&img, s, bk->palettes[0], -1);
+                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->width, s->height, s->len);
 
-                    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img->data, img->w, img->h, 32, img->w*4,
+                    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img.data, img.w, img.h, 32, img.w*4,
                                     rmask, gmask, bmask, amask))) {
                         printf("Could not create surface: %s\n", SDL_GetError());
                         return;
@@ -178,11 +179,12 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                     }
 
                     SDL_FreeSurface(surface);
+                    sd_rgba_image_free(&img);
 
                     rect.x = s->pos_x + 160;
                     rect.y = s->pos_y + 100;
-                    rect.w = s->img->w;
-                    rect.h = s->img->h;
+                    rect.w = s->width;
+                    rect.h = s->height;
                 }
             }
         }
@@ -194,11 +196,11 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
 
         // render the collision data
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        for(int i = 0; i < af->moves[anim]->animation->col_coord_count; i++) {
-            int x = af->moves[anim]->animation->col_coord_table[i].x;
-            int y = af->moves[anim]->animation->col_coord_table[i].y;
-            int y_ext = af->moves[anim]->animation->col_coord_table[i].y_ext;
-            if (y_ext == sprite) {
+        for(int i = 0; i < af->moves[anim]->animation->coord_count; i++) {
+            int x = af->moves[anim]->animation->coord_table[i].x;
+            int y = af->moves[anim]->animation->coord_table[i].y;
+            int frame_id = af->moves[anim]->animation->coord_table[i].frame_id;
+            if(frame_id == sprite) {
                 SDL_RenderDrawPoint(renderer, 160+x, 100+y);
             }
         }
@@ -220,7 +222,27 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
 // Move stuff --------------------------------------------------
 
 int move_key_get_id(const char* key) {
-    if(strcmp(key, "move_footer") == 0) return 14;
+    if(strcmp(key, "unknown_0") == 0) return 30;
+    if(strcmp(key, "unknown_2") == 0) return 31;
+    if(strcmp(key, "unknown_3") == 0) return 32;
+    if(strcmp(key, "unknown_4") == 0) return 33;
+    if(strcmp(key, "unknown_5") == 0) return 34;
+    if(strcmp(key, "unknown_6") == 0) return 35;
+    if(strcmp(key, "unknown_7") == 0) return 36;
+    if(strcmp(key, "unknown_8") == 0) return 37;
+    if(strcmp(key, "unknown_9") == 0) return 38;
+    if(strcmp(key, "unknown_10") == 0) return 39;
+    if(strcmp(key, "unknown_11") == 0) return 40;
+    if(strcmp(key, "next_anim_id") == 0) return 41;
+    if(strcmp(key, "category") == 0) return 42;
+    if(strcmp(key, "unknown_14") == 0) return 43;
+    if(strcmp(key, "scrap_amount") == 0) return 44;
+    if(strcmp(key, "successor_id") == 0) return 45;
+    if(strcmp(key, "damage_amount") == 0) return 46;
+    if(strcmp(key, "unknown_18") == 0) return 47;
+    if(strcmp(key, "unknown_19") == 0) return 48;
+    if(strcmp(key, "points") == 0) return 49;
+
     if(strcmp(key, "move_string") == 0) return 15;
     if(strcmp(key, "footer_string") == 0) return 16;
     return anim_key_get_id(key);
@@ -230,20 +252,28 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
     int tmp = 0;
     int kn = move_key_get_id(key[0]);
     switch(kn) {
-        case 14: 
-            if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < 21) {
-                    move->unknown[tmp] = conv_ubyte(value);
-                } else {
-                    printf("Move footer index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                printf("Key move_footer requires 1 parameter!\n");
-                return;
-            }
-            break;
+
+        case 30: move->unknown_0 = conv_uword(value); break;
+        case 31: move->unknown_2 = conv_uword(value); break;
+        case 32: move->unknown_3 = conv_ubyte(value); break;
+        case 33: move->unknown_4 = conv_ubyte(value); break;
+        case 34: move->unknown_5 = conv_ubyte(value); break;
+        case 35: move->unknown_6 = conv_ubyte(value); break;
+        case 36: move->unknown_7 = conv_ubyte(value); break;
+        case 37: move->unknown_8 = conv_ubyte(value); break;
+        case 38: move->unknown_9 = conv_ubyte(value); break;
+        case 39: move->unknown_10 = conv_ubyte(value); break;
+        case 40: move->unknown_11 = conv_ubyte(value); break;
+        case 41: move->next_anim_id = conv_ubyte(value); break;
+        case 42: move->category = conv_ubyte(value); break;
+        case 43: move->unknown_14 = conv_ubyte(value); break;
+        case 44: move->scrap_amount = conv_ubyte(value); break;
+        case 45: move->successor_id = conv_ubyte(value); break;
+        case 46: move->damage_amount = conv_ubyte(value); break;
+        case 47: move->unknown_18 = conv_ubyte(value); break;
+        case 48: move->unknown_19 = conv_ubyte(value); break;
+        case 49: move->points = conv_ubyte(value); break;
+
         case 15: 
             tmp = strlen(value)+1;
             if(tmp < 21) {
@@ -263,30 +293,34 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
     printf("Value set!\n");
 }
 
-void move_get_key(sd_move *mv, sd_animation *ani, const char **key, int kcount, int pcount) {
-    int tmp = 0;
+void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount, int pcount) {
     int kn = move_key_get_id(key[0]);
     switch(kn) {
-        case 14:
-            if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < 21) {
-                    printf("%d\n", mv->unknown[tmp]);
-                } else {
-                    printf("Move string table index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                for(int i = 0; i < 21; i++) {
-                    printf("%d ", (uint8_t)mv->unknown[i]);
-                }
-                printf("\n");
-            }
-            break;
+        case 30: printf("%d\n", move->unknown_0);
+        case 31: printf("%d\n", move->unknown_2);
+        case 32: printf("%d\n", move->unknown_3);
+        case 33: printf("%d\n", move->unknown_4);
+        case 34: printf("%d\n", move->unknown_5);
+        case 35: printf("%d\n", move->unknown_6);
+        case 36: printf("%d\n", move->unknown_7);
+        case 37: printf("%d\n", move->unknown_8);
+        case 38: printf("%d\n", move->unknown_9);
+        case 39: printf("%d\n", move->unknown_10);
+        case 40: printf("%d\n", move->unknown_11);
+        case 41: printf("%d\n", move->next_anim_id);
+        case 42: printf("%d\n", move->category);
+        case 43: printf("%d\n", move->unknown_14);
+        case 44: printf("%d\n", move->scrap_amount);
+        case 45: printf("%d\n", move->successor_id);
+        case 46: printf("%d\n", move->damage_amount);
+        case 47: printf("%d\n", move->unknown_18);
+        case 48: printf("%d\n", move->unknown_19);
+        case 49: printf("%d\n", move->points);
+
         case 15:
-            printf("%s\n", mv->move_string); break;
+            printf("%s\n", move->move_string); break;
         case 16:
-            if (pcount > 0 && mv->footer_string) {
+            if (pcount > 0 && move->footer_string) {
                 sd_stringparser *parser = sd_stringparser_create();
                 int err = sd_stringparser_set_string(parser, ani->anim_string);
                 if(err) {
@@ -296,7 +330,7 @@ void move_get_key(sd_move *mv, sd_animation *ani, const char **key, int kcount, 
                 }
                 sd_stringparser_delete(parser);
             } else {
-                printf("%s\n", mv->footer_string ? mv->footer_string : "(null)");
+                printf("%s\n", move->footer_string ? move->footer_string : "(null)");
             }
             break;
 
@@ -312,25 +346,60 @@ void move_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim) {
 void move_keylist() {
     printf("Valid field keys for Move structure:\n");
     anim_keylist();
-    printf("* move_footer <byte #>\n");
+
+    printf("* unknown_0\n");
+    printf("* unknown_2\n");
+    printf("* unknown_3\n");
+    printf("* unknown_4\n");
+    printf("* unknown_5\n");
+    printf("* unknown_6\n");
+    printf("* unknown_7\n");
+    printf("* unknown_8\n");
+    printf("* unknown_9\n");
+    printf("* unknown_10\n");
+    printf("* unknown_11\n");
+    printf("* next_anim_id\n");
+    printf("* category\n");
+    printf("* unknown_14\n");
+    printf("* scrap_amount\n");
+    printf("* successor_id\n");
+    printf("* damage_amount\n");
+    printf("* unknown_18\n");
+    printf("* unknown_19\n");
+    printf("* points\n");
     printf("* move_string <21 chars max>\n");
     printf("* footer_string\n");
 }
 
-void move_info(sd_move *mv, sd_animation *ani, int move) {
-    printf("Move #%d information:\n\n", move);
+void move_info(sd_move *move, sd_animation *ani, int move_id) {
+    printf("Move #%d information:\n\n", move_id);
     
     anim_common_info(ani);
 
     printf("\nAF specific footer:\n");
-    printf(" * Move footer:     ");
-    for(int i = 0; i < 21; i++) {
-        printf("%d ", (uint8_t)mv->unknown[i]);
-    }
-    printf("\n");
+    printf(" * unknown_0:       %d\n", move->unknown_0);
+    printf(" * unknown_2:       %d\n", move->unknown_2);
+    printf(" * unknown_3:       %d\n", move->unknown_3);
+    printf(" * unknown_4:       %d\n", move->unknown_4);
+    printf(" * unknown_5:       %d\n", move->unknown_5);
+    printf(" * unknown_6:       %d\n", move->unknown_6);
+    printf(" * unknown_7:       %d\n", move->unknown_7);
+    printf(" * unknown_8:       %d\n", move->unknown_8);
+    printf(" * unknown_9:       %d\n", move->unknown_9);
+    printf(" * unknown_10:      %d\n", move->unknown_10);
+    printf(" * unknown_11:      %d\n", move->unknown_11);
+    printf(" * next_anim_id:    %d\n", move->next_anim_id);
+    printf(" * category:        %d\n", move->category);
+    printf(" * unknown_14:      %d\n", move->unknown_14);
+    printf(" * scrap_amount:    %d\n", move->scrap_amount);
+    printf(" * successor_id:    %d\n", move->successor_id);
+    printf(" * damage_amount:   %d\n", move->damage_amount);
+    printf(" * unknown_18:      %d\n", move->unknown_18);
+    printf(" * unknown_19:      %d\n", move->unknown_19);
+    printf(" * points:          %d\n", move->points);
 
-    printf(" * Move string:     %s\n", mv->move_string);
-    printf(" * Footer string:   %s\n", mv->footer_string);
+    printf(" * Move string:     %s\n", move->move_string);
+    printf(" * Footer string:   %s\n", move->footer_string);
 }
 
 // AF Specific stuff -----------------------------------------------
@@ -454,9 +523,9 @@ void af_info(sd_af_file *af) {
             }
             if(m > last+1) {
                 if(start == last) {
-                    printf("%u, ", last);
+                    printf("%d, ", last);
                 } else {
-                    printf("%u-%u, ", start, last);
+                    printf("%d-%d, ", start, last);
                 }
                 start = m;
             }
@@ -465,9 +534,9 @@ void af_info(sd_af_file *af) {
     }
     if(m != last) {
         if(start == last) {
-            printf("%u\n", last);
+            printf("%d\n", last);
         } else {
-            printf("%u-%u\n", start, last);
+            printf("%d-%d\n", start, last);
         }
     } else {
         printf("\n");
@@ -588,17 +657,19 @@ int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
     
     // Load file
-    sd_af_file *af = sd_af_create();
-    int ret = sd_af_load(af, file->filename[0]);
+    sd_af_file af;
+    sd_af_create(&af);
+    int ret = sd_af_load(&af, file->filename[0]);
     if(ret != SD_SUCCESS) {
         printf("Unable to load AF file! [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_1;
     }
     
     // Palette
-    sd_bk_file *bk = sd_bk_create();
+    sd_bk_file bk;
+    sd_bk_create(&bk);
     if(palette->count > 0) {
-        int ret = sd_bk_load(bk, palette->filename[0]);
+        int ret = sd_bk_load(&bk, palette->filename[0]);
         if(ret != SD_SUCCESS) {
             printf("Unable to load Palette BK file! [%d] %s\n", ret, sd_get_error(ret));
             goto exit_2;
@@ -616,10 +687,10 @@ int main(int argc, char* argv[]) {
     // Check args
     if(sprite->count > 0) {
         // Make sure sprite exists.
-        if(!check_move_sprite(af, move->ival[0], sprite->ival[0])) {
+        if(!check_move_sprite(&af, move->ival[0], sprite->ival[0])) {
             goto exit_2;
         }
-        sd_sprite *sp = af->moves[move->ival[0]]->animation->sprites[sprite->ival[0]];
+        sd_sprite *sp = af.moves[move->ival[0]]->animation->sprites[sprite->ival[0]];
         
         // Handle arguments
         if(key->count > 0) {
@@ -631,16 +702,16 @@ int main(int argc, char* argv[]) {
         } else if(keylist->count > 0) {
             sprite_keylist();
         } else if(play->count > 0) {
-            sprite_play(af, bk, _sc, move->ival[0], sprite->ival[0]);
+            sprite_play(&af, &bk, _sc, move->ival[0], sprite->ival[0]);
         } else {
             sprite_info(sp, move->ival[0], sprite->ival[0]);
         }
     } else if(move->count > 0) {
         // Make sure the Move exists
-        if(!check_move(af, move->ival[0])) {
+        if(!check_move(&af, move->ival[0])) {
             goto exit_2;
         }
-        sd_move *mv = af->moves[move->ival[0]];
+        sd_move *mv = af.moves[move->ival[0]];
         sd_animation *ani = mv->animation;
     
         // Handle arguments
@@ -653,7 +724,7 @@ int main(int argc, char* argv[]) {
         } else if(keylist->count > 0) {
             move_keylist();
         } else if(play->count > 0) {
-            move_play(af, bk, _sc, move->ival[0]);
+            move_play(&af, &bk, _sc, move->ival[0]);
         } else {
             move_info(mv, ani, move->ival[0]);
         }
@@ -661,8 +732,8 @@ int main(int argc, char* argv[]) {
         sd_move *mv;
         sd_animation *ani;
         for(int i = 0; i < 70; i++) {
-            if (af->moves[i]) {
-                mv = af->moves[i];
+            if(af.moves[i]) {
+                mv = af.moves[i];
                 ani = mv->animation;
                 if(key->count > 0) {
                     if(value->count > 0) {
@@ -680,27 +751,27 @@ int main(int argc, char* argv[]) {
     } else {
         if(key->count > 0) {
             if(value->count > 0) {
-                af_set_key(af, key->sval, key->count, value->sval[0]);
+                af_set_key(&af, key->sval, key->count, value->sval[0]);
             } else {
-                af_get_key(af, key->sval, key->count);
+                af_get_key(&af, key->sval, key->count);
             }
         } else if(keylist->count > 0) {
             af_keylist();
         } else {
-            af_info(af);
+            af_info(&af);
         }
     }
 
     // Write output file
     if(output->count > 0) {
-        sd_af_save(af, output->filename[0]);
+        sd_af_save(&af, output->filename[0]);
     }
     
     // Quit
 exit_2:
-    sd_bk_delete(bk);
+    sd_bk_free(&bk);
 exit_1:
-    sd_af_delete(af);
+    sd_af_free(&af);
     SDL_Quit();
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
