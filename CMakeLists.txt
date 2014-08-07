@@ -50,8 +50,8 @@ include_directories(
 
 IF(SQLITE_FOUND)
     include_directories(${SQLITE_INCLUDE_DIR})
-    #add_executable(stringtool src/stringtool/main.c)
-    #target_link_libraries(stringtool ${CORELIBS} ${SHADOWDIVE_LIBRARY} ${SQLITE_LIBRARY})
+    add_executable(stringtool src/stringtool/main.c)
+    target_link_libraries(stringtool ${CORELIBS} ${SHADOWDIVE_LIBRARY} ${SQLITE_LIBRARY})
 ENDIF()
 
 # Set correct libs for musictool
