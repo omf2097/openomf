@@ -19,7 +19,7 @@ int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
         printf("Animation #%d does not exist.\n", anim);
         return 0;
     }
-    if(sprite < 0 || bk->anims[anim]->animation->sprites[sprite] == 0 || sprite >= bk->anims[anim]->animation->frame_count) {
+    if(sprite < 0 || bk->anims[anim]->animation->sprites[sprite] == 0 || sprite >= bk->anims[anim]->animation->sprite_count) {
         printf("Sprite #%d does not exist.\n", sprite);
         return 0;
     }
@@ -59,7 +59,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
         return;
     }
     
-    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->img->w, s->img->h, s->img->len);
+    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->width, s->height, s->len);
     
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     
@@ -70,9 +70,10 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     bmask = 0x00ff0000;
     amask = 0xff000000;
 
-    sd_rgba_image *img = sd_vga_image_decode(bk->background, bk->palettes[0], -1);
+    sd_rgba_image img;
+    sd_vga_image_decode(&img, bk->background, bk->palettes[0], -1);
 
-    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img->data, img->w, img->h, 32, img->w*4,
+    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img.data, img.w, img.h, 32, img.w*4,
             rmask, gmask, bmask, amask))) {
         printf("Could not create surface: %s\n", SDL_GetError());
         return;
@@ -89,11 +90,11 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     }
 
     SDL_FreeSurface(surface);
-    sd_rgba_image_delete(img);
+    sd_rgba_image_free(&img);
 
-    img = sd_sprite_image_decode(s->img, bk->palettes[0], -1);
+    sd_sprite_rgba_decode(&img, s, bk->palettes[0], -1);
 
-    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img->data, img->w, img->h, 32, img->w*4,
+    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img.data, img.w, img.h, 32, img.w*4,
             rmask, gmask, bmask, amask))) {
         printf("Could not create surface: %s\n", SDL_GetError());
         return;
@@ -105,12 +106,12 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     }
 
     SDL_FreeSurface(surface);
-    sd_rgba_image_delete(img);
+    sd_rgba_image_free(&img);
 
     rect.x = s->pos_x;
     rect.y = s->pos_y;
-    rect.w = s->img->w;
-    rect.h = s->img->h;
+    rect.w = s->width;
+    rect.h = s->height;
     
     dstrect.x = 0;
     dstrect.y = 0;
@@ -127,14 +128,14 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                 int changed = 0;
                 switch (e.key.keysym.sym) {
                     case SDLK_RIGHT:
-                        sprite = (sprite+1) % bk->anims[anim]->animation->frame_count;
+                        sprite = (sprite+1) % bk->anims[anim]->animation->sprite_count;
                         printf("sprite is now %u\n", sprite);
                         changed = 1;
                         break;
                     case SDLK_LEFT:
                         sprite--;
                         if (sprite < 0) {
-                            sprite = bk->anims[anim]->animation->frame_count - 1;
+                            sprite = bk->anims[anim]->animation->sprite_count - 1;
                         }
                         changed = 1;
                         break;
@@ -147,7 +148,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                             printf("no more animations\n");
                         } else {
                             anim = i;
-                            printf("UP: animation is now %u\n", anim);
+                            printf("UP: animation is now %d\n", anim);
                             sd_bk_anim *bka = bk->anims[anim];
                             sd_animation *ani = bka->animation;
                             bkanim_info(bka, ani, anim);
@@ -164,7 +165,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                             printf("no previous animations\n");
                         } else {
                             anim = i;
-                            printf("DOWN: animation is now %u\n", anim);
+                            printf("DOWN: animation is now %d\n", anim);
                             sd_bk_anim *bka = bk->anims[anim];
                             sd_animation *ani = bka->animation;
                             bkanim_info(bka, ani, anim);
@@ -177,12 +178,12 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                 }
                 if (changed) {
                     s = bk->anims[anim]->animation->sprites[sprite];
-                    img = sd_sprite_image_decode(s->img, bk->palettes[0], -1);
+                    sd_sprite_rgba_decode(&img, s, bk->palettes[0], -1);
                     int x = s->pos_x + bk->anims[anim]->animation->start_x;
                     int y = s->pos_y + bk->anims[anim]->animation->start_y;
-                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", x, y, s->img->w, s->img->h, s->img->len);
+                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", x, y, s->width, s->height, s->len);
 
-                    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img->data, img->w, img->h, 32, img->w*4,
+                    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img.data, img.w, img.h, 32, img.w*4,
                                     rmask, gmask, bmask, amask))) {
                         printf("Could not create surface: %s\n", SDL_GetError());
                         return;
@@ -194,11 +195,12 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                     }
 
                     SDL_FreeSurface(surface);
+                    sd_rgba_image_free(&img);
 
                     rect.x = x;
                     rect.y = y;
-                    rect.w = s->img->w;
-                    rect.h = s->img->h;
+                    rect.w = s->width;
+                    rect.h = s->height;
                 }
             }
         }
@@ -209,11 +211,11 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
 
         // render the collision data
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        for(int i = 0; i < bk->anims[anim]->animation->col_coord_count; i++) {
-            int x = bk->anims[anim]->animation->col_coord_table[i].x;
-            int y = bk->anims[anim]->animation->col_coord_table[i].y;
-            int y_ext = bk->anims[anim]->animation->col_coord_table[i].y_ext;
-            if (y_ext == sprite) {
+        for(int i = 0; i < bk->anims[anim]->animation->coord_count; i++) {
+            int x = bk->anims[anim]->animation->coord_table[i].x;
+            int y = bk->anims[anim]->animation->coord_table[i].y;
+            int frame_id = bk->anims[anim]->animation->coord_table[i].frame_id;
+            if(frame_id == sprite) {
                 SDL_RenderDrawPoint(renderer, x, y);
             }
         }
@@ -253,7 +255,7 @@ void bkanim_set_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
         case 3:  bka->load_on_start = conv_ubyte(value); break;
         case 4:  bka->probability = conv_uword(value); break;
         case 5:  bka->hazard_damage = conv_ubyte(value); break;
-        case 6:  set_bk_anim_string(bka, value); break;
+        case 6:  sd_bk_set_anim_string(bka, value); break;
         default:
             anim_set_key(ani, kn, key, kcount, value);
             return;
@@ -271,7 +273,7 @@ void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
         case 3: printf("%d\n", bka->load_on_start); break;
         case 4: printf("%d\n", bka->probability); break;
         case 5: printf("%d\n", bka->hazard_damage); break;
-        case 6: printf("%s\n", bka->unknown_data ? bka->unknown_data : "(null)"); break;
+        case 6: printf("%s\n", bka->footer_string); break;
         default:
             anim_get_key(ani, kn, key, kcount, pcount);
     }
@@ -304,7 +306,7 @@ void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim) {
     printf(" * Load on start:   %d\n", bka->load_on_start);
     printf(" * Probability:     %d\n", bka->probability);
     printf(" * hazard damage:   %d\n", bka->hazard_damage);
-    printf(" * String:          %s\n", bka->unknown_data);
+    printf(" * String:          %s\n", bka->footer_string);
     printf("\n");
     
     anim_common_info(ani);
@@ -381,7 +383,7 @@ void bk_keylist() {
 void bk_info(sd_bk_file *bk) {
     printf("BK File information:\n");
     printf(" * File ID:     %d\n", bk->file_id);
-    printf(" * Palettes:    %d\n", bk->num_palettes);
+    printf(" * Palettes:    %d\n", bk->palette_count);
     printf(" * Unknown A:   %d\n", bk->unknown_a);
     
     printf(" * Animations:  ");
@@ -526,8 +528,9 @@ int main(int argc, char *argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
     
     // Load file
-    sd_bk_file *bk = sd_bk_create();
-    int ret = sd_bk_load(bk, file->filename[0]);
+    sd_bk_file bk;
+    sd_bk_create(&bk);
+    int ret = sd_bk_load(&bk, file->filename[0]);
     if(ret != SD_SUCCESS) {
         printf("Unable to load BK file! [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_1;
@@ -544,10 +547,10 @@ int main(int argc, char *argv[]) {
     // Handle args
     if(sprite->count > 0) {
         // Make sure sprite exists.
-        if(!check_anim_sprite(bk, anim->ival[0], sprite->ival[0])) {
+        if(!check_anim_sprite(&bk, anim->ival[0], sprite->ival[0])) {
             goto exit_1;
         }
-        sd_sprite *sp = bk->anims[anim->ival[0]]->animation->sprites[sprite->ival[0]];
+        sd_sprite *sp = bk.anims[anim->ival[0]]->animation->sprites[sprite->ival[0]];
     
         // Handle arguments
         if(key->count > 0) {
@@ -559,16 +562,16 @@ int main(int argc, char *argv[]) {
         } else if(keylist->count > 0) {
             sprite_keylist();
         } else if(play->count > 0) {
-            sprite_play(bk, _sc, anim->ival[0], sprite->ival[0]);
+            sprite_play(&bk, _sc, anim->ival[0], sprite->ival[0]);
         } else {
             sprite_info(sp, anim->ival[0], sprite->ival[0]);
         }
     } else if(anim->count > 0) {
         // Make sure the bkanim exists
-        if(!check_anim(bk, anim->ival[0])) {
+        if(!check_anim(&bk, anim->ival[0])) {
             goto exit_1;
         }
-        sd_bk_anim *bka = bk->anims[anim->ival[0]];
+        sd_bk_anim *bka = bk.anims[anim->ival[0]];
         sd_animation *ani = bka->animation;
     
         if(key->count > 0) {
@@ -580,7 +583,7 @@ int main(int argc, char *argv[]) {
         } else if(keylist->count > 0) {
             bkanim_keylist();
         } else if(play->count > 0) {
-            anim_play(bk, _sc, anim->ival[0]);
+            anim_play(&bk, _sc, anim->ival[0]);
         } else {
             bkanim_info(bka, ani, anim->ival[0]);
         }
@@ -588,8 +591,8 @@ int main(int argc, char *argv[]) {
         sd_bk_anim *bka;
         sd_animation *ani;
         for(int i = 0; i < 50; i++) {
-            if (bk->anims[i]) {
-                bka = bk->anims[i];
+            if (bk.anims[i]) {
+                bka = bk.anims[i];
                 ani = bka->animation;
                 if(key->count > 0) {
                     if(value->count > 0) {
@@ -607,25 +610,25 @@ int main(int argc, char *argv[]) {
     } else {
         if(key->count > 0) {
             if(value->count > 0) {
-                bk_set_key(bk, key->sval, key->count, value->sval[0]);
+                bk_set_key(&bk, key->sval, key->count, value->sval[0]);
             } else {
-                bk_get_key(bk, key->sval, key->count);
+                bk_get_key(&bk, key->sval, key->count);
             }
         } else if(keylist->count > 0) {
             bk_keylist();
         } else {
-            bk_info(bk);
+            bk_info(&bk);
         }
     }
     
     // Write output file
     if(output->count > 0) {
-        sd_bk_save(bk, output->filename[0]);
+        sd_bk_save(&bk, output->filename[0]);
     }
     
     // Quit
 exit_1:
-    sd_bk_delete(bk);
+    sd_bk_free(&bk);
     SDL_Quit();
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
