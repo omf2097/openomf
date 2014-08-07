@@ -61,7 +61,7 @@ void anim_common_info(sd_animation *ani) {
     printf(" * Animation header: %d\n", ani->null);
     printf(" * Collision coords: %d\n", ani->coord_count);
     for(int i = 0; i < ani->coord_count; i++) {
-        printf("   - x,y = (%d,%d), x_ext = %d, y_ext = %d\n",
+        printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n",
                 ani->coord_table[i].x, ani->coord_table[i].y,
                 ani->coord_table[i].null, ani->coord_table[i].frame_id);
     }
