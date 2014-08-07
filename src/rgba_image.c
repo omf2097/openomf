@@ -64,7 +64,7 @@ int sd_rgba_image_to_ppm(const sd_rgba_image *img, const char *filename) {
     return SD_SUCCESS;
 }
 
-void sd_rgba_image_delete(sd_rgba_image *img) {
+void sd_rgba_image_free(sd_rgba_image *img) {
     if(img == NULL) return;
     free(img->data);
 }
