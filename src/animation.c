@@ -74,7 +74,7 @@ int sd_animation_get_extra_string_count(sd_animation *anim) {
 }
 
 int sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) {
-    if(num < 0 || num >= SD_SPRITE_EXTRASTR_COUNT_MAX) {
+    if(num < 0 || num >= SD_EXTRASTR_COUNT_MAX) {
         return SD_INVALID_INPUT;
     }
     if(strlen(str) >= SD_EXTRA_STRING_MAX) {
@@ -157,7 +157,7 @@ int sd_animation_pop_sprite(sd_animation *anim) {
 }
 
 sd_sprite* sd_animation_get_sprite(sd_animation *anim, int num) {
-    if(num < 0 || num >= SD_SPRITE_EXTRASTR_COUNT_MAX) {
+    if(num < 0 || num >= SD_EXTRASTR_COUNT_MAX) {
         return NULL;
     }
     return anim->sprites[num];
@@ -175,7 +175,19 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     ani->null = sd_read_udword(r);
     ani->coord_count = sd_read_uword(r);
     ani->sprite_count = sd_read_ubyte(r);
-    
+
+    // Enforce limits
+    if(ani->coord_count > SD_COLCOORD_COUNT_MAX) {
+        DEBUGLOG("Animation contains too many coordinates! Expected max %d coords, got %hu coords.",
+            SD_COLCOORD_COUNT_MAX, ani->coord_count);
+        return SD_FILE_PARSE_ERROR;
+    }
+    if(ani->sprite_count > SD_SPRITE_COUNT_MAX) {
+        DEBUGLOG("Animation contains too many sprites! Expected max %d sprites, got %hhu sprites.",
+            SD_SPRITE_COUNT_MAX, ani->sprite_count);
+        return SD_FILE_PARSE_ERROR;
+    }
+
     // Read collision point data
     for(int i = 0; i < ani->coord_count; i++) {
         tmp = sd_read_udword(r);
@@ -189,22 +201,35 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
 
     // Animation string header
     size = sd_read_uword(r);
-    if(size > 0) {
-        sd_read_buf(r, ani->anim_string, size+1);
+    if(size >= SD_ANIMATION_STRING_MAX) {
+        DEBUGLOG("Animation string header too big! Expected max %hu bytes, got %hu bytes.",
+            SD_ANIMATION_STRING_MAX, size);
+        return SD_FILE_PARSE_ERROR;
     }
+    sd_read_buf(r, ani->anim_string, size+1);
     if(ani->anim_string[size] != 0) {
+        DEBUGLOG("Animation string header did not end in null byte!");
         return SD_FILE_PARSE_ERROR;
     }
 
     // Extra animation strings
     ani->extra_string_count = sd_read_ubyte(r);
+    if(ani->extra_string_count > SD_EXTRASTR_COUNT_MAX) {
+        DEBUGLOG("Animation has too many extra strings! Expected max %hhu strings, got %hhu strings.",
+            SD_EXTRASTR_COUNT_MAX, ani->extra_string_count);
+        return SD_FILE_PARSE_ERROR;
+    }
     for(int i = 0; i < ani->extra_string_count; i++) {
         size = sd_read_uword(r);
-        if(size > 0) {
-            sd_read_buf(r, ani->extra_strings[i], size+1);
-            if(ani->extra_strings[i][size] != 0) {
-                return SD_FILE_PARSE_ERROR;
-            }
+        if(size >= SD_EXTRA_STRING_MAX) {
+            DEBUGLOG("Animation extra string %d is too long! Expected max %hu bytes, got %hu bytes.",
+                i, SD_EXTRA_STRING_MAX, size);
+            return SD_FILE_PARSE_ERROR;
+        }
+        sd_read_buf(r, ani->extra_strings[i], size+1);
+        if(ani->extra_strings[i][size] != 0) {
+            DEBUGLOG("Animation extra string %d did not end in null byte!", i);
+            return SD_FILE_PARSE_ERROR;
         }
     }
 

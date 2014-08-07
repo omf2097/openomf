@@ -17,8 +17,8 @@ extern "C" {
 #define SD_EXTRA_STRING_MAX 512
 
 #define SD_SPRITE_COUNT_MAX 255
-#define SD_SPRITE_COLCOORD_COUNT_MAX 128
-#define SD_SPRITE_EXTRASTR_COUNT_MAX 10
+#define SD_COLCOORD_COUNT_MAX 128
+#define SD_EXTRASTR_COUNT_MAX 10
 
 typedef struct {
     // Header
@@ -30,12 +30,12 @@ typedef struct {
     uint8_t extra_string_count;
 
     // Sprites and their collision coordinates
-    sd_coord coord_table[SD_SPRITE_COLCOORD_COUNT_MAX];
+    sd_coord coord_table[SD_COLCOORD_COUNT_MAX];
     sd_sprite *sprites[SD_SPRITE_COUNT_MAX];
 
     // String header & Extra strings
     char anim_string[SD_ANIMATION_STRING_MAX];
-    char extra_strings[SD_SPRITE_EXTRASTR_COUNT_MAX][SD_EXTRA_STRING_MAX];
+    char extra_strings[SD_EXTRASTR_COUNT_MAX][SD_EXTRA_STRING_MAX];
 } sd_animation;
 
 int sd_animation_create(sd_animation* animation);

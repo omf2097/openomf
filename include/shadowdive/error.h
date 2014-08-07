@@ -5,6 +5,13 @@
 extern "C" {
 #endif
 
+#ifdef DEBUGMODE
+    void debug_print(const char* fn, int line, const char *fmt, ...);
+    #define DEBUGLOG(...) debug_print(__FUNCTION__, __LINE__, __VA_ARGS__)
+#else
+    #define DEBUGLOG(...)
+#endif
+
 enum {
     SD_SUCCESS,
     SD_FILE_OPEN_ERROR,
