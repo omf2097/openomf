@@ -39,30 +39,6 @@ h4 { font-size: 14px; font-weight: bold; }\
 </head>\
 <body>";
 
-static const char *unk_header_names[] = {
-    "N/A",
-    "N/A", // 1
-    "N/A",
-    "N/A",
-    "N/A",
-    "N/A",
-    "N/A",
-    "N/A",
-    "N/A",
-    "N/A",
-    "N/A", // 10
-    "N/A",
-    "Next animation if hit",
-    "Category",
-    "N/A",
-    "Scrap amount",
-    "Successor ID",
-    "Damage",
-    "N/A",
-    "N/A",
-    "Score"
-};
-
 static const char *anim_names_a[] = {
     "",
     "Jumping",
@@ -178,16 +154,18 @@ int main(int argc, char *argv[]) {
     int ret;
     
     // Load palettes
-    sd_bk_file *bk = sd_bk_create();
-    ret = sd_bk_load(bk, palfile->filename[0]);
+    sd_bk_file bk;
+    sd_bk_create(&bk);
+    ret = sd_bk_load(&bk, palfile->filename[0]);
     if(ret) {
         printf("Unable to load %s file!", palfile->filename[0]);
         goto exit_1;
     }
     
     // Load file
-    sd_af_file *af = sd_af_create();
-    ret = sd_af_load(af, file->filename[0]);
+    sd_af_file af;
+    sd_af_create(&af);
+    ret = sd_af_load(&af, file->filename[0]);
     if(ret) {
         printf("Unable to load AF file! Make sure the file exists and is a valid AF file.\n");
         goto exit_2;
@@ -212,23 +190,23 @@ int main(int argc, char *argv[]) {
     
     // Root
     fprintf(f, "<h2>General information</h2><table><tr><th>Key</th><th>Value</th></tr>");
-    fprintf(f, "<tr><td>File ID</td><td>%d</td></tr>", af->file_id);
-    fprintf(f, "<tr><td>Unknown A</td><td>%d</td></tr>", af->unknown_a);
-    fprintf(f, "<tr><td>Endurance</td><td>%d</td></tr>", af->endurance);
-    fprintf(f, "<tr><td>Unknown B</td><td>%d</td></tr>", af->unknown_b);
-    fprintf(f, "<tr><td>Power</td><td>%d</td></tr>", af->power);
-    fprintf(f, "<tr><td>Fwd speed</td><td>%d</td></tr>", af->forward_speed);
-    fprintf(f, "<tr><td>Rev speed</td><td>%d</td></tr>", af->reverse_speed);
-    fprintf(f, "<tr><td>Jump speed</td><td>%d</td></tr>", af->jump_speed);
-    fprintf(f, "<tr><td>Fall speed</td><td>%d</td></tr>", af->fall_speed);
-    fprintf(f, "<tr><td>Unknown C</td><td>%d</td></tr>", af->unknown_c);
+    fprintf(f, "<tr><td>File ID</td><td>%d</td></tr>", af.file_id);
+    fprintf(f, "<tr><td>Unknown A</td><td>%d</td></tr>", af.unknown_a);
+    fprintf(f, "<tr><td>Endurance</td><td>%d</td></tr>", af.endurance);
+    fprintf(f, "<tr><td>Unknown B</td><td>%d</td></tr>", af.unknown_b);
+    fprintf(f, "<tr><td>Power</td><td>%d</td></tr>", af.power);
+    fprintf(f, "<tr><td>Fwd speed</td><td>%d</td></tr>", af.forward_speed);
+    fprintf(f, "<tr><td>Rev speed</td><td>%d</td></tr>", af.reverse_speed);
+    fprintf(f, "<tr><td>Jump speed</td><td>%d</td></tr>", af.jump_speed);
+    fprintf(f, "<tr><td>Fall speed</td><td>%d</td></tr>", af.fall_speed);
+    fprintf(f, "<tr><td>Unknown C</td><td>%d</td></tr>", af.unknown_c);
     fprintf(f, "</table>");
     
     // Animations
     fprintf(f, "<h2>Animations</h2><div id=\"animations\">");
     for(int m = 0; m < 70; m++) {
-        if(af->moves[m]) {
-            sd_move *afm = af->moves[m];
+        if(af.moves[m]) {
+            sd_move *afm = af.moves[m];
             sd_animation *ani = afm->animation;
 
             char anim_name[32];
@@ -245,37 +223,33 @@ int main(int argc, char *argv[]) {
             fprintf(f, "<h3>Animation %d %s</h3><div class=\"animation\">", m, anim_name);
             fprintf(f, "<div class=\"iblock\"><h4>General information</h4>");
             fprintf(f, "<table><tr><th>Key</th><th>Value</th></tr>");
-            fprintf(f, "<tr><td>Move string</td><td>%s</td></tr>", afm->move_string);
-            fprintf(f, "<tr><td>Footer string</td><td>%s</td></tr>", afm->footer_string);
-            fprintf(f, "<tr><td>Move header</td><td>");
-            fprintf(f, "<table><tr><th>#</th><th>Name</th><th>Value</th></tr>");
-            for(int h = 0; h < 21; h++) {
-                fprintf(f, "<tr>");
-                fprintf(f, "<td>%d</td>", h);
-                fprintf(f, "<td>%s</td>", unk_header_names[h]);
-                fprintf(f, "<td>");
-                if(afm->unknown[h] > 0) {
-                    fprintf(f, "<strong>");
-                }
-                fprintf(f, "%02X ", (uint8_t)afm->unknown[h]);
-                if(afm->unknown[h] > 0) {
-                    fprintf(f, "</strong>");
-                }
-                fprintf(f, "</td>");
-                fprintf(f, "</tr>");
-            }
-            fprintf(f, "</table>");
-            fprintf(f, "</td></tr>");
+            fprintf(f, "<tr><td>Move string</td><td>\"%s\"</td></tr>", afm->move_string);
+            fprintf(f, "<tr><td>Footer string</td><td>\"%s\"</td></tr>", afm->footer_string);
+
+            fprintf(f, "<tr><td>Unknown 0</td><td>%d</td></th>", afm->unknown_0);
+            fprintf(f, "<tr><td>Unknown 2</td><td>%d</td></th>", afm->unknown_2);
+            fprintf(f, "<tr><td>Unknown 4</td><td>%d</td></th>", afm->unknown_4);
+            fprintf(f, "<tr><td>Unknown 5</td><td>%d</td></th>", afm->unknown_5);
+            fprintf(f, "<tr><td>Unknown 6</td><td>%d</td></th>", afm->unknown_6);
+            fprintf(f, "<tr><td>Unknown 7</td><td>%d</td></th>", afm->unknown_7);
+            fprintf(f, "<tr><td>Unknown 8</td><td>%d</td></th>", afm->unknown_8);
+            fprintf(f, "<tr><td>Unknown 9</td><td>%d</td></th>", afm->unknown_9);
+            fprintf(f, "<tr><td>Unknown 10</td><td>%d</td></th>", afm->unknown_10);
+            fprintf(f, "<tr><td>Unknown 11</td><td>%d</td></th>", afm->unknown_11);
+            fprintf(f, "<tr><td>Next animation ID</td><td>%d</td></th>", afm->next_anim_id);
+            fprintf(f, "<tr><td>Category</td><td>%d</td></th>", afm->category);
+            fprintf(f, "<tr><td>Unknown 14</td><td>%d</td></th>", afm->unknown_14);
+            fprintf(f, "<tr><td>Scrap amount</td><td>%d</td></th>", afm->scrap_amount);
+            fprintf(f, "<tr><td>Successor ID</td><td>%d</td></th>", afm->successor_id);
+            fprintf(f, "<tr><td>Damage amount</td><td>%d</td></th>", afm->damage_amount);
+            fprintf(f, "<tr><td>Unknown 18</td><td>%d</td></th>", afm->unknown_18);
+            fprintf(f, "<tr><td>Unknown 19</td><td>%d</td></th>", afm->unknown_19);
+            fprintf(f, "<tr><td>Points on hit</td><td>%d</td></th>", afm->points);
 
             fprintf(f, "<tr><td>Start X</td><td>%d</td></tr>", ani->start_x);
             fprintf(f, "<tr><td>Start Y</td><td>%d</td></tr>", ani->start_y);
-            fprintf(f, "<tr><td>Animation string</td><td>%s</td></tr>", ani->anim_string);
-            fprintf(f, "<tr><td>Unknown animation header</td><td>");
-            for(int h = 0; h < 4; h++) {
-                fprintf(f, "%02X ", ani->unknown_a[h]);
-            }
-            fprintf(f, "</td></tr>");
-
+            fprintf(f, "<tr><td>Animation string</td><td>\"%s\"</td></tr>", ani->anim_string);
+            fprintf(f, "<tr><td>null</td><td>%d</td></tr>", ani->null);
 
             fprintf(f, "</table></div>");
             
@@ -284,18 +258,18 @@ int main(int argc, char *argv[]) {
                 fprintf(f, "<div class=\"iblock\"><h4>Extra strings</h4>");
                 fprintf(f, "<table><tr><th>#</th><th>String</th></tr>");
                 for(int e = 0; e < ani->extra_string_count; e++) {
-                    fprintf(f, "<tr><td>%d</td><td>%s</td></tr>", e, ani->extra_strings[e]);
+                    fprintf(f, "<tr><td>%d</td><td>\"%s\"</td></tr>", e, ani->extra_strings[e]);
                 }
                 fprintf(f, "</table></div>");
             }
             
             // Coords
-            if(ani->col_coord_count > 0) {
+            if(ani->coord_count > 0) {
                 fprintf(f, "<div class=\"iblock\"><h4>Collision coordinates</h4>");
-                fprintf(f, "<table><tr><th>X</th><th>Y</th><th>Frame</th></tr>");
-                for(int c = 0; c < ani->col_coord_count; c++) {
-                    col_coord *coord = &ani->col_coord_table[c];
-                    fprintf(f, "<tr><td>%d</td><td>%d</td><td>%d</td></tr>", coord->x, coord->y, coord->y_ext);
+                fprintf(f, "<table><tr><th>X</th><th>Y</th><th>null</th><th>frame_id</th></tr>");
+                for(int c = 0; c < ani->coord_count; c++) {
+                    sd_coord *coord = &ani->coord_table[c];
+                    fprintf(f, "<tr><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>", coord->x, coord->y, coord->null, coord->frame_id);
                 }
                 fprintf(f, "</table></div>");
             }
@@ -303,16 +277,17 @@ int main(int argc, char *argv[]) {
             // Frames
             fprintf(f, "<div class=\"iblock\"><h4>Frames</h4>");
             fprintf(f, "<table><tr><th>#</th><th>A-Z</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Index</th><th>Missing</th><th>Sprite</th></tr>");
-            for(int b = 0; b < ani->frame_count; b++) {
+            sd_rgba_image img;
+            for(int b = 0; b < ani->sprite_count; b++) {
                 sd_sprite *sprite = ani->sprites[b];
                 
                 // Write sprite
-                if(sprite->img->len > 0 && sprite->img->w > 0 && sprite->img->h > 0) {
+                if(sprite->len > 0 && sprite->width > 0 && sprite->height > 0) {
                     sprintf(namebuf, "%s/%s_sprite_%d_%d.png", outdir->sval[0], name->sval[0], m, b);
                     fp = fopen(namebuf, "wb");
-                    sd_rgba_image *img = sd_sprite_image_decode(sprite->img, bk->palettes[0], 0);
-                    write_png(fp, img->data, img->w, img->h);
-                    sd_rgba_image_delete(img);
+                    sd_sprite_rgba_decode(&img, sprite, bk.palettes[0], 0);
+                    write_png(fp, img.data, img.w, img.h);
+                    sd_rgba_image_free(&img);
                     fclose(fp);
                     sprintf(namebuf, "%s_sprite_%d_%d.png", name->sval[0], m, b);
                 } else {
@@ -325,8 +300,8 @@ int main(int argc, char *argv[]) {
                     b + 'A',
                     sprite->pos_x,
                     sprite->pos_y,
-                    sprite->img->w,
-                    sprite->img->h,
+                    sprite->width,
+                    sprite->height,
                     sprite->index,
                     sprite->missing,
                     namebuf);
@@ -341,7 +316,7 @@ int main(int argc, char *argv[]) {
     // Sounds
     fprintf(f, "<h2>Sound table</h2><table><tr><th>Local ID</th><th>Sound ID</th></tr>");
     for(int i = 0; i < 30; i++) {
-        fprintf(f, "<tr><td>%d</td><td>%d</td></tr>", i, (int)af->soundtable[i]);
+        fprintf(f, "<tr><td>%d</td><td>%d</td></tr>", i, (int)af.soundtable[i]);
     }
     fprintf(f, "</table>");
     
@@ -352,9 +327,9 @@ int main(int argc, char *argv[]) {
     // Quit
     fclose(f);
 exit_2:
-    sd_af_delete(af);
+    sd_af_free(&af);
 exit_1:
-    sd_bk_delete(bk);
+    sd_bk_free(&bk);
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     return 0;

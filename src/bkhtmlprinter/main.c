@@ -264,11 +264,11 @@ int main(int argc, char *argv[]) {
             fprintf(f, "<tr><td>Load on start</td><td>%d</td></tr>", bka->load_on_start);
             fprintf(f, "<tr><td>Probability</td><td>%d</td></tr>", bka->probability);
             fprintf(f, "<tr><td>Hazard damage</td><td>%d</td></tr>", bka->hazard_damage);
-            fprintf(f, "<tr><td>Footer string</td><td>%s</td></tr>", bka->footer_string);
+            fprintf(f, "<tr><td>Footer string</td><td>\"%s\"</td></tr>", bka->footer_string);
             
             fprintf(f, "<tr><td>Start X</td><td>%d</td></tr>", ani->start_x);
             fprintf(f, "<tr><td>Start Y</td><td>%d</td></tr>", ani->start_y);
-            fprintf(f, "<tr><td>Animation string</td><td>%s</td></tr>", ani->anim_string);
+            fprintf(f, "<tr><td>Animation string</td><td>\"%s\"</td></tr>", ani->anim_string);
             fprintf(f, "</table></div>");
             
             // Extra strings
@@ -276,7 +276,7 @@ int main(int argc, char *argv[]) {
                 fprintf(f, "<div class=\"iblock\"><h4>Extra strings</h4>");
                 fprintf(f, "<table><tr><th>#</th><th>String</th></tr>");
                 for(int e = 0; e < ani->extra_string_count; e++) {
-                    fprintf(f, "<tr><td>%d</td><td>%s</td></tr>", e, ani->extra_strings[e]);
+                    fprintf(f, "<tr><td>%d</td><td>\"%s\"</td></tr>", e, ani->extra_strings[e]);
                 }
                 fprintf(f, "</table></div>");
             }
