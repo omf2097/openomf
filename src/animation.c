@@ -202,9 +202,9 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
         size = sd_read_uword(r);
         if(size > 0) {
             sd_read_buf(r, ani->extra_strings[i], size+1);
-        }
-        if(ani->extra_strings[i][size] != 0) {
-            return SD_FILE_PARSE_ERROR;
+            if(ani->extra_strings[i][size] != 0) {
+                return SD_FILE_PARSE_ERROR;
+            }
         }
     }
 

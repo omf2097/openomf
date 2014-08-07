@@ -20,7 +20,6 @@ typedef struct {
     
     uint16_t unknown_0;
     uint16_t unknown_2;
-    uint8_t unknown_3;
     uint8_t unknown_4;
     uint8_t unknown_5;
     uint8_t unknown_6;

@@ -42,7 +42,6 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     // Everything else
     dst->unknown_0 = src->unknown_0;
     dst->unknown_2 = src->unknown_2;
-    dst->unknown_3 = src->unknown_3;
     dst->unknown_4 = src->unknown_4;
     dst->unknown_5 = src->unknown_5;
     dst->unknown_6 = src->unknown_6;
@@ -90,7 +89,6 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     // Header
     move->unknown_0 = sd_read_uword(r);
     move->unknown_2 = sd_read_uword(r);
-    move->unknown_3 = sd_read_ubyte(r);
     move->unknown_4 = sd_read_ubyte(r);
     move->unknown_5 = sd_read_ubyte(r);
     move->unknown_6 = sd_read_ubyte(r);
@@ -116,9 +114,9 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     size = sd_read_uword(r);
     if(size > 0) {
         sd_read_buf(r, move->footer_string, size);
-    }
-    if(move->footer_string[size-1] != 0) {
-        return SD_FILE_PARSE_ERROR;
+        if(move->footer_string[size-1] != 0) {
+            return SD_FILE_PARSE_ERROR;
+        }
     }
 
     // Return success if reader is still ok
@@ -144,7 +142,6 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     // Move header
     sd_write_uword(w, move->unknown_0);
     sd_write_uword(w, move->unknown_2);
-    sd_write_ubyte(w, move->unknown_3);
     sd_write_ubyte(w, move->unknown_4);
     sd_write_ubyte(w, move->unknown_5);
     sd_write_ubyte(w, move->unknown_6);

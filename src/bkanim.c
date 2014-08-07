@@ -71,9 +71,9 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     size = sd_read_uword(r);
     if(size > 0) {
         sd_read_buf(r, bka->footer_string, size);
-    }
-    if(bka->footer_string[size-1] != 0) {
-        return SD_FILE_PARSE_ERROR;
+        if(bka->footer_string[size-1] != 0) {
+            return SD_FILE_PARSE_ERROR;
+        }
     }
 
     // Initialize animation
