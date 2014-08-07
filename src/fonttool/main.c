@@ -19,7 +19,7 @@ SDL_Surface* render_text(sd_font *font, const char *text, int area_w) {
     SDL_Surface *surface;
     SDL_Surface *tmp;
     SDL_Rect dst;
-    sd_rgba_image *img = 0;
+    sd_rgba_image img;
     
     // Required surface size
     slen = strlen(text);
@@ -49,10 +49,10 @@ SDL_Surface* render_text(sd_font *font, const char *text, int area_w) {
     // Render text
     dst.w = 8;
     dst.h = font->h;
-    img = sd_rgba_image_create(8, font->h);
+    sd_rgba_image_create(&img, 8, font->h);
     for(int i = 0; i < slen; i++) {
-        sd_font_decode(font, img, text[i] - 32, 64, 128, 64);
-        memcpy(tmp->pixels, img->data, 4*8*font->h);
+        sd_font_decode(font, &img, text[i] - 32, 64, 128, 64);
+        memcpy(tmp->pixels, img.data, 4*8*font->h);
         dst.y = i / char_w * font->h;
         dst.x = i % char_w * 8;
         SDL_BlitSurface(tmp, 0, surface, &dst);
@@ -60,7 +60,7 @@ SDL_Surface* render_text(sd_font *font, const char *text, int area_w) {
     
     // All done.
     SDL_FreeSurface(tmp);
-    sd_rgba_image_delete(img);
+    sd_rgba_image_free(&img);
     return surface;
 }
 
@@ -129,8 +129,9 @@ int main(int argc, char* argv[]) {
     }
     
     // Load fonts
-    sd_font *font = sd_font_create();
-    int ret = sd_font_load(font, file->filename[0], _fs);
+    sd_font font;
+    sd_font_create(&font);
+    int ret = sd_font_load(&font, file->filename[0], _fs);
     if(ret != SD_SUCCESS) {
         printf("Couldn't load small font file! Error [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_2;
@@ -138,7 +139,7 @@ int main(int argc, char* argv[]) {
     
     // Create surface for font rendering
     SDL_Surface *surface = 0;
-    if((surface = render_text(font, text->sval[0], 320)) == 0) {
+    if((surface = render_text(&font, text->sval[0], 320)) == 0) {
         printf("Failed to render text!\n");
         goto exit_3;
     }
@@ -195,7 +196,7 @@ int main(int argc, char* argv[]) {
 exit_3:
     if(surface) SDL_FreeSurface(surface);
 exit_2:
-    sd_font_delete(font);
+    sd_font_free(&font);
 exit_1:
     SDL_Quit();
 exit_0:
