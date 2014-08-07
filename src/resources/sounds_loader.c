@@ -12,14 +12,23 @@ int sounds_loader_init() {
     const char *filename = pm_get_resource_path(DAT_SOUNDS);
 
     // Load sounds
-    sound_data = sd_sounds_create();
+    sound_data = malloc(sizeof(sd_sound_file));
+    if(sd_sounds_create(sound_data) != SD_SUCCESS) {
+        goto error_0;
+    }
     if(sd_sounds_load(sound_data, filename)) {
-        sd_sounds_delete(sound_data);
         PERROR("Unable to load sounds file '%s'!", filename);
-        return 1;
+        goto error_1;
     }
     INFO("Loaded sounds file '%s'.", filename);
     return 0;
+
+error_1:
+    sd_sounds_free(sound_data);
+error_0:
+    free(sound_data);
+    sound_data = NULL;
+    return 1;
 }
 
 int sounds_loader_get(int id, char **buffer, int *len) {
@@ -43,7 +52,8 @@ int sounds_loader_get(int id, char **buffer, int *len) {
 
 void sounds_loader_close() {
     if(sound_data != NULL) {
-        sd_sounds_delete(sound_data);
+        sd_sounds_free(sound_data);
+        free(sound_data);
         sound_data = NULL;
     }
 }

@@ -22,7 +22,7 @@ void bk_create(bk *b, void *src) {
 
     // Copy palettes
     vector_create(&b->palettes, sizeof(palette));
-    for(int i = 0; i < sdbk->num_palettes; i++) {
+    for(int i = 0; i < sdbk->palette_count; i++) {
         vector_append(&b->palettes, (palette*)sdbk->palettes[i]);
     }
 

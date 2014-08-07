@@ -13,9 +13,9 @@ void animation_create(animation *ani, void *src, int id) {
     // Copy collision coordinates
     vector_create(&ani->collision_coords, sizeof(collision_coord));
     collision_coord tmp_coord;
-    for(int i = 0; i < sdani->col_coord_count; i++) {
-        tmp_coord.pos = vec2i_create(sdani->col_coord_table[i].x, sdani->col_coord_table[i].y);
-        tmp_coord.frame_index = sdani->col_coord_table[i].y_ext;
+    for(int i = 0; i < sdani->coord_count; i++) {
+        tmp_coord.pos = vec2i_create(sdani->coord_table[i].x, sdani->coord_table[i].y);
+        tmp_coord.frame_index = sdani->coord_table[i].frame_id;
         vector_append(&ani->collision_coords, &tmp_coord);
     }
 
@@ -33,7 +33,7 @@ void animation_create(animation *ani, void *src, int id) {
     // Handle sprites
     vector_create(&ani->sprites, sizeof(sprite));
     sprite tmp_sprite;
-    for(int i = 0; i < sdani->frame_count; i++) {
+    for(int i = 0; i < sdani->sprite_count; i++) {
         sprite_create(&tmp_sprite, (void*)sdani->sprites[i], i);
         vector_append(&ani->sprites, &tmp_sprite);
     }

@@ -7,16 +7,13 @@ void af_move_create(af_move *move, void *src, int id) {
     str_create_from_cstr(&move->move_string, sdmv->move_string);
     str_create_from_cstr(&move->footer_string, sdmv->footer_string);
     move->id = id;
-    move->next_move = sdmv->unknown[12];
-    move->successor_id = sdmv->unknown[16];
-    move->category = sdmv->unknown[13];
-    move->damage = sdmv->unknown[17] / 2.0f;
-    move->points = sdmv->unknown[20] * 400;
-    move->scrap_amount = sdmv->unknown[15];
+    move->next_move = sdmv->next_anim_id;
+    move->successor_id = sdmv->successor_id;
+    move->category = sdmv->category;
+    move->damage = sdmv->damage_amount / 2.0f;
+    move->points = sdmv->points * 400;
+    move->scrap_amount = sdmv->scrap_amount;
     animation_create(&move->ani, sdmv->animation, id);
-#ifdef DEBUGMODE
-    memcpy(move->unknown, sdmv->unknown, sizeof(move->unknown));
-#endif
 }
 
 void af_move_free(af_move *move) {

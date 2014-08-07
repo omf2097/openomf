@@ -11,19 +11,30 @@ int altpals_init() {
     // Get filename
     const char *filename = pm_get_resource_path(DAT_ALTPALS);
 
-    altpals = sd_altpal_create();
-    if(sd_altpals_load(altpals, filename)) {
-        sd_altpal_delete(altpals);
+    altpals = malloc(sizeof(sd_altpal_file));
+    if(sd_altpal_create(altpals) != SD_SUCCESS) {
+        goto error_0;
+    }
+    if(sd_altpals_load(altpals, filename) != SD_SUCCESS) {
         PERROR("Unable to load altpals file '%s'!", filename);
-        return 1;
+        goto error_1;
     }
     INFO("Loaded altpals file '%s'.", filename);
     return 0;
+
+error_1:
+    sd_altpal_free(altpals);
+error_0:
+    free(altpals);
+    altpals = NULL;
+    return 1;
 }
 
 void altpals_close() {
     if(altpals != NULL) {
-        sd_altpal_delete(altpals);
+        sd_altpal_free(altpals);
+        free(altpals);
+        altpals = NULL;
     }
 }
 
