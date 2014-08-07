@@ -35,7 +35,7 @@ add_executable(bktool src/bktool/main.c src/shared/animation_misc.c src/shared/c
 add_executable(aftool src/aftool/main.c src/shared/animation_misc.c src/shared/conversions.c)
 add_executable(bkhtmlprinter src/bkhtmlprinter/main.c)
 add_executable(afhtmlprinter src/afhtmlprinter/main.c)
-#add_executable(soundtool src/soundtool/main.c)
+add_executable(soundtool src/soundtool/main.c)
 #add_executable(fonttool src/fonttool/main.c)
 #add_executable(languagetool src/languagetool/main.c)
 add_executable(omf_parse src/stringparser/main.c)
@@ -72,14 +72,14 @@ target_link_libraries(bktool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(aftool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(bkhtmlprinter ${CORELIBS} ${PNG_LIBRARY} ${ZLIB_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(afhtmlprinter ${CORELIBS} ${PNG_LIBRARY} ${ZLIB_LIBRARY} ${SHADOWDIVE_LIBRARY})
-#target_link_libraries(soundtool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(soundtool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 #target_link_libraries(fonttool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 #target_link_libraries(languagetool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(omf_parse ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(afdiff ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 
 #INSTALL(TARGETS afdiff bktool afhtmlprinter bkhtmlprinter omf_parse aftool soundtool musictool fonttool languagetool
-INSTALL(TARGETS aftool bktool omf_parse musictool bkhtmlprinter afhtmlprinter
+INSTALL(TARGETS aftool bktool omf_parse musictool bkhtmlprinter afhtmlprinter soundtool
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
