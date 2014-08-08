@@ -561,7 +561,8 @@ int main(int argc, char* argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
-    struct arg_file *file = arg_file1("f", "file", "<file>", "Input .AF file");
+    struct arg_file *file = arg_file0("f", "file", "<file>", "Input .AF file");
+    struct arg_lit *new = arg_lit0("n", "new", "Creates a new structure for editing.");
     struct arg_int *move = arg_int0("m", "move", "<move_id>", "Select move");
     struct arg_lit *all_moves = arg_lit0("A", "all_moves", "All moves");
     struct arg_int *sprite = arg_int0("s", "sprite", "<sprite_id>", "Select sprite (requires --move)");
@@ -574,7 +575,7 @@ int main(int argc, char* argv[]) {
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,move,all_moves,sprite,keylist,key,value,output,palette,play,scale,parse,end};
+    void* argtable[] = {help,vers,file,new,move,all_moves,sprite,keylist,key,value,output,palette,play,scale,parse,end};
     const char* progname = "aftool";
     
     // Make sure everything got allocated
@@ -640,6 +641,14 @@ int main(int argc, char* argv[]) {
             goto exit_0;
         }
     }
+    if(file->count == 0 && new->count == 0) {
+        printf("Either --file or --new argument required!");
+        goto exit_0;
+    }
+    if(file->count == 1 && new->count == 1) {
+        printf("Define at most one of (--file, --new).");
+        goto exit_0;
+    }
     
     // Handle errors
     if(nerrors > 0) {
@@ -654,10 +663,12 @@ int main(int argc, char* argv[]) {
     // Load file
     sd_af_file af;
     sd_af_create(&af);
-    int ret = sd_af_load(&af, file->filename[0]);
-    if(ret != SD_SUCCESS) {
-        printf("Unable to load AF file! [%d] %s.\n", ret, sd_get_error(ret));
-        goto exit_1;
+    if(file->count > 0) {
+        int ret = sd_af_load(&af, file->filename[0]);
+        if(ret != SD_SUCCESS) {
+            printf("Unable to load AF file! [%d] %s.\n", ret, sd_get_error(ret));
+            goto exit_1;
+        }
     }
     
     // Palette
