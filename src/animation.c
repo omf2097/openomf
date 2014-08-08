@@ -69,12 +69,47 @@ int sd_animation_set_anim_string(sd_animation *ani, const char *str) {
     return SD_SUCCESS;
 }
 
+int sd_animation_get_coord_count(sd_animation *ani) {
+    return ani->coord_count;
+}
+
+int sd_animation_set_coord(sd_animation *ani, int num, const sd_coord coord) {
+    if(num < 0 || num >= ani->coord_count) {
+        return SD_INVALID_INPUT;
+    }
+    ani->coord_table[num] = coord;
+    return SD_SUCCESS;
+}
+
+int sd_animation_push_coord(sd_animation *ani, const sd_coord coord) {
+    if(ani->coord_count >= SD_COLCOORD_COUNT_MAX) {
+        return SD_INVALID_INPUT;
+    }
+    ani->coord_table[ani->coord_count++] = coord;
+    return SD_SUCCESS;
+}
+
+int sd_animation_pop_coord(sd_animation *ani) {
+    if(ani->coord_count <= 0) {
+        return SD_INVALID_INPUT;
+    }
+    ani->coord_count--;
+    return SD_SUCCESS;
+}
+
+sd_coord* sd_animation_get_coord(sd_animation *ani, int num) {
+    if(num <= 0 || num >= SD_COLCOORD_COUNT_MAX) {
+        return NULL;
+    }
+    return &ani->coord_table[num];
+}
+
 int sd_animation_get_extra_string_count(sd_animation *anim) {
     return anim->extra_string_count;
 }
 
 int sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) {
-    if(num < 0 || num >= SD_EXTRASTR_COUNT_MAX) {
+    if(num < 0 || num >= ani->extra_string_count) {
         return SD_INVALID_INPUT;
     }
     if(strlen(str) >= SD_EXTRA_STRING_MAX) {
@@ -85,7 +120,7 @@ int sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) {
 }
 
 int sd_animation_push_extra_string(sd_animation *anim, const char *str) {
-    if(strlen(str) >= SD_EXTRA_STRING_MAX) {
+    if(strlen(str) >= SD_EXTRA_STRING_MAX || anim->extra_string_count >= SD_EXTRASTR_COUNT_MAX) {
         return SD_INVALID_INPUT;
     }
     strcpy(anim->extra_strings[anim->extra_string_count++], str);
