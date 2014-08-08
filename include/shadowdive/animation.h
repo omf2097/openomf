@@ -80,7 +80,16 @@ int sd_animation_copy(sd_animation *dst, const sd_animation *src);
  */
 void sd_animation_free(sd_animation *animation);
 
+/*! \brief Get coordinate count
+ *
+ * Returns the collision coordinate count in the animation.
+ *
+ * \param animation Animation struct to modify.
+ * \return Coordinate element count
+ */
 int sd_animation_get_coord_count(sd_animation *animation);
+
+
 int sd_animation_set_coord(sd_animation *animation, int num, const sd_coord coord);
 int sd_animation_push_coord(sd_animation *animation, const sd_coord coord);
 int sd_animation_pop_coord(sd_animation *animation);
