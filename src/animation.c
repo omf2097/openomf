@@ -148,7 +148,7 @@ int sd_animation_get_sprite_count(sd_animation *anim) {
 
 int sd_animation_set_sprite(sd_animation *anim, int num, const sd_sprite *sprite) {
     int ret;
-    if(num < 0 || num >= anim->sprite_count) {
+    if(num < 0 || num >= anim->sprite_count || sprite == NULL) {
         return SD_INVALID_INPUT;
     }
     if(anim->sprites[num] != NULL) {
@@ -187,6 +187,7 @@ int sd_animation_pop_sprite(sd_animation *anim) {
     anim->sprite_count--;
     sd_sprite_free(anim->sprites[anim->sprite_count]);
     free(anim->sprites[anim->sprite_count]);
+    anim->sprites[anim->sprite_count] = NULL;
 
     return SD_SUCCESS;
 }

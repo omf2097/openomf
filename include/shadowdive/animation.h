@@ -47,7 +47,7 @@ typedef struct {
  *
  * Initializes the animation structure with empty values.
  *
- * \retval SD_INVALID_INPUT BK struct pointer was NULL
+ * \retval SD_INVALID_INPUT Animation struct pointer was NULL
  * \retval SD_SUCCESS Success.
  *
  * \param animation Allocated animation struct pointer.
@@ -89,24 +89,197 @@ void sd_animation_free(sd_animation *animation);
  */
 int sd_animation_get_coord_count(sd_animation *animation);
 
-
+/*! \brief Sets coordinate at index
+ *
+ * Sets the coordinate at given index. It is only possible to overwrite values that
+ * are already in the animation. Adding new values should be done by using sd_animation_push_coord().
+ *
+ * \retval SD_INVALID_INPUT Invalid coordinate index
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param animation Animation struct to modify
+ * \param num Coordinate index
+ * \param coord Coordinate information.
+ */
 int sd_animation_set_coord(sd_animation *animation, int num, const sd_coord coord);
+
+/*! \brief Pushes coordinate to the end of coordinate list.
+ *
+ * Pushes a coordinate to the end of the coordinate list.
+ * Coord_count variable will be raised by 1.
+ *
+ * \retval SD_INVALID_INPUT Coordinate list is already full
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param animation Animation struct to modify
+ * \param coord Coordinate information.
+ */
 int sd_animation_push_coord(sd_animation *animation, const sd_coord coord);
+
+/*! \brief Pops a coordinate from the end of the coordinate list.
+ *
+ * Pops a coordinate off the end of the coordinate list.
+ * Coord_count variable will be decreased by 1.
+ *
+ * \retval SD_INVALID_INPUT Coordinate list is already empty
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param animation Animation struct to modify
+ */
 int sd_animation_pop_coord(sd_animation *animation);
+
+/*! \brief Gets a coordinate pointer at index
+ *
+ * Returns a pointer to the coordinate data at given index.
+ *
+ * \retval NULL There is no coordinate at the given index
+ * \retval sd_coord* Success
+ *
+ * \param animation Animation struct to modify
+ * \param num Coordinate index
+ */
 sd_coord* sd_animation_get_coord(sd_animation *animation, int num);
 
+/*! \brief Sets the animation string
+ *
+ * Sets the animation string for the given animation. String will be copied.
+ * Maximum string length is 1024 bytes.
+ *
+ * \retval SD_INVALID_INPUT Given string was too big.
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param animation Animation struct to modify
+ * \param str New animation string
+ */
 int sd_animation_set_anim_string(sd_animation *animation, const char *str);
 
+/*! \brief Get extra string count
+ *
+ * Returns the extra string count in the animation.
+ *
+ * \param animation Animation struct to modify.
+ * \return Extra string count
+ */
 int sd_animation_get_extra_string_count(sd_animation *animation);
+
+/*! \brief Sets extra string at index
+ *
+ * Sets the extra string at given index. It is only possible to overwrite values that
+ * are already in the animation. Adding new values should be done by using 
+ * sd_animation_push_extra_string().
+ *
+ * Maximum extra string length is 512 bytes.
+ *
+ * \retval SD_INVALID_INPUT Invalid extra string index or string too long.
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param animation Animation struct to modify
+ * \param num String index
+ * \param str Extra string. This will be copied.
+ */
 int sd_animation_set_extra_string(sd_animation *animation, int num, const char *str);
+
+/*! \brief Pushes extra string to the end of string list.
+ *
+ * Pushes am extra string to the end of the extra string list.
+ * Extra_string_count variable will be increased by 1.
+ *
+ * \retval SD_INVALID_INPUT Extra string list is full or string too long.
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param animation Animation struct to modify
+ * \param str Extra string. This will be copied.
+ */
 int sd_animation_push_extra_string(sd_animation *anim, const char *str);
+
+/*! \brief Pops an extra string off from the end of the extra string list.
+ *
+ * Pops a extra string off the end of the extra string list.
+ * Extra_string_count variable will be decreased by 1.
+ *
+ * \retval SD_INVALID_INPUT Extra string list is already empty.
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param animation Animation struct to modify
+ */
 int sd_animation_pop_extra_string(sd_animation *anim);
+
+/*! \brief Get extra string at given index
+ *
+ * Returns the extra string at given index.
+ *
+ * \retval NULL There is no extra string at given index.
+ * \retval char* Pointer to the extra string at given index.
+ *
+ * \param animation Animation struct to modify.
+ * \param num Extra string index
+ */
 char* sd_animation_get_extra_string(sd_animation *animation, int num);
 
+/*! \brief Get extra string count
+ *
+ * Returns the extra string count in the animation.
+ *
+ * \param animation Animation struct to modify.
+ * \return Extra string count
+ */
 int sd_animation_get_sprite_count(sd_animation *animation);
+
+/*! \brief Sets sprite at index
+ *
+ * Sets the sprite at given index. It is only possible to overwrite values that
+ * are already in the animation. Adding new values should be done by using 
+ * sd_animation_push_sprite().
+ *
+ * Any old data at given index will be automatically freed.
+ *
+ * \retval SD_INVALID_INPUT Invalid sprite index or sprite was NULL.
+ * \retval SD_OUT_OF_MEMORY Memory ran out. Data at the given index will be NULL.
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param animation Animation struct to modify
+ * \param num Sprite index
+ * \param str Sprite data. This will be copied.
+ */
 int sd_animation_set_sprite(sd_animation *animation, int num, const sd_sprite *sprite);
+
+/*! \brief Pushes a sprite to the end of the sprite list.
+ *
+ * Pushes a sprite to the end of the sprite list.
+ * Sprite_count variable will be increased by 1.
+ *
+ * \retval SD_INVALID_INPUT Coordinate list is already full
+ * \retval SD_OUT_OF_MEMORY Memory ran out. Animation will not be affected.
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param animation Animation struct to modify
+ * \param sprite Sprite information. This will be copied.
+ */
 int sd_animation_push_sprite(sd_animation *animation, const sd_sprite *sprite);
+
+/*! \brief Pops a sprite off from the end of the sprite list.
+ *
+ * Pops a sprite off the end of the sprite list.
+ * Sprite_count variable will be decreased by 1.
+ * Popped data will be automatically freed.
+ *
+ * \retval SD_INVALID_INPUT Sprite list is already empty
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param animation Animation struct to modify
+ */
 int sd_animation_pop_sprite(sd_animation *animation);
+
+/*! \brief Get sprite at given index
+ *
+ * Returns a pointer to the sprite data at given index.
+ *
+ * \retval NULL There was no sprite at given index
+ * \retval sd_sprite* Success.
+ *
+ * \param animation Animation struct to modify.
+ * \param num Sprite index
+ */
 sd_sprite* sd_animation_get_sprite(sd_animation *animation, int num);
 
 #ifdef SD_USE_INTERNAL
