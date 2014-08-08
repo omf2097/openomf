@@ -12,10 +12,13 @@ int lang_init() {
     const char *filename = pm_get_resource_path(DAT_ENGLISH);
 
     // Load up language file
-    language = sd_language_create();
+    language = malloc(sizeof(sd_language));
+    if(sd_language_create(language) != SD_SUCCESS) {
+        goto error_0;
+    }
     if(sd_language_load(language, filename)) {
         PERROR("Unable to load language file '%s'!", filename);
-        return 1;
+        goto error_1;
     }
 
     // Load language strings
@@ -26,11 +29,19 @@ int lang_init() {
 
     INFO("Loaded language file '%s'.", filename);
     return 0;
+
+error_1:
+    sd_language_free(language);
+error_0:
+    free(language);
+    return 1;
 }
 
 void lang_close() {
     array_free(&language_strings);
-    sd_language_delete(language);
+    sd_language_free(language);
+    free(language);
+    language = NULL;
 }
 
 const char* lang_get(unsigned int id) {

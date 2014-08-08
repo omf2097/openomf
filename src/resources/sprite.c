@@ -16,10 +16,11 @@ void sprite_create(sprite *sp, void *src, int id) {
     sp->data = malloc(sizeof(surface));
 
     // Load data
-    sd_vga_image *raw = sd_sprite_vga_decode(sdsprite->img);
-    surface_create_from_data(sp->data, SURFACE_TYPE_PALETTE, raw->w, raw->h, raw->data);
-    memcpy(sp->data->stencil, raw->stencil, raw->w * raw->h);
-    sd_vga_image_delete(raw);
+    sd_vga_image raw;
+    sd_sprite_vga_decode(&raw, sdsprite);
+    surface_create_from_data(sp->data, SURFACE_TYPE_PALETTE, raw.w, raw.h, raw.data);
+    memcpy(sp->data->stencil, raw.stencil, raw.w * raw.h);
+    sd_vga_image_free(&raw);
 }
 
 void sprite_free(sprite *sp) {

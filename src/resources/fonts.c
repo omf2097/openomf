@@ -29,8 +29,8 @@ void font_free(font *font) {
 }
 
 int font_load(font *font, const char* filename, unsigned int size) {
-    sd_rgba_image *img;
-    sd_font *sdfont;
+    sd_rgba_image img;
+    sd_font sdfont;
     int pixsize;
     surface *sur;
 
@@ -43,18 +43,20 @@ int font_load(font *font, const char* filename, unsigned int size) {
     }
 
     // Open font file
-    sdfont = sd_font_create();
-    if(sd_font_load(sdfont, filename, pixsize)) {
-        sd_font_delete(sdfont);
+    if(sd_font_create(&sdfont) != SD_SUCCESS) {
+        return 1;
+    }
+    if(sd_font_load(&sdfont, filename, pixsize)) {
+        sd_font_free(&sdfont);
         return 2;
     }
 
     // Load into textures
-    img = sd_rgba_image_create(pixsize, pixsize);
+    sd_rgba_image_create(&img, pixsize, pixsize);
     for(int i = 0; i < 224; i++) {
         sur = malloc(sizeof(surface));
-        sd_font_decode(sdfont, img, i, 0xFF, 0xFF, 0xFF);
-        surface_create_from_data(sur, SURFACE_TYPE_RGBA, img->w, img->h, img->data);
+        sd_font_decode(&sdfont, &img, i, 0xFF, 0xFF, 0xFF);
+        surface_create_from_data(sur, SURFACE_TYPE_RGBA, img.w, img.h, img.data);
         vector_append(&font->surfaces, &sur);
     }
 
@@ -64,8 +66,8 @@ int font_load(font *font, const char* filename, unsigned int size) {
     font->size = size;
 
     // Free resources
-    sd_rgba_image_delete(img);
-    sd_font_delete(sdfont);
+    sd_rgba_image_free(&img);
+    sd_font_free(&sdfont);
     return 0;
 }
 
