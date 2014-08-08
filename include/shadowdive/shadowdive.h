@@ -1,3 +1,8 @@
+/*! \file 
+ * \brief A simple header collection file.
+ * \license MIT
+ */ 
+
 #ifndef _SD_SHADOWDIVE_H
 #define _SD_SHADOWDIVE_H
 
