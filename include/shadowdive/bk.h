@@ -195,7 +195,7 @@ sd_palette* sd_bk_get_palette(const sd_bk_file *bk, int index);
  * \retval SD_SUCCESS Success.
  *
  * \param bk BK struct pointer.
- * \param filename Name of the BK file.
+ * \param filename Name of the BK file to load from.
  */
 int sd_bk_load(sd_bk_file *bk, const char *filename);
 
