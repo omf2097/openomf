@@ -52,6 +52,7 @@ void sd_bk_anim_free(sd_bk_anim *bka) {
     if(bka->animation != NULL) {
         sd_animation_free(bka->animation);
         free(bka->animation);
+        bka->animation = NULL;
     }
 }
 
@@ -127,6 +128,32 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     }
 
     return SD_SUCCESS;
+}
+
+int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation) {
+    int ret;
+    if(bka == NULL) {
+        return SD_INVALID_INPUT;
+    }
+    if(bka->animation != NULL) {
+        sd_animation_free(bka->animation);
+        free(bka->animation);
+        bka->animation = NULL;
+    }
+    if(animation == NULL) {
+        return SD_SUCCESS;
+    }
+    if((bka->animation = malloc(sizeof(sd_animation))) == NULL) {
+        return SD_OUT_OF_MEMORY;
+    }
+    if((ret = sd_animation_copy(bka->animation, animation)) != SD_SUCCESS) {
+        return ret;
+    }
+    return SD_SUCCESS;
+}
+
+sd_animation* sd_bk_anim_get_animation(const sd_bk_anim *bka) {
+    return bka->animation;
 }
 
 int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data) {

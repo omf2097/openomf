@@ -75,6 +75,10 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     int ret;
     uint16_t size;
 
+    if(r == NULL || move == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     // Read animation
     if((move->animation = malloc(sizeof(sd_animation))) == NULL) {
         return SD_OUT_OF_MEMORY;
@@ -182,9 +186,16 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
 
 int sd_move_set_animation(sd_move *move, const sd_animation *animation) {
     int ret;
+    if(move == NULL) {
+        return SD_INVALID_INPUT;
+    }
     if(move->animation != NULL) {
         sd_animation_free(move->animation);
         free(move->animation);
+        move->animation = NULL;
+    }
+    if(animation == NULL) {
+        return SD_SUCCESS;
     }
     if((move->animation = malloc(sizeof(sd_animation))) == NULL) {
         return SD_OUT_OF_MEMORY;

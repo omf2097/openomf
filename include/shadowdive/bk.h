@@ -19,20 +19,20 @@ extern "C" {
 #define MAX_BK_PALETTES 8
 
 typedef struct {
-    uint32_t file_id;
-    uint8_t unknown_a;
-    uint8_t palette_count;
+    uint32_t file_id; ///< File ID
+    uint8_t unknown_a; ///< Unknown value
+    uint8_t palette_count; ///< Number of palettes in the BK file
 
-    sd_bk_anim *anims[MAX_BK_ANIMS];
-    sd_vga_image *background;
-    sd_palette *palettes[MAX_BK_PALETTES];
+    sd_bk_anim *anims[MAX_BK_ANIMS]; ///< All animations contained by the BK file
+    sd_vga_image *background; ///< Background image. If NULL, a black background will be used.
+    sd_palette *palettes[MAX_BK_PALETTES]; ///< All palettes in the BK file.
 
-    char soundtable[30];
+    char soundtable[30]; ///< All sounds used by the animations in this BK file.
 } sd_bk_file;
 
-/*! \brief Initialize BK container
+/*! \brief Initialize BK file structure
  *
- * Initializes the BK container with empty values.
+ * Initializes the BK file structure with empty values.
  *
  * Return values:
  * - SD_INVALID_INPUT If bk struct pointer was NULL
@@ -49,7 +49,7 @@ int sd_bk_create(sd_bk_file *bk);
  * The copied structure must be freed using sd_bk_free().
  *
  * Destination buffer does not need to be cleared. Source buffer must be a valid
- * BK file structure, of problems are likely to appear.
+ * BK file structure, or problems are likely to appear.
  *
  * Return values:
  * - SD_OUT_OF_MEMORY If memory ran out. The destination struct should be considered invalid and freed.
@@ -236,9 +236,12 @@ int sd_bk_load(sd_bk_file *bk, const char *filename);
  */
 int sd_bk_save(const sd_bk_file *bk, const char* filename);
 
-/*! \brief Free BK container
- * Frees up the bk struct memory.
- * \param bk BK struct pointer.
+/*! \brief Free BK file structure
+ *
+ * Frees up all memory reserved by the BK structure.
+ * All contents will be freed, all pointers to contents will be invalid.
+ *
+ * \param bk BK file struct pointer.
  */
 void sd_bk_free(sd_bk_file *bk);
 

@@ -16,25 +16,25 @@ extern "C" {
 #define MAX_AF_MOVES 70
 
 typedef struct {
-    uint16_t file_id;
-    uint16_t unknown_a;
-    uint32_t endurance;
-    uint8_t unknown_b;
-    uint16_t power;
-    int32_t forward_speed;
-    int32_t reverse_speed;
-    int32_t jump_speed;
-    int32_t fall_speed;
-    uint8_t unknown_c;
-    uint8_t unknown_d;
+    uint16_t file_id;  ///< File ID
+    uint16_t unknown_a; ///< Unknown value
+    uint32_t endurance; ///< HAR Endurance
+    uint8_t unknown_b; ///< Unknown value
+    uint16_t power; ///< HAR Power
+    int32_t forward_speed; ///< HAR fwd speed
+    int32_t reverse_speed; ///< HAR bwd speed
+    int32_t jump_speed; ///< HAR jump speed
+    int32_t fall_speed; ///< HAR fall speed
+    uint8_t unknown_c; ///< Unknown value
+    uint8_t unknown_d; ///< Unknown value
 
-    sd_move *moves[MAX_AF_MOVES];
-    char soundtable[30];
+    sd_move *moves[MAX_AF_MOVES]; ///< All HAR moves.
+    char soundtable[30]; ///< All sounds used by the animations in this HAR file.
 } sd_af_file;
 
-/*! \brief Initialize AF container
+/*! \brief Initialize AF file structure
  *
- * Initializes the AF container with empty values.
+ * Initializes the AF file structure with empty values.
  *
  * Return values:
  * - SD_INVALID_INPUT if AF struct value was NULL.
@@ -51,7 +51,7 @@ int sd_af_create(sd_af_file *af);
  * The copied structure must be freed using sd_af_free().
  *
  * Destination buffer does not need to be cleared. Source buffer must be a valid
- * AF file structure, of problems are likely to appear.
+ * AF file structure, or problems are likely to appear.
  *
  * Return values:
  * - SD_OUT_OF_MEMORY If memory ran out. Destination struct should now be considered invalid and freed.
@@ -133,9 +133,9 @@ int sd_af_load(sd_af_file *af, const char *filename);
  */
 int sd_af_save(const sd_af_file *af, const char* filename);
 
-/*! \brief Free AF container
+/*! \brief Free AF file structure
  * 
- * Frees up all memory reserved by the AF container.
+ * Frees up all memory reserved by the AF file structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
  * \param af AF struct pointer.
