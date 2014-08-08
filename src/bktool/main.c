@@ -397,9 +397,9 @@ void bk_info(sd_bk_file *bk) {
             }
             if(m > last+1) {
                 if(start == last) {
-                    printf("%u, ", last);
+                    printf("%d, ", last);
                 } else {
-                    printf("%u-%u, ", start, last);
+                    printf("%d-%d, ", start, last);
                 }
                 start = m;
             }
@@ -408,9 +408,13 @@ void bk_info(sd_bk_file *bk) {
     }
     if(m != last) {
         if(start == last) {
-            printf("%u\n", last);
+            if(start == -1) {
+                printf("0\n");
+            } else {
+                printf("%d\n", last);
+            }
         } else {
-            printf("%u-%u\n", start, last);
+            printf("%d-%d\n", start, last);
         }
     } else {
         printf("\n");
@@ -440,7 +444,8 @@ int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
-    struct arg_file *file = arg_file1("f", "file", "<file>", "Input .BK file");
+    struct arg_file *file = arg_file0("f", "file", "<file>", "Input .BK file");
+    struct arg_lit *new = arg_lit0("n", "new", "Creates a new structure for editing.");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .BK file");
     struct arg_int *anim = arg_int0("a", "anim", "<animation_id>", "Select animation");
     struct arg_lit *all_anims = arg_lit0("A", "all_anims", "All animations");
@@ -452,7 +457,7 @@ int main(int argc, char *argv[]) {
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,anim,all_anims,sprite,keylist,key,value,play,scale,parse,end};
+    void* argtable[] = {help,vers,file,new,output,anim,all_anims,sprite,keylist,key,value,play,scale,parse,end};
     const char* progname = "bktool";
     
     // Make sure everything got allocated
@@ -516,6 +521,14 @@ int main(int argc, char *argv[]) {
             goto exit_0;
         }
     }
+    if(file->count == 0 && new->count == 0) {
+        printf("Either --file or --new argument required!");
+        goto exit_0;
+    }
+    if(file->count == 1 && new->count == 1) {
+        printf("Define at most one of (--file, --new).");
+        goto exit_0;
+    }
     
     // Handle errors
     if(nerrors > 0) {
@@ -530,10 +543,12 @@ int main(int argc, char *argv[]) {
     // Load file
     sd_bk_file bk;
     sd_bk_create(&bk);
-    int ret = sd_bk_load(&bk, file->filename[0]);
-    if(ret != SD_SUCCESS) {
-        printf("Unable to load BK file! [%d] %s.\n", ret, sd_get_error(ret));
-        goto exit_1;
+    if(file->count > 0) {
+        int ret = sd_bk_load(&bk, file->filename[0]);
+        if(ret != SD_SUCCESS) {
+            printf("Unable to load BK file! [%d] %s.\n", ret, sd_get_error(ret));
+            goto exit_1;
+        }
     }
     
     // Scaling variable
