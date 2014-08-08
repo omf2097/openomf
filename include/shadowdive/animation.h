@@ -1,3 +1,8 @@
+/*! \file 
+ * \brief Functions for dealing with generic af/bk animation data.
+ * \license MIT
+ */ 
+
 #ifndef _SD_ANIMATION_H
 #define _SD_ANIMATION_H
 
@@ -22,24 +27,57 @@ extern "C" {
 
 typedef struct {
     // Header
-    int16_t start_x;
-    int16_t start_y;
-    int32_t null;
-    uint16_t coord_count;
-    uint8_t sprite_count;
-    uint8_t extra_string_count;
+    int16_t start_x; ///< Animation start position, X-axis
+    int16_t start_y; ///< Animation start position, Y-axis
+    int32_t null; ///< Probably filler data
+    uint16_t coord_count; ///< Number of collision coordinates in animation frames
+    uint8_t sprite_count; ///< Number of sprites in animation
+    uint8_t extra_string_count; ///< Number of extra strings in animation
 
     // Sprites and their collision coordinates
-    sd_coord coord_table[SD_COLCOORD_COUNT_MAX];
-    sd_sprite *sprites[SD_SPRITE_COUNT_MAX];
+    sd_coord coord_table[SD_COLCOORD_COUNT_MAX]; ///< Collision coordinates
+    sd_sprite *sprites[SD_SPRITE_COUNT_MAX]; ///< Sprites
 
     // String header & Extra strings
-    char anim_string[SD_ANIMATION_STRING_MAX];
-    char extra_strings[SD_EXTRASTR_COUNT_MAX][SD_EXTRA_STRING_MAX];
+    char anim_string[SD_ANIMATION_STRING_MAX]; ///< Animation string
+    char extra_strings[SD_EXTRASTR_COUNT_MAX][SD_EXTRA_STRING_MAX]; ///< Extra strings
 } sd_animation;
 
+/*! \brief Initialize animation structure
+ *
+ * Initializes the animation structure with empty values.
+ *
+ * \retval SD_INVALID_INPUT BK struct pointer was NULL
+ * \retval SD_SUCCESS Success.
+ *
+ * \param animation Allocated animation struct pointer.
+ */
 int sd_animation_create(sd_animation* animation);
+
+/*! \brief Copy animation structure
+ *
+ * Copies the contents of an animation structure. _ALL_ internals will be copied.
+ * The copied structure must be freed using sd_animation_free().
+ *
+ * Destination buffer does not need to be cleared. Source buffer must be a valid
+ * animation structure, or problems are likely to appear.
+ *
+ * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
+ * \retval SD_INVALID_INPUT Either input value was NULL.
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param dst Destination animation struct pointer.
+ * \param src Source animation struct pointer.
+ */
 int sd_animation_copy(sd_animation *dst, const sd_animation *src);
+
+/*! \brief Free animation structure
+ * 
+ * Frees up all memory reserved by the animation structure.
+ * All contents will be freed, all pointers to contents will be invalid.
+ *
+ * \param animation Animation struct to modify.
+ */
 void sd_animation_free(sd_animation *animation);
 
 int sd_animation_get_coord_count(sd_animation *animation);
