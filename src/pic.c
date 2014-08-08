@@ -1,25 +1,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "shadowdive/error.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/error.h"
 #include "shadowdive/pic.h"
 
-
-sd_pic_file* sd_pic_create() {
-    sd_pic_file *pic = malloc(sizeof(sd_pic_file));
-    for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
-        pic->photos[i] = NULL;
+int sd_pic_create(sd_pic_file *pic) {
+    if(pic == NULL) {
+        return SD_INVALID_INPUT;
     }
-    return pic;
+    memset(pic, 0, sizeof(sd_pic_file));
+    return SD_SUCCESS;
 }
 
 void free_photos(sd_pic_file *pic) {
+    if(pic == NULL) return;
     for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
         if(pic->photos[i]) {
-            if(pic->photos[i]->sprite)
-                sd_sprite_delete(pic->photos[i]->sprite);
+            if(pic->photos[i]->sprite) {
+                sd_sprite_free(pic->photos[i]->sprite);
+            }
             free(pic->photos[i]);
             pic->photos[i] = NULL;
         }
@@ -27,6 +28,10 @@ void free_photos(sd_pic_file *pic) {
 }
 
 int sd_pic_load(sd_pic_file *pic, const char *filename) {
+    if(pic == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
@@ -78,14 +83,15 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         sd_skip(r, 1);
 
         // Sprite
-        pic->photos[i]->sprite = sd_sprite_create();
+        pic->photos[i]->sprite = malloc(sizeof(sd_sprite));
+        sd_sprite_create(pic->photos[i]->sprite);
         if(sd_sprite_load(r, pic->photos[i]->sprite) != SD_SUCCESS) {
             goto error_1;
         }
 
         // Fix length and width
-        pic->photos[i]->sprite->img->h++;
-        pic->photos[i]->sprite->img->w++;
+        pic->photos[i]->sprite->height++;
+        pic->photos[i]->sprite->width++;
     }
 
     sd_reader_close(r);
@@ -100,11 +106,14 @@ error_0:
 }
 
 int sd_pic_save(sd_pic_file *pic, const char *filename) {
+    if(pic == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     return SD_FILE_OPEN_ERROR;
 }
 
-void sd_pic_delete(sd_pic_file *pic) {
+void sd_pic_free(sd_pic_file *pic) {
     free_photos(pic);
-    free(pic);
 }
 

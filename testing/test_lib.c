@@ -2,28 +2,8 @@
 #include <CUnit/Basic.h>
 #include <shadowdive/shadowdive.h>
 
-sd_bk_file *bk_file;
-sd_af_file *af_file;
-
-void test_sd_bk_create(void) {
-    bk_file = sd_bk_create();
-    CU_ASSERT_PTR_NOT_NULL_FATAL(bk_file);
-}
-
-void test_sd_bk_delete(void) {
-    sd_bk_delete(bk_file);
-    //CU_ASSERT_PTR_NULL(bk_file);
-}
-
-void test_sd_af_create(void) {
-    af_file = sd_af_create();
-    CU_ASSERT_PTR_NOT_NULL_FATAL(af_file);
-}
-
-void test_sd_af_delete(void) {
-    sd_af_delete(af_file);
-    //CU_ASSERT_PTR_NULL(af_file);
-}
+void af_test_suite(CU_pSuite suite);
+void bk_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -32,17 +12,13 @@ int main(int argc, char **argv) {
         return CU_get_error();
     }
 
-    // Init suite
-    suite = CU_add_suite("Shadowdive", NULL, NULL);
-    if(suite == NULL) {
-        goto end;
-    }
-    
-    // Add tests
-    if(CU_add_test(suite, "test of sd_bk_create", test_sd_bk_create) == NULL) { goto end; }
-    if(CU_add_test(suite, "test of sd_bk_delete", test_sd_bk_delete) == NULL) { goto end; }
-    if(CU_add_test(suite, "test of sd_af_create", test_sd_af_create) == NULL) { goto end; }
-    if(CU_add_test(suite, "test of sd_af_delete", test_sd_af_delete) == NULL) { goto end; }
+    suite = CU_add_suite("AF Reading and writing", NULL, NULL);
+    if(suite == NULL) goto end;
+    af_test_suite(suite);
+
+    suite = CU_add_suite("BK Reading and writing", NULL, NULL);
+    if(suite == NULL) goto end;
+    bk_test_suite(suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);

@@ -7,11 +7,12 @@
 #include "shadowdive/palette.h"
 #include "shadowdive/altpal.h"
 
-
-sd_altpal_file* sd_altpal_create() {
-    sd_altpal_file *ap = (sd_altpal_file*)malloc(sizeof(sd_altpal_file));
+int sd_altpal_create(sd_altpal_file *ap) {
+    if(ap == NULL) {
+        return SD_INVALID_INPUT;
+    }
     memset(ap, 0, sizeof(sd_altpal_file));
-    return ap;
+    return SD_SUCCESS;
 }
 
 int sd_altpals_load(sd_altpal_file *ap, const char *filename) {
@@ -44,7 +45,6 @@ int sd_altpals_save(sd_altpal_file *ap, const char *filename) {
     return SD_SUCCESS;
 }
 
-void sd_altpal_delete(sd_altpal_file *ap) {
-    free(ap);
+void sd_altpal_free(sd_altpal_file *ap) {
 }
 

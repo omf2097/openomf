@@ -1,17 +1,24 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/error.h"
 #include "shadowdive/sounds.h"
-#include <stdlib.h>
 
-sd_sound_file* sd_sounds_create() {
-    sd_sound_file* sf = (sd_sound_file*)malloc(sizeof(sd_sound_file));
-    sf->sounds = 0;
-    sf->sound_count = 0;
-    return sf;
+int sd_sounds_create(sd_sound_file *sf) {
+    if(sf == NULL) {
+        return SD_INVALID_INPUT;
+    }
+    memset(sf, 0, sizeof(sd_sound_file));
+    return SD_SUCCESS;
 }
 
 int sd_sounds_load(sd_sound_file *sf, const char *filename) {
+    if(sf == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
@@ -56,6 +63,10 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
 }
 
 int sd_sounds_save(sd_sound_file *sf, const char* filename) {
+    if(sf == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
         return SD_FILE_OPEN_ERROR;
@@ -67,9 +78,15 @@ int sd_sounds_save(sd_sound_file *sf, const char* filename) {
     return SD_SUCCESS;
 }
 
-void sd_sound_to_au(sd_sound *sound, const char *filename) {
+int sd_sound_to_au(sd_sound *sound, const char *filename) {
+    if(sound == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     sd_writer *w = sd_writer_open(filename);
-    if(!w) return;
+    if(!w) {
+        return SD_FILE_OPEN_ERROR;
+    }
 
     // Write AU header
     sd_write_udword(w, 0x2e736e64); // Magic number (".snd")
@@ -92,15 +109,16 @@ void sd_sound_to_au(sd_sound *sound, const char *filename) {
 
     // All done!
     sd_writer_close(w);
+    return SD_SUCCESS;
 }
 
-void sd_sounds_delete(sd_sound_file *sf) {
+void sd_sounds_free(sd_sound_file *sf) {
+    if(sf == NULL) return;
     for(int i = 0; i < sf->sound_count; i++) {
-        if(sf->sounds[i]) {
+        if(sf->sounds[i] != NULL) {
             free(sf->sounds[i]->data);
             free(sf->sounds[i]);
         }
     }
     free(sf->sounds);
-    free(sf);
 }

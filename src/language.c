@@ -1,29 +1,34 @@
-#include "shadowdive/language.h"
+#include <stdlib.h>
+#include <string.h>
+
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/error.h"
-#include <stdlib.h>
+#include "shadowdive/language.h"
 
-sd_language* sd_language_create() {
-    sd_language *language = (sd_language*)malloc(sizeof(sd_language));
-    language->count = 0;
-    language->strings = 0;
-    return language;
+int sd_language_create(sd_language *language) {
+    if(language == NULL) {
+        return SD_INVALID_INPUT;
+    }
+    memset(language, 0, sizeof(sd_language));
+    return SD_SUCCESS;
 }
 
-void sd_language_delete(sd_language *language) {
-    if(language) {
-        if(language->strings != 0) {
-            for(int i = 0; i < language->count; i++) {
-                free(language->strings[i].data);
-            }
-            free(language->strings);
+void sd_language_free(sd_language *language) {
+    if(language == NULL) return;
+    if(language->strings != 0) {
+        for(int i = 0; i < language->count; i++) {
+            free(language->strings[i].data);
         }
-        free(language);
+        free(language->strings);
     }
 }
 
 int sd_language_load(sd_language *language, const char *filename) {
+    if(language == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
@@ -76,6 +81,10 @@ int sd_language_load(sd_language *language, const char *filename) {
 }
 
 int sd_language_save(sd_language *language, const char *filename) {
+    if(language == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
         return SD_FILE_OPEN_ERROR;

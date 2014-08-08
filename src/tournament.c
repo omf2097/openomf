@@ -1,24 +1,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "shadowdive/error.h"
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/memreader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/error.h"
 #include "shadowdive/tournament.h"
 
 #define ENEMY_BLOCK_LENGTH 428
 
-sd_tournament_file* sd_tournament_create() {
-    sd_tournament_file *trn = malloc(sizeof(sd_tournament_file));
-    for(int i = 0; i < MAX_TRN_ENEMIES; i++) {
-        trn->enemies[i] = NULL;
+int sd_tournament_create(sd_tournament_file *trn) {
+    if(trn == NULL) {
+        return SD_INVALID_INPUT;
     }
-    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        trn->locales[i] = NULL;
-    }
-    trn->pic_file = NULL;
-    return trn;
+    memset(trn, 0, sizeof(sd_tournament_file));
+    return SD_SUCCESS;
 }
 
 static void free_enemies(sd_tournament_file *trn) {
@@ -38,7 +34,7 @@ static void free_locales(sd_tournament_file *trn) {
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         if(trn->locales[i]) {
             if(trn->locales[i]->logo)
-                sd_sprite_delete(trn->locales[i]->logo);
+                sd_sprite_free(trn->locales[i]->logo);
             if(trn->locales[i]->description)
                 free(trn->locales[i]->description);
             if(trn->locales[i]->title)
@@ -66,6 +62,10 @@ char *read_variable_str(sd_reader *r) {
 }
 
 int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
+    if(trn == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
@@ -181,7 +181,8 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Load logos to locales
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        trn->locales[i]->logo = sd_sprite_create();
+        trn->locales[i]->logo = malloc(sizeof(sd_sprite));
+        sd_sprite_create(trn->locales[i]->logo);
         if(sd_sprite_load(r, trn->locales[i]->logo) != SD_SUCCESS) {
             goto error_2;
         }
@@ -237,13 +238,17 @@ error_0:
 }
 
 int sd_tournament_save(sd_tournament_file *trn, const char *filename) {
+    if(trn == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
     return SD_FILE_OPEN_ERROR;
 }
 
-void sd_tournament_delete(sd_tournament_file *trn) {
+void sd_tournament_free(sd_tournament_file *trn) {
+    if(trn == NULL) return;
     free_locales(trn);
     free_enemies(trn);
-    if(trn->pic_file != NULL)
+    if(trn->pic_file != NULL) {
         free(trn->pic_file);
-    free(trn);
+    }
 }

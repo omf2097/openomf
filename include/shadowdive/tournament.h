@@ -1,12 +1,12 @@
 #ifndef _SD_TOURNAMENT_H
 #define _SD_TOURNAMENT_H
 
+#include "palette.h"
+#include "sprite.h"
+
 #ifdef __cplusplus 
 extern "C" {
 #endif
-
-#include "palette.h"
-#include "sprite.h"
 
 #define MAX_TRN_ENEMIES 256
 #define MAX_TRN_LOCALES 10
@@ -24,7 +24,7 @@ enum {
     TRN_LANG_UNDEF_2
 };
 
-typedef struct sd_tournament_enemy_t {
+typedef struct {
     uint32_t unknown_a;
     char name[18];
     uint16_t wins;
@@ -67,14 +67,14 @@ typedef struct sd_tournament_enemy_t {
     char *quote[MAX_TRN_LOCALES];
 } sd_tournament_enemy;
 
-typedef struct sd_tournament_locale_t {
+typedef struct {
     sd_sprite *logo;
     char *title;
     char *description;
     char *end_texts[11][10];
 } sd_tournament_locale;
 
-typedef struct sd_tournament_file_t {
+typedef struct {
     int16_t enemy_count;
     char bk_name[14];
     float winnings_multiplier;
@@ -89,10 +89,10 @@ typedef struct sd_tournament_file_t {
     sd_palette pal;
 } sd_tournament_file;
 
-sd_tournament_file* sd_tournament_create();
+int sd_tournament_create(sd_tournament_file *trn);
 int sd_tournament_load(sd_tournament_file *trn, const char *filename);
 int sd_tournament_save(sd_tournament_file *trn, const char *filename);
-void sd_tournament_delete(sd_tournament_file *trn);
+void sd_tournament_free(sd_tournament_file *trn);
 
 #ifdef __cplusplus
 }

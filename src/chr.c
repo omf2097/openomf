@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "shadowdive/error.h"
 #include "shadowdive/internal/reader.h"
@@ -10,10 +9,12 @@
 
 #define UNUSED(x) (void)(x)
 
-sd_chr_file* sd_chr_create() {
-    sd_chr_file *chr = malloc(sizeof(sd_chr_file));
+int sd_chr_create(sd_chr_file *chr) {
+    if(chr == NULL) {
+        return SD_INVALID_INPUT;
+    }
     memset(chr, 0, sizeof(sd_chr_file));
-    return chr;
+    return SD_SUCCESS;
 }
 
 int sd_chr_load(sd_chr_file *chr, const char *filename) {
@@ -114,15 +115,16 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     sd_skip(r, 4);
 
     // Load sprite
-    chr->photo = sd_sprite_create();
+    chr->photo = malloc(sizeof(sd_sprite));
+    sd_sprite_create(chr->photo);
     int ret = sd_sprite_load(r, chr->photo);
     if(ret != SD_SUCCESS) {
         goto error_1;
     }
 
     // Fix photo size
-    chr->photo->img->w++;
-    chr->photo->img->h++;
+    chr->photo->width++;
+    chr->photo->height++;
 
     // Close & return
     sd_reader_close(r);
@@ -134,7 +136,7 @@ error_1:
             free(chr->enemies[i]);
         }
     }
-    sd_sprite_delete(chr->photo);
+    sd_sprite_free(chr->photo);
 
 error_0:
     sd_reader_close(r);
@@ -154,12 +156,11 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
     return SD_SUCCESS;
 }
 
-void sd_chr_delete(sd_chr_file *chr) {
+void sd_chr_free(sd_chr_file *chr) {
     for(int i = 0; i < chr->enemies_inc_unranked; i++) {
         if(chr->enemies[i] != NULL) {
             free(chr->enemies[i]);
         }
     }
-    sd_sprite_delete(chr->photo);
-    free(chr);
+    sd_sprite_free(chr->photo);
 }

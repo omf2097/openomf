@@ -27,7 +27,7 @@ int sd_writer_seek_end(sd_writer *writer, long offset);
 /**
   * Write a buffer to file.
   */
-int sd_write_buf(sd_writer *writer, char *buf, int len);
+int sd_write_buf(sd_writer *writer, const char *buf, int len);
 
 int sd_write_fprintf(sd_writer *writer, const char *format, ...);
 
@@ -37,5 +37,10 @@ void sd_write_udword(sd_writer *writer, uint32_t data);
 void sd_write_byte(sd_writer *writer, int8_t data);
 void sd_write_word(sd_writer *writer, int16_t data);
 void sd_write_dword(sd_writer *writer, int32_t data);
+
+/**
+ * Writes len bytes of filler content
+ */
+void sd_write_fill(sd_writer *writer, char content, int len);
 
 #endif // _SD_WRITER_H

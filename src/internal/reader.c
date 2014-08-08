@@ -162,4 +162,3 @@ int sd_match(sd_reader *reader, char *buf, unsigned int nbytes) {
 void sd_skip(sd_reader *reader, unsigned int nbytes) {
     fseek(reader->handle, nbytes, SEEK_CUR);
 }
-

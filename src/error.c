@@ -1,6 +1,22 @@
 #include "shadowdive/error.h"
 #include <string.h>
 
+#ifdef DEBUGMODE
+
+#include <stdio.h>
+#include <stdarg.h>
+
+void debug_print(const char* fn, int line, const char *fmt, ...) {
+    printf("[%s:%d] ", fn, line);
+    va_list args;
+    va_start(args, fmt);
+    printf(fmt, args);
+    va_end(args);
+    printf("\n");
+}
+
+#endif // DEBUGMODE
+
 const char* sd_get_error(int errorcode) {
     switch(errorcode) {
     case SD_SUCCESS:
@@ -13,6 +29,10 @@ const char* sd_get_error(int errorcode) {
         return "Parser error";
     case SD_ANIM_INVALID_STRING:
         return "Invalid animation string";
+    case SD_OUT_OF_MEMORY:
+        return "Out of memory";
+    case SD_INVALID_INPUT:
+        return "Invalid input/argument data";
     default:
         return "Unknown errorcode.";
     }
