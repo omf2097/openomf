@@ -1,16 +1,6 @@
 #ifndef _SD_SHADOWDIVE_H
 #define _SD_SHADOWDIVE_H
 
-#ifndef _SD_WRITER_H
-#define _SD_WRITER_H
-typedef struct sd_writer_t sd_writer;
-#endif
-
-#ifndef _SD_READER_H
-#define _SD_READER_H
-typedef struct sd_reader_t sd_reader;
-#endif
-
 #include "shadowdive/palette.h"
 #include "shadowdive/rgba_image.h"
 #include "shadowdive/vga_image.h"
