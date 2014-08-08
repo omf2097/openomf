@@ -383,7 +383,7 @@ void bk_push_key(sd_bk_file *bk, const char **key) {
             }
             break;
         default:
-            printf("Pushing not supported for this key.");
+            printf("Pushing not supported for this key.\n");
     }
 }
 
@@ -394,14 +394,42 @@ void bk_pop_key(sd_bk_file *bk, const char **key) {
             printf("Element popped; new size is %d.\n", bk->palette_count);
             break;
         default:
-            printf("Popping not supported for this key.");
+            printf("Popping not supported for this key.\n");
+    }
+}
+
+void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *filename) {
+    switch(bk_key_get_id(key[0])) {
+        case 1:
+            if(kcount <= 1) {
+                printf("Palette index required for palette exporting.\n");
+                return;
+            }
+            int index = atoi(key[1]);
+            sd_palette *pal = sd_bk_get_palette(bk, index);
+            if(pal == NULL) {
+                printf("No palette found at index %d.\n", index);
+                return;
+            }
+            sd_palette_to_gimp_palette(filename, pal);
+            
+            break;
+        default:
+            printf("Exporting not supported for this key.\n");
+    }
+}
+
+void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *filename) {
+    switch(bk_key_get_id(key[0])) {
+        default:
+            printf("Importing not supported for this key.\n");
     }
 }
 
 void bk_keylist() {
     printf("Valid field keys for BK file root:\n");
     printf("* fileid\n");
-    printf("* palette\n");
+    printf("* palette [<palette_index>]\n");
     printf("* unknown\n");
     printf("* soundtable <byte #>\n");
 }
@@ -482,10 +510,12 @@ int main(int argc, char *argv[]) {
     struct arg_lit *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim)");
     struct arg_lit *push = arg_lit0(NULL, "push", "Push a new element (requires --key)");
     struct arg_lit *pop = arg_lit0(NULL, "pop", "Pop the last element (requires --key)");
+    struct arg_file *export = arg_file0(NULL, "export", "<file>", "Exports data to a file (requires --key)");
+    struct arg_file *import = arg_file0(NULL, "import", "<file>", "Imports data from a file (requires --key)");
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
-    struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,new,output,anim,all_anims,sprite,keylist,key,value,push,pop,play,scale,parse,end};
+    struct arg_end *end = arg_end(30);
+    void* argtable[] = {help,vers,file,new,output,anim,all_anims,sprite,keylist,key,value,push,pop,export,import,play,scale,parse,end};
     const char* progname = "bktool";
     
     // Make sure everything got allocated
@@ -559,6 +589,10 @@ int main(int argc, char *argv[]) {
     }
     if(push->count == 1 && pop->count == 1) {
         printf("Define at most one of (--push, --pop).");
+        goto exit_0;
+    }
+    if(export->count == 1 && import->count == 1) {
+        printf("Define at most one of (--export, --import).");
         goto exit_0;
     }
     
@@ -662,7 +696,11 @@ int main(int argc, char *argv[]) {
                 bk_push_key(&bk, key->sval);
             } else if(pop->count > 0) {
                 bk_pop_key(&bk, key->sval);
-            }else {
+            } else if(export->count > 0) {
+                bk_export_key(&bk, key->sval, key->count, export->filename[0]);
+            } else if(import->count > 0) {
+                bk_import_key(&bk, key->sval, key->count, import->filename[0]);
+            } else {
                 bk_get_key(&bk, key->sval, key->count);
             }
         } else if(keylist->count > 0) {
