@@ -1,6 +1,17 @@
 #include <stdint.h>
+#include <string.h>
 #include "shadowdive/error.h"
 #include "shadowdive/palette.h"
+
+int sd_palette_create(sd_palette *pal) {
+    if(pal == NULL) {
+        return SD_INVALID_INPUT;
+    }
+    memset(pal, 0, sizeof(sd_palette));
+    return SD_SUCCESS;
+}
+
+void sd_palette_free(sd_palette *pal) {}
 
 unsigned char sd_palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const sd_palette *pal) {
     for(unsigned int i = 0; i < 256; i++) {
