@@ -51,12 +51,10 @@ typedef struct {
  *
  * Initializes the move structure with empty values.
  *
- * Return values:
- * - SD_INVALID_INPUT If bk struct pointer was NULL
- * - SD_SUCCESS on success.
+ * \retval SD_INVALID_INPUT BK struct pointer was NULL
+ * \retval SD_SUCCESS Success.
  *
  * \param move Allocated move struct pointer.
- * \return SD_SUCCESS or errorcode.
  */
 int sd_move_create(sd_move *move);
 
@@ -68,14 +66,12 @@ int sd_move_create(sd_move *move);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * move structure, or problems are likely to appear.
  *
- * Return values:
- * - SD_OUT_OF_MEMORY If memory ran out. Destination struct should now be considered invalid and freed.
- * - SD_INVALID_INPUT Either input value was NULL.
- * - SD_SUCCESS on success. 
+ * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
+ * \retval SD_INVALID_INPUT Either input value was NULL.
+ * \retval SD_SUCCESS Success. 
  *
  * \param dst Destination move struct pointer.
  * \param src Source move struct pointer.
- * \return SD_SUCCESS or errorcode.
  */
 int sd_move_copy(sd_move *dst, const sd_move *src);
 
@@ -97,14 +93,12 @@ void sd_move_free(sd_move *move);
  *
  * A NULL value for animation field will result in move->animation field getting freed.
  * 
- * Return values:
- * - SD_OUT_OF_MEMORY Memory ran out. Animation field will be NULL.
- * - SD_INVALID_INPUT Move struct pointer was NULL.
- * - SD_SUCCESS on success. 
+ * \retval SD_OUT_OF_MEMORY Memory ran out. Animation field will be NULL.
+ * \retval SD_INVALID_INPUT Move struct pointer was NULL.
+ * \retval SD_SUCCESS on success. 
  *
  * \param move Move struct to modify.
  * \param animation Animation to set. This will be copied.
- * \return SD_SUCCESS or errorcode.
  */ 
 int sd_move_set_animation(sd_move *move, const sd_animation *animation);
 
@@ -113,12 +107,10 @@ int sd_move_set_animation(sd_move *move, const sd_animation *animation);
  * Returns a pointer to the current animation for the move. If animation
  * is not set, NULL will be returned.
  *
- * Return values:
- * - NULL will be returned if animation does not exist
- * - sd_animation pointer will be returned on success
+ * \retval NULL Animation does not exist
+ * \retval sd_animation* Success
  *
  * \param move Move struct to modify.
- * \return sd_animation pointer on success or NULL on error.
  */ 
 sd_animation* sd_move_get_animation(const sd_move *move);
 
@@ -127,13 +119,11 @@ sd_animation* sd_move_get_animation(const sd_move *move);
  * Sets the move footer string for the Move struct. Maximum length is 
  * 512 bytes. Longer strings will result in error.
  *
- * Return values:
- * - SD_INVALID_INPUT Input string was too long.
- * - SD_SUCCESS on success. 
+ * \retval SD_INVALID_INPUT Input string was too long.
+ * \retval SD_SUCCESS Success. 
  *
  * \param move Move struct to modify.
  * \param str String to set.
- * \return SD_SUCCESS or errorcode.
  */ 
 int sd_move_set_footer_string(sd_move *move, const char *str);
 
@@ -142,13 +132,11 @@ int sd_move_set_footer_string(sd_move *move, const char *str);
  * Sets the move string for the Move struct. Maximum length is 
  * 21 bytes. Longer strings will result in error.
  *
- * Return values:
- * - SD_INVALID_INPUT Input string was too long.
- * - SD_SUCCESS on success. 
+ * \retval SD_INVALID_INPUT Input string was too long.
+ * \retval SD_SUCCESS Success. 
  *
  * \param move Move struct to modify.
  * \param str String to set.
- * \return SD_SUCCESS or errorcode.
  */ 
 int sd_move_set_move_string(sd_move *move, const char *str);
 

@@ -35,12 +35,10 @@ typedef struct {
  *
  * Initializes the BK animation info structure with empty values.
  *
- * Return values:
- * - SD_INVALID_INPUT If bk struct pointer was NULL
- * - SD_SUCCESS on success.
+ * \retval SD_INVALID_INPUT BK struct pointer was NULL
+ * \retval SD_SUCCESS Success.
  *
  * \param bka Allocated BK animation info struct pointer.
- * \return SD_SUCCESS or errorcode.
  */
 int sd_bk_anim_create(sd_bk_anim *bka);
 
@@ -52,14 +50,12 @@ int sd_bk_anim_create(sd_bk_anim *bka);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * move structure, or problems are likely to appear.
  *
- * Return values:
- * - SD_OUT_OF_MEMORY If memory ran out. Destination struct should now be considered invalid and freed.
- * - SD_INVALID_INPUT Either input value was NULL.
- * - SD_SUCCESS on success. 
+ * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
+ * \retval SD_INVALID_INPUT Either input value was NULL.
+ * \retval SD_SUCCESS Success. 
  *
  * \param dst Destination BK animation info struct pointer.
  * \param src Source BK animation info struct pointer.
- * \return SD_SUCCESS or errorcode.
  */
 int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src);
 
@@ -81,14 +77,12 @@ void sd_bk_anim_free(sd_bk_anim *bka);
  *
  * A NULL value for animation field will result in bka->animation field getting freed.
  * 
- * Return values:
- * - SD_OUT_OF_MEMORY Memory ran out. Animation field will be NULL.
- * - SD_INVALID_INPUT Move struct pointer was NULL.
- * - SD_SUCCESS on success. 
+ * \retval SD_OUT_OF_MEMORY Memory ran out. Animation field will be NULL.
+ * \retval SD_INVALID_INPUT Move struct pointer was NULL.
+ * \retval SD_SUCCESS Success. 
  *
  * \param bka BK animation info struct to modify.
  * \param animation Animation to set. This will be copied.
- * \return SD_SUCCESS or errorcode.
  */ 
 int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation);
 
@@ -97,12 +91,10 @@ int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation);
  * Returns a pointer to the current animation for the BK animation info struct. 
  * If animation is not set, NULL will be returned.
  *
- * Return values:
- * - NULL will be returned if animation does not exist
- * - sd_animation pointer will be returned on success
+ * \retval NULL Animation does not exist
+ * \retval sd_animation* Success.
  *
  * \param bka BK animation info struct to modify.
- * \return sd_animation pointer on success or NULL on error.
  */ 
 sd_animation* sd_bk_anim_get_animation(const sd_bk_anim *bka);
 
@@ -111,13 +103,11 @@ sd_animation* sd_bk_anim_get_animation(const sd_bk_anim *bka);
  * Sets the BK animation info footer string for the struct. Maximum length is 
  * 512 bytes. Longer strings will result in error.
  *
- * Return values:
- * - SD_INVALID_INPUT Input string was too long.
- * - SD_SUCCESS on success. 
+ * \retval SD_INVALID_INPUT Input string was too long.
+ * \retval SD_SUCCESS Success. 
  *
  * \param bka BK animation info struct to modify.
  * \param str String to set.
- * \return SD_SUCCESS or errorcode.
  */ 
 int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data);
 

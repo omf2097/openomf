@@ -1,5 +1,5 @@
 /*! \file 
- * \brief Contains functions for handling .AF (HAR) files.
+ * \brief Contains functions for handling ".AF" HAR files.
  * \license MIT
  */ 
 
@@ -36,12 +36,10 @@ typedef struct {
  *
  * Initializes the AF file structure with empty values.
  *
- * Return values:
- * - SD_INVALID_INPUT if AF struct value was NULL.
- * - SD_SUCCESS on success. 
+ * \retval SD_INVALID_INPUT AF struct value was NULL.
+ * \retval SD_SUCCESS Success. 
  *
  * \param af Allocated AF struct pointer.
- * \return SD_SUCCESS or errorcode.
  */
 int sd_af_create(sd_af_file *af);
 
@@ -53,18 +51,16 @@ int sd_af_create(sd_af_file *af);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * AF file structure, or problems are likely to appear.
  *
- * Return values:
- * - SD_OUT_OF_MEMORY If memory ran out. Destination struct should now be considered invalid and freed.
- * - SD_INVALID_INPUT Either input value was NULL.
- * - SD_SUCCESS on success. 
+ * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
+ * \retval SD_INVALID_INPUT Either input value was NULL.
+ * \retval SD_SUCCESS Success. 
  *
  * \param dst Destination AF struct pointer.
  * \param src Source AF struct pointer.
- * \return SD_SUCCESS or errorcode.
  */
 int sd_af_copy(sd_af_file *dst, const sd_af_file *src);
 
-/*! \ brief Set move
+/*! \brief Set move
  *
  * Sets a HAR move to a given index in a AF file structure. Move will be copied,
  * so remember to free your local copy yourself.
@@ -73,30 +69,26 @@ int sd_af_copy(sd_af_file *dst, const sd_af_file *src);
  *
  * A NULL value for move will result in the old move at index getting freed.
  * 
- * Return values:
- * - SD_OUT_OF_MEMORY If memory ran out. This struct should now be considered invalid and freed.
- * - SD_INVALID_INPUT Index was invalid or a pointer was NULL.
- * - SD_SUCCESS on success. 
+ * \retval SD_OUT_OF_MEMORY Memory ran out. This struct should now be considered invalid and freed.
+ * \retval SD_INVALID_INPUT Index was invalid or a pointer was NULL.
+ * \retval SD_SUCCESS Success. 
  *
  * \param af AF struct pointer.
  * \param index Index of the move. Must be 0 <= index <= 69.
  * \param move sd_move struct. This will be copied.
- * \return SD_SUCCESS or errorcode.
  */ 
 int sd_af_set_move(sd_af_file *af, int index, const sd_move *move);
 
-/*! \ brief Get move
+/*! \brief Get move
  * 
  * Gets a HAR move from an index in AF file structure. Index must be
  * between values 0 and 69 (inclusive); any other value will result in error.
  *
- * Return values:
- * - NULL on failure (wrong index or move does not exist)
- * - On success, a pointer to sd_move struct
+ * \retval NULL Wrong index or move does not exist.
+ * \retval sd_move* Success.
  *
  * \param af AF struct pointer.
  * \param index Index of the move. Must be 0 <= index <= 69.
- * \return sd_move pointer or NULL.
  */ 
 sd_move* sd_af_get_move(sd_af_file *af, int index);
 
@@ -106,15 +98,13 @@ sd_move* sd_af_get_move(sd_af_file *af, int index);
  * before using this function.´Loading to a previously loaded or filled sd_bk_file structure 
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  * 
- * Return values:
- * - SD_FILE_OPEN_ERROR If file could not be opened.
- * - SD_FILE_PARSE_ERROR If file does not contain valid data or has syntax problems.
- * - SD_OUT_OF_MEMORY If memory ran out. This struct should now be considered invalid and freed.
- * - SD_SUCCESS on success.
+ * \retval SD_FILE_OPEN_ERROR File could not be opened.
+ * \retval SD_FILE_PARSE_ERROR File does not contain valid data or has syntax problems.
+ * \retval SD_OUT_OF_MEMORY Memory ran out. This struct should now be considered invalid and freed.
+ * \retval SD_SUCCESS Success. 
  *
  * \param af AF struct pointer.
  * \param filename Name of the AF file.
- * \return SD_SUCCESS or errorcode.
  */
 int sd_af_load(sd_af_file *af, const char *filename);
 
@@ -123,13 +113,11 @@ int sd_af_load(sd_af_file *af, const char *filename);
  * Saves the given AF file from memory to a file on disk. The structure must be
  * at least initialized by using sd_af_create before running this.
  *
- * Return values:
- * - SD_FILE_OPEN_ERROR If file could not be opened.
- * - SD_SUCCESS on success.
+ * \retval SD_FILE_OPEN_ERROR File could not be opened.
+ * \retval SD_SUCCESS Success. 
  *
  * \param af AF struct pointer.
  * \param filename Name of the AF file
- * \return SD_SUCCESS or errorcode.
  */
 int sd_af_save(const sd_af_file *af, const char* filename);
 

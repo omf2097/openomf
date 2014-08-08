@@ -1,3 +1,8 @@
+/*! \file 
+ * \brief Contains functions and definitions for dealing with errors in libshadowdive.
+ * \license MIT
+ */ 
+
 #ifndef _SD_ERROR_H
 #define _SD_ERROR_H
 
@@ -12,16 +17,24 @@ extern "C" {
     #define DEBUGLOG(...)
 #endif
 
-enum {
-    SD_SUCCESS,
-    SD_FILE_OPEN_ERROR,
-    SD_FILE_INVALID_TYPE,
-    SD_FILE_PARSE_ERROR,
-    SD_ANIM_INVALID_STRING,
-    SD_OUT_OF_MEMORY,
-    SD_INVALID_INPUT,
+enum SD_ERRORCODE {
+    SD_SUCCESS, ///< Success message
+    SD_FILE_OPEN_ERROR, ///< File could not be opened
+    SD_FILE_INVALID_TYPE, ///< File was of invalid type
+    SD_FILE_PARSE_ERROR, ///< File had a syntax error
+    SD_ANIM_INVALID_STRING, ///< Invalid animation string
+    SD_OUT_OF_MEMORY, ///< Out of memory error
+    SD_INVALID_INPUT, ///< Function encountered unexpected/invalid arguments
 };
 
+/*! \brief Get text error for error ID
+ *
+ * Returns a clear text error message for the given error ID.
+ *
+ * \sa SD_ERRORCODE
+ * \param errorcode Errorcode
+ * \return Error message
+ */
 const char* sd_get_error(int errorcode);
 
 #ifdef __cplusplus
