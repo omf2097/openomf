@@ -316,7 +316,7 @@ void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim) {
 
 int bk_key_get_id(const char* key) {
     if(strcmp(key, "fileid") == 0) return 0;
-    //if(strcmp(key, "palette") == 0) return 1;
+    if(strcmp(key, "palette") == 0) return 1;
     if(strcmp(key, "unknown") == 0) return 2;
     if(strcmp(key, "footer") == 0) return 3;
     return -1;
@@ -326,7 +326,7 @@ void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value)
     int tmp = 0;
     switch(bk_key_get_id(key[0])) {
         case 0: bk->file_id = conv_udword(value); break;
-        case 1: break; // TODO
+        case 1: printf("Setting palette not supported."); break;
         case 2: bk->unknown_a = conv_ubyte(value); break;
         case 3: 
             if(kcount == 2) {
@@ -353,7 +353,7 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
     int tmp = 0;
     switch(bk_key_get_id(key[0])) {
         case 0: printf("%d\n", bk->file_id); break;
-        case 1: printf("\n"); break; // TODO
+        case 1: printf("Getting palette not supported.\n"); break;
         case 2: printf("%d\n", bk->unknown_a); break;
         case 3: 
             if(kcount == 2) {
@@ -372,10 +372,36 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
     }
 }
 
+void bk_push_key(sd_bk_file *bk, const char **key) {
+    switch(bk_key_get_id(key[0])) {
+        case 1: {
+            sd_palette pal;
+            sd_palette_create(&pal);
+            sd_bk_push_palette(bk, &pal);
+            sd_palette_free(&pal);
+            printf("Element pushed; new size is %d.\n", bk->palette_count);
+            }
+            break;
+        default:
+            printf("Pushing not supported for this key.");
+    }
+}
+
+void bk_pop_key(sd_bk_file *bk, const char **key) {
+    switch(bk_key_get_id(key[0])) {
+        case 1:
+            sd_bk_pop_palette(bk);
+            printf("Element popped; new size is %d.\n", bk->palette_count);
+            break;
+        default:
+            printf("Popping not supported for this key.");
+    }
+}
+
 void bk_keylist() {
     printf("Valid field keys for BK file root:\n");
     printf("* fileid\n");
-    //printf("* palette:<palette #>\n");
+    printf("* palette\n");
     printf("* unknown\n");
     printf("* soundtable <byte #>\n");
 }
@@ -454,10 +480,12 @@ int main(int argc, char *argv[]) {
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 2, "Select key");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
     struct arg_lit *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim)");
+    struct arg_lit *push = arg_lit0(NULL, "push", "Push a new element (requires --key)");
+    struct arg_lit *pop = arg_lit0(NULL, "pop", "Pop the last element (requires --key)");
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,new,output,anim,all_anims,sprite,keylist,key,value,play,scale,parse,end};
+    void* argtable[] = {help,vers,file,new,output,anim,all_anims,sprite,keylist,key,value,push,pop,play,scale,parse,end};
     const char* progname = "bktool";
     
     // Make sure everything got allocated
@@ -527,6 +555,10 @@ int main(int argc, char *argv[]) {
     }
     if(file->count == 1 && new->count == 1) {
         printf("Define at most one of (--file, --new).");
+        goto exit_0;
+    }
+    if(push->count == 1 && pop->count == 1) {
+        printf("Define at most one of (--push, --pop).");
         goto exit_0;
     }
     
@@ -626,7 +658,11 @@ int main(int argc, char *argv[]) {
         if(key->count > 0) {
             if(value->count > 0) {
                 bk_set_key(&bk, key->sval, key->count, value->sval[0]);
-            } else {
+            } else if(push->count > 0) {
+                bk_push_key(&bk, key->sval);
+            } else if(pop->count > 0) {
+                bk_pop_key(&bk, key->sval);
+            }else {
                 bk_get_key(&bk, key->sval, key->count);
             }
         } else if(keylist->count > 0) {
