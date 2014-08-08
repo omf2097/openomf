@@ -52,8 +52,9 @@ int main(int argc, char *argv[]) {
     }
     
     // Get strings
-    sd_language *language = sd_language_create();
-    int ret = sd_language_load(language, file->filename[0]);
+    sd_language language;
+    sd_language_create(&language);
+    int ret = sd_language_load(&language, file->filename[0]);
     if(ret != SD_SUCCESS) {
         printf("Language file could not be loaded! Error [%d] %s\n", ret, sd_get_error(ret));
         goto exit_0;
@@ -62,18 +63,18 @@ int main(int argc, char *argv[]) {
     // Print
     int id = str->ival[0];
     if(id < 0) {
-        for(int i = 0; i < language->count; i++) {
-            printf("Title: %s\n", language->strings[i].description);
-            printf("Data: %s\n", language->strings[i].data);
+        for(int i = 0; i < language.count; i++) {
+            printf("Title: %s\n", language.strings[i].description);
+            printf("Data: %s\n", language.strings[i].data);
         }
-    } else if(id >= 0 && id < language->count) {
-        printf("Title: %s\n", language->strings[id].description);
-        printf("Data: %s\n", language->strings[id].data);
+    } else if(id >= 0 && id < language.count) {
+        printf("Title: %s\n", language.strings[id].description);
+        printf("Data: %s\n", language.strings[id].data);
     } else {
         printf("String not found!\n");
     }
     
-    sd_language_delete(language);
+    sd_language_free(&language);
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     return 0;

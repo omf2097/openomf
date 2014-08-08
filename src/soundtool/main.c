@@ -79,8 +79,9 @@ int main(int argc, char *argv[]) {
     }
     
     // Open sounds.dat
-    sd_sound_file *sounds = sd_sounds_create();
-    retcode = sd_sounds_load(sounds, file->filename[0]);
+    sd_sound_file sf;
+    sd_sounds_create(&sf);
+    retcode = sd_sounds_load(&sf, file->filename[0]);
     if(retcode) {
         printf("Error %d: %s\n", retcode, sd_get_error(retcode));
         goto exit_1;
@@ -91,15 +92,15 @@ int main(int argc, char *argv[]) {
         printf("Attempting to play sample #%d.\n", id+1);
     
         // Make sure there is data at requested ID position
-        if(sounds->sounds[id] == 0) {
+        if(sf.sounds[id] == 0) {
             printf("Sample does not contain data.\n");
             goto exit_1;
         }
     
         // Streamer
-        streamer.size = sounds->sounds[id]->len;
+        streamer.size = sf.sounds[id]->len;
         streamer.pos = 0;
-        streamer.data = sounds->sounds[id]->data;
+        streamer.data = sf.sounds[id]->data;
     
         // Initialize required audio
         SDL_zero(want);
@@ -131,8 +132,8 @@ int main(int argc, char *argv[]) {
     } else {
         printf("Valid sample ID's:\n");
         int k = 0;
-        for(int i = 0; i < sounds->sound_count; i++) {
-            if(sounds->sounds[i]) {
+        for(int i = 0; i < sf.sound_count; i++) {
+            if(sf.sounds[i] != NULL) {
                 printf("%d", i+1);
                 if((k+1)%6==0) {
                     printf("\n");
@@ -147,7 +148,7 @@ int main(int argc, char *argv[]) {
     
 
 exit_1:
-    sd_sounds_delete(sounds);
+    sd_sounds_free(&sf);
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     return 0;

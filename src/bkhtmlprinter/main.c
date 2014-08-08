@@ -162,8 +162,9 @@ int main(int argc, char *argv[]) {
     }
     
     // Load file
-    sd_bk_file *bk = sd_bk_create();
-    int ret = sd_bk_load(bk, file->filename[0]);
+    sd_bk_file bk;
+    sd_bk_create(&bk);
+    int ret = sd_bk_load(&bk, file->filename[0]);
     if(ret) {
         printf("Unable to load BK file! Make sure the file exists and is a valid BK file.\n");
         goto exit_1;
@@ -189,9 +190,10 @@ int main(int argc, char *argv[]) {
         printf("Error while opening background file for writing!");
         goto exit_1;
     }
-    sd_rgba_image *bg = sd_vga_image_decode(bk->background, bk->palettes[0], -1);
-    write_png(fp, bg->data, bg->w, bg->h);
-    sd_rgba_image_delete(bg);
+    sd_rgba_image bg;
+    sd_vga_image_decode(&bg, bk.background, bk.palettes[0], -1);
+    write_png(fp, bg.data, bg.w, bg.h);
+    sd_rgba_image_free(&bg);
     fclose(fp);
     
     // Print header to file
@@ -200,7 +202,7 @@ int main(int argc, char *argv[]) {
     
     // Root
     fprintf(f, "<h2>General information</h2><table><tr><th>Key</th><th>Value</th></tr>");
-    fprintf(f, "<tr><td>File ID</td><td>%d</td></tr>", bk->file_id);
+    fprintf(f, "<tr><td>File ID</td><td>%d</td></tr>", bk.file_id);
     fprintf(f, "</table>");
     
     // Image
@@ -209,10 +211,10 @@ int main(int argc, char *argv[]) {
     fprintf(f, "<img src=\"%s\" width=\"640\" height=\"400\" />", namebuf);
     
     // Palettes
-    if(bk->num_palettes > 0) {
+    if(bk.palette_count > 0) {
         fprintf(f, "<h2>Palettes</h2>");
-        for(int i = 0; i < bk->num_palettes; i++) {
-            sd_palette *pal = bk->palettes[i];
+        for(int i = 0; i < bk.palette_count; i++) {
+            sd_palette *pal = bk.palettes[i];
             fprintf(f, "<h3>Palette %d</h3>", i+1);
             fprintf(f, "<table>");
             for(int y = 0; y < 16; y++) {
@@ -235,13 +237,13 @@ int main(int argc, char *argv[]) {
     // Animations
     fprintf(f, "<h2>Animations</h2><div id=\"animations\">");
     for(int m = 0; m < 50; m++) {
-        if(bk->anims[m]) {
-            sd_bk_anim *bka = bk->anims[m];
+        if(bk.anims[m]) {
+            sd_bk_anim *bka = bk.anims[m];
             sd_animation *ani = bka->animation;
 
             char anim_name[32];
             anim_name[0] = 0;
-            switch(bk->file_id) {
+            switch(bk.file_id) {
                 case 8:
                 case 16:
                 case 32:
@@ -262,11 +264,11 @@ int main(int argc, char *argv[]) {
             fprintf(f, "<tr><td>Load on start</td><td>%d</td></tr>", bka->load_on_start);
             fprintf(f, "<tr><td>Probability</td><td>%d</td></tr>", bka->probability);
             fprintf(f, "<tr><td>Hazard damage</td><td>%d</td></tr>", bka->hazard_damage);
-            fprintf(f, "<tr><td>Unknown</td><td>%s</td></tr>", bka->unknown_data);
+            fprintf(f, "<tr><td>Footer string</td><td>\"%s\"</td></tr>", bka->footer_string);
             
             fprintf(f, "<tr><td>Start X</td><td>%d</td></tr>", ani->start_x);
             fprintf(f, "<tr><td>Start Y</td><td>%d</td></tr>", ani->start_y);
-            fprintf(f, "<tr><td>Animation string</td><td>%s</td></tr>", ani->anim_string);
+            fprintf(f, "<tr><td>Animation string</td><td>\"%s\"</td></tr>", ani->anim_string);
             fprintf(f, "</table></div>");
             
             // Extra strings
@@ -274,35 +276,36 @@ int main(int argc, char *argv[]) {
                 fprintf(f, "<div class=\"iblock\"><h4>Extra strings</h4>");
                 fprintf(f, "<table><tr><th>#</th><th>String</th></tr>");
                 for(int e = 0; e < ani->extra_string_count; e++) {
-                    fprintf(f, "<tr><td>%d</td><td>%s</td></tr>", e, ani->extra_strings[e]);
+                    fprintf(f, "<tr><td>%d</td><td>\"%s\"</td></tr>", e, ani->extra_strings[e]);
                 }
                 fprintf(f, "</table></div>");
             }
             
             // Coords
-            if(ani->col_coord_count > 0) {
+            if(ani->coord_count > 0) {
                 fprintf(f, "<div class=\"iblock\"><h4>Collision coordinates</h4>");
-                fprintf(f, "<table><tr><th>X</th><th>Y</th><th>X-ext</th><th>Y-ext</th></tr>");
-                for(int c = 0; c < ani->col_coord_count; c++) {
-                    col_coord *coord = &ani->col_coord_table[c];
-                    fprintf(f, "<tr><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>", coord->x, coord->y, coord->x_ext, coord->y_ext);
+                fprintf(f, "<table><tr><th>X</th><th>Y</th><th>null</th><th>frame_id</th></tr>");
+                for(int c = 0; c < ani->coord_count; c++) {
+                    sd_coord *coord = &ani->coord_table[c];
+                    fprintf(f, "<tr><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>", coord->x, coord->y, coord->null, coord->frame_id);
                 }
                 fprintf(f, "</table></div>");
             }
             
             // Frames
             fprintf(f, "<div class=\"iblock\"><h4>Frames</h4>");
-            fprintf(f, "<table><tr><th>#</th><th>A-Z</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Index</th><th>Missing</th><th>Sprite</th></tr>");
-            for(int b = 0; b < ani->frame_count; b++) {
+            fprintf(f, "<table><tr><th>#</th><th>A-Z</th><th>len</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Index</th><th>Missing</th><th>Sprite</th></tr>");
+            sd_rgba_image img;
+            for(int b = 0; b < ani->sprite_count; b++) {
                 sd_sprite *sprite = ani->sprites[b];
                 
                 // Write sprite
-                if(sprite->img->len > 0 && sprite->img->w > 1 && sprite->img->h > 1) {
+                if(sprite->len > 0 && sprite->width > 1 && sprite->height > 1) {
                     sprintf(namebuf, "%s/%s_sprite_%d_%d.png", outdir->sval[0], name->sval[0], m, b);
                     fp = fopen(namebuf, "wb");
-                    sd_rgba_image *img = sd_sprite_image_decode(sprite->img, bk->palettes[0], 0);
-                    write_png(fp, img->data, img->w, img->h);
-                    sd_rgba_image_delete(img);
+                    sd_sprite_rgba_decode(&img, sprite, bk.palettes[0], 0);
+                    write_png(fp, img.data, img.w, img.h);
+                    sd_rgba_image_free(&img);
                     fclose(fp);
                     sprintf(namebuf, "%s_sprite_%d_%d.png", name->sval[0], m, b);
                 } else {
@@ -310,13 +313,14 @@ int main(int argc, char *argv[]) {
                 }
                 
                 // Print html
-                fprintf(f, "<tr><td>%d</td><td>%c</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td><img src=\"%s\" /></td></tr>", 
+                fprintf(f, "<tr><td>%d</td><td>%c</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td><img src=\"%s\" /></td></tr>", 
                     b,
                     b + 'A',
+                    sprite->len,
                     sprite->pos_x,
                     sprite->pos_y,
-                    sprite->img->w,
-                    sprite->img->h,
+                    sprite->width,
+                    sprite->height,
                     sprite->index,
                     sprite->missing,
                     namebuf);
@@ -331,7 +335,7 @@ int main(int argc, char *argv[]) {
     // Sounds
     fprintf(f, "<h2>Sound table</h2><table><tr><th>Local ID</th><th>Sound ID</th></tr>");
     for(int i = 0; i < 30; i++) {
-        fprintf(f, "<tr><td>%d</td><td>%d</td></tr>", i, (int)bk->soundtable[i]);
+        fprintf(f, "<tr><td>%d</td><td>%d</td></tr>", i, (int)bk.soundtable[i]);
     }
     fprintf(f, "</table>");
     
@@ -342,7 +346,7 @@ int main(int argc, char *argv[]) {
     // Quit
     fclose(f);
 exit_1:
-    sd_bk_delete(bk);
+    sd_bk_free(&bk);
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     return 0;

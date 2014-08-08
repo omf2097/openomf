@@ -96,8 +96,9 @@ add_str_err_0:
 int read_af(sqlite3 *db, const char* path, const char* name) {
     // Load AF file
     int ret;
-    sd_af_file *af = sd_af_create();
-    ret = sd_af_load(af, path);
+    sd_af_file af;
+    sd_af_create(&af);
+    ret = sd_af_load(&af, path);
     if(ret) {
         printf(" * Unable to load AF file! Make sure the file exists and is a valid AF file.\n");
         goto af_err_0;
@@ -115,11 +116,9 @@ int read_af(sqlite3 *db, const char* path, const char* name) {
 
     printf(" * Writing animation data ... ");
     for(int m = 0; m < 70; m++) {
-        if(af->moves[m]) {
-            sd_move *afm = af->moves[m];
+        if(af.moves[m]) {
+            sd_move *afm = af.moves[m];
             sd_animation *ani = afm->animation;
-
-
 
             add_string(db, file_id, afm->footer_string, m, "Move Footer");
             add_string(db, file_id, ani->anim_string, m, "Animation String");
@@ -135,19 +134,20 @@ int read_af(sqlite3 *db, const char* path, const char* name) {
     }
     printf("OK!\n");
 
-    sd_af_delete(af);
+    sd_af_free(&af);
     return 0;
 
 af_err_0:
-    sd_af_delete(af);
+    sd_af_free(&af);
     return 1;
 }
 
 int read_bk(sqlite3 *db, const char* path, const char* name) {
     // Load AF file
     int ret;
-    sd_bk_file *bk = sd_bk_create();
-    ret = sd_bk_load(bk, path);
+    sd_bk_file bk;
+    sd_bk_create(&bk);
+    ret = sd_bk_load(&bk, path);
     if(ret) {
         printf(" * Unable to load BK file! Make sure the file exists and is a valid BK file.\n");
         goto bk_err_0;
@@ -165,8 +165,8 @@ int read_bk(sqlite3 *db, const char* path, const char* name) {
 
     printf(" * Writing animation data ... ");
     for(int m = 0; m < 50; m++) {
-        if(bk->anims[m]) {
-            sd_bk_anim *bka = bk->anims[m];
+        if(bk.anims[m]) {
+            sd_bk_anim *bka = bk.anims[m];
             sd_animation *ani = bka->animation;
             add_string(db, file_id, ani->anim_string, m, "Animation String");
             if(ani->extra_string_count > 0) {
@@ -178,11 +178,11 @@ int read_bk(sqlite3 *db, const char* path, const char* name) {
     }
     printf("OK!\n");
 
-    sd_bk_delete(bk);
+    sd_bk_free(&bk);
     return 0;
 
 bk_err_0:
-    sd_bk_delete(bk);
+    sd_bk_free(&bk);
     return 1;
 }
 
@@ -197,7 +197,7 @@ int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
-    struct arg_file *infile = arg_file0("i", "input", "<file>", "Input AF file");
+    struct arg_file *infile = arg_file0("i", "input", "<file>", "Input AF/BK file");
     struct arg_file *outfile = arg_file0("o", "output", "<file>", "Output Sqlite database.");
     struct arg_lit *format = arg_lit0("f", "format", "Creates an empty database to the output file.");
     struct arg_end *end = arg_end(20);

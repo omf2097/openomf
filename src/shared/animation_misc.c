@@ -47,29 +47,25 @@ void sprite_info(sd_sprite *s, int anim, int sprite) {
     printf("Animation #%d, Sprite #%d information:\n", anim, sprite);
     printf(" * X:        %d\n", s->pos_x);
     printf(" * Y:        %d\n", s->pos_y);
-    printf(" * W:        %d\n", s->img->w);
-    printf(" * H:        %d\n", s->img->h);
+    printf(" * W:        %d\n", s->width);
+    printf(" * H:        %d\n", s->height);
     printf(" * Index:    %d\n", s->index);
     printf(" * Missing:  %d\n", s->missing);
-    printf(" * Length:   %d\n", s->img->len);
+    printf(" * Length:   %d\n", s->len);
 }
 
 void anim_common_info(sd_animation *ani) {
     printf("Common animation header:\n");
     printf(" * Start X:          %d\n", ani->start_x);
     printf(" * Start Y:          %d\n", ani->start_y);
-    printf(" * Animation header:  ");
-    for(int i = 0; i < 4; i++) {
-        printf("%d ", (uint8_t)ani->unknown_a[i]);
+    printf(" * Animation header: %d\n", ani->null);
+    printf(" * Collision coords: %d\n", ani->coord_count);
+    for(int i = 0; i < ani->coord_count; i++) {
+        printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n",
+                ani->coord_table[i].x, ani->coord_table[i].y,
+                ani->coord_table[i].null, ani->coord_table[i].frame_id);
     }
-    printf("\n");
-    printf(" * Collision coords: %d\n", ani->col_coord_count);
-    for(int i = 0; i < ani->col_coord_count; i++) {
-        printf("   - x,y = (%d,%d), x_ext = %d, y_ext = %d\n",
-                ani->col_coord_table[i].x, ani->col_coord_table[i].y,
-                ani->col_coord_table[i].x_ext, ani->col_coord_table[i].y_ext);
-    }
-    printf(" * Sprites:          %d\n", ani->frame_count);
+    printf(" * Sprites:          %d\n", ani->sprite_count);
     printf(" * Animation str:    %s\n", ani->anim_string);
     printf(" * Extra strings:    %d\n", ani->extra_string_count);
     for(int i = 0; i < ani->extra_string_count; i++) {
@@ -90,10 +86,9 @@ int anim_key_get_id(const char* key) {
 void anim_keylist() {
     printf("* start_x\n");
     printf("* start_y\n");
-    printf("* ani_header <byte #>\n");
+    printf("* ani_header\n");
     printf("* collision <collision #>\n");
     printf("* anim_str\n");
-    printf("* unknown\n");
     printf("* extra_str <str #>\n");
 }
 
@@ -101,19 +96,7 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
     int tmp = 0;
     switch(kn) {
         case 7:
-            if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < 4) {
-                    ani->unknown_a[tmp] = conv_ubyte(value);
-                } else {
-                    printf("Header index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                printf("Key ani_header requires 1 parameter!\n");
-                return;
-            }
-            break; 
+            ani->null = conv_dword(value); break; 
         case 8:  
             /*if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
@@ -156,42 +139,29 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
 void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int pcount) {
     int tmp = 0;
     switch(kn) {
-        case 7: 
-            if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < 4) {
-                    printf("%d\n", ani->unknown_a[tmp]);
-                } else {
-                    printf("Header index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                for(int i = 0; i < 4; i++) {
-                    printf("%d ", (uint8_t)ani->unknown_a[i]);
-                }
-                printf("\n");
-            }
+        case 7:
+            printf("%d\n", ani->null);
             break; 
         case 8:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->col_coord_count) {
-                    printf("x,y = (%d,%d), x_ext = %d, y_ext = %d\n",
-                            ani->col_coord_table[tmp].x, 
-                            ani->col_coord_table[tmp].y,
-                            ani->col_coord_table[tmp].x_ext, 
-                            ani->col_coord_table[tmp].y_ext);
+                if(tmp < ani->coord_count) {
+                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n",
+                            ani->coord_table[tmp].x, 
+                            ani->coord_table[tmp].y,
+                            ani->coord_table[tmp].null, 
+                            ani->coord_table[tmp].frame_id);
                 } else {
                     printf("Collision table index %d does not exist!\n", tmp);
                     return;
                 }
             } else {
-                for(int i = 0; i < ani->col_coord_count; i++) {
-                    printf("x,y = (%d,%d), x_ext = %d, y_ext = %d\n",
-                            ani->col_coord_table[i].x, 
-                            ani->col_coord_table[i].y,
-                            ani->col_coord_table[i].x_ext, 
-                            ani->col_coord_table[i].y_ext);
+                for(int i = 0; i < ani->coord_count; i++) {
+                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n",
+                            ani->coord_table[i].x, 
+                            ani->coord_table[i].y,
+                            ani->coord_table[i].null, 
+                            ani->coord_table[i].frame_id);
                 }
                 printf("\n");
             }
