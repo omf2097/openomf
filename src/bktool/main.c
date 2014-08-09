@@ -411,8 +411,7 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 printf("No palette found at index %d.\n", index);
                 return;
             }
-            sd_palette_to_gimp_palette(filename, pal);
-            
+            sd_palette_to_gimp_palette(pal, filename);
             break;
         default:
             printf("Exporting not supported for this key.\n");
@@ -421,6 +420,18 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
 
 void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *filename) {
     switch(bk_key_get_id(key[0])) {
+        case 1:
+            if(kcount <= 1) {
+                printf("Palette index required for palette importing.\n");
+                return;
+            }
+            int index = atoi(key[1]);
+            sd_palette *pal = sd_bk_get_palette(bk, index);
+            if(pal == NULL) {
+                printf("No palette found at index %d.\n", index);
+                return;
+            }
+            sd_palette_from_gimp_palette(pal, filename);
         default:
             printf("Importing not supported for this key.\n");
     }
