@@ -351,9 +351,28 @@ void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value)
 
 void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
     int tmp = 0;
+    unsigned char r,g,b;
     switch(bk_key_get_id(key[0])) {
         case 0: printf("%d\n", bk->file_id); break;
-        case 1: printf("Getting palette not supported.\n"); break;
+        case 1: {
+                if(kcount <= 1) {
+                    printf("Palette index required for palette fetching.\n");
+                    return;
+                }
+                int index = conv_ubyte(key[1]);
+                sd_palette *pal = sd_bk_get_palette(bk, index);
+                if(pal == NULL) {
+                    printf("No palette found at index %d.\n", index);
+                    return;
+                }
+                for(int tmp = 0; tmp < 256; tmp++) {
+                    r = pal->data[tmp][0];
+                    g = pal->data[tmp][1];
+                    b = pal->data[tmp][2];
+                    printf("%d = %3u %3u %3u\n", tmp, r, g, b);
+                }
+            }
+            break;
         case 2: printf("%d\n", bk->unknown_a); break;
         case 3: 
             if(kcount == 2) {
