@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include "shadowdive/error.h"
 #include "shadowdive/palette.h"
 
@@ -64,12 +65,14 @@ int sd_palette_from_gimp_palette(sd_palette *palette, const char *filename) {
     if(!sd_match(rd, "GIMP Palette\n", 13)) {
         return SD_FILE_INVALID_TYPE;
     }
-    sd_read_scan(rd, "Name: %s\n", tmp);
-    sd_read_scan(rd, "#\n", tmp);
+    sd_read_line(rd, tmp, 128); // Read name (we don't care about the value)
+    sd_read_line(rd, tmp, 128); // Read the # field
 
     // Read data
+    tmp[4] = 0;
     for(i = 0; i < 255; i++) {
-        sd_read_scan(rd, "%3u %3u %3u\n", &r, &g, &b);
+        sd_read_line(rd, tmp, 128);
+        sscanf(tmp, "%3hhu %3hhu %3hhu", &r, &g, &b);
         palette->data[i][0] = r;
         palette->data[i][1] = g;
         palette->data[i][2] = b;
