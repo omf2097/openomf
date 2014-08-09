@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <stdio.h>
 
 typedef struct sd_reader_t {
@@ -161,4 +162,17 @@ int sd_match(sd_reader *reader, char *buf, unsigned int nbytes) {
 
 void sd_skip(sd_reader *reader, unsigned int nbytes) {
     fseek(reader->handle, nbytes, SEEK_CUR);
+}
+
+int sd_read_scan(sd_reader *reader, const char* format, ...) {
+    va_list argp;
+    va_start(argp, format);
+    return fscanf(reader->handle, format, argp);
+}
+
+int sd_read_line(sd_reader *reader, char *buffer, int maxlen) {
+    if(fgets(buffer, maxlen, reader->handle) == NULL) {
+        return 1;
+    }
+    return 0;
 }

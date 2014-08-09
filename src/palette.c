@@ -25,9 +25,11 @@ unsigned char sd_palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const sd
     return 0;
 }
 
-int sd_palette_to_gimp_palette(const char *filename, const sd_palette *palette) {
-    sd_writer *w;;
+int sd_palette_to_gimp_palette(const sd_palette *palette, const char *filename) {
+    sd_writer *w;
     const unsigned char *d;
+    unsigned char r,g,b;
+    int i;
 
     if(!(w = sd_writer_open(filename))) {
         return SD_FILE_OPEN_ERROR;
@@ -36,15 +38,44 @@ int sd_palette_to_gimp_palette(const char *filename, const sd_palette *palette) 
     sd_write_fprintf(w, "GIMP Palette\n");
     sd_write_fprintf(w, "Name: %s\n", filename);
     sd_write_fprintf(w, "#\n");
-    for(int i = 0; i < 255; i++) {
+    for(i = 0; i < 255; i++) {
         d = palette->data[i];
-        unsigned char r = d[0] & 0xff;
-        unsigned char g = d[1] & 0xff;
-        unsigned char b = d[2] & 0xff;
+        r = d[0] & 0xff;
+        g = d[1] & 0xff;
+        b = d[2] & 0xff;
         sd_write_fprintf(w, "%3u %3u %3u\n", r, g, b);
     }
 
     sd_writer_close(w);
+    return SD_SUCCESS;
+}
+
+int sd_palette_from_gimp_palette(sd_palette *palette, const char *filename) {
+    sd_reader *rd;
+    char tmp[128];
+    int i;
+    unsigned char r,g,b;
+
+    if(!(rd = sd_reader_open(filename))) {
+        return SD_FILE_OPEN_ERROR;
+    }
+
+    // Read and match header
+    if(!sd_match(rd, "GIMP Palette\n", 13)) {
+        return SD_FILE_INVALID_TYPE;
+    }
+    sd_read_scan(rd, "Name: %s\n", tmp);
+    sd_read_scan(rd, "#\n", tmp);
+
+    // Read data
+    for(i = 0; i < 255; i++) {
+        sd_read_scan(rd, "%3u %3u %3u\n", &r, &g, &b);
+        palette->data[i][0] = r;
+        palette->data[i][1] = g;
+        palette->data[i][2] = b;
+    }
+
+    sd_reader_close(rd);
     return SD_SUCCESS;
 }
 

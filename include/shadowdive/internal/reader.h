@@ -32,6 +32,9 @@ int16_t sd_peek_word(sd_reader *reader);
 int32_t sd_peek_dword(sd_reader *reader);
 float sd_peek_float(sd_reader *reader);
 
+int sd_read_scan(sd_reader *reader, const char* format, ...);
+int sd_read_line(sd_reader *reader, char *buffer, int maxlen);
+
 /**
   * Compare following nbytes amount of data and given buffer. Does not advance file pointer.
   */
