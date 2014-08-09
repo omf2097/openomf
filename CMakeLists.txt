@@ -42,9 +42,16 @@ add_executable(omf_parse src/stringparser/main.c)
 add_executable(afdiff src/afdiff/main.c)
 
 set(CORELIBS ${ARGTABLE2_LIBRARY})
+
+# Fix compilation issues on mingw
 IF(MINGW)
     set(CORELIBS mingw32 ${CORELIBS})
 ENDIF()
+
+# Fix compilation issues on unixy systems (missing math lib)
+IF(UNIX)
+    SET(CORELIBS ${CORELIBS} -lm)
+ENDIF(UNIX)
 
 include_directories(
     ${SDL2_INCLUDE_DIR}

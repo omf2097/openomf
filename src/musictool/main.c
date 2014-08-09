@@ -13,7 +13,7 @@
     #define MODPLUG_STATIC
     #include <libmodplug/modplug.h>
 #else
-    #include <dumb/dumb.h>
+    #include <dumb.h>
 #endif
 
 #define PROGRESSBAR_LENGTH 25
