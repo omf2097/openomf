@@ -284,6 +284,25 @@ void anim_play(sd_bk_file *bk, int scale, int anim) {
     sprite_play(bk, scale, anim, 0);
 }
 
+void bkanim_push(sd_bk_file *bk, int key) {
+    sd_animation ani;
+    sd_bk_anim bka;
+    sd_animation_create(&ani);
+    sd_bk_anim_create(&bka);
+    sd_bk_anim_set_animation(&bka, &ani);
+    int ret;
+    if((ret = sd_bk_set_anim(bk, key, &bka)) != SD_SUCCESS) {
+        printf("Could not push new animation: %s.\n", sd_get_error(ret));
+        return;
+    }
+    printf("Pushed empty animation to index %d\n", key);
+}
+
+void bkanim_pop(sd_bk_file *bk, int key) {
+    sd_bk_set_anim(bk, key, NULL);
+    printf("Popped animation from index %d\n", key);
+}
+
 void bkanim_keylist() {
     printf("Valid field keys for Animation structure:\n");
     printf("* null\n");
@@ -419,7 +438,7 @@ void bk_pop_key(sd_bk_file *bk, const char **key) {
 
 void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *filename) {
     switch(bk_key_get_id(key[0])) {
-        case 1:
+        case 1: {
             if(kcount <= 1) {
                 printf("Palette index required for palette exporting.\n");
                 return;
@@ -431,6 +450,7 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 return;
             }
             sd_palette_to_gimp_palette(pal, filename);
+            }
             break;
         default:
             printf("Exporting not supported for this key.\n");
@@ -439,7 +459,7 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
 
 void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *filename) {
     switch(bk_key_get_id(key[0])) {
-        case 1:
+        case 1: {
             if(kcount <= 1) {
                 printf("Palette index required for palette importing.\n");
                 return;
@@ -450,7 +470,12 @@ void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 printf("No palette found at index %d.\n", index);
                 return;
             }
-            sd_palette_from_gimp_palette(pal, filename);
+            if(sd_palette_from_gimp_palette(pal, filename) != SD_SUCCESS) {
+                printf("Error while importing palette.");
+                return;
+            }
+            }
+            break;
         default:
             printf("Importing not supported for this key.\n");
     }
@@ -462,6 +487,7 @@ void bk_keylist() {
     printf("* palette [<palette_index>]\n");
     printf("* unknown\n");
     printf("* soundtable <byte #>\n");
+    printf("* animation\n");
 }
 
 void bk_info(sd_bk_file *bk) {
@@ -678,6 +704,11 @@ int main(int argc, char *argv[]) {
             sprite_info(sp, anim->ival[0], sprite->ival[0]);
         }
     } else if(anim->count > 0) {
+        // This doesn't need a check
+        if(push->count > 0) {
+            bkanim_push(&bk, anim->ival[0]);
+        }
+
         // Make sure the bkanim exists
         if(!check_anim(&bk, anim->ival[0])) {
             goto exit_1;
@@ -695,6 +726,8 @@ int main(int argc, char *argv[]) {
             bkanim_keylist();
         } else if(play->count > 0) {
             anim_play(&bk, _sc, anim->ival[0]);
+        } else if(pop->count > 0) {
+            bkanim_pop(&bk, anim->ival[0]);
         } else {
             bkanim_info(bka, ani, anim->ival[0]);
         }
