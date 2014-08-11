@@ -683,11 +683,26 @@ int main(int argc, char *argv[]) {
     
     // Handle args
     if(sprite->count > 0) {
+        sd_animation *ani;
+        sd_sprite *sp;
+
+        // Make sure the bkanim exists
+        if(!check_anim(&bk, anim->ival[0])) {
+            goto exit_1;
+        }
+
+        // This doesn't need a sprite check
+        ani = bk.anims[anim->ival[0]]->animation;
+        if(push->count > 0) {
+            anim_push(ani);
+            goto done;
+        }
+
         // Make sure sprite exists.
         if(!check_anim_sprite(&bk, anim->ival[0], sprite->ival[0])) {
             goto exit_1;
         }
-        sd_sprite *sp = bk.anims[anim->ival[0]]->animation->sprites[sprite->ival[0]];
+        sp = ani->sprites[sprite->ival[0]];
     
         // Handle arguments
         if(key->count > 0) {
@@ -700,6 +715,8 @@ int main(int argc, char *argv[]) {
             sprite_keylist();
         } else if(play->count > 0) {
             sprite_play(&bk, _sc, anim->ival[0], sprite->ival[0]);
+        } else if(pop->count > 0) {
+            anim_pop(ani);
         } else {
             sprite_info(sp, anim->ival[0], sprite->ival[0]);
         }
@@ -707,6 +724,7 @@ int main(int argc, char *argv[]) {
         // This doesn't need a check
         if(push->count > 0) {
             bkanim_push(&bk, anim->ival[0]);
+            goto done;
         }
 
         // Make sure the bkanim exists
@@ -772,7 +790,8 @@ int main(int argc, char *argv[]) {
             bk_info(&bk);
         }
     }
-    
+
+done:
     // Write output file
     if(output->count > 0) {
         sd_bk_save(&bk, output->filename[0]);

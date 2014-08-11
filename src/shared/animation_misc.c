@@ -92,6 +92,18 @@ void anim_keylist() {
     printf("* extra_str <str #>\n");
 }
 
+void anim_push(sd_animation *ani) {
+    sd_sprite sprite;
+    sd_sprite_create(&sprite);
+    sd_animation_push_sprite(ani, &sprite);
+    printf("New sprite pushed to animation. Animation now has %d sprites.\n", ani->sprite_count);
+}
+
+void anim_pop(sd_animation *ani) {
+    sd_animation_pop_sprite(ani);
+    printf("Last sprite popped from animation. Animation now has %d sprites.\n", ani->sprite_count);
+}
+
 void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const char *value) {
     int tmp = 0;
     switch(kn) {
