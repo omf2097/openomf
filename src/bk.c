@@ -256,6 +256,7 @@ int sd_bk_set_anim(sd_bk_file *bk, int index, const sd_bk_anim *anim) {
     if(bk->anims[index] != NULL) {
         sd_bk_anim_free(bk->anims[index]);
         free(bk->anims[index]);
+        bk->anims[index] = NULL;
     }
     // If input was NULL, we want to stop here.
     if(anim == NULL) {
