@@ -479,7 +479,7 @@ void har_take_damage(object *obj, str* string, float damage) {
     }
 
     // chronos' stasis does not have a hit animation
-    if (string->data) {
+    if (string->data && str_size(string) > 0) {
         sd_stringparser_frame f;
         const sd_stringparser_tag_value *v;
         h->state = STATE_RECOIL;
@@ -666,6 +666,11 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     sprite *sprite_b = obj_b->cur_sprite;
     int hard_limit = 35; // Push opponent if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
+
+    if (!sprite_a || !sprite_b) {
+        // no sprite, eg chronos' teleport
+        return;
+    }
 
     if (b->state == STATE_RECOIL
         || a->state == STATE_RECOIL
