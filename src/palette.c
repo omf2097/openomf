@@ -69,7 +69,6 @@ int sd_palette_from_gimp_palette(sd_palette *palette, const char *filename) {
     sd_read_line(rd, tmp, 128); // Read the # field
 
     // Read data
-    tmp[4] = 0;
     for(i = 0; i < 255; i++) {
         sd_read_line(rd, tmp, 128);
         tmp[3] = 0;
