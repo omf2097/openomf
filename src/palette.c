@@ -33,6 +33,10 @@ int sd_palette_to_gimp_palette(const sd_palette *palette, const char *filename) 
     unsigned char r,g,b;
     int i;
 
+    if(palette == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     if(!(w = sd_writer_open(filename))) {
         return SD_FILE_OPEN_ERROR;
     }
@@ -57,12 +61,19 @@ int sd_palette_from_gimp_palette(sd_palette *palette, const char *filename) {
     char tmp[128];
     int i;
 
+    if(palette == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     if(!(rd = sd_reader_open(filename))) {
         return SD_FILE_OPEN_ERROR;
     }
 
     // Read and match header
     if(!sd_match(rd, "GIMP Palette\n", 13)) {
+        return SD_FILE_INVALID_TYPE;
+    }
+    if(!sd_reader_ok(rd)) {
         return SD_FILE_INVALID_TYPE;
     }
     sd_read_line(rd, tmp, 128); // Read name (we don't care about the value)
