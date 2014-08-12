@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include "shadowdive/error.h"
 #include "shadowdive/palette.h"
@@ -55,7 +56,6 @@ int sd_palette_from_gimp_palette(sd_palette *palette, const char *filename) {
     sd_reader *rd;
     char tmp[128];
     int i;
-    unsigned char r,g,b;
 
     if(!(rd = sd_reader_open(filename))) {
         return SD_FILE_OPEN_ERROR;
@@ -72,10 +72,12 @@ int sd_palette_from_gimp_palette(sd_palette *palette, const char *filename) {
     tmp[4] = 0;
     for(i = 0; i < 255; i++) {
         sd_read_line(rd, tmp, 128);
-        sscanf(tmp, "%3hhu %3hhu %3hhu", &r, &g, &b);
-        palette->data[i][0] = r;
-        palette->data[i][1] = g;
-        palette->data[i][2] = b;
+        tmp[3] = 0;
+        tmp[7] = 0;
+        tmp[11] = 0;
+        palette->data[i][0] = atoi(tmp + 0);
+        palette->data[i][1] = atoi(tmp + 4);
+        palette->data[i][2] = atoi(tmp + 8);
     }
 
     sd_reader_close(rd);
