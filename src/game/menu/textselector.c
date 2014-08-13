@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <SDL2/SDL.h>
+#include "audio/sound.h"
 
 void textselector_create(component *c, font *font, const char *text, const char *initialvalue) {
     component_create(c);
@@ -80,6 +81,8 @@ int textselector_action(component *c, int action) {
         if(c->toggle != NULL) {
             c->toggle(c, c->userdata, *tb->pos);
         }
+        // Play menu sound
+        sound_play(20, 0.5f, 1.0f, 2.0f);
         return 0;
     } else  if(action == ACT_LEFT) {
         (*tb->pos)--;
@@ -89,6 +92,8 @@ int textselector_action(component *c, int action) {
         if(c->toggle != NULL) {
             c->toggle(c, c->userdata, *tb->pos);
         }
+        // Play menu sound
+        sound_play(20, 0.5f, -1.0f, 2.0f);
         return 0;
     }
     return 1;

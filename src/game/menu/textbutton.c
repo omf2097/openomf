@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <SDL2/SDL.h>
+#include "audio/sound.h"
 
 void textbutton_create(component *c, font *font, const char *text) {
     component_create(c);
@@ -57,6 +58,8 @@ int textbutton_action(component *c, int action) {
     // Handle selection
     if(action == ACT_KICK || action == ACT_PUNCH) {
         if(c->click != NULL) {
+            // Play menu sound
+            sound_play(20, 0.5f, 0.0f, 2.0f);
             c->click(c, c->userdata);
         }
         return 0;

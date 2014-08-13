@@ -110,9 +110,9 @@ int menu_handle_action(menu *menu, int action) {
             // Update selected component
             c = vector_get(&menu->objs, menu->selected);
 
-            // Play menu sound
-            sound_play(19, 0.5f, 0.0f, 2.0f);
         } while ((*c)->disabled);
+        // Play menu sound
+        sound_play(19, 0.5f, 0.0f, 2.0f);
         (*c)->selected = 1;
         return 0;
     }

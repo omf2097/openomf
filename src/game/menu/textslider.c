@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <SDL2/SDL.h>
+#include "audio/sound.h"
 
 void textslider_create(component *c, font *font, const char *text, unsigned int positions, int has_off) {
     component_create(c);
@@ -74,8 +75,11 @@ int textslider_action(component *c, int action) {
     textslider *tb = c->obj;
     if (action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
         (*tb->pos)++;
-        if (*tb->pos >= tb->positions) {
+        if (*tb->pos > tb->positions) {
             *tb->pos = tb->positions;
+        } else {
+            // Play menu sound
+            sound_play(20, 0.5f, 1.0f, 2.0f);
         }
         if(c->slide != NULL) {
             c->slide(c, c->userdata, *tb->pos);
@@ -83,10 +87,13 @@ int textslider_action(component *c, int action) {
         return 0;
     } else  if(action == ACT_LEFT) {
         (*tb->pos)--;
-        if (tb->has_off && *tb->pos <= 0) {
+        if (tb->has_off && *tb->pos < 0) {
             *tb->pos = 0;
         } else if (*tb->pos < 1) {
             *tb->pos = 1;
+        } else {
+            // Play menu sound
+            sound_play(20, 0.5f, -1.0f, 2.0f);
         }
         if(c->slide != NULL) {
             c->slide(c, c->userdata, *tb->pos);
