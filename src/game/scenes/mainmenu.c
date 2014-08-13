@@ -155,6 +155,8 @@ typedef struct mainmenu_local_t {
 
     ENetHost *host;
 
+    int prev_key;
+
     // Menu stack
     menu *mstack[10];
     int mstack_pos;
@@ -905,7 +907,10 @@ void mainmenu_input_tick(scene *scene) {
                         local->current_menu = local->mstack[local->mstack_pos-1];
                     }
                 } else {
-                    menu_handle_action(local->current_menu, i->event_data.action);
+                    if(local->prev_key == ACT_STOP) {
+                        menu_handle_action(local->current_menu, i->event_data.action);
+                    }
+                    local->prev_key = i->event_data.action;
                 }
             }
         } while((i = i->next));
@@ -1431,6 +1436,9 @@ int mainmenu_create(scene *scene) {
         component_click(&local->net_button);
         component_click(&local->net_listen_button);
     }
+
+    // prev_key is used to prevent multiple clicks while key is down
+    local->prev_key = ACT_STOP;
 
     // clear it, so this only happens the first time
     scene->gs->net_mode = NET_MODE_NONE;
