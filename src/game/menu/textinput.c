@@ -1,8 +1,9 @@
-#include "game/menu/textinput.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <SDL2/SDL.h>
+
+#include "game/menu/textinput.h"
 
 #define COLOR_MENU_LINE   color_create(0,0,89,255)
 #define COLOR_MENU_BORDER color_create(0,0,243,255)

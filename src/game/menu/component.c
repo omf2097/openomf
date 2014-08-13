@@ -1,5 +1,6 @@
-#include "game/menu/component.h"
 #include <stdlib.h>
+
+#include "game/menu/component.h"
 #include "utils/log.h"
 
 void component_create(component *c) {

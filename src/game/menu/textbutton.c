@@ -1,10 +1,12 @@
-#include "game/menu/textbutton.h"
-#include "game/menu/menu_background.h"
-#include "video/video.h"
 #include <stdlib.h>
 #include <string.h>
 #include <SDL2/SDL.h>
+
+#include "game/menu/textbutton.h"
+#include "game/menu/menu_background.h"
+#include "video/video.h"
 #include "audio/sound.h"
+#include "utils/log.h"
 
 void textbutton_create(component *c, font *font, const char *text) {
     component_create(c);

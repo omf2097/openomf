@@ -3,7 +3,6 @@
 #include "game/menu/menu.h"
 #include "game/menu/menu_background.h"
 #include "audio/sound.h"
-
 #include "utils/log.h"
 
 void menu_create(menu *menu, int x, int y, int w, int h) {

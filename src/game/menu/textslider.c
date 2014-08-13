@@ -1,9 +1,11 @@
-#include "game/menu/textslider.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <SDL2/SDL.h>
+
+#include "game/menu/textslider.h"
 #include "audio/sound.h"
+#include "utils/log.h"
 
 void textslider_create(component *c, font *font, const char *text, unsigned int positions, int has_off) {
     component_create(c);
@@ -79,7 +81,7 @@ int textslider_action(component *c, int action) {
             *tb->pos = tb->positions;
         } else {
             // Play menu sound
-            sound_play(20, 0.5f, 1.0f, 2.0f);
+            sound_play(20, 0.5f, 0.5f, 2.0f);
         }
         if(c->slide != NULL) {
             c->slide(c, c->userdata, *tb->pos);
@@ -93,7 +95,7 @@ int textslider_action(component *c, int action) {
             *tb->pos = 1;
         } else {
             // Play menu sound
-            sound_play(20, 0.5f, -1.0f, 2.0f);
+            sound_play(20, 0.5f, -0.5f, 2.0f);
         }
         if(c->slide != NULL) {
             c->slide(c, c->userdata, *tb->pos);

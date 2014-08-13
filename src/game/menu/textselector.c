@@ -1,8 +1,9 @@
-#include "game/menu/textselector.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <SDL2/SDL.h>
+
+#include "game/menu/textselector.h"
 #include "audio/sound.h"
 
 void textselector_create(component *c, font *font, const char *text, const char *initialvalue) {
@@ -82,7 +83,7 @@ int textselector_action(component *c, int action) {
             c->toggle(c, c->userdata, *tb->pos);
         }
         // Play menu sound
-        sound_play(20, 0.5f, 1.0f, 2.0f);
+        sound_play(20, 0.5f, 0.5f, 2.0f);
         return 0;
     } else  if(action == ACT_LEFT) {
         (*tb->pos)--;
@@ -93,7 +94,7 @@ int textselector_action(component *c, int action) {
             c->toggle(c, c->userdata, *tb->pos);
         }
         // Play menu sound
-        sound_play(20, 0.5f, -1.0f, 2.0f);
+        sound_play(20, 0.5f, -0.5f, 2.0f);
         return 0;
     }
     return 1;
