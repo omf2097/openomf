@@ -906,6 +906,7 @@ void mainmenu_input_tick(scene *scene) {
                         local->mstack[--local->mstack_pos] = NULL;
                         local->current_menu = local->mstack[local->mstack_pos-1];
                     }
+                    sound_play(20, 0.5f, 0.0f, 2.0f);
                 } else {
                     if(local->prev_key == ACT_STOP) {
                         menu_handle_action(local->current_menu, i->event_data.action);
