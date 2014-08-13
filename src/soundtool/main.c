@@ -16,6 +16,7 @@ typedef struct _streamer {
 
 void stream(void* userdata, Uint8* stream, int len) {
     Streamer *s = (Streamer*)userdata;
+    SDL_memset(stream, 128, len);
     int left = s->size - s->pos;
     len = (len > left) ? left : len;
     SDL_memcpy(stream, s->data + s->pos, len);
@@ -106,7 +107,7 @@ int main(int argc, char *argv[]) {
         SDL_zero(want);
         want.freq = 8000;
         want.format = AUDIO_U8;
-        want.channels = 2;
+        want.channels = 1;
         want.samples = 4096;
         want.callback = stream;
         want.userdata = &streamer;
