@@ -9,21 +9,21 @@
 static float _sound_volume = VOLUME_DEFAULT;
 
 #ifdef STANDALONE_SERVER
-void sound_play(int id, float volume, float panning, float pitch) {}
+unsigned int sound_play(int id, float volume, float panning, float pitch) {}
 #else
-void sound_play(int id, float volume, float panning, float pitch) {
+unsigned int sound_play(int id, float volume, float panning, float pitch) {
     audio_sink *sink = audio_get_sink();
 
     // If there is no sink, do nothing
     if(sink == NULL) {
-        return;
+        return -1;
     }
 
     // Get sample data
     char *buf;
     int len;
     if(sounds_loader_get(id, &buf, &len) != 0) {
-        return;
+        return -1;
     }
 
     // Play
@@ -32,9 +32,17 @@ void sound_play(int id, float volume, float panning, float pitch) {
     raw_source_init(src, buf, len);
     unsigned int sound_id = sink_play_set(sink, src, volume, panning, pitch);
     sink_set_stream_volume(sink, sound_id, _sound_volume);
-
+    return sound_id;
 }
 #endif
+
+int sound_playing(unsigned int sound_id) {
+    audio_sink *sink = audio_get_sink();
+    if(sink == NULL) {
+        return 0;
+    }
+    return sink_is_playing(sink, sound_id);
+}
 
 void sound_set_volume(float volume) {
     _sound_volume = volume;

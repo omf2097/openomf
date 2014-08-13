@@ -39,6 +39,8 @@ void sink_free(audio_sink *sink);
 void sink_render(audio_sink *sink);
 void sink_format_stream(audio_sink *sink, audio_stream *stream);
 
+int sink_is_playing(audio_sink *sink, unsigned int sid);
+
 void sink_set_stream_panning(audio_sink *sink, unsigned int sid, float panning);
 void sink_set_stream_volume(audio_sink *sink, unsigned int sid, float volume);
 void sink_set_stream_pitch(audio_sink *sink, unsigned int sid, float pitch);
