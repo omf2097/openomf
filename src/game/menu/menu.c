@@ -2,6 +2,7 @@
 #include "video/video.h"
 #include "game/menu/menu.h"
 #include "game/menu/menu_background.h"
+#include "audio/sound.h"
 
 #include "utils/log.h"
 
@@ -101,11 +102,16 @@ int menu_handle_action(menu *menu, int action) {
                 menu->selected--;
             }
             // wrap around
-            if(menu->selected < 0) menu->selected = vector_size(&menu->objs) - 1;
-            if(menu->selected >= vector_size(&menu->objs)) menu->selected = 0;
+            if(menu->selected < 0)
+                menu->selected = vector_size(&menu->objs) - 1;
+            if(menu->selected >= vector_size(&menu->objs))
+                menu->selected = 0;
 
             // Update selected component
             c = vector_get(&menu->objs, menu->selected);
+
+            // Play menu sound
+            sound_play(19, 0.5f, 0.0f, 2.0f);
         } while ((*c)->disabled);
         (*c)->selected = 1;
         return 0;
