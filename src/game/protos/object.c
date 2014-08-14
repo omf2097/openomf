@@ -335,13 +335,25 @@ void object_render(object *obj) {
         opacity = rstate->blend_start + d;
     }
 
-    // Tint color
+    // Default Tint color
     color tint = color_create(0xFF, 0xFF, 0xFF, 0xFF);
+
+    // These two force set the sprite color, so handle them first
     if(obj->video_effects & EFFECT_SHADOW) {
         tint = color_create(0x20, 0x20, 0x20, 0xFF);
     }
     if(obj->video_effects & EFFECT_DARK_TINT) {
         tint = color_create(0x60, 0x60, 0x60, 0xFF);
+    }
+
+    // This changes the tint depending on position, so handle next
+    if(obj->video_effects & EFFECT_POSITIONAL_LIGHTING) {
+        float p = (obj->pos.x > 160) ? 320 - obj->pos.x : obj->pos.x;
+        float shade = 0.75f + p / 640;
+        if(shade > 1.0f) shade = 1.0f;
+        tint.r *= shade;
+        tint.g *= shade;
+        tint.b *= shade;
     }
 
     // Render

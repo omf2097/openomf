@@ -24,12 +24,12 @@ void projectile_tick(object *obj) {
         }
     }
 
-    // Note! If we ever add more effects, this will need to be changed!
-    // XXX: Make this better.
+    // Set effect flags
+    int cur_effects = object_get_effects(obj);
     if(player_frame_isset(obj, "bt")) {
-        object_set_effects(obj, EFFECT_DARK_TINT);
+        object_set_effects(obj, cur_effects | EFFECT_DARK_TINT);
     } else {
-        object_set_effects(obj, EFFECT_NONE);
+        object_set_effects(obj, cur_effects & ~EFFECT_DARK_TINT);
     }
 }
 

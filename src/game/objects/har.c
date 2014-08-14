@@ -1125,12 +1125,12 @@ void har_tick(object *obj) {
         h->endurance += 1;
     }
 
-    // Note! If we ever add more effects, this will need to be changed!
-    // XXX: Make this better.
+    // Flip tint effect flag
+    int cur_effects = object_get_effects(obj);
     if(player_frame_isset(obj, "bt")) {
-        object_set_effects(obj, EFFECT_DARK_TINT);
+        object_set_effects(obj, cur_effects | EFFECT_DARK_TINT);
     } else {
-        object_set_effects(obj, EFFECT_NONE);
+        object_set_effects(obj, cur_effects & ~EFFECT_DARK_TINT);
     }
 
     // Leave shadow trail
@@ -1848,6 +1848,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_repeat(obj, 1);
     object_set_stl(obj, local->af_data->sound_translation_table);
     object_set_shadow(obj, 1);
+    object_set_effects(obj, EFFECT_POSITIONAL_LIGHTING);
 
     // New object spawner callback
     object_set_spawn_cb(obj, cb_har_spawn_object, local);
