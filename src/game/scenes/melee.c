@@ -7,6 +7,7 @@
 #include "utils/log.h"
 #include "utils/random.h"
 #include "audio/music.h"
+#include "audio/sound.h"
 #include "video/video.h"
 #include "resources/ids.h"
 #include "resources/bk.h"
@@ -213,17 +214,20 @@ void handle_action(scene *scene, int player, int action) {
             if (*column < 0) {
                 *column = 4;
             }
+            sound_play(19, 0.5f, 0.0f, 2.0f);
             break;
         case ACT_RIGHT:
             (*column)++;
             if (*column > 4) {
                 *column = 0;
             }
+            sound_play(19, 0.5f, 0.0f, 2.0f);
             break;
         case ACT_UP:
             if(*row == 1) {
                 *row = 0;
             }
+            sound_play(19, 0.5f, 0.0f, 2.0f);
             break;
         case ACT_DOWN:
             if(*row == 0) {
@@ -236,10 +240,12 @@ void handle_action(scene *scene, int player, int action) {
                     local->katana_down_count[player-1] = 11;
                 }
             }
+            sound_play(19, 0.5f, 0.0f, 2.0f);
             break;
         case ACT_KICK:
         case ACT_PUNCH:
             *done = 1;
+            sound_play(20, 0.5f, 0.0f, 2.0f);
             if (local->done_a && (local->done_b || !player2->selectable)) {
                 local->done_a = 0;
                 local->done_b = 0;
@@ -360,6 +366,7 @@ void melee_input_tick(scene *scene) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if (i->event_data.action == ACT_ESC) {
+                    sound_play(20, 0.5f, 0.0f, 2.0f);
                     if (local->selection == 1) {
                         // restore the player selection
                         local->column_a = local->pilot_id_a % 5;
