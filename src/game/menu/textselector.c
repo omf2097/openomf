@@ -5,6 +5,7 @@
 
 #include "game/menu/textselector.h"
 #include "audio/sound.h"
+#include "utils/log.h"
 
 void textselector_create(component *c, font *font, const char *text, const char *initialvalue) {
     component_create(c);

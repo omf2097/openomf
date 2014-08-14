@@ -395,8 +395,6 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     object *o_har = game_player_get_har(game_state_get_player(scene->gs, player_id));
     har *h = object_get_userdata(o_har);
 
-    DEBUG("WALL: %d", wall);
-
     int towards_wall = 0;
     if(wall == 0 && o_har->vel.x <= 1) {
         towards_wall = 1;

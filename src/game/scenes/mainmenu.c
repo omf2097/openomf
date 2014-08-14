@@ -973,6 +973,9 @@ void scaler_toggled(component *c, void *userdata, int pos) {
         v->scale_factor = list[0];
     }
 
+    // Always select first factor option if scaler has changed.
+    textselector_set_pos(&local->scale_factor_toggle, 0);
+
     // If scaler is "Nearest", disable factor toggle
     local->scale_factor_toggle.disabled = (textselector_get_pos(c) == 0);
 
