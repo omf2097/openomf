@@ -891,7 +891,14 @@ void mainmenu_input_tick(scene *scene) {
     if (i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                if (i->event_data.action == ACT_ESC) {
+                // Skip repeated keys
+                if(local->prev_key == i->event_data.action) {
+                    continue;
+                }
+                local->prev_key = i->event_data.action;
+
+                // Okay, the action is new. Handle it.
+                if(i->event_data.action == ACT_ESC) {
                     if(local->current_menu == &local->main_menu) {
                         if(menu_selected(&local->main_menu) == &local->quit_button) {
                             game_state_set_next(scene->gs, SCENE_CREDITS);
@@ -908,10 +915,7 @@ void mainmenu_input_tick(scene *scene) {
                     }
                     sound_play(20, 0.5f, 0.0f, 2.0f);
                 } else {
-                    if(local->prev_key == ACT_STOP) {
-                        menu_handle_action(local->current_menu, i->event_data.action);
-                    }
-                    local->prev_key = i->event_data.action;
+                    menu_handle_action(local->current_menu, i->event_data.action);
                 }
             }
         } while((i = i->next));
@@ -1439,7 +1443,7 @@ int mainmenu_create(scene *scene) {
     }
 
     // prev_key is used to prevent multiple clicks while key is down
-    local->prev_key = ACT_STOP;
+    local->prev_key = ACT_PUNCH;
 
     // clear it, so this only happens the first time
     scene->gs->net_mode = NET_MODE_NONE;
