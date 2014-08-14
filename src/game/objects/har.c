@@ -1249,28 +1249,28 @@ void add_input(char *buf, int act_type, int direction) {
                 add_input_to_buffer(buf, '6');
             }
             break;
-        case ACT_UPRIGHT:
+        case ACT_UP|ACT_RIGHT:
             if(direction == OBJECT_FACE_LEFT) {
                 add_input_to_buffer(buf, '7');
             } else {
                 add_input_to_buffer(buf, '9');
             }
             break;
-        case ACT_UPLEFT:
+        case ACT_UP|ACT_LEFT:
             if(direction == OBJECT_FACE_LEFT) {
                 add_input_to_buffer(buf, '9');
             } else {
                 add_input_to_buffer(buf, '7');
             }
             break;
-        case ACT_DOWNRIGHT:
+        case ACT_DOWN|ACT_RIGHT:
             if(direction == OBJECT_FACE_LEFT) {
                 add_input_to_buffer(buf, '1');
             } else {
                 add_input_to_buffer(buf, '3');
             }
             break;
-        case ACT_DOWNLEFT:
+        case ACT_DOWN|ACT_LEFT:
             if(direction == OBJECT_FACE_LEFT) {
                 add_input_to_buffer(buf, '3');
             } else {
@@ -1394,14 +1394,14 @@ af_move* scrap_destruction_cheat(object *obj, char *inputs) {
 int maybe_har_change_state(int oldstate, int direction, int act_type) {
     int state = 0;
     switch(act_type) {
-        case ACT_DOWNRIGHT:
+        case ACT_DOWN|ACT_RIGHT:
             if (direction == OBJECT_FACE_LEFT) {
                 state = STATE_CROUCHBLOCK;
             } else {
                 state = STATE_CROUCHING;
             }
             break;
-        case ACT_DOWNLEFT:
+        case ACT_DOWN|ACT_LEFT:
             if (direction == OBJECT_FACE_RIGHT) {
                 state = STATE_CROUCHBLOCK;
             } else {
@@ -1431,10 +1431,10 @@ int maybe_har_change_state(int oldstate, int direction, int act_type) {
         case ACT_UP:
             state = STATE_JUMPING;
             break;
-        case ACT_UPLEFT:
+        case ACT_UP|ACT_LEFT:
             state = STATE_JUMPING;
             break;
-        case ACT_UPRIGHT:
+        case ACT_UP|ACT_RIGHT:
             state = STATE_JUMPING;
             break;
     }
@@ -1485,9 +1485,9 @@ int har_act(object *obj, int act_type) {
             switch(s[j]) {
                 case '1':
                     if(direction == OBJECT_FACE_LEFT) {
-                        har_action_hook(obj, ACT_DOWNRIGHT);
+                        har_action_hook(obj, ACT_DOWN|ACT_RIGHT);
                     } else {
-                        har_action_hook(obj, ACT_DOWNLEFT);
+                        har_action_hook(obj, ACT_DOWN|ACT_LEFT);
                     }
                     break;
                 case '2':
@@ -1495,9 +1495,9 @@ int har_act(object *obj, int act_type) {
                     break;
                 case '3':
                     if(direction == OBJECT_FACE_LEFT) {
-                        har_action_hook(obj, ACT_DOWNLEFT);
+                        har_action_hook(obj, ACT_DOWN|ACT_LEFT);
                     } else {
-                        har_action_hook(obj, ACT_DOWNRIGHT);
+                        har_action_hook(obj, ACT_DOWN|ACT_RIGHT);
                     }
                     break;
                 case '4':
@@ -1519,9 +1519,9 @@ int har_act(object *obj, int act_type) {
                     break;
                 case '7':
                     if(direction == OBJECT_FACE_LEFT) {
-                        har_action_hook(obj, ACT_UPRIGHT);
+                        har_action_hook(obj, ACT_UP|ACT_RIGHT);
                     } else {
-                        har_action_hook(obj, ACT_UPLEFT);
+                        har_action_hook(obj, ACT_UP|ACT_LEFT);
                     }
                     break;
                 case '8':
@@ -1529,9 +1529,9 @@ int har_act(object *obj, int act_type) {
                     break;
                 case '9':
                     if(direction == OBJECT_FACE_LEFT) {
-                        har_action_hook(obj, ACT_UPLEFT);
+                        har_action_hook(obj, ACT_UP|ACT_LEFT);
                     } else {
-                        har_action_hook(obj, ACT_UPRIGHT);
+                        har_action_hook(obj, ACT_UP|ACT_RIGHT);
                     }
                     break;
                 case 'K':
@@ -1597,7 +1597,7 @@ int har_act(object *obj, int act_type) {
         // Send an event if the har tries to turn in the air by pressing either left/right/downleft/downright
         int opp_id = h->player_id ? 0 : 1;
         object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
-        if(act_type == ACT_LEFT || act_type == ACT_RIGHT || act_type == ACT_DOWNLEFT || act_type == ACT_DOWNRIGHT) {
+        if(act_type == ACT_LEFT || act_type == ACT_RIGHT || act_type == (ACT_DOWN|ACT_LEFT) || act_type == (ACT_DOWN|ACT_RIGHT)) {
             if(object_get_pos(obj).x > object_get_pos(opp).x) {
                 if(direction != OBJECT_FACE_LEFT) {
                     har_event_air_turn(h);
@@ -1654,13 +1654,13 @@ int har_act(object *obj, int act_type) {
                 vx = 0.0f;
                 vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
                 int jump_dir = 0;
-                if ((act_type == ACT_UPLEFT && direction == OBJECT_FACE_LEFT) ||
-                        (act_type == ACT_UPRIGHT && direction == OBJECT_FACE_RIGHT)) {
+                if ((act_type == (ACT_UP|ACT_LEFT) && direction == OBJECT_FACE_LEFT) ||
+                        (act_type == (ACT_UP|ACT_RIGHT) && direction == OBJECT_FACE_RIGHT)) {
                     vx = (h->af_data->forward_speed*direction)/(float)320;
                     object_set_tick_pos(obj, 110);
                     object_set_stride(obj, 7); // Pass 10 frames per tick
                     jump_dir = 1;
-                } else if (act_type == ACT_UPLEFT || act_type == ACT_UPRIGHT) {
+                } else if (act_type == (ACT_UP|ACT_LEFT) || act_type == (ACT_UP|ACT_RIGHT)) {
                     // If we are jumping backwards, start animation from end
                     // at -100 frames (seems to be about right)
                     object_set_playback_direction(obj, PLAY_BACKWARDS);

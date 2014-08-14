@@ -23,13 +23,13 @@ int keyboard_poll(controller *ctrl, ctrl_event **ev) {
     k->current = 0;
     const unsigned char *state = SDL_GetKeyboardState(NULL);
     if ( state[k->keys->left] && state[k->keys->up]) {
-        keyboard_cmd(ctrl, ACT_UPLEFT, ev);
+        keyboard_cmd(ctrl, ACT_UP|ACT_LEFT, ev);
     } else if ( state[k->keys->left] && state[k->keys->down]) {
-        keyboard_cmd(ctrl, ACT_DOWNLEFT, ev);
+        keyboard_cmd(ctrl, ACT_DOWN|ACT_LEFT, ev);
     } else  if ( state[k->keys->right] && state[k->keys->up]) {
-        keyboard_cmd(ctrl, ACT_UPRIGHT, ev);
+        keyboard_cmd(ctrl, ACT_UP|ACT_RIGHT, ev);
     } else  if ( state[k->keys->right] && state[k->keys->down]) {
-        keyboard_cmd(ctrl, ACT_DOWNRIGHT, ev);
+        keyboard_cmd(ctrl, ACT_DOWN|ACT_RIGHT, ev);
     } else if ( state[k->keys->right]) {
         keyboard_cmd(ctrl, ACT_RIGHT, ev);
     } else if ( state[k->keys->left]) {

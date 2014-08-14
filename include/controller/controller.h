@@ -7,19 +7,15 @@
 #include "utils/list.h"
 
 enum {
-    ACT_STOP = 1,
-    ACT_KICK = 2,
-    ACT_PUNCH = 4,
-    ACT_UP = 8,
-    ACT_UPLEFT = 16,
-    ACT_UPRIGHT = 32,
-    ACT_DOWN = 64,
-    ACT_DOWNLEFT = 128,
-    ACT_DOWNRIGHT = 256,
-    ACT_LEFT = 512,
-    ACT_ESC = 1024,
-    ACT_RIGHT = 2048,
-    ACT_FLUSH = 4096
+    ACT_STOP = 0x01,
+    ACT_KICK = 0x02,
+    ACT_PUNCH = 0x04,
+    ACT_UP = 0x08,
+    ACT_DOWN = 0x10,
+    ACT_LEFT = 0x20,
+    ACT_ESC = 0x40,
+    ACT_RIGHT = 0x80,
+    ACT_FLUSH = 0x100
 };
 
 enum {

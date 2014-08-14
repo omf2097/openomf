@@ -62,27 +62,27 @@ int char_to_act(int ch, int direction) {
             }
         case '7':
             if(direction == OBJECT_FACE_LEFT) {
-                return ACT_UPRIGHT;
+                return ACT_UP|ACT_RIGHT;
             } else {
-                return ACT_UPLEFT;
+                return ACT_UP|ACT_LEFT;
             }
         case '9':
             if(direction == OBJECT_FACE_LEFT) {
-                return ACT_UPLEFT;
+                return ACT_UP|ACT_LEFT;
             } else {
-                return ACT_UPRIGHT;
+                return ACT_UP|ACT_RIGHT;
             }
         case '1':
             if(direction == OBJECT_FACE_LEFT) {
-                return ACT_DOWNRIGHT;
+                return ACT_DOWN|ACT_RIGHT;
             } else {
-                return ACT_DOWNLEFT;
+                return ACT_DOWN|ACT_LEFT;
             }
         case '3':
             if(direction == OBJECT_FACE_LEFT) {
-                return ACT_DOWNLEFT;
+                return ACT_DOWN|ACT_LEFT;
             } else {
-                return ACT_DOWNRIGHT;
+                return ACT_DOWN|ACT_RIGHT;
             }
         case 'K': return ACT_KICK;
         case 'P': return ACT_PUNCH;
@@ -232,7 +232,7 @@ int ai_block_har(controller *ctrl, ctrl_event **ev) {
     if(fabsf(o_enemy->pos.x - o->pos.x) < 100) {
         if(h_enemy->executing_move && maybe(a->difficulty)) {
             if(har_is_crouching(h_enemy)) {
-                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWNLEFT : ACT_DOWNRIGHT);
+                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN|ACT_LEFT : ACT_DOWN|ACT_RIGHT);
                 controller_cmd(ctrl, a->cur_act, ev);
             } else {
                 a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT);
@@ -263,7 +263,7 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
                 pos_prj.x = object_get_pos(o_prj).x + ((o_prj->cur_sprite->pos.x * -1) - size_prj.x);
             }
             if(fabsf(pos_prj.x - o->pos.x) < 120) {
-                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWNLEFT : ACT_DOWNRIGHT);
+                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN|ACT_LEFT : ACT_DOWN|ACT_RIGHT);
                 controller_cmd(ctrl, a->cur_act, ev);
                 return 1;
             }
@@ -391,7 +391,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
                 a->cur_act = ACT_STOP;
             } else {
                 // crouch and block
-                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWNLEFT : ACT_DOWNRIGHT);
+                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN|ACT_LEFT : ACT_DOWN|ACT_RIGHT);
             }
 
             a->act_timer = 30;
@@ -403,9 +403,9 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
         // Jump once in a while
         if(rand_int(100) == 88){
             if(o->vel.x < 0) {
-                controller_cmd(ctrl, ACT_UPLEFT, ev);
+                controller_cmd(ctrl, ACT_UP|ACT_LEFT, ev);
             } else if(o->vel.x > 0) {
-                controller_cmd(ctrl, ACT_UPRIGHT, ev);
+                controller_cmd(ctrl, ACT_UP|ACT_RIGHT, ev);
             } else {
                 controller_cmd(ctrl, ACT_UP, ev);
             }
