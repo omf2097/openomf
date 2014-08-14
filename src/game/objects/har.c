@@ -555,16 +555,14 @@ void har_take_damage(object *obj, str* string, float damage) {
 }
 
 void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer) {
-    float rv = 0.0f;
-    float velx, vely;
     har *h = object_get_userdata(obj);
 
     // burning oil
     for(int i = 0; i < amount; i++) {
         // Calculate velocity etc.
-        rv = rand_int(100) / 100.0f - 0.5;
-        velx = (5 * cos(90 + i-(amount) / 2 + rv)) * object_get_direction(obj);
-        vely = -12 * sin(i / amount + rv);
+        float rv = rand_int(100) / 100.0f - 0.5;
+        float velx = (5 * cos(90 + i-(amount) / 2 + rv)) * object_get_direction(obj);
+        float vely = -12 * sin(i / amount + rv);
 
         // Make sure the oil drops have somekind of velocity
         // (to prevent floating scrap objects)
@@ -595,8 +593,6 @@ int is_destruction(game_state *gs) {
 }
 
 void har_spawn_scrap(object *obj, vec2i pos, int amount) {
-    float rv = 0.0f;
-    float velx, vely;
     // wild ass guess
     int oil_amount = amount / 3;
     har *h = object_get_userdata(obj);
@@ -617,9 +613,9 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     }
     for(int i = 0; i < scrap_amount; i++) {
         // Calculate velocity etc.
-        rv = rand_int(100) / 100.0f - 0.5;
-        velx = (5 * cos(90 + i-(scrap_amount) / 2 + rv)) * object_get_direction(obj);
-        vely = -12 * sin(i / scrap_amount + rv);
+        float rv = rand_int(100) / 100.0f - 0.5;
+        float velx = (5 * cos(90 + i-(scrap_amount) / 2 + rv)) * object_get_direction(obj);
+        float vely = -12 * sin(i / scrap_amount + rv);
 
         // Make destruction moves look more impressive :P
         if(destr) {
