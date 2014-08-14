@@ -1,6 +1,7 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 #include <shadowdive/shadowdive.h>
+#include <stdio.h>
 
 #define TESTFILE "test.gpl"
 #define TESTFILE2 "test2.gpl"
