@@ -114,7 +114,7 @@ int game_state_add_object(game_state *gs, object *obj, int layer) {
     o.obj = obj;
     o.layer = layer;
     animation *new_ani = object_get_animation(obj);
-    if (obj->singleton) {
+    if(object_get_singleton(obj)) {
         iterator it;
         render_obj *robj;
         vector_iter_begin(&gs->objects, &it);

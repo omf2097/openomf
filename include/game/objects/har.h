@@ -52,6 +52,7 @@ enum {
     STATE_DEFEAT,
     STATE_SCRAP,
     STATE_DESTRUCTION,
+    STATE_WALLDAMAGE, // Took damage from wall (electrocution)
     STATE_DONE // destruction or scrap has completed
 };
 

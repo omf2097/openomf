@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <shadowdive/shadowdive.h>
 
 #include "video/surface.h"
 #include "video/video.h"
@@ -16,6 +15,7 @@
 #include "game/objects/har.h"
 #include "game/objects/scrap.h"
 #include "game/objects/hazard.h"
+#include "game/objects/arena_constraints.h"
 #include "game/protos/object.h"
 #include "game/utils/score.h"
 #include "game/game_player.h"
@@ -278,8 +278,8 @@ void arena_reset(scene *sc) {
     // Initial har data
     vec2i pos[2];
     int dir[2] = {OBJECT_FACE_RIGHT, OBJECT_FACE_LEFT};
-    pos[0] = vec2i_create(HAR1_START_POS, 190);
-    pos[1] = vec2i_create(HAR2_START_POS, 190);
+    pos[0] = vec2i_create(HAR1_START_POS, ARENA_FLOOR);
+    pos[1] = vec2i_create(HAR2_START_POS, ARENA_FLOOR);
 
     // init HARs
     for(int i = 0; i < 2; i++) {
@@ -394,25 +394,41 @@ void arena_har_recover_hook(int player_id, scene *scene) {
 void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     object *o_har = game_player_get_har(game_state_get_player(scene->gs, player_id));
     har *h = object_get_userdata(o_har);
-    if (scene->id == SCENE_ARENA2 && o_har->pos.y < 190 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL) && abs(o_har->vel.x) >= 1) {
+
+    DEBUG("WALL: %d", wall);
+
+    int towards_wall = 0;
+    if(wall == 0 && o_har->vel.x <= 1) {
+        towards_wall = 1;
+    }
+    if(wall == 1 && o_har->vel.x >= 1) {
+        towards_wall = 1;
+    }
+
+    int on_air = 0;
+    if(o_har->pos.y < ARENA_FLOOR) {
+        on_air = 1;
+    }
+
+    /*
+     * When hitting the lightning arena wall, the HAr needs to get hit by lightning thingy.
+     */
+    if (scene->id == SCENE_ARENA2
+        && on_air
+        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
+        && towards_wall)
+    {
+        DEBUG("hit lightning wall %d", wall);
+        h->state = STATE_WALLDAMAGE;;
+
+        // Spawn wall animation
         bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
         object *obj = malloc(sizeof(object));
         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
         object_set_stl(obj, scene->bk_data.sound_translation_table);
         object_set_animation(obj, &info->ani);
-        obj->singleton = 1;
-        if (game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM) == 0) {
-            h->state = STATE_FALLEN;
-            // Set hit animation
-            object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
-            object_set_repeat(o_har, 0);
-            // from MASTER.DAT
-            object_set_custom_string(o_har, "hQ1-hQ7-x-3Q5-x-2L5-x-2M900");
-            scene->gs->screen_shake_horizontal = 3*fabsf(o_har->vel.x);
-            if(scene->gs->screen_shake_horizontal == 0) {
-                scene->gs->screen_shake_horizontal = 16;
-            }
-            object_set_vel(obj, vec2f_create(0, 0));
+        object_set_singleton(obj, 1);
+        if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM) == 0) {
 
             // spawn the electricity on top of the HAR
             // TODO this doesn't track the har's position well...
@@ -421,6 +437,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             object_create(obj2, scene->gs, vec2i_create(o_har->pos.x, o_har->pos.y), vec2f_create(0, 0));
             object_set_stl(obj2, scene->bk_data.sound_translation_table);
             object_set_animation(obj2, &info->ani);
+            object_attach_to(obj2, o_har);
             object_dynamic_tick(obj2);
             game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP);
         } else {
@@ -430,8 +447,17 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         return;
     }
 
-    if (scene->id == SCENE_ARENA4 && o_har->pos.y < 190) {
+    /**
+      * On arena wall, the wall needs to pulse. Handle it here
+      */
+    if (scene->id == SCENE_ARENA4
+        && on_air
+        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
+        && towards_wall)
+    {
         DEBUG("hit desert wall %d", wall);
+        h->state = STATE_WALLDAMAGE;
+
         // desert always shows the 'hit' animation when you touch the wall
         bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
         object *obj = malloc(sizeof(object));
@@ -445,18 +471,70 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             free(obj);
         }
     }
-#ifdef DEBUGMODE_STFU
-    DEBUG("velocity %d", abs(o_har->vel.x));
-#endif
-    if ((h->state == STATE_FALLEN || h->state == STATE_RECOIL) && abs(o_har->vel.x) > 5) {
-        h->state = STATE_RECOIL;
+
+    /**
+      * On all other arenas, the HAR needs to hit the wall with dust flying around
+      */
+    if(scene->id != SCENE_ARENA4
+        && scene->id != SCENE_ARENA2
+        && on_air
+        && towards_wall
+        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL))
+    {
+        DEBUG("hit dusty wall %d", wall);
+        h->state = STATE_WALLDAMAGE;
+
+        int amount = rand_int(2) + 3;
+        for(int i = 0; i < amount; i++) {
+            int variance = rand_int(20) - 10;
+            int anim_no = rand_int(2) + 24;
+            DEBUG("XXX anim = %d, variance = %d", anim_no, variance);
+            int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i*25;
+            vec2i coord = vec2i_create(o_har->pos.x, pos_y);
+            object *dust = malloc(sizeof(object));
+            object_create(dust, scene->gs, coord, vec2f_create(0,0));
+            object_set_stl(dust, scene->bk_data.sound_translation_table);
+            object_set_animation(dust, &bk_get_info(&scene->bk_data, anim_no)->ani);
+            game_state_add_object(scene->gs, dust, RENDER_LAYER_MIDDLE);
+        }
+
+        // Wallhit sound
+        float d = ((float)o_har->pos.x) / 640.0f;
+        float pos_pan = d - 0.25f;
+        sound_play(68, 1.0f, pos_pan, 2.0f);
+    }
+
+    /**
+      * Handle generic collision stuff
+      */
+    if((h->state == STATE_FALLEN
+        || h->state == STATE_RECOIL
+        || h->state == STATE_WALLDAMAGE)
+            && on_air
+            && towards_wall)
+    {
         // Set hit animation
         object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(o_har, 0);
         scene->gs->screen_shake_horizontal = 3*fabsf(o_har->vel.x);
         // from MASTER.DAT
-        object_set_custom_string(o_har, "hQ10-x-3Q5-x-2L5-x-2M900");
-        o_har->vel.x = 0.f;
+        if(wall == 1) {
+            object_set_custom_string(o_har, "hQ10-x-3Q5-x-2L5-x-2M900");
+            o_har->vel.x = -2;
+        } else {
+            object_set_custom_string(o_har, "hQ10-x3Q5-x2L5-x2M900");
+            o_har->vel.x = 2;
+        }
+        
+        object_dynamic_tick(o_har);
+
+        if(wall == 1) {
+            o_har->pos.x = ARENA_RIGHT_WALL - 2;
+            object_set_direction(o_har, OBJECT_FACE_RIGHT);
+        } else {
+            o_har->pos.x = ARENA_LEFT_WALL + 2;
+            object_set_direction(o_har, OBJECT_FACE_LEFT);
+        }
     }
 }
 
@@ -1087,8 +1165,8 @@ int arena_create(scene *scene) {
     // Initial har data
     vec2i pos[2];
     int dir[2] = {OBJECT_FACE_RIGHT, OBJECT_FACE_LEFT};
-    pos[0] = vec2i_create(HAR1_START_POS, 190);
-    pos[1] = vec2i_create(HAR2_START_POS, 190);
+    pos[0] = vec2i_create(HAR1_START_POS, ARENA_FLOOR);
+    pos[1] = vec2i_create(HAR2_START_POS, ARENA_FLOOR);
 
     // init HARs
     for(int i = 0; i < 2; i++) {

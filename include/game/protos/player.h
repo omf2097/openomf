@@ -65,20 +65,20 @@ void player_create(object *obj);
 void player_free(object *obj);
 void player_reload(object *obj);
 void player_reload_with_str(object *obj, const char *str);
-const char* player_get_str(object *obj);
+const char* player_get_str(const object *obj);
 void player_reset(object *obj);
-int player_frame_isset(object *obj, const char *tag);
-int player_frame_get(object *obj, const char *tag);
+int player_frame_isset(const object *obj, const char *tag);
+int player_frame_get(const object *obj, const char *tag);
 void player_run(object *obj);
 void player_set_repeat(object *obj, int repeat);
-int player_get_repeat(object *obj);
+int player_get_repeat(const object *obj);
 void player_set_end_frame(object *obj, int end_frame);
 void player_next_frame(object *obj);
 void player_goto_frame(object *obj, int frame_id);
-int player_get_frame(object *obj);
+int player_get_frame(const object *obj);
 void player_jump_to_tick(object *obj, int tick);
-char player_get_frame_letter(object *obj);
-unsigned int player_get_len_ticks(object *obj);
+char player_get_frame_letter(const object *obj);
+unsigned int player_get_len_ticks(const object *obj);
 void player_set_delay(object *obj, int delay);
 
 #endif // _PLAYER_H

@@ -379,7 +379,6 @@ void har_floor_landing_effects(object *obj) {
     // Landing sound
     float d = ((float)obj->pos.x) / 640.0f;
     float pos_pan = d - 0.25f;
-    DEBUG("XXXX %f", pos_pan);
     sound_play(56, 1.0f, pos_pan, 2.0f);
 }
 
@@ -439,9 +438,12 @@ void har_move(object *obj) {
             object_set_vel(obj, vel);
 
             // prevent har from sliding after defeat, unless they're 'fallen'
-            if(h->state != STATE_DEFEAT && h->state != STATE_FALLEN &&
-               h->health <= 0 && h->endurance <= 0 &&
-               obj->animation_state.parser->current_frame.is_final_frame) {
+            if(h->state != STATE_DEFEAT
+                && h->state != STATE_FALLEN
+                && h->health <= 0 
+                && h->endurance <= 0
+                && obj->animation_state.parser->current_frame.is_final_frame) {
+
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, ANIM_DEFEAT, 0);
                 har_event_defeat(h);
@@ -699,7 +701,9 @@ void har_check_closeness(object *obj_a, object *obj_b) {
         || b->state == STATE_JUMPING
         || a->state == STATE_DEFEAT
         || b->state == STATE_DEFEAT
-        || a->state == STATE_FALLEN) {
+        || a->state == STATE_FALLEN
+        || a->state == STATE_WALLDAMAGE
+        || b->state == STATE_WALLDAMAGE) {
         return;
     }
 
@@ -810,7 +814,9 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
 
-    if (b->state == STATE_FALLEN || b->state == STATE_STANDING_UP) {
+    if (b->state == STATE_FALLEN
+        || b->state == STATE_STANDING_UP
+        || b->state == STATE_WALLDAMAGE) {
         // can't hit em while they're down
         return;
     }
@@ -904,7 +910,9 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     // lol
     har *other = object_get_userdata(game_state_get_player(o_har->gs, abs(h->player_id - 1))->har);
 
-    if (h->state == STATE_FALLEN || h->state == STATE_STANDING_UP) {
+    if(h->state == STATE_FALLEN
+        || h->state == STATE_STANDING_UP
+        || h->state == STATE_WALLDAMAGE) {
         // can't hit em while they're down
         return;
     }
@@ -987,7 +995,12 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
         return;
     }
 
-    if (h->state == STATE_VICTORY || h->state == STATE_DEFEAT || h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION || h->state == STATE_DONE) {
+    if(h->state == STATE_VICTORY
+        || h->state == STATE_DEFEAT
+        || h->state == STATE_SCRAP
+        || h->state == STATE_DESTRUCTION
+        || h->state == STATE_DONE
+        || h->state == STATE_WALLDAMAGE) {
         // Hazards should not affect HARs at the end of a match
         return;
     }
@@ -1075,6 +1088,13 @@ void har_tick(object *obj) {
         if (hit) {
             har_event_hit_wall(h, wall);
         }
+    }
+
+    // Object took walldamage, but has now landed
+    if(h->state == STATE_WALLDAMAGE && !object_is_airborne(obj)) {
+        h->state = STATE_FALLEN;
+    } else if(h->state == STATE_WALLDAMAGE) {
+        return;
     }
     
     // Reset air_attacked when not in the air to prevent HAR from freezing

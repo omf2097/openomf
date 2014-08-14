@@ -11,7 +11,7 @@
 
 #define UNUSED(x) (void)(x)
 
-/** Creates a new, empty object.
+/** \brief Creates a new, empty object.
   * \param obj Object handle
   * \param gs Game state handle
   * \param pos Initial position
@@ -37,6 +37,9 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     // Video effect stuff
     obj->video_effects = 0;
+
+    // Attachment stuff
+    obj->attached_to = NULL;
 
     // Fire orb wandering
     obj->orbit = 0;
@@ -243,6 +246,11 @@ void object_set_playback_direction(object *obj, int dir) {
 void object_dynamic_tick(object *obj) {
     obj->age++;
 
+    if(obj->attached_to != NULL) {
+        object_set_pos(obj, object_get_pos(obj->attached_to));
+        object_set_direction(obj, object_get_direction(obj->attached_to));
+    }
+
     // Run animation player
     if(obj->cur_animation != NULL && obj->halt == 0) {
         for(int i = 0; i < obj->stride; i++)
@@ -300,7 +308,7 @@ void object_set_effects(object *obj, int effects) {
     obj->video_effects = effects;
 }
 
-int object_get_effects(object *obj) {
+int object_get_effects(const object *obj) {
     return obj->video_effects;
 }
 
@@ -487,7 +495,7 @@ void object_set_stl(object *obj, char *ptr) {
   * \param obj Object handle
   * \return Pointer to the sound translation table
   */
-char* object_get_stl(object *obj) {
+char* object_get_stl(const object *obj) {
     return obj->sound_translation_table;
 }
 
@@ -571,7 +579,7 @@ void object_set_sprite_override(object *obj, int override) {
 }
 
 void object_set_userdata(object *obj, void *ptr) { obj->userdata = ptr; }
-void* object_get_userdata(object *obj) { return obj->userdata; }
+void* object_get_userdata(const object *obj) { return obj->userdata; }
 void object_set_free_cb(object *obj, object_free_cb cbfunc) { obj->free = cbfunc; }
 void object_set_act_cb(object *obj, object_act_cb cbfunc) { obj->act = cbfunc; }
 void object_set_static_tick_cb(object *obj, object_tick_cb cbfunc) { obj->static_tick = cbfunc; }
@@ -587,43 +595,46 @@ void object_set_layers(object *obj, int layers) { obj->layers = layers; }
 void object_set_group(object *obj, int group) { obj->group = group; }
 void object_set_gravity(object *obj, float gravity) { obj->gravity = gravity; }
 
-int object_get_gravity(object *obj) { return obj->gravity; }
-int object_get_group(object *obj) { return obj->group; }
-int object_get_layers(object *obj) { return obj->layers; }
+int object_get_gravity(const object *obj) { return obj->gravity; }
+int object_get_group(const object *obj) { return obj->group; }
+int object_get_layers(const object *obj) { return obj->layers; }
 
 void object_set_pal_offset(object *obj, int offset) { obj->pal_offset = offset; }
-int object_get_pal_offset(object *obj) { return obj->pal_offset; }
+int object_get_pal_offset(const object *obj) { return obj->pal_offset; }
 
 void object_set_halt(object *obj, int halt) { obj->halt = halt; }
-int object_get_halt(object *obj) { return obj->halt; }
+int object_get_halt(const object *obj) { return obj->halt; }
 
 void object_set_repeat(object *obj, int repeat) { player_set_repeat(obj, repeat); }
-int object_get_repeat(object *obj) { return player_get_repeat(obj); }
+int object_get_repeat(const object *obj) { return player_get_repeat(obj); }
 int object_finished(object *obj) { return obj->animation_state.finished; }
 void object_set_direction(object *obj, int dir) { obj->direction = dir; }
-int object_get_direction(object *obj) { return obj->direction; }
+int object_get_direction(const object *obj) { return obj->direction; }
 
 void object_set_shadow(object *obj, int enable) { obj->cast_shadow = enable; }
-int object_get_shadow(object *obj) { return obj->cast_shadow; }
+int object_get_shadow(const object *obj) { return obj->cast_shadow; }
 
-int object_w(object *obj) { return object_get_size(obj).x; }
-int object_h(object *obj) { return object_get_size(obj).y; }
-int object_px(object *obj) { return vec2f_to_i(obj->pos).x; }
-int object_py(object *obj) { return vec2f_to_i(obj->pos).y; }
-float object_vx(object *obj) { return obj->vel.x; }
-float object_vy(object *obj) { return obj->vel.y; }
+int object_w(const object *obj) { return object_get_size(obj).x; }
+int object_h(const object *obj) { return object_get_size(obj).y; }
+int object_px(const object *obj) { return vec2f_to_i(obj->pos).x; }
+int object_py(const object *obj) { return vec2f_to_i(obj->pos).y; }
+float object_vx(const object *obj) { return obj->vel.x; }
+float object_vy(const object *obj) { return obj->vel.y; }
 
 void object_set_px(object *obj, int val) { obj->pos.x = val; }
 void object_set_py(object *obj, int val) { obj->pos.y = val; }
 void object_set_vx(object *obj, float val) { obj->vel.x = val; }
 void object_set_vy(object *obj, float val) { obj->vel.y = val; }
 
-vec2i object_get_pos(object *obj) { return vec2f_to_i(obj->pos); }
-vec2f object_get_vel(object *obj) { return obj->vel; }
+vec2i object_get_pos(const object *obj) { return vec2f_to_i(obj->pos); }
+vec2f object_get_vel(const object *obj) { return obj->vel; }
 void object_set_pos(object *obj, vec2i pos) { obj->pos = vec2i_to_f(pos); }
 void object_set_vel(object *obj, vec2f vel) { obj->vel = vel; }
 
-vec2i object_get_size(object *obj) {
+void object_set_singleton(object *obj, int singleton) { obj->singleton = singleton; }
+int object_get_singleton(const object *obj) { return obj->singleton; }
+
+vec2i object_get_size(const object *obj) {
     if(obj->cur_sprite != NULL) {
         return sprite_get_size(obj->cur_sprite);
     }
@@ -634,7 +645,7 @@ void object_disable_rewind_tag(object *obj, int disable_d) {
     obj->animation_state.disable_d = disable_d;
 }
 
-int object_is_rewind_tag_disabled(object *obj) {
+int object_is_rewind_tag_disabled(const object *obj) {
     return obj->animation_state.disable_d;
 }
 
@@ -652,7 +663,11 @@ void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata)
     obj->animation_state.destroy_userdata = userdata;
 }
 
-int object_is_airborne(object *obj) {
+int object_is_airborne(const object *obj) {
     return obj->pos.y < ARENA_FLOOR;
 }
 
+/* Attaches one object to another. Positions are synced to this from the attached. */
+void object_attach_to(object *obj, const object *attach_to) {
+    obj->attached_to = attach_to;
+}

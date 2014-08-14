@@ -19,13 +19,13 @@
 
 // ---------------- Private functions ----------------
 
-int isset(sd_stringparser_frame *frame, const char *tag) {
+int isset(const sd_stringparser_frame *frame, const char *tag) {
     const sd_stringparser_tag_value *v;
     sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
     return v->is_set;
 }
 
-int get(sd_stringparser_frame *frame, const char *tag) {
+int get(const sd_stringparser_frame *frame, const char *tag) {
     const sd_stringparser_tag_value *v;
     sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
     return v->value;
@@ -159,12 +159,12 @@ void player_reset(object *obj) {
     sd_stringparser_reset(obj->animation_state.parser);
 }
 
-int player_frame_isset(object *obj, const char *tag) {
+int player_frame_isset(const object *obj, const char *tag) {
     sd_stringparser_frame f = obj->animation_state.parser->current_frame;
     return isset(&f, tag);
 }
 
-int player_frame_get(object *obj, const char *tag) {
+int player_frame_get(const object *obj, const char *tag) {
     sd_stringparser_frame f = obj->animation_state.parser->current_frame;
     return get(&f, tag);
 }
@@ -635,7 +635,7 @@ void player_jump_to_tick(object *obj, int tick) {
     obj->animation_state.ticks = tick;
 }
 
-unsigned int player_get_len_ticks(object *obj) {
+unsigned int player_get_len_ticks(const object *obj) {
     return obj->animation_state.ticks_len;
 }
 
@@ -643,7 +643,7 @@ void player_set_repeat(object *obj, int repeat) {
     obj->animation_state.repeat = repeat;
 }
 
-int player_get_repeat(object *obj) {
+int player_get_repeat(const object *obj) {
     return obj->animation_state.repeat;
 }
 
@@ -663,14 +663,14 @@ void player_goto_frame(object *obj, int frame_id) {
     obj->animation_state.ticks++;
 }
 
-int player_get_frame(object *obj) {
+int player_get_frame(const object *obj) {
     return sd_stringparser_get_current_frame_id(obj->animation_state.parser);
 }
 
-char player_get_frame_letter(object *obj) {
+char player_get_frame_letter(const object *obj) {
     return sd_stringparser_get_current_frame_letter(obj->animation_state.parser);
 }
 
-const char* player_get_str(object *obj) {
+const char* player_get_str(const object *obj) {
     return obj->animation_state.parser->string;
 }
