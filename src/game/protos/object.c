@@ -559,6 +559,7 @@ animation* object_get_animation(object *obj) {
   * \param id Sprite ID (starting from 0). Negative values will set sprite to nonexistent (NULL).
   */
 void object_select_sprite(object *obj, int id) {
+    if(obj == NULL) return;
     if(!obj->sprite_override) {
         if(id < 0) {
             obj->cur_sprite = NULL;

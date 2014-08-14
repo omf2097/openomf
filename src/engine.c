@@ -239,6 +239,7 @@ void engine_run(int net_mode) {
 
         // Render scene
         int dt = (SDL_GetTicks() - frame_start);
+        frame_start = SDL_GetTicks(); // Reset timer
         dynamic_wait += dt;
         static_wait += dt;
         while(static_wait > 10) {
@@ -260,7 +261,6 @@ void engine_run(int net_mode) {
             // Handle waiting period leftover time
             dynamic_wait -= game_state_ms_per_dyntick(gs);
         }
-        frame_start = SDL_GetTicks();
 
 #ifndef STANDALONE_SERVER
         // Handle audio
