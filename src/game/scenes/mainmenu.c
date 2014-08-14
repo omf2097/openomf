@@ -162,6 +162,17 @@ typedef struct mainmenu_local_t {
     int mstack_pos;
 } mainmenu_local;
 
+void mainmenu_startup(scene *scene, int id, int *m_load, int *m_repeat) {
+    switch(id) {
+        case 10:
+        case 11:
+            *m_load = 1;
+            *m_repeat = 1;
+            break;
+    }
+}
+
+
 char *dupestr(const char *s) {
     return strcpy(malloc(strlen(s)+1), s);
 }
@@ -1435,6 +1446,7 @@ int mainmenu_create(scene *scene) {
     scene_set_render_overlay_cb(scene, mainmenu_render);
     scene_set_free_cb(scene, mainmenu_free);
     scene_set_dynamic_tick_cb(scene, mainmenu_tick);
+    scene_set_startup_cb(scene, mainmenu_startup);
 
     if(scene->gs->net_mode == NET_MODE_CLIENT) {
         component_click(&local->net_button);

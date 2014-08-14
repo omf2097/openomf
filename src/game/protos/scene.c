@@ -111,7 +111,7 @@ void scene_init(scene *scene) {
         scene_startup(scene, info->ani.id, &m_load, &m_repeat);
 
         // Start up animations
-        if(info->load_on_start == 255 || m_load) {
+        if(m_load) {
             object *obj = malloc(sizeof(object));
             object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
             object_set_stl(obj, scene->bk_data.sound_translation_table);
