@@ -18,6 +18,7 @@
 #include "controller/controller.h"
 #include "utils/log.h"
 #include "utils/random.h"
+#include "audio/sound.h"
 
 #define FUDGEFACTOR 0.003f
 #define IS_ZERO(n) (n < 0.8 && n > -0.8)
@@ -363,6 +364,25 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
     }
 }
 
+void har_floor_landing_effects(object *obj) {
+    int amount = rand_int(2) + 1;
+    for(int i = 0; i < amount; i++) {
+        int variance = rand_int(20) - 10;
+        vec2i coord = vec2i_create(obj->pos.x + variance + i*10, obj->pos.y);
+        object *dust = malloc(sizeof(object));
+        object_create(dust, obj->gs, coord, vec2f_create(0,0));
+        object_set_stl(dust, object_get_stl(obj));
+        object_set_animation(dust, &bk_get_info(&game_state_get_scene(obj->gs)->bk_data, 26)->ani);
+        game_state_add_object(obj->gs, dust, RENDER_LAYER_MIDDLE);
+    }
+
+    // Landing sound
+    float d = ((float)obj->pos.x) / 640.0f;
+    float pos_pan = d - 0.25f;
+    DEBUG("XXXX %f", pos_pan);
+    sound_play(56, 1.0f, pos_pan, 2.0f);
+}
+
 void har_move(object *obj) {
     vec2f vel = object_get_vel(obj);
     obj->pos.x += vel.x;
@@ -398,16 +418,17 @@ void har_move(object *obj) {
                 har_action_hook(obj, ACT_STOP);
                 har_action_hook(obj, ACT_FLUSH);
                 har_event_land(h);
+                har_floor_landing_effects(obj);
             /*}*/
         } else if (h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.4;
             vec2f vel = object_get_vel(obj);
             vec2i pos = object_get_pos(obj);
             if(pos.y > ARENA_FLOOR) {
-                // TODO spawn clouds of dust
                 pos.y = ARENA_FLOOR;
                 vel.y = -vel.y * dampen;
                 vel.x = vel.x * dampen;
+                har_floor_landing_effects(obj);
             }
 
             if (pos.x <= ARENA_LEFT_WALL || pos.x >= ARENA_RIGHT_WALL) {
@@ -1121,7 +1142,13 @@ void har_tick(object *obj) {
     }
 
     // Endurance restore
-    if (h->endurance < h->endurance_max && !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
+    if(h->endurance < h->endurance_max 
+        && !(h->executing_move 
+            || h->state == STATE_RECOIL
+            || h->state == STATE_STUNNED
+            || h->state == STATE_FALLEN
+            || h->state == STATE_STANDING_UP
+            || h->state == STATE_DEFEAT)) {
         h->endurance += 1;
     }
 
