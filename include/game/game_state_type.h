@@ -39,6 +39,10 @@ typedef struct game_state_t {
     int screen_shake_horizontal;
     int screen_shake_vertical;
 
+    // For momentary game speed switches
+    int speed_slowdown_previous;
+    int speed_slowdown_time;
+
     // Crossfade state
     int next_wait_ticks;
     int this_wait_ticks;

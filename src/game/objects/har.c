@@ -501,6 +501,17 @@ void har_take_damage(object *obj, str* string, float damage) {
         har_screencaps_capture(&other_player->screencaps, other_player->har, SCREENCAP_BLOW);
     }
 
+    // If damage is high enough, slow down the game for a bit
+    if(damage > 5.0f) {
+        DEBUG("Slowdown: Slowing from %d to %d.",
+            game_state_get_speed(obj->gs),
+            game_state_get_speed(obj->gs)-2);
+        game_state_slowdown(
+            obj->gs,
+            100,
+            game_state_get_speed(obj->gs)-2);
+    }
+
     // chronos' stasis does not have a hit animation
     if (string->data && str_size(string) > 0) {
         sd_stringparser_frame f;
@@ -580,7 +591,6 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
         scrap_create(scrap);
         game_state_add_object(obj->gs, scrap, layer);
     }
-
 }
 
 // TODO: This is kind of a hack. It's used to check if either

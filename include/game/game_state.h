@@ -40,10 +40,14 @@ void reconfigure_controller(game_state *gs);
 int game_state_rewind(game_state *gs, int rtt);
 void game_state_replay(game_state *gs, int rtt);
 
+void game_state_slowdown(game_state *gs, int ticks, int rate);
+
+void game_state_set_speed(game_state *gs, int speed);
+unsigned int game_state_get_speed(game_state *gs);
+
 int game_state_add_object(game_state *gs, object *obj, int layer);
 void game_state_del_object(game_state *gs, object *obj);
 void game_state_del_animation(game_state *gs, int anim_id);
-void game_state_set_speed(game_state *gs, int speed);
 void game_state_get_projectiles(game_state *gs, vector *obj_proj);
 void game_state_clear_hazards_projectiles(game_state *gs);
 

@@ -429,6 +429,10 @@ void object_move(object *obj) {
     }
 }
 
+int object_palette_self_transform(object *obj) {
+    return 0;
+}
+
 // This does palette transformations to the WHOLE screen palette
 // and affects all objects!
 int object_palette_transform(object *obj, screen_palette *pal) {

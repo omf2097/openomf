@@ -30,7 +30,7 @@
 #include "game/scenes/scoreboard.h"
 
 #define MS_PER_OMF_TICK 10
-#define MS_PER_OMF_TICK_SLOWEST 150
+#define MS_PER_OMF_TICK_SLOWEST 90
 
 enum {
     TICK_DYNAMIC = 0,
@@ -54,12 +54,16 @@ int game_state_create(game_state *gs, int net_mode) {
     gs->role = ROLE_CLIENT;
     gs->next_requires_refresh = 0;
     gs->net_mode = net_mode;
-    gs->speed = settings_get()->gameplay.speed;
+    gs->speed = settings_get()->gameplay.speed + 5;
     vector_create(&gs->objects, sizeof(render_obj));
 
     // For screen shake
     gs->screen_shake_horizontal = 0;
     gs->screen_shake_vertical = 0;
+
+    // For momentary game speed switches
+    gs->speed_slowdown_previous = 0;
+    gs->speed_slowdown_time = 0;
 
     // Used for crossfades
     gs->next_wait_ticks = 0;
@@ -134,9 +138,19 @@ int game_state_add_object(game_state *gs, object *obj, int layer) {
     return 0;
 }
 
+void game_state_slowdown(game_state *gs, int ticks, int rate) {
+    gs->speed_slowdown_previous = gs->speed;
+    gs->speed_slowdown_time = ticks;
+    gs->speed = rate;
+}
+
 void game_state_set_speed(game_state *gs, int speed) {
     DEBUG("game speed set to %d", speed);
-    gs->speed = speed;
+    gs->speed = (speed + 5);
+}
+
+unsigned int game_state_get_speed(game_state *gs) {
+    return gs->speed - 5;
 }
 
 void game_state_del_animation(game_state *gs, int anim_id) {
@@ -502,6 +516,15 @@ void game_state_call_tick(game_state *gs, int mode) {
             object_static_tick(robj->obj);
         }
     }
+
+    // Speed back up    
+    if(gs->speed_slowdown_time == 0) {
+        DEBUG("Slowdown: Speed back up from %d to %d.", gs->speed, gs->speed_slowdown_previous);
+        gs->speed = gs->speed_slowdown_previous;
+    }
+    if(gs->speed_slowdown_time >= 0) {
+        gs->speed_slowdown_time--;
+    }
 }
 
 // This function is always called with the same interval, and game speed does not affect it
@@ -736,13 +759,15 @@ void game_state_free(game_state *gs) {
 }
 
 int game_state_ms_per_dyntick(game_state *gs) {
+    float tmp;
     switch(gs->this_id) {
         case SCENE_ARENA0:
         case SCENE_ARENA1:
         case SCENE_ARENA2:
         case SCENE_ARENA3:
         case SCENE_ARENA4:
-            return MS_PER_OMF_TICK_SLOWEST / gs->speed;
+            tmp = 5.0f + MS_PER_OMF_TICK_SLOWEST - ((float)gs->speed / 15.0f) * MS_PER_OMF_TICK_SLOWEST;
+            return (int)tmp;
     }
     return MS_PER_OMF_TICK;
 }
