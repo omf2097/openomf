@@ -107,7 +107,7 @@ sd_animation* sd_bk_anim_get_animation(const sd_bk_anim *bka);
  * \retval SD_SUCCESS Success. 
  *
  * \param bka BK animation info struct to modify.
- * \param str String to set.
+ * \param data String to set.
  */ 
 int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data);
 
