@@ -430,6 +430,11 @@ void object_move(object *obj) {
 }
 
 int object_palette_self_transform(object *obj) {
+    player_sprite_state *rstate = &obj->sprite_state;
+
+    (void)(rstate);
+
+
     return 0;
 }
 

@@ -105,6 +105,7 @@ SDL_Texture* tcache_get(surface *sur,
 
     // Form a key
     tcache_entry_key key;
+    memset(&key, 0, sizeof(tcache_entry_key));
     key.c_pal_offset = (sur->type == SURFACE_TYPE_RGBA) ? 0 : pal_offset;
     key.c_remap_table = (sur->type == SURFACE_TYPE_RGBA) ? 0 : remap_table;
     key.c_surface = sur;
