@@ -10,6 +10,7 @@
 #define COLOR_MENU_BG     color_create(4,4,16,210)
 
 int textinput_action(component *c, int action);
+void textinput_focus(component *c, int focus);
 
 void textinput_create(component *c, font *font, const char *text, const char *initialvalue) {
     component_create(c);
@@ -33,6 +34,7 @@ void textinput_create(component *c, font *font, const char *text, const char *in
     c->event = textinput_event;
     c->action = textinput_action;
     c->tick = textinput_tick;
+    c->focus = textinput_focus;
 }
 
 void textinput_free(component *c) {
@@ -74,10 +76,23 @@ void textinput_render(component *c) {
 
 int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
-    if (e->type == SDL_KEYDOWN) {
+    if (e->type == SDL_TEXTINPUT) {
         textinput *tb = c->obj;
-        unsigned char code = e->key.keysym.sym;
-        unsigned char len = strlen(tb->buf);
+        size_t len = strlen(tb->buf);
+        if (strlen(e->text.text) == 1) {
+            // make sure it is not a unicode sequence
+            unsigned char c = e->text.text[0];
+            if (c >= 32 && c <= 126) {
+                // only allow ASCII through
+                if (len < sizeof(tb->buf)-1) {
+                    tb->buf[len+1] = '\0';
+                    tb->buf[len] = c;
+                }
+            }
+        }
+    } else if (e->type == SDL_KEYDOWN) {
+        textinput *tb = c->obj;
+        size_t len = strlen(tb->buf);
         const unsigned char *state = SDL_GetKeyboardState(NULL);
         if (state[SDL_SCANCODE_BACKSPACE] || state[SDL_SCANCODE_DELETE]) {
             if (len > 0) {
@@ -98,11 +113,6 @@ int textinput_event(component *c, SDL_Event *e) {
                 len += c_size;
                 tb->buf[len] = 0;
             }
-        } else if (code >= 32 && code <= 126) {
-            if (len < sizeof(tb->buf)-1) {
-                tb->buf[len+1] = '\0';
-                tb->buf[len] = code;
-            }
         }
     }
     return 1;
@@ -110,6 +120,14 @@ int textinput_event(component *c, SDL_Event *e) {
 
 int textinput_action(component *c, int action) {
     return 1;
+}
+
+void textinput_focus(component *c, int focus) {
+    if (focus) {
+        SDL_StartTextInput();
+    } else {
+        SDL_StopTextInput();
+    }
 }
 
 void textinput_tick(component *c) {

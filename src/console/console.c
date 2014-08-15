@@ -197,6 +197,7 @@ int console_init() {
     if(con != NULL) return 1;
     con = malloc(sizeof(console));
     con->isopen = 0;
+    con->ownsinput = 0;
     con->ypos = 0;
     con->ticks = 0;
     con->dir = 0;
@@ -247,9 +248,21 @@ void console_close() {
 }
 
 void console_event(game_state *gs, SDL_Event *e) {
-    if (e->type == SDL_KEYDOWN) {
-        unsigned char code = e->key.keysym.sym;
-        unsigned char len = strlen(con->input);
+    if (e->type == SDL_TEXTINPUT) {
+        size_t len = strlen(con->input);
+        if (strlen(e->text.text) == 1) {
+            // make sure it is not a unicode sequence
+            unsigned char c = e->text.text[0];
+            if (c >= 32 && c <= 126) {
+                // only allow ASCII through
+                if (len < sizeof(con->input)-1) {
+                    con->input[len+1] = '\0';
+                    con->input[len] = c;
+                }
+            }
+        }
+    } else if (e->type == SDL_KEYDOWN) {
+        size_t len = strlen(con->input);
         unsigned char scancode = e->key.keysym.scancode;
         /*if ((code >= SDLK_a && code <= SDLK_z) || (code >= SDLK_0 && code <= SDLK_9) || code == SDLK_SPACE || code == SDLK) {*/
         // SDLK_UP and SDLK_DOWN does not work here
@@ -279,11 +292,6 @@ void console_event(game_state *gs, SDL_Event *e) {
             console_output_scroll_up(1);
         } else if(scancode == SDL_SCANCODE_PAGEDOWN) {
             console_output_scroll_down(1);
-        } else if (code >= 32 && code <= 126) {
-            if (len < sizeof(con->input)-1) {
-                con->input[len+1] = '\0';
-                con->input[len] = code;
-            }
         }
     }
 }
@@ -346,9 +354,18 @@ int console_window_is_open() {
 }
 
 void console_window_open() {
+    if (!SDL_IsTextInputActive()) {
+        SDL_StartTextInput();
+        con->ownsinput = 1;
+    } else {
+        con->ownsinput = 0;
+    }
     con->isopen = 1;
 }
 
 void console_window_close() {
+    if (con->ownsinput) {
+        SDL_StopTextInput();
+    }
     con->isopen = 0;
 }

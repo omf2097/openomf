@@ -15,6 +15,7 @@ typedef struct console_t {
     char input[41];
     surface background;
     int isopen;
+    int ownsinput;
     int ypos;
     unsigned int ticks, dir;
     hashmap cmds; // string -> command

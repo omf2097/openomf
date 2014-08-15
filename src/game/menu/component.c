@@ -23,6 +23,7 @@ void component_create(component *c) {
     c->click = NULL;
     c->toggle = NULL;
     c->slide = NULL;
+    c->focus = NULL;
 }
 
 void component_free(component *c) {

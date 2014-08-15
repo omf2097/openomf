@@ -48,7 +48,14 @@ void menu_select(menu *menu, component *c) {
 
     tmp = vector_get(&menu->objs, menu->selected);
     (*tmp)->selected=0; // unselect the old component
+    if((*tmp)->focus) {
+        (*tmp)->focus(*tmp, 0);
+    }
     c->selected = 1; //select the new one
+    if(c->focus) {
+        c->focus(c, 1);
+    }
+
     menu->selected = i;
 }
 
