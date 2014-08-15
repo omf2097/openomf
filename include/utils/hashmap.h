@@ -5,7 +5,6 @@
 #include "utils/allocator.h"
 
 typedef struct hashmap_pair_t hashmap_pair;
-typedef struct hashmap_bucket_t hashmap_bucket;
 typedef struct hashmap_node_t hashmap_node;
 typedef struct hashmap_t hashmap;
 
@@ -19,12 +18,8 @@ struct hashmap_node_t {
     hashmap_node *next;
 };
 
-struct hashmap_bucket_t {
-    hashmap_node *first;
-};
-
 struct hashmap_t {
-    hashmap_bucket *buckets;
+    hashmap_node **buckets;
     unsigned int buckets_x;
     unsigned int reserved;
     allocator alloc;
