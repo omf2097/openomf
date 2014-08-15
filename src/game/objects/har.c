@@ -502,14 +502,14 @@ void har_take_damage(object *obj, str* string, float damage) {
     }
 
     // If damage is high enough, slow down the game for a bit
-    if(damage > 5.0f) {
+    if(damage > 12.0f) {
         DEBUG("Slowdown: Slowing from %d to %d.",
             game_state_get_speed(obj->gs),
-            game_state_get_speed(obj->gs)-2);
+            game_state_get_speed(obj->gs)-1);
         game_state_slowdown(
             obj->gs,
-            100,
-            game_state_get_speed(obj->gs)-2);
+            120,
+            game_state_get_speed(obj->gs)-1);
     }
 
     // chronos' stasis does not have a hit animation
