@@ -8,6 +8,7 @@ set(VERSION_PATCH "5")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Options
+OPTION(USE_LTO "Enable LTO" OFF)
 OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_DUMB "Use libdumb for module playback" ON)
@@ -26,6 +27,13 @@ find_package(confuse)
 # These flags are used for all builds
 set(CMAKE_C_FLAGS "-Wall")
 add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH})
+
+# Enable LTO flags if requested
+IF(USE_LTO)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+    message(NOTICE "Link time optimization enabled!")
+ENDIF()
 
 # Check available compiler
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
