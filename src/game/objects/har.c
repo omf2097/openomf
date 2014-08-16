@@ -1107,6 +1107,7 @@ int har_palette_transform(object *obj, screen_palette *pal) {
 
 void har_tick(object *obj) {
     har *h = object_get_userdata(obj);
+
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
@@ -1137,6 +1138,9 @@ void har_tick(object *obj) {
             har_event_hit_wall(h, wall);
         }
     }
+
+    // See if we are being grabbed
+    h->is_grabbed = (obj->enemy_slide_state.timer > 0);
 
     // Check for HAR specific palette tricks
     if(player_frame_isset(obj, "ptr")) {
@@ -1934,6 +1938,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->executing_move = 0;
     local->air_attacked = 0;
     local->is_wallhugging = 0;
+    local->is_grabbed = 0;
 
     local->delay = 0;
 

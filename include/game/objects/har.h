@@ -123,6 +123,7 @@ typedef struct har_t {
     uint8_t damage_received; // Damage was received this animation
     uint8_t air_attacked;
     uint8_t is_wallhugging; // HAR is standing right next to a wall
+    uint8_t is_grabbed; // Is being moved by another object. Set by ex, ey tags
 
     int16_t health_max, health;
     int16_t endurance_max, endurance;

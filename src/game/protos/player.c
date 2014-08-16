@@ -298,7 +298,7 @@ void player_run(object *obj) {
                 obj->animation_state.enemy->sprite_state.disable_gravity = 1;
             }
 
-            // Animation management
+            // Animation creation command
             if(isset(f, "m") && state->spawn != NULL) {
                 int mx = 0;
                 if (isset(f, "mrx")) {
@@ -324,10 +324,14 @@ void player_run(object *obj) {
                 /*DEBUG("Spawning %d, with g = %d, pos = (%d,%d)", */
                     /*get(f, "m"), mg, mx, my);*/
                 state->spawn(
-                    obj, get(f, "m"),
-                    vec2i_create(mx, my), mg,
+                    obj,
+                    get(f, "m"),
+                    vec2i_create(mx, my),
+                    mg,
                     state->spawn_userdata);
             }
+
+            // Animation deletion
             if(isset(f, "md") && state->destroy != NULL) {
                 state->destroy(obj, get(f, "md"), state->destroy_userdata);
             }
@@ -473,7 +477,6 @@ void player_run(object *obj) {
                 obj->slide_state.timer = obj->vel.y*-2;
             }
 
-
             // handle scaling on the Y axis
             if(isset(f, "y")) {
                 obj->y_percent = get(f, "y") / 100.0f;
@@ -497,11 +500,12 @@ void player_run(object *obj) {
                     obj->enemy_slide_state.duration = 0;
                     obj->enemy_slide_state.dest.x = x;
                     obj->enemy_slide_state.dest.y = y;
-                    /*DEBUG("ENEMY Slide object %d for (x,y) = (%f,%f) for %d ticks. (%d,%d) %f, %%f",
+                    /*DEBUG("ENEMY Slide object %d for (x,y) = (%f,%f) for %d ticks. (%d,%d)",
                             obj->cur_animation->id,
-                            obj->enemy_slide_state.vel.x,
-                            obj->enemy_slide_state.vel.y,
-                            param->duration, x, y, x_dist, y_dist);*/
+                            obj->enemy_slide_state.dest.x,
+                            obj->enemy_slide_state.dest.y,
+                            param->duration,
+                            x, y);*/
                 }
             }
             if (isset(f, "v") == 0 &&

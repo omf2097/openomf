@@ -61,6 +61,7 @@ struct object_t {
     int8_t direction;
     int8_t group;
 
+    // Set by q tag
     int8_t hit_frames;
     int8_t can_hit;
 
@@ -76,6 +77,7 @@ struct object_t {
     float y_percent;
     float gravity;
 
+    // Bitmask for several video effects (shadow, etc.)
     int video_effects;
 
     uint8_t layers;
@@ -86,6 +88,8 @@ struct object_t {
     char *sound_translation_table;
     uint8_t sprite_override; //< Tells whether cur_sprite should be kept constant regardless of anim string.
 
+    // NULL if this object is not attached to any other objects
+    // Object pointer if it is. In this case, velocity and direction will be matched.
     const object *attached_to;
 
     uint8_t pal_offset;

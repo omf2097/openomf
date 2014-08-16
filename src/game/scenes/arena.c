@@ -414,7 +414,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     if (scene->id == SCENE_ARENA2
         && on_air
         && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && towards_wall)
+        && towards_wall
+        && !h->is_grabbed)
     {
         DEBUG("hit lightning wall %d", wall);
         h->state = STATE_WALLDAMAGE;;
@@ -451,7 +452,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     if (scene->id == SCENE_ARENA4
         && on_air
         && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && towards_wall)
+        && towards_wall
+        && !h->is_grabbed)
     {
         DEBUG("hit desert wall %d", wall);
         h->state = STATE_WALLDAMAGE;
@@ -477,7 +479,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         && scene->id != SCENE_ARENA2
         && on_air
         && towards_wall
-        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL))
+        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
+        && !h->is_grabbed)
     {
         DEBUG("hit dusty wall %d", wall);
         h->state = STATE_WALLDAMAGE;
@@ -505,11 +508,12 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     /**
       * Handle generic collision stuff
       */
-    if((h->state == STATE_FALLEN
-        || h->state == STATE_RECOIL
-        || h->state == STATE_WALLDAMAGE)
-            && on_air
-            && towards_wall)
+    if(on_air
+        && towards_wall
+        && !h->is_grabbed
+        && (h->state == STATE_FALLEN
+            || h->state == STATE_RECOIL
+            || h->state == STATE_WALLDAMAGE))
     {
         // Set hit animation
         object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
