@@ -25,7 +25,7 @@ uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int x) {
 void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
     hm->alloc = alloc;
     hm->buckets_x = n_size;
-    size_t b_size = hashmap_size(hm) * sizeof(hashmap_node);
+    size_t b_size = hashmap_size(hm) * sizeof(hashmap_node*);
     hm->buckets = hm->alloc.cmalloc(b_size);
     memset(hm->buckets, 0, b_size);
     hm->reserved = 0;
