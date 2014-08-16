@@ -26,7 +26,7 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
     hm->alloc = alloc;
     hm->buckets_x = n_size;
     size_t b_size = hashmap_size(hm) * sizeof(hashmap_node);
-    hm->buckets = (hashmap_node**)hm->alloc.cmalloc(b_size);
+    hm->buckets = hm->alloc.cmalloc(b_size);
     memset(hm->buckets, 0, b_size);
     hm->reserved = 0;
 }
