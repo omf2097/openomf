@@ -75,8 +75,8 @@ int video_init(int window_w,
     // Clear palettes
     state.cur_palette = malloc(sizeof(screen_palette));
     state.base_palette = malloc(sizeof(palette));
+    memset(state.cur_palette, 0, sizeof(screen_palette));
     state.cur_palette->version = 1;
-    memset(state.cur_palette->data, 0, 768);
 
     // Form title string
     char title[32];
