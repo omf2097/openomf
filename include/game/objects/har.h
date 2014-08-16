@@ -110,9 +110,9 @@ typedef struct game_player_t game_player;
 
 typedef struct har_t {
     game_player *gp;
-    uint8_t id;
-    uint8_t player_id;
-    uint8_t pilot_id;
+    uint8_t id; // Har ID
+    uint8_t player_id; // Player number, 0 or 1
+    uint8_t pilot_id;  // Pilot ID
     uint8_t state;
     uint8_t executing_move;
     uint8_t flinching;
@@ -122,7 +122,7 @@ typedef struct har_t {
     uint8_t damage_done; // Damage was done this animation
     uint8_t damage_received; // Damage was received this animation
     uint8_t air_attacked;
-    uint8_t is_wallhugging;
+    uint8_t is_wallhugging; // HAR is standing right next to a wall
 
     int16_t health_max, health;
     int16_t endurance_max, endurance;
@@ -131,6 +131,14 @@ typedef struct har_t {
 
     uint8_t stun_timer;
     uint8_t delay; // used for 'stretching' frames in netplay
+
+    // ptr, pe, etc. stuff
+    uint8_t p_pal_ref;
+    uint8_t p_har_switch;
+    uint8_t p_color_ref;
+    int p_ticks_left;
+    unsigned int p_ticks_length;
+    uint8_t p_color_fn;
 
     list har_hooks;
 

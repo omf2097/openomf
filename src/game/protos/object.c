@@ -83,6 +83,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->serialize = NULL;
     obj->unserialize = NULL;
     obj->debug = NULL;
+    obj->pal_transform = NULL;
 }
 
 /*
@@ -429,18 +430,9 @@ void object_move(object *obj) {
     }
 }
 
-int object_palette_self_transform(object *obj) {
-    player_sprite_state *rstate = &obj->sprite_state;
-
-    (void)(rstate);
-
-
-    return 0;
-}
-
 // This does palette transformations to the WHOLE screen palette
 // and affects all objects!
-int object_palette_transform(object *obj, screen_palette *pal) {
+int object_scenewide_palette_transform(object *obj, screen_palette *pal) {
     player_sprite_state *rstate = &obj->sprite_state;
     if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
         float bp = ((float)rstate->pal_begin) +
@@ -471,6 +463,17 @@ int object_palette_transform(object *obj, screen_palette *pal) {
         return 1;
     }
     return 0;
+}
+
+// This does palette transformations to the WHOLE screen palette
+// and affects all objects!
+int object_palette_transform(object *obj, screen_palette *pal) {
+    int transform_done = 0;
+    transform_done |= object_scenewide_palette_transform(obj, pal);
+    if(obj->pal_transform != NULL) {
+        transform_done |= obj->pal_transform(obj, pal);
+    }
+    return transform_done;
 }
 
 /** Frees the object and all resources attached to it (even the animation, if it is owned by the object)
@@ -600,6 +603,7 @@ void object_set_move_cb(object *obj, object_move_cb cbfunc) { obj->move = cbfunc
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc) { obj->debug = cbfunc; }
 void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc) { obj->serialize = cbfunc; }
 void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc) { obj->unserialize = cbfunc; }
+void object_set_pal_transform_cb(object *obj, object_palette_transform_cb cbfunc) { obj->pal_transform = cbfunc; }
 
 void object_set_layers(object *obj, int layers) { obj->layers = layers; }
 void object_set_group(object *obj, int group) { obj->group = group; }

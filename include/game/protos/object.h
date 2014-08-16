@@ -50,6 +50,7 @@ typedef void (*object_finish_cb)(object *obj);
 typedef int  (*object_serialize_cb)(object *obj, serial *ser);
 typedef int  (*object_unserialize_cb)(object *obj, serial *ser, int animation_id, game_state *gs);
 typedef void (*object_debug_cb)(object *obj);
+typedef int (*object_palette_transform_cb)(object *obj, screen_palette *pal);
 
 struct object_t {
     game_state *gs;
@@ -116,6 +117,7 @@ struct object_t {
     object_serialize_cb serialize;
     object_unserialize_cb unserialize;
     object_debug_cb debug;
+    object_palette_transform_cb pal_transform;
 };
 
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
@@ -174,6 +176,7 @@ void object_set_move_cb(object *obj, object_move_cb cbfunc);
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc);
 void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc);
 void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc);
+void object_set_pal_transform_cb(object *obj, object_palette_transform_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);
 int object_get_repeat(const object *obj);
