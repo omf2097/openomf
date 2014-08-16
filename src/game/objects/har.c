@@ -474,12 +474,18 @@ void har_move(object *obj) {
 
 void har_take_damage(object *obj, str* string, float damage) {
     har *h = object_get_userdata(obj);
-    int oldhealth = h->health;
+    
+    // Save damage taken
+    h->last_damage_value = damage;
+
+    // If god mode is not on, take damage
     if(!game_state_get_player(obj->gs, h->player_id)->god) {
         h->health -= damage;
     }
-    if(h->health <= 0) { h->health = 0; }
 
+    // Handle health changes
+    int oldhealth = h->health;
+    if(h->health <= 0) { h->health = 0; }
     if (oldhealth <= 0) {
         // har has no health left and is left only with endurance.
         // one hit will end them
@@ -561,7 +567,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         sd_stringparser_peek(obj->animation_state.parser, 0, &f);
         sd_stringparser_get_tag(f.parser, f.id, "k", &v);
         if (v->is_set) {
-                obj->vel.y -= 7;
+            obj->vel.y -= 7;
         }
     }
 }
@@ -1946,6 +1952,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     local->action_hook_cb = NULL;
     local->action_hook_cb_data = NULL;
+
+    // Last damage value, for convenience
+    local->last_damage_value = 0.0f;
 
     // p<x> stuff
     local->p_ticks_left = 0;

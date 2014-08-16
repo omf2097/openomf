@@ -404,8 +404,16 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     }
 
     int on_air = 0;
-    if(o_har->pos.y < ARENA_FLOOR) {
+    if(o_har->pos.y < ARENA_FLOOR - 10) {
         on_air = 1;
+    }
+
+    // The limit here is entirely guesswork, and might not be it at all
+    // However, it is a close enough guess.
+    // TODO: Find out how this really works.
+    int took_enough_damage = 0;
+    if(h->last_damage_value > 15) {
+        took_enough_damage = 1;
     }
 
     /*
@@ -415,7 +423,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         && on_air
         && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
         && towards_wall
-        && !h->is_grabbed)
+        && !h->is_grabbed
+        && took_enough_damage)
     {
         DEBUG("hit lightning wall %d", wall);
         h->state = STATE_WALLDAMAGE;;
@@ -453,7 +462,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         && on_air
         && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
         && towards_wall
-        && !h->is_grabbed)
+        && !h->is_grabbed
+        && took_enough_damage)
     {
         DEBUG("hit desert wall %d", wall);
         h->state = STATE_WALLDAMAGE;
@@ -480,7 +490,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         && on_air
         && towards_wall
         && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && !h->is_grabbed)
+        && !h->is_grabbed
+        && took_enough_damage)
     {
         DEBUG("hit dusty wall %d", wall);
         h->state = STATE_WALLDAMAGE;
@@ -511,6 +522,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     if(on_air
         && towards_wall
         && !h->is_grabbed
+        && took_enough_damage
         && (h->state == STATE_FALLEN
             || h->state == STATE_RECOIL
             || h->state == STATE_WALLDAMAGE))
