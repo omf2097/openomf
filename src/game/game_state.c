@@ -30,7 +30,7 @@
 #include "game/scenes/scoreboard.h"
 
 #define MS_PER_OMF_TICK 10
-#define MS_PER_OMF_TICK_SLOWEST 90
+#define MS_PER_OMF_TICK_SLOWEST 60
 
 enum {
     TICK_DYNAMIC = 0,
@@ -771,7 +771,7 @@ int game_state_ms_per_dyntick(game_state *gs) {
         case SCENE_ARENA2:
         case SCENE_ARENA3:
         case SCENE_ARENA4:
-            tmp = 5.0f + MS_PER_OMF_TICK_SLOWEST - ((float)gs->speed / 15.0f) * MS_PER_OMF_TICK_SLOWEST;
+            tmp = 8.0f + MS_PER_OMF_TICK_SLOWEST - ((float)gs->speed / 15.0f) * MS_PER_OMF_TICK_SLOWEST;
             return (int)tmp;
     }
     return MS_PER_OMF_TICK;
