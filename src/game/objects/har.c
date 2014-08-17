@@ -361,7 +361,19 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         object_set_direction(obj, object_get_direction(parent));
         obj->animation_state.enemy = parent->animation_state.enemy;
         projectile_create(obj);
+
+        // Handle Nova animation where the bot gets destroyed in single player
+        if(h->id == 10 && id >= 25 && id <= 30) {
+            projectile_set_wall_bounce(obj, 1);
+            projectile_stop_on_ground(obj, 1);
+        }
+
         game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE);
+    }
+
+    // When kreissack explodes, spwan some scrap too. Just to make it awesome.
+    if(h->id == 10 && id >= 25 && id <= 30) {
+        har_spawn_scrap(parent, pos, 12);
     }
 }
 
