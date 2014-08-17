@@ -1360,10 +1360,15 @@ int arena_create(scene *scene) {
     har_screencaps_reset(&_player[0]->screencaps);
     har_screencaps_reset(&_player[1]->screencaps);
 
-    // TODO: Do something about this hack!
+    // Set correct sounds for ready, round and number STL fields
     scene->bk_data.sound_translation_table[14] = 10; // READY
     scene->bk_data.sound_translation_table[15] = 16; // ROUND
     scene->bk_data.sound_translation_table[3] = 23 + local->round; // NUMBER
+
+    // Disable the floating ball disappearence sound in fire arena
+    if(scene->id == SCENE_ARENA3) {
+        scene->bk_data.sound_translation_table[20] = 0;
+    }
 
     if (local->rounds == 1) {
         // Start READY animation
