@@ -20,7 +20,7 @@ OPTION(USE_RELEASE_SUBMODULES "Build the submodules in release mode. Enable this
 #OPTION(SERVER_ONLY "Do not build the game binary" OFF)
 
 # These flags are used for all builds
-set(CMAKE_C_FLAGS "-Wall -std=c99")
+set(CMAKE_C_FLAGS "-Wall -std=c11")
 set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer -DNDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
