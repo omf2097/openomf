@@ -54,9 +54,9 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     sd_read_buf(r, rec->unknown, 32);
 
     // Read rest of the raw data
-    size_t left = sd_reader_filesize(r) - sd_reader_pos(r);
-    rec->raw = malloc(left);
-    sd_read_buf(r, rec->raw, left);
+    rec->rawsize = sd_reader_filesize(r) - sd_reader_pos(r);
+    rec->raw = malloc(rec->rawsize);
+    sd_read_buf(r, rec->raw, rec->rawsize);
 
     // Close & return
     sd_reader_close(r);

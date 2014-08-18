@@ -38,8 +38,7 @@ int main(int argc, char **argv) {
     for(int i = 0; i < 2; i++) {
         sd_pilot *pilot = rec->pilots[i];
 
-        printf("[%d] %s:\n", i, pilot->name);
-        printf("## Pilot header\n");
+        printf("### Pilot header for [%d] %s:\n", i, pilot->name);
         printf("  - Wins:        %d\n", pilot->wins);
         printf("  - Losses:      %d\n", pilot->losses);
         printf("  - Robot ID:    %d\n", pilot->robot_id);
@@ -105,11 +104,15 @@ int main(int argc, char **argv) {
         printf("\n");
         printf("  - unk_block_g:\n");
         print_bytes(pilot->unk_block_g, 166, 16, 5);
-        printf("\n");
+        printf("\n\n");
     }
 
-    printf("\nUnknown footer data:\n");
+    printf("## Unknown footer data:\n");
     print_bytes((char*)rec->unknown, 32, 8, 0);
+    printf("\n");
+
+    printf("## Move data:\n");
+    print_bytes((char*)rec->raw, rec->rawsize, 32, 0);
     printf("\n");
 
     sd_rec_free(rec);

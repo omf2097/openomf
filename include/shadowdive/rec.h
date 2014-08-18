@@ -12,6 +12,7 @@ typedef struct {
     sd_pilot *pilots[2];
     char unknown[32];
     char *raw;
+    size_t rawsize;
 } sd_rec_file;
 
 int sd_rec_create(sd_rec_file *rec);
