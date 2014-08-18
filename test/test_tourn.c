@@ -195,5 +195,6 @@ int main(int argc, char **argv) {
     }
 
     sd_tournament_free(trn);
+    free(trn);
     return 0;
 }
