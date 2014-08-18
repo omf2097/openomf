@@ -177,7 +177,7 @@ char* pm_get_local_base_dir() {
     }
 
     // Attempt to open up locally writable directory
-    char *sdl_path = SDL_GetPrefPath("AnanasGroup", "OpenOMF");
+    char *sdl_path = SDL_GetPrefPath("openomfproject", "OpenOMF");
     if(sdl_path == NULL) {
         sprintf(errormessage, "Error getting config path: %s", SDL_GetError());
         return NULL;
