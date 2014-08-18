@@ -1,8 +1,9 @@
 #ifndef _SD_TOURNAMENT_H
 #define _SD_TOURNAMENT_H
 
-#include "palette.h"
-#include "sprite.h"
+#include "shadowdive/palette.h"
+#include "shadowdive/sprite.h"
+#include "shadowdive/pilot.h"
 
 #ifdef __cplusplus 
 extern "C" {
@@ -25,49 +26,6 @@ enum {
 };
 
 typedef struct {
-    uint32_t unknown_a;
-    char name[18];
-    uint16_t wins;
-    uint16_t losses;
-    uint16_t robot_id;
-    char stats[8];
-    uint16_t offense;
-    uint16_t defense;
-    uint32_t money;
-    uint8_t color_1;
-    uint8_t color_2;
-    uint8_t color_3;
-    char unk_block_a[107];
-    uint16_t force_arena;
-    char unk_block_b[3];
-    uint8_t movement;
-    char unk_block_c[6];
-    char enhancements[11];
-    uint8_t flags;
-    uint16_t reqs[5];
-    uint16_t attitude[3];
-    char unk_block_d[6];
-    uint16_t ap_throw;
-    uint16_t ap_special;
-    uint16_t ap_jump;
-    uint16_t ap_high;
-    uint16_t ap_low;
-    uint16_t ap_middle;
-    uint16_t pref_jump;
-    uint16_t pref_fwd;
-    uint16_t pref_back;
-    char unk_block_e[4];
-    float learning;
-    float forget;
-    char unk_block_f[24];
-    uint32_t winnings;
-    char unk_block_g[166];
-    uint16_t photo_id;
-
-    char *quote[MAX_TRN_LOCALES];
-} sd_tournament_enemy;
-
-typedef struct {
     sd_sprite *logo;
     char *title;
     char *description;
@@ -83,8 +41,9 @@ typedef struct {
     int32_t tournament_id;
     char *pic_file;
 
-    sd_tournament_enemy *enemies[MAX_TRN_ENEMIES];
+    sd_pilot *enemies[MAX_TRN_ENEMIES];
     sd_tournament_locale *locales[MAX_TRN_LOCALES];
+    char *quotes[MAX_TRN_ENEMIES][MAX_TRN_LOCALES];
 
     sd_palette pal;
 } sd_tournament_file;

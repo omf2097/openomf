@@ -21,9 +21,11 @@
 #include "shadowdive/bk.h"
 #include "shadowdive/af.h"
 #include "shadowdive/altpal.h"
+#include "shadowdive/pilot.h"
 #include "shadowdive/tournament.h"
 #include "shadowdive/pic.h"
 #include "shadowdive/score.h"
 #include "shadowdive/chr.h"
+#include "shadowdive/rec.h"
 
 #endif // _SD_SHADOWDIVE_H

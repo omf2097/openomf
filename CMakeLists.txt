@@ -41,6 +41,8 @@ add_library(shadowdive
     src/pic.c
     src/score.c
     src/chr.c
+    src/pilot.c
+    src/rec.c
     src/internal/reader.c
     src/internal/memreader.c
     src/internal/writer.c
@@ -48,29 +50,29 @@ add_library(shadowdive
 )
 
 IF(BUILD_OLD_TESTS)
-    add_executable(test_main test/test_main.c)
-    add_executable(test_sounds test/sounds_main.c)
-    add_executable(test_roundtrip test/roundtrip.c)
-    add_executable(test_font test/test_fonts.c)
-    add_executable(test_stringparser test/test_stringparser.c)
-    add_executable(test_language test/test_language.c)
-    add_executable(test_altpals test/altpals.c)
+    #add_executable(test_main test/test_main.c)
+    #add_executable(test_sounds test/sounds_main.c)
+    #add_executable(test_roundtrip test/roundtrip.c)
+    #add_executable(test_font test/test_fonts.c)
+    #add_executable(test_stringparser test/test_stringparser.c)
+    #add_executable(test_language test/test_language.c)
+    #add_executable(test_altpals test/altpals.c)
     add_executable(test_tourn test/test_tourn.c)
-    add_executable(test_pic test/test_pic.c)
-    add_executable(test_score test/test_score.c)
-    add_executable(test_chr test/test_chr.c)
+    #add_executable(test_pic test/test_pic.c)
+    #add_executable(test_score test/test_score.c)
+    #add_executable(test_chr test/test_chr.c)
 
-    target_link_libraries(test_main shadowdive)
-    target_link_libraries(test_sounds shadowdive)
-    target_link_libraries(test_roundtrip shadowdive)
-    target_link_libraries(test_font shadowdive)
-    target_link_libraries(test_stringparser shadowdive)
-    target_link_libraries(test_language shadowdive)
-    target_link_libraries(test_altpals shadowdive)
+    #target_link_libraries(test_main shadowdive)
+    #target_link_libraries(test_sounds shadowdive)
+    #target_link_libraries(test_roundtrip shadowdive)
+    #target_link_libraries(test_font shadowdive)
+    #target_link_libraries(test_stringparser shadowdive)
+    #target_link_libraries(test_language shadowdive)
+    #target_link_libraries(test_altpals shadowdive)
     target_link_libraries(test_tourn shadowdive)
-    target_link_libraries(test_pic shadowdive)
-    target_link_libraries(test_score shadowdive)
-    target_link_libraries(test_chr shadowdive)
+    #target_link_libraries(test_pic shadowdive)
+    #target_link_libraries(test_score shadowdive)
+    #target_link_libraries(test_chr shadowdive)
 ENDIF()
 
 FILE(GLOB H_FILES "include/shadowdive/*.h")

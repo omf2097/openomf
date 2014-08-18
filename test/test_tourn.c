@@ -1,6 +1,7 @@
 #include <shadowdive/shadowdive.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 const char *language_names[] = {
     "English",
@@ -47,7 +48,8 @@ int main(int argc, char **argv) {
     }
     
     // Open tournament file
-    sd_tournament_file *trn = sd_tournament_create();
+    sd_tournament_file *trn = malloc(sizeof(sd_tournament_file));
+    sd_tournament_create(trn);
     int ret = sd_tournament_load(trn, argv[1]);
     if(ret != SD_SUCCESS) {
         printf("Shadowdive error %d: %s\n", ret, sd_get_error(ret));
@@ -126,10 +128,10 @@ int main(int argc, char **argv) {
         printf("\n");
 
         for(int k = 0; k < MAX_TRN_LOCALES; k++) {
-            if(trn->enemies[i]->quote[k] == NULL) continue;
+            if(trn->quotes[i][k] == NULL) continue;
             printf("  - %s quote: %s\n", 
                 language_names[k], 
-                trn->enemies[i]->quote[k]);
+                trn->quotes[i][k]);
         }
 
         printf("\n");
@@ -143,9 +145,9 @@ int main(int argc, char **argv) {
         // Print locale information
         printf("\n[%d] Locale '%s':\n", i, language_names[i]);
         printf("  - Logo: length = %d, size = (%d,%d), pos = (%d,%d)\n",
-            trn->locales[i]->logo->img->len,
-            trn->locales[i]->logo->img->w, 
-            trn->locales[i]->logo->img->h,
+            trn->locales[i]->logo->len,
+            trn->locales[i]->logo->width, 
+            trn->locales[i]->logo->height,
             trn->locales[i]->logo->pos_x, 
             trn->locales[i]->logo->pos_y);
         printf("  - Title: %s\n", trn->locales[i]->title);
@@ -182,12 +184,16 @@ int main(int argc, char **argv) {
     // See if logo dump was requested, and do so if it was
     if(dumplogo) {
         printf("\nDumping logo to '%s'.\n", dumpfile);
-        sd_rgba_image *out = sd_sprite_image_decode(
-            trn->locales[0]->logo->img, &trn->pal, -1);
-        sd_rgba_image_to_ppm(out, dumpfile);
-        sd_rgba_image_delete(out);
+        sd_rgba_image out;
+        sd_sprite_rgba_decode(
+            &out,
+            trn->locales[0]->logo,
+            &trn->pal,
+            -1);
+        sd_rgba_image_to_ppm(&out, dumpfile);
+        sd_rgba_image_free(&out);
     }
 
-    sd_tournament_delete(trn);
+    sd_tournament_free(trn);
     return 0;
 }

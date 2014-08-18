@@ -2,12 +2,9 @@
 #include <string.h>
 
 #include "shadowdive/internal/reader.h"
-#include "shadowdive/internal/memreader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/error.h"
 #include "shadowdive/tournament.h"
-
-#define ENEMY_BLOCK_LENGTH 428
 
 int sd_tournament_create(sd_tournament_file *trn) {
     if(trn == NULL) {
@@ -20,12 +17,15 @@ int sd_tournament_create(sd_tournament_file *trn) {
 static void free_enemies(sd_tournament_file *trn) {
     for(int i = 0; i < MAX_TRN_ENEMIES; i++) {
         if(trn->enemies[i]) {
-            for(int k = 0; k < MAX_TRN_LOCALES; k++) {
-                if(trn->enemies[i]->quote[k])
-                    free(trn->enemies[i]->quote[k]);
-            }
+            sd_pilot_free(trn->enemies[i]);
             free(trn->enemies[i]);
             trn->enemies[i] = NULL;
+        }
+        for(int k = 0; k < MAX_TRN_LOCALES; k++) {
+            if(trn->quotes[i][k]) {
+                free(trn->quotes[i][k]);
+                trn->quotes[i][k] = NULL;
+            }
         }
     }
 }
@@ -95,66 +95,22 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     }
 
     // Read enemy data
-    sd_tournament_enemy *enemy;
     for(int i = 0; i < trn->enemy_count; i++) {
-        trn->enemies[i] = malloc(sizeof(sd_tournament_enemy));
-        enemy = trn->enemies[i];
+        trn->enemies[i] = malloc(sizeof(sd_pilot));
+        if(trn->enemies[i] == NULL) {
+            return SD_OUT_OF_MEMORY;
+        }
 
         // Find data length
         sd_reader_set(r, offset_list[i]);
 
-        // Open memory reader and XOR 
-        sd_mreader *mr = sd_mreader_open_from_reader(r, ENEMY_BLOCK_LENGTH);
-        sd_mreader_xor(mr, ENEMY_BLOCK_LENGTH & 0xFF);
-
-        // Set vars 
-        enemy->unknown_a =   sd_mread_udword(mr);
-        sd_mread_buf(mr, enemy->name, 18);
-        enemy->wins =        sd_mread_uword(mr);
-        enemy->losses =      sd_mread_uword(mr);
-        enemy->robot_id =    sd_mread_uword(mr);
-        sd_mread_buf(mr, enemy->stats, 8);
-        enemy->offense =     sd_mread_uword(mr);
-        enemy->defense =     sd_mread_uword(mr);
-        enemy->money =       sd_mread_udword(mr);
-        enemy->color_1 =     sd_mread_ubyte(mr);
-        enemy->color_2 =     sd_mread_ubyte(mr);
-        enemy->color_3 =     sd_mread_ubyte(mr);
-        sd_mread_buf(mr, enemy->unk_block_a, 107);
-        enemy->force_arena = sd_mread_uword(mr);
-        sd_mread_buf(mr, enemy->unk_block_b, 3);
-        enemy->movement =    sd_mread_ubyte(mr);
-        sd_mread_buf(mr, enemy->unk_block_c, 6);
-        sd_mread_buf(mr, enemy->enhancements, 11);
-        sd_mskip(mr, 1);
-        enemy->flags =       sd_mread_ubyte(mr);
-        sd_mskip(mr, 1);
-        sd_mread_buf(mr, (char*)enemy->reqs, 10);
-        sd_mread_buf(mr, (char*)enemy->attitude, 6);
-        sd_mread_buf(mr, enemy->unk_block_d, 6);
-        enemy->ap_throw =    sd_mread_uword(mr);
-        enemy->ap_special =  sd_mread_uword(mr);
-        enemy->ap_jump =     sd_mread_uword(mr);
-        enemy->ap_high =     sd_mread_uword(mr);
-        enemy->ap_low =      sd_mread_uword(mr);
-        enemy->ap_middle =   sd_mread_uword(mr);
-        enemy->pref_jump =   sd_mread_uword(mr);
-        enemy->pref_fwd =    sd_mread_uword(mr);
-        enemy->pref_back =   sd_mread_uword(mr);
-        sd_mread_buf(mr, enemy->unk_block_e, 4);
-        enemy->learning =    sd_mread_float(mr);
-        enemy->forget =      sd_mread_float(mr);
-        sd_mread_buf(mr, enemy->unk_block_f, 24);
-        enemy->winnings =    sd_mread_udword(mr);
-        sd_mread_buf(mr, enemy->unk_block_g, 166);
-        enemy->photo_id =    sd_mread_uword(mr);
-
-        // Close memory buffer reader
-        sd_mreader_close(mr);
+        // Read enemy pilot information
+        sd_pilot_create(trn->enemies[i]);
+        sd_pilot_load(r, trn->enemies[i]);
 
         // Read quotes
-        for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-            enemy->quote[i] = read_variable_str(r);
+        for(int m = 0; m < MAX_TRN_LOCALES; m++) {
+            trn->quotes[i][m] = read_variable_str(r);
         }
 
         // Check for errors
