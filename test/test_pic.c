@@ -20,8 +20,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Open pic file
-    sd_pic_file *pic = sd_pic_create();
-    int ret = sd_pic_load(pic, argv[1]);
+    sd_pic_file pic;
+    sd_pic_create(&pic);
+    int ret = sd_pic_load(&pic, argv[1]);
     if(ret != SD_SUCCESS) {
         printf("Shadowdive error %d: %s\n", ret, sd_get_error(ret));
         return 1;
@@ -29,10 +30,10 @@ int main(int argc, char *argv[]) {
 
     printf("Loaded file '%s'\n", argv[1]);
     
-    sd_bk_file *bk = NULL;
+    sd_bk_file bk;
     if(dump) {
-        bk = sd_bk_create();
-        if(sd_bk_load(bk, bkfile) != SD_SUCCESS) {
+        sd_bk_create(&bk);
+        if(sd_bk_load(&bk, bkfile) != SD_SUCCESS) {
             printf("Could not load BK file!\n");
             goto error_0;
         } else {
@@ -41,44 +42,46 @@ int main(int argc, char *argv[]) {
         printf("Dump flag used! Dumping sprites ...\n");
     }
 
-    printf("Photo count: %d\n", pic->photo_count);
+    printf("Photo count: %d\n", pic.photo_count);
 
-    for(int i = 0; i < pic->photo_count; i++) {
+    for(int i = 0; i < pic.photo_count; i++) {
         if(!dump) {
             printf("Photo %d:\n", i);
             printf("  * Length = %d\n", 
-                pic->photos[i]->sprite->img->len);
+                pic.photos[i]->sprite->len);
             printf("  * Size = (%d,%d)\n", 
-                pic->photos[i]->sprite->img->w,
-                pic->photos[i]->sprite->img->h);
+                pic.photos[i]->sprite->width,
+                pic.photos[i]->sprite->height);
             printf("  * Position = (%d,%d)\n", 
-                pic->photos[i]->sprite->pos_x,
-                pic->photos[i]->sprite->pos_y);
+                pic.photos[i]->sprite->pos_x,
+                pic.photos[i]->sprite->pos_y);
             printf("  * Sex = %d\n", 
-                pic->photos[i]->sex);
+                pic.photos[i]->sex);
             printf("  * Is Player = %d\n", 
-                pic->photos[i]->is_player);
+                pic.photos[i]->is_player);
         } else {
             char filename[128];
             sprintf(filename, "%s_%d.ppm", basename, i);
             printf(" * Dumping to '%s' ... ", filename);
-            sd_rgba_image *img = sd_sprite_image_decode(
-                pic->photos[i]->sprite->img,
-                bk->palettes[0],
+            sd_rgba_image img;
+            sd_sprite_rgba_decode(
+                &img,
+                pic.photos[i]->sprite,
+                bk.palettes[0],
                 -1);
-            sd_rgba_image_to_ppm(img, filename);
-            sd_rgba_image_delete(img);
+            sd_rgba_image_to_ppm(&img, filename);
+            sd_rgba_image_free(&img);
             printf("OK.\n");
         }
     }
 
     if(dump) {
-        sd_bk_delete(bk);
+        sd_bk_free(&bk);
     }
-    sd_pic_delete(pic);
+    sd_pic_free(&pic);
     return 0;
 
 error_0:
-    sd_pic_delete(pic);
+    sd_pic_free(&pic);
     return 1;
 }
