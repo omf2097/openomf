@@ -135,8 +135,8 @@ int main(int argc, char **argv) {
     sd_stringparser *parser = sd_stringparser_create();
     test_broken_string(parser);
 
-    sd_af_file *af;
-    sd_bk_file *bk;
+    sd_af_file af;
+    sd_bk_file bk;
     while(--argc) {
         strncpy(buf, argv[argc], 255);
         buf[255] = '0';
@@ -150,12 +150,12 @@ int main(int argc, char **argv) {
 
         printf("******* Testing file %s\n", buf);
         if (strncmp(ext, ".AF", 3) == 0) {
-            af = sd_af_create();
-            if(sd_af_load(af, argv[argc]) == SD_FILE_OPEN_ERROR) {
+            sd_af_create(&af);
+            if(sd_af_load(&af, argv[argc]) == SD_FILE_OPEN_ERROR) {
                 printf("failed to open %s\n", buf);
             } else {
                 for(int i=0;i<70;++i) {
-                    sd_move *move = af->moves[i];
+                    sd_move *move = af.moves[i];
                     if(move) {
                         test_anim_string(parser, move->animation->anim_string);
                         for(int j=0;j<move->animation->extra_string_count;++j) {
@@ -163,20 +163,21 @@ int main(int argc, char **argv) {
                                 test_anim_string(parser, move->animation->extra_strings[j]);
                             }
                         }
-                        if(move->footer_string) test_anim_string(parser, move->footer_string);
+                        if(move->footer_string)
+                            test_anim_string(parser, move->footer_string);
                     }
                 }
-                sd_af_delete(af);
+                
             }
-            
+            sd_af_free(&af);
         }
         else if (strncmp(ext, ".BK", 3) == 0) {
-            bk = sd_bk_create();
-            if(sd_bk_load(bk, argv[argc]) == SD_FILE_OPEN_ERROR) {
+            sd_bk_create(&bk);
+            if(sd_bk_load(&bk, argv[argc]) == SD_FILE_OPEN_ERROR) {
                 printf("failed to open %s\n", buf);
             } else {
                 for(int i=0;i<50;++i) {
-                    sd_bk_anim *anim = bk->anims[i];
+                    sd_bk_anim *anim = bk.anims[i];
                     if(anim) {
                         test_anim_string(parser, anim->animation->anim_string);
                         for(int j=0;j<anim->animation->extra_string_count;++j) {
@@ -186,9 +187,8 @@ int main(int argc, char **argv) {
                         }
                     }
                 }
-                sd_bk_delete(bk);
             }
-            
+            sd_bk_free(&bk);
         } else {
             printf("Invalid extension for %s\n", buf);
         }
