@@ -2,6 +2,7 @@
 #define _SD_REC_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include "shadowdive/pilot.h"
 
 #ifdef __cplusplus 
