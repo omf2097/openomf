@@ -50,7 +50,6 @@ add_library(shadowdive
 )
 
 IF(BUILD_OLD_TESTS)
-    #add_executable(test_main test/test_main.c)
     #add_executable(test_roundtrip test/roundtrip.c)
     add_executable(test_font test/test_fonts.c)
     #add_executable(test_stringparser test/test_stringparser.c)
@@ -61,7 +60,6 @@ IF(BUILD_OLD_TESTS)
     add_executable(test_chr test/test_chr.c)
     add_executable(test_rec test/test_rec.c test/helpers.c)
 
-    #target_link_libraries(test_main shadowdive)
     #target_link_libraries(test_roundtrip shadowdive)
     target_link_libraries(test_font shadowdive)
     #target_link_libraries(test_stringparser shadowdive)
