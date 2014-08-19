@@ -18,6 +18,29 @@ void print_bytes(char *buf, int len, int line, int padding) {
     }
 }
 
+const char* mstr[] = {
+    "PUNCH",
+    "KICK",
+    "UP",
+    "DOWN",
+    "LEFT",
+    "RIGHT"
+};
+
+void print_key(char *o, uint8_t key) {
+    int pos = 0;
+    o[0] = 0;
+    for(int i = 0; i < 6; i++) {
+        uint8_t m = 1 << i;
+        if(key & m) {
+            if(pos > 0) {
+                pos += sprintf((char*)(o+pos), "|");
+            }
+            pos += sprintf((char*)(o+pos), "%s", mstr[i]);
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     if(argc < 2) {
         printf("test_rec <recfile>\n");
@@ -131,14 +154,16 @@ int main(int argc, char **argv) {
     printf("\n");
 
     printf("## Parsed data:\n");
-    printf("Number    Tick Extra Player Action   Extra data\n");
+    printf("Number    Tick Extra Player             Action   Extra data\n");
     for(int i = 0; i < rec->move_count; i++) {
-        printf("  - %3d: %5d %5d %6d %6d",
+        char tmp[100];
+        print_key(tmp, rec->moves[i].action);
+        printf("  - %3d: %5d %5d %6d %18s",
             i,
             rec->moves[i].tick,
             rec->moves[i].extra,
             rec->moves[i].player_id,
-            rec->moves[i].action);
+            tmp);
         if(rec->moves[i].extra > 2) {
             print_bytes(rec->moves[i].extra_data, 7, 8, 3);
         }

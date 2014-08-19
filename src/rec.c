@@ -90,7 +90,25 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         rec->moves[i].tick = sd_read_udword(r);
         rec->moves[i].extra = sd_read_ubyte(r);
         rec->moves[i].player_id = sd_read_ubyte(r);
-        rec->moves[i].action = sd_read_ubyte(r);
+        uint8_t action = sd_read_ubyte(r);
+
+        rec->moves[i].action = SD_REC_NONE;
+        if(action & SD_REC_PUNCH) {
+            rec->moves[i].action |= SD_REC_PUNCH;
+        }
+        if(action & SD_REC_KICK) {
+            rec->moves[i].action |= SD_REC_KICK;
+        }
+        switch(action & 0xF0) {
+            case 16: rec->moves[i].action |= SD_REC_UP; break;
+            case 32: rec->moves[i].action |= (SD_REC_UP|SD_REC_RIGHT); break;
+            case 48: rec->moves[i].action |= SD_REC_RIGHT; break;
+            case 64: rec->moves[i].action |= (SD_REC_DOWN|SD_REC_RIGHT); break;
+            case 80: rec->moves[i].action |= SD_REC_DOWN; break;
+            case 96: rec->moves[i].action |= (SD_REC_DOWN|SD_REC_LEFT); break;
+            case 112: rec->moves[i].action |= SD_REC_LEFT; break;
+            case 128: rec->moves[i].action |= (SD_REC_UP|SD_REC_LEFT); break;
+        }
         if(rec->moves[i].extra > 2) {
             sd_read_buf(r, rec->moves[i].extra_data, 7);
             rec->move_count--;
