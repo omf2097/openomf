@@ -44,13 +44,14 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    sd_score *score = sd_score_create();
-    if(!sd_score_load(score, argv[1])) {
-        for(int page=0;page < sizeof(score->scores)/sizeof(score->scores[0]);page++) {
+    sd_score score;
+    sd_score_create(&score);
+    if(!sd_score_load(&score, argv[1])) {
+        for(int page=0;page < sizeof(score.scores)/sizeof(score.scores[0]);page++) {
             printf("%s\n", PAGE_NAME[page]);
             printf("-----------\n");
-            for(int i=0;i < sizeof(score->scores[0])/sizeof(score->scores[0][0]);i++) {
-                sd_score_entry *e = &score->scores[page][i];
+            for(int i=0;i < sizeof(score.scores[0])/sizeof(score.scores[0][0]);i++) {
+                sd_score_entry *e = &score.scores[page][i];
                 const char *pilot_name = e->pilot_id < sizeof(PILOT_NAME)/sizeof(PILOT_NAME[0]) ? PILOT_NAME[e->pilot_id] : "(null)";
                 const char *har_name = e->har_id < sizeof(HAR_NAME)/sizeof(HAR_NAME[0]) ? HAR_NAME[e->har_id] : "(null)";
                 if(strlen(e->name) > 0) {
@@ -67,7 +68,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    sd_score_delete(score);
+    sd_score_free(&score);
 
     return 0;
 }
