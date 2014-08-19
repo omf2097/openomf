@@ -130,6 +130,17 @@ int main(int argc, char **argv) {
     print_bytes((char*)rec->raw, rec->rawsize, 7, 3);
     printf("\n");
 
+    printf("## Parsed data:\n");
+    for(int i = 0; i < rec->move_count; i++) {
+        printf("  - %3d:  %8d %3d %3d %3d\n",
+            i,
+            rec->moves[i].a,
+            rec->moves[i].b,
+            rec->moves[i].c,
+            rec->moves[i].d);
+    }
+    printf("\n");
+
     sd_rec_free(rec);
     free(rec);
     return 0;

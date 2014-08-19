@@ -9,6 +9,13 @@ extern "C" {
 #endif
 
 typedef struct {
+    uint32_t a;
+    uint8_t b;
+    uint8_t c;
+    uint8_t d;
+} sd_rec_move;
+
+typedef struct {
     sd_pilot *pilots[2];
 
     uint32_t scores[2];
@@ -30,6 +37,9 @@ typedef struct {
 
     char *raw;
     size_t rawsize;
+
+    unsigned int move_count;
+    sd_rec_move *moves;
 } sd_rec_file;
 
 int sd_rec_create(sd_rec_file *rec);
