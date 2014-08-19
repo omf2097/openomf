@@ -24,6 +24,7 @@ typedef struct {
     uint8_t extra;
     uint8_t player_id;
     sd_rec_action action;
+    uint8_t raw_action;
     char extra_data[7];
 } sd_rec_move;
 

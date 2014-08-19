@@ -154,25 +154,23 @@ int main(int argc, char **argv) {
     printf("\n");
 
     printf("## Parsed data:\n");
-    printf("Number    Tick Extra Player             Action   Extra data\n");
+    printf("Number   Tick Extra Player Action        Action enum  Extra data\n");
     for(int i = 0; i < rec->move_count; i++) {
+        char tmp[100];
+        tmp[0] = 0;
         if(rec->moves[i].extra < 3) {
-            char tmp[100];
             print_key(tmp, rec->moves[i].action);
-            printf("  - %3d: %5d %5d %6d %18s",
-                    i,
-                    rec->moves[i].tick,
-                    rec->moves[i].extra,
-                    rec->moves[i].player_id,
-                    tmp);
-        } else if(rec->moves[i].extra > 2) {
-            printf("  - %3d: %5d %5d %6d %6d",
-                    i,
-                    rec->moves[i].tick,
-                    rec->moves[i].extra,
-                    rec->moves[i].player_id,
-                    rec->moves[i].action);
-            print_bytes(rec->moves[i].extra_data, 7, 8, 3);
+        }
+        printf(" - %3d: %5d %5d %6d %6d %18s",
+            i,
+            rec->moves[i].tick,
+            rec->moves[i].extra,
+            rec->moves[i].player_id,
+            rec->moves[i].raw_action,
+            tmp);
+
+        if(rec->moves[i].extra > 2) {
+            print_bytes(rec->moves[i].extra_data, 7, 8, 2);
         }
         printf("\n");
     }

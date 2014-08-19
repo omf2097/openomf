@@ -91,6 +91,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         rec->moves[i].extra = sd_read_ubyte(r);
         rec->moves[i].player_id = sd_read_ubyte(r);
         uint8_t action = sd_read_ubyte(r);
+        rec->moves[i].raw_action = action;
 
         rec->moves[i].action = SD_REC_NONE;
         if(action & SD_REC_PUNCH) {
