@@ -9,10 +9,10 @@ extern "C" {
 #endif
 
 typedef struct {
-    uint32_t a;
-    uint8_t b;
-    uint8_t c;
-    uint8_t d;
+    int32_t a;
+    int8_t b;
+    int8_t c;
+    int8_t d;
 } sd_rec_move;
 
 typedef struct {
