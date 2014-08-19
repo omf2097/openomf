@@ -55,6 +55,9 @@ void sd_rec_free(sd_rec_file *rec);
 int sd_rec_load(sd_rec_file *rec, const char *file);
 int sd_rec_save(sd_rec_file *rec, const char *file);
 
+int sd_rec_delete_action(sd_rec_file *rec, unsigned int number);
+int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move);
+
 #ifdef __cplusplus
 }
 #endif

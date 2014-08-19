@@ -125,3 +125,55 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
     }
     return SD_FILE_OPEN_ERROR;
 }
+
+int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
+    if(number >= rec->move_count || rec == NULL) {
+        return SD_INVALID_INPUT;
+    }
+    size_t single = sizeof(sd_rec_move);
+    size_t start = number * single;
+    size_t size = rec->move_count * single;
+
+    memmove(
+        rec->moves + start,
+        rec->moves + start + single,
+        (size - start));
+
+    rec->move_count--;
+    rec->moves = realloc(rec->moves, rec->move_count * single);
+
+    if(rec->moves == NULL) {
+        return SD_OUT_OF_MEMORY;
+    }
+    return SD_SUCCESS;
+}
+
+int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move) {
+    if(rec == NULL) {
+        return SD_INVALID_INPUT;
+    }
+    if(number >= rec->move_count) {
+        number = rec->move_count;
+    }
+    size_t single = sizeof(sd_rec_move);
+    size_t start = number * single;
+    size_t size = rec->move_count * single;
+
+    rec->move_count++;
+    rec->moves = realloc(rec->moves, rec->move_count * single);
+    if(rec->moves == NULL) {
+        return SD_OUT_OF_MEMORY;
+    }
+
+    // Only move if we are inserting.
+    if(number < rec->move_count) {
+        memmove(
+            rec->moves + start + single,
+            rec->moves + start, 
+            (size - start));
+    }
+    memcpy(
+        rec->moves + start, move, single);
+
+    return SD_SUCCESS;
+}
