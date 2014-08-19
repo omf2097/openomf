@@ -91,7 +91,12 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         rec->moves[i].b = sd_read_byte(r);
         rec->moves[i].c = sd_read_byte(r);
         rec->moves[i].d = sd_read_byte(r);
+        if(rec->moves[i].b > 2) {
+            sd_read_buf(r, rec->moves[i].extra, 7);
+            rec->move_count--;
+        }
     }
+    rec->moves = realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
 
     // Close & return
     sd_reader_close(r);

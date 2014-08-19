@@ -14,6 +14,7 @@ typedef struct {
     int8_t b;
     int8_t c;
     int8_t d;
+    char extra[7];
 } sd_rec_move;
 
 typedef struct {

@@ -132,12 +132,16 @@ int main(int argc, char **argv) {
 
     printf("## Parsed data:\n");
     for(int i = 0; i < rec->move_count; i++) {
-        printf("  - %3d:  %8d %3d %3d %3d\n",
+        printf("  - %3d:  %8d %4d %4d %4d",
             i,
             rec->moves[i].a,
             rec->moves[i].b,
             rec->moves[i].c,
             rec->moves[i].d);
+        if(rec->moves[i].b > 2) {
+            print_bytes(rec->moves[i].extra, 7, 8, 3);
+        }
+        printf("\n");
     }
     printf("\n");
 
