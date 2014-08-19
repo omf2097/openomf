@@ -50,8 +50,24 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         sd_skip(r, 168); // This contains empty palette and psrite etc. Just skip.
     }
 
-    // Unknown header data
-    sd_read_buf(r, rec->unknown, 32);
+    // Scores
+    for(int i = 0; i < 2; i++)
+        rec->scores[i] = sd_read_udword(r);
+
+    // Other flags
+    rec->unknown_a = sd_read_byte(r);
+    rec->unknown_b = sd_read_byte(r);
+    rec->unknown_c = sd_read_byte(r);
+    rec->unknown_d = sd_read_word(r);
+    rec->unknown_e = sd_read_word(r);
+    rec->unknown_f = sd_read_word(r);
+    rec->unknown_g = sd_read_word(r);
+    rec->unknown_h = sd_read_word(r);
+    rec->unknown_i = sd_read_word(r);
+    rec->unknown_j = sd_read_word(r);
+    rec->unknown_k = sd_read_word(r);
+    rec->unknown_l = sd_read_dword(r);
+    rec->unknown_m = sd_read_byte(r);
 
     // Read rest of the raw data
     rec->rawsize = sd_reader_filesize(r) - sd_reader_pos(r);

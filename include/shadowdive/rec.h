@@ -10,7 +10,24 @@ extern "C" {
 
 typedef struct {
     sd_pilot *pilots[2];
-    char unknown[32];
+
+    uint32_t scores[2];
+    int8_t unknown_a; // Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
+    int8_t unknown_b;
+    int8_t unknown_c;
+
+    int16_t unknown_d;
+    int16_t unknown_e;
+    int16_t unknown_f;
+    int16_t unknown_g;
+    int16_t unknown_h;
+    int16_t unknown_i;
+    int16_t unknown_j;
+    int16_t unknown_k;
+    int32_t unknown_l;
+
+    int8_t unknown_m;
+
     char *raw;
     size_t rawsize;
 } sd_rec_file;
