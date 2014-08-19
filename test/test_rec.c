@@ -8,7 +8,7 @@ void print_bytes(char *buf, int len, int line, int padding) {
         printf(" ");
     }
     for(int i = 1; i <= len; i++) {
-        printf("%02x ", (uint8_t)buf[i]);
+        printf("%02x ", (uint8_t)buf[i-1]);
         if(i % line == 0) {
             printf("\n");
             for(int k = 0; k < padding; k++) {
