@@ -22,16 +22,17 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    sd_font *font = sd_font_create();
-    if(sd_font_load(font, argv[1], h)) {
+    sd_font font;
+    sd_font_create(&font);
+    if(sd_font_load(&font, argv[1], h)) {
         printf("Font file couldn't be loaded!\n");
-        sd_font_delete(font);
+        sd_font_free(&font);
         return 1;
     }
     
-    for(int i = 0; i < font->h; i++) {
+    for(int i = 0; i < font.h; i++) {
         for(int k = 7; k >= 0; k--) {
-            if(font->chars[g].data[i] & (1 << k)) {
+            if(font.chars[g].data[i] & (1 << k)) {
                 printf("#");
             } else {
                 printf(" ");
@@ -40,6 +41,6 @@ int main(int argc, char **argv) {
         printf("\n");
     }
     
-    sd_font_delete(font);
+    sd_font_free(&font);
     return 0;
 }
