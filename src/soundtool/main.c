@@ -41,8 +41,9 @@ int main(int argc, char *argv[]) {
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "SOUNDS.DAT file");
     struct arg_int *sid = arg_int0("s", "sid", "<int>", "SampleID to play");
+    struct arg_int *sampleprint = arg_int0("p", "print", "<int>", "Samples to print");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,sid,end};
+    void* argtable[] = {help,vers,file,sid,sampleprint,end};
     const char* progname = "soundtool";
     
     // Make sure everything got allocated
@@ -89,7 +90,15 @@ int main(int argc, char *argv[]) {
     }
     
     int id = sid->ival[0]-1;
-    if(sid->count > 0) {
+    if(sid->count > 0 && sampleprint->count > 0) {
+        int scount = sampleprint->ival[0];
+        printf("Sample size = %d\n", sf.sounds[id]->len);
+        printf("Attempting to print #%d first samples.\n", scount);
+        for(int i = 0; i < scount; i++) {
+            unsigned int s = sf.sounds[id]->data[i] & 0xFF;
+            printf("%2x ", s);
+        }
+    } else if(sid->count > 0) {
         printf("Attempting to play sample #%d.\n", id+1);
     
         // Make sure there is data at requested ID position

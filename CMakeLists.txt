@@ -40,6 +40,7 @@ add_executable(fonttool src/fonttool/main.c)
 add_executable(languagetool src/languagetool/main.c)
 add_executable(omf_parse src/stringparser/main.c)
 add_executable(afdiff src/afdiff/main.c)
+add_executable(rectool src/rectool/main.c)
 
 set(CORELIBS ${ARGTABLE2_LIBRARY})
 
@@ -84,8 +85,9 @@ target_link_libraries(fonttool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY}
 target_link_libraries(languagetool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(omf_parse ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(afdiff ${CORELIBS} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(rectool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 
-INSTALL(TARGETS aftool bktool afdiff omf_parse bkhtmlprinter afhtmlprinter soundtool fonttool languagetool
+INSTALL(TARGETS aftool bktool afdiff omf_parse bkhtmlprinter afhtmlprinter soundtool fonttool languagetool rectool
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
