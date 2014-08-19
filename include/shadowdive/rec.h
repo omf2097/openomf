@@ -9,12 +9,24 @@
 extern "C" {
 #endif
 
+enum {
+    REC_ACT_NONE =  0x0,
+    REC_ACT_PUNCH = 0x1,
+    REC_ACT_KICK  = 0x2,
+    REC_ACT_A     = 0x4,
+    REC_ACT_B     = 0x8,
+    REC_ACT_C     = 0x10,
+    REC_ACT_D     = 0x20,
+    REC_ACT_E     = 0x40,
+    REC_ACT_F     = 0x80,
+}; 
+
 typedef struct {
-    int32_t a;
-    int8_t b;
-    int8_t c;
-    int8_t d;
-    char extra[7];
+    uint32_t tick;
+    uint8_t extra;
+    uint8_t player_id;
+    uint8_t action;
+    char extra_data[7];
 } sd_rec_move;
 
 typedef struct {

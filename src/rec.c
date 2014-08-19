@@ -87,12 +87,12 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     rec->moves = malloc(rec->move_count * sizeof(sd_rec_move));
 
     for(int i = 0; i < rec->move_count; i++) {
-        rec->moves[i].a = sd_read_dword(r);
-        rec->moves[i].b = sd_read_byte(r);
-        rec->moves[i].c = sd_read_byte(r);
-        rec->moves[i].d = sd_read_byte(r);
-        if(rec->moves[i].b > 2) {
-            sd_read_buf(r, rec->moves[i].extra, 7);
+        rec->moves[i].tick = sd_read_udword(r);
+        rec->moves[i].extra = sd_read_ubyte(r);
+        rec->moves[i].player_id = sd_read_ubyte(r);
+        rec->moves[i].action = sd_read_ubyte(r);
+        if(rec->moves[i].extra > 2) {
+            sd_read_buf(r, rec->moves[i].extra_data, 7);
             rec->move_count--;
         }
     }

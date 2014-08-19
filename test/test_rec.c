@@ -131,15 +131,16 @@ int main(int argc, char **argv) {
     printf("\n");
 
     printf("## Parsed data:\n");
+    printf("Number    Tick Extra Player Action   Extra data\n");
     for(int i = 0; i < rec->move_count; i++) {
-        printf("  - %3d:  %8d %4d %4d %4d",
+        printf("  - %3d: %5d %5d %6d %6d",
             i,
-            rec->moves[i].a,
-            rec->moves[i].b,
-            rec->moves[i].c,
-            rec->moves[i].d);
-        if(rec->moves[i].b > 2) {
-            print_bytes(rec->moves[i].extra, 7, 8, 3);
+            rec->moves[i].tick,
+            rec->moves[i].extra,
+            rec->moves[i].player_id,
+            rec->moves[i].action);
+        if(rec->moves[i].extra > 2) {
+            print_bytes(rec->moves[i].extra_data, 7, 8, 3);
         }
         printf("\n");
     }
