@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
         palettes[i] = (sd_palette*)malloc(sizeof(sd_palette));
         sd_palette_load(r, palettes[i]);
         sprintf(buf, "altpal%d.pal", i);
-        sd_palette_to_gimp_palette(buf, palettes[i]);
+        sd_palette_to_gimp_palette(palettes[i], buf);
     }
     return 0;
 }
