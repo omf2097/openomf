@@ -149,10 +149,6 @@ int main(int argc, char **argv) {
     printf("  - %c:       %d\n", tmp++, rec->unknown_m);
     printf("\n");
 
-    printf("## Move data:\n");
-    print_bytes((char*)rec->raw, rec->rawsize, 7, 3);
-    printf("\n");
-
     printf("## Parsed data:\n");
     printf("Number   Tick Extra Player Action        Action enum  Extra data\n");
     for(int i = 0; i < rec->move_count; i++) {

@@ -25,9 +25,6 @@ void sd_rec_free(sd_rec_file *rec) {
     if(rec->moves) {
         free(rec->moves);
     }
-    if(rec->raw) {
-        free(rec->raw);
-    }
 }
 
 int sd_rec_load(sd_rec_file *rec, const char *file) {
@@ -72,20 +69,13 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     rec->unknown_l = sd_read_dword(r);
     rec->unknown_m = sd_read_byte(r);
 
-    size_t pos = sd_reader_pos(r);
-    size_t len = sd_reader_filesize(r);
-    size_t rsize = len - pos;
-
-    // Read rest of the raw data
-    rec->rawsize = rsize;
-    rec->raw = malloc(rec->rawsize);
-    sd_read_buf(r, rec->raw, rsize);
-
-    // Set position back to the start of the move data, and read it to a pile of structs
-    sd_reader_set(r, pos);
+    // Allocate enough space for the record blocks
+    // This will be reduced later when we know the ACTUAL count
+    size_t rsize = sd_reader_filesize(r) - sd_reader_pos(r);
     rec->move_count = rsize / 7;
     rec->moves = malloc(rec->move_count * sizeof(sd_rec_move));
 
+    // Read blocks
     for(int i = 0; i < rec->move_count; i++) {
         rec->moves[i].tick = sd_read_udword(r);
         rec->moves[i].extra = sd_read_ubyte(r);
@@ -115,6 +105,9 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
             rec->move_count--;
         }
     }
+
+    // Okay, not reduce the allocated memory to match what we actually need
+    // Realloc should keep our old data intact
     rec->moves = realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
 
     // Close & return

@@ -35,7 +35,6 @@ typedef struct {
     int8_t unknown_a; // Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
     int8_t unknown_b;
     int8_t unknown_c;
-
     int16_t unknown_d;
     int16_t unknown_e;
     int16_t unknown_f;
@@ -45,11 +44,7 @@ typedef struct {
     int16_t unknown_j;
     int16_t unknown_k;
     int32_t unknown_l;
-
     int8_t unknown_m;
-
-    char *raw;
-    size_t rawsize;
 
     unsigned int move_count;
     sd_rec_move *moves;
