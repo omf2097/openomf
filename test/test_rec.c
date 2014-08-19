@@ -174,7 +174,6 @@ int main(int argc, char **argv) {
         }
         printf("\n");
     }
-    printf("\n");
 
     sd_rec_free(rec);
     free(rec);
