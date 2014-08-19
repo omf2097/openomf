@@ -38,7 +38,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     }
 
     // Make sure we have at least this much data
-    if(sd_reader_filesize(r) < 1290) {
+    if(sd_reader_filesize(r) < 1224) {
         goto error_0;
     }
 
