@@ -5,6 +5,7 @@
 void af_test_suite(CU_pSuite suite);
 void bk_test_suite(CU_pSuite suite);
 void palette_test_suite(CU_pSuite suite);
+void rec_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -24,6 +25,10 @@ int main(int argc, char **argv) {
     suite = CU_add_suite("Palettes", NULL, NULL);
     if(suite == NULL) goto end;
     palette_test_suite(suite);
+
+    suite = CU_add_suite("REC files", NULL, NULL);
+    if(suite == NULL) goto end;
+    rec_test_suite(suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);

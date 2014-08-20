@@ -31,9 +31,7 @@ typedef struct {
 } sd_rec_move;
 
 typedef struct {
-    sd_pilot *pilots[2];
-    char hack_time[2][428];
-
+    sd_pilot pilots[2];
     uint32_t scores[2];
     int8_t unknown_a; // Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
     int8_t unknown_b;

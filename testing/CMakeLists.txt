@@ -8,6 +8,7 @@ IF(CUNIT_FOUND)
         test_lib.c
         test_af.c
         test_bk.c
+        test_rec.c
         test_palette.c
     )
 

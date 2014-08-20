@@ -6,24 +6,20 @@
 #include "shadowdive/error.h"
 #include "shadowdive/rec.h"
 
-#include <stdio.h>
-
 int sd_rec_create(sd_rec_file *rec) {
     if(rec == NULL) {
         return SD_INVALID_INPUT;
     }
     memset(rec, 0, sizeof(sd_rec_file));
+    sd_pilot_create(&rec->pilots[0]);
+    sd_pilot_create(&rec->pilots[1]);
     return SD_SUCCESS;
 }
 
 void sd_rec_free(sd_rec_file *rec) {
     if(rec == NULL) return;
-    for(int i = 0; i < 2; i++) {
-        if(rec->pilots[i]) {
-            sd_pilot_free(rec->pilots[i]);
-            free(rec->pilots[i]);
-        }
-    }
+    sd_pilot_free(&rec->pilots[0]);
+    sd_pilot_free(&rec->pilots[1]);
     if(rec->moves) {
         free(rec->moves);
     }
@@ -46,15 +42,8 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
 
     // Read pilot data
     for(int i = 0; i < 2; i++) {
-        // MWAHAHAHA
-        size_t ppos = sd_reader_pos(r);
-        sd_read_buf(r, rec->hack_time[i], 428);
-        sd_reader_set(r, ppos);
-
         // Read pilot data
-        rec->pilots[i] = malloc(sizeof(sd_pilot));
-        sd_pilot_create(rec->pilots[i]);
-        sd_pilot_load(r, rec->pilots[i]);
+        sd_pilot_load(r, &rec->pilots[i]);
         sd_skip(r, 168); // This contains empty palette and psrite etc. Just skip.
     }
 
@@ -82,6 +71,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     size_t rsize = sd_reader_filesize(r) - sd_reader_pos(r);
     rec->move_count = rsize / 7;
     rec->moves = malloc(rec->move_count * sizeof(sd_rec_move));
+    memset(rec->moves, 0, rec->move_count * sizeof(sd_rec_move));
 
     // Read blocks
     for(int i = 0; i < rec->move_count; i++) {
@@ -92,10 +82,10 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         rec->moves[i].raw_action = action;
 
         rec->moves[i].action = SD_REC_NONE;
-        if(action & SD_REC_PUNCH) {
+        if(action & 1) {
             rec->moves[i].action |= SD_REC_PUNCH;
         }
-        if(action & SD_REC_KICK) {
+        if(action & 2) {
             rec->moves[i].action |= SD_REC_KICK;
         }
         switch(action & 0xF0) {
@@ -140,8 +130,7 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
 
     // Write pilots, palettes, etc.
     for(int i = 0; i < 2; i++) {
-        // MWAHAHAHA
-        sd_write_buf(w, rec->hack_time[i], 428);
+        sd_pilot_save(w, &rec->pilots[i]);
         sd_write_fill(w, 0, 168);
     }
 
@@ -191,7 +180,6 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
         if(rec->moves[i].action & SD_REC_KICK)
             raw_action |= 2;
         sd_write_ubyte(w, raw_action);
-
    }
 
     sd_writer_close(w);
