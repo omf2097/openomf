@@ -171,9 +171,58 @@ void print_rec_root_info(sd_rec_file *rec) {
     }
 }
 
+int rec_entry_key_get_id(const char* key) {
+    if(strcmp(key, "tick") == 0) return 0;
+    return -1;
+}
+
+void rec_entry_set_key(sd_rec_file *rec, int entry_id, const char *key, const char *value) {
+    switch(rec_entry_key_get_id(key)) {
+        case 0:
+            rec->moves[entry_id].tick = atoi(value);
+            break;
+        default:
+            printf("Invalid record entry key!\n");
+            return;
+    }
+}
+
+void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char* key) {
+    switch(rec_entry_key_get_id(key)) {
+        case 0:
+            printf("%d", rec->moves[entry_id].tick);
+            break;
+        default:
+            printf("Invalid record entry key!\n");
+            return;
+    }
+}
+
 int rec_key_get_id(const char* key) {
     if(strcmp(key, "entry") == 0) return 0;
     return -1;
+}
+
+void rec_set_key(sd_rec_file *rec, const char **key, int kcount, const char *value) {
+    switch(rec_key_get_id(key[0])) {
+        case 0: {
+            if(kcount == 1) {
+                printf("Record ID required!\n");
+                return;
+            }
+            if(kcount == 2) {
+                printf("Record key ID required\n");
+                return;
+            }
+            if(kcount == 3) {
+                int entry_id = atoi(key[1]);
+                rec_entry_set_key(rec, entry_id, key[2], value);
+                return;
+            }
+            } break;
+        default:
+            printf("Unknown key!\n");
+    }
 }
 
 void rec_get_key(sd_rec_file *rec, const char **key, int kcount) {
@@ -202,6 +251,11 @@ void rec_get_key(sd_rec_file *rec, const char **key, int kcount) {
                 print_bytes(rec->moves[r].extra_data, 7, 7, 0);
                 return;
             }
+            if(kcount == 3) {
+                int entry_id = atoi(key[1]);
+                rec_entry_get_key(rec, entry_id, key[2]);
+                return;
+            }
             } break;
         default:
             printf("Unknown key!\n");
@@ -215,7 +269,7 @@ int main(int argc, char* argv[]) {
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input .REC file");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .REC file");
-    struct arg_str *key = arg_strn("k", "key", "<key>", 0, 2, "Select key");
+    struct arg_str *key = arg_strn("k", "key", "<key>", 0, 3, "Select key");
     struct arg_str *value = arg_str0("s", "set", "<value>", "Set value (requires --key)");
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,output,key,value,end};
@@ -247,6 +301,11 @@ int main(int argc, char* argv[]) {
         printf("(C) 2014 Tuomas Virtanen\n");
         goto exit_0;
     }
+
+    if(value->count > 0 && output->count <= 0) {
+        printf("For setting values, remember to set --output or -o.\n");
+        goto exit_0;
+    }
     
     // Handle errors
     if(nerrors > 0) {
@@ -267,14 +326,20 @@ int main(int argc, char* argv[]) {
     }
 
     if(key->count > 0) {
-        rec_get_key(&rec, key->sval, key->count);
+        if(value->count > 0) {
+            rec_set_key(&rec, key->sval, key->count, value->sval[0]);
+        } else {
+            rec_get_key(&rec, key->sval, key->count);
+        }
     } else {
         print_rec_root_info(&rec);
     }
     
     // Write output file
     if(output->count > 0) {
-        sd_rec_save(&rec, output->filename[0]);
+        if(sd_rec_save(&rec, output->filename[0]) != SD_SUCCESS) {
+            printf("Save didn't succeed!");
+        }
     }
     
     // Quit
