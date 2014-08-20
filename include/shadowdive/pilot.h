@@ -26,7 +26,9 @@ typedef struct {
     uint8_t movement;
     char unk_block_c[6];
     char enhancements[11];
+    uint8_t unk_flag_a;
     uint8_t flags;
+    uint8_t unk_flag_b;
     uint16_t reqs[5];
     uint16_t attitude[3];
     char unk_block_d[6];

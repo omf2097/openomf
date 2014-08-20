@@ -4,6 +4,7 @@
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
 #include "shadowdive/internal/memreader.h"
+#include "shadowdive/internal/memwriter.h"
 #include "shadowdive/error.h"
 #include "shadowdive/pilot.h"
 
@@ -35,24 +36,28 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     pilot->losses =      sd_mread_uword(mr);
     pilot->robot_id =    sd_mread_uword(mr);
     sd_mread_buf(mr, pilot->stats, 8);
+
     pilot->offense =     sd_mread_uword(mr);
     pilot->defense =     sd_mread_uword(mr);
     pilot->money =       sd_mread_udword(mr);
     pilot->color_1 =     sd_mread_ubyte(mr);
     pilot->color_2 =     sd_mread_ubyte(mr);
     pilot->color_3 =     sd_mread_ubyte(mr);
+
     sd_mread_buf(mr, pilot->unk_block_a, 107);
     pilot->force_arena = sd_mread_uword(mr);
     sd_mread_buf(mr, pilot->unk_block_b, 3);
     pilot->movement =    sd_mread_ubyte(mr);
     sd_mread_buf(mr, pilot->unk_block_c, 6);
     sd_mread_buf(mr, pilot->enhancements, 11);
-    sd_mskip(mr, 1);
+
+    pilot->unk_flag_a =  sd_mread_ubyte(mr);
     pilot->flags =       sd_mread_ubyte(mr);
-    sd_mskip(mr, 1);
+    pilot->unk_flag_b =  sd_mread_ubyte(mr);
     sd_mread_buf(mr, (char*)pilot->reqs, 10);
     sd_mread_buf(mr, (char*)pilot->attitude, 6);
     sd_mread_buf(mr, pilot->unk_block_d, 6);
+
     pilot->ap_throw =    sd_mread_uword(mr);
     pilot->ap_special =  sd_mread_uword(mr);
     pilot->ap_jump =     sd_mread_uword(mr);
@@ -62,6 +67,7 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     pilot->pref_jump =   sd_mread_uword(mr);
     pilot->pref_fwd =    sd_mread_uword(mr);
     pilot->pref_back =   sd_mread_uword(mr);
+
     sd_mread_buf(mr, pilot->unk_block_e, 4);
     pilot->learning =    sd_mread_float(mr);
     pilot->forget =      sd_mread_float(mr);
@@ -75,9 +81,63 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     return SD_SUCCESS;
 }
 
-int sd_pilot_save(sd_writer *writer, const sd_pilot *pilot) {
-    if(writer == NULL || pilot == NULL) {
+int sd_pilot_save(sd_writer *fwriter, const sd_pilot *pilot) {
+    if(fwriter == NULL || pilot == NULL) {
         return SD_INVALID_INPUT;
     }
-    return SD_FILE_OPEN_ERROR;
+
+    // ALways succeeds
+    sd_mwriter *w = sd_mwriter_open();
+
+    // Write the pilot block
+    sd_mwrite_udword(w, pilot->unknown_a);
+    sd_mwrite_buf(w, pilot->name, 18);
+    sd_mwrite_uword(w, pilot->wins);
+    sd_mwrite_uword(w, pilot->losses);
+    sd_mwrite_uword(w, pilot->robot_id);
+    sd_mwrite_buf(w, pilot->stats, 8);
+
+    sd_mwrite_uword(w, pilot->offense);
+    sd_mwrite_uword(w, pilot->defense);
+    sd_mwrite_udword(w, pilot->money);
+    sd_mwrite_ubyte(w, pilot->color_1);
+    sd_mwrite_ubyte(w, pilot->color_2);
+    sd_mwrite_ubyte(w, pilot->color_3);
+
+    sd_mwrite_buf(w, pilot->unk_block_a, 107);
+    sd_mwrite_uword(w, pilot->force_arena);
+    sd_mwrite_buf(w, pilot->unk_block_b, 3);
+    sd_mwrite_ubyte(w, pilot->movement);
+    sd_mwrite_buf(w, pilot->unk_block_c, 6);
+    sd_mwrite_buf(w, pilot->enhancements, 11);
+
+    sd_mwrite_ubyte(w, pilot->unk_flag_a);
+    sd_mwrite_ubyte(w, pilot->flags);
+    sd_mwrite_ubyte(w, pilot->unk_flag_b);
+    sd_mwrite_buf(w, (char*)pilot->reqs, 10);
+    sd_mwrite_buf(w, (char*)pilot->attitude, 6);
+    sd_mwrite_buf(w, pilot->unk_block_d, 6);
+
+    sd_mwrite_uword(w, pilot->ap_throw);
+    sd_mwrite_uword(w, pilot->ap_special);
+    sd_mwrite_uword(w, pilot->ap_jump);
+    sd_mwrite_uword(w, pilot->ap_high);
+    sd_mwrite_uword(w, pilot->ap_low);
+    sd_mwrite_uword(w, pilot->ap_middle);
+    sd_mwrite_uword(w, pilot->pref_jump);
+    sd_mwrite_uword(w, pilot->pref_fwd);
+    sd_mwrite_uword(w, pilot->pref_back);
+
+    sd_mwrite_buf(w, pilot->unk_block_e, 4);
+    sd_mwrite_float(w, pilot->learning);
+    sd_mwrite_float(w, pilot->forget);
+    sd_mwrite_buf(w, pilot->unk_block_f, 24);
+    sd_mwrite_udword(w, pilot->winnings);
+    sd_mwrite_buf(w, pilot->unk_block_g, 166);
+    sd_mwrite_uword(w, pilot->photo_id);
+
+    // XOR block and save to file
+    sd_mwriter_xor(w, PILOT_BLOCK_LENGTH & 0xFF);
+    sd_mwriter_save(w, fwriter);
+    return SD_SUCCESS;
 }
