@@ -299,7 +299,7 @@ int main(int argc, char* argv[]) {
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 3, "Select key");
     struct arg_str *value = arg_str0("s", "set", "<value>", "Set value (requires --key)");
     struct arg_int *insert = arg_int0("i", "insert", "<number>", "Insert a new element");
-    struct arg_int *delete = arg_int0("d", "delete", "<number>", "Delete an existing element");
+    struct arg_int *delete = arg_intn("d", "delete", "<number>", 0, 10, "Delete an existing element");
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,output,key,value,delete,insert,end};
     const char* progname = "rectool";
@@ -349,7 +349,7 @@ int main(int argc, char* argv[]) {
         printf("Select either --delete or --insert, not both!");
         goto exit_0;
     }
-    
+
     // Load file
     sd_rec_file rec;
     sd_rec_create(&rec);
@@ -368,6 +368,21 @@ int main(int argc, char* argv[]) {
         } else {
             rec_get_key(&rec, key->sval, key->count);
         }
+    } else if (delete->count > 0) {
+        int last = -1;
+        int offset = 0;
+        for(int i = 0; i < delete->count; i++) {
+            if (delete->ival[i] < last) {
+                printf("Can't delete out of order, please list deletes in ascending order! %d %d\n", delete->ival[i], last);
+                goto exit_1;
+            }
+            if (sd_rec_delete_action(&rec, delete->ival[i] - offset) != SD_SUCCESS) {
+                printf("deleting move %d failed\n", delete->ival[i]);
+            }
+            last = delete->ival[i];
+            offset++;
+        }
+        printf("Deleted %d moves, final move count %d\n", offset, rec.move_count);
     } else {
         print_rec_root_info(&rec);
     }
