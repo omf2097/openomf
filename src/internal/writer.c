@@ -4,9 +4,11 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-typedef struct sd_writer_t {
+#include "shadowdive/internal/writer.h"
+
+struct sd_writer_t {
     FILE *handle;
-} sd_writer;
+};
 
 sd_writer* sd_writer_open(const char *file) {
     sd_writer *writer = malloc(sizeof(sd_writer));
@@ -76,6 +78,10 @@ void sd_write_word(sd_writer *writer, int16_t data) {
 
 void sd_write_dword(sd_writer *writer, int32_t data) {
     sd_write_buf(writer, (char*)&data, 4);
+}
+
+void sd_write_float(sd_writer *writer, float data) {
+    sd_write_buf(writer, (char*)&data, sizeof(float));
 }
 
 void sd_write_fill(sd_writer *writer, char content, int len) {

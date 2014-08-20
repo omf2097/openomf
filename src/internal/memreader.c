@@ -3,13 +3,7 @@
 #include <stdint.h>
 
 #include "shadowdive/internal/reader.h"
-
-typedef struct sd_mreader_t {
-    char *buf;
-    int owned;
-    long len;
-    long pos;
-} sd_mreader;
+#include "shadowdive/internal/memreader.h"
 
 sd_mreader* sd_mreader_open(char *buf, long len) {
     sd_mreader *reader = malloc(sizeof(sd_mreader));
@@ -29,7 +23,7 @@ sd_mreader* sd_mreader_open_from_reader(sd_reader *reader, int len) {
 }
 
 void sd_mreader_xor(sd_mreader *reader, uint8_t key) {
-    for(int k = 0; k < reader->len; k++) {
+    for(long k = 0; k < reader->len; k++) {
         reader->buf[k] = key++ ^ reader->buf[k];
     }
 }

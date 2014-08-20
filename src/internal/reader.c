@@ -4,10 +4,12 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-typedef struct sd_reader_t {
+#include "shadowdive/internal/reader.h"
+
+struct sd_reader_t {
     FILE *handle;
     long filesize;
-} sd_reader;
+};
 
 sd_reader* sd_reader_open(const char *file) {
     sd_reader *reader = malloc(sizeof(sd_reader));

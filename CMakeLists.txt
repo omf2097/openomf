@@ -45,6 +45,7 @@ add_library(shadowdive
     src/rec.c
     src/internal/reader.c
     src/internal/memreader.c
+    src/internal/memwriter.c
     src/internal/writer.c
     src/internal/helpers.c
 )

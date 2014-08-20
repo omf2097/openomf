@@ -37,6 +37,7 @@ void sd_write_udword(sd_writer *writer, uint32_t data);
 void sd_write_byte(sd_writer *writer, int8_t data);
 void sd_write_word(sd_writer *writer, int16_t data);
 void sd_write_dword(sd_writer *writer, int32_t data);
+void sd_write_float(sd_writer *writer, float data);
 
 /**
  * Writes len bytes of filler content
