@@ -167,6 +167,11 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
         sd_write_udword(w, rec->moves[i].tick);
         sd_write_ubyte(w, rec->moves[i].extra);
         sd_write_ubyte(w, rec->moves[i].player_id);
+        if(rec->moves[i].extra > 2) {
+            sd_write_ubyte(w, rec->moves[i].raw_action);
+            sd_write_buf(w, rec->moves[i].extra_data, 7);
+            continue;
+        }
 
         uint8_t raw_action = 0;
         switch(rec->moves[i].action & SD_MOVE_MASK) {
@@ -185,10 +190,7 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
             raw_action |= 2;
         sd_write_ubyte(w, raw_action);
 
-        if(rec->moves[i].extra > 2) {
-            sd_write_buf(w, rec->moves[i].extra_data, 7);
-        }
-    }
+   }
 
     sd_writer_close(w);
     return SD_SUCCESS;
@@ -199,13 +201,12 @@ int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
         return SD_INVALID_INPUT;
     }
     size_t single = sizeof(sd_rec_move);
-    size_t start = number * single;
-    size_t size = rec->move_count * single;
+    size_t size = (rec->move_count * single) - single;
 
     memmove(
-        rec->moves + start,
-        rec->moves + start + single,
-        (size - start));
+        rec->moves + number,
+        rec->moves + number + 1,
+        size);
 
     rec->move_count--;
     rec->moves = realloc(rec->moves, rec->move_count * single);
