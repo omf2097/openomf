@@ -44,6 +44,12 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
 
     // Read pilot data
     for(int i = 0; i < 2; i++) {
+        // MWAHAHAHA
+        size_t ppos = sd_reader_pos(r);
+        sd_read_buf(r, rec->hack_time[i], 428);
+        sd_reader_set(r, ppos);
+
+        // Read pilot data
         rec->pilots[i] = malloc(sizeof(sd_pilot));
         sd_pilot_create(rec->pilots[i]);
         sd_pilot_load(r, rec->pilots[i]);
@@ -120,10 +126,72 @@ error_0:
 }
 
 int sd_rec_save(sd_rec_file *rec, const char *file) {
+    sd_writer *w;
+
     if(rec == NULL || file == NULL) {
         return SD_INVALID_INPUT;
     }
-    return SD_FILE_OPEN_ERROR;
+
+    if(!(w = sd_writer_open(file))) {
+        return SD_FILE_OPEN_ERROR;
+    }
+
+    // Write pilots, palettes, etc.
+    for(int i = 0; i < 2; i++) {
+        // MWAHAHAHA
+        sd_write_buf(w, rec->hack_time[i], 428);
+        sd_write_fill(w, 0, 168);
+    }
+
+    // Scores
+    for(int i = 0; i < 2; i++)
+        sd_write_udword(w, rec->scores[i]);
+
+    // Other header data
+    sd_write_byte(w, rec->unknown_a);
+    sd_write_byte(w, rec->unknown_b);
+    sd_write_byte(w, rec->unknown_c);
+    sd_write_word(w, rec->unknown_d);
+    sd_write_word(w, rec->unknown_e);
+    sd_write_word(w, rec->unknown_f);
+    sd_write_word(w, rec->unknown_g);
+    sd_write_word(w, rec->unknown_h);
+    sd_write_word(w, rec->unknown_i);
+    sd_write_word(w, rec->unknown_j);
+    sd_write_word(w, rec->unknown_k);
+    sd_write_dword(w, rec->unknown_l);
+    sd_write_byte(w, rec->unknown_m);
+
+    // Move records
+    for(int i = 0; i < rec->move_count; i++) {
+        sd_write_udword(w, rec->moves[i].tick);
+        sd_write_ubyte(w, rec->moves[i].extra);
+        sd_write_ubyte(w, rec->moves[i].player_id);
+
+        uint8_t raw_action = 0;
+        switch(rec->moves[i].action & SD_MOVE_MASK) {
+            case (SD_REC_UP): raw_action = 16; break;
+            case (SD_REC_UP|SD_REC_RIGHT): raw_action = 32; break;
+            case (SD_REC_RIGHT): raw_action = 48; break;
+            case (SD_REC_DOWN|SD_REC_RIGHT): raw_action = 64; break;
+            case (SD_REC_DOWN): raw_action = 80; break;
+            case (SD_REC_DOWN|SD_REC_LEFT): raw_action = 96; break;
+            case (SD_REC_LEFT): raw_action = 112; break;
+            case (SD_REC_UP|SD_REC_LEFT): raw_action = 128; break;
+        }
+        if(rec->moves[i].action & SD_REC_PUNCH)
+            raw_action |= 1;
+        if(rec->moves[i].action & SD_REC_KICK)
+            raw_action |= 2;
+        sd_write_ubyte(w, raw_action);
+
+        if(rec->moves[i].extra > 2) {
+            sd_write_buf(w, rec->moves[i].extra_data, 7);
+        }
+    }
+
+    sd_writer_close(w);
+    return SD_SUCCESS;
 }
 
 int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {

@@ -17,7 +17,9 @@ typedef enum {
     SD_REC_DOWN  = 0x8,
     SD_REC_LEFT  = 0x10,
     SD_REC_RIGHT = 0x20,
-} sd_rec_action; 
+} sd_rec_action;
+
+#define SD_MOVE_MASK (SD_REC_UP|SD_REC_DOWN|SD_REC_LEFT|SD_REC_RIGHT)
 
 typedef struct {
     uint32_t tick;
@@ -30,6 +32,7 @@ typedef struct {
 
 typedef struct {
     sd_pilot *pilots[2];
+    char hack_time[2][428];
 
     uint32_t scores[2];
     int8_t unknown_a; // Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
