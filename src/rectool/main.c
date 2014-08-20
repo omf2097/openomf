@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 const char* mstr[] = {
     "PUNCH",
@@ -119,14 +120,105 @@ void print_pilot_info(sd_pilot *pilot) {
     }
 }
 
+void print_rec_root_info(sd_rec_file *rec) {
+    if(rec != NULL) {
+        // Print enemy data
+        printf("Enemies:\n");
+        for(int i = 0; i < 2; i++) {
+            print_pilot_info(rec->pilots[i]);
+        }
+
+        char tmp = 'A';
+        printf("## Unknown header data:\n");
+        printf("  - Score A: %d\n", rec->scores[0]);
+        printf("  - Score B: %d\n", rec->scores[1]);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_a);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_b);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_c);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_d);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_e);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_f);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_g);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_h);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_i);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_j);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_k);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_l);
+        printf("  - %c:       %d\n", tmp++, rec->unknown_m);
+        printf("\n");
+
+        printf("## Parsed data:\n");
+        printf("Number   Tick Extra Player Action        Action enum  Extra data\n");
+        for(int i = 0; i < rec->move_count; i++) {
+            char tmp[100];
+            tmp[0] = 0;
+            if(rec->moves[i].extra < 3) {
+                print_key(tmp, rec->moves[i].action);
+            }
+            printf(" - %3d: %5d %5d %6d %6d %18s",
+                i,
+                rec->moves[i].tick,
+                rec->moves[i].extra,
+                rec->moves[i].player_id,
+                rec->moves[i].raw_action,
+                tmp);
+
+            if(rec->moves[i].extra > 2) {
+                print_bytes(rec->moves[i].extra_data, 7, 8, 2);
+            }
+            printf("\n");
+        }
+    }
+}
+
+int rec_key_get_id(const char* key) {
+    if(strcmp(key, "entry") == 0) return 0;
+    return -1;
+}
+
+void rec_get_key(sd_rec_file *rec, const char **key, int kcount) {
+    switch(rec_key_get_id(key[0])) {
+        case 0: {
+            if(kcount == 1) {
+                printf("Record ID required!\n");
+                return;
+            }
+            if(kcount == 2) {
+                int r = atoi(key[1]);
+                if(r >= rec->move_count) {
+                    printf("Index does not exist.");
+                    return;
+                }
+                char tmp[100];
+                tmp[0] = 0;
+                if(rec->moves[r].extra < 3) {
+                    print_key(tmp, rec->moves[r].action);
+                }
+                printf("Tick:       %d\n", rec->moves[r].tick);
+                printf("Extra:      %d\n", rec->moves[r].extra);
+                printf("Player ID:  %d\n", rec->moves[r].player_id);
+                printf("Action:     %s\n", tmp);
+                printf("Extra data: ");
+                print_bytes(rec->moves[r].extra_data, 7, 7, 0);
+                return;
+            }
+            } break;
+        default:
+            printf("Unknown key!\n");
+    }
+}
+
+
 int main(int argc, char* argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input .REC file");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .REC file");
+    struct arg_str *key = arg_strn("k", "key", "<key>", 0, 2, "Select key");
+    struct arg_str *value = arg_str0("s", "set", "<value>", "Set value (requires --key)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,end};
+    void* argtable[] = {help,vers,file,output,key,value,end};
     const char* progname = "rectool";
     
     // Make sure everything got allocated
@@ -174,51 +266,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Print enemy data
-    printf("Enemies:\n");
-    for(int i = 0; i < 2; i++) {
-        print_pilot_info(rec.pilots[i]);
-    }
-
-    char tmp = 'A';
-    printf("## Unknown header data:\n");
-    printf("  - Score A: %d\n", rec.scores[0]);
-    printf("  - Score B: %d\n", rec.scores[1]);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_a);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_b);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_c);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_d);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_e);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_f);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_g);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_h);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_i);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_j);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_k);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_l);
-    printf("  - %c:       %d\n", tmp++, rec.unknown_m);
-    printf("\n");
-
-    printf("## Parsed data:\n");
-    printf("Number   Tick Extra Player Action        Action enum  Extra data\n");
-    for(int i = 0; i < rec.move_count; i++) {
-        char tmp[100];
-        tmp[0] = 0;
-        if(rec.moves[i].extra < 3) {
-            print_key(tmp, rec.moves[i].action);
-        }
-        printf(" - %3d: %5d %5d %6d %6d %18s",
-            i,
-            rec.moves[i].tick,
-            rec.moves[i].extra,
-            rec.moves[i].player_id,
-            rec.moves[i].raw_action,
-            tmp);
-
-        if(rec.moves[i].extra > 2) {
-            print_bytes(rec.moves[i].extra_data, 7, 8, 2);
-        }
-        printf("\n");
+    if(key->count > 0) {
+        rec_get_key(&rec, key->sval, key->count);
+    } else {
+        print_rec_root_info(&rec);
     }
     
     // Write output file
