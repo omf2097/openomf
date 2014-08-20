@@ -47,6 +47,7 @@ void sd_mwriter_xor(sd_mwriter *writer, uint8_t key) {
 void sd_mwrite_buf(sd_mwriter *writer, const char *buf, int len) {
     CHECK_SIZE
     memcpy(writer->buf + writer->data_len, buf, len);
+    writer->data_len += len;
 }
 
 void sd_mwrite_ubyte(sd_mwriter *writer, uint8_t value) {
@@ -80,4 +81,5 @@ void sd_mwrite_float(sd_mwriter *writer, float value) {
 void sd_mwrite_fill(sd_mwriter *writer, char content, int len) {
     CHECK_SIZE
     memset(writer->buf + writer->data_len, content, len);
+    writer->data_len += len;
 }
