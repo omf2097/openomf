@@ -6,6 +6,8 @@
 #include "shadowdive/error.h"
 #include "shadowdive/rec.h"
 
+#include <stdio.h>
+
 int sd_rec_create(sd_rec_file *rec) {
     if(rec == NULL) {
         return SD_INVALID_INPUT;
@@ -200,16 +202,18 @@ int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
     if(number >= rec->move_count || rec == NULL) {
         return SD_INVALID_INPUT;
     }
-    size_t single = sizeof(sd_rec_move);
-    size_t size = (rec->move_count * single) - single;
 
-    memmove(
-        rec->moves + number,
-        rec->moves + number + 1,
-        size);
+    // Only move if we are not deleting the last entry
+    if(number < (rec->move_count - 1)) {
+        memmove(
+            rec->moves + number,
+            rec->moves + number + 1,
+            (rec->move_count - number - 1) * sizeof(sd_rec_move));
+    }
 
+    // Resize to save memory
     rec->move_count--;
-    rec->moves = realloc(rec->moves, rec->move_count * single);
+    rec->moves = realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
 
     if(rec->moves == NULL) {
         return SD_OUT_OF_MEMORY;
@@ -221,28 +225,30 @@ int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_mov
     if(rec == NULL) {
         return SD_INVALID_INPUT;
     }
-    if(number >= rec->move_count) {
-        number = rec->move_count;
+    if(number > rec->move_count) {
+        return SD_INVALID_INPUT;
     }
-    size_t single = sizeof(sd_rec_move);
-    size_t start = number * single;
-    size_t size = rec->move_count * single;
 
-    rec->move_count++;
-    rec->moves = realloc(rec->moves, rec->move_count * single);
+    // Resize
+    rec->moves = realloc(rec->moves, (rec->move_count+1) * sizeof(sd_rec_move));
     if(rec->moves == NULL) {
         return SD_OUT_OF_MEMORY;
     }
 
-    // Only move if we are inserting.
+    // Only move if we are inserting, not appending
+    // when number == move_count-1, we are pushing the last entry forwards by one
+    // when nubmer == move_count, we are pushing to the end.
     if(number < rec->move_count) {
         memmove(
-            rec->moves + start + single,
-            rec->moves + start, 
-            (size - start));
+            rec->moves + number + 1,
+            rec->moves + number, 
+            (rec->move_count - number) * sizeof(sd_rec_move));
     }
     memcpy(
-        rec->moves + start, move, single);
+        rec->moves + number,
+        move,
+        sizeof(sd_rec_move));
 
+    rec->move_count++;
     return SD_SUCCESS;
 }
