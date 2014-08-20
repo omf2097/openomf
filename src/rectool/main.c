@@ -400,6 +400,14 @@ int main(int argc, char* argv[]) {
             offset++;
         }
         printf("Deleted %d moves, final move count %d\n", offset, rec.move_count);
+    } else if(insert->count > 0) {
+        sd_rec_move mv;
+        memset(&mv, 0, sizeof(sd_rec_move));
+        if(sd_rec_insert_action(&rec, insert->ival[0], &mv) != SD_SUCCESS) {
+            printf("Inserting move to slot %d failed.", insert->ival[0]);
+        } else {
+            printf("Inserted move to slot %d.", insert->ival[0]);
+        }
     } else {
         print_rec_root_info(&rec);
     }
