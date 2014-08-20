@@ -173,6 +173,10 @@ void print_rec_root_info(sd_rec_file *rec) {
 
 int rec_entry_key_get_id(const char* key) {
     if(strcmp(key, "tick") == 0) return 0;
+    if(strcmp(key, "extra") == 0) return 1;
+    if(strcmp(key, "player_id") == 0) return 2;
+    if(strcmp(key, "action") == 0) return 3;
+    if(strcmp(key, "extra_data") == 0) return 4;
     return -1;
 }
 
@@ -180,6 +184,15 @@ void rec_entry_set_key(sd_rec_file *rec, int entry_id, const char *key, const ch
     switch(rec_entry_key_get_id(key)) {
         case 0:
             rec->moves[entry_id].tick = atoi(value);
+            break;
+        case 1:
+            rec->moves[entry_id].extra = atoi(value);
+            break;
+        case 2:
+            rec->moves[entry_id].player_id = atoi(value);
+            break;
+        case 3:
+            rec->moves[entry_id].action = atoi(value);
             break;
         default:
             printf("Invalid record entry key!\n");
@@ -191,6 +204,20 @@ void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char* key) {
     switch(rec_entry_key_get_id(key)) {
         case 0:
             printf("%d", rec->moves[entry_id].tick);
+            break;
+        case 1:
+            printf("%d", rec->moves[entry_id].extra);
+            break;
+        case 2:
+            printf("%d", rec->moves[entry_id].player_id);
+            break;
+        case 3: {
+            char tmp[100];
+            print_key(tmp, rec->moves[entry_id].action);
+            printf("%s", tmp);
+            } break;
+        case 4:
+            print_bytes(rec->moves[entry_id].extra_data, 7, 8, 0);
             break;
         default:
             printf("Invalid record entry key!\n");
@@ -271,8 +298,10 @@ int main(int argc, char* argv[]) {
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .REC file");
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 3, "Select key");
     struct arg_str *value = arg_str0("s", "set", "<value>", "Set value (requires --key)");
+    struct arg_int *insert = arg_int0("i", "insert", "<number>", "Insert a new element");
+    struct arg_int *delete = arg_int0("d", "delete", "<number>", "Delete an existing element");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,key,value,end};
+    void* argtable[] = {help,vers,file,output,key,value,delete,insert,end};
     const char* progname = "rectool";
     
     // Make sure everything got allocated
@@ -302,6 +331,7 @@ int main(int argc, char* argv[]) {
         goto exit_0;
     }
 
+    // Note about needing --output when changing values
     if(value->count > 0 && output->count <= 0) {
         printf("For setting values, remember to set --output or -o.\n");
         goto exit_0;
@@ -311,6 +341,12 @@ int main(int argc, char* argv[]) {
     if(nerrors > 0) {
         arg_print_errors(stdout, end, progname);
         printf("Try '%s --help' for more information.\n", progname);
+        goto exit_0;
+    }
+
+    // Make sure delete and insert aren't both selected
+    if(delete->count > 0 && insert->count > 0) {
+        printf("Select either --delete or --insert, not both!");
         goto exit_0;
     }
     
@@ -325,6 +361,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    // Check if we want to fetch/set specific values
     if(key->count > 0) {
         if(value->count > 0) {
             rec_set_key(&rec, key->sval, key->count, value->sval[0]);
