@@ -125,7 +125,7 @@ void print_rec_root_info(sd_rec_file *rec) {
         // Print enemy data
         printf("Enemies:\n");
         for(int i = 0; i < 2; i++) {
-            print_pilot_info(rec->pilots[i]);
+            print_pilot_info(&rec->pilots[i]);
         }
 
         char tmp = 'A';
