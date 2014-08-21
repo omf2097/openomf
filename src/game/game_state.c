@@ -64,7 +64,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
     // For momentary game speed switches
     gs->speed_slowdown_previous = 0;
-    gs->speed_slowdown_time = 0;
+    gs->speed_slowdown_time = -1;
 
     // Used for crossfades
     gs->next_wait_ticks = 0;
