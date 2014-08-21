@@ -6,6 +6,8 @@
 #include "shadowdive/error.h"
 #include "shadowdive/sounds.h"
 
+#include <stdio.h>
+
 int sd_sounds_create(sd_sound_file *sf) {
     if(sf == NULL) {
         return SD_INVALID_INPUT;
@@ -25,37 +27,27 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
     }
 
     // Read header
-    sd_skip(r, 4);
+    uint32_t first_udword = sd_read_udword(r);
+    if(first_udword != 0) {
+        return SD_FILE_INVALID_TYPE;
+    }
+
     uint32_t header_size = sd_read_udword(r);
     int data_block_count = header_size / 4 - 2;
 
     // Find block sizes
-    uint32_t data_block_offsets[data_block_count];
+    uint32_t data_block_offsets[data_block_count+1];
     for(int i = 0; i < data_block_count; i++) {
         data_block_offsets[i] = sd_read_udword(r);
+        printf("%d = %d\n", i, data_block_offsets[i]);
     }
     data_block_offsets[data_block_count] = sd_reader_filesize(r);
 
-    // Allocate memory
-    sf->sounds = malloc(sizeof(sd_sound*) * data_block_count);
-    sf->sound_count = data_block_count;
-
     // Read blocks
-    sd_sound *sound;
-    unsigned int offset = 0;
-    for(int i = 0; i < data_block_count; i++) {
-        offset = data_block_offsets[i];
-
-        if((offset - sd_reader_pos(r)) <= 2) {
-            sf->sounds[i] = 0;
-            sd_skip(r, 2);
-        } else {
-            sound = (sd_sound*)malloc(sizeof(sd_sound));
-            sound->len = offset - sd_reader_pos(r);
-            sound->data = (char*)malloc(sound->len);
-            sd_read_buf(r, sound->data, sound->len);
-            sf->sounds[i] = sound;
-        }
+    for(int i = 0; i <= data_block_count; i++) {
+        sf->sounds[i].len = data_block_offsets[i] - sd_reader_pos(r);
+        sf->sounds[i].data = malloc(sf->sounds[i].len);
+        sd_read_buf(r, sf->sounds[i].data, sf->sounds[i].len);
     }
 
     sd_reader_close(r);
@@ -72,9 +64,82 @@ int sd_sounds_save(sd_sound_file *sf, const char* filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    // TODO: Writer
+    // Write header. Zero start + data block start.
+    size_t s_offset = 4 * SD_SOUNDS_MAX + 4;
+    sd_write_udword(w, 0);
+
+    // First pass -- write offsets
+    size_t ptr = 0;
+    for(int i = 0; i < SD_SOUNDS_MAX; i++) {
+        sd_write_udword(w, ptr + s_offset);
+        ptr += sf->sounds[i].len;
+    }
+
+    // Second pass -- Write sounds
+    for(int i = 0; i < SD_SOUNDS_MAX; i++) {
+        sd_write_buf(w, sf->sounds[i].data, sf->sounds[i].len);
+    }
 
     sd_writer_close(w);
+    return SD_SUCCESS;
+}
+
+sd_sound* sd_sounds_get(sd_sound_file *sf, int id) {
+    if(id < 0 || id >= SD_SOUNDS_MAX) {
+        return NULL;
+    }
+    return &sf->sounds[id];
+}
+
+int sd_sound_from_au(sd_sound *sound, const char *filename) {
+    if(sound == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
+    sd_reader *r = sd_reader_open(filename);
+    if(!r) {
+        return SD_FILE_OPEN_ERROR;
+    }
+
+    // Make sure the file seems right
+    uint32_t magic_number = sd_read_udword(r);
+    if(magic_number != 0x2e736e64) {
+        return SD_FILE_INVALID_TYPE;
+    }
+
+    // Header data
+    uint32_t data_start = sd_read_udword(r);
+    uint32_t data_size = sd_read_udword(r);
+    uint32_t data_type = sd_read_udword(r);
+    uint32_t data_freq = sd_read_udword(r);
+    uint32_t data_channels = sd_read_udword(r);
+
+    // Check data format
+    if(data_type != 2 || data_freq != 8000 || data_channels != 1) {
+        return SD_FILE_INVALID_TYPE;
+    }
+
+    // Skip annotation field and jump to data start
+    sd_reader_set(r, data_start);
+
+    // Size to read
+    size_t read_size = 0;
+    if(data_size != 0xffffffff) {
+        read_size = data_size;
+    } else {
+        read_size = sd_reader_filesize(r) - sd_reader_pos(r);
+    }
+
+    // Allocate
+    sound->len = read_size;
+    sound->data = malloc(read_size);
+
+    // Read data
+    for(size_t i = 0; i < read_size; i++) {
+        sound->data[i] = sd_read_byte(r) + 128;
+    }
+
+    sd_reader_close(r);
     return SD_SUCCESS;
 }
 
@@ -92,7 +157,7 @@ int sd_sound_to_au(sd_sound *sound, const char *filename) {
     sd_write_udword(w, 0x2e736e64); // Magic number (".snd")
     sd_write_udword(w, 32); // Data start
     sd_write_udword(w, 0xffffffff); // Data size
-    sd_write_udword(w, 2); // Type (8bit signed pcm)
+    sd_write_udword(w, 2); // Type (8bit signed pcm), needs conversion from our unsigned
     sd_write_udword(w, 8000); // Freq
     sd_write_udword(w, 1); // Channels
 
@@ -114,11 +179,7 @@ int sd_sound_to_au(sd_sound *sound, const char *filename) {
 
 void sd_sounds_free(sd_sound_file *sf) {
     if(sf == NULL) return;
-    for(int i = 0; i < sf->sound_count; i++) {
-        if(sf->sounds[i] != NULL) {
-            free(sf->sounds[i]->data);
-            free(sf->sounds[i]);
-        }
+    for(int i = 0; i < SD_SOUNDS_MAX; i++) {
+        free(sf->sounds[i].data);
     }
-    free(sf->sounds);
 }
