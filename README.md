@@ -11,19 +11,17 @@ Features:
 * HAR Data files (*.AF)
 * Arena/background data files (*.BK)
 * Language files (ENGLISH.DAT,GERMAN.DAT) (Only reading supported)
-* Sound data file (SOUNDS.DAT) (Only reading supported)
+* Sound data file (SOUNDS.DAT)
 * Characters for both big and small fonts (GRAPHCHR.DAT, CHARSMAL.DAT)
 * Score file (SCORES.DAT)
 * Pilot image files (*.PIC) (Only reading supported)
-* Tournament data files (*.TRN) (Only reading supported)
+* Tournament data files (*.TRN)
 * Character save files (*.CHR) (Only reading supported)
 
 Following formats are still TODO:
 * Character save files (*.CHR) writing
-* Tournament data files (*.TRN) writing
 * Pilot image files (*.PIC) writing
 * Language file (ENGLISH.DAT, GERMAN.DAT) writing
-* Sound file (SOUNDS.DAT) writing
 
 Other files:
 * OMF music files are in PSM module format, and can be opened with libdumb.
