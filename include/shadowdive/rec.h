@@ -1,3 +1,8 @@
+/*! \file 
+ * \brief Contains functions for handling ".REC" match record files.
+ * \license MIT
+ */ 
+
 #ifndef _SD_REC_H
 #define _SD_REC_H
 
@@ -22,17 +27,17 @@ typedef enum {
 #define SD_MOVE_MASK (SD_REC_UP|SD_REC_DOWN|SD_REC_LEFT|SD_REC_RIGHT)
 
 typedef struct {
-    uint32_t tick;
-    uint8_t extra;
-    uint8_t player_id;
-    sd_rec_action action;
-    uint8_t raw_action;
-    char extra_data[7];
+    uint32_t tick; ///< Game tick at the moment of this event
+    uint8_t extra; ///< Extra content flag. If this is >2, then extra_data will contain valid content.
+    uint8_t player_id; ///< Player ID. 0 or 1.
+    sd_rec_action action; ///< Player actions at this tick. A Combination of sd_rec_action enums.
+    uint8_t raw_action; ///< Raw action data from the file.
+    char extra_data[7]; ///< Extra data. Only valid if extra field > 2.
 } sd_rec_move;
 
 typedef struct {
-    sd_pilot pilots[2];
-    uint32_t scores[2];
+    sd_pilot pilots[2]; ///< Pilot data
+    uint32_t scores[2]; ///< Score data at the start of the match
     int8_t unknown_a; // Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
     int8_t unknown_b;
     int8_t unknown_c;
@@ -47,16 +52,88 @@ typedef struct {
     int32_t unknown_l;
     int8_t unknown_m;
 
-    unsigned int move_count;
-    sd_rec_move *moves;
+    unsigned int move_count; ///< How many REC event records
+    sd_rec_move *moves; ///< REC event records list
 } sd_rec_file;
 
+/*! \brief Initialize REC file structure
+ *
+ * Initializes the REC file structure with empty values.
+ *
+ * \retval SD_INVALID_INPUT REC struct pointer was NULL
+ * \retval SD_SUCCESS Success.
+ *
+ * \param rec Allocated REC struct pointer.
+ */
 int sd_rec_create(sd_rec_file *rec);
-void sd_rec_free(sd_rec_file *rec);
-int sd_rec_load(sd_rec_file *rec, const char *file);
-int sd_rec_save(sd_rec_file *rec, const char *file);
 
+/*! \brief Free REC file structure
+ *
+ * Frees up all memory reserved by the REC structure.
+ * All contents will be freed, all pointers to contents will be invalid.
+ *
+ * \param rec REC file struct pointer.
+ */
+void sd_rec_free(sd_rec_file *rec);
+
+/*! \brief Load .REC file
+ * 
+ * Loads the given REC file to memory. The structure must be initialized with sd_rec_create() 
+ * before using this function. Loading to a previously loaded or filled sd_rec_file structure 
+ * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
+ *
+ * \retval SD_FILE_OPEN_ERROR File could not be opened.
+ * \retval SD_FILE_PARSE_ERROR File does not contain valid data or has syntax problems.
+ * \retval SD_OUT_OF_MEMORY Memory ran out. This struct should now be considered invalid and freed.
+ * \retval SD_SUCCESS Success.
+ *
+ * \param rec BK struct pointer.
+ * \param filename Name of the BK file to load from.
+ */
+int sd_rec_load(sd_rec_file *rec, const char *filename);
+
+/*! \brief Save .REC file
+ * 
+ * Saves the given REC file from memory to a file on disk. The structure must be at
+ * least initialized by using sd_rec_create() before running this.
+ * 
+ * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
+ * \retval SD_SUCCESS Success.
+ * 
+ * \param rec REC struct pointer. 
+ * \param filename Name of the REC file to save into.
+ */
+int sd_rec_save(sd_rec_file *rec, const char *filename);
+
+/*! \brief Deletes a REC event record
+ *
+ * Deletes a REC event record at given position.
+ *
+ * \retval SD_OUT_OF_MEMORY Memory ran out. The REC structure will most likely be invalid.
+ * \retval SD_INVALID_INPUT Number you tried to remove does not exist, or rec was NULL.
+ * \retval SD_SUCCESS Success.
+ *
+ * \param rec BK struct pointer.
+ * \param number Record number
+ */
 int sd_rec_delete_action(sd_rec_file *rec, unsigned int number);
+
+/*! \brief Inserts a REC event record
+ *
+ * Inserts a new event record to a given position. All contents starting from the given
+ * position will be moved forwards by one entry.
+ *
+ * You can push new entries to the end of the list by pointing to the last+1 entry.
+ *
+ * Event record data will be copied. Make sure to free your local copy yourself.
+ *
+ * \retval SD_OUT_OF_MEMORY Memory ran out. The REC structure will most likely be invalid.
+ * \retval SD_INVALID_INPUT Slot you tried to insert to does not exist, or rec was NULL.
+ * \retval SD_SUCCESS Success.
+ *
+ * \param rec BK struct pointer.
+ * \param number Record number
+ */
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move);
 
 #ifdef __cplusplus

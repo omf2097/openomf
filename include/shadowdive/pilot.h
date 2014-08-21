@@ -1,3 +1,8 @@
+/*! \file 
+ * \brief Pilot data handling
+ * \license MIT
+ */ 
+
 #ifndef _SD_PILOT_H
 #define _SD_PILOT_H
 
@@ -13,19 +18,19 @@ extern "C" {
 
 typedef struct {
     uint32_t unknown_a;
-    char name[18];
-    uint16_t wins;
-    uint16_t losses;
-    uint16_t robot_id;
+    char name[18];        ///< Pilot name
+    uint16_t wins;        ///< Matches won by this pilot
+    uint16_t losses;      ///< Matches lost by this pilot
+    uint16_t robot_id;    ///< Har Identifier
     char stats[8];
-    uint16_t offense;
-    uint16_t defense;
-    uint32_t money;
-    uint8_t color_1;
-    uint8_t color_2;
-    uint8_t color_3;
+    uint16_t offense;     ///< Offense value
+    uint16_t defense;     ///< Defense value
+    uint32_t money;       ///< Amount of money the pilot currently has
+    uint8_t color_1;      ///< Color 1 field for the HAR
+    uint8_t color_2;      ///< Color 2 field for the HAR
+    uint8_t color_3;      ///< Color 3 field for the HAR
     char unk_block_a[107];
-    uint16_t force_arena;
+    uint16_t force_arena; ///< Tells if this pilot needs to play on a certain arena
     char unk_block_b[3];
     uint8_t movement;
     char unk_block_c[6];
@@ -51,10 +56,27 @@ typedef struct {
     char unk_block_f[24];
     uint32_t winnings;
     char unk_block_g[166];
-    uint16_t photo_id;
+    uint16_t photo_id;  ///< Which face photo this pilot uses
 } sd_pilot;
 
+/*! \brief Initialize pilot struct
+ *
+ * Initializes the pilot structure with empty values.
+ *
+ * \retval SD_INVALID_INPUT Pilot struct pointer was NULL
+ * \retval SD_SUCCESS Success.
+ *
+ * \param pilot Allocated pilot struct pointer.
+ */
 int sd_pilot_create(sd_pilot *pilot);
+
+/*! \brief Free pilot structure
+ *
+ * Frees up all memory reserved by the pilot structure.
+ * All contents will be freed, all pointers to contents will be invalid.
+ *
+ * \param pilot Pilot struct pointer.
+ */
 void sd_pilot_free(sd_pilot *pilot);
 
 #ifdef SD_USE_INTERNAL

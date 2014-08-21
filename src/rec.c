@@ -44,7 +44,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     for(int i = 0; i < 2; i++) {
         // Read pilot data
         sd_pilot_load(r, &rec->pilots[i]);
-        sd_skip(r, 168); // This contains empty palette and psrite etc. Just skip.
+        sd_skip(r, 168); // This contains empty palette and sprite etc. Just skip.
     }
 
     // Scores
@@ -225,7 +225,7 @@ int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_mov
 
     // Only move if we are inserting, not appending
     // when number == move_count-1, we are pushing the last entry forwards by one
-    // when nubmer == move_count, we are pushing to the end.
+    // when number == move_count, we are pushing to the end.
     if(number < rec->move_count) {
         memmove(
             rec->moves + number + 1,
