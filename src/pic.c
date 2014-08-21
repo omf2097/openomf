@@ -37,6 +37,7 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
+    // The filesize should be at least 200 bytes.
     if(sd_reader_filesize(r) < 200) {
         goto error_0;
     }
@@ -69,18 +70,12 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         pic->photos[i]->sex = sd_read_uword(r);
 
         // Read palette
-        memset((void*)&pic->photos[i]->pal, 0, sizeof(sd_palette));
-        char d[3];
-        for(int k = 0; k < 48; k++) {
-            sd_read_buf(r, d, 3);
-            pic->photos[i]->pal.data[k][0] = ((d[0] << 2) | (d[0] >> 4));
-            pic->photos[i]->pal.data[k][1] = ((d[1] << 2) | (d[1] >> 4));
-            pic->photos[i]->pal.data[k][2] = ((d[2] << 2) | (d[2] >> 4));
-        }
+        sd_palette_create(&pic->photos[i]->pal);
+        sd_palette_load_range(r, &pic->photos[i]->pal, 0, 48);
 
         // This byte is probably an "is there image data" flag
         // TODO: Find out what this does
-        sd_skip(r, 1);
+        pic->photos[i]->unk_flag = sd_read_ubyte(r);
 
         // Sprite
         pic->photos[i]->sprite = malloc(sizeof(sd_sprite));
@@ -110,7 +105,50 @@ int sd_pic_save(sd_pic_file *pic, const char *filename) {
         return SD_INVALID_INPUT;
     }
 
-    return SD_FILE_OPEN_ERROR;
+    sd_writer *w = sd_writer_open(filename);
+    if(!w) {
+        return SD_FILE_OPEN_ERROR;
+    }
+
+    // Write photo count, and then fill zero until 0xC8
+    sd_write_dword(w, pic->photo_count);
+    sd_write_fill(w, 0, 200 - sd_writer_pos(w));
+
+    // Offset list goes here. For now, just write zero
+    // We will fill this out later.
+    sd_write_fill(w, 0, pic->photo_count * 4);
+
+    // Write photos and offsets
+    for(int i = 0; i < pic->photo_count; i++) {
+        // Write offset to the catalog
+        uint32_t pos = sd_writer_pos(w);
+        sd_writer_seek_start(w, 200 + i * 4);
+        sd_write_udword(w, pos);
+        sd_writer_seek_start(w, pos);
+
+        // flags, palette, etc.
+        sd_write_ubyte(w, pic->photos[i]->is_player);
+        sd_write_uword(w, pic->photos[i]->sex);
+        sd_palette_save_range(w, &pic->photos[i]->pal, 0, 48);
+        sd_write_ubyte(w, pic->photos[i]->unk_flag);
+
+        // Hackity hack. Sprite w and h should be n-1 for some reason.
+        pic->photos[i]->sprite->height--;
+        pic->photos[i]->sprite->width--;
+        sd_sprite_save(w, pic->photos[i]->sprite);
+        pic->photos[i]->sprite->height++;
+        pic->photos[i]->sprite->width++;
+    }
+
+    sd_writer_close(w);
+    return SD_SUCCESS;
+}
+
+sd_pic_photo* sd_pic_get(sd_pic_file *pic, int entry_id) {
+    if(entry_id < 0 || entry_id > pic->photo_count) {
+        return NULL;
+    }
+    return pic->photos[entry_id];
 }
 
 void sd_pic_free(sd_pic_file *pic) {
