@@ -8,8 +8,6 @@
 #include "shadowdive/error.h"
 #include "shadowdive/tournament.h"
 
-#include <stdio.h>
-
 int sd_tournament_create(sd_tournament_file *trn) {
     if(trn == NULL) {
         return SD_INVALID_INPUT;
@@ -57,7 +55,6 @@ static void free_locales(sd_tournament_file *trn) {
 
 char *read_variable_str(sd_reader *r) {
     uint16_t len = sd_read_uword(r);
-    printf("str = %d\n", len);
     char *str = NULL;
     if(len > 0) {
         str = (char*)malloc(len);
@@ -65,16 +62,6 @@ char *read_variable_str(sd_reader *r) {
         assert(str[len-1] == 0);
     }
     return str;
-}
-
-void mwrite_variable_str(sd_mwriter *w, const char *str) {
-    if(str == NULL) {
-        sd_mwrite_uword(w, 0);
-        return;
-    }
-    uint16_t len = strlen(str) + 1;
-    sd_mwrite_uword(w, len);
-    sd_mwrite_buf(w, str, len);
 }
 
 void write_variable_str(sd_writer *w, const char *str) {
@@ -129,20 +116,16 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
         // Find data length
         sd_reader_set(r, offset_list[i]);
-        printf("A %d\n", (int)sd_reader_pos(r));
 
         // Read enemy pilot information
         sd_pilot_create(trn->enemies[i]);
         sd_pilot_load(r, trn->enemies[i]);
-
-        printf("B %d\n", (int)sd_reader_pos(r));
 
         // Read quotes
         for(int m = 0; m < MAX_TRN_LOCALES; m++) {
             trn->quotes[i][m] = read_variable_str(r);
         }
 
-        printf("C %d\n", (int)sd_reader_pos(r));
         // Check for errors
         if(!sd_reader_ok(r)) {
             goto error_1;
