@@ -27,15 +27,15 @@ int sd_score_load(sd_score *score, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
     
-    for(int i = 0;i < sizeof(score->scores)/sizeof(score->scores[0]);i++) {
-        for(int j = 0;j < sizeof(score->scores[0])/sizeof(score->scores[0][0]);j++) {
+    for(int i = 0; i < sizeof(score->scores) / sizeof(score->scores[0]); i++) {
+        for(int j = 0; j < sizeof(score->scores[0]) / sizeof(score->scores[0][0]); j++) {
             sd_score_entry *e = &score->scores[i][j];
             e->score = sd_read_udword(r);
             sd_read_buf(r, e->name, sizeof(e->name));
             uint32_t id = sd_read_udword(r);
-            e->har_id   = id&0x3F;
-            e->pilot_id = (id>>6)&0x3F;
-            e->padding  = (id>>12)&0xFFFFF;
+            e->har_id   = id & 0x3F;
+            e->pilot_id = (id >> 6) & 0x3F;
+            e->padding  = (id >> 12) & 0xFFFFF;
             if(!sd_reader_ok(r)) {
                 goto read_error;
             }
@@ -60,15 +60,26 @@ int sd_score_save(sd_score *score, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    for(int i = 0;i < sizeof(score->scores)/sizeof(score->scores[0]);i++) {
-        for(int j = 0;j < sizeof(score->scores[0])/sizeof(score->scores[0][0]);j++) {
+    for(int i = 0; i < sizeof(score->scores) / sizeof(score->scores[0]); i++) {
+        for(int j = 0; j < sizeof(score->scores[0]) / sizeof(score->scores[0][0]); j++) {
             sd_score_entry *e = &score->scores[i][j];
             sd_write_udword(w, e->score);
             sd_write_buf(w, e->name, sizeof(e->name));
-            sd_write_udword(w, (e->har_id&0x3F) | ((e->pilot_id&0x3F)<<6) | ((e->padding&0xFFFFF)<<12));
+            sd_write_udword(w, (e->har_id & 0x3F) | ((e->pilot_id & 0x3F) << 6) | ((e->padding & 0xFFFFF) << 12));
         }
     }
 
     sd_writer_close(w);
     return SD_SUCCESS;
+}
+
+sd_score_entry* sd_score_get(sd_score *score, int page, int entry_id) {
+    if(score == NULL) return NULL;
+    if(page < 0 || page >= SD_SCORE_PAGES) {
+        return NULL;
+    }
+    if(entry_id < 0 || entry_id >= SD_SCORE_ENTRIES) {
+        return NULL;
+    }
+    return &score->scores[page][entry_id];
 }
