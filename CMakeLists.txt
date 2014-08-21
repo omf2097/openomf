@@ -53,12 +53,10 @@ add_library(shadowdive
 IF(BUILD_OLD_TESTS)
     add_executable(test_stringparser test/test_stringparser.c)
     add_executable(test_altpals test/test_altpals.c)
-    add_executable(test_tourn test/test_tourn.c test/helpers.c)
     add_executable(test_chr test/test_chr.c)
 
     target_link_libraries(test_stringparser shadowdive)
     target_link_libraries(test_altpals shadowdive)
-    target_link_libraries(test_tourn shadowdive)
     target_link_libraries(test_chr shadowdive)
 ENDIF()
 
