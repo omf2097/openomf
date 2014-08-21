@@ -102,14 +102,8 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     sd_mreader_close(mr);
 
     // Read HAR palette
-    memset((void*)&chr->pal, 0, sizeof(sd_palette));
-    char d[3];
-    for(int k = 0; k < 48; k++) {
-        sd_read_buf(r, d, 3);
-        chr->pal.data[k][0] = ((d[0] << 2) | (d[0] >> 4));
-        chr->pal.data[k][1] = ((d[1] << 2) | (d[1] >> 4));
-        chr->pal.data[k][2] = ((d[2] << 2) | (d[2] >> 4));
-    }
+    sd_palette_create(&chr->pal);
+    sd_palette_load_range(r, &chr->pal, 0, 48);
 
     // No idea what this is. TODO: Find out.
     sd_skip(r, 4);
