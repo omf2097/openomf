@@ -52,22 +52,18 @@ add_library(shadowdive
 
 IF(BUILD_OLD_TESTS)
     #add_executable(test_roundtrip test/roundtrip.c)
-    add_executable(test_font test/test_fonts.c)
     add_executable(test_stringparser test/test_stringparser.c)
     add_executable(test_altpals test/test_altpals.c)
     add_executable(test_tourn test/test_tourn.c test/helpers.c)
     add_executable(test_score test/test_score.c)
     add_executable(test_chr test/test_chr.c)
-    add_executable(test_rec test/test_rec.c test/helpers.c)
 
     #target_link_libraries(test_roundtrip shadowdive)
-    target_link_libraries(test_font shadowdive)
     target_link_libraries(test_stringparser shadowdive)
     target_link_libraries(test_altpals shadowdive)
     target_link_libraries(test_tourn shadowdive)
     target_link_libraries(test_score shadowdive)
     target_link_libraries(test_chr shadowdive)
-    target_link_libraries(test_rec shadowdive)
 ENDIF()
 
 FILE(GLOB H_FILES "include/shadowdive/*.h")
