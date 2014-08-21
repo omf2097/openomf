@@ -36,6 +36,7 @@ typedef struct {
     int16_t enemy_count;
     char bk_name[14];
     float winnings_multiplier;
+    int32_t unknown_a;
     int32_t registration_free; 
     int32_t assumed_initial_value; 
     int32_t tournament_id;

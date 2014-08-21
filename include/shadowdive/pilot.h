@@ -2,6 +2,10 @@
 #define _SD_PILOT_H
 
 #include <stdint.h>
+#ifdef SD_USE_INTERNAL
+    #include "shadowdive/internal/reader.h"
+    #include "shadowdive/internal/writer.h"
+#endif
 
 #ifdef __cplusplus 
 extern "C" {

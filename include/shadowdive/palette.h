@@ -25,7 +25,9 @@ int sd_palette_create(sd_palette *pal);
 void sd_palette_free(sd_palette *pal);
 
 #ifdef SD_USE_INTERNAL
+int sd_palette_load_range(sd_reader *reader, sd_palette *palette, int index_start, int index_count);
 int sd_palette_load(sd_reader *reader, sd_palette *palette);
+void sd_palette_save_range(sd_writer *writer, const sd_palette *palette, int index_start, int index_count);
 void sd_palette_save(sd_writer *writer, const sd_palette *palette);
 #endif
 

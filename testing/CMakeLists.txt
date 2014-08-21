@@ -10,6 +10,7 @@ IF(CUNIT_FOUND)
         test_bk.c
         test_rec.c
         test_palette.c
+        test_trn.c
     )
 
     IF(UNIX)

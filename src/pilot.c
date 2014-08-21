@@ -81,12 +81,11 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     return SD_SUCCESS;
 }
 
-int sd_pilot_save(sd_writer *fwriter, const sd_pilot *pilot) {
-    if(fwriter == NULL || pilot == NULL) {
+int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
+    if(fw == NULL || pilot == NULL) {
         return SD_INVALID_INPUT;
     }
 
-    // ALways succeeds
     sd_mwriter *w = sd_mwriter_open();
 
     // Write the pilot block
@@ -136,8 +135,9 @@ int sd_pilot_save(sd_writer *fwriter, const sd_pilot *pilot) {
     sd_mwrite_buf(w, pilot->unk_block_g, 166);
     sd_mwrite_uword(w, pilot->photo_id);
 
-    // XOR block and save to file
+    // XOR block, save and close
     sd_mwriter_xor(w, PILOT_BLOCK_LENGTH & 0xFF);
-    sd_mwriter_save(w, fwriter);
+    sd_mwriter_save(w, fw);
+    sd_mwriter_close(w);
     return SD_SUCCESS;
 }

@@ -1,10 +1,14 @@
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/internal/memwriter.h"
 #include "shadowdive/error.h"
 #include "shadowdive/tournament.h"
+
+#include <stdio.h>
 
 int sd_tournament_create(sd_tournament_file *trn) {
     if(trn == NULL) {
@@ -52,13 +56,35 @@ static void free_locales(sd_tournament_file *trn) {
 }
 
 char *read_variable_str(sd_reader *r) {
-    int len = sd_read_uword(r);
+    uint16_t len = sd_read_uword(r);
+    printf("str = %d\n", len);
     char *str = NULL;
     if(len > 0) {
         str = (char*)malloc(len);
         sd_read_buf(r, str, len);
+        assert(str[len-1] == 0);
     }
     return str;
+}
+
+void mwrite_variable_str(sd_mwriter *w, const char *str) {
+    if(str == NULL) {
+        sd_mwrite_uword(w, 0);
+        return;
+    }
+    uint16_t len = strlen(str) + 1;
+    sd_mwrite_uword(w, len);
+    sd_mwrite_buf(w, str, len);
+}
+
+void write_variable_str(sd_writer *w, const char *str) {
+    if(str == NULL) {
+        sd_write_uword(w, 0);
+        return;
+    }
+    uint16_t len = strlen(str) + 1;
+    sd_write_uword(w, len);
+    sd_write_buf(w, str, len);
 }
 
 int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
@@ -82,7 +108,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     int victory_text_offset = sd_read_dword(r);
     sd_read_buf(r, trn->bk_name, 14);
     trn->winnings_multiplier = sd_read_float(r);
-    sd_skip(r, 4);
+    trn->unknown_a = sd_read_dword(r);
     trn->registration_free = sd_read_dword(r);
     trn->assumed_initial_value = sd_read_dword(r);
     trn->tournament_id = sd_read_dword(r);
@@ -103,16 +129,20 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
         // Find data length
         sd_reader_set(r, offset_list[i]);
+        printf("A %d\n", (int)sd_reader_pos(r));
 
         // Read enemy pilot information
         sd_pilot_create(trn->enemies[i]);
         sd_pilot_load(r, trn->enemies[i]);
+
+        printf("B %d\n", (int)sd_reader_pos(r));
 
         // Read quotes
         for(int m = 0; m < MAX_TRN_LOCALES; m++) {
             trn->quotes[i][m] = read_variable_str(r);
         }
 
+        printf("C %d\n", (int)sd_reader_pos(r));
         // Check for errors
         if(!sd_reader_ok(r)) {
             goto error_1;
@@ -147,13 +177,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     // Read palette. Only 40 colors are defined, starting
     // from palette position 128. Remember to convert VGA pal.
     memset((void*)&trn->pal, 0, sizeof(sd_palette));
-    char d[3];
-    for(int i = 128; i < 168; i++) {
-        sd_read_buf(r, d, 3);
-        trn->pal.data[i][0] = ((d[0] << 2) | (d[0] >> 4));
-        trn->pal.data[i][1] = ((d[1] << 2) | (d[1] >> 4));
-        trn->pal.data[i][2] = ((d[2] << 2) | (d[2] >> 4));
-    }
+    sd_palette_load_range(r, &trn->pal, 128, 40);
 
     // Read pic filename
     trn->pic_file = read_variable_str(r);
@@ -197,7 +221,86 @@ int sd_tournament_save(sd_tournament_file *trn, const char *filename) {
     if(trn == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
-    return SD_FILE_OPEN_ERROR;
+
+    sd_writer *w = sd_writer_open(filename);
+    if(!w) {
+        return SD_FILE_OPEN_ERROR;
+    }
+
+    // Header
+    sd_write_dword(w, trn->enemy_count);
+    sd_write_dword(w, 0); // Write this later!
+    sd_write_buf(w, trn->bk_name, 14);
+    sd_write_float(w, trn->winnings_multiplier);
+    sd_write_dword(w, trn->unknown_a);
+    sd_write_dword(w, trn->registration_free);
+    sd_write_dword(w, trn->assumed_initial_value);
+    sd_write_dword(w, trn->tournament_id);
+
+    // Write null until offset 300
+    // Nothing of consequence here.
+    sd_write_fill(w, 0, 300 - sd_writer_pos(w));
+
+    // Write first offset
+    sd_write_udword(w, 0);
+
+    // Write null until offset 1100
+    // Nothing of consequence here.
+    sd_write_fill(w, 0, 1100 - sd_writer_pos(w));
+
+    // Walk through the enemies list, and write
+    // offsets and blocks as we go
+    for(int i = 0; i < trn->enemy_count; i++) {
+        // Save pilot
+        sd_pilot_save(w, trn->enemies[i]);
+
+        // write strings
+        for(int k = 0; k < MAX_TRN_LOCALES; k++) {
+            write_variable_str(w, trn->quotes[i][k]);
+        }
+
+        // Update catalog
+        uint32_t c_pos = sd_writer_pos(w);
+        sd_writer_seek_start(w, 300 + (i+1) * 4);
+        sd_write_udword(w, c_pos);
+        sd_writer_seek_start(w, c_pos);
+    }
+
+    // Write logos
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        sd_sprite_save(w, trn->locales[i]->logo);
+    }
+
+    // Save 40 colors
+    sd_palette_save_range(w, &trn->pal, 128, 40);
+
+    // Pic filename
+    write_variable_str(w, trn->pic_file);
+
+    // Write tournament descriptions
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        write_variable_str(w, trn->locales[i]->title);
+        write_variable_str(w, trn->locales[i]->description);
+    }
+
+    // Let's write our current offset to the victory text offset position
+    long offset = sd_writer_pos(w);
+    sd_writer_seek_start(w, 4);
+    sd_write_dword(w, (uint32_t)offset);
+    sd_writer_seek_start(w, offset);
+
+    // Write texts
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        for(int har = 0; har < 11; har++) {
+            for(int page = 0; page < 10; page++) {
+                write_variable_str(w, trn->locales[i]->end_texts[har][page]);
+            }
+        }
+    }
+
+    // All done. Flush and close.
+    sd_writer_close(w);
+    return SD_SUCCESS;
 }
 
 void sd_tournament_free(sd_tournament_file *trn) {

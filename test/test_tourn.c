@@ -19,7 +19,7 @@ const char *language_names[] = {
 
 int main(int argc, char **argv) {
     if(argc < 2) {
-        printf("test_tourn <tournamentfile> [-d logodump.ppm]\n");
+        printf("test_tourn <tournamentfile> [-d logodump.ppm|-o output.trn]\n");
         return 0;
     }
 
@@ -29,6 +29,14 @@ int main(int argc, char **argv) {
     if(argc == 4) {
         if(strcmp(argv[2], "-d") == 0) {
             dumplogo = 1;
+            dumpfile = (char*)argv[3];
+        }
+    }
+
+    int dumptourn = 0;
+    if(argc == 4) {
+        if(strcmp(argv[2], "-o") == 0) {
+            dumptourn = 1;
             dumpfile = (char*)argv[3];
         }
     }
@@ -96,6 +104,7 @@ int main(int argc, char **argv) {
     printf("  - Enemy count         : %d\n", trn->enemy_count);
     printf("  - BK name             : %s\n", trn->bk_name);
     printf("  - Winnings multiplier : %f\n", trn->winnings_multiplier);
+    printf("  - Unknown             : %d\n", trn->unknown_a);
     printf("  - Registration fee    : %d\n", trn->registration_free);
     printf("  - Initial value       : %d\n", trn->assumed_initial_value);
     printf("  - ID                  : %d\n", trn->tournament_id);
@@ -112,6 +121,11 @@ int main(int argc, char **argv) {
             -1);
         sd_rgba_image_to_ppm(&out, dumpfile);
         sd_rgba_image_free(&out);
+    }
+    if(dumptourn) {
+        if(sd_tournament_save(trn, dumpfile) != SD_SUCCESS) {
+            printf("Dumping tournament file failed.\n");
+        }
     }
 
     sd_tournament_free(trn);
