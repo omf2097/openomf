@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <SDL2/SDL.h>
+#include <shadowdive/shadowdive.h>
 #include "controller/keyboard.h"
 #include "controller/joystick.h"
 #include "utils/log.h"
@@ -46,14 +47,14 @@ typedef struct {
     object *obj;
 } render_obj;
 
-int game_state_create(game_state *gs, int net_mode) {
+int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->run = 1;
     gs->paused = 0;
     gs->tick = 0;
     gs->int_tick = 0;
     gs->role = ROLE_CLIENT;
     gs->next_requires_refresh = 0;
-    gs->net_mode = net_mode;
+    gs->net_mode = init_flags->net_mode;
     gs->speed = settings_get()->gameplay.speed + 5;
     vector_create(&gs->objects, sizeof(render_obj));
 
@@ -77,23 +78,61 @@ int game_state_create(game_state *gs, int net_mode) {
     }
 
     reconfigure_controller(gs);
+    int nscene;
+    if (strlen(init_flags->rec_file) > 0) {
+        sd_rec_file rec;
+        sd_rec_create(&rec);
+        int ret = sd_rec_load(&rec, init_flags->rec_file);
+        if(ret != SD_SUCCESS) {
+            PERROR("Unable to load recording %s.", init_flags->rec_file);
+            goto error_0;
+        }
+        // hardcode arena 0 for now, although the arena ID resides in field 'L' of the REC file
+        nscene = SCENE_ARENA0;
+        DEBUG("playing recording file %s", init_flags->rec_file);
+        if(scene_create(gs->sc, gs, nscene)) {
+            PERROR("Error while loading scene %d.", nscene);
+            goto error_0;
+        }
+        // set the HAR colors
+        gs->players[0]->colors[0] = rec.pilots[0].color_3;
+        gs->players[0]->colors[1] = rec.pilots[0].color_2;
+        gs->players[0]->colors[2] = rec.pilots[0].color_1;
+        gs->players[1]->colors[0] = rec.pilots[1].color_3;
+        gs->players[1]->colors[1] = rec.pilots[1].color_2;
+        gs->players[1]->colors[2] = rec.pilots[1].color_1;
 
-    // Select correct starting scene and load resources
-    int nscene = (net_mode == NET_MODE_NONE ? SCENE_INTRO : SCENE_MENU);
-    if(scene_create(gs->sc, gs, nscene)) {
-        PERROR("Error while loading scene %d.", nscene);
-        goto error_0;
-    }
-    if(net_mode == NET_MODE_NONE) {
-        if(intro_create(gs->sc)) {
-            PERROR("Error while creating intro scene.");
+        gs->players[0]->har_id = HAR_JAGUAR + rec.pilots[0].robot_id / 256;
+        gs->players[1]->har_id = HAR_JAGUAR + rec.pilots[1].robot_id / 256;
+
+        gs->players[0]->pilot_id = rec.pilots[0].unk_block_a[105];
+        gs->players[1]->pilot_id = rec.pilots[1].unk_block_a[105];
+
+        // XXX use playback controller once it exista
+        _setup_keyboard(gs, 0);
+        _setup_keyboard(gs, 1);
+        if(arena_create(gs->sc)) {
+            PERROR("Error while creating arena scene.");
             goto error_1;
         }
     } else {
-        // if connecting to the server or listening, jump straight to the menu
-        if(mainmenu_create(gs->sc)) {
-            PERROR("Error while creating menu scene.");
-            goto error_1;
+        // Select correct starting scene and load resources
+         nscene = (init_flags->net_mode == NET_MODE_NONE ? SCENE_INTRO : SCENE_MENU);
+        if(scene_create(gs->sc, gs, nscene)) {
+            PERROR("Error while loading scene %d.", nscene);
+            goto error_0;
+        }
+        if(init_flags->net_mode == NET_MODE_NONE) {
+            if(intro_create(gs->sc)) {
+                PERROR("Error while creating intro scene.");
+                goto error_1;
+            }
+        } else {
+            // if connecting to the server or listening, jump straight to the menu
+            if(mainmenu_create(gs->sc)) {
+                PERROR("Error while creating menu scene.");
+                goto error_1;
+            }
         }
     }
 

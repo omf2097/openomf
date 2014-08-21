@@ -25,7 +25,9 @@ int main(int argc, char *argv[]) {
     char *ip = NULL;
     unsigned short connect_port = 0;
     unsigned short listen_port = 0;
-    int net_mode = NET_MODE_NONE;
+    engine_init_flags init_flags;
+    init_flags.net_mode = NET_MODE_NONE;
+    memset(init_flags.rec_file, 0, 255);
     int ret = 0;
 
     // Path manager
@@ -46,6 +48,7 @@ int main(int argc, char *argv[]) {
             printf("-h              Prints this help\n");
             printf("-c [ip] [port]  Connect to server\n");
             printf("-l [port]       Start server\n");
+            printf("play [FILE.REC] Play recording file, defaults to LAST.REC\n");
             goto exit_0;
         } else if(strcmp(argv[1], "-c") == 0) {
             if(argc >= 3) {
@@ -54,12 +57,20 @@ int main(int argc, char *argv[]) {
             if(argc >= 4) {
                 connect_port = atoi(argv[3]);
             }
-            net_mode = NET_MODE_CLIENT;
+            init_flags.net_mode = NET_MODE_CLIENT;
         } else if(strcmp(argv[1], "-l") == 0) {
             if(argc >= 3) {
                 listen_port = atoi(argv[2]);
             }
-            net_mode = NET_MODE_SERVER;
+            init_flags.net_mode = NET_MODE_SERVER;
+        } else if(strcmp(argv[1], "play") == 0) {
+            if(argc > 2) {
+                printf("playing recording %s\n", argv[2]);
+                strncpy(init_flags.rec_file, argv[2], 254);
+            } else {
+                printf("playing recording LAST.REC\n");
+                snprintf(init_flags.rec_file, 254, "LAST.REC");
+            }
         }
     }
 
@@ -189,7 +200,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Run
-    engine_run(net_mode);
+    engine_run(&init_flags);
 
     // Close everything
     engine_close();

@@ -105,7 +105,7 @@ exit_0:
     return 1;
 }
 
-void engine_run(int net_mode) {
+void engine_run(engine_init_flags *init_flags) {
     SDL_Event e;
 
     //if mouse_visible_ticks <= 0, hide mouse
@@ -143,7 +143,7 @@ void engine_run(int net_mode) {
 
     // Set up game
     game_state *gs = malloc(sizeof(game_state));
-    if(game_state_create(gs, net_mode)) {
+    if(game_state_create(gs, init_flags)) {
         return;
     }
 
