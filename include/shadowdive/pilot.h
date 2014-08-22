@@ -41,7 +41,12 @@ typedef struct {
     uint8_t color_1;       ///< Color 1 field for the HAR
     uint8_t color_2;       ///< Color 2 field for the HAR
     uint8_t color_3;       ///< Color 3 field for the HAR
-    char unk_block_a[107];
+
+    char trn_name[13];
+    char trn_desc[31];
+    char trn_image[13];
+
+    char unk_block_a[50];
     uint16_t force_arena;  ///< Tells if this pilot needs to play on a certain arena
     char unk_block_b[3];
     uint8_t movement;

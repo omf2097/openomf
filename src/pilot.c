@@ -59,7 +59,11 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     pilot->color_2 =     sd_mread_ubyte(mr);
     pilot->color_3 =     sd_mread_ubyte(mr);
 
-    sd_mread_buf(mr, pilot->unk_block_a, 107);
+    sd_mread_buf(mr, pilot->trn_name, 13);
+    sd_mread_buf(mr, pilot->trn_desc, 31);
+    sd_mread_buf(mr, pilot->trn_image, 13);
+
+    sd_mread_buf(mr, pilot->unk_block_a, 50);
     pilot->force_arena = sd_mread_uword(mr);
     sd_mread_buf(mr, pilot->unk_block_b, 3);
     pilot->movement =    sd_mread_ubyte(mr);
@@ -135,7 +139,11 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
     sd_mwrite_ubyte(w, pilot->color_2);
     sd_mwrite_ubyte(w, pilot->color_3);
 
-    sd_mwrite_buf(w, pilot->unk_block_a, 107);
+    sd_mwrite_buf(w, pilot->trn_name, 13);
+    sd_mwrite_buf(w, pilot->trn_desc, 31);
+    sd_mwrite_buf(w, pilot->trn_image, 13);
+
+    sd_mwrite_buf(w, pilot->unk_block_a, 50);
     sd_mwrite_uword(w, pilot->force_arena);
     sd_mwrite_buf(w, pilot->unk_block_b, 3);
     sd_mwrite_ubyte(w, pilot->movement);
