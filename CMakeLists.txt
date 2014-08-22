@@ -45,6 +45,7 @@ add_executable(pictool src/pictool/main.c)
 add_executable(scoretool src/scoretool/main.c)
 add_executable(trntool src/trntool/main.c src/shared/pilot.c)
 add_executable(altpaltool src/altpaltool/main.c)
+add_executable(chrtool src/chrtool/main.c)
 
 set(CORELIBS ${ARGTABLE2_LIBRARY})
 
@@ -94,6 +95,7 @@ target_link_libraries(pictool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(scoretool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(trntool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 target_link_libraries(altpaltool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(chrtool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 
 INSTALL(
     TARGETS
@@ -111,6 +113,7 @@ INSTALL(
         scoretool
         trntool
         altpaltool
+        chrtool
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
