@@ -1,5 +1,6 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
+#include <stdio.h>
 
 // DEBUGMODE enables the leak detector
 #ifndef DEBUGMODE
