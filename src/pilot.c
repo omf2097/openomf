@@ -34,8 +34,23 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     sd_mread_buf(mr, pilot->name, 18);
     pilot->wins =        sd_mread_uword(mr);
     pilot->losses =      sd_mread_uword(mr);
-    pilot->robot_id =    sd_mread_uword(mr);
-    sd_mread_buf(mr, pilot->stats, 8);
+    pilot->rank =        sd_mread_ubyte(mr);
+    pilot->har_id =      sd_mread_ubyte(mr);
+
+    uint16_t stats_a =   sd_mread_uword(mr);
+    uint16_t stats_b =   sd_mread_uword(mr);
+    uint16_t stats_c =   sd_mread_uword(mr);
+    uint8_t stats_d =    sd_mread_ubyte(mr);
+    pilot->arm_power = (stats_a >> 0) & 0x1F;
+    pilot->leg_power = (stats_a >> 5) & 0x1F;
+    pilot->arm_speed = (stats_a >> 10) & 0x1F;
+    pilot->leg_speed = (stats_b >> 0) & 0x1F;
+    pilot->armor     = (stats_b >> 5) & 0x1F;
+    pilot->stun_resistance = (stats_b >> 10) & 0x1F;
+    pilot->power = (stats_c >> 0) & 0x7F;
+    pilot->agility = (stats_c >> 7) & 0x7F;
+    pilot->endurance = (stats_d >> 0) & 0x7F;
+    pilot->unknown_stat = sd_mread_ubyte(mr);
 
     pilot->offense =     sd_mread_uword(mr);
     pilot->defense =     sd_mread_uword(mr);
@@ -93,8 +108,25 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
     sd_mwrite_buf(w, pilot->name, 18);
     sd_mwrite_uword(w, pilot->wins);
     sd_mwrite_uword(w, pilot->losses);
-    sd_mwrite_uword(w, pilot->robot_id);
-    sd_mwrite_buf(w, pilot->stats, 8);
+    sd_mwrite_ubyte(w, pilot->rank);
+    sd_mwrite_ubyte(w, pilot->har_id);
+
+    uint16_t stats_a = 0, stats_b = 0, stats_c = 0;
+    uint8_t stats_d = 0;
+    stats_a |= (pilot->arm_power & 0x1F) << 0;
+    stats_a |= (pilot->leg_power & 0x1F) << 5;
+    stats_a |= (pilot->arm_speed & 0x1F) << 10;
+    stats_b |= (pilot->leg_speed & 0x1F) << 0;
+    stats_b |= (pilot->armor & 0x1F) << 5;
+    stats_b |= (pilot->stun_resistance & 0x1F) << 10;
+    stats_c |= (pilot->power & 0x7F) << 0;
+    stats_c |= (pilot->agility & 0x7F) << 7;
+    stats_d |= (pilot->endurance & 0x7F) << 0;
+    sd_mwrite_uword(w, stats_a);
+    sd_mwrite_uword(w, stats_b);
+    sd_mwrite_uword(w, stats_c);
+    sd_mwrite_ubyte(w, stats_d);
+    sd_mwrite_ubyte(w, pilot->unknown_stat);
 
     sd_mwrite_uword(w, pilot->offense);
     sd_mwrite_uword(w, pilot->defense);

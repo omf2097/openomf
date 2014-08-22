@@ -18,19 +18,31 @@ extern "C" {
 
 typedef struct {
     uint32_t unknown_a;
-    char name[18];        ///< Pilot name
-    uint16_t wins;        ///< Matches won by this pilot
-    uint16_t losses;      ///< Matches lost by this pilot
-    uint16_t robot_id;    ///< Har Identifier
-    char stats[8];
-    uint16_t offense;     ///< Offense value
-    uint16_t defense;     ///< Defense value
-    uint32_t money;       ///< Amount of money the pilot currently has
-    uint8_t color_1;      ///< Color 1 field for the HAR
-    uint8_t color_2;      ///< Color 2 field for the HAR
-    uint8_t color_3;      ///< Color 3 field for the HAR
+    char name[18];         ///< Pilot name
+    uint16_t wins;         ///< Matches won by this pilot
+    uint16_t losses;       ///< Matches lost by this pilot
+    uint8_t rank;          ///< Rank
+    uint8_t har_id;        ///< Har Identifier
+
+    uint8_t arm_power;
+    uint8_t leg_power;
+    uint8_t arm_speed;
+    uint8_t leg_speed;
+    uint8_t armor;
+    uint8_t stun_resistance;
+    uint8_t power;
+    uint8_t agility;
+    uint8_t endurance;
+    uint8_t unknown_stat;
+
+    uint16_t offense;      ///< Offense value
+    uint16_t defense;      ///< Defense value
+    uint32_t money;        ///< Amount of money the pilot currently has
+    uint8_t color_1;       ///< Color 1 field for the HAR
+    uint8_t color_2;       ///< Color 2 field for the HAR
+    uint8_t color_3;       ///< Color 3 field for the HAR
     char unk_block_a[107];
-    uint16_t force_arena; ///< Tells if this pilot needs to play on a certain arena
+    uint16_t force_arena;  ///< Tells if this pilot needs to play on a certain arena
     char unk_block_b[3];
     uint8_t movement;
     char unk_block_c[6];
