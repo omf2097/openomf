@@ -21,8 +21,9 @@ int sd_altpals_load(sd_altpal_file *ap, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    for(uint8_t i = 0; i < 11; i++) {
-        sd_palette_load(r, &ap->palettes[i]);
+    for(uint8_t i = 0; i < SD_ALTPALS_PALETTES; i++) {
+        sd_palette_create(&ap->palettes[i]);
+        sd_palette_load_range(r, &ap->palettes[i], 0, 256);
     }
 
     // Close & return
@@ -36,8 +37,8 @@ int sd_altpals_save(sd_altpal_file *ap, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    for(uint8_t i = 0; i < 11; i++) {
-        sd_palette_save(w, &ap->palettes[i]);
+    for(uint8_t i = 0; i < SD_ALTPALS_PALETTES; i++) {
+        sd_palette_save_range(w, &ap->palettes[i], 0, 256);
     }
 
     // All done.

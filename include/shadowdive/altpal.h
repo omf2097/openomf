@@ -10,8 +10,10 @@
 extern "C" {
 #endif
 
+#define SD_ALTPALS_PALETTES 11
+
 typedef struct {
-    sd_palette palettes[11]; ///< List of exactly 11 palettes.
+    sd_palette palettes[SD_ALTPALS_PALETTES]; ///< List of palettes
 } sd_altpal_file;
 
 /*! \brief Initialize the alternate palette list structure
