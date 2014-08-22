@@ -14,13 +14,14 @@ Features:
 * Sound data file (SOUNDS.DAT)
 * Characters for both big and small fonts (GRAPHCHR.DAT, CHARSMAL.DAT)
 * Score file (SCORES.DAT)
-* Pilot image files (*.PIC) (Only reading supported)
+* Pilot image files (*.PIC)
 * Tournament data files (*.TRN)
 * Character save files (*.CHR) (Only reading supported)
+* Match record files (*.REC)
+* Alternate palette file (ALTPALS.DAT)
 
 Following formats are still TODO:
 * Character save files (*.CHR) writing
-* Pilot image files (*.PIC) writing
 * Language file (ENGLISH.DAT, GERMAN.DAT) writing
 
 Other files:
