@@ -11,7 +11,6 @@ set(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG")
 add_definitions(-DSD_USE_INTERNAL)
 
 OPTION(BUILD_TESTS "Build unittests" OFF)
-OPTION(BUILD_OLD_TESTS "Build old test programs" OFF)
 
 include(${CMAKE_MODULE_PATH}/CMakeLists-emscripten.cmake)
 link_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -49,11 +48,6 @@ add_library(shadowdive
     src/internal/writer.c
     src/internal/helpers.c
 )
-
-IF(BUILD_OLD_TESTS)
-    add_executable(test_stringparser test/test_stringparser.c)
-    target_link_libraries(test_stringparser shadowdive)
-ENDIF()
 
 FILE(GLOB H_FILES "include/shadowdive/*.h")
 INSTALL(FILES ${H_FILES} DESTINATION include/shadowdive/)
