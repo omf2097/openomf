@@ -2,6 +2,20 @@
 
 #include <stdio.h>
 
+static const char *har_list[] = {
+    "Jaguar",
+    "Shadow",
+    "Thorn",
+    "Pyros",
+    "Electra",
+    "Katana",
+    "Shredder",
+    "Flail",
+    "Gargoyle",
+    "Chronos",
+    "Nova"
+};
+
 void print_bytes(char *buf, int len, int line, int padding) {
     for(int k = 0; k < padding; k++) {
         printf(" ");
@@ -22,7 +36,18 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("### Pilot header for %s:\n", pilot->name);
         printf("  - Wins:        %d\n", pilot->wins);
         printf("  - Losses:      %d\n", pilot->losses);
-        printf("  - Robot ID:    %d\n", pilot->robot_id);
+        printf("  - Rank:        %d\n", pilot->rank);
+        printf("  - Har:         %s\n", har_list[pilot->har_id]);
+        printf("  - Arm Power:   %d\n", pilot->arm_power);
+        printf("  - Leg Power:   %d\n", pilot->leg_power);
+        printf("  - Arm Speed:   %d\n", pilot->arm_speed);
+        printf("  - Leg Speed:   %d\n", pilot->leg_speed);
+        printf("  - Armor:       %d\n", pilot->armor);
+        printf("  - Stun Res.:   %d\n", pilot->stun_resistance);
+        printf("  - Power:       %d\n", pilot->power);
+        printf("  - Agility:     %d\n", pilot->agility);
+        printf("  - Endurance:   %d\n", pilot->endurance);
+        printf("  - Unknown:     %d\n", pilot->unknown_stat);
         printf("  - Offense:     %d\n", pilot->offense);
         printf("  - Defense:     %d\n", pilot->defense);
         printf("  - Money:       %d\n", pilot->money);
@@ -31,9 +56,6 @@ void print_pilot_info(sd_pilot *pilot) {
             pilot->color_2,
             pilot->color_3);
 
-        printf("  - Stats:       ");
-        print_bytes(pilot->stats, 8, 10, 0);
-        printf("\n");
         printf("  - unk_block_a:\n");
         print_bytes(pilot->unk_block_a, 107, 16, 5);
         printf("\n");

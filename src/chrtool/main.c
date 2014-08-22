@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const char *har_list[] = {
+static const char *har_list[] = {
     "Jaguar",
     "Shadow",
     "Thorn",
