@@ -55,9 +55,12 @@ void print_pilot_info(sd_pilot *pilot) {
             pilot->color_1,
             pilot->color_2,
             pilot->color_3);
+        printf("  - TRN Name:    %s\n", pilot->trn_name);
+        printf("  - TRN Desc:    %s\n", pilot->trn_desc);
+        printf("  - TRN Image:   %s\n", pilot->trn_image);
 
         printf("  - unk_block_a:\n");
-        print_bytes(pilot->unk_block_a, 107, 16, 5);
+        print_bytes(pilot->unk_block_a, 50, 16, 5);
         printf("\n");
         printf("  - Force arena: %d\n", pilot->force_arena);
         printf("  - unk_block_b: ");
