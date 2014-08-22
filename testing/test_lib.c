@@ -7,6 +7,7 @@ void bk_test_suite(CU_pSuite suite);
 void palette_test_suite(CU_pSuite suite);
 void rec_test_suite(CU_pSuite suite);
 void trn_test_suite(CU_pSuite suite);
+void stringparser_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -34,6 +35,10 @@ int main(int argc, char **argv) {
     suite = CU_add_suite("TRN files", NULL, NULL);
     if(suite == NULL) goto end;
     trn_test_suite(suite);
+
+    suite = CU_add_suite("Stringparser", NULL, NULL);
+    if(suite == NULL) goto end;
+    stringparser_test_suite(suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);

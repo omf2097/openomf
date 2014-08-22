@@ -545,10 +545,10 @@ static void rn_frame(const char **str, char *frame_letter, int *duration) {
         *frame_letter = **str;
         (*str)++;
     } else { 
-        frame_letter = 0;
+        *frame_letter = 0;
     }
 
-    int pos=0;
+    int pos = 0;
     *duration = rn_int(&pos, *str);
     *str += pos;
 }
