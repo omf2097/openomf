@@ -5,9 +5,9 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
 set(CMAKE_C_FLAGS "-Wall -std=c99")
 set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE -fno-omit-frame-pointer -pedantic -Werror")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer")
-set(CMAKE_C_FLAGS_RELEASE "-O2")
-set(CMAKE_C_FLAGS_MINSIZEREL "-Os")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG")
 add_definitions(-DSD_USE_INTERNAL)
 
 OPTION(BUILD_TESTS "Build unittests" OFF)
