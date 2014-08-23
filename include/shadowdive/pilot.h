@@ -48,7 +48,8 @@ typedef struct {
 
     char unk_block_a[50];
     uint16_t force_arena;  ///< Tells if this pilot needs to play on a certain arena
-    char unk_block_b[3];
+    uint8_t difficulty;    ///< Difficulty setting
+    char unk_block_b[2];
     uint8_t movement;
     char unk_block_c[6];
     char enhancements[11];

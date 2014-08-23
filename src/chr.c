@@ -66,7 +66,8 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     sd_mread_buf(mr, chr->trn_desc, 31);
     sd_mread_buf(mr, chr->trn_image, 13);
 
-    sd_mskip(mr, 51);
+    sd_mskip(mr, 51); // Really 50
+    // Missing field: force_arena
     chr->difficulty = sd_mread_ubyte(mr);
     sd_mskip(mr, 10);
     sd_mread_buf(mr, chr->enhancements, 11);
