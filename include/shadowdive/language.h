@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 typedef struct {
-    char description[33];
+    char description[32];
     char *data;
 } sd_lang_string;
 
@@ -19,6 +19,8 @@ int sd_language_create(sd_language *language);
 void sd_language_free(sd_language *language);
 int sd_language_load(sd_language *language, const char *filename);
 int sd_language_save(sd_language *language, const char *filename);
+
+sd_lang_string* sd_language_get(const sd_language *language, int num);
 
 #ifdef __cplusplus
 }

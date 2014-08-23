@@ -2,9 +2,13 @@
 #include <string.h>
 
 #include "shadowdive/internal/reader.h"
+#include "shadowdive/internal/memreader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/internal/memwriter.h"
 #include "shadowdive/error.h"
 #include "shadowdive/language.h"
+
+#include <stdio.h>
 
 int sd_language_create(sd_language *language) {
     if(language == NULL) {
@@ -53,31 +57,37 @@ int sd_language_load(sd_language *language, const char *filename) {
     unsigned int pos = 0;
     while((offset = sd_read_udword(r)) < file_size) {
         sd_read_buf(r, language->strings[pos].description, 32);
-        language->strings[pos].description[32] = 0;
+        language->strings[pos].description[31] = 0;
         offsets[pos] = offset;
         pos++;
     }
     offsets[pos] = file_size;
     
     // Read real titles
-    unsigned int len = 0;
-    uint8_t xorkey = 0;
     for(int i = 0; i < string_count; i++) {
         sd_reader_set(r, offsets[i]);
-        len = offsets[i+1] - offsets[i];
-        xorkey = len & 0xFF;
-        language->strings[i].data = malloc(len+1);
-        language->strings[i].data[len] = 0;
-        
-        // Read & XOR
-        for(int k = 0; k < len; k++) {
-            language->strings[i].data[k] = sd_read_byte(r) ^ xorkey++;
-        }
+        unsigned int len = offsets[i+1] - offsets[i];
+
+        language->strings[i].data = malloc(len + 1);
+        memset(language->strings[i].data, 0, len + 1);
+
+        // Read string
+        sd_mreader *mr = sd_mreader_open_from_reader(r, len);
+        sd_mreader_xor(mr, len & 0xFF);
+        sd_mread_buf(mr, language->strings[i].data, len);
+        sd_mreader_close(mr);
     }
 
     // All done.
     sd_reader_close(r);
     return SD_SUCCESS;
+}
+
+sd_lang_string* sd_language_get(const sd_language *language, int num) {
+    if(language == NULL || num < 0 || num >= language->count) {
+        return NULL;
+    }
+    return &language->strings[num];
 }
 
 int sd_language_save(sd_language *language, const char *filename) {
@@ -90,7 +100,29 @@ int sd_language_save(sd_language *language, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    // TODO: Implement this
+    // Write descriptors
+    for(int i = 0; i < language->count; i++) {
+        sd_write_dword(w, 0); // For now
+        sd_write_buf(w, language->strings[i].description, 32);
+    }
+
+    // Write strings
+    for(int i = 0; i < language->count; i++) {
+        // Write catalog offset
+        uint32_t offset = sd_writer_pos(w);
+        sd_writer_seek_start(w, 36 * i);
+        sd_write_udword(w, offset);
+        sd_writer_seek_start(w, offset);
+
+        // write string
+        sd_mwriter *mw = sd_mwriter_open();
+        size_t str_len = strlen(language->strings[i].data);
+        sd_mwrite_buf(mw, language->strings[i].data, str_len);
+        sd_mwriter_xor(mw, str_len & 0xFF);
+        sd_mwriter_save(mw, w);
+        sd_mwriter_close(mw);
+    }
+
     
     sd_writer_close(w);
     return SD_SUCCESS;
