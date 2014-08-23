@@ -167,15 +167,15 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     sd_mwrite_buf(w, (char*)pilot->attitude, 6);
     sd_mwrite_buf(w, pilot->unk_block_d, 6);
 
-    sd_mwrite_uword(w, pilot->ap_throw);
-    sd_mwrite_uword(w, pilot->ap_special);
-    sd_mwrite_uword(w, pilot->ap_jump);
-    sd_mwrite_uword(w, pilot->ap_high);
-    sd_mwrite_uword(w, pilot->ap_low);
-    sd_mwrite_uword(w, pilot->ap_middle);
-    sd_mwrite_uword(w, pilot->pref_jump);
-    sd_mwrite_uword(w, pilot->pref_fwd);
-    sd_mwrite_uword(w, pilot->pref_back);
+    sd_mwrite_word(w, pilot->ap_throw);
+    sd_mwrite_word(w, pilot->ap_special);
+    sd_mwrite_word(w, pilot->ap_jump);
+    sd_mwrite_word(w, pilot->ap_high);
+    sd_mwrite_word(w, pilot->ap_low);
+    sd_mwrite_word(w, pilot->ap_middle);
+    sd_mwrite_word(w, pilot->pref_jump);
+    sd_mwrite_word(w, pilot->pref_fwd);
+    sd_mwrite_word(w, pilot->pref_back);
 
     sd_mwrite_udword(w, pilot->unknown_e);
     sd_mwrite_float(w, pilot->learning);
