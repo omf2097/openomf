@@ -90,6 +90,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
             PERROR("Unable to load recording %s.", init_flags->rec_file);
             goto error_0;
         }
+
         // hardcode arena 0 for now, although the arena ID resides in field 'L' of the REC file
         nscene = SCENE_ARENA0;
         DEBUG("playing recording file %s", init_flags->rec_file);
