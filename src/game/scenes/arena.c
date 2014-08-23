@@ -801,7 +801,11 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 game_state_unserialize(scene->gs, i->event_data.ser, player->ctrl->rtt);
                 maybe_install_har_hooks(scene);
             } else if (i->type == EVENT_TYPE_CLOSE) {
-                game_state_set_next(scene->gs, SCENE_MENU);
+                if (player->ctrl->type == CTRL_TYPE_REC) {
+                    game_state_set_next(scene->gs, SCENE_NONE);
+                } else {
+                    game_state_set_next(scene->gs, SCENE_MENU);
+                }
                 return 0;
             }
         } while(i && (i = i->next));
