@@ -22,6 +22,15 @@ uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int x) {
     return (((hval >> x) ^ hval) & TINY_MASK(x));
 }
 
+/** \brief Creates a new hashmap with an allocator
+  *
+  * Creates a new hashmap. This is just like hashmap_create, but
+  * allows the user to define the memory allocation functions.
+  *
+  * \param hm Allocated memory pointer
+  * \param n_size Size of the hashmap. Final size will be pow(w, n_size)
+  * \param alloc Allocation functions
+  */
 void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
     hm->alloc = alloc;
     hm->buckets_x = n_size;
@@ -31,6 +40,18 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
     hm->reserved = 0;
 }
 
+
+/** \brief Creates a new hashmap
+  *
+  * Creates a new hashmap. Note that the size parameter doesn't mean bucket count,
+  * but the bucket count is actually calculated pow(2, n_size). So for example value
+  * 8 means 256 buckets, and 9 would be 512 buckets.
+  *
+  * \todo Make a better create function
+  *
+  * \param hm Allocated memory pointer
+  * \param n_size Size of the hashmap. Final size will be pow(w, n_size)
+  */
 void hashmap_create(hashmap *hm, int n_size) {
     allocator alloc;
     alloc.cmalloc = malloc;
@@ -39,6 +60,13 @@ void hashmap_create(hashmap *hm, int n_size) {
     hashmap_create_with_allocator(hm, n_size, alloc);
 }
 
+/** \brief Clears hashmap entries
+  *
+  * This clears the hashmap of all entries. All contents will be freed.
+  * After this, the hashmap size will be 0.
+  *
+  * \param hm Hashmap to clear
+  */
 void hashmap_clear(hashmap *hm) {
     hashmap_node *node = NULL;
     hashmap_node *tmp = NULL;
@@ -56,6 +84,13 @@ void hashmap_clear(hashmap *hm) {
     }
 }
 
+/** \brief Free hashmap
+  * 
+  * Frees the hasmap. All contents will be freed and hashmap will be deallocated.
+  * Any use of this hashmap after this will lead to undefined behaviour.
+  *
+  * \param hm Hashmap to free
+  */
 void hashmap_free(hashmap *hm) {
     hashmap_clear(hm);
     hm->alloc.cfree(hm->buckets);
@@ -64,14 +99,44 @@ void hashmap_free(hashmap *hm) {
     hm->reserved = 0;
 }
 
+/** \brief Gets hashmap size
+  * 
+  * Returns the hashmap size. This is the amount of hashmap allocated buckets.
+  *
+  * \param hm Hashmap
+  * \return Amount of hashmap buckets
+  */
 unsigned int hashmap_size(hashmap *hm) {
     return BUCKETS_SIZE(hm->buckets_x);
 }
 
+/** \brief Gets hashmap reserved buckets
+  * 
+  * Returns the amount of items in the hashmap. Note that the item count
+  * can be larger than the bucket count, if the hashmap is full enough.
+  * If there are a lot more items than buckets, you should really consider
+  * growing your hashmap bucket count ...
+  *
+  * \param hm Hashmap
+  * \return Amount of items in the hashmap
+  */
 unsigned int hashmap_reserved(hashmap *hm) {
     return hm->reserved;
 }
 
+/** \brief Puts an item to the hashmap
+  * 
+  * Puts a new item to the hashmap. Note that the 
+  * contents of the value memory block will be copied. However,
+  * any memory _pointed to_ by it will NOT be copied. So be careful!
+  *
+  * \param hm Hashmap
+  * \param key Pointer to key memory block
+  * \param keylen Length of the key memory block
+  * \param val Pointer to value memory block
+  * \param vallen Length of the value memory block
+  * \return Returns a pointer to the newly reserved hashmap pair.
+  */
 void* hashmap_put(hashmap *hm,
                   const void *key, unsigned int keylen,
                   const void *val, unsigned int vallen) {
@@ -96,6 +161,18 @@ void* hashmap_put(hashmap *hm,
     return node->pair.val;
 }
 
+
+/** \brief Deletes an item from the hashmap
+  * 
+  * Deletes an item from the hashmap. Note: Using this function inside an
+  * iterator may lead to weird behavior. If you wish to delete inside an 
+  * iterator, please use hashmap_delete.
+  *
+  * \param hm Hashmap
+  * \param key Pointer to key memory block
+  * \param keylen Length of the key memory block
+  * \return Returns 0 on success, 1 on error (not found).
+  */
 int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
 
@@ -135,6 +212,17 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
     return 1;
 }
 
+/** \brief Gets an item from the hashmap
+  * 
+  * Returns an item from the hashmap.
+  *
+  * \param hm Hashmap
+  * \param key Pointer to key memory block
+  * \param keylen Length of the key memory block
+  * \param val Pointer to value hashmap memory block
+  * \param vallen Length of the hashmap value memory block
+  * \return Returns 0 on success, 1 on error (not found).
+  */
 int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
 
@@ -185,6 +273,16 @@ void hashmap_idel(hashmap *hm, unsigned int key) {
     hashmap_del(hm, (char*)&key, sizeof(unsigned int));
 }
 
+/** \brief Deletes an item from the hashmap by iterator key
+  * 
+  * Deletes an item from the hashmap by a matching iterator key.
+  * This function is iterator safe. In theory, this function
+  * should not fail, as the iterable value should exist.
+  *
+  * \param hm Hashmap
+  * \param iter Iterator
+  * \return Returns 0 on success, 1 on error (not found).
+  */
 int hashmap_delete(hashmap *hm, iterator *iter) {
     int index = iter->inow - 1;
 
