@@ -6,8 +6,6 @@
 #include "shadowdive/error.h"
 #include "shadowdive/sounds.h"
 
-#include <stdio.h>
-
 int sd_sounds_create(sd_sound_file *sf) {
     if(sf == NULL) {
         return SD_INVALID_INPUT;
@@ -39,7 +37,6 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
     uint32_t data_block_offsets[data_block_count+1];
     for(int i = 0; i < data_block_count; i++) {
         data_block_offsets[i] = sd_read_udword(r);
-        printf("%d = %d\n", i, data_block_offsets[i]);
     }
     data_block_offsets[data_block_count] = sd_reader_filesize(r);
 
