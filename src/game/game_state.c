@@ -4,6 +4,7 @@
 #include <shadowdive/shadowdive.h>
 #include "controller/keyboard.h"
 #include "controller/joystick.h"
+#include "controller/rec_controller.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "game/utils/serial.h"
@@ -37,6 +38,8 @@ enum {
     TICK_DYNAMIC = 0,
     TICK_STATIC,
 };
+
+void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec);
 
 // How long the scene waits after order to move to another scene
 // Used for crossfades
@@ -109,8 +112,8 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         gs->players[1]->pilot_id = rec.pilots[1].unk_block_a[105];
 
         // XXX use playback controller once it exista
-        _setup_keyboard(gs, 0);
-        _setup_keyboard(gs, 1);
+        _setup_rec_controller(gs, 0, &rec);
+        _setup_rec_controller(gs, 1, &rec);
         if(arena_create(gs->sc)) {
             PERROR("Error while creating arena scene.");
             goto error_1;
@@ -739,6 +742,15 @@ int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offs
     game_player_set_ctrl(player, ctrl);
     game_player_set_selectable(player, 1);
     return res;
+}
+
+void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec) {
+    controller *ctrl = malloc(sizeof(controller));
+    game_player *player = game_state_get_player(gs, player_id);
+    controller_init(ctrl);
+
+    rec_controller_create(ctrl, player_id, rec);
+    game_player_set_ctrl(player, ctrl);
 }
 
 void reconfigure_controller(game_state *gs) {
