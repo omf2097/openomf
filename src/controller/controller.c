@@ -13,6 +13,7 @@ void controller_init(controller *ctrl) {
     ctrl->har = NULL;
     ctrl->poll_fun = NULL;
     ctrl->tick_fun = NULL;
+    ctrl->dyntick_fun = NULL;
     ctrl->update_fun = NULL;
     ctrl->har_hook = NULL;
     ctrl->rumble_fun = NULL;
@@ -99,6 +100,13 @@ void controller_close(controller *ctrl, ctrl_event **ev) {
 int controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     if(ctrl->tick_fun != NULL) {
         return ctrl->tick_fun(ctrl, ticks, ev);
+    }
+    return 0;
+}
+
+int controller_dyntick(controller *ctrl, int ticks, ctrl_event **ev) {
+    if(ctrl->dyntick_fun != NULL) {
+        return ctrl->dyntick_fun(ctrl, ticks, ev);
     }
     return 0;
 }

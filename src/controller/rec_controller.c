@@ -14,9 +14,9 @@ int rec_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     unsigned int len;
     if (data->last_tick != ticks) {
         if (hashmap_iget(&data->tick_lookup, ticks, (void**)(&move), &len) == 0) {
-            DEBUG("tick %d has action %d for player %d", ticks, move->raw_action, move->player_id);
             if (move->action == SD_REC_NONE) {
                 controller_cmd(ctrl, ACT_STOP, ev);
+                data->last_action = ACT_STOP;
             } else {
                 if (move->action & SD_REC_PUNCH) {
                     controller_cmd(ctrl, ACT_PUNCH, ev);
@@ -42,8 +42,13 @@ int rec_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 }
                 if (action != 0) {
                     controller_cmd(ctrl, action, ev);
+                    data->last_action = action;
+                } else {
+                    data->last_action = ACT_STOP;
                 }
             }
+        } else {
+            controller_cmd(ctrl, data->last_action, ev);
         }
     }
     data->last_tick = ticks;
@@ -63,5 +68,5 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     }
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_KEYBOARD;
-    ctrl->tick_fun = &rec_controller_tick;
+    ctrl->dyntick_fun = &rec_controller_tick;
 }

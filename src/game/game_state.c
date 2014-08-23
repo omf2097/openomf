@@ -540,6 +540,17 @@ void game_state_tick_controllers(game_state *gs) {
     }
 }
 
+void game_state_dyntick_controllers(game_state *gs) {
+    for(int i = 0; i < game_state_num_players(gs); i++) {
+        game_player *gp = game_state_get_player(gs, i);
+        controller *c = game_player_get_ctrl(gp);
+        if(c) {
+            controller_dyntick(c, gs->tick, &c->extra_events);
+        }
+    }
+}
+
+
 void game_state_ctrl_events_free(game_state *gs) {
     for(int i = 0; i < game_state_num_players(gs); i++) {
         game_player *gp = game_state_get_player(gs, i);
@@ -647,6 +658,8 @@ void game_state_dynamic_tick(game_state *gs) {
         // XXX Ocasionally the screen does not return back to normal position
         video_move_target(0, 0);
     }
+
+    game_state_dyntick_controllers(gs);
 
     // Tick scene
     scene_dynamic_tick(gs->sc, game_state_is_paused(gs));
