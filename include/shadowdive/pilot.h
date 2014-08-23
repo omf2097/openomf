@@ -23,7 +23,6 @@ typedef struct {
     uint16_t losses;       ///< Matches lost by this pilot
     uint8_t rank;          ///< Rank
     uint8_t har_id;        ///< Har Identifier
-
     uint8_t arm_power;
     uint8_t leg_power;
     uint8_t arm_speed;
@@ -34,18 +33,15 @@ typedef struct {
     uint8_t agility;
     uint8_t endurance;
     uint8_t unknown_stat;
-
     uint16_t offense;      ///< Offense value
     uint16_t defense;      ///< Defense value
     uint32_t money;        ///< Amount of money the pilot currently has
     uint8_t color_1;       ///< Color 1 field for the HAR
     uint8_t color_2;       ///< Color 2 field for the HAR
     uint8_t color_3;       ///< Color 3 field for the HAR
-
-    char trn_name[13];
-    char trn_desc[31];
-    char trn_image[13];
-
+    char trn_name[13];     ///< Tournament file
+    char trn_desc[31];     ///< Tournament description
+    char trn_image[13];    ///< Tournament image file
     char unk_block_a[50];
     uint16_t force_arena;  ///< Tells if this pilot needs to play on a certain arena
     uint8_t difficulty;    ///< Difficulty setting
@@ -73,7 +69,10 @@ typedef struct {
     float forget;
     char unk_block_f[24];
     uint32_t winnings;
-    char unk_block_g[166];
+    char unk_block_g[7];
+    uint16_t enemies_inc_unranked;
+    uint16_t enemies_ex_unranked;
+    char unk_block_h[155];
     uint16_t photo_id;  ///< Which face photo this pilot uses
 } sd_pilot;
 
