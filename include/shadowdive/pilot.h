@@ -44,7 +44,9 @@ typedef struct {
     char trn_name[13];       ///< Tournament file
     char trn_desc[31];       ///< Tournament description
     char trn_image[13];      ///< Tournament image file
-    char unk_block_a[50];
+    char unk_block_a[48];
+    uint8_t pilot_id;        ///< Pilot ID
+    uint8_t unknown_k;
     uint16_t force_arena;    ///< Tells if this pilot needs to play on a certain arena
     uint8_t difficulty;      ///< Difficulty setting
     char unk_block_b[2];
