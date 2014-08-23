@@ -8,8 +8,6 @@
 #include "shadowdive/error.h"
 #include "shadowdive/language.h"
 
-#include <stdio.h>
-
 int sd_language_create(sd_language *language) {
     if(language == NULL) {
         return SD_INVALID_INPUT;
