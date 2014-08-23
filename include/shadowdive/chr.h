@@ -12,11 +12,8 @@ extern "C" {
 #define MAX_CHR_ENEMIES 256
 
 typedef struct {
-    char name[17];
-    uint16_t wins;
-    uint16_t losses;
-    uint8_t rank;
-    uint8_t har;
+    sd_pilot pilot;
+    char unknown[25];
 } sd_chr_enemy;
 
 typedef struct {

@@ -16,8 +16,8 @@ int sd_pilot_create(sd_pilot *pilot) {
 
 void sd_pilot_free(sd_pilot *pilot) {}
 
-void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
-    pilot->unknown_a =   sd_mread_udword(mr);
+// Reads exactly 24 + 8 + 11 = 43 bytes
+void sd_pilot_load_player_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     sd_mread_buf(mr, pilot->name, 18);
     pilot->wins =        sd_mread_uword(mr);
     pilot->losses =      sd_mread_uword(mr);
@@ -45,6 +45,12 @@ void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     pilot->color_1 =     sd_mread_ubyte(mr);
     pilot->color_2 =     sd_mread_ubyte(mr);
     pilot->color_3 =     sd_mread_ubyte(mr);
+}
+
+void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
+    pilot->unknown_a =   sd_mread_udword(mr);
+
+    sd_pilot_load_player_from_mem(mr, pilot);
 
     sd_mread_buf(mr, pilot->trn_name, 13);
     sd_mread_buf(mr, pilot->trn_desc, 31);
@@ -100,9 +106,7 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     return SD_SUCCESS;
 }
 
-void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
-    // Write the pilot block
-    sd_mwrite_udword(w, pilot->unknown_a);
+void sd_pilot_save_player_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     sd_mwrite_buf(w, pilot->name, 18);
     sd_mwrite_uword(w, pilot->wins);
     sd_mwrite_uword(w, pilot->losses);
@@ -132,6 +136,13 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     sd_mwrite_ubyte(w, pilot->color_1);
     sd_mwrite_ubyte(w, pilot->color_2);
     sd_mwrite_ubyte(w, pilot->color_3);
+}
+
+void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
+    // Write the pilot block
+    sd_mwrite_udword(w, pilot->unknown_a);
+
+    sd_pilot_save_player_to_mem(w, pilot);
 
     sd_mwrite_buf(w, pilot->trn_name, 13);
     sd_mwrite_buf(w, pilot->trn_desc, 31);

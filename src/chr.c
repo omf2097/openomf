@@ -30,10 +30,10 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     // Read up pilot block and the unknown data
     sd_mreader *mr = sd_mreader_open_from_reader(r, 448);
     sd_mreader_xor(mr, 0xAC);
+    sd_pilot_create(&chr->pilot);
     sd_pilot_load_from_mem(mr, &chr->pilot);
     sd_mread_buf(mr, chr->unknown, 20);
     sd_mreader_close(mr);
-
 
     // Read enemies block
     mr = sd_mreader_open_from_reader(r, 68 * chr->pilot.enemies_inc_unranked);
@@ -43,17 +43,9 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         // Reserve & zero out
         chr->enemies[i] = malloc(sizeof(sd_chr_enemy));
-        memset(chr->enemies[i], 0, sizeof(sd_chr_enemy));
-
-        // Read enemy data
-        sd_mread_buf(mr, chr->enemies[i]->name, 16);
-        sd_mskip(mr, 2);
-        chr->enemies[i]->wins = sd_mread_uword(mr);
-        chr->enemies[i]->losses = sd_mread_uword(mr);
-        chr->enemies[i]->rank = sd_mread_ubyte(mr);
-        chr->enemies[i]->har = sd_mread_ubyte(mr);
-        
-        sd_mskip(mr, 44);
+        sd_pilot_create(&chr->enemies[i]->pilot);
+        sd_pilot_load_player_from_mem(mr, &chr->enemies[i]->pilot);
+        sd_mread_buf(mr, chr->enemies[i]->unknown, 25);
     }
 
     // Close memory reader for enemy data block
