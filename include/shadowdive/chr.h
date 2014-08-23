@@ -20,6 +20,7 @@ typedef struct {
     sd_pilot pilot;
     char unknown[20];
     sd_palette pal;
+    uint32_t unknown_b;
     sd_sprite *photo;
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES];
 } sd_chr_file;

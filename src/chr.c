@@ -5,6 +5,7 @@
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/memreader.h"
 #include "shadowdive/internal/writer.h"
+#include "shadowdive/internal/memwriter.h"
 #include "shadowdive/chr.h"
 
 #define UNUSED(x) (void)(x)
@@ -55,8 +56,9 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     sd_palette_create(&chr->pal);
     sd_palette_load_range(r, &chr->pal, 0, 48);
 
-    // No idea what this is. TODO: Find out.
-    sd_skip(r, 4);
+    // No idea what this is. 
+    // TODO: Find out.
+    chr->unknown_b = sd_read_udword(r);
 
     // Load sprite
     chr->photo = malloc(sizeof(sd_sprite));
@@ -96,7 +98,36 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    // TODO
+    // Save pilot and unknown
+    sd_mwriter *mw = sd_mwriter_open();
+    sd_pilot_save_to_mem(mw, &chr->pilot);
+    sd_mwrite_buf(mw, chr->unknown, 20);
+    sd_mwriter_xor(mw, 0xAC);
+    sd_mwriter_save(mw, w);
+    sd_mwriter_close(mw);
+
+    // Write enemy data
+    mw = sd_mwriter_open();
+    for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
+        sd_pilot_save_player_to_mem(mw, &chr->enemies[i]->pilot);
+        sd_mwrite_buf(mw, chr->enemies[i]->unknown, 25);
+    }
+    sd_mwriter_xor(mw, (chr->pilot.enemies_inc_unranked * 68) & 0xFF);
+    sd_mwriter_save(mw, w);
+    sd_mwriter_close(mw);
+
+    // Save palette
+    sd_palette_save_range(w, &chr->pal, 0, 48);
+
+    // Save this, whatever this is.
+    sd_write_udword(w, chr->unknown_b);
+
+    // Save photo. Hacky size fix.
+    chr->photo->width--;
+    chr->photo->height--;
+    sd_sprite_save(w, chr->photo);
+    chr->photo->width++;
+    chr->photo->height++;
 
     // Close & return
     sd_writer_close(w);

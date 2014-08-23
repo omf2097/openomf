@@ -176,12 +176,12 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     sd_mwrite_udword(w, pilot->unknown_e);
     sd_mwrite_float(w, pilot->learning);
     sd_mwrite_float(w, pilot->forget);
-    sd_mwrite_buf(w, pilot->unk_block_f, 24);
-    sd_mwrite_udword(w, pilot->winnings);
-    sd_mwrite_buf(w, pilot->unk_block_g, 7);
+    sd_mwrite_buf(w, pilot->unk_block_f, 14);
     sd_mwrite_uword(w, pilot->enemies_inc_unranked);
     sd_mwrite_uword(w, pilot->enemies_ex_unranked);
-    sd_mwrite_buf(w, pilot->unk_block_h, 155);
+    sd_mwrite_buf(w, pilot->unk_block_g, 6);
+    sd_mwrite_udword(w, pilot->winnings);
+    sd_mwrite_buf(w, pilot->unk_block_h, 166);
     sd_mwrite_uword(w, pilot->photo_id);
 }
 
