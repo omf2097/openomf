@@ -16,6 +16,13 @@ static const char *har_list[] = {
     "Nova"
 };
 
+static const char *difficulty_names[] = {
+    "Aluminum",
+    "Iron",
+    "Steel",
+    "Heavy Metal",
+};
+
 void print_bytes(char *buf, int len, int line, int padding) {
     for(int k = 0; k < padding; k++) {
         printf(" ");
@@ -58,6 +65,7 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - TRN Name:    %s\n", pilot->trn_name);
         printf("  - TRN Desc:    %s\n", pilot->trn_desc);
         printf("  - TRN Image:   %s\n", pilot->trn_image);
+        printf("  - Difficulty:  %s\n", difficulty_names[pilot->difficulty]);
 
         printf("  - unk_block_a:\n");
         print_bytes(pilot->unk_block_a, 50, 16, 5);
