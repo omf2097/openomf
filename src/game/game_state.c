@@ -105,8 +105,8 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         gs->players[1]->colors[1] = rec.pilots[1].color_2;
         gs->players[1]->colors[2] = rec.pilots[1].color_1;
 
-        gs->players[0]->har_id = HAR_JAGUAR + rec.pilots[0].robot_id / 256;
-        gs->players[1]->har_id = HAR_JAGUAR + rec.pilots[1].robot_id / 256;
+        gs->players[0]->har_id = HAR_JAGUAR + rec.pilots[0].har_id / 256;
+        gs->players[1]->har_id = HAR_JAGUAR + rec.pilots[1].har_id / 256;
 
         gs->players[0]->pilot_id = rec.pilots[0].unk_block_a[105];
         gs->players[1]->pilot_id = rec.pilots[1].unk_block_a[105];
