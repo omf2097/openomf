@@ -101,32 +101,29 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - AP Low:      %d\n", pilot->ap_low);
         printf("  - AP Middle:   %d\n", pilot->ap_middle);
 
-        printf("  - Pref jump    %d\n", pilot->pref_jump);
-        printf("  - Pref fwd     %d\n", pilot->pref_fwd);
-        printf("  - Pref back    %d\n", pilot->pref_back);
+        printf("  - Pref jump:   %d\n", pilot->pref_jump);
+        printf("  - Pref fwd:    %d\n", pilot->pref_fwd);
+        printf("  - Pref back:   %d\n", pilot->pref_back);
 
-        printf("  - unk_block_e: ");
-        print_bytes(pilot->unk_block_d, 4, 16, 0);
-        printf("\n");
-
-        printf("  - Learning     %f\n", pilot->learning);
-        printf("  - Forget       %f\n", pilot->forget);
+        printf("  - Unknown E:   %d\n", pilot->unknown_e);
+        printf("  - Learning:    %f\n", pilot->learning);
+        printf("  - Forget:      %f\n", pilot->forget);
 
         printf("  - unk_block_f: ");
         print_bytes(pilot->unk_block_f, 24, 26, 0);
         printf("\n");
 
-        printf("  - Winnings     %d\n", pilot->winnings);
+        printf("  - Winnings:    %d\n", pilot->winnings);
 
         printf("  - unk_block_g: ");
-        print_bytes(pilot->unk_block_g, 7, 26, 0);
+        print_bytes(pilot->unk_block_g, 6, 26, 0);
         printf("\n");
 
         printf("  - Enemies (inc unranked): %d\n", pilot->enemies_inc_unranked);
         printf("  - Enemies (exl unranked): %d\n", pilot->enemies_ex_unranked);
 
         printf("  - unk_block_h:\n");
-        print_bytes(pilot->unk_block_h, 155, 16, 5);
+        print_bytes(pilot->unk_block_h, 166, 16, 5);
         printf("\n\n");
 
         printf("  - Photo ID     %d\n", pilot->photo_id);

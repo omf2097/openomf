@@ -45,7 +45,7 @@ add_executable(pictool src/pictool/main.c)
 add_executable(scoretool src/scoretool/main.c)
 add_executable(trntool src/trntool/main.c src/shared/pilot.c)
 add_executable(altpaltool src/altpaltool/main.c)
-add_executable(chrtool src/chrtool/main.c)
+add_executable(chrtool src/chrtool/main.c src/shared/pilot.c)
 
 set(CORELIBS ${ARGTABLE2_LIBRARY})
 
