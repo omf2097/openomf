@@ -52,9 +52,9 @@ int main(int argc, char* argv[]) {
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input altpals file");
     struct arg_file *export = arg_file0("e","export","<file>","Export Photo to a ppm file");
     struct arg_file *bkfile = arg_file0("b","bkfile","<file>","Palette BK file");
-    //struct arg_file *output = arg_file0("o","output","<file>","Output CHR file");
+    struct arg_file *output = arg_file0("o","output","<file>","Output CHR file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,export,bkfile,end};
+    void* argtable[] = {help,vers,file,output,export,bkfile,end};
     const char* progname = "chrtool";
     
     // Make sure everything got allocated
@@ -140,6 +140,16 @@ int main(int argc, char* argv[]) {
         sd_rgba_image_free(&img);
     } else {
         print_chr_info(&chr);
+    }
+
+    // Saving
+    if(output->count > 0) {
+        ret = sd_chr_save(&chr, output->filename[0]);
+        if(ret != SD_SUCCESS) {
+            printf("Failed saving CHR file to %s: %s",
+                output->filename[0],
+                sd_get_error(ret));
+        }
     }
 
     // Quit
