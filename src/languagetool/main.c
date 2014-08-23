@@ -12,9 +12,10 @@ int main(int argc, char *argv[]) {
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "language file");
-    struct arg_int *str = arg_int1("s", "string", "<value>", "print language string # (-1 for all).");
+    struct arg_int *str = arg_int0("s", "string", "<value>", "Select language string number");
+    struct arg_file *output = arg_file0("o","output","<file>","Output CHR file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,str,end};
+    void* argtable[] = {help,vers,file,output,str,end};
     const char* progname = "languagetool";
     
     // Make sure everything got allocated
@@ -61,19 +62,38 @@ int main(int argc, char *argv[]) {
     }
     
     // Print
-    int id = str->ival[0];
-    if(id < 0) {
-        for(int i = 0; i < language.count; i++) {
-            printf("Title: %s\n", language.strings[i].description);
-            printf("Data: %s\n", language.strings[i].data);
+    sd_lang_string *ds;
+    if(str->count > 0) {
+        int str_id = str->ival[0];
+        ds = sd_language_get(&language, str_id);
+        if(ds == NULL) {
+            printf("String %d not found!\n", str_id);
+            goto exit_1;
         }
-    } else if(id >= 0 && id < language.count) {
-        printf("Title: %s\n", language.strings[id].description);
-        printf("Data: %s\n", language.strings[id].data);
+
+        printf("Title: %s\n", ds->description);
+        printf("Data: %s\n", ds->data);
     } else {
-        printf("String not found!\n");
+        for(int i = 0; i < language.count; i++) {
+            ds = sd_language_get(&language, i);
+            if(ds != NULL) {
+                printf("Title: %s\n", ds->description);
+                printf("Data: %s\n", ds->data);
+            }
+        }
     }
-    
+
+    // Saving
+    if(output->count > 0) {
+        ret = sd_language_save(&language, output->filename[0]);
+        if(ret != SD_SUCCESS) {
+            printf("Failed saving language file to %s: %s",
+                output->filename[0],
+                sd_get_error(ret));
+        }
+    }
+
+exit_1:
     sd_language_free(&language);
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
