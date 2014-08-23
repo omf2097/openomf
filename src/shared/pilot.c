@@ -78,9 +78,10 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - unk_block_c: ");
         print_bytes(pilot->unk_block_c, 6, 16, 0);
         printf("\n");
-        printf("  - Enhancement: ");
-        print_bytes(pilot->enhancements, 11, 16, 0);
-        printf("\n");
+        printf("  - Enhancements:\n");
+        for(int i = 0; i < 11; i++) {
+            printf("     * %-10s: %x\n", har_list[i], pilot->enhancements[i]);
+        }
         printf("  - Flags:       %d\n", pilot->flags);
 
         printf("  - Reqs:        ");
@@ -110,14 +111,24 @@ void print_pilot_info(sd_pilot *pilot) {
 
         printf("  - Learning     %f\n", pilot->learning);
         printf("  - Forget       %f\n", pilot->forget);
-        printf("  - Winnings     %d\n", pilot->winnings);
-        printf("  - Photo ID     %d\n", pilot->photo_id);
 
         printf("  - unk_block_f: ");
         print_bytes(pilot->unk_block_f, 24, 26, 0);
         printf("\n");
-        printf("  - unk_block_g:\n");
-        print_bytes(pilot->unk_block_g, 166, 16, 5);
+
+        printf("  - Winnings     %d\n", pilot->winnings);
+
+        printf("  - unk_block_g: ");
+        print_bytes(pilot->unk_block_g, 7, 26, 0);
+        printf("\n");
+
+        printf("  - Enemies (inc unranked): %d\n", pilot->enemies_inc_unranked);
+        printf("  - Enemies (exl unranked): %d\n", pilot->enemies_ex_unranked);
+
+        printf("  - unk_block_h:\n");
+        print_bytes(pilot->unk_block_h, 155, 16, 5);
         printf("\n\n");
+
+        printf("  - Photo ID     %d\n", pilot->photo_id);
     }
 }
