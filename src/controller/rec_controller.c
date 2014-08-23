@@ -67,6 +67,6 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
         }
     }
     ctrl->data = data;
-    ctrl->type = CTRL_TYPE_KEYBOARD;
+    ctrl->type = CTRL_TYPE_REC;
     ctrl->dyntick_fun = &rec_controller_tick;
 }

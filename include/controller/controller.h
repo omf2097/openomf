@@ -22,7 +22,8 @@ enum {
     CTRL_TYPE_KEYBOARD,
     CTRL_TYPE_GAMEPAD,
     CTRL_TYPE_NETWORK,
-    CTRL_TYPE_AI
+    CTRL_TYPE_AI,
+    CTRL_TYPE_REC
 };
 
 enum {
