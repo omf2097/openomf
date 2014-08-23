@@ -73,15 +73,15 @@ void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     sd_mread_buf(mr, (char*)pilot->attitude, 6);
     sd_mread_buf(mr, pilot->unk_block_d, 6);
 
-    pilot->ap_throw =    sd_mread_uword(mr);
-    pilot->ap_special =  sd_mread_uword(mr);
-    pilot->ap_jump =     sd_mread_uword(mr);
-    pilot->ap_high =     sd_mread_uword(mr);
-    pilot->ap_low =      sd_mread_uword(mr);
-    pilot->ap_middle =   sd_mread_uword(mr);
-    pilot->pref_jump =   sd_mread_uword(mr);
-    pilot->pref_fwd =    sd_mread_uword(mr);
-    pilot->pref_back =   sd_mread_uword(mr);
+    pilot->ap_throw =    sd_mread_word(mr);
+    pilot->ap_special =  sd_mread_word(mr);
+    pilot->ap_jump =     sd_mread_word(mr);
+    pilot->ap_high =     sd_mread_word(mr);
+    pilot->ap_low =      sd_mread_word(mr);
+    pilot->ap_middle =   sd_mread_word(mr);
+    pilot->pref_jump =   sd_mread_word(mr);
+    pilot->pref_fwd =    sd_mread_word(mr);
+    pilot->pref_back =   sd_mread_word(mr);
 
     pilot->unknown_e =   sd_mread_udword(mr);
     pilot->learning =    sd_mread_float(mr);
