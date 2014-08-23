@@ -38,9 +38,9 @@ void print_bytes(char *buf, int len, int line, int padding) {
     }
 }
 
-void print_pilot_info(sd_pilot *pilot) {
-    if(pilot != NULL) {
-        printf("### Pilot header for %s:\n", pilot->name);
+void print_pilot_player_info(sd_pilot *pilot) {
+    if(pilot) {
+        printf("  - Name:        %s\n", pilot->name);
         printf("  - Wins:        %d\n", pilot->wins);
         printf("  - Losses:      %d\n", pilot->losses);
         printf("  - Rank:        %d\n", pilot->rank);
@@ -62,6 +62,15 @@ void print_pilot_info(sd_pilot *pilot) {
             pilot->color_1,
             pilot->color_2,
             pilot->color_3);
+    }
+}
+
+void print_pilot_info(sd_pilot *pilot) {
+    if(pilot != NULL) {
+        printf("### Pilot header for %s:\n", pilot->name);
+
+        print_pilot_player_info(pilot);
+
         printf("  - TRN Name:    %s\n", pilot->trn_name);
         printf("  - TRN Desc:    %s\n", pilot->trn_desc);
         printf("  - TRN Image:   %s\n", pilot->trn_image);

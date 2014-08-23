@@ -11,20 +11,6 @@
 #include <stdlib.h>
 #include "../shared/pilot.h"
 
-static const char *har_list[] = {
-    "Jaguar",
-    "Shadow",
-    "Thorn",
-    "Pyros",
-    "Electra",
-    "Katana",
-    "Shredder",
-    "Flail",
-    "Gargoyle",
-    "Chronos",
-    "Nova"
-};
-
 void print_chr_info(sd_chr_file *chr) {
     print_pilot_info(&chr->pilot);
 
@@ -51,13 +37,11 @@ void print_chr_info(sd_chr_file *chr) {
     // Enemy data
     printf("\nEnemies:\n");
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
-        printf("  - [%d] %s\n", i, chr->enemies[i]->name);
-        printf("    * Wins:    %d\n", chr->enemies[i]->wins);
-        printf("    * Losses:  %d\n", chr->enemies[i]->losses);
-        printf("    * Rank:    %d\n", chr->enemies[i]->rank);
-        printf("    * Har:     %s (%d)\n", 
-            har_list[chr->enemies[i]->har], 
-            chr->enemies[i]->har);
+        printf("Enemy %d:\n", i);
+        print_pilot_player_info(&chr->enemies[i]->pilot);
+        printf("  - Some unknown thingy: \n");
+        print_bytes(chr->enemies[i]->unknown, 20, 10, 5);
+        printf("\n");
     }
 }
 
