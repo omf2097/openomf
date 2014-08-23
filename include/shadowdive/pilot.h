@@ -9,7 +9,9 @@
 #include <stdint.h>
 #ifdef SD_USE_INTERNAL
     #include "shadowdive/internal/reader.h"
+    #include "shadowdive/internal/memreader.h"
     #include "shadowdive/internal/writer.h"
+    #include "shadowdive/internal/memwriter.h"
 #endif
 
 #ifdef __cplusplus 
@@ -64,15 +66,15 @@ typedef struct {
     uint16_t pref_jump;
     uint16_t pref_fwd;
     uint16_t pref_back;
-    char unk_block_e[4];
+    uint32_t unknown_e;
     float learning;
     float forget;
     char unk_block_f[24];
     uint32_t winnings;
-    char unk_block_g[7];
+    char unk_block_g[6];
     uint16_t enemies_inc_unranked;
     uint16_t enemies_ex_unranked;
-    char unk_block_h[155];
+    char unk_block_h[166];
     uint16_t photo_id;  ///< Which face photo this pilot uses
 } sd_pilot;
 
@@ -97,7 +99,9 @@ int sd_pilot_create(sd_pilot *pilot);
 void sd_pilot_free(sd_pilot *pilot);
 
 #ifdef SD_USE_INTERNAL
+void sd_pilot_load_from_mem(sd_mreader *mreader, sd_pilot *pilot);
 int sd_pilot_load(sd_reader *reader, sd_pilot *pilot);
+void sd_pilot_save_to_mem(sd_mwriter *mwriter, const sd_pilot *pilot);
 int sd_pilot_save(sd_writer *writer, const sd_pilot *pilot);
 #endif
 
