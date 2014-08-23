@@ -77,8 +77,10 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Difficulty:  %s\n", difficulty_names[pilot->difficulty]);
 
         printf("  - unk_block_a:\n");
-        print_bytes(pilot->unk_block_a, 50, 16, 5);
+        print_bytes(pilot->unk_block_a, 48, 16, 5);
         printf("\n");
+        printf("  - Pilot ID:    %d\n", pilot->pilot_id);
+        printf("  - Unknown K:   %d\n", pilot->unknown_k);
         printf("  - Force arena: %d\n", pilot->force_arena);
         printf("  - unk_block_b: ");
         print_bytes(pilot->unk_block_a, 3, 16, 0);
