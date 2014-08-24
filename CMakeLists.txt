@@ -11,10 +11,17 @@ set(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG")
 add_definitions(-DSD_USE_INTERNAL)
 
 OPTION(BUILD_TESTS "Build unittests" OFF)
+OPTION(USE_PNG "Use libpng for importers and exporters" ON)
 
 include(${CMAKE_MODULE_PATH}/CMakeLists-emscripten.cmake)
 link_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(include/)
+
+IF(USE_PNG)
+    find_package(PNG)
+    find_package(ZLIB)
+    add_definitions(-DUSE_PNG)
+ENDIF()
 
 IF(BUILD_TESTS)
     add_subdirectory(testing)
@@ -48,6 +55,11 @@ add_library(shadowdive
     src/internal/writer.c
     src/internal/helpers.c
 )
+
+IF(USE_PNG)
+    include_directories(${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
+    target_link_libraries(shadowdive ${PNG_LIBRARY} ${ZLIB_LIBRARY})
+ENDIF()
 
 FILE(GLOB H_FILES "include/shadowdive/*.h")
 INSTALL(FILES ${H_FILES} DESTINATION include/shadowdive/)

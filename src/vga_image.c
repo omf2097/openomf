@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "shadowdive/vga_image.h"
 #include "shadowdive/error.h"

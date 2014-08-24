@@ -339,6 +339,8 @@ void sd_bk_free(sd_bk_file *bk) {
         }
     }
     for(i = 0; i < bk->palette_count; i++) {
-        free(bk->palettes[i]);
+        if(bk->palettes[i] != NULL) {
+            free(bk->palettes[i]);
+        }
     }
 }
