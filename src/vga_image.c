@@ -147,7 +147,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     }
   
     info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr) {
+    if(!info_ptr) {
         ret = SD_OUT_OF_MEMORY;
         goto error_2;
     }
@@ -159,7 +159,11 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     int h = png_get_image_height(png_ptr, info_ptr);
     png_byte color_type = png_get_color_type(png_ptr, info_ptr);
     png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-    setjmp(png_jmpbuf(png_ptr));
+
+    if(setjmp(png_jmpbuf(png_ptr))) {
+        ret = SD_FILE_INVALID_TYPE;
+        goto error_2;
+    }
 
     // We need paletted images.
     if(color_type != PNG_COLOR_TYPE_PALETTE || bit_depth != 8) {
@@ -195,6 +199,85 @@ error_1:
 error_0:
     return ret;
 
+#else
+    return SD_FORMAT_NOT_SUPPORTED;
+#endif
+}
+
+int sd_vga_image_to_png(const sd_vga_image *img, const sd_palette *pal, const char *filename) {
+#ifdef USE_PNG
+    png_structp png_ptr;
+    png_infop info_ptr;
+    png_colorp palette;
+    int ret = SD_SUCCESS;
+
+    char *rows[img->h];
+    for(int y = 0; y < img->h; y++) {
+        rows[y] = img->data + y * img->w;
+    }
+
+    if(img == NULL || filename == NULL) {
+        ret = SD_INVALID_INPUT;
+        goto error_0;
+    }
+
+    FILE *handle = fopen(filename, "wb");
+    if(handle == NULL) {
+        ret = SD_FILE_OPEN_ERROR;
+        goto error_0;
+    }
+
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if(!png_ptr) {
+        ret = SD_OUT_OF_MEMORY;
+        goto error_1;
+    }
+
+    info_ptr = png_create_info_struct(png_ptr);
+    if(!info_ptr) {
+        ret = SD_OUT_OF_MEMORY;
+        goto error_2;
+    }
+
+    if(setjmp(png_jmpbuf(png_ptr))) {
+        ret = SD_FILE_INVALID_TYPE;
+        goto error_2;
+    }
+
+    png_init_io(png_ptr, handle);
+
+    // Write header. Paletted, 8 bits per pixel
+    png_set_IHDR(png_ptr,
+                 info_ptr,
+                 img->w,
+                 img->h,
+                 8,
+                 PNG_COLOR_TYPE_PALETTE,
+                 PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_BASE,
+                 PNG_FILTER_TYPE_BASE);
+
+    palette = png_malloc(png_ptr, 256 * sizeof(png_color));
+    for(int i = 0; i < 256; i++) {
+        palette[i].red   = pal->data[i][0];
+        palette[i].green = pal->data[i][1];
+        palette[i].blue  = pal->data[i][2];
+    }
+    png_set_PLTE(png_ptr, info_ptr, palette, 256);
+
+    // Write data
+    png_write_info(png_ptr, info_ptr);
+    png_write_image(png_ptr, (void*)rows);
+    png_write_end(png_ptr, NULL);
+
+    // Free everything
+    png_free(png_ptr, palette);
+error_2:
+    png_destroy_write_struct(&png_ptr, NULL);
+error_1:
+    fclose(handle);
+error_0:
+    return ret;
 #else
     return SD_FORMAT_NOT_SUPPORTED;
 #endif

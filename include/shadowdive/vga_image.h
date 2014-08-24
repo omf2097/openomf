@@ -118,12 +118,28 @@ int sd_vga_image_decode(
  * \retval SD_FILE_INVALID_TYPE Input image was of invalid type.
  * \retval SD_FILE_OPEN_ERROR File could not be opened for reading.
  * \retval SD_FORMAT_NOT_SUPPORTED File format (PNG) is not supported.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param img Destination image pointer
  * \param filename Source filename
  */
 int sd_vga_image_from_png(sd_vga_image *img, const char *filename);
+
+/*! \brief Save an indexed image from a PNG file.
+ *
+ * Saves an indexed (paletted) image to a PNG file. Maximum allowed image
+ * size is 320x200, and the smallest allowed size is 1x1.
+ *
+ * \retval SD_INVALID_INPUT Image or filename was NULL
+ * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
+ * \retval SD_FORMAT_NOT_SUPPORTED File format (PNG) is not supported.
+ * \retval SD_SUCCESS Success.
+ *
+ * \param img Source image pointer
+ * \param pal Palette for the image
+ * \param filename Destination filename
+ */
+int sd_vga_image_to_png(const sd_vga_image *img, const sd_palette *pal, const char *filename);
 
 #ifdef __cplusplus
 }
