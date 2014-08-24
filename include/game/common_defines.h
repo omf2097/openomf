@@ -15,6 +15,7 @@ int rand_arena();
 enum {
     SCENE_NONE = 0,
     SCENE_INTRO,
+    SCENE_OPENOMF,
     SCENE_MENU,
     SCENE_END,
     SCENE_END1,

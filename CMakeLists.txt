@@ -190,6 +190,7 @@ set(OPENOMF_SRC
     src/game/objects/projectile.c
     src/game/objects/hazard.c
     src/game/scenes/intro.c
+    src/game/scenes/openomf.c
     src/game/scenes/mainmenu.c
     src/game/scenes/credits.c
     src/game/scenes/cutscene.c

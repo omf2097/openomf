@@ -51,6 +51,7 @@ static const char *har_type_names[] = {
 static const char* scene_type_names[] = {
     "SCENE_NONE",
     "SCENE_INTRO",
+    "SCENE_OPENOMF",
     "SCENE_MENU",
     "SCENE_END",
     "SCENE_END1",

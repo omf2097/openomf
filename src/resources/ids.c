@@ -7,6 +7,7 @@
 const char* get_resource_file(unsigned int id) {
     switch(id) {
         case BK_INTRO:       return "INTRO.BK";
+        case BK_OPENOMF:     return "openomf.bk";
         case BK_MENU:        return "MAIN.BK";
         case BK_ARENA0:      return "ARENA0.BK";
         case BK_ARENA1:      return "ARENA1.BK";
@@ -56,6 +57,7 @@ const char* get_resource_file(unsigned int id) {
 const char* get_resource_name(unsigned int id) {
     switch(id) {
         case BK_INTRO:       return "BK_INTRO";
+        case BK_OPENOMF:     return "BK_OPENOMF";
         case BK_MENU:        return "BK_MAIN";
         case BK_ARENA0:      return "BK_ARENA0";
         case BK_ARENA1:      return "BK_ARENA1";

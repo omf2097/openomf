@@ -3,6 +3,7 @@
 
 enum RESOURCE_ID {
     BK_INTRO = 0,
+    BK_OPENOMF,
     BK_MENU,
     BK_END,
     BK_END1,

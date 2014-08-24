@@ -30,6 +30,7 @@
 #include "game/scenes/melee.h"
 #include "game/scenes/vs.h"
 #include "game/scenes/scoreboard.h"
+#include "game/scenes/openomf.h"
 
 #define MS_PER_OMF_TICK 10
 #define MS_PER_OMF_TICK_SLOWEST 60
@@ -121,13 +122,13 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         }
     } else {
         // Select correct starting scene and load resources
-         nscene = (init_flags->net_mode == NET_MODE_NONE ? SCENE_INTRO : SCENE_MENU);
+         nscene = (init_flags->net_mode == NET_MODE_NONE ? SCENE_OPENOMF : SCENE_MENU);
         if(scene_create(gs->sc, gs, nscene)) {
             PERROR("Error while loading scene %d.", nscene);
             goto error_0;
         }
         if(init_flags->net_mode == NET_MODE_NONE) {
-            if(intro_create(gs->sc)) {
+            if(openomf_create(gs->sc)) {
                 PERROR("Error while creating intro scene.");
                 goto error_1;
             }
@@ -410,6 +411,12 @@ int game_load_new(game_state *gs, int scene_id) {
 
     // Load scene specifics
     switch(scene_id) {
+        case SCENE_OPENOMF:
+            if(openomf_create(gs->sc)) {
+                PERROR("Error while creating openomf-intro scene.");
+                goto error_1;
+            }
+            break;
         case SCENE_INTRO:
             if(intro_create(gs->sc)) {
                 PERROR("Error while creating intro scene.");
