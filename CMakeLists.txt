@@ -19,12 +19,16 @@ include_directories(include/)
 
 IF(USE_PNG)
     find_package(PNG)
-    find_package(ZLIB)
     add_definitions(-DUSE_PNG)
 ENDIF()
 
 IF(BUILD_TESTS)
     add_subdirectory(testing)
+ENDIF()
+
+# zlib may be required if using tests
+IF(BUILD_TESTS AND USE_PNG)
+    find_package(ZLIB)
 ENDIF()
 
 add_library(shadowdive
@@ -57,8 +61,8 @@ add_library(shadowdive
 )
 
 IF(USE_PNG)
-    include_directories(${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
-    target_link_libraries(shadowdive ${PNG_LIBRARY} ${ZLIB_LIBRARY})
+    include_directories(${PNG_INCLUDE_DIR})
+    target_link_libraries(shadowdive ${PNG_LIBRARY})
 ENDIF()
 
 FILE(GLOB H_FILES "include/shadowdive/*.h")

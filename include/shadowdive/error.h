@@ -25,6 +25,7 @@ enum SD_ERRORCODE {
     SD_ANIM_INVALID_STRING, ///< Invalid animation string
     SD_OUT_OF_MEMORY, ///< Out of memory error
     SD_INVALID_INPUT, ///< Function encountered unexpected/invalid arguments
+    SD_FORMAT_NOT_SUPPORTED, ///< File format is not supported
 };
 
 /*! \brief Get text error for error ID

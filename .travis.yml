@@ -12,7 +12,7 @@ before_install:
  - if test $CC = gcc; then sudo update-alternatives --config gcc; fi
 
 before_script:
- - cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=1 .
+ - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_PNG=0 -DBUILD_TESTS=1 .
 
 script: make && make test
 

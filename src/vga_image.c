@@ -6,6 +6,10 @@
 #include "shadowdive/vga_image.h"
 #include "shadowdive/error.h"
 
+#ifdef USE_PNG
+    #include <png.h>
+#endif
+
 int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
     if(img == NULL) {
         return SD_INVALID_INPUT;
@@ -109,4 +113,89 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const sd_pa
         }
     }
     return SD_SUCCESS;
+}
+
+int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
+#ifdef USE_PNG
+    png_structp png_ptr;
+    png_infop info_ptr;
+    int ret = SD_SUCCESS;
+    png_bytep *row_pointers;
+
+    if(img == NULL || filename == NULL) {
+        ret = SD_INVALID_INPUT;
+        goto error_0;
+    }
+
+    FILE *handle = fopen(filename, "rb");
+    if(handle == NULL) {
+        ret = SD_FILE_OPEN_ERROR;
+        goto error_0;
+    }
+
+    uint8_t sig[8];
+    fread(sig, 1, 8, handle);
+    if(!png_check_sig(sig, 8)) {
+        ret = SD_FILE_INVALID_TYPE;
+        goto error_1;
+    }
+
+    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if(!png_ptr) {
+        ret = SD_OUT_OF_MEMORY;
+        goto error_1;
+    }
+  
+    info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+        ret = SD_OUT_OF_MEMORY;
+        goto error_2;
+    }
+
+    png_init_io(png_ptr, handle);
+    png_set_sig_bytes(png_ptr, 8);
+    png_read_info(png_ptr, info_ptr);
+    int w = png_get_image_width(png_ptr, info_ptr);
+    int h = png_get_image_height(png_ptr, info_ptr);
+    png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+    png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+    setjmp(png_jmpbuf(png_ptr));
+
+    // We need paletted images.
+    if(color_type != PNG_COLOR_TYPE_PALETTE || bit_depth != 8) {
+        ret = SD_FILE_INVALID_TYPE;
+        goto error_2;
+    }
+
+    // Allocate memory for the data
+    row_pointers = malloc(sizeof(png_bytep) * h);
+    for(int y = 0; y < h; y++) {
+        row_pointers[y] = malloc(png_get_rowbytes(png_ptr, info_ptr));
+    }
+    png_read_image(png_ptr, row_pointers);
+
+    // Convert
+    sd_vga_image_create(img, w, h);
+    for(int y = 0; y < h; y++) {
+        png_byte* row = row_pointers[y];
+        for(int x = 0; x < w; x++) {
+            img->data[w * y + x] = row[x];
+        }
+    }
+
+    // Free up everything
+    for(int y = 0; y < h; y++) {
+        free(row_pointers[y]);
+    }
+    free(row_pointers);
+error_2:
+    png_destroy_read_struct(&png_ptr, NULL, NULL);
+error_1:
+    fclose(handle);
+error_0:
+    return ret;
+
+#else
+    return SD_FORMAT_NOT_SUPPORTED;
+#endif
 }

@@ -4,6 +4,10 @@ IF(CUNIT_FOUND)
     include_directories(${CUNIT_INCLUDE_DIR} . ../include/)
     set(LIBS ${CUNIT_LIBRARY} shadowdive)
 
+    IF(USE_PNG)
+        set(LIBS ${LIBS} ${PNG_LIBRARY} ${ZLIB_LIBRARY})
+    ENDIF()
+
     add_executable(test_lib
         test_lib.c
         test_af.c

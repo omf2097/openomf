@@ -33,6 +33,8 @@ const char* sd_get_error(int errorcode) {
         return "Out of memory";
     case SD_INVALID_INPUT:
         return "Invalid input/argument data";
+    case SD_FORMAT_NOT_SUPPORTED:
+        return "Format is not supported";
     default:
         return "Unknown errorcode.";
     }

@@ -105,6 +105,26 @@ int sd_vga_image_decode(
     const sd_palette *pal,
     int remapping);
 
+/*! \brief Load an indexed image from a PNG file.
+ *
+ * Loads an indexed (paletted) image from a PNG file. Maximum allowed image
+ * size is 320x200, and the smallest allowed size is 1x1.
+ *
+ * Note! The output vga image will be created here. If the image had been
+ * already created by using sd_vga_image_create() previously, there may
+ * potentially be a memory leak, since the old image internals will not be freed.
+ *
+ * \retval SD_INVALID_INPUT Image or filename was NULL
+ * \retval SD_FILE_INVALID_TYPE Input image was of invalid type.
+ * \retval SD_FILE_OPEN_ERROR File could not be opened for reading.
+ * \retval SD_FORMAT_NOT_SUPPORTED File format (PNG) is not supported.
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param img Destination image pointer
+ * \param filename Source filename
+ */
+int sd_vga_image_from_png(sd_vga_image *img, const char *filename);
+
 #ifdef __cplusplus
 }
 #endif
