@@ -338,6 +338,7 @@ int bk_key_get_id(const char* key) {
     if(strcmp(key, "palette") == 0) return 1;
     if(strcmp(key, "unknown") == 0) return 2;
     if(strcmp(key, "footer") == 0) return 3;
+    if(strcmp(key, "background") == 0) return 4;
     return -1;
 }
 
@@ -362,7 +363,7 @@ void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value)
             }
         break;
         default:
-            printf("Unknown key!\n");
+            printf("Value setting not supported for this key!\n");
             return;
     }
     printf("Value set!\n");
@@ -406,7 +407,7 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
             }
             break;
         default:
-            printf("Unknown key!\n");
+            printf("Value retrieving not supported for this key!\n");
     }
 }
 
@@ -452,6 +453,26 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
             sd_palette_to_gimp_palette(pal, filename);
             }
             break;
+        case 4: {
+            sd_palette *pal = sd_bk_get_palette(bk, 0);
+            if(pal == NULL) {
+                printf("Palette required for exporting to PNG.\n");
+                return;
+            }
+            sd_vga_image *img = sd_bk_get_background(bk);
+            if(img == NULL) {
+                printf("Background is not set; cannot export.\n");
+                return;
+            }
+            int ret = sd_vga_image_to_png(img, pal, filename);
+            if(ret != SD_SUCCESS) {
+                printf("Error while exporting background to %s: %s\n",
+                    filename,
+                    sd_get_error(ret));
+                return;
+            }
+            }
+            break;
         default:
             printf("Exporting not supported for this key.\n");
     }
@@ -476,6 +497,19 @@ void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
             }
             }
             break;
+        case 4: {
+            sd_vga_image img;
+            int ret = sd_vga_image_from_png(&img, filename);
+            if(ret != SD_SUCCESS) {
+                printf("Error while attempting to import %s: %s\n",
+                    filename,
+                    sd_get_error(ret));
+                return;
+            }
+            sd_bk_set_background(bk, &img);
+            sd_vga_image_free(&img);
+            }
+            break;
         default:
             printf("Importing not supported for this key.\n");
     }
@@ -488,6 +522,7 @@ void bk_keylist() {
     printf("* unknown\n");
     printf("* soundtable <byte #>\n");
     printf("* animation\n");
+    printf("* background\n");
 }
 
 void bk_info(sd_bk_file *bk) {
@@ -794,7 +829,12 @@ int main(int argc, char *argv[]) {
 done:
     // Write output file
     if(output->count > 0) {
-        sd_bk_save(&bk, output->filename[0]);
+        int ret = sd_bk_save(&bk, output->filename[0]);
+        if(ret != SD_SUCCESS) {
+            printf("Error attempting to save to %s: %s\n",
+                output->filename[0],
+                sd_get_error(ret));
+        }
     }
     
     // Quit

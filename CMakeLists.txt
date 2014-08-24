@@ -47,7 +47,7 @@ add_executable(trntool src/trntool/main.c src/shared/pilot.c)
 add_executable(altpaltool src/altpaltool/main.c)
 add_executable(chrtool src/chrtool/main.c src/shared/pilot.c)
 
-set(CORELIBS ${ARGTABLE2_LIBRARY})
+set(CORELIBS ${SHADOWDIVE_LIBRARY} ${ARGTABLE2_LIBRARY} ${PNG_LIBRARY} ${ZLIB_LIBRARY})
 
 # Fix compilation issues on mingw
 IF(MINGW)
@@ -64,7 +64,7 @@ include_directories(
     ${PNG_INCLUDE_DIR}
     ${ARGTABLE2_INCLUDE_DIR}
     ${SHADOWDIVE_INCLUDE_DIR}
-) 
+)
 
 # Set correct libs for stringtool
 IF(USE_SQLITE)
@@ -81,21 +81,21 @@ ELSEIF(USE_MODPLUG)
     target_link_libraries(musictool ${CORELIBS} ${SDL2_LIBRARY} ${MODPLUG_LIBRARY})
 ENDIF()
 
-target_link_libraries(bktool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(aftool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(bkhtmlprinter ${CORELIBS} ${PNG_LIBRARY} ${ZLIB_LIBRARY} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(afhtmlprinter ${CORELIBS} ${PNG_LIBRARY} ${ZLIB_LIBRARY} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(soundtool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(fonttool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(languagetool ${CORELIBS} ${SDL2_LIBRARY} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(omf_parse ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(afdiff ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(rectool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(pictool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(scoretool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(trntool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(altpaltool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-target_link_libraries(chrtool ${CORELIBS} ${SHADOWDIVE_LIBRARY})
+target_link_libraries(bktool ${CORELIBS} ${SDL2_LIBRARY})
+target_link_libraries(aftool ${CORELIBS} ${SDL2_LIBRARY})
+target_link_libraries(bkhtmlprinter ${CORELIBS})
+target_link_libraries(afhtmlprinter ${CORELIBS})
+target_link_libraries(soundtool ${CORELIBS} ${SDL2_LIBRARY})
+target_link_libraries(fonttool ${CORELIBS} ${SDL2_LIBRARY})
+target_link_libraries(languagetool ${CORELIBS} ${SDL2_LIBRARY})
+target_link_libraries(omf_parse ${CORELIBS})
+target_link_libraries(afdiff ${CORELIBS})
+target_link_libraries(rectool ${CORELIBS})
+target_link_libraries(pictool ${CORELIBS})
+target_link_libraries(scoretool ${CORELIBS})
+target_link_libraries(trntool ${CORELIBS})
+target_link_libraries(altpaltool ${CORELIBS})
+target_link_libraries(chrtool ${CORELIBS})
 
 INSTALL(
     TARGETS
