@@ -1234,6 +1234,7 @@ int mainmenu_create(scene *scene) {
 
     if(plugin_found) {
         // Get scaling factors
+        int pindex = 0;
         int *plist;
         scaler_plugin scaler;
         scaler_init(&scaler);
@@ -1243,7 +1244,11 @@ int mainmenu_create(scene *scene) {
         for(int i = 0; i < plen; i++) {
             sprintf(local->scaling_factor_labels[i], "%d", plist[i]);
             textselector_add_option(&local->scale_factor_toggle, local->scaling_factor_labels[i]);
+            if(plist[i] == setting->video.scale_factor ) {
+                pindex = i;
+            }
         }
+        textselector_set_pos(&local->scale_factor_toggle, pindex);
     }
 
     textbutton_create(&local->video_done_button, &font_large, "DONE");
