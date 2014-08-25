@@ -6,6 +6,13 @@ typedef enum fight_mode_t {
     FIGHT_MODE_HYPER
 } fight_mode;
 
+typedef enum knock_down_mode_t {
+    KNOCK_DOWN_NONE = 0,
+    KNOCK_DOWN_PUNCHES,
+    KNOCK_DOWN_KICKS,
+    KNOCK_DOWN_BOTH
+} knock_down_mode;
+
 typedef enum difficulty_t {
     PUNCHING_BAG,
     ROOKIE,
@@ -52,6 +59,17 @@ typedef struct settings_gameplay_t {
     int rounds;
 } settings_gameplay;
 
+typedef struct settings_advanced_t {
+    int rehit_mode;
+    int defensive_throws;
+    int throw_range;
+    int jump_height;
+    int hit_pause;
+    int vitality;
+    int knock_down;
+    int block_damage;
+} settings_advanced;
+
 typedef struct settings_keyboard_t {
     // Player one
     int ctrl_type1;
@@ -89,6 +107,7 @@ typedef struct settings_t {
     settings_video video;
     settings_sound sound;
     settings_gameplay gameplay;
+    settings_advanced advanced;
     settings_keyboard keys;
     settings_network net;
 } settings;

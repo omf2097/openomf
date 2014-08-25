@@ -81,6 +81,17 @@ const field f_gameplay[] = {
     F_INT(settings_gameplay,  rounds,      1)
 };
 
+const field f_advanced[] = {
+    F_INT(settings_advanced, rehit_mode, 0),
+    F_INT(settings_advanced, defensive_throws, 0),
+    F_INT(settings_advanced, throw_range, 100),
+    F_INT(settings_advanced, jump_height, 100),
+    F_INT(settings_advanced, hit_pause, 0),
+    F_INT(settings_advanced, vitality, 100),
+    F_INT(settings_advanced, knock_down, KNOCK_DOWN_BOTH),
+    F_INT(settings_advanced, block_damage, 0),
+};
+
 const field f_keyboard[] = {
     // Player one
     F_INT(settings_keyboard, ctrl_type1,  CTRL_TYPE_KEYBOARD),
@@ -118,6 +129,7 @@ const struct_to_field struct_to_fields[] = {
     S_2_F(&_settings.video, f_video),
     S_2_F(&_settings.sound, f_sound),
     S_2_F(&_settings.gameplay, f_gameplay),
+    S_2_F(&_settings.advanced, f_advanced),
     S_2_F(&_settings.keys, f_keyboard),
     S_2_F(&_settings.net, f_net)
 };
