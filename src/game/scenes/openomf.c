@@ -36,10 +36,8 @@ void openomf_input_tick(scene *scene) {
 void openomf_tick(scene *scene, int paused) {
     openomf_local *local = scene_get_userdata(scene);
     local->ticks++;
-    DEBUG("TICK");
     if(local->ticks > 140) {
         game_state_set_next(scene->gs, SCENE_INTRO);
-        DEBUG("NEXT");
     }
 }
 
