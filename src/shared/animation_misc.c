@@ -8,6 +8,7 @@ int sprite_key_get_id(const char* key) {
     if(strcmp(key, "y") == 0) return 1;
     if(strcmp(key, "index") == 0) return 2;
     if(strcmp(key, "missing") == 0) return 3;
+    if(strcmp(key, "image") == 0) return 4;
     return -1;
 }
 
@@ -17,6 +18,7 @@ void sprite_set_key(sd_sprite *s, const char **key, int kcount, const char *valu
         case 1: s->pos_y = conv_word(value); break;
         case 2: s->index = conv_ubyte(value); break;
         case 3: s->missing = conv_ubyte(value); break;
+        case 4: printf("Value setting not supported for this key.\n"); break;
         default:
             printf("Unknown key!\n");
             return;
@@ -30,6 +32,7 @@ void sprite_get_key(sd_sprite *s, const char **key, int kcount) {
         case 1: printf("%d\n", s->pos_y); break;
         case 2: printf("%d\n", s->index); break;
         case 3: printf("%d\n", s->missing); break;
+        case 4: printf("Value fetching not supported for this key.\n"); break;
         default:
             printf("Unknown key!\n");
     }
@@ -41,6 +44,78 @@ void sprite_keylist() {
     printf("* y\n");
     printf("* index\n");
     printf("* missing\n");
+    printf("* image\n");
+}
+
+void sprite_export_key(sd_sprite *s, const char **key, int kcount, const char *filename, sd_bk_file *bk) {
+    switch(sprite_key_get_id(key[0])) {
+        case 1:
+        case 2:
+        case 3:
+            printf("Value fetching not supported for this key.\n");
+            break;
+        case 4: {
+            sd_palette *pal = sd_bk_get_palette(bk, 0);
+            if(pal == NULL) {
+                printf("Palette required for exporting to PNG.\n");
+                return;
+            }
+            sd_vga_image img;
+            int ret = sd_sprite_vga_decode(&img, s);
+            if(ret != SD_SUCCESS) {
+                printf("Sprite decoding failed.\n");
+                return;
+            }
+            ret = sd_vga_image_to_png(&img, pal, filename);
+            sd_vga_image_free(&img);
+            if(ret != SD_SUCCESS) {
+                printf("Error while exporting sprite to %s: %s\n",
+                    filename,
+                    sd_get_error(ret));
+                return;
+            }
+            }
+            break;
+        default:
+            printf("Unknown key!\n");
+    }
+}
+
+void sprite_import_key(sd_sprite *s, const char **key, int kcount, const char *filename, int transparent_index) {
+    switch(sprite_key_get_id(key[0])) {
+        case 1:
+        case 2:
+        case 3:
+            printf("Value fetching not supported for this key.\n");
+            break;
+        case 4: {
+            sd_vga_image img;
+            int ret = sd_vga_image_from_png(&img, filename);
+            if(ret != SD_SUCCESS) {
+                printf("Error while importing sprite from %s: %s\n",
+                    filename,
+                    sd_get_error(ret));
+                return;
+            }
+
+            ret = sd_vga_image_stencil_index(&img, transparent_index);
+            if(ret != SD_SUCCESS) {
+                printf("Stencil oculd not be set: %s\n", sd_get_error(ret));
+                return;
+            }
+
+            ret = sd_sprite_vga_encode(s, &img);
+            sd_vga_image_free(&img);
+            if(ret != SD_SUCCESS) {
+                printf("Error while converting VGA image to sprite.\n");
+                return;
+            }
+
+            }
+            break;
+        default:
+            printf("Unknown key!\n");
+    }
 }
 
 void sprite_info(sd_sprite *s, int anim, int sprite) {
