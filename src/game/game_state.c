@@ -99,19 +99,15 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
             PERROR("Error while loading scene %d.", nscene);
             goto error_0;
         }
-        // set the HAR colors
-        gs->players[0]->colors[0] = rec.pilots[0].color_3;
-        gs->players[0]->colors[1] = rec.pilots[0].color_2;
-        gs->players[0]->colors[2] = rec.pilots[0].color_1;
-        gs->players[1]->colors[0] = rec.pilots[1].color_3;
-        gs->players[1]->colors[1] = rec.pilots[1].color_2;
-        gs->players[1]->colors[2] = rec.pilots[1].color_1;
 
-        gs->players[0]->har_id = HAR_JAGUAR + rec.pilots[0].har_id;
-        gs->players[1]->har_id = HAR_JAGUAR + rec.pilots[1].har_id;
-
-        gs->players[0]->pilot_id = rec.pilots[0].pilot_id;
-        gs->players[1]->pilot_id = rec.pilots[1].pilot_id;
+        // set the HAR colors, pilot, har type
+        for(int i = 0; i < 2; i++) {
+            gs->players[i]->colors[0] = rec.pilots[i].info.color_3;
+            gs->players[i]->colors[1] = rec.pilots[i].info.color_2;
+            gs->players[i]->colors[2] = rec.pilots[i].info.color_1;
+            gs->players[i]->har_id = HAR_JAGUAR + rec.pilots[i].info.har_id;
+            gs->players[i]->pilot_id = rec.pilots[i].info.pilot_id;
+        }
 
         // XXX use playback controller once it exista
         _setup_rec_controller(gs, 0, &rec);
