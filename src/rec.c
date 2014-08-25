@@ -11,15 +11,15 @@ int sd_rec_create(sd_rec_file *rec) {
         return SD_INVALID_INPUT;
     }
     memset(rec, 0, sizeof(sd_rec_file));
-    sd_pilot_create(&rec->pilots[0]);
-    sd_pilot_create(&rec->pilots[1]);
+    sd_pilot_create(&rec->pilots[0].info);
+    sd_pilot_create(&rec->pilots[1].info);
     return SD_SUCCESS;
 }
 
 void sd_rec_free(sd_rec_file *rec) {
     if(rec == NULL) return;
-    sd_pilot_free(&rec->pilots[0]);
-    sd_pilot_free(&rec->pilots[1]);
+    sd_pilot_free(&rec->pilots[0].info);
+    sd_pilot_free(&rec->pilots[1].info);
     if(rec->moves) {
         free(rec->moves);
     }
@@ -43,8 +43,18 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     // Read pilot data
     for(int i = 0; i < 2; i++) {
         // Read pilot data
-        sd_pilot_load(r, &rec->pilots[i]);
-        sd_skip(r, 168); // This contains empty palette and sprite etc. Just skip.
+        sd_pilot_create(&rec->pilots[i].info);
+        sd_pilot_load(r, &rec->pilots[i].info);
+        rec->pilots[i].unknown_a = sd_read_ubyte(r);
+        rec->pilots[i].unknown_b = sd_read_uword(r);
+        sd_palette_create(&rec->pilots[i].pal);
+        sd_palette_load_range(r, &rec->pilots[i].pal, 0, 48);
+        sd_read_buf(r, rec->pilots[i].unknown_c, 20);
+        rec->pilots[i].has_photo = sd_read_ubyte(r);
+        if(rec->pilots[i].has_photo) {
+            sd_sprite_create(&rec->pilots[i].photo);
+            sd_sprite_load(r, &rec->pilots[i].photo);
+        }
     }
 
     // Scores
@@ -130,8 +140,15 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
 
     // Write pilots, palettes, etc.
     for(int i = 0; i < 2; i++) {
-        sd_pilot_save(w, &rec->pilots[i]);
-        sd_write_fill(w, 0, 168);
+        sd_pilot_save(w, &rec->pilots[i].info);
+        sd_write_ubyte(w, rec->pilots[i].unknown_a);
+        sd_write_uword(w, rec->pilots[i].unknown_b);
+        sd_palette_save_range(w, &rec->pilots[i].pal, 0, 48);
+        sd_write_buf(w, rec->pilots[i].unknown_c, 20);
+        sd_write_ubyte(w, rec->pilots[i].has_photo);
+        if(rec->pilots[i].has_photo) {
+            sd_sprite_save(w, &rec->pilots[i].photo);
+        }
     }
 
     // Scores

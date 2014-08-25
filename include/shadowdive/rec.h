@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "shadowdive/pilot.h"
+#include "shadowdive/palette.h"
+#include "shadowdive/sprite.h"
 
 #ifdef __cplusplus 
 extern "C" {
@@ -36,7 +38,17 @@ typedef struct {
 } sd_rec_move;
 
 typedef struct {
-    sd_pilot pilots[2]; ///< Pilot data
+    sd_pilot info;
+    uint8_t unknown_a;
+    uint16_t unknown_b;
+    sd_palette pal;
+    char unknown_c[20];
+    uint8_t has_photo;
+    sd_sprite photo;
+} sd_rec_pilot;
+
+typedef struct {
+    sd_rec_pilot pilots[2];
     uint32_t scores[2]; ///< Score data at the start of the match
     int8_t unknown_a; // Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
     int8_t unknown_b;
