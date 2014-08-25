@@ -30,7 +30,9 @@ void print_bytes(char *buf, int len, int line, int padding) {
     for(int i = 1; i <= len; i++) {
         printf("%02x ", (uint8_t)buf[i-1]);
         if(i % line == 0) {
-            printf("\n");
+            if(len != i) {
+                printf("\n");
+            }
             for(int k = 0; k < padding; k++) {
                 printf(" ");
             }
@@ -134,8 +136,8 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Enemies (exl unranked): %d\n", pilot->enemies_ex_unranked);
 
         printf("  - unk_block_h:\n");
-        print_bytes(pilot->unk_block_h, 166, 16, 5);
-        printf("\n\n");
+        print_bytes(pilot->unk_block_h, 166, 16, 4);
+        printf("\n");
 
         printf("  - Photo ID     %d\n", pilot->photo_id);
     }

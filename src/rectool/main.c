@@ -39,7 +39,33 @@ void print_rec_root_info(sd_rec_file *rec) {
         // Print enemy data
         printf("Enemies:\n");
         for(int i = 0; i < 2; i++) {
-            print_pilot_info(&rec->pilots[i]);
+            print_pilot_info(&rec->pilots[i].info);
+            printf("\n");
+            printf("  - Unknown: %d\n", rec->pilots[i].unknown_a);
+            printf("  - Unknown: %d\n", rec->pilots[i].unknown_b);
+            printf("  - Palette:\n");
+            print_bytes((char*)rec->pilots[i].pal.data, 144, 16, 4);
+            printf("\n");
+            printf("  - Unknown:\n");
+            print_bytes((char*)rec->pilots[i].unknown_c, 20, 20, 4);
+            printf("\n");
+
+            if(rec->pilots[i].has_photo) {
+                printf("  - Photo len  = %d\n", rec->pilots[i].photo.len);
+                printf("  - Photo size = (%d,%d)\n",
+                    rec->pilots[i].photo.width,
+                    rec->pilots[i].photo.height);
+                printf("  - Photo pos  = (%d,%d)\n",
+                    rec->pilots[i].photo.pos_x,
+                    rec->pilots[i].photo.pos_y);
+                printf("  - Missing    = %d\n",
+                    rec->pilots[i].photo.missing);
+                printf("  - Index      = %d\n",
+                    rec->pilots[i].photo.index);
+            } else {
+                printf("  - No photo.\n");
+            }
+            printf("\n");
         }
 
         char tmp = 'A';
