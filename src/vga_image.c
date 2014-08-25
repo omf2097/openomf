@@ -62,6 +62,24 @@ void sd_vga_image_free(sd_vga_image *img) {
     free(img->stencil);
 }
 
+int sd_vga_image_stencil_index(sd_vga_image *img, int stencil_index) {
+    if(stencil_index > 255 || img == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
+    // If stencil_index is < 0, we are just making the image opaque
+    if(stencil_index < 0) {
+        memset(img->stencil, 1, img->w * img->h);
+        return SD_SUCCESS;
+    }
+
+    // Search & destroy!
+    for(int i = 0; i < img->w * img->h; i++) {
+        img->stencil[i] = (img->data[i] != stencil_index);
+    }
+    return SD_SUCCESS;
+}
+
 int sd_vga_image_encode(sd_vga_image *dst, const sd_rgba_image *src, const sd_palette *pal, int remapping) {
     int ret;
     if(dst == NULL || src == NULL || pal == NULL) {
@@ -152,6 +170,11 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
         goto error_2;
     }
 
+    if(setjmp(png_jmpbuf(png_ptr))) {
+        ret = SD_FILE_INVALID_TYPE;
+        goto error_2;
+    }
+
     png_init_io(png_ptr, handle);
     png_set_sig_bytes(png_ptr, 8);
     png_read_info(png_ptr, info_ptr);
@@ -160,7 +183,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     png_byte color_type = png_get_color_type(png_ptr, info_ptr);
     png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
 
-    if(setjmp(png_jmpbuf(png_ptr))) {
+    if(w > 320 || w < 1 || h > 200 || h < 1) {
         ret = SD_FILE_INVALID_TYPE;
         goto error_2;
     }
@@ -176,6 +199,12 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     for(int y = 0; y < h; y++) {
         row_pointers[y] = malloc(png_get_rowbytes(png_ptr, info_ptr));
     }
+
+    if(setjmp(png_jmpbuf(png_ptr))) {
+        ret = SD_FILE_INVALID_TYPE;
+        goto error_3;
+    }
+
     png_read_image(png_ptr, row_pointers);
 
     // Convert
@@ -188,6 +217,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     }
 
     // Free up everything
+error_3:
     for(int y = 0; y < h; y++) {
         free(row_pointers[y]);
     }
@@ -240,7 +270,7 @@ int sd_vga_image_to_png(const sd_vga_image *img, const sd_palette *pal, const ch
     }
 
     if(setjmp(png_jmpbuf(png_ptr))) {
-        ret = SD_FILE_INVALID_TYPE;
+        ret = SD_OUT_OF_MEMORY;
         goto error_2;
     }
 
@@ -265,12 +295,18 @@ int sd_vga_image_to_png(const sd_vga_image *img, const sd_palette *pal, const ch
     }
     png_set_PLTE(png_ptr, info_ptr, palette, 256);
 
+    if(setjmp(png_jmpbuf(png_ptr))) {
+        ret = SD_OUT_OF_MEMORY;
+        goto error_3;
+    }
+
     // Write data
     png_write_info(png_ptr, info_ptr);
     png_write_image(png_ptr, (void*)rows);
     png_write_end(png_ptr, NULL);
 
     // Free everything
+error_3:
     png_free(png_ptr, palette);
 error_2:
     png_destroy_write_struct(&png_ptr, NULL);

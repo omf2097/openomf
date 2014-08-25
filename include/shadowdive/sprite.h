@@ -128,6 +128,21 @@ int sd_sprite_vga_decode(
     sd_vga_image *dst,
     const sd_sprite *src);
 
+/*! \brief Encode sprite from VGA image format.
+ *
+ * Encodes a VGA image to sprite format
+ *
+ * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
+ * \retval SD_INVALID_INPUT Dst or src was NULL.
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param dst Destination Sprite image struct pointer.
+ * \param src Source VGA image pointer
+ */
+int sd_sprite_vga_encode(
+    sd_sprite *dst,
+    const sd_vga_image *src);
+
 #ifdef SD_USE_INTERNAL
 int sd_sprite_load(sd_reader *reader, sd_sprite *sprite);
 int sd_sprite_save(sd_writer *writer, const sd_sprite *sprite);

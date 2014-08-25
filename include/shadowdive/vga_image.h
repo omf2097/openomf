@@ -58,6 +58,20 @@ int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src);
  */
 void sd_vga_image_free(sd_vga_image *img);
 
+/*! \brief Regenerates the stencil from a color index
+ * 
+ * This function regenerates the invisibility mask for the VGA image.
+ * A necative value for stencil_index will lead to a completely opaque background,
+ * while a value of 0-255 will create a stencil from colors of this index.
+ *
+ * \retval SD_INVALID_INPUT Bad index value or img was NULL
+ * \retval SD_SUCCESS All good.
+ *
+ * \param img VGA image struct to modify.
+ * \param stencil_index Color key to use for invisibility
+ */
+int sd_vga_image_stencil_index(sd_vga_image *img, int stencil_index);
+
 /*! \brief Encode RGBA data to VGA data
  *
  * Encodes RGBA image data to VGA image data. Color values will be matched to exact values in

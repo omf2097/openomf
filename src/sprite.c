@@ -4,6 +4,7 @@
 #include "shadowdive/error.h"
 #include "shadowdive/sprite.h"
 #include "shadowdive/palette.h"
+#include <stdio.h>
 
 int sd_sprite_create(sd_sprite *sprite) {
     if(sprite == NULL) {
@@ -346,3 +347,98 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
     return SD_SUCCESS;
 }
 
+int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
+    int lastx = -1;
+    int lasty = 0;
+    int i = 0;
+    int rowlen = 0;
+    uint16_t c = 0;
+    int rowstart = 0;
+    int ret = SD_SUCCESS;
+    size_t vga_size;
+    char *buf;
+
+    // Make sure we aren't being fed BS
+    if(dst == NULL || src == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
+    // allocate a buffer plenty big enough, we will trim it later
+    vga_size = src->w * src->h;
+    buf = malloc(vga_size * 4);
+
+    // always initialize Y to 0
+    buf[i++] = 2;
+    buf[i++] = 0;
+    rowstart = i;
+
+    // Walk through the RGBA data
+    for(int pos = 0; pos < vga_size; pos++) {
+        uint8_t idx = src->data[pos];
+        uint8_t stc = src->stencil[pos];
+
+        // ignore anything but fully opaque pixels
+        if(stc == 1) {
+            int16_t x = pos % src->w;
+            int16_t y = pos / src->w;
+            if(y != lasty) {
+                c = (y * 4) + 2;
+                buf[i++] = c & 0x00ff;
+                buf[i++] = (c & 0xff00) >> 8;
+            }
+            if(x != lastx+1 || y != lasty) {
+                if (x != 0) {
+                    c = (x * 4);
+                    buf[i++] = c & 0x00ff;
+                    buf[i++] = (c & 0xff00) >> 8;
+                }
+                if(!rowlen) {
+                    rowstart = i;
+                    i+=2;
+                }
+            }
+            if(y != lasty || x != lastx + 1) {
+                if(rowlen) {
+                    c = (rowlen * 4) + 1;
+                    buf[rowstart] = c & 0x00ff;
+                    buf[rowstart + 1] = (c & 0xff00) >> 8;
+                    rowlen = 0;
+                    lastx = -1;
+                    rowstart = i;
+                    i += 2;
+                }
+            } else if(lasty == 0 && x == 0) {
+                rowstart = i;
+                i += 2;
+            }
+            lastx = x;
+            lasty = y;
+            buf[i++] = idx;
+            rowlen++;
+        }
+    }
+    if(rowlen) {
+        c = (rowlen * 4) + 1;
+        buf[rowstart] = c & 0x00ff;
+        buf[rowstart + 1] = (c & 0xff00) >> 8;
+    }
+
+    // End of sprite marker, a WORD of value 7
+    buf[i++] = 7; 
+    buf[i++] = 0;
+
+    // Copy data
+    dst->width = src->w;
+    dst->height = src->h;
+    dst->len = i;
+    dst->missing = 0;
+    if((dst->data = malloc(i)) == NULL) {
+        ret = SD_OUT_OF_MEMORY;
+        goto done;
+    }
+    memcpy(dst->data, buf, i);
+
+done:
+    free(buf);
+    return ret;
+}
