@@ -62,14 +62,14 @@ void print_rec_root_info(sd_rec_file *rec) {
         printf("\n");
 
         printf("## Parsed data:\n");
-        printf("Number   Tick Extra Player Action        Action enum  Extra data\n");
+        printf("Number Tick       Extra Player Action        Action enum  Extra data\n");
         for(int i = 0; i < rec->move_count; i++) {
             char tmp[100];
             tmp[0] = 0;
             if(rec->moves[i].extra < 3) {
                 print_key(tmp, rec->moves[i].action);
             }
-            printf(" - %3d: %5d %5d %6d %6d %18s",
+            printf("%6u %10u %5u %6u %6u %18s",
                 i,
                 rec->moves[i].tick,
                 rec->moves[i].extra,
