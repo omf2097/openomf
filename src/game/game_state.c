@@ -47,7 +47,9 @@ void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec);
 #define FRAME_WAIT_TICKS 30
 
 typedef struct {
-    int layer;
+    int layer; ///< Object rendering layer
+    int persistent; ///< 1 if the object should keep alive across scene boundaries
+    int singleton; ///< 1 if object should be the only representative of its animation ID
     object *obj;
 } render_obj;
 
@@ -153,18 +155,27 @@ error_0:
     return 1;
 }
 
-int game_state_add_object(game_state *gs, object *obj, int layer) {
+/*
+ * \param game_state gs Game state object
+ * \param obj Object to add
+ * \param layer Object layer (top, middle, bottom)
+ * \param singleton Should object be the lone representative of the animation ID ?
+ * \param persistent Should object keep active across scene boundaries ?
+ */
+int game_state_add_object(game_state *gs, object *obj, int layer, int singleton, int persistent) {
     render_obj o;
     o.obj = obj;
     o.layer = layer;
+    o.singleton = singleton;
+    o.persistent = persistent;
     animation *new_ani = object_get_animation(obj);
-    if(object_get_singleton(obj)) {
+    if(singleton) {
         iterator it;
         render_obj *robj;
         vector_iter_begin(&gs->objects, &it);
         while((robj = iter_next(&it)) != NULL) {
             animation *ani = object_get_animation(robj->obj);
-            if(ani != NULL && ani->id == new_ani->id && robj->obj->singleton) {
+            if(ani != NULL && ani->id == new_ani->id && robj->singleton) {
                 return 1;
             }
         }
@@ -324,7 +335,8 @@ void game_state_render(game_state *gs) {
     vector_iter_begin(&gs->objects, &it);
     while((robj = iter_next(&it)) != NULL) {
         if(robj->layer == RENDER_LAYER_BOTTOM) {
-            if(robj->obj == har[0] || robj->obj == har[1]) continue;
+            if(robj->obj == har[0] || robj->obj == har[1])
+                continue;
             object_render(robj->obj);
         }
     }
@@ -346,7 +358,8 @@ void game_state_render(game_state *gs) {
     vector_iter_begin(&gs->objects, &it);
     while((robj = iter_next(&it)) != NULL) {
         if(robj->layer == RENDER_LAYER_MIDDLE) {
-            if(robj->obj == har[0] || robj->obj == har[1]) continue;
+            if(robj->obj == har[0] || robj->obj == har[1])
+                continue;
             object_render(robj->obj);
         }
     }
@@ -362,7 +375,8 @@ void game_state_render(game_state *gs) {
     vector_iter_begin(&gs->objects, &it);
     while((robj = iter_next(&it)) != NULL) {
         if(robj->layer == RENDER_LAYER_TOP) {
-            if(robj->obj == har[0] || robj->obj == har[1]) continue;
+            if(robj->obj == har[0] || robj->obj == har[1])
+                continue;
             object_render(robj->obj);
         }
     }
@@ -393,9 +407,11 @@ int game_load_new(game_state *gs, int scene_id) {
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     while((robj = iter_next(&it)) != NULL) {
-        object_free(robj->obj);
-        free(robj->obj);
-        vector_delete(&gs->objects, &it);
+        if(!robj->persistent) {
+            object_free(robj->obj);
+            free(robj->obj);
+            vector_delete(&gs->objects, &it);
+        }
     }
 
     // Initialize new scene with BK data etc.
@@ -906,7 +922,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         object_unserialize(obj, ser, gs);
 
         // Set HAR to controller and game_player
-        game_state_add_object(gs, obj, RENDER_LAYER_MIDDLE);
+        game_state_add_object(gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
 
         // Set HAR for player
         game_player_set_har(player, obj);
@@ -942,10 +958,8 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         object_unserialize(obj, ser, gs);
         DEBUG("newly added object finish status %d", object_finished(obj));
 
-        game_state_add_object(gs, obj, layer);
+        game_state_add_object(gs, obj, layer, 0, 0);
     }
-
-
 
     chr_score_unserialize(game_player_get_score(game_state_get_player(gs, 0)), ser);
     chr_score_unserialize(game_player_get_score(game_state_get_player(gs, 1)), ser);

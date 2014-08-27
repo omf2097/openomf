@@ -112,7 +112,7 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata
         object_set_animation(obj, &info->ani);
         object_set_spawn_cb(obj, cb_vs_spawn_object, userdata);
         object_set_destroy_cb(obj, cb_vs_destroy_object, userdata);
-        game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE);
+        game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
     }
 }
 
@@ -378,7 +378,7 @@ int vs_create(scene *scene) {
     object_set_animation(o_scientist, ani);
     object_select_sprite(o_scientist, 0);
     object_set_direction(o_scientist, scientistpos % 2 ? OBJECT_FACE_LEFT : OBJECT_FACE_RIGHT);
-    game_state_add_object(scene->gs, o_scientist, RENDER_LAYER_MIDDLE);
+    game_state_add_object(scene->gs, o_scientist, RENDER_LAYER_MIDDLE, 0, 0);
 
     // WELDER
     int welderpos = rand_int(6);
@@ -396,7 +396,7 @@ int vs_create(scene *scene) {
     object_set_spawn_cb(o_welder, cb_vs_spawn_object, (void*)scene);
     object_set_destroy_cb(o_welder, cb_vs_destroy_object, (void*)scene);
     object_set_direction(o_welder, welderpos % 2 ? OBJECT_FACE_LEFT : OBJECT_FACE_RIGHT);
-    game_state_add_object(scene->gs, o_welder, RENDER_LAYER_MIDDLE);
+    game_state_add_object(scene->gs, o_welder, RENDER_LAYER_MIDDLE, 0, 0);
 
     // GANTRIES
     object *o_gantry_a = malloc(sizeof(object));
@@ -404,14 +404,14 @@ int vs_create(scene *scene) {
     object_create(o_gantry_a, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(o_gantry_a, ani);
     object_select_sprite(o_gantry_a, 0);
-    game_state_add_object(scene->gs, o_gantry_a, RENDER_LAYER_TOP);
+    game_state_add_object(scene->gs, o_gantry_a, RENDER_LAYER_TOP, 0, 0);
 
     object *o_gantry_b = malloc(sizeof(object));
     object_create(o_gantry_b, scene->gs, vec2i_create(320,0), vec2f_create(0, 0));
     object_set_animation(o_gantry_b, ani);
     object_select_sprite(o_gantry_b, 0);
     object_set_direction(o_gantry_b, OBJECT_FACE_LEFT);
-    game_state_add_object(scene->gs, o_gantry_b, RENDER_LAYER_TOP);
+    game_state_add_object(scene->gs, o_gantry_b, RENDER_LAYER_TOP, 0, 0);
 
     // Background tex
     menu_background2_create(&local->arena_select_bg, 211, 50);

@@ -124,14 +124,14 @@ int cutscene_create(scene *scene) {
         object_set_animation(obj, ani);
         object_select_sprite(obj, p1->pilot_id);
         obj->halt=1;
-        game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP);
+        game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
 
         // Face effects
         ani = &bk_get_info(&scene->bk_data, 10+p1->pilot_id)->ani;
         obj = malloc(sizeof(object));
         object_create(obj, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
         object_set_animation(obj, ani);
-        game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP);
+        game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
         break;
 
       case SCENE_END2:

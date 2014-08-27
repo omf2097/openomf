@@ -68,7 +68,7 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, int g, void *userdata) {
             // without this, the 'bullet damage' sprite in the desert spawns at 0,0
             obj->pos = parent->pos;
         }
-        game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM);
+        game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);
     } else {
         DEBUG("failed to spawn hazard child");
     }

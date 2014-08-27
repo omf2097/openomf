@@ -108,7 +108,6 @@ struct object_t {
     uint32_t age;
 
     char *custom_str;
-    uint8_t singleton;
 
     void *userdata;
     object_free_cb free;

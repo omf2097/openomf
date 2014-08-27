@@ -33,7 +33,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = OBJECT_NO_GROUP;
     obj->gravity = 0.0f;
-    obj->singleton = 0;
 
     // Video effect stuff
     obj->video_effects = 0;
@@ -644,9 +643,6 @@ vec2i object_get_pos(const object *obj) { return vec2f_to_i(obj->pos); }
 vec2f object_get_vel(const object *obj) { return obj->vel; }
 void object_set_pos(object *obj, vec2i pos) { obj->pos = vec2i_to_f(pos); }
 void object_set_vel(object *obj, vec2f vel) { obj->vel = vel; }
-
-void object_set_singleton(object *obj, int singleton) { obj->singleton = singleton; }
-int object_get_singleton(const object *obj) { return obj->singleton; }
 
 vec2i object_get_size(const object *obj) {
     if(obj->cur_sprite != NULL) {

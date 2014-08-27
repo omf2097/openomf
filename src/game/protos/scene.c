@@ -121,7 +121,7 @@ void scene_init(scene *scene) {
             object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
             int o_prio = scene_anim_prio_override(scene, info->ani.id);
             o_prio = (o_prio != -1) ? o_prio : RENDER_LAYER_BOTTOM;
-            game_state_add_object(scene->gs, obj, o_prio);
+            game_state_add_object(scene->gs, obj, o_prio, 0, 0);
             DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
         }
     }
@@ -291,7 +291,7 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userd
             object_set_repeat(obj, 1);
         }
 
-        game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM);
+        game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);
     }
 }
 

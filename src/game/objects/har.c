@@ -368,7 +368,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
             projectile_stop_on_ground(obj, 1);
         }
 
-        game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE);
+        game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
     }
 
     // When kreissack explodes, spwan some scrap too. Just to make it awesome.
@@ -386,7 +386,7 @@ void har_floor_landing_effects(object *obj) {
         object_create(dust, obj->gs, coord, vec2f_create(0,0));
         object_set_stl(dust, object_get_stl(obj));
         object_set_animation(dust, &bk_get_info(&game_state_get_scene(obj->gs)->bk_data, 26)->ani);
-        game_state_add_object(obj->gs, dust, RENDER_LAYER_MIDDLE);
+        game_state_add_object(obj->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
     }
 
     // Landing sound
@@ -608,7 +608,7 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
         object_set_layers(scrap, LAYER_SCRAP);
         object_dynamic_tick(scrap);
         scrap_create(scrap);
-        game_state_add_object(obj->gs, scrap, layer);
+        game_state_add_object(obj->gs, scrap, layer, 0, 0);
     }
 }
 
@@ -668,7 +668,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         object_dynamic_tick(scrap);
         object_set_shadow(scrap, 1);
         scrap_create(scrap);
-        game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP);
+        game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP, 0, 0);
     }
 }
 
@@ -698,7 +698,7 @@ void har_block(object *obj, vec2i hit_coord) {
     object_set_layers(scrape, LAYER_SCRAP);
     object_dynamic_tick(scrape);
     object_dynamic_tick(scrape);
-    game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE);
+    game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE, 0, 0);
     h->damage_received = 1;
     if (h->state == STATE_CROUCHBLOCK) {
         h->flinching = 1;
@@ -1284,7 +1284,7 @@ void har_tick(object *obj) {
             object_set_effects(nobj, EFFECT_SHADOW);
             object_set_direction(nobj, object_get_direction(obj));
             object_dynamic_tick(nobj);
-            game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM);
+            game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM, 0, 0);
         }
     }
 
