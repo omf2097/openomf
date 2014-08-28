@@ -53,6 +53,7 @@ add_library(shadowdive
     src/chr.c
     src/pilot.c
     src/rec.c
+    src/taglist.c
     src/internal/reader.c
     src/internal/memreader.c
     src/internal/memwriter.c
