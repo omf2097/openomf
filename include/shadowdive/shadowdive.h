@@ -27,5 +27,6 @@
 #include "shadowdive/score.h"
 #include "shadowdive/chr.h"
 #include "shadowdive/rec.h"
+#include "shadowdive/taglist.h"
 
 #endif // _SD_SHADOWDIVE_H
