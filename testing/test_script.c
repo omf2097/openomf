@@ -14,9 +14,9 @@ void test_script_create(void) {
 }
 
 void test_script_decode(void) {
-    CU_ASSERT(sd_script_decode(&script, NULL) == SD_INVALID_INPUT);
-    CU_ASSERT(sd_script_decode(NULL, OK_STR) == SD_INVALID_INPUT);
-    CU_ASSERT(sd_script_decode(&script, OK_STR) == SD_SUCCESS);
+    CU_ASSERT(sd_script_decode(&script, NULL, NULL) == SD_INVALID_INPUT);
+    CU_ASSERT(sd_script_decode(NULL, OK_STR, NULL) == SD_INVALID_INPUT);
+    CU_ASSERT(sd_script_decode(&script, OK_STR, NULL) == SD_SUCCESS);
     CU_ASSERT(script.frame_count == 3);
     CU_ASSERT(script.frames[0].tag_count == 3);
     CU_ASSERT(script.frames[1].tag_count == 2);
@@ -40,7 +40,7 @@ void test_script_all(void) {
     for(int i = 0; i < TEST_STRING_COUNT; i++) {
         sd_script s;
         CU_ASSERT_FATAL(sd_script_create(&s) == SD_SUCCESS);
-        int ret = sd_script_decode(&s, test_strings[i]);
+        int ret = sd_script_decode(&s, test_strings[i], NULL);
         if(ret == SD_SUCCESS) {
             CU_ASSERT(sd_script_encode(&s, buf) == SD_SUCCESS);
         } else {

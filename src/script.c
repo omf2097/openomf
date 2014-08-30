@@ -59,7 +59,7 @@ static void _create_frame(sd_script *script, int number) {
     script->frame_count++;
 }
 
-int sd_script_decode(sd_script *script, const char* str) {
+int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
     if(script == NULL || str == NULL)
         return SD_INVALID_INPUT;
 
@@ -123,6 +123,8 @@ int sd_script_decode(sd_script *script, const char* str) {
                 if(strcmp(test, "z") == 0) { i++; continue; }
 
                 // Could do nothing about it.
+                if(inv_pos != NULL)
+                    *inv_pos = i;
                 return SD_INVALID_TAG;
             }
             continue;

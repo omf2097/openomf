@@ -25,7 +25,7 @@ typedef struct {
 
 int sd_script_create(sd_script *script);
 void sd_script_free(sd_script *script);
-int sd_script_decode(sd_script *script, const char* str);
+int sd_script_decode(sd_script *script, const char* str, int *invalid_pos);
 int sd_script_encode(const sd_script *script, char* str);
 int sd_script_encoded_length(const sd_script *script);
 
