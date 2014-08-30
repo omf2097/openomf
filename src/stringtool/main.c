@@ -30,11 +30,32 @@ const char *create_str = " \
     ); \
     CREATE TABLE strings ( \
         id INTEGER PRIMARY KEY, \
+        file_id INTEGER, \
         str TEXT, \
         anim_id INTEGER, \
         type VARCHAR(32), \
-        file INTEGER, \
-        FOREIGN KEY(file) REFERENCES files(id) \
+        FOREIGN KEY(file_id) REFERENCES files(id) \
+    ); \
+    CREATE TABLE frames ( \
+        id INTEGER PRIMARY KEY, \
+        string_id INTEGER, \
+        file_id INTEGER, \
+        sprite INTEGER, \
+        tick_len INTEGER, \
+        FOREIGN KEY(file_id) REFERENCES files(id), \
+        FOREIGN KEY(string_id) REFERENCES strings(id) \
+    ); \
+    CREATE TABLE tags ( \
+        id INTEGER PRIMARY KEY, \
+        string_id INTEGER, \
+        frame_id INTEGER, \
+        file_id INTEGER, \
+        tag VARCHAR(3), \
+        has_param INTEGER, \
+        value INTEGER, \
+        FOREIGN KEY(file_id) REFERENCES files(id), \
+        FOREIGN KEY(string_id) REFERENCES strings(id), \
+        FOREIGN KEY(frame_id) REFERENCES frames(id) \
     ); \
 ";
 
@@ -68,11 +89,11 @@ add_file_err_0:
     return 1;
 }
 
-int add_string(sqlite3 *db, long file_id, const char *string, int anim_id, const char* type) {
+int add_string(sqlite3 *db, long *string_id, long file_id, const char *string, int anim_id, const char* type) {
     // Add file
     sqlite3_stmt *query;
     int ret;
-    ret = sqlite3_prepare(db, "INSERT INTO strings (str,file,anim_id,type) VALUES (?,?,?,?)", -1, &query, NULL);
+    ret = sqlite3_prepare(db, "INSERT INTO strings (str,file_id,anim_id,type) VALUES (?,?,?,?)", -1, &query, NULL);
     if(ret != SQLITE_OK) {
         goto add_str_err_0;
     }
@@ -84,6 +105,7 @@ int add_string(sqlite3 *db, long file_id, const char *string, int anim_id, const
     if(ret != SQLITE_DONE) {
         goto add_str_err_0;
     }
+    *string_id = sqlite3_last_insert_rowid(db);
     sqlite3_finalize(query);
     return 0;
 
@@ -91,6 +113,75 @@ add_str_err_0:
     printf("Error: %s\n", sqlite3_errmsg(db));
     sqlite3_finalize(query);
     return 1;
+}
+
+int add_frame(sqlite3 *db, long *frame_id, long file_id, long string_id, int sprite, int tick_len) {
+    // Add file
+    sqlite3_stmt *query;
+    int ret;
+    ret = sqlite3_prepare(db, "INSERT INTO frames (file_id,string_id,sprite,tick_len) VALUES (?,?,?,?)", -1, &query, NULL);
+    if(ret != SQLITE_OK) {
+        goto add_str_err_0;
+    }
+    sqlite3_bind_int64(query, 1, file_id);
+    sqlite3_bind_int64(query, 2, string_id);
+    sqlite3_bind_int(query, 3, sprite);
+    sqlite3_bind_int(query, 4, tick_len);
+    ret = sqlite3_step(query);
+    if(ret != SQLITE_DONE) {
+        goto add_str_err_0;
+    }
+    *frame_id = sqlite3_last_insert_rowid(db);
+    sqlite3_finalize(query);
+    return 0;
+
+add_str_err_0:
+    printf("Error: %s\n", sqlite3_errmsg(db));
+    sqlite3_finalize(query);
+    return 1;
+}
+
+int add_tag(sqlite3 *db, long file_id, long string_id, long frame_id, const char *tag, int has_param, int value) {
+    // Add file
+    sqlite3_stmt *query;
+    int ret;
+    ret = sqlite3_prepare(db, "INSERT INTO tags (file_id,string_id,frame_id,tag,has_param,value) VALUES (?,?,?,?,?,?)", -1, &query, NULL);
+    if(ret != SQLITE_OK) {
+        goto add_str_err_0;
+    }
+    sqlite3_bind_int64(query, 1, file_id);
+    sqlite3_bind_int64(query, 2, string_id);
+    sqlite3_bind_int64(query, 3, frame_id);
+    sqlite3_bind_text(query, 4, tag, -1, NULL);
+    sqlite3_bind_int(query, 5, has_param);
+    sqlite3_bind_int(query, 6, value);
+    ret = sqlite3_step(query);
+    if(ret != SQLITE_DONE) {
+        goto add_str_err_0;
+    }
+    sqlite3_finalize(query);
+    return 0;
+
+add_str_err_0:
+    printf("Error: %s\n", sqlite3_errmsg(db));
+    sqlite3_finalize(query);
+    return 1;
+}
+
+void split_string(sqlite3 *db, long file_id, long string_id, const char *str) {
+    sd_script script;
+    sd_script_create(&script);
+    sd_script_decode(&script, str, NULL);
+    long g_frame_id;
+    for(int frame_id = 0; frame_id < script.frame_count; frame_id++) {
+        sd_script_frame *frame = &script.frames[frame_id];
+        add_frame(db, &g_frame_id, file_id, string_id, frame->sprite, frame->tick_len);
+        for(int tag_id = 0; tag_id < frame->tag_count; tag_id++) {
+            sd_script_tag *tag = &frame->tags[tag_id];
+            add_tag(db, file_id, string_id, g_frame_id, tag->key, tag->has_param, tag->value);
+        }
+    }
+    sd_script_free(&script);
 }
 
 int read_af(sqlite3 *db, const char* path, const char* name) {
@@ -106,6 +197,7 @@ int read_af(sqlite3 *db, const char* path, const char* name) {
     
     // Some vars
     long file_id;
+    long string_id;
 
     // Add file information
     printf(" * Writing File data ... ");
@@ -120,13 +212,17 @@ int read_af(sqlite3 *db, const char* path, const char* name) {
             sd_move *afm = af.moves[m];
             sd_animation *ani = afm->animation;
 
-            add_string(db, file_id, afm->footer_string, m, "Move Footer");
-            add_string(db, file_id, ani->anim_string, m, "Animation String");
+            add_string(db, &string_id, file_id, afm->footer_string, m, "Move Footer");
+            split_string(db, file_id, string_id, afm->footer_string);
+
+            add_string(db, &string_id, file_id, ani->anim_string, m, "Animation String");
+            split_string(db, file_id, string_id, ani->anim_string);
 
             // Extra strings
             if(ani->extra_string_count > 0) {
                 for(int e = 0; e < ani->extra_string_count; e++) {
-                    add_string(db, file_id, ani->extra_strings[e], m, "Extra String");
+                    add_string(db, &string_id, file_id, ani->extra_strings[e], m, "Extra String");
+                    split_string(db, file_id, string_id, ani->extra_strings[e]);
                 }
             }
 
@@ -155,6 +251,7 @@ int read_bk(sqlite3 *db, const char* path, const char* name) {
     
     // Some vars
     long file_id;
+    long string_id;
 
     // Add file information
     printf(" * Writing file data ... ");
@@ -168,10 +265,16 @@ int read_bk(sqlite3 *db, const char* path, const char* name) {
         if(bk.anims[m]) {
             sd_bk_anim *bka = bk.anims[m];
             sd_animation *ani = bka->animation;
-            add_string(db, file_id, ani->anim_string, m, "Animation String");
+            add_string(db, &string_id, file_id, ani->anim_string, m, "Animation String");
+            split_string(db, file_id, string_id, ani->anim_string);
+
+            add_string(db, &string_id, file_id, bka->footer_string, m, "BK footer");
+            split_string(db, file_id, string_id, bka->footer_string);
+
             if(ani->extra_string_count > 0) {
                 for(int e = 0; e < ani->extra_string_count; e++) {
-                    add_string(db, file_id, ani->extra_strings[e], m, "Extra String");
+                    add_string(db, &string_id, file_id, ani->extra_strings[e], m, "Extra String");
+                    split_string(db, file_id, string_id, ani->extra_strings[e]);
                 }
             }
         }
