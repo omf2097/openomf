@@ -119,7 +119,7 @@ Some useful CMake flags:
 | USE_LTO                   | Use LTO                                 | On/Off          | Off     |
 | USE_TESTS                 | Compile unittests                       | On/Off          | Off     |
 | USE_OGGVORBIS             | Selects Vorbis support                  | On/Off          | Off     |
-| USE_PNG                   | Selects PNG screenshot support          | On/Off          | Off     |
+| USE_PNG                   | Selects PNG screenshot support          | On/Off          | On      |
 | USE_OPENAL                | Selects OpenAL support                  | On/Off          | On      |
 | USE_DUMB                  | Selects libdumb support                 | On/Off          | On      |
 | USE_MODPLUG               | Selects libmodplug support              | On/Off          | Off     |
