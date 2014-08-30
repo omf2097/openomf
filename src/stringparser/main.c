@@ -10,28 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-int read_next_int(const char *str, int *pos) {
-    int opos = 0;
-    char buf[20];
-    memset(buf, 0, 20);
-    if (str[*pos] == '-' && str[(*pos)+1] >= '0' && str[(*pos)+1] <= '9') {
-        buf[opos] = str[*pos];
-        (*pos)++;
-        opos++;
-    }
-    if(str[*pos] == '+') {
-        (*pos)++;
-    }
-    while(str[*pos] >= '0' && str[*pos] <= '9') {
-        buf[opos] = str[*pos];
-        (*pos)++;
-        opos++;
-    }
-
-    if(opos == 0) return 0;
-    return atoi(buf);
-}
-
 int main(int argc, char* argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
@@ -88,62 +66,37 @@ int main(int argc, char* argv[]) {
     // Print some data
     printf("Parsing \"%s\".\n\n", str);
 
-    // Walk through the string
-    char test[4];
-    int len = strlen(str);
-    int i = 0;
-
-    char otemp[2048];
-    otemp[0] = 0;
-    int frame_number = 1;
-    while(i < len) {
-        if(str[i] >= 'A' && str[i] <= 'Z') {
-            char frame = str[i];
-            i++;
-            int flen = read_next_int(str, &i);
-            int ikey = (int)(frame-65);
-            printf("%d. Frame %d: '%c%d'\n", frame_number, ikey, frame, flen);
-            frame_number++;
-            printf("%s", otemp);
-            printf("\n");
-            otemp[0] = 0;
-            i++;
-            continue;
-        }
-        if(str[i] >= 'a' && str[i] <= 'z') {
-            int found = 0;
-            for(int k = 3; k > 0; k--) {
-                memcpy(test, str+i, k);
-                test[k] = 0;
-
-                int req_param;
-                const char *desc = NULL;
-                if(tag_info(test, &req_param, &desc) == 0) {
-                    if(desc == NULL) {
-                        desc = "Unknown";
-                    }
-
-                    i += k;
-                    found = 1;
-                    if(req_param) {
-                        int param = read_next_int(str, &i);
-                        char tmp[5];
-                        sprintf(tmp, "%d", param);
-                        sprintf(otemp+strlen(otemp)," * %-4s %-4s %s\n", test, tmp, desc);
-                    } else {
-                        sprintf(otemp+strlen(otemp)," * %-4s      %s\n", test, desc);
-                    }
-                    k = 0;
-                }
-            }
-            if(!found) {
-                sprintf(otemp+strlen(otemp)," * %-9c <Unlisted tag!>\n", str[i]);
-                i++;
-            }
-        }
-
+    int err_pos;
+    sd_script script;
+    sd_script_create(&script);
+    int ret = sd_script_decode(&script, str, &err_pos);
+    if(ret != SD_SUCCESS) {
+        printf("Bad input string! Error at position %d.\n", err_pos);
+        goto exit_1;
     }
 
+    for(int frame_id = 0; frame_id < script.frame_count; frame_id++) {
+        sd_script_frame *frame = &script.frames[frame_id];
+        printf("%d. Frame %d: '%c%d'\n",
+            frame_id,
+            frame->sprite,
+            (char)(frame->sprite+65),
+            frame->tick_len);
+        for(int tag_id = 0; tag_id < frame->tag_count; tag_id++) {
+            sd_script_tag *tag = &frame->tags[tag_id];
+            if(tag->desc == NULL) {
+                tag->desc = "";
+            }
+            if(tag->has_param) {
+                printf("   %-4s %-4d %s\n", tag->key, tag->value, tag->desc);
+            } else {
+                printf("   %-4s      %s\n", tag->key, tag->desc);
+            }
+        }
+    }
+
+exit_1:
+    sd_script_free(&script);
 exit_0:
     if (from_stdin) {
         free((char*)str);
