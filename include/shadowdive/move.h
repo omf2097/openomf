@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Contains functions for handling AF move data structures.
- * \license MIT
+/*! \file
+ * \brief AF move handling.
+ * \details Functions and structs for reading, writing and modifying OMF:2097 Fighter specific move structures.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_MOVE_H
@@ -17,9 +21,14 @@
 extern "C" {
 #endif
 
-#define SD_MOVE_STRING_MAX 21
-#define SD_MOVE_FOOTER_STRING_MAX 512
+#define SD_MOVE_STRING_MAX 21 ///< Maximum allowed move string length
+#define SD_MOVE_FOOTER_STRING_MAX 512 ///< Maximum allowed footer string length
 
+/*! \brief HAR Move information
+ *
+ * Contains information about the HAR move. Wraps a generic animation.
+ * \todo Find out what the unknown fields are.
+ */
 typedef struct {
     sd_animation *animation; ///< Animation field for Move. When saving AF file, this should be != NULL.
     

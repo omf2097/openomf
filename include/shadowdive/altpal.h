@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Functions for handling alternate palettes.
- * \license MIT
+/*! \file
+ * \brief Alternate palette  file handling.
+ * \details Functions and structs for reading, writing and modifying OMF:2097 alternate palette file (ALTPALS.DAT).
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_ALTPAL_H
@@ -10,8 +14,12 @@
 extern "C" {
 #endif
 
-#define SD_ALTPALS_PALETTES 11
+#define SD_ALTPALS_PALETTES 11 ///< Maximum amount of alternate palettes (technical limitation)
 
+/*! \brief Alternate palettes
+ *
+ * A simple list of alternate palettes.
+ */
 typedef struct {
     sd_palette palettes[SD_ALTPALS_PALETTES]; ///< List of palettes
 } sd_altpal_file;

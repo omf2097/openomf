@@ -142,3 +142,10 @@ void sd_chr_free(sd_chr_file *chr) {
     }
     sd_sprite_free(chr->photo);
 }
+
+const sd_chr_enemy* sd_chr_get_enemy(sd_chr_file *chr, int enemy_num) {
+    if(chr == NULL || enemy_num < 0 || enemy_num >= chr->pilot.enemies_inc_unranked) {
+        return NULL;
+    }
+    return chr->enemies[enemy_num];
+}

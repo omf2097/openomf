@@ -1,6 +1,10 @@
-/*! \file 
- * \brief A simple header collection file.
- * \license MIT
+/*! \file
+ * \brief A generic header for libsd.
+ * \details A header for making it easy to just pull the whole libshadowdive library in.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_SHADOWDIVE_H

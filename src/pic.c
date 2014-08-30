@@ -100,7 +100,7 @@ error_0:
     return SD_FILE_PARSE_ERROR;
 }
 
-int sd_pic_save(sd_pic_file *pic, const char *filename) {
+int sd_pic_save(const sd_pic_file *pic, const char *filename) {
     if(pic == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -144,7 +144,7 @@ int sd_pic_save(sd_pic_file *pic, const char *filename) {
     return SD_SUCCESS;
 }
 
-sd_pic_photo* sd_pic_get(sd_pic_file *pic, int entry_id) {
+const sd_pic_photo* sd_pic_get(const sd_pic_file *pic, int entry_id) {
     if(entry_id < 0 || entry_id > pic->photo_count) {
         return NULL;
     }

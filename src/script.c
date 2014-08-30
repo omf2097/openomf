@@ -45,6 +45,14 @@ void sd_script_free(sd_script *script) {
     free(script->frames);
 }
 
+int sd_script_get_total_ticks(const sd_script *script) {
+    int len = 0;
+    for(int i = 0; i < script->frame_count; i++) {
+        len += script->frames[i].tick_len;
+    }
+    return len;
+}
+
 static void _create_tag(sd_script_frame *frame, int number) {
     size_t newsize = sizeof(sd_script_tag) * (number + 1);
     frame->tags = realloc(frame->tags, newsize);

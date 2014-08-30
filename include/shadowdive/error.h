@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Contains functions and definitions for dealing with errors in libshadowdive.
- * \license MIT
+/*! \file
+ * \brief LibShadowDive error handling.
+ * \details Functions for dealing with libShadowDive errors.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_ERROR_H
@@ -17,6 +21,8 @@ extern "C" {
     #define DEBUGLOG(...)
 #endif
 
+/*! \brief Errorcode list.
+ */
 enum SD_ERRORCODE {
     SD_SUCCESS, ///< Success message
     SD_FILE_OPEN_ERROR, ///< File could not be opened

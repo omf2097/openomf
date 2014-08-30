@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Functions for dealing with generic af/bk animation data.
- * \license MIT
+/*! \file
+ * \brief Animation handling.
+ * \details Functions and structs for reading, writing and modifying OMF:2097 animation structures.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_ANIMATION_H
@@ -18,13 +22,25 @@
 extern "C" {
 #endif
 
-#define SD_ANIMATION_STRING_MAX 1024
-#define SD_EXTRA_STRING_MAX 512
+#define SD_ANIMATION_STRING_MAX 1024 ///< Maximum animation string size
+#define SD_EXTRA_STRING_MAX 512 ///< Maximum extra string size
 
-#define SD_SPRITE_COUNT_MAX 255
-#define SD_COLCOORD_COUNT_MAX 256
-#define SD_EXTRASTR_COUNT_MAX 10
+#define SD_SPRITE_COUNT_MAX 255 ///< Maximum amount of sprites allowed (technical limitation)
+#define SD_COLCOORD_COUNT_MAX 256 ///< Maximum amount of collision coordinates allowed \todo find out the real maximum
+#define SD_EXTRASTR_COUNT_MAX 10 ///< Maximum amount of extra strings.
 
+/*! \brief Generic animation container
+ *
+ * When starting animation playback, it should be positioned to the location pointed to by the 
+ * start_x, start_y variables. Note that sprites may also have their own position offsets.
+ *
+ * Animation always has some amount of sprites and an animation string.
+ * The string is used as a scripting language to tell the animation on how to go about it's business.
+ * Animation string may change the animation position, playback speed, etc. etc.
+ *
+ * If the animation can collide with other objects, it may have an amount of collision coordinates.
+ * A single sprite may have multiple collision coordinates assigned to it.
+ */
 typedef struct {
     // Header
     int16_t start_x; ///< Animation start position, X-axis
@@ -190,7 +206,7 @@ int sd_animation_set_extra_string(sd_animation *animation, int num, const char *
  * \param animation Animation struct to modify
  * \param str Extra string. This will be copied.
  */
-int sd_animation_push_extra_string(sd_animation *anim, const char *str);
+int sd_animation_push_extra_string(sd_animation *animation, const char *str);
 
 /*! \brief Pops an extra string off from the end of the extra string list.
  *
@@ -202,7 +218,7 @@ int sd_animation_push_extra_string(sd_animation *anim, const char *str);
  *
  * \param animation Animation struct to modify
  */
-int sd_animation_pop_extra_string(sd_animation *anim);
+int sd_animation_pop_extra_string(sd_animation *animation);
 
 /*! \brief Get extra string at given index
  *
@@ -239,7 +255,7 @@ int sd_animation_get_sprite_count(sd_animation *animation);
  *
  * \param animation Animation struct to modify
  * \param num Sprite index
- * \param str Sprite data. This will be copied.
+ * \param sprite Sprite data. This will be copied.
  */
 int sd_animation_set_sprite(sd_animation *animation, int num, const sd_sprite *sprite);
 

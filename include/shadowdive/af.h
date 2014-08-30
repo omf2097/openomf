@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Contains functions for handling ".AF" HAR files.
- * \license MIT
+/*! \file
+ * \brief Fighter file handling.
+ * \details Functions and structs for reading, writing and modifying OMF:2097 fighter (AF) files.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_AF_H
@@ -13,8 +17,12 @@
 extern "C" {
 #endif
 
-#define MAX_AF_MOVES 70
+#define MAX_AF_MOVES 70 ///< Maximum amount of moves for a HAR
 
+/*! \brief HAR data container
+ *
+ * Contains information about a single HAR (combat robot).
+ */
 typedef struct {
     uint16_t file_id;  ///< File ID
     uint16_t unknown_a; ///< Unknown value

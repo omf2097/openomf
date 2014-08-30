@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Contains functions for handling BK animation info data structures.
- * \license MIT
+/*! \file
+ * \brief BK animation data handling.
+ * \details Functions and structs for reading, writing and modifying OMF:2097 BK specific animation structures.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_BK_ANIMS
@@ -13,12 +17,16 @@
     #include "shadowdive/internal/writer.h"
 #endif
 
-#define SD_BK_FOOTER_STRING_MAX 512
+#define SD_BK_FOOTER_STRING_MAX 512 ///< Max BK footer string length
 
 #ifdef __cplusplus 
 extern "C" {
 #endif
 
+/*! \brief BK specific animation information
+ *
+ * Information about the BK specific animation things.
+ */
 typedef struct {
     uint8_t null; ///< Always 0 ?
     uint8_t chain_hit; ///< Animation to chain to if collision/hit
@@ -27,7 +35,7 @@ typedef struct {
     uint16_t probability; ///< Probability of animation
     uint8_t hazard_damage; ///< Hazard damage on hit
     char footer_string[SD_BK_FOOTER_STRING_MAX]; ///< Footer string
-    sd_animation *animation; // Animation ptr or NULL. On BK save, must be != NULL.
+    sd_animation *animation; ///< Animation ptr or NULL. On BK save, must be != NULL.
 } sd_bk_anim;
 
 

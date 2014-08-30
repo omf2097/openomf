@@ -51,7 +51,7 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
     return SD_SUCCESS;
 }
 
-int sd_sounds_save(sd_sound_file *sf, const char* filename) {
+int sd_sounds_save(const sd_sound_file *sf, const char* filename) {
     if(sf == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -81,15 +81,15 @@ int sd_sounds_save(sd_sound_file *sf, const char* filename) {
     return SD_SUCCESS;
 }
 
-sd_sound* sd_sounds_get(sd_sound_file *sf, int id) {
+const sd_sound* sd_sounds_get(const sd_sound_file *sf, int id) {
     if(id < 0 || id >= SD_SOUNDS_MAX) {
         return NULL;
     }
     return &sf->sounds[id];
 }
 
-int sd_sound_from_au(sd_sound *sound, const char *filename) {
-    if(sound == NULL || filename == NULL) {
+int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename) {
+    if(sf == NULL || filename == NULL || num < 0 || num >= 299) {
         return SD_INVALID_INPUT;
     }
 
@@ -127,21 +127,26 @@ int sd_sound_from_au(sd_sound *sound, const char *filename) {
         read_size = sd_reader_filesize(r) - sd_reader_pos(r);
     }
 
+    // Free if exists.
+    if(sf->sounds[num].data) {
+        free(sf->sounds[num].data);
+    }
+
     // Allocate
-    sound->len = read_size;
-    sound->data = malloc(read_size);
+    sf->sounds[num].len = read_size;
+    sf->sounds[num].data = malloc(read_size);
 
     // Read data
     for(size_t i = 0; i < read_size; i++) {
-        sound->data[i] = sd_read_byte(r) + 128;
+        sf->sounds[num].data[i] = sd_read_byte(r) + 128;
     }
 
     sd_reader_close(r);
     return SD_SUCCESS;
 }
 
-int sd_sound_to_au(sd_sound *sound, const char *filename) {
-    if(sound == NULL || filename == NULL) {
+int sd_sound_to_au(const sd_sound_file *sf, int num, const char *filename) {
+    if(sf == NULL || filename == NULL || num < 0 || num >= 299) {
         return SD_INVALID_INPUT;
     }
 
@@ -164,8 +169,8 @@ int sd_sound_to_au(sd_sound *sound, const char *filename) {
 
     // Write data
     int8_t sample = 0;
-    for(int i = 0; i < sound->len; i++) {
-        sample = sound->data[i] - 128;
+    for(int i = 0; i < sf->sounds[num].len; i++) {
+        sample = sf->sounds[num].data[i] - 128;
         sd_write_byte(w, sample);
     }
 

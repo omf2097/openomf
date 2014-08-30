@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Pilot data handling
- * \license MIT
+/*! \file
+ * \brief Pilot structure handling.
+ * \details Functions and structs for reading, writing and modifying OMF:2097 pilot data structures.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_PILOT_H
@@ -18,6 +22,11 @@
 extern "C" {
 #endif
 
+/*! \brief PIC pilot information
+ *
+ * Contains a pilot information. Current upgrades, powers, tournament, etc.
+ * \todo find out what the unknowns do. Some of them may be crap ?
+ */
 typedef struct {
     uint32_t unknown_a;
     char name[18];           ///< Pilot name
@@ -72,10 +81,10 @@ typedef struct {
     float learning;
     float forget;
     char unk_block_f[24];
-    uint32_t winnings;
+    uint32_t winnings;        ///< Money made by winning opponents
     char unk_block_g[6];
-    uint16_t enemies_inc_unranked;
-    uint16_t enemies_ex_unranked;
+    uint16_t enemies_inc_unranked; ///< Enemies in current tournament, including unranked opponents
+    uint16_t enemies_ex_unranked;  ///< Same as above, excluding unranked opponents.
     char unk_block_h[166];
     uint16_t photo_id;        ///< Which face photo this pilot uses
 } sd_pilot;

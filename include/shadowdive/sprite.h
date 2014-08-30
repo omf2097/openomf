@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Functions for dealing with generic af/bk sprite data.
- * \license MIT
+/*! \file
+ * \brief Sprite data handling.
+ * \details Functions and structs for reading, writing and modifying OMF:2097 sprite data.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_SPRITE_H
@@ -18,6 +22,13 @@
 extern "C" {
 #endif
 
+/*! \brief Sprite image
+ *
+ * An encoded sprite image. The image is paletted, and encoded with
+ * a type of RLE encoding. Decoding can be done to an RGBA image with
+ * a palette, or directly to a VGA image. Sprite length varies depending on how many
+ * "invisible" pixels it has.
+ */
 typedef struct {
     int16_t pos_x; ///< Position of sprite, X-axis
     int16_t pos_y; ///< Position of sprite, Y-axis
@@ -62,7 +73,7 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src);
  * Frees up all memory reserved by the sprite structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
- * \param sprite Sprite struct to modify.
+ * \param sprite Sprite struct to free.
  */
 void sd_sprite_free(sd_sprite *sprite);
 

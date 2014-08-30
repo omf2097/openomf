@@ -26,13 +26,14 @@ Other files:
 Dependencies
 ---------------
 
-CMake is required for building this package.
+CMake is required for building this package. LibPNG is required for importing and exporting
+image data. Compiling should be possible with any C99 capable C compiler (GCC and CLANG tested).
 
 Some common package manager commands for receiving the dependencies:
 
 Debian:
 ```
-apt-get install cmake
+apt-get install cmake libpng-dev
 ```
 
 Compiling

@@ -81,7 +81,7 @@ int sd_language_load(sd_language *language, const char *filename) {
     return SD_SUCCESS;
 }
 
-sd_lang_string* sd_language_get(const sd_language *language, int num) {
+const sd_lang_string* sd_language_get(const sd_language *language, int num) {
     if(language == NULL || num < 0 || num >= language->count) {
         return NULL;
     }

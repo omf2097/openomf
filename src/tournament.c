@@ -200,7 +200,7 @@ error_0:
     return SD_FILE_PARSE_ERROR;
 }
 
-int sd_tournament_save(sd_tournament_file *trn, const char *filename) {
+int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     if(trn == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }

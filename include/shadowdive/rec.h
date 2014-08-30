@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Contains functions for handling ".REC" match record files.
- * \license MIT
+/*! \file
+ * \brief Match record file handling.
+ * \details Functions and structs for reading, writing and modifying OMF:2097 match record (REC) files.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_REC_H
@@ -16,6 +20,8 @@
 extern "C" {
 #endif
 
+/*! \brief REC key action
+*/
 typedef enum {
     SD_REC_NONE =  0x0,
     SD_REC_PUNCH = 0x1,
@@ -26,8 +32,14 @@ typedef enum {
     SD_REC_RIGHT = 0x20,
 } sd_rec_action;
 
-#define SD_MOVE_MASK (SD_REC_UP|SD_REC_DOWN|SD_REC_LEFT|SD_REC_RIGHT)
+#define SD_MOVE_MASK (SD_REC_UP|SD_REC_DOWN|SD_REC_LEFT|SD_REC_RIGHT) ///< Mask of all movement keys
 
+/*! \brief REC action record
+ *
+ * AA record of a single action during the match.
+ * Essentially a record of keys pressed at a given tick.
+ * \todo Find out what the extra_data does.
+ */
 typedef struct {
     uint32_t tick; ///< Game tick at the moment of this event
     uint8_t extra; ///< Extra content flag. If this is >2, then extra_data will contain valid content.
@@ -37,6 +49,11 @@ typedef struct {
     char extra_data[7]; ///< Extra data. Only valid if extra field > 2.
 } sd_rec_move;
 
+/*! \brief REC pilot container
+ *
+ * Information about a single pilot in the match.
+ * \todo Find out about the unknowns here
+ */
 typedef struct {
     sd_pilot info;
     uint8_t unknown_a;
@@ -47,6 +64,13 @@ typedef struct {
     sd_sprite photo;
 } sd_rec_pilot;
 
+/*! \brief REC recording
+ *
+ * Contains a record of a single OMF:2097 match. This may be
+ * a network match, tournament match, singleplayer match ...
+ * The data varies slightly depending on the type.
+ * \todo Find out about the unknowns. Possibly hyper mode, etc.
+ */
 typedef struct {
     sd_rec_pilot pilots[2];
     uint32_t scores[2]; ///< Score data at the start of the match
@@ -145,6 +169,7 @@ int sd_rec_delete_action(sd_rec_file *rec, unsigned int number);
  *
  * \param rec BK struct pointer.
  * \param number Record number
+ * \param move Move to insert
  */
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move);
 

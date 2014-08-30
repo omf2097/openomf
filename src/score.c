@@ -50,7 +50,7 @@ read_error:
     return SD_FILE_PARSE_ERROR;
 }
 
-int sd_score_save(sd_score *score, const char *filename) {
+int sd_score_save(const sd_score *score, const char *filename) {
     if(score == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -62,7 +62,7 @@ int sd_score_save(sd_score *score, const char *filename) {
 
     for(int i = 0; i < sizeof(score->scores) / sizeof(score->scores[0]); i++) {
         for(int j = 0; j < sizeof(score->scores[0]) / sizeof(score->scores[0][0]); j++) {
-            sd_score_entry *e = &score->scores[i][j];
+            const sd_score_entry *e = &score->scores[i][j];
             sd_write_udword(w, e->score);
             sd_write_buf(w, e->name, sizeof(e->name));
             sd_write_udword(w, (e->har_id & 0x3F) | ((e->pilot_id & 0x3F) << 6) | ((e->padding & 0xFFFFF) << 12));
@@ -73,7 +73,7 @@ int sd_score_save(sd_score *score, const char *filename) {
     return SD_SUCCESS;
 }
 
-sd_score_entry* sd_score_get(sd_score *score, int page, int entry_id) {
+const sd_score_entry* sd_score_get(const sd_score *score, int page, int entry_id) {
     if(score == NULL) return NULL;
     if(page < 0 || page >= SD_SCORE_PAGES) {
         return NULL;

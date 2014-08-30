@@ -40,7 +40,7 @@ int sd_font_load(sd_font *font, const char *file, unsigned int font_h) {
     return SD_SUCCESS;
 }
 
-int sd_font_save(sd_font *font, const char *file) {
+int sd_font_save(const sd_font *font, const char *file) {
     if(font == NULL || file == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -58,8 +58,8 @@ int sd_font_save(sd_font *font, const char *file) {
     return SD_SUCCESS;
 }
 
-int sd_font_decode(sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8_t g, uint8_t b) {
-    if(font == NULL || o == NULL) {
+int sd_font_decode(const sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8_t g, uint8_t b) {
+    if(font == NULL || o == NULL || ch >= 224) {
         return SD_INVALID_INPUT;
     }
 

@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Contains functions for handling ".BK" scene files.
- * \license MIT
+/*! \file
+ * \brief Scene file handling.
+ * \details Functions and structs for reading, writing and modifying OMF:2097 scene (BK) files.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_BK_H
@@ -15,9 +19,13 @@
 extern "C" {
 #endif
 
-#define MAX_BK_ANIMS 50
-#define MAX_BK_PALETTES 8
+#define MAX_BK_ANIMS 50 ///< Amount of animations in the BK file. This is fixed!
+#define MAX_BK_PALETTES 8 ///< Maximum amount of palettes allowed in BK file.
 
+/*! \brief BK file information
+ *
+ * Contains information about an OMF:2097 scene. Eg. arenas, menus, intro, etc.
+ */
 typedef struct {
     uint32_t file_id; ///< File ID
     uint8_t unknown_a; ///< Unknown value

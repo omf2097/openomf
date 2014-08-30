@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Functions for dealing with RGBA image data.
- * \license MIT
+/*! \file
+ * \brief RGBA image data handling.
+ * \details Functions and structs for reading, writing and modifying RGBA image data.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_RGBA_IMAGE_H
@@ -10,6 +14,10 @@
 extern "C" {
 #endif
 
+/*! \brief RGBA image
+ *
+ * A very simple RGBA8888 image. Data size is always w * h * 4 bytes.
+ */
 typedef struct {
     unsigned int w; ///< Image pixel width
     unsigned int h; ///< Image pixel height
@@ -25,6 +33,8 @@ typedef struct {
  * \retval SD_SUCCESS Success.
  *
  * \param img Allocated RGBA image struct pointer.
+ * \param w Image width in pixels
+ * \param h Image height in pixels
  */
 int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h);
 

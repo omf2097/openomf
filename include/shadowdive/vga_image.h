@@ -1,6 +1,10 @@
-/*! \file 
- * \brief Functions for dealing with paletted image data.
- * \license MIT
+/*! \file
+ * \brief VGA image data handling.
+ * \details Functions and structs for reading, writing and modifying OMF:2097 VGA image data.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author Andrew Thompson
+ * \author Tuomas Virtanen
  */ 
 
 #ifndef _SD_VGA_IMAGE_H
@@ -13,22 +17,36 @@
 extern "C" {
 #endif
 
+/*! \brief VGA image structure
+ *
+ * Contains a paletted image and transparency stencil. The image can be exported to
+ * an omf:2097 sprite by using a proper function  sd_sprite_vga_encode() and back
+ * sd_sprite_vga_decode() . For RGBA conversion, a valid sd_palette is required.
+ *
+ * Invisibility is handled by setting a single palette index as the invisibility stencil.
+ * This can be modified with library function sd_vga_image_stencil_index().
+ *
+ * In VGA images, the len field should always be exactly w*h bytes long.
+ */
 typedef struct {
-    unsigned int w; ///< Pixel width
-    unsigned int h; ///< Pixel height
-    unsigned int len; ///< Byte length
-    char *data; ///< Palette representation of image data
-    char *stencil; ///< holds 0 or 1 indicating whether a pixel is present
+    unsigned int w;    ///< Pixel width
+    unsigned int h;    ///< Pixel height
+    unsigned int len;  ///< Byte length
+    char *data;        ///< Palette representation of image data
+    char *stencil;     ///< holds 0 or 1 indicating whether a pixel is present
 } sd_vga_image;
 
 /*! \brief Initialize VGA image structure
  *
- * Initializes the VGA image structure with empty values.
+ * Initializes the VGA image structure with empty values. By default, all pixels are
+ * set as visible (opacity 100%).
  *
  * \retval SD_INVALID_INPUT VGA image struct pointer was NULL
  * \retval SD_SUCCESS Success.
  *
  * \param img Allocated VGA image struct pointer.
+ * \param w Image width in pixels
+ * \param h Image height in pixels
  */
 int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h);
 
