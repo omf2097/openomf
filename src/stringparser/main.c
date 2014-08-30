@@ -71,7 +71,12 @@ int main(int argc, char* argv[]) {
     sd_script_create(&script);
     int ret = sd_script_decode(&script, str, &err_pos);
     if(ret != SD_SUCCESS) {
-        printf("Bad input string! Error at position %d.\n", err_pos);
+        if(ret == SD_INVALID_TAG) {
+            printf("Bad input string! Error at position %d.\n", err_pos);
+        }
+        if(ret == SD_ANIM_INVALID_STRING) {
+            printf("Bad input string!\n");
+        }
         goto exit_1;
     }
 
