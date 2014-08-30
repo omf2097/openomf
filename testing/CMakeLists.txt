@@ -16,6 +16,8 @@ IF(CUNIT_FOUND)
         test_palette.c
         test_trn.c
         test_stringparser.c
+        test_script.c
+        misc/parser_test_strings.c
     )
 
     IF(UNIX)

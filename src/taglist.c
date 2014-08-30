@@ -3,7 +3,7 @@
 
 // This file is generated automatically
 
-static const sd_tag sd_tags[] = {
+const sd_tag sd_taglist[] = {
     {"aa", 0, NULL},
     {"ab", 0, NULL},
     {"ac", 0, NULL},
@@ -157,3 +157,6 @@ static const sd_tag sd_tags[] = {
     {"zp", 0, "Invulnerable to projectiles?"},
     {"zz", 0, "Invulnerable to any attacks?"},
 };
+
+const int sd_taglist_size = 152;
+

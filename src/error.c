@@ -35,6 +35,8 @@ const char* sd_get_error(int errorcode) {
         return "Invalid input/argument data";
     case SD_FORMAT_NOT_SUPPORTED:
         return "Format is not supported";
+    case SD_INVALID_TAG:
+        return "String contains an invalid tag";
     default:
         return "Unknown errorcode.";
     }

@@ -28,5 +28,6 @@
 #include "shadowdive/chr.h"
 #include "shadowdive/rec.h"
 #include "shadowdive/taglist.h"
+#include "shadowdive/script.h"
 
 #endif // _SD_SHADOWDIVE_H
