@@ -785,8 +785,6 @@ void write_rec_move(scene *scene, game_player *player, int action) {
         return;
     }
 
-    DEBUG("recoding action %d", action);
-
     move.tick = scene->gs->tick;
     move.extra = 2;
     move.player_id = 0;

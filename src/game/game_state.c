@@ -618,11 +618,6 @@ void game_state_static_tick(game_state *gs) {
         video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
     }
 
-    // Poll input. If console is opened, do not poll the controllers.
-    if(!console_window_is_open()) {
-        scene_input_poll(gs->sc);
-    }
-
     // Call static ticks for scene
     scene_static_tick(gs->sc, game_state_is_paused(gs));
 
@@ -684,6 +679,11 @@ void game_state_dynamic_tick(game_state *gs) {
 
     // Tick scene
     scene_dynamic_tick(gs->sc, game_state_is_paused(gs));
+
+    // Poll input. If console is opened, do not poll the controllers.
+    if(!console_window_is_open()) {
+        scene_input_poll(gs->sc);
+    }
 
     if(!game_state_is_paused(gs)) {
         // Clean up objects
