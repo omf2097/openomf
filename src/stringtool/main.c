@@ -57,6 +57,7 @@ const char *create_str = " \
         FOREIGN KEY(string_id) REFERENCES strings(id), \
         FOREIGN KEY(frame_id) REFERENCES frames(id) \
     ); \
+    CREATE INDEX tag_index ON tags(tag); \
 ";
 
 typedef struct {
