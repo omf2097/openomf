@@ -3,6 +3,10 @@
 
 #include "shadowdive/taglist.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     const char* key;
     const char* desc;
@@ -34,5 +38,9 @@ sd_script_frame* sd_script_get_frame(const sd_script *script, int frame_number);
 sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag);
 int sd_script_isset(sd_script_frame *frame, const char* tag);
 int sd_script_get(sd_script_frame *frame, const char* tag);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SD_SCRIPT_H
