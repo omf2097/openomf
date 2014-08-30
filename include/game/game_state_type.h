@@ -2,6 +2,7 @@
 #define _GAME_STATE_TYPE_H
 
 #include "utils/vector.h"
+#include "engine.h"
 
 enum {
     RENDER_LAYER_BOTTOM = 0,
@@ -34,6 +35,7 @@ typedef struct game_state_t {
     unsigned int int_tick; // never adjusted, used in ping calculation
     unsigned int role;
     unsigned int speed;
+    engine_init_flags *init_flags;
 
     // For screen shaking
     int screen_shake_horizontal;

@@ -62,6 +62,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->next_requires_refresh = 0;
     gs->net_mode = init_flags->net_mode;
     gs->speed = settings_get()->gameplay.speed + 5;
+    gs->init_flags = init_flags;
     vector_create(&gs->objects, sizeof(render_obj));
 
     // For screen shake
@@ -85,7 +86,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
     reconfigure_controller(gs);
     int nscene;
-    if (strlen(init_flags->rec_file) > 0) {
+    if (strlen(init_flags->rec_file) > 0 && init_flags->record == 0) {
         sd_rec_file rec;
         sd_rec_create(&rec);
         int ret = sd_rec_load(&rec, init_flags->rec_file);

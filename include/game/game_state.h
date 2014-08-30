@@ -4,7 +4,6 @@
 #include <SDL2/SDL.h>
 #include "utils/vector.h"
 #include "utils/random.h"
-#include "engine.h"
 #include "game/utils/serial.h"
 #include "game/game_state_type.h"
 

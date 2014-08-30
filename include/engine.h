@@ -3,6 +3,7 @@
 
 typedef struct engine_init_flags_t {
     unsigned int net_mode;
+    unsigned int record;
     char rec_file[255];
 } engine_init_flags;
 

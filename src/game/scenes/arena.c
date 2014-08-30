@@ -78,9 +78,13 @@ typedef struct arena_local_t {
     object *player_rounds[2][4];
 
     int rein_enabled;
+
+    sd_rec_file *rec;
+    int rec_last[2];
 } arena_local;
 
 void arena_maybe_sync(scene *scene, int need_sync);
+void write_rec_move(scene *scene, game_player *player, int action);
 
 // -------- Local callbacks --------
 
@@ -729,6 +733,13 @@ void arena_free(scene *scene) {
 
     game_state_set_paused(scene->gs, 0);
 
+    if (local->rec) {
+        write_rec_move(scene, game_state_get_player(scene->gs, 0), ACT_STOP);
+        sd_rec_save(local->rec, scene->gs->init_flags->rec_file);
+        sd_rec_free(local->rec);
+        free(local->rec);
+    }
+
     for(int i = 0; i < 2; i++) {
         game_player *player = game_state_get_player(scene->gs, i);
         game_player_set_har(player, NULL);
@@ -767,6 +778,60 @@ void arena_free(scene *scene) {
     free(local);
 }
 
+void write_rec_move(scene *scene, game_player *player, int action) {
+    arena_local *local = scene_get_userdata(scene);
+    sd_rec_move move;
+    if (!local->rec) {
+        return;
+    }
+
+    DEBUG("recoding action %d", action);
+
+    move.tick = scene->gs->tick;
+    move.extra = 2;
+    move.player_id = 0;
+    move.action = 0;
+
+    if (player == game_state_get_player(scene->gs, 1)) {
+        move.player_id = 1;
+    }
+
+    if (action & ACT_PUNCH) {
+        move.action |= SD_REC_PUNCH;
+    }
+
+    if (action & ACT_KICK) {
+        move.action |= SD_REC_KICK;
+    }
+
+    if (action & ACT_UP) {
+        move.action |= SD_REC_UP;
+    }
+
+    if (action & ACT_DOWN) {
+        move.action |= SD_REC_DOWN;
+    }
+
+    if (action & ACT_LEFT) {
+        move.action |= SD_REC_LEFT;
+    }
+
+    if (action & ACT_RIGHT) {
+        move.action |= SD_REC_RIGHT;
+    }
+
+    if (local->rec_last[move.player_id] == move.action) {
+        return;
+    }
+    local->rec_last[move.player_id] = move.action;
+
+    int ret;
+
+    if ((ret = sd_rec_insert_action(local->rec, local->rec->move_count, &move)) != SD_SUCCESS) {
+        DEBUG("recoding move failed %d", ret);
+    }
+}
+
 int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
     int need_sync = 0;
     arena_local *local = scene_get_userdata(scene);
@@ -787,12 +852,14 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 if (player->ctrl->type == CTRL_TYPE_NETWORK) {
                     do {
                         object_act(game_player_get_har(player), i->event_data.action);
+                        write_rec_move(scene, player, i->event_data.action);
                     } while ((i = i->next) && i->type == EVENT_TYPE_ACTION);
                     // always trigger a synchronization, since if the client's move did not actually happen, we want to rewind them ASAP
                     need_sync = 1;
                     // XXX do we need to continue here, since we screwed with 'i'?
                 } else {
                     need_sync += object_act(game_player_get_har(player), i->event_data.action);
+                    write_rec_move(scene, player, i->event_data.action);
                 }
             } else if (i->type == EVENT_TYPE_SYNC) {
                 DEBUG("sync");
@@ -1411,6 +1478,25 @@ int arena_create(scene *scene) {
 
     // Pick renderer
     video_select_renderer(VIDEO_RENDERER_HW);
+
+    // initalize recording, if enabled
+    if (scene->gs->init_flags->record == 1) {
+        local->rec = malloc(sizeof(sd_rec_file));
+        sd_rec_create(local->rec);
+        for(int i = 0; i < 2; i++) {
+            // Declare some vars
+            game_player *player = game_state_get_player(scene->gs, i);
+            DEBUG("player %d using har %d", i, player->har_id);
+            local->rec->pilots[i].info.har_id = (unsigned char)player->har_id;
+            local->rec->pilots[i].info.pilot_id = player->pilot_id;
+            local->rec->pilots[i].info.color_1 = player->colors[2];
+            local->rec->pilots[i].info.color_2 = player->colors[1];
+            local->rec->pilots[i].info.color_3 = player->colors[0];
+            memcpy(local->rec->pilots[i].info.name, lang_get(player->pilot_id+20), 18);
+        }
+    } else{
+        local->rec = NULL;
+    }
 
     // All done!
     return 0;

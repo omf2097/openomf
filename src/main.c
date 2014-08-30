@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
     unsigned short listen_port = 0;
     engine_init_flags init_flags;
     init_flags.net_mode = NET_MODE_NONE;
+    init_flags.record = 0;
     memset(init_flags.rec_file, 0, 255);
     int ret = 0;
 
@@ -63,7 +64,10 @@ int main(int argc, char *argv[]) {
                 listen_port = atoi(argv[2]);
             }
             init_flags.net_mode = NET_MODE_SERVER;
-        } else if(strcmp(argv[1], "play") == 0) {
+        } else if(strcmp(argv[1], "play") == 0 || strcmp(argv[1], "rec") == 0) {
+            if (strcmp(argv[1], "rec") == 0) {
+                init_flags.record = 1;
+            }
             if(argc > 2) {
                 printf("playing recording %s\n", argv[2]);
                 strncpy(init_flags.rec_file, argv[2], 254);
