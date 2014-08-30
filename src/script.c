@@ -49,14 +49,12 @@ static void _create_tag(sd_script_frame *frame, int number) {
     size_t newsize = sizeof(sd_script_tag) * (number + 1);
     frame->tags = realloc(frame->tags, newsize);
     memset(&frame->tags[number], 0, sizeof(sd_script_tag));
-    frame->tag_count++;
 }
 
 static void _create_frame(sd_script *script, int number) {
     size_t newsize = sizeof(sd_script_frame) * (number + 1);
     script->frames = realloc(script->frames, newsize);
     memset(&script->frames[number], 0, sizeof(sd_script_frame));
-    script->frame_count++;
 }
 
 int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
@@ -67,6 +65,7 @@ int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
     int len = strlen(str);
     int i = 0;
     int req_param;
+    int has_end = 0;
     const char *desc = NULL;
     const char *tag = NULL;
 
@@ -85,7 +84,11 @@ int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
             if(i < len) {
                 frame_number++;
                 _create_frame(script, frame_number);
+                has_end = 0;
+            } else {
+                has_end = 1;
             }
+            script->frame_count++;
             continue;
         }
         if(str[i] >= 'a' && str[i] <= 'z') {
@@ -96,12 +99,14 @@ int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
 
                 // See if the current tag matches with anything.
                 if(sd_tag_info(test, &req_param, &tag, &desc) == 0) {
+                    has_end = 0;
                     i += k;
                     found = 1;
 
                     // Add entry for tag
                     sd_script_frame *frame = &script->frames[frame_number];
                     _create_tag(frame, tag_number);
+                    frame->tag_count++;
 
                     // Set values
                     frame->tags[tag_number].key = tag;
@@ -132,6 +137,12 @@ int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
 
         // Should never get here
         i++;
+    }
+    // Make sure the last frame is complete.
+    // If we don't, do some catastrophe management
+    if(!has_end) {
+        script->frame_count += 1; // Make sure our last entry is freed
+        return SD_ANIM_INVALID_STRING;
     }
     return SD_SUCCESS;
 }
