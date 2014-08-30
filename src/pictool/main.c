@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Print
-    sd_pic_photo *photo;
+    const sd_pic_photo *photo;
     if(entry->count > 0) {
         int entry_id = entry->ival[0];
         photo = sd_pic_get(&pic, entry_id);

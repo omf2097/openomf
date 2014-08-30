@@ -46,7 +46,7 @@ void print_page(sd_score *score, int page_id) {
     printf("PAGE %d: %s\n", page_id, page_name[page_id]);
     printf("%-18s%-9s%-9s%11s\n", "Player name", "HAR", "Pilot", "Score");
     for(int i = 0; i < SD_SCORE_ENTRIES; i++) {
-        sd_score_entry *entry = sd_score_get(score, page_id, i);
+        const sd_score_entry *entry = sd_score_get(score, page_id, i);
         if(entry->score > 0) {
             printf("%-18s%-9s%-9s%11d\n",
                 entry->name,

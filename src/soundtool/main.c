@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
     if(sid->count > 0) {
         // Sound ID to handle
         int sound_id = sid->ival[0];
-        sd_sound *sound = sd_sounds_get(&sf, sound_id-1);
+        const sd_sound *sound = sd_sounds_get(&sf, sound_id-1);
         if(sound == NULL) {
             printf("Invalid sound ID");
             goto exit_1;
@@ -152,16 +152,13 @@ int main(int argc, char *argv[]) {
                 SDL_CloseAudioDevice(dev);
             }
         } else if(import->count > 0) {
-            if(sound->data != NULL) {
-                free(sound->data);
-            }
-            if(sd_sound_from_au(sound, import->filename[0]) != SD_SUCCESS) {
+            if(sd_sound_from_au(&sf, sound_id, import->filename[0]) != SD_SUCCESS) {
                 printf("Importing sample %d from file %s failed.\n", sound_id, import->filename[0]);
             } else {
                 printf("Importing sample %d from file %s succeeded.\n", sound_id, import->filename[0]);
             }
         } else if(export->count > 0) {
-            if(sd_sound_to_au(sound, export->filename[0]) != SD_SUCCESS) {
+            if(sd_sound_to_au(&sf, sound_id, export->filename[0]) != SD_SUCCESS) {
                 printf("Exporting sample %d to file %s failed.\n", sound_id, export->filename[0]);
             } else {
                 printf("Exporting sample %d to file %s succeeded.\n", sound_id, export->filename[0]);
@@ -174,7 +171,7 @@ int main(int argc, char *argv[]) {
         printf("Valid sample ID's:\n");
         int k = 0;
         for(int i = 0; i < SD_SOUNDS_MAX; i++) {
-            sd_sound *sound = sd_sounds_get(&sf, i);
+            const sd_sound *sound = sd_sounds_get(&sf, i);
             if(sound != NULL && sound->len > 2) {
                 printf("%d", i+1);
                 if((k+1)%6==0) {

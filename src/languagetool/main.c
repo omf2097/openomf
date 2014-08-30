@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Print
-    sd_lang_string *ds;
+    const sd_lang_string *ds;
     if(str->count > 0) {
         int str_id = str->ival[0];
         ds = sd_language_get(&language, str_id);
