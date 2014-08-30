@@ -123,7 +123,6 @@ int sd_script_decode(sd_script *script, const char* str) {
                 if(strcmp(test, "z") == 0) { i++; continue; }
 
                 // Could do nothing about it.
-                printf("%d: %s (%s)\n", i, test, str);
                 return SD_INVALID_TAG;
             }
             continue;
