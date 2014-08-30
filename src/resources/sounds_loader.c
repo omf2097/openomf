@@ -36,7 +36,7 @@ int sounds_loader_get(int id, char **buffer, int *len) {
     if(sound_data == NULL) return 1;
 
     // Get sound
-    sd_sound *sample = sd_sounds_get(sound_data, id);
+    const sd_sound *sample = sd_sounds_get(sound_data, id);
     if(sample == NULL) {
         PERROR("Requested sound %d does not exist!", id);
         return 1;
