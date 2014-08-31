@@ -3,6 +3,7 @@
  * \details A header for making it easy to just pull the whole libshadowdive library in.
  * \copyright MIT license.
  * \date 2013-2014
+ * \author animehunter
  * \author Andrew Thompson
  * \author Tuomas Virtanen
  */ 

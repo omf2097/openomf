@@ -3,6 +3,7 @@
  * \details Functions for dealing with libShadowDive errors.
  * \copyright MIT license.
  * \date 2013-2014
+ * \author animehunter
  * \author Andrew Thompson
  * \author Tuomas Virtanen
  */ 

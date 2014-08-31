@@ -3,7 +3,7 @@
  * \details Animation tag information fetching.
  * \copyright MIT license.
  * \date 2013-2014
- * \author Andrew Thompson
+ * \author animehunter
  * \author Tuomas Virtanen
  */
 

@@ -1,3 +1,12 @@
+/*! \file
+ * \brief Animation tag list handling.
+ * \details Animation tag information fetching.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author animehunter
+ * \author Tuomas Virtanen
+ */
+
 #ifndef _SD_STRINGPARSER_TAGS_H
 #define _SD_STRINGPARSER_TAGS_H
 

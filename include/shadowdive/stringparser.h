@@ -1,3 +1,11 @@
+/*! \file
+ * \brief Animation stringparser
+ * \details Functions and structs for parsing command strings from animations.
+ * \copyright MIT license.
+ * \date 2013-2014
+ * \author animehunter
+ */ 
+
 #ifndef _SD_STRINGPARSER_H
 #define _SD_STRINGPARSER_H
 

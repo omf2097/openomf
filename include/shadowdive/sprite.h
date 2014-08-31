@@ -3,6 +3,7 @@
  * \details Functions and structs for reading, writing and modifying OMF:2097 sprite data.
  * \copyright MIT license.
  * \date 2013-2014
+ * \author huntercool
  * \author Andrew Thompson
  * \author Tuomas Virtanen
  */ 

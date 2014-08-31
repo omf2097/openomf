@@ -3,6 +3,7 @@
  * \details Functions and structs for reading, writing and modifying OMF:2097 Scoreboard files (SCORES.DAT).
  * \copyright MIT license.
  * \date 2013-2014
+ * \author animehunter
  * \author Andrew Thompson
  * \author Tuomas Virtanen
  */ 
