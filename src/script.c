@@ -46,6 +46,8 @@ void sd_script_free(sd_script *script) {
 }
 
 int sd_script_get_total_ticks(const sd_script *script) {
+    if(script == NULL)
+        return 0;
     int len = 0;
     for(int i = 0; i < script->frame_count; i++) {
         len += script->frames[i].tick_len;
@@ -179,6 +181,9 @@ int sd_script_encode(const sd_script *script, char* str) {
 }
 
 int sd_script_encoded_length(const sd_script *script) {
+    if(script == NULL)
+        return 0;
+
     int s = 0;
     char tmp[20];
     for(int i = 0; i < script->frame_count; i++) {
@@ -197,8 +202,10 @@ int sd_script_encoded_length(const sd_script *script) {
     return s;
 }
 
-sd_script_frame* sd_script_get_frame_at(const sd_script *script, int ticks) {
+const sd_script_frame* sd_script_get_frame_at(const sd_script *script, int ticks) {
     if(script == NULL)
+        return NULL;
+    if(ticks < 0)
         return NULL;
 
     int pos = 0;
@@ -213,14 +220,79 @@ sd_script_frame* sd_script_get_frame_at(const sd_script *script, int ticks) {
     return NULL;
 }
 
-sd_script_frame* sd_script_get_frame(const sd_script *script, int frame_number) {
+int sd_script_frame_changed(const sd_script *script, int tick_start, int tick_stop) {
+    if(script == NULL)
+        return 0;
+    if(tick_start == tick_stop)
+        return 0;
+    const sd_script_frame *frame_a = sd_script_get_frame_at(script, tick_start);
+    const sd_script_frame *frame_b = sd_script_get_frame_at(script, tick_stop);
+    return (frame_a != frame_b);
+}
+
+int sd_script_get_frame_index(const sd_script *script, const sd_script_frame *frame) {
+    if(script == NULL || frame == NULL)
+        return -1;
+    for(int i = 0; i < script->frame_count; i++) {
+        if(&script->frames[i] == frame) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int sd_script_get_frame_index_at(const sd_script *script, int ticks) {
+    if(script == NULL || ticks < 0)
+        return -1;
+
+    int pos = 0;
+    int next = 0;
+    for(int i = 0; i < script->frame_count; i++) {
+        next = pos + script->frames[i].tick_len;
+        if(pos <= ticks && ticks < next) {
+            return i;
+        }
+        pos = next;
+    }
+    return -1;
+} 
+
+int sd_script_is_last_frame(const sd_script *script, const sd_script_frame *frame) {
+    if(script == NULL)
+        return 0;
+    int index = sd_script_get_frame_index(script, frame);
+    if(index == script->frame_count-1)
+        return 1;
+    return 0;
+}
+
+int sd_script_is_last_frame_at(const sd_script *script, int ticks) {
+    const sd_script_frame *frame = sd_script_get_frame_at(script, ticks);
+    return sd_script_is_last_frame(script, frame);
+}
+
+int sd_script_is_first_frame(const sd_script *script, const sd_script_frame *frame) {
+    if(script == NULL)
+        return 0;
+    int index = sd_script_get_frame_index(script, frame);
+    if(index == 0)
+        return 1;
+    return 0;
+}
+
+int sd_script_is_first_frame_at(const sd_script *script, int ticks) {
+    const sd_script_frame *frame = sd_script_get_frame_at(script, ticks);
+    return sd_script_is_first_frame(script, frame);
+}
+
+const sd_script_frame* sd_script_get_frame(const sd_script *script, int frame_number) {
     if(script == NULL || frame_number < 0 || frame_number >= script->frame_count) {
         return NULL;
     }
     return &script->frames[frame_number];
 }
 
-sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag) {
+const sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag) {
     if(frame == NULL || tag == NULL) {
         return NULL;
     }
@@ -232,15 +304,15 @@ sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag) 
     return NULL;
 }
 
-int sd_script_isset(sd_script_frame *frame, const char* tag) {
+int sd_script_isset(const sd_script_frame *frame, const char* tag) {
     if(sd_script_get_tag(frame, tag) != NULL) {
         return 1;
     }
     return 0;
 }
 
-int sd_script_get(sd_script_frame *frame, const char* tag) {
-    sd_script_tag *stag = sd_script_get_tag(frame, tag);
+int sd_script_get(const sd_script_frame *frame, const char* tag) {
+    const sd_script_tag *stag = sd_script_get_tag(frame, tag);
     if(stag == NULL) {
         return 0;
     }
