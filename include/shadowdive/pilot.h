@@ -61,11 +61,11 @@ typedef struct {
     char unk_block_b[2];
     uint8_t movement;
     char unk_block_c[6];
-    char enhancements[11];
+    char enhancements[11];   ///< Har enchancements. A field for each HAR.
     uint8_t unk_flag_a;
     uint8_t flags;
     uint8_t unk_flag_b;
-    uint16_t reqs[5];
+    uint16_t reqs[5];        ///< Requirements for this pilot to appear in tournament
     uint16_t attitude[3];
     char unk_block_d[6];
     int16_t ap_throw;
@@ -78,8 +78,8 @@ typedef struct {
     int16_t pref_fwd;
     int16_t pref_back;
     uint32_t unknown_e;
-    float learning;
-    float forget;
+    float learning;           ///< How actively this pilot learns your combat tactics
+    float forget;             ///< How quickly this pilot forgets your combat tactics
     char unk_block_f[24];
     uint32_t winnings;        ///< Money made by winning opponents
     char unk_block_g[6];

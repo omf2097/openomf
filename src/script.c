@@ -220,6 +220,13 @@ const sd_script_frame* sd_script_get_frame_at(const sd_script *script, int ticks
     return NULL;
 }
 
+const sd_script_frame* sd_script_get_frame(const sd_script *script, int frame_number) {
+    if(script == NULL || frame_number < 0 || frame_number >= script->frame_count) {
+        return NULL;
+    }
+    return &script->frames[frame_number];
+}
+
 int sd_script_frame_changed(const sd_script *script, int tick_start, int tick_stop) {
     if(script == NULL)
         return 0;
@@ -283,13 +290,6 @@ int sd_script_is_first_frame(const sd_script *script, const sd_script_frame *fra
 int sd_script_is_first_frame_at(const sd_script *script, int ticks) {
     const sd_script_frame *frame = sd_script_get_frame_at(script, ticks);
     return sd_script_is_first_frame(script, frame);
-}
-
-const sd_script_frame* sd_script_get_frame(const sd_script *script, int frame_number) {
-    if(script == NULL || frame_number < 0 || frame_number >= script->frame_count) {
-        return NULL;
-    }
-    return &script->frames[frame_number];
 }
 
 const sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag) {

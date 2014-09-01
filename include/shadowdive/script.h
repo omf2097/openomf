@@ -67,14 +67,114 @@ int sd_script_create(sd_script *script);
  * \param script Script struct to free.
  */
 void sd_script_free(sd_script *script);
+
+/*! \brief Decode animation string
+ * 
+ * Decodes an animation string to frames and tags. There must be at least
+ * a single full frame, which means a frame number and length in ticks.
+ *
+ * \retval SD_ANIM_INVALID_STRING String is invalid; eg. doesn't have enough complete frames.
+ * \retval SD_INVALID_TAG There was an invalid tag in string. invalid_pos will contain problematic position.
+ * \retval SD_SUCCESS Decoding was successful.
+ *
+ * \param script Script structure to fill. Must be formatted using sd_script_create().
+ * \oaram str Animation string to parse
+ * \param invalid_pos Will contain problematic position in string if SD_INVALID_TAG is returned. Will be ignored if set to NULL.
+ */
 int sd_script_decode(sd_script *script, const char* str, int *invalid_pos);
+
+/*! \brief Encode animation string
+ *
+ * Encodes the animation script structure back to an animation string.
+ * Note that if the decoded string contained oddities like prefixed zeroes in
+ * front of numbers, those will be automatically fixed. Therefore the output
+ * string may not be exactly like the input string. Filler tags (u,c,p,o,z)
+ * will also be removed.
+ *
+ * Note that the target str buffer needs to be large enough for the encoding operation.
+ * It is possible to find the encoded string buffer size by using sd_script_encoded_lenghth() function.
+ *
+ * \sa sd_script_encoded_length
+ *
+ * \retval SD_INVALID_INPUT Script or str parameter was NULL
+ * \retval SD_SUCCESS Successful operation
+ *
+ * \param script Script structure to encode
+ * \oaram str Target string buffer. Make sure it's large enough!
+ */
 int sd_script_encode(const sd_script *script, char* str);
+
+/*! \brief Find the encoded length of a script
+ *
+ * Returns the encoded length of the animation script. The length will be the EXACT size
+ * of the string, so you may need to add +1 to compensate for a trailing zero.
+ *
+ * The function will return 0 if there are no frames in the script, the frames are invalid,
+ * or the script variable is NULL.
+ *
+ * \sa sd_script_decode
+ *
+ * \param script Script structure to check
+ * \return Length of the encoded animation string.
+ */
 int sd_script_encoded_length(const sd_script *script);
+
+/*! \brief Find the total duration of the script
+ *
+ * Finds the total duration of the script in game ticks. Essentially
+ * just adds up all the frame lengths.
+ *
+ * \param script Script structure to check
+ * \return The total duration of the script in game ticks
+ */
 int sd_script_get_total_ticks(const sd_script *script);
 
+/*! \brief Returns the frame at a given tick
+ *
+ * Finds the frame at the given moment in time (tick). If the ticks value is either
+ * larger than the total duration of the script or a negative value, the function will return NULL.
+ * If script variable is NULL, the function will also return NULL. Otherwise the function will 
+ * return the frame at the moment of the given tick.
+ *
+ * The tick values will start at 0, so if the tick length of a frame is 140, the last tick will be 139.
+ *
+ * The returned frame is owned by the library; do not attempt to free it.
+ *
+ * \param script The script structure to read
+ * \param ticks A position in time in game ticks
+ * \return Frame pointer or NULL
+ */
 const sd_script_frame* sd_script_get_frame_at(const sd_script *script, int ticks);
+
+/*! \brief Returns the frame at a given position
+ *
+ * Returns the frame at a given position. If the frame number given is less than 0
+ * or larger or equal than the number of frames, NULL will be returned. A NULL value
+ * for the script pointer will also cause a NULL to be returned. Otherwise the function
+ * will return the frame at the given position.
+ *
+ * The returned frame is owned by the library; do not attempt to free it.
+ *
+ * \param script The script structure to read
+ * \param frame_number Frame number to get
+ * \return Frame pointer or NULL
+ */
 const sd_script_frame* sd_script_get_frame(const sd_script *script, int frame_number);
+
+/*! \brief Returns the information of a tag in a frame.
+ *
+ * Returns the tag descriptor for the instance of a tag in frame. A NULL for either
+ * parameter will result in a NULL being returned. If the requested tag does not
+ * exist in the frame, a NULL will be also returned.
+ *
+ * The returned tag information struct is owned by the library; do not attempt to free it.
+ *
+ * \param frame Frame structure to read
+ * \param tag Tag to look for. Must have a trailing zero.
+ * \return Tag descriptor pointer or NULL
+ */
 const sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag);
+
 int sd_script_frame_changed(const sd_script *script, int tick_start, int tick_stop);
 int sd_script_get_frame_index(const sd_script *script, const sd_script_frame *frame);
 int sd_script_get_frame_index_at(const sd_script *script, int ticks);

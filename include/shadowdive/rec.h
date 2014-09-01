@@ -55,13 +55,13 @@ typedef struct {
  * \todo Find out about the unknowns here
  */
 typedef struct {
-    sd_pilot info;
-    uint8_t unknown_a;
-    uint16_t unknown_b;
-    sd_palette pal;
-    char unknown_c[20];
-    uint8_t has_photo;
-    sd_sprite photo;
+    sd_pilot info;       ///< Pilot information
+    uint8_t unknown_a;   ///< Unknown value \todo: Find this out
+    uint16_t unknown_b;  ///< Unknown value \todo: Find this out
+    sd_palette pal;      ///< Palette for this pilot (?) \todo: Find out
+    char unknown_c[20];  ///< Unknown values. \todo Find out what this is
+    uint8_t has_photo;   ///< Tells if the pilot has a photo sprite
+    sd_sprite photo;     ///< Photo sprite
 } sd_rec_pilot;
 
 /*! \brief REC recording
@@ -72,9 +72,9 @@ typedef struct {
  * \todo Find out about the unknowns. Possibly hyper mode, etc.
  */
 typedef struct {
-    sd_rec_pilot pilots[2];
-    uint32_t scores[2]; ///< Score data at the start of the match
-    int8_t unknown_a; // Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
+    sd_rec_pilot pilots[2]; ///< Information about the pilots
+    uint32_t scores[2];     ///< Score data at the start of the match
+    int8_t unknown_a;       ///< Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
     int8_t unknown_b;
     int8_t unknown_c;
     int16_t unknown_d;
