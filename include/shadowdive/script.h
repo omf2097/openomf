@@ -78,7 +78,7 @@ void sd_script_free(sd_script *script);
  * \retval SD_SUCCESS Decoding was successful.
  *
  * \param script Script structure to fill. Must be formatted using sd_script_create().
- * \oaram str Animation string to parse
+ * \param str Animation string to parse
  * \param invalid_pos Will contain problematic position in string if SD_INVALID_TAG is returned. Will be ignored if set to NULL.
  */
 int sd_script_decode(sd_script *script, const char* str, int *invalid_pos);
@@ -100,7 +100,7 @@ int sd_script_decode(sd_script *script, const char* str, int *invalid_pos);
  * \retval SD_SUCCESS Successful operation
  *
  * \param script Script structure to encode
- * \oaram str Target string buffer. Make sure it's large enough!
+ * \param str Target string buffer. Make sure it's large enough!
  */
 int sd_script_encode(const sd_script *script, char* str);
 
@@ -175,14 +175,118 @@ const sd_script_frame* sd_script_get_frame(const sd_script *script, int frame_nu
  */
 const sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag);
 
+/*! \brief Tells if the frame changed between two points in time
+ *
+ * Tells if the frame changed between two game ticks. If the tick times are equal,
+ * if frame struct pointer is null, or if the frame didn't change, 0 will be returned.
+ * If the frame changed, 1 will be returned.
+ *
+ * Note that a change between zero and negative value will also count as a frame change.
+ * Eg. switching between "animation not started" and first frame wil lcause 1.
+ * Also, change from a tick in animation range to a tick outside of animation will cause 
+ * 1 to be returned. However, a change from "not started" (-1) to "finished" (tick > total_ticks)
+ * will cause 0 to be returned.
+ *
+ * \param script The script structure to inspect
+ * \param tick_start Position 1
+ * \param tick_stop Position 2
+ * \return 1 or 0, whether the frame changed or not. 
+ */
 int sd_script_frame_changed(const sd_script *script, int tick_start, int tick_stop);
+
+/*! \brief Returns the array index of frame
+ *
+ * This simply returns the array index of the given frame. Comparison to the frames
+ * in the script will be done by pointer. If the frame does not exist in the animation,
+ * -1 will be returned.
+ *
+ * \param script The script structure to inspect
+ * \param frame Frame structure to find the index of
+ * \return Index of the frame
+ */
 int sd_script_get_frame_index(const sd_script *script, const sd_script_frame *frame);
+
+/*! \brief Returns the array index of frame at given tick position
+ *
+ * Returns the array index of the frame at a given tick position. If the tick is valid
+ * and in the range of the animation, an index will be returned. If the tick is outside
+ * the animation range, -1 will be returned.
+ *
+ * \param script The script structure to inspect
+ * \param ticks Tick position to find
+ * \return Index of the frame
+ */
 int sd_script_get_frame_index_at(const sd_script *script, int ticks);
+
+/*! \brief Tells if the frame is the last frame in animation.
+ *
+ * Tells if the given frame pointer is the last frame in the given animation.
+ * If script or frame pointer is null, or frame is not the last frame, 0 will be returned.
+ * Otherwise 1 will be returned.
+ *
+ * \param script The script structure to inspect
+ * \param frame Frame structure to find
+ * \return 1 or 0
+ */
 int sd_script_is_last_frame(const sd_script *script, const sd_script_frame *frame);
+
+/*! \brief Tells if the frame index is the last frame in animation.
+ *
+ * Tells if the given frame index is the last frame in the given animation.
+ * If script pointer is null, or frame is not the last frame, 0 will be returned.
+ * Otherwise 1 will be returned.
+ *
+ * \param script The script structure to inspect
+ * \param ticks Tick position to find
+ * \return 1 or 0
+ */
 int sd_script_is_last_frame_at(const sd_script *script, int ticks);
+
+/*! \brief Tells if the frame is the first frame in animation.
+ *
+ * Tells if the given frame pointer is the first frame in the given animation.
+ * If script or frame pointer is null, or frame is not the first frame, 0 will be returned.
+ * Otherwise 1 will be returned.
+ *
+ * \param script The script structure to inspect
+ * \param frame Frame structure to find
+ * \return 1 or 0
+ */
 int sd_script_is_first_frame(const sd_script *script, const sd_script_frame *frame);
+
+/*! \brief Tells if the frame index is the first frame in animation.
+ *
+ * Tells if the given frame index is the first frame in the given animation.
+ * If script pointer is null, or frame is not the first frame, 0 will be returned.
+ * Otherwise 1 will be returned.
+ *
+ * \param script The script structure to inspect
+ * \param ticks Tick position to find
+ * \return 1 or 0
+ */
 int sd_script_is_first_frame_at(const sd_script *script, int ticks);
+
+/*! \brief Tells if the tag is set in frame
+ *
+ * Tells if the given tag is set in the given frame, Returns 1 if tag is set,
+ * otherwise 0.
+ *
+ * \param frame The frame structure to inspect
+ * \param tag Tag name to find
+ * \return 1 or 0
+ */
 int sd_script_isset(const sd_script_frame *frame, const char* tag);
+
+/*! \brief Returns the tag value in frame
+ *
+ * Returns the parameter value of a tag in a given frame. Note that if the tag doesn't
+ * exist in frame, or tag doesn't have a parameter value, 0 will be returned. Otherwise
+ * the tag parameter value will be returned.
+ *
+ * \param frame The frame structure to inspect
+ * \param tag Tag name to find
+ * \return Tag parameter value or 0.
+ */
 int sd_script_get(const sd_script_frame *frame, const char* tag);
 
 #ifdef __cplusplus
