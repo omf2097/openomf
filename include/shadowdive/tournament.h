@@ -58,8 +58,8 @@ typedef struct {
     char bk_name[14];               ///< Tournament name (in english)
     float winnings_multiplier;      ///< Match winnings multiplier
     int32_t unknown_a;              ///< Unknown /todo find out
-    int32_t registration_free;      ///< Tournament registration fee (pretty obvious)
-    int32_t assumed_initial_value;  ///< --
+    int32_t registration_free;      ///< Tournament registration fee
+    int32_t assumed_initial_value;  ///< Value the player is assumed to have reached, minus starting value, when entering this tournament.
     int32_t tournament_id;          ///< ID for the tournament
     char *pic_file;                 ///< Tournament PIC filename
 
