@@ -6,13 +6,13 @@ compiler:
 before_install:
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  - sudo apt-get update -qq
- - sudo apt-get install -qq libcunit1 libcunit1-dev
+ - sudo apt-get install -qq libcunit1 libcunit1-dev libpng-dev
  - if test $CC = gcc; then sudo apt-get install -qq gcc-4.8; fi
  - if test $CC = gcc; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 20; fi
  - if test $CC = gcc; then sudo update-alternatives --config gcc; fi
 
 before_script:
- - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_PNG=0 -DBUILD_TESTS=1 .
+ - cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=1 .
 
 script: make && make test
 
