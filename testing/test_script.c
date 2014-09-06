@@ -174,16 +174,52 @@ void test_script_all(void) {
     }
 }
 
-void test_next_frame_with_sprite(void) {
+//"bpd1bps1bpn64A100-s1sf3B10-C34"
 
+void test_next_frame_with_sprite(void) {
+    CU_ASSERT(sd_script_next_frame_with_sprite(NULL, 0, 0) == -1); // script NULL
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, -1, 0) == -1); // nonexistent frame id
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 1000) == -1); // Tick does not exist
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 2, 0) == 2); // C
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 1, 0) == 1); // B
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 100) == -1); // A
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 3, 0) == -1); // D (does not exist)
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 0) == -1); // A, exists but should not be found
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, -1) == 0); // A, test negative tick
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 99) == -1); // A, exists but should not be found
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 1, 99) == 1); // B
 }
 
 void test_next_frame_with_tag(void) {
-
+    CU_ASSERT(sd_script_next_frame_with_tag(NULL, "s", 0) == -1); // script NULL
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "xxx", 0) == -1); // nonexistent tag
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "s", 1000) == -1); // tick does not exist
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "s", 0) == 1); // Should be in frame 1
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "bpd", 0) == -1); // should be in frame 0, but should not be found
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "bpd", -1) == 0); // test negative tick
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 0) == 1); // Just test any tag
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 99) == 1); // Border case 1
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 100) == -1); // Border case 2
 }
 
 void test_set_tag(void) {
+    // Test value setting to existing tag
+    CU_ASSERT(sd_script_set_tag(&script, 0, "bpd", 10) == SD_SUCCESS);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&script, 0), "bpd") == 10);
 
+    // Test creating new tag and make sure nothing got overwritten
+    CU_ASSERT(sd_script_set_tag(&script, 1, "bpd", 50) == SD_SUCCESS);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&script, 1), "bpd") == 50);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&script, 1), "s") == 1);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&script, 1), "sf") == 3);
+
+    // Check tag count
+    CU_ASSERT(script.frames[1].tag_count == 3);
+
+    // Bad input values
+    CU_ASSERT(sd_script_set_tag(NULL, 1, "bpd", 50) == SD_INVALID_INPUT);
+    CU_ASSERT(sd_script_set_tag(&script, -1, "bpd", 50) == SD_INVALID_INPUT);
+    CU_ASSERT(sd_script_set_tag(&script, 1, "xxx", 50) == SD_INVALID_INPUT);
 }
 
 void script_test_suite(CU_pSuite suite) {

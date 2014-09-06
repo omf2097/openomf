@@ -329,14 +329,14 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int
         return -1;
     if(sprite_id < 0)
         return -1;
-    if(current_tick < 0 || current_tick > sd_script_get_total_ticks(script))
+    if(current_tick > sd_script_get_total_ticks(script))
         return -1;
 
     int pos = 0;
     int next = 0;
     for(int i = 0; i < script->frame_count; i++) {
         next = pos + script->frames[i].tick_len;
-        if(current_tick < next && sprite_id == script->frames[i].sprite) {
+        if(current_tick < pos && sprite_id == script->frames[i].sprite) {
             return i;
         }
         pos = next;
@@ -348,14 +348,14 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int
 int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int current_tick) {
     if(script == NULL || tag == NULL)
         return -1;
-    if(current_tick < 0 || current_tick > sd_script_get_total_ticks(script))
+    if(current_tick > sd_script_get_total_ticks(script))
         return -1;
 
     int pos = 0;
     int next = 0;
     for(int i = 0; i < script->frame_count; i++) {
         next = pos + script->frames[i].tick_len;
-        if(current_tick < next && sd_script_isset(&script->frames[i], tag)) {
+        if(current_tick < pos && sd_script_isset(&script->frames[i], tag)) {
             return i;
         }
         pos = next;
@@ -398,4 +398,12 @@ int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int valu
     }
 
     return SD_SUCCESS;
+}
+
+int sd_script_letter_to_frame(char letter) {
+    return (int)letter - 'A';
+}
+
+char sd_script_frame_to_letter(int frame_id) {
+    return (char)(frame_id + 'A');
 }

@@ -341,6 +341,20 @@ int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int 
  */
 int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int value);
 
+/** \brief Returns the frame ID by frame letter.
+ *
+ * \param letter Frame letter ('A', 'B', etc.)
+ * \return Frame ID ('A' => 0, ...)
+ */
+int sd_script_letter_to_frame(char letter);
+
+/** \brief Returns the frame letter by frame ID.
+ *
+ * \param frame_id Frame ID (0 ... n)
+ * \return Frame letter (0 => 'A', ...)
+ */
+char sd_script_frame_to_letter(int frame_id);
+
 #ifdef __cplusplus
 }
 #endif
