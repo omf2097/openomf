@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "shadowdive/internal/helpers.h"
 #include "shadowdive/colcoord.h"
 #include "shadowdive/animation.h"
 #include "shadowdive/sprite.h"
