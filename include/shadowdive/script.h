@@ -303,7 +303,7 @@ int sd_script_get(const sd_script_frame *frame, const char* tag);
  *
  * \param script Script structure to search through
  * \param sprite_id Sprite ID to search for
- * \param Current tick time
+ * \param current_tick Current tick time
  * \return Frame ID or -1 on error
  */
 int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int current_tick);
@@ -320,7 +320,7 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int
  *
  * \param script Script structure to search through
  * \param tag Tag to search for
- * \param Current tick time
+ * \param current_tick Current tick time
  * \return Frame ID or -1 on error
  */
 int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int current_tick);
