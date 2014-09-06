@@ -401,7 +401,7 @@ int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int valu
 }
 
 int sd_script_letter_to_frame(char letter) {
-    return (int)letter - 'A';
+    return (int)(letter - 'A');
 }
 
 char sd_script_frame_to_letter(int frame_id) {

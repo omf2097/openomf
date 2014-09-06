@@ -220,6 +220,16 @@ void test_set_tag(void) {
     CU_ASSERT(sd_script_set_tag(&script, 1, "xxx", 50) == SD_INVALID_INPUT);
 }
 
+void test_letter_to_frame(void) {
+    CU_ASSERT(sd_script_letter_to_frame('A') == 0);
+    CU_ASSERT(sd_script_letter_to_frame('Z') == 25);
+}
+
+void test_frame_to_letter(void) {
+    CU_ASSERT(sd_script_frame_to_letter(0) == 'A');
+    CU_ASSERT(sd_script_frame_to_letter(25) == 'Z');
+}
+
 void script_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "test of sd_script_create", test_script_create) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_decode", test_script_decode) == NULL) { return; }
@@ -241,6 +251,8 @@ void script_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "test of sd_script_next_frame_with_sprite", test_next_frame_with_sprite) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_next_frame_with_tag", test_next_frame_with_tag) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_set_tag", test_set_tag) == NULL) { return; }
+    if(CU_add_test(suite, "test of sd_script_letter_to_frame", test_letter_to_frame) == NULL) { return; }
+    if(CU_add_test(suite, "test of sd_script_frame_to_letter", test_frame_to_letter) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_free", test_script_free) == NULL) { return; }
     if(CU_add_test(suite, "test of all OMF strings", test_script_all) == NULL) { return; }
 }
