@@ -289,6 +289,58 @@ int sd_script_isset(const sd_script_frame *frame, const char* tag);
  */
 int sd_script_get(const sd_script_frame *frame, const char* tag);
 
+/*! \brief Returns the next frame number with a given sprite ID
+ *
+ * Returns the next frame number with the given sprite number. Sprite numbers start from 0 and go to
+ * the amount of sprites in the frame.
+ * 
+ * If script is NULL, sprite_id is smaller than 0 or larger than the amount of sprites in the
+ * script, or current_tick is larger than the length of the script animation, or sprite frame
+ * with the sprite_id does not exist in script, -1 value will be returned. Otherwise
+ * the frame number will be returned.
+ *
+ * The search will start from the next frame from the one that current_tick is pointing at.
+ *
+ * \param script Script structure to search through
+ * \param sprite_id Sprite ID to search for
+ * \param Current tick time
+ * \return Frame ID or -1 on error
+ */
+int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int current_tick);
+
+/*! \brief Returns the next frame number with a given tag
+ *
+ * Returns the next frame number with the given tag.
+ * 
+ * If script or tag is NULL, current_tick is larger than the length of the script animation,
+ * or sprite frame with the tag does not exist in script, -1 value will be returned. Otherwise
+ * the frame number will be returned.
+ *
+ * The search will start from the next frame from the one that current_tick is pointing at.
+ *
+ * \param script Script structure to search through
+ * \param tag Tag to search for
+ * \param Current tick time
+ * \return Frame ID or -1 on error
+ */
+int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int current_tick);
+
+/*! \brief Sets a tag for the given frame
+ *
+ * Sets the tag for the given frame. If the tag has not been set previously, a new tag
+ * entry will be created. If the tag has been set previously, and the tag accepts value
+ * parameters, a new parameter will be set for the tag. Otherwise this function does nothing.
+ *
+ * \retval SD_SUCCESS On succesful tag set operation
+ * \retval SD_INVALID_INPUT if script or tag is NULL, tag does not exist or frame does not exist.
+ *
+ * \param script Script to modify
+ * \param frame_id Frame ID to modify
+ * \param tag Tag to add
+ * \param value Value to set, if tag allows values.
+ */
+int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int value);
+
 #ifdef __cplusplus
 }
 #endif

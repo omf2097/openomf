@@ -292,16 +292,20 @@ int sd_script_is_first_frame_at(const sd_script *script, int ticks) {
     return sd_script_is_first_frame(script, frame);
 }
 
-const sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag) {
-    if(frame == NULL || tag == NULL) {
-        return NULL;
-    }
+sd_script_tag* _sd_script_get_tag(const sd_script_frame* frame, const char* tag) {
     for(int i = 0; i < frame->tag_count; i++) {
         if(strcmp(tag, frame->tags[i].key) == 0) {
             return &frame->tags[i];
         }
     }
     return NULL;
+}
+
+const sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag) {
+    if(frame == NULL || tag == NULL) {
+        return NULL;
+    }
+    return _sd_script_get_tag(frame, tag);
 }
 
 int sd_script_isset(const sd_script_frame *frame, const char* tag) {
@@ -317,4 +321,81 @@ int sd_script_get(const sd_script_frame *frame, const char* tag) {
         return 0;
     }
     return stag->value;
+}
+
+
+int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int current_tick) {
+    if(script == NULL)
+        return -1;
+    if(sprite_id < 0)
+        return -1;
+    if(current_tick < 0 || current_tick > sd_script_get_total_ticks(script))
+        return -1;
+
+    int pos = 0;
+    int next = 0;
+    for(int i = 0; i < script->frame_count; i++) {
+        next = pos + script->frames[i].tick_len;
+        if(current_tick < next && sprite_id == script->frames[i].sprite) {
+            return i;
+        }
+        pos = next;
+    }
+
+    return -1;
+}
+
+int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int current_tick) {
+    if(script == NULL || tag == NULL)
+        return -1;
+    if(current_tick < 0 || current_tick > sd_script_get_total_ticks(script))
+        return -1;
+
+    int pos = 0;
+    int next = 0;
+    for(int i = 0; i < script->frame_count; i++) {
+        next = pos + script->frames[i].tick_len;
+        if(current_tick < next && sd_script_isset(&script->frames[i], tag)) {
+            return i;
+        }
+        pos = next;
+    }
+
+    return -1;
+}
+
+int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int value) {
+    if(script == NULL || tag == NULL)
+        return SD_INVALID_INPUT;
+    if(frame_id < 0 || frame_id >= script->frame_count)
+        return SD_INVALID_INPUT;
+
+    // Get frame
+    sd_script_frame *frame = &script->frames[frame_id];
+
+    // Get tag information
+    const char *r_tag;
+    const char *r_desc;
+    int req_param;
+    if(sd_tag_info(tag, &req_param, &r_tag, &r_desc) != SD_SUCCESS) {
+        return SD_INVALID_INPUT;
+    }
+
+    // See if old tag has been set
+    sd_script_tag *old_tag = _sd_script_get_tag(frame, r_tag);
+    if(old_tag == NULL) {
+        // If the tag does not exist in the frame, set it and its value (if value is required.)
+        _create_tag(frame, frame->tag_count);
+        frame->tags[frame->tag_count].key = r_tag;
+        frame->tags[frame->tag_count].desc = r_desc;
+        frame->tags[frame->tag_count].has_param = req_param;
+        frame->tags[frame->tag_count].value = value;
+        frame->tag_count++;
+    } else if(req_param) {
+        // If the tag exists and requires a value, set it.
+        old_tag->value = value;
+        old_tag->has_param = 1;
+    }
+
+    return SD_SUCCESS;
 }
