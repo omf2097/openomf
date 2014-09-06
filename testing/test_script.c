@@ -174,6 +174,18 @@ void test_script_all(void) {
     }
 }
 
+void test_next_frame_with_sprite(void) {
+
+}
+
+void test_next_frame_with_tag(void) {
+
+}
+
+void test_set_tag(void) {
+
+}
+
 void script_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "test of sd_script_create", test_script_create) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_decode", test_script_decode) == NULL) { return; }
@@ -192,6 +204,9 @@ void script_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "test of sd_script_is_first_frame_at", test_is_first_frame_at) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_isset", test_script_isset) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_get", test_script_get) == NULL) { return; }
+    if(CU_add_test(suite, "test of sd_script_next_frame_with_sprite", test_next_frame_with_sprite) == NULL) { return; }
+    if(CU_add_test(suite, "test of sd_script_next_frame_with_tag", test_next_frame_with_tag) == NULL) { return; }
+    if(CU_add_test(suite, "test of sd_script_set_tag", test_set_tag) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_free", test_script_free) == NULL) { return; }
     if(CU_add_test(suite, "test of all OMF strings", test_script_all) == NULL) { return; }
 }
