@@ -11,6 +11,7 @@
 #ifndef _SD_SHADOWDIVE_H
 #define _SD_SHADOWDIVE_H
 
+#include "shadowdive/actions.h"
 #include "shadowdive/palette.h"
 #include "shadowdive/rgba_image.h"
 #include "shadowdive/vga_image.h"
