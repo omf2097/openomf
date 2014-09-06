@@ -17,6 +17,7 @@ IF(CUNIT_FOUND)
         test_trn.c
         test_stringparser.c
         test_script.c
+        test_array.c
         misc/parser_test_strings.c
     )
 

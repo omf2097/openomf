@@ -9,6 +9,7 @@ void rec_test_suite(CU_pSuite suite);
 void trn_test_suite(CU_pSuite suite);
 void stringparser_test_suite(CU_pSuite suite);
 void script_test_suite(CU_pSuite suite);
+void array_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -44,6 +45,10 @@ int main(int argc, char **argv) {
     suite = CU_add_suite("Script", NULL, NULL);
     if(suite == NULL) goto end;
     script_test_suite(suite);
+
+    suite = CU_add_suite("Array", NULL, NULL);
+    if(suite == NULL) goto end;
+    array_test_suite(suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);

@@ -60,7 +60,7 @@ add_library(shadowdive
     src/internal/memreader.c
     src/internal/memwriter.c
     src/internal/writer.c
-
+    src/internal/array.c
 )
 
 IF(USE_PNG)
