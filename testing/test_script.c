@@ -174,8 +174,6 @@ void test_script_all(void) {
     }
 }
 
-//"bpd1bps1bpn64A100-s1sf3B10-C34"
-
 void test_next_frame_with_sprite(void) {
     CU_ASSERT(sd_script_next_frame_with_sprite(NULL, 0, 0) == -1); // script NULL
     CU_ASSERT(sd_script_next_frame_with_sprite(&script, -1, 0) == -1); // nonexistent frame id
