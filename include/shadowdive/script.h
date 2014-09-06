@@ -129,6 +129,14 @@ int sd_script_encoded_length(const sd_script *script);
  */
 int sd_script_get_total_ticks(const sd_script *script);
 
+/*! \brief Find the tick position at the start of the given frame.
+ *
+ * \param script Script structure to check
+ * \param frame_id Frame ID to search
+ * \return Tick
+ */
+int sd_script_get_tick_pos_at_frame(const sd_script *script, int frame_id);
+
 /*! \brief Returns the frame at a given tick
  *
  * Finds the frame at the given moment in time (tick). If the ticks value is either

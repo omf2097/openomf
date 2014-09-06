@@ -46,10 +46,14 @@ void sd_script_free(sd_script *script) {
 }
 
 int sd_script_get_total_ticks(const sd_script *script) {
+    return sd_script_get_tick_pos_at_frame(script, script->frame_count);
+}
+
+int sd_script_get_tick_pos_at_frame(const sd_script *script, int frame_id) {
     if(script == NULL)
         return 0;
     int len = 0;
-    for(int i = 0; i < script->frame_count; i++) {
+    for(int i = 0; i < frame_id; i++) {
         len += script->frames[i].tick_len;
     }
     return len;

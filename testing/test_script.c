@@ -33,6 +33,11 @@ void test_total_ticks(void) {
     sd_script_free(&m_script);
 }
 
+void test_tick_pos_at_frame(void) {
+    CU_ASSERT(sd_script_get_tick_pos_at_frame(&script, 0) == 0);
+    CU_ASSERT(sd_script_get_tick_pos_at_frame(&script, 1) == 100);
+}
+
 void test_script_encoded_length(void) {
     int len = sd_script_encoded_length(&script);
     CU_ASSERT(len = strlen(OK_STR));
@@ -234,6 +239,7 @@ void script_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "test of sd_script_create", test_script_create) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_decode", test_script_decode) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_get_total_ticks", test_total_ticks) == NULL) { return; }
+    if(CU_add_test(suite, "test of sd_script_get_tick_pos_at_frame", test_tick_pos_at_frame) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_encoded_length", test_script_encoded_length) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_encode", test_script_encode) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_get_frame", test_script_get_frame) == NULL) { return; }
