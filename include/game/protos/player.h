@@ -2,9 +2,9 @@
 #define _PLAYER_H
 
 #include "utils/vec.h"
+#include <shadowdive/script.h>
 
 typedef struct object_t object;
-typedef struct sd_stringparser_t sd_stringparser;
 
 typedef void (*object_state_add_cb)(object *parent, int id, vec2i pos, int g, void *userdata);
 typedef void (*object_state_del_cb)(object *parent, int id, void *userdata);
@@ -43,12 +43,12 @@ typedef struct player_enemy_slide_op_t {
 } player_enemy_slide_state;
 
 typedef struct player_animation_state_t {
-    uint32_t ticks;
-    uint32_t ticks_len;
+    uint32_t previous_tick;
+    uint32_t current_tick;
     uint32_t end_frame;
     int previous;
     int entered_frame;
-    sd_stringparser *parser;
+    sd_script parser;
     uint8_t repeat;
     uint8_t reverse;
     uint8_t finished;
@@ -65,7 +65,6 @@ void player_create(object *obj);
 void player_free(object *obj);
 void player_reload(object *obj);
 void player_reload_with_str(object *obj, const char *str);
-const char* player_get_str(const object *obj);
 void player_reset(object *obj);
 int player_frame_isset(const object *obj, const char *tag);
 int player_frame_get(const object *obj, const char *tag);
@@ -80,5 +79,7 @@ void player_jump_to_tick(object *obj, int tick);
 char player_get_frame_letter(const object *obj);
 unsigned int player_get_len_ticks(const object *obj);
 void player_set_delay(object *obj, int delay);
+int player_is_last_frame(const object *obj);
+int player_get_current_tick(const object *obj);
 
 #endif // _PLAYER_H

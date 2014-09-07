@@ -1,6 +1,6 @@
 #include <inttypes.h>
 #include <stdlib.h>
-#include <shadowdive/stringparser.h>
+#include <shadowdive/script.h>
 
 #include "game/game_state.h"
 #include "game/game_player.h"
@@ -18,18 +18,6 @@
 #include "utils/random.h"
 
 // ---------------- Private functions ----------------
-
-int isset(const sd_stringparser_frame *frame, const char *tag) {
-    const sd_stringparser_tag_value *v;
-    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
-    return v->is_set;
-}
-
-int get(const sd_stringparser_frame *frame, const char *tag) {
-    const sd_stringparser_tag_value *v;
-    sd_stringparser_get_tag(frame->parser, frame->id, tag, &v);
-    return v->value;
-}
 
 void player_clear_frame(object *obj) {
     player_sprite_state *s = &obj->sprite_state;
@@ -55,95 +43,52 @@ void player_clear_frame(object *obj) {
     s->pal_tint = 0;
 }
 
-int next_frame_with_tag(sd_stringparser *parser, int current_frame, const char *tag, sd_stringparser_frame *f) {
-    int frames = sd_stringparser_num_frames(parser);
-    int res = 0;
-    for(int i = current_frame + 1; i < frames; i++) {
-        sd_stringparser_peek(parser, i, f);
-        if(isset(f, tag)) {
-            return res;
-        }
-        res += f->duration;
-    }
-    return -1;
-}
-
-int next_frame_with_sprite(sd_stringparser *parser, int current_frame, int sprite, sd_stringparser_frame *f) {
-    int frames = sd_stringparser_num_frames(parser);
-    int res = 0;
-    for(int i = current_frame + 1; i < frames; i++) {
-        sd_stringparser_peek(parser, i, f);
-        if (f->letter == sprite + 'A') {
-            return res;
-        }
-        res += f->duration;
-    }
-    return -1;
-}
-
-
 // ---------------- Public functions ----------------
 
 void player_create(object *obj) {
     obj->animation_state.reverse = 0;
     obj->animation_state.end_frame = UINT32_MAX;
-    obj->animation_state.ticks = 1;
+    obj->animation_state.current_tick = 0;
+    obj->animation_state.previous_tick = -1;
     obj->animation_state.finished = 0;
-    obj->animation_state.entered_frame = 0;
     obj->animation_state.repeat = 0;
+    obj->animation_state.entered_frame = 0;
     obj->animation_state.spawn = NULL;
     obj->animation_state.spawn_userdata = NULL;
     obj->animation_state.destroy = NULL;
     obj->animation_state.destroy_userdata = NULL;
-    obj->animation_state.parser = NULL;
-    obj->animation_state.previous = -1;
-    obj->animation_state.ticks_len = 0;
-    obj->animation_state.parser = sd_stringparser_create();
     obj->animation_state.disable_d = 0;
     obj->animation_state.enemy = NULL;
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
+    sd_script_create(&obj->animation_state.parser);
     player_clear_frame(obj);
 }
 
 void player_free(object *obj) {
-    if(obj->animation_state.parser != NULL) {
-        sd_stringparser_delete(obj->animation_state.parser);
-    }
+    sd_script_free(&obj->animation_state.parser);
 }
 
 void player_reload_with_str(object *obj, const char* custom_str) {
-    // Load new animation string
-    sd_stringparser_set_string(
-        obj->animation_state.parser,
-        custom_str);
-
-    // Find string length
-    sd_stringparser_frame tmp;
-    obj->animation_state.ticks_len = 0;
-    int frames = sd_stringparser_num_frames(obj->animation_state.parser);
-    for(int i = 0; i < frames; i++) {
-        sd_stringparser_peek(obj->animation_state.parser, i, &tmp);
-        obj->animation_state.ticks_len += tmp.duration;
+    // Free and reload parser
+    sd_script_free(&obj->animation_state.parser);
+    sd_script_create(&obj->animation_state.parser);
+    int ret;
+    int err_pos;
+    ret = sd_script_decode(&obj->animation_state.parser, custom_str, &err_pos);
+    if(ret != SD_SUCCESS) {
+        PERROR("Decoder error %s at position %d in string \"%s\"",
+            sd_get_error(ret), err_pos, custom_str);
     }
 
-    // Peek parameters
-    sd_stringparser_frame param;
-    sd_stringparser_peek(obj->animation_state.parser, 0, &param);
-
     // Set player state
-    obj->animation_state.ticks = 1;
-    obj->animation_state.finished = 0;
-    obj->animation_state.previous = -1;
+    player_reset(obj);
     obj->animation_state.reverse = 0;
-
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
-
     obj->enemy_slide_state.timer = 0;
     obj->enemy_slide_state.dest = vec2i_create(0,0);
     obj->enemy_slide_state.duration = 0;
-
     obj->hit_frames = 0;
     obj->can_hit = 0;
 }
@@ -153,23 +98,25 @@ void player_reload(object *obj) {
 }
 
 void player_reset(object *obj) {
-    obj->animation_state.ticks = 1;
+    obj->animation_state.previous_tick = -1;
+    obj->animation_state.current_tick = 0;
     obj->animation_state.finished = 0;
     obj->animation_state.previous = -1;
-    sd_stringparser_reset(obj->animation_state.parser);
 }
 
 int player_frame_isset(const object *obj, const char *tag) {
-    sd_stringparser_frame f = obj->animation_state.parser->current_frame;
-    return isset(&f, tag);
+    const sd_script_frame *frame = sd_script_get_frame_at(&obj->animation_state.parser, obj->animation_state.current_tick);
+    return sd_script_isset(frame, tag);
 }
 
 int player_frame_get(const object *obj, const char *tag) {
-    sd_stringparser_frame f = obj->animation_state.parser->current_frame;
-    return get(&f, tag);
+    const sd_script_frame *frame = sd_script_get_frame_at(&obj->animation_state.parser, obj->animation_state.current_tick);
+    return sd_script_get(frame, tag);
 }
 
 void player_set_delay(object *obj, int delay) {
+
+    /*
     //try to spread <delay> ticks over the 'startup' frames; those that don't spawn projectiles or have hit coordinates
     int r;
     sd_stringparser_frame n;
@@ -214,6 +161,8 @@ void player_set_delay(object *obj, int delay) {
         DEBUG("changed duration of frame %d from %d to %d", i, olddur, n.duration);
         (void)(olddur); // Fixes compile complaints :P
     }
+
+    */
 }
 
 void player_run(object *obj) {
@@ -237,176 +186,161 @@ void player_run(object *obj) {
     }
 
     // Not sure what this does
-    int run_ret;
-    if(state->end_frame == UINT32_MAX) {
-        run_ret = sd_stringparser_run(
-            state->parser,
-            state->ticks - 1);
-    } else {
-        run_ret = sd_stringparser_run_frames(
-            state->parser,
-            state->ticks - 1,
-            state->end_frame);
+    const sd_script_frame *frame = sd_script_get_frame_at(&state->parser, state->current_tick);
+
+    // Animation has ended ?
+    if(frame == NULL) {
+        if(state->repeat) {
+            player_reset(obj);
+            frame = sd_script_get_frame_at(&state->parser, state->current_tick);
+        } else if(obj->finish != NULL) {
+            obj->cur_sprite = NULL;
+            obj->finish(obj);
+            return;
+        } else {
+            obj->cur_sprite = NULL;
+            state->finished = 1;
+            return;
+        }
     }
 
     // Handle frame
-    if(run_ret == 0) {
-        // Handle frame switch
-        sd_stringparser_frame *param = &state->parser->current_frame;
-        sd_stringparser_frame *f = param;
-        int real_frame = param->letter - 65;
-
-        // Do something if animation is finished!
-        if(param->is_animation_end) {
-            if(state->repeat) {
-                player_reset(obj);
-                sd_stringparser_run(state->parser, state->ticks - 1);
-                real_frame = param->letter - 65;
-            } else if(obj->finish != NULL) {
-                obj->cur_sprite = NULL;
-                obj->finish(obj);
-                return;
-            } else {
-                obj->cur_sprite = NULL;
-                state->finished = 1;
-                return;
-            }
-        }
-
-        state->entered_frame = 0;
+    state->entered_frame = 0;
+    if(frame == NULL) {
+        DEBUG("Something went wery wrong!");
+        // We shouldn't really get here, unless stringparser messes something up badly
+    } else {
         // If frame changed, do something
-        if(param->id != state->previous) {
-            player_clear_frame(obj);
+        if(sd_script_frame_changed(&state->parser, state->previous_tick, state->current_tick)) {
             state->entered_frame = 1;
+            player_clear_frame(obj);
 
             // Tick management
-            if(isset(f, "d")) {
+            if(sd_script_isset(frame, "d")) {
                 if(!obj->animation_state.disable_d) {
-                    state->ticks = get(f, "d") + 1;
-                    sd_stringparser_goto_tick(state->parser, state->ticks);
+                    state->previous_tick = sd_script_get(frame, "d")-1;
+                    state->current_tick = sd_script_get(frame, "d");
                 }
             }
 
             // Hover flag
-            if(isset(f, "h")) {
+            if(sd_script_isset(frame, "h")) {
                 rstate->disable_gravity = 1;
             } else {
                 rstate->disable_gravity = 0;
             }
 
-            if(isset(f, "ua")) {
+            if(sd_script_isset(frame, "ua")) {
                 obj->animation_state.enemy->sprite_state.disable_gravity = 1;
             }
 
             // Animation creation command
-            if(isset(f, "m") && state->spawn != NULL) {
+            if(sd_script_isset(frame, "m") && state->spawn != NULL) {
                 int mx = 0;
-                if (isset(f, "mrx")) {
-                    int mrx = get(f, "mrx");
-                    int mm = isset(f, "mm") ? get(f, "mm") : mrx;
+                if (sd_script_isset(frame, "mrx")) {
+                    int mrx = sd_script_get(frame, "mrx");
+                    int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mrx;
                     mx = random_int(&obj->rand_state, 320 - 2*mm) + mrx;
                     DEBUG("randomized mx as %d", mx);
-                } else if(isset(f, "mx")) {
-                    mx = obj->start.x + (get(f, "mx") * object_get_direction(obj));
+                } else if(sd_script_isset(frame, "mx")) {
+                    mx = obj->start.x + (sd_script_get(frame, "mx") * object_get_direction(obj));
                 }
 
                 int my = 0;
-                if (isset(f, "mry")) {
-                    int mry = get(f, "mry");
-                    int mm = isset(f, "mm") ? get(f, "mm") : mry;
+                if (sd_script_isset(frame, "mry")) {
+                    int mry = sd_script_get(frame, "mry");
+                    int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mry;
                     my = random_int(&obj->rand_state, 320 - 2*mm) + mry;
                     DEBUG("randomized my as %d", my);
-                } else if(isset(f, "my")) {
-                    my = obj->start.y + get(f, "my");
+                } else if(sd_script_isset(frame, "my")) {
+                    my = obj->start.y + sd_script_get(frame, "my");
                 }
 
-                int mg = isset(f, "mg") ? get(f, "mg") : 0;
-                /*DEBUG("Spawning %d, with g = %d, pos = (%d,%d)", */
-                    /*get(f, "m"), mg, mx, my);*/
+                int mg = sd_script_isset(frame, "mg") ? sd_script_get(frame, "mg") : 0;
                 state->spawn(
                     obj,
-                    get(f, "m"),
+                    sd_script_get(frame, "m"),
                     vec2i_create(mx, my),
                     mg,
                     state->spawn_userdata);
             }
 
             // Animation deletion
-            if(isset(f, "md") && state->destroy != NULL) {
-                state->destroy(obj, get(f, "md"), state->destroy_userdata);
+            if(sd_script_isset(frame, "md") && state->destroy != NULL) {
+                state->destroy(obj, sd_script_get(frame, "md"), state->destroy_userdata);
             }
 
             // Music playback
-            if(isset(f, "smo")) {
-                if(get(f, "smo") == 0) {
+            if(sd_script_isset(frame, "smo")) {
+                if(sd_script_get(frame, "smo") == 0) {
                     music_stop();
                     return;
                 }
-                music_play(PSM_END + (get(f, "smo") - 1));
+                music_play(PSM_END + (sd_script_get(frame, "smo") - 1));
             }
-            if(isset(f, "smf")) {
+            if(sd_script_isset(frame, "smf")) {
                 music_stop();
             }
 
             // Sound playback
-            if(isset(f, "s")) {
+            if(sd_script_isset(frame, "s")) {
                 float pitch = PITCH_DEFAULT;
                 float volume = VOLUME_DEFAULT * (settings_get()->sound.sound_vol/10.0f);
                 float panning = PANNING_DEFAULT;
-                if(isset(f, "sf")) {
-                    int p = clamp(get(f, "sf"), -16, 239);
+                if(sd_script_isset(frame, "sf")) {
+                    int p = clamp(sd_script_get(frame, "sf"), -16, 239);
                     pitch = clampf((p/239.0f)*3.0f + 1.0f, PITCH_MIN, PITCH_MAX);
                 }
-                if(isset(f, "l")) {
-                    int v = clamp(get(f, "l"), 0, 100);
+                if(sd_script_isset(frame, "l")) {
+                    int v = clamp(sd_script_get(frame, "l"), 0, 100);
                     volume = (v / 100.0f) * (settings_get()->sound.sound_vol/10.0f);
                 }
-                if(isset(f, "sb")) {
-                    panning = clamp(get(f, "sb"), -100, 100) / 100.0f;
+                if(sd_script_isset(frame, "sb")) {
+                    panning = clamp(sd_script_get(frame, "sb"), -100, 100) / 100.0f;
                 }
-                int sound_id = obj->sound_translation_table[get(f, "s")] - 1;
+                int sound_id = obj->sound_translation_table[sd_script_get(frame, "s")] - 1;
                 sound_play(sound_id, volume, panning, pitch);
             }
 
             // Blend mode stuff
-            if(isset(f, "b1")) { rstate->method_flags &= 0x2000; }
-            if(isset(f, "b2")) { rstate->method_flags &= 0x4000; }
-            if(isset(f, "bb")) {
+            if(sd_script_isset(frame, "b1")) { rstate->method_flags &= 0x2000; }
+            if(sd_script_isset(frame, "b2")) { rstate->method_flags &= 0x4000; }
+            if(sd_script_isset(frame, "bb")) {
                 rstate->method_flags &= 0x0010;
-                rstate->blend_finish = get(f, "bb");
-                rstate->screen_shake_vertical = get(f, "bb");
+                rstate->blend_finish = sd_script_get(frame, "bb");
+                rstate->screen_shake_vertical = sd_script_get(frame, "bb");
             }
-            if(isset(f, "be")) { rstate->method_flags &= 0x0800; }
-            if(isset(f, "bf")) {
+            if(sd_script_isset(frame, "be")) { rstate->method_flags &= 0x0800; }
+            if(sd_script_isset(frame, "bf")) {
                 rstate->method_flags &= 0x0001;
-                rstate->blend_finish = get(f, "bf");
+                rstate->blend_finish = sd_script_get(frame, "bf");
             }
-            if(isset(f, "bh")) { rstate->method_flags &= 0x0040; }
-            if(isset(f, "bl")) {
+            if(sd_script_isset(frame, "bh")) { rstate->method_flags &= 0x0040; }
+            if(sd_script_isset(frame, "bl")) {
                 rstate->method_flags &= 0x0008;
-                rstate->blend_finish = get(f, "bl");
-                rstate->screen_shake_horizontal = get(f, "bl");
+                rstate->blend_finish = sd_script_get(frame, "bl");
+                rstate->screen_shake_horizontal = sd_script_get(frame, "bl");
             }
-            if(isset(f, "bm")) {
+            if(sd_script_isset(frame, "bm")) {
                 rstate->method_flags &= 0x0100;
-                rstate->blend_finish = get(f, "bm");
+                rstate->blend_finish = sd_script_get(frame, "bm");
             }
-            if(isset(f, "bj")) {
+            if(sd_script_isset(frame, "bj")) {
                 rstate->method_flags &= 0x0400;
-                rstate->blend_finish = get(f, "bj");
+                rstate->blend_finish = sd_script_get(frame, "bj");
             }
-            if(isset(f, "bs")) {
-                rstate->blend_start = get(f, "bs");
+            if(sd_script_isset(frame, "bs")) {
+                rstate->blend_start = sd_script_get(frame, "bs");
             }
-            if(isset(f, "bu")) { rstate->method_flags &= 0x8000; }
-            if(isset(f, "bw")) { rstate->method_flags &= 0x0080; }
-            if(isset(f, "bx")) { rstate->method_flags &= 0x0002; }
+            if(sd_script_isset(frame, "bu")) { rstate->method_flags &= 0x8000; }
+            if(sd_script_isset(frame, "bw")) { rstate->method_flags &= 0x0080; }
+            if(sd_script_isset(frame, "bx")) { rstate->method_flags &= 0x0002; }
 
             // Palette tricks
-            if(isset(f, "bpd")) { rstate->pal_ref_index = get(f, "bpd"); }
-            if(isset(f, "bpn")) { rstate->pal_entry_count = get(f, "bpn"); }
-            if(isset(f, "bps")) { rstate->pal_start_index = get(f, "bps"); }
-            if(isset(f, "bpf")) {
+            if(sd_script_isset(frame, "bpd")) { rstate->pal_ref_index = sd_script_get(frame, "bpd"); }
+            if(sd_script_isset(frame, "bpn")) { rstate->pal_entry_count = sd_script_get(frame, "bpn"); }
+            if(sd_script_isset(frame, "bps")) { rstate->pal_start_index = sd_script_get(frame, "bps"); }
+            if(sd_script_isset(frame, "bpf")) {
                 // Exact values come from master.dat
                 if(game_state_get_player(obj->gs, 0)->har == obj) {
                     rstate->pal_start_index =  1;
@@ -416,51 +350,51 @@ void player_run(object *obj) {
                     rstate->pal_entry_count = 48;
                 }
             }
-            if(isset(f, "bpp")) {
-                rstate->pal_end = get(f, "bpp") * 4;
-                rstate->pal_begin = get(f, "bpp") * 4;
+            if(sd_script_isset(frame, "bpp")) {
+                rstate->pal_end = sd_script_get(frame, "bpp") * 4;
+                rstate->pal_begin = sd_script_get(frame, "bpp") * 4;
             }
-            if(isset(f, "bpb")) { rstate->pal_begin = get(f, "bpb") * 4; }
-            if(isset(f, "bz"))  { rstate->pal_tint = 1; }
+            if(sd_script_isset(frame, "bpb")) { rstate->pal_begin = sd_script_get(frame, "bpb") * 4; }
+            if(sd_script_isset(frame, "bz"))  { rstate->pal_tint = 1; }
 
             // The following is a hack. We don't REALLY know what these tags do.
             // However, they are only used in CREDITS.BK, so we can just interpret
             // then as we see fit, as long as stuff works.
-            if(isset(f, "bc") && f->duration >= 50) {
+            if(sd_script_isset(frame, "bc") && frame->tick_len >= 50) {
                 rstate->blend_start = 0;
-            } else if(isset(f, "bd") && f->duration >= 30) {
+            } else if(sd_script_isset(frame, "bd") && frame->tick_len >= 30) {
                 rstate->blend_finish = 0;
             }
 
             // Handle movement
-            if(isset(f, "ox")) {
-                DEBUG("changing X from %f to %f", obj->pos.x, obj->pos.x+get(f, "ox"));
-                /*obj->pos.x += get(f, "ox");*/
+            if(sd_script_isset(frame, "ox")) {
+                DEBUG("changing X from %f to %f", obj->pos.x, obj->pos.x+sd_script_get(frame, "ox"));
+                /*obj->pos.x += sd_script_get(frame, "ox");*/
             }
 
-            if(isset(f, "oy")) {
-                DEBUG("changing Y from %f to %f", obj->pos.y, obj->pos.y+get(f, "oy"));
-                /*obj->pos.y += get(f, "oy");*/
+            if(sd_script_isset(frame, "oy")) {
+                DEBUG("changing Y from %f to %f", obj->pos.y, obj->pos.y+sd_script_get(frame, "oy"));
+                /*obj->pos.y += sd_script_get(frame, "oy");*/
             }
 
-            if (isset(f, "bm")) {
+            if (sd_script_isset(frame, "bm")) {
                 // hack because we don't have 'walk to other HAR' implemented
                 obj->pos.x = state->enemy->pos.x;
                 obj->pos.y = state->enemy->pos.y;
                 player_next_frame(state->enemy);
             }
 
-            if (isset(f, "v")) {
+            if (sd_script_isset(frame, "v")) {
                 int x = 0, y = 0;
-                if(isset(f, "y-")) {
-                    y = get(f, "y-") * -1;
-                } else if(isset(f, "y+")) {
-                    y = get(f, "y+");
+                if(sd_script_isset(frame, "y-")) {
+                    y = sd_script_get(frame, "y-") * -1;
+                } else if(sd_script_isset(frame, "y+")) {
+                    y = sd_script_get(frame, "y+");
                 }
-                if(isset(f, "x-")) {
-                    x = get(f, "x-") * -1 * object_get_direction(obj);
-                } else if(isset(f, "x+")) {
-                    x = get(f, "x+") * object_get_direction(obj);
+                if(sd_script_isset(frame, "x-")) {
+                    x = sd_script_get(frame, "x-") * -1 * object_get_direction(obj);
+                } else if(sd_script_isset(frame, "x+")) {
+                    x = sd_script_get(frame, "x+") * object_get_direction(obj);
                 }
 
                 if (x || y) {
@@ -470,7 +404,7 @@ void player_run(object *obj) {
                 }
             }
 
-            if (isset(f, "bu") && obj->vel.y < 0.0f) {
+            if (sd_script_isset(frame, "bu") && obj->vel.y < 0.0f) {
                 float x_dist = dist(obj->pos.x, 160);
                 // assume that bu is used in conjunction with 'vy-X' and that we want to land in the center of the arena
                 obj->slide_state.vel.x = x_dist / (obj->vel.y*-2);
@@ -478,25 +412,25 @@ void player_run(object *obj) {
             }
 
             // handle scaling on the Y axis
-            if(isset(f, "y")) {
-                obj->y_percent = get(f, "y") / 100.0f;
+            if(sd_script_isset(frame, "y")) {
+                obj->y_percent = sd_script_get(frame, "y") / 100.0f;
             }
-            if (isset(f, "e")) {
+            if (sd_script_isset(frame, "e")) {
                 // x,y relative to *enemy's* position
                 int x = 0, y = 0;
-                if(isset(f, "y-")) {
-                    y = get(f, "y-") * -1;
-                } else if(isset(f, "y+")) {
-                    y = get(f, "y+");
+                if(sd_script_isset(frame, "y-")) {
+                    y = sd_script_get(frame, "y-") * -1;
+                } else if(sd_script_isset(frame, "y+")) {
+                    y = sd_script_get(frame, "y+");
                 }
-                if(isset(f, "x-")) {
-                    x = get(f, "x-") * -1 * object_get_direction(obj);
-                } else if(isset(f, "x+")) {
-                    x = get(f, "x+") * object_get_direction(obj);
+                if(sd_script_isset(frame, "x-")) {
+                    x = sd_script_get(frame, "x-") * -1 * object_get_direction(obj);
+                } else if(sd_script_isset(frame, "x+")) {
+                    x = sd_script_get(frame, "x+") * object_get_direction(obj);
                 }
 
                 if (x || y) {
-                    obj->enemy_slide_state.timer = param->duration;
+                    obj->enemy_slide_state.timer = frame->tick_len;
                     obj->enemy_slide_state.duration = 0;
                     obj->enemy_slide_state.dest.x = x;
                     obj->enemy_slide_state.dest.y = y;
@@ -508,23 +442,23 @@ void player_run(object *obj) {
                             x, y);*/
                 }
             }
-            if (isset(f, "v") == 0 &&
-                isset(f, "e") == 0 &&
-                (isset(f, "x+") || isset(f, "y+") || isset(f, "x-") || isset(f, "y-"))) {
+            if (sd_script_isset(frame, "v") == 0 &&
+                sd_script_isset(frame, "e") == 0 &&
+                (sd_script_isset(frame, "x+") || sd_script_isset(frame, "y+") || sd_script_isset(frame, "x-") || sd_script_isset(frame, "y-"))) {
                 // check for relative X interleaving
                 int x = 0, y = 0;
-                if(isset(f, "y-")) {
-                    y = get(f, "y-") * -1;
-                } else if(isset(f, "y+")) {
-                    y = get(f, "y+");
+                if(sd_script_isset(frame, "y-")) {
+                    y = sd_script_get(frame, "y-") * -1;
+                } else if(sd_script_isset(frame, "y+")) {
+                    y = sd_script_get(frame, "y+");
                 }
-                if(isset(f, "x-")) {
-                    x = get(f, "x-") * -1 * object_get_direction(obj);
-                } else if(isset(f, "x+")) {
-                    x = get(f, "x+") * object_get_direction(obj);
+                if(sd_script_isset(frame, "x-")) {
+                    x = sd_script_get(frame, "x-") * -1 * object_get_direction(obj);
+                } else if(sd_script_isset(frame, "x+")) {
+                    x = sd_script_get(frame, "x+") * object_get_direction(obj);
                 }
 
-                obj->slide_state.timer = param->duration;
+                obj->slide_state.timer = frame->tick_len;
                 obj->slide_state.vel.x = (float)x;
                 obj->slide_state.vel.y = (float)y;
                 /*DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.",*/
@@ -534,19 +468,24 @@ void player_run(object *obj) {
                     /*param->duration);*/
             }
 
-            if(isset(f, "x=") || isset(f, "y=")) {
+            if(sd_script_isset(frame, "x=") || sd_script_isset(frame, "y=")) {
                 obj->slide_state.vel = vec2f_create(0,0);
             }
-            if(isset(f, "x=")) {
-                obj->pos.x = obj->start.x + (get(f, "x=") * object_get_direction(obj));
-                sd_stringparser_frame n;
-                int r;
-                if((r =next_frame_with_tag(obj->animation_state.parser, f->id, "x=", &n)) >= 0) {
-                    int next_x = get(&n, "x=");
+            if(sd_script_isset(frame, "x=")) {
+                obj->pos.x = obj->start.x + (sd_script_get(frame, "x=") * object_get_direction(obj));
+
+                // Find frame ID by tick
+                int frame_id = sd_script_next_frame_with_tag(&state->parser, "x=", state->current_tick);
+                
+                // Handle it!
+                if(frame_id >= 0) {
+                    int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
+                    int r = mr - state->current_tick;
+                    int next_x = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "x=");
                     int slide = obj->start.x + (next_x * object_get_direction(obj));
                     if(slide != obj->pos.x) {
-                        obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(param->duration + r);
-                        obj->slide_state.timer = param->duration + r;
+                        obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(frame->tick_len + r);
+                        obj->slide_state.timer = frame->tick_len + r;
                         /*DEBUG("Slide object %d for X = %f for a total of %d ticks.",*/
                                 /*obj->cur_animation->id,*/
                                 /*obj->slide_state.vel.x,*/
@@ -555,16 +494,21 @@ void player_run(object *obj) {
 
                 }
             }
-            if(isset(f, "y=")) {
-                obj->pos.y = obj->start.y + get(f, "y=");
-                sd_stringparser_frame n;
-                int r;
-                if((r =next_frame_with_tag(obj->animation_state.parser, f->id, "y=", &n)) >= 0) {
-                    int next_y = get(&n, "y=");
+            if(sd_script_isset(frame, "y=")) {
+                obj->pos.y = obj->start.y + sd_script_get(frame, "y=");
+
+                // Find frame ID by tick
+                int frame_id = sd_script_next_frame_with_tag(&state->parser, "y=", state->current_tick);
+
+                // handle it!
+                if(frame_id >= 0) {
+                    int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
+                    int r = mr - state->current_tick;
+                    int next_y = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "y=");
                     int slide = next_y + obj->start.y;
                     if(slide != obj->pos.y) {
-                        obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(param->duration + r);
-                        obj->slide_state.timer = param->duration + r;
+                        obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(frame->tick_len + r);
+                        obj->slide_state.timer = frame->tick_len + r;
                         /*DEBUG("Slide object %d for Y = %f for a total of %d ticks.",*/
                                 /*obj->cur_animation->id,*/
                                 /*obj->slide_state.vel.y,*/
@@ -573,42 +517,41 @@ void player_run(object *obj) {
 
                 }
             }
-            if(isset(f, "as")) {
+            if(sd_script_isset(frame, "as")) {
                 // make the object move around the screen in a circular motion until end of frame
                 obj->orbit = 1;
             } else {
                 obj->orbit = 0;
             }
-            if(isset(f, "q")) {
+            if(sd_script_isset(frame, "q")) {
                 // Enable hit on the current and the next n-1 frames.
-                obj->hit_frames = get(f, "q");
+                obj->hit_frames = sd_script_get(frame, "q");
             }
             if(obj->hit_frames > 0) {
                 obj->can_hit = 1;
                 obj->hit_frames--;
             }
 
-            if(isset(f, "at")) {
+            if(sd_script_isset(frame, "at")) {
                 // set the object's X position to be behind the opponent
                 obj->pos.x = obj->animation_state.enemy->pos.x + (15 * object_get_direction(obj));
             }
 
-            if(isset(f, "ar")) {
+            if(sd_script_isset(frame, "ar")) {
                 // reverse direction
                 object_set_direction(obj, object_get_direction(obj) * -1);
             }
 
-
             // Set render settings
-            if(real_frame < 25) {
-                object_select_sprite(obj, real_frame);
+            if(frame->sprite < 25) {
+                object_select_sprite(obj, frame->sprite);
                 if(obj->cur_sprite != NULL) {
-                    rstate->duration = param->duration;
-                    rstate->blendmode = isset(f, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
-                    if(isset(f, "r")) {
+                    rstate->duration = frame->tick_len;
+                    rstate->blendmode = sd_script_isset(frame, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
+                    if(sd_script_isset(frame, "r")) {
                         rstate->flipmode ^= FLIP_HORIZONTAL;
                     }
-                    if(isset(f, "f")) {
+                    if(sd_script_isset(frame, "f")) {
                         rstate->flipmode ^= FLIP_VERTICAL;
                     }
                 }
@@ -617,14 +560,14 @@ void player_run(object *obj) {
             }
 
         }
-        state->previous = param->id;
     }
 
     // Animation ticks
+    state->previous_tick = state->current_tick;
     if(state->reverse) {
-        state->ticks--;
+        state->current_tick--;
     } else {
-        state->ticks++;
+        state->current_tick++;
     }
 
     // Sprite ticks
@@ -635,12 +578,14 @@ void player_run(object *obj) {
 }
 
 void player_jump_to_tick(object *obj, int tick) {
-    sd_stringparser_goto_tick(obj->animation_state.parser, tick);
-    obj->animation_state.ticks = tick;
+    player_animation_state *state = &obj->animation_state;
+    state->previous_tick = state->current_tick;
+    state->current_tick = tick;
 }
 
 unsigned int player_get_len_ticks(const object *obj) {
-    return obj->animation_state.ticks_len;
+    const player_animation_state *state = &obj->animation_state;
+    return sd_script_get_total_ticks(&state->parser);
 }
 
 void player_set_repeat(object *obj, int repeat) {
@@ -656,25 +601,32 @@ void player_set_end_frame(object *obj, int end_frame) {
 }
 
 void player_next_frame(object *obj) {
-    // right now, this can only skip the first frame...
-    if(sd_stringparser_run(obj->animation_state.parser, 0) == 0) {
-        obj->animation_state.ticks = obj->animation_state.parser->current_frame.duration + 1;
-    }
+    player_animation_state *state = &obj->animation_state;
+    int current_index = sd_script_get_frame_index_at(&state->parser, state->current_tick);
+    state->current_tick = sd_script_get_tick_pos_at_frame(&state->parser, current_index+1);
+    state->previous_tick = state->current_tick-1;
 }
 
 void player_goto_frame(object *obj, int frame_id) {
-    sd_stringparser_goto_frame(obj->animation_state.parser, frame_id, &obj->animation_state.ticks);
-    obj->animation_state.ticks++;
+    player_animation_state *state = &obj->animation_state;
+    state->current_tick = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
+    state->previous_tick = state->current_tick-1;
+}
+
+int player_get_current_tick(const object *obj) {
+    return obj->animation_state.current_tick;
 }
 
 int player_get_frame(const object *obj) {
-    return sd_stringparser_get_current_frame_id(obj->animation_state.parser);
+    const player_animation_state *state = &obj->animation_state;
+    return sd_script_get_frame_index_at(&state->parser, state->current_tick);
 }
 
 char player_get_frame_letter(const object *obj) {
-    return sd_stringparser_get_current_frame_letter(obj->animation_state.parser);
+    return sd_script_frame_to_letter(player_get_frame(obj));
 }
 
-const char* player_get_str(const object *obj) {
-    return obj->animation_state.parser->string;
+int player_is_last_frame(const object *obj) {
+    const player_animation_state *state = &obj->animation_state;
+    return sd_script_is_last_frame_at(&state->parser, state->current_tick);
 }

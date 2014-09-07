@@ -111,14 +111,14 @@ int object_serialize(object *obj, serial *ser) {
 
     // Write animation state
     if (obj->custom_str) {
-        const char *anim_str = player_get_str(obj);
         serial_write_int16(ser, strlen(obj->custom_str)+1);
-        serial_write(ser, anim_str, strlen(obj->custom_str)+1);
+        serial_write(ser, obj->custom_str, strlen(obj->custom_str)+1);
     } else {
         // using regular animation string from animation
         serial_write_int16(ser, 0);
     }
-    serial_write_int16(ser, (int)obj->animation_state.ticks);
+    serial_write_int16(ser, (int)obj->animation_state.current_tick);
+    serial_write_int16(ser, (int)obj->animation_state.previous_tick);
     serial_write_int8(ser, (int)obj->animation_state.reverse);
 
     /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
@@ -176,7 +176,8 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     if(anim_str_len > 0) {
         serial_read(ser, anim_str, anim_str_len);
     }
-    uint16_t ticks = (uint16_t)serial_read_int16(ser);
+    obj->animation_state.current_tick = (uint16_t)serial_read_int16(ser);
+    obj->animation_state.previous_tick = (uint16_t)serial_read_int16(ser);
     uint8_t reverse = serial_read_int8(ser);
 
     // Read the specialization ID from ther serial "stream".
@@ -197,13 +198,12 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     }
 
     // Init animation with correct string and tick
-    if (anim_str_len > 0) {
+    if(anim_str_len > 0) {
         // server is using a custom string
         DEBUG("serialized object has custom animation string %s", anim_str);
         player_reload_with_str(obj, anim_str);
     }
-    player_jump_to_tick(obj, ticks);
-    if (reverse) {
+    if(reverse) {
         object_set_playback_direction(obj, PLAY_BACKWARDS);
     }
 
