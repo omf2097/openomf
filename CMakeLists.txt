@@ -44,7 +44,6 @@ add_library(shadowdive
     src/rgba_image.c
     src/sounds.c
     src/sprite.c
-    src/stringparser.c
     src/vga_image.c
     src/language.c
     src/tournament.c
