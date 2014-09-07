@@ -8,7 +8,6 @@
 #include <dumb.h>
 #endif
 #include <enet/enet.h>
-#include <shadowdive/stringparser.h>
 #include "engine.h"
 #include "utils/log.h"
 #include "utils/random.h"
@@ -99,9 +98,6 @@ int main(int argc, char *argv[]) {
 
     // Random seed
     rand_seed(time(NULL));
-
-    // Init stringparser
-    sd_stringparser_lib_init();
 
     // Init config
     if(settings_init(pm_get_local_path(CONFIG_PATH))) {
@@ -219,7 +215,6 @@ exit_2:
     settings_save();
     settings_free();
 exit_1:
-    sd_stringparser_lib_deinit();
     INFO("Exit.");
     log_close();
 exit_0:

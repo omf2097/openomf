@@ -455,14 +455,14 @@ void har_move(object *obj) {
                 && h->state != STATE_FALLEN
                 && h->health <= 0 
                 && h->endurance <= 0
-                && obj->animation_state.parser->current_frame.is_final_frame) {
+                && player_is_last_frame(obj)) {
 
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, ANIM_DEFEAT, 0);
                 har_event_defeat(h);
             } else if(pos.y >= (ARENA_FLOOR-5) &&
                       IS_ZERO(vel.x) &&
-                      obj->animation_state.parser->current_frame.is_final_frame) {
+                      player_is_last_frame(obj)) {
                 if (h->state == STATE_FALLEN) {
                     if (h->health <= 0 && h->endurance <= 0) {
                         // fallen, but done bouncing
@@ -533,8 +533,6 @@ void har_take_damage(object *obj, str* string, float damage) {
 
     // chronos' stasis does not have a hit animation
     if (string->data && str_size(string) > 0) {
-        sd_stringparser_frame f;
-        const sd_stringparser_tag_value *v;
         h->state = STATE_RECOIL;
         // Set hit animation
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
@@ -574,12 +572,14 @@ void har_take_damage(object *obj, str* string, float damage) {
         }
         object_dynamic_tick(obj);
         h->flinching = 1;
+
         // XXX hack - if the first frame has the 'k' tag, treat it as some vertical knockback
         // we can't do this in player.c because it breaks the jaguar leap, which also uses the 'k' tag.
-        sd_stringparser_peek(obj->animation_state.parser, 0, &f);
-        sd_stringparser_get_tag(f.parser, f.id, "k", &v);
-        if (v->is_set) {
-            obj->vel.y -= 7;
+        const sd_script_frame *frame = sd_script_get_frame(&obj->animation_state.parser, 0);
+        if(frame != NULL) {
+            if(sd_script_isset(frame, "k")) {
+                obj->vel.y -= 7;
+            }
         }
     }
 }
@@ -1190,7 +1190,7 @@ void har_tick(object *obj) {
     }
 
     if ((h->state == STATE_DONE) 
-        && obj->animation_state.parser->current_frame.is_final_frame
+        && player_is_last_frame(obj)
         && obj->animation_state.entered_frame == 1) {
         // match is over
         har_event_done(h);
@@ -1438,7 +1438,7 @@ af_move* match_move(object *obj, char *inputs) {
                                break;
                        }
                    }
-                   if (obj->animation_state.ticks >= obj->animation_state.ticks_len) {
+                   if(player_get_current_tick(obj) >= player_get_len_ticks(obj)) {
                        DEBUG("enqueueing %d %s",  i, str_c(&move->move_string));
                        h->enqueued = i;
                        return NULL;
