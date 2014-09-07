@@ -16,7 +16,6 @@
 #include "shadowdive/rgba_image.h"
 #include "shadowdive/vga_image.h"
 #include "shadowdive/sprite.h"
-#include "shadowdive/stringparser.h"
 #include "shadowdive/fonts.h"
 #include "shadowdive/language.h"
 #include "shadowdive/error.h"
