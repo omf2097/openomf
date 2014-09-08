@@ -331,6 +331,7 @@ void sd_bk_free(sd_bk_file *bk) {
     int i;
     if(bk->background != NULL) {
         sd_vga_image_free(bk->background);
+        free(bk->background);
     }
     for(i = 0; i < MAX_BK_ANIMS; i++) {
         if(bk->anims[i] != NULL) {
