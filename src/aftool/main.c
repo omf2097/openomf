@@ -315,22 +315,11 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
         case 49: printf("%d\n", move->points);
 
         case 15:
-            printf("%s\n", move->move_string); break;
-        case 16:
-            if (pcount > 0 && move->footer_string) {
-                sd_stringparser *parser = sd_stringparser_create();
-                int err = sd_stringparser_set_string(parser, ani->anim_string);
-                if(err) {
-                    printf("Animation string parser error: %s (%s)\n", sd_get_error(err), ani->anim_string);
-                } else {
-                    sd_stringparser_prettyprint(parser);
-                }
-                sd_stringparser_delete(parser);
-            } else {
-                printf("%s\n", move->footer_string ? move->footer_string : "(null)");
-            }
+            printf("%s\n", move->move_string);
             break;
-
+        case 16:
+            printf("%s\n", move->footer_string ? move->footer_string : "(null)");
+            break;
         default:
             anim_get_key(ani, kn, key, kcount, pcount);
     }

@@ -254,35 +254,13 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
             }
             break;
         case 9:
-            if (pcount > 0) {
-                sd_stringparser *parser = sd_stringparser_create();
-                int err = sd_stringparser_set_string(parser, ani->anim_string);
-                if(err) {
-                    printf("Animation string parser error: %s (%s)\n", sd_get_error(err), ani->anim_string);
-                } else {
-                    sd_stringparser_prettyprint(parser);
-                }
-                sd_stringparser_delete(parser);
-            } else {
-                printf("%s\n", ani->anim_string);
-            }
+            printf("%s\n", ani->anim_string);
             break;
         case 11: 
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < ani->extra_string_count) {
-                    if (pcount > 0) {
-                        sd_stringparser *parser = sd_stringparser_create();
-                        int err = sd_stringparser_set_string(parser, ani->extra_strings[tmp]);
-                        if(err) {
-                            printf("Animation string parser error: %s (%s)\n", sd_get_error(err), ani->extra_strings[tmp]);
-                        } else {
-                            sd_stringparser_prettyprint(parser);
-                        }
-                        sd_stringparser_delete(parser);
-                    } else {
-                        printf("%s\n", ani->extra_strings[tmp]);
-                    }
+                    printf("%s\n", ani->extra_strings[tmp]);
                 } else {
                     printf("Extra string table index %d does not exist!\n", tmp);
                     return;
