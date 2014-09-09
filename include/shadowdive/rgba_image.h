@@ -55,6 +55,54 @@ int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h);
  */
 int sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src);
 
+/*! \brief Clear image with color
+ * 
+ * Clears the RGBA image with given color.
+ *
+ * \retval SD_INVALID_INPUT Image pointer was NULL
+ * \retval SD_SUCCESS All went as expected.
+ *
+ * \param img RGBA image struct to modify.
+ * \param r Red channel value (0 - 0xFF)
+ * \param g Green channel value (0 - 0xFF)
+ * \param b Blue channel value (0 - 0xFF)
+ * \param a Alpha channel value (0 - 0xFF)
+ */
+int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a);
+
+/*! \brief Blit RGBA image to another image
+ *
+ * Does a direct image surface blit to given coordinates. No blending is done;
+ * all image data is copied (including alpha channel). The whole input image
+ * will be copied.
+ *
+ * Both images must be valid images.
+ *
+ * \retval SD_INVALID_INPUT Either input value was NULL.
+ * \retval SD_SUCCESS Success. 
+ *
+ * \param dst Destination RGBA image struct pointer.
+ * \param src Source RGBA image struct pointer.
+ * \param x Destination X coordinate
+ * \param y Destination Y coordinate
+ */
+int sd_rgba_image_blit(sd_rgba_image *dst, const sd_rgba_image *src, int x, int y);
+
+/*! \brief Save an RGBA image from a PNG file.
+ *
+ * Saves an RGBA image to a PNG file. Output PNG image format will be standard
+ * RGBA format.
+ *
+ * \retval SD_INVALID_INPUT Image or filename was NULL
+ * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
+ * \retval SD_FORMAT_NOT_SUPPORTED File format (PNG) is not supported.
+ * \retval SD_SUCCESS Success.
+ *
+ * \param img Source image pointer
+ * \param filename Destination filename
+ */
+int sd_rgba_image_to_png(const sd_rgba_image *img, const char *filename);
+
 /*! \brief Free RGBA image structure
  * 
  * Frees up all memory reserved by the RGBA image structure.
