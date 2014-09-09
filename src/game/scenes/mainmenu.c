@@ -25,31 +25,7 @@
 #include "game/game_state.h"
 #include "plugins/plugins.h"
 
-struct resolution_t {
-    int w;  int h;  const char *name;
-} _resolutions[] = {
-    {320,   200,    "320x200"},
-    {640,   400,    "640x400"},
-    {800,   480,    "800x480"},
-    {800,   600,    "800x600"},
-    {1024,  768,    "1024x768"},
-    {1280,  720,    "1280x720"},
-    {1280,  800,    "1280x800"},
-    {1280,  960,    "1280x960"},
-    {1280,  1024,   "1280x1024"},
-    {1366,  768,    "1366x768"},
-    {1440,  900,    "1440x900"},
-    {1600,  1000,   "1600x1000"},
-    {1600,  1200,   "1600x1200"},
-    {1650,  1080,   "1650x1080"},
-    {1920,  1080,   "1920x1080"},
-    {1920,  1200,   "1920x1200"},
-    {2560,  1440,   "2560x1440"},
-    {2560,  1600,   "2560x1600"},
-    {3840,  2160,   "3840x2160"},
-};
-
-typedef struct resolution_t resolution;
+#include "game/scenes/mainmenu/menu_video.h"
 
 typedef struct mainmenu_local_t {
     time_t connect_start;
@@ -102,13 +78,6 @@ typedef struct mainmenu_local_t {
     component listen_cancel_button;
 
     menu video_menu;
-    component video_header;
-    component resolution_toggle;
-    component vsync_toggle;
-    component fullscreen_toggle;
-    component scaler_toggle;
-    component scale_factor_toggle;
-    component video_done_button;
 
     menu config_menu;
     component config_header;
@@ -193,18 +162,6 @@ void update_keys(mainmenu_local *local, int player) {
         sprintf(local->input_key_labels[4], "PUNCH: %s", k->key2_punch);
         sprintf(local->input_key_labels[5], "KICK: %s", k->key2_kick);
     }
-}
-
-resolution *find_resolution_by_settings(settings *s) {
-    int w = s->video.screen_w;
-    int h = s->video.screen_h;
-
-    for(int i = 0;i < sizeof(_resolutions)/sizeof(resolution);i++) {
-        if(w == _resolutions[i].w && h == _resolutions[i].h) {
-            return &_resolutions[i];
-        }
-    }
-    return NULL;
 }
 
 // Menu event handlers
@@ -475,53 +432,6 @@ void inputmenu_set_key(component *c, void *userdata) {
     local->input_presskey_ready_ticks = 0;
 }
 
-void video_done_clicked(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    settings_video *v = &settings_get()->video;
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
-    mainmenu_prev_menu(c, userdata);
-
-    if(local->old_video_settings.screen_w != v->screen_w ||
-        local->old_video_settings.screen_h != v->screen_h ||
-        local->old_video_settings.fullscreen != v->fullscreen) {
-        // Resolution confirmation dialog
-        mainmenu_enter_menu_video_confirm(c, userdata);
-        time(&local->video_accept_timer);
-        local->video_accept_secs = 20;
-        if(sprintf(local->video_accept_label,
-                   "ACCEPT NEW RESOLUTION? %d",
-                   local->video_accept_secs) > 0) {
-            ((textbutton*)local->video_confirm_header.obj)->text = local->video_accept_label;
-        }
-    }
-}
-
-void video_confirm_cancel_clicked(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    settings_video *v = &settings_get()->video;
-    *v = local->old_video_settings;
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
-    mainmenu_prev_menu(c, userdata);
-}
-
-void resolution_toggled(component *c, void *userdata, int pos) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    settings_video *v = &settings_get()->video;
-    if(local->is_custom_resolution) {
-        // The first index is always the custom resolution
-        if(pos == 0) {
-            v->screen_w = local->custom_resolution.x;
-            v->screen_h = local->custom_resolution.y;
-        } else {
-            v->screen_w = _resolutions[pos-1].w;
-            v->screen_h = _resolutions[pos-1].h;
-        }
-    } else {
-        v->screen_w = _resolutions[pos].w;
-        v->screen_h = _resolutions[pos].h;
-    }
-}
-
 void menu_music_slide(component *c, void *userdata, int pos) {
     music_set_volume(pos/10.0f);
 }
@@ -623,13 +533,6 @@ void mainmenu_free(scene *scene) {
     textbutton_free(&local->config_done_button);
     menu_free(&local->config_menu);
 
-    textbutton_free(&local->video_header);
-    textselector_free(&local->resolution_toggle);
-    textselector_free(&local->vsync_toggle);
-    textselector_free(&local->fullscreen_toggle);
-    textselector_free(&local->scale_factor_toggle);
-    textselector_free(&local->scaler_toggle);
-    textbutton_free(&local->video_done_button);
     menu_free(&local->video_menu);
 
     textbutton_free(&local->video_confirm_header);
@@ -952,63 +855,6 @@ void mainmenu_render(scene *scene) {
     menu_render(local->current_menu);
 }
 
-void scaler_toggled(component *c, void *userdata, int pos) {
-    mainmenu_local *local = userdata;
-    settings_video *v = &settings_get()->video;
-
-    // Set scaler
-    v->scaler = realloc(v->scaler, strlen(textselector_get_current_text(c))+1);
-    strcpy(v->scaler, textselector_get_current_text(c));
-
-    // If scaler is NEAREST, set factor to 1 and disable
-    if(textselector_get_pos(c) == 0) {
-        textselector_clear_options(&local->scale_factor_toggle);
-        textselector_add_option(&local->scale_factor_toggle, "1");
-        local->scale_factor_toggle.disabled = 1;
-        v->scale_factor = 1;
-    } else {
-        local->scale_factor_toggle.disabled = 0;
-
-        int *list;
-        scaler_plugin scaler;
-        scaler_init(&scaler);
-        plugins_get_scaler(&scaler, v->scaler);
-        int len = scaler_get_factors_list(&scaler, &list);
-        textselector_clear_options(&local->scale_factor_toggle);
-        for(int i = 0; i < len; i++) {
-            sprintf(local->scaling_factor_labels[i], "%d", list[i]);
-            textselector_add_option(&local->scale_factor_toggle, local->scaling_factor_labels[i]);
-        }
-
-        // Select first scale factor from the list
-        v->scale_factor = list[0];
-    }
-
-    // Always select first factor option if scaler has changed.
-    textselector_set_pos(&local->scale_factor_toggle, 0);
-
-    // If scaler is "Nearest", disable factor toggle
-    local->scale_factor_toggle.disabled = (textselector_get_pos(c) == 0);
-
-    // Reinig after algorithm change
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
-}
-
-void scaling_factor_toggled(component *c, void *userdata, int pos) {
-    //mainmenu_local *local = userdata;
-    settings_video *v = &settings_get()->video;
-
-    int *list;
-    scaler_plugin scaler;
-    scaler_init(&scaler);
-    plugins_get_scaler(&scaler, v->scaler);
-    scaler_get_factors_list(&scaler, &list);
-    v->scale_factor = list[pos];
-
-    // Reinit after factor change
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
-}
-
 // Init menus
 int mainmenu_create(scene *scene) {
     // Init local data
@@ -1179,108 +1025,11 @@ int mainmenu_create(scene *scene) {
     local->config_done_button.click = mainmenu_prev_menu;
     local->config_done_button.userdata = (void*)scene;
 
+    // Create video menu
     menu_create(&local->video_menu, 165, 5, 151, 119);
-    textbutton_create(&local->video_header, &font_large, "VIDEO");
-    resolution *res = find_resolution_by_settings(setting);
-    if(res) {
-        textselector_create(&local->resolution_toggle, &font_large, "RES:", _resolutions[0].name);
-        local->is_custom_resolution = 0;
-    } else {
-        sprintf(local->custom_resolution_label, "%ux%u", setting->video.screen_w, setting->video.screen_h);
-        textselector_create(&local->resolution_toggle, &font_large, "RES:", local->custom_resolution_label);
-        local->custom_resolution.x = setting->video.screen_w;
-        local->custom_resolution.y = setting->video.screen_h;
-        local->is_custom_resolution = 1;
-    }
-    for(int i = local->is_custom_resolution ? 0 : 1;i < sizeof(_resolutions)/sizeof(resolution); ++i) {
-        textselector_add_option(&local->resolution_toggle, _resolutions[i].name);
-    }
-    if(!local->is_custom_resolution) {
-        textselector *t = local->resolution_toggle.obj;
-        for(int i = 0;i < vector_size(&t->options);i++) {
-            if(res->name == *(const char**)vector_get(&t->options, i)) {
-                textselector_set_pos(&local->resolution_toggle, i);
-                break;
-            }
-        }
-    }
+    menu_video_create(&local->video_menu);
 
-    textselector_create(&local->vsync_toggle, &font_large, "VSYNC:", "OFF");
-    textselector_add_option(&local->vsync_toggle, "ON");
-    textselector_create(&local->fullscreen_toggle, &font_large, "FULLSCREEN:", "OFF");
-    textselector_add_option(&local->fullscreen_toggle, "ON");
-    textselector_create(&local->scaler_toggle, &font_large, "SCALER:", "NEAREST");
-    textselector_create(&local->scale_factor_toggle, &font_large, "SCALING FACTOR:", "1");
-
-    // Get scalers
-    list mlist;
-    list_create(&mlist);
-    plugins_get_list_by_type(&mlist, "scaler");
-    iterator it;
-    list_iter_begin(&mlist, &it);
-    base_plugin **plugin;
-    int i = 1;
-    int plugin_found = 0;
-    while((plugin = iter_next(&it)) != NULL) {
-        textselector_add_option(&local->scaler_toggle, (*plugin)->get_name());
-        if(strcmp((*plugin)->get_name(), setting->video.scaler) == 0) {
-            textselector_set_pos(&local->scaler_toggle, i);
-            plugin_found = 1;
-        }
-        i++;
-    }
-    list_free(&mlist);
-    local->scale_factor_toggle.disabled = !plugin_found;
-
-    if(plugin_found) {
-        // Get scaling factors
-        int pindex = 0;
-        int *plist;
-        scaler_plugin scaler;
-        scaler_init(&scaler);
-        plugins_get_scaler(&scaler, setting->video.scaler);
-        int plen = scaler_get_factors_list(&scaler, &plist);
-        textselector_clear_options(&local->scale_factor_toggle);
-        for(int i = 0; i < plen; i++) {
-            sprintf(local->scaling_factor_labels[i], "%d", plist[i]);
-            textselector_add_option(&local->scale_factor_toggle, local->scaling_factor_labels[i]);
-            if(plist[i] == setting->video.scale_factor ) {
-                pindex = i;
-            }
-        }
-        textselector_set_pos(&local->scale_factor_toggle, pindex);
-    }
-
-    textbutton_create(&local->video_done_button, &font_large, "DONE");
-    menu_attach(&local->video_menu, &local->video_header, 22);
-    menu_attach(&local->video_menu, &local->resolution_toggle, 11);
-    menu_attach(&local->video_menu, &local->vsync_toggle, 11);
-    menu_attach(&local->video_menu, &local->fullscreen_toggle, 11);
-    menu_attach(&local->video_menu, &local->scaler_toggle, 11);
-    menu_attach(&local->video_menu, &local->scale_factor_toggle, 11);
-    menu_attach(&local->video_menu, &local->video_done_button, 11);
-    local->video_header.disabled = 1;
-    local->video_done_button.click = video_done_clicked;
-    local->video_done_button.userdata = (void*)scene;
-    menu_select(&local->video_menu, &local->resolution_toggle);
-
-    // Video confirmation dialog
-    local->video_accept_secs = 0;
-    menu_create(&local->video_confirm_menu, 10, 80, 300, 40);
-    textbutton_create(&local->video_confirm_header, &font_large, "ACCEPT NEW RESOLUTION?");
-    textbutton_create(&local->video_confirm_cancel, &font_large, "CANCEL");
-    textbutton_create(&local->video_confirm_ok, &font_large, "OK");
-    menu_attach(&local->video_confirm_menu, &local->video_confirm_header, 11);
-    menu_attach(&local->video_confirm_menu, &local->video_confirm_cancel, 11);
-    menu_attach(&local->video_confirm_menu, &local->video_confirm_ok, 11);
-
-    local->video_confirm_header.disabled = 1;
-    menu_select(&local->video_confirm_menu, &local->video_confirm_cancel);
-    local->video_confirm_cancel.click = video_confirm_cancel_clicked;
-    local->video_confirm_cancel.userdata = (void*)scene;
-    local->video_confirm_ok.click = mainmenu_prev_menu;
-    local->video_confirm_ok.userdata = (void*)scene;
-
+    // Create gameplay menu
     menu_create(&local->gameplay_menu, 165, 5, 151, 119);
     textbutton_create(&local->gameplay_header, &font_large, "GAMEPLAY");
     textslider_create(&local->speed_slider, &font_large, "SPEED", 10, 0);

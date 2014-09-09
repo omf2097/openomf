@@ -13,6 +13,10 @@ void menu_create(menu *menu, int x, int y, int w, int h) {
     menu->h = h;
     menu_background_create(&menu->sur, w, h);
     menu->selected = 0;
+    menu->finished = 0;
+    
+    menu->free_cb = NULL;
+    menu->userdata = NULL;
 }
 
 void menu_free(menu *menu) {
@@ -121,6 +125,10 @@ int menu_handle_action(menu *menu, int action) {
         sound_play(19, 0.5f, 0.0f, 2.0f);
         (*c)->selected = 1;
         return 0;
+    }
+
+    if(action == ACT_ESC) {
+        menu->finished = 1;
     }
 
     if(!(*c)->action(*c, action)) {
