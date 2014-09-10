@@ -299,6 +299,15 @@ int pilot_sex(int pilot_id) {
   }
 }
 
+void newsroom_startup(scene *scene, int id, int *m_load, int *m_repeat) {
+    switch(id) {
+        case 5:
+        case 6:
+            *m_load = 1;
+            return;
+    }
+}
+
 int newsroom_create(scene *scene) {
     newsroom_local *local = malloc(sizeof(newsroom_local));
 
@@ -358,6 +367,7 @@ int newsroom_create(scene *scene) {
     scene_set_render_overlay_cb(scene, newsroom_overlay_render);
     scene_set_free_cb(scene, newsroom_free);
     scene_set_static_tick_cb(scene, newsroom_static_tick);
+    scene_set_startup_cb(scene, newsroom_startup);
 
     // Start correct music
     music_play(PSM_MENU);
