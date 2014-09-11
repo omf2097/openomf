@@ -48,6 +48,11 @@ $ cmake -DCMAKE_RELEASE_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
 $ make
 ```
 
+Documentation
+-------------
+
+Documentation can be found at [https://katajakasa.fi/projects/openomf/sd_doc/](https://katajakasa.fi/projects/openomf/sd_doc/).
+
 License
 -------
 MIT. Please see LICENSE file for details.
