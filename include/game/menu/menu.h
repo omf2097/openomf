@@ -31,9 +31,9 @@ void menu_tick(menu *menu);
 int menu_handle_event(menu *menu, SDL_Event *event);
 int menu_handle_action(menu *menu, int action);
 
-void menu_set_userdata(menu *menu, void *userdata) { menu->userdata = userdata; }
-void* menu_get_userdata(menu *menu) { return menu->userdata; }
-void menu_set_free_cb(menu *menu, menu_free_cb cb) { menu->free_cb = cb; }
+void menu_set_userdata(menu *menu, void *userdata);
+void* menu_get_userdata(menu *menu);
+void menu_set_free_cb(menu *menu, menu_free_cb cb);
 
 
 #endif // _MENU_H

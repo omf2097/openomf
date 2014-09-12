@@ -1,4 +1,4 @@
-#include <SDL2/SDL.h>
+/*
 #include <enet/enet.h>
 #include <time.h>
 #include <stdio.h>
@@ -6,12 +6,7 @@
 #include "utils/log.h"
 #include "game/text/text.h"
 #include "audio/audio.h"
-#include "audio/music.h"
-#include "video/video.h"
 #include "game/common_defines.h"
-#include "game/utils/settings.h"
-#include "game/scenes/mainmenu.h"
-#include "game/menu/menu.h"
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
@@ -24,124 +19,30 @@
 #include "game/game_player.h"
 #include "game/game_state.h"
 #include "plugins/plugins.h"
+*/
 
-#include "game/scenes/mainmenu/menu_video.h"
+#include <SDL2/SDL.h>
+#include "audio/music.h"
+#include "video/video.h"
+#include "resources/ids.h"
+#include "game/menu/menu.h"
+#include "game/scenes/mainmenu.h"
+#include "game/scenes/mainmenu/menu_main.h"
+#include "game/utils/settings.h"
 
 typedef struct mainmenu_local_t {
+/*
     time_t connect_start;
-
-    time_t video_accept_timer;
-    settings_video old_video_settings;
-    int video_accept_secs;
-    char video_accept_label[100];
-
     char input_key_labels[6][100];
     int input_presskey_ready_ticks;
     int input_selected_player;
-    char scaling_factor_labels[16][3];
-
-    char custom_resolution_label[40];
-    vec2i custom_resolution;
-    int is_custom_resolution;
-
-    menu *current_menu;
-    menu main_menu;
-    component oneplayer_button;
-    component twoplayer_button;
-    component tourn_button;
-    component config_button;
-    component gameplay_button;
-    component net_button;
-    component help_button;
-    component demo_button;
-    component scoreboard_button;
-    component quit_button;
-
-    menu video_confirm_menu;
-    component video_confirm_header;
-    component video_confirm_cancel;
-    component video_confirm_ok;
-
-    menu net_menu;
-    component net_header;
-    component net_connect_button;
-    component net_listen_button;
-    component net_done_button;
-
-    menu connect_menu;
-    component connect_ip_input;
-    component connect_ip_button;
-    component connect_ip_cancel_button;
-
-    menu listen_menu;
-    component listen_button;
-    component listen_cancel_button;
-
-    menu video_menu;
-
-    menu config_menu;
-    component config_header;
-    component playerone_input_button;
-    component playertwo_input_button;
-    component video_options_button;
-    component sound_slider;
-    component music_slider;
-    component mono_toggle;
-    component config_done_button;
-
-    menu input_config_menu;
-    component input_config_header;
-    component input_left_keyboard;
-    component input_right_keyboard;
-    component input_custom_keyboard;
-    component input_joystick1;
-    component input_joystick2;
-    component input_done_button;
-
-    menu input_custom_keyboard_menu;
-    component input_custom_keyboard_header;
-    component input_up_button;
-    component input_down_button;
-    component input_left_button;
-    component input_right_button;
-    component input_kick_button;
-    component input_punch_button;
-    component input_config_done_button;
-
-    menu input_presskey_menu;
-    component input_presskey_header;
-
-    menu gameplay_menu;
-    component gameplay_header;
-    component speed_slider;
-    component fightmode_toggle;
-    component powerone_slider;
-    component powertwo_slider;
-    component hazards_toggle;
-    component cpu_toggle;
-    component round_toggle;
-    component gameplay_done_button;
-
-    ENetHost *host;
-
     int prev_key;
+*/
 
-    // Menu stack
-    menu *mstack[10];
-    int mstack_pos;
+    menu main_menu;
 } mainmenu_local;
 
-void mainmenu_startup(scene *scene, int id, int *m_load, int *m_repeat) {
-    switch(id) {
-        case 10:
-        case 11:
-            *m_load = 1;
-            *m_repeat = 1;
-            break;
-    }
-}
-
-
+/*
 char *dupestr(const char *s) {
     return strcpy(malloc(strlen(s)+1), s);
 }
@@ -506,100 +407,23 @@ void mainmenu_listen_for_connections(component *c, void *userdata) {
     enet_socket_set_option(local->host->socket, ENET_SOCKOPT_REUSEADDR, 1);
     mainmenu_enter_menu_listen(c, userdata);
 }
-
+*/
 
 void mainmenu_free(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
-
-    textbutton_free(&local->oneplayer_button);
-    textbutton_free(&local->twoplayer_button);
-    textbutton_free(&local->tourn_button);
-    textbutton_free(&local->config_button);
-    textbutton_free(&local->gameplay_button);
-    textbutton_free(&local->net_button);
-    textbutton_free(&local->help_button);
-    textbutton_free(&local->demo_button);
-    textbutton_free(&local->scoreboard_button);
-    textbutton_free(&local->quit_button);
     menu_free(&local->main_menu);
-
-    textbutton_free(&local->config_header);
-    textbutton_free(&local->playerone_input_button);
-    textbutton_free(&local->playertwo_input_button);
-    textbutton_free(&local->video_options_button);
-    textslider_free(&local->sound_slider);
-    textslider_free(&local->music_slider);
-    textselector_free(&local->mono_toggle);
-    textbutton_free(&local->config_done_button);
-    menu_free(&local->config_menu);
-
-    menu_free(&local->video_menu);
-
-    textbutton_free(&local->video_confirm_header);
-    textbutton_free(&local->video_confirm_cancel);
-    textbutton_free(&local->video_confirm_ok);
-    menu_free(&local->video_confirm_menu);
-
-    textbutton_free(&local->gameplay_header);
-    textslider_free(&local->speed_slider);
-    textselector_free(&local->fightmode_toggle);
-    textslider_free(&local->powerone_slider);
-    textslider_free(&local->powertwo_slider);
-    textselector_free(&local->hazards_toggle);
-    textselector_free(&local->cpu_toggle);
-    textselector_free(&local->round_toggle);
-    textbutton_free(&local->gameplay_done_button);
-    menu_free(&local->gameplay_menu);
-
-    textbutton_free(&local->input_config_header);
-    textbutton_free(&local->input_right_keyboard);
-    textbutton_free(&local->input_left_keyboard);
-    textbutton_free(&local->input_custom_keyboard);
-    textbutton_free(&local->input_joystick1);
-    textbutton_free(&local->input_joystick2);
-    textbutton_free(&local->input_done_button);
-    menu_free(&local->input_config_menu);
-
-    textbutton_free(&local->input_custom_keyboard_header);
-    textbutton_free(&local->input_up_button);
-    textbutton_free(&local->input_down_button);
-    textbutton_free(&local->input_left_button);
-    textbutton_free(&local->input_right_button);
-    textbutton_free(&local->input_punch_button);
-    textbutton_free(&local->input_kick_button);
-    textbutton_free(&local->input_config_done_button);
-    menu_free(&local->input_custom_keyboard_menu);
-
-    textbutton_free(&local->input_presskey_header);
-    menu_free(&local->input_presskey_menu);
-
-    textbutton_free(&local->net_header);
-    textbutton_free(&local->net_connect_button);
-    textbutton_free(&local->net_listen_button);
-    textbutton_free(&local->net_done_button);
-    menu_free(&local->net_menu);
-
-    textinput_free(&local->connect_ip_input);
-    textbutton_free(&local->connect_ip_button);
-    textbutton_free(&local->connect_ip_cancel_button);
-    menu_free(&local->connect_menu);
-
-    textbutton_free(&local->listen_button);
-    textbutton_free(&local->listen_cancel_button);
-    menu_free(&local->listen_menu);
-
-    settings_save();
-
     free(local);
+    settings_save();
 }
 
 void mainmenu_tick(scene *scene, int paused) {
     mainmenu_local *local = scene_get_userdata(scene);
-    game_state *gs = scene->gs;
+    //game_state *gs = scene->gs;
 
     // Tick menu
-    menu_tick(local->current_menu);
+    menu_tick(&local->main_menu);
 
+/*
     // Handle video confirm menu
     if(local->mstack[local->mstack_pos-1] == &local->video_confirm_menu) {
         if(difftime(time(NULL), local->video_accept_timer) >= 1.0) {
@@ -792,9 +616,12 @@ void mainmenu_tick(scene *scene, int paused) {
             }
         }
     }
+*/
 }
 
+
 void mainmenu_input_tick(scene *scene) {
+/*
     mainmenu_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
 
@@ -835,11 +662,12 @@ void mainmenu_input_tick(scene *scene) {
         } while((i = i->next));
     }
     controller_free_chain(p1);
+*/
 }
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
     mainmenu_local *local = scene_get_userdata(scene);
-
+/*
     game_player *player1 = game_state_get_player(scene->gs, 0);
     if (player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
             (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN
@@ -847,12 +675,23 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
         // these events will be handled by polling
         return 1;
     }
-    return menu_handle_event(local->current_menu, event);
+*/
+    return menu_handle_event(&local->main_menu, event);
 }
 
 void mainmenu_render(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
-    menu_render(local->current_menu);
+    menu_render(&local->main_menu);
+}
+
+void mainmenu_startup(scene *scene, int id, int *m_load, int *m_repeat) {
+    switch(id) {
+        case 10:
+        case 11:
+            *m_load = 1;
+            *m_repeat = 1;
+            break;
+    }
 }
 
 // Init menus
@@ -862,337 +701,26 @@ int mainmenu_create(scene *scene) {
     scene_set_userdata(scene, local);
 
     // Load settings
-    settings *setting = settings_get();
     game_state_set_speed(scene->gs, settings_get()->gameplay.speed);
-
-    // Zero out host
-    local->host = NULL;
-
-    // Start stack & set main menu to current
-    local->mstack_pos = 0;
-    local->mstack[local->mstack_pos++] = &local->main_menu;
-    local->current_menu = &local->main_menu;
 
     // Create main menu
     menu_create(&local->main_menu, 165, 5, 151, 119);
-    textbutton_create(&local->oneplayer_button, &font_large, "ONE PLAYER GAME");
-    textbutton_create(&local->twoplayer_button, &font_large, "TWO PLAYER GAME");
-    textbutton_create(&local->tourn_button, &font_large, "TOURNAMENT PLAY");
-    textbutton_create(&local->net_button, &font_large, "NETWORK PLAY");
-    textbutton_create(&local->config_button, &font_large, "CONFIGURATION");
-    textbutton_create(&local->gameplay_button, &font_large, "GAMEPLAY");
-    textbutton_create(&local->help_button, &font_large, "HELP");
-    textbutton_create(&local->demo_button, &font_large, "DEMO");
-    textbutton_create(&local->scoreboard_button, &font_large, "SCOREBOARD");
-    textbutton_create(&local->quit_button, &font_large, "QUIT");
-    menu_attach(&local->main_menu, &local->oneplayer_button, 11);
-    menu_attach(&local->main_menu, &local->twoplayer_button, 11);
-    menu_attach(&local->main_menu, &local->tourn_button, 11);
-    menu_attach(&local->main_menu, &local->net_button, 11);
-    menu_attach(&local->main_menu, &local->config_button, 11);
-    menu_attach(&local->main_menu, &local->gameplay_button, 11);
-    menu_attach(&local->main_menu, &local->help_button, 11);
-    menu_attach(&local->main_menu, &local->demo_button, 11);
-    menu_attach(&local->main_menu, &local->scoreboard_button, 11);
-    menu_attach(&local->main_menu, &local->quit_button, 11);
+    menu_main_create(&local->main_menu);
 
-    // Status
-    local->tourn_button.disabled = 1;
-    local->config_button.disabled = 0;
-    local->gameplay_button.disabled = 0;
-    local->net_button.disabled = 0;
-    local->help_button.disabled = 1;
-    local->demo_button.disabled = 0;
-    local->scoreboard_button.disabled = 0;
-
-    // Events
-    local->quit_button.userdata = (void*)scene;
-    local->quit_button.click = mainmenu_quit;
-    local->oneplayer_button.userdata = (void*)scene;
-    local->oneplayer_button.click = mainmenu_1v1;
-    local->twoplayer_button.userdata = (void*)scene;
-    local->twoplayer_button.click = mainmenu_1v2;
-    local->tourn_button.userdata = (void*)scene;
-    local->tourn_button.click = mainmenu_tourn;
-    local->config_button.userdata = (void*)scene;
-    local->config_button.click = mainmenu_enter_menu_config;
-    local->net_button.userdata = (void*)scene;
-    local->net_button.click = mainmenu_enter_menu_net;
-    local->gameplay_button.userdata = (void*)scene;
-    local->gameplay_button.click = mainmenu_enter_menu_gameplay;
-    local->demo_button.userdata = (void*)scene;
-    local->demo_button.click = mainmenu_demo;
-    local->scoreboard_button.userdata = (void*)scene;
-    local->scoreboard_button.click = mainmenu_soreboard;
-
-    // destroy any leftover controllers
-    controller *ctrl;
-    for (int i = 0; i < 2; i++) {
+    // Cleanups and resets
+    for(int i = 0; i < 2; i++) {
+        // destroy any leftover controllers
+        controller *ctrl;
        if ((ctrl = game_player_get_ctrl(game_state_get_player(scene->gs, i)))) {
-           DEBUG("freeing controller");
            game_player_set_ctrl(game_state_get_player(scene->gs, i), NULL);
        }
+
        // reset any single player data
        game_state_get_player(scene->gs, i)->sp_wins = 0;
        chr_score_reset(game_player_get_score(game_state_get_player(scene->gs, i)), 1);
        chr_score_reset_wins(game_player_get_score(game_state_get_player(scene->gs, i)));
     }
-
     reconfigure_controller(scene->gs);
-
-    // network play menu
-    menu_create(&local->net_menu, 165, 5, 151, 119);
-    textbutton_create(&local->net_header, &font_large, "NETWORK PLAY");
-    textbutton_create(&local->net_connect_button, &font_large, "CONNECT TO SERVER");
-    textbutton_create(&local->net_listen_button, &font_large, "START SERVER");
-    textbutton_create(&local->net_done_button, &font_large, "DONE");
-    menu_attach(&local->net_menu, &local->net_header, 33);
-    menu_attach(&local->net_menu, &local->net_connect_button, 11);
-    menu_attach(&local->net_menu, &local->net_listen_button, 55);
-    menu_attach(&local->net_menu, &local->net_done_button, 11);
-
-    local->net_listen_button.userdata = scene;
-    local->net_listen_button.click = mainmenu_listen_for_connections;
-
-    local->net_header.disabled = 1;
-    menu_select(&local->net_menu, &local->net_connect_button);
-
-    local->net_connect_button.userdata = scene;
-    local->net_connect_button.click = mainmenu_enter_menu_connect;
-
-    local->net_done_button.userdata = scene;
-    local->net_done_button.click = mainmenu_prev_menu;
-
-    // connect menu
-    menu_create(&local->connect_menu, 10, 80, 300, 50);
-    textinput_create(&local->connect_ip_input, &font_large, "Host/IP", setting->net.net_connect_ip);
-    textbutton_create(&local->connect_ip_button, &font_large, "CONNECT");
-    textbutton_create(&local->connect_ip_cancel_button, &font_large, "CANCEL");
-    menu_attach(&local->connect_menu, &local->connect_ip_input, 11);
-    menu_attach(&local->connect_menu, &local->connect_ip_button, 11);
-    menu_attach(&local->connect_menu, &local->connect_ip_cancel_button, 11);
-
-    local->connect_ip_button.userdata = scene;
-    local->connect_ip_button.click = mainmenu_connect_to_ip;
-
-    local->connect_ip_cancel_button.userdata = scene;
-    local->connect_ip_cancel_button.click = mainmenu_cancel_connection;
-
-    // listen menu
-    menu_create(&local->listen_menu, 10, 80, 300, 50);
-    textbutton_create(&local->listen_button, &font_large, "Waiting for connection...");
-    textbutton_create(&local->listen_cancel_button, &font_large, "CANCEL");
-    menu_attach(&local->listen_menu, &local->listen_button, 11);
-    menu_attach(&local->listen_menu, &local->listen_cancel_button, 11);
-    local->listen_button.disabled = 1;
-    menu_select(&local->listen_menu, &local->listen_cancel_button);
-
-    local->listen_cancel_button.userdata = scene;
-    local->listen_cancel_button.click = mainmenu_cancel_connection;
-
-    // create configuration menu
-    menu_create(&local->config_menu, 165, 5, 151, 119);
-    textbutton_create(&local->config_header, &font_large, "CONFIGURATION");
-    textbutton_create(&local->playerone_input_button, &font_large, "PLAYER 1 INPUT");
-    textbutton_create(&local->playertwo_input_button, &font_large, "PLAYER 2 INPUT");
-    textbutton_create(&local->video_options_button, &font_large, "VIDEO OPTIONS");
-    textslider_create(&local->sound_slider, &font_large, "SOUND", 10, 1);
-    textslider_create(&local->music_slider, &font_large, "MUSIC", 10, 1);
-    textselector_create(&local->mono_toggle, &font_large, "MONO", "OFF");
-    textselector_add_option(&local->mono_toggle, "ON");
-    textbutton_create(&local->config_done_button, &font_large, "DONE");
-    menu_attach(&local->config_menu, &local->config_header, 33);
-    menu_attach(&local->config_menu, &local->playerone_input_button, 11);
-    menu_attach(&local->config_menu, &local->playertwo_input_button, 11);
-    menu_attach(&local->config_menu, &local->video_options_button, 11);
-    menu_attach(&local->config_menu, &local->sound_slider, 11);
-    menu_attach(&local->config_menu, &local->music_slider, 11);
-    menu_attach(&local->config_menu, &local->mono_toggle, 11);
-    menu_attach(&local->config_menu, &local->config_done_button, 11);
-
-    local->playerone_input_button.userdata = (void*)scene;
-    local->playerone_input_button.click = mainmenu_enter_playerone_input_config;
-
-    local->playertwo_input_button.userdata = (void*)scene;
-    local->playertwo_input_button.click = mainmenu_enter_playertwo_input_config;
-
-    local->video_options_button.userdata = (void*)scene;
-    local->video_options_button.click = mainmenu_enter_menu_video;
-
-    local->config_header.disabled = 1;
-    menu_select(&local->config_menu, &local->playerone_input_button);
-
-    local->config_done_button.click = mainmenu_prev_menu;
-    local->config_done_button.userdata = (void*)scene;
-
-    // Create video menu
-    menu_create(&local->video_menu, 165, 5, 151, 119);
-    menu_video_create(&local->video_menu);
-
-    // Create gameplay menu
-    menu_create(&local->gameplay_menu, 165, 5, 151, 119);
-    textbutton_create(&local->gameplay_header, &font_large, "GAMEPLAY");
-    textslider_create(&local->speed_slider, &font_large, "SPEED", 10, 0);
-    textselector_create(&local->fightmode_toggle, &font_large, "FIGHT MODE", "NORMAL");
-    textselector_add_option(&local->fightmode_toggle, "HYPER");
-    textslider_create(&local->powerone_slider, &font_large, "POWER 1", 8, 0);
-    textslider_create(&local->powertwo_slider, &font_large, "POWER 2", 8, 0);
-    textselector_create(&local->hazards_toggle, &font_large, "HAZARDS", "OFF");
-    textselector_add_option(&local->hazards_toggle, "ON");
-    textselector_create(&local->cpu_toggle, &font_large, "CPU:", ai_difficulty_get_name(0));
-    for(int i = 1; i < NUMBER_OF_AI_DIFFICULTY_TYPES; i++) {
-        textselector_add_option(&local->cpu_toggle, ai_difficulty_get_name(i));
-    }
-    textselector_create(&local->round_toggle, &font_large, "", round_get_name(0));
-    for(int i = 1; i < NUMBER_OF_ROUND_TYPES; i++) {
-        textselector_add_option(&local->round_toggle, round_get_name(i));
-    }
-    textbutton_create(&local->gameplay_done_button, &font_large, "DONE");
-    menu_attach(&local->gameplay_menu, &local->gameplay_header, 22);
-    menu_attach(&local->gameplay_menu, &local->speed_slider, 11);
-    menu_attach(&local->gameplay_menu, &local->fightmode_toggle, 11);
-    menu_attach(&local->gameplay_menu, &local->powerone_slider, 11);
-    menu_attach(&local->gameplay_menu, &local->powertwo_slider, 11);
-    menu_attach(&local->gameplay_menu, &local->hazards_toggle, 11);
-    menu_attach(&local->gameplay_menu, &local->cpu_toggle, 11);
-    menu_attach(&local->gameplay_menu, &local->round_toggle, 11);
-    menu_attach(&local->gameplay_menu, &local->gameplay_done_button, 11);
-
-    // sound options
-    local->sound_slider.slide = menu_sound_slide;
-    local->music_slider.slide = menu_music_slide;
-    textslider_bindvar(&local->sound_slider, &setting->sound.sound_vol);
-    textslider_bindvar(&local->music_slider, &setting->sound.music_vol);
-    textselector_bindvar(&local->mono_toggle, &setting->sound.music_mono);
-    local->mono_toggle.toggle = menu_mono_toggle;
-
-    // video options
-    local->resolution_toggle.toggle = resolution_toggled;
-    local->resolution_toggle.userdata = (void*)scene;
-    textselector_bindvar(&local->vsync_toggle, &setting->video.vsync);
-    textselector_bindvar(&local->fullscreen_toggle, &setting->video.fullscreen);
-    local->scaler_toggle.toggle = scaler_toggled;
-    local->scaler_toggle.userdata = local;
-    local->scale_factor_toggle.toggle = scaling_factor_toggled;
-    local->scale_factor_toggle.userdata = local;
-
-    // input config menu
-    menu_create(&local->input_config_menu, 165, 5, 151, 119);
-    textbutton_create(&local->input_config_header, &font_large, "CHOOSE INPUT DEVICE");
-    local->input_config_header.disabled = 1;
-    textbutton_create(&local->input_right_keyboard, &font_large, "RIGHT KEYBOARD");
-    textbutton_create(&local->input_left_keyboard, &font_large, "LEFT KEYBOARD");
-    textbutton_create(&local->input_custom_keyboard, &font_large, "CUSTOM KEYBOARD");
-    textbutton_create(&local->input_joystick1, &font_large, "JOYSTICK 1");
-    textbutton_create(&local->input_joystick2, &font_large, "JOYSTICK 2");
-    textbutton_create(&local->input_done_button, &font_large, "DONE");
-    menu_attach(&local->input_config_menu, &local->input_config_header, 22);
-    menu_attach(&local->input_config_menu, &local->input_right_keyboard, 11);
-    menu_attach(&local->input_config_menu, &local->input_left_keyboard, 11);
-    menu_attach(&local->input_config_menu, &local->input_custom_keyboard, 11);
-    menu_attach(&local->input_config_menu, &local->input_joystick1, 11);
-    menu_attach(&local->input_config_menu, &local->input_joystick2, 33);
-    menu_attach(&local->input_config_menu, &local->input_done_button, 11);
-
-    menu_select(&local->input_config_menu, &local->input_right_keyboard);
-
-    local->input_right_keyboard.click = mainmenu_set_right_keyboard;
-    local->input_right_keyboard.userdata = (void*)scene;
-
-    local->input_left_keyboard.click = mainmenu_set_left_keyboard;
-    local->input_left_keyboard.userdata = (void*)scene;
-
-    local->input_custom_keyboard.click = mainmenu_enter_custom_keyboard_config;
-    local->input_custom_keyboard.userdata = (void*)scene;
-
-    int jcount = joystick_count();
-    local->input_joystick1.click = mainmenu_set_joystick1;
-    local->input_joystick1.userdata = (void*)scene;
-    if (jcount < 1) {
-        local->input_joystick1.disabled = 1;
-    }
-
-    local->input_joystick2.click = mainmenu_set_joystick2;
-    local->input_joystick2.userdata = (void*)scene;
-    if (jcount < 2) {
-        local->input_joystick2.disabled = 1;
-    }
-
-    local->input_done_button.click = mainmenu_prev_menu;
-    local->input_done_button.userdata = (void*)scene;
-
-    menu_create(&local->input_custom_keyboard_menu, 165, 5, 151, 119);
-    textbutton_create(&local->input_custom_keyboard_header, &font_large, "CUSTOM INPUT SETUP");
-    textbutton_create(&local->input_up_button, &font_large, "UP:");
-    textbutton_create(&local->input_down_button, &font_large, "DOWN:");
-    textbutton_create(&local->input_left_button, &font_large, "LEFT:");
-    textbutton_create(&local->input_right_button, &font_large, "RIGHT:");
-    textbutton_create(&local->input_punch_button, &font_large, "PUNCH:");
-    textbutton_create(&local->input_kick_button, &font_large, "KICK:");
-    textbutton_create(&local->input_config_done_button, &font_large, "DONE");
-    menu_attach(&local->input_custom_keyboard_menu, &local->input_custom_keyboard_header, 22);
-    menu_attach(&local->input_custom_keyboard_menu, &local->input_up_button, 11);
-    menu_attach(&local->input_custom_keyboard_menu, &local->input_down_button, 11);
-    menu_attach(&local->input_custom_keyboard_menu, &local->input_left_button, 11);
-    menu_attach(&local->input_custom_keyboard_menu, &local->input_right_button, 11);
-    menu_attach(&local->input_custom_keyboard_menu, &local->input_punch_button, 11);
-    menu_attach(&local->input_custom_keyboard_menu, &local->input_kick_button, 11);
-    menu_attach(&local->input_custom_keyboard_menu, &local->input_config_done_button, 11);
-
-    local->input_config_header.disabled = 1;
-    menu_select(&local->input_custom_keyboard_menu, &local->input_up_button);
-
-    local->input_up_button.click = inputmenu_set_key;
-    local->input_up_button.userdata = (void*)scene;
-
-    local->input_down_button.click = inputmenu_set_key;
-    local->input_down_button.userdata = (void*)scene;
-
-    local->input_left_button.click = inputmenu_set_key;
-    local->input_left_button.userdata = (void*)scene;
-
-    local->input_right_button.click = inputmenu_set_key;
-    local->input_right_button.userdata = (void*)scene;
-
-    local->input_punch_button.click = inputmenu_set_key;
-    local->input_punch_button.userdata = (void*)scene;
-
-    local->input_kick_button.click = inputmenu_set_key;
-    local->input_kick_button.userdata = (void*)scene;
-
-    local->input_config_done_button.click = mainmenu_apply_custom_input_config;
-    local->input_config_done_button.userdata = (void*)scene;
-
-    // input press key menu
-    menu_create(&local->input_presskey_menu, 10, 80, 300, 20);
-    textbutton_create(&local->input_presskey_header, &font_large, "PRESS A KEY FOR THIS ACTION...");
-    menu_attach(&local->input_presskey_menu, &local->input_presskey_header, 11);
-
-    // gameplay options
-    textslider_bindvar(&local->speed_slider, &setting->gameplay.speed);
-    textslider_bindvar(&local->powerone_slider, &setting->gameplay.power1);
-    textslider_bindvar(&local->powertwo_slider, &setting->gameplay.power2);
-    textselector_bindvar(&local->fightmode_toggle, &setting->gameplay.fight_mode);
-    textselector_bindvar(&local->hazards_toggle, &setting->gameplay.hazards_on);
-    textselector_bindvar(&local->cpu_toggle, &setting->gameplay.difficulty);
-    textselector_bindvar(&local->round_toggle, &setting->gameplay.rounds);
-
-    local->gameplay_header.disabled = 1;
-    menu_select(&local->gameplay_menu, &local->speed_slider);
-
-    local->speed_slider.userdata = (void*)scene;
-    local->speed_slider.slide = menu_speed_slide;
-
-    local->gameplay_done_button.click = mainmenu_prev_menu;
-    local->gameplay_done_button.userdata = (void*)scene;
-
-    // Allocate memory for the input key labels
-    ((textbutton*)local->input_up_button.obj)->text = local->input_key_labels[0];
-    ((textbutton*)local->input_down_button.obj)->text = local->input_key_labels[1];
-    ((textbutton*)local->input_left_button.obj)->text = local->input_key_labels[2];
-    ((textbutton*)local->input_right_button.obj)->text = local->input_key_labels[3];
-    ((textbutton*)local->input_punch_button.obj)->text = local->input_key_labels[4];
-    ((textbutton*)local->input_kick_button.obj)->text = local->input_key_labels[5];
 
     // Set callbacks
     scene_set_event_cb(scene, mainmenu_event);
@@ -1202,6 +730,7 @@ int mainmenu_create(scene *scene) {
     scene_set_dynamic_tick_cb(scene, mainmenu_tick);
     scene_set_startup_cb(scene, mainmenu_startup);
 
+/*
     if(scene->gs->net_mode == NET_MODE_CLIENT) {
         component_click(&local->net_button);
         component_click(&local->net_connect_button);
@@ -1216,11 +745,10 @@ int mainmenu_create(scene *scene) {
 
     // clear it, so this only happens the first time
     scene->gs->net_mode = NET_MODE_NONE;
+*/
 
-    // Make sure we have music playing
+    // Music and renderer
     music_play(PSM_MENU);
-
-    // Pick renderer
     video_select_renderer(VIDEO_RENDERER_HW);
 
     // All done

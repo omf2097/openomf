@@ -146,3 +146,15 @@ void menu_tick(menu *menu) {
         (*tmp)->tick(*tmp);
     }
 }
+
+void menu_set_userdata(menu *menu, void *userdata) {
+    menu->userdata = userdata;
+}
+
+void* menu_get_userdata(menu *menu) {
+    return menu->userdata;
+}
+
+void menu_set_free_cb(menu *menu, menu_free_cb cb) {
+    menu->free_cb = cb;
+}
