@@ -4,19 +4,29 @@
 #include <SDL2/SDL.h>
 
 #include "game/menu/textinput.h"
+#include "utils/log.h"
+#include "utils/compat.h"
 
 #define COLOR_MENU_LINE   color_create(0,0,89,255)
 #define COLOR_MENU_BORDER color_create(0,0,243,255)
 #define COLOR_MENU_BG     color_create(4,4,16,210)
 
-int textinput_action(component *c, int action);
-void textinput_focus(component *c, int focus);
+typedef struct {
+    char *text;
+    font *font;
+    int ticks;
+    int dir;
+    int pos_;
+    int *pos;
+    surface sur;
+    char buf[50];
+} textinput;
 
 void textinput_create(component *c, font *font, const char *text, const char *initialvalue) {
     component_create(c);
-    textinput *tb;
-    tb = malloc(sizeof(textinput));
-    tb->text = text;
+
+    textinput *tb = malloc(sizeof(textinput));
+    tb->text = strdup(text);
     tb->font = font;
     tb->ticks = 0;
     tb->dir = 0;
@@ -29,17 +39,17 @@ void textinput_create(component *c, font *font, const char *text, const char *in
     surface_create_from_image(&tb->sur, &img);
     image_free(&img);
     memcpy(tb->buf, initialvalue, strlen(initialvalue)+1);
-    c->obj = tb;
-    c->render = textinput_render;
-    c->event = textinput_event;
-    c->action = textinput_action;
-    c->tick = textinput_tick;
-    c->focus = textinput_focus;
+    component_set_obj(c, tb);
+
+    component_set_render_cb(c, textinput_render);
+    component_set_event_cb(c, textinput_event);
+    component_set_tick_cb(c, textinput_tick);
 }
 
 void textinput_free(component *c) {
     textinput *tb = c->obj;
     surface_free(&tb->sur);
+    free(tb->text);
     free(tb);
     component_free(c);
 }

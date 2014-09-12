@@ -7,22 +7,34 @@
 #include "video/video.h"
 #include "audio/sound.h"
 #include "utils/log.h"
+#include "utils/compat.h"
+
+typedef struct textbutton_t {
+    char *text;
+    font *font;
+    int ticks;
+    int dir;
+    int border_enabled;
+    int border_created;
+    color border_color;
+    surface border;
+} textbutton;
 
 void textbutton_create(component *c, font *font, const char *text) {
     component_create(c);
-    textbutton *tb;
-    tb = malloc(sizeof(textbutton));
-    tb->text = text;
+
+    textbutton *tb = malloc(sizeof(textbutton));
+    tb->text = strdup(text);
     tb->font = font;
     tb->ticks = 0;
     tb->dir = 0;
     tb->border_enabled = 0;
     tb->border_created = 0;
-    c->obj = tb;
-    c->render = textbutton_render;
-    c->event = textbutton_event;
-    c->action = textbutton_action;
-    c->tick = textbutton_tick;
+    component_set_obj(c, tb);
+
+    component_set_render_cb(c, textbutton_render);
+    component_set_action_cb(c, textbutton_action);
+    component_set_tick_cb(c, textbutton_tick);
 }
 
 void textbutton_free(component *c) {
@@ -30,6 +42,7 @@ void textbutton_free(component *c) {
     if(tb->border_created) {
         surface_free(&tb->border);
     }
+    free(tb->text);
     free(tb);
     component_free(c);
 }
@@ -52,18 +65,11 @@ void textbutton_render(component *c) {
     }
 }
 
-int textbutton_event(component *c, SDL_Event *event) {
-    return 1;
-}
-
 int textbutton_action(component *c, int action) {
     // Handle selection
     if(action == ACT_KICK || action == ACT_PUNCH) {
-        if(c->click != NULL) {
-            // Play menu sound
-            sound_play(20, 0.5f, 0.0f, 2.0f);
-            c->click(c, c->userdata);
-        }
+        component_click(c);
+        sound_play(20, 0.5f, 0.0f, 2.0f);
         return 0;
     }
     return 1;

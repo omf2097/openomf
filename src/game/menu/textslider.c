@@ -6,12 +6,24 @@
 #include "game/menu/textslider.h"
 #include "audio/sound.h"
 #include "utils/log.h"
+#include "utils/compat.h"
+
+typedef struct {
+    char *text;
+    font *font;
+    int ticks;
+    int dir;
+    int pos_;
+    int *pos;
+    int has_off;
+    int positions;
+} textslider;
 
 void textslider_create(component *c, font *font, const char *text, unsigned int positions, int has_off) {
     component_create(c);
-    textslider *tb;
-    tb = malloc(sizeof(textslider));
-    tb->text = text;
+
+    textslider *tb = malloc(sizeof(textslider));
+    tb->text = strdup(text);
     tb->font = font;
     tb->ticks = 0;
     tb->dir = 0;
@@ -19,15 +31,16 @@ void textslider_create(component *c, font *font, const char *text, unsigned int 
     tb->pos = &tb->pos_;
     tb->has_off = has_off;
     tb->positions = positions;
-    c->obj = tb;
-    c->render = textslider_render;
-    c->event = textslider_event;
-    c->action = textslider_action;
-    c->tick = textslider_tick;
+    component_set_obj(c, tb);
+
+    component_set_render_cb(c, textslider_render);
+    component_set_action_cb(c, textslider_action);
+    component_set_tick_cb(c, textslider_tick);
 }
 
 void textslider_free(component *c) {
     textslider *tb = c->obj;
+    free(tb->text);
     free(tb);
     component_free(c);
 }
@@ -69,10 +82,6 @@ void textslider_render(component *c) {
     }
 }
 
-int textslider_event(component *c, SDL_Event *event) {
-    return 1;
-}
-
 int textslider_action(component *c, int action) {
     textslider *tb = c->obj;
     if (action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
@@ -83,9 +92,7 @@ int textslider_action(component *c, int action) {
             // Play menu sound
             sound_play(20, 0.5f, 0.5f, 2.0f);
         }
-        if(c->slide != NULL) {
-            c->slide(c, c->userdata, *tb->pos);
-        }
+        component_slide(c, *tb->pos);
         return 0;
     } else  if(action == ACT_LEFT) {
         (*tb->pos)--;
@@ -97,9 +104,7 @@ int textslider_action(component *c, int action) {
             // Play menu sound
             sound_play(20, 0.5f, -0.5f, 2.0f);
         }
-        if(c->slide != NULL) {
-            c->slide(c, c->userdata, *tb->pos);
-        }
+        component_slide(c, *tb->pos);
         return 0;
     }
     return 1;

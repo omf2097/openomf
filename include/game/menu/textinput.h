@@ -8,20 +8,6 @@
 #include "video/color.h"
 #include "video/image.h"
 
-
-typedef struct textinput_t textinput;
-
-struct textinput_t {
-    const char *text;
-    font *font;
-    int ticks;
-    int dir;
-    int pos_;
-    int *pos;
-    surface sur;
-    char buf[50];
-};
-
 void textinput_create(component *c, font *font, const char *text, const char *initialoption);
 void textinput_free(component *c);
 void textinput_render(component *c);

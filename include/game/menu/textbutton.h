@@ -4,19 +4,6 @@
 #include "game/menu/component.h"
 #include "game/text/text.h"
 
-typedef struct textbutton_t textbutton;
-
-struct textbutton_t {
-    const char *text;
-    font *font;
-    int ticks;
-    int dir;
-    int border_enabled;
-    int border_created;
-    color border_color;
-    surface border;
-};
-
 void textbutton_create(component *c, font *font, const char *text);
 void textbutton_free(component *c);
 void textbutton_render(component *c);

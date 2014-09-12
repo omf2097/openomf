@@ -6,12 +6,23 @@
 #include "game/menu/textselector.h"
 #include "audio/sound.h"
 #include "utils/log.h"
+#include "utils/compat.h"
+
+typedef struct {
+    char *text;
+    font *font;
+    int ticks;
+    int dir;
+    int pos_;
+    int *pos;
+    vector options;
+} textselector;
 
 void textselector_create(component *c, font *font, const char *text, const char *initialvalue) {
     component_create(c);
-    textselector *tb;
-    tb = malloc(sizeof(textselector));
-    tb->text = text;
+
+    textselector *tb = malloc(sizeof(textselector));
+    tb->text = strdup(text);
     tb->font = font;
     tb->ticks = 0;
     tb->dir = 0;
@@ -19,11 +30,11 @@ void textselector_create(component *c, font *font, const char *text, const char 
     tb->pos = &tb->pos_;
     vector_create(&tb->options, sizeof(char*));
     vector_append(&tb->options, &initialvalue);
-    c->obj = tb;
-    c->render = textselector_render;
-    c->event = textselector_event;
-    c->action = textselector_action;
-    c->tick = textselector_tick;
+    component_set_obj(c, tb);
+
+    component_set_render_cb(c, textselector_render);
+    component_set_action_cb(c, textselector_action);
+    component_set_tick_cb(c, textselector_tick);
 }
 
 void textselector_clear_options(component *c) {
@@ -39,6 +50,7 @@ void textselector_add_option(component *c, const char *value) {
 void textselector_free(component *c) {
     textselector *tb = c->obj;
     vector_free(&tb->options);
+    free(tb->text);
     free(tb);
     component_free(c);
 }
@@ -69,10 +81,6 @@ void textselector_render(component *c) {
     }
 }
 
-int textselector_event(component *c, SDL_Event *event) {
-    return 1;
-}
-
 int textselector_action(component *c, int action) {
     textselector *tb = c->obj;
     if (action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
@@ -80,10 +88,7 @@ int textselector_action(component *c, int action) {
         if (*tb->pos >= vector_size(&tb->options)) {
             *tb->pos = 0;
         }
-        if(c->toggle != NULL) {
-            c->toggle(c, c->userdata, *tb->pos);
-        }
-        // Play menu sound
+        component_toggle(c, *tb->pos);
         sound_play(20, 0.5f, 0.5f, 2.0f);
         return 0;
     } else  if(action == ACT_LEFT) {
@@ -91,10 +96,7 @@ int textselector_action(component *c, int action) {
         if (*tb->pos < 0) {
             *tb->pos = vector_size(&tb->options) -1;
         }
-        if(c->toggle != NULL) {
-            c->toggle(c, c->userdata, *tb->pos);
-        }
-        // Play menu sound
+        component_toggle(c, *tb->pos);
         sound_play(20, 0.5f, -0.5f, 2.0f);
         return 0;
     }

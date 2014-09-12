@@ -36,10 +36,10 @@ typedef struct mainmenu_local_t {
     char input_key_labels[6][100];
     int input_presskey_ready_ticks;
     int input_selected_player;
-    int prev_key;
 */
 
     menu main_menu;
+    int prev_key;
 } mainmenu_local;
 
 /*
@@ -621,6 +621,29 @@ void mainmenu_tick(scene *scene, int paused) {
 
 
 void mainmenu_input_tick(scene *scene) {
+    mainmenu_local *local = scene_get_userdata(scene);
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+
+    // Poll the controller
+    ctrl_event *p1 = NULL, *i;
+    controller_poll(player1->ctrl, &p1);
+    i = p1;
+    if(i) {
+        do {
+            if(i->type == EVENT_TYPE_ACTION) {
+                // Skip repeated keys
+                if(local->prev_key == i->event_data.action) {
+                    continue;
+                }
+                local->prev_key = i->event_data.action;
+
+                // Pass on the event
+                menu_handle_action(&local->main_menu, i->event_data.action);
+            }
+        } while((i = i->next));
+    }
+    controller_free_chain(p1);
+
 /*
     mainmenu_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
@@ -740,12 +763,12 @@ int mainmenu_create(scene *scene) {
         component_click(&local->net_listen_button);
     }
 
-    // prev_key is used to prevent multiple clicks while key is down
-    local->prev_key = ACT_PUNCH;
-
     // clear it, so this only happens the first time
     scene->gs->net_mode = NET_MODE_NONE;
 */
+
+    // prev_key is used to prevent multiple clicks while key is down
+    local->prev_key = ACT_PUNCH;
 
     // Music and renderer
     music_play(PSM_MENU);

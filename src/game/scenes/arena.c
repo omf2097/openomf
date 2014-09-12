@@ -1342,27 +1342,24 @@ int arena_create(scene *scene) {
     menu_attach(&local->game_menu, &local->quit_button, 11);
 
     // sound options
-    local->sound_slider.slide = sound_slide;
-    local->music_slider.slide = music_slide;
+    component_set_onslide(&local->sound_slider, sound_slide, NULL);
+    component_set_onslide(&local->music_slider, music_slide, NULL);
     textslider_bindvar(&local->sound_slider, &setting->sound.sound_vol);
     textslider_bindvar(&local->music_slider, &setting->sound.music_vol);
 
     // gameplay options
     textslider_bindvar(&local->speed_slider, &setting->gameplay.speed);
-    local->speed_slider.userdata = (void*)scene;
-    local->speed_slider.slide = arena_speed_slide;
+    component_set_onslide(&local->speed_slider, arena_speed_slide, scene);
     if (is_netplay(scene)) {
         // no changing the speed during netplay
-        local->speed_slider.disabled = 1;
+        component_disable(&local->speed_slider, 1);
     }
 
-    local->title_button.disabled = 1;
+    component_disable(&local->title_button, 1);
 
     // Events
-    local->quit_button.userdata = (void*)scene;
-    local->quit_button.click = game_menu_quit;
-    local->return_button.userdata = (void*)scene;
-    local->return_button.click = game_menu_return;
+    component_set_onclick(&local->quit_button, game_menu_quit, scene);
+    component_set_onclick(&local->return_button, game_menu_return, scene);
 
     menu_select(&local->game_menu, &local->return_button);
 

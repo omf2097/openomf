@@ -5,18 +5,6 @@
 #include "game/text/text.h"
 #include "utils/vector.h"
 
-typedef struct textselector_t textselector;
-
-struct textselector_t {
-    const char *text;
-    font *font;
-    int ticks;
-    int dir;
-    int pos_;
-    int *pos;
-    vector options;
-};
-
 void textselector_create(component *c, font *font, const char *text, const char *initialoption);
 void textselector_add_option(component *c, const char *option);
 void textselector_free(component *c);

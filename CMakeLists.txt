@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 project(OpenOMF C)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
+INCLUDE(CheckFunctionExists)
+
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "6")
 set(VERSION_PATCH "5")
@@ -49,6 +51,9 @@ ENDIF()
 find_package(SDL2)
 find_package(enet)
 find_package(confuse)
+
+# Check functions
+CHECK_FUNCTION_EXISTS(strdup HAVE_STRDUP)
 
 # Only search for submodules if we want them
 IF(USE_SUBMODULES)
@@ -129,6 +134,7 @@ IF(USE_TESTS)
 ENDIF()
 
 set(OPENOMF_SRC
+    src/utils/compat.c
     src/utils/log.c
     src/utils/config.c
     src/utils/list.c
