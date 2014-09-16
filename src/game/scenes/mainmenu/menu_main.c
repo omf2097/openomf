@@ -5,45 +5,22 @@
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
 #include "game/menu/textinput.h"
+#include "game/menu/frame.h"
 
-typedef struct {
-    component oneplayer_button;
-    component twoplayer_button;
-    component tourn_button;
-    component config_button;
-    component gameplay_button;
-    component net_button;
-    component help_button;
-    component demo_button;
-    component scoreboard_button;
-    component quit_button;
-    menu net_menu;
-    menu config_menu;
-    menu gameplay_menu;
-} main_menu_data;
 
-void menu_main_free(menu *menu) {
-    main_menu_data *local = menu_get_userdata(menu);
-    textbutton_free(&local->oneplayer_button);
-    textbutton_free(&local->twoplayer_button);
-    textbutton_free(&local->tourn_button);
-    textbutton_free(&local->config_button);
-    textbutton_free(&local->gameplay_button);
-    textbutton_free(&local->net_button);
-    textbutton_free(&local->help_button);
-    textbutton_free(&local->demo_button);
-    textbutton_free(&local->scoreboard_button);
-    textbutton_free(&local->quit_button);
-    /*
-    menu_free(&local->config_menu);
-    menu_free(&local->gameplay_menu);
-    menu_free(&local->net_menu);
-    */
-    free(local);
-}
+component* menu_main_create() {
+    component* menu = menu_create(11);
 
-void menu_main_create(menu *menu) {
-    main_menu_data *local = malloc(sizeof(main_menu_data));
+    menu_attach(menu, textbutton_create(&font_large, "ONE PLAYER GAME", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "TWO PLAYER GAME", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "TOURNAMENT PLAY", COM_DISABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "NETWORK PLAY", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "CONFIGURATION", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "GAMEPLAY", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "HELP", COM_DISABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "DEMO", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "SCOREBOARD", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "QUIT", COM_ENABLED, NULL, NULL));
 /*
     // Create Network play menu
     menu_create(&local->net_menu, 165, 5, 151, 119);
@@ -55,7 +32,7 @@ void menu_main_create(menu *menu) {
 
     // Create gameplay menu
     menu_create(&local->gameplay_menu, 165, 5, 151, 119);
-    menu_gameplay_create(&local->gameplay_menu);*/
+    menu_gameplay_create(&local->gameplay_menu);
 
     // Mainmenu components
     textbutton_create(&local->oneplayer_button, &font_large, "ONE PLAYER GAME");
@@ -88,7 +65,7 @@ void menu_main_create(menu *menu) {
     local->demo_button.disabled = 0;
     local->scoreboard_button.disabled = 0;
 
-/*
+
     // Events
     local->quit_button.userdata = (void*)scene;
     local->quit_button.click = mainmenu_quit;
@@ -110,6 +87,5 @@ void menu_main_create(menu *menu) {
     local->scoreboard_button.click = mainmenu_soreboard;
 */
 
-    menu_set_userdata(menu, local);
-    menu_set_free_cb(menu, menu_main_free);
+    return menu;
 }

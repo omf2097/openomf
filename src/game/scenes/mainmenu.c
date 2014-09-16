@@ -25,7 +25,7 @@
 #include "audio/music.h"
 #include "video/video.h"
 #include "resources/ids.h"
-#include "game/menu/menu.h"
+#include "game/menu/frame.h"
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/mainmenu/menu_main.h"
 #include "game/utils/settings.h"
@@ -38,7 +38,7 @@ typedef struct mainmenu_local_t {
     int input_selected_player;
 */
 
-    menu main_menu;
+    guiframe *frame;
     int prev_key;
 } mainmenu_local;
 
@@ -411,7 +411,7 @@ void mainmenu_listen_for_connections(component *c, void *userdata) {
 
 void mainmenu_free(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
-    menu_free(&local->main_menu);
+    guiframe_free(local->frame);
     free(local);
     settings_save();
 }
@@ -421,7 +421,7 @@ void mainmenu_tick(scene *scene, int paused) {
     //game_state *gs = scene->gs;
 
     // Tick menu
-    menu_tick(&local->main_menu);
+    guiframe_tick(local->frame);
 
 /*
     // Handle video confirm menu
@@ -638,7 +638,7 @@ void mainmenu_input_tick(scene *scene) {
                 local->prev_key = i->event_data.action;
 
                 // Pass on the event
-                menu_handle_action(&local->main_menu, i->event_data.action);
+                guiframe_action(local->frame, i->event_data.action);
             }
         } while((i = i->next));
     }
@@ -699,12 +699,12 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
         return 1;
     }
 */
-    return menu_handle_event(&local->main_menu, event);
+    return guiframe_event(local->frame, event);
 }
 
 void mainmenu_render(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
-    menu_render(&local->main_menu);
+    guiframe_render(local->frame);
 }
 
 void mainmenu_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -727,8 +727,9 @@ int mainmenu_create(scene *scene) {
     game_state_set_speed(scene->gs, settings_get()->gameplay.speed);
 
     // Create main menu
-    menu_create(&local->main_menu, 165, 5, 151, 119);
-    menu_main_create(&local->main_menu);
+    local->frame = guiframe_create(165, 5, 151, 119);
+    guiframe_set_root(local->frame, menu_main_create());
+    guiframe_layout(local->frame);
 
     // Cleanups and resets
     for(int i = 0; i < 2; i++) {

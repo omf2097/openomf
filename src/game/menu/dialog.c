@@ -23,40 +23,33 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     menu_background_create(&dlg->background, MAX_WIDTH+30, h+24+font_large.h);
 
     if(style == DIALOG_STYLE_YES_NO) {
-        dlg->yes = malloc(sizeof(component));
-        dlg->no = malloc(sizeof(component));
-        textbutton_create(dlg->yes, &font_large, "YES");
-        textbutton_create(dlg->no, &font_large, "NO");
+        dlg->yes = textbutton_create(&font_large, "YES", COM_ENABLED, NULL, NULL);
+        dlg->no = textbutton_create(&font_large, "NO", COM_ENABLED, NULL, NULL);
         textbutton_set_border(dlg->yes, COLOR_BLUE);
         textbutton_set_border(dlg->no, COLOR_BLUE);
         component_layout(dlg->yes, x + 54, x + h + 6, 8, 8);
         component_layout(dlg->no, x + 114, x + h + 6, 8, 8);
-        dlg->yes->selected = 1;
+        component_select(dlg->yes, 1);
         dlg->result = DIALOG_RESULT_YES_OK;
     } else if(style == DIALOG_STYLE_OK) {
-        dlg->ok = malloc(sizeof(component));
-        textbutton_create(dlg->ok, &font_large, "OK");
+        dlg->ok = textbutton_create(&font_large, "OK", COM_ENABLED, NULL, NULL);
         textbutton_set_border(dlg->ok, COLOR_BLUE);
         component_layout(dlg->ok, x + 84, x + h + 6, 8, 8);
-        dlg->ok->selected = 1;
+        component_select(dlg->ok, 1);
         dlg->result = DIALOG_RESULT_YES_OK;
     }
 }
 
 void dialog_free(dialog *dlg) {
     if(dlg->yes) {
-        textbutton_free(dlg->yes);
-        free(dlg->yes);
+        component_free(dlg->yes);
     }
     if(dlg->no) {
-        textbutton_free(dlg->no);
-        free(dlg->no);
+        component_free(dlg->no);
     }
     if(dlg->ok) {
-        textbutton_free(dlg->ok);
-        free(dlg->ok);
+        component_free(dlg->ok);
     }
-
     surface_free(&dlg->background);
 }
 
@@ -72,13 +65,13 @@ void dialog_render(dialog *dlg) {
     if(!dlg->visible) { return; }
     video_render_sprite(&dlg->background, dlg->x, dlg->y, BLEND_ALPHA, 0);
     if(dlg->yes) {
-        textbutton_render(dlg->yes);
+        component_render(dlg->yes);
     }
     if(dlg->no) {
-        textbutton_render(dlg->no);
+        component_render(dlg->no);
     }
     if(dlg->ok) {
-        textbutton_render(dlg->ok);
+        component_render(dlg->ok);
     }
     font_render_wrapped_shadowed(&font_small, dlg->text, dlg->x+15, dlg->y+3, MAX_WIDTH, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
 }
@@ -87,26 +80,26 @@ void dialog_render(dialog *dlg) {
 void dialog_tick(dialog *dlg) {
     if(!dlg->visible) { return; }
     if(dlg->yes) {
-        textbutton_tick(dlg->yes);
+        component_tick(dlg->yes);
     }
     if(dlg->no) {
-        textbutton_tick(dlg->no);
+        component_tick(dlg->no);
     }
     if(dlg->ok) {
-        textbutton_tick(dlg->ok);
+        component_tick(dlg->ok);
     }
 }
 
 void dialog_event(dialog *dlg, int action) {
     if(!dlg->visible) { return; }
     if(action == ACT_LEFT || action == ACT_RIGHT) {
-        if(dlg->yes && dlg->yes->selected) {
-            dlg->yes->selected = 0;
-            dlg->no->selected = 1;
+        if(dlg->yes && component_is_selected(dlg->yes)) {
+            component_select(dlg->yes, 0);
+            component_select(dlg->no, 1);
             dlg->result = DIALOG_RESULT_NO;
-        } else if(dlg->no && dlg->no->selected) {
-            dlg->yes->selected = 1;
-            dlg->no->selected = 0;
+        } else if(dlg->no && component_is_selected(dlg->no)) {
+            component_select(dlg->yes, 1);
+            component_select(dlg->no, 0);
             dlg->result = DIALOG_RESULT_YES_OK;
         }
     } else if(action == ACT_PUNCH || action == ACT_KICK) {

@@ -49,7 +49,7 @@
 #define HAR2_START_POS 211
 
 typedef struct arena_local_t {
-    menu game_menu;
+    /*menu game_menu;
     component title_button;
     component return_button;
     component sound_slider;
@@ -57,7 +57,7 @@ typedef struct arena_local_t {
     component speed_slider;
     component video_button;
     component help_button;
-    component quit_button;
+    component quit_button;*/
     surface sur;
     int menu_visible;
     unsigned int state;
@@ -753,7 +753,7 @@ void arena_free(scene *scene) {
         }
     }
 
-
+/*
     textbutton_free(&local->title_button);
     textbutton_free(&local->return_button);
     textslider_free(&local->sound_slider);
@@ -762,7 +762,7 @@ void arena_free(scene *scene) {
     textbutton_free(&local->video_button);
     textbutton_free(&local->help_button);
     textbutton_free(&local->quit_button);
-    menu_free(&local->game_menu);
+    menu_free(&local->game_menu);*/
 
     surface_free(&local->sur);
 
@@ -845,7 +845,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
             } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && player == game_state_get_player(scene->gs, 0) && !is_demoplay(scene)) {
                 DEBUG("menu event %d", i->event_data.action);
                 // menu events
-                menu_handle_action(&local->game_menu, i->event_data.action);
+                //menu_handle_action(&local->game_menu, i->event_data.action);
             } else if(i->type == EVENT_TYPE_ACTION) {
                 if (player->ctrl->type == CTRL_TYPE_NETWORK) {
                     do {
@@ -1029,8 +1029,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
 }
 
 void arena_static_tick(scene *scene, int paused) {
-    arena_local *local = scene_get_userdata(scene);
-    menu_tick(&local->game_menu);
+    //arena_local *local = scene_get_userdata(scene);
+    //menu_tick(&local->game_menu);
 }
 
 void arena_input_tick(scene *scene) {
@@ -1157,7 +1157,7 @@ void arena_render_overlay(scene *scene) {
 
     // Render menu (if visible)
     if(local->menu_visible) {
-        menu_render(&local->game_menu);
+        //menu_render(&local->game_menu);
         video_render_sprite(&local->sur, 10, 150, BLEND_ALPHA, 0);
     }
 }
@@ -1322,6 +1322,7 @@ int arena_create(scene *scene) {
 
     // Arena menu
     local->menu_visible = 0;
+    /*
     menu_create(&local->game_menu, 70, 5, 181, 117);
     textbutton_create(&local->title_button, &font_large, "OMF 2097");
     textbutton_create(&local->return_button, &font_large, "RETURN TO GAME");
@@ -1361,7 +1362,7 @@ int arena_create(scene *scene) {
     component_set_onclick(&local->quit_button, game_menu_quit, scene);
     component_set_onclick(&local->return_button, game_menu_return, scene);
 
-    menu_select(&local->game_menu, &local->return_button);
+    menu_select(&local->game_menu, &local->return_button);*/
 
     // background for the 'help' at the bottom of the screen
     // TODO support rendering text onto it

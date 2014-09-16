@@ -1,8 +1,8 @@
 #ifndef _MENU_MAIN_H
 #define _MENU_MAIN_H
 
-typedef struct menu_t menu;
+#include "game/menu/component.h"
 
-void menu_main_create(menu *menu);
+component* menu_main_create();
 
 #endif // _MENU_MAIN_H
