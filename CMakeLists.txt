@@ -206,6 +206,7 @@ set(OPENOMF_SRC
     src/game/scenes/mainmenu/menu_net.c
     src/game/scenes/mainmenu/menu_connect.c
     src/game/scenes/mainmenu/menu_listen.c
+    src/game/scenes/mainmenu/menu_input.c
     src/game/scenes/credits.c
     src/game/scenes/cutscene.c
     src/game/scenes/arena.c

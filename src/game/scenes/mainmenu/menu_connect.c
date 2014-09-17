@@ -7,6 +7,7 @@
 #include "game/utils/settings.h"
 #include "game/protos/scene.h"
 #include "game/game_state.h"
+#include "utils/compat.h"
 #include "utils/log.h"
 
 typedef struct {

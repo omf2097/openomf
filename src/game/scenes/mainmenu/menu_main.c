@@ -17,9 +17,9 @@ void mainmenu_1v1(component *c, void *userdata) {
 
     // Set up controllers
     settings_keyboard *k = &settings_get()->keys;
-    if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
+    if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 0);
-    } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
+    } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
         _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
     }
 
@@ -35,13 +35,13 @@ void mainmenu_1v2(component *c, void *userdata) {
     scene *s = userdata;
 
     settings_keyboard *k = &settings_get()->keys;
-    if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
+    if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 0);
     } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
         _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
     }
 
-    if (k->ctrl_type2 == CTRL_TYPE_KEYBOARD) {
+    if(k->ctrl_type2 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 1);
     } else if (k->ctrl_type2 == CTRL_TYPE_GAMEPAD) {
         _setup_joystick(s->gs, 1, k->joy_name2, k->joy_offset2);
