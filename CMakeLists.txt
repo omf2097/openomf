@@ -213,7 +213,7 @@ set(OPENOMF_SRC
     src/game/menu/menu.c
     src/game/menu/menu_background.c
     src/game/menu/textbutton.c
-#    src/game/menu/textselector.c
+    src/game/menu/textselector.c
     src/game/menu/textslider.c
 #    src/game/menu/textinput.c
     src/game/menu/dialog.c

@@ -140,7 +140,7 @@ component* textslider_create(font *font, const char *text, unsigned int position
 component* textslider_create_bind(font *font, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata, int *bind) {
     component *c = textslider_create(font, text, positions, has_off, cb, userdata);
     textslider *ts = widget_get_obj(c);
-    ts->pos = bind;
+    ts->pos = (bind) ? bind : &ts->pos_;
     return c;
 }
 
