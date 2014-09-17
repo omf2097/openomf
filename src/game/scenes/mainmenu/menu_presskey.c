@@ -1,6 +1,7 @@
 #include "game/scenes/mainmenu/menu_presskey.h"
 
 #include "game/menu/gui.h"
+#include "utils/compat.h"
 
 typedef struct {
     int wait_timeout;

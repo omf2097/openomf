@@ -1,6 +1,9 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "utils/compat.h"
 
-#ifdef HAVE_STRDUP
+#ifndef HAVE_STRDUP
 char* strdup(const char *s) {
     char *d = malloc(strlen(s) + 1);
     if(d != NULL)
