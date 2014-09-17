@@ -72,28 +72,6 @@ void resolution_toggled(component *c, void *userdata, int pos) {
     }
 }
 
-/*
-void video_done_clicked(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    settings_video *v = &settings_get()->video;
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
-    mainmenu_prev_menu(c, userdata);
-
-    if(local->old_video_settings.screen_w != v->screen_w ||
-        local->old_video_settings.screen_h != v->screen_h ||
-        local->old_video_settings.fullscreen != v->fullscreen) {
-        // Resolution confirmation dialog
-        mainmenu_enter_menu_video_confirm(c, userdata);
-        time(&local->video_accept_timer);
-        local->video_accept_secs = 20;
-        if(sprintf(local->video_accept_label,
-                   "ACCEPT NEW RESOLUTION? %d",
-                   local->video_accept_secs) > 0) {
-            ((textbutton*)local->video_confirm_header.obj)->text = local->video_accept_label;
-        }
-    }
-}
-*/
 void scaler_toggled(component *c, void *userdata, int pos) {
     video_menu_data *local = userdata;
     settings_video *v = &settings_get()->video;
