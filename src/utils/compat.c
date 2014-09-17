@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 
 #include "utils/compat.h"
 

@@ -1,6 +1,7 @@
 #ifndef _COMPAT_H
 #define _COMPAT_H
 
+#include <string.h>
 #include "config.h"
 
 #ifndef HAVE_STRDUP
