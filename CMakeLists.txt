@@ -3,6 +3,7 @@ project(OpenOMF C)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
 INCLUDE(CheckFunctionExists)
+INCLUDE(CheckSymbolExists)
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "6")
@@ -53,7 +54,7 @@ find_package(enet)
 find_package(confuse)
 
 # Check functions
-CHECK_FUNCTION_EXISTS(strdup HAVE_STRDUP)
+CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STRDUP)
 
 # Only search for submodules if we want them
 IF(USE_SUBMODULES)
