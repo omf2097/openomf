@@ -3,15 +3,7 @@
 
 #include "game/scenes/mainmenu/menu_connect.h"
 
-#include "game/menu/menu.h"
-#include "game/menu/textbutton.h"
-#include "game/menu/textselector.h"
-#include "game/menu/textslider.h"
-#include "game/menu/textinput.h"
-#include "game/menu/filler.h"
-#include "game/menu/label.h"
-#include "game/menu/sizer.h"
-
+#include "game/menu/gui.h"
 #include "game/utils/settings.h"
 #include "game/protos/scene.h"
 #include "game/game_state.h"

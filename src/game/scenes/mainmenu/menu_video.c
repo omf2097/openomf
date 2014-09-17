@@ -3,15 +3,7 @@
 #include "game/scenes/mainmenu/menu_video.h"
 #include "game/scenes/mainmenu/menu_video_confirm.h"
 
-#include "game/menu/menu.h"
-#include "game/menu/textbutton.h"
-#include "game/menu/textselector.h"
-#include "game/menu/textslider.h"
-#include "game/menu/textinput.h"
-#include "game/menu/label.h"
-#include "game/menu/filler.h"
-#include "game/menu/sizer.h"
-
+#include "game/menu/gui.h"
 #include "game/utils/settings.h"
 #include "video/video.h"
 #include "plugins/plugins.h"

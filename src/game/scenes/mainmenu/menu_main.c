@@ -3,12 +3,7 @@
 #include "game/scenes/mainmenu/menu_gameplay.h"
 #include "game/scenes/mainmenu/menu_net.h"
 
-#include "game/menu/menu.h"
-#include "game/menu/textbutton.h"
-#include "game/menu/textselector.h"
-#include "game/menu/textslider.h"
-#include "game/menu/textinput.h"
-#include "game/menu/frame.h"
+#include "game/menu/gui.h"
 #include "resources/ids.h"
 #include "game/utils/settings.h"
 

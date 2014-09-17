@@ -1,10 +1,6 @@
 #include "game/scenes/mainmenu/menu_keyboard.h"
 
-#include "game/menu/menu.h"
-#include "game/menu/textbutton.h"
-#include "game/menu/textselector.h"
-#include "game/menu/textslider.h"
-#include "game/menu/textinput.h"
+#include "game/menu/gui.h"
 
 typedef struct {
     component input_custom_keyboard_header;

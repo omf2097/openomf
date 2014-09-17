@@ -2,14 +2,7 @@
 #include "game/scenes/mainmenu/menu_connect.h"
 #include "game/scenes/mainmenu/menu_listen.h"
 
-#include "game/menu/menu.h"
-#include "game/menu/textbutton.h"
-#include "game/menu/textselector.h"
-#include "game/menu/textslider.h"
-#include "game/menu/textinput.h"
-#include "game/menu/filler.h"
-#include "game/menu/label.h"
-#include "game/menu/sizer.h"
+#include "game/menu/gui.h"
 
 void menu_net_done(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);
