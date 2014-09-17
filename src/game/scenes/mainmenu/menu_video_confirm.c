@@ -12,7 +12,7 @@ typedef struct {
     int video_accept_secs;
     char video_accept_label[100];
 
-    
+
     component video_confirm_header;
     component video_confirm_cancel;
     component video_confirm_ok;

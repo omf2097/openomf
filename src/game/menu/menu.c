@@ -205,6 +205,21 @@ void menu_layout(component *c, int x, int y, int w, int h) {
     }
 }
 
+void menu_set_userdata(component *c, void *userdata) {
+    menu *m = sizer_get_obj(c);
+    m->userdata = userdata;
+}
+
+void* menu_get_userdata(component *c) {
+    menu *m = sizer_get_obj(c);
+    return m->userdata;
+}
+
+void menu_set_free_cb(component *c, menu_free_cb cb) {
+    menu *m = sizer_get_obj(c);
+    m->free = cb;
+}
+
 void menu_free(component *c) {
     menu *m = sizer_get_obj(c);
     if(m->bg) {
@@ -212,7 +227,10 @@ void menu_free(component *c) {
         free(m->bg);
     }
     if(m->submenu) {
-        component_free(m->submenu);
+        component_free(m->submenu); // Free submenu component
+    }
+    if(m->free) {
+        m->free(c); // Free menu userdata
     }
 }
 

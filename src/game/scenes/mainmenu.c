@@ -600,7 +600,7 @@ int mainmenu_create(scene *scene) {
     for(int i = 0; i < 2; i++) {
         // destroy any leftover controllers
         controller *ctrl;
-        if ((ctrl = game_player_get_ctrl(game_state_get_player(scene->gs, i)))) {
+        if((ctrl = game_player_get_ctrl(game_state_get_player(scene->gs, i)))) {
             game_player_set_ctrl(game_state_get_player(scene->gs, i), NULL);
         }
 
