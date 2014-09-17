@@ -204,6 +204,7 @@ set(OPENOMF_SRC
     src/game/scenes/mainmenu/menu_video.c
     src/game/scenes/mainmenu/menu_video_confirm.c
     src/game/scenes/mainmenu/menu_net.c
+    src/game/scenes/mainmenu/menu_connect.c
     src/game/scenes/credits.c
     src/game/scenes/cutscene.c
     src/game/scenes/arena.c
@@ -219,7 +220,7 @@ set(OPENOMF_SRC
     src/game/menu/textbutton.c
     src/game/menu/textselector.c
     src/game/menu/textslider.c
-#    src/game/menu/textinput.c
+    src/game/menu/textinput.c
     src/game/menu/dialog.c
     src/game/menu/component.c
     src/game/menu/sizer.c

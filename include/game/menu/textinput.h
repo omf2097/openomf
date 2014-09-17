@@ -3,12 +3,8 @@
 
 #include "game/menu/component.h"
 #include "game/text/text.h"
-#include "utils/vector.h"
-#include "video/video.h"
-#include "video/color.h"
-#include "video/image.h"
 
-void textinput_create(component *c, font *font, const char *text, const char *initialoption);
+component* textinput_create(font *font, const char *text, const char *initialoption);
 void textinput_free(component *c);
 void textinput_render(component *c);
 int textinput_event(component *c, SDL_Event *event);

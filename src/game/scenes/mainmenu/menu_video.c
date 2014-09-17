@@ -13,6 +13,7 @@
 #include "game/menu/sizer.h"
 
 #include "game/utils/settings.h"
+#include "video/video.h"
 #include "plugins/plugins.h"
 
 struct resolution_t {

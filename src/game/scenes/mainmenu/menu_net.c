@@ -1,4 +1,5 @@
 #include "game/scenes/mainmenu/menu_net.h"
+#include "game/scenes/mainmenu/menu_connect.h"
 
 #include "game/menu/menu.h"
 #include "game/menu/textbutton.h"
@@ -19,8 +20,13 @@ void menu_net_free(component *c) {
 }
 
 void menu_net_done(component *c, void *userdata) {
-    menu *m = menu_get_userdata(c->parent);
+    menu *m = sizer_get_obj(c->parent);
     m->finished = 1;
+}
+
+void menu_net_connect(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, menu_connect_create(s));
 }
 
 component* menu_net_create(scene *s) {
@@ -31,7 +37,7 @@ component* menu_net_create(scene *s) {
     menu_attach(menu, label_create(&font_large, "NETWORK PLAY"));
     menu_attach(menu, filler_create());
 
-    menu_attach(menu, textbutton_create(&font_large, "CONNECT TO SERVER", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "CONNECT TO SERVER", COM_ENABLED, menu_net_connect, s));
     menu_attach(menu, textbutton_create(&font_large, "START SERVER", COM_ENABLED, NULL, NULL));
     menu_attach(menu, textbutton_create(&font_large, "DONE", COM_ENABLED, menu_net_done, NULL));
 
