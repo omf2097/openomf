@@ -73,6 +73,13 @@ void menu_connect_start(component *c, void *userdata) {
 void menu_connect_cancel(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);
     m->finished = 1;
+
+    // Clean up host
+    connect_menu_data *local = menu_get_userdata(c->parent);
+    if(local->host) {
+        enet_host_destroy(local->host);
+        local->host = NULL;
+    }
 }
 
 void menu_connect_tick(component *c) {
