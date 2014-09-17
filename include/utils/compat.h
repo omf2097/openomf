@@ -4,7 +4,7 @@
 #include <string.h>
 #include "platform.h"
 
-#ifndef HAVE_STRDUP
+#ifndef HAVE_STD_STRDUP
 char *strdup(const char *s1);
 #endif
 

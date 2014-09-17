@@ -54,7 +54,7 @@ find_package(enet)
 find_package(confuse)
 
 # Check functions and generate platform configuration file
-CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STRDUP)
+CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STD_STRDUP)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
 
 # Only search for submodules if we want them
