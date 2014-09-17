@@ -26,7 +26,6 @@ component* menu_gameplay_create(scene *s) {
     const char* fightmode_opts[] = {"NORMAL","HYPER"};
     const char* hazard_opts[] = {"OFF","ON"};
     component* menu = menu_create(11);
-
     menu_attach(menu, label_create(&font_large, "GAMEPLAY"));
     menu_attach(menu, filler_create());
     menu_attach(menu, textslider_create_bind(&font_large, "SPEED", 10, 1, menu_gameplay_speed_slide, s, &settings_get()->gameplay.speed));

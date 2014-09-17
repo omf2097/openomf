@@ -28,6 +28,9 @@
 #include "game/menu/textbutton.h"
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
+#include "game/menu/label.h"
+#include "game/menu/filler.h"
+#include "game/menu/frame.h"
 #include "controller/controller.h"
 #include "controller/net_controller.h"
 #include "resources/ids.h"
@@ -49,15 +52,8 @@
 #define HAR2_START_POS 211
 
 typedef struct arena_local_t {
-    /*menu game_menu;
-    component title_button;
-    component return_button;
-    component sound_slider;
-    component music_slider;
-    component speed_slider;
-    component video_button;
-    component help_button;
-    component quit_button;*/
+    guiframe *game_menu;
+
     surface sur;
     int menu_visible;
     unsigned int state;
@@ -104,11 +100,11 @@ void game_menu_return(component *c, void *userdata) {
     arena_maybe_sync(userdata, 1);
 }
 
-void music_slide(component *c, void *userdata, int pos) {
+void arena_music_slide(component *c, void *userdata, int pos) {
     music_set_volume(pos/10.0f);
 }
 
-void sound_slide(component *c, void *userdata, int pos) {
+void arena_sound_slide(component *c, void *userdata, int pos) {
     sound_set_volume(pos/10.0f);
 }
 
@@ -240,13 +236,13 @@ void arena_screengrab_winner(scene* sc) {
     har *h1 = object_get_userdata(game_state_get_player(gs, 0)->har);
     if(h1->state == STATE_VICTORY || h1->state == STATE_DONE) {
         har_screencaps_capture(
-            &game_state_get_player(gs, 0)->screencaps, 
-            game_state_get_player(gs, 0)->har, 
+            &game_state_get_player(gs, 0)->screencaps,
+            game_state_get_player(gs, 0)->har,
             SCREENCAP_POSE);
     } else {
         har_screencaps_capture(
-            &game_state_get_player(gs, 1)->screencaps, 
-            game_state_get_player(gs, 1)->har, 
+            &game_state_get_player(gs, 1)->screencaps,
+            game_state_get_player(gs, 1)->har,
             SCREENCAP_POSE);
     }
 }
@@ -541,7 +537,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             object_set_custom_string(o_har, "hQ10-x3Q5-x2L5-x2M900");
             o_har->vel.x = 2;
         }
-        
+
         object_dynamic_tick(o_har);
 
         if(wall == 1) {
@@ -753,17 +749,7 @@ void arena_free(scene *scene) {
         }
     }
 
-/*
-    textbutton_free(&local->title_button);
-    textbutton_free(&local->return_button);
-    textslider_free(&local->sound_slider);
-    textslider_free(&local->music_slider);
-    textslider_free(&local->speed_slider);
-    textbutton_free(&local->video_button);
-    textbutton_free(&local->help_button);
-    textbutton_free(&local->quit_button);
-    menu_free(&local->game_menu);*/
-
+    guiframe_free(local->game_menu);
     surface_free(&local->sur);
 
     music_stop();
@@ -845,7 +831,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
             } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && player == game_state_get_player(scene->gs, 0) && !is_demoplay(scene)) {
                 DEBUG("menu event %d", i->event_data.action);
                 // menu events
-                //menu_handle_action(&local->game_menu, i->event_data.action);
+                guiframe_action(local->game_menu, i->event_data.action);
             } else if(i->type == EVENT_TYPE_ACTION) {
                 if (player->ctrl->type == CTRL_TYPE_NETWORK) {
                     do {
@@ -1029,8 +1015,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
 }
 
 void arena_static_tick(scene *scene, int paused) {
-    //arena_local *local = scene_get_userdata(scene);
-    //menu_tick(&local->game_menu);
+    arena_local *local = scene_get_userdata(scene);
+    guiframe_tick(local->game_menu);
 }
 
 void arena_input_tick(scene *scene) {
@@ -1157,7 +1143,7 @@ void arena_render_overlay(scene *scene) {
 
     // Render menu (if visible)
     if(local->menu_visible) {
-        //menu_render(&local->game_menu);
+        guiframe_render(local->game_menu);
         video_render_sprite(&local->sur, 10, 150, BLEND_ALPHA, 0);
     }
 }
@@ -1322,47 +1308,29 @@ int arena_create(scene *scene) {
 
     // Arena menu
     local->menu_visible = 0;
-    /*
-    menu_create(&local->game_menu, 70, 5, 181, 117);
-    textbutton_create(&local->title_button, &font_large, "OMF 2097");
-    textbutton_create(&local->return_button, &font_large, "RETURN TO GAME");
-    textslider_create(&local->sound_slider, &font_large, "SOUND", 10, 1);
-    textslider_create(&local->music_slider, &font_large, "MUSIC", 10, 1);
-    textslider_create(&local->speed_slider, &font_large, "SPEED", 10, 0);
-    textbutton_create(&local->video_button, &font_large, "VIDEO OPTIONS");
-    textbutton_create(&local->help_button, &font_large, "HELP");
-    textbutton_create(&local->quit_button, &font_large, "QUIT");
+    local->game_menu = guiframe_create(60, 5, 181, 117);
+    component *menu = menu_create(11);
+    menu_attach(menu, label_create(&font_large, "OPENOMF"));
+    menu_attach(menu, filler_create());
+    component *return_button = textbutton_create(&font_large, "RETURN TO GAME", COM_ENABLED, game_menu_return, scene);
+    menu_attach(menu, return_button);
 
-    menu_attach(&local->game_menu, &local->title_button, 33);
-    menu_attach(&local->game_menu, &local->return_button, 11);
-    menu_attach(&local->game_menu, &local->sound_slider, 11);
-    menu_attach(&local->game_menu, &local->music_slider, 11);
-    menu_attach(&local->game_menu, &local->speed_slider, 11);
-    menu_attach(&local->game_menu, &local->video_button, 11);
-    menu_attach(&local->game_menu, &local->help_button, 11);
-    menu_attach(&local->game_menu, &local->quit_button, 11);
+    menu_attach(menu, textslider_create_bind(&font_large, "SOUND", 10, 1, arena_sound_slide, NULL, &setting->sound.sound_vol));
+    menu_attach(menu, textslider_create_bind(&font_large, "MUSIC", 10, 1, arena_music_slide, NULL, &setting->sound.music_vol));
 
-    // sound options
-    component_set_onslide(&local->sound_slider, sound_slide, NULL);
-    component_set_onslide(&local->music_slider, music_slide, NULL);
-    textslider_bindvar(&local->sound_slider, &setting->sound.sound_vol);
-    textslider_bindvar(&local->music_slider, &setting->sound.music_vol);
-
-    // gameplay options
-    textslider_bindvar(&local->speed_slider, &setting->gameplay.speed);
-    component_set_onslide(&local->speed_slider, arena_speed_slide, scene);
-    if (is_netplay(scene)) {
-        // no changing the speed during netplay
-        component_disable(&local->speed_slider, 1);
+    component *speed_slider = textslider_create_bind(&font_large, "SPEED", 10, 1, arena_speed_slide, scene, &setting->gameplay.speed);
+    if(is_netplay(scene)) {
+        component_disable(speed_slider, 1);
     }
+    menu_attach(menu, speed_slider);
 
-    component_disable(&local->title_button, 1);
+    menu_attach(menu, textbutton_create(&font_large, "VIDEO OPTIONS", COM_DISABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "HELP", COM_DISABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "QUIT", COM_ENABLED, game_menu_quit, scene));
 
-    // Events
-    component_set_onclick(&local->quit_button, game_menu_quit, scene);
-    component_set_onclick(&local->return_button, game_menu_return, scene);
-
-    menu_select(&local->game_menu, &local->return_button);*/
+    guiframe_set_root(local->game_menu, menu);
+    guiframe_layout(local->game_menu);
+    menu_select(menu, return_button);
 
     // background for the 'help' at the bottom of the screen
     // TODO support rendering text onto it
