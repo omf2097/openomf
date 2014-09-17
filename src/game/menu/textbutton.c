@@ -46,6 +46,14 @@ void textbutton_remove_border(component *c) {
     tb->border_enabled = 0;
 }
 
+void textbutton_set_text(component *c, const char* text) {
+    textbutton *tb = widget_get_obj(c);
+    if(tb->text) {
+        free(tb->text);
+    }
+    tb->text = strdup(text);
+}
+
 void textbutton_render(component *c) {
     textbutton *tb = widget_get_obj(c);
     int chars = strlen(tb->text);

@@ -4,6 +4,6 @@
 #include "game/menu/component.h"
 #include "game/protos/scene.h"
 
-component* menu_presskey_create(scene *s);
+component* menu_presskey_create(char **key);
 
 #endif // _MENU_PRESSKEY_H

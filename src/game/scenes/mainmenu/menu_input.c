@@ -1,4 +1,5 @@
 #include "game/scenes/mainmenu/menu_input.h"
+#include "game/scenes/mainmenu/menu_keyboard.h"
 
 #include "game/menu/gui.h"
 #include "game/utils/settings.h"
@@ -14,7 +15,7 @@ typedef struct {
     free(key); \
     key = strdup(SDL_GetScancodeName(scancode))
 
-void mainmenu_set_right_keyboard(component *c, void *userdata) {
+void menu_set_right_keyboard(component *c, void *userdata) {
     menu_input_local *local = menu_get_userdata(c->parent);
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
@@ -37,7 +38,7 @@ void mainmenu_set_right_keyboard(component *c, void *userdata) {
     }
 }
 
-void mainmenu_set_left_keyboard(component *c, void *userdata) {
+void menu_set_left_keyboard(component *c, void *userdata) {
     menu_input_local *local = menu_get_userdata(c->parent);
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
@@ -60,7 +61,7 @@ void mainmenu_set_left_keyboard(component *c, void *userdata) {
     }
 }
 
-void mainmenu_set_joystick1(component *c, void *userdata) {
+void menu_set_joystick1(component *c, void *userdata) {
     menu_input_local *local = menu_get_userdata(c->parent);
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
@@ -77,7 +78,7 @@ void mainmenu_set_joystick1(component *c, void *userdata) {
     reconfigure_controller(((scene*)userdata)->gs);
 }
 
-void mainmenu_set_joystick2(component *c, void *userdata) {
+void menu_set_joystick2(component *c, void *userdata) {
     menu_input_local *local = menu_get_userdata(c->parent);
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
@@ -92,6 +93,12 @@ void mainmenu_set_joystick2(component *c, void *userdata) {
         k->joy_offset2= joystick_offset(joystick_nth_id(2), k->joy_name2);
     }
     reconfigure_controller(((scene*)userdata)->gs);
+}
+
+void menu_set_custom_keyboard(component *c, void *u) {
+    scene *s = u;
+    menu_input_local *local = menu_get_userdata(c->parent);
+    menu_set_submenu(c->parent, menu_keyboard_create(s, local->selected_player));
 }
 
 void menu_input_done(component *c, void *u) {
@@ -112,11 +119,11 @@ component* menu_input_create(scene *s, int player_id) {
     component* menu = menu_create(11);
     menu_attach(menu, label_create(&font_large, "PICK INPUT DEVICE"));
     menu_attach(menu, filler_create());
-    menu_attach(menu, textbutton_create(&font_large, "RIGHT KEYBOARD", COM_ENABLED, mainmenu_set_right_keyboard, s));
-    menu_attach(menu, textbutton_create(&font_large, "LEFT KEYBOARD", COM_ENABLED, mainmenu_set_left_keyboard, s));
-    menu_attach(menu, textbutton_create(&font_large, "CUSTOM KEYBOARD", COM_ENABLED, NULL, NULL));
-    component *joy1 = textbutton_create(&font_large, "JOYSTICK 1", COM_ENABLED, mainmenu_set_joystick1, s);
-    component *joy2 = textbutton_create(&font_large, "JOYSTICK 2", COM_ENABLED, mainmenu_set_joystick2, s);
+    menu_attach(menu, textbutton_create(&font_large, "RIGHT KEYBOARD", COM_ENABLED, menu_set_right_keyboard, s));
+    menu_attach(menu, textbutton_create(&font_large, "LEFT KEYBOARD", COM_ENABLED, menu_set_left_keyboard, s));
+    menu_attach(menu, textbutton_create(&font_large, "CUSTOM KEYBOARD", COM_ENABLED, menu_set_custom_keyboard, s));
+    component *joy1 = textbutton_create(&font_large, "JOYSTICK 1", COM_ENABLED, menu_set_joystick1, s);
+    component *joy2 = textbutton_create(&font_large, "JOYSTICK 2", COM_ENABLED, menu_set_joystick2, s);
     int jcount = joystick_count();
     if(jcount < 1) {
         component_disable(joy1, 1);
