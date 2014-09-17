@@ -21,6 +21,14 @@ void label_free(component *c) {
     free(local);
 }
 
+void label_set_text(component *c, const char* text) {
+    label *local = widget_get_obj(c);
+    if(local->text) {
+        free(local->text);
+    }
+    local->text = strdup(text);
+}
+
 component* label_create(font *font, const char *text) {
     component *c = widget_create();
     component_disable(c, 1);

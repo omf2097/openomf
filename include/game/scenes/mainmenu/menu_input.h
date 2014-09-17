@@ -1,6 +1,9 @@
 #ifndef _MENU_INPUT_H
 #define _MENU_INPUT_H
 
-void menu_input_create(menu *menu);
+#include "game/menu/component.h"
+#include "game/protos/scene.h"
+
+component* menu_input_create(scene *s);
 
 #endif // _MENU_INPUT_H

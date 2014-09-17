@@ -5,5 +5,6 @@
 #include "game/text/text.h"
 
 component* label_create(font *font, const char *text);
+void label_set_text(component *label, const char *text);
 
 #endif // _LABEL_H

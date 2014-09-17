@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "game/scenes/mainmenu/menu_video.h"
+#include "game/scenes/mainmenu/menu_video_confirm.h"
 
 #include "game/menu/menu.h"
 #include "game/menu/textbutton.h"
@@ -43,6 +44,7 @@ typedef struct resolution_t resolution;
 typedef struct {
     vec2i custom_resolution;
     int is_custom_resolution;
+    settings_video old_video_settings;
     component *scaler;
     component *factor;
 } video_menu_data;
@@ -159,10 +161,21 @@ void scaling_factor_toggled(component *c, void *userdata, int pos) {
 
 
 void menu_video_done(component *c, void *u) {
-    menu *m = sizer_get_obj(c->parent);
-    m->finished = 1;
+    scene *s = u;
+    video_menu_data *local = menu_get_userdata(c->parent);
     settings_video *v = &settings_get()->video;
     video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
+
+    if(local->old_video_settings.screen_w != v->screen_w ||
+        local->old_video_settings.screen_h != v->screen_h ||
+        local->old_video_settings.fullscreen != v->fullscreen ||
+        local->old_video_settings.vsync != v->vsync) {
+
+        menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
+    } else {
+        menu *m = sizer_get_obj(c->parent);
+        m->finished = 1;
+    }
 }
 
 void menu_video_free(component *c) {
@@ -170,10 +183,16 @@ void menu_video_free(component *c) {
     free(local);
 }
 
+void menu_video_submenu_done(component *c, component *submenu) {
+    menu *m = sizer_get_obj(c);
+    m->finished = 1;
+}
+
 component* menu_video_create(scene *s) {
     // Menu userdata
     video_menu_data *local = malloc(sizeof(video_menu_data));
     memset(local, 0, sizeof(video_menu_data));
+    local->old_video_settings = settings_get()->video;
 
     // Load settings etc.
     const char* offon_opts[] = {"OFF","ON"};
@@ -263,10 +282,11 @@ component* menu_video_create(scene *s) {
     }
 
     // Done button
-    menu_attach(menu, textbutton_create(&font_large, "DONE", COM_ENABLED, menu_video_done, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "DONE", COM_ENABLED, menu_video_done, s));
 
     // Userdata & free function for it
     menu_set_userdata(menu, local);
     menu_set_free_cb(menu, menu_video_free);
+    menu_set_submenu_done_cb(menu, menu_video_submenu_done);
     return menu;
 }

@@ -46,6 +46,11 @@ component* menu_selected(component *mc) {
     return NULL;
 }
 
+void menu_set_submenu_done_cb(component *c, menu_submenu_done_cb done_cb) {
+    menu *m = sizer_get_obj(c);
+    m->submenu_done = done_cb;
+}
+
 void menu_attach(component *c, component *nc) {
     sizer_attach(c, nc);
 }
@@ -56,6 +61,21 @@ void menu_tick(component *c) {
     // If submenu is set, we need to tick it
     if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
         return component_tick(m->submenu);
+    }
+
+    // Check if we need to run submenu done -callback
+    if(m->submenu != NULL && menu_is_finished(m->submenu)) {
+        if(!m->prev_submenu_state) {
+            if(m->submenu_done) {
+                m->submenu_done(c, m->submenu);
+            }
+            m->prev_submenu_state = 1;
+        }
+    }
+
+    // Run external tick function
+    if(m->tick) {
+        m->tick(c);
     }
 }
 
@@ -161,6 +181,7 @@ void menu_set_submenu(component *mc, component *submenu) {
         component_free(m->submenu);
     }
     m->submenu = submenu;
+    m->prev_submenu_state = 0;
     submenu->parent = mc; // Set correct parent
     component_layout(m->submenu, mc->x, mc->y, mc->w, mc->h);
 }
@@ -218,6 +239,11 @@ void* menu_get_userdata(component *c) {
 void menu_set_free_cb(component *c, menu_free_cb cb) {
     menu *m = sizer_get_obj(c);
     m->free = cb;
+}
+
+void menu_set_tick_cb(component *c, menu_tick_cb cb) {
+    menu *m = sizer_get_obj(c);
+    m->tick = cb;
 }
 
 void menu_free(component *c) {

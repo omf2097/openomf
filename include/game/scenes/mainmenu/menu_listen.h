@@ -1,6 +1,9 @@
 #ifndef _MENU_LISTEN_H
 #define _MENU_LISTEN_H
 
-void menu_listen_create(menu *menu);
+#include "game/menu/component.h"
+#include "game/protos/scene.h"
+
+component* menu_listen_create(scene *s);
 
 #endif // _MENU_LISTEN_H
