@@ -216,15 +216,6 @@ void inputmenu_set_key(component *c, void *userdata) {
     local->input_presskey_ready_ticks = 0;
 }
 
-void menu_mono_toggle(component *c, void *userdata, int options) {
-    music_reload();
-}
-
-void menu_speed_slide(component *c, void *userdata, int pos) {
-    scene *sc = userdata;
-    game_state_set_speed(sc->gs, pos);
-}
-
 void mainmenu_connect_to_ip(component *c, void *userdata) {
     scene *s = (scene*)userdata;
     mainmenu_local *local = scene_get_userdata(s);

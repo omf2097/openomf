@@ -3,7 +3,7 @@
 #include "resources/ids.h"
 #include "utils/random.h"
 
-static const char *ai_difficulty_names[] = {
+const char *ai_difficulty_names[] = {
     "PUNCHING BAG",
     "ROOKIE",
     "VETERAN",
@@ -13,14 +13,14 @@ static const char *ai_difficulty_names[] = {
     "ULTIMATE",
 };
 
-static const char *round_type_names[] = {
+const char *round_type_names[] = {
     "ONE ROUND",
     "BEST 2 OF 3",
     "BEST 3 OF 5",
     "BEST 4 OF 7",
 };
 
-static const char *pilot_type_names[] = {
+const char *pilot_type_names[] = {
     "CRYSTAL",
     "STEFFAN",
     "MILANO",
@@ -34,7 +34,7 @@ static const char *pilot_type_names[] = {
     "KREISSACK"
 };
 
-static const char *har_type_names[] = {
+const char *har_type_names[] = {
     "JAGUAR",
     "SHADOW",
     "THORN",
@@ -48,7 +48,7 @@ static const char *har_type_names[] = {
     "NOVA"
 };
 
-static const char* scene_type_names[] = {
+const char *scene_type_names[] = {
     "SCENE_NONE",
     "SCENE_INTRO",
     "SCENE_OPENOMF",

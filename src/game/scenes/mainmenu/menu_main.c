@@ -1,5 +1,6 @@
 #include "game/scenes/mainmenu/menu_main.h"
 #include "game/scenes/mainmenu/menu_configuration.h"
+#include "game/scenes/mainmenu/menu_gameplay.h"
 
 #include "game/menu/menu.h"
 #include "game/menu/textbutton.h"
@@ -75,6 +76,11 @@ void mainmenu_enter_configuration(component *c, void *userdata) {
     menu_set_submenu(c->parent, menu_configuration_create(s));
 }
 
+void mainmenu_enter_gameplay(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, menu_gameplay_create(s));
+}
+
 component* menu_main_create(scene *s) {
     component* menu = menu_create(11);
     menu_attach(menu, textbutton_create(&font_large, "ONE PLAYER GAME", COM_ENABLED, mainmenu_1v1, s));
@@ -82,7 +88,7 @@ component* menu_main_create(scene *s) {
     menu_attach(menu, textbutton_create(&font_large, "TOURNAMENT PLAY", COM_DISABLED, NULL, NULL));
     menu_attach(menu, textbutton_create(&font_large, "NETWORK PLAY", COM_ENABLED, NULL, NULL));
     menu_attach(menu, textbutton_create(&font_large, "CONFIGURATION", COM_ENABLED, mainmenu_enter_configuration, s));
-    menu_attach(menu, textbutton_create(&font_large, "GAMEPLAY", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "GAMEPLAY", COM_ENABLED, mainmenu_enter_gameplay, s));
     menu_attach(menu, textbutton_create(&font_large, "HELP", COM_DISABLED, NULL, NULL));
     menu_attach(menu, textbutton_create(&font_large, "DEMO", COM_ENABLED, mainmenu_demo, s));
     menu_attach(menu, textbutton_create(&font_large, "SCOREBOARD", COM_ENABLED, mainmenu_soreboard, s));
