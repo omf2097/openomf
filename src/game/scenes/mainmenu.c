@@ -216,14 +216,6 @@ void inputmenu_set_key(component *c, void *userdata) {
     local->input_presskey_ready_ticks = 0;
 }
 
-void menu_music_slide(component *c, void *userdata, int pos) {
-    music_set_volume(pos/10.0f);
-}
-
-void menu_sound_slide(component *c, void *userdata, int pos) {
-    sound_set_volume(pos/10.0f);
-}
-
 void menu_mono_toggle(component *c, void *userdata, int options) {
     music_reload();
 }

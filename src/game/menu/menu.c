@@ -50,6 +50,15 @@ void menu_attach(component *c, component *nc) {
     sizer_attach(c, nc);
 }
 
+void menu_tick(component *c) {
+    menu *m = sizer_get_obj(c);
+
+    // If submenu is set, we need to tick it
+    if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
+        return component_tick(m->submenu);
+    }
+}
+
 void menu_render(component *c) {
     sizer *s = component_get_obj(c);
     menu *m = sizer_get_obj(c);
@@ -218,6 +227,7 @@ component* menu_create(int obj_h) {
 
     sizer_set_render_cb(c, menu_render);
     sizer_set_event_cb(c, menu_event);
+    sizer_set_tick_cb(c, menu_tick);
     sizer_set_action_cb(c, menu_action);
     sizer_set_layout_cb(c, menu_layout);
     sizer_set_free_cb(c, menu_free);

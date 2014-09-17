@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 
 #include "game/menu/textslider.h"
+#include "game/menu/widget.h"
 #include "audio/sound.h"
 #include "utils/log.h"
 #include "utils/compat.h"
@@ -17,36 +18,13 @@ typedef struct {
     int *pos;
     int has_off;
     int positions;
+
+    void *userdata;
+    textslider_slide_cb slide;
 } textslider;
 
-void textslider_create(component *c, font *font, const char *text, unsigned int positions, int has_off) {
-    component_create(c);
-
-    textslider *tb = malloc(sizeof(textslider));
-    tb->text = strdup(text);
-    tb->font = font;
-    tb->ticks = 0;
-    tb->dir = 0;
-    tb->pos_ = 1;
-    tb->pos = &tb->pos_;
-    tb->has_off = has_off;
-    tb->positions = positions;
-    component_set_obj(c, tb);
-
-    component_set_render_cb(c, textslider_render);
-    component_set_action_cb(c, textslider_action);
-    component_set_tick_cb(c, textslider_tick);
-}
-
-void textslider_free(component *c) {
-    textslider *tb = c->obj;
-    free(tb->text);
-    free(tb);
-    component_free(c);
-}
-
 void textslider_render(component *c) {
-    textslider *tb = c->obj;
+    textslider *tb = widget_get_obj(c);
     char buf[100];
     int chars;
     int width;
@@ -72,10 +50,10 @@ void textslider_render(component *c) {
     chars = strlen(buf);
     width = chars*tb->font->w;
     xoff = (c->w - width)/2;
-    if(c->selected) {
+    if(component_is_selected(c)) {
         int t = tb->ticks / 2;
         font_render(tb->font, buf, c->x + xoff, c->y, color_create(80 - t, 220 - t*2, 80 - t, 255));
-    } else if (c->disabled) {
+    } else if (component_is_disabled(c)) {
         font_render(tb->font, buf, c->x + xoff, c->y, color_create(121, 121, 121, 255));
     } else {
         font_render(tb->font, buf, c->x + xoff, c->y, color_create(0, 121, 0, 255));
@@ -83,7 +61,7 @@ void textslider_render(component *c) {
 }
 
 int textslider_action(component *c, int action) {
-    textslider *tb = c->obj;
+    textslider *tb = widget_get_obj(c);
     if (action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
         (*tb->pos)++;
         if (*tb->pos > tb->positions) {
@@ -92,7 +70,9 @@ int textslider_action(component *c, int action) {
             // Play menu sound
             sound_play(20, 0.5f, 0.5f, 2.0f);
         }
-        component_slide(c, *tb->pos);
+        if(tb->slide) {
+            tb->slide(c, tb->userdata, *tb->pos);
+        }
         return 0;
     } else  if(action == ACT_LEFT) {
         (*tb->pos)--;
@@ -104,14 +84,16 @@ int textslider_action(component *c, int action) {
             // Play menu sound
             sound_play(20, 0.5f, -0.5f, 2.0f);
         }
-        component_slide(c, *tb->pos);
+        if(tb->slide) {
+            tb->slide(c, tb->userdata, *tb->pos);
+        }
         return 0;
     }
     return 1;
 }
 
 void textslider_tick(component *c) {
-    textslider *tb = c->obj;
+    textslider *tb = widget_get_obj(c);
     if(!tb->dir) {
         tb->ticks++;
     } else {
@@ -125,7 +107,41 @@ void textslider_tick(component *c) {
     }
 }
 
-void textslider_bindvar(component *c, int *var) {
-    textslider *tb = c->obj;
-    tb->pos = (var ? var : &tb->pos_);
+void textslider_free(component *c) {
+    textslider *tb = widget_get_obj(c);
+    free(tb->text);
+    free(tb);
 }
+
+component* textslider_create(font *font, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata) {
+    component *c = widget_create();
+
+    textslider *tb = malloc(sizeof(textslider));
+    memset(tb, 0, sizeof(textslider));
+    tb->text = strdup(text);
+    tb->font = font;
+    tb->ticks = 0;
+    tb->dir = 0;
+    tb->pos_ = 1;
+    tb->pos = &tb->pos_;
+    tb->has_off = has_off;
+    tb->positions = positions;
+    tb->userdata = userdata;
+    tb->slide = cb;
+    widget_set_obj(c, tb);
+
+    widget_set_render_cb(c, textslider_render);
+    widget_set_action_cb(c, textslider_action);
+    widget_set_tick_cb(c, textslider_tick);
+    widget_set_free_cb(c, textslider_free);
+    return c;
+}
+
+component* textslider_create_bind(font *font, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata, int *bind) {
+    component *c = textslider_create(font, text, positions, has_off, cb, userdata);
+    textslider *ts = widget_get_obj(c);
+    ts->pos = bind;
+    return c;
+}
+
+
