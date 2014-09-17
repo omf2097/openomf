@@ -2,7 +2,7 @@
 #define _COMPAT_H
 
 #include <string.h>
-#include "config.h"
+#include "platform.h"
 
 #ifndef HAVE_STRDUP
 char *strdup(const char *s1);

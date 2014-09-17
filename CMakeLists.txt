@@ -53,8 +53,9 @@ find_package(SDL2)
 find_package(enet)
 find_package(confuse)
 
-# Check functions
+# Check functions and generate platform configuration file
 CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STRDUP)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
 
 # Only search for submodules if we want them
 IF(USE_SUBMODULES)
@@ -257,15 +258,16 @@ set(OPENOMF_SRC
 
 set(COREINCS
     include
-    ${SDL2_INCLUDE_DIR} 
+    ${CMAKE_CURRENT_BINARY_DIR}/include/
+    ${SDL2_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
     ${SHADOWDIVE_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
 )
 
-set(CORELIBS 
-    ${SDL2_LIBRARY} 
+set(CORELIBS
+    ${SDL2_LIBRARY}
     ${CONFUSE_LIBRARY}
     ${LIBINTL_LIBRARIES}
     ${ENET_LIBRARY}
