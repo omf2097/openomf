@@ -482,49 +482,6 @@ void mainmenu_input_tick(scene *scene) {
         } while((i = i->next));
     }
     controller_free_chain(p1);
-
-/*
-    mainmenu_local *local = scene_get_userdata(scene);
-    game_player *player1 = game_state_get_player(scene->gs, 0);
-
-    ctrl_event *p1 = NULL, *i;
-    controller_poll(player1->ctrl, &p1);
-
-    i = p1;
-    if (i) {
-        do {
-            if(i->type == EVENT_TYPE_ACTION) {
-                // Skip repeated keys
-                if(local->prev_key == i->event_data.action) {
-                    continue;
-                }
-                local->prev_key = i->event_data.action;
-
-                // Okay, the action is new. Handle it.
-                if(i->event_data.action == ACT_ESC) {
-                    if(local->current_menu == &local->main_menu) {
-                        if(menu_selected(&local->main_menu) == &local->quit_button) {
-                            game_state_set_next(scene->gs, SCENE_CREDITS);
-                        } else {
-                            menu_select(&local->main_menu, &local->quit_button);
-                        }
-                    } else {
-                        if(local->host) {
-                            enet_host_destroy(local->host);
-                            local->host = NULL;
-                        }
-                        local->mstack[--local->mstack_pos] = NULL;
-                        local->current_menu = local->mstack[local->mstack_pos-1];
-                    }
-                    sound_play(20, 0.5f, 0.0f, 2.0f);
-                } else {
-                    menu_handle_action(local->current_menu, i->event_data.action);
-                }
-            }
-        } while((i = i->next));
-    }
-    controller_free_chain(p1);
-*/
 }
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
@@ -602,9 +559,10 @@ int mainmenu_create(scene *scene) {
         component_click(&local->net_listen_button);
     }
 
+
+*/
     // clear it, so this only happens the first time
     scene->gs->net_mode = NET_MODE_NONE;
-*/
 
     // prev_key is used to prevent multiple clicks while key is down
     local->prev_key = ACT_PUNCH;
