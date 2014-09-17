@@ -5,64 +5,38 @@
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
 #include "game/menu/textinput.h"
+#include "game/menu/filler.h"
+#include "game/menu/label.h"
+#include "game/menu/sizer.h"
 
 typedef struct {
-    component net_header;
-    component net_connect_button;
-    component net_listen_button;
-    component net_done_button;
-    menu connect_menu;
-    menu listen_menu;
     ENetHost *host;
 } net_menu_data;
 
-void menu_net_free(menu *menu) {
-    net_menu_data *local = menu_get_userdata(menu);
-    textbutton_free(&local->net_header);
-    textbutton_free(&local->net_connect_button);
-    textbutton_free(&local->net_listen_button);
-    textbutton_free(&local->net_done_button);
-    menu_free(&local->connect_menu);
-    menu_free(&local->listen_menu);
+void menu_net_free(component *c) {
+    net_menu_data *local = menu_get_userdata(c);
     free(local);
 }
 
-void menu_net_create(menu *menu) {
-    net_menu_data *local = malloc(sizeof(net_menu_data));
+void menu_net_done(component *c, void *userdata) {
+    menu *m = menu_get_userdata(c->parent);
+    m->finished = 1;
+}
 
-    // Zero out host
+component* menu_net_create(scene *s) {
+    net_menu_data *local = malloc(sizeof(net_menu_data));
     local->host = NULL;
 
-    // connect menu
-    menu_create(&local->connect_menu, 10, 80, 300, 50);
-    menu_connect_create(&local->connect_menu);
+    component* menu = menu_create(11);
+    menu_attach(menu, label_create(&font_large, "NETWORK PLAY"));
+    menu_attach(menu, filler_create());
 
-    // listen menu
-    menu_create(&local->listen_menu, 10, 80, 300, 50);
-    menu_listen_create(&local->listen_menu);
+    menu_attach(menu, textbutton_create(&font_large, "CONNECT TO SERVER", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "START SERVER", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "DONE", COM_ENABLED, menu_net_done, NULL));
 
-    // Components
-    textbutton_create(&local->net_header, &font_large, "NETWORK PLAY");
-    textbutton_create(&local->net_connect_button, &font_large, "CONNECT TO SERVER");
-    textbutton_create(&local->net_listen_button, &font_large, "START SERVER");
-    textbutton_create(&local->net_done_button, &font_large, "DONE");
-    menu_attach(&local->net_menu, &local->net_header, 33);
-    menu_attach(&local->net_menu, &local->net_connect_button, 11);
-    menu_attach(&local->net_menu, &local->net_listen_button, 55);
-    menu_attach(&local->net_menu, &local->net_done_button, 11);
+    menu_set_userdata(menu, local);
+    menu_set_free_cb(menu, menu_net_free);
 
-    local->net_listen_button.userdata = scene;
-    local->net_listen_button.click = mainmenu_listen_for_connections;
-
-    local->net_header.disabled = 1;
-    menu_select(&local->net_menu, &local->net_connect_button);
-
-    local->net_connect_button.userdata = scene;
-    local->net_connect_button.click = mainmenu_enter_menu_connect;
-
-    local->net_done_button.userdata = scene;
-    local->net_done_button.click = mainmenu_prev_menu;
-
-    menu_set_userdata(local);
-    menu_set_free_cb(menu_net_free);
+    return menu;
 }

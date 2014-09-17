@@ -43,9 +43,6 @@ typedef struct mainmenu_local_t {
 } mainmenu_local;
 
 /*
-char *dupestr(const char *s) {
-    return strcpy(malloc(strlen(s)+1), s);
-}
 void update_keys(mainmenu_local *local, int player) {
     settings_keyboard *k = &settings_get()->keys;
     if(player == 1) {
@@ -201,13 +198,6 @@ void mainmenu_enter_playertwo_input_config(component *c, void *userdata) {
     local->input_selected_player = 2;
 }
 
-void mainmenu_enter_menu_video(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[local->mstack_pos++] = &local->video_menu;
-    local->current_menu = &local->video_menu;
-    local->old_video_settings = settings_get()->video;
-}
-
 void inputmenu_set_key(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     //settings_keyboard *k = &settings_get()->keys;
@@ -290,23 +280,6 @@ void mainmenu_tick(scene *scene, int paused) {
     guiframe_tick(local->frame);
 
 /*
-    // Handle video confirm menu
-    if(local->mstack[local->mstack_pos-1] == &local->video_confirm_menu) {
-        if(difftime(time(NULL), local->video_accept_timer) >= 1.0) {
-            time(&local->video_accept_timer);
-            local->video_accept_secs--;
-            if(sprintf(local->video_accept_label,
-                       "ACCEPT NEW RESOLUTION? %d",
-                       local->video_accept_secs) > 0) {
-                ((textbutton*)local->video_confirm_header.obj)->text = local->video_accept_label;
-            }
-        }
-        if(local->video_accept_secs == 0) {
-            local->video_confirm_cancel.click(
-                &local->video_confirm_cancel,
-                local->video_confirm_cancel.userdata);
-        }
-    }
 
     if(local->mstack[local->mstack_pos-1] == &local->input_presskey_menu) {
         if(local->input_presskey_ready_ticks == 20) {
