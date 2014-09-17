@@ -1,4 +1,5 @@
 #include "game/scenes/mainmenu/menu_main.h"
+#include "game/scenes/mainmenu/menu_configuration.h"
 
 #include "game/menu/menu.h"
 #include "game/menu/textbutton.h"
@@ -6,86 +7,85 @@
 #include "game/menu/textslider.h"
 #include "game/menu/textinput.h"
 #include "game/menu/frame.h"
+#include "resources/ids.h"
+#include "game/utils/settings.h"
 
+void mainmenu_quit(component *c, void *userdata) {
+    scene *s = userdata;
+    game_state_set_next(s->gs, SCENE_CREDITS);
+}
 
-component* menu_main_create() {
+void mainmenu_1v1(component *c, void *userdata) {
+    scene *s = userdata;
+
+    // Set up controllers
+    settings_keyboard *k = &settings_get()->keys;
+    if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
+        _setup_keyboard(s->gs, 0);
+    } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
+        _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
+    }
+
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)), settings_get()->gameplay.difficulty);
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 1)), settings_get()->gameplay.difficulty);
+    _setup_ai(s->gs, 1);
+
+    // Load MELEE scene
+    game_state_set_next(s->gs, SCENE_MELEE);
+}
+
+void mainmenu_1v2(component *c, void *userdata) {
+    scene *s = userdata;
+
+    settings_keyboard *k = &settings_get()->keys;
+    if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
+        _setup_keyboard(s->gs, 0);
+    } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
+        _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
+    }
+
+    if (k->ctrl_type2 == CTRL_TYPE_KEYBOARD) {
+        _setup_keyboard(s->gs, 1);
+    } else if (k->ctrl_type2 == CTRL_TYPE_GAMEPAD) {
+        _setup_joystick(s->gs, 1, k->joy_name2, k->joy_offset2);
+    }
+
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)), AI_DIFFICULTY_CHAMPION);
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 1)), AI_DIFFICULTY_CHAMPION);
+
+    // Load MELEE scene
+    game_state_set_next(s->gs, SCENE_MELEE);
+}
+
+void mainmenu_demo(component *c, void *userdata) {
+    scene *s = userdata;
+
+    // Set up controllers
+    game_state_init_demo(s->gs);
+    game_state_set_next(s->gs, rand_arena());
+}
+
+void mainmenu_soreboard(component *c, void *userdata) {
+    scene *s = userdata;
+    game_state_set_next(s->gs, SCENE_SCOREBOARD);
+}
+
+void mainmenu_enter_configuration(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, menu_configuration_create(s));
+}
+
+component* menu_main_create(scene *s) {
     component* menu = menu_create(11);
-
-    menu_attach(menu, textbutton_create(&font_large, "ONE PLAYER GAME", COM_ENABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&font_large, "TWO PLAYER GAME", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "ONE PLAYER GAME", COM_ENABLED, mainmenu_1v1, s));
+    menu_attach(menu, textbutton_create(&font_large, "TWO PLAYER GAME", COM_ENABLED, mainmenu_1v2, s));
     menu_attach(menu, textbutton_create(&font_large, "TOURNAMENT PLAY", COM_DISABLED, NULL, NULL));
     menu_attach(menu, textbutton_create(&font_large, "NETWORK PLAY", COM_ENABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&font_large, "CONFIGURATION", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "CONFIGURATION", COM_ENABLED, mainmenu_enter_configuration, s));
     menu_attach(menu, textbutton_create(&font_large, "GAMEPLAY", COM_ENABLED, NULL, NULL));
     menu_attach(menu, textbutton_create(&font_large, "HELP", COM_DISABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&font_large, "DEMO", COM_ENABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&font_large, "SCOREBOARD", COM_ENABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&font_large, "QUIT", COM_ENABLED, NULL, NULL));
-/*
-    // Create Network play menu
-    menu_create(&local->net_menu, 165, 5, 151, 119);
-    menu_net_create(&local->net_menu);
-
-    // Create configuration menu
-    menu_create(&local->config_menu, 165, 5, 151, 119);
-    menu_configuration_create(&local->config_menu);
-
-    // Create gameplay menu
-    menu_create(&local->gameplay_menu, 165, 5, 151, 119);
-    menu_gameplay_create(&local->gameplay_menu);
-
-    // Mainmenu components
-    textbutton_create(&local->oneplayer_button, &font_large, "ONE PLAYER GAME");
-    textbutton_create(&local->twoplayer_button, &font_large, "TWO PLAYER GAME");
-    textbutton_create(&local->tourn_button, &font_large, "TOURNAMENT PLAY");
-    textbutton_create(&local->net_button, &font_large, "NETWORK PLAY");
-    textbutton_create(&local->config_button, &font_large, "CONFIGURATION");
-    textbutton_create(&local->gameplay_button, &font_large, "GAMEPLAY");
-    textbutton_create(&local->help_button, &font_large, "HELP");
-    textbutton_create(&local->demo_button, &font_large, "DEMO");
-    textbutton_create(&local->scoreboard_button, &font_large, "SCOREBOARD");
-    textbutton_create(&local->quit_button, &font_large, "QUIT");
-    menu_attach(menu, &local->oneplayer_button, 11);
-    menu_attach(menu, &local->twoplayer_button, 11);
-    menu_attach(menu, &local->tourn_button, 11);
-    menu_attach(menu, &local->net_button, 11);
-    menu_attach(menu, &local->config_button, 11);
-    menu_attach(menu, &local->gameplay_button, 11);
-    menu_attach(menu, &local->help_button, 11);
-    menu_attach(menu, &local->demo_button, 11);
-    menu_attach(menu, &local->scoreboard_button, 11);
-    menu_attach(menu, &local->quit_button, 11);
-
-    // Status
-    local->tourn_button.disabled = 1;
-    local->config_button.disabled = 0;
-    local->gameplay_button.disabled = 0;
-    local->net_button.disabled = 0;
-    local->help_button.disabled = 1;
-    local->demo_button.disabled = 0;
-    local->scoreboard_button.disabled = 0;
-
-
-    // Events
-    local->quit_button.userdata = (void*)scene;
-    local->quit_button.click = mainmenu_quit;
-    local->oneplayer_button.userdata = (void*)scene;
-    local->oneplayer_button.click = mainmenu_1v1;
-    local->twoplayer_button.userdata = (void*)scene;
-    local->twoplayer_button.click = mainmenu_1v2;
-    local->tourn_button.userdata = (void*)scene;
-    local->tourn_button.click = mainmenu_tourn;
-    local->config_button.userdata = (void*)scene;
-    local->config_button.click = mainmenu_enter_menu_config;
-    local->net_button.userdata = (void*)scene;
-    local->net_button.click = mainmenu_enter_menu_net;
-    local->gameplay_button.userdata = (void*)scene;
-    local->gameplay_button.click = mainmenu_enter_menu_gameplay;
-    local->demo_button.userdata = (void*)scene;
-    local->demo_button.click = mainmenu_demo;
-    local->scoreboard_button.userdata = (void*)scene;
-    local->scoreboard_button.click = mainmenu_soreboard;
-*/
-
+    menu_attach(menu, textbutton_create(&font_large, "DEMO", COM_ENABLED, mainmenu_demo, s));
+    menu_attach(menu, textbutton_create(&font_large, "SCOREBOARD", COM_ENABLED, mainmenu_soreboard, s));
+    menu_attach(menu, textbutton_create(&font_large, "QUIT", COM_ENABLED, mainmenu_quit, s));
     return menu;
 }

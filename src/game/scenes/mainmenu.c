@@ -65,93 +65,6 @@ void update_keys(mainmenu_local *local, int player) {
     }
 }
 
-// Menu event handlers
-void mainmenu_quit(component *c, void *userdata) {
-    scene *s = userdata;
-    game_state_set_next(s->gs, SCENE_CREDITS);
-}
-
-void mainmenu_1v1(component *c, void *userdata) {
-    scene *s = userdata;
-
-    // Set up controllers
-    settings_keyboard *k = &settings_get()->keys;
-    if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
-        _setup_keyboard(s->gs, 0);
-    } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
-    }
-
-    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)), settings_get()->gameplay.difficulty);
-    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 1)), settings_get()->gameplay.difficulty);
-
-    _setup_ai(s->gs, 1);
-
-    // Load MELEE scene
-    game_state_set_next(s->gs, SCENE_MELEE);
-}
-
-void mainmenu_1v2(component *c, void *userdata) {
-    scene *s = userdata;
-
-    settings_keyboard *k = &settings_get()->keys;
-    if (k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
-        _setup_keyboard(s->gs, 0);
-    } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
-    }
-
-
-    if (k->ctrl_type2 == CTRL_TYPE_KEYBOARD) {
-        _setup_keyboard(s->gs, 1);
-    } else if (k->ctrl_type2 == CTRL_TYPE_GAMEPAD) {
-        _setup_joystick(s->gs, 1, k->joy_name2, k->joy_offset2);
-    }
-
-    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)), AI_DIFFICULTY_CHAMPION);
-    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 1)), AI_DIFFICULTY_CHAMPION);
-
-    // Load MELEE scene
-    game_state_set_next(s->gs, SCENE_MELEE);
-}
-
-void mainmenu_tourn(component *c, void *userdata) {
-    scene *s = userdata;
-    game_state_set_next(s->gs, SCENE_MECHLAB);
-}
-
-void mainmenu_demo(component *c, void *userdata) {
-    scene *s = userdata;
-
-    // Set up controllers
-    game_state_init_demo(s->gs);
-
-    game_state_set_next(s->gs, rand_arena());
-}
-
-void mainmenu_soreboard(component *c, void *userdata) {
-    scene *s = userdata;
-    game_state_set_next(s->gs, SCENE_SCOREBOARD);
-}
-
-void mainmenu_prev_menu(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[--local->mstack_pos] = NULL;
-    local->current_menu = local->mstack[local->mstack_pos - 1];
-}
-
-void mainmenu_enter_menu_config(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[local->mstack_pos++] = &local->config_menu;
-    local->current_menu = &local->config_menu;
-}
-
-void mainmenu_enter_menu_gameplay(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[local->mstack_pos++] = &local->gameplay_menu;
-    local->current_menu = &local->gameplay_menu;
-}
-
 void mainmenu_set_right_keyboard(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     settings_keyboard *k = &settings_get()->keys;
@@ -260,12 +173,6 @@ void mainmenu_set_joystick2(component *c, void *userdata) {
     reconfigure_controller(((scene*) userdata)->gs);
 }
 
-void mainmenu_enter_custom_keyboard_config(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[local->mstack_pos++] = &local->input_custom_keyboard_menu;
-    local->current_menu = &local->input_custom_keyboard_menu;
-}
-
 void mainmenu_apply_custom_input_config(component *c, void *userdata) {
     mainmenu_local *local = scene_get_userdata((scene*)userdata);
     settings_keyboard *k = &settings_get()->keys;
@@ -299,30 +206,6 @@ void mainmenu_enter_menu_video(component *c, void *userdata) {
     local->mstack[local->mstack_pos++] = &local->video_menu;
     local->current_menu = &local->video_menu;
     local->old_video_settings = settings_get()->video;
-}
-
-void mainmenu_enter_menu_video_confirm(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[local->mstack_pos++] = &local->video_confirm_menu;
-    local->current_menu = &local->video_confirm_menu;
-}
-
-void mainmenu_enter_menu_net(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[local->mstack_pos++] = &local->net_menu;
-    local->current_menu = &local->net_menu;
-}
-
-void mainmenu_enter_menu_connect(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[local->mstack_pos++] = &local->connect_menu;
-    local->current_menu = &local->connect_menu;
-}
-
-void mainmenu_enter_menu_listen(component *c, void *userdata) {
-    mainmenu_local *local = scene_get_userdata((scene*)userdata);
-    local->mstack[local->mstack_pos++] = &local->listen_menu;
-    local->current_menu = &local->listen_menu;
 }
 
 void inputmenu_set_key(component *c, void *userdata) {
@@ -690,7 +573,6 @@ void mainmenu_input_tick(scene *scene) {
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
     mainmenu_local *local = scene_get_userdata(scene);
-/*
     game_player *player1 = game_state_get_player(scene->gs, 0);
     if (player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
             (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN
@@ -698,7 +580,7 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
         // these events will be handled by polling
         return 1;
     }
-*/
+
     return guiframe_event(local->frame, event);
 }
 
@@ -728,21 +610,21 @@ int mainmenu_create(scene *scene) {
 
     // Create main menu
     local->frame = guiframe_create(165, 5, 151, 119);
-    guiframe_set_root(local->frame, menu_main_create());
+    guiframe_set_root(local->frame, menu_main_create(scene));
     guiframe_layout(local->frame);
 
     // Cleanups and resets
     for(int i = 0; i < 2; i++) {
         // destroy any leftover controllers
         controller *ctrl;
-       if ((ctrl = game_player_get_ctrl(game_state_get_player(scene->gs, i)))) {
-           game_player_set_ctrl(game_state_get_player(scene->gs, i), NULL);
-       }
+        if ((ctrl = game_player_get_ctrl(game_state_get_player(scene->gs, i)))) {
+            game_player_set_ctrl(game_state_get_player(scene->gs, i), NULL);
+        }
 
-       // reset any single player data
-       game_state_get_player(scene->gs, i)->sp_wins = 0;
-       chr_score_reset(game_player_get_score(game_state_get_player(scene->gs, i)), 1);
-       chr_score_reset_wins(game_player_get_score(game_state_get_player(scene->gs, i)));
+        // reset any single player data
+        game_state_get_player(scene->gs, i)->sp_wins = 0;
+        chr_score_reset(game_player_get_score(game_state_get_player(scene->gs, i)), 1);
+        chr_score_reset_wins(game_player_get_score(game_state_get_player(scene->gs, i)));
     }
     reconfigure_controller(scene->gs);
 

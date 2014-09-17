@@ -47,16 +47,19 @@ component* menu_selected(component *mc) {
 }
 
 void menu_attach(component *c, component *nc) {
-    sizer *s = component_get_obj(c);
-    if(sizer_size(c) == 0) {
-        component_select(nc, 1);
-    }
-    vector_append(&s->objs, &nc);
+    sizer_attach(c, nc);
 }
 
 void menu_render(component *c) {
     sizer *s = component_get_obj(c);
     menu *m = sizer_get_obj(c);
+
+    // If submenu is set, we need to use it
+    if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
+        return component_render(m->submenu);
+    }
+
+    // Otherwise handle this component
     iterator it;
     component **tmp;
     video_render_sprite(m->bg, c->x, c->y, BLEND_ALPHA, 0);
@@ -68,6 +71,13 @@ void menu_render(component *c) {
 
 int menu_event(component *mc, SDL_Event *event) {
     menu *m = sizer_get_obj(mc);
+
+    // If submenu is set, we need to use it
+    if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
+        return component_event(m->submenu, event);
+    }
+
+    // Otherwise handle this component
     component *c = sizer_get(mc, m->selected);
     if(c != NULL) {
         return component_event(c, event);
@@ -77,9 +87,29 @@ int menu_event(component *mc, SDL_Event *event) {
 
 int menu_action(component *mc, int action) {
     menu *m = sizer_get_obj(mc);
+    component *c;
 
-    component *c = sizer_get(mc, m->selected);
-    if(c != NULL) {
+    // If submenu is set, we need to use it
+    if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
+        return component_action(m->submenu, action);
+    }
+
+    // Select last item if ESC is pressed
+    if(m->selected == sizer_size(mc)-1 && action == ACT_ESC) {
+        // If the last item is already selected, and ESC if punched, change the action to punch
+        // This is then passed to the quit (last) component and its callback is called
+        // Hacky, but works well in menu sizer.
+        m->finished = 1;
+        action = ACT_PUNCH;
+    } else if(action == ACT_ESC) {
+        // Select last item when ESC is pressed and it's not already selected.
+        c = sizer_get(mc, sizer_size(mc) - 1);
+        menu_select(mc, c);
+        return 0;
+    }
+
+    // Handle down/up selection movement
+    if((c = sizer_get(mc, m->selected)) != NULL) {
         if(action == ACT_DOWN || action == ACT_UP) {
             component_select(c, 0);
             do {
@@ -106,18 +136,34 @@ int menu_action(component *mc, int action) {
         }
     }
 
-    if(m->selected == sizer_size(mc) && action == ACT_ESC) {
-        // Finish up this menu
-    } else if(action == ACT_ESC) {
-        c = sizer_get(mc, sizer_size(mc) - 1);
-        menu_select(mc, c);
-    }
-
+    // If the key wasn't handled yet and we have a valid component,
+    // pass on the event
     if(c != NULL) {
         return component_action(c, action);
     }
 
+    // Tel lthe caller that the event was not handled here.
     return 1;
+}
+
+void menu_set_submenu(component *mc, component *submenu) {
+    menu *m = sizer_get_obj(mc);
+    if(m->submenu) {
+        component_free(m->submenu);
+    }
+    m->submenu = submenu;
+    submenu->parent = mc; // Set correct parent
+    component_layout(m->submenu, mc->x, mc->y, mc->w, mc->h);
+}
+
+component* menu_get_submenu(component *c) {
+    menu *m = sizer_get_obj(c);
+    return m->submenu;
+}
+
+int menu_is_finished(component *c) {
+    menu *m = sizer_get_obj(c);
+    return m->finished;
 }
 
 void menu_layout(component *c, int x, int y, int w, int h) {
@@ -135,7 +181,16 @@ void menu_layout(component *c, int x, int y, int w, int h) {
     component **tmp;
     vector_iter_begin(&s->objs, &it);
     int i = 0;
+    int first_selected = 0;
     while((tmp = iter_next(&it)) != NULL) {
+        // Select first non-disabled component
+        if(!component_is_disabled(*tmp) && !first_selected) {
+            component_select(*tmp, 1);
+            first_selected = 1;
+            m->selected = i;
+        }
+
+        // Set component position and size
         component_layout(*tmp, x, m->margin_top + y + i * m->obj_h, w, m->obj_h);
         i++;
     }
@@ -146,6 +201,9 @@ void menu_free(component *c) {
     if(m->bg) {
         surface_free(m->bg);
         free(m->bg);
+    }
+    if(m->submenu) {
+        component_free(m->submenu);
     }
 }
 

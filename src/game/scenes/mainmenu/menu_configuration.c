@@ -5,40 +5,27 @@
 #include "game/menu/textselector.h"
 #include "game/menu/textslider.h"
 #include "game/menu/textinput.h"
+#include "game/menu/filler.h"
+#include "game/menu/label.h"
+#include "game/menu/sizer.h"
 
-typedef struct {
-    component config_header;
-    component playerone_input_button;
-    component playertwo_input_button;
-    component video_options_button;
-    component sound_slider;
-    component music_slider;
-    component mono_toggle;
-    component config_done_button;
-    menu video_menu;
-    menu input_config_menu;
-    menu input_custom_keyboard_menu;
-    menu input_presskey_menu;
-} configuration_menu_data;
-
-void menu_configuration_free(menu *menu) {
-    configuration_menu_data *local = menu_get_userdata(menu);
-    textbutton_free(&local->config_header);
-    textbutton_free(&local->playerone_input_button);
-    textbutton_free(&local->playertwo_input_button);
-    textbutton_free(&local->video_options_button);
-    textslider_free(&local->sound_slider);
-    textslider_free(&local->music_slider);
-    textselector_free(&local->mono_toggle);
-    textbutton_free(&local->config_done_button);
-    menu_free(&local->video_menu);
-    menu_free(&local->input_config_menu);
-    menu_free(&local->input_custom_keyboard_menu);
-    menu_free(&local->input_presskey_menu);
-    free(local);
+void menu_configuration_done(component *c, void *u) {
+    menu *m = sizer_get_obj(c->parent);
+    m->finished = 1;
 }
 
-void menu_configuration_create(menu *menu) {
+component* menu_configuration_create(scene *s) {
+    component* menu = menu_create(11);
+    menu_attach(menu, label_create(&font_large, "CONFIGURATION"));
+    menu_attach(menu, filler_create());
+    menu_attach(menu, textbutton_create(&font_large, "PLAYER 1 INPUT", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "PLAYER 2 INPUT", COM_ENABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "VIDEO OPTIONS", COM_ENABLED, NULL, NULL));
+
+    menu_attach(menu, textbutton_create(&font_large, "DONE", COM_ENABLED, menu_configuration_done, NULL));
+    return menu;
+
+    /*
     configuration_menu_data *local = malloc(sizeof(configuration_menu_data));
 
     // Create video menu
@@ -100,5 +87,5 @@ void menu_configuration_create(menu *menu) {
     local->mono_toggle.toggle = menu_mono_toggle;
 
     menu_set_userdata(local);
-    menu_set_free_cb(menu_configuration_free);
+    menu_set_free_cb(menu_configuration_free);*/
 }

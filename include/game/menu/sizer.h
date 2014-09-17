@@ -39,4 +39,6 @@ void sizer_set_layout_cb(component *c, sizer_layout_cb cb);
 void sizer_set_tick_cb(component *c, sizer_tick_cb cb);
 void sizer_set_free_cb(component *c, sizer_free_cb cb);
 
+void sizer_attach(component *c, component *nc);
+
 #endif // _SIZER_H

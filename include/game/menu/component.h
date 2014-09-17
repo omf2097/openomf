@@ -46,6 +46,8 @@ struct component_t {
     component_layout_cb layout;
     component_tick_cb tick;
     component_free_cb free;
+
+    component *parent;
 };
 
 // Create & free

@@ -55,6 +55,12 @@ void sizer_set_free_cb(component *c, sizer_free_cb cb) {
     local->free = cb;
 }
 
+void sizer_attach(component *c, component *nc) {
+    sizer *local = component_get_obj(c);
+    nc->parent = c;
+    vector_append(&local->objs, &nc);
+}
+
 void sizer_tick(component *c) {
     sizer *local = component_get_obj(c);
 

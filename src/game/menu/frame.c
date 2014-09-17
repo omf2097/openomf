@@ -24,6 +24,10 @@ void guiframe_free(guiframe *frame) {
     free(frame);
 }
 
+component* guiframe_get_root(guiframe *frame) {
+    return frame->root_node;
+}
+
 void guiframe_tick(guiframe *frame) {
     if(frame->root_node) {
         component_tick(frame->root_node);

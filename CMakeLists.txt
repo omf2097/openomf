@@ -199,6 +199,7 @@ set(OPENOMF_SRC
     src/game/scenes/openomf.c
     src/game/scenes/mainmenu.c
     src/game/scenes/mainmenu/menu_main.c
+    src/game/scenes/mainmenu/menu_configuration.c
     src/game/scenes/credits.c
     src/game/scenes/cutscene.c
     src/game/scenes/arena.c
@@ -220,6 +221,8 @@ set(OPENOMF_SRC
     src/game/menu/sizer.c
     src/game/menu/widget.c
     src/game/menu/frame.c
+    src/game/menu/label.c
+    src/game/menu/filler.c
     src/game/game_state.c
     src/game/game_player.c
     src/game/common_defines.c
