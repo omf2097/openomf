@@ -103,7 +103,8 @@ typedef struct {
     char unk_block_g[6];     ///< Unknown.
     uint32_t winnings;       ///< Money made by winning opponents
     uint32_t total_value;    ///< Total value for the pilot
-    char unk_block_h[16];    ///< Unknown. Unset memory ?
+    float unk_f_a;
+    float unk_f_b;
     sd_palette palette;      ///< Palette for photo ?
     uint16_t unk_block_i;    ///< Unknown
     uint16_t photo_id;       ///< Which face photo this pilot uses

@@ -119,7 +119,9 @@ void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     pilot->winnings =    sd_mread_udword(mr);
     pilot->total_value = sd_mread_udword(mr);
 
-    sd_mread_buf(mr, pilot->unk_block_h, 16);
+    pilot->unk_f_a = sd_mread_float(mr);
+    pilot->unk_f_b = sd_mread_float(mr);
+    sd_mskip(mr, 8);
     sd_palette_create(&pilot->palette);
     sd_palette_mload_range(mr, &pilot->palette, 0, 48);
     pilot->unk_block_i = sd_mread_uword(mr);
@@ -250,7 +252,9 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     sd_mwrite_udword(w, pilot->winnings);
     sd_mwrite_udword(w, pilot->total_value);
 
-    sd_mwrite_buf(w, pilot->unk_block_h, 16);
+    sd_mwrite_float(w, pilot->unk_f_a);
+    sd_mwrite_float(w, pilot->unk_f_b);
+    sd_mwrite_fill(w, 0, 8);
     sd_palette_msave_range(w, &pilot->palette, 0, 48);
     sd_mwrite_uword(w, pilot->unk_block_i);
 
