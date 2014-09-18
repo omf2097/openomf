@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error: %s\n", SDL_GetError());
         return 1;
     }
-    
+
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
@@ -49,13 +49,13 @@ int main(int argc, char *argv[]) {
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,output,sid,sampleprint,play,export,import,end};
     const char* progname = "soundtool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
         printf("(C) 2013 Tuomas Virtanen\n");
         goto exit_0;
     }
-    
+
     // Handle errors
     if(nerrors > 0) {
         arg_print_errors(stdout, end, progname);
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
         printf("Error %d: %s\n", retcode, sd_get_error(retcode));
         goto exit_1;
     }
-    
+
     if(sid->count > 0) {
         // Sound ID to handle
         int sound_id = sid->ival[0];
@@ -112,18 +112,18 @@ int main(int argc, char *argv[]) {
             }
         } else if(play->count > 0) {
             printf("Attempting to play sample #%d.\n", sound_id);
-        
+
             // Make sure there is data at requested ID position
             if(sound->len <= 2) {
                 printf("Sample does not contain data.\n");
                 goto exit_1;
             }
-        
+
             // Streamer
             streamer.size = sound->len;
             streamer.pos = 0;
             streamer.data = sound->data;
-        
+
             // Initialize required audio
             SDL_zero(want);
             want.freq = 8000;
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
             want.samples = 4096;
             want.callback = stream;
             want.userdata = &streamer;
-                
+
             // Open device, play file
             dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
             if(dev == 0) {
@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
         }
         printf("\n");
     }
-    
+
     if(output->count > 0) {
         if(sd_sounds_save(&sf, output->filename[0]) != SD_SUCCESS) {
             printf("Saving soundfile to %s failed.\n", output->filename[0]);
