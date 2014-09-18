@@ -79,17 +79,17 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Difficulty:  %s\n", difficulty_names[pilot->difficulty]);
 
         printf("  - unk_block_a:\n");
-        print_bytes(pilot->unk_block_a, 48, 16, 5);
+        print_bytes(pilot->unk_block_a, sizeof(pilot->unk_block_a), 16, 5);
         printf("\n");
         printf("  - Pilot ID:    %d\n", pilot->pilot_id);
         printf("  - Unknown K:   %d\n", pilot->unknown_k);
         printf("  - Force arena: %d\n", pilot->force_arena);
         printf("  - unk_block_b: ");
-        print_bytes(pilot->unk_block_a, 3, 16, 0);
+        print_bytes(pilot->unk_block_b, sizeof(pilot->unk_block_b), 16, 0);
         printf("\n");
         printf("  - Movement:    %d\n", pilot->movement);
         printf("  - unk_block_c: ");
-        print_bytes(pilot->unk_block_c, 6, 16, 0);
+        print_bytes(pilot->unk_block_c, sizeof(pilot->unk_block_c), 16, 0);
         printf("\n");
         printf("  - Enhancements:\n");
         for(int i = 0; i < 11; i++) {
@@ -98,13 +98,13 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Flags:       %d\n", pilot->flags);
 
         printf("  - Reqs:        ");
-        print_bytes((char*)pilot->reqs, 10, 16, 0);
+        print_bytes((char*)pilot->reqs, sizeof(pilot->reqs), 16, 0);
         printf("\n");
         printf("  - Attitude:    ");
-        print_bytes((char*)pilot->attitude, 6, 16, 0);
+        print_bytes((char*)pilot->attitude, sizeof(pilot->attitude), 16, 0);
         printf("\n");
         printf("  - unk_block_d: ");
-        print_bytes(pilot->unk_block_d, 6, 16, 0);
+        print_bytes(pilot->unk_block_d, sizeof(pilot->unk_block_d), 16, 0);
         printf("\n");
 
         printf("  - AP Throw:    %d\n", pilot->ap_throw);
@@ -123,20 +123,20 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Forget:      %f\n", pilot->forget);
 
         printf("  - unk_block_f: ");
-        print_bytes(pilot->unk_block_f, 24, 26, 0);
-        printf("\n");
-
-        printf("  - Winnings:    %d\n", pilot->winnings);
-
-        printf("  - unk_block_g: ");
-        print_bytes(pilot->unk_block_g, 6, 26, 0);
+        print_bytes(pilot->unk_block_f, sizeof(pilot->unk_block_f), 26, 0);
         printf("\n");
 
         printf("  - Enemies (inc unranked): %d\n", pilot->enemies_inc_unranked);
         printf("  - Enemies (exl unranked): %d\n", pilot->enemies_ex_unranked);
 
+        printf("  - unk_block_g: ");
+        print_bytes(pilot->unk_block_g, sizeof(pilot->unk_block_g), 26, 0);
+        printf("\n");
+
+        printf("  - Winnings:    %d\n", pilot->winnings);
+
         printf("  - unk_block_h:\n");
-        print_bytes(pilot->unk_block_h, 166, 16, 4);
+        print_bytes(pilot->unk_block_h, sizeof(pilot->unk_block_h), 16, 4);
         printf("\n");
 
         printf("  - Photo ID     %d\n", pilot->photo_id);
