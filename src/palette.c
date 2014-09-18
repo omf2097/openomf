@@ -109,6 +109,17 @@ int sd_palette_load_range(sd_reader *reader, sd_palette *palette, int index_star
     return SD_SUCCESS;
 }
 
+int sd_palette_mload_range(sd_mreader *reader, sd_palette *palette, int index_start, int index_count) {
+    char d[3];
+    for(int i = index_start; i < index_start + index_count; i++) {
+        sd_mread_buf(reader, d, 3);
+        palette->data[i][0] = ((d[0] << 2) | ((d[0] & 0x30) >> 4));
+        palette->data[i][1] = ((d[1] << 2) | ((d[1] & 0x30) >> 4));
+        palette->data[i][2] = ((d[2] << 2) | ((d[2] & 0x30) >> 4));
+    }
+    return SD_SUCCESS;
+}
+
 int sd_palette_load(sd_reader *reader, sd_palette *palette) {
     sd_palette_load_range(reader, palette, 0, 256);
     sd_read_buf(reader, (char*)palette->remaps, 19*256);
@@ -123,6 +134,17 @@ void sd_palette_save_range(sd_writer *writer, const sd_palette *palette, int ind
         sd_write_ubyte(writer, (d[0] & 0xff) >> 2);
         sd_write_ubyte(writer, (d[1] & 0xff) >> 2);
         sd_write_ubyte(writer, (d[2] & 0xff) >> 2);
+    }
+}
+
+void sd_palette_msave_range(sd_mwriter *writer, const sd_palette *palette, int index_start, int index_count) {
+    const unsigned char *d;
+    for(int i = index_start; i < index_start + index_count; i++) {
+        d = palette->data[i];
+        // for some reason, we need to mask off the high bits or the bitshift doesn't work
+        sd_mwrite_ubyte(writer, (d[0] & 0xff) >> 2);
+        sd_mwrite_ubyte(writer, (d[1] & 0xff) >> 2);
+        sd_mwrite_ubyte(writer, (d[2] & 0xff) >> 2);
     }
 }
 

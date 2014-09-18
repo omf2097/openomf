@@ -2,6 +2,7 @@
 #define _SD_MEMWRITER_H
 
 #include <stdint.h>
+#include "shadowdive/internal/writer.h"
 
 typedef struct sd_mwriter_t {
     char *buf;

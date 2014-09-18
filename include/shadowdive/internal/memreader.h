@@ -2,6 +2,7 @@
 #define _SD_MEMREADER_H
 
 #include <stdint.h>
+#include "shadowdive/internal/reader.h"
 
 typedef struct sd_mreader_t {
     char *buf;

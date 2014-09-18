@@ -5,12 +5,13 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_PILOT_H
 #define _SD_PILOT_H
 
 #include <stdint.h>
+#include "shadowdive/palette.h"
 #ifdef SD_USE_INTERNAL
     #include "shadowdive/internal/reader.h"
     #include "shadowdive/internal/memreader.h"
@@ -18,7 +19,7 @@
     #include "shadowdive/internal/memwriter.h"
 #endif
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -102,7 +103,9 @@ typedef struct {
     char unk_block_g[6];     ///< Unknown.
     uint32_t winnings;       ///< Money made by winning opponents
     uint32_t total_value;    ///< Total value for the pilot
-    char unk_block_h[162];   ///< Unknown. Unset memory ?
+    char unk_block_h[16];    ///< Unknown. Unset memory ?
+    sd_palette palette;      ///< Palette for photo ?
+    uint16_t unk_block_i;    ///< Unknown
     uint16_t photo_id;       ///< Which face photo this pilot uses
 } sd_pilot;
 
