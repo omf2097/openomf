@@ -4,26 +4,11 @@
 #include "game/menu/component.h"
 #include "game/text/text.h"
 
-typedef struct textbutton_t textbutton;
+typedef void (*textbutton_click_cb)(component *c, void *userdata);
 
-struct textbutton_t {
-    const char *text;
-    font *font;
-    int ticks;
-    int dir;
-    int border_enabled;
-    int border_created;
-    color border_color;
-    surface border;
-};
-
-void textbutton_create(component *c, font *font, const char *text);
-void textbutton_free(component *c);
-void textbutton_render(component *c);
-int textbutton_event(component *c, SDL_Event *event);
-int textbutton_action(component *c, int action);
-void textbutton_tick(component *c);
+component* textbutton_create(font *font, const char *text, int disabled, textbutton_click_cb cb, void *userdata);
 void textbutton_set_border(component *c, color col);
+void textbutton_set_text(component *c, const char* text);
 void textbutton_remove_border(component *c);
 
 #endif // _TEXTBUTTON_H

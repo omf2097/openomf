@@ -1,28 +1,42 @@
 #ifndef _MENU_H
 #define _MENU_H
 
-#include "utils/vector.h"
 #include "video/surface.h"
 #include "game/menu/component.h"
-#include <SDL2/SDL.h>
 
-typedef struct menu_t menu;
+typedef void (*menu_tick_cb)(component *c);
+typedef void (*menu_free_cb)(component *c);
+typedef void (*menu_submenu_done_cb)(component *menu, component *submenu);
 
-struct menu_t {
-    vector objs;
-    surface sur;
-    int x,y,w,h;
+typedef struct  {
+    surface *bg;
     int selected;
-};
+    int obj_h;
+    int margin_top;
+    int finished;
 
-void menu_create(menu *menu, int x, int y, int w, int h);
-void menu_free(menu *menu);
-void menu_attach(menu *menu, component *component, int h);
-void menu_select(menu *menu, component *c);
-component* menu_selected(menu *menu);
-void menu_render(menu *menu);
-void menu_tick(menu *menu);
-int menu_handle_event(menu *menu, SDL_Event *event);
-int menu_handle_action(menu *menu, int action);
+    char prev_submenu_state;
+    component *submenu;
+    menu_submenu_done_cb submenu_done;
+
+    void *userdata;
+    menu_free_cb free;
+    menu_tick_cb tick;
+} menu;
+
+component* menu_create(int obj_h);
+void menu_attach(component *menu, component *c);
+void menu_select(component *menu, component *c);
+component* menu_selected(component *menu);
+int menu_is_finished(component *menu);
+
+void menu_set_submenu(component *menu, component *submenu);
+component* menu_get_submenu(component *menu);
+void menu_set_submenu_done_cb(component *menu, menu_submenu_done_cb done_cb);
+
+void menu_set_userdata(component *menu, void *userdata);
+void* menu_get_userdata(component *menu);
+void menu_set_free_cb(component *menu, menu_free_cb cb);
+void menu_set_tick_cb(component *menu, menu_tick_cb cb);
 
 #endif // _MENU_H

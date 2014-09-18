@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.6)
 project(OpenOMF C)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
+INCLUDE(CheckFunctionExists)
+INCLUDE(CheckSymbolExists)
+
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "6")
 set(VERSION_PATCH "5")
@@ -49,6 +52,10 @@ ENDIF()
 find_package(SDL2)
 find_package(enet)
 find_package(confuse)
+
+# Check functions and generate platform configuration file
+CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STD_STRDUP)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
 
 # Only search for submodules if we want them
 IF(USE_SUBMODULES)
@@ -129,6 +136,7 @@ IF(USE_TESTS)
 ENDIF()
 
 set(OPENOMF_SRC
+    src/utils/compat.c
     src/utils/log.c
     src/utils/config.c
     src/utils/list.c
@@ -192,6 +200,17 @@ set(OPENOMF_SRC
     src/game/scenes/intro.c
     src/game/scenes/openomf.c
     src/game/scenes/mainmenu.c
+    src/game/scenes/mainmenu/menu_main.c
+    src/game/scenes/mainmenu/menu_configuration.c
+    src/game/scenes/mainmenu/menu_gameplay.c
+    src/game/scenes/mainmenu/menu_video.c
+    src/game/scenes/mainmenu/menu_video_confirm.c
+    src/game/scenes/mainmenu/menu_net.c
+    src/game/scenes/mainmenu/menu_connect.c
+    src/game/scenes/mainmenu/menu_listen.c
+    src/game/scenes/mainmenu/menu_input.c
+    src/game/scenes/mainmenu/menu_keyboard.c
+    src/game/scenes/mainmenu/menu_presskey.c
     src/game/scenes/credits.c
     src/game/scenes/cutscene.c
     src/game/scenes/arena.c
@@ -210,6 +229,11 @@ set(OPENOMF_SRC
     src/game/menu/textinput.c
     src/game/menu/dialog.c
     src/game/menu/component.c
+    src/game/menu/sizer.c
+    src/game/menu/widget.c
+    src/game/menu/frame.c
+    src/game/menu/label.c
+    src/game/menu/filler.c
     src/game/game_state.c
     src/game/game_player.c
     src/game/common_defines.c
@@ -234,15 +258,16 @@ set(OPENOMF_SRC
 
 set(COREINCS
     include
-    ${SDL2_INCLUDE_DIR} 
+    ${CMAKE_CURRENT_BINARY_DIR}/include/
+    ${SDL2_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
     ${SHADOWDIVE_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
 )
 
-set(CORELIBS 
-    ${SDL2_LIBRARY} 
+set(CORELIBS
+    ${SDL2_LIBRARY}
     ${CONFUSE_LIBRARY}
     ${LIBINTL_LIBRARIES}
     ${ENET_LIBRARY}

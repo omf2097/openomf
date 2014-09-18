@@ -4,48 +4,31 @@
 #include <SDL2/SDL.h>
 
 #include "game/menu/textinput.h"
+#include "game/menu/widget.h"
+#include "utils/vector.h"
+#include "video/video.h"
+#include "video/color.h"
+#include "video/image.h"
+#include "utils/log.h"
+#include "utils/compat.h"
 
 #define COLOR_MENU_LINE   color_create(0,0,89,255)
 #define COLOR_MENU_BORDER color_create(0,0,243,255)
 #define COLOR_MENU_BG     color_create(4,4,16,210)
 
-int textinput_action(component *c, int action);
-void textinput_focus(component *c, int focus);
-
-void textinput_create(component *c, font *font, const char *text, const char *initialvalue) {
-    component_create(c);
-    textinput *tb;
-    tb = malloc(sizeof(textinput));
-    tb->text = text;
-    tb->font = font;
-    tb->ticks = 0;
-    tb->dir = 0;
-    tb->pos_ = 0;
-    tb->pos = &tb->pos_;
-    image img;
-    image_create(&img, 15*font->w+2, font->h+3);
-    image_clear(&img, COLOR_MENU_BG);
-    image_rect(&img, 0, 0, 15*font->w+1, font->h+2, COLOR_MENU_BORDER);
-    surface_create_from_image(&tb->sur, &img);
-    image_free(&img);
-    memcpy(tb->buf, initialvalue, strlen(initialvalue)+1);
-    c->obj = tb;
-    c->render = textinput_render;
-    c->event = textinput_event;
-    c->action = textinput_action;
-    c->tick = textinput_tick;
-    c->focus = textinput_focus;
-}
-
-void textinput_free(component *c) {
-    textinput *tb = c->obj;
-    surface_free(&tb->sur);
-    free(tb);
-    component_free(c);
-}
+typedef struct {
+    char *text;
+    font *font;
+    int ticks;
+    int dir;
+    int pos_;
+    int *pos;
+    surface sur;
+    char buf[50];
+} textinput;
 
 void textinput_render(component *c) {
-    textinput *tb = c->obj;
+    textinput *tb = widget_get_obj(c);
     /*char buf[100];*/
     int chars;
     int width;
@@ -54,13 +37,13 @@ void textinput_render(component *c) {
     width = 15*tb->font->w;
     xoff = (c->w - width)/2;
     video_render_sprite(&tb->sur, c->x + xoff-2, c->y -2, BLEND_ALPHA, 0);
-    if(c->selected) {
+    if(component_is_selected(c)) {
         int t = tb->ticks / 2;
         if (chars > 0) {
             font_render(tb->font, tb->buf, c->x + xoff, c->y, color_create(80, 220, 80, 255));
         }
         font_render(tb->font, "", c->x+ xoff + chars * tb->font->w, c->y, color_create(121 - t, 121 - t, 121 - t, 255));
-    } else if (c->disabled) {
+    } else if (component_is_disabled(c)) {
         if (chars > 0) {
             font_render(tb->font, tb->buf, c->x + xoff, c->y, color_create(121, 121, 121, 255));
         }
@@ -77,7 +60,7 @@ void textinput_render(component *c) {
 int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     if (e->type == SDL_TEXTINPUT) {
-        textinput *tb = c->obj;
+        textinput *tb = widget_get_obj(c);
         size_t len = strlen(tb->buf);
         if (strlen(e->text.text) == 1) {
             // make sure it is not a unicode sequence
@@ -91,7 +74,7 @@ int textinput_event(component *c, SDL_Event *e) {
             }
         }
     } else if (e->type == SDL_KEYDOWN) {
-        textinput *tb = c->obj;
+        textinput *tb = widget_get_obj(c);
         size_t len = strlen(tb->buf);
         const unsigned char *state = SDL_GetKeyboardState(NULL);
         if (state[SDL_SCANCODE_BACKSPACE] || state[SDL_SCANCODE_DELETE]) {
@@ -123,7 +106,7 @@ int textinput_action(component *c, int action) {
 }
 
 void textinput_focus(component *c, int focus) {
-    if (focus) {
+    if(focus) {
         SDL_StartTextInput();
     } else {
         SDL_StopTextInput();
@@ -131,7 +114,7 @@ void textinput_focus(component *c, int focus) {
 }
 
 void textinput_tick(component *c) {
-    textinput *tb = c->obj;
+    textinput *tb = widget_get_obj(c);
     if(!tb->dir) {
         tb->ticks++;
     } else {
@@ -146,6 +129,41 @@ void textinput_tick(component *c) {
 }
 
 char* textinput_value(component *c) {
-    textinput *tb = c->obj;
+    textinput *tb = widget_get_obj(c);
     return tb->buf;
+}
+
+void textinput_free(component *c) {
+    textinput *tb = widget_get_obj(c);
+    surface_free(&tb->sur);
+    free(tb->text);
+    free(tb);
+}
+
+component* textinput_create(font *font, const char *text, const char *initialvalue) {
+    component *c = widget_create();
+
+    textinput *tb = malloc(sizeof(textinput));
+    memset(tb, 0, sizeof(textinput));
+    tb->text = strdup(text);
+    tb->font = font;
+    tb->pos = &tb->pos_;
+
+    // Background for field
+    image img;
+    image_create(&img, 15*font->w+2, font->h+3);
+    image_clear(&img, COLOR_MENU_BG);
+    image_rect(&img, 0, 0, 15*font->w+1, font->h+2, COLOR_MENU_BORDER);
+    surface_create_from_image(&tb->sur, &img);
+    image_free(&img);
+
+    // Copy over the initial value
+    memcpy(tb->buf, initialvalue, strlen(initialvalue)+1);
+
+    // Widget stuff
+    widget_set_obj(c, tb);
+    widget_set_render_cb(c, textinput_render);
+    widget_set_event_cb(c, textinput_event);
+    widget_set_tick_cb(c, textinput_tick);
+    return c;
 }

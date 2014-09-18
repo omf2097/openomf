@@ -5,27 +5,13 @@
 #include "game/text/text.h"
 #include "utils/vector.h"
 
-typedef struct textselector_t textselector;
+typedef void (*textselector_toggle_cb)(component *c, void *userdata, int pos);
 
-struct textselector_t {
-    const char *text;
-    font *font;
-    int ticks;
-    int dir;
-    int pos_;
-    int *pos;
-    vector options;
-};
-
-void textselector_create(component *c, font *font, const char *text, const char *initialoption);
+component* textselector_create(font *font, const char *text, textselector_toggle_cb toggle_cb, void *userdata);
+component* textselector_create_bind(font *font, const char *text, textselector_toggle_cb toggle_cb, void *userdata, int *bind);
+component* textselector_create_bind_opts(font *font, const char *text, textselector_toggle_cb toggle_cb, void *userdata, int *bind, const char **opts, int opt_size);
 void textselector_add_option(component *c, const char *option);
-void textselector_free(component *c);
 void textselector_clear_options(component *c);
-void textselector_render(component *c);
-int textselector_event(component *c, SDL_Event *event);
-int textselector_action(component *c, int action);
-void textselector_tick(component *c);
-void textselector_bindvar(component *c, int *var);
 const char* textselector_get_current_text(component *c);
 int textselector_get_pos(component *c);
 void textselector_set_pos(component *c, int pos);

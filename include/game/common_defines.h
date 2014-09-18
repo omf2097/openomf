@@ -12,6 +12,12 @@ int scene_to_resource(unsigned int id);
 
 int rand_arena();
 
+extern const char *ai_difficulty_names[];
+extern const char *round_type_names[];
+extern const char *pilot_type_names[];
+extern const char *har_type_names[];
+extern const char *scene_type_names[];
+
 enum {
     SCENE_NONE = 0,
     SCENE_INTRO,

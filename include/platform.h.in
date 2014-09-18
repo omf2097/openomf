@@ -1,0 +1,1 @@
+#cmakedefine HAVE_STD_STRDUP 1

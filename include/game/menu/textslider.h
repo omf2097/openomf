@@ -4,25 +4,9 @@
 #include "game/menu/component.h"
 #include "game/text/text.h"
 
-typedef struct textslider_t textslider;
+typedef void (*textslider_slide_cb)(component *c, void *userdata, int pos);
 
-struct textslider_t {
-    const char *text;
-    font *font;
-    int ticks;
-    int dir;
-    int pos_;
-    int *pos;
-    int has_off;
-    int positions;
-};
-
-void textslider_create(component *c, font *font, const char *text, unsigned int positions, int has_off);
-void textslider_free(component *c);
-void textslider_render(component *c);
-int textslider_event(component *c, SDL_Event *event);
-int textslider_action(component *c, int action);
-void textslider_tick(component *c);
-void textslider_bindvar(component *c, int *var);
+component* textslider_create(font *font, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata);
+component* textslider_create_bind(font *font, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata, int *bind);
 
 #endif // _TEXTSLIDER_H

@@ -2,139 +2,280 @@
 #include "video/video.h"
 #include "game/menu/menu.h"
 #include "game/menu/menu_background.h"
+#include "game/menu/sizer.h"
 #include "audio/sound.h"
+#include "utils/vector.h"
 #include "utils/log.h"
 
-void menu_create(menu *menu, int x, int y, int w, int h) {
-    vector_create(&menu->objs, sizeof(component*));
-    menu->x = x;
-    menu->y = y;
-    menu->w = w;
-    menu->h = h;
-    menu_background_create(&menu->sur, w, h);
-    menu->selected = 0;
-}
-
-void menu_free(menu *menu) {
-    vector_free(&menu->objs);
-    surface_free(&menu->sur);
-}
-
-int menu_get_ypos(menu *menu) {
-    int ypos = 8;
-    iterator it;
-    vector_iter_begin(&menu->objs, &it);
-    component **tmp;
-    while((tmp = iter_next(&it)) != NULL) {
-        ypos += (*tmp)->h;
-    }
-    return ypos;
-}
-
-void menu_select(menu *menu, component *c) {
+void menu_select(component *c, component *sc) {
+    sizer *s = component_get_obj(c);
+    menu *m = sizer_get_obj(c);
     component **tmp;
     iterator it;
     int i = 0;
-    vector_iter_begin(&menu->objs, &it);
+    vector_iter_begin(&s->objs, &it);
     while((tmp = iter_next(&it)) != NULL) {
-        if (*tmp == c) {
+        if (*tmp == sc) {
             break;
         }
         i++;
     }
-    if (tmp == NULL) {
+    if(tmp == NULL) {
         return;
     }
 
-    tmp = vector_get(&menu->objs, menu->selected);
-    (*tmp)->selected=0; // unselect the old component
-    if((*tmp)->focus) {
-        (*tmp)->focus(*tmp, 0);
-    }
-    c->selected = 1; //select the new one
-    if(c->focus) {
-        c->focus(c, 1);
+    // unselect the old component
+    tmp = vector_get(&s->objs, m->selected);
+    if(tmp != NULL) {
+        component_select(*tmp, 0);
+        component_focus(*tmp, 0);
     }
 
-    menu->selected = i;
+    // Select the new component
+    component_select(sc, 1);
+    component_focus(sc, 1);
+    m->selected = i;
 }
 
-component* menu_selected(menu *menu) {
-    component **res = vector_get(&menu->objs, menu->selected);
-    return *res;
-}
-
-void menu_attach(menu *menu, component *c, int h) {
-    c->layout(c, menu->x, menu->y + menu_get_ypos(menu), menu->w, h);
-    if(vector_size(&menu->objs) == 0) {
-        c->selected = 1;
+component* menu_selected(component *mc) {
+    menu *m = sizer_get_obj(mc);
+    component *c = sizer_get(mc, m->selected);
+    if(c != NULL) {
+        return c;
     }
-    vector_append(&menu->objs, &c);
+    return NULL;
 }
 
-void menu_render(menu *menu) {
+void menu_set_submenu_done_cb(component *c, menu_submenu_done_cb done_cb) {
+    menu *m = sizer_get_obj(c);
+    m->submenu_done = done_cb;
+}
+
+void menu_attach(component *c, component *nc) {
+    sizer_attach(c, nc);
+}
+
+void menu_tick(component *c) {
+    menu *m = sizer_get_obj(c);
+
+    // If submenu is set, we need to tick it
+    if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
+        return component_tick(m->submenu);
+    }
+
+    // Check if we need to run submenu done -callback
+    if(m->submenu != NULL && menu_is_finished(m->submenu)) {
+        if(!m->prev_submenu_state) {
+            if(m->submenu_done) {
+                m->submenu_done(c, m->submenu);
+            }
+            m->prev_submenu_state = 1;
+        }
+    }
+
+    // Run external tick function
+    if(m->tick) {
+        m->tick(c);
+    }
+}
+
+void menu_render(component *c) {
+    sizer *s = component_get_obj(c);
+    menu *m = sizer_get_obj(c);
+
+    // If submenu is set, we need to use it
+    if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
+        return component_render(m->submenu);
+    }
+
+    // Otherwise handle this component
     iterator it;
     component **tmp;
-    video_render_sprite(&menu->sur, menu->x, menu->y, BLEND_ALPHA, 0);
-    vector_iter_begin(&menu->objs, &it);
+    video_render_sprite(m->bg, c->x, c->y, BLEND_ALPHA, 0);
+    vector_iter_begin(&s->objs, &it);
     while((tmp = iter_next(&it)) != NULL) {
-        (*tmp)->render(*tmp);
+        component_render(*tmp);
     }
 }
 
-int menu_handle_event(menu *menu, SDL_Event *event) {
-    // Get selected component
-    component **c;
-    c = vector_get(&menu->objs, menu->selected);
+int menu_event(component *mc, SDL_Event *event) {
+    menu *m = sizer_get_obj(mc);
 
-    if(!(*c)->event(*c, event)) {
-        return 0;
+    // If submenu is set, we need to use it
+    if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
+        return component_event(m->submenu, event);
     }
 
+    // Otherwise handle this component
+    component *c = sizer_get(mc, m->selected);
+    if(c != NULL) {
+        return component_event(c, event);
+    }
     return 1;
 }
 
-int menu_handle_action(menu *menu, int action) {
-    component **c;
-    c = vector_get(&menu->objs, menu->selected);
+int menu_action(component *mc, int action) {
+    menu *m = sizer_get_obj(mc);
+    component *c;
 
-    if(action == ACT_DOWN || action == ACT_UP) {
-        (*c)->selected = 0;
-        do {
-            if(action == ACT_DOWN) {
-                menu->selected++;
-            }
-            if(action == ACT_UP) {
-                menu->selected--;
-            }
-            // wrap around
-            if(menu->selected < 0)
-                menu->selected = vector_size(&menu->objs) - 1;
-            if(menu->selected >= vector_size(&menu->objs))
-                menu->selected = 0;
+    // If submenu is set, we need to use it
+    if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
+        return component_action(m->submenu, action);
+    }
 
-            // Update selected component
-            c = vector_get(&menu->objs, menu->selected);
-
-        } while ((*c)->disabled);
-        // Play menu sound
-        sound_play(19, 0.5f, 0.0f, 2.0f);
-        (*c)->selected = 1;
+    // Select last item if ESC is pressed
+    if(m->selected == sizer_size(mc)-1 && action == ACT_ESC) {
+        // If the last item is already selected, and ESC if punched, change the action to punch
+        // This is then passed to the quit (last) component and its callback is called
+        // Hacky, but works well in menu sizer.
+        m->finished = 1;
+        action = ACT_PUNCH;
+    } else if(action == ACT_ESC) {
+        // Select last item when ESC is pressed and it's not already selected.
+        c = sizer_get(mc, sizer_size(mc) - 1);
+        menu_select(mc, c);
         return 0;
     }
 
-    if(!(*c)->action(*c, action)) {
-        return 0;
+    // Handle down/up selection movement
+    if((c = sizer_get(mc, m->selected)) != NULL) {
+        if(action == ACT_DOWN || action == ACT_UP) {
+            component_select(c, 0);
+            do {
+                if(action == ACT_DOWN) {
+                    m->selected++;
+                }
+                if(action == ACT_UP) {
+                    m->selected--;
+                }
+                // wrap around
+                if(m->selected < 0)
+                    m->selected = sizer_size(mc) - 1;
+                if(m->selected >= sizer_size(mc))
+                    m->selected = 0;
+
+                // Update selected component
+                c = sizer_get(mc, m->selected);
+
+            } while(component_is_disabled(c));
+            // Play menu sound
+            sound_play(19, 0.5f, 0.0f, 2.0f);
+            component_select(c, 1);
+            return 0;
+        }
     }
 
+    // If the key wasn't handled yet and we have a valid component,
+    // pass on the event
+    if(c != NULL) {
+        return component_action(c, action);
+    }
+
+    // Tel lthe caller that the event was not handled here.
     return 1;
 }
 
-void menu_tick(menu *menu) {
+void menu_set_submenu(component *mc, component *submenu) {
+    menu *m = sizer_get_obj(mc);
+    if(m->submenu) {
+        component_free(m->submenu);
+    }
+    m->submenu = submenu;
+    m->prev_submenu_state = 0;
+    submenu->parent = mc; // Set correct parent
+    component_layout(m->submenu, mc->x, mc->y, mc->w, mc->h);
+}
+
+component* menu_get_submenu(component *c) {
+    menu *m = sizer_get_obj(c);
+    return m->submenu;
+}
+
+int menu_is_finished(component *c) {
+    menu *m = sizer_get_obj(c);
+    return m->finished;
+}
+
+void menu_layout(component *c, int x, int y, int w, int h) {
+    sizer *s = component_get_obj(c);
+    menu *m = sizer_get_obj(c);
+
+    // Set the background now that we know the width and height
+    if(m->bg == NULL) {
+        m->bg = malloc(sizeof(surface));
+        menu_background_create(m->bg, w, h);
+    }
+
+    // Set layout for all components in the sizer
     iterator it;
     component **tmp;
-    vector_iter_begin(&menu->objs, &it);
+    vector_iter_begin(&s->objs, &it);
+    int i = 0;
+    int first_selected = 0;
     while((tmp = iter_next(&it)) != NULL) {
-        (*tmp)->tick(*tmp);
+        // Select first non-disabled component
+        if(!component_is_disabled(*tmp) && !first_selected) {
+            component_select(*tmp, 1);
+            first_selected = 1;
+            m->selected = i;
+        }
+
+        // Set component position and size
+        component_layout(*tmp, x, m->margin_top + y + i * m->obj_h, w, m->obj_h);
+        i++;
     }
 }
+
+void menu_set_userdata(component *c, void *userdata) {
+    menu *m = sizer_get_obj(c);
+    m->userdata = userdata;
+}
+
+void* menu_get_userdata(component *c) {
+    menu *m = sizer_get_obj(c);
+    return m->userdata;
+}
+
+void menu_set_free_cb(component *c, menu_free_cb cb) {
+    menu *m = sizer_get_obj(c);
+    m->free = cb;
+}
+
+void menu_set_tick_cb(component *c, menu_tick_cb cb) {
+    menu *m = sizer_get_obj(c);
+    m->tick = cb;
+}
+
+void menu_free(component *c) {
+    menu *m = sizer_get_obj(c);
+    if(m->bg) {
+        surface_free(m->bg);
+        free(m->bg);
+    }
+    if(m->submenu) {
+        component_free(m->submenu); // Free submenu component
+    }
+    if(m->free) {
+        m->free(c); // Free menu userdata
+    }
+}
+
+component* menu_create(int obj_h) {
+    component *c = sizer_create();
+
+    menu* m = malloc(sizeof(menu));
+    memset(m, 0, sizeof(menu));
+    m->margin_top = 8;
+    m->obj_h = obj_h;
+    sizer_set_obj(c, m);
+
+    sizer_set_render_cb(c, menu_render);
+    sizer_set_event_cb(c, menu_event);
+    sizer_set_tick_cb(c, menu_tick);
+    sizer_set_action_cb(c, menu_action);
+    sizer_set_layout_cb(c, menu_layout);
+    sizer_set_free_cb(c, menu_free);
+
+    return c;
+}
+
