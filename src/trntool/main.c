@@ -170,14 +170,14 @@ int main(int argc, char *argv[]) {
         print_info(&trn);
     } else {
         printf("Enemies:\n");
-        printf("ID Name          Wins Loss HAR      Money  C1  C2  C3  Secret Photo\n");
+        printf("ID Name          Wins Loss HAR      Money  C1  C2  C3  Secret Photo Value\n");
         for(int i = 0; i < trn.enemy_count; i++) {
             sd_pilot *pilot = trn.enemies[i];
             const char *har_name = "Random";
             if(pilot->har_id < 255) {
                 har_name = har_list[pilot->har_id];
             }
-            printf("%2d %-13s %-4d %-4d %-8s %-6d %-3d %-3d %-3d %-6d %-6u\n",
+            printf("%2d %-13s %-4d %-4d %-8s %-6d %-3d %-3d %-3d %-6d %-5u %-7u\n",
                 i,
                 pilot->name,
                 pilot->wins,
@@ -188,7 +188,8 @@ int main(int argc, char *argv[]) {
                 pilot->color_2,
                 pilot->color_3,
                 pilot->secret,
-                pilot->photo_id);
+                pilot->photo_id,
+                pilot->total_value);
         }
 
         printf("\nLocales:\n");
