@@ -65,11 +65,7 @@ void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     pilot->movement =    sd_mread_ubyte(mr);
     sd_mread_buf(mr, pilot->unk_block_c, 6);
     sd_mread_buf(mr, pilot->enhancements, 11);
-
-    pilot->unk_flag_a =  sd_mread_ubyte(mr);
-    pilot->flags =       sd_mread_ubyte(mr);
-    pilot->unk_flag_b =  sd_mread_ubyte(mr);
-    sd_mread_buf(mr, (char*)pilot->reqs, 10);
+    sd_mread_buf(mr, pilot->requirements, 13);
     sd_mread_buf(mr, (char*)pilot->attitude, 6);
     sd_mread_buf(mr, pilot->unk_block_d, 6);
 
@@ -91,7 +87,8 @@ void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     pilot->enemies_ex_unranked = sd_mread_uword(mr);
     sd_mread_buf(mr, pilot->unk_block_g, 6);
     pilot->winnings =    sd_mread_udword(mr);
-    sd_mread_buf(mr, pilot->unk_block_h, 166);
+    pilot->total_value = sd_mread_udword(mr);
+    sd_mread_buf(mr, pilot->unk_block_h, 162);
     pilot->photo_id =    sd_mread_uword(mr);
 }
 
@@ -160,10 +157,7 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     sd_mwrite_buf(w, pilot->unk_block_c, 6);
     sd_mwrite_buf(w, pilot->enhancements, 11);
 
-    sd_mwrite_ubyte(w, pilot->unk_flag_a);
-    sd_mwrite_ubyte(w, pilot->flags);
-    sd_mwrite_ubyte(w, pilot->unk_flag_b);
-    sd_mwrite_buf(w, (char*)pilot->reqs, 10);
+    sd_mwrite_buf(w, pilot->requirements, 13);
     sd_mwrite_buf(w, (char*)pilot->attitude, 6);
     sd_mwrite_buf(w, pilot->unk_block_d, 6);
 
@@ -185,7 +179,8 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     sd_mwrite_uword(w, pilot->enemies_ex_unranked);
     sd_mwrite_buf(w, pilot->unk_block_g, 6);
     sd_mwrite_udword(w, pilot->winnings);
-    sd_mwrite_buf(w, pilot->unk_block_h, 166);
+    sd_mwrite_udword(w, pilot->total_value);
+    sd_mwrite_buf(w, pilot->unk_block_h, 162);
     sd_mwrite_uword(w, pilot->photo_id);
 }
 

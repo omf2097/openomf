@@ -82,9 +82,9 @@ typedef struct {
 int sd_tournament_create(sd_tournament_file *trn);
 
 /*! \brief Load a TRN file
- * 
- * Loads the given TRN file to memory. The structure must be initialized with sd_trn_create() 
- * before using this function. Loading to a previously loaded or filled sd_tournament_file structure 
+ *
+ * Loads the given TRN file to memory. The structure must be initialized with sd_trn_create()
+ * before using this function. Loading to a previously loaded or filled sd_tournament_file structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
@@ -98,13 +98,13 @@ int sd_tournament_create(sd_tournament_file *trn);
 int sd_tournament_load(sd_tournament_file *trn, const char *filename);
 
 /*! \brief Save TRN file
- * 
+ *
  * Saves the given TRN file from memory to a file on disk. The structure must be at
  * least initialized by using sd_trn_create() before running this.
- * 
+ *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_SUCCESS Success.
- * 
+ *
  * \param trn TRN file struct pointer.
  * \param filename Name of the TRN file to save into.
  */

@@ -60,13 +60,10 @@ typedef struct {
     uint16_t force_arena;    ///< Tells if this pilot needs to play on a certain arena
     uint8_t difficulty;      ///< Difficulty setting
     char unk_block_b[2];
-    uint8_t movement;
+    uint8_t movement;        ///< Pilot can move in rankings
     char unk_block_c[6];
     char enhancements[11];   ///< Har enchancements. A field for each HAR.
-    uint8_t unk_flag_a;
-    uint8_t flags;
-    uint8_t unk_flag_b;
-    uint16_t reqs[5];        ///< Requirements for this pilot to appear in tournament
+    char requirements[13];   ///< Requirements for this pilot to appear in tournament
     uint16_t attitude[3];    ///< Attitude of the pilot. Stuff like Hyper, sniper, jumper, etc.
     char unk_block_d[6];
     int16_t ap_throw;        ///< AI Preference for throw moves. Accepted value range (-400, 400).
@@ -82,11 +79,12 @@ typedef struct {
     float learning;          ///< How actively this pilot learns your combat tactics. Accepted value range (0-15).
     float forget;            ///< How quickly this pilot forgets your combat tactics. Accepted value range (0-3).
     char unk_block_f[24];
-    uint32_t winnings;       ///< Money made by winning opponents
-    char unk_block_g[6];
     uint16_t enemies_inc_unranked; ///< Enemies in current tournament, including unranked opponents
     uint16_t enemies_ex_unranked;  ///< Same as above, excluding unranked opponents.
-    char unk_block_h[166];
+    char unk_block_g[6];
+    uint32_t winnings;       ///< Money made by winning opponents
+    uint32_t total_value;
+    char unk_block_h[162];
     uint16_t photo_id;       ///< Which face photo this pilot uses
 } sd_pilot;
 
