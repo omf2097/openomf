@@ -29,7 +29,7 @@ extern "C" {
  * \todo The combat requirement values need to be extracted too.
  */
 typedef struct {
-    uint32_t unknown_a;
+    uint32_t unknown_a;      ///< Unknown
     char name[18];           ///< Pilot name
     uint16_t wins;           ///< Matches won by this pilot
     uint16_t losses;         ///< Matches lost by this pilot
@@ -44,7 +44,7 @@ typedef struct {
     uint8_t power;           ///< Pilot power (1-25).
     uint8_t agility;         ///< Pilot agility (1-25).
     uint8_t endurance;       ///< Pilot endurance (1-25).
-    uint8_t unknown_stat;
+    uint8_t unknown_stat;    ///< Unknown. Maybe nothing ?
     uint16_t offense;        ///< Offense preference value (100 high, should be under 200).
     uint16_t defense;        ///< Defense preference value (100 high, should be under 200).
     uint32_t money;          ///< Amount of money the pilot currently has
@@ -54,36 +54,36 @@ typedef struct {
     char trn_name[13];       ///< Tournament file
     char trn_desc[31];       ///< Tournament description
     char trn_image[13];      ///< Tournament image file
-    char unk_block_a[48];
+    char unk_block_a[48];    ///< Unknown
     uint8_t pilot_id;        ///< Pilot ID
-    uint8_t unknown_k;
+    uint8_t unknown_k;       ///< Unknown
     uint16_t force_arena;    ///< Tells if this pilot needs to play on a certain arena
     uint8_t difficulty;      ///< Difficulty setting
-    char unk_block_b[2];
+    char unk_block_b[2];     ///< Unknown
     uint8_t movement;        ///< Pilot can move in rankings
-    char unk_block_c[6];
+    char unk_block_c[6];     ///< Unknown
     char enhancements[11];   ///< Har enchancements. A field for each HAR.
 
     uint8_t secret;          ///< This character is a secret character, and only comes out when requirements match
     uint8_t only_fight_once; ///< This character can only be fought once per tournament
     uint8_t req_enemy;       ///< Required defeated enemy for this character to appear (Value 0 if not set, otherwise character id + 1)
     uint8_t req_difficulty;  ///< Required difficulty level for this character to appear
-    uint8_t req_rank;        ///< Required ranking for this character to appear
+    uint8_t req_rank;        ///< Required minimum ranking for this character to appear
     uint8_t req_vitality;    ///< Required vitality for this character to appear
     uint8_t req_fighter;     ///< Required fighter for this character to appear
     uint8_t req_accuracy;    ///< Required accuracy for this character to appear
     uint8_t req_avg_dmg;     ///< Required average damage for this character to appear
-    uint8_t req_max_rank;    ///< Required max ranking for this character to appear
+    uint8_t req_max_rank;    ///< When you reach this ranking, this character appears.
     uint8_t req_scrap;       ///< Must have scrapped an enemy for this character to appear
     uint8_t req_destroy;     ///< Must have destroyed an enemy for this character to appear
 
-    uint8_t att_normal;
-    uint8_t att_hyper;
-    uint8_t att_jump;
-    uint8_t att_def;
-    uint8_t att_sniper;
+    uint8_t att_normal;      ///< Standard fighting method
+    uint8_t att_hyper;       ///< More aggressive
+    uint8_t att_jump;        ///< Jumps more often
+    uint8_t att_def;         ///< More defensive
+    uint8_t att_sniper;      ///< Tries to sneak in quick hits
 
-    char unk_block_d[6];
+    char unk_block_d[6];     ///< Unknown
     int16_t ap_throw;        ///< AI Preference for throw moves. Accepted value range (-400, 400).
     int16_t ap_special;      ///< AI Preference for special moves. Accepted value range (-400, 400).
     int16_t ap_jump;         ///< AI Preference for jump moves. Accepted value range (-400, 400).
@@ -93,16 +93,16 @@ typedef struct {
     int16_t pref_jump;       ///< AI Preference for jump movement. Accepted value range (-400, 400).
     int16_t pref_fwd;        ///< AI Preference for forwards movement. Accepted value range (-400, 400).
     int16_t pref_back;       ///< AI Preference for backwards movement. Accepted value range (-400, 400).
-    uint32_t unknown_e;
+    uint32_t unknown_e;      ///< Unknown
     float learning;          ///< How actively this pilot learns your combat tactics. Accepted value range (0-15).
     float forget;            ///< How quickly this pilot forgets your combat tactics. Accepted value range (0-3).
-    char unk_block_f[24];
+    char unk_block_f[24];    ///< Unknown
     uint16_t enemies_inc_unranked; ///< Enemies in current tournament, including unranked opponents
     uint16_t enemies_ex_unranked;  ///< Same as above, excluding unranked opponents.
-    char unk_block_g[6];
+    char unk_block_g[6];     ///< Unknown.
     uint32_t winnings;       ///< Money made by winning opponents
-    uint32_t total_value;
-    char unk_block_h[162];
+    uint32_t total_value;    ///< Total value for the pilot
+    char unk_block_h[162];   ///< Unknown. Unset memory ?
     uint16_t photo_id;       ///< Which face photo this pilot uses
 } sd_pilot;
 

@@ -75,18 +75,18 @@ typedef struct {
     sd_rec_pilot pilots[2]; ///< Information about the pilots
     uint32_t scores[2];     ///< Score data at the start of the match
     int8_t unknown_a;       ///< Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
-    int8_t unknown_b;
-    int8_t unknown_c;
-    int16_t unknown_d;
-    int16_t unknown_e;
-    int16_t unknown_f;
-    int16_t unknown_g;
-    int16_t unknown_h;
-    int16_t unknown_i;
-    int16_t unknown_j;
-    int16_t unknown_k;
-    int32_t unknown_l;
-    int8_t unknown_m;
+    int8_t unknown_b;       ///< Unknown \todo: Find out
+    int8_t unknown_c;       ///< Unknown \todo: Find out
+    int16_t unknown_d;      ///< Unknown \todo: Find out
+    int16_t unknown_e;      ///< Unknown \todo: Find out
+    int16_t unknown_f;      ///< Unknown \todo: Find out
+    int16_t unknown_g;      ///< Unknown \todo: Find out
+    int16_t unknown_h;      ///< Unknown \todo: Find out
+    int16_t unknown_i;      ///< Unknown \todo: Find out
+    int16_t unknown_j;      ///< Unknown \todo: Find out
+    int16_t unknown_k;      ///< Unknown \todo: Find out
+    int32_t unknown_l;      ///< Unknown \todo: Find out
+    int8_t unknown_m;       ///< Unknown \todo: Find out
 
     unsigned int move_count; ///< How many REC event records
     sd_rec_move *moves; ///< REC event records list
