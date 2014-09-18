@@ -77,7 +77,12 @@ typedef struct {
     uint8_t req_scrap;       ///< Must have scrapped an enemy for this character to appear
     uint8_t req_destroy;     ///< Must have destroyed an enemy for this character to appear
 
-    uint16_t attitude[3];    ///< Attitude of the pilot. Stuff like Hyper, sniper, jumper, etc.
+    uint8_t att_normal;
+    uint8_t att_hyper;
+    uint8_t att_jump;
+    uint8_t att_def;
+    uint8_t att_sniper;
+
     char unk_block_d[6];
     int16_t ap_throw;        ///< AI Preference for throw moves. Accepted value range (-400, 400).
     int16_t ap_special;      ///< AI Preference for special moves. Accepted value range (-400, 400).

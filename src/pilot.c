@@ -88,7 +88,14 @@ void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     pilot->req_destroy = ((reqs[4] >> 8) & 0x01) ? 1 : 0;
 
     // Attitude
-    sd_mread_buf(mr, (char*)pilot->attitude, 6);
+    uint16_t att[3];
+    sd_mread_buf(mr, (char*)att, 6);
+    pilot->att_normal = (att[0] >> 4) & 0x7F;
+    pilot->att_hyper  = att[1] & 0x7F;
+    pilot->att_jump   = (att[1] >> 7) & 0x7F;
+    pilot->att_def    = att[2] & 0x7F;
+    pilot->att_sniper = (att[2] >> 7) & 0x7F;
+
     sd_mread_buf(mr, pilot->unk_block_d, 6);
 
     pilot->ap_throw =    sd_mread_word(mr);
@@ -204,7 +211,16 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     reqs[4] |= (pilot->req_avg_dmg & 0x7F);
     sd_mwrite_buf(w, (char*)reqs, 10);
 
-    sd_mwrite_buf(w, (char*)pilot->attitude, 6);
+    // Attitude
+    uint16_t att[3];
+    memset((char*)att, 0, 6);
+    att[0] |= (pilot->att_normal & 0x7F) << 4;
+    att[1] |= (pilot->att_jump & 0x7F) << 7;
+    att[1] |= (pilot->att_hyper & 0x7F);
+    att[2] |= (pilot->att_sniper & 0x7F) << 7;
+    att[2] |= (pilot->att_def & 0x7F);
+    sd_mwrite_buf(w, (char*)att, 6);
+
     sd_mwrite_buf(w, pilot->unk_block_d, 6);
 
     sd_mwrite_word(w, pilot->ap_throw);
