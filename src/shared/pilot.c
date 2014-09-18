@@ -152,10 +152,15 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Winnings:        %d\n", pilot->winnings);
         printf("  - Total value:     %d\n", pilot->total_value);
 
-        printf("  - unk_block_h:\n");
-        print_bytes(pilot->unk_block_h, sizeof(pilot->unk_block_h), 16, 4);
+        printf("  - unk_block_h:     ");
+        print_bytes(pilot->unk_block_h, sizeof(pilot->unk_block_h), 16, 0);
         printf("\n");
 
+        printf("  - Palette:\n");
+        print_bytes((char*)pilot->palette.data, 144, 16, 4);
+        printf("\n");
+
+        printf("  - Unknown i        %d\n", pilot->unk_block_i);
         printf("  - Photo ID         %d\n", pilot->photo_id);
     }
 }
