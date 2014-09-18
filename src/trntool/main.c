@@ -25,6 +25,20 @@ const char *language_names[] = {
     "Undef"
 };
 
+static const char *har_list[] = {
+    "Jaguar",
+    "Shadow",
+    "Thorn",
+    "Pyros",
+    "Electra",
+    "Katana",
+    "Shredder",
+    "Flail",
+    "Gargoyle",
+    "Chronos",
+    "Nova"
+};
+
 void print_locale(sd_tournament_locale *locale, int lang_id) {
     // Make sure the locale is valid
     if(locale->title[0] == 0)
@@ -156,33 +170,50 @@ int main(int argc, char *argv[]) {
         print_info(&trn);
     } else {
         printf("Enemies:\n");
+        printf("ID Name          Wins Loss HAR      Money  C1  C2  C3  Secret Photo\n");
         for(int i = 0; i < trn.enemy_count; i++) {
-            print_pilot_info(trn.enemies[i]);
-            for(int k = 0; k < MAX_TRN_LOCALES; k++) {
-                if(trn.quotes[i][k] == NULL)
-                    continue;
-                printf("  - %s quote: %s\n",
-                    language_names[k],
-                    trn.quotes[i][k]);
+            sd_pilot *pilot = trn.enemies[i];
+            const char *har_name = "Random";
+            if(pilot->har_id < 255) {
+                har_name = har_list[pilot->har_id];
             }
-            printf("\n");
+            printf("%2d %-13s %-4d %-4d %-8s %-6d %-3d %-3d %-3d %-6d %-6u\n",
+                i,
+                pilot->name,
+                pilot->wins,
+                pilot->losses,
+                har_name,
+                pilot->money,
+                pilot->color_1,
+                pilot->color_2,
+                pilot->color_3,
+                pilot->secret,
+                pilot->photo_id);
         }
 
         printf("\nLocales:\n");
+        printf("ID Language   Title\n");
         for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-            print_locale(trn.locales[i], i);
+            sd_tournament_locale *locale = trn.locales[i];
+            if(locale->title[0] == 0)
+                continue;
+            printf("%2d %-10s %-25s\n",
+                i,
+                language_names[i],
+                locale->title);
         }
 
         print_info(&trn);
     }
 
-    // Output if asked
     if(output->count > 0) {
         ret = sd_tournament_save(&trn, output->filename[0]);
         if(ret != SD_SUCCESS) {
             printf("Failed to save TRN file to %s: %s\n",
                 output->filename[0],
                 sd_get_error(ret));
+        } else {
+            printf("Saved.");
         }
     }
 
