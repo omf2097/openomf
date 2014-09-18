@@ -65,7 +65,29 @@ void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     pilot->movement =    sd_mread_ubyte(mr);
     sd_mread_buf(mr, pilot->unk_block_c, 6);
     sd_mread_buf(mr, pilot->enhancements, 11);
-    sd_mread_buf(mr, pilot->requirements, 13);
+
+    // Flags (3)
+    sd_mskip(mr, 1); // Nothing here
+    uint8_t req_flags = sd_mread_ubyte(mr); // Secret, only fight once flags
+    pilot->secret = (req_flags & 0x02) ? 1 : 0;
+    pilot->only_fight_once = (req_flags & 0x08) ? 1 : 0;
+    sd_mskip(mr, 1); // Nothing here either
+
+    // Requirements (10)
+    uint16_t reqs[5];
+    sd_mread_buf(mr, (char*)reqs, 10);
+    pilot->req_rank = reqs[0] & 0xFF;
+    pilot->req_max_rank = (reqs[0] >> 8) & 0xFF;
+    pilot->req_fighter = reqs[1] & 0x1F;
+    pilot->req_difficulty = (reqs[2] >> 8) & 0x0F;
+    pilot->req_enemy = (reqs[2] & 0xFF);
+    pilot->req_vitality = reqs[3] & 0x7F;
+    pilot->req_accuracy = (reqs[3] >> 7) & 0x7F;
+    pilot->req_avg_dmg = reqs[4] & 0x7F;
+    pilot->req_scrap = (reqs[4] & 0x80) ? 1 : 0;
+    pilot->req_destroy = ((reqs[4] >> 8) & 0x01) ? 1 : 0;
+
+    // Attitude
     sd_mread_buf(mr, (char*)pilot->attitude, 6);
     sd_mread_buf(mr, pilot->unk_block_d, 6);
 
@@ -89,7 +111,7 @@ void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     pilot->winnings =    sd_mread_udword(mr);
     pilot->total_value = sd_mread_udword(mr);
     sd_mread_buf(mr, pilot->unk_block_h, 162);
-    pilot->photo_id =    sd_mread_uword(mr);
+    pilot->photo_id =    sd_mread_uword(mr) & 0x3FF;
 }
 
 int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
@@ -157,7 +179,31 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     sd_mwrite_buf(w, pilot->unk_block_c, 6);
     sd_mwrite_buf(w, pilot->enhancements, 11);
 
-    sd_mwrite_buf(w, pilot->requirements, 13);
+    // Flags
+    sd_mwrite_ubyte(w, 0);
+    uint8_t req_flags = 0;
+    if(pilot->secret)
+        req_flags |= 0x02;
+    if(pilot->only_fight_once)
+        req_flags |= 0x08;
+    sd_mwrite_ubyte(w, req_flags);
+    sd_mwrite_ubyte(w, 0);
+
+    // Requirements (10)
+    uint16_t reqs[5];
+    memset((char*)reqs, 0, 10);
+    reqs[0] |= (pilot->req_max_rank & 0xFF) << 8;
+    reqs[0] |= (pilot->req_rank & 0xFF);
+    reqs[1] |= (pilot->req_fighter & 0x1F);
+    reqs[2] |= (pilot->req_difficulty & 0x0F) << 8;
+    reqs[2] |= (pilot->req_enemy & 0xFF);
+    reqs[3] |= (pilot->req_accuracy & 0x7F) << 7;
+    reqs[3] |= (pilot->req_vitality & 0x7F);
+    reqs[4] |= (pilot->req_destroy & 0x01) << 8;
+    reqs[4] |= (pilot->req_scrap & 0x01) << 7;
+    reqs[4] |= (pilot->req_avg_dmg & 0x7F);
+    sd_mwrite_buf(w, (char*)reqs, 10);
+
     sd_mwrite_buf(w, (char*)pilot->attitude, 6);
     sd_mwrite_buf(w, pilot->unk_block_d, 6);
 
@@ -181,7 +227,7 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     sd_mwrite_udword(w, pilot->winnings);
     sd_mwrite_udword(w, pilot->total_value);
     sd_mwrite_buf(w, pilot->unk_block_h, 162);
-    sd_mwrite_uword(w, pilot->photo_id);
+    sd_mwrite_uword(w, pilot->photo_id & 0x3FF);
 }
 
 int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {

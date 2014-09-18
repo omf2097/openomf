@@ -34,7 +34,7 @@ typedef struct {
     uint16_t wins;           ///< Matches won by this pilot
     uint16_t losses;         ///< Matches lost by this pilot
     uint8_t rank;            ///< Rank
-    uint8_t har_id;          ///< Har Identifier
+    uint8_t har_id;          ///< Har Identifier (255 = random)
     uint8_t arm_power;       ///< HAR Arm power (0-9).
     uint8_t leg_power;       ///< HAR Leg power (0-9).
     uint8_t arm_speed;       ///< HAR Arm speed (0-9).
@@ -63,7 +63,20 @@ typedef struct {
     uint8_t movement;        ///< Pilot can move in rankings
     char unk_block_c[6];
     char enhancements[11];   ///< Har enchancements. A field for each HAR.
-    char requirements[13];   ///< Requirements for this pilot to appear in tournament
+
+    uint8_t secret;          ///< This character is a secret character, and only comes out when requirements match
+    uint8_t only_fight_once; ///< This character can only be fought once per tournament
+    uint8_t req_enemy;       ///< Required defeated enemy for this character to appear (Value 0 if not set, otherwise character id + 1)
+    uint8_t req_difficulty;  ///< Required difficulty level for this character to appear
+    uint8_t req_rank;        ///< Required ranking for this character to appear
+    uint8_t req_vitality;    ///< Required vitality for this character to appear
+    uint8_t req_fighter;     ///< Required fighter for this character to appear
+    uint8_t req_accuracy;    ///< Required accuracy for this character to appear
+    uint8_t req_avg_dmg;     ///< Required average damage for this character to appear
+    uint8_t req_max_rank;    ///< Required max ranking for this character to appear
+    uint8_t req_scrap;       ///< Must have scrapped an enemy for this character to appear
+    uint8_t req_destroy;     ///< Must have destroyed an enemy for this character to appear
+
     uint16_t attitude[3];    ///< Attitude of the pilot. Stuff like Hyper, sniper, jumper, etc.
     char unk_block_d[6];
     int16_t ap_throw;        ///< AI Preference for throw moves. Accepted value range (-400, 400).
