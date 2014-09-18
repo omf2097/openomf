@@ -101,20 +101,24 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Secret:          %d\n", pilot->secret);
         printf("  - Only fight once: %d\n", pilot->only_fight_once);
         printf("  - Requirements:\n");
-        printf("    * Rank:        %d\n", pilot->req_rank);
-        printf("    * Max rank:    %d\n", pilot->req_max_rank);
-        printf("    * Fighter:     %d\n", pilot->req_fighter);
-        printf("    * Difficulty:  %d\n", pilot->req_difficulty);
-        printf("    * Enemy:       %d\n", pilot->req_enemy);
-        printf("    * Vitality:    %d\n", pilot->req_vitality);
-        printf("    * Accuracy:    %d\n", pilot->req_accuracy);
-        printf("    * Avg Damage:  %d\n", pilot->req_avg_dmg);
-        printf("    * Scrap:       %d\n", pilot->req_scrap);
-        printf("    * Destruction  %d\n", pilot->req_destroy);
+        printf("    * Rank:          %d\n", pilot->req_rank);
+        printf("    * Max rank:      %d\n", pilot->req_max_rank);
+        printf("    * Fighter:       %d\n", pilot->req_fighter);
+        printf("    * Difficulty:    %d\n", pilot->req_difficulty);
+        printf("    * Enemy:         %d\n", pilot->req_enemy);
+        printf("    * Vitality:      %d\n", pilot->req_vitality);
+        printf("    * Accuracy:      %d\n", pilot->req_accuracy);
+        printf("    * Avg Damage:    %d\n", pilot->req_avg_dmg);
+        printf("    * Scrap:         %d\n", pilot->req_scrap);
+        printf("    * Destruction    %d\n", pilot->req_destroy);
 
-        printf("  - Attitude:    ");
-        print_bytes((char*)pilot->attitude, sizeof(pilot->attitude), 16, 0);
-        printf("\n");
+        printf("  - Attitude:\n");
+        printf("    * Normal:        %d\n", pilot->att_normal);
+        printf("    * Hyper:         %d\n", pilot->att_hyper);
+        printf("    * Jump:          %d\n", pilot->att_jump);
+        printf("    * Def:           %d\n", pilot->att_def);
+        printf("    * Sniper:        %d\n", pilot->att_sniper);
+
         printf("  - unk_block_d: ");
         print_bytes(pilot->unk_block_d, sizeof(pilot->unk_block_d), 16, 0);
         printf("\n");
