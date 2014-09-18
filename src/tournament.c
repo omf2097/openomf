@@ -225,7 +225,7 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     sd_write_fill(w, 0, 300 - sd_writer_pos(w));
 
     // Write first offset
-    sd_write_udword(w, 0);
+    sd_write_udword(w, 1100);
 
     // Write null until offset 1100
     // Nothing of consequence here.
