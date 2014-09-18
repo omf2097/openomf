@@ -152,9 +152,8 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Winnings:        %d\n", pilot->winnings);
         printf("  - Total value:     %d\n", pilot->total_value);
 
-        printf("  - unk_block_h:     ");
-        print_bytes(pilot->unk_block_h, sizeof(pilot->unk_block_h), 16, 0);
-        printf("\n");
+        printf("  - Unk. Float A:    %f\n", pilot->unk_f_a);
+        printf("  - Unk. Float B:    %f\n", pilot->unk_f_b);
 
         printf("  - Palette:\n");
         print_bytes((char*)pilot->palette.data, 144, 16, 4);
