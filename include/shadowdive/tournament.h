@@ -5,7 +5,7 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_TOURNAMENT_H
 #define _SD_TOURNAMENT_H
@@ -14,7 +14,7 @@
 #include "shadowdive/sprite.h"
 #include "shadowdive/pilot.h"
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 

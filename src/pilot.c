@@ -56,7 +56,8 @@ void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     sd_mread_buf(mr, pilot->trn_desc, 31);
     sd_mread_buf(mr, pilot->trn_image, 13);
 
-    sd_mread_buf(mr, pilot->unk_block_a, 48);
+    sd_mread_buf(mr, pilot->unk_block_a, 8);
+    sd_mskip(mr, 40); // Pointless pointers
     pilot->pilot_id =    sd_mread_ubyte(mr);
     pilot->unknown_k =   sd_mread_ubyte(mr);
     pilot->force_arena = sd_mread_uword(mr);
@@ -176,7 +177,8 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     sd_mwrite_buf(w, pilot->trn_desc, 31);
     sd_mwrite_buf(w, pilot->trn_image, 13);
 
-    sd_mwrite_buf(w, pilot->unk_block_a, 48);
+    sd_mwrite_buf(w, pilot->unk_block_a, 8);
+    sd_mwrite_fill(w, 0, 40);
     sd_mwrite_ubyte(w, pilot->pilot_id);
     sd_mwrite_ubyte(w, pilot->unknown_k);
     sd_mwrite_uword(w, pilot->force_arena);
