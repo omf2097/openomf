@@ -95,10 +95,8 @@ void print_pilot_info(sd_pilot *pilot) {
         for(int i = 0; i < 11; i++) {
             printf("     * %-10s: %x\n", har_list[i], pilot->enhancements[i]);
         }
-        printf("  - Flags:       %d\n", pilot->flags);
-
         printf("  - Reqs:        ");
-        print_bytes((char*)pilot->reqs, sizeof(pilot->reqs), 16, 0);
+        print_bytes((char*)pilot->requirements, sizeof(pilot->requirements), 16, 0);
         printf("\n");
         printf("  - Attitude:    ");
         print_bytes((char*)pilot->attitude, sizeof(pilot->attitude), 16, 0);
@@ -134,6 +132,7 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("\n");
 
         printf("  - Winnings:    %d\n", pilot->winnings);
+        printf("  - Total value: %d\n", pilot->total_value);
 
         printf("  - unk_block_h:\n");
         print_bytes(pilot->unk_block_h, sizeof(pilot->unk_block_h), 16, 4);
