@@ -139,6 +139,10 @@ int main(int argc, char *argv[]) {
         print_locale(trn.locales[locale_id], locale_id);
     } else if(pilot->count > 0) {
         int pilot_id = pilot->ival[0];
+        if(pilot_id < 0 || pilot_id >= trn.enemy_count) {
+            printf("Pilot ID out of bounds!\n");
+            goto exit_1;
+        }
         print_pilot_info(trn.enemies[pilot_id]);
         for(int k = 0; k < MAX_TRN_LOCALES; k++) {
             if(trn.quotes[pilot_id][k] == NULL)
