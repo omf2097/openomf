@@ -781,27 +781,27 @@ void write_rec_move(scene *scene, game_player *player, int action) {
     }
 
     if (action & ACT_PUNCH) {
-        move.action |= SD_REC_PUNCH;
+        move.action |= SD_ACT_PUNCH;
     }
 
     if (action & ACT_KICK) {
-        move.action |= SD_REC_KICK;
+        move.action |= SD_ACT_KICK;
     }
 
     if (action & ACT_UP) {
-        move.action |= SD_REC_UP;
+        move.action |= SD_ACT_UP;
     }
 
     if (action & ACT_DOWN) {
-        move.action |= SD_REC_DOWN;
+        move.action |= SD_ACT_DOWN;
     }
 
     if (action & ACT_LEFT) {
-        move.action |= SD_REC_LEFT;
+        move.action |= SD_ACT_LEFT;
     }
 
     if (action & ACT_RIGHT) {
-        move.action |= SD_REC_RIGHT;
+        move.action |= SD_ACT_RIGHT;
     }
 
     if (local->rec_last[move.player_id] == move.action) {

@@ -21,30 +21,30 @@ int rec_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
 
     if (data->last_tick != ticks) {
         if (hashmap_iget(&data->tick_lookup, ticks, (void**)(&move), &len) == 0) {
-            if (move->action == SD_REC_NONE) {
+            if (move->action == SD_ACT_NONE) {
                 controller_cmd(ctrl, ACT_STOP, ev);
                 data->last_action = ACT_STOP;
             } else {
-                if (move->action & SD_REC_PUNCH) {
+                if (move->action & SD_ACT_PUNCH) {
                     controller_cmd(ctrl, ACT_PUNCH, ev);
-                } else if (move->action & SD_REC_KICK) {
+                } else if (move->action & SD_ACT_KICK) {
                     controller_cmd(ctrl, ACT_KICK, ev);
                 }
 
                 int action = 0;
-                if (move->action & SD_REC_UP) {
+                if (move->action & SD_ACT_UP) {
                     action |= ACT_UP;
                 }
 
-                if (move->action & SD_REC_DOWN) {
+                if (move->action & SD_ACT_DOWN) {
                     action |= ACT_DOWN;
                 }
 
-                if (move->action & SD_REC_LEFT) {
+                if (move->action & SD_ACT_LEFT) {
                     action |= ACT_LEFT;
                 }
 
-                if (move->action & SD_REC_RIGHT) {
+                if (move->action & SD_ACT_RIGHT) {
                     action |= ACT_RIGHT;
                 }
                 if (action != 0) {
