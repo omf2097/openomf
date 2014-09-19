@@ -5,14 +5,14 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_PIC_H
 #define _SD_PIC_H
 
 #include "shadowdive/sprite.h"
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -61,9 +61,9 @@ int sd_pic_create(sd_pic_file *pic);
 void sd_pic_free(sd_pic_file *pic);
 
 /*! \brief Load a PIC file
- * 
- * Loads the given PIC file to memory. The structure must be initialized with sd_pic_create() 
- * before using this function. Loading to a previously loaded or filled sd_pic_file structure 
+ *
+ * Loads the given PIC file to memory. The structure must be initialized with sd_pic_create()
+ * before using this function. Loading to a previously loaded or filled sd_pic_file structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
@@ -76,28 +76,28 @@ void sd_pic_free(sd_pic_file *pic);
 int sd_pic_load(sd_pic_file *pic, const char *filename);
 
 /*! \brief Save PIC file
- * 
+ *
  * Saves the given PIC file from memory to a file on disk. The structure must be at
  * least initialized by using sd_pic_create() before running this.
- * 
+ *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_SUCCESS Success.
- * 
+ *
  * \param pic PIC file struct pointer.
  * \param filename Name of the PIC file to save into.
  */
 int sd_pic_save(const sd_pic_file *pic, const char *filename);
 
 /*! \brief Returns a PIC image entry.
- * 
- * Returns a pointer to a PIC image entry. 
- * 
+ *
+ * Returns a pointer to a PIC image entry.
+ *
  * The structure memory will be owned by the library; do not attempt to
  * free it.
  *
  * \retval NULL If PIC ptr was NULL or image entry does not exist.
  * \retval sd_pic_photo* Photo image struct pointer on success.
- * 
+ *
  * \param pic PIC file struct pointer.
  * \param entry_id Photo picture number to get.
  */

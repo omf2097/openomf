@@ -5,7 +5,7 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_BK_H
 #define _SD_BK_H
@@ -15,7 +15,7 @@
 #include "shadowdive/bkanim.h"
 #include "shadowdive/vga_image.h"
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -68,7 +68,7 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src);
 
 /*! \brief Set background image
  *
- * Sets the background image of the BK file. If this is not used to a 
+ * Sets the background image of the BK file. If this is not used to a
  * new file, a black background will be used.
  *
  * Image data will be copied. Make sure to free your local copy yourself.
@@ -78,7 +78,7 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src);
  * \retval SD_OUT_OF_MEMORY Memory ran out. Background was not set.
  * \retval SD_INVALID_INPUT BK struct was NULL.
  * \retval SD_SUCCESS Success.
- * 
+ *
  * \param bk BK struct pointer.
  * \param img VGA image data struct.
  */
@@ -90,7 +90,7 @@ int sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img);
  *
  * \retval NULL Background does not exist
  * \retval sd_vga_image* Background image.
- * 
+ *
  * \param bk BK struct pointer.
  */
 sd_vga_image* sd_bk_get_background(const sd_bk_file *bk);
@@ -119,7 +119,7 @@ int sd_bk_set_anim(sd_bk_file *bk, int index, const sd_bk_anim *anim);
  *
  * Returns a pointer to a bk animation data at given index. Index must be between
  * 0 and 49 (inclusive); any other value will return NULL.
- * 
+ *
  * \retval NULL No BK animation at index, or index is otherwise invalid.
  * \retval sd_bk_anim* Success.
  *
@@ -192,9 +192,9 @@ int sd_bk_pop_palette(sd_bk_file *bk);
 sd_palette* sd_bk_get_palette(const sd_bk_file *bk, int index);
 
 /*! \brief Load .BK file
- * 
- * Loads the given BK file to memory. The structure must be initialized with sd_bk_create() 
- * before using this function. Loading to a previously loaded or filled sd_bk_file structure 
+ *
+ * Loads the given BK file to memory. The structure must be initialized with sd_bk_create()
+ * before using this function. Loading to a previously loaded or filled sd_bk_file structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
@@ -208,14 +208,14 @@ sd_palette* sd_bk_get_palette(const sd_bk_file *bk, int index);
 int sd_bk_load(sd_bk_file *bk, const char *filename);
 
 /*! \brief Save .BK file
- * 
+ *
  * Saves the given BK file from memory to a file on disk. The structure must be at
  * least initialized by using sd_bk_create() before running this.
- * 
+ *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_SUCCESS Success.
- * 
- * \param bk BK struct pointer. 
+ *
+ * \param bk BK struct pointer.
  * \param filename Name of the BK file to save into.
  */
 int sd_bk_save(const sd_bk_file *bk, const char* filename);

@@ -5,7 +5,7 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_FONTS_H
 #define _SD_FONTS_H
@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include "shadowdive/rgba_image.h"
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -47,7 +47,7 @@ typedef struct {
 int sd_font_create(sd_font *font);
 
 /*! \brief Free font structure
- * 
+ *
  * Frees up all memory reserved by the font structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
@@ -56,9 +56,9 @@ int sd_font_create(sd_font *font);
 void sd_font_free(sd_font *font);
 
 /*! \brief Load a font file
- * 
- * Loads the given fontfile to memory. The structure must be initialized with sd_font_create() 
- * before using this function. Loading to a previously loaded or filled sd_font structure 
+ *
+ * Loads the given fontfile to memory. The structure must be initialized with sd_font_create()
+ * before using this function. Loading to a previously loaded or filled sd_font structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
@@ -72,27 +72,27 @@ void sd_font_free(sd_font *font);
 int sd_font_load(sd_font *font, const char *filename, unsigned int font_h);
 
 /*! \brief Save fontfile
- * 
+ *
  * Saves the given fontfile from memory to a file on disk. The structure must be at
  * least initialized by using sd_font_create() before running this.
- * 
+ *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_SUCCESS Success.
- * 
- * \param font Font struct pointer. 
+ *
+ * \param font Font struct pointer.
  * \param filename Name of the fontfile to save into.
  */
 int sd_font_save(const sd_font *font, const char *filename);
 
 /*! \brief Decodes a character to an image
- * 
+ *
  * Decodes a character to an RGBA8888 Image. Opacity will automatically be
  * set to 100%. Note! Image surface MUST be allocated and right size before using this!
- * 
+ *
  * \retval SD_INVALID_INPUT Font or image struct was NULL, or character index was >= 224.
  * \retval SD_SUCCESS Success.
- * 
- * \param font Font struct pointer. 
+ *
+ * \param font Font struct pointer.
  * \param surface Image surface to save to. Must be preallocated!
  * \param ch Character to load. Must be 0 <= ch <= 224.
  * \param r Red color index (0 - 0xFF)

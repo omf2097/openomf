@@ -23,7 +23,7 @@ void test_bk_roundtrip(void) {
 
     ret = sd_bk_create(&new);
     CU_ASSERT(ret == SD_SUCCESS);
-    
+
     // Set some values
     new.file_id = 1;
     new.unknown_a = 2;

@@ -5,12 +5,12 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_RGBA_IMAGE_H
 #define _SD_RGBA_IMAGE_H
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -48,7 +48,7 @@ int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h);
  *
  * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either input value was NULL.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param dst Destination RGBA image struct pointer.
  * \param src Source RGBA image struct pointer.
@@ -56,7 +56,7 @@ int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h);
 int sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src);
 
 /*! \brief Clear image with color
- * 
+ *
  * Clears the RGBA image with given color.
  *
  * \retval SD_INVALID_INPUT Image pointer was NULL
@@ -79,7 +79,7 @@ int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a);
  * Both images must be valid images.
  *
  * \retval SD_INVALID_INPUT Either input value was NULL.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param dst Destination RGBA image struct pointer.
  * \param src Source RGBA image struct pointer.
@@ -104,7 +104,7 @@ int sd_rgba_image_blit(sd_rgba_image *dst, const sd_rgba_image *src, int x, int 
 int sd_rgba_image_to_png(const sd_rgba_image *img, const char *filename);
 
 /*! \brief Free RGBA image structure
- * 
+ *
  * Frees up all memory reserved by the RGBA image structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
@@ -117,7 +117,7 @@ void sd_rgba_image_free(sd_rgba_image *img);
  * Saves the RGBA image data to PPM file.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param img Source image pointer
  * \param filename Destination filename

@@ -6,7 +6,7 @@
  * \author huntercool
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_SPRITE_H
 #define _SD_SPRITE_H
@@ -19,7 +19,7 @@
     #include "shadowdive/internal/writer.h"
 #endif
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -62,7 +62,7 @@ int sd_sprite_create(sd_sprite *sprite);
  *
  * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either input value was NULL.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param dst Destination sprite struct pointer.
  * \param src Source sprite struct pointer.
@@ -70,7 +70,7 @@ int sd_sprite_create(sd_sprite *sprite);
 int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src);
 
 /*! \brief Free sprite structure
- * 
+ *
  * Frees up all memory reserved by the sprite structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
@@ -85,7 +85,7 @@ void sd_sprite_free(sd_sprite *sprite);
  *
  * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Dst, src or palette was NULL.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param dst Destination sprite struct pointer.
  * \param src Source RGBA image pointer
@@ -101,14 +101,14 @@ int sd_sprite_rgba_encode(
 /*! \brief Decode sprite data to RGBA format
  *
  * Decodes the sprite image to RGBA image format.
- * 
+ *
  * Note! The output RGBA image will be created here. If the image had been
  * already created by using sd_rgba_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
  * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Dst, src or palette was NULL.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param dst Destination RGBA image struct pointer.
  * \param src Source Sprite image pointer
@@ -131,7 +131,7 @@ int sd_sprite_rgba_decode(
  *
  * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Dst or src was NULL.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param dst Destination VGA image struct pointer.
  * \param src Source sprite image pointer
@@ -146,7 +146,7 @@ int sd_sprite_vga_decode(
  *
  * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Dst or src was NULL.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param dst Destination Sprite image struct pointer.
  * \param src Source VGA image pointer

@@ -5,7 +5,7 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_BK_ANIMS
 #define _SD_BK_ANIMS
@@ -19,7 +19,7 @@
 
 #define SD_BK_FOOTER_STRING_MAX 512 ///< Max BK footer string length
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -60,7 +60,7 @@ int sd_bk_anim_create(sd_bk_anim *bka);
  *
  * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either input value was NULL.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param dst Destination BK animation info struct pointer.
  * \param src Source BK animation info struct pointer.
@@ -68,7 +68,7 @@ int sd_bk_anim_create(sd_bk_anim *bka);
 int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src);
 
 /*! \brief Free BK animation info structure
- * 
+ *
  * Frees up all memory reserved by the BK animation info structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
@@ -84,39 +84,39 @@ void sd_bk_anim_free(sd_bk_anim *bka);
  * eg. saving the BK file.
  *
  * A NULL value for animation field will result in bka->animation field getting freed.
- * 
+ *
  * \retval SD_OUT_OF_MEMORY Memory ran out. Animation field will be NULL.
  * \retval SD_INVALID_INPUT Move struct pointer was NULL.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param bka BK animation info struct to modify.
  * \param animation Animation to set. This will be copied.
- */ 
+ */
 int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation);
 
 /*! \brief Get the current animation
  *
- * Returns a pointer to the current animation for the BK animation info struct. 
+ * Returns a pointer to the current animation for the BK animation info struct.
  * If animation is not set, NULL will be returned.
  *
  * \retval NULL Animation does not exist
  * \retval sd_animation* Success.
  *
  * \param bka BK animation info struct to modify.
- */ 
+ */
 sd_animation* sd_bk_anim_get_animation(const sd_bk_anim *bka);
 
 /*! \brief Set BK animation info footer string
  *
- * Sets the BK animation info footer string for the struct. Maximum length is 
+ * Sets the BK animation info footer string for the struct. Maximum length is
  * 512 bytes. Longer strings will result in error.
  *
  * \retval SD_INVALID_INPUT Input string was too long.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param bka BK animation info struct to modify.
  * \param data String to set.
- */ 
+ */
 int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data);
 
 #ifdef SD_USE_INTERNAL

@@ -5,7 +5,7 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_SCRIPT_H
 #define _SD_SCRIPT_H
@@ -60,7 +60,7 @@ typedef struct {
 int sd_script_create(sd_script *script);
 
 /*! \brief Free script parser
- * 
+ *
  * Frees up all memory reserved by the script parser structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
@@ -69,7 +69,7 @@ int sd_script_create(sd_script *script);
 void sd_script_free(sd_script *script);
 
 /*! \brief Decode animation string
- * 
+ *
  * Decodes an animation string to frames and tags. There must be at least
  * a single full frame, which means a frame number and length in ticks.
  *
@@ -141,7 +141,7 @@ int sd_script_get_tick_pos_at_frame(const sd_script *script, int frame_id);
  *
  * Finds the frame at the given moment in time (tick). If the ticks value is either
  * larger than the total duration of the script or a negative value, the function will return NULL.
- * If script variable is NULL, the function will also return NULL. Otherwise the function will 
+ * If script variable is NULL, the function will also return NULL. Otherwise the function will
  * return the frame at the moment of the given tick.
  *
  * The tick values will start at 0, so if the tick length of a frame is 140, the last tick will be 139.
@@ -191,14 +191,14 @@ const sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char*
  *
  * Note that a change between zero and negative value will also count as a frame change.
  * Eg. switching between "animation not started" and first frame wil lcause 1.
- * Also, change from a tick in animation range to a tick outside of animation will cause 
+ * Also, change from a tick in animation range to a tick outside of animation will cause
  * 1 to be returned. However, a change from "not started" (-1) to "finished" (tick > total_ticks)
  * will cause 0 to be returned.
  *
  * \param script The script structure to inspect
  * \param tick_start Position 1
  * \param tick_stop Position 2
- * \return 1 or 0, whether the frame changed or not. 
+ * \return 1 or 0, whether the frame changed or not.
  */
 int sd_script_frame_changed(const sd_script *script, int tick_start, int tick_stop);
 
@@ -301,7 +301,7 @@ int sd_script_get(const sd_script_frame *frame, const char* tag);
  *
  * Returns the next frame number with the given sprite number. Sprite numbers start from 0 and go to
  * the amount of sprites in the frame.
- * 
+ *
  * If script is NULL, sprite_id is smaller than 0 or larger than the amount of sprites in the
  * script, or current_tick is larger than the length of the script animation, or sprite frame
  * with the sprite_id does not exist in script, -1 value will be returned. Otherwise
@@ -319,7 +319,7 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int
 /*! \brief Returns the next frame number with a given tag
  *
  * Returns the next frame number with the given tag.
- * 
+ *
  * If script or tag is NULL, current_tick is larger than the length of the script animation,
  * or sprite frame with the tag does not exist in script, -1 value will be returned. Otherwise
  * the frame number will be returned.

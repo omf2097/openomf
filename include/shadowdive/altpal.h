@@ -5,12 +5,12 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_ALTPAL_H
 #define _SD_ALTPAL_H
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -36,9 +36,9 @@ typedef struct {
 int sd_altpal_create(sd_altpal_file *ap);
 
 /*! \brief Load altpals structure from file.
- * 
- * Loads the given file to memory. The structure must be initialized with sd_altpal_create() 
- * before using this function. Loading to a previously loaded or filled sd_altpal_file structure 
+ *
+ * Loads the given file to memory. The structure must be initialized with sd_altpal_create()
+ * before using this function. Loading to a previously loaded or filled sd_altpal_file structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for reading.
@@ -50,20 +50,20 @@ int sd_altpal_create(sd_altpal_file *ap);
 int sd_altpals_load(sd_altpal_file *ap, const char *filename);
 
 /*! \brief Save altpals structure to file.
- * 
+ *
  * Saves the given altpal file from memory to a file on disk. The structure must be at
  * least initialized by using sd_altpal_create() before running this.
- * 
+ *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_SUCCESS Success.
- * 
+ *
  * \param ap Altpal struct pointer
  * \param filename Filename to save into.
  */
 int sd_altpals_save(sd_altpal_file *ap, const char *filename);
 
 /*! \brief Free alternate palette structure
- * 
+ *
  * Frees up all memory reserved by the structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *

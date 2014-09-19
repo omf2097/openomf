@@ -6,12 +6,12 @@
  * \author animehunter
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_ERROR_H
 #define _SD_ERROR_H
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 

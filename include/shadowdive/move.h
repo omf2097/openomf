@@ -5,7 +5,7 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_MOVE_H
 #define _SD_MOVE_H
@@ -17,7 +17,7 @@
     #include "shadowdive/internal/writer.h"
 #endif
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -31,7 +31,7 @@ extern "C" {
  */
 typedef struct {
     sd_animation *animation; ///< Animation field for Move. When saving AF file, this should be != NULL.
-    
+
     uint16_t unknown_0; ///< Unknown value
     uint16_t unknown_2; ///< Unknown value
     uint8_t unknown_4; ///< Unknown value
@@ -77,7 +77,7 @@ int sd_move_create(sd_move *move);
  *
  * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either input value was NULL.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param dst Destination move struct pointer.
  * \param src Source move struct pointer.
@@ -85,7 +85,7 @@ int sd_move_create(sd_move *move);
 int sd_move_copy(sd_move *dst, const sd_move *src);
 
 /*! \brief Free move structure
- * 
+ *
  * Frees up all memory reserved by the move structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
@@ -101,14 +101,14 @@ void sd_move_free(sd_move *move);
  * eg. saving the AF file.
  *
  * A NULL value for animation field will result in move->animation field getting freed.
- * 
+ *
  * \retval SD_OUT_OF_MEMORY Memory ran out. Animation field will be NULL.
  * \retval SD_INVALID_INPUT Move struct pointer was NULL.
- * \retval SD_SUCCESS on success. 
+ * \retval SD_SUCCESS on success.
  *
  * \param move Move struct to modify.
  * \param animation Animation to set. This will be copied.
- */ 
+ */
 int sd_move_set_animation(sd_move *move, const sd_animation *animation);
 
 /*! \brief Get the current animation
@@ -120,33 +120,33 @@ int sd_move_set_animation(sd_move *move, const sd_animation *animation);
  * \retval sd_animation* Success
  *
  * \param move Move struct to modify.
- */ 
+ */
 sd_animation* sd_move_get_animation(const sd_move *move);
 
 /*! \brief Set move footer string for the Move struct.
  *
- * Sets the move footer string for the Move struct. Maximum length is 
+ * Sets the move footer string for the Move struct. Maximum length is
  * 512 bytes. Longer strings will result in error.
  *
  * \retval SD_INVALID_INPUT Input string was too long.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param move Move struct to modify.
  * \param str String to set.
- */ 
+ */
 int sd_move_set_footer_string(sd_move *move, const char *str);
 
 /*! \brief Set move string for the Move struct.
  *
- * Sets the move string for the Move struct. Maximum length is 
+ * Sets the move string for the Move struct. Maximum length is
  * 21 bytes. Longer strings will result in error.
  *
  * \retval SD_INVALID_INPUT Input string was too long.
- * \retval SD_SUCCESS Success. 
+ * \retval SD_SUCCESS Success.
  *
  * \param move Move struct to modify.
  * \param str String to set.
- */ 
+ */
 int sd_move_set_move_string(sd_move *move, const char *str);
 
 #ifdef SD_USE_INTERNAL

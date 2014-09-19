@@ -6,7 +6,7 @@
  * \author animehunter
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_SHADOWDIVE_H
 #define _SD_SHADOWDIVE_H

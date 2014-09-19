@@ -10,7 +10,7 @@
 #ifndef _SD_SOUNDS_H
 #define _SD_SOUNDS_H
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -48,7 +48,7 @@ typedef struct {
 int sd_sounds_create(sd_sound_file *sf);
 
 /*! \brief Free sounds structure
- * 
+ *
  * Frees up all memory reserved by the sounds structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
@@ -57,16 +57,16 @@ int sd_sounds_create(sd_sound_file *sf);
 void sd_sounds_free(sd_sound_file *sf);
 
 /*! \brief Returns a sound entry.
- * 
- * Returns a pointer to a sound entry. 
- * 
+ *
+ * Returns a pointer to a sound entry.
+ *
  * The structure memory will be owned by the library; do not attempt to
  * free it.
  *
  * \retval NULL If sd_sound_file ptr was NULL or sound does not exist.
  * \retval sd_sound* Sound entry pointer on success.
- * 
- * \param sf Sound information struct pointer. 
+ *
+ * \param sf Sound information struct pointer.
  * \param id Sound identifier (0 - 299).
  */
 const sd_sound* sd_sounds_get(const sd_sound_file *sf, int id);
@@ -102,9 +102,9 @@ int sd_sound_to_au(const sd_sound_file *sf, int num, const char *filename);
 int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename);
 
 /*! \brief Load sounds file
- * 
- * Loads the given sounds file to memory. The structure must be initialized with sd_sounds_create() 
- * before using this function. Loading to a previously loaded or filled sd_sound_file structure 
+ *
+ * Loads the given sounds file to memory. The structure must be initialized with sd_sounds_create()
+ * before using this function. Loading to a previously loaded or filled sd_sound_file structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
@@ -118,14 +118,14 @@ int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename);
 int sd_sounds_load(sd_sound_file *sf, const char *filename);
 
 /*! \brief Save sounds file
- * 
+ *
  * Saves the given sounds file from memory to a file on disk. The structure must be at
  * least initialized by using sd_sounds_create() before running this.
- * 
+ *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_SUCCESS Success.
- * 
- * \param sf Sounds struct pointer. 
+ *
+ * \param sf Sounds struct pointer.
  * \param filename Name of the sounds file to save into.
  */
 int sd_sounds_save(const sd_sound_file *sf, const char *filename);

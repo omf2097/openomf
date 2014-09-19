@@ -6,7 +6,7 @@
  * \author animehunter
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_SCORE_H
 #define _SD_SCORE_H
@@ -58,7 +58,7 @@ typedef struct {
 int sd_score_create(sd_score *score);
 
 /*! \brief Free score structure
- * 
+ *
  * Frees up all memory reserved by the score structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
@@ -67,9 +67,9 @@ int sd_score_create(sd_score *score);
 void sd_score_free(sd_score *score);
 
 /*! \brief Load score file
- * 
- * Loads the given score file to memory. The structure must be initialized with sd_score_create() 
- * before using this function. Loading to a previously loaded or filled sd_score structure 
+ *
+ * Loads the given score file to memory. The structure must be initialized with sd_score_create()
+ * before using this function. Loading to a previously loaded or filled sd_score structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
@@ -83,29 +83,29 @@ void sd_score_free(sd_score *score);
 int sd_score_load(sd_score *score, const char *filename);
 
 /*! \brief Save score file
- * 
+ *
  * Saves the given score file from memory to a file on disk. The structure must be at
  * least initialized by using sd_score_create() before running this.
- * 
+ *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_SUCCESS Success.
- * 
- * \param score Score struct pointer. 
+ *
+ * \param score Score struct pointer.
  * \param filename Name of the score file to save into.
  */
 int sd_score_save(const sd_score *score, const char *filename);
 
 /*! \brief Returns a score information entry.
- * 
- * Returns a pointer to a score information entry. 
- * 
+ *
+ * Returns a pointer to a score information entry.
+ *
  * The structure memory will be owned by the library; do not attempt to
  * free it.
  *
  * \retval NULL If score ptr was NULL or score information entry does not exist.
  * \retval sd_score_entry* Score information struct pointer on success.
- * 
- * \param score Score information struct pointer. 
+ *
+ * \param score Score information struct pointer.
  * \param page Scoreboard page number.
  * \param entry_id Score information entry id.
  */
