@@ -25,20 +25,6 @@ const char *language_names[] = {
     "Undef"
 };
 
-static const char *har_list[] = {
-    "Jaguar",
-    "Shadow",
-    "Thorn",
-    "Pyros",
-    "Electra",
-    "Katana",
-    "Shredder",
-    "Flail",
-    "Gargoyle",
-    "Chronos",
-    "Nova"
-};
-
 void print_locale(sd_tournament_locale *locale, int lang_id) {
     // Make sure the locale is valid
     if(locale->title[0] == 0)
@@ -170,26 +156,10 @@ int main(int argc, char *argv[]) {
         print_info(&trn);
     } else {
         printf("Enemies:\n");
-        printf("ID Name          Wins Loss HAR      Money  C1  C2  C3  Secret Photo Value\n");
+        print_pilot_array_header();
         for(int i = 0; i < trn.enemy_count; i++) {
             sd_pilot *pilot = trn.enemies[i];
-            const char *har_name = "Random";
-            if(pilot->har_id < 255) {
-                har_name = har_list[pilot->har_id];
-            }
-            printf("%2d %-13s %-4d %-4d %-8s %-6d %-3d %-3d %-3d %-6d %-5u %-7u\n",
-                i,
-                pilot->name,
-                pilot->wins,
-                pilot->losses,
-                har_name,
-                pilot->money,
-                pilot->color_1,
-                pilot->color_2,
-                pilot->color_3,
-                pilot->secret,
-                pilot->photo_id,
-                pilot->total_value);
+            print_pilot_array_row(pilot, i);
         }
 
         printf("\nLocales:\n");

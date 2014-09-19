@@ -39,6 +39,41 @@ void print_bytes(char *buf, int len, int line, int padding) {
     }
 }
 
+void print_pilot_array_header() {
+    printf("ID Name          Wins Loss HAR      Money   AP LP AS LS AR SR PW AG EN OFF   DEF   C1  C2  C3  Secret Photo Value\n");
+}
+
+void print_pilot_array_row(sd_pilot *pilot, int i) {
+    const char *har_name = "Random";
+    if(pilot->har_id < 255) {
+        har_name = har_list[pilot->har_id];
+    }
+    printf("%2d %-13s %-4d %-4d %-8s %-7d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-5d %-5d %-3d %-3d %-3d %-6d %-5u %-7u\n",
+        i,
+        pilot->name,
+        pilot->wins,
+        pilot->losses,
+        har_name,
+        pilot->money,
+        pilot->arm_power,
+        pilot->leg_power,
+        pilot->arm_speed,
+        pilot->leg_speed,
+        pilot->armor,
+        pilot->stun_resistance,
+        pilot->power,
+        pilot->agility,
+        pilot->endurance,
+        pilot->offense,
+        pilot->defense,
+        pilot->color_1,
+        pilot->color_2,
+        pilot->color_3,
+        pilot->secret,
+        pilot->photo_id,
+        pilot->total_value);
+}
+
 void print_pilot_player_info(sd_pilot *pilot) {
     if(pilot) {
         printf("  - Name:            %s\n", pilot->name);
@@ -78,14 +113,12 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - TRN Name:        %s\n", pilot->trn_name);
         printf("  - TRN Desc:        %s\n", pilot->trn_desc);
         printf("  - TRN Image:       %s\n", pilot->trn_image);
-        printf("  - Difficulty:      %s\n", difficulty_names[pilot->difficulty]);
-
-        printf("  - unk_block_a:     ");
-        print_bytes(pilot->unk_block_a, sizeof(pilot->unk_block_a), 16, 0);
-        printf("\n");
+        printf("  - Unk. Float C:    %f\n", pilot->unk_f_c);
+        printf("  - Unk. Float D:    %f\n", pilot->unk_f_d);
         printf("  - Pilot ID:        %d\n", pilot->pilot_id);
         printf("  - Unknown K:       %d\n", pilot->unknown_k);
         printf("  - Force arena:     %d\n", pilot->force_arena);
+        printf("  - Difficulty:      %s\n", difficulty_names[pilot->difficulty]);
         printf("  - unk_block_b:     ");
         print_bytes(pilot->unk_block_b, sizeof(pilot->unk_block_b), 16, 0);
         printf("\n");
