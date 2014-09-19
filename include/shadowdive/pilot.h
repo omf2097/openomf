@@ -55,7 +55,8 @@ typedef struct {
     char trn_name[13];       ///< Tournament file
     char trn_desc[31];       ///< Tournament description
     char trn_image[13];      ///< Tournament image file
-    char unk_block_a[8];     ///< Unknown
+    float unk_f_c;           ///< Unknown
+    float unk_f_d;           ///< Unknown
     uint8_t pilot_id;        ///< Pilot ID
     uint8_t unknown_k;       ///< Unknown
     uint16_t force_arena;    ///< Tells if this pilot needs to play on a certain arena
@@ -103,8 +104,8 @@ typedef struct {
     char unk_block_g[6];     ///< Unknown.
     uint32_t winnings;       ///< Money made by winning opponents
     uint32_t total_value;    ///< Total value for the pilot
-    float unk_f_a;
-    float unk_f_b;
+    float unk_f_a;           ///< Unknown
+    float unk_f_b;           ///< Unknown
     sd_palette palette;      ///< Palette for photo ?
     uint16_t unk_block_i;    ///< Unknown
     uint16_t photo_id;       ///< Which face photo this pilot uses
