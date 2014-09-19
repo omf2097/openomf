@@ -45,7 +45,6 @@ typedef struct {
     uint8_t power;           ///< Pilot power (1-25).
     uint8_t agility;         ///< Pilot agility (1-25).
     uint8_t endurance;       ///< Pilot endurance (1-25).
-    uint8_t unknown_stat;    ///< Unknown. Maybe nothing ?
     uint16_t offense;        ///< Offense preference value (100 high, should be under 200).
     uint16_t defense;        ///< Defense preference value (100 high, should be under 200).
     uint32_t money;          ///< Amount of money the pilot currently has
@@ -63,7 +62,7 @@ typedef struct {
     uint8_t difficulty;      ///< Difficulty setting
     char unk_block_b[2];     ///< Unknown
     uint8_t movement;        ///< Pilot can move in rankings
-    char unk_block_c[6];     ///< Unknown
+    uint16_t unk_block_c[3]; ///< Unknown
     char enhancements[11];   ///< Har enchancements. A field for each HAR.
 
     uint8_t secret;          ///< This character is a secret character, and only comes out when requirements match
@@ -85,7 +84,7 @@ typedef struct {
     uint8_t att_def;         ///< More defensive
     uint8_t att_sniper;      ///< Tries to sneak in quick hits
 
-    char unk_block_d[6];     ///< Unknown
+    uint16_t unk_block_d[3];     ///< Unknown
     int16_t ap_throw;        ///< AI Preference for throw moves. Accepted value range (-400, 400).
     int16_t ap_special;      ///< AI Preference for special moves. Accepted value range (-400, 400).
     int16_t ap_jump;         ///< AI Preference for jump moves. Accepted value range (-400, 400).
@@ -98,10 +97,13 @@ typedef struct {
     uint32_t unknown_e;      ///< Unknown
     float learning;          ///< How actively this pilot learns your combat tactics. Accepted value range (0-15).
     float forget;            ///< How quickly this pilot forgets your combat tactics. Accepted value range (0-3).
-    char unk_block_f[24];    ///< Unknown
+    char unk_block_f[14];    ///< Unknown
     uint16_t enemies_inc_unranked; ///< Enemies in current tournament, including unranked opponents
     uint16_t enemies_ex_unranked;  ///< Same as above, excluding unranked opponents.
-    char unk_block_g[6];     ///< Unknown.
+
+    uint16_t unk_d_a;        ///< Unknown.
+    uint32_t unk_d_b;        ///< Unknown.
+
     uint32_t winnings;       ///< Money made by winning opponents
     uint32_t total_value;    ///< Total value for the pilot
     float unk_f_a;           ///< Unknown
