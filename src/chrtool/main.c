@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include "../shared/pilot.h"
 
-void print_chr_info(sd_chr_file *chr) {
+void print_chr_pilot_info(sd_chr_file *chr) {
     print_pilot_info(&chr->pilot);
 
     printf("\n");
@@ -22,27 +22,25 @@ void print_chr_info(sd_chr_file *chr) {
     // Portrait data
     printf("\n");
     printf("Portrait:\n");
-    printf("  - Size = (%d,%d)\n", 
-        chr->photo->width, 
+    printf("  - Size = (%d,%d)\n",
+        chr->photo->width,
         chr->photo->height);
-    printf("  - Position = (%d,%d)\n", 
-        chr->photo->pos_x, 
+    printf("  - Position = (%d,%d)\n",
+        chr->photo->pos_x,
         chr->photo->pos_y);
-    printf("  - Length = %d\n", 
+    printf("  - Length = %d\n",
         chr->photo->len);
     printf("  - I/M = %u/%u\n",
         chr->photo->index,
         chr->photo->missing);
+}
 
-    // Enemy data
-    printf("\nEnemies:\n");
-    for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
-        printf("Enemy %d:\n", i);
-        print_pilot_player_info(&chr->enemies[i]->pilot);
-        printf("  - Some unknown thingy: \n");
-        print_bytes(chr->enemies[i]->unknown, 20, 10, 5);
-        printf("\n");
-    }
+void print_enemy_info(sd_chr_file *chr, int i) {
+    printf("Enemy %d:\n", i);
+    print_pilot_player_info(&chr->enemies[i]->pilot);
+    printf("  - Some unknown thingy: \n");
+    print_bytes(chr->enemies[i]->unknown, 20, 10, 5);
+    printf("\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -52,17 +50,19 @@ int main(int argc, char* argv[]) {
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input altpals file");
     struct arg_file *export = arg_file0("e","export","<file>","Export Photo to a ppm file");
     struct arg_file *bkfile = arg_file0("b","bkfile","<file>","Palette BK file");
+    struct arg_lit *pilot = arg_lit0(NULL, "pilot", "Only print pilot information");
+    struct arg_int *enemy = arg_int0(NULL, "enemy", "<int>", "Only print opponent information");
     struct arg_file *output = arg_file0("o","output","<file>","Output CHR file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,export,bkfile,end};
+    void* argtable[] = {help,vers,file,output,export,pilot,enemy,bkfile,end};
     const char* progname = "chrtool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -138,8 +138,26 @@ int main(int argc, char* argv[]) {
                 sd_get_error(ret));
         }
         sd_rgba_image_free(&img);
+    } else if(pilot->count > 0) {
+        print_chr_pilot_info(&chr);
+    } else if(enemy->count > 0) {
+        int enemy_id = enemy->ival[0];
+        if(enemy_id < 0 || enemy_id >= chr.pilot.enemies_inc_unranked) {
+            printf("Enemy index out of bounds.\n");
+            goto exit_1;
+        }
+        print_enemy_info(&chr, enemy_id);
     } else {
-        print_chr_info(&chr);
+        printf("Pilot:\n");
+        print_pilot_array_header();
+        print_pilot_array_row(&chr.pilot, 0);
+
+        printf("\nEnemies:\n");
+        print_pilot_array_header();
+        for(int i = 0; i < chr.pilot.enemies_inc_unranked; i++) {
+            sd_pilot *pilot = &chr.enemies[i]->pilot;
+            print_pilot_array_row(pilot, i);
+        }
     }
 
     // Saving
