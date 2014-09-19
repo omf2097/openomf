@@ -26,8 +26,6 @@ extern "C" {
 /*! \brief PIC pilot information
  *
  * Contains a pilot information. Current upgrades, powers, tournament, etc.
- * \todo The attitude values need to be extracted from the attitude variable on load, and re-packed on save
- * \todo The combat requirement values need to be extracted too.
  */
 typedef struct {
     uint32_t unknown_a;      ///< Unknown
@@ -48,9 +46,9 @@ typedef struct {
     uint16_t offense;        ///< Offense preference value (100 high, should be under 200).
     uint16_t defense;        ///< Defense preference value (100 high, should be under 200).
     uint32_t money;          ///< Amount of money the pilot currently has
-    uint8_t color_1;         ///< Color 1 field for the HAR (0-15).
-    uint8_t color_2;         ///< Color 2 field for the HAR (0-15).
-    uint8_t color_3;         ///< Color 3 field for the HAR (0-15).
+    uint8_t color_1;         ///< Color 1 field for the HAR (0-15). 255 means random.
+    uint8_t color_2;         ///< Color 2 field for the HAR (0-15). 255 means random.
+    uint8_t color_3;         ///< Color 3 field for the HAR (0-15). 255 means random.
     char trn_name[13];       ///< Tournament file
     char trn_desc[31];       ///< Tournament description
     char trn_image[13];      ///< Tournament image file
@@ -84,7 +82,7 @@ typedef struct {
     uint8_t att_def;         ///< More defensive
     uint8_t att_sniper;      ///< Tries to sneak in quick hits
 
-    uint16_t unk_block_d[3];     ///< Unknown
+    uint16_t unk_block_d[3]; ///< Unknown
     int16_t ap_throw;        ///< AI Preference for throw moves. Accepted value range (-400, 400).
     int16_t ap_special;      ///< AI Preference for special moves. Accepted value range (-400, 400).
     int16_t ap_jump;         ///< AI Preference for jump moves. Accepted value range (-400, 400).
@@ -97,12 +95,12 @@ typedef struct {
     uint32_t unknown_e;      ///< Unknown
     float learning;          ///< How actively this pilot learns your combat tactics. Accepted value range (0-15).
     float forget;            ///< How quickly this pilot forgets your combat tactics. Accepted value range (0-3).
-    char unk_block_f[14];    ///< Unknown
+    char unk_block_f[14];    ///< Unknown. Probably pointers and scratch variables
     uint16_t enemies_inc_unranked; ///< Enemies in current tournament, including unranked opponents
     uint16_t enemies_ex_unranked;  ///< Same as above, excluding unranked opponents.
 
     uint16_t unk_d_a;        ///< Unknown.
-    uint32_t unk_d_b;        ///< Unknown.
+    uint32_t unk_d_b;        ///< Unknown. Possible a bitmask ?
 
     uint32_t winnings;       ///< Money made by winning opponents
     uint32_t total_value;    ///< Total value for the pilot
