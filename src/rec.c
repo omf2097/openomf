@@ -91,22 +91,22 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         uint8_t action = sd_read_ubyte(r);
         rec->moves[i].raw_action = action;
 
-        rec->moves[i].action = SD_REC_NONE;
+        rec->moves[i].action = SD_ACT_NONE;
         if(action & 1) {
-            rec->moves[i].action |= SD_REC_PUNCH;
+            rec->moves[i].action |= SD_ACT_PUNCH;
         }
         if(action & 2) {
-            rec->moves[i].action |= SD_REC_KICK;
+            rec->moves[i].action |= SD_ACT_KICK;
         }
         switch(action & 0xF0) {
-            case 16: rec->moves[i].action |= SD_REC_UP; break;
-            case 32: rec->moves[i].action |= (SD_REC_UP|SD_REC_RIGHT); break;
-            case 48: rec->moves[i].action |= SD_REC_RIGHT; break;
-            case 64: rec->moves[i].action |= (SD_REC_DOWN|SD_REC_RIGHT); break;
-            case 80: rec->moves[i].action |= SD_REC_DOWN; break;
-            case 96: rec->moves[i].action |= (SD_REC_DOWN|SD_REC_LEFT); break;
-            case 112: rec->moves[i].action |= SD_REC_LEFT; break;
-            case 128: rec->moves[i].action |= (SD_REC_UP|SD_REC_LEFT); break;
+            case 16: rec->moves[i].action |= SD_ACT_UP; break;
+            case 32: rec->moves[i].action |= (SD_ACT_UP|SD_ACT_RIGHT); break;
+            case 48: rec->moves[i].action |= SD_ACT_RIGHT; break;
+            case 64: rec->moves[i].action |= (SD_ACT_DOWN|SD_ACT_RIGHT); break;
+            case 80: rec->moves[i].action |= SD_ACT_DOWN; break;
+            case 96: rec->moves[i].action |= (SD_ACT_DOWN|SD_ACT_LEFT); break;
+            case 112: rec->moves[i].action |= SD_ACT_LEFT; break;
+            case 128: rec->moves[i].action |= (SD_ACT_UP|SD_ACT_LEFT); break;
         }
         if(rec->moves[i].extra > 2) {
             sd_read_buf(r, rec->moves[i].extra_data, 7);
@@ -183,18 +183,18 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
 
         uint8_t raw_action = 0;
         switch(rec->moves[i].action & SD_MOVE_MASK) {
-            case (SD_REC_UP): raw_action = 16; break;
-            case (SD_REC_UP|SD_REC_RIGHT): raw_action = 32; break;
-            case (SD_REC_RIGHT): raw_action = 48; break;
-            case (SD_REC_DOWN|SD_REC_RIGHT): raw_action = 64; break;
-            case (SD_REC_DOWN): raw_action = 80; break;
-            case (SD_REC_DOWN|SD_REC_LEFT): raw_action = 96; break;
-            case (SD_REC_LEFT): raw_action = 112; break;
-            case (SD_REC_UP|SD_REC_LEFT): raw_action = 128; break;
+            case (SD_ACT_UP): raw_action = 16; break;
+            case (SD_ACT_UP|SD_ACT_RIGHT): raw_action = 32; break;
+            case (SD_ACT_RIGHT): raw_action = 48; break;
+            case (SD_ACT_DOWN|SD_ACT_RIGHT): raw_action = 64; break;
+            case (SD_ACT_DOWN): raw_action = 80; break;
+            case (SD_ACT_DOWN|SD_ACT_LEFT): raw_action = 96; break;
+            case (SD_ACT_LEFT): raw_action = 112; break;
+            case (SD_ACT_UP|SD_ACT_LEFT): raw_action = 128; break;
         }
-        if(rec->moves[i].action & SD_REC_PUNCH)
+        if(rec->moves[i].action & SD_ACT_PUNCH)
             raw_action |= 1;
-        if(rec->moves[i].action & SD_REC_KICK)
+        if(rec->moves[i].action & SD_ACT_KICK)
             raw_action |= 2;
         sd_write_ubyte(w, raw_action);
    }

@@ -23,7 +23,7 @@ void test_sd_rec_create(void) {
         sd_rec_move mv;
         fill((char*)&mv, sizeof(sd_rec_move));
         mv.extra = (i % 5 == 0) ? 18 : 2;
-        mv.action = SD_REC_KICK|SD_REC_PUNCH|SD_REC_LEFT|SD_REC_DOWN;
+        mv.action = SD_ACT_KICK|SD_ACT_PUNCH|SD_ACT_LEFT|SD_ACT_DOWN;
         sd_rec_insert_action(&rec, i, &mv);
     }
 }
@@ -46,7 +46,7 @@ void test_rec_roundtrip(void) {
         CU_ASSERT(rec.moves[i].tick == loaded.moves[i].tick);
         CU_ASSERT(rec.moves[i].extra == loaded.moves[i].extra);
         CU_ASSERT(rec.moves[i].player_id == loaded.moves[i].player_id);
-        
+
         if(rec.moves[i].extra > 2) {
             CU_ASSERT(rec.moves[i].raw_action == loaded.moves[i].raw_action);
             CU_ASSERT_NSTRING_EQUAL(

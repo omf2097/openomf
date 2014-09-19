@@ -5,7 +5,7 @@
  * \date 2013-2014
  * \author Andrew Thompson
  * \author Tuomas Virtanen
- */ 
+ */
 
 #ifndef _SD_REC_H
 #define _SD_REC_H
@@ -15,24 +15,11 @@
 #include "shadowdive/pilot.h"
 #include "shadowdive/palette.h"
 #include "shadowdive/sprite.h"
+#include "shadowdive/actions.h"
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
-
-/*! \brief REC key action
-*/
-typedef enum {
-    SD_REC_NONE =  0x0,
-    SD_REC_PUNCH = 0x1,
-    SD_REC_KICK  = 0x2,
-    SD_REC_UP    = 0x4,
-    SD_REC_DOWN  = 0x8,
-    SD_REC_LEFT  = 0x10,
-    SD_REC_RIGHT = 0x20,
-} sd_rec_action;
-
-#define SD_MOVE_MASK (SD_REC_UP|SD_REC_DOWN|SD_REC_LEFT|SD_REC_RIGHT) ///< Mask of all movement keys
 
 /*! \brief REC action record
  *
@@ -44,7 +31,7 @@ typedef struct {
     uint32_t tick; ///< Game tick at the moment of this event
     uint8_t extra; ///< Extra content flag. If this is >2, then extra_data will contain valid content.
     uint8_t player_id; ///< Player ID. 0 or 1.
-    sd_rec_action action; ///< Player actions at this tick. A Combination of sd_rec_action enums.
+    sd_action action; ///< Player actions at this tick. A Combination of sd_rec_action enums.
     uint8_t raw_action; ///< Raw action data from the file.
     char extra_data[7]; ///< Extra data. Only valid if extra field > 2.
 } sd_rec_move;
@@ -113,9 +100,9 @@ int sd_rec_create(sd_rec_file *rec);
 void sd_rec_free(sd_rec_file *rec);
 
 /*! \brief Load .REC file
- * 
- * Loads the given REC file to memory. The structure must be initialized with sd_rec_create() 
- * before using this function. Loading to a previously loaded or filled sd_rec_file structure 
+ *
+ * Loads the given REC file to memory. The structure must be initialized with sd_rec_create()
+ * before using this function. Loading to a previously loaded or filled sd_rec_file structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
@@ -129,14 +116,14 @@ void sd_rec_free(sd_rec_file *rec);
 int sd_rec_load(sd_rec_file *rec, const char *filename);
 
 /*! \brief Save .REC file
- * 
+ *
  * Saves the given REC file from memory to a file on disk. The structure must be at
  * least initialized by using sd_rec_create() before running this.
- * 
+ *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_SUCCESS Success.
- * 
- * \param rec REC struct pointer. 
+ *
+ * \param rec REC struct pointer.
  * \param filename Name of the REC file to save into.
  */
 int sd_rec_save(sd_rec_file *rec, const char *filename);

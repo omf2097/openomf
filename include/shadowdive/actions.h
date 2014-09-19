@@ -21,4 +21,6 @@ typedef enum {
     SD_ACT_RIGHT = 0x20, ///< Move right (walk)
 } sd_action;
 
+#define SD_MOVE_MASK (SD_ACT_UP|SD_ACT_DOWN|SD_ACT_LEFT|SD_ACT_RIGHT) ///< Mask of all movement keys
+
 #endif // _SD_ACTIONS_H
