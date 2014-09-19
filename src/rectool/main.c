@@ -37,36 +37,12 @@ void print_key(char *o, uint8_t key) {
 void print_rec_root_info(sd_rec_file *rec) {
     if(rec != NULL) {
         // Print enemy data
-        printf("Enemies:\n");
+        printf("## Pilots:\n");
+        print_pilot_array_header();
         for(int i = 0; i < 2; i++) {
-            print_pilot_info(&rec->pilots[i].info);
-            printf("\n");
-            printf("  - Unknown: %d\n", rec->pilots[i].unknown_a);
-            printf("  - Unknown: %d\n", rec->pilots[i].unknown_b);
-            printf("  - Palette:\n");
-            print_bytes((char*)rec->pilots[i].pal.data, 144, 16, 4);
-            printf("\n");
-            printf("  - Unknown:\n");
-            print_bytes((char*)rec->pilots[i].unknown_c, 20, 20, 4);
-            printf("\n");
-
-            if(rec->pilots[i].has_photo) {
-                printf("  - Photo len  = %d\n", rec->pilots[i].photo.len);
-                printf("  - Photo size = (%d,%d)\n",
-                    rec->pilots[i].photo.width,
-                    rec->pilots[i].photo.height);
-                printf("  - Photo pos  = (%d,%d)\n",
-                    rec->pilots[i].photo.pos_x,
-                    rec->pilots[i].photo.pos_y);
-                printf("  - Missing    = %d\n",
-                    rec->pilots[i].photo.missing);
-                printf("  - Index      = %d\n",
-                    rec->pilots[i].photo.index);
-            } else {
-                printf("  - No photo.\n");
-            }
-            printf("\n");
+            print_pilot_array_row(&rec->pilots[i].info, i);
         }
+        printf("\n");
 
         char tmp = 'A';
         printf("## Unknown header data:\n");
@@ -254,19 +230,20 @@ int main(int argc, char* argv[]) {
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input .REC file");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .REC file");
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 3, "Select key");
+    struct arg_int *pilot = arg_int0(NULL, "pilot", "<int>", "Only print pilot information");
     struct arg_str *value = arg_str0("s", "set", "<value>", "Set value (requires --key)");
     struct arg_int *insert = arg_int0("i", "insert", "<number>", "Insert a new element");
     struct arg_int *delete = arg_intn("d", "delete", "<number>", 0, 10, "Delete an existing element");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,key,value,delete,insert,end};
+    void* argtable[] = {help,vers,file,output,pilot,key,value,delete,insert,end};
     const char* progname = "rectool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -278,7 +255,7 @@ int main(int argc, char* argv[]) {
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -293,7 +270,7 @@ int main(int argc, char* argv[]) {
         printf("For setting values, remember to set --output or -o.\n");
         goto exit_0;
     }
-    
+
     // Handle errors
     if(nerrors > 0) {
         arg_print_errors(stdout, end, progname);
@@ -348,17 +325,50 @@ int main(int argc, char* argv[]) {
         } else {
             printf("Inserted move to slot %d.", insert->ival[0]);
         }
+    } else if(pilot->count > 0) {
+        int i = pilot->ival[0];
+        if(i < 0 || i > 1) {
+            printf("Pilot ID out of bounds.\n");
+            goto exit_1;
+        }
+        print_pilot_info(&rec.pilots[i].info);
+        printf("\n");
+        printf("  - Unknown: %d\n", rec.pilots[i].unknown_a);
+        printf("  - Unknown: %d\n", rec.pilots[i].unknown_b);
+        printf("  - Palette:\n");
+        print_bytes((char*)rec.pilots[i].pal.data, 144, 16, 4);
+        printf("\n");
+        printf("  - Unknown:\n");
+        print_bytes((char*)rec.pilots[i].unknown_c, 20, 20, 4);
+        printf("\n");
+
+        if(rec.pilots[i].has_photo) {
+            printf("  - Photo len  = %d\n", rec.pilots[i].photo.len);
+            printf("  - Photo size = (%d,%d)\n",
+                rec.pilots[i].photo.width,
+                rec.pilots[i].photo.height);
+            printf("  - Photo pos  = (%d,%d)\n",
+                rec.pilots[i].photo.pos_x,
+                rec.pilots[i].photo.pos_y);
+            printf("  - Missing    = %d\n",
+                rec.pilots[i].photo.missing);
+            printf("  - Index      = %d\n",
+                rec.pilots[i].photo.index);
+        } else {
+            printf("  - No photo.\n");
+        }
+        printf("\n");
     } else {
         print_rec_root_info(&rec);
     }
-    
+
     // Write output file
     if(output->count > 0) {
         if(sd_rec_save(&rec, output->filename[0]) != SD_SUCCESS) {
             printf("Save didn't succeed!");
         }
     }
-    
+
     // Quit
 exit_1:
     sd_rec_free(&rec);
