@@ -1,3 +1,11 @@
+/*! \file
+ * \brief Gui base component
+ * \details Base component for GUI elements. Sizers, widgets etc. are based on this.
+ * \copyright MIT license.
+ * \date 2014
+ * \author Tuomas Virtanen
+ */
+
 #ifndef _COMPONENT_H
 #define _COMPONENT_H
 
@@ -5,13 +13,13 @@
 #include "controller/controller.h"
 
 enum {
-    COM_ENABLED = 0,
-    COM_DISABLED = 1,
+    COM_ENABLED = 0,   ///< Component enabled. Component is colored and can be interacted with.
+    COM_DISABLED = 1,  ///< Component disabled. Component is grayed out, and cannot be interacted with.
 };
 
 enum {
-    COM_UNSELECTED = 0,
-    COM_SELECTED = 1,
+    COM_UNSELECTED = 0, ///< Componen unselected. Used in eg. menu sizers.
+    COM_SELECTED = 1,   ///< Component selected. Used in eg. menu sizers.
 };
 
 typedef struct component_t component;
@@ -23,31 +31,38 @@ typedef void (*component_layout_cb)(component *c, int x, int y, int w, int h);
 typedef void (*component_tick_cb)(component *c);
 typedef void (*component_free_cb)(component *c);
 
-/*
-* This is the basic component that you get by creating any textbutton, togglebutton, etc.
-* The point is to abstract away rendering and event handling
-*/
+/*! \brief Basic GUI object
+ *
+ * This is the basic component that you get by creating any textbutton, togglebutton, etc.
+ * The point is to abstract away rendering and event handling.
+ *
+ * Note that the component doesn't have position or size before component_layout has been called.
+ * Component_layout call for a sizer will cause all its children widgets and  sizers to be set also.
+ */
 struct component_t {
-    int x,y,w,h;
-    void *obj;
+    int x;                      ///< Horizontal position of the object in pixels. This is in screen coordinates.
+    int y;                      ///< Vertical position of the object in pixels. This is in screen coordinates.
+    int w;                      ///< Width of the object in pixels.
+    int h;                      ///< Height of the object in pixels.
+    void *obj;                  ///< Specialization object pointer. Basically always Sizer or Widget struct.
 
-    char supports_select;
-    char is_selected;
+    char supports_select;       ///< Whether the component can be selected by component_select() call.
+    char is_selected;           ///< Whether the component is selected
 
-    char supports_disable;
-    char is_disabled;
+    char supports_disable;      ///< Whether the component can be disabled by component_disable() call.
+    char is_disabled;           ///< Whether the component is disabled
 
-    char supports_focus;
-    char is_focused;
+    char supports_focus;        ///< Whether the component can be focused by component_focus() call.
+    char is_focused;            ///< Whether the component is focused
 
-    component_render_cb render;
-    component_event_cb event;
-    component_action_cb action;
-    component_layout_cb layout;
-    component_tick_cb tick;
-    component_free_cb free;
+    component_render_cb render; ///< Render function callback. This tells the component to draw itself.
+    component_event_cb event;   ///< Event function callback. Direct SDL2 event handler.
+    component_action_cb action; ///< Action function callback. Handles OpenOMF abstract key events.
+    component_layout_cb layout; ///< Layout function callback. This is called after the component tree is created. Sets component size and position.
+    component_tick_cb tick;     ///< Tick function callback. This is called periodically.
+    component_free_cb free;     ///< Free function callback. Any component callbacks should be done here.
 
-    component *parent;
+    component *parent;          ///< Parent component. For widgets, this should be always a sizer. For root sizer it will be NULL.
 };
 
 // Create & free
