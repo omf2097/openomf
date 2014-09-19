@@ -93,7 +93,6 @@ void print_pilot_player_info(sd_pilot *pilot) {
         printf("  - Power:           %d\n", pilot->power);
         printf("  - Agility:         %d\n", pilot->agility);
         printf("  - Endurance:       %d\n", pilot->endurance);
-        printf("  - Unknown:         %d\n", pilot->unknown_stat);
         printf("  - Offense:         %d\n", pilot->offense);
         printf("  - Defense:         %d\n", pilot->defense);
         printf("  - Money:           %d\n", pilot->money);
@@ -123,9 +122,11 @@ void print_pilot_info(sd_pilot *pilot) {
         print_bytes(pilot->unk_block_b, sizeof(pilot->unk_block_b), 16, 0);
         printf("\n");
         printf("  - Movement:        %d\n", pilot->movement);
-        printf("  - unk_block_c:     ");
-        print_bytes(pilot->unk_block_c, sizeof(pilot->unk_block_c), 16, 0);
-        printf("\n");
+        printf("  - unk_block_c:\n");
+        for(int i = 0; i < 3; i++) {
+            printf("     [%d] = %d\n", i, pilot->unk_block_c[i]);
+        }
+
         printf("  - Enhancements:\n");
         for(int i = 0; i < 11; i++) {
             printf("     * %-10s: %x\n", har_list[i], pilot->enhancements[i]);
@@ -152,9 +153,10 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("    * Def:           %d\n", pilot->att_def);
         printf("    * Sniper:        %d\n", pilot->att_sniper);
 
-        printf("  - unk_block_d:     ");
-        print_bytes(pilot->unk_block_d, sizeof(pilot->unk_block_d), 16, 0);
-        printf("\n");
+        printf("  - unk_block_d:\n");
+        for(int i = 0; i < 3; i++) {
+            printf("     [%d] = %d\n", i, pilot->unk_block_d[i]);
+        }
 
         printf("  - AP Throw:        %d\n", pilot->ap_throw);
         printf("  - AP Special:      %d\n", pilot->ap_special);
@@ -178,9 +180,8 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Enemies (inc unranked): %d\n", pilot->enemies_inc_unranked);
         printf("  - Enemies (exl unranked): %d\n", pilot->enemies_ex_unranked);
 
-        printf("  - unk_block_g:     ");
-        print_bytes(pilot->unk_block_g, sizeof(pilot->unk_block_g), 26, 0);
-        printf("\n");
+        printf("  - Unk. Int A:      %d\n", pilot->unk_d_a);
+        printf("  - Unk. Int B:      %d\n", pilot->unk_d_b);
 
         printf("  - Winnings:        %d\n", pilot->winnings);
         printf("  - Total value:     %d\n", pilot->total_value);
