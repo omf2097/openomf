@@ -38,6 +38,25 @@ static const int tmp_lengths[] = {
     2,1,1,5,5,5,1,2,2,1
 };
 
+static const char* onoff[] = {
+    "Off",
+    "On"
+};
+
+static const char* match_type[] = {
+    "One match",
+    "2 out of 3",
+    "3 out of 5",
+    "4 out of 7"
+};
+
+static const char* knockdown_text[] = {
+    "None",
+    "Kicks",
+    "Punches",
+    "Both"
+};
+
 void print_rec_root_info(sd_rec_file *rec) {
     if(rec != NULL) {
         // Print enemy data
@@ -48,31 +67,31 @@ void print_rec_root_info(sd_rec_file *rec) {
         }
         printf("\n");
 
-        char tmp = 'A';
         printf("## Unknown header data:\n");
         printf("  - Score A:      %d\n", rec->scores[0]);
         printf("  - Score B:      %d\n", rec->scores[1]);
-        printf("  - %c:            %d\n", tmp++, rec->unknown_a);
-        printf("  - %c:            %d\n", tmp++, rec->unknown_b);
-        printf("  - %c:            %d\n", tmp++, rec->unknown_c);
-        printf("  - Throw Range:  %d\n", rec->throw_range); tmp++;
-        printf("  - Hit Pause:    %d\n", rec->hit_pause); tmp++;
-        printf("  - Block Damage: %d\n", rec->block_damage); tmp++;
-        printf("  - Vitality:     %d\n", rec->vitality); tmp++;
-        printf("  - Jump Height:  %d\n", rec->jump_height); tmp++;
-        printf("  - %c:            %d\n", tmp++, rec->unknown_i);
-        printf("  - %c:            %d\n", tmp++, rec->unknown_j);
-        printf("  - %c:            %d\n", tmp++, rec->unknown_k);
-        printf("  - %c:            %d\n", tmp++, rec->unknown_l);
-        printf("  - %c:            %d\n", tmp++, rec->unknown_m);
-        printf("\n");
-
-        printf("  - Bitmap values:\n");
-        int pos = 0;
-        for(int i = 0; i < 10; i++) {
-            printf("    * %-2d [%-2d:%-2d] = %d\n", i, pos, tmp_lengths[i], rec->m_vals[i]);
-            pos += tmp_lengths[i];
-        }
+        printf("  - Unknown A:    %d\n", rec->unknown_a);
+        printf("  - Unknown B:    %d\n", rec->unknown_b);
+        printf("  - Unknown C:    %d\n", rec->unknown_c);
+        printf("  - Throw Range:  %d\n", rec->throw_range);
+        printf("  - Hit Pause:    %d\n", rec->hit_pause);
+        printf("  - Block Damage: %d\n", rec->block_damage);
+        printf("  - Vitality:     %d\n", rec->vitality);
+        printf("  - Jump Height:  %d\n", rec->jump_height);
+        printf("  - Unknown I:    %d\n", rec->unknown_i);
+        printf("  - Unknown J:    %d\n", rec->unknown_j);
+        printf("  - Unknown K:    %d\n", rec->unknown_k);
+        printf("  - Knock down:   %s\n", knockdown_text[rec->knock_down]);
+        printf("  - Rehit mode:   %s\n", onoff[rec->rehit_mode]);
+        printf("  - Def. throws:  %s\n", onoff[rec->def_throws]);
+        printf("  - Arena ID:     %d\n", rec->arena_id);
+        printf("  - Power 1:      %d\n", rec->power[0]);
+        printf("  - Power 2:      %d\n", rec->power[1]);
+        printf("  - Hazards:      %s\n", onoff[rec->hazards]);
+        printf("  - Round type:   %s\n", match_type[rec->round_type]);
+        printf("  - Unknown L:    %d\n", rec->unknown_l);
+        printf("  - Hyper Mode:   %s\n", onoff[rec->hyper_mode]);
+        printf("  - Unknown M:    %d\n", rec->unknown_m);
         printf("\n");
 
         printf("## Parsed data:\n");
