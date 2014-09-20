@@ -94,8 +94,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     // This will be reduced later when we know the ACTUAL count
     size_t rsize = sd_reader_filesize(r) - sd_reader_pos(r);
     rec->move_count = rsize / 7;
-    rec->moves = malloc(rec->move_count * sizeof(sd_rec_move));
-    memset(rec->moves, 0, rec->move_count * sizeof(sd_rec_move));
+    rec->moves = calloc(rec->move_count, sizeof(sd_rec_move));
 
     // Read blocks
     for(int i = 0; i < rec->move_count; i++) {
