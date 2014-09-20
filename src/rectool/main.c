@@ -46,21 +46,21 @@ void print_rec_root_info(sd_rec_file *rec) {
 
         char tmp = 'A';
         printf("## Unknown header data:\n");
-        printf("  - Score A: %d\n", rec->scores[0]);
-        printf("  - Score B: %d\n", rec->scores[1]);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_a);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_b);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_c);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_d);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_e);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_f);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_g);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_h);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_i);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_j);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_k);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_l);
-        printf("  - %c:       %d\n", tmp++, rec->unknown_m);
+        printf("  - Score A:      %d\n", rec->scores[0]);
+        printf("  - Score B:      %d\n", rec->scores[1]);
+        printf("  - %c:            %d\n", tmp++, rec->unknown_a);
+        printf("  - %c:            %d\n", tmp++, rec->unknown_b);
+        printf("  - %c:            %d\n", tmp++, rec->unknown_c);
+        printf("  - Throw Range:  %d\n", rec->throw_range); tmp++;
+        printf("  - Hit Pause:    %d\n", rec->hit_pause); tmp++;
+        printf("  - Block Damage: %d\n", rec->block_damage); tmp++;
+        printf("  - Vitality:     %d\n", rec->vitality); tmp++;
+        printf("  - Jump Height:  %d\n", rec->jump_height); tmp++;
+        printf("  - %c:            %d\n", tmp++, rec->unknown_i);
+        printf("  - %c:            %d\n", tmp++, rec->unknown_j);
+        printf("  - %c:            %d\n", tmp++, rec->unknown_k);
+        printf("  - %c:            %d\n", tmp++, rec->unknown_l);
+        printf("  - %c:            %d\n", tmp++, rec->unknown_m);
         printf("\n");
 
         printf("## Parsed data:\n");
