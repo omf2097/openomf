@@ -73,22 +73,18 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     rec->unknown_i = sd_read_word(r);
     rec->unknown_j = sd_read_word(r);
     rec->unknown_k = sd_read_word(r);
-    rec->unknown_l = sd_read_udword(r);
+    uint32_t in = sd_read_udword(r);
+    rec->knock_down = (in >> 0 ) & 0x03; // 00000000 00000000 00000000 00000011 (2)
+    rec->rehit_mode = (in >> 2 ) & 0x01; // 00000000 00000000 00000000 00000100 (1)
+    rec->def_throws = (in >> 3 ) & 0x01; // 00000000 00000000 00000000 00001000 (1)
+    rec->arena_id =   (in >> 4 ) & 0x1F; // 00000000 00000000 00000001 11110000 (5)
+    rec->power[0] =   (in >> 9 ) & 0x1F; // 00000000 00000000 00111110 00000000 (5)
+    rec->power[1] =   (in >> 14) & 0x1F; // 00000000 00000111 11000000 00000000 (5)
+    rec->hazards =    (in >> 19) & 0x01; // 00000000 00001000 00000000 00000000 (1)
+    rec->round_type = (in >> 20) & 0x03; // 00000000 00110000 00000000 00000000 (2)
+    rec->unknown_l =  (in >> 22) & 0x03; // 00000000 11000000 00000000 00000000 (2)
+    rec->hyper_mode = (in >> 24) & 0x01; // 00000001 00000000 00000000 00000000 (1)
     rec->unknown_m = sd_read_byte(r);
-
-    // Parse values from the bitmap block
-    // \todo Find out what these are, and read&write the velus correctly. This is a temporary hack.
-    int m = 0;
-    rec->m_vals[m++] = (rec->unknown_l >> 0 ) & 0x03; // 00000000 00000000 00000000 00000011
-    rec->m_vals[m++] = (rec->unknown_l >> 2 ) & 0x01; // 00000000 00000000 00000000 00000100
-    rec->m_vals[m++] = (rec->unknown_l >> 3 ) & 0x01; // 00000000 00000000 00000000 00001000
-    rec->m_vals[m++] = (rec->unknown_l >> 4 ) & 0x1F; // 00000000 00000000 00000001 11110000
-    rec->m_vals[m++] = (rec->unknown_l >> 9 ) & 0x1F; // 00000000 00000000 00111110 00000000
-    rec->m_vals[m++] = (rec->unknown_l >> 14) & 0x1F; // 00000000 00000111 11000000 00000000
-    rec->m_vals[m++] = (rec->unknown_l >> 19) & 0x01; // 00000000 00001000 00000000 00000000
-    rec->m_vals[m++] = (rec->unknown_l >> 20) & 0x03; // 00000000 00110000 00000000 00000000
-    rec->m_vals[m++] = (rec->unknown_l >> 22) & 0x03; // 00000000 11000000 00000000 00000000
-    rec->m_vals[m++] = (rec->unknown_l >> 24) & 0x01; // 00000001 00000000 00000000 00000000
 
     // Allocate enough space for the record blocks
     // This will be reduced later when we know the ACTUAL count
@@ -180,7 +176,18 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
     sd_write_word(w, rec->unknown_i);
     sd_write_word(w, rec->unknown_j);
     sd_write_word(w, rec->unknown_k);
-    sd_write_udword(w, rec->unknown_l);
+    uint32_t out = 0;
+    out |= (rec->knock_down & 0x3) << 0;
+    out |= (rec->rehit_mode & 0x1) << 2;
+    out |= (rec->def_throws & 0x1) << 3;
+    out |= (rec->arena_id & 0x1F) << 4;
+    out |= (rec->power[0] & 0x1F) << 9;
+    out |= (rec->power[1] & 0x1F) << 14;
+    out |= (rec->hazards & 0x1) << 19;
+    out |= (rec->round_type & 0x3) << 20;
+    out |= (rec->unknown_l & 0x3) << 22;
+    out |= (rec->hyper_mode & 0x1) << 24;
+    sd_write_udword(w, out);
     sd_write_byte(w, rec->unknown_m);
 
     // Move records

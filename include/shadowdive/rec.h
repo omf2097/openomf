@@ -73,9 +73,16 @@ typedef struct {
     int16_t unknown_i;      ///< Unknown \todo: Find out
     int16_t unknown_j;      ///< Unknown \todo: Find out
     int16_t unknown_k;      ///< Unknown \todo: Find out
-    uint32_t unknown_l;     ///< Unknown \todo: Find out
 
-    uint8_t m_vals[10];
+    uint8_t knock_down;     ///< Knock down (0 = None, 1 = Kicks, 2 = Punches, 3 = both)
+    uint8_t rehit_mode;     ///< Rehit mode (On/Off)
+    uint8_t def_throws;     ///< Def. Throws (On/Off)
+    uint8_t arena_id;       ///< Arena ID
+    uint8_t power[2];       ///< Power 1,2 (0-7?)
+    uint8_t hazards;        ///< Hazards (On/Off)
+    uint8_t round_type;     ///< Round type (0=1, 1=2/3, 2=3/5, 3=4/7)
+    uint8_t unknown_l;      ///< Currently unknown \todo Find out what this does
+    uint8_t hyper_mode;     ///< Hyper mode (On/Off)
 
     int8_t unknown_m;       ///< Unknown \todo: Find out
 
