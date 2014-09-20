@@ -34,6 +34,10 @@ void print_key(char *o, uint8_t key) {
     }
 }
 
+static const int tmp_lengths[] = {
+    2,1,1,5,5,5,1,2,2,1
+};
+
 void print_rec_root_info(sd_rec_file *rec) {
     if(rec != NULL) {
         // Print enemy data
@@ -61,6 +65,14 @@ void print_rec_root_info(sd_rec_file *rec) {
         printf("  - %c:            %d\n", tmp++, rec->unknown_k);
         printf("  - %c:            %d\n", tmp++, rec->unknown_l);
         printf("  - %c:            %d\n", tmp++, rec->unknown_m);
+        printf("\n");
+
+        printf("  - Bitmap values:\n");
+        int pos = 0;
+        for(int i = 0; i < 10; i++) {
+            printf("    * %-2d [%-2d:%-2d] = %d\n", i, pos, tmp_lengths[i], rec->m_vals[i]);
+            pos += tmp_lengths[i];
+        }
         printf("\n");
 
         printf("## Parsed data:\n");
