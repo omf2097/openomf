@@ -69,11 +69,13 @@ typedef struct {
     int16_t hit_pause;      ///< Hit pause (ticks)
     int16_t block_damage;   ///< Block damage (%)
     int16_t vitality;       ///< Vitality (%)
-    int16_t jump_height;    ///< (%)
+    int16_t jump_height;    ///< Jump height (%)
     int16_t unknown_i;      ///< Unknown \todo: Find out
     int16_t unknown_j;      ///< Unknown \todo: Find out
     int16_t unknown_k;      ///< Unknown \todo: Find out
-    int32_t unknown_l;      ///< Unknown \todo: Find out
+    uint32_t unknown_l;     ///< Unknown \todo: Find out
+
+    uint8_t m_vals[10];
 
     int8_t unknown_m;       ///< Unknown \todo: Find out
 

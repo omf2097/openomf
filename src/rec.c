@@ -65,7 +65,6 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     rec->unknown_a = sd_read_byte(r);
     rec->unknown_b = sd_read_byte(r);
     rec->unknown_c = sd_read_byte(r);
-
     rec->throw_range = sd_read_word(r);
     rec->hit_pause = sd_read_word(r);
     rec->block_damage = sd_read_word(r);
@@ -74,9 +73,22 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     rec->unknown_i = sd_read_word(r);
     rec->unknown_j = sd_read_word(r);
     rec->unknown_k = sd_read_word(r);
-    rec->unknown_l = sd_read_dword(r);
-
+    rec->unknown_l = sd_read_udword(r);
     rec->unknown_m = sd_read_byte(r);
+
+    // Parse values from the bitmap block
+    // \todo Find out what these are, and read&write the velus correctly. This is a temporary hack.
+    int m = 0;
+    rec->m_vals[m++] = (rec->unknown_l >> 0 ) & 0x03; // 00000000 00000000 00000000 00000011
+    rec->m_vals[m++] = (rec->unknown_l >> 2 ) & 0x01; // 00000000 00000000 00000000 00000100
+    rec->m_vals[m++] = (rec->unknown_l >> 3 ) & 0x01; // 00000000 00000000 00000000 00001000
+    rec->m_vals[m++] = (rec->unknown_l >> 4 ) & 0x1F; // 00000000 00000000 00000001 11110000
+    rec->m_vals[m++] = (rec->unknown_l >> 9 ) & 0x1F; // 00000000 00000000 00111110 00000000
+    rec->m_vals[m++] = (rec->unknown_l >> 14) & 0x1F; // 00000000 00000111 11000000 00000000
+    rec->m_vals[m++] = (rec->unknown_l >> 19) & 0x01; // 00000000 00001000 00000000 00000000
+    rec->m_vals[m++] = (rec->unknown_l >> 20) & 0x03; // 00000000 00110000 00000000 00000000
+    rec->m_vals[m++] = (rec->unknown_l >> 22) & 0x03; // 00000000 11000000 00000000 00000000
+    rec->m_vals[m++] = (rec->unknown_l >> 24) & 0x01; // 00000001 00000000 00000000 00000000
 
     // Allocate enough space for the record blocks
     // This will be reduced later when we know the ACTUAL count
@@ -169,7 +181,7 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
     sd_write_word(w, rec->unknown_i);
     sd_write_word(w, rec->unknown_j);
     sd_write_word(w, rec->unknown_k);
-    sd_write_dword(w, rec->unknown_l);
+    sd_write_udword(w, rec->unknown_l);
     sd_write_byte(w, rec->unknown_m);
 
     // Move records
