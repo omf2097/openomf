@@ -64,15 +64,17 @@ typedef struct {
     int8_t unknown_a;       ///< Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
     int8_t unknown_b;       ///< Unknown \todo: Find out
     int8_t unknown_c;       ///< Unknown \todo: Find out
-    int16_t unknown_d;      ///< Unknown \todo: Find out
-    int16_t unknown_e;      ///< Unknown \todo: Find out
-    int16_t unknown_f;      ///< Unknown \todo: Find out
-    int16_t unknown_g;      ///< Unknown \todo: Find out
-    int16_t unknown_h;      ///< Unknown \todo: Find out
+
+    int16_t throw_range;    ///< Throw range (%)
+    int16_t hit_pause;      ///< Hit pause (ticks)
+    int16_t block_damage;   ///< Block damage (%)
+    int16_t vitality;       ///< Vitality (%)
+    int16_t jump_height;    ///< (%)
     int16_t unknown_i;      ///< Unknown \todo: Find out
     int16_t unknown_j;      ///< Unknown \todo: Find out
     int16_t unknown_k;      ///< Unknown \todo: Find out
     int32_t unknown_l;      ///< Unknown \todo: Find out
+
     int8_t unknown_m;       ///< Unknown \todo: Find out
 
     unsigned int move_count; ///< How many REC event records

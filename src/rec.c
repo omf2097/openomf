@@ -65,15 +65,17 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     rec->unknown_a = sd_read_byte(r);
     rec->unknown_b = sd_read_byte(r);
     rec->unknown_c = sd_read_byte(r);
-    rec->unknown_d = sd_read_word(r);
-    rec->unknown_e = sd_read_word(r);
-    rec->unknown_f = sd_read_word(r);
-    rec->unknown_g = sd_read_word(r);
-    rec->unknown_h = sd_read_word(r);
+
+    rec->throw_range = sd_read_word(r);
+    rec->hit_pause = sd_read_word(r);
+    rec->block_damage = sd_read_word(r);
+    rec->vitality = sd_read_word(r);
+    rec->jump_height = sd_read_word(r);
     rec->unknown_i = sd_read_word(r);
     rec->unknown_j = sd_read_word(r);
     rec->unknown_k = sd_read_word(r);
     rec->unknown_l = sd_read_dword(r);
+
     rec->unknown_m = sd_read_byte(r);
 
     // Allocate enough space for the record blocks
@@ -159,11 +161,11 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
     sd_write_byte(w, rec->unknown_a);
     sd_write_byte(w, rec->unknown_b);
     sd_write_byte(w, rec->unknown_c);
-    sd_write_word(w, rec->unknown_d);
-    sd_write_word(w, rec->unknown_e);
-    sd_write_word(w, rec->unknown_f);
-    sd_write_word(w, rec->unknown_g);
-    sd_write_word(w, rec->unknown_h);
+    sd_write_word(w, rec->throw_range);
+    sd_write_word(w, rec->hit_pause);
+    sd_write_word(w, rec->block_damage);
+    sd_write_word(w, rec->vitality);
+    sd_write_word(w, rec->jump_height);
     sd_write_word(w, rec->unknown_i);
     sd_write_word(w, rec->unknown_j);
     sd_write_word(w, rec->unknown_k);
