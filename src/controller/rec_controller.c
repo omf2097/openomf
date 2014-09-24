@@ -68,7 +68,7 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     data->last_tick = 0;
     hashmap_create(&data->tick_lookup, 9);
     for(unsigned int i = 0; i < rec->move_count; i++) {
-        if (rec->moves[i].player_id == player && rec->moves[i].extra == 2) {
+        if (rec->moves[i].player_id == player && rec->moves[i].lookup_id == 2) {
             hashmap_iput(&data->tick_lookup, rec->moves[i].tick, &rec->moves[i], sizeof(sd_rec_move));
         }
     }
