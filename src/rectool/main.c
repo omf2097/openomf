@@ -369,9 +369,13 @@ int main(int argc, char* argv[]) {
         printf("  - Palette:\n");
         print_bytes((char*)rec.pilots[i].pal.data, 144, 16, 4);
         printf("\n");
-        printf("  - Unknown:\n");
-        print_bytes((char*)rec.pilots[i].unknown_c, 20, 20, 4);
-        printf("\n");
+        printf("  - Quotes:\n");
+        for(int m = 0; m < 10; m++) {
+            char *quote = rec.pilots[i].quotes[m];
+            if(quote != NULL && strlen(quote) > 0) {
+                printf("    * %s\n", quote);
+            }
+        }
 
         if(rec.pilots[i].has_photo) {
             printf("  - Photo len  = %d\n", rec.pilots[i].photo.len);
