@@ -144,13 +144,6 @@ int main(int argc, char *argv[]) {
             goto exit_1;
         }
         print_pilot_info(trn.enemies[pilot_id]);
-        for(int k = 0; k < MAX_TRN_LOCALES; k++) {
-            if(trn.quotes[pilot_id][k] == NULL)
-                continue;
-            printf("  - %s quote: %s\n",
-                language_names[k],
-                trn.quotes[pilot_id][k]);
-        }
         printf("\n");
     } else if(info->count > 0) {
         print_info(&trn);

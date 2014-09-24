@@ -195,5 +195,13 @@ void print_pilot_info(sd_pilot *pilot) {
 
         printf("  - Unknown i        %d\n", pilot->unk_block_i);
         printf("  - Photo ID         %d\n", pilot->photo_id);
+
+        printf("  - Quotes:\n");
+        for(int m = 0; m < 10; m++) {
+            char *quote = pilot->quotes[m];
+            if(quote != NULL) {
+                printf("    * %s\n", quote);
+            }
+        }
     }
 }
