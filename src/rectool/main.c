@@ -95,23 +95,24 @@ void print_rec_root_info(sd_rec_file *rec) {
         printf("\n");
 
         printf("## Parsed data:\n");
-        printf("Number Tick       Extra Player Action        Action enum  Extra data\n");
+        printf("Number Tick       Extra Player Action Length            Action enum Extra data\n");
         for(int i = 0; i < rec->move_count; i++) {
             char tmp[100];
             tmp[0] = 0;
-            if(rec->moves[i].extra < 3) {
+            if(rec->moves[i].lookup_id < 3) {
                 print_key(tmp, rec->moves[i].action);
             }
-            printf("%6u %10u %5u %6u %6u %18s",
+            printf("%6u %10u %5u %6u %6u %6u %22s",
                 i,
                 rec->moves[i].tick,
-                rec->moves[i].extra,
+                rec->moves[i].lookup_id,
                 rec->moves[i].player_id,
                 rec->moves[i].raw_action,
+                sd_rec_extra_len(rec->moves[i].lookup_id),
                 tmp);
 
-            if(rec->moves[i].extra > 2) {
-                print_bytes(rec->moves[i].extra_data, 7, 8, 2);
+            if(rec->moves[i].lookup_id > 2) {
+                print_bytes(rec->moves[i].extra_data, sd_rec_extra_len(rec->moves[i].lookup_id), 8, 2);
             }
             printf("\n");
         }
@@ -120,7 +121,7 @@ void print_rec_root_info(sd_rec_file *rec) {
 
 int rec_entry_key_get_id(const char* key) {
     if(strcmp(key, "tick") == 0) return 0;
-    if(strcmp(key, "extra") == 0) return 1;
+    if(strcmp(key, "lookup_id") == 0) return 1;
     if(strcmp(key, "player_id") == 0) return 2;
     if(strcmp(key, "action") == 0) return 3;
     if(strcmp(key, "extra_data") == 0) return 4;
@@ -134,7 +135,7 @@ void rec_entry_set_key(sd_rec_file *rec, int entry_id, const char *key, const ch
             rec->moves[entry_id].tick = atoi(value);
             break;
         case 1:
-            rec->moves[entry_id].extra = atoi(value);
+            rec->moves[entry_id].lookup_id = atoi(value);
             break;
         case 2:
             rec->moves[entry_id].player_id = atoi(value);
@@ -170,7 +171,7 @@ void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char* key) {
             printf("%d", rec->moves[entry_id].tick);
             break;
         case 1:
-            printf("%d", rec->moves[entry_id].extra);
+            printf("%d", rec->moves[entry_id].lookup_id);
             break;
         case 2:
             printf("%d", rec->moves[entry_id].player_id);
@@ -231,11 +232,11 @@ void rec_get_key(sd_rec_file *rec, const char **key, int kcount) {
                 }
                 char tmp[100];
                 tmp[0] = 0;
-                if(rec->moves[r].extra < 3) {
+                if(rec->moves[r].lookup_id < 3) {
                     print_key(tmp, rec->moves[r].action);
                 }
                 printf("Tick:       %d\n", rec->moves[r].tick);
-                printf("Extra:      %d\n", rec->moves[r].extra);
+                printf("Extra:      %d\n", rec->moves[r].lookup_id);
                 printf("Player ID:  %d\n", rec->moves[r].player_id);
                 printf("Action:     %s\n", tmp);
                 printf("Extra data: ");
