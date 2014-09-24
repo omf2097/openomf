@@ -17,7 +17,7 @@ int sd_sprite_create(sd_sprite *sprite) {
 int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
     if(dst == NULL || src == NULL) {
         return SD_INVALID_INPUT;
-    } 
+    }
 
     // Clear destination
     memset(dst, 0, sizeof(sd_sprite));
@@ -187,7 +187,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_pal
     }
 
     // End of sprite marker, a WORD of value 7
-    buf[i++] = 7; 
+    buf[i++] = 7;
     buf[i++] = 0;
 
     // Copy data
@@ -424,7 +424,7 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     }
 
     // End of sprite marker, a WORD of value 7
-    buf[i++] = 7; 
+    buf[i++] = 7;
     buf[i++] = 0;
 
     // Copy data

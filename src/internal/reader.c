@@ -178,3 +178,13 @@ int sd_read_line(sd_reader *reader, char *buffer, int maxlen) {
     }
     return 0;
 }
+
+char* sd_read_variable_str(sd_reader *r) {
+    uint16_t len = sd_read_uword(r);
+    char *str = NULL;
+    if(len > 0) {
+        str = (char*)malloc(len);
+        sd_read_buf(r, str, len);
+    }
+    return str;
+}

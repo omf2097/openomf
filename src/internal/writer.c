@@ -96,3 +96,13 @@ void sd_write_fill(sd_writer *writer, char content, int len) {
         left -= now;
     }
 }
+
+void sd_write_variable_str(sd_writer *w, const char *str) {
+    if(str == NULL) {
+        sd_write_uword(w, 0);
+        return;
+    }
+    uint16_t len = strlen(str) + 1;
+    sd_write_uword(w, len);
+    sd_write_buf(w, str, len);
+}

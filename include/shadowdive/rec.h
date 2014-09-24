@@ -45,8 +45,8 @@ typedef struct {
     sd_pilot info;       ///< Pilot information
     uint8_t unknown_a;   ///< Unknown value \todo: Find this out
     uint16_t unknown_b;  ///< Unknown value \todo: Find this out
-    sd_palette pal;      ///< Palette for this pilot (?) \todo: Find out
-    char unknown_c[20];  ///< Unknown values. \todo Find out what this is
+    sd_palette pal;      ///< Palette for this pilot photo
+    char *quotes[10];    ///< Pilot quotes for each supported language
     uint8_t has_photo;   ///< Tells if the pilot has a photo sprite
     sd_sprite photo;     ///< Photo sprite
 } sd_rec_pilot;

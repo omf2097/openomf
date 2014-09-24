@@ -45,4 +45,6 @@ int sd_match(sd_reader *reader, char *buf, unsigned int nbytes);
   */
 void sd_skip(sd_reader *reader, unsigned int nbytes);
 
+char* sd_read_variable_str(sd_reader *r);
+
 #endif // _SD_READER_H

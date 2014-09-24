@@ -44,4 +44,6 @@ void sd_write_float(sd_writer *writer, float data);
  */
 void sd_write_fill(sd_writer *writer, char content, int len);
 
+void sd_write_variable_str(sd_writer *w, const char *str);
+
 #endif // _SD_WRITER_H

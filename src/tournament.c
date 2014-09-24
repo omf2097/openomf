@@ -53,27 +53,6 @@ static void free_locales(sd_tournament_file *trn) {
     }
 }
 
-char *read_variable_str(sd_reader *r) {
-    uint16_t len = sd_read_uword(r);
-    char *str = NULL;
-    if(len > 0) {
-        str = (char*)malloc(len);
-        sd_read_buf(r, str, len);
-        assert(str[len-1] == 0);
-    }
-    return str;
-}
-
-void write_variable_str(sd_writer *w, const char *str) {
-    if(str == NULL) {
-        sd_write_uword(w, 0);
-        return;
-    }
-    uint16_t len = strlen(str) + 1;
-    sd_write_uword(w, len);
-    sd_write_buf(w, str, len);
-}
-
 int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     if(trn == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
@@ -123,7 +102,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
         // Read quotes
         for(int m = 0; m < MAX_TRN_LOCALES; m++) {
-            trn->quotes[i][m] = read_variable_str(r);
+            trn->quotes[i][m] = sd_read_variable_str(r);
         }
 
         // Check for errors
@@ -163,12 +142,12 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     sd_palette_load_range(r, &trn->pal, 128, 40);
 
     // Read pic filename
-    trn->pic_file = read_variable_str(r);
+    trn->pic_file = sd_read_variable_str(r);
 
     // Read tournament descriptions
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        trn->locales[i]->title = read_variable_str(r);
-        trn->locales[i]->description = read_variable_str(r);
+        trn->locales[i]->title = sd_read_variable_str(r);
+        trn->locales[i]->description = sd_read_variable_str(r);
     }
 
     // Make sure we are in correct position
@@ -180,7 +159,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         for(int har = 0; har < 11; har++) {
             for(int page = 0; page < 10; page++) {
-                trn->locales[i]->end_texts[har][page] = read_variable_str(r);
+                trn->locales[i]->end_texts[har][page] = sd_read_variable_str(r);
             }
         }
     }
@@ -239,7 +218,7 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
 
         // write strings
         for(int k = 0; k < MAX_TRN_LOCALES; k++) {
-            write_variable_str(w, trn->quotes[i][k]);
+            sd_write_variable_str(w, trn->quotes[i][k]);
         }
 
         // Update catalog
@@ -258,12 +237,12 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     sd_palette_save_range(w, &trn->pal, 128, 40);
 
     // Pic filename
-    write_variable_str(w, trn->pic_file);
+    sd_write_variable_str(w, trn->pic_file);
 
     // Write tournament descriptions
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        write_variable_str(w, trn->locales[i]->title);
-        write_variable_str(w, trn->locales[i]->description);
+        sd_write_variable_str(w, trn->locales[i]->title);
+        sd_write_variable_str(w, trn->locales[i]->description);
     }
 
     // Let's write our current offset to the victory text offset position
@@ -276,7 +255,7 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         for(int har = 0; har < 11; har++) {
             for(int page = 0; page < 10; page++) {
-                write_variable_str(w, trn->locales[i]->end_texts[har][page]);
+                sd_write_variable_str(w, trn->locales[i]->end_texts[har][page]);
             }
         }
     }
