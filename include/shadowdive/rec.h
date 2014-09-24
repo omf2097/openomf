@@ -25,15 +25,14 @@ extern "C" {
  *
  * AA record of a single action during the match.
  * Essentially a record of keys pressed at a given tick.
- * \todo Find out what the extra_data does.
  */
 typedef struct {
-    uint32_t tick; ///< Game tick at the moment of this event
-    uint8_t extra; ///< Extra content flag. If this is >2, then extra_data will contain valid content.
-    uint8_t player_id; ///< Player ID. 0 or 1.
-    sd_action action; ///< Player actions at this tick. A Combination of sd_rec_action enums.
+    uint32_t tick;      ///< Game tick at the moment of this event
+    uint8_t lookup_id;  ///< Extra content id. Valid values 2,3,5,6,10,18.
+    uint8_t player_id;  ///< Player ID. 0 or 1.
+    sd_action action;   ///< Player actions at this tick. A Combination of sd_rec_action enums.
     uint8_t raw_action; ///< Raw action data from the file.
-    char extra_data[7]; ///< Extra data. Only valid if extra field > 2.
+    char *extra_data;   ///< Extra data. Check length using sd_rec_extra_len(). NULL if does not exist.
 } sd_rec_move;
 
 /*! \brief REC pilot container
@@ -150,6 +149,8 @@ int sd_rec_save(sd_rec_file *rec, const char *filename);
  * \param number Record number
  */
 int sd_rec_delete_action(sd_rec_file *rec, unsigned int number);
+
+int sd_rec_extra_len(int key);
 
 /*! \brief Inserts a REC event record
  *

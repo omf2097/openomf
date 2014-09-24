@@ -6,6 +6,21 @@
 #include "shadowdive/error.h"
 #include "shadowdive/rec.h"
 
+int sd_rec_extra_len(int key) {
+    switch(key) {
+        case 2:
+        case 3:
+        case 5:
+            return 1;
+        case 6:
+            return 60;
+        case 10:
+        case 18:
+            return 8;
+    }
+    return 0;
+}
+
 int sd_rec_create(sd_rec_file *rec) {
     if(rec == NULL) {
         return SD_INVALID_INPUT;
@@ -21,6 +36,9 @@ void sd_rec_free(sd_rec_file *rec) {
     sd_pilot_free(&rec->pilots[0].info);
     sd_pilot_free(&rec->pilots[1].info);
     if(rec->moves) {
+        for(int i = 0; i < rec->move_count; i++) {
+            free(rec->moves[i].extra_data);
+        }
         free(rec->moves);
     }
 }
@@ -94,31 +112,39 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     // Read blocks
     for(int i = 0; i < rec->move_count; i++) {
         rec->moves[i].tick = sd_read_udword(r);
-        rec->moves[i].extra = sd_read_ubyte(r);
+        rec->moves[i].lookup_id = sd_read_ubyte(r);
         rec->moves[i].player_id = sd_read_ubyte(r);
-        uint8_t action = sd_read_ubyte(r);
-        rec->moves[i].raw_action = action;
+        int extra_length = sd_rec_extra_len(rec->moves[i].lookup_id);
+        if(extra_length > 0) {
+            uint8_t action = sd_read_ubyte(r);
+            rec->moves[i].raw_action = action;
 
-        rec->moves[i].action = SD_ACT_NONE;
-        if(action & 1) {
-            rec->moves[i].action |= SD_ACT_PUNCH;
-        }
-        if(action & 2) {
-            rec->moves[i].action |= SD_ACT_KICK;
-        }
-        switch(action & 0xF0) {
-            case 16: rec->moves[i].action |= SD_ACT_UP; break;
-            case 32: rec->moves[i].action |= (SD_ACT_UP|SD_ACT_RIGHT); break;
-            case 48: rec->moves[i].action |= SD_ACT_RIGHT; break;
-            case 64: rec->moves[i].action |= (SD_ACT_DOWN|SD_ACT_RIGHT); break;
-            case 80: rec->moves[i].action |= SD_ACT_DOWN; break;
-            case 96: rec->moves[i].action |= (SD_ACT_DOWN|SD_ACT_LEFT); break;
-            case 112: rec->moves[i].action |= SD_ACT_LEFT; break;
-            case 128: rec->moves[i].action |= (SD_ACT_UP|SD_ACT_LEFT); break;
-        }
-        if(rec->moves[i].extra > 2) {
-            sd_read_buf(r, rec->moves[i].extra_data, 7);
-            rec->move_count--;
+            // Parse real action key
+            rec->moves[i].action = SD_ACT_NONE;
+            if(action & 1) {
+                rec->moves[i].action |= SD_ACT_PUNCH;
+            }
+            if(action & 2) {
+                rec->moves[i].action |= SD_ACT_KICK;
+            }
+            switch(action & 0xF0) {
+                case 16: rec->moves[i].action |= SD_ACT_UP; break;
+                case 32: rec->moves[i].action |= (SD_ACT_UP|SD_ACT_RIGHT); break;
+                case 48: rec->moves[i].action |= SD_ACT_RIGHT; break;
+                case 64: rec->moves[i].action |= (SD_ACT_DOWN|SD_ACT_RIGHT); break;
+                case 80: rec->moves[i].action |= SD_ACT_DOWN; break;
+                case 96: rec->moves[i].action |= (SD_ACT_DOWN|SD_ACT_LEFT); break;
+                case 112: rec->moves[i].action |= SD_ACT_LEFT; break;
+                case 128: rec->moves[i].action |= (SD_ACT_UP|SD_ACT_LEFT); break;
+            }
+
+            // We already read the action key, so minus one.
+            int unknown_len = extra_length - 1;
+            if(unknown_len > 0) {
+                rec->moves[i].extra_data = malloc(unknown_len);
+                sd_read_buf(r, rec->moves[i].extra_data, unknown_len);
+                rec->move_count--;
+            }
         }
     }
 
@@ -191,30 +217,35 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
     // Move records
     for(int i = 0; i < rec->move_count; i++) {
         sd_write_udword(w, rec->moves[i].tick);
-        sd_write_ubyte(w, rec->moves[i].extra);
+        sd_write_ubyte(w, rec->moves[i].lookup_id);
         sd_write_ubyte(w, rec->moves[i].player_id);
-        if(rec->moves[i].extra > 2) {
-            sd_write_ubyte(w, rec->moves[i].raw_action);
-            sd_write_buf(w, rec->moves[i].extra_data, 7);
-            continue;
-        }
 
-        uint8_t raw_action = 0;
-        switch(rec->moves[i].action & SD_MOVE_MASK) {
-            case (SD_ACT_UP): raw_action = 16; break;
-            case (SD_ACT_UP|SD_ACT_RIGHT): raw_action = 32; break;
-            case (SD_ACT_RIGHT): raw_action = 48; break;
-            case (SD_ACT_DOWN|SD_ACT_RIGHT): raw_action = 64; break;
-            case (SD_ACT_DOWN): raw_action = 80; break;
-            case (SD_ACT_DOWN|SD_ACT_LEFT): raw_action = 96; break;
-            case (SD_ACT_LEFT): raw_action = 112; break;
-            case (SD_ACT_UP|SD_ACT_LEFT): raw_action = 128; break;
+        int extra_length = sd_rec_extra_len(rec->moves[i].lookup_id);
+        if(extra_length > 0) {
+            // Write action information
+            uint8_t raw_action = 0;
+            switch(rec->moves[i].action & SD_MOVE_MASK) {
+                case (SD_ACT_UP): raw_action = 16; break;
+                case (SD_ACT_UP|SD_ACT_RIGHT): raw_action = 32; break;
+                case (SD_ACT_RIGHT): raw_action = 48; break;
+                case (SD_ACT_DOWN|SD_ACT_RIGHT): raw_action = 64; break;
+                case (SD_ACT_DOWN): raw_action = 80; break;
+                case (SD_ACT_DOWN|SD_ACT_LEFT): raw_action = 96; break;
+                case (SD_ACT_LEFT): raw_action = 112; break;
+                case (SD_ACT_UP|SD_ACT_LEFT): raw_action = 128; break;
+            }
+            if(rec->moves[i].action & SD_ACT_PUNCH)
+                raw_action |= 1;
+            if(rec->moves[i].action & SD_ACT_KICK)
+                raw_action |= 2;
+            sd_write_ubyte(w, raw_action);
+
+            // If there is more extra data, write it
+            int unknown_len = extra_length - 1;
+            if(unknown_len > 0) {
+                sd_write_buf(w, rec->moves[i].extra_data, unknown_len);
+            }
         }
-        if(rec->moves[i].action & SD_ACT_PUNCH)
-            raw_action |= 1;
-        if(rec->moves[i].action & SD_ACT_KICK)
-            raw_action |= 2;
-        sd_write_ubyte(w, raw_action);
    }
 
     sd_writer_close(w);
