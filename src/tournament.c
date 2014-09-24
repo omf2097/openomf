@@ -23,12 +23,6 @@ static void free_enemies(sd_tournament_file *trn) {
             free(trn->enemies[i]);
             trn->enemies[i] = NULL;
         }
-        for(int k = 0; k < MAX_TRN_LOCALES; k++) {
-            if(trn->quotes[i][k]) {
-                free(trn->quotes[i][k]);
-                trn->quotes[i][k] = NULL;
-            }
-        }
     }
 }
 
@@ -99,11 +93,6 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         // Read enemy pilot information
         sd_pilot_create(trn->enemies[i]);
         sd_pilot_load(r, trn->enemies[i]);
-
-        // Read quotes
-        for(int m = 0; m < MAX_TRN_LOCALES; m++) {
-            trn->quotes[i][m] = sd_read_variable_str(r);
-        }
 
         // Check for errors
         if(!sd_reader_ok(r)) {
@@ -215,11 +204,6 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     for(int i = 0; i < trn->enemy_count; i++) {
         // Save pilot
         sd_pilot_save(w, trn->enemies[i]);
-
-        // write strings
-        for(int k = 0; k < MAX_TRN_LOCALES; k++) {
-            sd_write_variable_str(w, trn->quotes[i][k]);
-        }
 
         // Update catalog
         uint32_t c_pos = sd_writer_pos(w);

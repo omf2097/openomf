@@ -65,7 +65,6 @@ typedef struct {
 
     sd_pilot *enemies[MAX_TRN_ENEMIES]; ///< List of enemy pilots
     sd_tournament_locale *locales[MAX_TRN_LOCALES]; ///< List of locales. If locale does not exist, it is NULL.
-    char *quotes[MAX_TRN_ENEMIES][MAX_TRN_LOCALES]; ///< Quotes for the pilots. If quote does not exist, it is NULL.
 
     sd_palette pal; ///< Tournament palette
 } sd_tournament_file;

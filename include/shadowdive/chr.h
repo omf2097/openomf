@@ -36,7 +36,6 @@ typedef struct {
  */
 typedef struct {
     sd_pilot pilot;      ///< Pilot data
-    char unknown[20];    ///< Umknown data.
     sd_palette pal;      ///< Pilot palette
     uint32_t unknown_b;  ///< Unkown value. Maybe tells if there is photo data ?
     sd_sprite *photo;    ///< Pilot photo

@@ -23,11 +23,6 @@ void sd_rec_free(sd_rec_file *rec) {
     if(rec->moves) {
         free(rec->moves);
     }
-    for(int m = 0; m < 10; m++) {
-        for(int i = 0; i < 2; i++) {
-            free(rec->pilots[i].quotes[m]);
-        }
-    }
 }
 
 int sd_rec_load(sd_rec_file *rec, const char *file) {
@@ -50,9 +45,6 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         // Read pilot data
         sd_pilot_create(&rec->pilots[i].info);
         sd_pilot_load(r, &rec->pilots[i].info);
-        for(int m = 0; m < 10; m++) {
-            rec->pilots[i].quotes[m] = sd_read_variable_str(r);
-        }
         rec->pilots[i].unknown_a = sd_read_ubyte(r);
         rec->pilots[i].unknown_b = sd_read_uword(r);
         sd_palette_create(&rec->pilots[i].pal);
@@ -157,9 +149,6 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
     // Write pilots, palettes, etc.
     for(int i = 0; i < 2; i++) {
         sd_pilot_save(w, &rec->pilots[i].info);
-        for(int m = 0; m < 10; m++) {
-            sd_write_variable_str(w, rec->pilots[i].quotes[m]);
-        }
         sd_write_ubyte(w, rec->pilots[i].unknown_a);
         sd_write_uword(w, rec->pilots[i].unknown_b);
         sd_palette_save_range(w, &rec->pilots[i].pal, 0, 48);

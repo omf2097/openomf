@@ -33,7 +33,6 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     sd_mreader_xor(mr, 0xAC);
     sd_pilot_create(&chr->pilot);
     sd_pilot_load_from_mem(mr, &chr->pilot);
-    sd_mread_buf(mr, chr->unknown, 20);
     sd_mreader_close(mr);
 
     // Read enemies block
@@ -56,7 +55,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     sd_palette_create(&chr->pal);
     sd_palette_load_range(r, &chr->pal, 0, 48);
 
-    // No idea what this is. 
+    // No idea what this is.
     // TODO: Find out.
     chr->unknown_b = sd_read_udword(r);
 
@@ -101,7 +100,6 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
     // Save pilot and unknown
     sd_mwriter *mw = sd_mwriter_open();
     sd_pilot_save_to_mem(mw, &chr->pilot);
-    sd_mwrite_buf(mw, chr->unknown, 20);
     sd_mwriter_xor(mw, 0xAC);
     sd_mwriter_save(mw, w);
     sd_mwriter_close(mw);

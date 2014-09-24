@@ -109,6 +109,8 @@ typedef struct {
     sd_palette palette;      ///< Palette for photo ?
     uint16_t unk_block_i;    ///< Unknown
     uint16_t photo_id;       ///< Which face photo this pilot uses
+
+    char *quotes[10];        ///< Pilot quotes for each supported language
 } sd_pilot;
 
 /*! \brief Initialize pilot struct

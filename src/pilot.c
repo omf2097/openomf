@@ -14,7 +14,11 @@ int sd_pilot_create(sd_pilot *pilot) {
     return SD_SUCCESS;
 }
 
-void sd_pilot_free(sd_pilot *pilot) {}
+void sd_pilot_free(sd_pilot *pilot) {
+    for(int m = 0; m < 10; m++) {
+        free(pilot->quotes[m]);
+    }
+}
 
 // Reads exactly 24 + 8 + 11 = 43 bytes
 void sd_pilot_load_player_from_mem(sd_mreader *mr, sd_pilot *pilot) {
@@ -140,6 +144,11 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     sd_mreader_xor(mr, PILOT_BLOCK_LENGTH & 0xFF);
     sd_pilot_load_from_mem(mr, pilot);
     sd_mreader_close(mr);
+
+    // Quote block
+    for(int m = 0; m < 10; m++) {
+        pilot->quotes[m] = sd_read_variable_str(reader);
+    }
     return SD_SUCCESS;
 }
 
@@ -274,5 +283,10 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
     sd_mwriter_xor(w, PILOT_BLOCK_LENGTH & 0xFF);
     sd_mwriter_save(w, fw);
     sd_mwriter_close(w);
+
+    // Quote block
+    for(int m = 0; m < 10; m++) {
+        sd_write_variable_str(fw, pilot->quotes[m]);
+    }
     return SD_SUCCESS;
 }
