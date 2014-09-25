@@ -1,6 +1,7 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <shadowdive/shadowdive.h>
 
 sd_rec_file rec;
@@ -17,13 +18,12 @@ void test_sd_rec_create(void) {
     CU_ASSERT(sd_rec_create(NULL) == SD_INVALID_INPUT);
 
     // Set some values
-    fill((char*)&rec.pilots[0], sizeof(rec.pilots[0]));
-    fill((char*)&rec.pilots[1], sizeof(rec.pilots[1]));
     for(int i = 0; i < 10; i++) {
         sd_rec_move mv;
         fill((char*)&mv, sizeof(sd_rec_move));
-        mv.extra = (i % 5 == 0) ? 18 : 2;
+        mv.lookup_id = 2;
         mv.action = SD_ACT_KICK|SD_ACT_PUNCH|SD_ACT_LEFT|SD_ACT_DOWN;
+        mv.extra_data = NULL;
         sd_rec_insert_action(&rec, i, &mv);
     }
 }
@@ -44,10 +44,10 @@ void test_rec_roundtrip(void) {
     CU_ASSERT(rec.move_count == loaded.move_count);
     for(int i = 0; i < rec.move_count; i++) {
         CU_ASSERT(rec.moves[i].tick == loaded.moves[i].tick);
-        CU_ASSERT(rec.moves[i].extra == loaded.moves[i].extra);
+        CU_ASSERT(rec.moves[i].lookup_id == loaded.moves[i].lookup_id);
         CU_ASSERT(rec.moves[i].player_id == loaded.moves[i].player_id);
 
-        if(rec.moves[i].extra > 2) {
+        if(rec.moves[i].lookup_id > 2) {
             CU_ASSERT(rec.moves[i].raw_action == loaded.moves[i].raw_action);
             CU_ASSERT_NSTRING_EQUAL(
                 rec.moves[i].extra_data,
