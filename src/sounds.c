@@ -40,10 +40,11 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
         data_block_offsets[i] = sd_read_udword(r);
     }
     data_block_offsets[data_block_count] = sd_reader_filesize(r);
+    (void)(data_block_offsets);
 
     // Read blocks
     for(int i = 0; i <= data_block_count; i++) {
-        sd_reader_set(r, data_block_offsets[i]);
+        //sd_reader_set(r, data_block_offsets[i-1]);
         sf->sounds[i].len = sd_read_uword(r);
         if(sf->sounds[i].len > 0) {
             sf->sounds[i].unknown = sd_read_ubyte(r);
