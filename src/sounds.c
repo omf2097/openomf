@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
@@ -42,9 +43,13 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
 
     // Read blocks
     for(int i = 0; i <= data_block_count; i++) {
-        sf->sounds[i].len = data_block_offsets[i] - sd_reader_pos(r);
-        sf->sounds[i].data = malloc(sf->sounds[i].len);
-        sd_read_buf(r, sf->sounds[i].data, sf->sounds[i].len);
+        sd_reader_set(r, data_block_offsets[i]);
+        sf->sounds[i].len = sd_read_uword(r);
+        if(sf->sounds[i].len > 0) {
+            sf->sounds[i].unknown = sd_read_ubyte(r);
+            sf->sounds[i].data = malloc(sf->sounds[i].len);
+            sd_read_buf(r, sf->sounds[i].data, sf->sounds[i].len);
+        }
     }
 
     sd_reader_close(r);
@@ -74,7 +79,11 @@ int sd_sounds_save(const sd_sound_file *sf, const char* filename) {
 
     // Second pass -- Write sounds
     for(int i = 0; i < SD_SOUNDS_MAX; i++) {
-        sd_write_buf(w, sf->sounds[i].data, sf->sounds[i].len);
+        sd_write_uword(w, sf->sounds[i].len);
+        if(sf->sounds[i].len > 0) {
+            sd_write_ubyte(w, sf->sounds[i].unknown);
+            sd_write_buf(w, sf->sounds[i].data, sf->sounds[i].len);
+        }
     }
 
     sd_writer_close(w);

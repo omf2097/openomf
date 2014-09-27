@@ -24,8 +24,9 @@ extern "C" {
  * - Mono
  */
 typedef struct {
-    unsigned int len; ///< Sound length in bytes
-    char *data;       ///< Sound data
+    uint16_t len; ///< Sound length in bytes
+    char *data;   ///< Sound data
+    uint8_t unknown;
 } sd_sound;
 
 /*! \brief Sounds list
