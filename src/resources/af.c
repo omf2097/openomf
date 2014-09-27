@@ -18,6 +18,9 @@ void af_create(af *a, void *src) {
     memcpy(a->sound_translation_table, sdaf->soundtable, 30);
 
     // Set defaults like master.dat
+    // TODO: These may change according to pilot and HAR... Find out how.
+    a->sound_translation_table[25] = 0;
+    a->sound_translation_table[26] = 0;
     a->sound_translation_table[27] = 0;
 
     // Moves
