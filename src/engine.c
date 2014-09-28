@@ -109,6 +109,7 @@ void engine_run(engine_init_flags *init_flags) {
     SDL_Event e;
     int visual_debugger = 0;
     int debugger_proceed = 0;
+    int debugger_render = 0;
 
     //if mouse_visible_ticks <= 0, hide mouse
     int mouse_visible_ticks = 1000;
@@ -173,6 +174,9 @@ void engine_run(engine_init_flags *init_flags) {
                     }
                     if(e.key.keysym.sym == SDLK_SPACE) {
                         debugger_proceed = 1;
+                    }
+                    if(e.key.keysym.sym == SDLK_F6) {
+                        debugger_render = !debugger_render;
                     }
                     break;
                 case SDL_MOUSEMOTION:
@@ -287,6 +291,9 @@ void engine_run(engine_init_flags *init_flags) {
 
             video_render_prepare();
             game_state_render(gs);
+            if(debugger_render) {
+                game_state_debug(gs);
+            }
             console_render();
             video_render_finish();
 

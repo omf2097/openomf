@@ -382,17 +382,20 @@ void game_state_render(game_state *gs) {
         }
     }
 
+    // Render scene overlay (menus, etc.)
+    scene_render_overlay(gs->sc);
+}
+
+void game_state_debug(game_state *gs) {
     // If we are in debug mode, handle HAR debug layers
 #ifdef DEBUGMODE
     for(int i = 0; i < 2; i++) {
-        if(har[i] != NULL) {
-            object_debug(har[i]);
+        object *h = game_state_get_player(gs, i)->har;
+        if(h != NULL) {
+            object_debug(h);
         }
     }
 #endif
-
-    // Render scene overlay (menus, etc.)
-    scene_render_overlay(gs->sc);
 }
 
 int game_load_new(game_state *gs, int scene_id) {
@@ -596,7 +599,7 @@ void game_state_call_tick(game_state *gs, int mode) {
         }
     }
 
-    // Speed back up    
+    // Speed back up
     if(gs->speed_slowdown_time == 0) {
         DEBUG("Slowdown: Speed back up from %d to %d.", gs->speed, gs->speed_slowdown_previous);
         gs->speed = gs->speed_slowdown_previous;
