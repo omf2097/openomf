@@ -294,26 +294,25 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
 void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount, int pcount) {
     int kn = move_key_get_id(key[0]);
     switch(kn) {
-        case 30: printf("%d\n", move->unknown_0);
-        case 31: printf("%d\n", move->unknown_2);
-        case 33: printf("%d\n", move->unknown_4);
-        case 34: printf("%d\n", move->unknown_5);
-        case 35: printf("%d\n", move->unknown_6);
-        case 36: printf("%d\n", move->unknown_7);
-        case 37: printf("%d\n", move->unknown_8);
-        case 38: printf("%d\n", move->unknown_9);
-        case 39: printf("%d\n", move->unknown_10);
-        case 40: printf("%d\n", move->unknown_11);
-        case 41: printf("%d\n", move->next_anim_id);
-        case 42: printf("%d\n", move->category);
-        case 43: printf("%d\n", move->unknown_14);
-        case 44: printf("%d\n", move->scrap_amount);
-        case 45: printf("%d\n", move->successor_id);
-        case 46: printf("%d\n", move->damage_amount);
-        case 47: printf("%d\n", move->unknown_18);
-        case 48: printf("%d\n", move->unknown_19);
-        case 49: printf("%d\n", move->points);
-
+        case 30: printf("%d\n", move->unknown_0); break;
+        case 31: printf("%d\n", move->unknown_2); break;
+        case 33: printf("%d\n", move->unknown_4); break;
+        case 34: printf("%d\n", move->unknown_5); break;
+        case 35: printf("%d\n", move->unknown_6); break;
+        case 36: printf("%d\n", move->unknown_7); break;
+        case 37: printf("%d\n", move->unknown_8); break;
+        case 38: printf("%d\n", move->unknown_9); break;
+        case 39: printf("%d\n", move->unknown_10); break;
+        case 40: printf("%d\n", move->unknown_11); break;
+        case 41: printf("%d\n", move->next_anim_id); break;
+        case 42: printf("%d\n", move->category); break;
+        case 43: printf("%d\n", move->unknown_14); break;
+        case 44: printf("%d\n", move->scrap_amount); break;
+        case 45: printf("%d\n", move->successor_id); break;
+        case 46: printf("%d\n", move->damage_amount); break;
+        case 47: printf("%d\n", move->unknown_18); break;
+        case 48: printf("%d\n", move->unknown_19); break;
+        case 49: printf("%d\n", move->points); break;
         case 15:
             printf("%s\n", move->move_string);
             break;
