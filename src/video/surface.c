@@ -29,6 +29,16 @@ void surface_create_from_image(surface *sur, image *img) {
     surface_create_from_data(sur, SURFACE_TYPE_RGBA, img->w, img->h, img->data);
 }
 
+int surface_to_image(surface *sur, image *img) {
+    if(sur->type != SURFACE_TYPE_RGBA) {
+        return -1;
+    }
+    img->w = sur->w;
+    img->h = sur->h;
+    img->data = sur->data;
+    return 0;
+}
+
 void surface_free(surface *sur) {
     free(sur->data);
     free(sur->stencil);

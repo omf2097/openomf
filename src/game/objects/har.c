@@ -21,6 +21,8 @@
 #include "utils/miscmath.h"
 #include "audio/sound.h"
 
+#include "video/video.h"
+
 #define FUDGEFACTOR 0.003f
 #define IS_ZERO(n) (n < 0.8 && n > -0.8)
 
@@ -833,6 +835,51 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             a->hard_close = 1;
         }
     }
+}
+
+void har_debug(object *obj) {
+    har *h = object_get_userdata(obj);
+    image img;
+    surface_to_image(&h->cd_debug, &img);
+
+    color c = color_create(0, 255, 0, 255);
+    color red = color_create(0, 255, 0, 255);
+    color blank = color_create(0, 0, 0, 0);
+
+    if(obj->cur_sprite == NULL) {
+        return;
+    }
+    // Make sure there are hitpoints to check.
+    if(vector_size(&obj->cur_animation->collision_coords) == 0) {
+        return;
+    }
+
+    image_clear(&img, blank);
+
+    // Some useful variables
+    vec2i pos_a = object_get_pos(obj);//, obj->cur_sprite->pos);
+    //vec2i size_a = object_get_size(obj);
+
+    int flip = 1;
+
+    if (object_get_direction(obj) == OBJECT_FACE_LEFT) {
+        //pos_a.x = object_get_pos(obj).x + ((obj->cur_sprite->pos.x * -1) - size_a.x);
+        flip = -1;
+    }
+
+    // Iterate through hitpoints
+    iterator it;
+    collision_coord *cc;
+    vector_iter_begin(&obj->cur_animation->collision_coords, &it);
+    while((cc = iter_next(&it)) != NULL) {
+        if(cc->frame_index != obj->cur_sprite->id) continue;
+        image_set_pixel(&img, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y, c);
+        DEBUG("%d drawing hit point at %d %d ->%d %d", obj->cur_sprite->id, pos_a.x, pos_a.y, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y);
+    }
+
+    image_set_pixel(&img, pos_a.x, pos_a.y, red);
+
+    video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
 }
 
 void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
@@ -2010,7 +2057,12 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_collide_cb(obj, har_collide);
     object_set_finish_cb(obj, har_finished);
     object_set_pal_transform_cb(obj, har_palette_transform);
-    //object_set_debug_cb(obj, har_debug);
+
+#ifdef DEBUGMODE
+    object_set_debug_cb(obj, har_debug);
+    surface_create(&local->cd_debug, SURFACE_TYPE_RGBA, 320, 200);
+    surface_clear(&local->cd_debug);
+#endif
 
     for (int i = 0; i < OBJECT_EVENT_BUFFER_SIZE; i++) {
         local->act_buf[i].count = 0;

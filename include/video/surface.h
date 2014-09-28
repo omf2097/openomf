@@ -27,6 +27,7 @@ enum {
 void surface_create(surface *sur, int type, int w, int h);
 void surface_create_from_image(surface *sur, image *img);
 void surface_create_from_data(surface *sur, int type, int w, int h, const char *src);
+int surface_to_image(surface *sur, image *img);
 void surface_copy(surface *dst, surface *src);
 void surface_copy_ex(surface *dst, surface *src);
 void surface_free(surface *sur);
