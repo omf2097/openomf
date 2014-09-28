@@ -892,11 +892,6 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             object_set_direction(obj_b, object_get_direction(obj_a) * -1);
         }
 
-        if (move->next_move) {
-            object_set_animation(obj_a, &af_get_move(a->af_data, move->next_move)->ani);
-            object_set_repeat(obj_a, 0);
-            return;
-        }
 
         har_event_take_hit(b, move);
         har_event_land_hit(a, move);
@@ -909,14 +904,6 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         if (hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->scrap_amount);
         }
-        a->damage_done = 1;
-        b->damage_received = 1;
-
-        if (move->category == CAT_CLOSE) {
-            // never flinch from a throw
-            b->flinching = 0;
-            a->flinching = 0;
-        }
 
         DEBUG("HAR %s to HAR %s collision at %d,%d!",
             har_get_name(a->id),
@@ -926,6 +913,24 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         DEBUG("HAR %s animation set to %s",
             har_get_name(b->id),
             str_c(&move->footer_string));
+
+        if (move->next_move) {
+            DEBUG("HAR %s going to next move %d", har_get_name(b->id), move->next_move);
+            object_set_animation(obj_a, &af_get_move(a->af_data, move->next_move)->ani);
+            object_set_repeat(obj_a, 0);
+            // bail out early, the next move can still brutalize the oppopent so don't set them immune to further damage
+            // this fixes flail's charging punch and katana's wall spin, but thorn's spike charge still works
+            return;
+        }
+
+        a->damage_done = 1;
+        b->damage_received = 1;
+
+        if (move->category == CAT_CLOSE) {
+            // never flinch from a throw
+            b->flinching = 0;
+            a->flinching = 0;
+        }
     }
 }
 
