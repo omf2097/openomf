@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "video/tcache.h"
-
 #include "game/objects/har.h"
 #include "game/objects/scrap.h"
 #include "game/objects/projectile.h"
@@ -896,7 +894,6 @@ void har_debug(object *obj) {
 
     image_set_pixel(&img, pos_a.x, pos_a.y, red);
 
-    tcache_clear();
     video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
 }
 
@@ -2080,6 +2077,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_debug_cb(obj, har_debug);
     surface_create(&local->cd_debug, SURFACE_TYPE_RGBA, 320, 200);
     surface_clear(&local->cd_debug);
+    surface_disable_cache(&local->cd_debug, 1);
 #endif
 
     for (int i = 0; i < OBJECT_EVENT_BUFFER_SIZE; i++) {
