@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "video/tcache.h"
+
 #include "game/objects/har.h"
 #include "game/objects/scrap.h"
 #include "game/objects/projectile.h"
@@ -879,11 +881,11 @@ void har_debug(object *obj) {
         found = 1;
     }
 
+    image_clear(&img, blank);
+
     if (!found) {
         return;
     }
-
-    image_clear(&img, blank);
 
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
     while((cc = iter_next(&it)) != NULL) {
@@ -894,6 +896,7 @@ void har_debug(object *obj) {
 
     image_set_pixel(&img, pos_a.x, pos_a.y, red);
 
+    tcache_clear();
     video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
 }
 
