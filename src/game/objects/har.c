@@ -455,7 +455,7 @@ void har_move(object *obj) {
             // prevent har from sliding after defeat, unless they're 'fallen'
             if(h->state != STATE_DEFEAT
                 && h->state != STATE_FALLEN
-                && h->health <= 0 
+                && h->health <= 0
                 && h->endurance <= 0
                 && player_is_last_frame(obj)) {
 
@@ -488,7 +488,7 @@ void har_move(object *obj) {
 
 void har_take_damage(object *obj, str* string, float damage) {
     har *h = object_get_userdata(obj);
-    
+
     // Save damage taken
     h->last_damage_value = damage;
 
@@ -889,7 +889,7 @@ void har_debug(object *obj) {
     while((cc = iter_next(&it)) != NULL) {
         if(cc->frame_index != obj->cur_sprite->id) continue;
         image_set_pixel(&img, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y, c);
-        DEBUG("%d drawing hit point at %d %d ->%d %d", obj->cur_sprite->id, pos_a.x, pos_a.y, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y);
+        //DEBUG("%d drawing hit point at %d %d ->%d %d", obj->cur_sprite->id, pos_a.x, pos_a.y, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y);
     }
 
     image_set_pixel(&img, pos_a.x, pos_a.y, red);
@@ -1242,7 +1242,7 @@ void har_tick(object *obj) {
     if(h->state == STATE_WALLDAMAGE && !object_is_airborne(obj)) {
         h->state = STATE_FALLEN;
     }
-    
+
     // Reset air_attacked when not in the air to prevent HAR from freezing
     if (!object_is_airborne(obj)) {
         if(h->air_attacked) {
@@ -1251,7 +1251,7 @@ void har_tick(object *obj) {
         }
     }
 
-    if ((h->state == STATE_DONE) 
+    if ((h->state == STATE_DONE)
         && player_is_last_frame(obj)
         && obj->animation_state.entered_frame == 1) {
         // match is over
@@ -1311,8 +1311,8 @@ void har_tick(object *obj) {
     }
 
     // Endurance restore
-    if(h->endurance < h->endurance_max 
-        && !(h->executing_move 
+    if(h->endurance < h->endurance_max
+        && !(h->executing_move
             || h->state == STATE_RECOIL
             || h->state == STATE_STUNNED
             || h->state == STATE_FALLEN
