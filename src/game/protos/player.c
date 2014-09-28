@@ -538,8 +538,10 @@ void player_run(object *obj) {
             }
 
             if(sd_script_isset(frame, "ar")) {
+                DEBUG("flipping direction %d -> %d", object_get_direction(obj), object_get_direction(obj) *-1);
                 // reverse direction
                 object_set_direction(obj, object_get_direction(obj) * -1);
+                DEBUG("flipping direction now %d", object_get_direction(obj));
             }
 
             // Set render settings

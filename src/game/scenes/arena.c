@@ -655,7 +655,8 @@ void arena_har_hook(har_event event, void *data) {
                 har1->air_attacked = 1;
                 DEBUG("AIR ATTACK %u", event.player_id);
             } else {
-                arena_maybe_turn_har(event.player_id, scene);
+                // XXX this breaks the backwards razor spin and anything else using the 'ar' tag, so lets disable it for now
+                //arena_maybe_turn_har(event.player_id, scene);
             }
             break;
         case HAR_EVENT_LAND:

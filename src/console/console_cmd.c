@@ -125,6 +125,9 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
             game_player_get_har(player)->animation_state.enemy = game_player_get_har(game_state_get_player(gs, 1));
             game_player_get_har(game_state_get_player(gs, 1))->animation_state.enemy = game_player_get_har(player);
 
+
+            maybe_install_har_hooks(game_state_get_scene(gs));
+
             return 0;
         }
     }
