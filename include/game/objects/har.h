@@ -148,6 +148,10 @@ typedef struct har_t {
     void *action_hook_cb_data;
 
     action_buffer act_buf[OBJECT_EVENT_BUFFER_SIZE];
+
+#ifdef DEBUGMODE
+    surface cd_debug;
+#endif
 } har;
 
 void har_install_action_hook(har *h, har_action_hook_cb hook, void *data);

@@ -107,6 +107,9 @@ exit_0:
 
 void engine_run(engine_init_flags *init_flags) {
     SDL_Event e;
+    int visual_debugger = 0;
+    int debugger_proceed = 0;
+    int debugger_render = 0;
 
     //if mouse_visible_ticks <= 0, hide mouse
     int mouse_visible_ticks = 1000;
@@ -165,6 +168,15 @@ void engine_run(engine_init_flags *init_flags) {
                 case SDL_KEYDOWN:
                     if(e.key.keysym.sym == SDLK_F1) {
                         take_screenshot = 1;
+                    }
+                    if(e.key.keysym.sym == SDLK_F5) {
+                        visual_debugger = !visual_debugger;
+                    }
+                    if(e.key.keysym.sym == SDLK_SPACE) {
+                        debugger_proceed = 1;
+                    }
+                    if(e.key.keysym.sym == SDLK_F6) {
+                        debugger_render = !debugger_render;
                     }
                     break;
                 case SDL_MOUSEMOTION:
@@ -240,8 +252,14 @@ void engine_run(engine_init_flags *init_flags) {
         // Render scene
         int dt = (SDL_GetTicks() - frame_start);
         frame_start = SDL_GetTicks(); // Reset timer
-        dynamic_wait += dt;
-        static_wait += dt;
+        if(!visual_debugger) {
+            dynamic_wait += dt;
+            static_wait += dt;
+        } else if(debugger_proceed) {
+            dynamic_wait += 20;
+            static_wait += 20;
+            debugger_proceed = 0;
+        }
         while(static_wait > 10) {
             // Static tick for gamestate
             game_state_static_tick(gs);
@@ -264,16 +282,21 @@ void engine_run(engine_init_flags *init_flags) {
 
 #ifndef STANDALONE_SERVER
         // Handle audio
-        audio_render();
+        if(!visual_debugger) {
+            audio_render();
+        }
 
         // Do the actual video rendering jobs
         if(enable_screen_updates) {
 
             video_render_prepare();
             game_state_render(gs);
+            if(debugger_render) {
+                game_state_debug(gs);
+            }
             console_render();
             video_render_finish();
-    
+
             // If screenshot requested, do it here.
             if(take_screenshot) {
                 image img;

@@ -15,6 +15,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags);
 void game_state_free(game_state *gs);
 int game_state_handle_event(game_state *gs, SDL_Event *event);
 void game_state_render(game_state *gs);
+void game_state_debug(game_state *gs);
 void game_state_static_tick(game_state *gs);
 void game_state_dynamic_tick(game_state *gs);
 void game_state_tick_controllers(game_state *gs);
