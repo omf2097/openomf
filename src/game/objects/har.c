@@ -846,6 +846,8 @@ void har_debug(object *obj) {
     color red = color_create(0, 255, 0, 255);
     color blank = color_create(0, 0, 0, 0);
 
+    //video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
+
     if(obj->cur_sprite == NULL) {
         return;
     }
@@ -854,7 +856,6 @@ void har_debug(object *obj) {
         return;
     }
 
-    image_clear(&img, blank);
 
     // Some useful variables
     vec2i pos_a = object_get_pos(obj);//, obj->cur_sprite->pos);
@@ -870,6 +871,20 @@ void har_debug(object *obj) {
     // Iterate through hitpoints
     iterator it;
     collision_coord *cc;
+    vector_iter_begin(&obj->cur_animation->collision_coords, &it);
+
+    int found = 0;
+    while((cc = iter_next(&it)) != NULL) {
+        if(cc->frame_index != obj->cur_sprite->id) continue;
+        found = 1;
+    }
+
+    if (!found) {
+        return;
+    }
+
+    image_clear(&img, blank);
+
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
     while((cc = iter_next(&it)) != NULL) {
         if(cc->frame_index != obj->cur_sprite->id) continue;
