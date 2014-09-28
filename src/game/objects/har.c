@@ -1409,6 +1409,13 @@ af_move* match_move(object *obj, char *inputs) {
                     continue;
                 }
 
+
+                if (h->is_wallhugging != 1 && move->pos_constraints & 0x1) {
+                    DEBUG("not wallhugging!");
+                    // required to be wall hugging
+                    continue;
+                }
+
                 if (h->executing_move && ! h->enqueued) {
                     // check if the current frame allows chaining
                    int allowed = 0;
