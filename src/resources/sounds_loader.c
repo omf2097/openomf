@@ -42,12 +42,6 @@ int sounds_loader_get(int id, char **buffer, int *len) {
         return 1;
     }
 
-    // All samples seem to contain crap in the first few samples.
-    // Clean them up.
-    for(int i = 0; i < 3; i++) {
-        sample->data[i] = 128;
-    }
-
     // Get much data!
     *buffer = sample->data;
     *len = sample->len;
