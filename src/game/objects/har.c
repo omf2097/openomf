@@ -837,6 +837,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     }
 }
 
+#ifdef DEBUGMODE
 void har_debug(object *obj) {
     har *h = object_get_userdata(obj);
     image img;
@@ -896,6 +897,7 @@ void har_debug(object *obj) {
 
     video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
 }
+#endif // DEBUGMODE
 
 void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     har *a = object_get_userdata(obj_a);
