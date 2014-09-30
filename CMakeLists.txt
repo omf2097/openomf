@@ -144,7 +144,6 @@ set(OPENOMF_SRC
     src/utils/hashmap.c
     src/utils/iterator.c
     src/utils/array.c
-    src/utils/ringbuffer.c
     src/utils/vec.c
     src/utils/str.c
     src/utils/random.c

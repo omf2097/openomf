@@ -4,17 +4,21 @@ IF(CUNIT_FOUND)
     include_directories(${CUNIT_INCLUDE_DIR} . ../include/)
     set(LIBS ${CUNIT_LIBRARY})
 
-    add_executable(openomf_test_main 
+    add_executable(openomf_test_main
         test_main.c
         test_str.c
         test_hashmap.c
         test_vector.c
+        test_list.c
+        test_array.c
         ../src/utils/hashmap.c
         ../src/utils/vector.c
         ../src/utils/iterator.c
         ../src/utils/str.c
+        ../src/utils/list.c
+        ../src/utils/array.c
     )
-    
+
     # On unix platforms, add libm (sometimes needed, it seems)
     IF(UNIX)
         SET(LIBS ${LIBS} -lm)
