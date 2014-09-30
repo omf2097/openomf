@@ -924,7 +924,9 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             || move->category == CAT_CLOSE ||
             (player_frame_isset(obj_a, "ue") && b->state != STATE_JUMPING))) {
 
-        if (har_is_blocking(b, move)) {
+        if (har_is_blocking(b, move) &&
+                // earthquake smash is unblockable
+                !player_frame_isset(obj_a, "ue")) {
             har_event_enemy_block(a, move);
             har_block(obj_b, hit_coord);
             if (b->is_wallhugging) {
