@@ -1754,7 +1754,8 @@ int har_act(object *obj, int act_type) {
     // Don't allow new movement while we're still executing a move
     if(h->executing_move) {
         if(obj->pos.y < ARENA_FLOOR) {
-            if (h->state < STATE_JUMPING && h->executing_move) {
+            // XXX I think 'i' is for 'not interruptable'
+            if (h->state < STATE_JUMPING && !player_frame_isset(obj, "i")) {
                 DEBUG("standing move led to airborne one");
                 h->state = STATE_JUMPING;
             } else if (h->state != STATE_JUMPING) {
