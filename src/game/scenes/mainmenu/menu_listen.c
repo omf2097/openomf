@@ -107,6 +107,7 @@ component* menu_listen_create(scene *s) {
     local->host = enet_host_create(&address, 1, 2, 0, 0);
     if(local->host == NULL) {
         DEBUG("Failed to initialize ENet server");
+        free(local);
         return NULL;
     }
     enet_socket_set_option(local->host->socket, ENET_SOCKOPT_REUSEADDR, 1);

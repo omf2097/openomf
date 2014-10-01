@@ -91,7 +91,7 @@ void font_render_wrapped_internal(const font *font, const char *text, int x, int
         // ok, we actually have to do some real work
         // look ma, no mallocs!
         const char *start = text;
-        const char *stop = start;
+        const char *stop;
         const char *end = &start[len];
         const char *tmpstop;
         int maxlen = max_w/font->w;
@@ -158,7 +158,6 @@ void font_render_wrapped_internal(const font *font, const char *text, int x, int
             }
             *out_h = yoff;
             start = stop+1;
-            stop = start;
         }
     }
 }
