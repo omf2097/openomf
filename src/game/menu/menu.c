@@ -258,6 +258,7 @@ static void menu_free(component *c) {
     if(m->free) {
         m->free(c); // Free menu userdata
     }
+    free(m);
 }
 
 component* menu_create(int obj_h) {
