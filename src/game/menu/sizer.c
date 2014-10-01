@@ -1,6 +1,6 @@
 #include "game/menu/sizer.h"
 
-component* sizer_get(component *nc, int item) {
+component* sizer_get(const component *nc, int item) {
     sizer *local = component_get_obj(nc);
     component **c;
     c = vector_get(&local->objs, item);
@@ -10,7 +10,7 @@ component* sizer_get(component *nc, int item) {
     return NULL;
 }
 
-int sizer_size(component *c) {
+int sizer_size(const component *c) {
     sizer *local = component_get_obj(c);
     return vector_size(&local->objs);
 }
@@ -20,7 +20,7 @@ void sizer_set_obj(component *c, void *obj) {
     local->obj = obj;
 }
 
-void* sizer_get_obj(component *c) {
+void* sizer_get_obj(const component *c) {
     sizer *local = component_get_obj(c);
     return local->obj;
 }
@@ -61,7 +61,7 @@ void sizer_attach(component *c, component *nc) {
     vector_append(&local->objs, &nc);
 }
 
-void sizer_tick(component *c) {
+static void sizer_tick(component *c) {
     sizer *local = component_get_obj(c);
 
     // Tell the specialized sizer object to do tick if needed
@@ -78,7 +78,7 @@ void sizer_tick(component *c) {
     }
 }
 
-void sizer_render(component *c) {
+static void sizer_render(component *c) {
     sizer *local = component_get_obj(c);
     // Since rendering can be a bit special, the actual sizer should do it
     if(local->render) {
@@ -86,7 +86,7 @@ void sizer_render(component *c) {
     }
 }
 
-int sizer_event(component *c, SDL_Event *event) {
+static int sizer_event(component *c, SDL_Event *event) {
     sizer *local = component_get_obj(c);
     // Events are something that the actual sizer needs to handle
     if(local->event) {
@@ -95,7 +95,7 @@ int sizer_event(component *c, SDL_Event *event) {
     return 1;
 }
 
-int sizer_action(component *c, int action) {
+static int sizer_action(component *c, int action) {
     sizer *local = component_get_obj(c);
     // Actions are something that the actual sizer needs to handle
     if(local->action) {
@@ -104,7 +104,7 @@ int sizer_action(component *c, int action) {
     return 1;
 }
 
-void sizer_layout(component *c, int x, int y, int w, int h) {
+static void sizer_layout(component *c, int x, int y, int w, int h) {
     // Because we don't know how to order this stuff in base sizer, we just pass this on.
     sizer *local = component_get_obj(c);
     if(local->layout) {
@@ -112,7 +112,7 @@ void sizer_layout(component *c, int x, int y, int w, int h) {
     }
 }
 
-void sizer_free(component *c) {
+static void sizer_free(component *c) {
     sizer *local = component_get_obj(c);
 
     // Free all objects inside the sizer

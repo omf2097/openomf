@@ -28,8 +28,8 @@ struct hashmap_t {
 void hashmap_create(hashmap *hashmap, int n_size); // actual size will be 2^n_size
 void hashmap_create_with_allocator(hashmap *hashmap, int n_size, allocator alloc);
 void hashmap_free(hashmap *hashmap);
-unsigned int hashmap_size(hashmap *hashmap);
-unsigned int hashmap_reserved(hashmap *hashmap);
+unsigned int hashmap_size(const hashmap *hashmap);
+unsigned int hashmap_reserved(const hashmap *hashmap);
 void* hashmap_put(hashmap *hm, const void *key, unsigned int keylen, const void *val, unsigned int vallen);
 void hashmap_sput(hashmap *hashmap, const char *key, void *value, unsigned int value_len);
 void hashmap_iput(hashmap *hashmap, unsigned int key, void *value, unsigned int value_len);
@@ -39,7 +39,7 @@ int hashmap_iget(hashmap *hashmap, unsigned int key, void **value, unsigned int 
 int hashmap_del(hashmap *hm, const void *key, unsigned int keylen);
 void hashmap_sdel(hashmap *hashmap, const char *key);
 void hashmap_idel(hashmap *hashmap, unsigned int key);
-void hashmap_iter_begin(hashmap *hashmap, iterator *iter);
+void hashmap_iter_begin(const hashmap *hashmap, iterator *iter);
 int hashmap_delete(hashmap *hashmap, iterator *iter);
 void hashmap_clear(hashmap *hashmap);
 

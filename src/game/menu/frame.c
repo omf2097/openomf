@@ -24,7 +24,7 @@ void guiframe_free(guiframe *frame) {
     free(frame);
 }
 
-component* guiframe_get_root(guiframe *frame) {
+component* guiframe_get_root(const guiframe *frame) {
     return frame->root_node;
 }
 

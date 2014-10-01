@@ -4,11 +4,7 @@
 #include "game/menu/component.h"
 #include "game/text/text.h"
 
-component* textinput_create(font *font, const char *text, const char *initialoption);
-void textinput_free(component *c);
-void textinput_render(component *c);
-int textinput_event(component *c, SDL_Event *event);
-void textinput_tick(component *c);
-char* textinput_value(component *c);
+component* textinput_create(const font *font, const char *text, const char *initialoption);
+char* textinput_value(const component *c);
 
 #endif // _TEXTINPUT_H

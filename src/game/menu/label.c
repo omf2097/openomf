@@ -4,10 +4,10 @@
 
 typedef struct {
     char *text;
-    font *font;
+    const font *font;
 } label;
 
-void label_render(component *c) {
+static void label_render(component *c) {
     label *local = widget_get_obj(c);
     int chars = strlen(local->text);
     int width = chars * local->font->w;
@@ -15,7 +15,7 @@ void label_render(component *c) {
     font_render(local->font, local->text, c->x + xoff, c->y, color_create(121, 121, 121, 255));
 }
 
-void label_free(component *c) {
+static void label_free(component *c) {
     label *local = widget_get_obj(c);
     free(local->text);
     free(local);
@@ -29,7 +29,7 @@ void label_set_text(component *c, const char* text) {
     local->text = strdup(text);
 }
 
-component* label_create(font *font, const char *text) {
+component* label_create(const font *font, const char *text) {
     component *c = widget_create();
     component_disable(c, 1);
     c->supports_disable = 0;

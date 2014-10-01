@@ -24,13 +24,12 @@ typedef struct {
 } sizer;
 
 component* sizer_create();
-void sizer_free(component *c);
 
 void sizer_set_obj(component *c, void *obj);
-void* sizer_get_obj(component *c);
+void* sizer_get_obj(const component *c);
 
-component* sizer_get(component *c, int item);
-int sizer_size(component *c);
+component* sizer_get(const component *c, int item);
+int sizer_size(const component *c);
 
 void sizer_set_render_cb(component *c, sizer_render_cb cb);
 void sizer_set_event_cb(component *c, sizer_event_cb cb);

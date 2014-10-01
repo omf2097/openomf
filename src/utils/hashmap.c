@@ -85,7 +85,7 @@ void hashmap_clear(hashmap *hm) {
 }
 
 /** \brief Free hashmap
-  * 
+  *
   * Frees the hasmap. All contents will be freed and hashmap will be deallocated.
   * Any use of this hashmap after this will lead to undefined behaviour.
   *
@@ -100,18 +100,18 @@ void hashmap_free(hashmap *hm) {
 }
 
 /** \brief Gets hashmap size
-  * 
+  *
   * Returns the hashmap size. This is the amount of hashmap allocated buckets.
   *
   * \param hm Hashmap
   * \return Amount of hashmap buckets
   */
-unsigned int hashmap_size(hashmap *hm) {
+unsigned int hashmap_size(const hashmap *hm) {
     return BUCKETS_SIZE(hm->buckets_x);
 }
 
 /** \brief Gets hashmap reserved buckets
-  * 
+  *
   * Returns the amount of items in the hashmap. Note that the item count
   * can be larger than the bucket count, if the hashmap is full enough.
   * If there are a lot more items than buckets, you should really consider
@@ -120,13 +120,13 @@ unsigned int hashmap_size(hashmap *hm) {
   * \param hm Hashmap
   * \return Amount of items in the hashmap
   */
-unsigned int hashmap_reserved(hashmap *hm) {
+unsigned int hashmap_reserved(const hashmap *hm) {
     return hm->reserved;
 }
 
 /** \brief Puts an item to the hashmap
-  * 
-  * Puts a new item to the hashmap. Note that the 
+  *
+  * Puts a new item to the hashmap. Note that the
   * contents of the value memory block will be copied. However,
   * any memory _pointed to_ by it will NOT be copied. So be careful!
   *
@@ -163,9 +163,9 @@ void* hashmap_put(hashmap *hm,
 
 
 /** \brief Deletes an item from the hashmap
-  * 
+  *
   * Deletes an item from the hashmap. Note: Using this function inside an
-  * iterator may lead to weird behavior. If you wish to delete inside an 
+  * iterator may lead to weird behavior. If you wish to delete inside an
   * iterator, please use hashmap_delete.
   *
   * \param hm Hashmap
@@ -213,7 +213,7 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
 }
 
 /** \brief Gets an item from the hashmap
-  * 
+  *
   * Returns an item from the hashmap.
   *
   * \param hm Hashmap
@@ -274,7 +274,7 @@ void hashmap_idel(hashmap *hm, unsigned int key) {
 }
 
 /** \brief Deletes an item from the hashmap by iterator key
-  * 
+  *
   * Deletes an item from the hashmap by a matching iterator key.
   * This function is iterator safe. In theory, this function
   * should not fail, as the iterable value should exist.
@@ -369,7 +369,7 @@ void* hashmap_iter_next(iterator *iter) {
     return &tmp->pair;
 }
 
-void hashmap_iter_begin(hashmap *hm, iterator *iter) {
+void hashmap_iter_begin(const hashmap *hm, iterator *iter) {
     iter->data = hm;
     iter->vnow = NULL;
     iter->inow = 0;

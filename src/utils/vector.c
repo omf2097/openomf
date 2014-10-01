@@ -41,7 +41,7 @@ void vector_free(vector *vec) {
     vec->data = NULL;
 }
 
-void* vector_get(vector *vec, unsigned int key) {
+void* vector_get(const vector *vec, unsigned int key) {
     if(key >= vec->blocks) {
         return NULL;
     }
@@ -81,7 +81,7 @@ int vector_prepend(vector *vec, const void *value) {
     return 0;
 }
 
-unsigned int vector_size(vector *vec) {
+unsigned int vector_size(const vector *vec) {
     return vec->blocks;
 }
 
@@ -143,7 +143,7 @@ void* vector_iter_prev(iterator *iter) {
     return addr;
 }
 
-void vector_iter_begin(vector *vec, iterator *iter) {
+void vector_iter_begin(const vector *vec, iterator *iter) {
     iter->data = vec;
     iter->vnow = NULL;
     iter->inow = 0;
@@ -152,7 +152,7 @@ void vector_iter_begin(vector *vec, iterator *iter) {
     iter->ended = (vec->blocks == 0);
 }
 
-void vector_iter_end(vector *vec, iterator *iter) {
+void vector_iter_end(const vector *vec, iterator *iter) {
     iter->data = vec;
     iter->vnow = NULL;
     iter->inow = vector_size(vec)-1;

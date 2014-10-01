@@ -5,11 +5,11 @@
 #include "video/video.h"
 #include "utils/log.h"
 
-void font_render_char(font *font, char ch, int x, int y, color c) {
+void font_render_char(const font *font, char ch, int x, int y, color c) {
     font_render_char_shadowed(font, ch, x, y, c, 0);
 }
 
-void font_render_char_shadowed(font *font, char ch, int x, int y, color c, int shadow_flags) {
+void font_render_char_shadowed(const font *font, char ch, int x, int y, color c, int shadow_flags) {
     // Make sure code is valid
     int code = ch - 32;
     surface **sur = NULL;
@@ -42,11 +42,11 @@ void font_render_char_shadowed(font *font, char ch, int x, int y, color c, int s
     video_render_sprite_tint(*sur, x, y, c, 0);
 }
 
-void font_render_len(font *font, const char *text, int len, int x, int y, color c) {
+void font_render_len(const font *font, const char *text, int len, int x, int y, color c) {
     font_render_len_shadowed(font, text, len, x, y, c, 0);
 }
 
-void font_render_len_shadowed(font *font, const char *text, int len, int x, int y, color c, int shadow_flags) {
+void font_render_len_shadowed(const font *font, const char *text, int len, int x, int y, color c, int shadow_flags) {
     int pos_x = x;
     for(int i = 0; i < len; i++) {
         font_render_char_shadowed(font, text[i], pos_x, y, c, shadow_flags);
@@ -54,22 +54,22 @@ void font_render_len_shadowed(font *font, const char *text, int len, int x, int 
     }
 }
 
-void font_render(font *font, const char *text, int x, int y, color c) {
+void font_render(const font *font, const char *text, int x, int y, color c) {
     int len = strlen(text);
     font_render_len(font, text, len, x, y, c);
 }
 
-void font_render_shadowed(font *font, const char *text, int x, int y, color c, int shadow_flags) {
+void font_render_shadowed(const font *font, const char *text, int x, int y, color c, int shadow_flags) {
     int len = strlen(text);
     font_render_len_shadowed(font, text, len, x, y, c, shadow_flags);
 }
 
-void font_render_wrapped(font *font, const char *text, int x, int y, int w, color c) {
+void font_render_wrapped(const font *font, const char *text, int x, int y, int w, color c) {
     font_render_wrapped_shadowed(font, text, x, y, w, c, 0);
 }
 
 
-void font_render_wrapped_internal(font *font, const char *text, int x, int y, int max_w, color c, int shadow_flags, int only_size, int *out_w, int *out_h) {
+void font_render_wrapped_internal(const font *font, const char *text, int x, int y, int max_w, color c, int shadow_flags, int only_size, int *out_w, int *out_h) {
     int len = strlen(text);
     int has_newline = 0;
     for(int i = 0;i < len;i++) {
@@ -163,17 +163,17 @@ void font_render_wrapped_internal(font *font, const char *text, int x, int y, in
     }
 }
 
-void font_render_wrapped_shadowed(font *font, const char *text, int x, int y, int w, color c, int shadow_flags) {
+void font_render_wrapped_shadowed(const font *font, const char *text, int x, int y, int w, color c, int shadow_flags) {
     int tmp;
     font_render_wrapped_internal(font, text, x, y, w, c, shadow_flags, 0, &tmp, &tmp);
 }
 
-void font_get_wrapped_size(font *font, const char *text, int max_w, int *out_w, int *out_h) {
+void font_get_wrapped_size(const font *font, const char *text, int max_w, int *out_w, int *out_h) {
     static color c = {0};
     font_render_wrapped_internal(font, text, 0, 0, max_w, c, 0, 1, out_w, out_h);
 }
 
-void font_get_wrapped_size_shadowed(font *font, const char *text, int max_w, int shadow_flag, int *out_w, int *out_h) {
+void font_get_wrapped_size_shadowed(const font *font, const char *text, int max_w, int shadow_flag, int *out_w, int *out_h) {
     static color c = {0};
     font_render_wrapped_internal(font, text, 0, 0, max_w, c, shadow_flag, 1, out_w, out_h);
 }

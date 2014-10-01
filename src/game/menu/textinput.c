@@ -18,7 +18,7 @@
 
 typedef struct {
     char *text;
-    font *font;
+    const font *font;
     int ticks;
     int dir;
     int pos_;
@@ -27,7 +27,7 @@ typedef struct {
     char buf[50];
 } textinput;
 
-void textinput_render(component *c) {
+static void textinput_render(component *c) {
     textinput *tb = widget_get_obj(c);
     /*char buf[100];*/
     int chars;
@@ -57,7 +57,7 @@ void textinput_render(component *c) {
     }
 }
 
-int textinput_event(component *c, SDL_Event *e) {
+static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     if (e->type == SDL_TEXTINPUT) {
         textinput *tb = widget_get_obj(c);
@@ -101,10 +101,6 @@ int textinput_event(component *c, SDL_Event *e) {
     return 1;
 }
 
-int textinput_action(component *c, int action) {
-    return 1;
-}
-
 void textinput_focus(component *c, int focus) {
     if(focus) {
         SDL_StartTextInput();
@@ -113,7 +109,7 @@ void textinput_focus(component *c, int focus) {
     }
 }
 
-void textinput_tick(component *c) {
+static void textinput_tick(component *c) {
     textinput *tb = widget_get_obj(c);
     if(!tb->dir) {
         tb->ticks++;
@@ -128,19 +124,19 @@ void textinput_tick(component *c) {
     }
 }
 
-char* textinput_value(component *c) {
+char* textinput_value(const component *c) {
     textinput *tb = widget_get_obj(c);
     return tb->buf;
 }
 
-void textinput_free(component *c) {
+static void textinput_free(component *c) {
     textinput *tb = widget_get_obj(c);
     surface_free(&tb->sur);
     free(tb->text);
     free(tb);
 }
 
-component* textinput_create(font *font, const char *text, const char *initialvalue) {
+component* textinput_create(const font *font, const char *text, const char *initialvalue) {
     component *c = widget_create();
 
     textinput *tb = malloc(sizeof(textinput));
@@ -165,5 +161,6 @@ component* textinput_create(font *font, const char *text, const char *initialval
     widget_set_render_cb(c, textinput_render);
     widget_set_event_cb(c, textinput_event);
     widget_set_tick_cb(c, textinput_tick);
+    widget_set_free_cb(c, textinput_free);
     return c;
 }

@@ -27,15 +27,15 @@ typedef struct  {
 component* menu_create(int obj_h);
 void menu_attach(component *menu, component *c);
 void menu_select(component *menu, component *c);
-component* menu_selected(component *menu);
-int menu_is_finished(component *menu);
+component* menu_selected(const component *menu);
+int menu_is_finished(const component *menu);
 
 void menu_set_submenu(component *menu, component *submenu);
-component* menu_get_submenu(component *menu);
+component* menu_get_submenu(const component *menu);
 void menu_set_submenu_done_cb(component *menu, menu_submenu_done_cb done_cb);
 
 void menu_set_userdata(component *menu, void *userdata);
-void* menu_get_userdata(component *menu);
+void* menu_get_userdata(const component *menu);
 void menu_set_free_cb(component *menu, menu_free_cb cb);
 void menu_set_tick_cb(component *menu, menu_tick_cb cb);
 

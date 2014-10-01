@@ -36,7 +36,7 @@ void str_free(str *string) {
     string->len = 0;
 }
 
-size_t str_size(str *string) {
+size_t str_size(const str *string) {
     return string->len;
 }
 
@@ -47,7 +47,7 @@ void str_remove_at(str *string, size_t pos) {
    string->len--;
 }
 
-void str_substr(str *dst, str *src, size_t start, size_t end) {
+void str_substr(str *dst, const str *src, size_t start, size_t end) {
     if(src->data) {
         size_t len = end - start;
         dst->data = realloc(dst->data, len + 1);
@@ -60,7 +60,7 @@ void str_substr(str *dst, str *src, size_t start, size_t end) {
     }
 }
 
-void str_copy(str *dst, str *src) {
+void str_copy(str *dst, const str *src) {
     if(src->data) {
         dst->data = realloc(dst->data, src->len + 1);
         dst->len = src->len;
@@ -72,7 +72,7 @@ void str_copy(str *dst, str *src) {
     }
 }
 
-void str_append(str *dst, str *src) {
+void str_append(str *dst, const str *src) {
     dst->data = realloc(dst->data, dst->len + src->len + 1);
     memcpy(dst->data + dst->len, src->data, src->len);
     dst->len += src->len;
@@ -87,7 +87,7 @@ void str_append_c(str *dst, const char *src) {
     dst->data[dst->len] = 0;
 }
 
-void str_prepend(str *dst, str *src) {
+void str_prepend(str *dst, const str *src) {
     dst->data = realloc(dst->data, dst->len + src->len + 1);
     memmove(dst->data + src->len, dst->data, dst->len);
     memcpy(dst->data, src->data, src->len);
@@ -95,7 +95,7 @@ void str_prepend(str *dst, str *src) {
     dst->data[dst->len] = 0;
 }
 
-int str_first_of(str *string, char find, size_t *pos) {
+int str_first_of(const str *string, char find, size_t *pos) {
     for(size_t i = 0; i < string->len; i++) {
         if(string->data[i] == find) {
             *pos = i;
@@ -105,7 +105,7 @@ int str_first_of(str *string, char find, size_t *pos) {
     return 0;
 }
 
-int str_next_of(str *string, char find, size_t *pos) {
+int str_next_of(const str *string, char find, size_t *pos) {
     for(size_t i = *pos; i < string->len; i++) {
         if(string->data[i] == find) {
             *pos = i;
@@ -115,7 +115,7 @@ int str_next_of(str *string, char find, size_t *pos) {
     return 0;
 }
 
-int str_last_of(str *string, char find, size_t *pos) {
+int str_last_of(const str *string, char find, size_t *pos) {
     for(size_t i = string->len; i > 0; i--) {
         if(string->data[i-1] == find) {
             *pos = i-1;
@@ -125,7 +125,7 @@ int str_last_of(str *string, char find, size_t *pos) {
     return 0;
 }
 
-int str_equal(str *string, str *string_b) {
+int str_equal(const str *string, const str *string_b) {
     if(string->len != string_b->len) {
         return 0;
     }
@@ -135,11 +135,11 @@ int str_equal(str *string, str *string_b) {
     return 1;
 }
 
-int str_cmp(str *cmp_a, str *cmp_b) {
+int str_cmp(const str *cmp_a, const str *cmp_b) {
     return strcmp(cmp_a->data, cmp_b->data);
 }
 
-char str_at(str *string, size_t pos) {
+char str_at(const str *string, size_t pos) {
     if(pos >= str_size(string)) {
         return 0;
     }
@@ -158,22 +158,22 @@ void str_tolower(str *string) {
     }
 }
 
-int str_to_int(str *string, int *result) {
+int str_to_int(const str *string, int *result) {
     *result = atoi(str_c(string));
     return 1;
 }
 
-int str_to_float(str *string, float *result) {
+int str_to_float(const str *string, float *result) {
     *result = atof(str_c(string));
     return 1;
 }
 
-int str_to_long(str *string, long *result) {
+int str_to_long(const str *string, long *result) {
     *result = atol(str_c(string));
     return 1;
 }
 
-const char* str_c(str *string) {
+const char* str_c(const str *string) {
     // At the moment, the internal representation of
     // string is compatible with C strings. So just return
     // a pointer to that data

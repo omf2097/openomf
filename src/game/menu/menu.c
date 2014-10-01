@@ -37,7 +37,7 @@ void menu_select(component *c, component *sc) {
     m->selected = i;
 }
 
-component* menu_selected(component *mc) {
+component* menu_selected(const component *mc) {
     menu *m = sizer_get_obj(mc);
     component *c = sizer_get(mc, m->selected);
     if(c != NULL) {
@@ -55,7 +55,7 @@ void menu_attach(component *c, component *nc) {
     sizer_attach(c, nc);
 }
 
-void menu_tick(component *c) {
+static void menu_tick(component *c) {
     menu *m = sizer_get_obj(c);
 
     // If submenu is set, we need to tick it
@@ -79,7 +79,7 @@ void menu_tick(component *c) {
     }
 }
 
-void menu_render(component *c) {
+static void menu_render(component *c) {
     sizer *s = component_get_obj(c);
     menu *m = sizer_get_obj(c);
 
@@ -98,7 +98,7 @@ void menu_render(component *c) {
     }
 }
 
-int menu_event(component *mc, SDL_Event *event) {
+static int menu_event(component *mc, SDL_Event *event) {
     menu *m = sizer_get_obj(mc);
 
     // If submenu is set, we need to use it
@@ -114,7 +114,7 @@ int menu_event(component *mc, SDL_Event *event) {
     return 1;
 }
 
-int menu_action(component *mc, int action) {
+static int menu_action(component *mc, int action) {
     menu *m = sizer_get_obj(mc);
     component *c;
 
@@ -186,17 +186,17 @@ void menu_set_submenu(component *mc, component *submenu) {
     component_layout(m->submenu, mc->x, mc->y, mc->w, mc->h);
 }
 
-component* menu_get_submenu(component *c) {
+component* menu_get_submenu(const component *c) {
     menu *m = sizer_get_obj(c);
     return m->submenu;
 }
 
-int menu_is_finished(component *c) {
+int menu_is_finished(const component *c) {
     menu *m = sizer_get_obj(c);
     return m->finished;
 }
 
-void menu_layout(component *c, int x, int y, int w, int h) {
+static void menu_layout(component *c, int x, int y, int w, int h) {
     sizer *s = component_get_obj(c);
     menu *m = sizer_get_obj(c);
 
@@ -231,7 +231,7 @@ void menu_set_userdata(component *c, void *userdata) {
     m->userdata = userdata;
 }
 
-void* menu_get_userdata(component *c) {
+void* menu_get_userdata(const component *c) {
     menu *m = sizer_get_obj(c);
     return m->userdata;
 }
@@ -246,7 +246,7 @@ void menu_set_tick_cb(component *c, menu_tick_cb cb) {
     m->tick = cb;
 }
 
-void menu_free(component *c) {
+static void menu_free(component *c) {
     menu *m = sizer_get_obj(c);
     if(m->bg) {
         surface_free(m->bg);

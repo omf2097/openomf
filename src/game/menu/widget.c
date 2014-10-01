@@ -6,7 +6,7 @@ void widget_set_obj(component *c, void *obj) {
     local->obj = obj;
 }
 
-void* widget_get_obj(component *c) {
+void* widget_get_obj(const component *c) {
     widget *local = component_get_obj(c);
     return local->obj;
 }
@@ -51,21 +51,21 @@ void widget_set_free_cb(component *c, widget_free_cb cb) {
     local->free = cb;
 }
 
-void widget_tick(component *c) {
+static void widget_tick(component *c) {
     widget *local = component_get_obj(c);
     if(local->tick) {
         local->tick(c);
     }
 }
 
-void widget_render(component *c) {
+static void widget_render(component *c) {
     widget *local = component_get_obj(c);
     if(local->render) {
         local->render(c);
     }
 }
 
-int widget_event(component *c, SDL_Event *event) {
+static int widget_event(component *c, SDL_Event *event) {
     widget *local = component_get_obj(c);
     if(local->event) {
         return local->event(c, event);
@@ -73,7 +73,7 @@ int widget_event(component *c, SDL_Event *event) {
     return 1;
 }
 
-int widget_action(component *c, int action) {
+static int widget_action(component *c, int action) {
     widget *local = component_get_obj(c);
     if(local->action) {
         return local->action(c, action);
@@ -81,15 +81,18 @@ int widget_action(component *c, int action) {
     return 1;
 }
 
-void widget_layout(component *c, int x, int y, int w, int h) {
+static void widget_layout(component *c, int x, int y, int w, int h) {
     widget *local = component_get_obj(c);
     if(local->layout) {
         local->layout(c, x, y, w, h);
     }
 }
 
-void widget_free(component *c) {
+static void widget_free(component *c) {
     widget *local = component_get_obj(c);
+    if(local->free) {
+        local->free(c);
+    }
     free(local);
 }
 

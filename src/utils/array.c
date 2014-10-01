@@ -38,7 +38,7 @@ void array_set(array *array, unsigned int key, const void *ptr) {
     array->filled += (ptr != NULL);
 }
 
-void* array_get(array *array, unsigned int key) {
+void* array_get(const array *array, unsigned int key) {
     if(key > array->allocated_size) {
         return NULL;
     }
@@ -79,7 +79,7 @@ void* array_iter_prev(iterator *iter) {
     return out;
 }
 
-void array_iter_begin(array *array, iterator *iter) {
+void array_iter_begin(const array *array, iterator *iter) {
     iter->data = array;
     iter->vnow = NULL;
     iter->inow = 0;
@@ -88,7 +88,7 @@ void array_iter_begin(array *array, iterator *iter) {
     iter->ended = (array->filled == 0);
 }
 
-void array_iter_end(array *array, iterator *iter) {
+void array_iter_end(const array *array, iterator *iter) {
     iter->data = array;
     iter->vnow = NULL;
     iter->inow = array->allocated_size-1;

@@ -11,7 +11,7 @@
 
 typedef struct {
     char *text;
-    font *font;
+    const font *font;
     int ticks;
     int dir;
     int pos_;
@@ -23,7 +23,7 @@ typedef struct {
     textslider_slide_cb slide;
 } textslider;
 
-void textslider_render(component *c) {
+static void textslider_render(component *c) {
     textslider *tb = widget_get_obj(c);
     char buf[100];
     int chars;
@@ -60,7 +60,7 @@ void textslider_render(component *c) {
     }
 }
 
-int textslider_action(component *c, int action) {
+static int textslider_action(component *c, int action) {
     textslider *tb = widget_get_obj(c);
     if (action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
         (*tb->pos)++;
@@ -92,7 +92,7 @@ int textslider_action(component *c, int action) {
     return 1;
 }
 
-void textslider_tick(component *c) {
+static void textslider_tick(component *c) {
     textslider *tb = widget_get_obj(c);
     if(!tb->dir) {
         tb->ticks++;
@@ -107,13 +107,13 @@ void textslider_tick(component *c) {
     }
 }
 
-void textslider_free(component *c) {
+static void textslider_free(component *c) {
     textslider *tb = widget_get_obj(c);
     free(tb->text);
     free(tb);
 }
 
-component* textslider_create(font *font, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata) {
+component* textslider_create(const font *font, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata) {
     component *c = widget_create();
 
     textslider *tb = malloc(sizeof(textslider));
@@ -137,7 +137,7 @@ component* textslider_create(font *font, const char *text, unsigned int position
     return c;
 }
 
-component* textslider_create_bind(font *font, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata, int *bind) {
+component* textslider_create_bind(const font *font, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata, int *bind) {
     component *c = textslider_create(font, text, positions, has_off, cb, userdata);
     textslider *ts = widget_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;

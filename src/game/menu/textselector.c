@@ -11,7 +11,7 @@
 
 typedef struct {
     char *text;
-    font *font;
+    const font *font;
     int ticks;
     int dir;
     int pos_;
@@ -43,7 +43,7 @@ void textselector_add_option(component *c, const char *value) {
     vector_append(&tb->options, &new);
 }
 
-const char* textselector_get_current_text(component *c) {
+const char* textselector_get_current_text(const component *c) {
     textselector *tb = widget_get_obj(c);
     char **text = vector_get(&tb->options, *tb->pos);
     if(text != NULL) {
@@ -52,7 +52,7 @@ const char* textselector_get_current_text(component *c) {
     return NULL;
 }
 
-void textselector_render(component *c) {
+static void textselector_render(component *c) {
     textselector *tb = widget_get_obj(c);
     char buf[100];
     int chars;
@@ -81,7 +81,7 @@ void textselector_render(component *c) {
     }
 }
 
-int textselector_action(component *c, int action) {
+static int textselector_action(component *c, int action) {
     textselector *tb = widget_get_obj(c);
     if(action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
         if(vector_size(&tb->options) == 0) { return 0; }
@@ -109,7 +109,7 @@ int textselector_action(component *c, int action) {
     return 1;
 }
 
-void textselector_tick(component *c) {
+static void textselector_tick(component *c) {
     textselector *tb = widget_get_obj(c);
     if(!tb->dir) {
         tb->ticks++;
@@ -124,7 +124,7 @@ void textselector_tick(component *c) {
     }
 }
 
-int textselector_get_pos(component *c) {
+int textselector_get_pos(const component *c) {
     textselector *tb = widget_get_obj(c);
     return *tb->pos;
 }
@@ -134,7 +134,7 @@ void textselector_set_pos(component *c, int pos) {
     *tb->pos = pos;
 }
 
-void textselector_free(component *c) {
+static void textselector_free(component *c) {
     textselector *tb = widget_get_obj(c);
     textselector_clear_options(c);
     vector_free(&tb->options);
@@ -142,7 +142,7 @@ void textselector_free(component *c) {
     free(tb);
 }
 
-component* textselector_create(font *font, const char *text, textselector_toggle_cb cb, void *userdata) {
+component* textselector_create(const font *font, const char *text, textselector_toggle_cb cb, void *userdata) {
     component *c = widget_create();
 
     textselector *tb = malloc(sizeof(textselector));
@@ -163,14 +163,14 @@ component* textselector_create(font *font, const char *text, textselector_toggle
     return c;
 }
 
-component* textselector_create_bind(font *font, const char *text, textselector_toggle_cb toggle_cb, void *userdata, int *bind) {
+component* textselector_create_bind(const font *font, const char *text, textselector_toggle_cb toggle_cb, void *userdata, int *bind) {
     component* c = textselector_create(font, text, toggle_cb, userdata);
     textselector *ts = widget_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;
     return c;
 }
 
-component* textselector_create_bind_opts(font *font, const char *text, textselector_toggle_cb toggle_cb, void *userdata, int *bind, const char **opts, int opt_size) {
+component* textselector_create_bind_opts(const font *font, const char *text, textselector_toggle_cb toggle_cb, void *userdata, int *bind, const char **opts, int opt_size) {
     component* c = textselector_create_bind(font, text, toggle_cb, userdata, bind);
     for(int i = 0; i < opt_size; i++) {
         textselector_add_option(c, opts[i]);

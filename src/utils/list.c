@@ -73,7 +73,7 @@ void list_delete(list *list, iterator *iter) {
     list->size--;
 }
 
-unsigned int list_size(list *list) {
+unsigned int list_size(const list *list) {
     return list->size;
 }
 
@@ -103,7 +103,7 @@ void* list_iter_prev(iterator *iter) {
     return ((list_node*)iter->vnow)->data;
 }
 
-void* list_get(list *list, unsigned int i) {
+void* list_get(const list *list, unsigned int i) {
     if(i >= list_size(list)) return NULL;
     iterator it;
     list_iter_begin(list, &it);
@@ -118,7 +118,7 @@ void* list_get(list *list, unsigned int i) {
     return NULL;
 }
 
-void list_iter_begin(list *list, iterator *iter) {
+void list_iter_begin(const list *list, iterator *iter) {
     iter->data = list;
     iter->vnow = NULL;
     iter->inow = 0;
@@ -127,7 +127,7 @@ void list_iter_begin(list *list, iterator *iter) {
     iter->ended = (list->first == NULL);
 }
 
-void list_iter_end(list *list, iterator *iter) {
+void list_iter_end(const list *list, iterator *iter) {
     iter->data = list;
     iter->vnow = NULL;
     iter->inow = 0;

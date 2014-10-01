@@ -12,7 +12,7 @@
 
 typedef struct {
     char *text;
-    font *font;
+    const font *font;
     int ticks;
     int dir;
 
@@ -54,7 +54,7 @@ void textbutton_set_text(component *c, const char* text) {
     tb->text = strdup(text);
 }
 
-void textbutton_render(component *c) {
+static void textbutton_render(component *c) {
     textbutton *tb = widget_get_obj(c);
     int chars = strlen(tb->text);
     int width = chars*tb->font->w;
@@ -72,7 +72,7 @@ void textbutton_render(component *c) {
     }
 }
 
-int textbutton_action(component *c, int action) {
+static int textbutton_action(component *c, int action) {
     textbutton *tb = widget_get_obj(c);
 
     // Handle selection
@@ -86,7 +86,7 @@ int textbutton_action(component *c, int action) {
     return 1;
 }
 
-void textbutton_tick(component *c) {
+static void textbutton_tick(component *c) {
     textbutton *tb = widget_get_obj(c);
     if(!tb->dir) {
         tb->ticks++;
@@ -101,7 +101,7 @@ void textbutton_tick(component *c) {
     }
 }
 
-void textbutton_free(component *c) {
+static void textbutton_free(component *c) {
     textbutton *tb = widget_get_obj(c);
 
     if(tb->border_created) {
@@ -111,7 +111,7 @@ void textbutton_free(component *c) {
     free(tb);
 }
 
-component* textbutton_create(font *font, const char *text, int disabled, textbutton_click_cb cb, void *userdata) {
+component* textbutton_create(const font *font, const char *text, int disabled, textbutton_click_cb cb, void *userdata) {
     component *c = widget_create();
     component_disable(c, disabled);
 

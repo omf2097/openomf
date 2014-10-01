@@ -25,9 +25,9 @@ void list_free(list *list);
 void list_prepend(list *list, const void *ptr, size_t size);
 void list_append(list *list, const void *ptr, size_t size);
 void list_delete(list *list, iterator *iter);
-unsigned int list_size(list *list);
-void list_iter_begin(list *list, iterator *iter);
-void list_iter_end(list *list, iterator *iter);
-void* list_get(list *list, unsigned int i);
+unsigned int list_size(const list *list);
+void list_iter_begin(const list *list, iterator *iter);
+void list_iter_end(const list *list, iterator *iter);
+void* list_get(const list *list, unsigned int i);
 
 #endif

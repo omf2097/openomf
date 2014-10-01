@@ -15,15 +15,15 @@ enum {
     TEXT_SHADOW_ALL = 0xF
 };
 
-void font_get_wrapped_size(font *font, const char *text, int max_w, int *out_w, int *out_h);
-void font_get_wrapped_size_shadowed(font *font, const char *text, int max_w, int shadow_flag, int *out_w, int *out_h);
-void font_render_char(font *font, char ch, int x, int y, color c);
-void font_render_char_shadowed(font *font, char ch, int x, int y, color c, int shadow_flags);
-void font_render_len(font *font, const char *text, int len, int x, int y, color c);
-void font_render_len_shadowed(font *font, const char *text, int len, int x, int y, color c, int shadow_flags);
-void font_render(font *font, const char *text, int x, int y, color c);
-void font_render_shadowed(font *font, const char *text, int x, int y, color c, int shadow_flags);
-void font_render_wrapped(font *font, const char *text, int x, int y, int w, color c);
-void font_render_wrapped_shadowed(font *font, const char *text, int x, int y, int w, color c, int shadow_flags);
+void font_get_wrapped_size(const font *font, const char *text, int max_w, int *out_w, int *out_h);
+void font_get_wrapped_size_shadowed(const font *font, const char *text, int max_w, int shadow_flag, int *out_w, int *out_h);
+void font_render_char(const font *font, char ch, int x, int y, color c);
+void font_render_char_shadowed(const font *font, char ch, int x, int y, color c, int shadow_flags);
+void font_render_len(const font *font, const char *text, int len, int x, int y, color c);
+void font_render_len_shadowed(const font *font, const char *text, int len, int x, int y, color c, int shadow_flags);
+void font_render(const font *font, const char *text, int x, int y, color c);
+void font_render_shadowed(const font *font, const char *text, int x, int y, color c, int shadow_flags);
+void font_render_wrapped(const font *font, const char *text, int x, int y, int w, color c);
+void font_render_wrapped_shadowed(const font *font, const char *text, int x, int y, int w, color c, int shadow_flags);
 
 #endif // _TEXT_H

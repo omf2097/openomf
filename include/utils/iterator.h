@@ -4,7 +4,7 @@
 typedef struct iterator_t iterator;
 
 struct iterator_t {
-    void *data;
+    const void *data;
     void *vnow;
     int inow;
     int ended;

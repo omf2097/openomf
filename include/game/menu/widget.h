@@ -23,10 +23,9 @@ typedef struct {
 } widget;
 
 component* widget_create();
-void widget_free(component *c);
 
 void widget_set_obj(component *c, void *obj);
-void* widget_get_obj(component *c);
+void* widget_get_obj(const component *c);
 
 void widget_set_id(component *c, int id);
 int widget_get_id(const component *c);
