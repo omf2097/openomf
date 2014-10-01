@@ -131,8 +131,11 @@ static void progressbar_tick(component *c) {
 
 static void progressbar_free(component *c) {
     progressbar *bar = widget_get_obj(c);
+    surface_free(bar->block);
     free(bar->block);
+    surface_free(bar->background);
     free(bar->background);
+    surface_free(bar->background_alt);
     free(bar->background_alt);
     free(bar);
 }
