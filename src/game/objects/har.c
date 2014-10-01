@@ -33,6 +33,9 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount);
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
     list_free(&h->har_hooks);
+#ifdef DEBUGMODE
+    surface_free(&h->cd_debug);
+#endif
     free(h);
 }
 
