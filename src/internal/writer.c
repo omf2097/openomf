@@ -27,64 +27,64 @@ void sd_writer_close(sd_writer *writer) {
     free(writer);
 }
 
-long sd_writer_pos(sd_writer *writer) {
+long sd_writer_pos(const sd_writer *writer) {
     return ftell(writer->handle);
 }
 
-int sd_writer_seek_start(sd_writer *writer, long offset) {
+int sd_writer_seek_start(const sd_writer *writer, long offset) {
     return fseek(writer->handle, offset, SEEK_SET);
 }
 
-int sd_writer_seek_cur(sd_writer *writer, long offset) {
+int sd_writer_seek_cur(const sd_writer *writer, long offset) {
     return fseek(writer->handle, offset, SEEK_CUR);
 }
 
-int sd_writer_seek_end(sd_writer *writer, long offset) {
+int sd_writer_seek_end(const sd_writer *writer, long offset) {
     return fseek(writer->handle, offset, SEEK_END);
 }
 
-int sd_write_buf(sd_writer *writer, const char *buf, int len) {
+int sd_write_buf(const sd_writer *writer, const char *buf, int len) {
     if(fwrite(buf, 1, len, writer->handle) != len) {
         return 0;
     }
     return 1;
 }
 
-int sd_write_fprintf(sd_writer *writer, const char *format, ...) {
+int sd_write_fprintf(const sd_writer *writer, const char *format, ...) {
     va_list argp;
     va_start(argp, format);
     return vfprintf(writer->handle, format, argp);
 }
 
-void sd_write_ubyte(sd_writer *writer, uint8_t data) {
+void sd_write_ubyte(const sd_writer *writer, uint8_t data) {
     sd_write_buf(writer, (char*)&data, 1);
 }
 
-void sd_write_uword(sd_writer *writer, uint16_t data) {
+void sd_write_uword(const sd_writer *writer, uint16_t data) {
     sd_write_buf(writer, (char*)&data, 2);
 }
 
-void sd_write_udword(sd_writer *writer, uint32_t data) {
+void sd_write_udword(const sd_writer *writer, uint32_t data) {
     sd_write_buf(writer, (char*)&data, 4);
 }
 
-void sd_write_byte(sd_writer *writer, int8_t data) {
+void sd_write_byte(const sd_writer *writer, int8_t data) {
     sd_write_buf(writer, (char*)&data, 1);
 }
 
-void sd_write_word(sd_writer *writer, int16_t data) {
+void sd_write_word(const sd_writer *writer, int16_t data) {
     sd_write_buf(writer, (char*)&data, 2);
 }
 
-void sd_write_dword(sd_writer *writer, int32_t data) {
+void sd_write_dword(const sd_writer *writer, int32_t data) {
     sd_write_buf(writer, (char*)&data, 4);
 }
 
-void sd_write_float(sd_writer *writer, float data) {
+void sd_write_float(const sd_writer *writer, float data) {
     sd_write_buf(writer, (char*)&data, sizeof(float));
 }
 
-void sd_write_fill(sd_writer *writer, char content, int len) {
+void sd_write_fill(const sd_writer *writer, char content, int len) {
     int left = len;
     int now = 0;
     char buffer[1024];
@@ -97,7 +97,7 @@ void sd_write_fill(sd_writer *writer, char content, int len) {
     }
 }
 
-void sd_write_variable_str(sd_writer *w, const char *str) {
+void sd_write_variable_str(const sd_writer *w, const char *str) {
     if(str == NULL) {
         sd_write_uword(w, 0);
         return;

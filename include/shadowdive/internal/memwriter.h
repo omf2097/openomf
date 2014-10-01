@@ -11,9 +11,9 @@ typedef struct sd_mwriter_t {
 } sd_mwriter;
 
 sd_mwriter* sd_mwriter_open();
-void sd_mwriter_save(sd_mwriter *src, sd_writer *dst);
+void sd_mwriter_save(const sd_mwriter *src, sd_writer *dst);
 void sd_mwriter_close(sd_mwriter *writer);
-long sd_mwriter_pos(sd_mwriter *writer);
+long sd_mwriter_pos(const sd_mwriter *writer);
 void sd_mwriter_xor(sd_mwriter *writer, uint8_t key);
 
 void sd_mwrite_buf(sd_mwriter *writer, const char *buf, int len);

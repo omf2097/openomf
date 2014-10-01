@@ -24,7 +24,7 @@ sd_mwriter* sd_mwriter_open() {
     return mwriter;
 }
 
-void sd_mwriter_save(sd_mwriter *src, sd_writer *dst) {
+void sd_mwriter_save(const sd_mwriter *src, sd_writer *dst) {
     sd_write_buf(dst, src->buf, src->data_len);
 }
 
@@ -34,7 +34,7 @@ void sd_mwriter_close(sd_mwriter *writer) {
     free(writer);
 }
 
-long sd_mwriter_pos(sd_mwriter *writer) {
+long sd_mwriter_pos(const sd_mwriter *writer) {
     return writer->data_len;
 }
 

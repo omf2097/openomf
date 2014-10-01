@@ -14,7 +14,7 @@ sd_mreader* sd_mreader_open(char *buf, long len) {
     return reader;
 }
 
-sd_mreader* sd_mreader_open_from_reader(sd_reader *reader, int len) {
+sd_mreader* sd_mreader_open_from_reader(const sd_reader *reader, int len) {
     char *buf = malloc(len);
     sd_read_buf(reader, buf, len);
     sd_mreader *mreader = sd_mreader_open(buf, len);
@@ -28,11 +28,11 @@ void sd_mreader_xor(sd_mreader *reader, uint8_t key) {
     }
 }
 
-long sd_mreader_size(sd_mreader *reader) {
+long sd_mreader_size(const sd_mreader *reader) {
     return reader->len;
 }
 
-long sd_mreader_pos(sd_mreader *reader) {
+long sd_mreader_pos(const sd_mreader *reader) {
     return reader->pos;
 }
 
