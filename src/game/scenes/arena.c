@@ -7,7 +7,6 @@
 #include "video/surface.h"
 #include "video/video.h"
 #include "game/scenes/arena.h"
-#include "game/utils/progressbar.h"
 #include "audio/stream.h"
 #include "audio/audio.h"
 #include "audio/music.h"
@@ -31,21 +30,13 @@
 #include "game/menu/label.h"
 #include "game/menu/filler.h"
 #include "game/menu/frame.h"
+#include "game/menu/progressbar.h"
 #include "controller/controller.h"
 #include "controller/net_controller.h"
 #include "resources/ids.h"
 #include "utils/log.h"
 #include "utils/random.h"
 
-#define BAR_COLOR_BG color_create(89,40,101,255)
-#define BAR_COLOR_TL_BORDER color_create(60,0,60,255)
-#define BAR_COLOR_BR_BORDER color_create(178,0,223,255)
-#define HEALTHBAR_COLOR_BG color_create(255,56,109,255)
-#define HEALTHBAR_COLOR_TL_BORDER color_create(255,0,0,255)
-#define HEALTHBAR_COLOR_BR_BORDER color_create(158,0,0,255)
-#define ENDURANCEBAR_COLOR_BG color_create(97,150,186,255)
-#define ENDURANCEBAR_COLOR_TL_BORDER color_create(24,117,138,255)
-#define ENDURANCEBAR_COLOR_BR_BORDER color_create(0,69,93,255)
 #define TEXT_COLOR color_create(186,250,250,255)
 
 #define HAR1_START_POS 110
@@ -59,10 +50,8 @@ typedef struct arena_local_t {
     unsigned int state;
     int ending_ticks;
 
-    progress_bar player1_health_bar;
-    progress_bar player2_health_bar;
-    progress_bar player1_endurance_bar;
-    progress_bar player2_endurance_bar;
+    component *health_bars[2];
+    component *endurance_bars[2];
 
     chr_score player1_score;
     chr_score player2_score;
@@ -755,10 +744,11 @@ void arena_free(scene *scene) {
 
     music_stop();
 
-    progressbar_free(&local->player1_health_bar);
-    progressbar_free(&local->player2_health_bar);
-    progressbar_free(&local->player1_endurance_bar);
-    progressbar_free(&local->player2_endurance_bar);
+    // Free bar components
+    for(int i = 0; i < 2; i++) {
+        component_free(local->health_bars[i]);
+        component_free(local->endurance_bars[i]);
+    }
 
     settings_save();
 
@@ -931,21 +921,33 @@ void arena_dynamic_tick(scene *scene, int paused) {
     game_player *player2 = game_state_get_player(gs, 1);
 
     if(!paused) {
+        object *obj_har[2];
+        har *hars[2];
+        for(int i = 0; i < 2; i++) {
+            obj_har[i] = game_player_get_har(game_state_get_player(scene->gs, i));
+            hars[i] = obj_har[i]->userdata;
+        }
+
         // Handle scrolling score texts
         chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 0)));
         chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 1)));
 
-        // Turn the HARs to face the enemy
-        object *obj_har1,*obj_har2;
-        obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
-        obj_har2 = game_player_get_har(game_state_get_player(scene->gs, 1));
-        har *har1, *har2;
-        har1 = obj_har1->userdata;
-        har2 = obj_har2->userdata;
+        // Set and tick all proggressbars
+        for(int i = 0; i < 2; i++) {
+            float hp = (float)hars[i]->health / (float)hars[i]->health_max;
+            float en = (float)hars[i]->endurance / (float)hars[i]->endurance_max;
+            progressbar_set_progress(local->health_bars[i], hp * 100);
+            progressbar_set_progress(local->endurance_bars[i], en * 100);
+            progressbar_set_flashing(local->endurance_bars[i], (en * 100 < 50), 8);
+            component_tick(local->health_bars[i]);
+            component_tick(local->endurance_bars[i]);
+        }
 
-        har1->delay = ceil(player2->ctrl->rtt / 2.0f);
-        har2->delay = ceil(player1->ctrl->rtt / 2.0f);
+        // RTT stuff
+        hars[0]->delay = ceil(player2->ctrl->rtt / 2.0f);
+        hars[1]->delay = ceil(player1->ctrl->rtt / 2.0f);
 
+        // Endings and beginnings
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
             settings *setting = settings_get();
             if (setting->gameplay.hazards_on) {
@@ -955,11 +957,10 @@ void arena_dynamic_tick(scene *scene, int paused) {
         if(local->state == ARENA_STATE_ENDING) {
             chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
             chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
-            if (player_frame_isset(obj_har1, "be")
-                || player_frame_isset(obj_har2, "be")
+            if (player_frame_isset(obj_har[0], "be")
+                || player_frame_isset(obj_har[1], "be")
                 || chr_score_onscreen(s1)
                 || chr_score_onscreen(s2)) {
-                /*DEBUG("blocking ending");*/
             } else {
                 local->ending_ticks++;
             }
@@ -999,8 +1000,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     object_set_gravity(scrap, 0.4f);
                     object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
                     object_set_layers(scrap, LAYER_SCRAP);
+                    object_set_shadow(scrap, 1);
                     object_dynamic_tick(scrap);
-                    scrap->cast_shadow = 1;
                     scrap_create(scrap);
                     game_state_add_object(gs, scrap, RENDER_LAYER_TOP, 0, 0);
                 }
@@ -1058,36 +1059,15 @@ void arena_render_overlay(scene *scene) {
     sprintf(buf, "%u", rand_get_seed());
     font_render(&font_small, buf, 130, 8, TEXT_COLOR);
 #endif
-    har *har[2];
     for(int i = 0; i < 2; i++) {
         player[i] = game_state_get_player(scene->gs, i);
         obj[i] = game_player_get_har(player[i]);
-        har[i] = object_get_userdata(obj[i]);
     }
     if(obj[0] != NULL && obj[1] != NULL) {
-        float p1_hp = (float)har[0]->health / (float)har[0]->health_max;
-        float p2_hp = (float)har[1]->health / (float)har[1]->health_max;
-        progressbar_set(&local->player1_health_bar, p1_hp * 100);
-        progressbar_set(&local->player2_health_bar, p2_hp * 100);
-        progressbar_render(&local->player1_health_bar);
-        progressbar_render(&local->player2_health_bar);
-
-        // Set endurance bar
-        float p1_en = (float)har[0]->endurance / (float)har[0]->endurance_max;
-        float p2_en = (float)har[1]->endurance / (float)har[1]->endurance_max;
-        progressbar_set(&local->player1_endurance_bar, p1_en * 100);
-        progressbar_set(&local->player2_endurance_bar, p2_en * 100);
-
-        if (p1_en * 100 < 50 && scene->gs->tick % 8 < 4) {
-            progressbar_render_flashing(&local->player1_endurance_bar, 1);
-        } else {
-            progressbar_render(&local->player1_endurance_bar);
-        }
-
-        if (p2_en * 100 < 50 && scene->gs->tick % 8 < 4) {
-            progressbar_render_flashing(&local->player2_endurance_bar, 1);
-        } else {
-            progressbar_render(&local->player2_endurance_bar);
+        //  Render progress bar components
+        for(int i = 0; i < 2; i++) {
+            component_render(local->health_bars[i]);
+            component_render(local->endurance_bars[i]);
         }
 
         // Render HAR and pilot names
@@ -1337,45 +1317,17 @@ int arena_create(scene *scene) {
     // TODO support rendering text onto it
     menu_background_create(&local->sur, 301, 37);
 
-    // Health bars
-    progressbar_create(&local->player1_health_bar,
-                       5, 5, 100, 8,
-                       BAR_COLOR_TL_BORDER,
-                       BAR_COLOR_BR_BORDER,
-                       BAR_COLOR_BG,
-                       HEALTHBAR_COLOR_TL_BORDER,
-                       HEALTHBAR_COLOR_BR_BORDER,
-                       HEALTHBAR_COLOR_BG,
-                       PROGRESSBAR_RIGHT);
-    progressbar_create(&local->player2_health_bar,
-                       215, 5, 100, 8,
-                       BAR_COLOR_TL_BORDER,
-                       BAR_COLOR_BR_BORDER,
-                       BAR_COLOR_BG,
-                       HEALTHBAR_COLOR_TL_BORDER,
-                       HEALTHBAR_COLOR_BR_BORDER,
-                       HEALTHBAR_COLOR_BG,
-                       PROGRESSBAR_LEFT);
-    progressbar_create_flashing(&local->player1_endurance_bar,
-                       5, 14, 100, 4,
-                       BAR_COLOR_TL_BORDER,
-                       BAR_COLOR_BR_BORDER,
-                       BAR_COLOR_BG,
-                       BAR_COLOR_BR_BORDER,
-                       ENDURANCEBAR_COLOR_TL_BORDER,
-                       ENDURANCEBAR_COLOR_BR_BORDER,
-                       ENDURANCEBAR_COLOR_BG,
-                       PROGRESSBAR_RIGHT);
-    progressbar_create_flashing(&local->player2_endurance_bar,
-                       215, 14, 100, 4,
-                       BAR_COLOR_TL_BORDER,
-                       BAR_COLOR_BR_BORDER,
-                       BAR_COLOR_BG,
-                       BAR_COLOR_BR_BORDER,
-                       ENDURANCEBAR_COLOR_TL_BORDER,
-                       ENDURANCEBAR_COLOR_BR_BORDER,
-                       ENDURANCEBAR_COLOR_BG,
-                       PROGRESSBAR_LEFT);
+    // Health and endurance bars
+    local->health_bars[0] = progressbar_create(PROGRESSBAR_THEME_HEALTH, PROGRESSBAR_RIGHT, 100);
+    component_layout(local->health_bars[0], 5, 5, 100, 8);
+    local->health_bars[1] = progressbar_create(PROGRESSBAR_THEME_HEALTH, PROGRESSBAR_LEFT, 100);
+    component_layout(local->health_bars[1], 215, 5, 100, 8);
+    local->endurance_bars[0] = progressbar_create(PROGRESSBAR_THEME_ENDURANCE, PROGRESSBAR_RIGHT, 100);
+    component_layout(local->endurance_bars[0], 5, 14, 100, 4);
+    local->endurance_bars[1] = progressbar_create(PROGRESSBAR_THEME_ENDURANCE, PROGRESSBAR_LEFT, 100);
+    component_layout(local->endurance_bars[1], 215, 14, 100, 4);
+
+    // Score positioning
     chr_score_set_pos(game_player_get_score(_player[0]), 5, 33, OBJECT_FACE_RIGHT);
     chr_score_set_pos(game_player_get_score(_player[1]), 315, 33, OBJECT_FACE_LEFT); // TODO: Set better coordinates for this
 

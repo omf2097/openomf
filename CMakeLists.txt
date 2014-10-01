@@ -233,6 +233,7 @@ set(OPENOMF_SRC
     src/game/menu/frame.c
     src/game/menu/label.c
     src/game/menu/filler.c
+    src/game/menu/progressbar.c
     src/game/game_state.c
     src/game/game_player.c
     src/game/common_defines.c
@@ -240,7 +241,6 @@ set(OPENOMF_SRC
     src/game/utils/serial.c
     src/game/utils/settings.c
     src/game/utils/score.c
-    src/game/utils/progressbar.c
     src/game/utils/har_screencap.c
     src/game/utils/formatting.c
     src/controller/controller.c
