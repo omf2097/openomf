@@ -161,7 +161,6 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_pal
                     buf[rowstart] = c & 0x00ff;
                     buf[rowstart+1] = (c & 0xff00) >> 8;
                     rowlen = 0;
-                    lastx = -1;
                     rowstart = i;
                     i+=2;
                 }
@@ -403,7 +402,6 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
                     buf[rowstart] = c & 0x00ff;
                     buf[rowstart + 1] = (c & 0xff00) >> 8;
                     rowlen = 0;
-                    lastx = -1;
                     rowstart = i;
                     i += 2;
                 }

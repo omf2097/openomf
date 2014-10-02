@@ -45,6 +45,11 @@ int sd_language_load(sd_language *language, const char *filename) {
         string_count++;
     }
     sd_reader_set(r, 0);
+
+    if (!string_count) {
+        sd_reader_close(r);
+        return SD_FILE_INVALID_TYPE;
+    }
     
     // Some variables etc.
     unsigned int offsets[string_count+1];
@@ -59,6 +64,7 @@ int sd_language_load(sd_language *language, const char *filename) {
         offsets[pos] = offset;
         pos++;
     }
+
     offsets[pos] = file_size;
     
     // Read real titles
