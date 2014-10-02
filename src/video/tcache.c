@@ -103,6 +103,9 @@ SDL_Texture* tcache_get(surface *sur,
                         char *remap_table,
                         uint8_t pal_offset) {
 
+    if(sur == NULL || sur->w == 0 || sur->h == 0 || sur->data == NULL)
+        return NULL;
+
     // Form a key
     tcache_entry_key key;
     memset(&key, 0, sizeof(tcache_entry_key));

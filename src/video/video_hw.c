@@ -30,6 +30,8 @@ void hw_render_background(
                     surface *sur) {
 
     SDL_Texture *tex = tcache_get(sur, state->cur_palette, NULL, 0);
+    if(tex == NULL)
+        return;
     SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
     SDL_SetTextureAlphaMod(tex, 0xFF);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_NONE);
@@ -48,6 +50,8 @@ void hw_render_sprite_fsot(
 
     hw_scale_rect(state, dst);
     SDL_Texture *tex = tcache_get(sur, state->cur_palette, NULL, pal_offset);
+    if(tex == NULL)
+        return;
     SDL_SetTextureAlphaMod(tex, opacity);
     SDL_SetTextureColorMod(tex, color_mod.r, color_mod.g, color_mod.b);
     SDL_SetTextureBlendMode(tex, blend_mode);
