@@ -3,7 +3,7 @@
 
 #include "game/scenes/mainmenu/menu_video_confirm.h"
 
-#include "game/menu/gui.h"
+#include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "video/video.h"
 

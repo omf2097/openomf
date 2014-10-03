@@ -2,7 +2,7 @@
 #define _MENU_H
 
 #include "video/surface.h"
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 
 typedef void (*menu_tick_cb)(component *c);
 typedef void (*menu_free_cb)(component *c);

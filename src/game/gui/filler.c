@@ -1,5 +1,5 @@
-#include "game/menu/filler.h"
-#include "game/menu/widget.h"
+#include "game/gui/filler.h"
+#include "game/gui/widget.h"
 
 component* filler_create() {
     component *c = widget_create();

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "console/console.h"
 #include "console/console_type.h"
-#include "game/menu/menu_background.h"
+#include "game/gui/menu_background.h"
 #include "game/utils/settings.h"
 #include "video/video.h"
 

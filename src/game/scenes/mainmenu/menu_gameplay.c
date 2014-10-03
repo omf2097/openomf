@@ -1,6 +1,6 @@
 #include "game/scenes/mainmenu/menu_gameplay.h"
 
-#include "game/menu/gui.h"
+#include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "game/common_defines.h"
 

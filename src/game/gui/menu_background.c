@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "game/menu/menu_background.h"
+#include "game/gui/menu_background.h"
 #include "utils/log.h"
 #include "video/color.h"
 #include "video/image.h"

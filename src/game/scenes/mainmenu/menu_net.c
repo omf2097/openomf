@@ -2,7 +2,7 @@
 #include "game/scenes/mainmenu/menu_connect.h"
 #include "game/scenes/mainmenu/menu_listen.h"
 
-#include "game/menu/gui.h"
+#include "game/gui/gui.h"
 
 void menu_net_done(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);

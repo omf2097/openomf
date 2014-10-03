@@ -1,7 +1,7 @@
 #ifndef _TEXTSELECTOR_H
 #define _TEXTSELECTOR_H
 
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 #include "game/text/text.h"
 #include "utils/vector.h"
 

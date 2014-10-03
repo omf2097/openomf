@@ -2,7 +2,7 @@
 #include "game/scenes/mainmenu/menu_video.h"
 #include "game/scenes/mainmenu/menu_input.h"
 
-#include "game/menu/gui.h"
+#include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "audio/music.h"
 #include "audio/sound.h"

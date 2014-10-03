@@ -3,8 +3,8 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 
-#include "game/menu/textinput.h"
-#include "game/menu/widget.h"
+#include "game/gui/textinput.h"
+#include "game/gui/widget.h"
 #include "utils/vector.h"
 #include "video/video.h"
 #include "video/color.h"

@@ -1,7 +1,7 @@
 #ifndef _SIZER_H
 #define _SIZER_H
 
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 #include "utils/vector.h"
 
 typedef void (*sizer_render_cb)(component *c);

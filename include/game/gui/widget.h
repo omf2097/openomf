@@ -1,7 +1,7 @@
 #ifndef _WIDGET_H
 #define _WIDGET_H
 
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 
 typedef void (*widget_render_cb)(component *c);
 typedef int (*widget_event_cb)(component *c, SDL_Event *event);

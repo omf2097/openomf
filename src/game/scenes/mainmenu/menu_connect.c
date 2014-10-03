@@ -3,7 +3,7 @@
 
 #include "game/scenes/mainmenu/menu_connect.h"
 
-#include "game/menu/gui.h"
+#include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "game/protos/scene.h"
 #include "game/game_state.h"

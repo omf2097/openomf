@@ -3,7 +3,7 @@
 #include "game/scenes/mainmenu/menu_gameplay.h"
 #include "game/scenes/mainmenu/menu_net.h"
 
-#include "game/menu/gui.h"
+#include "game/gui/gui.h"
 #include "resources/ids.h"
 #include "game/utils/settings.h"
 

@@ -220,20 +220,20 @@ set(OPENOMF_SRC
     src/game/scenes/scoreboard.c
     src/game/objects/har.c
     src/game/text/text.c
-    src/game/menu/menu.c
-    src/game/menu/menu_background.c
-    src/game/menu/textbutton.c
-    src/game/menu/textselector.c
-    src/game/menu/textslider.c
-    src/game/menu/textinput.c
-    src/game/menu/dialog.c
-    src/game/menu/component.c
-    src/game/menu/sizer.c
-    src/game/menu/widget.c
-    src/game/menu/frame.c
-    src/game/menu/label.c
-    src/game/menu/filler.c
-    src/game/menu/progressbar.c
+    src/game/gui/menu.c
+    src/game/gui/menu_background.c
+    src/game/gui/textbutton.c
+    src/game/gui/textselector.c
+    src/game/gui/textslider.c
+    src/game/gui/textinput.c
+    src/game/gui/dialog.c
+    src/game/gui/component.c
+    src/game/gui/sizer.c
+    src/game/gui/widget.c
+    src/game/gui/frame.c
+    src/game/gui/label.c
+    src/game/gui/filler.c
+    src/game/gui/progressbar.c
     src/game/game_state.c
     src/game/game_player.c
     src/game/common_defines.c

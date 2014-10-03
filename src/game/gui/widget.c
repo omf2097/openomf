@@ -1,4 +1,4 @@
-#include "game/menu/widget.h"
+#include "game/gui/widget.h"
 
 
 void widget_set_obj(component *c, void *obj) {

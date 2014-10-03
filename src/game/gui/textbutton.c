@@ -2,9 +2,9 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 
-#include "game/menu/textbutton.h"
-#include "game/menu/menu_background.h"
-#include "game/menu/widget.h"
+#include "game/gui/textbutton.h"
+#include "game/gui/menu_background.h"
+#include "game/gui/widget.h"
 #include "video/video.h"
 #include "audio/sound.h"
 #include "utils/log.h"

@@ -3,8 +3,8 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 
-#include "game/menu/textslider.h"
-#include "game/menu/widget.h"
+#include "game/gui/textslider.h"
+#include "game/gui/widget.h"
 #include "audio/sound.h"
 #include "utils/log.h"
 #include "utils/compat.h"

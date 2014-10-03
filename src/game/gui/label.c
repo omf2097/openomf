@@ -1,5 +1,5 @@
-#include "game/menu/label.h"
-#include "game/menu/widget.h"
+#include "game/gui/label.h"
+#include "game/gui/widget.h"
 #include "utils/compat.h"
 
 typedef struct {

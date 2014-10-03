@@ -1,4 +1,4 @@
-#include "game/menu/sizer.h"
+#include "game/gui/sizer.h"
 
 component* sizer_get(const component *nc, int item) {
     sizer *local = component_get_obj(nc);

@@ -3,7 +3,7 @@
 #include "game/scenes/mainmenu/menu_keyboard.h"
 #include "game/scenes/mainmenu/menu_presskey.h"
 
-#include "game/menu/gui.h"
+#include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "controller/keyboard.h"
 #include "utils/compat.h"

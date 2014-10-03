@@ -1,7 +1,7 @@
 #ifndef _TEXTSLIDER_H
 #define _TEXTSLIDER_H
 
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 #include "game/text/text.h"
 
 typedef void (*textslider_slide_cb)(component *c, void *userdata, int pos);

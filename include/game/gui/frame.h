@@ -1,7 +1,7 @@
 #ifndef _FRAME_H
 #define _FRAME_H
 
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 
 typedef struct {
     int x;

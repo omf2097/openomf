@@ -1,7 +1,7 @@
 #ifndef _MENU_GAMEPLAY_H
 #define _MENU_GAMEPLAY_H
 
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 #include "game/protos/scene.h"
 
 component* menu_gameplay_create(scene *s);

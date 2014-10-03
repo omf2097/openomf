@@ -1,7 +1,7 @@
 #include "game/scenes/mainmenu/menu_input.h"
 #include "game/scenes/mainmenu/menu_keyboard.h"
 
-#include "game/menu/gui.h"
+#include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "controller/joystick.h"
 #include "controller/keyboard.h"

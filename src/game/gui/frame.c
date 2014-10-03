@@ -1,4 +1,4 @@
-#include "game/menu/frame.h"
+#include "game/gui/frame.h"
 
 guiframe* guiframe_create(int x, int y, int w, int h) {
     guiframe *frame = malloc(sizeof(guiframe));

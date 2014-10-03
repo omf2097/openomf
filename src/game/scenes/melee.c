@@ -21,8 +21,8 @@
 #include "game/protos/scene.h"
 #include "game/protos/object.h"
 #include "game/scenes/melee.h"
-#include "game/menu/progressbar.h"
-#include "game/menu/menu_background.h"
+#include "game/gui/progressbar.h"
+#include "game/gui/menu_background.h"
 
 #define MAX_STAT 20
 

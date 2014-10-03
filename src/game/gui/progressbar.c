@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#include "game/menu/progressbar.h"
-#include "game/menu/widget.h"
+#include "game/gui/progressbar.h"
+#include "game/gui/widget.h"
 #include "video/surface.h"
 #include "video/image.h"
 #include "video/video.h"

@@ -3,7 +3,7 @@
 
 #include "utils/vector.h"
 #include "video/surface.h"
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 
 typedef enum dialog_style_t {
     DIALOG_STYLE_YES_NO,

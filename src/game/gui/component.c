@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 #include "utils/log.h"
 
 void component_tick(component *c) {

@@ -1,6 +1,6 @@
 #include "game/scenes/newsroom.h"
-#include "game/menu/menu_background.h"
-#include "game/menu/dialog.h"
+#include "game/gui/menu_background.h"
+#include "game/gui/dialog.h"
 #include "resources/languages.h"
 #include "game/text/text.h"
 #include "game/utils/settings.h"

@@ -2,7 +2,7 @@
 #define _PROGRESSBAR_H
 
 #include "video/color.h"
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 
 typedef struct {
     color border_topleft_color;

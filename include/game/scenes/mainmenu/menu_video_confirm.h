@@ -1,7 +1,7 @@
 #ifndef _MENU_VIDEO_CONFIRM_H
 #define _MENU_VIDEO_CONFIRM_H
 
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 #include "game/protos/scene.h"
 #include "game/utils/settings.h"
 

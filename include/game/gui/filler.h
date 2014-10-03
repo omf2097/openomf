@@ -1,7 +1,7 @@
 #ifndef _FILLER_H
 #define _FILLER_H
 
-#include "game/menu/component.h"
+#include "game/gui/component.h"
 
 component* filler_create();
 

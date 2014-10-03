@@ -1,9 +1,9 @@
 #include <string.h>
 #include "video/video.h"
 #include "utils/log.h"
-#include "game/menu/menu_background.h"
-#include "game/menu/textbutton.h"
-#include "game/menu/dialog.h"
+#include "game/gui/menu_background.h"
+#include "game/gui/textbutton.h"
+#include "game/gui/dialog.h"
 
 #define MAX_WIDTH 160
 

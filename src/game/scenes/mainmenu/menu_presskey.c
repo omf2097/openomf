@@ -1,6 +1,6 @@
 #include "game/scenes/mainmenu/menu_presskey.h"
 
-#include "game/menu/gui.h"
+#include "game/gui/gui.h"
 #include "utils/compat.h"
 
 typedef struct {
