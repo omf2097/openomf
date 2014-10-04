@@ -77,7 +77,9 @@ static void progressbar_render(component *c) {
         bar->refresh = 0;
 
         // Free old block first ...
-        surface_free(bar->block);
+        if(bar->block) {
+            surface_free(bar->block);
+        }
 
         // ... Then draw the new one
         float prog = bar->percentage / 100.0f;
@@ -94,9 +96,15 @@ static void progressbar_render(component *c) {
                              bar->theme.int_bottomright_color,
                              bar->theme.int_bottomright_color,
                              bar->theme.int_topleft_color);
+            if(bar->block == NULL) {
+                bar->block = malloc(sizeof(surface));
+            }
             surface_create_from_image(bar->block, &tmp);
             surface_disable_cache(bar->block, 1);
             image_free(&tmp);
+        } else {
+            free(bar->block);
+            bar->block = NULL;
         }
     }
 
@@ -131,8 +139,10 @@ static void progressbar_tick(component *c) {
 
 static void progressbar_free(component *c) {
     progressbar *bar = widget_get_obj(c);
-    surface_free(bar->block);
-    free(bar->block);
+    if(bar->block) {
+        surface_free(bar->block);
+        free(bar->block);
+    }
     surface_free(bar->background);
     free(bar->background);
     surface_free(bar->background_alt);
@@ -147,7 +157,7 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
     // Allocate everything
     bar->background = malloc(sizeof(surface));
     bar->background_alt = malloc(sizeof(surface));
-    bar->block = malloc(sizeof(surface));
+    bar->block = NULL;
 
     // Background,
     image_create(&tmp, w, h);
@@ -171,9 +181,6 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
                      bar->theme.border_topleft_color);
     surface_create_from_image(bar->background_alt, &tmp);
     image_free(&tmp);
-
-    surface_create(bar->block, SURFACE_TYPE_RGBA, 0, 0);
-    surface_disable_cache(bar->block, 1);
 }
 
 component* progressbar_create(progressbar_theme theme, int orientation, int percentage) {

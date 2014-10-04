@@ -103,8 +103,14 @@ SDL_Texture* tcache_get(surface *sur,
                         char *remap_table,
                         uint8_t pal_offset) {
 
-    if(sur == NULL || sur->w == 0 || sur->h == 0 || sur->data == NULL)
+    if(sur == NULL || sur->w == 0 || sur->h == 0 || sur->data == NULL) {
+        if(sur != NULL) {
+            DEBUG("Invalid surface requested from tcache: w,h = %d,%d data = %p", sur->w, sur->h, sur->data);
+        } else {
+            DEBUG("Invalid surface requested from tcache: w,h = %d,%d surface = %p", sur->w, sur->h, sur);
+        }
         return NULL;
+    }
 
     // Form a key
     tcache_entry_key key;
