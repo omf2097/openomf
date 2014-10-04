@@ -2,6 +2,19 @@
 #include "video/video_soft.h"
 #include "utils/log.h"
 
+/*
+* This is a software renderer for the special cases where the hardware renderer
+* can't do something. The idea is that scene can switch renderer on-the-fly as
+* required. In the future, we might want to expand this to work along, so that
+* playing the game fully software rendered would be possible.
+*
+* Note that currently Z-index handling is not anywhere near perfect. RGBA surfaces are
+* handled as one layer while sprite surfaces are blitted on another layer. These are then
+* blitted together and dumped on the screen. This creates all kinds of interesting trouble ...
+*
+* TODO: Rewrite and rethink
+*/
+
 typedef struct soft_renderer_t {
     char *tmp_normal;
     char *tmp_scaling;
