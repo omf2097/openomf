@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
     // Path manager
     if(pm_init() != 0) {
         err_msgbox(pm_get_errormsg());
+        printf("Error: %s.\n", pm_get_errormsg());
         return 1;
     }
 
@@ -81,11 +82,13 @@ int main(int argc, char *argv[]) {
 #if defined(DEBUGMODE) || defined(STANDALONE_SERVER)
     if(log_init(0)) {
         err_msgbox("Error while initializing log!");
+        printf("Error while initializing log!\n");
         goto exit_0;
     }
 #else
     if(log_init(pm_get_local_path(LOG_PATH))) {
         err_msgbox("Error while initializing log '%s'!", pm_get_local_path(LOG_PATH));
+        printf("Error while initializing log '%s'!", pm_get_local_path(LOG_PATH));
         goto exit_0;
     }
 #endif
@@ -102,6 +105,7 @@ int main(int argc, char *argv[]) {
     // Init config
     if(settings_init(pm_get_local_path(CONFIG_PATH))) {
         err_msgbox("Failed to initialize settings file");
+        PERROR("Failed to initialize settings file");
         goto exit_1;
     }
     settings_load();
