@@ -55,6 +55,11 @@ void sizer_set_free_cb(component *c, sizer_free_cb cb) {
     local->free = cb;
 }
 
+void sizer_set_find_cb(component *c, sizer_find_cb cb) {
+    sizer *local = component_get_obj(c);
+    local->find = cb;
+}
+
 void sizer_attach(component *c, component *nc) {
     sizer *local = component_get_obj(c);
     nc->parent = c;
@@ -133,6 +138,31 @@ static void sizer_free(component *c) {
     free(local);
 }
 
+static component* sizer_find(component *c, int id) {
+    sizer *local = component_get_obj(c);
+
+    // Free all objects inside the sizer
+    iterator it;
+    component **tmp;
+    vector_iter_begin(&local->objs, &it);
+    while((tmp = iter_next(&it)) != NULL) {
+        // Find out if the component is what we're looking for.
+        // If it is, return pointer.
+        component *out = component_find(*tmp, id);
+        if(out != NULL) {
+            return out;
+        }
+    }
+
+    // If find callback is set, try to use it.
+    if(local->find) {
+        return local->find(c, id);
+    }
+
+    // If requested ID was not found in any of the internal components/widgets, return NULL.
+    return NULL;
+}
+
 component* sizer_create() {
     component *c = component_create();
 
@@ -140,11 +170,14 @@ component* sizer_create() {
     memset(local, 0, sizeof(sizer));
     vector_create(&local->objs, sizeof(component*));
     component_set_obj(c, local);
+
     component_set_tick_cb(c, sizer_tick);
     component_set_render_cb(c, sizer_render);
     component_set_event_cb(c, sizer_event);
     component_set_action_cb(c, sizer_action);
     component_set_layout_cb(c, sizer_layout);
     component_set_free_cb(c, sizer_free);
+    component_set_find_cb(c, sizer_find);
+
     return c;
 }

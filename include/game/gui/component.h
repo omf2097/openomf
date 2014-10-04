@@ -30,6 +30,7 @@ typedef int (*component_action_cb)(component *c, int action);
 typedef void (*component_layout_cb)(component *c, int x, int y, int w, int h);
 typedef void (*component_tick_cb)(component *c);
 typedef void (*component_free_cb)(component *c);
+typedef component* (*component_find_cb)(component *c, int id);
 
 /*! \brief Basic GUI object
  *
@@ -61,6 +62,7 @@ struct component_t {
     component_layout_cb layout; ///< Layout function callback. This is called after the component tree is created. Sets component size and position.
     component_tick_cb tick;     ///< Tick function callback. This is called periodically.
     component_free_cb free;     ///< Free function callback. Any component callbacks should be done here.
+    component_find_cb find;     ///< Should only be set by widget and sizer. Used to look up widgets by ID.
 
     component *parent;          ///< Parent component. For widgets, this should be always a sizer. For root sizer it will be NULL.
 };
@@ -83,6 +85,9 @@ int component_is_disabled(const component *c);
 int component_is_selected(const component *c);
 int component_is_focused(const component *c);
 
+// ID lookup stuff
+component* component_find(component *c, int id);
+
 // Basic component callbacks
 void component_set_obj(component *c, void *obj);
 void* component_get_obj(const component *c);
@@ -92,5 +97,6 @@ void component_set_action_cb(component *c, component_action_cb cb);
 void component_set_layout_cb(component *c, component_layout_cb cb);
 void component_set_tick_cb(component *c, component_tick_cb cb);
 void component_set_free_cb(component *c, component_free_cb cb);
+void component_set_find_cb(component *c, component_find_cb cb);
 
 #endif // _COMPONENT_H

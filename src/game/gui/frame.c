@@ -24,6 +24,13 @@ void guiframe_free(guiframe *frame) {
     free(frame);
 }
 
+component* guiframe_find(guiframe *frame, int id) {
+    if(frame->root_node) {
+        return component_find(frame->root_node, id);
+    }
+    return NULL;
+}
+
 component* guiframe_get_root(const guiframe *frame) {
     return frame->root_node;
 }

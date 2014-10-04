@@ -69,6 +69,10 @@ int component_is_focused(const component *c) {
     return c->is_focused;
 }
 
+component* component_find(component *c, int id) {
+    return c->find(c, id);
+}
+
 void component_set_obj(component *c, void *obj) {
     c->obj = obj;
 }
@@ -99,6 +103,10 @@ void component_set_tick_cb(component *c, component_tick_cb cb) {
 
 void component_set_free_cb(component *c, component_free_cb cb) {
     c->free = cb;
+}
+
+void component_set_find_cb(component *c, component_find_cb cb) {
+    c->find = cb;
 }
 
 component* component_create() {

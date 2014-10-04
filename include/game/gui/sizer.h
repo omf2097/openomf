@@ -10,6 +10,7 @@ typedef int (*sizer_action_cb)(component *c, int action);
 typedef void (*sizer_layout_cb)(component *c, int x, int y, int w, int h);
 typedef void (*sizer_tick_cb)(component *c);
 typedef void (*sizer_free_cb)(component *c);
+typedef component* (*sizer_find_cb)(component *c, int id);
 
 typedef struct {
     void *obj;
@@ -21,6 +22,7 @@ typedef struct {
     sizer_layout_cb layout;
     sizer_tick_cb tick;
     sizer_free_cb free;
+    sizer_find_cb find;
 } sizer;
 
 component* sizer_create();
@@ -37,6 +39,7 @@ void sizer_set_action_cb(component *c, sizer_action_cb cb);
 void sizer_set_layout_cb(component *c, sizer_layout_cb cb);
 void sizer_set_tick_cb(component *c, sizer_tick_cb cb);
 void sizer_set_free_cb(component *c, sizer_free_cb cb);
+void sizer_set_find_cb(component *c, sizer_find_cb cb);
 
 void sizer_attach(component *c, component *nc);
 

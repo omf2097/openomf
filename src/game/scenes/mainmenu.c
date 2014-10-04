@@ -5,7 +5,10 @@
 #include "game/gui/frame.h"
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/mainmenu/menu_main.h"
+#include "game/scenes/mainmenu/menu_widget_ids.h"
 #include "game/utils/settings.h"
+
+#include "utils/log.h"
 
 typedef struct mainmenu_local_t {
     guiframe *frame;
@@ -114,16 +117,14 @@ int mainmenu_create(scene *scene) {
     scene_set_dynamic_tick_cb(scene, mainmenu_tick);
     scene_set_startup_cb(scene, mainmenu_startup);
 
-/*
     if(scene->gs->net_mode == NET_MODE_CLIENT) {
-        component_click(&local->net_button);
-        component_click(&local->net_connect_button);
-        component_click(&local->connect_ip_button);
+        component_action(guiframe_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
+        component_action(guiframe_find(local->frame, NETWORK_CONNECT_BUTTON_ID), ACT_PUNCH);
+        component_action(guiframe_find(local->frame, NETWORK_CONNECT_IP_BUTTON_ID), ACT_PUNCH);
     } else if(scene->gs->net_mode == NET_MODE_SERVER) {
-        component_click(&local->net_button);
-        component_click(&local->net_listen_button);
+        component_action(guiframe_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
+        component_action(guiframe_find(local->frame, NETWORK_LISTEN_BUTTON_ID), ACT_PUNCH);
     }
-*/
 
     // clear it, so this only happens the first time
     scene->gs->net_mode = NET_MODE_NONE;

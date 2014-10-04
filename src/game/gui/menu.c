@@ -261,6 +261,14 @@ static void menu_free(component *c) {
     free(m);
 }
 
+static component* menu_find(component *c, int id) {
+    menu *m = sizer_get_obj(c);
+    if(m->submenu) {
+        return component_find(m->submenu, id);
+    }
+    return NULL;
+}
+
 component* menu_create(int obj_h) {
     component *c = sizer_create();
 
@@ -276,6 +284,7 @@ component* menu_create(int obj_h) {
     sizer_set_action_cb(c, menu_action);
     sizer_set_layout_cb(c, menu_layout);
     sizer_set_free_cb(c, menu_free);
+    sizer_set_find_cb(c, menu_find);
 
     return c;
 }

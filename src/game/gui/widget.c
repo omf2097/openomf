@@ -96,6 +96,13 @@ static void widget_free(component *c) {
     free(local);
 }
 
+static component* widget_find(component *c, int id) {
+    if(widget_get_id(c) == id) {
+        return c;
+    }
+    return NULL;
+}
+
 component* widget_create() {
     component *c = component_create();
     c->supports_disable = 1;
@@ -104,6 +111,7 @@ component* widget_create() {
 
     widget *local = malloc(sizeof(widget));
     memset(local, 0, sizeof(widget));
+    local->id = -1;
     component_set_obj(c, local);
 
     component_set_tick_cb(c, widget_tick);
@@ -112,6 +120,7 @@ component* widget_create() {
     component_set_action_cb(c, widget_action);
     component_set_layout_cb(c, widget_layout);
     component_set_free_cb(c, widget_free);
+    component_set_find_cb(c, widget_find);
 
     return c;
 }

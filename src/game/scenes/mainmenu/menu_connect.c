@@ -2,6 +2,7 @@
 #include <time.h>
 
 #include "game/scenes/mainmenu/menu_connect.h"
+#include "game/scenes/mainmenu/menu_widget_ids.h"
 
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
@@ -150,6 +151,7 @@ component* menu_connect_create(scene *s) {
     local->addr_input = textinput_create(&font_large, "Host/IP", settings_get()->net.net_connect_ip);
     local->connect_button = textbutton_create(&font_large, "CONNECT", COM_ENABLED, menu_connect_start, s);
     local->cancel_button = textbutton_create(&font_large, "CANCEL", COM_ENABLED, menu_connect_cancel, s);
+    widget_set_id(local->connect_button, NETWORK_CONNECT_IP_BUTTON_ID);
     menu_attach(menu, local->addr_input);
     menu_attach(menu, local->connect_button);
     menu_attach(menu, local->cancel_button);

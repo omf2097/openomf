@@ -2,6 +2,7 @@
 #include "game/scenes/mainmenu/menu_configuration.h"
 #include "game/scenes/mainmenu/menu_gameplay.h"
 #include "game/scenes/mainmenu/menu_net.h"
+#include "game/scenes/mainmenu/menu_widget_ids.h"
 
 #include "game/gui/gui.h"
 #include "resources/ids.h"
@@ -87,7 +88,9 @@ component* menu_main_create(scene *s) {
     menu_attach(menu, textbutton_create(&font_large, "ONE PLAYER GAME", COM_ENABLED, mainmenu_1v1, s));
     menu_attach(menu, textbutton_create(&font_large, "TWO PLAYER GAME", COM_ENABLED, mainmenu_1v2, s));
     menu_attach(menu, textbutton_create(&font_large, "TOURNAMENT PLAY", COM_DISABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&font_large, "NETWORK PLAY", COM_ENABLED, mainmenu_enter_network, s));
+    component *net =  textbutton_create(&font_large, "NETWORK PLAY", COM_ENABLED, mainmenu_enter_network, s);
+    widget_set_id(net, NETWORK_BUTTON_ID);
+    menu_attach(menu, net);
     menu_attach(menu, textbutton_create(&font_large, "CONFIGURATION", COM_ENABLED, mainmenu_enter_configuration, s));
     menu_attach(menu, textbutton_create(&font_large, "GAMEPLAY", COM_ENABLED, mainmenu_enter_gameplay, s));
     menu_attach(menu, textbutton_create(&font_large, "HELP", COM_DISABLED, NULL, NULL));
