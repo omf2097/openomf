@@ -26,6 +26,12 @@ IF(CUNIT_FOUND)
 
     target_link_libraries(openomf_test_main ${LIBS})
 
+    # Change policy to allow "test" target name
+    cmake_policy(PUSH)
+    if(POLICY CMP0037)
+        cmake_policy(SET CMP0037 OLD)
+    endif()
     add_custom_target(test openomf_test_main)
+    cmake_policy(POP)
 ENDIF(CUNIT_FOUND)
 
