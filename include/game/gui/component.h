@@ -47,6 +47,11 @@ struct component_t {
     int h;                      ///< Height of the object in pixels.
     void *obj;                  ///< Specialization object pointer. Basically always Sizer or Widget struct.
 
+    int x_hint;                 ///< X position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
+    int y_hint;                 ///< Y position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
+    int w_hint;                 ///< W size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
+    int h_hint;                 ///< H size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
+
     char supports_select;       ///< Whether the component can be selected by component_select() call.
     char is_selected;           ///< Whether the component is selected
 
@@ -84,6 +89,9 @@ void component_focus(component *c, int focused);
 int component_is_disabled(const component *c);
 int component_is_selected(const component *c);
 int component_is_focused(const component *c);
+
+void component_set_size_hints(component *c, int w, int h);
+void component_set_pos_hints(component *c, int x, int y);
 
 // ID lookup stuff
 component* component_find(component *c, int id);

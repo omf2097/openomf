@@ -69,6 +69,16 @@ int component_is_focused(const component *c) {
     return c->is_focused;
 }
 
+void component_set_size_hints(component *c, int w, int h) {
+    c->w_hint = w;
+    c->h_hint = h;
+}
+
+void component_set_pos_hints(component *c, int x, int y) {
+    c->x_hint = x;
+    c->y_hint = y;
+}
+
 component* component_find(component *c, int id) {
     return c->find(c, id);
 }
@@ -112,6 +122,10 @@ void component_set_find_cb(component *c, component_find_cb cb) {
 component* component_create() {
     component *c = malloc(sizeof(component));
     memset(c, 0, sizeof(component));
+    c->x_hint = -1;
+    c->y_hint = -1;
+    c->w_hint = -1;
+    c->h_hint = -1;
     return c;
 }
 
