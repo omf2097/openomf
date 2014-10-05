@@ -221,8 +221,10 @@ set(OPENOMF_SRC
     src/game/objects/har.c
     src/game/text/text.c
     src/game/gui/menu.c
+    src/game/gui/trn_menu.c
     src/game/gui/menu_background.c
     src/game/gui/textbutton.c
+    src/game/gui/spritebutton.c
     src/game/gui/textselector.c
     src/game/gui/textslider.c
     src/game/gui/textinput.c
