@@ -68,6 +68,11 @@ void mainmenu_soreboard(component *c, void *userdata) {
     game_state_set_next(s->gs, SCENE_SCOREBOARD);
 }
 
+void mainmenu_mechlab(component *c, void *userdata) {
+    scene *s = userdata;
+    game_state_set_next(s->gs, SCENE_MECHLAB);
+}
+
 void mainmenu_enter_configuration(component *c, void *userdata) {
     scene *s = userdata;
     menu_set_submenu(c->parent, menu_configuration_create(s));
@@ -87,7 +92,7 @@ component* menu_main_create(scene *s) {
     component* menu = menu_create(11);
     menu_attach(menu, textbutton_create(&font_large, "ONE PLAYER GAME", COM_ENABLED, mainmenu_1v1, s));
     menu_attach(menu, textbutton_create(&font_large, "TWO PLAYER GAME", COM_ENABLED, mainmenu_1v2, s));
-    menu_attach(menu, textbutton_create(&font_large, "TOURNAMENT PLAY", COM_DISABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&font_large, "TOURNAMENT PLAY", COM_ENABLED, mainmenu_mechlab, s));
     component *net =  textbutton_create(&font_large, "NETWORK PLAY", COM_ENABLED, mainmenu_enter_network, s);
     widget_set_id(net, NETWORK_BUTTON_ID);
     menu_attach(menu, net);

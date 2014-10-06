@@ -3,13 +3,15 @@
 
 #include "game/protos/object.h"
 #include "game/scenes/mechlab.h"
+#include "game/scenes/mechlab/lab_main.h"
+#include "game/gui/frame.h"
 #include "game/protos/scene.h"
-#include "game/text/text.h"
 #include "game/game_state.h"
-#include "utils/log.h"
 #include "video/video.h"
+#include "utils/log.h"
 #include "resources/ids.h"
 
+/*
 #define NPANELBUTTON(p) sizeof(p)/sizeof(object)
 
 typedef struct mechlab_hand_t {
@@ -22,10 +24,12 @@ typedef struct mechlab_hand_t {
     int prev_sel;
     float move_interp;
 } mechlab_hand;
+*/
 
-
-typedef struct mechlab_local_t {
+typedef struct {
     object bg_obj[3];
+    guiframe *frame;
+    /*
     object panel_obj;
 
     object main_buttons[10];
@@ -36,9 +40,9 @@ typedef struct mechlab_local_t {
     object upgrade_buttons[11];
 
     mechlab_hand hand;
-
+*/
 } mechlab_local;
-
+/*
 void panelbutton_create(object *pb, unsigned int npb, scene *scene, unsigned int anim) {
     for(int i = 0;i < npb; i++) {
         sprite *button_spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, anim)->ani, i));
@@ -55,29 +59,34 @@ void panelbutton_free(object *pb, unsigned int npb) {
     for(int i = 0;i < npb; i++) {
         object_free(&pb[i]);
     }
-}
+}*/
 
 void mechlab_free(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
-
+/*
     panelbutton_free(local->ailevel_buttons, NPANELBUTTON(local->ailevel_buttons));
     panelbutton_free(local->upgrade_buttons, NPANELBUTTON(local->upgrade_buttons));
     panelbutton_free(local->yesno_buttons, NPANELBUTTON(local->yesno_buttons));
     panelbutton_free(local->select_buttons, NPANELBUTTON(local->select_buttons));
     panelbutton_free(local->main_buttons, NPANELBUTTON(local->main_buttons));
     panelbutton_free(local->training_buttons, NPANELBUTTON(local->training_buttons));
-
+*/
     for(int i = 0; i < sizeof(local->bg_obj)/sizeof(object); i++) {
         object_free(&local->bg_obj[i]);
     }
+    /*
     object_free(&local->panel_obj);
     object_free(&local->hand.obj);
+    */
+    guiframe_free(local->frame);
     free(local);
 }
 
 void mechlab_tick(scene *scene, int paused) {
     mechlab_local *local = scene_get_userdata(scene);
 
+    guiframe_tick(local->frame);
+/*
     if(local->hand.moving) {
         vec2i buttonsize_prev = object_get_size(&local->hand.buttons[local->hand.prev_sel]);
         vec2i buttonpos_prev = object_get_pos(&local->hand.buttons[local->hand.prev_sel]);
@@ -102,9 +111,10 @@ void mechlab_tick(scene *scene, int paused) {
         }
     } else if(local->hand.pressing)  {
         object_dynamic_tick(&local->hand.obj);
-    }
+    }*/
 }
 
+/*
 void mechlab_hand_sel_button(mechlab_local *local) {
     vec2i buttonpos = object_get_pos(&local->hand.buttons[local->hand.sel]);
     DEBUG("HAND POSITION %d %d", buttonpos.x, buttonpos.y);
@@ -117,10 +127,13 @@ void mechlab_hand_sel_button(mechlab_local *local) {
         local->hand.moving = 1;
     }
 
-}
+}*/
 
 int mechlab_event(scene *scene, SDL_Event *event) {
     mechlab_local *local = scene_get_userdata(scene);
+
+    guiframe_event(local->frame, event);
+/*
     int hand_moved = 0;
 
     if(event->type == SDL_KEYDOWN) {
@@ -165,7 +178,7 @@ int mechlab_event(scene *scene, SDL_Event *event) {
             mechlab_hand_sel_button(local);
         }
         return 1;
-    }
+    }*/
     return 0;
 }
 
@@ -175,23 +188,28 @@ void mechlab_render(scene *scene) {
     for(int i = 0; i < sizeof(local->bg_obj)/sizeof(object); i++) {
         object_render(&local->bg_obj[i]);
     }
-    object_render(&local->panel_obj);
-    object_render(&local->hand.obj);
-}
 
+    guiframe_render(local->frame);
+    /*
+    object_render(&local->panel_obj);
+    object_render(&local->hand.obj);*/
+}
+/*
 void mechlab_hand_finished(object *hand_obj) {
     mechlab_local *local = object_get_userdata(hand_obj);
     local->hand.pressing = 0;
     player_reset(&local->hand.obj);
     object_dynamic_tick(&local->hand.obj);
-}
+}*/
 
 // Init mechlab
 int mechlab_create(scene *scene) {
     // Alloc
     mechlab_local *local = malloc(sizeof(mechlab_local));
+    memset(local, 0, sizeof(mechlab_local));
+
     animation *bg_ani[3];
-    animation *panel_ani;
+    //animation *panel_ani;
 
     // Init the background
     for(int i = 0; i < sizeof(bg_ani)/sizeof(animation*); i++) {
@@ -204,6 +222,13 @@ int mechlab_create(scene *scene) {
         object_set_animation_owner(&local->bg_obj[i], OWNER_OBJECT);
     }
 
+    // Create main menu
+    local->frame = guiframe_create(0, 0, 320, 200);
+    guiframe_set_root(local->frame, lab_main_create(scene));
+    guiframe_layout(local->frame);
+
+
+/*
     // Init the panel
     sprite *panel_spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 2));
     panel_ani = create_animation_from_single(panel_spr, panel_spr->pos);
@@ -235,7 +260,7 @@ int mechlab_create(scene *scene) {
     mechlab_hand_sel_button(local);
     object_set_finish_cb(&local->hand.obj, mechlab_hand_finished);
     object_dynamic_tick(&local->hand.obj);
-
+*/
     // Set callbacks
     scene_set_userdata(scene, local);
     scene_set_event_cb(scene, mechlab_event);

@@ -7,6 +7,6 @@
 
 typedef void (*spritebutton_click_cb)(component *c, void *userdata);
 
-component* spritebutton_create(const font *font, const char *text, const surface *img, int disabled, spritebutton_click_cb cb, void *userdata);
+component* spritebutton_create(const font *font, const char *text, surface *img, int disabled, spritebutton_click_cb cb, void *userdata);
 
 #endif // _SPRITEBUTTON_H

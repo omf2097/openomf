@@ -56,6 +56,10 @@ sprite* animation_get_sprite(animation *ani, int sprite_id) {
     return (sprite*)vector_get(&ani->sprites, sprite_id);
 }
 
+int animation_get_sprite_count(animation *ani) {
+    return vector_size(&ani->sprites);
+}
+
 void animation_free(animation *ani) {
     iterator it;
 
