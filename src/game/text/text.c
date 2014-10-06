@@ -68,7 +68,6 @@ void font_render_wrapped(const font *font, const char *text, int x, int y, int w
     font_render_wrapped_shadowed(font, text, x, y, w, c, 0);
 }
 
-
 void font_render_wrapped_internal(const font *font, const char *text, int x, int y, int max_w, color c, int shadow_flags, int only_size, int *out_w, int *out_h) {
     int len = strlen(text);
     int has_newline = 0;
