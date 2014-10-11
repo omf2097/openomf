@@ -118,21 +118,22 @@ IF(USE_OGGVORBIS)
     add_definitions(-DUSE_OGGVORBIS)
 ENDIF()
 
+# Find PNG if it is switched on
 IF(USE_PNG)
     find_package(PNG)
     find_package(ZLIB)
     add_definitions(-DUSE_PNG)
 ENDIF()
 
+# If tests are enabled, find CUnit
+IF(USE_TESTS)
+    find_package(CUnit)
+ENDIF()
+
 # Only strip on GCC (clang does not appreciate)
 IF(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wl,-s")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
-ENDIF()
-
-# Testing stuff
-IF(USE_TESTS)
-    add_subdirectory(testing)
 ENDIF()
 
 set(OPENOMF_SRC
@@ -224,6 +225,7 @@ set(OPENOMF_SRC
     src/game/gui/menu.c
     src/game/gui/trn_menu.c
     src/game/gui/menu_background.c
+    src/game/gui/text_render.c
     src/game/gui/textbutton.c
     src/game/gui/spritebutton.c
     src/game/gui/textselector.c
@@ -329,7 +331,7 @@ ENDIF()
 
 include_directories(${COREINCS})
 
-# Build the server binary 
+# Build the server binary
 # XXX uncomment this later when we start working on the dedicated server
 #add_executable(openomf_server ${OPENOMF_SRC})
 #set_target_properties(openomf_server PROPERTIES COMPILE_DEFINITIONS "STANDALONE_SERVER=1")
@@ -346,6 +348,33 @@ IF(NOT SERVER_ONLY)
     ENDIF(MINGW)
     target_link_libraries(openomf ${CORELIBS})
 ENDIF(NOT SERVER_ONLY)
+
+# Testing stuff
+IF(CUNIT_FOUND)
+    include_directories(${CUNIT_INCLUDE_DIR} testing/ include/)
+    SET(CORELIBS ${CORELIBS} ${CUNIT_LIBRARY})
+
+    add_executable(openomf_test_main
+        testing/test_main.c
+        testing/test_str.c
+        testing/test_hashmap.c
+        testing/test_vector.c
+        testing/test_list.c
+        testing/test_array.c
+        testing/test_text_render.c
+        ${OPENOMF_SRC}
+    )
+
+    target_link_libraries(openomf_test_main ${CORELIBS})
+
+    # Change policy to allow "test" target name
+    cmake_policy(PUSH)
+    if(POLICY CMP0037)
+        cmake_policy(SET CMP0037 OLD)
+    endif()
+    add_custom_target(test openomf_test_main)
+    cmake_policy(POP)
+ENDIF(CUNIT_FOUND)
 
 # Packaging
 add_subdirectory(packaging)

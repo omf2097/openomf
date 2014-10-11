@@ -1,19 +1,18 @@
 #ifndef _FONTS_H
 #define _FONTS_H
 
-enum {
-    FONT_UNDEFINED,
+#include "utils/vector.h"
+
+typedef enum {
     FONT_BIG,
     FONT_SMALL
-};
+} font_size;
 
-typedef struct font_t font;
-
-struct font_t {
-    int size;
+typedef struct {
+    font_size size;
     int w,h;
     vector surfaces;
-};
+} font;
 
 extern font font_small;
 extern font font_large;

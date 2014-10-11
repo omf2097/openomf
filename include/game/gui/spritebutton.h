@@ -2,7 +2,7 @@
 #define _SPRITEBUTTON_H
 
 #include "game/gui/component.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 #include "video/surface.h"
 
 enum {
@@ -21,7 +21,6 @@ typedef void (*spritebutton_click_cb)(component *c, void *userdata);
 
 component* spritebutton_create(const font *font, const char *text, surface *img, int disabled, spritebutton_click_cb cb, void *userdata);
 
-void spritebutton_set_text_padding(component *c, int top, int bottom, int left, int right);
-void spritebutton_set_text_align(component *c, int halign, int valign);
+void spritebutton_set_text_style(component *c, text_settings *set);
 
 #endif // _SPRITEBUTTON_H

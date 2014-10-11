@@ -5,7 +5,10 @@
 #include "video/color.h"
 #include "resources/fonts.h"
 
+#ifndef TEXT_SHADOW_DEF
+#define TEXT_SHADOW_DEF
 enum {
+    TEXT_SHADOW_NONE = 0x00,
     TEXT_SHADOW_TOP = 0x1,
     TEXT_SHADOW_BOTTOM = 0x2,
     TEXT_SHADOW_LEFT = 0x4,
@@ -14,6 +17,7 @@ enum {
     TEXT_SHADOW_VERTICAL = 0x3,
     TEXT_SHADOW_ALL = 0xF
 };
+#endif // TEXT_SHADOW_DEF
 
 void font_get_wrapped_size(const font *font, const char *text, int max_w, int *out_w, int *out_h);
 void font_get_wrapped_size_shadowed(const font *font, const char *text, int max_w, int shadow_flag, int *out_w, int *out_h);

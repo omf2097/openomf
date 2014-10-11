@@ -11,13 +11,12 @@ font font_small;
 font font_large;
 static int fonts_loaded = 0;
 
-void font_create(font *font) {
-    font->size = FONT_UNDEFINED;
-    vector_create(&font->surfaces, sizeof(surface*));
+void font_create(font *f) {
+    memset(f, 0, sizeof(font));
+    vector_create(&f->surfaces, sizeof(surface*));
 }
 
 void font_free(font *font) {
-    font->size = FONT_UNDEFINED;
     iterator it;
     vector_iter_begin(&font->surfaces, &it);
     surface **sur = NULL;

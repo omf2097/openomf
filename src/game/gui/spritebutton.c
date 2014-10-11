@@ -13,13 +13,7 @@ typedef struct {
     char *text;
     const font *font;
     surface *img;
-
-    int pad_top;
-    int pad_bottom;
-    int pad_right;
-    int pad_left;
-    int halign;
-    int valign;
+    text_settings text_conf;
 
     spritebutton_click_cb click_cb;
     void *userdata;
@@ -27,34 +21,7 @@ typedef struct {
 
 static void spritebutton_render(component *c) {
     spritebutton *sb = widget_get_obj(c);
-
-    int w_size = c->w - sb->pad_left - sb->pad_right;
-
-    int width, height;
-    font_get_wrapped_size(sb->font, sb->text, w_size, &width, &height);
-
-    int xoff = 0;
-    int yoff = 0;
-    if(sb->halign == HALIGN_CENTER) {
-        xoff = (c->w - width) / 2;
-    }
-    if(sb->valign == VALIGN_MIDDLE) {
-        yoff = (c->h - height) / 2;
-    }
-
-    // HACK TO FIX STUPID FONT RENDERING
-    // font_render_wrapped always wants to center everything, so fix offset. Bleargh.
-    // TODO: Fix this!
-    if(sb->halign == HALIGN_LEFT)
-        xoff = -xoff;
-    if(sb->halign == HALIGN_CENTER)
-        xoff = 0;
-
-    xoff += sb->pad_left;
-    yoff += sb->pad_top;
-
-    font_render_wrapped(sb->font, sb->text, c->x + xoff, c->y + yoff, w_size, color_create(0, 0, 123, 255));
-    //video_render_sprite(sb->img, c->x, c->y, BLEND_ALPHA, 0);
+    text_render(&sb->text_conf, c->x, c->y, c->w, c->h, sb->text);
 }
 
 static void spritebutton_free(component *c) {
@@ -76,18 +43,10 @@ static int spritebutton_action(component *c, int action) {
     return 1;
 }
 
-void spritebutton_set_text_padding(component *c, int top, int bottom, int left, int right) {
+void spritebutton_set_text_style(component *c, text_settings *set) {
     spritebutton *sb = widget_get_obj(c);
-    sb->pad_top = top;
-    sb->pad_bottom = bottom;
-    sb->pad_left = left;
-    sb->pad_right = right;
-}
-
-void spritebutton_set_text_align(component *c, int halign, int valign) {
-    spritebutton *sb = widget_get_obj(c);
-    sb->valign = valign;
-    sb->halign = halign;
+    memcpy(&sb->text_conf, set, sizeof(text_settings));
+    sb->text_conf.cforeground = color_create(0, 0, 123, 255);
 }
 
 component* spritebutton_create(const font *font, const char *text, surface *img, int disabled, spritebutton_click_cb cb, void *userdata) {
@@ -101,6 +60,8 @@ component* spritebutton_create(const font *font, const char *text, surface *img,
     sb->click_cb = cb;
     sb->img = img;
     sb->userdata = userdata;
+    text_defaults(&sb->text_conf);
+    sb->text_conf.cforeground = color_create(0, 0, 123, 255);
     widget_set_obj(c, sb);
 
     widget_set_render_cb(c, spritebutton_render);

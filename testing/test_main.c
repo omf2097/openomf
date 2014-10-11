@@ -6,6 +6,7 @@ void hashmap_test_suite(CU_pSuite suite);
 void vector_test_suite(CU_pSuite suite);
 void list_test_suite(CU_pSuite suite);
 void array_test_suite(CU_pSuite suite);
+void text_render_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     if(CU_initialize_registry() != CUE_SUCCESS) {
@@ -32,6 +33,10 @@ int main(int argc, char **argv) {
     CU_pSuite array_suite = CU_add_suite("Array", NULL, NULL);
     if(array_suite == NULL) goto end;
     array_test_suite(array_suite);
+
+    CU_pSuite text_render_suite = CU_add_suite("Text Renderer", NULL, NULL);
+    if(text_render_suite == NULL) goto end;
+    text_render_test_suite(text_render_suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);
