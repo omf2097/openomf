@@ -128,7 +128,7 @@ void text_render(text_settings *settings, int x, int y, int w, int h, const char
             tmp_s = fit_lines * charw - settings->cspacing; // Total W minus last spacing
             switch(settings->halign) {
                 case TEXT_CENTER:
-                    start_x += (xspace - tmp_s) / 2;
+                    start_x += ceil((xspace - tmp_s) / 2.0f);
                     break;
                 case TEXT_RIGHT:
                     start_x += (xspace - tmp_s);
@@ -201,7 +201,7 @@ void text_render(text_settings *settings, int x, int y, int w, int h, const char
                 // Vertical alignment for this line
                 switch(settings->valign) {
                     case TEXT_MIDDLE:
-                        my += (yspace - line_ph) / 2;
+                        my += ceil((yspace - line_ph) / 2.0f);
                         break;
                     case TEXT_BOTTOM:
                         my += (yspace - line_ph);
