@@ -256,7 +256,6 @@ set(OPENOMF_SRC
     src/controller/rec_controller.c
     src/console/console.c
     src/console/console_cmd.c
-    src/main.c
     src/engine.c
 )
 
@@ -333,13 +332,13 @@ include_directories(${COREINCS})
 
 # Build the server binary
 # XXX uncomment this later when we start working on the dedicated server
-#add_executable(openomf_server ${OPENOMF_SRC})
+#add_executable(openomf_server ${OPENOMF_SRC} src/main.c)
 #set_target_properties(openomf_server PROPERTIES COMPILE_DEFINITIONS "STANDALONE_SERVER=1")
 #target_link_libraries(openomf_server ${CORELIBS})
 
 # Build the game binary
 IF(NOT SERVER_ONLY)
-    add_executable(openomf ${OPENOMF_SRC})
+    add_executable(openomf ${OPENOMF_SRC} src/main.c)
     # Don't show console on mingw in release builds
     IF(MINGW)
         IF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
