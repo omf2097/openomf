@@ -154,6 +154,7 @@ void text_render(text_settings *settings, int x, int y, int w, int h, const char
     int line = 0;
     while(ptr < len-1 && line < fit_lines) {
         int line_len;
+        int real_len;
         int mx = 0;
         int my = 0;
         int line_pw;
@@ -164,18 +165,20 @@ void text_render(text_settings *settings, int x, int y, int w, int h, const char
             line_len = text_find_max_strlen(cols, text + ptr);
         else
             line_len = text_find_max_strlen(rows, text + ptr);
+        real_len = line_len;
 
         // Skip spaces
         int k = 0;
         for(; k < line_len; k++) {
             if(text[ptr+k] != ' ')
                 break;
+            real_len--;
         }
 
         // Find total size of this line and set newline start coords
         switch(settings->direction) {
             case TEXT_HORIZONTAL:
-                line_pw = line_len * charw - settings->cspacing;
+                line_pw = real_len * charw - settings->cspacing;
                 line_ph = charh;
                 my += charh * line;
 
@@ -192,7 +195,7 @@ void text_render(text_settings *settings, int x, int y, int w, int h, const char
                 break;
             case TEXT_VERTICAL:
                 line_pw = charw;
-                line_ph = line_len * charh - settings->lspacing;
+                line_ph = real_len * charh - settings->lspacing;
                 mx += charw * line;
 
                 // Vertical alignment for this line
