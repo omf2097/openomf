@@ -212,7 +212,6 @@ void text_render(text_settings *settings, int x, int y, int w, int h, const char
         }
 
         // Render characters
-        DEBUG("%d,%d = %s", mx, my, (char*)(text+ptr));
         for(; k < line_len; k++) {
             // Skip line endings.
             if(text[ptr+k] == '\n')
