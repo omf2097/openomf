@@ -21,11 +21,11 @@ static int trnmenu_hand_select(component *c) {
     component *sel = sizer_get(c, m->selected);
     if(sel == NULL)
         return 0;
-    vec2i pos = vec2i_create(sel->x, sel->y);
-    vec2i bsize = vec2i_create(sel->w, sel->h);
-    bsize.x /= 2;
-    bsize.y /= 2;
-    object_set_pos(m->hand.obj, vec2i_add(bsize, pos));
+
+    m->hand.move = 1;
+    m->hand.pstart = object_get_pos(m->hand.obj);
+    m->hand.pend = vec2i_create(sel->x + sel->w / 2, sel->y + sel->h / 2);
+    m->hand.moved = 0.0f;
     return 1;
 }
 
@@ -109,8 +109,9 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
         i++;
     }
 
-    // Set hand position
-    trnmenu_hand_select(c);
+    // Set initial hand position
+    component *sel = sizer_get(c, m->selected);
+    object_set_pos(m->hand.obj, vec2i_create(sel->x + sel->w / 2, sel->y + sel->h / 2));
 }
 
 /*
@@ -176,8 +177,26 @@ static void trnmenu_render(component *c) {
 
 static void trnmenu_tick(component *c) {
     trnmenu *m = sizer_get_obj(c);
+
+    // Tick hand animation
     if(m->hand.play && m->hand.obj) {
         object_dynamic_tick(m->hand.obj);
+    }
+
+    // Move hand
+    if(m->hand.move && m->hand.obj) {
+        // Stop movement if we're done.
+        // Otherwise interpolate from target to dest
+        if(m->hand.moved >= 1.0) {
+            m->hand.move = 0;
+            object_set_pos(m->hand.obj, m->hand.pend);
+        } else {
+            vec2i dist = vec2i_sub(m->hand.pend, m->hand.pstart);
+            vec2i m_pos = vec2i_create(dist.x * m->hand.moved, dist.y * m->hand.moved);
+            vec2i r_pos = vec2i_add(m->hand.pstart, m_pos);
+            object_set_pos(m->hand.obj, r_pos);
+            m->hand.moved += 0.1f;
+        }
     }
 }
 
