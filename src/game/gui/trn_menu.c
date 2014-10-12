@@ -9,8 +9,41 @@ void trnmenu_attach(component *c, component *nc) {
     sizer_attach(c, nc);
 }
 
-void trnmenu_bind_hand(component *c, animation *hand) {
+static void trnmenu_hand_finished(object *hand_obj) {
+    trnmenu_hand *hand = object_get_userdata(hand_obj);
+    player_reset(hand->obj);
+    object_dynamic_tick(hand->obj);
+}
 
+static int trnmenu_hand_select(component *c) {
+    trnmenu *m = sizer_get_obj(c);
+    component *sel = sizer_get(c, m->selected);
+    if(sel == NULL)
+        return 0;
+    vec2i pos = vec2i_create(sel->x, sel->y);
+    vec2i bsize = vec2i_create(sel->w, sel->h);
+    bsize.x /= 2;
+    bsize.y /= 2;
+    object_set_pos(m->hand.obj, vec2i_add(bsize, pos));
+    return 1;
+}
+
+void trnmenu_bind_hand(component *c, animation *hand_ani, game_state *gs) {
+    trnmenu *m = sizer_get_obj(c);
+
+    // Free old. Shouldn't be needed, but let's be thorough.
+    if(m->hand.obj != NULL) {
+        object_free(m->hand.obj);
+        free(m->hand.obj);
+    }
+
+    // Set up new hand object
+    m->hand.obj = malloc(sizeof(object));
+    object_create(m->hand.obj, gs, vec2i_create(0,0), vec2f_create(0,0));
+    object_set_animation(m->hand.obj, hand_ani);
+    object_set_userdata(m->hand.obj, &m->hand);
+    object_set_finish_cb(m->hand.obj, trnmenu_hand_finished);
+    object_dynamic_tick(m->hand.obj);
 }
 
 void trnmenu_set_userdata(component *c, void *userdata) {
@@ -37,6 +70,10 @@ static void trnmenu_free(component *c) {
     trnmenu *m = sizer_get_obj(c);
     if(m->free) {
         m->free(c); // Free trnmenu userdata
+    }
+    if(m->hand.obj != NULL) {
+        object_free(m->hand.obj);
+        free(m->hand.obj);
     }
     free(m);
 }
@@ -70,7 +107,38 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
         component_layout(*tmp, m_x, m_y, m_w, m_h);
         i++;
     }
+
+    // Set hand position
+    trnmenu_hand_select(c);
 }
+
+int trnmenu_event(component *c, SDL_Event *event) {
+    trnmenu *m = sizer_get_obj(c);
+    if(event->type == SDL_KEYDOWN) {
+        switch(event->key.keysym.sym) {
+            case SDLK_LEFT:
+                m->selected--;
+                if(!trnmenu_hand_select(c)) {
+                    m->selected++;
+                }
+                break;
+            case SDLK_RIGHT:
+                m->selected++;
+                if(!trnmenu_hand_select(c)) {
+                    m->selected--;
+                }
+                break;
+            case SDLK_UP:
+                break;
+            case SDLK_DOWN:
+                break;
+            case SDLK_RETURN:
+                break;
+        }
+    }
+    return 0;
+}
+
 
 static void trnmenu_render(component *c) {
     sizer *s = component_get_obj(c);
@@ -86,6 +154,11 @@ static void trnmenu_render(component *c) {
     while((tmp = iter_next(&it)) != NULL) {
         component_render(*tmp);
     }
+
+    // Render hand if it is set
+    if(m->hand.obj != NULL) {
+        object_render(m->hand.obj);
+    }
 }
 
 component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
@@ -100,6 +173,7 @@ component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
 
     sizer_set_render_cb(c, trnmenu_render);
     sizer_set_layout_cb(c, trnmenu_layout);
+    sizer_set_event_cb(c, trnmenu_event);
     sizer_set_free_cb(c, trnmenu_free);
 
     return c;

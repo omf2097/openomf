@@ -33,10 +33,11 @@ static const button_details details_list[] = {
 component* lab_main_create(scene *s) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(&s->bk_data, 8)->ani;
+    animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
 
     // Initialize menu, and set button sheet
     sprite *msprite = animation_get_sprite(main_sheets, 2);
-    component* menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);
+    component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);
 
     // Default text configuration
     text_settings tconf;
@@ -60,6 +61,9 @@ component* lab_main_create(scene *s) {
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
         trnmenu_attach(menu, button);
     }
+
+    // Bind hand animation
+    trnmenu_bind_hand(menu, hand_of_doom, s->gs);
 
     return menu;
 }
