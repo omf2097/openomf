@@ -132,7 +132,17 @@ void mechlab_hand_sel_button(mechlab_local *local) {
 int mechlab_event(scene *scene, SDL_Event *event) {
     mechlab_local *local = scene_get_userdata(scene);
 
-    guiframe_event(local->frame, event);
+    if(event->type == SDL_KEYDOWN) {
+        switch(event->key.keysym.sym) {
+            case SDLK_ESCAPE:
+                game_state_set_next(scene->gs, SCENE_MENU);
+                break;
+            default:
+                guiframe_event(local->frame, event);
+                break;
+        }
+    }
+
 /*
     int hand_moved = 0;
 
