@@ -1,5 +1,6 @@
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 
 #include "game/gui/text_render.h"
 #include "video/video.h"
@@ -11,7 +12,7 @@ void text_defaults(text_settings *settings) {
     settings->cforeground = color_create(0xFF,0xFF,0xFF,0xFF);
 }
 
-static void text_render_char(text_settings *settings, int x, int y, char ch) {
+void text_render_char(const text_settings *settings, int x, int y, char ch) {
     // Make sure code is valid
     int code = ch - 32;
     surface **sur = NULL;
@@ -107,7 +108,7 @@ int text_find_line_count(text_direction dir, int cols, int rows, int len, const 
     return lines;
 }
 
-void text_render(text_settings *settings, int x, int y, int w, int h, const char *text) {
+void text_render(const text_settings *settings, int x, int y, int w, int h, const char *text) {
     int len = strlen(text);
 
     int size = (settings->font == FONT_BIG) ? 8 : 6;
@@ -141,7 +142,7 @@ void text_render(text_settings *settings, int x, int y, int w, int h, const char
             tmp_s = fit_lines * charh - settings->lspacing; // Total H minus last spacing
             switch(settings->valign) {
                 case TEXT_MIDDLE:
-                    start_y += (yspace - tmp_s) / 2;
+                    start_y += floor((yspace - tmp_s) / 2.0f);
                     break;
                 case TEXT_BOTTOM:
                     start_y += (yspace - tmp_s);
@@ -186,7 +187,7 @@ void text_render(text_settings *settings, int x, int y, int w, int h, const char
                 // Horizontal alignment for this line
                 switch(settings->halign) {
                     case TEXT_CENTER:
-                        mx += (xspace - line_pw) / 2;
+                        mx += floor((xspace - line_pw) / 2.0f);
                         break;
                     case TEXT_RIGHT:
                         mx += (xspace - line_pw);
