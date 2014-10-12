@@ -2,7 +2,7 @@
 #define _TEXTSELECTOR_H
 
 #include "game/gui/component.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 #include "utils/vector.h"
 
 typedef void (*textselector_toggle_cb)(component *c, void *userdata, int pos);

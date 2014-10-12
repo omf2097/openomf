@@ -5,7 +5,7 @@
 #include "utils/random.h"
 #include "video/video.h"
 #include "resources/ids.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 #include "resources/languages.h"
 #include "game/protos/scene.h"
 #include "game/scenes/vs.h"

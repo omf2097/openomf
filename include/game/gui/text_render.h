@@ -30,8 +30,6 @@ typedef enum {
     TEXT_VERTICAL,
 } text_direction;
 
-#ifndef TEXT_SHADOW_DEF
-#define TEXT_SHADOW_DEF
 enum {
     TEXT_SHADOW_NONE = 0,
     TEXT_SHADOW_TOP = 0x1,
@@ -42,7 +40,6 @@ enum {
     TEXT_SHADOW_VERTICAL = 0x3,
     TEXT_SHADOW_ALL = 0xF
 };
-#endif // TEXT_SHADOW_DEF
 
 typedef struct {
     color cforeground;
@@ -61,5 +58,17 @@ void text_defaults(text_settings *settings);
 int text_find_max_strlen(int maxchars, const char *ptr);
 int text_find_line_count(text_direction dir, int cols, int rows, int len, const char *text);
 void text_render(text_settings *settings, int x, int y, int w, int h, const char *text);
+
+// Old functions
+void font_get_wrapped_size(const font *font, const char *text, int max_w, int *out_w, int *out_h);
+void font_get_wrapped_size_shadowed(const font *font, const char *text, int max_w, int shadow_flag, int *out_w, int *out_h);
+void font_render_char(const font *font, char ch, int x, int y, color c);
+void font_render_char_shadowed(const font *font, char ch, int x, int y, color c, int shadow_flags);
+void font_render_len(const font *font, const char *text, int len, int x, int y, color c);
+void font_render_len_shadowed(const font *font, const char *text, int len, int x, int y, color c, int shadow_flags);
+void font_render(const font *font, const char *text, int x, int y, color c);
+void font_render_shadowed(const font *font, const char *text, int x, int y, color c, int shadow_flags);
+void font_render_wrapped(const font *font, const char *text, int x, int y, int w, color c);
+void font_render_wrapped_shadowed(const font *font, const char *text, int x, int y, int w, color c, int shadow_flags);
 
 #endif // _TEXT_RENDER_H

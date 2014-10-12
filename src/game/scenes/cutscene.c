@@ -2,7 +2,7 @@
 
 #include "game/scenes/cutscene.h"
 #include "resources/languages.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 #include "game/game_state.h"
 #include "audio/music.h"
 #include "video/video.h"

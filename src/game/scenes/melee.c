@@ -14,7 +14,7 @@
 #include "resources/pilots.h"
 #include "resources/animation.h"
 #include "resources/sprite.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 #include "resources/languages.h"
 #include "game/utils/settings.h"
 #include "game/game_state.h"

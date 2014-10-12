@@ -13,7 +13,7 @@
 #include "game/game_state.h"
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 #include "console/console.h"
 
 static int run = 0;

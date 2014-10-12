@@ -6,7 +6,7 @@
 #include "utils/list.h"
 #include "video/surface.h"
 #include "game/protos/object.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 
 enum {
     SCORE_EV_PUNCH = 0,

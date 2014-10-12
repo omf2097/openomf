@@ -221,7 +221,6 @@ set(OPENOMF_SRC
     src/game/scenes/newsroom.c
     src/game/scenes/scoreboard.c
     src/game/objects/har.c
-    src/game/text/text.c
     src/game/gui/menu.c
     src/game/gui/trn_menu.c
     src/game/gui/menu_background.c

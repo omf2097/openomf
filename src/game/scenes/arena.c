@@ -20,7 +20,7 @@
 #include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/utils/ticktimer.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 #include "resources/languages.h"
 #include "game/gui/menu.h"
 #include "game/gui/menu_background.h"

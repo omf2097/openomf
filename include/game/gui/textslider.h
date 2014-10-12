@@ -2,7 +2,7 @@
 #define _TEXTSLIDER_H
 
 #include "game/gui/component.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 
 typedef void (*textslider_slide_cb)(component *c, void *userdata, int pos);
 

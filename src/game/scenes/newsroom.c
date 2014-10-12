@@ -2,7 +2,7 @@
 #include "game/gui/menu_background.h"
 #include "game/gui/dialog.h"
 #include "resources/languages.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 #include "game/utils/settings.h"
 #include "audio/music.h"
 #include "resources/ids.h"

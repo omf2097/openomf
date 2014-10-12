@@ -7,7 +7,7 @@
 #include "resources/scores.h"
 #include "utils/log.h"
 #include "game/common_defines.h"
-#include "game/text/text.h"
+#include "game/gui/text_render.h"
 #include "game/utils/formatting.h"
 #include "game/utils/settings.h"
 #include "game/scenes/scoreboard.h"
