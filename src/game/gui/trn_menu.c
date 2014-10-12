@@ -11,6 +11,7 @@ void trnmenu_attach(component *c, component *nc) {
 
 static void trnmenu_hand_finished(object *hand_obj) {
     trnmenu_hand *hand = object_get_userdata(hand_obj);
+    hand->play = 0;
     player_reset(hand->obj);
     object_dynamic_tick(hand->obj);
 }
@@ -112,33 +113,45 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
     trnmenu_hand_select(c);
 }
 
-int trnmenu_event(component *c, SDL_Event *event) {
+/*
+static int find_closest(component *c, int act) {
+
+}
+*/
+
+static int trnmenu_action(component *c, int action) {
     trnmenu *m = sizer_get_obj(c);
-    if(event->type == SDL_KEYDOWN) {
-        switch(event->key.keysym.sym) {
-            case SDLK_LEFT:
-                m->selected--;
-                if(!trnmenu_hand_select(c)) {
-                    m->selected++;
-                }
-                break;
-            case SDLK_RIGHT:
+    switch(action) {
+        case ACT_LEFT:
+            m->selected--;
+            if(!trnmenu_hand_select(c)) {
                 m->selected++;
-                if(!trnmenu_hand_select(c)) {
-                    m->selected--;
+            }
+            break;
+        case ACT_RIGHT:
+            m->selected++;
+            if(!trnmenu_hand_select(c)) {
+                m->selected--;
+            }
+            break;
+        case ACT_UP:
+            break;
+        case ACT_DOWN:
+            break;
+        case ACT_ESC:
+            break;
+        case ACT_PUNCH:
+        case ACT_KICK: {
+                component *sel = sizer_get(c, m->selected);
+                if(sel != NULL) {
+                    m->hand.play = 1;
+                    return component_action(sel, action);
                 }
-                break;
-            case SDLK_UP:
-                break;
-            case SDLK_DOWN:
-                break;
-            case SDLK_RETURN:
-                break;
-        }
+            }
+            break;
     }
     return 0;
 }
-
 
 static void trnmenu_render(component *c) {
     sizer *s = component_get_obj(c);
@@ -161,6 +174,13 @@ static void trnmenu_render(component *c) {
     }
 }
 
+static void trnmenu_tick(component *c) {
+    trnmenu *m = sizer_get_obj(c);
+    if(m->hand.play && m->hand.obj) {
+        object_dynamic_tick(m->hand.obj);
+    }
+}
+
 component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
     component *c = sizer_create();
 
@@ -173,7 +193,8 @@ component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
 
     sizer_set_render_cb(c, trnmenu_render);
     sizer_set_layout_cb(c, trnmenu_layout);
-    sizer_set_event_cb(c, trnmenu_event);
+    sizer_set_action_cb(c, trnmenu_action);
+    sizer_set_tick_cb(c, trnmenu_tick);
     sizer_set_free_cb(c, trnmenu_free);
 
     return c;

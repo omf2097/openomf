@@ -4,9 +4,11 @@
 #include "game/gui/sizer.h"
 #include "game/gui/text_render.h"
 #include "resources/bk.h"
+#include "game/common_defines.h"
 #include "utils/log.h"
 
 typedef struct {
+    spritebutton_click_cb cb;
     const char *text;
     text_direction dir;
     text_halign halign;
@@ -17,17 +19,22 @@ typedef struct {
     int right;
 } button_details;
 
+void mechlab_quit(component *c, void *userdata) {
+    scene *s = userdata;
+    game_state_set_next(s->gs, SCENE_MENU);
+}
+
 static const button_details details_list[] = {
-    {"ARENA", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {"TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0},
-    {"BUY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {"SELL", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {"LOAD", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
-    {"NEW", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
-    {"DELETE", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
-    {"SIM", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {"QUIT", TEXT_VERTICAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
-    {"NEW TOURNAMENT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
+    {NULL, "ARENA", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
+    {NULL, "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0},
+    {NULL, "BUY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
+    {NULL, "SELL", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
+    {NULL, "LOAD", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
+    {NULL, "NEW", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
+    {NULL, "DELETE", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
+    {NULL, "SIM", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
+    {mechlab_quit, "QUIT", TEXT_VERTICAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
+    {NULL, "NEW TOURNAMENT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
 };
 
 component* lab_main_create(scene *s) {
@@ -48,7 +55,7 @@ component* lab_main_create(scene *s) {
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
         sprite *bsprite = animation_get_sprite(main_buttons, i);
         surface *bsurface = bsprite->data;
-        component *button = spritebutton_create(&font_small, details_list[i].text, bsurface, COM_ENABLED, NULL, NULL);
+        component *button = spritebutton_create(&font_small, details_list[i].text, bsurface, COM_ENABLED, details_list[i].cb, s);
         tconf.valign = details_list[i].valign;
         tconf.halign = details_list[i].halign;
         tconf.padding.top = details_list[i].top;

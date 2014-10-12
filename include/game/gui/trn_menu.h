@@ -15,6 +15,7 @@ typedef struct {
     vec2i pstart;
     vec2i pend;
     float moved;
+    int play;
 } trnmenu_hand;
 
 typedef struct  {
