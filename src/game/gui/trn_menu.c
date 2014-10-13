@@ -186,6 +186,12 @@ static int find_next_button(component *c, int act) {
 
 static int trnmenu_action(component *c, int action) {
     trnmenu *m = sizer_get_obj(c);
+
+    // If submenu is set, we need to use it
+    if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+        return component_action(m->submenu, action);
+    }
+
     int next;
     switch(action) {
         case ACT_LEFT:
@@ -217,6 +223,11 @@ static void trnmenu_render(component *c) {
     sizer *s = component_get_obj(c);
     trnmenu *m = sizer_get_obj(c);
 
+    // If submenu is set, we need to use it
+    if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+        return component_render(m->submenu);
+    }
+
     // Render button sheet
     video_render_sprite(m->button_sheet, m->sheet_x, m->sheet_y, BLEND_ALPHA, 0);
 
@@ -236,6 +247,21 @@ static void trnmenu_render(component *c) {
 
 static void trnmenu_tick(component *c) {
     trnmenu *m = sizer_get_obj(c);
+
+    // If submenu is set, we need to tick it
+    if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+        return component_tick(m->submenu);
+    }
+
+    // Check if we need to run submenu done -callback
+    if(m->submenu != NULL && trnmenu_is_finished(m->submenu)) {
+        if(!m->prev_submenu_state) {
+            if(m->submenu_done) {
+                m->submenu_done(c, m->submenu);
+            }
+            m->prev_submenu_state = 1;
+        }
+    }
 
     // Tick hand animation
     if(m->hand.play && m->hand.obj) {
@@ -259,6 +285,49 @@ static void trnmenu_tick(component *c) {
     }
 }
 
+static int trnmenu_event(component *mc, SDL_Event *event) {
+    trnmenu *m = sizer_get_obj(mc);
+
+    // If submenu is set, we need to use it
+    if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+        return component_event(m->submenu, event);
+    }
+
+    // Otherwise handle this component
+    component *c = sizer_get(mc, m->selected);
+    if(c != NULL) {
+        return component_event(c, event);
+    }
+    return 1;
+}
+
+
+int trnmenu_is_finished(const component *c) {
+    trnmenu *m = sizer_get_obj(c);
+    return m->finished;
+}
+
+void trnmenu_set_submenu(component *c, component *submenu) {
+    trnmenu *m = sizer_get_obj(c);
+    if(m->submenu) {
+        component_free(m->submenu);
+    }
+    m->submenu = submenu;
+    m->prev_submenu_state = 0;
+    submenu->parent = c; // Set correct parent
+    component_layout(m->submenu, c->x, c->y, c->w, c->h);
+}
+
+component* trnmenu_get_submenu(const component *c) {
+    trnmenu *m = sizer_get_obj(c);
+    return m->submenu;
+}
+
+void trnmenu_set_submenu_done_cb(component *c, trnmenu_submenu_done_cb done_cb) {
+    trnmenu *m = sizer_get_obj(c);
+    m->submenu_done = done_cb;
+}
+
 component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
     component *c = sizer_create();
 
@@ -272,6 +341,7 @@ component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
     sizer_set_render_cb(c, trnmenu_render);
     sizer_set_layout_cb(c, trnmenu_layout);
     sizer_set_action_cb(c, trnmenu_action);
+    sizer_set_event_cb(c, trnmenu_event);
     sizer_set_tick_cb(c, trnmenu_tick);
     sizer_set_free_cb(c, trnmenu_free);
 

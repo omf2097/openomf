@@ -9,6 +9,7 @@
 
 typedef void (*trnmenu_tick_cb)(component *c);
 typedef void (*trnmenu_free_cb)(component *c);
+typedef void (*trnmenu_submenu_done_cb)(component *menu, component *submenu);
 
 typedef struct {
     object *obj;
@@ -28,6 +29,11 @@ typedef struct  {
 
     trnmenu_hand hand;
 
+    char prev_submenu_state;
+    component *submenu;
+    trnmenu_submenu_done_cb submenu_done;
+    int finished;
+
     void *userdata;
     trnmenu_free_cb free;
     trnmenu_tick_cb tick;
@@ -37,6 +43,11 @@ component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y);
 void trnmenu_attach(component *menu, component *c);
 
 void trnmenu_bind_hand(component *menu, animation *hand, game_state *gs);
+
+void trnmenu_set_submenu(component *menu, component *submenu);
+component* trnmenu_get_submenu(const component *menu);
+void trnmenu_set_submenu_done_cb(component *menu, trnmenu_submenu_done_cb done_cb);
+int trnmenu_is_finished(const component *menu);
 
 void trnmenu_set_userdata(component *menu, void *userdata);
 void* trnmenu_get_userdata(const component *menu);
