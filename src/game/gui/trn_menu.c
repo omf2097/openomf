@@ -114,30 +114,89 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
     object_set_pos(m->hand.obj, vec2i_create(sel->x + sel->w / 2, sel->y + sel->h / 2));
 }
 
-/*
-static int find_closest(component *c, int act) {
-
+static vec2f center(component *c) {
+    return vec2f_create(c->x + c->w / 2, c->y + c->h / 2);
 }
-*/
+
+static vec2f rcenter(component *c) {
+    return vec2f_create(c->x + c->w, c->y + c->h / 2);
+}
+
+static vec2f lcenter(component *c) {
+    return vec2f_create(c->x, c->y + c->h / 2);
+}
+
+static int find_next_button(component *c, int act) {
+    sizer *s = component_get_obj(c);
+    trnmenu *m = sizer_get_obj(c);
+
+    iterator it;
+    component **tmp;
+    vector_iter_begin(&s->objs, &it);
+
+    component *cur = sizer_get(c, m->selected);
+    float best_dist = 9999.0f;
+    int best_idx = -1;
+    int idx_now = 0;
+    while((tmp = iter_next(&it)) != NULL) {
+        component *t = *tmp;
+        switch(act) {
+            case ACT_LEFT:
+                if((t->x + t->w) < cur->x) {
+                    float tdist = vec2f_dist(rcenter(t),lcenter(cur));
+                    if(tdist < best_dist) {
+                        best_dist = tdist;
+                        best_idx = idx_now;
+                    }
+                }
+                break;
+            case ACT_RIGHT:
+                if(t->x > (cur->x + cur->w)) {
+                    float tdist = vec2f_dist(lcenter(t),rcenter(cur));
+                    if(tdist < best_dist) {
+                        best_dist = tdist;
+                        best_idx = idx_now;
+                    }
+                }
+                break;
+            case ACT_UP:
+                if((t->y + t->h) < cur->y) {
+                    float tdist = vec2f_dist(center(t),center(cur));
+                    if(tdist < best_dist) {
+                        best_dist = tdist;
+                        best_idx = idx_now;
+                    }
+                }
+                break;
+            case ACT_DOWN:
+                if(t->y > (cur->y + cur->h)) {
+                    float tdist = vec2f_dist(center(t),center(cur));
+                    if(tdist < best_dist) {
+                        best_dist = tdist;
+                        best_idx = idx_now;
+                    }
+                }
+                break;
+        }
+        idx_now++;
+    }
+
+    return best_idx;
+}
 
 static int trnmenu_action(component *c, int action) {
     trnmenu *m = sizer_get_obj(c);
+    int next;
     switch(action) {
         case ACT_LEFT:
-            m->selected--;
-            if(!trnmenu_hand_select(c)) {
-                m->selected++;
-            }
-            break;
         case ACT_RIGHT:
-            m->selected++;
-            if(!trnmenu_hand_select(c)) {
-                m->selected--;
-            }
-            break;
         case ACT_UP:
-            break;
         case ACT_DOWN:
+            next = find_next_button(c, action);
+            if(next != -1) {
+                m->selected = next;
+            }
+            trnmenu_hand_select(c);
             break;
         case ACT_ESC:
             break;
