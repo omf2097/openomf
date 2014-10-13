@@ -218,6 +218,7 @@ set(OPENOMF_SRC
     src/game/scenes/vs.c
     src/game/scenes/mechlab.c
     src/game/scenes/mechlab/lab_main.c
+    src/game/scenes/mechlab/lab_customize.c
     src/game/scenes/newsroom.c
     src/game/scenes/scoreboard.c
     src/game/objects/har.c

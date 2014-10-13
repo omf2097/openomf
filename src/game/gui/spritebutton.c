@@ -48,9 +48,9 @@ static int spritebutton_action(component *c, int action) {
 
     // Handle selection
     if(action == ACT_KICK || action == ACT_PUNCH) {
+        sb->active = 10;
         if(sb->click_cb) {
             sb->click_cb(c, sb->userdata);
-            sb->active = 10;
         }
         return 0;
     }

@@ -142,7 +142,7 @@ static int find_next_button(component *c, int act) {
         component *t = *tmp;
         switch(act) {
             case ACT_LEFT:
-                if((t->x + t->w) < cur->x) {
+                if(t->x < cur->x) {
                     float tdist = vec2f_dist(rcenter(t),lcenter(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
@@ -151,7 +151,7 @@ static int find_next_button(component *c, int act) {
                 }
                 break;
             case ACT_RIGHT:
-                if(t->x > (cur->x + cur->w)) {
+                if(t->x > cur->x) {
                     float tdist = vec2f_dist(lcenter(t),rcenter(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
@@ -160,7 +160,7 @@ static int find_next_button(component *c, int act) {
                 }
                 break;
             case ACT_UP:
-                if((t->y + t->h) < cur->y) {
+                if(t->y < cur->y) {
                     float tdist = vec2f_dist(center(t),center(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
@@ -169,7 +169,7 @@ static int find_next_button(component *c, int act) {
                 }
                 break;
             case ACT_DOWN:
-                if(t->y > (cur->y + cur->h)) {
+                if(t->y > cur->y) {
                     float tdist = vec2f_dist(center(t),center(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
@@ -205,6 +205,7 @@ static int trnmenu_action(component *c, int action) {
             trnmenu_hand_select(c);
             break;
         case ACT_ESC:
+            m->finished = 1;
             break;
         case ACT_PUNCH:
         case ACT_KICK: {
@@ -326,6 +327,11 @@ component* trnmenu_get_submenu(const component *c) {
 void trnmenu_set_submenu_done_cb(component *c, trnmenu_submenu_done_cb done_cb) {
     trnmenu *m = sizer_get_obj(c);
     m->submenu_done = done_cb;
+}
+
+void trnmenu_finish(component *c) {
+    trnmenu *m = sizer_get_obj(c);
+    m->finished = 1;
 }
 
 component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {

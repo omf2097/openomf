@@ -48,6 +48,7 @@ void trnmenu_set_submenu(component *menu, component *submenu);
 component* trnmenu_get_submenu(const component *menu);
 void trnmenu_set_submenu_done_cb(component *menu, trnmenu_submenu_done_cb done_cb);
 int trnmenu_is_finished(const component *menu);
+void trnmenu_finish(component *menu);
 
 void trnmenu_set_userdata(component *menu, void *userdata);
 void* trnmenu_get_userdata(const component *menu);

@@ -9,7 +9,7 @@ void test_text_find_max_strlen(void) {
     CU_ASSERT(text_find_max_strlen(10, "AAAAAAAAAA BBBB") == 10); // Only first string should be taken into account (10). Space should be disregarded.
     CU_ASSERT(text_find_max_strlen(10, "AAAAAAAAAAA BBBB") == 11); // Only first string should be taken into account (11)
     CU_ASSERT(text_find_max_strlen(10, "AA\n") == 3); // Should advance 2 chars + line ending (3)
-    CU_ASSERT(text_find_max_strlen(14, "I CAN HAS CHEESEBURGER") == 10); // Should wordwrap. (10)
+    CU_ASSERT(text_find_max_strlen(14, "I CAN HAS CHEESEBURGER") == 9); // Should wordwrap. Skip spaces to next line. (9)
 }
 
 void test_text_find_line_count(void) {

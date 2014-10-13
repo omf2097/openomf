@@ -1,4 +1,5 @@
 #include "game/scenes/mechlab/lab_main.h"
+#include "game/scenes/mechlab/lab_customize.h"
 #include "game/gui/trn_menu.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/sizer.h"
@@ -19,21 +20,26 @@ typedef struct {
     int right;
 } button_details;
 
-void mechlab_quit(component *c, void *userdata) {
+void lab_main_quit(component *c, void *userdata) {
     scene *s = userdata;
     game_state_set_next(s->gs, SCENE_MENU);
+}
+
+void lab_main_customize_enter(component *c, void *userdata) {
+    scene *s = userdata;
+    trnmenu_set_submenu(c->parent, lab_customize_create(s));
 }
 
 static const button_details details_list[] = {
     {NULL, "ARENA", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
     {NULL, "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0},
-    {NULL, "BUY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
+    {lab_main_customize_enter, "BUY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
     {NULL, "SELL", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
     {NULL, "LOAD", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
     {NULL, "NEW", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
     {NULL, "DELETE", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
     {NULL, "SIM", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {mechlab_quit, "QUIT", TEXT_VERTICAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
+    {lab_main_quit, "QUIT", TEXT_VERTICAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
     {NULL, "NEW TOURNAMENT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
 };
 

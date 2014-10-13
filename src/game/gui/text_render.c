@@ -81,7 +81,7 @@ int text_find_max_strlen(int maxchars, const char *ptr) {
             if(ptr[i] == ' ') { // If we are at valid end character (space), end here
                 return i;
             } else if(last_space != lstart) {
-                return last_space+1;
+                return last_space;
             }
         } else if(ptr[i] == ' ') {
             last_space = i;
@@ -187,7 +187,7 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
                 // Horizontal alignment for this line
                 switch(settings->halign) {
                     case TEXT_CENTER:
-                        mx += floor((xspace - line_pw) / 2.0f);
+                        mx += ceil((xspace - line_pw) / 2.0f);
                         break;
                     case TEXT_RIGHT:
                         mx += (xspace - line_pw);
