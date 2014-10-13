@@ -25,7 +25,9 @@ static void spritebutton_render(component *c) {
     if(sb->active > 0) {
         video_render_sprite(sb->img, c->x, c->y, BLEND_ALPHA, 0);
     }
-    text_render(&sb->text_conf, c->x, c->y, c->w, c->h, sb->text);
+    if(sb->text) {
+        text_render(&sb->text_conf, c->x, c->y, c->w, c->h, sb->text);
+    }
 }
 
 static void spritebutton_free(component *c) {
@@ -67,7 +69,8 @@ component* spritebutton_create(const font *font, const char *text, surface *img,
 
     spritebutton *sb = malloc(sizeof(spritebutton));
     memset(sb, 0, sizeof(spritebutton));
-    sb->text = strdup(text);
+    if(text != NULL)
+        sb->text = strdup(text);
     sb->font = font;
     sb->click_cb = cb;
     sb->img = img;
