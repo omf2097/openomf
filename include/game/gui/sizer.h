@@ -13,8 +13,10 @@ typedef void (*sizer_free_cb)(component *c);
 typedef component* (*sizer_find_cb)(component *c, int id);
 
 typedef struct {
-    void *obj;
-    vector objs;
+    void *obj; ///< Sizer specialization object, eg. menu, trnmenu
+    vector objs; ///< Contains all the child objects in the sizer
+
+    float opacity; ///< Some sizers may want to fade their contents (eg. tournament menu). In these cases, if should be handled via this variable.
 
     sizer_render_cb render;
     sizer_event_cb event;

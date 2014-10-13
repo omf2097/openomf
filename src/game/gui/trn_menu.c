@@ -1,9 +1,14 @@
 #include "game/gui/trn_menu.h"
 #include "game/gui/sizer.h"
+#include "game/gui/text_render.h"
+#include "game/gui/spritebutton.h"
 #include "video/surface.h"
 #include "video/video.h"
 #include "utils/vector.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
+
+#define OPACITY_STEP 0.03f
 
 void trnmenu_attach(component *c, component *nc) {
     sizer_attach(c, nc);
@@ -187,6 +192,11 @@ static int find_next_button(component *c, int act) {
 static int trnmenu_action(component *c, int action) {
     trnmenu *m = sizer_get_obj(c);
 
+    // If fading, wait until it's done.
+    if(m->fade) {
+        return 1;
+    }
+
     // If submenu is set, we need to use it
     if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
         return component_action(m->submenu, action);
@@ -205,7 +215,7 @@ static int trnmenu_action(component *c, int action) {
             trnmenu_hand_select(c);
             break;
         case ACT_ESC:
-            m->finished = 1;
+            trnmenu_finish(c);
             break;
         case ACT_PUNCH:
         case ACT_KICK: {
@@ -225,12 +235,15 @@ static void trnmenu_render(component *c) {
     trnmenu *m = sizer_get_obj(c);
 
     // If submenu is set, we need to use it
-    if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
-        return component_render(m->submenu);
+    if(!m->fade) {
+        if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+            return component_render(m->submenu);
+        }
     }
 
     // Render button sheet
-    video_render_sprite(m->button_sheet, m->sheet_x, m->sheet_y, BLEND_ALPHA, 0);
+    video_render_sprite_flip_scale_opacity_tint(
+        m->button_sheet, m->sheet_x, m->sheet_y, BLEND_ALPHA, 0, FLIP_NONE, 1, clamp(s->opacity * 255, 0, 255), color_create(0xFF,0xFF,0xFF,0xFF));
 
     // Handle components
     iterator it;
@@ -248,15 +261,38 @@ static void trnmenu_render(component *c) {
 
 static void trnmenu_tick(component *c) {
     trnmenu *m = sizer_get_obj(c);
+    sizer *s = component_get_obj(c);
 
-    // If submenu is set, we need to tick it
-    if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
-        return component_tick(m->submenu);
+    // If fade is not ongoing, try to handle submenu. If fade IS ongoing, handle it.
+    if(!m->fade) {
+        // If submenu is set, we need to tick it
+        if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+            return component_tick(m->submenu);
+        }
+    } else {
+        // Tick opacity
+        s->opacity += m->opacity_step;
+
+        // Check if fade is done, and set tick to 0 if so.
+        if(m->opacity_step > 0 && s->opacity >= 1.0f) {
+            s->opacity = 1.0f;
+            m->fade = 0;
+        } else if(m->opacity_step < 0 && s->opacity <= 0.0f) {
+            s->opacity = 0.0f;
+            m->fade = 0;
+            if(m->submenu == NULL || trnmenu_is_finished(m->submenu)) {
+                m->finished = 1;
+            }
+        }
     }
 
     // Check if we need to run submenu done -callback
-    if(m->submenu != NULL && trnmenu_is_finished(m->submenu)) {
+    // Also reset fade
+    if(m->submenu != NULL && trnmenu_is_finished(m->submenu) && !trnmenu_is_fading(m->submenu)) {
         if(!m->prev_submenu_state) {
+            m->fade = 1;
+            s->opacity = 0;
+            m->opacity_step = OPACITY_STEP;
             if(m->submenu_done) {
                 m->submenu_done(c, m->submenu);
             }
@@ -286,8 +322,18 @@ static void trnmenu_tick(component *c) {
     }
 }
 
+int trnmenu_is_fading(const component *c) {
+    trnmenu *m = sizer_get_obj(c);
+    return m->fade;
+}
+
 static int trnmenu_event(component *mc, SDL_Event *event) {
     trnmenu *m = sizer_get_obj(mc);
+
+    // If fading, wait until it's done.
+    if(m->fade) {
+        return 1;
+    }
 
     // If submenu is set, we need to use it
     if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
@@ -317,6 +363,9 @@ void trnmenu_set_submenu(component *c, component *submenu) {
     m->prev_submenu_state = 0;
     submenu->parent = c; // Set correct parent
     component_layout(m->submenu, c->x, c->y, c->w, c->h);
+
+    m->opacity_step = -OPACITY_STEP;
+    m->fade = 1;
 }
 
 component* trnmenu_get_submenu(const component *c) {
@@ -331,7 +380,8 @@ void trnmenu_set_submenu_done_cb(component *c, trnmenu_submenu_done_cb done_cb) 
 
 void trnmenu_finish(component *c) {
     trnmenu *m = sizer_get_obj(c);
-    m->finished = 1;
+    m->fade = 1;
+    m->opacity_step = -OPACITY_STEP;
 }
 
 component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
@@ -342,6 +392,8 @@ component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
     m->button_sheet = button_sheet;
     m->sheet_x = sheet_x;
     m->sheet_y = sheet_y;
+    m->fade = 1;
+    m->opacity_step = OPACITY_STEP;
     sizer_set_obj(c, m);
 
     sizer_set_render_cb(c, trnmenu_render);

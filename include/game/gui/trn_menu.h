@@ -27,6 +27,9 @@ typedef struct  {
     int sheet_x;
     int sheet_y;
 
+    int fade;
+    float opacity_step;
+
     trnmenu_hand hand;
 
     char prev_submenu_state;
@@ -49,6 +52,8 @@ component* trnmenu_get_submenu(const component *menu);
 void trnmenu_set_submenu_done_cb(component *menu, trnmenu_submenu_done_cb done_cb);
 int trnmenu_is_finished(const component *menu);
 void trnmenu_finish(component *menu);
+
+int trnmenu_is_fading(const component *menu);
 
 void trnmenu_set_userdata(component *menu, void *userdata);
 void* trnmenu_get_userdata(const component *menu);
