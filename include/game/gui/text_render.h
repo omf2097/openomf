@@ -51,6 +51,7 @@ typedef struct {
     uint8_t shadow;
     uint8_t cspacing;
     uint8_t lspacing;
+    uint8_t opacity;
     bool wrap;
 } text_settings;
 

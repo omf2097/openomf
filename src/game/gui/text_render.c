@@ -10,6 +10,7 @@
 void text_defaults(text_settings *settings) {
     memset(settings, 0, sizeof(text_settings));
     settings->cforeground = color_create(0xFF,0xFF,0xFF,0xFF);
+    settings->opacity = 0xFF;
 }
 
 void text_render_char(const text_settings *settings, int x, int y, char ch) {
@@ -32,27 +33,28 @@ void text_render_char(const text_settings *settings, int x, int y, char ch) {
     }
 
     // Handle shadows if necessary
+    float of = settings->opacity / 255.0f;
     if(settings->shadow & TEXT_SHADOW_RIGHT)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x+1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 80, settings->cforeground
+            *sur, x+1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, settings->cforeground
         );
     if(settings->shadow & TEXT_SHADOW_LEFT)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x-1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 80, settings->cforeground
+            *sur, x-1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, settings->cforeground
         );
     if(settings->shadow & TEXT_SHADOW_BOTTOM)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x, y+1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 80, settings->cforeground
+            *sur, x, y+1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, settings->cforeground
         );
     if(settings->shadow & TEXT_SHADOW_TOP)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x, y-1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 80, settings->cforeground
+            *sur, x, y-1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, settings->cforeground
         );
 
     // Handle the font face itself
-    video_render_sprite_tint(*sur, x, y, settings->cforeground, 0);
+    video_render_sprite_flip_scale_opacity_tint(
+        *sur, x, y, BLEND_ALPHA, 0, FLIP_NONE, 1, settings->opacity, settings->cforeground);
 }
-
 
 int text_find_max_strlen(int maxchars, const char *ptr) {
     int i;
