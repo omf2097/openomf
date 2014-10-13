@@ -124,11 +124,14 @@ SDL_Texture* tcache_get(surface *sur,
     // Attempt to find appropriate surface
     // If surface is cacheable and hasn't changed, just return here.
     tcache_entry_value *val = tcache_get_entry(&key);
-    if(val != NULL && (val->pal_version == pal->version || sur->type == SURFACE_TYPE_RGBA) && !sur->no_cache) {
+    if(val != NULL && (val->pal_version == pal->version || sur->type == SURFACE_TYPE_RGBA) && !sur->force_refresh) {
         val->age = 0;
         cache->hits++;
         return val->tex;
     }
+
+    // Reset refresh flag here
+    sur->force_refresh = 0;
 
     // If there was no fitting surface tex in the cache at all,
     // then we need to create one

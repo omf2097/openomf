@@ -100,7 +100,7 @@ static void progressbar_render(component *c) {
                 bar->block = malloc(sizeof(surface));
             }
             surface_create_from_image(bar->block, &tmp);
-            surface_disable_cache(bar->block, 1);
+            surface_force_refresh(bar->block);
             image_free(&tmp);
         } else {
             free(bar->block);

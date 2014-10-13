@@ -14,11 +14,11 @@ void surface_create(surface *sur, int type, int w, int h) {
     sur->w = w;
     sur->h = h;
     sur->type = type;
-    sur->no_cache = 0;
+    sur->force_refresh = 0;
 }
 
-void surface_disable_cache(surface *sur, int disable_cache) {
-    sur->no_cache = disable_cache;
+void surface_force_refresh(surface *sur) {
+    sur->force_refresh = 1;
 }
 
 void surface_create_from_data(surface *sur, int type, int w, int h, const char *src) {

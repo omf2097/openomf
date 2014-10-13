@@ -12,7 +12,7 @@ typedef struct {
     int type;
     char *data;
     char *stencil;
-    int no_cache;
+    uint8_t force_refresh;
 } surface;
 
 enum {
@@ -26,7 +26,7 @@ enum {
 };
 
 void surface_create(surface *sur, int type, int w, int h);
-void surface_disable_cache(surface *sur, int disable_cache);
+void surface_force_refresh(surface *sur);
 void surface_create_from_image(surface *sur, image *img);
 void surface_create_from_data(surface *sur, int type, int w, int h, const char *src);
 int surface_to_image(surface *sur, image *img);
