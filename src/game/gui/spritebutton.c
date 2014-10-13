@@ -14,6 +14,7 @@ typedef struct {
     const font *font;
     surface *img;
     text_settings text_conf;
+    int active;
 
     spritebutton_click_cb click_cb;
     void *userdata;
@@ -21,6 +22,9 @@ typedef struct {
 
 static void spritebutton_render(component *c) {
     spritebutton *sb = widget_get_obj(c);
+    if(sb->active > 0) {
+        video_render_sprite(sb->img, c->x, c->y, BLEND_ALPHA, 0);
+    }
     text_render(&sb->text_conf, c->x, c->y, c->w, c->h, sb->text);
 }
 
@@ -30,6 +34,13 @@ static void spritebutton_free(component *c) {
     free(sb);
 }
 
+static void spritebutton_tick(component *c) {
+    spritebutton *sb = widget_get_obj(c);
+    if(sb->active > 0) {
+        sb->active--;
+    }
+}
+
 static int spritebutton_action(component *c, int action) {
     spritebutton *sb = widget_get_obj(c);
 
@@ -37,6 +48,7 @@ static int spritebutton_action(component *c, int action) {
     if(action == ACT_KICK || action == ACT_PUNCH) {
         if(sb->click_cb) {
             sb->click_cb(c, sb->userdata);
+            sb->active = 10;
         }
         return 0;
     }
@@ -66,7 +78,7 @@ component* spritebutton_create(const font *font, const char *text, surface *img,
 
     widget_set_render_cb(c, spritebutton_render);
     widget_set_action_cb(c, spritebutton_action);
-    //widget_set_tick_cb(c, spritebutton_tick);
+    widget_set_tick_cb(c, spritebutton_tick);
     widget_set_free_cb(c, spritebutton_free);
 
     return c;
