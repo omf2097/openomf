@@ -5,6 +5,7 @@
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/lab_main.h"
 #include "game/gui/frame.h"
+#include "game/gui/trn_menu.h"
 #include "game/protos/scene.h"
 #include "game/game_state.h"
 #include "video/video.h"
@@ -14,6 +15,7 @@
 typedef struct {
     object bg_obj[3];
     guiframe *frame;
+    object *mech;
 } mechlab_local;
 
 void mechlab_free(scene *scene) {
@@ -24,6 +26,8 @@ void mechlab_free(scene *scene) {
     }
 
     guiframe_free(local->frame);
+    object_free(local->mech);
+    free(local->mech);
     free(local);
 }
 
@@ -31,6 +35,13 @@ void mechlab_tick(scene *scene, int paused) {
     mechlab_local *local = scene_get_userdata(scene);
 
     guiframe_tick(local->frame);
+    object_dynamic_tick(local->mech);
+
+    // Check if root is finished
+    component *root = guiframe_get_root(local->frame);
+    if(trnmenu_is_finished(root)) {
+        game_state_set_next(scene->gs, SCENE_MENU);
+    }
 }
 
 int mechlab_event(scene *scene, SDL_Event *event) {
@@ -54,6 +65,7 @@ void mechlab_render(scene *scene) {
     }
 
     guiframe_render(local->frame);
+    object_render(local->mech);
 }
 
 void mechlab_input_tick(scene *scene) {
@@ -97,6 +109,14 @@ int mechlab_create(scene *scene) {
     local->frame = guiframe_create(0, 0, 320, 200);
     guiframe_set_root(local->frame, lab_main_create(scene));
     guiframe_layout(local->frame);
+
+    // Load HAR
+    animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15)->ani;
+    local->mech = malloc(sizeof(object));
+    object_create(local->mech, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
+    object_set_animation(local->mech, initial_har_ani);
+    object_set_repeat(local->mech, 1);
+    object_dynamic_tick(local->mech);
 
     // Set callbacks
     scene_set_userdata(scene, local);
