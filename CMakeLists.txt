@@ -219,6 +219,7 @@ set(OPENOMF_SRC
     src/game/scenes/mechlab.c
     src/game/scenes/mechlab/lab_main.c
     src/game/scenes/mechlab/lab_customize.c
+    src/game/scenes/mechlab/lab_dashboard.c
     src/game/scenes/newsroom.c
     src/game/scenes/scoreboard.c
     src/game/objects/har.c
@@ -239,6 +240,7 @@ set(OPENOMF_SRC
     src/game/gui/label.c
     src/game/gui/filler.c
     src/game/gui/progressbar.c
+    src/game/gui/gauge.c
     src/game/game_state.c
     src/game/game_player.c
     src/game/common_defines.c

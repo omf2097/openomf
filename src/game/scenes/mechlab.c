@@ -4,6 +4,7 @@
 #include "game/protos/object.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/lab_main.h"
+#include "game/scenes/mechlab/lab_dashboard.h"
 #include "game/gui/frame.h"
 #include "game/gui/trn_menu.h"
 #include "game/protos/scene.h"
@@ -15,6 +16,7 @@
 typedef struct {
     object bg_obj[3];
     guiframe *frame;
+    guiframe *dashboard;
     object *mech;
 } mechlab_local;
 
@@ -26,6 +28,7 @@ void mechlab_free(scene *scene) {
     }
 
     guiframe_free(local->frame);
+    guiframe_free(local->dashboard);
     object_free(local->mech);
     free(local->mech);
     free(local);
@@ -35,6 +38,7 @@ void mechlab_tick(scene *scene, int paused) {
     mechlab_local *local = scene_get_userdata(scene);
 
     guiframe_tick(local->frame);
+    guiframe_tick(local->dashboard);
     object_dynamic_tick(local->mech);
 
     // Check if root is finished
@@ -65,6 +69,7 @@ void mechlab_render(scene *scene) {
     }
 
     guiframe_render(local->frame);
+    guiframe_render(local->dashboard);
     object_render(local->mech);
 }
 
@@ -109,6 +114,11 @@ int mechlab_create(scene *scene) {
     local->frame = guiframe_create(0, 0, 320, 200);
     guiframe_set_root(local->frame, lab_main_create(scene));
     guiframe_layout(local->frame);
+
+    // Dashboard with the gauges etc.
+    local->dashboard = guiframe_create(0, 0, 320, 200);
+    guiframe_set_root(local->dashboard, lab_dashboard_create(scene));
+    guiframe_layout(local->dashboard);
 
     // Load HAR
     animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15)->ani;

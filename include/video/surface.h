@@ -53,6 +53,7 @@ void surface_additive_blit(surface *dst,
                            int dst_x, int dst_y,
                            palette *remap_pal,
                            SDL_RendererFlip flip);
+void surface_rgba_blit(surface *dst, const surface *src, int dst_x, int dst_y);
 void surface_alpha_blit(surface *dst,
                         surface *src,
                         int dst_x, int dst_y,

@@ -180,6 +180,33 @@ void surface_additive_blit(surface *dst,
     }
 }
 
+void surface_rgba_blit(surface *dst, const surface *src, int dst_x, int dst_y) {
+    // Both surfaces must be rgba
+    if(dst->type != SURFACE_TYPE_RGBA || src->type != SURFACE_TYPE_RGBA) {
+        return;
+    }
+
+    int dst_pos;
+    int src_pos;
+    for(int y = 0; y < src->h; y++) {
+        for(int x = 0; x < src->w; x++) {
+            // If pixel offscreen, skip
+            if(dst_x + x >= dst->w
+                || dst_y + y >= dst->h
+                || dst_x + x < 0
+                || dst_y + y < 0) continue;
+
+            dst_pos = (dst_y + y) * dst->w + (dst_x + x);
+            src_pos = y * src->w + x;
+            dst_pos *= 4;
+            src_pos *= 4;
+            dst->data[dst_pos+0] = src->data[src_pos+0];
+            dst->data[dst_pos+1] = src->data[src_pos+1];
+            dst->data[dst_pos+2] = src->data[src_pos+2];
+            dst->data[dst_pos+3] = src->data[src_pos+3];
+        }
+    }}
+
 void surface_alpha_blit(surface *dst,
                         surface *src,
                         int dst_x, int dst_y,
