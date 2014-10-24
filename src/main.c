@@ -243,3 +243,23 @@ exit_0:
     pm_free();
     return ret;
 }
+
+
+#ifdef __EMSCRIPTEN__
+
+
+#include <libintl.h>
+
+
+char * dgettext (const char * domainname, const char * msgid) {
+	return (char *) "";
+}
+
+
+char * bindtextdomain (const char * domainname, const char * dirname) {
+	return (char *) "";
+}
+
+
+#endif  // __EMSCRIPTEN__
+
