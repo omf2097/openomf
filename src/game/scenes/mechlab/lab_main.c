@@ -1,6 +1,7 @@
 #include "game/scenes/mechlab/lab_main.h"
 #include "game/scenes/mechlab/lab_customize.h"
 #include "game/scenes/mechlab/lab_training.h"
+#include "game/scenes/mechlab/button_details.h"
 #include "game/gui/trn_menu.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/sizer.h"
@@ -8,18 +9,6 @@
 #include "resources/bk.h"
 #include "game/common_defines.h"
 #include "utils/log.h"
-
-typedef struct {
-    spritebutton_click_cb cb;
-    const char *text;
-    text_direction dir;
-    text_halign halign;
-    text_valign valign;
-    int top;
-    int bottom;
-    int left;
-    int right;
-} button_details;
 
 void lab_main_quit(component *c, void *userdata) {
     scene *s = userdata;
