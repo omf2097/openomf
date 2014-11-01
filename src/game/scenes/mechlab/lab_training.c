@@ -1,5 +1,3 @@
-#include "game/scenes/mechlab/lab_main.h"
-#include "game/scenes/mechlab/lab_customize.h"
 #include "game/scenes/mechlab/lab_training.h"
 #include "game/gui/trn_menu.h"
 #include "game/gui/spritebutton.h"
@@ -21,41 +19,24 @@ typedef struct {
     int right;
 } button_details;
 
-void lab_main_quit(component *c, void *userdata) {
-    scene *s = userdata;
-    game_state_set_next(s->gs, SCENE_MENU);
-}
-
-void lab_main_customize_enter(component *c, void *userdata) {
-    scene *s = userdata;
-    trnmenu_set_submenu(c->parent, lab_customize_create(s));
-}
-
-void lab_main_training_enter(component *c, void *userdata) {
-    scene *s = userdata;
-    trnmenu_set_submenu(c->parent, lab_training_create(s));
+void lab_training_done(component *c, void *userdata) {
+    trnmenu_finish(c->parent);
 }
 
 static const button_details details_list[] = {
-    {NULL, "ARENA", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {lab_main_training_enter, "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0},
-    {lab_main_customize_enter, "BUY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {lab_main_customize_enter, "SELL", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {NULL, "LOAD", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
-    {NULL, "NEW", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
-    {NULL, "DELETE", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0},
-    {NULL, "SIM", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {lab_main_quit, "QUIT", TEXT_VERTICAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
-    {NULL, "NEW TOURNAMENT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
+    {NULL, "POWER", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
+    {NULL, "AGILITY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
+    {NULL, "ENDUR.", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
+    {lab_training_done, "DONE", TEXT_VERTICAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
 };
 
-component* lab_main_create(scene *s) {
+component* lab_training_create(scene *s) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
-    animation *main_buttons = &bk_get_info(&s->bk_data, 8)->ani;
+    animation *main_buttons = &bk_get_info(&s->bk_data, 9)->ani;
     animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
 
     // Initialize menu, and set button sheet
-    sprite *msprite = animation_get_sprite(main_sheets, 2);
+    sprite *msprite = animation_get_sprite(main_sheets, 1);
     component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);
 
     // Default text configuration
