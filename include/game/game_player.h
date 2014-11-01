@@ -1,6 +1,8 @@
 #ifndef _GAME_PLAYER_H
 #define _GAME_PLAYER_H
 
+#include <shadowdive/pilot.h>
+
 #include "game/protos/object.h"
 #include "controller/controller.h"
 #include "controller/keyboard.h"
@@ -16,6 +18,7 @@ typedef struct game_player_t {
     object *har;
     controller *ctrl;
     surface *portrait;
+    sd_pilot pilot;
     int selectable;
     char colors[3];
     chr_score score;

@@ -14,6 +14,7 @@ void game_player_create(game_player *gp) {
     gp->colors[2] = 8;
     chr_score_create(&gp->score);
     har_screencaps_create(&gp->screencaps);
+    sd_pilot_create(&gp->pilot);
     gp->god = 0;
     gp->ez_destruct = 0;
     gp->sp_wins = 0;
@@ -22,6 +23,7 @@ void game_player_create(game_player *gp) {
 void game_player_free(game_player *gp) {
     chr_score_free(&gp->score);
     har_screencaps_free(&gp->screencaps);
+    sd_pilot_free(&gp->pilot);
 }
 
 void game_player_set_har(game_player *gp, object *har) {
