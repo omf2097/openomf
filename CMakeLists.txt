@@ -242,6 +242,7 @@ set(OPENOMF_SRC
     src/game/gui/filler.c
     src/game/gui/progressbar.c
     src/game/gui/gauge.c
+    src/game/gui/xysizer.c
     src/game/game_state.c
     src/game/game_player.c
     src/game/common_defines.c
