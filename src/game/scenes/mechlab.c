@@ -18,6 +18,7 @@ typedef struct {
     guiframe *frame;
     guiframe *dashboard;
     object *mech;
+    dashboard_widgets dw;
 } mechlab_local;
 
 void mechlab_free(scene *scene) {
@@ -116,8 +117,9 @@ int mechlab_create(scene *scene) {
     guiframe_layout(local->frame);
 
     // Dashboard with the gauges etc.
+    // Dashboard widgets struct is filled with pointer to the necessary components for easy access
     local->dashboard = guiframe_create(0, 0, 320, 200);
-    guiframe_set_root(local->dashboard, lab_dashboard_create(scene));
+    guiframe_set_root(local->dashboard, lab_dashboard_create(scene, &local->dw));
     guiframe_layout(local->dashboard);
 
     // Load HAR
