@@ -20,7 +20,7 @@ SDL_Surface* render_text(sd_font *font, const char *text, int area_w) {
     SDL_Surface *tmp;
     SDL_Rect dst;
     sd_rgba_image img;
-    
+
     // Required surface size
     slen = strlen(text);
     char_h = (slen * font->h) / area_w + 1;
@@ -45,7 +45,7 @@ SDL_Surface* render_text(sd_font *font, const char *text, int area_w) {
         SDL_FreeSurface(surface);
         return 0;
     }
-    
+
     // Render text
     dst.w = font->h;
     dst.h = font->h;
@@ -57,32 +57,45 @@ SDL_Surface* render_text(sd_font *font, const char *text, int area_w) {
         dst.x = i % char_w * font->h;
         SDL_BlitSurface(tmp, 0, surface, &dst);
     }
-    
+
     // All done.
     SDL_FreeSurface(tmp);
     sd_rgba_image_free(&img);
     return surface;
 }
 
-void export_to(sd_font *font, const char *filename) {
-    sd_rgba_image dst_img;
-    sd_rgba_image ch_img;
-    sd_rgba_image_create(&dst_img, font->h * 16, font->h * 16);
-
-    sd_rgba_image_create(&ch_img, font->h, font->h);
-    for(int i = 32; i < 256; i++) {
-        int x = i % 16;
-        int y = i / 16;
-        sd_font_decode(font, &ch_img, (char)(i-32), 0, 0, 0);
-        sd_rgba_image_blit(&dst_img, &ch_img, x * font->h, y * font->h);
+void export_to(sd_font *font, const char *filename, int split) {
+    if(split) {
+        char path[256];
+        sd_rgba_image ch_img;
+        sd_rgba_image_create(&ch_img, font->h, font->h);
+        for(int i = 32; i < 256; i++) {
+            sd_font_decode(font, &ch_img, (char)(i-32), 0, 0, 0);
+            sprintf(path, "%s/uni%04x.png", filename, i);
+            int ret = sd_rgba_image_to_png(&ch_img, path);
+            if(ret != SD_SUCCESS) {
+                printf("Error while exporting to %s: %s.", path, sd_get_error(ret));
+            }
+        }
+        sd_rgba_image_free(&ch_img);
+    } else {
+        sd_rgba_image ch_img;
+        sd_rgba_image dst_img;
+        sd_rgba_image_create(&dst_img, font->h * 16, font->h * 16);
+        sd_rgba_image_create(&ch_img, font->h, font->h);
+        for(int i = 32; i < 256; i++) {
+            int x = i % 16;
+            int y = i / 16;
+            sd_font_decode(font, &ch_img, (char)(i-32), 0, 0, 0);
+            sd_rgba_image_blit(&dst_img, &ch_img, x * font->h, y * font->h);
+        }
+        sd_rgba_image_free(&ch_img);
+        int ret = sd_rgba_image_to_png(&dst_img, filename);
+        if(ret != SD_SUCCESS) {
+            printf("Error while exporting to %s: %s.", filename, sd_get_error(ret));
+        }
+        sd_rgba_image_free(&dst_img);
     }
-    sd_rgba_image_free(&ch_img);
-    
-    int ret = sd_rgba_image_to_png(&dst_img, filename);
-    if(ret != SD_SUCCESS) {
-        printf("Error while exporting to %s: %s.", filename, sd_get_error(ret));
-    }
-    sd_rgba_image_free(&dst_img);
 }
 
 void display(sd_font *font, int _sc, const char *text) {
@@ -109,7 +122,7 @@ void display(sd_font *font, int _sc, const char *text) {
         printf("Could not create window: %s\n", SDL_GetError());
         goto d_exit_1;
     }
-   
+
     // Rects
     SDL_Rect srcrect, dstrect;
     srcrect.x = 0;
@@ -132,7 +145,7 @@ void display(sd_font *font, int _sc, const char *text) {
                 run = 0;
             }
         }
-        
+
         SDL_FillRect(window_surface, NULL, tcolor);
         if(_sc == 1) {
             SDL_BlitSurface(surface, &srcrect, window_surface, &dstrect);
@@ -144,7 +157,7 @@ void display(sd_font *font, int _sc, const char *text) {
     }
 
     // Quit
-    SDL_DestroyWindow(window); 
+    SDL_DestroyWindow(window);
 d_exit_1:
     SDL_FreeSurface(surface);
 d_exit_0:
@@ -160,16 +173,17 @@ int main(int argc, char* argv[]) {
     struct arg_str *text = arg_str0("t", "text", "<value>", "text to show");
     struct arg_int *scale = arg_int0("s", "scale", "<value>", "scaling for the window");
     struct arg_file *export = arg_file0("e", "export", "<file>", "Export the full font to a PNG file");
+    struct arg_lit *split = arg_lit0(NULL, "split", "Split to separate PNG files (set path in -e).");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,fh,text,scale,export,end};
+    void* argtable[] = {help,vers,file,fh,text,scale,export,split,end};
     const char* progname = "fonttool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -181,7 +195,7 @@ int main(int argc, char* argv[]) {
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -190,7 +204,7 @@ int main(int argc, char* argv[]) {
         printf("(C) 2013 Tuomas Virtanen\n");
         goto exit_0;
     }
-    
+
     // Handle errors
     if(nerrors > 0) {
         arg_print_errors(stdout, end, progname);
@@ -203,7 +217,7 @@ int main(int argc, char* argv[]) {
         printf("Use either --export or --text arguments!\n");
         goto exit_0;
     }
-    
+
     // Font size
     int _fs = fh->ival[0];
     if(_fs < 6 || _fs > 8 || _fs == 7) {
@@ -222,7 +236,7 @@ int main(int argc, char* argv[]) {
 
     // Export or display
     if(export->count > 0) {
-        export_to(&font, export->filename[0]);
+        export_to(&font, export->filename[0], (split->count > 0));
     } else {
         // Scale
         int _sc = 1;
@@ -231,7 +245,7 @@ int main(int argc, char* argv[]) {
         }
         if(_sc > 4) _sc = 4;
         if(_sc < 1) _sc = 1;
-        
+
         display(&font, _sc, text->sval[0]);
     }
 

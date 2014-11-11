@@ -112,7 +112,7 @@ void print_rec_root_info(sd_rec_file *rec) {
                 tmp);
 
             if(rec->moves[i].lookup_id > 2) {
-                print_bytes(rec->moves[i].extra_data, sd_rec_extra_len(rec->moves[i].lookup_id), 8, 2);
+                print_bytes(rec->moves[i].extra_data, sd_rec_extra_len(rec->moves[i].lookup_id)-1, 8, 2);
             }
             printf("\n");
         }

@@ -58,11 +58,11 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
         printf("Could not create window: %s\n", SDL_GetError());
         return;
     }
-    
+
     printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->width, s->height, s->len);
-    
+
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    
+
     uint32_t rmask, gmask, bmask, amask;
 
     rmask = 0x000000ff;
@@ -83,7 +83,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
         printf("Could not create texture: %s\n", SDL_GetError());
         return;
     }
-    
+
     if((rendertarget = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 320, 200)) == 0) {
         printf("Could not create texture: %s\n", SDL_GetError());
         return;
@@ -112,7 +112,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     rect.y = s->pos_y;
     rect.w = s->width;
     rect.h = s->height;
-    
+
     dstrect.x = 0;
     dstrect.y = 0;
     dstrect.w = 320 * scale;
@@ -265,7 +265,7 @@ void bkanim_set_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
 
 void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kcount, int pcount) {
     int kn = bkanim_key_get_id(key[0]);
-    
+
     switch(kn) {
         case 0: printf("%d\n", bka->null); break;
         case 1: printf("%d\n", bka->chain_hit); break;
@@ -317,7 +317,7 @@ void bkanim_keylist() {
 
 void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim) {
     printf("Animation #%d information:\n", anim);
-    
+
     printf("\nBK specific header:\n");
     printf(" * Null:            %d\n", bka->null);
     printf(" * Chain # if hit:  %d\n", bka->chain_hit);
@@ -327,7 +327,7 @@ void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim) {
     printf(" * hazard damage:   %d\n", bka->hazard_damage);
     printf(" * String:          %s\n", bka->footer_string);
     printf("\n");
-    
+
     anim_common_info(ani);
 }
 
@@ -348,7 +348,7 @@ void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value)
         case 0: bk->file_id = conv_udword(value); break;
         case 1: printf("Setting palette not supported."); break;
         case 2: bk->unknown_a = conv_ubyte(value); break;
-        case 3: 
+        case 3:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < 30) {
@@ -394,7 +394,7 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
             }
             break;
         case 2: printf("%d\n", bk->unknown_a); break;
-        case 3: 
+        case 3:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < 30) {
@@ -403,7 +403,7 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
                     printf("Soundtable index %d does not exist!\n", tmp);
                 }
             } else {
-                for(int i = 0; i < 30; i++) { printf("%d ", bk->soundtable[i]); } printf("\n"); 
+                for(int i = 0; i < 30; i++) { printf("%d ", bk->soundtable[i]); } printf("\n");
             }
             break;
         default:
@@ -450,7 +450,11 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 printf("No palette found at index %d.\n", index);
                 return;
             }
-            sd_palette_to_gimp_palette(pal, filename);
+            int ret = sd_palette_to_gimp_palette(pal, filename);
+            if(ret != SD_SUCCESS) {
+                printf("Error while exporting palette: %s.", sd_get_error(ret));
+                return;
+            }
             }
             break;
         case 4: {
@@ -491,8 +495,9 @@ void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 printf("No palette found at index %d.\n", index);
                 return;
             }
-            if(sd_palette_from_gimp_palette(pal, filename) != SD_SUCCESS) {
-                printf("Error while importing palette.");
+            int ret = sd_palette_from_gimp_palette(pal, filename);
+            if(ret != SD_SUCCESS) {
+                printf("Error while importing palette: %s.", sd_get_error(ret));
                 return;
             }
             }
@@ -530,7 +535,7 @@ void bk_info(sd_bk_file *bk) {
     printf(" * File ID:     %d\n", bk->file_id);
     printf(" * Palettes:    %d\n", bk->palette_count);
     printf(" * Unknown A:   %d\n", bk->unknown_a);
-    
+
     printf(" * Animations:  ");
     int start = -1, last = -1;
     unsigned int m;
@@ -564,7 +569,7 @@ void bk_info(sd_bk_file *bk) {
     } else {
         printf("\n");
     }
-    
+
     printf(" * Sound table:\n");
     printf("   |");
     for(int k = 0; k < 30; k++) {
@@ -609,13 +614,13 @@ int main(int argc, char *argv[]) {
     struct arg_end *end = arg_end(30);
     void* argtable[] = {help,vers,file,new,output,anim,all_anims,sprite,keylist,key,value,push,pop,export,import,stencil,play,scale,parse,end};
     const char* progname = "bktool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -627,7 +632,7 @@ int main(int argc, char *argv[]) {
         arg_print_glossary(stdout, argtable, "%-30s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -636,7 +641,7 @@ int main(int argc, char *argv[]) {
         printf("(C) 2013 Tuomas Virtanen\n");
         goto exit_0;
     }
-    
+
     // Argument dependencies
     if(anim->count == 0) {
         if(sprite->count > 0) {
@@ -687,17 +692,17 @@ int main(int argc, char *argv[]) {
         printf("Define at most one of (--export, --import).");
         goto exit_0;
     }
-    
+
     // Handle errors
     if(nerrors > 0) {
         arg_print_errors(stdout, end, progname);
         printf("Try '%s --help' for more information.\n", progname);
         goto exit_0;
     }
-    
+
     // Init SDL
     SDL_Init(SDL_INIT_VIDEO);
-    
+
     // Load file
     sd_bk_file bk;
     sd_bk_create(&bk);
@@ -708,7 +713,7 @@ int main(int argc, char *argv[]) {
             goto exit_1;
         }
     }
-    
+
     // Scaling variable
     int _sc = 1;
     if(scale->count > 0) {
@@ -716,7 +721,7 @@ int main(int argc, char *argv[]) {
         if(_sc > 4) _sc = 4;
         if(_sc < 1) _sc = 1;
     }
-    
+
     // Handle args
     if(sprite->count > 0) {
         sd_animation *ani;
@@ -739,7 +744,7 @@ int main(int argc, char *argv[]) {
             goto exit_1;
         }
         sp = ani->sprites[sprite->ival[0]];
-    
+
         // Handle arguments
         if(key->count > 0) {
             if(value->count > 0) {
@@ -777,7 +782,7 @@ int main(int argc, char *argv[]) {
         }
         sd_bk_anim *bka = bk.anims[anim->ival[0]];
         sd_animation *ani = bka->animation;
-    
+
         if(key->count > 0) {
             if(value->count > 0) {
                 bkanim_set_key(bka, ani, key->sval, key->count, value->sval[0]);
@@ -847,7 +852,7 @@ done:
                 sd_get_error(ret));
         }
     }
-    
+
     // Quit
 exit_1:
     sd_bk_free(&bk);

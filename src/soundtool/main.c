@@ -105,6 +105,7 @@ int main(int argc, char *argv[]) {
         if(sampleprint->count > 0) {
             int count = (sampleprint->ival[0] > sound->len) ? sound->len : sampleprint->ival[0];
             printf("Sample size = %d\n", sound->len);
+            printf("Unknown = %d\n", sound->unknown);
             printf("Attempting to print %d first bytes.\n", count);
             for(int i = 0; i < count; i++) {
                 unsigned int s = sound->data[i] & 0xFF;
@@ -114,7 +115,7 @@ int main(int argc, char *argv[]) {
             printf("Attempting to play sample #%d.\n", sound_id);
 
             // Make sure there is data at requested ID position
-            if(sound->len <= 2) {
+            if(sound->len <= 0) {
                 printf("Sample does not contain data.\n");
                 goto exit_1;
             }
@@ -165,6 +166,7 @@ int main(int argc, char *argv[]) {
             }
         } else {
             printf("Selected sample %d\n", sound_id);
+            printf("Unknown = %d\n", sound->unknown);
             printf("Length = %d\n", sound->len);
         }
     } else {
