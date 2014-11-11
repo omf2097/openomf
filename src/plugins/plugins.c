@@ -21,6 +21,7 @@ void plugins_init() {
         _plugins[i].get_author = NULL;
         _plugins[i].get_license = NULL;
         _plugins[i].get_type = NULL;
+        _plugins[i].get_version = NULL;
     }
 
     // Search for plugins
@@ -66,6 +67,7 @@ void plugins_init() {
             _plugins[_plugins_count].get_author = SDL_LoadFunction(handle, "plugin_get_author");
             _plugins[_plugins_count].get_license = SDL_LoadFunction(handle, "plugin_get_license");
             _plugins[_plugins_count].get_type = SDL_LoadFunction(handle, "plugin_get_type");
+            _plugins[_plugins_count].get_version = SDL_LoadFunction(handle, "plugin_get_version");
 
             // Make sure we have all functions
             if(_plugins[_plugins_count].get_name == NULL) {
@@ -84,7 +86,9 @@ void plugins_init() {
                 PERROR("Plugin get_type handle not found: %s", SDL_GetError());
                 continue;
             }
-
+            if(_plugins[_plugins_count].get_version == NULL) {
+                DEBUG("Plugin get_version handle not found; your plugin is old.");
+            }
 #ifdef DEBUGMODE
             // Print some debug information
             base_plugin *tmp = &_plugins[_plugins_count];
@@ -93,6 +97,9 @@ void plugins_init() {
             DEBUG("   - Author: %s", tmp->get_author());
             DEBUG("   - License: %s", tmp->get_license());
             DEBUG("   - Type: %s", tmp->get_type());
+            if(tmp->get_version) {
+                DEBUG("   - Version: %s", tmp->get_version());
+            }
 #endif
             _plugins_count++;
         }
