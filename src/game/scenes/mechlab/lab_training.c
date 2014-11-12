@@ -32,12 +32,10 @@ component* lab_training_create(scene *s) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
+    tconf.cforeground = color_create(0, 0, 123, 255);
 
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
-        sprite *bsprite = animation_get_sprite(main_buttons, i);
-        surface *bsurface = bsprite->data;
-        component *button = spritebutton_create(&font_small, details_list[i].text, bsurface, COM_ENABLED, details_list[i].cb, s);
         tconf.valign = details_list[i].valign;
         tconf.halign = details_list[i].halign;
         tconf.padding.top = details_list[i].top;
@@ -45,8 +43,10 @@ component* lab_training_create(scene *s) {
         tconf.padding.left = details_list[i].left;
         tconf.padding.right = details_list[i].right;
         tconf.direction = details_list[i].dir;
-        spritebutton_set_text_style(button, &tconf);
-        component_set_size_hints(button, bsurface->w, bsurface->h);
+
+        sprite *bsprite = animation_get_sprite(main_buttons, i);
+        component *button = spritebutton_create(&tconf, details_list[i].text, bsprite->data, COM_ENABLED, details_list[i].cb, s);
+        component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
         trnmenu_attach(menu, button);
     }

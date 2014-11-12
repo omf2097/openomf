@@ -4,15 +4,12 @@
 
 typedef struct {
     char *text;
-    const font *font;
+    text_settings tconf;
 } label;
 
 static void label_render(component *c) {
     label *local = widget_get_obj(c);
-    int chars = strlen(local->text);
-    int width = chars * local->font->w;
-    int xoff = (c->w - width) / 2;
-    font_render(local->font, local->text, c->x + xoff, c->y, color_create(121, 121, 121, 255));
+    text_render(&local->tconf, c->x, c->y, c->w, c->h, local->text);
 }
 
 static void label_free(component *c) {
@@ -29,7 +26,7 @@ void label_set_text(component *c, const char* text) {
     local->text = strdup(text);
 }
 
-component* label_create(const font *font, const char *text) {
+component* label_create(const text_settings *tconf, const char *text) {
     component *c = widget_create();
     component_disable(c, 1);
     c->supports_disable = 0;
@@ -38,7 +35,7 @@ component* label_create(const font *font, const char *text) {
 
     label *local = malloc(sizeof(label));
     memset(local, 0, sizeof(label));
-    local->font = font;
+    memcpy(&local->tconf, tconf, sizeof(text_settings));
     local->text = strdup(text);
 
     widget_set_obj(c, local);

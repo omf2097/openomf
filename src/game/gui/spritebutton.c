@@ -13,9 +13,8 @@
 
 typedef struct {
     char *text;
-    const font *font;
+    text_settings tconf;
     surface *img;
-    text_settings text_conf;
     int active;
 
     spritebutton_click_cb click_cb;
@@ -29,8 +28,8 @@ static void spritebutton_render(component *c) {
         video_render_sprite(sb->img, c->x, c->y, BLEND_ALPHA, 0);
     }
     if(sb->text) {
-        sb->text_conf.opacity = clamp(s->opacity * 255, 0, 255);
-        text_render(&sb->text_conf, c->x, c->y, c->w, c->h, sb->text);
+        sb->tconf.opacity = clamp(s->opacity * 255, 0, 255);
+        text_render(&sb->tconf, c->x, c->y, c->w, c->h, sb->text);
     }
 }
 
@@ -61,18 +60,7 @@ static int spritebutton_action(component *c, int action) {
     return 1;
 }
 
-void spritebutton_set_text_style(component *c, text_settings *set) {
-    spritebutton *sb = widget_get_obj(c);
-    memcpy(&sb->text_conf, set, sizeof(text_settings));
-    sb->text_conf.cforeground = color_create(0, 0, 123, 255);
-}
-
-text_settings* spritebutton_get_text_style(component *c) {
-    spritebutton *sb = widget_get_obj(c);
-    return &sb->text_conf;
-}
-
-component* spritebutton_create(const font *font, const char *text, surface *img, int disabled, spritebutton_click_cb cb, void *userdata) {
+component* spritebutton_create(const text_settings *tconf, const char *text, surface *img, int disabled, spritebutton_click_cb cb, void *userdata) {
     component *c = widget_create();
     component_disable(c, disabled);
 
@@ -80,12 +68,10 @@ component* spritebutton_create(const font *font, const char *text, surface *img,
     memset(sb, 0, sizeof(spritebutton));
     if(text != NULL)
         sb->text = strdup(text);
-    sb->font = font;
+    memcpy(&sb->tconf, tconf, sizeof(text_settings));
     sb->click_cb = cb;
     sb->img = img;
     sb->userdata = userdata;
-    text_defaults(&sb->text_conf);
-    sb->text_conf.cforeground = color_create(0, 0, 123, 255);
     widget_set_obj(c, sb);
 
     widget_set_render_cb(c, spritebutton_render);

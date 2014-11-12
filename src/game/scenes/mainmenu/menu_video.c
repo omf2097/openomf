@@ -170,13 +170,20 @@ component* menu_video_create(scene *s) {
     const char* offon_opts[] = {"OFF","ON"};
     settings *setting = settings_get();
 
+    // Text config
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_BIG;
+    tconf.halign = TEXT_CENTER;
+    tconf.cforeground = color_create(0, 121, 0, 255);
+
     // Create menu and its header
     component* menu = menu_create(11);
-    menu_attach(menu, label_create(&font_large, "VIDEO"));
+    menu_attach(menu, label_create(&tconf, "VIDEO"));
     menu_attach(menu, filler_create());
 
     // Resolution selector
-    component *res_selector = textselector_create(&font_large, "RES:", resolution_toggled, local);
+    component *res_selector = textselector_create(&tconf, "RES:", resolution_toggled, local);
     menu_attach(menu, res_selector);
 
     // If custom resolution is set, add it as first selection
@@ -199,12 +206,12 @@ component* menu_video_create(scene *s) {
     }
 
     // vsync and fullscreen
-    menu_attach(menu, textselector_create_bind_opts(&font_large, "VSYNC", NULL, NULL, &setting->video.vsync, offon_opts, 2));
-    menu_attach(menu, textselector_create_bind_opts(&font_large, "FULLSCREEN", NULL, NULL, &setting->video.fullscreen, offon_opts, 2));
+    menu_attach(menu, textselector_create_bind_opts(&tconf, "VSYNC", NULL, NULL, &setting->video.vsync, offon_opts, 2));
+    menu_attach(menu, textselector_create_bind_opts(&tconf, "FULLSCREEN", NULL, NULL, &setting->video.fullscreen, offon_opts, 2));
 
     // Scaler selection
-    component *scaler = textselector_create(&font_large, "SCALER:", scaler_toggled, local);
-    component *factor = textselector_create(&font_large, "SCALING FACTOR:", scaling_factor_toggled, local);
+    component *scaler = textselector_create(&tconf, "SCALER:", scaler_toggled, local);
+    component *factor = textselector_create(&tconf, "SCALING FACTOR:", scaling_factor_toggled, local);
     menu_attach(menu, scaler);
     menu_attach(menu, factor);
     textselector_add_option(scaler, "NEAREST");
@@ -254,7 +261,7 @@ component* menu_video_create(scene *s) {
     }
 
     // Done button
-    menu_attach(menu, textbutton_create(&font_large, "DONE", COM_ENABLED, menu_video_done, s));
+    menu_attach(menu, textbutton_create(&tconf, "DONE", COM_ENABLED, menu_video_done, s));
 
     // Userdata & free function for it
     menu_set_userdata(menu, local);

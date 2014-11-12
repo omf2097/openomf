@@ -116,14 +116,21 @@ component* menu_input_create(scene *s, int player_id) {
     memset(local, 0, sizeof(menu_input_local));
     local->selected_player = player_id;
 
+    // Text config
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_BIG;
+    tconf.halign = TEXT_CENTER;
+    tconf.cforeground = color_create(0, 121, 0, 255);
+
     component* menu = menu_create(11);
-    menu_attach(menu, label_create(&font_large, "PICK INPUT DEVICE"));
+    menu_attach(menu, label_create(&tconf, "PICK INPUT DEVICE"));
     menu_attach(menu, filler_create());
-    menu_attach(menu, textbutton_create(&font_large, "RIGHT KEYBOARD", COM_ENABLED, menu_set_right_keyboard, s));
-    menu_attach(menu, textbutton_create(&font_large, "LEFT KEYBOARD", COM_ENABLED, menu_set_left_keyboard, s));
-    menu_attach(menu, textbutton_create(&font_large, "CUSTOM KEYBOARD", COM_ENABLED, menu_set_custom_keyboard, s));
-    component *joy1 = textbutton_create(&font_large, "JOYSTICK 1", COM_ENABLED, menu_set_joystick1, s);
-    component *joy2 = textbutton_create(&font_large, "JOYSTICK 2", COM_ENABLED, menu_set_joystick2, s);
+    menu_attach(menu, textbutton_create(&tconf, "RIGHT KEYBOARD", COM_ENABLED, menu_set_right_keyboard, s));
+    menu_attach(menu, textbutton_create(&tconf, "LEFT KEYBOARD", COM_ENABLED, menu_set_left_keyboard, s));
+    menu_attach(menu, textbutton_create(&tconf, "CUSTOM KEYBOARD", COM_ENABLED, menu_set_custom_keyboard, s));
+    component *joy1 = textbutton_create(&tconf, "JOYSTICK 1", COM_ENABLED, menu_set_joystick1, s);
+    component *joy2 = textbutton_create(&tconf, "JOYSTICK 2", COM_ENABLED, menu_set_joystick2, s);
     int jcount = joystick_count();
     if(jcount < 1) {
         component_disable(joy1, 1);
@@ -134,7 +141,7 @@ component* menu_input_create(scene *s, int player_id) {
     menu_attach(menu, joy1);
     menu_attach(menu, joy2);
     menu_attach(menu, filler_create());
-    menu_attach(menu, textbutton_create(&font_large, "DONE", COM_ENABLED, menu_input_done, NULL));
+    menu_attach(menu, textbutton_create(&tconf, "DONE", COM_ENABLED, menu_input_done, NULL));
 
     menu_set_userdata(menu, local);
     menu_set_free_cb(menu, menu_input_free);

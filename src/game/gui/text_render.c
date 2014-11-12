@@ -93,6 +93,10 @@ int text_find_max_strlen(int maxchars, const char *ptr) {
     return i;
 }
 
+int text_char_width(const text_settings *settings) {
+    return (settings->font == FONT_BIG) ? 8 : 6;
+}
+
 int text_find_line_count(text_direction dir, int cols, int rows, int len, const char *text) {
     int ptr = 0;
     int lines = 0;
@@ -113,7 +117,7 @@ int text_find_line_count(text_direction dir, int cols, int rows, int len, const 
 void text_render(const text_settings *settings, int x, int y, int w, int h, const char *text) {
     int len = strlen(text);
 
-    int size = (settings->font == FONT_BIG) ? 8 : 6;
+    int size = text_char_width(settings);
     int xspace = w - settings->padding.left - settings->padding.right;
     int yspace = h - settings->padding.top - settings->padding.bottom;
     int charw = size + settings->cspacing;

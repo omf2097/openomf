@@ -144,13 +144,20 @@ component* menu_connect_create(scene *s) {
     memset(local, 0, sizeof(connect_menu_data));
     local->s = s;
 
+    // Text config
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_BIG;
+    tconf.halign = TEXT_CENTER;
+    tconf.cforeground = color_create(0, 121, 0, 255);
+
     component* menu = menu_create(11);
-    menu_attach(menu, label_create(&font_large, "CONNECT TO SERVER"));
+    menu_attach(menu, label_create(&tconf, "CONNECT TO SERVER"));
     menu_attach(menu, filler_create());
 
-    local->addr_input = textinput_create(&font_large, "Host/IP", settings_get()->net.net_connect_ip);
-    local->connect_button = textbutton_create(&font_large, "CONNECT", COM_ENABLED, menu_connect_start, s);
-    local->cancel_button = textbutton_create(&font_large, "CANCEL", COM_ENABLED, menu_connect_cancel, s);
+    local->addr_input = textinput_create(&tconf, "Host/IP", settings_get()->net.net_connect_ip);
+    local->connect_button = textbutton_create(&tconf, "CONNECT", COM_ENABLED, menu_connect_start, s);
+    local->cancel_button = textbutton_create(&tconf, "CANCEL", COM_ENABLED, menu_connect_cancel, s);
     widget_set_id(local->connect_button, NETWORK_CONNECT_IP_BUTTON_ID);
     menu_attach(menu, local->addr_input);
     menu_attach(menu, local->connect_button);

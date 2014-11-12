@@ -92,14 +92,21 @@ component* menu_keyboard_create(scene *s, int selected_player) {
     memset(local, 0, sizeof(keyboard_menu_local));
     local->selected_player = selected_player;
 
+    // Text config
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_BIG;
+    tconf.halign = TEXT_CENTER;
+    tconf.cforeground = color_create(0, 121, 0, 255);
+
     component* menu = menu_create(11);
-    menu_attach(menu, label_create(&font_large, "CUSTOM INPUT SETUP"));
+    menu_attach(menu, label_create(&tconf, "CUSTOM INPUT SETUP"));
     menu_attach(menu, filler_create());
     for(int i = 0; i < 6; i++) {
-        local->keys[i] = textbutton_create(&font_large, "", COM_ENABLED, menu_keyboard_set_key, (void*)menu_get_key(local->selected_player, i));
+        local->keys[i] = textbutton_create(&tconf, "", COM_ENABLED, menu_keyboard_set_key, (void*)menu_get_key(local->selected_player, i));
         menu_attach(menu, local->keys[i]);
     }
-    menu_attach(menu, textbutton_create(&font_large, "DONE", COM_ENABLED, menu_keyboard_done, s));
+    menu_attach(menu, textbutton_create(&tconf, "DONE", COM_ENABLED, menu_keyboard_done, s));
 
     menu_set_userdata(menu, local);
     menu_set_free_cb(menu, menu_keyboard_free);

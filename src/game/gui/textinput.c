@@ -18,7 +18,7 @@
 
 typedef struct {
     char *text;
-    const font *font;
+    text_settings tconf;
     int ticks;
     int dir;
     int pos_;
@@ -29,31 +29,32 @@ typedef struct {
 
 static void textinput_render(component *c) {
     textinput *tb = widget_get_obj(c);
-    /*char buf[100];*/
-    int chars;
-    int width;
-    int xoff;
-    chars = strlen(tb->buf);
-    width = 15*tb->font->w;
-    xoff = (c->w - width)/2;
-    video_render_sprite(&tb->sur, c->x + xoff-2, c->y -2, BLEND_ALPHA, 0);
+    int chars = strlen(tb->buf);
+
+    video_render_sprite(&tb->sur, c->x + (c->w - tb->sur.w)/2, c->y - 2, BLEND_ALPHA, 0);
+
     if(component_is_selected(c)) {
-        int t = tb->ticks / 2;
-        if (chars > 0) {
-            font_render(tb->font, tb->buf, c->x + xoff, c->y, color_create(80, 220, 80, 255));
+        if(chars > 0) {
+            tb->tconf.cforeground = color_create(80, 220, 80, 255);
+            tb->buf[chars] = '\x7F';
+            tb->buf[chars+1] = 0;
+            text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
+            tb->buf[chars] = 0;
         }
-        font_render(tb->font, "", c->x+ xoff + chars * tb->font->w, c->y, color_create(121 - t, 121 - t, 121 - t, 255));
-    } else if (component_is_disabled(c)) {
-        if (chars > 0) {
-            font_render(tb->font, tb->buf, c->x + xoff, c->y, color_create(121, 121, 121, 255));
+    } else if(component_is_disabled(c)) {
+        if(chars > 0) {
+            tb->tconf.cforeground = color_create(121, 121, 121, 255);
+            text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
         }
     } else {
-        if (chars > 0) {
-            font_render(tb->font, tb->buf, c->x + xoff, c->y, color_create(0, 121, 0, 255));
+        if(chars > 0) {
+            tb->tconf.cforeground = color_create(0, 121, 0, 255);
+            text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
         }
     }
-    if (chars == 0) {
-        font_render(tb->font, tb->text, c->x + xoff, c->y, color_create(121, 121, 121, 255));
+    if(chars == 0) {
+        tb->tconf.cforeground = color_create(121, 121, 121, 255);
+        text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
     }
 }
 
@@ -136,20 +137,21 @@ static void textinput_free(component *c) {
     free(tb);
 }
 
-component* textinput_create(const font *font, const char *text, const char *initialvalue) {
+component* textinput_create(const text_settings *tconf, const char *text, const char *initialvalue) {
     component *c = widget_create();
 
     textinput *tb = malloc(sizeof(textinput));
     memset(tb, 0, sizeof(textinput));
     tb->text = strdup(text);
-    tb->font = font;
+    memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->pos = &tb->pos_;
 
     // Background for field
+    int tsize = text_char_width(&tb->tconf);
     image img;
-    image_create(&img, 15*font->w+2, font->h+3);
+    image_create(&img, 15*tsize+2, tsize+3);
     image_clear(&img, COLOR_MENU_BG);
-    image_rect(&img, 0, 0, 15*font->w+1, font->h+2, COLOR_MENU_BORDER);
+    image_rect(&img, 0, 0, 15*tsize+1, tsize+2, COLOR_MENU_BORDER);
     surface_create_from_image(&tb->sur, &img);
     image_free(&img);
 

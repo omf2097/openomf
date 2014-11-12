@@ -42,9 +42,15 @@ component* menu_presskey_create(char **key) {
     local->wait_timeout = 20;
     local->key = key;
 
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_BIG;
+    tconf.halign = TEXT_CENTER;
+    tconf.cforeground = color_create(0, 121, 0, 255);
+
     component* menu = menu_create(11);
-    menu_attach(menu, label_create(&font_large, "PRESS A KEY FOR"));
-    menu_attach(menu, label_create(&font_large, "THIS ACTION ..."));
+    menu_attach(menu, label_create(&tconf, "PRESS A KEY FOR"));
+    menu_attach(menu, label_create(&tconf, "THIS ACTION ..."));
     menu_attach(menu, filler_create());
 
     menu_set_userdata(menu, local);

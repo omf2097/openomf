@@ -9,6 +9,17 @@
 
 void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int y) {
     int w, h;
+
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_BIG;
+    tconf.cforeground = color_create(0, 121, 0, 255);
+
+    text_settings tconf_desc;
+    text_defaults(&tconf_desc);
+    tconf_desc.font = FONT_SMALL;
+    tconf_desc.cforeground = color_create(0, 121, 0, 255);
+
     dlg->x = x;
     dlg->y = y;
     dlg->yes = NULL;
@@ -20,11 +31,12 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     strncpy(dlg->text, text, sizeof(dlg->text)-1);
     dlg->text[sizeof(dlg->text)-1] = 0;
     font_get_wrapped_size_shadowed(&font_small, dlg->text, MAX_WIDTH, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM, &w, &h);
-    menu_background_create(&dlg->background, MAX_WIDTH+30, h+24+font_large.h);
+    int tsize = text_char_width(&tconf);
+    menu_background_create(&dlg->background, MAX_WIDTH+30, h+24+tsize);
 
     if(style == DIALOG_STYLE_YES_NO) {
-        dlg->yes = textbutton_create(&font_large, "YES", COM_ENABLED, NULL, NULL);
-        dlg->no = textbutton_create(&font_large, "NO", COM_ENABLED, NULL, NULL);
+        dlg->yes = textbutton_create(&tconf, "YES", COM_ENABLED, NULL, NULL);
+        dlg->no = textbutton_create(&tconf, "NO", COM_ENABLED, NULL, NULL);
         textbutton_set_border(dlg->yes, COLOR_BLUE);
         textbutton_set_border(dlg->no, COLOR_BLUE);
         component_layout(dlg->yes, x + 54, x + h + 6, 8, 8);
@@ -32,7 +44,7 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
         component_select(dlg->yes, 1);
         dlg->result = DIALOG_RESULT_YES_OK;
     } else if(style == DIALOG_STYLE_OK) {
-        dlg->ok = textbutton_create(&font_large, "OK", COM_ENABLED, NULL, NULL);
+        dlg->ok = textbutton_create(&tconf, "OK", COM_ENABLED, NULL, NULL);
         textbutton_set_border(dlg->ok, COLOR_BLUE);
         component_layout(dlg->ok, x + 84, x + h + 6, 8, 8);
         component_select(dlg->ok, 1);

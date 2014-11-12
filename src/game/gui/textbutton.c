@@ -12,7 +12,7 @@
 
 typedef struct {
     char *text;
-    const font *font;
+    text_settings tconf;
     int ticks;
     int dir;
 
@@ -36,8 +36,9 @@ void textbutton_set_border(component *c, color col) {
 
     // create new border
     int chars = strlen(tb->text);
-    int width = chars*tb->font->w;
-    menu_background_border_create(&tb->border, width+6, tb->font->h+3);
+    int fsize = text_char_width(&tb->tconf);
+    int width = chars * fsize;
+    menu_background_border_create(&tb->border, width+6, fsize+3);
     tb->border_created = 1;
 }
 
@@ -56,19 +57,21 @@ void textbutton_set_text(component *c, const char* text) {
 
 static void textbutton_render(component *c) {
     textbutton *tb = widget_get_obj(c);
-    int chars = strlen(tb->text);
-    int width = chars*tb->font->w;
-    int xoff = (c->w - width)/2;
+
+    // Select color and render
     if(component_is_selected(c)) {
         int t = tb->ticks / 2;
-        font_render(tb->font, tb->text, c->x + xoff, c->y, color_create(80 - t, 220 - t*2, 80 - t, 255));
+        tb->tconf.cforeground = color_create(80 - t, 220 - t*2, 80 - t, 255);
     } else if (component_is_disabled(c)) {
-        font_render(tb->font, tb->text, c->x + xoff, c->y, color_create(121, 121, 121, 255));
+        tb->tconf.cforeground = color_create(121, 121, 121, 255);
     } else {
-        font_render(tb->font, tb->text, c->x + xoff, c->y, color_create(0, 121, 0, 255));
+        tb->tconf.cforeground = color_create(0, 121, 0, 255);
     }
+    text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->text);
+
+    // Border
     if(tb->border_enabled) {
-        video_render_sprite(&tb->border, c->x + xoff-4, c->y-2, BLEND_ALPHA, 0);
+        video_render_sprite(&tb->border, c->x-2, c->y-2, BLEND_ALPHA, 0);
     }
 }
 
@@ -111,14 +114,14 @@ static void textbutton_free(component *c) {
     free(tb);
 }
 
-component* textbutton_create(const font *font, const char *text, int disabled, textbutton_click_cb cb, void *userdata) {
+component* textbutton_create(const text_settings *tconf, const char *text, int disabled, textbutton_click_cb cb, void *userdata) {
     component *c = widget_create();
     component_disable(c, disabled);
 
     textbutton *tb = malloc(sizeof(textbutton));
     memset(tb, 0, sizeof(textbutton));
     tb->text = strdup(text);
-    tb->font = font;
+    memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->click_cb = cb;
     tb->userdata = userdata;
     widget_set_obj(c, tb);

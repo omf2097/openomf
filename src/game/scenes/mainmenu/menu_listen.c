@@ -112,13 +112,20 @@ component* menu_listen_create(scene *s) {
     }
     enet_socket_set_option(local->host->socket, ENET_SOCKOPT_REUSEADDR, 1);
 
+    // Text config
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_BIG;
+    tconf.halign = TEXT_CENTER;
+    tconf.cforeground = color_create(0, 121, 0, 255);
+
     // Create the menu
     component* menu = menu_create(11);
-    menu_attach(menu, label_create(&font_large, "START SERVER"));
+    menu_attach(menu, label_create(&tconf, "START SERVER"));
     menu_attach(menu, filler_create());
-    menu_attach(menu, label_create(&font_large, "Waiting ..."));
+    menu_attach(menu, label_create(&tconf, "Waiting ..."));
     menu_attach(menu, filler_create());
-    local->cancel_button = textbutton_create(&font_large, "CANCEL", COM_ENABLED, menu_listen_cancel, s);
+    local->cancel_button = textbutton_create(&tconf, "CANCEL", COM_ENABLED, menu_listen_cancel, s);
     menu_attach(menu, local->cancel_button);
 
     menu_set_userdata(menu, local);
