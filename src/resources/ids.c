@@ -49,6 +49,11 @@ const char* get_resource_file(unsigned int id) {
         case DAT_GRAPHCHR:   return "GRAPHCHR.DAT";
         case DAT_CHARSMAL:   return "CHARSMAL.DAT";
         case DAT_ALTPALS:    return "ALTPALS.DAT";
+        case PIC_NORTHAM:    return "NORTH_AM.PIC";
+        case PIC_KATUSHAI:   return "KATUSHAI.PIC";
+        case PIC_WAR:        return "WAR.PIC";
+        case PIC_WORLD:      return "WORLD.PIC";
+        case PIC_PLAYERS:    return "PLAYERS.PIC";
         default: break;
     }
     return NULL;
@@ -99,6 +104,11 @@ const char* get_resource_name(unsigned int id) {
         case DAT_GRAPHCHR:   return "DAT_GRAPHCHR";
         case DAT_CHARSMAL:   return "DAT_CHARSMAL";
         case DAT_ALTPALS:    return "DAT_ALTPALS";
+        case PIC_NORTHAM:    return "PIC_NORTHAM";
+        case PIC_KATUSHAI:   return "PIC_KATUSHAI";
+        case PIC_WAR:        return "PIC_WAR";
+        case PIC_WORLD:      return "PIC_WORLD";
+        case PIC_PLAYERS:    return "PIC_PLAYERS";
         default: break;
     }
     return NULL;
@@ -118,4 +128,8 @@ int is_har(unsigned int id) {
 
 int is_music(unsigned int id) {
     return (id >= PSM_MENU && id <= PSM_ARENA4);
+}
+
+int is_pic(unsigned int id) {
+    return (id >= PIC_NORTHAM && id <= PIC_PLAYERS);
 }

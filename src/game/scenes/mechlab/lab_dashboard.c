@@ -2,6 +2,8 @@
 #include "game/gui/gauge.h"
 #include "game/gui/xysizer.h"
 #include "game/gui/label.h"
+#include "game/gui/pilotpic.h"
+#include "resources/ids.h"
 #include "utils/log.h"
 
 component* lab_dashboard_create(scene *s, dashboard_widgets *dw) {
@@ -11,6 +13,10 @@ component* lab_dashboard_create(scene *s, dashboard_widgets *dw) {
     text_defaults(&tconf_dark);
     tconf_dark.font = FONT_SMALL;
     tconf_dark.cforeground = color_create(0, 200, 0, 255);
+
+    // Pilot image
+    dw->photo = pilotpic_create(PIC_PLAYERS, 1);
+    xysizer_attach(xy, dw->photo, 0, 0, -1, -1);
 
     // Bars and texts
     xysizer_attach(xy, label_create(&tconf_dark, "Power"), 12, 95, -1, -1);

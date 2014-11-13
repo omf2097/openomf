@@ -45,6 +45,11 @@ enum RESOURCE_ID {
     DAT_GRAPHCHR,
     DAT_CHARSMAL,
     DAT_ALTPALS,
+    PIC_NORTHAM,
+    PIC_KATUSHAI,
+    PIC_WAR,
+    PIC_WORLD,
+    PIC_PLAYERS,
     NUMBER_OF_RESOURCES
 };
 
@@ -55,5 +60,6 @@ int is_arena(unsigned int id);
 int is_scene(unsigned int id);
 int is_har(unsigned int id);
 int is_music(unsigned int id);
+int is_pic(unsigned int id);
 
 #endif // _IDS_H

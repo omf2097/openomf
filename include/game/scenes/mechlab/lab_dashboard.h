@@ -6,6 +6,7 @@
 
 // For easy access to components
 typedef struct {
+    component *photo;
     component *power;
     component *agility;
     component *endurance;
