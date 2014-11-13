@@ -14,9 +14,28 @@ component* lab_dashboard_create(scene *s, dashboard_widgets *dw) {
     tconf_dark.font = FONT_SMALL;
     tconf_dark.cforeground = color_create(0, 200, 0, 255);
 
+    text_settings tconf_light;
+    text_defaults(&tconf_light);
+    tconf_light.font = FONT_SMALL;
+    tconf_light.cforeground = color_create(50, 240, 50, 255);
+
     // Pilot image
     dw->photo = pilotpic_create(PIC_PLAYERS, 1);
     xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
+
+    // Texts
+    dw->name = label_create(&tconf_light, "PLAYER NAME");
+    dw->rank = label_create(&tconf_dark,  "RANK: 3");
+    dw->wins = label_create(&tconf_dark,  "WINS: 777");
+    dw->losses = label_create(&tconf_dark,  "LOSES: 555");
+    dw->money = label_create(&tconf_dark,  "MONEY: $ 123K");
+    dw->tournament = label_create(&tconf_light, "TOURNAMENT NAME");
+    xysizer_attach(xy, dw->name, 12, 58, 200, 6);
+    xysizer_attach(xy, dw->rank, 18, 64, 200, 6);
+    xysizer_attach(xy, dw->wins, 18, 70, 200, 6);
+    xysizer_attach(xy, dw->losses, 12, 76, 200, 6);
+    xysizer_attach(xy, dw->money, 12, 82, 200, 6);
+    xysizer_attach(xy, dw->tournament, 12, 88, 200, 6);
 
     // Bars and texts
     xysizer_attach(xy, label_create(&tconf_dark, "Power"), 12, 95, -1, -1);
