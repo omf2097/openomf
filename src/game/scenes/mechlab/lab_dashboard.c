@@ -16,7 +16,7 @@ component* lab_dashboard_create(scene *s, dashboard_widgets *dw) {
 
     // Pilot image
     dw->photo = pilotpic_create(PIC_PLAYERS, 1);
-    xysizer_attach(xy, dw->photo, 0, 0, -1, -1);
+    xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
 
     // Bars and texts
     xysizer_attach(xy, label_create(&tconf_dark, "Power"), 12, 95, -1, -1);
