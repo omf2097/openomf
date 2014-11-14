@@ -3,9 +3,13 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <SDL2/SDL.h>
+
 #if defined(_WIN32) || defined(WIN32)
 #include <shlobj.h> //SHCreateDirectoryEx
+#else
+#include <sys/stat.h> // mkdir
 #endif
+
 #include "resources/pathmanager.h"
 #include "utils/log.h"
 
