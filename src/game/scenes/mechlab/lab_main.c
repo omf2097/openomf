@@ -6,8 +6,8 @@
 #include "game/gui/spritebutton.h"
 #include "game/gui/sizer.h"
 #include "game/gui/text_render.h"
-#include "resources/bk.h"
 #include "game/common_defines.h"
+#include "resources/bk.h"
 #include "utils/log.h"
 
 void lab_main_quit(component *c, void *userdata) {

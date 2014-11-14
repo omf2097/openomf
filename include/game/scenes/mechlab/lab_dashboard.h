@@ -15,7 +15,7 @@ typedef struct {
     component *leg_power;
     component *leg_speed;
     component *armor;
-    component *stun_res;
+    component *stun_resistance;
     component *name;
     component *money;
     component *rank;
@@ -25,8 +25,6 @@ typedef struct {
 } dashboard_widgets;
 
 component* lab_dashboard_create(scene *s, dashboard_widgets *dw);
-
-// Should be called after stat changes, updates the widgets
-void lab_dashboard_update();
+void lab_dashboard_update(scene *s, dashboard_widgets *dw);
 
 #endif // _LAB_DASHBOARD_H

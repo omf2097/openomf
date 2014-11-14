@@ -6,54 +6,54 @@
 
 /* GIMP RGBA C-Source image dump (gauge_small_off.c) */
 static const struct {
-  unsigned int   width;
-  unsigned int   height;
-  unsigned int   bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */ 
-  unsigned char  pixel_data[3 * 3 * 4 + 1];
+    unsigned int   width;
+    unsigned int   height;
+    unsigned int   bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */ 
+    unsigned char  pixel_data[3 * 3 * 4 + 1];
 } gauge_small_off_img = {
-  3, 3, 4,
-  "\0\207\0\377\0\\\0\377\0""1\0\377\0\\\0\377\0,\0\377\0\10\0\377\0-\0\377"
-  "\0""6\0\377\0\14\0\377",
+    3, 3, 4,
+    "\0\207\0\377\0\\\0\377\0""1\0\377\0\\\0\377\0,\0\377\0\10\0\377\0-\0\377"
+    "\0""6\0\377\0\14\0\377",
 };
 
 /* GIMP RGBA C-Source image dump (gauge_small_on.c) */
 static const struct {
-  unsigned int   width;
-  unsigned int   height;
-  unsigned int   bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */ 
-  unsigned char  pixel_data[3 * 3 * 4 + 1];
+    unsigned int   width;
+    unsigned int   height;
+    unsigned int   bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */ 
+    unsigned char  pixel_data[3 * 3 * 4 + 1];
 } gauge_small_on_img = {
-  3, 3, 4,
-  "\0\377\0\377\0\370\0\377\0\314\0\377\0\317\0\377\0\241\0\377\0y\0\377\0y"
-  "\0\377\0N\0\377\0#\0\377",
+    3, 3, 4,
+    "\0\377\0\377\0\370\0\377\0\314\0\377\0\317\0\377\0\241\0\377\0y\0\377\0y"
+    "\0\377\0N\0\377\0#\0\377",
 };
 
 /* GIMP RGBA C-Source image dump (gauge_big_on.c) */
 static const struct {
-  unsigned int   width;
-  unsigned int   height;
-  unsigned int   bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */ 
-  unsigned char  pixel_data[8 * 3 * 4 + 1];
+    unsigned int   width;
+    unsigned int   height;
+    unsigned int   bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */ 
+    unsigned char  pixel_data[8 * 3 * 4 + 1];
 } gauge_big_on_img = {
-  8, 3, 4,
-  "\0\377\0\377\0\364\0\377\0\366\0\377\0\366\0\377\0\366\0\377\0\366\0\377"
-  "\0\373\0\377\0\314\0\377\0\317\0\377\0\235\0\377\0\241\0\377\0\241\0\377"
-  "\0\241\0\377\0\241\0\377\0\246\0\377\0y\0\377\0y\0\377\0J\0\377\0N\0\377"
-  "\0N\0\377\0N\0\377\0N\0\377\0S\0\377\0#\0\377",
+    8, 3, 4,
+    "\0\377\0\377\0\364\0\377\0\366\0\377\0\366\0\377\0\366\0\377\0\366\0\377"
+    "\0\373\0\377\0\314\0\377\0\317\0\377\0\235\0\377\0\241\0\377\0\241\0\377"
+    "\0\241\0\377\0\241\0\377\0\246\0\377\0y\0\377\0y\0\377\0J\0\377\0N\0\377"
+    "\0N\0\377\0N\0\377\0N\0\377\0S\0\377\0#\0\377",
 };
 
 /* GIMP RGBA C-Source image dump (gauge_big_off.c) */
 static const struct {
-  unsigned int   width;
-  unsigned int   height;
-  unsigned int   bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */
-  unsigned char  pixel_data[8 * 3 * 4 + 1];
+    unsigned int   width;
+    unsigned int   height;
+    unsigned int   bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */
+    unsigned char  pixel_data[8 * 3 * 4 + 1];
 } gauge_big_off_img = {
-  8, 3, 4,
-  "\0\207\0\377\0X\0\377\0\\\0\377\0\\\0\377\0\\\0\377\0\\\0\377\0a\0\377\0"
-  """1\0\377\0\\\0\377\0(\0\377\0-\0\377\0-\0\377\0-\0\377\0-\0\377\0""1\0\377"
-  "\0\10\0\377\0-\0\377\0""2\0\377\0""2\0\377\0""2\0\377\0""2\0\377\0""2\0\377"
-  "\0""6\0\377\0\14\0\377",
+    8, 3, 4,
+    "\0\207\0\377\0X\0\377\0\\\0\377\0\\\0\377\0\\\0\377\0\\\0\377\0a\0\377\0"
+    """1\0\377\0\\\0\377\0(\0\377\0-\0\377\0-\0\377\0-\0\377\0-\0\377\0""1\0\377"
+    "\0\10\0\377\0-\0\377\0""2\0\377\0""2\0\377\0""2\0\377\0""2\0\377\0""2\0\377"
+    "\0""6\0\377\0\14\0\377",
 };
 
 // Local small gauge type
@@ -115,8 +115,10 @@ static void gauge_free(component *c) {
 
 void gauge_set_lit(component *c, int lit) {
     gauge *g = widget_get_obj(c);
-    g->lit = lit;
-    gauge_update(c);
+    if(lit != g->lit) {
+        g->lit = lit;
+        gauge_update(c);
+    }
 }
 
 int gauge_get_lit(component *c) {

@@ -111,6 +111,11 @@ int mechlab_create(scene *scene) {
         object_set_animation_owner(&local->bg_obj[i], OWNER_OBJECT);
     }
 
+    // TODO: Proper tournament initialisation & loading
+    game_player *p1 = game_state_get_player(scene->gs, 0);
+    strcpy(p1->pilot.name, "TEST PILOT");
+    strcpy(p1->pilot.trn_name, "TEST TOURNAMENT");
+
     // Create main menu
     local->frame = guiframe_create(0, 0, 320, 200);
     guiframe_set_root(local->frame, lab_main_create(scene));
@@ -120,6 +125,7 @@ int mechlab_create(scene *scene) {
     // Dashboard widgets struct is filled with pointer to the necessary components for easy access
     local->dashboard = guiframe_create(0, 0, 320, 200);
     guiframe_set_root(local->dashboard, lab_dashboard_create(scene, &local->dw));
+    lab_dashboard_update(scene, &local->dw);
     guiframe_layout(local->dashboard);
 
     // Load HAR

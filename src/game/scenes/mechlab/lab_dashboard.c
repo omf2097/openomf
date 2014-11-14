@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "game/scenes/mechlab/lab_dashboard.h"
 #include "game/gui/gauge.h"
 #include "game/gui/xysizer.h"
@@ -24,12 +26,12 @@ component* lab_dashboard_create(scene *s, dashboard_widgets *dw) {
     xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
 
     // Texts
-    dw->name = label_create(&tconf_light, "PLAYER NAME");
-    dw->rank = label_create(&tconf_dark,  "RANK: 3");
-    dw->wins = label_create(&tconf_dark,  "WINS: 777");
-    dw->losses = label_create(&tconf_dark,  "LOSES: 555");
-    dw->money = label_create(&tconf_dark,  "MONEY: $ 123K");
-    dw->tournament = label_create(&tconf_light, "TOURNAMENT NAME");
+    dw->name = label_create(&tconf_light, "NO NAME");
+    dw->rank = label_create(&tconf_dark,  "RANK: 0");
+    dw->wins = label_create(&tconf_dark,  "WINS: 0");
+    dw->losses = label_create(&tconf_dark,  "LOSES: 0");
+    dw->money = label_create(&tconf_dark,  "MONEY: $ 0K");
+    dw->tournament = label_create(&tconf_light, "NO TOURNAMENT");
     xysizer_attach(xy, dw->name, 12, 58, 200, 6);
     xysizer_attach(xy, dw->rank, 18, 64, 200, 6);
     xysizer_attach(xy, dw->wins, 18, 70, 200, 6);
@@ -53,26 +55,63 @@ component* lab_dashboard_create(scene *s, dashboard_widgets *dw) {
     dw->arm_power = gauge_create(GAUGE_BIG, 8, 3);
     xysizer_attach(xy, dw->arm_power, 125, 102, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "LEG POWER"), 125, 106, 200, 6);
-    dw->arm_speed = gauge_create(GAUGE_BIG, 8, 3);
-    xysizer_attach(xy, dw->arm_speed, 125, 113, -1, -1);
+    dw->leg_power = gauge_create(GAUGE_BIG, 8, 3);
+    xysizer_attach(xy, dw->leg_power, 125, 113, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "ARMOR"), 125, 117, 200, 6);
     dw->armor = gauge_create(GAUGE_BIG, 8, 3);
     xysizer_attach(xy, dw->armor, 125, 124, -1, -1);
 
     // Bars and texts (bottom right side)
     xysizer_attach(xy, label_create(&tconf_dark, "ARM SPEED"), 228, 95, 200, 6);
-    dw->arm_power = gauge_create(GAUGE_BIG, 8, 3);
-    xysizer_attach(xy, dw->arm_power, 228, 102, -1, -1);
+    dw->arm_speed = gauge_create(GAUGE_BIG, 8, 3);
+    xysizer_attach(xy, dw->arm_speed, 228, 102, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "LEG SPEED"), 228, 106, 200, 6);
-    dw->arm_speed = gauge_create(GAUGE_BIG, 7, 3);
-    xysizer_attach(xy, dw->arm_speed, 228, 113, -1, -1);
+    dw->leg_speed = gauge_create(GAUGE_BIG, 7, 3);
+    xysizer_attach(xy, dw->leg_speed, 228, 113, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "STUN RES"), 228, 117, 200, 6);
-    dw->armor = gauge_create(GAUGE_BIG, 7, 3);
-    xysizer_attach(xy, dw->armor, 228, 124, -1, -1);
+    dw->stun_resistance = gauge_create(GAUGE_BIG, 7, 3);
+    xysizer_attach(xy, dw->stun_resistance, 228, 124, -1, -1);
 
     return xy;
 }
 
-void lab_dashboard_update() {
-    // Update widgets here from pilot 1 data
+void lab_dashboard_update(scene *s, dashboard_widgets *dw) {
+    char tmp[64];
+    game_player *p1;
+
+    // Load the player information for player 1
+    // P1 is always the one being edited in tournament dashboard
+    p1 = game_state_get_player(s->gs, 0);
+
+    // Set up variables properly
+    snprintf(tmp, 64, "RANK: %d", p1->pilot.rank);
+    label_set_text(dw->rank, tmp);
+    snprintf(tmp, 64, "WINS: %d", p1->pilot.wins);
+    label_set_text(dw->wins, tmp);
+    snprintf(tmp, 64, "LOSES: %d", p1->pilot.losses);
+    label_set_text(dw->losses, tmp);
+    snprintf(tmp, 64, "MONEY: $ %d", p1->pilot.money);
+    label_set_text(dw->money, tmp);
+
+    // Tournament and player name
+    label_set_text(dw->name, p1->pilot.name);
+    label_set_text(dw->tournament, p1->pilot.trn_name);
+
+    #define SET_GAUGE_X(name) gauge_set_lit(dw->name, p1->pilot.name)
+
+    // Pilot stats
+    SET_GAUGE_X(power);
+    SET_GAUGE_X(agility);
+    SET_GAUGE_X(endurance);
+
+    // Har stats
+    SET_GAUGE_X(arm_power);
+    SET_GAUGE_X(leg_power);
+    SET_GAUGE_X(armor);
+    SET_GAUGE_X(arm_speed);
+    SET_GAUGE_X(leg_speed);
+    SET_GAUGE_X(stun_resistance);
+
+    // Select pilot picture
+    pilotpic_select(dw->photo, PIC_PLAYERS, p1->pilot.photo_id);
 }

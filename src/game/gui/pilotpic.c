@@ -64,10 +64,6 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
         c,
         local->img->data->w,
         local->img->data->h);
-    component_set_pos_hints(
-        c,
-        local->img->pos.x,
-        local->img->pos.y);
 
     // Free pics
     sd_pic_free(&pics);
