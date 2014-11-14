@@ -7,6 +7,7 @@
 #include "game/gui/pilotpic.h"
 #include "resources/ids.h"
 #include "utils/log.h"
+#include "video/video.h"
 
 component* lab_dashboard_create(scene *s, dashboard_widgets *dw) {
     component *xy = xysizer_create();
@@ -114,4 +115,11 @@ void lab_dashboard_update(scene *s, dashboard_widgets *dw) {
 
     // Select pilot picture
     pilotpic_select(dw->photo, PIC_PLAYERS, p1->pilot.photo_id);
+
+    // Palette
+    palette *base_pal = video_get_base_palette();
+    palette_set_player_color(base_pal, 0, p1->pilot.color_3, 0);
+    palette_set_player_color(base_pal, 0, p1->pilot.color_2, 1);
+    palette_set_player_color(base_pal, 0, p1->pilot.color_1, 2);
+    video_force_pal_refresh();
 }
