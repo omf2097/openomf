@@ -7,11 +7,13 @@
 #include "game/scenes/mechlab/lab_dashboard.h"
 #include "game/gui/frame.h"
 #include "game/gui/trn_menu.h"
+#include "game/utils/settings.h"
 #include "game/protos/scene.h"
 #include "game/game_state.h"
+#include "resources/sgmanager.h"
+#include "resources/ids.h"
 #include "video/video.h"
 #include "utils/log.h"
-#include "resources/ids.h"
 
 typedef struct {
     object bg_obj[3];
@@ -111,10 +113,31 @@ int mechlab_create(scene *scene) {
         object_set_animation_owner(&local->bg_obj[i], OWNER_OBJECT);
     }
 
-    // TODO: Proper tournament initialisation & loading
+    // Find last saved game ...
     game_player *p1 = game_state_get_player(scene->gs, 0);
-    strcpy(p1->pilot.name, "TEST PILOT");
-    strcpy(p1->pilot.trn_name, "TEST TOURNAMENT");
+    const char* last_name = settings_get()->tournament.last_name;
+    if(last_name == NULL || strlen(last_name) == 0) {
+        last_name = NULL;
+    }
+
+    // ... and attempt to load it, if one was found.
+    if(last_name != NULL) {
+        int ret = sg_load(&p1->pilot, last_name);
+        if(ret != SD_SUCCESS) {
+            PERROR("Could not load saved game for playername '%s': %s!", last_name, sd_get_error(ret));
+            last_name = NULL;
+        } else {
+            DEBUG("Loaded savegame for playername '%s'.", last_name);
+        }
+    }
+
+    // TODO: Proper tournament initialisation if no savegame is found
+    if(last_name == NULL) {
+        // Just throw in something in there
+        strcpy(p1->pilot.name, "TEST PILOT");
+        strcpy(p1->pilot.trn_name, "TEST TOURNAMENT");
+        DEBUG("Created new data for playername '%s'.", last_name);
+    }
 
     // Create main menu
     local->frame = guiframe_create(0, 0, 320, 200);

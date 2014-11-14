@@ -96,7 +96,7 @@ void lab_dashboard_update(scene *s, dashboard_widgets *dw) {
 
     // Tournament and player name
     label_set_text(dw->name, p1->pilot.name);
-    label_set_text(dw->tournament, p1->pilot.trn_name);
+    label_set_text(dw->tournament, p1->pilot.trn_desc);
 
     #define SET_GAUGE_X(name) gauge_set_lit(dw->name, p1->pilot.name)
 
