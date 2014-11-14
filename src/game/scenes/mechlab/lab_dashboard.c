@@ -91,14 +91,14 @@ void lab_dashboard_update(scene *s, dashboard_widgets *dw) {
     label_set_text(dw->wins, tmp);
     snprintf(tmp, 64, "LOSES: %d", p1->pilot.losses);
     label_set_text(dw->losses, tmp);
-    snprintf(tmp, 64, "MONEY: $ %d", p1->pilot.money);
+    snprintf(tmp, 64, "MONEY: $ %dK", p1->pilot.money);
     label_set_text(dw->money, tmp);
 
     // Tournament and player name
     label_set_text(dw->name, p1->pilot.name);
     label_set_text(dw->tournament, p1->pilot.trn_desc);
 
-    #define SET_GAUGE_X(name) gauge_set_lit(dw->name, p1->pilot.name)
+    #define SET_GAUGE_X(name) gauge_set_lit(dw->name, p1->pilot.name + 1)
 
     // Pilot stats
     SET_GAUGE_X(power);
