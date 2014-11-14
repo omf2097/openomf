@@ -242,7 +242,7 @@ int pm_create_dir(const char* dirname) {
         return 1;
     }
     #else
-    if(mkdir(dirname, 0644) != 0) {
+    if(mkdir(dirname, 0755) != 0) {
         PERROR("Error while attempting to create directory '%s'.", dirname);
         return 1;
     }
