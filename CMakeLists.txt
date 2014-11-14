@@ -183,6 +183,7 @@ set(OPENOMF_SRC
     src/resources/animation.c
     src/resources/sounds_loader.c
     src/resources/pathmanager.c
+    src/resources/sgmanager.c
     src/resources/languages.c
     src/resources/fonts.c
     src/resources/scores.c

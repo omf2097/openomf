@@ -129,7 +129,7 @@ int mechlab_create(scene *scene) {
     guiframe_layout(local->dashboard);
 
     // Load HAR
-    animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15)->ani;
+    animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot.har_id)->ani;
     local->mech = malloc(sizeof(object));
     object_create(local->mech, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
     object_set_animation(local->mech, initial_har_ani);

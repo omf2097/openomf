@@ -9,6 +9,7 @@ enum {
     LOG_PATH,
     CONFIG_PATH,
     SCORE_PATH,
+    SAVE_PATH,
     NUMBER_OF_LOCAL_PATHS
 };
 
@@ -24,5 +25,6 @@ char* pm_get_local_base_dir();
 const char* pm_get_local_path_type_name(unsigned int path_id);
 const char* pm_get_local_path(unsigned int resource_id);
 const char* pm_get_resource_path(unsigned int local_id);
+int pm_create_dir(const char* dirname);
 
 #endif // _PATHS_H

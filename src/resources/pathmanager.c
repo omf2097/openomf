@@ -13,6 +13,7 @@
 static const char* logfile_name = "openomf.log";
 static const char* configfile_name = "openomf.conf";
 static const char* scorefile_name = "SCORES.DAT";
+static const char* savegamedir_name = "save/";
 static char errormessage[128];
 
 // Lists
@@ -60,6 +61,7 @@ int pm_init() {
     local_path_build(LOG_PATH, local_base_dir, logfile_name);
     local_path_build(CONFIG_PATH, local_base_dir, configfile_name);
     local_path_build(SCORE_PATH, local_base_dir, scorefile_name);
+    local_path_build(SAVE_PATH, local_base_dir, savegamedir_name);
 
     // Set default base dirs for resources and plugins
     int m_ok = 0;
@@ -224,6 +226,22 @@ const char* pm_get_local_path_type_name(unsigned int path_id) {
         case CONFIG_PATH: return "CONFIG_PATH";
         case LOG_PATH: return "LOG_PATH";
         case SCORE_PATH: return "SCORE_PATH";
+        case SAVE_PATH: return "SAVE_PATH";
     }
     return "UNKNOWN";
+}
+
+int pm_create_dir(const char* dirname) {
+    #if defined(_WIN32) || defined(WIN32)
+    if(SHCreateDirectoryEx(NULL, dirname, NULL) != ERROR_SUCCESS) {
+        PERROR("Error while attempting to create directory '%s'.", dirname);
+        return 1;
+    }
+    #else
+    if(mkdir(dirname, 0644) != 0) {
+        PERROR("Error while attempting to create directory '%s'.", dirname);
+        return 1;
+    }
+    #endif
+    return 0;
 }

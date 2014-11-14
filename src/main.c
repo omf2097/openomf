@@ -16,11 +16,12 @@
 #include "game/utils/settings.h"
 #include "resources/pathmanager.h"
 #include "resources/ids.h"
+#include "resources/sgmanager.h"
 #include "plugins/plugins.h"
 #include "controller/gamecontrollerdb.h"
 
 int main(int argc, char *argv[]) {
-    // Get path
+    // Set up initial state for misc things
     char *ip = NULL;
     unsigned short connect_port = 0;
     unsigned short listen_port = 0;
@@ -109,6 +110,10 @@ int main(int argc, char *argv[]) {
         goto exit_1;
     }
     settings_load();
+
+    // Savegame directory check and create
+    // TODO: Handle errors
+    sg_init();
 
     // Find plugins and make sure they are valid
     plugins_init();
