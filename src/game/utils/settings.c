@@ -81,6 +81,10 @@ const field f_gameplay[] = {
     F_INT(settings_gameplay,  rounds,      1)
 };
 
+const field f_tournament[] = {
+    F_STRING(settings_tournament, last_name, ""),
+};
+
 const field f_advanced[] = {
     F_INT(settings_advanced, rehit_mode, 0),
     F_INT(settings_advanced, defensive_throws, 0),
@@ -129,6 +133,7 @@ const struct_to_field struct_to_fields[] = {
     S_2_F(&_settings.video, f_video),
     S_2_F(&_settings.sound, f_sound),
     S_2_F(&_settings.gameplay, f_gameplay),
+    S_2_F(&_settings.tournament, f_tournament),
     S_2_F(&_settings.advanced, f_advanced),
     S_2_F(&_settings.keys, f_keyboard),
     S_2_F(&_settings.net, f_net)
@@ -154,15 +159,15 @@ void settings_add_fields(const field *fields, int nfields) {
             case TYPE_INT:
                 conf_addint(f->name, f->def.i);
                 break;
-        
+
             case TYPE_FLOAT:
                 conf_addfloat(f->name, f->def.f);
                 break;
-        
+
             case TYPE_BOOL:
                 conf_addbool(f->name, f->def.b);
                 break;
-        
+
             case TYPE_STRING:
                 conf_addstring(f->name, f->def.s);
                 break;
@@ -177,15 +182,15 @@ void settings_load_fields(void *st, const field *fields, int nfields) {
             case TYPE_INT:
                 *fieldint(st, f->offset) = conf_int(f->name);
                 break;
-        
+
             case TYPE_FLOAT:
                 *fieldfloat(st, f->offset) = conf_float(f->name);
                 break;
-        
+
             case TYPE_BOOL:
                 *fieldbool(st, f->offset) = conf_bool(f->name);
                 break;
-        
+
             case TYPE_STRING:
                 {
                     // make a copy of the string
@@ -209,15 +214,15 @@ void settings_save_fields(void *st, const field *fields, int nfields) {
             case TYPE_INT:
                 conf_setint(f->name, *fieldint(st, f->offset));
                 break;
-        
+
             case TYPE_FLOAT:
                 conf_setfloat(f->name, *fieldfloat(st, f->offset));
                 break;
-        
+
             case TYPE_BOOL:
                 conf_setbool(f->name, *fieldbool(st, f->offset));
                 break;
-        
+
             case TYPE_STRING:
                 conf_setstring(f->name, *fieldstr(st, f->offset));
                 break;

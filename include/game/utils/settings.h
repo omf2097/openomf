@@ -59,6 +59,10 @@ typedef struct settings_gameplay_t {
     int rounds;
 } settings_gameplay;
 
+typedef struct settings_tournament_t {
+    char *last_name;
+} settings_tournament;
+
 typedef struct settings_advanced_t {
     int rehit_mode;
     int defensive_throws;
@@ -108,6 +112,7 @@ typedef struct settings_t {
     settings_sound sound;
     settings_gameplay gameplay;
     settings_advanced advanced;
+    settings_tournament tournament;
     settings_keyboard keys;
     settings_network net;
 } settings;
