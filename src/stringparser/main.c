@@ -19,13 +19,13 @@ int main(int argc, char* argv[]) {
     void* argtable[] = {help,vers,astr,end};
     const char* progname = "omf_parse";
     int from_stdin = 0;
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
     if(nerrors > 0) {
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
         printf("Try '%s --help' for more information.\n", progname);
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
         printf("(C) 2014 Tuomas Virtanen\n");
         goto exit_0;
     }
-    
+
     // Handle help
     if(help->count > 0) {
         printf("Usage: %s", progname);

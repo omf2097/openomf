@@ -22,13 +22,13 @@ int main(int argc, char* argv[]) {
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,pal,output,import,export,end};
     const char* progname = "altpaltool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
                 sd_get_error(ret));
         }
     }
-    
+
     // Write output file
     if(output->count > 0) {
         ret = sd_altpals_save(&alt, output->filename[0]);
@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
                 sd_get_error(ret));
         }
     }
-    
+
     // Quit
 exit_1:
     sd_altpal_free(&alt);

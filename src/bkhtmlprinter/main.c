@@ -78,36 +78,36 @@ const char *footer = "</body></html>";
 int write_png(FILE *fp, char *data, int w, int h) {
     png_structp png_ptr;
     png_infop info_ptr;
-    
+
     // Get row pointers
     char *rows[h];
     for(int i = 0; i < h; i++) {
         rows[i] = data + (i * w) * 4;
     }
-    
+
     // Init
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     info_ptr = png_create_info_struct(png_ptr);
     setjmp(png_jmpbuf(png_ptr));
     png_init_io(png_ptr, fp);
-    
+
     // Write header. RGB, 8bits per channel
     setjmp(png_jmpbuf(png_ptr));
-    png_set_IHDR(png_ptr, 
-                 info_ptr, 
-                 w, 
+    png_set_IHDR(png_ptr,
+                 info_ptr,
+                 w,
                  h,
-                 8, 
-                 PNG_COLOR_TYPE_RGBA, 
+                 8,
+                 PNG_COLOR_TYPE_RGBA,
                  PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE, 
+                 PNG_COMPRESSION_TYPE_BASE,
                  PNG_FILTER_TYPE_BASE);
     png_write_info(png_ptr, info_ptr);
-    
+
     // Write data
     setjmp(png_jmpbuf(png_ptr));
     png_write_image(png_ptr, (void*)rows);
-    
+
     // End
     setjmp(png_jmpbuf(png_ptr));
     png_write_end(png_ptr, NULL);
@@ -126,13 +126,13 @@ int main(int argc, char *argv[]) {
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,outdir,name,end};
     const char* progname = "bkhtmlprinter";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
         arg_print_glossary(stdout, argtable, "%-30s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
         printf("Try '%s --help' for more information.\n", progname);
         goto exit_0;
     }
-    
+
     // Load file
     sd_bk_file bk;
     sd_bk_create(&bk);
@@ -169,11 +169,11 @@ int main(int argc, char *argv[]) {
         printf("Unable to load BK file! Make sure the file exists and is a valid BK file.\n");
         goto exit_1;
     }
-    
+
     // Some vars
     FILE *fp;
     char namebuf[256];
-    
+
     // Open output file
     FILE *f;
     sprintf(namebuf, "%s/%s.html", outdir->sval[0], name->sval[0]);
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
         printf("Error while opening file!");
         goto exit_1;
     }
-    
+
     // Write background
     sprintf(namebuf, "%s/%s_bg.png", outdir->sval[0], name->sval[0]);
     fp = fopen(namebuf, "wb");
@@ -195,21 +195,21 @@ int main(int argc, char *argv[]) {
     write_png(fp, bg.data, bg.w, bg.h);
     sd_rgba_image_free(&bg);
     fclose(fp);
-    
+
     // Print header to file
     fprintf(f, "%s", header);
     fprintf(f, "<h1>%s</h1>", name->sval[0]);
-    
+
     // Root
     fprintf(f, "<h2>General information</h2><table><tr><th>Key</th><th>Value</th></tr>");
     fprintf(f, "<tr><td>File ID</td><td>%d</td></tr>", bk.file_id);
     fprintf(f, "</table>");
-    
+
     // Image
     fprintf(f, "<h2>Background</h2>");
     sprintf(namebuf, "%s_bg.png", name->sval[0]);
     fprintf(f, "<img src=\"%s\" width=\"640\" height=\"400\" />", namebuf);
-    
+
     // Palettes
     if(bk.palette_count > 0) {
         fprintf(f, "<h2>Palettes</h2>");
@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
             for(int y = 0; y < 16; y++) {
                 fprintf(f, "<tr>");
                 for(int x = 0; x < 16; x++) {
-                    fprintf(f, "<td style=\"background-color: rgb(%d,%d,%d); text-align: middle; width: 30px; height: 30px; color: white;\">%d</td>", 
+                    fprintf(f, "<td style=\"background-color: rgb(%d,%d,%d); text-align: middle; width: 30px; height: 30px; color: white;\">%d</td>",
                         pal->data[y*16+x][0],
                         pal->data[y*16+x][1],
                         pal->data[y*16+x][2],
@@ -233,7 +233,7 @@ int main(int argc, char *argv[]) {
     }
 
     fflush(f);
-    
+
     // Animations
     fprintf(f, "<h2>Animations</h2><div id=\"animations\">");
     for(int m = 0; m < 50; m++) {
@@ -265,12 +265,12 @@ int main(int argc, char *argv[]) {
             fprintf(f, "<tr><td>Probability</td><td>%d</td></tr>", bka->probability);
             fprintf(f, "<tr><td>Hazard damage</td><td>%d</td></tr>", bka->hazard_damage);
             fprintf(f, "<tr><td>Footer string</td><td>\"%s\"</td></tr>", bka->footer_string);
-            
+
             fprintf(f, "<tr><td>Start X</td><td>%d</td></tr>", ani->start_x);
             fprintf(f, "<tr><td>Start Y</td><td>%d</td></tr>", ani->start_y);
             fprintf(f, "<tr><td>Animation string</td><td>\"%s\"</td></tr>", ani->anim_string);
             fprintf(f, "</table></div>");
-            
+
             // Extra strings
             if(ani->extra_string_count) {
                 fprintf(f, "<div class=\"iblock\"><h4>Extra strings</h4>");
@@ -280,7 +280,7 @@ int main(int argc, char *argv[]) {
                 }
                 fprintf(f, "</table></div>");
             }
-            
+
             // Coords
             if(ani->coord_count > 0) {
                 fprintf(f, "<div class=\"iblock\"><h4>Collision coordinates</h4>");
@@ -291,14 +291,14 @@ int main(int argc, char *argv[]) {
                 }
                 fprintf(f, "</table></div>");
             }
-            
+
             // Frames
             fprintf(f, "<div class=\"iblock\"><h4>Frames</h4>");
             fprintf(f, "<table><tr><th>#</th><th>A-Z</th><th>len</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Index</th><th>Missing</th><th>Sprite</th></tr>");
             sd_rgba_image img;
             for(int b = 0; b < ani->sprite_count; b++) {
                 sd_sprite *sprite = ani->sprites[b];
-                
+
                 // Write sprite
                 if(sprite->len > 0 && sprite->width > 1 && sprite->height > 1) {
                     sprintf(namebuf, "%s/%s_sprite_%d_%d.png", outdir->sval[0], name->sval[0], m, b);
@@ -311,9 +311,9 @@ int main(int argc, char *argv[]) {
                 } else {
                     namebuf[0] = 0;
                 }
-                
+
                 // Print html
-                fprintf(f, "<tr><td>%d</td><td>%c</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td><img src=\"%s\" /></td></tr>", 
+                fprintf(f, "<tr><td>%d</td><td>%c</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td><img src=\"%s\" /></td></tr>",
                     b,
                     b + 'A',
                     sprite->len,
@@ -326,23 +326,23 @@ int main(int argc, char *argv[]) {
                     namebuf);
             }
             fprintf(f, "</table>");
-            
+
             fprintf(f, "</div></div>");
         }
     }
     fprintf(f, "</div>");
-    
+
     // Sounds
     fprintf(f, "<h2>Sound table</h2><table><tr><th>Local ID</th><th>Sound ID</th></tr>");
     for(int i = 0; i < 30; i++) {
         fprintf(f, "<tr><td>%d</td><td>%d</td></tr>", i, (int)bk.soundtable[i]);
     }
     fprintf(f, "</table>");
-    
-    
+
+
     // Print footer to file
     fprintf(f, "%s", footer);
-    
+
     // Quit
     fclose(f);
 exit_1:

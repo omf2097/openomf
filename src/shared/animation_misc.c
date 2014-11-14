@@ -183,8 +183,8 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
     int tmp = 0;
     switch(kn) {
         case 7:
-            ani->null = conv_dword(value); break; 
-        case 8:  
+            ani->null = conv_dword(value); break;
+        case 8:
             /*if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < ani->col_coord_count) {
@@ -198,9 +198,9 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
                 return;
             }*/
             printf("Coord value setting not supported yet!\n");
-            break; 
+            break;
         case 9:  sd_animation_set_anim_string(ani, value); break;
-        case 11:  
+        case 11:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < ani->extra_string_count) {
@@ -228,15 +228,15 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
     switch(kn) {
         case 7:
             printf("%d\n", ani->null);
-            break; 
+            break;
         case 8:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < ani->coord_count) {
                     printf("x,y = (%d,%d), null = %d, frame_id = %d\n",
-                            ani->coord_table[tmp].x, 
+                            ani->coord_table[tmp].x,
                             ani->coord_table[tmp].y,
-                            ani->coord_table[tmp].null, 
+                            ani->coord_table[tmp].null,
                             ani->coord_table[tmp].frame_id);
                 } else {
                     printf("Collision table index %d does not exist!\n", tmp);
@@ -245,9 +245,9 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
             } else {
                 for(int i = 0; i < ani->coord_count; i++) {
                     printf("x,y = (%d,%d), null = %d, frame_id = %d\n",
-                            ani->coord_table[i].x, 
+                            ani->coord_table[i].x,
                             ani->coord_table[i].y,
-                            ani->coord_table[i].null, 
+                            ani->coord_table[i].null,
                             ani->coord_table[i].frame_id);
                 }
                 printf("\n");
@@ -256,7 +256,7 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
         case 9:
             printf("%s\n", ani->anim_string);
             break;
-        case 11: 
+        case 11:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < ani->extra_string_count) {

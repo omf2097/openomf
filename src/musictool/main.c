@@ -35,7 +35,7 @@ typedef struct _streamer {
 void stream(void* userdata, Uint8* stream, int len) {
     Streamer *s = (Streamer*)userdata;
     int before = s->pos;
-    
+
 #ifdef USE_MODPLUG
     int got = ModPlug_Read(s->renderer, stream, len);
     if(got == 0) {
@@ -45,7 +45,7 @@ void stream(void* userdata, Uint8* stream, int len) {
     duh_render(s->renderer, 16, 0, 1.0f, DELTA, len/4, stream);
     s->pos = duh_sigrenderer_get_position(s->renderer);
 #endif
-  
+
     if(s->pos >= s->size || s->pos < before) {
         s->ended = 1;
     }
@@ -56,7 +56,7 @@ void format_ms(int ticks) {
     int hours = 0;
     int minutes = 0;
     int seconds = 0;
-    
+
     if(total_seconds > 3600) {
         hours = total_seconds / 3600;
         total_seconds = total_seconds % 3600;
@@ -66,17 +66,17 @@ void format_ms(int ticks) {
         total_seconds = total_seconds % 60;
     }
     seconds = total_seconds;
-    
+
     if(hours > 0)
         printf("%02d:%02d:%02d", hours, minutes, seconds);
     else {
         printf("%02d:%02d", minutes, seconds);
-    } 
+    }
 }
 
 void show_progress(int width, float progress, int ticks) {
     int d = progress * width;
- 
+
     printf("%3d%% [", (int)(progress*100));
     for(int x = 0; x < d; x++) {
         printf("=");
@@ -86,7 +86,7 @@ void show_progress(int width, float progress, int ticks) {
     }
     printf("] ");
     format_ms(ticks);
-    
+
     printf("\r");
 }
 
@@ -103,12 +103,12 @@ char* get_file_data(const char *filename, size_t *size) {
     if(handle == NULL) {
         return NULL;
     }
-    
+
     // Find size
     fseek(handle, 0L, SEEK_END);
     (*size) = ftell(handle);
     rewind(handle);
-    
+
     // Read all data
     data = (char*)malloc(*size);
     fread(data, *size, sizeof(char), handle);
@@ -153,13 +153,13 @@ int main(int argc, char *argv[]) {
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,end};
     const char* progname = "musictool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -180,41 +180,41 @@ int main(int argc, char *argv[]) {
         printf("(C) 2013 Tuomas Virtanen\n");
         goto exit_0;
     }
-    
+
     // Handle errors
     if(nerrors > 0) {
         arg_print_errors(stdout, end, progname);
         printf("Try '%s --help' for more information.\n", progname);
         goto exit_0;
     }
-    
+
     // Load correct file type
     const char *ext = get_file_ext(file->filename[0]);
     if(!ext) {
         printf("Could not find file extension.");
         goto exit_0;
     }
-    
+
 #ifdef USE_MODPLUG
     src_data = get_file_data(file->filename[0], &src_size);
     if(src_data == NULL) {
         printf("Unable to load file!\n");
         goto exit_0;
     }
-    
+
     ModPlug_GetSettings(&settings);
     settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
     settings.mChannels = CHANNELS;
     settings.mBits = 16;
     settings.mFrequency = FREQUENCY;
     ModPlug_SetSettings(&settings);
-    
+
     src_renderer = ModPlug_Load(src_data, src_size);
     if(!src_renderer) {
         printf("Unable to load file!\n");
         goto exit_0;
     }
-    
+
     // Streamer
     streamer.renderer = src_renderer;
     streamer.size = ModPlug_GetLength(src_renderer);
@@ -237,23 +237,23 @@ int main(int argc, char *argv[]) {
         printf("Unknown module format.");
         goto exit_0;
     }
-    
+
     // Initialize dumb renderer
     if(!src_data) {
         printf("Unable to load file!\n");
         goto exit_0;
     }
     src_renderer = duh_start_sigrenderer(src_data, 0, CHANNELS, 0);
-    
+
     // Streamer
     streamer.renderer = src_renderer;
     streamer.size = duh_get_length(src_data);
     streamer.pos = 0;
     streamer.ended = 0;
 #endif // USE_MODPLUG
-    
+
     printf("File '%s' loaded succesfully.\n", file->filename[0]);
-    
+
     // SDL2
     SDL_zero(want);
     want.freq = FREQUENCY;
@@ -272,12 +272,12 @@ int main(int argc, char *argv[]) {
             printf("Could not get correct playback format.\n");
             goto exit_1;
         }
-        
+
         // Some information
         printf("Frequency:       %d\n", FREQUENCY);
         printf("Channels:        %d\n", CHANNELS);
         printf("Extension:       %s\n", get_file_ext(file->filename[0]));
-        
+
         // Play file
         printf("Starting playback.\n");
         SDL_PauseAudioDevice(dev, 0);

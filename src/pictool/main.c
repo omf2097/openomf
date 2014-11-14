@@ -19,13 +19,13 @@ int main(int argc, char *argv[]) {
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,output,export,bkfile,entry,end};
     const char* progname = "pictool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
         printf("(C) 2014 Tuomas Virtanen\n");
         goto exit_0;
     }
-    
+
     // Handle errors
     if(nerrors > 0) {
         arg_print_errors(stdout, end, progname);
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
         printf("For exporting, you need to define a BK file for palette.\n");
         goto exit_0;
     }
-    
+
     // Get strings
     sd_pic_file pic;
     sd_pic_create(&pic);
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
             goto exit_1;
         }
     }
-    
+
     // Print
     const sd_pic_photo *photo;
     if(entry->count > 0) {
@@ -103,24 +103,24 @@ int main(int argc, char *argv[]) {
                     export->filename[0],
                     sd_get_error(ret));
             } else {
-                printf("Photo %d exported to %s.\n", 
+                printf("Photo %d exported to %s.\n",
                     entry_id,
                     export->filename[0]);
             }
             sd_rgba_image_free(&img);
         } else {
-            printf("Length = %d\n", 
+            printf("Length = %d\n",
                 photo->sprite->len);
-            printf("Size = (%d,%d)\n", 
+            printf("Size = (%d,%d)\n",
                 photo->sprite->width,
                 photo->sprite->height);
-            printf("Position = (%d,%d)\n", 
+            printf("Position = (%d,%d)\n",
                 photo->sprite->pos_x,
                 photo->sprite->pos_y);
             printf("Sex = %s (%d)\n",
                 (photo->sex ? "FEMALE" : "MALE"),
                 photo->sex);
-            printf("Is Player = %d\n", 
+            printf("Is Player = %d\n",
                 photo->is_player);
         }
     } else {
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
                 photo->unk_flag);
         }
     }
-    
+
     if(output->count > 0) {
         ret = sd_pic_save(&pic, output->filename[0]);
         if(ret != SD_SUCCESS) {

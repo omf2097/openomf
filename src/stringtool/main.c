@@ -195,7 +195,7 @@ int read_af(sqlite3 *db, const char* path, const char* name) {
         printf(" * Unable to load AF file! Make sure the file exists and is a valid AF file.\n");
         goto af_err_0;
     }
-    
+
     // Some vars
     long file_id;
     long string_id;
@@ -249,7 +249,7 @@ int read_bk(sqlite3 *db, const char* path, const char* name) {
         printf(" * Unable to load BK file! Make sure the file exists and is a valid BK file.\n");
         goto bk_err_0;
     }
-    
+
     // Some vars
     long file_id;
     long string_id;
@@ -307,13 +307,13 @@ int main(int argc, char *argv[]) {
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,infile,outfile,format,end};
     const char* progname = "stringtool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -325,7 +325,7 @@ int main(int argc, char *argv[]) {
         arg_print_glossary(stdout, argtable, "%-30s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -341,7 +341,7 @@ int main(int argc, char *argv[]) {
         printf("Try '%s --help' for more information.\n", progname);
         goto exit_0;
     }
-    
+
     if(outfile->count == 0 || (infile->count == 0 && format->count == 0)) {
         printf("Either --input and --output or --format and --output flags have to be set.\n");
         goto exit_0;
@@ -378,7 +378,7 @@ int main(int argc, char *argv[]) {
         printf("OK\n");
     }
 
-    // Handle 
+    // Handle
     for(int i = 0; i < COUNT_TYPES; i++) {
         cbs c = types[i];
         if(strcmp(c.type, ext) == 0) {

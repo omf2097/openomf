@@ -57,18 +57,18 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
         printf("Could not create window: %s\n", SDL_GetError());
         return;
     }
-    
+
     printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->width, s->height, s->len);
-    
+
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    
+
     uint32_t rmask, gmask, bmask, amask;
 
     rmask = 0x000000ff;
     gmask = 0x0000ff00;
     bmask = 0x00ff0000;
     amask = 0xff000000;
-    
+
     if((rendertarget = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 320, 200)) == 0) {
         printf("Could not create texture: %s\n", SDL_GetError());
         return;
@@ -95,7 +95,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
     rect.y = s->pos_y + 100;
     rect.w = s->width;
     rect.h = s->height;
-    
+
     dstrect.x = 0;
     dstrect.y = 0;
     dstrect.w = 320 * scale;
@@ -204,7 +204,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                 SDL_RenderDrawPoint(renderer, 160+x, 100+y);
             }
         }
-        
+
         // Switch to screen target & scale
         SDL_SetRenderTarget(renderer, NULL);
         SDL_RenderCopy(renderer, rendertarget, NULL, &dstrect);
@@ -272,7 +272,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
         case 48: move->unknown_19 = conv_ubyte(value); break;
         case 49: move->points = conv_ubyte(value); break;
 
-        case 15: 
+        case 15:
             tmp = strlen(value)+1;
             if(tmp < 21) {
                 memcpy(move->move_string, value, tmp);
@@ -281,7 +281,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
                 return;
             }
             break;
-        case 16: 
+        case 16:
             sd_move_set_footer_string(move, value);
             break;
         default:
@@ -357,7 +357,7 @@ void move_keylist() {
 
 void move_info(sd_move *move, sd_animation *ani, int move_id) {
     printf("Move #%d information:\n\n", move_id);
-    
+
     anim_common_info(ani);
 
     printf("\nAF specific footer:\n");
@@ -416,7 +416,7 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
         case 7: printf("%d\n", af->jump_speed); break;
         case 8: printf("%d\n", af->fall_speed); break;
         case 9: printf("%d\n", af->unknown_c); break;
-        case 10: 
+        case 10:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < 30) {
@@ -425,7 +425,7 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
                     printf("Soundtable index %d does not exist!\n", tmp);
                 }
             } else {
-                for(int i = 0; i < 30; i++) { printf("%d ", af->soundtable[i]); } printf("\n"); 
+                for(int i = 0; i < 30; i++) { printf("%d ", af->soundtable[i]); } printf("\n");
             }
             break;
         default:
@@ -446,7 +446,7 @@ void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value)
         case 7: af->jump_speed = conv_dword(value); break;
         case 8: af->fall_speed = conv_dword(value); break;
         case 9: af->unknown_c = conv_uword(value); break;
-        case 10: 
+        case 10:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < 30) {
@@ -494,7 +494,7 @@ void af_info(sd_af_file *af) {
     printf(" * Jump speed:  %d\n", af->jump_speed);
     printf(" * Fall speed:  %d\n", af->fall_speed);
     printf(" * Unknown C:   %d\n", af->unknown_c);
-    
+
     printf(" * Animations:  ");
     int start = -1, last = -1;
     unsigned int m;
@@ -524,7 +524,7 @@ void af_info(sd_af_file *af) {
     } else {
         printf("\n");
     }
-    
+
     printf(" * Sound table:\n");
     printf("   |");
     for(int k = 0; k < 30; k++) {
@@ -565,13 +565,13 @@ int main(int argc, char* argv[]) {
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,new,move,all_moves,sprite,keylist,key,value,output,palette,play,scale,parse,end};
     const char* progname = "aftool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -583,7 +583,7 @@ int main(int argc, char* argv[]) {
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -592,7 +592,7 @@ int main(int argc, char* argv[]) {
         printf("(C) 2013 Tuomas Virtanen\n");
         goto exit_0;
     }
-    
+
     // Argument dependencies
     if(move->count == 0) {
         if(sprite->count > 0) {
@@ -637,17 +637,17 @@ int main(int argc, char* argv[]) {
         printf("Define at most one of (--file, --new).");
         goto exit_0;
     }
-    
+
     // Handle errors
     if(nerrors > 0) {
         arg_print_errors(stdout, end, progname);
         printf("Try '%s --help' for more information.\n", progname);
         goto exit_0;
     }
-    
+
     // Init SDL
     SDL_Init(SDL_INIT_VIDEO);
-    
+
     // Load file
     sd_af_file af;
     sd_af_create(&af);
@@ -658,7 +658,7 @@ int main(int argc, char* argv[]) {
             goto exit_1;
         }
     }
-    
+
     // Palette
     sd_bk_file bk;
     sd_bk_create(&bk);
@@ -685,7 +685,7 @@ int main(int argc, char* argv[]) {
             goto exit_2;
         }
         sd_sprite *sp = af.moves[move->ival[0]]->animation->sprites[sprite->ival[0]];
-        
+
         // Handle arguments
         if(key->count > 0) {
             if(value->count > 0) {
@@ -707,7 +707,7 @@ int main(int argc, char* argv[]) {
         }
         sd_move *mv = af.moves[move->ival[0]];
         sd_animation *ani = mv->animation;
-    
+
         // Handle arguments
         if(key->count > 0) {
             if(value->count > 0) {
@@ -760,7 +760,7 @@ int main(int argc, char* argv[]) {
     if(output->count > 0) {
         sd_af_save(&af, output->filename[0]);
     }
-    
+
     // Quit
 exit_2:
     sd_bk_free(&bk);

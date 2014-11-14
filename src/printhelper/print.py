@@ -51,7 +51,7 @@ for mfile in bk_files:
     output_file = output_file.lower()
     output_bk_files.append((output_file, filebase,))
     print("Parsing %s to %s ... " % (filebase,output_file+".html",), end='')
-    
+
     try:
         subprocess.call(["bkhtmlprinter", "-f", mfile, "-o", output_path, "-n", output_file])
     except:
@@ -66,7 +66,7 @@ for mfile in af_files:
     output_file = output_file.lower()
     output_af_files.append((output_file, filebase,))
     print("Parsing %s to %s ... " % (filebase,output_file+".html",), end='')
-    
+
     try:
         subprocess.call(["afhtmlprinter", "-f", mfile, "-p", palette_bk, "-o", output_path, "-n", output_file])
     except:

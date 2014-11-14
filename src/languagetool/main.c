@@ -17,13 +17,13 @@ int main(int argc, char *argv[]) {
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,file,output,str,end};
     const char* progname = "languagetool";
-    
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -44,14 +44,14 @@ int main(int argc, char *argv[]) {
         printf("(C) 2013 Tuomas Virtanen\n");
         goto exit_0;
     }
-    
+
     // Handle errors
     if(nerrors > 0) {
         arg_print_errors(stdout, end, progname);
         printf("Try '%s --help' for more information.\n", progname);
         goto exit_0;
     }
-    
+
     // Get strings
     sd_language language;
     sd_language_create(&language);
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
         printf("Language file could not be loaded! Error [%d] %s\n", ret, sd_get_error(ret));
         goto exit_0;
     }
-    
+
     // Print
     const sd_lang_string *ds;
     if(str->count > 0) {
