@@ -3,7 +3,7 @@
 #include "utils/hashmap.h"
 #include "utils/log.h"
 
-#define CACHE_LIFETIME 25
+#define CACHE_LIFETIME 300
 
 typedef struct tcache_entry_key_t {
     surface *c_surface;
@@ -22,6 +22,7 @@ typedef struct tcache_t {
     hashmap entries;
     unsigned int hits;
     unsigned int misses;
+    unsigned int old_frees;
     uint8_t scale_factor;
     scaler_plugin *scaler;
     SDL_Renderer *renderer;
@@ -53,6 +54,7 @@ void tcache_init(SDL_Renderer *renderer, int scale_factor, scaler_plugin *scaler
     cache->scaler = scaler;
     cache->scale_factor = scale_factor;
     cache->hits = 0;
+    cache->old_frees = 0;
     cache->misses = 0;
     DEBUG("Texture cache initialized.");
 }
@@ -85,14 +87,16 @@ void tcache_tick() {
         if(entry->age > CACHE_LIFETIME) {
             SDL_DestroyTexture(entry->tex);
             hashmap_delete(&cache->entries, &it);
+            cache->old_frees++;
         }
     }
 }
 
 void tcache_close() {
     DEBUG("Texture cache:");
-    DEBUG(" * Cache misses: %d", cache->misses);
-    DEBUG(" * Cache hits: %d", cache->hits);
+    DEBUG(" * Misses:    %d", cache->misses);
+    DEBUG(" * Hits:      %d", cache->hits);
+    DEBUG(" * Old frees: %d", cache->old_frees);
     tcache_clear();
     hashmap_free(&cache->entries);
     free(cache);
