@@ -27,7 +27,7 @@ void openal_stream_apply(audio_stream *stream) {
 
     // Handle panning here (only if mono)
     if(source_get_channels(stream->src) == 1) {
-        float pos[] = {stream->panning, 0.0f, 0.0f};
+        float pos[] = {stream->panning, 0.0f, -1.0f};
         alSourcefv(local->source, AL_POSITION, pos);
     }
 

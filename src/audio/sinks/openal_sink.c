@@ -45,6 +45,10 @@ int openal_sink_init(audio_sink *sink) {
     local->context = alcCreateContext(local->device, 0);
     alcMakeContextCurrent(local->context);
 
+    // Disable distance calculation
+    // Good for panning
+    alDistanceModel(AL_NONE);
+
     // Set callbacks
     sink_set_userdata(sink, local);
     sink_set_close_cb(sink, openal_sink_close);
