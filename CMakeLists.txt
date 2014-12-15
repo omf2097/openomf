@@ -221,6 +221,7 @@ set(OPENOMF_SRC
     src/game/scenes/mechlab/lab_main.c
     src/game/scenes/mechlab/lab_customize.c
     src/game/scenes/mechlab/lab_dashboard.c
+    src/game/scenes/mechlab/lab_newplayer.c
     src/game/scenes/mechlab/lab_training.c
     src/game/scenes/newsroom.c
     src/game/scenes/scoreboard.c

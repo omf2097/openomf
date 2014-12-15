@@ -5,6 +5,7 @@
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/lab_main.h"
 #include "game/scenes/mechlab/lab_dashboard.h"
+#include "game/scenes/mechlab/lab_newplayer.h"
 #include "game/gui/frame.h"
 #include "game/gui/trn_menu.h"
 #include "game/utils/settings.h"
@@ -15,7 +16,14 @@
 #include "video/video.h"
 #include "utils/log.h"
 
+typedef enum {
+    DASHBOARD_NONE,
+    DASHBOARD_STATS,
+    DASHBOARD_NEW,
+} dashboard_type;
+
 typedef struct {
+    dashboard_type dashtype;
     object bg_obj[3];
     guiframe *frame;
     guiframe *dashboard;
@@ -48,6 +56,42 @@ void mechlab_tick(scene *scene, int paused) {
     component *root = guiframe_get_root(local->frame);
     if(trnmenu_is_finished(root)) {
         game_state_set_next(scene->gs, SCENE_MENU);
+    }
+}
+
+void mechlab_select_dashboard(scene *scene, mechlab_local *local, dashboard_type type) {
+    if(type == local->dashtype) {
+        // No change
+        return;
+    }
+
+    // Free old dashboard if set
+    if(local->dashboard != NULL) {
+        guiframe_free(local->dashboard);
+    }
+
+    // Switch to new dashboard
+    local->dashtype = type;
+    switch(type) {
+        // Dashboard with the gauges etc.
+        case DASHBOARD_STATS:
+            // Dashboard widgets struct is filled with pointer to the necessary components for easy access
+            local->dashboard = guiframe_create(0, 0, 320, 200);
+            guiframe_set_root(local->dashboard, lab_dashboard_create(scene, &local->dw));
+            lab_dashboard_update(scene, &local->dw);
+            guiframe_layout(local->dashboard);
+            break;
+        // Dashboard for new player
+        case DASHBOARD_NEW:
+            local->dashboard = guiframe_create(0, 0, 320, 200);
+            guiframe_set_root(local->dashboard, lab_newplayer_create(scene));
+            guiframe_layout(local->dashboard);
+            break;
+        // No dashboard selection. This shouldn't EVER happen.
+        case DASHBOARD_NONE:
+            PERROR("No dashboard selected; this should not happen!");
+            local->dashboard = NULL;
+            break;
     }
 }
 
@@ -131,25 +175,21 @@ int mechlab_create(scene *scene) {
         }
     }
 
-    // TODO: Proper tournament initialisation if no savegame is found
+    // Either initialize a new tournament if no savegame is found,
+    // or just show old savegame stats directly if it was.
+    local->dashtype = DASHBOARD_NONE;
     if(last_name == NULL) {
-        // Just throw in something in there
-        strcpy(p1->pilot.name, "TEST PILOT");
-        strcpy(p1->pilot.trn_name, "TEST TOURNAMENT");
-        DEBUG("Created new data for playername '%s'.", last_name);
+        mechlab_select_dashboard(scene, local, DASHBOARD_NEW);
+        DEBUG("No savegame found; starting a new tournament player.");
+    } else {
+        mechlab_select_dashboard(scene, local, DASHBOARD_STATS);
+        DEBUG("Previous savegame found; loading as default.");
     }
 
     // Create main menu
     local->frame = guiframe_create(0, 0, 320, 200);
     guiframe_set_root(local->frame, lab_main_create(scene));
     guiframe_layout(local->frame);
-
-    // Dashboard with the gauges etc.
-    // Dashboard widgets struct is filled with pointer to the necessary components for easy access
-    local->dashboard = guiframe_create(0, 0, 320, 200);
-    guiframe_set_root(local->dashboard, lab_dashboard_create(scene, &local->dw));
-    lab_dashboard_update(scene, &local->dw);
-    guiframe_layout(local->dashboard);
 
     // Load HAR
     animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot.har_id)->ani;
