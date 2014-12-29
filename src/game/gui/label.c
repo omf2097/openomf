@@ -26,6 +26,11 @@ void label_set_text(component *c, const char* text) {
     local->text = strdup(text);
 }
 
+text_settings* label_get_text_settings(component *c) {
+    label *local = widget_get_obj(c);
+    return &local->tconf;
+}
+
 component* label_create(const text_settings *tconf, const char *text) {
     component *c = widget_create();
     component_disable(c, 1);
