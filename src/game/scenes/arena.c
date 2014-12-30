@@ -649,7 +649,10 @@ void arena_har_hook(har_event event, void *data) {
             }
             break;
         case HAR_EVENT_LAND:
-            arena_maybe_turn_har(event.player_id, scene);
+            if (har2->state == STATE_STANDING || har_is_crouching(har2) || har_is_walking(har2) || har2->executing_move) {
+                // if the other HAR is jumping or recoiling, don't flip the direction. This specifically is to fix jaguar ending up facing backwards after an overhead throw.
+                arena_maybe_turn_har(event.player_id, scene);
+            }
             arena_maybe_sync(scene, 1);
             DEBUG("LAND %u", event.player_id);
             break;
