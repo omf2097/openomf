@@ -117,7 +117,11 @@ void mechlab_render(scene *scene) {
 
     guiframe_render(local->frame);
     guiframe_render(local->dashboard);
-    object_render(local->mech);
+
+    // Only render mech in stats dashboard
+    if(local->dashtype == DASHBOARD_STATS) {
+        object_render(local->mech);
+    }
 }
 
 void mechlab_input_tick(scene *scene) {
