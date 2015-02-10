@@ -53,7 +53,7 @@ Required:
 
 Recommended:
 * OpenAL: http://kcat.strangesoft.net/openal.html (for audio)
-* libdumb: https://bitbucket.org/kode54/dumb (for module music)
+* libdumb (>=1.0): https://bitbucket.org/kode54/dumb (for module music)
 
 Optional:
 * libvorbis: https://www.xiph.org/downloads/
