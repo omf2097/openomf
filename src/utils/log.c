@@ -36,4 +36,5 @@ void log_print(char mode, const char *fn, const char *fmt, ...) {
     vfprintf(handle, fmt, args);
     va_end(args);
     fprintf(handle, "\n");
+    fflush(handle);
 }
