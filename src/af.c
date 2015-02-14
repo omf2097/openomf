@@ -185,6 +185,7 @@ int sd_af_save(const sd_af_file *af, const char* filename) {
         if(af->moves[i] != NULL) {
             sd_write_ubyte(w, i);
             if((ret = sd_move_save(w, af->moves[i])) != SD_SUCCESS) {
+                sd_writer_close(w);
                 return ret;
             }
         }
