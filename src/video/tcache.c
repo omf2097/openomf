@@ -106,13 +106,13 @@ SDL_Texture* tcache_get(surface *sur,
                         screen_palette *pal,
                         char *remap_table,
                         uint8_t pal_offset) {
+    if(sur == NULL) {
+        DEBUG("Invalid surface requested from tcache: surface is NULL.");
+        return NULL;
+    }
 
-    if(sur == NULL || sur->w == 0 || sur->h == 0 || sur->data == NULL) {
-        if(sur != NULL) {
-            DEBUG("Invalid surface requested from tcache: w,h = %d,%d data = %p", sur->w, sur->h, sur->data);
-        } else {
-            DEBUG("Invalid surface requested from tcache: w,h = %d,%d surface = %p", sur->w, sur->h, sur);
-        }
+    if(sur->w == 0 || sur->h == 0 || sur->data == NULL) {
+        DEBUG("Invalid surface requested from tcache: w,h = %d,%d data = %p", sur->w, sur->h, sur->data);
         return NULL;
     }
 
