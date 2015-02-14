@@ -53,7 +53,9 @@ int sd_write_buf(const sd_writer *writer, const char *buf, int len) {
 int sd_write_fprintf(const sd_writer *writer, const char *format, ...) {
     va_list argp;
     va_start(argp, format);
-    return vfprintf(writer->handle, format, argp);
+    int ret = vfprintf(writer->handle, format, argp);
+    va_end(argp);
+    return ret;
 }
 
 void sd_write_ubyte(const sd_writer *writer, uint8_t data) {
