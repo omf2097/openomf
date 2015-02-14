@@ -279,7 +279,7 @@ sd_bk_anim* sd_bk_get_anim(const sd_bk_file *bk, int index) {
 }
 
 int sd_bk_set_palette(sd_bk_file *bk, int index, const sd_palette *palette) {
-    if(index < 0 || index >= bk->palette_count || bk == NULL || palette == NULL) {
+    if(index < 0 || bk == NULL || index >= bk->palette_count || palette == NULL) {
         return SD_INVALID_INPUT;
     }
     if(bk->palettes[index] != NULL) {
