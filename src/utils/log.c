@@ -6,7 +6,8 @@ FILE *handle = 0;
 unsigned int _log_tick = 0;
 
 int log_init(const char *filename) {
-    if(handle) return 1;
+    if(handle)
+        return 1;
 
     if(filename == 0) {
         handle = stdout;
@@ -26,6 +27,8 @@ void log_close() {
 }
 
 void log_print(char mode, const char *fn, const char *fmt, ...) {
+    if(handle == 0)
+        return;
     if(fn != NULL) {
         fprintf(handle, "[%7u][%c] %s(): ", _log_tick, mode, fn);
     } else {
