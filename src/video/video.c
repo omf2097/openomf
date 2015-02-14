@@ -189,7 +189,7 @@ int video_reinit(int window_w,
 
     // Check scaler
     if(strcmp(scaler_name, state.scaler_name) != 0) {
-        strcpy(state.scaler_name, scaler_name);
+        strncpy(state.scaler_name, scaler_name, sizeof(state.scaler_name));
         changed = 1;
     }
     if(scale_factor != state.scale_factor) {
