@@ -9,6 +9,16 @@ void xysizer_attach(component *c, component *nc, int x, int y, int w, int h) {
     sizer_attach(c, nc);
 }
 
+void xysizer_set_userdata(component *c, void *userdata) {
+    xysizer *m = sizer_get_obj(c);
+    m->userdata = userdata;
+}
+
+void* xysizer_get_userdata(component *c) {
+    xysizer *m = sizer_get_obj(c);
+    return m->userdata;
+}
+
 static void xysizer_render(component *c) {
     sizer *s = component_get_obj(c);
 

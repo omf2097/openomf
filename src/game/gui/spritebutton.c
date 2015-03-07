@@ -81,6 +81,3 @@ component* spritebutton_create(const text_settings *tconf, const char *text, sur
 
     return c;
 }
-
-
-

@@ -237,6 +237,7 @@ set(OPENOMF_SRC
     src/game/gui/text_render.c
     src/game/gui/textbutton.c
     src/game/gui/spritebutton.c
+    src/game/gui/spriteimage.c
     src/game/gui/textselector.c
     src/game/gui/textslider.c
     src/game/gui/textinput.c
