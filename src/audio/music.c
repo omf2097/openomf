@@ -9,15 +9,10 @@
 #include "utils/log.h"
 #include "game/utils/settings.h"
 
-#ifdef USE_DUMB
 #include "audio/sources/dumb_source.h"
-#endif
-#ifdef USE_MODPLUG
 #include "audio/sources/modplug_source.h"
-#endif
-#ifdef USE_OGGVORBIS
+#include "audio/sources/xmp_source.h"
 #include "audio/sources/vorbis_source.h"
-#endif // USE_OGGVORBIS
 
 #ifdef STANDALONE_SERVER
 int music_play(const char *filename) { return 0; }
@@ -95,9 +90,10 @@ int music_play(unsigned int id) {
     {
 #if USE_DUMB
         failed = dumb_source_init(music_src, filename, channels);
-#endif
-#if USE_MODPLUG
+#elif USE_MODPLUG
         failed = modplug_source_init(music_src, filename, channels);
+#elif USE_XMP
+        failed = xmp_source_init(music_src, filename, channels);
 #endif
     }
 

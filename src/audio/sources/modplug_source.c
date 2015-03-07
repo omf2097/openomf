@@ -54,7 +54,7 @@ int modplug_source_init(audio_source *src, const char* file, int channels) {
     settings.mFrequency = 44100;
     settings.mLoopCount = (src->loop) ? -1 : 0;
     ModPlug_SetSettings(&settings);
-    
+
     // Init rnederer
     local->renderer = ModPlug_Load(local->data, local->dsize);
     if(!local->renderer) {
@@ -87,7 +87,5 @@ error_0:
     free(local);
     return 1;
 }
-
-
 
 #endif

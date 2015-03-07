@@ -1,7 +1,7 @@
 #ifndef _MODPLUG_SOURCE
 #define _MODPLUG_SOURCE
 
-#ifdef USE_OGGVORBIS
+#ifdef USE_MODPLUG
 
 #include "audio/source.h"
 

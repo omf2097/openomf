@@ -16,6 +16,7 @@ OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_DUMB "Use libdumb for module playback" ON)
 OPTION(USE_MODPLUG "Use libmodplug for module playback" OFF)
+OPTION(USE_XMP "Use libxmp for module playback" OFF)
 OPTION(USE_PNG "Add support for PNG screenshots" ON)
 OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
 OPTION(USE_SUBMODULES "Add libsd and libdumb as submodules" ON)
@@ -89,6 +90,9 @@ ELSEIF(USE_DUMB)
 ELSEIF(USE_MODPLUG)
     find_package(modplug)
     add_definitions(-DUSE_MODPLUG)
+ELSEIF(USE_XMP)
+    find_package(xmp)
+    add_definitions(-DUSE_XMP)
 ELSE()
     MESSAGE(STATUS "Note! No module player backend. Music will not play.")
 ENDIF()
@@ -168,6 +172,7 @@ set(OPENOMF_SRC
     src/audio/sinks/openal_stream.c
     src/audio/sources/dumb_source.c
     src/audio/sources/modplug_source.c
+    src/audio/sources/xmp_source.c
     src/audio/sources/vorbis_source.c
     src/audio/sources/raw_source.c
     src/resources/ids.c
@@ -300,6 +305,9 @@ ELSEIF(USE_DUMB)
 ELSEIF(USE_MODPLUG)
     set(CORELIBS ${CORELIBS} ${MODPLUG_LIBRARY})
     set(COREINCS ${COREINCS} ${MODPLUG_INCLUDE_DIR})
+ELSEIF(USE_XMP)
+    set(CORELIBS ${CORELIBS} ${XMP_LIBRARY})
+    set(COREINCS ${COREINCS} ${XMP_INCLUDE_DIR})
 ENDIF()
 
 # Audio sinks

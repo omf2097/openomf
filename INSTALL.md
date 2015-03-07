@@ -60,7 +60,11 @@ Optional:
 * libogg: https://www.xiph.org/downloads/
 * libpng: http://www.libpng.org/pub/png/libpng.html (for .PNG screenshots)
 * zlib: http://www.zlib.net/
-* libmodplug to replace libdumb, if libdumb is not available (Note! Current upstream versions of modplug do not yet play PSM files correctly!)
+* libxmp to replace libdumb, if libdumb is not available.
+* libmodplug to replace libdumb, if libdumb is not available.
+
+Note that libxmp and libmodplug don't play all ingame music tracks quite right, and libdumb is much preferred! At the time of writing this, the playback quality is 
+libdumb > libxmp > libmodplug. Always make sure the playback library is up-to-date!
 
 [libShadowDive](https://github.com/omf2097/libShadowDive) is our own library for handling OMF:2097 file formats. It is probably not in any repositories by default, and so you may need to compile it yourself. It is also possible to pull this in as a submodule; please see USE_SUBMODULES cmake flag for that.
 
@@ -123,12 +127,13 @@ Some useful CMake flags:
 | USE_OPENAL                | Selects OpenAL support                  | On/Off          | On      |
 | USE_DUMB                  | Selects libdumb support                 | On/Off          | On      |
 | USE_MODPLUG               | Selects libmodplug support              | On/Off          | Off     |
+| USE_XMP                   | Selects libxmp support                  | On/Off          | Off     |
 | USE_SUBMODULES            | Pull in libdumb and libsd as submodules | On/Off          | On      |
 | USE_RELEASE_SUBMODULES    | Build libdumb and libsd in Release mode | On/Off          | Off     |
 
 Ogg Vorbis support is required if you wish to replace original OMF soundtracks with OGG files. Otherwise the switch is optional.
 
-Only one module playback library should be enabled. So either do USE_DUMB=On or USE_MODPLUG=On, but not both. If both are selected, only dumb will be used. If USE_SUBMODULES is enabled, USE_DUMB=On and USE_MODPLUG=Off will be forced.
+Only one module playback library should be enabled. So either do USE_DUMB=On, USE_XMP=on or USE_MODPLUG=On, but not more than one. If more than one is selected, only dumb will be used. If USE_SUBMODULES is enabled, USE_DUMB=On, USE_XMP=off and USE_MODPLUG=Off will be forced.
 
 It is technically possible to select more than one audio sink, or none. Currently only one audio sink is supported (OpenAL). If all audio sinks are off, then no audio will be played. This will also of course reduce cpu usage a bit.
 
