@@ -1,5 +1,5 @@
-#ifndef _LAB_DASHBOARD_H
-#define _LAB_DASHBOARD_H
+#ifndef _LAB_DASH_MAIN_H
+#define _LAB_DASH_MAIN_H
 
 #include "game/gui/component.h"
 #include "game/protos/scene.h"
@@ -24,7 +24,7 @@ typedef struct {
     component *tournament;
 } dashboard_widgets;
 
-component* lab_dashboard_create(scene *s, dashboard_widgets *dw);
-void lab_dashboard_update(scene *s, dashboard_widgets *dw);
+component* lab_dash_main_create(scene *s, dashboard_widgets *dw);
+void lab_dash_main_update(scene *s, dashboard_widgets *dw);
 
-#endif // _LAB_DASHBOARD_H
+#endif // _LAB_DASH_MAIN_H

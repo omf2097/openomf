@@ -1,4 +1,4 @@
-#include "game/scenes/mechlab/lab_training.h"
+#include "game/scenes/mechlab/lab_menu_training.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "game/gui/trn_menu.h"
 #include "game/gui/spritebutton.h"
@@ -8,7 +8,7 @@
 #include "game/common_defines.h"
 #include "utils/log.h"
 
-void lab_training_done(component *c, void *userdata) {
+void lab_menu_training_done(component *c, void *userdata) {
     trnmenu_finish(c->parent);
 }
 
@@ -16,10 +16,10 @@ static const button_details details_list[] = {
     {NULL, "POWER", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
     {NULL, "AGILITY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
     {NULL, "ENDUR.", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {lab_training_done, "DONE", TEXT_VERTICAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
+    {lab_menu_training_done, "DONE", TEXT_VERTICAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
 };
 
-component* lab_training_create(scene *s) {
+component* lab_menu_training_create(scene *s) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(&s->bk_data, 9)->ani;
     animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;

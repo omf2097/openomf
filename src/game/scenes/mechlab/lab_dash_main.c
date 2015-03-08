@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "game/scenes/mechlab/lab_dashboard.h"
+#include "game/scenes/mechlab/lab_dash_main.h"
 #include "game/gui/gauge.h"
 #include "game/gui/xysizer.h"
 #include "game/gui/label.h"
@@ -9,7 +9,7 @@
 #include "utils/log.h"
 #include "video/video.h"
 
-component* lab_dashboard_create(scene *s, dashboard_widgets *dw) {
+component* lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     component *xy = xysizer_create();
 
     text_settings tconf_dark;
@@ -76,7 +76,7 @@ component* lab_dashboard_create(scene *s, dashboard_widgets *dw) {
     return xy;
 }
 
-void lab_dashboard_update(scene *s, dashboard_widgets *dw) {
+void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     char tmp[64];
     game_player *p1;
 

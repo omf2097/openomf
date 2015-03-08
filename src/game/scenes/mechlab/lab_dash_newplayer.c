@@ -1,11 +1,11 @@
-#include "game/scenes/mechlab/lab_newplayer.h"
+#include "game/scenes/mechlab/lab_dash_newplayer.h"
 #include "game/gui/xysizer.h"
 #include "game/gui/spriteimage.h"
 #include "game/gui/label.h"
 #include "game/gui/textinput.h"
 #include "resources/bk.h"
 
-component* lab_newplayer_create(scene *s, newplayer_widgets *nw) {
+component* lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     component *xy = xysizer_create();
 
     // Text config

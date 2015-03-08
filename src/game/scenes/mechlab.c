@@ -3,9 +3,9 @@
 
 #include "game/protos/object.h"
 #include "game/scenes/mechlab.h"
-#include "game/scenes/mechlab/lab_main.h"
-#include "game/scenes/mechlab/lab_dashboard.h"
-#include "game/scenes/mechlab/lab_newplayer.h"
+#include "game/scenes/mechlab/lab_menu_main.h"
+#include "game/scenes/mechlab/lab_dash_main.h"
+#include "game/scenes/mechlab/lab_dash_newplayer.h"
 #include "game/gui/frame.h"
 #include "game/gui/trn_menu.h"
 #include "game/utils/settings.h"
@@ -83,23 +83,17 @@ void mechlab_select_dashboard(scene *scene, mechlab_local *local, dashboard_type
     switch(type) {
         // Dashboard with the gauges etc.
         case DASHBOARD_STATS:
+        case DASHBOARD_SELECT_NEW_PIC:
             // Dashboard widgets struct is filled with pointer to the necessary components for easy access
             local->dashboard = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->dashboard, lab_dashboard_create(scene, &local->dw));
-            lab_dashboard_update(scene, &local->dw);
+            guiframe_set_root(local->dashboard, lab_dash_main_create(scene, &local->dw));
+            lab_dash_main_update(scene, &local->dw);
             guiframe_layout(local->dashboard);
             break;
         // Dashboard for new player
         case DASHBOARD_NEW:
             local->dashboard = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->dashboard, lab_newplayer_create(scene, &local->nw));
-            guiframe_layout(local->dashboard);
-            break;
-        // For selecting new player pic
-        case DASHBOARD_SELECT_NEW_PIC:
-            local->dashboard = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->dashboard, lab_dashboard_create(scene, &local->dw));
-            lab_dashboard_update(scene, &local->dw);
+            guiframe_set_root(local->dashboard, lab_dash_newplayer_create(scene, &local->nw));
             guiframe_layout(local->dashboard);
             break;
         // No dashboard selection. This shouldn't EVER happen.
@@ -229,7 +223,7 @@ int mechlab_create(scene *scene) {
 
     // Create main menu
     local->frame = guiframe_create(0, 0, 320, 200);
-    guiframe_set_root(local->frame, lab_main_create(scene));
+    guiframe_set_root(local->frame, lab_menu_main_create(scene));
     guiframe_layout(local->frame);
 
     // Load HAR
