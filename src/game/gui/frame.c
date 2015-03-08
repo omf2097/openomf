@@ -11,6 +11,12 @@ guiframe* guiframe_create(int x, int y, int w, int h) {
 }
 
 void guiframe_set_root(guiframe *frame, component *root_node) {
+    if(root_node == frame->root_node) {
+        return;
+    }
+    if(frame->root_node != NULL) {
+        component_free(frame->root_node);
+    }
     frame->root_node = root_node;
 }
 

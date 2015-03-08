@@ -20,6 +20,7 @@ typedef enum {
     DASHBOARD_NONE,
     DASHBOARD_STATS,
     DASHBOARD_NEW,
+    DASHBOARD_SELECT_NEW_PIC,
 } dashboard_type;
 
 typedef struct {
@@ -29,6 +30,7 @@ typedef struct {
     guiframe *dashboard;
     object *mech;
     dashboard_widgets dw;
+    newplayer_widgets nw;
 } mechlab_local;
 
 void mechlab_free(scene *scene) {
@@ -55,7 +57,13 @@ void mechlab_tick(scene *scene, int paused) {
     // Check if root is finished
     component *root = guiframe_get_root(local->frame);
     if(trnmenu_is_finished(root)) {
-        game_state_set_next(scene->gs, SCENE_MENU);
+        if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
+            // TODO: HANDLE BACKING OUT FROM NEWPLAYER CREATION
+            // - If no players exist, back to main menu
+            // - If a player already exists, go back to tournament main view
+        } else {
+            game_state_set_next(scene->gs, SCENE_MENU);
+        }
     }
 }
 
@@ -84,7 +92,14 @@ void mechlab_select_dashboard(scene *scene, mechlab_local *local, dashboard_type
         // Dashboard for new player
         case DASHBOARD_NEW:
             local->dashboard = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->dashboard, lab_newplayer_create(scene));
+            guiframe_set_root(local->dashboard, lab_newplayer_create(scene, &local->nw));
+            guiframe_layout(local->dashboard);
+            break;
+        // For selecting new player pic
+        case DASHBOARD_SELECT_NEW_PIC:
+            local->dashboard = guiframe_create(0, 0, 320, 200);
+            guiframe_set_root(local->dashboard, lab_dashboard_create(scene, &local->dw));
+            lab_dashboard_update(scene, &local->dw);
             guiframe_layout(local->dashboard);
             break;
         // No dashboard selection. This shouldn't EVER happen.
@@ -140,8 +155,21 @@ void mechlab_input_tick(scene *scene) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
+                // If view is new dashboard view, pass all input to it
                 if(local->dashtype == DASHBOARD_NEW) {
-                    guiframe_action(local->dashboard, i->event_data.action);
+                    // If inputting text for new player name is done, switch to next view.
+                    // If ESC, exit view.
+                    // Otherwise handle text input
+                    if(i->event_data.action == ACT_ESC) {
+
+                    }
+                    else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
+                        mechlab_select_dashboard(scene, local, DASHBOARD_SELECT_NEW_PIC);
+                    }
+                    else {
+                        guiframe_action(local->dashboard, i->event_data.action);
+                    }
+                // If view is any other, just pass input to the bottom menu
                 } else {
                     guiframe_action(local->frame, i->event_data.action);
                 }

@@ -5,7 +5,7 @@
 #include "game/gui/textinput.h"
 #include "resources/bk.h"
 
-component* lab_newplayer_create(scene *s) {
+component* lab_newplayer_create(scene *s, newplayer_widgets *nw) {
     component *xy = xysizer_create();
 
     // Text config
@@ -25,11 +25,11 @@ component* lab_newplayer_create(scene *s) {
 
     // Input field
     tconf.cforeground = color_create(0, 121, 0, 255);
-    component *input = textinput_create(&tconf, "Name", "");
-    component_select(input, 1);
-    textinput_enable_background(input, 0);
-    textinput_set_max_chars(input, 8);
-    xysizer_attach(xy, input, 101, 62, 120, 8);
+    nw->input = textinput_create(&tconf, "Name", "");
+    component_select(nw->input, 1);
+    textinput_enable_background(nw->input, 0);
+    textinput_set_max_chars(nw->input, 8);
+    xysizer_attach(xy, nw->input, 101, 62, 120, 8);
 
     return xy;
 }

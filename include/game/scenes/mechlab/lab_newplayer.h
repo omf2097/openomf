@@ -4,6 +4,10 @@
 #include "game/gui/component.h"
 #include "game/protos/scene.h"
 
-component* lab_newplayer_create(scene *s);
+typedef struct {
+    component *input;
+} newplayer_widgets;
+
+component* lab_newplayer_create(scene *s, newplayer_widgets *nw);
 
 #endif // _LAB_NEWPLAYER_H
