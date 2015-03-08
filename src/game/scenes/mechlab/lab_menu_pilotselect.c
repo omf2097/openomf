@@ -4,18 +4,35 @@
 #include "game/gui/spritebutton.h"
 #include "game/gui/sizer.h"
 #include "game/gui/text_render.h"
+#include "game/gui/pilotpic.h"
 #include "game/gui/label.h"
 #include "resources/bk.h"
 #include "game/common_defines.h"
 #include "utils/log.h"
 
+void lab_menu_pilotselect_choose(component *c, void *userdata) {
+    DEBUG("CHOOSE PILOT");
+}
+
+void lab_menu_pilotselect_left(component *c, void *userdata) {
+    DEBUG("PILOT -1");
+    dashboard_widgets *dw = userdata;
+    pilotpic_prev(dw->photo);
+}
+
+void lab_menu_pilotselect_right(component *c, void *userdata) {
+    DEBUG("PILOT +1");
+    dashboard_widgets *dw = userdata;
+    pilotpic_next(dw->photo);
+}
+
 static const button_details details_list[] = {
-    {NULL, "SELECT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
-    {NULL, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
-    {NULL, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
+    {lab_menu_pilotselect_choose, "SELECT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
+    {lab_menu_pilotselect_left,  NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
+    {lab_menu_pilotselect_right, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
 };
 
-component* lab_menu_pilotselect_create(scene *s) {
+component* lab_menu_pilotselect_create(scene *s, dashboard_widgets *dw) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(&s->bk_data, 7)->ani;
     animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
@@ -41,7 +58,7 @@ component* lab_menu_pilotselect_create(scene *s) {
         tconf.direction = details_list[i].dir;
 
         sprite *bsprite = animation_get_sprite(main_buttons, i);
-        component *button = spritebutton_create(&tconf, details_list[i].text, bsprite->data, COM_ENABLED, details_list[i].cb, s);
+        component *button = spritebutton_create(&tconf, details_list[i].text, bsprite->data, COM_ENABLED, details_list[i].cb, dw);
         component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
         trnmenu_attach(menu, button);

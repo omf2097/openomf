@@ -10,6 +10,9 @@
 // Local small gauge type
 typedef struct {
     sprite *img;
+    int max;
+    int selected;
+    int pic_id;
 } pilotpic;
 
 static void pilotpic_render(component *c) {
@@ -65,8 +68,31 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
         local->img->data->w,
         local->img->data->h);
 
+    // Save some information
+    local->selected = pilot_id;
+    local->max = pics.photo_count;
+    local->pic_id = pic_id;
+
     // Free pics
     sd_pic_free(&pics);
+}
+
+void pilotpic_next(component *c) {
+    pilotpic *local = widget_get_obj(c);
+    int select = local->selected + 1;
+    if(select >= local->max) {
+        select = 0;
+    }
+    pilotpic_select(c, local->pic_id, select);
+}
+
+void pilotpic_prev(component *c) {
+    pilotpic *local = widget_get_obj(c);
+    int select = local->selected - 1;
+    if(select < 0) {
+        select = local->max - 1;
+    }
+    pilotpic_select(c, local->pic_id, select);
 }
 
 component* pilotpic_create(int pic_id, int pilot_id) {
@@ -78,6 +104,9 @@ component* pilotpic_create(int pic_id, int pilot_id) {
     // Local information
     pilotpic *local = malloc(sizeof(pilotpic));
     memset(local, 0, sizeof(pilotpic));
+    local->max = 0;
+    local->selected = 0;
+    local->pic_id = -1;
 
     // Set callbacks
     widget_set_obj(c, local);

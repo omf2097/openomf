@@ -61,7 +61,7 @@ void mechlab_tick(scene *scene, int paused) {
         if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->frame, lab_menu_pilotselect_create(scene));
+            guiframe_set_root(local->frame, lab_menu_pilotselect_create(scene, &local->dw));
             guiframe_layout(local->frame);
         } else {
             game_state_set_next(scene->gs, SCENE_MENU);
