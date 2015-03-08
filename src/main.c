@@ -20,6 +20,12 @@
 #include "plugins/plugins.h"
 #include "controller/gamecontrollerdb.h"
 
+#ifndef SHA1_HASH
+    const char *git_sha1_hash = "";
+#else
+    const char *git_sha1_hash = SHA1_HASH;
+#endif
+
 int main(int argc, char *argv[]) {
     // Set up initial state for misc things
     char *ip = NULL;
@@ -96,6 +102,9 @@ int main(int argc, char *argv[]) {
 
     // Simple header
     INFO("Starting OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
+    if(strlen(git_sha1_hash) > 0) {
+        INFO("Git SHA1 hash: %s", git_sha1_hash);
+    }
 
     // Dump pathmanager log
     pm_log();

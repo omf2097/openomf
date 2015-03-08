@@ -31,6 +31,20 @@ set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
 set(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG")
 add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH})
 
+# See if we have Git, and use it to fetch current SHA1 hash
+find_package(Git)
+if(GIT_FOUND)
+    message(STATUS "Git found: ${GIT_EXECUTABLE}")
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} "rev-parse" "HEAD"
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        OUTPUT_VARIABLE SHA1_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    message(STATUS "Git SHA1 Hash: ${SHA1_HASH}")
+    add_definitions(-DSHA1_HASH="${SHA1_HASH}")
+endif()
+
 # Enable LTO flags if requested
 IF(USE_LTO)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fno-fat-lto-objects")
