@@ -240,6 +240,7 @@ set(OPENOMF_SRC
     src/game/scenes/mechlab/lab_menu_main.c
     src/game/scenes/mechlab/lab_menu_customize.c
     src/game/scenes/mechlab/lab_menu_training.c
+    src/game/scenes/mechlab/lab_menu_pilotselect.c
     src/game/scenes/mechlab/lab_dash_main.c
     src/game/scenes/mechlab/lab_dash_newplayer.c
     src/game/scenes/newsroom.c
