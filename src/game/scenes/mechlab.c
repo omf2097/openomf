@@ -105,7 +105,11 @@ int mechlab_event(scene *scene, SDL_Event *event) {
         return 1;
     }
 
-    return guiframe_event(local->frame, event);
+    if(local->dashtype == DASHBOARD_NEW) {
+        return guiframe_event(local->dashboard, event);
+    } else {
+        return guiframe_event(local->frame, event);
+    }
 }
 
 void mechlab_render(scene *scene) {
@@ -115,6 +119,7 @@ void mechlab_render(scene *scene) {
         object_render(&local->bg_obj[i]);
     }
 
+    // Render dashboard
     guiframe_render(local->frame);
     guiframe_render(local->dashboard);
 
@@ -135,7 +140,11 @@ void mechlab_input_tick(scene *scene) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                guiframe_action(local->frame, i->event_data.action);
+                if(local->dashtype == DASHBOARD_NEW) {
+                    guiframe_action(local->dashboard, i->event_data.action);
+                } else {
+                    guiframe_action(local->frame, i->event_data.action);
+                }
             }
         } while((i = i->next));
     }

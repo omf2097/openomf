@@ -51,6 +51,35 @@ static void xysizer_layout(component *c, int x, int y, int w, int h) {
     }
 }
 
+static int xysizer_event(component *c, SDL_Event *event) {
+    sizer *s = component_get_obj(c);
+
+    // Just pass events to all children
+    int handled = 0;
+    iterator it;
+    component **tmp;
+    vector_iter_begin(&s->objs, &it);
+    while((tmp = iter_next(&it)) != NULL) {
+        handled |= component_event(*tmp, event);
+    }
+
+    return 1; // Wasn't handled here (event though it might have been)
+}
+
+static int xysizer_action(component *c, int action) {
+    sizer *s = sizer_get_obj(c);
+
+    // Just pass events to all children
+    iterator it;
+    component **tmp;
+    vector_iter_begin(&s->objs, &it);
+    while((tmp = iter_next(&it)) != NULL) {
+        component_action(*tmp, action);
+    }
+
+    return 1; // Wasn't handled here (event though it might have been)
+}
+
 static void xysizer_free(component *c) {
     xysizer *m = sizer_get_obj(c);
     free(m);
@@ -65,6 +94,8 @@ component* xysizer_create(int obj_h) {
 
     sizer_set_render_cb(c, xysizer_render);
     sizer_set_layout_cb(c, xysizer_layout);
+    sizer_set_event_cb(c, xysizer_event);
+    sizer_set_action_cb(c, xysizer_action);
     sizer_set_free_cb(c, xysizer_free);
 
     return c;

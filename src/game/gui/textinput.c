@@ -21,17 +21,19 @@ typedef struct {
     text_settings tconf;
     int ticks;
     int dir;
-    int pos_;
-    int *pos;
     surface sur;
-    char buf[50];
+    char *buf;
+    int max_chars;
+    int bg_enabled;
 } textinput;
 
 static void textinput_render(component *c) {
     textinput *tb = widget_get_obj(c);
     int chars = strlen(tb->buf);
 
-    video_render_sprite(&tb->sur, c->x + (c->w - tb->sur.w)/2, c->y - 2, BLEND_ALPHA, 0);
+    if(tb->bg_enabled) {
+        video_render_sprite(&tb->sur, c->x + (c->w - tb->sur.w)/2, c->y - 2, BLEND_ALPHA, 0);
+    }
 
     if(component_is_selected(c)) {
         if(chars > 0) {
@@ -54,26 +56,15 @@ static void textinput_render(component *c) {
     }
     if(chars == 0) {
         tb->tconf.cforeground = color_create(121, 121, 121, 255);
-        text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
+        text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->text);
     }
 }
 
 static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
-    if (e->type == SDL_TEXTINPUT) {
+    if(e->type == SDL_TEXTINPUT) {
         textinput *tb = widget_get_obj(c);
-        size_t len = strlen(tb->buf);
-        if (strlen(e->text.text) == 1) {
-            // make sure it is not a unicode sequence
-            unsigned char c = e->text.text[0];
-            if (c >= 32 && c <= 126) {
-                // only allow ASCII through
-                if (len < sizeof(tb->buf)-1) {
-                    tb->buf[len+1] = '\0';
-                    tb->buf[len] = c;
-                }
-            }
-        }
+        strncat(tb->buf, e->text.text, tb->max_chars - strlen(tb->buf));
     } else if (e->type == SDL_KEYDOWN) {
         textinput *tb = widget_get_obj(c);
         size_t len = strlen(tb->buf);
@@ -88,26 +79,11 @@ static int textinput_event(component *c, SDL_Event *e) {
             // TODO move cursor to the right
         } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
             if(SDL_HasClipboardText()) {
-                char* clip_text = SDL_GetClipboardText();
-                int c_size = strlen(clip_text);
-                if((c_size + len) > sizeof(tb->buf)-1) {
-                    c_size = sizeof(tb->buf) - 1 - len;
-                }
-                memcpy(tb->buf + len, clip_text, c_size);
-                len += c_size;
-                tb->buf[len] = 0;
+                strncat(tb->buf, SDL_GetClipboardText(), tb->max_chars - strlen(tb->buf));
             }
         }
     }
     return 1;
-}
-
-void textinput_focus(component *c, int focus) {
-    if(focus) {
-        SDL_StartTextInput();
-    } else {
-        SDL_StopTextInput();
-    }
 }
 
 static void textinput_tick(component *c) {
@@ -134,7 +110,20 @@ static void textinput_free(component *c) {
     textinput *tb = widget_get_obj(c);
     surface_free(&tb->sur);
     free(tb->text);
+    free(tb->buf);
     free(tb);
+}
+
+void textinput_set_max_chars(component *c, int max_chars) {
+    textinput *tb = widget_get_obj(c);
+    tb->buf = realloc(tb->buf, max_chars+1);
+    tb->buf[max_chars] = 0;
+    tb->max_chars = max_chars;
+}
+
+void textinput_enable_background(component *c, int enabled) {
+    textinput *tb = widget_get_obj(c);
+    tb->bg_enabled = enabled;
 }
 
 component* textinput_create(const text_settings *tconf, const char *text, const char *initialvalue) {
@@ -144,7 +133,8 @@ component* textinput_create(const text_settings *tconf, const char *text, const 
     memset(tb, 0, sizeof(textinput));
     tb->text = strdup(text);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
-    tb->pos = &tb->pos_;
+    tb->bg_enabled = 1;
+    tb->max_chars = 15;
 
     // Background for field
     int tsize = text_char_width(&tb->tconf);
@@ -156,7 +146,9 @@ component* textinput_create(const text_settings *tconf, const char *text, const 
     image_free(&img);
 
     // Copy over the initial value
-    memcpy(tb->buf, initialvalue, strlen(initialvalue)+1);
+    tb->buf = malloc(tb->max_chars + 1);
+    memset(tb->buf, tb->max_chars + 1, 0);
+    strncpy(tb->buf, initialvalue, tb->max_chars);
 
     // Widget stuff
     widget_set_obj(c, tb);
