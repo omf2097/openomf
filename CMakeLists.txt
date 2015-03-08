@@ -400,7 +400,7 @@ INSTALL(TARGETS openomf
     DESTINATION bin
     COMPONENT Binaries
 )
-INSTALL(FILES resources/openomf.bk
+INSTALL(FILES resources/openomf.bk resources/openomf_icon.png
     DESTINATION share/openomf/
     COMPONENT Data
 )
