@@ -147,7 +147,7 @@ component* textinput_create(const text_settings *tconf, const char *text, const 
 
     // Copy over the initial value
     tb->buf = malloc(tb->max_chars + 1);
-    memset(tb->buf, tb->max_chars + 1, 0);
+    memset(tb->buf, 0, tb->max_chars + 1);
     strncpy(tb->buf, initialvalue, tb->max_chars);
 
     // Widget stuff
