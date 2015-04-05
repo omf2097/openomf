@@ -73,10 +73,8 @@ static int textslider_action(component *c, int action) {
         return 0;
     } else  if(action == ACT_LEFT) {
         (*tb->pos)--;
-        if (tb->has_off && *tb->pos < 0) {
+        if (*tb->pos < 0) {
             *tb->pos = 0;
-        } else if (*tb->pos < 1) {
-            *tb->pos = 1;
         } else {
             // Play menu sound
             sound_play(20, 0.5f, -0.5f, 2.0f);
