@@ -114,7 +114,7 @@ void menu_set_joystick2(component *c, void *userdata) {
 void menu_set_custom_keyboard(component *c, void *u) {
     scene *s = u;
     menu_input_local *local = menu_get_userdata(c->parent);
-    menu_set_submenu(c->parent, menu_keyboard_create(s, local->selected_player));
+    menu_link_menu(c->parent, menu_keyboard_create(s, local->selected_player));
 }
 
 void menu_input_done(component *c, void *u) {

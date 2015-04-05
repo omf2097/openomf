@@ -186,6 +186,17 @@ void menu_set_submenu(component *mc, component *submenu) {
     component_layout(m->submenu, mc->x, mc->y, mc->w, mc->h);
 }
 
+void menu_link_menu(component *mc, guiframe *linked_menu) {
+    menu *m = sizer_get_obj(mc);
+    if(m->submenu) {
+        component_free(m->submenu);
+    }
+    m->submenu = linked_menu->root_node;
+    m->prev_submenu_state = 0;
+    linked_menu->root_node->parent = mc; // Set correct parent
+    component_layout(m->submenu, linked_menu->x, linked_menu->y, linked_menu->w, linked_menu->h);
+}
+
 component* menu_get_submenu(const component *c) {
     menu *m = sizer_get_obj(c);
     return m->submenu;
