@@ -23,6 +23,7 @@ static const char *keynames[] = {
 };
 
 typedef struct {
+    guiframe *frame;
     component *keys[10];
     int selected_player;
 } keyboard_menu_local;
@@ -69,7 +70,7 @@ void menu_update_keys(component *c) {
     char tmp_buf[32];
     for(int i = 0; i < 10; i++) {
         DEBUG("%d", local->selected_player);
-        sprintf(tmp_buf, "%s: %s", keynames[i], *menu_get_key(local->selected_player, i));
+        sprintf(tmp_buf, "%-19s%12s", keynames[i], *menu_get_key(local->selected_player, i));
         textbutton_set_text(local->keys[i], tmp_buf);
     }
 }
@@ -99,7 +100,7 @@ void menu_keyboard_keypress_done(component *c, component *submenu) {
     menu_update_keys(c);
 }
 
-component* menu_keyboard_create(scene *s, int selected_player) {
+guiframe* menu_keyboard_create(scene *s, int selected_player) {
     keyboard_menu_local *local = malloc(sizeof(keyboard_menu_local));
     memset(local, 0, sizeof(keyboard_menu_local));
     local->selected_player = selected_player;
@@ -110,10 +111,13 @@ component* menu_keyboard_create(scene *s, int selected_player) {
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = color_create(0, 121, 0, 255);
-
+    
+    local->frame = guiframe_create(25, 5, 270, 140);
     component* menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "CUSTOM INPUT SETUP"));
-    menu_attach(menu, filler_create());
+    guiframe_set_root(local->frame, menu);
+    guiframe_layout(local->frame);
+    menu_attach(menu, label_create(&tconf, "CUSTOM KEYBOARD SETUP"));
+    //menu_attach(menu, filler_create());
     for(int i = 0; i < 10; i++) {
         local->keys[i] = textbutton_create(&tconf, "", COM_ENABLED, menu_keyboard_set_key, (void*)menu_get_key(local->selected_player, i));
         menu_attach(menu, local->keys[i]);
@@ -125,5 +129,5 @@ component* menu_keyboard_create(scene *s, int selected_player) {
     menu_set_submenu_done_cb(menu, menu_keyboard_keypress_done);
 
     menu_update_keys(menu);
-    return menu;
+    return local->frame;
 }
