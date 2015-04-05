@@ -10,16 +10,20 @@
 #include "utils/log.h"
 
 static const char *keynames[] = {
-    "UP",
-    "DOWN",
-    "LEFT",
-    "RIGHT",
+    "JUMP UP",
+    "JUMP RIGHT",
+    "WALK RIGHT",
+    "DUCK FORWARD",
+    "DUCK",
+    "DUCK BACK",
+    "WALK BACK",
+    "JUMP LEFT",
     "PUNCH",
     "KICK"
 };
 
 typedef struct {
-    component *keys[6];
+    component *keys[10];
     int selected_player;
 } keyboard_menu_local;
 
@@ -32,20 +36,28 @@ char** menu_get_key(int player, int keynum) {
     settings_keyboard *k = &settings_get()->keys;
     switch(player) {
         case 1: switch(keynum) {
-            case 0: return &k->key1_up;
-            case 1: return &k->key1_down;
-            case 2: return &k->key1_left;
-            case 3: return &k->key1_right;
-            case 4: return &k->key1_punch;
-            case 5: return &k->key1_kick;
+            case 0: return &k->key1_jump_up;
+            case 1: return &k->key1_jump_right;
+            case 2: return &k->key1_walk_right;
+            case 3: return &k->key1_duck_forward;
+            case 4: return &k->key1_duck;
+            case 5: return &k->key1_duck_back;
+            case 6: return &k->key1_walk_back;
+            case 7: return &k->key1_jump_left;
+            case 8: return &k->key1_punch;
+            case 9: return &k->key1_kick;
         }
         case 2: switch(keynum) {
-            case 0: return &k->key2_up;
-            case 1: return &k->key2_down;
-            case 2: return &k->key2_left;
-            case 3: return &k->key2_right;
-            case 4: return &k->key2_punch;
-            case 5: return &k->key2_kick;
+            case 0: return &k->key2_jump_up;
+            case 1: return &k->key2_jump_right;
+            case 2: return &k->key2_walk_right;
+            case 3: return &k->key2_duck_forward;
+            case 4: return &k->key2_duck;
+            case 5: return &k->key2_duck_back;
+            case 6: return &k->key2_walk_back;
+            case 7: return &k->key2_jump_left;
+            case 8: return &k->key2_punch;
+            case 9: return &k->key2_kick;
         }
     }
     return NULL;
@@ -55,7 +67,7 @@ void menu_update_keys(component *c) {
     keyboard_menu_local *local = menu_get_userdata(c);
 
     char tmp_buf[32];
-    for(int i = 0; i < 6; i++) {
+    for(int i = 0; i < 10; i++) {
         DEBUG("%d", local->selected_player);
         sprintf(tmp_buf, "%s: %s", keynames[i], *menu_get_key(local->selected_player, i));
         textbutton_set_text(local->keys[i], tmp_buf);
@@ -102,7 +114,7 @@ component* menu_keyboard_create(scene *s, int selected_player) {
     component* menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "CUSTOM INPUT SETUP"));
     menu_attach(menu, filler_create());
-    for(int i = 0; i < 6; i++) {
+    for(int i = 0; i < 10; i++) {
         local->keys[i] = textbutton_create(&tconf, "", COM_ENABLED, menu_keyboard_set_key, (void*)menu_get_key(local->selected_player, i));
         menu_attach(menu, local->keys[i]);
     }
