@@ -1309,7 +1309,7 @@ int arena_create(scene *scene) {
     menu_attach(menu, textslider_create_bind(&tconf, "SOUND", 10, 1, arena_sound_slide, NULL, &setting->sound.sound_vol));
     menu_attach(menu, textslider_create_bind(&tconf, "MUSIC", 10, 1, arena_music_slide, NULL, &setting->sound.music_vol));
 
-    component *speed_slider = textslider_create_bind(&tconf, "SPEED", 10, 1, arena_speed_slide, scene, &setting->gameplay.speed);
+    component *speed_slider = textslider_create_bind(&tconf, "SPEED", 10, 0, arena_speed_slide, scene, &setting->gameplay.speed);
     if(is_netplay(scene)) {
         component_disable(speed_slider, 1);
     }
