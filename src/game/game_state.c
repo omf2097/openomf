@@ -809,6 +809,9 @@ void reconfigure_controller(game_state *gs) {
             reconfigure_controller(gs);
         }
     }
+
+    // Set up second player keyboard to be available in menu
+    _setup_keyboard(gs, 1);
 }
 
 void game_state_init_demo(game_state *gs) {
