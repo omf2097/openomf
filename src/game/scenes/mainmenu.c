@@ -27,29 +27,35 @@ void mainmenu_tick(scene *scene, int paused) {
     guiframe_tick(local->frame);
 }
 
-void mainmenu_input_tick(scene *scene) {
-    mainmenu_local *local = scene_get_userdata(scene);
-    game_player *player1 = game_state_get_player(scene->gs, 0);
-
-    // Poll the controller
-    ctrl_event *p1 = NULL, *i;
-    controller_poll(player1->ctrl, &p1);
-    i = p1;
-    if(i) {
+void mainmenu_process_controller_events(mainmenu_local *local, ctrl_event *p) {
+    if(p) {
         do {
-            if(i->type == EVENT_TYPE_ACTION) {
+            if(p->type == EVENT_TYPE_ACTION) {
                 // Skip repeated keys
-                if(local->prev_key == i->event_data.action) {
+                if(local->prev_key == p->event_data.action) {
                     continue;
                 }
-                local->prev_key = i->event_data.action;
+                local->prev_key = p->event_data.action;
 
                 // Pass on the event
-                guiframe_action(local->frame, i->event_data.action);
+                guiframe_action(local->frame, p->event_data.action);
             }
-        } while((i = i->next));
+        } while((p = p->next));
     }
-    controller_free_chain(p1);
+}
+
+void mainmenu_input_tick(scene *scene) {
+    mainmenu_local *local = scene_get_userdata(scene);
+
+    for(int i = 0; i < 2; i++) {
+        game_player *player = game_state_get_player(scene->gs, i);
+        
+        // Poll the controller
+        ctrl_event *p = NULL;
+        controller_poll(player->ctrl, &p);
+        mainmenu_process_controller_events(local, p);
+        controller_free_chain(p);
+    }
 }
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
