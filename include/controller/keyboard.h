@@ -10,10 +10,14 @@ typedef struct keyboard_keys_t keyboard_keys;
 typedef struct keyboard_t keyboard;
 
 struct keyboard_keys_t {
-    int up;
-    int down;
-    int left;
-    int right;
+    int jump_up;
+    int jump_right;
+    int walk_right;
+    int duck_forward;
+    int duck;
+    int duck_back;
+    int walk_back;
+    int jump_left;
     int punch;
     int kick;
     int escape;
