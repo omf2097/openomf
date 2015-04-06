@@ -51,6 +51,7 @@ component* menu_configuration_create(scene *s) {
     component* menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "CONFIGURATION"));
     menu_attach(menu, filler_create());
+    menu_attach(menu, filler_create());
     menu_attach(menu, textbutton_create(&tconf, "PLAYER 1 INPUT", COM_ENABLED, menu_enter_input_1, s));
     menu_attach(menu, textbutton_create(&tconf, "PLAYER 2 INPUT", COM_ENABLED, menu_enter_input_2, s));
     menu_attach(menu, textbutton_create(&tconf, "VIDEO OPTIONS", COM_ENABLED, menu_enter_video, s));
