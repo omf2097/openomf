@@ -12,13 +12,6 @@ before_install:
  - if test $CC = gcc; then sudo apt-get install -qq gcc-4.9; fi
  - if test $CC = gcc; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20; fi
  - if test $CC = gcc; then sudo update-alternatives --config gcc; fi
- - wget "http://www.cmake.org/files/v3.0/cmake-3.0.0.tar.gz"
- - tar xf "cmake-3.0.0.tar.gz"
- - cd "cmake-3.0.0"
- - ./bootstrap --prefix=/usr/local
- - make
- - sudo make install
- - cd ..
 
 before_script:
 - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SUBMODULES=On -DUSE_OGGVORBIS=On -DUSE_PNG=On -DUSE_TESTS=On .
