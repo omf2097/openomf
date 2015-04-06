@@ -110,14 +110,12 @@ guiframe* menu_keyboard_create(scene *s, int selected_player) {
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = color_create(0, 121, 0, 255);
     
     local->frame = guiframe_create(25, 5, 270, 140);
     component* menu = menu_create(11);
     guiframe_set_root(local->frame, menu);
     guiframe_layout(local->frame);
     menu_attach(menu, label_create(&tconf, "CUSTOM KEYBOARD SETUP"));
-    //menu_attach(menu, filler_create());
     for(int i = 0; i < 10; i++) {
         local->keys[i] = textbutton_create(&tconf, "", COM_ENABLED, menu_keyboard_set_key, (void*)menu_get_key(local->selected_player, i));
         menu_attach(menu, local->keys[i]);

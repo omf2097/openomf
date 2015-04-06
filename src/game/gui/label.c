@@ -9,6 +9,7 @@ typedef struct {
 
 static void label_render(component *c) {
     label *local = widget_get_obj(c);
+    local->tconf.cforeground = color_create(0, 255, 0, 255);
     text_render(&local->tconf, c->x, c->y, c->w, c->h, local->text);
 }
 
