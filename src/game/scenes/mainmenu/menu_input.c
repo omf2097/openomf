@@ -140,7 +140,16 @@ component* menu_input_create(scene *s, int player_id) {
     tconf.cforeground = color_create(0, 121, 0, 255);
 
     component* menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "PICK INPUT DEVICE"));
+    menu_attach(menu, label_create(&tconf, "CHOOSE INPUT"));
+    menu_attach(menu, label_create(&tconf, "DEVICE FOR"));
+    switch (local->selected_player) {
+        case 1:
+            menu_attach(menu, label_create(&tconf, "PLAYER 1"));
+            break;
+        case 2:
+            menu_attach(menu, label_create(&tconf, "PLAYER 2"));
+            break;
+    }
     menu_attach(menu, filler_create());
     menu_attach(menu, textbutton_create(&tconf, "RIGHT KEYBOARD", COM_ENABLED, menu_set_right_keyboard, s));
     menu_attach(menu, textbutton_create(&tconf, "LEFT KEYBOARD", COM_ENABLED, menu_set_left_keyboard, s));
@@ -156,7 +165,6 @@ component* menu_input_create(scene *s, int player_id) {
     }
     menu_attach(menu, joy1);
     menu_attach(menu, joy2);
-    menu_attach(menu, filler_create());
     menu_attach(menu, textbutton_create(&tconf, "DONE", COM_ENABLED, menu_input_done, NULL));
 
     menu_set_userdata(menu, local);
