@@ -88,7 +88,7 @@ void menu_keyboard_done(component *c, void *userdata) {
     } else {
         k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
     }
-    reconfigure_controller(((scene*)userdata)->gs);
+    //reconfigure_controller(((scene*)userdata)->gs);
 }
 
 void menu_keyboard_set_key(component *c, void *userdata) {
@@ -109,7 +109,8 @@ guiframe* menu_keyboard_create(scene *s, int selected_player) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
+    tconf.halign = TEXT_CENTER; 
+    tconf.cforeground = color_create(0, 121, 0, 255);
     
     local->frame = guiframe_create(25, 5, 270, 140);
     component* menu = menu_create(11);
