@@ -22,6 +22,12 @@ static const char *keynames[] = {
     "KICK"
 };
 
+//TODO: This menu is using guiframe instead of component. I consider it as hack.
+//The reasons are that the menu is positioned outside its parent component.
+//Because of this it also needs its own background. Both of these things are
+//handled by special guiframe. The menu is also added by special function
+//menu_link_menu instead of standart menu_set_submenu.
+
 typedef struct {
     guiframe *frame;
     component *keys[10];
