@@ -193,7 +193,7 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
                 // Horizontal alignment for this line
                 switch(settings->halign) {
                     case TEXT_CENTER:
-                        mx += ceil((xspace - line_pw) / 2.0f);
+                        mx += floor((xspace - line_pw) / 2.0f);
                         break;
                     case TEXT_RIGHT:
                         mx += (xspace - line_pw);
