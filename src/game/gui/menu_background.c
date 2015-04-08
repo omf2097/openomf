@@ -15,10 +15,10 @@ void menu_background_create(surface *s, int w, int h) {
     image img;
     image_create(&img, w, h);
     image_clear(&img, COLOR_MENU_BG);
-    for(int x = 7; x < w; x += 8) {
+    for(int x = 5; x < w; x += 8) {
         image_line(&img, x, 0, x, h-1, COLOR_MENU_LINE);
     }
-    for(int y = 7; y < h; y += 8) {
+    for(int y = 5; y < h; y += 8) {
         image_line(&img, 0, y, w-1, y, COLOR_MENU_LINE);
     }
     image_rect(&img, 0, 0, w-1, h-1, COLOR_MENU_BORDER);
