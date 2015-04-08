@@ -3,6 +3,7 @@
 
 #include "video/surface.h"
 #include "game/gui/component.h"
+#include "game/gui/frame.h"
 
 typedef void (*menu_tick_cb)(component *c);
 typedef void (*menu_free_cb)(component *c);
@@ -31,6 +32,7 @@ component* menu_selected(const component *menu);
 int menu_is_finished(const component *menu);
 
 void menu_set_submenu(component *menu, component *submenu);
+void menu_link_menu(component *menu, guiframe *linked_menu);
 component* menu_get_submenu(const component *menu);
 void menu_set_submenu_done_cb(component *menu, menu_submenu_done_cb done_cb);
 

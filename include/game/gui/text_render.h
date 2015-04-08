@@ -41,6 +41,8 @@ enum {
     TEXT_SHADOW_ALL = 0xF
 };
 
+typedef color (*text_settings_dynamic_foreground_cb)(int modifier);
+
 typedef struct {
     color cforeground;
     text_valign valign;
@@ -53,6 +55,8 @@ typedef struct {
     uint8_t lspacing;
     uint8_t opacity;
     bool wrap;
+    int dynamic_cmodifier;
+    text_settings_dynamic_foreground_cb dynamic_cforeground;
 } text_settings;
 
 // New text rendering functions

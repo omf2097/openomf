@@ -32,28 +32,33 @@ void text_render_char(const text_settings *settings, int x, int y, char ch) {
         return;
     }
 
+    color c = settings->cforeground; 
+    if (settings->dynamic_cforeground) {
+        c = settings->dynamic_cforeground(settings->dynamic_cmodifier);
+    }
+
     // Handle shadows if necessary
     float of = settings->opacity / 255.0f;
     if(settings->shadow & TEXT_SHADOW_RIGHT)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x+1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, settings->cforeground
+            *sur, x+1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, c
         );
     if(settings->shadow & TEXT_SHADOW_LEFT)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x-1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, settings->cforeground
+            *sur, x-1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, c
         );
     if(settings->shadow & TEXT_SHADOW_BOTTOM)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x, y+1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, settings->cforeground
+            *sur, x, y+1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, c
         );
     if(settings->shadow & TEXT_SHADOW_TOP)
         video_render_sprite_flip_scale_opacity_tint(
-            *sur, x, y-1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, settings->cforeground
+            *sur, x, y-1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, of * 80, c
         );
 
     // Handle the font face itself
     video_render_sprite_flip_scale_opacity_tint(
-        *sur, x, y, BLEND_ALPHA, 0, FLIP_NONE, 1, settings->opacity, settings->cforeground);
+        *sur, x, y, BLEND_ALPHA, 0, FLIP_NONE, 1, settings->opacity, c);
 }
 
 int text_find_max_strlen(int maxchars, const char *ptr) {
@@ -193,7 +198,7 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
                 // Horizontal alignment for this line
                 switch(settings->halign) {
                     case TEXT_CENTER:
-                        mx += ceil((xspace - line_pw) / 2.0f);
+                        mx += floor((xspace - line_pw) / 2.0f);
                         break;
                     case TEXT_RIGHT:
                         mx += (xspace - line_pw);

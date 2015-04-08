@@ -815,14 +815,20 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
     arena_local *local = scene_get_userdata(scene);
     if (i) {
         do {
-            if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC && player == game_state_get_player(scene->gs, 0)) {
+            if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC && 
+                    player == game_state_get_player(scene->gs, 0)) {
                 // toggle menu
                 local->menu_visible = !local->menu_visible;
                 game_state_set_paused(scene->gs, local->menu_visible);
                 need_sync = 1;
                 controller_set_repeat(game_player_get_ctrl(player), !local->menu_visible);
+                controller_set_repeat(game_player_get_ctrl(game_state_get_player(scene->gs, 1)), !local->menu_visible);
                 DEBUG("local menu %d, controller repeat %d", local->menu_visible, game_player_get_ctrl(player)->repeat);
-            } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && player == game_state_get_player(scene->gs, 0) && !is_demoplay(scene)) {
+            } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && 
+                    (player->ctrl->type == CTRL_TYPE_KEYBOARD || player->ctrl->type == CTRL_TYPE_GAMEPAD) && 
+                    i->event_data.action != ACT_ESC && /* take AST_ESC only from player 1 */
+                    !is_demoplay(scene)
+              ) {
                 DEBUG("menu event %d", i->event_data.action);
                 // menu events
                 guiframe_action(local->game_menu, i->event_data.action);
@@ -831,10 +837,14 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                     do {
                         object_act(game_player_get_har(player), i->event_data.action);
                         write_rec_move(scene, player, i->event_data.action);
-                    } while ((i = i->next) && i->type == EVENT_TYPE_ACTION);
+                    // Rewritten this way, we possible skipped some events before.
+                    // We check if there is a next event, then check if it is EVENT_TYPE_ACTION
+                    // and only then we move the event iterator.
+                    // If conditions fail then we move to the next element at the end of the loop as usual.
+                    // This change also simplified the loop condition, we now don't need to check i for NULL.
+                    } while (i->next && i->next->type == EVENT_TYPE_ACTION && (i = i->next));
                     // always trigger a synchronization, since if the client's move did not actually happen, we want to rewind them ASAP
                     need_sync = 1;
-                    // XXX do we need to continue here, since we screwed with 'i'?
                 } else {
                     need_sync += object_act(game_player_get_har(player), i->event_data.action);
                     write_rec_move(scene, player, i->event_data.action);
@@ -851,7 +861,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 }
                 return 0;
             }
-        } while(i && (i = i->next));
+        } while((i = i->next));
     }
     return need_sync;
 }
@@ -1303,13 +1313,14 @@ int arena_create(scene *scene) {
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "OPENOMF"));
     menu_attach(menu, filler_create());
+    menu_attach(menu, filler_create());
     component *return_button = textbutton_create(&tconf, "RETURN TO GAME", COM_ENABLED, game_menu_return, scene);
     menu_attach(menu, return_button);
 
     menu_attach(menu, textslider_create_bind(&tconf, "SOUND", 10, 1, arena_sound_slide, NULL, &setting->sound.sound_vol));
     menu_attach(menu, textslider_create_bind(&tconf, "MUSIC", 10, 1, arena_music_slide, NULL, &setting->sound.music_vol));
 
-    component *speed_slider = textslider_create_bind(&tconf, "SPEED", 10, 1, arena_speed_slide, scene, &setting->gameplay.speed);
+    component *speed_slider = textslider_create_bind(&tconf, "SPEED", 10, 0, arena_speed_slide, scene, &setting->gameplay.speed);
     if(is_netplay(scene)) {
         component_disable(speed_slider, 1);
     }

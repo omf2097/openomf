@@ -57,10 +57,14 @@ void menu_listen_tick(component *c) {
             // Player 1 controller -- Keyboard
             settings_keyboard *k = &settings_get()->keys;
             keys = malloc(sizeof(keyboard_keys));
-            keys->up = SDL_GetScancodeFromName(k->key1_up);
-            keys->down = SDL_GetScancodeFromName(k->key1_down);
-            keys->left = SDL_GetScancodeFromName(k->key1_left);
-            keys->right = SDL_GetScancodeFromName(k->key1_right);
+            keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
+            keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
+            keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
+            keys->duck_forward = SDL_GetScancodeFromName(k->key1_duck_forward);
+            keys->duck = SDL_GetScancodeFromName(k->key1_duck);
+            keys->duck_back = SDL_GetScancodeFromName(k->key1_duck_back);
+            keys->walk_back = SDL_GetScancodeFromName(k->key1_walk_back);
+            keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
             keys->punch = SDL_GetScancodeFromName(k->key1_punch);
             keys->kick = SDL_GetScancodeFromName(k->key1_kick);
             keys->escape = SDL_GetScancodeFromName(k->key1_escape);

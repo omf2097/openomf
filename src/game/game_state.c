@@ -735,18 +735,26 @@ void _setup_keyboard(game_state *gs, int player_id) {
     // Set up keyboards
     keyboard_keys *keys = malloc(sizeof(keyboard_keys));
     if(player_id == 0) {
-        keys->up = SDL_GetScancodeFromName(k->key1_up);
-        keys->down = SDL_GetScancodeFromName(k->key1_down);
-        keys->left = SDL_GetScancodeFromName(k->key1_left);
-        keys->right = SDL_GetScancodeFromName(k->key1_right);
+        keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
+        keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
+        keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
+        keys->duck_forward = SDL_GetScancodeFromName(k->key1_duck_forward);
+        keys->duck = SDL_GetScancodeFromName(k->key1_duck);
+        keys->duck_back = SDL_GetScancodeFromName(k->key1_duck_back);
+        keys->walk_back = SDL_GetScancodeFromName(k->key1_walk_back);
+        keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
         keys->punch = SDL_GetScancodeFromName(k->key1_punch);
         keys->kick = SDL_GetScancodeFromName(k->key1_kick);
         keys->escape = SDL_GetScancodeFromName(k->key1_escape);
     } else {
-        keys->up = SDL_GetScancodeFromName(k->key2_up);
-        keys->down = SDL_GetScancodeFromName(k->key2_down);
-        keys->left = SDL_GetScancodeFromName(k->key2_left);
-        keys->right = SDL_GetScancodeFromName(k->key2_right);
+        keys->jump_up = SDL_GetScancodeFromName(k->key2_jump_up);
+        keys->jump_right = SDL_GetScancodeFromName(k->key2_jump_right);
+        keys->walk_right = SDL_GetScancodeFromName(k->key2_walk_right);
+        keys->duck_forward = SDL_GetScancodeFromName(k->key2_duck_forward);
+        keys->duck = SDL_GetScancodeFromName(k->key2_duck);
+        keys->duck_back = SDL_GetScancodeFromName(k->key2_duck_back);
+        keys->walk_back = SDL_GetScancodeFromName(k->key2_walk_back);
+        keys->jump_left = SDL_GetScancodeFromName(k->key2_jump_left);
         keys->punch = SDL_GetScancodeFromName(k->key2_punch);
         keys->kick = SDL_GetScancodeFromName(k->key2_kick);
         keys->escape = SDL_GetScancodeFromName(k->key2_escape);
@@ -801,6 +809,9 @@ void reconfigure_controller(game_state *gs) {
             reconfigure_controller(gs);
         }
     }
+
+    // Set up second player keyboard to be available in menu
+    _setup_keyboard(gs, 1);
 }
 
 void game_state_init_demo(game_state *gs) {

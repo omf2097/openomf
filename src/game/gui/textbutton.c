@@ -55,17 +55,26 @@ void textbutton_set_text(component *c, const char* text) {
     tb->text = strdup(text);
 }
 
+static color textbutton_dynamic_foreground(int modifier) {
+    if (modifier == -1)
+        return color_create(121, 121, 121, 255);
+    if (modifier == -2)
+        return color_create(0, 121, 0, 255);
+    return color_create(80 - modifier, 220 - modifier*2, 80 - modifier, 255);
+}
+
 static void textbutton_render(component *c) {
     textbutton *tb = widget_get_obj(c);
 
     // Select color and render
     if(component_is_selected(c)) {
-        int t = tb->ticks / 2;
-        tb->tconf.cforeground = color_create(80 - t, 220 - t*2, 80 - t, 255);
+        if (tb->tconf.dynamic_cforeground) {
+          tb->tconf.dynamic_cmodifier = tb->ticks / 2;
+        }
     } else if (component_is_disabled(c)) {
-        tb->tconf.cforeground = color_create(121, 121, 121, 255);
+        tb->tconf.dynamic_cmodifier = -1;
     } else {
-        tb->tconf.cforeground = color_create(0, 121, 0, 255);
+        tb->tconf.dynamic_cmodifier = -2;
     }
     text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->text);
 
@@ -125,6 +134,10 @@ component* textbutton_create(const text_settings *tconf, const char *text, int d
     tb->click_cb = cb;
     tb->userdata = userdata;
     widget_set_obj(c, tb);
+
+    if (!tb->tconf.dynamic_cforeground) {
+      tb->tconf.dynamic_cforeground = textbutton_dynamic_foreground;
+    }
 
     widget_set_render_cb(c, textbutton_render);
     widget_set_action_cb(c, textbutton_action);
