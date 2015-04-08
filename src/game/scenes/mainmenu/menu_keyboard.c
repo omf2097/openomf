@@ -88,7 +88,7 @@ void menu_keyboard_done(component *c, void *userdata) {
     } else {
         k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
     }
-    reconfigure_controller(((scene*)userdata)->gs);
+    //reconfigure_controller(((scene*)userdata)->gs);
 }
 
 void menu_keyboard_set_key(component *c, void *userdata) {
