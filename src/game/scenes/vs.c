@@ -302,14 +302,11 @@ int vs_create(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    char pilot1[32];
-    char pilot2[32];
-    snprintf(pilot1, 32, "%s", lang_get(20+player1->pilot_id));
-    snprintf(pilot2, 32, "%s", lang_get(20+player2->pilot_id));
-    pilot1[strlen(pilot1)-1] = 0;
-    pilot2[strlen(pilot2)-1] = 0;
-
-    snprintf(local->vs_str, 128, "%s VS. %s", pilot1, pilot2);
+    const char *pilot1 = lang_get(20+player1->pilot_id);
+    const char *pilot2 = lang_get(20+player2->pilot_id);
+    snprintf(local->vs_str, 128, "%*.*s VS. %*.*s",
+        (int)strlen(pilot1)-1, (int)strlen(pilot1)-1, pilot1,
+        (int)strlen(pilot2)-1, (int)strlen(pilot2)-1, pilot2);
 
     animation *ani;
 
