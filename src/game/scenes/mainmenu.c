@@ -12,7 +12,7 @@
 
 typedef struct mainmenu_local_t {
     guiframe *frame;
-    int prev_key;
+    int prev_key[2];
 } mainmenu_local;
 
 void mainmenu_free(scene *scene) {
@@ -29,27 +29,30 @@ void mainmenu_tick(scene *scene, int paused) {
 
 void mainmenu_input_tick(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
-    game_player *player1 = game_state_get_player(scene->gs, 0);
 
-    // Poll the controller
-    ctrl_event *p1 = NULL, *i;
-    controller_poll(player1->ctrl, &p1);
-    i = p1;
-    if(i) {
-        do {
-            if(i->type == EVENT_TYPE_ACTION) {
-                // Skip repeated keys
-                if(local->prev_key == i->event_data.action) {
-                    continue;
+    for (int i = 0; i < 2; i++) {
+        game_player *player = game_state_get_player(scene->gs, i);
+        
+        // Poll the controller
+        ctrl_event *p = NULL;
+        controller_poll(player->ctrl, &p);
+        if (p) {
+            do {
+                if (p->type == EVENT_TYPE_ACTION) {
+                    // Skip repeated keys
+                    if (local->prev_key[i] == p->event_data.action) {
+                        continue;
+                    }
+                    
+                    local->prev_key[i] = p->event_data.action;
+
+                    // Pass on the event
+                    guiframe_action(local->frame, p->event_data.action);
                 }
-                local->prev_key = i->event_data.action;
-
-                // Pass on the event
-                guiframe_action(local->frame, i->event_data.action);
-            }
-        } while((i = i->next));
+            } while((p = p->next));
+        }
+        controller_free_chain(p);
     }
-    controller_free_chain(p1);
 }
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
@@ -130,7 +133,7 @@ int mainmenu_create(scene *scene) {
     scene->gs->net_mode = NET_MODE_NONE;
 
     // prev_key is used to prevent multiple clicks while key is down
-    local->prev_key = ACT_PUNCH;
+    local->prev_key[0] = local->prev_key[1] = ACT_PUNCH;
 
     // Music and renderer
     music_play(PSM_MENU);

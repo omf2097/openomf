@@ -18,18 +18,29 @@ int is_key_bound(int key) {
     #define CHECK_KEY(keyname) \
         if(strcmp(keyname, compare) == 0) { DEBUG("Key %s is already bound.", compare); return 1; }
 
-    CHECK_KEY(k->key1_up)
-    CHECK_KEY(k->key1_down)
-    CHECK_KEY(k->key1_left)
-    CHECK_KEY(k->key1_right)
+    CHECK_KEY(k->key1_jump_up)
+    CHECK_KEY(k->key1_jump_right)
+    CHECK_KEY(k->key1_walk_right)
+    CHECK_KEY(k->key1_duck_forward)
+    CHECK_KEY(k->key1_duck)
+    CHECK_KEY(k->key1_duck_back)
+    CHECK_KEY(k->key1_walk_back)
+    CHECK_KEY(k->key1_jump_left)
     CHECK_KEY(k->key1_punch)
     CHECK_KEY(k->key1_kick)
-    CHECK_KEY(k->key2_up)
-    CHECK_KEY(k->key2_down)
-    CHECK_KEY(k->key2_left)
-    CHECK_KEY(k->key2_right)
+    CHECK_KEY(k->key2_jump_up)
+    CHECK_KEY(k->key2_jump_right)
+    CHECK_KEY(k->key2_walk_right)
+    CHECK_KEY(k->key2_duck_forward)
+    CHECK_KEY(k->key2_duck)
+    CHECK_KEY(k->key2_duck_back)
+    CHECK_KEY(k->key2_walk_back)
+    CHECK_KEY(k->key2_jump_left)
     CHECK_KEY(k->key2_punch)
     CHECK_KEY(k->key2_kick)
+    
+    CHECK_KEY(k->key1_escape)
+    CHECK_KEY(k->key2_escape)
 
     return 0;
 }

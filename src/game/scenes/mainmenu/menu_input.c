@@ -19,22 +19,53 @@ void menu_set_right_keyboard(component *c, void *userdata) {
     menu_input_local *local = menu_get_userdata(c->parent);
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
-        KEY_RESET(k->key1_up, SDL_SCANCODE_UP);
-        KEY_RESET(k->key1_down, SDL_SCANCODE_DOWN);
-        KEY_RESET(k->key1_left, SDL_SCANCODE_LEFT);
-        KEY_RESET(k->key1_right, SDL_SCANCODE_RIGHT);
+        KEY_RESET(k->key1_jump_up, SDL_SCANCODE_UP);
+        KEY_RESET(k->key1_jump_right, SDL_SCANCODE_PAGEUP);
+        KEY_RESET(k->key1_walk_right, SDL_SCANCODE_RIGHT);
+        KEY_RESET(k->key1_duck_forward, SDL_SCANCODE_PAGEDOWN);
+        KEY_RESET(k->key1_duck, SDL_SCANCODE_DOWN);
+        KEY_RESET(k->key1_duck_back, SDL_SCANCODE_END);
+        KEY_RESET(k->key1_walk_back, SDL_SCANCODE_LEFT);
+        KEY_RESET(k->key1_jump_left, SDL_SCANCODE_HOME);
         KEY_RESET(k->key1_punch, SDL_SCANCODE_RETURN);
         KEY_RESET(k->key1_kick, SDL_SCANCODE_RSHIFT);
         k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
+        KEY_RESET(k->key2_jump_up, SDL_SCANCODE_W);
+        KEY_RESET(k->key2_jump_right, SDL_SCANCODE_E);
+        KEY_RESET(k->key2_walk_right, SDL_SCANCODE_D);
+        KEY_RESET(k->key2_duck_forward, SDL_SCANCODE_C);
+        KEY_RESET(k->key2_duck, SDL_SCANCODE_X);
+        KEY_RESET(k->key2_duck_back, SDL_SCANCODE_Z);
+        KEY_RESET(k->key2_walk_back, SDL_SCANCODE_A);
+        KEY_RESET(k->key2_jump_left, SDL_SCANCODE_Q);
+        KEY_RESET(k->key2_punch, SDL_SCANCODE_LSHIFT);
+        KEY_RESET(k->key2_kick, SDL_SCANCODE_LCTRL);
+        k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
         reconfigure_controller(((scene*)userdata)->gs);
     } else if(local->selected_player == 2) {
-        KEY_RESET(k->key2_up, SDL_SCANCODE_UP);
-        KEY_RESET(k->key2_down, SDL_SCANCODE_DOWN);
-        KEY_RESET(k->key2_left, SDL_SCANCODE_LEFT);
-        KEY_RESET(k->key2_right, SDL_SCANCODE_RIGHT);
+        KEY_RESET(k->key2_jump_up, SDL_SCANCODE_UP);
+        KEY_RESET(k->key2_jump_right, SDL_SCANCODE_PAGEUP);
+        KEY_RESET(k->key2_walk_right, SDL_SCANCODE_RIGHT);
+        KEY_RESET(k->key2_duck_forward, SDL_SCANCODE_PAGEDOWN);
+        KEY_RESET(k->key2_duck, SDL_SCANCODE_DOWN);
+        KEY_RESET(k->key2_duck_back, SDL_SCANCODE_END);
+        KEY_RESET(k->key2_walk_back, SDL_SCANCODE_LEFT);
+        KEY_RESET(k->key2_jump_left, SDL_SCANCODE_HOME);
         KEY_RESET(k->key2_punch, SDL_SCANCODE_RETURN);
         KEY_RESET(k->key2_kick, SDL_SCANCODE_RSHIFT);
         k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
+        KEY_RESET(k->key1_jump_up, SDL_SCANCODE_W);
+        KEY_RESET(k->key1_jump_right, SDL_SCANCODE_E);
+        KEY_RESET(k->key1_walk_right, SDL_SCANCODE_D);
+        KEY_RESET(k->key1_duck_forward, SDL_SCANCODE_C);
+        KEY_RESET(k->key1_duck, SDL_SCANCODE_X);
+        KEY_RESET(k->key1_duck_back, SDL_SCANCODE_Z);
+        KEY_RESET(k->key1_walk_back, SDL_SCANCODE_A);
+        KEY_RESET(k->key1_jump_left, SDL_SCANCODE_Q);
+        KEY_RESET(k->key1_punch, SDL_SCANCODE_LSHIFT);
+        KEY_RESET(k->key1_kick, SDL_SCANCODE_LCTRL);
+        k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
+        reconfigure_controller(((scene*)userdata)->gs);
     }
 }
 
@@ -42,22 +73,53 @@ void menu_set_left_keyboard(component *c, void *userdata) {
     menu_input_local *local = menu_get_userdata(c->parent);
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
-        KEY_RESET(k->key1_up, SDL_SCANCODE_W);
-        KEY_RESET(k->key1_down, SDL_SCANCODE_S);
-        KEY_RESET(k->key1_left, SDL_SCANCODE_A);
-        KEY_RESET(k->key1_right, SDL_SCANCODE_D);
+        KEY_RESET(k->key1_jump_up, SDL_SCANCODE_W);
+        KEY_RESET(k->key1_jump_right, SDL_SCANCODE_E);
+        KEY_RESET(k->key1_walk_right, SDL_SCANCODE_D);
+        KEY_RESET(k->key1_duck_forward, SDL_SCANCODE_C);
+        KEY_RESET(k->key1_duck, SDL_SCANCODE_X);
+        KEY_RESET(k->key1_duck_back, SDL_SCANCODE_Z);
+        KEY_RESET(k->key1_walk_back, SDL_SCANCODE_A);
+        KEY_RESET(k->key1_jump_left, SDL_SCANCODE_Q);
         KEY_RESET(k->key1_punch, SDL_SCANCODE_LSHIFT);
         KEY_RESET(k->key1_kick, SDL_SCANCODE_LCTRL);
         k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
+        KEY_RESET(k->key2_jump_up, SDL_SCANCODE_UP);
+        KEY_RESET(k->key2_jump_right, SDL_SCANCODE_PAGEUP);
+        KEY_RESET(k->key2_walk_right, SDL_SCANCODE_RIGHT);
+        KEY_RESET(k->key2_duck_forward, SDL_SCANCODE_PAGEDOWN);
+        KEY_RESET(k->key2_duck, SDL_SCANCODE_DOWN);
+        KEY_RESET(k->key2_duck_back, SDL_SCANCODE_END);
+        KEY_RESET(k->key2_walk_back, SDL_SCANCODE_LEFT);
+        KEY_RESET(k->key2_jump_left, SDL_SCANCODE_HOME);
+        KEY_RESET(k->key2_punch, SDL_SCANCODE_RETURN);
+        KEY_RESET(k->key2_kick, SDL_SCANCODE_RSHIFT);
+        k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
         reconfigure_controller(((scene*)userdata)->gs);
     } else if(local->selected_player == 2) {
-        KEY_RESET(k->key2_up, SDL_SCANCODE_W);
-        KEY_RESET(k->key2_down, SDL_SCANCODE_S);
-        KEY_RESET(k->key2_left, SDL_SCANCODE_A);
-        KEY_RESET(k->key2_right, SDL_SCANCODE_D);
+        KEY_RESET(k->key2_jump_up, SDL_SCANCODE_W);
+        KEY_RESET(k->key2_jump_right, SDL_SCANCODE_E);
+        KEY_RESET(k->key2_walk_right, SDL_SCANCODE_D);
+        KEY_RESET(k->key2_duck_forward, SDL_SCANCODE_C);
+        KEY_RESET(k->key2_duck, SDL_SCANCODE_X);
+        KEY_RESET(k->key2_duck_back, SDL_SCANCODE_Z);
+        KEY_RESET(k->key2_walk_back, SDL_SCANCODE_A);
+        KEY_RESET(k->key2_jump_left, SDL_SCANCODE_Q);
         KEY_RESET(k->key2_punch, SDL_SCANCODE_LSHIFT);
         KEY_RESET(k->key2_kick, SDL_SCANCODE_LCTRL);
         k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
+        KEY_RESET(k->key1_jump_up, SDL_SCANCODE_UP);
+        KEY_RESET(k->key1_jump_right, SDL_SCANCODE_PAGEUP);
+        KEY_RESET(k->key1_walk_right, SDL_SCANCODE_RIGHT);
+        KEY_RESET(k->key1_duck_forward, SDL_SCANCODE_PAGEDOWN);
+        KEY_RESET(k->key1_duck, SDL_SCANCODE_DOWN);
+        KEY_RESET(k->key1_duck_back, SDL_SCANCODE_END);
+        KEY_RESET(k->key1_walk_back, SDL_SCANCODE_LEFT);
+        KEY_RESET(k->key1_jump_left, SDL_SCANCODE_HOME);
+        KEY_RESET(k->key1_punch, SDL_SCANCODE_RETURN);
+        KEY_RESET(k->key1_kick, SDL_SCANCODE_RSHIFT);
+        k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
+        reconfigure_controller(((scene*)userdata)->gs);
     }
 }
 
@@ -98,7 +160,7 @@ void menu_set_joystick2(component *c, void *userdata) {
 void menu_set_custom_keyboard(component *c, void *u) {
     scene *s = u;
     menu_input_local *local = menu_get_userdata(c->parent);
-    menu_set_submenu(c->parent, menu_keyboard_create(s, local->selected_player));
+    menu_link_menu(c->parent, menu_keyboard_create(s, local->selected_player));
 }
 
 void menu_input_done(component *c, void *u) {
@@ -124,7 +186,16 @@ component* menu_input_create(scene *s, int player_id) {
     tconf.cforeground = color_create(0, 121, 0, 255);
 
     component* menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "PICK INPUT DEVICE"));
+    menu_attach(menu, label_create(&tconf, "CHOOSE INPUT"));
+    menu_attach(menu, label_create(&tconf, "DEVICE FOR"));
+    switch (local->selected_player) {
+        case 1:
+            menu_attach(menu, label_create(&tconf, "PLAYER 1"));
+            break;
+        case 2:
+            menu_attach(menu, label_create(&tconf, "PLAYER 2"));
+            break;
+    }
     menu_attach(menu, filler_create());
     menu_attach(menu, textbutton_create(&tconf, "RIGHT KEYBOARD", COM_ENABLED, menu_set_right_keyboard, s));
     menu_attach(menu, textbutton_create(&tconf, "LEFT KEYBOARD", COM_ENABLED, menu_set_left_keyboard, s));
@@ -140,7 +211,6 @@ component* menu_input_create(scene *s, int player_id) {
     }
     menu_attach(menu, joy1);
     menu_attach(menu, joy2);
-    menu_attach(menu, filler_create());
     menu_attach(menu, textbutton_create(&tconf, "DONE", COM_ENABLED, menu_input_done, NULL));
 
     menu_set_userdata(menu, local);
