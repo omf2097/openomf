@@ -5,7 +5,7 @@ libShadowDive
 
 Overview
 --------
-libShadowDive is a library for reading and writing One Must Fall 2097 datafiles. 
+libShadowDive is a library for reading and writing One Must Fall 2097 datafiles. Note! Because we don't yet know everything about OMF2097 file formats and therefore the library keeps changing all the time, libShadowDive is meant to be statically linked to OpenOMF and Omf2097-tools projects by pulling a certain version of it as a git submodule. Dynamic linking could be made to work, but there is not much point to it currently.
 
 Features:
 * HAR Data files (*.AF)
@@ -52,6 +52,8 @@ Documentation
 -------------
 
 Documentation can be found at [https://katajakasa.fi/projects/openomf/sd_doc/](https://katajakasa.fi/projects/openomf/sd_doc/).
+
+You can also generate the documentation yourself by running doc/Doxyfile through doxygen (```doxygen Doxyfile```).
 
 License
 -------
