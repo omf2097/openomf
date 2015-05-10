@@ -200,6 +200,7 @@ int main(int argc, char *argv[]) {
         fprintf(f, "<tr><td>Tournament name</td><td>%s</td></tr>", enemy->trn_name);
         fprintf(f, "<tr><td>Tournament description</td><td>%s</td></tr>", enemy->trn_desc);
         fprintf(f, "<tr><td>Tournament image</td><td>%s</td></tr>", enemy->trn_image);
+        fprintf(f, "<tr><td>Photo ID</td><td>%d</td></tr>", enemy->photo_id);
         fprintf(f, "</table>");
 
         // Print pilot palette
