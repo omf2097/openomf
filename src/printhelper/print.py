@@ -19,6 +19,7 @@ if not os.path.isdir(output_path):
 
 bk_files = []
 af_files = []
+trn_files = []
 
 print("Traversing path %s" % (input_path,))
 for root, dirs, files in os.walk(input_path):
@@ -27,7 +28,9 @@ for root, dirs, files in os.walk(input_path):
             bk_files.append(os.path.join(input_path,file))
         if file.endswith(".AF"):
             af_files.append(os.path.join(input_path,file))
-print("Found %d AF files and %d BK files." % (len(bk_files), len(af_files),))
+        if file.endswith(".TRN"):
+            trn_files.append(os.path.join(input_path,file))
+print("Found %d AF files, %d BK files, %d TRN files" % (len(bk_files), len(af_files), len(trn_files),))
 
 palette_bk = None
 for mfile in bk_files:
@@ -44,6 +47,7 @@ if len(bk_files) == 0 and len(af_files) == 0:
 
 output_af_files = []
 output_bk_files = []
+output_trn_files = []
 
 for mfile in bk_files:
     filebase = os.path.basename(mfile)
@@ -75,6 +79,21 @@ for mfile in af_files:
 
     print("OK")
 
+for mfile in trn_files:
+    filebase = os.path.basename(mfile)
+    output_file = os.path.splitext(filebase)[0] + "_trn"
+    output_file = output_file.lower()
+    output_trn_files.append((output_file, filebase,))
+    print("Parsing %s to %s ... " % (filebase,output_file+".html",), end='')
+
+    try:
+        subprocess.call(["trnhtmlprinter", "-f", mfile, "-o", output_path, "-n", output_file])
+    except:
+        print("Error!")
+        exit(1)
+
+    print("OK")
+
 print("Creating index")
 f = open(os.path.join(output_path, "index.html"), 'wb')
 f.write("<html><head><title>OMF:2097 Data files</title></head><body><h1>OMF:2097 Data files</h1>")
@@ -86,6 +105,11 @@ f.write("</ul>")
 
 f.write("<h2>Scenes:</h2><ul>")
 for mfile in output_bk_files:
+    f.write('<li><a href="%s.html">%s</a></li>' % mfile)
+f.write("</ul>")
+
+f.write("<h2>Tournaments:</h2><ul>")
+for mfile in output_trn_files:
     f.write('<li><a href="%s.html">%s</a></li>' % mfile)
 f.write("</ul>")
 
