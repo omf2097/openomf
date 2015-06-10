@@ -6,9 +6,24 @@
 
 #include <argtable2.h>
 #include <shadowdive/shadowdive.h>
+#include "../shared/pilot_html.h"
 #include <stdint.h>
 #include <string.h>
 #include <png.h>
+
+static const char *har_list[] = {
+    "Jaguar",
+    "Shadow",
+    "Thorn",
+    "Pyros",
+    "Electra",
+    "Katana",
+    "Shredder",
+    "Flail",
+    "Gargoyle",
+    "Chronos",
+    "Nova"
+};
 
 const char *header = "<!DOCTYPE html>\
 <html>\
@@ -186,22 +201,9 @@ int main(int argc, char *argv[]) {
     fprintf(f, "<h2>Pilots</h2><div id=\"pilots\">");
     for(int m = 0; m < trn.enemy_count; m++) {
         sd_pilot *enemy = trn.enemies[m];
-        fprintf(f, "<h3>Pilot %d %s</h3><div class=\"pilot\">", m, enemy->name);
 
-        // Pilot information
-        fprintf(f, "<h4>Information</h4>");
-        fprintf(f, "<table>");
-        fprintf(f, "<tr><th>Key</th><th>Value</th></tr>");
-        fprintf(f, "<tr><td>Unknown A</td><td>%d</td></tr>", enemy->unknown_a);
-        fprintf(f, "<tr><td>Wins</td><td>%d</td></tr>", enemy->wins);
-        fprintf(f, "<tr><td>Losses</td><td>%d</td></tr>", enemy->losses);
-        fprintf(f, "<tr><td>Rank</td><td>%d</td></tr>", enemy->rank);
-        fprintf(f, "<tr><td>Har ID</td><td>%d</td></tr>", enemy->har_id);
-        fprintf(f, "<tr><td>Tournament name</td><td>%s</td></tr>", enemy->trn_name);
-        fprintf(f, "<tr><td>Tournament description</td><td>%s</td></tr>", enemy->trn_desc);
-        fprintf(f, "<tr><td>Tournament image</td><td>%s</td></tr>", enemy->trn_image);
-        fprintf(f, "<tr><td>Photo ID</td><td>%d</td></tr>", enemy->photo_id);
-        fprintf(f, "</table>");
+        fprintf(f, "<h3>Pilot %d %s</h3><div class=\"pilot\">", m, enemy->name);
+        print_pilot_info_html(f, enemy);
 
         // Print pilot palette
         fprintf(f, "<h4>Palette</h4>");
@@ -230,9 +232,11 @@ int main(int argc, char *argv[]) {
         sd_tournament_locale *locale = trn.locales[m];
         if(locale == NULL)
             continue;
+        if(locale->end_texts[0][0] == NULL || locale->end_texts[0][0][0] == 0)
+            continue;
 
         // Title & index
-        fprintf(f, "<h3>Locale %d %s</h3><div class=\"locale\">", m, locale->title);
+        fprintf(f, "<h3>Locale %d: title = %s</h3><div class=\"locale\">", m, locale->title);
 
         // Description text
         fprintf(f, "<h4>Description</h4>");
@@ -241,13 +245,13 @@ int main(int argc, char *argv[]) {
         // End texts
         fprintf(f, "<h4>End texts</h4>");
         fprintf(f, "<table>");
-        fprintf(f, "<tr><th>HAR</th><th>Page</th><th>Text</th></tr>");
+        fprintf(f, "<tr><th>HAR ID</th><th>HAR Name</th><th>Page</th><th>Text</th></tr>");
         for(int k = 0; k < 11; k++) {
             for(int g = 0; g < 10; g++) {
                 if(locale->end_texts[k][g] != NULL && locale->end_texts[k][g][0] != 0) {
                     fprintf(f,
-                        "<tr><td>%d</td><td>%d</td><td>%s</td></tr>",
-                        k, g, locale->end_texts[k][g]);
+                        "<tr><td>%d</td><td>%s</td><td>%d</td><td>%s</td></tr>",
+                        k, har_list[k], g, locale->end_texts[k][g]);
                 }
             }
         }

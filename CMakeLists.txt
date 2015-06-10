@@ -35,7 +35,7 @@ add_executable(bktool src/bktool/main.c src/shared/animation_misc.c src/shared/c
 add_executable(aftool src/aftool/main.c src/shared/animation_misc.c src/shared/conversions.c)
 add_executable(bkhtmlprinter src/bkhtmlprinter/main.c)
 add_executable(afhtmlprinter src/afhtmlprinter/main.c)
-add_executable(trnhtmlprinter src/trnhtmlprinter/main.c)
+add_executable(trnhtmlprinter src/trnhtmlprinter/main.c src/shared/pilot_html.c)
 add_executable(soundtool src/soundtool/main.c)
 add_executable(fonttool src/fonttool/main.c)
 add_executable(languagetool src/languagetool/main.c)
