@@ -9,12 +9,11 @@
 
 typedef struct {
     xmp_context ctx;
-    int loop;
 } xmp_source;
 
 int xmp_source_update(audio_source *src, char *buffer, int len) {
     xmp_source *local = source_get_userdata(src);
-    int ret = xmp_play_buffer(local->ctx, buffer, len, (local->loop == 1) ? 999999 : 1);
+    int ret = xmp_play_buffer(local->ctx, buffer, len, (src->loop == 1) ? 999999 : 1);
     return (ret != 0) ? 0 : len;
 }
 
@@ -57,7 +56,6 @@ int xmp_source_init(audio_source *src, const char* file, int channels) {
         PERROR("XMP Source: Unable to open module file.");
         goto error_1;
     }
-    local->loop = src->loop;
 
     // Audio information
     source_set_frequency(src, 44100);
