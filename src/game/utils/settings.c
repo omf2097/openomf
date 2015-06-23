@@ -58,17 +58,28 @@ const field f_video[] = {
 };
 
 const field f_sound[] = {
-    F_STRING(settings_sound, sink,   "openal"),
-    F_BOOL(settings_sound, music_mono,      0),
-    F_INT(settings_sound,  sound_vol,       5),
-    F_INT(settings_sound,  music_vol,       5),
-    F_STRING(settings_sound, music_arena0, ""),
-    F_STRING(settings_sound, music_arena1, ""),
-    F_STRING(settings_sound, music_arena2, ""),
-    F_STRING(settings_sound, music_arena3, ""),
-    F_STRING(settings_sound, music_arena4, ""),
-    F_STRING(settings_sound, music_end,    ""),
-    F_STRING(settings_sound, music_menu,   "")
+    F_STRING(settings_sound, sink,            "openal"),
+    F_BOOL(settings_sound, music_mono,        0),
+    F_INT(settings_sound,  sound_vol,         5),
+    F_INT(settings_sound,  music_vol,         5),
+    F_INT(settings_sound,  music_frequency,   44100),
+#if USE_DUMB
+    F_INT(settings_sound, music_library,      0),
+    F_INT(settings_sound, music_resampler,    1),
+#elif USE_MODPLUG
+    F_INT(settings_sound, music_library,      1),
+    F_INT(settings_sound, music_resampler,    0),
+#elif USE_XMP
+    F_INT(settings_sound, music_library,      2),
+    F_INT(settings_sound, music_resampler,    1),
+#endif
+    F_STRING(settings_sound, music_arena0,    ""),
+    F_STRING(settings_sound, music_arena1,    ""),
+    F_STRING(settings_sound, music_arena2,    ""),
+    F_STRING(settings_sound, music_arena3,    ""),
+    F_STRING(settings_sound, music_arena4,    ""),
+    F_STRING(settings_sound, music_end,       ""),
+    F_STRING(settings_sound, music_menu,      "")
 };
 
 const field f_gameplay[] = {

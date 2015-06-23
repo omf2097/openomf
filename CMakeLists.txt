@@ -95,20 +95,25 @@ ELSE()
     find_package(shadowdive)
 ENDIF()
 
+# If submodules are in use, or if USE_DUMB flag is on, turn on libdumb
 IF(USE_SUBMODULES)
     MESSAGE(STATUS "USE_SUBMODULES=1 flag automatically forces USE_DUMB=1.")
     add_definitions(-DUSE_DUMB)
 ELSEIF(USE_DUMB)
     find_package(dumb)
     add_definitions(-DUSE_DUMB)
-ELSEIF(USE_MODPLUG)
+ENDIF()
+
+# If modplug has been selected, attempt to find it
+IF(USE_MODPLUG)
     find_package(modplug)
     add_definitions(-DUSE_MODPLUG)
-ELSEIF(USE_XMP)
+ENDIF()
+
+# If XMP has been selected, attempt to find it
+IF(USE_XMP)
     find_package(xmp)
     add_definitions(-DUSE_XMP)
-ELSE()
-    MESSAGE(STATUS "Note! No module player backend. Music will not play.")
 ENDIF()
 
 # Audio sink selection
@@ -223,6 +228,7 @@ set(OPENOMF_SRC
     src/game/scenes/mainmenu/menu_main.c
     src/game/scenes/mainmenu/menu_configuration.c
     src/game/scenes/mainmenu/menu_gameplay.c
+    src/game/scenes/mainmenu/menu_audio.c
     src/game/scenes/mainmenu/menu_video.c
     src/game/scenes/mainmenu/menu_video_confirm.c
     src/game/scenes/mainmenu/menu_net.c
@@ -311,17 +317,19 @@ ELSE()
     set(CORELIBS ${CORELIBS} ${SHADOWDIVE_LIBRARY})
 ENDIF()
 
-# Handle module playback library
+# Handle module playback libraries
 IF(USE_SUBMODULES)
     set(CORELIBS ${CORELIBS} dumb)
     set(COREINCS ${COREINCS} ${DUMB_INCLUDE_DIR})
 ELSEIF(USE_DUMB)
     set(CORELIBS ${CORELIBS} ${DUMB_LIBRARY})
     set(COREINCS ${COREINCS} ${DUMB_INCLUDE_DIR})
-ELSEIF(USE_MODPLUG)
+ENDIF()
+IF(USE_MODPLUG)
     set(CORELIBS ${CORELIBS} ${MODPLUG_LIBRARY})
     set(COREINCS ${COREINCS} ${MODPLUG_INCLUDE_DIR})
-ELSEIF(USE_XMP)
+ENDIF()
+IF(USE_XMP)
     set(CORELIBS ${CORELIBS} ${XMP_LIBRARY})
     set(COREINCS ${COREINCS} ${XMP_INCLUDE_DIR})
 ENDIF()
