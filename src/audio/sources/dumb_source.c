@@ -16,6 +16,31 @@ typedef struct dumb_source_t {
     long vpos;
 } dumb_source;
 
+audio_source_freq dumb_freqs[] = {
+    {11025, 0, "11025Hz"},
+    {22050, 0, "22050Hz"},
+    {44100, 1, "44100Hz"},
+    {0,0,0} // Guard
+};
+
+audio_source_resampler dumb_resamplers[] = {
+    {DUMB_RQ_ALIASING, 0, "Aliasing"},
+    {DUMB_RQ_BLEP, 0, "BLEP"},
+    {DUMB_RQ_LINEAR, 1, "Linear"},
+    {DUMB_RQ_BLAM, 0, "BLIP"},
+    {DUMB_RQ_CUBIC, 0, "Cubic"},
+    {DUMB_RQ_FIR, 0, "FIR"},
+    {0,0,0} // Guard
+};
+
+audio_source_freq* dumb_get_freqs() {
+    return dumb_freqs;
+}
+
+audio_source_resampler* dumb_get_resamplers() {
+    return dumb_resamplers;
+}
+
 int dumb_source_update(audio_source *src, char *buffer, int len) {
     dumb_source *local = source_get_userdata(src);
 
@@ -51,7 +76,7 @@ void dumb_source_close(audio_source *src) {
     DEBUG("Libdumb Source: Closed.");
 }
 
-int dumb_source_init(audio_source *src, const char* file, int channels) {
+int dumb_source_init(audio_source *src, const char* file, int channels, int freq, int resampler) {
     dumb_source *local = malloc(sizeof(dumb_source));
 
     // Load file and initialize renderer
@@ -78,10 +103,14 @@ int dumb_source_init(audio_source *src, const char* file, int channels) {
     local->vlen = duh_get_length(local->data);
     local->vpos = 0;
 
+    // Set resampler here
+    dumb_it_set_resampling_quality(duh_get_it_sigrenderer(local->renderer), resampler);
+
     // Audio information
-    source_set_frequency(src, 44100);
+    source_set_frequency(src, freq);
     source_set_bytes(src, 2);
     source_set_channels(src, channels);
+    source_set_resampler(src, resampler);
 
     // Set callbacks
     source_set_userdata(src, local);

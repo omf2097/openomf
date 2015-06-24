@@ -11,6 +11,28 @@ typedef struct {
     xmp_context ctx;
 } xmp_source;
 
+audio_source_freq xmp_freqs[] = {
+    {11025, 0, "11025Hz"},
+    {22050, 0, "22050Hz"},
+    {44100, 1, "44100Hz"},
+    {0,0,0} // Guard
+};
+
+audio_source_resampler xmp_resamplers[] = {
+    {XMP_INTERP_NEAREST, 0, "Nearest"},
+    {XMP_INTERP_LINEAR,  1, "Linear"},
+    {XMP_INTERP_SPLINE,  0, "Cubic"},
+    {0,0,0}
+};
+
+audio_source_freq* xmp_get_freqs() {
+    return xmp_freqs;
+}
+
+audio_source_resampler* xmp_get_resamplers() {
+    return xmp_resamplers;
+}
+
 int xmp_source_update(audio_source *src, char *buffer, int len) {
     xmp_source *local = source_get_userdata(src);
     int ret = xmp_play_buffer(local->ctx, buffer, len, (src->loop == 1) ? 999999 : 1);
@@ -25,7 +47,7 @@ void xmp_source_close(audio_source *src) {
     DEBUG("XMP Source: Closed.");
 }
 
-int xmp_source_init(audio_source *src, const char* file, int channels) {
+int xmp_source_init(audio_source *src, const char* file, int channels, int freq, int resampler) {
     xmp_source *local = malloc(sizeof(xmp_source));
 
     // Create a libxmp context
@@ -52,15 +74,20 @@ int xmp_source_init(audio_source *src, const char* file, int channels) {
         flags |= XMP_FORMAT_MONO;
         DEBUG("XMP Source: Setting to MONO.");
     }
-    if(xmp_start_player(local->ctx, 44100, flags) != 0) {
+    if(xmp_start_player(local->ctx, freq, flags) != 0) {
         PERROR("XMP Source: Unable to open module file.");
+        goto error_1;
+    }
+    if(xmp_set_player(local->ctx, XMP_PLAYER_INTERP, resampler) != 0) {
+        PERROR("XMP Source: Unable to set resampler.");
         goto error_1;
     }
 
     // Audio information
-    source_set_frequency(src, 44100);
+    source_set_frequency(src, freq);
     source_set_bytes(src, 2);
     source_set_channels(src, channels);
+    source_set_resampler(src, resampler);
 
     // Set callbacks
     source_set_userdata(src, local);

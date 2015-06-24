@@ -30,6 +30,63 @@ static unsigned int _music_stream_id = 0;
 static unsigned int _music_resource_id = 0;
 static float _music_volume = VOLUME_DEFAULT;
 
+static module_source module_sources[] = {
+#ifdef USE_DUMB
+    {0, "dumb"},
+#endif
+#ifdef USE_MODPLUG
+    {1, "modplug"},
+#endif
+#ifdef USE_XMP
+    {2, "xmp"},
+#endif
+    {0,0} // Guard
+};
+
+audio_source_freq default_freqs[] = {
+    {44100, 1, "44100Hz"},
+    {0,0}
+};
+
+audio_source_resampler default_resamplers[] = {
+    {0, 1, "default"},
+    {0,0}
+};
+
+module_source* music_get_module_sources() {
+    return module_sources;
+}
+
+audio_source_freq* music_module_get_freqs(int id) {
+    switch(id) {
+#ifdef USE_DUMB
+        case 0: return dumb_get_freqs();
+#endif
+#ifdef USE_MODPLUG
+        case 1: return modplug_get_freqs();
+#endif
+#ifdef USE_XMP
+        case 2: return xmp_get_freqs();
+#endif
+    }
+    return default_freqs;
+}
+
+audio_source_resampler* music_module_get_resamplers(int id) {
+    switch(id) {
+#ifdef USE_DUMB
+        case 0: return dumb_get_resamplers();
+#endif
+#ifdef USE_MODPLUG
+        case 1: return modplug_get_resamplers();
+#endif
+#ifdef USE_XMP
+        case 2: return xmp_get_resamplers();
+#endif
+    }
+    return default_resamplers;
+}
+
 const char* get_file_or_override(unsigned int id) {
     // Declare music overrides
     settings *s = settings_get();
@@ -61,8 +118,12 @@ int music_play(unsigned int id) {
         return 0;
     }
 
+    // Get audio settings from config file
     int channels = settings_get()->sound.music_mono ? 1 : 2;
-    (void)(channels);
+    int freq = settings_get()->sound.music_frequency;
+    int modlib = settings_get()->sound.music_library;
+    int resampler = settings_get()->sound.music_resampler;
+
     // Check if the wanted music is already playing
     if(id == _music_resource_id && _music_stream_id != 0) {
         return 0;
@@ -82,19 +143,24 @@ int music_play(unsigned int id) {
 
     // Try to open as module file
     int failed = 1;
-    if(strcasecmp(ext, "psm") == 0
-       || strcasecmp(ext, "s3m") == 0
-       || strcasecmp(ext, "mod") == 0
-       || strcasecmp(ext, "it") == 0
-       || strcasecmp(ext, "xm") == 0)
-    {
-#if USE_DUMB
-        failed = dumb_source_init(music_src, filename, channels);
-#elif USE_MODPLUG
-        failed = modplug_source_init(music_src, filename, channels);
-#elif USE_XMP
-        failed = xmp_source_init(music_src, filename, channels);
+    if(strcasecmp(ext, "psm") == 0) {
+        switch(modlib) {
+#ifdef USE_DUMB
+            case 0:
+                failed = dumb_source_init(music_src, filename, channels, freq, resampler);
+                break;
 #endif
+#ifdef USE_MODPLUG
+            case 1:
+                failed = modplug_source_init(music_src, filename, channels, freq, resampler);
+                break;
+#endif
+#ifdef USE_XMP
+            case 2:
+                failed = xmp_source_init(music_src, filename, channels, freq, resampler);
+                break;
+#endif
+        }
     }
 
     // Try to open as Ogg vorbis

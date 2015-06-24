@@ -16,6 +16,24 @@ typedef struct {
     long vpos;
 } modplug_source;
 
+audio_source_freq modplug_freqs[] = {
+    {44100, 1, "44100Hz"},
+    {0,0,0} // Guard
+};
+
+audio_source_resampler modplug_resamplers[] = {
+    {XMP_INTERP_NEAREST, 1, "default"},
+    {0,0,0} // Guard
+};
+
+audio_source_freq* modplug_get_freqs() {
+    return modplug_freqs;
+}
+
+audio_source_resampler* modplug_get_resamplers() {
+    return modplug_resamplers;
+}
+
 int modplug_source_update(audio_source *src, char *buffer, int len) {
     modplug_source *local = source_get_userdata(src);
     return ModPlug_Read(local->renderer, buffer, len);
@@ -29,7 +47,7 @@ void modplug_source_close(audio_source *src) {
     DEBUG("Modplug Source: Closed.");
 }
 
-int modplug_source_init(audio_source *src, const char* file, int channels) {
+int modplug_source_init(audio_source *src, const char* file, int channels, int freq, int resampler) {
     modplug_source *local = malloc(sizeof(modplug_source));
 
     // Read all data from file
@@ -51,7 +69,7 @@ int modplug_source_init(audio_source *src, const char* file, int channels) {
     settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
     settings.mChannels = channels;
     settings.mBits = 16;
-    settings.mFrequency = 44100;
+    settings.mFrequency = freq;
     settings.mLoopCount = (src->loop) ? -1 : 0;
     ModPlug_SetSettings(&settings);
 
@@ -65,9 +83,10 @@ int modplug_source_init(audio_source *src, const char* file, int channels) {
     local->vpos = 0;
 
     // Audio information
-    source_set_frequency(src, 44100);
+    source_set_frequency(src, freq);
     source_set_bytes(src, 2);
     source_set_channels(src, channels);
+    source_set_resampler(src, resampler);
 
     // Set callbacks
     source_set_userdata(src, local);
