@@ -26,10 +26,6 @@ void menu_audio_sound_slide(component *c, void *userdata, int pos) {
     sound_set_volume(pos/10.0f);
 }
 
-void menu_audio_mono_toggle(component *c, void *userdata, int pos) {
-    music_reload();
-}
-
 void menu_audio_done(component *c, void *userdata) {
     audio_menu_data *local = userdata;
 
@@ -41,7 +37,8 @@ void menu_audio_done(component *c, void *userdata) {
     settings_sound *s = &settings_get()->sound;
     if(s->music_library != local->old_audio_settings.music_library
        || s->music_frequency != local->old_audio_settings.music_frequency
-       || s->music_resampler != local->old_audio_settings.music_resampler)
+       || s->music_resampler != local->old_audio_settings.music_resampler
+       || s->music_mono != local->old_audio_settings.music_mono)
     {
         music_reload();
     }
@@ -129,7 +126,7 @@ component* menu_audio_create(scene *s) {
     menu_attach(menu, filler_create());
     menu_attach(menu, textslider_create_bind(&tconf, "SOUND", 10, 1, menu_audio_sound_slide, NULL, &settings_get()->sound.sound_vol));
     menu_attach(menu, textslider_create_bind(&tconf, "MUSIC", 10, 1, menu_audio_music_slide, NULL, &settings_get()->sound.music_vol));
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "MONO", menu_audio_mono_toggle, NULL, &settings_get()->sound.music_mono, mono_opts, 2));
+    menu_attach(menu, textselector_create_bind_opts(&tconf, "MONO", NULL, NULL, &settings_get()->sound.music_mono, mono_opts, 2));
 
     local->lib_selector = textselector_create(&tconf, "PLAYBACK:", menu_audio_library_toggled, local);
     module_source *sources = music_get_module_sources();
