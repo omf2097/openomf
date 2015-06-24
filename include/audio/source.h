@@ -18,13 +18,15 @@ struct audio_source_t {
 };
 
 typedef struct {
-	int internal_id;
-	const char* name;
+    int internal_id;
+    int is_default;
+    const char* name;
 } audio_source_resampler;
 
 typedef struct {
-	int freq;
-	const char* name;
+    int freq;
+    int is_default;
+    const char* name;
 } audio_source_freq;
 
 void source_init(audio_source *src);

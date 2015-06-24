@@ -17,13 +17,13 @@ typedef struct {
 } modplug_source;
 
 audio_source_freq modplug_freqs[] = {
-    {44100, "44100Hz"},
-    {0,0} // Guard
+    {44100, 1, "44100Hz"},
+    {0,0,0} // Guard
 };
 
 audio_source_resampler modplug_resamplers[] = {
-    {XMP_INTERP_NEAREST, "default"},
-    {0,0} // Guard
+    {XMP_INTERP_NEAREST, 1, "default"},
+    {0,0,0} // Guard
 };
 
 audio_source_freq* modplug_get_freqs() {

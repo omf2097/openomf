@@ -17,20 +17,20 @@ typedef struct dumb_source_t {
 } dumb_source;
 
 audio_source_freq dumb_freqs[] = {
-    {11025, "11025Hz"},
-    {22050, "22050Hz"},
-    {44100, "44100Hz"},
-    {0, 0} // Guard
+    {11025, 0, "11025Hz"},
+    {22050, 0, "22050Hz"},
+    {44100, 1, "44100Hz"},
+    {0,0,0} // Guard
 };
 
 audio_source_resampler dumb_resamplers[] = {
-    {DUMB_RQ_ALIASING, "Aliasing"},
-    {DUMB_RQ_BLEP, "BLEP"},
-    {DUMB_RQ_LINEAR, "Linear"},
-    {DUMB_RQ_BLAM, "B-lim. Linear"},
-    {DUMB_RQ_CUBIC, "Cubic"},
-    {DUMB_RQ_FIR, "FIR"},
-    {0, 0}
+    {DUMB_RQ_ALIASING, 0, "Aliasing"},
+    {DUMB_RQ_BLEP, 0, "BLEP"},
+    {DUMB_RQ_LINEAR, 1, "Linear"},
+    {DUMB_RQ_BLAM, 0, "BLIP"},
+    {DUMB_RQ_CUBIC, 0, "Cubic"},
+    {DUMB_RQ_FIR, 0, "FIR"},
+    {0,0,0} // Guard
 };
 
 audio_source_freq* dumb_get_freqs() {

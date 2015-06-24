@@ -12,17 +12,17 @@ typedef struct {
 } xmp_source;
 
 audio_source_freq xmp_freqs[] = {
-    {11025, "11025Hz"},
-    {22050, "22050Hz"},
-    {44100, "44100Hz"},
-    {0,0} // Guard
+    {11025, 0, "11025Hz"},
+    {22050, 0, "22050Hz"},
+    {44100, 1, "44100Hz"},
+    {0,0,0} // Guard
 };
 
 audio_source_resampler xmp_resamplers[] = {
-    {XMP_INTERP_NEAREST, "Nearest"},
-    {XMP_INTERP_LINEAR,  "Linear"},
-    {XMP_INTERP_SPLINE,  "Cubic"},
-    {0,0}
+    {XMP_INTERP_NEAREST, 0, "Nearest"},
+    {XMP_INTERP_LINEAR,  1, "Linear"},
+    {XMP_INTERP_SPLINE,  0, "Cubic"},
+    {0,0,0}
 };
 
 audio_source_freq* xmp_get_freqs() {

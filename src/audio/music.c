@@ -44,12 +44,12 @@ static module_source module_sources[] = {
 };
 
 audio_source_freq default_freqs[] = {
-    {44100, "44100Hz"},
+    {44100, 1, "44100Hz"},
     {0,0}
 };
 
 audio_source_resampler default_resamplers[] = {
-    {0, "default"},
+    {0, 1, "default"},
     {0,0}
 };
 
