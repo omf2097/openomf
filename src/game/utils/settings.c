@@ -71,7 +71,7 @@ const field f_sound[] = {
     F_INT(settings_sound, music_resampler,    1),
 #elif USE_MODPLUG
     F_INT(settings_sound, music_library,      1),
-    F_INT(settings_sound, music_resampler,    0),
+    F_INT(settings_sound, music_resampler,    1),
 #endif
     F_STRING(settings_sound, music_arena0,    ""),
     F_STRING(settings_sound, music_arena1,    ""),

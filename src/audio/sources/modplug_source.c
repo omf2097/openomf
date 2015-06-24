@@ -17,12 +17,17 @@ typedef struct {
 } modplug_source;
 
 audio_source_freq modplug_freqs[] = {
+    {11025, 0, "11025Hz"},
+    {22050, 0, "22050Hz"},
     {44100, 1, "44100Hz"},
     {0,0,0} // Guard
 };
 
 audio_source_resampler modplug_resamplers[] = {
-    {XMP_INTERP_NEAREST, 1, "default"},
+    {MODPLUG_RESAMPLE_NEAREST, 0, "Nearest"},
+    {MODPLUG_RESAMPLE_LINEAR, 1, "Linear"},
+    {MODPLUG_RESAMPLE_SPLINE, 0, "Spline"},
+    {MODPLUG_RESAMPLE_FIR, 0, "FIR"},
     {0,0,0} // Guard
 };
 
@@ -66,11 +71,12 @@ int modplug_source_init(audio_source *src, const char* file, int channels, int f
     // Settings
     ModPlug_Settings settings;
     ModPlug_GetSettings(&settings);
-    settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
+    settings.mResamplingMode = resampler;
     settings.mChannels = channels;
     settings.mBits = 16;
     settings.mFrequency = freq;
     settings.mLoopCount = (src->loop) ? -1 : 0;
+    settings.mFlags = MODPLUG_ENABLE_OVERSAMPLING;
     ModPlug_SetSettings(&settings);
 
     // Init rnederer
