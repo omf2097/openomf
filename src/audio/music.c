@@ -43,8 +43,48 @@ static module_source module_sources[] = {
     {0,0} // Guard
 };
 
+audio_source_freq default_freqs[] = {
+    {44100, "44100Hz"},
+    {0,0}
+};
+
+audio_source_resampler default_resamplers[] = {
+    {0, "default"},
+    {0,0}
+};
+
 module_source* music_get_module_sources() {
     return module_sources;
+}
+
+audio_source_freq* music_module_get_freqs(int id) {
+    switch(id) {
+#ifdef USE_DUMB
+        case 0: return dumb_get_freqs();
+#endif
+#ifdef USE_MODPLUG
+        case 1: return modplug_get_freqs();
+#endif
+#ifdef USE_XMP
+        case 2: return xmp_get_freqs();
+#endif
+    }
+    return default_freqs;
+}
+
+audio_source_resampler* music_module_get_resamplers(int id) {
+    switch(id) {
+#ifdef USE_DUMB
+        case 0: return dumb_get_resamplers();
+#endif
+#ifdef USE_MODPLUG
+        case 1: return modplug_get_resamplers();
+#endif
+#ifdef USE_XMP
+        case 2: return xmp_get_resamplers();
+#endif
+    }
+    return default_resamplers;
 }
 
 const char* get_file_or_override(unsigned int id) {
