@@ -537,7 +537,7 @@ void har_take_damage(object *obj, str* string, float damage) {
     }
 
     // chronos' stasis does not have a hit animation
-    if (string->data && str_size(string) > 0) {
+    if (str_size(string) > 0) {
         h->state = STATE_RECOIL;
         // Set hit animation
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
@@ -1035,19 +1035,20 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         int damage = 0;
 
+        /// Handle the flich animation correctly for projectiles
         if (move->successor_id) {
             af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
-            if (!move->footer_string.data) {
-                DEBUG("using sucessor footer string %s", str_c(&next_move->footer_string));
-                har_take_damage(o_har, &next_move->footer_string, move->damage);
+            if (next_move->footer_string.data) {
+                DEBUG("HAR %s Takes %f units of damage on string %s",
+                    har_get_name(h->id),
+                    move->damage,
+                    str_c(&move->footer_string));
+                har_take_damage(o_har, &move->footer_string, move->damage);
                 damage = 1;
             }
-            object_set_animation(o_pjt, &next_move->ani);
-            object_set_repeat(o_pjt, 0);
-            /*object_set_vel(o_pjt, vec2f_create(0,0));*/
-            o_pjt->animation_state.finished = 0;
         }
 
+        // Just take damage normally if there is no footer string in successor
         if (!damage) {
             har_take_damage(o_har, &move->footer_string, move->damage);
         }
@@ -1062,18 +1063,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         vel.x = 0.0f;
         object_set_vel(o_har, vel);
 
-        if (move->successor_id) {
-            af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
-            if (!move->footer_string.data && next_move->footer_string.data) {
-                DEBUG("using sucessor footer string %s", str_c(&next_move->footer_string));
-                object_set_custom_string(o_har, str_c(&next_move->footer_string));
-            }
-            object_set_animation(o_pjt, &next_move->ani);
-            object_set_repeat(o_pjt, 0);
-            /*object_set_vel(o_pjt, vec2f_create(0,0));*/
-            o_pjt->animation_state.finished = 0;
-        }
-
         DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!",
             object_get_animation(o_pjt)->id,
             har_get_name(h->id),
@@ -1082,6 +1071,24 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         DEBUG("HAR %s animation set to %s",
             har_get_name(h->id),
             str_c(&move->footer_string));
+
+        // Switch to successor animation if one exists for this projectile
+        if (move->successor_id) {
+            af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
+            if (!move->footer_string.data && next_move->footer_string.data) {
+                DEBUG("HAR %s: Using successor footer string: %s",
+                    har_get_name(h->id),
+                    str_c(&next_move->footer_string));
+                object_set_custom_string(o_har, str_c(&next_move->footer_string));
+            }
+            object_set_animation(o_pjt, &next_move->ani);
+            object_set_repeat(o_pjt, 0);
+            o_pjt->animation_state.finished = 0;
+            DEBUG("SUCCESSOR: Selecting anim %d with string %s",
+                object_get_animation(o_pjt)->id,
+                str_c(&object_get_animation(o_pjt)->animation_string));
+
+        }
     }
 }
 
