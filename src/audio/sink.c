@@ -30,23 +30,19 @@ void sink_format_stream(audio_sink *sink, audio_stream *stream) {
     sink->format_stream(sink, stream);
 }
 
-unsigned int sink_play(audio_sink *sink, audio_source *src) {
-	return sink_play_set(sink, src, VOLUME_DEFAULT, PANNING_DEFAULT, PITCH_DEFAULT);
-}
-
-
-int sink_is_playing(audio_sink *sink, unsigned int sid) {
+int sink_is_playing(audio_sink *sink, int sid) {
     if(sink_get_stream(sink, sid) != NULL) {
         return 1;
     }
     return 0;
 }
 
-unsigned int sink_play_set(audio_sink *sink,
-						   audio_source *src,
-						   float volume,
-						   float panning,
-						   float pitch) {
+void sink_play(audio_sink *sink,
+			   audio_source *src,
+               int id,
+			   float volume,
+			   float panning,
+			   float pitch) {
     audio_stream *stream = malloc(sizeof(audio_stream));
     stream_init(stream, sink, src);
     sink_format_stream(sink, stream);
@@ -54,12 +50,10 @@ unsigned int sink_play_set(audio_sink *sink,
     stream->panning = panning;
     stream->pitch = pitch;
     stream_play(stream);
-    unsigned int new_key = gid_gen();
-    hashmap_iput(&sink->streams, new_key, &stream, sizeof(audio_stream*));
-    return new_key;
+    hashmap_iput(&sink->streams, id, &stream, sizeof(audio_stream*));
 }
 
-void sink_stop(audio_sink *sink, unsigned int sid) {
+void sink_stop(audio_sink *sink, int sid) {
     // Stop playback && remove stream
     audio_stream *s = sink_get_stream(sink, sid);
     stream_stop(s);
@@ -105,36 +99,36 @@ void sink_free(audio_sink *sink) {
     }
 }
 
-void sink_set_stream_panning(audio_sink *sink, unsigned int sid, float panning) {
+void sink_set_stream_panning(audio_sink *sink, int sid, float panning) {
 	if(panning < PANNING_MIN || panning > PANNING_MAX) return;
 	audio_stream *s = sink_get_stream(sink, sid);
 	s->panning = panning;
 	stream_apply(s);
 }
 
-void sink_set_stream_volume(audio_sink *sink, unsigned int sid, float volume) {
+void sink_set_stream_volume(audio_sink *sink, int sid, float volume) {
 	if(volume < VOLUME_MIN || volume > VOLUME_MAX) return;
 	audio_stream *s = sink_get_stream(sink, sid);
 	s->volume = volume;
 	stream_apply(s);
 }
 
-void sink_set_stream_pitch(audio_sink *sink, unsigned int sid, float pitch) {
+void sink_set_stream_pitch(audio_sink *sink, int sid, float pitch) {
 	if(pitch < PITCH_MIN || pitch > PITCH_MAX) return;
 	audio_stream *s = sink_get_stream(sink, sid);
 	s->pitch = pitch;
 	stream_apply(s);
 }
 
-float sink_get_stream_panning(audio_sink *sink, unsigned int sid) {
+float sink_get_stream_panning(audio_sink *sink, int sid) {
 	return sink_get_stream(sink, sid)->panning;
 }
 
-float sink_get_stream_volume(audio_sink *sink, unsigned int sid) {
+float sink_get_stream_volume(audio_sink *sink, int sid) {
 	return sink_get_stream(sink, sid)->volume;
 }
 
-float sink_get_stream_pitch(audio_sink *sink, unsigned int sid) {
+float sink_get_stream_pitch(audio_sink *sink, int sid) {
 	return sink_get_stream(sink, sid)->pitch;
 }
 

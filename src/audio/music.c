@@ -26,7 +26,8 @@ struct music_override_t {
     const char *name;
 };
 
-static unsigned int _music_stream_id = 0;
+#define MUSIC_STREAM_ID 1000
+
 static unsigned int _music_resource_id = 0;
 static float _music_volume = VOLUME_DEFAULT;
 
@@ -125,7 +126,7 @@ int music_play(unsigned int id) {
     int resampler = settings_get()->sound.music_resampler;
 
     // Check if the wanted music is already playing
-    if(id == _music_resource_id && _music_stream_id != 0) {
+    if(id == _music_resource_id && sink_is_playing(sink, MUSIC_STREAM_ID)) {
         return 0;
     }
 
@@ -184,8 +185,7 @@ int music_play(unsigned int id) {
 
     // Start playback
     _music_resource_id = id;
-    _music_stream_id = sink_play(sink, music_src);
-    sink_set_stream_volume(sink, _music_stream_id, _music_volume);
+    sink_play(sink, music_src, MUSIC_STREAM_ID, _music_volume, PANNING_DEFAULT, PITCH_DEFAULT);
 
     // All done
     return 0;
@@ -208,8 +208,8 @@ void music_set_volume(float volume) {
     }
 
     _music_volume = volume;
-    if(_music_stream_id != 0) {
-        sink_set_stream_volume(sink, _music_stream_id, _music_volume);
+    if(sink_is_playing(sink, MUSIC_STREAM_ID)) {
+        sink_set_stream_volume(sink, MUSIC_STREAM_ID, _music_volume);
     }
 }
 
@@ -218,18 +218,15 @@ void music_stop() {
     if(sink == NULL) {
         return;
     }
-    if(_music_stream_id == 0) {
+    if(!sink_is_playing(sink, MUSIC_STREAM_ID)) {
         return;
     }
-    sink_stop(sink, _music_stream_id);
-    _music_stream_id = 0;
+    sink_stop(sink, MUSIC_STREAM_ID);
 }
 
 int music_playing() {
-    if(_music_stream_id == 0) {
-        return 0;
-    }
-    return 1;
+    audio_sink *sink = audio_get_sink();
+    return sink_is_playing(sink, MUSIC_STREAM_ID);
 }
 
 unsigned int music_get_resource() {

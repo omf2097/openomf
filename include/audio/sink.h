@@ -32,22 +32,21 @@ struct audio_sink_t {
 };
 
 void sink_init(audio_sink *sink);
-unsigned int sink_play(audio_sink *sink, audio_source *src);
-unsigned int sink_play_set(audio_sink *sink, audio_source *src, float volume, float panning, float pitch);
-void sink_stop(audio_sink *sink, unsigned int sid);
+void sink_play(audio_sink *sink, audio_source *src, int id, float volume, float panning, float pitch);
+void sink_stop(audio_sink *sink, int sid);
 void sink_free(audio_sink *sink);
 void sink_render(audio_sink *sink);
 void sink_format_stream(audio_sink *sink, audio_stream *stream);
 
-int sink_is_playing(audio_sink *sink, unsigned int sid);
+int sink_is_playing(audio_sink *sink, int sid);
 
-void sink_set_stream_panning(audio_sink *sink, unsigned int sid, float panning);
-void sink_set_stream_volume(audio_sink *sink, unsigned int sid, float volume);
-void sink_set_stream_pitch(audio_sink *sink, unsigned int sid, float pitch);
+void sink_set_stream_panning(audio_sink *sink, int sid, float panning);
+void sink_set_stream_volume(audio_sink *sink, int sid, float volume);
+void sink_set_stream_pitch(audio_sink *sink, int sid, float pitch);
 
-float sink_get_stream_panning(audio_sink *sink, unsigned int sid);
-float sink_get_stream_volume(audio_sink *sink, unsigned int sid);
-float sink_get_stream_pitch(audio_sink *sink, unsigned int sid);
+float sink_get_stream_panning(audio_sink *sink, int sid);
+float sink_get_stream_volume(audio_sink *sink, int sid);
+float sink_get_stream_pitch(audio_sink *sink, int sid);
 
 void sink_set_userdata(audio_sink *sink, void *userdata);
 void* sink_get_userdata(audio_sink *sink);
