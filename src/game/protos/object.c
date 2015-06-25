@@ -361,6 +361,9 @@ void object_render(object *obj) {
     if(obj->video_effects & EFFECT_DARK_TINT) {
         tint = color_create(0x60, 0x60, 0x60, 0xFF);
     }
+    if(obj->video_effects & EFFECT_STASIS) {
+        opacity = 128;
+    }
 
     // This changes the tint depending on position, so handle next
     if(obj->video_effects & EFFECT_POSITIONAL_LIGHTING) {

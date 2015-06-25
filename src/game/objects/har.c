@@ -492,6 +492,9 @@ void har_move(object *obj) {
 void har_take_damage(object *obj, str* string, float damage) {
     har *h = object_get_userdata(obj);
 
+    // Got hit, disable stasis activator on this bot
+    h->in_stasis_ticks = 1;
+
     // Save damage taken
     h->last_damage_value = damage;
 
@@ -1063,17 +1066,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         object_set_vel(o_har, vel);
 
         // Exception case for chronos' time freeze
-        if(other->id == HAR_CHRONOS && (move->ani.id == 38 || move->ani.id == 39)) {
-            if(object_get_halt_ticks(o_har) > 0) {
-                object_set_halt_ticks(o_har, 0);
-                DEBUG("TIME FREEZE: Disabled");
-            } else {
-                object_set_halt_ticks(o_har, 75);
-                DEBUG("TIME FREEZE: Enabled");
-            }
-        } else if(object_get_halt_ticks(o_har) > 0) {
-            object_set_halt_ticks(o_har, 0);
-            DEBUG("TIME FREEZE: Disabled");
+        if(player_frame_isset(o_pjt, "af")) {
+            h->in_stasis_ticks = 75;
         }
 
         DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!",
@@ -1220,6 +1214,17 @@ int har_palette_transform(object *obj, screen_palette *pal) {
 
 void har_tick(object *obj) {
     har *h = object_get_userdata(obj);
+
+    if(h->in_stasis_ticks > 0) {
+        h->in_stasis_ticks--;
+        if(h->in_stasis_ticks) {
+            object_set_halt(obj, 1);
+            object_set_effects(obj, EFFECT_STASIS);
+        } else {
+            object_set_halt(obj, 0);
+            object_set_effects(obj, 0);
+        }
+    }
 
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
@@ -1498,7 +1503,6 @@ af_move* match_move(object *obj, char *inputs) {
                 if (move->category == CAT_DESTRUCTION && h->state != STATE_SCRAP) {
                     continue;
                 }
-
 
                 if (h->is_wallhugging != 1 && move->pos_constraints & 0x1) {
                     DEBUG("not wallhugging!");
@@ -2068,6 +2072,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->air_attacked = 0;
     local->is_wallhugging = 0;
     local->is_grabbed = 0;
+
+    local->in_stasis_ticks = 0;
 
     local->delay = 0;
 
