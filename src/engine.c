@@ -311,6 +311,8 @@ void engine_run(engine_init_flags *init_flags) {
                 }
                 if(scr_ret) {
                     PERROR("Screenshot write operation failed (%s)", screenshot_filename);
+                } else {
+                    DEBUG("Got a screenshot: %s", screenshot_filename);
                 }
 
                 image_free(&img);
