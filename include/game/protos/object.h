@@ -95,6 +95,7 @@ struct object_t {
     uint8_t pal_offset;
     uint8_t cur_remap;
     uint8_t halt;
+    int16_t halt_ticks;
     uint8_t stride;
     uint8_t cast_shadow;
     surface *cur_surface;
@@ -157,6 +158,8 @@ void object_set_custom_string(object *obj, const char *str);
 void object_select_sprite(object *obj, int id);
 void object_set_sprite_override(object *obj, int override);
 
+void object_set_halt_ticks(object *obj, int ticks);
+int object_get_halt_ticks(object *obj);
 void object_set_halt(object *obj, int halt);
 int object_get_halt(const object *obj);
 

@@ -1007,7 +1007,6 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
     af *prog_owner_af_data = projectile_get_af_data(o_pjt);
-    // lol
     har *other = object_get_userdata(game_state_get_player(o_har->gs, abs(h->player_id - 1))->har);
 
     if(h->state == STATE_FALLEN
@@ -1062,6 +1061,20 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         vec2f vel = object_get_vel(o_har);
         vel.x = 0.0f;
         object_set_vel(o_har, vel);
+
+        // Exception case for chronos' time freeze
+        if(other->id == HAR_CHRONOS && (move->ani.id == 38 || move->ani.id == 39)) {
+            if(object_get_halt_ticks(o_har) > 0) {
+                object_set_halt_ticks(o_har, 0);
+                DEBUG("TIME FREEZE: Disabled");
+            } else {
+                object_set_halt_ticks(o_har, 75);
+                DEBUG("TIME FREEZE: Enabled");
+            }
+        } else if(object_get_halt_ticks(o_har) > 0) {
+            object_set_halt_ticks(o_har, 0);
+            DEBUG("TIME FREEZE: Disabled");
+        }
 
         DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!",
             object_get_animation(o_pjt)->id,

@@ -57,6 +57,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->cur_remap = -1;
     obj->pal_offset = 0;
     obj->halt = 0;
+    obj->halt_ticks = 0;
     obj->stride = 1;
     obj->cast_shadow = 0;
     obj->age = 0;
@@ -167,6 +168,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->cur_surface = NULL;
     obj->cur_remap = 0;
     obj->halt = 0;
+    obj->halt_ticks = 0;
     obj->cast_shadow = 0;
     player_create(obj);
 
@@ -249,6 +251,12 @@ void object_dynamic_tick(object *obj) {
     if(obj->attached_to != NULL) {
         object_set_pos(obj, object_get_pos(obj->attached_to));
         object_set_direction(obj, object_get_direction(obj->attached_to));
+    }
+
+    // Check if object still needs to be halted
+    if(obj->halt_ticks > 0) {
+        obj->halt_ticks--;
+        obj->halt = (obj->halt_ticks > 0);
     }
 
     // Run animation player
@@ -615,7 +623,10 @@ int object_get_layers(const object *obj) { return obj->layers; }
 void object_set_pal_offset(object *obj, int offset) { obj->pal_offset = offset; }
 int object_get_pal_offset(const object *obj) { return obj->pal_offset; }
 
-void object_set_halt(object *obj, int halt) { obj->halt = halt; }
+void object_set_halt_ticks(object *obj, int ticks) { obj->halt = (ticks > 0); obj->halt_ticks = ticks; }
+int object_get_halt_ticks(object *obj) { return obj->halt_ticks; }
+
+void object_set_halt(object *obj, int halt) { obj->halt = halt; obj->halt_ticks = (halt == 0 ? 0 : obj->halt_ticks); }
 int object_get_halt(const object *obj) { return obj->halt; }
 
 void object_set_repeat(object *obj, int repeat) { player_set_repeat(obj, repeat); }
