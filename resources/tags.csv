@@ -3,14 +3,14 @@
 "ac",0,
 "ad",0,
 "ae",0,
-"af",0,
+"af",0,"Freeze opponent HAR"
 "ag",0,
 "ai",0,
-"am",0,
+"am",0,"Tells the HAR when to stop walking"
 "ao",0,
-"as",0,
-"at",0,
-"aw",0,
+"as",0,"Wandering fire pit orb"
+"at",0,"Sets object position behind enemy har"
+"aw",0,"Tells if the HAR can pass through walls"
 "ax",0,
 "ar",0,
 "al",0,
