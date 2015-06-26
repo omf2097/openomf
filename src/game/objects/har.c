@@ -397,7 +397,7 @@ void har_floor_landing_effects(object *obj) {
     // Landing sound
     float d = ((float)obj->pos.x) / 640.0f;
     float pos_pan = d - 0.25f;
-    sound_play(56, 0.5f, pos_pan, 1.8f);
+    sound_play(56, 0.3f, pos_pan, 2.2f);
 }
 
 void har_move(object *obj) {
