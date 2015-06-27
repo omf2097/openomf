@@ -19,9 +19,9 @@ void sound_play(int id, float volume, float panning, float pitch) {
         return;
     }
 
-    // If the sound is already playing, just fake it.
+    // If the sound is already playing, stop it.
     if(sink_is_playing(sink, id)) {
-        return;
+        sink_stop(sink, id);
     }
 
     // Get sample data
