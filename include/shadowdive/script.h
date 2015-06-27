@@ -133,9 +133,17 @@ int sd_script_get_total_ticks(const sd_script *script);
  *
  * \param script Script structure to check
  * \param frame_id Frame ID to search
- * \return Tick
+ * \return Tick position at the frame
  */
 int sd_script_get_tick_pos_at_frame(const sd_script *script, int frame_id);
+
+/*! \brief Find the tick length of the given frame
+ *
+ * \param script Script structure to check
+ * \param frame_id Frame ID to search
+ * \return Tick length of the frame
+ */
+int sd_script_get_tick_len_at_frame(const sd_script *script, int frame_id);
 
 /*! \brief Returns the frame at a given tick
  *

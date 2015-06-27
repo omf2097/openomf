@@ -191,6 +191,7 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
             sd_write_udword(w, 0); // write a 0 as a placeholder
             sd_write_ubyte(w, i);
             if((ret = sd_bk_anim_save(w, bk->anims[i])) != SD_SUCCESS) {
+                sd_writer_close(w);
                 return ret;
             }
             rpos = sd_writer_pos(w);

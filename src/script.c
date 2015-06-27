@@ -59,6 +59,12 @@ int sd_script_get_tick_pos_at_frame(const sd_script *script, int frame_id) {
     return len;
 }
 
+int sd_script_get_tick_len_at_frame(const sd_script *script, int frame_id) {
+    if(script == NULL || frame_id >= script->frame_count)
+        return 0;
+    return script->frames[frame_id].tick_len;
+}
+
 static void _create_tag(sd_script_frame *frame, int number) {
     size_t newsize = sizeof(sd_script_tag) * (number + 1);
     frame->tags = realloc(frame->tags, newsize);
