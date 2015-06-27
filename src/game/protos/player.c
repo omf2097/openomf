@@ -476,20 +476,22 @@ void player_run(object *obj) {
 
                 // Find frame ID by tick
                 int frame_id = sd_script_next_frame_with_tag(&state->parser, "x=", state->current_tick);
-                
+
                 // Handle it!
                 if(frame_id >= 0) {
                     int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
-                    int r = mr - state->current_tick;
+                    int r = mr - state->current_tick - frame->tick_len;
                     int next_x = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "x=");
                     int slide = obj->start.x + (next_x * object_get_direction(obj));
                     if(slide != obj->pos.x) {
                         obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(frame->tick_len + r);
                         obj->slide_state.timer = frame->tick_len + r;
-                        /*DEBUG("Slide object %d for X = %f for a total of %d ticks.",*/
-                                /*obj->cur_animation->id,*/
-                                /*obj->slide_state.vel.x,*/
-                                /*param->duration + r);*/
+                        /* DEBUG("Slide object %d for X = %f for a total of %d + %d = %d ticks.",
+                                obj->cur_animation->id,
+                                obj->slide_state.vel.x,
+                                frame->tick_len,
+                                r,
+                                frame->tick_len + r);*/
                     }
 
                 }
@@ -503,16 +505,18 @@ void player_run(object *obj) {
                 // handle it!
                 if(frame_id >= 0) {
                     int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
-                    int r = mr - state->current_tick;
+                    int r = mr - state->current_tick - frame->tick_len;
                     int next_y = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "y=");
                     int slide = next_y + obj->start.y;
                     if(slide != obj->pos.y) {
                         obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(frame->tick_len + r);
                         obj->slide_state.timer = frame->tick_len + r;
-                        /*DEBUG("Slide object %d for Y = %f for a total of %d ticks.",*/
-                                /*obj->cur_animation->id,*/
-                                /*obj->slide_state.vel.y,*/
-                                /*param->duration + r);*/
+                        /* DEBUG("Slide object %d for Y = %f for a total of %d + %d = %d ticks.",
+                                obj->cur_animation->id,
+                                obj->slide_state.vel.y,
+                                frame->tick_len,
+                                r,
+                                frame->tick_len + r);*/
                     }
 
                 }
