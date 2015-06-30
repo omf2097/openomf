@@ -18,6 +18,7 @@ typedef struct player_sprite_state_t {
     int screen_shake_horizontal;
     int screen_shake_vertical;
 
+    vec2i o_correction;
     int disable_gravity;
 
     int blend_start;

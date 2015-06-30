@@ -16,6 +16,7 @@
 #include "utils/miscmath.h"
 #include "utils/log.h"
 #include "utils/random.h"
+#include "utils/vec.h"
 
 // ---------------- Private functions ----------------
 
@@ -26,6 +27,8 @@ void player_clear_frame(object *obj) {
     s->method_flags = 0;
     s->timer = 0;
     s->duration = 0;
+
+    s->o_correction = vec2i_create(0,0);
 
     s->disable_gravity = 0;
 
@@ -366,15 +369,18 @@ void player_run(object *obj) {
                 rstate->blend_finish = 0;
             }
 
-            // Handle movement
+            // Handle position correction
             if(sd_script_isset(frame, "ox")) {
-                DEBUG("changing X from %f to %f", obj->pos.x, obj->pos.x+sd_script_get(frame, "ox"));
-                /*obj->pos.x += sd_script_get(frame, "ox");*/
+                DEBUG("O_CORRECTION: X = %d", sd_script_get(frame, "ox"));
+                rstate->o_correction.x = sd_script_get(frame, "ox");
+            } else {
+                rstate->o_correction.x = 0;
             }
-
             if(sd_script_isset(frame, "oy")) {
-                DEBUG("changing Y from %f to %f", obj->pos.y, obj->pos.y+sd_script_get(frame, "oy"));
-                /*obj->pos.y += sd_script_get(frame, "oy");*/
+                DEBUG("O_CORRECTION: Y = %d", sd_script_get(frame, "oy"));
+                rstate->o_correction.y = sd_script_get(frame, "oy");
+            } else {
+                rstate->o_correction.y = 0;
             }
 
             if (sd_script_isset(frame, "bm")) {

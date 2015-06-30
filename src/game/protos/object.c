@@ -331,8 +331,8 @@ void object_render(object *obj) {
     player_sprite_state *rstate = &obj->sprite_state;
 
     // Position
-    int y = obj->pos.y + obj->cur_sprite->pos.y;
-    int x = obj->pos.x + obj->cur_sprite->pos.x;
+    int y = obj->pos.y + obj->cur_sprite->pos.y + rstate->o_correction.y;
+    int x = obj->pos.x + obj->cur_sprite->pos.x + rstate->o_correction.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
         x = obj->pos.x - obj->cur_sprite->pos.x - object_get_size(obj).x;
     }
@@ -367,8 +367,8 @@ void object_render(object *obj) {
 
     // This changes the tint depending on position, so handle next
     if(obj->video_effects & EFFECT_POSITIONAL_LIGHTING) {
-        float p = (obj->pos.x > 160) ? 320 - obj->pos.x : obj->pos.x;
-        float shade = 0.75f + p / 640;
+        float p = (x > 160) ? 320 - x : x;
+        float shade = 0.50f + p / 320;
         if(shade > 1.0f) shade = 1.0f;
         tint.r *= shade;
         tint.g *= shade;
@@ -398,9 +398,9 @@ void object_render_shadow(object *obj) {
 
     // Determine X
     int flipmode = obj->sprite_state.flipmode;
-    int x = obj->pos.x + obj->cur_sprite->pos.x;
+    int x = obj->pos.x + obj->cur_sprite->pos.x + obj->sprite_state.o_correction.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = obj->pos.x - obj->cur_sprite->pos.x - object_get_size(obj).x;
+        x = (obj->pos.x + obj->sprite_state.o_correction.x) - obj->cur_sprite->pos.x - object_get_size(obj).x;
         flipmode ^= FLIP_HORIZONTAL;
     }
 
