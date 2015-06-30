@@ -917,6 +917,12 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         return;
     }
 
+    // Check if collisions are switched off for the attacking HAR
+    if(player_frame_isset(obj_a, "n")) {
+        DEBUG("COLLISIONS: Disabled for this frame.");
+        return;
+    }
+
     // Check for collisions by sprite collision points
     int level = 1;
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
@@ -953,7 +959,6 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             DEBUG("both hars hit at the same time!");
             har_collide_with_har(obj_b, obj_a, 1);
         }
-
 
         if (move->category == CAT_CLOSE) {
             a->close = 0;
@@ -1016,6 +1021,12 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         || h->state == STATE_STANDING_UP
         || h->state == STATE_WALLDAMAGE) {
         // can't hit em while they're down
+        return;
+    }
+
+    // Check if collisions are switched off for the projectile
+    if(player_frame_isset(o_pjt, "n")) {
+        DEBUG("COLLISIONS: Disabled for this frame.");
         return;
     }
 
@@ -1099,10 +1110,10 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     }
 }
 
-void har_collide_with_hazard(object *o_har, object *o_pjt) {
+void har_collide_with_hazard(object *o_har, object *o_hzd) {
     har *h = object_get_userdata(o_har);
-    bk *bk_data = object_get_userdata(o_pjt);
-    bk_info *anim = bk_get_info(bk_data, o_pjt->cur_animation->id);
+    bk *bk_data = object_get_userdata(o_hzd);
+    bk_info *anim = bk_get_info(bk_data, o_hzd->cur_animation->id);
 
     if (h->state == STATE_FALLEN || h->state == STATE_STANDING_UP) {
         // can't hit em while they're down
@@ -1119,25 +1130,30 @@ void har_collide_with_hazard(object *o_har, object *o_pjt) {
         return;
     }
 
+    // Check if collisions are switched off for the hazard
+    if(player_frame_isset(o_hzd, "n")) {
+        return;
+    }
+
     // Check for collisions by sprite collision points
     int level = 2;
     vec2i hit_coord;
-    if(!h->damage_received && intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
+    if(!h->damage_received && intersect_sprite_hitpoint(o_hzd, o_har, level, &hit_coord)) {
         har_take_damage(o_har, &anim->footer_string, anim->hazard_damage);
         har_event_hazard_hit(h, anim);
         if (anim->chain_no_hit) {
-            object_set_animation(o_pjt, &bk_get_info(bk_data, anim->chain_no_hit)->ani);
-            object_set_repeat(o_pjt, 0);
+            object_set_animation(o_hzd, &bk_get_info(bk_data, anim->chain_no_hit)->ani);
+            object_set_repeat(o_hzd, 0);
         }
         har_spawn_scrap(o_har, hit_coord, 9);
         h->damage_received = 1;
-    } else if(anim->chain_hit && intersect_sprite_hitpoint(o_har, o_pjt, level, &hit_coord)) {
+    } else if(anim->chain_hit && intersect_sprite_hitpoint(o_har, o_hzd, level, &hit_coord)) {
         // we can punch this! Only set on fire pit orb
         anim = bk_get_info(bk_data, anim->chain_hit);
-        o_pjt->animation_state.enemy = o_har->animation_state.enemy;
-        object_set_animation(o_pjt, &anim->ani);
-        object_set_repeat(o_pjt, 0);
-        o_pjt->animation_state.finished = 0;
+        o_hzd->animation_state.enemy = o_har->animation_state.enemy;
+        object_set_animation(o_hzd, &anim->ani);
+        object_set_repeat(o_hzd, 0);
+        o_hzd->animation_state.finished = 0;
     }
 }
 
