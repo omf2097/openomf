@@ -89,8 +89,8 @@
 "my",1,"Y position of new animation"
 "m",1,"Create instance of animation N"
 "n",0,"Disable hitcoords for the current frame"
-"ox",1,
-"oy",1,
+"ox",1,"Set sprite X correction for this frame"
+"oy",1,"Set sprite Y correction for this frame"
 "pa",0,"Enable color effect for HAR palette effects"
 "pb",1,"N < 512"
 "pc",1,"N < 512"
