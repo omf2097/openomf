@@ -166,6 +166,8 @@ int object_get_halt(const object *obj);
 
 void object_set_effects(object *obj, int effects);
 int object_get_effects(const object *obj);
+void object_add_effects(object *obj, int effects);
+void object_del_effects(object *obj, int effects);
 
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);

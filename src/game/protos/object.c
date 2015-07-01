@@ -320,6 +320,14 @@ int object_get_effects(const object *obj) {
     return obj->video_effects;
 }
 
+void object_add_effects(object *obj, int effects) {
+    obj->video_effects |= effects;
+}
+
+void object_del_effects(object *obj, int effects) {
+    obj->video_effects &= ~effects;
+}
+
 void object_render(object *obj) {
     // Stop here if cur_sprite is NULL
     if(obj->cur_sprite == NULL) return;
@@ -368,7 +376,7 @@ void object_render(object *obj) {
     // This changes the tint depending on position, so handle next
     if(obj->video_effects & EFFECT_POSITIONAL_LIGHTING) {
         float p = (x > 160) ? 320 - x : x;
-        float shade = 0.50f + p / 320;
+        float shade = 0.65f + p / 320;
         if(shade > 1.0f) shade = 1.0f;
         tint.r *= shade;
         tint.g *= shade;

@@ -29,11 +29,10 @@ void projectile_tick(object *obj) {
     }
 
     // Set effect flags
-    int cur_effects = object_get_effects(obj);
     if(player_frame_isset(obj, "bt")) {
-        object_set_effects(obj, cur_effects | EFFECT_DARK_TINT);
+        object_add_effects(obj, EFFECT_DARK_TINT);
     } else {
-        object_set_effects(obj, cur_effects & ~EFFECT_DARK_TINT);
+        object_del_effects(obj, EFFECT_DARK_TINT);
     }
 }
 
