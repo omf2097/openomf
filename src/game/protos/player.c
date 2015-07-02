@@ -390,23 +390,35 @@ void player_run(object *obj) {
                 player_next_frame(state->enemy);
             }
 
-            if (sd_script_isset(frame, "v")) {
-                int x = 0, y = 0;
-                if(sd_script_isset(frame, "y-")) {
-                    y = sd_script_get(frame, "y-") * -1;
-                } else if(sd_script_isset(frame, "y+")) {
-                    y = sd_script_get(frame, "y+");
-                }
-                if(sd_script_isset(frame, "x-")) {
-                    x = sd_script_get(frame, "x-") * -1 * object_get_direction(obj);
-                } else if(sd_script_isset(frame, "x+")) {
-                    x = sd_script_get(frame, "x+") * object_get_direction(obj);
-                }
+            // See if x+/- or y+/- are set and save values
+            int trans_x = 0, trans_y = 0;
+            if(sd_script_isset(frame, "y-")) {
+                trans_y = sd_script_get(frame, "y-") * -1;
+            } else if(sd_script_isset(frame, "y+")) {
+                trans_y = sd_script_get(frame, "y+");
+            }
+            if(sd_script_isset(frame, "x-")) {
+                trans_x = sd_script_get(frame, "x-") * -1 * object_get_direction(obj);
+            } else if(sd_script_isset(frame, "x+")) {
+                trans_x = sd_script_get(frame, "x+") * object_get_direction(obj);
+            }
 
-                if (x || y) {
-                    DEBUG("x vel %d, y vel %d", x, y);
-                    obj->vel.x += x;
-                    obj->vel.y += y;
+            // Handler x+- and y+- properly
+            if(trans_x || trans_y) {
+                if(sd_script_isset(frame, "v")) {
+                    obj->vel.x += trans_x;
+                    obj->vel.y += trans_y;
+                } else {
+                    if(sd_script_isset(frame, "e")) {
+                        obj->enemy_slide_state.timer = frame->tick_len;
+                        obj->enemy_slide_state.duration = 0;
+                        obj->enemy_slide_state.dest.x = trans_x;
+                        obj->enemy_slide_state.dest.y = trans_y;
+                    } else {
+                        obj->slide_state.timer = frame->tick_len;
+                        obj->slide_state.vel.x = (float)trans_x;
+                        obj->slide_state.vel.y = (float)trans_y;
+                    }
                 }
             }
 
@@ -421,59 +433,8 @@ void player_run(object *obj) {
             if(sd_script_isset(frame, "y")) {
                 obj->y_percent = sd_script_get(frame, "y") / 100.0f;
             }
-            if (sd_script_isset(frame, "e")) {
-                // x,y relative to *enemy's* position
-                int x = 0, y = 0;
-                if(sd_script_isset(frame, "y-")) {
-                    y = sd_script_get(frame, "y-") * -1;
-                } else if(sd_script_isset(frame, "y+")) {
-                    y = sd_script_get(frame, "y+");
-                }
-                if(sd_script_isset(frame, "x-")) {
-                    x = sd_script_get(frame, "x-") * -1 * object_get_direction(obj);
-                } else if(sd_script_isset(frame, "x+")) {
-                    x = sd_script_get(frame, "x+") * object_get_direction(obj);
-                }
 
-                if (x || y) {
-                    obj->enemy_slide_state.timer = frame->tick_len;
-                    obj->enemy_slide_state.duration = 0;
-                    obj->enemy_slide_state.dest.x = x;
-                    obj->enemy_slide_state.dest.y = y;
-                    /*DEBUG("ENEMY Slide object %d for (x,y) = (%f,%f) for %d ticks. (%d,%d)",
-                            obj->cur_animation->id,
-                            obj->enemy_slide_state.dest.x,
-                            obj->enemy_slide_state.dest.y,
-                            param->duration,
-                            x, y);*/
-                }
-            }
-            if (sd_script_isset(frame, "v") == 0 &&
-                sd_script_isset(frame, "e") == 0 &&
-                (sd_script_isset(frame, "x+") || sd_script_isset(frame, "y+") || sd_script_isset(frame, "x-") || sd_script_isset(frame, "y-"))) {
-                // check for relative X interleaving
-                int x = 0, y = 0;
-                if(sd_script_isset(frame, "y-")) {
-                    y = sd_script_get(frame, "y-") * -1;
-                } else if(sd_script_isset(frame, "y+")) {
-                    y = sd_script_get(frame, "y+");
-                }
-                if(sd_script_isset(frame, "x-")) {
-                    x = sd_script_get(frame, "x-") * -1 * object_get_direction(obj);
-                } else if(sd_script_isset(frame, "x+")) {
-                    x = sd_script_get(frame, "x+") * object_get_direction(obj);
-                }
-
-                obj->slide_state.timer = frame->tick_len;
-                obj->slide_state.vel.x = (float)x;
-                obj->slide_state.vel.y = (float)y;
-                /*DEBUG("Slide object %d for (x,y) = (%f,%f) for %d ticks.",*/
-                    /*obj->cur_animation->id,*/
-                    /*obj->slide_state.vel.x, */
-                    /*obj->slide_state.vel.y, */
-                    /*param->duration);*/
-            }
-
+            // Handle slides
             if(sd_script_isset(frame, "x=") || sd_script_isset(frame, "y=")) {
                 obj->slide_state.vel = vec2f_create(0,0);
             }

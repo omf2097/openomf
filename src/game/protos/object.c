@@ -342,7 +342,7 @@ void object_render(object *obj) {
     int y = obj->pos.y + obj->cur_sprite->pos.y + rstate->o_correction.y;
     int x = obj->pos.x + obj->cur_sprite->pos.x + rstate->o_correction.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = obj->pos.x - obj->cur_sprite->pos.x - object_get_size(obj).x;
+        x = obj->pos.x - obj->cur_sprite->pos.x  + rstate->o_correction.x - object_get_size(obj).x;
     }
 
     // Flip to face the right direction
