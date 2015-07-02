@@ -403,7 +403,7 @@ void player_run(object *obj) {
                 trans_x = sd_script_get(frame, "x+") * object_get_direction(obj);
             }
 
-            // Handler x+- and y+- properly
+            // Handle vx+/-, ex+/-, vy+/-, ey+/-, x+/-. y+/-
             if(trans_x || trans_y) {
                 if(sd_script_isset(frame, "v")) {
                     obj->vel.x += trans_x;
