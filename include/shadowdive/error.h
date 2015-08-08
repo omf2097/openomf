@@ -17,7 +17,7 @@ extern "C" {
 
 #ifdef DEBUGMODE
     void debug_print(const char* fn, int line, const char *fmt, ...);
-    #define DEBUGLOG(...) debug_print(__FUNCTION__, __LINE__, __VA_ARGS__)
+    #define DEBUGLOG(...) debug_print(__func__, __LINE__, __VA_ARGS__)
 #else
     #define DEBUGLOG(...) ///< Prints debug text if the debugging mode is on.
 #endif
