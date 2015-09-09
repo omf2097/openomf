@@ -37,17 +37,24 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         return 0;
     }
 
+    int object_dir = OBJECT_FACE_RIGHT;
+    int target_dir = OBJECT_FACE_RIGHT;
+
     // Some useful variables
     vec2i pos_a = vec2i_add(object_get_pos(obj), obj->cur_sprite->pos);
     vec2i pos_b = vec2i_add(object_get_pos(target), target->cur_sprite->pos);
     vec2i size_a = object_get_size(obj);
     vec2i size_b = object_get_size(target);
 
-    if (object_get_direction(obj) == OBJECT_FACE_LEFT) {
+    if ((object_get_direction(obj) == OBJECT_FACE_LEFT && !player_frame_isset(obj, "r")) ||
+            (object_get_direction(obj) == OBJECT_FACE_RIGHT && player_frame_isset(obj, "r"))) {
+        object_dir = OBJECT_FACE_LEFT;
         pos_a.x = object_get_pos(obj).x + ((obj->cur_sprite->pos.x * -1) - size_a.x);
     }
 
-    if (object_get_direction(target) == OBJECT_FACE_LEFT) {
+    if ((object_get_direction(target) == OBJECT_FACE_LEFT && !player_frame_isset(target, "r")) ||
+            (object_get_direction(target) == OBJECT_FACE_RIGHT && player_frame_isset(target, "r"))) {
+        target_dir = OBJECT_FACE_LEFT;
         pos_b.x = object_get_pos(target).x + ((target->cur_sprite->pos.x * -1) - size_b.x);
     }
 
@@ -63,7 +70,7 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         if(cc->frame_index != obj->cur_sprite->id) continue;
 
         // Convert coords to target sprite local space
-        int t = (object_get_direction(obj) == OBJECT_FACE_RIGHT)
+        int t = (object_dir == OBJECT_FACE_RIGHT)
             ? (pos_a.x + cc->pos.x - obj->cur_sprite->pos.x)
             : (pos_a.x + (size_a.x - cc->pos.x) + obj->cur_sprite->pos.x);
 
@@ -81,7 +88,7 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         // Get hitpixel
         surface *sfc = target->cur_sprite->data;
         int hitpoint = (ycoord * sfc->w) + xcoord;
-        if (object_get_direction(target) == OBJECT_FACE_LEFT) {
+        if (target_dir == OBJECT_FACE_LEFT) {
             hitpoint = (ycoord * sfc->w) + (sfc->w - xcoord);
         }
         if(sfc->stencil[hitpoint] > 0) {
