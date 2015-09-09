@@ -143,12 +143,14 @@ OpenOMF loads the original data files from the original OMF:2097 game using libS
 
 On linux in debug mode, the OMF resource files should be put in resources/ subdirectory.
 
-On linux in release mode, the resources should be located in ../share/openomf/. So if your binary is
-in /usr/local/bin, the resources should be put in /usr/local/share/openomf/. With release or testing packages, the resources should be extracted to /usr/share/openomf/.
+On linux in release mode, the resources should be located in ../share/games/openomf/, relative to the openomf binary. So if your binary is
+in /usr/local/bin, the resources should be put in /usr/local/share/games/openomf/. With release or testing packages, the resources should be extracted to /usr/share/games/openomf/.
 
 On MacOS and windows, the resources should be put into the resources/ subdirectory.
 
 Note! Only BK,AF,PIC,TRN,PSM and DAT files are required, others may be removed to save space.
+
+You can override these default paths by setting the OPENOMF_RESOURCE_DIR environment variable to an absolute directory. Plugins have a similiar environment variable called OPENOMF_PLUGIN_DIR.
 
 4. Play the game!
 -----------------

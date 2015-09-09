@@ -424,6 +424,6 @@ INSTALL(TARGETS openomf
     COMPONENT Binaries
 )
 INSTALL(FILES resources/openomf.bk resources/openomf_icon.png
-    DESTINATION share/openomf/
+    DESTINATION share/games/openomf/
     COMPONENT Data
 )
