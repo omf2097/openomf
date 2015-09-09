@@ -706,6 +706,7 @@ void har_block(object *obj, vec2i hit_coord) {
     object_set_layers(scrape, LAYER_SCRAP);
     object_dynamic_tick(scrape);
     object_dynamic_tick(scrape);
+    sound_play(3, 0.7f, 0.5f, 1.0f);
     game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE, 0, 0);
     h->damage_received = 1;
     if (h->state == STATE_CROUCHBLOCK) {
