@@ -70,6 +70,9 @@ static int textslider_action(component *c, int action) {
         if(tb->slide) {
             tb->slide(c, tb->userdata, *tb->pos);
         }
+        // reset ticks so text is bright
+        tb->ticks = 0;
+        tb->dir = 0;
         return 0;
     } else  if(action == ACT_LEFT) {
         (*tb->pos)--;
@@ -82,6 +85,9 @@ static int textslider_action(component *c, int action) {
         if(tb->slide) {
             tb->slide(c, tb->userdata, *tb->pos);
         }
+        // reset ticks so text is bright
+        tb->ticks = 0;
+        tb->dir = 0;
         return 0;
     }
     return 1;

@@ -88,6 +88,9 @@ static int textselector_action(component *c, int action) {
             tb->toggle(c, tb->userdata, *tb->pos);
         }
         sound_play(20, 0.5f, 0.5f, 2.0f);
+        // reset ticks so text is bright
+        tb->ticks = 0;
+        tb->dir = 0;
         return 0;
     } else  if(action == ACT_LEFT) {
         if(vector_size(&tb->options) == 0) { return 0; }
@@ -99,6 +102,9 @@ static int textselector_action(component *c, int action) {
             tb->toggle(c, tb->userdata, *tb->pos);
         }
         sound_play(20, 0.5f, -0.5f, 2.0f);
+        // reset ticks so text is bright
+        tb->ticks = 0;
+        tb->dir = 0;
         return 0;
     }
     return 1;
