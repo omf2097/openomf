@@ -111,12 +111,14 @@ int pm_init() {
     // check if we have overrides from the environment
     char *resource_env = getenv("OPENOMF_RESOURCE_DIR");
     if (resource_env) {
-        sprintf(local_paths[RESOURCE_PATH], "%s", resource_env);
+        char *ext = resource_env[strlen(resource_env)-1] == '/' ? "" : "/";
+        local_path_build(RESOURCE_PATH, resource_env, ext);
     }
 
     char *plugin_env = getenv("OPENOMF_PLUGIN_DIR");
     if (plugin_env) {
-        sprintf(local_paths[PLUGIN_PATH], "%s", plugin_env);
+        char *ext = plugin_env[strlen(plugin_env)-1] == '/' ? "" : "/";
+        local_path_build(PLUGIN_PATH, plugin_env, ext);
     }
 
 
