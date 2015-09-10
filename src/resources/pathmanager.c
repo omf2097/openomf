@@ -27,12 +27,12 @@ static char* resource_paths[NUMBER_OF_RESOURCES];
 // Build directory
 static void local_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
-    local_paths[path_id] = malloc(len);
+    local_paths[path_id] = realloc(local_paths[path_id], len);
     sprintf(local_paths[path_id], "%s%s", path, ext);
 }
 static void resource_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
-    resource_paths[path_id] = malloc(len);
+    resource_paths[path_id] = realloc(resource_paths[path_id], len);
     sprintf(resource_paths[path_id], "%s%s", path, ext);
 }
 
@@ -54,6 +54,8 @@ int pm_init() {
 
     // Clear everything
     errormessage[0] = 0;
+    memset(local_paths, 0, sizeof(local_paths));
+    memset(resource_paths, 0, sizeof(resource_paths));
 
     // Find local basedir
     local_base_dir = pm_get_local_base_dir();
