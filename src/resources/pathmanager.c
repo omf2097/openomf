@@ -36,6 +36,11 @@ static void resource_path_build(int path_id, const char *path, const char *ext) 
     sprintf(resource_paths[path_id], "%s%s", path, ext);
 }
 
+int str_ends_with_sep(const char *str) {
+    int pos = strlen(str) - 1;
+    return (str[pos] == '/' || str[pos] == '\\');
+}
+
 // Makes sure resource file exists
 int pm_validate_resources() {
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
@@ -110,16 +115,21 @@ int pm_init() {
         }
     }
 
+    char *platform_sep = "/";
+    if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+        platform_sep = "\\";
+    }
+
     // check if we have overrides from the environment
     char *resource_env = getenv("OPENOMF_RESOURCE_DIR");
     if (resource_env) {
-        char *ext = resource_env[strlen(resource_env)-1] == '/' ? "" : "/";
+        char *ext = str_ends_with_sep(resource_env) ? "" : platform_sep;
         local_path_build(RESOURCE_PATH, resource_env, ext);
     }
 
     char *plugin_env = getenv("OPENOMF_PLUGIN_DIR");
     if (plugin_env) {
-        char *ext = plugin_env[strlen(plugin_env)-1] == '/' ? "" : "/";
+        char *ext = str_ends_with_sep(plugin_env) ? "" : platform_sep;
         local_path_build(PLUGIN_PATH, plugin_env, ext);
     }
 
