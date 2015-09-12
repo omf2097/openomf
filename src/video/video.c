@@ -64,7 +64,8 @@ int video_init(int window_w,
     state.target_move_y = 0;
 
     // Load scaler (if any)
-    strncpy(state.scaler_name, scaler_name, sizeof(state.scaler_name));
+    memset(state.scaler_name, 0, sizeof(state.scaler_name));
+    strncpy(state.scaler_name, scaler_name, sizeof(state.scaler_name)-1);
     if(video_load_scaler(scaler_name, scale_factor)) {
         DEBUG("Scaler \"%s\" plugin not found; using Nearest neighbour scaling.", scaler_name);
         state.scale_factor = 1;

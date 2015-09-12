@@ -17,7 +17,7 @@ typedef struct video_state_t {
 
     int scale_factor;
     scaler_plugin scaler;
-    char scaler_name[16];
+    char scaler_name[17];
 
     float fade;
     int target_move_x;
