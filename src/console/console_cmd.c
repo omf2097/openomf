@@ -99,18 +99,21 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
             }
 
             game_player *player = game_state_get_player(gs, 0);
-
-            object *har_obj = game_player_get_har(player);
-            object *obj = malloc(sizeof(object));
-            vec2i pos = object_get_pos(har_obj);
-            int hd = object_get_direction(har_obj);
-            object_create(obj, gs, pos, vec2f_create(0,0));
-            player->har_id = i;
             if (scene_load_har(game_state_get_scene(gs), 0, player->har_id)) {
                 return 1;
             }
 
+            object *har_obj = game_player_get_har(player);
+            vec2i pos = object_get_pos(har_obj);
+            int hd = object_get_direction(har_obj);
+
+            object *obj = malloc(sizeof(object));
+            object_create(obj, gs, pos, vec2f_create(0,0));
+            player->har_id = i;
+
             if(har_create(obj, game_state_get_scene(gs)->af_data[0], hd, player->har_id, player->pilot_id, 0)) {
+                object_free(obj);
+                free(obj);
                 return 1;
             }
 
