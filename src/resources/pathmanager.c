@@ -27,13 +27,18 @@ static char* resource_paths[NUMBER_OF_RESOURCES];
 // Build directory
 static void local_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
-    local_paths[path_id] = malloc(len);
+    local_paths[path_id] = realloc(local_paths[path_id], len);
     sprintf(local_paths[path_id], "%s%s", path, ext);
 }
 static void resource_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
-    resource_paths[path_id] = malloc(len);
+    resource_paths[path_id] = realloc(resource_paths[path_id], len);
     sprintf(resource_paths[path_id], "%s%s", path, ext);
+}
+
+int str_ends_with_sep(const char *str) {
+    int pos = strlen(str) - 1;
+    return (str[pos] == '/' || str[pos] == '\\');
 }
 
 // Makes sure resource file exists
@@ -54,6 +59,8 @@ int pm_init() {
 
     // Clear everything
     errormessage[0] = 0;
+    memset(local_paths, 0, sizeof(local_paths));
+    memset(resource_paths, 0, sizeof(resource_paths));
 
     // Find local basedir
     local_base_dir = pm_get_local_base_dir();
@@ -79,10 +86,10 @@ int pm_init() {
                 local_path_build(PLUGIN_PATH, bin_base_dir, "plugins\\");
                 m_ok = 1;
             } else if(!strcasecmp(SDL_GetPlatform(), "Linux")) {
-                // on linux, the resources will be in ../share/openomf, relative to the binary
+                // on linux, the resources will be in ../share/games/openomf, relative to the binary
                 // so if openomf is installed to /usr/local/bin,
-                // the resources will be in /usr/local/share/openomf
-                local_path_build(RESOURCE_PATH, bin_base_dir, "../share/openomf/");
+                // the resources will be in /usr/local/share/games/openomf
+                local_path_build(RESOURCE_PATH, bin_base_dir, "../share/games/openomf/");
                 local_path_build(PLUGIN_PATH, bin_base_dir, "../lib/openomf/");
                 m_ok = 1;
             } else if(!strcasecmp(SDL_GetPlatform(), "Mac OS X")) {
@@ -107,6 +114,25 @@ int pm_init() {
             local_path_build(PLUGIN_PATH, "plugins/", "");
         }
     }
+
+    char *platform_sep = "/";
+    if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+        platform_sep = "\\";
+    }
+
+    // check if we have overrides from the environment
+    char *resource_env = getenv("OPENOMF_RESOURCE_DIR");
+    if (resource_env) {
+        char *ext = str_ends_with_sep(resource_env) ? "" : platform_sep;
+        local_path_build(RESOURCE_PATH, resource_env, ext);
+    }
+
+    char *plugin_env = getenv("OPENOMF_PLUGIN_DIR");
+    if (plugin_env) {
+        char *ext = str_ends_with_sep(plugin_env) ? "" : platform_sep;
+        local_path_build(PLUGIN_PATH, plugin_env, ext);
+    }
+
 
     // Set resource paths
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
