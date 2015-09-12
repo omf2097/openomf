@@ -105,14 +105,16 @@ void dialog_tick(dialog *dlg) {
 void dialog_event(dialog *dlg, int action) {
     if(!dlg->visible) { return; }
     if(action == ACT_LEFT || action == ACT_RIGHT) {
-        if(dlg->yes && component_is_selected(dlg->yes)) {
-            component_select(dlg->yes, 0);
-            component_select(dlg->no, 1);
-            dlg->result = DIALOG_RESULT_NO;
-        } else if(dlg->no && component_is_selected(dlg->no)) {
-            component_select(dlg->yes, 1);
-            component_select(dlg->no, 0);
-            dlg->result = DIALOG_RESULT_YES_OK;
+        if(dlg->yes && dlg->no) {
+            if(component_is_selected(dlg->yes)) {
+                component_select(dlg->yes, 0);
+                component_select(dlg->no, 1);
+                dlg->result = DIALOG_RESULT_NO;
+            } else if(component_is_selected(dlg->no)) {
+                component_select(dlg->yes, 1);
+                component_select(dlg->no, 0);
+                dlg->result = DIALOG_RESULT_YES_OK;
+            }
         }
     } else if(action == ACT_PUNCH || action == ACT_KICK) {
         if(dlg->clicked) {
