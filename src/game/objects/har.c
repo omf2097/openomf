@@ -1356,9 +1356,11 @@ void har_tick(object *obj) {
         // XXX TODO is there a non-hardcoded value that we could use?
         if(h->executing_move == 0 && (h->state == STATE_CROUCHBLOCK || h->state == STATE_WALKFROM)) {
             push.x = 8.0f * -object_get_direction(obj);
-        } else if (h->executing_move == 1) {
+        }
+        /*else if (h->executing_move == 1) {
             push.x = 4.0f * -object_get_direction(obj);
-        } else {
+        }*/
+        else {
             push.x = 4.0f * -object_get_direction(obj);
         }
         object_set_vel(obj, push);

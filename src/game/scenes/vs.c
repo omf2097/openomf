@@ -65,6 +65,7 @@ vec2i spawn_position(int index, int scientist) {
                     // right arm
                     return vec2i_create(120,80);
             }
+            break;
         case 1:
             // top right gantry
             if (scientist) {
@@ -81,6 +82,7 @@ vec2i spawn_position(int index, int scientist) {
                     //right arm
                     return vec2i_create(260,80);
             }
+            break;
         case 2:
             // middle left gantry
             return vec2i_create(90, 118);
@@ -96,8 +98,10 @@ vec2i spawn_position(int index, int scientist) {
             // bottom right gantry
             return vec2i_create(230,150);
         default:
-            return vec2i_create(160, 200);
+            break;
     }
+    // default
+    return vec2i_create(160, 200);
 }
 
 void cb_vs_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {

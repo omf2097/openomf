@@ -53,7 +53,7 @@ char** menu_get_key(int player, int keynum) {
             case 7: return &k->key1_jump_left;
             case 8: return &k->key1_punch;
             case 9: return &k->key1_kick;
-        }
+        } break;
         case 2: switch(keynum) {
             case 0: return &k->key2_jump_up;
             case 1: return &k->key2_jump_right;
@@ -65,7 +65,7 @@ char** menu_get_key(int player, int keynum) {
             case 7: return &k->key2_jump_left;
             case 8: return &k->key2_punch;
             case 9: return &k->key2_kick;
-        }
+        } break;
     }
     return NULL;
 }
