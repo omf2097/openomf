@@ -21,8 +21,7 @@ typedef struct cutscene_local_t {
     int text_x;
     int text_y;
     int text_width;
-    color color;
-
+    text_settings text_conf;
 } cutscene_local;
 
 int cutscene_next_scene(scene *scene) {
@@ -73,7 +72,7 @@ void cutscene_input_tick(scene *scene) {
 
 void cutscene_render_overlay(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
-    font_render_wrapped(&font_small, local->current, local->text_x, local->text_y, local->text_width, local->color);
+    text_render(&local->text_conf, local->text_x, local->text_y, local->text_width, 200, local->current);
 }
 
 void cutscene_free(scene *scene) {
@@ -96,6 +95,10 @@ void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
 
 int cutscene_create(scene *scene) {
     cutscene_local *local = malloc(sizeof(cutscene_local));
+    memset(local, 0, sizeof(cutscene_local));
+    text_defaults(&local->text_conf);
+    local->text_conf.halign = TEXT_CENTER;
+    local->text_conf.font = FONT_SMALL;
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
 
@@ -107,15 +110,15 @@ int cutscene_create(scene *scene) {
         local->text_x = 10;
         local->text_y = 5;
         local->text_width = 300;
-        local->color = COLOR_YELLOW;
+        local->text_conf.cforeground = COLOR_YELLOW;
         break;
 
       case SCENE_END1:
         text = lang_get(END1_TEXT+p1->pilot_id);
         local->text_x = 10;
-        local->text_y = 160;
+        local->text_y = 157;
         local->text_width = 300;
-        local->color = COLOR_RED;
+        local->text_conf.cforeground = COLOR_RED;
 
         // Pilot face
         animation *ani = &bk_get_info(&scene->bk_data, 3)->ani;
@@ -123,7 +126,7 @@ int cutscene_create(scene *scene) {
         object_create(obj, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
         object_set_animation(obj, ani);
         object_select_sprite(obj, p1->pilot_id);
-        obj->halt=1;
+        object_set_halt(obj, 1);
         game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
 
         // Face effects
@@ -139,7 +142,7 @@ int cutscene_create(scene *scene) {
         local->text_x = 10;
         local->text_y = 160;
         local->text_width = 300;
-        local->color = COLOR_GREEN;
+        local->text_conf.cforeground = COLOR_GREEN;
         break;
     }
 
