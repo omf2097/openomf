@@ -358,6 +358,9 @@ int vs_create(scene *scene) {
     if (player2->selectable) {
         // player1 gets to choose, start at arena 0
         local->arena = 0;
+    } else if (player2->pilot_id == PILOT_KREISSACK) {
+	// force arena 0 when fighting Kreissack in 1 player mode
+	local->arena = 0;
     } else {
         // pick a random arena for 1 player mode
         local->arena = rand_int(5); // srand was done in melee
