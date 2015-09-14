@@ -8,7 +8,7 @@ output_file = open('../src/taglist.c','wb')
 output_file.write('#include <stdlib.h>\n')
 output_file.write('#include "shadowdive/taglist.h"\n\n')
 output_file.write('// This file is generated automatically\n\n')
-output_file.write('const sd_tag sd_tags[] = {\n')
+output_file.write('const sd_tag sd_taglist[] = {\n')
 reader = csv.reader(tags_file)
 count = 0
 for row in reader:
