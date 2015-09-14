@@ -18,6 +18,9 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
 void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const char *value);
 void anim_keylist();
 
+void string_strip(char *str, const char *tag);
+void anim_strip_key(sd_animation *ani, int kn, const char **key, int kcount, const char *tag);
+
 void anim_push(sd_animation *ani);
 void anim_pop(sd_animation *ani);
 

@@ -543,7 +543,21 @@ void af_info(sd_af_file *af) {
     printf("|\n");
 }
 
-
+void move_strip_key(sd_move *move, sd_animation *ani, const char **key, int kcount, const char *tag) {
+    int kn = move_key_get_id(key[0]);
+    switch(kn) {
+        case 15:
+            string_strip(move->move_string, tag);
+            break;
+        case 16:
+            string_strip(move->footer_string, tag);
+            break;
+        default:
+            anim_strip_key(ani, kn, key, kcount, tag);
+            return;
+    }
+    printf("Tag stripped!\n");
+}
 
 int main(int argc, char* argv[]) {
     // commandline argument parser options
@@ -557,13 +571,14 @@ int main(int argc, char* argv[]) {
     struct arg_lit *keylist = arg_lit0(NULL, "keylist", "Prints a list of valid fields for --key.");
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 2, "Select key");
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
+    struct arg_str *strip = arg_str0(NULL, "strip", "<tag>", "Strip tag from selected file, move or key (string)");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .AF file");
     struct arg_file *palette = arg_file0("p", "palette", "<file>", "BK file for palette");
     struct arg_lit *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim and --palette)");
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,new,move,all_moves,sprite,keylist,key,value,output,palette,play,scale,parse,end};
+    void* argtable[] = {help,vers,file,new,move,all_moves,sprite,keylist,key,value,strip,output,palette,play,scale,parse,end};
     const char* progname = "aftool";
 
     // Make sure everything got allocated
@@ -712,6 +727,8 @@ int main(int argc, char* argv[]) {
         if(key->count > 0) {
             if(value->count > 0) {
                 move_set_key(mv, ani, key->sval, key->count, value->sval[0]);
+            } else if(strip->count > 0) {
+                move_strip_key(mv, ani, key->sval, key->count, strip->sval[0]);
             } else {
                 move_get_key(mv, ani, key->sval, key->count, parse->count);
             }
@@ -758,7 +775,12 @@ int main(int argc, char* argv[]) {
 
     // Write output file
     if(output->count > 0) {
-        sd_af_save(&af, output->filename[0]);
+        int ret = sd_af_save(&af, output->filename[0]);
+        if(ret != SD_SUCCESS) {
+            printf("Error attempting to save to %s: %s\n",
+                output->filename[0],
+                sd_get_error(ret));
+        }
     }
 
     // Quit
