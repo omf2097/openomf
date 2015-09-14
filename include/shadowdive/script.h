@@ -141,9 +141,17 @@ int sd_script_get_tick_pos_at_frame(const sd_script *script, int frame_id);
  *
  * \param script Script structure to check
  * \param frame_id Frame ID to search
- * \return Tick length of the frame
+ * \return Tick length of the frame, 0 if frame_id does not exist.
  */
 int sd_script_get_tick_len_at_frame(const sd_script *script, int frame_id);
+
+/*! \brief Find the sprite ID of the given frame
+ *
+ * \param script Script structure to check
+ * \param frame_id Frame ID to search
+ * \return Sprite ID of the given frame, 0 if frame_id does not exist.
+ */
+int sd_script_get_sprite_at_frame(const sd_script *script, int frame_id);
 
 /*! \brief Returns the frame at a given tick
  *
@@ -356,6 +364,58 @@ int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int 
  * \param value Value to set, if tag allows values.
  */
 int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int value);
+
+/*! \brief Append a new frame to the end of the frame list
+ * 
+ * Appends a new frame to the end of the frame list, and sets its tick length and sprite ID.
+ * Tag list will be empty after creation.
+ *
+ * \retval SD_SUCCESS on successful frame creation
+ * \retval SD_INVALID_INPUT if script is NULL
+ *
+ * \param script Script to modify
+ * \param tick_len Tick length of the new frame
+ * \param sprite_id Sprite ID for the new frame
+ */
+int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id);
+
+/*! \brief Clear frame tags
+ * 
+ * Clears all tags from the given frame.
+ *
+ * \retval SD_SUCCESS on successful removal
+ * \retval SD_INVALID_INPUT if script is NULL or if frame_id is nonexistent
+ *
+ * \param script Script to modify
+ * \param frame_id Valid frame ID with tags to clear
+ */
+int sd_script_clear_tags(sd_script *script, int frame_id);
+
+/*! \brief Set frame tick length
+ * 
+ * Sets a new tick length for the given frame.
+ *
+ * \retval SD_SUCCESS on successful operation
+ * \retval SD_INVALID_INPUT if script is NULL or frame_id is nonexistent
+ *
+ * \param script Script to modify
+ * \param frame_id Frame ID to set tick length to
+ * \param duration Tick length to set
+ */
+int sd_script_set_tick_len_at_frame(sd_script *script, int frame_id, int duration);
+
+/*! \brief Set frame sprite ID
+ * 
+ * Sets the sprite ID of the given frame.
+ *
+ * \retval SD_SUCCESS on successful operation
+ * \retval SD_INVALID_INPUT if script is NULL, frame_id is invalid or sprite_id is invalid.
+ *
+ * \param script Script to modify
+ * \param frame_id Frame ID to set sprite ID to
+ * \param sprite_id Sprite ID to set
+ */
+int sd_script_set_sprite_at_frame(sd_script *script, int frame_id, int sprite_id);
 
 /** \brief Returns the frame ID by frame letter.
  *

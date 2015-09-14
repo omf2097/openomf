@@ -5,6 +5,9 @@
 #include "shadowdive/error.h"
 #include "shadowdive/taglist.h"
 
+static void _create_frame(sd_script *script, int number);
+static void _create_tag(sd_script_frame *frame, int number);
+
 static int read_next_int(const char *str, int *pos) {
     int opos = 0;
     char buf[20];
@@ -45,6 +48,48 @@ void sd_script_free(sd_script *script) {
     free(script->frames);
 }
 
+int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id) {
+    if(script == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
+    _create_frame(script, script->frame_count);
+    script->frames[script->frame_count].tick_len = tick_len;
+    script->frames[script->frame_count].sprite = sprite_id;
+    script->frame_count++;
+    return SD_SUCCESS;
+}
+
+int sd_script_clear_tags(sd_script *script, int frame_id) {
+    if(script == NULL || frame_id < 0 || frame_id >= script->frame_count) {
+        return SD_INVALID_INPUT;
+    }
+
+    // Clear out old tags
+    free(script->frames[frame_id].tags);
+    script->frames[frame_id].tags = NULL;
+    script->frames[frame_id].tag_count = 0;
+    return SD_SUCCESS;
+}
+
+int sd_script_set_tick_len_at_frame(sd_script *script, int frame_id, int duration) {
+    if(script == NULL || frame_id < 0 || frame_id >= script->frame_count) {
+        return SD_INVALID_INPUT;
+    }
+
+    script->frames[frame_id].tick_len = duration;
+    return SD_SUCCESS;
+}
+
+int sd_script_set_sprite_at_frame(sd_script *script, int frame_id, int sprite_id) {
+    if(script == NULL || frame_id < 0 || frame_id >= script->frame_count || sprite_id < 0 || sprite_id > 25) {
+        return SD_INVALID_INPUT;
+    }
+
+    script->frames[frame_id].sprite = sprite_id;
+    return SD_SUCCESS;
+}
+
 int sd_script_get_total_ticks(const sd_script *script) {
     return sd_script_get_tick_pos_at_frame(script, script->frame_count);
 }
@@ -63,6 +108,12 @@ int sd_script_get_tick_len_at_frame(const sd_script *script, int frame_id) {
     if(script == NULL || frame_id >= script->frame_count)
         return 0;
     return script->frames[frame_id].tick_len;
+}
+
+int sd_script_get_sprite_at_frame(const sd_script *script, int frame_id) {
+    if(script == NULL || frame_id >= script->frame_count)
+        return 0;
+    return script->frames[frame_id].sprite;
 }
 
 static void _create_tag(sd_script_frame *frame, int number) {
