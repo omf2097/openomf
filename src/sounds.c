@@ -35,6 +35,11 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
     uint32_t header_size = sd_read_udword(r);
     int data_block_count = header_size / 4 - 2;
 
+    // Find block sizes
+    for(int i = 0; i < data_block_count; i++) {
+        sd_read_udword(r);
+    }
+
     // Read blocks
     for(int i = 0; i <= data_block_count; i++) {
         sf->sounds[i].len = sd_read_uword(r);
