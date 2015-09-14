@@ -6,13 +6,13 @@
 "af",0,"Freeze opponent HAR"
 "ag",0,
 "ai",0,
-"am",0,"Tells the HAR when to stop walking"
+"am",0,"Tells the HAR when to stop walking, with the enemy 'e' modifier use coordinates relative to enemy, honors x/y coordinates"
 "ao",0,
 "as",0,"Wandering fire pit orb"
-"at",0,"Sets object position behind enemy har"
+"at",0,"Sets object position behind enemy har, used only by chronos' teleport"
 "aw",0,"Tells if the HAR can pass through walls"
 "ax",0,
-"ar",0,
+"ar",0,"Reverse player direction"
 "al",0,
 "b",0,
 "b1",0,
@@ -45,24 +45,24 @@
 "bn",0,
 "bo",1,
 "br",0,"Draw additively?"
-"bt",0,
+"bt",0,"Dark tint, used by shadow HAR'
 "by",0,
-"cf",0,
+"cf",0,"Only used by shadow scrap, works with 'bm' tag to walk to far corner of arena"
 "cg",0,
 "cl",0,
-"cp",0,"Apply damage?"
+"cp",0,
 "cw",0,
 "cx",1,
 "cy",1,
 "d",1,"Re-enter animation at N ticks"
 "e",0,"Relative enemy position modifier"
-"f",0,"Flip sprite vertically?"
-"g",0,
+"f",0,"Flip sprite vertically"
+"g",0,"something to do with wall collisions?"
 "h",0,"Hover"
 "i",0,
 "jf2",0,"Allow chaining to destruction"
 "jf",0,"Allow chaining to scrap"
-"jg",0,
+"jg",0,"Every HAR uses this in the 'getup' animation, purpose unknown, might be 'grab' (like standing throw)?"
 "jh",0,"Allow chaining to 'high' moves"
 "jj",0,"Allow chaining to airborne moves"
 "jl",0,"Allow chaining to 'low' moves"
@@ -74,8 +74,8 @@
 "l",1,"Sound loudness"
 "ma",1,
 "mc",0,
-"md",1,"Destroy animation N?"
-"mg",1,"Gravity for spawned animation"
+"md",1,"Destroy animation N"
+"mg",1,"Gravity for spawned animation, default 0"
 "mi",1,
 "mm",1,"Manipulate mrx and mry calculations"
 "mn",1,
@@ -88,7 +88,7 @@
 "mx",1,"X position of new animation"
 "my",1,"Y position of new animation"
 "m",1,"Create instance of animation N"
-"n",0,"Disable hitcoords for the current frame"
+"n",0,"Disable collision detection for the current frame"
 "ox",1,"Set sprite X correction for this frame"
 "oy",1,"Set sprite Y correction for this frame"
 "pa",0,"Enable color effect for HAR palette effects"
@@ -116,9 +116,9 @@
 "smo",1,"Play music track N"
 "sp",1,
 "sw",1,
-"t",0,
+"t",0,"Prevent sound from playing if other HAR is blocking"
 "ua",0,"Disable gravity for opponent"
-"ub",0,"Motion blur effect?"
+"ub",0,"Motion blur effect"
 "uc",0,
 "ud",0,
 "ue",0,"Damage enemy if on the ground"
@@ -145,8 +145,8 @@
 "y",1,"Scale image as % of height (default 100)"
 "zg",0,"Never used?"
 "zh",0,"Never used?"
-"zj",0,"Invulnerable to jumping attacks?"
+"zj",0,"Invulnerable to jumping attacks"
 "zl",0,"Never used?"
 "zm",0,"Never used?"
-"zp",0,"Invulnerable to projectiles?"
-"zz",0,"Invulnerable to any attacks?"
+"zp",0,"Invulnerable to projectiles"
+"zz",0,"Invulnerable to any attacks"
