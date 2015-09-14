@@ -267,7 +267,7 @@ void vs_render(scene *scene) {
 
         // arena description
         font_render_wrapped(&font_small, lang_get(66+local->arena), 56+72, 160, (211-72)-4, COLOR_GREEN);
-    } else if (player2->pilot_id == 10 && settings_get()->gameplay.difficulty < 2) {
+    } else if (player2->pilot_id == PILOT_KREISSACK && settings_get()->gameplay.difficulty < 2) {
         // kriessack, but not on Veteran or higher
         font_render_wrapped(&font_small, lang_get(747), 59, 160, 200, COLOR_YELLOW);
     } else {
@@ -439,7 +439,7 @@ int vs_create(scene *scene) {
     local->too_pathetic_dialog.userdata = scene;
     local->too_pathetic_dialog.clicked = vs_too_pathetic_dialog_clicked;
 
-    if (player2->pilot_id == 10 && settings_get()->gameplay.difficulty < 2) {
+    if (player2->pilot_id == PILOT_KREISSACK && settings_get()->gameplay.difficulty < 2) {
         // kriessack, but not on Veteran or higher
         dialog_show(&local->too_pathetic_dialog, 1);
     }
