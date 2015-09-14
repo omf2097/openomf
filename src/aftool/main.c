@@ -546,9 +546,6 @@ void af_info(sd_af_file *af) {
 void move_strip_key(sd_move *move, sd_animation *ani, const char **key, int kcount, const char *tag) {
     int kn = move_key_get_id(key[0]);
     switch(kn) {
-        case 15:
-            string_strip(move->move_string, tag);
-            break;
         case 16:
             string_strip(move->footer_string, tag);
             break;
