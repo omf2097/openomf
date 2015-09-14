@@ -83,9 +83,6 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     // Read enemy data
     for(int i = 0; i < trn->enemy_count; i++) {
         trn->enemies[i] = malloc(sizeof(sd_pilot));
-        if(trn->enemies[i] == NULL) {
-            return SD_OUT_OF_MEMORY;
-        }
 
         // Find data length
         sd_reader_set(r, offset_list[i]);
@@ -230,7 +227,7 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     }
 
     // Let's write our current offset to the victory text offset position
-    long offset = sd_writer_pos(w);
+    uint32_t offset = sd_writer_pos(w);
     sd_writer_seek_start(w, 4);
     sd_write_dword(w, (uint32_t)offset);
     sd_writer_seek_start(w, offset);

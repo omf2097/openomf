@@ -28,23 +28,15 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
     // Read header
     uint32_t first_udword = sd_read_udword(r);
     if(first_udword != 0) {
+        sd_reader_close(r);
         return SD_FILE_INVALID_TYPE;
     }
 
     uint32_t header_size = sd_read_udword(r);
     int data_block_count = header_size / 4 - 2;
 
-    // Find block sizes
-    uint32_t data_block_offsets[data_block_count+1];
-    for(int i = 0; i < data_block_count; i++) {
-        data_block_offsets[i] = sd_read_udword(r);
-    }
-    data_block_offsets[data_block_count] = sd_reader_filesize(r);
-    (void)(data_block_offsets);
-
     // Read blocks
     for(int i = 0; i <= data_block_count; i++) {
-        //sd_reader_set(r, data_block_offsets[i-1]);
         sf->sounds[i].len = sd_read_uword(r);
         if(sf->sounds[i].len > 0) {
             sf->sounds[i].unknown = sd_read_ubyte(r);
@@ -99,6 +91,7 @@ const sd_sound* sd_sounds_get(const sd_sound_file *sf, int id) {
 }
 
 int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename) {
+    int ret = SD_SUCCESS;
     if(sf == NULL || filename == NULL || num < 0 || num >= 299) {
         return SD_INVALID_INPUT;
     }
@@ -111,7 +104,8 @@ int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename) {
     // Make sure the file seems right
     uint32_t magic_number = sd_read_udword(r);
     if(magic_number != 0x2e736e64) {
-        return SD_FILE_INVALID_TYPE;
+        ret = SD_FILE_INVALID_TYPE;
+        goto error_0;
     }
 
     // Header data
@@ -123,7 +117,8 @@ int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename) {
 
     // Check data format
     if(data_type != 2 || data_freq != 8000 || data_channels != 1) {
-        return SD_FILE_INVALID_TYPE;
+        ret = SD_FILE_INVALID_TYPE;
+        goto error_0;
     }
 
     // Skip annotation field and jump to data start
@@ -151,8 +146,9 @@ int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename) {
         sf->sounds[num].data[i] = sd_read_byte(r) + 128;
     }
 
+error_0:
     sd_reader_close(r);
-    return SD_SUCCESS;
+    return ret;
 }
 
 int sd_sound_to_au(const sd_sound_file *sf, int num, const char *filename) {

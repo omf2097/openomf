@@ -138,6 +138,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     png_structp png_ptr;
     png_infop info_ptr;
     int ret = SD_SUCCESS;
+    int got = 0;
     png_bytep *row_pointers;
 
     if(img == NULL || filename == NULL) {
@@ -152,8 +153,8 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     }
 
     uint8_t sig[8];
-    fread(sig, 1, 8, handle);
-    if(!png_check_sig(sig, 8)) {
+    got = fread(sig, 1, 8, handle);
+    if(got != 8 || !png_check_sig(sig, 8)) {
         ret = SD_FILE_INVALID_TYPE;
         goto error_1;
     }
@@ -236,20 +237,15 @@ error_0:
 
 int sd_vga_image_to_png(const sd_vga_image *img, const sd_palette *pal, const char *filename) {
 #ifdef USE_PNG
+    if(img == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     png_structp png_ptr;
     png_infop info_ptr;
     png_colorp palette;
     int ret = SD_SUCCESS;
-
     char *rows[img->h];
-    for(int y = 0; y < img->h; y++) {
-        rows[y] = img->data + y * img->w;
-    }
-
-    if(img == NULL || filename == NULL) {
-        ret = SD_INVALID_INPUT;
-        goto error_0;
-    }
 
     FILE *handle = fopen(filename, "wb");
     if(handle == NULL) {
@@ -298,6 +294,10 @@ int sd_vga_image_to_png(const sd_vga_image *img, const sd_palette *pal, const ch
     if(setjmp(png_jmpbuf(png_ptr))) {
         ret = SD_OUT_OF_MEMORY;
         goto error_3;
+    }
+
+    for(int y = 0; y < img->h; y++) {
+        rows[y] = img->data + y * img->w;
     }
 
     // Write data

@@ -71,11 +71,13 @@ int sd_palette_from_gimp_palette(sd_palette *palette, const char *filename) {
 
     // Read and match header
     if(!sd_match(rd, "GIMP Palette\n", 13)) {
+        sd_reader_close(rd);
         return SD_FILE_INVALID_TYPE;
     }
     while(1) {
         sd_read_line(rd, tmp, 128);
         if(!sd_reader_ok(rd)) {
+            sd_reader_close(rd);
             return SD_FILE_INVALID_TYPE;
         }
         if(tmp[0] == '#') {
