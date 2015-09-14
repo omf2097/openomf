@@ -269,6 +269,41 @@ void test_clear_tags(void) {
     sd_script_free(&s);
 }
 
+void test_delete_tag(void) {
+    sd_script s;
+
+    // Create a test case
+    CU_ASSERT(sd_script_create(&s) == SD_SUCCESS);
+    CU_ASSERT(sd_script_append_frame(&s, 100, 0) == SD_SUCCESS);
+    CU_ASSERT(sd_script_set_tag(&s, 0, "bpn", 10) == SD_SUCCESS);
+    CU_ASSERT(s.frames[0].tag_count == 1);
+    CU_ASSERT(sd_script_set_tag(&s, 0, "s", 15) == SD_SUCCESS);
+    CU_ASSERT(s.frames[0].tag_count == 2);
+    CU_ASSERT(sd_script_set_tag(&s, 0, "sf", 100) == SD_SUCCESS);
+    CU_ASSERT(s.frames[0].tag_count == 3);
+
+    // Real tests
+    CU_ASSERT(sd_script_delete_tag(&s, 0, "bpn") == SD_SUCCESS);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "bpn") == 0);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "s") == 15);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "sf") == 100);
+    CU_ASSERT(s.frames[0].tag_count == 2);
+
+    CU_ASSERT(sd_script_delete_tag(&s, 0, "s") == SD_SUCCESS);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "bpn") == 0);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "s") == 0);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "sf") == 100);
+    CU_ASSERT(s.frames[0].tag_count == 1);
+
+    CU_ASSERT(sd_script_delete_tag(&s, 0, "sf") == SD_SUCCESS);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "bpn") == 0);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "s") == 0);
+    CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "sf") == 0);
+    CU_ASSERT(s.frames[0].tag_count == 0);
+
+    sd_script_free(&s);
+}
+
 void test_set_tick_len_at_frame(void) {
     sd_script s;
 
@@ -334,6 +369,7 @@ void script_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "test of sd_script_next_frame_with_sprite", test_next_frame_with_sprite) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_next_frame_with_tag", test_next_frame_with_tag) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_set_tag", test_set_tag) == NULL) { return; }
+    if(CU_add_test(suite, "test of sd_script_delete_tag", test_delete_tag) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_append_frame", test_append_frame) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_clear_tags", test_clear_tags) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_script_set_tick_len_at_frame", test_set_tick_len_at_frame) == NULL) { return; }

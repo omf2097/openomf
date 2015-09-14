@@ -365,6 +365,19 @@ int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int 
  */
 int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int value);
 
+/*! \brief Deletes a tag from the given frame
+ *
+ * Deletes the tag from the given frame. If the tag does not exist, does nothing.
+ *
+ * \retval SD_SUCCESS On succesful tag set operation
+ * \retval SD_INVALID_INPUT if script or tag is NULL or the frame does not exist.
+ *
+ * \param script Script to modify
+ * \param frame_id Frame ID to modify
+ * \param tag Tag to delete
+ */
+int sd_script_delete_tag(sd_script *script, int frame_id, const char* tag);
+
 /*! \brief Append a new frame to the end of the frame list
  * 
  * Appends a new frame to the end of the frame list, and sets its tick length and sprite ID.

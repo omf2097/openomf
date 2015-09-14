@@ -425,6 +425,40 @@ int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int 
     return -1;
 }
 
+int sd_script_delete_tag(sd_script *script, int frame_id, const char* tag) {
+    if(script == NULL || tag == NULL)
+        return SD_INVALID_INPUT;
+    if(frame_id < 0 || frame_id >= script->frame_count)
+        return SD_INVALID_INPUT;
+
+    sd_script_frame *frame = &script->frames[frame_id];
+    if(frame->tag_count <= 0) {
+        return SD_SUCCESS;
+    }
+
+    // Find the tag.
+    int tag_num = -1;
+    for(int i = 0; i < frame->tag_count; i++) {
+        if(strcmp(frame->tags[i].key, tag) == 0) {
+            tag_num = i;
+            break;
+        }
+    }
+    if(tag_num < 0) {
+        return SD_SUCCESS; // No tag, stop here
+    }
+
+    // Move if this is not the last entry
+    if(tag_num + 1 < frame->tag_count) {
+        void *dst = frame->tags + tag_num;
+        void *src = frame->tags + tag_num + 1;
+        size_t len = (frame->tag_count - tag_num - 1) * sizeof(sd_script_tag);
+        memmove(dst, src, len);
+    }
+    frame->tag_count--;
+    return SD_SUCCESS;
+}
+
 int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int value) {
     if(script == NULL || tag == NULL)
         return SD_INVALID_INPUT;
