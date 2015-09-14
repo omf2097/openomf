@@ -118,55 +118,46 @@ int player_frame_get(const object *obj, const char *tag) {
     return sd_script_get(frame, tag);
 }
 
+/*
+ * Try to spread <delay> ticks over the 'startup' frames; those that don't spawn projectiles or have hit coordinates
+ */
 void player_set_delay(object *obj, int delay) {
-
-    /*
-    //try to spread <delay> ticks over the 'startup' frames; those that don't spawn projectiles or have hit coordinates
-    int r;
-    sd_stringparser_frame n;
-    int frames = 99;
     // find the first frame that spawns a projectile, if any
-    if((r =next_frame_with_tag(obj->animation_state.parser, 0, "m", &n)) >= 0) {
-        frames = n.id;
-    }
+    int r = sd_script_next_frame_with_tag(&obj->animation_state.parser, "m", 0);
+    int frames = (r >= 0) ? r : 99;
 
     // find the first frame with hit coordinates
     iterator it;
     collision_coord *cc;
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
     while((cc = iter_next(&it)) != NULL) {
-        if((r = next_frame_with_sprite(obj->animation_state.parser, 0, cc->frame_index, &n)) >= 0) {
-            if (n.id < frames) {
-                frames = n.id;
-            }
-        }
+        r = sd_script_next_frame_with_sprite(&obj->animation_state.parser, cc->frame_index, 0);
+        frames = (r >= 0 && r < frames) ? r : frames;
     }
 
-    if (!frames) {
+    // No frame found, just quit now.
+    if(!frames) {
         return;
     }
 
-    DEBUG("animation has %d initializer frames", frames);
+    DEBUG("Animation has %d initializer frames", frames);
 
-    int delay_per_frame = delay/frames;
+    int delay_per_frame = delay / frames;
     int rem = delay % frames;
     for(int i = 0; i < frames; i++) {
-        int olddur;
-        sd_stringparser_peek(obj->animation_state.parser, i, &n);
-        olddur = n.duration;
-        int newduration = n.duration + delay_per_frame;
-        if (rem) {
-            newduration++;
+        int duration = sd_script_get_tick_len_at_frame(&obj->animation_state.parser, i);
+        int old_dur = duration;
+        int new_duration = duration + delay_per_frame;
+        if(rem) {
+            new_duration++;
             rem--;
         }
 
-        sd_stringparser_set_frame_duration(obj->animation_state.parser, i, newduration);
-        sd_stringparser_peek(obj->animation_state.parser, i, &n);
-        DEBUG("changed duration of frame %d from %d to %d", i, olddur, n.duration);
-        (void)(olddur); // Fixes compile complaints :P
+        sd_script_set_tick_len_at_frame(&obj->animation_state.parser, i, new_duration);
+        duration = sd_script_get_tick_len_at_frame(&obj->animation_state.parser, i);
+        DEBUG("changed duration of frame %d from %d to %d", i, old_dur, duration);
+        (void)(old_dur); // Fixes compile complaints :P
     }
-
-    */
 }
 
 void player_run(object *obj) {
