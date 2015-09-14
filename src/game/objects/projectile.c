@@ -13,6 +13,7 @@ typedef struct projectile_local_t {
     af *af_data;
     int wall_bounce;
     int ground_freeze;
+    int invincible;
 } projectile_local;
 
 void projectile_tick(object *obj) {
@@ -60,7 +61,7 @@ void projectile_move(object *obj) {
             obj->pos.x = ARENA_RIGHT_WALL;
             obj->vel.x = -obj->vel.x * dampen;
         }
-    } else {
+    } else if (!local->invincible) {
         if(obj->pos.x < ARENA_LEFT_WALL) {
             obj->pos.x = ARENA_LEFT_WALL;
             obj->animation_state.finished = 1;
@@ -150,6 +151,11 @@ object *projectile_get_owner(object *obj) {
 void projectile_set_wall_bounce(object *obj, int bounce) {
     projectile_local *local = object_get_userdata(obj);
     local->wall_bounce = bounce;
+}
+
+void projectile_set_invincible(object *obj) {
+    projectile_local *local = object_get_userdata(obj);
+    local->invincible = 1;
 }
 
 void projectile_stop_on_ground(object *obj, int stop) {

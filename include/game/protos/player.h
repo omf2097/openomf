@@ -54,6 +54,7 @@ typedef struct player_animation_state_t {
     uint8_t reverse;
     uint8_t finished;
     uint8_t disable_d;
+    uint8_t shadow_corner_hack;
 
     void *spawn_userdata;
     void *destroy_userdata;

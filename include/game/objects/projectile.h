@@ -11,6 +11,7 @@ af *projectile_get_af_data(object *obj);
 object *projectile_get_owner(object *obj);
 void projectile_bootstrap(object *obj);
 void projectile_set_wall_bounce(object *obj, int bounce);
+void projectile_set_invincible(object *obj);
 void projectile_stop_on_ground(object *obj, int stop);
 
 #endif // _PROJECTILE_H

@@ -62,6 +62,7 @@ void player_create(object *obj) {
     obj->animation_state.destroy_userdata = NULL;
     obj->animation_state.disable_d = 0;
     obj->animation_state.enemy = NULL;
+    obj->animation_state.shadow_corner_hack = 0;
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
     sd_script_create(&obj->animation_state.parser);
@@ -240,6 +241,11 @@ void player_run(object *obj) {
             // Animation creation command
             if(sd_script_isset(frame, "m") && state->spawn != NULL) {
                 int mx = 0;
+                int my = 0;
+                if (obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65) {
+                    mx = state->enemy->pos.x;
+                    my = state->enemy->pos.y;
+                }
                 if (sd_script_isset(frame, "mrx")) {
                     int mrx = sd_script_get(frame, "mrx");
                     int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mrx;
@@ -249,7 +255,6 @@ void player_run(object *obj) {
                     mx = obj->start.x + (sd_script_get(frame, "mx") * object_get_direction(obj));
                 }
 
-                int my = 0;
                 if (sd_script_isset(frame, "mry")) {
                     int mry = sd_script_get(frame, "mry");
                     int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mry;
@@ -383,11 +388,11 @@ void player_run(object *obj) {
                 rstate->o_correction.y = 0;
             }
 
-            if (sd_script_isset(frame, "bm")) {
-                // hack because we don't have 'walk to other HAR' implemented
-                obj->pos.x = state->enemy->pos.x;
-                obj->pos.y = state->enemy->pos.y;
-                player_next_frame(state->enemy);
+            if(sd_script_isset(frame, "ar")) {
+                DEBUG("flipping direction %d -> %d", object_get_direction(obj), object_get_direction(obj) *-1);
+                // reverse direction
+                object_set_direction(obj, object_get_direction(obj) * -1);
+                DEBUG("flipping direction now %d", object_get_direction(obj));
             }
 
             // See if x+/- or y+/- are set and save values
@@ -403,21 +408,44 @@ void player_run(object *obj) {
                 trans_x = sd_script_get(frame, "x+") * object_get_direction(obj);
             }
 
-            // Handle vx+/-, ex+/-, vy+/-, ey+/-, x+/-. y+/-
-            if(trans_x || trans_y) {
-                if(sd_script_isset(frame, "v")) {
-                    obj->vel.x += trans_x;
-                    obj->vel.y += trans_y;
-                } else {
-                    if(sd_script_isset(frame, "e")) {
-                        obj->enemy_slide_state.timer = frame->tick_len;
-                        obj->enemy_slide_state.duration = 0;
-                        obj->enemy_slide_state.dest.x = trans_x;
-                        obj->enemy_slide_state.dest.y = trans_y;
+            if (sd_script_isset(frame, "bm")) {
+                if (sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
+                    // destination is the enemy's position
+                    DEBUG("BE tag with x/y offsets: %d %d %d %d", trans_x, trans_y, object_get_direction(obj), object_get_direction(state->enemy));
+                    DEBUG("enemy x %d modified trans_x: %d (%d * %d *%d)", state->enemy->pos.x, (trans_x * object_get_direction(obj) * object_get_direction(state->enemy)), object_get_direction(obj), object_get_direction(state->enemy));
+                    // hack because we don't have 'walk to other HAR' implemented
+                    obj->pos.x = state->enemy->pos.x + (trans_x * object_get_direction(obj) * object_get_direction(state->enemy));
+                    obj->pos.y = state->enemy->pos.y + trans_y;
+                } else if (sd_script_isset(frame, "cf")) {
+                    // shadow's scrap, position is in the corner behind shadow
+                    if (object_get_direction(obj) == OBJECT_FACE_RIGHT) {
+                        obj->pos.x = 0;
                     } else {
-                        obj->slide_state.timer = frame->tick_len;
-                        obj->slide_state.vel.x = (float)trans_x;
-                        obj->slide_state.vel.y = (float)trans_y;
+                        obj->pos.x = 320;
+                    }
+                    // flip the HAR's position for this animation
+                    obj->animation_state.shadow_corner_hack = 1;
+                } else {
+                    PERROR("unknown end position for BE tag");
+                }
+                player_next_frame(state->enemy);
+            } else {
+                // Handle vx+/-, ex+/-, vy+/-, ey+/-, x+/-. y+/-
+                if(trans_x || trans_y) {
+                    if(sd_script_isset(frame, "v")) {
+                        obj->vel.x += trans_x;
+                        obj->vel.y += trans_y;
+                    } else {
+                        if(sd_script_isset(frame, "e")) {
+                            obj->enemy_slide_state.timer = frame->tick_len;
+                            obj->enemy_slide_state.duration = 0;
+                            obj->enemy_slide_state.dest.x = trans_x;
+                            obj->enemy_slide_state.dest.y = trans_y;
+                        } else {
+                            obj->slide_state.timer = frame->tick_len;
+                            obj->slide_state.vel.x = (float)trans_x;
+                            obj->slide_state.vel.y = (float)trans_y;
+                        }
                     }
                 }
             }
@@ -508,20 +536,13 @@ void player_run(object *obj) {
                 obj->pos.x = obj->animation_state.enemy->pos.x + (15 * object_get_direction(obj));
             }
 
-            if(sd_script_isset(frame, "ar")) {
-                DEBUG("flipping direction %d -> %d", object_get_direction(obj), object_get_direction(obj) *-1);
-                // reverse direction
-                object_set_direction(obj, object_get_direction(obj) * -1);
-                DEBUG("flipping direction now %d", object_get_direction(obj));
-            }
-
             // Set render settings
             if(frame->sprite < 25) {
                 object_select_sprite(obj, frame->sprite);
                 if(obj->cur_sprite != NULL) {
                     rstate->duration = frame->tick_len;
                     rstate->blendmode = sd_script_isset(frame, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
-                    if(sd_script_isset(frame, "r")) {
+                    if(sd_script_isset(frame, "r") || obj->animation_state.shadow_corner_hack) {
                         rstate->flipmode ^= FLIP_HORIZONTAL;
                     }
                     if(sd_script_isset(frame, "f")) {

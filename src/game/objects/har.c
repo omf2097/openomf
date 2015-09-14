@@ -230,7 +230,9 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     har *h = object_get_userdata(obj);
     af_move *move = af_get_move(h->af_data, animation_id);
     char *s = (char*)str_c(&move->move_string);
+    uint8_t has_corner_hack = obj->animation_state.shadow_corner_hack;
     object_set_animation(obj, &move->ani);
+    obj->animation_state.shadow_corner_hack = has_corner_hack;
     if (s != NULL && strcasecmp(s, "!") && strcasecmp(s, "0") && h->delay > 0) {
         DEBUG("delaying move %d %s by %d ticks", move->id, s, h->delay);
         object_set_delay(obj, h->delay);
@@ -367,10 +369,20 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, int g, void *userdat
         obj->animation_state.enemy = parent->animation_state.enemy;
         projectile_create(obj);
 
+        // allow projectiles to spawn projectiles, eg. shadow's scrap animation
+        object_set_spawn_cb(obj, cb_har_spawn_object, h);
+
         // Handle Nova animation where the bot gets destroyed in single player
         if(h->id == 10 && id >= 25 && id <= 30) {
             projectile_set_wall_bounce(obj, 1);
             projectile_stop_on_ground(obj, 1);
+        }
+
+
+        if (h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
+            // some scrap animations, like shadow's spawn projectiles that might collide with the wall
+            // and we don't want them to disappear
+            projectile_set_invincible(obj);
         }
 
         game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
