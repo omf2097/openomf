@@ -5,6 +5,7 @@ find_program(GIT_COMMAND git)
 if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libShadowDive/src" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dumb/dumb")
     if(GIT_COMMAND)
         execute_process(
+            COMMAND ${GIT_COMMAND} submodule sync
             COMMAND ${GIT_COMMAND} submodule update --init --recursive
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
     else(GIT_COMMAND)
@@ -14,6 +15,7 @@ endif()
 
 if(GIT_COMMAND)
     add_custom_target(update-deps
+        COMMAND ${GIT_COMMAND} submodule sync
         COMMAND ${GIT_COMMAND} submodule update --init --recursive
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 endif(GIT_COMMAND)
