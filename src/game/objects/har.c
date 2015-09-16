@@ -240,7 +240,6 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
 
     if (move->category == CAT_JUMPING) {
         h->state = STATE_JUMPING;
-        object_set_gravity(obj, h->af_data->fall_speed);
     }
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
@@ -436,7 +435,6 @@ void har_move(object *obj) {
 
         // Change animation from jump to walk or idle,
         // depending on horizontal velocity
-        object_set_gravity(obj, 1);
         if(h->state == STATE_JUMPING) {
             /*if(object_get_hstate(obj) == OBJECT_MOVING) {*/
                 /*h->state = STATE_WALKING;*/
@@ -1906,7 +1904,6 @@ int har_act(object *obj, int act_type) {
                     vy = vy * 1.25;
                     vx = vx * 1.25;
                 }
-                object_set_gravity(obj, h->af_data->fall_speed);
                 object_set_vel(obj, vec2f_create(vx,vy));
                 har_event_jump(h, jump_dir);
                 break;
@@ -2137,8 +2134,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_pal_offset(obj, player_id * 48);
 
     // Object related stuff
-    /*object_set_gravity(obj, local->af_data->fall_speed);*/
-    object_set_gravity(obj, 1);
+    object_set_gravity(obj, local->af_data->fall_speed);
     object_set_layers(obj, LAYER_HAR | (player_id == 0 ? LAYER_HAR1 : LAYER_HAR2));
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);

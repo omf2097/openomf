@@ -627,7 +627,7 @@ void object_set_layers(object *obj, int layers) { obj->layers = layers; }
 void object_set_group(object *obj, int group) { obj->group = group; }
 void object_set_gravity(object *obj, float gravity) { obj->gravity = gravity; }
 
-int object_get_gravity(const object *obj) { return obj->gravity; }
+float object_get_gravity(const object *obj) { return obj->gravity; }
 int object_get_group(const object *obj) { return obj->group; }
 int object_get_layers(const object *obj) { return obj->layers; }
 

@@ -192,7 +192,7 @@ int object_get_repeat(const object *obj);
 void object_set_direction(object *obj, int dir);
 int object_get_direction(const object *obj);
 
-int object_get_gravity(const object *obj);
+float object_get_gravity(const object *obj);
 int object_get_group(const object *obj);
 int object_get_layers(const object *obj);
 
