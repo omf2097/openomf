@@ -2096,7 +2096,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     pilot_get_info(&p, pilot_id);
 
     // Health, endurance
-    local->health_max = local->health = (af_data->health * p.endurance + 25)/35;
+    local->health_max = local->health = af_data->health * (p.endurance + 25)/35;
     local->endurance_max = local->endurance = (af_data->endurance * (p.endurance + 25) )/37;
     /*local->af_data->forward_speed *= p.agility;*/
     /*local->af_data->reverse_speed *= p.agility;*/
