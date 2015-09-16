@@ -122,34 +122,37 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
         // Initialize animation
         if((bk->anims[animno] = malloc(sizeof(sd_bk_anim))) == NULL) {
             ret = SD_OUT_OF_MEMORY;
-            goto cleanup;
+            goto exit_0;
         }
         if((ret = sd_bk_anim_create(bk->anims[animno])) != SD_SUCCESS) {
-            goto cleanup;
+            goto exit_0;
         }
         if((ret = sd_bk_anim_load(r, bk->anims[animno])) != SD_SUCCESS) {
-            goto cleanup;
+            goto exit_0;
         }
     }
 
     // Read background image
     if((bk->background = malloc(sizeof(sd_vga_image))) == NULL) {
         ret = SD_OUT_OF_MEMORY;
-        goto cleanup;
+        goto exit_0;
     }
     if((ret = sd_vga_image_create(bk->background, img_w, img_h)) != SD_SUCCESS) {
-        free(bk->background);
-        goto cleanup;
+        goto exit_0;
     }
-    sd_read_buf(r, bk->background->data, img_h * img_w);
+    int bsize = img_w * img_h;
+    sd_read_buf(r, bk->background->data, bsize);
 
     // Read palettes
     bk->palette_count = sd_read_ubyte(r);
     for(uint8_t i = 0; i < bk->palette_count; i++) {
         if((bk->palettes[i] = malloc(sizeof(sd_palette))) == NULL) {
-            return SD_OUT_OF_MEMORY;
+            ret = SD_OUT_OF_MEMORY;
+            goto exit_0;
         }
-        sd_palette_load(r, bk->palettes[i]);
+        if((ret = sd_palette_load(r, bk->palettes[i])) != SD_SUCCESS) {
+            goto exit_0;
+        }
     }
 
     // Read soundtable
@@ -158,8 +161,7 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     // Fix missing sprites
     sd_bk_postprocess(bk);
 
-cleanup:
-    // Close & return
+exit_0:
     sd_reader_close(r);
     return ret;
 }
