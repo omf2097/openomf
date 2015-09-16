@@ -59,6 +59,7 @@ void list_delete(list *list, iterator *iter) {
     list_node *node = (list_node*)iter->vnow;
     if(node == NULL && iter->prev == NULL) { node = list->first; }
     if(node == NULL && iter->next == NULL) { node = list->last;  }
+    if(node == NULL) return;
     if(node->prev != NULL)  { node->prev->next = node->next; }
     if(node->next != NULL)  { node->next->prev = node->prev; }
     if(node == list->first) { list->first = node->next; }
