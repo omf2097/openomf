@@ -11,5 +11,6 @@ uint16_t conv_uword(const char* data);
 int16_t  conv_word(const char* data);
 uint32_t conv_udword(const char* data);
 int32_t  conv_dword(const char* data);
+float    conv_float(const char* data);
 
 #endif // _CONVERSIONS_H

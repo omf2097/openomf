@@ -191,14 +191,14 @@ int main(int argc, char *argv[]) {
     // Root
     fprintf(f, "<h2>General information</h2><table><tr><th>Key</th><th>Value</th></tr>");
     fprintf(f, "<tr><td>File ID</td><td>%d</td></tr>", af.file_id);
-    fprintf(f, "<tr><td>Unknown A</td><td>%d</td></tr>", af.unknown_a);
-    fprintf(f, "<tr><td>Endurance</td><td>%d</td></tr>", af.endurance);
+    fprintf(f, "<tr><td>Exec window</td><td>%d</td></tr>", af.exec_window);
+    fprintf(f, "<tr><td>Endurance</td><td>%f</td></tr>", af.endurance);
     fprintf(f, "<tr><td>Unknown B</td><td>%d</td></tr>", af.unknown_b);
-    fprintf(f, "<tr><td>Power</td><td>%d</td></tr>", af.power);
-    fprintf(f, "<tr><td>Fwd speed</td><td>%d</td></tr>", af.forward_speed);
-    fprintf(f, "<tr><td>Rev speed</td><td>%d</td></tr>", af.reverse_speed);
-    fprintf(f, "<tr><td>Jump speed</td><td>%d</td></tr>", af.jump_speed);
-    fprintf(f, "<tr><td>Fall speed</td><td>%d</td></tr>", af.fall_speed);
+    fprintf(f, "<tr><td>Health</td><td>%d</td></tr>", af.health);
+    fprintf(f, "<tr><td>Fwd speed</td><td>%f</td></tr>", af.forward_speed);
+    fprintf(f, "<tr><td>Rev speed</td><td>%f</td></tr>", af.reverse_speed);
+    fprintf(f, "<tr><td>Jump speed</td><td>%f</td></tr>", af.jump_speed);
+    fprintf(f, "<tr><td>Fall speed</td><td>%f</td></tr>", af.fall_speed);
     fprintf(f, "<tr><td>Unknown C</td><td>%d</td></tr>", af.unknown_c);
     fprintf(f, "</table>");
 

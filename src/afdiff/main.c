@@ -27,6 +27,14 @@ int null_diff(const char* label, void *a, void *b) {
     return 0;
 }
 
+int float_diff(const char* label, float a, float b) {
+    if(a != b) {
+        printf("%-30s: %-6f != %-6f\n", label, a, b);
+        return 1;
+    }
+    return 0;
+}
+
 int str_diff(const char* label, const char *a, const char *b) {
     if(strcmp(a, b) != 0) {
         printf("%-30s: A      != B\n", label);
@@ -39,14 +47,14 @@ int base_info_diff(sd_af_file *a, sd_af_file *b) {
     int d_found = 0;
     printf("Header:\n");
     d_found |= int_diff(" * File ID", VNAME(file_id));
-    d_found |= int_diff(" * Unknown A", VNAME(unknown_a));
-    d_found |= int_diff(" * Endurance", VNAME(endurance));
+    d_found |= int_diff(" * Exec window", VNAME(exec_window));
+    d_found |= float_diff(" * Endurance", VNAME(endurance));
     d_found |= int_diff(" * Unknown B", VNAME(unknown_b));
-    d_found |= int_diff(" * Power", VNAME(power));
-    d_found |= int_diff(" * Fwd speed", VNAME(forward_speed));
-    d_found |= int_diff(" * Rev speed", VNAME(reverse_speed));
-    d_found |= int_diff(" * Jump speed", VNAME(jump_speed));
-    d_found |= int_diff(" * Fall speed", VNAME(fall_speed));
+    d_found |= int_diff(" * Health", VNAME(health));
+    d_found |= float_diff(" * Fwd speed", VNAME(forward_speed));
+    d_found |= float_diff(" * Rev speed", VNAME(reverse_speed));
+    d_found |= float_diff(" * Jump speed", VNAME(jump_speed));
+    d_found |= float_diff(" * Fall speed", VNAME(fall_speed));
     d_found |= int_diff(" * Unknown C", VNAME(unknown_c));
     d_found |= int_diff(" * Unknown D", VNAME(unknown_d));
     if(!d_found) {
