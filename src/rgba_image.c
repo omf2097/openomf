@@ -112,14 +112,13 @@ int sd_rgba_image_to_png(const sd_rgba_image *img, const char *filename) {
     png_infop info_ptr;
     int ret = SD_SUCCESS;
 
+    if(img == NULL || filename == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
     char *rows[img->h];
     for(int y = 0; y < img->h; y++) {
         rows[y] = img->data + (y * img->w * 4);
-    }
-
-    if(img == NULL || filename == NULL) {
-        ret = SD_INVALID_INPUT;
-        goto error_0;
     }
 
     FILE *handle = fopen(filename, "wb");
