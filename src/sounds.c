@@ -127,7 +127,10 @@ int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename) {
     }
 
     // Skip annotation field and jump to data start
-    sd_reader_set(r, data_start);
+    if(sd_reader_set(r, data_start) != 0) {
+        ret = SD_FILE_INVALID_TYPE;
+        goto error_0;
+    }
 
     // Size to read
     size_t read_size = 0;
