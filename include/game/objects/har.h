@@ -32,8 +32,9 @@ enum {
     CAT_JUMPING,
     CAT_PROJECTILE,
     CAT_BASIC,
-    CAT_VICTORY = 10, // or defeat
-    CAT_SCRAP = 12,
+    CAT_VICTORY, // or defeat
+    CAT_THROW,
+    CAT_SCRAP,
     CAT_DESTRUCTION
 };
 
