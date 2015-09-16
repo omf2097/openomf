@@ -14,7 +14,7 @@ sd_mreader* sd_mreader_open(char *buf, long len) {
     return reader;
 }
 
-sd_mreader* sd_mreader_open_from_reader(const sd_reader *reader, int len) {
+sd_mreader* sd_mreader_open_from_reader(sd_reader *reader, int len) {
     char *buf = malloc(len);
     sd_read_buf(reader, buf, len);
     sd_mreader *mreader = sd_mreader_open(buf, len);

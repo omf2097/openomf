@@ -12,7 +12,7 @@ typedef struct sd_mreader_t {
 } sd_mreader;
 
 sd_mreader* sd_mreader_open(char *buf, long len);
-sd_mreader* sd_mreader_open_from_reader(const sd_reader *reader, int len);
+sd_mreader* sd_mreader_open_from_reader(sd_reader *reader, int len);
 void sd_mreader_close(sd_mreader *reader);
 long sd_mreader_size(const sd_mreader *reader);
 long sd_mreader_pos(const sd_mreader *reader);
