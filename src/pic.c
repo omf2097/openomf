@@ -28,6 +28,7 @@ void free_photos(sd_pic_file *pic) {
 }
 
 int sd_pic_load(sd_pic_file *pic, const char *filename) {
+    int ret = SD_FILE_PARSE_ERROR;
     if(pic == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -44,10 +45,14 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
 
     // Basic info
     pic->photo_count = sd_read_dword(r);
+    if(pic->photo_count >= 256 || pic->photo_count < 0) {
+        goto error_0;
+    }
 
     // Read offsets
     sd_reader_set(r, 200);
     int offset_list[256];
+    memset(offset_list, 0, sizeof(offset_list));
     for(int i = 0; i < pic->photo_count; i++) {
         offset_list[i] = sd_read_dword(r);
     }
@@ -80,7 +85,7 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         // Sprite
         pic->photos[i]->sprite = malloc(sizeof(sd_sprite));
         sd_sprite_create(pic->photos[i]->sprite);
-        if(sd_sprite_load(r, pic->photos[i]->sprite) != SD_SUCCESS) {
+        if((ret = sd_sprite_load(r, pic->photos[i]->sprite)) != SD_SUCCESS) {
             goto error_1;
         }
 
@@ -97,7 +102,7 @@ error_1:
 
 error_0:
     sd_reader_close(r);
-    return SD_FILE_PARSE_ERROR;
+    return ret;
 }
 
 int sd_pic_save(const sd_pic_file *pic, const char *filename) {
