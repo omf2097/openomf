@@ -107,7 +107,7 @@ void sd_af_postprocess(sd_af_file *af) {
 }
 
 int sd_af_load(sd_af_file *af, const char *filename) {
-    int ret;
+    int ret = SD_SUCCESS;
     uint8_t moveno = 0;
     sd_reader *r;
 
@@ -138,13 +138,14 @@ int sd_af_load(sd_af_file *af, const char *filename) {
 
         // Read move
         if((af->moves[moveno] = malloc(sizeof(sd_move))) == NULL) {
-            return SD_OUT_OF_MEMORY;
+            ret = SD_OUT_OF_MEMORY;
+            goto cleanup;
         }
         if((ret = sd_move_create(af->moves[moveno])) != SD_SUCCESS) {
-            return ret;
+            goto cleanup;
         }
         if((ret = sd_move_load(r, af->moves[moveno])) != SD_SUCCESS) {
-            return ret;
+            goto cleanup;
         }
     }
 
@@ -154,9 +155,10 @@ int sd_af_load(sd_af_file *af, const char *filename) {
     // Fix missing sprites
     sd_af_postprocess(af);
 
+cleanup:
     // Close & return
     sd_reader_close(r);
-    return SD_SUCCESS;
+    return ret;
 }
 
 int sd_af_save(const sd_af_file *af, const char* filename) {

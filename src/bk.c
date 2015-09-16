@@ -98,7 +98,7 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     uint16_t img_w, img_h;
     uint8_t animno = 0;
     sd_reader *r;
-    int ret;
+    int ret = SD_SUCCESS;
 
     // Initialize reader
     if(!(r = sd_reader_open(filename))) {
@@ -121,22 +121,25 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
 
         // Initialize animation
         if((bk->anims[animno] = malloc(sizeof(sd_bk_anim))) == NULL) {
-            return SD_OUT_OF_MEMORY;
+            ret = SD_OUT_OF_MEMORY;
+            goto cleanup;
         }
         if((ret = sd_bk_anim_create(bk->anims[animno])) != SD_SUCCESS) {
-            return ret;
+            goto cleanup;
         }
         if((ret = sd_bk_anim_load(r, bk->anims[animno])) != SD_SUCCESS) {
-            return ret;
+            goto cleanup;
         }
     }
 
     // Read background image
     if((bk->background = malloc(sizeof(sd_vga_image))) == NULL) {
-        return SD_OUT_OF_MEMORY;
+        ret = SD_OUT_OF_MEMORY;
+        goto cleanup;
     }
     if((ret = sd_vga_image_create(bk->background, img_w, img_h)) != SD_SUCCESS) {
-        return ret;
+        free(bk->background);
+        goto cleanup;
     }
     sd_read_buf(r, bk->background->data, img_h * img_w);
 
@@ -155,9 +158,10 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     // Fix missing sprites
     sd_bk_postprocess(bk);
 
+cleanup:
     // Close & return
     sd_reader_close(r);
-    return SD_SUCCESS;
+    return ret;
 }
 
 int sd_bk_save(const sd_bk_file *bk, const char* filename) {

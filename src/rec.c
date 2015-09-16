@@ -253,7 +253,7 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
 }
 
 int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
-    if(number >= rec->move_count || rec == NULL) {
+    if(rec == NULL || number >= rec->move_count) {
         return SD_INVALID_INPUT;
     }
 
