@@ -469,7 +469,7 @@ void har_move(object *obj) {
             if(h->state != STATE_DEFEAT
                 && h->state != STATE_FALLEN
                 && h->health <= 0
-                && h->endurance <= 0
+                && h->endurance < 1.0f
                 && player_is_last_frame(obj)) {
 
                 h->state = STATE_DEFEAT;
@@ -479,7 +479,7 @@ void har_move(object *obj) {
                       IS_ZERO(vel.x) &&
                       player_is_last_frame(obj)) {
                 if (h->state == STATE_FALLEN) {
-                    if (h->health <= 0 && h->endurance <= 0) {
+                    if (h->health <= 0 && h->endurance < 1.0f) {
                         // fallen, but done bouncing
                         h->state = STATE_DEFEAT;
                         har_set_ani(obj, ANIM_DEFEAT, 0);
@@ -519,21 +519,21 @@ void har_take_damage(object *obj, str* string, float damage) {
     if (oldhealth <= 0) {
         // har has no health left and is left only with endurance.
         // one hit will end them
-        h->endurance = 0;
+        h->endurance = 0.0f;
     } else {
         h->endurance -= damage;
-        if(h->endurance <= 0) {
+        if(h->endurance < 1.0f) {
             if (h->state == STATE_STUNNED) {
                 // refill endurance
                 h->endurance = h->endurance_max;
             } else {
-                h->endurance = 0;
+                h->endurance = 0.0f;
             }
         }
     }
 
     // Take a screencap of enemy har
-    if(h->health == 0 && h->endurance == 0) {
+    if(h->health == 0 && h->endurance < 1.0f) {
         game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
         har_screencaps_capture(&other_player->screencaps, other_player->har, SCREENCAP_BLOW);
     }
@@ -555,7 +555,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         // Set hit animation
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(obj, 0);
-        if (h->health <= 0 && h->endurance <= 0) {
+        if (h->health <= 0 && h->endurance < 1.0f) {
             // taken from MASTER.DAT
             // XXX changed the last frame to 200 ticks to ensure the HAR falls down
             char *final = "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM200";
@@ -1385,7 +1385,7 @@ void har_tick(object *obj) {
             || h->state == STATE_FALLEN
             || h->state == STATE_STANDING_UP
             || h->state == STATE_DEFEAT)) {
-        h->endurance += 1;
+        h->endurance += 0.025f; // made up but plausible number
     }
 
     // Flip tint effect flag
@@ -1932,11 +1932,11 @@ void har_finished(object *obj) {
         // end the arena
         DEBUG("ending arena!");
         game_state_set_next(obj->gs, SCENE_MENU);
-    } else if (h->state == STATE_RECOIL && h->endurance <= 0 && h->health <= 0) {
+    } else if (h->state == STATE_RECOIL && h->endurance < 1.0f && h->health <= 0) {
         h->state = STATE_DEFEAT;
         har_set_ani(obj, ANIM_DEFEAT, 0);
         har_event_defeat(h);
-    } else if ((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance <= 0) {
+    } else if ((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1.0f) {
         if (h->state == STATE_RECOIL) {
             har_event_recover(h);
         }
@@ -1987,7 +1987,7 @@ int har_serialize(object *obj, serial *ser) {
     serial_write_int8(ser, h->damage_received);
     serial_write_int8(ser, h->air_attacked);
     serial_write_int16(ser, h->health);
-    serial_write_int16(ser, h->endurance);
+    serial_write_float(ser, h->endurance);
     serial_write(ser, h->inputs, 10);
 
     // ...
@@ -2032,7 +2032,7 @@ int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) 
     h->damage_received = serial_read_int8(ser);
     h->air_attacked = serial_read_int8(ser);
     h->health = serial_read_int16(ser);
-    h->endurance = serial_read_int16(ser);
+    h->endurance = serial_read_float(ser);
     serial_read(ser, h->inputs, 10);
 
     /*DEBUG("har animation id is %d with state %d with %d", animation_id, h->state, h->executing_move);*/
