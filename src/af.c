@@ -29,10 +29,10 @@ int sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
 
     // Copy the basic stuff
     dst->file_id = src->file_id;
-    dst->unknown_a = src->unknown_a;
+    dst->exec_window = src->exec_window;
     dst->endurance = src->endurance;
     dst->unknown_b = src->unknown_b;
-    dst->power = src->power;
+    dst->health = src->health;
     dst->forward_speed = src->forward_speed;
     dst->reverse_speed = src->reverse_speed;
     dst->jump_speed = src->jump_speed;
@@ -118,14 +118,14 @@ int sd_af_load(sd_af_file *af, const char *filename) {
 
     // Header
     af->file_id = sd_read_uword(r);
-    af->unknown_a = sd_read_uword(r); // Always 10
-    af->endurance = sd_read_udword(r);
+    af->exec_window = sd_read_uword(r); // Always 10
+    af->endurance = sd_read_udword(r) / 256.0f;
     af->unknown_b = sd_read_ubyte(r); // Always 1 or 2
-    af->power = sd_read_uword(r);
-    af->forward_speed = sd_read_dword(r);
-    af->reverse_speed = sd_read_dword(r);
-    af->jump_speed = sd_read_dword(r);
-    af->fall_speed = sd_read_dword(r);
+    af->health = sd_read_uword(r);
+    af->forward_speed = sd_read_dword(r) / 256.0f;
+    af->reverse_speed = sd_read_dword(r) / 256.0f;
+    af->jump_speed = sd_read_dword(r) / 256.0f;
+    af->fall_speed = sd_read_dword(r) / 256.0f;
     af->unknown_c = sd_read_ubyte(r); // Always 0x32 ?
     af->unknown_d = sd_read_ubyte(r); // Always 0x14 ?
 
@@ -171,14 +171,14 @@ int sd_af_save(const sd_af_file *af, const char* filename) {
 
     // Header
     sd_write_uword(w, af->file_id);
-    sd_write_uword(w, af->unknown_a);
-    sd_write_udword(w, af->endurance);
+    sd_write_uword(w, af->exec_window);
+    sd_write_udword(w, (int)(af->endurance * 256));
     sd_write_ubyte(w, af->unknown_b);
-    sd_write_uword(w, af->power);
-    sd_write_dword(w, af->forward_speed);
-    sd_write_dword(w, af->reverse_speed);
-    sd_write_dword(w, af->jump_speed);
-    sd_write_dword(w, af->fall_speed);
+    sd_write_uword(w, af->health);
+    sd_write_dword(w, (int)(af->forward_speed * 256));
+    sd_write_dword(w, (int)(af->reverse_speed * 256));
+    sd_write_dword(w, (int)(af->jump_speed * 256));
+    sd_write_dword(w, (int)(af->fall_speed * 256));
     sd_write_ubyte(w, af->unknown_c);
     sd_write_ubyte(w, af->unknown_d);
 

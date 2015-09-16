@@ -28,10 +28,10 @@ void test_af_roundtrip(void) {
 
     // Set some values
     new.file_id = 1;
-    new.unknown_a = 2;
+    new.exec_window = 2;
     new.endurance = 3;
     new.unknown_b = 4;
-    new.power = 5;
+    new.health = 5;
     new.forward_speed = 6;
     new.reverse_speed = 7;
     new.jump_speed = 8;
