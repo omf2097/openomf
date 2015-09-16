@@ -8,7 +8,7 @@ void af_create(af *a, void *src) {
     // Trivial stuff
     a->id = sdaf->file_id;
     a->endurance = sdaf->endurance;
-    a->power = sdaf->power;
+    a->health = sdaf->health;
     a->forward_speed = sdaf->forward_speed;
     a->reverse_speed = sdaf->reverse_speed;
     a->jump_speed = sdaf->jump_speed;

@@ -6,7 +6,7 @@
 typedef struct af_t {
     unsigned int id;
     unsigned int endurance;
-    unsigned int power;
+    unsigned int health;
     int forward_speed;
     int reverse_speed;
     int jump_speed;

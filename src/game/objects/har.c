@@ -15,6 +15,7 @@
 #include "game/utils/serial.h"
 #include "resources/af_loader.h"
 #include "resources/animation.h"
+#include "resources/pilots.h"
 #include "controller/controller.h"
 #include "utils/log.h"
 #include "utils/random.h"
@@ -23,7 +24,6 @@
 
 #include "video/video.h"
 
-#define FUDGEFACTOR 0.003f
 #define IS_ZERO(n) (n < 0.8 && n > -0.8)
 
 void har_finished(object *obj);
@@ -240,7 +240,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
 
     if (move->category == CAT_JUMPING) {
         h->state = STATE_JUMPING;
-        object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
+        object_set_gravity(obj, h->af_data->fall_speed);
     }
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
@@ -523,7 +523,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         // one hit will end them
         h->endurance = 0;
     } else {
-        h->endurance -= damage * 8;
+        h->endurance -= damage;
         if(h->endurance <= 0) {
             if (h->state == STATE_STUNNED) {
                 // refill endurance
@@ -1871,24 +1871,24 @@ int har_act(object *obj, int act_type) {
                 break;
             case STATE_WALKTO:
                 har_set_ani(obj, ANIM_WALKING, 1);
-                vx = (h->af_data->forward_speed*direction)/(float)320;
+                vx = (h->af_data->forward_speed*direction);
                 object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
                 har_event_walk(h, 1);
                 break;
             case STATE_WALKFROM:
                 har_set_ani(obj, ANIM_WALKING, 1);
-                vx = (h->af_data->reverse_speed*direction*-1)/(float)320;
+                vx = (h->af_data->reverse_speed*direction*-1);
                 object_set_vel(obj, vec2f_create(vx*(h->hard_close ? 0.5 : 1.0),0));
                 har_event_walk(h, -1);
                 break;
             case STATE_JUMPING:
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 vx = 0.0f;
-                vy = (float)h->af_data->jump_speed * FUDGEFACTOR;
+                vy = (float)h->af_data->jump_speed;
                 int jump_dir = 0;
                 if ((act_type == (ACT_UP|ACT_LEFT) && direction == OBJECT_FACE_LEFT) ||
                         (act_type == (ACT_UP|ACT_RIGHT) && direction == OBJECT_FACE_RIGHT)) {
-                    vx = (h->af_data->forward_speed*direction)/(float)320;
+                    vx = (h->af_data->forward_speed*direction);
                     object_set_tick_pos(obj, 110);
                     object_set_stride(obj, 7); // Pass 10 frames per tick
                     jump_dir = 1;
@@ -1897,7 +1897,7 @@ int har_act(object *obj, int act_type) {
                     // at -100 frames (seems to be about right)
                     object_set_playback_direction(obj, PLAY_BACKWARDS);
                     object_set_tick_pos(obj, -110);
-                    vx = (h->af_data->reverse_speed*direction*-1)/(float)320;
+                    vx = (h->af_data->reverse_speed*direction*-1);
                     object_set_stride(obj, 7); // Pass 10 frames per tick
                     jump_dir = -1;
                 }
@@ -1906,7 +1906,7 @@ int har_act(object *obj, int act_type) {
                     vy = vy * 1.25;
                     vx = vx * 1.25;
                 }
-                object_set_gravity(obj, h->af_data->fall_speed * FUDGEFACTOR);
+                object_set_gravity(obj, h->af_data->fall_speed);
                 object_set_vel(obj, vec2f_create(vx,vy));
                 har_event_jump(h, jump_dir);
                 break;
@@ -2092,9 +2092,16 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->player_id = player_id;
     local->pilot_id = pilot_id;
 
+    pilot p;
+    pilot_get_info(&p, pilot_id);
+
     // Health, endurance
-    local->health_max = local->health = 100;
-    local->endurance_max = local->endurance = 400;
+    local->health_max = local->health = (af_data->health * p.endurance + 25)/35;
+    local->endurance_max = local->endurance = (af_data->endurance * (p.endurance + 25) )/37;
+    /*local->af_data->forward_speed *= p.agility;*/
+    /*local->af_data->reverse_speed *= p.agility;*/
+    /*local->af_data->jump_speed *= p.agility;*/
+    /*local->af_data->fall_speed *= p.agility;*/
     local->close = 0;
     local->hard_close =  0;
     local->state = STATE_STANDING;
