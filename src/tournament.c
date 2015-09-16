@@ -48,6 +48,7 @@ static void free_locales(sd_tournament_file *trn) {
 }
 
 int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
+    int ret = SD_FILE_PARSE_ERROR;
     if(trn == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -63,8 +64,13 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         goto error_0;
     }
 
-    // Read tournament data
+    // Read enemy count and make sure it seems somwhat correct
     trn->enemy_count = sd_read_dword(r);
+    if(trn->enemy_count >= 256 || trn->enemy_count < 0) {
+        goto error_0;
+    }
+
+    // Read tournament data
     int victory_text_offset = sd_read_dword(r);
     sd_read_buf(r, trn->bk_name, 14);
     trn->winnings_multiplier = sd_read_float(r);
@@ -76,6 +82,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     // Read enemy block offsets
     sd_reader_set(r, 300);
     int offset_list[256]; // Should be large enough
+    memset(offset_list, 0, sizeof(offset_list));
     for(int i = 0; i < trn->enemy_count + 1; i++) {
         offset_list[i] = sd_read_dword(r);
     }
@@ -117,7 +124,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         trn->locales[i]->logo = malloc(sizeof(sd_sprite));
         sd_sprite_create(trn->locales[i]->logo);
-        if(sd_sprite_load(r, trn->locales[i]->logo) != SD_SUCCESS) {
+        if((ret = sd_sprite_load(r, trn->locales[i]->logo)) != SD_SUCCESS) {
             goto error_2;
         }
     }
@@ -162,7 +169,7 @@ error_1:
 
 error_0:
     sd_reader_close(r);
-    return SD_FILE_PARSE_ERROR;
+    return ret;
 }
 
 int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
