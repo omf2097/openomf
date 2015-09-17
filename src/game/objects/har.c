@@ -514,23 +514,21 @@ void har_take_damage(object *obj, str* string, float damage) {
     }
 
     // Handle health changes
-    int oldhealth = h->health;
-    if(h->health <= 0) { h->health = 0; }
-    if (oldhealth <= 0) {
-        // har has no health left and is left only with endurance.
-        // one hit will end them
+    if(h->health <= 0) {
+        h->health = 0;
         h->endurance = 0.0f;
-    } else {
-        h->endurance -= damage;
-        if(h->endurance < 1.0f) {
-            if (h->state == STATE_STUNNED) {
-                // refill endurance
-                h->endurance = h->endurance_max;
-            } else {
-                h->endurance = 0.0f;
-            }
+    }
+
+    h->endurance -= damage;
+    if(h->endurance < 1.0f) {
+        if (h->state == STATE_STUNNED) {
+            // refill endurance
+            h->endurance = h->endurance_max;
+        } else {
+            h->endurance = 0.0f;
         }
     }
+
 
     // Take a screencap of enemy har
     if(h->health == 0 && h->endurance < 1.0f) {
