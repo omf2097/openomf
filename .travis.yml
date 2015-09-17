@@ -1,5 +1,9 @@
 language: c
 
+env:
+  global:
+   - secure: "qvRpkAmV7PRQHoUfjhykb5lkvMyMFAlNYh/1140ej/iHjDsO9bFpX2qxbfgAe8jaW8VBf4ly+VpjA9ByJHWol6/b+FwURa/yiFgNESxeYDUJz/dJCYyrgORH+t41bCwV8SEYZmpa3NJiDi4GkH8iojEi+dQYhWoN4uwEg81m45c="
+
 compiler:
   - gcc
   - clang
@@ -13,10 +17,18 @@ before_install:
  - if test $CC = gcc; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20; fi
  - if test $CC = gcc; then sudo update-alternatives --config gcc; fi
 
-before_script:
-- cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SUBMODULES=On -DUSE_OGGVORBIS=On -DUSE_PNG=On -DUSE_TESTS=On .
-
-script: make && make test
+script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SUBMODULES=On -DUSE_OGGVORBIS=On -DUSE_PNG=On -DUSE_TESTS=On . && make && make test; fi
 
 notifications:
   email: false
+
+addons:
+  coverity_scan:
+    project:
+      name: "omf2097/openomf"
+      version: 0.6.5
+      description: "One Must Fall 2097 Remake"
+    notification_email: katajakasa@gmail.com
+    build_command_prepend: "cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_SUBMODULES=On -DUSE_PNG=On -DUSE_TESTS=Off ."
+    build_command: "make"
+    branch_pattern: coverity_scan

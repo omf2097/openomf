@@ -32,8 +32,9 @@ enum {
     CAT_JUMPING,
     CAT_PROJECTILE,
     CAT_BASIC,
-    CAT_VICTORY = 10, // or defeat
-    CAT_SCRAP = 12,
+    CAT_VICTORY, // or defeat
+    CAT_THROW,
+    CAT_SCRAP,
     CAT_DESTRUCTION
 };
 
@@ -129,7 +130,7 @@ typedef struct har_t {
     int in_stasis_ticks; // Handle stasis activator
 
     int16_t health_max, health;
-    int16_t endurance_max, endurance;
+    float endurance_max, endurance;
     char inputs[11];
     uint8_t hard_close;
 

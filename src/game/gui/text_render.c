@@ -187,7 +187,6 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
         switch(settings->direction) {
             case TEXT_HORIZONTAL:
                 line_pw = real_len * charw - settings->cspacing;
-                line_ph = charh;
                 my += charh * line;
 
                 // Horizontal alignment for this line
@@ -202,7 +201,6 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
                 }
                 break;
             case TEXT_VERTICAL:
-                line_pw = charw;
                 line_ph = real_len * charh - settings->lspacing;
                 mx += charw * line;
 

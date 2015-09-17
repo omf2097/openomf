@@ -152,6 +152,7 @@ int pm_init() {
 
 error_1:
     pm_free();
+    free(local_base_dir);
 error_0:
     return 1;
 }
