@@ -65,7 +65,7 @@ void print_info(sd_tournament_file *trn) {
     printf("  - BK name             : %s\n", trn->bk_name);
     printf("  - Winnings multiplier : %f\n", trn->winnings_multiplier);
     printf("  - Unknown             : %d\n", trn->unknown_a);
-    printf("  - Registration fee    : %d\n", trn->registration_free);
+    printf("  - Registration fee    : %d\n", trn->registration_fee);
     printf("  - Initial value       : %d\n", trn->assumed_initial_value);
     printf("  - ID                  : %d\n", trn->tournament_id);
     printf("  - PIC file            : %s\n", trn->pic_file);

@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
     fprintf(f, "<tr><td>BK name</td><td>%s</td></tr>", trn.bk_name);
     fprintf(f, "<tr><td>Enemy count</td><td>%d</td></tr>", trn.enemy_count);
     fprintf(f, "<tr><td>Winnings multiplier</td><td>%f</td></tr>", trn.winnings_multiplier);
-    fprintf(f, "<tr><td>Registration fee</td><td>%d</td></tr>", trn.registration_free);
+    fprintf(f, "<tr><td>Registration fee</td><td>%d</td></tr>", trn.registration_fee);
     fprintf(f, "<tr><td>Assumed initial value</td><td>%d</td></tr>", trn.assumed_initial_value);
     fprintf(f, "<tr><td>Unknown A:</td><td>%d</td></tr>", trn.unknown_a);
     fprintf(f, "<tr><td>Tournament ID</td><td>%d</td></tr>", trn.tournament_id);
