@@ -44,6 +44,7 @@ void sd_rec_free(sd_rec_file *rec) {
 }
 
 int sd_rec_load(sd_rec_file *rec, const char *file) {
+    int ret = SD_FILE_PARSE_ERROR;
     if(rec == NULL || file == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -62,7 +63,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     for(int i = 0; i < 2; i++) {
         // Read pilot data
         sd_pilot_create(&rec->pilots[i].info);
-        sd_pilot_load(r, &rec->pilots[i].info);
+        if((ret = sd_pilot_load(r, &rec->pilots[i].info)) != SD_SUCCESS) { goto error_0; }
         rec->pilots[i].unknown_a = sd_read_ubyte(r);
         rec->pilots[i].unknown_b = sd_read_uword(r);
         sd_palette_create(&rec->pilots[i].pal);
@@ -70,7 +71,9 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         rec->pilots[i].has_photo = sd_read_ubyte(r);
         sd_sprite_create(&rec->pilots[i].photo);
         if(rec->pilots[i].has_photo) {
-            sd_sprite_load(r, &rec->pilots[i].photo);
+            if((ret = sd_sprite_load(r, &rec->pilots[i].photo)) != SD_SUCCESS) {
+                goto error_0;
+            }
         }
     }
 
@@ -158,7 +161,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
 
 error_0:
     sd_reader_close(r);
-    return SD_FILE_PARSE_ERROR;
+    return ret;
 }
 
 int sd_rec_save(sd_rec_file *rec, const char *file) {

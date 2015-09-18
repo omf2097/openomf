@@ -304,7 +304,8 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
     }
 
     // everything defaults to transparent
-    memset(dst->stencil, 0, src->width * src->height);
+    int bsize = src->width * src->height;
+    memset(dst->stencil, 0, bsize);
 
     // Walk through raw sprite data
     while(i < src->len) {
