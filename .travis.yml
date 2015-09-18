@@ -1,23 +1,27 @@
 language: c
 
+sudo: false
+
 env:
   global:
    - secure: "qvRpkAmV7PRQHoUfjhykb5lkvMyMFAlNYh/1140ej/iHjDsO9bFpX2qxbfgAe8jaW8VBf4ly+VpjA9ByJHWol6/b+FwURa/yiFgNESxeYDUJz/dJCYyrgORH+t41bCwV8SEYZmpa3NJiDi4GkH8iojEi+dQYhWoN4uwEg81m45c="
+   - CMAKE_PREFIX_PATH=$HOME/SDL2
+
+cache:
+  directories:
+  - $HOME/SDL2
 
 compiler:
   - gcc
   - clang
 
 before_install:
- - sudo add-apt-repository ppa:zoogie/sdl2-snapshots -y
- - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
- - sudo apt-get update -qq
- - sudo apt-get install --force-yes -qq libcunit1 libcunit1-dev libsdl2-dev libopenal-dev libconfuse-dev libpng-dev libenet-dev libogg-dev libvorbis-dev
- - if test $CC = gcc; then sudo apt-get install -qq gcc-4.9; fi
- - if test $CC = gcc; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20; fi
- - if test $CC = gcc; then sudo update-alternatives --config gcc; fi
+  - export CC="gcc-5"
 
-script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SUBMODULES=On -DUSE_OGGVORBIS=On -DUSE_PNG=On -DUSE_TESTS=On . && make && make test; fi
+install:
+  - if [ ! -d "$HOME/SDL2/lib" ]; then wget https://www.libsdl.org/release/SDL2-2.0.3.tar.gz -O ~/SDL2.tar.gz && tar -xzvf ~/SDL2.tar.gz -C ~/ && mkdir ~/sdl-build && cd ~/sdl-build && ~/SDL2-2.0.3/configure --prefix=$HOME/SDL2 && make && make install; else echo 'Using cached SDL2 build directory.'; fi
+
+script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then cd $TRAVIS_BUILD_DIR && cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On . && make && make test; fi
 
 notifications:
   email: false
@@ -29,6 +33,27 @@ addons:
       version: 0.6.5
       description: "One Must Fall 2097 Remake"
     notification_email: katajakasa@gmail.com
-    build_command_prepend: "cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_SUBMODULES=On -DUSE_PNG=On -DUSE_TESTS=Off ."
+    build_command_prepend: "cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_TESTS=Off ."
     build_command: "make"
     branch_pattern: coverity_scan
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - libc6-dev
+    - libcunit1
+    - libcunit1-dev
+    - libopenal-dev
+    - libconfuse-dev
+    - libpng-dev
+    - libenet-dev
+    - gcc-5
+    - libasound2-dev
+    - libpulse-dev
+    - libx11-dev
+    - libxext-dev
+    - libxrandr-dev
+    - libxi-dev
+    - libxxf86vm-dev
+    - libxss-dev
+    - libudev-dev
