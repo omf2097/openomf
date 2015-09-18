@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
@@ -47,6 +48,19 @@ static void free_locales(sd_tournament_file *trn) {
     }
 }
 
+int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name) {
+    if(trn == NULL || bk_name == NULL) return SD_INVALID_INPUT;
+    snprintf(trn->bk_name, sizeof(trn->bk_name), bk_name);
+    return SD_SUCCESS;
+}
+
+int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
+    if(trn == NULL || pic_name == NULL) return SD_INVALID_INPUT;
+    trn->pic_file = realloc(trn->pic_file, strlen(pic_name)+1);
+    sprintf(trn->pic_file, pic_name);
+    return SD_SUCCESS;
+}
+
 int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     int ret = SD_FILE_PARSE_ERROR;
     if(trn == NULL || filename == NULL) {
@@ -75,7 +89,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     sd_read_buf(r, trn->bk_name, 14);
     trn->winnings_multiplier = sd_read_float(r);
     trn->unknown_a = sd_read_dword(r);
-    trn->registration_free = sd_read_dword(r);
+    trn->registration_fee = sd_read_dword(r);
     trn->assumed_initial_value = sd_read_dword(r);
     trn->tournament_id = sd_read_dword(r);
 
@@ -188,7 +202,7 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     sd_write_buf(w, trn->bk_name, 14);
     sd_write_float(w, trn->winnings_multiplier);
     sd_write_dword(w, trn->unknown_a);
-    sd_write_dword(w, trn->registration_free);
+    sd_write_dword(w, trn->registration_fee);
     sd_write_dword(w, trn->assumed_initial_value);
     sd_write_dword(w, trn->tournament_id);
 
@@ -218,7 +232,14 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
 
     // Write logos
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        sd_sprite_save(w, trn->locales[i]->logo);
+        if(trn->locales[i] != NULL) {
+            sd_sprite_save(w, trn->locales[i]->logo);
+        } else {
+            sd_sprite s;
+            sd_sprite_create(&s);
+            sd_sprite_save(w, &s);
+            sd_sprite_free(&s);
+        }
     }
 
     // Save 40 colors
@@ -229,8 +250,13 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
 
     // Write tournament descriptions
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        sd_write_variable_str(w, trn->locales[i]->title);
-        sd_write_variable_str(w, trn->locales[i]->description);
+        if(trn->locales[i] != NULL) {
+            sd_write_variable_str(w, trn->locales[i]->title);
+            sd_write_variable_str(w, trn->locales[i]->description);
+        } else {
+            sd_write_variable_str(w, "");
+            sd_write_variable_str(w, "");
+        }
     }
 
     // Let's write our current offset to the victory text offset position
@@ -243,7 +269,11 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         for(int har = 0; har < 11; har++) {
             for(int page = 0; page < 10; page++) {
-                sd_write_variable_str(w, trn->locales[i]->end_texts[har][page]);
+                if(trn->locales[i] != NULL) {
+                    sd_write_variable_str(w, trn->locales[i]->end_texts[har][page]);
+                } else {
+                    sd_write_variable_str(w, "");
+                }
             }
         }
     }

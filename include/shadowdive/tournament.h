@@ -58,7 +58,7 @@ typedef struct {
     char bk_name[14];               ///< Tournament BK filename
     float winnings_multiplier;      ///< Match winnings multiplier
     int32_t unknown_a;              ///< Unknown /todo find out
-    int32_t registration_free;      ///< Tournament registration fee
+    int32_t registration_fee;       ///< Tournament registration fee
     int32_t assumed_initial_value;  ///< Value the player is assumed to have reached, minus starting value, when entering this tournament.
     int32_t tournament_id;          ///< ID for the tournament
     char *pic_file;                 ///< Tournament PIC filename
@@ -108,6 +108,9 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename);
  * \param filename Name of the TRN file to save into.
  */
 int sd_tournament_save(const sd_tournament_file *trn, const char *filename);
+
+int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name);
+int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name);
 
 /*! \brief Free TRN file structure
  *
