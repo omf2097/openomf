@@ -50,14 +50,14 @@ static void free_locales(sd_tournament_file *trn) {
 
 int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name) {
     if(trn == NULL || bk_name == NULL) return SD_INVALID_INPUT;
-    snprintf(trn->bk_name, sizeof(trn->bk_name), bk_name);
+    snprintf(trn->bk_name, sizeof(trn->bk_name), "%s", bk_name);
     return SD_SUCCESS;
 }
 
 int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
     if(trn == NULL || pic_name == NULL) return SD_INVALID_INPUT;
     trn->pic_file = realloc(trn->pic_file, strlen(pic_name)+1);
-    sprintf(trn->pic_file, pic_name);
+    sprintf(trn->pic_file, "%s", pic_name);
     return SD_SUCCESS;
 }
 
