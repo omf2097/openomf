@@ -386,6 +386,15 @@ void player_run(object *obj) {
                 DEBUG("flipping direction now %d", object_get_direction(obj));
             }
 
+            if(sd_script_isset(frame, "ac")) {
+                // force the har to face the center of the arena
+                if (obj->pos.x > 160) {
+                    object_set_direction(obj, OBJECT_FACE_LEFT);
+                } else {
+                    object_set_direction(obj, OBJECT_FACE_RIGHT);
+                }
+            }
+
             // See if x+/- or y+/- are set and save values
             int trans_x = 0, trans_y = 0;
             if(sd_script_isset(frame, "y-")) {
