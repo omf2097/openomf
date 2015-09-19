@@ -469,7 +469,6 @@ void har_move(object *obj) {
             if(h->state != STATE_DEFEAT
                 && h->state != STATE_FALLEN
                 && h->health <= 0
-                && h->endurance < 1.0f
                 && player_is_last_frame(obj)) {
 
                 h->state = STATE_DEFEAT;
@@ -479,7 +478,7 @@ void har_move(object *obj) {
                       IS_ZERO(vel.x) &&
                       player_is_last_frame(obj)) {
                 if (h->state == STATE_FALLEN) {
-                    if (h->health <= 0 && h->endurance < 1.0f) {
+                    if (h->health <= 0) {
                         // fallen, but done bouncing
                         h->state = STATE_DEFEAT;
                         har_set_ani(obj, ANIM_DEFEAT, 0);
