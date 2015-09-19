@@ -1886,7 +1886,7 @@ int har_act(object *obj, int act_type) {
                         (act_type == (ACT_UP|ACT_RIGHT) && direction == OBJECT_FACE_RIGHT)) {
                     vx = (h->af_data->forward_speed*direction);
                     object_set_tick_pos(obj, 110);
-                    object_set_stride(obj, 7); // Pass 10 frames per tick
+                    object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = 1;
                 } else if (act_type == (ACT_UP|ACT_LEFT) || act_type == (ACT_UP|ACT_RIGHT)) {
                     // If we are jumping backwards, start animation from end
@@ -1894,8 +1894,14 @@ int har_act(object *obj, int act_type) {
                     object_set_playback_direction(obj, PLAY_BACKWARDS);
                     object_set_tick_pos(obj, -110);
                     vx = (h->af_data->reverse_speed*direction*-1);
-                    object_set_stride(obj, 7); // Pass 10 frames per tick
+                    object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = -1;
+                } else if (act_type == ACT_UP) {
+                    // If we are jumping upwards
+                    object_set_tick_pos(obj, 110);
+                    if(h->id == HAR_GARGOYLE) {
+                        object_set_stride(obj, 7);
+                    }
                 }
                 if (oldstate == STATE_CROUCHING || oldstate == STATE_CROUCHBLOCK) {
                     // jumping frop crouch makes you jump 25% higher
