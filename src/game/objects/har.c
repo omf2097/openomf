@@ -469,7 +469,6 @@ void har_move(object *obj) {
             if(h->state != STATE_DEFEAT
                 && h->state != STATE_FALLEN
                 && h->health <= 0
-                && h->endurance < 1.0f
                 && player_is_last_frame(obj)) {
 
                 h->state = STATE_DEFEAT;
@@ -479,7 +478,7 @@ void har_move(object *obj) {
                       IS_ZERO(vel.x) &&
                       player_is_last_frame(obj)) {
                 if (h->state == STATE_FALLEN) {
-                    if (h->health <= 0 && h->endurance < 1.0f) {
+                    if (h->health <= 0) {
                         // fallen, but done bouncing
                         h->state = STATE_DEFEAT;
                         har_set_ani(obj, ANIM_DEFEAT, 0);
@@ -553,7 +552,7 @@ void har_take_damage(object *obj, str* string, float damage) {
         // Set hit animation
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(obj, 0);
-        if (h->health <= 0 && h->endurance < 1.0f) {
+        if (h->health <= 0) {
             // taken from MASTER.DAT
             // XXX changed the last frame to 200 ticks to ensure the HAR falls down
             char *final = "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM200";
@@ -1936,7 +1935,7 @@ void har_finished(object *obj) {
         // end the arena
         DEBUG("ending arena!");
         game_state_set_next(obj->gs, SCENE_MENU);
-    } else if (h->state == STATE_RECOIL && h->endurance < 1.0f && h->health <= 0) {
+    } else if (h->state == STATE_RECOIL && h->health <= 0) {
         h->state = STATE_DEFEAT;
         har_set_ani(obj, ANIM_DEFEAT, 0);
         har_event_defeat(h);
