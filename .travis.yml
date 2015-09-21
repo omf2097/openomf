@@ -29,7 +29,7 @@ addons:
       name: "omf2097/openomf"
       description: "One Must Fall 2097 Remake"
     notification_email: katajakasa@gmail.com
-    build_command_prepend: "bin/cov-configure --comptype gcc --compiler /usr/bin/gcc-5 && cmake -DCMAKE_C_COMPILER=/usr/bin/gcc-5 -DCMAKE_BUILD_TYPE=Debug -DUSE_TESTS=Off ."
+    build_command_prepend: "cov-configure --comptype gcc --compiler /usr/bin/gcc-5 && cmake -DCMAKE_C_COMPILER=/usr/bin/gcc-5 -DCMAKE_BUILD_TYPE=Debug -DUSE_TESTS=Off ."
     build_command: "make"
     branch_pattern: coverity_scan
   apt:
