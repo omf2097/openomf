@@ -2,4 +2,5 @@ build/
 *.exe
 *.dll
 *.so
+*.swp
 doc/html/
