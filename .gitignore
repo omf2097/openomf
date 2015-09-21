@@ -2,5 +2,5 @@ build/
 *.exe
 *.dll
 *.so
-*.swp
+*.sw[klmnop]
 doc/html/
