@@ -34,10 +34,7 @@ addons:
     build_command: "make"
     branch_pattern: coverity_scan
   apt:
-    sources:
-    - ubuntu-toolchain-r-test
     packages:
-    - libc6-dev
     - libcunit1
     - libcunit1-dev
     - libopenal-dev
