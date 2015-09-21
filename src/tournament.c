@@ -270,7 +270,7 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     }
 
     // Let's write our current offset to the victory text offset position
-    uint32_t offset = sd_writer_pos(w);
+    long offset = sd_writer_pos(w);
     if (offset < 0) {
         goto error;
     }

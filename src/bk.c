@@ -205,7 +205,7 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
                 return ret;
             }
             rpos = sd_writer_pos(w);
-            if (opos < 0) {
+            if (rpos < 0) {
                 goto error;
             }
             if (sd_writer_seek_start(w, opos) < 0) {

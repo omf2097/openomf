@@ -113,7 +113,10 @@ int sd_language_save(sd_language *language, const char *filename) {
     // Write strings
     for(int i = 0; i < language->count; i++) {
         // Write catalog offset
-        uint32_t offset = sd_writer_pos(w);
+        long offset = sd_writer_pos(w);
+        if (offset < 0) {
+            goto error;
+        }
         if (sd_writer_seek_start(w, 36 * i) < 0) {
             goto error;
         }
