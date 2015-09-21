@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
@@ -194,6 +195,9 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
     for(uint8_t i = 0; i < MAX_BK_ANIMS; i++) {
         if(bk->anims[i] != NULL) {
             opos = sd_writer_pos(w); // remember where we need to fill in the blank
+            if (opos < 0) {
+                goto error;
+            }
             sd_write_udword(w, 0); // write a 0 as a placeholder
             sd_write_ubyte(w, i);
             if((ret = sd_bk_anim_save(w, bk->anims[i])) != SD_SUCCESS) {
@@ -201,9 +205,16 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
                 return ret;
             }
             rpos = sd_writer_pos(w);
-            sd_writer_seek_start(w, opos);
+            if (opos < 0) {
+                goto error;
+            }
+            if (sd_writer_seek_start(w, opos) < 0) {
+                goto error;
+            }
             sd_write_udword(w, rpos); // write the actual size
-            sd_writer_seek_start(w, rpos);
+            if (sd_writer_seek_start(w, rpos) < 0) {
+                goto error;
+            }
         }
     }
     sd_write_udword(w, rpos);
@@ -225,9 +236,18 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
     // Write soundtable
     sd_write_buf(w, bk->soundtable, 30);
 
+    if (sd_writer_errno(w)) {
+        goto error;
+    }
+
     // All done, close writer
     sd_writer_close(w);
     return SD_SUCCESS;
+
+error:
+    unlink(filename);
+    sd_writer_close(w);
+    return SD_FILE_WRITE_ERROR;
 }
 
 int sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img) {

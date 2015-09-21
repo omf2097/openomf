@@ -114,9 +114,13 @@ int sd_language_save(sd_language *language, const char *filename) {
     for(int i = 0; i < language->count; i++) {
         // Write catalog offset
         uint32_t offset = sd_writer_pos(w);
-        sd_writer_seek_start(w, 36 * i);
+        if (sd_writer_seek_start(w, 36 * i) < 0) {
+            goto error;
+        }
         sd_write_udword(w, offset);
-        sd_writer_seek_start(w, offset);
+        if (sd_writer_seek_start(w, offset) < 0) {
+            goto error;
+        }
 
         // write string
         sd_mwriter *mw = sd_mwriter_open();
@@ -127,7 +131,10 @@ int sd_language_save(sd_language *language, const char *filename) {
         sd_mwriter_close(mw);
     }
 
-    
     sd_writer_close(w);
     return SD_SUCCESS;
+
+error:
+    sd_writer_close(w);
+    return SD_FILE_WRITE_ERROR;
 }

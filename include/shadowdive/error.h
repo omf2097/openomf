@@ -34,6 +34,8 @@ enum SD_ERRORCODE {
     SD_INVALID_INPUT, ///< Function encountered unexpected/invalid arguments
     SD_FORMAT_NOT_SUPPORTED, ///< File format is not supported
     SD_INVALID_TAG, ///< Invalid tag in animation string
+    SD_FILE_WRITE_ERROR, ///< File could not be written
+    SD_FILE_READ_ERROR ///< File could not be read
 };
 
 /*! \brief Get text error for error ID

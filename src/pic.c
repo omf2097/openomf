@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
@@ -127,9 +128,16 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename) {
     for(int i = 0; i < pic->photo_count; i++) {
         // Write offset to the catalog
         uint32_t pos = sd_writer_pos(w);
-        sd_writer_seek_start(w, 200 + i * 4);
+        if (pos < 0) {
+            goto error;
+        }
+        if (sd_writer_seek_start(w, 200 + i * 4) < 0) {
+            goto error;
+        }
         sd_write_udword(w, pos);
-        sd_writer_seek_start(w, pos);
+        if (sd_writer_seek_start(w, pos) < 0) {
+            goto error;
+        }
 
         // flags, palette, etc.
         sd_write_ubyte(w, pic->photos[i]->is_player);
@@ -145,8 +153,18 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename) {
         pic->photos[i]->sprite->width++;
     }
 
+
+    if (sd_writer_errno(w)) {
+        goto error;
+    }
+
     sd_writer_close(w);
     return SD_SUCCESS;
+
+error:
+    unlink(filename);
+    sd_writer_close(w);
+    return SD_FILE_WRITE_ERROR;
 }
 
 const sd_pic_photo* sd_pic_get(const sd_pic_file *pic, int entry_id) {

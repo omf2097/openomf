@@ -2,6 +2,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "shadowdive/internal/reader.h"
 #include "shadowdive/internal/writer.h"
@@ -79,10 +80,12 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     }
 
     // Read enemy count and make sure it seems somwhat correct
-    trn->enemy_count = sd_read_dword(r);
-    if(trn->enemy_count >= 256 || trn->enemy_count < 0) {
+    int32_t enemy_count  = sd_read_dword(r);
+    if(enemy_count >= 256 || enemy_count < 0) {
         goto error_0;
     }
+
+    trn->enemy_count = (int16_t)enemy_count;
 
     // Read tournament data
     int victory_text_offset = sd_read_dword(r);
@@ -225,9 +228,16 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
 
         // Update catalog
         uint32_t c_pos = sd_writer_pos(w);
-        sd_writer_seek_start(w, 300 + (i+1) * 4);
+        if (c_pos< 0) {
+            goto error;
+        }
+        if (sd_writer_seek_start(w, 300 + (i+1) * 4) < 0) {
+            goto error;
+        }
         sd_write_udword(w, c_pos);
-        sd_writer_seek_start(w, c_pos);
+        if (sd_writer_seek_start(w, c_pos) < 0) {
+            goto error;
+        }
     }
 
     // Write logos
@@ -261,9 +271,16 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
 
     // Let's write our current offset to the victory text offset position
     uint32_t offset = sd_writer_pos(w);
-    sd_writer_seek_start(w, 4);
+    if (offset < 0) {
+        goto error;
+    }
+    if (sd_writer_seek_start(w, 4) < 0) {
+        goto error;
+    }
     sd_write_dword(w, (uint32_t)offset);
-    sd_writer_seek_start(w, offset);
+    if (sd_writer_seek_start(w, offset) < 0) {
+        goto error;
+    }
 
     // Write texts
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
@@ -278,9 +295,18 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
         }
     }
 
+    if (sd_writer_errno(w)) {
+        goto error;
+    }
+
     // All done. Flush and close.
     sd_writer_close(w);
     return SD_SUCCESS;
+
+error:
+    unlink(filename);
+    sd_writer_close(w);
+    return SD_FILE_WRITE_ERROR;
 }
 
 void sd_tournament_free(sd_tournament_file *trn) {
