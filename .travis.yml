@@ -16,9 +16,9 @@ compiler:
   - clang
 
 install:
-  - if [ ! -d "$HOME/SDL2/lib" ]; then wget https://www.libsdl.org/release/SDL2-2.0.3.tar.gz -O ~/SDL2.tar.gz && tar -xzvf ~/SDL2.tar.gz -C ~/ && mkdir ~/sdl-build && cd ~/sdl-build && ~/SDL2-2.0.3/configure --prefix=$HOME/SDL2 && make && make install; else echo 'Using cached SDL2 build directory.'; fi
+  - if [ ! -d "$HOME/SDL2/lib" ]; then wget https://www.libsdl.org/release/SDL2-2.0.3.tar.gz -O ~/SDL2.tar.gz && tar -xzvf ~/SDL2.tar.gz -C ~/ && mkdir ~/sdl-build && cd ~/sdl-build && export CC=gcc-5 ~/SDL2-2.0.3/configure --disable-nls --prefix=$HOME/SDL2 && export CC=gcc-5 make && make install; else echo 'Using cached SDL2 build directory.'; fi
 
-script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then cd $TRAVIS_BUILD_DIR && cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On . && make && make test; fi
+script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then cd $TRAVIS_BUILD_DIR && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/gcc-5 -DUSE_TESTS=On . && make && make test; fi
 
 notifications:
   email: false
@@ -27,10 +27,9 @@ addons:
   coverity_scan:
     project:
       name: "omf2097/openomf"
-      version: 0.6.5
       description: "One Must Fall 2097 Remake"
     notification_email: katajakasa@gmail.com
-    build_command_prepend: "cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_TESTS=Off ."
+    build_command_prepend: "bin/cov-configure --comptype gcc --compiler /usr/bin/gcc-5 && cmake -DCMAKE_C_COMPILER=/usr/bin/gcc-5 -DCMAKE_BUILD_TYPE=Debug -DUSE_TESTS=Off ."
     build_command: "make"
     branch_pattern: coverity_scan
   apt:
@@ -38,6 +37,8 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - libc6-dev
+    - gcc-5
+    - gettext
     - libcunit1
     - libcunit1-dev
     - libopenal-dev
