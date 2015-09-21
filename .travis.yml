@@ -16,7 +16,7 @@ compiler:
   - clang
 
 install:
-  - if [ ! -d "$HOME/SDL2/lib" ]; then wget https://www.libsdl.org/release/SDL2-2.0.3.tar.gz -O ~/SDL2.tar.gz && tar -xzvf ~/SDL2.tar.gz -C ~/ && mkdir ~/sdl-build && cd ~/sdl-build && export CC=gcc-5 ~/SDL2-2.0.3/configure --disable-nls --prefix=$HOME/SDL2 && export CC=gcc-5 make && make install; else echo 'Using cached SDL2 build directory.'; fi
+  - if [ ! -d "$HOME/SDL2/lib" ]; then wget https://www.libsdl.org/release/SDL2-2.0.3.tar.gz -O ~/SDL2.tar.gz && tar -xzvf ~/SDL2.tar.gz -C ~/ && mkdir ~/sdl-build && cd ~/sdl-build && export CC=gcc-5 && ~/SDL2-2.0.3/configure --prefix=$HOME/SDL2 && make && make install; else echo 'Using cached SDL2 build directory.'; fi
 
 script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then cd $TRAVIS_BUILD_DIR && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/gcc-5 -DUSE_TESTS=On . && make && make test; fi
 
