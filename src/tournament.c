@@ -227,15 +227,15 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
         sd_pilot_save(w, trn->enemies[i]);
 
         // Update catalog
-        uint32_t c_pos = sd_writer_pos(w);
+        long c_pos = sd_writer_pos(w);
         if (c_pos< 0) {
             goto error;
         }
         if (sd_writer_seek_start(w, 300 + (i+1) * 4) < 0) {
             goto error;
         }
-        sd_write_udword(w, c_pos);
-        if (sd_writer_seek_start(w, c_pos) < 0) {
+        sd_write_udword(w, (uint32_t)c_pos);
+        if (sd_writer_seek_start(w, (uint32_t)c_pos) < 0) {
             goto error;
         }
     }
