@@ -127,14 +127,14 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename) {
     // Write photos and offsets
     for(int i = 0; i < pic->photo_count; i++) {
         // Write offset to the catalog
-        uint32_t pos = sd_writer_pos(w);
+        long pos = sd_writer_pos(w);
         if (pos < 0) {
             goto error;
         }
         if (sd_writer_seek_start(w, 200 + i * 4) < 0) {
             goto error;
         }
-        sd_write_udword(w, pos);
+        sd_write_udword(w, (uint32_t)pos);
         if (sd_writer_seek_start(w, pos) < 0) {
             goto error;
         }
