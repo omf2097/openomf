@@ -18,6 +18,12 @@ extern "C" {
 #endif
 
 typedef struct {
+	uint8_t unk:2;
+	uint8_t shadows:2;
+	uint8_t unk2:4;
+} __attribute__((packed)) gflags;
+
+typedef struct {
 	char unknown_a[212];
 	uint16_t unknown_b;
 	uint16_t unknown_c;
@@ -31,7 +37,7 @@ typedef struct {
 	uint16_t unknown_k;
 	uint16_t unknown_l;
 	uint16_t unknown_m;
-	uint8_t general_flags;
+	gflags general_flags;
 	uint8_t unknown_n;
 	uint32_t unknown_o;
 	uint8_t unknown_p;
