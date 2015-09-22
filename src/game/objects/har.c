@@ -536,14 +536,15 @@ void har_take_damage(object *obj, str* string, float damage) {
     }
 
     // If damage is high enough, slow down the game for a bit
-    if(damage > 12.0f) {
+    // Also slow down game more for last shot
+    if(damage > 12.0f || h->health == 0) {
         DEBUG("Slowdown: Slowing from %d to %d.",
             game_state_get_speed(obj->gs),
-            game_state_get_speed(obj->gs)-6);
+            h->health == 0 ? game_state_get_speed(obj->gs)-10 : game_state_get_speed(obj->gs)-6);
         game_state_slowdown(
             obj->gs,
             120,
-            game_state_get_speed(obj->gs)-6);
+            h->health == 0 ? game_state_get_speed(obj->gs)-10 : game_state_get_speed(obj->gs)-6);
     }
 
     // chronos' stasis does not have a hit animation
