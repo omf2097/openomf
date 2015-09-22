@@ -33,7 +33,10 @@ void print_setup_root_info(sd_setup_file *setup) {
     printf(" - Unknown K:    %d\n", setup->unknown_k);
     printf(" - Unknown L:    %d\n", setup->unknown_l);
     printf(" - Unknown M:    %d\n", setup->unknown_m);
-    printf(" - Flags:        %d\n", setup->general_flags);
+    printf(" - Flags:\n");
+    printf("    * unk1:      %d\n", setup->general_flags.unk);
+    printf("    * shadows:   %d\n", setup->general_flags.shadows);
+    printf("    * unk2:      %d\n", setup->general_flags.unk2);
     printf(" - Unknown N:    %d\n", setup->unknown_n);
     printf(" - Unknown O:    %d\n", setup->unknown_o);
     printf(" - Unknown P:    %d\n", setup->unknown_p);
