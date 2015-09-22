@@ -194,7 +194,7 @@ int game_state_add_object(game_state *gs, object *obj, int layer, int singleton,
  * Slows down the game for n ticks. Only allows slowdown if one isn't already ongoing.
  */
 void game_state_slowdown(game_state *gs, int ticks, int rate) {
-    if(gs->speed_slowdown_time < 0) { 
+    if(gs->speed_slowdown_time < 0) {
         gs->speed_slowdown_previous = gs->speed;
         gs->speed_slowdown_time = ticks;
         gs->speed = rate;
@@ -207,7 +207,7 @@ void game_state_set_speed(game_state *gs, int speed) {
 }
 
 unsigned int game_state_get_speed(game_state *gs) {
-    return gs->speed - 5;
+    return gs->speed;
 }
 
 void game_state_del_animation(game_state *gs, int anim_id) {
