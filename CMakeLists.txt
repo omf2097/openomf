@@ -50,6 +50,7 @@ add_library(shadowdive
     src/pic.c
     src/score.c
     src/chr.c
+    src/setup.c
     src/pilot.c
     src/rec.c
     src/taglist.c

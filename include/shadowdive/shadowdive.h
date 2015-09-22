@@ -34,5 +34,6 @@
 #include "shadowdive/rec.h"
 #include "shadowdive/taglist.h"
 #include "shadowdive/script.h"
+#include "shadowdive/setup.h"
 
 #endif // _SD_SHADOWDIVE_H
