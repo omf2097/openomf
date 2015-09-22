@@ -530,20 +530,21 @@ void har_take_damage(object *obj, str* string, float damage) {
 
 
     // Take a screencap of enemy har
-    if(h->health == 0 && h->endurance < 1.0f) {
+    if(h->health == 0) {
         game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
         har_screencaps_capture(&other_player->screencaps, other_player->har, SCREENCAP_BLOW);
     }
 
     // If damage is high enough, slow down the game for a bit
-    if(damage > 12.0f) {
+    // Also slow down game more for last shot
+    if(damage > 12.0f || h->health == 0) {
         DEBUG("Slowdown: Slowing from %d to %d.",
             game_state_get_speed(obj->gs),
-            game_state_get_speed(obj->gs)-1);
+            h->health == 0 ? game_state_get_speed(obj->gs)-10 : game_state_get_speed(obj->gs)-6);
         game_state_slowdown(
             obj->gs,
             120,
-            game_state_get_speed(obj->gs)-1);
+            h->health == 0 ? game_state_get_speed(obj->gs)-10 : game_state_get_speed(obj->gs)-6);
     }
 
     // chronos' stasis does not have a hit animation
