@@ -20,8 +20,22 @@ extern "C" {
 typedef struct {
 	uint8_t unk:2;
 	uint8_t shadows:2;
-	uint8_t unk2:4;
-} __attribute__((packed)) gflags;
+	uint8_t unk2:2;
+	uint8_t screen_shakes:1;
+	uint8_t animations:1;
+} __attribute__((packed)) gflags1;
+
+typedef struct {
+	uint8_t palette_animation:1;
+	uint8_t unk2:2;
+	uint8_t snow_checking:1;
+	uint8_t unk3:4;
+} __attribute__((packed)) gflags2;
+
+typedef struct {
+	uint32_t stereo_reversed:1;
+	uint32_t unk:31;
+} __attribute__((packed)) gflags3;
 
 typedef struct {
 	char unknown_a[212];
@@ -37,11 +51,11 @@ typedef struct {
 	uint16_t unknown_k;
 	uint16_t unknown_l;
 	uint16_t unknown_m;
-	gflags general_flags;
-	uint8_t unknown_n;
-	uint32_t unknown_o;
-	uint8_t unknown_p;
-	uint8_t unknown_q;
+	gflags1 general_flags_1;
+	gflags2 general_flags_2;
+	gflags3 general_flags_3;
+	uint8_t sound_volume;
+	uint8_t music_volume;
 	char unknown_r[38];
 } __attribute__((packed)) sd_setup_file;
 
