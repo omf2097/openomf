@@ -11,7 +11,7 @@ void menu_gameplay_done(component *c, void *u) {
 
 void menu_gameplay_speed_slide(component *c, void *userdata, int pos) {
     scene *sc = userdata;
-    game_state_set_speed(sc->gs, pos);
+    game_state_set_speed(sc->gs, pos + 5);
 }
 
 component* menu_gameplay_create(scene *s) {

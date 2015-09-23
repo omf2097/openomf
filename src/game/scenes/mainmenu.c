@@ -90,7 +90,7 @@ int mainmenu_create(scene *scene) {
     scene_set_userdata(scene, local);
 
     // Load settings
-    game_state_set_speed(scene->gs, settings_get()->gameplay.speed);
+    game_state_set_speed(scene->gs, settings_get()->gameplay.speed + 5);
 
     // Create main menu
     local->frame = guiframe_create(165, 5, 151, 119);

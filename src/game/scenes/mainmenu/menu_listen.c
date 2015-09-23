@@ -40,7 +40,7 @@ void menu_listen_tick(component *c) {
             game_player *p2 = game_state_get_player(gs, 1);
 
             // force the speed to 3
-            game_state_set_speed(gs, 5);
+            game_state_set_speed(gs, 10);
 
             p1->har_id = HAR_JAGUAR;
             p1->pilot_id = 0;

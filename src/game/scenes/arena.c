@@ -99,7 +99,7 @@ void arena_sound_slide(component *c, void *userdata, int pos) {
 
 void arena_speed_slide(component *c, void *userdata, int pos) {
     scene *sc = userdata;
-    game_state_set_speed(sc->gs, pos);
+    game_state_set_speed(sc->gs, pos + 5);
 }
 
 void scene_fight_anim_done(void *userdata) {
