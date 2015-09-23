@@ -197,12 +197,12 @@ void game_state_slowdown(game_state *gs, int ticks, int rate) {
     if(gs->speed_slowdown_time < 0) {
         gs->speed_slowdown_previous = gs->speed;
         gs->speed_slowdown_time = ticks;
-        gs->speed = max(rate, 0);
+        gs->speed = max2(rate, 0);
     }
 }
 
 void game_state_set_speed(game_state *gs, int rate) {
-    gs->speed = max(rate, 0);
+    gs->speed = max2(rate, 0);
     DEBUG("game speed set to %d", gs->speed);
 }
 
