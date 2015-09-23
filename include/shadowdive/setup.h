@@ -43,7 +43,8 @@ typedef struct {
 
 typedef struct {
 	uint32_t stereo_reversed:1;
-	uint32_t unk:31;
+	uint32_t match_count:2;
+	uint32_t unk:29;
 } __attribute__((packed)) gflags3;
 
 typedef struct {
