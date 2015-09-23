@@ -18,9 +18,18 @@ extern "C" {
 #endif
 
 typedef struct {
+	uint16_t unk:5;
+	uint16_t power_1:3;
+	uint16_t unk2:2;
+	uint16_t power_2:3;
+	uint16_t unk3:3;
+} __attribute__((packed)) gflags0;
+
+typedef struct {
 	uint8_t unk:2;
 	uint8_t shadows:2;
-	uint8_t unk2:2;
+	uint8_t hazards:1;
+	uint8_t hyper_mode:1;
 	uint8_t screen_shakes:1;
 	uint8_t animations:1;
 } __attribute__((packed)) gflags1;
@@ -38,7 +47,8 @@ typedef struct {
 } __attribute__((packed)) gflags3;
 
 typedef struct {
-	char unknown_a[212];
+	uint8_t game_speed;
+	char unknown_a[211];
 	uint16_t unknown_b;
 	uint16_t unknown_c;
 	uint16_t unknown_d;
@@ -50,7 +60,7 @@ typedef struct {
 	uint16_t unknown_j;
 	uint16_t unknown_k;
 	uint16_t unknown_l;
-	uint16_t unknown_m;
+	gflags0 general_flags_0;
 	gflags1 general_flags_1;
 	gflags2 general_flags_2;
 	gflags3 general_flags_3;
