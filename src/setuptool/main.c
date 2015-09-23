@@ -11,19 +11,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const char *shadows[] = {
+static const char *shadows[] = {
     "None",
     "Low",
     "Medium",
     "High",
 };
 
-const char *onoff[] = {
+static const char *onoff[] = {
     "Off",
     "On"
 };
 
-const char *difficulty_list[] = {
+static const char *difficulty_list[] = {
     "Punching bag",
     "Rookia",
     "Veteran",
@@ -31,6 +31,13 @@ const char *difficulty_list[] = {
     "Champion",
     "Deadly",
     "Ultimate"
+};
+
+static const char* match_type[] = {
+    "One match",
+    "2 out of 3",
+    "3 out of 5",
+    "4 out of 7"
 };
 
 void print_setup_root_info(sd_setup_file *setup) {
@@ -79,6 +86,7 @@ void print_setup_root_info(sd_setup_file *setup) {
 
     printf(" - Flags 3:\n");
     printf("    * stereo rev: %s\n", onoff[setup->general_flags_3.stereo_reversed]);
+    printf("    * match cnt:  %s\n", match_type[setup->general_flags_3.match_count]);
     printf("    * unk:        %d\n", setup->general_flags_3.unk);
 
     printf(" - Sound volume:  %d\n", setup->sound_volume);
