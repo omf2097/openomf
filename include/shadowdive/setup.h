@@ -53,7 +53,7 @@ typedef struct {
 	uint16_t unknown_c;
 	uint16_t unknown_d;
 	char unknown_e[18];
-	uint8_t unknown_f;
+	uint8_t difficulty;
 	uint8_t unknown_g;
 	uint16_t unknown_h;
 	uint16_t unknown_i;
