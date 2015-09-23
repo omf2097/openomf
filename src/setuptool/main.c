@@ -28,6 +28,7 @@ void print_setup_root_info(sd_setup_file *setup) {
         return;
     }
 
+    printf(" - Speed:         %d\n", setup->game_speed);
     printf(" - Unknown A:\n");
     print_bytes(setup->unknown_a, sizeof(setup->unknown_a), 32, 3);
     printf("\n");
@@ -44,11 +45,19 @@ void print_setup_root_info(sd_setup_file *setup) {
     printf(" - Unknown J:     %d\n", setup->unknown_j);
     printf(" - Unknown K:     %d\n", setup->unknown_k);
     printf(" - Unknown L:     %d\n", setup->unknown_l);
-    printf(" - Unknown M:     %d\n", setup->unknown_m);
+
+    printf(" - Flags 0:\n");
+    printf("    * unk1:       %d\n", setup->general_flags_0.unk);
+    printf("    * Power 2:    %d\n", setup->general_flags_0.power_2);
+    printf("    * unk2:       %d\n", setup->general_flags_0.unk2);
+    printf("    * Power 1:    %d\n", setup->general_flags_0.power_1);
+    printf("    * unk3:       %d\n", setup->general_flags_0.unk3);
+
     printf(" - Flags 1:\n");
     printf("    * unk1:       %d\n", setup->general_flags_1.unk);
     printf("    * shadows:    %s\n", shadows[setup->general_flags_1.shadows]);
-    printf("    * unk2:       %d\n", setup->general_flags_1.unk2);
+    printf("    * hazards:    %s\n", onoff[setup->general_flags_1.hazards]);
+    printf("    * hyper mode: %s\n", onoff[setup->general_flags_1.hyper_mode]);
     printf("    * screen shk: %s\n", onoff[setup->general_flags_1.screen_shakes]);
     printf("    * animations: %s\n", onoff[setup->general_flags_1.animations]);
 
