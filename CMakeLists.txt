@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
 project(omf2097-tools C)
 
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
-OPTION(USE_MODPLUG "Use libmodplug for music playback" OFF)
-OPTION(USE_DUMB "Use libdumb for music playback" ON)
-OPTION(USE_SQLITE "Use sqlite3 (enables stringtool)" ON)
+option(USE_MODPLUG "Use libmodplug for music playback" OFF)
+option(USE_DUMB "Use libdumb for music playback" ON)
+option(USE_SQLITE "Use sqlite3 (enables stringtool)" ON)
 
 set(CMAKE_C_FLAGS "-Wall -std=c99")
 set(CMAKE_C_FLAGS_DEBUG "-ggdb -Werror")
@@ -16,20 +16,20 @@ find_package(argtable2)
 find_package(shadowdive)
 find_package(PNG)
 
-IF(USE_SQLITE)
+if(USE_SQLITE)
     find_package(sqlite)
     add_executable(stringtool src/stringtool/main.c)
-ENDIF()
+endif()
 
-IF(USE_DUMB)
+if(USE_DUMB)
     find_package(dumb)
     add_definitions(-DUSE_DUMB)
     add_executable(musictool src/musictool/main.c)
-ELSEIF(USE_MODPLUG)
+elseif(USE_MODPLUG)
     find_package(modplug)
     add_definitions(-DUSE_MODPLUG)
     add_executable(musictool src/musictool/main.c)
-ENDIF()
+endif()
 
 add_executable(bktool src/bktool/main.c src/shared/animation_misc.c src/shared/conversions.c)
 add_executable(aftool src/aftool/main.c src/shared/animation_misc.c src/shared/conversions.c)
@@ -52,14 +52,14 @@ add_executable(setuptool src/setuptool/main.c src/shared/pilot.c)
 set(CORELIBS ${SHADOWDIVE_LIBRARY} ${ARGTABLE2_LIBRARY} ${PNG_LIBRARY} ${ZLIB_LIBRARY})
 
 # Fix compilation issues on mingw
-IF(MINGW)
+if(MINGW)
     set(CORELIBS mingw32 ${CORELIBS})
-ENDIF()
+endif()
 
 # Fix compilation issues on unixy systems (missing math lib)
-IF(UNIX)
+if(UNIX)
     SET(CORELIBS ${CORELIBS} -lm)
-ENDIF(UNIX)
+endif(UNIX)
 
 include_directories(
     ${SDL2_INCLUDE_DIR}
@@ -69,19 +69,19 @@ include_directories(
 )
 
 # Set correct libs for stringtool
-IF(USE_SQLITE)
+if(USE_SQLITE)
     include_directories(${SQLITE_INCLUDE_DIR})
     target_link_libraries(stringtool ${CORELIBS} ${SHADOWDIVE_LIBRARY} ${SQLITE_LIBRARY})
-ENDIF()
+endif()
 
 # Set correct libs for musictool
-IF(USE_DUMB)
+if(USE_DUMB)
     include_directories(${DUMB_INCLUDE_DIR})
     target_link_libraries(musictool ${CORELIBS} ${SDL2_LIBRARY} ${DUMB_LIBRARY})
-ELSEIF(USE_MODPLUG)
+elseif(USE_MODPLUG)
     include_directories(${MODPLUG_INCLUDE_DIR})
     target_link_libraries(musictool ${CORELIBS} ${SDL2_LIBRARY} ${MODPLUG_LIBRARY})
-ENDIF()
+endif()
 
 target_link_libraries(bktool ${CORELIBS} ${SDL2_LIBRARY})
 target_link_libraries(aftool ${CORELIBS} ${SDL2_LIBRARY})
@@ -101,7 +101,7 @@ target_link_libraries(altpaltool ${CORELIBS})
 target_link_libraries(chrtool ${CORELIBS})
 target_link_libraries(setuptool ${CORELIBS})
 
-INSTALL(
+install(
     TARGETS
         aftool
         bktool
