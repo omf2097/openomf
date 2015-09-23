@@ -11,6 +11,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+const char *shadows[] = {
+    "None",
+    "Low",
+    "Medium",
+    "High",
+};
+
+const char *onoff[] = {
+    "Off",
+    "On"
+};
+
 void print_setup_root_info(sd_setup_file *setup) {
     if(setup == NULL) {
         return;
@@ -19,28 +31,39 @@ void print_setup_root_info(sd_setup_file *setup) {
     printf(" - Unknown A:\n");
     print_bytes(setup->unknown_a, sizeof(setup->unknown_a), 32, 3);
     printf("\n");
-    printf(" - Unknown B:    %d\n", setup->unknown_b);
-    printf(" - Unknown C:    %d\n", setup->unknown_c);
-    printf(" - Unknown D:    %d\n", setup->unknown_d);
+    printf(" - Unknown B:     %d\n", setup->unknown_b);
+    printf(" - Unknown C:     %d\n", setup->unknown_c);
+    printf(" - Unknown D:     %d\n", setup->unknown_d);
     printf(" - Unknown E:\n");
     print_bytes(setup->unknown_e, sizeof(setup->unknown_e), 32, 3);
     printf("\n");
-    printf(" - Unknown F:    %d\n", setup->unknown_f);
-    printf(" - Unknown G:    %d\n", setup->unknown_g);
-    printf(" - Unknown H:    %d\n", setup->unknown_h);
-    printf(" - Unknown I:    %d\n", setup->unknown_i);
-    printf(" - Unknown J:    %d\n", setup->unknown_j);
-    printf(" - Unknown K:    %d\n", setup->unknown_k);
-    printf(" - Unknown L:    %d\n", setup->unknown_l);
-    printf(" - Unknown M:    %d\n", setup->unknown_m);
-    printf(" - Flags:\n");
-    printf("    * unk1:      %d\n", setup->general_flags.unk);
-    printf("    * shadows:   %d\n", setup->general_flags.shadows);
-    printf("    * unk2:      %d\n", setup->general_flags.unk2);
-    printf(" - Unknown N:    %d\n", setup->unknown_n);
-    printf(" - Unknown O:    %d\n", setup->unknown_o);
-    printf(" - Unknown P:    %d\n", setup->unknown_p);
-    printf(" - Unknown Q:    %d\n", setup->unknown_q);
+    printf(" - Unknown F:     %d\n", setup->unknown_f);
+    printf(" - Unknown G:     %d\n", setup->unknown_g);
+    printf(" - Unknown H:     %d\n", setup->unknown_h);
+    printf(" - Unknown I:     %d\n", setup->unknown_i);
+    printf(" - Unknown J:     %d\n", setup->unknown_j);
+    printf(" - Unknown K:     %d\n", setup->unknown_k);
+    printf(" - Unknown L:     %d\n", setup->unknown_l);
+    printf(" - Unknown M:     %d\n", setup->unknown_m);
+    printf(" - Flags 1:\n");
+    printf("    * unk1:       %d\n", setup->general_flags_1.unk);
+    printf("    * shadows:    %s\n", shadows[setup->general_flags_1.shadows]);
+    printf("    * unk2:       %d\n", setup->general_flags_1.unk2);
+    printf("    * screen shk: %s\n", onoff[setup->general_flags_1.screen_shakes]);
+    printf("    * animations: %s\n", onoff[setup->general_flags_1.animations]);
+
+    printf(" - Flags 2:\n");
+    printf("    * pal anim:   %s\n", onoff[setup->general_flags_2.palette_animation]);
+    printf("    * unk2:       %d\n", setup->general_flags_2.unk2);
+    printf("    * snow chk:   %s\n", onoff[setup->general_flags_2.snow_checking]);
+    printf("    * unk3:       %d\n", setup->general_flags_2.unk3);
+
+    printf(" - Flags 3:\n");
+    printf("    * stereo rev: %s\n", onoff[setup->general_flags_3.stereo_reversed]);
+    printf("    * unk:        %d\n", setup->general_flags_3.unk);
+
+    printf(" - Sound volume:  %d\n", setup->sound_volume);
+    printf(" - Music volume:  %d\n", setup->music_volume);
     printf(" - Unknown R:\n");
     print_bytes(setup->unknown_r, sizeof(setup->unknown_r), 32, 3);
     printf("\n");
