@@ -23,6 +23,16 @@ const char *onoff[] = {
     "On"
 };
 
+const char *difficulty_list[] = {
+    "Punching bag",
+    "Rookia",
+    "Veteran",
+    "World Class",
+    "Champion",
+    "Deadly",
+    "Ultimate"
+};
+
 void print_setup_root_info(sd_setup_file *setup) {
     if(setup == NULL) {
         return;
@@ -38,7 +48,7 @@ void print_setup_root_info(sd_setup_file *setup) {
     printf(" - Unknown E:\n");
     print_bytes(setup->unknown_e, sizeof(setup->unknown_e), 32, 3);
     printf("\n");
-    printf(" - Unknown F:     %d\n", setup->unknown_f);
+    printf(" - Difficulty:    %s\n", difficulty_list[setup->difficulty]);
     printf(" - Unknown G:     %d\n", setup->unknown_g);
     printf(" - Unknown H:     %d\n", setup->unknown_h);
     printf(" - Unknown I:     %d\n", setup->unknown_i);
