@@ -40,6 +40,13 @@ static const char* match_type[] = {
     "4 out of 7"
 };
 
+static const char* knockdown_text[] = {
+    "None",
+    "Kicks",
+    "Punches",
+    "Kicks & Punches"
+};
+
 void print_setup_root_info(sd_setup_file *setup) {
     if(setup == NULL) {
         return;
@@ -57,21 +64,24 @@ void print_setup_root_info(sd_setup_file *setup) {
     printf("\n");
     printf(" - Difficulty:    %s\n", difficulty_list[setup->difficulty]);
     printf(" - Unknown G:     %d\n", setup->unknown_g);
-    printf(" - Unknown H:     %d\n", setup->unknown_h);
-    printf(" - Unknown I:     %d\n", setup->unknown_i);
-    printf(" - Unknown J:     %d\n", setup->unknown_j);
-    printf(" - Unknown K:     %d\n", setup->unknown_k);
-    printf(" - Unknown L:     %d\n", setup->unknown_l);
+    printf(" - Throw range:   %d\n", setup->throw_range);
+    printf(" - Hit pause:     %d\n", setup->hit_pause);
+    printf(" - Block Damage:  %d\n", setup->block_damage);
+    printf(" - Vitality:      %d\n", setup->vitality);
+    printf(" - Jump height:   %d\n", setup->jump_height);
 
     printf(" - Flags 0:\n");
     printf("    * unk1:       %d\n", setup->general_flags_0.unk);
-    printf("    * Power 2:    %d\n", setup->general_flags_0.power_2);
+    printf("    * rehit_mode: %d\n", setup->general_flags_0.rehit_mode);
+    printf("    * def_throws: %d\n", setup->general_flags_0.def_throws);
     printf("    * unk2:       %d\n", setup->general_flags_0.unk2);
     printf("    * Power 1:    %d\n", setup->general_flags_0.power_1);
     printf("    * unk3:       %d\n", setup->general_flags_0.unk3);
+    printf("    * Power 2:    %d\n", setup->general_flags_0.power_2);
+    printf("    * unk4:       %d\n", setup->general_flags_0.unk4);
 
     printf(" - Flags 1:\n");
-    printf("    * unk1:       %d\n", setup->general_flags_1.unk);
+    printf("    * knockdown:  %s\n", knockdown_text[setup->general_flags_1.knockdown]);
     printf("    * shadows:    %s\n", shadows[setup->general_flags_1.shadows]);
     printf("    * hazards:    %s\n", onoff[setup->general_flags_1.hazards]);
     printf("    * hyper mode: %s\n", onoff[setup->general_flags_1.hyper_mode]);
