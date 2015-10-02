@@ -11,7 +11,50 @@ typedef struct wtf_t {
     int last_action;
     int outstanding_hb;
     int disconnected;
+    int rttbuf[100];
+    int rttpos;
+    int rttfilled;
+    int tick_offset;
 } wtf;
+
+// simple standard deviation calculation
+float stddev(float average, int data[], int n) {
+    float variance = 0.0f;
+    for (int i=0; i < n; i++) {
+        variance = (data[i] - average)*(data[i] - average);
+    }
+    return sqrtf(variance/n);
+}
+
+// calculate average round trip time, ignoring outliers outside 1 standard deviation
+int avg_rtt(int data[], int n) {
+    float average = 0.0f;
+    float result = 0.0f;
+    int j;
+    for (int i=0; i < n; i++) {
+        average += data[i];
+    }
+    average = average/n;
+
+    float sd = stddev(average, data, n);
+    for (int i=0; i < n; i++) {
+        if (abs(data[i] - average) <= sd) {
+            result += data[i];
+            j++;
+        }
+    }
+    return trunc(result/j);
+}
+
+int net_controller_ready(controller *ctrl) {
+    wtf *data = ctrl->data;
+    return data->rttfilled;
+}
+
+int net_controller_tick_offset(controller *ctrl) {
+    wtf *data = ctrl->data;
+    return data->tick_offset;
+}
 
 void net_controller_free(controller *ctrl) {
     wtf *data = ctrl->data;
@@ -72,11 +115,17 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             int id = serial_read_int8(ser);
                             if (id == data->id) {
                                 int start = serial_read_int32(ser);
+                                int peerticks = serial_read_int32(ser);
                                 int newrtt = abs(start - ticks);
-                                if (newrtt > ctrl->rtt) {
-                                    ctrl->rtt++;
-                                } else if (newrtt < ctrl->rtt) {
-                                    ctrl->rtt--;
+                                data->rttbuf[data->rttpos++] = newrtt;
+                                if (data->rttpos >= 100) {
+                                    data->rttpos = 0;
+                                    data->rttfilled = 1;
+                                }
+                                if (data->rttfilled == 1) {
+                                    ctrl->rtt = avg_rtt(data->rttbuf, 100);
+                                    data->tick_offset = (peerticks + (ctrl->rtt/2)) - ticks;
+                                    /*DEBUG("I am %d ticks away from server: %d %d", data->tick_offset, ticks, peerticks);*/
                                 }
                                 data->outstanding_hb = 0;
                                 data->last_hb = ticks;
@@ -84,6 +133,8 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             } else {
                                 // a heartbeat from the peer, bounce it back
                                 ENetPacket *packet;
+                                // write our own ticks into it
+                                serial_write_int32(ser, ticks);
                                 packet = enet_packet_create(ser->data, ser->len, ENET_PACKET_FLAG_UNSEQUENCED);
                                 if (peer) {
                                     enet_peer_send(peer, 0, packet);
@@ -114,7 +165,12 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
         }
     }
 
-    if ((data->last_hb == -1 || ticks - data->last_hb > 20) || !data->outstanding_hb) {
+    int tick_interval = 5;
+    if (data->rttfilled) {
+        tick_interval = 20;
+    }
+
+    if ((data->last_hb == -1 || ticks - data->last_hb > tick_interval) || !data->outstanding_hb) {
         data->outstanding_hb = 1;
         serial ser;
         ENetPacket *packet;
@@ -227,9 +283,15 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->last_action = ACT_STOP;
     data->outstanding_hb = 0;
     data->disconnected = 0;
+    data->rttpos=0;
+    data->tick_offset = 0;
+    memset(data->rttbuf, 0, sizeof(int)*100);
+    data->rttfilled=0;
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
     ctrl->update_fun = &net_controller_update;
     ctrl->controller_hook = &controller_hook;
 }
+
+

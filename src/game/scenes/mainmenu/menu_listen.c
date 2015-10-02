@@ -74,12 +74,17 @@ void menu_listen_tick(component *c) {
             // Player 2 controller -- Network
             net_controller_create(player2_ctrl, local->host, event.peer, ROLE_SERVER);
             game_player_set_ctrl(p2, player2_ctrl);
-            local->host = NULL;
             game_player_set_selectable(p2, 1);
 
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)), AI_DIFFICULTY_CHAMPION);
 
+        }
+        game_player *p2 = game_state_get_player(gs, 1);
+        controller *c2 = game_player_get_ctrl(p2);
+        if (c2->type == CTRL_TYPE_NETWORK && net_controller_ready(c2) == 1) {
+            DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c2), c2->rtt);
+            local->host = NULL;
             game_state_set_next(gs, SCENE_MELEE);
         }
     }

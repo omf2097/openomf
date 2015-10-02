@@ -127,18 +127,25 @@ void menu_connect_tick(component *c) {
             keys->escape = SDL_GetScancodeFromName(k->key1_escape);
             keyboard_create(player2_ctrl, keys, 0);
             game_player_set_ctrl(p2, player2_ctrl);
-            local->host = NULL;
             game_player_set_selectable(p2, 1);
 
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)), AI_DIFFICULTY_CHAMPION);
 
-            game_state_set_next(gs, SCENE_MELEE);
         } else {
             if(difftime(time(NULL), local->connect_start) > 5.0) {
                 DEBUG("connection timed out");
                 menu_connect_cancel(local->cancel_button, local->s);
             }
+        }
+        game_player *p1 = game_state_get_player(gs, 0);
+        controller *c1 = game_player_get_ctrl(p1);
+        if (c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1) == 1) {
+            DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1), c1->rtt);
+            local->host = NULL;
+            gs->tick += net_controller_tick_offset(c1);
+            gs->int_tick = gs->tick;
+            game_state_set_next(gs, SCENE_MELEE);
         }
     }
 }

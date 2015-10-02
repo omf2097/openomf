@@ -8,15 +8,15 @@
 int object_auto_specialize(object *obj, int specialization_id) {
     switch(specialization_id) {
         case SPECID_HAR:
-            DEBUG("Object is specialized as a HAR");
+            //DEBUG("Object is specialized as a HAR");
             har_bootstrap(obj);
             return 0;
         case SPECID_PROJECTILE:
-            DEBUG("Object is specialized as a projectile");
+            //DEBUG("Object is specialized as a projectile");
             projectile_bootstrap(obj);
             return 0;
         case SPECID_HAZARD:
-            DEBUG("Object is specialized as a hazard");
+            //DEBUG("Object is specialized as a hazard");
             hazard_bootstrap(obj);
             return 0;
         default:
