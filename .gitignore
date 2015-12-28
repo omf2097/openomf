@@ -10,3 +10,4 @@ build/CMakeFiles/
 build/music/
 build/
 *.sw[klmnop]
+.idea
