@@ -21,11 +21,11 @@
 "be",0,
 "bf",1,"Blend finish"
 "bh",0,
-"bl",1,
-"bm",1,
+"bl",1,"Horizontal screen shake with magnitude n"
+"bm",1,"Animation to play while doing something"
 "bj",1,
 "bs",1,"Blend start"
-"bu",0,
+"bu",0,"Used by jaguar's destruct to move to center of arena"
 "bw",0,
 "bx",0,
 "bpd",1,"Reference palette index"
@@ -44,7 +44,7 @@
 "bk",1,
 "bn",0,
 "bo",1,
-"br",0,"Draw additively?"
+"br",0,"Draw additively"
 "bt",0,"Dark tint, used by shadow HAR"
 "by",0,
 "cf",0,"Only used by shadow scrap, works with 'bm' tag to walk to far corner of arena"
