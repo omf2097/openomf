@@ -18,6 +18,42 @@
 #include "utils/random.h"
 #include "utils/vec.h"
 
+// For CREDITS page, marks the animations and frames on which to fade in and out
+// Somewhat hacky, but easier than trying to figure out the tags (which only work for this scene anyway)
+struct {
+    int anim_no;
+    int frame_no;
+    int fade_in;
+} bd_overrides[] = {
+    {20, 2, 1},
+    {21, 1, 1},
+    {21, 4, 0},
+    {21, 6, 1},
+    {21, 9, 0},
+    {21, 11, 1},
+    {21, 14, 0},
+    {21, 16, 1},
+    {21, 19, 0},
+    {20, 5, 0},
+    {22, 2, 1},
+    {23, 1, 1},
+    {23, 4, 0},
+    {23, 6, 1},
+    {23, 9, 0},
+    {23, 11, 1},
+    {23, 14, 0},
+    {22, 5, 0},
+    {25, 1, 1},
+    {24, 3, 1},
+    {25, 4, 0},
+    {24, 6, 0},
+    {27, 1, 1},
+    {26, 3, 1},
+    {27, 4, 0},
+    {26, 6, 0},
+    {0,0,0} // guard
+};
+
 // ---------------- Private functions ----------------
 
 void player_clear_frame(object *obj) {
@@ -356,15 +392,6 @@ void player_run(object *obj) {
             if(sd_script_isset(frame, "bpb")) { rstate->pal_begin = sd_script_get(frame, "bpb") * 4; }
             if(sd_script_isset(frame, "bz"))  { rstate->pal_tint = 1; }
 
-            // The following is a hack. We don't REALLY know what these tags do.
-            // However, they are only used in CREDITS.BK, so we can just interpret
-            // then as we see fit, as long as stuff works.
-            if(sd_script_isset(frame, "bc") && frame->tick_len >= 50) {
-                rstate->blend_start = 0;
-            } else if(sd_script_isset(frame, "bd") && frame->tick_len >= 30) {
-                rstate->blend_finish = 0;
-            }
-
             // Handle position correction
             if(sd_script_isset(frame, "ox")) {
                 DEBUG("O_CORRECTION: X = %d", sd_script_get(frame, "ox"));
@@ -529,6 +556,27 @@ void player_run(object *obj) {
             if(obj->hit_frames > 0) {
                 obj->can_hit = 1;
                 obj->hit_frames--;
+            }
+
+            // CREDITS scene moving titles & names
+            if(sd_script_isset(frame, "bd")) {
+                int cur_anim = obj->cur_animation->id;
+                int cur_frame = sd_script_get_frame_index(&obj->animation_state.parser, frame);
+
+                int n = 0;
+                while(1) {
+                    if(bd_overrides[n].anim_no == 0) {
+                        break;
+                    }
+                    if(bd_overrides[n].anim_no == cur_anim && bd_overrides[n].frame_no == cur_frame) {
+                        if(bd_overrides[n].fade_in == 1) {
+                            rstate->blend_start = 0;
+                        } else {
+                            rstate->blend_finish = 0;
+                        }
+                    }
+                    n++;
+                }
             }
 
             if(sd_script_isset(frame, "at")) {
