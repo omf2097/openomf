@@ -36,11 +36,11 @@
 "bpb",1,"Initial color level"
 "bpo",0,"Disable palette effects"
 "bz",0,"Color tint effect"
-"ba",1,
-"bc",1,
-"bd",0,
-"bg",0,
-"bi",1,
+"ba",1,"Credits fade effect remapping (?)"
+"bc",1,"Credits fade effect color count"
+"bd",0,"Credits fade effect switch"
+"bg",0,"Credits fade effect unknown"
+"bi",1,"Credits fade effect color start index"
 "bk",1,
 "bn",0,
 "bo",1,
