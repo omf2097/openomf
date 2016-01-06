@@ -42,13 +42,22 @@ void test_hashmap_delete(void) {
 }
 
 void test_hashmap_insert(void) {
-    for(unsigned int i = 0; i < TEST_VAL_COUNT; i++) {
-        unsigned int k = TEST_VAL_COUNT - i;
-        int *v = hashmap_put(&test_map, &i, sizeof(int), &k, sizeof(int));
+    unsigned int i, k;
+    int *v, *m;
+    for(i = 0; i < TEST_VAL_COUNT; i++) {
+        k = TEST_VAL_COUNT - i;
+        v = hashmap_put(&test_map, &i, sizeof(int), &k, sizeof(int));
         CU_ASSERT_PTR_NOT_NULL(v);
         CU_ASSERT(*v == k);
         test_values[i] = k;
     }
+    CU_ASSERT(hashmap_reserved(&test_map) == TEST_VAL_COUNT);
+
+    // Try re-adding with a key already in the list, size shouldn't change
+    i = TEST_VAL_COUNT / 2;
+    k = TEST_VAL_COUNT - i;
+    m = hashmap_put(&test_map, &i, sizeof(int), &k, sizeof(int));
+    CU_ASSERT(*m == test_values[i]);
     CU_ASSERT(hashmap_reserved(&test_map) == TEST_VAL_COUNT);
     return;
 }
@@ -58,7 +67,8 @@ void test_hashmap_get(void) {
     unsigned int vlen;
 
     for(unsigned int i = 0; i < TEST_VAL_COUNT; i ++) {
-        hashmap_get(&test_map, &i, sizeof(int), (void**)&val, &vlen);
+        int ret = hashmap_get(&test_map, &i, sizeof(int), (void**)&val, &vlen);
+        CU_ASSERT_FATAL(ret == 0);
         CU_ASSERT(*val == test_values[i]);
         CU_ASSERT(vlen == sizeof(int));
     }
