@@ -326,7 +326,7 @@ void* hashmap_put(hashmap *hm,
   * iterator may lead to weird behavior. If you wish to delete inside an
   * iterator, please use hashmap_delete.
   *
-  * If autoresizing is on, this will first check if the hashmap needs
+  * If autoresizing is on, this will check if the hashmap needs
   * to be decreased in size. If yes, size will be cut in half and a full 
   * rehashing operation will be run. This will take time!
   *
