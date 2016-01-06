@@ -4,6 +4,11 @@
 #include "utils/iterator.h"
 #include "utils/allocator.h"
 
+enum hashmap_flags {
+    HASHMAP_AUTO_INC = 0x1,
+    HASHMAP_AUTO_DEC = 0x2
+};
+
 typedef struct hashmap_pair_t hashmap_pair;
 typedef struct hashmap_node_t hashmap_node;
 typedef struct hashmap_t hashmap;
@@ -21,14 +26,22 @@ struct hashmap_node_t {
 struct hashmap_t {
     hashmap_node **buckets;
     unsigned int buckets_x;
+    unsigned int buckets_x_min;
+    unsigned int buckets_x_max;
     unsigned int reserved;
+    float min_pressure;
+    float max_pressure;
+    unsigned int flags;
     allocator alloc;
 };
 
 void hashmap_create(hashmap *hashmap, int n_size); // actual size will be 2^n_size
 void hashmap_create_with_allocator(hashmap *hashmap, int n_size, allocator alloc);
 void hashmap_free(hashmap *hashmap);
+void hashmap_set_opts(hashmap *hm, unsigned int flags, float min_pressure, float max_pressure, int buckets_min, int buckets_max);
 int hashmap_resize(hashmap *hm, int n_size);
+float hashmap_get_pressure(hashmap *hm);
+void hashmap_autoresize(hashmap *hm);
 unsigned int hashmap_size(const hashmap *hashmap);
 unsigned int hashmap_reserved(const hashmap *hashmap);
 void* hashmap_put(hashmap *hm, const void *key, unsigned int keylen, const void *val, unsigned int vallen);
