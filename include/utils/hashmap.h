@@ -28,6 +28,7 @@ struct hashmap_t {
 void hashmap_create(hashmap *hashmap, int n_size); // actual size will be 2^n_size
 void hashmap_create_with_allocator(hashmap *hashmap, int n_size, allocator alloc);
 void hashmap_free(hashmap *hashmap);
+int hashmap_resize(hashmap *hm, int n_size);
 unsigned int hashmap_size(const hashmap *hashmap);
 unsigned int hashmap_reserved(const hashmap *hashmap);
 void* hashmap_put(hashmap *hm, const void *key, unsigned int keylen, const void *val, unsigned int vallen);

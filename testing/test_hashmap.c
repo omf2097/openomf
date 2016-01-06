@@ -62,6 +62,14 @@ void test_hashmap_insert(void) {
     return;
 }
 
+void test_hashmap_resize(void) {
+    CU_ASSERT(hashmap_resize(&test_map, 8) == 1);
+    CU_ASSERT(hashmap_resize(&test_map, 10) == 0);
+    CU_ASSERT_PTR_NOT_NULL(test_map.buckets);
+    CU_ASSERT(test_map.buckets_x = 10);
+    CU_ASSERT(hashmap_size(&test_map) == 1024);
+}
+
 void test_hashmap_get(void) {
     unsigned int *val;
     unsigned int vlen;
@@ -126,6 +134,7 @@ void hashmap_test_suite(CU_pSuite suite) {
     // Add tests
     if(CU_add_test(suite, "Test for hashmap create", test_hashmap_create) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap insert operation", test_hashmap_insert) == NULL) { return; }
+    if(CU_add_test(suite, "Test for hashmap resize operation", test_hashmap_resize) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap get operation", test_hashmap_get) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap delete operation", test_hashmap_delete) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap iterator ", test_hashmap_iterator) == NULL) { return; }

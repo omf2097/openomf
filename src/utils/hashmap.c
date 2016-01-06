@@ -28,7 +28,7 @@ uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int x) {
   * allows the user to define the memory allocation functions.
   *
   * \param hm Allocated memory pointer
-  * \param n_size Size of the hashmap. Final size will be pow(w, n_size)
+  * \param n_size Size of the hashmap. Final size will be pow(2, n_size)
   * \param alloc Allocation functions
   */
 void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
@@ -50,7 +50,7 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
   * \todo Make a better create function
   *
   * \param hm Allocated memory pointer
-  * \param n_size Size of the hashmap. Final size will be pow(w, n_size)
+  * \param n_size Size of the hashmap. Final size will be pow(2, n_size)
   */
 void hashmap_create(hashmap *hm, int n_size) {
     allocator alloc;
@@ -58,6 +58,51 @@ void hashmap_create(hashmap *hm, int n_size) {
     alloc.crealloc = realloc;
     alloc.cfree = free;
     hashmap_create_with_allocator(hm, n_size, alloc);
+}
+
+/** \brief Resizes the hashmap
+  *
+  * Note! This is a very naive implementation. During the rehashing, a separate
+  * memory area is reserved, so memory usage will temporarily jump!
+  *
+  * \todo Make a better resize function
+  *
+  * \param hm Allocated memory pointer
+  * \param n_size Size of the hashmap. Final size will be pow(2, n_size)
+  */
+int hashmap_resize(hashmap *hm, int n_size) {
+    // Do not resize if equal size was requested
+    if(n_size == hm->buckets_x) {
+        return 1;
+    }
+
+    // Allocate and zero out a new memory blocks for the resized bucket list
+    size_t new_size = BUCKETS_SIZE(n_size) * sizeof(hashmap_node*);
+    hashmap_node **new_buckets = hm->alloc.cmalloc(new_size);
+    memset(new_buckets, 0, new_size);
+
+    // Rehash
+    hashmap_node *node = NULL;
+    hashmap_node *this = NULL;
+    unsigned int index;
+    for(unsigned int i = 0; i < hashmap_size(hm); i++) {
+        node = hm->buckets[i];
+        while(node != NULL) {
+            this = node;
+            node = node->next;
+
+            // Recalculate index, and prepend the new index to the bucket list
+            index = fnv_32a_buf(this->pair.key, this->pair.keylen, n_size);
+            this->next = new_buckets[index];
+            new_buckets[index] = this;
+        }
+    }
+
+    // Free old bucket list and assign new list and size of the hashmap
+    free(hm->buckets);
+    hm->buckets = new_buckets;
+    hm->buckets_x = n_size;
+    return 0;
 }
 
 /** \brief Clears hashmap entries
