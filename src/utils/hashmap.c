@@ -160,6 +160,7 @@ void* hashmap_put(hashmap *hm,
         // The key is already in the hashmap, so just realloc and reset the contents.
         seek->pair.val = hm->alloc.crealloc(seek->pair.val, vallen);
         memcpy(seek->pair.val, val, vallen);
+        seek->pair.vallen = vallen;
         return seek->pair.val;
     } else {
         // Key is not yet in the hashmap, so create a new node and set it
