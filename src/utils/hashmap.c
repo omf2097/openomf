@@ -141,24 +141,44 @@ void* hashmap_put(hashmap *hm,
                   const void *key, unsigned int keylen,
                   const void *val, unsigned int vallen) {
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
+    hashmap_node *root = hm->buckets[index];
+    hashmap_node *seek = root;
 
-    // Create new node, copy data
-    hashmap_node *node = hm->alloc.cmalloc(sizeof(hashmap_node));
-    node->pair.keylen = keylen;
-    node->pair.vallen = vallen;
-    node->pair.key = hm->alloc.cmalloc(keylen);
-    node->pair.val = hm->alloc.cmalloc(vallen);
-    memcpy(node->pair.key, key, keylen);
-    memcpy(node->pair.val, val, vallen);
+    // See if the key already exists in the buckets list
+    int found = 0;
+    while(seek) {
+        if(seek->pair.keylen == keylen) {
+            if(memcmp(seek->pair.key, key, keylen) == 0) {
+                found = 1;
+                break;
+            }
+        }
+        seek = seek->next;
+    }
 
-    // Set new node as first
-    node->next = hm->buckets[index];
-    hm->buckets[index] = node;
-    hm->reserved++;
+    if(found) {
+        // The key is already in the hashmap, so just realloc and reset the contents.
+        seek->pair.val = hm->alloc.crealloc(seek->pair.val, vallen);
+        memcpy(seek->pair.val, val, vallen);
+        seek->pair.vallen = vallen;
+        return seek->pair.val;
+    } else {
+        // Key is not yet in the hashmap, so create a new node and set it
+        // as the first entry in the buckets list.
+        hashmap_node *node = hm->alloc.cmalloc(sizeof(hashmap_node));
+        node->pair.keylen = keylen;
+        node->pair.vallen = vallen;
+        node->pair.key = hm->alloc.cmalloc(keylen);
+        node->pair.val = hm->alloc.cmalloc(vallen);
+        memcpy(node->pair.key, key, keylen);
+        memcpy(node->pair.val, val, vallen);
 
-    // Return a pointer to the newly allocated value
-    // for convenience
-    return node->pair.val;
+        node->next = root;
+        hm->buckets[index] = node;
+        hm->reserved++;
+
+        return node->pair.val;
+    }
 }
 
 
