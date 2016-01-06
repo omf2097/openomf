@@ -306,6 +306,10 @@ void hashmap_idel(hashmap *hm, unsigned int key) {
 int hashmap_delete(hashmap *hm, iterator *iter) {
     int index = iter->inow - 1;
 
+    if (iter->ended) {
+        return 1;
+    }
+
     // Find correct node
     hashmap_node *node = hm->buckets[index];
     hashmap_node *prev = NULL;
