@@ -9,6 +9,22 @@
 #define TINY_MASK(x) (((uint32_t)1<<(x))-1)
 #define BUCKETS_SIZE(x) (pow(2,(x)))
 
+#define AUTO_INC_CHECK() \
+    if(hm->flags & HASHMAP_AUTO_INC \
+        && hm->buckets_x < hm->buckets_x_max \
+        && hashmap_get_pressure(hm) > hm->max_pressure) \
+    { \
+        hashmap_resize(hm, hm->buckets_x+1); \
+    }
+
+#define AUTO_DEC_CHECK() \
+    if(hm->flags & HASHMAP_AUTO_DEC \
+        && hm->buckets_x > hm->buckets_x_min \
+        && hashmap_get_pressure(hm) < hm->min_pressure) \
+    { \
+        hashmap_resize(hm, hm->buckets_x-1); \
+    }
+
 // The rest
 
 uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int x) {
@@ -27,13 +43,18 @@ uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int x) {
   * Creates a new hashmap. This is just like hashmap_create, but
   * allows the user to define the memory allocation functions.
   *
-  * \param hm Allocated memory pointer
-  * \param n_size Size of the hashmap. Final size will be pow(w, n_size)
+  * \param hm Allocated hashmap pointer
+  * \param n_size Size of the hashmap. Final size will be pow(2, n_size)
   * \param alloc Allocation functions
   */
 void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
     hm->alloc = alloc;
     hm->buckets_x = n_size;
+    hm->buckets_x_min = 4;
+    hm->buckets_x_max = 31;
+    hm->min_pressure = 0.25;
+    hm->max_pressure = 0.75;
+    hm->flags = 0;
     size_t b_size = hashmap_size(hm) * sizeof(hashmap_node*);
     hm->buckets = hm->alloc.cmalloc(b_size);
     memset(hm->buckets, 0, b_size);
@@ -47,10 +68,15 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
   * but the bucket count is actually calculated pow(2, n_size). So for example value
   * 8 means 256 buckets, and 9 would be 512 buckets.
   *
+  * Note that if you are planning on using the autoresize feature with auto decrease option, 
+  * the n_size should be the same as the min_buckets value in hashmap_set_opts() call.
+  * If you don't fill the hashmap to full size at the start before calling hashmap_del(),
+  * the delete function will start automatically decreasing the hashmap size.
+  *
   * \todo Make a better create function
   *
-  * \param hm Allocated memory pointer
-  * \param n_size Size of the hashmap. Final size will be pow(w, n_size)
+  * \param hm Allocated hashmap pointer
+  * \param n_size Size of the hashmap. Final size will be pow(2, n_size)
   */
 void hashmap_create(hashmap *hm, int n_size) {
     allocator alloc;
@@ -58,6 +84,112 @@ void hashmap_create(hashmap *hm, int n_size) {
     alloc.crealloc = realloc;
     alloc.cfree = free;
     hashmap_create_with_allocator(hm, n_size, alloc);
+}
+
+/** \brief Set hashmap options
+  *
+  * Used to set hashmap resizing options and pressures.
+  *
+  * Available flags:
+  * - HASHMAP_AUTO_INC: Enables automatic hashmap size increasing (set pressure via max_pressure)
+  * - HASHMAP_AUTO_DEC: Enables automatic hashmap size decreasing (set pressure via min_pressure)
+  *
+  * Decent default for pressures might be 0.25 for minimum and 0.75 for maximum. These can and should
+  * of course be tweaked as necessary, since resizing is a rather expensive operation and should be
+  * avoided if necessary.
+  * 
+  * buckets_min and buckets_max define the minimum and maximum amount of buckets available in the
+  * hashmap.
+  *
+  * min_pressure and max_pressure will only be used if HASHMAP_AUTO_INC and HASHMAP_AUTO_DEC are set,
+  * respectively. Same with buckets_min and buckets_max.
+  *
+  * \param hm Allocated hashmap pointer
+  * \param flags Feature flags (eg. HASHMAP_AUTO_INC|HASHMAP_AUTO_DEC)
+  * \param min_pressure Minimum pressure value for auto-resize (eg. 0.25)
+  * \param max_pressure Maximum pressure value for auto-resize (eg. 0.75)
+  * \param buckets_min Minimum amount of buckets (must be >= 2)
+  * \param buckets_max Maximum amount of buckets
+  */
+void hashmap_set_opts(hashmap *hm, 
+    unsigned int flags,
+    float min_pressure, float max_pressure,
+    int buckets_min, int buckets_max)
+{
+    hm->flags = flags & 0x3;
+    hm->min_pressure = min_pressure;
+    hm->max_pressure = max_pressure;
+    hm->buckets_x_min = buckets_min >= 2 ? buckets_min : 2;
+    hm->buckets_x_max = buckets_max;
+}
+
+/** \brief Get current hashmap pressure
+  *
+  * Simply gets the current fill pressure for the hashmap.
+  * Calculated as reserved_buckets / total_buckets.
+  *
+  * \param hm Allocated hashmap pointer
+  */
+float hashmap_get_pressure(hashmap *hm) {
+    return ((float)hm->reserved) / ((float)BUCKETS_SIZE(hm->buckets_x));
+}
+
+/** \brief Runs pressure checks and resizes if necessary
+  *
+  * This function checks if either the minimun or maximum pressure checks are on
+  * and if the pressure values have been exceeded. If they are, resize operation
+  * will be run.
+  *
+  * \param hm Allocated hashmap pointer
+  */
+void hashmap_autoresize(hashmap *hm) {
+    AUTO_INC_CHECK()
+    AUTO_DEC_CHECK()
+}
+
+/** \brief Resizes the hashmap
+  *
+  * Note! This is a very naive implementation. During the rehashing, a separate
+  * memory area is reserved, so memory usage will temporarily jump!
+  *
+  * \todo Make a better resize function
+  *
+  * \param hm Allocated hashmap pointer
+  * \param n_size Size of the hashmap. Final size will be pow(2, n_size)
+  */
+int hashmap_resize(hashmap *hm, int n_size) {
+    // Do not resize if equal size was requested
+    if(n_size == hm->buckets_x) {
+        return 1;
+    }
+
+    // Allocate and zero out a new memory blocks for the resized bucket list
+    size_t new_size = BUCKETS_SIZE(n_size) * sizeof(hashmap_node*);
+    hashmap_node **new_buckets = hm->alloc.cmalloc(new_size);
+    memset(new_buckets, 0, new_size);
+
+    // Rehash
+    hashmap_node *node = NULL;
+    hashmap_node *this = NULL;
+    unsigned int index;
+    for(unsigned int i = 0; i < hashmap_size(hm); i++) {
+        node = hm->buckets[i];
+        while(node != NULL) {
+            this = node;
+            node = node->next;
+
+            // Recalculate index, and prepend the new index to the bucket list
+            index = fnv_32a_buf(this->pair.key, this->pair.keylen, n_size);
+            this->next = new_buckets[index];
+            new_buckets[index] = this;
+        }
+    }
+
+    // Free old bucket list and assign new list and size of the hashmap
+    free(hm->buckets);
+    hm->buckets = new_buckets;
+    hm->buckets_x = n_size;
+    return 0;
 }
 
 /** \brief Clears hashmap entries
@@ -130,6 +262,13 @@ unsigned int hashmap_reserved(const hashmap *hm) {
   * contents of the value memory block will be copied. However,
   * any memory _pointed to_ by it will NOT be copied. So be careful!
   *
+  * If autoresizing is on, this will check if the hashmap needs
+  * to be increased in size. If yes, size will be doubled and a full 
+  * rehashing operation will be run. This will take time!
+  *
+  * This function does NOT automatically decrease size, even if HASHMAP_AUTO_DEC
+  * flag is enabled.
+  *
   * \param hm Hashmap
   * \param key Pointer to key memory block
   * \param keylen Length of the key memory block
@@ -139,7 +278,8 @@ unsigned int hashmap_reserved(const hashmap *hm) {
   */
 void* hashmap_put(hashmap *hm,
                   const void *key, unsigned int keylen,
-                  const void *val, unsigned int vallen) {
+                  const void *val, unsigned int vallen)
+{
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
     hashmap_node *root = hm->buckets[index];
     hashmap_node *seek = root;
@@ -161,6 +301,8 @@ void* hashmap_put(hashmap *hm,
         seek->pair.val = hm->alloc.crealloc(seek->pair.val, vallen);
         memcpy(seek->pair.val, val, vallen);
         seek->pair.vallen = vallen;
+
+        AUTO_INC_CHECK()
         return seek->pair.val;
     } else {
         // Key is not yet in the hashmap, so create a new node and set it
@@ -177,6 +319,7 @@ void* hashmap_put(hashmap *hm,
         hm->buckets[index] = node;
         hm->reserved++;
 
+        AUTO_INC_CHECK()
         return node->pair.val;
     }
 }
@@ -187,6 +330,13 @@ void* hashmap_put(hashmap *hm,
   * Deletes an item from the hashmap. Note: Using this function inside an
   * iterator may lead to weird behavior. If you wish to delete inside an
   * iterator, please use hashmap_delete.
+  *
+  * If autoresizing is on, this will check if the hashmap needs
+  * to be decreased in size. If yes, size will be cut in half and a full 
+  * rehashing operation will be run. This will take time!
+  *
+  * This function does NOT automatically increase size, even if HASHMAP_AUTO_INC
+  * flag is enabled.
   *
   * \param hm Hashmap
   * \param key Pointer to key memory block
@@ -227,6 +377,8 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
         hm->alloc.cfree(node->pair.val);
         hm->alloc.cfree(node);
         hm->reserved--;
+
+        AUTO_DEC_CHECK()
         return 0;
     }
     return 1;
@@ -298,6 +450,11 @@ void hashmap_idel(hashmap *hm, unsigned int key) {
   * Deletes an item from the hashmap by a matching iterator key.
   * This function is iterator safe. In theory, this function
   * should not fail, as the iterable value should exist.
+  *
+  * Note! This function does NOT autoresize at all, even if the flags
+  * are enabled. This is to avoid trouble while iterating. If you do
+  * a large amount of deletions here and suspect the minimum limit has been
+  * reached, call hashmap_autoresize to run a check and resize operation.
   *
   * \param hm Hashmap
   * \param iter Iterator

@@ -62,6 +62,20 @@ void test_hashmap_insert(void) {
     return;
 }
 
+void test_hashmap_get_pressure(void) {
+    float pr = hashmap_get_pressure(&test_map);
+    CU_ASSERT(pr >= 3.9);
+    CU_ASSERT(pr <= 3.91);
+}
+
+void test_hashmap_resize(void) {
+    CU_ASSERT(hashmap_resize(&test_map, 8) == 1);
+    CU_ASSERT(hashmap_resize(&test_map, 10) == 0);
+    CU_ASSERT_PTR_NOT_NULL(test_map.buckets);
+    CU_ASSERT(test_map.buckets_x = 10);
+    CU_ASSERT(hashmap_size(&test_map) == 1024);
+}
+
 void test_hashmap_get(void) {
     unsigned int *val;
     unsigned int vlen;
@@ -122,14 +136,65 @@ void test_hashmap_clear(void) {
     CU_ASSERT(hashmap_reserved(&test_map) == 0);
 }
 
+void hashmap_test_autoresize(void) {
+    hashmap_create(&test_map, 2);
+
+    hashmap_set_opts(&test_map, HASHMAP_AUTO_INC|HASHMAP_AUTO_DEC, 0.25, 0.75, 2, 8);
+    CU_ASSERT(test_map.buckets_x_max == 8);
+    CU_ASSERT(test_map.buckets_x_min == 2);
+    CU_ASSERT(test_map.flags & HASHMAP_AUTO_INC);
+    CU_ASSERT(test_map.flags & HASHMAP_AUTO_DEC);
+    CU_ASSERT_DOUBLE_EQUAL(test_map.max_pressure, 0.75, 0.01);
+    CU_ASSERT_DOUBLE_EQUAL(test_map.min_pressure, 0.25, 0.01);
+
+    CU_ASSERT(test_map.buckets_x == 2);
+
+    unsigned int c_key = 0;
+    unsigned int c_value = 0xFFFF;
+
+    hashmap_put(&test_map, &c_key, sizeof(int), &c_value, sizeof(int));
+    CU_ASSERT_DOUBLE_EQUAL(hashmap_get_pressure(&test_map), 0.25, 0.01);
+    c_key++;
+    c_value--;
+
+    hashmap_put(&test_map, &c_key, sizeof(int), &c_value, sizeof(int));
+    CU_ASSERT_DOUBLE_EQUAL(hashmap_get_pressure(&test_map), 0.5, 0.01);
+    c_key++;
+    c_value--;
+
+    hashmap_put(&test_map, &c_key, sizeof(int), &c_value, sizeof(int));
+    CU_ASSERT_DOUBLE_EQUAL(hashmap_get_pressure(&test_map), 0.75, 0.01);
+    c_key++;
+    c_value--;
+
+    hashmap_put(&test_map, &c_key, sizeof(int), &c_value, sizeof(int));
+    CU_ASSERT_DOUBLE_EQUAL(hashmap_get_pressure(&test_map), 0.5, 0.01);
+    CU_ASSERT(test_map.buckets_x == 3);
+
+
+    hashmap_del(&test_map, &c_key, sizeof(int));
+    c_key--;
+    hashmap_del(&test_map, &c_key, sizeof(int));
+    c_key--;
+    hashmap_del(&test_map, &c_key, sizeof(int));
+
+    CU_ASSERT_DOUBLE_EQUAL(hashmap_get_pressure(&test_map), 0.25, 0.01);
+    CU_ASSERT(test_map.buckets_x == 2);
+
+    hashmap_free(&test_map);
+}
+
 void hashmap_test_suite(CU_pSuite suite) {
     // Add tests
     if(CU_add_test(suite, "Test for hashmap create", test_hashmap_create) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap insert operation", test_hashmap_insert) == NULL) { return; }
+    if(CU_add_test(suite, "Test for hashmap get pressure operation", test_hashmap_get_pressure) == NULL) { return; }
+    if(CU_add_test(suite, "Test for hashmap resize operation", test_hashmap_resize) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap get operation", test_hashmap_get) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap delete operation", test_hashmap_delete) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap iterator ", test_hashmap_iterator) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap iterator delete operation", test_hashmap_iter_del) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap clear operation", test_hashmap_clear) == NULL) { return; }
     if(CU_add_test(suite, "Test for hashmap free operation", test_hashmap_free) == NULL) { return; }
+    if(CU_add_test(suite, "Test for hashmap auto resize", hashmap_test_autoresize) == NULL) { return; }
 }
