@@ -20,7 +20,7 @@
 #define AUTO_DEC_CHECK() \
     if(hm->flags & HASHMAP_AUTO_DEC \
         && hm->buckets_x > hm->buckets_x_min \
-        && hashmap_get_pressure(hm) > hm->max_pressure) \
+        && hashmap_get_pressure(hm) < hm->min_pressure) \
     { \
         hashmap_resize(hm, hm->buckets_x-1); \
     }
@@ -257,7 +257,7 @@ unsigned int hashmap_reserved(const hashmap *hm) {
   * contents of the value memory block will be copied. However,
   * any memory _pointed to_ by it will NOT be copied. So be careful!
   *
-  * If autoresizing is on, this will first check if the hashmap needs
+  * If autoresizing is on, this will check if the hashmap needs
   * to be increased in size. If yes, size will be doubled and a full 
   * rehashing operation will be run. This will take time!
   *
@@ -275,8 +275,6 @@ void* hashmap_put(hashmap *hm,
                   const void *key, unsigned int keylen,
                   const void *val, unsigned int vallen)
 {
-    AUTO_INC_CHECK()
-
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
     hashmap_node *root = hm->buckets[index];
     hashmap_node *seek = root;
@@ -298,6 +296,8 @@ void* hashmap_put(hashmap *hm,
         seek->pair.val = hm->alloc.crealloc(seek->pair.val, vallen);
         memcpy(seek->pair.val, val, vallen);
         seek->pair.vallen = vallen;
+
+        AUTO_INC_CHECK()
         return seek->pair.val;
     } else {
         // Key is not yet in the hashmap, so create a new node and set it
@@ -314,6 +314,7 @@ void* hashmap_put(hashmap *hm,
         hm->buckets[index] = node;
         hm->reserved++;
 
+        AUTO_INC_CHECK()
         return node->pair.val;
     }
 }
@@ -338,8 +339,6 @@ void* hashmap_put(hashmap *hm,
   * \return Returns 0 on success, 1 on error (not found).
   */
 int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
-    AUTO_DEC_CHECK()
-
     unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
 
     // Get node
@@ -373,6 +372,8 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
         hm->alloc.cfree(node->pair.val);
         hm->alloc.cfree(node);
         hm->reserved--;
+
+        AUTO_DEC_CHECK()
         return 0;
     }
     return 1;
