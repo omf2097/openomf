@@ -68,6 +68,11 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
   * but the bucket count is actually calculated pow(2, n_size). So for example value
   * 8 means 256 buckets, and 9 would be 512 buckets.
   *
+  * Note that if you are planning on using the autoresize feature with auto decrease option, 
+  * the n_size should be the same as the min_buckets value in hashmap_set_opts() call.
+  * If you don't fill the hashmap to full size at the start before calling hashmap_del(),
+  * the delete function will start automatically decreasing the hashmap size.
+  *
   * \todo Make a better create function
   *
   * \param hm Allocated hashmap pointer
