@@ -42,6 +42,8 @@ Official releases are (somewhat) stable, but don't necessary come with all the l
 
 Use at least GCC 4.7 or Clang 3.1. MSVC is not supported at this time.
 
+Note! For debug builds, GCC 4.9 or later is recommended.
+
 #### Libraries
 
 Required:
