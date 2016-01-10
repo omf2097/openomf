@@ -29,6 +29,8 @@ Dependencies
 CMake is required for building this package. LibPNG is required for importing and exporting
 image data. Compiling should be possible with any C99 capable C compiler (GCC and CLANG tested).
 
+Note! GCC 4.8.x series has bugs that may prevent compiling in debug mode!
+
 Some common package manager commands for receiving the dependencies:
 
 Debian:
