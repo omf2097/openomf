@@ -1,4 +1,6 @@
 set(LIBSHADOWDIVE_LIBRARY_ONLY 1)
+set(BUILD_EXAMPLES OFF)
+set(BUILD_ALLEGRO4 OFF)
 
 find_program(GIT_COMMAND git)
 
@@ -21,8 +23,8 @@ if(GIT_COMMAND)
 endif(GIT_COMMAND)
     
 add_subdirectory(libShadowDive)
-add_subdirectory(dumb/dumb/cmake)
+add_subdirectory(dumb)
 
 # Includes
-set(DUMB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dumb/dumb/include" PARENT_SCOPE)
+set(DUMB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dumb/include" PARENT_SCOPE)
 set(SHADOWDIVE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libShadowDive/include" PARENT_SCOPE)
