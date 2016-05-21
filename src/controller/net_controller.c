@@ -79,8 +79,14 @@ void net_controller_free(controller *ctrl) {
         }
     }
 done:
-    enet_host_destroy(data->host);
-    free(data);
+    if(data->host) {
+        enet_host_destroy(data->host);
+        data->host = NULL;
+    }
+    if(ctrl->data) {
+        free(ctrl->data);
+        ctrl->data = NULL;
+    }
 }
 
 int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
@@ -283,10 +289,10 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->last_action = ACT_STOP;
     data->outstanding_hb = 0;
     data->disconnected = 0;
-    data->rttpos=0;
+    data->rttpos = 0;
     data->tick_offset = 0;
     memset(data->rttbuf, 0, sizeof(int)*100);
-    data->rttfilled=0;
+    data->rttfilled = 0;
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
