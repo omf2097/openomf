@@ -35,9 +35,11 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
+    - george-edison55-precise-backports
     packages:
     - libc6-dev
     - gcc-5
+    - cmake
     - gettext
     - libcunit1
     - libcunit1-dev
