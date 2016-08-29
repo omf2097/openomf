@@ -1,24 +1,21 @@
 language: c
 
-sudo: false
+sudo: required
+dist: trusty
 
 env:
   global:
    - secure: "qvRpkAmV7PRQHoUfjhykb5lkvMyMFAlNYh/1140ej/iHjDsO9bFpX2qxbfgAe8jaW8VBf4ly+VpjA9ByJHWol6/b+FwURa/yiFgNESxeYDUJz/dJCYyrgORH+t41bCwV8SEYZmpa3NJiDi4GkH8iojEi+dQYhWoN4uwEg81m45c="
-   - CMAKE_PREFIX_PATH=$HOME/SDL2
-
-cache:
-  directories:
-  - $HOME/SDL2
 
 compiler:
   - gcc
   - clang
 
-install:
-  - if [ ! -d "$HOME/SDL2/lib" ]; then wget https://www.libsdl.org/release/SDL2-2.0.3.tar.gz -O ~/SDL2.tar.gz && tar -xzvf ~/SDL2.tar.gz -C ~/ && mkdir ~/sdl-build && cd ~/sdl-build && export CC=gcc-5 && ~/SDL2-2.0.3/configure --prefix=$HOME/SDL2 && make && make install; else echo 'Using cached SDL2 build directory.'; fi
+before_install: chmod +x travis/*
 
-script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then cd $TRAVIS_BUILD_DIR && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/gcc-5 -DUSE_TESTS=On . && make && make test; fi
+install: travis/deps.sh
+
+script: travis/make.sh
 
 notifications:
   email: false
@@ -29,32 +26,6 @@ addons:
       name: "omf2097/openomf"
       description: "One Must Fall 2097 Remake"
     notification_email: katajakasa@gmail.com
-    build_command_prepend: "cov-configure --comptype gcc --compiler /usr/bin/gcc-5 && cmake -DCMAKE_C_COMPILER=/usr/bin/gcc-5 -DCMAKE_BUILD_TYPE=Debug -DUSE_TESTS=Off ."
+    build_command_prepend: "travis/cov-configure.sh"
     build_command: "make"
     branch_pattern: coverity_scan
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    - george-edison55-precise-backports
-    packages:
-    - libc6-dev
-    - gcc-5
-    - cmake
-    - cmake-data
-    - gettext
-    - libargtable2-dev
-    - libcunit1
-    - libcunit1-dev
-    - libopenal-dev
-    - libconfuse-dev
-    - libpng-dev
-    - libenet-dev
-    - libasound2-dev
-    - libpulse-dev
-    - libx11-dev
-    - libxext-dev
-    - libxrandr-dev
-    - libxi-dev
-    - libxxf86vm-dev
-    - libxss-dev
-    - libudev-dev
