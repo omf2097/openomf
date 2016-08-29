@@ -11,6 +11,8 @@
 
 typedef struct dumb_source_t {
     DUH_SIGRENDERER *renderer;
+    sample_t **sig_samples;
+    long sig_samples_size;
     DUH *data;
     long vlen;
     long vpos;
@@ -56,8 +58,10 @@ int dumb_source_update(audio_source *src, char *buffer, int len) {
     local->vpos = pos;
 
     // ... otherwise get more data.
-    int ret = duh_render(
+    int ret = duh_render_int(
             local->renderer,
+            &local->sig_samples,
+            &local->sig_samples_size,
             source_get_bytes(src) * 8, // Bits
             0,  // Unsign
             1.0f, // Volume
@@ -72,6 +76,7 @@ void dumb_source_close(audio_source *src) {
     dumb_source *local = source_get_userdata(src);
     duh_end_sigrenderer(local->renderer);
     unload_duh(local->data);
+    destroy_sample_buffer(local->sig_samples);
     free(local);
     DEBUG("Libdumb Source: Closed.");
 }
@@ -102,6 +107,8 @@ int dumb_source_init(audio_source *src, const char* file, int channels, int freq
     local->renderer = duh_start_sigrenderer(local->data, 0, channels, 0);
     local->vlen = duh_get_length(local->data);
     local->vpos = 0;
+    local->sig_samples = NULL;
+    local->sig_samples_size = 0;
 
     // Set resampler here
     dumb_it_set_resampling_quality(duh_get_it_sigrenderer(local->renderer), resampler);
