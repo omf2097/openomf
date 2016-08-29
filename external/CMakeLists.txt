@@ -1,8 +1,7 @@
-set(LIBSHADOWDIVE_LIBRARY_ONLY 1)
-set(BUILD_EXAMPLES OFF)
-set(BUILD_ALLEGRO4 OFF)
-
 find_program(GIT_COMMAND git)
+set(LIBSHADOWDIVE_LIBRARY_ONLY 1)
+set(BUILD_EXAMPLES OFF CACHE BOOL "Libdumb examples")
+set(BUILD_ALLEGRO4 OFF CACHE BOOL "Libdumb allegro4 support")
 
 if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libShadowDive/src" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dumb/dumb")
     if(GIT_COMMAND)
@@ -21,7 +20,7 @@ if(GIT_COMMAND)
         COMMAND ${GIT_COMMAND} submodule update --init --recursive
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 endif(GIT_COMMAND)
-    
+
 add_subdirectory(libShadowDive)
 add_subdirectory(dumb)
 
