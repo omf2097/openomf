@@ -67,6 +67,7 @@ ENDIF()
 find_package(SDL2)
 find_package(enet)
 find_package(confuse)
+find_package(argtable2)
 
 # Check functions and generate platform configuration file
 CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STD_STRDUP)
@@ -301,6 +302,7 @@ set(COREINCS
     ${SHADOWDIVE_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
+    ${ARGTABLE2_INCLUDE_DIR}
 )
 
 set(CORELIBS
@@ -308,6 +310,7 @@ set(CORELIBS
     ${CONFUSE_LIBRARY}
     ${LIBINTL_LIBRARIES}
     ${ENET_LIBRARY}
+    ${ARGTABLE2_LIBRARY}
 )
 
 # Shadowdive

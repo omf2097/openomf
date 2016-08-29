@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <argtable2.h>
 #ifdef USE_DUMB
 #include <dumb.h>
 #endif
@@ -40,49 +41,75 @@ int main(int argc, char *argv[]) {
     // Path manager
     if(pm_init() != 0) {
         err_msgbox(pm_get_errormsg());
-        printf("Error: %s.\n", pm_get_errormsg());
+        fprintf(stderr, "Error: %s.\n", pm_get_errormsg());
         return 1;
     }
 
-    // Check arguments
-    if(argc >= 2) {
-        if(strcmp(argv[1], "-v") == 0) {
-            printf("OpenOMF v%d.%d.%d\n", V_MAJOR, V_MINOR, V_PATCH);
-            printf("Source available at https://github.com/omf2097/ under MIT License\n");
-            printf("(C) 2097 Tuomas Virtanen, Andrew Thompson, Hunter and others\n");
-            goto exit_0;
-        } else if(strcmp(argv[1], "-h") == 0) {
-            printf("Arguments:\n");
-            printf("-h              Prints this help\n");
-            printf("-c [ip] [port]  Connect to server\n");
-            printf("-l [port]       Start server\n");
-            printf("play [FILE.REC] Play recording file, defaults to LAST.REC\n");
-            goto exit_0;
-        } else if(strcmp(argv[1], "-c") == 0) {
-            if(argc >= 3) {
-                ip = strcpy(malloc(strlen(argv[2])+1), argv[2]);
-            }
-            if(argc >= 4) {
-                connect_port = atoi(argv[3]);
-            }
-            init_flags.net_mode = NET_MODE_CLIENT;
-        } else if(strcmp(argv[1], "-l") == 0) {
-            if(argc >= 3) {
-                listen_port = atoi(argv[2]);
-            }
-            init_flags.net_mode = NET_MODE_SERVER;
-        } else if(strcmp(argv[1], "play") == 0 || strcmp(argv[1], "rec") == 0) {
-            if (strcmp(argv[1], "rec") == 0) {
-                init_flags.record = 1;
-            }
-            if(argc > 2) {
-                printf("playing recording %s\n", argv[2]);
-                strncpy(init_flags.rec_file, argv[2], 254);
-            } else {
-                printf("playing recording LAST.REC\n");
-                snprintf(init_flags.rec_file, 254, "LAST.REC");
-            }
+    struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
+    struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
+    struct arg_lit *listen = arg_lit0("l", "listen", "Start a network game server");
+    struct arg_str *connect = arg_str0("c", "connect", "<host>", "Connect to a remote game");
+    struct arg_int *port = arg_int0("p", "port", "<port>","Port to connect or listen (default: 2097)");
+    struct arg_file *play = arg_file0("P", "play", "<file>", "Play an existing recfile");
+    struct arg_file *rec = arg_file0("R", "rec", "<file>", "Record a new recfile");
+    struct arg_end *end = arg_end(30);
+    void* argtable[] = {help, vers, listen, connect, port, play, rec, end};
+    const char* progname = "openomf";
+
+    // Make sure everything got allocated
+    if(arg_nullcheck(argtable) != 0) {
+        fprintf(stderr, "Error: insufficient memory\n");
+        err_msgbox("Error: insufficient memory");
+        return 1;
+    }
+
+    // Parse arguments
+    int nerrors = arg_parse(argc, argv, argtable);
+
+    // Handle help & version
+    if(help->count > 0) {
+        fprintf(stderr, "Usage: %s", progname);
+        arg_print_syntax(stderr, argtable, "\n");
+        fprintf(stderr, "\nArguments:\n");
+        arg_print_glossary(stderr, argtable, "%-25s %s\n");
+        goto exit_0;
+    }
+    if(vers->count > 0) {
+        printf("OpenOMF v%d.%d.%d\n", V_MAJOR, V_MINOR, V_PATCH);
+        printf("Source available at https://github.com/omf2097/ under MIT License\n");
+        printf("(C) 2097 Tuomas Virtanen, Andrew Thompson, Hunter and others\n");
+        goto exit_0;
+    }
+
+    // Handle errors
+    if(nerrors > 0) {
+        arg_print_errors(stderr, end, progname);
+        fprintf(stderr, "Try '%s --help' for more information.\n", progname);
+        goto exit_0;
+    }
+
+    // Check other flags
+    if(connect->count > 0) {
+        init_flags.net_mode = NET_MODE_CLIENT;
+        connect_port = 2097;
+        ip = strdup(connect->sval[0]);
+        if(port->count > 0) {
+            connect_port = port->ival[0] & 0xFFFF;
         }
+    }
+    else if(listen->count > 0) {
+        init_flags.net_mode = NET_MODE_SERVER;
+        listen_port = 2097;
+        if(port->count > 0) {
+            listen_port = port->ival[0] & 0xFFFF;
+        }
+    }
+    else if(play->count > 0) {
+        strncpy(init_flags.rec_file, play->filename[0], 254);
+    }
+    else if(rec->count > 0) {
+        init_flags.record = 1;
+        strncpy(init_flags.rec_file, rec->filename[0], 254);
     }
 
     // Init log
@@ -236,10 +263,11 @@ exit_1:
     INFO("Exit.");
     log_close();
 exit_0:
-    if (ip) {
+    if(ip) {
         free(ip);
     }
     plugins_close();
+    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     pm_free();
     return ret;
 }
