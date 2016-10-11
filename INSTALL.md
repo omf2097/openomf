@@ -52,6 +52,7 @@ Required:
 * confuse: http://www.nongnu.org/confuse/
 * Gettext (if you have problems with libintl)
 * Enet: http://enet.bespin.org/
+* libargtable2: http://argtable.sourceforge.net/
 
 Recommended:
 * OpenAL: http://kcat.strangesoft.net/openal.html (for audio)
@@ -73,7 +74,7 @@ Note that libxmp doesn't play all ingame music tracks quite right, and libdumb i
 #### Debian
 On debian, it is possible to pull some libraries using apt-get.
 ```
-apt-get install libsdl2-dev libopenal-dev libconfuse-dev libenet-dev
+apt-get install libsdl2-dev libopenal-dev libconfuse-dev libenet-dev libargtable2-dev
 ```
 
 If you wish to use ogg vorbis and png support, you may also run
