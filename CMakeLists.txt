@@ -3,8 +3,6 @@ project(omf2097-tools C)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
-option(USE_MODPLUG "Use libmodplug for music playback" OFF)
-option(USE_DUMB "Use libdumb for music playback" ON)
 option(USE_SQLITE "Use sqlite3 (enables stringtool)" ON)
 
 set(CMAKE_C_FLAGS "-Wall -std=c99")
@@ -19,16 +17,6 @@ find_package(PNG)
 if(USE_SQLITE)
     find_package(sqlite)
     add_executable(stringtool src/stringtool/main.c)
-endif()
-
-if(USE_DUMB)
-    find_package(dumb)
-    add_definitions(-DUSE_DUMB)
-    add_executable(musictool src/musictool/main.c)
-elseif(USE_MODPLUG)
-    find_package(modplug)
-    add_definitions(-DUSE_MODPLUG)
-    add_executable(musictool src/musictool/main.c)
 endif()
 
 add_executable(bktool src/bktool/main.c src/shared/animation_misc.c src/shared/conversions.c)
@@ -72,15 +60,6 @@ include_directories(
 if(USE_SQLITE)
     include_directories(${SQLITE_INCLUDE_DIR})
     target_link_libraries(stringtool ${CORELIBS} ${SHADOWDIVE_LIBRARY} ${SQLITE_LIBRARY})
-endif()
-
-# Set correct libs for musictool
-if(USE_DUMB)
-    include_directories(${DUMB_INCLUDE_DIR})
-    target_link_libraries(musictool ${CORELIBS} ${SDL2_LIBRARY} ${DUMB_LIBRARY})
-elseif(USE_MODPLUG)
-    include_directories(${MODPLUG_INCLUDE_DIR})
-    target_link_libraries(musictool ${CORELIBS} ${SDL2_LIBRARY} ${MODPLUG_LIBRARY})
 endif()
 
 target_link_libraries(bktool ${CORELIBS} ${SDL2_LIBRARY})

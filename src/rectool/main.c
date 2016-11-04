@@ -34,9 +34,11 @@ void print_key(char *o, uint8_t key) {
     }
 }
 
+/*
 static const int tmp_lengths[] = {
     2,1,1,5,5,5,1,2,2,1
 };
+*/
 
 static const char* onoff[] = {
     "Off",
