@@ -300,19 +300,21 @@ void engine_run(engine_init_flags *init_flags) {
             // If screenshot requested, do it here.
             if(take_screenshot) {
                 image img;
-                video_screenshot(&img);
-                int scr_ret = 0;
-                if(image_supports_png()) {
-                    sprintf(screenshot_filename, "screenshot_%u.png", SDL_GetTicks());
-                    scr_ret = image_write_png(&img, screenshot_filename);
-                } else {
-                    sprintf(screenshot_filename, "screenshot_%u.tga", SDL_GetTicks());
-                    scr_ret= image_write_tga(&img, screenshot_filename);
-                }
-                if(scr_ret) {
-                    PERROR("Screenshot write operation failed (%s)", screenshot_filename);
-                } else {
-                    DEBUG("Got a screenshot: %s", screenshot_filename);
+                int failed_screenshot = video_screenshot(&img);
+                if(!failed_screenshot) {
+                    int scr_ret = 0;
+                    if(image_supports_png()) {
+                        sprintf(screenshot_filename, "screenshot_%u.png", SDL_GetTicks());
+                        scr_ret = image_write_png(&img, screenshot_filename);
+                    } else {
+                        sprintf(screenshot_filename, "screenshot_%u.tga", SDL_GetTicks());
+                        scr_ret= image_write_tga(&img, screenshot_filename);
+                    }
+                    if(scr_ret) {
+                        PERROR("Screenshot write operation failed (%s)", screenshot_filename);
+                    } else {
+                        DEBUG("Got a screenshot: %s", screenshot_filename);
+                    }
                 }
 
                 image_free(&img);

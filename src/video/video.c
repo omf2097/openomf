@@ -291,12 +291,14 @@ void video_set_fade(float fade) {
     state.fade = fade;
 }
 
-void video_screenshot(image *img) {
+int video_screenshot(image *img) {
     image_create(img, state.w, state.h);
     int ret = SDL_RenderReadPixels(state.renderer, NULL, SDL_PIXELFORMAT_ABGR8888, img->data, img->w * 4);
     if(ret != 0) {
         PERROR("Unable to read pixels from rendertarget: %s", SDL_GetError());
+        return 1;
     }
+    return 0;
 }
 
 int video_area_capture(surface *sur, int x, int y, int w, int h) {

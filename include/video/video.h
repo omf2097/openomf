@@ -97,7 +97,7 @@ void video_render_background(surface *sur);
 void video_render_prepare();
 void video_render_finish();
 void video_close();
-void video_screenshot(image *img);
+int video_screenshot(image *img);
 int video_area_capture(surface *sur, int x, int y, int w, int h);
 void video_set_fade(float fade);
 
