@@ -20,6 +20,7 @@
 #include "resources/sgmanager.h"
 #include "plugins/plugins.h"
 #include "controller/gamecontrollerdb.h"
+#include "utils/compat.h"
 
 #ifndef SHA1_HASH
     const char *git_sha1_hash = "";
