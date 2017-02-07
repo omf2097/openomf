@@ -2,8 +2,8 @@
 
 // On Apple OS (Mac and IOS), al.h and alc.h are in nonstandard locations
 #ifdef __APPLE__
-#include <al.h>
-#include <alc.h>
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
 #else
 #include <AL/al.h>
 #include <AL/alc.h>
