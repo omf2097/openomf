@@ -48,7 +48,7 @@ int engine_init() {
         const char *prev_sink = audiosink;
         audiosink = audio_get_first_sink_name();
         if(audiosink == NULL) {
-            INFO("Could not find requested sink '%s'. No other sink available; disabling audio.", prev_sink);
+            INFO("Could not find requested sink '%s'. No other sinks available; disabling audio.", prev_sink);
         } else {
             INFO("Could not find requested sink '%s'. Falling back to '%s'.", prev_sink, audiosink);
         }
