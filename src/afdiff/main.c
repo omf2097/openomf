@@ -97,7 +97,7 @@ int anim_common_diff(sd_animation *a, sd_animation *b) {
 int animations_diff(sd_af_file *a, sd_af_file *b) {
     int d_found = 0;
     printf("Animations:\n");
-    char f[5];
+    char f[20];
     for(int m = 0; m < 70; m++) {
         sprintf(f, " * %-2d", m);
         d_found |= null_diff(f, a->moves[m], b->moves[m]);
