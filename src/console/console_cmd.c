@@ -4,6 +4,7 @@
 #include "console/console_type.h"
 #include "resources/ids.h"
 #include "video/video.h"
+#include "audio/music.h"
 
 // utils
 int strtoint(char *input, int *output) {
@@ -228,6 +229,16 @@ int console_cmd_ez_destruct(game_state *gs, int argc, char **argv) {
     return 0;
 }
 
+int console_cmd_music(game_state *gs, int argc, char **argv) {
+    if(argc == 2) {
+        int i;
+        if(strtoint(argv[1], &i)) {
+            music_play(PSM_END + i);
+        }
+    }
+    return 0;
+}
+
 void console_init_cmd() {
     // Add console commands
     console_add_cmd("h",     &console_cmd_history,  "show command history");
@@ -237,6 +248,7 @@ void console_init_cmd() {
     console_add_cmd("exit",  &console_cmd_quit,  "quit the game");
     console_add_cmd("help",  &console_cmd_help,  "show all commands");
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
+    console_add_cmd("music", &console_cmd_music, "Play specified song (0-6)");
     console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
     console_add_cmd("win",   &console_cmd_win,   "Set the other player's health to 0");
     console_add_cmd("lose",  &console_cmd_lose,   "Set your health to 0");
