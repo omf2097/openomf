@@ -216,7 +216,6 @@ void player_run(object *obj) {
         obj->enemy_slide_state.timer--;
     }
 
-    // Not sure what this does
     const sd_script_frame *frame = sd_script_get_frame_at(&state->parser, state->current_tick);
 
     // Animation has ended ?
@@ -556,6 +555,12 @@ void player_run(object *obj) {
             if(obj->hit_frames > 0) {
                 obj->can_hit = 1;
                 obj->hit_frames--;
+            }
+
+            // Grounding tag
+            if(sd_script_isset(frame, "g")) {
+                obj->vel.x = 0;
+                obj->pos.y = ARENA_FLOOR;
             }
 
             // CREDITS scene moving titles & names
