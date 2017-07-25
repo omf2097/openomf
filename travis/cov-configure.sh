@@ -1,0 +1,1 @@
+cov-configure --comptype gcc --compiler /usr/bin/gcc-5 && cmake -DCMAKE_C_COMPILER=/usr/bin/gcc-5 -DCMAKE_BUILD_TYPE=Debug -DUSE_TESTS=Off .
