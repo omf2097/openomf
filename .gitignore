@@ -11,3 +11,4 @@ build/music/
 build/
 *.sw[klmnop]
 .idea
+.vscode
