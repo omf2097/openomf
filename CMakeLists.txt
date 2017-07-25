@@ -49,6 +49,7 @@ endif()
 IF(USE_LTO)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fno-fat-lto-objects")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+    SET(CMAKE_AR  "gcc-ar")
     message(STATUS "Link time optimization enabled!")
 
     string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE)
