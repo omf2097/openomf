@@ -339,10 +339,14 @@ void object_render(object *obj) {
     player_sprite_state *rstate = &obj->sprite_state;
 
     // Position
+    int x;
     int y = obj->pos.y + obj->cur_sprite->pos.y + rstate->o_correction.y;
-    int x = obj->pos.x + obj->cur_sprite->pos.x + rstate->o_correction.x;
+
+    // Set X coord, take into account the HAR facing.
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
         x = obj->pos.x - obj->cur_sprite->pos.x  + rstate->o_correction.x - object_get_size(obj).x;
+    } else {
+        x = obj->pos.x + obj->cur_sprite->pos.x + rstate->o_correction.x;
     }
 
     // Flip to face the right direction

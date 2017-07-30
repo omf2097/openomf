@@ -72,7 +72,7 @@ void scene_set_static_tick_cb(scene *scene, scene_tick_cb cbfunc);
 void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc);
 void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc);
 void scene_set_anim_prio_override_cb(scene *scene, scene_anim_prio_override_cb cbfunc);
-void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, int s, int g, void *userdata);
 void cb_scene_destroy_object(object *parent, int id, void *userdata);
 
 #endif // _SCENE_H

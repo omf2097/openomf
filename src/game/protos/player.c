@@ -1,5 +1,6 @@
 #include <inttypes.h>
 #include <stdlib.h>
+#include <math.h>
 #include <shadowdive/script.h>
 
 #include "game/game_state.h"
@@ -268,10 +269,15 @@ void player_run(object *obj) {
             if(sd_script_isset(frame, "m") && state->spawn != NULL) {
                 int mx = 0;
                 int my = 0;
+                float vx = 0;
+                float vy = 0;
+
                 if (obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65) {
                     mx = state->enemy->pos.x;
                     my = state->enemy->pos.y;
                 }
+
+                // Staring X coordinate for new animation
                 if (sd_script_isset(frame, "mrx")) {
                     int mrx = sd_script_get(frame, "mrx");
                     int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mrx;
@@ -281,6 +287,7 @@ void player_run(object *obj) {
                     mx = obj->start.x + (sd_script_get(frame, "mx") * object_get_direction(obj));
                 }
 
+                // Staring Y coordinate for new animation
                 if (sd_script_isset(frame, "mry")) {
                     int mry = sd_script_get(frame, "mry");
                     int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mry;
@@ -290,11 +297,22 @@ void player_run(object *obj) {
                     my = obj->start.y + sd_script_get(frame, "my");
                 }
 
+                // Angle/speed for new animation
+                if(sd_script_isset(frame, "ma")) {
+                    int ma = sd_script_get(frame, "ma");
+                    vx = cosf(ma);
+                    vy = sinf(ma);
+                    DEBUG("MA is set! angle = %d, vx = %f, vy = %f", ma, vx, vy);
+                }
+
+                int ms = sd_script_isset(frame, "ms");
                 int mg = sd_script_isset(frame, "mg") ? sd_script_get(frame, "mg") : 0;
                 state->spawn(
                     obj,
                     sd_script_get(frame, "m"),
                     vec2i_create(mx, my),
+                    vec2f_create(vx, vy),
+                    ms,
                     mg,
                     state->spawn_userdata);
             }

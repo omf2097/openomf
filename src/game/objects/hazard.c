@@ -46,14 +46,14 @@ void hazard_tick(object *obj) {
     }
 }
 
-void hazard_spawn_cb(object *parent, int id, vec2i pos, int g, void *userdata) {
-    scene *s = (scene*)userdata;
+void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, int s, int g, void *userdata) {
+    scene *sc = (scene*)userdata;
 
     // Get next animation
-    bk_info *info = bk_get_info(&s->bk_data, id);
+    bk_info *info = bk_get_info(&sc->bk_data, id);
     if(info != NULL) {
         object *obj = malloc(sizeof(object));
-        object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vec2f_create(0,0));
+        object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vel);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &info->ani);
         if(info->probability == 1) {
@@ -62,10 +62,9 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, int g, void *userdata) {
         object_set_layers(obj, LAYER_HAZARD|LAYER_HAR);
         object_set_group(obj, GROUP_PROJECTILE);
         object_set_userdata(obj, object_get_userdata(parent));
-        hazard_create(obj, s);
-        if (s->bk_data.file_id == 128 && id == 14) {
-            // XXX hack because we don't understand the ms and md tags
-            // without this, the 'bullet damage' sprite in the desert spawns at 0,0
+        hazard_create(obj, sc);
+        if(s) {
+            // If MS tag is set, correct the bullet damage animation position
             obj->pos = parent->pos;
         }
         game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);

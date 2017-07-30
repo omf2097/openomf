@@ -10,7 +10,7 @@
 #include "game/game_state_type.h"
 
 // Some internal functions
-void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata);
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, int s, int g, void *userdata);
 void cb_scene_destroy_object(object *parent, int id, void *userdata);
 
 // Loads BK file etc.
@@ -275,14 +275,14 @@ void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc) {
     scene->input_poll = cbfunc;
 }
 
-void cb_scene_spawn_object(object *parent, int id, vec2i pos, int g, void *userdata) {
-    scene *s = (scene*)userdata;
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, int s, int g, void *userdata) {
+    scene *sc = (scene*)userdata;
 
     // Get next animation
-    bk_info *info = bk_get_info(&s->bk_data, id);
+    bk_info *info = bk_get_info(&sc->bk_data, id);
     if(info != NULL) {
         object *obj = malloc(sizeof(object));
-        object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vec2f_create(0,0));
+        object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vel);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &info->ani);
         object_set_spawn_cb(obj, cb_scene_spawn_object, userdata);
