@@ -8,7 +8,7 @@ Note! If you wish to compile OpenOMF from sources yourself, begin from step 2. I
 
 ### Latest experimental binaries
 
-Latest experimental binaries for windows and debian (ubuntu) are available at https://katajakasa.fi/projects/openomf/packages/ . These binaries may not always work correctly, but they will be following the git status very closely. So, if you with to test the latest features, this is for you!
+Latest experimental binaries for windows and debian (ubuntu) are available at https://buildbot.openomf.org/artifacts/ . These binaries may not always work correctly, but they will be following the git status very closely. So, if you with to test the latest features, this is for you!
 
 #### Windows
 
