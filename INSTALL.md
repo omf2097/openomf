@@ -1,10 +1,8 @@
-OpenOMF Installation
-====================
+# OpenOMF Installation
 
 Note! If you wish to compile OpenOMF from sources yourself, begin from step 2. If you are however downloading a binary release package, you should skip step 2.
 
-1. Installation from packages
------------------------------
+## 1. Installation from packages
 
 ### Latest experimental binaries
 
@@ -33,8 +31,7 @@ We have a Gentoo overlay at https://github.com/omf2097/openomf-overlay . For ins
 
 Official releases are (somewhat) stable, but don't necessary come with all the latest bells and whistles. However, if you wish to try them, they will be available at https://github.com/omf2097/openomf/releases . Installation instructions are also available there.
 
-2. Compiling from source
----------------
+## 2. Compiling from source
 
 ### Dependencies
 
@@ -137,8 +134,8 @@ For music playback, select at least one (or more) of the module player libraries
 
 It is technically possible to select more than one audio sink, or none. Currently only one audio sink is supported (OpenAL). If all audio sinks are off, then no audio will be played. This will also of course reduce cpu usage a bit.
 
-3. Data Files
--------------
+## 3. Data Files
+
 OpenOMF loads the original data files from the original OMF:2097 game using libShadowDive. Since One Must Fall 2079 is freeware, the files are obtainable for free from [www.omf2097.com](http://www.omf2097.com/pub/files/omf/omf2097.rar).
 
 On linux in debug mode, the OMF resource files should be put in resources/ subdirectory.
@@ -152,6 +149,5 @@ Note! Only BK,AF,PIC,TRN,PSM and DAT files are required, others may be removed t
 
 You can override these default paths by setting the OPENOMF_RESOURCE_DIR environment variable to an absolute directory. Plugins have a similiar environment variable called OPENOMF_PLUGIN_DIR.
 
-4. Play the game!
------------------
+## 4. Play the game!
 Start the game by running the main binary. If there are problems, please contact us by either making an issue ticket, or at #omf @ freenode in IRC (mode details in the [README.md](https://github.com/omf2097/openomf/blob/master/README.md)).
