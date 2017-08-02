@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 
 #include "controller/net_controller.h"
 #include "utils/log.h"
