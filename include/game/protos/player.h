@@ -13,7 +13,6 @@ typedef void (*object_state_del_cb)(object *parent, int id, void *userdata);
 typedef struct player_sprite_state_t {
     int blendmode;
     int flipmode;
-    int method_flags;
     int timer;
     int duration;
     int screen_shake_horizontal;

@@ -384,13 +384,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     object *o_har = game_player_get_har(game_state_get_player(scene->gs, player_id));
     har *h = object_get_userdata(o_har);
 
-    int towards_wall = 0;
-    if(wall == 0 && o_har->vel.x <= 1) {
-        towards_wall = 1;
-    }
-    if(wall == 1 && o_har->vel.x >= 1) {
-        towards_wall = 1;
-    }
+    DEBUG("Player %d hit wall %d", player_id, wall);
 
     int on_air = 0;
     if(o_har->pos.y < ARENA_FLOOR - 10) {
@@ -411,12 +405,11 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     if (scene->id == SCENE_ARENA2
         && on_air
         && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && towards_wall
         && !h->is_grabbed
         && took_enough_damage)
     {
         DEBUG("hit lightning wall %d", wall);
-        h->state = STATE_WALLDAMAGE;;
+        h->state = STATE_WALLDAMAGE;
 
         // Spawn wall animation
         bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
@@ -434,7 +427,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             object_set_stl(obj2, scene->bk_data.sound_translation_table);
             object_set_animation(obj2, &info->ani);
             object_attach_to(obj2, o_har);
-            object_dynamic_tick(obj2);
+            //object_dynamic_tick(obj2);
             game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP, 0, 0);
         } else {
             object_free(obj);
@@ -449,7 +442,6 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     if (scene->id == SCENE_ARENA4
         && on_air
         && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && towards_wall
         && !h->is_grabbed
         && took_enough_damage)
     {
@@ -475,7 +467,6 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     if(scene->id != SCENE_ARENA4
         && scene->id != SCENE_ARENA2
         && on_air
-        && towards_wall
         && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
         && !h->is_grabbed
         && took_enough_damage)
@@ -507,7 +498,6 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
       * Handle generic collision stuff
       */
     if(on_air
-        && towards_wall
         && !h->is_grabbed
         && took_enough_damage
         && (h->state == STATE_FALLEN
@@ -526,8 +516,6 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             object_set_custom_string(o_har, "hQ10-x3Q5-x2L5-x2M900");
             o_har->vel.x = 2;
         }
-
-        object_dynamic_tick(o_har);
 
         if(wall == 1) {
             o_har->pos.x = ARENA_RIGHT_WALL - 2;

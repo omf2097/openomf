@@ -222,7 +222,7 @@ void har_action_hook(object *obj, int action) {
     int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
     h->act_buf[pos].actions[h->act_buf[pos].count] = (unsigned char)action;
     h->act_buf[pos].count++;
-    h->act_buf[pos].age = obj->age;;
+    h->act_buf[pos].age = obj->age;
 }
 
 // Simple helper function
@@ -356,7 +356,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t f
         object_set_userdata(obj, h);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &move->ani);
-        object_set_gravity(obj, g/50);
+        object_set_gravity(obj, g/256.0f);
         object_set_pal_offset(obj, object_get_pal_offset(parent));
         // Set all projectiles to their own layer + har layer
         object_set_layers(obj, LAYER_PROJECTILE|(h->player_id == 0 ? LAYER_HAR2 : LAYER_HAR1));
@@ -787,11 +787,11 @@ void har_check_closeness(object *obj_a, object *obj_b) {
                 pos_a.x = pos_b.x - hard_limit;
                 object_set_pos(obj_a, pos_a);
             } else {
-            // landed in front of the HAR, push opponent back
-            pos_b.x = pos_b.x + obj_a->vel.y/2;
-            object_set_pos(obj_b, pos_b);
-            pos_a.x = pos_a.x - obj_a->vel.y/2;
-            object_set_pos(obj_a, pos_a);
+                // landed in front of the HAR, push opponent back
+                pos_b.x = pos_b.x + obj_a->vel.y/2;
+                object_set_pos(obj_b, pos_b);
+                pos_a.x = pos_a.x - obj_a->vel.y/2;
+                object_set_pos(obj_a, pos_a);
             }
         } else if(pos_a.x <= pos_b.x + hard_limit && pos_a.x >= pos_b.x && y1 >= y2) {
             if (pos_b.x == ARENA_RIGHT_WALL) {
@@ -1258,7 +1258,7 @@ void har_tick(object *obj) {
         int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
         int hit = 0;
-        if(pos.x <  ARENA_LEFT_WALL) {
+        if(pos.x < ARENA_LEFT_WALL) {
             pos.x = ARENA_LEFT_WALL;
             hit = 1;
         } else if(pos.x > ARENA_RIGHT_WALL) {
@@ -1266,7 +1266,6 @@ void har_tick(object *obj) {
             wall = 1;
             hit = 1;
         }
-
         object_set_pos(obj, pos);
 
         if (hit && wall_flag) {
@@ -1287,16 +1286,10 @@ void har_tick(object *obj) {
 
     // Check for HAR specific palette tricks
     if(player_frame_isset(obj, "ptr")) {
-        h->p_pal_ref = 0;
-        if(player_frame_isset(obj, "pd")) {
-            h->p_pal_ref = player_frame_get(obj, "pd");
-        }
+        h->p_pal_ref = player_frame_isset(obj, "pd") ? player_frame_get(obj, "pd") : 0;
         h->p_har_switch = player_frame_isset(obj, "pe");
         h->p_color_ref = player_frame_get(obj, "ptr");
-        h->p_ticks_length = 0;
-        if(player_frame_isset(obj, "pp")) {
-            h->p_ticks_length = player_frame_get(obj, "pp");
-        }
+        h->p_ticks_length = player_frame_isset(obj, "pp") ? player_frame_get(obj, "pp") : 0;
         h->p_ticks_left = h->p_ticks_length;
         h->p_color_fn = player_frame_isset(obj, "pa");
     }
