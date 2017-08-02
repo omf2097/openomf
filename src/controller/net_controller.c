@@ -31,7 +31,7 @@ float stddev(float average, int data[], int n) {
 int avg_rtt(int data[], int n) {
     float average = 0.0f;
     float result = 0.0f;
-    int j = 0;;
+    int j = 0;
     for (int i=0; i < n; i++) {
         average += data[i];
     }

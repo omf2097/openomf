@@ -66,6 +66,7 @@ void player_clear_frame(object *obj) {
     s->duration = 0;
 
     s->o_correction = vec2i_create(0,0);
+    s->dir_correction = 1;
 
     s->disable_gravity = 0;
 
@@ -203,20 +204,6 @@ void player_run(object *obj) {
     player_sprite_state *rstate = &obj->sprite_state;
     if(state->finished) return;
 
-    // Handle slide operation
-    if(obj->slide_state.timer > 0) {
-        obj->pos.x += obj->slide_state.vel.x;
-        obj->pos.y += obj->slide_state.vel.y;
-        obj->slide_state.timer--;
-    }
-
-    if(obj->enemy_slide_state.timer > 0) {
-        obj->enemy_slide_state.duration++;
-        obj->pos.x = state->enemy->pos.x + obj->enemy_slide_state.dest.x;
-        obj->pos.y = state->enemy->pos.y + obj->enemy_slide_state.dest.y;
-        obj->enemy_slide_state.timer--;
-    }
-
     const sd_script_frame *frame = sd_script_get_frame_at(&state->parser, state->current_tick);
 
     // Animation has ended ?
@@ -233,6 +220,69 @@ void player_run(object *obj) {
             state->finished = 1;
             return;
         }
+    }
+
+    // Get MP flag content, set to 0 if not set.
+    uint8_t mp = sd_script_isset(frame, "mp") ? sd_script_get(frame, "mp") & 0xFF : 0;
+
+    // See if x+/- or y+/- are set and save values
+    int trans_x = 0, trans_y = 0;
+    if(sd_script_isset(frame, "y-")) {
+        trans_y = sd_script_get(frame, "y-") * -1;
+    } else if(sd_script_isset(frame, "y+")) {
+        trans_y = sd_script_get(frame, "y+");
+    }
+    if(sd_script_isset(frame, "x-")) {
+        trans_x = sd_script_get(frame, "x-") * -1 * object_get_direction(obj);
+    } else if(sd_script_isset(frame, "x+")) {
+        trans_x = sd_script_get(frame, "x+") * object_get_direction(obj);
+    }
+
+    if(sd_script_isset(frame, "e")) {
+        // Reset position to enemy coordinates
+        obj->pos.x = state->enemy->pos.x;
+        obj->pos.y = state->enemy->pos.y;
+    }
+
+    // Set to ground
+    if(sd_script_isset(frame, "g")) {
+        obj->vel.x = 0;
+        obj->pos.y = ARENA_FLOOR;
+    }
+
+    if(sd_script_isset(frame, "h")) {
+        // Hover, reset all velocities to 0 on every frame
+        obj->vel.x = 0;
+        obj->vel.y = 0;
+    }
+
+    if(!sd_script_isset(frame, "bm")) {
+        // Handle vx+/-, ex+/-, vy+/-, ey+/-, x+/-. y+/-
+        if(trans_x || trans_y) {
+            if(sd_script_isset(frame, "v")) {
+                obj->vel.x = trans_x * (mp & 0x20 ? -1 : 1);
+                obj->vel.y = trans_y;
+                DEBUG("vel x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->vel.x, obj->vel.y);
+            } else {
+                obj->pos.x += trans_x * (mp & 0x20 ? -1 : 1);
+                obj->pos.y += trans_y;
+                DEBUG("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x, obj->pos.y);
+            }
+        }
+    }
+
+    // Handle slide operation
+    if(obj->slide_state.timer > 0) {
+        obj->pos.x += obj->slide_state.vel.x;
+        obj->pos.y += obj->slide_state.vel.y;
+        obj->slide_state.timer--;
+    }
+
+    if(obj->enemy_slide_state.timer > 0) {
+        obj->enemy_slide_state.duration++;
+        obj->pos.x = state->enemy->pos.x + obj->enemy_slide_state.dest.x;
+        obj->pos.y = state->enemy->pos.y + obj->enemy_slide_state.dest.y;
+        obj->enemy_slide_state.timer--;
     }
 
     // Handle frame
@@ -255,14 +305,27 @@ void player_run(object *obj) {
             }
 
             // Hover flag
-            if(sd_script_isset(frame, "h")) {
-                rstate->disable_gravity = 1;
-            } else {
-                rstate->disable_gravity = 0;
-            }
+            //if(sd_script_isset(frame, "h")) {
+            //    rstate->disable_gravity = 1;
+            //} else {
+            //    rstate->disable_gravity = 0;
+            //}
 
-            if(sd_script_isset(frame, "ua")) {
-                obj->animation_state.enemy->sprite_state.disable_gravity = 1;
+            //if(sd_script_isset(frame, "ua")) {
+            //    obj->animation_state.enemy->sprite_state.disable_gravity = 1;
+            //}
+
+            // Flags for new object
+            if(mp != 0) {
+                DEBUG("mp flags set for new animation %d:", sd_script_get(frame, "m"));
+                if(mp & 0x1)  DEBUG(" * 0x01: NON-HAR Sprite");
+                if(mp & 0x2)  DEBUG(" * 0x02: Unknown");
+                if(mp & 0x4)  DEBUG(" * 0x04: HAR 1 related");
+                if(mp & 0x8)  DEBUG(" * 0x08: Something timer related is skipped ?");
+                if(mp & 0x10) DEBUG(" * 0x10: HAR 2 related");
+                if(mp & 0x20) DEBUG(" * 0x20: Flip x operations");
+                if(mp & 0x40) DEBUG(" * 0x40: Something about wall collisions ?");
+                if(mp & 0x80) DEBUG(" * 0x80: Sprite timer related ?");
             }
 
             // Animation creation command
@@ -308,20 +371,6 @@ void player_run(object *obj) {
                 // Special positioning for certain desert arena sprites
                 int ms = sd_script_isset(frame, "ms");
                 
-                // Flags for new object
-                uint8_t mp = sd_script_isset(frame, "mp") ? sd_script_get(frame, "mp") & 0xFF : 0;
-                if(mp != 0) {
-                    DEBUG("mp flags set for new animation %d:", sd_script_get(frame, "m"));
-                    if(mp & 0x1)  DEBUG(" * 0x01: NON-HAR Sprite");
-                    if(mp & 0x2)  DEBUG(" * 0x02: Unknown");
-                    if(mp & 0x4)  DEBUG(" * 0x04: HAR 1 related");
-                    if(mp & 0x8)  DEBUG(" * 0x08: Something timer related is skipped ?");
-                    if(mp & 0x10) DEBUG(" * 0x10: HAR 2 related");
-                    if(mp & 0x20) DEBUG(" * 0x20: Initial horizontal flip");
-                    if(mp & 0x40) DEBUG(" * 0x40: Something about wall collisions ?");
-                    if(mp & 0x80) DEBUG(" * 0x80: Sprite timer related ?");
-                }
-
                 // Gravity for new object
                 int mg = sd_script_isset(frame, "mg") ? sd_script_get(frame, "mg") : 0;
 
@@ -443,10 +492,11 @@ void player_run(object *obj) {
             }
 
             if(sd_script_isset(frame, "ar")) {
-                DEBUG("flipping direction %d -> %d", object_get_direction(obj), object_get_direction(obj) *-1);
+                //DEBUG("flipping direction %d -> %d", object_get_direction(obj), object_get_direction(obj) *-1);
+                rstate->dir_correction = -1;
                 // reverse direction
-                object_set_direction(obj, object_get_direction(obj) * -1);
-                DEBUG("flipping direction now %d", object_get_direction(obj));
+                //object_set_direction(obj, object_get_direction(obj) * -1);
+                //DEBUG("flipping direction now %d", object_get_direction(obj) * -1);
             }
 
             if(sd_script_isset(frame, "ac")) {
@@ -458,24 +508,17 @@ void player_run(object *obj) {
                 }
             }
 
-            // See if x+/- or y+/- are set and save values
-            int trans_x = 0, trans_y = 0;
-            if(sd_script_isset(frame, "y-")) {
-                trans_y = sd_script_get(frame, "y-") * -1;
-            } else if(sd_script_isset(frame, "y+")) {
-                trans_y = sd_script_get(frame, "y+");
-            }
-            if(sd_script_isset(frame, "x-")) {
-                trans_x = sd_script_get(frame, "x-") * -1 * object_get_direction(obj);
-            } else if(sd_script_isset(frame, "x+")) {
-                trans_x = sd_script_get(frame, "x+") * object_get_direction(obj);
-            }
 
             if (sd_script_isset(frame, "bm")) {
                 if (sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                     // destination is the enemy's position
                     DEBUG("BE tag with x/y offsets: %d %d %d %d", trans_x, trans_y, object_get_direction(obj), object_get_direction(state->enemy));
-                    DEBUG("enemy x %d modified trans_x: %d (%d * %d *%d)", state->enemy->pos.x, (trans_x * object_get_direction(obj) * object_get_direction(state->enemy)), object_get_direction(obj), object_get_direction(state->enemy));
+                    DEBUG("enemy x %d modified trans_x: %d (%d * %d * %d)", 
+                        state->enemy->pos.x,
+                        (trans_x * object_get_direction(obj) * object_get_direction(state->enemy)),
+                        trans_x,
+                        object_get_direction(obj),
+                        object_get_direction(state->enemy));
                     // hack because we don't have 'walk to other HAR' implemented
                     obj->pos.x = state->enemy->pos.x + (trans_x * object_get_direction(obj) * object_get_direction(state->enemy));
                     obj->pos.y = state->enemy->pos.y + trans_y;
@@ -492,26 +535,6 @@ void player_run(object *obj) {
                     PERROR("unknown end position for BE tag");
                 }
                 player_next_frame(state->enemy);
-            } else {
-                // Handle vx+/-, ex+/-, vy+/-, ey+/-, x+/-. y+/-
-                if(trans_x || trans_y) {
-                    if(sd_script_isset(frame, "v")) {
-                        obj->vel.x += trans_x;
-                        obj->vel.y += trans_y;
-                        DEBUG("vel x+%d, y+%d to x=%f, y=%d", trans_x, trans_y, obj->vel.x, obj->vel.y);
-                    } else {
-                        if(sd_script_isset(frame, "e")) {
-                            obj->enemy_slide_state.timer = frame->tick_len;
-                            obj->enemy_slide_state.duration = 0;
-                            obj->enemy_slide_state.dest.x = trans_x;
-                            obj->enemy_slide_state.dest.y = trans_y;
-                        } else {
-                            obj->slide_state.timer = frame->tick_len;
-                            obj->slide_state.vel.x = (float)trans_x;
-                            obj->slide_state.vel.y = (float)trans_y;
-                        }
-                    }
-                }
             }
 
             if (sd_script_isset(frame, "bu") && obj->vel.y < 0.0f) {
@@ -593,12 +616,6 @@ void player_run(object *obj) {
             if(obj->hit_frames > 0) {
                 obj->can_hit = 1;
                 obj->hit_frames--;
-            }
-
-            // Grounding tag
-            if(sd_script_isset(frame, "g")) {
-                obj->vel.x = 0;
-                obj->pos.y = ARENA_FLOOR;
             }
 
             // CREDITS scene moving titles & names
