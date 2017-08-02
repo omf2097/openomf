@@ -46,7 +46,7 @@ void hazard_tick(object *obj) {
     }
 }
 
-void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, int s, int g, void *userdata) {
+void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata) {
     scene *sc = (scene*)userdata;
 
     // Get next animation
@@ -66,6 +66,9 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, int s, int g,
         if(s) {
             // If MS tag is set, correct the bullet damage animation position
             obj->pos = parent->pos;
+        }
+        if(flags & 0x20) {
+            object_set_direction(obj, object_get_direction(obj) * -1);
         }
         game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);
     } else {

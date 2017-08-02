@@ -305,13 +305,32 @@ void player_run(object *obj) {
                     DEBUG("MA is set! angle = %d, vx = %f, vy = %f", ma, vx, vy);
                 }
 
+                // Special positioning for certain desert arena sprites
                 int ms = sd_script_isset(frame, "ms");
+                
+                // Flags for new object
+                uint8_t mp = sd_script_isset(frame, "mp") ? sd_script_get(frame, "mp") & 0xFF : 0;
+                if(mp != 0) {
+                    DEBUG("mp flags set for new animation %d:", sd_script_get(frame, "m"));
+                    if(mp & 0x1)  DEBUG(" * 0x01: NON-HAR Sprite");
+                    if(mp & 0x2)  DEBUG(" * 0x02: Unknown");
+                    if(mp & 0x4)  DEBUG(" * 0x04: HAR 1 related");
+                    if(mp & 0x8)  DEBUG(" * 0x08: Something timer related is skipped ?");
+                    if(mp & 0x10) DEBUG(" * 0x10: HAR 2 related");
+                    if(mp & 0x20) DEBUG(" * 0x20: Initial horizontal flip");
+                    if(mp & 0x40) DEBUG(" * 0x40: Something about wall collisions ?");
+                    if(mp & 0x80) DEBUG(" * 0x80: Sprite timer related ?");
+                }
+
+                // Gravity for new object
                 int mg = sd_script_isset(frame, "mg") ? sd_script_get(frame, "mg") : 0;
+
                 state->spawn(
                     obj,
                     sd_script_get(frame, "m"),
                     vec2i_create(mx, my),
                     vec2f_create(vx, vy),
+                    mp,
                     ms,
                     mg,
                     state->spawn_userdata);
@@ -479,6 +498,7 @@ void player_run(object *obj) {
                     if(sd_script_isset(frame, "v")) {
                         obj->vel.x += trans_x;
                         obj->vel.y += trans_y;
+                        DEBUG("vel x+%d, y+%d to x=%f, y=%d", trans_x, trans_y, obj->vel.x, obj->vel.y);
                     } else {
                         if(sd_script_isset(frame, "e")) {
                             obj->enemy_slide_state.timer = frame->tick_len;

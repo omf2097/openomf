@@ -16,7 +16,7 @@
 #include "controller/controller.h"
 #include "controller/keyboard.h"
 
-void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, int s, int g, void *userdata);
+void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata);
 void cb_vs_destroy_object(object *parent, int id, void *userdata);
 
 typedef struct vs_local_t {
@@ -104,7 +104,7 @@ vec2i spawn_position(int index, int scientist) {
     return vec2i_create(160, 200);
 }
 
-void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, int s, int g, void *userdata) {
+void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata) {
     scene *sc = (scene*)userdata;
 
     // Get next animation

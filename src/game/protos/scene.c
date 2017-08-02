@@ -10,7 +10,7 @@
 #include "game/game_state_type.h"
 
 // Some internal functions
-void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, int s, int g, void *userdata);
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata);
 void cb_scene_destroy_object(object *parent, int id, void *userdata);
 
 // Loads BK file etc.
@@ -275,7 +275,7 @@ void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc) {
     scene->input_poll = cbfunc;
 }
 
-void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, int s, int g, void *userdata) {
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata) {
     scene *sc = (scene*)userdata;
 
     // Get next animation
@@ -289,6 +289,9 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, int s, 
         object_set_destroy_cb(obj, cb_scene_destroy_object, userdata);
         if(info->probability == 1) {
             object_set_repeat(obj, 1);
+        }
+        if(flags & 0x20) {
+            object_set_direction(obj, object_get_direction(obj) * -1);
         }
 
         game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);
