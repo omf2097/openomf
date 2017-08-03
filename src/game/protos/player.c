@@ -321,10 +321,15 @@ void player_run(object *obj) {
     }
 
     if(sd_script_isset(frame, "e")) {
-        // Reset position to enemy coordinates
+        // Set speed to 0, since we're being controlled by animation tag system
+        obj->vel.x = 0;
+        obj->vel.y = 0;
+
+        // Reset position to enemy coordinates and make sure facing is set correctly
         obj->pos.x = state->enemy->pos.x;
         obj->pos.y = state->enemy->pos.y;
         object_set_direction(obj, object_get_direction(state->enemy) * -1);
+        DEBUG("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
 
     // Set to ground
