@@ -1665,7 +1665,8 @@ int har_act(object *obj, int act_type) {
          har_is_crouching(h) ||
          h->state == STATE_JUMPING ||
          h->state == STATE_VICTORY ||
-         h->state == STATE_SCRAP)) {
+         h->state == STATE_SCRAP) ||
+         object_get_halt(obj)) {
         // doing something else, ignore input
         return 0;
     }
