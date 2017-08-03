@@ -274,6 +274,15 @@ void player_run(object *obj) {
             obj->animation_state.shadow_corner_hack = 1;
         }
 
+        if(sd_script_isset(frame, "ac")) {
+            // force the har to face the center of the arena
+            if (obj->pos.x > 160) {
+                object_set_direction(obj, OBJECT_FACE_LEFT);
+            } else {
+                object_set_direction(obj, OBJECT_FACE_RIGHT);
+            }
+        }
+
         /*if (sd_script_isset(frame, "bm")) {
             if (sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                 // destination is the enemy's position
@@ -528,14 +537,6 @@ void player_run(object *obj) {
             har_set_ani(obj, new_ani, 0);
         }
 
-        if(sd_script_isset(frame, "ac")) {
-            // force the har to face the center of the arena
-            if (obj->pos.x > 160) {
-                object_set_direction(obj, OBJECT_FACE_LEFT);
-            } else {
-                object_set_direction(obj, OBJECT_FACE_RIGHT);
-            }
-        }
 
         if (sd_script_isset(frame, "bu") && obj->vel.y < 0.0f) {
             float x_dist = dist(obj->pos.x, 160);
