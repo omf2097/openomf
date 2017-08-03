@@ -386,6 +386,14 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
 
     DEBUG("Player %d hit wall %d", player_id, wall);
 
+    // Check if wallhit override flag is set
+    // Use this to allow wall splats for eneny har
+    int override_flag = o_har->animation_state.wall_splat_hack;
+    if(override_flag) {
+        DEBUG("CW Wallhack is enabled!");
+    }
+
+    // Check if HAR is in air
     int on_air = 0;
     if(o_har->pos.y < ARENA_FLOOR - 10) {
         on_air = 1;
@@ -399,14 +407,15 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         took_enough_damage = 1;
     }
 
+    int splat_conditions = (on_air
+        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
+        && !h->is_grabbed
+        && took_enough_damage) || override_flag;
+
     /*
      * When hitting the lightning arena wall, the HAr needs to get hit by lightning thingy.
      */
-    if (scene->id == SCENE_ARENA2
-        && on_air
-        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && !h->is_grabbed
-        && took_enough_damage)
+    if (scene->id == SCENE_ARENA2 && splat_conditions)
     {
         DEBUG("hit lightning wall %d", wall);
         h->state = STATE_WALLDAMAGE;
@@ -439,11 +448,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     /**
       * On arena wall, the wall needs to pulse. Handle it here
       */
-    if (scene->id == SCENE_ARENA4
-        && on_air
-        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && !h->is_grabbed
-        && took_enough_damage)
+    if (scene->id == SCENE_ARENA4 && splat_conditions)
     {
         DEBUG("hit desert wall %d", wall);
         h->state = STATE_WALLDAMAGE;
@@ -464,12 +469,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     /**
       * On all other arenas, the HAR needs to hit the wall with dust flying around
       */
-    if(scene->id != SCENE_ARENA4
-        && scene->id != SCENE_ARENA2
-        && on_air
-        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && !h->is_grabbed
-        && took_enough_damage)
+    if(scene->id != SCENE_ARENA4 && scene->id != SCENE_ARENA2 && splat_conditions)
     {
         DEBUG("hit dusty wall %d", wall);
         h->state = STATE_WALLDAMAGE;
@@ -497,9 +497,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     /**
       * Handle generic collision stuff
       */
-    if(on_air
-        && !h->is_grabbed
-        && took_enough_damage
+    if(((on_air && !h->is_grabbed && took_enough_damage) || override_flag)
         && (h->state == STATE_FALLEN
             || h->state == STATE_RECOIL
             || h->state == STATE_WALLDAMAGE))

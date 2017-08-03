@@ -1254,7 +1254,7 @@ void har_tick(object *obj) {
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
-    if (h->state != STATE_DEFEAT) {
+    if (h->state != STATE_DEFEAT || obj->animation_state.wall_splat_hack) {
         int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
         int hit = 0;
