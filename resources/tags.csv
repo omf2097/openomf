@@ -6,7 +6,7 @@
 "af",0,"Freeze opponent HAR"
 "ag",0,
 "ai",0,
-"am",0,"Tells the HAR when to stop walking, with the enemy 'e' modifier use coordinates relative to enemy, honors x/y coordinates"
+"am",0,"Tells the HAR when to stop walking"
 "ao",0,
 "as",0,"Wandering fire pit orb"
 "at",0,"Sets object position behind enemy har, used only by chronos' teleport"
@@ -18,12 +18,12 @@
 "b1",0,
 "b2",0,
 "bb",1,"Vertical screen shake"
-"be",0,
+"be",0,"Block the end of the round"
 "bf",1,"Blend finish"
 "bh",0,
 "bl",1,"Horizontal screen shake with magnitude n"
 "bm",1,"Animation to play while doing something"
-"bj",1,
+"bj",1,"Jump to animation <n>"
 "bs",1,"Blend start"
 "bu",0,"Used by jaguar's destruct to move to center of arena"
 "bw",0,
@@ -55,10 +55,10 @@
 "cx",1,
 "cy",1,
 "d",1,"Re-enter animation at N ticks"
-"e",0,"Relative enemy position modifier"
+"e",0,"Set position to enemy position"
 "f",0,"Flip sprite vertically"
-"g",0,"something to do with wall collisions?"
-"h",0,"Hover"
+"g",0,"Set position to ground and zero velocity"
+"h",0,"Set velocity to 0"
 "i",0,
 "jf2",0,"Allow chaining to destruction"
 "jf",0,"Allow chaining to scrap"
@@ -72,7 +72,7 @@
 "jn",1,"Allow frame to chain to animation N"
 "k",1,"Knockback on hit"
 "l",1,"Sound loudness"
-"ma",1,
+"ma",1,"Sets angle of new object in degrees. Velocity is then x=cos(ma), y=sin(ma)."
 "mc",0,
 "md",1,"Destroy animation N"
 "mg",1,"Gravity for spawned animation, default 0"
@@ -80,10 +80,10 @@
 "mm",1,"Manipulate mrx and mry calculations"
 "mn",1,
 "mo",0,
-"mp",1,
+"mp",1,"Feature bitmask"
 "mrx",1,"Randomize new animation X"
 "mry",1,"Randomize new animation Y"
-"ms",0,
+"ms",0,"Set special Y position for object; y = -4 * (y - 188)"
 "mu",1,
 "mx",1,"X position of new animation"
 "my",1,"Y position of new animation"
@@ -103,7 +103,7 @@
 "ptp",1,"N < 128"
 "ptr",1,"N < 128"
 "q",1,"Enable hit on current and next n-1 frames."
-"r",0,"Flip sprite horizontally?"
+"r",0,"Flip sprite horizontally"
 "s",1,"Play sound N from sound table footer"
 "sa",0,
 "sb",1,"Sound panning start"
@@ -117,7 +117,7 @@
 "sp",1,
 "sw",1,
 "t",0,"Prevent sound from playing if other HAR is blocking"
-"ua",0,"Disable gravity for opponent"
+"ua",0,"Sets enemy HAR to damage animation, if not already set."
 "ub",0,"Motion blur effect"
 "uc",0,
 "ud",0,
@@ -134,13 +134,13 @@
 "v",0,"Velocity modifier for x/y"
 "vsx",0,
 "vsy",0,
-"w",0,
-"x-",1,"Decrement X coordinate by N"
-"x+",1,"Increment X coordinate by N"
+"w",0,"Sprite caching related ?"
+"x-",1,"Set X coordinate to -N"
+"x+",1,"Set X coordinate to +N"
 "x=",1,"Interpolate X coordinate to N by next frame"
 "x",1,"Scale image as % of width (default 100)"
-"y-",1,"Decrement Y coordinate by N"
-"y+",1,"Increment Y coordinate by N"
+"y-",1,"Set Y coordinate to -N"
+"y+",1,"Set Y coordinate to +N"
 "y=",1,"Interpolate Y coordinate to N by next frame"
 "y",1,"Scale image as % of height (default 100)"
 "zg",0,"Never used?"
