@@ -1,8 +1,9 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
-#include "utils/vec.h"
+#include <stdint.h>
 #include <shadowdive/script.h>
+#include "utils/vec.h"
 
 typedef struct object_t object;
 
@@ -12,13 +13,13 @@ typedef void (*object_state_del_cb)(object *parent, int id, void *userdata);
 typedef struct player_sprite_state_t {
     int blendmode;
     int flipmode;
-    int method_flags;
     int timer;
     int duration;
     int screen_shake_horizontal;
     int screen_shake_vertical;
 
     vec2i o_correction; // Sprite specific position correction
+    int dir_correction;
     int disable_gravity;
 
     int blend_start;

@@ -351,7 +351,7 @@ void object_render(object *obj) {
 
     // Flip to face the right direction
     int flipmode = rstate->flipmode;
-    if(obj->direction == OBJECT_FACE_LEFT) {
+    if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
         flipmode ^= FLIP_HORIZONTAL;
     }
 
@@ -647,8 +647,11 @@ int object_get_halt(const object *obj) { return obj->halt; }
 void object_set_repeat(object *obj, int repeat) { player_set_repeat(obj, repeat); }
 int object_get_repeat(const object *obj) { return player_get_repeat(obj); }
 int object_finished(object *obj) { return obj->animation_state.finished; }
+
 void object_set_direction(object *obj, int dir) { obj->direction = dir; }
-int object_get_direction(const object *obj) { return obj->direction; }
+int object_get_direction(const object *obj) {
+    return obj->direction * obj->sprite_state.dir_correction;
+}
 
 void object_set_shadow(object *obj, int enable) { obj->cast_shadow = enable; }
 int object_get_shadow(const object *obj) { return obj->cast_shadow; }
