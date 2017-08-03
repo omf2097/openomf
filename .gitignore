@@ -5,3 +5,4 @@ build/
 *.so
 *.sw[klmnop]
 doc/html/
+.vscode/
