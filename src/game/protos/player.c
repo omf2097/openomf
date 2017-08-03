@@ -324,6 +324,7 @@ void player_run(object *obj) {
         // Reset position to enemy coordinates
         obj->pos.x = state->enemy->pos.x;
         obj->pos.y = state->enemy->pos.y;
+        object_set_direction(obj, object_get_direction(state->enemy) * -1);
     }
 
     // Set to ground
