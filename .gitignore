@@ -20,3 +20,4 @@ bin/
 *.app
 
 build/
+.vscode/
