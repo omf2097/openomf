@@ -334,7 +334,7 @@ void player_run(object *obj) {
 
     // Set to ground
     if(sd_script_isset(frame, "g")) {
-        obj->vel.x = 0;
+        obj->vel.y = 0;
         obj->pos.y = ARENA_FLOOR;
     }
 
