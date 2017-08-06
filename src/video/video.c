@@ -544,11 +544,11 @@ void video_render_finish() {
 
 void video_close() {
     state.cb.render_close(&state);
+    tcache_close();
     SDL_DestroyTexture(state.target);
     SDL_DestroyRenderer(state.renderer);
     SDL_DestroyWindow(state.window);
     free(state.cur_palette);
     free(state.base_palette);
-    tcache_close();
     INFO("Video deinit.");
 }
