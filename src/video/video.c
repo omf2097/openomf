@@ -16,6 +16,15 @@
 
 static video_state state;
 
+
+void clear_render_target() {
+    // Update target with black pixels
+    int size = NATIVE_W * state.scale_factor * NATIVE_H * state.scale_factor * 4;
+    char *pixels = calloc(1, size);
+    SDL_UpdateTexture(state.target, NULL, pixels, NATIVE_W * state.scale_factor * 4);
+    free(pixels);
+}
+
 void reset_targets() {
     if(state.target != NULL) {
         SDL_DestroyTexture(state.target);
@@ -25,13 +34,7 @@ void reset_targets() {
                                      SDL_TEXTUREACCESS_TARGET,
                                      NATIVE_W * state.scale_factor,
                                      NATIVE_H * state.scale_factor);
-
-    // Update target with black pixels
-    int size = NATIVE_W * state.scale_factor * NATIVE_H * state.scale_factor * 4;
-    char *pixels = malloc(size);
-    memset(pixels, 0, size);
-    SDL_UpdateTexture(state.target, NULL, pixels, NATIVE_W * state.scale_factor * 4);
-    free(pixels);
+    clear_render_target();
 }
 
 int video_load_scaler(const char* name, int scale_factor) {
@@ -75,9 +78,8 @@ int video_init(int window_w,
     }
 
     // Clear palettes
-    state.cur_palette = malloc(sizeof(screen_palette));
-    state.base_palette = malloc(sizeof(palette));
-    memset(state.cur_palette, 0, sizeof(screen_palette));
+    state.cur_palette = calloc(1, sizeof(screen_palette));
+    state.base_palette = calloc(1, sizeof(palette));
     state.cur_palette->version = 1;
 
     // Form title string
