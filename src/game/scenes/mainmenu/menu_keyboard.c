@@ -76,7 +76,7 @@ void menu_update_keys(component *c) {
     char tmp_buf[32];
     for(int i = 0; i < 10; i++) {
         DEBUG("%d", local->selected_player);
-        sprintf(tmp_buf, "%-19s%12s", keynames[i], *menu_get_key(local->selected_player, i));
+        snprintf(tmp_buf, 32, "%-19s%12s", keynames[i], *menu_get_key(local->selected_player, i));
         textbutton_set_text(local->keys[i], tmp_buf);
     }
 }

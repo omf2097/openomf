@@ -51,7 +51,7 @@ void plugins_init() {
             // Open the plugin file
             int psize = strlen(pm_get_local_path(PLUGIN_PATH)) + strlen(plugin_file) + 1;
             plugin_path = malloc(psize);
-            sprintf(plugin_path, "%s%s", pm_get_local_path(PLUGIN_PATH), plugin_file);
+            snprintf(plugin_path, psize, "%s%s", pm_get_local_path(PLUGIN_PATH), plugin_file);
             handle = SDL_LoadObject(plugin_path);
             free(plugin_path);
 

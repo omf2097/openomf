@@ -84,7 +84,7 @@ int video_init(int window_w,
 
     // Form title string
     char title[32];
-    sprintf(title, "OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
+    snprintf(title, 32, "OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
 
     // Open window
     state.window = SDL_CreateWindow(

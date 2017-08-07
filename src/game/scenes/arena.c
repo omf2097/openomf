@@ -1055,9 +1055,9 @@ void arena_render_overlay(scene *scene) {
 
     char buf[40];
 #ifdef DEBUGMODE
-    sprintf(buf, "%u", game_state_get_tick(scene->gs));
+    snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
     font_render(&font_small, buf, 160, 0, TEXT_COLOR);
-    sprintf(buf, "%u", rand_get_seed());
+    snprintf(buf, 40, "%u", rand_get_seed());
     font_render(&font_small, buf, 130, 8, TEXT_COLOR);
 #endif
     for(int i = 0; i < 2; i++) {
@@ -1106,11 +1106,11 @@ void arena_render_overlay(scene *scene) {
 
         // render ping, if player is networked
         if (player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
-            sprintf(buf, "ping %u", player[0]->ctrl->rtt);
+            snprintf(buf, 40, "ping %u", player[0]->ctrl->rtt);
             font_render(&font_small, buf, 5, 40, TEXT_COLOR);
         }
         if (player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
-            sprintf(buf, "ping %u", player[1]->ctrl->rtt);
+            snprintf(buf, 40, "ping %u", player[1]->ctrl->rtt);
             font_render(&font_small, buf, 315-(strlen(buf)*font_small.w), 40, TEXT_COLOR);
         }
 

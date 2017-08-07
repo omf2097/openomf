@@ -26,12 +26,13 @@ int sort_command_by_name(const void *a, const void *b) {
 int console_cmd_history(game_state *gs, int argc, char **argv) {
     iterator it;
     char *input;
-    char buf[sizeof(con->input)];
+    int input_len = sizeof(con->input);
+    char buf[input_len];
     int i = 1;
 
     list_iter_begin(&con->history, &it);
     while((input = iter_next(&it)) != NULL) {
-        sprintf(buf, "%d. %s", i, input);
+        snprintf(buf, input_len, "%d. %s", i, input);
         console_output_addline(buf);
         i++;
     }

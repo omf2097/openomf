@@ -27,7 +27,7 @@ static void textslider_render(component *c) {
     textslider *tb = widget_get_obj(c);
     char buf[100];
     int chars;
-    sprintf(buf, "%s ", tb->text);
+    snprintf(buf, 100, "%s ", tb->text);
     chars = strlen(buf);
     if (tb->has_off && *tb->pos == 0) {
         buf[chars] = 'O';

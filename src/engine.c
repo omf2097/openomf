@@ -304,10 +304,10 @@ void engine_run(engine_init_flags *init_flags) {
                 if(!failed_screenshot) {
                     int scr_ret = 0;
                     if(image_supports_png()) {
-                        sprintf(screenshot_filename, "screenshot_%u.png", SDL_GetTicks());
+                        snprintf(screenshot_filename, 128, "screenshot_%u.png", SDL_GetTicks());
                         scr_ret = image_write_png(&img, screenshot_filename);
                     } else {
-                        sprintf(screenshot_filename, "screenshot_%u.tga", SDL_GetTicks());
+                        snprintf(screenshot_filename, 128, "screenshot_%u.tga", SDL_GetTicks());
                         scr_ret= image_write_tga(&img, screenshot_filename);
                     }
                     if(scr_ret) {
