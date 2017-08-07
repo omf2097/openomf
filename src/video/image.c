@@ -1,4 +1,5 @@
 #include "video/image.h"
+#include "utils/log.h"
 
 #include <stdlib.h>
 #include <memory.h>
@@ -152,53 +153,25 @@ int image_supports_png() {
 
 int image_write_png(image *img, const char *filename) {
 #ifdef USE_PNG
-    // Open file
-    FILE *fp = fopen(filename, "wb");
-    if(fp == NULL) {
+    png_image out;
+    memset(&out, 0, sizeof(out));
+    out.version = PNG_IMAGE_VERSION;
+    out.opaque = NULL;
+    out.width = img->w;
+    out.height = img->h;
+    out.format = PNG_FORMAT_RGBA;
+    out.flags = 0;
+    out.colormap_entries = 0;
+
+    png_image_write_to_file(&out, filename, 0, img->data, img->w * 4, NULL);
+
+    if(PNG_IMAGE_FAILED(out)) {
+        PERROR("Unable to write PNG file: %s", out.message);
         return 1;
     }
-
-    // PNG stuff
-    png_structp png_ptr;
-    png_infop info_ptr;
-
-    // Get row pointers
-    char *rows[img->h];
-    for(int y = 0; y < img->h; y++) {
-        rows[y] = img->data + (y * img->w * 4);
-    }
-
-    // Init
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    info_ptr = png_create_info_struct(png_ptr);
-    setjmp(png_jmpbuf(png_ptr));
-    png_init_io(png_ptr, fp);
-
-    // Write header. RGB, 8bits per channel
-    setjmp(png_jmpbuf(png_ptr));
-    png_set_IHDR(png_ptr,
-                 info_ptr,
-                 img->w,
-                 img->h,
-                 8,
-                 PNG_COLOR_TYPE_RGBA,
-                 PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE,
-                 PNG_FILTER_TYPE_BASE);
-    png_write_info(png_ptr, info_ptr);
-
-    // Write data
-    setjmp(png_jmpbuf(png_ptr));
-    png_write_image(png_ptr, (void*)rows);
-
-    // End
-    setjmp(png_jmpbuf(png_ptr));
-    png_write_end(png_ptr, NULL);
-
-    // Free file
-    fclose(fp);
-    return 0; // Success
+    return 0;
 #else
+    PERROR("Writing PNG files is not supported!");
     return 1; // PNG not supported, report failure
 #endif
 }
