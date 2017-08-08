@@ -286,13 +286,11 @@ void player_run(object *obj) {
         if(sd_script_isset(frame, "cx")) {
             float cxe = 0.0f, cye = 0.0f;
             int successor_id = -1;
-            object *h1 = game_state_get_player(obj->gs, 0)->har;
-            object *h2 = game_state_get_player(obj->gs, 1)->har;
-            if(h1 == obj) {
-                successor_id = af_get_move(((har*)object_get_userdata(h1))->af_data, obj->cur_animation->id)->successor_id;
-            }
-            if(h2 == obj) {
-                successor_id = af_get_move(((har*)object_get_userdata(h2))->af_data, obj->cur_animation->id)->successor_id;
+            int player = game_state_get_player_by_obj(obj->gs, obj);
+            if(player >= 0) {
+                har *h = object_get_userdata(game_state_get_player(obj->gs, player)->har);
+                successor_id = af_get_move(h->af_data, obj->cur_animation->id)->successor_id;
+                DEBUG("SUCCESSOR_ID = %d", successor_id);
             }
             switch(successor_id) {
                 case ANIM_JUMPING:

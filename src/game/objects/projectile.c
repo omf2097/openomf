@@ -140,11 +140,11 @@ int projectile_create(object *obj) {
     return 0;
 }
 
-af *projectile_get_af_data(object *obj) {
+af *projectile_get_af_data(const object *obj) {
     return ((projectile_local*)object_get_userdata(obj))->af_data;
 }
 
-object *projectile_get_owner(object *obj) {
+object *projectile_get_owner(const object *obj) {
     return ((projectile_local*)object_get_userdata(obj))->owner;
 }
 

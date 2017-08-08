@@ -46,6 +46,8 @@ void game_state_slowdown(game_state *gs, int ticks, int rate);
 void game_state_set_speed(game_state *gs, int speed);
 unsigned int game_state_get_speed(game_state *gs);
 
+int game_state_get_player_by_obj(const game_state *gs, const object *obj);
+
 int game_state_add_object(game_state *gs, object *obj, int layer, int singleton, int persistent);
 void game_state_del_object(game_state *gs, object *obj);
 void game_state_del_animation(game_state *gs, int anim_id);
