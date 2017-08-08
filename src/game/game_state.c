@@ -2,6 +2,7 @@
 #include <math.h>
 #include <SDL2/SDL.h>
 #include <shadowdive/shadowdive.h>
+
 #include "controller/keyboard.h"
 #include "controller/joystick.h"
 #include "controller/rec_controller.h"
@@ -17,6 +18,7 @@
 #include "game/common_defines.h"
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
+#include "game/objects/projectile.h"
 #include "game/protos/scene.h"
 #include "game/protos/object.h"
 #include "game/protos/intersect.h"
@@ -723,6 +725,22 @@ game_player* game_state_get_player(game_state *gs, int player_id) {
 
 int game_state_num_players(game_state *gs) {
     return sizeof(gs->players)/sizeof(game_player*);
+}
+
+int game_state_get_player_by_obj(const game_state *gs, const object *obj) {
+    const object *h = obj;
+    if(object_get_group(obj) == GROUP_PROJECTILE) {
+        h = projectile_get_owner(obj);
+    }
+
+    if(gs->players[0]->har == h) {
+        return 0;
+    }
+    if(gs->players[1]->har == h) {
+        return 1;
+    }
+
+    return -1; // unknown
 }
 
 void _setup_keyboard(game_state *gs, int player_id) {

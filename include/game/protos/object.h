@@ -59,8 +59,9 @@ struct object_t {
     vec2f start;
     vec2f pos;
     vec2f vel;
-    int8_t direction;
+    int8_t direction; //< Current direction. -1 left, 1 right.
     int8_t group;
+    uint8_t layers;
 
     // Set by q tag
     int8_t hit_frames;
@@ -78,10 +79,9 @@ struct object_t {
     float y_percent;
     float gravity;
 
-    // Bitmask for several video effects (shadow, etc.)
-    int video_effects;
+    int video_effects; //< Bitmask for several video effects (shadow, etc.)
 
-    uint8_t layers;
+    
     uint8_t cur_animation_own;
 
     animation *cur_animation;
