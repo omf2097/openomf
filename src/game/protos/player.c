@@ -283,6 +283,57 @@ void player_run(object *obj) {
             }
         }
 
+        if(sd_script_isset(frame, "cx")) {
+            float cxe = 0.0f, cye = 0.0f;
+            int successor_id = -1;
+            object *h1 = game_state_get_player(obj->gs, 0)->har;
+            object *h2 = game_state_get_player(obj->gs, 1)->har;
+            if(h1 == obj) {
+                successor_id = af_get_move(((har*)object_get_userdata(h1))->af_data, obj->cur_animation->id)->successor_id;
+            }
+            if(h2 == obj) {
+                successor_id = af_get_move(((har*)object_get_userdata(h2))->af_data, obj->cur_animation->id)->successor_id;
+            }
+            switch(successor_id) {
+                case ANIM_JUMPING:
+                    cye = -1.0f;
+                    break;
+                case ANIM_STANDUP:
+                    cxe = 0.7f;
+                    cye = -0.7f;
+                    break;
+                case ANIM_STUNNED:
+                    cxe = 1.0f;
+                    break;
+                case ANIM_CROUCHING:
+                    cxe = 0.7f;
+                    cye = 0.7f;
+                    break;
+                case ANIM_STANDING_BLOCK:
+                    cye = 1.0f;
+                    break;
+                case ANIM_CROUCHING_BLOCK:
+                    cxe = -0.7f;
+                    cye = 0.7f;
+                    break;
+                case ANIM_BURNING_OIL:
+                    cxe = -1.0f;
+                    break;
+                case ANIM_BLOCKING_SCRAPE:
+                    cxe = -0.7f;
+                    cye = -0.7f;
+                    break;
+            }
+            if(sd_script_isset(frame, "cx")) {
+                obj->vel.x += sd_script_get(frame, "cx") * cxe;
+                DEBUG("CX = %d, vel.x = %f", sd_script_get(frame, "cx"), obj->vel.x);
+            }
+            if(sd_script_isset(frame, "cy")) {
+                obj->vel.y += sd_script_get(frame, "cy") * cye;
+                DEBUG("CY = %d, vel.y = %f", sd_script_get(frame, "cx"), obj->vel.y);
+            }
+        }
+
         /*if (sd_script_isset(frame, "bm")) {
             if (sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                 // destination is the enemy's position
