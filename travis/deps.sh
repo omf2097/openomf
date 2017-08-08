@@ -9,6 +9,17 @@ sudo apt-get -y install \
     libcunit1-dev \
     libopenal-dev \
     libconfuse-dev \
-    libpng-dev \
     libenet-dev \
     libsdl2-dev
+
+sudo apt-get remove libpng12-dev libz-dev -y
+wget "http://mirrors.kernel.org/ubuntu/pool/main/z/zlib/zlib1g-dev_1.2.11.dfsg-0ubuntu1_amd64.deb"
+wget "http://mirrors.kernel.org/ubuntu/pool/main/z/zlib/zlib1g_1.2.11.dfsg-0ubuntu1_amd64.deb"
+wget "http://mirrors.kernel.org/ubuntu/pool/main/libp/libpng1.6/libpng16-16_1.6.31-1_amd64.deb"
+wget "http://mirrors.kernel.org/ubuntu/pool/main/libp/libpng1.6/libpng-tools_1.6.31-1_amd64.deb"
+wget "http://mirrors.kernel.org/ubuntu/pool/main/libp/libpng1.6/libpng-dev_1.6.31-1_amd64.deb"
+sudo dpkg -i zlib1g_1.2.11.dfsg-0ubuntu1_amd64.deb
+sudo dpkg -i zlib1g-dev_1.2.11.dfsg-0ubuntu1_amd64.deb
+sudo dpkg -i libpng16-16_1.6.31-1_amd64.deb
+sudo dpkg -i libpng-tools_1.6.31-1_amd64.deb
+sudo dpkg -i libpng-dev_1.6.31-1_amd64.deb
