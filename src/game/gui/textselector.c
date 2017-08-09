@@ -59,9 +59,9 @@ static void textselector_render(component *c) {
     // Only render if the selector has options
     if(vector_size(&tb->options) > 0) {
         char **opt = vector_get(&tb->options, *tb->pos);
-        sprintf(buf, "%s %s", tb->text, *opt);
+        snprintf(buf, 100, "%s %s", tb->text, *opt);
     } else {
-        sprintf(buf, "%s -", tb->text);
+        snprintf(buf, 100, "%s -", tb->text);
     }
 
     // Render text

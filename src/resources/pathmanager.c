@@ -28,12 +28,13 @@ static char* resource_paths[NUMBER_OF_RESOURCES];
 static void local_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
     local_paths[path_id] = realloc(local_paths[path_id], len);
-    sprintf(local_paths[path_id], "%s%s", path, ext);
+    snprintf(local_paths[path_id], len, "%s%s", path, ext);
 }
+
 static void resource_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
     resource_paths[path_id] = realloc(resource_paths[path_id], len);
-    sprintf(resource_paths[path_id], "%s%s", path, ext);
+    snprintf(resource_paths[path_id], len, "%s%s", path, ext);
 }
 
 int str_ends_with_sep(const char *str) {
@@ -46,7 +47,7 @@ int pm_validate_resources() {
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         const char *testfile = pm_get_resource_path(i);
         if(access(testfile, F_OK) == -1) {
-            sprintf(errormessage, "Missing file %s.", testfile);
+            snprintf(errormessage, 128, "Missing file %s.", testfile);
             return 1;
         }
     }
@@ -212,7 +213,7 @@ char* pm_get_local_base_dir() {
     // Attempt to open up locally writable directory
     char *sdl_path = SDL_GetPrefPath("openomfproject", "OpenOMF");
     if(sdl_path == NULL) {
-        sprintf(errormessage, "Error getting config path: %s", SDL_GetError());
+        snprintf(errormessage, 128, "Error getting config path: %s", SDL_GetError());
         return NULL;
     }
     out = malloc(strlen(sdl_path)+1);
@@ -224,10 +225,10 @@ char* pm_get_local_base_dir() {
 #if defined(_WIN32) || defined(WIN32)
     int sherr = SHCreateDirectoryEx(NULL, out, NULL);
     if(sherr == ERROR_FILE_EXISTS) {
-        sprintf(errormessage, "Please delete this file and relaunch OpenOMF: %s", out);
+        snprintf(errormessage, 128, "Please delete this file and relaunch OpenOMF: %s", out);
         return NULL;
     } else if(sherr != ERROR_SUCCESS && sherr != ERROR_ALREADY_EXISTS) {
-        sprintf(errormessage, "Failed to create config path: %s", out);
+        snprintf(errormessage, 128, "Failed to create config path: %s", out);
         return NULL;
     }
 #endif

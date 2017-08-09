@@ -72,7 +72,7 @@ void console_handle_line(game_state *gs) {
                     console_output_addline(" SUCCESS");
                 } else {
                     char buf[12];
-                    sprintf(buf, "%d", err);
+                    snprintf(buf, 12, "%d", err);
                     console_output_add("> ");
                     console_output_add(argv[0]);
                     console_output_add(" ERROR:");

@@ -103,7 +103,7 @@ void scaler_toggled(component *c, void *userdata, int pos) {
         int len = scaler_get_factors_list(&scaler, &list);
         textselector_clear_options(local->factor);
         for(int i = 0; i < len; i++) {
-            sprintf(tmp_buf, "%d", list[i]);
+            snprintf(tmp_buf, 32, "%d", list[i]);
             textselector_add_option(local->factor, tmp_buf);
         }
 
@@ -195,7 +195,7 @@ component* menu_video_create(scene *s) {
     resolution *res = find_resolution_by_settings(setting);
     if(!res) {
         char tmp_label[32];
-        sprintf(tmp_label, "%ux%u", setting->video.screen_w, setting->video.screen_h);
+        snprintf(tmp_label, 32, "%ux%u", setting->video.screen_w, setting->video.screen_h);
         textselector_add_option(res_selector, tmp_label);
         local->custom_resolution.x = setting->video.screen_w;
         local->custom_resolution.y = setting->video.screen_h;
@@ -256,7 +256,7 @@ component* menu_video_create(scene *s) {
         int plen = scaler_get_factors_list(&scaler, &plist);
         textselector_clear_options(factor);
         for(int i = 0; i < plen; i++) {
-            sprintf(tmp_buf, "%d", plist[i]);
+            snprintf(tmp_buf, 32, "%d", plist[i]);
             textselector_add_option(factor, tmp_buf);
             if(plist[i] == setting->video.scale_factor ) {
                 pindex = i;

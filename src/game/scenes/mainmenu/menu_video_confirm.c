@@ -41,7 +41,7 @@ void menu_video_confirm_free(component *c) {
 void  menu_video_confirm_update(component *c) {
     video_menu_confirm_data *local = menu_get_userdata(c);
     char buf[32];
-    sprintf(buf, "CANCELLING IN %d", local->video_accept_secs);
+    snprintf(buf, 32, "CANCELLING IN %d", local->video_accept_secs);
     label_set_text(local->timeout_label, buf);
 }
 

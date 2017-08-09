@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "game/utils/formatting.h"
 
-void score_format(unsigned int score, char *buf) {
+void score_format(unsigned int score, char *buf, int maxlen) {
     unsigned int n = 0;
     unsigned int scale = 1;
     while(score >= 1000) {
@@ -9,11 +9,11 @@ void score_format(unsigned int score, char *buf) {
         score /= 1000;
         scale *= 1000;
     }
-    int len = sprintf(buf, "%u", score);
-    while(scale != 1) {
+    int len = snprintf(buf, maxlen, "%u", score);
+    while(scale != 1 && len < maxlen) {
         scale /= 1000;
         score = n / scale;
         n = n  % scale;
-        len += sprintf(buf + len, ",%03u", score);
+        len += snprintf(buf + len, maxlen - len, ",%03u", score);
     }
 }
