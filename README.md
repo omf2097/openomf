@@ -18,9 +18,7 @@ OpenOMF is developed under the MIT License. Please read [LICENSE](https://github
 
 Contribute
 ----------
-You may submit patches to this project by forking this repository and making a pull request. If you want to become a regular contributor, please contact us on #omf on irc.freenode.net. We appreciate all kinds of contributions, whether it's big or small. We also very enthusiastically welcome bug tickets and improvement suggestions on our [bug tracker](https://github.com/omf2097/openomf/issues).
-
-You may also support us by donating via paypal. For that, please see [http://www.openomf.org/](http://www.openomf.org).
+For guidelines on contributing, please see [CONTRIBUTING.md](https://github.com/omf2097/openomf/blob/master/CONTRIBUTING.md).
 
 Contact
 -------
