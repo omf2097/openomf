@@ -101,6 +101,7 @@ void player_create(object *obj) {
     obj->animation_state.disable_d = 0;
     obj->animation_state.enemy = NULL;
     obj->animation_state.shadow_corner_hack = 0;
+    obj->animation_state.wall_splat_hack = 0;
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0,0);
     sd_script_create(&obj->animation_state.parser);
@@ -281,6 +282,15 @@ void player_run(object *obj) {
             } else {
                 object_set_direction(obj, OBJECT_FACE_RIGHT);
             }
+        }
+
+        // If CW (wallcheck) flag is on and we're touching the wall, then disable d tag.
+        if(sd_script_isset(frame, "cw")) {
+            har *enemy_h = state->enemy->userdata;
+            if(enemy_h->is_wallhugging) {
+                state->disable_d = 1;
+            }
+            state->enemy->animation_state.wall_splat_hack = 1;
         }
 
         /*if (sd_script_isset(frame, "bm")) {
@@ -542,6 +552,7 @@ void player_run(object *obj) {
         if(sd_script_isset(frame, "bj")) {
             int new_ani = sd_script_get(frame, "bj");
             har_set_ani(obj, new_ani, 0);
+            DEBUG("BJ: Moving to animation %d", new_ani);
         }
 
 
