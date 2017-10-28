@@ -94,10 +94,6 @@ int char_to_act(int ch, int direction) {
 int ai_har_event(controller *ctrl, har_event event) {
     ai *a = ctrl->data;
     move_stat *ms;
-    //object *o = ctrl->har;
-    //har *h = object_get_userdata(o);
-    //object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
-    //har *h_enemy = object_get_userdata(o_enemy);
 
     switch(event.type) {
         case HAR_EVENT_LAND_HIT:

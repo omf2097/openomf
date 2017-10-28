@@ -10,14 +10,17 @@ typedef struct console_t {
     int histpos;
     int histpos_changed;
     char output[4810];
-    unsigned int output_head, output_tail, output_pos;
+    unsigned int output_head;
+    unsigned int output_tail;
+    unsigned int output_pos;
     int output_overflowing;
     char input[41];
     surface background;
     int isopen;
     int ownsinput;
     int ypos;
-    unsigned int ticks, dir;
+    unsigned int ticks;
+    unsigned int dir;
     hashmap cmds; // string -> command
 } console;
 
