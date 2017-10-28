@@ -146,13 +146,14 @@ int cutscene_create(scene *scene) {
         break;
     }
 
-    local->len = strlen(text)-1;
+    size_t text_len = strlen(text);
+    local->len = text_len - 1;
     local->pos = 0;
-    local->text = malloc(strlen(text)+1);
-    strcpy(local->text, text);
+    local->text = calloc(1, text_len + 1);
+    strncpy(local->text, text, text_len);
     local->current = local->text;
-    char *p;
 
+    char *p;
     if ((p = strchr(local->text, '\n'))) {
       // null out the byte
       *p = '\0';

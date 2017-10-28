@@ -2,6 +2,7 @@
 #include "controller/controller.h"
 #include "utils/config.h"
 #include "utils/log.h"
+#include "utils/compat.h"
 #include <stddef.h> //offsetof
 #include <stdlib.h>
 #include <string.h>
@@ -214,12 +215,8 @@ void settings_load_fields(void *st, const field *fields, int nfields) {
                 {
                     // make a copy of the string
                     char **s = fieldstr(st, f->offset);
-                    if(*s) {
-                        free(*s);
-                    }
-                    const char *s2 = conf_string(f->name);
-                    *s = malloc(strlen(s2)+1);
-                    strcpy(*s, s2);
+                    free(*s);
+                    *s = strdup(conf_string(f->name));
                 }
                 break;
         }

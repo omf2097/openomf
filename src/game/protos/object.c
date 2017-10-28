@@ -7,6 +7,7 @@
 #include "game/game_state_type.h"
 #include "video/video.h"
 #include "utils/log.h"
+#include "utils/compat.h"
 #include "utils/miscmath.h"
 
 #define UNUSED(x) (void)(x)
@@ -550,9 +551,8 @@ void object_set_animation(object *obj, animation *ani) {
         animation_free(obj->cur_animation);
         free(obj->cur_animation);
     }
-    if (obj->custom_str != NULL) {
-        free(obj->custom_str);
-    }
+    free(obj->custom_str);
+
     obj->custom_str = NULL;
     obj->cur_animation = ani;
     obj->cur_animation_own = OWNER_EXTERNAL;
@@ -575,9 +575,10 @@ void object_set_animation(object *obj, animation *ani) {
   * \param str New animation string
   */
 void object_set_custom_string(object *obj, const char *str) {
-    obj->custom_str = strcpy(malloc(strlen(str)+1), str);
-    player_reload_with_str(obj, str);
-    DEBUG("Set animation string to %s", str);
+    free(obj->custom_str);
+    obj->custom_str = strdup(str);
+    player_reload_with_str(obj, obj->custom_str);
+    DEBUG("Set animation string to %s", obj->custom_str);
 }
 
 /** Returns a pointer to the currently playing animation

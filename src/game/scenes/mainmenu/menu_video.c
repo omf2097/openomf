@@ -5,6 +5,7 @@
 
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
+#include "utils/compat.h"
 #include "video/video.h"
 #include "plugins/plugins.h"
 
@@ -83,8 +84,8 @@ void scaler_toggled(component *c, void *userdata, int pos) {
     settings_video *v = &settings_get()->video;
 
     // Set scaler
-    v->scaler = realloc(v->scaler, strlen(textselector_get_current_text(c))+1);
-    strcpy(v->scaler, textselector_get_current_text(c));
+    free(v->scaler);
+    v->scaler = strdup(textselector_get_current_text(c));
 
     // If scaler is NEAREST, set factor to 1 and disable
     char tmp_buf[32];
