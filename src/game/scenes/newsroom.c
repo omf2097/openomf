@@ -76,7 +76,7 @@ void newsroom_fixup_str(newsroom_local *local) {
     while(str_next_of(&textstr, '~', &pos)) {
         str tmp;
         str_create(&tmp);
-        str_substr(&tmp, &textstr, prevpos, pos);
+        str_slice(&tmp, &textstr, prevpos, pos);
         str_append(&local->news_str, &tmp);
         str_free(&tmp);
 
@@ -128,7 +128,7 @@ void newsroom_fixup_str(newsroom_local *local) {
     }
     str tmp;
     str_create(&tmp);
-    str_substr(&tmp, &textstr, pos, str_size(&textstr));
+    str_slice(&tmp, &textstr, pos, str_size(&textstr));
     str_append(&local->news_str, &tmp);
     str_free(&tmp);
     str_free(&textstr);

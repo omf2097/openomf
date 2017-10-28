@@ -3,35 +3,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <assert.h>
 
 void str_create(str *string) {
     string->len = 0;
-    string->data = NULL;
+    string->data = calloc(1, 1);
 }
 
 void str_create_from_cstr(str *string, const char *cstr) {
-    if(cstr) {
-        string->len = strlen(cstr);
-        string->data = malloc(string->len + 1);
-        memcpy(string->data, cstr, string->len);
-        string->data[string->len] = 0;
-    } else {
-        string->len = 0;
-        string->data = NULL;
-    }
+    string->len = strlen(cstr);
+    string->data = malloc(string->len + 1);
+    memcpy(string->data, cstr, string->len);
+    string->data[string->len] = 0;
 }
 
 void str_create_from_data(str *string, const char *data, size_t len) {
     string->len = len;
     string->data = malloc(len + 1);
-    memcpy(string->data, data, len);
+    memcpy(string->data, data, string->len);
     string->data[string->len] = 0;
 }
 
 void str_free(str *string) {
-    if(string->data != NULL) {
-        free(string->data);
-    }
+    free(string->data);
     string->data = NULL;
     string->len = 0;
 }
@@ -40,36 +35,37 @@ size_t str_size(const str *string) {
     return string->len;
 }
 
-void str_remove_at(str *string, size_t pos) {
-   for(size_t i = pos; i < string->len - 1; i++) {
-       string->data[i] = string->data[i + 1];
-   }
-   string->len--;
+void str_remove_at(str *src, size_t pos) {
+   memmove(src->data + pos, src->data + pos + 1, src->len - pos - 1);
+   src->len--;
 }
 
-void str_substr(str *dst, const str *src, size_t start, size_t end) {
-    if(src->data) {
-        size_t len = end - start;
-        dst->data = realloc(dst->data, len + 1);
-        dst->len = len;
-        memcpy(dst->data, src->data + start, len);
-        dst->data[len] = 0;
-    } else {
-        dst->data = NULL;
-        dst->len = 0;
-    }
+void str_printf(str *dst, const char *format, ...) {
+    size_t size;
+    va_list args;
+    va_start(args, format);
+    size = vsnprintf(NULL, 0, format, args);
+    dst->data = realloc(dst->data, dst->len + size + 1);
+    vsnprintf(dst->data + dst->len, size + 1, format, args);
+    dst->len += size;
+    va_end(args);
+    dst->data[dst->len] = 0;
+}
+
+void str_slice(str *dst, const str *src, size_t start, size_t end) {
+    assert(start < end);
+    size_t len = end - start;
+    dst->data = realloc(dst->data, len + 1);
+    dst->len = len;
+    memcpy(dst->data, src->data + start, len);
+    dst->data[dst->len] = 0;
 }
 
 void str_copy(str *dst, const str *src) {
-    if(src->data) {
-        dst->data = realloc(dst->data, src->len + 1);
-        dst->len = src->len;
-        memcpy(dst->data, src->data, dst->len);
-        dst->data[dst->len] = 0;
-    } else {
-        dst->data = NULL;
-        dst->len = 0;
-    }
+    dst->data = realloc(dst->data, src->len + 1);
+    dst->len = src->len;
+    memcpy(dst->data, src->data, dst->len);
+    dst->data[dst->len] = 0;
 }
 
 void str_append(str *dst, const str *src) {
@@ -92,6 +88,15 @@ void str_prepend(str *dst, const str *src) {
     memmove(dst->data + src->len, dst->data, dst->len);
     memcpy(dst->data, src->data, src->len);
     dst->len += src->len;
+    dst->data[dst->len] = 0;
+}
+
+void str_prepend_c(str *dst, const char *src) {
+    size_t srclen = strlen(src);
+    dst->data = realloc(dst->data, dst->len + srclen + 1);
+    memmove(dst->data + srclen, dst->data, dst->len);
+    memcpy(dst->data, src, srclen);
+    dst->len += srclen;
     dst->data[dst->len] = 0;
 }
 
@@ -129,14 +134,10 @@ int str_equal(const str *string, const str *string_b) {
     if(string->len != string_b->len) {
         return 0;
     }
-    if(strcmp(string->data, string_b->data) != 0) {
+    if(strncmp(string->data, string_b->data, string->len) != 0) {
         return 0;
     }
     return 1;
-}
-
-int str_cmp(const str *cmp_a, const str *cmp_b) {
-    return strcmp(cmp_a->data, cmp_b->data);
 }
 
 char str_at(const str *string, size_t pos) {
@@ -178,4 +179,11 @@ const char* str_c(const str *string) {
     // string is compatible with C strings. So just return
     // a pointer to that data
     return string->data;
+}
+
+const char* str_c_alloc(const str *src) {
+    char *ptr = malloc(src->len + 1);
+    memcpy(ptr, src->data, src->len + 1);
+    ptr[src->len] = 0;
+    return ptr;
 }

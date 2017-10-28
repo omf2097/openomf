@@ -498,7 +498,7 @@ void har_move(object *obj) {
     }
 }
 
-void har_take_damage(object *obj, str* string, float damage) {
+void har_take_damage(object *obj, const str* string, float damage) {
     har *h = object_get_userdata(obj);
 
     // Got hit, disable stasis activator on this bot
@@ -556,15 +556,16 @@ void har_take_damage(object *obj, str* string, float damage) {
         if (h->health <= 0) {
             // taken from MASTER.DAT
             // XXX changed the last frame to 200 ticks to ensure the HAR falls down
-            char *final = "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM200";
-            char *str = malloc(str_size(string) + strlen(final) + 1);
-            // append the 'final knockback' string to the hit string, replacing the final frame
-            sprintf(str, "%s", string->data);
-            char *last = strrchr(str, '-');
-            sprintf(last, "%s", final);
-            object_set_custom_string(obj, str);
-            free(str);
-            if (object_is_airborne(obj)) {
+            str n;
+            size_t last_line;
+            str_create(&n);
+            str_last_of(string, '-', &last_line);
+            str_slice(&n, string, 0, last_line);
+            str_append_c(&n, "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM200");
+            object_set_custom_string(obj, str_c(&n));
+            str_free(&n);
+
+            if(object_is_airborne(obj)) {
                 // airborne defeat
                 obj->vel.y = -7;
                 object_set_stride(obj, 1);
@@ -572,15 +573,17 @@ void har_take_damage(object *obj, str* string, float damage) {
             }
         } else if (object_is_airborne(obj)) {
             DEBUG("airborne knockback");
-            char *final = "-L2-M5-L2 ";
-            char *str = malloc(str_size(string) + strlen(final) + 1);
             // append the 'airborne knockback' string to the hit string, replacing the final frame
-            sprintf(str, "%s", string->data);
-            char *last = strrchr(str, '-');
-            sprintf(last, "%s", final);
-            object_set_custom_string(obj, str);
+            str n;
+            size_t last_line;
+            str_create(&n);
+            str_last_of(string, '-', &last_line);
+            str_slice(&n, string, 0, last_line);
+            str_append_c(&n, "-L2-M5-L2");
+            object_set_custom_string(obj, str_c(&n));
+            str_free(&n);
+    
             obj->vel.y = -7;
-            free(str);
             h->state = STATE_FALLEN;
             object_set_stride(obj, 1);
         } else {
