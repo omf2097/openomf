@@ -10,7 +10,7 @@ void scores_clear(scoreboard *sb) {
             sb->entries[i][m].score = 0;
             sb->entries[i][m].har_id = 0;
             sb->entries[i][m].pilot_id = 0;
-            strcpy(sb->entries[i][m].name, "");
+            strncpy(sb->entries[i][m].name, "", 16);
         }
     }
 }
@@ -32,7 +32,7 @@ int scores_read(scoreboard *sb) {
             sb->entries[i][m].score = score_file.scores[i][m].score;
             sb->entries[i][m].har_id = score_file.scores[i][m].har_id;
             sb->entries[i][m].pilot_id = score_file.scores[i][m].pilot_id;
-            strcpy(sb->entries[i][m].name, score_file.scores[i][m].name);
+            strncpy(sb->entries[i][m].name, score_file.scores[i][m].name, 16);
         }
     }
 
@@ -58,7 +58,7 @@ int scores_write(scoreboard *sb) {
             score_file.scores[i][m].score = sb->entries[i][m].score;
             score_file.scores[i][m].har_id = sb->entries[i][m].har_id;
             score_file.scores[i][m].pilot_id = sb->entries[i][m].pilot_id;
-            strcpy(score_file.scores[i][m].name, sb->entries[i][m].name);
+            strncpy(score_file.scores[i][m].name, sb->entries[i][m].name, 16);
         }
     }
 

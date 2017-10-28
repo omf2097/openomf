@@ -4,9 +4,10 @@
 
 #ifndef HAVE_STD_STRDUP
 char* strdup(const char *s) {
-    char *d = malloc(strlen(s) + 1);
+    size_t len = strlen(s) + 1;
+    char *d = malloc(len);
     if(d != NULL)
-        strcpy(d, s);
+        strncpy(d, s, len);
     return d;
 }
 #endif

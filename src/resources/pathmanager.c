@@ -205,8 +205,7 @@ int pm_in_portable_mode() {
 char* pm_get_local_base_dir() {
     char *out = NULL;
     if(pm_in_portable_mode()) {
-        out = malloc(1);
-        out[0] = 0;
+        out = calloc(1, 1);
         return out;
     }
 
@@ -216,8 +215,7 @@ char* pm_get_local_base_dir() {
         snprintf(errormessage, 128, "Error getting config path: %s", SDL_GetError());
         return NULL;
     }
-    out = malloc(strlen(sdl_path)+1);
-    strcpy(out, sdl_path);
+    out = strdup(sdl_path);
     SDL_free(sdl_path);
 
     // Ensure the path exists before continuing on
