@@ -23,10 +23,6 @@ Latest experimental binaries for windows and debian (ubuntu) are available at ht
 3. Install the game resources. Please see step 3. of this guide for this.
 4. Start the game by running ./openomf on command line.
 
-#### Gentoo
-
-We have a Gentoo overlay at https://github.com/omf2097/openomf-overlay . For installation instructions, please read the README.md in the repository.
-
 ### Official releases
 
 Official releases are (somewhat) stable, but don't necessary come with all the latest bells and whistles. However, if you wish to try them, they will be available at https://github.com/omf2097/openomf/releases . Installation instructions are also available there.
@@ -39,7 +35,7 @@ Official releases are (somewhat) stable, but don't necessary come with all the l
 
 Use at least GCC 4.7 or Clang 3.1. MSVC is not supported at this time.
 
-Note! For debug builds, GCC 4.9 or later is recommended.
+Note! For debug builds, GCC 4.9 or later is recommended. With later GCC versions you get better error messages and stricted code quality checks, so if you're doing development, please use the latest compiler version available to you.
 
 #### Libraries
 
@@ -86,9 +82,6 @@ brew install confuse
 brew install enet
 brew install gettext
 ```
-
-#### Gentoo:
-We have an experimental gentoo portage overlay at https://github.com/omf2097/openomf-overlay, which contains libshadowdive, libdumb and openomf packages.
 
 ### Acquiring the sources
 
@@ -150,4 +143,5 @@ Note! Only BK,AF,PIC,TRN,PSM and DAT files are required, others may be removed t
 You can override these default paths by setting the OPENOMF_RESOURCE_DIR environment variable to an absolute directory. Plugins have a similiar environment variable called OPENOMF_PLUGIN_DIR.
 
 ## 4. Play the game!
+
 Start the game by running the main binary. If there are problems, please contact us by either making an issue ticket, or at #omf @ freenode in IRC (mode details in the [README.md](https://github.com/omf2097/openomf/blob/master/README.md)).
