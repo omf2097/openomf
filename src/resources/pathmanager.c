@@ -10,6 +10,7 @@
 #include <sys/stat.h> // mkdir
 #endif
 
+#include "utils/compat.h"
 #include "resources/pathmanager.h"
 #include "utils/log.h"
 
