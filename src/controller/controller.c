@@ -76,15 +76,16 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
     }
 }
 
-void controller_sync(controller *ctrl, serial *ser, ctrl_event **ev) {
+void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev) {
     if (*ev != NULL) {
         // a sync event obsoletes all previous events
         controller_free_chain(*ev);
     }
     *ev = malloc(sizeof(ctrl_event));
     (*ev)->type = EVENT_TYPE_SYNC;
-    (*ev)->event_data.ser = ser;
+    (*ev)->event_data.ser = serial_malloc_copy(ser);
     (*ev)->next = NULL;
+    
 }
 
 void controller_close(controller *ctrl, ctrl_event **ev) {

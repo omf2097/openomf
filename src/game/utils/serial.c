@@ -9,6 +9,7 @@
 #include "utils/log.h"
 #include <stdio.h>
 
+#define SERIAL_BUF_RESIZE_INC 64
 
 // taken from http://stackoverflow.com/questions/10620601/portable-serialisation-of-ieee754-floating-point-values
 float htonf(float val) {
@@ -27,23 +28,44 @@ float ntohf(float val) {
     return val;
 }
 
-// TODO we should probably have some reasonable initial size, so we don't realloc like crazy
 void serial_create(serial *s) {
-    s->len = 0;
+    s->len = SERIAL_BUF_RESIZE_INC;
+    s->wpos = 0;
     s->rpos = 0;
-    s->data = NULL;
+    s->data = malloc(s->len);
 }
 
-// TODO: Optimize writing
-void serial_write(serial *s, const char *buf, int len) {
-    if(s->data == NULL) {
-        s->data = malloc(len);
-        memcpy(s->data, buf, len);
-    } else {
-        s->data = realloc(s->data, s->len + len);
-        memcpy(s->data + s->len, buf, len);
+void serial_create_from(serial *s, const char *buf, size_t len) {
+    s->len = len + SERIAL_BUF_RESIZE_INC;
+    s->wpos = len;
+    s->rpos = 0;
+    s->data = malloc(s->len);
+    memcpy(s->data, buf, len);
+}
+
+void serial_copy(serial *dst, const serial *src) {
+    dst->len = src->len;
+    dst->wpos = src->wpos;
+    dst->rpos = src->rpos;
+    dst->data = malloc(dst->len);
+    memcpy(dst->data, src->data, dst->len);
+}
+
+serial* serial_malloc_copy(const serial *src) {
+    serial* dst = malloc(sizeof(serial));
+    serial_copy(dst, src);
+    return dst;
+}
+
+void serial_write(serial *s, const char *buf, size_t len) {
+    if(s->len < (s->wpos + len)) {
+        size_t new_len = s->len + len + SERIAL_BUF_RESIZE_INC;
+        s->data = realloc(s->data, new_len);
+        s->len = new_len;
     }
-    s->len += len;
+
+    memcpy(s->data + s->wpos, buf, len);
+    s->wpos += len;
 }
 
 void serial_write_int8(serial *s, int8_t v) {
@@ -66,30 +88,29 @@ void serial_write_float(serial *s, float v) {
 }
 
 void serial_free(serial *s) {
-    if(s->data != NULL) {
-        free(s->data);
-        s->data = NULL;
-        s->len = 0;
-        s->rpos = 0;
-    }
+    free(s->data);
+    s->data = NULL;
+    s->len = 0;
+    s->rpos = 0;
+    s->wpos = 0;
 }
 
 size_t serial_len(serial *s) {
-    return s->len;
+    return s->wpos;
 }
 
 void serial_read_reset(serial *s) {
     s->rpos = 0;
 }
 
-void serial_read(serial *s, char *buf, int len) {
-    if(len + s->rpos  > s->len) {
-        len = s->len - s->rpos;
+void serial_read(serial *s, char *buf, size_t len) {
+    if(len + s->rpos > s->wpos) {
+        len = s->wpos - s->rpos;
     }
-    memcpy(buf, s->data+s->rpos, len);
+    memcpy(buf, s->data + s->rpos, len);
     s->rpos += len;
-    if (s->rpos > s->len) {
-        s->rpos = s->len;
+    if(s->rpos > s->wpos) {
+        s->rpos = s->wpos;
     }
 }
 

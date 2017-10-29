@@ -3,6 +3,7 @@
 
 #include "controller/net_controller.h"
 #include "utils/log.h"
+#include "game/utils/serial.h"
 
 typedef struct wtf_t {
     ENetHost *host;
@@ -95,34 +96,29 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     wtf *data = ctrl->data;
     ENetHost *host = data->host;
     ENetPeer *peer = data->peer;
-    serial *ser;
-    /*int handled = 0;*/
+    serial ser;
     while (enet_host_service(host, &event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
-                ser = malloc(sizeof(serial));
-                serial_create(ser);
-                ser->data = malloc(event.packet->dataLength);
-                ser->len = event.packet->dataLength;
-                memcpy(ser->data, event.packet->data, event.packet->dataLength);
-                switch(serial_read_int8(ser)) {
+                serial_create_from(
+                    &ser,
+                    (const char*)event.packet->data,
+                    event.packet->dataLength);
+                switch(serial_read_int8(&ser)) {
                     case EVENT_TYPE_ACTION:
                         {
                             // dispatch keypress to scene
-                            int action = serial_read_int16(ser);
+                            int action = serial_read_int16(&ser);
                             controller_cmd(ctrl, action, ev);
-                            /*handled = 1;*/
-                            serial_free(ser);
-                            free(ser);
                         }
                         break;
                     case EVENT_TYPE_HB:
                         {
                             // got a tick
-                            int id = serial_read_int8(ser);
+                            int id = serial_read_int8(&ser);
                             if (id == data->id) {
-                                int start = serial_read_int32(ser);
-                                int peerticks = serial_read_int32(ser);
+                                int start = serial_read_int32(&ser);
+                                int peerticks = serial_read_int32(&ser);
                                 int newrtt = abs(start - ticks);
                                 data->rttbuf[data->rttpos++] = newrtt;
                                 if (data->rttpos >= 100) {
@@ -136,29 +132,24 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                                 }
                                 data->outstanding_hb = 0;
                                 data->last_hb = ticks;
-                                serial_free(ser);
                             } else {
                                 // a heartbeat from the peer, bounce it back
                                 ENetPacket *packet;
                                 // write our own ticks into it
-                                serial_write_int32(ser, ticks);
-                                packet = enet_packet_create(ser->data, ser->len, ENET_PACKET_FLAG_UNSEQUENCED);
+                                serial_write_int32(&ser, ticks);
+                                packet = enet_packet_create(ser.data, ser.len, ENET_PACKET_FLAG_UNSEQUENCED);
                                 if (peer) {
                                     enet_peer_send(peer, 0, packet);
                                     enet_host_flush (host);
                                 }
                             }
-                            free(ser);
                         }
                         break;
                     case EVENT_TYPE_SYNC:
-                        controller_sync(ctrl, ser, ev);
-                        /*handled = 1;*/
+                        controller_sync(ctrl, &ser, ev);
                         break;
-                    default:
-                        serial_free(ser);
-                        free(ser);
                 }
+                serial_free(&ser);
                 enet_packet_destroy(event.packet);
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:

@@ -65,7 +65,7 @@ struct controller_t {
 
 void controller_init(controller* ctrl);
 void controller_cmd(controller* ctrl, int action, ctrl_event **ev);
-void controller_sync(controller *ctrl, serial *ser, ctrl_event **ev);
+void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev);
 void controller_close(controller* ctrl, ctrl_event **ev);
 int controller_poll(controller *ctrl, ctrl_event **ev);
 int controller_tick(controller *ctrl, int ticks, ctrl_event **ev);
