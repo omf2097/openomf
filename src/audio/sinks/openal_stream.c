@@ -119,6 +119,22 @@ void openal_stream_close(audio_stream *stream) {
     free(local);
 }
 
+static int get_al_format(int bytes, int channels) {
+    if(bytes == 1) {
+        if(channels == 1)
+            return AL_FORMAT_MONO8;
+        if(channels == 2)
+            return AL_FORMAT_STEREO8;
+    }
+    if(bytes == 2) {
+        if(channels == 1)
+            return AL_FORMAT_MONO16;
+        if(channels == 2)
+            return AL_FORMAT_STEREO16;
+    }
+    return 0;
+}
+
 int openal_stream_init(audio_stream *stream, audio_sink *sink) {
     openal_stream *local = malloc(sizeof(openal_stream));
 
@@ -126,21 +142,9 @@ int openal_stream_init(audio_stream *stream, audio_sink *sink) {
     while(alGetError() != AL_NO_ERROR);
 
     // Pick format
-    local->format = 0;
-    switch(source_get_bytes(stream->src)) {
-        case 1:
-            switch(source_get_channels(stream->src)) {
-                case 1: local->format = AL_FORMAT_MONO8; break;
-                case 2: local->format = AL_FORMAT_STEREO8; break;
-            }
-            break;
-        case 2: 
-            switch(source_get_channels(stream->src)) {
-                case 1: local->format = AL_FORMAT_MONO16; break;
-                case 2: local->format = AL_FORMAT_STEREO16; break;
-            }
-            break;
-    };
+    local->format = get_al_format(
+        source_get_bytes(stream->src),
+        source_get_channels(stream->src));
     if(!local->format) {
         PERROR("OpenAL Stream: Could not find suitable audio format!");
         goto exit_0;

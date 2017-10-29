@@ -9,8 +9,6 @@ typedef struct raw_source_t {
     int pos;
 } raw_source;
 
-// TODO: Implement looping if necessary
-
 int raw_source_update(audio_source *src, char *buffer, int len) {
     raw_source *local = source_get_userdata(src);
     int data_left = local->len - local->pos;
@@ -25,7 +23,6 @@ int raw_source_update(audio_source *src, char *buffer, int len) {
 
 void raw_source_close(audio_source *src) {
     raw_source *local = source_get_userdata(src);
-    /*DEBUG("Raw Source: Closed (len: %d).", local->len);*/
     free(local);
 }
 
@@ -46,9 +43,6 @@ int raw_source_init(audio_source *src, char* buffer, int len) {
     source_set_userdata(src, local);
     source_set_update_cb(src, raw_source_update);
     source_set_close_cb(src, raw_source_close);
-
-    // Some debug info
-    /*DEBUG("Raw Source: Loaded raw pcm sample succesfully.");*/
 
     // All done
     return 0;

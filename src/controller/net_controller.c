@@ -148,6 +148,9 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                     case EVENT_TYPE_SYNC:
                         controller_sync(ctrl, &ser, ev);
                         break;
+                    default:
+                        // Event type is unknown or we don't care about it
+                        break;
                 }
                 serial_free(&ser);
                 enet_packet_destroy(event.packet);

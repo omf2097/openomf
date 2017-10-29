@@ -87,6 +87,8 @@ int char_to_act(int ch, int direction) {
         case 'K': return ACT_KICK;
         case 'P': return ACT_PUNCH;
         case '5': return ACT_STOP;
+        default:
+            break;
     }
     return ACT_STOP;
 }
@@ -123,6 +125,9 @@ int ai_har_event(controller *ctrl, har_event event) {
 
         case HAR_EVENT_ATTACK:
             a->selected_move = NULL;
+            break;
+
+        default:
             break;
     }
 
@@ -188,17 +193,20 @@ int is_valid_move(af_move *move, har *h) {
     }
     // XXX check for chaining?
 
-    const char *move_str = str_c(&move->move_string);
-    for(int i = 0;i < str_size(&move->move_string);i++) {
-        if((move_str[i] >= '1' && move_str[i] <= '9') || move_str[i] == 'K' || move_str[i] == 'P') {
-            continue;
-        } else {
+    int move_str_len = str_size(&move->move_string);
+    char tmp;
+    for(int i = 0; i < move_str_len; i++) {
+        tmp = str_at(&move->move_string, i);
+        if(!((tmp >= '1' && tmp <= '9') || tmp == 'K' || tmp == 'P')) {
             return 0;
         }
     }
 
-    if((move->damage > 0 || move->category == CAT_PROJECTILE || move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) &&
-        str_size(&move->move_string) > 0) {
+    if((move->damage > 0
+        || move->category == CAT_PROJECTILE
+        || move->category == CAT_SCRAP
+        || move->category == CAT_DESTRUCTION) && move_str_len > 0) 
+    {
         return 1;
     }
 
