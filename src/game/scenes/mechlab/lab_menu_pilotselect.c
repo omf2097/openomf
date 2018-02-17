@@ -27,9 +27,9 @@ void lab_menu_pilotselect_right(component *c, void *userdata) {
 }
 
 static const button_details details_list[] = {
-    {lab_menu_pilotselect_choose, "SELECT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
-    {lab_menu_pilotselect_left,  NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
-    {lab_menu_pilotselect_right, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
+    {lab_menu_pilotselect_choose, "SELECT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_pilotselect_left,  NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_pilotselect_right, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
 
 component* lab_menu_pilotselect_create(scene *s, dashboard_widgets *dw) {

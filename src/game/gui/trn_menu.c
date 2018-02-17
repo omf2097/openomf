@@ -145,6 +145,10 @@ static int find_next_button(component *c, int act) {
     int idx_now = 0;
     while((tmp = iter_next(&it)) != NULL) {
         component *t = *tmp;
+        if(component_is_disabled(t)) {
+            idx_now++;
+            continue;
+        }
         switch(act) {
             case ACT_LEFT:
                 if(t->x < cur->x) {

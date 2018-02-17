@@ -14,6 +14,7 @@ typedef struct {
     int bottom;
     int left;
     int right;
+    int enabled;
 } button_details;
 
 #endif // _BUTTON_DETAILS_H

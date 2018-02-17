@@ -13,10 +13,10 @@ void lab_menu_training_done(component *c, void *userdata) {
 }
 
 static const button_details details_list[] = {
-    {NULL, "POWER", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {NULL, "AGILITY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {NULL, "ENDUR.", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0},
-    {lab_menu_training_done, "DONE", TEXT_VERTICAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0},
+    {NULL, "POWER", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
+    {NULL, "AGILITY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
+    {NULL, "ENDUR.", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
+    {lab_menu_training_done, "DONE", TEXT_VERTICAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
 
 component* lab_menu_training_create(scene *s) {
