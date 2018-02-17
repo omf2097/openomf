@@ -217,12 +217,11 @@ int mechlab_create(scene *scene) {
     // or just show old savegame stats directly if it was.
     local->dashtype = DASHBOARD_NONE;
     if(last_name == NULL) {
-        mechlab_select_dashboard(scene, local, DASHBOARD_NEW);
-        DEBUG("No savegame found; starting a new tournament player.");
+        DEBUG("No previous savegame found");
     } else {
-        mechlab_select_dashboard(scene, local, DASHBOARD_STATS);
         DEBUG("Previous savegame found; loading as default.");
     }
+    mechlab_select_dashboard(scene, local, DASHBOARD_STATS);
 
     // Create main menu
     local->frame = guiframe_create(0, 0, 320, 200);
