@@ -11,7 +11,6 @@ set(VERSION_PATCH "5")
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Options
-OPTION(USE_LTO "Enable LTO" OFF)
 OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_DUMB "Use libdumb for module playback" ON)
@@ -24,7 +23,7 @@ OPTION(USE_RELEASE_SUBMODULES "Build the submodules in release mode. Enable this
 #OPTION(SERVER_ONLY "Do not build the game binary" OFF)
 
 # These flags are used for all builds
-set(CMAKE_C_FLAGS "-Wall -std=c11")
+set(CMAKE_C_FLAGS "-Wall")
 set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer -DNDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
@@ -44,25 +43,6 @@ if(GIT_FOUND)
     message(STATUS "Git SHA1 Hash: ${SHA1_HASH}")
     add_definitions(-DSHA1_HASH="${SHA1_HASH}")
 endif()
-
-# Enable LTO flags if requested
-IF(USE_LTO)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fno-fat-lto-objects")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
-    SET(CMAKE_AR  "gcc-ar")
-    message(STATUS "Link time optimization enabled!")
-
-    string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE)
-    IF(BTYPE MATCHES DEBUG)
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ggdb")
-    ELSEIF(BTYPE MATCHES RELEASE)
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -O2")
-    ELSEIF(BTYPE MATCHES RELWITHDEBINFO)
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -O2")
-    ELSEIF(BTYPE MATCHES MINSIZEREL)
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Os")
-    ENDIF()
-ENDIF()
 
 # System packages (hard dependencies)
 find_package(SDL2)
@@ -395,6 +375,7 @@ IF(NOT SERVER_ONLY)
         ENDIF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
     ENDIF(MINGW)
     target_link_libraries(openomf ${CORELIBS})
+    set_property(TARGET openomf PROPERTY C_STANDARD 11)
 ENDIF(NOT SERVER_ONLY)
 
 # Testing stuff
@@ -414,6 +395,7 @@ IF(CUNIT_FOUND)
     )
 
     target_link_libraries(openomf_test_main ${CORELIBS})
+    set_property(TARGET openomf_test_main PROPERTY C_STANDARD 11)
 
     # Change policy to allow "test" target name
     cmake_policy(PUSH)
