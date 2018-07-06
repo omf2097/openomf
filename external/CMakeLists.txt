@@ -5,10 +5,14 @@ set(BUILD_ALLEGRO4 OFF CACHE BOOL "Libdumb allegro4 support")
 
 if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libShadowDive/src" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dumb/dumb")
     if(GIT_COMMAND)
-        execute_process(
-            COMMAND ${GIT_COMMAND} submodule sync
-            COMMAND ${GIT_COMMAND} submodule update --init --recursive
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+        if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
+            execute_process(COMMAND sh clone.sh)
+        else()
+            execute_process(
+                COMMAND ${GIT_COMMAND} submodule sync
+                COMMAND ${GIT_COMMAND} submodule update --init --recursive
+                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+        endif()
     else(GIT_COMMAND)
         MESSAGE(FATAL_ERROR "Could not locate the git command, Please manually run 'git submodule update --init --recursive'")
     endif(GIT_COMMAND)
@@ -19,6 +23,10 @@ if(GIT_COMMAND)
         COMMAND ${GIT_COMMAND} submodule sync
         COMMAND ${GIT_COMMAND} submodule update --init --recursive
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+        execute_process(
+            COMMAND ${GIT_COMMAND} submodule status
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            OUTPUT_FILE external/modules)
 endif(GIT_COMMAND)
 
 add_subdirectory(libShadowDive)
