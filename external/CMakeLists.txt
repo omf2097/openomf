@@ -5,8 +5,9 @@ set(BUILD_ALLEGRO4 OFF CACHE BOOL "Libdumb allegro4 support")
 
 if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libShadowDive/src" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dumb/dumb")
     if(GIT_COMMAND)
-        if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
-            execute_process(COMMAND sh clone.sh)
+        if( NOT EXISTS "${PROJECT_SOURCE_DIR}/.git")
+            execute_process(COMMAND sh "${CMAKE_CURRENT_SOURCE_DIR}/clone.sh"
+                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external)
         else()
             execute_process(
                 COMMAND ${GIT_COMMAND} submodule sync
@@ -18,7 +19,7 @@ if( NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libShadowDive/src" OR NOT EXISTS "${
     endif(GIT_COMMAND)
 endif()
 
-if(GIT_COMMAND)
+if(GIT_COMMAND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     add_custom_target(update-deps
         COMMAND ${GIT_COMMAND} submodule sync
         COMMAND ${GIT_COMMAND} submodule update --init --recursive
@@ -27,7 +28,7 @@ if(GIT_COMMAND)
             COMMAND ${GIT_COMMAND} submodule status
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             OUTPUT_FILE external/modules)
-endif(GIT_COMMAND)
+endif()
 
 add_subdirectory(libShadowDive)
 add_subdirectory(dumb)

@@ -5,7 +5,8 @@ for MOD in $MODULES; do
 		URL=`grep -A 1 $MOD ../.gitmodules | tail -1 | awk -e '{print $3}'`
 		SHA=`grep $MOD modules | awk -e '{print $1}'`
 		DIR=`basename $MOD`
-		if [ ! -d $DIR ]; then
+		echo "cloning $DIR $SHA $URL"
+		if [ ! -d $DIR/.git ]; then
 				git clone $URL
 		fi
 		cd $DIR
