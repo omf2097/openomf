@@ -50,6 +50,10 @@ find_package(enet)
 find_package(confuse)
 find_package(argtable2)
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+
 # Check functions and generate platform configuration file
 CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STD_STRDUP)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
@@ -298,6 +302,7 @@ set(CORELIBS
     ${Intl_LIBRARIES}
     ${ENET_LIBRARY}
     ${ARGTABLE2_LIBRARY}
+    Threads::Threads
 )
 
 # Shadowdive
