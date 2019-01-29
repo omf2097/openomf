@@ -112,6 +112,8 @@ void player_free(object *obj) {
 }
 
 void player_reload_with_str(object *obj, const char* custom_str) {
+    DEBUG("Set string = %s", custom_str);
+
     // Free and reload parser
     sd_script_free(&obj->animation_state.parser);
     sd_script_create(&obj->animation_state.parser);
@@ -198,6 +200,33 @@ void player_set_delay(object *obj, int delay) {
     }
 }
 
+void player_describe_frame(const sd_script_frame *frame) {
+    DEBUG("Frame %c%d", 65 + frame->sprite, frame->tick_len);
+    for(int i = 0; i < frame->tag_count; i++) {
+        sd_script_tag *tag = &frame->tags[i];
+        if(tag->has_param) {
+            DEBUG("    %3s%5d   %s", tag->key, tag->value, tag->desc);
+        } else {
+            DEBUG("    %3s        %s", tag->key, tag->desc);
+        }
+    }
+}
+
+void player_describe_object(object *obj) {
+    DEBUG("Object:");
+    DEBUG("  - Start: %d, %d", obj->start.x, obj->start.y);
+    DEBUG("  - Position: %d, %d", obj->pos.x, obj->pos.y);
+    DEBUG("  - Velocity: %d, %d", obj->vel.x, obj->vel.y);
+    if(obj->cur_sprite) {
+        DEBUG("  - Pos: %d, %d", obj->cur_sprite->pos.x, obj->cur_sprite->pos.y);
+        DEBUG("  - Size: %d, %d", obj->cur_sprite->data->w, obj->cur_sprite->data->h);
+        player_sprite_state *rstate = &obj->sprite_state;
+        DEBUG("CURRENT = %d - %d + %d - %d",
+            obj->pos.y, obj->cur_sprite->pos.y, rstate->o_correction.y, obj->cur_sprite->data->h
+        );
+    }
+}
+
 void player_run(object *obj) {
     // Some vars for easier life
     player_animation_state *state = &obj->animation_state;
@@ -244,6 +273,10 @@ void player_run(object *obj) {
     // Check if frame changed from the previous tick
     state->entered_frame = sd_script_frame_changed(&state->parser, state->previous_tick, state->current_tick);
     if(state->entered_frame) {
+#ifdef DEBUGMODE
+        //player_describe_frame(frame);
+        //player_describe_object(obj);
+#endif
         player_clear_frame(obj);
 
         // Print out MP flags here (just once for this frame)
