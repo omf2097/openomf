@@ -341,11 +341,25 @@ void object_render(object *obj) {
 
     // Position
     int x;
-    int y = obj->pos.y + obj->cur_sprite->pos.y + rstate->o_correction.y;
+    int y;
+
+    // Set Y coord, take into account sprite flipping
+    if(rstate->flipmode & FLIP_VERTICAL) {
+        y = obj->pos.y + rstate->o_correction.y - object_get_size(obj).y;
+
+        // Jumping is special case, we just fix damage done by har_fix_sprite_coords
+        if(obj->cur_animation->id == ANIM_JUMPING) {
+            y -= 50;
+        } else {
+            y -= obj->cur_sprite->pos.y;
+        }
+    } else {
+        y = obj->pos.y + obj->cur_sprite->pos.y + rstate->o_correction.y;
+    }
 
     // Set X coord, take into account the HAR facing.
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = obj->pos.x - obj->cur_sprite->pos.x  + rstate->o_correction.x - object_get_size(obj).x;
+        x = obj->pos.x - obj->cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
     } else {
         x = obj->pos.x + obj->cur_sprite->pos.x + rstate->o_correction.x;
     }
