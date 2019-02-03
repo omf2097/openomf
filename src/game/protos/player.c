@@ -112,8 +112,6 @@ void player_free(object *obj) {
 }
 
 void player_reload_with_str(object *obj, const char* custom_str) {
-    DEBUG("Set string = %s", custom_str);
-
     // Free and reload parser
     sd_script_free(&obj->animation_state.parser);
     sd_script_create(&obj->animation_state.parser);
