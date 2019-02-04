@@ -72,6 +72,7 @@ void net_controller_free(controller *ctrl) {
                     break;
                 case ENET_EVENT_TYPE_DISCONNECT:
                     DEBUG("got disconnect notice");
+                    event.peer->data = NULL;
                     // peer has acknowledged the disconnect
                     goto done;
                     break;
@@ -158,6 +159,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
             case ENET_EVENT_TYPE_DISCONNECT:
                 DEBUG("peer disconnected!");
                 data->disconnected = 1;
+                event.peer->data = NULL;
                 controller_close(ctrl, ev);
                 return 1; // bail the fuck out
                 break;
@@ -180,6 +182,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
         serial_write_int8(&ser, data->id);
         serial_write_int32(&ser, ticks);
         packet = enet_packet_create(ser.data, ser.len, ENET_PACKET_FLAG_UNSEQUENCED);
+        serial_free(&ser);
         if (peer) {
             enet_peer_send(peer, 0, packet);
             enet_host_flush (host);
