@@ -21,6 +21,7 @@ OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
 OPTION(USE_SUBMODULES "Add libsd and libdumb as submodules" ON)
 OPTION(USE_RELEASE_SUBMODULES "Build the submodules in release mode. Enable this option if debug build segfaults on mainmenu." OFF)
 #OPTION(SERVER_ONLY "Do not build the game binary" OFF)
+OPTION(USE_ASAN "Enable AddressSanitizer" OFF)
 
 # These flags are used for all builds
 set(CMAKE_C_FLAGS "-Wall")
@@ -368,6 +369,14 @@ include_directories(${COREINCS})
 # Build the game binary
 IF(NOT SERVER_ONLY)
     add_executable(openomf ${OPENOMF_SRC} src/main.c)
+
+    # Enable AddressSanitizer if requested
+    IF(USE_ASAN)
+        set(CORELIBS asan ${CORELIBS})
+        target_compile_options(openomf "-fsanitize=address")
+        message("DEV: AddressSanitizer enabled")
+    ENDIF()
+
     # Don't show console on mingw in release builds
     IF(MINGW)
         IF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
