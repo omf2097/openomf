@@ -54,13 +54,14 @@ static void xysizer_layout(component *c, int x, int y, int w, int h) {
 static int xysizer_event(component *c, SDL_Event *event) {
     sizer *s = component_get_obj(c);
 
-    // Just pass events to all children
-    int handled = 0;
+    // Just pass events to all children, stop if it gets handled.
     iterator it;
     component **tmp;
     vector_iter_begin(&s->objs, &it);
     while((tmp = iter_next(&it)) != NULL) {
-        handled |= component_event(*tmp, event);
+        if(component_event(*tmp, event) == 0) {
+            return 0;
+        }
     }
 
     return 1; // Wasn't handled here (event though it might have been)
@@ -74,7 +75,9 @@ static int xysizer_action(component *c, int action) {
     component **tmp;
     vector_iter_begin(&s->objs, &it);
     while((tmp = iter_next(&it)) != NULL) {
-        component_action(*tmp, action);
+        if(component_action(*tmp, action) == 0) {
+            return 0;
+        }
     }
 
     return 1; // Wasn't handled here (event though it might have been)

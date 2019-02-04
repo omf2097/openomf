@@ -13,6 +13,7 @@
 
 typedef struct {
     time_t connect_start;
+    int controllers_created;
     ENetHost *host;
     component *addr_input;
     component *connect_button;
@@ -22,10 +23,11 @@ typedef struct {
 
 void menu_connect_free(component *c) {
     connect_menu_data *local = menu_get_userdata(c);
-    if(local->host) {
+    if(local->host && !local->controllers_created) {
         enet_host_destroy(local->host);
-        local->host = NULL;
     }
+    local->controllers_created = 0;
+    local->host = NULL;
     free(local);
 }
 
@@ -67,14 +69,23 @@ void menu_connect_start(component *c, void *userdata) {
 
 void menu_connect_cancel(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);
+    
+    connect_menu_data *local = menu_get_userdata(c->parent);
+    if(local->connect_start) {
+        if(difftime(time(NULL), local->connect_start) < 0.1) {
+            return;
+        }
+    }
+
+    // Finish menu
     m->finished = 1;
 
     // Clean up host
-    connect_menu_data *local = menu_get_userdata(c->parent);
-    if(local->host) {
+    if(local->host && !local->controllers_created) {
         enet_host_destroy(local->host);
-        local->host = NULL;
     }
+    local->controllers_created = 0;
+    local->host = NULL;
 }
 
 void menu_connect_tick(component *c) {
@@ -82,8 +93,12 @@ void menu_connect_tick(component *c) {
     game_state *gs = local->s->gs;
     if(local->host) {
         ENetEvent event;
-        if(enet_host_service(local->host, &event, 0) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
-            ENetPacket * packet = enet_packet_create("0", 2, ENET_PACKET_FLAG_RELIABLE);
+        while(!local->controllers_created && enet_host_service(local->host, &event, 0) > 0) {
+            if(event.type != ENET_EVENT_TYPE_CONNECT) {
+                continue;
+            }
+
+            ENetPacket *packet = enet_packet_create("0", 2, ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(event.peer, 0, packet);
             enet_host_flush(local->host);
 
@@ -100,11 +115,11 @@ void menu_connect_tick(component *c) {
             p1->pilot_id = 0;
             p2->har_id = HAR_JAGUAR;
             p2->pilot_id = 0;
-
-            player1_ctrl = malloc(sizeof(controller));
+            
+            player1_ctrl = calloc(1, sizeof(controller));
             controller_init(player1_ctrl);
             player1_ctrl->har = p1->har;
-            player2_ctrl = malloc(sizeof(controller));
+            player2_ctrl = calloc(1, sizeof(controller));
             controller_init(player2_ctrl);
             player2_ctrl->har = p2->har;
 
@@ -133,17 +148,22 @@ void menu_connect_tick(component *c) {
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)), AI_DIFFICULTY_CHAMPION);
 
-        } else {
-            if(difftime(time(NULL), local->connect_start) > 5.0) {
-                DEBUG("connection timed out");
-                menu_connect_cancel(local->cancel_button, local->s);
-            }
+            local->controllers_created = 1;
+            break;
         }
+
+        if(difftime(time(NULL), local->connect_start) > 5.0) {
+            DEBUG("connection timed out");
+            menu_connect_cancel(local->cancel_button, local->s);
+        }
+
         game_player *p1 = game_state_get_player(gs, 0);
         controller *c1 = game_player_get_ctrl(p1);
         if (c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1) == 1) {
             DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1), c1->rtt);
             local->host = NULL;
+            local->controllers_created = 0;
+            local->connect_start = 0;
             gs->tick += net_controller_tick_offset(c1);
             gs->int_tick = gs->tick;
             game_state_set_next(gs, SCENE_MELEE);
@@ -167,6 +187,8 @@ component* menu_connect_create(scene *s) {
     menu_attach(menu, label_create(&tconf, "CONNECT TO SERVER"));
     menu_attach(menu, filler_create());
 
+    local->controllers_created = 0;
+    local->connect_start = 0;
     local->addr_input = textinput_create(&tconf, "Host/IP", settings_get()->net.net_connect_ip);
     local->connect_button = textbutton_create(&tconf, "CONNECT", COM_ENABLED, menu_connect_start, s);
     local->cancel_button = textbutton_create(&tconf, "CANCEL", COM_ENABLED, menu_connect_cancel, s);

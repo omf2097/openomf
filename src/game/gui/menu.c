@@ -138,7 +138,8 @@ static int menu_action(component *mc, int action) {
     }
 
     // Handle down/up selection movement
-    if((c = sizer_get(mc, m->selected)) != NULL) {
+    c = sizer_get(mc, m->selected);
+    if(c != NULL) {
         if(action == ACT_DOWN || action == ACT_UP) {
             component_select(c, 0);
             do {
@@ -171,7 +172,7 @@ static int menu_action(component *mc, int action) {
         return component_action(c, action);
     }
 
-    // Tel lthe caller that the event was not handled here.
+    // Tell the caller that the event was not handled here.
     return 1;
 }
 

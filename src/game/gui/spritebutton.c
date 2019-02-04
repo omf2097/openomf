@@ -76,6 +76,9 @@ component* spritebutton_create(
         void *userdata) 
 {
     component *c = widget_create();
+    c->supports_disable = 1;
+    c->supports_focus = 1;
+    c->supports_select = 1;    
     component_disable(c, disabled);
 
     spritebutton *sb = malloc(sizeof(spritebutton));
