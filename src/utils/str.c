@@ -1,4 +1,5 @@
 #include "utils/str.h"
+#include "utils/log.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -45,10 +46,16 @@ void str_printf(str *dst, const char *format, ...) {
     va_list args;
     va_start(args, format);
     size = vsnprintf(NULL, 0, format, args);
-    dst->data = realloc(dst->data, dst->len + size + 1);
-    vsnprintf(dst->data + dst->len, size + 1, format, args);
-    dst->len += size;
     va_end(args);
+    if(size < 0) {
+        PERROR("Call to vsnprintf returned -1");
+        return;
+    }
+    dst->data = realloc(dst->data, dst->len + size + 1);
+    va_start(args, format);
+    vsnprintf(dst->data + dst->len, size + 1, format, args);
+    va_end(args);
+    dst->len += size;
     dst->data[dst->len] = 0;
 }
 
