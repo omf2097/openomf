@@ -43,18 +43,28 @@ void str_remove_at(str *src, size_t pos) {
 
 void str_printf(str *dst, const char *format, ...) {
     size_t size;
-    va_list args;
-    va_start(args, format);
-    size = vsnprintf(NULL, 0, format, args);
-    va_end(args);
+    va_list args1;
+    va_list args2;
+
+    // Find size for the printf output. Make sure to copy the variadic
+    // args for the next vsnprintf call.
+    va_start(args1, format);
+    va_copy(args2, args1);
+    size = vsnprintf(NULL, 0, format, args1);
+    va_end(args1);
+
+    // vsnprintf may return -1 for errors, catch that here.
     if(size < 0) {
         PERROR("Call to vsnprintf returned -1");
         return;
     }
+
+    // Make sure there is enough room for our vsnprintf call plus ending NULL,
+    // then render the output to our new buffer.
     dst->data = realloc(dst->data, dst->len + size + 1);
-    va_start(args, format);
-    vsnprintf(dst->data + dst->len, size + 1, format, args);
-    va_end(args);
+    vsnprintf(dst->data + dst->len, size + 1, format, args2);
+    va_end(args2);
+
     dst->len += size;
     dst->data[dst->len] = 0;
 }
