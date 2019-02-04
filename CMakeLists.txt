@@ -373,7 +373,7 @@ IF(NOT SERVER_ONLY)
     # Enable AddressSanitizer if requested
     IF(USE_ASAN)
         set(CORELIBS asan ${CORELIBS})
-        target_compile_options(openomf "-fsanitize=address")
+        target_compile_options(openomf PRIVATE "-fsanitize=address")
         message("DEV: AddressSanitizer enabled")
     ENDIF()
 
