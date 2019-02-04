@@ -32,7 +32,7 @@ void serial_create(serial *s) {
     s->len = SERIAL_BUF_RESIZE_INC;
     s->wpos = 0;
     s->rpos = 0;
-    s->data = malloc(s->len);
+    s->data = calloc(s->len, 1);
 }
 
 void serial_create_from(serial *s, const char *buf, size_t len) {

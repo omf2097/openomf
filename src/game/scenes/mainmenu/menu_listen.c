@@ -19,6 +19,7 @@ void menu_listen_free(component *c) {
     listen_menu_data *local = menu_get_userdata(c);
     if(local->host) {
         enet_host_destroy(local->host);
+        local->host = NULL;
     }
     free(local);
 }

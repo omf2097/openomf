@@ -44,6 +44,7 @@ void game_player_set_ctrl(game_player *gp, controller *ctrl) {
             ai_controller_free(gp->ctrl);
         }
         free(gp->ctrl);
+        gp->ctrl = NULL;
     }
     gp->ctrl = ctrl;
 }
