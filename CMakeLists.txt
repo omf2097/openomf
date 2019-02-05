@@ -13,13 +13,11 @@ SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 # Options
 OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
-OPTION(USE_DUMB "Use libdumb for module playback" ON)
-OPTION(USE_XMP "Use libxmp for module playback" OFF)
+OPTION(USE_DUMB "Use libdumb for module playback" OFF)
+OPTION(USE_XMP "Use libxmp for module playback" ON)
 OPTION(USE_PNG "Add support for PNG screenshots" ON)
 OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
 OPTION(USE_SUBMODULES "Add libsd and libdumb as submodules" ON)
-OPTION(USE_RELEASE_SUBMODULES "Build the submodules in release mode. Enable this option if debug build segfaults on mainmenu." OFF)
-#OPTION(SERVER_ONLY "Do not build the game binary" OFF)
 OPTION(USE_ASAN "Enable AddressSanitizer" OFF)
 
 # These flags are used for all builds
@@ -56,35 +54,14 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT
 
 # Only search for submodules if we want them
 IF(USE_SUBMODULES)
-    # XXX workaround for Mingw 32 bit 4.6.X - 4.8.X compilers
-    # In debug build, the game segfaults inside libdumb's SSE resampling code while loading the mainmenu.
-    # Using release build of libdumb works around that problem.
-    # If anybody could track down why that segfault occurs I would appreciate it
-    if(USE_RELEASE_SUBMODULES)
-        set(XXX_OLD_BUILD_TYPE ${CMAKE_BUILD_TYPE})
-        set(CMAKE_BUILD_TYPE "Release")
-    endif()
     add_subdirectory(external)
-    if(USE_RELEASE_SUBMODULES)
-        set_target_properties(dumb PROPERTIES DEBUG_POSTFIX "")
-        set_target_properties(shadowdive PROPERTIES DEBUG_POSTFIX "")
-        set(CMAKE_BUILD_TYPE ${XXX_OLD_BUILD_TYPE})
-    endif()
-
-    MESSAGE(STATUS "Using submodule dumb: ${DUMB_INCLUDE_DIR}")
     MESSAGE(STATUS "Using submodule shadowdive: ${SHADOWDIVE_INCLUDE_DIR}")
 ELSE()
     find_package(shadowdive)
 ENDIF()
 
-# If submodules are in use, or if USE_DUMB flag is on, turn on libdumb
-IF(USE_SUBMODULES)
-    MESSAGE(STATUS "USE_SUBMODULES=1 flag automatically forces USE_DUMB=1.")
-    add_definitions(-DUSE_DUMB)
-    if(MINGW)
-        add_definitions(-D_FILE_OFFSET_BITS=64)
-    endif()
-ELSEIF(USE_DUMB)
+# If USE_DUMB flag is on, turn on libdumb
+IF(USE_DUMB)
     find_package(dumb)
     add_definitions(-DUSE_DUMB)
     if(MINGW)
@@ -301,10 +278,7 @@ ELSE()
 ENDIF()
 
 # Handle module playback libraries
-IF(USE_SUBMODULES)
-    set(CORELIBS ${CORELIBS} dumb)
-    set(COREINCS ${COREINCS} ${DUMB_INCLUDE_DIR})
-ELSEIF(USE_DUMB)
+IF(USE_DUMB)
     set(CORELIBS ${CORELIBS} ${DUMB_LIBRARY})
     set(COREINCS ${COREINCS} ${DUMB_INCLUDE_DIR})
 ENDIF()
@@ -347,12 +321,6 @@ IF(UNIX)
 ENDIF()
 
 include_directories(${COREINCS})
-
-# Build the server binary
-# XXX uncomment this later when we start working on the dedicated server
-#add_executable(openomf_server ${OPENOMF_SRC} src/main.c)
-#set_target_properties(openomf_server PROPERTIES COMPILE_DEFINITIONS "STANDALONE_SERVER=1")
-#target_link_libraries(openomf_server ${CORELIBS})
 
 # Build the game binary
 IF(NOT SERVER_ONLY)
