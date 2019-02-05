@@ -14,7 +14,6 @@ SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_DUMB "Use libdumb for module playback" ON)
-#OPTION(USE_MODPLUG "Use libmodplug for module playback" OFF)
 OPTION(USE_XMP "Use libxmp for module playback" OFF)
 OPTION(USE_PNG "Add support for PNG screenshots" ON)
 OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
@@ -91,12 +90,6 @@ ELSEIF(USE_DUMB)
     if(MINGW)
         add_definitions(-D_FILE_OFFSET_BITS=64)
     endif()
-ENDIF()
-
-# If modplug has been selected, attempt to find it
-IF(USE_MODPLUG)
-    find_package(modplug)
-    add_definitions(-DUSE_MODPLUG)
 ENDIF()
 
 # If XMP has been selected, attempt to find it
@@ -179,7 +172,6 @@ set(OPENOMF_SRC
     src/audio/sinks/openal_sink.c
     src/audio/sinks/openal_stream.c
     src/audio/sources/dumb_source.c
-    src/audio/sources/modplug_source.c
     src/audio/sources/xmp_source.c
     src/audio/sources/vorbis_source.c
     src/audio/sources/raw_source.c
@@ -315,10 +307,6 @@ IF(USE_SUBMODULES)
 ELSEIF(USE_DUMB)
     set(CORELIBS ${CORELIBS} ${DUMB_LIBRARY})
     set(COREINCS ${COREINCS} ${DUMB_INCLUDE_DIR})
-ENDIF()
-IF(USE_MODPLUG)
-    set(CORELIBS ${CORELIBS} ${MODPLUG_LIBRARY})
-    set(COREINCS ${COREINCS} ${MODPLUG_INCLUDE_DIR})
 ENDIF()
 IF(USE_XMP)
     set(CORELIBS ${CORELIBS} ${XMP_LIBRARY})

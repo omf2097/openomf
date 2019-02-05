@@ -10,7 +10,6 @@
 #include "game/utils/settings.h"
 
 #include "audio/sources/dumb_source.h"
-#include "audio/sources/modplug_source.h"
 #include "audio/sources/xmp_source.h"
 #include "audio/sources/vorbis_source.h"
 
@@ -28,24 +27,26 @@ struct music_override_t {
 
 #define MUSIC_STREAM_ID 1000
 
+#define SOURCE_NONE 0
+#define SOURCE_DUMB 1
+#define SOURCE_XMP 2
+
 static unsigned int _music_resource_id = 0;
 static float _music_volume = VOLUME_DEFAULT;
 
 static module_source module_sources[] = {
+    {SOURCE_NONE, "none"},
 #ifdef USE_DUMB
-    {0, "dumb"},
-#endif
-#ifdef USE_MODPLUG
-    {1, "modplug"},
+    {SOURCE_DUMB, "dumb"},
 #endif
 #ifdef USE_XMP
-    {2, "xmp"},
+    {SOURCE_XMP, "xmp"},
 #endif
     {0,0} // Guard
 };
 
 audio_source_freq default_freqs[] = {
-    {44100, 1, "44100Hz"},
+    {0, 1, "none"},
     {0,0}
 };
 
@@ -61,13 +62,10 @@ module_source* music_get_module_sources() {
 audio_source_freq* music_module_get_freqs(int id) {
     switch(id) {
 #ifdef USE_DUMB
-        case 0: return dumb_get_freqs();
-#endif
-#ifdef USE_MODPLUG
-        case 1: return modplug_get_freqs();
+        case SOURCE_DUMB: return dumb_get_freqs();
 #endif
 #ifdef USE_XMP
-        case 2: return xmp_get_freqs();
+        case SOURCE_XMP: return xmp_get_freqs();
 #endif
     }
     return default_freqs;
@@ -76,13 +74,10 @@ audio_source_freq* music_module_get_freqs(int id) {
 audio_source_resampler* music_module_get_resamplers(int id) {
     switch(id) {
 #ifdef USE_DUMB
-        case 0: return dumb_get_resamplers();
-#endif
-#ifdef USE_MODPLUG
-        case 1: return modplug_get_resamplers();
+        case SOURCE_DUMB: return dumb_get_resamplers();
 #endif
 #ifdef USE_XMP
-        case 2: return xmp_get_resamplers();
+        case SOURCE_XMP: return xmp_get_resamplers();
 #endif
     }
     return default_resamplers;
@@ -147,17 +142,12 @@ int music_play(unsigned int id) {
     if(strcasecmp(ext, "psm") == 0) {
         switch(modlib) {
 #ifdef USE_DUMB
-            case 0:
+            case SOURCE_DUMB:
                 failed = dumb_source_init(music_src, filename, channels, freq, resampler);
                 break;
 #endif
-#ifdef USE_MODPLUG
-            case 1:
-                failed = modplug_source_init(music_src, filename, channels, freq, resampler);
-                break;
-#endif
 #ifdef USE_XMP
-            case 2:
+            case SOURCE_XMP:
                 failed = xmp_source_init(music_src, filename, channels, freq, resampler);
                 break;
 #endif

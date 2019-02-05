@@ -62,7 +62,7 @@ Note that libxmp doesn't play all ingame music tracks quite right, and libdumb i
 
 [libShadowDive](https://github.com/omf2097/libShadowDive) is our own library for handling OMF:2097 file formats. It is probably not in any repositories by default, and so you may need to compile it yourself. It is also possible to pull this in as a submodule; please see USE_SUBMODULES cmake flag for that.
 
-[libdumb](https://bitbucket.org/kode54/dumb) is required for PSM module playback. Modplug may also be used, but the current upstream version isn't quite yet up to correct PSM playback. It is also possible to pull libdumb in as a submodule; please see USE_SUBMODULES cmake flag for that.
+[libdumb](https://bitbucket.org/kode54/dumb) is required for PSM module playback. It is also possible to pull libdumb in as a submodule; please see USE_SUBMODULES cmake flag for that.
 
 #### Debian
 On debian, it is possible to pull some libraries using apt-get.
