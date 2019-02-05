@@ -22,7 +22,7 @@ void controller_init(controller *ctrl) {
 }
 
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type)) {
-    hook_function *h = malloc(sizeof(hook_function));
+    hook_function *h = calloc(1, sizeof(hook_function));
     h->fp = fp;
     h->source = source;
     list_append(&ctrl->hooks, &h, sizeof(hook_function*));
@@ -39,15 +39,16 @@ void controller_clear_hooks(controller *ctrl) {
 }
 
 void controller_free_chain(ctrl_event *ev) {
-    if(ev != NULL) {
-        if(ev->next != NULL) {
-            controller_free_chain(ev->next);
+    ctrl_event *now = ev;
+    ctrl_event *tmp;
+    while(now != NULL) {
+        if(now->type == EVENT_TYPE_SYNC) {
+            serial_free(now->event_data.ser);
+            free(now->event_data.ser);
         }
-        if (ev->type == EVENT_TYPE_SYNC) {
-            serial_free(ev->event_data.ser);
-            free(ev->event_data.ser);
-        }
-        free(ev);
+        tmp = now->next;
+        free(now);
+        now = tmp;
     }
 }
 
@@ -56,32 +57,30 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
     iterator it;
     hook_function **p = 0;
     ctrl_event *i;
+    ctrl_event *new;
 
     list_iter_begin(&ctrl->hooks, &it);
     while((p = iter_next(&it)) != NULL) {
         ((*p)->fp)((*p)->source, action);
     }
+
+    new = calloc(1, sizeof(ctrl_event));
+    new->type = EVENT_TYPE_ACTION;
+    new->event_data.action = action;
+
     if (*ev == NULL) {
-        *ev = malloc(sizeof(ctrl_event));
-        (*ev)->type = EVENT_TYPE_ACTION;
-        (*ev)->event_data.action = action;
-        (*ev)->next = NULL;
+        *ev = new;
     } else {
         i = *ev;
         while (i->next) { i = i->next; }
-        i->next = malloc(sizeof(ctrl_event));
-        i->next->type = EVENT_TYPE_ACTION;
-        i->next->event_data.action = action;
-        i->next->next = NULL;
+        i->next = new;
     }
 }
 
 void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev) {
-    if (*ev != NULL) {
-        // a sync event obsoletes all previous events
-        controller_free_chain(*ev);
-    }
-    *ev = malloc(sizeof(ctrl_event));
+    // a sync event obsoletes all previous events
+    controller_free_chain(*ev);
+    *ev = calloc(1, sizeof(ctrl_event));
     (*ev)->type = EVENT_TYPE_SYNC;
     (*ev)->event_data.ser = serial_malloc_copy(ser);
     (*ev)->next = NULL;
@@ -89,11 +88,9 @@ void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev) {
 }
 
 void controller_close(controller *ctrl, ctrl_event **ev) {
-    if (*ev != NULL) {
-        // a close event obsoletes all previous events
-        controller_free_chain(*ev);
-    }
-    *ev = malloc(sizeof(ctrl_event));
+    // a close event obsoletes all previous events
+    controller_free_chain(*ev);
+    *ev = calloc(1, sizeof(ctrl_event));
     (*ev)->type = EVENT_TYPE_CLOSE;
     (*ev)->next = NULL;
 }

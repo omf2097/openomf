@@ -120,8 +120,7 @@ void component_set_find_cb(component *c, component_find_cb cb) {
 }
 
 component* component_create() {
-    component *c = malloc(sizeof(component));
-    memset(c, 0, sizeof(component));
+    component *c = calloc(1, sizeof(component));
     c->x_hint = -1;
     c->y_hint = -1;
     c->w_hint = -1;

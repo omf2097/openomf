@@ -65,6 +65,7 @@ static int textinput_event(component *c, SDL_Event *e) {
     if(e->type == SDL_TEXTINPUT) {
         textinput *tb = widget_get_obj(c);
         strncat(tb->buf, e->text.text, tb->max_chars - strlen(tb->buf));
+        return 0;
     } else if (e->type == SDL_KEYDOWN) {
         textinput *tb = widget_get_obj(c);
         size_t len = strlen(tb->buf);
@@ -82,6 +83,7 @@ static int textinput_event(component *c, SDL_Event *e) {
                 strncat(tb->buf, SDL_GetClipboardText(), tb->max_chars - strlen(tb->buf));
             }
         }
+        return 0;
     }
     return 1;
 }
@@ -128,6 +130,9 @@ void textinput_enable_background(component *c, int enabled) {
 
 component* textinput_create(const text_settings *tconf, const char *text, const char *initialvalue) {
     component *c = widget_create();
+    c->supports_disable = 1;
+    c->supports_focus = 1;
+    c->supports_select = 1;
 
     textinput *tb = malloc(sizeof(textinput));
     memset(tb, 0, sizeof(textinput));

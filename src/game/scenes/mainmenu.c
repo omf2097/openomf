@@ -100,15 +100,14 @@ int mainmenu_create(scene *scene) {
     // Cleanups and resets
     for(int i = 0; i < 2; i++) {
         // destroy any leftover controllers
-        controller *ctrl;
-        if((ctrl = game_player_get_ctrl(game_state_get_player(scene->gs, i)))) {
-            game_player_set_ctrl(game_state_get_player(scene->gs, i), NULL);
-        }
+        game_player *player = game_state_get_player(scene->gs, i);
+        game_player_set_ctrl(player, NULL);
 
         // reset any single player data
-        game_state_get_player(scene->gs, i)->sp_wins = 0;
-        chr_score_reset(game_player_get_score(game_state_get_player(scene->gs, i)), 1);
-        chr_score_reset_wins(game_player_get_score(game_state_get_player(scene->gs, i)));
+        player->sp_wins = 0;
+        chr_score *score = game_player_get_score(player);
+        chr_score_reset(score, 1);
+        chr_score_reset_wins(score);
     }
     reconfigure_controller(scene->gs);
 

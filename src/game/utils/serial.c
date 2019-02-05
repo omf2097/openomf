@@ -109,9 +109,6 @@ void serial_read(serial *s, char *buf, size_t len) {
     }
     memcpy(buf, s->data + s->rpos, len);
     s->rpos += len;
-    if(s->rpos > s->wpos) {
-        s->rpos = s->wpos;
-    }
 }
 
 int8_t serial_read_int8(serial *s) {

@@ -11,16 +11,18 @@
 
 typedef struct {
     ENetHost *host;
+    int controllers_created;
     component *cancel_button;
     scene *s;
 } listen_menu_data;
 
 void menu_listen_free(component *c) {
     listen_menu_data *local = menu_get_userdata(c);
-    if(local->host) {
+    if(local->host && !local->controllers_created) {
         enet_host_destroy(local->host);
-        local->host = NULL;
     }
+    local->host = NULL;
+    local->controllers_created = 0;
     free(local);
 }
 
@@ -29,7 +31,11 @@ void menu_listen_tick(component *c) {
     game_state *gs = local->s->gs;
     if(local->host) {
         ENetEvent event;
-        if(enet_host_service(local->host, &event, 0) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
+        while(!local->controllers_created && enet_host_service(local->host, &event, 0) > 0) {
+            if(event.type != ENET_EVENT_TYPE_CONNECT) {
+                continue;
+            }
+
             ENetPacket * packet = enet_packet_create("0", 2,  ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(event.peer, 0, packet);
             enet_host_flush(local->host);
@@ -48,10 +54,10 @@ void menu_listen_tick(component *c) {
             p2->har_id = HAR_JAGUAR;
             p2->pilot_id = 0;
 
-            player1_ctrl = malloc(sizeof(controller));
+            player1_ctrl = calloc(1, sizeof(controller));
             controller_init(player1_ctrl);
             player1_ctrl->har = p1->har;
-            player2_ctrl = malloc(sizeof(controller));
+            player2_ctrl = calloc(1, sizeof(controller));
             controller_init(player2_ctrl);
             player2_ctrl->har = p2->har;
 
@@ -80,12 +86,15 @@ void menu_listen_tick(component *c) {
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)), AI_DIFFICULTY_CHAMPION);
 
+            local->controllers_created = 1;
+            break;
         }
         game_player *p2 = game_state_get_player(gs, 1);
         controller *c2 = game_player_get_ctrl(p2);
         if (c2->type == CTRL_TYPE_NETWORK && net_controller_ready(c2) == 1) {
             DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c2), c2->rtt);
             local->host = NULL;
+            local->controllers_created = 0;
             game_state_set_next(gs, SCENE_MELEE);
         }
     }
@@ -97,10 +106,11 @@ void menu_listen_cancel(component *c, void *userdata) {
 
     // Clean up host
     listen_menu_data *local = menu_get_userdata(c->parent);
-    if(local->host) {
+    if(local->host && !local->controllers_created) {
         enet_host_destroy(local->host);
-        local->host = NULL;
     }
+    local->controllers_created = 0;
+    local->host = NULL;
 }
 
 component* menu_listen_create(scene *s) {
@@ -114,6 +124,7 @@ component* menu_listen_create(scene *s) {
     address.port = settings_get()->net.net_listen_port;
 
     // Set up host
+    local->controllers_created = 0;
     local->host = enet_host_create(&address, 1, 2, 0, 0);
     if(local->host == NULL) {
         DEBUG("Failed to initialize ENet server");
