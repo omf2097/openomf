@@ -17,8 +17,8 @@ OPTION(USE_DUMB "Use libdumb for module playback" OFF)
 OPTION(USE_XMP "Use libxmp for module playback" ON)
 OPTION(USE_PNG "Add support for PNG screenshots" ON)
 OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
-OPTION(USE_SUBMODULES "Add libsd and libdumb as submodules" ON)
-OPTION(USE_ASAN "Enable AddressSanitizer" OFF)
+OPTION(USE_SUBMODULES "Add libsd as submodule" ON)
+OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 
 # These flags are used for all builds
 set(CMAKE_C_FLAGS "-Wall")
@@ -323,25 +323,25 @@ ENDIF()
 include_directories(${COREINCS})
 
 # Build the game binary
-IF(NOT SERVER_ONLY)
-    add_executable(openomf ${OPENOMF_SRC} src/main.c)
+add_executable(openomf ${OPENOMF_SRC} src/main.c)
 
-    # Enable AddressSanitizer if requested
-    IF(USE_ASAN)
-        set(CORELIBS asan ${CORELIBS})
-        target_compile_options(openomf PRIVATE "-fsanitize=address")
-        message("DEV: AddressSanitizer enabled")
-    ENDIF()
+# Enable AddressSanitizer if requested (these libs need to be first on the list!)
+IF(USE_SANITIZERS)
+    set(CORELIBS asan ubsan ${CORELIBS})
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address,undefined")
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address,undefined")
+    message(STATUS "DEBUG: Asan and Ubsan enabled")
+ENDIF()
 
-    # Don't show console on mingw in release builds
-    IF(MINGW)
-        IF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
-            set_target_properties(openomf PROPERTIES LINK_FLAGS "-mwindows")
-        ENDIF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
-    ENDIF(MINGW)
-    target_link_libraries(openomf ${CORELIBS})
-    set_property(TARGET openomf PROPERTY C_STANDARD 11)
-ENDIF(NOT SERVER_ONLY)
+# Don't show console on mingw in release builds
+IF(MINGW)
+    IF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+        set_target_properties(openomf PROPERTIES LINK_FLAGS "-mwindows")
+    ENDIF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+ENDIF(MINGW)
+target_link_libraries(openomf ${CORELIBS})
+set_property(TARGET openomf PROPERTY C_STANDARD 11)
+
 
 # Testing stuff
 IF(CUNIT_FOUND)
