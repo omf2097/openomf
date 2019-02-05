@@ -65,13 +65,10 @@ const field f_sound[] = {
     F_INT(settings_sound,  music_vol,         5),
     F_INT(settings_sound,  music_frequency,   44100),
 #if USE_DUMB
-    F_INT(settings_sound, music_library,      0),
+    F_INT(settings_sound, music_library,      1),
     F_INT(settings_sound, music_resampler,    2),
 #elif USE_XMP
     F_INT(settings_sound, music_library,      2),
-    F_INT(settings_sound, music_resampler,    1),
-#elif USE_MODPLUG
-    F_INT(settings_sound, music_library,      1),
     F_INT(settings_sound, music_resampler,    1),
 #endif
     F_STRING(settings_sound, music_arena0,    ""),

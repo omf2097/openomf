@@ -14,16 +14,12 @@ struct sink_info_t {
 #ifdef USE_OPENAL
     {openal_sink_init, "openal"},
 #endif // USE_OPENAL
-#ifdef USE_SDLAUDIO
-    {sdl_sink_init, "sdl"},
-#endif // USE_SDLAUDIO
-    {0, 0}
+    {NULL, NULL}
 };
 
 int audio_get_sink_count() {
     int count = 0;
-    int sink_id = 0;
-    while(sinks[sink_id++].name != 0) {
+    while(sinks[count].name != NULL) {
         count++;
     }
     return count;

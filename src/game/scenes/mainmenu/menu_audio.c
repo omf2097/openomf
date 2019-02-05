@@ -6,7 +6,6 @@
 #include "audio/music.h"
 #include "audio/sound.h"
 #include "audio/sources/dumb_source.h"
-#include "audio/sources/modplug_source.h"
 #include "audio/sources/xmp_source.h"
 
 typedef struct {
