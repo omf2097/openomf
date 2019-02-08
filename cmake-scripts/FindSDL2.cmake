@@ -1,5 +1,7 @@
 
+IF (NOT EMSCRIPTEN)
 FIND_PACKAGE(Threads)
+ENDIF ()
 
 SET(SDL2_SEARCH_PATHS
     /usr/local/

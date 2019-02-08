@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#ifdef __linux__
+#if defined(__linux__) || defined(EMSCRIPTEN)
 #include <strings.h> // strcasecmp
 #endif // __linux__
 #include "resources/pathmanager.h"

@@ -270,6 +270,14 @@ set(CORELIBS
     ${ARGTABLE2_LIBRARY}
 )
 
+IF (EMSCRIPTEN)
+
+set (CMAKE_EXE_LINKER_FLAGS
+    "--preload-file ../resources@resources -s TOTAL_MEMORY=67108864 -s ALLOW_MEMORY_GROWTH=1"
+)
+
+ENDIF()
+
 # Shadowdive
 IF(USE_SUBMODULES)
     set(CORELIBS ${CORELIBS} shadowdive)
