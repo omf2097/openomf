@@ -220,6 +220,8 @@ set_property(TARGET openomf PROPERTY C_STANDARD 11)
 
 # Testing stuff
 IF(CUNIT_FOUND)
+    enable_testing()
+
     include_directories(${CUNIT_INCLUDE_DIR} testing/ include/)
     SET(CORELIBS ${CORELIBS} ${CUNIT_LIBRARY})
 
@@ -236,13 +238,7 @@ IF(CUNIT_FOUND)
     target_link_libraries(openomf_test_main ${CORELIBS})
     set_property(TARGET openomf_test_main PROPERTY C_STANDARD 11)
 
-    # Change policy to allow "test" target name
-    cmake_policy(PUSH)
-    if(POLICY CMP0037)
-        cmake_policy(SET CMP0037 OLD)
-    endif()
-    add_custom_target(test openomf_test_main)
-    cmake_policy(POP)
+    add_test(main openomf_test_main)
 ENDIF(CUNIT_FOUND)
 
 # Packaging
