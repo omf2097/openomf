@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
-#include <shadowdive/script.h>
 
+#include "formats/error.h"
+#include "formats/script.h"
 #include "game/game_state.h"
 #include "game/game_player.h"
 #include "game/utils/settings.h"

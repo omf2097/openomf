@@ -51,10 +51,6 @@ find_package(argtable2)
 CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STD_STRDUP)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
 
-# Add libshadowdive
-add_subdirectory(external)
-MESSAGE(STATUS "Using shadowdive: ${SHADOWDIVE_INCLUDE_DIR}")
-
 # If USE_DUMB flag is on, turn on libdumb
 IF(USE_DUMB)
     find_package(dumb)
@@ -121,7 +117,6 @@ set(COREINCS
     ${CMAKE_CURRENT_BINARY_DIR}/include/
     ${SDL2_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
-    ${SHADOWDIVE_INCLUDE_DIR}
     ${Intl_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
     ${ARGTABLE2_INCLUDE_DIR}
@@ -134,9 +129,6 @@ set(CORELIBS
     ${ENET_LIBRARY}
     ${ARGTABLE2_LIBRARY}
 )
-
-# Shadowdive
-set(CORELIBS ${CORELIBS} shadowdive)
 
 # Handle module playback libraries
 IF(USE_DUMB)
@@ -216,15 +208,9 @@ IF(CUNIT_FOUND)
     include_directories(${CUNIT_INCLUDE_DIR} testing/ include/)
     SET(CORELIBS ${CORELIBS} ${CUNIT_LIBRARY})
 
-    add_executable(openomf_test_main
-        testing/test_main.c
-        testing/test_str.c
-        testing/test_hashmap.c
-        testing/test_vector.c
-        testing/test_list.c
-        testing/test_array.c
-        testing/test_text_render.c
-    )
+    file(GLOB_RECURSE TEST_SRC RELATIVE ${CMAKE_SOURCE_DIR} "testing/*.c")
+
+    add_executable(openomf_test_main ${TEST_SRC})
 
     target_link_libraries(openomf_test_main ${CORELIBS})
     set_property(TARGET openomf_test_main PROPERTY C_STANDARD 11)

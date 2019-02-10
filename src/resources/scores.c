@@ -1,5 +1,6 @@
 #include <string.h>
-#include <shadowdive/shadowdive.h>
+#include "formats/score.h"
+#include "formats/error.h"
 #include "utils/log.h"
 #include "resources/pathmanager.h"
 #include "resources/scores.h"

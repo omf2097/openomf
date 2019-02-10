@@ -1,6 +1,6 @@
-#include <shadowdive/shadowdive.h>
 #include <stdlib.h>
 #include <string.h>
+#include "formats/sprite.h"
 #include "resources/sprite.h"
 
 void sprite_create_custom(sprite *sp, vec2i pos, surface *data) {

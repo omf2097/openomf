@@ -1,8 +1,0 @@
-.idea/
-build/
-*.exe
-*.dll
-*.so
-*.sw[klmnop]
-doc/html/
-.vscode/

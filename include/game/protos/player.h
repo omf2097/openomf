@@ -2,7 +2,7 @@
 #define _PLAYER_H
 
 #include <stdint.h>
-#include <shadowdive/script.h>
+#include "formats/script.h"
 #include "utils/vec.h"
 
 typedef struct object_t object;

@@ -1,5 +1,5 @@
 #include <string.h>
-#include <shadowdive/shadowdive.h>
+#include "formats/af.h"
 #include "resources/af.h"
 
 void af_create(af *a, void *src) {

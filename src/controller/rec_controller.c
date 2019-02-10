@@ -1,4 +1,6 @@
 #include "controller/rec_controller.h"
+#include "formats/rec.h"
+#include "formats/error.h"
 #include "utils/log.h"
 
 typedef struct wtf_t {
