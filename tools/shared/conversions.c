@@ -1,12 +1,8 @@
-#include "conversions.h"
-
 #include <stdlib.h>
 
-int clamp(int value, long low, long high) {
-    if(value > high) return high;
-    if(value < low) return low;
-    return value;
-}
+#include "conversions.h"
+#include "utils/miscmath.h"
+
 
 uint8_t  conv_ubyte(const char* data) { return clamp(atoi(data), 0, 0xFF); }
 int8_t   conv_byte (const char* data) { return clamp(atoi(data), -0x80, 0x80); }
