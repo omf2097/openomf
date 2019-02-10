@@ -40,7 +40,7 @@ int avg_rtt(int data[], int n) {
 
     float sd = stddev(average, data, n);
     for (int i=0; i < n; i++) {
-        if (abs(data[i] - average) <= sd) {
+        if (fabsf(data[i] - average) <= sd) {
             result += data[i];
             j++;
         }

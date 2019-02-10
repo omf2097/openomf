@@ -25,5 +25,5 @@ int max2(int a, int b) { return (a > b) ? a : b; }
 int min2(int a, int b) { return (a > b) ? b : a; }
 
 float dist(float a, float b) {
-    return abs((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1 : -1);
+    return fabsf((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1 : -1);
 }

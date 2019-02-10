@@ -376,7 +376,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
             // do the move
             a->selected_move = selected_move;
             a->move_str_pos = str_size(&selected_move->move_string)-1;
-            a->move_stats[a->selected_move->id].last_dist = abs(o->pos.x - o_enemy->pos.x);
+            a->move_stats[a->selected_move->id].last_dist = fabsf(o->pos.x - o_enemy->pos.x);
             a->blocked = 0;
             DEBUG("AI selected move %s", str_c(&selected_move->move_string));
         }
