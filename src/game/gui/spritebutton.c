@@ -26,14 +26,16 @@ typedef struct {
 static void spritebutton_render(component *c) {
     spritebutton *sb = widget_get_obj(c);
     sizer *s = component_get_obj(c->parent);
+    int opacity = clamp(s->opacity * 255, 0, 255);
     if(c->is_disabled) {
-        video_render_sprite_tint(sb->img, c->x, c->y, color_create(128,128,128,255), 0);
+        video_render_sprite_flip_scale_opacity_tint(
+            sb->img, c->x, c->y, BLEND_ALPHA, 0, 0, 1.0, opacity, color_create(128,128,128,255));
     }
     else if(sb->active > 0) {
         video_render_sprite(sb->img, c->x, c->y, BLEND_ALPHA, 0);
     }
     if(sb->text) {
-        sb->tconf.opacity = clamp(s->opacity * 255, 0, 255);
+        sb->tconf.opacity = opacity;
         text_render(&sb->tconf, c->x, c->y, c->w, c->h, sb->text);
     }
 }
