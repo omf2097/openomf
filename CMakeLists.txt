@@ -247,10 +247,7 @@ IF(CUNIT_FOUND)
 
     file(GLOB_RECURSE TEST_SRC RELATIVE ${CMAKE_SOURCE_DIR} "testing/*.c")
 
-    add_executable(openomf_test_main
-        ${TEST_SRC}
-        ${OPENOMF_SRC}
-    )
+    add_executable(openomf_test_main ${TEST_SRC})
 
     target_link_libraries(openomf_test_main ${CORELIBS})
     set_property(TARGET openomf_test_main PROPERTY C_STANDARD 11)
