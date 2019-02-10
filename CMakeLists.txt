@@ -83,14 +83,14 @@ ELSE()
     MESSAGE(STATUS "Note! No audio sink selected; Music/sounds will not play.")
 ENDIF()
 
-# When building with MingW, do not look for Libintl
+# When building with MingW, do not look for Intl
 # Also, use static libgcc when on mingw
 IF(MINGW)
     set(LIBINTL_INCLUDE_DIR "")
     set(LIBINTL_LIBRARIES "")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
 ELSE()
-    find_package(Libintl)
+    find_package(Intl)
 ENDIF()
 
 # If we want to build support for vorbis streaming, find these too
@@ -127,7 +127,7 @@ set(COREINCS
     ${SDL2_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
     ${SHADOWDIVE_INCLUDE_DIR}
-    ${LIBINTL_INCLUDE_DIR}
+    ${Intl_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
     ${ARGTABLE2_INCLUDE_DIR}
 )
@@ -135,7 +135,7 @@ set(COREINCS
 set(CORELIBS
     ${SDL2_LIBRARY}
     ${CONFUSE_LIBRARY}
-    ${LIBINTL_LIBRARIES}
+    ${Intl_LIBRARIES}
     ${ENET_LIBRARY}
     ${ARGTABLE2_LIBRARY}
 )
