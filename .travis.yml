@@ -21,8 +21,8 @@ addons:
     organization: "openomf"
   apt:
     sources:
-      - ppa:ubuntu-toolchain-r/test
-      - ppa:zoogie/sdl2-snapshots
+      - sourceline: 'ppa:ubuntu-toolchain-r/test'
+      - sourceline: 'ppa:zoogie/sdl2-snapshots'
     packages:
       - gcc-8
       - cmake
