@@ -6,41 +6,104 @@ env:
   global:
    - secure: "qvRpkAmV7PRQHoUfjhykb5lkvMyMFAlNYh/1140ej/iHjDsO9bFpX2qxbfgAe8jaW8VBf4ly+VpjA9ByJHWol6/b+FwURa/yiFgNESxeYDUJz/dJCYyrgORH+t41bCwV8SEYZmpa3NJiDi4GkH8iojEi+dQYhWoN4uwEg81m45c="
 
-compiler:
-  - gcc
+matrix:
+  include:
+    - os: linux
+      addons:
+        sonarcloud:
+          organization: "openomf"
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-7
+            - cmake
+            - cmake-data
+            - libargtable2-dev
+            - libcunit1-dev
+            - libopenal-dev
+            - libconfuse-dev
+            - libenet-dev
+            - libsdl2-dev
+            - libxmp-dev
+            - libpng16-dev
+      cache:
+        directories:
+          - '$HOME/.sonar/cache'
+      after_script:
+        - build-wrapper-linux-x86-64 --out-dir bw-output make
+        - sonar-scanner
+      env:
+        - MATRIX_EVAL="CC=gcc-7"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-8
+            - cmake
+            - cmake-data
+            - libargtable2-dev
+            - libcunit1-dev
+            - libopenal-dev
+            - libconfuse-dev
+            - libenet-dev
+            - libsdl2-dev
+            - libxmp-dev
+            - libpng16-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-8"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-6.0
+          packages:
+            - clang-6.0
+            - cmake
+            - cmake-data
+            - libargtable2-dev
+            - libcunit1-dev
+            - libopenal-dev
+            - libconfuse-dev
+            - libenet-dev
+            - libsdl2-dev
+            - libxmp-dev
+            - libpng16-dev
+      env:
+        - MATRIX_EVAL="CC=clang-6.0"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-7
+          packages:
+            - clang-7
+            - cmake
+            - cmake-data
+            - libargtable2-dev
+            - libcunit1-dev
+            - libopenal-dev
+            - libconfuse-dev
+            - libenet-dev
+            - libsdl2-dev
+            - libxmp-dev
+            - libpng16-dev
+      env:
+        - MATRIX_EVAL="CC=clang-7"
+
+before_install:
+    - eval "${MATRIX_EVAL}"
 
 script:
   - cd $TRAVIS_BUILD_DIR
-  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/gcc-8 -DUSE_TESTS=On . 
+  - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On . 
   - make
   - make test ARGS="-V"
   - make clean
-  - build-wrapper-linux-x86-64 --out-dir bw-output make
-  - sonar-scanner
 
 notifications:
   email: false
-
-addons:
-  sonarcloud:
-    organization: "openomf"
-  apt:
-    sources:
-      - sourceline: 'ppa:ubuntu-toolchain-r/test'
-      - sourceline: 'ppa:zoogie/sdl2-snapshots'
-    packages:
-      - gcc-8
-      - cmake
-      - cmake-data
-      - libargtable2-dev
-      - libcunit1-dev
-      - libopenal-dev
-      - libconfuse-dev
-      - libenet-dev
-      - libsdl2-dev
-      - libxmp-dev
-      - libpng16-dev
-
-cache:
-  directories:
-    - '$HOME/.sonar/cache'
