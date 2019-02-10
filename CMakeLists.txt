@@ -176,9 +176,9 @@ ENDIF()
 
 include_directories(${COREINCS})
 
-# Make a static library out of the core files, we can then easily links this to our
+# Make an object library out of the core files, we can then easily links this to our
 # entrypoints. This way we only need to compile once.
-add_library(openomf_core STATIC ${OPENOMF_SRC})
+add_library(openomf_core OBJECT ${OPENOMF_SRC})
 set(CORELIBS openomf_core ${CORELIBS})
 
 # Build the game binary
