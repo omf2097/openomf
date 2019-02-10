@@ -118,138 +118,8 @@ IF(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
 ENDIF()
 
-set(OPENOMF_SRC
-    src/utils/compat.c
-    src/utils/log.c
-    src/utils/config.c
-    src/utils/list.c
-    src/utils/vector.c
-    src/utils/hashmap.c
-    src/utils/iterator.c
-    src/utils/array.c
-    src/utils/vec.c
-    src/utils/str.c
-    src/utils/random.c
-    src/utils/miscmath.c
-    src/utils/scandir.c
-    src/utils/msgbox.c
-    src/video/video.c
-    src/video/surface.c
-    src/video/image.c
-    src/video/tcache.c
-    src/video/color.c
-    src/video/video_hw.c
-    src/video/video_soft.c
-    src/audio/audio.c
-    src/audio/music.c
-    src/audio/sound.c
-    src/audio/sink.c
-    src/audio/stream.c
-    src/audio/source.c
-    src/audio/sinks/openal_sink.c
-    src/audio/sinks/openal_stream.c
-    src/audio/sources/dumb_source.c
-    src/audio/sources/xmp_source.c
-    src/audio/sources/vorbis_source.c
-    src/audio/sources/raw_source.c
-    src/resources/ids.c
-    src/resources/af.c
-    src/resources/af_loader.c
-    src/resources/af_move.c
-    src/resources/bk.c
-    src/resources/bk_info.c
-    src/resources/bk_loader.c
-    src/resources/palette.c
-    src/resources/pilots.c
-    src/resources/sprite.c
-    src/resources/animation.c
-    src/resources/sounds_loader.c
-    src/resources/pathmanager.c
-    src/resources/sgmanager.c
-    src/resources/languages.c
-    src/resources/fonts.c
-    src/resources/scores.c
-    src/plugins/plugins.c
-    src/plugins/scaler_plugin.c
-    src/game/protos/object.c
-    src/game/protos/player.c
-    src/game/protos/scene.c
-    src/game/protos/intersect.c
-    src/game/protos/object_specializer.c
-    src/game/objects/har.c
-    src/game/objects/scrap.c
-    src/game/objects/projectile.c
-    src/game/objects/hazard.c
-    src/game/scenes/intro.c
-    src/game/scenes/openomf.c
-    src/game/scenes/mainmenu.c
-    src/game/scenes/mainmenu/menu_main.c
-    src/game/scenes/mainmenu/menu_configuration.c
-    src/game/scenes/mainmenu/menu_gameplay.c
-    src/game/scenes/mainmenu/menu_audio.c
-    src/game/scenes/mainmenu/menu_video.c
-    src/game/scenes/mainmenu/menu_video_confirm.c
-    src/game/scenes/mainmenu/menu_net.c
-    src/game/scenes/mainmenu/menu_connect.c
-    src/game/scenes/mainmenu/menu_listen.c
-    src/game/scenes/mainmenu/menu_input.c
-    src/game/scenes/mainmenu/menu_keyboard.c
-    src/game/scenes/mainmenu/menu_presskey.c
-    src/game/scenes/credits.c
-    src/game/scenes/cutscene.c
-    src/game/scenes/arena.c
-    src/game/scenes/melee.c
-    src/game/scenes/vs.c
-    src/game/scenes/mechlab.c
-    src/game/scenes/mechlab/lab_menu_main.c
-    src/game/scenes/mechlab/lab_menu_customize.c
-    src/game/scenes/mechlab/lab_menu_training.c
-    src/game/scenes/mechlab/lab_menu_pilotselect.c
-    src/game/scenes/mechlab/lab_dash_main.c
-    src/game/scenes/mechlab/lab_dash_newplayer.c
-    src/game/scenes/newsroom.c
-    src/game/scenes/scoreboard.c
-    src/game/objects/har.c
-    src/game/gui/menu.c
-    src/game/gui/trn_menu.c
-    src/game/gui/menu_background.c
-    src/game/gui/text_render.c
-    src/game/gui/textbutton.c
-    src/game/gui/spritebutton.c
-    src/game/gui/spriteimage.c
-    src/game/gui/textselector.c
-    src/game/gui/textslider.c
-    src/game/gui/textinput.c
-    src/game/gui/dialog.c
-    src/game/gui/component.c
-    src/game/gui/sizer.c
-    src/game/gui/widget.c
-    src/game/gui/frame.c
-    src/game/gui/label.c
-    src/game/gui/filler.c
-    src/game/gui/progressbar.c
-    src/game/gui/gauge.c
-    src/game/gui/pilotpic.c
-    src/game/gui/xysizer.c
-    src/game/game_state.c
-    src/game/game_player.c
-    src/game/common_defines.c
-    src/game/utils/ticktimer.c
-    src/game/utils/serial.c
-    src/game/utils/settings.c
-    src/game/utils/score.c
-    src/game/utils/har_screencap.c
-    src/game/utils/formatting.c
-    src/controller/controller.c
-    src/controller/keyboard.c
-    src/controller/joystick.c
-    src/controller/net_controller.c
-    src/controller/ai_controller.c
-    src/controller/rec_controller.c
-    src/console/console.c
-    src/console/console_cmd.c
-    src/engine.c
-)
+# Find OpenOMF core sources
+file(GLOB_RECURSE OPENOMF_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/*/*.c")
 
 set(COREINCS
     include
@@ -322,8 +192,13 @@ ENDIF()
 
 include_directories(${COREINCS})
 
+# Build core sources first as an object library
+# this can then be reused in tests and main executable to speed things up
+add_library(openomf_core OBJECT ${OPENOMF_SRC})
+set(CORELIBS openomf_core ${CORELIBS})
+
 # Build the game binary
-add_executable(openomf ${OPENOMF_SRC} src/main.c)
+add_executable(openomf src/main.c src/engine.c)
 
 # Enable AddressSanitizer if requested (these libs need to be first on the list!)
 IF(USE_SANITIZERS)
@@ -356,7 +231,6 @@ IF(CUNIT_FOUND)
         testing/test_list.c
         testing/test_array.c
         testing/test_text_render.c
-        ${OPENOMF_SRC}
     )
 
     target_link_libraries(openomf_test_main ${CORELIBS})
