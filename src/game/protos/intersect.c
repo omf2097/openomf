@@ -28,6 +28,26 @@ int intersect_object_point(object *obj, vec2i point) {
 
 
 int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
+    /**
+     * \brief Checks if source objects hitpoint intersect with the target object.
+     *
+     * This is used to check for collisions between objects that have hitpoints defined.
+     * Each sprite in HAR can have special hitpoints that have been defined around the object.
+     * We can then go through that list and check if the source objects hitpoints collide
+     * with any point of the target sprite.
+     *
+     * If a collision is found, we return 1 and set point argument to the approximate point
+     * of collision. If no collision is detected, we return 0.
+     *
+     * Amount of hitpoints required to return a collision detection can be set with level
+     * parameter.
+     *
+     * \param obj Source object that has the hitpoints
+     * \param target Target object that is being hit
+     * \param level Amount of collision detections required for a positive return
+     * \param point Approximate point of collision
+     * \return 1 if collision detected, 0 if not.
+     */
     // Make sure both objects have sprites going
     if(obj->cur_sprite == NULL || target->cur_sprite == NULL) {
         return 0;
