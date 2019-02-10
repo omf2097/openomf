@@ -2,7 +2,7 @@ OpenOMF Readme
 =======
 
 [![Build Status](https://travis-ci.org/omf2097/openomf.png?branch=master)](https://travis-ci.org/omf2097/openomf)
-[![Quality Gate](https://sonarcloud.io/api/badges/gate?key=openomf%3AOpenOMF)](https://sonarcloud.io/dashboard?id=openomf%3AOpenOMF)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=openomf%3AOpenOMF&metric=alert_status)](https://sonarcloud.io/dashboard?id=openomf%3AOpenOMF)
 
 OpenOMF is a Open Source remake of "One Must Fall 2097" by Diversions Entertainment.
 Since the original DOS game from 1994 still uses IPX networking and is a pain to set
