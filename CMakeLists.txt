@@ -12,6 +12,7 @@ SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Options
 OPTION(USE_TESTS "Build unittests" OFF)
+OPTION(USE_TOOLS "Build tools" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_DUMB "Use libdumb for module playback" OFF)
 OPTION(USE_XMP "Use libxmp for module playback" ON)
@@ -182,6 +183,44 @@ set(CORELIBS openomf_core ${CORELIBS})
 
 # Build the game binary
 add_executable(openomf src/main.c src/engine.c)
+
+# Build tools if requested
+if(USE_TOOLS)
+
+    add_executable(bktool tools/bktool/main.c
+                          tools/shared/animation_misc.c
+                          tools/shared/conversions.c)
+    add_executable(aftool tools/aftool/main.c
+                          tools/shared/animation_misc.c
+                          tools/shared/conversions.c)
+    add_executable(soundtool tools/soundtool/main.c)
+    add_executable(fonttool tools/fonttool/main.c)
+    add_executable(languagetool tools/languagetool/main.c)
+    add_executable(omf_parse tools/stringparser/main.c)
+    add_executable(afdiff tools/afdiff/main.c)
+    add_executable(rectool tools/rectool/main.c tools/shared/pilot.c)
+    add_executable(pictool tools/pictool/main.c)
+    add_executable(scoretool tools/scoretool/main.c)
+    add_executable(trntool tools/trntool/main.c tools/shared/pilot.c)
+    add_executable(altpaltool tools/altpaltool/main.c)
+    add_executable(chrtool tools/chrtool/main.c tools/shared/pilot.c)
+    add_executable(setuptool tools/setuptool/main.c tools/shared/pilot.c)
+
+    target_link_libraries(bktool ${CORELIBS})
+    target_link_libraries(aftool ${CORELIBS})
+    target_link_libraries(soundtool ${CORELIBS})
+    target_link_libraries(fonttool ${CORELIBS})
+    target_link_libraries(languagetool ${CORELIBS} ${})
+    target_link_libraries(omf_parse ${CORELIBS})
+    target_link_libraries(afdiff ${CORELIBS})
+    target_link_libraries(rectool ${CORELIBS})
+    target_link_libraries(pictool ${CORELIBS})
+    target_link_libraries(scoretool ${CORELIBS})
+    target_link_libraries(trntool ${CORELIBS})
+    target_link_libraries(altpaltool ${CORELIBS})
+    target_link_libraries(chrtool ${CORELIBS})
+    target_link_libraries(setuptool ${CORELIBS})
+endif()
 
 # Enable AddressSanitizer if requested (these libs need to be first on the list!)
 IF(USE_SANITIZERS)

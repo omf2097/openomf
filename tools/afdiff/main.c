@@ -5,9 +5,11 @@
   */
 
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
 #include <stdint.h>
 #include <string.h>
+
+#include "formats/af.h"
+#include "formats/error.h"
 
 #define VNAME(n) a->n, b->n
 
