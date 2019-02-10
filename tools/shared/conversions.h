@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-int clamp(int value, long low, long high);
-
 uint8_t  conv_ubyte(const char* data);
 int8_t   conv_byte(const char* data);
 uint16_t conv_uword(const char* data);
