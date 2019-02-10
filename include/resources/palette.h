@@ -1,7 +1,7 @@
 #ifndef _PALETTE_H
 #define _PALETTE_H
 
-#include <shadowdive/shadowdive.h>
+#include "formats/altpal.h"
 
 // globals, yay
 extern sd_altpal_file *altpals;

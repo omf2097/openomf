@@ -1,7 +1,7 @@
 #ifndef _IMAGE_H
 #define _IMAGE_H
 
-#include <shadowdive/rgba_image.h>
+#include "formats/rgba_image.h"
 #include "video/color.h"
 
 typedef struct image_t {

@@ -1,7 +1,7 @@
 #ifndef _SGMANAGER_H
 #define _SGMANAGER_H
 
-#include <shadowdive/pilot.h>
+#include "formats/pilot.h"
 
 int sg_init();
 int sg_load(sd_pilot *pilot, const char* pilotname);

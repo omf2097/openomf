@@ -17,7 +17,6 @@ OPTION(USE_DUMB "Use libdumb for module playback" OFF)
 OPTION(USE_XMP "Use libxmp for module playback" ON)
 OPTION(USE_PNG "Add support for PNG screenshots" ON)
 OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
-OPTION(USE_SUBMODULES "Add libsd as submodule" ON)
 OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 
 # These flags are used for all builds
@@ -51,14 +50,6 @@ find_package(argtable2)
 # Check functions and generate platform configuration file
 CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STD_STRDUP)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
-
-# Only search for submodules if we want them
-IF(USE_SUBMODULES)
-    add_subdirectory(external)
-    MESSAGE(STATUS "Using submodule shadowdive: ${SHADOWDIVE_INCLUDE_DIR}")
-ELSE()
-    find_package(shadowdive)
-ENDIF()
 
 # If USE_DUMB flag is on, turn on libdumb
 IF(USE_DUMB)
@@ -118,145 +109,14 @@ IF(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
 ENDIF()
 
-set(OPENOMF_SRC
-    src/utils/compat.c
-    src/utils/log.c
-    src/utils/config.c
-    src/utils/list.c
-    src/utils/vector.c
-    src/utils/hashmap.c
-    src/utils/iterator.c
-    src/utils/array.c
-    src/utils/vec.c
-    src/utils/str.c
-    src/utils/random.c
-    src/utils/miscmath.c
-    src/utils/scandir.c
-    src/utils/msgbox.c
-    src/video/video.c
-    src/video/surface.c
-    src/video/image.c
-    src/video/tcache.c
-    src/video/color.c
-    src/video/video_hw.c
-    src/video/video_soft.c
-    src/audio/audio.c
-    src/audio/music.c
-    src/audio/sound.c
-    src/audio/sink.c
-    src/audio/stream.c
-    src/audio/source.c
-    src/audio/sinks/openal_sink.c
-    src/audio/sinks/openal_stream.c
-    src/audio/sources/dumb_source.c
-    src/audio/sources/xmp_source.c
-    src/audio/sources/vorbis_source.c
-    src/audio/sources/raw_source.c
-    src/resources/ids.c
-    src/resources/af.c
-    src/resources/af_loader.c
-    src/resources/af_move.c
-    src/resources/bk.c
-    src/resources/bk_info.c
-    src/resources/bk_loader.c
-    src/resources/palette.c
-    src/resources/pilots.c
-    src/resources/sprite.c
-    src/resources/animation.c
-    src/resources/sounds_loader.c
-    src/resources/pathmanager.c
-    src/resources/sgmanager.c
-    src/resources/languages.c
-    src/resources/fonts.c
-    src/resources/scores.c
-    src/plugins/plugins.c
-    src/plugins/scaler_plugin.c
-    src/game/protos/object.c
-    src/game/protos/player.c
-    src/game/protos/scene.c
-    src/game/protos/intersect.c
-    src/game/protos/object_specializer.c
-    src/game/objects/har.c
-    src/game/objects/scrap.c
-    src/game/objects/projectile.c
-    src/game/objects/hazard.c
-    src/game/scenes/intro.c
-    src/game/scenes/openomf.c
-    src/game/scenes/mainmenu.c
-    src/game/scenes/mainmenu/menu_main.c
-    src/game/scenes/mainmenu/menu_configuration.c
-    src/game/scenes/mainmenu/menu_gameplay.c
-    src/game/scenes/mainmenu/menu_audio.c
-    src/game/scenes/mainmenu/menu_video.c
-    src/game/scenes/mainmenu/menu_video_confirm.c
-    src/game/scenes/mainmenu/menu_net.c
-    src/game/scenes/mainmenu/menu_connect.c
-    src/game/scenes/mainmenu/menu_listen.c
-    src/game/scenes/mainmenu/menu_input.c
-    src/game/scenes/mainmenu/menu_keyboard.c
-    src/game/scenes/mainmenu/menu_presskey.c
-    src/game/scenes/credits.c
-    src/game/scenes/cutscene.c
-    src/game/scenes/arena.c
-    src/game/scenes/melee.c
-    src/game/scenes/vs.c
-    src/game/scenes/mechlab.c
-    src/game/scenes/mechlab/lab_menu_main.c
-    src/game/scenes/mechlab/lab_menu_customize.c
-    src/game/scenes/mechlab/lab_menu_training.c
-    src/game/scenes/mechlab/lab_menu_pilotselect.c
-    src/game/scenes/mechlab/lab_dash_main.c
-    src/game/scenes/mechlab/lab_dash_newplayer.c
-    src/game/scenes/newsroom.c
-    src/game/scenes/scoreboard.c
-    src/game/objects/har.c
-    src/game/gui/menu.c
-    src/game/gui/trn_menu.c
-    src/game/gui/menu_background.c
-    src/game/gui/text_render.c
-    src/game/gui/textbutton.c
-    src/game/gui/spritebutton.c
-    src/game/gui/spriteimage.c
-    src/game/gui/textselector.c
-    src/game/gui/textslider.c
-    src/game/gui/textinput.c
-    src/game/gui/dialog.c
-    src/game/gui/component.c
-    src/game/gui/sizer.c
-    src/game/gui/widget.c
-    src/game/gui/frame.c
-    src/game/gui/label.c
-    src/game/gui/filler.c
-    src/game/gui/progressbar.c
-    src/game/gui/gauge.c
-    src/game/gui/pilotpic.c
-    src/game/gui/xysizer.c
-    src/game/game_state.c
-    src/game/game_player.c
-    src/game/common_defines.c
-    src/game/utils/ticktimer.c
-    src/game/utils/serial.c
-    src/game/utils/settings.c
-    src/game/utils/score.c
-    src/game/utils/har_screencap.c
-    src/game/utils/formatting.c
-    src/controller/controller.c
-    src/controller/keyboard.c
-    src/controller/joystick.c
-    src/controller/net_controller.c
-    src/controller/ai_controller.c
-    src/controller/rec_controller.c
-    src/console/console.c
-    src/console/console_cmd.c
-    src/engine.c
-)
+# Find sources
+file(GLOB_RECURSE OPENOMF_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/*.c")
 
 set(COREINCS
     include
     ${CMAKE_CURRENT_BINARY_DIR}/include/
     ${SDL2_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
-    ${SHADOWDIVE_INCLUDE_DIR}
     ${LIBINTL_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
     ${ARGTABLE2_INCLUDE_DIR}
@@ -269,13 +129,6 @@ set(CORELIBS
     ${ENET_LIBRARY}
     ${ARGTABLE2_LIBRARY}
 )
-
-# Shadowdive
-IF(USE_SUBMODULES)
-    set(CORELIBS ${CORELIBS} shadowdive)
-ELSE()
-    set(CORELIBS ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-ENDIF()
 
 # Handle module playback libraries
 IF(USE_DUMB)
@@ -348,27 +201,17 @@ IF(CUNIT_FOUND)
     include_directories(${CUNIT_INCLUDE_DIR} testing/ include/)
     SET(CORELIBS ${CORELIBS} ${CUNIT_LIBRARY})
 
+    file(GLOB_RECURSE TEST_SRC RELATIVE ${CMAKE_SOURCE_DIR} "testing/*.c")
+
     add_executable(openomf_test_main
-        testing/test_main.c
-        testing/test_str.c
-        testing/test_hashmap.c
-        testing/test_vector.c
-        testing/test_list.c
-        testing/test_array.c
-        testing/test_text_render.c
+        ${TEST_SRC}
         ${OPENOMF_SRC}
     )
 
     target_link_libraries(openomf_test_main ${CORELIBS})
     set_property(TARGET openomf_test_main PROPERTY C_STANDARD 11)
 
-    # Change policy to allow "test" target name
-    cmake_policy(PUSH)
-    if(POLICY CMP0037)
-        cmake_policy(SET CMP0037 OLD)
-    endif()
-    add_custom_target(test openomf_test_main)
-    cmake_policy(POP)
+    add_custom_target(test_main openomf_test_main)
 ENDIF(CUNIT_FOUND)
 
 # Packaging

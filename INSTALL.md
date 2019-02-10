@@ -40,7 +40,6 @@ Note! For debug builds, GCC 4.9 or later is recommended. With later GCC versions
 #### Libraries
 
 Required:
-* libShadowDive: https://github.com/omf2097/libShadowDive
 * SDL2 (>=2.0.2): http://www.libsdl.org/download-2.0.php
 * confuse: http://www.nongnu.org/confuse/
 * Gettext (if you have problems with libintl)
@@ -49,20 +48,14 @@ Required:
 
 Recommended:
 * OpenAL: http://kcat.strangesoft.net/openal.html (for audio)
-* libdumb (>=2.0.0): https://bitbucket.org/kode54/dumb (for module music)
+* libxmp: Used for module playback.
 
 Optional:
 * libvorbis: https://www.xiph.org/downloads/
 * libogg: https://www.xiph.org/downloads/
 * libpng: http://www.libpng.org/pub/png/libpng.html (for .PNG screenshots)
 * zlib: http://www.zlib.net/
-* libxmp to replace libdumb, if libdumb is not available.
-
-Note that libxmp doesn't play all ingame music tracks quite right, and libdumb is much preferred! Always make sure the playback library is up-to-date!
-
-[libShadowDive](https://github.com/omf2097/libShadowDive) is our own library for handling OMF:2097 file formats. It is probably not in any repositories by default, and so you may need to compile it yourself. It is also possible to pull this in as a submodule; please see USE_SUBMODULES cmake flag for that.
-
-[libdumb](https://bitbucket.org/kode54/dumb) is required for PSM module playback. It is also possible to pull libdumb in as a submodule; please see USE_SUBMODULES cmake flag for that.
+* libdumb (>=2.0.0): https://bitbucket.org/kode54/dumb (for module music)
 
 #### Debian
 On debian, it is possible to pull some libraries using apt-get.
@@ -129,7 +122,7 @@ It is technically possible to select more than one audio sink, or none. Currentl
 
 ## 3. Data Files
 
-OpenOMF loads the original data files from the original OMF:2097 game using libShadowDive. Since One Must Fall 2079 is freeware, the files are obtainable for free from [www.omf2097.com](http://www.omf2097.com/pub/files/omf/omf2097.rar).
+OpenOMF loads the original data files from the original OMF:2097 game. Since One Must Fall 2079 is freeware, the files are obtainable for free from [www.omf2097.com](http://www.omf2097.com/pub/files/omf/omf2097.rar).
 
 On linux in debug mode, the OMF resource files should be put in resources/ subdirectory.
 

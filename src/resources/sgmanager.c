@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include <shadowdive/shadowdive.h>
-
+#include "formats/chr.h"
+#include "formats/error.h"
 #include "resources/sgmanager.h"
 #include "resources/pathmanager.h"
 #include "utils/scandir.h"

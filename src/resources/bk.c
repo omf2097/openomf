@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
-#include <shadowdive/shadowdive.h>
+#include "formats/bk.h"
 #include "resources/bk.h"
 
 void bk_create(bk *b, void *src) {

@@ -3,6 +3,8 @@
 #include "resources/palette.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
+#include "formats/error.h"
+#include "formats/palette.h"
 #include "utils/log.h"
 
 sd_altpal_file *altpals = NULL;

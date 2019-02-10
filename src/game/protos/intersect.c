@@ -1,4 +1,4 @@
-#include <shadowdive/rgba_image.h>
+#include "formats/rgba_image.h"
 #include "game/protos/intersect.h"
 #include "utils/log.h"
 

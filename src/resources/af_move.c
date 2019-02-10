@@ -1,5 +1,5 @@
 #include <string.h>
-#include <shadowdive/shadowdive.h>
+#include "formats/move.h"
 #include "resources/af_move.h"
 
 void af_move_create(af_move *move, void *src, int id) {

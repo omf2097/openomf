@@ -1,5 +1,5 @@
 #include "resources/animation.h"
-#include <shadowdive/shadowdive.h>
+#include "formats/animation.h"
 #include <stdlib.h>
 
 void animation_create(animation *ani, void *src, int id) {

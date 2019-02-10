@@ -4,6 +4,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "formats/error.h"
+#include "formats/rec.h"
 #include "video/surface.h"
 #include "video/video.h"
 #include "game/scenes/arena.h"

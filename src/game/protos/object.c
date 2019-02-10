@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include <shadowdive/sprite.h>
+#include "formats/sprite.h"
 #include "game/protos/object.h"
 #include "game/protos/object_specializer.h"
 #include "game/objects/arena_constraints.h"

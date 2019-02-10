@@ -1,4 +1,5 @@
-#include <shadowdive/shadowdive.h>
+#include "formats/pic.h"
+#include "formats/error.h"
 #include "resources/pathmanager.h"
 #include "resources/sprite.h"
 #include "game/gui/pilotpic.h"
