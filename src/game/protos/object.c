@@ -87,10 +87,15 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->pal_transform = NULL;
 }
 
-/*
- * Serializes the object to a buffer. Should return 1 on error, 0 on success
+/**
+ * \brief Serializes the object to a buffer.
+ * 
  * This will call the specialized objects, eg. har or projectile for their
  * serialization data.
+ * 
+ * \param obj Object to serialize
+ * \param ser Target serialization buffer to write into
+ * \return 0 on success, 1 on error
  */
 int object_serialize(object *obj, serial *ser) {
     serial_write_float(ser, obj->pos.x);
@@ -136,10 +141,15 @@ int object_serialize(object *obj, serial *ser) {
     return 0;
 }
 
-/*
- * Unserializes the data from buffer to a specialized object.
- * Should return 1 on error, 0 on success.
- * Serial reder position should be set to correct position before calling this.
+/**
+ * \brief Unserializes the data from buffer to a specialized object.
+ * 
+ * Serial render position should be set to correct position before calling this.
+ * 
+ * \param obj Object to unserialize into
+ * \param ser Serialization buffer to unserialize from
+ * \param gs Gamestate
+ * \return 0 on success, 1 on error.
  */
 int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->pos.x = serial_read_float(ser);

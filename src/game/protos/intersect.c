@@ -2,6 +2,16 @@
 #include "game/protos/intersect.h"
 #include "utils/log.h"
 
+/**
+ * \brief Checks if objects hitboxes intersect.
+ * 
+ * This is a basic hitbox to hitbox intersection check. Hitboxes are defined
+ * by objects position and size.
+ * 
+ * \param a Object 1 to check
+ * \param b Object 2 to check
+ * \return 1 if collision detected, 0 if not.
+ */
 int intersect_object_object(object *a, object *b) {
     if(a->cur_sprite == NULL || b->cur_sprite == NULL) return 0;
     vec2i pos_a = vec2i_add(object_get_pos(a), a->cur_sprite->pos);
@@ -15,6 +25,13 @@ int intersect_object_object(object *a, object *b) {
         (pos_a.y + size_a.y) < pos_b.y);
 }
 
+/**
+ * \brief Checks if the point intersects the given object hitbox
+ * 
+ * \param obj Target object to check, targets position and size is used to define the hitbox.
+ * \param point Point to intersect
+ * \return 1 if collision detected, 0 if not.
+ */
 int intersect_object_point(object *obj, vec2i point) {
     if(obj->cur_sprite == NULL) return 0;
     vec2i pos = vec2i_add(object_get_pos(obj), obj->cur_sprite->pos);
@@ -26,28 +43,27 @@ int intersect_object_point(object *obj, vec2i point) {
         point.y > pos.y);
 }
 
-
+/**
+ * \brief Checks if source objects hitpoint intersect with the target object.
+ *
+ * This is used to check for collisions between objects that have hitpoints defined.
+ * Each sprite in HAR can have special hitpoints that have been defined around the object.
+ * We can then go through that list and check if the source objects hitpoints collide
+ * with any point of the target sprite.
+ *
+ * If a collision is found, we return 1 and set point argument to the approximate point
+ * of collision. If no collision is detected, we return 0.
+ *
+ * Amount of hitpoints required to return a collision detection can be set with level
+ * parameter.
+ *
+ * \param obj Source object that has the hitpoints
+ * \param target Target object that is being hit
+ * \param level Amount of collision detections required for a positive return
+ * \param point Approximate point of collision
+ * \return 1 if collision detected, 0 if not.
+ */
 int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
-    /**
-     * \brief Checks if source objects hitpoint intersect with the target object.
-     *
-     * This is used to check for collisions between objects that have hitpoints defined.
-     * Each sprite in HAR can have special hitpoints that have been defined around the object.
-     * We can then go through that list and check if the source objects hitpoints collide
-     * with any point of the target sprite.
-     *
-     * If a collision is found, we return 1 and set point argument to the approximate point
-     * of collision. If no collision is detected, we return 0.
-     *
-     * Amount of hitpoints required to return a collision detection can be set with level
-     * parameter.
-     *
-     * \param obj Source object that has the hitpoints
-     * \param target Target object that is being hit
-     * \param level Amount of collision detections required for a positive return
-     * \param point Approximate point of collision
-     * \return 1 if collision detected, 0 if not.
-     */
     // Make sure both objects have sprites going
     if(obj->cur_sprite == NULL || target->cur_sprite == NULL) {
         return 0;
