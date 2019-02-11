@@ -26,4 +26,6 @@ For guidelines on contributing, please see [CONTRIBUTING.md](https://github.com/
 
 Contact
 -------
-Join us on [#omf](http://webchat.freenode.net?channels=omf) on [irc.freenode.net](irc://chat.freenode.net/omf) !
+
+Discord: https://discord.gg/7CPPzab
+IRC: [#omf](http://webchat.freenode.net?channels=omf) on [irc.freenode.net](irc://chat.freenode.net/omf) !
