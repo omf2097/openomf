@@ -5,12 +5,14 @@
   */
 
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "formats/tournament.h"
+#include "formats/error.h"
 #include "../shared/pilot.h"
+
 
 const char *language_names[] = {
     "English",

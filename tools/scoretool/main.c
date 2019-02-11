@@ -5,7 +5,9 @@
   */
 
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
+#include "formats/score.h"
+#include "formats/error.h"
+
 
 const char *page_name[] = {
     "ONE ROUND",

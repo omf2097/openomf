@@ -6,7 +6,9 @@
 
 #include <SDL2/SDL.h>
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
+#include "formats/sounds.h"
+#include "formats/error.h"
+
 
 typedef struct _streamer {
     char *data;

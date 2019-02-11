@@ -1,7 +1,7 @@
 #ifndef _PILOT_H
 #define _PILOT_H
 
-#include <shadowdive/shadowdive.h>
+#include "formats/pilot.h"
 
 void print_bytes(char *buf, int len, int line, int padding);
 void print_pilot_info(sd_pilot *pilot);

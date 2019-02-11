@@ -5,10 +5,12 @@
   */
 
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "formats/script.h"
+#include "formats/error.h"
+
 
 int main(int argc, char* argv[]) {
     // commandline argument parser options

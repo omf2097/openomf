@@ -4,12 +4,14 @@
   */
 
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
-#include "../shared/pilot.h"
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "formats/setup.h"
+#include "formats/error.h"
+#include "../shared/pilot.h"
+
 
 static const char *shadows[] = {
     "None",

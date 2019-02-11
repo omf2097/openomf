@@ -4,11 +4,12 @@
   */
 
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "formats/rec.h"
+#include "formats/error.h"
 #include "../shared/pilot.h"
 
 const char* mstr[] = {

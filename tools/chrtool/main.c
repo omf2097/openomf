@@ -4,12 +4,15 @@
   */
 
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "formats/chr.h"
+#include "formats/bk.h"
+#include "formats/error.h"
 #include "../shared/pilot.h"
+
 
 void print_chr_pilot_info(sd_chr_file *chr) {
     print_pilot_info(&chr->pilot);

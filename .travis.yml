@@ -100,7 +100,7 @@ before_install:
 
 script:
   - cd $TRAVIS_BUILD_DIR
-  - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On . 
+  - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On -DUSE_TOOLS=On .
   - make
   - make test ARGS="-V"
   - make clean

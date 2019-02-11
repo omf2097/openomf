@@ -6,9 +6,11 @@
 
 #include <SDL2/SDL.h>
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
 #include <stdint.h>
 #include <string.h>
+#include "formats/fonts.h"
+#include "formats/error.h"
+
 
 SDL_Surface* render_text(sd_font *font, const char *text, int area_w) {
     // Vars

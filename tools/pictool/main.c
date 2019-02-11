@@ -5,7 +5,9 @@
   */
 
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
+#include "formats/bk.h"
+#include "formats/pic.h"
+#include "formats/error.h"
 
 int main(int argc, char *argv[]) {
    // commandline argument parser options

@@ -1,7 +1,8 @@
 #ifndef _ANIMATION_MISC_H
 #define _ANIMATION_MISC_H
 
-#include <shadowdive/shadowdive.h>
+#include "formats/animation.h"
+#include "formats/bk.h"
 
 int sprite_key_get_id(const char* key);
 void sprite_set_key(sd_sprite *s, const char **key, int kcount, const char *value);

@@ -6,9 +6,10 @@
 
 #include <SDL2/SDL.h>
 #include <argtable2.h>
-#include <shadowdive/shadowdive.h>
 #include <stdint.h>
 #include <string.h>
+#include "formats/af.h"
+#include "formats/error.h"
 #include "../shared/animation_misc.h"
 #include "../shared/conversions.h"
 

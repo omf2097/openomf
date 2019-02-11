@@ -1,5 +1,7 @@
 #include "animation_misc.h"
 #include "conversions.h"
+#include "formats/script.h"
+#include "formats/error.h"
 #include <string.h>
 #include <stdio.h>
 
