@@ -94,6 +94,7 @@ brew install sdl2
 brew install confuse
 brew install enet
 brew install gettext
+brew install libxmp
 ```
 
 ### Acquiring the sources
