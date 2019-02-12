@@ -1877,7 +1877,6 @@ int har_act(object *obj, int act_type) {
             case STATE_JUMPING:
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 vx = 0.0f;
-                DEBUG("Agi: %d", game_state_get_player(obj->gs, h->player_id)->pilot.agility);
                 vy = (float)h->af_data->jump_speed;
                 int jump_dir = 0;
                 if ((act_type == (ACT_UP|ACT_LEFT) && direction == OBJECT_FACE_LEFT) ||
