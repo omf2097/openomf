@@ -12,12 +12,12 @@ SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Options
 OPTION(USE_TESTS "Build unittests" OFF)
+OPTION(USE_TOOLS "Build tools" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_DUMB "Use libdumb for module playback" OFF)
 OPTION(USE_XMP "Use libxmp for module playback" ON)
 OPTION(USE_PNG "Add support for PNG screenshots" ON)
 OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
-OPTION(USE_SUBMODULES "Add libsd as submodule" ON)
 OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 
 # These flags are used for all builds
@@ -51,14 +51,6 @@ find_package(argtable2)
 # Check functions and generate platform configuration file
 CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STD_STRDUP)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
-
-# Only search for submodules if we want them
-IF(USE_SUBMODULES)
-    add_subdirectory(external)
-    MESSAGE(STATUS "Using submodule shadowdive: ${SHADOWDIVE_INCLUDE_DIR}")
-ELSE()
-    find_package(shadowdive)
-ENDIF()
 
 # If USE_DUMB flag is on, turn on libdumb
 IF(USE_DUMB)
@@ -126,7 +118,6 @@ set(COREINCS
     ${CMAKE_CURRENT_BINARY_DIR}/include/
     ${SDL2_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
-    ${SHADOWDIVE_INCLUDE_DIR}
     ${Intl_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
     ${ARGTABLE2_INCLUDE_DIR}
@@ -139,13 +130,6 @@ set(CORELIBS
     ${ENET_LIBRARY}
     ${ARGTABLE2_LIBRARY}
 )
-
-# Shadowdive
-IF(USE_SUBMODULES)
-    set(CORELIBS ${CORELIBS} shadowdive)
-ELSE()
-    set(CORELIBS ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-ENDIF()
 
 # Handle module playback libraries
 IF(USE_DUMB)
@@ -200,6 +184,44 @@ set(CORELIBS openomf_core ${CORELIBS})
 # Build the game binary
 add_executable(openomf src/main.c src/engine.c)
 
+# Build tools if requested
+if(USE_TOOLS)
+
+    add_executable(bktool tools/bktool/main.c
+                          tools/shared/animation_misc.c
+                          tools/shared/conversions.c)
+    add_executable(aftool tools/aftool/main.c
+                          tools/shared/animation_misc.c
+                          tools/shared/conversions.c)
+    add_executable(soundtool tools/soundtool/main.c)
+    add_executable(fonttool tools/fonttool/main.c)
+    add_executable(languagetool tools/languagetool/main.c)
+    add_executable(omf_parse tools/stringparser/main.c)
+    add_executable(afdiff tools/afdiff/main.c)
+    add_executable(rectool tools/rectool/main.c tools/shared/pilot.c)
+    add_executable(pictool tools/pictool/main.c)
+    add_executable(scoretool tools/scoretool/main.c)
+    add_executable(trntool tools/trntool/main.c tools/shared/pilot.c)
+    add_executable(altpaltool tools/altpaltool/main.c)
+    add_executable(chrtool tools/chrtool/main.c tools/shared/pilot.c)
+    add_executable(setuptool tools/setuptool/main.c tools/shared/pilot.c)
+
+    target_link_libraries(bktool ${CORELIBS})
+    target_link_libraries(aftool ${CORELIBS})
+    target_link_libraries(soundtool ${CORELIBS})
+    target_link_libraries(fonttool ${CORELIBS})
+    target_link_libraries(languagetool ${CORELIBS} ${})
+    target_link_libraries(omf_parse ${CORELIBS})
+    target_link_libraries(afdiff ${CORELIBS})
+    target_link_libraries(rectool ${CORELIBS})
+    target_link_libraries(pictool ${CORELIBS})
+    target_link_libraries(scoretool ${CORELIBS})
+    target_link_libraries(trntool ${CORELIBS})
+    target_link_libraries(altpaltool ${CORELIBS})
+    target_link_libraries(chrtool ${CORELIBS})
+    target_link_libraries(setuptool ${CORELIBS})
+endif()
+
 # Enable AddressSanitizer if requested (these libs need to be first on the list!)
 IF(USE_SANITIZERS)
     set(CORELIBS asan ubsan ${CORELIBS})
@@ -225,15 +247,9 @@ IF(CUNIT_FOUND)
     include_directories(${CUNIT_INCLUDE_DIR} testing/ include/)
     SET(CORELIBS ${CORELIBS} ${CUNIT_LIBRARY})
 
-    add_executable(openomf_test_main
-        testing/test_main.c
-        testing/test_str.c
-        testing/test_hashmap.c
-        testing/test_vector.c
-        testing/test_list.c
-        testing/test_array.c
-        testing/test_text_render.c
-    )
+    file(GLOB_RECURSE TEST_SRC RELATIVE ${CMAKE_SOURCE_DIR} "testing/*.c")
+
+    add_executable(openomf_test_main ${TEST_SRC})
 
     target_link_libraries(openomf_test_main ${CORELIBS})
     set_property(TARGET openomf_test_main PROPERTY C_STANDARD 11)

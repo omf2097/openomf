@@ -16,6 +16,7 @@
 #include "resources/ids.h"
 #include "video/video.h"
 #include "utils/log.h"
+#include "formats/error.h"
 
 typedef enum {
     DASHBOARD_NONE,

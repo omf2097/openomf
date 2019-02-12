@@ -1,6 +1,7 @@
 #include "resources/af_loader.h"
 #include "resources/pathmanager.h"
-#include <shadowdive/shadowdive.h>
+#include "formats/af.h"
+#include "formats/error.h"
 
 int load_af_file(af *a, int id) {
     // Get directory + filename

@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <SDL2/SDL.h>
-#include <shadowdive/shadowdive.h>
 #include "controller/keyboard.h"
 #include "controller/joystick.h"
 #include "controller/rec_controller.h"
@@ -13,6 +12,8 @@
 #include "console/console.h"
 #include "video/video.h"
 #include "video/tcache.h"
+#include "formats/rec.h"
+#include "formats/error.h"
 #include "game/game_state.h"
 #include "game/common_defines.h"
 #include "game/utils/settings.h"

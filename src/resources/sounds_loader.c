@@ -1,5 +1,6 @@
 #include <stdlib.h>
-#include <shadowdive/shadowdive.h>
+#include "formats/sounds.h"
+#include "formats/error.h"
 #include "resources/sounds_loader.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"

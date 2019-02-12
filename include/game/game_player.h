@@ -1,8 +1,7 @@
 #ifndef _GAME_PLAYER_H
 #define _GAME_PLAYER_H
 
-#include <shadowdive/pilot.h>
-
+#include "formats/pilot.h"
 #include "game/protos/object.h"
 #include "controller/controller.h"
 #include "controller/keyboard.h"

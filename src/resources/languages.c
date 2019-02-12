@@ -1,4 +1,5 @@
-#include <shadowdive/shadowdive.h>
+#include "formats/language.h"
+#include "formats/error.h"
 #include "resources/languages.h"
 #include "resources/pathmanager.h"
 #include "utils/array.h"

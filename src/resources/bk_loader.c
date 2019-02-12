@@ -1,6 +1,7 @@
 #include "resources/bk_loader.h"
 #include "resources/pathmanager.h"
-#include <shadowdive/shadowdive.h>
+#include "formats/bk.h"
+#include "formats/error.h"
 
 int load_bk_file(bk *b, int id) {
     // Get directory + filename

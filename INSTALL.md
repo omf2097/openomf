@@ -54,7 +54,6 @@ the latest compiler version available to you.
 #### Libraries
 
 Required:
-* libShadowDive: https://github.com/omf2097/libShadowDive
 * SDL2 (>=2.0.5): http://www.libsdl.org/download-2.0.php
 * confuse: http://www.nongnu.org/confuse/
 * Gettext (if you have problems with libintl)
@@ -72,12 +71,8 @@ Optional:
 * zlib: http://www.zlib.net/
 * libdumb (>=2.0.0): https://bitbucket.org/kode54/dumb (for module music)
 
-[libShadowDive](https://github.com/omf2097/libShadowDive) is our own library for handling OMF:2097
-file formats. It is probably not in any repositories by default, and so you may need to compile
-it yourself. It is also possible to pull this in as a submodule; please see USE_SUBMODULES cmake
-flag for that.
-
 #### Debian
+
 On debian, it is possible to pull some libraries using apt-get.
 ```
 apt-get install libsdl2-dev libopenal-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
@@ -133,7 +128,6 @@ Some useful CMake flags:
 | USE_OPENAL                | Selects OpenAL support                  | On/Off          | On      |
 | USE_DUMB                  | Selects libdumb support                 | On/Off          | Off     |
 | USE_XMP                   | Selects libxmp support                  | On/Off          | On      |
-| USE_SUBMODULES            | Pull in libsd as submodule              | On/Off          | On      |
 
 Ogg Vorbis support is required if you wish to replace original OMF soundtracks with OGG files.
 Otherwise the switch is optional.
@@ -147,7 +141,7 @@ This will also of course reduce cpu usage a bit.
 
 ## 3. Data Files
 
-OpenOMF loads the original data files from the original OMF:2097 game using libShadowDive.
+OpenOMF loads the original data files from the original OMF:2097 game.
 Since One Must Fall 2079 is freeware, the files are obtainable for free from
 [www.omf2097.com](http://www.omf2097.com/pub/files/omf/omf2097.rar).
 
