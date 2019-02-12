@@ -767,9 +767,10 @@ void har_check_closeness(object *obj_a, object *obj_b) {
                 object_set_pos(obj_a, pos_a);
             } else  {
                 // landed in front of the HAR, push opponent back
-                pos_b.x = pos_b.x - obj_a->vel.y/2;
+                int t = hard_limit - (pos_a.x - pos_b.x);
+                pos_b.x = pos_b.x - t/2;
                 object_set_pos(obj_b, pos_b);
-                pos_a.x = pos_a.x + obj_a->vel.y/2;
+                pos_a.x = pos_a.x + t/2;
                 object_set_pos(obj_a, pos_a);
             }
         } else if (pos_a.x + hard_limit >= pos_b.x && pos_a.x <= pos_b.x && y1 >= y2) {
@@ -778,9 +779,10 @@ void har_check_closeness(object *obj_a, object *obj_b) {
                 object_set_pos(obj_a, pos_a);
             } else  {
                 // landed behind of the HAR, push opponent forwards
-                pos_b.x = pos_b.x + obj_a->vel.y;
+                int t = hard_limit - (pos_b.x - pos_a.x);
+                pos_b.x = pos_b.x + t/2;
                 object_set_pos(obj_b, pos_b);
-                pos_a.x = pos_a.x - obj_a->vel.y/2;
+                pos_a.x = pos_a.x - t/2;
                 object_set_pos(obj_a, pos_a);
             }
         }
@@ -791,9 +793,10 @@ void har_check_closeness(object *obj_a, object *obj_b) {
                 object_set_pos(obj_a, pos_a);
             } else {
                 // landed in front of the HAR, push opponent back
-                pos_b.x = pos_b.x + obj_a->vel.y/2;
+                int t = hard_limit - (pos_b.x - pos_a.x);
+                pos_b.x = pos_b.x + t/2;
                 object_set_pos(obj_b, pos_b);
-                pos_a.x = pos_a.x - obj_a->vel.y/2;
+                pos_a.x = pos_a.x - t/2;
                 object_set_pos(obj_a, pos_a);
             }
         } else if(pos_a.x <= pos_b.x + hard_limit && pos_a.x >= pos_b.x && y1 >= y2) {
@@ -802,9 +805,10 @@ void har_check_closeness(object *obj_a, object *obj_b) {
                 object_set_pos(obj_a, pos_a);
             } else {
                 // landed behind of the HAR, push opponent forwards
-                pos_b.x = pos_b.x - obj_a->vel.y/2;
+                int t = hard_limit - (pos_b.x - pos_a.x);
+                pos_b.x = pos_b.x - t/2;
                 object_set_pos(obj_b, pos_b);
-                pos_a.x = pos_a.x + obj_a->vel.y/2;
+                pos_a.x = pos_a.x + t/2;
                 object_set_pos(obj_a, pos_a);
             }
         }
@@ -1526,8 +1530,13 @@ af_move* match_move(object *obj, char *inputs) {
                     continue;
                 }
 
+                if(h->state != STATE_JUMPING && move->pos_constraints & 0x2) {
+                    DEBUG("Position contraint prevents move when not jumping!");
+                    // required to be jumping
+                    continue;
+                }
                 if (h->is_wallhugging != 1 && move->pos_constraints & 0x1) {
-                    DEBUG("not wallhugging!");
+                    DEBUG("Position contraint prevents move when not wallhugging!");
                     // required to be wall hugging
                     continue;
                 }
@@ -2096,12 +2105,12 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // Health, endurance
     local->health_max = local->health = af_data->health * (p.endurance + 25)/35;
     local->endurance_max = local->endurance = (af_data->endurance * (p.endurance + 25) )/37;
-    float jump_boost = 0.8f + 0.4f * ((float)p.agility / 20.0f);
+    /*float jump_boost = 0.8f + 0.4f * ((float)p.agility / 20.0f);
     float fall_boost = 0.9f + ((float)p.agility / 20.0f);
     DEBUG("JUMP_BOOST = %f", jump_boost);
     DEBUG("FALL_BOOST = %f", fall_boost);
     local->af_data->jump_speed *= jump_boost;
-    local->af_data->fall_speed *= fall_boost;
+    local->af_data->fall_speed *= fall_boost;*/
     local->close = 0;
     local->hard_close =  0;
     local->state = STATE_STANDING;

@@ -355,7 +355,7 @@ void object_render(object *obj) {
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = obj->pos.y - obj->cur_sprite->pos.y - rstate->o_correction.y - object_get_size(obj).y;
+        y = obj->pos.y - obj->cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
             y -= 100;
@@ -366,7 +366,7 @@ void object_render(object *obj) {
 
     // Set X coord, take into account the HAR facing.
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = obj->pos.x - obj->cur_sprite->pos.x - rstate->o_correction.x - object_get_size(obj).x;
+        x = obj->pos.x - obj->cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
     } else {
         x = obj->pos.x + obj->cur_sprite->pos.x + rstate->o_correction.x;
     }
@@ -452,7 +452,7 @@ void object_render_shadow(object *obj) {
             obj->pal_offset,
             flipmode,
             scale_y,
-            50,
+            65,
             color_create(0,0,0,255));
     }
 }
