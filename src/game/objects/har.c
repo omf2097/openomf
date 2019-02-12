@@ -1784,6 +1784,17 @@ int har_act(object *obj, int act_type) {
         }
         object_set_vel(obj, spd);
 
+        // Prefetch enemy object & har links, they may be needed
+        object *enemy_obj = game_player_get_har(game_state_get_player(obj->gs, !h->player_id));
+        har *enemy_har = (har*)enemy_obj->userdata;
+
+        // If animation is scrap or destruction, then remove our customizations
+        // from gravity/fall speed, and just use the HARs native value.
+        if(move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
+            object_set_gravity(obj, h->af_data->fall_speed);
+            object_set_gravity(enemy_obj, enemy_har->af_data->fall_speed);
+        }
+
         if (move->category == CAT_SCRAP) {
             DEBUG("going to scrap state");
             h->state = STATE_SCRAP;
@@ -1798,13 +1809,11 @@ int har_act(object *obj, int act_type) {
 
         // make the other har participate in the scrap/destruction
         if (move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
-            int opp_id = h->player_id ? 0 : 1;
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
-            object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
-            object_set_animation(opp, &af_get_move(((har*)opp->userdata)->af_data, ANIM_DAMAGE)->ani);
-            object_set_repeat(opp, 0);
-            object_set_custom_string(opp, str_c(&move->footer_string));
-            object_dynamic_tick(opp);
+            object_set_animation(enemy_obj, &af_get_move(enemy_har->af_data, ANIM_DAMAGE)->ani);
+            object_set_repeat(enemy_obj, 0);
+            object_set_custom_string(enemy_obj, str_c(&move->footer_string));
+            object_dynamic_tick(enemy_obj);
         }
 
         // we actually did something interesting
@@ -1887,7 +1896,7 @@ int har_act(object *obj, int act_type) {
             case STATE_JUMPING:
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 vx = 0.0f;
-                vy = (float)h->af_data->jump_speed;
+                vy = (float)h->af_data->jump_speed * h->jump_boost;
                 int jump_dir = 0;
                 if ((act_type == (ACT_UP|ACT_LEFT) && direction == OBJECT_FACE_LEFT) ||
                         (act_type == (ACT_UP|ACT_RIGHT) && direction == OBJECT_FACE_RIGHT)) {
@@ -2106,12 +2115,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // Health, endurance
     local->health_max = local->health = af_data->health * (p.endurance + 25)/35;
     local->endurance_max = local->endurance = (af_data->endurance * (p.endurance + 25) )/37;
-    /*float jump_boost = 0.8f + 0.4f * ((float)p.agility / 20.0f);
-    float fall_boost = 0.9f + ((float)p.agility / 20.0f);
-    DEBUG("JUMP_BOOST = %f", jump_boost);
-    DEBUG("FALL_BOOST = %f", fall_boost);
-    local->af_data->jump_speed *= jump_boost;
-    local->af_data->fall_speed *= fall_boost;*/
+    local->jump_boost = 0.8f + 0.4f * ((float)p.agility / 20.0f);
+    local->fall_boost = 0.9f + ((float)p.agility / 20.0f);
     local->close = 0;
     local->hard_close =  0;
     local->state = STATE_STANDING;
@@ -2147,7 +2152,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_pal_offset(obj, player_id * 48);
 
     // Object related stuff
-    object_set_gravity(obj, local->af_data->fall_speed);
+    object_set_gravity(obj, local->af_data->fall_speed * local->fall_boost);
     object_set_layers(obj, LAYER_HAR | (player_id == 0 ? LAYER_HAR1 : LAYER_HAR2));
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
