@@ -17,7 +17,6 @@ OPTION(USE_DUMB "Use libdumb for module playback" OFF)
 OPTION(USE_XMP "Use libxmp for module playback" ON)
 OPTION(USE_PNG "Add support for PNG screenshots" ON)
 OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
-OPTION(USE_SUBMODULES "Add libsd as submodule" ON)
 OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 
 # These flags are used for all builds
@@ -52,13 +51,9 @@ find_package(argtable2)
 CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STD_STRDUP)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
 
-# Only search for submodules if we want them
-IF(USE_SUBMODULES)
-    add_subdirectory(external)
-    MESSAGE(STATUS "Using submodule shadowdive: ${SHADOWDIVE_INCLUDE_DIR}")
-ELSE()
-    find_package(shadowdive)
-ENDIF()
+# Add libshadowdive
+add_subdirectory(external)
+MESSAGE(STATUS "Using shadowdive: ${SHADOWDIVE_INCLUDE_DIR}")
 
 # If USE_DUMB flag is on, turn on libdumb
 IF(USE_DUMB)
@@ -141,11 +136,7 @@ set(CORELIBS
 )
 
 # Shadowdive
-IF(USE_SUBMODULES)
-    set(CORELIBS ${CORELIBS} shadowdive)
-ELSE()
-    set(CORELIBS ${CORELIBS} ${SHADOWDIVE_LIBRARY})
-ENDIF()
+set(CORELIBS ${CORELIBS} shadowdive)
 
 # Handle module playback libraries
 IF(USE_DUMB)
