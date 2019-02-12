@@ -583,7 +583,7 @@ void har_take_damage(object *obj, const str* string, float damage) {
             object_set_custom_string(obj, str_c(&n));
             str_free(&n);
     
-            obj->vel.y = -7;
+            obj->vel.y = -7 * object_get_direction(obj);
             h->state = STATE_FALLEN;
             object_set_stride(obj, 1);
         } else {
@@ -1258,6 +1258,10 @@ void har_tick(object *obj) {
         }
     }
 
+    // See if we are being grabbed. We detect this by checking the
+    // "e" tag -- force to enemy position.
+    h->is_grabbed = player_frame_isset(obj, "e");
+
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
@@ -1287,9 +1291,6 @@ void har_tick(object *obj) {
             har_event_hit_wall(h, wall);
         }
     }
-
-    // See if we are being grabbed
-    h->is_grabbed = (obj->enemy_slide_state.timer > 0);
 
     // Check for HAR specific palette tricks
     if(player_frame_isset(obj, "ptr")) {
