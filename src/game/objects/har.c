@@ -1877,6 +1877,7 @@ int har_act(object *obj, int act_type) {
             case STATE_JUMPING:
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 vx = 0.0f;
+                DEBUG("Agi: %d", game_state_get_player(obj->gs, h->player_id)->pilot.agility);
                 vy = (float)h->af_data->jump_speed;
                 int jump_dir = 0;
                 if ((act_type == (ACT_UP|ACT_LEFT) && direction == OBJECT_FACE_LEFT) ||
@@ -2096,10 +2097,12 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // Health, endurance
     local->health_max = local->health = af_data->health * (p.endurance + 25)/35;
     local->endurance_max = local->endurance = (af_data->endurance * (p.endurance + 25) )/37;
-    /*local->af_data->forward_speed *= p.agility;*/
-    /*local->af_data->reverse_speed *= p.agility;*/
-    /*local->af_data->jump_speed *= p.agility;*/
-    /*local->af_data->fall_speed *= p.agility;*/
+    float jump_boost = 0.8f + 0.4f * ((float)p.agility / 20.0f);
+    float fall_boost = 0.9f + ((float)p.agility / 20.0f);
+    DEBUG("JUMP_BOOST = %f", jump_boost);
+    DEBUG("FALL_BOOST = %f", fall_boost);
+    local->af_data->jump_speed *= jump_boost;
+    local->af_data->fall_speed *= fall_boost;
     local->close = 0;
     local->hard_close =  0;
     local->state = STATE_STANDING;
