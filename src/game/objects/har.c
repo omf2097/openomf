@@ -1361,11 +1361,11 @@ void har_tick(object *obj) {
         if(h->executing_move == 0 && (h->state == STATE_CROUCHBLOCK || h->state == STATE_WALKFROM)) {
             push.x = 8.0f * -object_get_direction(obj);
         }
-        /*else if (h->executing_move == 1) {
-            push.x = 4.0f * -object_get_direction(obj);
-        }*/
-        else {
-            push.x = 4.0f * -object_get_direction(obj);
+        else if (h->executing_move == 1 && !h->is_wallhugging) {
+            push.x = 1.5f * -object_get_direction(obj);
+        }
+        else if (h->executing_move == 0 && !h->is_wallhugging){
+            push.x = 3.0f * -object_get_direction(obj);
         }
         object_set_vel(obj, push);
         h->flinching = 0;
