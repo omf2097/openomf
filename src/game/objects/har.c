@@ -448,7 +448,7 @@ void har_move(object *obj) {
                 har_floor_landing_effects(obj);
             /*}*/
         } else if (h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
-            float dampen = 0.4;
+            float dampen = 0.2f;
             vec2f vel = object_get_vel(obj);
             vec2i pos = object_get_pos(obj);
             if(pos.y > ARENA_FLOOR) {
