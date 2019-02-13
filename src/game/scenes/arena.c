@@ -388,27 +388,28 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
 
     DEBUG("Player %d hit wall %d", player_id, wall);
 
-    int on_air = 0;
-    if(o_har->pos.y < ARENA_FLOOR - 10) {
-        on_air = 1;
+    // HAR must be in the air to be get faceplanted to a wall.
+    if(o_har->pos.y >= ARENA_FLOOR - 10) {
+        return;
+    }
+
+    // Don't allow object to collide if it is being grabbed.
+    if(h->is_grabbed) {
+        return;
     }
 
     // The limit here is entirely guesswork, and might not be it at all
     // However, it is a close enough guess.
     // TODO: Find out how this really works.
-    int took_enough_damage = 0;
-    if(h->last_damage_value > 15) {
-        took_enough_damage = 1;
+    if(h->last_damage_value <= 15) {
+        return;
     }
 
     /*
      * When hitting the lightning arena wall, the HAr needs to get hit by lightning thingy.
      */
     if (scene->id == SCENE_ARENA2
-        && on_air
-        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && !h->is_grabbed
-        && took_enough_damage)
+        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL))
     {
         DEBUG("hit lightning wall %d", wall);
         h->state = STATE_WALLDAMAGE;
@@ -442,10 +443,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
       * On arena wall, the wall needs to pulse. Handle it here
       */
     if (scene->id == SCENE_ARENA4
-        && on_air
-        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && !h->is_grabbed
-        && took_enough_damage)
+        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL))
     {
         DEBUG("hit desert wall %d", wall);
         h->state = STATE_WALLDAMAGE;
@@ -468,10 +466,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
       */
     if(scene->id != SCENE_ARENA4
         && scene->id != SCENE_ARENA2
-        && on_air
-        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)
-        && !h->is_grabbed
-        && took_enough_damage)
+        && (h->state == STATE_FALLEN || h->state == STATE_RECOIL))
     {
         DEBUG("hit dusty wall %d", wall);
         h->state = STATE_WALLDAMAGE;
@@ -499,12 +494,9 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     /**
       * Handle generic collision stuff
       */
-    if(on_air
-        && !h->is_grabbed
-        && took_enough_damage
-        && (h->state == STATE_FALLEN
-            || h->state == STATE_RECOIL
-            || h->state == STATE_WALLDAMAGE))
+    if(h->state == STATE_FALLEN
+       || h->state == STATE_RECOIL
+       || h->state == STATE_WALLDAMAGE)
     {
         // Set hit animation
         object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);

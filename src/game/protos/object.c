@@ -355,13 +355,10 @@ void object_render(object *obj) {
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = obj->pos.y + rstate->o_correction.y - object_get_size(obj).y;
+        y = obj->pos.y - obj->cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
 
-        // Jumping is special case, we just fix damage done by har_fix_sprite_coords
         if(obj->cur_animation->id == ANIM_JUMPING) {
-            y -= 50;
-        } else {
-            y -= obj->cur_sprite->pos.y;
+            y -= 100;
         }
     } else {
         y = obj->pos.y + obj->cur_sprite->pos.y + rstate->o_correction.y;
@@ -455,7 +452,7 @@ void object_render_shadow(object *obj) {
             obj->pal_offset,
             flipmode,
             scale_y,
-            50,
+            65,
             color_create(0,0,0,255));
     }
 }

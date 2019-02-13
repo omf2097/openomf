@@ -127,6 +127,9 @@ typedef struct har_t {
     uint8_t is_grabbed; // Is being moved by another object. Set by ex, ey tags
     float last_damage_value; // Last damage value taken
 
+    float jump_boost;  // Agility generated speed modifier for jumping
+    float fall_boost;  // Agility generated speed modifier for falling
+
     int in_stasis_ticks; // Handle stasis activator
 
     int16_t health_max, health;
