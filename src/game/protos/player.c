@@ -378,7 +378,11 @@ void player_run(object *obj) {
 
     if(sd_script_isset(frame, "at")) {
         // set the object's X position to be behind the opponent
-        obj->pos.x = state->enemy->pos.x + (15 * object_get_direction(obj));
+        if(obj->pos.x > state->enemy->pos.x) { // From right to left
+            obj->pos.x = state->enemy->pos.x - object_get_size(obj).x / 2;
+        } else { // From left to right
+            obj->pos.x = state->enemy->pos.x + object_get_size(state->enemy).x / 2;
+        }
         object_set_direction(obj, object_get_direction(obj) * -1);
     }
 
