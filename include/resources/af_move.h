@@ -13,6 +13,7 @@ typedef struct af_move_t {
     uint8_t category;
     uint16_t points;
     uint8_t scrap_amount;
+    uint8_t collision_opts;
     float damage;
     str move_string;
     str footer_string;

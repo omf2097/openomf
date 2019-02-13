@@ -1776,6 +1776,11 @@ int har_act(object *obj, int act_type) {
         h->inputs[0] = '\0';
         h->executing_move = 1;
 
+        // Move flag is on -- make the HAR move backwards to avoid overlap.
+        if(move->collision_opts & 0x20) {
+            obj->pos.x -= object_get_size(obj).x / 2 * object_get_direction(obj);
+        }
+
         // Stop horizontal movement, when move is done
         // TODO: Make this work better
         vec2f spd = object_get_vel(obj);

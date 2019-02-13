@@ -14,6 +14,7 @@ void af_move_create(af_move *move, void *src, int id) {
     move->points = sdmv->points * 400;
     move->scrap_amount = sdmv->scrap_amount;
     move->pos_constraints = sdmv->unknown_2;
+    move->collision_opts = sdmv->unknown_18;
     animation_create(&move->ani, sdmv->animation, id);
 }
 
