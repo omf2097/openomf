@@ -1,6 +1,8 @@
 #ifndef _ANIMATION_MISC_H
 #define _ANIMATION_MISC_H
 
+#include <stddef.h>
+
 #include "formats/animation.h"
 #include "formats/bk.h"
 
