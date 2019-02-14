@@ -2,13 +2,10 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <png.h>
 
 #include "formats/vga_image.h"
 #include "formats/error.h"
-
-#ifdef USE_PNG
-    #include <png.h>
-#endif
 
 int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
     if(img == NULL) {
@@ -134,7 +131,6 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const sd_pa
 }
 
 int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
-#ifdef USE_PNG
     png_structp png_ptr;
     png_infop info_ptr;
     int ret = SD_SUCCESS;
@@ -229,14 +225,9 @@ error_1:
     fclose(handle);
 error_0:
     return ret;
-
-#else
-    return SD_FORMAT_NOT_SUPPORTED;
-#endif
 }
 
 int sd_vga_image_to_png(const sd_vga_image *img, const sd_palette *pal, const char *filename) {
-#ifdef USE_PNG
     if(img == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -314,7 +305,4 @@ error_1:
     fclose(handle);
 error_0:
     return ret;
-#else
-    return SD_FORMAT_NOT_SUPPORTED;
-#endif
 }

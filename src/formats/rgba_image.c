@@ -2,13 +2,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <png.h>
 
 #include "formats/rgba_image.h"
 #include "formats/error.h"
 
-#ifdef USE_PNG
-    #include <png.h>
-#endif
 
 #define STRIDE 4
 
@@ -107,7 +105,6 @@ int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a) {
 }
 
 int sd_rgba_image_to_png(const sd_rgba_image *img, const char *filename) {
-#ifdef USE_PNG
     png_structp png_ptr;
     png_infop info_ptr;
     int ret = SD_SUCCESS;
@@ -174,9 +171,6 @@ error_1:
     fclose(handle);
 error_0:
     return ret;
-#else
-    return SD_FORMAT_NOT_SUPPORTED;
-#endif
 }
 
 void sd_rgba_image_free(sd_rgba_image *img) {

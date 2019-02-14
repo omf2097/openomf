@@ -1,16 +1,13 @@
-#include "video/image.h"
-#include "utils/log.h"
-
 #include <stdlib.h>
 #include <memory.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
-
-// If png support is enabled, include header
-#ifdef USE_PNG
 #include <png.h>
-#endif
+
+#include "video/image.h"
+#include "utils/log.h"
+
 
 #define CHECK_COORD_BOUNDS(n, x) n = (n >= x ? (x-1) : (n < 0 ? 0 : n))
 
@@ -143,16 +140,7 @@ int image_write_tga(image *img, const char *filename) {
     return 0; // Success
 }
 
-int image_supports_png() {
-#ifdef USE_PNG
-    return 1;
-#else
-    return 0;
-#endif
-}
-
 int image_write_png(image *img, const char *filename) {
-#ifdef USE_PNG
     png_image out;
     memset(&out, 0, sizeof(out));
     out.version = PNG_IMAGE_VERSION;
@@ -170,8 +158,4 @@ int image_write_png(image *img, const char *filename) {
         return 1;
     }
     return 0;
-#else
-    PERROR("Writing PNG files is not supported!");
-    return 1; // PNG not supported, report failure
-#endif
 }

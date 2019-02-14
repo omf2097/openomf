@@ -16,7 +16,6 @@ OPTION(USE_TOOLS "Build tools" OFF)
 OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
 OPTION(USE_DUMB "Use libdumb for module playback" OFF)
 OPTION(USE_XMP "Use libxmp for module playback" ON)
-OPTION(USE_PNG "Add support for PNG screenshots" ON)
 OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
 OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 
@@ -47,6 +46,8 @@ find_package(SDL2)
 find_package(enet)
 find_package(confuse)
 find_package(argtable2)
+find_package(PNG)
+find_package(ZLIB)
 
 # Check functions and generate platform configuration file
 CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STD_STRDUP)
@@ -92,13 +93,6 @@ IF(USE_OGGVORBIS)
     add_definitions(-DUSE_OGGVORBIS)
 ENDIF()
 
-# Find PNG if it is switched on
-IF(USE_PNG)
-    find_package(PNG)
-    find_package(ZLIB)
-    add_definitions(-DUSE_PNG)
-ENDIF()
-
 # If tests are enabled, find CUnit
 IF(USE_TESTS)
     find_package(CUnit)
@@ -121,6 +115,8 @@ set(COREINCS
     ${Intl_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
     ${ARGTABLE2_INCLUDE_DIR}
+    ${PNG_INCLUDE_DIR}
+    ${ZLIB_INCLUDE_DIR}
 )
 
 set(CORELIBS
@@ -129,6 +125,8 @@ set(CORELIBS
     ${Intl_LIBRARIES}
     ${ENET_LIBRARY}
     ${ARGTABLE2_LIBRARY}
+    ${PNG_LIBRARY}
+    ${ZLIB_LIBRARY}
 )
 
 # Handle module playback libraries
@@ -151,12 +149,6 @@ ENDIF()
 IF(USE_OGGVORBIS)
     set(COREINCS ${COREINCS} ${OGG_INCLUDE_DIR} ${VORBIS_INCLUDE_DIR})
     set(CORELIBS ${CORELIBS} ${VORBISFILE_LIBRARY} ${VORBIS_LIBRARY} ${OGG_LIBRARY})
-ENDIF()
-
-# If we support PNG, add library incs etc.
-IF(USE_PNG)
-    set(COREINCS ${COREINCS} ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
-    set(CORELIBS ${CORELIBS} ${PNG_LIBRARY} ${ZLIB_LIBRARY})
 ENDIF()
 
 # MingW build should add mingw32 lib

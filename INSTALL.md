@@ -59,6 +59,8 @@ Required:
 * Gettext (if you have problems with libintl)
 * Enet: http://enet.bespin.org/
 * libargtable2: http://argtable.sourceforge.net/
+* libpng: http://www.libpng.org/pub/png/libpng.html (for .PNG screenshots)
+* zlib: http://www.zlib.net/ (for libpng)
 
 Recommended:
 * OpenAL: http://kcat.strangesoft.net/openal.html (for audio)
@@ -67,8 +69,6 @@ Recommended:
 Optional:
 * libvorbis: https://www.xiph.org/downloads/
 * libogg: https://www.xiph.org/downloads/
-* libpng: http://www.libpng.org/pub/png/libpng.html (for .PNG screenshots)
-* zlib: http://www.zlib.net/
 * libdumb (>=2.0.0): https://bitbucket.org/kode54/dumb (for module music)
 
 #### Debian
@@ -124,7 +124,6 @@ Some useful CMake flags:
 | CMAKE_INSTALL_PREFIX      | Installation path                       | -               | -       |
 | USE_TESTS                 | Compile unittests                       | On/Off          | Off     |
 | USE_OGGVORBIS             | Selects Vorbis support                  | On/Off          | Off     |
-| USE_PNG                   | Selects PNG screenshot support          | On/Off          | On      |
 | USE_OPENAL                | Selects OpenAL support                  | On/Off          | On      |
 | USE_DUMB                  | Selects libdumb support                 | On/Off          | Off     |
 | USE_XMP                   | Selects libxmp support                  | On/Off          | On      |
