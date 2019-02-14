@@ -2,7 +2,7 @@
 #define _joystick_H
 
 #include "controller/controller.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 typedef struct joystick_keys_t joystick_keys;
 typedef struct joystick_t joystick;

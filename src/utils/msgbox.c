@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "utils/msgbox.h"
 
 #ifdef STANDALONE_SERVER

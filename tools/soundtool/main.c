@@ -4,7 +4,7 @@
   * @license MIT
   */
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <argtable2.h>
 #include "formats/sounds.h"
 #include "formats/error.h"

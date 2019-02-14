@@ -2,7 +2,7 @@
 #define _NET_CONTROLLER_H
 
 #include "controller/controller.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <enet/enet.h>
 
 void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int id);

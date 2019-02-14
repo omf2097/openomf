@@ -1,7 +1,7 @@
 #ifndef _GAME_STATE_H
 #define _GAME_STATE_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "utils/vector.h"
 #include "utils/random.h"
 #include "game/utils/serial.h"

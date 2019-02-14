@@ -1,7 +1,7 @@
 #ifndef _CONSOLE_TYPE_H
 #define _CONSOLE_TYPE_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "game/protos/scene.h"
 
 typedef struct console_t {

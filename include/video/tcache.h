@@ -1,7 +1,7 @@
 #ifndef _TCACHE_H
 #define _TCACHE_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "video/surface.h"
 #include "video/screen_palette.h"
 #include "plugins/scaler_plugin.h"

@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #if defined(_WIN32) || defined(WIN32)
 #include <shlobj.h> //SHCreateDirectoryEx

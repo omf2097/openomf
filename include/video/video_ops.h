@@ -3,7 +3,7 @@
 
 #include "video/color.h"
 #include "video/surface.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 typedef struct video_state_t video_state;
 

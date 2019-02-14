@@ -1,7 +1,7 @@
 #ifndef _SURFACE_H
 #define _SURFACE_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "video/image.h"
 #include "video/screen_palette.h"
 #include "resources/palette.h"
