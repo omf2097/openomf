@@ -66,11 +66,14 @@ int audio_init(const char* sink_name) {
     }
 
     // Find requested sink
-    for(int i = 0; i < audio_get_sink_count(); i++) {
-        if(strcmp(sink_name, sinks[i].name) == 0) {
-            si = sinks[i];
+    int c = 0;
+    while(sinks[c].name != NULL) {
+        if(strcmp(sink_name, sinks[c].name) == 0) {
+            si = sinks[c];
             found = 1;
+            break;
         }
+        c++;
     }
     if(!found) {
         PERROR("Requested audio sink was not found!");

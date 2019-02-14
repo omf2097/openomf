@@ -99,7 +99,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Read enemy block offsets
     sd_reader_set(r, 300);
-    int offset_list[MAX_TRN_ENEMIES + 1]; // Should be large enough
+    int offset_list[MAX_TRN_ENEMIES + 2]; // Should be large enough
     memset(offset_list, 0, sizeof(offset_list));
     for(int i = 0; i < trn->enemy_count + 1; i++) {
         offset_list[i] = sd_read_dword(r);

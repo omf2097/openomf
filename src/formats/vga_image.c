@@ -205,7 +205,10 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     png_read_image(png_ptr, row_pointers);
 
     // Convert
-    sd_vga_image_create(img, w, h);
+    if(sd_vga_image_create(img, w, h) != SD_SUCCESS) {
+        ret = SD_OUT_OF_MEMORY;
+        goto error_3;
+    }
     for(int y = 0; y < h; y++) {
         png_byte* row = row_pointers[y];
         for(int x = 0; x < w; x++) {
