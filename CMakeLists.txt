@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(OpenOMF C)
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckSymbolExists)
@@ -8,7 +8,7 @@ INCLUDE(CheckSymbolExists)
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "6")
 set(VERSION_PATCH "6")
-SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 # Options
 OPTION(USE_TESTS "Build unittests" OFF)
@@ -50,53 +50,53 @@ find_package(PNG)
 find_package(ZLIB)
 
 # Check functions and generate platform configuration file
-CHECK_SYMBOL_EXISTS(strdup "string.h" HAVE_STD_STRDUP)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
+check_symbol_exists(strdup "string.h" HAVE_STD_STRDUP)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
 
 # If USE_DUMB flag is on, turn on libdumb
-IF(USE_DUMB)
+if(USE_DUMB)
     find_package(dumb)
     add_definitions(-DUSE_DUMB)
     if(MINGW)
         add_definitions(-D_FILE_OFFSET_BITS=64)
     endif()
-ENDIF()
+endif()
 
 # If XMP has been selected, attempt to find it
-IF(USE_XMP)
+if(USE_XMP)
     find_package(xmp)
     add_definitions(-DUSE_XMP)
-ENDIF()
+endif()
 
 # Audio sink selection
-IF(USE_OPENAL)
+if(USE_OPENAL)
     find_package(OpenAL)
     add_definitions(-DUSE_OPENAL)
-ELSE()
-    MESSAGE(STATUS "Note! No audio sink selected; Music/sounds will not play.")
-ENDIF()
+else()
+    message(STATUS "Note! No audio sink selected; Music/sounds will not play.")
+endif()
 
 # When building with MingW, do not look for Intl
 # Also, use static libgcc when on mingw
-IF(MINGW)
+if(MINGW)
     set(LIBINTL_INCLUDE_DIR "")
     set(LIBINTL_LIBRARIES "")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
-ELSE()
+else()
     find_package(Intl)
-ENDIF()
+endif()
 
 # If we want to build support for vorbis streaming, find these too
-IF(USE_OGGVORBIS)
+if(USE_OGGVORBIS)
     find_package(ogg)
     find_package(vorbis)
     add_definitions(-DUSE_OGGVORBIS)
-ENDIF()
+endif()
 
 # If tests are enabled, find CUnit
-IF(USE_TESTS)
+if(USE_TESTS)
     find_package(CUnit)
-ENDIF()
+endif()
 
 # Find OpenOMF core sources
 file(GLOB_RECURSE OPENOMF_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/*/*.c")
@@ -124,42 +124,43 @@ set(CORELIBS
 )
 
 # Handle module playback libraries
-IF(USE_DUMB)
+if(USE_DUMB)
     set(CORELIBS ${CORELIBS} ${DUMB_LIBRARY})
     set(COREINCS ${COREINCS} ${DUMB_INCLUDE_DIR})
-ENDIF()
-IF(USE_XMP)
+endif()
+if(USE_XMP)
     set(CORELIBS ${CORELIBS} ${XMP_LIBRARY})
     set(COREINCS ${COREINCS} ${XMP_INCLUDE_DIR})
-ENDIF()
+endif()
 
 # Audio sinks
-IF(USE_OPENAL)
+if(USE_OPENAL)
     set(CORELIBS ${CORELIBS} ${OPENAL_LIBRARY})
     set(COREINCS ${COREINCS} ${OPENAL_INCLUDE_DIR})
-ENDIF()
+endif()
 
 # If we support ogg vorbis, add library includes etc.
-IF(USE_OGGVORBIS)
+if(USE_OGGVORBIS)
     set(COREINCS ${COREINCS} ${OGG_INCLUDE_DIR} ${VORBIS_INCLUDE_DIR})
     set(CORELIBS ${CORELIBS} ${VORBISFILE_LIBRARY} ${VORBIS_LIBRARY} ${OGG_LIBRARY})
-ENDIF()
+endif()
 
 # MingW build should add mingw32 lib
-IF(MINGW)
+if(MINGW)
     set(CORELIBS mingw32 ${CORELIBS})
-ENDIF()
+endif()
 
 # On windows, add winsock2 and winmm
-IF(WIN32)
+if(WIN32)
     set(CORELIBS ${CORELIBS} ws2_32 winmm)
-ENDIF()
+endif()
 
 # On unix platforms, add libm (sometimes needed, it seems)
-IF(UNIX)
+if(UNIX)
     SET(CORELIBS ${CORELIBS} m)
-ENDIF()
+endif()
 
+# Set include directories for all builds
 include_directories(${COREINCS})
 
 # Build core sources first as an object library
@@ -208,25 +209,26 @@ if(USE_TOOLS)
 endif()
 
 # Enable AddressSanitizer if requested (these libs need to be first on the list!)
-IF(USE_SANITIZERS)
+if(USE_SANITIZERS)
     set(CORELIBS asan ubsan ${CORELIBS})
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address,undefined")
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address,undefined")
     message(STATUS "DEBUG: Asan and Ubsan enabled")
-ENDIF()
+endif()
 
 # Don't show console on mingw in release builds
-IF(MINGW)
-    IF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+if(MINGW)
+    if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
         set_target_properties(openomf PROPERTIES LINK_FLAGS "-mwindows")
-    ENDIF(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
-ENDIF(MINGW)
+    endif(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+endif()
+
+# Link options for main binary
 target_link_libraries(openomf ${CORELIBS})
 set_property(TARGET openomf PROPERTY C_STANDARD 11)
 
-
 # Testing stuff
-IF(CUNIT_FOUND)
+if(CUNIT_FOUND)
     enable_testing()
 
     include_directories(${CUNIT_INCLUDE_DIR} testing/ include/)
@@ -240,18 +242,18 @@ IF(CUNIT_FOUND)
     set_property(TARGET openomf_test_main PROPERTY C_STANDARD 11)
 
     add_test(main openomf_test_main)
-ENDIF(CUNIT_FOUND)
+endif()
 
 # Packaging
 add_subdirectory(packaging)
 
 # Installation
-INSTALL(TARGETS openomf
+install(TARGETS openomf
     RUNTIME
     DESTINATION bin
     COMPONENT Binaries
 )
-INSTALL(FILES resources/openomf.bk resources/openomf_icon.png
+install(FILES resources/openomf.bk resources/openomf_icon.png
     DESTINATION share/games/openomf/
     COMPONENT Data
 )
