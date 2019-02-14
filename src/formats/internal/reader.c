@@ -101,85 +101,85 @@ int sd_peek_buf(sd_reader *reader, char *buf, int len) {
 }
 
 uint8_t sd_read_ubyte(sd_reader *reader) {
-    uint8_t d;
+    uint8_t d = 0;
     sd_read_buf(reader, (char*)&d, 1);
     return d;
 }
 
 uint16_t sd_read_uword(sd_reader *reader) {
-    uint16_t d;
+    uint16_t d = 0;
     sd_read_buf(reader, (char*)&d, 2);
     return d;
 }
 
 uint32_t sd_read_udword(sd_reader *reader) {
-    uint32_t d;
+    uint32_t d = 0;
     sd_read_buf(reader, (char*)&d, 4);
     return d;
 }
 
 int8_t sd_read_byte(sd_reader *reader) {
-    int8_t d;
+    int8_t d = 0;
     sd_read_buf(reader, (char*)&d, 1);
     return d;
 }
 
 int16_t sd_read_word(sd_reader *reader) {
-    int16_t d;
+    int16_t d = 0;
     sd_read_buf(reader, (char*)&d, 2);
     return d;
 }
 
 int32_t sd_read_dword(sd_reader *reader) {
-    int32_t d;
+    int32_t d = 0;
     sd_read_buf(reader, (char*)&d, 4);
     return d;
 }
 
 float sd_read_float(sd_reader *reader) {
-    float f;
+    float f = 0;
     sd_read_buf(reader, (char*)&f, 4);
     return f;
 }
 
 uint8_t sd_peek_ubyte(sd_reader *reader) {
-    uint8_t d;
+    uint8_t d = 0;
     sd_peek_buf(reader, (char*)&d, 1);
     return d;
 }
 
 uint16_t sd_peek_uword(sd_reader *reader) {
-    uint16_t d;
+    uint16_t d = 0;
     sd_peek_buf(reader, (char*)&d, 2);
     return d;
 }
 
 uint32_t sd_peek_udword(sd_reader *reader) {
-    uint32_t d;
+    uint32_t d = 0;
     sd_peek_buf(reader, (char*)&d, 4);
     return d;
 }
 
 int8_t sd_peek_byte(sd_reader *reader) {
-    int8_t d;
+    int8_t d = 0;
     sd_peek_buf(reader, (char*)&d, 1);
     return d;
 }
 
 int16_t sd_peek_word(sd_reader *reader) {
-    int16_t d;
+    int16_t d = 0;
     sd_peek_buf(reader, (char*)&d, 2);
     return d;
 }
 
 int32_t sd_peek_dword(sd_reader *reader) {
-    int32_t d;
+    int32_t d = 0;
     sd_peek_buf(reader, (char*)&d, 4);
     return d;
 }
 
 float sd_peek_float(sd_reader *reader) {
-    float f;
+    float f = 0;
     sd_peek_buf(reader, (char*)&f, 4);
     return f;
 }
