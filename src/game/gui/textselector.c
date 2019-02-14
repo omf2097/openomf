@@ -145,9 +145,6 @@ static void textselector_free(component *c) {
 
 component* textselector_create(const text_settings *tconf, const char *text, textselector_toggle_cb cb, void *userdata) {
     component *c = widget_create();
-    c->supports_disable = 1;
-    c->supports_focus = 1;
-    c->supports_select = 1;
 
     textselector *tb = malloc(sizeof(textselector));
     memset(tb, 0, sizeof(textselector));

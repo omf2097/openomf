@@ -34,7 +34,7 @@ text_settings* label_get_text_settings(component *c) {
 component* label_create(const text_settings *tconf, const char *text) {
     component *c = widget_create();
     component_disable(c, 1);
-    c->supports_disable = 0;
+    c->supports_disable = 1;
     c->supports_select = 0;
     c->supports_focus = 0;
 

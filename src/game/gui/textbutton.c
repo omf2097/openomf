@@ -116,9 +116,6 @@ static void textbutton_free(component *c) {
 
 component* textbutton_create(const text_settings *tconf, const char *text, int disabled, textbutton_click_cb cb, void *userdata) {
     component *c = widget_create();
-    c->supports_disable = 1;
-    c->supports_focus = 1;
-    c->supports_select = 1;
     component_disable(c, disabled);
 
     textbutton *tb = malloc(sizeof(textbutton));

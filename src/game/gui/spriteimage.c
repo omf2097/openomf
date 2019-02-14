@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #include "game/gui/spriteimage.h"
 #include "game/gui/widget.h"
@@ -29,7 +29,7 @@ component* spriteimage_create(surface *img) {
     component *c = widget_create();
     component_disable(c, 1);
     c->supports_focus = 0;
-    c->supports_disable = 0;
+    c->supports_disable = 1;
     c->supports_select = 0;
 
     spriteimage *sb = malloc(sizeof(spriteimage));

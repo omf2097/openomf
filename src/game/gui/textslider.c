@@ -116,9 +116,6 @@ static void textslider_free(component *c) {
 
 component* textslider_create(const text_settings *tconf, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata) {
     component *c = widget_create();
-    c->supports_disable = 1;
-    c->supports_focus = 1;
-    c->supports_select = 1;
 
     textslider *tb = malloc(sizeof(textslider));
     memset(tb, 0, sizeof(textslider));

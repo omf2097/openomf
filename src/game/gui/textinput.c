@@ -130,9 +130,6 @@ void textinput_enable_background(component *c, int enabled) {
 
 component* textinput_create(const text_settings *tconf, const char *text, const char *initialvalue) {
     component *c = widget_create();
-    c->supports_disable = 1;
-    c->supports_focus = 1;
-    c->supports_select = 1;
 
     textinput *tb = malloc(sizeof(textinput));
     memset(tb, 0, sizeof(textinput));

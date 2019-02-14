@@ -58,14 +58,20 @@ void component_focus(component *c, int focused) {
 }
 
 int component_is_disabled(const component *c) {
+    if(!c->supports_disable)
+        return 0;
     return c->is_disabled;
 }
 
 int component_is_selected(const component *c) {
+    if(!c->supports_select)
+        return 0;
     return c->is_selected;
 }
 
 int component_is_focused(const component *c) {
+    if(!c->supports_focus)
+        return 0;
     return c->is_focused;
 }
 
