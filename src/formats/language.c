@@ -58,7 +58,7 @@ int sd_language_load(sd_language *language, const char *filename) {
     
     // Read titles and offsets
     unsigned int pos = 0;
-    while((offset = sd_read_udword(r)) < file_size) {
+    while((offset = sd_read_udword(r)) < file_size && pos < string_count) {
         sd_read_buf(r, language->strings[pos].description, 32);
         language->strings[pos].description[31] = 0;
         offsets[pos] = offset;
