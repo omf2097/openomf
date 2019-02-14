@@ -23,8 +23,8 @@ OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 set(CMAKE_C_FLAGS "-Wall")
 set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer -DNDEBUG")
-set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
-set(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "-O2 -Wl,-s -DNDEBUG")
+set(CMAKE_C_FLAGS_MINSIZEREL "-Os -Wl,-s -DNDEBUG")
 add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH})
 
 # See if we have Git, and use it to fetch current SHA1 hash
@@ -98,12 +98,6 @@ IF(USE_TESTS)
     find_package(CUnit)
 ENDIF()
 
-# Only strip on GCC (clang does not appreciate)
-IF(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wl,-s")
-    set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
-ENDIF()
-
 # Find OpenOMF core sources
 file(GLOB_RECURSE OPENOMF_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/*/*.c")
 
@@ -163,7 +157,7 @@ ENDIF()
 
 # On unix platforms, add libm (sometimes needed, it seems)
 IF(UNIX)
-    SET(CORELIBS ${CORELIBS} -lm)
+    SET(CORELIBS ${CORELIBS} m)
 ENDIF()
 
 include_directories(${COREINCS})
@@ -178,7 +172,6 @@ add_executable(openomf src/main.c src/engine.c)
 
 # Build tools if requested
 if(USE_TOOLS)
-
     add_executable(bktool tools/bktool/main.c
                           tools/shared/animation_misc.c
                           tools/shared/conversions.c)
@@ -202,7 +195,7 @@ if(USE_TOOLS)
     target_link_libraries(aftool ${CORELIBS})
     target_link_libraries(soundtool ${CORELIBS})
     target_link_libraries(fonttool ${CORELIBS})
-    target_link_libraries(languagetool ${CORELIBS} ${})
+    target_link_libraries(languagetool ${CORELIBS})
     target_link_libraries(omf_parse ${CORELIBS})
     target_link_libraries(afdiff ${CORELIBS})
     target_link_libraries(rectool ${CORELIBS})
