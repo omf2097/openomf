@@ -6,6 +6,7 @@
 
 #include "formats/rgba_image.h"
 #include "formats/error.h"
+#include "utils/log.h"
 
 
 #define STRIDE 4
@@ -105,72 +106,27 @@ int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a) {
 }
 
 int sd_rgba_image_to_png(const sd_rgba_image *img, const char *filename) {
-    png_structp png_ptr;
-    png_infop info_ptr;
-    int ret = SD_SUCCESS;
-
     if(img == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
 
-    char *rows[img->h];
-    for(int y = 0; y < img->h; y++) {
-        rows[y] = img->data + (y * img->w * 4);
+    png_image out;
+    memset(&out, 0, sizeof(out));
+    out.version = PNG_IMAGE_VERSION;
+    out.opaque = NULL;
+    out.width = img->w;
+    out.height = img->h;
+    out.format = PNG_FORMAT_RGBA;
+    out.flags = 0;
+    out.colormap_entries = 0;
+
+    png_image_write_to_file(&out, filename, 0, img->data, img->w * 4, NULL);
+
+    if(PNG_IMAGE_FAILED(out)) {
+        PERROR("Unable to write PNG file: %s", out.message);
+        return SD_FILE_WRITE_ERROR;
     }
-
-    FILE *handle = fopen(filename, "wb");
-    if(handle == NULL) {
-        ret = SD_FILE_OPEN_ERROR;
-        goto error_0;
-    }
-
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if(!png_ptr) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_1;
-    }
-
-    info_ptr = png_create_info_struct(png_ptr);
-    if(!info_ptr) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_2;
-    }
-
-    if(setjmp(png_jmpbuf(png_ptr))) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_2;
-    }
-
-    png_init_io(png_ptr, handle);
-
-    // Write header. RGBA, 8 bits per pixel
-    png_set_IHDR(png_ptr,
-                 info_ptr,
-                 img->w,
-                 img->h,
-                 8,
-                 PNG_COLOR_TYPE_RGBA,
-                 PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE,
-                 PNG_FILTER_TYPE_BASE);
-
-    if(setjmp(png_jmpbuf(png_ptr))) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_2;
-    }
-
-    // Write data
-    png_write_info(png_ptr, info_ptr);
-    png_write_image(png_ptr, (void*)rows);
-    png_write_end(png_ptr, NULL);
-
-    // Free everything
-error_2:
-    png_destroy_write_struct(&png_ptr, NULL);
-error_1:
-    fclose(handle);
-error_0:
-    return ret;
+    return SD_SUCCESS;
 }
 
 void sd_rgba_image_free(sd_rgba_image *img) {
