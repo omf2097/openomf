@@ -218,7 +218,7 @@ int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
     return SD_SUCCESS;
 }
 
-int sd_script_encode(const sd_script *script, char* str) {
+int sd_script_encode(const sd_script *script, char* str, size_t len) {
     if(script == NULL || str == NULL)
         return SD_INVALID_INPUT;
 
@@ -227,12 +227,12 @@ int sd_script_encode(const sd_script *script, char* str) {
         sd_script_frame *frame = &script->frames[i];
         for(int k = 0; k < frame->tag_count; k++) {
             sd_script_tag *tag = &frame->tags[k];
-            s += sprintf(str + s, "%s", tag->key);
+            s += snprintf(str + s, len - s, "%s", tag->key);
             if(tag->has_param) {
-                s += sprintf(str + s, "%d", tag->value);
+                s += snprintf(str + s, len - s, "%d", tag->value);
             }
         }
-        s += sprintf(str + s, "%c%d-", frame->sprite + 65, frame->tick_len);
+        s += snprintf(str + s, len - s, "%c%d-", frame->sprite + 65, frame->tick_len);
     }
 
     // Overwrite the last '-'
@@ -253,11 +253,11 @@ int sd_script_encoded_length(const sd_script *script) {
             sd_script_tag *tag = &frame->tags[k];
             s += strlen(tag->key); // Tag length
             if(tag->has_param) {
-                s += sprintf(tmp, "%d", tag->value); // Tag value length
+                s += snprintf(tmp, sizeof(tmp) - s, "%d", tag->value); // Tag value length
             }
         }
         s += 2; // sprite key and the '-' char
-        s += sprintf(tmp, "%d", frame->tick_len); // Tick length char count
+        s += snprintf(tmp, sizeof(tmp) - s, "%d", frame->tick_len); // Tick length char count
     }
     s--; // Minus the last '-'
     return s;

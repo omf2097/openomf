@@ -55,7 +55,7 @@ void test_script_encoded_length(void) {
 void test_script_encode(void) {
     char buf[1024];
     memset(buf, 0, 1024);
-    CU_ASSERT(sd_script_encode(&script, buf) == SD_SUCCESS);
+    CU_ASSERT(sd_script_encode(&script, buf, 1024) == SD_SUCCESS);
     CU_ASSERT(strcmp(OK_STR_ENC, buf) == 0);
 }
 
@@ -184,7 +184,7 @@ void test_script_all(void) {
         CU_ASSERT_FATAL(sd_script_create(&s) == SD_SUCCESS);
         int ret = sd_script_decode(&s, test_strings[i], NULL);
         if(ret == SD_SUCCESS) {
-            CU_ASSERT(sd_script_encode(&s, buf) == SD_SUCCESS);
+            CU_ASSERT(sd_script_encode(&s, buf, 1024) == SD_SUCCESS);
         } else {
             CU_FAIL("Parser failed. Broken string ?");
         }

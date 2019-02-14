@@ -4,7 +4,7 @@
   * @license MIT
   */
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <argtable2.h>
 #include <stdint.h>
 #include <string.h>

@@ -35,8 +35,8 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     }
 
     // Copy move and footer strings
-    strcpy(dst->move_string, src->move_string);
-    strcpy(dst->footer_string, src->footer_string);
+    strncpy(dst->move_string, src->move_string, sizeof(dst->move_string));
+    strncpy(dst->footer_string, src->footer_string, sizeof(dst->footer_string));
 
     // Everything else
     dst->unknown_0 = src->unknown_0;
@@ -213,7 +213,7 @@ int sd_move_set_footer_string(sd_move *move, const char* str) {
     if(strlen(str) >= SD_MOVE_FOOTER_STRING_MAX-1) {
         return SD_INVALID_INPUT;
     }
-    strcpy(move->footer_string, str);
+    strncpy(move->footer_string, str, sizeof(move->footer_string));
     return SD_SUCCESS;
 }
 
@@ -221,6 +221,6 @@ int sd_move_set_move_string(sd_move *move, const char *str) {
     if(strlen(str) >= SD_MOVE_STRING_MAX-1) {
         return SD_INVALID_INPUT;
     }
-    strcpy(move->move_string, str);
+    strncpy(move->move_string, str, sizeof(move->move_string));
     return SD_SUCCESS;
 }

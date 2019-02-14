@@ -64,7 +64,7 @@ int sd_animation_set_anim_string(sd_animation *ani, const char *str) {
     if(strlen(str) >= SD_ANIMATION_STRING_MAX) {
         return SD_INVALID_INPUT;
     }
-    strcpy(ani->anim_string, str);
+    strncpy(ani->anim_string, str, sizeof(ani->anim_string));
     return SD_SUCCESS;
 }
 
@@ -114,7 +114,7 @@ int sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) {
     if(strlen(str) >= SD_EXTRA_STRING_MAX) {
         return SD_INVALID_INPUT;
     }
-    strcpy(ani->extra_strings[num], str);
+    strncpy(ani->extra_strings[num], str, SD_EXTRA_STRING_MAX);
     return SD_SUCCESS;
 }
 
@@ -122,7 +122,7 @@ int sd_animation_push_extra_string(sd_animation *anim, const char *str) {
     if(strlen(str) >= SD_EXTRA_STRING_MAX || anim->extra_string_count >= SD_EXTRASTR_COUNT_MAX) {
         return SD_INVALID_INPUT;
     }
-    strcpy(anim->extra_strings[anim->extra_string_count++], str);
+    strncpy(anim->extra_strings[anim->extra_string_count++], str, SD_EXTRA_STRING_MAX);
     return SD_SUCCESS;
 }
 

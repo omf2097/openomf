@@ -102,7 +102,7 @@ int sd_script_decode(sd_script *script, const char* str, int *invalid_pos);
  * \param script Script structure to encode
  * \param str Target string buffer. Make sure it's large enough!
  */
-int sd_script_encode(const sd_script *script, char* str);
+int sd_script_encode(const sd_script *script, char* str, size_t len);
 
 /*! \brief Find the encoded length of a script
  *

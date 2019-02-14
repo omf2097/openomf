@@ -548,7 +548,7 @@ void move_strip_key(sd_move *move, sd_animation *ani, const char **key, int kcou
     int kn = move_key_get_id(key[0]);
     switch(kn) {
         case 16:
-            string_strip(move->footer_string, tag);
+            string_strip(move->footer_string, sizeof(move->footer_string), tag);
             break;
         default:
             anim_strip_key(ani, kn, key, kcount, tag);

@@ -32,7 +32,7 @@ int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
     dst->hazard_damage = src->hazard_damage;
 
     // Footer string
-    strcpy(dst->footer_string, src->footer_string);
+    strncpy(dst->footer_string, src->footer_string, sizeof(dst->footer_string));
 
     // Copy animation (if exists)
     if(src->animation != NULL) {
@@ -159,6 +159,6 @@ int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data) {
     if(strlen(data) >= SD_BK_FOOTER_STRING_MAX-1) {
         return SD_INVALID_INPUT;
     }
-    strcpy(bka->footer_string, data);
+    strncpy(bka->footer_string, data, sizeof(bka->footer_string));
     return SD_SUCCESS;
 }
