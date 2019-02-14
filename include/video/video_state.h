@@ -1,7 +1,7 @@
 #ifndef _VIDEO_STATE_H
 #define _VIDEO_STATE_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "resources/palette.h"
 #include "video/screen_palette.h"
 #include "video/video_ops.h"

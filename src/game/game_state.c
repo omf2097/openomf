@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <math.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "controller/keyboard.h"
 #include "controller/joystick.h"
 #include "controller/rec_controller.h"

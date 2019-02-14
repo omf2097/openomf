@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "game/protos/object.h"
 #include "game/scenes/mechlab.h"

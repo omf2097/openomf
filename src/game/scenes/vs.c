@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "utils/log.h"
 #include "utils/random.h"
 #include "video/video.h"

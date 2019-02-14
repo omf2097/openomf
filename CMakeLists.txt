@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.7)
 project(OpenOMF C)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
@@ -42,12 +42,15 @@ if(GIT_FOUND)
 endif()
 
 # System packages (hard dependencies)
-find_package(SDL2)
+find_package(SDL2 REQUIRED)
 find_package(enet)
 find_package(confuse)
 find_package(argtable2)
 find_package(PNG)
 find_package(ZLIB)
+
+# Fix SDL2 library defs
+string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
 
 # Check functions and generate platform configuration file
 check_symbol_exists(strdup "string.h" HAVE_STD_STRDUP)
@@ -104,7 +107,7 @@ file(GLOB_RECURSE OPENOMF_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/*/*.c")
 set(COREINCS
     include
     ${CMAKE_CURRENT_BINARY_DIR}/include/
-    ${SDL2_INCLUDE_DIR}
+    ${SDL2_INCLUDE_DIRS}
     ${CONFUSE_INCLUDE_DIR}
     ${Intl_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
@@ -114,7 +117,7 @@ set(COREINCS
 )
 
 set(CORELIBS
-    ${SDL2_LIBRARY}
+    ${SDL2_LIBRARIES}
     ${CONFUSE_LIBRARY}
     ${Intl_LIBRARIES}
     ${ENET_LIBRARY}

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "game/gui/textbutton.h"
 #include "game/gui/menu_background.h"

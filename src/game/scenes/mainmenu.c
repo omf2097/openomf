@@ -1,4 +1,4 @@
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "audio/music.h"
 #include "video/video.h"
 #include "resources/ids.h"

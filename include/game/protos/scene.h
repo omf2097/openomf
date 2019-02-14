@@ -1,7 +1,7 @@
 #ifndef _SCENE_H
 #define _SCENE_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "controller/controller.h"
 #include "game/protos/object.h"
 #include "game/game_player.h"

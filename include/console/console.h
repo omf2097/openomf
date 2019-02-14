@@ -1,7 +1,7 @@
 #ifndef _CONSOLE_H
 #define _CONSOLE_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "game/game_state_type.h"
 
 // return 0 on success, otherwise return error code

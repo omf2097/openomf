@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "game/gui/textinput.h"
 #include "game/gui/widget.h"

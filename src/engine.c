@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <signal.h> // signal()
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "engine.h"
 #include "utils/log.h"
 #include "utils/config.h"

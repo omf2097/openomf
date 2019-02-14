@@ -3,7 +3,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <argtable2.h>
 #ifdef USE_DUMB
 #include <dumb.h>
