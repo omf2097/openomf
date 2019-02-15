@@ -318,7 +318,7 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             printf("%s\n", move->move_string);
             break;
         case 16:
-            printf("%s\n", move->footer_string ? move->footer_string : "(null)");
+            printf("%s\n", move->footer_string);
             break;
         default:
             anim_get_key(ani, kn, key, kcount, pcount);
