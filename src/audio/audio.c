@@ -60,7 +60,7 @@ int audio_init(const char* sink_name) {
     int found = 0;
 
     // If null sink given, disable audio
-    if(sink_name == NULL) {
+    if(sink_name == NULL || strlen(sink_name) <= 0) {
         INFO("Audio sink NOT initialized; audio not available.");
         return 0;
     }
