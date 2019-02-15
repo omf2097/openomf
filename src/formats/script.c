@@ -222,6 +222,13 @@ int sd_script_encode(const sd_script *script, char* str, size_t len) {
     if(script == NULL || str == NULL)
         return SD_INVALID_INPUT;
 
+    // If there are no frames, then we just return an empty string.
+    if(script->frame_count <= 0) {
+        s[0] = 0;
+        reutrn SD_SUCCESS;
+    }
+
+    // Frames exist. Walk through each, and output tags and ending frame tag + duration
     int s = 0;
     for(int i = 0; i < script->frame_count; i++) {
         sd_script_frame *frame = &script->frames[i];

@@ -46,7 +46,8 @@ int sd_language_load(sd_language *language, const char *filename) {
     }
     sd_reader_set(r, 0);
 
-    if (!string_count) {
+    // There should be at least one string
+    if(string_count <= 0) {
         sd_reader_close(r);
         return SD_FILE_INVALID_TYPE;
     }

@@ -82,7 +82,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Read enemy count and make sure it seems somwhat correct
     int32_t enemy_count  = sd_read_dword(r);
-    if(enemy_count >= MAX_TRN_ENEMIES || enemy_count < 0) {
+    if(enemy_count >= MAX_TRN_ENEMIES || enemy_count <= 0) {
         goto error_0;
     }
 
