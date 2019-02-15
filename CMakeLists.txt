@@ -23,8 +23,8 @@ OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 set(CMAKE_C_FLAGS "-Wall")
 set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer -DNDEBUG")
-set(CMAKE_C_FLAGS_RELEASE "-O2 -Wl,-s -DNDEBUG")
-set(CMAKE_C_FLAGS_MINSIZEREL "-Os -Wl,-s -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG")
 add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH})
 
 # See if we have Git, and use it to fetch current SHA1 hash
@@ -99,6 +99,12 @@ endif()
 # If tests are enabled, find CUnit
 if(USE_TESTS)
     find_package(CUnit)
+endif()
+
+# Only strip on GCC (clang does not appreciate)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wl,-s")
+    set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
 endif()
 
 # Find OpenOMF core sources
