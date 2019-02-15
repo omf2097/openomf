@@ -66,6 +66,12 @@ int sd_language_load(sd_language *language, const char *filename) {
         pos++;
     }
 
+    // Valid file with no content
+    if(pos <= 0) {
+        sd_reader_close(r);
+        return SD_SUCCESS;
+    }
+
     offsets[pos] = file_size;
     
     // Read real titles

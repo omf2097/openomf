@@ -50,13 +50,15 @@ static void free_locales(sd_tournament_file *trn) {
 }
 
 int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name) {
-    if(trn == NULL || bk_name == NULL) return SD_INVALID_INPUT;
+    if(trn == NULL || bk_name == NULL)
+        return SD_INVALID_INPUT;
     snprintf(trn->bk_name, sizeof(trn->bk_name), "%s", bk_name);
     return SD_SUCCESS;
 }
 
 int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
-    if(trn == NULL || pic_name == NULL) return SD_INVALID_INPUT;
+    if(trn == NULL || pic_name == NULL)
+        return SD_INVALID_INPUT;
     size_t len = strlen(pic_name) + 1;
     trn->pic_file = realloc(trn->pic_file, len);
     snprintf(trn->pic_file, len, "%s", pic_name);
@@ -82,7 +84,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Read enemy count and make sure it seems somwhat correct
     int32_t enemy_count  = sd_read_dword(r);
-    if(enemy_count >= MAX_TRN_ENEMIES || enemy_count <= 0) {
+    if(enemy_count >= MAX_TRN_ENEMIES || enemy_count < 0) {
         goto error_0;
     }
 
@@ -123,7 +125,9 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     }
 
     // Seek sprite start offset
-    sd_reader_set(r, offset_list[trn->enemy_count]);
+    if(trn->enemy_count > 0) {
+        sd_reader_set(r, offset_list[trn->enemy_count]);
+    }
 
     // Allocate locales
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
