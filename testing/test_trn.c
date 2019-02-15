@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 #include "formats/tournament.h"
@@ -30,6 +31,10 @@ void test_sd_trn_roundtripping(void) {
 
 	memset(&n_trn.pal, 64, sizeof(n_trn.pal));
 
+	n_trn.enemies[0] = calloc(1, sizeof(sd_pilot));
+	n_trn.enemy_count = 1;
+	snprintf(n_trn.enemies[0]->name, 18, "test_pilot");
+
 	CU_ASSERT(sd_tournament_save(&n_trn, "test.trn") == SD_SUCCESS);
 	CU_ASSERT(sd_tournament_load(&l_trn, "test.trn") == SD_SUCCESS);
 
@@ -42,6 +47,8 @@ void test_sd_trn_roundtripping(void) {
 
 	CU_ASSERT_STRING_EQUAL(n_trn.bk_name, l_trn.bk_name);
 	CU_ASSERT_STRING_EQUAL(n_trn.pic_file, l_trn.pic_file);
+
+	CU_ASSERT_STRING_EQUAL(n_trn.enemies[0]->name, l_trn.enemies[0]->name);
 
 	sd_tournament_free(&n_trn);
 	sd_tournament_free(&l_trn);

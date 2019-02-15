@@ -31,8 +31,10 @@ static void free_enemies(sd_tournament_file *trn) {
 static void free_locales(sd_tournament_file *trn) {
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         if(trn->locales[i]) {
-            if(trn->locales[i]->logo)
+            if(trn->locales[i]->logo) {
                 sd_sprite_free(trn->locales[i]->logo);
+                free(trn->locales[i]->logo);
+            }
             if(trn->locales[i]->description)
                 free(trn->locales[i]->description);
             if(trn->locales[i]->title)
@@ -84,7 +86,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Read enemy count and make sure it seems somwhat correct
     int32_t enemy_count  = sd_read_dword(r);
-    if(enemy_count >= MAX_TRN_ENEMIES || enemy_count < 0) {
+    if(enemy_count >= MAX_TRN_ENEMIES || enemy_count <= 0) {
         goto error_0;
     }
 
@@ -125,9 +127,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     }
 
     // Seek sprite start offset
-    if(trn->enemy_count > 0) {
-        sd_reader_set(r, offset_list[trn->enemy_count]);
-    }
+    sd_reader_set(r, offset_list[trn->enemy_count]);
 
     // Allocate locales
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
