@@ -159,6 +159,6 @@ int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data) {
     if(strlen(data) >= SD_BK_FOOTER_STRING_MAX-1) {
         return SD_INVALID_INPUT;
     }
-    strncpy(bka->footer_string, data, sizeof(bka->footer_string));
+    str_copy_c(&bka->footer_string, data);
     return SD_SUCCESS;
 }

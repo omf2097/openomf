@@ -15,6 +15,7 @@
 #include "formats/colcoord.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include "utils/str.h"
 
 
 #ifdef __cplusplus
@@ -54,8 +55,8 @@ typedef struct {
     sd_sprite *sprites[SD_SPRITE_COUNT_MAX]; ///< Sprites
 
     // String header & Extra strings
-    char anim_string[SD_ANIMATION_STRING_MAX]; ///< Animation string
-    char extra_strings[SD_EXTRASTR_COUNT_MAX][SD_EXTRA_STRING_MAX]; ///< Extra strings
+    str anim_string; ///< Animation string
+    str extra_strings[SD_EXTRASTR_COUNT_MAX]; ///< Extra strings
 } sd_animation;
 
 /*! \brief Initialize animation structure

@@ -50,8 +50,8 @@ typedef struct {
     uint8_t unknown_19; ///< Unknown value
     uint8_t points;  ///< Score gained for this hit
 
-    char move_string[SD_MOVE_STRING_MAX];  ///< Move string
-    char footer_string[SD_MOVE_FOOTER_STRING_MAX]; ///< Footer string
+    str move_string;  ///< Move string
+    str footer_string; ///< Footer string
 } sd_move;
 
 /*! \brief Initialize Move structure

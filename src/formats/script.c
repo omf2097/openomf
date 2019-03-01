@@ -4,6 +4,7 @@
 #include "formats/script.h"
 #include "formats/error.h"
 #include "formats/taglist.h"
+#include "utils/str.h"
 
 static void _create_frame(sd_script *script, int number);
 static void _create_tag(sd_script_frame *frame, int number);
@@ -218,32 +219,30 @@ int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
     return SD_SUCCESS;
 }
 
-int sd_script_encode(const sd_script *script, char* str, size_t len) {
-    if(script == NULL || str == NULL)
+int sd_script_encode(const sd_script *script, str *buf) {
+    if(script == NULL || buf == NULL)
         return SD_INVALID_INPUT;
 
     // If there are no frames, then we just return an empty string.
     if(script->frame_count <= 0) {
-        str[0] = 0;
         return SD_SUCCESS;
     }
 
     // Frames exist. Walk through each, and output tags and ending frame tag + duration
-    int s = 0;
     for(int i = 0; i < script->frame_count; i++) {
         sd_script_frame *frame = &script->frames[i];
         for(int k = 0; k < frame->tag_count; k++) {
             sd_script_tag *tag = &frame->tags[k];
-            s += snprintf(str + s, len - s, "%s", tag->key);
+            str_printf(buf, "%s", tag->key);
             if(tag->has_param) {
-                s += snprintf(str + s, len - s, "%d", tag->value);
+                str_printf(buf, "%d", tag->value);
             }
         }
-        s += snprintf(str + s, len - s, "%c%d-", frame->sprite + 65, frame->tick_len);
+        str_printf(buf, "%c%d-", frame->sprite + 65, frame->tick_len);
     }
 
     // Overwrite the last '-'
-    str[--s] = 0;
+    str_pop_ch(buf);
 
     return SD_SUCCESS;
 }

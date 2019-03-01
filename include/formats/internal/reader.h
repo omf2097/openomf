@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+typedef struct str_t str;
 typedef struct sd_reader_t sd_reader;
 
 sd_reader* sd_reader_open(const char *file);
@@ -21,6 +22,9 @@ int sd_reader_set(sd_reader *reader, long pos);
 
 int sd_read_buf(sd_reader *reader, char *buf, int len);
 int sd_peek_buf(sd_reader *reader, char *buf, int len);
+
+int sd_read_str_from_buf(sd_reader *reader, str *buf);
+int sd_read_str_from_cstr(sd_reader *reader, str *buf);
 
 uint8_t sd_read_ubyte(sd_reader *reader);
 uint16_t sd_read_uword(sd_reader *reader);

@@ -8,7 +8,7 @@ void animation_create(animation *ani, void *src, int id) {
     // Copy simple stuff
     ani->id = id;
     ani->start_pos = vec2i_create(sdani->start_x, sdani->start_y);
-    str_create_from_cstr(&ani->animation_string, sdani->anim_string);
+    str_copy(&ani->animation_string, &sdani->anim_string);
 
     // Copy collision coordinates
     vector_create(&ani->collision_coords, sizeof(collision_coord));
@@ -24,7 +24,7 @@ void animation_create(animation *ani, void *src, int id) {
     vector_create(&ani->extra_strings, sizeof(str));
     str tmp_string;
     for(int i = 0; i < sdani->extra_string_count; i++) {
-        str_create_from_cstr(&tmp_string, sdani->extra_strings[i]);
+        str_copy(&tmp_string, &sdani->extra_strings[i]);
         vector_append(&ani->extra_strings, &tmp_string);
         // don't str_free tmp_str here because it will free the pointers
         // inside it, which vector_append does not copy

@@ -181,17 +181,18 @@ void anim_pop(sd_animation *ani) {
     printf("Last sprite popped from animation. Animation now has %d sprites.\n", ani->sprite_count);
 }
 
-void string_strip(char *str, size_t len, const char *tag) {
+void string_strip(str *in, const char *tag) {
     sd_script s;
     sd_script_create(&s);
-    sd_script_decode(&s, str, NULL);
+    sd_script_decode(&s, str_c(in), NULL);
 
     for(int i = 0; i < s.frame_count; i++) {
         sd_script_delete_tag(&s, i, tag);
     }
 
     // Dont bother with resizing the result
-    sd_script_encode(&s, str, len);
+    str_clear(in);
+    sd_script_encode(&s, in);
     sd_script_free(&s);
 }
 
@@ -199,13 +200,13 @@ void anim_strip_key(sd_animation *ani, int kn, const char **key, int kcount, con
     int tmp = 0;
     switch(kn) {
         case 9: 
-            string_strip(ani->anim_string, sizeof(ani->anim_string), tag);
+            string_strip(ani->anim_string, tag);
             break;
         case 11:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < ani->extra_string_count) {
-                    string_strip(ani->extra_strings[tmp], SD_EXTRA_STRING_MAX, tag);
+                    string_strip(ani->extra_strings[tmp], tag);
                 } else {
                     printf("Extra string table index %d does not exist!\n", tmp);
                     return;

@@ -14,6 +14,7 @@
 #include "formats/animation.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include "utils/str.h"
 
 
 #define SD_BK_FOOTER_STRING_MAX 512 ///< Max BK footer string length
@@ -33,7 +34,7 @@ typedef struct {
     uint8_t load_on_start; ///< Actually repeat flag
     uint16_t probability; ///< Probability of animation
     uint8_t hazard_damage; ///< Hazard damage on hit
-    char footer_string[SD_BK_FOOTER_STRING_MAX]; ///< Footer string
+    str footer_string; ///< Footer string
     sd_animation *animation; ///< Animation ptr or NULL. On BK save, must be != NULL.
 } sd_bk_anim;
 

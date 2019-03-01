@@ -8,11 +8,14 @@
 #include <assert.h>
 
 void str_create(str *string) {
+    assert(string != NULL);
     string->len = 0;
     string->data = calloc(1, 1);
 }
 
 void str_create_from_cstr(str *string, const char *cstr) {
+    assert(string != NULL);
+    assert(cstr != NULL);
     string->len = strlen(cstr);
     string->data = malloc(string->len + 1);
     memcpy(string->data, cstr, string->len);
@@ -20,6 +23,9 @@ void str_create_from_cstr(str *string, const char *cstr) {
 }
 
 void str_create_from_data(str *string, const char *data, size_t len) {
+    assert(string != NULL);
+    assert(data != NULL);
+    assert(len >= 0);
     string->len = len;
     string->data = malloc(len + 1);
     memcpy(string->data, data, string->len);
@@ -27,9 +33,26 @@ void str_create_from_data(str *string, const char *data, size_t len) {
 }
 
 void str_free(str *string) {
+    assert(string != NULL);
     free(string->data);
     string->data = NULL;
     string->len = 0;
+}
+
+void str_clear(str *string) {
+    assert(string != NULL);
+    string->len = 0;
+    string->data[0] = 0;
+}
+
+char str_pop_ch(str *string) {
+    if(string->len <= 0) {
+        return 0;
+    }
+    string->len--;
+    char ch = string->data[string->len];
+    string->data[string->len] = 0;
+    return ch;
 }
 
 size_t str_size(const str *string) {
@@ -37,11 +60,18 @@ size_t str_size(const str *string) {
 }
 
 void str_remove_at(str *src, size_t pos) {
-   memmove(src->data + pos, src->data + pos + 1, src->len - pos - 1);
-   src->len--;
+    assert(src != NULL);
+    assert(pos >= 0);
+    if(pos >= src->len || src->len <= 0) {
+        return;
+    }
+    memmove(src->data + pos, src->data + pos + 1, src->len - pos - 1);
+    src->len--;
 }
 
 void str_printf(str *dst, const char *format, ...) {
+    assert(dst != NULL);
+
     size_t size;
     va_list args1;
     va_list args2;
@@ -82,6 +112,13 @@ void str_copy(str *dst, const str *src) {
     dst->data = realloc(dst->data, src->len + 1);
     dst->len = src->len;
     memcpy(dst->data, src->data, dst->len);
+    dst->data[dst->len] = 0;
+}
+
+void str_copy_c(str *dst, const char *src) {
+    dst->len = strlen(src);
+    dst->data = realloc(dst->data, dst->len + 1);
+    memcpy(dst->data, src, dst->len);
     dst->data[dst->len] = 0;
 }
 
