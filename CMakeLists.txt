@@ -49,9 +49,6 @@ find_package(argtable2)
 find_package(PNG)
 find_package(ZLIB)
 
-# Fix SDL2 library defs
-string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
-
 # Check functions and generate platform configuration file
 check_symbol_exists(strdup "string.h" HAVE_STD_STRDUP)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
