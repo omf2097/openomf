@@ -186,8 +186,7 @@ float sd_peek_float(sd_reader *reader) {
 
 int sd_match(sd_reader *reader, char *buf, unsigned int nbytes) {
     char t[nbytes];
-    sd_peek_buf(reader, t, nbytes);
-    if(memcmp(t, buf, nbytes) == 0) {
+    if(sd_peek_buf(reader, t, nbytes) == 0 && memcmp(t, buf, nbytes) == 0) {
         return 1;
     }
     return 0;
