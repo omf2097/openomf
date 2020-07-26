@@ -69,8 +69,16 @@ void test_rec_roundtrip(void) {
     sd_rec_free(&loaded);
 }
 
+void test_crystal_shirro_load(void) {
+    CU_ASSERT(sd_rec_create(&rec) == SD_SUCCESS);
+    CU_ASSERT(sd_rec_load(&rec, TESTS_ROOT_DIR
+                          "/recs/crystal-shirro.rec") == SD_SUCCESS);
+    sd_rec_free(&rec);
+}
+
 void rec_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "test of sd_rec_create", test_sd_rec_create) == NULL) { return; }
     if(CU_add_test(suite, "test of REC roundtripping", test_rec_roundtrip) == NULL) { return; }
     if(CU_add_test(suite, "test of sd_rec_free", test_sd_rec_free) == NULL) { return; }
+    if(CU_add_test(suite, "test loading crystal-shirro.rec", test_crystal_shirro_load) == NULL) { return; }
 }

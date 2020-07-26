@@ -244,6 +244,10 @@ if(CUNIT_FOUND)
 
     add_executable(openomf_test_main ${TEST_SRC})
 
+    # This makes loading test resources possible
+    target_compile_definitions(openomf_test_main PRIVATE
+                               TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
+
     target_link_libraries(openomf_test_main ${CORELIBS})
     set_property(TARGET openomf_test_main PROPERTY C_STANDARD 11)
 
