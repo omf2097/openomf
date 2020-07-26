@@ -93,6 +93,7 @@ void test_af_roundtrip(void) {
     CU_ASSERT_STRING_EQUAL(new.moves[0]->animation->anim_string, loaded.moves[0]->animation->anim_string);
     CU_ASSERT(new.moves[0]->animation->extra_string_count == 2);
 
+    sd_move_free(&move);
     sd_af_free(&new);
     sd_af_free(&loaded);
 }

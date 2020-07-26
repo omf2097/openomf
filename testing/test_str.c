@@ -165,6 +165,8 @@ void test_printf(void) {
     CU_ASSERT(test.len == 39);
     CU_ASSERT_PTR_NOT_NULL(test.data);
     CU_ASSERT(test.data[39] == 0);
+
+    str_free(&test);
 }
 
 void str_test_suite(CU_pSuite suite) {
