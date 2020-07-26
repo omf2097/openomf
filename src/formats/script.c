@@ -260,11 +260,11 @@ int sd_script_encoded_length(const sd_script *script) {
             sd_script_tag *tag = &frame->tags[k];
             s += strlen(tag->key); // Tag length
             if(tag->has_param) {
-                s += snprintf(tmp, sizeof(tmp) - s, "%d", tag->value); // Tag value length
+                s += snprintf(tmp, sizeof(tmp), "%d", tag->value); // Tag value length
             }
         }
         s += 2; // sprite key and the '-' char
-        s += snprintf(tmp, sizeof(tmp) - s, "%d", frame->tick_len); // Tick length char count
+        s += snprintf(tmp, sizeof(tmp), "%d", frame->tick_len); // Tick length char count
     }
     s--; // Minus the last '-'
     return s;
