@@ -1415,6 +1415,7 @@ int arena_create(scene *scene) {
             local->rec->pilots[i].info.color_3 = player->colors[0];
             memcpy(local->rec->pilots[i].info.name, lang_get(player->pilot_id+20), 18);
         }
+        local->rec->arena_id = scene->id - SCENE_ARENA0;
     } else{
         local->rec = NULL;
     }
