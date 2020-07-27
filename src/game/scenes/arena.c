@@ -747,6 +747,7 @@ void write_rec_move(scene *scene, game_player *player, int action) {
         return;
     }
 
+    memset(&move, 0, sizeof(move));
     move.tick = scene->gs->tick;
     move.lookup_id = 2;
     move.player_id = 0;
@@ -1414,6 +1415,7 @@ int arena_create(scene *scene) {
             local->rec->pilots[i].info.color_3 = player->colors[0];
             memcpy(local->rec->pilots[i].info.name, lang_get(player->pilot_id+20), 18);
         }
+        local->rec->arena_id = scene->id - SCENE_ARENA0;
     } else{
         local->rec = NULL;
     }
