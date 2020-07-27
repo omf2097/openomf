@@ -747,6 +747,7 @@ void write_rec_move(scene *scene, game_player *player, int action) {
         return;
     }
 
+    memset(&move, 0, sizeof(move));
     move.tick = scene->gs->tick;
     move.lookup_id = 2;
     move.player_id = 0;
