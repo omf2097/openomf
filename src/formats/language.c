@@ -75,7 +75,7 @@ int sd_language_load(sd_language *language, const char *filename) {
     offsets[pos] = file_size;
     
     // Read real titles
-    for(int i = 0; i < string_count; i++) {
+    for(unsigned i = 0; i < pos; i++) {
         sd_reader_set(r, offsets[i]);
         unsigned int len = offsets[i+1] - offsets[i];
 
