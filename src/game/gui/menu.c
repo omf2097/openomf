@@ -139,31 +139,29 @@ static int menu_action(component *mc, int action) {
 
     // Handle down/up selection movement
     c = sizer_get(mc, m->selected);
-    if(c != NULL) {
-        if(action == ACT_DOWN || action == ACT_UP) {
-            component_select(c, 0);
-            do {
-                if(action == ACT_DOWN) {
-                    m->selected++;
-                }
-                if(action == ACT_UP) {
-                    m->selected--;
-                }
-                // wrap around
-                if(m->selected < 0)
-                    m->selected = sizer_size(mc) - 1;
-                if(m->selected >= sizer_size(mc))
-                    m->selected = 0;
+    if(c != NULL && (action == ACT_DOWN || action == ACT_UP)) {
+        component_select(c, 0);
+        do {
+            if(action == ACT_DOWN) {
+                m->selected++;
+            }
+            if(action == ACT_UP) {
+                m->selected--;
+            }
+            // wrap around
+            if(m->selected < 0)
+                m->selected = sizer_size(mc) - 1;
+            if(m->selected >= sizer_size(mc))
+                m->selected = 0;
 
-                // Update selected component
-                c = sizer_get(mc, m->selected);
+            // Update selected component
+            c = sizer_get(mc, m->selected);
 
-            } while(component_is_disabled(c));
-            // Play menu sound
-            sound_play(19, 0.5f, 0.0f, 2.0f);
-            component_select(c, 1);
-            return 0;
-        }
+        } while(component_is_disabled(c));
+        // Play menu sound
+        sound_play(19, 0.5f, 0.0f, 2.0f);
+        component_select(c, 1);
+        return 0;
     }
 
     // If the key wasn't handled yet and we have a valid component,
