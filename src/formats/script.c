@@ -187,7 +187,7 @@ int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
                         frame->tags[tag_number].value = read_next_int(str, &i);
                     }
                     tag_number++;
-                    k = 0; // Stop here.
+                    break;
                 }
             }
             if(!found) {
