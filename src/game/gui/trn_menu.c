@@ -239,10 +239,8 @@ static void trnmenu_render(component *c) {
     trnmenu *m = sizer_get_obj(c);
 
     // If submenu is set, we need to use it
-    if(!m->fade) {
-        if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
-            return component_render(m->submenu);
-        }
+    if(!m->fade && m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+        return component_render(m->submenu);
     }
 
     // Render button sheet
