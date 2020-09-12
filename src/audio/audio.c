@@ -10,7 +10,7 @@ audio_sink *_global_sink = NULL;
 struct sink_info_t {
     int (*sink_init_fn)(audio_sink *sink);
     const char* name;
-} sinks[] = {
+} const sinks[] = {
 #ifdef USE_OPENAL
     {openal_sink_init, "openal"},
 #endif // USE_OPENAL
