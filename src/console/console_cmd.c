@@ -183,11 +183,9 @@ int console_cmd_rein(game_state *gs, int argc, char **argv) {
 int console_cmd_renderer(game_state *gs, int argc, char **argv) {
     if(argc == 2) {
         int i;
-        if(strtoint(argv[1], &i)) {
-            if(i == 0 || i == 1) {
-                video_select_renderer(i);
-                return 0;
-            }
+        if(strtoint(argv[1], &i) && (i == 0 || i == 1)) {
+            video_select_renderer(i);
+            return 0;
         }
     }
     return 1;
