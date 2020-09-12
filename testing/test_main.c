@@ -16,6 +16,7 @@ void text_render_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
+    int ret = 0;
 
     if(CU_initialize_registry() != CUE_SUCCESS) {
         return CU_get_error();
@@ -75,6 +76,12 @@ int main(int argc, char **argv) {
     CU_basic_run_tests();
 
 end:
-    CU_cleanup_registry();
-    return CU_get_error();
+    if (CU_get_number_of_tests_failed() != 0)
+        ret = 1;
+    CU_ErrorCode cu_err = CU_get_error();
+    if (cu_err != CUE_SUCCESS) {
+        fprintf(stderr, "CUnit error: %s\n", CU_get_error_msg());
+        ret = 1;
+    }
+    return ret;
 }
