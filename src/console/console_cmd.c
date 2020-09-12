@@ -81,11 +81,9 @@ int console_cmd_scene(game_state *gs, int argc, char **argv) {
     // change scene
     if(argc == 2) {
         int i;
-        if(strtoint(argv[1], &i)) {
-            if(is_scene(i)) {
-                game_state_set_next(gs, i);
-                return 0;
-            }
+        if(strtoint(argv[1], &i) && is_scene(i)) {
+            game_state_set_next(gs, i);
+            return 0;
         }
     }
     return 1;
