@@ -253,12 +253,10 @@ void console_event(game_state *gs, SDL_Event *e) {
         if (strlen(e->text.text) == 1) {
             // make sure it is not a unicode sequence
             unsigned char c = e->text.text[0];
-            if (c >= 32 && c <= 126) {
-                // only allow ASCII through
-                if (len < sizeof(con->input)-1) {
-                    con->input[len+1] = '\0';
-                    con->input[len] = c;
-                }
+            // only allow ASCII through
+            if (c >= 32 && c <= 126 && len < sizeof(con->input)-1) {
+                con->input[len+1] = '\0';
+                con->input[len] = c;
             }
         }
     } else if (e->type == SDL_KEYDOWN) {
