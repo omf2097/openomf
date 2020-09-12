@@ -45,7 +45,9 @@ int avg_rtt(int data[], int n) {
             j++;
         }
     }
-    return trunc(result/j);
+    if (j != 0)
+        return trunc(result/j);
+    return 0;
 }
 
 int net_controller_ready(controller *ctrl) {
