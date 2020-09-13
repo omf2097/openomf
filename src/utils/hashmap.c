@@ -353,11 +353,10 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
     // Find the node we want to delete
     int found = 0;
     while(node) {
-        if(node->pair.keylen == keylen) {
-            if(memcmp(node->pair.key, key, keylen) == 0) {
-                found = 1;
-                break;
-            }
+        if(node->pair.keylen == keylen &&
+           memcmp(node->pair.key, key, keylen) == 0) {
+            found = 1;
+            break;
         }
         prev = node;
         node = node->next;
