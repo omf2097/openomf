@@ -52,9 +52,9 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     dst->next_anim_id = src->next_anim_id;
     dst->category = src->category;
     dst->unknown_14 = src->unknown_14;
-    dst->scrap_amount = src->scrap_amount;;
+    dst->scrap_amount = src->scrap_amount;
     dst->successor_id = src->successor_id;
-    dst->damage_amount = src->damage_amount;;
+    dst->damage_amount = src->damage_amount;
     dst->unknown_18 = src->unknown_18;
     dst->unknown_19 = src->unknown_19;
     dst->points = src->points;
