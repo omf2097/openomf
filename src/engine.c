@@ -145,8 +145,9 @@ void engine_run(engine_init_flags *init_flags) {
 #endif
 
     // Set up game
-    game_state *gs = malloc(sizeof(game_state));
+    game_state *gs = calloc(1, sizeof(game_state));
     if(game_state_create(gs, init_flags)) {
+        game_state_free(&gs);
         return;
     }
 
@@ -325,8 +326,7 @@ void engine_run(engine_init_flags *init_flags) {
     }
 
     // Free scene object
-    game_state_free(gs);
-    free(gs);
+    game_state_free(&gs);
 
     INFO(" --- END GAME LOG ---");
 }

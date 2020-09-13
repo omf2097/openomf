@@ -838,7 +838,10 @@ void game_state_init_demo(game_state *gs) {
     }
 }
 
-void game_state_free(game_state *gs) {
+void game_state_free(game_state **_gs) {
+    game_state *gs = *_gs;
+    *_gs = NULL;
+
     // Free objects
     render_obj *robj;
     iterator it;
@@ -860,6 +863,7 @@ void game_state_free(game_state *gs) {
         game_player_free(gs->players[i]);
         free(gs->players[i]);
     }
+    free(gs);
 }
 
 int game_state_ms_per_dyntick(game_state *gs) {
