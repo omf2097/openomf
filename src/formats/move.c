@@ -172,10 +172,10 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     sd_write_buf(w, move->move_string, 21);
 
     // Save footer string
-    size = strlen(move->footer_string);
+    size = str_size(&move->footer_string);
     if(size > 0) {
         sd_write_uword(w, size+1);
-        sd_write_buf(w, move->footer_string, size+1);
+        sd_write_buf(w, str_c(&move->footer_string), size + 1);
     } else {
         sd_write_uword(w, 0);
     }
@@ -213,7 +213,7 @@ int sd_move_set_footer_string(sd_move *move, const char* str) {
     if(strlen(str) >= SD_MOVE_FOOTER_STRING_MAX-1) {
         return SD_INVALID_INPUT;
     }
-    strncpy(move->footer_string, str, sizeof(move->footer_string));
+    str_copy_c(&move->footer_string, str);
     return SD_SUCCESS;
 }
 
@@ -221,6 +221,6 @@ int sd_move_set_move_string(sd_move *move, const char *str) {
     if(strlen(str) >= SD_MOVE_STRING_MAX-1) {
         return SD_INVALID_INPUT;
     }
-    strncpy(move->move_string, str, sizeof(move->move_string));
+    str_copy_c(&move->move_string, str);
     return SD_SUCCESS;
 }

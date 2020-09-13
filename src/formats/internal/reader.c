@@ -90,6 +90,31 @@ int sd_read_buf(sd_reader *reader, char *buf, int len) {
     return 1;
 }
 
+int sd_read_str_from_buf(sd_reader *reader, str *buf) {
+    uint16_t len = sd_read_uword(r);
+    if(len <= 0) {
+        str_clear(buf);
+        return 0;
+    }
+    char tmp[len+1];
+    sd_read_buf(r, tmp, len);
+    tmp[len] = 0;
+    str_copy_c(buf, tmp);
+    return len;
+}
+
+int sd_read_str_from_cstr(sd_reader *reader, str *buf) {
+    uint16_t len = sd_read_uword(r);
+    if(len <= 0) {
+        str_clear(buf);
+        return 0;
+    }
+    char tmp[len];
+    sd_read_buf(r, tmp, len);
+    str_copy_c(buf, tmp);
+    return got;
+}
+
 int sd_peek_buf(sd_reader *reader, char *buf, int len) {
     if(sd_read_buf(reader, buf, len)) {
         return 0;

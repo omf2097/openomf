@@ -11,6 +11,7 @@
 #define _SD_SCRIPT_H
 
 #include "formats/taglist.h"
+#include "utils/str.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,9 +101,9 @@ int sd_script_decode(sd_script *script, const char* str, int *invalid_pos);
  * \retval SD_SUCCESS Successful operation
  *
  * \param script Script structure to encode
- * \param str Target string buffer. Make sure it's large enough!
+ * \param buf Target string buffer.
  */
-int sd_script_encode(const sd_script *script, char* str, size_t len);
+int sd_script_encode(const sd_script *script, str *buf);
 
 /*! \brief Find the encoded length of a script
  *
