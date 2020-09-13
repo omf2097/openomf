@@ -8,6 +8,7 @@
 #include "audio/sound.h"
 #include "utils/log.h"
 #include "utils/compat.h"
+#include "utils/str.h"
 
 typedef struct {
     char *text;
@@ -25,25 +26,19 @@ typedef struct {
 
 static void textslider_render(component *c) {
     textslider *tb = widget_get_obj(c);
-    char buf[100];
-    int chars;
-    snprintf(buf, 100, "%s ", tb->text);
-    chars = strlen(buf);
+    str txt;
+    str_create(&txt);
+    str_printf(&txt, "%s ", tb->text);
     if (tb->has_off && *tb->pos == 0) {
-        buf[chars] = 'O';
-        buf[chars+1] = 'F';
-        buf[chars+2] = 'F';
-        buf[chars+3] = '\0';
+        str_append_c(&txt, "OFF");
     } else {
         for(int i = 0; i < tb->positions; i++) {
             if (i+1 > *tb->pos) {
-                buf[chars+i] = '|';
+                str_append_c(&txt, "|");
             } else {
-                buf[chars+i] = 127;
+                str_append_c(&txt, "\x7f");
             }
         }
-        // null terminator
-        buf[chars+tb->positions] = '\0';
     }
 
     if(component_is_selected(c)) {
@@ -54,7 +49,8 @@ static void textslider_render(component *c) {
     } else {
         tb->tconf.cforeground = color_create(0, 121, 0, 255);
     }
-    text_render(&tb->tconf, c->x, c->y, c->w, c->h, buf);
+    text_render(&tb->tconf, c->x, c->y, c->w, c->h, str_c(&txt));
+    str_free(&txt);
 }
 
 static int textslider_action(component *c, int action) {

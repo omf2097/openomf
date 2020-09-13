@@ -71,10 +71,9 @@ void menu_connect_cancel(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);
     
     connect_menu_data *local = menu_get_userdata(c->parent);
-    if(local->connect_start) {
-        if(difftime(time(NULL), local->connect_start) < 0.1) {
-            return;
-        }
+    if(local->connect_start &&
+       difftime(time(NULL), local->connect_start) < 0.1) {
+        return;
     }
 
     // Finish menu

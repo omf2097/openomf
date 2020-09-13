@@ -63,7 +63,7 @@ void print_locale(sd_tournament_locale *locale, int lang_id) {
 
 void print_info(sd_tournament_file *trn) {
     printf("\nTournament details:\n");
-    printf("  - Enemy count         : %d\n", trn->enemy_count);
+    printf("  - Enemy count         : %u\n", trn->enemy_count);
     printf("  - BK name             : %s\n", trn->bk_name);
     printf("  - Winnings multiplier : %f\n", trn->winnings_multiplier);
     printf("  - Unknown             : %d\n", trn->unknown_a);
@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
         print_locale(trn.locales[locale_id], locale_id);
     } else if(pilot->count > 0) {
         int pilot_id = pilot->ival[0];
-        if(pilot_id < 0 || pilot_id >= trn.enemy_count) {
+        if(pilot_id < 0 || (unsigned)pilot_id >= trn.enemy_count) {
             printf("Pilot ID out of bounds!\n");
             goto exit_1;
         }
@@ -152,9 +152,9 @@ int main(int argc, char *argv[]) {
     } else {
         printf("Enemies:\n");
         print_pilot_array_header();
-        for(int i = 0; i < trn.enemy_count; i++) {
+        for(unsigned i = 0; i < trn.enemy_count; i++) {
             sd_pilot *pilot = trn.enemies[i];
-            print_pilot_array_row(pilot, i);
+            print_pilot_array_row(pilot, (int)i);
         }
 
         printf("\nLocales:\n");

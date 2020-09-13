@@ -287,11 +287,10 @@ void* hashmap_put(hashmap *hm,
     // See if the key already exists in the buckets list
     int found = 0;
     while(seek) {
-        if(seek->pair.keylen == keylen) {
-            if(memcmp(seek->pair.key, key, keylen) == 0) {
-                found = 1;
-                break;
-            }
+        if(seek->pair.keylen == keylen &&
+           memcmp(seek->pair.key, key, keylen) == 0) {
+            found = 1;
+            break;
         }
         seek = seek->next;
     }
@@ -354,11 +353,10 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
     // Find the node we want to delete
     int found = 0;
     while(node) {
-        if(node->pair.keylen == keylen) {
-            if(memcmp(node->pair.key, key, keylen) == 0) {
-                found = 1;
-                break;
-            }
+        if(node->pair.keylen == keylen &&
+           memcmp(node->pair.key, key, keylen) == 0) {
+            found = 1;
+            break;
         }
         prev = node;
         node = node->next;
@@ -408,12 +406,11 @@ int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, u
 
     // Find the node we want
     while(node) {
-        if(node->pair.keylen == keylen) {
-            if(memcmp(node->pair.key, key, keylen) == 0) {
-                *val = node->pair.val;
-                *vallen = node->pair.vallen;
-                return 0;
-            }
+        if(node->pair.keylen == keylen &&
+           memcmp(node->pair.key, key, keylen) == 0) {
+            *val = node->pair.val;
+            *vallen = node->pair.vallen;
+            return 0;
         }
         node = node->next;
     }

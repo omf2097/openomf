@@ -103,10 +103,7 @@ void console_output_scroll_to_end() {
         si = BUFFER_DEC(con->output_tail);
     }
 
-    for(;
-        si != con->output_head;
-        si = BUFFER_DEC(si)) {
-
+    while(si != con->output_head) {
         if(con->output[si] == '\n') {
             lines++;
 
@@ -115,6 +112,7 @@ void console_output_scroll_to_end() {
                 break;
             }
         }
+        si = BUFFER_DEC(si);
     }
 
     con->output_pos = si;

@@ -595,10 +595,8 @@ void har_take_damage(object *obj, const str* string, float damage) {
         // XXX hack - if the first frame has the 'k' tag, treat it as some vertical knockback
         // we can't do this in player.c because it breaks the jaguar leap, which also uses the 'k' tag.
         const sd_script_frame *frame = sd_script_get_frame(&obj->animation_state.parser, 0);
-        if(frame != NULL) {
-            if(sd_script_isset(frame, "k")) {
-                obj->vel.y -= 7;
-            }
+        if(frame != NULL && sd_script_isset(frame, "k")) {
+            obj->vel.y -= 7;
         }
     }
 }
@@ -1308,11 +1306,9 @@ void har_tick(object *obj) {
     }
 
     // Reset air_attacked when not in the air to prevent HAR from freezing
-    if (!object_is_airborne(obj)) {
-        if(h->air_attacked) {
-            har_event_air_attack_done(h);
-            h->air_attacked = 0;
-        }
+    if (!object_is_airborne(obj) && h->air_attacked) {
+        har_event_air_attack_done(h);
+        h->air_attacked = 0;
     }
 
     if ((h->state == STATE_DONE)
@@ -1399,20 +1395,18 @@ void har_tick(object *obj) {
     // to show the sprite with animation string that interpolates opacity down
     // Mark new object as the owner of the animation, so that the animation gets
     // removed when the object is finished.
-    if(player_frame_isset(obj, "ub")) {
-        if(obj->age % 2 == 0) {
-            sprite *nsp = sprite_copy(obj->cur_sprite);
-            object *nobj = malloc(sizeof(object));
-            object_create(nobj, obj->gs, object_get_pos(obj), vec2f_create(0,0));
-            object_set_stl(nobj, object_get_stl(obj));
-            object_set_animation(nobj, create_animation_from_single(nsp, obj->cur_animation->start_pos));
-            object_set_animation_owner(nobj, OWNER_OBJECT);
-            object_set_custom_string(nobj, "bs100A1-bf0A15");
-            object_add_effects(nobj, EFFECT_SHADOW);
-            object_set_direction(nobj, object_get_direction(obj));
-            object_dynamic_tick(nobj);
-            game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM, 0, 0);
-        }
+    if(player_frame_isset(obj, "ub") && obj->age % 2 == 0) {
+        sprite *nsp = sprite_copy(obj->cur_sprite);
+        object *nobj = malloc(sizeof(object));
+        object_create(nobj, obj->gs, object_get_pos(obj), vec2f_create(0,0));
+        object_set_stl(nobj, object_get_stl(obj));
+        object_set_animation(nobj, create_animation_from_single(nsp, obj->cur_animation->start_pos));
+        object_set_animation_owner(nobj, OWNER_OBJECT);
+        object_set_custom_string(nobj, "bs100A1-bf0A15");
+        object_add_effects(nobj, EFFECT_SHADOW);
+        object_set_direction(nobj, object_get_direction(obj));
+        object_dynamic_tick(nobj);
+        game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM, 0, 0);
     }
 
     // Network motion replay

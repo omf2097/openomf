@@ -14,34 +14,26 @@ struct sink_info_t {
 #ifdef USE_OPENAL
     {openal_sink_init, "openal"},
 #endif // USE_OPENAL
-    {NULL, NULL}
 };
-
-int audio_get_sink_count() {
-    int count = 0;
-    while(sinks[count].name != NULL) {
-        count++;
-    }
-    return count;
-}
+#define SINK_COUNT (sizeof(sinks)/sizeof(struct sink_info_t))
 
 const char* audio_get_sink_name(int sink_id) {
     // Get sink
-    if(sink_id < 0 || sink_id >= audio_get_sink_count()) {
+    if(sink_id < 0 || (unsigned)sink_id >= SINK_COUNT) {
         return NULL;
     }
     return sinks[sink_id].name;
 }
 
 const char* audio_get_first_sink_name() {
-    if(audio_get_sink_count() > 0) {
+    if(SINK_COUNT > 0) {
         return sinks[0].name;
     }
     return NULL;
 }
 
 int audio_is_sink_available(const char* sink_name) {
-    for(int i = 0; i < audio_get_sink_count(); i++) {
+    for(unsigned i = 0; i < SINK_COUNT; i++) {
         if(strcmp(sink_name, sinks[i].name) == 0) {
             return 1;
         }
@@ -66,14 +58,12 @@ int audio_init(const char* sink_name) {
     }
 
     // Find requested sink
-    int c = 0;
-    while(sinks[c].name != NULL) {
+    for (unsigned c = 0; c < SINK_COUNT; ++c) {
         if(strcmp(sink_name, sinks[c].name) == 0) {
             si = sinks[c];
             found = 1;
             break;
         }
-        c++;
     }
     if(!found) {
         PERROR("Requested audio sink was not found!");

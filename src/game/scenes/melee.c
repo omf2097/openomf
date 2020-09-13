@@ -162,13 +162,11 @@ void melee_tick(scene *scene, int paused) {
         local->pulsedir = 0;
     }
     local->hartick++;
-    if (local->selection == 1) {
-        if(local->hartick > 10) {
-            local->hartick = 0;
-            object_dynamic_tick(&local->har_player1[5*local->row_a + local->column_a]);
-            if (player2->selectable) {
-                object_dynamic_tick(&local->har_player2[5*local->row_b + local->column_b]);
-            }
+    if (local->selection == 1 && local->hartick > 10) {
+        local->hartick = 0;
+        object_dynamic_tick(&local->har_player1[5*local->row_a + local->column_a]);
+        if (player2->selectable) {
+            object_dynamic_tick(&local->har_player2[5*local->row_b + local->column_b]);
         }
     }
 
