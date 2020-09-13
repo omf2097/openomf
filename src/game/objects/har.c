@@ -595,10 +595,8 @@ void har_take_damage(object *obj, const str* string, float damage) {
         // XXX hack - if the first frame has the 'k' tag, treat it as some vertical knockback
         // we can't do this in player.c because it breaks the jaguar leap, which also uses the 'k' tag.
         const sd_script_frame *frame = sd_script_get_frame(&obj->animation_state.parser, 0);
-        if(frame != NULL) {
-            if(sd_script_isset(frame, "k")) {
-                obj->vel.y -= 7;
-            }
+        if(frame != NULL && sd_script_isset(frame, "k")) {
+            obj->vel.y -= 7;
         }
     }
 }
