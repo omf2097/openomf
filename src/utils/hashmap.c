@@ -287,11 +287,10 @@ void* hashmap_put(hashmap *hm,
     // See if the key already exists in the buckets list
     int found = 0;
     while(seek) {
-        if(seek->pair.keylen == keylen) {
-            if(memcmp(seek->pair.key, key, keylen) == 0) {
-                found = 1;
-                break;
-            }
+        if(seek->pair.keylen == keylen &&
+           memcmp(seek->pair.key, key, keylen) == 0) {
+            found = 1;
+            break;
         }
         seek = seek->next;
     }
