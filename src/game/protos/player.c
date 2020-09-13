@@ -345,11 +345,9 @@ void player_run(object *obj) {
     }
 
     // Tick management
-    if(sd_script_isset(frame, "d")) {
-        if(!obj->animation_state.disable_d) {
-            state->previous_tick = sd_script_get(frame, "d")-1;
-            state->current_tick = sd_script_get(frame, "d");
-        }
+    if(sd_script_isset(frame, "d") && !obj->animation_state.disable_d) {
+        state->previous_tick = sd_script_get(frame, "d")-1;
+        state->current_tick = sd_script_get(frame, "d");
     }
 
     if(sd_script_isset(frame, "e")) {
@@ -568,10 +566,9 @@ void player_run(object *obj) {
         }
 
         // If UA is set, force other HAR to damage animation
-        if(sd_script_isset(frame, "ua")) {
-            if(state->enemy->cur_animation->id != 9) {
-                har_set_ani(state->enemy, 9, 0);
-            }
+        if(sd_script_isset(frame, "ua") &&
+           state->enemy->cur_animation->id != 9) {
+            har_set_ani(state->enemy, 9, 0);
         }
 
         // BJ sets new animation for our HAR
