@@ -406,12 +406,11 @@ int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, u
 
     // Find the node we want
     while(node) {
-        if(node->pair.keylen == keylen) {
-            if(memcmp(node->pair.key, key, keylen) == 0) {
-                *val = node->pair.val;
-                *vallen = node->pair.vallen;
-                return 0;
-            }
+        if(node->pair.keylen == keylen &&
+           memcmp(node->pair.key, key, keylen) == 0) {
+            *val = node->pair.val;
+            *vallen = node->pair.vallen;
+            return 0;
         }
         node = node->next;
     }
