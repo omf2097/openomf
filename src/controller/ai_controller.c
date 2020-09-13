@@ -233,17 +233,16 @@ int ai_block_har(controller *ctrl, ctrl_event **ev) {
     har *h_enemy = object_get_userdata(o_enemy);
 
     // XXX TODO get maximum move distance from the animation object
-    if(fabsf(o_enemy->pos.x - o->pos.x) < 100) {
-        if(h_enemy->executing_move && maybe(a->difficulty)) {
-            if(har_is_crouching(h_enemy)) {
-                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN|ACT_LEFT : ACT_DOWN|ACT_RIGHT);
-                controller_cmd(ctrl, a->cur_act, ev);
-            } else {
-                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT);
-                controller_cmd(ctrl, a->cur_act, ev);
-            }
-            return 1;
+    if(fabsf(o_enemy->pos.x - o->pos.x) < 100 && h_enemy->executing_move &&
+       maybe(a->difficulty)) {
+        if(har_is_crouching(h_enemy)) {
+            a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN|ACT_LEFT : ACT_DOWN|ACT_RIGHT);
+            controller_cmd(ctrl, a->cur_act, ev);
+        } else {
+            a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT);
+            controller_cmd(ctrl, a->cur_act, ev);
         }
+        return 1;
     }
     return 0;
 }
