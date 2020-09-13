@@ -54,7 +54,7 @@ typedef struct {
  * Tournament enemies, locales, quotes, name, etc.
  */
 typedef struct {
-    int16_t enemy_count;            ///< Number of enemies in tournament
+    uint32_t enemy_count;           ///< Number of enemies in tournament
     char bk_name[14];               ///< Tournament BK filename
     float winnings_multiplier;      ///< Match winnings multiplier
     int32_t unknown_a;              ///< Unknown /todo find out
