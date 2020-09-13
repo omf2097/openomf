@@ -64,13 +64,12 @@ static void menu_tick(component *c) {
     }
 
     // Check if we need to run submenu done -callback
-    if(m->submenu != NULL && menu_is_finished(m->submenu)) {
-        if(!m->prev_submenu_state) {
-            if(m->submenu_done) {
-                m->submenu_done(c, m->submenu);
-            }
-            m->prev_submenu_state = 1;
+    if(m->submenu != NULL && menu_is_finished(m->submenu) &&
+       !m->prev_submenu_state) {
+        if(m->submenu_done) {
+            m->submenu_done(c, m->submenu);
         }
+        m->prev_submenu_state = 1;
     }
 
     // Run external tick function
