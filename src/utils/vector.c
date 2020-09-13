@@ -57,10 +57,8 @@ int vector_grow(vector *vec) {
 }
 
 int vector_append(vector *vec, const void *value) {
-    if(vec->blocks >= vec->reserved) {
-        if(vector_grow(vec)) {
-            return 1;
-        }
+    if(vec->blocks >= vec->reserved && vector_grow(vec)) {
+        return 1;
     }
     void *dst = (char*)(vec->data + vec->blocks * vec->block_size);
     memcpy(dst, value, vec->block_size);
