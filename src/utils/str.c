@@ -42,7 +42,7 @@ void str_remove_at(str *src, size_t pos) {
 }
 
 void str_printf(str *dst, const char *format, ...) {
-    size_t size;
+    int size;
     va_list args1;
     va_list args2;
 
@@ -56,7 +56,7 @@ void str_printf(str *dst, const char *format, ...) {
     // vsnprintf may return -1 for errors, catch that here.
     if(size < 0) {
         PERROR("Call to vsnprintf returned -1");
-        return;
+        exit(1);
     }
 
     // Make sure there is enough room for our vsnprintf call plus ending NULL,
