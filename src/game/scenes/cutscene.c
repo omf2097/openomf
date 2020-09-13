@@ -86,10 +86,8 @@ void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
         if(id == 1) {
             *m_load = 1;
         }
-    } else if(scene->id == SCENE_END2) {
-        if(id == 1 || id == 11) {
-            *m_load = 1;
-        }
+    } else if(scene->id == SCENE_END2 && (id == 1 || id == 11)) {
+        *m_load = 1;
     }
 }
 
