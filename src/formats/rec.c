@@ -70,9 +70,11 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         sd_palette_load_range(r, &rec->pilots[i].pal, 0, 48);
         rec->pilots[i].has_photo = sd_read_ubyte(r);
         sd_sprite_create(&rec->pilots[i].photo);
-        if((rec->pilots[i].has_photo) &&
-           (ret = sd_sprite_load(r, &rec->pilots[i].photo)) != SD_SUCCESS) {
-            goto error_0;
+        if(rec->pilots[i].has_photo) {
+            ret = sd_sprite_load(r, &rec->pilots[i].photo);
+            if (ret != SD_SUCCESS) {
+                goto error_0;
+            }
         }
     }
 
