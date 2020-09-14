@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include "utils/str.h"
 #include "formats/internal/reader.h"
 
 struct sd_reader_t {
@@ -14,36 +15,41 @@ struct sd_reader_t {
 };
 
 sd_reader* sd_reader_open(const char *file) {
-    sd_reader *reader = malloc(sizeof(const sd_reader));
-
-    reader->sd_errno = 0;
+    sd_reader *reader = calloc(1, sizeof(const sd_reader));
+    if(reader == NULL) {
+        goto error_0;
+    }
 
     // Attempt to open file (note: Binary mode!)
     reader->handle = fopen(file, "rb");
     if(!reader->handle) {
-        free(reader);
-        return 0;
+        goto error_1;
     }
 
     // Find file size
     if (fseek(reader->handle, 0, SEEK_END) == -1) {
-        goto error;
+        reader->sd_errno = errno;
+        goto error_2;
     }
     reader->filesize = ftell(reader->handle);
     if (reader->filesize == -1) {
-        goto error;
+        reader->sd_errno = errno;
+        goto error_2;
     }
     if (fseek(reader->handle, 0, SEEK_SET) == -1) {
-        goto error;
+        reader->sd_errno = errno;
+        goto error_2;
     }
 
     // All done.
     return reader;
 
-error:
+error_2:
     fclose(reader->handle);
+error_1:
     free(reader);
-    return 0;
+error_0:
+    return NULL;
 }
 
 long sd_reader_filesize(const sd_reader *reader) {
@@ -91,28 +97,34 @@ int sd_read_buf(sd_reader *reader, char *buf, int len) {
 }
 
 int sd_read_str_from_buf(sd_reader *reader, str *buf) {
-    uint16_t len = sd_read_uword(r);
+    uint16_t len = sd_read_uword(reader);
     if(len <= 0) {
         str_clear(buf);
         return 0;
     }
     char tmp[len+1];
-    sd_read_buf(r, tmp, len);
+    sd_read_buf(reader, tmp, len);
     tmp[len] = 0;
     str_copy_c(buf, tmp);
     return len;
 }
 
 int sd_read_str_from_cstr(sd_reader *reader, str *buf) {
-    uint16_t len = sd_read_uword(r);
+    uint16_t len = sd_read_uword(reader);
     if(len <= 0) {
-        str_clear(buf);
-        return 0;
+        goto error;
     }
     char tmp[len];
-    sd_read_buf(r, tmp, len);
+    sd_read_buf(reader, tmp, len);
+    if(tmp[len] != 0) {
+        goto error;
+    }
     str_copy_c(buf, tmp);
-    return got;
+    return len;
+
+error:
+    str_clear(buf);
+    return 0;
 }
 
 int sd_peek_buf(sd_reader *reader, char *buf, int len) {

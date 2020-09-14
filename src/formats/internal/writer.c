@@ -62,24 +62,24 @@ int sd_write_buf(sd_writer *writer, const char *buf, int len) {
     return 1;
 }
 
-int sd_write_buf(sd_reader *reader, const str *buf) {
+int sd_write_str(sd_writer *writer, const str *buf) {
     if(str == NULL) {
-        sd_write_uword(w, 0);
+        sd_write_uword(writer, 0);
         return;
     }
     uint16_t len = strlen(str) + 1;
-    sd_write_uword(w, len);
-    sd_write_buf(w, str, len);
+    sd_write_uword(writer, len);
+    sd_write_buf(writer, str, len);
 }
 
-int sd_write_cstr(sd_reader *reader, const str *buf) {
+int sd_write_cstr(sd_writer *writer, const str *buf) {
     if(str == NULL) {
-        sd_write_uword(w, 0);
+        sd_write_uword(writer, 0);
         return;
     }
     uint16_t len = strlen(str) + 1;
-    sd_write_uword(w, len);
-    sd_write_buf(w, str, len);
+    sd_write_uword(writer, len);
+    sd_write_buf(writer, str, len);
 }
 
 int sd_write_fprintf(const sd_writer *writer, const char *format, ...) {

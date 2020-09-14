@@ -6,6 +6,10 @@
 #include "formats/sprite.h"
 #include "formats/error.h"
 
+// These are used as restrictions when parsing
+#define SD_ANIMATION_STRING_MAX 1024 ///< Maximum animation string size
+#define SD_EXTRA_STRING_MAX 512 ///< Maximum extra string size
+
 int sd_animation_create(sd_animation *ani) {
     if(ani == NULL) {
         return SD_INVALID_INPUT;
@@ -60,11 +64,8 @@ void sd_animation_free(sd_animation *anim) {
     }
 }
 
-int sd_animation_set_anim_string(sd_animation *ani, const char *str) {
-    if(strlen(str) >= SD_ANIMATION_STRING_MAX) {
-        return SD_INVALID_INPUT;
-    }
-    strncpy(ani->anim_string, str, sizeof(ani->anim_string));
+int sd_animation_set_anim_string(sd_animation *ani, const str *src) {
+    str_copy(&ani->anim_string, src);
     return SD_SUCCESS;
 }
 
@@ -107,22 +108,19 @@ int sd_animation_get_extra_string_count(sd_animation *anim) {
     return anim->extra_string_count;
 }
 
-int sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) {
+int sd_animation_set_extra_string(sd_animation *ani, int num, const str *src) {
     if(num < 0 || num >= ani->extra_string_count) {
         return SD_INVALID_INPUT;
     }
-    if(strlen(str) >= SD_EXTRA_STRING_MAX) {
-        return SD_INVALID_INPUT;
-    }
-    strncpy(ani->extra_strings[num], str, SD_EXTRA_STRING_MAX);
+    str_copy(&ani->extra_strings[num], src);
     return SD_SUCCESS;
 }
 
-int sd_animation_push_extra_string(sd_animation *anim, const char *str) {
-    if(strlen(str) >= SD_EXTRA_STRING_MAX || anim->extra_string_count >= SD_EXTRASTR_COUNT_MAX) {
+int sd_animation_push_extra_string(sd_animation *anim, const str *src) {
+    if(anim->extra_string_count >= SD_EXTRASTR_COUNT_MAX) {
         return SD_INVALID_INPUT;
     }
-    strncpy(anim->extra_strings[anim->extra_string_count++], str, SD_EXTRA_STRING_MAX);
+    str_copy(&anim->extra_strings[anim->extra_string_count++], src);
     return SD_SUCCESS;
 }
 
@@ -134,11 +132,11 @@ int sd_animation_pop_extra_string(sd_animation *anim) {
     return SD_SUCCESS;
 }
 
-char* sd_animation_get_extra_string(sd_animation *anim, int num) {
+str* sd_animation_get_extra_string(sd_animation *anim, int num) {
     if(num < 0 || num >= anim->extra_string_count) {
         return NULL;
     }
-    return anim->extra_strings[num];
+    return &anim->extra_strings[num];
 }
 
 int sd_animation_get_sprite_count(sd_animation *anim) {
@@ -235,17 +233,8 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     }
 
     // Animation string header
-    size = sd_read_uword(r);
-    if(size >= SD_ANIMATION_STRING_MAX) {
-        DEBUGLOG("Animation string header too big! Expected max %hu bytes, got %hu bytes.",
-            SD_ANIMATION_STRING_MAX, size);
-        return SD_FILE_PARSE_ERROR;
-    }
-    sd_read_buf(r, ani->anim_string, size+1);
-    if(ani->anim_string[size] != 0) {
-        DEBUGLOG("Animation string header did not end in null byte!");
-        return SD_FILE_PARSE_ERROR;
-    }
+    str_create(&ani->anim_string);
+    sd_read_str_from_cstr(r, &ani->anim_string);
 
     // Extra animation strings
     ani->extra_string_count = sd_read_ubyte(r);
@@ -255,17 +244,7 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
         return SD_FILE_PARSE_ERROR;
     }
     for(int i = 0; i < ani->extra_string_count; i++) {
-        size = sd_read_uword(r);
-        if(size >= SD_EXTRA_STRING_MAX) {
-            DEBUGLOG("Animation extra string %d is too long! Expected max %hu bytes, got %hu bytes.",
-                i, SD_EXTRA_STRING_MAX, size);
-            return SD_FILE_PARSE_ERROR;
-        }
-        sd_read_buf(r, ani->extra_strings[i], size+1);
-        if(ani->extra_strings[i][size] != 0) {
-            DEBUGLOG("Animation extra string %d did not end in null byte!", i);
-            return SD_FILE_PARSE_ERROR;
-        }
+        sd_read_str_from_cstr(r, ani->extra_strings[i]);
     }
 
     // Sprites

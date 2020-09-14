@@ -22,9 +22,6 @@
 extern "C" {
 #endif
 
-#define SD_ANIMATION_STRING_MAX 1024 ///< Maximum animation string size
-#define SD_EXTRA_STRING_MAX 512 ///< Maximum extra string size
-
 #define SD_SPRITE_COUNT_MAX 255 ///< Maximum amount of sprites allowed (technical limitation)
 #define SD_COLCOORD_COUNT_MAX 256 ///< Maximum amount of collision coordinates allowed \todo find out the real maximum
 #define SD_EXTRASTR_COUNT_MAX 10 ///< Maximum amount of extra strings.
@@ -159,7 +156,6 @@ sd_coord* sd_animation_get_coord(sd_animation *animation, int num);
 /*! \brief Sets the animation string
  *
  * Sets the animation string for the given animation. String will be copied.
- * Maximum string length is 1024 bytes.
  *
  * \retval SD_INVALID_INPUT Given string was too big.
  * \retval SD_SUCCESS Success.
@@ -167,7 +163,7 @@ sd_coord* sd_animation_get_coord(sd_animation *animation, int num);
  * \param animation Animation struct to modify
  * \param str New animation string
  */
-int sd_animation_set_anim_string(sd_animation *animation, const char *str);
+int sd_animation_set_anim_string(sd_animation *animation, const str *src);
 
 /*! \brief Get extra string count
  *
@@ -193,7 +189,7 @@ int sd_animation_get_extra_string_count(sd_animation *animation);
  * \param num String index
  * \param str Extra string. This will be copied.
  */
-int sd_animation_set_extra_string(sd_animation *animation, int num, const char *str);
+int sd_animation_set_extra_string(sd_animation *animation, int num, const str *src);
 
 /*! \brief Pushes extra string to the end of string list.
  *
@@ -206,7 +202,7 @@ int sd_animation_set_extra_string(sd_animation *animation, int num, const char *
  * \param animation Animation struct to modify
  * \param str Extra string. This will be copied.
  */
-int sd_animation_push_extra_string(sd_animation *animation, const char *str);
+int sd_animation_push_extra_string(sd_animation *animation, const str *src);
 
 /*! \brief Pops an extra string off from the end of the extra string list.
  *
@@ -225,12 +221,12 @@ int sd_animation_pop_extra_string(sd_animation *animation);
  * Returns the extra string at given index.
  *
  * \retval NULL There is no extra string at given index.
- * \retval char* Pointer to the extra string at given index.
+ * \retval str* Pointer to the extra string at given index.
  *
  * \param animation Animation struct to modify.
  * \param num Extra string index
  */
-char* sd_animation_get_extra_string(sd_animation *animation, int num);
+str* sd_animation_get_extra_string(sd_animation *animation, int num);
 
 /*! \brief Get extra string count
  *

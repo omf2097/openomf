@@ -20,6 +20,7 @@ size_t str_size(const str *string);
 void str_slice(str *dst, const str *src, size_t start, size_t end);
 void str_copy(str *dst, const str *src);
 void str_copy_c(str *dst, const char *src);
+void str_copy_buf(str *dst, const char *src, size_t len);
 void str_append(str *dst, const str *src);
 void str_append_c(str *dst, const char *src);
 void str_prepend(str *dst, const str *src);

@@ -30,8 +30,8 @@ int sd_writer_seek_start(const sd_writer *writer, long offset);
 int sd_writer_seek_cur(const sd_writer *writer, long offset);
 int sd_writer_seek_end(const sd_writer *writer, long offset);
 
-int sd_write_buf(sd_reader *reader, const str *buf);  // No null at the end
-int sd_write_cstr(sd_reader *reader, const str *buf);  // Null padded
+int sd_write_str(sd_writer *writer, const str *buf);  // No null at the end
+int sd_write_cstr(sd_writer *writer, const str *buf);  // Null padded
 
 /**
   * Write a buffer to file.
