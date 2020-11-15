@@ -6,7 +6,7 @@
 #define TEST_VAL_COUNT 1000
 
 vector test_vector;
-unsigned int test_values[TEST_VAL_COUNT];
+static unsigned int test_values[TEST_VAL_COUNT];
 
 void test_vector_create(void) {
     vector_create(&test_vector, sizeof(int));

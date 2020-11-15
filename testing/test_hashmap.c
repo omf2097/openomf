@@ -7,7 +7,7 @@
 #define TEST_VAL_COUNT 1000
 
 hashmap test_map;
-unsigned int test_values[TEST_VAL_COUNT];
+static unsigned int test_values[TEST_VAL_COUNT];
 
 void test_hashmap_create(void) {
     hashmap_create(&test_map, 8);
