@@ -23,7 +23,7 @@ uint32_t random_intmax(struct random_t *r) {
 }
 
 float random_float(struct random_t *r) {
-    return (float)random_intmax(r) / UINT_MAX;
+    return (float)random_intmax(r) / (float)UINT_MAX;
 }
 
 void rand_seed(uint32_t seed) { random_seed(&rand_state, seed); }

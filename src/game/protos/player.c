@@ -199,6 +199,7 @@ void player_set_delay(object *obj, int delay) {
     }
 }
 
+#ifdef DEBUGMODE
 void player_describe_frame(const sd_script_frame *frame) {
     DEBUG("Frame %c%d", 65 + frame->sprite, frame->tick_len);
     for(int i = 0; i < frame->tag_count; i++) {
@@ -225,6 +226,7 @@ void player_describe_object(object *obj) {
         );
     }
 }
+#endif /* DEBUGMODE */
 
 void player_run(object *obj) {
     // Some vars for easier life
