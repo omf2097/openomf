@@ -23,5 +23,6 @@ for row in reader:
     count = count + 1
 output_file.write('};\n\n')
 output_file.write('const int sd_taglist_size = %d;\n\n' % count)
+
 output_file.close()
 tags_file.close()
