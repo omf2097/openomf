@@ -271,7 +271,8 @@ void newsroom_input_tick(scene *scene) {
                                 // make a new AI controller
                                 controller *ctrl = omf_calloc(1, sizeof(controller));
                                 controller_init(ctrl);
-                                ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
+                                sd_pilot *pilot = game_player_get_pilot(p2);
+                                ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, p2->pilot_id);
                                 game_player_set_ctrl(p2, ctrl);
                                 game_state_set_next(scene->gs, SCENE_VS);
                             }
