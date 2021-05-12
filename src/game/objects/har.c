@@ -1934,6 +1934,14 @@ int har_act(object *obj, int act_type) {
         return 1;
     }
 
+    // if enemy is airborn we fire extra walk event to check whether we need to turn
+    // fixes some rare behaviour where you cannot kick-counter someone who jumps over you
+    int opp_id = h->player_id ? 0 : 1;
+    object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
+    if(object_is_airborne(opp)) {
+        har_event_walk(h, 1);
+    }
+
     return 0;
 }
 
