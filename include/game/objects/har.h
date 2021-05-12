@@ -64,10 +64,12 @@ enum {
     HAR_EVENT_AIR_ATTACK_DONE, // Touched the floor after executing a move in the air
     HAR_EVENT_ATTACK, // Executed a move, may not hit
     HAR_EVENT_ENEMY_BLOCK, // Opponent blocked your move
+    HAR_EVENT_BLOCK, // You blocked your opponents move
     HAR_EVENT_LAND_HIT, // Landed a hit on the opponent
     HAR_EVENT_TAKE_HIT, // Hit by HAR or projectile
     HAR_EVENT_HAZARD_HIT, // Hit by hazard
     HAR_EVENT_STUN,
+    HAR_EVENT_ENEMY_STUN,
     HAR_EVENT_RECOVER, // regained control after recoil/stun
     HAR_EVENT_HIT_WALL, // Touched a wall
     HAR_EVENT_LAND, // Touched the floor
