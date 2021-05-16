@@ -69,6 +69,10 @@ int game_player_get_selectable(game_player *gp) {
     return gp->selectable;
 }
 
+sd_pilot* game_player_get_pilot(game_player *gp) {
+    return &gp->pilot;
+}
+
 chr_score* game_player_get_score(game_player *gp) {
     return &gp->score;
 }

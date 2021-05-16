@@ -560,14 +560,13 @@ void set_selected_move(controller *ctrl, af_move *selected_move) {
 }
 
 int assign_move_by_cat(controller *ctrl, int category) {
-    ai *a = ctrl->data;
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
 
     for(int i = 0; i < 70; i++) {
         af_move *move = NULL;
         if((move = af_get_move(h->af_data, i))) {
-            if(is_valid_move(move, h, a->pilot)) {
+            if(is_valid_move(move, h)) {
                 // category filter
                 if (category != move->category) {
                     continue;
@@ -584,14 +583,13 @@ int assign_move_by_cat(controller *ctrl, int category) {
 }
 
 int assign_move_by_id(controller *ctrl, int move_id) {
-    ai *a = ctrl->data;
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
 
     for(int i = 0; i < 70; i++) {
         af_move *move = NULL;
         if((move = af_get_move(h->af_data, i))) {
-            if(is_valid_move(move, h, a->pilot)) {
+            if(is_valid_move(move, h)) {
                 // move_id filter
                 if (move_id != move->id) {
                     continue;
@@ -756,7 +754,7 @@ int attempt_attack(controller *ctrl) {
             af_move *move = NULL;
             if((move = af_get_move(h->af_data, i))) {
                 move_stat *ms = &a->move_stats[i];
-                if(is_valid_move(move, h, a->pilot)) {
+                if(is_valid_move(move, h)) {
 
                     // sometimes skip move if pilot dislikes it
                     if (move_disliked(a, move)) {
