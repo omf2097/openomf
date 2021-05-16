@@ -108,47 +108,64 @@ int char_to_act(int ch, int direction) {
     return ACT_STOP;
 }
 
-// pref_val will be from -400 to 400
-// used to determine whether pilot prefers a move or tactic
-int roll_pref(int pref_val) {
+/** 
+ * \brief Roll chance for pilot preference.
+ *
+ * \param pref_val The value of the pilot preference (-400 to 400)
+ *
+ * \return A boolean indicating whether the preference is confirmed.
+ */
+bool roll_pref(int pref_val) {
     int rand_roll = rand_int(800);
     int pref_thresh = pref_val + 400;
-    if (rand_roll < pref_thresh) {
-        return 1;
-    } else {
-        return 0;
-    }
+    return rand_roll <= pref_thresh;
 }
 
-// whether smart AI will usually go ahead with an action
-int smart_usually(ai *a) {
+/** 
+ * \brief Determine whether the AI is smart enough to usually go ahead with an action.
+ *
+ * \param a The AI instance.
+ *
+ * \return A boolean indicating whether the AI is smart enough.
+ */
+bool smart_usually(ai *a) {
+    int rand_roll = rand_int(32);
     int diff_factor = a->difficulty * a->difficulty; // 1 - 49
-    int roll = rand_int(32);
-    if (roll <= diff_factor) {
-        return 1;
-    } else {
-        return 0;
-    }
+    return rand_roll <= diff_factor;
 }
 
-// whether dumb AI will usually go ahead with an action
-int dumb_usually(ai *a) {
+/** 
+ * \brief Determine whether the AI is dumb enough to usually go ahead with an action.
+ *
+ * \param a The AI instance.
+ *
+ * \return A boolean indicating whether the AI is dumb enough.
+ */
+bool dumb_usually(ai *a) {
     return !smart_usually(a);
 }
 
-// whether smart AI will sometimes go ahead with an action
-int smart_sometimes(ai *a) {
+/** 
+ * \brief Determine whether the AI is smart enough to sometimes go ahead with an action.
+ *
+ * \param a The AI instance.
+ *
+ * \return A boolean indicating whether the AI is smart enough.
+ */
+bool smart_sometimes(ai *a) {
+    int rand_roll = rand_int(72);
     int diff_factor = a->difficulty * a->difficulty; // 1-49
-    int roll = rand_int(72);
-    if (roll <= diff_factor) {
-        return 1;
-    } else {
-        return 0;
-    }
+    return rand_roll <= diff_factor;
 }
 
-// whether dumb AI will sometimes go ahead with an action
-int dumb_sometimes(ai *a) {
+/** 
+ * \brief Determine whether the AI is dumb enough to sometimes go ahead with an action.
+ *
+ * \param a The AI instance.
+ *
+ * \return A boolean indicating whether the AI is dumb enough.
+ */
+bool dumb_sometimes(ai *a) {
     return !smart_sometimes(a);
 }
 
@@ -172,9 +189,16 @@ int is_special_move(af_move *move) {
     return 1;
 }
 
-int har_has_projectiles(int har_id) {
+/** 
+ * \brief Check whether a HAR has projectiles.
+ *
+ * \param har_id An integer identifying the HAR.
+ *
+ * \return A boolean indicating whether the HAS supports projectiles.
+ */
+bool har_has_projectiles(int har_id) {
     // disabled for now as AI is unable to use projectile attacks
-    return 0;
+    return false;
 
     switch (har_id) {
         case 0: // jaguar (spit)
@@ -183,83 +207,67 @@ int har_has_projectiles(int har_id) {
         case 5: // shredder (short-range hands)
         case 8: // chronos (chest triangle)
         case 9: // nova (missile)
-            return 1;
+            return true;
     }
-    return 0;
+    return false;
 }
 
-// depending on pilot preferences they might skip a move
-int move_disliked(ai *a, af_move *move) {
+/** 
+ * \brief Determine whether a pilot might dislike a move.
+ *
+ * \param a The AI instance.
+ * \param selected_move The move instance.
+ *
+ * \return A boolean indicating whether move was disliked.
+ */
+bool move_disliked(ai *a, af_move *move) {
     // bail-out 75% of the time
     if (rand_int(4) > 1) {
-        return 0;
+        return false;
     }
 
     if (is_special_move(move)) {
         // decide whether to do special move
-        if (!roll_pref(a->pilot->ap_special)) {
-            return 1;
-        } else {
-            return 0;
-        }
+        return !roll_pref(a->pilot->ap_special);
     }
 
     switch(move->category) {
         case CAT_BASIC:
             // decide whether to do basic move
-            if (smart_sometimes(a)) {
-                return 0;
-            } else {
-                return 1;
-            }
+            return dumb_sometimes(a);
         case CAT_LOW:
             // decide whether to do low move
-            if (!roll_pref(a->pilot->ap_low)) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return !roll_pref(a->pilot->ap_low);
         case CAT_MEDIUM:
             // decide whether to do middle move
-            if (!roll_pref(a->pilot->ap_middle)) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return !roll_pref(a->pilot->ap_middle);
         case CAT_HIGH:
             // decide whether to do high move
-            if (!roll_pref(a->pilot->ap_high)) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return !roll_pref(a->pilot->ap_middle);
         case CAT_THROW:
         case CAT_CLOSE:
             // decide whether to do throw move
-            if (!roll_pref(a->pilot->ap_throw)) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return !roll_pref(a->pilot->ap_throw);
         case CAT_PROJECTILE:
         case CAT_SCRAP:
         case CAT_DESTRUCTION:
             // decide whether to do special move
-            if (!roll_pref(a->pilot->ap_special)) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return !roll_pref(a->pilot->ap_special);
     }
 
-    return 0;
+    return false;
 }
 
-int move_too_powerful(ai *a, af_move *move) {
-    if (is_special_move(move) && dumb_usually(a)) {
-        return 1;
-    }
-    return 0;
+/** 
+ * \brief Determine whether a move is too powerful for AI difficutly.
+ *
+ * \param a The AI instance.
+ * \param selected_move The move instance.
+ *
+ * \return A boolean indicating whether move is considered too powerful.
+ */
+bool move_too_powerful(ai *a, af_move *move) {
+    return is_special_move(move) && dumb_usually(a);
 }
 
 int ai_har_event(controller *ctrl, har_event event) {
@@ -542,6 +550,14 @@ int is_valid_move(af_move *move, har *h) {
     return 0;
 }
 
+/** 
+ * \brief Sets the selected move.
+ *
+ * \param ctrl Controller instance.
+ * \param selected_move The move instance.
+ *
+ * \return Void.
+ */
 void set_selected_move(controller *ctrl, af_move *selected_move) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
@@ -559,7 +575,15 @@ void set_selected_move(controller *ctrl, af_move *selected_move) {
     // DEBUG("AI selected move %s", str_c(&selected_move->move_string));
 }
 
-int assign_move_by_cat(controller *ctrl, int category) {
+/** 
+ * \brief Assigns a move by category identifier.
+ *
+ * \param ctrl Controller instance.
+ * \param category An integer identifying the desired category of move.
+ *
+ * \return A boolean indicating whether move was assigned.
+ */
+bool assign_move_by_cat(controller *ctrl, int category) {
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
 
@@ -573,16 +597,23 @@ int assign_move_by_cat(controller *ctrl, int category) {
                 }
                 // DEBUG("=== assign_move_by_cat === category %d - id %d", move->category, move->id);
                 set_selected_move(ctrl, move);
-                return 1;
+                return true;
             }
         }
     }
 
-
-    return 0;
+    return false;
 }
 
-int assign_move_by_id(controller *ctrl, int move_id) {
+/** 
+ * \brief Assigns a move by move_id.
+ *
+ * \param ctrl Controller instance.
+ * \param move_id An integer identifying the desired move.
+ *
+ * \return A boolean indicating whether move was assigned.
+ */
+bool assign_move_by_id(controller *ctrl, int move_id) {
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
 
@@ -597,12 +628,12 @@ int assign_move_by_id(controller *ctrl, int move_id) {
                 
                 // DEBUG("=== assign_move_by_id === id %d", move_id);
                 set_selected_move(ctrl, move);
-                return 1;
+                return true;
             }
         }
     }
 
-    return 0;
+    return false;
 }
 
 // return 1 on block
@@ -658,6 +689,14 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
     return 0;
 }
 
+/** 
+ * \brief Process the current selected move.
+ *
+ * \param ctrl Controller instance.
+ * \param ev The current controller event.
+ *
+ * \return Void.
+ */
 void process_selected_move(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
@@ -675,6 +714,14 @@ void process_selected_move(controller *ctrl, ctrl_event **ev) {
     controller_cmd(ctrl, char_to_act(ch, o->direction), ev);
 }
 
+/** 
+ * \brief Handle the AI's movement.
+ *
+ * \param ctrl Controller instance.
+ * \param ev The current controller event.
+ *
+ * \return Void.
+ */
 void handle_movement(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
@@ -740,7 +787,14 @@ void handle_movement(controller *ctrl, ctrl_event **ev) {
     }
 }
 
-int attempt_attack(controller *ctrl) {
+/** 
+ * \brief Attempt to select a random attack.
+ *
+ * \param ctrl Controller instance.
+ *
+ * \return Boolean indicating whether an attack was selected.
+ */
+bool attempt_attack(controller *ctrl) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
@@ -796,14 +850,22 @@ int attempt_attack(controller *ctrl) {
 
         if(selected_move) {
             set_selected_move(ctrl, selected_move);
-            return 1;
+            return true;
         }
     }
 
-    return 0;
+    return false;
 }
 
-int attempt_tactic(controller *ctrl, ctrl_event **ev) {
+/** 
+ * \brief Attempt to initiate the currently queued tactic.
+ *
+ * \param ctrl Controller instance.
+ * \param ev The current controller event.
+ *
+ * \return Boolean indicating whether an tactic was initiated.
+ */
+bool attempt_tactic(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
@@ -856,8 +918,10 @@ int attempt_tactic(controller *ctrl, ctrl_event **ev) {
                 // if we manage to close
                 if (a->pilot->att_hyper && assign_move_by_cat(ctrl, CAT_THROW)) {
                     // DEBUG("=== attempt_tactic === TACTIC_CLOSE - throw");
+                    return true;
                 } else if (assign_move_by_cat(ctrl, CAT_BASIC)) {
                     // DEBUG("=== attempt_tactic === TACTIC_CLOSE - basic");
+                    return true;
                 }
             }
         break;
@@ -865,7 +929,7 @@ int attempt_tactic(controller *ctrl, ctrl_event **ev) {
             a->queued_tactic = 0;
             if (assign_move_by_cat(ctrl, CAT_THROW)) {
                 // DEBUG("=== attempt_tactic === TACTIC_GRAB - throw SUCCESS");
-                return 1;
+                return true;
             } else {
                 if (!h->close) {
                     // DEBUG("=== attempt_tactic === TACTIC_GRAB - closing");
@@ -875,6 +939,7 @@ int attempt_tactic(controller *ctrl, ctrl_event **ev) {
                     a->queued_tactic = TACTIC_GRAB;
                 } else {
                     // DEBUG("=== attempt_tactic === TACTIC_GRAB - failed");
+                    return false;
                 }
             }
         break;
@@ -882,7 +947,7 @@ int attempt_tactic(controller *ctrl, ctrl_event **ev) {
             a->queued_tactic = 0;
             if (assign_move_by_cat(ctrl, CAT_BASIC)) {
                 // DEBUG("=== attempt_tactic === TACTIC_QUICK - basic SUCCESS");
-                return 1;
+                return true;
             } else {
                 if (!h->close) {
                     // DEBUG("=== attempt_tactic === TACTIC_QUICK - closing");
@@ -892,6 +957,7 @@ int attempt_tactic(controller *ctrl, ctrl_event **ev) {
                     a->queued_tactic = TACTIC_QUICK;
                 } else {
                     // DEBUG("=== attempt_tactic === TACTIC_QUICK - failed");
+                    return false;
                 }
             }
         case TACTIC_SPAM:
@@ -900,20 +966,20 @@ int attempt_tactic(controller *ctrl, ctrl_event **ev) {
             if (a->last_move_id > 0 && assign_move_by_id(ctrl, a->last_move_id)) {
                 // DEBUG("=== attempt_tactic === TACTIC_SPAM - repeat SUCCESS");
                 a->last_move_id = 0;
-                return 1;
+                return true;
             } else {
                 // DEBUG("=== attempt_tactic === TACTIC_SPAM - failed");
-                return 0;
+                return false;
             }
         break;
         case TACTIC_SHOOT:
             a->queued_tactic = 0;
             if (assign_move_by_cat(ctrl, CAT_PROJECTILE)) {
                 // DEBUG("=== attempt_tactic === TACTIC_SHOOT - projectile SUCCESS");
-                return 1;
+                return true;
             } else {
                 // DEBUG("=== attempt_tactic === TACTIC_SHOOT - failed");
-                return 0;
+                return false;
             }
         break;
         case TACTIC_TRIP:
@@ -921,7 +987,7 @@ int attempt_tactic(controller *ctrl, ctrl_event **ev) {
 
             if (assign_move_by_cat(ctrl, CAT_LOW)) {
                 // DEBUG("=== attempt_tactic === TACTIC_TRIP - trip SUCCESS");
-                return 1;
+                return true;
             } else {
                 if (!h->close) {
                     // DEBUG("=== attempt_tactic === TACTIC_TRIP - closing");
@@ -931,12 +997,13 @@ int attempt_tactic(controller *ctrl, ctrl_event **ev) {
                     a->queued_tactic = TACTIC_TRIP;
                 } else {
                     // DEBUG("=== attempt_tactic === TACTIC_TRIP - failed");
+                    return false;
                 }
             }
         break;
         default:
             a->queued_tactic = 0;
-            return 0;
+            return false;
         break;
     }
 
@@ -944,7 +1011,7 @@ int attempt_tactic(controller *ctrl, ctrl_event **ev) {
 
     controller_cmd(ctrl, a->cur_act, ev);
     a->queued_tactic = 0;
-    return 1;
+    return true;
 }
 
 int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
@@ -1018,10 +1085,18 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     return 0;
 }
 
-void pilot_get_pref(sd_pilot *pilot, int id) {
+/** 
+ * \brief Populate pilot preferences according to perceived personality.
+ *
+ * \param pilot The pilot details.
+ * \param pilot_id An integer identifying the pilot.
+ *
+ * \return Void.
+ */
+void populate_pilot_prefs(sd_pilot *pilot, int pilot_id) {
     // not sure if this only exists when in tournament mode
     // but i wanted a way for arcade pilots to be behave uniquely
-    switch (id) {
+    switch (pilot_id) {
         case 0:
             // crystal
             // determined and independent
@@ -1124,7 +1199,7 @@ void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int
 
     // pilot prefs are always zero outside of tournament mode
     // populating them here to make arcade mode more interesting
-    pilot_get_pref(pilot, pilot_id);
+    populate_pilot_prefs(pilot, pilot_id);
     DEBUG("pilot %d", pilot_id);
     DEBUG("att_normal %d", pilot->att_normal);
     DEBUG("att_def %d", pilot->att_def);
