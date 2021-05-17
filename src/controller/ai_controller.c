@@ -637,22 +637,52 @@ void set_selected_move(controller *ctrl, af_move *selected_move) {
  * \return A boolean indicating whether move was assigned.
  */
 bool assign_move_by_cat(controller *ctrl, int category) {
+    ai *a = ctrl->data;
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
 
+    af_move *selected_move = NULL;
+    int top_value = 0;
     for(int i = 0; i < 70; i++) {
         af_move *move = NULL;
         if((move = af_get_move(h->af_data, i))) {
+            move_stat *ms = &a->move_stats[i];
             if(is_valid_move(move, h)) {
                 // category filter
                 if (category != move->category) {
                     continue;
                 }
-                // DEBUG("=== assign_move_by_cat === category %d - id %d", move->category, move->id);
-                set_selected_move(ctrl, move);
-                return true;
+
+                int value = ms->value + rand_int(10);
+                if (ms->min_hit_dist != -1){
+                    if (ms->last_dist < ms->max_hit_dist+5 && ms->last_dist > ms->min_hit_dist+5){
+                        value += 2;
+                    } else if (ms->last_dist > ms->max_hit_dist+10){
+                        value -= 3;
+                    }
+                }
+
+                value -= ms->attempts/2;
+                value -= ms->consecutive*2;
+
+                if (selected_move == NULL){
+                    selected_move = move;
+                    top_value = value;
+                } else if (value > top_value) {
+                    selected_move = move;
+                    top_value = value;
+                }
             }
         }
+    }
+
+    for(int i = 0; i < 70; i++) {
+        a->move_stats[i].consecutive /= 2;
+    }
+
+    if(selected_move) {
+        set_selected_move(ctrl, selected_move);
+        return true;
     }
 
     return false;
