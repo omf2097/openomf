@@ -1229,8 +1229,6 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
  * \return Void.
  */
 void populate_pilot_prefs(sd_pilot *pilot, int pilot_id) {
-    // not sure if this only exists when in tournament mode
-    // but i wanted a way for arcade pilots to be behave uniquely
     switch (pilot_id) {
         case 0:
             // crystal
@@ -1345,8 +1343,7 @@ void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int
     vector_create(&a->active_projectiles, sizeof(object*));
     a->pilot = pilot;
 
-    // pilot prefs are always zero outside of tournament mode
-    // populating them here to make arcade mode more interesting
+    // pilot prefs manually until we start reading them from binary
     populate_pilot_prefs(pilot, pilot_id);
     DEBUG("pilot %d", pilot_id);
     DEBUG("att_normal %d", pilot->att_normal);
