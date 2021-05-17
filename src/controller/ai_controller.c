@@ -157,7 +157,7 @@ bool roll_pref(int pref_val) {
  *
  * \return A boolean indicating whether the AI is smart enough.
  */
-bool smart_usually(ai *a) {
+bool smart_usually(const ai *a) {
     int rand_roll = rand_int(32);
     int diff_factor = a->difficulty * a->difficulty; // 1 - 49
     return rand_roll <= diff_factor;
@@ -170,7 +170,7 @@ bool smart_usually(ai *a) {
  *
  * \return A boolean indicating whether the AI is dumb enough.
  */
-bool dumb_usually(ai *a) {
+bool dumb_usually(const ai *a) {
     return !smart_usually(a);
 }
 
@@ -181,7 +181,7 @@ bool dumb_usually(ai *a) {
  *
  * \return A boolean indicating whether the AI is smart enough.
  */
-bool smart_sometimes(ai *a) {
+bool smart_sometimes(const ai *a) {
     int rand_roll = rand_int(72);
     int diff_factor = a->difficulty * a->difficulty; // 1-49
     return rand_roll <= diff_factor;
@@ -194,7 +194,7 @@ bool smart_sometimes(ai *a) {
  *
  * \return A boolean indicating whether the AI is dumb enough.
  */
-bool dumb_sometimes(ai *a) {
+bool dumb_sometimes(const ai *a) {
     return !smart_sometimes(a);
 }
 
@@ -205,7 +205,7 @@ bool dumb_sometimes(ai *a) {
  *
  * \return A boolean indicating whether the move is a special move.
  */
-bool is_special_move(af_move *move) {
+bool is_special_move(const af_move *move) {
     if (
         !str_equal_c(&move->move_string, "K") ||
         !str_equal_c(&move->move_string, "K1") ||
@@ -256,7 +256,7 @@ bool har_has_projectiles(int har_id) {
  *
  * \return A boolean indicating whether move was disliked.
  */
-bool move_disliked(ai *a, af_move *move) {
+bool move_disliked(const ai *a, const af_move *move) {
     // check for non-projectile special moves
     if (is_special_move(move)) {
         // decide whether to do special move
@@ -301,7 +301,7 @@ bool move_disliked(ai *a, af_move *move) {
  *
  * \return A boolean indicating whether move is considered too powerful.
  */
-bool move_too_powerful(ai *a, af_move *move) {
+bool move_too_powerful(const ai *a, const af_move *move) {
     return is_special_move(move) && dumb_usually(a);
 }
 
@@ -563,7 +563,7 @@ void ai_controller_free(controller *ctrl) {
  *
  * \return A boolean indicating whether the move is valid
  */
-bool is_valid_move(af_move *move, har *h) {
+bool is_valid_move(const af_move *move, const har *h) {
     // If category is any of these, and bot is not close, then
     // do not try to execute any of them. This attempts
     // to make the HARs close up instead of standing in place
