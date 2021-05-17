@@ -169,24 +169,31 @@ bool dumb_sometimes(ai *a) {
     return !smart_sometimes(a);
 }
 
-int is_special_move(af_move *move) {
-    const char *move_string = str_c(&move->move_string);
+/** 
+ * \brief Convenience method to check whether the provided move is a special move.
+ *
+ * \param move The move instance.
+ *
+ * \return A boolean indicating whether the move is a special move.
+ */
+bool is_special_move(af_move *move) {
     if (
-            !strcmp("K", move_string) ||
-            !strcmp("K1", move_string) ||
-            !strcmp("K2", move_string) ||
-            !strcmp("K3", move_string) ||
-            !strcmp("K4", move_string) ||
-            !strcmp("K6", move_string) ||
-            !strcmp("P", move_string) ||
-            !strcmp("P1", move_string) ||
-            !strcmp("P2", move_string) ||
-            !strcmp("P3", move_string) ||
-            !strcmp("P4", move_string) ||
-            !strcmp("P6", move_string)) {
-        return 0;
+        !str_equal_c(&move->move_string, "K") ||
+        !str_equal_c(&move->move_string, "K1") ||
+        !str_equal_c(&move->move_string, "K2") ||
+        !str_equal_c(&move->move_string, "K3") ||
+        !str_equal_c(&move->move_string, "K4") ||
+        !str_equal_c(&move->move_string, "K6") ||
+        !str_equal_c(&move->move_string, "P") ||
+        !str_equal_c(&move->move_string, "P1") ||
+        !str_equal_c(&move->move_string, "P2") ||
+        !str_equal_c(&move->move_string, "P3") ||
+        !str_equal_c(&move->move_string, "P4") ||
+        !str_equal_c(&move->move_string, "P6")
+    ) {
+        return false;
     }
-    return 1;
+    return true;
 }
 
 /** 
