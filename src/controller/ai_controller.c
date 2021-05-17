@@ -527,7 +527,15 @@ void ai_controller_free(controller *ctrl) {
     free(a);
 }
 
-int is_valid_move(af_move *move, har *h) {
+/** 
+ * \brief Check whether a move is valid and can be initiated.
+ *
+ * \param move The move instance.
+ * \param h The HAR instance.
+ *
+ * \return A boolean indicating whether the move is valid
+ */
+bool is_valid_move(af_move *move, har *h) {
     // If category is any of these, and bot is not close, then
     // do not try to execute any of them. This attempts
     // to make the HARs close up instead of standing in place
@@ -544,19 +552,20 @@ int is_valid_move(af_move *move, har *h) {
     }
     if(move->category == CAT_JUMPING && h->state != STATE_JUMPING) {
         // not jumping but trying to execute a jumping move
-        return 0;
+        return false;
     }
     if(move->category != CAT_JUMPING && h->state == STATE_JUMPING) {
         // jumping but this move is not a jumping move
-        return 0;
+        return false;
     }
     if(move->category == CAT_SCRAP && h->state != STATE_VICTORY) {
-        return 0;
+        return false;
     }
 
     if(move->category == CAT_DESTRUCTION && h->state != STATE_SCRAP) {
-        return 0;
+        return false;
     }
+
     // XXX check for chaining?
 
     int move_str_len = str_size(&move->move_string);
@@ -564,7 +573,7 @@ int is_valid_move(af_move *move, har *h) {
     for(int i = 0; i < move_str_len; i++) {
         tmp = str_at(&move->move_string, i);
         if(!((tmp >= '1' && tmp <= '9') || tmp == 'K' || tmp == 'P')) {
-            return 0;
+            return false;
         }
     }
 
@@ -573,10 +582,10 @@ int is_valid_move(af_move *move, har *h) {
         || move->category == CAT_SCRAP
         || move->category == CAT_DESTRUCTION) && move_str_len > 0) 
     {
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
 /** 
