@@ -127,6 +127,17 @@ int char_to_act(int ch, int direction) {
 }
 
 /** 
+ * \brief Convenience method to roll '1 in x' chance.
+ *
+ * \param roll_x An integer indicating number of numbers in roll.
+ *
+ * \return A boolean indicating whether the roll passed.
+ */
+bool roll_chance(int roll_x) {
+    return rand_int(roll_x) == 1;
+}
+
+/** 
  * \brief Roll chance for pilot preference.
  *
  * \param pref_val The value of the pilot preference (-400 to 400)
@@ -215,14 +226,14 @@ bool is_special_move(af_move *move) {
 }
 
 /** 
- * \brief Check whether a HAR has projectiles.
+ * \brief Convenience method to check whether a HAR has projectiles.
  *
  * \param har_id An integer identifying the HAR.
  *
- * \return A boolean indicating whether the HAS supports projectiles.
+ * \return Boolean indicating whether HAR supports projectiles.
  */
 bool har_has_projectiles(int har_id) {
-    // disabled for now as AI is unable to use projectile attacks
+    // disabled for now as AI is failing to initiate projectile attacks on-demand
     return false;
 
     switch (har_id) {
@@ -246,11 +257,7 @@ bool har_has_projectiles(int har_id) {
  * \return A boolean indicating whether move was disliked.
  */
 bool move_disliked(ai *a, af_move *move) {
-    // bail-out 75% of the time
-    if (rand_int(4) > 1) {
-        return false;
-    }
-
+    // check for non-projectile special moves
     if (is_special_move(move)) {
         // decide whether to do special move
         return !roll_pref(a->pilot->ap_special);
@@ -273,6 +280,9 @@ bool move_disliked(ai *a, af_move *move) {
         case CAT_CLOSE:
             // decide whether to do throw move
             return !roll_pref(a->pilot->ap_throw);
+        case CAT_JUMPING:
+            // decide whether to do throw move
+            return !roll_pref(a->pilot->ap_jump);
         case CAT_PROJECTILE:
         case CAT_SCRAP:
         case CAT_DESTRUCTION:
@@ -340,7 +350,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                     } else if (pilot->att_sniper) {
                         // DEBUG("=== HIT EVENT === att_sniper - queue TACTIC_QUICK");
                         a->queued_tactic = TACTIC_QUICK;
-                    } else if (pilot->att_jump) {
+                    } else if (pilot->att_jump && roll_chance(2)) {
                         // DEBUG("=== HIT EVENT === att_jump - queue TACTIC_ESCAPE");
                         a->queued_tactic = TACTIC_ESCAPE;
                     }
@@ -437,7 +447,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                 if (har_has_projectiles(h->id)) {
                     // DEBUG("=== WALL EVENT === queue TACTIC_SHOOT");
                     a->queued_tactic = TACTIC_SHOOT;
-                } else {
+                } else if (roll_pref(pilot->pref_jump)) {
                     // DEBUG("=== WALL EVENT === queue TACTIC_FLY");
                     a->queued_tactic = TACTIC_FLY;
                 }
@@ -465,7 +475,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                     // DEBUG("=== HURT EVENT === att_def queue TACTIC_TURTLE");
                     a->queued_tactic = TACTIC_TURTLE;
                 } else if (!h->close) {
-                    if (smart_usually(a)) {
+                    if (roll_pref(pilot->pref_jump)) {
                         // DEBUG("=== HURT EVENT === !close queue TACTIC_FLY");
                         a->queued_tactic = TACTIC_FLY;
                     } else {
@@ -476,9 +486,12 @@ int ai_har_event(controller *ctrl, har_event event) {
                     if (pilot->att_hyper) {
                         // DEBUG("=== HURT EVENT === wallhug att_hyper queue TACTIC_GRAB");
                         a->queued_tactic = TACTIC_GRAB;
-                    } else {
+                    } else if (roll_pref(pilot->pref_jump)) {
                         // DEBUG("=== HURT EVENT === wallhug queue TACTIC_FLY");
                         a->queued_tactic = TACTIC_FLY; 
+                    } else {
+                        // DEBUG("=== HURT EVENT === wallhug queue TACTIC_TRIP");
+                        a->queued_tactic = TACTIC_TRIP; 
                     }
                 } else {
                     // DEBUG("=== HURT EVENT === queue TACTIC_TRIP");
@@ -562,7 +575,7 @@ bool is_valid_move(af_move *move, har *h) {
         case CAT_HIGH:
             // Only allow handwaving if close or jumping
             if(!h->close && h->state != STATE_JUMPING) {
-                return 0;
+                return false;
             }
     }
     if(move->category == CAT_JUMPING && h->state != STATE_JUMPING) {
@@ -576,7 +589,6 @@ bool is_valid_move(af_move *move, har *h) {
     if(move->category == CAT_SCRAP && h->state != STATE_VICTORY) {
         return false;
     }
-
     if(move->category == CAT_DESTRUCTION && h->state != STATE_SCRAP) {
         return false;
     }
@@ -719,7 +731,14 @@ bool assign_move_by_id(controller *ctrl, int move_id) {
     return false;
 }
 
-// return 1 on block
+/** 
+ * \brief Assigns a move by move_id.
+ *
+ * \param ctrl Controller instance.
+ * \param move_id An integer identifying the desired move.
+ *
+ * \return A boolean indicating whether move was assigned.
+ */
 int ai_block_har(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
@@ -892,13 +911,6 @@ bool attempt_attack(controller *ctrl) {
             if((move = af_get_move(h->af_data, i))) {
                 move_stat *ms = &a->move_stats[i];
                 if(is_valid_move(move, h)) {
-
-                    // sometimes skip move if pilot dislikes it
-                    if (move_disliked(a, move)) {
-                        // DEBUG("skipping move %s because of pilot preference", str_c(&move->move_string));
-                        continue;
-                    }
-
                     int value = ms->value + rand_int(10);
                     if (ms->min_hit_dist != -1){
                         if (ms->last_dist < ms->max_hit_dist+5 && ms->last_dist > ms->min_hit_dist+5){
@@ -910,6 +922,13 @@ bool attempt_attack(controller *ctrl) {
 
                     value -= ms->attempts/2;
                     value -= ms->consecutive*2;
+
+                    // sometimes skip move if pilot dislikes it
+                    if (move_disliked(a, move)) {
+                        // DEBUG("skipping move %s because of pilot preference", str_c(&move->move_string));
+                        //continue;
+                        value -= rand_int(10);
+                    }
 
                     // sometimes skip move if it is too powerful for difficulty
                     if (move_too_powerful(a, move)) {
@@ -955,7 +974,9 @@ bool attempt_tactic(controller *ctrl, ctrl_event **ev) {
 
     switch (a->queued_tactic) {
         case TACTIC_TURTLE:
-            if (rand_int(2) == 1 || h->is_wallhugging) {
+            a->queued_tactic = 0;
+
+            if (roll_chance(2) && h->is_wallhugging) {
                 // DEBUG("=== attempt_tactic === TACTIC_TURTLE - crouch & block");
                 // crouch and block
                 a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN|ACT_LEFT : ACT_DOWN|ACT_RIGHT);
@@ -966,12 +987,16 @@ bool attempt_tactic(controller *ctrl, ctrl_event **ev) {
             }
         break;
         case TACTIC_FLY:
+            a->queued_tactic = 0;
+
             // DEBUG("=== attempt_tactic === TACTIC_FLY - jump forward");
             // jump forward
             a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)|ACT_UP;
         break;
         case TACTIC_ESCAPE:
-            if (h->is_wallhugging) {
+            a->queued_tactic = 0;
+
+            if (roll_chance(2) && h->is_wallhugging) {
                 // DEBUG("=== attempt_tactic === TACTIC_ESCAPE - jump forward");
                 // jump forward
                 a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)|ACT_UP;
@@ -985,7 +1010,7 @@ bool attempt_tactic(controller *ctrl, ctrl_event **ev) {
             a->queued_tactic = 0;
 
             if (!h->close) {
-                if (rand_int(4) == 1) {
+                if (roll_chance(4)) {
                     // DEBUG("=== attempt_tactic === TACTIC_CLOSE - jump forward");
                     // jump forward
                     a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)|ACT_UP;
@@ -995,12 +1020,17 @@ bool attempt_tactic(controller *ctrl, ctrl_event **ev) {
                     a->cur_act = o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT;
                 }
 
-                // persist with trying to close
-                a->queued_tactic = TACTIC_CLOSE;
+                if (roll_chance(2)) {
+                    // persist with trying to close
+                    a->queued_tactic = TACTIC_CLOSE;
+                }
             } else {
                 // if we manage to close
                 if (a->pilot->att_hyper && assign_move_by_cat(ctrl, CAT_THROW)) {
                     // DEBUG("=== attempt_tactic === TACTIC_CLOSE - throw");
+                    return true;
+                } else if (a->pilot->att_hyper && assign_move_by_cat(ctrl, CAT_CLOSE)) {
+                    // DEBUG("=== attempt_tactic === TACTIC_CLOSE - close throw");
                     return true;
                 } else if (assign_move_by_cat(ctrl, CAT_BASIC)) {
                     // DEBUG("=== attempt_tactic === TACTIC_CLOSE - basic");
@@ -1010,16 +1040,23 @@ bool attempt_tactic(controller *ctrl, ctrl_event **ev) {
         break;
         case TACTIC_GRAB:
             a->queued_tactic = 0;
+
             if (assign_move_by_cat(ctrl, CAT_THROW)) {
                 // DEBUG("=== attempt_tactic === TACTIC_GRAB - throw SUCCESS");
+                return true;
+            } else if (a->pilot->att_hyper && assign_move_by_cat(ctrl, CAT_CLOSE)) {
+                // DEBUG("=== attempt_tactic === TACTIC_GRAB - close throw SUCCESS");
                 return true;
             } else {
                 if (!h->close) {
                     // DEBUG("=== attempt_tactic === TACTIC_GRAB - closing");
                     // walking forward
                     a->cur_act = o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT;
-                    // persist with trying to throw
-                    a->queued_tactic = TACTIC_GRAB;
+
+                    if (roll_chance(2)) {
+                        // persist with trying to throw
+                        a->queued_tactic = TACTIC_GRAB;
+                    }
                 } else {
                     // DEBUG("=== attempt_tactic === TACTIC_GRAB - failed");
                     return false;
@@ -1028,6 +1065,7 @@ bool attempt_tactic(controller *ctrl, ctrl_event **ev) {
         break;
         case TACTIC_QUICK:
             a->queued_tactic = 0;
+
             if (assign_move_by_cat(ctrl, CAT_BASIC)) {
                 // DEBUG("=== attempt_tactic === TACTIC_QUICK - basic SUCCESS");
                 return true;
@@ -1036,27 +1074,38 @@ bool attempt_tactic(controller *ctrl, ctrl_event **ev) {
                     // DEBUG("=== attempt_tactic === TACTIC_QUICK - closing");
                     // walking forward
                     a->cur_act = o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT;
-                    // persist with trying to attack
-                    a->queued_tactic = TACTIC_QUICK;
+
+                    if (roll_chance(2)) {
+                        // persist with trying to attack
+                        a->queued_tactic = TACTIC_QUICK;
+                    }
                 } else {
                     // DEBUG("=== attempt_tactic === TACTIC_QUICK - failed");
                     return false;
                 }
             }
         case TACTIC_SPAM:
-            // TODO: make spam throw CAT_BASIC attacks
             a->queued_tactic = 0;
+
             if (a->last_move_id > 0 && assign_move_by_id(ctrl, a->last_move_id)) {
-                // DEBUG("=== attempt_tactic === TACTIC_SPAM - repeat SUCCESS");
+                DEBUG("=== attempt_tactic === TACTIC_SPAM - repeat SUCCESS");
                 a->last_move_id = 0;
+                if (roll_chance(3)) a->queued_tactic = TACTIC_SPAM;
+                return true;
+            } else if (assign_move_by_cat(ctrl, CAT_BASIC)) {
+                DEBUG("=== attempt_tactic === TACTIC_SPAM - basic SUCCESS");
+                a->last_move_id = 0;
+                if (roll_chance(3)) a->queued_tactic = TACTIC_SPAM;
                 return true;
             } else {
-                // DEBUG("=== attempt_tactic === TACTIC_SPAM - failed");
+                DEBUG("=== attempt_tactic === TACTIC_SPAM - failed");
+                a->last_move_id = 0;
                 return false;
             }
         break;
         case TACTIC_SHOOT:
             a->queued_tactic = 0;
+
             if (assign_move_by_cat(ctrl, CAT_PROJECTILE)) {
                 // DEBUG("=== attempt_tactic === TACTIC_SHOOT - projectile SUCCESS");
                 return true;
@@ -1076,8 +1125,10 @@ bool attempt_tactic(controller *ctrl, ctrl_event **ev) {
                     // DEBUG("=== attempt_tactic === TACTIC_TRIP - closing");
                     // walking forward
                     a->cur_act = o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT;
-                    // persist with trying to throw
-                    a->queued_tactic = TACTIC_TRIP;
+                    if (roll_chance(2)) {
+                        // persist with trying to trip
+                        a->queued_tactic = TACTIC_TRIP;
+                    }
                 } else {
                     // DEBUG("=== attempt_tactic === TACTIC_TRIP - failed");
                     return false;
@@ -1289,6 +1340,7 @@ void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int
         a->move_stats[i].last_dist = -1;
     }
     a->blocked = 0;
+    a->thrown = 0;
     a->queued_tactic = 0;
     vector_create(&a->active_projectiles, sizeof(object*));
     a->pilot = pilot;
@@ -1302,6 +1354,10 @@ void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int
     DEBUG("att_hyper %d", pilot->att_hyper);
     DEBUG("att_jump %d", pilot->att_jump);
     DEBUG("att_sniper %d", pilot->att_sniper);
+    DEBUG("ap_special %d", pilot->ap_low);
+    DEBUG("ap_middle %d", pilot->ap_middle);
+    DEBUG("ap_high %d", pilot->ap_high);
+    DEBUG("ap_jump %d", pilot->ap_jump);
     DEBUG("ap_throw %d", pilot->ap_throw);
     DEBUG("ap_special %d", pilot->ap_special);
 
