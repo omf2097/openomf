@@ -1157,41 +1157,48 @@ void populate_pilot_prefs(sd_pilot *pilot, int pilot_id) {
             pilot->pref_fwd = 50;
             pilot->att_sniper = 1;
             pilot->ap_throw = 250;
-            pilot->ap_special = 250;
+            pilot->ap_special = 50;
             break;
         case 1:
             // stefan
             // young and skillful
             pilot->att_normal = 1;
             pilot->ap_special = 200;
+            pilot->ap_jump = 100;
             break;
         case 2:
             // milano
             // fast kickboxer
             pilot->att_jump = 1;
             pilot->pref_back = 50;
-            pilot->ap_low = 200;
-            pilot->ap_middle = -100;
-            pilot->ap_high = 300;
+            pilot->ap_special = -150;
+            pilot->ap_jump = 300;
+            pilot->pref_jump = 100;
             break;
         case 3:
             // christian
             // aggressive
             pilot->att_hyper = 1;
             pilot->pref_fwd = 100;
+            pilot->ap_special = 150;
             break;
         case 4:
             // shirro
             // slow but powerful
             pilot->att_normal = 1;
+            pilot->ap_jump = -100;
+            pilot->pref_jump = -100;
             pilot->ap_throw = 300;
+            pilot->ap_special = -50;
             break;
         case 5:
             // jean-paul
             // well rounded & calculating
             pilot->att_normal = 1;
             pilot->pref_back = 50;
+            pilot->ap_low = 100;
             pilot->ap_jump = 100;
+            pilot->ap_special = 100;
             break;
         case 6:
             // ibrahim
@@ -1205,19 +1212,24 @@ void populate_pilot_prefs(sd_pilot *pilot, int pilot_id) {
             // angel
             // mysterious
             pilot->att_sniper = 1;
-            pilot->ap_special = 200;
+            pilot->ap_special = 300;
             break;
         case 8:
             // cosette
             // defensive / cautious
             pilot->att_def = 1;
             pilot->ap_low = 100;
+            pilot->ap_special = -50;
+            pilot->pref_jump = -100;
+            pilot->ap_jump = -50;
             break;
         case 9:
             // raven
             // that's so raven
             pilot->att_hyper = 1;
-            pilot->ap_special = 250;
+            pilot->pref_jump = 50;
+            pilot->ap_jump = 100;
+            pilot->ap_special = 300;
             break;
         case 10:
             // kreissack
