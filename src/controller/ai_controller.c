@@ -19,6 +19,21 @@
 
 /* times thrown before we AI learns its lesson */
 #define MAX_TIMES_THROWN 3
+/* base likelihood to change movement action (lower is more likely) */
+#define BASE_ACT_THRESH 90
+/* base timer before we can consider changing movement action */
+#define BASE_ACT_TIMER 28
+/* base likelihood to keep moving (lower is more likely) */
+#define BASE_MOVE_THRESH 16
+/* base likelihood to move forwards (lower is more likely) */
+#define BASE_FWD_THRESH 50
+/* base likelihood to jump while moving forwards (lower is more likely) */
+#define BASE_FWD_JUMP_THRESH 78
+/* base likelihood to jump while moving backwards (lower is more likely) */
+#define BASE_BACK_JUMP_THRESH 84
+/* base likelihood to jump while standing still (lower is more likely) */
+#define BASE_STILL_JUMP_THRESH 95
+
 typedef struct move_stat_t {
     int max_hit_dist;
     int min_hit_dist;
@@ -766,16 +781,16 @@ void handle_movement(controller *ctrl, ctrl_event **ev) {
 
     // Change action after act_timer runs out
     int jump_thresh = 0;
-    if(a->act_timer <= 0 && rand_int(100) > (90 - (a->difficulty * 3))) {
+    if(a->act_timer <= 0 && rand_int(100) > (BASE_ACT_THRESH - (a->difficulty * 3))) {
         int p_move_roll = rand_int(100);
 
-        int p_move_thresh = 16 - (a->difficulty * 2);
+        int p_move_thresh = BASE_MOVE_THRESH - (a->difficulty * 2);
 
         if (p_move_roll > p_move_thresh) {
 
             int p_fwd_roll = rand_int(100);
 
-            int p_fwd_thresh = 50 - ((a->difficulty - 1) * 2);
+            int p_fwd_thresh = BASE_FWD_THRESH - ((a->difficulty - 1) * 2);
             if (a->pilot->pref_fwd >= a->pilot->pref_back) p_fwd_thresh -= 4; // pilot pref
             if (a->pilot->att_hyper) p_fwd_thresh -= 4; // pilot hyper
 
@@ -784,11 +799,11 @@ void handle_movement(controller *ctrl, ctrl_event **ev) {
             if (p_fwd_roll >= p_fwd_thresh) {
                 // walk forward
                 a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT);
-                jump_thresh = 78 - (a->difficulty * 2);
+                jump_thresh = BASE_FWD_JUMP_THRESH - (a->difficulty * 2);
             } else {
                 // walk backward
                 a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT);
-                jump_thresh = 84 - (a->difficulty * 2);
+                jump_thresh = BASE_BACK_JUMP_THRESH - (a->difficulty * 2);
             }
         } else {
             if (smart_sometimes(a)) {
@@ -797,11 +812,11 @@ void handle_movement(controller *ctrl, ctrl_event **ev) {
             } else {
                 // do nothing
                 a->cur_act = ACT_STOP;
-                jump_thresh = 95 - a->difficulty;
+                jump_thresh = BASE_STILL_JUMP_THRESH - a->difficulty;
             }             
         }
 
-        a->act_timer = 28 - (a->difficulty * 2);
+        a->act_timer = BASE_ACT_TIMER - (a->difficulty * 2);
 
         controller_cmd(ctrl, a->cur_act, ev);
     } else {
@@ -1045,7 +1060,8 @@ bool attempt_tactic(controller *ctrl, ctrl_event **ev) {
         break;
     }
 
-    a->act_timer = 28 - (a->difficulty * 2);
+    // reset movement act timer
+    a->act_timer = BASE_ACT_TIMER - (a->difficulty * 2);
 
     controller_cmd(ctrl, a->cur_act, ev);
     a->queued_tactic = 0;
