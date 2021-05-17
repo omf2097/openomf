@@ -30,6 +30,7 @@ int str_next_of(const str *string, char find, size_t *pos);
 int str_last_of(const str *string, char find, size_t *pos);
 
 int str_equal(const str *string, const str *string_b);
+int str_equal_c(const str *string, char *char_compare);
 
 void str_toupper(str *string);
 void str_tolower(str *string);
