@@ -17,6 +17,8 @@
 #include "utils/vec.h"
 #include "utils/random.h"
 
+/* times thrown before we AI learns its lesson */
+#define MAX_TIMES_THROWN 3
 typedef struct move_stat_t {
     int max_hit_dist;
     int min_hit_dist;
@@ -40,6 +42,7 @@ typedef struct ai_t {
     int move_str_pos;
     move_stat move_stats[70];
     int blocked;
+    int thrown; // times thrown by enemy
     int queued_tactic;
     sd_pilot *pilot;
 
@@ -465,6 +468,25 @@ int ai_har_event(controller *ctrl, har_event event) {
                 } else {
                     // DEBUG("=== HURT EVENT === queue TACTIC_TRIP");
                     a->queued_tactic = TACTIC_TRIP;
+                }
+            }
+
+            if (event.move->category == CAT_THROW || event.move->category == CAT_CLOSE) {
+                // keep track of how many times we have been thrown
+                a->thrown++;
+                // if thrown too often AI will learn to switch it up
+                if (smart_usually(a) && a->thrown > MAX_TIMES_THROWN) {
+                    if (pilot->att_def) {
+                        // turn off defensive personality
+                        pilot->att_def = 0;
+                        // turn on aggressive personality
+                        pilot->att_hyper = 1;
+                    } else if (pilot->att_sniper) {
+                        // turn off sniper personality
+                        pilot->att_sniper = 0;
+                        // turn on aggressive personality
+                        pilot->att_hyper = 1;
+                    }
                 }
             }
 
