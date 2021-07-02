@@ -1,6 +1,6 @@
 language: c
 
-dist: xenial
+dist: focal
 
 env:
   global:
@@ -13,8 +13,6 @@ matrix:
         sonarcloud:
           organization: "openomf"
         apt:
-          sources:
-            - ubuntu-toolchain-r-test
           packages:
             - gcc-7
             - cmake
@@ -26,7 +24,7 @@ matrix:
             - libenet-dev
             - libsdl2-dev
             - libxmp-dev
-            - libpng16-dev
+            - libpng-dev
       cache:
         directories:
           - '$HOME/.sonar/cache'
@@ -38,8 +36,6 @@ matrix:
     - os: linux
       addons:
         apt:
-          sources:
-            - ubuntu-toolchain-r-test
           packages:
             - gcc-8
             - cmake
@@ -51,15 +47,12 @@ matrix:
             - libenet-dev
             - libsdl2-dev
             - libxmp-dev
-            - libpng16-dev
+            - libpng-dev
       env:
         - MATRIX_EVAL="CC=gcc-8"
     - os: linux
       addons:
         apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-xenial-6.0
           packages:
             - clang-6.0
             - cmake
@@ -71,15 +64,12 @@ matrix:
             - libenet-dev
             - libsdl2-dev
             - libxmp-dev
-            - libpng16-dev
+            - libpng-dev
       env:
         - MATRIX_EVAL="CC=clang-6.0"
     - os: linux
       addons:
         apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-xenial-7
           packages:
             - clang-7
             - cmake
@@ -91,7 +81,7 @@ matrix:
             - libenet-dev
             - libsdl2-dev
             - libxmp-dev
-            - libpng16-dev
+            - libpng-dev
       env:
         - MATRIX_EVAL="CC=clang-7"
 
