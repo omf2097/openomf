@@ -57,7 +57,10 @@ int main(int argc, char* argv[]) {
     const char *str = *astr->sval;
 
     if (strcmp("-", *astr->sval) == 0) {
-        fgets(tmp_str, 512, stdin);
+        if (fgets(tmp_str, 512, stdin) == NULL) {
+            printf("Unexpectedly failed to read line from stdin\n");
+            goto exit_0;
+        }
         // throttle the newline
         tmp_str[strlen(tmp_str)-1] = '\0';
         str = tmp_str;
