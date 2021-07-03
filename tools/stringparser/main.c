@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     struct arg_end *end = arg_end(20);
     void* argtable[] = {help,vers,astr,end};
     const char* progname = "omf_parse";
-    int from_stdin = 0;
+    char tmp_str[512];
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -57,8 +57,6 @@ int main(int argc, char* argv[]) {
     const char *str = *astr->sval;
 
     if (strcmp("-", *astr->sval) == 0) {
-        from_stdin = 1;
-        char *tmp_str = malloc(512);
         fgets(tmp_str, 512, stdin);
         // throttle the newline
         tmp_str[strlen(tmp_str)-1] = '\0';
@@ -105,9 +103,6 @@ int main(int argc, char* argv[]) {
 exit_1:
     sd_script_free(&script);
 exit_0:
-    if (from_stdin) {
-        free((char*)str);
-    }
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     return 0;
 }
