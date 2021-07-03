@@ -14,7 +14,7 @@ matrix:
           organization: "openomf"
         apt:
           packages:
-            - gcc-7
+            - gcc-9
             - cmake
             - cmake-data
             - libargtable2-dev
@@ -32,12 +32,12 @@ matrix:
         - build-wrapper-linux-x86-64 --out-dir bw-output make
         - sonar-scanner
       env:
-        - MATRIX_EVAL="CC=gcc-7"
+        - MATRIX_EVAL="CC=gcc-9"
     - os: linux
       addons:
         apt:
           packages:
-            - gcc-8
+            - gcc-10
             - cmake
             - cmake-data
             - libargtable2-dev
@@ -49,12 +49,12 @@ matrix:
             - libxmp-dev
             - libpng-dev
       env:
-        - MATRIX_EVAL="CC=gcc-8"
+        - MATRIX_EVAL="CC=gcc-10"
     - os: linux
       addons:
         apt:
           packages:
-            - clang-6.0
+            - clang-10
             - cmake
             - cmake-data
             - libargtable2-dev
@@ -66,12 +66,12 @@ matrix:
             - libxmp-dev
             - libpng-dev
       env:
-        - MATRIX_EVAL="CC=clang-6.0"
+        - MATRIX_EVAL="CC=clang-10"
     - os: linux
       addons:
         apt:
           packages:
-            - clang-7
+            - clang-11
             - cmake
             - cmake-data
             - libargtable2-dev
@@ -83,7 +83,7 @@ matrix:
             - libxmp-dev
             - libpng-dev
       env:
-        - MATRIX_EVAL="CC=clang-7"
+        - MATRIX_EVAL="CC=clang-11"
 
 before_install:
     - eval "${MATRIX_EVAL}"
