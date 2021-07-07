@@ -324,8 +324,13 @@ bool har_has_projectiles(int har_id) {
  * \return Boolean indicating whether the AI would like to use the tactic..
  */
 bool likes_tactic(ai *a, int tactic_type, const har *h) {
-    // we don't like to repeat the same tactic twice in a row
-    if (a->tactic->last_tactic == tactic_type) return false;
+    // try to avoid spamming the same tactic
+    if (
+        a->tactic->last_tactic == tactic_type &&
+        roll_chance(2)
+     ) {
+        return false;
+    }
 
     bool enemy_close = h->close;
     bool wall_close = h->is_wallhugging;
