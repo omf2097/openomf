@@ -1348,8 +1348,14 @@ void process_selected_move(controller *ctrl, ctrl_event **ev) {
         }
         a->input_lag_timer = a->input_lag;
     }
+
+
     int ch = str_at(&a->selected_move->move_string, a->move_str_pos);
     controller_cmd(ctrl, char_to_act(ch, o->direction), ev);
+
+    if (a->move_str_pos <= 0) {
+        a->selected_move = NULL;
+    }
 }
 
 /** 
@@ -1786,11 +1792,11 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     // chain another tactic
                     if (smart_usually(a)) {
                         if (likes_tactic(ctrl, TACTIC_TRIP)) {
-                            // set chain tactic to trip if attack attack hits
+                            // set chain tactic to trip if attack hits
                             a->tactic->chain_hit_on = heavy_cat;
                             a->tactic->chain_hit_tactic = TACTIC_TRIP;
                         } else if (likes_tactic(ctrl, TACTIC_COUNTER)) {
-                            // set chain tactic to counter if attack attack hits
+                            // set chain tactic to counter if attack hits
                             a->tactic->chain_hit_on = heavy_cat;
                             a->tactic->chain_hit_tactic = TACTIC_COUNTER;
                         } else if (likes_tactic(ctrl, TACTIC_QUICK)) {
