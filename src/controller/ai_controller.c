@@ -19,6 +19,8 @@
 
 /* times thrown before we AI learns its lesson */
 #define MAX_TIMES_THROWN 3
+/* times shot before we AI learns its lesson */
+#define MAX_TIMES_SHOT 4
 /* base likelihood to change movement action (lower is more likely) */
 #define BASE_ACT_THRESH 90
 /* base timer before we can consider changing movement action */
@@ -34,9 +36,9 @@
 /* base likelihood to jump while standing still (lower is more likely) */
 #define BASE_STILL_JUMP_THRESH 95
 /* number of move ticks before bailing on tactic */
-#define TACTIC_MOVE_TIMER_MAX 6
+#define TACTIC_MOVE_TIMER_MAX 5
 /* number of attack attempt ticks before bailing on tactic */
-#define TACTIC_ATTACK_TIMER_MAX 3
+#define TACTIC_ATTACK_TIMER_MAX 2
 
 typedef struct move_stat_t {
     int max_hit_dist;
@@ -56,6 +58,8 @@ typedef struct tactic_state_t {
     int attack_id;
     int attack_timer;
     int attack_on;
+    int chain_hit_on;
+    int chain_hit_tactic;
 } tactic_state;
 
 typedef struct ai_t {
@@ -73,6 +77,7 @@ typedef struct ai_t {
     move_stat move_stats[70];
     int blocked;
     int thrown; // times thrown by enemy
+    int shot; // times shot by enemy
 
     // tactical state
     tactic_state *tactic;
@@ -85,33 +90,40 @@ typedef struct ai_t {
 
 enum {
     TACTIC_ESCAPE = 1, // escape from enemy
-    TACTIC_TURTLE = 2, // block attacks
-    TACTIC_GRAB = 3, // charge and grab enemy
-    TACTIC_SPAM = 4, // spam the same attack
-    TACTIC_SHOOT = 5, // shoot a projectile
-    TACTIC_TRIP = 6, // trip enemy
-    TACTIC_QUICK = 7, // quick attack
-    TACTIC_CLOSE = 8, // close with the enemy
-    TACTIC_FLY = 9, // fly towards the enemy
-    TACTIC_PUSH = 10, // spam power moves to push them back
-    TACTIC_COUNTER = 11 // block then attack
+    TACTIC_TURTLE, // block attacks
+    TACTIC_GRAB, // charge and grab enemy
+    TACTIC_SPAM, // spam the same attack
+    TACTIC_SHOOT, // shoot a projectile
+    TACTIC_TRIP, // trip enemy
+    TACTIC_QUICK, // quick attack
+    TACTIC_CLOSE, // close with the enemy
+    TACTIC_FLY, // fly towards the enemy
+    TACTIC_PUSH, // spam power moves to push them back
+    TACTIC_COUNTER // block then attack
 };
 
 enum {
     MOVE_CLOSE = 1, // close distance
-    MOVE_AVOID = 2, // gain distance
-    MOVE_JUMP = 3, // jump towards
-    MOVE_BLOCK = 4 // hold block
+    MOVE_AVOID, // gain distance
+    MOVE_JUMP, // jump towards
+    MOVE_BLOCK // hold block
 };
 
 enum {
     ATTACK_ID = 1, // attack by id
-    ATTACK_TRIP = 2, // trip attack
-    ATTACK_GRAB = 3, // grab/throw attack
-    ATTACK_LIGHT = 4, // light/quick attack
-    ATTACK_HEAVY = 5, // heavy/power attack
-    ATTACK_JUMP = 6, // jumping attack
-    ATTACK_RANGED = 7 // ranged attack
+    ATTACK_TRIP, // trip attack
+    ATTACK_GRAB, // grab/throw attack
+    ATTACK_LIGHT, // light/quick attack
+    ATTACK_HEAVY, // heavy/power attack
+    ATTACK_JUMP, // jumping attack
+    ATTACK_RANGED // ranged attack
+};
+
+enum {
+    RANGE_CRAMPED,
+    RANGE_CLOSE,
+    RANGE_MID,
+    RANGE_FAR
 };
 
 int char_to_act(int ch, int direction) {
@@ -240,7 +252,7 @@ bool smart_sometimes(const ai *a) {
  * \return A boolean indicating whether the AI is dumb enough.
  */
 bool dumb_sometimes(const ai *a) {
-    if (a->difficulty <= 3) {
+    if (a->difficulty <= 2) {
         return roll_chance(a->difficulty + 2);
     } else {
         return false;
@@ -248,17 +260,42 @@ bool dumb_sometimes(const ai *a) {
 }
 
 /** 
- * \brief Determine whether the enemy is close enough to trade melee attacks.
+ * \brief Determine whether AI will proceed with an action using exponentially scaling roll.
+ *
+ * \param a The AI instance.
+ *
+ * \return A boolean indicating whether the AI should proceed with an action.
+ */
+bool diff_scale(const ai *a) {
+    int roll = rand_int(36);
+    return roll <= (a->difficulty * a->difficulty);
+}
+
+/** 
+ * \brief Determine the current range classification.
  *
  * \param ctrl The AI controller instance.
  *
- * \return A boolean indicating whether the enemy is close.
+ * \return A boolean indicating range classification.
  */
-bool is_enemy_close(controller *ctrl) {
+bool get_enemy_range(const controller *ctrl) {
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
     object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
-    return abs(o_enemy->pos.x - o->pos.x) < 100;
+
+    int range_units = abs(o_enemy->pos.x - o->pos.x) / 50;
+    switch (range_units) {
+        case 0:
+        case 1:
+            return RANGE_CRAMPED;
+        case 2:
+            return RANGE_CLOSE;
+        case 3:
+        case 4:
+            return RANGE_MID;
+        default:
+            return RANGE_FAR;
+    }
 }
 
 /** 
@@ -297,18 +334,13 @@ bool is_special_move(const af_move *move) {
  */
 bool har_has_projectiles(int har_id) {
     switch (har_id) {
-        case 0: // jaguar (spit)
-        case 1: // shadow (shadow kick/punch)
-        case 4: // electra (zap ball)
-        case 6: // shredder (short-range hands)
-        case 9: // chronos (chest triangle)
-        case 10: // nova (missile)
+        case HAR_JAGUAR:
+        case HAR_SHADOW:
+        case HAR_ELECTRA:
+        case HAR_SHREDDER:
+        case HAR_CHRONOS:
+        case HAR_NOVA:
             return true;
-        // 2 = thorn
-        // 3 = Pyro
-        // 5 = Katana
-        // 7 = Flail
-        // 8 = Gargoyle
     }
 
     return false;
@@ -317,13 +349,14 @@ bool har_has_projectiles(int har_id) {
 /** 
  * \brief Determine whether the AI would like to use the specified tactic.
  *
- * \param a The AI instance.
+ * \param ctrl Controller instance.
  * \param tactic_type An integer identifying the tactic.
- * \param h The HAR instance.
  *
  * \return Boolean indicating whether the AI would like to use the tactic..
  */
-bool likes_tactic(ai *a, int tactic_type, const har *h) {
+bool likes_tactic(const controller *ctrl, int tactic_type) {
+    ai *a = ctrl->data;
+
     // try to avoid spamming the same tactic
     if (
         a->tactic->last_tactic == tactic_type &&
@@ -332,9 +365,14 @@ bool likes_tactic(ai *a, int tactic_type, const har *h) {
         return false;
     }
 
-    bool enemy_close = h->close;
-    bool wall_close = h->is_wallhugging;
+
+    object *o = ctrl->har;
+    har *h = object_get_userdata(o);
     sd_pilot *pilot = a->pilot;
+
+    bool enemy_close = h->close;
+    int enemy_range = get_enemy_range(ctrl);
+    bool wall_close = h->is_wallhugging;
         
     switch (tactic_type) {
         case TACTIC_SHOOT:
@@ -347,8 +385,11 @@ bool likes_tactic(ai *a, int tactic_type, const har *h) {
                     (wall_close && roll_chance(3))
                 ) &&
                 (
-                    (h->id != 6 && !enemy_close) ||
-                    (h->id == 6 && (enemy_close || roll_chance(4))) // shredder prefers to be close
+                    (h->id != HAR_SHREDDER && !enemy_close) ||
+                    (
+                        h->id == HAR_SHREDDER &&
+                        (enemy_range != RANGE_FAR || dumb_sometimes(a))
+                    ) // shredder prefers to be close-mid range
                 )
             ) {
                 return true;
@@ -359,7 +400,7 @@ bool likes_tactic(ai *a, int tactic_type, const har *h) {
                 !enemy_close &&
                 (
                     (pilot->att_hyper && roll_chance(3)) ||
-                    ((h->id == 7 || h->id == 2) && roll_chance(3)) ||
+                    ((h->id == HAR_FLAIL || h->id == HAR_THORN) && roll_chance(3)) ||
                     roll_chance(6)
                 )
             ) {
@@ -376,25 +417,31 @@ bool likes_tactic(ai *a, int tactic_type, const har *h) {
             break;
         case TACTIC_GRAB:
             if (
-                (pilot->att_hyper && roll_chance(3)) ||
-                ((h->id == 7 || h->id == 2) && roll_chance(3)) ||
-                roll_chance(6)
+                a->thrown <= MAX_TIMES_THROWN && (
+                    (pilot->att_hyper && roll_chance(3)) ||
+                    ((h->id == HAR_FLAIL || h->id == HAR_THORN) && roll_chance(3)) ||
+                    roll_chance(6)
+                )
             ) {
                 return true;
             }
             break;
         case TACTIC_TURTLE:
             if (
-                (pilot->att_def && roll_chance(3)) ||
-                roll_chance(10)
+                 a->thrown <= MAX_TIMES_THROWN && (
+                    (pilot->att_def && roll_chance(3)) ||
+                    roll_chance(10)
+                )
             ) {
                 return true;
             }
             break;
         case TACTIC_COUNTER:
             if (
-                (pilot->att_def && roll_chance(3)) ||
-                roll_chance(6)
+                a->thrown < MAX_TIMES_THROWN && (
+                    (pilot->att_def && roll_chance(3)) ||
+                    roll_chance(6)
+                )
             ) {
                 return true;
             }
@@ -411,7 +458,7 @@ bool likes_tactic(ai *a, int tactic_type, const har *h) {
             if (
                 (
                     roll_pref(a->pilot->pref_jump) ||
-                    (h->id == 8 || h->id == 3)
+                    (h->id == HAR_GARGOYLE || h->id == HAR_PYROS)
                 ) &&
                 (
                     pilot->att_jump ||
@@ -428,7 +475,7 @@ bool likes_tactic(ai *a, int tactic_type, const har *h) {
                 (
                     (pilot->att_def && roll_chance(3)) ||
                     (wall_close && roll_chance(3)) ||
-                    ((h->id == 7 || h->id == 2) && roll_chance(3)) ||
+                    ((h->id == HAR_FLAIL || h->id == HAR_THORN) && roll_chance(3)) ||
                     roll_chance(6)
                 )
             ) {
@@ -454,16 +501,20 @@ bool likes_tactic(ai *a, int tactic_type, const har *h) {
 /** 
  * \brief Queue the specified tactic in AI tactical state object.
  *
- * \param a The AI instance.
+ * \param ctrl Controller instance.
  * \param tactic_type An integer identifying the tactic.
- * \param h The HAR instance.
  *
  * \return Void.
  */
-void queue_tactic(ai *a, int tactic_type, const har *h) {
+void queue_tactic(controller *ctrl, int tactic_type) {
+    ai *a = ctrl->data;
+    object *o = ctrl->har;
+    har *h = object_get_userdata(o);
+
     a->tactic->last_tactic = a->tactic->tactic_type > 0 ? a->tactic->tactic_type : 0;
     a->tactic->tactic_type = tactic_type;
 
+    // log when we queue a tactic
     switch (tactic_type) {
         case TACTIC_GRAB:
             DEBUG("\e[33mQueue tactic:\e[0m \e[32mGRAB\e[0m");
@@ -489,6 +540,9 @@ void queue_tactic(ai *a, int tactic_type, const har *h) {
         case TACTIC_SPAM:
             DEBUG("\e[33mQueue tactic:\e[0m \e[32mSPAM\e[0m");
             break;
+        case TACTIC_ESCAPE:
+            DEBUG("\e[33mQueue tactic:\e[0m \e[32mESCAPE\e[0m");
+            break;
         case TACTIC_TURTLE:
             DEBUG("\e[33mQueue tactic:\e[0m \e[32mTURTLE\e[0m");
             break;
@@ -498,6 +552,8 @@ void queue_tactic(ai *a, int tactic_type, const har *h) {
     }
 
     bool enemy_close = h->close;
+    bool wall_close = h->is_wallhugging;
+    int enemy_range = get_enemy_range(ctrl);
 
     // set move tactic
     switch (tactic_type) {
@@ -508,7 +564,10 @@ void queue_tactic(ai *a, int tactic_type, const har *h) {
         case TACTIC_CLOSE:
             if (enemy_close) {
                 a->tactic->move_type = 0;
-            } else if (smart_usually(a) && roll_pref(a->pilot->pref_jump)) {
+            } else if (
+                smart_usually(a) &&
+                roll_pref(a->pilot->pref_jump)
+            ) {
                 // smart AI that likes to jump will close via jump
                 a->tactic->move_type = MOVE_JUMP;
             } else {
@@ -521,20 +580,29 @@ void queue_tactic(ai *a, int tactic_type, const har *h) {
             break;
         // ranged tactics
         case TACTIC_SHOOT:
-            a->tactic->move_type = enemy_close ? MOVE_AVOID : 0;
+            a->tactic->move_type = (enemy_close && !wall_close) ? MOVE_AVOID : 0;
             break;
         // stalling tactics
         case TACTIC_PUSH:
         case TACTIC_SPAM:
-            a->tactic->move_type = !enemy_close ? MOVE_AVOID : 0;
+            a->tactic->move_type = 0;
+            break;
+        // evasive tactics
+        case TACTIC_ESCAPE:
+            a->tactic->move_type = wall_close? MOVE_JUMP : MOVE_AVOID;
             break;
         // goading tactics
         case TACTIC_TURTLE:
-        case TACTIC_COUNTER:
-            a->tactic->move_type = enemy_close ? MOVE_BLOCK : 0;
+            if (enemy_range == RANGE_CRAMPED) {
+                // at this range they might grab/throw so we need to use escape tactic
+                a->tactic->move_type = wall_close? MOVE_JUMP : MOVE_AVOID;
+            } else {
+                a->tactic->move_type = MOVE_BLOCK;
+            }
             break;
-        default:
-            a->tactic->move_type = 0;
+        case TACTIC_COUNTER:
+            a->tactic->move_type = enemy_range > RANGE_CRAMPED ? MOVE_BLOCK : 0;
+            break;
     }
 
     // set tactic move timer
@@ -578,13 +646,20 @@ void queue_tactic(ai *a, int tactic_type, const har *h) {
             if (a->last_move_id > 0) {
                 a->tactic->attack_type = ATTACK_ID;
                 a->tactic->attack_id = a->last_move_id;
+            } else {
+                a->tactic->attack_type = ATTACK_LIGHT;
+                a->tactic->attack_id = 0;
             }
             break;
         case TACTIC_COUNTER:
             a->tactic->attack_type = roll_chance(3) ? ATTACK_TRIP : ATTACK_HEAVY;
-            a->tactic->attack_on = HAR_EVENT_BLOCK;
+            // we only wait for block if they're not in range to grab/throw
+            if (enemy_range > RANGE_CRAMPED) {
+                a->tactic->attack_on = HAR_EVENT_BLOCK;
+            }
             break;
-        default:
+        case TACTIC_ESCAPE:
+        case TACTIC_TURTLE:
             a->tactic->attack_type = 0;
             a->tactic->attack_id = 0;
     }
@@ -604,52 +679,59 @@ void reset_tactic_state(ai *a) {
     a->tactic->attack_id = 0;
     a->tactic->attack_timer = 0;
     a->tactic->attack_on = 0;
-}
-
-void reset_act_timer(ai *a) {
-    a->act_timer = BASE_ACT_TIMER - (a->difficulty * 2);
+    a->tactic->chain_hit_on = 0;
+    a->tactic->chain_hit_tactic = 0;
 }
 
 /** 
- * \brief Determine whether a pilot might dislike a move.
+ * \brief Reset the base movement act timer.
+ *
+ * \param a The AI instance.
+ *
+ * \return Void.
+ */
+void reset_act_timer(ai *a) {
+    a->act_timer = BASE_ACT_TIMER - (a->difficulty * 2) - rand_int(3);
+}
+
+/** 
+ * \brief Determine whether a pilot dislikes a move.
  *
  * \param a The AI instance.
  * \param selected_move The move instance.
  *
  * \return A boolean indicating whether move was disliked.
  */
-bool move_disliked(const ai *a, const af_move *move) {
+bool dislikes_move(const ai *a, const af_move *move) {
     // check for non-projectile special moves
     if (is_special_move(move)) {
-        // decide whether to do special move
+        // pilots with bad special ability dislike special moves
         return !roll_pref(a->pilot->ap_special);
     }
 
     switch(move->category) {
         case CAT_BASIC:
-            // decide whether to do basic move
-            return dumb_sometimes(a);
+            // smart AI dislike basic moves
+            return smart_usually(a);
         case CAT_LOW:
-            // decide whether to do low move
+            // pilots with bad low ability dislike low moves 
             return !roll_pref(a->pilot->ap_low);
         case CAT_MEDIUM:
-            // decide whether to do middle move
+            // pilots with bad middle ability dislike middle moves
             return !roll_pref(a->pilot->ap_middle);
         case CAT_HIGH:
-            // decide whether to do high move
-            return !roll_pref(a->pilot->ap_middle);
+            // pilots with bad high ability dislike high moves
+            return !roll_pref(a->pilot->ap_high);
         case CAT_THROW:
         case CAT_CLOSE:
-            // decide whether to do throw move
-            return !roll_pref(a->pilot->ap_throw);
+            // non-hyper pilots with bad throw ability dislike throw moves
+            return !a->pilot->att_hyper && !roll_pref(a->pilot->ap_throw);
         case CAT_JUMPING:
-            // decide whether to do jump move
-            return !roll_pref(a->pilot->ap_jump);
+            // non-jumper pilots with bad jump ability dislike jump moves
+            return !a->pilot->att_jump && !roll_pref(a->pilot->ap_jump);
         case CAT_PROJECTILE:
-        case CAT_SCRAP:
-        case CAT_DESTRUCTION:
-            // decide whether to do special move
-            return !roll_pref(a->pilot->ap_special);
+            // non-sniper pilots with bad special ability dislike projectile moves
+            return !a->pilot->att_sniper && !roll_pref(a->pilot->ap_special);
     }
 
     return false;
@@ -686,21 +768,14 @@ int ai_har_event(controller *ctrl, har_event event) {
                 }
                 break;
             case HAR_EVENT_TAKE_HIT:
-                // if (roll_chance(2)) {
-                //     reset_tactic_state(a);
-                //     has_queued_tactic = false;
-                //     DEBUG("\e[90mReset tactic queue: EVENT_TAKE_HIT\e[0m");
-                // }
-                break;
-            case HAR_EVENT_RECOVER:
+                reset_tactic_state(a);
+                has_queued_tactic = false;
+                DEBUG("\e[90mReset tactic queue: EVENT_TAKE_HIT\e[0m");
                 break;
             case HAR_EVENT_ENEMY_STUN:
                 reset_tactic_state(a);
                 has_queued_tactic = false;
                 DEBUG("\e[90mReset tactic queue: EVENT_ENEMY_STUN\e[0m");
-            break;
-            case HAR_EVENT_LAND:
-                // continue with current tactic
             break;
         }
     }
@@ -739,24 +814,30 @@ int ai_har_event(controller *ctrl, har_event event) {
 
             a->last_move_id = event.move->id;
 
-            if (has_queued_tactic ||!smart_usually(a)) break;
+            if (a->tactic->chain_hit_on == event.move->category) {
+                DEBUG("\e[33mQueueing chained tactic\e[0m");
+                queue_tactic(ctrl, a->tactic->chain_hit_tactic);
+                break;
+            }
 
-            if (likes_tactic(a, TACTIC_SHOOT, h)) {
-                queue_tactic(a, TACTIC_SHOOT, h);
-            } else if (likes_tactic(a, TACTIC_QUICK, h)) {
-                queue_tactic(a, TACTIC_QUICK, h);
-            } else if (likes_tactic(a, TACTIC_TRIP, h)) {
-                queue_tactic(a, TACTIC_TRIP, h);
-            } else if (likes_tactic(a, TACTIC_GRAB, h)) {
-                queue_tactic(a, TACTIC_GRAB, h);
-            } else if (likes_tactic(a, TACTIC_PUSH, h)) {
-                queue_tactic(a, TACTIC_PUSH, h);
-            } else if (likes_tactic(a, TACTIC_CLOSE, h)) {
-                queue_tactic(a, TACTIC_CLOSE, h);
-            } else if (likes_tactic(a, TACTIC_TURTLE, h)) {
-                queue_tactic(a, TACTIC_TURTLE, h);
-            } else if (likes_tactic(a, TACTIC_SPAM, h)) {
-                queue_tactic(a, TACTIC_SPAM, h);
+            if (has_queued_tactic || !smart_usually(a)) break;
+
+            if (likes_tactic(ctrl, TACTIC_SHOOT)) {
+                queue_tactic(ctrl, TACTIC_SHOOT);
+            } else if (likes_tactic(ctrl, TACTIC_QUICK)) {
+                queue_tactic(ctrl, TACTIC_QUICK);
+            } else if (likes_tactic(ctrl, TACTIC_TRIP)) {
+                queue_tactic(ctrl, TACTIC_TRIP);
+            } else if (likes_tactic(ctrl, TACTIC_GRAB)) {
+                queue_tactic(ctrl, TACTIC_GRAB);
+            } else if (likes_tactic(ctrl, TACTIC_PUSH)) {
+                queue_tactic(ctrl, TACTIC_PUSH);
+            } else if (likes_tactic(ctrl, TACTIC_CLOSE)) {
+                queue_tactic(ctrl, TACTIC_CLOSE);
+            } else if (likes_tactic(ctrl, TACTIC_TURTLE)) {
+                queue_tactic(ctrl, TACTIC_TURTLE);
+            } else if (likes_tactic(ctrl, TACTIC_SPAM)) {
+                queue_tactic(ctrl, TACTIC_SPAM);
             }
 
             break;
@@ -769,26 +850,26 @@ int ai_har_event(controller *ctrl, har_event event) {
 
                 a->last_move_id = event.move->id;
 
-                if (has_queued_tactic ||!smart_usually(a)) break;
+                if (has_queued_tactic || !smart_usually(a)) break;
 
-                if (likes_tactic(a, TACTIC_GRAB, h)) {
-                    queue_tactic(a, TACTIC_GRAB, h);
-                } else if (likes_tactic(a, TACTIC_TRIP, h)) {
-                    queue_tactic(a, TACTIC_TRIP, h);
-                } else if (likes_tactic(a, TACTIC_COUNTER, h)) {
-                    queue_tactic(a, TACTIC_COUNTER, h);
-                } else if (likes_tactic(a, TACTIC_PUSH, h)) {
-                    queue_tactic(a, TACTIC_PUSH, h);
-                } else if (likes_tactic(a, TACTIC_TURTLE, h)) {
-                    queue_tactic(a, TACTIC_TURTLE, h);
-                } else if (likes_tactic(a, TACTIC_ESCAPE, h)) {
-                    queue_tactic(a, TACTIC_ESCAPE, h);
-                } else if (likes_tactic(a, TACTIC_FLY, h)) {
-                    queue_tactic(a, TACTIC_FLY, h);
-                } else if (likes_tactic(a, TACTIC_QUICK, h)) {
-                    queue_tactic(a, TACTIC_QUICK, h);
-                } else if (likes_tactic(a, TACTIC_SPAM, h)) {
-                    queue_tactic(a, TACTIC_SPAM, h);
+                if (likes_tactic(ctrl, TACTIC_GRAB)) {
+                    queue_tactic(ctrl, TACTIC_GRAB);
+                } else if (likes_tactic(ctrl, TACTIC_TRIP)) {
+                    queue_tactic(ctrl, TACTIC_TRIP);
+                } else if (likes_tactic(ctrl, TACTIC_COUNTER)) {
+                    queue_tactic(ctrl, TACTIC_COUNTER);
+                } else if (likes_tactic(ctrl, TACTIC_PUSH)) {
+                    queue_tactic(ctrl, TACTIC_PUSH);
+                } else if (likes_tactic(ctrl, TACTIC_TURTLE)) {
+                    queue_tactic(ctrl, TACTIC_TURTLE);
+                } else if (likes_tactic(ctrl, TACTIC_ESCAPE)) {
+                    queue_tactic(ctrl, TACTIC_ESCAPE);
+                } else if (likes_tactic(ctrl, TACTIC_FLY)) {
+                    queue_tactic(ctrl, TACTIC_FLY);
+                } else if (likes_tactic(ctrl, TACTIC_QUICK)) {
+                    queue_tactic(ctrl, TACTIC_QUICK);
+                } else if (likes_tactic(ctrl, TACTIC_SPAM)) {
+                    queue_tactic(ctrl, TACTIC_SPAM);
                 }
             }
 
@@ -800,22 +881,23 @@ int ai_har_event(controller *ctrl, har_event event) {
                 // do the attack now
                 DEBUG("\e[94mAttempting counter move\e[0m");
                 a->tactic->move_timer = 0;
-            } else if (has_queued_tactic ||!smart_usually(a)) break;
+                break;
+            } else if (has_queued_tactic || !smart_usually(a)) break;
 
-            if (likes_tactic(a, TACTIC_TRIP, h)) {
-                queue_tactic(a, TACTIC_TRIP, h);
-            } else if (likes_tactic(a, TACTIC_PUSH, h)) {
-                queue_tactic(a, TACTIC_PUSH, h);
-            } else if (likes_tactic(a, TACTIC_TURTLE, h)) {
-                queue_tactic(a, TACTIC_TURTLE, h);
-            } else if (likes_tactic(a, TACTIC_GRAB, h)) {
-                queue_tactic(a, TACTIC_GRAB, h);
-            } else if (likes_tactic(a, TACTIC_ESCAPE, h)) {
-                queue_tactic(a, TACTIC_ESCAPE, h);
-            } else if (likes_tactic(a, TACTIC_QUICK, h)) {
-                queue_tactic(a, TACTIC_QUICK, h);
-            } else if (likes_tactic(a, TACTIC_SPAM, h)) {
-                queue_tactic(a, TACTIC_SPAM, h);
+            if (likes_tactic(ctrl, TACTIC_TRIP)) {
+                queue_tactic(ctrl, TACTIC_TRIP);
+            } else if (likes_tactic(ctrl, TACTIC_PUSH)) {
+                queue_tactic(ctrl, TACTIC_PUSH);
+            } else if (likes_tactic(ctrl, TACTIC_TURTLE)) {
+                queue_tactic(ctrl, TACTIC_TURTLE);
+            } else if (likes_tactic(ctrl, TACTIC_GRAB)) {
+                queue_tactic(ctrl, TACTIC_GRAB);
+            } else if (likes_tactic(ctrl, TACTIC_ESCAPE)) {
+                queue_tactic(ctrl, TACTIC_ESCAPE);
+            } else if (likes_tactic(ctrl, TACTIC_QUICK)) {
+                queue_tactic(ctrl, TACTIC_QUICK);
+            } else if (likes_tactic(ctrl, TACTIC_SPAM)) {
+                queue_tactic(ctrl, TACTIC_SPAM);
             } 
 
             break;
@@ -826,20 +908,21 @@ int ai_har_event(controller *ctrl, har_event event) {
                 // do the attack now
                 a->tactic->move_timer = 0;
                 DEBUG("\e[94mAttempting landing move\e[0m");
-            } else if (has_queued_tactic ||!smart_usually(a)) break;
+                break;
+            } else if (has_queued_tactic || !smart_usually(a)) break;
 
-            if (likes_tactic(a, TACTIC_SHOOT, h)) {
-                queue_tactic(a, TACTIC_SHOOT, h);
-            } else if (likes_tactic(a, TACTIC_TURTLE, h)) {
-                queue_tactic(a, TACTIC_TURTLE, h);
-            } else if (likes_tactic(a, TACTIC_QUICK, h)) {
-                queue_tactic(a, TACTIC_QUICK, h);
-            } else if (likes_tactic(a, TACTIC_GRAB, h)) {
-                queue_tactic(a, TACTIC_GRAB, h);
-            } else if (likes_tactic(a, TACTIC_TRIP, h)) {
-                queue_tactic(a, TACTIC_TRIP, h);
-            } else if (likes_tactic(a, TACTIC_COUNTER, h)) {
-                queue_tactic(a, TACTIC_COUNTER, h);
+            if (likes_tactic(ctrl, TACTIC_SHOOT)) {
+                queue_tactic(ctrl, TACTIC_SHOOT);
+            } else if (likes_tactic(ctrl, TACTIC_TURTLE)) {
+                queue_tactic(ctrl, TACTIC_TURTLE);
+            } else if (likes_tactic(ctrl, TACTIC_QUICK)) {
+                queue_tactic(ctrl, TACTIC_QUICK);
+            } else if (likes_tactic(ctrl, TACTIC_GRAB)) {
+                queue_tactic(ctrl, TACTIC_GRAB);
+            } else if (likes_tactic(ctrl, TACTIC_TRIP)) {
+                queue_tactic(ctrl, TACTIC_TRIP);
+            } else if (likes_tactic(ctrl, TACTIC_COUNTER)) {
+                queue_tactic(ctrl, TACTIC_COUNTER);
             }
 
             break;
@@ -849,97 +932,132 @@ int ai_har_event(controller *ctrl, har_event event) {
 
         case HAR_EVENT_HIT_WALL:
 
-            if (has_queued_tactic ||!smart_usually(a)) break;
+            if (has_queued_tactic || !smart_usually(a)) break;
 
-            if (likes_tactic(a, TACTIC_SHOOT, h)) {
-                queue_tactic(a, TACTIC_SHOOT, h);
-            } else if (likes_tactic(a, TACTIC_TURTLE, h)) {
-                queue_tactic(a, TACTIC_TURTLE, h);
-            } else if (likes_tactic(a, TACTIC_TRIP, h)) {
-                queue_tactic(a, TACTIC_TRIP, h);
-            } else if (likes_tactic(a, TACTIC_FLY, h)) {
-                queue_tactic(a, TACTIC_FLY, h);
-            } else if (likes_tactic(a, TACTIC_ESCAPE, h)) {
-                queue_tactic(a, TACTIC_ESCAPE, h);
-            } else if (likes_tactic(a, TACTIC_PUSH, h)) {
-                queue_tactic(a, TACTIC_PUSH, h);
-            } else if (likes_tactic(a, TACTIC_COUNTER, h)) {
-                queue_tactic(a, TACTIC_COUNTER, h);
+            if (likes_tactic(ctrl, TACTIC_SHOOT)) {
+                queue_tactic(ctrl, TACTIC_SHOOT);
+            } else if (likes_tactic(ctrl, TACTIC_TURTLE)) {
+                queue_tactic(ctrl, TACTIC_TURTLE);
+            } else if (likes_tactic(ctrl, TACTIC_TRIP)) {
+                queue_tactic(ctrl, TACTIC_TRIP);
+            } else if (likes_tactic(ctrl, TACTIC_FLY)) {
+                queue_tactic(ctrl, TACTIC_FLY);
+            } else if (likes_tactic(ctrl, TACTIC_ESCAPE)) {
+                queue_tactic(ctrl, TACTIC_ESCAPE);
+            } else if (likes_tactic(ctrl, TACTIC_PUSH)) {
+                queue_tactic(ctrl, TACTIC_PUSH);
+            } else if (likes_tactic(ctrl, TACTIC_COUNTER)) {
+                queue_tactic(ctrl, TACTIC_COUNTER);
             }
 
             break;
 
         case HAR_EVENT_TAKE_HIT:
 
-            if (has_queued_tactic ||!smart_usually(a)) break;
-
-            if (likes_tactic(a, TACTIC_COUNTER, h)) {
-                queue_tactic(a, TACTIC_COUNTER, h);
-            } else if (likes_tactic(a, TACTIC_TURTLE, h)) {
-                queue_tactic(a, TACTIC_TURTLE, h);
-            } else if (likes_tactic(a, TACTIC_ESCAPE, h)) {
-                queue_tactic(a, TACTIC_ESCAPE, h);
-            } else if (likes_tactic(a, TACTIC_PUSH, h)) {
-                queue_tactic(a, TACTIC_PUSH, h);
-            } else if (likes_tactic(a, TACTIC_SHOOT, h)) {
-                queue_tactic(a, TACTIC_SHOOT, h);
-            } else if (likes_tactic(a, TACTIC_FLY, h)) {
-                queue_tactic(a, TACTIC_FLY, h);
-            } else if (likes_tactic(a, TACTIC_TRIP, h)) {
-                queue_tactic(a, TACTIC_TRIP, h);
-            } else if (likes_tactic(a, TACTIC_QUICK, h)) {
-                queue_tactic(a, TACTIC_QUICK, h);
-            } else if (likes_tactic(a, TACTIC_SPAM, h)) {
-                queue_tactic(a, TACTIC_SPAM, h);
-            }
-
+            // if enemy is cheesing the AI will try to adjust
             if (event.move->category == CAT_THROW || event.move->category == CAT_CLOSE) {
                 // keep track of how many times we have been thrown
                 a->thrown++;
-                // if thrown too often AI will learn to switch it up
-                if (smart_usually(a) && a->thrown > MAX_TIMES_THROWN) {
-                    if (pilot->att_def) {
-                        // turn off defensive personality
-                        pilot->att_def = 0;
-                        // turn on aggressive personality
-                        pilot->att_hyper = 1;
-                    } else if (pilot->att_sniper) {
-                        // turn off sniper personality
-                        pilot->att_sniper = 0;
-                        // turn on aggressive personality
-                        pilot->att_hyper = 1;
-                    }
+                if (smart_usually(a) && a->thrown >= MAX_TIMES_THROWN) {
+                    DEBUG("\e[33mAI adjusting in response to repeated throws.\e[0m");
+                    // turn off defensive personality
+                    pilot->att_def = 0;
+                    // turn on sniper personality
+                    pilot->att_sniper = 1;
+                    // turn on jumper personality
+                    pilot->att_jump = 1;
+                    // favor jumping movement
+                    pilot->pref_jump += 50;
+                    // favor backwards movement
+                    if (pilot->pref_back < 200) pilot->pref_back += 50;
+                    if (pilot->pref_fwd > -200) pilot->pref_fwd -= 50;
+                }
+            } else if (event.move->category == CAT_PROJECTILE) {
+                // keep track of how many times we have been shot
+                a->shot++;
+                if (smart_usually(a) && a->shot >= MAX_TIMES_SHOT) {
+                    DEBUG("\e[33mAI adjusting in response to repeated projectiles.\e[0m");
+                    // turn off defensive personality
+                    pilot->att_def = 0;
+                    // turn on aggressive personality
+                    pilot->att_hyper = 1;
+                    // turn on jumper personality
+                    pilot->att_jump = 1;
+                    // favor forwards movement
+                    if (pilot->pref_fwd < 200) pilot->pref_fwd += 50;
+                    if (pilot->pref_back > -200) pilot->pref_back -= 50;
+                }
+            }
+
+            if (has_queued_tactic || !smart_usually(a)) break;
+
+            if (event.move->category == CAT_THROW || event.move->category == CAT_CLOSE) {
+                // distance gaining tactics
+                if (likes_tactic(ctrl, TACTIC_ESCAPE)) {
+                    queue_tactic(ctrl, TACTIC_ESCAPE);
+                } else if (likes_tactic(ctrl, TACTIC_PUSH)) {
+                    queue_tactic(ctrl, TACTIC_PUSH);
+                } else if (likes_tactic(ctrl, TACTIC_FLY)) {
+                    queue_tactic(ctrl, TACTIC_FLY);
+                }
+            } else if (event.move->category == CAT_PROJECTILE) {
+                // aggressive tactics
+                if (likes_tactic(ctrl, TACTIC_FLY)) {
+                    queue_tactic(ctrl, TACTIC_FLY);
+                } else if (likes_tactic(ctrl, TACTIC_SHOOT)) {
+                    queue_tactic(ctrl, TACTIC_SHOOT);
+                } else if (likes_tactic(ctrl, TACTIC_GRAB)) {
+                    queue_tactic(ctrl, TACTIC_GRAB);
+                } else if (likes_tactic(ctrl, TACTIC_CLOSE)) {
+                    queue_tactic(ctrl, TACTIC_CLOSE);
+                }
+            } else {
+                // defensive tactics
+                if (likes_tactic(ctrl, TACTIC_COUNTER)) {
+                    queue_tactic(ctrl, TACTIC_COUNTER);
+                } else if (likes_tactic(ctrl, TACTIC_TURTLE)) {
+                    queue_tactic(ctrl, TACTIC_TURTLE);
+                } else if (likes_tactic(ctrl, TACTIC_ESCAPE)) {
+                    queue_tactic(ctrl, TACTIC_ESCAPE);
+                } else if (likes_tactic(ctrl, TACTIC_PUSH)) {
+                    queue_tactic(ctrl, TACTIC_PUSH);
+                } else if (likes_tactic(ctrl, TACTIC_TRIP)) {
+                    queue_tactic(ctrl, TACTIC_TRIP);
+                } else if (likes_tactic(ctrl, TACTIC_QUICK)) {
+                    queue_tactic(ctrl, TACTIC_QUICK);
+                } else if (likes_tactic(ctrl, TACTIC_SPAM)) {
+                    queue_tactic(ctrl, TACTIC_SPAM);
                 }
             }
 
             break;
         case HAR_EVENT_RECOVER:
 
-            if (has_queued_tactic ||!smart_usually(a)) break;
+            if (has_queued_tactic || !smart_usually(a)) break;
 
-            if (likes_tactic(a, TACTIC_SHOOT, h)) {
-                queue_tactic(a, TACTIC_SHOOT, h);
-            } else if (likes_tactic(a, TACTIC_COUNTER, h)) {
-                queue_tactic(a, TACTIC_COUNTER, h);
-            } else if (likes_tactic(a, TACTIC_TURTLE, h)) {
-                queue_tactic(a, TACTIC_TURTLE, h);
-            } else if (likes_tactic(a, TACTIC_ESCAPE, h)) {
-                queue_tactic(a, TACTIC_ESCAPE, h);
+            if (likes_tactic(ctrl, TACTIC_SHOOT)) {
+                queue_tactic(ctrl, TACTIC_SHOOT);
+            } else if (likes_tactic(ctrl, TACTIC_COUNTER)) {
+                queue_tactic(ctrl, TACTIC_COUNTER);
+            } else if (likes_tactic(ctrl, TACTIC_TURTLE)) {
+                queue_tactic(ctrl, TACTIC_TURTLE);
+            } else if (likes_tactic(ctrl, TACTIC_ESCAPE)) {
+                queue_tactic(ctrl, TACTIC_ESCAPE);
             } 
 
             break;
         case HAR_EVENT_ENEMY_STUN:
 
-            if (has_queued_tactic ||!smart_usually(a)) break;
+            if (has_queued_tactic || !smart_usually(a)) break;
 
-            if (likes_tactic(a, TACTIC_GRAB, h)) {
-                queue_tactic(a, TACTIC_GRAB, h);
-            } else if (likes_tactic(a, TACTIC_CLOSE, h)) {
-                queue_tactic(a, TACTIC_CLOSE, h);
-            } else if (likes_tactic(a, TACTIC_SHOOT, h)) {
-                queue_tactic(a, TACTIC_SHOOT, h);
-            } else if (likes_tactic(a, TACTIC_FLY, h)) {
-                queue_tactic(a, TACTIC_FLY, h);
+            if (likes_tactic(ctrl, TACTIC_GRAB)) {
+                queue_tactic(ctrl, TACTIC_GRAB);
+            } else if (likes_tactic(ctrl, TACTIC_CLOSE)) {
+                queue_tactic(ctrl, TACTIC_CLOSE);
+            } else if (likes_tactic(ctrl, TACTIC_SHOOT)) {
+                queue_tactic(ctrl, TACTIC_SHOOT);
+            } else if (likes_tactic(ctrl, TACTIC_FLY)) {
+                queue_tactic(ctrl, TACTIC_FLY);
             } 
         default:
             break;
@@ -952,6 +1070,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 void ai_controller_free(controller *ctrl) {
     ai *a = ctrl->data;
     vector_free(&a->active_projectiles);
+    free(a->tactic);
     free(a);
 }
 
@@ -1054,7 +1173,6 @@ bool assign_move_by_cat(controller *ctrl, int category, bool highest_damage) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
-
 
     af_move *selected_move = NULL;
     int top_value = 0;
@@ -1230,13 +1348,8 @@ void process_selected_move(controller *ctrl, ctrl_event **ev) {
         }
         a->input_lag_timer = a->input_lag;
     }
-    int ch;
-    if (a->selected_move->category == CAT_PROJECTILE) {
-        ch = str_at(&a->selected_move->move_string, a->move_str_pos);
-    } else {
-        ch = str_at(&a->selected_move->move_string, a->move_str_pos);
-        controller_cmd(ctrl, char_to_act(ch, o->direction), ev);
-    }
+    int ch = str_at(&a->selected_move->move_string, a->move_str_pos);
+    controller_cmd(ctrl, char_to_act(ch, o->direction), ev);
 }
 
 /** 
@@ -1270,7 +1383,7 @@ void handle_movement(controller *ctrl, ctrl_event **ev) {
                 p_fwd_thresh += roll_pref(a->pilot->pref_back) ? 4 : 2;
             }
 
-            if (h->id == 7 || h->id == 2 || h->id == 10) p_fwd_thresh -= 4; // flail/thorn/nova
+            if (h->id == HAR_FLAIL || h->id == HAR_THORN || h->id == HAR_NOVA) p_fwd_thresh -= 4; // flail/thorn/nova
             if (a->pilot->att_hyper) p_fwd_thresh -= 4; // pilot hyper
 
             // DEBUG("p_fwd_thresh %d", p_fwd_thresh);
@@ -1330,71 +1443,88 @@ bool attempt_attack(controller *ctrl, bool highest_damage) {
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
 
-    if(smart_usually(a)) {
-        af_move *selected_move = NULL;
-        int top_value = 0;
+    int enemy_range = get_enemy_range(ctrl);
+    bool in_attempt_range = (
+        enemy_range <= RANGE_CLOSE ||
+        (enemy_range == RANGE_MID && dumb_sometimes(a))
+    );
 
-        // Attack
-        for(int i = 0; i < 70; i++) {
-            af_move *move = NULL;
-            if((move = af_get_move(h->af_data, i))) {
-                move_stat *ms = &a->move_stats[i];
-                if(is_valid_move(move, h, false)) {
-                    int value;
-                    if (highest_damage) {
-                        // evaluate the move based purely on damage
-                        value = (int) move->damage * 10;
-                    } else {
-                        // evaluate the move based on learning reinforcement
-                        value = ms->value + rand_int(10);
-                        if (ms->min_hit_dist != -1){
-                            if (ms->last_dist < ms->max_hit_dist+5 && ms->last_dist > ms->min_hit_dist+5){
-                                value += 2;
-                            } else if (ms->last_dist > ms->max_hit_dist+10){
-                                value -= 3;
-                            }
-                        }
+    af_move *selected_move = NULL;
+    int top_value = 0;
 
-                        // smart AI will slightly favor high damage moves
-                        if (smart_usually(a)) {
-                            value += ((int) move->damage / 4);
-                        }
+    // Attack
+    for(int i = 0; i < 70; i++) {
+        af_move *move = NULL;
+        if((move = af_get_move(h->af_data, i))) {
+            move_stat *ms = &a->move_stats[i];
+            if(is_valid_move(move, h, false)) {
+                // smart AI will bail-out unless close enough to hit
+                if (!in_attempt_range &&
+                    (
+                        move->category == CAT_BASIC ||
+                        move->category == CAT_LOW ||
+                        move->category == CAT_MEDIUM ||
+                        move->category == CAT_HIGH ||
+                        move->category == CAT_LOW
+                    )
+                ) {
+                    continue;
+                }
 
-                        // AI is less likely to use disliked moves
-                        if (move_disliked(a, move)) {
-                            value -= rand_int(5);
-                        }
-
-                        value -= ms->attempts/2;
-                        value -= ms->consecutive*2;
-
-                        // sometimes skip move if it is too powerful for difficulty
-                        if (move_too_powerful(a, move)) {
-                            DEBUG("skipping move %s because of difficulty", str_c(&move->move_string));
-                            continue;
+                int value;
+                if (highest_damage) {
+                    // evaluate the move based purely on damage
+                    value = (int) move->damage * 10;
+                } else {
+                    // evaluate the move based on learning reinforcement
+                    value = ms->value + rand_int(10);
+                    if (ms->min_hit_dist != -1){
+                        if (ms->last_dist < ms->max_hit_dist+5 && ms->last_dist > ms->min_hit_dist+5){
+                            value += 2;
+                        } else if (ms->last_dist > ms->max_hit_dist+10){
+                            value -= 3;
                         }
                     }
 
-                    if (selected_move == NULL){
-                        selected_move = move;
-                        top_value = value;
-                    } else if (value > top_value) {
-                        selected_move = move;
-                        top_value = value;
+                    // smart AI will slightly favor high damage moves
+                    if (smart_usually(a)) {
+                        value += ((int) move->damage / 4);
                     }
+
+                    // AI is less likely to use disliked moves
+                    if (dislikes_move(a, move)) {
+                        value -= rand_int(10);
+                    }
+
+                    value -= ms->attempts/2;
+                    value -= ms->consecutive*2;
+
+                    // sometimes skip move if it is too powerful for difficulty
+                    if (move_too_powerful(a, move)) {
+                        DEBUG("skipping move %s because of difficulty", str_c(&move->move_string));
+                        continue;
+                    }
+                }
+
+                if (selected_move == NULL){
+                    selected_move = move;
+                    top_value = value;
+                } else if (value > top_value) {
+                    selected_move = move;
+                    top_value = value;
                 }
             }
         }
+    }
 
-        if(selected_move) {
-            for(int i = 0; i < 70; i++) {
-                a->move_stats[i].consecutive /= 2;
-            }
-
-            DEBUG("\e[35mRandom attack\e[0m");
-            set_selected_move(ctrl, selected_move);
-            return true;
+    if(selected_move) {
+        for(int i = 0; i < 70; i++) {
+            a->move_stats[i].consecutive /= 2;
         }
+
+        DEBUG("\e[35mRandom attack\e[0m %d", selected_move->id);
+        set_selected_move(ctrl, selected_move);
+        return true;
     }
 
     return false;
@@ -1412,17 +1542,21 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
 
+    if (h->state == STATE_WALKTO || h->state == STATE_WALKFROM || h->state == STATE_CROUCHBLOCK) {
+        controller_cmd(ctrl, ACT_STOP, ev);
+    }
+
     switch (h->id) {
-        case 0: // jaguar (Concussion Cannon : D,B+P)
-        case 4: // electra (Ball Lightning : D,B+P)
-        case 6: // shredder (Flying Hands : D, B+P)
+        case HAR_JAGUAR: // Concussion Cannon : D,B+P
+        case HAR_ELECTRA: // Ball Lightning : D,B+P
+        case HAR_SHREDDER: // Flying Hands : D, B+P
             controller_cmd(ctrl, ACT_DOWN, ev);
             controller_cmd(ctrl, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN|ACT_LEFT : ACT_DOWN|ACT_RIGHT), ev);
             controller_cmd(ctrl, (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT), ev);
             controller_cmd(ctrl, (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT|ACT_PUNCH : ACT_RIGHT|ACT_PUNCH), ev);
             controller_cmd(ctrl, ACT_PUNCH, ev);
             break;
-        case 1: // shadow (shadow kick/punch)
+        case HAR_SHADOW:
             controller_cmd(ctrl, ACT_DOWN, ev);
             controller_cmd(ctrl, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN|ACT_LEFT : ACT_DOWN|ACT_RIGHT), ev);
             controller_cmd(ctrl, (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT), ev);
@@ -1436,13 +1570,13 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
                 controller_cmd(ctrl, ACT_KICK, ev);
             }
             break;
-        case 9: // chronos (Stasis : D, B, P)
+        case HAR_CHRONOS: // Stasis : D, B, P
             controller_cmd(ctrl, ACT_DOWN, ev);
             controller_cmd(ctrl, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN|ACT_LEFT : ACT_DOWN|ACT_RIGHT), ev);
             controller_cmd(ctrl, (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT), ev);
             controller_cmd(ctrl, ACT_PUNCH, ev);
             break;
-        case 10: // nova (Missile : D, F, P)
+        case HAR_NOVA: // Missile : D, F, P
             controller_cmd(ctrl, ACT_DOWN, ev);
             controller_cmd(ctrl, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN|ACT_RIGHT : ACT_DOWN|ACT_LEFT), ev);
             controller_cmd(ctrl, (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ev);
@@ -1453,14 +1587,24 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
     return true;
 }
 
-void handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
+/** 
+ * \brief Handle the next phase of the currently queued tactic.
+ *
+ * \param ctrl Controller instance.
+ * \param ev The current controller event.
+ *
+ * \return Boolean indicating whether AI moved or attacked.
+ */
+bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = ctrl->har;
     har *h = object_get_userdata(o);
     tactic_state *tactic = a->tactic;
-    bool enemy_close = h->close;
+    int enemy_close = h->close;
+    int enemy_range = get_enemy_range(ctrl);
     bool wall_close = h->is_wallhugging;
 
+    bool acted = false;
     if (tactic->move_type > 0 && tactic->move_timer > 0) {
         // handle movement phase of tactic
         switch (tactic->move_type) {
@@ -1470,46 +1614,52 @@ void handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     a->cur_act = o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT;
                     controller_cmd(ctrl, a->cur_act, ev);
                     tactic->move_timer--;
-                    //DEBUG("\e[34mMovement close tick\e[0m");
+                    acted = true;
                 } else {
                     tactic->move_timer = 0;
                     DEBUG("\e[34mMovement close success\e[0m");
                 }
                 break;
             case MOVE_AVOID:
-                if (enemy_close) {
-                    // take a step away
-                    a->cur_act = o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT;
+                if (enemy_range == RANGE_FAR) {
+                    tactic->move_timer = 0;
                 } else {
-                    // gain more distance
-                    if (roll_pref(a->pilot->pref_jump)) {
-                        // jump away
-                        a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT)|ACT_UP;
-                    } else {
+                    if (enemy_range == RANGE_CRAMPED || !roll_pref(a->pilot->pref_jump)) {
                         // take a step away
                         a->cur_act = o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT;
+                    } else {
+                        // jump away
+                        a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT)|ACT_UP;
                     }
-                }
 
-                controller_cmd(ctrl, a->cur_act, ev);
-                tactic->move_timer--;
+                    controller_cmd(ctrl, a->cur_act, ev);
+                    tactic->move_timer--;
+                    acted = true;
+                }
 
                 if (tactic->move_timer == 0) DEBUG("\e[34mMovement avoid finished\e[0m");
                 break;
             case MOVE_JUMP:
-                // jump closer
-                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)|ACT_UP;
-                controller_cmd(ctrl, a->cur_act, ev);
-
-                if (!enemy_close && tactic->tactic_type != TACTIC_FLY) {
-                    // transition into close
-                    tactic->move_type = MOVE_CLOSE;
-                    tactic->move_timer--;
-                    DEBUG("\e[34mMovement jump transition to close\e[0m");
+                if (!enemy_close) {
+                    // jump closer
+                    a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)|ACT_UP;
+                    controller_cmd(ctrl, a->cur_act, ev);
+                    if (roll_pref(a->pilot->pref_jump)) {
+                        tactic->move_timer--;
+                    } else {
+                        tactic->move_timer = 0;
+                    }
+                } else if (tactic->tactic_type == TACTIC_FLY) {
+                    // jump over enemy
+                    a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)|ACT_UP;
+                    controller_cmd(ctrl, a->cur_act, ev);
+                    tactic->move_timer = 0;
                 } else {
                     tactic->move_timer = 0;
-                    DEBUG("\e[34mMovement jump finished\e[0m");
                 }
+
+                acted = true;
+                if (tactic->move_timer == 0) DEBUG("\e[34mMovement jump finished\e[0m");
                 break;
             case MOVE_BLOCK:
                 if (wall_close || har_is_crouching(h)) {
@@ -1522,88 +1672,193 @@ void handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
 
                 controller_cmd(ctrl, a->cur_act, ev);
                 tactic->move_timer--;
+                acted = true;
 
                 if (tactic->move_timer == 0) DEBUG("\e[34mMovement block finished\e[0m");
                 break;
+            default:
+                DEBUG("\e[31mFlushing invalid move type\e[0m");
+                tactic->move_type = 0;
+                tactic->move_timer = 0;
         }
     } else if (tactic->attack_type > 0 && tactic->attack_timer > 0) {
         // handle attack phase of tactic
+        bool in_attempt_range = (
+            enemy_close || 
+            (enemy_range <= RANGE_MID && dumb_sometimes(a))
+        );
+        acted = true;
+        tactic->attack_timer--;
+        int attack_cat = 0;
         switch (tactic->attack_type) {
             case ATTACK_ID:
-                if ((enemy_close || dumb_sometimes(a)) && assign_move_by_id(ctrl, tactic->attack_id)) {
+                if (!in_attempt_range) break;
+
+                if (assign_move_by_id(ctrl, tactic->attack_id)) {
                     reset_tactic_state(a);
                     DEBUG("\e[32mSpecific attack success\e[0m");
-                } else {
-                    tactic->attack_timer--;
-                    //DEBUG("\e[33mSpecific attack attempt\e[0m");
                 }
                 break;
             case ATTACK_TRIP:
-                if ((enemy_close || dumb_sometimes(a)) && assign_move_by_cat(ctrl, CAT_LOW, true)) {
+                if (!in_attempt_range) break;
+
+                if (assign_move_by_cat(ctrl, CAT_LOW, true)) {
                     reset_tactic_state(a);
                     DEBUG("\e[32mTrip attack success\e[0m");
-                } else {
-                    tactic->attack_timer--;
-                    //DEBUG("\e[33mTrip attack attempt\e[0m");
+                    
+                    // chain another tactic
+                    if (smart_usually(a)) {
+                        if (likes_tactic(ctrl, TACTIC_ESCAPE)) {
+                            // set chain tactic to shoot if low attack hits
+                            a->tactic->chain_hit_on = CAT_LOW;
+                            a->tactic->chain_hit_tactic = TACTIC_ESCAPE;
+                        } else if (likes_tactic(ctrl, TACTIC_SHOOT)) {
+                            // set chain tactic to escape if low attack hits
+                            a->tactic->chain_hit_on = CAT_LOW;
+                            a->tactic->chain_hit_tactic = TACTIC_SHOOT;
+                        }
+                    }
                 }
                 break;
             case ATTACK_GRAB:
-                if (
-                    (enemy_close || dumb_sometimes(a)) && 
-                    (
-                        assign_move_by_cat(ctrl, CAT_THROW, false) ||
-                        assign_move_by_cat(ctrl, CAT_CLOSE, false)
-                    )
-                ) {
+                if (assign_move_by_cat(ctrl, CAT_THROW, false)) {
+                    attack_cat = CAT_THROW;
+                } else if (assign_move_by_cat(ctrl, CAT_CLOSE, true)) {
+                    attack_cat = CAT_CLOSE;
+                }
+
+                if (attack_cat > 0) {
                     reset_tactic_state(a);
                     DEBUG("\e[32mGrab attack success\e[0m");
-                } else {
-                    tactic->attack_timer--;
-                    //DEBUG("\e[33mGrab attack attempt\e[0m");
+
+                    // chain another tactic
+                    if (smart_usually(a)) {
+                        if (likes_tactic(ctrl, TACTIC_SHOOT)) {
+                            // set chain tactic to shoot if attack hits
+                            a->tactic->chain_hit_on = attack_cat;
+                            a->tactic->chain_hit_tactic = TACTIC_SHOOT;
+                        } else if (likes_tactic(ctrl, TACTIC_FLY)) {
+                            // set chain tactic to fly if attack hits
+                            a->tactic->chain_hit_on = attack_cat;
+                            a->tactic->chain_hit_tactic = TACTIC_FLY;
+                        } else if (likes_tactic(ctrl, TACTIC_COUNTER)) {
+                            // set chain tactic to counter if attack hits
+                            a->tactic->chain_hit_on = attack_cat;
+                            a->tactic->chain_hit_tactic = TACTIC_COUNTER;
+                        }
+                    }
                 }
                 break;
             case ATTACK_LIGHT:
-                if ((enemy_close || dumb_sometimes(a)) && assign_move_by_cat(ctrl, roll_chance(2) ? CAT_BASIC : CAT_MEDIUM, false)) {
+                if (!in_attempt_range) break;
+
+                int light_cat = roll_chance(2) ? CAT_BASIC : CAT_MEDIUM;
+                if (assign_move_by_cat(ctrl, light_cat, false)) {
                     reset_tactic_state(a);
                     DEBUG("\e[32mLight attack success\e[0m");
-                } else {
-                    tactic->attack_timer--;
-                    //DEBUG("\e[33mLight attack attempt\e[0m");
+
+                    // chain another tactic
+                    if (smart_usually(a)) {
+                        if (likes_tactic(ctrl, TACTIC_PUSH)) {
+                            // set chain tactic to push if attack hits
+                            a->tactic->chain_hit_on = light_cat;
+                            a->tactic->chain_hit_tactic = TACTIC_PUSH;
+                        } else if (likes_tactic(ctrl, TACTIC_TRIP)) {
+                            // set chain tactic to trip if attack hits
+                            a->tactic->chain_hit_on = light_cat;
+                            a->tactic->chain_hit_tactic = TACTIC_TRIP;
+                        } else if (likes_tactic(ctrl, TACTIC_FLY)) {
+                            // set chain tactic to fly if attack hits
+                            a->tactic->chain_hit_on = light_cat;
+                            a->tactic->chain_hit_tactic = TACTIC_FLY;
+                        }
+                    }
                 }
                 break;
             case ATTACK_HEAVY:
-                if ((enemy_close || dumb_sometimes(a)) && assign_move_by_cat(ctrl, roll_chance(2) ? CAT_MEDIUM : CAT_HIGH, true)) {
+                if (!in_attempt_range) break;
+
+                int heavy_cat = roll_chance(2) ? CAT_MEDIUM : CAT_HIGH;
+                if (assign_move_by_cat(ctrl, heavy_cat, true)) {
                     reset_tactic_state(a);
-                    DEBUG("\e[32mHeavyattack success\e[0m");
-                } else {
-                    tactic->attack_timer--;
-                    //DEBUG("\e[33mHeavy attack attempt\e[0m");
+                    DEBUG("\e[32mHeavy attack success\e[0m");
+
+                    // chain another tactic
+                    if (smart_usually(a)) {
+                        if (likes_tactic(ctrl, TACTIC_TRIP)) {
+                            // set chain tactic to trip if attack attack hits
+                            a->tactic->chain_hit_on = heavy_cat;
+                            a->tactic->chain_hit_tactic = TACTIC_TRIP;
+                        } else if (likes_tactic(ctrl, TACTIC_COUNTER)) {
+                            // set chain tactic to counter if attack attack hits
+                            a->tactic->chain_hit_on = heavy_cat;
+                            a->tactic->chain_hit_tactic = TACTIC_COUNTER;
+                        } else if (likes_tactic(ctrl, TACTIC_QUICK)) {
+                            // set chain tactic to quick if attack hits
+                            a->tactic->chain_hit_on = heavy_cat;
+                            a->tactic->chain_hit_tactic = TACTIC_QUICK;
+                        }
+                    }
                 }
                 break;
             case ATTACK_JUMP:
                 if (assign_move_by_cat(ctrl, CAT_JUMPING, false)) {
                     reset_tactic_state(a);
                     DEBUG("\e[32mJump attack success\e[0m");
-                } else {
-                    tactic->attack_timer--;
-                    //DEBUG("\e[33mJump attack attempt\e[0m");
+
+                    // chain another tactic
+                    if (smart_usually(a)) {
+                        if (likes_tactic(ctrl, TACTIC_TRIP)) {
+                            // set chain tactic to counter if jumping attack hits
+                            a->tactic->chain_hit_on = CAT_JUMPING;
+                            a->tactic->chain_hit_tactic = TACTIC_TRIP;
+                        } else if (likes_tactic(ctrl, TACTIC_GRAB)) {
+                            // set chain tactic to counter if jumping attack hits
+                            a->tactic->chain_hit_on = CAT_JUMPING;
+                            a->tactic->chain_hit_tactic = TACTIC_GRAB;
+                        } else if (likes_tactic(ctrl, TACTIC_PUSH)) {
+                            // set chain tactic to counter if jumping attack hits
+                            a->tactic->chain_hit_on = CAT_JUMPING;
+                            a->tactic->chain_hit_tactic = TACTIC_PUSH;
+                        }
+                    }
                 }
                 break;
             case ATTACK_RANGED:
                 if (attempt_projectile_attack(ctrl, ev)) {
                     reset_tactic_state(a);
                     DEBUG("\e[32mRanged attack success\e[0m");
-                } else {
-                    tactic->attack_timer--;
-                    //DEBUG("\e[33mRanged attack attempt\e[0m");
+
+                    // chain another tactic
+                    if (smart_usually(a)) {
+                        if (likes_tactic(ctrl, TACTIC_SHOOT)) {
+                            // set chain tactic to shoot if projectile hits
+                            a->tactic->chain_hit_on = CAT_PROJECTILE;
+                            a->tactic->chain_hit_tactic = TACTIC_SHOOT;
+                        } else if (likes_tactic(ctrl, TACTIC_FLY)) {
+                            // set chain tactic to fly if projectile hits
+                            a->tactic->chain_hit_on = CAT_PROJECTILE;
+                            a->tactic->chain_hit_tactic = TACTIC_FLY;
+                        } else if (likes_tactic(ctrl, TACTIC_COUNTER)) {
+                            // set chain tactic to counter if projectile hits
+                            a->tactic->chain_hit_on = CAT_PROJECTILE;
+                            a->tactic->chain_hit_tactic = TACTIC_COUNTER;
+                        }
+                    }
                 }
                 break;
+            default:
+                DEBUG("\e[31mFlushing invalid attack type\e[0m");
+                tactic->attack_type = 0;
+                tactic->attack_timer = 0;
         }
     } else {
         // reset queued tactic
         reset_tactic_state(a);
         DEBUG("\e[31mFlushing failed tactic queue\e[0m");
     }
+
+    return acted;
 }
 
 int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
@@ -1654,22 +1909,37 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
         return 0;
     }
 
-    int can_move = (h->state == STATE_STANDING || h->state == STATE_WALKTO || h->state == STATE_WALKFROM);
+    int can_move = (h->state == STATE_STANDING || h->state == STATE_WALKTO || h->state == STATE_WALKFROM || h->state == STATE_CROUCHBLOCK);    
 
-    // attempt queued tactic
-    if (a->tactic->tactic_type > 0 && (can_move || (a->tactic->tactic_type == TACTIC_FLY && h->state == STATE_JUMPING))) {
-        handle_queued_tactic(ctrl, ev);
-        // check if tactic is complete
-        if (a->tactic->tactic_type == 0) {
-            // reset movement act timer
-            reset_act_timer(a);
-            // wait for next poll
+    // be wary of repeated throws
+    if (can_move && a->tactic->tactic_type > 0 && a->thrown >= 1 && a->difficulty > 2) {
+        // attempt a quick attack to disrupt their grab/throw
+        int enemy_range = get_enemy_range(ctrl);
+        if (
+            (
+                enemy_range == RANGE_CRAMPED ||
+                (enemy_range == RANGE_CLOSE && a->thrown >= 2)
+            ) &&
+            attempt_attack(ctrl, false)
+        ) {
             return 0;
         }
     }
 
+    // attempt queued tactic
+    if (a->tactic->tactic_type > 0 && (can_move || (a->tactic->tactic_type == TACTIC_FLY && h->state == STATE_JUMPING))) {
+        bool acted = handle_queued_tactic(ctrl, ev);
+        // check if tactic is complete
+        if (a->tactic->tactic_type == 0) {
+            // reset movement act timer
+            reset_act_timer(a);
+        }
+
+        if (acted) return 0; // wait for next poll
+    }
+
     // attempt a random attack
-    if (attempt_attack(ctrl, false)) {
+    if (diff_scale(a) && attempt_attack(ctrl, false)) {
         // reset movement act timer
         reset_act_timer(a);
         return 0;
@@ -1681,18 +1951,18 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
 
     // queue a random tactic for next poll
     if (smart_sometimes(a) && a->tactic->tactic_type == 0 && can_move && roll_chance(6)) {
-        if (roll_chance(8) && likes_tactic(a, TACTIC_SHOOT, h)) {
+        if (roll_chance(8) && likes_tactic(ctrl, TACTIC_SHOOT)) {
             DEBUG("\e[35mQueue random tactic:\e[32m SHOOT\e[0m");
-            queue_tactic(a, TACTIC_SHOOT, h);
-        } else if (roll_chance(6) && likes_tactic(a, TACTIC_QUICK, h)) {
+            queue_tactic(ctrl, TACTIC_SHOOT);
+        } else if (roll_chance(6) && likes_tactic(ctrl, TACTIC_QUICK)) {
             DEBUG("\e[35mQueue random tactic\e[32m QUICK\e[0m");
-            queue_tactic(a, TACTIC_QUICK, h);
-        } else if (roll_chance(6) && likes_tactic(a, TACTIC_FLY, h)) {
+            queue_tactic(ctrl, TACTIC_QUICK);
+        } else if (roll_chance(6) && likes_tactic(ctrl, TACTIC_FLY)) {
             DEBUG("\e[35mQueue random tactic\e[32m FLY\e[0m");
-            queue_tactic(a, TACTIC_FLY, h);
-        } else if (roll_chance(6) && likes_tactic(a, TACTIC_GRAB, h)) {
+            queue_tactic(ctrl, TACTIC_FLY);
+        } else if (roll_chance(6) && likes_tactic(ctrl, TACTIC_GRAB)) {
             DEBUG("\e[35mQueue random tactic\e[32m GRAB\e[0m");
-            queue_tactic(a, TACTIC_GRAB, h);
+            queue_tactic(ctrl, TACTIC_GRAB);
         }
     }
 
@@ -1805,7 +2075,8 @@ void populate_pilot_prefs(sd_pilot *pilot, int pilot_id) {
 void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int pilot_id) {
     ai *a = malloc(sizeof(ai));
     a->har_event_hooked = 0;
-    a->difficulty = difficulty+1;
+    //a->difficulty = difficulty+1;
+    a->difficulty = 6;
     a->act_timer = 0;
     a->cur_act = 0;
     a->input_lag = 3;
@@ -1829,7 +2100,7 @@ void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int
     populate_pilot_prefs(pilot, pilot_id);
 
     // set initial tactical state
-    tactic_state *tactic = malloc(sizeof(tactic_state));
+    tactic_state *tactic = calloc(1, sizeof(tactic_state));
     tactic->tactic_type = 0;
     tactic->last_tactic = 0;
     tactic->move_type = 0;
