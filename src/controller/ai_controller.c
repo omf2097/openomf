@@ -2075,8 +2075,7 @@ void populate_pilot_prefs(sd_pilot *pilot, int pilot_id) {
 void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int pilot_id) {
     ai *a = malloc(sizeof(ai));
     a->har_event_hooked = 0;
-    //a->difficulty = difficulty+1;
-    a->difficulty = 6;
+    a->difficulty = difficulty+1;
     a->act_timer = 0;
     a->cur_act = 0;
     a->input_lag = 3;
