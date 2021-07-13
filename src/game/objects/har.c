@@ -110,6 +110,14 @@ void har_event_enemy_block(har *h, af_move *move) {
     fire_hooks(h, event);
 }
 
+void har_event_block(har *h, af_move *move) {
+    har_event event;
+    event.type = HAR_EVENT_BLOCK;
+    event.player_id = h->player_id;
+    event.move = move;
+
+    fire_hooks(h, event);
+}
 
 void har_event_take_hit(har *h, af_move *move) {
     har_event event;
@@ -141,6 +149,14 @@ void har_event_hazard_hit(har *h, bk_info *info) {
 void har_event_stun(har *h) {
     har_event event;
     event.type = HAR_EVENT_STUN;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
+void har_event_enemy_stun(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_ENEMY_STUN;
     event.player_id = h->player_id;
 
     fire_hooks(h, event);
@@ -955,6 +971,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
                 // earthquake smash is unblockable
                 !player_frame_isset(obj_a, "ue")) {
             har_event_enemy_block(a, move);
+            har_event_block(b, move);
             har_block(obj_b, hit_coord);
             if (b->is_wallhugging) {
                 a->flinching = 1;
@@ -1932,6 +1949,14 @@ int har_act(object *obj, int act_type) {
         return 1;
     }
 
+    // if enemy is airborn we fire extra walk event to check whether we need to turn
+    // fixes some rare behaviour where you cannot kick-counter someone who jumps over you
+    int opp_id = h->player_id ? 0 : 1;
+    object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
+    if(object_is_airborne(opp)) {
+        har_event_walk(h, 1);
+    }
+
     return 0;
 }
 
@@ -1963,6 +1988,11 @@ void har_finished(object *obj) {
         h->stun_timer = 0;
         har_set_ani(obj, ANIM_STUNNED, 1);
         har_event_stun(h);
+
+        // fire enemy stunned event
+        object *enemy_obj = game_player_get_har(game_state_get_player(obj->gs, !h->player_id));
+        har *enemy_h = object_get_userdata(enemy_obj);
+        har_event_enemy_stun(enemy_h);
     } else if (h->state == STATE_RECOIL) {
         har_event_recover(h);
         h->state = STATE_STANDING;
