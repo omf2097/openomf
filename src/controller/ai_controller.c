@@ -1492,6 +1492,11 @@ bool attempt_attack(controller *ctrl, bool highest_damage) {
                         }
                     }
 
+                    // AI is less likely to use exact same move as last attack
+                    if (a->last_move_id > 0 && a->last_move_id == move->id) {
+                        value -= rand_int(10);
+                    }
+
                     // smart AI will slightly favor high damage moves
                     if (smart_usually(a)) {
                         value += ((int) move->damage / 4);
