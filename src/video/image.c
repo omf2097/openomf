@@ -6,6 +6,7 @@
 #include <png.h>
 
 #include "video/image.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 
@@ -25,7 +26,7 @@ typedef struct __attribute__ ((__packed__)) tga_header_t {
 } tga_header;
 
 int image_create(image *img, int w, int h) {
-    img->data = malloc(w * h * 4);
+    img->data = omf_calloc(1, w * h * 4);
     img->w = w;
     img->h = h;
     return 0;

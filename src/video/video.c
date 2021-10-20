@@ -6,6 +6,7 @@
 #include "video/video.h"
 #include "video/image.h"
 #include "video/tcache.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/list.h"
 #include "resources/palette.h"
@@ -20,7 +21,7 @@ static video_state state;
 void clear_render_target() {
     // Update target with black pixels
     int size = NATIVE_W * state.scale_factor * NATIVE_H * state.scale_factor * 4;
-    char *pixels = calloc(1, size);
+    char *pixels = omf_calloc(1, size);
     SDL_UpdateTexture(state.target, NULL, pixels, NATIVE_W * state.scale_factor * 4);
     free(pixels);
 }
@@ -78,8 +79,8 @@ int video_init(int window_w,
     }
 
     // Clear palettes
-    state.cur_palette = calloc(1, sizeof(screen_palette));
-    state.base_palette = calloc(1, sizeof(palette));
+    state.cur_palette = omf_calloc(1, sizeof(screen_palette));
+    state.base_palette = omf_calloc(1, sizeof(palette));
     state.cur_palette->version = 1;
 
     // Form title string

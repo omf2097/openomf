@@ -46,7 +46,6 @@ int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * RGBA image structure, or problems are likely to appear.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either input value was NULL.
  * \retval SD_SUCCESS Success.
  *

@@ -5,6 +5,7 @@
 #include "game/utils/settings.h"
 #include "controller/joystick.h"
 #include "controller/keyboard.h"
+#include "utils/allocator.h"
 #include "utils/compat.h"
 
 typedef struct {
@@ -174,8 +175,7 @@ void menu_input_free(component *c) {
 }
 
 component* menu_input_create(scene *s, int player_id) {
-    menu_input_local *local = malloc(sizeof(menu_input_local));
-    memset(local, 0, sizeof(menu_input_local));
+    menu_input_local *local = omf_calloc(1, sizeof(menu_input_local));
     local->selected_player = player_id;
 
     // Text config

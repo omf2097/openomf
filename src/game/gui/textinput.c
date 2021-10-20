@@ -9,6 +9,7 @@
 #include "video/video.h"
 #include "video/color.h"
 #include "video/image.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/compat.h"
 
@@ -131,8 +132,7 @@ void textinput_enable_background(component *c, int enabled) {
 component* textinput_create(const text_settings *tconf, const char *text, const char *initialvalue) {
     component *c = widget_create();
 
-    textinput *tb = malloc(sizeof(textinput));
-    memset(tb, 0, sizeof(textinput));
+    textinput *tb = omf_calloc(1, sizeof(textinput));
     tb->text = strdup(text);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->bg_enabled = 1;
@@ -148,8 +148,7 @@ component* textinput_create(const text_settings *tconf, const char *text, const 
     image_free(&img);
 
     // Copy over the initial value
-    tb->buf = malloc(tb->max_chars + 1);
-    memset(tb->buf, 0, tb->max_chars + 1);
+    tb->buf = omf_calloc(tb->max_chars + 1, 1);
     strncpy(tb->buf, initialvalue, tb->max_chars);
 
     // Widget stuff

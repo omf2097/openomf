@@ -4,6 +4,7 @@
 #include "controller/keyboard.h"
 #include "controller/joystick.h"
 #include "controller/rec_controller.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "game/utils/serial.h"
@@ -79,9 +80,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->this_wait_ticks = 0;
 
     // Set up players
-    gs->sc = malloc(sizeof(scene));
+    gs->sc = omf_calloc(1, sizeof(scene));
     for(int i = 0; i < 2; i++) {
-        gs->players[i] = malloc(sizeof(game_player));
+        gs->players[i] = omf_calloc(1, sizeof(game_player));
         game_player_create(gs->players[i]);
     }
 
@@ -419,7 +420,7 @@ int game_load_new(game_state *gs, int scene_id) {
     }
 
     // Initialize new scene with BK data etc.
-    gs->sc = malloc(sizeof(scene));
+    gs->sc = omf_calloc(1, sizeof(scene));
     if(scene_create(gs->sc, gs, scene_id)) {
         PERROR("Error while loading scene %d.", scene_id);
         goto error_0;
@@ -728,12 +729,12 @@ int game_state_num_players(game_state *gs) {
 void _setup_keyboard(game_state *gs, int player_id) {
     settings_keyboard *k = &settings_get()->keys;
     // Set up controller
-    controller *ctrl = malloc(sizeof(controller));
+    controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);
 
     // Set up keyboards
-    keyboard_keys *keys = malloc(sizeof(keyboard_keys));
+    keyboard_keys *keys = omf_calloc(1, sizeof(keyboard_keys));
     if(player_id == 0) {
         keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
         keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
@@ -768,7 +769,7 @@ void _setup_keyboard(game_state *gs, int player_id) {
 }
 
 void _setup_ai(game_state *gs, int player_id) {
-    controller *ctrl = malloc(sizeof(controller));
+    controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);
 
@@ -779,7 +780,7 @@ void _setup_ai(game_state *gs, int player_id) {
 }
 
 int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offset) {
-    controller *ctrl = malloc(sizeof(controller));
+    controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);
 
@@ -790,7 +791,7 @@ int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offs
 }
 
 void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec) {
-    controller *ctrl = malloc(sizeof(controller));
+    controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);
 
@@ -818,7 +819,7 @@ void game_state_init_demo(game_state *gs) {
     // Set up player controller
     for(int i = 0;i < game_state_num_players(gs);i++) {
         game_player *player = game_state_get_player(gs, i);
-        controller *ctrl = malloc(sizeof(controller));
+        controller *ctrl = omf_calloc(1, sizeof(controller));
         controller_init(ctrl);
         ai_controller_create(ctrl, 4);
         game_player_set_ctrl(player, ctrl);
@@ -932,7 +933,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         // Declare some vars
         game_player *player = game_state_get_player(gs, i);
         game_state_del_object(gs, player->har);
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
@@ -971,7 +972,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     uint8_t count = serial_read_int8(ser);
 
     for (int i = 0; i < count; i++) {
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
         int layer = serial_read_int8(ser);
         object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0,0));
         object_unserialize(obj, ser, gs);

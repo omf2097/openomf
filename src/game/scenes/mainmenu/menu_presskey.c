@@ -1,6 +1,7 @@
 #include "game/scenes/mainmenu/menu_presskey.h"
 #include "game/utils/settings.h"
 #include "game/gui/gui.h"
+#include "utils/allocator.h"
 #include "utils/compat.h"
 #include "utils/log.h"
 
@@ -95,8 +96,7 @@ void menu_presskey_tick(component *c) {
 }
 
 component* menu_presskey_create(char **key) {
-    presskey_menu_local *local = malloc(sizeof(presskey_menu_local));
-    memset(local, 0, sizeof(presskey_menu_local));
+    presskey_menu_local *local = omf_calloc(1, sizeof(presskey_menu_local));
     local->wait_timeout = 20;
     local->warn_timeout = 50;
     local->key = key;

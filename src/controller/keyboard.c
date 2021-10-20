@@ -1,4 +1,5 @@
 #include "controller/keyboard.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include <stdlib.h>
 
@@ -89,7 +90,7 @@ int keyboard_binds_key(controller *ctrl, SDL_Event *event) {
 }
 
 void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
-    keyboard *k = malloc(sizeof(keyboard));
+    keyboard *k = omf_calloc(1, sizeof(keyboard));
     k->keys = keys;
     k->last = 0;
     ctrl->data = k;

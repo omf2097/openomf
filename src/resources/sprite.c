@@ -2,6 +2,7 @@
 #include <string.h>
 #include "formats/sprite.h"
 #include "resources/sprite.h"
+#include "utils/allocator.h"
 
 void sprite_create_custom(sprite *sp, vec2i pos, surface *data) {
     sp->id = -1;
@@ -13,7 +14,7 @@ void sprite_create(sprite *sp, void *src, int id) {
     sd_sprite *sdsprite = (sd_sprite*)src;
     sp->id = id;
     sp->pos = vec2i_create(sdsprite->pos_x, sdsprite->pos_y);
-    sp->data = malloc(sizeof(surface));
+    sp->data = omf_calloc(1, sizeof(surface));
 
     // Load data
     sd_vga_image raw;
@@ -39,12 +40,12 @@ vec2i sprite_get_size(sprite *sp) {
 sprite* sprite_copy(sprite *src) {
     if(src == NULL) return NULL;
 
-    sprite *new = malloc(sizeof(sprite));
+    sprite *new = omf_calloc(1, sizeof(sprite));
     new->pos = src->pos;
     new->id = src->id;
 
     // Copy surface
-    new->data = malloc(sizeof(surface));
+    new->data = omf_calloc(1, sizeof(surface));
     surface_copy(new->data, src->data);
     return new;
 }

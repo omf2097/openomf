@@ -2,6 +2,7 @@
 #include <math.h>
 
 #include "controller/net_controller.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "game/utils/serial.h"
 
@@ -282,7 +283,7 @@ void net_controller_har_hook(int action, void *cb_data) {
 }
 
 void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int id) {
-    wtf *data = calloc(1, sizeof(wtf));
+    wtf *data = omf_calloc(1, sizeof(wtf));
     data->id = id;
     data->host = host;
     data->peer = peer;

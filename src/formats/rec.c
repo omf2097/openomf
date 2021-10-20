@@ -5,6 +5,7 @@
 #include "formats/internal/writer.h"
 #include "formats/error.h"
 #include "formats/rec.h"
+#include "utils/allocator.h"
 
 int sd_rec_extra_len(int key) {
     switch(key) {
@@ -111,7 +112,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     // This will be reduced later when we know the ACTUAL count
     size_t rsize = sd_reader_filesize(r) - sd_reader_pos(r);
     rec->move_count = rsize / 7;
-    rec->moves = calloc(rec->move_count, sizeof(sd_rec_move));
+    rec->moves = omf_calloc(rec->move_count, sizeof(sd_rec_move));
 
     // Read blocks
     for(int i = 0; i < rec->move_count; i++) {
@@ -145,7 +146,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
             // We already read the action key, so minus one.
             int unknown_len = extra_length - 1;
             if(unknown_len > 0) {
-                rec->moves[i].extra_data = malloc(unknown_len);
+                rec->moves[i].extra_data = omf_calloc(unknown_len, 1);
                 sd_read_buf(r, rec->moves[i].extra_data, unknown_len);
                 rec->move_count--;
             }

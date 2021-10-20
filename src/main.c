@@ -20,6 +20,7 @@
 #include "resources/sgmanager.h"
 #include "plugins/plugins.h"
 #include "controller/gamecontrollerdb.h"
+#include "utils/allocator.h"
 #include "utils/compat.h"
 
 #ifndef SHA1_HASH
@@ -193,7 +194,7 @@ int main(int argc, char *argv[]) {
     // built-in header
     SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
     SDL_GameControllerAddMappingsFromRW(rw, 1);
-    char *gamecontrollerdbpath = malloc(128);
+    char *gamecontrollerdbpath = omf_calloc(128, 1);
     snprintf(gamecontrollerdbpath, 128, "%s/gamecontrollerdb.txt", pm_get_local_path(RESOURCE_PATH));
     int mappings_loaded = SDL_GameControllerAddMappingsFromFile(gamecontrollerdbpath);
     if (mappings_loaded > 0) {

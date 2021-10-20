@@ -70,7 +70,6 @@ void sd_chr_free(sd_chr_file *chr);
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
  * \retval SD_FILE_PARSE_ERROR File does not contain valid data or has syntax problems.
- * \retval SD_OUT_OF_MEMORY Memory ran out. This struct should now be considered invalid and freed.
  * \retval SD_SUCCESS Success.
  *
  * \param chr CHR struct pointer.

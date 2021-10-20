@@ -55,9 +55,7 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
     hm->min_pressure = 0.25;
     hm->max_pressure = 0.75;
     hm->flags = 0;
-    size_t b_size = hashmap_size(hm) * sizeof(hashmap_node*);
-    hm->buckets = hm->alloc.cmalloc(b_size);
-    memset(hm->buckets, 0, b_size);
+    hm->buckets = omf_calloc(hashmap_size(hm), sizeof(hashmap_node*));
     hm->reserved = 0;
 }
 
@@ -80,7 +78,6 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
   */
 void hashmap_create(hashmap *hm, int n_size) {
     allocator alloc;
-    alloc.cmalloc = malloc;
     alloc.crealloc = realloc;
     alloc.cfree = free;
     hashmap_create_with_allocator(hm, n_size, alloc);
@@ -164,9 +161,7 @@ int hashmap_resize(hashmap *hm, int n_size) {
     }
 
     // Allocate and zero out a new memory blocks for the resized bucket list
-    size_t new_size = BUCKETS_SIZE(n_size) * sizeof(hashmap_node*);
-    hashmap_node **new_buckets = hm->alloc.cmalloc(new_size);
-    memset(new_buckets, 0, new_size);
+    hashmap_node **new_buckets = omf_calloc(BUCKETS_SIZE(n_size), sizeof(hashmap_node*));
 
     // Rehash
     hashmap_node *node = NULL;
@@ -306,11 +301,11 @@ void* hashmap_put(hashmap *hm,
     } else {
         // Key is not yet in the hashmap, so create a new node and set it
         // as the first entry in the buckets list.
-        hashmap_node *node = hm->alloc.cmalloc(sizeof(hashmap_node));
+        hashmap_node *node = omf_calloc(1, sizeof(hashmap_node));
         node->pair.keylen = keylen;
         node->pair.vallen = vallen;
-        node->pair.key = hm->alloc.cmalloc(keylen);
-        node->pair.val = hm->alloc.cmalloc(vallen);
+        node->pair.key = omf_calloc(1, keylen);
+        node->pair.val = omf_calloc(1, vallen);
         memcpy(node->pair.key, key, keylen);
         memcpy(node->pair.val, val, vallen);
 

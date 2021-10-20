@@ -1,5 +1,6 @@
 #include "formats/fonts.h"
 #include "formats/error.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vector.h"
 #include "video/surface.h"
@@ -53,7 +54,7 @@ int font_load(font *font, const char* filename, unsigned int size) {
     // Load into textures
     sd_rgba_image_create(&img, pixsize, pixsize);
     for(int i = 0; i < 224; i++) {
-        sur = malloc(sizeof(surface));
+        sur = omf_calloc(1, sizeof(surface));
         sd_font_decode(&sdfont, &img, i, 0xFF, 0xFF, 0xFF);
         surface_create_from_data(sur, SURFACE_TYPE_RGBA, img.w, img.h, img.data);
         vector_append(&font->surfaces, &sur);

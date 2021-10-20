@@ -17,6 +17,7 @@
 #include "resources/animation.h"
 #include "resources/pilots.h"
 #include "controller/controller.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/random.h"
 #include "utils/miscmath.h"
@@ -351,7 +352,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t f
     // ... otherwise expect it is a projectile
     af_move *move = af_get_move(h->af_data, id);
     if(move != NULL) {
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, parent->gs, pos, vel);
         object_set_userdata(obj, h);
         object_set_stl(obj, object_get_stl(parent));
@@ -398,7 +399,7 @@ void har_floor_landing_effects(object *obj) {
     for(int i = 0; i < amount; i++) {
         int variance = rand_int(20) - 10;
         vec2i coord = vec2i_create(obj->pos.x + variance + i*10, obj->pos.y);
-        object *dust = malloc(sizeof(object));
+        object *dust = omf_calloc(1, sizeof(object));
         object_create(dust, obj->gs, coord, vec2f_create(0,0));
         object_set_stl(dust, object_get_stl(obj));
         object_set_animation(dust, &bk_get_info(&game_state_get_scene(obj->gs)->bk_data, 26)->ani);
@@ -616,7 +617,7 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
         if(vely < 0.1 && vely > -0.1) vely += 0.21;
 
         // Create the object
-        object *scrap = malloc(sizeof(object));
+        object *scrap = omf_calloc(1, sizeof(object));
         int anim_no = ANIM_BURNING_OIL;
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
@@ -674,7 +675,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         if(vely < 0.1 && vely > -0.1) vely += 0.21;
 
         // Create the object
-        object *scrap = malloc(sizeof(object));
+        object *scrap = omf_calloc(1, sizeof(object));
         int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
@@ -705,7 +706,7 @@ void har_block(object *obj, vec2i hit_coord) {
         // don't make another scrape
         return;
     }
-    object *scrape = malloc(sizeof(object));
+    object *scrape = omf_calloc(1, sizeof(object));
     object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
     object_set_animation(scrape, &af_get_move(h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
     object_set_stl(scrape, object_get_stl(obj));
@@ -1397,7 +1398,7 @@ void har_tick(object *obj) {
     // removed when the object is finished.
     if(player_frame_isset(obj, "ub") && obj->age % 2 == 0) {
         sprite *nsp = sprite_copy(obj->cur_sprite);
-        object *nobj = malloc(sizeof(object));
+        object *nobj = omf_calloc(1, sizeof(object));
         object_create(nobj, obj->gs, object_get_pos(obj), vec2f_create(0,0));
         object_set_stl(nobj, object_get_stl(obj));
         object_set_animation(nobj, create_animation_from_single(nsp, obj->cur_animation->start_pos));
@@ -2096,7 +2097,7 @@ void har_copy_actions(object *new, object *old) {
 
 int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id) {
     // Create local data
-    har *local = malloc(sizeof(har));
+    har *local = omf_calloc(1, sizeof(har));
     object_set_userdata(obj, local);
     har_bootstrap(obj);
 

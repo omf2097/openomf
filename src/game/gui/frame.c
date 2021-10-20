@@ -1,8 +1,8 @@
 #include "game/gui/frame.h"
+#include "utils/allocator.h"
 
 guiframe* guiframe_create(int x, int y, int w, int h) {
-    guiframe *frame = malloc(sizeof(guiframe));
-    memset(frame, 0, sizeof(guiframe));
+    guiframe *frame = omf_calloc(1, sizeof(guiframe));
     frame->x = x;
     frame->y = y;
     frame->w = w;

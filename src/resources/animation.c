@@ -1,5 +1,6 @@
 #include "resources/animation.h"
 #include "formats/animation.h"
+#include "utils/allocator.h"
 #include <stdlib.h>
 
 void animation_create(animation *ani, void *src, int id) {
@@ -40,7 +41,7 @@ void animation_create(animation *ani, void *src, int id) {
 }
 
 animation* create_animation_from_single(sprite *sp, vec2i pos) {
-    animation *a = malloc(sizeof(animation));
+    animation *a = omf_calloc(1, sizeof(animation));
     a->start_pos = pos;
     a->id = -1;
     str_create_from_cstr(&a->animation_string, "A9999999999");

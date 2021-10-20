@@ -10,6 +10,7 @@
 #include <sys/stat.h> // mkdir
 #endif
 
+#include "utils/allocator.h"
 #include "utils/compat.h"
 #include "resources/pathmanager.h"
 #include "utils/log.h"
@@ -206,7 +207,7 @@ int pm_in_portable_mode() {
 char* pm_get_local_base_dir() {
     char *out = NULL;
     if(pm_in_portable_mode()) {
-        out = calloc(1, 1);
+        out = omf_calloc(1, 1);
         return out;
     }
 

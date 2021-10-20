@@ -73,7 +73,6 @@ int sd_move_create(sd_move *move);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * move structure, or problems are likely to appear.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either input value was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -100,7 +99,6 @@ void sd_move_free(sd_move *move);
  *
  * A NULL value for animation field will result in move->animation field getting freed.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Animation field will be NULL.
  * \retval SD_INVALID_INPUT Move struct pointer was NULL.
  * \retval SD_SUCCESS on success.
  *

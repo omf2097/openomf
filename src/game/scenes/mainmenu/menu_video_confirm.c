@@ -6,6 +6,7 @@
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "video/video.h"
+#include "utils/allocator.h"
 
 typedef struct {
     time_t video_accept_timer;
@@ -58,8 +59,7 @@ void menu_video_confirm_tick(component *c) {
 }
 
 component* menu_video_confirm_create(scene *s, settings_video *old_settings) {
-    video_menu_confirm_data *local = malloc(sizeof(video_menu_confirm_data));
-    memset(local, 0, sizeof(video_menu_confirm_data));
+    video_menu_confirm_data *local = omf_calloc(1, sizeof(video_menu_confirm_data));
     local->video_accept_secs = 20;
     local->old_video_settings = old_settings;
     time(&local->video_accept_timer);

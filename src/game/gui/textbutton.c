@@ -7,6 +7,7 @@
 #include "game/gui/widget.h"
 #include "video/video.h"
 #include "audio/sound.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/compat.h"
 
@@ -118,8 +119,7 @@ component* textbutton_create(const text_settings *tconf, const char *text, int d
     component *c = widget_create();
     component_disable(c, disabled);
 
-    textbutton *tb = malloc(sizeof(textbutton));
-    memset(tb, 0, sizeof(textbutton));
+    textbutton *tb = omf_calloc(1, sizeof(textbutton));
     tb->text = strdup(text);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->click_cb = cb;

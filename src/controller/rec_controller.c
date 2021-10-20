@@ -1,6 +1,7 @@
 #include "controller/rec_controller.h"
 #include "formats/rec.h"
 #include "formats/error.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 typedef struct wtf_t {
@@ -65,7 +66,7 @@ int rec_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
 }
 
 void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
-    wtf *data = malloc(sizeof(wtf));
+    wtf *data = omf_calloc(1, sizeof(wtf));
     data->last_action = ACT_STOP;
     data->last_tick = 0;
     hashmap_create(&data->tick_lookup, 9);

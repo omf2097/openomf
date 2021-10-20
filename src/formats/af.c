@@ -7,6 +7,7 @@
 #include "formats/error.h"
 #include "formats/move.h"
 #include "formats/af.h"
+#include "utils/allocator.h"
 
 int sd_af_create(sd_af_file *af) {
     if(af == NULL) {
@@ -46,9 +47,7 @@ int sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
     // Copy move animations
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         if(src->moves[i] != NULL) {
-            if((dst->moves[i] = malloc(sizeof(sd_move))) == NULL) {
-                return SD_OUT_OF_MEMORY;
-            }
+            dst->moves[i] = omf_calloc(1, sizeof(sd_move));
             if((ret = sd_move_copy(dst->moves[i], src->moves[i])) != SD_SUCCESS) {
                 return ret;
             }
@@ -70,9 +69,7 @@ int sd_af_set_move(sd_af_file *af, int index, const sd_move *move) {
     if(move == NULL) {
         return SD_SUCCESS;
     }
-    if((af->moves[index] = malloc(sizeof(sd_move))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    af->moves[index] = omf_calloc(1, sizeof(sd_move));
     if((ret = sd_move_copy(af->moves[index], move)) != SD_SUCCESS) {
         return ret;
     }
@@ -137,10 +134,7 @@ int sd_af_load(sd_af_file *af, const char *filename) {
         }
 
         // Read move
-        if((af->moves[moveno] = malloc(sizeof(sd_move))) == NULL) {
-            ret = SD_OUT_OF_MEMORY;
-            goto cleanup;
-        }
+        af->moves[moveno] = omf_calloc(1, sizeof(sd_move));
         if((ret = sd_move_create(af->moves[moveno])) != SD_SUCCESS) {
             goto cleanup;
         }

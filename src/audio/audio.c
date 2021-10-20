@@ -3,6 +3,7 @@
 #include "audio/audio.h"
 #include "audio/sink.h"
 #include "audio/sinks/openal_sink.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 audio_sink *_global_sink = NULL;
@@ -74,7 +75,7 @@ int audio_init(const char* sink_name) {
     INFO("Using audio sink '%s'.", si.name);
 
     // Init sink
-    _global_sink = malloc(sizeof(audio_sink));
+    _global_sink = omf_calloc(1, sizeof(audio_sink));
     sink_init(_global_sink);
     if(si.sink_init_fn(_global_sink) != 0) {
         free(_global_sink);

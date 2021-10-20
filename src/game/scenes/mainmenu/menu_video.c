@@ -5,6 +5,7 @@
 
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
+#include "utils/allocator.h"
 #include "utils/compat.h"
 #include "video/video.h"
 #include "plugins/plugins.h"
@@ -169,8 +170,7 @@ void menu_video_submenu_done(component *c, component *submenu) {
 
 component* menu_video_create(scene *s) {
     // Menu userdata
-    video_menu_data *local = malloc(sizeof(video_menu_data));
-    memset(local, 0, sizeof(video_menu_data));
+    video_menu_data *local = omf_calloc(1, sizeof(video_menu_data));
     local->old_video_settings = settings_get()->video;
 
     // Load settings etc.

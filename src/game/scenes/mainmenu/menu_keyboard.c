@@ -6,6 +6,7 @@
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "controller/keyboard.h"
+#include "utils/allocator.h"
 #include "utils/compat.h"
 #include "utils/log.h"
 
@@ -107,8 +108,7 @@ void menu_keyboard_keypress_done(component *c, component *submenu) {
 }
 
 guiframe* menu_keyboard_create(scene *s, int selected_player) {
-    keyboard_menu_local *local = malloc(sizeof(keyboard_menu_local));
-    memset(local, 0, sizeof(keyboard_menu_local));
+    keyboard_menu_local *local = omf_calloc(1, sizeof(keyboard_menu_local));
     local->selected_player = selected_player;
 
     // Text config

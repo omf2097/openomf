@@ -112,7 +112,6 @@ int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename);
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
  * \retval SD_FILE_PARSE_ERROR File does not contain valid data or has syntax problems.
- * \retval SD_OUT_OF_MEMORY Memory ran out. This struct should now be considered invalid and freed.
  * \retval SD_SUCCESS Success.
  *
  * \param sf Sounds struct pointer.

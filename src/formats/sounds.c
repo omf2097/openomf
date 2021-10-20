@@ -6,6 +6,7 @@
 #include "formats/internal/writer.h"
 #include "formats/error.h"
 #include "formats/sounds.h"
+#include "utils/allocator.h"
 
 int sd_sounds_create(sd_sound_file *sf) {
     if(sf == NULL) {
@@ -45,7 +46,7 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
         sf->sounds[i].len = sd_read_uword(r);
         if(sf->sounds[i].len > 0) {
             sf->sounds[i].unknown = sd_read_ubyte(r);
-            sf->sounds[i].data = malloc(sf->sounds[i].len);
+            sf->sounds[i].data = omf_calloc(sf->sounds[i].len, 1);
             sd_read_buf(r, sf->sounds[i].data, sf->sounds[i].len);
         }
     }
@@ -147,7 +148,7 @@ int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename) {
 
     // Allocate
     sf->sounds[num].len = read_size;
-    sf->sounds[num].data = malloc(read_size);
+    sf->sounds[num].data = omf_calloc(read_size, 1);
 
     // Read data
     for(size_t i = 0; i < read_size; i++) {

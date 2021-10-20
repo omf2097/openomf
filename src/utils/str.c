@@ -1,3 +1,4 @@
+#include "utils/allocator.h"
 #include "utils/str.h"
 #include "utils/log.h"
 
@@ -9,19 +10,19 @@
 
 void str_create(str *string) {
     string->len = 0;
-    string->data = calloc(1, 1);
+    string->data = omf_calloc(1, 1);
 }
 
 void str_create_from_cstr(str *string, const char *cstr) {
     string->len = strlen(cstr);
-    string->data = malloc(string->len + 1);
+    string->data = omf_calloc(string->len + 1, 1);
     memcpy(string->data, cstr, string->len);
     string->data[string->len] = 0;
 }
 
 void str_create_from_data(str *string, const char *data, size_t len) {
     string->len = len;
-    string->data = malloc(len + 1);
+    string->data = omf_calloc(len + 1, 1);
     memcpy(string->data, data, string->len);
     string->data[string->len] = 0;
 }
@@ -199,7 +200,7 @@ const char* str_c(const str *string) {
 }
 
 const char* str_c_alloc(const str *src) {
-    char *ptr = malloc(src->len + 1);
+    char *ptr = omf_calloc(src->len + 1, 1);
     memcpy(ptr, src->data, src->len + 1);
     ptr[src->len] = 0;
     return ptr;

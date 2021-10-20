@@ -2,6 +2,7 @@
 #include "formats/error.h"
 #include "resources/languages.h"
 #include "resources/pathmanager.h"
+#include "utils/allocator.h"
 #include "utils/array.h"
 #include "utils/log.h"
 
@@ -13,7 +14,7 @@ int lang_init() {
     const char *filename = pm_get_resource_path(DAT_ENGLISH);
 
     // Load up language file
-    language = malloc(sizeof(sd_language));
+    language = omf_calloc(1, sizeof(sd_language));
     if(sd_language_create(language) != SD_SUCCESS) {
         goto error_0;
     }

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <xmp.h>
 #include "audio/sources/xmp_source.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 typedef struct {
@@ -50,7 +51,7 @@ void xmp_source_close(audio_source *src) {
 }
 
 int xmp_source_init(audio_source *src, const char* file, int channels, int freq, int resampler) {
-    xmp_source *local = malloc(sizeof(xmp_source));
+    xmp_source *local = omf_calloc(1, sizeof(xmp_source));
 
     // Create a libxmp context
     local->ctx = xmp_create_context();

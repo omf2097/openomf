@@ -6,6 +6,7 @@
 #include "formats/internal/writer.h"
 #include "formats/error.h"
 #include "formats/pic.h"
+#include "utils/allocator.h"
 
 int sd_pic_create(sd_pic_file *pic) {
     if(pic == NULL) {
@@ -69,7 +70,7 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         sd_reader_set(r, offset_list[i]);
 
         // Reserve mem
-        pic->photos[i] = malloc(sizeof(sd_pic_photo));
+        pic->photos[i] = omf_calloc(1, sizeof(sd_pic_photo));
 
         // Read start bytes
         pic->photos[i]->is_player = sd_read_ubyte(r);
@@ -84,7 +85,7 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         pic->photos[i]->unk_flag = sd_read_ubyte(r);
 
         // Sprite
-        pic->photos[i]->sprite = malloc(sizeof(sd_sprite));
+        pic->photos[i]->sprite = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(pic->photos[i]->sprite);
         if((ret = sd_sprite_load(r, pic->photos[i]->sprite)) != SD_SUCCESS) {
             goto error_1;

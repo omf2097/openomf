@@ -7,6 +7,7 @@
 #endif // __linux__
 #include <dumb.h>
 #include "audio/sources/dumb_source.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 typedef struct dumb_source_t {
@@ -83,7 +84,7 @@ void dumb_source_close(audio_source *src) {
 }
 
 int dumb_source_init(audio_source *src, const char* file, int channels, int freq, int resampler) {
-    dumb_source *local = malloc(sizeof(dumb_source));
+    dumb_source *local = omf_calloc(1, sizeof(dumb_source));
 
     // Load file and initialize renderer
     char *ext = strrchr(file, '.') + 1;

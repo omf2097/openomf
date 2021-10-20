@@ -6,6 +6,7 @@
 #include "game/gui/textslider.h"
 #include "game/gui/widget.h"
 #include "audio/sound.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/compat.h"
 #include "utils/str.h"
@@ -113,8 +114,7 @@ static void textslider_free(component *c) {
 component* textslider_create(const text_settings *tconf, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata) {
     component *c = widget_create();
 
-    textslider *tb = malloc(sizeof(textslider));
-    memset(tb, 0, sizeof(textslider));
+    textslider *tb = omf_calloc(1, sizeof(textslider));
     tb->text = strdup(text);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->ticks = 0;

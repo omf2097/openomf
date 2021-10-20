@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "plugins/plugins.h"
 #include "resources/pathmanager.h"
+#include "utils/allocator.h"
 #include "utils/scandir.h"
 #include "utils/list.h"
 #include "utils/log.h"
@@ -50,7 +51,7 @@ void plugins_init() {
 
             // Open the plugin file
             int psize = strlen(pm_get_local_path(PLUGIN_PATH)) + strlen(plugin_file) + 1;
-            plugin_path = malloc(psize);
+            plugin_path = omf_calloc(psize, 1);
             snprintf(plugin_path, psize, "%s%s", pm_get_local_path(PLUGIN_PATH), plugin_file);
             handle = SDL_LoadObject(plugin_path);
             free(plugin_path);

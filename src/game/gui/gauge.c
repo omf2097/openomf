@@ -3,6 +3,7 @@
 #include "video/surface.h"
 #include "video/video.h"
 #include "utils/miscmath.h"
+#include "utils/allocator.h"
 
 /* GIMP RGBA C-Source image dump (gauge_small_off.c) */
 static const struct {
@@ -138,14 +139,13 @@ component* gauge_create(gauge_type type, int size, int lit) {
     c->supports_focus = 0;
 
     // Local information
-    gauge *local = malloc(sizeof(gauge));
-    memset(local, 0, sizeof(gauge));
+    gauge *local = omf_calloc(1, sizeof(gauge));
     local->size = size;
     local->type = type;
     local->lit = clamp(lit, 0, size);
 
     // Initialize image
-    local->img = malloc(sizeof(surface));
+    local->img = omf_calloc(1, sizeof(surface));
     int pix = ((type == GAUGE_BIG) ? 8 : 3) * size;
     surface_create(local->img, SURFACE_TYPE_RGBA, pix, 3);
     component_set_size_hints(c, pix, 3);

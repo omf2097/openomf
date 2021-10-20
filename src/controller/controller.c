@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "controller/controller.h"
 
@@ -22,7 +23,7 @@ void controller_init(controller *ctrl) {
 }
 
 void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type)) {
-    hook_function *h = calloc(1, sizeof(hook_function));
+    hook_function *h = omf_calloc(1, sizeof(hook_function));
     h->fp = fp;
     h->source = source;
     list_append(&ctrl->hooks, &h, sizeof(hook_function*));
@@ -64,7 +65,7 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
         ((*p)->fp)((*p)->source, action);
     }
 
-    new = calloc(1, sizeof(ctrl_event));
+    new = omf_calloc(1, sizeof(ctrl_event));
     new->type = EVENT_TYPE_ACTION;
     new->event_data.action = action;
 
@@ -80,9 +81,9 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
 void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev) {
     // a sync event obsoletes all previous events
     controller_free_chain(*ev);
-    *ev = calloc(1, sizeof(ctrl_event));
+    *ev = omf_calloc(1, sizeof(ctrl_event));
     (*ev)->type = EVENT_TYPE_SYNC;
-    (*ev)->event_data.ser = serial_malloc_copy(ser);
+    (*ev)->event_data.ser = serial_calloc_copy(ser);
     (*ev)->next = NULL;
     
 }
@@ -90,7 +91,7 @@ void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev) {
 void controller_close(controller *ctrl, ctrl_event **ev) {
     // a close event obsoletes all previous events
     controller_free_chain(*ev);
-    *ev = calloc(1, sizeof(ctrl_event));
+    *ev = omf_calloc(1, sizeof(ctrl_event));
     (*ev)->type = EVENT_TYPE_CLOSE;
     (*ev)->next = NULL;
 }

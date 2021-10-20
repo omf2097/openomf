@@ -58,7 +58,6 @@ int sd_sprite_create(sd_sprite *sprite);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * sprite structure, or problems are likely to appear.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either input value was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -81,7 +80,6 @@ void sd_sprite_free(sd_sprite *sprite);
  * Encodes RGBA image data to sprite image data. Color values will be matched to exact values in
  * the palette. If no matching value is found for the pixel, the pixel color will be black.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Dst, src or palette was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -104,7 +102,6 @@ int sd_sprite_rgba_encode(
  * already created by using sd_rgba_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Dst, src or palette was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -127,7 +124,6 @@ int sd_sprite_rgba_decode(
  * already created by using sd_vga_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Dst or src was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -142,7 +138,6 @@ int sd_sprite_vga_decode(
  *
  * Encodes a VGA image to sprite format
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Dst or src was NULL.
  * \retval SD_SUCCESS Success.
  *

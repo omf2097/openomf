@@ -3,6 +3,7 @@
 #include "game/protos/object_specializer.h"
 #include "game/game_state.h"
 #include "game/game_player.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "game/objects/arena_constraints.h"
 
@@ -125,7 +126,7 @@ void projectile_bootstrap(object *obj) {
 
 int projectile_create(object *obj) {
     // strore the HAR in local userdata instead
-    projectile_local *local = malloc(sizeof(projectile_local));
+    projectile_local *local = omf_calloc(1, sizeof(projectile_local));
     local->owner = obj;
     local->wall_bounce = 0;
     local->ground_freeze = 0;

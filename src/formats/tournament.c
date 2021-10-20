@@ -9,6 +9,7 @@
 #include "formats/internal/memwriter.h"
 #include "formats/error.h"
 #include "formats/tournament.h"
+#include "utils/allocator.h"
 
 int sd_tournament_create(sd_tournament_file *trn) {
     if(trn == NULL) {
@@ -111,7 +112,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Read enemy data
     for(unsigned i = 0; i < trn->enemy_count; i++) {
-        trn->enemies[i] = malloc(sizeof(sd_pilot));
+        trn->enemies[i] = omf_calloc(1, sizeof(sd_pilot));
 
         // Find data length
         sd_reader_set(r, offset_list[i]);
@@ -131,7 +132,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Allocate locales
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        trn->locales[i] = malloc(sizeof(sd_tournament_locale));
+        trn->locales[i] = omf_calloc(1, sizeof(sd_tournament_locale));
         trn->locales[i]->logo = NULL;
         trn->locales[i]->description = NULL;
         trn->locales[i]->title = NULL;
@@ -144,7 +145,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Load logos to locales
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        trn->locales[i]->logo = malloc(sizeof(sd_sprite));
+        trn->locales[i]->logo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(trn->locales[i]->logo);
         if((ret = sd_sprite_load(r, trn->locales[i]->logo)) != SD_SUCCESS) {
             goto error_2;

@@ -77,7 +77,6 @@ int sd_animation_create(sd_animation* animation);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * animation structure, or problems are likely to appear.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either input value was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -249,7 +248,6 @@ int sd_animation_get_sprite_count(sd_animation *animation);
  * Any old data at given index will be automatically freed.
  *
  * \retval SD_INVALID_INPUT Invalid sprite index or sprite was NULL.
- * \retval SD_OUT_OF_MEMORY Memory ran out. Data at the given index will be NULL.
  * \retval SD_SUCCESS Success.
  *
  * \param animation Animation struct to modify
@@ -264,7 +262,6 @@ int sd_animation_set_sprite(sd_animation *animation, int num, const sd_sprite *s
  * Sprite_count variable will be increased by 1.
  *
  * \retval SD_INVALID_INPUT Coordinate list is already full
- * \retval SD_OUT_OF_MEMORY Memory ran out. Animation will not be affected.
  * \retval SD_SUCCESS Success.
  *
  * \param animation Animation struct to modify

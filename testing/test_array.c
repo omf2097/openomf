@@ -3,6 +3,7 @@
 #include <utils/array.h>
 #include <utils/iterator.h>
 #include <stdlib.h>
+#include "utils/allocator.h"
 
 array test_array;
 void *test_ptr;
@@ -22,7 +23,7 @@ void test_array_free(void) {
 }
 
 void test_array_set(void) {
-    void *test_data = malloc(TEST_STR_SIZE);
+    void *test_data = omf_calloc(TEST_STR_SIZE, 1);
     memset(test_data, 1, TEST_STR_SIZE);
     test_ptr = test_data;
     array_set(&test_array, 0, test_data);

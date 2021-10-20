@@ -7,6 +7,7 @@
 #include "game/gui/sizer.h"
 #include "video/video.h"
 #include "audio/sound.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/compat.h"
 #include "utils/miscmath.h"
@@ -32,8 +33,7 @@ component* spriteimage_create(surface *img) {
     c->supports_disable = 1;
     c->supports_select = 0;
 
-    spriteimage *sb = malloc(sizeof(spriteimage));
-    memset(sb, 0, sizeof(spriteimage));
+    spriteimage *sb = omf_calloc(1, sizeof(spriteimage));
     sb->img = img;
     widget_set_obj(c, sb);
 

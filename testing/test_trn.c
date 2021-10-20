@@ -4,6 +4,7 @@
 #include <CUnit/Basic.h>
 #include "formats/tournament.h"
 #include "formats/error.h"
+#include "utils/allocator.h"
 
 sd_tournament_file trn;
 
@@ -31,7 +32,7 @@ void test_sd_trn_roundtripping(void) {
 
 	memset(&n_trn.pal, 64, sizeof(n_trn.pal));
 
-	n_trn.enemies[0] = calloc(1, sizeof(sd_pilot));
+	n_trn.enemies[0] = omf_calloc(1, sizeof(sd_pilot));
 	n_trn.enemy_count = 1;
 	snprintf(n_trn.enemies[0]->name, 18, "test_pilot");
 

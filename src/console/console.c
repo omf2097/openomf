@@ -4,6 +4,7 @@
 #include "game/gui/menu_background.h"
 #include "game/utils/settings.h"
 #include "video/video.h"
+#include "utils/allocator.h"
 
 #define HISTORY_MAX 100
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
@@ -193,7 +194,7 @@ void console_output_render() {
 
 int console_init() {
     if(con != NULL) return 1;
-    con = malloc(sizeof(console));
+    con = omf_calloc(1, sizeof(console));
     con->isopen = 0;
     con->ownsinput = 0;
     con->ypos = 0;

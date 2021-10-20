@@ -6,6 +6,7 @@
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
 #include "audio/sources/vorbis_source.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 typedef struct vorbis_source_t {
@@ -72,7 +73,7 @@ int vorbis_source_init(audio_source *src, const char* file) {
     int ret;
 
     // Init local struct
-    local = malloc(sizeof(vorbis_source));
+    local = omf_calloc(1, sizeof(vorbis_source));
 
     // Try to open up the audio file
     ret = ov_fopen(file, &local->src_file);

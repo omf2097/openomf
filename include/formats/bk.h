@@ -57,7 +57,6 @@ int sd_bk_create(sd_bk_file *bk);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * BK file structure, or problems are likely to appear.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. The destination struct should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either of the input pointers was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -75,7 +74,6 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src);
  *
  * A NULL value for image data means that background will be removed.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Background was not set.
  * \retval SD_INVALID_INPUT BK struct was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -105,7 +103,6 @@ sd_vga_image* sd_bk_get_background(const sd_bk_file *bk);
  *
  * Animation input value of NULL will mean that data at index will be freed!
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. This struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT index value was invalid or bk struct was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -137,7 +134,6 @@ sd_bk_anim* sd_bk_get_anim(const sd_bk_file *bk, int index);
  * Palette data will be copied. Make sure to free your local copy yourself.
  * Old data in index will be freed automatically.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Palette data was not copied.
  * \retval SD_INVALID_INPUT Index was invalid or some input pointer was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -154,7 +150,6 @@ int sd_bk_set_palette(sd_bk_file *bk, int index, const sd_palette *palette);
  *
  * Palette data will be copied. Make sure to free your local copy yourself.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Palette data was not copied.
  * \retval SD_INVALID_INPUT Palette list is already full.
  * \retval SD_SUCCESS Success.
  *
@@ -199,7 +194,6 @@ sd_palette* sd_bk_get_palette(const sd_bk_file *bk, int index);
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
  * \retval SD_FILE_PARSE_ERROR File does not contain valid data or has syntax problems.
- * \retval SD_OUT_OF_MEMORY Memory ran out. This struct should now be considered invalid and freed.
  * \retval SD_SUCCESS Success.
  *
  * \param bk BK struct pointer.

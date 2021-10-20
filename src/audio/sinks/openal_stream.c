@@ -11,6 +11,7 @@
 
 #include <stdlib.h>
 #include "audio/sinks/openal_stream.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 #define AUDIO_BUFFER_COUNT 2
@@ -136,7 +137,7 @@ static int get_al_format(int bytes, int channels) {
 }
 
 int openal_stream_init(audio_stream *stream, audio_sink *sink) {
-    openal_stream *local = malloc(sizeof(openal_stream));
+    openal_stream *local = omf_calloc(1, sizeof(openal_stream));
 
     // Dump old errors
     while(alGetError() != AL_NO_ERROR);

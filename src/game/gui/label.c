@@ -1,5 +1,6 @@
 #include "game/gui/label.h"
 #include "game/gui/widget.h"
+#include "utils/allocator.h"
 #include "utils/compat.h"
 
 typedef struct {
@@ -38,8 +39,7 @@ component* label_create(const text_settings *tconf, const char *text) {
     c->supports_select = 0;
     c->supports_focus = 0;
 
-    label *local = malloc(sizeof(label));
-    memset(local, 0, sizeof(label));
+    label *local = omf_calloc(1, sizeof(label));
     memcpy(&local->tconf, tconf, sizeof(text_settings));
     local->text = strdup(text);
     

@@ -4,6 +4,7 @@
 #include "game/gui/menu_background.h"
 #include "game/gui/sizer.h"
 #include "audio/sound.h"
+#include "utils/allocator.h"
 #include "utils/vector.h"
 #include "utils/log.h"
 
@@ -211,7 +212,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
 
     // Set the background now that we know the width and height
     if(m->bg == NULL) {
-        m->bg = malloc(sizeof(surface));
+        m->bg = omf_calloc(1, sizeof(surface));
         menu_background_create(m->bg, w, h);
     }
 
@@ -281,8 +282,7 @@ static component* menu_find(component *c, int id) {
 component* menu_create(int obj_h) {
     component *c = sizer_create();
 
-    menu* m = malloc(sizeof(menu));
-    memset(m, 0, sizeof(menu));
+    menu* m = omf_calloc(1, sizeof(menu));
     m->margin_top = 8;
     m->obj_h = obj_h;
     sizer_set_obj(c, m);

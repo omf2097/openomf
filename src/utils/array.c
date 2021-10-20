@@ -1,3 +1,4 @@
+#include "utils/allocator.h"
 #include "utils/array.h"
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +15,7 @@ void array_nullify(void **ptr, unsigned int len) {
 void array_create(array *array) {
     array->allocated_size = ARRAY_START_SIZE;
     array->filled = 0;
-    array->data = malloc(PTR_SIZE(array->allocated_size));
+    array->data = omf_calloc(1, PTR_SIZE(array->allocated_size));
     array_nullify(array->data, array->allocated_size);
 }
 

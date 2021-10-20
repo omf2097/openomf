@@ -1,9 +1,10 @@
 #include "formats/internal/array.h"
+#include "utils/allocator.h"
 #include <stdlib.h>
 #include <string.h>
 
 void sd_array_create(void **mem, size_t item_size, int num_size) {
-    *mem = calloc(num_size, item_size);
+    *mem = omf_calloc(num_size, item_size);
 }
 
 void sd_array_free(void **mem) {

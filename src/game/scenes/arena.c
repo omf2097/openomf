@@ -36,6 +36,7 @@
 #include "controller/controller.h"
 #include "controller/net_controller.h"
 #include "resources/ids.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/random.h"
 
@@ -122,7 +123,7 @@ void scene_fight_anim_start(void *userdata) {
     game_state *gs = userdata;
     scene *scene = game_state_get_scene(gs);
     animation *fight_ani = &bk_get_info(&scene->bk_data, 10)->ani;
-    object *fight = malloc(sizeof(object));
+    object *fight = omf_calloc(1, sizeof(object));
     object_create(fight, gs, fight_ani->start_pos, vec2f_create(0,0));
     object_set_stl(fight, bk_get_stl(&scene->bk_data));
     object_set_animation(fight, fight_ani);
@@ -151,7 +152,7 @@ void scene_youwin_anim_start(void *userdata) {
     game_state *gs = userdata;
     scene *scene = game_state_get_scene(gs);
     animation *youwin_ani = &bk_get_info(&scene->bk_data, 9)->ani;
-    object *youwin = malloc(sizeof(object));
+    object *youwin = omf_calloc(1, sizeof(object));
     object_create(youwin, gs, youwin_ani->start_pos, vec2f_create(0,0));
     object_set_stl(youwin, bk_get_stl(&scene->bk_data));
     object_set_animation(youwin, youwin_ani);
@@ -173,7 +174,7 @@ void scene_youlose_anim_start(void *userdata) {
     game_state *gs = userdata;
     scene *scene = game_state_get_scene(gs);
     animation *youlose_ani = &bk_get_info(&scene->bk_data, 8)->ani;
-    object *youlose = malloc(sizeof(object));
+    object *youlose = omf_calloc(1, sizeof(object));
     object_create(youlose, gs, youlose_ani->start_pos, vec2f_create(0,0));
     object_set_stl(youlose, bk_get_stl(&scene->bk_data));
     object_set_animation(youlose, youlose_ani);
@@ -293,7 +294,7 @@ void arena_reset(scene *sc) {
     sc->bk_data.sound_translation_table[3] = 23 + local->round; // NUMBER
     // ROUND animation
     animation *round_ani = &bk_get_info(&sc->bk_data, 6)->ani;
-    object *round = malloc(sizeof(object));
+    object *round = omf_calloc(1, sizeof(object));
     object_create(round, sc->gs, round_ani->start_pos, vec2f_create(0,0));
     object_set_stl(round, sc->bk_data.sound_translation_table);
     object_set_animation(round, round_ani);
@@ -302,7 +303,7 @@ void arena_reset(scene *sc) {
 
     // Round number
     animation *number_ani = &bk_get_info(&sc->bk_data, 7)->ani;
-    object *number = malloc(sizeof(object));
+    object *number = omf_calloc(1, sizeof(object));
     object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0,0));
     object_set_stl(number, sc->bk_data.sound_translation_table);
     object_set_animation(number, number_ani);
@@ -416,7 +417,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
 
         // Spawn wall animation
         bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
         object_set_stl(obj, scene->bk_data.sound_translation_table);
         object_set_animation(obj, &info->ani);
@@ -425,7 +426,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             // spawn the electricity on top of the HAR
             // TODO this doesn't track the har's position well...
             info = bk_get_info(&scene->bk_data, 22);
-            object *obj2 = malloc(sizeof(object));
+            object *obj2 = omf_calloc(1, sizeof(object));
             object_create(obj2, scene->gs, vec2i_create(o_har->pos.x, o_har->pos.y), vec2f_create(0, 0));
             object_set_stl(obj2, scene->bk_data.sound_translation_table);
             object_set_animation(obj2, &info->ani);
@@ -450,7 +451,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
 
         // desert always shows the 'hit' animation when you touch the wall
         bk_info *info = bk_get_info(&scene->bk_data, 20+wall);
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
         object_set_stl(obj, scene->bk_data.sound_translation_table);
         object_set_animation(obj, &info->ani);
@@ -478,7 +479,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             DEBUG("XXX anim = %d, variance = %d", anim_no, variance);
             int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i*25;
             vec2i coord = vec2i_create(o_har->pos.x, pos_y);
-            object *dust = malloc(sizeof(object));
+            object *dust = omf_calloc(1, sizeof(object));
             object_create(dust, scene->gs, coord, vec2f_create(0,0));
             object_set_stl(dust, scene->bk_data.sound_translation_table);
             object_set_animation(dust, &bk_get_info(&scene->bk_data, anim_no)->ani);
@@ -869,7 +870,7 @@ void arena_spawn_hazard(scene *scene) {
         if(info->probability > 1) {
             if (rand_int(info->probability) == 1) {
                 // TODO don't spawn it if we already have this animation running
-                object *obj = malloc(sizeof(object));
+                object *obj = omf_calloc(1, sizeof(object));
                 object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
                 object_set_stl(obj, scene->bk_data.sound_translation_table);
                 object_set_animation(obj, &info->ani);
@@ -992,7 +993,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     if(vely < 0.1 && vely > -0.1) vely += 0.21;
 
                     // Create the object
-                    object *scrap = malloc(sizeof(object));
+                    object *scrap = omf_calloc(1, sizeof(object));
                     int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
                     object_create(scrap, gs, pos, vec2f_create(velx, vely));
                     object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
@@ -1180,7 +1181,7 @@ int arena_create(scene *scene) {
     }
 
     // Initialize local struct
-    local = malloc(sizeof(arena_local));
+    local = omf_calloc(1, sizeof(arena_local));
     scene_set_userdata(scene, local);
 
     // Set correct state
@@ -1218,7 +1219,7 @@ int arena_create(scene *scene) {
     for(int i = 0; i < 2; i++) {
         // Declare some vars
         game_player *player = game_state_get_player(scene->gs, i);
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
 
         // load the player's colors into the palette
         palette *base_pal = video_get_base_palette();
@@ -1250,7 +1251,7 @@ int arena_create(scene *scene) {
         // Create round tokens
         for (int j = 0; j < 4; j++) {
             if (j < ceil(local->rounds / 2.0f)) {
-                local->player_rounds[i][j] = malloc(sizeof(object));
+                local->player_rounds[i][j] = omf_calloc(1, sizeof(object));
                 int xoff = 110 + 9 * j + 3 + j;
                 if (i == 1) {
                     xoff = 210 - 9 * j - 3 - j;
@@ -1365,7 +1366,7 @@ int arena_create(scene *scene) {
     if (local->rounds == 1) {
         // Start READY animation
         animation *ready_ani = &bk_get_info(&scene->bk_data, 11)->ani;
-        object *ready = malloc(sizeof(object));
+        object *ready = omf_calloc(1, sizeof(object));
         object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0,0));
         object_set_stl(ready, scene->bk_data.sound_translation_table);
         object_set_animation(ready, ready_ani);
@@ -1374,7 +1375,7 @@ int arena_create(scene *scene) {
     } else {
         // ROUND
         animation *round_ani = &bk_get_info(&scene->bk_data, 6)->ani;
-        object *round = malloc(sizeof(object));
+        object *round = omf_calloc(1, sizeof(object));
         object_create(round, scene->gs, round_ani->start_pos, vec2f_create(0,0));
         object_set_stl(round, scene->bk_data.sound_translation_table);
         object_set_animation(round, round_ani);
@@ -1383,7 +1384,7 @@ int arena_create(scene *scene) {
 
         // Number
         animation *number_ani = &bk_get_info(&scene->bk_data, 7)->ani;
-        object *number = malloc(sizeof(object));
+        object *number = omf_calloc(1, sizeof(object));
         object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0,0));
         object_set_stl(number, scene->bk_data.sound_translation_table);
         object_set_animation(number, number_ani);
@@ -1405,7 +1406,7 @@ int arena_create(scene *scene) {
 
     // initalize recording, if enabled
     if (scene->gs->init_flags->record == 1) {
-        local->rec = malloc(sizeof(sd_rec_file));
+        local->rec = omf_calloc(1, sizeof(sd_rec_file));
         sd_rec_create(local->rec);
         for(int i = 0; i < 2; i++) {
             // Declare some vars

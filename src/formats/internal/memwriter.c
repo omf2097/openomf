@@ -6,6 +6,7 @@
 
 #include "formats/internal/writer.h"
 #include "formats/internal/memwriter.h"
+#include "utils/allocator.h"
 
 #define GROW 64
 
@@ -17,9 +18,8 @@
     }
 
 sd_mwriter* sd_mwriter_open() {
-    sd_mwriter *mwriter = malloc(sizeof(sd_mwriter));
-    memset(mwriter, 0, sizeof(sd_mwriter));
-    mwriter->buf = malloc(GROW);
+    sd_mwriter *mwriter = omf_calloc(1, sizeof(sd_mwriter));
+    mwriter->buf = omf_calloc(GROW, 1);
     mwriter->real_len = GROW;
     return mwriter;
 }

@@ -6,7 +6,6 @@ void list_create(list *list) {
     list->first = NULL;
     list->last = NULL;
     list->size = 0;
-    list->alloc.cmalloc = malloc;
     list->alloc.crealloc = realloc;
     list->alloc.cfree = free;
 }
@@ -32,10 +31,10 @@ void list_free(list *list) {
 }
 
 void list_prepend(list *list, const void *ptr, size_t size) {
-    list_node *node = (list_node*)list->alloc.cmalloc(sizeof(list_node));
+    list_node *node = (list_node*)omf_calloc(1, sizeof(list_node));
     node->next = list->first;
     node->prev = NULL;
-    node->data = list->alloc.cmalloc(size);
+    node->data = omf_calloc(size, 1);
     memcpy(node->data, (const char*)ptr, size);
     if(list->first) { list->first->prev = node; }
     if(!list->last) { list->last = node; }
@@ -44,10 +43,10 @@ void list_prepend(list *list, const void *ptr, size_t size) {
 }
 
 void list_append(list *list, const void *ptr, size_t size) {
-    list_node *node = (list_node*)list->alloc.cmalloc(sizeof(list_node));
+    list_node *node = (list_node*)omf_calloc(1, sizeof(list_node));
     node->next = NULL;
     node->prev = list->last;
-    node->data = list->alloc.cmalloc(size);
+    node->data = omf_calloc(size, 1);
     memcpy(node->data, (const char*)ptr, size);
     if(list->last) { list->last->next = node; }
     if(!list->first) { list->first = node; }

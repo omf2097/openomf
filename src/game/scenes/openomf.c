@@ -5,6 +5,7 @@
 #include "game/game_state.h"
 #include "video/video.h"
 #include "resources/ids.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 typedef struct openomf_local_t {
@@ -46,7 +47,7 @@ void openomf_free(scene *scene) {
 }
 
 int openomf_create(scene *scene) {
-    openomf_local *local = malloc(sizeof(openomf_local));
+    openomf_local *local = omf_calloc(1, sizeof(openomf_local));
     local->ticks = 0;
 
     // Callbacks

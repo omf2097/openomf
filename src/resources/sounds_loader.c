@@ -4,6 +4,7 @@
 #include "resources/sounds_loader.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 sd_sound_file *sound_data = NULL;
@@ -13,7 +14,7 @@ int sounds_loader_init() {
     const char *filename = pm_get_resource_path(DAT_SOUNDS);
 
     // Load sounds
-    sound_data = malloc(sizeof(sd_sound_file));
+    sound_data = omf_calloc(1, sizeof(sd_sound_file));
     if(sd_sounds_create(sound_data) != SD_SUCCESS) {
         goto error_0;
     }
