@@ -155,7 +155,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
 
     // Okay, not reduce the allocated memory to match what we actually need
     // Realloc should keep our old data intact
-    rec->moves = realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
+    rec->moves = omf_realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
 
     // Close & return
     sd_reader_close(r);
@@ -272,11 +272,7 @@ int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
 
     // Resize to save memory
     rec->move_count--;
-    rec->moves = realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
-
-    if(rec->moves == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    rec->moves = omf_realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
     return SD_SUCCESS;
 }
 
@@ -289,10 +285,7 @@ int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_mov
     }
 
     // Resize
-    rec->moves = realloc(rec->moves, (rec->move_count+1) * sizeof(sd_rec_move));
-    if(rec->moves == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    rec->moves = omf_realloc(rec->moves, (rec->move_count+1) * sizeof(sd_rec_move));
 
     // Only move if we are inserting, not appending
     // when number == move_count-1, we are pushing the last entry forwards by one

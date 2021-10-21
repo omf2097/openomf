@@ -18,7 +18,6 @@ void vector_init(vector *vec) {
 void vector_create(vector *vec, unsigned int block_size) {
     vec->block_size = block_size;
     vec->alloc.cfree = free;
-    vec->alloc.crealloc = realloc;
     vector_init(vec);
 }
 
@@ -48,7 +47,7 @@ void* vector_get(const vector *vec, unsigned int key) {
 }
 
 int vector_grow(vector *vec) {
-    void *ndata = vec->alloc.crealloc(vec->data, vec->reserved * vec->block_size * vec->inc_factor);
+    void *ndata = omf_realloc(vec->data, vec->reserved * vec->block_size * vec->inc_factor);
     if(ndata == NULL) return 1;
     vec->data = ndata;
     vec->reserved = vec->reserved * vec->inc_factor;

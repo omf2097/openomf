@@ -61,7 +61,7 @@ serial* serial_calloc_copy(const serial *src) {
 void serial_write(serial *s, const char *buf, size_t len) {
     if(s->len < (s->wpos + len)) {
         size_t new_len = s->len + len + SERIAL_BUF_RESIZE_INC;
-        s->data = realloc(s->data, new_len);
+        s->data = omf_realloc(s->data, new_len);
         s->len = new_len;
     }
 

@@ -13,7 +13,7 @@
 #define CHECK_SIZE \
     if(writer->real_len < writer->data_len + len) { \
         size_t newsize = writer->real_len + len + GROW; \
-        writer->buf = realloc(writer->buf, newsize); \
+        writer->buf = omf_realloc(writer->buf, newsize); \
         writer->real_len = newsize; \
     }
 

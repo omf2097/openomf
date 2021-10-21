@@ -6,7 +6,6 @@ void list_create(list *list) {
     list->first = NULL;
     list->last = NULL;
     list->size = 0;
-    list->alloc.crealloc = realloc;
     list->alloc.cfree = free;
 }
 

@@ -4,6 +4,7 @@
 #include "formats/script.h"
 #include "formats/error.h"
 #include "formats/taglist.h"
+#include "utils/allocator.h"
 
 static void _create_frame(sd_script *script, int number);
 static void _create_tag(sd_script_frame *frame, int number);
@@ -118,13 +119,13 @@ int sd_script_get_sprite_at_frame(const sd_script *script, int frame_id) {
 
 static void _create_tag(sd_script_frame *frame, int number) {
     size_t newsize = sizeof(sd_script_tag) * (number + 1);
-    frame->tags = realloc(frame->tags, newsize);
+    frame->tags = omf_realloc(frame->tags, newsize);
     memset(&frame->tags[number], 0, sizeof(sd_script_tag));
 }
 
 static void _create_frame(sd_script *script, int number) {
     size_t newsize = sizeof(sd_script_frame) * (number + 1);
-    script->frames = realloc(script->frames, newsize);
+    script->frames = omf_realloc(script->frames, newsize);
     memset(&script->frames[number], 0, sizeof(sd_script_frame));
 }
 

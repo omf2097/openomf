@@ -29,13 +29,13 @@ static char* resource_paths[NUMBER_OF_RESOURCES];
 // Build directory
 static void local_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
-    local_paths[path_id] = realloc(local_paths[path_id], len);
+    local_paths[path_id] = omf_realloc(local_paths[path_id], len);
     snprintf(local_paths[path_id], len, "%s%s", path, ext);
 }
 
 static void resource_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
-    resource_paths[path_id] = realloc(resource_paths[path_id], len);
+    resource_paths[path_id] = omf_realloc(resource_paths[path_id], len);
     snprintf(resource_paths[path_id], len, "%s%s", path, ext);
 }
 

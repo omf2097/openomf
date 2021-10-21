@@ -119,7 +119,7 @@ static void textinput_free(component *c) {
 
 void textinput_set_max_chars(component *c, int max_chars) {
     textinput *tb = widget_get_obj(c);
-    tb->buf = realloc(tb->buf, max_chars+1);
+    tb->buf = omf_realloc(tb->buf, max_chars+1);
     tb->buf[max_chars] = 0;
     tb->max_chars = max_chars;
 }

@@ -13,7 +13,7 @@ void sd_array_free(void **mem) {
 }
 
 void sd_array_resize(void **mem, size_t item_size, int num_size) {
-    *mem = realloc(*mem, item_size * num_size);
+    *mem = omf_realloc(*mem, item_size * num_size);
 }
 
 void sd_array_delete(void *mem, size_t item_size, int *num_size, int index) {

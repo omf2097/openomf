@@ -63,7 +63,7 @@ int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
     if(trn == NULL || pic_name == NULL)
         return SD_INVALID_INPUT;
     size_t len = strlen(pic_name) + 1;
-    trn->pic_file = realloc(trn->pic_file, len);
+    trn->pic_file = omf_realloc(trn->pic_file, len);
     snprintf(trn->pic_file, len, "%s", pic_name);
     return SD_SUCCESS;
 }

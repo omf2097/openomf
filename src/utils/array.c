@@ -31,7 +31,7 @@ void array_set(array *array, unsigned int key, const void *ptr) {
         if(key > newsize) {
             newsize = key;
         }
-        array->data = realloc(array->data, PTR_SIZE(newsize));
+        array->data = omf_realloc(array->data, PTR_SIZE(newsize));
         array_nullify(array->data + array->allocated_size, newsize - array->allocated_size);
         array->allocated_size = newsize;
     }

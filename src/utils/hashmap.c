@@ -78,7 +78,6 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
   */
 void hashmap_create(hashmap *hm, int n_size) {
     allocator alloc;
-    alloc.crealloc = realloc;
     alloc.cfree = free;
     hashmap_create_with_allocator(hm, n_size, alloc);
 }
@@ -292,7 +291,7 @@ void* hashmap_put(hashmap *hm,
 
     if(found) {
         // The key is already in the hashmap, so just realloc and reset the contents.
-        seek->pair.val = hm->alloc.crealloc(seek->pair.val, vallen);
+        seek->pair.val = omf_realloc(seek->pair.val, vallen);
         memcpy(seek->pair.val, val, vallen);
         seek->pair.vallen = vallen;
 

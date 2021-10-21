@@ -62,7 +62,7 @@ void str_printf(str *dst, const char *format, ...) {
 
     // Make sure there is enough room for our vsnprintf call plus ending NULL,
     // then render the output to our new buffer.
-    dst->data = realloc(dst->data, dst->len + size + 1);
+    dst->data = omf_realloc(dst->data, dst->len + size + 1);
     vsnprintf(dst->data + dst->len, size + 1, format, args2);
     va_end(args2);
 
@@ -73,21 +73,21 @@ void str_printf(str *dst, const char *format, ...) {
 void str_slice(str *dst, const str *src, size_t start, size_t end) {
     assert(start < end);
     size_t len = end - start;
-    dst->data = realloc(dst->data, len + 1);
+    dst->data = omf_realloc(dst->data, len + 1);
     dst->len = len;
     memcpy(dst->data, src->data + start, len);
     dst->data[dst->len] = 0;
 }
 
 void str_copy(str *dst, const str *src) {
-    dst->data = realloc(dst->data, src->len + 1);
+    dst->data = omf_realloc(dst->data, src->len + 1);
     dst->len = src->len;
     memcpy(dst->data, src->data, dst->len);
     dst->data[dst->len] = 0;
 }
 
 void str_append(str *dst, const str *src) {
-    dst->data = realloc(dst->data, dst->len + src->len + 1);
+    dst->data = omf_realloc(dst->data, dst->len + src->len + 1);
     memcpy(dst->data + dst->len, src->data, src->len);
     dst->len += src->len;
     dst->data[dst->len] = 0;
@@ -95,14 +95,14 @@ void str_append(str *dst, const str *src) {
 
 void str_append_c(str *dst, const char *src) {
     size_t srclen = strlen(src);
-    dst->data = realloc(dst->data, dst->len + srclen + 1);
+    dst->data = omf_realloc(dst->data, dst->len + srclen + 1);
     memcpy(dst->data + dst->len, src, srclen);
     dst->len += srclen;
     dst->data[dst->len] = 0;
 }
 
 void str_prepend(str *dst, const str *src) {
-    dst->data = realloc(dst->data, dst->len + src->len + 1);
+    dst->data = omf_realloc(dst->data, dst->len + src->len + 1);
     memmove(dst->data + src->len, dst->data, dst->len);
     memcpy(dst->data, src->data, src->len);
     dst->len += src->len;
@@ -111,7 +111,7 @@ void str_prepend(str *dst, const str *src) {
 
 void str_prepend_c(str *dst, const char *src) {
     size_t srclen = strlen(src);
-    dst->data = realloc(dst->data, dst->len + srclen + 1);
+    dst->data = omf_realloc(dst->data, dst->len + srclen + 1);
     memmove(dst->data + srclen, dst->data, dst->len);
     memcpy(dst->data, src, srclen);
     dst->len += srclen;

@@ -5,7 +5,6 @@
 
 typedef struct allocator_t {
     void  (*cfree)(void *ptr);
-    void* (*crealloc)(void *ptr, size_t size);
 } allocator;
 
 #define omf_calloc(nmemb, size) \
