@@ -28,8 +28,7 @@ void str_create_from_data(str *string, const char *data, size_t len) {
 }
 
 void str_free(str *string) {
-    free(string->data);
-    string->data = NULL;
+    omf_free(string->data);
     string->len = 0;
 }
 

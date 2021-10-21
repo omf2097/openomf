@@ -150,12 +150,12 @@ int pm_init() {
     }
 
     // All done
-    free(local_base_dir);
+    omf_free(local_base_dir);
     return 0;
 
 error_1:
     pm_free();
-    free(local_base_dir);
+    omf_free(local_base_dir);
 error_0:
     return 1;
 }
@@ -171,10 +171,10 @@ void pm_log() {
 
 void pm_free() {
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        free(resource_paths[i]);
+        omf_free(resource_paths[i]);
     }
     for(int i = 0; i < NUMBER_OF_LOCAL_PATHS; i++) {
-        free(local_paths[i]);
+        omf_free(local_paths[i]);
     }
 }
 

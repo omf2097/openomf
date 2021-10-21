@@ -94,7 +94,7 @@ static void widget_free(component *c) {
     if(local->free) {
         local->free(c);
     }
-    free(local);
+    omf_free(local);
 }
 
 static component* widget_find(component *c, int id) {

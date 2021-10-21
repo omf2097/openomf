@@ -22,7 +22,7 @@ void array_create(array *array) {
 void array_free(array *array) {
     array->allocated_size = 0;
     array->filled = 0;
-    free(array->data);
+    omf_free(array->data);
 }
 
 void array_set(array *array, unsigned int key, const void *ptr) {

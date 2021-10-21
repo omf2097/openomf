@@ -112,9 +112,9 @@ char* textinput_value(const component *c) {
 static void textinput_free(component *c) {
     textinput *tb = widget_get_obj(c);
     surface_free(&tb->sur);
-    free(tb->text);
-    free(tb->buf);
-    free(tb);
+    omf_free(tb->text);
+    omf_free(tb->buf);
+    omf_free(tb);
 }
 
 void textinput_set_max_chars(component *c, int max_chars) {

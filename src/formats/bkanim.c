@@ -49,8 +49,7 @@ int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
 void sd_bk_anim_free(sd_bk_anim *bka) {
     if(bka->animation != NULL) {
         sd_animation_free(bka->animation);
-        free(bka->animation);
-        bka->animation = NULL;
+        omf_free(bka->animation);
     }
 }
 
@@ -133,8 +132,7 @@ int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation) {
     }
     if(bka->animation != NULL) {
         sd_animation_free(bka->animation);
-        free(bka->animation);
-        bka->animation = NULL;
+        omf_free(bka->animation);
     }
     if(animation == NULL) {
         return SD_SUCCESS;

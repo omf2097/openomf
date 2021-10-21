@@ -48,7 +48,8 @@ int is_key_bound(int key) {
 
 void menu_presskey_free(component *c) {
     presskey_menu_local *local = menu_get_userdata(c);
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 void menu_presskey_tick(component *c) {
@@ -86,7 +87,7 @@ void menu_presskey_tick(component *c) {
                 local->warn_timeout = 50;
                 return;
             } else {
-                free(*(local->key));
+                omf_free(*(local->key));
                 *(local->key) = strdup(SDL_GetScancodeName(i));
                 m->finished = 1;
                 return;

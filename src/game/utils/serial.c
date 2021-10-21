@@ -89,8 +89,7 @@ void serial_write_float(serial *s, float v) {
 }
 
 void serial_free(serial *s) {
-    free(s->data);
-    s->data = NULL;
+    omf_free(s->data);
     s->len = 0;
     s->rpos = 0;
     s->wpos = 0;

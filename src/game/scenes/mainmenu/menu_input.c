@@ -13,7 +13,7 @@ typedef struct {
 } menu_input_local;
 
 #define KEY_RESET(key,scancode) \
-    free(key); \
+    omf_free(key); \
     key = strdup(SDL_GetScancodeName(scancode))
 
 void menu_set_right_keyboard(component *c, void *userdata) {
@@ -129,12 +129,12 @@ void menu_set_joystick1(component *c, void *userdata) {
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
-        free(k->joy_name1);
+        omf_free(k->joy_name1);
         k->joy_name1 = strdup(SDL_JoystickNameForIndex(joystick_nth_id(1)));
         k->joy_offset1 = joystick_offset(joystick_nth_id(1), k->joy_name1);
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
-        free(k->joy_name2);
+        omf_free(k->joy_name2);
         k->joy_name2 = strdup(SDL_JoystickNameForIndex(joystick_nth_id(1)));
         k->joy_offset2 = joystick_offset(joystick_nth_id(1), k->joy_name2);
     }
@@ -146,12 +146,12 @@ void menu_set_joystick2(component *c, void *userdata) {
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
-        free(k->joy_name1);
+        omf_free(k->joy_name1);
         k->joy_name1 = strdup(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
         k->joy_offset1= joystick_offset(joystick_nth_id(2), k->joy_name1);
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
-        free(k->joy_name2);
+        omf_free(k->joy_name2);
         k->joy_name2 = strdup(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
         k->joy_offset2= joystick_offset(joystick_nth_id(2), k->joy_name2);
     }
@@ -171,7 +171,8 @@ void menu_input_done(component *c, void *u) {
 
 void menu_input_free(component *c) {
     menu_input_local *local = menu_get_userdata(c);
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 component* menu_input_create(scene *s, int player_id) {

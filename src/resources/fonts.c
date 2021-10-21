@@ -23,7 +23,7 @@ void font_free(font *font) {
     surface **sur = NULL;
     while((sur = iter_next(&it)) != NULL) {
         surface_free(*sur);
-        free(*sur);
+        omf_free(*sur);
     }
     vector_free(&font->surfaces);
 }

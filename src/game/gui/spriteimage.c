@@ -23,7 +23,7 @@ static void spriteimage_render(component *c) {
 
 static void spriteimage_free(component *c) {
     spriteimage *sb = widget_get_obj(c);
-    free(sb);
+    omf_free(sb);
 }
 
 component* spriteimage_create(surface *img) {

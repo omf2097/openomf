@@ -37,7 +37,8 @@ void har_free(object *obj) {
 #ifdef DEBUGMODE
     surface_free(&h->cd_debug);
 #endif
-    free(h);
+    omf_free(h);
+    object_set_userdata(obj, h);
 }
 
 /* hooks */

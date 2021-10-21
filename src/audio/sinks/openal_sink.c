@@ -25,7 +25,8 @@ void openal_sink_close(audio_sink *sink) {
     alcMakeContextCurrent(0);
     alcDestroyContext(local->context);
     alcCloseDevice(local->device);
-    free(local);
+    omf_free(local);
+    sink_set_userdata(sink, local);
     INFO("OpenAL Sink closed.");
 }
 
@@ -40,7 +41,7 @@ int openal_sink_init(audio_sink *sink) {
     local->device = alcOpenDevice(0);
     if(!local->device) {
         PERROR("Could not open audio playback device!");
-        free(local);
+        omf_free(local);
         return 1;
     }
     local->context = alcCreateContext(local->device, 0);

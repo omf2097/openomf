@@ -45,7 +45,7 @@ void sd_sprite_free(sd_sprite *sprite) {
     // Only attempt to free if there IS something to free
     // AND sprite data belongs to this sprite
     if(sprite->data != NULL && !sprite->missing) {
-        free(sprite->data);
+        omf_free(sprite->data);
     }
 }
 
@@ -193,7 +193,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_pal
     dst->missing = 0;
     dst->data = omf_calloc(i, 1);
     memcpy(dst->data, buf, i);
-    free(buf);
+    omf_free(buf);
     return ret;
 }
 
@@ -425,6 +425,6 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     dst->missing = 0;
     dst->data = omf_calloc(i, 1);
     memcpy(dst->data, buf, i);
-    free(buf);
+    omf_free(buf);
     return ret;
 }

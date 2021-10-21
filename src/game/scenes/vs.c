@@ -139,7 +139,8 @@ void vs_free(scene *scene) {
     if (player2->selectable) {
         object_free(&local->arena_select);
     }
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void vs_handle_action(scene *scene, int action) {

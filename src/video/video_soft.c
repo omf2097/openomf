@@ -39,9 +39,9 @@ void soft_render_close(video_state *state) {
     soft_renderer *sr = state->userdata;
     SDL_FreeSurface(sr->higher);
     surface_free(&sr->lower);
-    free(sr->tmp_normal);
-    free(sr->tmp_scaling);
-    free(sr);
+    omf_free(sr->tmp_normal);
+    omf_free(sr->tmp_scaling);
+    omf_free(sr);
 }
 
 void soft_render_reinit(video_state *state) {

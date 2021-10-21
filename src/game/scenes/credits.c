@@ -41,7 +41,9 @@ void credits_tick(scene *scene, int paused) {
 }
 
 void credits_free(scene *scene) {
-    free(scene_get_userdata(scene));
+    credits_local *local = scene_get_userdata(scene);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void credits_startup(scene *scene, int id, int *m_load, int *m_repeat) {

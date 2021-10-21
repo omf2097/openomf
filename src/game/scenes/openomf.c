@@ -43,7 +43,9 @@ void openomf_tick(scene *scene, int paused) {
 }
 
 void openomf_free(scene *scene) {
-    free(scene_get_userdata(scene));
+    openomf_local *local = scene_get_userdata(scene);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 int openomf_create(scene *scene) {

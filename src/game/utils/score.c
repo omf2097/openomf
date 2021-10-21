@@ -68,7 +68,7 @@ void chr_score_reset(chr_score *score, int wipe) {
     score->destruction = 0;
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
-        free(t->text);
+        omf_free(t->text);
         list_delete(&score->texts, &it);
     }
 }
@@ -97,7 +97,7 @@ void chr_score_free(chr_score *score) {
 
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
-        free(t->text);
+        omf_free(t->text);
     }
     list_free(&score->texts);
 }
@@ -119,7 +119,7 @@ void chr_score_tick(chr_score *score) {
         lastage = t->age++;
         if(t->position < 0.0f) {
             score->score += t->points;
-            free(t->text);
+            omf_free(t->text);
             list_delete(&score->texts, &it);
         }
     }

@@ -29,7 +29,8 @@ void menu_connect_free(component *c) {
     }
     local->controllers_created = 0;
     local->host = NULL;
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 void menu_connect_start(component *c, void *userdata) {
@@ -40,7 +41,7 @@ void menu_connect_start(component *c, void *userdata) {
     s->gs->role = ROLE_CLIENT;
 
     // Free old saved address, and set new
-    free(settings_get()->net.net_connect_ip);
+    omf_free(settings_get()->net.net_connect_ip);
     settings_get()->net.net_connect_ip = strdup(addr);
 
     // Set up enet host

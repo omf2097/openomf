@@ -46,10 +46,8 @@ int surface_to_image(surface *sur, image *img) {
 }
 
 void surface_free(surface *sur) {
-    free(sur->data);
-    free(sur->stencil);
-    sur->stencil = NULL;
-    sur->data = NULL;
+    omf_free(sur->data);
+    omf_free(sur->stencil);
 }
 
 int surface_get_type(surface *sur) {
@@ -252,10 +250,9 @@ void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset) 
     surface_to_rgba(sur, pixels, pal, NULL, pal_offset);
 
     // Free old data
-    free(sur->data);
-    free(sur->stencil);
+    omf_free(sur->data);
+    omf_free(sur->stencil);
     sur->data = pixels;
-    sur->stencil = NULL;
     sur->type = SURFACE_TYPE_RGBA;
 }
 

@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
     if (mappings_loaded > 0) {
         DEBUG("loaded %d mappings from %s", mappings_loaded, gamecontrollerdbpath);
     }
-    free(gamecontrollerdbpath);
+    omf_free(gamecontrollerdbpath);
 
     // Load up joysticks
     INFO("Found %d joysticks attached", SDL_NumJoysticks());
@@ -266,7 +266,7 @@ exit_1:
     log_close();
 exit_0:
     if(ip) {
-        free(ip);
+        omf_free(ip);
     }
     plugins_close();
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));

@@ -142,5 +142,5 @@ void component_free(component *c) {
     if(c->free != NULL) {
         c->free(c);
     }
-    free(c);
+    omf_free(c);
 }

@@ -46,7 +46,8 @@ void xmp_source_close(audio_source *src) {
     xmp_end_player(local->ctx);
     xmp_release_module(local->ctx);
     xmp_free_context(local->ctx);
-    free(local);
+    omf_free(local);
+    source_set_userdata(src, local);
     DEBUG("XMP Source: Closed.");
 }
 
@@ -107,7 +108,7 @@ error_1:
     xmp_free_context(local->ctx);
 
 error_0:
-    free(local);
+    omf_free(local);
     return 1;
 }
 

@@ -79,7 +79,8 @@ void dumb_source_close(audio_source *src) {
     duh_end_sigrenderer(local->renderer);
     unload_duh(local->data);
     destroy_sample_buffer(local->sig_samples);
-    free(local);
+    omf_free(local);
+    source_set_userdata(src, local);
     DEBUG("Libdumb Source: Closed.");
 }
 
@@ -133,7 +134,7 @@ int dumb_source_init(audio_source *src, const char* file, int channels, int freq
     return 0;
 
 error_0:
-    free(local);
+    omf_free(local);
     return 1;
 }
 

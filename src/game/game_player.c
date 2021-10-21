@@ -1,3 +1,4 @@
+#include "utils/allocator.h"
 #include "game/game_player.h"
 #include <stdlib.h>
 
@@ -43,8 +44,7 @@ void game_player_set_ctrl(game_player *gp, controller *ctrl) {
         } else if(gp->ctrl->type == CTRL_TYPE_AI) {
             ai_controller_free(gp->ctrl);
         }
-        free(gp->ctrl);
-        gp->ctrl = NULL;
+        omf_free(gp->ctrl);
     }
     gp->ctrl = ctrl;
 }

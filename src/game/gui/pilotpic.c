@@ -27,8 +27,8 @@ static void pilotpic_render(component *c) {
 static void pilotpic_free(component *c) {
     pilotpic *g = widget_get_obj(c);
     sprite_free(g->img);
-    free(g->img);
-    free(g);
+    omf_free(g->img);
+    omf_free(g);
 }
 
 void pilotpic_select(component *c, int pic_id, int pilot_id) {
@@ -37,7 +37,7 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
     // Free old image
     if(local->img != NULL) {
         sprite_free(local->img);
-        free(local->img);
+        omf_free(local->img);
     }
 
     // Find pic file handle

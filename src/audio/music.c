@@ -182,7 +182,7 @@ int music_play(unsigned int id) {
     return 0;
 
 error_0:
-    free(music_src);
+    omf_free(music_src);
     return 1;
 }
 

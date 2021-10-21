@@ -104,8 +104,7 @@ static void progressbar_render(component *c) {
             surface_force_refresh(bar->block);
             image_free(&tmp);
         } else {
-            free(bar->block);
-            bar->block = NULL;
+            omf_free(bar->block);
         }
     }
 
@@ -142,13 +141,13 @@ static void progressbar_free(component *c) {
     progressbar *bar = widget_get_obj(c);
     if(bar->block) {
         surface_free(bar->block);
-        free(bar->block);
+        omf_free(bar->block);
     }
     surface_free(bar->background);
-    free(bar->background);
+    omf_free(bar->background);
     surface_free(bar->background_alt);
-    free(bar->background_alt);
-    free(bar);
+    omf_free(bar->background_alt);
+    omf_free(bar);
 }
 
 static void progressbar_layout(component *c, int x, int y, int w, int h) {

@@ -15,8 +15,8 @@ void joystick_free(controller *ctrl) {
         SDL_HapticClose(k->haptic);
     }
     SDL_GameControllerClose(k->joy);
-    free(k->keys);
-    free(k);
+    omf_free(k->keys);
+    omf_free(k);
 }
 
 void joystick_cmd(controller *ctrl, int action, ctrl_event **ev) {

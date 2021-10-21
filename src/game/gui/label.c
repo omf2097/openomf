@@ -15,14 +15,14 @@ static void label_render(component *c) {
 
 static void label_free(component *c) {
     label *local = widget_get_obj(c);
-    free(local->text);
-    free(local);
+    omf_free(local->text);
+    omf_free(local);
 }
 
 void label_set_text(component *c, const char* text) {
     label *local = widget_get_obj(c);
     if(local->text) {
-        free(local->text);
+        omf_free(local->text);
     }
     local->text = strdup(text);
 }

@@ -43,8 +43,8 @@ static void spritebutton_render(component *c) {
 
 static void spritebutton_free(component *c) {
     spritebutton *sb = widget_get_obj(c);
-    free(sb->text);
-    free(sb);
+    omf_free(sb->text);
+    omf_free(sb);
 }
 
 static void spritebutton_tick(component *c) {

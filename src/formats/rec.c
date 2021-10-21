@@ -38,9 +38,9 @@ void sd_rec_free(sd_rec_file *rec) {
     sd_pilot_free(&rec->pilots[1].info);
     if(rec->moves) {
         for(int i = 0; i < rec->move_count; i++) {
-            free(rec->moves[i].extra_data);
+            omf_free(rec->moves[i].extra_data);
         }
-        free(rec->moves);
+        omf_free(rec->moves);
     }
 }
 

@@ -26,8 +26,7 @@ void sprite_create(sprite *sp, void *src, int id) {
 
 void sprite_free(sprite *sp) {
     surface_free(sp->data);
-    free(sp->data);
-    sp->data = NULL;
+    omf_free(sp->data);
 }
 
 vec2i sprite_get_size(sprite *sp) {

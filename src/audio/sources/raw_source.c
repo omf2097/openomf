@@ -24,7 +24,8 @@ int raw_source_update(audio_source *src, char *buffer, int len) {
 
 void raw_source_close(audio_source *src) {
     raw_source *local = source_get_userdata(src);
-    free(local);
+    omf_free(local);
+    source_set_userdata(src, local);
 }
 
 int raw_source_init(audio_source *src, char* buffer, int len) {

@@ -107,8 +107,8 @@ static void textslider_tick(component *c) {
 
 static void textslider_free(component *c) {
     textslider *tb = widget_get_obj(c);
-    free(tb->text);
-    free(tb);
+    omf_free(tb->text);
+    omf_free(tb);
 }
 
 component* textslider_create(const text_settings *tconf, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata) {

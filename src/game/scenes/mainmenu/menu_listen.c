@@ -24,7 +24,8 @@ void menu_listen_free(component *c) {
     }
     local->host = NULL;
     local->controllers_created = 0;
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 void menu_listen_tick(component *c) {
@@ -129,7 +130,7 @@ component* menu_listen_create(scene *s) {
     local->host = enet_host_create(&address, 1, 2, 0, 0);
     if(local->host == NULL) {
         DEBUG("Failed to initialize ENet server");
-        free(local);
+        omf_free(local);
         return NULL;
     }
     enet_socket_set_option(local->host->socket, ENET_SOCKOPT_REUSEADDR, 1);

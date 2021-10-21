@@ -21,9 +21,9 @@ void sd_language_free(sd_language *language) {
     if(language == NULL) return;
     if(language->strings != 0) {
         for(int i = 0; i < language->count; i++) {
-            free(language->strings[i].data);
+            omf_free(language->strings[i].data);
         }
-        free(language->strings);
+        omf_free(language->strings);
     }
 }
 

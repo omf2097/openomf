@@ -18,7 +18,8 @@ typedef struct mainmenu_local_t {
 void mainmenu_free(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
     guiframe_free(local->frame);
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
     settings_save();
 }
 

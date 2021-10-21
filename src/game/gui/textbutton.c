@@ -51,7 +51,7 @@ void textbutton_remove_border(component *c) {
 void textbutton_set_text(component *c, const char* text) {
     textbutton *tb = widget_get_obj(c);
     if(tb->text) {
-        free(tb->text);
+        omf_free(tb->text);
     }
     tb->text = strdup(text);
 }
@@ -111,8 +111,8 @@ static void textbutton_free(component *c) {
     if(tb->border_created) {
         surface_free(&tb->border);
     }
-    free(tb->text);
-    free(tb);
+    omf_free(tb->text);
+    omf_free(tb);
 }
 
 component* textbutton_create(const text_settings *tconf, const char *text, int disabled, textbutton_click_cb cb, void *userdata) {

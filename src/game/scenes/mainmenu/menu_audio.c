@@ -104,7 +104,8 @@ void menu_audio_resampler_toggled(component *c, void *userdata, int pos) {
 
 void menu_audio_free(component *c) {
     audio_menu_data *local = menu_get_userdata(c);
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 component* menu_audio_create(scene *s) {

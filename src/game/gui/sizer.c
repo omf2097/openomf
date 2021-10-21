@@ -136,7 +136,7 @@ static void sizer_free(component *c) {
 
     // Free sizer itself
     vector_free(&local->objs);
-    free(local);
+    omf_free(local);
 }
 
 static component* sizer_find(component *c, int id) {

@@ -23,7 +23,7 @@ void clear_render_target() {
     int size = NATIVE_W * state.scale_factor * NATIVE_H * state.scale_factor * 4;
     char *pixels = omf_calloc(1, size);
     SDL_UpdateTexture(state.target, NULL, pixels, NATIVE_W * state.scale_factor * 4);
-    free(pixels);
+    omf_free(pixels);
 }
 
 void reset_targets() {
@@ -551,7 +551,7 @@ void video_close() {
     SDL_DestroyTexture(state.target);
     SDL_DestroyRenderer(state.renderer);
     SDL_DestroyWindow(state.window);
-    free(state.cur_palette);
-    free(state.base_palette);
+    omf_free(state.cur_palette);
+    omf_free(state.base_palette);
     INFO("Video deinit.");
 }

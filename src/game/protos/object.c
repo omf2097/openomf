@@ -6,6 +6,7 @@
 #include "game/objects/arena_constraints.h"
 #include "game/game_state_type.h"
 #include "video/video.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/compat.h"
 #include "utils/miscmath.h"
@@ -530,10 +531,10 @@ void object_free(object *obj) {
     player_free(obj);
     if(obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
-        free(obj->cur_animation);
+        omf_free(obj->cur_animation);
     }
     if (obj->custom_str) {
-        free(obj->custom_str);
+        omf_free(obj->custom_str);
     }
     obj->cur_surface = NULL;
     obj->cur_animation = NULL;
@@ -570,9 +571,9 @@ void object_set_animation_owner(object *obj, int owner) {
 void object_set_animation(object *obj, animation *ani) {
     if(obj->cur_animation != NULL && obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
-        free(obj->cur_animation);
+        omf_free(obj->cur_animation);
     }
-    free(obj->custom_str);
+    omf_free(obj->custom_str);
 
     obj->custom_str = NULL;
     obj->cur_animation = ani;
@@ -596,7 +597,7 @@ void object_set_animation(object *obj, animation *ani) {
   * \param str New animation string
   */
 void object_set_custom_string(object *obj, const char *str) {
-    free(obj->custom_str);
+    omf_free(obj->custom_str);
     obj->custom_str = strdup(str);
     player_reload_with_str(obj, obj->custom_str);
     DEBUG("Set animation string to %s", obj->custom_str);

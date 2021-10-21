@@ -39,7 +39,9 @@ void projectile_tick(object *obj) {
 }
 
 void projectile_free(object *obj) {
-    free(object_get_userdata(obj));
+    projectile_local *local = object_get_userdata(obj);
+    omf_free(local);
+    object_set_userdata(obj, local);
 }
 
 void projectile_move(object *obj) {

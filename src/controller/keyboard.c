@@ -5,8 +5,8 @@
 
 void keyboard_free(controller *ctrl) {
     keyboard *k = ctrl->data;
-    free(k->keys);
-    free(k);
+    omf_free(k->keys);
+    omf_free(k);
 }
 
 void keyboard_cmd(controller *ctrl, int action, ctrl_event **ev) {

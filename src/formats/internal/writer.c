@@ -19,7 +19,7 @@ sd_writer* sd_writer_open(const char *file) {
     writer->handle = fopen(file, "wb");
     writer->sd_errno = 0;
     if(!writer->handle) {
-        free(writer);
+        omf_free(writer);
         return 0;
     }
 
@@ -32,7 +32,7 @@ int sd_writer_errno(const sd_writer *writer) {
 
 void sd_writer_close(sd_writer *writer) {
     fclose(writer->handle);
-    free(writer);
+    omf_free(writer);
 }
 
 long sd_writer_pos(sd_writer *writer) {

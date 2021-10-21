@@ -80,7 +80,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
 error_1:
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         if(chr->enemies[i] != NULL) {
-            free(chr->enemies[i]);
+            omf_free(chr->enemies[i]);
         }
     }
     sd_sprite_free(chr->photo);
@@ -136,7 +136,7 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
 void sd_chr_free(sd_chr_file *chr) {
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         if(chr->enemies[i] != NULL) {
-            free(chr->enemies[i]);
+            omf_free(chr->enemies[i]);
         }
     }
     sd_sprite_free(chr->photo);

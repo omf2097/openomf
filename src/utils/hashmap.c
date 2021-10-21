@@ -78,7 +78,6 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
   */
 void hashmap_create(hashmap *hm, int n_size) {
     allocator alloc;
-    alloc.cfree = free;
     hashmap_create_with_allocator(hm, n_size, alloc);
 }
 
@@ -180,7 +179,7 @@ int hashmap_resize(hashmap *hm, int n_size) {
     }
 
     // Free old bucket list and assign new list and size of the hashmap
-    free(hm->buckets);
+    omf_free(hm->buckets);
     hm->buckets = new_buckets;
     hm->buckets_x = n_size;
     return 0;
@@ -201,9 +200,9 @@ void hashmap_clear(hashmap *hm) {
         while(node != NULL) {
             tmp = node;
             node = node->next;
-            hm->alloc.cfree(tmp->pair.key);
-            hm->alloc.cfree(tmp->pair.val);
-            hm->alloc.cfree(tmp);
+            omf_free(tmp->pair.key);
+            omf_free(tmp->pair.val);
+            omf_free(tmp);
             hm->reserved--;
         }
         hm->buckets[i] = NULL;
@@ -219,8 +218,7 @@ void hashmap_clear(hashmap *hm) {
   */
 void hashmap_free(hashmap *hm) {
     hashmap_clear(hm);
-    hm->alloc.cfree(hm->buckets);
-    hm->buckets = NULL;
+    omf_free(hm->buckets);
     hm->buckets_x = 0;
     hm->reserved = 0;
 }
@@ -365,9 +363,9 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
             // If node is first in chain, set possible next entry as first
             hm->buckets[index] = node->next;
         }
-        hm->alloc.cfree(node->pair.key);
-        hm->alloc.cfree(node->pair.val);
-        hm->alloc.cfree(node);
+        omf_free(node->pair.key);
+        omf_free(node->pair.val);
+        omf_free(node);
         hm->reserved--;
 
         AUTO_DEC_CHECK()
@@ -489,9 +487,9 @@ int hashmap_delete(hashmap *hm, iterator *iter) {
         }
 
         // Alld one, free up memory.
-        hm->alloc.cfree(node->pair.key);
-        hm->alloc.cfree(node->pair.val);
-        hm->alloc.cfree(node);
+        omf_free(node->pair.key);
+        omf_free(node->pair.val);
+        omf_free(node);
         hm->reserved--;
         return 0;
     }

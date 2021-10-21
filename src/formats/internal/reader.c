@@ -22,7 +22,7 @@ sd_reader* sd_reader_open(const char *file) {
     // Attempt to open file (note: Binary mode!)
     reader->handle = fopen(file, "rb");
     if(!reader->handle) {
-        free(reader);
+        omf_free(reader);
         return 0;
     }
 
@@ -43,7 +43,7 @@ sd_reader* sd_reader_open(const char *file) {
 
 error:
     fclose(reader->handle);
-    free(reader);
+    omf_free(reader);
     return 0;
 }
 
@@ -57,7 +57,7 @@ int sd_reader_errno(const sd_reader *reader) {
 
 void sd_reader_close(sd_reader *reader) {
     fclose(reader->handle);
-    free(reader);
+    omf_free(reader);
 }
 
 int sd_reader_set(sd_reader *reader, long offset) {

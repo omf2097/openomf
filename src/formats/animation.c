@@ -54,7 +54,7 @@ void sd_animation_free(sd_animation *anim) {
     for(int i = 0; i < SD_SPRITE_COUNT_MAX; i++) {
         if(anim->sprites[i] != NULL) {
             sd_sprite_free(anim->sprites[i]);
-            free(anim->sprites[i]);
+            omf_free(anim->sprites[i]);
         }
     }
 }
@@ -151,7 +151,7 @@ int sd_animation_set_sprite(sd_animation *anim, int num, const sd_sprite *sprite
     }
     if(anim->sprites[num] != NULL) {
         sd_sprite_free(anim->sprites[num]);
-        free(anim->sprites[num]);
+        omf_free(anim->sprites[num]);
     }
     anim->sprites[num] = omf_calloc(1, sizeof(sd_sprite));
     if((ret = sd_sprite_copy(anim->sprites[num], sprite)) != SD_SUCCESS) {
@@ -180,8 +180,7 @@ int sd_animation_pop_sprite(sd_animation *anim) {
 
     anim->sprite_count--;
     sd_sprite_free(anim->sprites[anim->sprite_count]);
-    free(anim->sprites[anim->sprite_count]);
-    anim->sprites[anim->sprite_count] = NULL;
+    omf_free(anim->sprites[anim->sprite_count]);
 
     return SD_SUCCESS;
 }

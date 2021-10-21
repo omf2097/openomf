@@ -6,7 +6,6 @@ void list_create(list *list) {
     list->first = NULL;
     list->last = NULL;
     list->size = 0;
-    list->alloc.cfree = free;
 }
 
 void list_create_with_allocator(list *list, allocator alloc) {
@@ -22,8 +21,8 @@ void list_free(list *list) {
     now = list->first;
     while(now != NULL) {
         next = now->next;
-        list->alloc.cfree(now->data);
-        list->alloc.cfree(now);
+        omf_free(now->data);
+        omf_free(now);
         now = next;
     }
     list->size = 0;
@@ -67,8 +66,8 @@ void list_delete(list *list, iterator *iter) {
     } else {
         iter->vnow = node->prev;
     }
-    list->alloc.cfree(node->data);
-    list->alloc.cfree(node);
+    omf_free(node->data);
+    omf_free(node);
     list->size--;
 }
 

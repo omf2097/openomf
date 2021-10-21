@@ -139,7 +139,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 void ai_controller_free(controller *ctrl) {
     ai *a = ctrl->data;
     vector_free(&a->active_projectiles);
-    free(a);
+    omf_free(a);
 }
 
 int is_special_move(af_move *move) {

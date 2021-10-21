@@ -27,7 +27,7 @@ void guiframe_free(guiframe *frame) {
     if(frame->root_node) {
         component_free(frame->root_node);
     }
-    free(frame);
+    omf_free(frame);
 }
 
 component* guiframe_find(guiframe *frame, int id) {

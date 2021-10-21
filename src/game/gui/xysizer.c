@@ -86,7 +86,7 @@ static int xysizer_action(component *c, int action) {
 
 static void xysizer_free(component *c) {
     xysizer *m = sizer_get_obj(c);
-    free(m);
+    omf_free(m);
 }
 
 component* xysizer_create(int obj_h) {

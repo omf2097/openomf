@@ -54,7 +54,7 @@ void plugins_init() {
             plugin_path = omf_calloc(psize, 1);
             snprintf(plugin_path, psize, "%s%s", pm_get_local_path(PLUGIN_PATH), plugin_file);
             handle = SDL_LoadObject(plugin_path);
-            free(plugin_path);
+            omf_free(plugin_path);
 
             // Check for errors in plugin open
             if(handle == NULL) {

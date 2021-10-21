@@ -243,7 +243,7 @@ void console_close() {
     surface_free(&con->background);
     list_free(&con->history);
     hashmap_free(&con->cmds);
-    free(con);
+    omf_free(con);
 }
 
 void console_event(game_state *gs, SDL_Event *e) {

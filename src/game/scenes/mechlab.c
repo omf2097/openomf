@@ -46,8 +46,9 @@ void mechlab_free(scene *scene) {
     guiframe_free(local->frame);
     guiframe_free(local->dashboard);
     object_free(local->mech);
-    free(local->mech);
-    free(local);
+    omf_free(local->mech);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void mechlab_tick(scene *scene, int paused) {

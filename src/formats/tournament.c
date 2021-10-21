@@ -23,8 +23,7 @@ static void free_enemies(sd_tournament_file *trn) {
     for(int i = 0; i < MAX_TRN_ENEMIES; i++) {
         if(trn->enemies[i]) {
             sd_pilot_free(trn->enemies[i]);
-            free(trn->enemies[i]);
-            trn->enemies[i] = NULL;
+            omf_free(trn->enemies[i]);
         }
     }
 }
@@ -34,20 +33,19 @@ static void free_locales(sd_tournament_file *trn) {
         if(trn->locales[i]) {
             if(trn->locales[i]->logo) {
                 sd_sprite_free(trn->locales[i]->logo);
-                free(trn->locales[i]->logo);
+                omf_free(trn->locales[i]->logo);
             }
             if(trn->locales[i]->description)
-                free(trn->locales[i]->description);
+                omf_free(trn->locales[i]->description);
             if(trn->locales[i]->title)
-                free(trn->locales[i]->title);
+                omf_free(trn->locales[i]->title);
             for(int har = 0; har < 11; har++) {
                 for(int page = 0; page < 10; page++) {
                     if(trn->locales[i]->end_texts[har][page])
-                        free(trn->locales[i]->end_texts[har][page]);
+                        omf_free(trn->locales[i]->end_texts[har][page]);
                 }
             }
-            free(trn->locales[i]);
-            trn->locales[i] = NULL;
+            omf_free(trn->locales[i]);
         }
     }
 }
@@ -320,6 +318,6 @@ void sd_tournament_free(sd_tournament_file *trn) {
     free_locales(trn);
     free_enemies(trn);
     if(trn->pic_file != NULL) {
-        free(trn->pic_file);
+        omf_free(trn->pic_file);
     }
 }

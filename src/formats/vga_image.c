@@ -37,8 +37,8 @@ int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
 
 void sd_vga_image_free(sd_vga_image *img) {
     if(img == NULL) return;
-    free(img->data);
-    free(img->stencil);
+    omf_free(img->data);
+    omf_free(img->stencil);
 }
 
 int sd_vga_image_stencil_index(sd_vga_image *img, int stencil_index) {
@@ -201,9 +201,9 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     // Free up everything
 error_3:
     for(int y = 0; y < h; y++) {
-        free(row_pointers[y]);
+        omf_free(row_pointers[y]);
     }
-    free(row_pointers);
+    omf_free(row_pointers);
 error_2:
     png_destroy_read_struct(&png_ptr, NULL, NULL);
 error_1:

@@ -34,7 +34,7 @@ void controller_clear_hooks(controller *ctrl) {
     hook_function **tmp = 0;
     list_iter_begin(&ctrl->hooks, &it);
     while((tmp = iter_next(&it)) != NULL) {
-        free(*tmp);
+        omf_free(*tmp);
         list_delete(&ctrl->hooks, &it);
     }
 }
@@ -45,10 +45,10 @@ void controller_free_chain(ctrl_event *ev) {
     while(now != NULL) {
         if(now->type == EVENT_TYPE_SYNC) {
             serial_free(now->event_data.ser);
-            free(now->event_data.ser);
+            omf_free(now->event_data.ser);
         }
         tmp = now->next;
-        free(now);
+        omf_free(now);
         now = tmp;
     }
 }

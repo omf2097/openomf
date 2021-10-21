@@ -28,16 +28,14 @@ int altpals_init() {
 error_1:
     sd_altpal_free(altpals);
 error_0:
-    free(altpals);
-    altpals = NULL;
+    omf_free(altpals);
     return 1;
 }
 
 void altpals_close() {
     if(altpals != NULL) {
         sd_altpal_free(altpals);
-        free(altpals);
-        altpals = NULL;
+        omf_free(altpals);
     }
 }
 

@@ -78,8 +78,7 @@ int audio_init(const char* sink_name) {
     _global_sink = omf_calloc(1, sizeof(audio_sink));
     sink_init(_global_sink);
     if(si.sink_init_fn(_global_sink) != 0) {
-        free(_global_sink);
-        _global_sink = NULL;
+        omf_free(_global_sink);
         return 1;
     }
 
@@ -91,8 +90,7 @@ int audio_init(const char* sink_name) {
 void audio_close() {
     if(_global_sink != NULL) {
         sink_free(_global_sink);
-        free(_global_sink);
-        _global_sink = NULL;
+        omf_free(_global_sink);
         INFO("Audio system closed.");
     }
 }

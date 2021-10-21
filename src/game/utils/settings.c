@@ -1,5 +1,6 @@
 #include "game/utils/settings.h"
 #include "controller/controller.h"
+#include "utils/allocator.h"
 #include "utils/config.h"
 #include "utils/log.h"
 #include "utils/compat.h"
@@ -212,7 +213,7 @@ void settings_load_fields(void *st, const field *fields, int nfields) {
                 {
                     // make a copy of the string
                     char **s = fieldstr(st, f->offset);
-                    free(*s);
+                    omf_free(*s);
                     *s = strdup(conf_string(f->name));
                 }
                 break;
@@ -249,8 +250,7 @@ void settings_free_strings(void *st, const field *fields, int nfields) {
         if(f->type == TYPE_STRING) {
             char **s = fieldstr(st, f->offset);
             if(*s) {
-                free(*s);
-                *s = NULL;
+                omf_free(*s);
             }
         }
     }

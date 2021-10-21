@@ -44,9 +44,9 @@ void sd_script_free(sd_script *script) {
     if(script == NULL)
         return;
     for(int i = 0; i < script->frame_count; i++) {
-        free(script->frames[i].tags);
+        omf_free(script->frames[i].tags);
     }
-    free(script->frames);
+    omf_free(script->frames);
 }
 
 int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id) {
@@ -67,8 +67,7 @@ int sd_script_clear_tags(sd_script *script, int frame_id) {
     }
 
     // Clear out old tags
-    free(script->frames[frame_id].tags);
-    script->frames[frame_id].tags = NULL;
+    omf_free(script->frames[frame_id].tags);
     script->frames[frame_id].tag_count = 0;
     return SD_SUCCESS;
 }

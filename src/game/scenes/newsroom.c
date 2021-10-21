@@ -167,7 +167,8 @@ void newsroom_free(scene *scene) {
     str_free(&local->har1);
     str_free(&local->har2);
     dialog_free(&local->continue_dialog);
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void newsroom_static_tick(scene *scene, int paused) {

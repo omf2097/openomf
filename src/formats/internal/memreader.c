@@ -39,9 +39,9 @@ long sd_mreader_pos(const sd_mreader *reader) {
 
 void sd_mreader_close(sd_mreader *reader) {
     if(reader->owned) {
-        free(reader->buf);
+        omf_free(reader->buf);
     }
-    free(reader);
+    omf_free(reader);
 }
 
 int sd_mread_buf(sd_mreader *reader, char *buf, int len) {

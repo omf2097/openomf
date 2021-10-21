@@ -29,7 +29,8 @@ typedef struct scoreboard_local_t {
 void scoreboard_free(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
     surface_free(&local->black_surface);
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void handle_scoreboard_save(scoreboard_local *local) {

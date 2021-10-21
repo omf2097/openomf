@@ -260,7 +260,7 @@ static void menu_free(component *c) {
     menu *m = sizer_get_obj(c);
     if(m->bg) {
         surface_free(m->bg);
-        free(m->bg);
+        omf_free(m->bg);
     }
     if(m->submenu) {
         component_free(m->submenu); // Free submenu component
@@ -268,7 +268,7 @@ static void menu_free(component *c) {
     if(m->free) {
         m->free(c); // Free menu userdata
     }
-    free(m);
+    omf_free(m);
 }
 
 static component* menu_find(component *c, int id) {

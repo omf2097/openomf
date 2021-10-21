@@ -37,7 +37,8 @@ typedef struct {
 
 void menu_keyboard_free(component *c) {
     keyboard_menu_local *local = menu_get_userdata(c);
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 char** menu_get_key(int player, int keynum) {

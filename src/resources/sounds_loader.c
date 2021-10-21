@@ -28,8 +28,7 @@ int sounds_loader_init() {
 error_1:
     sd_sounds_free(sound_data);
 error_0:
-    free(sound_data);
-    sound_data = NULL;
+    omf_free(sound_data);
     return 1;
 }
 
@@ -54,7 +53,6 @@ int sounds_loader_get(int id, char **buffer, int *len) {
 void sounds_loader_close() {
     if(sound_data != NULL) {
         sd_sounds_free(sound_data);
-        free(sound_data);
-        sound_data = NULL;
+        omf_free(sound_data);
     }
 }

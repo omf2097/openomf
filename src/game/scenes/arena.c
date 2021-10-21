@@ -435,7 +435,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP, 0, 0);
         } else {
             object_free(obj);
-            free(obj);
+            omf_free(obj);
         }
         return;
     }
@@ -458,7 +458,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         object_set_custom_string(obj, "brwA1-brwB1-brwD1-brwE0-brwD4-brwC2-brwB2-brwA2");
         if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
             object_free(obj);
-            free(obj);
+            omf_free(obj);
         }
     }
 
@@ -709,7 +709,7 @@ void arena_free(scene *scene) {
         write_rec_move(scene, game_state_get_player(scene->gs, 0), ACT_STOP);
         sd_rec_save(local->rec, scene->gs->init_flags->rec_file);
         sd_rec_free(local->rec);
-        free(local->rec);
+        omf_free(local->rec);
     }
 
     for(int i = 0; i < 2; i++) {
@@ -720,7 +720,7 @@ void arena_free(scene *scene) {
 
         for (int j = 0; j < 4; j++) {
             if (j < ceil(local->rounds / 2.0f)) {
-                free(local->player_rounds[i][j]);
+                omf_free(local->player_rounds[i][j]);
             }
         }
     }
@@ -738,7 +738,8 @@ void arena_free(scene *scene) {
 
     settings_save();
 
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void write_rec_move(scene *scene, game_player *player, int action) {
@@ -905,7 +906,7 @@ void arena_spawn_hazard(scene *scene) {
                     changed++;
                 } else {
                     object_free(obj);
-                    free(obj);
+                    omf_free(obj);
                 }
             }
         }
@@ -1232,7 +1233,7 @@ int arena_create(scene *scene) {
         // Errors are unlikely here, but check anyway.
 
         if (scene_load_har(scene, i, player->har_id)) {
-            free(obj);
+            omf_free(obj);
             return 1;
         }
 

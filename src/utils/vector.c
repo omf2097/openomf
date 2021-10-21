@@ -17,7 +17,6 @@ void vector_init(vector *vec) {
 
 void vector_create(vector *vec, unsigned int block_size) {
     vec->block_size = block_size;
-    vec->alloc.cfree = free;
     vector_init(vec);
 }
 
@@ -35,8 +34,7 @@ void vector_free(vector *vec) {
     vec->blocks = 0;
     vec->reserved = 0;
     vec->block_size = 0;
-    vec->alloc.cfree(vec->data);
-    vec->data = NULL;
+    omf_free(vec->data);
 }
 
 void* vector_get(const vector *vec, unsigned int key) {

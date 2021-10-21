@@ -110,8 +110,8 @@ static void gauge_render(component *c) {
 static void gauge_free(component *c) {
     gauge *g = widget_get_obj(c);
     surface_free(g->img);
-    free(g->img);
-    free(g);
+    omf_free(g->img);
+    omf_free(g);
 }
 
 void gauge_set_lit(component *c, int lit) {

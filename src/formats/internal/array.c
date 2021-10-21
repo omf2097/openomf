@@ -8,8 +8,7 @@ void sd_array_create(void **mem, size_t item_size, int num_size) {
 }
 
 void sd_array_free(void **mem) {
-    free(*mem);
-    *mem = NULL;
+    omf_free(*mem);
 }
 
 void sd_array_resize(void **mem, size_t item_size, int num_size) {

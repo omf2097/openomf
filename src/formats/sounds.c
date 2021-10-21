@@ -143,7 +143,7 @@ int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename) {
 
     // Free if exists.
     if(sf->sounds[num].data) {
-        free(sf->sounds[num].data);
+        omf_free(sf->sounds[num].data);
     }
 
     // Allocate
@@ -197,6 +197,6 @@ int sd_sound_to_au(const sd_sound_file *sf, int num, const char *filename) {
 void sd_sounds_free(sd_sound_file *sf) {
     if(sf == NULL) return;
     for(int i = 0; i < SD_SOUNDS_MAX; i++) {
-        free(sf->sounds[i].data);
+        omf_free(sf->sounds[i].data);
     }
 }

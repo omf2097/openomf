@@ -33,8 +33,7 @@ int image_create(image *img, int w, int h) {
 }
 
 void image_free(image *img) {
-    free(img->data);
-    img->data = NULL;
+    omf_free(img->data);
     img->w = 0;
     img->h = 0;
 }

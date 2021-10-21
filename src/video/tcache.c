@@ -100,7 +100,7 @@ void tcache_close() {
     DEBUG(" * Old frees: %d", cache->old_frees);
     tcache_clear();
     hashmap_free(&cache->entries);
-    free(cache);
+    omf_free(cache);
 }
 
 SDL_Texture* tcache_get(surface *sur,
@@ -168,7 +168,7 @@ SDL_Texture* tcache_get(surface *sur,
         scaler_scale(cache->scaler, raw, scaled.data, sur->w, sur->h, cache->scale_factor);
         surface_to_texture(&scaled, val->tex, pal, remap_table, pal_offset);
         surface_free(&scaled);
-        free(raw);
+        omf_free(raw);
     } else {
         surface_to_texture(sur, val->tex, pal, remap_table, pal_offset);
     }

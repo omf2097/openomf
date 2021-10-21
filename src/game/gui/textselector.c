@@ -31,7 +31,7 @@ void textselector_clear_options(component *c) {
     char **text;
     vector_iter_begin(&tb->options, &it);
     while((text = iter_next(&it)) != NULL) {
-        free(*text);
+        omf_free(*text);
     }
 
     // Clear vector
@@ -140,8 +140,8 @@ static void textselector_free(component *c) {
     textselector *tb = widget_get_obj(c);
     textselector_clear_options(c);
     vector_free(&tb->options);
-    free(tb->text);
-    free(tb);
+    omf_free(tb->text);
+    omf_free(tb);
 }
 
 component* textselector_create(const text_settings *tconf, const char *text, textselector_toggle_cb cb, void *userdata) {

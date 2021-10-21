@@ -78,8 +78,9 @@ void cutscene_render_overlay(scene *scene) {
 
 void cutscene_free(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
-    free(local->text);
-    free(local);
+    omf_free(local->text);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {

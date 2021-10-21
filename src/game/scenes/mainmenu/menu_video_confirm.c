@@ -36,7 +36,8 @@ void video_confirm_cancel_clicked(component *c, void *userdata) {
 
 void menu_video_confirm_free(component *c) {
     video_menu_confirm_data *local = menu_get_userdata(c);
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 void  menu_video_confirm_update(component *c) {

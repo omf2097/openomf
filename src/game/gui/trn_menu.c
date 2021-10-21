@@ -41,7 +41,7 @@ void trnmenu_bind_hand(component *c, animation *hand_ani, game_state *gs) {
     // Free old. Shouldn't be needed, but let's be thorough.
     if(m->hand.obj != NULL) {
         object_free(m->hand.obj);
-        free(m->hand.obj);
+        omf_free(m->hand.obj);
     }
 
     // Set up new hand object
@@ -80,9 +80,9 @@ static void trnmenu_free(component *c) {
     }
     if(m->hand.obj != NULL) {
         object_free(m->hand.obj);
-        free(m->hand.obj);
+        omf_free(m->hand.obj);
     }
-    free(m);
+    omf_free(m);
 }
 
 static void trnmenu_layout(component *c, int x, int y, int w, int h) {

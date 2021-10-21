@@ -114,7 +114,7 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
 
             if(har_create(obj, game_state_get_scene(gs)->af_data[0], hd, player->har_id, player->pilot_id, 0)) {
                 object_free(obj);
-                free(obj);
+                omf_free(obj);
                 return 1;
             }
 

@@ -90,8 +90,7 @@ done:
         data->host = NULL;
     }
     if(ctrl->data) {
-        free(ctrl->data);
-        ctrl->data = NULL;
+        omf_free(ctrl->data);
     }
 }
 

@@ -64,7 +64,7 @@ int sd_af_set_move(sd_af_file *af, int index, const sd_move *move) {
     }
     if(af->moves[index] != NULL) {
         sd_move_free(af->moves[index]);
-        free(af->moves[index]);
+        omf_free(af->moves[index]);
     }
     if(move == NULL) {
         return SD_SUCCESS;
@@ -203,7 +203,7 @@ void sd_af_free(sd_af_file *af) {
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         if(af->moves[i] != NULL) {
             sd_move_free(af->moves[i]);
-            free(af->moves[i]);
+            omf_free(af->moves[i]);
         }
     }
 }

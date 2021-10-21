@@ -118,7 +118,8 @@ void melee_free(scene *scene) {
     if (player2->selectable) {
         object_free(&local->bigportrait2);
     }
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void melee_tick(scene *scene, int paused) {

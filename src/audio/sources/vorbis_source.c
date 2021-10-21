@@ -64,7 +64,8 @@ int vorbis_source_update(audio_source *src, char *buffer, int len) {
 void vorbis_source_close(audio_source *src) {
     vorbis_source *local = source_get_userdata(src);
     ov_clear(&local->src_file);
-    free(local);
+    omf_free(local);
+    source_set_userdata(src, local);
     DEBUG("Vorbis Source: Closed.");
 }
 
@@ -107,7 +108,7 @@ int vorbis_source_init(audio_source *src, const char* file) {
     // All done
     return 0;
 error_1:
-    free(local);
+    omf_free(local);
     return 1;
 }
 

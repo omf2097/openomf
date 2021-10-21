@@ -59,7 +59,7 @@ void sink_stop(audio_sink *sink, int sid) {
     audio_stream *s = sink_get_stream(sink, sid);
     stream_stop(s);
     stream_free(s);
-    free(s);
+    omf_free(s);
     hashmap_idel(&sink->streams, sid);
 }
 
@@ -75,7 +75,7 @@ void sink_render(audio_sink *sink) {
         if(stream_get_status(stream) == STREAM_STATUS_FINISHED) {
             stream_stop(stream);
             stream_free(stream);
-            free(stream);
+            omf_free(stream);
             hashmap_delete(&sink->streams, &it);
         }
     }
@@ -90,7 +90,7 @@ void sink_free(audio_sink *sink) {
         audio_stream *stream = *((audio_stream**)pair->val);
         stream_stop(stream);
         stream_free(stream);
-        free(stream);
+        omf_free(stream);
     }
     hashmap_free(&sink->streams);
 

@@ -65,7 +65,7 @@ void sd_move_free(sd_move *move) {
     if(move == NULL) return;
     if(move->animation != NULL) {
         sd_animation_free(move->animation);
-        free(move->animation);
+        omf_free(move->animation);
     }
 }
 
@@ -187,8 +187,7 @@ int sd_move_set_animation(sd_move *move, const sd_animation *animation) {
     }
     if(move->animation != NULL) {
         sd_animation_free(move->animation);
-        free(move->animation);
-        move->animation = NULL;
+        omf_free(move->animation);
     }
     if(animation == NULL) {
         return SD_SUCCESS;
