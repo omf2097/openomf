@@ -1,3 +1,4 @@
+#include "utils/allocator.h"
 #include "utils/list.h"
 #include <stdlib.h>
 #include <string.h>
@@ -6,13 +7,6 @@ void list_create(list *list) {
     list->first = NULL;
     list->last = NULL;
     list->size = 0;
-}
-
-void list_create_with_allocator(list *list, allocator alloc) {
-    list->first = NULL;
-    list->last = NULL;
-    list->size = 0;
-    list->alloc = alloc;
 }
 
 void list_free(list *list) {

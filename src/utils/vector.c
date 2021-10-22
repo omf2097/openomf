@@ -1,3 +1,4 @@
+#include "utils/allocator.h"
 #include "utils/vector.h"
 #include <stdlib.h>
 #include <string.h>
@@ -17,12 +18,6 @@ void vector_init(vector *vec) {
 
 void vector_create(vector *vec, unsigned int block_size) {
     vec->block_size = block_size;
-    vector_init(vec);
-}
-
-void vector_create_with_allocator(vector *vec, unsigned int block_size, allocator alloc) {
-    vec->block_size = block_size;
-    vec->alloc = alloc;
     vector_init(vec);
 }
 

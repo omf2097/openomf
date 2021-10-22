@@ -1,3 +1,4 @@
+#include "utils/allocator.h"
 #include "utils/hashmap.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -38,28 +39,6 @@ uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int x) {
     return (((hval >> x) ^ hval) & TINY_MASK(x));
 }
 
-/** \brief Creates a new hashmap with an allocator
-  *
-  * Creates a new hashmap. This is just like hashmap_create, but
-  * allows the user to define the memory allocation functions.
-  *
-  * \param hm Allocated hashmap pointer
-  * \param n_size Size of the hashmap. Final size will be pow(2, n_size)
-  * \param alloc Allocation functions
-  */
-void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
-    hm->alloc = alloc;
-    hm->buckets_x = n_size;
-    hm->buckets_x_min = 4;
-    hm->buckets_x_max = 31;
-    hm->min_pressure = 0.25;
-    hm->max_pressure = 0.75;
-    hm->flags = 0;
-    hm->buckets = omf_calloc(hashmap_size(hm), sizeof(hashmap_node*));
-    hm->reserved = 0;
-}
-
-
 /** \brief Creates a new hashmap
   *
   * Creates a new hashmap. Note that the size parameter doesn't mean bucket count,
@@ -77,8 +56,14 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
   * \param n_size Size of the hashmap. Final size will be pow(2, n_size)
   */
 void hashmap_create(hashmap *hm, int n_size) {
-    allocator alloc;
-    hashmap_create_with_allocator(hm, n_size, alloc);
+    hm->buckets_x = n_size;
+    hm->buckets_x_min = 4;
+    hm->buckets_x_max = 31;
+    hm->min_pressure = 0.25;
+    hm->max_pressure = 0.75;
+    hm->flags = 0;
+    hm->buckets = omf_calloc(hashmap_size(hm), sizeof(hashmap_node*));
+    hm->reserved = 0;
 }
 
 /** \brief Set hashmap options

@@ -2,7 +2,6 @@
 #define _HASHMAP_H
 
 #include "utils/iterator.h"
-#include "utils/allocator.h"
 
 enum hashmap_flags {
     HASHMAP_AUTO_INC = 0x1,
@@ -32,11 +31,9 @@ struct hashmap_t {
     float min_pressure;
     float max_pressure;
     unsigned int flags;
-    allocator alloc;
 };
 
 void hashmap_create(hashmap *hashmap, int n_size); // actual size will be 2^n_size
-void hashmap_create_with_allocator(hashmap *hashmap, int n_size, allocator alloc);
 void hashmap_free(hashmap *hashmap);
 void hashmap_set_opts(hashmap *hm, unsigned int flags, float min_pressure, float max_pressure, int buckets_min, int buckets_max);
 int hashmap_resize(hashmap *hm, int n_size);
