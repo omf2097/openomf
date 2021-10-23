@@ -50,10 +50,10 @@
 "cf",0,"Only used by shadow scrap, works with 'bm' tag to walk to far corner of arena"
 "cg",0,
 "cl",0,
-"cp",0,
+"cp",0,"If hit collision succeeds, perform hit pause"
 "cw",0,
-"cx",1,
-"cy",1,
+"cx",1,"Set X axis movement speed, if object is already moving (pixels / frame)."
+"cy",1,"Set Y axis movement speed, if object is already moving. Only works if CX is also set."
 "d",1,"Re-enter animation at N ticks"
 "e",0,"Set position to enemy position"
 "f",0,"Flip sprite vertically"
