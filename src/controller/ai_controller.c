@@ -1029,7 +1029,7 @@ void reset_pilot_personality(sd_pilot *pilot) {
             pilot->ap_throw = 100;
             pilot->ap_special = 100;
             pilot->learning = 3.0;
-            pilot->learning = 0.25;
+            pilot->forget = 0.25;
             break;
     }
 }
