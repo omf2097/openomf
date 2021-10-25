@@ -1071,7 +1071,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
         if (har_is_blocking(h, move)) {
             har_event_enemy_block(other, move, true);
-            har_block(o_har, hit_coord, true);
+            har_event_block(h, move, true);
+            har_block(o_har, hit_coord);
             return;
         }
 
