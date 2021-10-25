@@ -64,9 +64,13 @@ enum {
     HAR_EVENT_AIR_ATTACK_DONE, // Touched the floor after executing a move in the air
     HAR_EVENT_ATTACK, // Executed a move, may not hit
     HAR_EVENT_ENEMY_BLOCK, // Opponent blocked your move
+    HAR_EVENT_ENEMY_BLOCK_PROJECTILE, // Opponent blocked your projectile
     HAR_EVENT_BLOCK, // You blocked your opponents move
+    HAR_EVENT_BLOCK_PROJECTILE, // You blocked your opponents projectile
     HAR_EVENT_LAND_HIT, // Landed a hit on the opponent
-    HAR_EVENT_TAKE_HIT, // Hit by HAR or projectile
+    HAR_EVENT_LAND_HIT_PROJECTILE, // Landed a projectile hit on the opponent
+    HAR_EVENT_TAKE_HIT, // Hit by HAR
+    HAR_EVENT_TAKE_HIT_PROJECTILE, // Hit by projectile
     HAR_EVENT_HAZARD_HIT, // Hit by hazard
     HAR_EVENT_STUN,
     HAR_EVENT_ENEMY_STUN,

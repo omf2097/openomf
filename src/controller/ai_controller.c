@@ -1112,6 +1112,7 @@ int ai_har_event(controller *ctrl, har_event event) {
     if (has_queued_tactic) {
         switch(event.type) {
             case HAR_EVENT_BLOCK:
+            case HAR_EVENT_BLOCK_PROJECTILE:
                 if (
                     a->tactic->tactic_type != TACTIC_COUNTER && 
                     a->tactic->tactic_type != TACTIC_TURTLE && 
@@ -1129,7 +1130,6 @@ int ai_har_event(controller *ctrl, har_event event) {
                 break;
             case HAR_EVENT_TAKE_HIT:
                 if (
-                    event.projectile == 0 ||
                     a->tactic->tactic_type == TACTIC_CLOSE ||
                     a->tactic->tactic_type == TACTIC_FLY ||
                     a->tactic->tactic_type == TACTIC_COUNTER ||
@@ -1156,22 +1156,18 @@ int ai_har_event(controller *ctrl, har_event event) {
     }
 
     switch(event.type) {
-        case HAR_EVENT_ENEMY_STUN:
-        case HAR_EVENT_BLOCK:
-        case HAR_EVENT_LAND:
-        case HAR_EVENT_HIT_WALL:
-        case HAR_EVENT_TAKE_HIT:
-        case HAR_EVENT_RECOVER:
-        break;
         case HAR_EVENT_ATTACK:
         case HAR_EVENT_ENEMY_BLOCK:
+        case HAR_EVENT_ENEMY_BLOCK_PROJECTILE:
         case HAR_EVENT_LAND_HIT:
+        case HAR_EVENT_LAND_HIT_PROJECTILE:
             a->selected_move = NULL;
         break;
     }
 
     switch(event.type) {
         case HAR_EVENT_LAND_HIT:
+        case HAR_EVENT_LAND_HIT_PROJECTILE:
             ms = &a->move_stats[event.move->id];
 
             // in the heat of the moment they might forget what they have learnt
@@ -1206,7 +1202,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 
             if (has_queued_tactic || !smart_usually(a)) break;
 
-            if (event.projectile == 1) {
+            if (event.type == HAR_EVENT_LAND_HIT_PROJECTILE) {
                 // we hit with a projectile 
                 chain_consider_tactics(ctrl, (int []) {
                     TACTIC_FLY,
@@ -1230,6 +1226,7 @@ int ai_har_event(controller *ctrl, har_event event) {
             break;
 
         case HAR_EVENT_ENEMY_BLOCK:
+        case HAR_EVENT_ENEMY_BLOCK_PROJECTILE:
             ms = &a->move_stats[event.move->id];
             if(!a->blocked) {
                 a->blocked = 1;
@@ -1239,7 +1236,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 
                 if (has_queued_tactic || !smart_usually(a)) break;
 
-                if (event.projectile == 1) {
+                if (event.type == HAR_EVENT_ENEMY_BLOCK_PROJECTILE) {
                     // enemy blocked our projectile
                     chain_consider_tactics(ctrl, (int []) {
                         TACTIC_FLY,
@@ -1267,6 +1264,7 @@ int ai_har_event(controller *ctrl, har_event event) {
             break;
 
         case HAR_EVENT_BLOCK:
+        case HAR_EVENT_BLOCK_PROJECTILE:
 
             if (has_queued_tactic && a->tactic->attack_on == HAR_EVENT_BLOCK) {
                 // do the attack now
@@ -1277,7 +1275,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 
             if (has_queued_tactic || !smart_usually(a)) break;
 
-            if (event.projectile == 1) {
+            if (event.type == HAR_EVENT_BLOCK_PROJECTILE) {
                 // count this as being shot to respond to spam quicker
                 a->shot++;
                 // we blocked a projectile
@@ -1341,6 +1339,7 @@ int ai_har_event(controller *ctrl, har_event event) {
             });
             break;
         case HAR_EVENT_TAKE_HIT:
+        case HAR_EVENT_TAKE_HIT_PROJECTILE:
 
             // if enemy is cheesing the AI will try to adjust
             if (event.move->category == CAT_THROW || event.move->category == CAT_CLOSE) {
@@ -1360,7 +1359,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                     if (pilot->pref_back < 90) pilot->pref_back += 10;
                     if (pilot->pref_fwd > -90) pilot->pref_fwd -= 10;
                 }
-            } else if (event.move->category == CAT_PROJECTILE) {
+            } else if (event.type == HAR_EVENT_TAKE_HIT_PROJECTILE) {
                 // keep track of how many times we have been shot
                 a->shot++;
                 if (learning_moment(a) && a->shot >= MAX_TIMES_SHOT) {
@@ -1389,7 +1388,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                     TACTIC_PUSH,
                     TACTIC_FLY
                 });
-            } else if (event.projectile == 1) {
+            } else if (event.type == HAR_EVENT_TAKE_HIT_PROJECTILE) {
                 // aggressive tactics
                 chain_consider_tactics(ctrl, (int []) {
                     TACTIC_CLOSE,
