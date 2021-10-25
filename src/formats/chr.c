@@ -7,6 +7,7 @@
 #include "formats/internal/writer.h"
 #include "formats/internal/memwriter.h"
 #include "formats/chr.h"
+#include "utils/allocator.h"
 
 #define UNUSED(x) (void)(x)
 
@@ -42,7 +43,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     // Handle enemy data
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         // Reserve & zero out
-        chr->enemies[i] = malloc(sizeof(sd_chr_enemy));
+        chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
         sd_pilot_create(&chr->enemies[i]->pilot);
         sd_pilot_load_player_from_mem(mr, &chr->enemies[i]->pilot);
         sd_mread_buf(mr, chr->enemies[i]->unknown, 25);
@@ -60,7 +61,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     chr->unknown_b = sd_read_udword(r);
 
     // Load sprite
-    chr->photo = malloc(sizeof(sd_sprite));
+    chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_create(chr->photo);
     int ret = sd_sprite_load(r, chr->photo);
     if(ret != SD_SUCCESS) {
@@ -79,7 +80,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
 error_1:
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         if(chr->enemies[i] != NULL) {
-            free(chr->enemies[i]);
+            omf_free(chr->enemies[i]);
         }
     }
     sd_sprite_free(chr->photo);
@@ -135,7 +136,7 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
 void sd_chr_free(sd_chr_file *chr) {
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         if(chr->enemies[i] != NULL) {
-            free(chr->enemies[i]);
+            omf_free(chr->enemies[i]);
         }
     }
     sd_sprite_free(chr->photo);

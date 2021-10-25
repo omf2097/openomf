@@ -5,6 +5,7 @@
 #include "formats/animation.h"
 #include "formats/sprite.h"
 #include "formats/error.h"
+#include "utils/allocator.h"
 
 int sd_animation_create(sd_animation *ani) {
     if(ani == NULL) {
@@ -40,9 +41,7 @@ int sd_animation_copy(sd_animation *dst, const sd_animation *src) {
     // Copy sprites
     for(int i = 0; i < SD_SPRITE_COUNT_MAX; i++) {
         if(src->sprites[i] != NULL) {
-            if((dst->sprites[i] = malloc(sizeof(sd_sprite))) == NULL) {
-                return SD_OUT_OF_MEMORY;
-            }
+            dst->sprites[i] = omf_calloc(1, sizeof(sd_sprite));
             if((ret = sd_sprite_copy(dst->sprites[i], src->sprites[i])) != SD_SUCCESS) {
                 return ret;
             }
@@ -55,7 +54,7 @@ void sd_animation_free(sd_animation *anim) {
     for(int i = 0; i < SD_SPRITE_COUNT_MAX; i++) {
         if(anim->sprites[i] != NULL) {
             sd_sprite_free(anim->sprites[i]);
-            free(anim->sprites[i]);
+            omf_free(anim->sprites[i]);
         }
     }
 }
@@ -152,11 +151,9 @@ int sd_animation_set_sprite(sd_animation *anim, int num, const sd_sprite *sprite
     }
     if(anim->sprites[num] != NULL) {
         sd_sprite_free(anim->sprites[num]);
-        free(anim->sprites[num]);
+        omf_free(anim->sprites[num]);
     }
-    if((anim->sprites[num] = malloc(sizeof(sd_sprite))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    anim->sprites[num] = omf_calloc(1, sizeof(sd_sprite));
     if((ret = sd_sprite_copy(anim->sprites[num], sprite)) != SD_SUCCESS) {
         return ret;
     }
@@ -168,9 +165,7 @@ int sd_animation_push_sprite(sd_animation *anim, const sd_sprite *sprite) {
     if(anim->sprite_count >= SD_SPRITE_COUNT_MAX) {
         return SD_INVALID_INPUT;
     }
-    if((anim->sprites[anim->sprite_count] = malloc(sizeof(sd_sprite))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    anim->sprites[anim->sprite_count] = omf_calloc(1, sizeof(sd_sprite));
     if((ret = sd_sprite_copy(anim->sprites[anim->sprite_count], sprite)) != SD_SUCCESS) {
         return ret;
     }
@@ -185,8 +180,7 @@ int sd_animation_pop_sprite(sd_animation *anim) {
 
     anim->sprite_count--;
     sd_sprite_free(anim->sprites[anim->sprite_count]);
-    free(anim->sprites[anim->sprite_count]);
-    anim->sprites[anim->sprite_count] = NULL;
+    omf_free(anim->sprites[anim->sprite_count]);
 
     return SD_SUCCESS;
 }
@@ -270,9 +264,7 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
 
     // Sprites
     for(int i = 0; i < ani->sprite_count; i++) {
-        if((ani->sprites[i] = malloc(sizeof(sd_sprite))) == NULL) {
-            return SD_OUT_OF_MEMORY;
-        }
+        ani->sprites[i] = omf_calloc(1, sizeof(sd_sprite));
         if((ret = sd_sprite_create(ani->sprites[i])) != SD_SUCCESS) {
             return ret;
         }

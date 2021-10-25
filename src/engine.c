@@ -2,6 +2,7 @@
 #include <signal.h> // signal()
 #include <SDL.h>
 #include "engine.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/config.h"
 #include "audio/audio.h"
@@ -145,7 +146,7 @@ void engine_run(engine_init_flags *init_flags) {
 #endif
 
     // Set up game
-    game_state *gs = calloc(1, sizeof(game_state));
+    game_state *gs = omf_calloc(1, sizeof(game_state));
     if(game_state_create(gs, init_flags)) {
         game_state_free(&gs);
         return;

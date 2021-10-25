@@ -1,3 +1,4 @@
+#include "utils/allocator.h"
 #include "utils/str.h"
 #include "utils/log.h"
 
@@ -9,26 +10,25 @@
 
 void str_create(str *string) {
     string->len = 0;
-    string->data = calloc(1, 1);
+    string->data = omf_calloc(1, 1);
 }
 
 void str_create_from_cstr(str *string, const char *cstr) {
     string->len = strlen(cstr);
-    string->data = malloc(string->len + 1);
+    string->data = omf_calloc(string->len + 1, 1);
     memcpy(string->data, cstr, string->len);
     string->data[string->len] = 0;
 }
 
 void str_create_from_data(str *string, const char *data, size_t len) {
     string->len = len;
-    string->data = malloc(len + 1);
+    string->data = omf_calloc(len + 1, 1);
     memcpy(string->data, data, string->len);
     string->data[string->len] = 0;
 }
 
 void str_free(str *string) {
-    free(string->data);
-    string->data = NULL;
+    omf_free(string->data);
     string->len = 0;
 }
 
@@ -61,7 +61,7 @@ void str_printf(str *dst, const char *format, ...) {
 
     // Make sure there is enough room for our vsnprintf call plus ending NULL,
     // then render the output to our new buffer.
-    dst->data = realloc(dst->data, dst->len + size + 1);
+    dst->data = omf_realloc(dst->data, dst->len + size + 1);
     vsnprintf(dst->data + dst->len, size + 1, format, args2);
     va_end(args2);
 
@@ -72,21 +72,21 @@ void str_printf(str *dst, const char *format, ...) {
 void str_slice(str *dst, const str *src, size_t start, size_t end) {
     assert(start < end);
     size_t len = end - start;
-    dst->data = realloc(dst->data, len + 1);
+    dst->data = omf_realloc(dst->data, len + 1);
     dst->len = len;
     memcpy(dst->data, src->data + start, len);
     dst->data[dst->len] = 0;
 }
 
 void str_copy(str *dst, const str *src) {
-    dst->data = realloc(dst->data, src->len + 1);
+    dst->data = omf_realloc(dst->data, src->len + 1);
     dst->len = src->len;
     memcpy(dst->data, src->data, dst->len);
     dst->data[dst->len] = 0;
 }
 
 void str_append(str *dst, const str *src) {
-    dst->data = realloc(dst->data, dst->len + src->len + 1);
+    dst->data = omf_realloc(dst->data, dst->len + src->len + 1);
     memcpy(dst->data + dst->len, src->data, src->len);
     dst->len += src->len;
     dst->data[dst->len] = 0;
@@ -94,14 +94,14 @@ void str_append(str *dst, const str *src) {
 
 void str_append_c(str *dst, const char *src) {
     size_t srclen = strlen(src);
-    dst->data = realloc(dst->data, dst->len + srclen + 1);
+    dst->data = omf_realloc(dst->data, dst->len + srclen + 1);
     memcpy(dst->data + dst->len, src, srclen);
     dst->len += srclen;
     dst->data[dst->len] = 0;
 }
 
 void str_prepend(str *dst, const str *src) {
-    dst->data = realloc(dst->data, dst->len + src->len + 1);
+    dst->data = omf_realloc(dst->data, dst->len + src->len + 1);
     memmove(dst->data + src->len, dst->data, dst->len);
     memcpy(dst->data, src->data, src->len);
     dst->len += src->len;
@@ -110,7 +110,7 @@ void str_prepend(str *dst, const str *src) {
 
 void str_prepend_c(str *dst, const char *src) {
     size_t srclen = strlen(src);
-    dst->data = realloc(dst->data, dst->len + srclen + 1);
+    dst->data = omf_realloc(dst->data, dst->len + srclen + 1);
     memmove(dst->data + srclen, dst->data, dst->len);
     memcpy(dst->data, src, srclen);
     dst->len += srclen;
@@ -199,7 +199,7 @@ const char* str_c(const str *string) {
 }
 
 const char* str_c_alloc(const str *src) {
-    char *ptr = malloc(src->len + 1);
+    char *ptr = omf_calloc(src->len + 1, 1);
     memcpy(ptr, src->data, src->len + 1);
     ptr[src->len] = 0;
     return ptr;

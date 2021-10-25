@@ -4,6 +4,7 @@
 #include "formats/animation.h"
 #include "formats/bkanim.h"
 #include "formats/error.h"
+#include "utils/allocator.h"
 
 int sd_bk_anim_create(sd_bk_anim *bka) {
     if(bka == NULL) {
@@ -36,9 +37,7 @@ int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
 
     // Copy animation (if exists)
     if(src->animation != NULL) {
-        if((dst->animation = malloc(sizeof(sd_animation))) == NULL) {
-            return SD_OUT_OF_MEMORY;
-        }
+        dst->animation = omf_calloc(1, sizeof(sd_animation));
         if((ret = sd_animation_copy(dst->animation, src->animation)) != SD_SUCCESS) {
             return ret;
         }
@@ -50,8 +49,7 @@ int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
 void sd_bk_anim_free(sd_bk_anim *bka) {
     if(bka->animation != NULL) {
         sd_animation_free(bka->animation);
-        free(bka->animation);
-        bka->animation = NULL;
+        omf_free(bka->animation);
     }
 }
 
@@ -82,9 +80,7 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     }
 
     // Initialize animation
-    if((bka->animation = malloc(sizeof(sd_animation))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    bka->animation = omf_calloc(1, sizeof(sd_animation));
     if((ret = sd_animation_create(bka->animation)) != SD_SUCCESS) {
         return ret;
     }
@@ -136,15 +132,12 @@ int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation) {
     }
     if(bka->animation != NULL) {
         sd_animation_free(bka->animation);
-        free(bka->animation);
-        bka->animation = NULL;
+        omf_free(bka->animation);
     }
     if(animation == NULL) {
         return SD_SUCCESS;
     }
-    if((bka->animation = malloc(sizeof(sd_animation))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    bka->animation = omf_calloc(1, sizeof(sd_animation));
     if((ret = sd_animation_copy(bka->animation, animation)) != SD_SUCCESS) {
         return ret;
     }

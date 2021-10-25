@@ -1,5 +1,6 @@
 #include "game/gui/xysizer.h"
 #include "game/gui/sizer.h"
+#include "utils/allocator.h"
 #include "utils/vector.h"
 #include "utils/log.h"
 
@@ -85,14 +86,13 @@ static int xysizer_action(component *c, int action) {
 
 static void xysizer_free(component *c) {
     xysizer *m = sizer_get_obj(c);
-    free(m);
+    omf_free(m);
 }
 
 component* xysizer_create(int obj_h) {
     component *c = sizer_create();
 
-    xysizer* m = malloc(sizeof(xysizer));
-    memset(m, 0, sizeof(xysizer));
+    xysizer* m = omf_calloc(1, sizeof(xysizer));
     sizer_set_obj(c, m);
 
     sizer_set_render_cb(c, xysizer_render);

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "video/video_soft.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 /*
@@ -38,9 +39,9 @@ void soft_render_close(video_state *state) {
     soft_renderer *sr = state->userdata;
     SDL_FreeSurface(sr->higher);
     surface_free(&sr->lower);
-    free(sr->tmp_normal);
-    free(sr->tmp_scaling);
-    free(sr);
+    omf_free(sr->tmp_normal);
+    omf_free(sr->tmp_scaling);
+    omf_free(sr);
 }
 
 void soft_render_reinit(video_state *state) {
@@ -122,7 +123,7 @@ void soft_render_sprite_fsot(
 }
 
 void video_soft_init(video_state *state) {
-    soft_renderer *sr = malloc(sizeof(soft_renderer));
+    soft_renderer *sr = omf_calloc(1, sizeof(soft_renderer));
     sr->higher = SDL_CreateRGBSurface(0,
                                     320,
                                     200,
@@ -135,10 +136,10 @@ void video_soft_init(video_state *state) {
     surface_create(&sr->lower, SURFACE_TYPE_PALETTE, 320, 200);
 
     // Preallocate memory for more efficient drawing
-    sr->tmp_normal = malloc(320 * 200 * 4);
+    sr->tmp_normal = omf_calloc(1, 320 * 200 * 4);
     sr->tmp_scaling = NULL;
     if(state->scale_factor > 1) {
-        sr->tmp_scaling = malloc(320 * 200 * 4 * state->scale_factor * state->scale_factor);
+        sr->tmp_scaling = omf_calloc(1, 320 * 200 * 4 * state->scale_factor * state->scale_factor);
     }
 
     // Set as userdata

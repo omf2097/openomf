@@ -10,6 +10,7 @@
 #include <sys/stat.h> // mkdir
 #endif
 
+#include "utils/allocator.h"
 #include "utils/compat.h"
 #include "resources/pathmanager.h"
 #include "utils/log.h"
@@ -28,13 +29,13 @@ static char* resource_paths[NUMBER_OF_RESOURCES];
 // Build directory
 static void local_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
-    local_paths[path_id] = realloc(local_paths[path_id], len);
+    local_paths[path_id] = omf_realloc(local_paths[path_id], len);
     snprintf(local_paths[path_id], len, "%s%s", path, ext);
 }
 
 static void resource_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
-    resource_paths[path_id] = realloc(resource_paths[path_id], len);
+    resource_paths[path_id] = omf_realloc(resource_paths[path_id], len);
     snprintf(resource_paths[path_id], len, "%s%s", path, ext);
 }
 
@@ -149,12 +150,12 @@ int pm_init() {
     }
 
     // All done
-    free(local_base_dir);
+    omf_free(local_base_dir);
     return 0;
 
 error_1:
     pm_free();
-    free(local_base_dir);
+    omf_free(local_base_dir);
 error_0:
     return 1;
 }
@@ -170,10 +171,10 @@ void pm_log() {
 
 void pm_free() {
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        free(resource_paths[i]);
+        omf_free(resource_paths[i]);
     }
     for(int i = 0; i < NUMBER_OF_LOCAL_PATHS; i++) {
-        free(local_paths[i]);
+        omf_free(local_paths[i]);
     }
 }
 
@@ -206,7 +207,7 @@ int pm_in_portable_mode() {
 char* pm_get_local_base_dir() {
     char *out = NULL;
     if(pm_in_portable_mode()) {
-        out = calloc(1, 1);
+        out = omf_calloc(1, 1);
         return out;
     }
 

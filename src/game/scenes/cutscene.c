@@ -7,6 +7,7 @@
 #include "audio/music.h"
 #include "video/video.h"
 #include "resources/ids.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 #define END_TEXT 992
@@ -77,8 +78,9 @@ void cutscene_render_overlay(scene *scene) {
 
 void cutscene_free(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
-    free(local->text);
-    free(local);
+    omf_free(local->text);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -92,8 +94,7 @@ void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
 }
 
 int cutscene_create(scene *scene) {
-    cutscene_local *local = malloc(sizeof(cutscene_local));
-    memset(local, 0, sizeof(cutscene_local));
+    cutscene_local *local = omf_calloc(1, sizeof(cutscene_local));
     text_defaults(&local->text_conf);
     local->text_conf.halign = TEXT_CENTER;
     local->text_conf.font = FONT_SMALL;
@@ -120,7 +121,7 @@ int cutscene_create(scene *scene) {
 
         // Pilot face
         animation *ani = &bk_get_info(&scene->bk_data, 3)->ani;
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
         object_set_animation(obj, ani);
         object_select_sprite(obj, p1->pilot_id);
@@ -129,7 +130,7 @@ int cutscene_create(scene *scene) {
 
         // Face effects
         ani = &bk_get_info(&scene->bk_data, 10+p1->pilot_id)->ani;
-        obj = malloc(sizeof(object));
+        obj = omf_calloc(1, sizeof(object));
         object_create(obj, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
         object_set_animation(obj, ani);
         game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
@@ -147,7 +148,7 @@ int cutscene_create(scene *scene) {
     size_t text_len = strlen(text);
     local->len = text_len - 1;
     local->pos = 0;
-    local->text = calloc(1, text_len + 1);
+    local->text = omf_calloc(text_len + 1, 1);
     strncpy(local->text, text, text_len);
     local->current = local->text;
 

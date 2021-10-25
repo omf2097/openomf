@@ -9,6 +9,7 @@
 #include "formats/internal/memwriter.h"
 #include "formats/error.h"
 #include "formats/tournament.h"
+#include "utils/allocator.h"
 
 int sd_tournament_create(sd_tournament_file *trn) {
     if(trn == NULL) {
@@ -22,8 +23,7 @@ static void free_enemies(sd_tournament_file *trn) {
     for(int i = 0; i < MAX_TRN_ENEMIES; i++) {
         if(trn->enemies[i]) {
             sd_pilot_free(trn->enemies[i]);
-            free(trn->enemies[i]);
-            trn->enemies[i] = NULL;
+            omf_free(trn->enemies[i]);
         }
     }
 }
@@ -33,20 +33,19 @@ static void free_locales(sd_tournament_file *trn) {
         if(trn->locales[i]) {
             if(trn->locales[i]->logo) {
                 sd_sprite_free(trn->locales[i]->logo);
-                free(trn->locales[i]->logo);
+                omf_free(trn->locales[i]->logo);
             }
             if(trn->locales[i]->description)
-                free(trn->locales[i]->description);
+                omf_free(trn->locales[i]->description);
             if(trn->locales[i]->title)
-                free(trn->locales[i]->title);
+                omf_free(trn->locales[i]->title);
             for(int har = 0; har < 11; har++) {
                 for(int page = 0; page < 10; page++) {
                     if(trn->locales[i]->end_texts[har][page])
-                        free(trn->locales[i]->end_texts[har][page]);
+                        omf_free(trn->locales[i]->end_texts[har][page]);
                 }
             }
-            free(trn->locales[i]);
-            trn->locales[i] = NULL;
+            omf_free(trn->locales[i]);
         }
     }
 }
@@ -62,7 +61,7 @@ int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
     if(trn == NULL || pic_name == NULL)
         return SD_INVALID_INPUT;
     size_t len = strlen(pic_name) + 1;
-    trn->pic_file = realloc(trn->pic_file, len);
+    trn->pic_file = omf_realloc(trn->pic_file, len);
     snprintf(trn->pic_file, len, "%s", pic_name);
     return SD_SUCCESS;
 }
@@ -111,7 +110,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Read enemy data
     for(unsigned i = 0; i < trn->enemy_count; i++) {
-        trn->enemies[i] = malloc(sizeof(sd_pilot));
+        trn->enemies[i] = omf_calloc(1, sizeof(sd_pilot));
 
         // Find data length
         sd_reader_set(r, offset_list[i]);
@@ -131,7 +130,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Allocate locales
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        trn->locales[i] = malloc(sizeof(sd_tournament_locale));
+        trn->locales[i] = omf_calloc(1, sizeof(sd_tournament_locale));
         trn->locales[i]->logo = NULL;
         trn->locales[i]->description = NULL;
         trn->locales[i]->title = NULL;
@@ -144,7 +143,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Load logos to locales
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        trn->locales[i]->logo = malloc(sizeof(sd_sprite));
+        trn->locales[i]->logo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(trn->locales[i]->logo);
         if((ret = sd_sprite_load(r, trn->locales[i]->logo)) != SD_SUCCESS) {
             goto error_2;
@@ -319,6 +318,6 @@ void sd_tournament_free(sd_tournament_file *trn) {
     free_locales(trn);
     free_enemies(trn);
     if(trn->pic_file != NULL) {
-        free(trn->pic_file);
+        omf_free(trn->pic_file);
     }
 }

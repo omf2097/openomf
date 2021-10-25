@@ -11,6 +11,7 @@
 
 #include <stdlib.h>
 #include "audio/sinks/openal_stream.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 #define AUDIO_BUFFER_COUNT 2
@@ -116,7 +117,8 @@ void openal_stream_close(audio_stream *stream) {
     alSourceStop(local->source);
     alDeleteSources(1, &local->source);
     alDeleteBuffers(AUDIO_BUFFER_COUNT, local->buffers);
-    free(local);
+    omf_free(local);
+    stream_set_userdata(stream, local);
 }
 
 static int get_al_format(int bytes, int channels) {
@@ -136,7 +138,7 @@ static int get_al_format(int bytes, int channels) {
 }
 
 int openal_stream_init(audio_stream *stream, audio_sink *sink) {
-    openal_stream *local = malloc(sizeof(openal_stream));
+    openal_stream *local = omf_calloc(1, sizeof(openal_stream));
 
     // Dump old errors
     while(alGetError() != AL_NO_ERROR);
@@ -179,7 +181,7 @@ int openal_stream_init(audio_stream *stream, audio_sink *sink) {
 exit_1:
     alDeleteSources(1, &local->source);
 exit_0:
-    free(local);
+    omf_free(local);
     return 1;
 }
 

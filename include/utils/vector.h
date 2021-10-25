@@ -2,7 +2,6 @@
 #define _VECTOR_H
 
 #include "iterator.h"
-#include "allocator.h"
 
 typedef struct vector_t {
     char *data;
@@ -10,12 +9,10 @@ typedef struct vector_t {
     unsigned int blocks;
     unsigned int reserved;
     unsigned int inc_factor;
-    allocator alloc;
 } vector;
 
 typedef int (*vector_compare_func)(const void*, const void*);
 
-void vector_create_with_allocator(vector *vector, unsigned int block_size, allocator alloc);
 void vector_create(vector *vector, unsigned int block_size);
 void vector_free(vector *vector);
 void vector_clear(vector *vector);

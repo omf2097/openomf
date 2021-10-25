@@ -5,6 +5,7 @@
 #include "game/game_state.h"
 #include "video/video.h"
 #include "resources/ids.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 typedef struct intro_local_t {
@@ -50,7 +51,9 @@ void intro_tick(scene *scene, int paused) {
 }
 
 void intro_free(scene *scene) {
-    free(scene_get_userdata(scene));
+    intro_local *local = scene_get_userdata(scene);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 int intro_anim_override(scene *scene, int anim_id) {
@@ -62,7 +65,7 @@ int intro_anim_override(scene *scene, int anim_id) {
 }
 
 int intro_create(scene *scene) {
-    intro_local *local = malloc(sizeof(intro_local));
+    intro_local *local = omf_calloc(1, sizeof(intro_local));
     local->ticks = 0;
 
     // Callbacks

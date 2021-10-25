@@ -4,6 +4,7 @@
 #include "controller/keyboard.h"
 #include "controller/joystick.h"
 #include "controller/rec_controller.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "game/utils/serial.h"
@@ -79,9 +80,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->this_wait_ticks = 0;
 
     // Set up players
-    gs->sc = malloc(sizeof(scene));
+    gs->sc = omf_calloc(1, sizeof(scene));
     for(int i = 0; i < 2; i++) {
-        gs->players[i] = malloc(sizeof(game_player));
+        gs->players[i] = omf_calloc(1, sizeof(game_player));
         game_player_create(gs->players[i]);
     }
 
@@ -151,7 +152,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 error_1:
     scene_free(gs->sc);
 error_0:
-    free(gs->sc);
+    omf_free(gs->sc);
     vector_free(&gs->objects);
     return 1;
 }
@@ -218,7 +219,7 @@ void game_state_del_animation(game_state *gs, int anim_id) {
         animation *ani = object_get_animation(robj->obj);
         if(ani != NULL && ani->id == anim_id) {
             object_free(robj->obj);
-            free(robj->obj);
+            omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
             DEBUG("Deleted animation %i from game_state.", anim_id);
             return;
@@ -234,7 +235,7 @@ void game_state_del_object(game_state *gs, object *target) {
     while((robj = iter_next(&it)) != NULL) {
         if(target == robj->obj) {
             object_free(robj->obj);
-            free(robj->obj);
+            omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
             return;
         }
@@ -259,7 +260,7 @@ void game_state_clear_hazards_projectiles(game_state *gs) {
     while((robj = iter_next(&it)) != NULL) {
         if(object_get_group(robj->obj) == GROUP_PROJECTILE) {
             object_free(robj->obj);
-            free(robj->obj);
+            omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
         }
     }
@@ -401,7 +402,7 @@ void game_state_debug(game_state *gs) {
 int game_load_new(game_state *gs, int scene_id) {
     // Free old scene
     scene_free(gs->sc);
-    free(gs->sc);
+    omf_free(gs->sc);
 
     // Clear up old video cache objects
     tcache_clear();
@@ -413,13 +414,13 @@ int game_load_new(game_state *gs, int scene_id) {
     while((robj = iter_next(&it)) != NULL) {
         if(!robj->persistent) {
             object_free(robj->obj);
-            free(robj->obj);
+            omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
         }
     }
 
     // Initialize new scene with BK data etc.
-    gs->sc = malloc(sizeof(scene));
+    gs->sc = omf_calloc(1, sizeof(scene));
     if(scene_create(gs->sc, gs, scene_id)) {
         PERROR("Error while loading scene %d.", scene_id);
         goto error_0;
@@ -511,7 +512,7 @@ int game_load_new(game_state *gs, int scene_id) {
 error_1:
     scene_free(gs->sc);
 error_0:
-    free(gs->sc);
+    omf_free(gs->sc);
     return 1;
 }
 
@@ -539,7 +540,7 @@ void game_state_cleanup(game_state *gs) {
         if(object_finished(robj->obj)) {
             /*DEBUG("Animation object %d is finished, removing.", robj->obj->cur_animation->id);*/
             object_free(robj->obj);
-            free(robj->obj);
+            omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
         }
     }
@@ -728,12 +729,12 @@ int game_state_num_players(game_state *gs) {
 void _setup_keyboard(game_state *gs, int player_id) {
     settings_keyboard *k = &settings_get()->keys;
     // Set up controller
-    controller *ctrl = malloc(sizeof(controller));
+    controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);
 
     // Set up keyboards
-    keyboard_keys *keys = malloc(sizeof(keyboard_keys));
+    keyboard_keys *keys = omf_calloc(1, sizeof(keyboard_keys));
     if(player_id == 0) {
         keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
         keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
@@ -768,7 +769,7 @@ void _setup_keyboard(game_state *gs, int player_id) {
 }
 
 void _setup_ai(game_state *gs, int player_id) {
-    controller *ctrl = malloc(sizeof(controller));
+    controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);
 
@@ -779,7 +780,7 @@ void _setup_ai(game_state *gs, int player_id) {
 }
 
 int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offset) {
-    controller *ctrl = malloc(sizeof(controller));
+    controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);
 
@@ -790,7 +791,7 @@ int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offs
 }
 
 void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec) {
-    controller *ctrl = malloc(sizeof(controller));
+    controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);
 
@@ -818,7 +819,7 @@ void game_state_init_demo(game_state *gs) {
     // Set up player controller
     for(int i = 0;i < game_state_num_players(gs);i++) {
         game_player *player = game_state_get_player(gs, i);
-        controller *ctrl = malloc(sizeof(controller));
+        controller *ctrl = omf_calloc(1, sizeof(controller));
         controller_init(ctrl);
         ai_controller_create(ctrl, 4);
         game_player_set_ctrl(player, ctrl);
@@ -848,22 +849,22 @@ void game_state_free(game_state **_gs) {
     vector_iter_begin(&gs->objects, &it);
     while((robj = iter_next(&it)) != NULL) {
         object_free(robj->obj);
-        free(robj->obj);
+        omf_free(robj->obj);
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
 
     // Free scene
     scene_free(gs->sc);
-    free(gs->sc);
+    omf_free(gs->sc);
 
     // Free players
     for(int i = 0; i < 2; i++) {
         game_player_set_ctrl(gs->players[i], NULL);
         game_player_free(gs->players[i]);
-        free(gs->players[i]);
+        omf_free(gs->players[i]);
     }
-    free(gs);
+    omf_free(gs);
 }
 
 int game_state_ms_per_dyntick(game_state *gs) {
@@ -932,7 +933,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         // Declare some vars
         game_player *player = game_state_get_player(gs, i);
         game_state_del_object(gs, player->har);
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
@@ -963,7 +964,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     while((robj = iter_next(&it)) != NULL) {
         if (robj->obj->group == GROUP_PROJECTILE) {
             object_free(robj->obj);
-            free(robj->obj);
+            omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
         }
     }
@@ -971,7 +972,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     uint8_t count = serial_read_int8(ser);
 
     for (int i = 0; i < count; i++) {
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
         int layer = serial_read_int8(ser);
         object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0,0));
         object_unserialize(obj, ser, gs);

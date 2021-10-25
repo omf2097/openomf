@@ -6,6 +6,7 @@
 #include "game/gui/textselector.h"
 #include "game/gui/widget.h"
 #include "audio/sound.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/compat.h"
 
@@ -30,7 +31,7 @@ void textselector_clear_options(component *c) {
     char **text;
     vector_iter_begin(&tb->options, &it);
     while((text = iter_next(&it)) != NULL) {
-        free(*text);
+        omf_free(*text);
     }
 
     // Clear vector
@@ -139,15 +140,14 @@ static void textselector_free(component *c) {
     textselector *tb = widget_get_obj(c);
     textselector_clear_options(c);
     vector_free(&tb->options);
-    free(tb->text);
-    free(tb);
+    omf_free(tb->text);
+    omf_free(tb);
 }
 
 component* textselector_create(const text_settings *tconf, const char *text, textselector_toggle_cb cb, void *userdata) {
     component *c = widget_create();
 
-    textselector *tb = malloc(sizeof(textselector));
-    memset(tb, 0, sizeof(textselector));
+    textselector *tb = omf_calloc(1, sizeof(textselector));
     tb->text = strdup(text);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->pos = &tb->pos_;

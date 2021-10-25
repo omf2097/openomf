@@ -3,6 +3,7 @@
 
 #include "formats/error.h"
 #include "formats/pilot.h"
+#include "utils/allocator.h"
 
 #define PILOT_BLOCK_LENGTH 428
 
@@ -16,7 +17,7 @@ int sd_pilot_create(sd_pilot *pilot) {
 
 void sd_pilot_free(sd_pilot *pilot) {
     for(int m = 0; m < 10; m++) {
-        free(pilot->quotes[m]);
+        omf_free(pilot->quotes[m]);
     }
 }
 

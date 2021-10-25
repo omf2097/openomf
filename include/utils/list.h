@@ -2,7 +2,7 @@
 #define _LIST_H
 
 #include "iterator.h"
-#include "allocator.h"
+#include <stddef.h>
 
 typedef struct list_node_t list_node;
 
@@ -16,11 +16,9 @@ typedef struct list_t {
     list_node *first;
     list_node *last;
     unsigned int size;
-    allocator alloc;
 } list;
 
 void list_create(list *list);
-void list_create_with_allocator(list *list, allocator alloc);
 void list_free(list *list);
 void list_prepend(list *list, const void *ptr, size_t size);
 void list_append(list *list, const void *ptr, size_t size);

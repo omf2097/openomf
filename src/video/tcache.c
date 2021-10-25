@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "video/tcache.h"
+#include "utils/allocator.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
 
@@ -48,7 +49,7 @@ tcache_entry_value* tcache_get_entry(tcache_entry_key *key) {
 }
 
 void tcache_init(SDL_Renderer *renderer, int scale_factor, scaler_plugin *scaler) {
-    cache = malloc(sizeof(tcache));
+    cache = omf_calloc(1, sizeof(tcache));
     hashmap_create(&cache->entries, 6);
     cache->renderer = renderer;
     cache->scaler = scaler;
@@ -99,7 +100,7 @@ void tcache_close() {
     DEBUG(" * Old frees: %d", cache->old_frees);
     tcache_clear();
     hashmap_free(&cache->entries);
-    free(cache);
+    omf_free(cache);
 }
 
 SDL_Texture* tcache_get(surface *sur,
@@ -156,7 +157,7 @@ SDL_Texture* tcache_get(surface *sur,
     // Either one, it needs to be updated. Let's do it now.
     // Also, scale surface if necessary
     if(cache->scale_factor > 1) {
-        char *raw = malloc(sur->w * sur->h * 4);
+        char *raw = omf_calloc(1, sur->w * sur->h * 4);
         surface scaled;
         surface_create(&scaled,
                        SURFACE_TYPE_RGBA,
@@ -167,7 +168,7 @@ SDL_Texture* tcache_get(surface *sur,
         scaler_scale(cache->scaler, raw, scaled.data, sur->w, sur->h, cache->scale_factor);
         surface_to_texture(&scaled, val->tex, pal, remap_table, pal_offset);
         surface_free(&scaled);
-        free(raw);
+        omf_free(raw);
     } else {
         surface_to_texture(sur, val->tex, pal, remap_table, pal_offset);
     }

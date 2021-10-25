@@ -1,6 +1,7 @@
 #include "game/utils/score.h"
 #include "game/utils/formatting.h"
 #include "video/surface.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include <stdio.h>
 #include <math.h>
@@ -67,7 +68,7 @@ void chr_score_reset(chr_score *score, int wipe) {
     score->destruction = 0;
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
-        free(t->text);
+        omf_free(t->text);
         list_delete(&score->texts, &it);
     }
 }
@@ -96,7 +97,7 @@ void chr_score_free(chr_score *score) {
 
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
-        free(t->text);
+        omf_free(t->text);
     }
     list_free(&score->texts);
 }
@@ -118,7 +119,7 @@ void chr_score_tick(chr_score *score) {
         lastage = t->age++;
         if(t->position < 0.0f) {
             score->score += t->points;
-            free(t->text);
+            omf_free(t->text);
             list_delete(&score->texts, &it);
         }
     }
@@ -184,14 +185,14 @@ void chr_score_victory(chr_score *score, int health) {
     score->health = health;
     char *text;
     if (health == 100) {
-        text = malloc(64);
+        text = omf_calloc(64, 1);
         int len = snprintf(text, 64, "perfect round ");
         int points = DESTRUCTION * multipliers[score->difficulty];
         score_format(points, text+len, 64-len);
         // XXX hardcode the y coordinate for now
         chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
     }
-    text = malloc(64);
+    text = omf_calloc(64, 1);
 
     int len = snprintf(text, 64, "vitality ");
     int points = trunc((DESTRUCTION * multipliers[score->difficulty]) * (health / 100.0f));
@@ -212,7 +213,7 @@ void chr_score_done(chr_score *score) {
     if (!score->done) {
         score->done = 1;
         if (score->destruction) {
-            char *text = malloc(64);
+            char *text = omf_calloc(64, 1);
             int len = snprintf(text, 64, "destruction bonus ");
             int points = DESTRUCTION * multipliers[score->difficulty];
             score_format(points, text+len, 64-len);
@@ -220,7 +221,7 @@ void chr_score_done(chr_score *score) {
             chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
             score->destruction = 0;
         } else if (score->scrap) {
-            char *text = malloc(64);
+            char *text = omf_calloc(64, 1);
             int len = snprintf(text, 64, "scrap bonus ");
             int points = SCRAP * multipliers[score->difficulty];
             score_format(points, text+len, 64-len);
@@ -239,7 +240,7 @@ int chr_score_interrupt(chr_score *score, vec2i pos) {
     // Enemy interrupted somehow, show consecutive hits or whatevera
     int ret = 0;
     if (score->consecutive_hits > 3) {
-        char *text = malloc(64);
+        char *text = omf_calloc(64, 1);
         ret = 1;
         int len = snprintf(text, 64, "%d consecutive hits ", score->consecutive_hits);
         score_format(score->consecutive_hit_score, text+len, 64-len);
@@ -255,7 +256,7 @@ int chr_score_end_combo(chr_score *score, vec2i pos) {
     // enemy recovered control, end any combos
     int ret = 0;
     if (score->combo_hits > 1) {
-        char *text = malloc(64);
+        char *text = omf_calloc(64, 1);
         ret = 1;
         int len = snprintf(text, 64, "%d hit combo ", score->combo_hits);
         score_format(score->combo_hit_score*4, text+len, 64-len);
@@ -305,7 +306,7 @@ void chr_score_unserialize(chr_score *score, serial *ser) {
 
     for (int i = 0; i < count; i++) {
         text_len = serial_read_int8(ser);
-        text = malloc(text_len);
+        text = omf_calloc(text_len, 1);
         serial_read(ser, text, text_len);
         pos = serial_read_float(ser);
         x = serial_read_int16(ser);

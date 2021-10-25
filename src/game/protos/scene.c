@@ -4,6 +4,7 @@
 #include "resources/ids.h"
 #include "resources/bk_loader.h"
 #include "resources/af_loader.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vec.h"
 #include "game/game_player.h"
@@ -75,9 +76,9 @@ void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
 int scene_load_har(scene *scene, int player_id, int har_id) {
     if(scene->af_data[player_id]) {
         af_free(scene->af_data[player_id]);
-        free(scene->af_data[player_id]);
+        omf_free(scene->af_data[player_id]);
     }
-    scene->af_data[player_id] = malloc(sizeof(af));
+    scene->af_data[player_id] = omf_calloc(1, sizeof(af));
 
     int resource_id = har_to_resource(har_id);
     if(load_af_file(scene->af_data[player_id], resource_id)) {
@@ -112,7 +113,7 @@ void scene_init(scene *scene) {
 
         // Start up animations
         if(m_load) {
-            object *obj = malloc(sizeof(object));
+            object *obj = omf_calloc(1, sizeof(object));
             object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
             object_set_stl(obj, scene->bk_data.sound_translation_table);
             object_set_animation(obj, &info->ani);
@@ -230,11 +231,11 @@ void scene_free(scene *scene) {
     bk_free(&scene->bk_data);
     if (scene->af_data[0]) {
         af_free(scene->af_data[0]);
-        free(scene->af_data[0]);
+        omf_free(scene->af_data[0]);
     }
     if (scene->af_data[1]) {
         af_free(scene->af_data[1]);
-        free(scene->af_data[1]);
+        omf_free(scene->af_data[1]);
     }
     ticktimer_close(&scene->tick_timer);
 }
@@ -281,7 +282,7 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t
     // Get next animation
     bk_info *info = bk_get_info(&sc->bk_data, id);
     if(info != NULL) {
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vel);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &info->ani);

@@ -6,6 +6,7 @@
 #include "resources/pathmanager.h"
 #include "audio/music.h"
 #include "audio/audio.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "game/utils/settings.h"
 
@@ -126,7 +127,7 @@ int music_play(unsigned int id) {
     }
 
     // ... Okay, it's not. Create a new resource and start loading.
-    audio_source *music_src = malloc(sizeof(audio_source));
+    audio_source *music_src = omf_calloc(1, sizeof(audio_source));
     source_init(music_src);
 
     // Find path & ext
@@ -181,7 +182,7 @@ int music_play(unsigned int id) {
     return 0;
 
 error_0:
-    free(music_src);
+    omf_free(music_src);
     return 1;
 }
 

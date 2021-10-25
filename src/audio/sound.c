@@ -5,6 +5,7 @@
 #include "audio/sink.h"
 #include "audio/sound.h"
 #include "resources/sounds_loader.h"
+#include "utils/allocator.h"
 
 static float _sound_volume = VOLUME_DEFAULT;
 
@@ -32,7 +33,7 @@ void sound_play(int id, float volume, float panning, float pitch) {
     }
 
     // Play
-    audio_source *src = malloc(sizeof(audio_source));
+    audio_source *src = omf_calloc(1, sizeof(audio_source));
     source_init(src);
     raw_source_init(src, buf, len);
     sink_play(sink, src, id, volume * _sound_volume, panning, pitch);

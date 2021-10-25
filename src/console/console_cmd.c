@@ -5,6 +5,7 @@
 #include "resources/ids.h"
 #include "video/video.h"
 #include "audio/music.h"
+#include "utils/allocator.h"
 
 // utils
 int strtoint(char *input, int *output) {
@@ -107,13 +108,13 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
             vec2i pos = object_get_pos(har_obj);
             int hd = object_get_direction(har_obj);
 
-            object *obj = malloc(sizeof(object));
+            object *obj = omf_calloc(1, sizeof(object));
             object_create(obj, gs, pos, vec2f_create(0,0));
             player->har_id = i;
 
             if(har_create(obj, game_state_get_scene(gs)->af_data[0], hd, player->har_id, player->pilot_id, 0)) {
                 object_free(obj);
-                free(obj);
+                omf_free(obj);
                 return 1;
             }
 

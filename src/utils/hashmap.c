@@ -1,3 +1,4 @@
+#include "utils/allocator.h"
 #include "utils/hashmap.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -38,30 +39,6 @@ uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int x) {
     return (((hval >> x) ^ hval) & TINY_MASK(x));
 }
 
-/** \brief Creates a new hashmap with an allocator
-  *
-  * Creates a new hashmap. This is just like hashmap_create, but
-  * allows the user to define the memory allocation functions.
-  *
-  * \param hm Allocated hashmap pointer
-  * \param n_size Size of the hashmap. Final size will be pow(2, n_size)
-  * \param alloc Allocation functions
-  */
-void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
-    hm->alloc = alloc;
-    hm->buckets_x = n_size;
-    hm->buckets_x_min = 4;
-    hm->buckets_x_max = 31;
-    hm->min_pressure = 0.25;
-    hm->max_pressure = 0.75;
-    hm->flags = 0;
-    size_t b_size = hashmap_size(hm) * sizeof(hashmap_node*);
-    hm->buckets = hm->alloc.cmalloc(b_size);
-    memset(hm->buckets, 0, b_size);
-    hm->reserved = 0;
-}
-
-
 /** \brief Creates a new hashmap
   *
   * Creates a new hashmap. Note that the size parameter doesn't mean bucket count,
@@ -79,11 +56,14 @@ void hashmap_create_with_allocator(hashmap *hm, int n_size, allocator alloc) {
   * \param n_size Size of the hashmap. Final size will be pow(2, n_size)
   */
 void hashmap_create(hashmap *hm, int n_size) {
-    allocator alloc;
-    alloc.cmalloc = malloc;
-    alloc.crealloc = realloc;
-    alloc.cfree = free;
-    hashmap_create_with_allocator(hm, n_size, alloc);
+    hm->buckets_x = n_size;
+    hm->buckets_x_min = 4;
+    hm->buckets_x_max = 31;
+    hm->min_pressure = 0.25;
+    hm->max_pressure = 0.75;
+    hm->flags = 0;
+    hm->buckets = omf_calloc(hashmap_size(hm), sizeof(hashmap_node*));
+    hm->reserved = 0;
 }
 
 /** \brief Set hashmap options
@@ -164,9 +144,7 @@ int hashmap_resize(hashmap *hm, int n_size) {
     }
 
     // Allocate and zero out a new memory blocks for the resized bucket list
-    size_t new_size = BUCKETS_SIZE(n_size) * sizeof(hashmap_node*);
-    hashmap_node **new_buckets = hm->alloc.cmalloc(new_size);
-    memset(new_buckets, 0, new_size);
+    hashmap_node **new_buckets = omf_calloc(BUCKETS_SIZE(n_size), sizeof(hashmap_node*));
 
     // Rehash
     hashmap_node *node = NULL;
@@ -186,7 +164,7 @@ int hashmap_resize(hashmap *hm, int n_size) {
     }
 
     // Free old bucket list and assign new list and size of the hashmap
-    free(hm->buckets);
+    omf_free(hm->buckets);
     hm->buckets = new_buckets;
     hm->buckets_x = n_size;
     return 0;
@@ -207,9 +185,9 @@ void hashmap_clear(hashmap *hm) {
         while(node != NULL) {
             tmp = node;
             node = node->next;
-            hm->alloc.cfree(tmp->pair.key);
-            hm->alloc.cfree(tmp->pair.val);
-            hm->alloc.cfree(tmp);
+            omf_free(tmp->pair.key);
+            omf_free(tmp->pair.val);
+            omf_free(tmp);
             hm->reserved--;
         }
         hm->buckets[i] = NULL;
@@ -225,8 +203,7 @@ void hashmap_clear(hashmap *hm) {
   */
 void hashmap_free(hashmap *hm) {
     hashmap_clear(hm);
-    hm->alloc.cfree(hm->buckets);
-    hm->buckets = NULL;
+    omf_free(hm->buckets);
     hm->buckets_x = 0;
     hm->reserved = 0;
 }
@@ -297,7 +274,7 @@ void* hashmap_put(hashmap *hm,
 
     if(found) {
         // The key is already in the hashmap, so just realloc and reset the contents.
-        seek->pair.val = hm->alloc.crealloc(seek->pair.val, vallen);
+        seek->pair.val = omf_realloc(seek->pair.val, vallen);
         memcpy(seek->pair.val, val, vallen);
         seek->pair.vallen = vallen;
 
@@ -306,11 +283,11 @@ void* hashmap_put(hashmap *hm,
     } else {
         // Key is not yet in the hashmap, so create a new node and set it
         // as the first entry in the buckets list.
-        hashmap_node *node = hm->alloc.cmalloc(sizeof(hashmap_node));
+        hashmap_node *node = omf_calloc(1, sizeof(hashmap_node));
         node->pair.keylen = keylen;
         node->pair.vallen = vallen;
-        node->pair.key = hm->alloc.cmalloc(keylen);
-        node->pair.val = hm->alloc.cmalloc(vallen);
+        node->pair.key = omf_calloc(1, keylen);
+        node->pair.val = omf_calloc(1, vallen);
         memcpy(node->pair.key, key, keylen);
         memcpy(node->pair.val, val, vallen);
 
@@ -371,9 +348,9 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
             // If node is first in chain, set possible next entry as first
             hm->buckets[index] = node->next;
         }
-        hm->alloc.cfree(node->pair.key);
-        hm->alloc.cfree(node->pair.val);
-        hm->alloc.cfree(node);
+        omf_free(node->pair.key);
+        omf_free(node->pair.val);
+        omf_free(node);
         hm->reserved--;
 
         AUTO_DEC_CHECK()
@@ -495,9 +472,9 @@ int hashmap_delete(hashmap *hm, iterator *iter) {
         }
 
         // Alld one, free up memory.
-        hm->alloc.cfree(node->pair.key);
-        hm->alloc.cfree(node->pair.val);
-        hm->alloc.cfree(node);
+        omf_free(node->pair.key);
+        omf_free(node->pair.val);
+        omf_free(node);
         hm->reserved--;
         return 0;
     }

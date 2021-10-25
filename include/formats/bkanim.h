@@ -57,7 +57,6 @@ int sd_bk_anim_create(sd_bk_anim *bka);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * move structure, or problems are likely to appear.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either input value was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -84,7 +83,6 @@ void sd_bk_anim_free(sd_bk_anim *bka);
  *
  * A NULL value for animation field will result in bka->animation field getting freed.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Animation field will be NULL.
  * \retval SD_INVALID_INPUT Move struct pointer was NULL.
  * \retval SD_SUCCESS Success.
  *

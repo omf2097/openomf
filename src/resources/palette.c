@@ -5,6 +5,7 @@
 #include "resources/pathmanager.h"
 #include "formats/error.h"
 #include "formats/palette.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 sd_altpal_file *altpals = NULL;
@@ -13,7 +14,7 @@ int altpals_init() {
     // Get filename
     const char *filename = pm_get_resource_path(DAT_ALTPALS);
 
-    altpals = malloc(sizeof(sd_altpal_file));
+    altpals = omf_calloc(1, sizeof(sd_altpal_file));
     if(sd_altpal_create(altpals) != SD_SUCCESS) {
         goto error_0;
     }
@@ -27,16 +28,14 @@ int altpals_init() {
 error_1:
     sd_altpal_free(altpals);
 error_0:
-    free(altpals);
-    altpals = NULL;
+    omf_free(altpals);
     return 1;
 }
 
 void altpals_close() {
     if(altpals != NULL) {
         sd_altpal_free(altpals);
-        free(altpals);
-        altpals = NULL;
+        omf_free(altpals);
     }
 }
 
@@ -50,7 +49,7 @@ void palette_set_player_color(palette *palette, int player, int srccolor, int ds
 }
 
 palette* palette_copy(palette *src) {
-    palette *new = malloc(sizeof(palette));
+    palette *new = omf_calloc(1, sizeof(palette));
     memcpy(new->data, src->data, 256*3);
     memcpy(new->remaps, src->remaps, 19*256);
     return new;

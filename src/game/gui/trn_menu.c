@@ -4,6 +4,7 @@
 #include "game/gui/spritebutton.h"
 #include "video/surface.h"
 #include "video/video.h"
+#include "utils/allocator.h"
 #include "utils/vector.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
@@ -40,11 +41,11 @@ void trnmenu_bind_hand(component *c, animation *hand_ani, game_state *gs) {
     // Free old. Shouldn't be needed, but let's be thorough.
     if(m->hand.obj != NULL) {
         object_free(m->hand.obj);
-        free(m->hand.obj);
+        omf_free(m->hand.obj);
     }
 
     // Set up new hand object
-    m->hand.obj = malloc(sizeof(object));
+    m->hand.obj = omf_calloc(1, sizeof(object));
     object_create(m->hand.obj, gs, vec2i_create(0,0), vec2f_create(0,0));
     object_set_animation(m->hand.obj, hand_ani);
     object_set_userdata(m->hand.obj, &m->hand);
@@ -79,9 +80,9 @@ static void trnmenu_free(component *c) {
     }
     if(m->hand.obj != NULL) {
         object_free(m->hand.obj);
-        free(m->hand.obj);
+        omf_free(m->hand.obj);
     }
-    free(m);
+    omf_free(m);
 }
 
 static void trnmenu_layout(component *c, int x, int y, int w, int h) {
@@ -389,8 +390,7 @@ void trnmenu_finish(component *c) {
 component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
     component *c = sizer_create();
 
-    trnmenu* m = malloc(sizeof(trnmenu));
-    memset(m, 0, sizeof(trnmenu));
+    trnmenu* m = omf_calloc(1, sizeof(trnmenu));
     m->button_sheet = button_sheet;
     m->sheet_x = sheet_x;
     m->sheet_y = sheet_y;

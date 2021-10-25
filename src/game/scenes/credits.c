@@ -4,6 +4,7 @@
 #include "game/game_state.h"
 #include "video/video.h"
 #include "resources/ids.h"
+#include "utils/allocator.h"
 
 typedef struct credits_local_t {
     int ticks;
@@ -40,7 +41,9 @@ void credits_tick(scene *scene, int paused) {
 }
 
 void credits_free(scene *scene) {
-    free(scene_get_userdata(scene));
+    credits_local *local = scene_get_userdata(scene);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void credits_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -52,7 +55,7 @@ void credits_startup(scene *scene, int id, int *m_load, int *m_repeat) {
 }
 
 int credits_create(scene *scene) {
-    credits_local *local = malloc(sizeof(credits_local));
+    credits_local *local = omf_calloc(1, sizeof(credits_local));
     local->ticks = 0;
 
     // Callbacks

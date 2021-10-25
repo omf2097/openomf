@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "game/scenes/mainmenu/menu_audio.h"
 #include "game/gui/gui.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "game/utils/settings.h"
 #include "audio/music.h"
@@ -103,13 +104,13 @@ void menu_audio_resampler_toggled(component *c, void *userdata, int pos) {
 
 void menu_audio_free(component *c) {
     audio_menu_data *local = menu_get_userdata(c);
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 component* menu_audio_create(scene *s) {
     // Menu userdata
-    audio_menu_data *local = malloc(sizeof(audio_menu_data));
-    memset(local, 0, sizeof(audio_menu_data));
+    audio_menu_data *local = omf_calloc(1, sizeof(audio_menu_data));
     local->old_audio_settings = settings_get()->sound;
 
     // Text config

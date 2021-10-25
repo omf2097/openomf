@@ -4,6 +4,7 @@
 #include "formats/error.h"
 #include "formats/sprite.h"
 #include "formats/palette.h"
+#include "utils/allocator.h"
 #include <stdio.h>
 
 int sd_sprite_create(sd_sprite *sprite) {
@@ -31,9 +32,7 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
     dst->len = src->len;
 
     if(src->data != NULL) {
-        if((dst->data = malloc(src->len)) == NULL) {
-            return SD_OUT_OF_MEMORY;
-        }
+        dst->data = omf_calloc(src->len, 1);
         memcpy(dst->data, src->data, src->len);
     }
 
@@ -46,7 +45,7 @@ void sd_sprite_free(sd_sprite *sprite) {
     // Only attempt to free if there IS something to free
     // AND sprite data belongs to this sprite
     if(sprite->data != NULL && !sprite->missing) {
-        free(sprite->data);
+        omf_free(sprite->data);
     }
 }
 
@@ -61,9 +60,7 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
 
     // Copy sprite data, if there is any.
     if(sprite->missing == 0) {
-        if((sprite->data = malloc(sprite->len)) == NULL) {
-            return SD_OUT_OF_MEMORY;
-        }
+        sprite->data = omf_calloc(sprite->len, 1);
         sd_read_buf(r, sprite->data, sprite->len);
     } else {
         sprite->data = NULL;
@@ -110,7 +107,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_pal
 
     // allocate a buffer plenty big enough, we will trim it later
     rgb_size = src->w * src->h * 4;
-    buf = malloc(rgb_size);
+    buf = omf_calloc(rgb_size, 1);
 
     // always initialize Y to 0
     buf[i++] = 2;
@@ -194,14 +191,9 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_pal
     dst->height = src->h;
     dst->len = i;
     dst->missing = 0;
-    if((dst->data = malloc(i)) == NULL) {
-        ret = SD_OUT_OF_MEMORY;
-        goto done;
-    }
+    dst->data = omf_calloc(i, 1);
     memcpy(dst->data, buf, i);
-
-done:
-    free(buf);
+    omf_free(buf);
     return ret;
 }
 
@@ -365,7 +357,7 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
 
     // allocate a buffer plenty big enough, we will trim it later
     vga_size = src->w * src->h;
-    buf = malloc(vga_size * 4);
+    buf = omf_calloc(4, vga_size);
 
     // always initialize Y to 0
     buf[i++] = 2;
@@ -431,13 +423,8 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     dst->height = src->h;
     dst->len = i;
     dst->missing = 0;
-    if((dst->data = malloc(i)) == NULL) {
-        ret = SD_OUT_OF_MEMORY;
-        goto done;
-    }
+    dst->data = omf_calloc(i, 1);
     memcpy(dst->data, buf, i);
-
-done:
-    free(buf);
+    omf_free(buf);
     return ret;
 }

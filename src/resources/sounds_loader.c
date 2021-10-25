@@ -4,6 +4,7 @@
 #include "resources/sounds_loader.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 sd_sound_file *sound_data = NULL;
@@ -13,7 +14,7 @@ int sounds_loader_init() {
     const char *filename = pm_get_resource_path(DAT_SOUNDS);
 
     // Load sounds
-    sound_data = malloc(sizeof(sd_sound_file));
+    sound_data = omf_calloc(1, sizeof(sd_sound_file));
     if(sd_sounds_create(sound_data) != SD_SUCCESS) {
         goto error_0;
     }
@@ -27,8 +28,7 @@ int sounds_loader_init() {
 error_1:
     sd_sounds_free(sound_data);
 error_0:
-    free(sound_data);
-    sound_data = NULL;
+    omf_free(sound_data);
     return 1;
 }
 
@@ -53,7 +53,6 @@ int sounds_loader_get(int id, char **buffer, int *len) {
 void sounds_loader_close() {
     if(sound_data != NULL) {
         sd_sounds_free(sound_data);
-        free(sound_data);
-        sound_data = NULL;
+        omf_free(sound_data);
     }
 }

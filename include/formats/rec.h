@@ -116,7 +116,6 @@ void sd_rec_free(sd_rec_file *rec);
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
  * \retval SD_FILE_PARSE_ERROR File does not contain valid data or has syntax problems.
- * \retval SD_OUT_OF_MEMORY Memory ran out. This struct should now be considered invalid and freed.
  * \retval SD_SUCCESS Success.
  *
  * \param rec BK struct pointer.
@@ -141,7 +140,6 @@ int sd_rec_save(sd_rec_file *rec, const char *filename);
  *
  * Deletes a REC event record at given position.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. The REC structure will most likely be invalid.
  * \retval SD_INVALID_INPUT Number you tried to remove does not exist, or rec was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -161,7 +159,6 @@ int sd_rec_extra_len(int key);
  *
  * Event record data will be copied. Make sure to free your local copy yourself.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. The REC structure will most likely be invalid.
  * \retval SD_INVALID_INPUT Slot you tried to insert to does not exist, or rec was NULL.
  * \retval SD_SUCCESS Success.
  *

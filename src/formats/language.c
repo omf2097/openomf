@@ -7,6 +7,7 @@
 #include "formats/internal/memwriter.h"
 #include "formats/error.h"
 #include "formats/language.h"
+#include "utils/allocator.h"
 
 int sd_language_create(sd_language *language) {
     if(language == NULL) {
@@ -20,9 +21,9 @@ void sd_language_free(sd_language *language) {
     if(language == NULL) return;
     if(language->strings != 0) {
         for(int i = 0; i < language->count; i++) {
-            free(language->strings[i].data);
+            omf_free(language->strings[i].data);
         }
-        free(language->strings);
+        omf_free(language->strings);
     }
 }
 
@@ -54,7 +55,7 @@ int sd_language_load(sd_language *language, const char *filename) {
     
     // Some variables etc.
     unsigned int offsets[string_count+1];
-    language->strings = malloc(sizeof(sd_lang_string) * string_count);
+    language->strings = omf_calloc(string_count, sizeof(sd_lang_string));
     language->count = string_count;
     
     // Read titles and offsets
@@ -79,7 +80,7 @@ int sd_language_load(sd_language *language, const char *filename) {
         sd_reader_set(r, offsets[i]);
         unsigned int len = offsets[i+1] - offsets[i];
 
-        language->strings[i].data = malloc(len + 1);
+        language->strings[i].data = omf_calloc(len + 1, 1);
         memset(language->strings[i].data, 0, len + 1);
 
         // Read string

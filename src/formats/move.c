@@ -4,6 +4,7 @@
 #include "formats/error.h"
 #include "formats/animation.h"
 #include "formats/move.h"
+#include "utils/allocator.h"
 
 int sd_move_create(sd_move *move) {
     if(move == NULL) {
@@ -26,9 +27,7 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
 
     // Copy animation
     if(src->animation != NULL) {
-        if((dst->animation = malloc(sizeof(sd_animation))) == NULL) {
-            return SD_OUT_OF_MEMORY;
-        }
+        dst->animation = omf_calloc(1, sizeof(sd_animation));
         if((ret = sd_animation_copy(dst->animation, src->animation)) != SD_SUCCESS) {
             return ret;
         }
@@ -66,7 +65,7 @@ void sd_move_free(sd_move *move) {
     if(move == NULL) return;
     if(move->animation != NULL) {
         sd_animation_free(move->animation);
-        free(move->animation);
+        omf_free(move->animation);
     }
 }
 
@@ -79,9 +78,7 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     }
 
     // Read animation
-    if((move->animation = malloc(sizeof(sd_animation))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    move->animation = omf_calloc(1, sizeof(sd_animation));
     if((ret = sd_animation_create(move->animation)) != SD_SUCCESS) {
         return ret;
     }
@@ -190,15 +187,12 @@ int sd_move_set_animation(sd_move *move, const sd_animation *animation) {
     }
     if(move->animation != NULL) {
         sd_animation_free(move->animation);
-        free(move->animation);
-        move->animation = NULL;
+        omf_free(move->animation);
     }
     if(animation == NULL) {
         return SD_SUCCESS;
     }
-    if((move->animation = malloc(sizeof(sd_animation))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    move->animation = omf_calloc(1, sizeof(sd_animation));
     if((ret = sd_animation_copy(move->animation, animation)) != SD_SUCCESS) {
         return ret;
     }

@@ -6,6 +6,7 @@
 #include <errno.h>
 
 #include "formats/internal/reader.h"
+#include "utils/allocator.h"
 
 struct sd_reader_t {
     FILE *handle;
@@ -14,14 +15,14 @@ struct sd_reader_t {
 };
 
 sd_reader* sd_reader_open(const char *file) {
-    sd_reader *reader = malloc(sizeof(const sd_reader));
+    sd_reader *reader = omf_calloc(1, sizeof(sd_reader));
 
     reader->sd_errno = 0;
 
     // Attempt to open file (note: Binary mode!)
     reader->handle = fopen(file, "rb");
     if(!reader->handle) {
-        free(reader);
+        omf_free(reader);
         return 0;
     }
 
@@ -42,7 +43,7 @@ sd_reader* sd_reader_open(const char *file) {
 
 error:
     fclose(reader->handle);
-    free(reader);
+    omf_free(reader);
     return 0;
 }
 
@@ -56,7 +57,7 @@ int sd_reader_errno(const sd_reader *reader) {
 
 void sd_reader_close(sd_reader *reader) {
     fclose(reader->handle);
-    free(reader);
+    omf_free(reader);
 }
 
 int sd_reader_set(sd_reader *reader, long offset) {
@@ -217,7 +218,7 @@ char* sd_read_variable_str(sd_reader *r) {
     uint16_t len = sd_read_uword(r);
     char *str = NULL;
     if(len > 0) {
-        str = (char*)malloc(len);
+        str = (char*)omf_calloc(len, 1);
         sd_read_buf(r, str, len);
     }
     return str;

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <SDL.h>
 
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/random.h"
 #include "audio/music.h"
@@ -117,7 +118,8 @@ void melee_free(scene *scene) {
     if (player2->selectable) {
         object_free(&local->bigportrait2);
     }
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void melee_tick(scene *scene, int paused) {
@@ -552,8 +554,7 @@ int melee_create(scene *scene) {
     char bitmap[51*36*4];
 
     // Init local data
-    melee_local *local = malloc(sizeof(melee_local));
-    memset(local, 0, sizeof(melee_local));
+    melee_local *local = omf_calloc(1, sizeof(melee_local));
     scene_set_userdata(scene, local);
 
     game_player *player1 = game_state_get_player(scene->gs, 0);

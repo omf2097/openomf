@@ -6,6 +6,7 @@
 
 #include "formats/rgba_image.h"
 #include "formats/error.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 
@@ -18,10 +19,7 @@ int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h) {
     img->w = w;
     img->h = h;
     img->len = w * h * STRIDE;
-    if((img->data = malloc(img->len)) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
-    memset(img->data, 0, img->len);
+    img->data = omf_calloc(img->len, 1);
     return SD_SUCCESS;
 }
 
@@ -33,9 +31,7 @@ int sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src) {
     dst->w = src->w;
     dst->h = src->h;
     dst->len = src->len;
-    if((dst->data = malloc(src->len)) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    dst->data = omf_calloc(src->len, 1);
     memcpy(dst->data, src->data, src->len);
     return SD_SUCCESS;
 }
@@ -132,5 +128,5 @@ int sd_rgba_image_to_png(const sd_rgba_image *img, const char *filename) {
 void sd_rgba_image_free(sd_rgba_image *img) {
     if(img == NULL)
         return;
-    free(img->data);
+    omf_free(img->data);
 }

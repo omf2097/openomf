@@ -59,7 +59,6 @@ int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * VGA image structure, or problems are likely to appear.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Destination struct should now be considered invalid and freed.
  * \retval SD_INVALID_INPUT Either input value was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -100,7 +99,6 @@ int sd_vga_image_stencil_index(sd_vga_image *img, int stencil_index);
  * already created by using sd_vga_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Dst, src or palette was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -123,7 +121,6 @@ int sd_vga_image_encode(
  * already created by using sd_rgba_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Dst, src or palette was NULL.
  * \retval SD_SUCCESS Success.
  *
@@ -163,6 +160,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename);
  * Saves an indexed (paletted) image to a PNG file. Maximum allowed image
  * size is 320x200, and the smallest allowed size is 1x1.
  *
+ * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Image or filename was NULL
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_FORMAT_NOT_SUPPORTED File format (PNG) is not supported.

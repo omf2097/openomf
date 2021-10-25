@@ -6,6 +6,7 @@
 #include "game/gui/widget.h"
 #include "video/surface.h"
 #include "video/video.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 // Local small gauge type
@@ -26,8 +27,8 @@ static void pilotpic_render(component *c) {
 static void pilotpic_free(component *c) {
     pilotpic *g = widget_get_obj(c);
     sprite_free(g->img);
-    free(g->img);
-    free(g);
+    omf_free(g->img);
+    omf_free(g);
 }
 
 void pilotpic_select(component *c, int pic_id, int pilot_id) {
@@ -36,7 +37,7 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
     // Free old image
     if(local->img != NULL) {
         sprite_free(local->img);
-        free(local->img);
+        omf_free(local->img);
     }
 
     // Find pic file handle
@@ -59,7 +60,7 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
 
     // Create new
     const sd_pic_photo *photo = sd_pic_get(&pics, pilot_id);
-    local->img = malloc(sizeof(sprite));
+    local->img = omf_calloc(1, sizeof(sprite));
     sprite_create(local->img, photo->sprite, -1);
 
     // Position and size hints for the gui component
@@ -103,8 +104,7 @@ component* pilotpic_create(int pic_id, int pilot_id) {
     c->supports_focus = 0;
 
     // Local information
-    pilotpic *local = malloc(sizeof(pilotpic));
-    memset(local, 0, sizeof(pilotpic));
+    pilotpic *local = omf_calloc(1, sizeof(pilotpic));
     local->max = 0;
     local->selected = 0;
     local->pic_id = -1;

@@ -6,6 +6,7 @@
 #include <errno.h>
 
 #include "formats/internal/writer.h"
+#include "utils/allocator.h"
 
 struct sd_writer_t {
     FILE *handle;
@@ -13,12 +14,12 @@ struct sd_writer_t {
 };
 
 sd_writer* sd_writer_open(const char *file) {
-    sd_writer *writer = malloc(sizeof(sd_writer));
+    sd_writer *writer = omf_calloc(1, sizeof(sd_writer));
 
     writer->handle = fopen(file, "wb");
     writer->sd_errno = 0;
     if(!writer->handle) {
-        free(writer);
+        omf_free(writer);
         return 0;
     }
 
@@ -31,7 +32,7 @@ int sd_writer_errno(const sd_writer *writer) {
 
 void sd_writer_close(sd_writer *writer) {
     fclose(writer->handle);
-    free(writer);
+    omf_free(writer);
 }
 
 long sd_writer_pos(sd_writer *writer) {

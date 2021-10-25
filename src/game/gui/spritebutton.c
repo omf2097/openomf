@@ -8,6 +8,7 @@
 #include "video/video.h"
 #include "video/color.h"
 #include "audio/sound.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/compat.h"
 #include "utils/miscmath.h"
@@ -42,8 +43,8 @@ static void spritebutton_render(component *c) {
 
 static void spritebutton_free(component *c) {
     spritebutton *sb = widget_get_obj(c);
-    free(sb->text);
-    free(sb);
+    omf_free(sb->text);
+    omf_free(sb);
 }
 
 static void spritebutton_tick(component *c) {
@@ -80,8 +81,7 @@ component* spritebutton_create(
     component *c = widget_create();
     component_disable(c, disabled);
 
-    spritebutton *sb = malloc(sizeof(spritebutton));
-    memset(sb, 0, sizeof(spritebutton));
+    spritebutton *sb = omf_calloc(1, sizeof(spritebutton));
     if(text != NULL)
         sb->text = strdup(text);
     memcpy(&sb->tconf, tconf, sizeof(text_settings));

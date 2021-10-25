@@ -11,6 +11,7 @@
 #include "formats/bkanim.h"
 #include "formats/error.h"
 #include "formats/bk.h"
+#include "utils/allocator.h"
 
 int sd_bk_create(sd_bk_file *bk) {
     if(bk == NULL) {
@@ -42,9 +43,7 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
     // Copy animations
     for(int i = 0; i < MAX_BK_ANIMS; i++) {
         if(src->anims[i] != NULL) {
-            if((dst->anims[i] = malloc(sizeof(sd_bk_anim))) == NULL) {
-                return SD_OUT_OF_MEMORY;
-            }
+            dst->anims[i] = omf_calloc(1, sizeof(sd_bk_anim));
             if((ret = sd_bk_anim_copy(dst->anims[i], src->anims[i])) != SD_SUCCESS) {
                 return ret;
             }
@@ -53,9 +52,7 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
 
     // Copy background
     if(src->background != NULL) {
-        if((dst->background = malloc(sizeof(sd_vga_image))) == NULL) {
-            return SD_OUT_OF_MEMORY;
-        }
+        dst->background = omf_calloc(1, sizeof(sd_vga_image));
         if((ret = sd_vga_image_copy(dst->background, src->background)) != SD_SUCCESS) {
             return ret;
         }
@@ -65,9 +62,7 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
     for(int i = 0; i < MAX_BK_PALETTES; i++) {
         dst->palettes[i] = NULL;
         if(src->palettes[i] != NULL) {
-            if((dst->palettes[i] = malloc(sizeof(sd_palette))) == NULL) {
-                return SD_OUT_OF_MEMORY;
-            }
+            dst->palettes[i] = omf_calloc(1, sizeof(sd_palette));
             memcpy(dst->palettes[i], src->palettes[i], sizeof(sd_palette));
         }
     }
@@ -121,10 +116,7 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
         }
 
         // Initialize animation
-        if((bk->anims[animno] = malloc(sizeof(sd_bk_anim))) == NULL) {
-            ret = SD_OUT_OF_MEMORY;
-            goto exit_0;
-        }
+        bk->anims[animno] = omf_calloc(1, sizeof(sd_bk_anim));
         if((ret = sd_bk_anim_create(bk->anims[animno])) != SD_SUCCESS) {
             goto exit_0;
         }
@@ -134,10 +126,7 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     }
 
     // Read background image
-    if((bk->background = malloc(sizeof(sd_vga_image))) == NULL) {
-        ret = SD_OUT_OF_MEMORY;
-        goto exit_0;
-    }
+    bk->background = omf_calloc(1, sizeof(sd_vga_image));
     if((ret = sd_vga_image_create(bk->background, img_w, img_h)) != SD_SUCCESS) {
         goto exit_0;
     }
@@ -147,10 +136,7 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     // Read palettes
     bk->palette_count = sd_read_ubyte(r);
     for(uint8_t i = 0; i < bk->palette_count; i++) {
-        if((bk->palettes[i] = malloc(sizeof(sd_palette))) == NULL) {
-            ret = SD_OUT_OF_MEMORY;
-            goto exit_0;
-        }
+        bk->palettes[i] = omf_calloc(1, sizeof(sd_palette));
         if((ret = sd_palette_load(r, bk->palettes[i])) != SD_SUCCESS) {
             goto exit_0;
         }
@@ -257,14 +243,12 @@ int sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img) {
     }
     if(bk->background != NULL) {
         sd_vga_image_free(bk->background);
-        free(bk->background);
+        omf_free(bk->background);
     }
     if(img == NULL) {
         return SD_SUCCESS;
     }
-    if((bk->background = malloc(sizeof(sd_vga_image))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    bk->background = omf_calloc(1, sizeof(sd_vga_image));
     if((ret = sd_vga_image_copy(bk->background, img)) != SD_SUCCESS) {
         return ret;
     }
@@ -282,16 +266,13 @@ int sd_bk_set_anim(sd_bk_file *bk, int index, const sd_bk_anim *anim) {
     }
     if(bk->anims[index] != NULL) {
         sd_bk_anim_free(bk->anims[index]);
-        free(bk->anims[index]);
-        bk->anims[index] = NULL;
+        omf_free(bk->anims[index]);
     }
     // If input was NULL, we want to stop here.
     if(anim == NULL) {
         return SD_SUCCESS;
     }
-    if((bk->anims[index] = malloc(sizeof(sd_bk_anim))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    bk->anims[index] = omf_calloc(1, sizeof(sd_bk_anim));
     if((ret = sd_bk_anim_copy(bk->anims[index], anim)) != SD_SUCCESS) {
         return ret;
     }
@@ -310,11 +291,9 @@ int sd_bk_set_palette(sd_bk_file *bk, int index, const sd_palette *palette) {
         return SD_INVALID_INPUT;
     }
     if(bk->palettes[index] != NULL) {
-        free(bk->palettes[index]);
+        omf_free(bk->palettes[index]);
     }
-    if((bk->palettes[index] = malloc(sizeof(sd_palette))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    bk->palettes[index] = omf_calloc(1, sizeof(sd_palette));
     memcpy(bk->palettes[index], palette, sizeof(sd_palette));
     return SD_SUCCESS;
 }
@@ -325,8 +304,7 @@ int sd_bk_pop_palette(sd_bk_file *bk) {
     }
 
     bk->palette_count--;
-    free(bk->palettes[bk->palette_count]);
-    bk->palettes[bk->palette_count] = NULL;
+    omf_free(bk->palettes[bk->palette_count]);
 
     return SD_SUCCESS;
 }
@@ -336,11 +314,9 @@ int sd_bk_push_palette(sd_bk_file *bk, const sd_palette *palette) {
         return SD_INVALID_INPUT;
     }
     if(bk->palettes[bk->palette_count] != NULL) {
-        free(bk->palettes[bk->palette_count]);
+        omf_free(bk->palettes[bk->palette_count]);
     }
-    if((bk->palettes[bk->palette_count] = malloc(sizeof(sd_palette))) == NULL) {
-        return SD_OUT_OF_MEMORY;
-    }
+    bk->palettes[bk->palette_count] = omf_calloc(1, sizeof(sd_palette));
     memcpy(bk->palettes[bk->palette_count], palette, sizeof(sd_palette));
     bk->palette_count++;
 
@@ -358,17 +334,17 @@ void sd_bk_free(sd_bk_file *bk) {
     int i;
     if(bk->background != NULL) {
         sd_vga_image_free(bk->background);
-        free(bk->background);
+        omf_free(bk->background);
     }
     for(i = 0; i < MAX_BK_ANIMS; i++) {
         if(bk->anims[i] != NULL) {
             sd_bk_anim_free(bk->anims[i]);
-            free(bk->anims[i]);
+            omf_free(bk->anims[i]);
         }
     }
     for(i = 0; i < bk->palette_count; i++) {
         if(bk->palettes[i] != NULL) {
-            free(bk->palettes[i]);
+            omf_free(bk->palettes[i]);
         }
     }
 }

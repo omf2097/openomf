@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <SDL.h>
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/random.h"
 #include "video/video.h"
@@ -110,7 +111,7 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t fl
     // Get next animation
     bk_info *info = bk_get_info(&sc->bk_data, id);
     if(info != NULL) {
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, parent->gs, vec2i_add(pos, vec2f_to_i(parent->pos)), vel);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &info->ani);
@@ -138,7 +139,8 @@ void vs_free(scene *scene) {
     if (player2->selectable) {
         object_free(&local->arena_select);
     }
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void vs_handle_action(scene *scene, int action) {
@@ -301,7 +303,7 @@ void vs_too_pathetic_dialog_clicked(dialog *dlg, dialog_result result){
 
 int vs_create(scene *scene) {
     // Init local data
-    vs_local *local = malloc(sizeof(vs_local));
+    vs_local *local = omf_calloc(1, sizeof(vs_local));
     scene_set_userdata(scene, local);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
@@ -383,7 +385,7 @@ int vs_create(scene *scene) {
     } else {
         scientistcoord.x -= 50;
     }
-    object *o_scientist = malloc(sizeof(object));
+    object *o_scientist = omf_calloc(1, sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 8)->ani;
     object_create(o_scientist, scene->gs, scientistcoord, vec2f_create(0, 0));
     object_set_animation(o_scientist, ani);
@@ -399,7 +401,7 @@ int vs_create(scene *scene) {
     while ((welderpos % 2)  == (scientistpos % 2) || (scientistpos < 2 && welderpos < 2) || (scientistpos > 1 && welderpos > 1 && welderpos < 4)) {
         welderpos = rand_int(6);
     }
-    object *o_welder = malloc(sizeof(object));
+    object *o_welder = omf_calloc(1, sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 7)->ani;
     object_create(o_welder, scene->gs, spawn_position(welderpos, 0), vec2f_create(0, 0));
     object_set_animation(o_welder, ani);
@@ -410,14 +412,14 @@ int vs_create(scene *scene) {
     game_state_add_object(scene->gs, o_welder, RENDER_LAYER_MIDDLE, 0, 0);
 
     // GANTRIES
-    object *o_gantry_a = malloc(sizeof(object));
+    object *o_gantry_a = omf_calloc(1, sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 11)->ani;
     object_create(o_gantry_a, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
     object_set_animation(o_gantry_a, ani);
     object_select_sprite(o_gantry_a, 0);
     game_state_add_object(scene->gs, o_gantry_a, RENDER_LAYER_TOP, 0, 0);
 
-    object *o_gantry_b = malloc(sizeof(object));
+    object *o_gantry_b = omf_calloc(1, sizeof(object));
     object_create(o_gantry_b, scene->gs, vec2i_create(320,0), vec2f_create(0, 0));
     object_set_animation(o_gantry_b, ani);
     object_select_sprite(o_gantry_b, 0);

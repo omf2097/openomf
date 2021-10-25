@@ -60,7 +60,6 @@ void sd_language_free(sd_language *language);
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened.
- * \retval SD_OUT_OF_MEMORY Memory ran out. This struct should now be considered invalid and freed.
  * \retval SD_SUCCESS Success.
  *
  * \param language Language struct pointer.

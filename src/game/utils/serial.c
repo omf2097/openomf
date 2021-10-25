@@ -6,6 +6,7 @@
     #include <arpa/inet.h> // for htonl and friends
 #endif
 #include "game/utils/serial.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include <stdio.h>
 
@@ -32,14 +33,14 @@ void serial_create(serial *s) {
     s->len = SERIAL_BUF_RESIZE_INC;
     s->wpos = 0;
     s->rpos = 0;
-    s->data = calloc(s->len, 1);
+    s->data = omf_calloc(s->len, 1);
 }
 
 void serial_create_from(serial *s, const char *buf, size_t len) {
     s->len = len + SERIAL_BUF_RESIZE_INC;
     s->wpos = len;
     s->rpos = 0;
-    s->data = malloc(s->len);
+    s->data = omf_calloc(s->len, 1);
     memcpy(s->data, buf, len);
 }
 
@@ -47,12 +48,12 @@ void serial_copy(serial *dst, const serial *src) {
     dst->len = src->len;
     dst->wpos = src->wpos;
     dst->rpos = src->rpos;
-    dst->data = malloc(dst->len);
+    dst->data = omf_calloc(dst->len, 1);
     memcpy(dst->data, src->data, dst->len);
 }
 
-serial* serial_malloc_copy(const serial *src) {
-    serial* dst = malloc(sizeof(serial));
+serial* serial_calloc_copy(const serial *src) {
+    serial* dst = omf_calloc(1, sizeof(serial));
     serial_copy(dst, src);
     return dst;
 }
@@ -60,7 +61,7 @@ serial* serial_malloc_copy(const serial *src) {
 void serial_write(serial *s, const char *buf, size_t len) {
     if(s->len < (s->wpos + len)) {
         size_t new_len = s->len + len + SERIAL_BUF_RESIZE_INC;
-        s->data = realloc(s->data, new_len);
+        s->data = omf_realloc(s->data, new_len);
         s->len = new_len;
     }
 
@@ -88,8 +89,7 @@ void serial_write_float(serial *s, float v) {
 }
 
 void serial_free(serial *s) {
-    free(s->data);
-    s->data = NULL;
+    omf_free(s->data);
     s->len = 0;
     s->rpos = 0;
     s->wpos = 0;

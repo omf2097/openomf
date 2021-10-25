@@ -1,4 +1,5 @@
 #include "controller/joystick.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include <stdlib.h>
 
@@ -14,8 +15,8 @@ void joystick_free(controller *ctrl) {
         SDL_HapticClose(k->haptic);
     }
     SDL_GameControllerClose(k->joy);
-    free(k->keys);
-    free(k);
+    omf_free(k->keys);
+    omf_free(k);
 }
 
 void joystick_cmd(controller *ctrl, int action, ctrl_event **ev) {
@@ -160,8 +161,8 @@ int joystick_rumble(controller *ctrl, float magnitude, int duration) {
 }
 
 int joystick_create(controller *ctrl, int joystick_id) {
-    joystick *k = malloc(sizeof(joystick));
-    k->keys = malloc(sizeof(joystick_keys));
+    joystick *k = omf_calloc(1, sizeof(joystick));
+    k->keys = omf_calloc(1, sizeof(joystick_keys));
     k->keys->x_axis = SDL_CONTROLLER_AXIS_LEFTX;
     k->keys->y_axis = SDL_CONTROLLER_AXIS_LEFTY;
     k->keys->dpad[0] = SDL_CONTROLLER_BUTTON_DPAD_UP;

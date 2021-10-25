@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "audio/stream.h"
 #include "audio/source.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 void stream_nullify(audio_stream *stream) {
@@ -37,7 +38,7 @@ void stream_free(audio_stream *stream) {
     }
     if(stream->src != NULL) {
         source_free(stream->src);
-        free(stream->src);
+        omf_free(stream->src);
     }
     stream_nullify(stream);
 }

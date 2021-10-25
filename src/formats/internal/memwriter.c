@@ -6,20 +6,20 @@
 
 #include "formats/internal/writer.h"
 #include "formats/internal/memwriter.h"
+#include "utils/allocator.h"
 
 #define GROW 64
 
 #define CHECK_SIZE \
     if(writer->real_len < writer->data_len + len) { \
         size_t newsize = writer->real_len + len + GROW; \
-        writer->buf = realloc(writer->buf, newsize); \
+        writer->buf = omf_realloc(writer->buf, newsize); \
         writer->real_len = newsize; \
     }
 
 sd_mwriter* sd_mwriter_open() {
-    sd_mwriter *mwriter = malloc(sizeof(sd_mwriter));
-    memset(mwriter, 0, sizeof(sd_mwriter));
-    mwriter->buf = malloc(GROW);
+    sd_mwriter *mwriter = omf_calloc(1, sizeof(sd_mwriter));
+    mwriter->buf = omf_calloc(GROW, 1);
     mwriter->real_len = GROW;
     return mwriter;
 }
@@ -30,8 +30,8 @@ void sd_mwriter_save(const sd_mwriter *src, sd_writer *dst) {
 
 void sd_mwriter_close(sd_mwriter *writer) {
     if(writer == NULL) return;
-    free(writer->buf);
-    free(writer);
+    omf_free(writer->buf);
+    omf_free(writer);
 }
 
 long sd_mwriter_pos(const sd_mwriter *writer) {

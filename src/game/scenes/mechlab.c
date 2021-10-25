@@ -15,6 +15,7 @@
 #include "resources/sgmanager.h"
 #include "resources/ids.h"
 #include "video/video.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "formats/error.h"
 
@@ -45,8 +46,9 @@ void mechlab_free(scene *scene) {
     guiframe_free(local->frame);
     guiframe_free(local->dashboard);
     object_free(local->mech);
-    free(local->mech);
-    free(local);
+    omf_free(local->mech);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void mechlab_tick(scene *scene, int paused) {
@@ -180,8 +182,7 @@ void mechlab_input_tick(scene *scene) {
 // Init mechlab
 int mechlab_create(scene *scene) {
     // Alloc
-    mechlab_local *local = malloc(sizeof(mechlab_local));
-    memset(local, 0, sizeof(mechlab_local));
+    mechlab_local *local = omf_calloc(1, sizeof(mechlab_local));
 
     animation *bg_ani[3];
 
@@ -231,7 +232,7 @@ int mechlab_create(scene *scene) {
 
     // Load HAR
     animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot.har_id)->ani;
-    local->mech = malloc(sizeof(object));
+    local->mech = omf_calloc(1, sizeof(object));
     object_create(local->mech, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
     object_set_animation(local->mech, initial_har_ani);
     object_set_repeat(local->mech, 1);

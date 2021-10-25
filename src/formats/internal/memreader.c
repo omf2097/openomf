@@ -4,9 +4,10 @@
 
 #include "formats/internal/reader.h"
 #include "formats/internal/memreader.h"
+#include "utils/allocator.h"
 
 sd_mreader* sd_mreader_open(char *buf, long len) {
-    sd_mreader *reader = malloc(sizeof(sd_mreader));
+    sd_mreader *reader = omf_calloc(1, sizeof(sd_mreader));
     reader->buf = buf;
     reader->pos = 0;
     reader->len = len;
@@ -15,7 +16,7 @@ sd_mreader* sd_mreader_open(char *buf, long len) {
 }
 
 sd_mreader* sd_mreader_open_from_reader(sd_reader *reader, int len) {
-    char *buf = malloc(len);
+    char *buf = omf_calloc(1, len);
     sd_read_buf(reader, buf, len);
     sd_mreader *mreader = sd_mreader_open(buf, len);
     mreader->owned = 1;
@@ -38,9 +39,9 @@ long sd_mreader_pos(const sd_mreader *reader) {
 
 void sd_mreader_close(sd_mreader *reader) {
     if(reader->owned) {
-        free(reader->buf);
+        omf_free(reader->buf);
     }
-    free(reader);
+    omf_free(reader);
 }
 
 int sd_mread_buf(sd_mreader *reader, char *buf, int len) {

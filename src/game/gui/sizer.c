@@ -1,4 +1,5 @@
 #include "game/gui/sizer.h"
+#include "utils/allocator.h"
 
 component* sizer_get(const component *nc, int item) {
     sizer *local = component_get_obj(nc);
@@ -135,7 +136,7 @@ static void sizer_free(component *c) {
 
     // Free sizer itself
     vector_free(&local->objs);
-    free(local);
+    omf_free(local);
 }
 
 static component* sizer_find(component *c, int id) {
@@ -166,8 +167,7 @@ static component* sizer_find(component *c, int id) {
 component* sizer_create() {
     component *c = component_create();
 
-    sizer *local = malloc(sizeof(sizer));
-    memset(local, 0, sizeof(sizer));
+    sizer *local = omf_calloc(1, sizeof(sizer));
     vector_create(&local->objs, sizeof(component*));
     component_set_obj(c, local);
 

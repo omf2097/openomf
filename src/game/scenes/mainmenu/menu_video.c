@@ -5,6 +5,7 @@
 
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
+#include "utils/allocator.h"
 #include "utils/compat.h"
 #include "video/video.h"
 #include "plugins/plugins.h"
@@ -85,7 +86,7 @@ void scaler_toggled(component *c, void *userdata, int pos) {
     settings_video *v = &settings_get()->video;
 
     // Set scaler
-    free(v->scaler);
+    omf_free(v->scaler);
     v->scaler = strdup(textselector_get_current_text(c));
 
     // If scaler is NEAREST, set factor to 1 and disable
@@ -159,7 +160,8 @@ void menu_video_done(component *c, void *u) {
 
 void menu_video_free(component *c) {
     video_menu_data *local = menu_get_userdata(c);
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 void menu_video_submenu_done(component *c, component *submenu) {
@@ -169,8 +171,7 @@ void menu_video_submenu_done(component *c, component *submenu) {
 
 component* menu_video_create(scene *s) {
     // Menu userdata
-    video_menu_data *local = malloc(sizeof(video_menu_data));
-    memset(local, 0, sizeof(video_menu_data));
+    video_menu_data *local = omf_calloc(1, sizeof(video_menu_data));
     local->old_video_settings = settings_get()->video;
 
     // Load settings etc.

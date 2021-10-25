@@ -7,7 +7,7 @@
 #include "game/scenes/mainmenu/menu_main.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 #include "game/utils/settings.h"
-
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 typedef struct mainmenu_local_t {
@@ -18,7 +18,8 @@ typedef struct mainmenu_local_t {
 void mainmenu_free(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
     guiframe_free(local->frame);
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
     settings_save();
 }
 
@@ -86,7 +87,7 @@ void mainmenu_startup(scene *scene, int id, int *m_load, int *m_repeat) {
 // Init menus
 int mainmenu_create(scene *scene) {
     // Init local data
-    mainmenu_local *local = malloc(sizeof(mainmenu_local));
+    mainmenu_local *local = omf_calloc(1, sizeof(mainmenu_local));
     scene_set_userdata(scene, local);
 
     // Load settings

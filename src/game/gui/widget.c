@@ -1,4 +1,5 @@
 #include "game/gui/widget.h"
+#include "utils/allocator.h"
 
 
 void widget_set_obj(component *c, void *obj) {
@@ -93,7 +94,7 @@ static void widget_free(component *c) {
     if(local->free) {
         local->free(c);
     }
-    free(local);
+    omf_free(local);
 }
 
 static component* widget_find(component *c, int id) {
@@ -109,8 +110,7 @@ component* widget_create() {
     c->supports_select = 1;
     c->supports_focus = 1;
 
-    widget *local = malloc(sizeof(widget));
-    memset(local, 0, sizeof(widget));
+    widget *local = omf_calloc(1, sizeof(widget));
     local->id = -1;
     component_set_obj(c, local);
 

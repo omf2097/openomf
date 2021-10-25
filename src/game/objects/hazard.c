@@ -2,6 +2,7 @@
 #include <math.h>
 #include "game/objects/hazard.h"
 #include "game/protos/object_specializer.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "game/protos/scene.h"
@@ -52,7 +53,7 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags
     // Get next animation
     bk_info *info = bk_get_info(&sc->bk_data, id);
     if(info != NULL) {
-        object *obj = malloc(sizeof(object));
+        object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vel);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &info->ani);

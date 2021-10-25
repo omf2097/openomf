@@ -5,6 +5,7 @@
 #include "video/surface.h"
 #include "video/image.h"
 #include "video/video.h"
+#include "utils/allocator.h"
 #include "utils/miscmath.h"
 
 const progressbar_theme _progressbar_theme_health = {
@@ -97,14 +98,13 @@ static void progressbar_render(component *c) {
                              bar->theme.int_bottomright_color,
                              bar->theme.int_topleft_color);
             if(bar->block == NULL) {
-                bar->block = malloc(sizeof(surface));
+                bar->block = omf_calloc(1, sizeof(surface));
             }
             surface_create_from_image(bar->block, &tmp);
             surface_force_refresh(bar->block);
             image_free(&tmp);
         } else {
-            free(bar->block);
-            bar->block = NULL;
+            omf_free(bar->block);
         }
     }
 
@@ -141,13 +141,13 @@ static void progressbar_free(component *c) {
     progressbar *bar = widget_get_obj(c);
     if(bar->block) {
         surface_free(bar->block);
-        free(bar->block);
+        omf_free(bar->block);
     }
     surface_free(bar->background);
-    free(bar->background);
+    omf_free(bar->background);
     surface_free(bar->background_alt);
-    free(bar->background_alt);
-    free(bar);
+    omf_free(bar->background_alt);
+    omf_free(bar);
 }
 
 static void progressbar_layout(component *c, int x, int y, int w, int h) {
@@ -155,8 +155,8 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
     progressbar *bar = widget_get_obj(c);
 
     // Allocate everything
-    bar->background = malloc(sizeof(surface));
-    bar->background_alt = malloc(sizeof(surface));
+    bar->background = omf_calloc(1, sizeof(surface));
+    bar->background_alt = omf_calloc(1, sizeof(surface));
     bar->block = NULL;
 
     // Background,
@@ -189,8 +189,7 @@ component* progressbar_create(progressbar_theme theme, int orientation, int perc
     c->supports_select = 0;
     c->supports_focus = 0;
 
-    progressbar *local = malloc(sizeof(progressbar));
-    memset(local, 0, sizeof(progressbar));
+    progressbar *local = omf_calloc(1, sizeof(progressbar));
     local->theme = theme;
     local->orientation = clamp(orientation, 0, 1);
     local->percentage = clamp(percentage, 0, 100);

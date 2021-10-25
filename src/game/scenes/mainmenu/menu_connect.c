@@ -8,6 +8,7 @@
 #include "game/utils/settings.h"
 #include "game/protos/scene.h"
 #include "game/game_state.h"
+#include "utils/allocator.h"
 #include "utils/compat.h"
 #include "utils/log.h"
 
@@ -28,7 +29,8 @@ void menu_connect_free(component *c) {
     }
     local->controllers_created = 0;
     local->host = NULL;
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 void menu_connect_start(component *c, void *userdata) {
@@ -39,7 +41,7 @@ void menu_connect_start(component *c, void *userdata) {
     s->gs->role = ROLE_CLIENT;
 
     // Free old saved address, and set new
-    free(settings_get()->net.net_connect_ip);
+    omf_free(settings_get()->net.net_connect_ip);
     settings_get()->net.net_connect_ip = strdup(addr);
 
     // Set up enet host
@@ -115,10 +117,10 @@ void menu_connect_tick(component *c) {
             p2->har_id = HAR_JAGUAR;
             p2->pilot_id = 0;
             
-            player1_ctrl = calloc(1, sizeof(controller));
+            player1_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player1_ctrl);
             player1_ctrl->har = p1->har;
-            player2_ctrl = calloc(1, sizeof(controller));
+            player2_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player2_ctrl);
             player2_ctrl->har = p2->har;
 
@@ -128,7 +130,7 @@ void menu_connect_tick(component *c) {
 
             // Player 2 controller -- Keyboard
             settings_keyboard *k = &settings_get()->keys;
-            keys = malloc(sizeof(keyboard_keys));
+            keys = omf_calloc(1, sizeof(keyboard_keys));
             keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
             keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
             keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
@@ -171,8 +173,7 @@ void menu_connect_tick(component *c) {
 }
 
 component* menu_connect_create(scene *s) {
-    connect_menu_data *local = malloc(sizeof(connect_menu_data));
-    memset(local, 0, sizeof(connect_menu_data));
+    connect_menu_data *local = omf_calloc(1, sizeof(connect_menu_data));
     local->s = s;
 
     // Text config

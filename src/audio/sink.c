@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "audio/sink.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 unsigned int _sink_global_id = 1;
@@ -43,7 +44,7 @@ void sink_play(audio_sink *sink,
 			   float volume,
 			   float panning,
 			   float pitch) {
-    audio_stream *stream = malloc(sizeof(audio_stream));
+    audio_stream *stream = omf_calloc(1, sizeof(audio_stream));
     stream_init(stream, sink, src);
     sink_format_stream(sink, stream);
     stream->volume = volume;
@@ -58,7 +59,7 @@ void sink_stop(audio_sink *sink, int sid) {
     audio_stream *s = sink_get_stream(sink, sid);
     stream_stop(s);
     stream_free(s);
-    free(s);
+    omf_free(s);
     hashmap_idel(&sink->streams, sid);
 }
 
@@ -74,7 +75,7 @@ void sink_render(audio_sink *sink) {
         if(stream_get_status(stream) == STREAM_STATUS_FINISHED) {
             stream_stop(stream);
             stream_free(stream);
-            free(stream);
+            omf_free(stream);
             hashmap_delete(&sink->streams, &it);
         }
     }
@@ -89,7 +90,7 @@ void sink_free(audio_sink *sink) {
         audio_stream *stream = *((audio_stream**)pair->val);
         stream_stop(stream);
         stream_free(stream);
-        free(stream);
+        omf_free(stream);
     }
     hashmap_free(&sink->streams);
 

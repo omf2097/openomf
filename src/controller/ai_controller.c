@@ -12,6 +12,7 @@
 #include "resources/ids.h"
 #include "resources/animation.h"
 #include "controller/controller.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vec.h"
 #include "utils/random.h"
@@ -138,7 +139,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 void ai_controller_free(controller *ctrl) {
     ai *a = ctrl->data;
     vector_free(&a->active_projectiles);
-    free(a);
+    omf_free(a);
 }
 
 int is_special_move(af_move *move) {
@@ -418,7 +419,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
 }
 
 void ai_controller_create(controller *ctrl, int difficulty) {
-    ai *a = malloc(sizeof(ai));
+    ai *a = omf_calloc(1, sizeof(ai));
     a->har_event_hooked = 0;
     a->difficulty = difficulty+1;
     a->act_timer = 0;

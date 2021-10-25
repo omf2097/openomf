@@ -7,6 +7,7 @@
 #include "game/utils/settings.h"
 #include "game/protos/scene.h"
 #include "game/game_state.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
 typedef struct {
@@ -23,7 +24,8 @@ void menu_listen_free(component *c) {
     }
     local->host = NULL;
     local->controllers_created = 0;
-    free(local);
+    omf_free(local);
+    menu_set_userdata(c, local);
 }
 
 void menu_listen_tick(component *c) {
@@ -54,16 +56,16 @@ void menu_listen_tick(component *c) {
             p2->har_id = HAR_JAGUAR;
             p2->pilot_id = 0;
 
-            player1_ctrl = calloc(1, sizeof(controller));
+            player1_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player1_ctrl);
             player1_ctrl->har = p1->har;
-            player2_ctrl = calloc(1, sizeof(controller));
+            player2_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player2_ctrl);
             player2_ctrl->har = p2->har;
 
             // Player 1 controller -- Keyboard
             settings_keyboard *k = &settings_get()->keys;
-            keys = malloc(sizeof(keyboard_keys));
+            keys = omf_calloc(1, sizeof(keyboard_keys));
             keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
             keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
             keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
@@ -114,7 +116,7 @@ void menu_listen_cancel(component *c, void *userdata) {
 }
 
 component* menu_listen_create(scene *s) {
-    listen_menu_data *local = malloc(sizeof(listen_menu_data));
+    listen_menu_data *local = omf_calloc(1, sizeof(listen_menu_data));
     s->gs->role = ROLE_SERVER;
     local->s = s;
 
@@ -128,7 +130,7 @@ component* menu_listen_create(scene *s) {
     local->host = enet_host_create(&address, 1, 2, 0, 0);
     if(local->host == NULL) {
         DEBUG("Failed to initialize ENet server");
-        free(local);
+        omf_free(local);
         return NULL;
     }
     enet_socket_set_option(local->host->socket, ENET_SOCKOPT_REUSEADDR, 1);

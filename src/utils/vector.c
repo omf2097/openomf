@@ -1,3 +1,4 @@
+#include "utils/allocator.h"
 #include "utils/vector.h"
 #include <stdlib.h>
 #include <string.h>
@@ -12,20 +13,11 @@ void vector_init(vector *vec) {
     vec->blocks = 0;
     vec->reserved = 32;
     vec->inc_factor = 2;
-    vec->data = (char*)vec->alloc.cmalloc(vec->reserved * vec->block_size);
+    vec->data = (char*)omf_calloc(vec->reserved, vec->block_size);
 }
 
 void vector_create(vector *vec, unsigned int block_size) {
     vec->block_size = block_size;
-    vec->alloc.cmalloc = malloc;
-    vec->alloc.cfree = free;
-    vec->alloc.crealloc = realloc;
-    vector_init(vec);
-}
-
-void vector_create_with_allocator(vector *vec, unsigned int block_size, allocator alloc) {
-    vec->block_size = block_size;
-    vec->alloc = alloc;
     vector_init(vec);
 }
 
@@ -37,8 +29,7 @@ void vector_free(vector *vec) {
     vec->blocks = 0;
     vec->reserved = 0;
     vec->block_size = 0;
-    vec->alloc.cfree(vec->data);
-    vec->data = NULL;
+    omf_free(vec->data);
 }
 
 void* vector_get(const vector *vec, unsigned int key) {
@@ -49,7 +40,7 @@ void* vector_get(const vector *vec, unsigned int key) {
 }
 
 int vector_grow(vector *vec) {
-    void *ndata = vec->alloc.crealloc(vec->data, vec->reserved * vec->block_size * vec->inc_factor);
+    void *ndata = omf_realloc(vec->data, vec->reserved * vec->block_size * vec->inc_factor);
     if(ndata == NULL) return 1;
     vec->data = ndata;
     vec->reserved = vec->reserved * vec->inc_factor;

@@ -7,6 +7,7 @@
 #include "audio/music.h"
 #include "resources/ids.h"
 #include "resources/pilots.h"
+#include "utils/allocator.h"
 #include "utils/random.h"
 #include "utils/str.h"
 #include "utils/log.h"
@@ -166,7 +167,8 @@ void newsroom_free(scene *scene) {
     str_free(&local->har1);
     str_free(&local->har2);
     dialog_free(&local->continue_dialog);
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void newsroom_static_tick(scene *scene, int paused) {
@@ -267,7 +269,7 @@ void newsroom_input_tick(scene *scene) {
                                 p2->colors[2] = p.colors[2];
 
                                 // make a new AI controller
-                                controller *ctrl = malloc(sizeof(controller));
+                                controller *ctrl = omf_calloc(1, sizeof(controller));
                                 controller_init(ctrl);
                                 ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
                                 game_player_set_ctrl(p2, ctrl);
@@ -309,7 +311,7 @@ void newsroom_startup(scene *scene, int id, int *m_load, int *m_repeat) {
 }
 
 int newsroom_create(scene *scene) {
-    newsroom_local *local = malloc(sizeof(newsroom_local));
+    newsroom_local *local = omf_calloc(1, sizeof(newsroom_local));
 
     local->news_id = rand_int(24)*2;
     local->screen = 0;

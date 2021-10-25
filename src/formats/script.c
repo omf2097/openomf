@@ -4,6 +4,7 @@
 #include "formats/script.h"
 #include "formats/error.h"
 #include "formats/taglist.h"
+#include "utils/allocator.h"
 
 static void _create_frame(sd_script *script, int number);
 static void _create_tag(sd_script_frame *frame, int number);
@@ -43,9 +44,9 @@ void sd_script_free(sd_script *script) {
     if(script == NULL)
         return;
     for(int i = 0; i < script->frame_count; i++) {
-        free(script->frames[i].tags);
+        omf_free(script->frames[i].tags);
     }
-    free(script->frames);
+    omf_free(script->frames);
 }
 
 int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id) {
@@ -66,8 +67,7 @@ int sd_script_clear_tags(sd_script *script, int frame_id) {
     }
 
     // Clear out old tags
-    free(script->frames[frame_id].tags);
-    script->frames[frame_id].tags = NULL;
+    omf_free(script->frames[frame_id].tags);
     script->frames[frame_id].tag_count = 0;
     return SD_SUCCESS;
 }
@@ -118,13 +118,13 @@ int sd_script_get_sprite_at_frame(const sd_script *script, int frame_id) {
 
 static void _create_tag(sd_script_frame *frame, int number) {
     size_t newsize = sizeof(sd_script_tag) * (number + 1);
-    frame->tags = realloc(frame->tags, newsize);
+    frame->tags = omf_realloc(frame->tags, newsize);
     memset(&frame->tags[number], 0, sizeof(sd_script_tag));
 }
 
 static void _create_frame(sd_script *script, int number) {
     size_t newsize = sizeof(sd_script_frame) * (number + 1);
-    script->frames = realloc(script->frames, newsize);
+    script->frames = omf_realloc(script->frames, newsize);
     memset(&script->frames[number], 0, sizeof(sd_script_frame));
 }
 

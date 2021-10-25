@@ -5,6 +5,7 @@
 #include "video/surface.h"
 #include "resources/ids.h"
 #include "resources/scores.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "game/common_defines.h"
 #include "game/gui/text_render.h"
@@ -28,7 +29,8 @@ typedef struct scoreboard_local_t {
 void scoreboard_free(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
     surface_free(&local->black_surface);
-    free(local);
+    omf_free(local);
+    scene_set_userdata(scene, local);
 }
 
 void handle_scoreboard_save(scoreboard_local *local) {
@@ -208,7 +210,7 @@ int score_fits_scoreboard(scoreboard_local *local, unsigned int score) {
 
 int scoreboard_create(scene *scene) {
     // Init local data
-    scoreboard_local *local = malloc(sizeof(scoreboard_local));
+    scoreboard_local *local = omf_calloc(1, sizeof(scoreboard_local));
     local->page = settings_get()->gameplay.rounds;
 
     // Load scores

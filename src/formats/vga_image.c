@@ -6,6 +6,7 @@
 
 #include "formats/vga_image.h"
 #include "formats/error.h"
+#include "utils/allocator.h"
 
 int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
     if(img == NULL) {
@@ -14,20 +15,10 @@ int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
     img->w = w;
     img->h = h;
     img->len = w * h;
-    if((img->data = malloc(w * h)) == NULL) {
-        goto error_0;
-    }
-    if((img->stencil = malloc(w * h)) == NULL) {
-        goto error_1;
-    }
-    memset(img->data, 0, w * h);
+    img->data = omf_calloc(1, w * h);
+    img->stencil = omf_calloc(1, w * h);
     memset(img->stencil, 1, w * h);
     return SD_SUCCESS;
-
-error_1:
-    free(img->data);
-error_0:
-    return SD_OUT_OF_MEMORY;
 }
 
 int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
@@ -37,26 +28,17 @@ int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
     dst->w = src->w;
     dst->h = src->h;
     dst->len = src->len;
-    if((dst->data = malloc(src->len)) == NULL) {
-        goto error_0;
-    }
-    if((dst->stencil = malloc(src->len)) == NULL) {
-        goto error_1;
-    }
+    dst->data = omf_calloc(src->len, 1);
+    dst->stencil = omf_calloc(src->len, 1);
     memcpy(dst->data, src->data, src->len);
     memcpy(dst->stencil, src->stencil, src->len);
     return SD_SUCCESS;
-
-error_1:
-    free(dst->data);
-error_0:
-    return SD_OUT_OF_MEMORY;
 }
 
 void sd_vga_image_free(sd_vga_image *img) {
     if(img == NULL) return;
-    free(img->data);
-    free(img->stencil);
+    omf_free(img->data);
+    omf_free(img->stencil);
 }
 
 int sd_vga_image_stencil_index(sd_vga_image *img, int stencil_index) {
@@ -192,9 +174,9 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     }
 
     // Allocate memory for the data
-    row_pointers = malloc(sizeof(png_bytep) * h);
+    row_pointers = omf_calloc(h, sizeof(png_bytep));
     for(int y = 0; y < h; y++) {
-        row_pointers[y] = malloc(png_get_rowbytes(png_ptr, info_ptr));
+        row_pointers[y] = omf_calloc(1, png_get_rowbytes(png_ptr, info_ptr));
     }
 
     if(setjmp(png_jmpbuf(png_ptr))) {
@@ -219,9 +201,9 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     // Free up everything
 error_3:
     for(int y = 0; y < h; y++) {
-        free(row_pointers[y]);
+        omf_free(row_pointers[y]);
     }
-    free(row_pointers);
+    omf_free(row_pointers);
 error_2:
     png_destroy_read_struct(&png_ptr, NULL, NULL);
 error_1:
