@@ -465,6 +465,20 @@ void har_move(object *obj) {
                 har_action_hook(obj, ACT_FLUSH);
                 har_event_land(h);
                 har_floor_landing_effects(obj);
+
+                // make sure HAR's are facing each other
+                object *obj_enemy = game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har;
+                if (object_get_direction(obj) == object_get_direction(obj_enemy)) {
+                    vec2i pos = object_get_pos(obj);
+                    vec2i pos_enemy = object_get_pos(obj_enemy);
+                    if (pos.x > pos_enemy.x) {
+                        object_set_direction(obj, OBJECT_FACE_LEFT);
+                    } else {
+                        object_set_direction(obj, OBJECT_FACE_RIGHT);
+                    }
+
+                    object_set_direction(obj_enemy, object_get_direction(obj) * -1);
+                }
             /*}*/
         } else if (h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.2f;
