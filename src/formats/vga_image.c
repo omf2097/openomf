@@ -36,7 +36,9 @@ int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
 }
 
 void sd_vga_image_free(sd_vga_image *img) {
-    if(img == NULL) return;
+    if(img == NULL) {
+        return;
+    }
     omf_free(img->data);
     omf_free(img->stencil);
 }

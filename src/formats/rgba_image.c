@@ -126,7 +126,8 @@ int sd_rgba_image_to_png(const sd_rgba_image *img, const char *filename) {
 }
 
 void sd_rgba_image_free(sd_rgba_image *img) {
-    if(img == NULL)
+    if(img == NULL) {
         return;
+    }
     omf_free(img->data);
 }

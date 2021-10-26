@@ -29,7 +29,9 @@ void sd_mwriter_save(const sd_mwriter *src, sd_writer *dst) {
 }
 
 void sd_mwriter_close(sd_mwriter *writer) {
-    if(writer == NULL) return;
+    if(writer == NULL) {
+        return;
+    }
     omf_free(writer->buf);
     omf_free(writer);
 }
