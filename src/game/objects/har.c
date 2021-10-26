@@ -588,12 +588,14 @@ void har_take_damage(object *obj, const str* string, float damage) {
         object_set_repeat(obj, 0);
         if (h->health <= 0) {
             // taken from MASTER.DAT
-            // XXX changed the last frame to 200 ticks to ensure the HAR falls down
+            size_t last_line = 0;
+            if(!str_last_of(string, '-', &last_line)) {
+                last_line = 0;
+            }
+
             str n;
-            size_t last_line;
-            str_create(&n);
-            str_last_of(string, '-', &last_line);
-            str_slice(&n, string, 0, last_line);
+            str_from_slice(&n, string, 0, last_line);
+            // XXX changed the last frame to 200 ticks to ensure the HAR falls down
             str_append_c(&n, "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM200");
             object_set_custom_string(obj, str_c(&n));
             str_free(&n);
@@ -607,11 +609,13 @@ void har_take_damage(object *obj, const str* string, float damage) {
         } else if (object_is_airborne(obj)) {
             DEBUG("airborne knockback");
             // append the 'airborne knockback' string to the hit string, replacing the final frame
+            size_t last_line = 0;
+            if(!str_last_of(string, '-', &last_line)) {
+                last_line = 0;
+            }
+
             str n;
-            size_t last_line;
-            str_create(&n);
-            str_last_of(string, '-', &last_line);
-            str_slice(&n, string, 0, last_line);
+            str_from_slice(&n, string, 0, last_line);
             str_append_c(&n, "-L2-M5-L2");
             object_set_custom_string(obj, str_c(&n));
             str_free(&n);

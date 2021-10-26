@@ -11,6 +11,7 @@
 #include "utils/random.h"
 #include "utils/str.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "video/surface.h"
 #include "video/video.h"
 
@@ -31,21 +32,20 @@ typedef struct newsroom_local_t {
 } newsroom_local;
 
 const char* object_pronoun(int sex) {
-  if (sex == PILOT_SEX_MALE) {
-    return "Him";
-  }
-  return "Her";
+    if (sex == PILOT_SEX_MALE) {
+        return "Him";
+    }
+    return "Her";
 }
 
 const char* subject_pronoun(int sex) {
-  if (sex == PILOT_SEX_MALE) {
-    return "He";
-  }
-  return "She";
+    if (sex == PILOT_SEX_MALE) {
+        return "He";
+    }
+    return "She";
 }
 
 void newsroom_fixup_str(newsroom_local *local) {
-
     /*
      * Substitution table
 
@@ -61,78 +61,25 @@ void newsroom_fixup_str(newsroom_local *local) {
        11= He/She P2 - He
     */
 
-    const char *text = NULL;
+    unsigned int translation_id = NEWSROOM_TEXT + local->news_id + min2(local->screen, 1);
 
-    if(local->screen == 0) {
-        text = lang_get(NEWSROOM_TEXT+local->news_id);
-    } else {
-        text = lang_get(NEWSROOM_TEXT+local->news_id+1);
-    }
-
-    str textstr;
-    size_t prevpos=0, pos = 0;
-
-    str_create_from_cstr(&textstr, text);
-    str_free(&local->news_str);
-    while(str_next_of(&textstr, '~', &pos)) {
-        str tmp;
-        str_create(&tmp);
-        str_slice(&tmp, &textstr, prevpos, pos);
-        str_append(&local->news_str, &tmp);
-        str_free(&tmp);
-
-        // replace ~n tokens
-        char n = str_at(&textstr, pos+1);
-        char nn = str_at(&textstr, pos+2);
-        switch(n) {
-            case '1':
-                if(nn == '0') {
-                    // ~10
-                    str_append_c(&local->news_str, object_pronoun(local->sex2));
-                    pos++;
-                } else if(nn == '1') {
-                    // ~11
-                    str_append_c(&local->news_str, subject_pronoun(local->sex2));
-                    pos++;
-                } else {
-                    // ~1
-                    str_append(&local->news_str, &local->pilot1);
-                }
-                break;
-            case '2':
-                str_append(&local->news_str, &local->pilot2);
-                break;
-            case '3':
-                str_append(&local->news_str, &local->har1);
-                break;
-            case '4':
-                str_append(&local->news_str, &local->har2);
-                break;
-            case '5':
-                str_append_c(&local->news_str, "Stadium");
-                break;
-            case '6':
-                str_append_c(&local->news_str, "The");
-                break;
-            case '7':
-                str_append_c(&local->news_str, object_pronoun(local->sex1));
-                break;
-            case '8':
-                str_append_c(&local->news_str, subject_pronoun(local->sex1));
-                break;
-            case '9':
-                str_append_c(&local->news_str, "WTF");
-                break;
-        }
-        pos+=2;
-        prevpos = pos;
-    }
     str tmp;
-    str_create(&tmp);
-    str_slice(&tmp, &textstr, pos, str_size(&textstr));
-    str_append(&local->news_str, &tmp);
+    str_from_c(&tmp, lang_get(translation_id));
+    str_replace(&tmp, "~11", subject_pronoun(local->sex2), -1);
+    str_replace(&tmp, "~10", object_pronoun(local->sex2), -1);
+    str_replace(&tmp, "~9", "WTF", -1);
+    str_replace(&tmp, "~8", subject_pronoun(local->sex1), -1);
+    str_replace(&tmp, "~7", object_pronoun(local->sex1), -1);
+    str_replace(&tmp, "~6", "The", -1);
+    str_replace(&tmp, "~5", "Stadium", -1);
+    str_replace(&tmp, "~4", str_c(&local->har2), -1);
+    str_replace(&tmp, "~3", str_c(&local->har1), -1);
+    str_replace(&tmp, "~2", str_c(&local->pilot2), -1);
+    str_replace(&tmp, "~1", str_c(&local->pilot1), -1);
+
+    str_free(&local->news_str);
+    str_from(&local->news_str, &tmp);
     str_free(&tmp);
-    str_free(&textstr);
 }
 
 void newsroom_set_names(newsroom_local *local,
@@ -140,20 +87,16 @@ void newsroom_set_names(newsroom_local *local,
                         const char *har1, const char *har2,
                         int sex1, int sex2) {
 
-    str_create_from_cstr(&local->pilot1, pilot1);
-    str_create_from_cstr(&local->pilot2, pilot2);
-    str_create_from_cstr(&local->har1, har1);
-    str_create_from_cstr(&local->har2, har2);
+    str_from_c(&local->pilot1, pilot1);
+    str_from_c(&local->pilot2, pilot2);
+    str_from_c(&local->har1, har1);
+    str_from_c(&local->har2, har2);
     local->sex1 = sex1;
     local->sex2 = sex2;
 
     // Remove the whitespace at the end of pilots name
-    if(isspace(str_at(&local->pilot1, str_size(&local->pilot1)-1))) {
-        str_remove_at(&local->pilot1, str_size(&local->pilot1)-1);
-    }
-    if(isspace(str_at(&local->pilot2, str_size(&local->pilot2)-1))) {
-        str_remove_at(&local->pilot2, str_size(&local->pilot2)-1);
-    }
+    str_rstrip(&local->pilot1);
+    str_rstrip(&local->pilot2);
 }
 
 
