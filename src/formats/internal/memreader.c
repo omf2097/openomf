@@ -45,8 +45,9 @@ void sd_mreader_close(sd_mreader *reader) {
 }
 
 int sd_mread_buf(sd_mreader *reader, char *buf, int len) {
-    if(reader->pos + len > reader->len)
+    if(reader->pos + len > reader->len) {
         return 0;
+    }
     memcpy(buf, reader->buf + reader->pos, len);
     reader->pos += len;
     return 1;
