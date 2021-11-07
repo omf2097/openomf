@@ -93,7 +93,7 @@ int sd_palette_to_gimp_palette(const sd_palette *palette, const char *filename);
  */
 int sd_palette_from_gimp_palette(sd_palette *palette, const char *filename);
 
-int sd_palette_mload_range(sd_mreader *reader, sd_palette *palette, int index_start, int index_count);
+int sd_palette_mload_range(memreader *reader, sd_palette *palette, int index_start, int index_count);
 int sd_palette_load_range(sd_reader *reader, sd_palette *palette, int index_start, int index_count);
 int sd_palette_load(sd_reader *reader, sd_palette *palette);
 void sd_palette_msave_range(memwriter *writer, const sd_palette *palette, int index_start, int index_count);

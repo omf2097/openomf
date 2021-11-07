@@ -84,10 +84,10 @@ int sd_language_load(sd_language *language, const char *filename) {
         memset(language->strings[i].data, 0, len + 1);
 
         // Read string
-        sd_mreader *mr = sd_mreader_open_from_reader(r, len);
-        sd_mreader_xor(mr, len & 0xFF);
-        sd_mread_buf(mr, language->strings[i].data, len);
-        sd_mreader_close(mr);
+        memreader *mr = memreader_open_from_reader(r, len);
+        memreader_xor(mr, len & 0xFF);
+        memread_buf(mr, language->strings[i].data, len);
+        memreader_close(mr);
     }
 
     // All done.

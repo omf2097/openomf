@@ -111,10 +111,10 @@ int sd_palette_load_range(sd_reader *reader, sd_palette *palette, int index_star
     return SD_SUCCESS;
 }
 
-int sd_palette_mload_range(sd_mreader *reader, sd_palette *palette, int index_start, int index_count) {
+int sd_palette_mload_range(memreader *reader, sd_palette *palette, int index_start, int index_count) {
     char d[3];
     for(int i = index_start; i < index_start + index_count; i++) {
-        sd_mread_buf(reader, d, 3);
+        memread_buf(reader, d, 3);
         palette->data[i][0] = ((d[0] << 2) | ((d[0] & 0x30) >> 4));
         palette->data[i][1] = ((d[1] << 2) | ((d[1] & 0x30) >> 4));
         palette->data[i][2] = ((d[2] << 2) | ((d[2] & 0x30) >> 4));

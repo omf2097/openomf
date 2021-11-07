@@ -30,15 +30,15 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     }
 
     // Read up pilot block and the unknown data
-    sd_mreader *mr = sd_mreader_open_from_reader(r, 448);
-    sd_mreader_xor(mr, 0xAC);
+    memreader *mr = memreader_open_from_reader(r, 448);
+    memreader_xor(mr, 0xAC);
     sd_pilot_create(&chr->pilot);
     sd_pilot_load_from_mem(mr, &chr->pilot);
-    sd_mreader_close(mr);
+    memreader_close(mr);
 
     // Read enemies block
-    mr = sd_mreader_open_from_reader(r, 68 * chr->pilot.enemies_inc_unranked);
-    sd_mreader_xor(mr, (chr->pilot.enemies_inc_unranked * 68) & 0xFF);
+    mr = memreader_open_from_reader(r, 68 * chr->pilot.enemies_inc_unranked);
+    memreader_xor(mr, (chr->pilot.enemies_inc_unranked * 68) & 0xFF);
 
     // Handle enemy data
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
@@ -46,11 +46,11 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
         sd_pilot_create(&chr->enemies[i]->pilot);
         sd_pilot_load_player_from_mem(mr, &chr->enemies[i]->pilot);
-        sd_mread_buf(mr, chr->enemies[i]->unknown, 25);
+        memread_buf(mr, chr->enemies[i]->unknown, 25);
     }
 
     // Close memory reader for enemy data block
-    sd_mreader_close(mr);
+    memreader_close(mr);
 
     // Read HAR palette
     sd_palette_create(&chr->pal);
