@@ -139,14 +139,14 @@ void sd_palette_save_range(sd_writer *writer, const sd_palette *palette, int ind
     }
 }
 
-void sd_palette_msave_range(sd_mwriter *writer, const sd_palette *palette, int index_start, int index_count) {
+void sd_palette_msave_range(memwriter *writer, const sd_palette *palette, int index_start, int index_count) {
     const unsigned char *d;
     for(int i = index_start; i < index_start + index_count; i++) {
         d = palette->data[i];
         // for some reason, we need to mask off the high bits or the bitshift doesn't work
-        sd_mwrite_ubyte(writer, (d[0] & 0xff) >> 2);
-        sd_mwrite_ubyte(writer, (d[1] & 0xff) >> 2);
-        sd_mwrite_ubyte(writer, (d[2] & 0xff) >> 2);
+        memwrite_ubyte(writer, (d[0] & 0xff) >> 2);
+        memwrite_ubyte(writer, (d[1] & 0xff) >> 2);
+        memwrite_ubyte(writer, (d[2] & 0xff) >> 2);
     }
 }
 

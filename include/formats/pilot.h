@@ -135,8 +135,8 @@ void sd_pilot_free(sd_pilot *pilot);
 void sd_pilot_load_player_from_mem(sd_mreader *mreader, sd_pilot *pilot);
 void sd_pilot_load_from_mem(sd_mreader *mreader, sd_pilot *pilot);
 int sd_pilot_load(sd_reader *reader, sd_pilot *pilot);
-void sd_pilot_save_player_to_mem(sd_mwriter *mwriter, const sd_pilot *pilot);
-void sd_pilot_save_to_mem(sd_mwriter *mwriter, const sd_pilot *pilot);
+void sd_pilot_save_player_to_mem(memwriter *mwriter, const sd_pilot *pilot);
+void sd_pilot_save_to_mem(memwriter *mwriter, const sd_pilot *pilot);
 int sd_pilot_save(sd_writer *writer, const sd_pilot *pilot);
 
 #ifdef __cplusplus

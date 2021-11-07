@@ -153,12 +153,12 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     return SD_SUCCESS;
 }
 
-void sd_pilot_save_player_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
-    sd_mwrite_buf(w, pilot->name, 18);
-    sd_mwrite_uword(w, pilot->wins);
-    sd_mwrite_uword(w, pilot->losses);
-    sd_mwrite_ubyte(w, pilot->rank);
-    sd_mwrite_ubyte(w, pilot->har_id);
+void sd_pilot_save_player_to_mem(memwriter *w, const sd_pilot *pilot) {
+    memwrite_buf(w, pilot->name, 18);
+    memwrite_uword(w, pilot->wins);
+    memwrite_uword(w, pilot->losses);
+    memwrite_ubyte(w, pilot->rank);
+    memwrite_ubyte(w, pilot->har_id);
 
     uint16_t stats_a = 0, stats_b = 0, stats_c = 0;
     uint8_t stats_d = 0;
@@ -171,51 +171,51 @@ void sd_pilot_save_player_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     stats_c |= (pilot->agility & 0x7F) << 0;
     stats_c |= (pilot->power & 0x7F) << 7;
     stats_d |= (pilot->endurance & 0x7F) << 0;
-    sd_mwrite_uword(w, stats_a);
-    sd_mwrite_uword(w, stats_b);
-    sd_mwrite_uword(w, stats_c);
-    sd_mwrite_ubyte(w, stats_d);
-    sd_mwrite_fill(w, 0, 1);
+    memwrite_uword(w, stats_a);
+    memwrite_uword(w, stats_b);
+    memwrite_uword(w, stats_c);
+    memwrite_ubyte(w, stats_d);
+    memwrite_fill(w, 0, 1);
 
-    sd_mwrite_uword(w, pilot->offense);
-    sd_mwrite_uword(w, pilot->defense);
-    sd_mwrite_udword(w, pilot->money);
-    sd_mwrite_ubyte(w, pilot->color_1);
-    sd_mwrite_ubyte(w, pilot->color_2);
-    sd_mwrite_ubyte(w, pilot->color_3);
+    memwrite_uword(w, pilot->offense);
+    memwrite_uword(w, pilot->defense);
+    memwrite_udword(w, pilot->money);
+    memwrite_ubyte(w, pilot->color_1);
+    memwrite_ubyte(w, pilot->color_2);
+    memwrite_ubyte(w, pilot->color_3);
 }
 
-void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
+void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
     // Write the pilot block
-    sd_mwrite_udword(w, pilot->unknown_a);
+    memwrite_udword(w, pilot->unknown_a);
 
     sd_pilot_save_player_to_mem(w, pilot);
 
-    sd_mwrite_buf(w, pilot->trn_name, 13);
-    sd_mwrite_buf(w, pilot->trn_desc, 31);
-    sd_mwrite_buf(w, pilot->trn_image, 13);
+    memwrite_buf(w, pilot->trn_name, 13);
+    memwrite_buf(w, pilot->trn_desc, 31);
+    memwrite_buf(w, pilot->trn_image, 13);
 
-    sd_mwrite_float(w, pilot->unk_f_c);
-    sd_mwrite_float(w, pilot->unk_f_d);
-    sd_mwrite_fill(w, 0, 40);
-    sd_mwrite_ubyte(w, pilot->pilot_id);
-    sd_mwrite_ubyte(w, pilot->unknown_k);
-    sd_mwrite_uword(w, pilot->force_arena);
-    sd_mwrite_ubyte(w, (pilot->difficulty & 0x3) << 3);
-    sd_mwrite_buf(w, pilot->unk_block_b, 2);
-    sd_mwrite_ubyte(w, pilot->movement);
-    sd_mwrite_buf(w, (char*)pilot->unk_block_c, 6);
-    sd_mwrite_buf(w, pilot->enhancements, 11);
+    memwrite_float(w, pilot->unk_f_c);
+    memwrite_float(w, pilot->unk_f_d);
+    memwrite_fill(w, 0, 40);
+    memwrite_ubyte(w, pilot->pilot_id);
+    memwrite_ubyte(w, pilot->unknown_k);
+    memwrite_uword(w, pilot->force_arena);
+    memwrite_ubyte(w, (pilot->difficulty & 0x3) << 3);
+    memwrite_buf(w, pilot->unk_block_b, 2);
+    memwrite_ubyte(w, pilot->movement);
+    memwrite_buf(w, (char*)pilot->unk_block_c, 6);
+    memwrite_buf(w, pilot->enhancements, 11);
 
     // Flags
-    sd_mwrite_ubyte(w, 0);
+    memwrite_ubyte(w, 0);
     uint8_t req_flags = 0;
     if(pilot->secret)
         req_flags |= 0x02;
     if(pilot->only_fight_once)
         req_flags |= 0x08;
-    sd_mwrite_ubyte(w, req_flags);
-    sd_mwrite_ubyte(w, 0);
+    memwrite_ubyte(w, req_flags);
+    memwrite_ubyte(w, 0);
 
     // Requirements (10)
     uint16_t reqs[5];
@@ -230,7 +230,7 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     reqs[4] |= (pilot->req_destroy & 0x01) << 8;
     reqs[4] |= (pilot->req_scrap & 0x01) << 7;
     reqs[4] |= (pilot->req_avg_dmg & 0x7F);
-    sd_mwrite_buf(w, (char*)reqs, 10);
+    memwrite_buf(w, (char*)reqs, 10);
 
     // Attitude
     uint16_t att[3];
@@ -240,37 +240,37 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     att[1] |= (pilot->att_hyper & 0x7F);
     att[2] |= (pilot->att_sniper & 0x7F) << 7;
     att[2] |= (pilot->att_def & 0x7F);
-    sd_mwrite_buf(w, (char*)att, 6);
+    memwrite_buf(w, (char*)att, 6);
 
-    sd_mwrite_buf(w, (char*)pilot->unk_block_d, 6);
+    memwrite_buf(w, (char*)pilot->unk_block_d, 6);
 
-    sd_mwrite_word(w, pilot->ap_throw);
-    sd_mwrite_word(w, pilot->ap_special);
-    sd_mwrite_word(w, pilot->ap_jump);
-    sd_mwrite_word(w, pilot->ap_high);
-    sd_mwrite_word(w, pilot->ap_low);
-    sd_mwrite_word(w, pilot->ap_middle);
-    sd_mwrite_word(w, pilot->pref_jump);
-    sd_mwrite_word(w, pilot->pref_fwd);
-    sd_mwrite_word(w, pilot->pref_back);
+    memwrite_word(w, pilot->ap_throw);
+    memwrite_word(w, pilot->ap_special);
+    memwrite_word(w, pilot->ap_jump);
+    memwrite_word(w, pilot->ap_high);
+    memwrite_word(w, pilot->ap_low);
+    memwrite_word(w, pilot->ap_middle);
+    memwrite_word(w, pilot->pref_jump);
+    memwrite_word(w, pilot->pref_fwd);
+    memwrite_word(w, pilot->pref_back);
 
-    sd_mwrite_udword(w, pilot->unknown_e);
-    sd_mwrite_float(w, pilot->learning);
-    sd_mwrite_float(w, pilot->forget);
-    sd_mwrite_buf(w, pilot->unk_block_f, 14);
-    sd_mwrite_uword(w, pilot->enemies_inc_unranked);
-    sd_mwrite_uword(w, pilot->enemies_ex_unranked);
-    sd_mwrite_uword(w, pilot->unk_d_a);
-    sd_mwrite_udword(w, pilot->unk_d_b);
-    sd_mwrite_udword(w, pilot->winnings);
-    sd_mwrite_udword(w, pilot->total_value);
-    sd_mwrite_float(w, pilot->unk_f_a);
-    sd_mwrite_float(w, pilot->unk_f_b);
-    sd_mwrite_fill(w, 0, 8);
+    memwrite_udword(w, pilot->unknown_e);
+    memwrite_float(w, pilot->learning);
+    memwrite_float(w, pilot->forget);
+    memwrite_buf(w, pilot->unk_block_f, 14);
+    memwrite_uword(w, pilot->enemies_inc_unranked);
+    memwrite_uword(w, pilot->enemies_ex_unranked);
+    memwrite_uword(w, pilot->unk_d_a);
+    memwrite_udword(w, pilot->unk_d_b);
+    memwrite_udword(w, pilot->winnings);
+    memwrite_udword(w, pilot->total_value);
+    memwrite_float(w, pilot->unk_f_a);
+    memwrite_float(w, pilot->unk_f_b);
+    memwrite_fill(w, 0, 8);
     sd_palette_msave_range(w, &pilot->palette, 0, 48);
-    sd_mwrite_uword(w, pilot->unk_block_i);
+    memwrite_uword(w, pilot->unk_block_i);
 
-    sd_mwrite_uword(w, pilot->photo_id & 0x3FF);
+    memwrite_uword(w, pilot->photo_id & 0x3FF);
 }
 
 int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
@@ -279,11 +279,11 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
     }
 
     // Copy, XOR, save and close
-    sd_mwriter *w = sd_mwriter_open();
+    memwriter *w = memwriter_open();
     sd_pilot_save_to_mem(w, pilot);
-    sd_mwriter_xor(w, PILOT_BLOCK_LENGTH & 0xFF);
-    sd_mwriter_save(w, fw);
-    sd_mwriter_close(w);
+    memwriter_xor(w, PILOT_BLOCK_LENGTH & 0xFF);
+    memwriter_save(w, fw);
+    memwriter_close(w);
 
     // Quote block
     for(int m = 0; m < 10; m++) {

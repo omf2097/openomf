@@ -99,21 +99,21 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
     }
 
     // Save pilot and unknown
-    sd_mwriter *mw = sd_mwriter_open();
+    memwriter *mw = memwriter_open();
     sd_pilot_save_to_mem(mw, &chr->pilot);
-    sd_mwriter_xor(mw, 0xAC);
-    sd_mwriter_save(mw, w);
-    sd_mwriter_close(mw);
+    memwriter_xor(mw, 0xAC);
+    memwriter_save(mw, w);
+    memwriter_close(mw);
 
     // Write enemy data
-    mw = sd_mwriter_open();
+    mw = memwriter_open();
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         sd_pilot_save_player_to_mem(mw, &chr->enemies[i]->pilot);
-        sd_mwrite_buf(mw, chr->enemies[i]->unknown, 25);
+        memwrite_buf(mw, chr->enemies[i]->unknown, 25);
     }
-    sd_mwriter_xor(mw, (chr->pilot.enemies_inc_unranked * 68) & 0xFF);
-    sd_mwriter_save(mw, w);
-    sd_mwriter_close(mw);
+    memwriter_xor(mw, (chr->pilot.enemies_inc_unranked * 68) & 0xFF);
+    memwriter_save(mw, w);
+    memwriter_close(mw);
 
     // Save palette
     sd_palette_save_range(w, &chr->pal, 0, 48);
