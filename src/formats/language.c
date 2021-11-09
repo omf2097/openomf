@@ -84,10 +84,10 @@ int sd_language_load(sd_language *language, const char *filename) {
         memset(language->strings[i].data, 0, len + 1);
 
         // Read string
-        sd_mreader *mr = sd_mreader_open_from_reader(r, len);
-        sd_mreader_xor(mr, len & 0xFF);
-        sd_mread_buf(mr, language->strings[i].data, len);
-        sd_mreader_close(mr);
+        memreader *mr = memreader_open_from_reader(r, len);
+        memreader_xor(mr, len & 0xFF);
+        memread_buf(mr, language->strings[i].data, len);
+        memreader_close(mr);
     }
 
     // All done.
@@ -134,12 +134,12 @@ int sd_language_save(sd_language *language, const char *filename) {
         }
 
         // write string
-        sd_mwriter *mw = sd_mwriter_open();
+        memwriter *mw = memwriter_open();
         size_t str_len = strlen(language->strings[i].data);
-        sd_mwrite_buf(mw, language->strings[i].data, str_len);
-        sd_mwriter_xor(mw, str_len & 0xFF);
-        sd_mwriter_save(mw, w);
-        sd_mwriter_close(mw);
+        memwrite_buf(mw, language->strings[i].data, str_len);
+        memwriter_xor(mw, str_len & 0xFF);
+        memwriter_save(mw, w);
+        memwriter_close(mw);
     }
 
     sd_writer_close(w);

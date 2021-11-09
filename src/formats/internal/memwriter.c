@@ -17,18 +17,18 @@
         writer->real_len = newsize; \
     }
 
-sd_mwriter* sd_mwriter_open() {
-    sd_mwriter *mwriter = omf_calloc(1, sizeof(sd_mwriter));
+memwriter* memwriter_open() {
+    memwriter *mwriter = omf_calloc(1, sizeof(memwriter));
     mwriter->buf = omf_calloc(GROW, 1);
     mwriter->real_len = GROW;
     return mwriter;
 }
 
-void sd_mwriter_save(const sd_mwriter *src, sd_writer *dst) {
+void memwriter_save(const memwriter *src, sd_writer *dst) {
     sd_write_buf(dst, src->buf, src->data_len);
 }
 
-void sd_mwriter_close(sd_mwriter *writer) {
+void memwriter_close(memwriter *writer) {
     if(writer == NULL) {
         return;
     }
@@ -36,51 +36,51 @@ void sd_mwriter_close(sd_mwriter *writer) {
     omf_free(writer);
 }
 
-long sd_mwriter_pos(const sd_mwriter *writer) {
+long memwriter_pos(const memwriter *writer) {
     return writer->data_len;
 }
 
-void sd_mwriter_xor(sd_mwriter *writer, uint8_t key) {
+void memwriter_xor(memwriter *writer, uint8_t key) {
     for(long k = 0; k < writer->data_len; k++) {
         writer->buf[k] = key++ ^ writer->buf[k];
     }
 }
 
-void sd_mwrite_buf(sd_mwriter *writer, const char *buf, int len) {
+void memwrite_buf(memwriter *writer, const char *buf, int len) {
     CHECK_SIZE
     memcpy(writer->buf + writer->data_len, buf, len);
     writer->data_len += len;
 }
 
-void sd_mwrite_ubyte(sd_mwriter *writer, uint8_t value) {
-    sd_mwrite_buf(writer, (char*)&value, 1);
+void memwrite_ubyte(memwriter *writer, uint8_t value) {
+    memwrite_buf(writer, (char*)&value, 1);
 }
 
-void sd_mwrite_uword(sd_mwriter *writer, uint16_t value) {
-    sd_mwrite_buf(writer, (char*)&value, 2);
+void memwrite_uword(memwriter *writer, uint16_t value) {
+    memwrite_buf(writer, (char*)&value, 2);
 }
 
-void sd_mwrite_udword(sd_mwriter *writer, uint32_t value) {
-    sd_mwrite_buf(writer, (char*)&value, 4);
+void memwrite_udword(memwriter *writer, uint32_t value) {
+    memwrite_buf(writer, (char*)&value, 4);
 }
 
-void sd_mwrite_byte(sd_mwriter *writer, int8_t value) {
-    sd_mwrite_buf(writer, (char*)&value, 1);
+void memwrite_byte(memwriter *writer, int8_t value) {
+    memwrite_buf(writer, (char*)&value, 1);
 }
 
-void sd_mwrite_word(sd_mwriter *writer, int16_t value) {
-    sd_mwrite_buf(writer, (char*)&value, 2);
+void memwrite_word(memwriter *writer, int16_t value) {
+    memwrite_buf(writer, (char*)&value, 2);
 }
 
-void sd_mwrite_dword(sd_mwriter *writer, int32_t value) {
-    sd_mwrite_buf(writer, (char*)&value, 4);
+void memwrite_dword(memwriter *writer, int32_t value) {
+    memwrite_buf(writer, (char*)&value, 4);
 }
 
-void sd_mwrite_float(sd_mwriter *writer, float value) {
-    sd_mwrite_buf(writer, (char*)&value, sizeof(float));
+void memwrite_float(memwriter *writer, float value) {
+    memwrite_buf(writer, (char*)&value, sizeof(float));
 }
 
-void sd_mwrite_fill(sd_mwriter *writer, char content, int len) {
+void memwrite_fill(memwriter *writer, char content, int len) {
     CHECK_SIZE
     memset(writer->buf + writer->data_len, content, len);
     writer->data_len += len;

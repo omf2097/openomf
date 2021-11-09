@@ -22,17 +22,17 @@ void sd_pilot_free(sd_pilot *pilot) {
 }
 
 // Reads exactly 24 + 8 + 11 = 43 bytes
-void sd_pilot_load_player_from_mem(sd_mreader *mr, sd_pilot *pilot) {
-    sd_mread_buf(mr, pilot->name, 18);
-    pilot->wins =        sd_mread_uword(mr);
-    pilot->losses =      sd_mread_uword(mr);
-    pilot->rank =        sd_mread_ubyte(mr);
-    pilot->har_id =      sd_mread_ubyte(mr);
+void sd_pilot_load_player_from_mem(memreader *mr, sd_pilot *pilot) {
+    memread_buf(mr, pilot->name, 18);
+    pilot->wins =        memread_uword(mr);
+    pilot->losses =      memread_uword(mr);
+    pilot->rank =        memread_ubyte(mr);
+    pilot->har_id =      memread_ubyte(mr);
 
-    uint16_t stats_a =   sd_mread_uword(mr);
-    uint16_t stats_b =   sd_mread_uword(mr);
-    uint16_t stats_c =   sd_mread_uword(mr);
-    uint8_t stats_d =    sd_mread_ubyte(mr);
+    uint16_t stats_a =   memread_uword(mr);
+    uint16_t stats_b =   memread_uword(mr);
+    uint16_t stats_c =   memread_uword(mr);
+    uint8_t stats_d =    memread_ubyte(mr);
     pilot->arm_power = (stats_a >> 0) & 0x1F;
     pilot->leg_power = (stats_a >> 5) & 0x1F;
     pilot->arm_speed = (stats_a >> 10) & 0x1F;
@@ -44,45 +44,45 @@ void sd_pilot_load_player_from_mem(sd_mreader *mr, sd_pilot *pilot) {
     pilot->endurance = (stats_d >> 0) & 0x7F;
     sd_mskip(mr, 1);
 
-    pilot->offense =     sd_mread_uword(mr);
-    pilot->defense =     sd_mread_uword(mr);
-    pilot->money =       sd_mread_udword(mr);
-    pilot->color_1 =     sd_mread_ubyte(mr);
-    pilot->color_2 =     sd_mread_ubyte(mr);
-    pilot->color_3 =     sd_mread_ubyte(mr);
+    pilot->offense =     memread_uword(mr);
+    pilot->defense =     memread_uword(mr);
+    pilot->money =       memread_udword(mr);
+    pilot->color_1 =     memread_ubyte(mr);
+    pilot->color_2 =     memread_ubyte(mr);
+    pilot->color_3 =     memread_ubyte(mr);
 }
 
-void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
-    pilot->unknown_a =   sd_mread_udword(mr);
+void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
+    pilot->unknown_a =   memread_udword(mr);
 
     sd_pilot_load_player_from_mem(mr, pilot);
 
-    sd_mread_buf(mr, pilot->trn_name, 13);
-    sd_mread_buf(mr, pilot->trn_desc, 31);
-    sd_mread_buf(mr, pilot->trn_image, 13);
+    memread_buf(mr, pilot->trn_name, 13);
+    memread_buf(mr, pilot->trn_desc, 31);
+    memread_buf(mr, pilot->trn_image, 13);
 
-    pilot->unk_f_c = sd_mread_float(mr);
-    pilot->unk_f_d = sd_mread_float(mr);
+    pilot->unk_f_c = memread_float(mr);
+    pilot->unk_f_d = memread_float(mr);
     sd_mskip(mr, 40); // Pointless pointers
-    pilot->pilot_id =    sd_mread_ubyte(mr);
-    pilot->unknown_k =   sd_mread_ubyte(mr);
-    pilot->force_arena = sd_mread_uword(mr);
-    pilot->difficulty = (sd_mread_ubyte(mr) >> 3) & 0x3; // 155-156
-    sd_mread_buf(mr, pilot->unk_block_b, 2);
-    pilot->movement =    sd_mread_ubyte(mr);
-    sd_mread_buf(mr, (char*)pilot->unk_block_c, 6);
-    sd_mread_buf(mr, pilot->enhancements, 11);
+    pilot->pilot_id =    memread_ubyte(mr);
+    pilot->unknown_k =   memread_ubyte(mr);
+    pilot->force_arena = memread_uword(mr);
+    pilot->difficulty = (memread_ubyte(mr) >> 3) & 0x3; // 155-156
+    memread_buf(mr, pilot->unk_block_b, 2);
+    pilot->movement =    memread_ubyte(mr);
+    memread_buf(mr, (char*)pilot->unk_block_c, 6);
+    memread_buf(mr, pilot->enhancements, 11);
 
     // Flags (3)
     sd_mskip(mr, 1); // Nothing here
-    uint8_t req_flags = sd_mread_ubyte(mr); // Secret, only fight once flags
+    uint8_t req_flags = memread_ubyte(mr); // Secret, only fight once flags
     pilot->secret = (req_flags & 0x02) ? 1 : 0;
     pilot->only_fight_once = (req_flags & 0x08) ? 1 : 0;
     sd_mskip(mr, 1); // Nothing here either
 
     // Requirements (10)
     uint16_t reqs[5];
-    sd_mread_buf(mr, (char*)reqs, 10);
+    memread_buf(mr, (char*)reqs, 10);
     pilot->req_rank = reqs[0] & 0xFF;
     pilot->req_max_rank = (reqs[0] >> 8) & 0xFF;
     pilot->req_fighter = reqs[1] & 0x1F;
@@ -96,43 +96,43 @@ void sd_pilot_load_from_mem(sd_mreader *mr, sd_pilot *pilot) {
 
     // Attitude
     uint16_t att[3];
-    sd_mread_buf(mr, (char*)att, 6);
+    memread_buf(mr, (char*)att, 6);
     pilot->att_normal = (att[0] >> 4) & 0x7F;
     pilot->att_hyper  = att[1] & 0x7F;
     pilot->att_jump   = (att[1] >> 7) & 0x7F;
     pilot->att_def    = att[2] & 0x7F;
     pilot->att_sniper = (att[2] >> 7) & 0x7F;
 
-    sd_mread_buf(mr, (char*)pilot->unk_block_d, 6);
+    memread_buf(mr, (char*)pilot->unk_block_d, 6);
 
-    pilot->ap_throw =    sd_mread_word(mr);
-    pilot->ap_special =  sd_mread_word(mr);
-    pilot->ap_jump =     sd_mread_word(mr);
-    pilot->ap_high =     sd_mread_word(mr);
-    pilot->ap_low =      sd_mread_word(mr);
-    pilot->ap_middle =   sd_mread_word(mr);
-    pilot->pref_jump =   sd_mread_word(mr);
-    pilot->pref_fwd =    sd_mread_word(mr);
-    pilot->pref_back =   sd_mread_word(mr);
+    pilot->ap_throw =    memread_word(mr);
+    pilot->ap_special =  memread_word(mr);
+    pilot->ap_jump =     memread_word(mr);
+    pilot->ap_high =     memread_word(mr);
+    pilot->ap_low =      memread_word(mr);
+    pilot->ap_middle =   memread_word(mr);
+    pilot->pref_jump =   memread_word(mr);
+    pilot->pref_fwd =    memread_word(mr);
+    pilot->pref_back =   memread_word(mr);
 
-    pilot->unknown_e =   sd_mread_udword(mr);
-    pilot->learning =    sd_mread_float(mr);
-    pilot->forget =      sd_mread_float(mr);
-    sd_mread_buf(mr, pilot->unk_block_f, 14);
-    pilot->enemies_inc_unranked = sd_mread_uword(mr);
-    pilot->enemies_ex_unranked = sd_mread_uword(mr);
-    pilot->unk_d_a =     sd_mread_uword(mr);
-    pilot->unk_d_b =     sd_mread_udword(mr);
-    pilot->winnings =    sd_mread_udword(mr);
-    pilot->total_value = sd_mread_udword(mr);
-    pilot->unk_f_a = sd_mread_float(mr);
-    pilot->unk_f_b = sd_mread_float(mr);
+    pilot->unknown_e =   memread_udword(mr);
+    pilot->learning =    memread_float(mr);
+    pilot->forget =      memread_float(mr);
+    memread_buf(mr, pilot->unk_block_f, 14);
+    pilot->enemies_inc_unranked = memread_uword(mr);
+    pilot->enemies_ex_unranked = memread_uword(mr);
+    pilot->unk_d_a =     memread_uword(mr);
+    pilot->unk_d_b =     memread_udword(mr);
+    pilot->winnings =    memread_udword(mr);
+    pilot->total_value = memread_udword(mr);
+    pilot->unk_f_a = memread_float(mr);
+    pilot->unk_f_b = memread_float(mr);
     sd_mskip(mr, 8);
     sd_palette_create(&pilot->palette);
     sd_palette_mload_range(mr, &pilot->palette, 0, 48);
-    pilot->unk_block_i = sd_mread_uword(mr);
+    pilot->unk_block_i = memread_uword(mr);
 
-    pilot->photo_id =    sd_mread_uword(mr) & 0x3FF;
+    pilot->photo_id =    memread_uword(mr) & 0x3FF;
 }
 
 int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
@@ -141,10 +141,10 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     }
 
     // Read block, XOR, Read to pilot, free memory
-    sd_mreader *mr = sd_mreader_open_from_reader(reader, PILOT_BLOCK_LENGTH);
-    sd_mreader_xor(mr, PILOT_BLOCK_LENGTH & 0xFF);
+    memreader *mr = memreader_open_from_reader(reader, PILOT_BLOCK_LENGTH);
+    memreader_xor(mr, PILOT_BLOCK_LENGTH & 0xFF);
     sd_pilot_load_from_mem(mr, pilot);
-    sd_mreader_close(mr);
+    memreader_close(mr);
 
     // Quote block
     for(int m = 0; m < 10; m++) {
@@ -153,12 +153,12 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     return SD_SUCCESS;
 }
 
-void sd_pilot_save_player_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
-    sd_mwrite_buf(w, pilot->name, 18);
-    sd_mwrite_uword(w, pilot->wins);
-    sd_mwrite_uword(w, pilot->losses);
-    sd_mwrite_ubyte(w, pilot->rank);
-    sd_mwrite_ubyte(w, pilot->har_id);
+void sd_pilot_save_player_to_mem(memwriter *w, const sd_pilot *pilot) {
+    memwrite_buf(w, pilot->name, 18);
+    memwrite_uword(w, pilot->wins);
+    memwrite_uword(w, pilot->losses);
+    memwrite_ubyte(w, pilot->rank);
+    memwrite_ubyte(w, pilot->har_id);
 
     uint16_t stats_a = 0, stats_b = 0, stats_c = 0;
     uint8_t stats_d = 0;
@@ -171,51 +171,51 @@ void sd_pilot_save_player_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     stats_c |= (pilot->agility & 0x7F) << 0;
     stats_c |= (pilot->power & 0x7F) << 7;
     stats_d |= (pilot->endurance & 0x7F) << 0;
-    sd_mwrite_uword(w, stats_a);
-    sd_mwrite_uword(w, stats_b);
-    sd_mwrite_uword(w, stats_c);
-    sd_mwrite_ubyte(w, stats_d);
-    sd_mwrite_fill(w, 0, 1);
+    memwrite_uword(w, stats_a);
+    memwrite_uword(w, stats_b);
+    memwrite_uword(w, stats_c);
+    memwrite_ubyte(w, stats_d);
+    memwrite_fill(w, 0, 1);
 
-    sd_mwrite_uword(w, pilot->offense);
-    sd_mwrite_uword(w, pilot->defense);
-    sd_mwrite_udword(w, pilot->money);
-    sd_mwrite_ubyte(w, pilot->color_1);
-    sd_mwrite_ubyte(w, pilot->color_2);
-    sd_mwrite_ubyte(w, pilot->color_3);
+    memwrite_uword(w, pilot->offense);
+    memwrite_uword(w, pilot->defense);
+    memwrite_udword(w, pilot->money);
+    memwrite_ubyte(w, pilot->color_1);
+    memwrite_ubyte(w, pilot->color_2);
+    memwrite_ubyte(w, pilot->color_3);
 }
 
-void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
+void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
     // Write the pilot block
-    sd_mwrite_udword(w, pilot->unknown_a);
+    memwrite_udword(w, pilot->unknown_a);
 
     sd_pilot_save_player_to_mem(w, pilot);
 
-    sd_mwrite_buf(w, pilot->trn_name, 13);
-    sd_mwrite_buf(w, pilot->trn_desc, 31);
-    sd_mwrite_buf(w, pilot->trn_image, 13);
+    memwrite_buf(w, pilot->trn_name, 13);
+    memwrite_buf(w, pilot->trn_desc, 31);
+    memwrite_buf(w, pilot->trn_image, 13);
 
-    sd_mwrite_float(w, pilot->unk_f_c);
-    sd_mwrite_float(w, pilot->unk_f_d);
-    sd_mwrite_fill(w, 0, 40);
-    sd_mwrite_ubyte(w, pilot->pilot_id);
-    sd_mwrite_ubyte(w, pilot->unknown_k);
-    sd_mwrite_uword(w, pilot->force_arena);
-    sd_mwrite_ubyte(w, (pilot->difficulty & 0x3) << 3);
-    sd_mwrite_buf(w, pilot->unk_block_b, 2);
-    sd_mwrite_ubyte(w, pilot->movement);
-    sd_mwrite_buf(w, (char*)pilot->unk_block_c, 6);
-    sd_mwrite_buf(w, pilot->enhancements, 11);
+    memwrite_float(w, pilot->unk_f_c);
+    memwrite_float(w, pilot->unk_f_d);
+    memwrite_fill(w, 0, 40);
+    memwrite_ubyte(w, pilot->pilot_id);
+    memwrite_ubyte(w, pilot->unknown_k);
+    memwrite_uword(w, pilot->force_arena);
+    memwrite_ubyte(w, (pilot->difficulty & 0x3) << 3);
+    memwrite_buf(w, pilot->unk_block_b, 2);
+    memwrite_ubyte(w, pilot->movement);
+    memwrite_buf(w, (char*)pilot->unk_block_c, 6);
+    memwrite_buf(w, pilot->enhancements, 11);
 
     // Flags
-    sd_mwrite_ubyte(w, 0);
+    memwrite_ubyte(w, 0);
     uint8_t req_flags = 0;
     if(pilot->secret)
         req_flags |= 0x02;
     if(pilot->only_fight_once)
         req_flags |= 0x08;
-    sd_mwrite_ubyte(w, req_flags);
-    sd_mwrite_ubyte(w, 0);
+    memwrite_ubyte(w, req_flags);
+    memwrite_ubyte(w, 0);
 
     // Requirements (10)
     uint16_t reqs[5];
@@ -230,7 +230,7 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     reqs[4] |= (pilot->req_destroy & 0x01) << 8;
     reqs[4] |= (pilot->req_scrap & 0x01) << 7;
     reqs[4] |= (pilot->req_avg_dmg & 0x7F);
-    sd_mwrite_buf(w, (char*)reqs, 10);
+    memwrite_buf(w, (char*)reqs, 10);
 
     // Attitude
     uint16_t att[3];
@@ -240,37 +240,37 @@ void sd_pilot_save_to_mem(sd_mwriter *w, const sd_pilot *pilot) {
     att[1] |= (pilot->att_hyper & 0x7F);
     att[2] |= (pilot->att_sniper & 0x7F) << 7;
     att[2] |= (pilot->att_def & 0x7F);
-    sd_mwrite_buf(w, (char*)att, 6);
+    memwrite_buf(w, (char*)att, 6);
 
-    sd_mwrite_buf(w, (char*)pilot->unk_block_d, 6);
+    memwrite_buf(w, (char*)pilot->unk_block_d, 6);
 
-    sd_mwrite_word(w, pilot->ap_throw);
-    sd_mwrite_word(w, pilot->ap_special);
-    sd_mwrite_word(w, pilot->ap_jump);
-    sd_mwrite_word(w, pilot->ap_high);
-    sd_mwrite_word(w, pilot->ap_low);
-    sd_mwrite_word(w, pilot->ap_middle);
-    sd_mwrite_word(w, pilot->pref_jump);
-    sd_mwrite_word(w, pilot->pref_fwd);
-    sd_mwrite_word(w, pilot->pref_back);
+    memwrite_word(w, pilot->ap_throw);
+    memwrite_word(w, pilot->ap_special);
+    memwrite_word(w, pilot->ap_jump);
+    memwrite_word(w, pilot->ap_high);
+    memwrite_word(w, pilot->ap_low);
+    memwrite_word(w, pilot->ap_middle);
+    memwrite_word(w, pilot->pref_jump);
+    memwrite_word(w, pilot->pref_fwd);
+    memwrite_word(w, pilot->pref_back);
 
-    sd_mwrite_udword(w, pilot->unknown_e);
-    sd_mwrite_float(w, pilot->learning);
-    sd_mwrite_float(w, pilot->forget);
-    sd_mwrite_buf(w, pilot->unk_block_f, 14);
-    sd_mwrite_uword(w, pilot->enemies_inc_unranked);
-    sd_mwrite_uword(w, pilot->enemies_ex_unranked);
-    sd_mwrite_uword(w, pilot->unk_d_a);
-    sd_mwrite_udword(w, pilot->unk_d_b);
-    sd_mwrite_udword(w, pilot->winnings);
-    sd_mwrite_udword(w, pilot->total_value);
-    sd_mwrite_float(w, pilot->unk_f_a);
-    sd_mwrite_float(w, pilot->unk_f_b);
-    sd_mwrite_fill(w, 0, 8);
+    memwrite_udword(w, pilot->unknown_e);
+    memwrite_float(w, pilot->learning);
+    memwrite_float(w, pilot->forget);
+    memwrite_buf(w, pilot->unk_block_f, 14);
+    memwrite_uword(w, pilot->enemies_inc_unranked);
+    memwrite_uword(w, pilot->enemies_ex_unranked);
+    memwrite_uword(w, pilot->unk_d_a);
+    memwrite_udword(w, pilot->unk_d_b);
+    memwrite_udword(w, pilot->winnings);
+    memwrite_udword(w, pilot->total_value);
+    memwrite_float(w, pilot->unk_f_a);
+    memwrite_float(w, pilot->unk_f_b);
+    memwrite_fill(w, 0, 8);
     sd_palette_msave_range(w, &pilot->palette, 0, 48);
-    sd_mwrite_uword(w, pilot->unk_block_i);
+    memwrite_uword(w, pilot->unk_block_i);
 
-    sd_mwrite_uword(w, pilot->photo_id & 0x3FF);
+    memwrite_uword(w, pilot->photo_id & 0x3FF);
 }
 
 int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
@@ -279,11 +279,11 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
     }
 
     // Copy, XOR, save and close
-    sd_mwriter *w = sd_mwriter_open();
+    memwriter *w = memwriter_open();
     sd_pilot_save_to_mem(w, pilot);
-    sd_mwriter_xor(w, PILOT_BLOCK_LENGTH & 0xFF);
-    sd_mwriter_save(w, fw);
-    sd_mwriter_close(w);
+    memwriter_xor(w, PILOT_BLOCK_LENGTH & 0xFF);
+    memwriter_save(w, fw);
+    memwriter_close(w);
 
     // Quote block
     for(int m = 0; m < 10; m++) {
