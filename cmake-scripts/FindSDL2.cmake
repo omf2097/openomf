@@ -231,24 +231,18 @@ if(NOT SDL2_BUILDING_LIBRARY)
   endif()
 endif()
 
-# SDL2 may require threads on your system.
-# The Apple build may not need an explicit flag because one of the
-# frameworks may already provide it.
-# But for non-OSX systems, I will use the CMake Threads package.
-if(NOT APPLE)
-  find_package(Threads QUIET)
-  if(NOT Threads_FOUND)
-    set(SDL2_THREADS_NOT_FOUND "Could NOT find Threads (Threads is required by SDL2).")
-    if(SDL2_FIND_REQUIRED)
-      message(FATAL_ERROR ${SDL2_THREADS_NOT_FOUND})
-    else()
-        if(NOT SDL2_FIND_QUIETLY)
-          message(STATUS ${SDL2_THREADS_NOT_FOUND})
-        endif()
-      return()
-    endif()
-    unset(SDL2_THREADS_NOT_FOUND)
+find_package(Threads QUIET)
+if(NOT Threads_FOUND)
+  set(SDL2_THREADS_NOT_FOUND "Could NOT find Threads (Threads is required by SDL2).")
+  if(SDL2_FIND_REQUIRED)
+    message(FATAL_ERROR ${SDL2_THREADS_NOT_FOUND})
+  else()
+      if(NOT SDL2_FIND_QUIETLY)
+        message(STATUS ${SDL2_THREADS_NOT_FOUND})
+      endif()
+    return()
   endif()
+  unset(SDL2_THREADS_NOT_FOUND)
 endif()
 
 # MinGW needs an additional link flag, -mwindows
@@ -267,22 +261,8 @@ if(SDL2_LIBRARY)
     unset(_SDL2_MAIN_INDEX)
   endif()
 
-  # For OS X, SDL2 uses Cocoa as a backend so it must link to Cocoa.
-  # CMake doesn't display the -framework Cocoa string in the UI even
-  # though it actually is there if I modify a pre-used variable.
-  # I think it has something to do with the CACHE STRING.
-  # So I use a temporary variable until the end so I can set the
-  # "real" variable in one-shot.
-  if(APPLE)
-    set(SDL2_LIBRARIES ${SDL2_LIBRARIES} -framework Cocoa)
-  endif()
 
-  # For threads, as mentioned Apple doesn't need this.
-  # In fact, there seems to be a problem if I used the Threads package
-  # and try using this line, so I'm just skipping it entirely for OS X.
-  if(NOT APPLE)
-    set(SDL2_LIBRARIES ${SDL2_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  endif()
+  set(SDL2_LIBRARIES ${SDL2_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
   # For MinGW library
   if(MINGW)
@@ -339,17 +319,10 @@ if(SDL2_FOUND)
                           IMPORTED_LOCATION "${SDL2_LIBRARY}"
                           INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}")
 
-    if(APPLE)
-      # For OS X, SDL2 uses Cocoa as a backend so it must link to Cocoa.
-      # For more details, please see above.
-      set_property(TARGET SDL2::Core APPEND PROPERTY
-                   INTERFACE_LINK_OPTIONS -framework Cocoa)
-    else()
       # For threads, as mentioned Apple doesn't need this.
       # For more details, please see above.
       set_property(TARGET SDL2::Core APPEND PROPERTY
                    INTERFACE_LINK_LIBRARIES Threads::Threads)
-    endif()
   endif()
 
   # SDL2::Main target
