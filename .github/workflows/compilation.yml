@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  repository_dispatch:
+    types: [run_build]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, macos-11, ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Get number of CPU cores
+      uses: SimenB/github-actions-cpu-cores@v1
+
+    - name: Install Ubuntu Dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install cmake libargtable2-dev libcunit1-dev libopenal-dev libconfuse-dev libenet-dev \
+          libsdl2-dev libxmp-dev libpng-dev
+
+    - name: Install Mac Dependencies
+      if: startsWith( matrix.os, 'macos' )
+      run: |
+        brew update
+        brew install cmake argtable cunit openal-soft confuse enet sdl2 libxmp libpng
+
+    - name: Run Tests
+      run: |
+        mkdir build-test && cd build-test
+        cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On -DUSE_TOOLS=On ..
+        make -j${{ steps.cpu-cores.outputs.count }}
+        make -j${{ steps.cpu-cores.outputs.count }} test ARGS="-V"
+
+    - name: Generate Release
+      run: |
+        mkdir build-release && cd build-release
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release ..
+        make -j${{ steps.cpu-cores.outputs.count }}
+        make -j${{ steps.cpu-cores.outputs.count }} install
+    
+    - name: Get short SHA
+      id: slug
+      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+
+    - name: Generate DEB package
+      if: matrix.os == 'ubuntu-latest'
+      uses: jiro4989/build-deb-action@v2
+      with:
+        package: openomf
+        package_root: build-release/release
+        maintainer: ${{ github.repository_owner }}
+        version: 0.6.6-${{ steps.slug.outputs.sha8 }}
+        arch: 'amd64'
+        depends: 'libargtable2, libopenal, libconfuse, libenet, libsdl2, libxmp, libpng'
+        desc: 'One Must Fall 2097 Remake'
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: openomf-${{ steps.slug.outputs.sha8 }}-${{ matrix.os }}
+        path: build-release/release
+    
+    - name: Upload artifacts
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v2
+      with:
+        name: openomf-${{ steps.slug.outputs.sha8 }}-${{ matrix.os }}-amd64-deb
+        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_amd64.deb
