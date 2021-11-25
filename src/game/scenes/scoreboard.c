@@ -246,7 +246,10 @@ int scoreboard_create(scene *scene) {
     scene_set_input_poll_cb(scene, scoreboard_input_tick);
     scene_set_render_overlay_cb(scene, scoreboard_render_overlay);
     scene_set_free_cb(scene, scoreboard_free);
-    video_select_renderer(VIDEO_RENDERER_HW);
+
+    // Don't render background on its own layer
+    // Fix for some additive blending tricks.
+    video_render_bg_separately(false);
 
     // All done
     return 0;

@@ -1,10 +1,11 @@
 #ifndef _VIDEO_STATE_H
 #define _VIDEO_STATE_H
 
+#include <stdbool.h>
+
 #include <SDL.h>
 #include "resources/palette.h"
 #include "video/screen_palette.h"
-#include "video/video_ops.h"
 #include "plugins/scaler_plugin.h"
 
 typedef struct video_state_t {
@@ -23,16 +24,14 @@ typedef struct video_state_t {
     int target_move_x;
     int target_move_y;
 
-    int cur_renderer;
-    SDL_Texture *target;
+    bool render_bg_separately;
+    SDL_Texture *fg_target;
+    SDL_Texture *bg_target;
 
     // Palettes
-    palette *base_palette;
-    screen_palette *cur_palette;
-
-    // Renderer
-    video_render_cbs cb;
-    void *userdata;
+    palette *base_palette;  // Copy of the scenes base palette
+    screen_palette *screen_palette;  // Normal rendering palette
+    screen_palette *extra_palette;  // Reflects base palette, used for additive blending
 } video_state;
 
 #endif // _VIDEO_STATE_H

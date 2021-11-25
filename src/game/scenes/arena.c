@@ -1402,9 +1402,6 @@ int arena_create(scene *scene) {
     scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
 
-    // Pick renderer
-    video_select_renderer(VIDEO_RENDERER_HW);
-
     // initalize recording, if enabled
     if (scene->gs->init_flags->record == 1) {
         local->rec = omf_calloc(1, sizeof(sd_rec_file));
@@ -1424,6 +1421,10 @@ int arena_create(scene *scene) {
     } else{
         local->rec = NULL;
     }
+
+    // Don't render background on its own layer
+    // Fix for some additive blending tricks.
+    video_render_bg_separately(false);
 
     // All done!
     return 0;

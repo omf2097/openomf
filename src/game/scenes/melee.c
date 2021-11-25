@@ -694,8 +694,9 @@ int melee_create(scene *scene) {
     // Play correct music
     music_play(PSM_MENU);
 
-    // Pick renderer
-    video_select_renderer(VIDEO_RENDERER_HW);
+    // Don't render background on its own layer
+    // Fix for some additive blending tricks.
+    video_render_bg_separately(false);
 
     // All done
     return 0;

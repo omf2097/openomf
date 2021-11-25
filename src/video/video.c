@@ -11,31 +11,32 @@
 #include "utils/list.h"
 #include "resources/palette.h"
 #include "video/video_state.h"
-#include "video/video_hw.h"
-#include "video/video_soft.h"
 #include "plugins/plugins.h"
 
 static video_state state;
 
 
-void clear_render_target() {
-    // Update target with black pixels
-    int size = NATIVE_W * state.scale_factor * NATIVE_H * state.scale_factor * 4;
-    char *pixels = omf_calloc(1, size);
-    SDL_UpdateTexture(state.target, NULL, pixels, NATIVE_W * state.scale_factor * 4);
-    omf_free(pixels);
-}
-
 void reset_targets() {
-    if(state.target != NULL) {
-        SDL_DestroyTexture(state.target);
+    if(state.fg_target != NULL) {
+        SDL_DestroyTexture(state.fg_target);
     }
-    state.target = SDL_CreateTexture(state.renderer,
-                                     SDL_PIXELFORMAT_ABGR8888,
-                                     SDL_TEXTUREACCESS_TARGET,
-                                     NATIVE_W * state.scale_factor,
-                                     NATIVE_H * state.scale_factor);
-    clear_render_target();
+    if(state.bg_target != NULL) {
+        SDL_DestroyTexture(state.bg_target);
+    }
+    state.fg_target = SDL_CreateTexture(
+        state.renderer,
+        SDL_PIXELFORMAT_ABGR8888,
+        SDL_TEXTUREACCESS_TARGET,
+        NATIVE_W * state.scale_factor,
+        NATIVE_H * state.scale_factor);
+    state.bg_target = SDL_CreateTexture(
+        state.renderer,
+        SDL_PIXELFORMAT_ABGR8888,
+        SDL_TEXTUREACCESS_TARGET,
+        NATIVE_W * state.scale_factor,
+        NATIVE_H * state.scale_factor);
+    SDL_SetTextureBlendMode(state.bg_target, SDL_BLENDMODE_NONE);
+    SDL_SetTextureBlendMode(state.fg_target, SDL_BLENDMODE_BLEND);
 }
 
 int video_load_scaler(const char* name, int scale_factor) {
@@ -63,9 +64,11 @@ int video_init(int window_w,
     state.fs = fullscreen;
     state.vsync = vsync;
     state.fade = 1.0f;
-    state.target = NULL;
+    state.fg_target = NULL;
+    state.bg_target = NULL;
     state.target_move_x = 0;
     state.target_move_y = 0;
+    state.render_bg_separately = true;
 
     // Load scaler (if any)
     memset(state.scaler_name, 0, sizeof(state.scaler_name));
@@ -79,10 +82,12 @@ int video_init(int window_w,
     }
 
     // Clear palettes
-    state.cur_palette = omf_calloc(1, sizeof(screen_palette));
     state.base_palette = omf_calloc(1, sizeof(palette));
-    state.cur_palette->version = 1;
-
+    state.extra_palette = omf_calloc(1, sizeof(screen_palette));
+    state.screen_palette = omf_calloc(1, sizeof(screen_palette));
+    state.extra_palette->version = 0;
+    state.screen_palette->version = 1;
+    
     // Form title string
     char title[32];
     snprintf(title, 32, "OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
@@ -140,10 +145,6 @@ int video_init(int window_w,
 
     // Init texture cache
     tcache_init(state.renderer, state.scale_factor, &state.scaler);
-
-    // Init hardware renderer
-    state.cur_renderer = VIDEO_RENDERER_HW;
-    video_hw_init(&state);
 
     // Get renderer data
     SDL_RendererInfo rinfo;
@@ -250,7 +251,6 @@ int video_reinit(int window_w,
         video_reinit_renderer();
     }
 
-    state.cb.render_reinit(&state);
     return 0;
 }
 
@@ -271,22 +271,6 @@ void video_get_state(int *w, int *h, int *fs, int *vsync) {
     }
     if(vsync != NULL) {
         *vsync = state.vsync;
-    }
-}
-
-void video_select_renderer(int renderer) {
-    if(renderer == state.cur_renderer) {
-        return;
-    }
-    state.cb.render_close(&state);
-    state.cur_renderer = renderer;
-    switch(renderer) {
-        case VIDEO_RENDERER_QUIRKS:
-            video_soft_init(&state);
-            break;
-        case VIDEO_RENDERER_HW:
-            video_hw_init(&state);
-            break;
     }
 }
 
@@ -330,41 +314,109 @@ int video_area_capture(surface *sur, int x, int y, int w, int h) {
 }
 
 void video_force_pal_refresh() {
-    memcpy(state.cur_palette->data, state.base_palette->data, 768);
-    state.cur_palette->version++;
+    memcpy(state.screen_palette->data, state.base_palette->data, 768);
+    memcpy(state.extra_palette->data, state.base_palette->data, 768);
+    state.extra_palette->version = state.screen_palette->version + 1;
+    state.screen_palette->version = state.extra_palette->version + 1;
 }
 
 void video_set_base_palette(const palette *src) {
     memcpy(state.base_palette, src, sizeof(palette));
-    memcpy(state.cur_palette->data, state.base_palette->data, 768);
-    state.cur_palette->version++;
+    video_force_pal_refresh();
 }
 
-palette *video_get_base_palette() {
+palette* video_get_base_palette() {
     return state.base_palette;
 }
 
 void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount) {
-    memcpy(state.cur_palette->data + dst_start * 3,
+    memcpy(state.screen_palette->data + dst_start * 3,
            src->data + src_start * 3,
            amount * 3);
-    state.cur_palette->version++;
+    state.screen_palette->version++;
 }
 
 screen_palette* video_get_pal_ref() {
-    return state.cur_palette;
+    return state.screen_palette;
+}
+
+static void clear_render_target(SDL_Texture *target) {
+    SDL_SetRenderTarget(state.renderer, target);
+    SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 0);
+    SDL_RenderClear(state.renderer);
 }
 
 void video_render_prepare() {
     // Reset palette
-    memcpy(state.cur_palette->data, state.base_palette->data, 768);
-    SDL_SetRenderTarget(state.renderer, state.target);
-    state.cb.render_prepare(&state);
+    memcpy(state.screen_palette->data, state.base_palette->data, 768);
+    clear_render_target(state.fg_target);
+}
+
+void video_render_bg_separately(bool separate) {
+    state.render_bg_separately = separate;
 }
 
 void video_render_background(surface *sur) {
-    state.cb.render_background(&state, sur);
+    SDL_Texture *tex = tcache_get(sur, state.screen_palette, NULL, 0);
+    if(tex == NULL) {
+        return;
+    }
+
+    if (state.render_bg_separately) {
+        SDL_SetRenderTarget(state.renderer, state.bg_target);
+    } else {
+        SDL_SetRenderTarget(state.renderer, state.fg_target);
+    }
+    SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
+    SDL_SetTextureAlphaMod(tex, 0xFF);
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_NONE);
+    SDL_RenderCopy(state.renderer, tex, NULL, NULL);
 }
+
+static void scale_rect(const video_state *state, SDL_Rect *rct) {
+    rct->w = rct->w * state->scale_factor;
+    rct->h = rct->h * state->scale_factor;
+    rct->x = rct->x * state->scale_factor;
+    rct->y = rct->y * state->scale_factor;
+}
+
+static void render_sprite_fsot(
+    video_state *state,
+    surface *sur,
+    SDL_Rect *dst,
+    SDL_BlendMode blend_mode,
+    int pal_offset,
+    SDL_RendererFlip flip_mode,
+    uint8_t opacity,
+    color color_mod
+) {
+    // Scale the object to actual screen size
+    scale_rect(state, dst);
+
+    // If this is additive blend, always use the base palette.
+    // This is because additive blending effects should not stack
+    // with other effects.
+    screen_palette *pal = state->screen_palette;
+    if (blend_mode == SDL_BLENDMODE_ADD) {
+        pal = state->extra_palette;
+    }
+
+    // Fetch object from texture cache. Palettes are versioned, so
+    // we if object does not yet exist with given palette, it will be rendered
+    // and uploaded to videomem.
+    SDL_Texture *tex = tcache_get(sur, pal, NULL, pal_offset);
+    if(tex == NULL)
+        return;
+
+    // Always render objects to foreground rendertarget. This way we avoid
+    // doing effects on the background (which is on another rendertarget).
+    SDL_SetRenderTarget(state->renderer, state->fg_target);
+    SDL_SetTextureAlphaMod(tex, opacity);
+    SDL_SetTextureColorMod(tex, color_mod.r, color_mod.g, color_mod.b);
+    SDL_SetTextureBlendMode(tex, blend_mode);
+    SDL_RenderCopyEx(state->renderer, tex, NULL, dst, 0, NULL, flip_mode);
+}
+
 
 void video_render_sprite_tint(
         surface *sur,
@@ -373,21 +425,15 @@ void video_render_sprite_tint(
         color c,
         int pal_offset) {
 
-    // Position & correct height
-    SDL_Rect dst;
-    dst.w = sur->w;
-    dst.h = sur->h;
-    dst.x = sx;
-    dst.y = sy;
-
-    // Render
-    state.cb.render_fsot(
-        &state,
+    video_render_sprite_flip_scale_opacity_tint(
         sur,
-        &dst,
-        SDL_BLENDMODE_BLEND,
+        sx, sy,
+        BLEND_ALPHA,
         pal_offset,
-        0, 255, c); // pal_offset, opacity, tint
+        FLIP_NONE,
+        1.0f,
+        255,
+        c);
 }
 
 // Wrapper
@@ -462,14 +508,14 @@ void video_render_sprite_size(
     dst.y = sy;
 
     // Render
-    state.cb.render_fsot(
+    render_sprite_fsot(
         &state,
         sur,
         &dst,
-        SDL_BLENDMODE_BLEND, // blendmode
-        0, // Pal offset
-        0, // flip
-        0xFF, // opacity
+        SDL_BLENDMODE_BLEND,
+        0,
+        0,
+        0xFF,
         color_create(0xFF, 0xFF, 0xFF, 0xFF)); // tint
 }
 
@@ -496,13 +542,21 @@ void video_render_sprite_flip_scale_opacity_tint(
     if(flip_mode & FLIP_HORIZONTAL) flip |= SDL_FLIP_HORIZONTAL;
     if(flip_mode & FLIP_VERTICAL) flip |= SDL_FLIP_VERTICAL;
 
-    // Blend mode
-    SDL_BlendMode blend_mode = SDL_BLENDMODE_BLEND;
-    if(rendering_mode == BLEND_ADDITIVE)
-        blend_mode = SDL_BLENDMODE_ADD;
+    // Select SDL blendmode
+    SDL_BlendMode blend_mode = 
+        (rendering_mode == BLEND_ALPHA)
+        ? SDL_BLENDMODE_BLEND
+        : SDL_BLENDMODE_ADD;
 
-    // Render
-    state.cb.render_fsot(&state, sur, &dst, blend_mode, pal_offset, flip, opacity, tint);
+    render_sprite_fsot(
+        &state,
+        sur,
+        &dst,
+        blend_mode,
+        pal_offset,
+        flip,
+        opacity,
+        tint);
 }
 
 // Called on every game tick
@@ -512,9 +566,6 @@ void video_tick() {
 
 // Called after frame has been rendered
 void video_render_finish() {
-    // Tell software/hardware renderer to finish up whatever it was doing
-    state.cb.render_finish(&state);
-
     // Set our rendertarget to screen buffer.
     SDL_SetRenderTarget(state.renderer, NULL);
 
@@ -524,7 +575,8 @@ void video_render_finish() {
 
     // Handle fading by color modulation
     uint8_t v = 255.0f * state.fade;
-    SDL_SetTextureColorMod(state.target, v, v, v);
+    SDL_SetTextureColorMod(state.fg_target, v, v, v);
+    SDL_SetTextureColorMod(state.bg_target, v, v, v);
 
     // Set screen position. take into account scaling and target moves (screen shakes)
     SDL_Rect dst;
@@ -532,10 +584,12 @@ void video_render_finish() {
     dst.y = state.target_move_y * state.scale_factor;
     dst.w = NATIVE_W * state.scale_factor;
     dst.h = NATIVE_H * state.scale_factor;
-    SDL_RenderCopy(state.renderer, state.target, NULL, &dst);
+    SDL_RenderCopy(state.renderer, state.bg_target, NULL, &dst);
+    SDL_RenderCopy(state.renderer, state.fg_target, NULL, &dst);
 
     // Reset color modulation to normal
-    SDL_SetTextureColorMod(state.target, 0xFF, 0xFF, 0xFF);
+    SDL_SetTextureColorMod(state.fg_target, 0xFF, 0xFF, 0xFF);
+    SDL_SetTextureColorMod(state.bg_target, 0xFF, 0xFF, 0xFF);
 
     // Flip buffers. If vsync is off, we should sleep here
     // so hat our main loop doesn't eat up all cpu :)
@@ -546,12 +600,13 @@ void video_render_finish() {
 }
 
 void video_close() {
-    state.cb.render_close(&state);
     tcache_close();
-    SDL_DestroyTexture(state.target);
+    SDL_DestroyTexture(state.fg_target);
+    SDL_DestroyTexture(state.bg_target);
     SDL_DestroyRenderer(state.renderer);
     SDL_DestroyWindow(state.window);
-    omf_free(state.cur_palette);
+    omf_free(state.screen_palette);
+    omf_free(state.extra_palette);
     omf_free(state.base_palette);
     INFO("Video deinit.");
 }
