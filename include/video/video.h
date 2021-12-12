@@ -5,7 +5,7 @@
 #include "video/surface.h"
 #include "video/image.h"
 #include "video/screen_palette.h"
-#include "resources/palette.h"
+#include "formats/palette.h"
 
 #define NATIVE_W 320
 #define NATIVE_H 200

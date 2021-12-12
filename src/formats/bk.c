@@ -62,8 +62,8 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
     for(int i = 0; i < MAX_BK_PALETTES; i++) {
         dst->palettes[i] = NULL;
         if(src->palettes[i] != NULL) {
-            dst->palettes[i] = omf_calloc(1, sizeof(sd_palette));
-            memcpy(dst->palettes[i], src->palettes[i], sizeof(sd_palette));
+            dst->palettes[i] = omf_calloc(1, sizeof(palette));
+            memcpy(dst->palettes[i], src->palettes[i], sizeof(palette));
         }
     }
 
@@ -136,8 +136,8 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     // Read palettes
     bk->palette_count = sd_read_ubyte(r);
     for(uint8_t i = 0; i < bk->palette_count; i++) {
-        bk->palettes[i] = omf_calloc(1, sizeof(sd_palette));
-        if((ret = sd_palette_load(r, bk->palettes[i])) != SD_SUCCESS) {
+        bk->palettes[i] = omf_calloc(1, sizeof(palette));
+        if((ret = palette_load(r, bk->palettes[i])) != SD_SUCCESS) {
             goto exit_0;
         }
     }
@@ -216,7 +216,7 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
     // Write palettes
     sd_write_ubyte(w, bk->palette_count);
     for(uint8_t i = 0; i < bk->palette_count; i++) {
-        sd_palette_save(w, bk->palettes[i]);
+        palette_save(w, bk->palettes[i]);
     }
 
     // Write soundtable
@@ -286,15 +286,15 @@ sd_bk_anim* sd_bk_get_anim(const sd_bk_file *bk, int index) {
     return bk->anims[index];
 }
 
-int sd_bk_set_palette(sd_bk_file *bk, int index, const sd_palette *palette) {
-    if(index < 0 || bk == NULL || index >= bk->palette_count || palette == NULL) {
+int sd_bk_set_palette(sd_bk_file *bk, int index, const palette *pal) {
+    if(index < 0 || bk == NULL || index >= bk->palette_count || pal == NULL) {
         return SD_INVALID_INPUT;
     }
     if(bk->palettes[index] != NULL) {
         omf_free(bk->palettes[index]);
     }
-    bk->palettes[index] = omf_calloc(1, sizeof(sd_palette));
-    memcpy(bk->palettes[index], palette, sizeof(sd_palette));
+    bk->palettes[index] = omf_calloc(1, sizeof(palette));
+    memcpy(bk->palettes[index], pal, sizeof(palette));
     return SD_SUCCESS;
 }
 
@@ -309,21 +309,21 @@ int sd_bk_pop_palette(sd_bk_file *bk) {
     return SD_SUCCESS;
 }
 
-int sd_bk_push_palette(sd_bk_file *bk, const sd_palette *palette) {
-    if(bk == NULL || palette == NULL || bk->palette_count >= MAX_BK_PALETTES) {
+int sd_bk_push_palette(sd_bk_file *bk, const palette *pal) {
+    if(bk == NULL || pal == NULL || bk->palette_count >= MAX_BK_PALETTES) {
         return SD_INVALID_INPUT;
     }
     if(bk->palettes[bk->palette_count] != NULL) {
         omf_free(bk->palettes[bk->palette_count]);
     }
-    bk->palettes[bk->palette_count] = omf_calloc(1, sizeof(sd_palette));
-    memcpy(bk->palettes[bk->palette_count], palette, sizeof(sd_palette));
+    bk->palettes[bk->palette_count] = omf_calloc(1, sizeof(palette));
+    memcpy(bk->palettes[bk->palette_count], pal, sizeof(palette));
     bk->palette_count++;
 
     return SD_SUCCESS;
 }
 
-sd_palette* sd_bk_get_palette(const sd_bk_file *bk, int index) {
+palette *sd_bk_get_palette(const sd_bk_file *bk, int index) {
     if(bk == NULL || index < 0 || index >= bk->palette_count) {
         return NULL;
     }

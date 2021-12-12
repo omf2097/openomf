@@ -571,12 +571,12 @@ int main(int argc, char* argv[]) {
     struct arg_str *value = arg_str0(NULL, "value", "<value>", "Set value (requires --key)");
     struct arg_str *strip = arg_str0(NULL, "strip", "<tag>", "Strip tag from selected file, move or key (string)");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .AF file");
-    struct arg_file *palette = arg_file0("p", "palette", "<file>", "BK file for palette");
+    struct arg_file *pal = arg_file0("p", "palette", "<file>", "BK file for palette");
     struct arg_lit *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim and --palette)");
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,new,move,all_moves,sprite,keylist,key,value,strip,output,palette,play,scale,parse,end};
+    void* argtable[] = {help,vers,file,new,move,all_moves,sprite,keylist,key,value,strip,output,pal,play,scale,parse,end};
     const char* progname = "aftool";
 
     // Make sure everything got allocated
@@ -635,7 +635,7 @@ int main(int argc, char* argv[]) {
             goto exit_0;
         }
     }
-    if(palette->count == 0) {
+    if(pal->count == 0) {
         if(play->count > 0) {
             printf("--play requires --palette\n");
             printf("Try '%s --help' for more information.\n", progname);
@@ -675,8 +675,8 @@ int main(int argc, char* argv[]) {
     // Palette
     sd_bk_file bk;
     sd_bk_create(&bk);
-    if(palette->count > 0) {
-        int ret = sd_bk_load(&bk, palette->filename[0]);
+    if(pal->count > 0) {
+        int ret = sd_bk_load(&bk, pal->filename[0]);
         if(ret != SD_SUCCESS) {
             printf("Unable to load Palette BK file! [%d] %s\n", ret, sd_get_error(ret));
             goto exit_2;

@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
 
     // Check what to do
     if(export->count > 0) {
-        ret = sd_palette_to_gimp_palette(&alt.palettes[pal_id], export->filename[0]);
+        ret = palette_to_gimp_palette(&alt.palettes[pal_id], export->filename[0]);
         if(ret == SD_SUCCESS) {
             printf("Palette %d exported to file %s succesfully.\n",
                 pal_id,
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
                 sd_get_error(ret));
         }
     } else if(import->count > 0) {
-        ret = sd_palette_from_gimp_palette(&alt.palettes[pal_id], import->filename[0]);
+        ret = palette_from_gimp_palette(&alt.palettes[pal_id], import->filename[0]);
         if(ret == SD_SUCCESS) {
             printf("Palette %d imported from file %s succesfully.\n",
                 pal_id,

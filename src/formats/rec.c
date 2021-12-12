@@ -67,8 +67,8 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         if((ret = sd_pilot_load(r, &rec->pilots[i].info)) != SD_SUCCESS) { goto error_0; }
         rec->pilots[i].unknown_a = sd_read_ubyte(r);
         rec->pilots[i].unknown_b = sd_read_uword(r);
-        sd_palette_create(&rec->pilots[i].pal);
-        sd_palette_load_range(r, &rec->pilots[i].pal, 0, 48);
+        palette_create(&rec->pilots[i].pal);
+        palette_load_range(r, &rec->pilots[i].pal, 0, 48);
         rec->pilots[i].has_photo = sd_read_ubyte(r);
         sd_sprite_create(&rec->pilots[i].photo);
         if(rec->pilots[i].has_photo) {
@@ -182,7 +182,7 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
         sd_pilot_save(w, &rec->pilots[i].info);
         sd_write_ubyte(w, rec->pilots[i].unknown_a);
         sd_write_uword(w, rec->pilots[i].unknown_b);
-        sd_palette_save_range(w, &rec->pilots[i].pal, 0, 48);
+        palette_save_range(w, &rec->pilots[i].pal, 0, 48);
         sd_write_ubyte(w, rec->pilots[i].has_photo);
         if(rec->pilots[i].has_photo) {
             sd_sprite_save(w, &rec->pilots[i].photo);

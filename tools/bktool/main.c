@@ -381,7 +381,7 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
                     return;
                 }
                 int index = conv_ubyte(key[1]);
-                sd_palette *pal = sd_bk_get_palette(bk, index);
+                palette *pal = sd_bk_get_palette(bk, index);
                 if(pal == NULL) {
                     printf("No palette found at index %d.\n", index);
                     return;
@@ -415,10 +415,10 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
 void bk_push_key(sd_bk_file *bk, const char **key) {
     switch(bk_key_get_id(key[0])) {
         case 1: {
-            sd_palette pal;
-            sd_palette_create(&pal);
+            palette pal;
+            palette_create(&pal);
             sd_bk_push_palette(bk, &pal);
-            sd_palette_free(&pal);
+            palette_free(&pal);
             printf("Element pushed; new size is %d.\n", bk->palette_count);
             }
             break;
@@ -446,12 +446,12 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 return;
             }
             int index = atoi(key[1]);
-            sd_palette *pal = sd_bk_get_palette(bk, index);
+            palette *pal = sd_bk_get_palette(bk, index);
             if(pal == NULL) {
                 printf("No palette found at index %d.\n", index);
                 return;
             }
-            int ret = sd_palette_to_gimp_palette(pal, filename);
+            int ret = palette_to_gimp_palette(pal, filename);
             if(ret != SD_SUCCESS) {
                 printf("Error while exporting palette: %s.", sd_get_error(ret));
                 return;
@@ -459,7 +459,7 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
             }
             break;
         case 4: {
-            sd_palette *pal = sd_bk_get_palette(bk, 0);
+            palette *pal = sd_bk_get_palette(bk, 0);
             if(pal == NULL) {
                 printf("Palette required for exporting to PNG.\n");
                 return;
@@ -491,12 +491,12 @@ void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 return;
             }
             int index = atoi(key[1]);
-            sd_palette *pal = sd_bk_get_palette(bk, index);
+            palette *pal = sd_bk_get_palette(bk, index);
             if(pal == NULL) {
                 printf("No palette found at index %d.\n", index);
                 return;
             }
-            int ret = sd_palette_from_gimp_palette(pal, filename);
+            int ret = palette_from_gimp_palette(pal, filename);
             if(ret != SD_SUCCESS) {
                 printf("Error while importing palette: %s.", sd_get_error(ret));
                 return;

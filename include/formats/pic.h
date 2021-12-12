@@ -26,7 +26,7 @@ extern "C" {
 typedef struct {
     int is_player;     ///< Is a player ? 1 = yes, 0 = no.
     int sex;           ///< Sex of person in photo. 1 = Female, 0 = Male.
-    sd_palette pal;    ///< Image palette.
+    palette pal;       ///< Image palette.
     sd_sprite *sprite; ///< Photo sprite
     uint8_t unk_flag;  ///< Unknown flag.
 } sd_pic_photo;

@@ -1,7 +1,6 @@
 #ifndef _SPRITE_H
 #define _SPRITE_H
 
-#include "resources/palette.h"
 #include "video/surface.h"
 #include "utils/vec.h"
 

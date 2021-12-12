@@ -53,8 +53,8 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     memreader_close(mr);
 
     // Read HAR palette
-    sd_palette_create(&chr->pal);
-    sd_palette_load_range(r, &chr->pal, 0, 48);
+    palette_create(&chr->pal);
+    palette_load_range(r, &chr->pal, 0, 48);
 
     // No idea what this is.
     // TODO: Find out.
@@ -116,7 +116,7 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
     memwriter_close(mw);
 
     // Save palette
-    sd_palette_save_range(w, &chr->pal, 0, 48);
+    palette_save_range(w, &chr->pal, 0, 48);
 
     // Save this, whatever this is.
     sd_write_udword(w, chr->unknown_b);

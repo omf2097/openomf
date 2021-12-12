@@ -57,7 +57,7 @@ void sprite_export_key(sd_sprite *s, const char **key, int kcount, const char *f
             printf("Value fetching not supported for this key.\n");
             break;
         case 4: {
-            sd_palette *pal = sd_bk_get_palette(bk, 0);
+            palette *pal = sd_bk_get_palette(bk, 0);
             if(pal == NULL) {
                 printf("Palette required for exporting to PNG.\n");
                 return;

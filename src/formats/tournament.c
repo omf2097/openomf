@@ -157,8 +157,8 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Read palette. Only 40 colors are defined, starting
     // from palette position 128. Remember to convert VGA pal.
-    memset((void*)&trn->pal, 0, sizeof(sd_palette));
-    sd_palette_load_range(r, &trn->pal, 128, 40);
+    memset((void*)&trn->pal, 0, sizeof(palette));
+    palette_load_range(r, &trn->pal, 128, 40);
 
     // Read pic filename
     trn->pic_file = sd_read_variable_str(r);
@@ -262,7 +262,7 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     }
 
     // Save 40 colors
-    sd_palette_save_range(w, &trn->pal, 128, 40);
+    palette_save_range(w, &trn->pal, 128, 40);
 
     // Pic filename
     sd_write_variable_str(w, trn->pic_file);

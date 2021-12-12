@@ -23,8 +23,14 @@ extern "C" {
  * A simple list of alternate palettes.
  */
 typedef struct {
-    sd_palette palettes[SD_ALTPALS_PALETTES]; ///< List of palettes
+    palette palettes[SD_ALTPALS_PALETTES]; ///< List of palettes
 } sd_altpal_file;
+
+// globals, yay
+extern sd_altpal_file *altpals;
+
+int altpals_init();
+void altpals_close();
 
 /*! \brief Initialize the alternate palette list structure
  *

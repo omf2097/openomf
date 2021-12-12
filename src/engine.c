@@ -16,6 +16,7 @@
 #include "game/utils/ticktimer.h"
 #include "game/gui/text_render.h"
 #include "console/console.h"
+#include "formats/altpal.h"
 
 static int run = 0;
 static int start_timeout = 30;

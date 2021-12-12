@@ -2,7 +2,7 @@
 #define _VIDEO_STATE_H
 
 #include <SDL.h>
-#include "resources/palette.h"
+#include "formats/palette.h"
 #include "video/screen_palette.h"
 #include "video/video_ops.h"
 #include "plugins/scaler_plugin.h"
