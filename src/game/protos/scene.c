@@ -291,7 +291,6 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t
         if(info->probability == 1) {
             object_set_repeat(obj, 1);
         }
-
         game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);
     }
 }

@@ -137,7 +137,10 @@ int mainmenu_create(scene *scene) {
 
     // Music and renderer
     music_play(PSM_MENU);
-    video_select_renderer(VIDEO_RENDERER_HW);
+
+    // Don't render background on its own layer
+    // Fix for some additive blending tricks.
+    video_render_bg_separately(false);
 
     // All done
     return 0;

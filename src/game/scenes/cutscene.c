@@ -91,6 +91,7 @@ void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     } else if(scene->id == SCENE_END2 && (id == 1 || id == 11)) {
         *m_load = 1;
     }
+    video_render_bg_separately(false);
 }
 
 int cutscene_create(scene *scene) {
@@ -164,9 +165,6 @@ int cutscene_create(scene *scene) {
     scene_set_input_poll_cb(scene, cutscene_input_tick);
     scene_set_startup_cb(scene, cutscene_startup);
     scene_set_render_overlay_cb(scene, cutscene_render_overlay);
-
-    // Pick renderer
-    video_select_renderer(VIDEO_RENDERER_HW);
 
     return 0;
 }

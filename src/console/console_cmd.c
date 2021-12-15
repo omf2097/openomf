@@ -181,17 +181,6 @@ int console_cmd_rein(game_state *gs, int argc, char **argv) {
     return 1;
 }
 
-int console_cmd_renderer(game_state *gs, int argc, char **argv) {
-    if(argc == 2) {
-        int i;
-        if(strtoint(argv[1], &i) && (i == 0 || i == 1)) {
-            video_select_renderer(i);
-            return 0;
-        }
-    }
-    return 1;
-}
-
 
 int console_cmd_god(game_state *gs, int argc, char **argv) {
     for(int i = 0;i < game_state_num_players(gs);i++) {
@@ -252,7 +241,6 @@ void console_init_cmd() {
     console_add_cmd("lose",  &console_cmd_lose,   "Set your health to 0");
     console_add_cmd("stun",  &console_cmd_stun,   "Stun the other player");
     console_add_cmd("rein",  &console_cmd_rein,   "R-E-I-N!");
-    console_add_cmd("rdr",   &console_cmd_renderer, "Renderer (0=sw,1=hw)");
     console_add_cmd("god",   &console_cmd_god,  "Enable god mode");
     console_add_cmd("kreissack",   &console_kreissack,  "Fight Kreissack");
     console_add_cmd("ez-destruct",  &console_cmd_ez_destruct,  "Punch = destruction, kick = scrap");
