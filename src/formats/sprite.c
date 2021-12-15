@@ -89,7 +89,7 @@ int sd_sprite_save(sd_writer *w, const sd_sprite *sprite) {
     return SD_SUCCESS;
 }
 
-int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_palette *pal, int remapping) {
+int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palette *pal, int remapping) {
     int lastx = -1;
     int lasty = 0;
     int i = 0;
@@ -168,7 +168,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_pal
             lastx=x;
             lasty=y;
             // write byte
-            buf[i++] = sd_palette_resolve_color(r, g, b, pal);
+            buf[i++] = palette_resolve_color(r, g, b, pal);
             rowlen++;
         }
     }
@@ -197,7 +197,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const sd_pal
     return ret;
 }
 
-int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const sd_palette *pal, int remapping) {
+int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const palette *pal, int remapping) {
     uint16_t x = 0;
     uint16_t y = 0;
     int i = 0;

@@ -91,7 +91,7 @@ void sd_sprite_free(sd_sprite *sprite);
 int sd_sprite_rgba_encode(
     sd_sprite *dst,
     const sd_rgba_image *src,
-    const sd_palette *pal,
+    const palette *pal,
     int remapping);
 
 /*! \brief Decode sprite data to RGBA format
@@ -113,7 +113,7 @@ int sd_sprite_rgba_encode(
 int sd_sprite_rgba_decode(
     sd_rgba_image *dst,
     const sd_sprite *src,
-    const sd_palette *pal,
+    const palette *pal,
     int remapping);
 
 /*! \brief Decode sprite to VGA image format.

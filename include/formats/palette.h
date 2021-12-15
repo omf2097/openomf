@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_PALETTE_H
-#define _SD_PALETTE_H
+#ifndef _PALETTE_H
+#define _PALETTE_H
 
 #include <stdint.h>
 #include "formats/internal/memreader.h"
@@ -28,7 +28,7 @@ extern "C" {
 typedef struct {
     unsigned char data[256][3];   ///< Palette data (256 indices, 3 channels/index)
     unsigned char remaps[19][256]; ///< Palette remapping tables.
-} sd_palette;
+} palette;
 
 /*! \brief Initialize palette data structure
  *
@@ -39,7 +39,7 @@ typedef struct {
  *
  * \param pal Allocated palette data struct pointer.
  */
-int sd_palette_create(sd_palette *pal);
+int palette_create(palette *pal);
 
 /*! \brief Free REC file structure
  *
@@ -48,7 +48,7 @@ int sd_palette_create(sd_palette *pal);
  *
  * \param pal Palette data struct pointer.
  */
-void sd_palette_free(sd_palette *pal);
+void palette_free(palette *pal);
 
 /*! \brief Resolves an RGB color to palette index
  *
@@ -62,26 +62,26 @@ void sd_palette_free(sd_palette *pal);
  * \param pal Palette data struct pointer
  * \return Resolved color index
  */
-unsigned char sd_palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const sd_palette *pal);
+unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const palette *pal);
 
 /*! \brief Exports palette to GIMP palette file.
  *
- * Exports an sd_palette to GIMP palette format (GPL). Palette remappings are NOT
+ * Exports a palette to GIMP palette format (GPL). Palette remappings are NOT
  * exported, only the 256 color palette.
  *
  * \retval SD_INVALID_INPUT Palette or filename ptr was NULL.
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_SUCCESS Success.
  *
- * \param palette Palette to export.
+ * \param pal Palette to export.
  * \param filename Name of the file to export to.
  */
-int sd_palette_to_gimp_palette(const sd_palette *palette, const char *filename);
+int palette_to_gimp_palette(const palette *pal, const char *filename);
 
 /*! \brief Imports palette from GIMP palette file.
  *
- * Imports an sd_palette from GIMP palette format (GPL). The sd_palette struct
- * must be initialized with sd_palette_create before this.
+ * Imports a palette from GIMP palette format (GPL). The palette struct
+ * must be initialized with palette_create before this.
  *
  * \retval SD_INVALID_INPUT Palette or filename ptr was NULL.
  * \retval SD_FILE_OPEN_ERROR File could not be opened for reading.
@@ -91,17 +91,19 @@ int sd_palette_to_gimp_palette(const sd_palette *palette, const char *filename);
  * \param palette Palette to import to.
  * \param filename Name of the file to import from.
  */
-int sd_palette_from_gimp_palette(sd_palette *palette, const char *filename);
+int palette_from_gimp_palette(palette *pal, const char *filename);
 
-int sd_palette_mload_range(memreader *reader, sd_palette *palette, int index_start, int index_count);
-int sd_palette_load_range(sd_reader *reader, sd_palette *palette, int index_start, int index_count);
-int sd_palette_load(sd_reader *reader, sd_palette *palette);
-void sd_palette_msave_range(memwriter *writer, const sd_palette *palette, int index_start, int index_count);
-void sd_palette_save_range(sd_writer *writer, const sd_palette *palette, int index_start, int index_count);
-void sd_palette_save(sd_writer *writer, const sd_palette *palette);
+int palette_mload_range(memreader *reader, palette *pal, int index_start, int index_count);
+int palette_load_range(sd_reader *reader, palette *pal, int index_start, int index_count);
+int palette_load(sd_reader *reader, palette *pal);
+void palette_msave_range(memwriter *writer, const palette *pal, int index_start, int index_count);
+void palette_save_range(sd_writer *writer, const palette *pal, int index_start, int index_count);
+void palette_save(sd_writer *writer, const palette *pal);
+void palette_set_player_color(palette *pal, int player, int sourcecolor, int destcolor);
+palette *palette_copy(palette *src);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // _SD_PALETTE_H
+#endif // _PALETTE_H

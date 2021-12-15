@@ -128,8 +128,8 @@ void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
     pilot->unk_f_a = memread_float(mr);
     pilot->unk_f_b = memread_float(mr);
     sd_mskip(mr, 8);
-    sd_palette_create(&pilot->palette);
-    sd_palette_mload_range(mr, &pilot->palette, 0, 48);
+    palette_create(&pilot->palette);
+    palette_mload_range(mr, &pilot->palette, 0, 48);
     pilot->unk_block_i = memread_uword(mr);
 
     pilot->photo_id =    memread_uword(mr) & 0x3FF;
@@ -267,7 +267,7 @@ void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
     memwrite_float(w, pilot->unk_f_a);
     memwrite_float(w, pilot->unk_f_b);
     memwrite_fill(w, 0, 8);
-    sd_palette_msave_range(w, &pilot->palette, 0, 48);
+    palette_msave_range(w, &pilot->palette, 0, 48);
     memwrite_uword(w, pilot->unk_block_i);
 
     memwrite_uword(w, pilot->photo_id & 0x3FF);

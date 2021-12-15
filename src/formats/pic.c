@@ -76,8 +76,8 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         pic->photos[i]->sex = sd_read_uword(r);
 
         // Read palette
-        sd_palette_create(&pic->photos[i]->pal);
-        sd_palette_load_range(r, &pic->photos[i]->pal, 0, 48);
+        palette_create(&pic->photos[i]->pal);
+        palette_load_range(r, &pic->photos[i]->pal, 0, 48);
 
         // This byte is probably an "is there image data" flag
         // TODO: Find out what this does
@@ -142,7 +142,7 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename) {
         // flags, palette, etc.
         sd_write_ubyte(w, pic->photos[i]->is_player);
         sd_write_uword(w, pic->photos[i]->sex);
-        sd_palette_save_range(w, &pic->photos[i]->pal, 0, 48);
+        palette_save_range(w, &pic->photos[i]->pal, 0, 48);
         sd_write_ubyte(w, pic->photos[i]->unk_flag);
 
         // Hackity hack. Sprite w and h should be n-1 for some reason.

@@ -61,7 +61,7 @@ int sd_vga_image_stencil_index(sd_vga_image *img, int stencil_index) {
     return SD_SUCCESS;
 }
 
-int sd_vga_image_encode(sd_vga_image *dst, const sd_rgba_image *src, const sd_palette *pal, int remapping) {
+int sd_vga_image_encode(sd_vga_image *dst, const sd_rgba_image *src, const palette *pal, int remapping) {
     int ret;
     if(dst == NULL || src == NULL || pal == NULL) {
         return SD_INVALID_INPUT;
@@ -75,12 +75,12 @@ int sd_vga_image_encode(sd_vga_image *dst, const sd_rgba_image *src, const sd_pa
         uint8_t g = src->data[pos+1];
         uint8_t b = src->data[pos+2];
         // ignore alpha channel, VGA images have no transparency
-        dst->data[pos/4] = sd_palette_resolve_color(r, g, b, pal);
+        dst->data[pos/4] = palette_resolve_color(r, g, b, pal);
     }
     return SD_SUCCESS;
 }
 
-int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const sd_palette *pal, int remapping) {
+int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const palette *pal, int remapping) {
     int ret;
     if(dst == NULL || src == NULL || pal == NULL) {
         return SD_INVALID_INPUT;
@@ -214,7 +214,7 @@ error_0:
     return ret;
 }
 
-int sd_vga_image_to_png(const sd_vga_image *img, const sd_palette *pal, const char *filename) {
+int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char *filename) {
     if(img == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }

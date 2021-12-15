@@ -46,7 +46,7 @@ bk_info* bk_get_info(bk *b, int id) {
     return val;
 }
 
-palette* bk_get_palette(bk *b, int id) {
+palette *bk_get_palette(bk *b, int id) {
     return vector_get(&b->palettes, id);
 }
 

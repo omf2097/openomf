@@ -4,7 +4,7 @@
 #include <SDL.h>
 #include "video/image.h"
 #include "video/screen_palette.h"
-#include "resources/palette.h"
+#include "formats/palette.h"
 
 typedef struct {
     int w;

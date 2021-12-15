@@ -9,7 +9,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/list.h"
-#include "resources/palette.h"
+#include "formats/palette.h"
 #include "video/video_state.h"
 #include "video/video_hw.h"
 #include "video/video_soft.h"

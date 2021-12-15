@@ -22,7 +22,7 @@ extern "C" {
  *
  * Contains a paletted image and transparency stencil. The image can be exported to
  * an omf:2097 sprite by using a proper function  sd_sprite_vga_encode() and back
- * sd_sprite_vga_decode() . For RGBA conversion, a valid sd_palette is required.
+ * sd_sprite_vga_decode() . For RGBA conversion, a valid palette is required.
  *
  * Invisibility is handled by setting a single palette index as the invisibility stencil.
  * This can be modified with library function sd_vga_image_stencil_index().
@@ -110,7 +110,7 @@ int sd_vga_image_stencil_index(sd_vga_image *img, int stencil_index);
 int sd_vga_image_encode(
     sd_vga_image *dst,
     const sd_rgba_image *src,
-    const sd_palette *pal,
+    const palette *pal,
     int remapping);
 
 /*! \brief Decode VGA data to RGBA format
@@ -132,7 +132,7 @@ int sd_vga_image_encode(
 int sd_vga_image_decode(
     sd_rgba_image *dst,
     const sd_vga_image *src,
-    const sd_palette *pal,
+    const palette *pal,
     int remapping);
 
 /*! \brief Load an indexed image from a PNG file.
@@ -170,7 +170,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename);
  * \param pal Palette for the image
  * \param filename Destination filename
  */
-int sd_vga_image_to_png(const sd_vga_image *img, const sd_palette *pal, const char *filename);
+int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char *filename);
 
 #ifdef __cplusplus
 }

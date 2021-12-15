@@ -12,7 +12,7 @@ enum {
 int arena_create(scene *scene);
 int arena_get_state(scene *scene);
 void arena_set_state(scene *scene, int state);
-palette* arena_get_player_palette(scene *scene, int player);
+palette *arena_get_player_palette(scene *scene, int player);
 void arena_toggle_rein(scene *scene);
 void maybe_install_har_hooks(scene *scene);
 
