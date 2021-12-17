@@ -72,9 +72,9 @@ int main(int argc, char* argv[]) {
     }
 
     // Load file
-    sd_altpal_file alt;
-    sd_altpal_create(&alt);
-    int ret = sd_altpals_load(&alt, file->filename[0]);
+    altpal_file alt;
+    altpal_create(&alt);
+    int ret = altpals_load(&alt, file->filename[0]);
     if(ret != SD_SUCCESS) {
         printf("Unable to load altpals file %s: %s.\n",
             file->filename[0],
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 
     // Check ID
     int pal_id = pal->ival[0];
-    if(pal_id < 0 || pal_id > SD_ALTPALS_PALETTES) {
+    if(pal_id < 0 || pal_id > ALTPALS_PALETTES) {
         printf("Palette index %d does not exist!\n", pal_id);
         goto exit_1;
     }
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
 
     // Write output file
     if(output->count > 0) {
-        ret = sd_altpals_save(&alt, output->filename[0]);
+        ret = altpals_save(&alt, output->filename[0]);
         if(ret != SD_SUCCESS) {
             printf("Failed saving altpals file to %s: %s",
                 output->filename[0],
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
 
     // Quit
 exit_1:
-    sd_altpal_free(&alt);
+    altpal_free(&alt);
 exit_0:
     arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
     return 0;
