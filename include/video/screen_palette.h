@@ -1,5 +1,5 @@
-#ifndef SCREEN_PALETTE
-#define SCREEN_PALETTE
+#ifndef SCREEN_PALETTE_H
+#define SCREEN_PALETTE_H
 
 #include <stdint.h>
 
@@ -8,4 +8,4 @@ typedef struct {
     unsigned int version;
 } screen_palette;
 
-#endif // SCREEN_PALETTE
+#endif // SCREEN_PALETTE_H

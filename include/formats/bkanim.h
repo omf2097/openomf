@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef SD_BK_ANIMS
-#define SD_BK_ANIMS
+#ifndef SD_BKANIM_H
+#define SD_BKANIM_H
 
 #include <stdint.h>
 #include "formats/animation.h"
@@ -123,4 +123,4 @@ int sd_bk_anim_save(sd_writer *writer, const sd_bk_anim *bka);
 }
 #endif
 
-#endif // SD_BK_ANIMS
+#endif // SD_BKANIM_H

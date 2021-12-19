@@ -1,5 +1,5 @@
-#ifndef UTIL_STRING_H
-#define UTIL_STRING_H
+#ifndef STR_H
+#define STR_H
 
 #include <stddef.h>
 #include <stdarg.h>
@@ -42,4 +42,4 @@ int str_to_float(const str *string, float *result);
 const char* str_c(const str *string);
 const char* str_c_alloc(const str *string);
 
-#endif // UTIL_STRING_H
+#endif // STR_H

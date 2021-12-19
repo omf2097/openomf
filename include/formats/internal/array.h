@@ -1,5 +1,5 @@
-#ifndef SD_HELPERS_H
-#define SD_HELPERS_H
+#ifndef SD_ARRAY_H
+#define SD_ARRAY_H
 
 #include <stdlib.h>
 
@@ -11,4 +11,4 @@ void sd_array_insert(void *mem, size_t item_size, int *num_size, int index, void
 void sd_array_push(void *mem, size_t item_size, int *num_size, void *new_item);
 void sd_array_pop(void *mem, size_t item_size, int *num_size, void *old_item);
 
-#endif // SD_HELPERS_H
+#endif // SD_ARRAY_H

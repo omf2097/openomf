@@ -1,5 +1,5 @@
-#ifndef XMP_SOURCE
-#define XMP_SOURCE
+#ifndef XMP_SOURCE_H
+#define XMP_SOURCE_H
 
 #ifdef USE_XMP
 
@@ -11,4 +11,4 @@ audio_source_resampler* xmp_get_resamplers();
 
 #endif // USE_XMP
 
-#endif // XMP_SOURCE
+#endif // XMP_SOURCE_H

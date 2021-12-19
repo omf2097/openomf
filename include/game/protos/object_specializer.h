@@ -1,5 +1,5 @@
-#ifndef OBJECT_SPECIALIZER
-#define OBJECT_SPECIALIZER
+#ifndef OBJECT_SPECIALIZER_H
+#define OBJECT_SPECIALIZER_H
 
 typedef struct object_t object;
 
@@ -13,4 +13,4 @@ enum {
 
 int object_auto_specialize(object *obj, int specialization_id);
 
-#endif // OBJECT_SPECIALIZER
+#endif // OBJECT_SPECIALIZER_H
