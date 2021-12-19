@@ -2,56 +2,107 @@ name: CI
 
 on:
   push:
+    branches:
+      - master
   pull_request:
   repository_dispatch:
     types: [run_build]
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
     strategy:
       matrix:
-        os: [macos-latest, macos-11, ubuntu-latest]
+        config:
+        - {
+            name: "Windows MingW64",
+            os: ubuntu-latest,
+            tag: win-x86_64,
+            type: windows
+          }
+        - {
+            name: "Macos latest",
+            os: macos-latest,
+            tag: macos-latest,
+            type: mac
+          }
+        - {
+            name: "Macos 11",
+            os: macos-11,
+            tag: macos-11,
+            type: mac
+          }
+        - {
+            name: "Ubuntu latest",
+            os: ubuntu-latest,
+            tag: ubuntu-x86_64,
+            type: ubuntu
+          }
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Get number of CPU cores
-      uses: SimenB/github-actions-cpu-cores@v1
-
     - name: Install Ubuntu Dependencies
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.config.type == 'ubuntu'
       run: |
         sudo apt-get update
         sudo apt-get -y install cmake libargtable2-dev libcunit1-dev libopenal-dev libconfuse-dev libenet-dev \
           libsdl2-dev libxmp-dev libpng-dev
 
+    - name: Install Windows Dependencies
+      if: matrix.config.type == 'windows'
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install mingw-w64 unzip
+        wget -q https://github.com/omf2097/openomf-win-build/archive/refs/heads/main.zip
+        unzip -q main.zip && rm main.zip
+
     - name: Install Mac Dependencies
-      if: startsWith( matrix.os, 'macos' )
+      if: matrix.config.type == 'mac'
       run: |
         brew update
         brew install cmake argtable cunit openal-soft confuse enet sdl2 libxmp libpng
 
     - name: Run Tests
+      if: matrix.config.type != 'windows'
       run: |
         mkdir build-test && cd build-test
-        cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On -DUSE_TOOLS=On ..
-        make -j${{ steps.cpu-cores.outputs.count }}
-        make -j${{ steps.cpu-cores.outputs.count }} test ARGS="-V"
+        cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On -DUSE_TOOLS=On -Wno-dev ..
+        make -j2
+        make test ARGS="-V"
 
-    - name: Generate Release
+    - name: Generate Unixy Release
+      if: matrix.config.type != 'windows'
       run: |
         mkdir build-release && cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release ..
-        make -j${{ steps.cpu-cores.outputs.count }}
-        make -j${{ steps.cpu-cores.outputs.count }} install
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release -Wno-dev ..
+        make -j2
+        make install
     
+    - name: Generate Windows Release
+      if: matrix.config.type == 'windows'
+      run: |
+        mkdir build-release && cd build-release
+        cmake -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_INSTALL_PREFIX=release \
+              -DCMAKE_TOOLCHAIN_FILE="${GITHUB_WORKSPACE}/cmake-scripts/mingw-w64-toolchain.cmake" \
+              -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
+              -DCMAKE_INCLUDE_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/include/" \
+              -DCMAKE_LIBRARY_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/lib/" \
+              -DCMAKE_FIND_ROOT_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
+              -Wno-dev \
+              "${GITHUB_WORKSPACE}"
+        make -j2
+        make install
+        cp ${GITHUB_WORKSPACE}/openomf-win-build-main/bin/*.dll release/openomf/
+
     - name: Get short SHA
       id: slug
       run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
 
     - name: Generate DEB package
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.config.type == 'ubuntu'
       uses: jiro4989/build-deb-action@v2
       with:
         package: openomf
@@ -65,12 +116,12 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: openomf-${{ steps.slug.outputs.sha8 }}-${{ matrix.os }}
+        name: openomf-${{ steps.slug.outputs.sha8 }}-${{ matrix.config.tag }}
         path: build-release/release
     
     - name: Upload artifacts
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.config.type == 'ubuntu'
       uses: actions/upload-artifact@v2
       with:
-        name: openomf-${{ steps.slug.outputs.sha8 }}-${{ matrix.os }}-amd64-deb
+        name: openomf-${{ steps.slug.outputs.sha8 }}-${{ matrix.config.tag }}-deb
         path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_amd64.deb

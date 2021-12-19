@@ -258,12 +258,20 @@ endif()
 add_subdirectory(packaging)
 
 # Installation
-install(TARGETS openomf
-    RUNTIME
-    DESTINATION bin
-    COMPONENT Binaries
-)
-install(FILES resources/openomf.bk resources/openomf_icon.png
-    DESTINATION share/games/openomf/
-    COMPONENT Data
-)
+if(WIN32)
+    # On windows, generate a flat directory structure under openomf/ subdir.
+    # This way we have an "openomf/" root directory inside the zip file.
+    install(TARGETS openomf RUNTIME DESTINATION openomf/ COMPONENT Binaries)
+    install(FILES resources/openomf.bk DESTINATION openomf/resources/ COMPONENT Data)
+    install(FILES README.md INSTALL.md LICENSE resources/openomf_icon.ico resources/openomf_icon.png
+        DESTINATION openomf/
+        COMPONENT Data
+    )
+else()
+    # On unixy systems, follow standard.
+    install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
+    install(FILES resources/openomf.bk resources/openomf_icon.png
+        DESTINATION share/games/openomf/
+        COMPONENT Data
+    )
+endif()
