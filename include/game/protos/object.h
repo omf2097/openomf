@@ -1,5 +1,5 @@
-#ifndef _OBJECT_H
-#define _OBJECT_H
+#ifndef OBJECT_H
+#define OBJECT_H
 
 #include "resources/animation.h"
 #include "resources/sprite.h"
@@ -236,4 +236,4 @@ serial* object_get_serialization_point(const object *obj, unsigned int ticks_ago
 void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata);
 void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata);
 
-#endif // _OBJECT_H
+#endif // OBJECT_H

@@ -1,5 +1,5 @@
-#ifndef _ARRAY_H
-#define _ARRAY_H
+#ifndef ARRAY_H
+#define ARRAY_H
 
 #include "iterator.h"
 
@@ -17,4 +17,4 @@ void* array_get(const array *array, unsigned int key);
 void array_iter_begin(const array *array, iterator *iterator);
 void array_iter_end(const array *arrat, iterator *iterator);
 
-#endif // _ARRAY_H
+#endif // ARRAY_H

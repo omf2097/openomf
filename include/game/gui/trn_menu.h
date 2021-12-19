@@ -1,5 +1,5 @@
-#ifndef _TRN_MENU_H
-#define _TRN_MENU_H
+#ifndef TRN_MENU_H
+#define TRN_MENU_H
 
 #include "game/gui/component.h"
 #include "game/protos/object.h"
@@ -60,4 +60,4 @@ void* trnmenu_get_userdata(const component *menu);
 void trnmenu_set_free_cb(component *menu, trnmenu_free_cb cb);
 void trnmenu_set_tick_cb(component *menu, trnmenu_tick_cb cb);
 
-#endif // _TRN_MENU_H
+#endif // TRN_MENU_H

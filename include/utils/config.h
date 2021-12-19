@@ -1,5 +1,5 @@
-#ifndef _CONFIG_H
-#define _CONFIG_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
 void conf_addint(char *name, int default_val);
 void conf_addbool(char *name, int default_val);
@@ -20,4 +20,4 @@ void conf_setfloat(const char *name, double val);
 void conf_setbool(const char *name, int val);
 void conf_setstring(const char *name, const char *val);
 
-#endif // _CONFIG_H
+#endif // CONFIG_H

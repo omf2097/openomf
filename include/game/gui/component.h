@@ -6,8 +6,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _COMPONENT_H
-#define _COMPONENT_H
+#ifndef COMPONENT_H
+#define COMPONENT_H
 
 #include <SDL.h>
 #include "controller/controller.h"
@@ -107,4 +107,4 @@ void component_set_tick_cb(component *c, component_tick_cb cb);
 void component_set_free_cb(component *c, component_free_cb cb);
 void component_set_find_cb(component *c, component_find_cb cb);
 
-#endif // _COMPONENT_H
+#endif // COMPONENT_H

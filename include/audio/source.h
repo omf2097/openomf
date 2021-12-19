@@ -1,5 +1,5 @@
-#ifndef _SOURCE_H
-#define _SOURCE_H
+#ifndef SOURCE_H
+#define SOURCE_H
 
 typedef struct audio_source_t audio_source;
 
@@ -50,4 +50,4 @@ void* source_get_userdata(audio_source *src);
 void source_set_update_cb(audio_source *src, source_update_cb cbfunc);
 void source_set_close_cb(audio_source *src, source_close_cb cbfunc);
 
-#endif // _SOURCE_H
+#endif // SOURCE_H

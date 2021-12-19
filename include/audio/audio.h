@@ -1,5 +1,5 @@
-#ifndef _AUDIO_H
-#define _AUDIO_H
+#ifndef AUDIO_H
+#define AUDIO_H
 
 #include "audio/music.h"
 #include "audio/sound.h"
@@ -19,4 +19,4 @@ void audio_close();
 
 audio_sink* audio_get_sink();
 
-#endif // _AUDIO_H
+#endif // AUDIO_H

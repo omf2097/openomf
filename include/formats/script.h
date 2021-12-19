@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_SCRIPT_H
-#define _SD_SCRIPT_H
+#ifndef SD_SCRIPT_H
+#define SD_SCRIPT_H
 
 #include "formats/taglist.h"
 
@@ -448,4 +448,4 @@ char sd_script_frame_to_letter(int frame_id);
 }
 #endif
 
-#endif // _SD_SCRIPT_H
+#endif // SD_SCRIPT_H

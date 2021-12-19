@@ -1,8 +1,8 @@
-#ifndef _SCRAP_H
-#define _SCRAP_H
+#ifndef SCRAP_H
+#define SCRAP_H
 
 #include "game/protos/object.h"
 
 int scrap_create(object *obj);
 
-#endif // _SCRAP_H
+#endif // SCRAP_H

@@ -1,5 +1,5 @@
-#ifndef _IMAGE_H
-#define _IMAGE_H
+#ifndef IMAGE_H
+#define IMAGE_H
 
 #include "formats/rgba_image.h"
 #include "video/color.h"
@@ -27,4 +27,4 @@ int image_write_tga(image *img, const char *filename);
 
 int image_write_png(image *img, const char *filename);
 
-#endif // _IMAGE_H
+#endif // IMAGE_H

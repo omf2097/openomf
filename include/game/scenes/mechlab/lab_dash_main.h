@@ -1,5 +1,5 @@
-#ifndef _LAB_DASH_MAIN_H
-#define _LAB_DASH_MAIN_H
+#ifndef LAB_DASH_MAIN_H
+#define LAB_DASH_MAIN_H
 
 #include "game/gui/component.h"
 #include "game/protos/scene.h"
@@ -27,4 +27,4 @@ typedef struct {
 component* lab_dash_main_create(scene *s, dashboard_widgets *dw);
 void lab_dash_main_update(scene *s, dashboard_widgets *dw);
 
-#endif // _LAB_DASH_MAIN_H
+#endif // LAB_DASH_MAIN_H

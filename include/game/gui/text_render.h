@@ -1,5 +1,5 @@
-#ifndef _TEXT_RENDER_H
-#define _TEXT_RENDER_H
+#ifndef TEXT_RENDER_H
+#define TEXT_RENDER_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -75,4 +75,4 @@ void font_render_shadowed(const font *font, const char *text, int x, int y, colo
 void font_render_wrapped(const font *font, const char *text, int x, int y, int w, color c);
 void font_render_wrapped_shadowed(const font *font, const char *text, int x, int y, int w, color c, int shadow_flags);
 
-#endif // _TEXT_RENDER_H
+#endif // TEXT_RENDER_H

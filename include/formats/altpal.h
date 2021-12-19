@@ -9,8 +9,8 @@
 
 #include "formats/palette.h"
 
-#ifndef _SD_ALTPAL_H
-#define _SD_ALTPAL_H
+#ifndef SD_ALTPAL_H
+#define SD_ALTPAL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -83,4 +83,4 @@ void sd_altpal_free(sd_altpal_file *ap);
 }
 #endif
 
-#endif // _SD_ALTPAL_H
+#endif // SD_ALTPAL_H

@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_PIC_H
-#define _SD_PIC_H
+#ifndef SD_PIC_H
+#define SD_PIC_H
 
 #include "formats/sprite.h"
 
@@ -106,4 +106,4 @@ const sd_pic_photo* sd_pic_get(const sd_pic_file *pic, int entry_id);
 }
 #endif
 
-#endif // _SD_PIC_H
+#endif // SD_PIC_H

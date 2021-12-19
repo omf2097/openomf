@@ -1,5 +1,5 @@
-#ifndef _BK_H
-#define _BK_H
+#ifndef BK_H
+#define BK_H
 
 #include "resources/bk_info.h"
 #include "utils/hashmap.h"
@@ -19,4 +19,4 @@ palette *bk_get_palette(bk *b, int id);
 char* bk_get_stl(bk *b);
 void bk_free(bk *b);
 
-#endif // _BK_H
+#endif // BK_H

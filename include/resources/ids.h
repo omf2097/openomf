@@ -1,5 +1,5 @@
-#ifndef _IDS_H
-#define _IDS_H
+#ifndef IDS_H
+#define IDS_H
 
 enum RESOURCE_ID {
     BK_INTRO = 0,
@@ -62,4 +62,4 @@ int is_har(unsigned int id);
 int is_music(unsigned int id);
 int is_pic(unsigned int id);
 
-#endif // _IDS_H
+#endif // IDS_H

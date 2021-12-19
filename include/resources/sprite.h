@@ -1,5 +1,5 @@
-#ifndef _SPRITE_H
-#define _SPRITE_H
+#ifndef SPRITE_H
+#define SPRITE_H
 
 #include "video/surface.h"
 #include "utils/vec.h"
@@ -17,4 +17,4 @@ void sprite_free(sprite *sp);
 vec2i sprite_get_size(sprite *s);
 sprite* sprite_copy(sprite *src);
 
-#endif // _SPRITE_H
+#endif // SPRITE_H

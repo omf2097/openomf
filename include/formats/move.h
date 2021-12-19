@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_MOVE_H
-#define _SD_MOVE_H
+#ifndef SD_MOVE_H
+#define SD_MOVE_H
 
 #include <stdint.h>
 #include "formats/animation.h"
@@ -153,4 +153,4 @@ int sd_move_save(sd_writer *writer, const sd_move *move);
 }
 #endif
 
-#endif // _SD_MOVE_H
+#endif // SD_MOVE_H

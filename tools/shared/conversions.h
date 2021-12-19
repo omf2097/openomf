@@ -1,5 +1,5 @@
-#ifndef _CONVERSIONS_H
-#define _CONVERSIONS_H
+#ifndef CONVERSIONS_H
+#define CONVERSIONS_H
 
 #include <stdint.h>
 
@@ -11,4 +11,4 @@ uint32_t conv_udword(const char* data);
 int32_t  conv_dword(const char* data);
 float    conv_float(const char* data);
 
-#endif // _CONVERSIONS_H
+#endif // CONVERSIONS_H

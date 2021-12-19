@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_REC_H
-#define _SD_REC_H
+#ifndef SD_REC_H
+#define SD_REC_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -172,4 +172,4 @@ int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_mov
 }
 #endif
 
-#endif // _SD_REC_H
+#endif // SD_REC_H

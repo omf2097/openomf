@@ -1,5 +1,5 @@
-#ifndef _SD_READER_H
-#define _SD_READER_H
+#ifndef SD_READER_H
+#define SD_READER_H
 
 #include <stdint.h>
 
@@ -53,4 +53,4 @@ void sd_skip(sd_reader *reader, unsigned int nbytes);
 
 char* sd_read_variable_str(sd_reader *r);
 
-#endif // _SD_READER_H
+#endif // SD_READER_H

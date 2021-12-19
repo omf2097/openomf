@@ -1,5 +1,5 @@
-#ifndef _PILOTS_H
-#define _PILOTS_H
+#ifndef PILOTS_H
+#define PILOTS_H
 
 typedef struct pilot_t {
     int power, agility, endurance;
@@ -9,4 +9,4 @@ typedef struct pilot_t {
 
 void pilot_get_info(pilot *pilot, int id);
 
-#endif // _PILOTS_H
+#endif // PILOTS_H

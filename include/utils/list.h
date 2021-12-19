@@ -1,5 +1,5 @@
-#ifndef _LIST_H
-#define _LIST_H
+#ifndef LIST_H
+#define LIST_H
 
 #include "iterator.h"
 #include <stddef.h>
@@ -28,4 +28,4 @@ void list_iter_begin(const list *list, iterator *iter);
 void list_iter_end(const list *list, iterator *iter);
 void* list_get(const list *list, unsigned int i);
 
-#endif
+#endif // LIST_H

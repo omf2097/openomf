@@ -1,5 +1,5 @@
-#ifndef _HASHMAP_H
-#define _HASHMAP_H
+#ifndef HASHMAP_H
+#define HASHMAP_H
 
 #include "utils/iterator.h"
 
@@ -54,4 +54,4 @@ void hashmap_iter_begin(const hashmap *hashmap, iterator *iter);
 int hashmap_delete(hashmap *hashmap, iterator *iter);
 void hashmap_clear(hashmap *hashmap);
 
-#endif // _HASHMAP_H
+#endif // HASHMAP_H

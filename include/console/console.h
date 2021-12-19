@@ -1,5 +1,5 @@
-#ifndef _CONSOLE_H
-#define _CONSOLE_H
+#ifndef CONSOLE_H
+#define CONSOLE_H
 
 #include <SDL.h>
 #include "game/game_state_type.h"
@@ -22,4 +22,4 @@ int console_window_is_open();
 void console_window_open();
 void console_window_close();
 
-#endif // _CONSOLE_H
+#endif // CONSOLE_H

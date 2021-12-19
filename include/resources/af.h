@@ -1,5 +1,5 @@
-#ifndef _AF_H
-#define _AF_H
+#ifndef AF_H
+#define AF_H
 
 #include "resources/af_move.h"
 
@@ -19,4 +19,4 @@ void af_create(af *a, void *src);
 af_move* af_get_move(af *a, int id);
 void af_free(af *a);
 
-#endif // _AF_H
+#endif // AF_H

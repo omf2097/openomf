@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_TAGLIST_H
-#define _SD_TAGLIST_H
+#ifndef SD_TAGLIST_H
+#define SD_TAGLIST_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,4 +47,4 @@ int sd_tag_info(const char* search_tag, int *req_param, const char **tag, const 
 }
 #endif
 
-#endif // _SD_TAGLIST_H
+#endif // SD_TAGLIST_H

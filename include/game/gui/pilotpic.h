@@ -1,5 +1,5 @@
-#ifndef _PILOTPIC_H
-#define _PILOTPIC_H
+#ifndef PILOTPIC_H
+#define PILOTPIC_H
 
 #include "game/gui/component.h"
 
@@ -9,4 +9,4 @@ int pilotpic_get_pilot_count(component *c, int pic_id);
 void pilotpic_next(component *c);
 void pilotpic_prev(component *c);
 
-#endif // _PILOTPIC_H
+#endif // PILOTPIC_H

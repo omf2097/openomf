@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_AF_H
-#define _SD_AF_H
+#ifndef SD_AF_H
+#define SD_AF_H
 
 #include <stdint.h>
 #include "formats/move.h"
@@ -139,4 +139,4 @@ void sd_af_free(sd_af_file *af);
 }
 #endif
 
-#endif // _SD_AF_H
+#endif // SD_AF_H

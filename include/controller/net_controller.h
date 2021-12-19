@@ -1,5 +1,5 @@
-#ifndef _NET_CONTROLLER_H
-#define _NET_CONTROLLER_H
+#ifndef NET_CONTROLLER_H
+#define NET_CONTROLLER_H
 
 #include "controller/controller.h"
 #include <SDL.h>
@@ -13,4 +13,4 @@ void net_controller_har_hook(int action, void *cb_data);
 int net_controller_ready(controller *ctrl);
 int net_controller_tick_offset(controller *ctrl);
 
-#endif // _NET_CONTROLLER_H
+#endif // NET_CONTROLLER_H

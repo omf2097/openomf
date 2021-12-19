@@ -1,5 +1,5 @@
-#ifndef _LOG_H
-#define _LOG_H
+#ifndef LOG_H
+#define LOG_H
 
 #include <stdlib.h>
 
@@ -20,4 +20,4 @@ void log_print(char mode, const char* fn, const char *fmt, ...);
 int log_init(const char *filename);
 void log_close();
 
-#endif // _LOG_H
+#endif // LOG_H

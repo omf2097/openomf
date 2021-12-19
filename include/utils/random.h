@@ -1,5 +1,5 @@
-#ifndef _RANDOM_H
-#define _RANDOM_H
+#ifndef RANDOM_H
+#define RANDOM_H
 
 #include <stdint.h>
 
@@ -31,4 +31,4 @@ uint32_t rand_int(uint32_t upperbound);
 uint32_t rand_intmax(void);
 float rand_float(void);
 
-#endif // _RANDOM_H
+#endif // RANDOM_H

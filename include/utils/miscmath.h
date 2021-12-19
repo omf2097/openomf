@@ -1,5 +1,5 @@
-#ifndef _MISCMATH_H
-#define _MISCMATH_H
+#ifndef MISCMATH_H
+#define MISCMATH_H
 
 #define MATH_PI 3.14159265f
 
@@ -10,4 +10,4 @@ int clamp(int val, int _min, int _max);
 int max2(int a, int b);
 int min2(int a, int b);
 
-#endif // _MISCMATH_H
+#endif // MISCMATH_H

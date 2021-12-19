@@ -6,8 +6,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_ACTIONS_H
-#define _SD_ACTIONS_H
+#ifndef SD_ACTIONS_H
+#define SD_ACTIONS_H
 
 /*! \brief Contains all actions a HAR can do during a match
 */
@@ -23,4 +23,4 @@ typedef enum {
 
 #define SD_MOVE_MASK (SD_ACT_UP|SD_ACT_DOWN|SD_ACT_LEFT|SD_ACT_RIGHT) ///< Mask of all movement keys
 
-#endif // _SD_ACTIONS_H
+#endif // SD_ACTIONS_H

@@ -1,5 +1,5 @@
-#ifndef _XYSIZER_H
-#define _XYSIZER_H
+#ifndef XYSIZER_H
+#define XYSIZER_H
 
 #include "video/surface.h"
 #include "game/gui/component.h"
@@ -14,4 +14,4 @@ void xysizer_attach(component *sizer, component *c, int x, int y, int w, int h);
 void xysizer_set_userdata(component *sizer, void *userdata);
 void* xysizer_get_userdata(component *sizer);
 
-#endif // _XYSIZER_H
+#endif // XYSIZER_H

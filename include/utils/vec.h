@@ -1,5 +1,5 @@
-#ifndef _VEC_H
-#define _VEC_H
+#ifndef VEC_H
+#define VEC_H
 
 typedef struct vec2f_t {
     float x;
@@ -29,4 +29,4 @@ vec2f vec2i_to_f(vec2i i);
 vec2i vec2i_create(int x, int y);
 vec2f vec2f_create(float x, float y);
 
-#endif // _VEC_H
+#endif // VEC_H

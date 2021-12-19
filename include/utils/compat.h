@@ -1,5 +1,5 @@
-#ifndef _COMPAT_H
-#define _COMPAT_H
+#ifndef COMPAT_H
+#define COMPAT_H
 
 #include <string.h>
 #include "platform.h"
@@ -8,4 +8,4 @@
 char *strdup(const char *s1);
 #endif
 
-#endif // _COMPAT_H
+#endif // COMPAT_H

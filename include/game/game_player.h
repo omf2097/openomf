@@ -1,5 +1,5 @@
-#ifndef _GAME_PLAYER_H
-#define _GAME_PLAYER_H
+#ifndef GAME_PLAYER_H
+#define GAME_PLAYER_H
 
 #include "formats/pilot.h"
 #include "game/protos/object.h"
@@ -40,4 +40,4 @@ void game_player_set_selectable(game_player *gp, int selectable);
 int game_player_get_selectable(game_player *gp);
 chr_score* game_player_get_score(game_player *gp);
 
-#endif // _GAME_PLAYER_H
+#endif // GAME_PLAYER_H

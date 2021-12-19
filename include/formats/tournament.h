@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_TOURNAMENT_H
-#define _SD_TOURNAMENT_H
+#ifndef SD_TOURNAMENT_H
+#define SD_TOURNAMENT_H
 
 #include "formats/palette.h"
 #include "formats/sprite.h"
@@ -124,4 +124,4 @@ void sd_tournament_free(sd_tournament_file *trn);
 }
 #endif
 
-#endif // _SD_TOURNAMENT_H
+#endif // SD_TOURNAMENT_H

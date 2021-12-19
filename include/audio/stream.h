@@ -1,5 +1,5 @@
-#ifndef _STREAM_H
-#define _STREAM_H
+#ifndef STREAM_H
+#define STREAM_H
 
 typedef struct audio_stream_t audio_stream;
 typedef struct audio_source_t audio_source;
@@ -51,4 +51,4 @@ void stream_set_play_cb(audio_stream *stream, stream_play_cb cbfunc);
 void stream_set_stop_cb(audio_stream *stream, stream_stop_cb cbfunc);
 void stream_set_apply_cb(audio_stream *stream, stream_apply_cb cbfunc);
 
-#endif // _STREAM_H
+#endif // STREAM_H

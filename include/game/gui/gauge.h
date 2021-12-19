@@ -1,5 +1,5 @@
-#ifndef _GAUGE_H
-#define _GAUGE_H
+#ifndef GAUGE_H
+#define GAUGE_H
 
 #include "game/gui/component.h"
 
@@ -13,4 +13,4 @@ void gauge_set_lit(component *gauge, int lit);
 int gauge_get_lit(component *gauge);
 int gauge_get_size(component *gauge);
 
-#endif // _GAUGE_H
+#endif // GAUGE_H

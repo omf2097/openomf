@@ -1,5 +1,5 @@
-#ifndef _SERIAL_H
-#define _SERIAL_H
+#ifndef SERIAL_H
+#define SERIAL_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -30,4 +30,4 @@ float serial_read_float(serial *s);
 void serial_copy(serial *dst, const serial *src);
 serial* serial_calloc_copy(const serial *src);
 
-#endif // _SERIAL_H
+#endif // SERIAL_H

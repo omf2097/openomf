@@ -1,5 +1,5 @@
-#ifndef _HAR_H
-#define _HAR_H
+#ifndef HAR_H
+#define HAR_H
 
 #include "resources/af.h"
 #include "resources/bk.h"
@@ -171,4 +171,4 @@ int har_is_walking(har *h);
 int har_is_blocking(har *h, af_move *move);
 void har_copy_actions(object *new, object *old);
 
-#endif // _HAR_H
+#endif // HAR_H

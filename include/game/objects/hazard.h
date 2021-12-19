@@ -1,5 +1,5 @@
-#ifndef _HAZARD_H
-#define _HAZARD_H
+#ifndef HAZARD_H
+#define HAZARD_H
 
 #include "game/protos/object.h"
 #include "game/game_state_type.h"
@@ -11,4 +11,4 @@ typedef struct har_t har;
 int hazard_create(object *obj, scene *scene);
 void hazard_bootstrap(object *obj);
 
-#endif // _HAZARD_H
+#endif // HAZARD_H

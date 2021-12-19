@@ -1,5 +1,5 @@
-#ifndef _ANIMATION_MISC_H
-#define _ANIMATION_MISC_H
+#ifndef ANIMATION_MISC_H
+#define ANIMATION_MISC_H
 
 #include <stddef.h>
 
@@ -27,4 +27,4 @@ void anim_strip_key(sd_animation *ani, int kn, const char **key, int kcount, con
 void anim_push(sd_animation *ani);
 void anim_pop(sd_animation *ani);
 
-#endif // _ANIMATION_MISC_H
+#endif // ANIMATION_MISC_H

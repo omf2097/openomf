@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_LANGUAGE_H
-#define _SD_LANGUAGE_H
+#ifndef SD_LANGUAGE_H
+#define SD_LANGUAGE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -99,4 +99,4 @@ const sd_lang_string* sd_language_get(const sd_language *language, int num);
 }
 #endif
 
-#endif // _SD_LANGUAGE_H
+#endif // SD_LANGUAGE_H

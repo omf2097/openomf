@@ -1,5 +1,5 @@
-#ifndef _NEWSROOM_H
-#define _NEWSROOM_H
+#ifndef NEWSROOM_H
+#define NEWSROOM_H
 
 #include "game/protos/scene.h"
 
@@ -10,4 +10,4 @@ enum {
 
 int newsroom_create(scene *scene);
 
-#endif // _NEWSROOM_H
+#endif // NEWSROOM_H

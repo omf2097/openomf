@@ -1,5 +1,5 @@
-#ifndef _DUMB_SOURCE_H
-#define _DUMB_SOURCE_H
+#ifndef DUMB_SOURCE_H
+#define DUMB_SOURCE_H
 
 #ifdef USE_DUMB
 
@@ -11,4 +11,4 @@ audio_source_resampler* dumb_get_resamplers();
 
 #endif // USE_DUMB
 
-#endif // _DUMB_SOURCE_H
+#endif // DUMB_SOURCE_H

@@ -1,5 +1,5 @@
-#ifndef _TEXTBUTTON_H
-#define _TEXTBUTTON_H
+#ifndef TEXTBUTTON_H
+#define TEXTBUTTON_H
 
 #include "game/gui/component.h"
 #include "game/gui/text_render.h"
@@ -11,4 +11,4 @@ void textbutton_set_border(component *c, color col);
 void textbutton_set_text(component *c, const char* text);
 void textbutton_remove_border(component *c);
 
-#endif // _TEXTBUTTON_H
+#endif // TEXTBUTTON_H

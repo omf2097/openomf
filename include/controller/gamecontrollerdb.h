@@ -1,5 +1,5 @@
-#ifndef _GAMECONTROLLERDB_H
-#define _GAMECONTROLLERDB_H
+#ifndef GAMECONTROLLERDB_H
+#define GAMECONTROLLERDB_H
 
 static const char gamecontrollerdb[] = "\n\
 # Windows - DINPUT\n\
@@ -95,4 +95,4 @@ AD1B00000000000001F9000000000000,Gamestop BB-070 X360 Controller,a:b0,b:b1,back:
 03000000790000001100000010010000,RetroLink Saturn Classic Controller,platform:Linux,x:b3,a:b0,b:b1,y:b4,back:b5,guide:b2,start:b8,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,\n\
 ";
 
-#endif // _GAMECONTROLLERDB_H
+#endif // GAMECONTROLLERDB_H

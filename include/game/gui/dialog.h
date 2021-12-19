@@ -1,5 +1,5 @@
-#ifndef _DIALOG_H
-#define _DIALOG_H
+#ifndef DIALOG_H
+#define DIALOG_H
 
 #include "utils/vector.h"
 #include "video/surface.h"
@@ -46,4 +46,4 @@ void dialog_tick(dialog *dlg);
 void dialog_render(dialog *dlg);
 void dialog_event(dialog *dlg, int action);
 
-#endif
+#endif // DIALOG_H

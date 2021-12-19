@@ -1,8 +1,8 @@
-#ifndef _CUTSCENE_H
-#define _CUTSCENE_H
+#ifndef CUTSCENE_H
+#define CUTSCENE_H
 
 #include "game/protos/scene.h"
 
 int cutscene_create(scene *scene);
 
-#endif // _CUTSCENE_H
+#endif // CUTSCENE_H
