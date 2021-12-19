@@ -8,8 +8,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_SCORE_H
-#define _SD_SCORE_H
+#ifndef SD_SCORE_H
+#define SD_SCORE_H
 
 #include <stdint.h>
 
@@ -114,4 +114,4 @@ const sd_score_entry* sd_score_get(const sd_score *score, int page, int entry_id
 }
 #endif
 
-#endif // _SD_SCORE_H
+#endif // SD_SCORE_H

@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_FONTS_H
-#define _SD_FONTS_H
+#ifndef SD_FONTS_H
+#define SD_FONTS_H
 
 #include <stdint.h>
 #include "formats/rgba_image.h"
@@ -110,4 +110,4 @@ int sd_font_decode(
 }
 #endif
 
-#endif // _SD_FONTS_H
+#endif // SD_FONTS_H

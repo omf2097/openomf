@@ -1,5 +1,5 @@
-#ifndef _FRAME_H
-#define _FRAME_H
+#ifndef FRAME_H
+#define FRAME_H
 
 #include "game/gui/component.h"
 
@@ -24,4 +24,4 @@ int guiframe_event(guiframe *frame, SDL_Event *event);
 int guiframe_action(guiframe *frame, int action);
 void guiframe_layout(guiframe *frame);
 
-#endif // _FRAME_H
+#endif // FRAME_H

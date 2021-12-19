@@ -8,8 +8,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_VGA_IMAGE_H
-#define _SD_VGA_IMAGE_H
+#ifndef SD_VGA_IMAGE_H
+#define SD_VGA_IMAGE_H
 
 #include "formats/rgba_image.h"
 #include "formats/palette.h"
@@ -176,4 +176,4 @@ int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char 
 }
 #endif
 
-#endif // _SD_VGA_IMAGE_H
+#endif // SD_VGA_IMAGE_H

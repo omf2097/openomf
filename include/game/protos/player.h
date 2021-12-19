@@ -1,5 +1,5 @@
-#ifndef _PLAYER_H
-#define _PLAYER_H
+#ifndef PLAYER_H
+#define PLAYER_H
 
 #include <stdint.h>
 #include "formats/script.h"
@@ -85,4 +85,4 @@ void player_set_delay(object *obj, int delay);
 int player_is_last_frame(const object *obj);
 int player_get_current_tick(const object *obj);
 
-#endif // _PLAYER_H
+#endif // PLAYER_H

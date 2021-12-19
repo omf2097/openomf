@@ -1,5 +1,5 @@
-#ifndef _joystick_H
-#define _joystick_H
+#ifndef JOYSTICK_H
+#define JOYSTICK_H
 
 #include "controller/controller.h"
 #include <SDL.h>
@@ -34,4 +34,4 @@ int joystick_nth_id(int n);
 int joystick_name_to_id(const char *name, int offset);
 int joystick_offset(int id, const char *name);
 
-#endif // _joystick_H
+#endif // JOYSTICK_H

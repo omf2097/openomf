@@ -1,5 +1,5 @@
-#ifndef _WIDGET_H
-#define _WIDGET_H
+#ifndef WIDGET_H
+#define WIDGET_H
 
 #include "game/gui/component.h"
 
@@ -37,4 +37,4 @@ void widget_set_layout_cb(component *c, widget_layout_cb cb);
 void widget_set_tick_cb(component *c, widget_tick_cb cb);
 void widget_set_free_cb(component *c, widget_free_cb cb);
 
-#endif // _WIDGET_H
+#endif // WIDGET_H

@@ -1,5 +1,5 @@
-#ifndef _PLUGINS_H
-#define _PLUGINS_H
+#ifndef PLUGINS_H
+#define PLUGINS_H
 
 #include "utils/list.h"
 #include "plugins/base_plugin.h"
@@ -12,4 +12,4 @@ int plugins_get_scaler(scaler_plugin *scaler, const char* name);
 
 int plugins_get_list_by_type(list *tlist, const char* type);
 
-#endif
+#endif // PLUGINS_H

@@ -1,5 +1,5 @@
-#ifndef _SCORE_H
-#define _SCORE_H
+#ifndef SCORE_H
+#define SCORE_H
 
 #include <string.h>
 #include <stdlib.h>
@@ -57,4 +57,4 @@ int chr_score_interrupt(chr_score *score, vec2i pos);
 void chr_score_serialize(chr_score *score, serial *ser);
 void chr_score_unserialize(chr_score *score, serial *ser);
 
-#endif // _SCORE_H
+#endif // SCORE_H

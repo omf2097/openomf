@@ -1,5 +1,5 @@
-#ifndef _GUI_H
-#define _GUI_H
+#ifndef GUI_H
+#define GUI_H
 
 #include "game/gui/component.h"
 #include "game/gui/widget.h"
@@ -15,4 +15,4 @@
 #include "game/gui/filler.h"
 #include "game/gui/label.h"
 
-#endif // _GUI_H
+#endif // GUI_H

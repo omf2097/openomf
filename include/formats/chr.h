@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_CHR_H
-#define _SD_CHR_H
+#ifndef SD_CHR_H
+#define SD_CHR_H
 
 #include "formats/palette.h"
 #include "formats/sprite.h"
@@ -109,4 +109,4 @@ const sd_chr_enemy* sd_chr_get_enemy(sd_chr_file *chr, int enemy_num);
 }
 #endif
 
-#endif // _SD_CHR_H
+#endif // SD_CHR_H

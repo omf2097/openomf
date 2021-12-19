@@ -1,5 +1,5 @@
-#ifndef _INTERSECT_H
-#define _INTERSECT_H
+#ifndef INTERSECT_H
+#define INTERSECT_H
 
 #include "game/protos/object.h"
 
@@ -12,4 +12,4 @@ int intersect_object_point(object *obj, vec2i point);
 int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point);
 
 
-#endif // _INTERSECT_H
+#endif // INTERSECT_H

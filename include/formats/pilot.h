@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_PILOT_H
-#define _SD_PILOT_H
+#ifndef SD_PILOT_H
+#define SD_PILOT_H
 
 #include <stdint.h>
 #include "formats/palette.h"
@@ -143,4 +143,4 @@ int sd_pilot_save(sd_writer *writer, const sd_pilot *pilot);
 }
 #endif
 
-#endif // _SD_PILOT_H
+#endif // SD_PILOT_H

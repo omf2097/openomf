@@ -1,5 +1,5 @@
-#ifndef _GAME_STATE_TYPE_H
-#define _GAME_STATE_TYPE_H
+#ifndef GAME_STATE_TYPE_H
+#define GAME_STATE_TYPE_H
 
 #include "utils/vector.h"
 #include "engine.h"
@@ -56,4 +56,4 @@ typedef struct game_state_t {
     game_player *players[2];
 } game_state;
 
-#endif // _GAME_STATE_TYPE_H
+#endif // GAME_STATE_TYPE_H

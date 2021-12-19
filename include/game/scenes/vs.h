@@ -1,8 +1,8 @@
-#ifndef _VS_H
-#define _VS_H
+#ifndef VS_H
+#define VS_H
 
 #include "game/protos/scene.h"
 
 int vs_create(scene *scene);
 
-#endif // _VS_H
+#endif // VS_H

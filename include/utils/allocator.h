@@ -1,5 +1,5 @@
-#ifndef _ALLOCATOR_H
-#define _ALLOCATOR_H
+#ifndef ALLOCATOR_H
+#define ALLOCATOR_H
 
 #include <stddef.h>
 
@@ -16,4 +16,4 @@ void *omf_realloc_real(void *ptr, size_t size, const char *file, int line);
     (ptr) = NULL;          \
 } while(0)
 
-#endif // _ALLOCATOR_H
+#endif // ALLOCATOR_H

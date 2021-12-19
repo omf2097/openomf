@@ -1,5 +1,5 @@
-#ifndef _SETTINGS_H
-#define _SETTINGS_H
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
 typedef enum fight_mode_t {
     FIGHT_MODE_NORMAL,
@@ -137,4 +137,4 @@ void settings_save();
 
 settings *settings_get();
 
-#endif // _SETTINGS_H
+#endif // SETTINGS_H

@@ -1,5 +1,5 @@
-#ifndef _AF_MOVE_H
-#define _AF_MOVE_H
+#ifndef AF_MOVE_H
+#define AF_MOVE_H
 
 #include "resources/animation.h"
 #include "utils/str.h"
@@ -25,4 +25,4 @@ typedef struct af_move_t {
 void af_move_create(af_move *move, void *src, int id);
 void af_move_free(af_move *move);
 
-#endif // _AF_MOVE_H
+#endif // AF_MOVE_H

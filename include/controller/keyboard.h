@@ -1,5 +1,5 @@
-#ifndef _KEYBOARD_H
-#define _KEYBOARD_H
+#ifndef KEYBOARD_H
+#define KEYBOARD_H
 
 #include "controller/controller.h"
 #include <SDL.h>
@@ -33,4 +33,4 @@ void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay);
 void keyboard_free(controller *ctrl);
 int keyboard_binds_key(controller *ctrl, SDL_Event *event);
 
-#endif // _KEYBOARD_H
+#endif // KEYBOARD_H

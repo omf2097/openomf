@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_RGBA_IMAGE_H
-#define _SD_RGBA_IMAGE_H
+#ifndef SD_RGBA_IMAGE_H
+#define SD_RGBA_IMAGE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -127,4 +127,4 @@ int sd_rgba_image_to_ppm(const sd_rgba_image *img, const char *filename);
 }
 #endif
 
-#endif // _SD_RGBA_IMAGE_H
+#endif // SD_RGBA_IMAGE_H

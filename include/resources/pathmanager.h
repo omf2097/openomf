@@ -1,5 +1,5 @@
-#ifndef _PATHS_H
-#define _PATHS_H
+#ifndef PATHS_H
+#define PATHS_H
 
 #include "resources/ids.h"
 
@@ -27,4 +27,4 @@ const char* pm_get_local_path(unsigned int resource_id);
 const char* pm_get_resource_path(unsigned int local_id);
 int pm_create_dir(const char* dirname);
 
-#endif // _PATHS_H
+#endif // PATHS_H

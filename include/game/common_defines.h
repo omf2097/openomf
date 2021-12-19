@@ -1,5 +1,5 @@
-#ifndef _COMMON_DEFINES_H
-#define _COMMON_DEFINES_H
+#ifndef COMMON_DEFINES_H
+#define COMMON_DEFINES_H
 
 const char* ai_difficulty_get_name(unsigned int id);
 const char* har_get_name(unsigned int id);
@@ -94,4 +94,4 @@ enum {
     NUMBER_OF_ROUND_TYPES,
 };
 
-#endif // _COMMON_DEFINES_H
+#endif // COMMON_DEFINES_H

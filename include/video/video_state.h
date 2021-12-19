@@ -1,5 +1,5 @@
-#ifndef _VIDEO_STATE_H
-#define _VIDEO_STATE_H
+#ifndef VIDEO_STATE_H
+#define VIDEO_STATE_H
 
 #include <stdbool.h>
 
@@ -34,4 +34,4 @@ typedef struct video_state_t {
     screen_palette *extra_palette;  // Reflects base palette, used for additive blending
 } video_state;
 
-#endif // _VIDEO_STATE_H
+#endif // VIDEO_STATE_H

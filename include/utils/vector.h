@@ -1,5 +1,5 @@
-#ifndef _VECTOR_H
-#define _VECTOR_H
+#ifndef VECTOR_H
+#define VECTOR_H
 
 #include "iterator.h"
 
@@ -25,4 +25,4 @@ int vector_delete(vector *vector, iterator *iterator);
 void vector_iter_begin(const vector *vector, iterator *iter);
 void vector_iter_end(const vector *vector, iterator *iter);
 
-#endif // _VECTOR_H
+#endif // VECTOR_H

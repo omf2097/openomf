@@ -1,5 +1,5 @@
-#ifndef _SIZER_H
-#define _SIZER_H
+#ifndef SIZER_H
+#define SIZER_H
 
 #include "game/gui/component.h"
 #include "utils/vector.h"
@@ -45,4 +45,4 @@ void sizer_set_find_cb(component *c, sizer_find_cb cb);
 
 void sizer_attach(component *c, component *nc);
 
-#endif // _SIZER_H
+#endif // SIZER_H

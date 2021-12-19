@@ -1,5 +1,5 @@
-#ifndef _ENGINE_H
-#define _ENGINE_H
+#ifndef ENGINE_H
+#define ENGINE_H
 
 typedef struct engine_init_flags_t {
     unsigned int net_mode;
@@ -11,4 +11,4 @@ int engine_init(); // Init window, audiodevice, etc.
 void engine_run(engine_init_flags *init_flags); // Run game
 void engine_close(); // Kill window, audiodev
 
-#endif // _ENGINE_H
+#endif // ENGINE_H

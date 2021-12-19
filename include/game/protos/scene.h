@@ -1,5 +1,5 @@
-#ifndef _SCENE_H
-#define _SCENE_H
+#ifndef SCENE_H
+#define SCENE_H
 
 #include <SDL.h>
 #include "controller/controller.h"
@@ -75,4 +75,4 @@ void scene_set_anim_prio_override_cb(scene *scene, scene_anim_prio_override_cb c
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata);
 void cb_scene_destroy_object(object *parent, int id, void *userdata);
 
-#endif // _SCENE_H
+#endif // SCENE_H

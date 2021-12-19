@@ -1,5 +1,5 @@
-#ifndef _SD_WRITER_H
-#define _SD_WRITER_H
+#ifndef SD_WRITER_H
+#define SD_WRITER_H
 
 #include <stdint.h>
 
@@ -51,4 +51,4 @@ void sd_write_fill(sd_writer *writer, char content, int len);
 
 void sd_write_variable_str(sd_writer *w, const char *str);
 
-#endif // _SD_WRITER_H
+#endif // SD_WRITER_H

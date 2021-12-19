@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_SOUNDS_H
-#define _SD_SOUNDS_H
+#ifndef SD_SOUNDS_H
+#define SD_SOUNDS_H
 
 #include <inttypes.h>
 
@@ -136,4 +136,4 @@ int sd_sounds_save(const sd_sound_file *sf, const char *filename);
 }
 #endif
 
-#endif // _SD_SOUNDS_H
+#endif // SD_SOUNDS_H

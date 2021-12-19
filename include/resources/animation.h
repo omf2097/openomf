@@ -1,5 +1,5 @@
-#ifndef _ANIMATION_H
-#define _ANIMATION_H
+#ifndef ANIMATION_H
+#define ANIMATION_H
 
 #include "resources/sprite.h"
 #include "utils/vec.h"
@@ -52,4 +52,4 @@ int animation_get_sprite_count(animation *ani);
 
 animation* create_animation_from_single(sprite *sp, vec2i pos);
 
-#endif // _ANIMATION_H
+#endif // ANIMATION_H

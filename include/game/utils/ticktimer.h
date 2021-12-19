@@ -1,5 +1,5 @@
-#ifndef _TICKTIMER_H
-#define _TICKTIMER_H
+#ifndef TICKTIMER_H
+#define TICKTIMER_H
 
 #include "utils/vector.h"
 
@@ -14,4 +14,4 @@ void ticktimer_add(ticktimer *tt, int ticks, ticktimer_cb cb, void *userdata);
 void ticktimer_run(ticktimer *tt);
 void ticktimer_close(ticktimer *tt);
 
-#endif // _TICKTIMER_H
+#endif // TICKTIMER_H

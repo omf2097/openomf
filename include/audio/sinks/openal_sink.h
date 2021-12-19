@@ -1,5 +1,5 @@
-#ifndef _OPENAL_SINK_H
-#define _OPENAL_SINK_H
+#ifndef OPENAL_SINK_H
+#define OPENAL_SINK_H
 
 #ifdef USE_OPENAL
 
@@ -9,4 +9,4 @@ int openal_sink_init(audio_sink *sink);
 
 #endif // USE_OPENAL
 
-#endif // _OPENAL_SINK_H
+#endif // OPENAL_SINK_H

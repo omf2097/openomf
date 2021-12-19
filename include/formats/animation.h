@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_ANIMATION_H
-#define _SD_ANIMATION_H
+#ifndef SD_ANIMATION_H
+#define SD_ANIMATION_H
 
 #include <stdint.h>
 #include "formats/sprite.h"
@@ -303,4 +303,4 @@ int sd_animation_save(sd_writer *writer, const sd_animation *animation);
 }
 #endif
 
-#endif // _SD_ANIMATION_H
+#endif // SD_ANIMATION_H

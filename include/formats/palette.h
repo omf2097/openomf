@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _PALETTE_H
-#define _PALETTE_H
+#ifndef PALETTE_H
+#define PALETTE_H
 
 #include <stdint.h>
 #include "formats/internal/memreader.h"
@@ -106,4 +106,4 @@ palette *palette_copy(palette *src);
 }
 #endif
 
-#endif // _PALETTE_H
+#endif // PALETTE_H

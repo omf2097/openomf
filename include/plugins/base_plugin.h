@@ -1,5 +1,5 @@
-#ifndef _BASE_PLUGIN
-#define _BASE_PLUGIN
+#ifndef BASE_PLUGIN
+#define BASE_PLUGIN
 
 typedef struct {
     void *handle;
@@ -10,4 +10,4 @@ typedef struct {
     const char* (*get_version)();
 } base_plugin;
 
-#endif // _BASE_PLUGIN
+#endif // BASE_PLUGIN

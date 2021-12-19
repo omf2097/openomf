@@ -1,5 +1,5 @@
-#ifndef _TCACHE_H
-#define _TCACHE_H
+#ifndef TCACHE_H
+#define TCACHE_H
 
 #include <SDL.h>
 #include "video/surface.h"
@@ -16,4 +16,4 @@ SDL_Texture* tcache_get(surface *sur,
                         uint8_t pal_offset);
 void tcache_tick();
 
-#endif // _TCACHE_H
+#endif // TCACHE_H

@@ -1,5 +1,5 @@
-#ifndef _HAR_SCREENCAP_H
-#define _HAR_SCREENCAP_H
+#ifndef HAR_SCREENCAP_H
+#define HAR_SCREENCAP_H
 
 #include "game/protos/object.h"
 #include "video/surface.h"
@@ -21,4 +21,4 @@ void har_screencaps_free(har_screencaps *caps);
 void har_screencaps_reset(har_screencaps *caps);
 void har_screencaps_capture(har_screencaps *caps, object *obj, int id);
 
-#endif // _HAR_SCREENCAP_H
+#endif // HAR_SCREENCAP_H

@@ -1,6 +1,6 @@
-#ifndef _FORMATTING_H
-#define _FORMATTING_H
+#ifndef FORMATTING_H
+#define FORMATTING_H
 
 void score_format(unsigned int score, char *buf, int maxlen);
 
-#endif // _FORMATTING_H
+#endif // FORMATTING_H

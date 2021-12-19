@@ -1,5 +1,5 @@
-#ifndef _VORBIS_SOURCE_H
-#define _VORBIS_SOURCE_H
+#ifndef VORBIS_SOURCE_H
+#define VORBIS_SOURCE_H
 
 #ifdef USE_OGGVORBIS
 
@@ -9,4 +9,4 @@ int vorbis_source_init(audio_source *src, const char* file);
 
 #endif // USE_OGGVORBIS
 
-#endif // _VORBIS_SOURCE_H
+#endif // VORBIS_SOURCE_H

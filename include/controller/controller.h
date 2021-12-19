@@ -1,5 +1,5 @@
-#ifndef _CONTROLLER_H
-#define _CONTROLLER_H
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
 #include "game/protos/object.h"
 #include "game/objects/har.h"
@@ -78,4 +78,4 @@ void controller_free_chain(ctrl_event *ev);
 void controller_set_repeat(controller *ctrl, int repeat);
 int controller_rumble(controller *ctrl, float magnitude, int duration);
 
-#endif // _CONTROLLER_H
+#endif // CONTROLLER_H

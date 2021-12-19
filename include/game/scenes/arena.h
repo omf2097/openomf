@@ -1,5 +1,5 @@
-#ifndef _ARENA_H
-#define _ARENA_H
+#ifndef ARENA_H
+#define ARENA_H
 
 #include "game/protos/scene.h"
 
@@ -16,4 +16,4 @@ palette *arena_get_player_palette(scene *scene, int player);
 void arena_toggle_rein(scene *scene);
 void maybe_install_har_hooks(scene *scene);
 
-#endif // _ARENA_H
+#endif // ARENA_H

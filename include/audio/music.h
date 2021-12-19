@@ -1,5 +1,5 @@
-#ifndef _MUSIC_H
-#define _MUSIC_H
+#ifndef MUSIC_H
+#define MUSIC_H
 
 #include "audio/source.h"
 
@@ -19,4 +19,4 @@ module_source* music_get_module_sources();
 audio_source_freq* music_module_get_freqs(int id);
 audio_source_resampler* music_module_get_resamplers(int id);
 
-#endif // _MUSIC_H
+#endif // MUSIC_H

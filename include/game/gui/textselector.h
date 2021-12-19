@@ -1,5 +1,5 @@
-#ifndef _TEXTSELECTOR_H
-#define _TEXTSELECTOR_H
+#ifndef TEXTSELECTOR_H
+#define TEXTSELECTOR_H
 
 #include "game/gui/component.h"
 #include "game/gui/text_render.h"
@@ -16,4 +16,4 @@ const char* textselector_get_current_text(const component *c);
 int textselector_get_pos(const component *c);
 void textselector_set_pos(component *c, int pos);
 
-#endif // _TEXTSELECTOR_H
+#endif // TEXTSELECTOR_H

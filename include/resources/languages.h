@@ -1,5 +1,5 @@
-#ifndef _LANGUAGES_H
-#define _LANGUAGES_H
+#ifndef LANGUAGES_H
+#define LANGUAGES_H
 
 /*
 * This file should handle loading language file(s)
@@ -13,4 +13,4 @@ void lang_close();
 // Maybe something like this ?
 const char* lang_get(unsigned int id);
 
-#endif // _LANGUAGES_H
+#endif // LANGUAGES_H

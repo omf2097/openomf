@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_BK_H
-#define _SD_BK_H
+#ifndef SD_BK_H
+#define SD_BK_H
 
 #include <stdint.h>
 #include "formats/palette.h"
@@ -227,4 +227,4 @@ void sd_bk_free(sd_bk_file *bk);
 }
 #endif
 
-#endif // _SD_BK_H
+#endif // SD_BK_H

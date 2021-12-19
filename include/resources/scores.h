@@ -1,5 +1,5 @@
-#ifndef _SCORES_H
-#define _SCORES_H
+#ifndef SCORES_H
+#define SCORES_H
 
 typedef struct score_entry_t {
     unsigned int score;
@@ -16,4 +16,4 @@ int scores_read(scoreboard *sb);
 int scores_write(scoreboard *sb);
 void scores_clear(scoreboard *sb);
 
-#endif // _SCORES_H
+#endif // SCORES_H

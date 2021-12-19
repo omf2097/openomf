@@ -1,5 +1,5 @@
-#ifndef _FONTS_H
-#define _FONTS_H
+#ifndef FONTS_H
+#define FONTS_H
 
 #include "utils/vector.h"
 
@@ -20,4 +20,4 @@ extern font font_large;
 int fonts_init();
 void fonts_close();
 
-#endif // _FONTS_H
+#endif // FONTS_H

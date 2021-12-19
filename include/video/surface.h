@@ -1,5 +1,5 @@
-#ifndef _SURFACE_H
-#define _SURFACE_H
+#ifndef SURFACE_H
+#define SURFACE_H
 
 #include <SDL.h>
 #include "video/image.h"
@@ -64,4 +64,4 @@ int surface_to_texture(surface *src,
                        char *remap_table,
                        uint8_t pal_offset);
 
-#endif // _SURFACE_H
+#endif // SURFACE_H

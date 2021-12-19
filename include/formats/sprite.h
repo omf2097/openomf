@@ -8,8 +8,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_SPRITE_H
-#define _SD_SPRITE_H
+#ifndef SD_SPRITE_H
+#define SD_SPRITE_H
 
 #include <stdint.h>
 #include "formats/vga_image.h"
@@ -155,4 +155,4 @@ int sd_sprite_save(sd_writer *writer, const sd_sprite *sprite);
 }
 #endif
 
-#endif // _SD_SPRITE_H
+#endif // SD_SPRITE_H

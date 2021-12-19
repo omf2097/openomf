@@ -1,5 +1,5 @@
-#ifndef _SCALER_PLUGIN
-#define _SCALER_PLUGIN
+#ifndef SCALER_PLUGIN
+#define SCALER_PLUGIN
 
 #include "plugins/base_plugin.h"
 
@@ -21,4 +21,4 @@ int scaler_scale(scaler_plugin *scaler,
                  int w, int h,
                  int factor);
 
-# endif // _SCALER_PLUGIN
+# endif // SCALER_PLUGIN

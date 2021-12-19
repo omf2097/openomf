@@ -1,5 +1,5 @@
-#ifndef _BK_INFO_H
-#define _BK_INFO_H
+#ifndef BK_INFO_H
+#define BK_INFO_H
 
 #include "resources/animation.h"
 
@@ -16,4 +16,4 @@ typedef struct bk_info_t {
 void bk_info_create(bk_info *info, void *src, int id);
 void bk_info_free(bk_info *info);
 
-#endif // _BK_INFO_H
+#endif // BK_INFO_H

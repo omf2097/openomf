@@ -1,5 +1,5 @@
-#ifndef _CONSOLE_TYPE_H
-#define _CONSOLE_TYPE_H
+#ifndef CONSOLE_TYPE_H
+#define CONSOLE_TYPE_H
 
 #include <SDL.h>
 #include "game/protos/scene.h"
@@ -32,4 +32,4 @@ typedef struct command_t {
 // Console State
 extern console *con;
 
-#endif // _CONSOLE_TYPE_H
+#endif // CONSOLE_TYPE_H

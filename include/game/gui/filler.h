@@ -1,8 +1,8 @@
-#ifndef _FILLER_H
-#define _FILLER_H
+#ifndef FILLER_H
+#define FILLER_H
 
 #include "game/gui/component.h"
 
 component* filler_create();
 
-#endif // _FILLER_H
+#endif // FILLER_H

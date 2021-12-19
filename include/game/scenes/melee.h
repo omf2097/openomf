@@ -1,8 +1,8 @@
-#ifndef _MELEE_H
-#define _MELEE_H
+#ifndef MELEE_H
+#define MELEE_H
 
 #include "game/protos/scene.h"
 
 int melee_create(scene *scene);
 
-#endif // _MELEE_H
+#endif // MELEE_H

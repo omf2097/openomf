@@ -9,25 +9,25 @@
 
 #include "formats/palette.h"
 
-#ifndef _SD_ALTPAL_H
-#define _SD_ALTPAL_H
+#ifndef ALTPAL_H
+#define ALTPAL_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define SD_ALTPALS_PALETTES 11 ///< Maximum amount of alternate palettes (technical limitation)
+#define ALTPALS_PALETTES 11 ///< Maximum amount of alternate palettes (technical limitation)
 
 /*! \brief Alternate palettes
  *
  * A simple list of alternate palettes.
  */
 typedef struct {
-    palette palettes[SD_ALTPALS_PALETTES]; ///< List of palettes
-} sd_altpal_file;
+    palette palettes[ALTPALS_PALETTES]; ///< List of palettes
+} altpal_file;
 
 // globals, yay
-extern sd_altpal_file *altpals;
+extern altpal_file *altpals;
 
 int altpals_init();
 void altpals_close();
@@ -41,12 +41,12 @@ void altpals_close();
  *
  * \param ap Altpal struct pointer
  */
-int sd_altpal_create(sd_altpal_file *ap);
+int altpal_create(altpal_file *ap);
 
 /*! \brief Load altpals structure from file.
  *
- * Loads the given file to memory. The structure must be initialized with sd_altpal_create()
- * before using this function. Loading to a previously loaded or filled sd_altpal_file structure
+ * Loads the given file to memory. The structure must be initialized with altpal_create()
+ * before using this function. Loading to a previously loaded or filled altpal_file structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for reading.
@@ -55,12 +55,12 @@ int sd_altpal_create(sd_altpal_file *ap);
  * \param ap Altpal struct pointer
  * \param filename Filename to load from.
  */
-int sd_altpals_load(sd_altpal_file *ap, const char *filename);
+int altpals_load(altpal_file *ap, const char *filename);
 
 /*! \brief Save altpals structure to file.
  *
  * Saves the given altpal file from memory to a file on disk. The structure must be at
- * least initialized by using sd_altpal_create() before running this.
+ * least initialized by using altpal_create() before running this.
  *
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_SUCCESS Success.
@@ -68,7 +68,7 @@ int sd_altpals_load(sd_altpal_file *ap, const char *filename);
  * \param ap Altpal struct pointer
  * \param filename Filename to save into.
  */
-int sd_altpals_save(sd_altpal_file *ap, const char *filename);
+int altpals_save(altpal_file *ap, const char *filename);
 
 /*! \brief Free alternate palette structure
  *
@@ -77,10 +77,10 @@ int sd_altpals_save(sd_altpal_file *ap, const char *filename);
  *
  * \param ap Altpal struct pointer
  */
-void sd_altpal_free(sd_altpal_file *ap);
+void altpal_free(altpal_file *ap);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // _SD_ALTPAL_H
+#endif // ALTPAL_H

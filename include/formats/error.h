@@ -8,8 +8,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_ERROR_H
-#define _SD_ERROR_H
+#ifndef SD_ERROR_H
+#define SD_ERROR_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,4 +52,4 @@ const char* sd_get_error(int errorcode);
 }
 #endif
 
-#endif // _SD_ERROR_H
+#endif // SD_ERROR_H

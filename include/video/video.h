@@ -1,5 +1,5 @@
-#ifndef _VIDEO_H
-#define _VIDEO_H
+#ifndef VIDEO_H
+#define VIDEO_H
 
 #include <stdbool.h>
 
@@ -104,4 +104,4 @@ void video_force_pal_refresh();
 void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount);
 screen_palette* video_get_pal_ref();
 
-#endif // _VIDEO_H
+#endif // VIDEO_H

@@ -1,5 +1,5 @@
-#ifndef _SINK_H
-#define _SINK_H
+#ifndef SINK_H
+#define SINK_H
 
 #include "utils/hashmap.h"
 #include "audio/stream.h"
@@ -53,4 +53,4 @@ void* sink_get_userdata(audio_sink *sink);
 void sink_set_close_cb(audio_sink *sink, sink_close_cb cbfunc);
 void sink_set_format_stream_cb(audio_sink *sink, sink_format_stream_cb cbfunc);
 
-#endif // _SINK_H
+#endif // SINK_H

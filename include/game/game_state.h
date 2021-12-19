@@ -1,5 +1,5 @@
-#ifndef _GAME_STATE_H
-#define _GAME_STATE_H
+#ifndef GAME_STATE_H
+#define GAME_STATE_H
 
 #include <SDL.h>
 #include "utils/vector.h"
@@ -52,4 +52,4 @@ void game_state_del_animation(game_state *gs, int anim_id);
 void game_state_get_projectiles(game_state *gs, vector *obj_proj);
 void game_state_clear_hazards_projectiles(game_state *gs);
 
-#endif // _GAME_STATE_H
+#endif // GAME_STATE_H

@@ -1,5 +1,5 @@
-#ifndef _MENU_H
-#define _MENU_H
+#ifndef MENU_H
+#define MENU_H
 
 #include "video/surface.h"
 #include "game/gui/component.h"
@@ -41,4 +41,4 @@ void* menu_get_userdata(const component *menu);
 void menu_set_free_cb(component *menu, menu_free_cb cb);
 void menu_set_tick_cb(component *menu, menu_tick_cb cb);
 
-#endif // _MENU_H
+#endif // MENU_H

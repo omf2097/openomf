@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef _SD_SETUP_H
-#define _SD_SETUP_H
+#ifndef SD_SETUP_H
+#define SD_SETUP_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -81,4 +81,4 @@ int sd_setup_load(sd_setup_file *setup, const char *file);
 }
 #endif
 
-#endif // _SD_SETUP_H
+#endif // SD_SETUP_H
