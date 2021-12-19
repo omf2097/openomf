@@ -7,8 +7,8 @@
  * \author Tuomas Virtanen
  */
 
-#ifndef COL_COORD_H
-#define COL_COORD_H
+#ifndef COLCOORD_H
+#define COLCOORD_H
 
 #include <stdint.h>
 
@@ -34,4 +34,4 @@ typedef struct {
 }
 #endif
 
-#endif // COL_COORD_H
+#endif // COLCOORD_H
