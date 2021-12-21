@@ -268,10 +268,7 @@ if(WIN32)
     # This way we have an "openomf/" root directory inside the zip file.
     install(TARGETS openomf RUNTIME DESTINATION openomf/ COMPONENT Binaries)
     install(FILES resources/openomf.bk DESTINATION openomf/resources/ COMPONENT Data)
-    install(FILES README.md INSTALL.md LICENSE resources/icons/openomf.ico resources/icons/openomf.png
-        DESTINATION openomf/
-        COMPONENT Data
-    )
+    install(FILES README.md INSTALL.md LICENSE DESTINATION openomf/ COMPONENT Data)
 else()
     # On unixy systems, follow standard.
     install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
