@@ -174,8 +174,13 @@ include_directories(${COREINCS})
 add_library(openomf_core OBJECT ${OPENOMF_SRC})
 set(CORELIBS openomf_core ${CORELIBS})
 
+# Set icon for windows executable
+if(WIN32)
+    SET(ICON_RESOURCE "resources/icons/openomf.rc")
+endif()
+
 # Build the game binary
-add_executable(openomf src/main.c src/engine.c)
+add_executable(openomf src/main.c src/engine.c ${ICON_RESOURCE})
 
 # Build tools if requested
 if(USE_TOOLS)
@@ -263,14 +268,14 @@ if(WIN32)
     # This way we have an "openomf/" root directory inside the zip file.
     install(TARGETS openomf RUNTIME DESTINATION openomf/ COMPONENT Binaries)
     install(FILES resources/openomf.bk DESTINATION openomf/resources/ COMPONENT Data)
-    install(FILES README.md INSTALL.md LICENSE resources/openomf_icon.ico resources/openomf_icon.png
+    install(FILES README.md INSTALL.md LICENSE resources/icons/openomf.ico resources/icons/openomf.png
         DESTINATION openomf/
         COMPONENT Data
     )
 else()
     # On unixy systems, follow standard.
     install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
-    install(FILES resources/openomf.bk resources/openomf_icon.png
+    install(FILES resources/openomf.bk resources/icons/openomf.png
         DESTINATION share/games/openomf/
         COMPONENT Data
     )
