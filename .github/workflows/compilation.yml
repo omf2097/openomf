@@ -9,7 +9,40 @@ on:
     types: [run_build]
 
 jobs:
+  unittest:
+    name: Run unit-tests on ${{ matrix.config.name }}
+    runs-on: ubuntu-latest
+    env:
+      CC: ${{ matrix.config.cc }}
+
+    strategy:
+      matrix:
+        config:
+        - { name: "gcc 11",   cc: gcc-11   }
+        - { name: "clang 11", cc: clang-11 }
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Ubuntu Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install cmake cmake-data libargtable2-dev libcunit1-dev \
+          libopenal-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev \
+          ${{ matrix.config.cc }}
+
+    - name: Build tests
+      run: |
+        mkdir build-test && cd build-test
+        cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On -DUSE_TOOLS=On -Wno-dev ..
+        make -j2
+
+    - name: Run tests
+      run: cd build-test && make test ARGS="-V"
+
+
   build:
+    needs: unittest
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
@@ -41,8 +74,8 @@ jobs:
       if: matrix.config.type == 'ubuntu'
       run: |
         sudo apt-get update
-        sudo apt-get -y install cmake libargtable2-dev libcunit1-dev libopenal-dev libconfuse-dev libenet-dev \
-          libsdl2-dev libxmp-dev libpng-dev
+        sudo apt-get -y install cmake libargtable2-dev libcunit1-dev libopenal-dev \
+          libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
 
     - name: Install Windows Dependencies
       if: matrix.config.type == 'windows'
@@ -57,14 +90,6 @@ jobs:
       run: |
         brew update
         brew install cmake argtable cunit openal-soft confuse enet sdl2 libxmp libpng
-
-    - name: Run Tests
-      if: matrix.config.type != 'windows'
-      run: |
-        mkdir build-test && cd build-test
-        cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On -DUSE_TOOLS=On -Wno-dev ..
-        make -j2
-        make test ARGS="-V"
 
     - name: Generate Unixy Release
       if: matrix.config.type != 'windows'
