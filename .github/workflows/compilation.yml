@@ -22,15 +22,9 @@ jobs:
             type: windows
           }
         - {
-            name: "Macos latest",
+            name: "MacOS latest",
             os: macos-latest,
             tag: macos-latest,
-            type: mac
-          }
-        - {
-            name: "Macos 11",
-            os: macos-11,
-            tag: macos-11,
             type: mac
           }
         - {
