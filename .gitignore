@@ -9,6 +9,7 @@ build/*.conf
 build/CMakeFiles/
 build/music/
 build/
+mingw_build/
 *.sw[klmnop]
 .idea
 .vscode

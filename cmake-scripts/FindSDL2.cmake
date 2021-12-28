@@ -295,6 +295,7 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(SDL2
                                   VERSION_VAR SDL2_VERSION_STRING)
 
 if(SDL2MAIN_LIBRARY)
+  set(FPHSA_NAME_MISMATCHED 1)
   FIND_PACKAGE_HANDLE_STANDARD_ARGS(SDL2main
                                     REQUIRED_VARS SDL2MAIN_LIBRARY SDL2_INCLUDE_DIR
                                     VERSION_VAR SDL2_VERSION_STRING)
@@ -319,10 +320,8 @@ if(SDL2_FOUND)
                           IMPORTED_LOCATION "${SDL2_LIBRARY}"
                           INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}")
 
-      # For threads, as mentioned Apple doesn't need this.
-      # For more details, please see above.
-      set_property(TARGET SDL2::Core APPEND PROPERTY
-                   INTERFACE_LINK_LIBRARIES Threads::Threads)
+    set_property(TARGET SDL2::Core APPEND PROPERTY
+                  INTERFACE_LINK_LIBRARIES Threads::Threads)
   endif()
 
   # SDL2::Main target
