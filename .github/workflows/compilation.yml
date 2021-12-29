@@ -9,6 +9,9 @@ on:
     types: [run_build]
 
 jobs:
+
+  # Run unittests on modern-ish versions of gcc and clang.
+  # -----------------------------------------------------------------------------------------------
   unittest:
     name: Run unit-tests on ${{ matrix.config.name }}
     runs-on: ubuntu-latest
@@ -38,69 +41,121 @@ jobs:
         make -j2
 
     - name: Run tests
-      run: cd build-test && make test ARGS="-V"
+      run: |
+        cd build-test
+        make test ARGS="-V"
 
-
-  build:
+  # Build ubuntu package, release artifact and update "latest" release if necessary.
+  # -----------------------------------------------------------------------------------------------
+  build_ubuntu:
     needs: unittest
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      matrix:
-        config:
-        - {
-            name: "Windows MingW64",
-            os: ubuntu-latest,
-            tag: win-x86_64,
-            type: windows
-          }
-        - {
-            name: "MacOS latest",
-            os: macos-latest,
-            tag: macos-latest,
-            type: mac
-          }
-        - {
-            name: "Ubuntu latest",
-            os: ubuntu-latest,
-            tag: ubuntu-x86_64,
-            type: ubuntu
-          }
+
+    name: Build ubuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
     - name: Install Ubuntu Dependencies
-      if: matrix.config.type == 'ubuntu'
       run: |
         sudo apt-get update
         sudo apt-get -y install cmake libargtable2-dev libcunit1-dev libopenal-dev \
           libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
 
-    - name: Install Windows Dependencies
-      if: matrix.config.type == 'windows'
-      run: |
-        sudo apt-get update
-        sudo apt-get -y install mingw-w64 unzip
-        wget -q https://github.com/omf2097/openomf-win-build/archive/refs/heads/main.zip
-        unzip -q main.zip && rm main.zip
-
-    - name: Install Mac Dependencies
-      if: matrix.config.type == 'mac'
-      run: |
-        brew update
-        brew install cmake argtable cunit openal-soft confuse enet sdl2 libxmp libpng
-
-    - name: Generate Unixy Release
-      if: matrix.config.type != 'windows'
+    - name: Generate Release
       run: |
         mkdir build-release && cd build-release
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release -Wno-dev ..
         make -j2
         make install
     
+    - name: Get short SHA
+      id: slug
+      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+
+    - name: Generate TGZ package
+      run: tar cvfz ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz -C build-release/release/ .
+
+    - name: Upload TGZ artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64
+        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz
+
+    - name: Generate DEB package
+      uses: jiro4989/build-deb-action@v2
+      with:
+        package: openomf
+        package_root: build-release/release
+        maintainer: ${{ github.repository_owner }}
+        version: 0.6.6-${{ steps.slug.outputs.sha8 }}
+        arch: 'amd64'
+        depends: 'libargtable2, libopenal, libconfuse, libenet, libsdl2, libxmp, libpng'
+        desc: 'One Must Fall 2097 Remake'
+
+    - name: Upload DEB artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_deb_amd64
+        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_amd64.deb
+
+  # Build macos package, release artifact and update "latest" release if necessary.
+  # -----------------------------------------------------------------------------------------------
+  build_macos:
+    needs: unittest
+
+    name: Build macos-11
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Mac Dependencies
+      run: |
+        brew update
+        brew install cmake argtable cunit openal-soft confuse enet sdl2 libxmp libpng
+
+    - name: Generate Release
+      run: |
+        mkdir build-release && cd build-release
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release -Wno-dev ..
+        make -j3
+        make install
+    
+    - name: Get short SHA
+      id: slug
+      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+
+    - name: Generate ZIP package
+      run: |
+        cd build-release/release
+        zip -r ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos11.zip .
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos11
+        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos11.zip
+
+  # Build windows package, release artifact and update "latest" release if necessary.
+  # -----------------------------------------------------------------------------------------------
+  build_windows:
+    needs: unittest
+
+    name: Build windows-amd64
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install mingw-w64 unzip
+        wget -q https://github.com/omf2097/openomf-win-build/archive/refs/heads/main.zip
+        unzip -q main.zip && rm main.zip
+
     - name: Generate Windows Release
-      if: matrix.config.type == 'windows'
       run: |
         mkdir build-release && cd build-release
         cmake -DCMAKE_BUILD_TYPE=Release \
@@ -120,27 +175,48 @@ jobs:
       id: slug
       run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
 
-    - name: Generate DEB package
-      if: matrix.config.type == 'ubuntu'
-      uses: jiro4989/build-deb-action@v2
-      with:
-        package: openomf
-        package_root: build-release/release
-        maintainer: ${{ github.repository_owner }}
-        version: 0.6.6-${{ steps.slug.outputs.sha8 }}
-        arch: 'amd64'
-        depends: 'libargtable2, libopenal, libconfuse, libenet, libsdl2, libxmp, libpng'
-        desc: 'One Must Fall 2097 Remake'
-    
+    - name: Generate ZIP package
+      run: |
+        cd build-release/release
+        zip -r ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64.zip openomf
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: openomf-${{ steps.slug.outputs.sha8 }}-${{ matrix.config.tag }}
-        path: build-release/release
-    
-    - name: Upload artifacts
-      if: matrix.config.type == 'ubuntu'
-      uses: actions/upload-artifact@v2
+        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64
+        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64.zip
+
+
+  # Create a "latest" release
+  # -----------------------------------------------------------------------------------------------
+  make_release:
+    needs: [build_windows, build_macos, build_ubuntu]
+    if: github.ref == 'refs/tags/master'
+
+    name: Make "latest" release
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/download-artifact@v2
       with:
-        name: openomf-${{ steps.slug.outputs.sha8 }}-${{ matrix.config.tag }}-deb
-        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_amd64.deb
+        path: artifacts/
+    
+    - name: Extract ubuntu releases
+      run: |
+        mkdir upload
+        shopt -s globstar
+        for file in artifacts/**; do
+          if [ -f "$file" ]; then
+            cp "$file" "${GITHUB_WORKSPACE}/upload/"
+          fi
+        done
+
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "upload/*"
+        body: "Latest release from master"
+        name: Latest
+        tag: latest
+        allowUpdates: true
+        prerelease: true
+        token: ${{ secrets.GITHUB_TOKEN }}
