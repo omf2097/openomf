@@ -1,18 +1,18 @@
 # OpenOMF Installation
 
-Note! If you wish to compile OpenOMF from sources yourself, begin from step 2.
-If you are however downloading a binary release package, you should skip step 2.
+## Installation from packages
 
-## 1. Installation from packages
+Latest experimental binaries for windows, macos and ubuntu are available at
+https://github.com/omf2097/openomf/releases/tag/latest . These binaries may
+not always work correctly, but they will be following the git status very 
+closely. So, if you want to test the latest features, this is for you.
 
-### Latest experimental binaries
+Official releases are (somewhat) stable, but don't necessary come with all 
+the latest bells and whistles. However, if you wish to try them, they will
+be available at https://github.com/omf2097/openomf/releases . Installation
+instructions are also available there.
 
-Latest experimental binaries for windows and debian (ubuntu) are available at
-https://buildbot.openomf.org/artifacts/ . These binaries may not always work
-correctly, but they will be following the git status very closely. So, if you
-with to test the latest features, this is for you!
-
-#### Windows
+### Windows
 
 1. Download an appropriate zip file. For 64bit computers, win64 package is available.
    If you do not know which package to download, get the "-win32.zip" version.
@@ -24,7 +24,7 @@ with to test the latest features, this is for you!
    Note that this is not necessary for running the game.
 5. Start the game by running openomf.exe.
 
-#### Debian
+### Unbuntu
 
 1. Download an appropriate .deb file for your architecture (NOTE! 32bit not currently available!).
 2. Install the package. You can either run dpkg -i <packagefile> or do it by using graphical tools
@@ -33,25 +33,13 @@ with to test the latest features, this is for you!
 3. Install the game resources. Please see step 3. of this guide for this.
 4. Start the game by running ./openomf on command line.
 
-### Official releases
+## Compiling from source
 
-Official releases are (somewhat) stable, but don't necessary come with all the latest bells and
-whistles. However, if you wish to try them, they will be available at
-https://github.com/omf2097/openomf/releases . Installation instructions are also available there.
-
-## 2. Compiling from source
+Compiling from source should be your last option, unless you know what you are doing!
 
 ### Dependencies
 
-#### Compiler
-
-Use at least GCC 4.9 or Clang 4. MSVC is not supported at this time.
-
-Note! For debug builds, GCC 4.9 or later is recommended. With later GCC versions you get better
-error messages and stricted code quality checks, so if you're doing development, please use
-the latest compiler version available to you.
-
-#### Libraries
+Use at least GCC 9 or Clang 10. MSVC is not supported at this time.
 
 Required:
 * SDL2 (>=2.0.5): http://www.libsdl.org/download-2.0.php
@@ -71,25 +59,15 @@ Optional:
 * libogg: https://www.xiph.org/downloads/
 * libdumb (>=2.0.0): https://bitbucket.org/kode54/dumb (for module music)
 
-#### Debian
 
 On debian, it is possible to pull some libraries using apt-get.
 ```
-apt-get install libsdl2-dev libopenal-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
+apt-get install libsdl2-dev libopenal-dev libpng-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
 ```
 
-If you wish to use ogg vorbis and png support, you may also run
+On mac, you can use brew:
 ```
-apt-get install libogg-dev libvorbis-dev libpng-dev
-```
-
-#### Mac OS X (Homebrew):
-```
-brew install sdl2
-brew install confuse
-brew install enet
-brew install gettext
-brew install libxmp
+brew install argtable openal-soft confuse enet sdl2 libxmp libpng
 ```
 
 ### Acquiring the sources
@@ -123,6 +101,7 @@ Some useful CMake flags:
 | CMAKE_BUILD_TYPE          | Chooses between build types             | -/Debug/Release | -       |
 | CMAKE_INSTALL_PREFIX      | Installation path                       | -               | -       |
 | USE_TESTS                 | Compile unittests                       | On/Off          | Off     |
+| USE_TOOLS                 | Compile dev tools                       | On/Off          | Off     |
 | USE_OGGVORBIS             | Selects Vorbis support                  | On/Off          | Off     |
 | USE_OPENAL                | Selects OpenAL support                  | On/Off          | On      |
 | USE_DUMB                  | Selects libdumb support                 | On/Off          | Off     |
@@ -132,13 +111,13 @@ Ogg Vorbis support is required if you wish to replace original OMF soundtracks w
 Otherwise the switch is optional.
 
 For music playback, select at least one (or more) of the module player libraries. 
-Available: libdumb, libxmp. Libxmp is recommended.
+XMP is recommended due to ease of installation, but DUMB will also work just fine.
 
 It is technically possible to select more than one audio sink, or none. Currently only one
 audio sink is supported (OpenAL). If all audio sinks are off, then no audio will be played.
 This will also of course reduce cpu usage a bit.
 
-## 3. Data Files
+## Data Files
 
 OpenOMF loads the original data files from the original OMF:2097 game.
 Since One Must Fall 2079 is freeware, the files are obtainable for free from
@@ -159,7 +138,7 @@ You can override these default paths by setting the OPENOMF_RESOURCE_DIR environ
 variable to an absolute directory. Plugins have a similiar environment variable called
 OPENOMF_PLUGIN_DIR.
 
-## 4. Play the game!
+## Play the game!
 
 Start the game by running the main binary. If there are problems, please contact us by either
 making an issue ticket, or at #omf @ freenode in IRC (mode details in the

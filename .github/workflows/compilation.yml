@@ -37,7 +37,7 @@ jobs:
     - name: Build tests
       run: |
         mkdir build-test && cd build-test
-        cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On -DUSE_TOOLS=On -Wno-dev ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On -DUSE_TOOLS=On ..
         make -j2
 
     - name: Run tests
@@ -65,7 +65,7 @@ jobs:
     - name: Generate Release
       run: |
         mkdir build-release && cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release -Wno-dev ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release ..
         make -j2
         make install
     
@@ -118,7 +118,7 @@ jobs:
     - name: Generate Release
       run: |
         mkdir build-release && cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release -Wno-dev ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release ..
         make -j3
         make install
     
@@ -165,7 +165,6 @@ jobs:
               -DCMAKE_INCLUDE_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/include/" \
               -DCMAKE_LIBRARY_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/lib/" \
               -DCMAKE_FIND_ROOT_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
-              -Wno-dev \
               "${GITHUB_WORKSPACE}"
         make -j2
         make install
