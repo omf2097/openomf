@@ -191,7 +191,7 @@ jobs:
   # -----------------------------------------------------------------------------------------------
   make_release:
     needs: [build_windows, build_macos, build_ubuntu]
-    if: github.ref == 'refs/tags/master'
+    if: github.ref == 'refs/heads/master'
 
     name: Make "latest" release
     runs-on: ubuntu-latest
