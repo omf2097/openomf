@@ -30,14 +30,14 @@ typedef struct newsroom_local_t {
     dialog continue_dialog;
 } newsroom_local;
 
-char *object_pronoun(int sex) {
+const char* object_pronoun(int sex) {
   if (sex == PILOT_SEX_MALE) {
     return "Him";
   }
   return "Her";
 }
 
-char *subject_pronoun(int sex) {
+const char* subject_pronoun(int sex) {
   if (sex == PILOT_SEX_MALE) {
     return "He";
   }

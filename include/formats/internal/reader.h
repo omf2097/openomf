@@ -44,7 +44,7 @@ int sd_read_line(const sd_reader *reader, char *buffer, int maxlen);
 /**
   * Compare following nbytes amount of data and given buffer. Does not advance file pointer.
   */
-int sd_match(sd_reader *reader, char *buf, unsigned int nbytes);
+int sd_match(sd_reader *reader, const char *buf, unsigned int nbytes);
 
 /**
   * Skip following nbytes amount of data.
