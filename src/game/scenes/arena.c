@@ -614,6 +614,7 @@ void arena_har_hook(har_event event, void *data) {
             arena_maybe_turn_har(event.player_id, scene);
             break;
         case HAR_EVENT_TAKE_HIT:
+        case HAR_EVENT_TAKE_HIT_PROJECTILE:
             if(af_get_move(har2->af_data, obj_har2->cur_animation->id)->category != CAT_CLOSE) {
                 arena_maybe_turn_har(event.player_id, scene);
             }

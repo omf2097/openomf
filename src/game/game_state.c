@@ -773,7 +773,8 @@ void _setup_ai(game_state *gs, int player_id) {
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);
 
-    ai_controller_create(ctrl, settings_get()->gameplay.difficulty);
+    sd_pilot *pilot = game_player_get_pilot(player);
+    ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, player->pilot_id);
 
     game_player_set_ctrl(player, ctrl);
     game_player_set_selectable(player, 0);
@@ -821,7 +822,8 @@ void game_state_init_demo(game_state *gs) {
         game_player *player = game_state_get_player(gs, i);
         controller *ctrl = omf_calloc(1, sizeof(controller));
         controller_init(ctrl);
-        ai_controller_create(ctrl, 4);
+        sd_pilot *pl = game_player_get_pilot(player);
+        ai_controller_create(ctrl, 4, pl, player->pilot_id);
         game_player_set_ctrl(player, ctrl);
         game_player_set_selectable(player, 1);
 

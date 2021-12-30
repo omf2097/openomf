@@ -157,6 +157,11 @@ int str_equal(const str *string, const str *string_b) {
     return 1;
 }
 
+int str_equal_c(const str *string, char *compare_char) {
+    const char *compare_string = str_c(string);
+    return strcmp(compare_char, compare_string);
+}
+
 char str_at(const str *string, size_t pos) {
     if(pos >= str_size(string)) {
         return 0;

@@ -103,8 +103,9 @@ void har_event_attack(har *h, af_move *move) {
     fire_hooks(h, event);
 }
 
-void har_event_enemy_block(har *h, af_move *move) {
+void har_event_enemy_block(har *h, af_move *move, bool projectile) {
     har_event event;
+    event.type = projectile ? HAR_EVENT_ENEMY_BLOCK_PROJECTILE : HAR_EVENT_ENEMY_BLOCK;
     event.type = HAR_EVENT_ENEMY_BLOCK;
     event.player_id = h->player_id;
     event.move = move;
@@ -112,19 +113,27 @@ void har_event_enemy_block(har *h, af_move *move) {
     fire_hooks(h, event);
 }
 
-
-void har_event_take_hit(har *h, af_move *move) {
+void har_event_block(har *h, af_move *move, bool projectile) {
     har_event event;
-    event.type = HAR_EVENT_TAKE_HIT;
+    event.type = projectile ? HAR_EVENT_BLOCK_PROJECTILE : HAR_EVENT_BLOCK;
     event.player_id = h->player_id;
     event.move = move;
 
     fire_hooks(h, event);
 }
 
-void har_event_land_hit(har *h, af_move *move) {
+void har_event_take_hit(har *h, af_move *move, bool projectile) {
     har_event event;
-    event.type = HAR_EVENT_LAND_HIT;
+    event.type = projectile ? HAR_EVENT_TAKE_HIT_PROJECTILE : HAR_EVENT_TAKE_HIT;
+    event.player_id = h->player_id;
+    event.move = move;
+
+    fire_hooks(h, event);
+}
+
+void har_event_land_hit(har *h, af_move *move, bool projectile) {
+    har_event event;
+    event.type = projectile ? HAR_EVENT_LAND_HIT_PROJECTILE : HAR_EVENT_LAND_HIT;
     event.player_id = h->player_id;
     event.move = move;
 
@@ -143,6 +152,14 @@ void har_event_hazard_hit(har *h, bk_info *info) {
 void har_event_stun(har *h) {
     har_event event;
     event.type = HAR_EVENT_STUN;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
+void har_event_enemy_stun(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_ENEMY_STUN;
     event.player_id = h->player_id;
 
     fire_hooks(h, event);
@@ -448,6 +465,20 @@ void har_move(object *obj) {
                 har_action_hook(obj, ACT_FLUSH);
                 har_event_land(h);
                 har_floor_landing_effects(obj);
+
+                // make sure HAR's are facing each other
+                object *obj_enemy = game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har;
+                if (object_get_direction(obj) == object_get_direction(obj_enemy)) {
+                    vec2i pos = object_get_pos(obj);
+                    vec2i pos_enemy = object_get_pos(obj_enemy);
+                    if (pos.x > pos_enemy.x) {
+                        object_set_direction(obj, OBJECT_FACE_LEFT);
+                    } else {
+                        object_set_direction(obj, OBJECT_FACE_RIGHT);
+                    }
+
+                    object_set_direction(obj_enemy, object_get_direction(obj) * -1);
+                }
             /*}*/
         } else if (h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.2f;
@@ -956,7 +987,8 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         if (har_is_blocking(b, move) &&
                 // earthquake smash is unblockable
                 !player_frame_isset(obj_a, "ue")) {
-            har_event_enemy_block(a, move);
+            har_event_enemy_block(a, move, false);
+            har_event_block(b, move, false);
             har_block(obj_b, hit_coord);
             if (b->is_wallhugging) {
                 a->flinching = 1;
@@ -987,8 +1019,8 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         }
 
 
-        har_event_take_hit(b, move);
-        har_event_land_hit(a, move);
+        har_event_take_hit(b, move, false);
+        har_event_land_hit(a, move, false);
 
         if (b->state == STATE_RECOIL || b->is_wallhugging) {
             // back the attacker off a little
@@ -1052,7 +1084,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     if(intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
         af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
         if (har_is_blocking(h, move)) {
-            har_event_enemy_block(other, move);
+            har_event_enemy_block(other, move, true);
+            har_event_block(h, move, true);
             har_block(o_har, hit_coord);
             return;
         }
@@ -1082,8 +1115,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             har_take_damage(o_har, &move->footer_string, move->damage);
         }
 
-        har_event_take_hit(h, move);
-        har_event_land_hit(other, move);
+        har_event_take_hit(h, move, true);
+        har_event_land_hit(other, move, true);
 
         har_spawn_scrap(o_har, hit_coord, move->scrap_amount);
         h->damage_received = 1;
@@ -1934,6 +1967,14 @@ int har_act(object *obj, int act_type) {
         return 1;
     }
 
+    // if enemy is airborn we fire extra walk event to check whether we need to turn
+    // fixes some rare behaviour where you cannot kick-counter someone who jumps over you
+    int opp_id = h->player_id ? 0 : 1;
+    object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
+    if(object_is_airborne(opp)) {
+        har_event_walk(h, 1);
+    }
+
     return 0;
 }
 
@@ -1965,6 +2006,11 @@ void har_finished(object *obj) {
         h->stun_timer = 0;
         har_set_ani(obj, ANIM_STUNNED, 1);
         har_event_stun(h);
+
+        // fire enemy stunned event
+        object *enemy_obj = game_player_get_har(game_state_get_player(obj->gs, !h->player_id));
+        har *enemy_h = object_get_userdata(enemy_obj);
+        har_event_enemy_stun(enemy_h);
     } else if (h->state == STATE_RECOIL) {
         har_event_recover(h);
         h->state = STATE_STANDING;
