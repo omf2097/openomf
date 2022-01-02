@@ -6,7 +6,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-audio_sink *_global_sink = NULL;
+static audio_sink *_global_sink = NULL;
 
 struct sink_info_t {
     int (*sink_init_fn)(audio_sink *sink);

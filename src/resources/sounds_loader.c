@@ -7,7 +7,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-sd_sound_file *sound_data = NULL;
+static sd_sound_file *sound_data = NULL;
 
 int sounds_loader_init() {
     // Get filename
