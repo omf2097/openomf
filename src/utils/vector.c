@@ -18,15 +18,29 @@ void vector_init(vector *vec) {
 
 void vector_create(vector *vec, unsigned int block_size) {
     vec->block_size = block_size;
+    vec->free_cb = NULL;
+    vector_init(vec);
+}
+
+void vector_create_cb(vector *vec, unsigned int block_size, vector_free_cb free_cb) {
+    vec->block_size = block_size;
+    vec->free_cb = free_cb;
     vector_init(vec);
 }
 
 void vector_clear(vector *vec) {
+    void *dst;
+    if(vec->free_cb) {
+        for(unsigned int i = 0; i < vec->blocks; i++) {
+            dst = vec->data + i * vec->block_size;
+            vec->free_cb(dst);
+        }
+    }
     vec->blocks = 0;
 }
 
 void vector_free(vector *vec) {
-    vec->blocks = 0;
+    vector_clear(vec);
     vec->reserved = 0;
     vec->block_size = 0;
     omf_free(vec->data);
@@ -90,6 +104,9 @@ int vector_delete(vector *vec, iterator *iter) {
         void *dst = vec->data + real * vec->block_size;
         void *src = vec->data + (real + 1) * vec->block_size;
         unsigned int size = (vec->blocks - 1 - real) * vec->block_size;
+        if(vec->free_cb) {
+            vec->free_cb(dst);
+        }
         memmove(dst, src, size);
 
         // If we are iterating forwards, moving an entry will hop iterator forwards by two.
