@@ -3,7 +3,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-unsigned int _sink_global_id = 1;
+static unsigned int _sink_global_id = 1;
 
 unsigned int gid_gen() {
     return _sink_global_id++;

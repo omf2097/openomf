@@ -42,7 +42,7 @@ enum {
     TICK_STATIC,
 };
 
-void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec);
+static void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec);
 
 // How long the scene waits after order to move to another scene
 // Used for crossfades
@@ -791,7 +791,7 @@ int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offs
     return res;
 }
 
-void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec) {
+static void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec) {
     controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
     controller_init(ctrl);

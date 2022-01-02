@@ -6,8 +6,8 @@
 #include "utils/array.h"
 #include "utils/log.h"
 
-array language_strings;
-sd_language *language;
+static array language_strings;
+static sd_language *language;
 
 int lang_init() {
     // Get filename

@@ -24,9 +24,9 @@
 #include "utils/compat.h"
 
 #ifndef SHA1_HASH
-    const char *git_sha1_hash = "";
+    static const char *git_sha1_hash = "";
 #else
-    const char *git_sha1_hash = SHA1_HASH;
+    static const char *git_sha1_hash = SHA1_HASH;
 #endif
 
 int main(int argc, char *argv[]) {
