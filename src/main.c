@@ -5,9 +5,6 @@
 #include <stdio.h>
 #include <SDL.h>
 #include <argtable2.h>
-#ifdef USE_DUMB
-#include <dumb.h>
-#endif
 #include <enet/enet.h>
 #include "engine.h"
 #include "utils/log.h"
@@ -227,11 +224,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Init libDumb
-#ifdef USE_DUMB
-    dumb_register_stdfiles();
-#endif // USE_DUMB
-
 #endif // STANDALONE_SERVER
 
     // Init enet
@@ -256,9 +248,6 @@ exit_4:
 exit_3:
     SDL_Quit();
 exit_2:
-#ifdef USE_DUMB
-    dumb_exit();
-#endif
     settings_save();
     settings_free();
 exit_1:
