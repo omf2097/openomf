@@ -81,11 +81,15 @@ void dumb_source_close(audio_source *src) {
     destroy_sample_buffer(local->sig_samples);
     omf_free(local);
     source_set_userdata(src, local);
+    dumb_exit();  // Free libdumb memory
     DEBUG("Libdumb Source: Closed.");
 }
 
 int dumb_source_init(audio_source *src, const char* file, int channels, int freq, int resampler) {
     dumb_source *local = omf_calloc(1, sizeof(dumb_source));
+
+    // Make sure libdumb is initialized
+    dumb_register_stdfiles();
 
     // Load file and initialize renderer
     char *ext = strrchr(file, '.') + 1;
