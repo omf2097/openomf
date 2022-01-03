@@ -361,18 +361,18 @@ int get_enemy_range(const controller *ctrl) {
  */
 bool is_special_move(const af_move *move) {
     if (
-        !str_equal_c(&move->move_string, "K") ||
-        !str_equal_c(&move->move_string, "K1") ||
-        !str_equal_c(&move->move_string, "K2") ||
-        !str_equal_c(&move->move_string, "K3") ||
-        !str_equal_c(&move->move_string, "K4") ||
-        !str_equal_c(&move->move_string, "K6") ||
-        !str_equal_c(&move->move_string, "P") ||
-        !str_equal_c(&move->move_string, "P1") ||
-        !str_equal_c(&move->move_string, "P2") ||
-        !str_equal_c(&move->move_string, "P3") ||
-        !str_equal_c(&move->move_string, "P4") ||
-        !str_equal_c(&move->move_string, "P6")
+        str_equal_c(&move->move_string, "K") ||
+        str_equal_c(&move->move_string, "K1") ||
+        str_equal_c(&move->move_string, "K2") ||
+        str_equal_c(&move->move_string, "K3") ||
+        str_equal_c(&move->move_string, "K4") ||
+        str_equal_c(&move->move_string, "K6") ||
+        str_equal_c(&move->move_string, "P") ||
+        str_equal_c(&move->move_string, "P1") ||
+        str_equal_c(&move->move_string, "P2") ||
+        str_equal_c(&move->move_string, "P3") ||
+        str_equal_c(&move->move_string, "P4") ||
+        str_equal_c(&move->move_string, "P6")
     ) {
         return false;
     }

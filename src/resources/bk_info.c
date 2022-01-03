@@ -9,7 +9,7 @@ void bk_info_create(bk_info *info, void *src, int id) {
     info->load_on_start = sdinfo->load_on_start;
     info->probability = sdinfo->probability;
     info->hazard_damage = sdinfo->hazard_damage / 2;
-    str_create_from_cstr(&info->footer_string, sdinfo->footer_string);
+    str_from_c(&info->footer_string, sdinfo->footer_string);
 }
 
 void bk_info_free(bk_info *info) {

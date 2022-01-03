@@ -9,7 +9,7 @@ void animation_create(animation *ani, void *src, int id) {
     // Copy simple stuff
     ani->id = id;
     ani->start_pos = vec2i_create(sdani->start_x, sdani->start_y);
-    str_create_from_cstr(&ani->animation_string, sdani->anim_string);
+    str_from_c(&ani->animation_string, sdani->anim_string);
 
     // Copy collision coordinates
     vector_create(&ani->collision_coords, sizeof(collision_coord));
@@ -25,7 +25,7 @@ void animation_create(animation *ani, void *src, int id) {
     vector_create(&ani->extra_strings, sizeof(str));
     str tmp_string;
     for(int i = 0; i < sdani->extra_string_count; i++) {
-        str_create_from_cstr(&tmp_string, sdani->extra_strings[i]);
+        str_from_c(&tmp_string, sdani->extra_strings[i]);
         vector_append(&ani->extra_strings, &tmp_string);
         // don't str_free tmp_str here because it will free the pointers
         // inside it, which vector_append does not copy
@@ -44,7 +44,7 @@ animation* create_animation_from_single(sprite *sp, vec2i pos) {
     animation *a = omf_calloc(1, sizeof(animation));
     a->start_pos = pos;
     a->id = -1;
-    str_create_from_cstr(&a->animation_string, "A9999999999");
+    str_from_c(&a->animation_string, "A9999999999");
     vector_create(&a->collision_coords, sizeof(collision_coord));
     vector_create(&a->extra_strings, sizeof(str));
     vector_create(&a->sprites, sizeof(sprite));

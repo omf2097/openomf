@@ -524,10 +524,9 @@ void melee_render(scene *scene) {
 
             // render HAR name (Har1 VS. Har2)
             str vstext;
-            str_create(&vstext);
-            str_printf(&vstext, "%s VS. %s",
-                har_get_name(5*local->row_a + local->column_a),
-                har_get_name(5*local->row_b + local->column_b));
+            str_from_format(&vstext, "%s VS. %s",
+                har_get_name(5 * local->row_a + local->column_a),
+                har_get_name(5 * local->row_b + local->column_b));
             font_render_wrapped_shadowed(&font_small, str_c(&vstext), 80, 107, 150, COLOR_BLACK, TEXT_SHADOW_TOP|TEXT_SHADOW_LEFT);
             str_free(&vstext);
         } else {

@@ -28,8 +28,7 @@ typedef struct {
 static void textslider_render(component *c) {
     textslider *tb = widget_get_obj(c);
     str txt;
-    str_create(&txt);
-    str_printf(&txt, "%s ", tb->text);
+    str_from_format(&txt, "%s ", tb->text);
     if (tb->has_off && *tb->pos == 0) {
         str_append_c(&txt, "OFF");
     } else {
