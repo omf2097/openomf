@@ -2,8 +2,11 @@
 #define SD_WRITER_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
-typedef struct sd_writer_t sd_writer;
+#include "utils/str.h"
+
+typedef struct sd_writer sd_writer;
 
 /**
   * Open file for writing. If file exists, it will be overwritten.
@@ -48,6 +51,15 @@ void sd_write_float(sd_writer *writer, float data);
  * Writes len bytes of filler content
  */
 void sd_write_fill(sd_writer *writer, char content, int len);
+
+/**
+ * @brief Writes a string object
+ * 
+ * @param writer Writer object
+ * @param src Source string
+ * @param null_terminated Should the string be null terminated when written (true = yes);
+ */
+void sd_write_str(sd_writer *writer, str *src, bool null_terminated);
 
 void sd_write_variable_str(sd_writer *w, const char *str);
 

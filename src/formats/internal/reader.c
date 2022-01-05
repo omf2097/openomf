@@ -8,7 +8,7 @@
 #include "formats/internal/reader.h"
 #include "utils/allocator.h"
 
-struct sd_reader_t {
+struct sd_reader {
     FILE *handle;
     long filesize;
     int sd_errno;
@@ -222,4 +222,16 @@ char* sd_read_variable_str(sd_reader *r) {
         sd_read_buf(r, str, len);
     }
     return str;
+}
+
+void sd_read_str(sd_reader *r, str *dst) {
+    uint16_t len = sd_read_uword(r);
+    if(len > 0) {
+        char *buf = omf_calloc(1, len + 1);
+        sd_read_buf(r, buf, len);
+        str_from_c(dst, buf);
+        omf_free(buf);
+    } else {
+        str_create(dst);
+    }
 }
