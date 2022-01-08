@@ -1,21 +1,21 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <SDL.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "game/gui/textinput.h"
 #include "game/gui/widget.h"
+#include "utils/allocator.h"
+#include "utils/compat.h"
+#include "utils/log.h"
 #include "utils/vector.h"
-#include "video/video.h"
 #include "video/color.h"
 #include "video/image.h"
-#include "utils/allocator.h"
-#include "utils/log.h"
-#include "utils/compat.h"
+#include "video/video.h"
 
-#define COLOR_MENU_LINE   color_create(0,0,89,255)
-#define COLOR_MENU_BORDER color_create(0,0,243,255)
-#define COLOR_MENU_BG     color_create(4,4,16,210)
+#define COLOR_MENU_LINE color_create(0, 0, 89, 255)
+#define COLOR_MENU_BORDER color_create(0, 0, 243, 255)
+#define COLOR_MENU_BG color_create(4, 4, 16, 210)
 
 typedef struct {
     char *text;
@@ -32,30 +32,30 @@ static void textinput_render(component *c) {
     textinput *tb = widget_get_obj(c);
     int chars = strlen(tb->buf);
 
-    if(tb->bg_enabled) {
-        video_render_sprite(&tb->sur, c->x + (c->w - tb->sur.w)/2, c->y - 2, BLEND_ALPHA, 0);
+    if (tb->bg_enabled) {
+        video_render_sprite(&tb->sur, c->x + (c->w - tb->sur.w) / 2, c->y - 2, BLEND_ALPHA, 0);
     }
 
-    if(component_is_selected(c)) {
-        if(chars > 0) {
+    if (component_is_selected(c)) {
+        if (chars > 0) {
             tb->tconf.cforeground = color_create(80, 220, 80, 255);
             tb->buf[chars] = '\x7F';
-            tb->buf[chars+1] = 0;
+            tb->buf[chars + 1] = 0;
             text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
             tb->buf[chars] = 0;
         }
-    } else if(component_is_disabled(c)) {
-        if(chars > 0) {
+    } else if (component_is_disabled(c)) {
+        if (chars > 0) {
             tb->tconf.cforeground = color_create(121, 121, 121, 255);
             text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
         }
     } else {
-        if(chars > 0) {
+        if (chars > 0) {
             tb->tconf.cforeground = color_create(0, 121, 0, 255);
             text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
         }
     }
-    if(chars == 0) {
+    if (chars == 0) {
         tb->tconf.cforeground = color_create(121, 121, 121, 255);
         text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->text);
     }
@@ -63,7 +63,7 @@ static void textinput_render(component *c) {
 
 static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
-    if(e->type == SDL_TEXTINPUT) {
+    if (e->type == SDL_TEXTINPUT) {
         textinput *tb = widget_get_obj(c);
         strncat(tb->buf, e->text.text, tb->max_chars - strlen(tb->buf));
         return 0;
@@ -73,14 +73,14 @@ static int textinput_event(component *c, SDL_Event *e) {
         const unsigned char *state = SDL_GetKeyboardState(NULL);
         if (state[SDL_SCANCODE_BACKSPACE] || state[SDL_SCANCODE_DELETE]) {
             if (len > 0) {
-                tb->buf[len-1] = '\0';
+                tb->buf[len - 1] = '\0';
             }
-        } else if(state[SDL_SCANCODE_LEFT]) {
+        } else if (state[SDL_SCANCODE_LEFT]) {
             // TODO move cursor to the left
-        } else if(state[SDL_SCANCODE_RIGHT]) {
+        } else if (state[SDL_SCANCODE_RIGHT]) {
             // TODO move cursor to the right
-        } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
-            if(SDL_HasClipboardText()) {
+        } else if (state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
+            if (SDL_HasClipboardText()) {
                 strncat(tb->buf, SDL_GetClipboardText(), tb->max_chars - strlen(tb->buf));
             }
         }
@@ -91,20 +91,20 @@ static int textinput_event(component *c, SDL_Event *e) {
 
 static void textinput_tick(component *c) {
     textinput *tb = widget_get_obj(c);
-    if(!tb->dir) {
+    if (!tb->dir) {
         tb->ticks++;
     } else {
         tb->ticks--;
     }
-    if(tb->ticks > 120) {
+    if (tb->ticks > 120) {
         tb->dir = 1;
     }
-    if(tb->ticks == 0) {
+    if (tb->ticks == 0) {
         tb->dir = 0;
     }
 }
 
-char* textinput_value(const component *c) {
+char *textinput_value(const component *c) {
     textinput *tb = widget_get_obj(c);
     return tb->buf;
 }
@@ -119,7 +119,7 @@ static void textinput_free(component *c) {
 
 void textinput_set_max_chars(component *c, int max_chars) {
     textinput *tb = widget_get_obj(c);
-    tb->buf = omf_realloc(tb->buf, max_chars+1);
+    tb->buf = omf_realloc(tb->buf, max_chars + 1);
     tb->buf[max_chars] = 0;
     tb->max_chars = max_chars;
 }
@@ -129,7 +129,8 @@ void textinput_enable_background(component *c, int enabled) {
     tb->bg_enabled = enabled;
 }
 
-component* textinput_create(const text_settings *tconf, const char *text, const char *initialvalue) {
+component *textinput_create(const text_settings *tconf, const char *text,
+                            const char *initialvalue) {
     component *c = widget_create();
 
     textinput *tb = omf_calloc(1, sizeof(textinput));
@@ -141,9 +142,9 @@ component* textinput_create(const text_settings *tconf, const char *text, const 
     // Background for field
     int tsize = text_char_width(&tb->tconf);
     image img;
-    image_create(&img, 15*tsize+2, tsize+3);
+    image_create(&img, 15 * tsize + 2, tsize + 3);
     image_clear(&img, COLOR_MENU_BG);
-    image_rect(&img, 0, 0, 15*tsize+1, tsize+2, COLOR_MENU_BORDER);
+    image_rect(&img, 0, 0, 15 * tsize + 1, tsize + 2, COLOR_MENU_BORDER);
     surface_create_from_image(&tb->sur, &img);
     image_free(&img);
 

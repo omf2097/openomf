@@ -1,18 +1,18 @@
-#include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
+#include "formats/error.h"
+#include "formats/internal/memwriter.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-#include "formats/internal/memwriter.h"
-#include "formats/error.h"
 #include "formats/tournament.h"
 #include "utils/allocator.h"
 
 int sd_tournament_create(sd_tournament_file *trn) {
-    if(trn == NULL) {
+    if (trn == NULL) {
         return SD_INVALID_INPUT;
     }
     memset(trn, 0, sizeof(sd_tournament_file));
@@ -20,8 +20,8 @@ int sd_tournament_create(sd_tournament_file *trn) {
 }
 
 static void free_enemies(sd_tournament_file *trn) {
-    for(int i = 0; i < MAX_TRN_ENEMIES; i++) {
-        if(trn->enemies[i]) {
+    for (int i = 0; i < MAX_TRN_ENEMIES; i++) {
+        if (trn->enemies[i]) {
             sd_pilot_free(trn->enemies[i]);
             omf_free(trn->enemies[i]);
         }
@@ -29,21 +29,21 @@ static void free_enemies(sd_tournament_file *trn) {
 }
 
 static void free_locales(sd_tournament_file *trn) {
-    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        if(trn->locales[i]) {
-            if(trn->locales[i]->logo) {
+    for (int i = 0; i < MAX_TRN_LOCALES; i++) {
+        if (trn->locales[i]) {
+            if (trn->locales[i]->logo) {
                 sd_sprite_free(trn->locales[i]->logo);
                 omf_free(trn->locales[i]->logo);
             }
-            if(trn->locales[i]->description) {
+            if (trn->locales[i]->description) {
                 omf_free(trn->locales[i]->description);
             }
-            if(trn->locales[i]->title) {
+            if (trn->locales[i]->title) {
                 omf_free(trn->locales[i]->title);
             }
-            for(int har = 0; har < 11; har++) {
-                for(int page = 0; page < 10; page++) {
-                    if(trn->locales[i]->end_texts[har][page]) {
+            for (int har = 0; har < 11; har++) {
+                for (int page = 0; page < 10; page++) {
+                    if (trn->locales[i]->end_texts[har][page]) {
                         omf_free(trn->locales[i]->end_texts[har][page]);
                     }
                 }
@@ -54,7 +54,7 @@ static void free_locales(sd_tournament_file *trn) {
 }
 
 int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name) {
-    if(trn == NULL || bk_name == NULL) {
+    if (trn == NULL || bk_name == NULL) {
         return SD_INVALID_INPUT;
     }
     snprintf(trn->bk_name, sizeof(trn->bk_name), "%s", bk_name);
@@ -62,7 +62,7 @@ int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name) {
 }
 
 int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
-    if(trn == NULL || pic_name == NULL) {
+    if (trn == NULL || pic_name == NULL) {
         return SD_INVALID_INPUT;
     }
     size_t len = strlen(pic_name) + 1;
@@ -73,24 +73,24 @@ int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
 
 int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     int ret = SD_FILE_PARSE_ERROR;
-    if(trn == NULL || filename == NULL) {
+    if (trn == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
 
     sd_reader *r = sd_reader_open(filename);
-    if(!r) {
+    if (!r) {
         return SD_FILE_OPEN_ERROR;
     }
 
     // Make sure that the file looks at least relatively okay
     // TODO: Add other checks.
-    if(sd_reader_filesize(r) < 1582) {
+    if (sd_reader_filesize(r) < 1582) {
         goto error_0;
     }
 
     // Read enemy count and make sure it seems somwhat correct
-    uint32_t enemy_count  = sd_read_udword(r);
-    if(enemy_count >= MAX_TRN_ENEMIES || enemy_count == 0) {
+    uint32_t enemy_count = sd_read_udword(r);
+    if (enemy_count >= MAX_TRN_ENEMIES || enemy_count == 0) {
         goto error_0;
     }
 
@@ -109,12 +109,12 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     sd_reader_set(r, 300);
     int offset_list[MAX_TRN_ENEMIES + 2]; // Should be large enough
     memset(offset_list, 0, sizeof(offset_list));
-    for(unsigned i = 0; i < trn->enemy_count + 1; i++) {
+    for (unsigned i = 0; i < trn->enemy_count + 1; i++) {
         offset_list[i] = sd_read_dword(r);
     }
 
     // Read enemy data
-    for(unsigned i = 0; i < trn->enemy_count; i++) {
+    for (unsigned i = 0; i < trn->enemy_count; i++) {
         trn->enemies[i] = omf_calloc(1, sizeof(sd_pilot));
 
         // Find data length
@@ -125,7 +125,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         sd_pilot_load(r, trn->enemies[i]);
 
         // Check for errors
-        if(!sd_reader_ok(r)) {
+        if (!sd_reader_ok(r)) {
             goto error_1;
         }
     }
@@ -134,50 +134,50 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     sd_reader_set(r, offset_list[trn->enemy_count]);
 
     // Allocate locales
-    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+    for (int i = 0; i < MAX_TRN_LOCALES; i++) {
         trn->locales[i] = omf_calloc(1, sizeof(sd_tournament_locale));
         trn->locales[i]->logo = NULL;
         trn->locales[i]->description = NULL;
         trn->locales[i]->title = NULL;
-        for(int har = 0; har < 11; har++) {
-            for(int page = 0; page < 10; page++) {
+        for (int har = 0; har < 11; har++) {
+            for (int page = 0; page < 10; page++) {
                 trn->locales[i]->end_texts[har][page] = NULL;
             }
         }
     }
 
     // Load logos to locales
-    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+    for (int i = 0; i < MAX_TRN_LOCALES; i++) {
         trn->locales[i]->logo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(trn->locales[i]->logo);
-        if((ret = sd_sprite_load(r, trn->locales[i]->logo)) != SD_SUCCESS) {
+        if ((ret = sd_sprite_load(r, trn->locales[i]->logo)) != SD_SUCCESS) {
             goto error_2;
         }
     }
 
     // Read palette. Only 40 colors are defined, starting
     // from palette position 128. Remember to convert VGA pal.
-    memset((void*)&trn->pal, 0, sizeof(palette));
+    memset((void *)&trn->pal, 0, sizeof(palette));
     palette_load_range(r, &trn->pal, 128, 40);
 
     // Read pic filename
     trn->pic_file = sd_read_variable_str(r);
 
     // Read tournament descriptions
-    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+    for (int i = 0; i < MAX_TRN_LOCALES; i++) {
         trn->locales[i]->title = sd_read_variable_str(r);
         trn->locales[i]->description = sd_read_variable_str(r);
     }
 
     // Make sure we are in correct position
-    if(sd_reader_pos(r) != victory_text_offset) {
+    if (sd_reader_pos(r) != victory_text_offset) {
         goto error_2;
     }
 
     // Load texts
-    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        for(int har = 0; har < 11; har++) {
-            for(int page = 0; page < 10; page++) {
+    for (int i = 0; i < MAX_TRN_LOCALES; i++) {
+        for (int har = 0; har < 11; har++) {
+            for (int page = 0; page < 10; page++) {
                 trn->locales[i]->end_texts[har][page] = sd_read_variable_str(r);
             }
         }
@@ -199,12 +199,12 @@ error_0:
 }
 
 int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
-    if(trn == NULL || filename == NULL) {
+    if (trn == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
 
     sd_writer *w = sd_writer_open(filename);
-    if(!w) {
+    if (!w) {
         return SD_FILE_OPEN_ERROR;
     }
 
@@ -231,16 +231,16 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
 
     // Walk through the enemies list, and write
     // offsets and blocks as we go
-    for(unsigned i = 0; i < trn->enemy_count; i++) {
+    for (unsigned i = 0; i < trn->enemy_count; i++) {
         // Save pilot
         sd_pilot_save(w, trn->enemies[i]);
 
         // Update catalog
         long c_pos = sd_writer_pos(w);
-        if (c_pos< 0) {
+        if (c_pos < 0) {
             goto error;
         }
-        if (sd_writer_seek_start(w, 300 + (i+1) * 4) < 0) {
+        if (sd_writer_seek_start(w, 300 + (i + 1) * 4) < 0) {
             goto error;
         }
         sd_write_udword(w, (uint32_t)c_pos);
@@ -250,8 +250,8 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     }
 
     // Write logos
-    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        if(trn->locales[i] != NULL) {
+    for (int i = 0; i < MAX_TRN_LOCALES; i++) {
+        if (trn->locales[i] != NULL) {
             sd_sprite_save(w, trn->locales[i]->logo);
         } else {
             sd_sprite s;
@@ -268,8 +268,8 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     sd_write_variable_str(w, trn->pic_file);
 
     // Write tournament descriptions
-    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        if(trn->locales[i] != NULL) {
+    for (int i = 0; i < MAX_TRN_LOCALES; i++) {
+        if (trn->locales[i] != NULL) {
             sd_write_variable_str(w, trn->locales[i]->title);
             sd_write_variable_str(w, trn->locales[i]->description);
         } else {
@@ -292,10 +292,10 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     }
 
     // Write texts
-    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        for(int har = 0; har < 11; har++) {
-            for(int page = 0; page < 10; page++) {
-                if(trn->locales[i] != NULL) {
+    for (int i = 0; i < MAX_TRN_LOCALES; i++) {
+        for (int har = 0; har < 11; har++) {
+            for (int page = 0; page < 10; page++) {
+                if (trn->locales[i] != NULL) {
                     sd_write_variable_str(w, trn->locales[i]->end_texts[har][page]);
                 } else {
                     sd_write_variable_str(w, "");
@@ -319,12 +319,12 @@ error:
 }
 
 void sd_tournament_free(sd_tournament_file *trn) {
-    if(trn == NULL) {
+    if (trn == NULL) {
         return;
     }
     free_locales(trn);
     free_enemies(trn);
-    if(trn->pic_file != NULL) {
+    if (trn->pic_file != NULL) {
         omf_free(trn->pic_file);
     }
 }

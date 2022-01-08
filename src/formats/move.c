@@ -1,13 +1,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "formats/error.h"
 #include "formats/animation.h"
+#include "formats/error.h"
 #include "formats/move.h"
 #include "utils/allocator.h"
 
 int sd_move_create(sd_move *move) {
-    if(move == NULL) {
+    if (move == NULL) {
         return SD_INVALID_INPUT;
     }
 
@@ -18,7 +18,7 @@ int sd_move_create(sd_move *move) {
 
 int sd_move_copy(sd_move *dst, const sd_move *src) {
     int ret;
-    if(dst == NULL || src == NULL) {
+    if (dst == NULL || src == NULL) {
         return SD_INVALID_INPUT;
     }
 
@@ -26,9 +26,9 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     memset(dst, 0, sizeof(sd_move));
 
     // Copy animation
-    if(src->animation != NULL) {
+    if (src->animation != NULL) {
         dst->animation = omf_calloc(1, sizeof(sd_animation));
-        if((ret = sd_animation_copy(dst->animation, src->animation)) != SD_SUCCESS) {
+        if ((ret = sd_animation_copy(dst->animation, src->animation)) != SD_SUCCESS) {
             return ret;
         }
     }
@@ -62,8 +62,9 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
 }
 
 void sd_move_free(sd_move *move) {
-    if(move == NULL) return;
-    if(move->animation != NULL) {
+    if (move == NULL)
+        return;
+    if (move->animation != NULL) {
         sd_animation_free(move->animation);
         omf_free(move->animation);
     }
@@ -73,16 +74,16 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     int ret;
     uint16_t size;
 
-    if(r == NULL || move == NULL) {
+    if (r == NULL || move == NULL) {
         return SD_INVALID_INPUT;
     }
 
     // Read animation
     move->animation = omf_calloc(1, sizeof(sd_animation));
-    if((ret = sd_animation_create(move->animation)) != SD_SUCCESS) {
+    if ((ret = sd_animation_create(move->animation)) != SD_SUCCESS) {
         return ret;
     }
-    if((ret = sd_animation_load(r, move->animation)) != SD_SUCCESS) {
+    if ((ret = sd_animation_load(r, move->animation)) != SD_SUCCESS) {
         return ret;
     }
 
@@ -112,20 +113,20 @@ int sd_move_load(sd_reader *r, sd_move *move) {
 
     // Footer string
     size = sd_read_uword(r);
-    if(size >= SD_MOVE_FOOTER_STRING_MAX) {
+    if (size >= SD_MOVE_FOOTER_STRING_MAX) {
         DEBUGLOG("Move footer too big! Expected max %d bytes, got %hu bytes.",
-            SD_MOVE_FOOTER_STRING_MAX, size);
+                 SD_MOVE_FOOTER_STRING_MAX, size);
         return SD_FILE_PARSE_ERROR;
     }
-    if(size > 0) {
+    if (size > 0) {
         sd_read_buf(r, move->footer_string, size);
-        if(move->footer_string[size-1] != 0) {
+        if (move->footer_string[size - 1] != 0) {
             return SD_FILE_PARSE_ERROR;
         }
     }
 
     // Return success if reader is still ok
-    if(!sd_reader_ok(r)) {
+    if (!sd_reader_ok(r)) {
         return SD_FILE_PARSE_ERROR;
     }
     return SD_SUCCESS;
@@ -135,12 +136,12 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     int ret;
     uint16_t size;
 
-    if(w == NULL || move == NULL) {
+    if (w == NULL || move == NULL) {
         return SD_INVALID_INPUT;
     }
 
     // Save animation
-    if((ret = sd_animation_save(w, move->animation)) != SD_SUCCESS) {
+    if ((ret = sd_animation_save(w, move->animation)) != SD_SUCCESS) {
         return ret;
     }
 
@@ -170,9 +171,9 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
 
     // Save footer string
     size = strlen(move->footer_string);
-    if(size > 0) {
-        sd_write_uword(w, size+1);
-        sd_write_buf(w, move->footer_string, size+1);
+    if (size > 0) {
+        sd_write_uword(w, size + 1);
+        sd_write_buf(w, move->footer_string, size + 1);
     } else {
         sd_write_uword(w, 0);
     }
@@ -182,29 +183,27 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
 
 int sd_move_set_animation(sd_move *move, const sd_animation *animation) {
     int ret;
-    if(move == NULL) {
+    if (move == NULL) {
         return SD_INVALID_INPUT;
     }
-    if(move->animation != NULL) {
+    if (move->animation != NULL) {
         sd_animation_free(move->animation);
         omf_free(move->animation);
     }
-    if(animation == NULL) {
+    if (animation == NULL) {
         return SD_SUCCESS;
     }
     move->animation = omf_calloc(1, sizeof(sd_animation));
-    if((ret = sd_animation_copy(move->animation, animation)) != SD_SUCCESS) {
+    if ((ret = sd_animation_copy(move->animation, animation)) != SD_SUCCESS) {
         return ret;
     }
     return SD_SUCCESS;
 }
 
-sd_animation* sd_move_get_animation(const sd_move *move) {
-    return move->animation;
-}
+sd_animation *sd_move_get_animation(const sd_move *move) { return move->animation; }
 
-int sd_move_set_footer_string(sd_move *move, const char* str) {
-    if(strlen(str) >= SD_MOVE_FOOTER_STRING_MAX-1) {
+int sd_move_set_footer_string(sd_move *move, const char *str) {
+    if (strlen(str) >= SD_MOVE_FOOTER_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
     strncpy(move->footer_string, str, sizeof(move->footer_string));
@@ -212,7 +211,7 @@ int sd_move_set_footer_string(sd_move *move, const char* str) {
 }
 
 int sd_move_set_move_string(sd_move *move, const char *str) {
-    if(strlen(str) >= SD_MOVE_STRING_MAX-1) {
+    if (strlen(str) >= SD_MOVE_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
     strncpy(move->move_string, str, sizeof(move->move_string));

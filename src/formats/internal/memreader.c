@@ -1,12 +1,12 @@
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 
-#include "formats/internal/reader.h"
 #include "formats/internal/memreader.h"
+#include "formats/internal/reader.h"
 #include "utils/allocator.h"
 
-memreader* memreader_open(char *buf, long len) {
+memreader *memreader_open(char *buf, long len) {
     memreader *reader = omf_calloc(1, sizeof(memreader));
     reader->buf = buf;
     reader->pos = 0;
@@ -15,7 +15,7 @@ memreader* memreader_open(char *buf, long len) {
     return reader;
 }
 
-memreader* memreader_open_from_reader(sd_reader *reader, int len) {
+memreader *memreader_open_from_reader(sd_reader *reader, int len) {
     char *buf = omf_calloc(1, len);
     sd_read_buf(reader, buf, len);
     memreader *mreader = memreader_open(buf, len);
@@ -24,28 +24,24 @@ memreader* memreader_open_from_reader(sd_reader *reader, int len) {
 }
 
 void memreader_xor(memreader *reader, uint8_t key) {
-    for(long k = 0; k < reader->len; k++) {
+    for (long k = 0; k < reader->len; k++) {
         reader->buf[k] = key++ ^ reader->buf[k];
     }
 }
 
-long memreader_size(const memreader *reader) {
-    return reader->len;
-}
+long memreader_size(const memreader *reader) { return reader->len; }
 
-long memreader_pos(const memreader *reader) {
-    return reader->pos;
-}
+long memreader_pos(const memreader *reader) { return reader->pos; }
 
 void memreader_close(memreader *reader) {
-    if(reader->owned) {
+    if (reader->owned) {
         omf_free(reader->buf);
     }
     omf_free(reader);
 }
 
 int memread_buf(memreader *reader, char *buf, int len) {
-    if(reader->pos + len > reader->len) {
+    if (reader->pos + len > reader->len) {
         return 0;
     }
     memcpy(buf, reader->buf + reader->pos, len);
@@ -102,6 +98,4 @@ float memread_float(memreader *reader) {
     return r;
 }
 
-void sd_mskip(memreader *reader, unsigned int nbytes) {
-    reader->pos += nbytes;
-}
+void sd_mskip(memreader *reader, unsigned int nbytes) { reader->pos += nbytes; }

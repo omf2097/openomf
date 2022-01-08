@@ -97,34 +97,34 @@ int joystick_poll(controller *ctrl, ctrl_event **ev) {
     int dpadright = SDL_GameControllerGetButton(k->joy, k->keys->dpad[3]);
 
     // joystick input
-    // TODO the devide by 2 should be a 'dead zone' variable that can be set in the option menu but this devide works well 99% of the time.
-    // Analog Stick (Axis 1) Movement
-    if (x_axis <= LEFT/2 && y_axis <= UP/2) {
-        joystick_cmd(ctrl, ACT_UP|ACT_LEFT, ev);
-    } else if (x_axis <= LEFT/2 && y_axis >= DOWN/2) {
-        joystick_cmd(ctrl, ACT_DOWN|ACT_LEFT, ev);
-    } else if (x_axis >= RIGHT/2 && y_axis <= UP/2) {
-        joystick_cmd(ctrl, ACT_UP|ACT_RIGHT, ev);
-    } else if (x_axis >= RIGHT/2 && y_axis >= DOWN/2) {
-        joystick_cmd(ctrl, ACT_DOWN|ACT_RIGHT, ev);
-    } else if (x_axis >= RIGHT/2) {
+    // TODO the devide by 2 should be a 'dead zone' variable that can be set in the option menu but
+    // this devide works well 99% of the time. Analog Stick (Axis 1) Movement
+    if (x_axis <= LEFT / 2 && y_axis <= UP / 2) {
+        joystick_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
+    } else if (x_axis <= LEFT / 2 && y_axis >= DOWN / 2) {
+        joystick_cmd(ctrl, ACT_DOWN | ACT_LEFT, ev);
+    } else if (x_axis >= RIGHT / 2 && y_axis <= UP / 2) {
+        joystick_cmd(ctrl, ACT_UP | ACT_RIGHT, ev);
+    } else if (x_axis >= RIGHT / 2 && y_axis >= DOWN / 2) {
+        joystick_cmd(ctrl, ACT_DOWN | ACT_RIGHT, ev);
+    } else if (x_axis >= RIGHT / 2) {
         joystick_cmd(ctrl, ACT_RIGHT, ev);
-    } else if (x_axis <= LEFT/2) {
+    } else if (x_axis <= LEFT / 2) {
         joystick_cmd(ctrl, ACT_LEFT, ev);
-    } else if (y_axis <= UP/2) {
+    } else if (y_axis <= UP / 2) {
         joystick_cmd(ctrl, ACT_UP, ev);
-    } else if (y_axis >= DOWN/2) {
+    } else if (y_axis >= DOWN / 2) {
         joystick_cmd(ctrl, ACT_DOWN, ev);
     }
 
     if (dpadup && dpadleft) {
-        joystick_cmd(ctrl, ACT_UP|ACT_LEFT, ev);
+        joystick_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
     } else if (dpaddown && dpadleft) {
-        joystick_cmd(ctrl, ACT_DOWN|ACT_LEFT, ev);
+        joystick_cmd(ctrl, ACT_DOWN | ACT_LEFT, ev);
     } else if (dpadup && dpadright) {
-        joystick_cmd(ctrl, ACT_UP|ACT_RIGHT, ev);
+        joystick_cmd(ctrl, ACT_UP | ACT_RIGHT, ev);
     } else if (dpaddown && dpadright) {
-        joystick_cmd(ctrl, ACT_DOWN|ACT_RIGHT, ev);
+        joystick_cmd(ctrl, ACT_DOWN | ACT_RIGHT, ev);
     } else if (dpadright) {
         joystick_cmd(ctrl, ACT_RIGHT, ev);
     } else if (dpadleft) {
@@ -173,7 +173,7 @@ int joystick_create(controller *ctrl, int joystick_id) {
     k->keys->kick = SDL_CONTROLLER_BUTTON_B;
     k->keys->escape = SDL_CONTROLLER_BUTTON_START;
     k->last = 0;
-    k->rumble= 0;
+    k->rumble = 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_GAMEPAD;
     ctrl->poll_fun = &joystick_poll;
@@ -200,5 +200,4 @@ int joystick_create(controller *ctrl, int joystick_id) {
 
     DEBUG("failed to open joystick: %s", SDL_GetError());
     return 0;
-
 }

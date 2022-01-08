@@ -3,10 +3,10 @@
 
 #include "game/scenes/mainmenu/menu_listen.h"
 
-#include "game/gui/gui.h"
-#include "game/utils/settings.h"
-#include "game/protos/scene.h"
 #include "game/game_state.h"
+#include "game/gui/gui.h"
+#include "game/protos/scene.h"
+#include "game/utils/settings.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 
@@ -19,7 +19,7 @@ typedef struct {
 
 void menu_listen_free(component *c) {
     listen_menu_data *local = menu_get_userdata(c);
-    if(local->host && !local->controllers_created) {
+    if (local->host && !local->controllers_created) {
         enet_host_destroy(local->host);
     }
     local->host = NULL;
@@ -31,14 +31,14 @@ void menu_listen_free(component *c) {
 void menu_listen_tick(component *c) {
     listen_menu_data *local = menu_get_userdata(c);
     game_state *gs = local->s->gs;
-    if(local->host) {
+    if (local->host) {
         ENetEvent event;
-        while(!local->controllers_created && enet_host_service(local->host, &event, 0) > 0) {
-            if(event.type != ENET_EVENT_TYPE_CONNECT) {
+        while (!local->controllers_created && enet_host_service(local->host, &event, 0) > 0) {
+            if (event.type != ENET_EVENT_TYPE_CONNECT) {
                 continue;
             }
 
-            ENetPacket * packet = enet_packet_create("0", 2,  ENET_PACKET_FLAG_RELIABLE);
+            ENetPacket *packet = enet_packet_create("0", 2, ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(event.peer, 0, packet);
             enet_host_flush(local->host);
 
@@ -85,8 +85,10 @@ void menu_listen_tick(component *c) {
             game_player_set_ctrl(p2, player2_ctrl);
             game_player_set_selectable(p2, 1);
 
-            chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);
-            chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)), AI_DIFFICULTY_CHAMPION);
+            chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
+                                     AI_DIFFICULTY_CHAMPION);
+            chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)),
+                                     AI_DIFFICULTY_CHAMPION);
 
             local->controllers_created = 1;
             break;
@@ -94,7 +96,8 @@ void menu_listen_tick(component *c) {
         game_player *p2 = game_state_get_player(gs, 1);
         controller *c2 = game_player_get_ctrl(p2);
         if (c2->type == CTRL_TYPE_NETWORK && net_controller_ready(c2) == 1) {
-            DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c2), c2->rtt);
+            DEBUG("network peer is ready, tick offset is %d and rtt is %d",
+                  net_controller_tick_offset(c2), c2->rtt);
             local->host = NULL;
             local->controllers_created = 0;
             game_state_set_next(gs, SCENE_MELEE);
@@ -108,14 +111,14 @@ void menu_listen_cancel(component *c, void *userdata) {
 
     // Clean up host
     listen_menu_data *local = menu_get_userdata(c->parent);
-    if(local->host && !local->controllers_created) {
+    if (local->host && !local->controllers_created) {
         enet_host_destroy(local->host);
     }
     local->controllers_created = 0;
     local->host = NULL;
 }
 
-component* menu_listen_create(scene *s) {
+component *menu_listen_create(scene *s) {
     listen_menu_data *local = omf_calloc(1, sizeof(listen_menu_data));
     s->gs->role = ROLE_SERVER;
     local->s = s;
@@ -128,7 +131,7 @@ component* menu_listen_create(scene *s) {
     // Set up host
     local->controllers_created = 0;
     local->host = enet_host_create(&address, 1, 2, 0, 0);
-    if(local->host == NULL) {
+    if (local->host == NULL) {
         DEBUG("Failed to initialize ENet server");
         omf_free(local);
         return NULL;
@@ -143,7 +146,7 @@ component* menu_listen_create(scene *s) {
     tconf.cforeground = color_create(0, 121, 0, 255);
 
     // Create the menu
-    component* menu = menu_create(11);
+    component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "START SERVER"));
     menu_attach(menu, filler_create());
     menu_attach(menu, label_create(&tconf, "Waiting ..."));

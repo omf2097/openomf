@@ -1,18 +1,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "formats/error.h"
-#include "formats/internal/reader.h"
-#include "formats/internal/memreader.h"
-#include "formats/internal/writer.h"
-#include "formats/internal/memwriter.h"
 #include "formats/chr.h"
+#include "formats/error.h"
+#include "formats/internal/memreader.h"
+#include "formats/internal/memwriter.h"
+#include "formats/internal/reader.h"
+#include "formats/internal/writer.h"
 #include "utils/allocator.h"
 
 #define UNUSED(x) (void)(x)
 
 int sd_chr_create(sd_chr_file *chr) {
-    if(chr == NULL) {
+    if (chr == NULL) {
         return SD_INVALID_INPUT;
     }
     memset(chr, 0, sizeof(sd_chr_file));
@@ -20,12 +20,12 @@ int sd_chr_create(sd_chr_file *chr) {
 }
 
 int sd_chr_load(sd_chr_file *chr, const char *filename) {
-    if(chr == NULL ||filename == NULL) {
+    if (chr == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
 
     sd_reader *r = sd_reader_open(filename);
-    if(!r) {
+    if (!r) {
         return SD_FILE_OPEN_ERROR;
     }
 
@@ -41,7 +41,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     memreader_xor(mr, (chr->pilot.enemies_inc_unranked * 68) & 0xFF);
 
     // Handle enemy data
-    for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
+    for (int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         // Reserve & zero out
         chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
         sd_pilot_create(&chr->enemies[i]->pilot);
@@ -64,7 +64,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_create(chr->photo);
     int ret = sd_sprite_load(r, chr->photo);
-    if(ret != SD_SUCCESS) {
+    if (ret != SD_SUCCESS) {
         goto error_1;
     }
 
@@ -76,10 +76,9 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     sd_reader_close(r);
     return SD_SUCCESS;
 
-
 error_1:
-    for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
-        if(chr->enemies[i] != NULL) {
+    for (int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
+        if (chr->enemies[i] != NULL) {
             omf_free(chr->enemies[i]);
         }
     }
@@ -89,12 +88,12 @@ error_1:
 }
 
 int sd_chr_save(sd_chr_file *chr, const char *filename) {
-    if(chr == NULL || filename == NULL) {
+    if (chr == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
 
     sd_writer *w = sd_writer_open(filename);
-    if(!w) {
+    if (!w) {
         return SD_FILE_OPEN_ERROR;
     }
 
@@ -107,7 +106,7 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
 
     // Write enemy data
     mw = memwriter_open();
-    for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
+    for (int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         sd_pilot_save_player_to_mem(mw, &chr->enemies[i]->pilot);
         memwrite_buf(mw, chr->enemies[i]->unknown, 25);
     }
@@ -134,16 +133,16 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
 }
 
 void sd_chr_free(sd_chr_file *chr) {
-    for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
-        if(chr->enemies[i] != NULL) {
+    for (int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
+        if (chr->enemies[i] != NULL) {
             omf_free(chr->enemies[i]);
         }
     }
     sd_sprite_free(chr->photo);
 }
 
-const sd_chr_enemy* sd_chr_get_enemy(sd_chr_file *chr, int enemy_num) {
-    if(chr == NULL || enemy_num < 0 || enemy_num >= chr->pilot.enemies_inc_unranked) {
+const sd_chr_enemy *sd_chr_get_enemy(sd_chr_file *chr, int enemy_num) {
+    if (chr == NULL || enemy_num < 0 || enemy_num >= chr->pilot.enemies_inc_unranked) {
         return NULL;
     }
     return chr->enemies[enemy_num];

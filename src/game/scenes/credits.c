@@ -1,10 +1,10 @@
 #include <stdlib.h>
 
-#include "game/scenes/credits.h"
 #include "game/game_state.h"
-#include "video/video.h"
+#include "game/scenes/credits.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
+#include "video/video.h"
 
 typedef struct credits_local_t {
     int ticks;
@@ -19,15 +19,14 @@ void credits_input_tick(scene *scene) {
     i = p1;
     if (i) {
         do {
-            if(i->type == EVENT_TYPE_ACTION) {
-                if(i->event_data.action == ACT_ESC ||
-                    i->event_data.action == ACT_KICK ||
+            if (i->type == EVENT_TYPE_ACTION) {
+                if (i->event_data.action == ACT_ESC || i->event_data.action == ACT_KICK ||
                     i->event_data.action == ACT_PUNCH) {
 
                     game_state_set_next(scene->gs, SCENE_NONE);
                 }
             }
-        } while((i = i->next));
+        } while ((i = i->next));
     }
     controller_free_chain(p1);
 }
@@ -35,7 +34,7 @@ void credits_input_tick(scene *scene) {
 void credits_tick(scene *scene, int paused) {
     credits_local *local = scene_get_userdata(scene);
     local->ticks++;
-    if(local->ticks > 4500) {
+    if (local->ticks > 4500) {
         game_state_set_next(scene->gs, SCENE_NONE);
     }
 }
@@ -47,10 +46,10 @@ void credits_free(scene *scene) {
 }
 
 void credits_startup(scene *scene, int id, int *m_load, int *m_repeat) {
-    switch(id) {
-        case 20:
-            *m_load = 1;
-            return;
+    switch (id) {
+    case 20:
+        *m_load = 1;
+        return;
     }
 }
 

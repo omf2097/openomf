@@ -9,10 +9,10 @@
 #include <AL/alc.h>
 #endif
 
-#include <stdlib.h>
 #include "audio/sinks/openal_stream.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <stdlib.h>
 
 #define AUDIO_BUFFER_COUNT 2
 #define AUDIO_BUFFER_SIZE 32768
@@ -27,7 +27,7 @@ void openal_stream_apply(audio_stream *stream) {
     openal_stream *local = stream_get_userdata(stream);
 
     // Handle panning here (only if mono)
-    if(source_get_channels(stream->src) == 1) {
+    if (source_get_channels(stream->src) == 1) {
         float pos[] = {stream->panning, 0.0f, -1.0f};
         alSourcefv(local->source, AL_POSITION, pos);
     }
@@ -42,14 +42,11 @@ void openal_stream_play(audio_stream *stream) {
 
     // Fill initial buffers
     char buf[AUDIO_BUFFER_SIZE];
-    for(int i = 0; i < AUDIO_BUFFER_COUNT; i++) {
+    for (int i = 0; i < AUDIO_BUFFER_COUNT; i++) {
         int ret = source_update(stream->src, buf, AUDIO_BUFFER_SIZE);
-        if(ret > 0) {
-            alBufferData(
-                local->buffers[i],
-                local->format,
-                buf, ret,
-                source_get_frequency(stream->src));
+        if (ret > 0) {
+            alBufferData(local->buffers[i], local->format, buf, ret,
+                         source_get_frequency(stream->src));
             alSourceQueueBuffers(local->source, 1, &local->buffers[i]);
         }
     }
@@ -60,7 +57,7 @@ void openal_stream_play(audio_stream *stream) {
     // Start playback
     alSourcePlay(local->source);
     int err = alGetError();
-    if(err != AL_NO_ERROR) {
+    if (err != AL_NO_ERROR) {
         PERROR("OpenAL Stream: Source playback error: %d.", err);
     }
 }
@@ -76,24 +73,24 @@ void openal_stream_update(audio_stream *stream) {
     // See if we have any empty buffers to fill
     int val;
     alGetSourcei(local->source, AL_BUFFERS_PROCESSED, &val);
-    if(val <= 0) {
+    if (val <= 0) {
         return;
     }
 
     // Handle buffer filling and loading
     char buf[AUDIO_BUFFER_SIZE];
     ALuint n;
-    while(val--) {
+    while (val--) {
         // Fill buffer & re-queue
         int ret = source_update(stream->src, buf, AUDIO_BUFFER_SIZE);
-        if(ret > 0) {
+        if (ret > 0) {
             alSourceUnqueueBuffers(local->source, 1, &n);
             alBufferData(n, local->format, buf, ret, source_get_frequency(stream->src));
             alSourceQueueBuffers(local->source, 1, &n);
 
             // Check for any errors
             int err = alGetError();
-            if(err != AL_NO_ERROR) {
+            if (err != AL_NO_ERROR) {
                 PERROR("OpenAL Stream: Error %d while buffering!", err);
             }
         } else {
@@ -103,10 +100,10 @@ void openal_stream_update(audio_stream *stream) {
     }
 
     // Make sure we are playing stream
-    if(stream_get_status(stream) == STREAM_STATUS_PLAYING) {
+    if (stream_get_status(stream) == STREAM_STATUS_PLAYING) {
         ALenum state;
         alGetSourcei(local->source, AL_SOURCE_STATE, &state);
-        if(state != AL_PLAYING) {
+        if (state != AL_PLAYING) {
             alSourcePlay(local->source);
         }
     }
@@ -122,16 +119,16 @@ void openal_stream_close(audio_stream *stream) {
 }
 
 static int get_al_format(int bytes, int channels) {
-    if(bytes == 1) {
-        if(channels == 1)
+    if (bytes == 1) {
+        if (channels == 1)
             return AL_FORMAT_MONO8;
-        if(channels == 2)
+        if (channels == 2)
             return AL_FORMAT_STEREO8;
     }
-    if(bytes == 2) {
-        if(channels == 1)
+    if (bytes == 2) {
+        if (channels == 1)
             return AL_FORMAT_MONO16;
-        if(channels == 2)
+        if (channels == 2)
             return AL_FORMAT_STEREO16;
     }
     return 0;
@@ -141,27 +138,26 @@ int openal_stream_init(audio_stream *stream, audio_sink *sink) {
     openal_stream *local = omf_calloc(1, sizeof(openal_stream));
 
     // Dump old errors
-    while(alGetError() != AL_NO_ERROR);
+    while (alGetError() != AL_NO_ERROR)
+        ;
 
     // Pick format
-    local->format = get_al_format(
-        source_get_bytes(stream->src),
-        source_get_channels(stream->src));
-    if(!local->format) {
+    local->format = get_al_format(source_get_bytes(stream->src), source_get_channels(stream->src));
+    if (!local->format) {
         PERROR("OpenAL Stream: Could not find suitable audio format!");
         goto exit_0;
     }
 
     // Generate a source
     alGenSources(1, &local->source);
-    if(alGetError() != AL_NO_ERROR) {
+    if (alGetError() != AL_NO_ERROR) {
         PERROR("OpenAL Stream: Could not create audio source!");
         goto exit_0;
     }
 
     // Generate buffers
     alGenBuffers(AUDIO_BUFFER_COUNT, local->buffers);
-    if(alGetError() != AL_NO_ERROR) {
+    if (alGetError() != AL_NO_ERROR) {
         PERROR("OpenAL Stream: Could not create audio buffers!");
         goto exit_1;
     }

@@ -1,11 +1,11 @@
 #include "game/gui/sizer.h"
 #include "utils/allocator.h"
 
-component* sizer_get(const component *nc, int item) {
+component *sizer_get(const component *nc, int item) {
     sizer *local = component_get_obj(nc);
     component **c;
     c = vector_get(&local->objs, item);
-    if(c != NULL) {
+    if (c != NULL) {
         return *c;
     }
     return NULL;
@@ -21,7 +21,7 @@ void sizer_set_obj(component *c, void *obj) {
     local->obj = obj;
 }
 
-void* sizer_get_obj(const component *c) {
+void *sizer_get_obj(const component *c) {
     sizer *local = component_get_obj(c);
     return local->obj;
 }
@@ -71,7 +71,7 @@ static void sizer_tick(component *c) {
     sizer *local = component_get_obj(c);
 
     // Tell the specialized sizer object to do tick if needed
-    if(local->tick) {
+    if (local->tick) {
         local->tick(c);
     }
 
@@ -79,7 +79,7 @@ static void sizer_tick(component *c) {
     iterator it;
     component **tmp;
     vector_iter_begin(&local->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    while ((tmp = iter_next(&it)) != NULL) {
         component_tick(*tmp);
     }
 }
@@ -87,7 +87,7 @@ static void sizer_tick(component *c) {
 static void sizer_render(component *c) {
     sizer *local = component_get_obj(c);
     // Since rendering can be a bit special, the actual sizer should do it
-    if(local->render) {
+    if (local->render) {
         local->render(c);
     }
 }
@@ -95,7 +95,7 @@ static void sizer_render(component *c) {
 static int sizer_event(component *c, SDL_Event *event) {
     sizer *local = component_get_obj(c);
     // Events are something that the actual sizer needs to handle
-    if(local->event) {
+    if (local->event) {
         return local->event(c, event);
     }
     return 1;
@@ -104,7 +104,7 @@ static int sizer_event(component *c, SDL_Event *event) {
 static int sizer_action(component *c, int action) {
     sizer *local = component_get_obj(c);
     // Actions are something that the actual sizer needs to handle
-    if(local->action) {
+    if (local->action) {
         return local->action(c, action);
     }
     return 1;
@@ -113,7 +113,7 @@ static int sizer_action(component *c, int action) {
 static void sizer_layout(component *c, int x, int y, int w, int h) {
     // Because we don't know how to order this stuff in base sizer, we just pass this on.
     sizer *local = component_get_obj(c);
-    if(local->layout) {
+    if (local->layout) {
         local->layout(c, x, y, w, h);
     }
 }
@@ -125,12 +125,12 @@ static void sizer_free(component *c) {
     iterator it;
     component **tmp;
     vector_iter_begin(&local->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    while ((tmp = iter_next(&it)) != NULL) {
         component_free(*tmp);
     }
 
     // Free sizer specialization
-    if(local->free) {
+    if (local->free) {
         local->free(c);
     }
 
@@ -139,24 +139,24 @@ static void sizer_free(component *c) {
     omf_free(local);
 }
 
-static component* sizer_find(component *c, int id) {
+static component *sizer_find(component *c, int id) {
     sizer *local = component_get_obj(c);
 
     // Free all objects inside the sizer
     iterator it;
     component **tmp;
     vector_iter_begin(&local->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    while ((tmp = iter_next(&it)) != NULL) {
         // Find out if the component is what we're looking for.
         // If it is, return pointer.
         component *out = component_find(*tmp, id);
-        if(out != NULL) {
+        if (out != NULL) {
             return out;
         }
     }
 
     // If find callback is set, try to use it.
-    if(local->find) {
+    if (local->find) {
         return local->find(c, id);
     }
 
@@ -164,11 +164,11 @@ static component* sizer_find(component *c, int id) {
     return NULL;
 }
 
-component* sizer_create() {
+component *sizer_create() {
     component *c = component_create();
 
     sizer *local = omf_calloc(1, sizeof(sizer));
-    vector_create(&local->objs, sizeof(component*));
+    vector_create(&local->objs, sizeof(component *));
     component_set_obj(c, local);
 
     component_set_tick_cb(c, sizer_tick);

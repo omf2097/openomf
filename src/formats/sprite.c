@@ -2,13 +2,13 @@
 #include <string.h>
 
 #include "formats/error.h"
-#include "formats/sprite.h"
 #include "formats/palette.h"
+#include "formats/sprite.h"
 #include "utils/allocator.h"
 #include <stdio.h>
 
 int sd_sprite_create(sd_sprite *sprite) {
-    if(sprite == NULL) {
+    if (sprite == NULL) {
         return SD_INVALID_INPUT;
     }
     memset(sprite, 0, sizeof(sd_sprite));
@@ -16,7 +16,7 @@ int sd_sprite_create(sd_sprite *sprite) {
 }
 
 int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
-    if(dst == NULL || src == NULL) {
+    if (dst == NULL || src == NULL) {
         return SD_INVALID_INPUT;
     }
 
@@ -31,7 +31,7 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
     dst->height = src->height;
     dst->len = src->len;
 
-    if(src->data != NULL) {
+    if (src->data != NULL) {
         dst->data = omf_calloc(src->len, 1);
         memcpy(dst->data, src->data, src->len);
     }
@@ -40,11 +40,12 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
 }
 
 void sd_sprite_free(sd_sprite *sprite) {
-    if(sprite == NULL) return;
+    if (sprite == NULL)
+        return;
 
     // Only attempt to free if there IS something to free
     // AND sprite data belongs to this sprite
-    if(sprite->data != NULL && !sprite->missing) {
+    if (sprite->data != NULL && !sprite->missing) {
         omf_free(sprite->data);
     }
 }
@@ -59,21 +60,21 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
     sprite->missing = sd_read_ubyte(r);
 
     // Copy sprite data, if there is any.
-    if(sprite->missing == 0) {
+    if (sprite->missing == 0) {
         sprite->data = omf_calloc(sprite->len, 1);
         sd_read_buf(r, sprite->data, sprite->len);
     } else {
         sprite->data = NULL;
     }
 
-    if(!sd_reader_ok(r)) {
+    if (!sd_reader_ok(r)) {
         return SD_FILE_PARSE_ERROR;
     }
     return SD_SUCCESS;
 }
 
 int sd_sprite_save(sd_writer *w, const sd_sprite *sprite) {
-    if(w == NULL || sprite == NULL) {
+    if (w == NULL || sprite == NULL) {
         return SD_INVALID_INPUT;
     }
     sd_write_uword(w, sprite->len);
@@ -83,13 +84,14 @@ int sd_sprite_save(sd_writer *w, const sd_sprite *sprite) {
     sd_write_uword(w, sprite->height);
     sd_write_ubyte(w, sprite->index);
     sd_write_ubyte(w, sprite->missing);
-    if(!sprite->missing) {
+    if (!sprite->missing) {
         sd_write_buf(w, sprite->data, sprite->len);
     }
     return SD_SUCCESS;
 }
 
-int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palette *pal, int remapping) {
+int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palette *pal,
+                          int remapping) {
     int lastx = -1;
     int lasty = 0;
     int i = 0;
@@ -101,7 +103,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palett
     char *buf;
 
     // Make sure we aren't being fed BS
-    if(dst == NULL || src == NULL || pal == NULL) {
+    if (dst == NULL || src == NULL || pal == NULL) {
         return SD_INVALID_INPUT;
     }
 
@@ -115,71 +117,71 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palett
     rowstart = i;
 
     // Walk through the RGBA data
-    for(int pos = 0; pos <= rgb_size; pos+= 4) {
+    for (int pos = 0; pos <= rgb_size; pos += 4) {
         uint8_t r = src->data[pos];
-        uint8_t g = src->data[pos+1];
-        uint8_t b = src->data[pos+2];
-        uint8_t a = src->data[pos+3];
+        uint8_t g = src->data[pos + 1];
+        uint8_t b = src->data[pos + 2];
+        uint8_t a = src->data[pos + 3];
 
         // ignore anytjhing but fully opaque pixels
         if (a == 255) {
-            int16_t x = (pos/4) % src->w;
-            int16_t y = (pos/4) / src->w;
+            int16_t x = (pos / 4) % src->w;
+            int16_t y = (pos / 4) / src->w;
             if (y != lasty) {
                 // new row
-                c = (y*4)+2;
+                c = (y * 4) + 2;
                 // write little endian unsigned word
                 buf[i++] = c & 0x00ff;
                 buf[i++] = (c & 0xff00) >> 8;
             }
-            if (x != lastx+1 || y != lasty) {
+            if (x != lastx + 1 || y != lasty) {
                 // if Y changes, write out X too
                 // dont write X coordinate if we just wrote a row and the nex X coordinate is 0
                 // because the decoder resets X coordinate to 0 after each row
                 if (x != 0) {
                     // we skipped some columns
-                    c = (x*4);
+                    c = (x * 4);
                     // write little endian unsigned word
                     buf[i++] = c & 0x00ff;
                     buf[i++] = (c & 0xff00) >> 8;
                 }
                 if (!rowlen) {
                     rowstart = i;
-                    i+=2;
+                    i += 2;
                 }
             }
             // write out the length of the previous row, if there was one
-            if (y != lasty || x != lastx+1) {
+            if (y != lasty || x != lastx + 1) {
                 if (rowlen) {
                     // go back and write in the width of the row of pixels
-                    c = (rowlen*4)+1;
+                    c = (rowlen * 4) + 1;
                     // place to write is at i - rowlen
                     // write little endian unsigned word
                     buf[rowstart] = c & 0x00ff;
-                    buf[rowstart+1] = (c & 0xff00) >> 8;
+                    buf[rowstart + 1] = (c & 0xff00) >> 8;
                     rowlen = 0;
                     rowstart = i;
-                    i+=2;
+                    i += 2;
                 }
             } else if (lasty == 0 && x == 0) {
                 rowstart = i;
-                i+=2;
+                i += 2;
             }
-            lastx=x;
-            lasty=y;
+            lastx = x;
+            lasty = y;
             // write byte
             buf[i++] = palette_resolve_color(r, g, b, pal);
             rowlen++;
         }
     }
     // update the length of the last row
-    if(rowlen) {
+    if (rowlen) {
         // go back and write in the width of the row of pixels
-        c = (rowlen*4)+1;
+        c = (rowlen * 4) + 1;
         // place to write is at i - rowlen
         // write little endian unsigned word
         buf[rowstart] = c & 0x00ff;
-        buf[rowstart+1] = (c & 0xff00) >> 8;
+        buf[rowstart + 1] = (c & 0xff00) >> 8;
     }
 
     // End of sprite marker, a WORD of value 7
@@ -197,7 +199,8 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palett
     return ret;
 }
 
-int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const palette *pal, int remapping) {
+int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const palette *pal,
+                          int remapping) {
     uint16_t x = 0;
     uint16_t y = 0;
     int i = 0;
@@ -206,63 +209,63 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const palett
     char op = 0;
 
     // Make sure we aren't being fed BS
-    if(src == NULL || dst == NULL || pal == NULL) {
+    if (src == NULL || dst == NULL || pal == NULL) {
         return SD_INVALID_INPUT;
     }
 
     // If image data length is 0, then size should be 1x1
-    if(src->len > 0) {
+    if (src->len > 0) {
         sd_rgba_image_create(dst, src->width, src->height);
     } else {
         sd_rgba_image_create(dst, 1, 1);
     }
 
     // XXX CREDITS.BK has a bunch of 0 width sprites, for some unknown reason
-    if(src->width == 0 || src->height == 0 || src->len == 0) {
+    if (src->width == 0 || src->height == 0 || src->len == 0) {
         return SD_SUCCESS;
     }
 
     // Walk through sprite raw data
-    while(i < src->len) {
+    while (i < src->len) {
         // read a word
-        c = (uint8_t)src->data[i] + ((uint8_t)src->data[i+1] << 8);
+        c = (uint8_t)src->data[i] + ((uint8_t)src->data[i + 1] << 8);
         op = c % 4;
         data = c / 4;
         i += 2; // we read 2 bytes
 
         // Handle operation
-        switch(op) {
-            case 0:
-                x = data;
-                break;
-            case 2:
-                y = data;
-                break;
-            case 1:
-                while(data > 0) {
-                    uint8_t b = src->data[i];
-                    int pos = ((y * src->width) + x) * 4;
-                    if(remapping > -1) {
-                        dst->data[pos+0] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][0];
-                        dst->data[pos+1] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][1];
-                        dst->data[pos+2] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][2];
-                    } else {
-                        dst->data[pos+0] = (uint8_t)pal->data[b][0];
-                        dst->data[pos+1] = (uint8_t)pal->data[b][1];
-                        dst->data[pos+2] = (uint8_t)pal->data[b][2];
-                    }
-                    dst->data[pos+3] = (uint8_t)255; // fully opaque
-                    i++; // we read 1 byte
-                    x++;
-                    data--;
+        switch (op) {
+        case 0:
+            x = data;
+            break;
+        case 2:
+            y = data;
+            break;
+        case 1:
+            while (data > 0) {
+                uint8_t b = src->data[i];
+                int pos = ((y * src->width) + x) * 4;
+                if (remapping > -1) {
+                    dst->data[pos + 0] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][0];
+                    dst->data[pos + 1] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][1];
+                    dst->data[pos + 2] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][2];
+                } else {
+                    dst->data[pos + 0] = (uint8_t)pal->data[b][0];
+                    dst->data[pos + 1] = (uint8_t)pal->data[b][1];
+                    dst->data[pos + 2] = (uint8_t)pal->data[b][2];
                 }
-                x = 0;
-                break;
-            case 3:
-                if(i != src->len) {
-                    return SD_INVALID_INPUT;
-                }
-                break;
+                dst->data[pos + 3] = (uint8_t)255; // fully opaque
+                i++;                               // we read 1 byte
+                x++;
+                data--;
+            }
+            x = 0;
+            break;
+        case 3:
+            if (i != src->len) {
+                return SD_INVALID_INPUT;
+            }
+            break;
         }
     }
 
@@ -279,19 +282,19 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
     char op = 0;
 
     // Make sure we aren't being fed BS
-    if(dst == NULL || src == NULL) {
+    if (dst == NULL || src == NULL) {
         return SD_INVALID_INPUT;
     }
 
     // If image data length is 0, then size should be 1x1
-    if(src->len > 0) {
+    if (src->len > 0) {
         sd_vga_image_create(dst, src->width, src->height);
     } else {
         sd_vga_image_create(dst, 1, 1);
     }
 
     // XXX CREDITS.BK has a bunch of 0 width sprites, for some unknown reason
-    if(src->width == 0 || src->height == 0 || src->len == 0) {
+    if (src->width == 0 || src->height == 0 || src->len == 0) {
         return SD_SUCCESS;
     }
 
@@ -300,38 +303,38 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
     memset(dst->stencil, 0, bsize);
 
     // Walk through raw sprite data
-    while(i < src->len) {
+    while (i < src->len) {
         // read a word
-        c = (uint8_t)src->data[i] + ((uint8_t)src->data[i+1] << 8);
+        c = (uint8_t)src->data[i] + ((uint8_t)src->data[i + 1] << 8);
         op = c % 4;
         data = c / 4;
         i += 2; // we read 2 bytes
 
         // Handle operation
-        switch(op) {
-            case 0:
-                x = data;
-                break;
-            case 2:
-                y = data;
-                break;
-            case 1:
-                while(data > 0) {
-                    uint8_t b = src->data[i];
-                    int pos = ((y * src->width) + x);
-                    dst->data[pos] = b;
-                    dst->stencil[pos] = 1;
-                    i++; // we read 1 byte
-                    x++;
-                    data--;
-                }
-                x = 0;
-                break;
-            case 3:
-                if(i != src->len) {
-                    return SD_INVALID_INPUT;
-                }
-                break;
+        switch (op) {
+        case 0:
+            x = data;
+            break;
+        case 2:
+            y = data;
+            break;
+        case 1:
+            while (data > 0) {
+                uint8_t b = src->data[i];
+                int pos = ((y * src->width) + x);
+                dst->data[pos] = b;
+                dst->stencil[pos] = 1;
+                i++; // we read 1 byte
+                x++;
+                data--;
+            }
+            x = 0;
+            break;
+        case 3:
+            if (i != src->len) {
+                return SD_INVALID_INPUT;
+            }
+            break;
         }
     }
 
@@ -351,7 +354,7 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     char *buf;
 
     // Make sure we aren't being fed BS
-    if(dst == NULL || src == NULL) {
+    if (dst == NULL || src == NULL) {
         return SD_INVALID_INPUT;
     }
 
@@ -365,32 +368,32 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     rowstart = i;
 
     // Walk through the RGBA data
-    for(int pos = 0; pos < vga_size; pos++) {
+    for (int pos = 0; pos < vga_size; pos++) {
         uint8_t idx = src->data[pos];
         uint8_t stc = src->stencil[pos];
 
         // ignore anything but fully opaque pixels
-        if(stc == 1) {
+        if (stc == 1) {
             int16_t x = pos % src->w;
             int16_t y = pos / src->w;
-            if(y != lasty) {
+            if (y != lasty) {
                 c = (y * 4) + 2;
                 buf[i++] = c & 0x00ff;
                 buf[i++] = (c & 0xff00) >> 8;
             }
-            if(x != lastx+1 || y != lasty) {
+            if (x != lastx + 1 || y != lasty) {
                 if (x != 0) {
                     c = (x * 4);
                     buf[i++] = c & 0x00ff;
                     buf[i++] = (c & 0xff00) >> 8;
                 }
-                if(!rowlen) {
+                if (!rowlen) {
                     rowstart = i;
-                    i+=2;
+                    i += 2;
                 }
             }
-            if(y != lasty || x != lastx + 1) {
-                if(rowlen) {
+            if (y != lasty || x != lastx + 1) {
+                if (rowlen) {
                     c = (rowlen * 4) + 1;
                     buf[rowstart] = c & 0x00ff;
                     buf[rowstart + 1] = (c & 0xff00) >> 8;
@@ -398,7 +401,7 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
                     rowstart = i;
                     i += 2;
                 }
-            } else if(lasty == 0 && x == 0) {
+            } else if (lasty == 0 && x == 0) {
                 rowstart = i;
                 i += 2;
             }
@@ -408,7 +411,7 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
             rowlen++;
         }
     }
-    if(rowlen) {
+    if (rowlen) {
         c = (rowlen * 4) + 1;
         buf[rowstart] = c & 0x00ff;
         buf[rowstart + 1] = (c & 0xff00) >> 8;

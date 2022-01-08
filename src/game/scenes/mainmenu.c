@@ -1,14 +1,14 @@
-#include <SDL.h>
-#include "audio/music.h"
-#include "video/video.h"
-#include "resources/ids.h"
-#include "game/gui/frame.h"
 #include "game/scenes/mainmenu.h"
+#include "audio/music.h"
+#include "game/gui/frame.h"
 #include "game/scenes/mainmenu/menu_main.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 #include "game/utils/settings.h"
+#include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/video.h"
+#include <SDL.h>
 
 typedef struct mainmenu_local_t {
     guiframe *frame;
@@ -33,7 +33,7 @@ void mainmenu_input_tick(scene *scene) {
 
     for (int i = 0; i < 2; i++) {
         game_player *player = game_state_get_player(scene->gs, i);
-        
+
         // Poll the controller
         ctrl_event *p = NULL;
         controller_poll(player->ctrl, &p);
@@ -44,13 +44,13 @@ void mainmenu_input_tick(scene *scene) {
                     if (local->prev_key[i] == p->event_data.action) {
                         continue;
                     }
-                    
+
                     local->prev_key[i] = p->event_data.action;
 
                     // Pass on the event
                     guiframe_action(local->frame, p->event_data.action);
                 }
-            } while((p = p->next));
+            } while ((p = p->next));
         }
         controller_free_chain(p);
     }
@@ -60,8 +60,8 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
     mainmenu_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     if (player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
-            (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN
-             && keyboard_binds_key(player1->ctrl, event))) {
+        (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN &&
+         keyboard_binds_key(player1->ctrl, event))) {
         // these events will be handled by polling
         return 1;
     }
@@ -75,12 +75,12 @@ void mainmenu_render(scene *scene) {
 }
 
 void mainmenu_startup(scene *scene, int id, int *m_load, int *m_repeat) {
-    switch(id) {
-        case 10:
-        case 11:
-            *m_load = 1;
-            *m_repeat = 1;
-            break;
+    switch (id) {
+    case 10:
+    case 11:
+        *m_load = 1;
+        *m_repeat = 1;
+        break;
     }
 }
 
@@ -99,7 +99,7 @@ int mainmenu_create(scene *scene) {
     guiframe_layout(local->frame);
 
     // Cleanups and resets
-    for(int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
         // destroy any leftover controllers
         game_player *player = game_state_get_player(scene->gs, i);
         game_player_set_ctrl(player, NULL);
@@ -120,11 +120,11 @@ int mainmenu_create(scene *scene) {
     scene_set_dynamic_tick_cb(scene, mainmenu_tick);
     scene_set_startup_cb(scene, mainmenu_startup);
 
-    if(scene->gs->net_mode == NET_MODE_CLIENT) {
+    if (scene->gs->net_mode == NET_MODE_CLIENT) {
         component_action(guiframe_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
         component_action(guiframe_find(local->frame, NETWORK_CONNECT_BUTTON_ID), ACT_PUNCH);
         component_action(guiframe_find(local->frame, NETWORK_CONNECT_IP_BUTTON_ID), ACT_PUNCH);
-    } else if(scene->gs->net_mode == NET_MODE_SERVER) {
+    } else if (scene->gs->net_mode == NET_MODE_SERVER) {
         component_action(guiframe_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
         component_action(guiframe_find(local->frame, NETWORK_LISTEN_BUTTON_ID), ACT_PUNCH);
     }

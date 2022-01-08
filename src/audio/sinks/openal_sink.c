@@ -9,11 +9,11 @@
 #include <AL/alc.h>
 #endif
 
-#include <stdlib.h>
 #include "audio/sinks/openal_sink.h"
 #include "audio/sinks/openal_stream.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <stdlib.h>
 
 typedef struct {
     ALCdevice *device;
@@ -39,7 +39,7 @@ int openal_sink_init(audio_sink *sink) {
 
     // Open device and create context
     local->device = alcOpenDevice(0);
-    if(!local->device) {
+    if (!local->device) {
         PERROR("Could not open audio playback device!");
         omf_free(local);
         return 1;

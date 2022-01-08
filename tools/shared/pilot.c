@@ -1,19 +1,8 @@
-#include <stdio.h>
 #include "pilot.h"
+#include <stdio.h>
 
-static const char *har_list[] = {
-    "Jaguar",
-    "Shadow",
-    "Thorn",
-    "Pyros",
-    "Electra",
-    "Katana",
-    "Shredder",
-    "Flail",
-    "Gargoyle",
-    "Chronos",
-    "Nova"
-};
+static const char *har_list[] = {"Jaguar",   "Shadow", "Thorn",    "Pyros",   "Electra", "Katana",
+                                 "Shredder", "Flail",  "Gargoyle", "Chronos", "Nova"};
 
 static const char *difficulty_names[] = {
     "Aluminum",
@@ -23,16 +12,16 @@ static const char *difficulty_names[] = {
 };
 
 void print_bytes(char *buf, int len, int line, int padding) {
-    for(int k = 0; k < padding; k++) {
+    for (int k = 0; k < padding; k++) {
         printf(" ");
     }
-    for(int i = 1; i <= len; i++) {
-        printf("%02x ", (uint8_t)buf[i-1]);
-        if(i % line == 0) {
-            if(len != i) {
+    for (int i = 1; i <= len; i++) {
+        printf("%02x ", (uint8_t)buf[i - 1]);
+        if (i % line == 0) {
+            if (len != i) {
                 printf("\n");
             }
-            for(int k = 0; k < padding; k++) {
+            for (int k = 0; k < padding; k++) {
                 printf(" ");
             }
         }
@@ -40,47 +29,31 @@ void print_bytes(char *buf, int len, int line, int padding) {
 }
 
 void print_pilot_array_header() {
-    printf("ID Name          Wins Loss HAR      Money   AP LP AS LS AR SR PW AG EN OFF   DEF   C1  C2  C3  Secret Photo Value\n");
+    printf("ID Name          Wins Loss HAR      Money   AP LP AS LS AR SR PW AG EN OFF   DEF   C1  "
+           "C2  C3  Secret Photo Value\n");
 }
 
 void print_pilot_array_row(sd_pilot *pilot, int i) {
     const char *har_name = "Random";
-    if(pilot->har_id < 255) {
+    if (pilot->har_id < 255) {
         har_name = har_list[pilot->har_id];
     }
-    printf("%2d %-13s %-4d %-4d %-8s %-7d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-5d %-5d %-3d %-3d %-3d %-6d %-5u %-7u\n",
-        i,
-        pilot->name,
-        pilot->wins,
-        pilot->losses,
-        har_name,
-        pilot->money,
-        pilot->arm_power,
-        pilot->leg_power,
-        pilot->arm_speed,
-        pilot->leg_speed,
-        pilot->armor,
-        pilot->stun_resistance,
-        pilot->power,
-        pilot->agility,
-        pilot->endurance,
-        pilot->offense,
-        pilot->defense,
-        pilot->color_1,
-        pilot->color_2,
-        pilot->color_3,
-        pilot->secret,
-        pilot->photo_id,
-        pilot->total_value);
+    printf("%2d %-13s %-4d %-4d %-8s %-7d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-5d %-5d "
+           "%-3d %-3d %-3d %-6d %-5u %-7u\n",
+           i, pilot->name, pilot->wins, pilot->losses, har_name, pilot->money, pilot->arm_power,
+           pilot->leg_power, pilot->arm_speed, pilot->leg_speed, pilot->armor,
+           pilot->stun_resistance, pilot->power, pilot->agility, pilot->endurance, pilot->offense,
+           pilot->defense, pilot->color_1, pilot->color_2, pilot->color_3, pilot->secret,
+           pilot->photo_id, pilot->total_value);
 }
 
 void print_pilot_player_info(sd_pilot *pilot) {
-    if(pilot) {
+    if (pilot) {
         printf("  - Name:            %s\n", pilot->name);
         printf("  - Wins:            %d\n", pilot->wins);
         printf("  - Losses:          %d\n", pilot->losses);
         printf("  - Rank:            %d\n", pilot->rank);
-        if(pilot->har_id == 255)
+        if (pilot->har_id == 255)
             printf("  - Har:             Random\n");
         else
             printf("  - Har:             %s\n", har_list[pilot->har_id]);
@@ -96,15 +69,12 @@ void print_pilot_player_info(sd_pilot *pilot) {
         printf("  - Offense:         %d\n", pilot->offense);
         printf("  - Defense:         %d\n", pilot->defense);
         printf("  - Money:           %d\n", pilot->money);
-        printf("  - Color:           %d,%d,%d\n",
-            pilot->color_1,
-            pilot->color_2,
-            pilot->color_3);
+        printf("  - Color:           %d,%d,%d\n", pilot->color_1, pilot->color_2, pilot->color_3);
     }
 }
 
 void print_pilot_info(sd_pilot *pilot) {
-    if(pilot != NULL) {
+    if (pilot != NULL) {
         printf("### Pilot header for %s:\n", pilot->name);
 
         print_pilot_player_info(pilot);
@@ -123,12 +93,12 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("\n");
         printf("  - Movement:        %d\n", pilot->movement);
         printf("  - unk_block_c:\n");
-        for(int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             printf("     [%d] = %d\n", i, pilot->unk_block_c[i]);
         }
 
         printf("  - Enhancements:\n");
-        for(int i = 0; i < 11; i++) {
+        for (int i = 0; i < 11; i++) {
             printf("     * %-10s: %x\n", har_list[i], pilot->enhancements[i]);
         }
 
@@ -154,7 +124,7 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("    * Sniper:        %d\n", pilot->att_sniper);
 
         printf("  - unk_block_d:\n");
-        for(int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             printf("     [%d] = %d\n", i, pilot->unk_block_d[i]);
         }
 
@@ -190,16 +160,16 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Unk. Float B:    %f\n", pilot->unk_f_b);
 
         printf("  - Palette:\n");
-        print_bytes((char*)pilot->palette.data, 144, 16, 4);
+        print_bytes((char *)pilot->palette.data, 144, 16, 4);
         printf("\n");
 
         printf("  - Unknown i        %d\n", pilot->unk_block_i);
         printf("  - Photo ID         %d\n", pilot->photo_id);
 
         printf("  - Quotes:\n");
-        for(int m = 0; m < 10; m++) {
+        for (int m = 0; m < 10; m++) {
             char *quote = pilot->quotes[m];
-            if(quote != NULL) {
+            if (quote != NULL) {
                 printf("    * %s\n", quote);
             }
         }

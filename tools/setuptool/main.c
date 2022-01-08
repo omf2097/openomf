@@ -1,17 +1,16 @@
 /** @file main.c
-  * @brief SETUP.CFG file editor tool
-  * @license MIT
-  */
+ * @brief SETUP.CFG file editor tool
+ * @license MIT
+ */
 
+#include "../shared/pilot.h"
+#include "formats/error.h"
+#include "formats/setup.h"
 #include <argtable2.h>
 #include <stdint.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "formats/setup.h"
-#include "formats/error.h"
-#include "../shared/pilot.h"
-
+#include <string.h>
 
 static const char *shadows[] = {
     "None",
@@ -20,37 +19,17 @@ static const char *shadows[] = {
     "High",
 };
 
-static const char *onoff[] = {
-    "Off",
-    "On"
-};
+static const char *onoff[] = {"Off", "On"};
 
-static const char *difficulty_list[] = {
-    "Punching bag",
-    "Rookia",
-    "Veteran",
-    "World Class",
-    "Champion",
-    "Deadly",
-    "Ultimate"
-};
+static const char *difficulty_list[] = {"Punching bag", "Rookia", "Veteran", "World Class",
+                                        "Champion",     "Deadly", "Ultimate"};
 
-static const char* match_type[] = {
-    "One match",
-    "2 out of 3",
-    "3 out of 5",
-    "4 out of 7"
-};
+static const char *match_type[] = {"One match", "2 out of 3", "3 out of 5", "4 out of 7"};
 
-static const char* knockdown_text[] = {
-    "None",
-    "Kicks",
-    "Punches",
-    "Kicks & Punches"
-};
+static const char *knockdown_text[] = {"None", "Kicks", "Punches", "Kicks & Punches"};
 
 void print_setup_root_info(sd_setup_file *setup) {
-    if(setup == NULL) {
+    if (setup == NULL) {
         return;
     }
 
@@ -108,17 +87,17 @@ void print_setup_root_info(sd_setup_file *setup) {
     printf("\n");
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input .REC file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,end};
-    const char* progname = "setuptool";
+    void *argtable[] = {help, vers, file, end};
+    const char *progname = "setuptool";
 
     // Make sure everything got allocated
-    if(arg_nullcheck(argtable) != 0) {
+    if (arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
@@ -127,7 +106,7 @@ int main(int argc, char* argv[]) {
     int nerrors = arg_parse(argc, argv, argtable);
 
     // Handle help
-    if(help->count > 0) {
+    if (help->count > 0) {
         printf("Usage: %s", progname);
         arg_print_syntax(stdout, argtable, "\n");
         printf("\nArguments:\n");
@@ -136,7 +115,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Handle version
-    if(vers->count > 0) {
+    if (vers->count > 0) {
         printf("%s v0.1\n", progname);
         printf("Command line One Must Fall 2097 SETUP.CFG file editor.\n");
         printf("Source code is available at https://github.com/omf2097 under MIT license.\n");
@@ -145,7 +124,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Handle errors
-    if(nerrors > 0) {
+    if (nerrors > 0) {
         arg_print_errors(stdout, end, progname);
         printf("Try '%s --help' for more information.\n", progname);
         goto exit_0;
@@ -154,9 +133,9 @@ int main(int argc, char* argv[]) {
     // Load file
     sd_setup_file setup;
     sd_setup_create(&setup);
-    if(file->count > 0) {
+    if (file->count > 0) {
         int ret = sd_setup_load(&setup, file->filename[0]);
-        if(ret != SD_SUCCESS) {
+        if (ret != SD_SUCCESS) {
             printf("Unable to load setup file! [%d] %s.\n", ret, sd_get_error(ret));
             goto exit_1;
         }
@@ -168,6 +147,6 @@ int main(int argc, char* argv[]) {
 exit_1:
     sd_setup_free(&setup);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

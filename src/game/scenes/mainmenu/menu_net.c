@@ -18,22 +18,23 @@ void menu_net_connect(component *c, void *userdata) {
 void menu_net_listen(component *c, void *userdata) {
     scene *s = userdata;
     component *new_menu = menu_listen_create(s);
-    if(new_menu != NULL) {
+    if (new_menu != NULL) {
         menu_set_submenu(c->parent, new_menu);
     }
 }
 
-component* menu_net_create(scene *s) {
+component *menu_net_create(scene *s) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = color_create(0, 121, 0, 255);
 
-    component* menu = menu_create(11);
+    component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "NETWORK PLAY"));
     menu_attach(menu, filler_create());
-    component *connect = textbutton_create(&tconf, "CONNECT TO SERVER", COM_ENABLED, menu_net_connect, s);
+    component *connect =
+        textbutton_create(&tconf, "CONNECT TO SERVER", COM_ENABLED, menu_net_connect, s);
     widget_set_id(connect, NETWORK_CONNECT_BUTTON_ID);
     menu_attach(menu, connect);
     component *listen = textbutton_create(&tconf, "START SERVER", COM_ENABLED, menu_net_listen, s);

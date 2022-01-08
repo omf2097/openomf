@@ -1,22 +1,22 @@
-#include <stdio.h>
-#include <signal.h> // signal()
-#include <SDL.h>
 #include "engine.h"
-#include "utils/allocator.h"
-#include "utils/log.h"
-#include "utils/config.h"
 #include "audio/audio.h"
 #include "audio/music.h"
-#include "resources/sounds_loader.h"
-#include "video/surface.h"
-#include "video/video.h"
-#include "resources/languages.h"
-#include "game/game_state.h"
-#include "game/utils/settings.h"
-#include "game/utils/ticktimer.h"
-#include "game/gui/text_render.h"
 #include "console/console.h"
 #include "formats/altpal.h"
+#include "game/game_state.h"
+#include "game/gui/text_render.h"
+#include "game/utils/settings.h"
+#include "game/utils/ticktimer.h"
+#include "resources/languages.h"
+#include "resources/sounds_loader.h"
+#include "utils/allocator.h"
+#include "utils/config.h"
+#include "utils/log.h"
+#include "video/surface.h"
+#include "video/video.h"
+#include <SDL.h>
+#include <signal.h> // signal()
+#include <stdio.h>
 
 static int run = 0;
 static int start_timeout = 30;
@@ -26,9 +26,7 @@ static int enable_screen_updates = 1;
 static char screenshot_filename[128];
 #endif
 
-void exit_handler(int s) {
-    run = 0;
-}
+void exit_handler(int s) { run = 0; }
 
 int engine_init() {
 #ifndef STANDALONE_SERVER
@@ -43,38 +41,39 @@ int engine_init() {
     const char *audiosink = setting->sound.sink;
 
     // Initialize everything.
-    if(video_init(w, h, fs, vsync, scaler, scale_factor)) {
+    if (video_init(w, h, fs, vsync, scaler, scale_factor)) {
         goto exit_0;
     }
-    if(!audio_is_sink_available(audiosink)) {
+    if (!audio_is_sink_available(audiosink)) {
         const char *prev_sink = audiosink;
         audiosink = audio_get_first_sink_name();
-        if(audiosink == NULL) {
-            INFO("Could not find requested sink '%s'. No other sinks available; disabling audio.", prev_sink);
+        if (audiosink == NULL) {
+            INFO("Could not find requested sink '%s'. No other sinks available; disabling audio.",
+                 prev_sink);
         } else {
             INFO("Could not find requested sink '%s'. Falling back to '%s'.", prev_sink, audiosink);
         }
     }
-    if(audio_init(audiosink)) {
+    if (audio_init(audiosink)) {
         goto exit_1;
     }
-    sound_set_volume(setting->sound.sound_vol/10.0f);
-    music_set_volume(setting->sound.music_vol/10.0f);
+    sound_set_volume(setting->sound.sound_vol / 10.0f);
+    music_set_volume(setting->sound.music_vol / 10.0f);
 #endif
 
-    if(sounds_loader_init()) {
+    if (sounds_loader_init()) {
         goto exit_2;
     }
-    if(lang_init()) {
+    if (lang_init()) {
         goto exit_3;
     }
-    if(fonts_init()) {
+    if (fonts_init()) {
         goto exit_4;
     }
-    if(altpals_init()) {
+    if (altpals_init()) {
         goto exit_5;
     }
-    if(console_init()) {
+    if (console_init()) {
         goto exit_6;
     }
 
@@ -113,7 +112,7 @@ void engine_run(engine_init_flags *init_flags) {
     int debugger_proceed = 0;
     int debugger_render = 0;
 
-    //if mouse_visible_ticks <= 0, hide mouse
+    // if mouse_visible_ticks <= 0, hide mouse
     int mouse_visible_ticks = 1000;
 
     INFO(" --- BEGIN GAME LOG ---");
@@ -127,13 +126,13 @@ void engine_run(engine_init_flags *init_flags) {
     // Game start timeout.
     // Wait a moment so that people are mentally prepared
     // (with the recording software on) for the game to start :)
-    if(!settings_get()->video.crossfade_on) {
+    if (!settings_get()->video.crossfade_on) {
         start_timeout = 0;
     }
-    while(start_timeout > 0) {
+    while (start_timeout > 0) {
         start_timeout--;
-        while(SDL_PollEvent(&e)) {
-            if(e.type == SDL_QUIT) {
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
                 return;
             }
         }
@@ -143,12 +142,12 @@ void engine_run(engine_init_flags *init_flags) {
     }
 
     // apply volume settings
-    sound_set_volume(settings_get()->sound.sound_vol/10.0f);
+    sound_set_volume(settings_get()->sound.sound_vol / 10.0f);
 #endif
 
     // Set up game
     game_state *gs = omf_calloc(1, sizeof(game_state));
-    if(game_state_create(gs, init_flags)) {
+    if (game_state_create(gs, init_flags)) {
         game_state_free(&gs);
         return;
     }
@@ -157,76 +156,75 @@ void engine_run(engine_init_flags *init_flags) {
     int frame_start = SDL_GetTicks();
     int dynamic_wait = 0;
     int static_wait = 0;
-    while(run && game_state_is_running(gs)) {
+    while (run && game_state_is_running(gs)) {
 
 #ifndef STANDALONE_SERVER
         // Handle events
         int check_fs;
-        while(SDL_PollEvent(&e)) {
+        while (SDL_PollEvent(&e)) {
             // Handle other events
-            switch(e.type) {
-                case SDL_QUIT:
-                    run = 0;
+            switch (e.type) {
+            case SDL_QUIT:
+                run = 0;
+                break;
+            case SDL_KEYDOWN:
+                if (e.key.keysym.sym == SDLK_F1) {
+                    take_screenshot = 1;
+                }
+                if (e.key.keysym.sym == SDLK_F5) {
+                    visual_debugger = !visual_debugger;
+                }
+                if (e.key.keysym.sym == SDLK_SPACE) {
+                    debugger_proceed = 1;
+                }
+                if (e.key.keysym.sym == SDLK_F6) {
+                    debugger_render = !debugger_render;
+                }
+                break;
+            case SDL_MOUSEMOTION:
+                mouse_visible_ticks = 1000;
+                SDL_ShowCursor(1);
+                break;
+            case SDL_WINDOWEVENT:
+                switch (e.window.event) {
+                case SDL_WINDOWEVENT_MINIMIZED:
+                    DEBUG("MINIMIZED");
+                    enable_screen_updates = 0;
                     break;
-                case SDL_KEYDOWN:
-                    if(e.key.keysym.sym == SDLK_F1) {
-                        take_screenshot = 1;
-                    }
-                    if(e.key.keysym.sym == SDLK_F5) {
-                        visual_debugger = !visual_debugger;
-                    }
-                    if(e.key.keysym.sym == SDLK_SPACE) {
-                        debugger_proceed = 1;
-                    }
-                    if(e.key.keysym.sym == SDLK_F6) {
-                        debugger_render = !debugger_render;
-                    }
+                case SDL_WINDOWEVENT_HIDDEN:
+                    DEBUG("HIDDEN");
+                    enable_screen_updates = 0;
                     break;
-                case SDL_MOUSEMOTION:
-                    mouse_visible_ticks = 1000;
-                    SDL_ShowCursor(1);
+                case SDL_WINDOWEVENT_MAXIMIZED:
+                    DEBUG("MAXIMIZED");
+                    enable_screen_updates = 1;
                     break;
-                case SDL_WINDOWEVENT:
-                    switch(e.window.event) {
-                        case SDL_WINDOWEVENT_MINIMIZED:
-                            DEBUG("MINIMIZED");
-                            enable_screen_updates = 0;
-                            break;
-                        case SDL_WINDOWEVENT_HIDDEN:
-                            DEBUG("HIDDEN");
-                            enable_screen_updates = 0;
-                            break;
-                        case SDL_WINDOWEVENT_MAXIMIZED:
-                            DEBUG("MAXIMIZED");
-                            enable_screen_updates = 1;
-                            break;
-                        case SDL_WINDOWEVENT_RESTORED:
-                            video_get_state(NULL, NULL, &check_fs, NULL);
-                            if(check_fs) {
-                                video_reinit_renderer();
-                            }
-                            DEBUG("RESTORED");
-                            enable_screen_updates = 1;
-                            break;
-                        case SDL_WINDOWEVENT_SHOWN:
-                            enable_screen_updates = 1;
-                            DEBUG("SHOWN");
-                            break;
+                case SDL_WINDOWEVENT_RESTORED:
+                    video_get_state(NULL, NULL, &check_fs, NULL);
+                    if (check_fs) {
+                        video_reinit_renderer();
                     }
+                    DEBUG("RESTORED");
+                    enable_screen_updates = 1;
                     break;
+                case SDL_WINDOWEVENT_SHOWN:
+                    enable_screen_updates = 1;
+                    DEBUG("SHOWN");
+                    break;
+                }
+                break;
             }
 
             // Console events
-            if(e.type == SDL_KEYDOWN) {
-                if(console_window_is_open() && (e.key.keysym.scancode == SDL_SCANCODE_GRAVE ||
-                                                e.key.keysym.sym == SDLK_BACKQUOTE ||
-                                                e.key.keysym.sym == SDLK_TAB ||
-                                                e.key.keysym.sym == SDLK_ESCAPE)) {
+            if (e.type == SDL_KEYDOWN) {
+                if (console_window_is_open() &&
+                    (e.key.keysym.scancode == SDL_SCANCODE_GRAVE ||
+                     e.key.keysym.sym == SDLK_BACKQUOTE || e.key.keysym.sym == SDLK_TAB ||
+                     e.key.keysym.sym == SDLK_ESCAPE)) {
                     console_window_close();
                     continue;
-                } else if(e.key.keysym.sym == SDLK_TAB ||
-                          e.key.keysym.sym == SDLK_BACKQUOTE ||
-                          e.key.keysym.scancode == SDL_SCANCODE_GRAVE) {
+                } else if (e.key.keysym.sym == SDLK_TAB || e.key.keysym.sym == SDLK_BACKQUOTE ||
+                           e.key.keysym.scancode == SDL_SCANCODE_GRAVE) {
                     console_window_open();
                     continue;
                 }
@@ -234,7 +232,7 @@ void engine_run(engine_init_flags *init_flags) {
 
             // If console windows is open, pass events to console.
             // Otherwise to the objects.
-            if(console_window_is_open()) {
+            if (console_window_is_open()) {
                 console_event(gs, &e);
             } else {
                 game_state_handle_event(gs, &e);
@@ -242,9 +240,9 @@ void engine_run(engine_init_flags *init_flags) {
         }
 
         // hide mouse after n ticks
-        if(mouse_visible_ticks > 0) {
+        if (mouse_visible_ticks > 0) {
             mouse_visible_ticks -= SDL_GetTicks() - frame_start;
-            if(mouse_visible_ticks <= 0) {
+            if (mouse_visible_ticks <= 0) {
                 SDL_ShowCursor(0);
             }
         }
@@ -255,15 +253,15 @@ void engine_run(engine_init_flags *init_flags) {
         // Render scene
         int dt = (SDL_GetTicks() - frame_start);
         frame_start = SDL_GetTicks(); // Reset timer
-        if(!visual_debugger) {
+        if (!visual_debugger) {
             dynamic_wait += dt;
             static_wait += dt;
-        } else if(debugger_proceed) {
+        } else if (debugger_proceed) {
             dynamic_wait += 20;
             static_wait += 20;
             debugger_proceed = 0;
         }
-        while(static_wait > 10) {
+        while (static_wait > 10) {
             // Static tick for gamestate
             game_state_static_tick(gs);
 
@@ -275,7 +273,7 @@ void engine_run(engine_init_flags *init_flags) {
 
             static_wait -= 10;
         }
-        while(dynamic_wait > game_state_ms_per_dyntick(gs)) {
+        while (dynamic_wait > game_state_ms_per_dyntick(gs)) {
             // Tick scene
             game_state_dynamic_tick(gs);
 
@@ -285,29 +283,29 @@ void engine_run(engine_init_flags *init_flags) {
 
 #ifndef STANDALONE_SERVER
         // Handle audio
-        if(!visual_debugger) {
+        if (!visual_debugger) {
             audio_render();
         }
 
         // Do the actual video rendering jobs
-        if(enable_screen_updates) {
+        if (enable_screen_updates) {
 
             video_render_prepare();
             game_state_render(gs);
-            if(debugger_render) {
+            if (debugger_render) {
                 game_state_debug(gs);
             }
             console_render();
             video_render_finish();
 
             // If screenshot requested, do it here.
-            if(take_screenshot) {
+            if (take_screenshot) {
                 image img;
                 int failed_screenshot = video_screenshot(&img);
-                if(!failed_screenshot) {
+                if (!failed_screenshot) {
                     snprintf(screenshot_filename, 128, "screenshot_%u.png", SDL_GetTicks());
                     int scr_ret = image_write_png(&img, screenshot_filename);
-                    if(scr_ret) {
+                    if (scr_ret) {
                         PERROR("Screenshot write operation failed (%s)", screenshot_filename);
                     } else {
                         DEBUG("Got a screenshot: %s", screenshot_filename);

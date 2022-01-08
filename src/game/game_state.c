@@ -1,38 +1,38 @@
-#include <stdlib.h>
-#include <math.h>
-#include <SDL.h>
-#include "controller/keyboard.h"
+#include "game/game_state.h"
+#include "console/console.h"
 #include "controller/joystick.h"
+#include "controller/keyboard.h"
 #include "controller/rec_controller.h"
+#include "formats/error.h"
+#include "formats/rec.h"
+#include "game/common_defines.h"
+#include "game/protos/intersect.h"
+#include "game/protos/object.h"
+#include "game/protos/scene.h"
+#include "game/scenes/arena.h"
+#include "game/scenes/credits.h"
+#include "game/scenes/cutscene.h"
+#include "game/scenes/intro.h"
+#include "game/scenes/mainmenu.h"
+#include "game/scenes/mechlab.h"
+#include "game/scenes/melee.h"
+#include "game/scenes/newsroom.h"
+#include "game/scenes/openomf.h"
+#include "game/scenes/scoreboard.h"
+#include "game/scenes/vs.h"
+#include "game/utils/serial.h"
+#include "game/utils/settings.h"
+#include "game/utils/ticktimer.h"
+#include "resources/ids.h"
+#include "resources/pilots.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "game/utils/serial.h"
-#include "resources/ids.h"
-#include "resources/pilots.h"
-#include "console/console.h"
-#include "video/video.h"
 #include "video/tcache.h"
-#include "formats/rec.h"
-#include "formats/error.h"
-#include "game/game_state.h"
-#include "game/common_defines.h"
-#include "game/utils/settings.h"
-#include "game/utils/ticktimer.h"
-#include "game/protos/scene.h"
-#include "game/protos/object.h"
-#include "game/protos/intersect.h"
-#include "game/scenes/intro.h"
-#include "game/scenes/mainmenu.h"
-#include "game/scenes/credits.h"
-#include "game/scenes/cutscene.h"
-#include "game/scenes/arena.h"
-#include "game/scenes/mechlab.h"
-#include "game/scenes/newsroom.h"
-#include "game/scenes/melee.h"
-#include "game/scenes/vs.h"
-#include "game/scenes/scoreboard.h"
-#include "game/scenes/openomf.h"
+#include "video/video.h"
+#include <SDL.h>
+#include <math.h>
+#include <stdlib.h>
 
 #define MS_PER_OMF_TICK 10
 #define MS_PER_OMF_TICK_SLOWEST 60
@@ -49,9 +49,9 @@ static void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *re
 #define FRAME_WAIT_TICKS 30
 
 typedef struct {
-    int layer; ///< Object rendering layer
+    int layer;      ///< Object rendering layer
     int persistent; ///< 1 if the object should keep alive across scene boundaries
-    int singleton; ///< 1 if object should be the only representative of its animation ID
+    int singleton;  ///< 1 if object should be the only representative of its animation ID
     object *obj;
 } render_obj;
 
@@ -81,7 +81,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
     // Set up players
     gs->sc = omf_calloc(1, sizeof(scene));
-    for(int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
         gs->players[i] = omf_calloc(1, sizeof(game_player));
         game_player_create(gs->players[i]);
     }
@@ -92,20 +92,20 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         sd_rec_file rec;
         sd_rec_create(&rec);
         int ret = sd_rec_load(&rec, init_flags->rec_file);
-        if(ret != SD_SUCCESS) {
+        if (ret != SD_SUCCESS) {
             PERROR("Unable to load recording %s.", init_flags->rec_file);
             goto error_0;
         }
 
         nscene = SCENE_ARENA0 + rec.arena_id;
         DEBUG("playing recording file %s", init_flags->rec_file);
-        if(scene_create(gs->sc, gs, nscene)) {
+        if (scene_create(gs->sc, gs, nscene)) {
             PERROR("Error while loading scene %d.", nscene);
             goto error_0;
         }
 
         // set the HAR colors, pilot, har type
-        for(int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++) {
             gs->players[i]->colors[0] = rec.pilots[i].info.color_3;
             gs->players[i]->colors[1] = rec.pilots[i].info.color_2;
             gs->players[i]->colors[2] = rec.pilots[i].info.color_1;
@@ -116,25 +116,25 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         // XXX use playback controller once it exista
         _setup_rec_controller(gs, 0, &rec);
         _setup_rec_controller(gs, 1, &rec);
-        if(arena_create(gs->sc)) {
+        if (arena_create(gs->sc)) {
             PERROR("Error while creating arena scene.");
             goto error_1;
         }
     } else {
         // Select correct starting scene and load resources
-         nscene = (init_flags->net_mode == NET_MODE_NONE ? SCENE_OPENOMF : SCENE_MENU);
-        if(scene_create(gs->sc, gs, nscene)) {
+        nscene = (init_flags->net_mode == NET_MODE_NONE ? SCENE_OPENOMF : SCENE_MENU);
+        if (scene_create(gs->sc, gs, nscene)) {
             PERROR("Error while loading scene %d.", nscene);
             goto error_0;
         }
-        if(init_flags->net_mode == NET_MODE_NONE) {
-            if(openomf_create(gs->sc)) {
+        if (init_flags->net_mode == NET_MODE_NONE) {
+            if (openomf_create(gs->sc)) {
                 PERROR("Error while creating intro scene.");
                 goto error_1;
             }
         } else {
             // if connecting to the server or listening, jump straight to the menu
-            if(mainmenu_create(gs->sc)) {
+            if (mainmenu_create(gs->sc)) {
                 PERROR("Error while creating menu scene.");
                 goto error_1;
             }
@@ -171,13 +171,13 @@ int game_state_add_object(game_state *gs, object *obj, int layer, int singleton,
     o.singleton = singleton;
     o.persistent = persistent;
     animation *new_ani = object_get_animation(obj);
-    if(singleton) {
+    if (singleton) {
         iterator it;
         render_obj *robj;
         vector_iter_begin(&gs->objects, &it);
-        while((robj = iter_next(&it)) != NULL) {
+        while ((robj = iter_next(&it)) != NULL) {
             animation *ani = object_get_animation(robj->obj);
-            if(ani != NULL && ani->id == new_ani->id && robj->singleton) {
+            if (ani != NULL && ani->id == new_ani->id && robj->singleton) {
                 return 1;
             }
         }
@@ -195,7 +195,7 @@ int game_state_add_object(game_state *gs, object *obj, int layer, int singleton,
  * Slows down the game for n ticks. Only allows slowdown if one isn't already ongoing.
  */
 void game_state_slowdown(game_state *gs, int ticks, int rate) {
-    if(gs->speed_slowdown_time < 0) {
+    if (gs->speed_slowdown_time < 0) {
         gs->speed_slowdown_previous = gs->speed;
         gs->speed_slowdown_time = ticks;
         gs->speed = max2(rate, 0);
@@ -207,17 +207,15 @@ void game_state_set_speed(game_state *gs, int rate) {
     DEBUG("game speed set to %d", gs->speed);
 }
 
-unsigned int game_state_get_speed(game_state *gs) {
-    return gs->speed;
-}
+unsigned int game_state_get_speed(game_state *gs) { return gs->speed; }
 
 void game_state_del_animation(game_state *gs, int anim_id) {
     iterator it;
     render_obj *robj;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    while ((robj = iter_next(&it)) != NULL) {
         animation *ani = object_get_animation(robj->obj);
-        if(ani != NULL && ani->id == anim_id) {
+        if (ani != NULL && ani->id == anim_id) {
             object_free(robj->obj);
             omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
@@ -225,15 +223,16 @@ void game_state_del_animation(game_state *gs, int anim_id) {
             return;
         }
     }
-    DEBUG("Attempted to delete animation %i from game_state, but no such animation was playing.", anim_id);
+    DEBUG("Attempted to delete animation %i from game_state, but no such animation was playing.",
+          anim_id);
 }
 
 void game_state_del_object(game_state *gs, object *target) {
     iterator it;
     render_obj *robj;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(target == robj->obj) {
+    while ((robj = iter_next(&it)) != NULL) {
+        if (target == robj->obj) {
             object_free(robj->obj);
             omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
@@ -246,8 +245,8 @@ void game_state_get_projectiles(game_state *gs, vector *obj_proj) {
     iterator it;
     render_obj *robj;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(object_get_layers(robj->obj) & LAYER_PROJECTILE) {
+    while ((robj = iter_next(&it)) != NULL) {
+        if (object_get_layers(robj->obj) & LAYER_PROJECTILE) {
             vector_append(obj_proj, &robj->obj);
         }
     }
@@ -257,8 +256,8 @@ void game_state_clear_hazards_projectiles(game_state *gs) {
     iterator it;
     render_obj *robj;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(object_get_group(robj->obj) == GROUP_PROJECTILE) {
+    while ((robj = iter_next(&it)) != NULL) {
+        if (object_get_group(robj->obj) == GROUP_PROJECTILE) {
             object_free(robj->obj);
             omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
@@ -267,32 +266,24 @@ void game_state_clear_hazards_projectiles(game_state *gs) {
 }
 
 void game_state_set_next(game_state *gs, unsigned int next_scene_id) {
-    if(gs->next_wait_ticks <= 0) {
+    if (gs->next_wait_ticks <= 0) {
         gs->next_wait_ticks = FRAME_WAIT_TICKS;
         gs->next_next_id = SCENE_MENU;
         gs->next_id = next_scene_id;
     }
 }
 
-scene* game_state_get_scene(game_state *gs) {
-    return gs->sc;
-}
+scene *game_state_get_scene(game_state *gs) { return gs->sc; }
 
-unsigned int game_state_is_running(game_state *gs) {
-    return gs->run;
-}
+unsigned int game_state_is_running(game_state *gs) { return gs->run; }
 
-unsigned int game_state_is_paused(game_state *gs) {
-    return gs->paused;
-}
+unsigned int game_state_is_paused(game_state *gs) { return gs->paused; }
 
-void game_state_set_paused(game_state *gs, unsigned int paused) {
-    gs->paused = paused;
-}
+void game_state_set_paused(game_state *gs, unsigned int paused) { gs->paused = paused; }
 
 // Return 0 if event was handled here
 int game_state_handle_event(game_state *gs, SDL_Event *event) {
-    if(scene_event(gs->sc, event) == 0) {
+    if (scene_event(gs->sc, event) == 0) {
         return 0;
     }
     return 1;
@@ -306,8 +297,8 @@ void game_state_render(game_state *gs) {
     screen_palette *scr_pal = video_get_pal_ref();
     int pal_changed = 0;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(object_palette_transform(robj->obj, scr_pal) == 1) {
+    while ((robj = iter_next(&it)) != NULL) {
+        if (object_palette_transform(robj->obj, scr_pal) == 1) {
             pal_changed = 1;
             gs->next_requires_refresh = 1;
         }
@@ -316,9 +307,9 @@ void game_state_render(game_state *gs) {
     // If changes were made to palette, then
     // all resources that depend on it must be redrawn.
     // This will take care of it.
-    if(pal_changed) {
+    if (pal_changed) {
         scr_pal->version++;
-    } else if(gs->next_requires_refresh) {
+    } else if (gs->next_requires_refresh) {
         // Because of caching, we might sometimes get stuck to
         // a bad/old frame. This will fix it.
         scr_pal->version++;
@@ -335,9 +326,9 @@ void game_state_render(game_state *gs) {
 
     // Render BOTTOM layer
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(robj->layer == RENDER_LAYER_BOTTOM) {
-            if(robj->obj == har[0] || robj->obj == har[1])
+    while ((robj = iter_next(&it)) != NULL) {
+        if (robj->layer == RENDER_LAYER_BOTTOM) {
+            if (robj->obj == har[0] || robj->obj == har[1])
                 continue;
             object_render(robj->obj);
         }
@@ -345,39 +336,39 @@ void game_state_render(game_state *gs) {
 
     // cast object shadows (scrap, projectiles, etc)
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    while ((robj = iter_next(&it)) != NULL) {
         object_render_shadow(robj->obj);
     }
 
     // Render passive HARs here
-    for(int i = 0; i < 2; i++) {
-        if(har[i] != NULL && !har_is_active(har[i])) {
+    for (int i = 0; i < 2; i++) {
+        if (har[i] != NULL && !har_is_active(har[i])) {
             object_render(har[i]);
         }
     }
 
     // Render MIDDLE layer
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(robj->layer == RENDER_LAYER_MIDDLE) {
-            if(robj->obj == har[0] || robj->obj == har[1])
+    while ((robj = iter_next(&it)) != NULL) {
+        if (robj->layer == RENDER_LAYER_MIDDLE) {
+            if (robj->obj == har[0] || robj->obj == har[1])
                 continue;
             object_render(robj->obj);
         }
     }
 
     // Render active HARs here
-    for(int i = 0; i < 2; i++) {
-        if(har[i] != NULL && har_is_active(har[i])) {
+    for (int i = 0; i < 2; i++) {
+        if (har[i] != NULL && har_is_active(har[i])) {
             object_render(har[i]);
         }
     }
 
     // Render TOP layer
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(robj->layer == RENDER_LAYER_TOP) {
-            if(robj->obj == har[0] || robj->obj == har[1])
+    while ((robj = iter_next(&it)) != NULL) {
+        if (robj->layer == RENDER_LAYER_TOP) {
+            if (robj->obj == har[0] || robj->obj == har[1])
                 continue;
             object_render(robj->obj);
         }
@@ -390,9 +381,9 @@ void game_state_render(game_state *gs) {
 void game_state_debug(game_state *gs) {
     // If we are in debug mode, handle HAR debug layers
 #ifdef DEBUGMODE
-    for(int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
         object *h = game_state_get_player(gs, i)->har;
-        if(h != NULL) {
+        if (h != NULL) {
             object_debug(h);
         }
     }
@@ -411,8 +402,8 @@ int game_load_new(game_state *gs, int scene_id) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(!robj->persistent) {
+    while ((robj = iter_next(&it)) != NULL) {
+        if (!robj->persistent) {
             object_free(robj->obj);
             omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
@@ -421,83 +412,83 @@ int game_load_new(game_state *gs, int scene_id) {
 
     // Initialize new scene with BK data etc.
     gs->sc = omf_calloc(1, sizeof(scene));
-    if(scene_create(gs->sc, gs, scene_id)) {
+    if (scene_create(gs->sc, gs, scene_id)) {
         PERROR("Error while loading scene %d.", scene_id);
         goto error_0;
     }
 
     // Load scene specifics
-    switch(scene_id) {
-        case SCENE_OPENOMF:
-            if(openomf_create(gs->sc)) {
-                PERROR("Error while creating openomf-intro scene.");
-                goto error_1;
-            }
-            break;
-        case SCENE_INTRO:
-            if(intro_create(gs->sc)) {
-                PERROR("Error while creating intro scene.");
-                goto error_1;
-            }
-            break;
-        case SCENE_MENU:
-            if(mainmenu_create(gs->sc)) {
-                PERROR("Error while creating mainmenu scene.");
-                goto error_1;
-            }
-            break;
-        case SCENE_SCOREBOARD:
-            if(scoreboard_create(gs->sc)) {
-                PERROR("Error while creating scoreboard scene.");
-                goto error_1;
-            }
-            break;
-        case SCENE_CREDITS:
-            if(credits_create(gs->sc)) {
-                PERROR("Error while creating credits scene.");
-                goto error_1;
-            }
-            break;
-        case SCENE_MELEE:
-            if(melee_create(gs->sc)) {
-                PERROR("Error while creating melee scene.");
-                goto error_1;
-            }
-            break;
-        case SCENE_VS:
-            if(vs_create(gs->sc)) {
-                PERROR("Error while creating VS scene.");
-                goto error_1;
-            }
-            break;
-        case SCENE_MECHLAB:
-            if(mechlab_create(gs->sc)) {
-                PERROR("Error while creating Mechlab scene.");
-                goto error_1;
-            }
-            break;
-        case SCENE_NEWSROOM:
-            if(newsroom_create(gs->sc)) {
-                PERROR("Error while creating Newsroom scene.");
-                goto error_1;
-            }
-            break;
-        case SCENE_ARENA0:
-        case SCENE_ARENA1:
-        case SCENE_ARENA2:
-        case SCENE_ARENA3:
-        case SCENE_ARENA4:
-            if(arena_create(gs->sc)) {
-                PERROR("Error while creating arena scene.");
-                goto error_1;
-            }
-            break;
-        default:
-            if(cutscene_create(gs->sc)) {
-                PERROR("Error while creating cut scene.");
-                goto error_1;
-            }
-            break;
+    switch (scene_id) {
+    case SCENE_OPENOMF:
+        if (openomf_create(gs->sc)) {
+            PERROR("Error while creating openomf-intro scene.");
+            goto error_1;
+        }
+        break;
+    case SCENE_INTRO:
+        if (intro_create(gs->sc)) {
+            PERROR("Error while creating intro scene.");
+            goto error_1;
+        }
+        break;
+    case SCENE_MENU:
+        if (mainmenu_create(gs->sc)) {
+            PERROR("Error while creating mainmenu scene.");
+            goto error_1;
+        }
+        break;
+    case SCENE_SCOREBOARD:
+        if (scoreboard_create(gs->sc)) {
+            PERROR("Error while creating scoreboard scene.");
+            goto error_1;
+        }
+        break;
+    case SCENE_CREDITS:
+        if (credits_create(gs->sc)) {
+            PERROR("Error while creating credits scene.");
+            goto error_1;
+        }
+        break;
+    case SCENE_MELEE:
+        if (melee_create(gs->sc)) {
+            PERROR("Error while creating melee scene.");
+            goto error_1;
+        }
+        break;
+    case SCENE_VS:
+        if (vs_create(gs->sc)) {
+            PERROR("Error while creating VS scene.");
+            goto error_1;
+        }
+        break;
+    case SCENE_MECHLAB:
+        if (mechlab_create(gs->sc)) {
+            PERROR("Error while creating Mechlab scene.");
+            goto error_1;
+        }
+        break;
+    case SCENE_NEWSROOM:
+        if (newsroom_create(gs->sc)) {
+            PERROR("Error while creating Newsroom scene.");
+            goto error_1;
+        }
+        break;
+    case SCENE_ARENA0:
+    case SCENE_ARENA1:
+    case SCENE_ARENA2:
+    case SCENE_ARENA3:
+    case SCENE_ARENA4:
+        if (arena_create(gs->sc)) {
+            PERROR("Error while creating arena scene.");
+            goto error_1;
+        }
+        break;
+    default:
+        if (cutscene_create(gs->sc)) {
+            PERROR("Error while creating cut scene.");
+            goto error_1;
+        }
+        break;
     }
 
     // Zap scene to produce objects & background
@@ -519,12 +510,13 @@ error_0:
 void game_state_call_collide(game_state *gs) {
     object *a, *b;
     unsigned int size = vector_size(&gs->objects);
-    for(int i = 0; i < size; i++) {
-        a = ((render_obj*)vector_get(&gs->objects, i))->obj;
-        for(int k = i+1; k < size; k++) {
-            b = ((render_obj*)vector_get(&gs->objects, k))->obj;
-            if(a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) {
-                if(a->layers & b->layers) {
+    for (int i = 0; i < size; i++) {
+        a = ((render_obj *)vector_get(&gs->objects, i))->obj;
+        for (int k = i + 1; k < size; k++) {
+            b = ((render_obj *)vector_get(&gs->objects, k))->obj;
+            if (a->group != b->group || a->group == OBJECT_NO_GROUP ||
+                b->group == OBJECT_NO_GROUP) {
+                if (a->layers & b->layers) {
                     object_collide(a, b);
                 }
             }
@@ -536,8 +528,8 @@ void game_state_cleanup(game_state *gs) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(object_finished(robj->obj)) {
+    while ((robj = iter_next(&it)) != NULL) {
+        if (object_finished(robj->obj)) {
             /*DEBUG("Animation object %d is finished, removing.", robj->obj->cur_animation->id);*/
             object_free(robj->obj);
             omf_free(robj->obj);
@@ -550,37 +542,36 @@ void game_state_call_move(game_state *gs) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    while ((robj = iter_next(&it)) != NULL) {
         object_move(robj->obj);
     }
 }
 
 void game_state_tick_controllers(game_state *gs) {
-    for(int i = 0; i < game_state_num_players(gs); i++) {
+    for (int i = 0; i < game_state_num_players(gs); i++) {
         game_player *gp = game_state_get_player(gs, i);
         controller *c = game_player_get_ctrl(gp);
-        if(c) {
+        if (c) {
             controller_tick(c, gs->int_tick, &c->extra_events);
         }
     }
 }
 
 void game_state_dyntick_controllers(game_state *gs) {
-    for(int i = 0; i < game_state_num_players(gs); i++) {
+    for (int i = 0; i < game_state_num_players(gs); i++) {
         game_player *gp = game_state_get_player(gs, i);
         controller *c = game_player_get_ctrl(gp);
-        if(c) {
+        if (c) {
             controller_dyntick(c, gs->tick, &c->extra_events);
         }
     }
 }
 
-
 void game_state_ctrl_events_free(game_state *gs) {
-    for(int i = 0; i < game_state_num_players(gs); i++) {
+    for (int i = 0; i < game_state_num_players(gs); i++) {
         game_player *gp = game_state_get_player(gs, i);
         controller *c = game_player_get_ctrl(gp);
-        if(c) {
+        if (c) {
             controller_free_chain(c->extra_events);
             c->extra_events = NULL;
         }
@@ -592,8 +583,8 @@ void game_state_call_tick(game_state *gs, int mode) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(mode == TICK_DYNAMIC) {
+    while ((robj = iter_next(&it)) != NULL) {
+        if (mode == TICK_DYNAMIC) {
             object_dynamic_tick(robj->obj);
         } else {
             object_static_tick(robj->obj);
@@ -601,11 +592,11 @@ void game_state_call_tick(game_state *gs, int mode) {
     }
 
     // Speed back up
-    if(gs->speed_slowdown_time == 0) {
+    if (gs->speed_slowdown_time == 0) {
         DEBUG("Slowdown: Speed back up from %d to %d.", gs->speed, gs->speed_slowdown_previous);
         gs->speed = gs->speed_slowdown_previous;
     }
-    if(gs->speed_slowdown_time >= 0) {
+    if (gs->speed_slowdown_time >= 0) {
         gs->speed_slowdown_time--;
     }
 }
@@ -613,11 +604,11 @@ void game_state_call_tick(game_state *gs, int mode) {
 // This function is always called with the same interval, and game speed does not affect it
 void game_state_static_tick(game_state *gs) {
     // Set scene crossfade values
-    if(gs->next_wait_ticks > 0) {
+    if (gs->next_wait_ticks > 0) {
         gs->next_wait_ticks--;
         video_set_fade((float)gs->next_wait_ticks / (float)FRAME_WAIT_TICKS);
     }
-    if(gs->this_wait_ticks > 0) {
+    if (gs->this_wait_ticks > 0) {
         gs->this_wait_ticks--;
         video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
     }
@@ -632,21 +623,22 @@ void game_state_static_tick(game_state *gs) {
 // This function is called when the game speed requires it
 void game_state_dynamic_tick(game_state *gs) {
     // We want to load another scene
-    if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
+    if (gs->this_id != gs->next_id &&
+        (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
         // If this is the end, set run to 0 so that engine knows to close here
-        if(gs->next_id == SCENE_NONE) {
+        if (gs->next_id == SCENE_NONE) {
             DEBUG("Next ID is SCENE_NONE! bailing.");
             gs->run = 0;
             return;
         }
 
         // Load up new scene
-        if(game_load_new(gs, gs->next_id)) {
+        if (game_load_new(gs, gs->next_id)) {
             PERROR("Error while loading new scene! bailing.");
             gs->run = 0;
             return;
         }
-        if(settings_get()->video.crossfade_on) {
+        if (settings_get()->video.crossfade_on) {
             gs->this_wait_ticks = FRAME_WAIT_TICKS;
         } else {
             gs->this_wait_ticks = 0;
@@ -655,23 +647,28 @@ void game_state_dynamic_tick(game_state *gs) {
     }
 
     // Change the screen shake value downwards
-    if(gs->screen_shake_horizontal > 0 && !gs->paused) {
+    if (gs->screen_shake_horizontal > 0 && !gs->paused) {
         gs->screen_shake_horizontal--;
     }
 
-    if(gs->screen_shake_vertical > 0 && !gs->paused) {
+    if (gs->screen_shake_vertical > 0 && !gs->paused) {
         gs->screen_shake_vertical--;
     }
 
     if (gs->screen_shake_horizontal > 0 || gs->screen_shake_vertical > 0) {
-        float shake_x = sin(gs->screen_shake_horizontal) * 5 * ((float)gs->screen_shake_horizontal / 15);
-        float shake_y = sin(gs->screen_shake_vertical) * 5 * ((float)gs->screen_shake_vertical / 15);
+        float shake_x =
+            sin(gs->screen_shake_horizontal) * 5 * ((float)gs->screen_shake_horizontal / 15);
+        float shake_y =
+            sin(gs->screen_shake_vertical) * 5 * ((float)gs->screen_shake_vertical / 15);
         video_move_target((int)shake_x, (int)shake_y);
-        for(int i = 0; i < game_state_num_players(gs); i++) {
+        for (int i = 0; i < game_state_num_players(gs); i++) {
             game_player *gp = game_state_get_player(gs, i);
             controller *c = game_player_get_ctrl(gp);
-            if(c) {
-                controller_rumble(c, max2(gs->screen_shake_horizontal, gs->screen_shake_vertical)/12.0f, max2(gs->screen_shake_horizontal, gs->screen_shake_vertical) * game_state_ms_per_dyntick(gs));
+            if (c) {
+                controller_rumble(
+                    c, max2(gs->screen_shake_horizontal, gs->screen_shake_vertical) / 12.0f,
+                    max2(gs->screen_shake_horizontal, gs->screen_shake_vertical) *
+                        game_state_ms_per_dyntick(gs));
             }
         }
     } else {
@@ -685,11 +682,11 @@ void game_state_dynamic_tick(game_state *gs) {
     scene_dynamic_tick(gs->sc, game_state_is_paused(gs));
 
     // Poll input. If console is opened, do not poll the controllers.
-    if(!console_window_is_open()) {
+    if (!console_window_is_open()) {
         scene_input_poll(gs->sc);
     }
 
-    if(!game_state_is_paused(gs)) {
+    if (!game_state_is_paused(gs)) {
         // Clean up objects
         game_state_cleanup(gs);
 
@@ -714,17 +711,11 @@ void game_state_dynamic_tick(game_state *gs) {
     gs->int_tick++;
 }
 
-unsigned int game_state_get_tick(game_state *gs) {
-    return gs->tick;
-}
+unsigned int game_state_get_tick(game_state *gs) { return gs->tick; }
 
-game_player* game_state_get_player(game_state *gs, int player_id) {
-    return gs->players[player_id];
-}
+game_player *game_state_get_player(game_state *gs, int player_id) { return gs->players[player_id]; }
 
-int game_state_num_players(game_state *gs) {
-    return sizeof(gs->players)/sizeof(game_player*);
-}
+int game_state_num_players(game_state *gs) { return sizeof(gs->players) / sizeof(game_player *); }
 
 void _setup_keyboard(game_state *gs, int player_id) {
     settings_keyboard *k = &settings_get()->keys;
@@ -735,7 +726,7 @@ void _setup_keyboard(game_state *gs, int player_id) {
 
     // Set up keyboards
     keyboard_keys *keys = omf_calloc(1, sizeof(keyboard_keys));
-    if(player_id == 0) {
+    if (player_id == 0) {
         keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
         keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
         keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
@@ -818,7 +809,7 @@ void reconfigure_controller(game_state *gs) {
 
 void game_state_init_demo(game_state *gs) {
     // Set up player controller
-    for(int i = 0;i < game_state_num_players(gs);i++) {
+    for (int i = 0; i < game_state_num_players(gs); i++) {
         game_player *player = game_state_get_player(gs, i);
         controller *ctrl = omf_calloc(1, sizeof(controller));
         controller_init(ctrl);
@@ -849,7 +840,7 @@ void game_state_free(game_state **_gs) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    while ((robj = iter_next(&it)) != NULL) {
         object_free(robj->obj);
         omf_free(robj->obj);
         vector_delete(&gs->objects, &it);
@@ -861,7 +852,7 @@ void game_state_free(game_state **_gs) {
     omf_free(gs->sc);
 
     // Free players
-    for(int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
         game_player_set_ctrl(gs->players[i], NULL);
         game_player_free(gs->players[i]);
         omf_free(gs->players[i]);
@@ -871,14 +862,14 @@ void game_state_free(game_state **_gs) {
 
 int game_state_ms_per_dyntick(game_state *gs) {
     float tmp;
-    switch(gs->this_id) {
-        case SCENE_ARENA0:
-        case SCENE_ARENA1:
-        case SCENE_ARENA2:
-        case SCENE_ARENA3:
-        case SCENE_ARENA4:
-            tmp = 8.0f + MS_PER_OMF_TICK_SLOWEST - ((float)gs->speed / 15.0f) * MS_PER_OMF_TICK_SLOWEST;
-            return (int)tmp;
+    switch (gs->this_id) {
+    case SCENE_ARENA0:
+    case SCENE_ARENA1:
+    case SCENE_ARENA2:
+    case SCENE_ARENA3:
+    case SCENE_ARENA4:
+        tmp = 8.0f + MS_PER_OMF_TICK_SLOWEST - ((float)gs->speed / 15.0f) * MS_PER_OMF_TICK_SLOWEST;
+        return (int)tmp;
     }
     return MS_PER_OMF_TICK;
 }
@@ -904,7 +895,7 @@ int game_state_serialize(game_state *gs, serial *ser) {
     vector_iter_begin(&gs->objects, &it);
     render_obj *robj;
     uint8_t count = 0;
-    while((robj = iter_next(&it)) != NULL) {
+    while ((robj = iter_next(&it)) != NULL) {
         if (robj->obj->group == GROUP_PROJECTILE) {
             serial_write_int8(&objects, robj->layer);
             object_serialize(robj->obj, &objects);
@@ -931,7 +922,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     rand_seed(serial_read_int32(ser));
     game_state_set_paused(gs, serial_read_int32(ser));
 
-    for(int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
         // Declare some vars
         game_player *player = game_state_get_player(gs, i);
         game_state_del_object(gs, player->har);
@@ -940,7 +931,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
 
-        object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0,0));
+        object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_unserialize(obj, ser, gs);
 
         // Set HAR to controller and game_player
@@ -952,7 +943,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     }
 
     // ensure the HARs know each other's positions
-    object *obj_har1,*obj_har2;
+    object *obj_har1, *obj_har2;
     obj_har1 = game_player_get_har(game_state_get_player(gs, 0));
     obj_har2 = game_player_get_har(game_state_get_player(gs, 1));
 
@@ -963,7 +954,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     render_obj *robj;
-    while((robj = iter_next(&it)) != NULL) {
+    while ((robj = iter_next(&it)) != NULL) {
         if (robj->obj->group == GROUP_PROJECTILE) {
             object_free(robj->obj);
             omf_free(robj->obj);
@@ -976,7 +967,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     for (int i = 0; i < count; i++) {
         object *obj = omf_calloc(1, sizeof(object));
         int layer = serial_read_int8(ser);
-        object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0,0));
+        object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_unserialize(obj, ser, gs);
         DEBUG("newly added object finish status %d", object_finished(obj));
 

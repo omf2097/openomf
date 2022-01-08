@@ -1,13 +1,13 @@
-#include <SDL2/SDL_loadso.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include "plugins/plugins.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
-#include "utils/scandir.h"
 #include "utils/list.h"
 #include "utils/log.h"
+#include "utils/scandir.h"
+#include <SDL2/SDL_loadso.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define PLUGIN_MAX_COUNT 128
 static base_plugin _plugins[PLUGIN_MAX_COUNT];
@@ -16,7 +16,7 @@ static int _plugins_count;
 void plugins_init() {
     // Zero out plugin list
     _plugins_count = 0;
-    for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
+    for (int i = 0; i < PLUGIN_MAX_COUNT; i++) {
         _plugins[i].handle = NULL;
         _plugins[i].get_name = NULL;
         _plugins[i].get_author = NULL;
@@ -31,21 +31,21 @@ void plugins_init() {
 
     // Find all files from the plugin path
     list_create(&scanned);
-    if(scan_directory(&scanned, pm_get_local_path(PLUGIN_PATH))) {
+    if (scan_directory(&scanned, pm_get_local_path(PLUGIN_PATH))) {
         PERROR("Error while attempting to open plugin directory.");
         return;
     }
 
     // Walk through all the plugins, search for valid files
-    if(list_size(&scanned) > 0) {
+    if (list_size(&scanned) > 0) {
         iterator it;
         list_iter_begin(&scanned, &it);
         char *plugin_file;
         char *plugin_path;
         void *handle;
-        while((plugin_file = iter_next(&it)) != NULL) {
+        while ((plugin_file = iter_next(&it)) != NULL) {
             // Skip for .. and . :)
-            if(strlen(plugin_file) <= 2) {
+            if (strlen(plugin_file) <= 2) {
                 continue;
             }
 
@@ -57,7 +57,7 @@ void plugins_init() {
             omf_free(plugin_path);
 
             // Check for errors in plugin open
-            if(handle == NULL) {
+            if (handle == NULL) {
                 PERROR("Plugin file %s could not be opened: %s", plugin_file, SDL_GetError());
                 continue;
             }
@@ -71,23 +71,23 @@ void plugins_init() {
             _plugins[_plugins_count].get_version = SDL_LoadFunction(handle, "plugin_get_version");
 
             // Make sure we have all functions
-            if(_plugins[_plugins_count].get_name == NULL) {
+            if (_plugins[_plugins_count].get_name == NULL) {
                 PERROR("Plugin get_name handle not found: %s", SDL_GetError());
                 continue;
             }
-            if(_plugins[_plugins_count].get_author == NULL) {
+            if (_plugins[_plugins_count].get_author == NULL) {
                 PERROR("Plugin get_author handle not found: %s", SDL_GetError());
                 continue;
             }
-            if(_plugins[_plugins_count].get_license == NULL) {
+            if (_plugins[_plugins_count].get_license == NULL) {
                 PERROR("Plugin get_license handle not found: %s", SDL_GetError());
                 continue;
             }
-            if(_plugins[_plugins_count].get_type == NULL) {
+            if (_plugins[_plugins_count].get_type == NULL) {
                 PERROR("Plugin get_type handle not found: %s", SDL_GetError());
                 continue;
             }
-            if(_plugins[_plugins_count].get_version == NULL) {
+            if (_plugins[_plugins_count].get_version == NULL) {
                 DEBUG("Plugin get_version handle not found; your plugin is old.");
             }
 #ifdef DEBUGMODE
@@ -98,7 +98,7 @@ void plugins_init() {
             DEBUG("   - Author: %s", tmp->get_author());
             DEBUG("   - License: %s", tmp->get_license());
             DEBUG("   - Type: %s", tmp->get_type());
-            if(tmp->get_version) {
+            if (tmp->get_version) {
                 DEBUG("   - Version: %s", tmp->get_version());
             }
 #endif
@@ -113,17 +113,18 @@ void plugins_init() {
     INFO("%d plugins found.", _plugins_count);
 }
 
-int plugins_get_scaler(scaler_plugin *scaler, const char* name) {
+int plugins_get_scaler(scaler_plugin *scaler, const char *name) {
     // Search for a scaler with given name
-    for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
-        if(_plugins[i].handle != NULL
-           && strcmp(_plugins[i].get_name(), name) == 0
-           && strcmp(_plugins[i].get_type(), "scaler") == 0)
-        {
+    for (int i = 0; i < PLUGIN_MAX_COUNT; i++) {
+        if (_plugins[i].handle != NULL && strcmp(_plugins[i].get_name(), name) == 0 &&
+            strcmp(_plugins[i].get_type(), "scaler") == 0) {
             scaler->base = &_plugins[i];
-            scaler->is_factor_available = SDL_LoadFunction(scaler->base->handle, "scaler_is_factor_available");
-            scaler->get_factors_list = SDL_LoadFunction(scaler->base->handle, "scaler_get_factors_list");
-            scaler->get_color_format = SDL_LoadFunction(scaler->base->handle, "scaler_get_color_format");
+            scaler->is_factor_available =
+                SDL_LoadFunction(scaler->base->handle, "scaler_is_factor_available");
+            scaler->get_factors_list =
+                SDL_LoadFunction(scaler->base->handle, "scaler_get_factors_list");
+            scaler->get_color_format =
+                SDL_LoadFunction(scaler->base->handle, "scaler_get_color_format");
             scaler->scale = SDL_LoadFunction(scaler->base->handle, "scaler_handle");
             return 0;
         }
@@ -131,15 +132,13 @@ int plugins_get_scaler(scaler_plugin *scaler, const char* name) {
     return 1;
 }
 
-int plugins_get_list_by_type(list *tlist, const char* type) {
+int plugins_get_list_by_type(list *tlist, const char *type) {
     // Search for a scaler with given type
     int count = 0;
-    for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
-        if(_plugins[i].handle != NULL
-           && strcmp(_plugins[i].get_type(), type) == 0)
-        {
+    for (int i = 0; i < PLUGIN_MAX_COUNT; i++) {
+        if (_plugins[i].handle != NULL && strcmp(_plugins[i].get_type(), type) == 0) {
             void *ptr = &_plugins[i];
-            list_append(tlist,&ptr,sizeof(base_plugin*));
+            list_append(tlist, &ptr, sizeof(base_plugin *));
             count++;
         }
     }
@@ -147,8 +146,8 @@ int plugins_get_list_by_type(list *tlist, const char* type) {
 }
 
 void plugins_close() {
-    for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
-        if(_plugins[i].handle != NULL) {
+    for (int i = 0; i < PLUGIN_MAX_COUNT; i++) {
+        if (_plugins[i].handle != NULL) {
             SDL_UnloadObject(_plugins[i].handle);
             _plugins[i].handle = NULL;
         }

@@ -19,20 +19,20 @@ static void label_free(component *c) {
     omf_free(local);
 }
 
-void label_set_text(component *c, const char* text) {
+void label_set_text(component *c, const char *text) {
     label *local = widget_get_obj(c);
-    if(local->text) {
+    if (local->text) {
         omf_free(local->text);
     }
     local->text = strdup(text);
 }
 
-text_settings* label_get_text_settings(component *c) {
+text_settings *label_get_text_settings(component *c) {
     label *local = widget_get_obj(c);
     return &local->tconf;
 }
 
-component* label_create(const text_settings *tconf, const char *text) {
+component *label_create(const text_settings *tconf, const char *text) {
     component *c = widget_create();
     component_disable(c, 1);
     c->supports_disable = 1;
@@ -42,7 +42,7 @@ component* label_create(const text_settings *tconf, const char *text) {
     label *local = omf_calloc(1, sizeof(label));
     memcpy(&local->tconf, tconf, sizeof(text_settings));
     local->text = strdup(text);
-    
+
     local->tconf.cforeground = color_create(0, 255, 0, 255);
 
     widget_set_obj(c, local);

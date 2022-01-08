@@ -1,38 +1,34 @@
-#include "utils/allocator.h"
 #include "utils/str.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
-#define STR_ALLOC(string, size) do { \
-    string->len = (size); \
-    string->data = omf_calloc(string->len + 1, 1); \
-} while(0)
+#define STR_ALLOC(string, size)                                                                    \
+    do {                                                                                           \
+        string->len = (size);                                                                      \
+        string->data = omf_calloc(string->len + 1, 1);                                             \
+    } while (0)
 
-#define STR_REALLOC(string, size) do { \
-    string->len = (size); \
-    string->data = omf_realloc(string->data, string->len + 1); \
-} while(0)
+#define STR_REALLOC(string, size)                                                                  \
+    do {                                                                                           \
+        string->len = (size);                                                                      \
+        string->data = omf_realloc(string->data, string->len + 1);                                 \
+    } while (0)
 
 #define STR_ZERO(string) string->data[string->len] = 0
 
 // ------------------------ Create & destroy ------------------------
 
-void str_create(str *dst) {
-    STR_ALLOC(dst, 0);
-}
+void str_create(str *dst) { STR_ALLOC(dst, 0); }
 
-void str_from(str *dst, const str *src) {
-    str_from_buf(dst, src->data, src->len);
-}
+void str_from(str *dst, const str *src) { str_from_buf(dst, src->data, src->len); }
 
-void str_from_c(str *dst, const char *src) {
-    str_from_buf(dst, src, strlen(src));
-}
+void str_from_c(str *dst, const char *src) { str_from_buf(dst, src, strlen(src)); }
 
 void str_from_buf(str *dst, const char *buf, size_t len) {
     STR_ALLOC(dst, len);
@@ -53,7 +49,7 @@ void str_from_format(str *dst, const char *format, ...) {
     va_end(args1);
 
     // vsnprintf may return -1 for errors, catch that here.
-    if(size < 0) {
+    if (size < 0) {
         PERROR("Call to vsnprintf returned -1");
         abort();
     }
@@ -81,34 +77,35 @@ void str_from_slice(str *dst, const str *src, size_t start, size_t end) {
 }
 
 void str_free(str *dst) {
-    if(dst == NULL) { return; }
+    if (dst == NULL) {
+        return;
+    }
     omf_free(dst->data);
     dst->len = 0;
 }
 
 // ------------------------ Modification ------------------------
 
-
 void str_toupper(str *dst) {
-    for(size_t i = 0; i < dst->len; i++) {
+    for (size_t i = 0; i < dst->len; i++) {
         dst->data[i] = toupper(dst->data[i]);
     }
 }
 
 void str_tolower(str *dst) {
-    for(size_t i = 0; i < dst->len; i++) {
+    for (size_t i = 0; i < dst->len; i++) {
         dst->data[i] = tolower(dst->data[i]);
     }
 }
 
 static size_t _strip_size(const str *src, bool left) {
-    if(src->len == 0) {
+    if (src->len == 0) {
         return 0;
     }
     size_t pos;
-    for(size_t i = 0; i < src->len; i++) {
+    for (size_t i = 0; i < src->len; i++) {
         pos = left ? i : src->len - i - 1;
-        if(!isspace(src->data[pos])) {
+        if (!isspace(src->data[pos])) {
             return pos;
         }
     }
@@ -140,9 +137,7 @@ void str_append(str *dst, const str *src) {
     str_append_buf(dst, src->data, src->len);
 }
 
-void str_append_c(str *dst, const char *src) {
-    str_append_buf(dst, src, strlen(src));
-}
+void str_append_c(str *dst, const char *src) { str_append_buf(dst, src, strlen(src)); }
 
 void str_append_buf(str *dst, const char *buf, size_t len) {
     size_t offset = dst->len;
@@ -152,8 +147,8 @@ void str_append_buf(str *dst, const char *buf, size_t len) {
 }
 
 static bool _find_next(const str *string, char find, size_t *pos) {
-    for(size_t i = *pos; i < string->len; i++) {
-        if(string->data[i] == find) {
+    for (size_t i = *pos; i < string->len; i++) {
+        if (string->data[i] == find) {
             *pos = i;
             return true;
         }
@@ -168,18 +163,15 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
     int found = 0;
     size_t diff = replacement_len - seek_len;
     size_t current_pos = 0;
-    while(_find_next(dst, seek[0], &current_pos) && (found < limit || limit < 0)) {
-        if(strncmp(dst->data + current_pos, seek, seek_len) == 0) {
-            if(diff > 0) {  // Grow first, before move.
+    while (_find_next(dst, seek[0], &current_pos) && (found < limit || limit < 0)) {
+        if (strncmp(dst->data + current_pos, seek, seek_len) == 0) {
+            if (diff > 0) { // Grow first, before move.
                 STR_REALLOC(dst, dst->len + diff);
             }
-            memmove(
-                dst->data + current_pos + replacement_len,
-                dst->data + current_pos + seek_len,
-                dst->len - replacement_len - current_pos
-            );
+            memmove(dst->data + current_pos + replacement_len, dst->data + current_pos + seek_len,
+                    dst->len - replacement_len - current_pos);
             memcpy(dst->data + current_pos, replacement, replacement_len);
-            if(diff < 0) { // Reduce after all is done.
+            if (diff < 0) { // Reduce after all is done.
                 STR_REALLOC(dst, dst->len + diff);
             }
             STR_ZERO(dst);
@@ -190,16 +182,13 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
     }
 }
 
-
 // ------------------------ Getters ------------------------
 
-size_t str_size(const str *string) {
-    return string->len;
-}
+size_t str_size(const str *string) { return string->len; }
 
 bool str_first_of(const str *string, char find, size_t *pos) {
-    for(size_t i = 0; i < string->len; i++) {
-        if(string->data[i] == find) {
+    for (size_t i = 0; i < string->len; i++) {
+        if (string->data[i] == find) {
             *pos = i;
             return true;
         }
@@ -209,9 +198,9 @@ bool str_first_of(const str *string, char find, size_t *pos) {
 
 bool str_last_of(const str *string, char find, size_t *pos) {
     size_t tmp;
-    for(size_t i = 0; i < string->len; i++) {
+    for (size_t i = 0; i < string->len; i++) {
         tmp = string->len - i - 1;
-        if(string->data[tmp] == find) {
+        if (string->data[tmp] == find) {
             *pos = tmp;
             return true;
         }
@@ -220,37 +209,37 @@ bool str_last_of(const str *string, char find, size_t *pos) {
 }
 
 bool str_equal(const str *a, const str *b) {
-    if(a->len != b->len) {
+    if (a->len != b->len) {
         return false;
     }
-    if(strncmp(a->data, b->data, a->len) != 0) {
+    if (strncmp(a->data, b->data, a->len) != 0) {
         return false;
     }
     return true;
 }
 
 bool str_equal_c(const str *a, const char *b) {
-    if(a->len != strlen(b)) {
+    if (a->len != strlen(b)) {
         return false;
     }
-    if(strncmp(a->data, b, a->len) != 0) {
+    if (strncmp(a->data, b, a->len) != 0) {
         return false;
     }
     return true;
 }
 
 bool str_equal_buf(const str *a, const char *buf, size_t len) {
-    if(a->len != len) {
+    if (a->len != len) {
         return false;
     }
-    if(strncmp(a->data, buf, a->len) != 0) {
+    if (strncmp(a->data, buf, a->len) != 0) {
         return false;
     }
     return true;
 }
 
 char str_at(const str *string, size_t pos) {
-    if(pos >= str_size(string)) {
+    if (pos >= str_size(string)) {
         return 0;
     }
     return string->data[pos];
@@ -270,7 +259,7 @@ bool str_to_long(const str *string, long *result) {
     return (string->data != end);
 }
 
-const char* str_c(const str *string) {
+const char *str_c(const str *string) {
     // At the moment, the internal representation of
     // string is compatible with C strings. So just return
     // a pointer to that data

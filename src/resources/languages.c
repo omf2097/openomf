@@ -1,6 +1,6 @@
-#include "formats/language.h"
-#include "formats/error.h"
 #include "resources/languages.h"
+#include "formats/error.h"
+#include "formats/language.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/array.h"
@@ -15,17 +15,17 @@ int lang_init() {
 
     // Load up language file
     language = omf_calloc(1, sizeof(sd_language));
-    if(sd_language_create(language) != SD_SUCCESS) {
+    if (sd_language_create(language) != SD_SUCCESS) {
         goto error_0;
     }
-    if(sd_language_load(language, filename)) {
+    if (sd_language_load(language, filename)) {
         PERROR("Unable to load language file '%s'!", filename);
         goto error_1;
     }
 
     // Load language strings
     array_create(&language_strings);
-    for(int i = 0; i < language->count; i++) {
+    for (int i = 0; i < language->count; i++) {
         array_set(&language_strings, i, language->strings[i].data);
     }
 
@@ -45,6 +45,4 @@ void lang_close() {
     omf_free(language);
 }
 
-const char* lang_get(unsigned int id) {
-    return (const char*)array_get(&language_strings, id);
-}
+const char *lang_get(unsigned int id) { return (const char *)array_get(&language_strings, id); }

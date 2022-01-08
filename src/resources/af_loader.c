@@ -1,7 +1,7 @@
 #include "resources/af_loader.h"
-#include "resources/pathmanager.h"
 #include "formats/af.h"
 #include "formats/error.h"
+#include "resources/pathmanager.h"
 
 int load_af_file(af *a, int id) {
     // Get directory + filename
@@ -9,10 +9,10 @@ int load_af_file(af *a, int id) {
 
     // Load up AF file from libSD
     sd_af_file tmp;
-    if(sd_af_create(&tmp) != SD_SUCCESS) {
+    if (sd_af_create(&tmp) != SD_SUCCESS) {
         return 1;
     }
-    if(sd_af_load(&tmp, filename) != SD_SUCCESS) {
+    if (sd_af_load(&tmp, filename) != SD_SUCCESS) {
         sd_af_free(&tmp);
         return 1;
     }

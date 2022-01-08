@@ -1,19 +1,17 @@
 #include "game/gui/trn_menu.h"
 #include "game/gui/sizer.h"
-#include "game/gui/text_render.h"
 #include "game/gui/spritebutton.h"
-#include "video/surface.h"
-#include "video/video.h"
+#include "game/gui/text_render.h"
 #include "utils/allocator.h"
-#include "utils/vector.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "utils/vector.h"
+#include "video/surface.h"
+#include "video/video.h"
 
 #define OPACITY_STEP 0.03f
 
-void trnmenu_attach(component *c, component *nc) {
-    sizer_attach(c, nc);
-}
+void trnmenu_attach(component *c, component *nc) { sizer_attach(c, nc); }
 
 static void trnmenu_hand_finished(object *hand_obj) {
     trnmenu_hand *hand = object_get_userdata(hand_obj);
@@ -25,7 +23,7 @@ static void trnmenu_hand_finished(object *hand_obj) {
 static int trnmenu_hand_select(component *c) {
     trnmenu *m = sizer_get_obj(c);
     component *sel = sizer_get(c, m->selected);
-    if(sel == NULL)
+    if (sel == NULL)
         return 0;
 
     m->hand.move = 1;
@@ -39,14 +37,14 @@ void trnmenu_bind_hand(component *c, animation *hand_ani, game_state *gs) {
     trnmenu *m = sizer_get_obj(c);
 
     // Free old. Shouldn't be needed, but let's be thorough.
-    if(m->hand.obj != NULL) {
+    if (m->hand.obj != NULL) {
         object_free(m->hand.obj);
         omf_free(m->hand.obj);
     }
 
     // Set up new hand object
     m->hand.obj = omf_calloc(1, sizeof(object));
-    object_create(m->hand.obj, gs, vec2i_create(0,0), vec2f_create(0,0));
+    object_create(m->hand.obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
     object_set_animation(m->hand.obj, hand_ani);
     object_set_userdata(m->hand.obj, &m->hand);
     object_set_finish_cb(m->hand.obj, trnmenu_hand_finished);
@@ -58,7 +56,7 @@ void trnmenu_set_userdata(component *c, void *userdata) {
     m->userdata = userdata;
 }
 
-void* trnmenu_get_userdata(const component *c) {
+void *trnmenu_get_userdata(const component *c) {
     trnmenu *m = sizer_get_obj(c);
     return m->userdata;
 }
@@ -75,10 +73,10 @@ void trnmenu_set_tick_cb(component *c, trnmenu_tick_cb cb) {
 
 static void trnmenu_free(component *c) {
     trnmenu *m = sizer_get_obj(c);
-    if(m->free) {
+    if (m->free) {
         m->free(c); // Free trnmenu userdata
     }
-    if(m->hand.obj != NULL) {
+    if (m->hand.obj != NULL) {
         object_free(m->hand.obj);
         omf_free(m->hand.obj);
     }
@@ -95,9 +93,9 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
     vector_iter_begin(&s->objs, &it);
     int i = 0;
     int first_selected = 0;
-    while((tmp = iter_next(&it)) != NULL) {
+    while ((tmp = iter_next(&it)) != NULL) {
         // Select first non-disabled component
-        if(!component_is_disabled(*tmp) && !first_selected) {
+        if (!component_is_disabled(*tmp) && !first_selected) {
             component_select(*tmp, 1);
             first_selected = 1;
             m->selected = i;
@@ -108,8 +106,9 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
         int m_y = ((*tmp)->y_hint < y) ? y : (*tmp)->y_hint;
         int m_w = ((*tmp)->w_hint < 0) ? 0 : (*tmp)->w_hint;
         int m_h = ((*tmp)->h_hint < 0) ? 0 : (*tmp)->h_hint;
-        if(m_w == 0 || m_h == 0) {
-            DEBUG("Warning: Gui component hidden, because size is 0. Make sure size hints are set!");
+        if (m_w == 0 || m_h == 0) {
+            DEBUG(
+                "Warning: Gui component hidden, because size is 0. Make sure size hints are set!");
         }
         component_layout(*tmp, m_x, m_y, m_w, m_h);
         i++;
@@ -120,17 +119,11 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
     object_set_pos(m->hand.obj, vec2i_create(sel->x + sel->w / 2, sel->y + sel->h / 2));
 }
 
-static vec2f center(component *c) {
-    return vec2f_create(c->x + c->w / 2, c->y + c->h / 2);
-}
+static vec2f center(component *c) { return vec2f_create(c->x + c->w / 2, c->y + c->h / 2); }
 
-static vec2f rcenter(component *c) {
-    return vec2f_create(c->x + c->w, c->y + c->h / 2);
-}
+static vec2f rcenter(component *c) { return vec2f_create(c->x + c->w, c->y + c->h / 2); }
 
-static vec2f lcenter(component *c) {
-    return vec2f_create(c->x, c->y + c->h / 2);
-}
+static vec2f lcenter(component *c) { return vec2f_create(c->x, c->y + c->h / 2); }
 
 static int find_next_button(component *c, int act) {
     sizer *s = component_get_obj(c);
@@ -144,49 +137,49 @@ static int find_next_button(component *c, int act) {
     float best_dist = 9999.0f;
     int best_idx = -1;
     int idx_now = 0;
-    while((tmp = iter_next(&it)) != NULL) {
+    while ((tmp = iter_next(&it)) != NULL) {
         component *t = *tmp;
-        if(component_is_disabled(t)) {
+        if (component_is_disabled(t)) {
             idx_now++;
             continue;
         }
-        switch(act) {
-            case ACT_LEFT:
-                if(t->x < cur->x) {
-                    float tdist = vec2f_dist(rcenter(t),lcenter(cur));
-                    if(tdist < best_dist) {
-                        best_dist = tdist;
-                        best_idx = idx_now;
-                    }
+        switch (act) {
+        case ACT_LEFT:
+            if (t->x < cur->x) {
+                float tdist = vec2f_dist(rcenter(t), lcenter(cur));
+                if (tdist < best_dist) {
+                    best_dist = tdist;
+                    best_idx = idx_now;
                 }
-                break;
-            case ACT_RIGHT:
-                if(t->x > cur->x) {
-                    float tdist = vec2f_dist(lcenter(t),rcenter(cur));
-                    if(tdist < best_dist) {
-                        best_dist = tdist;
-                        best_idx = idx_now;
-                    }
+            }
+            break;
+        case ACT_RIGHT:
+            if (t->x > cur->x) {
+                float tdist = vec2f_dist(lcenter(t), rcenter(cur));
+                if (tdist < best_dist) {
+                    best_dist = tdist;
+                    best_idx = idx_now;
                 }
-                break;
-            case ACT_UP:
-                if(t->y < cur->y) {
-                    float tdist = vec2f_dist(center(t),center(cur));
-                    if(tdist < best_dist) {
-                        best_dist = tdist;
-                        best_idx = idx_now;
-                    }
+            }
+            break;
+        case ACT_UP:
+            if (t->y < cur->y) {
+                float tdist = vec2f_dist(center(t), center(cur));
+                if (tdist < best_dist) {
+                    best_dist = tdist;
+                    best_idx = idx_now;
                 }
-                break;
-            case ACT_DOWN:
-                if(t->y > cur->y) {
-                    float tdist = vec2f_dist(center(t),center(cur));
-                    if(tdist < best_dist) {
-                        best_dist = tdist;
-                        best_idx = idx_now;
-                    }
+            }
+            break;
+        case ACT_DOWN:
+            if (t->y > cur->y) {
+                float tdist = vec2f_dist(center(t), center(cur));
+                if (tdist < best_dist) {
+                    best_dist = tdist;
+                    best_idx = idx_now;
                 }
-                break;
+            }
+            break;
         }
         idx_now++;
     }
@@ -198,39 +191,38 @@ static int trnmenu_action(component *c, int action) {
     trnmenu *m = sizer_get_obj(c);
 
     // If fading, wait until it's done.
-    if(m->fade) {
+    if (m->fade) {
         return 1;
     }
 
     // If submenu is set, we need to use it
-    if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+    if (m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
         return component_action(m->submenu, action);
     }
 
     int next;
-    switch(action) {
-        case ACT_LEFT:
-        case ACT_RIGHT:
-        case ACT_UP:
-        case ACT_DOWN:
-            next = find_next_button(c, action);
-            if(next != -1) {
-                m->selected = next;
-            }
-            trnmenu_hand_select(c);
-            break;
-        case ACT_ESC:
-            trnmenu_finish(c);
-            break;
-        case ACT_PUNCH:
-        case ACT_KICK: {
-                component *sel = sizer_get(c, m->selected);
-                if(sel != NULL) {
-                    m->hand.play = 1;
-                    return component_action(sel, action);
-                }
-            }
-            break;
+    switch (action) {
+    case ACT_LEFT:
+    case ACT_RIGHT:
+    case ACT_UP:
+    case ACT_DOWN:
+        next = find_next_button(c, action);
+        if (next != -1) {
+            m->selected = next;
+        }
+        trnmenu_hand_select(c);
+        break;
+    case ACT_ESC:
+        trnmenu_finish(c);
+        break;
+    case ACT_PUNCH:
+    case ACT_KICK: {
+        component *sel = sizer_get(c, m->selected);
+        if (sel != NULL) {
+            m->hand.play = 1;
+            return component_action(sel, action);
+        }
+    } break;
     }
     return 0;
 }
@@ -240,24 +232,25 @@ static void trnmenu_render(component *c) {
     trnmenu *m = sizer_get_obj(c);
 
     // If submenu is set, we need to use it
-    if(!m->fade && m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+    if (!m->fade && m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
         return component_render(m->submenu);
     }
 
     // Render button sheet
     video_render_sprite_flip_scale_opacity_tint(
-        m->button_sheet, m->sheet_x, m->sheet_y, BLEND_ALPHA, 0, FLIP_NONE, 1, clamp(s->opacity * 255, 0, 255), color_create(0xFF,0xFF,0xFF,0xFF));
+        m->button_sheet, m->sheet_x, m->sheet_y, BLEND_ALPHA, 0, FLIP_NONE, 1,
+        clamp(s->opacity * 255, 0, 255), color_create(0xFF, 0xFF, 0xFF, 0xFF));
 
     // Handle components
     iterator it;
     component **tmp;
     vector_iter_begin(&s->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    while ((tmp = iter_next(&it)) != NULL) {
         component_render(*tmp);
     }
 
     // Render hand if it is set
-    if(m->hand.obj != NULL) {
+    if (m->hand.obj != NULL) {
         object_render(m->hand.obj);
     }
 }
@@ -267,9 +260,9 @@ static void trnmenu_tick(component *c) {
     sizer *s = component_get_obj(c);
 
     // If fade is not ongoing, try to handle submenu. If fade IS ongoing, handle it.
-    if(!m->fade) {
+    if (!m->fade) {
         // If submenu is set, we need to tick it
-        if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+        if (m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
             return component_tick(m->submenu);
         }
     } else {
@@ -277,13 +270,13 @@ static void trnmenu_tick(component *c) {
         s->opacity += m->opacity_step;
 
         // Check if fade is done, and set tick to 0 if so.
-        if(m->opacity_step > 0 && s->opacity >= 1.0f) {
+        if (m->opacity_step > 0 && s->opacity >= 1.0f) {
             s->opacity = 1.0f;
             m->fade = 0;
-        } else if(m->opacity_step < 0 && s->opacity <= 0.0f) {
+        } else if (m->opacity_step < 0 && s->opacity <= 0.0f) {
             s->opacity = 0.0f;
             m->fade = 0;
-            if(m->submenu == NULL || trnmenu_is_finished(m->submenu)) {
+            if (m->submenu == NULL || trnmenu_is_finished(m->submenu)) {
                 m->finished = 1;
             }
         }
@@ -291,12 +284,12 @@ static void trnmenu_tick(component *c) {
 
     // Check if we need to run submenu done -callback
     // Also reset fade
-    if(m->submenu != NULL && trnmenu_is_finished(m->submenu) && !trnmenu_is_fading(m->submenu)) {
-        if(!m->prev_submenu_state) {
+    if (m->submenu != NULL && trnmenu_is_finished(m->submenu) && !trnmenu_is_fading(m->submenu)) {
+        if (!m->prev_submenu_state) {
             m->fade = 1;
             s->opacity = 0;
             m->opacity_step = OPACITY_STEP;
-            if(m->submenu_done) {
+            if (m->submenu_done) {
                 m->submenu_done(c, m->submenu);
             }
             m->prev_submenu_state = 1;
@@ -304,15 +297,15 @@ static void trnmenu_tick(component *c) {
     }
 
     // Tick hand animation
-    if(m->hand.play && m->hand.obj) {
+    if (m->hand.play && m->hand.obj) {
         object_dynamic_tick(m->hand.obj);
     }
 
     // Move hand
-    if(m->hand.move && m->hand.obj) {
+    if (m->hand.move && m->hand.obj) {
         // Stop movement if we're done.
         // Otherwise interpolate from target to dest
-        if(m->hand.moved >= 1.0) {
+        if (m->hand.moved >= 1.0) {
             m->hand.move = 0;
             object_set_pos(m->hand.obj, m->hand.pend);
         } else {
@@ -334,23 +327,22 @@ static int trnmenu_event(component *mc, SDL_Event *event) {
     trnmenu *m = sizer_get_obj(mc);
 
     // If fading, wait until it's done.
-    if(m->fade) {
+    if (m->fade) {
         return 1;
     }
 
     // If submenu is set, we need to use it
-    if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+    if (m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
         return component_event(m->submenu, event);
     }
 
     // Otherwise handle this component
     component *c = sizer_get(mc, m->selected);
-    if(c != NULL) {
+    if (c != NULL) {
         return component_event(c, event);
     }
     return 1;
 }
-
 
 int trnmenu_is_finished(const component *c) {
     trnmenu *m = sizer_get_obj(c);
@@ -359,7 +351,7 @@ int trnmenu_is_finished(const component *c) {
 
 void trnmenu_set_submenu(component *c, component *submenu) {
     trnmenu *m = sizer_get_obj(c);
-    if(m->submenu) {
+    if (m->submenu) {
         component_free(m->submenu);
     }
     m->submenu = submenu;
@@ -371,7 +363,7 @@ void trnmenu_set_submenu(component *c, component *submenu) {
     m->fade = 1;
 }
 
-component* trnmenu_get_submenu(const component *c) {
+component *trnmenu_get_submenu(const component *c) {
     trnmenu *m = sizer_get_obj(c);
     return m->submenu;
 }
@@ -387,10 +379,10 @@ void trnmenu_finish(component *c) {
     m->opacity_step = -OPACITY_STEP;
 }
 
-component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
+component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
     component *c = sizer_create();
 
-    trnmenu* m = omf_calloc(1, sizeof(trnmenu));
+    trnmenu *m = omf_calloc(1, sizeof(trnmenu));
     m->button_sheet = button_sheet;
     m->sheet_x = sheet_x;
     m->sheet_y = sheet_y;

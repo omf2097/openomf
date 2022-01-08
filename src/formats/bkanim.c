@@ -7,7 +7,7 @@
 #include "utils/allocator.h"
 
 int sd_bk_anim_create(sd_bk_anim *bka) {
-    if(bka == NULL) {
+    if (bka == NULL) {
         return SD_INVALID_INPUT;
     }
     // clear everything
@@ -17,7 +17,7 @@ int sd_bk_anim_create(sd_bk_anim *bka) {
 
 int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
     int ret;
-    if(dst == NULL || src == NULL) {
+    if (dst == NULL || src == NULL) {
         return SD_INVALID_INPUT;
     }
 
@@ -36,9 +36,9 @@ int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
     strncpy(dst->footer_string, src->footer_string, sizeof(dst->footer_string));
 
     // Copy animation (if exists)
-    if(src->animation != NULL) {
+    if (src->animation != NULL) {
         dst->animation = omf_calloc(1, sizeof(sd_animation));
-        if((ret = sd_animation_copy(dst->animation, src->animation)) != SD_SUCCESS) {
+        if ((ret = sd_animation_copy(dst->animation, src->animation)) != SD_SUCCESS) {
             return ret;
         }
     }
@@ -47,7 +47,7 @@ int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
 }
 
 void sd_bk_anim_free(sd_bk_anim *bka) {
-    if(bka->animation != NULL) {
+    if (bka->animation != NULL) {
         sd_animation_free(bka->animation);
         omf_free(bka->animation);
     }
@@ -67,24 +67,24 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
 
     // Footer string
     size = sd_read_uword(r);
-    if(size >= SD_BK_FOOTER_STRING_MAX) {
+    if (size >= SD_BK_FOOTER_STRING_MAX) {
         DEBUGLOG("BK specific animation footer too big! Expected max %d bytes, got %hu bytes.",
-            SD_BK_FOOTER_STRING_MAX, size);
+                 SD_BK_FOOTER_STRING_MAX, size);
         return SD_FILE_PARSE_ERROR;
     }
-    if(size > 0) {
+    if (size > 0) {
         sd_read_buf(r, bka->footer_string, size);
-        if(bka->footer_string[size-1] != 0) {
+        if (bka->footer_string[size - 1] != 0) {
             return SD_FILE_PARSE_ERROR;
         }
     }
 
     // Initialize animation
     bka->animation = omf_calloc(1, sizeof(sd_animation));
-    if((ret = sd_animation_create(bka->animation)) != SD_SUCCESS) {
+    if ((ret = sd_animation_create(bka->animation)) != SD_SUCCESS) {
         return ret;
     }
-    if((ret = sd_animation_load(r, bka->animation)) != SD_SUCCESS) {
+    if ((ret = sd_animation_load(r, bka->animation)) != SD_SUCCESS) {
         return ret;
     }
 
@@ -96,7 +96,7 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     int ret;
     uint16_t size;
 
-    if(w == NULL || bka == NULL) {
+    if (w == NULL || bka == NULL) {
         return SD_INVALID_INPUT;
     }
 
@@ -110,15 +110,15 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
 
     // Save footer string
     size = strlen(bka->footer_string);
-    if(size > 0) {
-        sd_write_uword(w, size+1);
-        sd_write_buf(w, bka->footer_string, size+1);
+    if (size > 0) {
+        sd_write_uword(w, size + 1);
+        sd_write_buf(w, bka->footer_string, size + 1);
     } else {
         sd_write_uword(w, 0);
     }
 
     // Write animation
-    if((ret = sd_animation_save(w, bka->animation)) != SD_SUCCESS) {
+    if ((ret = sd_animation_save(w, bka->animation)) != SD_SUCCESS) {
         return ret;
     }
 
@@ -127,29 +127,27 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
 
 int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation) {
     int ret;
-    if(bka == NULL) {
+    if (bka == NULL) {
         return SD_INVALID_INPUT;
     }
-    if(bka->animation != NULL) {
+    if (bka->animation != NULL) {
         sd_animation_free(bka->animation);
         omf_free(bka->animation);
     }
-    if(animation == NULL) {
+    if (animation == NULL) {
         return SD_SUCCESS;
     }
     bka->animation = omf_calloc(1, sizeof(sd_animation));
-    if((ret = sd_animation_copy(bka->animation, animation)) != SD_SUCCESS) {
+    if ((ret = sd_animation_copy(bka->animation, animation)) != SD_SUCCESS) {
         return ret;
     }
     return SD_SUCCESS;
 }
 
-sd_animation* sd_bk_anim_get_animation(const sd_bk_anim *bka) {
-    return bka->animation;
-}
+sd_animation *sd_bk_anim_get_animation(const sd_bk_anim *bka) { return bka->animation; }
 
 int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data) {
-    if(strlen(data) >= SD_BK_FOOTER_STRING_MAX-1) {
+    if (strlen(data) >= SD_BK_FOOTER_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
     strncpy(bka->footer_string, data, sizeof(bka->footer_string));

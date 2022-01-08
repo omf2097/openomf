@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "resources/pathmanager.h"
+#include "formats/altpal.h"
+#include "formats/error.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-#include "formats/error.h"
 #include "formats/palette.h"
-#include "formats/altpal.h"
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 
@@ -17,10 +17,10 @@ int altpals_init() {
     const char *filename = pm_get_resource_path(DAT_ALTPALS);
 
     altpals = omf_calloc(1, sizeof(altpal_file));
-    if(altpal_create(altpals) != SD_SUCCESS) {
+    if (altpal_create(altpals) != SD_SUCCESS) {
         goto error_0;
     }
-    if(altpals_load(altpals, filename) != SD_SUCCESS) {
+    if (altpals_load(altpals, filename) != SD_SUCCESS) {
         PERROR("Unable to load altpals file '%s'!", filename);
         goto error_1;
     }
@@ -35,14 +35,14 @@ error_0:
 }
 
 void altpals_close() {
-    if(altpals != NULL) {
+    if (altpals != NULL) {
         altpal_free(altpals);
         omf_free(altpals);
     }
 }
 
 int altpal_create(altpal_file *ap) {
-    if(ap == NULL) {
+    if (ap == NULL) {
         return SD_INVALID_INPUT;
     }
     memset(ap, 0, sizeof(altpal_file));
@@ -51,11 +51,11 @@ int altpal_create(altpal_file *ap) {
 
 int altpals_load(altpal_file *ap, const char *filename) {
     sd_reader *r = sd_reader_open(filename);
-    if(!r) {
+    if (!r) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    for(uint8_t i = 0; i < ALTPALS_PALETTES; i++) {
+    for (uint8_t i = 0; i < ALTPALS_PALETTES; i++) {
         palette_create(&ap->palettes[i]);
         palette_load_range(r, &ap->palettes[i], 0, 256);
     }
@@ -67,11 +67,11 @@ int altpals_load(altpal_file *ap, const char *filename) {
 
 int altpals_save(altpal_file *ap, const char *filename) {
     sd_writer *w = sd_writer_open(filename);
-    if(!w) {
+    if (!w) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    for(uint8_t i = 0; i < ALTPALS_PALETTES; i++) {
+    for (uint8_t i = 0; i < ALTPALS_PALETTES; i++) {
         palette_save_range(w, &ap->palettes[i], 0, 256);
     }
 
@@ -80,6 +80,4 @@ int altpals_save(altpal_file *ap, const char *filename) {
     return SD_SUCCESS;
 }
 
-void altpal_free(altpal_file *ap) {
-}
-
+void altpal_free(altpal_file *ap) {}

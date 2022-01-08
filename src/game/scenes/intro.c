@@ -1,12 +1,12 @@
 #include <SDL.h>
 #include <stdlib.h>
 
-#include "game/scenes/intro.h"
 #include "game/game_state.h"
-#include "video/video.h"
+#include "game/scenes/intro.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/video.h"
 
 typedef struct intro_local_t {
     int ticks;
@@ -21,31 +21,30 @@ void intro_input_tick(scene *scene) {
     i = p1;
     if (i) {
         do {
-            if(i->type == EVENT_TYPE_ACTION) {
-                if(i->event_data.action == ACT_ESC ||
-                    i->event_data.action == ACT_KICK ||
+            if (i->type == EVENT_TYPE_ACTION) {
+                if (i->event_data.action == ACT_ESC || i->event_data.action == ACT_KICK ||
                     i->event_data.action == ACT_PUNCH) {
 
                     game_state_set_next(scene->gs, SCENE_MENU);
                 }
             }
-        } while((i = i->next));
+        } while ((i = i->next));
     }
     controller_free_chain(p1);
 }
 
 void intro_startup(scene *scene, int id, int *m_load, int *m_repeat) {
-    switch(id) {
-        case 25:
-            *m_load = 1;
-            return;
+    switch (id) {
+    case 25:
+        *m_load = 1;
+        return;
     }
 }
 
 void intro_tick(scene *scene, int paused) {
     intro_local *local = scene_get_userdata(scene);
     local->ticks++;
-    if(local->ticks > 2500) {
+    if (local->ticks > 2500) {
         game_state_set_next(scene->gs, SCENE_MENU);
     }
 }
@@ -57,9 +56,9 @@ void intro_free(scene *scene) {
 }
 
 int intro_anim_override(scene *scene, int anim_id) {
-    switch(anim_id) {
-        case 25:
-            return RENDER_LAYER_TOP;
+    switch (anim_id) {
+    case 25:
+        return RENDER_LAYER_TOP;
     }
     return -1;
 }

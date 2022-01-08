@@ -1,17 +1,17 @@
 #include "game/scenes/newsroom.h"
-#include "game/gui/menu_background.h"
+#include "audio/music.h"
 #include "game/gui/dialog.h"
-#include "resources/languages.h"
+#include "game/gui/menu_background.h"
 #include "game/gui/text_render.h"
 #include "game/utils/settings.h"
-#include "audio/music.h"
 #include "resources/ids.h"
+#include "resources/languages.h"
 #include "resources/pilots.h"
 #include "utils/allocator.h"
-#include "utils/random.h"
-#include "utils/str.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "utils/random.h"
+#include "utils/str.h"
 #include "video/surface.h"
 #include "video/video.h"
 
@@ -31,14 +31,14 @@ typedef struct newsroom_local_t {
     dialog continue_dialog;
 } newsroom_local;
 
-const char* object_pronoun(int sex) {
+const char *object_pronoun(int sex) {
     if (sex == PILOT_SEX_MALE) {
         return "Him";
     }
     return "Her";
 }
 
-const char* subject_pronoun(int sex) {
+const char *subject_pronoun(int sex) {
     if (sex == PILOT_SEX_MALE) {
         return "He";
     }
@@ -82,10 +82,8 @@ void newsroom_fixup_str(newsroom_local *local) {
     str_free(&tmp);
 }
 
-void newsroom_set_names(newsroom_local *local,
-                        const char *pilot1, const char *pilot2,
-                        const char *har1, const char *har2,
-                        int sex1, int sex2) {
+void newsroom_set_names(newsroom_local *local, const char *pilot1, const char *pilot2,
+                        const char *har1, const char *har2, int sex1, int sex2) {
 
     str_from_c(&local->pilot1, pilot1);
     str_from_c(&local->pilot2, pilot2);
@@ -98,7 +96,6 @@ void newsroom_set_names(newsroom_local *local,
     str_rstrip(&local->pilot1);
     str_rstrip(&local->pilot2);
 }
-
 
 // newsroom callbacks
 void newsroom_free(scene *scene) {
@@ -124,29 +121,29 @@ void newsroom_overlay_render(scene *scene) {
 
     // Render screencapture
     har_screencaps *caps = &(game_state_get_player(scene->gs, (local->won ? 0 : 1))->screencaps);
-    if(local->screen == 0) {
-        if(caps->ok[SCREENCAP_POSE])
+    if (local->screen == 0) {
+        if (caps->ok[SCREENCAP_POSE])
             video_render_sprite_size(&caps->cap[SCREENCAP_POSE], 165, 15, SCREENCAP_W, SCREENCAP_H);
     } else {
-        if(caps->ok[SCREENCAP_BLOW])
+        if (caps->ok[SCREENCAP_BLOW])
             video_render_sprite_size(&caps->cap[SCREENCAP_BLOW], 165, 15, SCREENCAP_W, SCREENCAP_H);
     }
 
     // Render text
-    if(str_size(&local->news_str) > 0) {
+    if (str_size(&local->news_str) > 0) {
         video_render_sprite(&local->news_bg, 20, 140, BLEND_ALPHA, 0);
         font_render_wrapped(&font_small, str_c(&local->news_str), 30, 150, 250, COLOR_YELLOW);
     }
 
     // Dialog
-    if(dialog_is_visible(&local->continue_dialog)) {
+    if (dialog_is_visible(&local->continue_dialog)) {
         dialog_render(&local->continue_dialog);
     }
 }
 
-void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result){
+void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result) {
     scene *sc = dlg->userdata;
-    if(result == DIALOG_RESULT_NO) {
+    if (result == DIALOG_RESULT_NO) {
         game_state_set_next(sc->gs, SCENE_SCOREBOARD);
     } else if (result == DIALOG_RESULT_YES_OK) {
         // Resetting p2->sp_wins here allows the game to progress,
@@ -165,27 +162,25 @@ void newsroom_input_tick(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
 
     game_player *player1 = game_state_get_player(scene->gs, 0);
-    ctrl_event *p1=NULL, *i;
+    ctrl_event *p1 = NULL, *i;
     controller_poll(player1->ctrl, &p1);
     i = p1;
     if (i) {
         do {
-            if(i->type == EVENT_TYPE_ACTION) {
-                if(dialog_is_visible(&local->continue_dialog)) {
+            if (i->type == EVENT_TYPE_ACTION) {
+                if (dialog_is_visible(&local->continue_dialog)) {
                     dialog_event(&local->continue_dialog, i->event_data.action);
-                } else if (
-                        i->event_data.action == ACT_ESC ||
-                        i->event_data.action == ACT_KICK ||
-                        i->event_data.action == ACT_PUNCH) {
+                } else if (i->event_data.action == ACT_ESC || i->event_data.action == ACT_KICK ||
+                           i->event_data.action == ACT_PUNCH) {
                     local->screen++;
                     newsroom_fixup_str(local);
-                    if(local->screen >= 2) {
+                    if (local->screen >= 2) {
                         if (local->won) {
                             // pick a new player
                             game_player *p1 = game_state_get_player(scene->gs, 0);
                             game_player *p2 = game_state_get_player(scene->gs, 1);
                             DEBUG("wins are %d", p1->sp_wins);
-                            if (p1->sp_wins == (4094 ^ (2 << p1->pilot_id)))  {
+                            if (p1->sp_wins == (4094 ^ (2 << p1->pilot_id))) {
                                 // won the game
                                 game_state_set_next(scene->gs, SCENE_END);
                             } else {
@@ -195,7 +190,7 @@ void newsroom_input_tick(scene *scene) {
                                     p2->har_id = HAR_NOVA;
                                 } else {
                                     // pick an opponent we have not yet beaten
-                                    while(1) {
+                                    while (1) {
                                         int i = rand_int(10);
                                         if ((2 << i) & p1->sp_wins || i == p1->pilot_id) {
                                             continue;
@@ -215,7 +210,8 @@ void newsroom_input_tick(scene *scene) {
                                 controller *ctrl = omf_calloc(1, sizeof(controller));
                                 controller_init(ctrl);
                                 sd_pilot *pilot = game_player_get_pilot(p2);
-                                ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, p2->pilot_id);
+                                ai_controller_create(ctrl, settings_get()->gameplay.difficulty,
+                                                     pilot, p2->pilot_id);
                                 game_player_set_ctrl(p2, ctrl);
                                 game_state_set_next(scene->gs, SCENE_VS);
                             }
@@ -225,39 +221,39 @@ void newsroom_input_tick(scene *scene) {
                     }
                 }
             }
-        } while((i = i->next));
+        } while ((i = i->next));
     }
     controller_free_chain(p1);
 }
 
 int pilot_sex(int pilot_id) {
-  switch (pilot_id) {
+    switch (pilot_id) {
     case 0:
-      // Crystal
+        // Crystal
     case 7:
-      // Angel
+        // Angel
     case 8:
-      // Cossette
-      return PILOT_SEX_FEMALE;
+        // Cossette
+        return PILOT_SEX_FEMALE;
     default:
-      // everyone else is male
-      return PILOT_SEX_MALE;
-  }
+        // everyone else is male
+        return PILOT_SEX_MALE;
+    }
 }
 
 void newsroom_startup(scene *scene, int id, int *m_load, int *m_repeat) {
-    switch(id) {
-        case 5:
-        case 6:
-            *m_load = 1;
-            return;
+    switch (id) {
+    case 5:
+    case 6:
+        *m_load = 1;
+        return;
     }
 }
 
 int newsroom_create(scene *scene) {
     newsroom_local *local = omf_calloc(1, sizeof(newsroom_local));
 
-    local->news_id = rand_int(24)*2;
+    local->news_id = rand_int(24) * 2;
     local->screen = 0;
     menu_background_create(&local->news_bg, 280, 50);
     str_create(&local->news_str);
@@ -282,24 +278,21 @@ int newsroom_create(scene *scene) {
     DEBUG("health is %d", health);
 
     if (health > 40 && local->won == 1) {
-        local->news_id = rand_int(6)*2;
+        local->news_id = rand_int(6) * 2;
     } else if (local->won == 1) {
-        local->news_id = 12+rand_int(6)*2;
+        local->news_id = 12 + rand_int(6) * 2;
     } else if (health < 40 && local->won == 0) {
-        local->news_id = 38+rand_int(5)*2;
+        local->news_id = 38 + rand_int(5) * 2;
     } else {
-        local->news_id = 24+rand_int(7)*2;
+        local->news_id = 24 + rand_int(7) * 2;
     }
 
     // XXX TODO get the real sex of pilot
     // XXX TODO strip spaces from the end of the pilots name
     // XXX TODO set winner/loser names properly
-    newsroom_set_names(local, lang_get(20+p1->pilot_id),
-                              lang_get(20+p2->pilot_id),
-                              har_get_name(p1->har_id),
-                              har_get_name(p2->har_id),
-                              pilot_sex(p1->pilot_id),
-                              pilot_sex(p2->pilot_id));
+    newsroom_set_names(local, lang_get(20 + p1->pilot_id), lang_get(20 + p2->pilot_id),
+                       har_get_name(p1->har_id), har_get_name(p2->har_id), pilot_sex(p1->pilot_id),
+                       pilot_sex(p2->pilot_id));
     newsroom_fixup_str(local);
 
     // Continue Dialog

@@ -1,13 +1,12 @@
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
 
-
 void widget_set_obj(component *c, void *obj) {
     widget *local = component_get_obj(c);
     local->obj = obj;
 }
 
-void* widget_get_obj(const component *c) {
+void *widget_get_obj(const component *c) {
     widget *local = component_get_obj(c);
     return local->obj;
 }
@@ -54,21 +53,21 @@ void widget_set_free_cb(component *c, widget_free_cb cb) {
 
 static void widget_tick(component *c) {
     widget *local = component_get_obj(c);
-    if(local->tick) {
+    if (local->tick) {
         local->tick(c);
     }
 }
 
 static void widget_render(component *c) {
     widget *local = component_get_obj(c);
-    if(local->render) {
+    if (local->render) {
         local->render(c);
     }
 }
 
 static int widget_event(component *c, SDL_Event *event) {
     widget *local = component_get_obj(c);
-    if(local->event) {
+    if (local->event) {
         return local->event(c, event);
     }
     return 1;
@@ -76,7 +75,7 @@ static int widget_event(component *c, SDL_Event *event) {
 
 static int widget_action(component *c, int action) {
     widget *local = component_get_obj(c);
-    if(local->action) {
+    if (local->action) {
         return local->action(c, action);
     }
     return 1;
@@ -84,27 +83,27 @@ static int widget_action(component *c, int action) {
 
 static void widget_layout(component *c, int x, int y, int w, int h) {
     widget *local = component_get_obj(c);
-    if(local->layout) {
+    if (local->layout) {
         local->layout(c, x, y, w, h);
     }
 }
 
 static void widget_free(component *c) {
     widget *local = component_get_obj(c);
-    if(local->free) {
+    if (local->free) {
         local->free(c);
     }
     omf_free(local);
 }
 
-static component* widget_find(component *c, int id) {
-    if(widget_get_id(c) == id) {
+static component *widget_find(component *c, int id) {
+    if (widget_get_id(c) == id) {
         return c;
     }
     return NULL;
 }
 
-component* widget_create() {
+component *widget_create() {
     component *c = component_create();
     c->supports_disable = 1;
     c->supports_select = 1;
@@ -124,4 +123,3 @@ component* widget_create() {
 
     return c;
 }
-

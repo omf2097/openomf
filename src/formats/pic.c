@@ -2,14 +2,14 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "formats/error.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-#include "formats/error.h"
 #include "formats/pic.h"
 #include "utils/allocator.h"
 
 int sd_pic_create(sd_pic_file *pic) {
-    if(pic == NULL) {
+    if (pic == NULL) {
         return SD_INVALID_INPUT;
     }
     memset(pic, 0, sizeof(sd_pic_file));
@@ -17,10 +17,11 @@ int sd_pic_create(sd_pic_file *pic) {
 }
 
 void free_photos(sd_pic_file *pic) {
-    if(pic == NULL) return;
-    for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
-        if(pic->photos[i]) {
-            if(pic->photos[i]->sprite) {
+    if (pic == NULL)
+        return;
+    for (int i = 0; i < MAX_PIC_PHOTOS; i++) {
+        if (pic->photos[i]) {
+            if (pic->photos[i]->sprite) {
                 sd_sprite_free(pic->photos[i]->sprite);
             }
             omf_free(pic->photos[i]);
@@ -30,23 +31,23 @@ void free_photos(sd_pic_file *pic) {
 
 int sd_pic_load(sd_pic_file *pic, const char *filename) {
     int ret = SD_FILE_PARSE_ERROR;
-    if(pic == NULL || filename == NULL) {
+    if (pic == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
 
     sd_reader *r = sd_reader_open(filename);
-    if(!r) {
+    if (!r) {
         return SD_FILE_OPEN_ERROR;
     }
 
     // The filesize should be at least 200 bytes.
-    if(sd_reader_filesize(r) < 200) {
+    if (sd_reader_filesize(r) < 200) {
         goto error_0;
     }
 
     // Basic info
     pic->photo_count = sd_read_dword(r);
-    if(pic->photo_count >= 256 || pic->photo_count < 0) {
+    if (pic->photo_count >= 256 || pic->photo_count < 0) {
         goto error_0;
     }
 
@@ -54,17 +55,17 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
     sd_reader_set(r, 200);
     int offset_list[256];
     memset(offset_list, 0, sizeof(offset_list));
-    for(int i = 0; i < pic->photo_count; i++) {
+    for (int i = 0; i < pic->photo_count; i++) {
         offset_list[i] = sd_read_dword(r);
     }
 
     // Clear photos
-    for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
+    for (int i = 0; i < MAX_PIC_PHOTOS; i++) {
         pic->photos[i] = NULL;
     }
 
     // Read data
-    for(int i = 0; i < pic->photo_count; i++) {
+    for (int i = 0; i < pic->photo_count; i++) {
         // Set correct position
         sd_reader_set(r, offset_list[i]);
 
@@ -86,7 +87,7 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         // Sprite
         pic->photos[i]->sprite = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(pic->photos[i]->sprite);
-        if((ret = sd_sprite_load(r, pic->photos[i]->sprite)) != SD_SUCCESS) {
+        if ((ret = sd_sprite_load(r, pic->photos[i]->sprite)) != SD_SUCCESS) {
             goto error_1;
         }
 
@@ -107,12 +108,12 @@ error_0:
 }
 
 int sd_pic_save(const sd_pic_file *pic, const char *filename) {
-    if(pic == NULL || filename == NULL) {
+    if (pic == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
 
     sd_writer *w = sd_writer_open(filename);
-    if(!w) {
+    if (!w) {
         return SD_FILE_OPEN_ERROR;
     }
 
@@ -125,7 +126,7 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename) {
     sd_write_fill(w, 0, pic->photo_count * 4);
 
     // Write photos and offsets
-    for(int i = 0; i < pic->photo_count; i++) {
+    for (int i = 0; i < pic->photo_count; i++) {
         // Write offset to the catalog
         long pos = sd_writer_pos(w);
         if (pos < 0) {
@@ -153,7 +154,6 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename) {
         pic->photos[i]->sprite->width++;
     }
 
-
     if (sd_writer_errno(w)) {
         goto error;
     }
@@ -167,14 +167,11 @@ error:
     return SD_FILE_WRITE_ERROR;
 }
 
-const sd_pic_photo* sd_pic_get(const sd_pic_file *pic, int entry_id) {
-    if(entry_id < 0 || entry_id > pic->photo_count) {
+const sd_pic_photo *sd_pic_get(const sd_pic_file *pic, int entry_id) {
+    if (entry_id < 0 || entry_id > pic->photo_count) {
         return NULL;
     }
     return pic->photos[entry_id];
 }
 
-void sd_pic_free(sd_pic_file *pic) {
-    free_photos(pic);
-}
-
+void sd_pic_free(sd_pic_file *pic) { free_photos(pic); }

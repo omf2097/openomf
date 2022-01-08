@@ -1,11 +1,11 @@
-#include <stdlib.h>
-#include "formats/sounds.h"
-#include "formats/error.h"
 #include "resources/sounds_loader.h"
+#include "formats/error.h"
+#include "formats/sounds.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <stdlib.h>
 
 static sd_sound_file *sound_data = NULL;
 
@@ -15,10 +15,10 @@ int sounds_loader_init() {
 
     // Load sounds
     sound_data = omf_calloc(1, sizeof(sd_sound_file));
-    if(sd_sounds_create(sound_data) != SD_SUCCESS) {
+    if (sd_sounds_create(sound_data) != SD_SUCCESS) {
         goto error_0;
     }
-    if(sd_sounds_load(sound_data, filename)) {
+    if (sd_sounds_load(sound_data, filename)) {
         PERROR("Unable to load sounds file '%s'!", filename);
         goto error_1;
     }
@@ -34,11 +34,12 @@ error_0:
 
 int sounds_loader_get(int id, char **buffer, int *len) {
     // Make sure the data is ok and sound exists
-    if(sound_data == NULL) return 1;
+    if (sound_data == NULL)
+        return 1;
 
     // Get sound
     const sd_sound *sample = sd_sounds_get(sound_data, id);
-    if(sample == NULL) {
+    if (sample == NULL) {
         PERROR("Requested sound %d does not exist!", id);
         return 1;
     }
@@ -51,7 +52,7 @@ int sounds_loader_get(int id, char **buffer, int *len) {
 }
 
 void sounds_loader_close() {
-    if(sound_data != NULL) {
+    if (sound_data != NULL) {
         sd_sounds_free(sound_data);
         omf_free(sound_data);
     }

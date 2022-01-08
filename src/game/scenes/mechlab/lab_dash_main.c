@@ -1,15 +1,15 @@
 #include <stdio.h>
 
-#include "game/scenes/mechlab/lab_dash_main.h"
 #include "game/gui/gauge.h"
-#include "game/gui/xysizer.h"
 #include "game/gui/label.h"
 #include "game/gui/pilotpic.h"
+#include "game/gui/xysizer.h"
+#include "game/scenes/mechlab/lab_dash_main.h"
 #include "resources/ids.h"
 #include "utils/log.h"
 #include "video/video.h"
 
-component* lab_dash_main_create(scene *s, dashboard_widgets *dw) {
+component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     component *xy = xysizer_create();
 
     text_settings tconf_dark;
@@ -28,10 +28,10 @@ component* lab_dash_main_create(scene *s, dashboard_widgets *dw) {
 
     // Texts
     dw->name = label_create(&tconf_light, "NO NAME");
-    dw->rank = label_create(&tconf_dark,  "RANK: 0");
-    dw->wins = label_create(&tconf_dark,  "WINS: 0");
-    dw->losses = label_create(&tconf_dark,  "LOSES: 0");
-    dw->money = label_create(&tconf_dark,  "MONEY: $ 0K");
+    dw->rank = label_create(&tconf_dark, "RANK: 0");
+    dw->wins = label_create(&tconf_dark, "WINS: 0");
+    dw->losses = label_create(&tconf_dark, "LOSES: 0");
+    dw->money = label_create(&tconf_dark, "MONEY: $ 0K");
     dw->tournament = label_create(&tconf_light, "NO TOURNAMENT");
     xysizer_attach(xy, dw->name, 12, 58, 200, 6);
     xysizer_attach(xy, dw->rank, 18, 64, 200, 6);
@@ -98,7 +98,7 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     label_set_text(dw->name, p1->pilot.name);
     label_set_text(dw->tournament, p1->pilot.trn_desc);
 
-    #define SET_GAUGE_X(name) gauge_set_lit(dw->name, p1->pilot.name + 1)
+#define SET_GAUGE_X(name) gauge_set_lit(dw->name, p1->pilot.name + 1)
 
     // Pilot stats
     SET_GAUGE_X(power);

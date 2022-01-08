@@ -2,7 +2,7 @@
 #include "formats/bkanim.h"
 
 void bk_info_create(bk_info *info, void *src, int id) {
-    sd_bk_anim *sdinfo = (sd_bk_anim*)src;
+    sd_bk_anim *sdinfo = (sd_bk_anim *)src;
     animation_create(&info->ani, sdinfo->animation, id);
     info->chain_hit = sdinfo->chain_hit;
     info->chain_no_hit = sdinfo->chain_no_hit;

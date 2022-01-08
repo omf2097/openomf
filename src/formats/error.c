@@ -3,10 +3,10 @@
 
 #ifdef DEBUGMODE
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
-void debug_print(const char* fn, int line, const char *fmt, ...) {
+void debug_print(const char *fn, int line, const char *fmt, ...) {
     printf("[%s:%d] ", fn, line);
     va_list args;
     va_start(args, fmt);
@@ -17,8 +17,8 @@ void debug_print(const char* fn, int line, const char *fmt, ...) {
 
 #endif // DEBUGMODE
 
-const char* sd_get_error(int errorcode) {
-    switch(errorcode) {
+const char *sd_get_error(int errorcode) {
+    switch (errorcode) {
     case SD_SUCCESS:
         return "No error";
     case SD_FILE_OPEN_ERROR:

@@ -2,17 +2,17 @@
 #include <string.h>
 #ifdef __linux__
 #include <strings.h> // strcasecmp
-#endif // __linux__
-#include "resources/pathmanager.h"
-#include "audio/music.h"
+#endif               // __linux__
 #include "audio/audio.h"
+#include "audio/music.h"
+#include "game/utils/settings.h"
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "game/utils/settings.h"
 
 #include "audio/sources/dumb_source.h"
-#include "audio/sources/xmp_source.h"
 #include "audio/sources/vorbis_source.h"
+#include "audio/sources/xmp_source.h"
 
 #ifdef STANDALONE_SERVER
 int music_play(const char *filename) { return 0; }
@@ -43,62 +43,54 @@ static module_source module_sources[] = {
 #ifdef USE_XMP
     {SOURCE_XMP, "xmp"},
 #endif
-    {0,0} // Guard
+    {0, 0} // Guard
 };
 
-audio_source_freq default_freqs[] = {
-    {0, 1, "none"},
-    {0,0}
-};
+audio_source_freq default_freqs[] = {{0, 1, "none"}, {0, 0}};
 
-audio_source_resampler default_resamplers[] = {
-    {0, 1, "default"},
-    {0,0}
-};
+audio_source_resampler default_resamplers[] = {{0, 1, "default"}, {0, 0}};
 
-module_source* music_get_module_sources() {
-    return module_sources;
-}
+module_source *music_get_module_sources() { return module_sources; }
 
-audio_source_freq* music_module_get_freqs(int id) {
-    switch(id) {
+audio_source_freq *music_module_get_freqs(int id) {
+    switch (id) {
 #ifdef USE_DUMB
-        case SOURCE_DUMB: return dumb_get_freqs();
+    case SOURCE_DUMB:
+        return dumb_get_freqs();
 #endif
 #ifdef USE_XMP
-        case SOURCE_XMP: return xmp_get_freqs();
+    case SOURCE_XMP:
+        return xmp_get_freqs();
 #endif
     }
     return default_freqs;
 }
 
-audio_source_resampler* music_module_get_resamplers(int id) {
-    switch(id) {
+audio_source_resampler *music_module_get_resamplers(int id) {
+    switch (id) {
 #ifdef USE_DUMB
-        case SOURCE_DUMB: return dumb_get_resamplers();
+    case SOURCE_DUMB:
+        return dumb_get_resamplers();
 #endif
 #ifdef USE_XMP
-        case SOURCE_XMP: return xmp_get_resamplers();
+    case SOURCE_XMP:
+        return xmp_get_resamplers();
 #endif
     }
     return default_resamplers;
 }
 
-const char* get_file_or_override(unsigned int id) {
+const char *get_file_or_override(unsigned int id) {
     // Declare music overrides
     settings *s = settings_get();
     struct music_override_t overrides[] = {
-        {PSM_ARENA0, s->sound.music_arena0},
-        {PSM_ARENA1, s->sound.music_arena1},
-        {PSM_ARENA2, s->sound.music_arena2},
-        {PSM_ARENA3, s->sound.music_arena3},
-        {PSM_ARENA4, s->sound.music_arena4},
-        {PSM_MENU,   s->sound.music_menu},
-        {PSM_END,    s->sound.music_end}
-    };
+        {PSM_ARENA0, s->sound.music_arena0}, {PSM_ARENA1, s->sound.music_arena1},
+        {PSM_ARENA2, s->sound.music_arena2}, {PSM_ARENA3, s->sound.music_arena3},
+        {PSM_ARENA4, s->sound.music_arena4}, {PSM_MENU, s->sound.music_menu},
+        {PSM_END, s->sound.music_end}};
 
-    for(int i = 0; i < 7; i++) {
-        if(id == overrides[i].id && strlen(overrides[i].name) > 0) {
+    for (int i = 0; i < 7; i++) {
+        if (id == overrides[i].id && strlen(overrides[i].name) > 0) {
             DEBUG("Overriding %s to %s.", get_resource_name(id), overrides[i].name);
             return overrides[i].name;
         }
@@ -111,7 +103,7 @@ int music_play(unsigned int id) {
     audio_sink *sink = audio_get_sink();
 
     // If there is no sink, do nothing
-    if(sink == NULL) {
+    if (sink == NULL) {
         return 0;
     }
 
@@ -122,7 +114,7 @@ int music_play(unsigned int id) {
     int resampler = settings_get()->sound.music_resampler;
 
     // Check if the wanted music is already playing
-    if(id == _music_resource_id && sink_is_playing(sink, MUSIC_STREAM_ID)) {
+    if (id == _music_resource_id && sink_is_playing(sink, MUSIC_STREAM_ID)) {
         return 0;
     }
 
@@ -131,39 +123,39 @@ int music_play(unsigned int id) {
     source_init(music_src);
 
     // Find path & ext
-    const char* filename = get_file_or_override(id);
-    const char* ext = strrchr(filename, '.') + 1;
-    if(ext == NULL || ext == filename) {
+    const char *filename = get_file_or_override(id);
+    const char *ext = strrchr(filename, '.') + 1;
+    if (ext == NULL || ext == filename) {
         PERROR("Couldn't find extension for music file!");
         goto error_0;
     }
 
     // Try to open as module file
     int failed = 1;
-    if(strcasecmp(ext, "psm") == 0) {
-        switch(modlib) {
+    if (strcasecmp(ext, "psm") == 0) {
+        switch (modlib) {
 #ifdef USE_DUMB
-            case SOURCE_DUMB:
-                failed = dumb_source_init(music_src, filename, channels, freq, resampler);
-                break;
+        case SOURCE_DUMB:
+            failed = dumb_source_init(music_src, filename, channels, freq, resampler);
+            break;
 #endif
 #ifdef USE_XMP
-            case SOURCE_XMP:
-                failed = xmp_source_init(music_src, filename, channels, freq, resampler);
-                break;
+        case SOURCE_XMP:
+            failed = xmp_source_init(music_src, filename, channels, freq, resampler);
+            break;
 #endif
         }
     }
 
     // Try to open as Ogg vorbis
 #ifdef USE_OGGVORBIS
-    if(strcasecmp(ext, "ogg") == 0) {
+    if (strcasecmp(ext, "ogg") == 0) {
         failed = vorbis_source_init(music_src, filename);
     }
 #endif // USE_OGGVORBIS
 
     // Handle opening failure
-    if(failed) {
+    if (failed) {
         PERROR("No suitable music streamer found for format '%s'.", ext);
         goto error_0;
     }
@@ -194,22 +186,22 @@ int music_reload() {
 
 void music_set_volume(float volume) {
     audio_sink *sink = audio_get_sink();
-    if(sink == NULL) {
+    if (sink == NULL) {
         return;
     }
 
     _music_volume = volume;
-    if(sink_is_playing(sink, MUSIC_STREAM_ID)) {
+    if (sink_is_playing(sink, MUSIC_STREAM_ID)) {
         sink_set_stream_volume(sink, MUSIC_STREAM_ID, _music_volume);
     }
 }
 
 void music_stop() {
     audio_sink *sink = audio_get_sink();
-    if(sink == NULL) {
+    if (sink == NULL) {
         return;
     }
-    if(!sink_is_playing(sink, MUSIC_STREAM_ID)) {
+    if (!sink_is_playing(sink, MUSIC_STREAM_ID)) {
         return;
     }
     sink_stop(sink, MUSIC_STREAM_ID);
@@ -220,8 +212,6 @@ int music_playing() {
     return sink_is_playing(sink, MUSIC_STREAM_ID);
 }
 
-unsigned int music_get_resource() {
-    return _music_resource_id;
-}
+unsigned int music_get_resource() { return _music_resource_id; }
 
 #endif // STANDALONE_SERVER

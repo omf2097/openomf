@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include "formats/taglist.h"
+#include <stdlib.h>
 
 // This file is generated automatically
 
@@ -68,7 +68,9 @@ const sd_tag sd_taglist[] = {
     {"i", 0, NULL},
     {"jf2", 0, "Allow chaining to destruction"},
     {"jf", 0, "Allow chaining to scrap"},
-    {"jg", 0, "Every HAR uses this in the 'getup' animation, purpose unknown, might be 'grab' (like standing throw)?"},
+    {"jg", 0,
+     "Every HAR uses this in the 'getup' animation, purpose unknown, might be 'grab' (like "
+     "standing throw)?"},
     {"jh", 0, "Allow chaining to 'high' moves"},
     {"jj", 0, "Allow chaining to airborne moves"},
     {"jl", 0, "Allow chaining to 'low' moves"},
@@ -159,4 +161,3 @@ const sd_tag sd_taglist[] = {
 };
 
 const int sd_taglist_size = 152;
-
