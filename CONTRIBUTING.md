@@ -2,6 +2,8 @@
 
 Firstly, thanks for checking out this document and showing interest in contributing :)
 
+## Bug tickets
+
 You may submit patches to this project by forking this repository and making a pull request.
 If you want to become a regular contributor, please contact us on discord (check README for the link).
 We appreciate all kinds of contributions, whether it's big or small. We also very enthusiastically
@@ -32,3 +34,13 @@ Currently we are working on:
 Please see our milestones page for more details on these!
 
 You may also support us by donating via paypal. For that, please see http://www.openomf.org/.
+
+## Pull Requests
+
+Before making a pull request, please verify via a normal issue ticket
+(or via the discussion system) that nobody else is yet working on the feature.
+
+Pull requests:
+* must not have any build errors
+* must be formatted using clang-format
+* must be verified using clang-tidy
