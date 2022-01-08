@@ -2,8 +2,11 @@
 #define SD_READER_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
-typedef struct sd_reader_t sd_reader;
+#include "utils/str.h"
+
+typedef struct sd_reader sd_reader;
 
 sd_reader* sd_reader_open(const char *file);
 
@@ -50,6 +53,17 @@ int sd_match(sd_reader *reader, const char *buf, unsigned int nbytes);
   * Skip following nbytes amount of data.
   */
 void sd_skip(sd_reader *reader, unsigned int nbytes);
+
+/**
+ * @brief Read a string object
+ * @details This will read a variable sized string object. Note that both
+ *          types of variable strings will be handled (with trailing null or not).
+ * @param reader Reader object
+ * @param dst String object to create
+ * @return true if something was copied
+ * @return false if nothing was copied
+ */
+void sd_read_str(sd_reader *reader, str *dst);
 
 char* sd_read_variable_str(sd_reader *r);
 
