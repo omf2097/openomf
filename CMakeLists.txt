@@ -22,7 +22,8 @@ OPTION(USE_TIDY "Use clang-tidy for checks" OFF)
 OPTION(USE_FORMAT "Use clang-format for checks" OFF)
 
 # These flags are used for all builds
-set(CMAKE_C_FLAGS "-Wall -std=c11")
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_FLAGS "-Wall")
 set(CMAKE_C_FLAGS_DEBUG "-ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -fno-omit-frame-pointer -DNDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
@@ -185,6 +186,7 @@ endif()
 add_executable(openomf src/main.c src/engine.c ${ICON_RESOURCE})
 
 # Build tools if requested
+set(TOOL_TARGET_NAMES)
 if(USE_TOOLS)
     add_executable(bktool tools/bktool/main.c
                           tools/shared/animation_misc.c
@@ -205,45 +207,50 @@ if(USE_TOOLS)
     add_executable(chrtool tools/chrtool/main.c tools/shared/pilot.c)
     add_executable(setuptool tools/setuptool/main.c tools/shared/pilot.c)
 
-    target_link_libraries(bktool ${CORELIBS})
-    target_link_libraries(aftool ${CORELIBS})
-    target_link_libraries(soundtool ${CORELIBS})
-    target_link_libraries(fonttool ${CORELIBS})
-    target_link_libraries(languagetool ${CORELIBS})
-    target_link_libraries(omf_parse ${CORELIBS})
-    target_link_libraries(afdiff ${CORELIBS})
-    target_link_libraries(rectool ${CORELIBS})
-    target_link_libraries(pictool ${CORELIBS})
-    target_link_libraries(scoretool ${CORELIBS})
-    target_link_libraries(trntool ${CORELIBS})
-    target_link_libraries(altpaltool ${CORELIBS})
-    target_link_libraries(chrtool ${CORELIBS})
-    target_link_libraries(setuptool ${CORELIBS})
+    list(APPEND TOOL_TARGET_NAMES
+        bktool
+        aftool
+        soundtool
+        fonttool
+        languagetool
+        omf_parse
+        afdiff
+        rectool
+        pictool
+        scoretool
+        trntool
+        altpaltool
+        chrtool
+        setuptool
+    )
+    message(STATUS "Development: CLI tools enabled")
+else()
+    message(STATUS "Development: CLI tools disabled")
 endif()
 
-# Linting & formatting
+# Linting via clang-tidy
 if(USE_TIDY)
     set_target_properties(openomf PROPERTIES C_CLANG_TIDY "clang-tidy")
     set_target_properties(openomf_core PROPERTIES C_CLANG_TIDY "clang-tidy")
+    foreach(TARGET ${TOOL_TARGET_NAMES})
+        set_target_properties(${TARGET} PROPERTIES C_CLANG_TIDY "clang-tidy")
+    endforeach()
+    message(STATUS "Development: clang-tidy enabled")
+else()
+    message(STATUS "Development: clang-tidy disabled")
 endif()
+
+# Formatting via clang-format
 if(USE_FORMAT)
     include(ClangFormat)
     target_clangformat_setup(openomf_core)
     target_clangformat_setup(openomf)
-    target_clangformat_setup(bktool)
-    target_clangformat_setup(aftool)
-    target_clangformat_setup(soundtool)
-    target_clangformat_setup(fonttool)
-    target_clangformat_setup(languagetool)
-    target_clangformat_setup(omf_parse)
-    target_clangformat_setup(afdiff)
-    target_clangformat_setup(rectool)
-    target_clangformat_setup(pictool)
-    target_clangformat_setup(scoretool)
-    target_clangformat_setup(trntool)
-    target_clangformat_setup(altpaltool)
-    target_clangformat_setup(chrtool)
-    target_clangformat_setup(setuptool)
+    foreach(TARGET ${TOOL_TARGET_NAMES})
+        target_clangformat_setup(${TARGET})
+    endforeach()
+    message(STATUS "Development: clang-format enabled")
+else()
+    message(STATUS "Development: clang-format disabled")
 endif()
 
 # Enable AddressSanitizer if requested (these libs need to be first on the list!)
@@ -251,7 +258,9 @@ if(USE_SANITIZERS)
     set(CORELIBS asan ubsan ${CORELIBS})
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address,undefined")
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address,undefined")
-    message(STATUS "DEBUG: Asan and Ubsan enabled")
+    message(STATUS "Development: Asan and Ubsan enabled")
+else()
+    message(STATUS "Development: Asan and Ubsan disabled")
 endif()
 
 # Don't show console on mingw in release builds
@@ -261,9 +270,11 @@ if(MINGW)
     endif(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
 endif()
 
-# Link options for main binary
+# Make sure libraries are linked
 target_link_libraries(openomf ${CORELIBS})
-set_property(TARGET openomf PROPERTY C_STANDARD 11)
+foreach(TARGET ${TOOL_TARGET_NAMES})
+    target_link_libraries(${TARGET} ${CORELIBS})
+endforeach()
 
 # Testing stuff
 if(CUNIT_FOUND)
@@ -281,9 +292,12 @@ if(CUNIT_FOUND)
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
     target_link_libraries(openomf_test_main ${CORELIBS})
-    set_property(TARGET openomf_test_main PROPERTY C_STANDARD 11)
 
     add_test(main openomf_test_main)
+
+    message(STATUS "Development: Unit-tests are enabled")
+else()
+    message(STATUS "Development: Unit-tests are disabled")
 endif()
 
 # Packaging
