@@ -1,14 +1,13 @@
+#include <png.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <png.h>
 
-#include "formats/rgba_image.h"
 #include "formats/error.h"
+#include "formats/rgba_image.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-
 
 #define STRIDE 4
 
@@ -44,15 +43,15 @@ int sd_rgba_image_blit(sd_rgba_image *dst, const sd_rgba_image *src, int x, int 
         return SD_INVALID_INPUT;
     }
 
-    int rdp,rsp;
+    int rdp, rsp;
     for(int py = 0; py < src->h; py++) {
         for(int px = 0; px < src->w; px++) {
             rdp = (py + y) * dst->w + (px + x);
             rsp = py * src->w + px;
-            dst->data[rdp*4 + 0] = src->data[rsp*4 + 0];
-            dst->data[rdp*4 + 1] = src->data[rsp*4 + 1];
-            dst->data[rdp*4 + 2] = src->data[rsp*4 + 2];
-            dst->data[rdp*4 + 3] = src->data[rsp*4 + 3];
+            dst->data[rdp * 4 + 0] = src->data[rsp * 4 + 0];
+            dst->data[rdp * 4 + 1] = src->data[rsp * 4 + 1];
+            dst->data[rdp * 4 + 2] = src->data[rsp * 4 + 2];
+            dst->data[rdp * 4 + 3] = src->data[rsp * 4 + 3];
         }
     }
 
@@ -74,10 +73,7 @@ int sd_rgba_image_to_ppm(const sd_rgba_image *img, const char *filename) {
     i = 0;
     while(i < img->len) {
         for(int j = 0; j < 5; j++) {
-            fprintf(fd, "%u %u %u ",
-                (uint8_t)img->data[i],
-                (uint8_t)img->data[i+1],
-                (uint8_t)img->data[i+2]);
+            fprintf(fd, "%u %u %u ", (uint8_t)img->data[i], (uint8_t)img->data[i + 1], (uint8_t)img->data[i + 2]);
             i += 4;
         }
         fprintf(fd, "\n");

@@ -1,11 +1,11 @@
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "formats/error.h"
 #include "formats/palette.h"
 #include "formats/altpal.h"
+#include "formats/error.h"
 #include "utils/allocator.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 int palette_create(palette *pal) {
     if(pal == NULL) {
@@ -15,7 +15,8 @@ int palette_create(palette *pal) {
     return SD_SUCCESS;
 }
 
-void palette_free(palette *pal) {}
+void palette_free(palette *pal) {
+}
 
 unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const palette *pal) {
     for(unsigned int i = 0; i < 256; i++) {
@@ -32,7 +33,7 @@ unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const palet
 int palette_to_gimp_palette(const palette *pal, const char *filename) {
     sd_writer *w;
     const unsigned char *d;
-    unsigned char r,g,b;
+    unsigned char r, g, b;
     int i;
 
     if(pal == NULL || filename == NULL) {
@@ -126,7 +127,7 @@ int palette_mload_range(memreader *reader, palette *pal, int index_start, int in
 
 int palette_load(sd_reader *reader, palette *pal) {
     palette_load_range(reader, pal, 0, 256);
-    sd_read_buf(reader, (char*)pal->remaps, 19*256);
+    sd_read_buf(reader, (char *)pal->remaps, 19 * 256);
     return SD_SUCCESS;
 }
 
@@ -154,7 +155,7 @@ void palette_msave_range(memwriter *writer, const palette *pal, int index_start,
 
 void palette_save(sd_writer *writer, const palette *pal) {
     palette_save_range(writer, pal, 0, 256);
-    sd_write_buf(writer, (char*)pal->remaps, 19*256);
+    sd_write_buf(writer, (char *)pal->remaps, 19 * 256);
 }
 
 void palette_set_player_color(palette *pal, int player, int srccolor, int dstcolor) {
@@ -168,7 +169,7 @@ void palette_set_player_color(palette *pal, int player, int srccolor, int dstcol
 
 palette *palette_copy(palette *src) {
     palette *new = omf_calloc(1, sizeof(palette));
-    memcpy(new->data, src->data, 256*3);
-    memcpy(new->remaps, src->remaps, 19*256);
+    memcpy(new->data, src->data, 256 * 3);
+    memcpy(new->remaps, src->remaps, 19 * 256);
     return new;
 }

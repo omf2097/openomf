@@ -1,9 +1,9 @@
-#include <string.h>
-#include "formats/score.h"
-#include "formats/error.h"
-#include "utils/log.h"
-#include "resources/pathmanager.h"
 #include "resources/scores.h"
+#include "formats/error.h"
+#include "formats/score.h"
+#include "resources/pathmanager.h"
+#include "utils/log.h"
+#include <string.h>
 
 void scores_clear(scoreboard *sb) {
     for(int i = 0; i < 4; i++) {

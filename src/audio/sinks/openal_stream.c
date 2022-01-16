@@ -9,10 +9,10 @@
 #include <AL/alc.h>
 #endif
 
-#include <stdlib.h>
 #include "audio/sinks/openal_stream.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <stdlib.h>
 
 #define AUDIO_BUFFER_COUNT 2
 #define AUDIO_BUFFER_SIZE 32768
@@ -45,11 +45,7 @@ void openal_stream_play(audio_stream *stream) {
     for(int i = 0; i < AUDIO_BUFFER_COUNT; i++) {
         int ret = source_update(stream->src, buf, AUDIO_BUFFER_SIZE);
         if(ret > 0) {
-            alBufferData(
-                local->buffers[i],
-                local->format,
-                buf, ret,
-                source_get_frequency(stream->src));
+            alBufferData(local->buffers[i], local->format, buf, ret, source_get_frequency(stream->src));
             alSourceQueueBuffers(local->source, 1, &local->buffers[i]);
         }
     }
@@ -141,12 +137,11 @@ int openal_stream_init(audio_stream *stream, audio_sink *sink) {
     openal_stream *local = omf_calloc(1, sizeof(openal_stream));
 
     // Dump old errors
-    while(alGetError() != AL_NO_ERROR);
+    while(alGetError() != AL_NO_ERROR)
+        ;
 
     // Pick format
-    local->format = get_al_format(
-        source_get_bytes(stream->src),
-        source_get_channels(stream->src));
+    local->format = get_al_format(source_get_bytes(stream->src), source_get_channels(stream->src));
     if(!local->format) {
         PERROR("OpenAL Stream: Could not find suitable audio format!");
         goto exit_0;

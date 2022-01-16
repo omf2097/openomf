@@ -1,18 +1,17 @@
 /** @file main.c
-  * @brief CHR file editor tool
-  * @license MIT
-  */
+ * @brief CHR file editor tool
+ * @license MIT
+ */
 
+#include "../shared/pilot.h"
+#include "formats/bk.h"
+#include "formats/chr.h"
+#include "formats/error.h"
 #include <argtable2.h>
 #include <stdint.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "formats/chr.h"
-#include "formats/bk.h"
-#include "formats/error.h"
-#include "../shared/pilot.h"
-
+#include <string.h>
 
 void print_chr_pilot_info(sd_chr_file *chr) {
     print_pilot_info(&chr->pilot);
@@ -21,17 +20,10 @@ void print_chr_pilot_info(sd_chr_file *chr) {
     // Portrait data
     printf("\n");
     printf("Portrait:\n");
-    printf("  - Size = (%d,%d)\n",
-        chr->photo->width,
-        chr->photo->height);
-    printf("  - Position = (%d,%d)\n",
-        chr->photo->pos_x,
-        chr->photo->pos_y);
-    printf("  - Length = %d\n",
-        chr->photo->len);
-    printf("  - I/M = %u/%u\n",
-        chr->photo->index,
-        chr->photo->missing);
+    printf("  - Size = (%d,%d)\n", chr->photo->width, chr->photo->height);
+    printf("  - Position = (%d,%d)\n", chr->photo->pos_x, chr->photo->pos_y);
+    printf("  - Length = %d\n", chr->photo->len);
+    printf("  - I/M = %u/%u\n", chr->photo->index, chr->photo->missing);
 }
 
 void print_enemy_info(sd_chr_file *chr, int i) {
@@ -42,19 +34,19 @@ void print_enemy_info(sd_chr_file *chr, int i) {
     printf("\n");
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input altpals file");
-    struct arg_file *export = arg_file0("e","export","<file>","Export Photo to a ppm file");
-    struct arg_file *bkfile = arg_file0("b","bkfile","<file>","Palette BK file");
+    struct arg_file *export = arg_file0("e", "export", "<file>", "Export Photo to a ppm file");
+    struct arg_file *bkfile = arg_file0("b", "bkfile", "<file>", "Palette BK file");
     struct arg_lit *pilot = arg_lit0(NULL, "pilot", "Only print pilot information");
     struct arg_int *enemy = arg_int0(NULL, "enemy", "<int>", "Only print opponent information");
-    struct arg_file *output = arg_file0("o","output","<file>","Output CHR file");
+    struct arg_file *output = arg_file0("o", "output", "<file>", "Output CHR file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,export,pilot,enemy,bkfile,end};
-    const char* progname = "chrtool";
+    void *argtable[] = {help, vers, file, output, export, pilot, enemy, bkfile, end};
+    const char *progname = "chrtool";
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -101,9 +93,7 @@ int main(int argc, char* argv[]) {
     sd_chr_create(&chr);
     int ret = sd_chr_load(&chr, file->filename[0]);
     if(ret != SD_SUCCESS) {
-        printf("Unable to load chr file %s: %s.\n",
-            file->filename[0],
-            sd_get_error(ret));
+        printf("Unable to load chr file %s: %s.\n", file->filename[0], sd_get_error(ret));
         goto exit_1;
     }
 
@@ -113,9 +103,7 @@ int main(int argc, char* argv[]) {
         sd_bk_create(&bk);
         int ret = sd_bk_load(&bk, bkfile->filename[0]);
         if(ret != SD_SUCCESS) {
-            printf("Unable to load BK file %s: %s.\n",
-                bkfile->filename[0],
-                sd_get_error(ret));
+            printf("Unable to load BK file %s: %s.\n", bkfile->filename[0], sd_get_error(ret));
             goto exit_2;
         }
     }
@@ -123,18 +111,12 @@ int main(int argc, char* argv[]) {
     // Check if we want to export. If not, just print info
     if(export->count > 0) {
         sd_rgba_image img;
-        sd_sprite_rgba_decode(
-            &img,
-            chr.photo,
-            bk.palettes[0],
-            -1);
+        sd_sprite_rgba_decode(&img, chr.photo, bk.palettes[0], -1);
         ret = sd_rgba_image_to_ppm(&img, export->filename[0]);
         if(ret == SD_SUCCESS) {
             printf("Exported photo to file %s.\n", export->filename[0]);
         } else {
-            printf("Failed to export photo to file %s: %s\n",
-                export->filename[0],
-                sd_get_error(ret));
+            printf("Failed to export photo to file %s: %s\n", export->filename[0], sd_get_error(ret));
         }
         sd_rgba_image_free(&img);
     } else if(pilot->count > 0) {
@@ -163,9 +145,7 @@ int main(int argc, char* argv[]) {
     if(output->count > 0) {
         ret = sd_chr_save(&chr, output->filename[0]);
         if(ret != SD_SUCCESS) {
-            printf("Failed saving CHR file to %s: %s",
-                output->filename[0],
-                sd_get_error(ret));
+            printf("Failed saving CHR file to %s: %s", output->filename[0], sd_get_error(ret));
         }
     }
 
@@ -177,6 +157,6 @@ exit_2:
 exit_1:
     sd_chr_free(&chr);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

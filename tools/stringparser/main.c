@@ -1,25 +1,24 @@
 /** @file main.c
-  * @brief Animation string parser tool
-  * @author Tuomas Virtanen
-  * @license MIT
-  */
+ * @brief Animation string parser tool
+ * @author Tuomas Virtanen
+ * @license MIT
+ */
 
+#include "formats/error.h"
+#include "formats/script.h"
 #include <argtable2.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "formats/script.h"
-#include "formats/error.h"
 
-
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_str *astr = arg_str1("s", "str", "<str>", "Animation string");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,astr,end};
-    const char* progname = "omf_parse";
+    void *argtable[] = {help, vers, astr, end};
+    const char *progname = "omf_parse";
     char tmp_str[512];
 
     // Make sure everything got allocated
@@ -56,13 +55,13 @@ int main(int argc, char* argv[]) {
 
     const char *str = *astr->sval;
 
-    if (strcmp("-", *astr->sval) == 0) {
-        if (fgets(tmp_str, 512, stdin) == NULL) {
+    if(strcmp("-", *astr->sval) == 0) {
+        if(fgets(tmp_str, 512, stdin) == NULL) {
             printf("Unexpectedly failed to read line from stdin\n");
             goto exit_0;
         }
         // throttle the newline
-        tmp_str[strlen(tmp_str)-1] = '\0';
+        tmp_str[strlen(tmp_str) - 1] = '\0';
         str = tmp_str;
     }
 
@@ -85,11 +84,7 @@ int main(int argc, char* argv[]) {
 
     for(int frame_id = 0; frame_id < script.frame_count; frame_id++) {
         sd_script_frame *frame = &script.frames[frame_id];
-        printf("%d. Frame %d: '%c%d'\n",
-            frame_id,
-            frame->sprite,
-            (char)(frame->sprite+65),
-            frame->tick_len);
+        printf("%d. Frame %d: '%c%d'\n", frame_id, frame->sprite, (char)(frame->sprite + 65), frame->tick_len);
         for(int tag_id = 0; tag_id < frame->tag_count; tag_id++) {
             sd_script_tag *tag = &frame->tags[tag_id];
             if(tag->desc == NULL) {
@@ -106,6 +101,6 @@ int main(int argc, char* argv[]) {
 exit_1:
     sd_script_free(&script);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

@@ -1,10 +1,10 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
+#include "formats/error.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-#include "formats/error.h"
 #include "formats/sounds.h"
 #include "utils/allocator.h"
 
@@ -55,7 +55,7 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
     return SD_SUCCESS;
 }
 
-int sd_sounds_save(const sd_sound_file *sf, const char* filename) {
+int sd_sounds_save(const sd_sound_file *sf, const char *filename) {
     if(sf == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -89,7 +89,7 @@ int sd_sounds_save(const sd_sound_file *sf, const char* filename) {
     return SD_SUCCESS;
 }
 
-const sd_sound* sd_sounds_get(const sd_sound_file *sf, int id) {
+const sd_sound *sd_sounds_get(const sd_sound_file *sf, int id) {
     if(id < 0 || id >= SD_SOUNDS_MAX) {
         return NULL;
     }
@@ -172,11 +172,11 @@ int sd_sound_to_au(const sd_sound_file *sf, int num, const char *filename) {
 
     // Write AU header
     sd_write_udword(w, 0x2e736e64); // Magic number (".snd")
-    sd_write_udword(w, 32); // Data start
+    sd_write_udword(w, 32);         // Data start
     sd_write_udword(w, 0xffffffff); // Data size
-    sd_write_udword(w, 2); // Type (8bit signed pcm), needs conversion from our unsigned
-    sd_write_udword(w, 8000); // Freq
-    sd_write_udword(w, 1); // Channels
+    sd_write_udword(w, 2);          // Type (8bit signed pcm), needs conversion from our unsigned
+    sd_write_udword(w, 8000);       // Freq
+    sd_write_udword(w, 1);          // Channels
 
     // Annotation field (terminate with 0)
     sd_write_buf(w, "omf2097", 7);
@@ -195,7 +195,8 @@ int sd_sound_to_au(const sd_sound_file *sf, int num, const char *filename) {
 }
 
 void sd_sounds_free(sd_sound_file *sf) {
-    if(sf == NULL) return;
+    if(sf == NULL)
+        return;
     for(int i = 0; i < SD_SOUNDS_MAX; i++) {
         omf_free(sf->sounds[i].data);
     }

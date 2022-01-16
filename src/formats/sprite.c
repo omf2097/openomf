@@ -2,8 +2,8 @@
 #include <string.h>
 
 #include "formats/error.h"
-#include "formats/sprite.h"
 #include "formats/palette.h"
+#include "formats/sprite.h"
 #include "utils/allocator.h"
 #include <stdio.h>
 
@@ -40,7 +40,8 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
 }
 
 void sd_sprite_free(sd_sprite *sprite) {
-    if(sprite == NULL) return;
+    if(sprite == NULL)
+        return;
 
     // Only attempt to free if there IS something to free
     // AND sprite data belongs to this sprite
@@ -115,58 +116,58 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palett
     rowstart = i;
 
     // Walk through the RGBA data
-    for(int pos = 0; pos <= rgb_size; pos+= 4) {
+    for(int pos = 0; pos <= rgb_size; pos += 4) {
         uint8_t r = src->data[pos];
-        uint8_t g = src->data[pos+1];
-        uint8_t b = src->data[pos+2];
-        uint8_t a = src->data[pos+3];
+        uint8_t g = src->data[pos + 1];
+        uint8_t b = src->data[pos + 2];
+        uint8_t a = src->data[pos + 3];
 
         // ignore anytjhing but fully opaque pixels
-        if (a == 255) {
-            int16_t x = (pos/4) % src->w;
-            int16_t y = (pos/4) / src->w;
-            if (y != lasty) {
+        if(a == 255) {
+            int16_t x = (pos / 4) % src->w;
+            int16_t y = (pos / 4) / src->w;
+            if(y != lasty) {
                 // new row
-                c = (y*4)+2;
+                c = (y * 4) + 2;
                 // write little endian unsigned word
                 buf[i++] = c & 0x00ff;
                 buf[i++] = (c & 0xff00) >> 8;
             }
-            if (x != lastx+1 || y != lasty) {
+            if(x != lastx + 1 || y != lasty) {
                 // if Y changes, write out X too
                 // dont write X coordinate if we just wrote a row and the nex X coordinate is 0
                 // because the decoder resets X coordinate to 0 after each row
-                if (x != 0) {
+                if(x != 0) {
                     // we skipped some columns
-                    c = (x*4);
+                    c = (x * 4);
                     // write little endian unsigned word
                     buf[i++] = c & 0x00ff;
                     buf[i++] = (c & 0xff00) >> 8;
                 }
-                if (!rowlen) {
+                if(!rowlen) {
                     rowstart = i;
-                    i+=2;
+                    i += 2;
                 }
             }
             // write out the length of the previous row, if there was one
-            if (y != lasty || x != lastx+1) {
-                if (rowlen) {
+            if(y != lasty || x != lastx + 1) {
+                if(rowlen) {
                     // go back and write in the width of the row of pixels
-                    c = (rowlen*4)+1;
+                    c = (rowlen * 4) + 1;
                     // place to write is at i - rowlen
                     // write little endian unsigned word
                     buf[rowstart] = c & 0x00ff;
-                    buf[rowstart+1] = (c & 0xff00) >> 8;
+                    buf[rowstart + 1] = (c & 0xff00) >> 8;
                     rowlen = 0;
                     rowstart = i;
-                    i+=2;
+                    i += 2;
                 }
-            } else if (lasty == 0 && x == 0) {
+            } else if(lasty == 0 && x == 0) {
                 rowstart = i;
-                i+=2;
+                i += 2;
             }
-            lastx=x;
-            lasty=y;
+            lastx = x;
+            lasty = y;
             // write byte
             buf[i++] = palette_resolve_color(r, g, b, pal);
             rowlen++;
@@ -175,11 +176,11 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palett
     // update the length of the last row
     if(rowlen) {
         // go back and write in the width of the row of pixels
-        c = (rowlen*4)+1;
+        c = (rowlen * 4) + 1;
         // place to write is at i - rowlen
         // write little endian unsigned word
         buf[rowstart] = c & 0x00ff;
-        buf[rowstart+1] = (c & 0xff00) >> 8;
+        buf[rowstart + 1] = (c & 0xff00) >> 8;
     }
 
     // End of sprite marker, a WORD of value 7
@@ -225,7 +226,7 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const palett
     // Walk through sprite raw data
     while(i < src->len) {
         // read a word
-        c = (uint8_t)src->data[i] + ((uint8_t)src->data[i+1] << 8);
+        c = (uint8_t)src->data[i] + ((uint8_t)src->data[i + 1] << 8);
         op = c % 4;
         data = c / 4;
         i += 2; // we read 2 bytes
@@ -243,16 +244,16 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const palett
                     uint8_t b = src->data[i];
                     int pos = ((y * src->width) + x) * 4;
                     if(remapping > -1) {
-                        dst->data[pos+0] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][0];
-                        dst->data[pos+1] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][1];
-                        dst->data[pos+2] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][2];
+                        dst->data[pos + 0] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][0];
+                        dst->data[pos + 1] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][1];
+                        dst->data[pos + 2] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][2];
                     } else {
-                        dst->data[pos+0] = (uint8_t)pal->data[b][0];
-                        dst->data[pos+1] = (uint8_t)pal->data[b][1];
-                        dst->data[pos+2] = (uint8_t)pal->data[b][2];
+                        dst->data[pos + 0] = (uint8_t)pal->data[b][0];
+                        dst->data[pos + 1] = (uint8_t)pal->data[b][1];
+                        dst->data[pos + 2] = (uint8_t)pal->data[b][2];
                     }
-                    dst->data[pos+3] = (uint8_t)255; // fully opaque
-                    i++; // we read 1 byte
+                    dst->data[pos + 3] = (uint8_t)255; // fully opaque
+                    i++;                               // we read 1 byte
                     x++;
                     data--;
                 }
@@ -302,7 +303,7 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
     // Walk through raw sprite data
     while(i < src->len) {
         // read a word
-        c = (uint8_t)src->data[i] + ((uint8_t)src->data[i+1] << 8);
+        c = (uint8_t)src->data[i] + ((uint8_t)src->data[i + 1] << 8);
         op = c % 4;
         data = c / 4;
         i += 2; // we read 2 bytes
@@ -378,15 +379,15 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
                 buf[i++] = c & 0x00ff;
                 buf[i++] = (c & 0xff00) >> 8;
             }
-            if(x != lastx+1 || y != lasty) {
-                if (x != 0) {
+            if(x != lastx + 1 || y != lasty) {
+                if(x != 0) {
                     c = (x * 4);
                     buf[i++] = c & 0x00ff;
                     buf[i++] = (c & 0xff00) >> 8;
                 }
                 if(!rowlen) {
                     rowstart = i;
-                    i+=2;
+                    i += 2;
                 }
             }
             if(y != lasty || x != lastx + 1) {

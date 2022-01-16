@@ -1,7 +1,7 @@
 #include "game/gui/frame.h"
 #include "utils/allocator.h"
 
-guiframe* guiframe_create(int x, int y, int w, int h) {
+guiframe *guiframe_create(int x, int y, int w, int h) {
     guiframe *frame = omf_calloc(1, sizeof(guiframe));
     frame->x = x;
     frame->y = y;
@@ -30,14 +30,14 @@ void guiframe_free(guiframe *frame) {
     omf_free(frame);
 }
 
-component* guiframe_find(guiframe *frame, int id) {
+component *guiframe_find(guiframe *frame, int id) {
     if(frame->root_node) {
         return component_find(frame->root_node, id);
     }
     return NULL;
 }
 
-component* guiframe_get_root(const guiframe *frame) {
+component *guiframe_get_root(const guiframe *frame) {
     return frame->root_node;
 }
 

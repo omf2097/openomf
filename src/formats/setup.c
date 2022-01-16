@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "formats/error.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-#include "formats/error.h"
 #include "formats/setup.h"
 
 int sd_setup_create(sd_setup_file *setup) {
@@ -11,11 +11,12 @@ int sd_setup_create(sd_setup_file *setup) {
         return SD_INVALID_INPUT;
     }
     memset(setup, 0, sizeof(sd_setup_file));
-	return SD_SUCCESS;
+    return SD_SUCCESS;
 }
 
 void sd_setup_free(sd_setup_file *setup) {
-	if(setup == NULL) return;
+    if(setup == NULL)
+        return;
 }
 
 int sd_setup_load(sd_setup_file *setup, const char *file) {
@@ -30,19 +31,19 @@ int sd_setup_load(sd_setup_file *setup, const char *file) {
     }
 
     if(sd_reader_filesize(r) != 296) {
-    	ret = SD_FILE_INVALID_TYPE;
+        ret = SD_FILE_INVALID_TYPE;
         goto error_0;
     }
 
-    if(!sd_read_buf(r, (char*)setup, 296)) {
-    	ret = SD_FILE_PARSE_ERROR;
-    	goto error_0;
+    if(!sd_read_buf(r, (char *)setup, 296)) {
+        ret = SD_FILE_PARSE_ERROR;
+        goto error_0;
     }
 
     sd_reader_close(r);
     return SD_SUCCESS;
 
 error_0:
-	sd_reader_close(r);
-	return ret;
+    sd_reader_close(r);
+    return ret;
 }

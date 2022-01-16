@@ -1,12 +1,12 @@
 #include "game/utils/score.h"
 #include "game/utils/formatting.h"
-#include "video/surface.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include <stdio.h>
+#include "video/surface.h"
 #include <math.h>
+#include <stdio.h>
 
-#define TEXT_COLOR color_create(186,250,250,255)
+#define TEXT_COLOR color_create(186, 250, 250, 255)
 #define SLIDER_DISTANCE 50
 #define SLIDER_HANG_TIME 25
 
@@ -32,8 +32,8 @@ float multipliers[] = {
 };
 
 vec2i interpolate(vec2i start, vec2i end, float fraction) {
-    int nx = start.x+(end.x - start.x)*fraction;
-    int ny = start.y+(end.y - start.y)*fraction;
+    int nx = start.x + (end.x - start.x) * fraction;
+    int ny = start.y + (end.y - start.y) * fraction;
     return vec2i_create(nx, ny);
 }
 
@@ -55,7 +55,7 @@ void chr_score_reset(chr_score *score, int wipe) {
     iterator it;
     score_text *t;
 
-    if (wipe) {
+    if(wipe) {
         score->score = 0;
     }
     score->rounds = 0;
@@ -110,10 +110,10 @@ void chr_score_tick(chr_score *score) {
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
         // don't allow them to get too close together, if a bunch are added at once
-        if (lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
+        if(lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
             break;
         }
-        if (t->age > SLIDER_HANG_TIME) {
+        if(t->age > SLIDER_HANG_TIME) {
             t->position -= 0.01f;
         }
         lastage = t->age++;
@@ -129,11 +129,12 @@ void chr_score_render(chr_score *score) {
     // Render all texts in list to right spot
     char tmp[50];
     score_format(score->score, tmp, 50);
-    if (score->direction == OBJECT_FACE_RIGHT) {
-        font_render_shadowed(&font_small, tmp, score->x, score->y, TEXT_COLOR, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
+    if(score->direction == OBJECT_FACE_RIGHT) {
+        font_render_shadowed(&font_small, tmp, score->x, score->y, TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
     } else {
         int s2len = strlen(tmp) * font_small.w;
-        font_render_shadowed(&font_small, tmp, score->x-s2len, score->y, TEXT_COLOR, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
+        font_render_shadowed(&font_small, tmp, score->x - s2len, score->y, TEXT_COLOR,
+                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
     }
 
     iterator it;
@@ -143,14 +144,15 @@ void chr_score_render(chr_score *score) {
 
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
-        if (lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
+        if(lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
             break;
         }
         pos = interpolate(vec2i_create(score->x, score->y), t->start, t->position);
-        if (score->direction == OBJECT_FACE_LEFT) {
-            pos = interpolate(vec2i_create(score->x-(strlen(t->text)*font_small.w), score->y), t->start, t->position);
+        if(score->direction == OBJECT_FACE_LEFT) {
+            pos =
+                interpolate(vec2i_create(score->x - (strlen(t->text) * font_small.w), score->y), t->start, t->position);
         }
-        font_render_shadowed(&font_small, t->text, pos.x, pos.y, TEXT_COLOR, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
+        font_render_shadowed(&font_small, t->text, pos.x, pos.y, TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
         lastage = t->age;
     }
 }
@@ -163,7 +165,7 @@ void chr_score_add(chr_score *score, char *text, int points, vec2i pos, float po
     s.points = points;
     s.start = pos;
     // center correctly initially, but end up justified
-    s.start.x -= ((strlen(s.text)*font_small.w)/2);
+    s.start.x -= ((strlen(s.text) * font_small.w) / 2);
     s.position = position;
     s.age = 0;
 
@@ -184,11 +186,11 @@ void chr_score_victory(chr_score *score, int health) {
     score->wins++;
     score->health = health;
     char *text;
-    if (health == 100) {
+    if(health == 100) {
         text = omf_calloc(64, 1);
         int len = snprintf(text, 64, "perfect round ");
         int points = DESTRUCTION * multipliers[score->difficulty];
-        score_format(points, text+len, 64-len);
+        score_format(points, text + len, 64 - len);
         // XXX hardcode the y coordinate for now
         chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
     }
@@ -196,7 +198,7 @@ void chr_score_victory(chr_score *score, int health) {
 
     int len = snprintf(text, 64, "vitality ");
     int points = trunc((DESTRUCTION * multipliers[score->difficulty]) * (health / 100.0f));
-    score_format(points, text+len, 64-len);
+    score_format(points, text + len, 64 - len);
     // XXX hardcode the y coordinate for now
     chr_score_add(score, text, points * (health / 100), vec2i_create(160, 100), 1.0f);
 }
@@ -210,21 +212,21 @@ void chr_score_destruction(chr_score *score) {
 }
 
 void chr_score_done(chr_score *score) {
-    if (!score->done) {
+    if(!score->done) {
         score->done = 1;
-        if (score->destruction) {
+        if(score->destruction) {
             char *text = omf_calloc(64, 1);
             int len = snprintf(text, 64, "destruction bonus ");
             int points = DESTRUCTION * multipliers[score->difficulty];
-            score_format(points, text+len, 64-len);
+            score_format(points, text + len, 64 - len);
             // XXX hardcode the y coordinate for now
             chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
             score->destruction = 0;
-        } else if (score->scrap) {
+        } else if(score->scrap) {
             char *text = omf_calloc(64, 1);
             int len = snprintf(text, 64, "scrap bonus ");
             int points = SCRAP * multipliers[score->difficulty];
-            score_format(points, text+len, 64-len);
+            score_format(points, text + len, 64 - len);
             // XXX hardcode the y coordinate for now
             chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
             score->scrap = 0;
@@ -239,11 +241,11 @@ void chr_score_clear_done(chr_score *score) {
 int chr_score_interrupt(chr_score *score, vec2i pos) {
     // Enemy interrupted somehow, show consecutive hits or whatevera
     int ret = 0;
-    if (score->consecutive_hits > 3) {
+    if(score->consecutive_hits > 3) {
         char *text = omf_calloc(64, 1);
         ret = 1;
         int len = snprintf(text, 64, "%d consecutive hits ", score->consecutive_hits);
-        score_format(score->consecutive_hit_score, text+len, 64-len);
+        score_format(score->consecutive_hit_score, text + len, 64 - len);
         // XXX hardcode the y coordinate for now
         chr_score_add(score, text, score->consecutive_hit_score, vec2i_create(pos.x, 130), 1.0f);
     }
@@ -255,13 +257,13 @@ int chr_score_interrupt(chr_score *score, vec2i pos) {
 int chr_score_end_combo(chr_score *score, vec2i pos) {
     // enemy recovered control, end any combos
     int ret = 0;
-    if (score->combo_hits > 1) {
+    if(score->combo_hits > 1) {
         char *text = omf_calloc(64, 1);
         ret = 1;
         int len = snprintf(text, 64, "%d hit combo ", score->combo_hits);
-        score_format(score->combo_hit_score*4, text+len, 64-len);
+        score_format(score->combo_hit_score * 4, text + len, 64 - len);
         // XXX hardcode the y coordinate for now
-        chr_score_add(score, text, score->combo_hit_score*4, vec2i_create(pos.x, 130), 1.0f);
+        chr_score_add(score, text, score->combo_hit_score * 4, vec2i_create(pos.x, 130), 1.0f);
     }
     score->combo_hits = 0;
     score->combo_hit_score = 0;
@@ -279,8 +281,8 @@ void chr_score_serialize(chr_score *score, serial *ser) {
 
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
-        serial_write_int8(ser, strlen(t->text)+1);
-        serial_write(ser, t->text, strlen(t->text)+1);
+        serial_write_int8(ser, strlen(t->text) + 1);
+        serial_write(ser, t->text, strlen(t->text) + 1);
         serial_write_float(ser, t->position);
         serial_write_int16(ser, t->start.x);
         serial_write_int16(ser, t->start.y);
@@ -304,7 +306,7 @@ void chr_score_unserialize(chr_score *score, serial *ser) {
     chr_score_free(score);
     list_create(&score->texts);
 
-    for (int i = 0; i < count; i++) {
+    for(int i = 0; i < count; i++) {
         text_len = serial_read_int8(ser);
         text = omf_calloc(text_len, 1);
         serial_read(ser, text, text_len);

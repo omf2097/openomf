@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <stdarg.h>
 #include "utils/log.h"
+#include <stdarg.h>
+#include <stdio.h>
 
 FILE *handle = 0;
 unsigned int _log_tick = 0;

@@ -1,13 +1,12 @@
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
 
-
 void widget_set_obj(component *c, void *obj) {
     widget *local = component_get_obj(c);
     local->obj = obj;
 }
 
-void* widget_get_obj(const component *c) {
+void *widget_get_obj(const component *c) {
     widget *local = component_get_obj(c);
     return local->obj;
 }
@@ -97,14 +96,14 @@ static void widget_free(component *c) {
     omf_free(local);
 }
 
-static component* widget_find(component *c, int id) {
+static component *widget_find(component *c, int id) {
     if(widget_get_id(c) == id) {
         return c;
     }
     return NULL;
 }
 
-component* widget_create() {
+component *widget_create() {
     component *c = component_create();
     c->supports_disable = 1;
     c->supports_select = 1;
@@ -124,4 +123,3 @@ component* widget_create() {
 
     return c;
 }
-

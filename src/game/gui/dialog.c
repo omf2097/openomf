@@ -1,9 +1,9 @@
-#include <string.h>
-#include "video/video.h"
-#include "utils/log.h"
+#include "game/gui/dialog.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/textbutton.h"
-#include "game/gui/dialog.h"
+#include "utils/log.h"
+#include "video/video.h"
+#include <string.h>
 
 #define MAX_WIDTH 160
 
@@ -28,11 +28,11 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     dlg->visible = 0;
     dlg->userdata = NULL;
     dlg->clicked = NULL;
-    strncpy(dlg->text, text, sizeof(dlg->text)-1);
-    dlg->text[sizeof(dlg->text)-1] = 0;
-    font_get_wrapped_size_shadowed(&font_small, dlg->text, MAX_WIDTH, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM, &w, &h);
+    strncpy(dlg->text, text, sizeof(dlg->text) - 1);
+    dlg->text[sizeof(dlg->text) - 1] = 0;
+    font_get_wrapped_size_shadowed(&font_small, dlg->text, MAX_WIDTH, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM, &w, &h);
     int tsize = text_char_width(&tconf);
-    menu_background_create(&dlg->background, MAX_WIDTH+30, h+24+tsize);
+    menu_background_create(&dlg->background, MAX_WIDTH + 30, h + 24 + tsize);
 
     if(style == DIALOG_STYLE_YES_NO) {
         dlg->yes = textbutton_create(&tconf, "YES", COM_ENABLED, NULL, NULL);
@@ -74,7 +74,9 @@ int dialog_is_visible(dialog *dlg) {
 }
 
 void dialog_render(dialog *dlg) {
-    if(!dlg->visible) { return; }
+    if(!dlg->visible) {
+        return;
+    }
     video_render_sprite(&dlg->background, dlg->x, dlg->y, BLEND_ALPHA, 0);
     if(dlg->yes) {
         component_render(dlg->yes);
@@ -85,12 +87,14 @@ void dialog_render(dialog *dlg) {
     if(dlg->ok) {
         component_render(dlg->ok);
     }
-    font_render_wrapped_shadowed(&font_small, dlg->text, dlg->x+15, dlg->y+3, MAX_WIDTH, COLOR_GREEN, TEXT_SHADOW_RIGHT|TEXT_SHADOW_BOTTOM);
+    font_render_wrapped_shadowed(&font_small, dlg->text, dlg->x + 15, dlg->y + 3, MAX_WIDTH, COLOR_GREEN,
+                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
 }
 
-
 void dialog_tick(dialog *dlg) {
-    if(!dlg->visible) { return; }
+    if(!dlg->visible) {
+        return;
+    }
     if(dlg->yes) {
         component_tick(dlg->yes);
     }
@@ -103,7 +107,9 @@ void dialog_tick(dialog *dlg) {
 }
 
 void dialog_event(dialog *dlg, int action) {
-    if(!dlg->visible) { return; }
+    if(!dlg->visible) {
+        return;
+    }
     if(action == ACT_LEFT || action == ACT_RIGHT) {
         if(dlg->yes && dlg->no) {
             if(component_is_selected(dlg->yes)) {

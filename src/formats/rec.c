@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "formats/error.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-#include "formats/error.h"
 #include "formats/rec.h"
 #include "utils/allocator.h"
 
@@ -33,7 +33,8 @@ int sd_rec_create(sd_rec_file *rec) {
 }
 
 void sd_rec_free(sd_rec_file *rec) {
-    if(rec == NULL) return;
+    if(rec == NULL)
+        return;
     sd_pilot_free(&rec->pilots[0].info);
     sd_pilot_free(&rec->pilots[1].info);
     if(rec->moves) {
@@ -64,7 +65,9 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     for(int i = 0; i < 2; i++) {
         // Read pilot data
         sd_pilot_create(&rec->pilots[i].info);
-        if((ret = sd_pilot_load(r, &rec->pilots[i].info)) != SD_SUCCESS) { goto error_0; }
+        if((ret = sd_pilot_load(r, &rec->pilots[i].info)) != SD_SUCCESS) {
+            goto error_0;
+        }
         rec->pilots[i].unknown_a = sd_read_ubyte(r);
         rec->pilots[i].unknown_b = sd_read_uword(r);
         palette_create(&rec->pilots[i].pal);
@@ -73,7 +76,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         sd_sprite_create(&rec->pilots[i].photo);
         if(rec->pilots[i].has_photo) {
             ret = sd_sprite_load(r, &rec->pilots[i].photo);
-            if (ret != SD_SUCCESS) {
+            if(ret != SD_SUCCESS) {
                 goto error_0;
             }
         }
@@ -96,15 +99,15 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     rec->unknown_j = sd_read_word(r);
     rec->unknown_k = sd_read_word(r);
     uint32_t in = sd_read_udword(r);
-    rec->knock_down = (in >> 0 ) & 0x03; // 00000000 00000000 00000000 00000011 (2)
-    rec->rehit_mode = (in >> 2 ) & 0x01; // 00000000 00000000 00000000 00000100 (1)
-    rec->def_throws = (in >> 3 ) & 0x01; // 00000000 00000000 00000000 00001000 (1)
-    rec->arena_id =   (in >> 4 ) & 0x1F; // 00000000 00000000 00000001 11110000 (5)
-    rec->power[0] =   (in >> 9 ) & 0x1F; // 00000000 00000000 00111110 00000000 (5)
-    rec->power[1] =   (in >> 14) & 0x1F; // 00000000 00000111 11000000 00000000 (5)
-    rec->hazards =    (in >> 19) & 0x01; // 00000000 00001000 00000000 00000000 (1)
+    rec->knock_down = (in >> 0) & 0x03;  // 00000000 00000000 00000000 00000011 (2)
+    rec->rehit_mode = (in >> 2) & 0x01;  // 00000000 00000000 00000000 00000100 (1)
+    rec->def_throws = (in >> 3) & 0x01;  // 00000000 00000000 00000000 00001000 (1)
+    rec->arena_id = (in >> 4) & 0x1F;    // 00000000 00000000 00000001 11110000 (5)
+    rec->power[0] = (in >> 9) & 0x1F;    // 00000000 00000000 00111110 00000000 (5)
+    rec->power[1] = (in >> 14) & 0x1F;   // 00000000 00000111 11000000 00000000 (5)
+    rec->hazards = (in >> 19) & 0x01;    // 00000000 00001000 00000000 00000000 (1)
     rec->round_type = (in >> 20) & 0x03; // 00000000 00110000 00000000 00000000 (2)
-    rec->unknown_l =  (in >> 22) & 0x03; // 00000000 11000000 00000000 00000000 (2)
+    rec->unknown_l = (in >> 22) & 0x03;  // 00000000 11000000 00000000 00000000 (2)
     rec->hyper_mode = (in >> 24) & 0x01; // 00000001 00000000 00000000 00000000 (1)
     rec->unknown_m = sd_read_byte(r);
 
@@ -133,14 +136,30 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
                 rec->moves[i].action |= SD_ACT_KICK;
             }
             switch(action & 0xF0) {
-                case 16: rec->moves[i].action |= SD_ACT_UP; break;
-                case 32: rec->moves[i].action |= (SD_ACT_UP|SD_ACT_RIGHT); break;
-                case 48: rec->moves[i].action |= SD_ACT_RIGHT; break;
-                case 64: rec->moves[i].action |= (SD_ACT_DOWN|SD_ACT_RIGHT); break;
-                case 80: rec->moves[i].action |= SD_ACT_DOWN; break;
-                case 96: rec->moves[i].action |= (SD_ACT_DOWN|SD_ACT_LEFT); break;
-                case 112: rec->moves[i].action |= SD_ACT_LEFT; break;
-                case 128: rec->moves[i].action |= (SD_ACT_UP|SD_ACT_LEFT); break;
+                case 16:
+                    rec->moves[i].action |= SD_ACT_UP;
+                    break;
+                case 32:
+                    rec->moves[i].action |= (SD_ACT_UP | SD_ACT_RIGHT);
+                    break;
+                case 48:
+                    rec->moves[i].action |= SD_ACT_RIGHT;
+                    break;
+                case 64:
+                    rec->moves[i].action |= (SD_ACT_DOWN | SD_ACT_RIGHT);
+                    break;
+                case 80:
+                    rec->moves[i].action |= SD_ACT_DOWN;
+                    break;
+                case 96:
+                    rec->moves[i].action |= (SD_ACT_DOWN | SD_ACT_LEFT);
+                    break;
+                case 112:
+                    rec->moves[i].action |= SD_ACT_LEFT;
+                    break;
+                case 128:
+                    rec->moves[i].action |= (SD_ACT_UP | SD_ACT_LEFT);
+                    break;
             }
 
             // We already read the action key, so minus one.
@@ -230,14 +249,30 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
             // Write action information
             uint8_t raw_action = 0;
             switch(rec->moves[i].action & SD_MOVE_MASK) {
-                case (SD_ACT_UP): raw_action = 16; break;
-                case (SD_ACT_UP|SD_ACT_RIGHT): raw_action = 32; break;
-                case (SD_ACT_RIGHT): raw_action = 48; break;
-                case (SD_ACT_DOWN|SD_ACT_RIGHT): raw_action = 64; break;
-                case (SD_ACT_DOWN): raw_action = 80; break;
-                case (SD_ACT_DOWN|SD_ACT_LEFT): raw_action = 96; break;
-                case (SD_ACT_LEFT): raw_action = 112; break;
-                case (SD_ACT_UP|SD_ACT_LEFT): raw_action = 128; break;
+                case(SD_ACT_UP):
+                    raw_action = 16;
+                    break;
+                case(SD_ACT_UP | SD_ACT_RIGHT):
+                    raw_action = 32;
+                    break;
+                case(SD_ACT_RIGHT):
+                    raw_action = 48;
+                    break;
+                case(SD_ACT_DOWN | SD_ACT_RIGHT):
+                    raw_action = 64;
+                    break;
+                case(SD_ACT_DOWN):
+                    raw_action = 80;
+                    break;
+                case(SD_ACT_DOWN | SD_ACT_LEFT):
+                    raw_action = 96;
+                    break;
+                case(SD_ACT_LEFT):
+                    raw_action = 112;
+                    break;
+                case(SD_ACT_UP | SD_ACT_LEFT):
+                    raw_action = 128;
+                    break;
             }
             if(rec->moves[i].action & SD_ACT_PUNCH)
                 raw_action |= 1;
@@ -251,7 +286,7 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
                 sd_write_buf(w, rec->moves[i].extra_data, unknown_len);
             }
         }
-   }
+    }
 
     sd_writer_close(w);
     return SD_SUCCESS;
@@ -264,10 +299,7 @@ int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
 
     // Only move if we are not deleting the last entry
     if(number < (rec->move_count - 1)) {
-        memmove(
-            rec->moves + number,
-            rec->moves + number + 1,
-            (rec->move_count - number - 1) * sizeof(sd_rec_move));
+        memmove(rec->moves + number, rec->moves + number + 1, (rec->move_count - number - 1) * sizeof(sd_rec_move));
     }
 
     // Resize to save memory
@@ -285,21 +317,15 @@ int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_mov
     }
 
     // Resize
-    rec->moves = omf_realloc(rec->moves, (rec->move_count+1) * sizeof(sd_rec_move));
+    rec->moves = omf_realloc(rec->moves, (rec->move_count + 1) * sizeof(sd_rec_move));
 
     // Only move if we are inserting, not appending
     // when number == move_count-1, we are pushing the last entry forwards by one
     // when number == move_count, we are pushing to the end.
     if(number < rec->move_count) {
-        memmove(
-            rec->moves + number + 1,
-            rec->moves + number, 
-            (rec->move_count - number) * sizeof(sd_rec_move));
+        memmove(rec->moves + number + 1, rec->moves + number, (rec->move_count - number) * sizeof(sd_rec_move));
     }
-    memcpy(
-        rec->moves + number,
-        move,
-        sizeof(sd_rec_move));
+    memcpy(rec->moves + number, move, sizeof(sd_rec_move));
 
     rec->move_count++;
     return SD_SUCCESS;

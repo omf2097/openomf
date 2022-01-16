@@ -1,6 +1,6 @@
-#include "formats/language.h"
-#include "formats/error.h"
 #include "resources/languages.h"
+#include "formats/error.h"
+#include "formats/language.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/array.h"
@@ -45,6 +45,6 @@ void lang_close() {
     omf_free(language);
 }
 
-const char* lang_get(unsigned int id) {
-    return (const char*)array_get(&language_strings, id);
+const char *lang_get(unsigned int id) {
+    return (const char *)array_get(&language_strings, id);
 }

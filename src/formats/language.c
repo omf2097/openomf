@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "formats/internal/reader.h"
-#include "formats/internal/memreader.h"
-#include "formats/internal/writer.h"
-#include "formats/internal/memwriter.h"
 #include "formats/error.h"
+#include "formats/internal/memreader.h"
+#include "formats/internal/memwriter.h"
+#include "formats/internal/reader.h"
+#include "formats/internal/writer.h"
 #include "formats/language.h"
 #include "utils/allocator.h"
 
@@ -18,7 +18,8 @@ int sd_language_create(sd_language *language) {
 }
 
 void sd_language_free(sd_language *language) {
-    if(language == NULL) return;
+    if(language == NULL)
+        return;
     if(language->strings != 0) {
         for(int i = 0; i < language->count; i++) {
             omf_free(language->strings[i].data);
@@ -36,7 +37,7 @@ int sd_language_load(sd_language *language, const char *filename) {
     if(!r) {
         return SD_FILE_OPEN_ERROR;
     }
-    
+
     // Find out how many strings there are in the file
     unsigned int string_count = 0;
     unsigned int offset = 0;
@@ -52,12 +53,12 @@ int sd_language_load(sd_language *language, const char *filename) {
         sd_reader_close(r);
         return SD_FILE_INVALID_TYPE;
     }
-    
+
     // Some variables etc.
-    unsigned int offsets[string_count+1];
+    unsigned int offsets[string_count + 1];
     language->strings = omf_calloc(string_count, sizeof(sd_lang_string));
     language->count = string_count;
-    
+
     // Read titles and offsets
     unsigned int pos = 0;
     while((offset = sd_read_udword(r)) < file_size && pos < string_count) {
@@ -74,11 +75,11 @@ int sd_language_load(sd_language *language, const char *filename) {
     }
 
     offsets[pos] = file_size;
-    
+
     // Read real titles
     for(unsigned i = 0; i < pos; i++) {
         sd_reader_set(r, offsets[i]);
-        unsigned int len = offsets[i+1] - offsets[i];
+        unsigned int len = offsets[i + 1] - offsets[i];
 
         language->strings[i].data = omf_calloc(len + 1, 1);
         memset(language->strings[i].data, 0, len + 1);
@@ -95,7 +96,7 @@ int sd_language_load(sd_language *language, const char *filename) {
     return SD_SUCCESS;
 }
 
-const sd_lang_string* sd_language_get(const sd_language *language, int num) {
+const sd_lang_string *sd_language_get(const sd_language *language, int num) {
     if(language == NULL || num < 0 || num >= language->count) {
         return NULL;
     }
@@ -122,14 +123,14 @@ int sd_language_save(sd_language *language, const char *filename) {
     for(int i = 0; i < language->count; i++) {
         // Write catalog offset
         long offset = sd_writer_pos(w);
-        if (offset < 0) {
+        if(offset < 0) {
             goto error;
         }
-        if (sd_writer_seek_start(w, 36 * i) < 0) {
+        if(sd_writer_seek_start(w, 36 * i) < 0) {
             goto error;
         }
         sd_write_udword(w, offset);
-        if (sd_writer_seek_start(w, offset) < 0) {
+        if(sd_writer_seek_start(w, offset) < 0) {
             goto error;
         }
 

@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "formats/internal/reader.h"
-#include "formats/internal/writer.h"
 #include "formats/error.h"
 #include "formats/fonts.h"
+#include "formats/internal/reader.h"
+#include "formats/internal/writer.h"
 
 int sd_font_create(sd_font *font) {
     if(font == NULL) {
@@ -26,7 +26,7 @@ int sd_font_load(sd_font *font, const char *file, unsigned int font_h) {
     if(!r) {
         return SD_FILE_OPEN_ERROR;
     }
-    
+
     font->h = font_h;
     for(int i = 0; i < 224; i++) {
         sd_read_buf(r, font->chars[i].data, font_h);
@@ -35,7 +35,7 @@ int sd_font_load(sd_font *font, const char *file, unsigned int font_h) {
             return SD_FILE_PARSE_ERROR;
         }
     }
-    
+
     sd_reader_close(r);
     return SD_SUCCESS;
 }
@@ -53,7 +53,7 @@ int sd_font_save(const sd_font *font, const char *file) {
     for(int i = 0; i < 224; i++) {
         sd_write_buf(w, font->chars[i].data, font->h);
     }
-    
+
     sd_writer_close(w);
     return SD_SUCCESS;
 }
@@ -65,7 +65,7 @@ int sd_font_decode(const sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r,
 
     int t = 0;
     for(int i = 0; i < font->h; i++) {
-        for(int k = font->h-1; k >= 0; k--) {
+        for(int k = font->h - 1; k >= 0; k--) {
             if(font->chars[ch].data[i] & (1 << k)) {
                 o->data[t++] = r;
                 o->data[t++] = g;

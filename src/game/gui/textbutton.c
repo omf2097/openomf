@@ -1,15 +1,15 @@
+#include <SDL.h>
 #include <stdlib.h>
 #include <string.h>
-#include <SDL.h>
 
-#include "game/gui/textbutton.h"
-#include "game/gui/menu_background.h"
-#include "game/gui/widget.h"
-#include "video/video.h"
 #include "audio/sound.h"
+#include "game/gui/menu_background.h"
+#include "game/gui/textbutton.h"
+#include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/compat.h"
+#include "utils/log.h"
+#include "video/video.h"
 
 typedef struct {
     char *text;
@@ -39,7 +39,7 @@ void textbutton_set_border(component *c, color col) {
     int chars = strlen(tb->text);
     int fsize = text_char_width(&tb->tconf);
     int width = chars * fsize;
-    menu_background_border_create(&tb->border, width+6, fsize+3);
+    menu_background_border_create(&tb->border, width + 6, fsize + 3);
     tb->border_created = 1;
 }
 
@@ -48,7 +48,7 @@ void textbutton_remove_border(component *c) {
     tb->border_enabled = 0;
 }
 
-void textbutton_set_text(component *c, const char* text) {
+void textbutton_set_text(component *c, const char *text) {
     textbutton *tb = widget_get_obj(c);
     if(tb->text) {
         omf_free(tb->text);
@@ -62,8 +62,8 @@ static void textbutton_render(component *c) {
     // Select color and render
     if(component_is_selected(c)) {
         int t = tb->ticks / 2;
-        tb->tconf.cforeground = color_create(80 - t, 220 - t*2, 80 - t, 255);
-    } else if (component_is_disabled(c)) {
+        tb->tconf.cforeground = color_create(80 - t, 220 - t * 2, 80 - t, 255);
+    } else if(component_is_disabled(c)) {
         tb->tconf.cforeground = color_create(121, 121, 121, 255);
     } else {
         tb->tconf.cforeground = color_create(0, 121, 0, 255);
@@ -72,7 +72,7 @@ static void textbutton_render(component *c) {
 
     // Border
     if(tb->border_enabled) {
-        video_render_sprite(&tb->border, c->x-2, c->y-2, BLEND_ALPHA, 0);
+        video_render_sprite(&tb->border, c->x - 2, c->y - 2, BLEND_ALPHA, 0);
     }
 }
 
@@ -115,7 +115,8 @@ static void textbutton_free(component *c) {
     omf_free(tb);
 }
 
-component* textbutton_create(const text_settings *tconf, const char *text, int disabled, textbutton_click_cb cb, void *userdata) {
+component *textbutton_create(const text_settings *tconf, const char *text, int disabled, textbutton_click_cb cb,
+                             void *userdata) {
     component *c = widget_create();
     component_disable(c, disabled);
 

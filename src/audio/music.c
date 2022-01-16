@@ -2,23 +2,29 @@
 #include <string.h>
 #ifdef __linux__
 #include <strings.h> // strcasecmp
-#endif // __linux__
-#include "resources/pathmanager.h"
-#include "audio/music.h"
+#endif               // __linux__
 #include "audio/audio.h"
+#include "audio/music.h"
+#include "game/utils/settings.h"
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "game/utils/settings.h"
 
 #include "audio/sources/dumb_source.h"
-#include "audio/sources/xmp_source.h"
 #include "audio/sources/vorbis_source.h"
+#include "audio/sources/xmp_source.h"
 
 #ifdef STANDALONE_SERVER
-int music_play(const char *filename) { return 0; }
-void music_set_volume(float volume) {}
-void music_stop() {}
-int music_playing() { return 1; }
+int music_play(const char *filename) {
+    return 0;
+}
+void music_set_volume(float volume) {
+}
+void music_stop() {
+}
+int music_playing() {
+    return 1;
+}
 #else // STANDALONE_SERVER
 
 struct music_override_t {
@@ -41,50 +47,54 @@ static module_source module_sources[] = {
     {SOURCE_DUMB, "dumb"},
 #endif
 #ifdef USE_XMP
-    {SOURCE_XMP, "xmp"},
+    {SOURCE_XMP,  "xmp" },
 #endif
-    {0,0} // Guard
+    {0,           0     }  // Guard
 };
 
 audio_source_freq default_freqs[] = {
     {0, 1, "none"},
-    {0,0}
+    {0, 0 }
 };
 
 audio_source_resampler default_resamplers[] = {
     {0, 1, "default"},
-    {0,0}
+    {0, 0 }
 };
 
-module_source* music_get_module_sources() {
+module_source *music_get_module_sources() {
     return module_sources;
 }
 
-audio_source_freq* music_module_get_freqs(int id) {
+audio_source_freq *music_module_get_freqs(int id) {
     switch(id) {
 #ifdef USE_DUMB
-        case SOURCE_DUMB: return dumb_get_freqs();
+        case SOURCE_DUMB:
+            return dumb_get_freqs();
 #endif
 #ifdef USE_XMP
-        case SOURCE_XMP: return xmp_get_freqs();
+        case SOURCE_XMP:
+            return xmp_get_freqs();
 #endif
     }
     return default_freqs;
 }
 
-audio_source_resampler* music_module_get_resamplers(int id) {
+audio_source_resampler *music_module_get_resamplers(int id) {
     switch(id) {
 #ifdef USE_DUMB
-        case SOURCE_DUMB: return dumb_get_resamplers();
+        case SOURCE_DUMB:
+            return dumb_get_resamplers();
 #endif
 #ifdef USE_XMP
-        case SOURCE_XMP: return xmp_get_resamplers();
+        case SOURCE_XMP:
+            return xmp_get_resamplers();
 #endif
     }
     return default_resamplers;
 }
 
-const char* get_file_or_override(unsigned int id) {
+const char *get_file_or_override(unsigned int id) {
     // Declare music overrides
     settings *s = settings_get();
     struct music_override_t overrides[] = {
@@ -93,8 +103,8 @@ const char* get_file_or_override(unsigned int id) {
         {PSM_ARENA2, s->sound.music_arena2},
         {PSM_ARENA3, s->sound.music_arena3},
         {PSM_ARENA4, s->sound.music_arena4},
-        {PSM_MENU,   s->sound.music_menu},
-        {PSM_END,    s->sound.music_end}
+        {PSM_MENU,   s->sound.music_menu  },
+        {PSM_END,    s->sound.music_end   }
     };
 
     for(int i = 0; i < 7; i++) {
@@ -131,8 +141,8 @@ int music_play(unsigned int id) {
     source_init(music_src);
 
     // Find path & ext
-    const char* filename = get_file_or_override(id);
-    const char* ext = strrchr(filename, '.') + 1;
+    const char *filename = get_file_or_override(id);
+    const char *ext = strrchr(filename, '.') + 1;
     if(ext == NULL || ext == filename) {
         PERROR("Couldn't find extension for music file!");
         goto error_0;

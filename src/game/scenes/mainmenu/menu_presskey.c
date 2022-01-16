@@ -1,6 +1,6 @@
 #include "game/scenes/mainmenu/menu_presskey.h"
-#include "game/utils/settings.h"
 #include "game/gui/gui.h"
+#include "game/utils/settings.h"
 #include "utils/allocator.h"
 #include "utils/compat.h"
 #include "utils/log.h"
@@ -16,8 +16,11 @@ int is_key_bound(int key) {
     settings_keyboard *k = &settings_get()->keys;
     const char *compare = SDL_GetScancodeName(key);
 
-    #define CHECK_KEY(keyname) \
-        if(strcmp(keyname, compare) == 0) { DEBUG("Key %s is already bound.", compare); return 1; }
+#define CHECK_KEY(keyname)                                                                                             \
+    if(strcmp(keyname, compare) == 0) {                                                                                \
+        DEBUG("Key %s is already bound.", compare);                                                                    \
+        return 1;                                                                                                      \
+    }
 
     CHECK_KEY(k->key1_jump_up)
     CHECK_KEY(k->key1_jump_right)
@@ -39,7 +42,7 @@ int is_key_bound(int key) {
     CHECK_KEY(k->key2_jump_left)
     CHECK_KEY(k->key2_punch)
     CHECK_KEY(k->key2_kick)
-    
+
     CHECK_KEY(k->key1_escape)
     CHECK_KEY(k->key2_escape)
 
@@ -96,7 +99,7 @@ void menu_presskey_tick(component *c) {
     }
 }
 
-component* menu_presskey_create(char **key) {
+component *menu_presskey_create(char **key) {
     presskey_menu_local *local = omf_calloc(1, sizeof(presskey_menu_local));
     local->wait_timeout = 20;
     local->warn_timeout = 50;
@@ -108,7 +111,7 @@ component* menu_presskey_create(char **key) {
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = color_create(0, 121, 0, 255);
 
-    component* menu = menu_create(11);
+    component *menu = menu_create(11);
     local->text[0] = label_create(&tconf, "PRESS A KEY FOR");
     local->text[1] = label_create(&tconf, "THIS ACTION ...");
     menu_attach(menu, local->text[0]);

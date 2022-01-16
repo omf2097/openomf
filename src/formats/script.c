@@ -1,10 +1,10 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 #include "formats/script.h"
 #include "formats/error.h"
 #include "formats/taglist.h"
 #include "utils/allocator.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 static void _create_frame(sd_script *script, int number);
 static void _create_tag(sd_script_frame *frame, int number);
@@ -13,7 +13,7 @@ static int read_next_int(const char *str, int *pos) {
     int opos = 0;
     char buf[20];
     memset(buf, 0, 20);
-    if(str[*pos] == '-' && str[(*pos)+1] >= '0' && str[(*pos)+1] <= '9') {
+    if(str[*pos] == '-' && str[(*pos) + 1] >= '0' && str[(*pos) + 1] <= '9') {
         buf[opos] = str[*pos];
         (*pos)++;
         opos++;
@@ -128,7 +128,7 @@ static void _create_frame(sd_script *script, int number) {
     memset(&script->frames[number], 0, sizeof(sd_script_frame));
 }
 
-int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
+int sd_script_decode(sd_script *script, const char *str, int *inv_pos) {
     if(script == NULL || str == NULL)
         return SD_INVALID_INPUT;
 
@@ -165,7 +165,7 @@ int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
         if(str[i] >= 'a' && str[i] <= 'z') {
             int found = 0;
             for(int k = 3; k > 0; k--) {
-                memcpy(test, str+i, k);
+                memcpy(test, str + i, k);
                 test[k] = 0;
 
                 // See if the current tag matches with anything.
@@ -192,11 +192,26 @@ int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
             }
             if(!found) {
                 // Handle known filler tags
-                if(strcmp(test, "u") == 0) { i++; continue; }
-                if(strcmp(test, "c") == 0) { i++; continue; }
-                if(strcmp(test, "p") == 0) { i++; continue; }
-                if(strcmp(test, "o") == 0) { i++; continue; }
-                if(strcmp(test, "z") == 0) { i++; continue; }
+                if(strcmp(test, "u") == 0) {
+                    i++;
+                    continue;
+                }
+                if(strcmp(test, "c") == 0) {
+                    i++;
+                    continue;
+                }
+                if(strcmp(test, "p") == 0) {
+                    i++;
+                    continue;
+                }
+                if(strcmp(test, "o") == 0) {
+                    i++;
+                    continue;
+                }
+                if(strcmp(test, "z") == 0) {
+                    i++;
+                    continue;
+                }
 
                 // Could do nothing about it.
                 if(inv_pos != NULL)
@@ -218,7 +233,7 @@ int sd_script_decode(sd_script *script, const char* str, int *inv_pos) {
     return SD_SUCCESS;
 }
 
-int sd_script_encode(const sd_script *script, char* str, size_t len) {
+int sd_script_encode(const sd_script *script, char *str, size_t len) {
     if(script == NULL || str == NULL)
         return SD_INVALID_INPUT;
 
@@ -263,14 +278,14 @@ int sd_script_encoded_length(const sd_script *script) {
                 s += snprintf(tmp, sizeof(tmp), "%d", tag->value); // Tag value length
             }
         }
-        s += 2; // sprite key and the '-' char
+        s += 2;                                                 // sprite key and the '-' char
         s += snprintf(tmp, sizeof(tmp), "%d", frame->tick_len); // Tick length char count
     }
     s--; // Minus the last '-'
     return s;
 }
 
-const sd_script_frame* sd_script_get_frame_at(const sd_script *script, int ticks) {
+const sd_script_frame *sd_script_get_frame_at(const sd_script *script, int ticks) {
     if(script == NULL)
         return NULL;
     if(ticks < 0)
@@ -288,7 +303,7 @@ const sd_script_frame* sd_script_get_frame_at(const sd_script *script, int ticks
     return NULL;
 }
 
-const sd_script_frame* sd_script_get_frame(const sd_script *script, int frame_number) {
+const sd_script_frame *sd_script_get_frame(const sd_script *script, int frame_number) {
     if(script == NULL || frame_number < 0 || frame_number >= script->frame_count) {
         return NULL;
     }
@@ -330,13 +345,13 @@ int sd_script_get_frame_index_at(const sd_script *script, int ticks) {
         pos = next;
     }
     return -1;
-} 
+}
 
 int sd_script_is_last_frame(const sd_script *script, const sd_script_frame *frame) {
     if(script == NULL)
         return 0;
     int index = sd_script_get_frame_index(script, frame);
-    if(index == script->frame_count-1)
+    if(index == script->frame_count - 1)
         return 1;
     return 0;
 }
@@ -360,7 +375,7 @@ int sd_script_is_first_frame_at(const sd_script *script, int ticks) {
     return sd_script_is_first_frame(script, frame);
 }
 
-sd_script_tag* _sd_script_get_tag(const sd_script_frame* frame, const char* tag) {
+sd_script_tag *_sd_script_get_tag(const sd_script_frame *frame, const char *tag) {
     for(int i = 0; i < frame->tag_count; i++) {
         if(strcmp(tag, frame->tags[i].key) == 0) {
             return &frame->tags[i];
@@ -369,28 +384,27 @@ sd_script_tag* _sd_script_get_tag(const sd_script_frame* frame, const char* tag)
     return NULL;
 }
 
-const sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag) {
+const sd_script_tag *sd_script_get_tag(const sd_script_frame *frame, const char *tag) {
     if(frame == NULL || tag == NULL) {
         return NULL;
     }
     return _sd_script_get_tag(frame, tag);
 }
 
-int sd_script_isset(const sd_script_frame *frame, const char* tag) {
+int sd_script_isset(const sd_script_frame *frame, const char *tag) {
     if(sd_script_get_tag(frame, tag) != NULL) {
         return 1;
     }
     return 0;
 }
 
-int sd_script_get(const sd_script_frame *frame, const char* tag) {
+int sd_script_get(const sd_script_frame *frame, const char *tag) {
     const sd_script_tag *stag = sd_script_get_tag(frame, tag);
     if(stag == NULL) {
         return 0;
     }
     return stag->value;
 }
-
 
 int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int current_tick) {
     if(script == NULL)
@@ -413,7 +427,7 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int
     return -1;
 }
 
-int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int current_tick) {
+int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, int current_tick) {
     if(script == NULL || tag == NULL)
         return -1;
     if(current_tick > sd_script_get_total_ticks(script))
@@ -432,7 +446,7 @@ int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int 
     return -1;
 }
 
-int sd_script_delete_tag(sd_script *script, int frame_id, const char* tag) {
+int sd_script_delete_tag(sd_script *script, int frame_id, const char *tag) {
     if(script == NULL || tag == NULL)
         return SD_INVALID_INPUT;
     if(frame_id < 0 || frame_id >= script->frame_count)
@@ -466,7 +480,7 @@ int sd_script_delete_tag(sd_script *script, int frame_id, const char* tag) {
     return SD_SUCCESS;
 }
 
-int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int value) {
+int sd_script_set_tag(sd_script *script, int frame_id, const char *tag, int value) {
     if(script == NULL || tag == NULL)
         return SD_INVALID_INPUT;
     if(frame_id < 0 || frame_id >= script->frame_count)

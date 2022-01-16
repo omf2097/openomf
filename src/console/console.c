@@ -1,10 +1,10 @@
-#include <stdio.h>
 #include "console/console.h"
 #include "console/console_type.h"
 #include "game/gui/menu_background.h"
 #include "game/utils/settings.h"
-#include "video/video.h"
 #include "utils/allocator.h"
+#include "video/video.h"
+#include <stdio.h>
 
 #define HISTORY_MAX 100
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
@@ -21,12 +21,22 @@ void console_init_cmd();
 int make_argv(char *p, char **argv) {
     // split line into argv, warning: does not handle quoted strings
     int argc = 0;
-    while(isspace(*p)) { ++p; }
+    while(isspace(*p)) {
+        ++p;
+    }
     while(*p) {
-        if(argv != NULL) { argv[argc] = p; }
-        while(*p && !isspace(*p)) { ++p; }
-        if(argv != NULL && *p) { *p++ = '\0'; }
-        while(isspace(*p)) { ++p; }
+        if(argv != NULL) {
+            argv[argc] = p;
+        }
+        while(*p && !isspace(*p)) {
+            ++p;
+        }
+        if(argv != NULL && *p) {
+            *p++ = '\0';
+        }
+        while(isspace(*p)) {
+            ++p;
+        }
         ++argc;
     }
     return argc;
@@ -66,8 +76,7 @@ void console_handle_line(game_state *gs) {
             if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
                 command *cmd = val;
                 int err = cmd->func(gs, argc, argv);
-                if(err == 0)
-                {
+                if(err == 0) {
                     console_output_add("> ");
                     console_output_add(argv[0]);
                     console_output_addline(" SUCCESS");
@@ -128,7 +137,7 @@ void console_output_scroll_up(unsigned int lines) {
         con->output_pos = BUFFER_DEC(con->output_pos);
         if(con->output[con->output_pos] == '\n') {
             l++;
-            if(l == lines){
+            if(l == lines) {
                 con->output_pos = BUFFER_INC(con->output_pos);
                 break;
             }
@@ -142,7 +151,7 @@ void console_output_scroll_down(unsigned int lines) {
         con->output_pos = BUFFER_INC(con->output_pos);
         if(con->output[con->output_pos] == '\n') {
             l++;
-            if(l == lines){
+            if(l == lines) {
                 con->output_pos = BUFFER_INC(con->output_pos);
                 break;
             }
@@ -152,7 +161,7 @@ void console_output_scroll_down(unsigned int lines) {
 
 void console_output_add(const char *text) {
     size_t len = strlen(text);
-    for(size_t i = 0;i < len;++i) {
+    for(size_t i = 0; i < len; ++i) {
         char c = text[i];
         con->output[con->output_tail] = c;
         con->output_tail = BUFFER_INC(con->output_tail);
@@ -175,9 +184,7 @@ void console_output_render() {
     int y = 0;
     unsigned int lines = 0;
     const color textcolor = color_create(121, 121, 121, 255);
-    for(unsigned int i = con->output_pos;
-        i != con->output_tail && lines < 15;
-        i = BUFFER_INC(i)) {
+    for(unsigned int i = con->output_pos; i != con->output_tail && lines < 15; i = BUFFER_INC(i)) {
 
         char c = con->output[i];
         if(c == '\n') {
@@ -186,14 +193,15 @@ void console_output_render() {
             lines++;
         } else {
             // TODO add word wrapping?
-            font_render_char(&font_small, c, x, y+con->ypos-100, textcolor);
+            font_render_char(&font_small, c, x, y + con->ypos - 100, textcolor);
             x += font_small.w;
         }
     }
 }
 
 int console_init() {
-    if(con != NULL) return 1;
+    if(con != NULL)
+        return 1;
     con = omf_calloc(1, sizeof(console));
     con->isopen = 0;
     con->ownsinput = 0;
@@ -215,23 +223,23 @@ int console_init() {
     console_init_cmd();
 
     // Print the header
-    for(int i=0;i<37;i++) {
+    for(int i = 0; i < 37; i++) {
         console_output_add(CURSOR_STR);
     }
     console_output_addline("");
-    console_output_addline(CURSOR_STR "                                   " CURSOR_STR "\n"
-                           CURSOR_STR " OpenOMF Debug Console Cheat Sheet " CURSOR_STR "\n"
-                           CURSOR_STR "                                   " CURSOR_STR "\n"
-                           CURSOR_STR " PageUp - Scroll Up                " CURSOR_STR "\n"
-                           CURSOR_STR " PageDn - Scroll Down              " CURSOR_STR "\n"
-                           CURSOR_STR " Up     - Reissue Previous Command " CURSOR_STR "\n"
-                           CURSOR_STR " Down   - Reissue Next Command     " CURSOR_STR "\n"
-                           CURSOR_STR " Enter  - Execute Current Command  " CURSOR_STR "\n"
-                           CURSOR_STR " --------------------------------- " CURSOR_STR "\n"
-                           CURSOR_STR " Type in Help to explore more      " CURSOR_STR "\n"
-                           CURSOR_STR " --------------------------------- " CURSOR_STR "\n"
-                           CURSOR_STR "                                   " CURSOR_STR);
-    for(int i=0;i<37;i++) {
+    console_output_addline(CURSOR_STR "                                   " CURSOR_STR "\n" CURSOR_STR
+                                      " OpenOMF Debug Console Cheat Sheet " CURSOR_STR "\n" CURSOR_STR
+                                      "                                   " CURSOR_STR "\n" CURSOR_STR
+                                      " PageUp - Scroll Up                " CURSOR_STR "\n" CURSOR_STR
+                                      " PageDn - Scroll Down              " CURSOR_STR "\n" CURSOR_STR
+                                      " Up     - Reissue Previous Command " CURSOR_STR "\n" CURSOR_STR
+                                      " Down   - Reissue Next Command     " CURSOR_STR "\n" CURSOR_STR
+                                      " Enter  - Execute Current Command  " CURSOR_STR "\n" CURSOR_STR
+                                      " --------------------------------- " CURSOR_STR "\n" CURSOR_STR
+                                      " Type in Help to explore more      " CURSOR_STR "\n" CURSOR_STR
+                                      " --------------------------------- " CURSOR_STR "\n" CURSOR_STR
+                                      "                                   " CURSOR_STR);
+    for(int i = 0; i < 37; i++) {
         console_output_add(CURSOR_STR);
     }
     console_output_addline("\n");
@@ -247,24 +255,25 @@ void console_close() {
 }
 
 void console_event(game_state *gs, SDL_Event *e) {
-    if (e->type == SDL_TEXTINPUT) {
+    if(e->type == SDL_TEXTINPUT) {
         size_t len = strlen(con->input);
-        if (strlen(e->text.text) == 1) {
+        if(strlen(e->text.text) == 1) {
             // make sure it is not a unicode sequence
             unsigned char c = e->text.text[0];
             // only allow ASCII through
-            if (c >= 32 && c <= 126 && len < sizeof(con->input)-1) {
-                con->input[len+1] = '\0';
+            if(c >= 32 && c <= 126 && len < sizeof(con->input) - 1) {
+                con->input[len + 1] = '\0';
                 con->input[len] = c;
             }
         }
-    } else if (e->type == SDL_KEYDOWN) {
+    } else if(e->type == SDL_KEYDOWN) {
         size_t len = strlen(con->input);
         unsigned char scancode = e->key.keysym.scancode;
-        /*if ((code >= SDLK_a && code <= SDLK_z) || (code >= SDLK_0 && code <= SDLK_9) || code == SDLK_SPACE || code == SDLK) {*/
+        /*if ((code >= SDLK_a && code <= SDLK_z) || (code >= SDLK_0 && code <= SDLK_9) || code == SDLK_SPACE || code ==
+         * SDLK) {*/
         // SDLK_UP and SDLK_DOWN does not work here
         if(scancode == SDL_SCANCODE_UP) {
-            if(con->histpos < HISTORY_MAX && con->histpos < (signed int)(list_size(&con->history)-1)) {
+            if(con->histpos < HISTORY_MAX && con->histpos < (signed int)(list_size(&con->history) - 1)) {
                 con->histpos++;
                 con->histpos_changed = 1;
             }
@@ -277,11 +286,11 @@ void console_event(game_state *gs, SDL_Event *e) {
             // TODO move cursor to the left
         } else if(scancode == SDL_SCANCODE_RIGHT) {
             // TODO move cursor to the right
-        } else if (scancode == SDL_SCANCODE_BACKSPACE || scancode == SDL_SCANCODE_DELETE) {
-            if (len > 0) {
-                con->input[len-1] = '\0';
+        } else if(scancode == SDL_SCANCODE_BACKSPACE || scancode == SDL_SCANCODE_DELETE) {
+            if(len > 0) {
+                con->input[len - 1] = '\0';
             }
-        } else if (scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) {
+        } else if(scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) {
             // send the input somewhere and clear the input line
             console_handle_line(gs);
             con->input[0] = '\0';
@@ -294,7 +303,7 @@ void console_event(game_state *gs, SDL_Event *e) {
 }
 
 void console_render() {
-    if (con->ypos > 0) {
+    if(con->ypos > 0) {
         if(con->histpos != -1 && con->histpos_changed) {
             char *input = list_get(&con->history, con->histpos);
             memcpy(con->input, input, sizeof(con->input));
@@ -307,20 +316,25 @@ void console_render() {
         video_render_sprite(&con->background, -1, con->ypos - 101, BLEND_ALPHA, 0);
         int t = con->ticks / 2;
         // input line
-        font_render(&font_small, con->input, 0 , con->ypos - 7, color_create(121, 121, 121, 255));
-        //cursor
-        font_render(&font_small, CURSOR_STR, strlen(con->input)*font_small.w , con->ypos - 7, color_create(121 - t, 121 - t, 121 - t, 255));
+        font_render(&font_small, con->input, 0, con->ypos - 7, color_create(121, 121, 121, 255));
+        // cursor
+        font_render(&font_small, CURSOR_STR, strlen(con->input) * font_small.w, con->ypos - 7,
+                    color_create(121 - t, 121 - t, 121 - t, 255));
         console_output_render();
     }
 }
 
 void console_tick() {
-    if (con->isopen && con->ypos < 100) {
-        con->ypos+=4;
-        if(settings_get()->video.instant_console) { con->ypos = 100; }
-    } else if (!con->isopen && con->ypos > 0) {
-        con->ypos-=4;
-        if(settings_get()->video.instant_console) { con->ypos = 0; }
+    if(con->isopen && con->ypos < 100) {
+        con->ypos += 4;
+        if(settings_get()->video.instant_console) {
+            con->ypos = 100;
+        }
+    } else if(!con->isopen && con->ypos > 0) {
+        con->ypos -= 4;
+        if(settings_get()->video.instant_console) {
+            con->ypos = 0;
+        }
     }
     if(!con->dir) {
         con->ticks++;
@@ -351,7 +365,7 @@ int console_window_is_open() {
 }
 
 void console_window_open() {
-    if (!SDL_IsTextInputActive()) {
+    if(!SDL_IsTextInputActive()) {
         SDL_StartTextInput();
         con->ownsinput = 1;
     } else {
@@ -361,7 +375,7 @@ void console_window_open() {
 }
 
 void console_window_close() {
-    if (con->ownsinput) {
+    if(con->ownsinput) {
         SDL_StopTextInput();
     }
     con->isopen = 0;

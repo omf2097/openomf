@@ -1,9 +1,9 @@
+#include "formats/error.h"
+#include "formats/taglist.h"
 #include <stdlib.h>
 #include <string.h>
-#include "formats/taglist.h"
-#include "formats/error.h"
 
-int sd_tag_info(const char* search_tag, int *req_param, const char **tag, const char **desc) {
+int sd_tag_info(const char *search_tag, int *req_param, const char **tag, const char **desc) {
     for(int i = 0; i < sd_taglist_size; i++) {
         if(strcmp(search_tag, sd_taglist[i].tag) == 0) {
             if(req_param != NULL)

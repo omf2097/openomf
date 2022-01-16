@@ -1,14 +1,14 @@
-#include <SDL.h>
-#include "audio/music.h"
-#include "video/video.h"
-#include "resources/ids.h"
-#include "game/gui/frame.h"
 #include "game/scenes/mainmenu.h"
+#include "audio/music.h"
+#include "game/gui/frame.h"
 #include "game/scenes/mainmenu/menu_main.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 #include "game/utils/settings.h"
+#include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/video.h"
+#include <SDL.h>
 
 typedef struct mainmenu_local_t {
     guiframe *frame;
@@ -31,20 +31,20 @@ void mainmenu_tick(scene *scene, int paused) {
 void mainmenu_input_tick(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
 
-    for (int i = 0; i < 2; i++) {
+    for(int i = 0; i < 2; i++) {
         game_player *player = game_state_get_player(scene->gs, i);
-        
+
         // Poll the controller
         ctrl_event *p = NULL;
         controller_poll(player->ctrl, &p);
-        if (p) {
+        if(p) {
             do {
-                if (p->type == EVENT_TYPE_ACTION) {
+                if(p->type == EVENT_TYPE_ACTION) {
                     // Skip repeated keys
-                    if (local->prev_key[i] == p->event_data.action) {
+                    if(local->prev_key[i] == p->event_data.action) {
                         continue;
                     }
-                    
+
                     local->prev_key[i] = p->event_data.action;
 
                     // Pass on the event
@@ -59,9 +59,9 @@ void mainmenu_input_tick(scene *scene) {
 int mainmenu_event(scene *scene, SDL_Event *event) {
     mainmenu_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
-    if (player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
-            (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN
-             && keyboard_binds_key(player1->ctrl, event))) {
+    if(player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
+       (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN &&
+        keyboard_binds_key(player1->ctrl, event))) {
         // these events will be handled by polling
         return 1;
     }

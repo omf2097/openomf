@@ -1,9 +1,9 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdint.h>
-#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "formats/internal/writer.h"
 #include "utils/allocator.h"
@@ -13,7 +13,7 @@ struct sd_writer {
     int sd_errno;
 };
 
-sd_writer* sd_writer_open(const char *file) {
+sd_writer *sd_writer_open(const char *file) {
     sd_writer *writer = omf_calloc(1, sizeof(sd_writer));
 
     writer->handle = fopen(file, "wb");
@@ -37,7 +37,7 @@ void sd_writer_close(sd_writer *writer) {
 
 long sd_writer_pos(sd_writer *writer) {
     long res = ftell(writer->handle);
-    if (res == -1) {
+    if(res == -1) {
         writer->sd_errno = errno;
     }
     return res;
@@ -72,31 +72,31 @@ int sd_write_fprintf(const sd_writer *writer, const char *format, ...) {
 }
 
 void sd_write_ubyte(sd_writer *writer, uint8_t data) {
-    sd_write_buf(writer, (char*)&data, 1);
+    sd_write_buf(writer, (char *)&data, 1);
 }
 
 void sd_write_uword(sd_writer *writer, uint16_t data) {
-    sd_write_buf(writer, (char*)&data, 2);
+    sd_write_buf(writer, (char *)&data, 2);
 }
 
 void sd_write_udword(sd_writer *writer, uint32_t data) {
-    sd_write_buf(writer, (char*)&data, 4);
+    sd_write_buf(writer, (char *)&data, 4);
 }
 
 void sd_write_byte(sd_writer *writer, int8_t data) {
-    sd_write_buf(writer, (char*)&data, 1);
+    sd_write_buf(writer, (char *)&data, 1);
 }
 
 void sd_write_word(sd_writer *writer, int16_t data) {
-    sd_write_buf(writer, (char*)&data, 2);
+    sd_write_buf(writer, (char *)&data, 2);
 }
 
 void sd_write_dword(sd_writer *writer, int32_t data) {
-    sd_write_buf(writer, (char*)&data, 4);
+    sd_write_buf(writer, (char *)&data, 4);
 }
 
 void sd_write_float(sd_writer *writer, float data) {
-    sd_write_buf(writer, (char*)&data, sizeof(float));
+    sd_write_buf(writer, (char *)&data, sizeof(float));
 }
 
 void sd_write_fill(sd_writer *writer, char content, int len) {
@@ -107,7 +107,7 @@ void sd_write_fill(sd_writer *writer, char content, int len) {
     memset(buffer, content, 1024);
     while(left > 0) {
         now = (left > 1024) ? 1024 : left;
-        if (fwrite(buffer, 1, now, writer->handle) != now) {
+        if(fwrite(buffer, 1, now, writer->handle) != now) {
             writer->sd_errno = ferror(writer->handle);
             return;
         }

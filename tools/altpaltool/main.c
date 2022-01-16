@@ -1,18 +1,17 @@
 /** @file main.c
-  * @brief Altpals file editor tool
-  * @license MIT
-  */
+ * @brief Altpals file editor tool
+ * @license MIT
+ */
 
-#include <argtable2.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include "formats/altpal.h"
 #include "formats/error.h"
+#include <argtable2.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
@@ -22,8 +21,8 @@ int main(int argc, char* argv[]) {
     struct arg_file *import = arg_file0("i", "import", "<file>", "Import selected palette from GPL file");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output altpals file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,pal,output,import,export,end};
-    const char* progname = "altpaltool";
+    void *argtable[] = {help, vers, file, pal, output, import, export, end};
+    const char *progname = "altpaltool";
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -76,9 +75,7 @@ int main(int argc, char* argv[]) {
     altpal_create(&alt);
     int ret = altpals_load(&alt, file->filename[0]);
     if(ret != SD_SUCCESS) {
-        printf("Unable to load altpals file %s: %s.\n",
-            file->filename[0],
-            sd_get_error(ret));
+        printf("Unable to load altpals file %s: %s.\n", file->filename[0], sd_get_error(ret));
         goto exit_1;
     }
 
@@ -93,26 +90,18 @@ int main(int argc, char* argv[]) {
     if(export->count > 0) {
         ret = palette_to_gimp_palette(&alt.palettes[pal_id], export->filename[0]);
         if(ret == SD_SUCCESS) {
-            printf("Palette %d exported to file %s succesfully.\n",
-                pal_id,
-                export->filename[0]);
+            printf("Palette %d exported to file %s succesfully.\n", pal_id, export->filename[0]);
         } else {
-            printf("Error while attempting to save palette %d to file %s: %s",
-                pal_id,
-                export->filename[0],
-                sd_get_error(ret));
+            printf("Error while attempting to save palette %d to file %s: %s", pal_id, export->filename[0],
+                   sd_get_error(ret));
         }
     } else if(import->count > 0) {
         ret = palette_from_gimp_palette(&alt.palettes[pal_id], import->filename[0]);
         if(ret == SD_SUCCESS) {
-            printf("Palette %d imported from file %s succesfully.\n",
-                pal_id,
-                import->filename[0]);
+            printf("Palette %d imported from file %s succesfully.\n", pal_id, import->filename[0]);
         } else {
-            printf("Error while attempting to load palette %d from file %s: %s",
-                pal_id,
-                import->filename[0],
-                sd_get_error(ret));
+            printf("Error while attempting to load palette %d from file %s: %s", pal_id, import->filename[0],
+                   sd_get_error(ret));
         }
     }
 
@@ -120,9 +109,7 @@ int main(int argc, char* argv[]) {
     if(output->count > 0) {
         ret = altpals_save(&alt, output->filename[0]);
         if(ret != SD_SUCCESS) {
-            printf("Failed saving altpals file to %s: %s",
-                output->filename[0],
-                sd_get_error(ret));
+            printf("Failed saving altpals file to %s: %s", output->filename[0], sd_get_error(ret));
         }
     }
 
@@ -130,6 +117,6 @@ int main(int argc, char* argv[]) {
 exit_1:
     altpal_free(&alt);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

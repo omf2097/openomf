@@ -1,24 +1,24 @@
+#include "game/protos/object.h"
+#include "formats/sprite.h"
+#include "game/game_state_type.h"
+#include "game/objects/arena_constraints.h"
+#include "game/protos/object_specializer.h"
+#include "utils/allocator.h"
+#include "utils/compat.h"
+#include "utils/log.h"
+#include "utils/miscmath.h"
+#include "video/video.h"
 #include <stdlib.h>
 #include <string.h>
-#include "formats/sprite.h"
-#include "game/protos/object.h"
-#include "game/protos/object_specializer.h"
-#include "game/objects/arena_constraints.h"
-#include "game/game_state_type.h"
-#include "video/video.h"
-#include "utils/allocator.h"
-#include "utils/log.h"
-#include "utils/compat.h"
-#include "utils/miscmath.h"
 
 #define UNUSED(x) (void)(x)
 
 /** \brief Creates a new, empty object.
-  * \param obj Object handle
-  * \param gs Game state handle
-  * \param pos Initial position
-  * \param vel Initial velocity
-  */
+ * \param obj Object handle
+ * \param gs Game state handle
+ * \param pos Initial position
+ * \param vel Initial velocity
+ */
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // State
     obj->gs = gs;
@@ -44,7 +44,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     // Fire orb wandering
     obj->orbit = 0;
-    obj->orbit_tick = MATH_PI/2.0f;
+    obj->orbit_tick = MATH_PI / 2.0f;
     obj->orbit_dest = obj->start;
     obj->orbit_pos = obj->start;
     obj->orbit_pos_vary = vec2f_create(0, 0);
@@ -90,10 +90,10 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
 /**
  * \brief Serializes the object to a buffer.
- * 
+ *
  * This will call the specialized objects, eg. har or projectile for their
  * serialization data.
- * 
+ *
  * \param obj Object to serialize
  * \param ser Target serialization buffer to write into
  * \return 0 on success, 1 on error
@@ -118,9 +118,9 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int8(ser, obj->can_hit);
 
     // Write animation state
-    if (obj->custom_str) {
-        serial_write_int16(ser, strlen(obj->custom_str)+1);
-        serial_write(ser, obj->custom_str, strlen(obj->custom_str)+1);
+    if(obj->custom_str) {
+        serial_write_int16(ser, strlen(obj->custom_str) + 1);
+        serial_write(ser, obj->custom_str, strlen(obj->custom_str) + 1);
     } else {
         // using regular animation string from animation
         serial_write_int16(ser, 0);
@@ -129,7 +129,9 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int16(ser, (int)obj->animation_state.previous_tick);
     serial_write_int8(ser, (int)obj->animation_state.reverse);
 
-    /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
+    /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f",
+     * strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride,
+     * obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
 
     // Serialize the underlying object
     if(obj->serialize != NULL) {
@@ -144,9 +146,9 @@ int object_serialize(object *obj, serial *ser) {
 
 /**
  * \brief Unserializes the data from buffer to a specialized object.
- * 
+ *
  * Serial render position should be set to correct position before calling this.
- * 
+ *
  * \param obj Object to unserialize into
  * \param ser Serialization buffer to unserialize from
  * \param gs Gamestate
@@ -186,7 +188,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
 
     // Read animation state
     uint16_t anim_str_len = serial_read_int16(ser);
-    char anim_str[anim_str_len+1];
+    char anim_str[anim_str_len + 1];
     if(anim_str_len > 0) {
         serial_read(ser, anim_str, anim_str_len);
     }
@@ -229,7 +231,9 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     obj->hit_frames = hit_frames;
     obj->can_hit = can_hit;
 
-    /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f", strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride, obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
+    /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f",
+     * strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride,
+     * obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
 
     // Return success
     return 0;
@@ -320,7 +324,7 @@ void object_debug(object *obj) {
 
 void object_collide(object *obj, object *b) {
     if(obj->collide != NULL) {
-        obj->collide(obj,b);
+        obj->collide(obj, b);
     }
 }
 
@@ -342,7 +346,8 @@ void object_del_effects(object *obj, int effects) {
 
 void object_render(object *obj) {
     // Stop here if cur_sprite is NULL
-    if(obj->cur_sprite == NULL) return;
+    if(obj->cur_sprite == NULL)
+        return;
 
     // Set current surface
     obj->cur_surface = obj->cur_sprite->data;
@@ -404,22 +409,16 @@ void object_render(object *obj) {
     if(obj->video_effects & EFFECT_POSITIONAL_LIGHTING) {
         float p = (x > 160) ? 320 - x : x;
         float shade = 0.65f + p / 320;
-        if(shade > 1.0f) shade = 1.0f;
+        if(shade > 1.0f)
+            shade = 1.0f;
         tint.r *= shade;
         tint.g *= shade;
         tint.b *= shade;
     }
 
     // Render
-    video_render_sprite_flip_scale_opacity_tint(
-        obj->cur_surface,
-        x, y,
-        rstate->blendmode,
-        obj->pal_offset,
-        flipmode,
-        obj->y_percent,
-        opacity,
-        tint);
+    video_render_sprite_flip_scale_opacity_tint(obj->cur_surface, x, y, rstate->blendmode, obj->pal_offset, flipmode,
+                                                obj->y_percent, opacity, tint);
 }
 
 void object_render_shadow(object *obj) {
@@ -446,15 +445,8 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_render_sprite_flip_scale_opacity_tint(
-            obj->cur_sprite->data,
-            x+i, y+i,
-            BLEND_ALPHA,
-            obj->pal_offset,
-            flipmode,
-            scale_y,
-            65,
-            color_create(0,0,0,255));
+        video_render_sprite_flip_scale_opacity_tint(obj->cur_sprite->data, x + i, y + i, BLEND_ALPHA, obj->pal_offset,
+                                                    flipmode, scale_y, 65, color_create(0, 0, 0, 255));
     }
 }
 
@@ -468,7 +460,7 @@ int object_act(object *obj, int action) {
 
 void object_move(object *obj) {
     if(obj->sprite_state.disable_gravity) {
-        object_set_vel(obj, vec2f_create(0,0));
+        object_set_vel(obj, vec2f_create(0, 0));
     }
     if(obj->move != NULL) {
         obj->move(obj);
@@ -480,9 +472,8 @@ void object_move(object *obj) {
 int object_scenewide_palette_transform(object *obj, screen_palette *pal) {
     player_sprite_state *rstate = &obj->sprite_state;
     if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
-        float bp = ((float)rstate->pal_begin) +
-            ((float)rstate->pal_end - (float)rstate->pal_begin) *
-            ((float)rstate->timer / (float)rstate->duration);
+        float bp = ((float)rstate->pal_begin) + ((float)rstate->pal_end - (float)rstate->pal_begin) *
+                                                    ((float)rstate->timer / (float)rstate->duration);
 
         color b;
         b.r = pal->data[rstate->pal_ref_index][0];
@@ -522,8 +513,8 @@ int object_palette_transform(object *obj, screen_palette *pal) {
 }
 
 /** Frees the object and all resources attached to it (even the animation, if it is owned by the object)
-  * \param obj Object handle
-  */
+ * \param obj Object handle
+ */
 void object_free(object *obj) {
     if(obj->free != NULL) {
         obj->free(obj);
@@ -533,7 +524,7 @@ void object_free(object *obj) {
         animation_free(obj->cur_animation);
         omf_free(obj->cur_animation);
     }
-    if (obj->custom_str) {
+    if(obj->custom_str) {
         omf_free(obj->custom_str);
     }
     obj->cur_surface = NULL;
@@ -541,33 +532,33 @@ void object_free(object *obj) {
 }
 
 /** Sets a pointer to a sound translation table. Note! Does NOT copy!
-  * \param obj Object handle
-  * \param ptr Pointer to the STL (30 byte char array)
-  */
+ * \param obj Object handle
+ * \param ptr Pointer to the STL (30 byte char array)
+ */
 void object_set_stl(object *obj, char *ptr) {
     obj->sound_translation_table = ptr;
 }
 
 /** Returns a pointer to the sound translation table (30 byte char array)
-  * \param obj Object handle
-  * \return Pointer to the sound translation table
-  */
-char* object_get_stl(const object *obj) {
+ * \param obj Object handle
+ * \return Pointer to the sound translation table
+ */
+char *object_get_stl(const object *obj) {
     return obj->sound_translation_table;
 }
 
 /** Sets the owner of the animation. If OWNER_OBJECT, the object will free animation on object_free().
-  * \param obj Object handle
-  * \param owner Owner of the object (OWNER_EXTERNAL, OWNER_OBJECT)
-  */
+ * \param obj Object handle
+ * \param owner Owner of the object (OWNER_EXTERNAL, OWNER_OBJECT)
+ */
 void object_set_animation_owner(object *obj, int owner) {
     obj->cur_animation_own = owner;
 }
 
 /** Sets an animation for object. It will automatically start playing on first tick.
-  * \param obj Object handle
-  * \param ani Animation to attach
-  */
+ * \param obj Object handle
+ * \param ani Animation to attach
+ */
 void object_set_animation(object *obj, animation *ani) {
     if(obj->cur_animation != NULL && obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
@@ -582,20 +573,19 @@ void object_set_animation(object *obj, animation *ani) {
 
     // Debug texts
     if(obj->cur_animation->id == -1) {
-        DEBUG("Custom object set to (x,y) = (%f,%f).",
-            obj->pos.x, obj->pos.y);
+        DEBUG("Custom object set to (x,y) = (%f,%f).", obj->pos.x, obj->pos.y);
     } else {
         /*DEBUG("Animation object %d set to (x,y) = (%f,%f) with \"%s\".", */
-            /*obj->cur_animation->id,*/
-            /*obj->pos.x, obj->pos.y,*/
-            /*str_c(&obj->cur_animation->animation_string));*/
+        /*obj->cur_animation->id,*/
+        /*obj->pos.x, obj->pos.y,*/
+        /*str_c(&obj->cur_animation->animation_string));*/
     }
 }
 
 /** Sets a new animation string to currently playing animation
-  * \param obj Object handle
-  * \param str New animation string
-  */
+ * \param obj Object handle
+ * \param str New animation string
+ */
 void object_set_custom_string(object *obj, const char *str) {
     omf_free(obj->custom_str);
     obj->custom_str = strdup(str);
@@ -604,19 +594,20 @@ void object_set_custom_string(object *obj, const char *str) {
 }
 
 /** Returns a pointer to the currently playing animation
-  * \param obj Object handle
-  * \return animation* Pointer to current animation
-  */
-animation* object_get_animation(object *obj) {
+ * \param obj Object handle
+ * \return animation* Pointer to current animation
+ */
+animation *object_get_animation(object *obj) {
     return obj->cur_animation;
 }
 
 /** Selects sprite to show. Note! Animation string will override this!
-  * \param obj Object handle
-  * \param id Sprite ID (starting from 0). Negative values will set sprite to nonexistent (NULL).
-  */
+ * \param obj Object handle
+ * \param id Sprite ID (starting from 0). Negative values will set sprite to nonexistent (NULL).
+ */
 void object_select_sprite(object *obj, int id) {
-    if(obj == NULL) return;
+    if(obj == NULL)
+        return;
     if(!obj->sprite_override) {
         if(id < 0) {
             obj->cur_sprite = NULL;
@@ -629,78 +620,170 @@ void object_select_sprite(object *obj, int id) {
 }
 
 /** Tell object to NOT change currently selected sprite, even if animation string tells it to.
-  * \param obj Object handle
-  * \param override Set override (1|0)
-  */
+ * \param obj Object handle
+ * \param override Set override (1|0)
+ */
 void object_set_sprite_override(object *obj, int override) {
     obj->sprite_override = override;
 }
 
-void object_set_userdata(object *obj, void *ptr) { obj->userdata = ptr; }
-void* object_get_userdata(const object *obj) { return obj->userdata; }
-void object_set_free_cb(object *obj, object_free_cb cbfunc) { obj->free = cbfunc; }
-void object_set_act_cb(object *obj, object_act_cb cbfunc) { obj->act = cbfunc; }
-void object_set_static_tick_cb(object *obj, object_tick_cb cbfunc) { obj->static_tick = cbfunc; }
-void object_set_dynamic_tick_cb(object *obj, object_tick_cb cbfunc) { obj->dynamic_tick = cbfunc; }
-void object_set_collide_cb(object *obj, object_collide_cb cbfunc) { obj->collide = cbfunc; }
-void object_set_finish_cb(object *obj, object_finish_cb cbfunc) { obj->finish = cbfunc; }
-void object_set_move_cb(object *obj, object_move_cb cbfunc) { obj->move = cbfunc; }
-void object_set_debug_cb(object *obj, object_debug_cb cbfunc) { obj->debug = cbfunc; }
-void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc) { obj->serialize = cbfunc; }
-void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc) { obj->unserialize = cbfunc; }
-void object_set_pal_transform_cb(object *obj, object_palette_transform_cb cbfunc) { obj->pal_transform = cbfunc; }
+void object_set_userdata(object *obj, void *ptr) {
+    obj->userdata = ptr;
+}
+void *object_get_userdata(const object *obj) {
+    return obj->userdata;
+}
+void object_set_free_cb(object *obj, object_free_cb cbfunc) {
+    obj->free = cbfunc;
+}
+void object_set_act_cb(object *obj, object_act_cb cbfunc) {
+    obj->act = cbfunc;
+}
+void object_set_static_tick_cb(object *obj, object_tick_cb cbfunc) {
+    obj->static_tick = cbfunc;
+}
+void object_set_dynamic_tick_cb(object *obj, object_tick_cb cbfunc) {
+    obj->dynamic_tick = cbfunc;
+}
+void object_set_collide_cb(object *obj, object_collide_cb cbfunc) {
+    obj->collide = cbfunc;
+}
+void object_set_finish_cb(object *obj, object_finish_cb cbfunc) {
+    obj->finish = cbfunc;
+}
+void object_set_move_cb(object *obj, object_move_cb cbfunc) {
+    obj->move = cbfunc;
+}
+void object_set_debug_cb(object *obj, object_debug_cb cbfunc) {
+    obj->debug = cbfunc;
+}
+void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc) {
+    obj->serialize = cbfunc;
+}
+void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc) {
+    obj->unserialize = cbfunc;
+}
+void object_set_pal_transform_cb(object *obj, object_palette_transform_cb cbfunc) {
+    obj->pal_transform = cbfunc;
+}
 
-void object_set_layers(object *obj, int layers) { obj->layers = layers; }
-void object_set_group(object *obj, int group) { obj->group = group; }
-void object_set_gravity(object *obj, float gravity) { obj->gravity = gravity; }
+void object_set_layers(object *obj, int layers) {
+    obj->layers = layers;
+}
+void object_set_group(object *obj, int group) {
+    obj->group = group;
+}
+void object_set_gravity(object *obj, float gravity) {
+    obj->gravity = gravity;
+}
 
-float object_get_gravity(const object *obj) { return obj->gravity; }
-int object_get_group(const object *obj) { return obj->group; }
-int object_get_layers(const object *obj) { return obj->layers; }
+float object_get_gravity(const object *obj) {
+    return obj->gravity;
+}
+int object_get_group(const object *obj) {
+    return obj->group;
+}
+int object_get_layers(const object *obj) {
+    return obj->layers;
+}
 
-void object_set_pal_offset(object *obj, int offset) { obj->pal_offset = offset; }
-int object_get_pal_offset(const object *obj) { return obj->pal_offset; }
+void object_set_pal_offset(object *obj, int offset) {
+    obj->pal_offset = offset;
+}
+int object_get_pal_offset(const object *obj) {
+    return obj->pal_offset;
+}
 
-void object_set_halt_ticks(object *obj, int ticks) { obj->halt = (ticks > 0); obj->halt_ticks = ticks; }
-int object_get_halt_ticks(object *obj) { return obj->halt_ticks; }
+void object_set_halt_ticks(object *obj, int ticks) {
+    obj->halt = (ticks > 0);
+    obj->halt_ticks = ticks;
+}
+int object_get_halt_ticks(object *obj) {
+    return obj->halt_ticks;
+}
 
-void object_set_halt(object *obj, int halt) { obj->halt = halt; obj->halt_ticks = (halt == 0 ? 0 : obj->halt_ticks); }
-int object_get_halt(const object *obj) { return obj->halt; }
+void object_set_halt(object *obj, int halt) {
+    obj->halt = halt;
+    obj->halt_ticks = (halt == 0 ? 0 : obj->halt_ticks);
+}
+int object_get_halt(const object *obj) {
+    return obj->halt;
+}
 
-void object_set_repeat(object *obj, int repeat) { player_set_repeat(obj, repeat); }
-int object_get_repeat(const object *obj) { return player_get_repeat(obj); }
-int object_finished(object *obj) { return obj->animation_state.finished; }
+void object_set_repeat(object *obj, int repeat) {
+    player_set_repeat(obj, repeat);
+}
+int object_get_repeat(const object *obj) {
+    return player_get_repeat(obj);
+}
+int object_finished(object *obj) {
+    return obj->animation_state.finished;
+}
 
-void object_set_direction(object *obj, int dir) { obj->direction = dir; }
+void object_set_direction(object *obj, int dir) {
+    obj->direction = dir;
+}
 int object_get_direction(const object *obj) {
     return obj->direction * obj->sprite_state.dir_correction;
 }
 
-void object_set_shadow(object *obj, int enable) { obj->cast_shadow = enable; }
-int object_get_shadow(const object *obj) { return obj->cast_shadow; }
+void object_set_shadow(object *obj, int enable) {
+    obj->cast_shadow = enable;
+}
+int object_get_shadow(const object *obj) {
+    return obj->cast_shadow;
+}
 
-int object_w(const object *obj) { return object_get_size(obj).x; }
-int object_h(const object *obj) { return object_get_size(obj).y; }
-int object_px(const object *obj) { return vec2f_to_i(obj->pos).x; }
-int object_py(const object *obj) { return vec2f_to_i(obj->pos).y; }
-float object_vx(const object *obj) { return obj->vel.x; }
-float object_vy(const object *obj) { return obj->vel.y; }
+int object_w(const object *obj) {
+    return object_get_size(obj).x;
+}
+int object_h(const object *obj) {
+    return object_get_size(obj).y;
+}
+int object_px(const object *obj) {
+    return vec2f_to_i(obj->pos).x;
+}
+int object_py(const object *obj) {
+    return vec2f_to_i(obj->pos).y;
+}
+float object_vx(const object *obj) {
+    return obj->vel.x;
+}
+float object_vy(const object *obj) {
+    return obj->vel.y;
+}
 
-void object_set_px(object *obj, int val) { obj->pos.x = val; }
-void object_set_py(object *obj, int val) { obj->pos.y = val; }
-void object_set_vx(object *obj, float val) { obj->vel.x = val; }
-void object_set_vy(object *obj, float val) { obj->vel.y = val; }
+void object_set_px(object *obj, int val) {
+    obj->pos.x = val;
+}
+void object_set_py(object *obj, int val) {
+    obj->pos.y = val;
+}
+void object_set_vx(object *obj, float val) {
+    obj->vel.x = val;
+}
+void object_set_vy(object *obj, float val) {
+    obj->vel.y = val;
+}
 
-vec2i object_get_pos(const object *obj) { return vec2f_to_i(obj->pos); }
-vec2f object_get_vel(const object *obj) { return obj->vel; }
-void object_set_pos(object *obj, vec2i pos) { obj->pos = vec2i_to_f(pos); }
-void object_set_vel(object *obj, vec2f vel) { obj->vel = vel; }
+vec2i object_get_pos(const object *obj) {
+    return vec2f_to_i(obj->pos);
+}
+vec2f object_get_vel(const object *obj) {
+    return obj->vel;
+}
+void object_set_pos(object *obj, vec2i pos) {
+    obj->pos = vec2i_to_f(pos);
+}
+void object_set_vel(object *obj, vec2f vel) {
+    obj->vel = vel;
+}
 
 vec2i object_get_size(const object *obj) {
     if(obj->cur_sprite != NULL) {
         return sprite_get_size(obj->cur_sprite);
     }
-    return vec2i_create(0,0);
+    return vec2i_create(0, 0);
 }
 
 void object_disable_rewind_tag(object *obj, int disable_d) {

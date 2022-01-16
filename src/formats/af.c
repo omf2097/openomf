@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "formats/internal/reader.h"
-#include "formats/internal/writer.h"
+#include "formats/af.h"
 #include "formats/animation.h"
 #include "formats/error.h"
+#include "formats/internal/reader.h"
+#include "formats/internal/writer.h"
 #include "formats/move.h"
-#include "formats/af.h"
 #include "utils/allocator.h"
 
 int sd_af_create(sd_af_file *af) {
@@ -76,7 +76,7 @@ int sd_af_set_move(sd_af_file *af, int index, const sd_move *move) {
     return SD_SUCCESS;
 }
 
-sd_move* sd_af_get_move(sd_af_file *af, int index) {
+sd_move *sd_af_get_move(sd_af_file *af, int index) {
     if(af == NULL || index < 0 || index >= MAX_AF_MOVES) {
         return NULL;
     }
@@ -155,7 +155,7 @@ cleanup:
     return ret;
 }
 
-int sd_af_save(const sd_af_file *af, const char* filename) {
+int sd_af_save(const sd_af_file *af, const char *filename) {
     int ret;
     sd_writer *w;
 
@@ -188,7 +188,7 @@ int sd_af_save(const sd_af_file *af, const char* filename) {
     }
 
     // This marks the end of animations
-    sd_write_ubyte(w, 250); 
+    sd_write_ubyte(w, 250);
 
     // Soundtable
     sd_write_buf(w, af->soundtable, 30);
@@ -199,7 +199,8 @@ int sd_af_save(const sd_af_file *af, const char* filename) {
 }
 
 void sd_af_free(sd_af_file *af) {
-    if(af == NULL) return;
+    if(af == NULL)
+        return;
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         if(af->moves[i] != NULL) {
             sd_move_free(af->moves[i]);

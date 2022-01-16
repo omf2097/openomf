@@ -2,9 +2,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "formats/error.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-#include "formats/error.h"
 #include "formats/pic.h"
 #include "utils/allocator.h"
 
@@ -17,7 +17,8 @@ int sd_pic_create(sd_pic_file *pic) {
 }
 
 void free_photos(sd_pic_file *pic) {
-    if(pic == NULL) return;
+    if(pic == NULL)
+        return;
     for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
         if(pic->photos[i]) {
             if(pic->photos[i]->sprite) {
@@ -128,14 +129,14 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename) {
     for(int i = 0; i < pic->photo_count; i++) {
         // Write offset to the catalog
         long pos = sd_writer_pos(w);
-        if (pos < 0) {
+        if(pos < 0) {
             goto error;
         }
-        if (sd_writer_seek_start(w, 200 + i * 4) < 0) {
+        if(sd_writer_seek_start(w, 200 + i * 4) < 0) {
             goto error;
         }
         sd_write_udword(w, (uint32_t)pos);
-        if (sd_writer_seek_start(w, pos) < 0) {
+        if(sd_writer_seek_start(w, pos) < 0) {
             goto error;
         }
 
@@ -153,8 +154,7 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename) {
         pic->photos[i]->sprite->width++;
     }
 
-
-    if (sd_writer_errno(w)) {
+    if(sd_writer_errno(w)) {
         goto error;
     }
 
@@ -167,7 +167,7 @@ error:
     return SD_FILE_WRITE_ERROR;
 }
 
-const sd_pic_photo* sd_pic_get(const sd_pic_file *pic, int entry_id) {
+const sd_pic_photo *sd_pic_get(const sd_pic_file *pic, int entry_id) {
     if(entry_id < 0 || entry_id > pic->photo_count) {
         return NULL;
     }
@@ -177,4 +177,3 @@ const sd_pic_photo* sd_pic_get(const sd_pic_file *pic, int entry_id) {
 void sd_pic_free(sd_pic_file *pic) {
     free_photos(pic);
 }
-

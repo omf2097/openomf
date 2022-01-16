@@ -5,8 +5,8 @@
 
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
-#include "video/video.h"
 #include "utils/allocator.h"
+#include "video/video.h"
 
 typedef struct {
     time_t video_accept_timer;
@@ -40,7 +40,7 @@ void menu_video_confirm_free(component *c) {
     menu_set_userdata(c, local);
 }
 
-void  menu_video_confirm_update(component *c) {
+void menu_video_confirm_update(component *c) {
     video_menu_confirm_data *local = menu_get_userdata(c);
     char buf[32];
     snprintf(buf, 32, "CANCELLING IN %d", local->video_accept_secs);
@@ -59,7 +59,7 @@ void menu_video_confirm_tick(component *c) {
     }
 }
 
-component* menu_video_confirm_create(scene *s, settings_video *old_settings) {
+component *menu_video_confirm_create(scene *s, settings_video *old_settings) {
     video_menu_confirm_data *local = omf_calloc(1, sizeof(video_menu_confirm_data));
     local->video_accept_secs = 20;
     local->old_video_settings = old_settings;
@@ -72,7 +72,7 @@ component* menu_video_confirm_create(scene *s, settings_video *old_settings) {
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = color_create(0, 121, 0, 255);
 
-    component* menu = menu_create(11);
+    component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "ACCEPT RESOLUTION?"));
     menu_attach(menu, filler_create());
     local->timeout_label = label_create(&tconf, "");

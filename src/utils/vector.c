@@ -1,5 +1,5 @@
-#include "utils/allocator.h"
 #include "utils/vector.h"
+#include "utils/allocator.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -13,7 +13,7 @@ void vector_init(vector *vec) {
     vec->blocks = 0;
     vec->reserved = 32;
     vec->inc_factor = 2;
-    vec->data = (char*)omf_calloc(vec->reserved, vec->block_size);
+    vec->data = (char *)omf_calloc(vec->reserved, vec->block_size);
 }
 
 void vector_create(vector *vec, unsigned int block_size) {
@@ -32,16 +32,17 @@ void vector_free(vector *vec) {
     omf_free(vec->data);
 }
 
-void* vector_get(const vector *vec, unsigned int key) {
+void *vector_get(const vector *vec, unsigned int key) {
     if(key >= vec->blocks) {
         return NULL;
     }
-    return (char*)(vec->data + vec->block_size * key);
+    return (char *)(vec->data + vec->block_size * key);
 }
 
 int vector_grow(vector *vec) {
     void *ndata = omf_realloc(vec->data, vec->reserved * vec->block_size * vec->inc_factor);
-    if(ndata == NULL) return 1;
+    if(ndata == NULL)
+        return 1;
     vec->data = ndata;
     vec->reserved = vec->reserved * vec->inc_factor;
     return 0;
@@ -51,7 +52,7 @@ int vector_append(vector *vec, const void *value) {
     if(vec->blocks >= vec->reserved && vector_grow(vec)) {
         return 1;
     }
-    void *dst = (char*)(vec->data + vec->blocks * vec->block_size);
+    void *dst = (char *)(vec->data + vec->blocks * vec->block_size);
     memcpy(dst, value, vec->block_size);
     vec->blocks++;
     return 0;
@@ -61,7 +62,7 @@ int vector_prepend(vector *vec, const void *value) {
     if(vec->blocks >= vec->reserved && vector_grow(vec)) {
         return 1;
     }
-    char *dst = (char*)(vec->data + vec->block_size);
+    char *dst = (char *)(vec->data + vec->block_size);
     memmove(dst, vec->data, vec->block_size * vec->blocks);
     memcpy(dst, value, vec->block_size);
     vec->blocks++;
@@ -73,7 +74,8 @@ unsigned int vector_size(const vector *vec) {
 }
 
 int vector_delete(vector *vec, iterator *iter) {
-    if(vec->blocks == 0) return 1;
+    if(vec->blocks == 0)
+        return 1;
 
     // Since last iteration already changed the "now" value, find the real "now" here.
     int real;
@@ -84,7 +86,7 @@ int vector_delete(vector *vec, iterator *iter) {
     }
 
     // If this is NOT the last entry, we need to do memmove.
-    if(real+1 < vec->blocks) {
+    if(real + 1 < vec->blocks) {
         void *dst = vec->data + real * vec->block_size;
         void *src = vec->data + (real + 1) * vec->block_size;
         unsigned int size = (vec->blocks - 1 - real) * vec->block_size;
@@ -110,22 +112,22 @@ void vector_sort(vector *vec, vector_compare_func cf) {
     qsort(vec->data, vec->blocks, vec->block_size, cf);
 }
 
-void* vector_iter_next(iterator *iter) {
-    vector *vec = (vector*)iter->data;
+void *vector_iter_next(iterator *iter) {
+    vector *vec = (vector *)iter->data;
     if(iter->inow + 1 >= vec->blocks) {
         iter->ended = 1;
     }
-    void *addr = (void*)(vec->data + iter->inow * vec->block_size);
+    void *addr = (void *)(vec->data + iter->inow * vec->block_size);
     iter->inow++;
     return addr;
 }
 
-void* vector_iter_prev(iterator *iter) {
-    vector *vec = (vector*)iter->data;
+void *vector_iter_prev(iterator *iter) {
+    vector *vec = (vector *)iter->data;
     if(iter->inow == 0) {
         iter->ended = 1;
     }
-    void *addr = (void*)(vec->data + iter->inow * vec->block_size);
+    void *addr = (void *)(vec->data + iter->inow * vec->block_size);
     iter->inow--;
     return addr;
 }
@@ -142,7 +144,7 @@ void vector_iter_begin(const vector *vec, iterator *iter) {
 void vector_iter_end(const vector *vec, iterator *iter) {
     iter->data = vec;
     iter->vnow = NULL;
-    iter->inow = vector_size(vec)-1;
+    iter->inow = vector_size(vec) - 1;
     iter->next = NULL;
     iter->prev = vector_iter_prev;
     iter->ended = (vec->blocks == 0);

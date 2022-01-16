@@ -1,15 +1,15 @@
-#include <stdlib.h>
 #include "video/tcache.h"
 #include "utils/allocator.h"
 #include "utils/hashmap.h"
 #include "utils/log.h"
+#include <stdlib.h>
 
 #define CACHE_LIFETIME 300
 
 typedef struct tcache_entry_key_t {
     surface *c_surface;
     char *c_remap_table;
-    uint16_t w,h;
+    uint16_t w, h;
     uint8_t c_pal_offset;
 } tcache_entry_key;
 
@@ -32,19 +32,15 @@ typedef struct tcache_t {
 static tcache *cache = NULL;
 
 // Helper method for getting cache entry
-tcache_entry_value* tcache_add_entry(tcache_entry_key *key, tcache_entry_value *val) {
-    return hashmap_put(&cache->entries,
-                      (void*)key, sizeof(tcache_entry_key),
-                      (void*)val, sizeof(tcache_entry_value));
+tcache_entry_value *tcache_add_entry(tcache_entry_key *key, tcache_entry_value *val) {
+    return hashmap_put(&cache->entries, (void *)key, sizeof(tcache_entry_key), (void *)val, sizeof(tcache_entry_value));
 }
 
 // Helper method for setting cache entry
-tcache_entry_value* tcache_get_entry(tcache_entry_key *key) {
+tcache_entry_value *tcache_get_entry(tcache_entry_key *key) {
     tcache_entry_value *val = NULL;
     unsigned int tmp_size;
-    hashmap_get(&cache->entries,
-                (void*)key, sizeof(tcache_entry_key),
-                (void**)&val, &tmp_size);
+    hashmap_get(&cache->entries, (void *)key, sizeof(tcache_entry_key), (void **)&val, &tmp_size);
     return val;
 }
 
@@ -103,10 +99,7 @@ void tcache_close() {
     omf_free(cache);
 }
 
-SDL_Texture* tcache_get(surface *sur,
-                        screen_palette *pal,
-                        char *remap_table,
-                        uint8_t pal_offset) {
+SDL_Texture *tcache_get(surface *sur, screen_palette *pal, char *remap_table, uint8_t pal_offset) {
     if(sur == NULL) {
         DEBUG("Invalid surface requested from tcache: surface is NULL.");
         return NULL;
@@ -144,11 +137,8 @@ SDL_Texture* tcache_get(surface *sur,
         tcache_entry_value new_entry;
         new_entry.age = 0;
         new_entry.pal_version = pal->version;
-        new_entry.tex = SDL_CreateTexture(cache->renderer,
-                                          SDL_PIXELFORMAT_ABGR8888,
-                                          SDL_TEXTUREACCESS_STREAMING,
-                                          sur->w * cache->scale_factor,
-                                          sur->h * cache->scale_factor);
+        new_entry.tex = SDL_CreateTexture(cache->renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING,
+                                          sur->w * cache->scale_factor, sur->h * cache->scale_factor);
         SDL_SetTextureBlendMode(new_entry.tex, SDL_BLENDMODE_BLEND);
         val = tcache_add_entry(&key, &new_entry);
     }
@@ -159,10 +149,7 @@ SDL_Texture* tcache_get(surface *sur,
     if(cache->scale_factor > 1) {
         char *raw = omf_calloc(1, sur->w * sur->h * 4);
         surface scaled;
-        surface_create(&scaled,
-                       SURFACE_TYPE_RGBA,
-                       sur->w * cache->scale_factor,
-                       sur->h * cache->scale_factor);
+        surface_create(&scaled, SURFACE_TYPE_RGBA, sur->w * cache->scale_factor, sur->h * cache->scale_factor);
 
         surface_to_rgba(sur, raw, pal, remap_table, pal_offset);
         scaler_scale(cache->scaler, raw, scaled.data, sur->w, sur->h, cache->scale_factor);

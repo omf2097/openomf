@@ -1,23 +1,23 @@
-#include <stdlib.h>
 #include <SDL.h>
+#include <stdlib.h>
 
-#include "game/protos/object.h"
-#include "game/scenes/mechlab.h"
-#include "game/scenes/mechlab/lab_menu_main.h"
-#include "game/scenes/mechlab/lab_dash_main.h"
-#include "game/scenes/mechlab/lab_dash_newplayer.h"
-#include "game/scenes/mechlab/lab_menu_pilotselect.h"
+#include "formats/error.h"
+#include "game/game_state.h"
 #include "game/gui/frame.h"
 #include "game/gui/trn_menu.h"
-#include "game/utils/settings.h"
+#include "game/protos/object.h"
 #include "game/protos/scene.h"
-#include "game/game_state.h"
-#include "resources/sgmanager.h"
+#include "game/scenes/mechlab.h"
+#include "game/scenes/mechlab/lab_dash_main.h"
+#include "game/scenes/mechlab/lab_dash_newplayer.h"
+#include "game/scenes/mechlab/lab_menu_main.h"
+#include "game/scenes/mechlab/lab_menu_pilotselect.h"
+#include "game/utils/settings.h"
 #include "resources/ids.h"
-#include "video/video.h"
+#include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "formats/error.h"
+#include "video/video.h"
 
 typedef enum {
     DASHBOARD_NONE,
@@ -39,7 +39,7 @@ typedef struct {
 void mechlab_free(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
 
-    for(int i = 0; i < sizeof(local->bg_obj)/sizeof(object); i++) {
+    for(int i = 0; i < sizeof(local->bg_obj) / sizeof(object); i++) {
         object_free(&local->bg_obj[i]);
     }
 
@@ -112,9 +112,9 @@ void mechlab_select_dashboard(scene *scene, mechlab_local *local, dashboard_type
 int mechlab_event(scene *scene, SDL_Event *event) {
     mechlab_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
-    if (player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
-            (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN
-             && keyboard_binds_key(player1->ctrl, event))) {
+    if(player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
+       (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN &&
+        keyboard_binds_key(player1->ctrl, event))) {
         // these events will be handled by polling
         return 1;
     }
@@ -129,7 +129,7 @@ int mechlab_event(scene *scene, SDL_Event *event) {
 void mechlab_render(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
 
-    for(int i = 0; i < sizeof(local->bg_obj)/sizeof(object); i++) {
+    for(int i = 0; i < sizeof(local->bg_obj) / sizeof(object); i++) {
         object_render(&local->bg_obj[i]);
     }
 
@@ -161,15 +161,14 @@ void mechlab_input_tick(scene *scene) {
                     // Otherwise handle text input
                     if(i->event_data.action == ACT_ESC) {
                         trnmenu_finish(guiframe_get_root(local->frame));
-                    }
-                    else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
+                    } else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
                         mechlab_select_dashboard(scene, local, DASHBOARD_SELECT_NEW_PIC);
-                        trnmenu_finish(guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
-                    }
-                    else {
+                        trnmenu_finish(
+                            guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
+                    } else {
                         guiframe_action(local->dashboard, i->event_data.action);
                     }
-                // If view is any other, just pass input to the bottom menu
+                    // If view is any other, just pass input to the bottom menu
                 } else {
                     guiframe_action(local->frame, i->event_data.action);
                 }
@@ -187,10 +186,10 @@ int mechlab_create(scene *scene) {
     animation *bg_ani[3];
 
     // Init the background
-    for(int i = 0; i < sizeof(bg_ani)/sizeof(animation*); i++) {
+    for(int i = 0; i < sizeof(bg_ani) / sizeof(animation *); i++) {
         sprite *spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 14)->ani, i));
         bg_ani[i] = create_animation_from_single(spr, spr->pos);
-        object_create(&local->bg_obj[i], scene->gs, vec2i_create(0,0), vec2f_create(0,0));
+        object_create(&local->bg_obj[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(&local->bg_obj[i], bg_ani[i]);
         object_select_sprite(&local->bg_obj[i], 0);
         object_set_repeat(&local->bg_obj[i], 1);
@@ -199,7 +198,7 @@ int mechlab_create(scene *scene) {
 
     // Find last saved game ...
     game_player *p1 = game_state_get_player(scene->gs, 0);
-    const char* last_name = settings_get()->tournament.last_name;
+    const char *last_name = settings_get()->tournament.last_name;
     if(last_name == NULL || strlen(last_name) == 0) {
         last_name = NULL;
     }
@@ -233,7 +232,7 @@ int mechlab_create(scene *scene) {
     // Load HAR
     animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot.har_id)->ani;
     local->mech = omf_calloc(1, sizeof(object));
-    object_create(local->mech, scene->gs, vec2i_create(0,0), vec2f_create(0,0));
+    object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
     object_set_animation(local->mech, initial_har_ani);
     object_set_repeat(local->mech, 1);
     object_dynamic_tick(local->mech);

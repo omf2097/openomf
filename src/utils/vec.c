@@ -1,5 +1,5 @@
-#include <math.h>
 #include "utils/vec.h"
+#include <math.h>
 
 vec2i vec2i_add(vec2i a, vec2i b) {
     a.x += b.x;
@@ -59,7 +59,7 @@ vec2f vec2f_norm(vec2f a) {
 }
 
 float vec2f_mag(vec2f a) {
-    return sqrtf(a.x*a.x + a.y*a.y);
+    return sqrtf(a.x * a.x + a.y * a.y);
 }
 
 float vec2f_dist(vec2f a, vec2f b) {

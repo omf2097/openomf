@@ -1,10 +1,10 @@
-#include <stdlib.h>
+#include "controller/controller.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "controller/controller.h"
+#include <stdlib.h>
 
 typedef struct hook_function_t {
-    void(*fp)(controller *ctrl, int act_type);
+    void (*fp)(controller *ctrl, int act_type);
     controller *source;
 } hook_function;
 
@@ -22,11 +22,11 @@ void controller_init(controller *ctrl) {
     ctrl->repeat = 0;
 }
 
-void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type)) {
+void controller_add_hook(controller *ctrl, controller *source, void (*fp)(controller *ctrl, int act_type)) {
     hook_function *h = omf_calloc(1, sizeof(hook_function));
     h->fp = fp;
     h->source = source;
-    list_append(&ctrl->hooks, &h, sizeof(hook_function*));
+    list_append(&ctrl->hooks, &h, sizeof(hook_function *));
 }
 
 void controller_clear_hooks(controller *ctrl) {
@@ -53,7 +53,7 @@ void controller_free_chain(ctrl_event *ev) {
     }
 }
 
-void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
+void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
     // fire any installed hooks
     iterator it;
     hook_function **p = 0;
@@ -69,11 +69,13 @@ void controller_cmd(controller* ctrl, int action, ctrl_event **ev) {
     new->type = EVENT_TYPE_ACTION;
     new->event_data.action = action;
 
-    if (*ev == NULL) {
+    if(*ev == NULL) {
         *ev = new;
     } else {
         i = *ev;
-        while (i->next) { i = i->next; }
+        while(i->next) {
+            i = i->next;
+        }
         i->next = new;
     }
 }
@@ -85,7 +87,6 @@ void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev) {
     (*ev)->type = EVENT_TYPE_SYNC;
     (*ev)->event_data.ser = serial_calloc_copy(ser);
     (*ev)->next = NULL;
-    
 }
 
 void controller_close(controller *ctrl, ctrl_event **ev) {

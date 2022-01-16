@@ -1,8 +1,8 @@
 #include "game/gui/xysizer.h"
 #include "game/gui/sizer.h"
 #include "utils/allocator.h"
-#include "utils/vector.h"
 #include "utils/log.h"
+#include "utils/vector.h"
 
 void xysizer_attach(component *c, component *nc, int x, int y, int w, int h) {
     component_set_size_hints(nc, w, h);
@@ -15,7 +15,7 @@ void xysizer_set_userdata(component *c, void *userdata) {
     m->userdata = userdata;
 }
 
-void* xysizer_get_userdata(component *c) {
+void *xysizer_get_userdata(component *c) {
     xysizer *m = sizer_get_obj(c);
     return m->userdata;
 }
@@ -89,10 +89,10 @@ static void xysizer_free(component *c) {
     omf_free(m);
 }
 
-component* xysizer_create(int obj_h) {
+component *xysizer_create(int obj_h) {
     component *c = sizer_create();
 
-    xysizer* m = omf_calloc(1, sizeof(xysizer));
+    xysizer *m = omf_calloc(1, sizeof(xysizer));
     sizer_set_obj(c, m);
 
     sizer_set_render_cb(c, xysizer_render);
@@ -103,4 +103,3 @@ component* xysizer_create(int obj_h) {
 
     return c;
 }
-

@@ -1,13 +1,13 @@
-#include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
+#include "formats/error.h"
+#include "formats/internal/memwriter.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-#include "formats/internal/memwriter.h"
-#include "formats/error.h"
 #include "formats/tournament.h"
 #include "utils/allocator.h"
 
@@ -89,7 +89,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     }
 
     // Read enemy count and make sure it seems somwhat correct
-    uint32_t enemy_count  = sd_read_udword(r);
+    uint32_t enemy_count = sd_read_udword(r);
     if(enemy_count >= MAX_TRN_ENEMIES || enemy_count == 0) {
         goto error_0;
     }
@@ -157,7 +157,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Read palette. Only 40 colors are defined, starting
     // from palette position 128. Remember to convert VGA pal.
-    memset((void*)&trn->pal, 0, sizeof(palette));
+    memset((void *)&trn->pal, 0, sizeof(palette));
     palette_load_range(r, &trn->pal, 128, 40);
 
     // Read pic filename
@@ -237,14 +237,14 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
 
         // Update catalog
         long c_pos = sd_writer_pos(w);
-        if (c_pos< 0) {
+        if(c_pos < 0) {
             goto error;
         }
-        if (sd_writer_seek_start(w, 300 + (i+1) * 4) < 0) {
+        if(sd_writer_seek_start(w, 300 + (i + 1) * 4) < 0) {
             goto error;
         }
         sd_write_udword(w, (uint32_t)c_pos);
-        if (sd_writer_seek_start(w, (uint32_t)c_pos) < 0) {
+        if(sd_writer_seek_start(w, (uint32_t)c_pos) < 0) {
             goto error;
         }
     }
@@ -280,14 +280,14 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
 
     // Let's write our current offset to the victory text offset position
     long offset = sd_writer_pos(w);
-    if (offset < 0) {
+    if(offset < 0) {
         goto error;
     }
-    if (sd_writer_seek_start(w, 4) < 0) {
+    if(sd_writer_seek_start(w, 4) < 0) {
         goto error;
     }
     sd_write_dword(w, (uint32_t)offset);
-    if (sd_writer_seek_start(w, offset) < 0) {
+    if(sd_writer_seek_start(w, offset) < 0) {
         goto error;
     }
 
@@ -304,7 +304,7 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
         }
     }
 
-    if (sd_writer_errno(w)) {
+    if(sd_writer_errno(w)) {
         goto error;
     }
 

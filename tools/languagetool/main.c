@@ -1,23 +1,23 @@
 /** @file main.c
-  * @brief Language file parser tool
-  * @author Tuomas Virtanen
-  * @license MIT
-  */
+ * @brief Language file parser tool
+ * @author Tuomas Virtanen
+ * @license MIT
+ */
 
-#include <argtable2.h>
-#include "formats/language.h"
 #include "formats/error.h"
+#include "formats/language.h"
+#include <argtable2.h>
 
 int main(int argc, char *argv[]) {
-   // commandline argument parser options
+    // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "language file");
     struct arg_int *str = arg_int0("s", "string", "<value>", "Select language string number");
-    struct arg_file *output = arg_file0("o","output","<file>","Output CHR file");
+    struct arg_file *output = arg_file0("o", "output", "<file>", "Output CHR file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,str,end};
-    const char* progname = "languagetool";
+    void *argtable[] = {help, vers, file, output, str, end};
+    const char *progname = "languagetool";
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -88,15 +88,13 @@ int main(int argc, char *argv[]) {
     if(output->count > 0) {
         ret = sd_language_save(&language, output->filename[0]);
         if(ret != SD_SUCCESS) {
-            printf("Failed saving language file to %s: %s",
-                output->filename[0],
-                sd_get_error(ret));
+            printf("Failed saving language file to %s: %s", output->filename[0], sd_get_error(ret));
         }
     }
 
 exit_1:
     sd_language_free(&language);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

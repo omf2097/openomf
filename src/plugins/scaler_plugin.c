@@ -16,7 +16,7 @@ int scaler_is_factor_available(scaler_plugin *scaler, int factor) {
     return 0;
 }
 
-int scaler_get_factors_list(scaler_plugin *scaler, int** factors) {
+int scaler_get_factors_list(scaler_plugin *scaler, int **factors) {
     if(scaler->get_factors_list != NULL) {
         return scaler->get_factors_list(factors);
     }
@@ -30,7 +30,7 @@ int scaler_get_color_format(scaler_plugin *scaler) {
     return 0;
 }
 
-int scaler_scale(scaler_plugin *scaler, const char* in, char* out, int w, int h, int factor) {
+int scaler_scale(scaler_plugin *scaler, const char *in, char *out, int w, int h, int factor) {
     if(scaler->scale != NULL) {
         return scaler->scale(in, out, w, h, factor);
     }

@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "formats/error.h"
 #include "formats/animation.h"
+#include "formats/error.h"
 #include "formats/move.h"
 #include "utils/allocator.h"
 
@@ -62,7 +62,8 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
 }
 
 void sd_move_free(sd_move *move) {
-    if(move == NULL) return;
+    if(move == NULL)
+        return;
     if(move->animation != NULL) {
         sd_animation_free(move->animation);
         omf_free(move->animation);
@@ -113,13 +114,12 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     // Footer string
     size = sd_read_uword(r);
     if(size >= SD_MOVE_FOOTER_STRING_MAX) {
-        DEBUGLOG("Move footer too big! Expected max %d bytes, got %hu bytes.",
-            SD_MOVE_FOOTER_STRING_MAX, size);
+        DEBUGLOG("Move footer too big! Expected max %d bytes, got %hu bytes.", SD_MOVE_FOOTER_STRING_MAX, size);
         return SD_FILE_PARSE_ERROR;
     }
     if(size > 0) {
         sd_read_buf(r, move->footer_string, size);
-        if(move->footer_string[size-1] != 0) {
+        if(move->footer_string[size - 1] != 0) {
             return SD_FILE_PARSE_ERROR;
         }
     }
@@ -171,8 +171,8 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     // Save footer string
     size = strlen(move->footer_string);
     if(size > 0) {
-        sd_write_uword(w, size+1);
-        sd_write_buf(w, move->footer_string, size+1);
+        sd_write_uword(w, size + 1);
+        sd_write_buf(w, move->footer_string, size + 1);
     } else {
         sd_write_uword(w, 0);
     }
@@ -199,12 +199,12 @@ int sd_move_set_animation(sd_move *move, const sd_animation *animation) {
     return SD_SUCCESS;
 }
 
-sd_animation* sd_move_get_animation(const sd_move *move) {
+sd_animation *sd_move_get_animation(const sd_move *move) {
     return move->animation;
 }
 
-int sd_move_set_footer_string(sd_move *move, const char* str) {
-    if(strlen(str) >= SD_MOVE_FOOTER_STRING_MAX-1) {
+int sd_move_set_footer_string(sd_move *move, const char *str) {
+    if(strlen(str) >= SD_MOVE_FOOTER_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
     strncpy(move->footer_string, str, sizeof(move->footer_string));
@@ -212,7 +212,7 @@ int sd_move_set_footer_string(sd_move *move, const char* str) {
 }
 
 int sd_move_set_move_string(sd_move *move, const char *str) {
-    if(strlen(str) >= SD_MOVE_STRING_MAX-1) {
+    if(strlen(str) >= SD_MOVE_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
     strncpy(move->move_string, str, sizeof(move->move_string));

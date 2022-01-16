@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "resources/pathmanager.h"
+#include "formats/altpal.h"
+#include "formats/error.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-#include "formats/error.h"
 #include "formats/palette.h"
-#include "formats/altpal.h"
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 
@@ -82,4 +82,3 @@ int altpals_save(altpal_file *ap, const char *filename) {
 
 void altpal_free(altpal_file *ap) {
 }
-

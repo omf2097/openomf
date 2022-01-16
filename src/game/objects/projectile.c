@@ -1,11 +1,11 @@
-#include <stdlib.h>
 #include "game/objects/projectile.h"
-#include "game/protos/object_specializer.h"
-#include "game/game_state.h"
 #include "game/game_player.h"
+#include "game/game_state.h"
+#include "game/objects/arena_constraints.h"
+#include "game/protos/object_specializer.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "game/objects/arena_constraints.h"
+#include <stdlib.h>
 
 #define IS_ZERO(n) (n < 0.1 && n > -0.1)
 
@@ -22,10 +22,10 @@ void projectile_tick(object *obj) {
 
     if(obj->animation_state.finished) {
         af_move *move = af_get_move(local->af_data, obj->cur_animation->id);
-        if (move->successor_id) {
+        if(move->successor_id) {
             object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
             object_set_repeat(obj, 0);
-            object_set_vel(obj, vec2f_create(0,0));
+            object_set_vel(obj, vec2f_create(0, 0));
             obj->animation_state.finished = 0;
         }
     }
@@ -56,7 +56,7 @@ void projectile_move(object *obj) {
     // If wall bounce flag is on, bounce the projectile on wall hit
     // Otherwise kill it.
     if(local->wall_bounce) {
-        if(obj->pos.x <  ARENA_LEFT_WALL) {
+        if(obj->pos.x < ARENA_LEFT_WALL) {
             obj->pos.x = ARENA_LEFT_WALL;
             obj->vel.x = -obj->vel.x * dampen;
         }
@@ -64,7 +64,7 @@ void projectile_move(object *obj) {
             obj->pos.x = ARENA_RIGHT_WALL;
             obj->vel.x = -obj->vel.x * dampen;
         }
-    } else if (!local->invincible) {
+    } else if(!local->invincible) {
         if(obj->pos.x < ARENA_LEFT_WALL) {
             obj->pos.x = ARENA_LEFT_WALL;
             obj->animation_state.finished = 1;
@@ -79,11 +79,8 @@ void projectile_move(object *obj) {
         obj->vel.y = -obj->vel.y * dampen;
         obj->vel.x = obj->vel.x * dampen;
     }
-    if(obj->pos.y >= (ARENA_FLOOR-5)
-        && IS_ZERO(obj->vel.x)
-        && obj->vel.y < obj->gravity * 1.1
-        && obj->vel.y > obj->gravity * -1.1
-        && local->ground_freeze) {
+    if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && obj->vel.y < obj->gravity * 1.1 &&
+       obj->vel.y > obj->gravity * -1.1 && local->ground_freeze) {
 
         object_disable_rewind_tag(obj, 1);
     }
@@ -107,7 +104,7 @@ int projectile_unserialize(object *obj, serial *ser, int animation_id, game_stat
         player = game_state_get_player(gs, i);
         o = game_player_get_har(player);
         h = object_get_userdata(o);
-        if (h->af_data->id == har_id) {
+        if(h->af_data->id == har_id) {
             af_move *move = af_get_move(h->af_data, animation_id);
             object_set_animation(obj, &move->ani);
             object_set_userdata(obj, h);
@@ -132,7 +129,7 @@ int projectile_create(object *obj) {
     local->owner = obj;
     local->wall_bounce = 0;
     local->ground_freeze = 0;
-    local->af_data = ((har*)object_get_userdata(obj))->af_data;
+    local->af_data = ((har *)object_get_userdata(obj))->af_data;
 
     // Set up callbacks
     object_set_userdata(obj, local);
@@ -144,11 +141,11 @@ int projectile_create(object *obj) {
 }
 
 af *projectile_get_af_data(object *obj) {
-    return ((projectile_local*)object_get_userdata(obj))->af_data;
+    return ((projectile_local *)object_get_userdata(obj))->af_data;
 }
 
 object *projectile_get_owner(object *obj) {
-    return ((projectile_local*)object_get_userdata(obj))->owner;
+    return ((projectile_local *)object_get_userdata(obj))->owner;
 }
 
 void projectile_set_wall_bounce(object *obj, int bounce) {

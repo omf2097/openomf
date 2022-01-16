@@ -1,16 +1,16 @@
+#include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <string.h>
-#include <SDL2/SDL.h>
 
+#include "audio/sound.h"
+#include "game/gui/sizer.h"
 #include "game/gui/spriteimage.h"
 #include "game/gui/widget.h"
-#include "game/gui/sizer.h"
-#include "video/video.h"
-#include "audio/sound.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/compat.h"
+#include "utils/log.h"
 #include "utils/miscmath.h"
+#include "video/video.h"
 
 typedef struct {
     surface *img;
@@ -26,7 +26,7 @@ static void spriteimage_free(component *c) {
     omf_free(sb);
 }
 
-component* spriteimage_create(surface *img) {
+component *spriteimage_create(surface *img) {
     component *c = widget_create();
     component_disable(c, 1);
     c->supports_focus = 0;

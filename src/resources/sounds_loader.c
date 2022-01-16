@@ -1,11 +1,11 @@
-#include <stdlib.h>
-#include "formats/sounds.h"
-#include "formats/error.h"
 #include "resources/sounds_loader.h"
+#include "formats/error.h"
+#include "formats/sounds.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <stdlib.h>
 
 static sd_sound_file *sound_data = NULL;
 
@@ -34,7 +34,8 @@ error_0:
 
 int sounds_loader_get(int id, char **buffer, int *len) {
     // Make sure the data is ok and sound exists
-    if(sound_data == NULL) return 1;
+    if(sound_data == NULL)
+        return 1;
 
     // Get sound
     const sd_sound *sample = sd_sounds_get(sound_data, id);

@@ -1,13 +1,13 @@
 #include "game/gui/trn_menu.h"
 #include "game/gui/sizer.h"
-#include "game/gui/text_render.h"
 #include "game/gui/spritebutton.h"
-#include "video/surface.h"
-#include "video/video.h"
+#include "game/gui/text_render.h"
 #include "utils/allocator.h"
-#include "utils/vector.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "utils/vector.h"
+#include "video/surface.h"
+#include "video/video.h"
 
 #define OPACITY_STEP 0.03f
 
@@ -46,7 +46,7 @@ void trnmenu_bind_hand(component *c, animation *hand_ani, game_state *gs) {
 
     // Set up new hand object
     m->hand.obj = omf_calloc(1, sizeof(object));
-    object_create(m->hand.obj, gs, vec2i_create(0,0), vec2f_create(0,0));
+    object_create(m->hand.obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
     object_set_animation(m->hand.obj, hand_ani);
     object_set_userdata(m->hand.obj, &m->hand);
     object_set_finish_cb(m->hand.obj, trnmenu_hand_finished);
@@ -58,7 +58,7 @@ void trnmenu_set_userdata(component *c, void *userdata) {
     m->userdata = userdata;
 }
 
-void* trnmenu_get_userdata(const component *c) {
+void *trnmenu_get_userdata(const component *c) {
     trnmenu *m = sizer_get_obj(c);
     return m->userdata;
 }
@@ -153,7 +153,7 @@ static int find_next_button(component *c, int act) {
         switch(act) {
             case ACT_LEFT:
                 if(t->x < cur->x) {
-                    float tdist = vec2f_dist(rcenter(t),lcenter(cur));
+                    float tdist = vec2f_dist(rcenter(t), lcenter(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;
@@ -162,7 +162,7 @@ static int find_next_button(component *c, int act) {
                 break;
             case ACT_RIGHT:
                 if(t->x > cur->x) {
-                    float tdist = vec2f_dist(lcenter(t),rcenter(cur));
+                    float tdist = vec2f_dist(lcenter(t), rcenter(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;
@@ -171,7 +171,7 @@ static int find_next_button(component *c, int act) {
                 break;
             case ACT_UP:
                 if(t->y < cur->y) {
-                    float tdist = vec2f_dist(center(t),center(cur));
+                    float tdist = vec2f_dist(center(t), center(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;
@@ -180,7 +180,7 @@ static int find_next_button(component *c, int act) {
                 break;
             case ACT_DOWN:
                 if(t->y > cur->y) {
-                    float tdist = vec2f_dist(center(t),center(cur));
+                    float tdist = vec2f_dist(center(t), center(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;
@@ -224,13 +224,12 @@ static int trnmenu_action(component *c, int action) {
             break;
         case ACT_PUNCH:
         case ACT_KICK: {
-                component *sel = sizer_get(c, m->selected);
-                if(sel != NULL) {
-                    m->hand.play = 1;
-                    return component_action(sel, action);
-                }
+            component *sel = sizer_get(c, m->selected);
+            if(sel != NULL) {
+                m->hand.play = 1;
+                return component_action(sel, action);
             }
-            break;
+        } break;
     }
     return 0;
 }
@@ -245,8 +244,8 @@ static void trnmenu_render(component *c) {
     }
 
     // Render button sheet
-    video_render_sprite_flip_scale_opacity_tint(
-        m->button_sheet, m->sheet_x, m->sheet_y, BLEND_ALPHA, 0, FLIP_NONE, 1, clamp(s->opacity * 255, 0, 255), color_create(0xFF,0xFF,0xFF,0xFF));
+    video_render_sprite_flip_scale_opacity_tint(m->button_sheet, m->sheet_x, m->sheet_y, BLEND_ALPHA, 0, FLIP_NONE, 1,
+                                                clamp(s->opacity * 255, 0, 255), color_create(0xFF, 0xFF, 0xFF, 0xFF));
 
     // Handle components
     iterator it;
@@ -351,7 +350,6 @@ static int trnmenu_event(component *mc, SDL_Event *event) {
     return 1;
 }
 
-
 int trnmenu_is_finished(const component *c) {
     trnmenu *m = sizer_get_obj(c);
     return m->finished;
@@ -371,7 +369,7 @@ void trnmenu_set_submenu(component *c, component *submenu) {
     m->fade = 1;
 }
 
-component* trnmenu_get_submenu(const component *c) {
+component *trnmenu_get_submenu(const component *c) {
     trnmenu *m = sizer_get_obj(c);
     return m->submenu;
 }
@@ -387,10 +385,10 @@ void trnmenu_finish(component *c) {
     m->opacity_step = -OPACITY_STEP;
 }
 
-component* trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
+component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
     component *c = sizer_create();
 
-    trnmenu* m = omf_calloc(1, sizeof(trnmenu));
+    trnmenu *m = omf_calloc(1, sizeof(trnmenu));
     m->button_sheet = button_sheet;
     m->sheet_x = sheet_x;
     m->sheet_y = sheet_y;

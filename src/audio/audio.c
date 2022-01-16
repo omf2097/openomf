@@ -1,24 +1,24 @@
-#include <stdlib.h>
-#include <string.h>
 #include "audio/audio.h"
 #include "audio/sink.h"
 #include "audio/sinks/openal_sink.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <stdlib.h>
+#include <string.h>
 
 static audio_sink *_global_sink = NULL;
 
 struct sink_info_t {
     int (*sink_init_fn)(audio_sink *sink);
-    const char* name;
+    const char *name;
 } const sinks[] = {
 #ifdef USE_OPENAL
     {openal_sink_init, "openal"},
-#endif // USE_OPENAL
+#endif  // USE_OPENAL
 };
-#define SINK_COUNT (sizeof(sinks)/sizeof(struct sink_info_t))
+#define SINK_COUNT (sizeof(sinks) / sizeof(struct sink_info_t))
 
-const char* audio_get_sink_name(int sink_id) {
+const char *audio_get_sink_name(int sink_id) {
     // Get sink
     if(sink_id < 0 || (unsigned)sink_id >= SINK_COUNT) {
         return NULL;
@@ -26,14 +26,14 @@ const char* audio_get_sink_name(int sink_id) {
     return sinks[sink_id].name;
 }
 
-const char* audio_get_first_sink_name() {
+const char *audio_get_first_sink_name() {
     if(SINK_COUNT > 0) {
         return sinks[0].name;
     }
     return NULL;
 }
 
-int audio_is_sink_available(const char* sink_name) {
+int audio_is_sink_available(const char *sink_name) {
     for(unsigned i = 0; i < SINK_COUNT; i++) {
         if(strcmp(sink_name, sinks[i].name) == 0) {
             return 1;
@@ -48,7 +48,7 @@ void audio_render() {
     }
 }
 
-int audio_init(const char* sink_name) {
+int audio_init(const char *sink_name) {
     struct sink_info_t si;
     int found = 0;
 
@@ -59,7 +59,7 @@ int audio_init(const char* sink_name) {
     }
 
     // Find requested sink
-    for (unsigned c = 0; c < SINK_COUNT; ++c) {
+    for(unsigned c = 0; c < SINK_COUNT; ++c) {
         if(strcmp(sink_name, sinks[c].name) == 0) {
             si = sinks[c];
             found = 1;
@@ -95,6 +95,6 @@ void audio_close() {
     }
 }
 
-audio_sink* audio_get_sink() {
+audio_sink *audio_get_sink() {
     return _global_sink;
 }

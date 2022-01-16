@@ -86,7 +86,7 @@ void component_set_pos_hints(component *c, int x, int y) {
     c->y_hint = y;
 }
 
-component* component_find(component *c, int id) {
+component *component_find(component *c, int id) {
     return c->find(c, id);
 }
 
@@ -94,7 +94,7 @@ void component_set_obj(component *c, void *obj) {
     c->obj = obj;
 }
 
-void* component_get_obj(const component *c) {
+void *component_get_obj(const component *c) {
     return c->obj;
 }
 
@@ -126,7 +126,7 @@ void component_set_find_cb(component *c, component_find_cb cb) {
     c->find = cb;
 }
 
-component* component_create() {
+component *component_create() {
     component *c = omf_calloc(1, sizeof(component));
     c->x_hint = -1;
     c->y_hint = -1;

@@ -2,15 +2,15 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "formats/animation.h"
+#include "formats/bk.h"
+#include "formats/bkanim.h"
+#include "formats/error.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/palette.h"
 #include "formats/rgba_image.h"
 #include "formats/vga_image.h"
-#include "formats/animation.h"
-#include "formats/bkanim.h"
-#include "formats/error.h"
-#include "formats/bk.h"
 #include "utils/allocator.h"
 
 int sd_bk_create(sd_bk_file *bk) {
@@ -153,7 +153,7 @@ exit_0:
     return ret;
 }
 
-int sd_bk_save(const sd_bk_file *bk, const char* filename) {
+int sd_bk_save(const sd_bk_file *bk, const char *filename) {
     long rpos = 0;
     long opos = 0;
     sd_writer *w;
@@ -181,7 +181,7 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
     for(uint8_t i = 0; i < MAX_BK_ANIMS; i++) {
         if(bk->anims[i] != NULL) {
             opos = sd_writer_pos(w); // remember where we need to fill in the blank
-            if (opos < 0) {
+            if(opos < 0) {
                 goto error;
             }
             sd_write_udword(w, 0); // write a 0 as a placeholder
@@ -191,20 +191,20 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
                 return ret;
             }
             rpos = sd_writer_pos(w);
-            if (rpos < 0) {
+            if(rpos < 0) {
                 goto error;
             }
-            if (sd_writer_seek_start(w, opos) < 0) {
+            if(sd_writer_seek_start(w, opos) < 0) {
                 goto error;
             }
             sd_write_udword(w, rpos); // write the actual size
-            if (sd_writer_seek_start(w, rpos) < 0) {
+            if(sd_writer_seek_start(w, rpos) < 0) {
                 goto error;
             }
         }
     }
     sd_write_udword(w, rpos);
-    sd_write_ubyte(w, MAX_BK_ANIMS+1); // indicate end of animations
+    sd_write_ubyte(w, MAX_BK_ANIMS + 1); // indicate end of animations
 
     // Write background image. If none exists, write black image.
     if(bk->background != NULL) {
@@ -222,7 +222,7 @@ int sd_bk_save(const sd_bk_file *bk, const char* filename) {
     // Write soundtable
     sd_write_buf(w, bk->soundtable, 30);
 
-    if (sd_writer_errno(w)) {
+    if(sd_writer_errno(w)) {
         goto error;
     }
 
@@ -255,7 +255,7 @@ int sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img) {
     return SD_SUCCESS;
 }
 
-sd_vga_image* sd_bk_get_background(const sd_bk_file *bk) {
+sd_vga_image *sd_bk_get_background(const sd_bk_file *bk) {
     return bk->background;
 }
 
@@ -279,7 +279,7 @@ int sd_bk_set_anim(sd_bk_file *bk, int index, const sd_bk_anim *anim) {
     return SD_SUCCESS;
 }
 
-sd_bk_anim* sd_bk_get_anim(const sd_bk_file *bk, int index) {
+sd_bk_anim *sd_bk_get_anim(const sd_bk_file *bk, int index) {
     if(index < 0 || index >= MAX_BK_ANIMS || bk == NULL) {
         return NULL;
     }
