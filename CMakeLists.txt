@@ -243,11 +243,18 @@ endif()
 # Formatting via clang-format
 if(USE_FORMAT)
     include(ClangFormat)
-    target_clangformat_setup(openomf_core)
-    target_clangformat_setup(openomf)
-    foreach(TARGET ${TOOL_TARGET_NAMES})
-        target_clangformat_setup(${TARGET})
-    endforeach()
+    file(
+        GLOB_RECURSE
+        SRC_FILES
+        RELATIVE ${CMAKE_SOURCE_DIR}
+        "include/*.h"
+        "src/*.c"
+        "tools/*.c"
+        "tools/*.h"
+        "testing/*.c"
+        "testing/*.h"
+    )
+    clangformat_setup(${SRC_FILES})
     message(STATUS "Development: clang-format enabled")
 else()
     message(STATUS "Development: clang-format disabled")
