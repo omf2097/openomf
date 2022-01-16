@@ -334,7 +334,7 @@ int get_enemy_range(const controller *ctrl) {
     har *h = object_get_userdata(o);
     object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
 
-    int range_units = abs(o_enemy->pos.x - o->pos.x) / 30;
+    int range_units = fabsf(o_enemy->pos.x - o->pos.x) / 30;
     switch(range_units) {
         case 0:
         case 1:

@@ -1,9 +1,8 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-cplusplus*,-clang-diagnostic-unused-command-line-argument'
+Checks: 'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-cplusplus*,-clang-diagnostic-unused-command-line-argument,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
-AnalyzeTemporaryDtors: false
-FormatStyle:     none
+FormatStyle: llvm
 CheckOptions:
   - key:             llvm-else-after-return.WarnOnConditionVariables
     value:           'false'
