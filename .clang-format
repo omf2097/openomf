@@ -12,7 +12,9 @@ BraceWrapping:
   AfterUnion:      false
   BeforeElse:      false
   IndentBraces:    false
+  AfterEnum:       false
 AllowShortFunctionsOnASingleLine: false
 AllowShortBlocksOnASingleLine: false
 AlignArrayOfStructures: Left
 IndentCaseLabels: true
+AllowShortEnumsOnASingleLine: false
