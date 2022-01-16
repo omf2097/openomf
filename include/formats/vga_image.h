@@ -11,8 +11,8 @@
 #ifndef SD_VGA_IMAGE_H
 #define SD_VGA_IMAGE_H
 
-#include "formats/rgba_image.h"
 #include "formats/palette.h"
+#include "formats/rgba_image.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,11 +30,11 @@ extern "C" {
  * In VGA images, the len field should always be exactly w*h bytes long.
  */
 typedef struct {
-    unsigned int w;    ///< Pixel width
-    unsigned int h;    ///< Pixel height
-    unsigned int len;  ///< Byte length
-    char *data;        ///< Palette representation of image data
-    char *stencil;     ///< holds 0 or 1 indicating whether a pixel is present
+    unsigned int w;   ///< Pixel width
+    unsigned int h;   ///< Pixel height
+    unsigned int len; ///< Byte length
+    char *data;       ///< Palette representation of image data
+    char *stencil;    ///< holds 0 or 1 indicating whether a pixel is present
 } sd_vga_image;
 
 /*! \brief Initialize VGA image structure
@@ -107,11 +107,7 @@ int sd_vga_image_stencil_index(sd_vga_image *img, int stencil_index);
  * \param pal Palette that should be used for the conversion
  * \param remapping Palette remapping table that should be used. -1 for none.
  */
-int sd_vga_image_encode(
-    sd_vga_image *dst,
-    const sd_rgba_image *src,
-    const palette *pal,
-    int remapping);
+int sd_vga_image_encode(sd_vga_image *dst, const sd_rgba_image *src, const palette *pal, int remapping);
 
 /*! \brief Decode VGA data to RGBA format
  *
@@ -129,11 +125,7 @@ int sd_vga_image_encode(
  * \param pal Palette that should be used for the conversion
  * \param remapping Palette remapping table that should be used. -1 for none.
  */
-int sd_vga_image_decode(
-    sd_rgba_image *dst,
-    const sd_vga_image *src,
-    const palette *pal,
-    int remapping);
+int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const palette *pal, int remapping);
 
 /*! \brief Load an indexed image from a PNG file.
  *

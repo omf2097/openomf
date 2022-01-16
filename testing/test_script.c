@@ -1,8 +1,8 @@
-#include <CUnit/CUnit.h>
-#include <CUnit/Basic.h>
-#include "formats/script.h"
 #include "formats/error.h"
+#include "formats/script.h"
 #include "misc/parser_test_strings.h"
+#include <CUnit/Basic.h>
+#include <CUnit/CUnit.h>
 
 sd_script script;
 
@@ -91,8 +91,8 @@ void test_script_get_tag(void) {
 
 void test_script_frame_changed(void) {
     CU_ASSERT(sd_script_frame_changed(&script, -1, 0) == 1);
-    CU_ASSERT(sd_script_frame_changed(&script,  0, 0) == 0);
-    CU_ASSERT(sd_script_frame_changed(&script,  0, 1) == 0);
+    CU_ASSERT(sd_script_frame_changed(&script, 0, 0) == 0);
+    CU_ASSERT(sd_script_frame_changed(&script, 0, 1) == 0);
     CU_ASSERT(sd_script_frame_changed(&script, 143, 144) == 1);
     CU_ASSERT(sd_script_frame_changed(&script, 99, 100) == 1);
     CU_ASSERT(sd_script_frame_changed(&script, 98, 99) == 0);
@@ -193,28 +193,28 @@ void test_script_all(void) {
 }
 
 void test_next_frame_with_sprite(void) {
-    CU_ASSERT(sd_script_next_frame_with_sprite(NULL, 0, 0) == -1); // script NULL
-    CU_ASSERT(sd_script_next_frame_with_sprite(&script, -1, 0) == -1); // nonexistent frame id
+    CU_ASSERT(sd_script_next_frame_with_sprite(NULL, 0, 0) == -1);       // script NULL
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, -1, 0) == -1);   // nonexistent frame id
     CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 1000) == -1); // Tick does not exist
-    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 2, 0) == 2); // C
-    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 1, 0) == 1); // B
-    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 100) == -1); // A
-    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 3, 0) == -1); // D (does not exist)
-    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 0) == -1); // A, exists but should not be found
-    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, -1) == 0); // A, test negative tick
-    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 99) == -1); // A, exists but should not be found
-    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 1, 99) == 1); // B
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 2, 0) == 2);     // C
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 1, 0) == 1);     // B
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 100) == -1);  // A
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 3, 0) == -1);    // D (does not exist)
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 0) == -1);    // A, exists but should not be found
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, -1) == 0);    // A, test negative tick
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 99) == -1);   // A, exists but should not be found
+    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 1, 99) == 1);    // B
 }
 
 void test_next_frame_with_tag(void) {
-    CU_ASSERT(sd_script_next_frame_with_tag(NULL, "s", 0) == -1); // script NULL
-    CU_ASSERT(sd_script_next_frame_with_tag(&script, "xxx", 0) == -1); // nonexistent tag
+    CU_ASSERT(sd_script_next_frame_with_tag(NULL, "s", 0) == -1);       // script NULL
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "xxx", 0) == -1);  // nonexistent tag
     CU_ASSERT(sd_script_next_frame_with_tag(&script, "s", 1000) == -1); // tick does not exist
-    CU_ASSERT(sd_script_next_frame_with_tag(&script, "s", 0) == 1); // Should be in frame 1
-    CU_ASSERT(sd_script_next_frame_with_tag(&script, "bpd", 0) == -1); // should be in frame 0, but should not be found
-    CU_ASSERT(sd_script_next_frame_with_tag(&script, "bpd", -1) == 0); // test negative tick
-    CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 0) == 1); // Just test any tag
-    CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 99) == 1); // Border case 1
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "s", 0) == 1);     // Should be in frame 1
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "bpd", 0) == -1);  // should be in frame 0, but should not be found
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "bpd", -1) == 0);  // test negative tick
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 0) == 1);    // Just test any tag
+    CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 99) == 1);   // Border case 1
     CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 100) == -1); // Border case 2
 }
 
@@ -348,36 +348,100 @@ void test_frame_to_letter(void) {
 }
 
 void script_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "test of sd_script_create", test_script_create) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_decode", test_script_decode) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_get_total_ticks", test_total_ticks) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_get_tick_pos_at_frame", test_tick_pos_at_frame) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_get_tick_len_at_frame", test_tick_len_at_frame) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_encoded_length", test_script_encoded_length) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_encode", test_script_encode) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_get_frame", test_script_get_frame) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_get_frame_at", test_script_get_frame_at) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_get_tag", test_script_get_tag) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_frame_changed", test_script_frame_changed) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_get_frame_index", test_script_get_frame_index) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_get_frame_index_at", test_script_get_frame_index_at) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_is_last_frame", test_is_last_frame) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_is_last_frame_at", test_is_last_frame_at) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_is_first_frame", test_is_first_frame) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_is_first_frame_at", test_is_first_frame_at) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_isset", test_script_isset) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_get", test_script_get) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_next_frame_with_sprite", test_next_frame_with_sprite) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_next_frame_with_tag", test_next_frame_with_tag) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_set_tag", test_set_tag) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_delete_tag", test_delete_tag) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_append_frame", test_append_frame) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_clear_tags", test_clear_tags) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_set_tick_len_at_frame", test_set_tick_len_at_frame) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_set_sprite_at_frame", test_set_sprite_at_frame) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_letter_to_frame", test_letter_to_frame) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_frame_to_letter", test_frame_to_letter) == NULL) { return; }
-    if(CU_add_test(suite, "testing odd tags", test_script_tag_vars) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_script_free", test_script_free) == NULL) { return; }
-    if(CU_add_test(suite, "test of all OMF strings", test_script_all) == NULL) { return; }
+    if(CU_add_test(suite, "test of sd_script_create", test_script_create) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_decode", test_script_decode) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_get_total_ticks", test_total_ticks) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_get_tick_pos_at_frame", test_tick_pos_at_frame) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_get_tick_len_at_frame", test_tick_len_at_frame) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_encoded_length", test_script_encoded_length) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_encode", test_script_encode) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_get_frame", test_script_get_frame) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_get_frame_at", test_script_get_frame_at) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_get_tag", test_script_get_tag) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_frame_changed", test_script_frame_changed) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_get_frame_index", test_script_get_frame_index) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_get_frame_index_at", test_script_get_frame_index_at) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_is_last_frame", test_is_last_frame) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_is_last_frame_at", test_is_last_frame_at) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_is_first_frame", test_is_first_frame) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_is_first_frame_at", test_is_first_frame_at) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_isset", test_script_isset) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_get", test_script_get) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_next_frame_with_sprite", test_next_frame_with_sprite) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_next_frame_with_tag", test_next_frame_with_tag) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_set_tag", test_set_tag) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_delete_tag", test_delete_tag) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_append_frame", test_append_frame) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_clear_tags", test_clear_tags) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_set_tick_len_at_frame", test_set_tick_len_at_frame) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_set_sprite_at_frame", test_set_sprite_at_frame) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_letter_to_frame", test_letter_to_frame) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_frame_to_letter", test_frame_to_letter) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "testing odd tags", test_script_tag_vars) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_free", test_script_free) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of all OMF strings", test_script_all) == NULL) {
+        return;
+    }
 }

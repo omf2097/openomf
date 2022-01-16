@@ -10,11 +10,10 @@
 #ifndef SD_BKANIM_H
 #define SD_BKANIM_H
 
-#include <stdint.h>
 #include "formats/animation.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-
+#include <stdint.h>
 
 #define SD_BK_FOOTER_STRING_MAX 512 ///< Max BK footer string length
 
@@ -27,16 +26,15 @@ extern "C" {
  * Information about the BK specific animation things.
  */
 typedef struct {
-    uint8_t null; ///< Always 0 ?
-    uint8_t chain_hit; ///< Animation to chain to if collision/hit
-    uint8_t chain_no_hit; ///< Animation to chain to on no collision/hit
-    uint8_t load_on_start; ///< Actually repeat flag
-    uint16_t probability; ///< Probability of animation
-    uint8_t hazard_damage; ///< Hazard damage on hit
+    uint8_t null;                                ///< Always 0 ?
+    uint8_t chain_hit;                           ///< Animation to chain to if collision/hit
+    uint8_t chain_no_hit;                        ///< Animation to chain to on no collision/hit
+    uint8_t load_on_start;                       ///< Actually repeat flag
+    uint16_t probability;                        ///< Probability of animation
+    uint8_t hazard_damage;                       ///< Hazard damage on hit
     char footer_string[SD_BK_FOOTER_STRING_MAX]; ///< Footer string
-    sd_animation *animation; ///< Animation ptr or NULL. On BK save, must be != NULL.
+    sd_animation *animation;                     ///< Animation ptr or NULL. On BK save, must be != NULL.
 } sd_bk_anim;
-
 
 /*! \brief Initialize BK animation info structure
  *
@@ -101,7 +99,7 @@ int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation);
  *
  * \param bka BK animation info struct to modify.
  */
-sd_animation* sd_bk_anim_get_animation(const sd_bk_anim *bka);
+sd_animation *sd_bk_anim_get_animation(const sd_bk_anim *bka);
 
 /*! \brief Set BK animation info footer string
  *

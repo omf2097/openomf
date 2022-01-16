@@ -53,8 +53,8 @@ enum RESOURCE_ID {
     NUMBER_OF_RESOURCES
 };
 
-const char* get_resource_file(unsigned int id);
-const char* get_resource_name(unsigned int id);
+const char *get_resource_file(unsigned int id);
+const char *get_resource_name(unsigned int id);
 
 int is_arena(unsigned int id);
 int is_scene(unsigned int id);

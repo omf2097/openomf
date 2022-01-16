@@ -3,6 +3,6 @@
 
 #include "game/gui/component.h"
 
-component* filler_create();
+component *filler_create();
 
 #endif // FILLER_H

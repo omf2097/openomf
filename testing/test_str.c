@@ -1,5 +1,5 @@
-#include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
+#include <CUnit/CUnit.h>
 #include <utils/str.h>
 
 void test_str_create(void) {
@@ -87,7 +87,6 @@ void test_str_toupper(void) {
     str_free(&d);
 }
 
-
 void test_str_tolower(void) {
     str d;
     str_from_c(&d, "TEST-STRING");
@@ -141,7 +140,7 @@ void test_str_append(void) {
     CU_ASSERT(str_size(&dst) == 26);
     CU_ASSERT_PTR_NOT_NULL(dst.data);
     CU_ASSERT_NSTRING_EQUAL(dst.data, "base_string", 11);
-    CU_ASSERT_NSTRING_EQUAL(dst.data+11, "appended_string", 15);
+    CU_ASSERT_NSTRING_EQUAL(dst.data + 11, "appended_string", 15);
     CU_ASSERT(dst.data[dst.len] == 0);
     str_free(&src);
     str_free(&dst);
@@ -154,7 +153,7 @@ void test_str_append_c(void) {
     CU_ASSERT(str_size(&dst) == 26);
     CU_ASSERT_PTR_NOT_NULL(dst.data);
     CU_ASSERT_NSTRING_EQUAL(dst.data, "base_string", 11);
-    CU_ASSERT_NSTRING_EQUAL(dst.data+11, "appended_string", 15);
+    CU_ASSERT_NSTRING_EQUAL(dst.data + 11, "appended_string", 15);
     CU_ASSERT(dst.data[dst.len] == 0);
     str_free(&dst);
 }
@@ -166,7 +165,7 @@ void test_str_append_buf(void) {
     CU_ASSERT(str_size(&dst) == 26);
     CU_ASSERT_PTR_NOT_NULL(dst.data);
     CU_ASSERT_NSTRING_EQUAL(dst.data, "base_string", 11);
-    CU_ASSERT_NSTRING_EQUAL(dst.data+11, "appended_string", 15);
+    CU_ASSERT_NSTRING_EQUAL(dst.data + 11, "appended_string", 15);
     CU_ASSERT(dst.data[dst.len] == 0);
     str_free(&dst);
 }
@@ -285,33 +284,85 @@ void test_str_replace_multi_limit(void) {
 }
 
 void str_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) { return; }
-    if(CU_add_test(suite, "Test for string free operation", test_str_free) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_from", test_str_from) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_from_c", test_str_from_c) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_from_buf", test_str_from_buf) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_from_slice", test_str_from_slice) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_from_format", test_str_from_format) == NULL) { return; }
-    
-    if(CU_add_test(suite, "Test for str_toupper", test_str_toupper) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_tolower", test_str_tolower) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_rstrip", test_str_rstrip) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_lstrip", test_str_lstrip) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_strip", test_str_strip) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_append", test_str_append) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_append_c", test_str_append_c) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_append_buf", test_str_append_buf) == NULL) { return; }
+    if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for string free operation", test_str_free) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_from", test_str_from) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_from_c", test_str_from_c) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_from_buf", test_str_from_buf) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_from_slice", test_str_from_slice) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_from_format", test_str_from_format) == NULL) {
+        return;
+    }
 
-    if(CU_add_test(suite, "Test for str_replace (longer replacement)", test_str_replace_lg) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_replace (equal replacement)", test_str_replace_eq) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_replace (shorter replacement)", test_str_replace_sm) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_replace (multiple hits)", test_str_replace_multi) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_replace (multiple hits w/limit)", test_str_replace_multi_limit) == NULL) { return; }
+    if(CU_add_test(suite, "Test for str_toupper", test_str_toupper) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_tolower", test_str_tolower) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_rstrip", test_str_rstrip) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_lstrip", test_str_lstrip) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_strip", test_str_strip) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_append", test_str_append) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_append_c", test_str_append_c) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_append_buf", test_str_append_buf) == NULL) {
+        return;
+    }
 
-    if(CU_add_test(suite, "Test for str_first_of", test_str_first_of) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_last_of (near)", test_str_last_of_near) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_last_of (far)", test_str_last_of_far) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_equal", test_str_equal) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_equal_c", test_str_equal_c) == NULL) { return; }
-    if(CU_add_test(suite, "Test for str_equal_buf", test_str_equal_buf) == NULL) { return; }
+    if(CU_add_test(suite, "Test for str_replace (longer replacement)", test_str_replace_lg) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_replace (equal replacement)", test_str_replace_eq) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_replace (shorter replacement)", test_str_replace_sm) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_replace (multiple hits)", test_str_replace_multi) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_replace (multiple hits w/limit)", test_str_replace_multi_limit) == NULL) {
+        return;
+    }
+
+    if(CU_add_test(suite, "Test for str_first_of", test_str_first_of) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_last_of (near)", test_str_last_of_near) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_last_of (far)", test_str_last_of_far) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_equal", test_str_equal) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_equal_c", test_str_equal_c) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_equal_buf", test_str_equal_buf) == NULL) {
+        return;
+    }
 }

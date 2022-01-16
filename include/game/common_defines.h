@@ -1,11 +1,11 @@
 #ifndef COMMON_DEFINES_H
 #define COMMON_DEFINES_H
 
-const char* ai_difficulty_get_name(unsigned int id);
-const char* har_get_name(unsigned int id);
-const char* pilot_get_name(unsigned int id);
-const char* round_get_name(unsigned int id);
-const char* scene_get_name(unsigned int id);
+const char *ai_difficulty_get_name(unsigned int id);
+const char *har_get_name(unsigned int id);
+const char *pilot_get_name(unsigned int id);
+const char *round_get_name(unsigned int id);
+const char *scene_get_name(unsigned int id);
 
 int har_to_resource(unsigned int id);
 int scene_to_resource(unsigned int id);

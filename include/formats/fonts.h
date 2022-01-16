@@ -10,8 +10,8 @@
 #ifndef SD_FONTS_H
 #define SD_FONTS_H
 
-#include <stdint.h>
 #include "formats/rgba_image.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,13 +98,7 @@ int sd_font_save(const sd_font *font, const char *filename);
  * \param g Green color index (0 - 0xFF)
  * \param b Blue color index (0 - 0xFF)
  */
-int sd_font_decode(
-    const sd_font *font,
-    sd_rgba_image* surface,
-    uint8_t ch,
-    uint8_t r,
-    uint8_t g,
-    uint8_t b);
+int sd_font_decode(const sd_font *font, sd_rgba_image *surface, uint8_t ch, uint8_t r, uint8_t g, uint8_t b);
 
 #ifdef __cplusplus
 }

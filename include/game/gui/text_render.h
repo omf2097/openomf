@@ -1,22 +1,14 @@
 #ifndef TEXT_RENDER_H
 #define TEXT_RENDER_H
 
-#include <stdint.h>
-#include <stdbool.h>
-#include "video/color.h"
 #include "resources/fonts.h"
+#include "video/color.h"
+#include <stdbool.h>
+#include <stdint.h>
 
-typedef enum {
-    TEXT_TOP = 0,
-    TEXT_MIDDLE,
-    TEXT_BOTTOM
-} text_valign;
+typedef enum { TEXT_TOP = 0, TEXT_MIDDLE, TEXT_BOTTOM } text_valign;
 
-typedef enum {
-    TEXT_LEFT = 0,
-    TEXT_CENTER,
-    TEXT_RIGHT
-} text_halign;
+typedef enum { TEXT_LEFT = 0, TEXT_CENTER, TEXT_RIGHT } text_halign;
 
 typedef struct {
     uint8_t left;
@@ -65,7 +57,8 @@ int text_char_width(const text_settings *settings);
 
 // Old functions
 void font_get_wrapped_size(const font *font, const char *text, int max_w, int *out_w, int *out_h);
-void font_get_wrapped_size_shadowed(const font *font, const char *text, int max_w, int shadow_flag, int *out_w, int *out_h);
+void font_get_wrapped_size_shadowed(const font *font, const char *text, int max_w, int shadow_flag, int *out_w,
+                                    int *out_h);
 void font_render_char(const font *font, char ch, int x, int y, color c);
 void font_render_char_shadowed(const font *font, char ch, int x, int y, color c, int shadow_flags);
 void font_render_len(const font *font, const char *text, int len, int x, int y, color c);

@@ -11,15 +11,15 @@
 #define SD_TOURNAMENT_H
 
 #include "formats/palette.h"
-#include "formats/sprite.h"
 #include "formats/pilot.h"
+#include "formats/sprite.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define MAX_TRN_ENEMIES 256 ///< Maximum amount of tournament enemies
-#define MAX_TRN_LOCALES 10 ///< Maximum amount of tournament locales (some of these are unused)
+#define MAX_TRN_LOCALES 10  ///< Maximum amount of tournament locales (some of these are unused)
 
 /*! \brief Locales
  *
@@ -54,19 +54,20 @@ typedef struct {
  * Tournament enemies, locales, quotes, name, etc.
  */
 typedef struct {
-    uint32_t enemy_count;           ///< Number of enemies in tournament
-    char bk_name[14];               ///< Tournament BK filename
-    float winnings_multiplier;      ///< Match winnings multiplier
-    int32_t unknown_a;              ///< Unknown /todo find out
-    int32_t registration_fee;       ///< Tournament registration fee
-    int32_t assumed_initial_value;  ///< Value the player is assumed to have reached, minus starting value, when entering this tournament.
-    int32_t tournament_id;          ///< ID for the tournament
-    char *pic_file;                 ///< Tournament PIC filename
+    uint32_t enemy_count;          ///< Number of enemies in tournament
+    char bk_name[14];              ///< Tournament BK filename
+    float winnings_multiplier;     ///< Match winnings multiplier
+    int32_t unknown_a;             ///< Unknown /todo find out
+    int32_t registration_fee;      ///< Tournament registration fee
+    int32_t assumed_initial_value; ///< Value the player is assumed to have reached, minus starting value, when entering
+                                   ///< this tournament.
+    int32_t tournament_id;         ///< ID for the tournament
+    char *pic_file;                ///< Tournament PIC filename
 
-    sd_pilot *enemies[MAX_TRN_ENEMIES]; ///< List of enemy pilots
+    sd_pilot *enemies[MAX_TRN_ENEMIES];             ///< List of enemy pilots
     sd_tournament_locale *locales[MAX_TRN_LOCALES]; ///< List of locales. If locale does not exist, it is NULL.
 
-    palette pal;                    ///< Tournament palette
+    palette pal; ///< Tournament palette
 } sd_tournament_file;
 
 /*! \brief Initialize TRN file structure

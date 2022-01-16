@@ -10,8 +10,8 @@
 #ifndef SD_AF_H
 #define SD_AF_H
 
-#include <stdint.h>
 #include "formats/move.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,20 +24,20 @@ extern "C" {
  * Contains information about a single HAR (combat robot).
  */
 typedef struct {
-    uint16_t file_id;  ///< File ID
+    uint16_t file_id;     ///< File ID
     uint16_t exec_window; ///< Move execution window (?)
-    float endurance; ///< HAR Endurance
-    uint8_t unknown_b; ///< Unknown value
-    uint16_t health; ///< HAR Health
-    float forward_speed; ///< HAR fwd speed
-    float reverse_speed; ///< HAR bwd speed
-    float jump_speed; ///< HAR jump speed
-    float fall_speed; ///< HAR fall speed
-    uint8_t unknown_c; ///< Unknown value
-    uint8_t unknown_d; ///< Unknown value
+    float endurance;      ///< HAR Endurance
+    uint8_t unknown_b;    ///< Unknown value
+    uint16_t health;      ///< HAR Health
+    float forward_speed;  ///< HAR fwd speed
+    float reverse_speed;  ///< HAR bwd speed
+    float jump_speed;     ///< HAR jump speed
+    float fall_speed;     ///< HAR fall speed
+    uint8_t unknown_c;    ///< Unknown value
+    uint8_t unknown_d;    ///< Unknown value
 
     sd_move *moves[MAX_AF_MOVES]; ///< All HAR moves.
-    char soundtable[30]; ///< All sounds used by the animations in this HAR file.
+    char soundtable[30];          ///< All sounds used by the animations in this HAR file.
 } sd_af_file;
 
 /*! \brief Initialize AF file structure
@@ -96,7 +96,7 @@ int sd_af_set_move(sd_af_file *af, int index, const sd_move *move);
  * \param af AF struct pointer.
  * \param index Index of the move. Must be 0 <= index <= 69.
  */
-sd_move* sd_af_get_move(sd_af_file *af, int index);
+sd_move *sd_af_get_move(sd_af_file *af, int index);
 
 /*! \brief Load AF file
  *
@@ -124,7 +124,7 @@ int sd_af_load(sd_af_file *af, const char *filename);
  * \param af AF struct pointer.
  * \param filename Name of the AF file
  */
-int sd_af_save(const sd_af_file *af, const char* filename);
+int sd_af_save(const sd_af_file *af, const char *filename);
 
 /*! \brief Free AF file structure
  *

@@ -36,7 +36,7 @@ typedef struct {
  * Contains a list of pilot face portraits.
  */
 typedef struct {
-    int photo_count;   ///< Photo count
+    int photo_count;                      ///< Photo count
     sd_pic_photo *photos[MAX_PIC_PHOTOS]; ///< Photo array
 } sd_pic_file;
 
@@ -100,7 +100,7 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename);
  * \param pic PIC file struct pointer.
  * \param entry_id Photo picture number to get.
  */
-const sd_pic_photo* sd_pic_get(const sd_pic_file *pic, int entry_id);
+const sd_pic_photo *sd_pic_get(const sd_pic_file *pic, int entry_id);
 
 #ifdef __cplusplus
 }

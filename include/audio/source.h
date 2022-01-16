@@ -20,13 +20,13 @@ struct audio_source_t {
 typedef struct {
     int internal_id;
     int is_default;
-    const char* name;
+    const char *name;
 } audio_source_resampler;
 
 typedef struct {
     int freq;
     int is_default;
-    const char* name;
+    const char *name;
 } audio_source_freq;
 
 void source_init(audio_source *src);
@@ -46,7 +46,7 @@ int source_get_loop(audio_source *src);
 int source_get_resampler(audio_source *src);
 
 void source_set_userdata(audio_source *src, void *userdata);
-void* source_get_userdata(audio_source *src);
+void *source_get_userdata(audio_source *src);
 void source_set_update_cb(audio_source *src, source_update_cb cbfunc);
 void source_set_close_cb(audio_source *src, source_close_cb cbfunc);
 

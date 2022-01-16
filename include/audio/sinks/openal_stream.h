@@ -3,8 +3,8 @@
 
 #ifdef USE_OPENAL
 
-#include "audio/stream.h"
 #include "audio/sink.h"
+#include "audio/stream.h"
 
 int openal_stream_init(audio_stream *stream, audio_sink *sink);
 

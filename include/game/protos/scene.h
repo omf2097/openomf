@@ -1,16 +1,16 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <SDL.h>
 #include "controller/controller.h"
-#include "game/protos/object.h"
+#include "game/common_defines.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
-#include "game/common_defines.h"
+#include "game/protos/object.h"
 #include "game/utils/serial.h"
 #include "game/utils/ticktimer.h"
 #include "resources/bk.h"
 #include "video/surface.h"
+#include <SDL.h>
 
 typedef struct scene_t scene;
 typedef struct game_player_t game_player;
@@ -61,7 +61,7 @@ int scene_serialize(scene *scene, serial *ser);
 int scene_unserialize(scene *scene, serial *ser);
 
 void scene_set_userdata(scene *scene, void *userdata);
-void* scene_get_userdata(scene *scene);
+void *scene_get_userdata(scene *scene);
 
 void scene_set_free_cb(scene *scene, scene_free_cb cbfunc);
 void scene_set_event_cb(scene *scene, scene_event_cb cbfunc);

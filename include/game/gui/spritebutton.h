@@ -11,14 +11,11 @@ enum {
     VALIGN_BOTTOM,
 };
 
-enum {
-    HALIGN_LEFT = 0,
-    HALIGN_CENTER,
-    HALIGN_RIGHT
-};
+enum { HALIGN_LEFT = 0, HALIGN_CENTER, HALIGN_RIGHT };
 
 typedef void (*spritebutton_click_cb)(component *c, void *userdata);
 
-component* spritebutton_create(const text_settings *tconf, const char *text, surface *img, int disabled, spritebutton_click_cb cb, void *userdata);
+component *spritebutton_create(const text_settings *tconf, const char *text, surface *img, int disabled,
+                               spritebutton_click_cb cb, void *userdata);
 
 #endif // SPRITEBUTTON_H

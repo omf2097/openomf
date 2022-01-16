@@ -72,7 +72,7 @@ void sd_sounds_free(sd_sound_file *sf);
  * \param sf Sound information struct pointer.
  * \param id Sound identifier (0 - 299).
  */
-const sd_sound* sd_sounds_get(const sd_sound_file *sf, int id);
+const sd_sound *sd_sounds_get(const sd_sound_file *sf, int id);
 
 /*! \brief Save a sound to an AU file.
  *

@@ -1,17 +1,17 @@
 #ifndef HAR_H
 #define HAR_H
 
-#include "resources/af.h"
-#include "resources/bk.h"
-#include "resources/animation.h"
-#include "game/protos/object.h"
 #include "game/objects/arena_constraints.h"
+#include "game/protos/object.h"
+#include "resources/af.h"
+#include "resources/animation.h"
+#include "resources/bk.h"
 #include "utils/list.h"
 
 // For debug texture stuff
 #ifdef DEBUGMODE
-#include "video/surface.h"
 #include "video/image.h"
+#include "video/surface.h"
 #endif
 
 #define LAYER_HAR 0x02
@@ -54,29 +54,29 @@ enum {
     STATE_SCRAP,
     STATE_DESTRUCTION,
     STATE_WALLDAMAGE, // Took damage from wall (electrocution)
-    STATE_DONE // destruction or scrap has completed
+    STATE_DONE        // destruction or scrap has completed
 };
 
 enum {
     HAR_EVENT_JUMP,
     HAR_EVENT_AIR_TURN,
     HAR_EVENT_WALK,
-    HAR_EVENT_AIR_ATTACK_DONE, // Touched the floor after executing a move in the air
-    HAR_EVENT_ATTACK, // Executed a move, may not hit
-    HAR_EVENT_ENEMY_BLOCK, // Opponent blocked your move
+    HAR_EVENT_AIR_ATTACK_DONE,        // Touched the floor after executing a move in the air
+    HAR_EVENT_ATTACK,                 // Executed a move, may not hit
+    HAR_EVENT_ENEMY_BLOCK,            // Opponent blocked your move
     HAR_EVENT_ENEMY_BLOCK_PROJECTILE, // Opponent blocked your projectile
-    HAR_EVENT_BLOCK, // You blocked your opponents move
-    HAR_EVENT_BLOCK_PROJECTILE, // You blocked your opponents projectile
-    HAR_EVENT_LAND_HIT, // Landed a hit on the opponent
-    HAR_EVENT_LAND_HIT_PROJECTILE, // Landed a projectile hit on the opponent
-    HAR_EVENT_TAKE_HIT, // Hit by HAR
-    HAR_EVENT_TAKE_HIT_PROJECTILE, // Hit by projectile
-    HAR_EVENT_HAZARD_HIT, // Hit by hazard
+    HAR_EVENT_BLOCK,                  // You blocked your opponents move
+    HAR_EVENT_BLOCK_PROJECTILE,       // You blocked your opponents projectile
+    HAR_EVENT_LAND_HIT,               // Landed a hit on the opponent
+    HAR_EVENT_LAND_HIT_PROJECTILE,    // Landed a projectile hit on the opponent
+    HAR_EVENT_TAKE_HIT,               // Hit by HAR
+    HAR_EVENT_TAKE_HIT_PROJECTILE,    // Hit by projectile
+    HAR_EVENT_HAZARD_HIT,             // Hit by hazard
     HAR_EVENT_STUN,
     HAR_EVENT_ENEMY_STUN,
-    HAR_EVENT_RECOVER, // regained control after recoil/stun
+    HAR_EVENT_RECOVER,  // regained control after recoil/stun
     HAR_EVENT_HIT_WALL, // Touched a wall
-    HAR_EVENT_LAND, // Touched the floor
+    HAR_EVENT_LAND,     // Touched the floor
     HAR_EVENT_DEFEAT,
     HAR_EVENT_SCRAP,
     HAR_EVENT_DESTRUCTION,
@@ -89,7 +89,7 @@ typedef struct har_event_t {
     union {
         af_move *move; // for attack/hit
         bk_info *info; // for hazard hit
-        int wall; // for hit wall
+        int wall;      // for hit wall
         int direction; // jump direction
     };
 } har_event;
@@ -117,7 +117,7 @@ typedef struct game_player_t game_player;
 
 typedef struct har_t {
     game_player *gp;
-    uint8_t id; // Har ID
+    uint8_t id;        // Har ID
     uint8_t player_id; // Player number, 0 or 1
     uint8_t pilot_id;  // Pilot ID
     uint8_t state;
@@ -126,15 +126,15 @@ typedef struct har_t {
     uint8_t close;
     uint8_t enqueued;
     af *af_data;
-    uint8_t damage_done; // Damage was done this animation
+    uint8_t damage_done;     // Damage was done this animation
     uint8_t damage_received; // Damage was received this animation
     uint8_t air_attacked;
-    uint8_t is_wallhugging; // HAR is standing right next to a wall
-    uint8_t is_grabbed; // Is being moved by another object. Set by ex, ey tags
+    uint8_t is_wallhugging;  // HAR is standing right next to a wall
+    uint8_t is_grabbed;      // Is being moved by another object. Set by ex, ey tags
     float last_damage_value; // Last damage value taken
 
-    float jump_boost;  // Agility generated speed modifier for jumping
-    float fall_boost;  // Agility generated speed modifier for falling
+    float jump_boost; // Agility generated speed modifier for jumping
+    float fall_boost; // Agility generated speed modifier for falling
 
     int in_stasis_ticks; // Handle stasis activator
 

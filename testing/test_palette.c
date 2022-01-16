@@ -1,8 +1,8 @@
-#include <stdio.h>
-#include <CUnit/CUnit.h>
-#include <CUnit/Basic.h>
-#include "formats/palette.h"
 #include "formats/error.h"
+#include "formats/palette.h"
+#include <CUnit/Basic.h>
+#include <CUnit/CUnit.h>
+#include <stdio.h>
 
 #define TESTFILE "test.gpl"
 #define TESTFILE2 "test2.gpl"
@@ -19,7 +19,7 @@ void test_palette_create(void) {
     // Fill with data
     for(int i = 0; i < 256; i++) {
         pal.data[i][0] = i;
-        pal.data[i][1] = 256-i;
+        pal.data[i][1] = 256 - i;
         pal.data[i][2] = 128;
     }
 }
@@ -82,16 +82,26 @@ void test_gimp_roundtrip(void) {
     CU_ASSERT(ret == SD_SUCCESS);
 
     // Match
-    CU_ASSERT_NSTRING_EQUAL(pal.data, new.data, 256*3);
+    CU_ASSERT_NSTRING_EQUAL(pal.data, new.data, 256 * 3);
 
     // Free up
     palette_free(&new);
 }
 
 void palette_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "test of palette_create", test_palette_create) == NULL) { return; }
-    if(CU_add_test(suite, "test of palette_to_gimp_palette", test_palette_gimp_save) == NULL) { return; }
-    if(CU_add_test(suite, "test of palette_from_gimp_palette", test_palette_gimp_load) == NULL) { return; }
-    if(CU_add_test(suite, "test of palette roundtripping", test_gimp_roundtrip) == NULL) { return; }
-    if(CU_add_test(suite, "test of palette_free", test_palette_free) == NULL) { return; }
+    if(CU_add_test(suite, "test of palette_create", test_palette_create) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of palette_to_gimp_palette", test_palette_gimp_save) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of palette_from_gimp_palette", test_palette_gimp_load) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of palette roundtripping", test_gimp_roundtrip) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of palette_free", test_palette_free) == NULL) {
+        return;
+    }
 }

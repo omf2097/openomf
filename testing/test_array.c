@@ -1,9 +1,9 @@
-#include <CUnit/CUnit.h>
+#include "utils/allocator.h"
 #include <CUnit/Basic.h>
+#include <CUnit/CUnit.h>
+#include <stdlib.h>
 #include <utils/array.h>
 #include <utils/iterator.h>
-#include <stdlib.h>
-#include "utils/allocator.h"
 
 array test_array;
 void *test_ptr;
@@ -43,8 +43,16 @@ void test_array_get(void) {
 
 void array_test_suite(CU_pSuite suite) {
     // Add tests
-    if(CU_add_test(suite, "Test for array create", test_array_create) == NULL) { return; }
-    if(CU_add_test(suite, "Test for array set", test_array_set) == NULL) { return; }
-    if(CU_add_test(suite, "Test for array get", test_array_get) == NULL) { return; }
-    if(CU_add_test(suite, "Test for array free", test_array_free) == NULL) { return; }
+    if(CU_add_test(suite, "Test for array create", test_array_create) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for array set", test_array_set) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for array get", test_array_get) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for array free", test_array_free) == NULL) {
+        return;
+    }
 }

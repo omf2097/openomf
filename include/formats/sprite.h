@@ -11,11 +11,11 @@
 #ifndef SD_SPRITE_H
 #define SD_SPRITE_H
 
-#include <stdint.h>
-#include "formats/vga_image.h"
-#include "formats/rgba_image.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include "formats/rgba_image.h"
+#include "formats/vga_image.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,14 +29,14 @@ extern "C" {
  * "invisible" pixels it has.
  */
 typedef struct {
-    int16_t pos_x; ///< Position of sprite, X-axis
-    int16_t pos_y; ///< Position of sprite, Y-axis
-    uint8_t index; ///< Sprite index
+    int16_t pos_x;   ///< Position of sprite, X-axis
+    int16_t pos_y;   ///< Position of sprite, Y-axis
+    uint8_t index;   ///< Sprite index
     uint8_t missing; ///< Is sprite data missing? If this is 1, then data points to the data of another sprite.
-    uint16_t width; ///< Pixel width of the sprite
+    uint16_t width;  ///< Pixel width of the sprite
     uint16_t height; ///< Pixel height of the sprite
-    uint16_t len; ///< Byte length of the packed sprite data
-    char *data; ///< Packed sprite data
+    uint16_t len;    ///< Byte length of the packed sprite data
+    char *data;      ///< Packed sprite data
 } sd_sprite;
 
 /*! \brief Initialize sprite structure
@@ -88,11 +88,7 @@ void sd_sprite_free(sd_sprite *sprite);
  * \param pal Palette that should be used for the conversion
  * \param remapping Palette remapping table that should be used. -1 for none.
  */
-int sd_sprite_rgba_encode(
-    sd_sprite *dst,
-    const sd_rgba_image *src,
-    const palette *pal,
-    int remapping);
+int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palette *pal, int remapping);
 
 /*! \brief Decode sprite data to RGBA format
  *
@@ -110,11 +106,7 @@ int sd_sprite_rgba_encode(
  * \param pal Palette that should be used for the conversion
  * \param remapping Palette remapping table that should be used. -1 for none.
  */
-int sd_sprite_rgba_decode(
-    sd_rgba_image *dst,
-    const sd_sprite *src,
-    const palette *pal,
-    int remapping);
+int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const palette *pal, int remapping);
 
 /*! \brief Decode sprite to VGA image format.
  *
@@ -130,9 +122,7 @@ int sd_sprite_rgba_decode(
  * \param dst Destination VGA image struct pointer.
  * \param src Source sprite image pointer
  */
-int sd_sprite_vga_decode(
-    sd_vga_image *dst,
-    const sd_sprite *src);
+int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src);
 
 /*! \brief Encode sprite from VGA image format.
  *
@@ -144,9 +134,7 @@ int sd_sprite_vga_decode(
  * \param dst Destination Sprite image struct pointer.
  * \param src Source VGA image pointer
  */
-int sd_sprite_vga_encode(
-    sd_sprite *dst,
-    const sd_vga_image *src);
+int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src);
 
 int sd_sprite_load(sd_reader *reader, sd_sprite *sprite);
 int sd_sprite_save(sd_writer *writer, const sd_sprite *sprite);
