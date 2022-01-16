@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 #if defined(WIN32) || defined(_WIN32)
-    #include <winsock.h> // for htonl and friends
+#include <winsock.h> // for htonl and friends
 #else
-    #include <arpa/inet.h> // for htonl and friends
+#include <arpa/inet.h> // for htonl and friends
 #endif
 #include "game/utils/serial.h"
 #include "utils/allocator.h"
@@ -52,8 +52,8 @@ void serial_copy(serial *dst, const serial *src) {
     memcpy(dst->data, src->data, dst->len);
 }
 
-serial* serial_calloc_copy(const serial *src) {
-    serial* dst = omf_calloc(1, sizeof(serial));
+serial *serial_calloc_copy(const serial *src) {
+    serial *dst = omf_calloc(1, sizeof(serial));
     serial_copy(dst, src);
     return dst;
 }
@@ -70,22 +70,22 @@ void serial_write(serial *s, const char *buf, size_t len) {
 }
 
 void serial_write_int8(serial *s, int8_t v) {
-    serial_write(s, (char*)&v, sizeof(v));
+    serial_write(s, (char *)&v, sizeof(v));
 }
 
 void serial_write_int16(serial *s, int16_t v) {
     int16_t t = htons(v);
-    serial_write(s, (char*)&t, sizeof(t));
+    serial_write(s, (char *)&t, sizeof(t));
 }
 
 void serial_write_int32(serial *s, int32_t v) {
     int32_t t = htonl(v);
-    serial_write(s, (char*)&t, sizeof(t));
+    serial_write(s, (char *)&t, sizeof(t));
 }
 
 void serial_write_float(serial *s, float v) {
     float t = htonf(v);
-    serial_write(s, (char*)&t, sizeof(t));
+    serial_write(s, (char *)&t, sizeof(t));
 }
 
 void serial_free(serial *s) {
@@ -113,24 +113,24 @@ void serial_read(serial *s, char *buf, size_t len) {
 
 int8_t serial_read_int8(serial *s) {
     int8_t v;
-    serial_read(s, (char*)&v, sizeof(v));
+    serial_read(s, (char *)&v, sizeof(v));
     return v;
 }
 
 int16_t serial_read_int16(serial *s) {
     int16_t v;
-    serial_read(s, (char*)&v, sizeof(v));
+    serial_read(s, (char *)&v, sizeof(v));
     return ntohs(v);
 }
 
 int32_t serial_read_int32(serial *s) {
     int32_t v;
-    serial_read(s, (char*)&v, sizeof(v));
+    serial_read(s, (char *)&v, sizeof(v));
     return ntohl(v);
 }
 
 float serial_read_float(serial *s) {
     float v;
-    serial_read(s, (char*)&v, sizeof(v));
+    serial_read(s, (char *)&v, sizeof(v));
     return ntohf(v);
 }

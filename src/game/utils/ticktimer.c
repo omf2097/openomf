@@ -1,6 +1,6 @@
-#include <stdlib.h>
 #include "game/utils/ticktimer.h"
 #include "utils/vector.h"
+#include <stdlib.h>
 
 typedef struct ticktimer_unit_t {
     ticktimer_cb callback;

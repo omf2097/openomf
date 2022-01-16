@@ -1,13 +1,13 @@
-#include "formats/pic.h"
+#include "game/gui/pilotpic.h"
 #include "formats/error.h"
+#include "formats/pic.h"
+#include "game/gui/widget.h"
 #include "resources/pathmanager.h"
 #include "resources/sprite.h"
-#include "game/gui/pilotpic.h"
-#include "game/gui/widget.h"
-#include "video/surface.h"
-#include "video/video.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/surface.h"
+#include "video/video.h"
 
 // Local small gauge type
 typedef struct {
@@ -65,10 +65,7 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
 
     // Position and size hints for the gui component
     // These are set on layout function call
-    component_set_size_hints(
-        c,
-        local->img->data->w,
-        local->img->data->h);
+    component_set_size_hints(c, local->img->data->w, local->img->data->h);
 
     // Save some information
     local->selected = pilot_id;
@@ -97,7 +94,7 @@ void pilotpic_prev(component *c) {
     pilotpic_select(c, local->pic_id, select);
 }
 
-component* pilotpic_create(int pic_id, int pilot_id) {
+component *pilotpic_create(int pic_id, int pilot_id) {
     component *c = widget_create();
     c->supports_disable = 0;
     c->supports_select = 0;
@@ -118,5 +115,3 @@ component* pilotpic_create(int pic_id, int pilot_id) {
     pilotpic_select(c, pic_id, pilot_id);
     return c;
 }
-
-

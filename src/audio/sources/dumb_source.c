@@ -4,11 +4,11 @@
 #include <string.h>
 #ifdef __linux__
 #include <strings.h> // strcasecmp
-#endif // __linux__
-#include <dumb.h>
+#endif               // __linux__
 #include "audio/sources/dumb_source.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <dumb.h>
 
 typedef struct dumb_source_t {
     DUH_SIGRENDERER *renderer;
@@ -24,24 +24,24 @@ audio_source_freq dumb_freqs[] = {
     {22050, 0, "22050Hz"},
     {44100, 1, "44100Hz"},
     {48000, 1, "48000Hz"},
-    {0,0,0} // Guard
+    {0,     0, 0        }  // Guard
 };
 
 audio_source_resampler dumb_resamplers[] = {
     {DUMB_RQ_ALIASING, 0, "Aliasing"},
-    {DUMB_RQ_BLEP, 0, "BLEP"},
-    {DUMB_RQ_LINEAR, 1, "Linear"},
-    {DUMB_RQ_BLAM, 0, "BLIP"},
-    {DUMB_RQ_CUBIC, 0, "Cubic"},
-    {DUMB_RQ_FIR, 0, "FIR"},
-    {0,0,0} // Guard
+    {DUMB_RQ_BLEP,     0, "BLEP"    },
+    {DUMB_RQ_LINEAR,   1, "Linear"  },
+    {DUMB_RQ_BLAM,     0, "BLIP"    },
+    {DUMB_RQ_CUBIC,    0, "Cubic"   },
+    {DUMB_RQ_FIR,      0, "FIR"     },
+    {0,                0, 0         }  // Guard
 };
 
-audio_source_freq* dumb_get_freqs() {
+audio_source_freq *dumb_get_freqs() {
     return dumb_freqs;
 }
 
-audio_source_resampler* dumb_get_resamplers() {
+audio_source_resampler *dumb_get_resamplers() {
     return dumb_resamplers;
 }
 
@@ -60,17 +60,14 @@ int dumb_source_update(audio_source *src, char *buffer, int len) {
     local->vpos = pos;
 
     // ... otherwise get more data.
-    int ret = duh_render_int(
-            local->renderer,
-            &local->sig_samples,
-            &local->sig_samples_size,
-            source_get_bytes(src) * 8, // Bits
-            0,  // Unsign
-            1.0f, // Volume
-            delta,
-            len / bps, // Size
-            buffer
-        ) * bps;
+    int ret = duh_render_int(local->renderer, &local->sig_samples, &local->sig_samples_size,
+                             source_get_bytes(src) * 8, // Bits
+                             0,                         // Unsign
+                             1.0f,                      // Volume
+                             delta,
+                             len / bps, // Size
+                             buffer) *
+              bps;
     return ret;
 }
 
@@ -81,11 +78,11 @@ void dumb_source_close(audio_source *src) {
     destroy_sample_buffer(local->sig_samples);
     omf_free(local);
     source_set_userdata(src, local);
-    dumb_exit();  // Free libdumb memory
+    dumb_exit(); // Free libdumb memory
     DEBUG("Libdumb Source: Closed.");
 }
 
-int dumb_source_init(audio_source *src, const char* file, int channels, int freq, int resampler) {
+int dumb_source_init(audio_source *src, const char *file, int channels, int freq, int resampler) {
     dumb_source *local = omf_calloc(1, sizeof(dumb_source));
 
     // Make sure libdumb is initialized

@@ -11,7 +11,7 @@
 
 void joystick_free(controller *ctrl) {
     joystick *k = ctrl->data;
-    if (k->haptic) {
+    if(k->haptic) {
         SDL_HapticClose(k->haptic);
     }
     SDL_GameControllerClose(k->joy);
@@ -21,9 +21,9 @@ void joystick_free(controller *ctrl) {
 
 void joystick_cmd(controller *ctrl, int action, ctrl_event **ev) {
     joystick *k = ctrl->data;
-    if (ctrl->repeat && action != ACT_KICK && action != ACT_PUNCH && action != ACT_ESC) {
+    if(ctrl->repeat && action != ACT_KICK && action != ACT_PUNCH && action != ACT_ESC) {
         controller_cmd(ctrl, action, ev);
-    } else if (!(k->last & action)) {
+    } else if(!(k->last & action)) {
         controller_cmd(ctrl, action, ev);
     }
     k->current |= action;
@@ -32,12 +32,12 @@ void joystick_cmd(controller *ctrl, int action, ctrl_event **ev) {
 int joystick_count() {
     int valid_joysticks = 0;
     SDL_Joystick *joy;
-    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+    for(int i = 0; i < SDL_NumJoysticks(); i++) {
         joy = SDL_JoystickOpen(i);
-        if (joy) {
+        if(joy) {
             valid_joysticks++;
         }
-        if (SDL_JoystickGetAttached(joy)) {
+        if(SDL_JoystickGetAttached(joy)) {
             SDL_JoystickClose(joy);
         }
     }
@@ -47,14 +47,14 @@ int joystick_count() {
 int joystick_nth_id(int n) {
     SDL_Joystick *joy;
     int c = 0;
-    for (int i = 0; i < SDL_NumJoysticks(); i++) {
+    for(int i = 0; i < SDL_NumJoysticks(); i++) {
         joy = SDL_JoystickOpen(i);
-        if (joy) {
+        if(joy) {
             c++;
-            if (SDL_JoystickGetAttached(joy)) {
+            if(SDL_JoystickGetAttached(joy)) {
                 SDL_JoystickClose(joy);
             }
-            if (c == n) {
+            if(c == n) {
                 return i;
             }
         }
@@ -64,17 +64,17 @@ int joystick_nth_id(int n) {
 
 int joystick_offset(int id, const char *name) {
     int offset = 0;
-    for (int i = 0; i < id; i++) {
-        if (i != id && !strcmp(name, SDL_JoystickNameForIndex(i)))
+    for(int i = 0; i < id; i++) {
+        if(i != id && !strcmp(name, SDL_JoystickNameForIndex(i)))
             offset++;
     }
     return offset;
 }
 
 int joystick_name_to_id(const char *name, int offset) {
-    for (int i = 0; i < SDL_NumJoysticks(); i++) {
-        if (!strcmp(name, SDL_JoystickNameForIndex(i))) {
-            if (offset) {
+    for(int i = 0; i < SDL_NumJoysticks(); i++) {
+        if(!strcmp(name, SDL_JoystickNameForIndex(i))) {
+            if(offset) {
                 offset--;
             } else {
                 return i;
@@ -97,56 +97,56 @@ int joystick_poll(controller *ctrl, ctrl_event **ev) {
     int dpadright = SDL_GameControllerGetButton(k->joy, k->keys->dpad[3]);
 
     // joystick input
-    // TODO the devide by 2 should be a 'dead zone' variable that can be set in the option menu but this devide works well 99% of the time.
-    // Analog Stick (Axis 1) Movement
-    if (x_axis <= LEFT/2 && y_axis <= UP/2) {
-        joystick_cmd(ctrl, ACT_UP|ACT_LEFT, ev);
-    } else if (x_axis <= LEFT/2 && y_axis >= DOWN/2) {
-        joystick_cmd(ctrl, ACT_DOWN|ACT_LEFT, ev);
-    } else if (x_axis >= RIGHT/2 && y_axis <= UP/2) {
-        joystick_cmd(ctrl, ACT_UP|ACT_RIGHT, ev);
-    } else if (x_axis >= RIGHT/2 && y_axis >= DOWN/2) {
-        joystick_cmd(ctrl, ACT_DOWN|ACT_RIGHT, ev);
-    } else if (x_axis >= RIGHT/2) {
+    // TODO the devide by 2 should be a 'dead zone' variable that can be set in the option menu but this devide works
+    // well 99% of the time. Analog Stick (Axis 1) Movement
+    if(x_axis <= LEFT / 2 && y_axis <= UP / 2) {
+        joystick_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
+    } else if(x_axis <= LEFT / 2 && y_axis >= DOWN / 2) {
+        joystick_cmd(ctrl, ACT_DOWN | ACT_LEFT, ev);
+    } else if(x_axis >= RIGHT / 2 && y_axis <= UP / 2) {
+        joystick_cmd(ctrl, ACT_UP | ACT_RIGHT, ev);
+    } else if(x_axis >= RIGHT / 2 && y_axis >= DOWN / 2) {
+        joystick_cmd(ctrl, ACT_DOWN | ACT_RIGHT, ev);
+    } else if(x_axis >= RIGHT / 2) {
         joystick_cmd(ctrl, ACT_RIGHT, ev);
-    } else if (x_axis <= LEFT/2) {
+    } else if(x_axis <= LEFT / 2) {
         joystick_cmd(ctrl, ACT_LEFT, ev);
-    } else if (y_axis <= UP/2) {
+    } else if(y_axis <= UP / 2) {
         joystick_cmd(ctrl, ACT_UP, ev);
-    } else if (y_axis >= DOWN/2) {
+    } else if(y_axis >= DOWN / 2) {
         joystick_cmd(ctrl, ACT_DOWN, ev);
     }
 
-    if (dpadup && dpadleft) {
-        joystick_cmd(ctrl, ACT_UP|ACT_LEFT, ev);
-    } else if (dpaddown && dpadleft) {
-        joystick_cmd(ctrl, ACT_DOWN|ACT_LEFT, ev);
-    } else if (dpadup && dpadright) {
-        joystick_cmd(ctrl, ACT_UP|ACT_RIGHT, ev);
-    } else if (dpaddown && dpadright) {
-        joystick_cmd(ctrl, ACT_DOWN|ACT_RIGHT, ev);
-    } else if (dpadright) {
+    if(dpadup && dpadleft) {
+        joystick_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
+    } else if(dpaddown && dpadleft) {
+        joystick_cmd(ctrl, ACT_DOWN | ACT_LEFT, ev);
+    } else if(dpadup && dpadright) {
+        joystick_cmd(ctrl, ACT_UP | ACT_RIGHT, ev);
+    } else if(dpaddown && dpadright) {
+        joystick_cmd(ctrl, ACT_DOWN | ACT_RIGHT, ev);
+    } else if(dpadright) {
         joystick_cmd(ctrl, ACT_RIGHT, ev);
-    } else if (dpadleft) {
+    } else if(dpadleft) {
         joystick_cmd(ctrl, ACT_LEFT, ev);
-    } else if (dpadup) {
+    } else if(dpadup) {
         joystick_cmd(ctrl, ACT_UP, ev);
-    } else if (dpaddown) {
+    } else if(dpaddown) {
         joystick_cmd(ctrl, ACT_DOWN, ev);
     }
 
     // button input
-    if (SDL_GameControllerGetButton(k->joy, k->keys->punch)) {
+    if(SDL_GameControllerGetButton(k->joy, k->keys->punch)) {
         joystick_cmd(ctrl, ACT_PUNCH, ev);
-    } else if (SDL_GameControllerGetButton(k->joy, k->keys->kick)) {
+    } else if(SDL_GameControllerGetButton(k->joy, k->keys->kick)) {
         joystick_cmd(ctrl, ACT_KICK, ev);
     }
 
-    if (SDL_GameControllerGetButton(k->joy, k->keys->escape)) {
+    if(SDL_GameControllerGetButton(k->joy, k->keys->escape)) {
         joystick_cmd(ctrl, ACT_ESC, ev);
     }
 
-    if (k->current == 0) {
+    if(k->current == 0) {
         joystick_cmd(ctrl, ACT_STOP, ev);
     }
 
@@ -173,17 +173,17 @@ int joystick_create(controller *ctrl, int joystick_id) {
     k->keys->kick = SDL_CONTROLLER_BUTTON_B;
     k->keys->escape = SDL_CONTROLLER_BUTTON_START;
     k->last = 0;
-    k->rumble= 0;
+    k->rumble = 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_GAMEPAD;
     ctrl->poll_fun = &joystick_poll;
 
     k->joy = SDL_GameControllerOpen(joystick_id);
-    if (k->joy) {
+    if(k->joy) {
         k->haptic = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(k->joy));
-        if (k->haptic) {
-            if (SDL_HapticRumbleSupported(k->haptic)) {
-                if (SDL_HapticRumbleInit(k->haptic) == 0) {
+        if(k->haptic) {
+            if(SDL_HapticRumbleSupported(k->haptic)) {
+                if(SDL_HapticRumbleInit(k->haptic) == 0) {
                     k->rumble = 1;
                     ctrl->rumble_fun = joystick_rumble;
                 } else {
@@ -200,5 +200,4 @@ int joystick_create(controller *ctrl, int joystick_id) {
 
     DEBUG("failed to open joystick: %s", SDL_GetError());
     return 0;
-
 }

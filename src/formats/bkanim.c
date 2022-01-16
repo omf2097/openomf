@@ -68,13 +68,13 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     // Footer string
     size = sd_read_uword(r);
     if(size >= SD_BK_FOOTER_STRING_MAX) {
-        DEBUGLOG("BK specific animation footer too big! Expected max %d bytes, got %hu bytes.",
-            SD_BK_FOOTER_STRING_MAX, size);
+        DEBUGLOG("BK specific animation footer too big! Expected max %d bytes, got %hu bytes.", SD_BK_FOOTER_STRING_MAX,
+                 size);
         return SD_FILE_PARSE_ERROR;
     }
     if(size > 0) {
         sd_read_buf(r, bka->footer_string, size);
-        if(bka->footer_string[size-1] != 0) {
+        if(bka->footer_string[size - 1] != 0) {
             return SD_FILE_PARSE_ERROR;
         }
     }
@@ -111,8 +111,8 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     // Save footer string
     size = strlen(bka->footer_string);
     if(size > 0) {
-        sd_write_uword(w, size+1);
-        sd_write_buf(w, bka->footer_string, size+1);
+        sd_write_uword(w, size + 1);
+        sd_write_buf(w, bka->footer_string, size + 1);
     } else {
         sd_write_uword(w, 0);
     }
@@ -144,12 +144,12 @@ int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation) {
     return SD_SUCCESS;
 }
 
-sd_animation* sd_bk_anim_get_animation(const sd_bk_anim *bka) {
+sd_animation *sd_bk_anim_get_animation(const sd_bk_anim *bka) {
     return bka->animation;
 }
 
 int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data) {
-    if(strlen(data) >= SD_BK_FOOTER_STRING_MAX-1) {
+    if(strlen(data) >= SD_BK_FOOTER_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
     strncpy(bka->footer_string, data, sizeof(bka->footer_string));

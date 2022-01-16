@@ -1,22 +1,22 @@
-#include <stdio.h>
-#include <signal.h> // signal()
-#include <SDL.h>
 #include "engine.h"
-#include "utils/allocator.h"
-#include "utils/log.h"
-#include "utils/config.h"
 #include "audio/audio.h"
 #include "audio/music.h"
-#include "resources/sounds_loader.h"
-#include "video/surface.h"
-#include "video/video.h"
-#include "resources/languages.h"
-#include "game/game_state.h"
-#include "game/utils/settings.h"
-#include "game/utils/ticktimer.h"
-#include "game/gui/text_render.h"
 #include "console/console.h"
 #include "formats/altpal.h"
+#include "game/game_state.h"
+#include "game/gui/text_render.h"
+#include "game/utils/settings.h"
+#include "game/utils/ticktimer.h"
+#include "resources/languages.h"
+#include "resources/sounds_loader.h"
+#include "utils/allocator.h"
+#include "utils/config.h"
+#include "utils/log.h"
+#include "video/surface.h"
+#include "video/video.h"
+#include <SDL.h>
+#include <signal.h> // signal()
+#include <stdio.h>
 
 static int run = 0;
 static int start_timeout = 30;
@@ -58,8 +58,8 @@ int engine_init() {
     if(audio_init(audiosink)) {
         goto exit_1;
     }
-    sound_set_volume(setting->sound.sound_vol/10.0f);
-    music_set_volume(setting->sound.music_vol/10.0f);
+    sound_set_volume(setting->sound.sound_vol / 10.0f);
+    music_set_volume(setting->sound.music_vol / 10.0f);
 #endif
 
     if(sounds_loader_init()) {
@@ -113,7 +113,7 @@ void engine_run(engine_init_flags *init_flags) {
     int debugger_proceed = 0;
     int debugger_render = 0;
 
-    //if mouse_visible_ticks <= 0, hide mouse
+    // if mouse_visible_ticks <= 0, hide mouse
     int mouse_visible_ticks = 1000;
 
     INFO(" --- BEGIN GAME LOG ---");
@@ -143,7 +143,7 @@ void engine_run(engine_init_flags *init_flags) {
     }
 
     // apply volume settings
-    sound_set_volume(settings_get()->sound.sound_vol/10.0f);
+    sound_set_volume(settings_get()->sound.sound_vol / 10.0f);
 #endif
 
     // Set up game
@@ -218,14 +218,12 @@ void engine_run(engine_init_flags *init_flags) {
 
             // Console events
             if(e.type == SDL_KEYDOWN) {
-                if(console_window_is_open() && (e.key.keysym.scancode == SDL_SCANCODE_GRAVE ||
-                                                e.key.keysym.sym == SDLK_BACKQUOTE ||
-                                                e.key.keysym.sym == SDLK_TAB ||
-                                                e.key.keysym.sym == SDLK_ESCAPE)) {
+                if(console_window_is_open() &&
+                   (e.key.keysym.scancode == SDL_SCANCODE_GRAVE || e.key.keysym.sym == SDLK_BACKQUOTE ||
+                    e.key.keysym.sym == SDLK_TAB || e.key.keysym.sym == SDLK_ESCAPE)) {
                     console_window_close();
                     continue;
-                } else if(e.key.keysym.sym == SDLK_TAB ||
-                          e.key.keysym.sym == SDLK_BACKQUOTE ||
+                } else if(e.key.keysym.sym == SDLK_TAB || e.key.keysym.sym == SDLK_BACKQUOTE ||
                           e.key.keysym.scancode == SDL_SCANCODE_GRAVE) {
                     console_window_open();
                     continue;

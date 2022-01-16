@@ -10,6 +10,7 @@
 #ifndef SD_SCRIPT_H
 #define SD_SCRIPT_H
 
+#include <stddef.h>
 #include "formats/taglist.h"
 
 #ifdef __cplusplus

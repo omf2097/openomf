@@ -4,10 +4,10 @@
 #include "game/scenes/mainmenu/menu_connect.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 
-#include "game/gui/gui.h"
-#include "game/utils/settings.h"
-#include "game/protos/scene.h"
 #include "game/game_state.h"
+#include "game/gui/gui.h"
+#include "game/protos/scene.h"
+#include "game/utils/settings.h"
 #include "utils/allocator.h"
 #include "utils/compat.h"
 #include "utils/log.h"
@@ -71,10 +71,9 @@ void menu_connect_start(component *c, void *userdata) {
 
 void menu_connect_cancel(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);
-    
+
     connect_menu_data *local = menu_get_userdata(c->parent);
-    if(local->connect_start &&
-       difftime(time(NULL), local->connect_start) < 0.1) {
+    if(local->connect_start && difftime(time(NULL), local->connect_start) < 0.1) {
         return;
     }
 
@@ -116,7 +115,7 @@ void menu_connect_tick(component *c) {
             p1->pilot_id = 0;
             p2->har_id = HAR_JAGUAR;
             p2->pilot_id = 0;
-            
+
             player1_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player1_ctrl);
             player1_ctrl->har = p1->har;
@@ -160,7 +159,7 @@ void menu_connect_tick(component *c) {
 
         game_player *p1 = game_state_get_player(gs, 0);
         controller *c1 = game_player_get_ctrl(p1);
-        if (c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1) == 1) {
+        if(c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1) == 1) {
             DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1), c1->rtt);
             local->host = NULL;
             local->controllers_created = 0;
@@ -172,7 +171,7 @@ void menu_connect_tick(component *c) {
     }
 }
 
-component* menu_connect_create(scene *s) {
+component *menu_connect_create(scene *s) {
     connect_menu_data *local = omf_calloc(1, sizeof(connect_menu_data));
     local->s = s;
 
@@ -183,7 +182,7 @@ component* menu_connect_create(scene *s) {
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = color_create(0, 121, 0, 255);
 
-    component* menu = menu_create(11);
+    component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "CONNECT TO SERVER"));
     menu_attach(menu, filler_create());
 

@@ -1,26 +1,41 @@
 #include "animation_misc.h"
 #include "conversions.h"
-#include "formats/script.h"
 #include "formats/error.h"
-#include <string.h>
+#include "formats/script.h"
 #include <stdio.h>
+#include <string.h>
 
-int sprite_key_get_id(const char* key) {
-    if(strcmp(key, "x") == 0) return 0;
-    if(strcmp(key, "y") == 0) return 1;
-    if(strcmp(key, "index") == 0) return 2;
-    if(strcmp(key, "missing") == 0) return 3;
-    if(strcmp(key, "image") == 0) return 4;
+int sprite_key_get_id(const char *key) {
+    if(strcmp(key, "x") == 0)
+        return 0;
+    if(strcmp(key, "y") == 0)
+        return 1;
+    if(strcmp(key, "index") == 0)
+        return 2;
+    if(strcmp(key, "missing") == 0)
+        return 3;
+    if(strcmp(key, "image") == 0)
+        return 4;
     return -1;
 }
 
 void sprite_set_key(sd_sprite *s, const char **key, int kcount, const char *value) {
     switch(sprite_key_get_id(key[0])) {
-        case 0: s->pos_x = conv_word(value); break;
-        case 1: s->pos_y = conv_word(value); break;
-        case 2: s->index = conv_ubyte(value); break;
-        case 3: s->missing = conv_ubyte(value); break;
-        case 4: printf("Value setting not supported for this key.\n"); break;
+        case 0:
+            s->pos_x = conv_word(value);
+            break;
+        case 1:
+            s->pos_y = conv_word(value);
+            break;
+        case 2:
+            s->index = conv_ubyte(value);
+            break;
+        case 3:
+            s->missing = conv_ubyte(value);
+            break;
+        case 4:
+            printf("Value setting not supported for this key.\n");
+            break;
         default:
             printf("Unknown key!\n");
             return;
@@ -30,11 +45,21 @@ void sprite_set_key(sd_sprite *s, const char **key, int kcount, const char *valu
 
 void sprite_get_key(sd_sprite *s, const char **key, int kcount) {
     switch(sprite_key_get_id(key[0])) {
-        case 0: printf("%d\n", s->pos_x); break;
-        case 1: printf("%d\n", s->pos_y); break;
-        case 2: printf("%d\n", s->index); break;
-        case 3: printf("%d\n", s->missing); break;
-        case 4: printf("Value fetching not supported for this key.\n"); break;
+        case 0:
+            printf("%d\n", s->pos_x);
+            break;
+        case 1:
+            printf("%d\n", s->pos_y);
+            break;
+        case 2:
+            printf("%d\n", s->index);
+            break;
+        case 3:
+            printf("%d\n", s->missing);
+            break;
+        case 4:
+            printf("Value fetching not supported for this key.\n");
+            break;
         default:
             printf("Unknown key!\n");
     }
@@ -71,13 +96,10 @@ void sprite_export_key(sd_sprite *s, const char **key, int kcount, const char *f
             ret = sd_vga_image_to_png(&img, pal, filename);
             sd_vga_image_free(&img);
             if(ret != SD_SUCCESS) {
-                printf("Error while exporting sprite to %s: %s\n",
-                    filename,
-                    sd_get_error(ret));
+                printf("Error while exporting sprite to %s: %s\n", filename, sd_get_error(ret));
                 return;
             }
-            }
-            break;
+        } break;
         default:
             printf("Unknown key!\n");
     }
@@ -94,9 +116,7 @@ void sprite_import_key(sd_sprite *s, const char **key, int kcount, const char *f
             sd_vga_image img;
             int ret = sd_vga_image_from_png(&img, filename);
             if(ret != SD_SUCCESS) {
-                printf("Error while importing sprite from %s: %s\n",
-                    filename,
-                    sd_get_error(ret));
+                printf("Error while importing sprite from %s: %s\n", filename, sd_get_error(ret));
                 return;
             }
 
@@ -113,8 +133,7 @@ void sprite_import_key(sd_sprite *s, const char **key, int kcount, const char *f
                 return;
             }
 
-            }
-            break;
+        } break;
         default:
             printf("Unknown key!\n");
     }
@@ -138,9 +157,8 @@ void anim_common_info(sd_animation *ani) {
     printf(" * Animation header: %d\n", ani->null);
     printf(" * Collision coords: %d\n", ani->coord_count);
     for(int i = 0; i < ani->coord_count; i++) {
-        printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n",
-                ani->coord_table[i].x, ani->coord_table[i].y,
-                ani->coord_table[i].null, ani->coord_table[i].frame_id);
+        printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n", ani->coord_table[i].x, ani->coord_table[i].y,
+               ani->coord_table[i].null, ani->coord_table[i].frame_id);
     }
     printf(" * Sprites:          %d\n", ani->sprite_count);
     printf(" * Animation str:    %s\n", ani->anim_string);
@@ -150,13 +168,19 @@ void anim_common_info(sd_animation *ani) {
     }
 }
 
-int anim_key_get_id(const char* key) {
-    if(strcmp(key, "ani_header") == 0) return 7;
-    if(strcmp(key, "collision") == 0) return 8;
-    if(strcmp(key, "anim_str") == 0) return 9;
-    if(strcmp(key, "extra_str") == 0) return 11;
-    if(strcmp(key, "start_x") == 0) return 12;
-    if(strcmp(key, "start_y") == 0) return 13;
+int anim_key_get_id(const char *key) {
+    if(strcmp(key, "ani_header") == 0)
+        return 7;
+    if(strcmp(key, "collision") == 0)
+        return 8;
+    if(strcmp(key, "anim_str") == 0)
+        return 9;
+    if(strcmp(key, "extra_str") == 0)
+        return 11;
+    if(strcmp(key, "start_x") == 0)
+        return 12;
+    if(strcmp(key, "start_y") == 0)
+        return 13;
     return -1;
 }
 
@@ -198,7 +222,7 @@ void string_strip(char *str, size_t len, const char *tag) {
 void anim_strip_key(sd_animation *ani, int kn, const char **key, int kcount, const char *tag) {
     int tmp = 0;
     switch(kn) {
-        case 9: 
+        case 9:
             string_strip(ani->anim_string, sizeof(ani->anim_string), tag);
             break;
         case 11:
@@ -226,7 +250,8 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
     int tmp = 0;
     switch(kn) {
         case 7:
-            ani->null = conv_dword(value); break;
+            ani->null = conv_dword(value);
+            break;
         case 8:
             /*if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
@@ -242,7 +267,9 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
             }*/
             printf("Coord value setting not supported yet!\n");
             break;
-        case 9:  sd_animation_set_anim_string(ani, value); break;
+        case 9:
+            sd_animation_set_anim_string(ani, value);
+            break;
         case 11:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
@@ -257,8 +284,12 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
                 return;
             }
             break;
-        case 12:  ani->start_x = conv_word(value); break;
-        case 13:  ani->start_y = conv_word(value); break;
+        case 12:
+            ani->start_x = conv_word(value);
+            break;
+        case 13:
+            ani->start_y = conv_word(value);
+            break;
         default:
             printf("Unknown key!\n");
             return;
@@ -276,22 +307,16 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < ani->coord_count) {
-                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n",
-                            ani->coord_table[tmp].x,
-                            ani->coord_table[tmp].y,
-                            ani->coord_table[tmp].null,
-                            ani->coord_table[tmp].frame_id);
+                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", ani->coord_table[tmp].x,
+                           ani->coord_table[tmp].y, ani->coord_table[tmp].null, ani->coord_table[tmp].frame_id);
                 } else {
                     printf("Collision table index %d does not exist!\n", tmp);
                     return;
                 }
             } else {
                 for(int i = 0; i < ani->coord_count; i++) {
-                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n",
-                            ani->coord_table[i].x,
-                            ani->coord_table[i].y,
-                            ani->coord_table[i].null,
-                            ani->coord_table[i].frame_id);
+                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", ani->coord_table[i].x, ani->coord_table[i].y,
+                           ani->coord_table[i].null, ani->coord_table[i].frame_id);
                 }
                 printf("\n");
             }
@@ -315,8 +340,12 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
                 printf("\n");
             }
             break;
-        case 12: printf("%d\n", ani->start_x); break;
-        case 13: printf("%d\n", ani->start_y); break;
+        case 12:
+            printf("%d\n", ani->start_x);
+            break;
+        case 13:
+            printf("%d\n", ani->start_y);
+            break;
         default:
             printf("Unknown key!\n");
     }

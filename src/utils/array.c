@@ -1,10 +1,10 @@
-#include "utils/allocator.h"
 #include "utils/array.h"
+#include "utils/allocator.h"
 #include <stdlib.h>
 #include <string.h>
 
 #define ARRAY_START_SIZE 64
-#define PTR_SIZE(bs) ((bs) * sizeof(void*))
+#define PTR_SIZE(bs) ((bs) * sizeof(void *))
 
 void array_nullify(void **ptr, unsigned int len) {
     for(int i = 0; i < len; i++) {
@@ -35,19 +35,19 @@ void array_set(array *array, unsigned int key, const void *ptr) {
         array_nullify(array->data + array->allocated_size, newsize - array->allocated_size);
         array->allocated_size = newsize;
     }
-    array->data[key] = (void*)ptr;
+    array->data[key] = (void *)ptr;
     array->filled += (ptr != NULL);
 }
 
-void* array_get(const array *array, unsigned int key) {
+void *array_get(const array *array, unsigned int key) {
     if(key > array->allocated_size) {
         return NULL;
     }
     return array->data[key];
 }
 
-void* array_iter_next(iterator *iter) {
-    array *arr = (array*)iter->data;
+void *array_iter_next(iterator *iter) {
+    array *arr = (array *)iter->data;
     void *out = NULL;
     while(iter->inow < arr->allocated_size) {
         if(arr->data[iter->inow] != NULL) {
@@ -63,8 +63,8 @@ void* array_iter_next(iterator *iter) {
     return out;
 }
 
-void* array_iter_prev(iterator *iter) {
-    array *arr = (array*)iter->data;
+void *array_iter_prev(iterator *iter) {
+    array *arr = (array *)iter->data;
     void *out = NULL;
     if(iter->inow == 0) {
         iter->ended = 1;
@@ -92,7 +92,7 @@ void array_iter_begin(const array *array, iterator *iter) {
 void array_iter_end(const array *array, iterator *iter) {
     iter->data = array;
     iter->vnow = NULL;
-    iter->inow = array->allocated_size-1;
+    iter->inow = array->allocated_size - 1;
     iter->next = NULL;
     iter->prev = array_iter_prev;
     iter->ended = (array->filled == 0);

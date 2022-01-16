@@ -1,8 +1,8 @@
-#include <stdlib.h>
 #include "audio/stream.h"
 #include "audio/source.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <stdlib.h>
 
 void stream_nullify(audio_stream *stream) {
     stream->apply = NULL;
@@ -58,9 +58,9 @@ void stream_stop(audio_stream *stream) {
 }
 
 void stream_apply(audio_stream *stream) {
-	if(stream->apply != NULL) {
-		stream->apply(stream);
-	}
+    if(stream->apply != NULL) {
+        stream->apply(stream);
+    }
 }
 
 int stream_get_status(audio_stream *stream) {
@@ -71,7 +71,7 @@ void stream_set_userdata(audio_stream *stream, void *userdata) {
     stream->userdata = userdata;
 }
 
-void* stream_get_userdata(audio_stream *stream) {
+void *stream_get_userdata(audio_stream *stream) {
     return stream->userdata;
 }
 
@@ -92,5 +92,5 @@ void stream_set_stop_cb(audio_stream *stream, stream_stop_cb cbfunc) {
 }
 
 void stream_set_apply_cb(audio_stream *stream, stream_apply_cb cbfunc) {
-	stream->apply = cbfunc;
+    stream->apply = cbfunc;
 }

@@ -1,25 +1,18 @@
 /** @file main.c
-  * @brief .REC file editor tool
-  * @license MIT
-  */
+ * @brief .REC file editor tool
+ * @license MIT
+ */
 
+#include "../shared/pilot.h"
+#include "formats/error.h"
+#include "formats/rec.h"
 #include <argtable2.h>
 #include <stdint.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "formats/rec.h"
-#include "formats/error.h"
-#include "../shared/pilot.h"
+#include <string.h>
 
-const char* mstr[] = {
-    "PUNCH",
-    "KICK",
-    "UP",
-    "DOWN",
-    "LEFT",
-    "RIGHT"
-};
+const char *mstr[] = {"PUNCH", "KICK", "UP", "DOWN", "LEFT", "RIGHT"};
 
 void print_key(char *o, uint8_t key) {
     int pos = 0;
@@ -28,9 +21,9 @@ void print_key(char *o, uint8_t key) {
         uint8_t m = 1 << i;
         if(key & m) {
             if(pos > 0) {
-                pos += sprintf((char*)(o+pos), "|");
+                pos += sprintf((char *)(o + pos), "|");
             }
-            pos += sprintf((char*)(o+pos), "%s", mstr[i]);
+            pos += sprintf((char *)(o + pos), "%s", mstr[i]);
         }
     }
 }
@@ -41,24 +34,11 @@ static const int tmp_lengths[] = {
 };
 */
 
-static const char* onoff[] = {
-    "Off",
-    "On"
-};
+static const char *onoff[] = {"Off", "On"};
 
-static const char* match_type[] = {
-    "One match",
-    "2 out of 3",
-    "3 out of 5",
-    "4 out of 7"
-};
+static const char *match_type[] = {"One match", "2 out of 3", "3 out of 5", "4 out of 7"};
 
-static const char* knockdown_text[] = {
-    "None",
-    "Kicks",
-    "Punches",
-    "Both"
-};
+static const char *knockdown_text[] = {"None", "Kicks", "Punches", "Both"};
 
 void print_rec_root_info(sd_rec_file *rec) {
     if(rec != NULL) {
@@ -105,29 +85,28 @@ void print_rec_root_info(sd_rec_file *rec) {
             if(rec->moves[i].lookup_id < 3) {
                 print_key(tmp, rec->moves[i].action);
             }
-            printf("%6u %10u %5u %6u %6u %6u %22s",
-                i,
-                rec->moves[i].tick,
-                rec->moves[i].lookup_id,
-                rec->moves[i].player_id,
-                rec->moves[i].raw_action,
-                sd_rec_extra_len(rec->moves[i].lookup_id),
-                tmp);
+            printf("%6u %10u %5u %6u %6u %6u %22s", i, rec->moves[i].tick, rec->moves[i].lookup_id,
+                   rec->moves[i].player_id, rec->moves[i].raw_action, sd_rec_extra_len(rec->moves[i].lookup_id), tmp);
 
             if(rec->moves[i].lookup_id > 2) {
-                print_bytes(rec->moves[i].extra_data, sd_rec_extra_len(rec->moves[i].lookup_id)-1, 8, 2);
+                print_bytes(rec->moves[i].extra_data, sd_rec_extra_len(rec->moves[i].lookup_id) - 1, 8, 2);
             }
             printf("\n");
         }
     }
 }
 
-int rec_entry_key_get_id(const char* key) {
-    if(strcmp(key, "tick") == 0) return 0;
-    if(strcmp(key, "lookup_id") == 0) return 1;
-    if(strcmp(key, "player_id") == 0) return 2;
-    if(strcmp(key, "action") == 0) return 3;
-    if(strcmp(key, "extra_data") == 0) return 4;
+int rec_entry_key_get_id(const char *key) {
+    if(strcmp(key, "tick") == 0)
+        return 0;
+    if(strcmp(key, "lookup_id") == 0)
+        return 1;
+    if(strcmp(key, "player_id") == 0)
+        return 2;
+    if(strcmp(key, "action") == 0)
+        return 3;
+    if(strcmp(key, "extra_data") == 0)
+        return 4;
     return -1;
 }
 
@@ -152,14 +131,30 @@ void rec_entry_set_key(sd_rec_file *rec, int entry_id, const char *key, const ch
                 rec->moves[entry_id].action |= SD_ACT_KICK;
             }
             switch(action & 0xF0) {
-                case 16: rec->moves[entry_id].action |= SD_ACT_UP; break;
-                case 32: rec->moves[entry_id].action |= (SD_ACT_UP|SD_ACT_RIGHT); break;
-                case 48: rec->moves[entry_id].action |= SD_ACT_RIGHT; break;
-                case 64: rec->moves[entry_id].action |= (SD_ACT_DOWN|SD_ACT_RIGHT); break;
-                case 80: rec->moves[entry_id].action |= SD_ACT_DOWN; break;
-                case 96: rec->moves[entry_id].action |= (SD_ACT_DOWN|SD_ACT_LEFT); break;
-                case 112: rec->moves[entry_id].action |= SD_ACT_LEFT; break;
-                case 128: rec->moves[entry_id].action |= (SD_ACT_UP|SD_ACT_LEFT); break;
+                case 16:
+                    rec->moves[entry_id].action |= SD_ACT_UP;
+                    break;
+                case 32:
+                    rec->moves[entry_id].action |= (SD_ACT_UP | SD_ACT_RIGHT);
+                    break;
+                case 48:
+                    rec->moves[entry_id].action |= SD_ACT_RIGHT;
+                    break;
+                case 64:
+                    rec->moves[entry_id].action |= (SD_ACT_DOWN | SD_ACT_RIGHT);
+                    break;
+                case 80:
+                    rec->moves[entry_id].action |= SD_ACT_DOWN;
+                    break;
+                case 96:
+                    rec->moves[entry_id].action |= (SD_ACT_DOWN | SD_ACT_LEFT);
+                    break;
+                case 112:
+                    rec->moves[entry_id].action |= SD_ACT_LEFT;
+                    break;
+                case 128:
+                    rec->moves[entry_id].action |= (SD_ACT_UP | SD_ACT_LEFT);
+                    break;
             }
             break;
         default:
@@ -168,7 +163,7 @@ void rec_entry_set_key(sd_rec_file *rec, int entry_id, const char *key, const ch
     }
 }
 
-void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char* key) {
+void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char *key) {
     switch(rec_entry_key_get_id(key)) {
         case 0:
             printf("%d", rec->moves[entry_id].tick);
@@ -183,7 +178,7 @@ void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char* key) {
             char tmp[100];
             print_key(tmp, rec->moves[entry_id].action);
             printf("%s", tmp);
-            } break;
+        } break;
         case 4:
             print_bytes(rec->moves[entry_id].extra_data, 7, 8, 0);
             break;
@@ -193,8 +188,9 @@ void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char* key) {
     }
 }
 
-int rec_key_get_id(const char* key) {
-    if(strcmp(key, "entry") == 0) return 0;
+int rec_key_get_id(const char *key) {
+    if(strcmp(key, "entry") == 0)
+        return 0;
     return -1;
 }
 
@@ -214,7 +210,7 @@ void rec_set_key(sd_rec_file *rec, const char **key, int kcount, const char *val
                 rec_entry_set_key(rec, entry_id, key[2], value);
                 return;
             }
-            } break;
+        } break;
         default:
             printf("Unknown key!\n");
     }
@@ -251,14 +247,13 @@ void rec_get_key(sd_rec_file *rec, const char **key, int kcount) {
                 rec_entry_get_key(rec, entry_id, key[2]);
                 return;
             }
-            } break;
+        } break;
         default:
             printf("Unknown key!\n");
     }
 }
 
-
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
@@ -270,8 +265,8 @@ int main(int argc, char* argv[]) {
     struct arg_int *insert = arg_int0("i", "insert", "<number>", "Insert a new element");
     struct arg_int *delete = arg_intn("d", "delete", "<number>", 0, 10, "Delete an existing element");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,pilot,key,value,delete,insert,end};
-    const char* progname = "rectool";
+    void *argtable[] = {help, vers, file, output, pilot, key, value, delete, insert, end};
+    const char *progname = "rectool";
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -337,15 +332,16 @@ int main(int argc, char* argv[]) {
         } else {
             rec_get_key(&rec, key->sval, key->count);
         }
-    } else if (delete->count > 0) {
+    } else if(delete->count > 0) {
         int last = -1;
         int offset = 0;
         for(int i = 0; i < delete->count; i++) {
-            if (delete->ival[i] < last) {
-                printf("Can't delete out of order, please list deletes in ascending order! %d %d\n", delete->ival[i], last);
+            if(delete->ival[i] < last) {
+                printf("Can't delete out of order, please list deletes in ascending order! %d %d\n", delete->ival[i],
+                       last);
                 goto exit_1;
             }
-            if (sd_rec_delete_action(&rec, delete->ival[i] - offset) != SD_SUCCESS) {
+            if(sd_rec_delete_action(&rec, delete->ival[i] - offset) != SD_SUCCESS) {
                 printf("deleting move %d failed\n", delete->ival[i]);
             }
             last = delete->ival[i];
@@ -371,21 +367,15 @@ int main(int argc, char* argv[]) {
         printf("  - Unknown: %d\n", rec.pilots[i].unknown_a);
         printf("  - Unknown: %d\n", rec.pilots[i].unknown_b);
         printf("  - Palette:\n");
-        print_bytes((char*)rec.pilots[i].pal.data, 144, 16, 4);
+        print_bytes((char *)rec.pilots[i].pal.data, 144, 16, 4);
         printf("\n");
 
         if(rec.pilots[i].has_photo) {
             printf("  - Photo len  = %d\n", rec.pilots[i].photo.len);
-            printf("  - Photo size = (%d,%d)\n",
-                rec.pilots[i].photo.width,
-                rec.pilots[i].photo.height);
-            printf("  - Photo pos  = (%d,%d)\n",
-                rec.pilots[i].photo.pos_x,
-                rec.pilots[i].photo.pos_y);
-            printf("  - Missing    = %d\n",
-                rec.pilots[i].photo.missing);
-            printf("  - Index      = %d\n",
-                rec.pilots[i].photo.index);
+            printf("  - Photo size = (%d,%d)\n", rec.pilots[i].photo.width, rec.pilots[i].photo.height);
+            printf("  - Photo pos  = (%d,%d)\n", rec.pilots[i].photo.pos_x, rec.pilots[i].photo.pos_y);
+            printf("  - Missing    = %d\n", rec.pilots[i].photo.missing);
+            printf("  - Index      = %d\n", rec.pilots[i].photo.index);
         } else {
             printf("  - No photo.\n");
         }
@@ -405,6 +395,6 @@ int main(int argc, char* argv[]) {
 exit_1:
     sd_rec_free(&rec);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

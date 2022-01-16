@@ -1,16 +1,16 @@
+#include "video/surface.h"
+#include "utils/allocator.h"
 #include <stdlib.h>
 #include <string.h>
 #include <utils/log.h>
-#include "video/surface.h"
-#include "utils/allocator.h"
 
 void surface_create(surface *sur, int type, int w, int h) {
     if(type == SURFACE_TYPE_RGBA) {
-        sur->data = omf_calloc(1, w*h*4);
+        sur->data = omf_calloc(1, w * h * 4);
         sur->stencil = NULL;
     } else {
-        sur->data = omf_calloc(1, w*h);
-        sur->stencil = omf_calloc(1, w*h);
+        sur->data = omf_calloc(1, w * h);
+        sur->stencil = omf_calloc(1, w * h);
     }
     sur->w = w;
     sur->h = h;
@@ -56,9 +56,9 @@ int surface_get_type(surface *sur) {
 
 void surface_clear(surface *sur) {
     if(sur->type == SURFACE_TYPE_RGBA) {
-        memset(sur->data, 0, sur->w*sur->h*4);
+        memset(sur->data, 0, sur->w * sur->h * 4);
     } else {
-        memset(sur->data, 0, sur->w*sur->h);
+        memset(sur->data, 0, sur->w * sur->h);
     }
 }
 
@@ -71,10 +71,10 @@ void surface_fill(surface *sur, color c) {
 
     // Fill
     for(int i = 0; i < sur->w * sur->h; i++) {
-        sur->data[i*4+0] = c.r;
-        sur->data[i*4+1] = c.g;
-        sur->data[i*4+2] = c.b;
-        sur->data[i*4+3] = c.a;
+        sur->data[i * 4 + 0] = c.r;
+        sur->data[i * 4 + 1] = c.g;
+        sur->data[i * 4 + 2] = c.b;
+        sur->data[i * 4 + 3] = c.a;
     }
 }
 
@@ -104,12 +104,7 @@ void surface_copy(surface *dst, surface *src) {
 }
 
 // Copies a an area of old surface to an entirely new surface
-void surface_sub(surface *dst,
-                 surface *src,
-                 int dst_x, int dst_y,
-                 int src_x, int src_y,
-                 int w, int h,
-                 int method) {
+void surface_sub(surface *dst, surface *src, int dst_x, int dst_y, int src_x, int src_y, int w, int h, int method) {
 
     // Make sure the source and destination are of the same type.
     if(dst->type != src->type) {
@@ -118,7 +113,7 @@ void surface_sub(surface *dst,
 
     // Copy!
     int bytes = (src->type == SURFACE_TYPE_RGBA) ? 4 : 1;
-    int src_offset,dst_offset;
+    int src_offset, dst_offset;
     for(int y = 0; y < h; y++) {
         for(int x = 0; x < w; x++) {
             src_offset = (src_x + x + (src_y + y) * src->w) * bytes;
@@ -140,10 +135,7 @@ void surface_sub(surface *dst,
     }
 }
 
-void surface_additive_blit(surface *dst,
-                           surface *src,
-                           int dst_x, int dst_y,
-                           palette *remap_pal,
+void surface_additive_blit(surface *dst, surface *src, int dst_x, int dst_y, palette *remap_pal,
                            SDL_RendererFlip flip) {
 
     // Both surfaces must be paletted
@@ -151,15 +143,13 @@ void surface_additive_blit(surface *dst,
         return;
     }
 
-    int src_offset,dst_offset;
+    int src_offset, dst_offset;
     uint8_t src_index, dst_index;
     for(int y = 0; y < src->h; y++) {
         for(int x = 0; x < src->w; x++) {
             // If pixel offscreen, skip
-            if(dst_x + x >= dst->w
-                || dst_y + y >= dst->h
-                || dst_x + x < 0
-                || dst_y + y < 0) continue;
+            if(dst_x + x >= dst->w || dst_y + y >= dst->h || dst_x + x < 0 || dst_y + y < 0)
+                continue;
 
             // Calculate pixel offsets
             src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - x : x) +
@@ -171,7 +161,7 @@ void surface_additive_blit(surface *dst,
                 if(src->data[src_offset] == 0)
                     continue;
 
-                src_index = src->data[src_offset]+3;
+                src_index = src->data[src_offset] + 3;
                 dst_index = dst->data[dst_offset];
                 dst->data[dst_offset] = remap_pal->remaps[src_index][dst_index];
             }
@@ -190,40 +180,34 @@ void surface_rgba_blit(surface *dst, const surface *src, int dst_x, int dst_y) {
     for(int y = 0; y < src->h; y++) {
         for(int x = 0; x < src->w; x++) {
             // If pixel offscreen, skip
-            if(dst_x + x >= dst->w
-                || dst_y + y >= dst->h
-                || dst_x + x < 0
-                || dst_y + y < 0) continue;
+            if(dst_x + x >= dst->w || dst_y + y >= dst->h || dst_x + x < 0 || dst_y + y < 0)
+                continue;
 
             dst_pos = (dst_y + y) * dst->w + (dst_x + x);
             src_pos = y * src->w + x;
             dst_pos *= 4;
             src_pos *= 4;
-            dst->data[dst_pos+0] = src->data[src_pos+0];
-            dst->data[dst_pos+1] = src->data[src_pos+1];
-            dst->data[dst_pos+2] = src->data[src_pos+2];
-            dst->data[dst_pos+3] = src->data[src_pos+3];
+            dst->data[dst_pos + 0] = src->data[src_pos + 0];
+            dst->data[dst_pos + 1] = src->data[src_pos + 1];
+            dst->data[dst_pos + 2] = src->data[src_pos + 2];
+            dst->data[dst_pos + 3] = src->data[src_pos + 3];
         }
-    }}
+    }
+}
 
-void surface_alpha_blit(surface *dst,
-                        surface *src,
-                        int dst_x, int dst_y,
-                        SDL_RendererFlip flip) {
+void surface_alpha_blit(surface *dst, surface *src, int dst_x, int dst_y, SDL_RendererFlip flip) {
 
     // Both surfaces must be paletted
     if(dst->type != SURFACE_TYPE_PALETTE || src->type != SURFACE_TYPE_PALETTE) {
         return;
     }
 
-    int src_offset,dst_offset;
+    int src_offset, dst_offset;
     for(int y = 0; y < src->h; y++) {
         for(int x = 0; x < src->w; x++) {
             // If pixel offscreen, skip
-            if(dst_x + x >= dst->w
-                || dst_y + y >= dst->h
-                || dst_x + x < 0
-                || dst_y + y < 0) continue;
+            if(dst_x + x >= dst->w || dst_y + y >= dst->h || dst_x + x < 0 || dst_y + y < 0)
+                continue;
 
             // Calculate offsets
             src_offset = ((flip & SDL_FLIP_HORIZONTAL) ? src->w - 1 - x : x) +
@@ -257,11 +241,7 @@ void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset) 
 }
 
 // Creates a new RGBA surface
-void surface_to_rgba(surface *sur,
-                     char *dst,
-                     screen_palette *pal,
-                     char *remap_table,
-                     uint8_t pal_offset) {
+void surface_to_rgba(surface *sur, char *dst, screen_palette *pal, char *remap_table, uint8_t pal_offset) {
 
     if(sur->type == SURFACE_TYPE_RGBA) {
         memcpy(dst, sur->data, sur->w * sur->h * 4);
@@ -292,11 +272,7 @@ void surface_to_rgba(surface *sur,
 
 // Copies surface to an existing texture.
 // Note, texture has to be streaming type
-int surface_to_texture(surface *src,
-                       SDL_Texture *tex,
-                       screen_palette *pal,
-                       char *remap_table,
-                       uint8_t pal_offset) {
+int surface_to_texture(surface *src, SDL_Texture *tex, screen_palette *pal, char *remap_table, uint8_t pal_offset) {
     void *pixels;
     int pitch;
     if(SDL_LockTexture(tex, NULL, &pixels, &pitch) == 0) {

@@ -1,12 +1,12 @@
 #include "formats/fonts.h"
 #include "formats/error.h"
+#include "resources/fonts.h"
+#include "resources/ids.h"
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vector.h"
 #include "video/surface.h"
-#include "resources/ids.h"
-#include "resources/fonts.h"
-#include "resources/pathmanager.h"
 
 font font_small;
 font font_large;
@@ -14,7 +14,7 @@ static int fonts_loaded = 0;
 
 void font_create(font *f) {
     memset(f, 0, sizeof(font));
-    vector_create(&f->surfaces, sizeof(surface*));
+    vector_create(&f->surfaces, sizeof(surface *));
 }
 
 void font_free(font *font) {
@@ -28,7 +28,7 @@ void font_free(font *font) {
     vector_free(&font->surfaces);
 }
 
-int font_load(font *font, const char* filename, unsigned int size) {
+int font_load(font *font, const char *filename, unsigned int size) {
     sd_rgba_image img;
     sd_font sdfont;
     int pixsize;
@@ -36,8 +36,12 @@ int font_load(font *font, const char* filename, unsigned int size) {
 
     // Find vertical size
     switch(size) {
-        case FONT_BIG: pixsize = 8; break;
-        case FONT_SMALL: pixsize = 6; break;
+        case FONT_BIG:
+            pixsize = 8;
+            break;
+        case FONT_SMALL:
+            pixsize = 6;
+            break;
         default:
             return 1;
     }

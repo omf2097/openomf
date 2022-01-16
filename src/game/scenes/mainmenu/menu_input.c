@@ -1,10 +1,10 @@
 #include "game/scenes/mainmenu/menu_input.h"
 #include "game/scenes/mainmenu/menu_keyboard.h"
 
-#include "game/gui/gui.h"
-#include "game/utils/settings.h"
 #include "controller/joystick.h"
 #include "controller/keyboard.h"
+#include "game/gui/gui.h"
+#include "game/utils/settings.h"
 #include "utils/allocator.h"
 #include "utils/compat.h"
 
@@ -12,8 +12,8 @@ typedef struct {
     int selected_player;
 } menu_input_local;
 
-#define KEY_RESET(key,scancode) \
-    omf_free(key); \
+#define KEY_RESET(key, scancode)                                                                                       \
+    omf_free(key);                                                                                                     \
     key = strdup(SDL_GetScancodeName(scancode))
 
 void menu_set_right_keyboard(component *c, void *userdata) {
@@ -42,7 +42,7 @@ void menu_set_right_keyboard(component *c, void *userdata) {
         KEY_RESET(k->key2_punch, SDL_SCANCODE_LSHIFT);
         KEY_RESET(k->key2_kick, SDL_SCANCODE_LCTRL);
         k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
-        reconfigure_controller(((scene*)userdata)->gs);
+        reconfigure_controller(((scene *)userdata)->gs);
     } else if(local->selected_player == 2) {
         KEY_RESET(k->key2_jump_up, SDL_SCANCODE_UP);
         KEY_RESET(k->key2_jump_right, SDL_SCANCODE_PAGEUP);
@@ -66,7 +66,7 @@ void menu_set_right_keyboard(component *c, void *userdata) {
         KEY_RESET(k->key1_punch, SDL_SCANCODE_LSHIFT);
         KEY_RESET(k->key1_kick, SDL_SCANCODE_LCTRL);
         k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
-        reconfigure_controller(((scene*)userdata)->gs);
+        reconfigure_controller(((scene *)userdata)->gs);
     }
 }
 
@@ -96,7 +96,7 @@ void menu_set_left_keyboard(component *c, void *userdata) {
         KEY_RESET(k->key2_punch, SDL_SCANCODE_RETURN);
         KEY_RESET(k->key2_kick, SDL_SCANCODE_RSHIFT);
         k->ctrl_type2 = CTRL_TYPE_KEYBOARD;
-        reconfigure_controller(((scene*)userdata)->gs);
+        reconfigure_controller(((scene *)userdata)->gs);
     } else if(local->selected_player == 2) {
         KEY_RESET(k->key2_jump_up, SDL_SCANCODE_W);
         KEY_RESET(k->key2_jump_right, SDL_SCANCODE_E);
@@ -120,7 +120,7 @@ void menu_set_left_keyboard(component *c, void *userdata) {
         KEY_RESET(k->key1_punch, SDL_SCANCODE_RETURN);
         KEY_RESET(k->key1_kick, SDL_SCANCODE_RSHIFT);
         k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
-        reconfigure_controller(((scene*)userdata)->gs);
+        reconfigure_controller(((scene *)userdata)->gs);
     }
 }
 
@@ -138,7 +138,7 @@ void menu_set_joystick1(component *c, void *userdata) {
         k->joy_name2 = strdup(SDL_JoystickNameForIndex(joystick_nth_id(1)));
         k->joy_offset2 = joystick_offset(joystick_nth_id(1), k->joy_name2);
     }
-    reconfigure_controller(((scene*)userdata)->gs);
+    reconfigure_controller(((scene *)userdata)->gs);
 }
 
 void menu_set_joystick2(component *c, void *userdata) {
@@ -148,14 +148,14 @@ void menu_set_joystick2(component *c, void *userdata) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
         omf_free(k->joy_name1);
         k->joy_name1 = strdup(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
-        k->joy_offset1= joystick_offset(joystick_nth_id(2), k->joy_name1);
+        k->joy_offset1 = joystick_offset(joystick_nth_id(2), k->joy_name1);
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
         omf_free(k->joy_name2);
         k->joy_name2 = strdup(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
-        k->joy_offset2= joystick_offset(joystick_nth_id(2), k->joy_name2);
+        k->joy_offset2 = joystick_offset(joystick_nth_id(2), k->joy_name2);
     }
-    reconfigure_controller(((scene*)userdata)->gs);
+    reconfigure_controller(((scene *)userdata)->gs);
 }
 
 void menu_set_custom_keyboard(component *c, void *u) {
@@ -175,7 +175,7 @@ void menu_input_free(component *c) {
     menu_set_userdata(c, local);
 }
 
-component* menu_input_create(scene *s, int player_id) {
+component *menu_input_create(scene *s, int player_id) {
     menu_input_local *local = omf_calloc(1, sizeof(menu_input_local));
     local->selected_player = player_id;
 
@@ -186,10 +186,10 @@ component* menu_input_create(scene *s, int player_id) {
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = color_create(0, 121, 0, 255);
 
-    component* menu = menu_create(11);
+    component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "CHOOSE INPUT"));
     menu_attach(menu, label_create(&tconf, "DEVICE FOR"));
-    switch (local->selected_player) {
+    switch(local->selected_player) {
         case 1:
             menu_attach(menu, label_create(&tconf, "PLAYER 1"));
             break;

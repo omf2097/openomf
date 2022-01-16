@@ -1,12 +1,12 @@
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 
-#include "formats/internal/reader.h"
 #include "formats/internal/memreader.h"
+#include "formats/internal/reader.h"
 #include "utils/allocator.h"
 
-memreader* memreader_open(char *buf, long len) {
+memreader *memreader_open(char *buf, long len) {
     memreader *reader = omf_calloc(1, sizeof(memreader));
     reader->buf = buf;
     reader->pos = 0;
@@ -15,7 +15,7 @@ memreader* memreader_open(char *buf, long len) {
     return reader;
 }
 
-memreader* memreader_open_from_reader(sd_reader *reader, int len) {
+memreader *memreader_open_from_reader(sd_reader *reader, int len) {
     char *buf = omf_calloc(1, len);
     sd_read_buf(reader, buf, len);
     memreader *mreader = memreader_open(buf, len);

@@ -1,17 +1,17 @@
+#include <SDL.h>
 #include <stdlib.h>
 #include <string.h>
-#include <SDL.h>
 
+#include "audio/sound.h"
+#include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/widget.h"
-#include "game/gui/sizer.h"
-#include "video/video.h"
-#include "video/color.h"
-#include "audio/sound.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/compat.h"
+#include "utils/log.h"
 #include "utils/miscmath.h"
+#include "video/color.h"
+#include "video/video.h"
 
 typedef struct {
     char *text;
@@ -29,10 +29,9 @@ static void spritebutton_render(component *c) {
     sizer *s = component_get_obj(c->parent);
     int opacity = clamp(s->opacity * 255, 0, 255);
     if(c->is_disabled) {
-        video_render_sprite_flip_scale_opacity_tint(
-            sb->img, c->x, c->y, BLEND_ALPHA, 0, 0, 1.0, opacity, color_create(128,128,128,255));
-    }
-    else if(sb->active > 0) {
+        video_render_sprite_flip_scale_opacity_tint(sb->img, c->x, c->y, BLEND_ALPHA, 0, 0, 1.0, opacity,
+                                                    color_create(128, 128, 128, 255));
+    } else if(sb->active > 0) {
         video_render_sprite(sb->img, c->x, c->y, BLEND_ALPHA, 0);
     }
     if(sb->text) {
@@ -71,13 +70,8 @@ static int spritebutton_action(component *c, int action) {
     return 1;
 }
 
-component* spritebutton_create(
-        const text_settings *tconf,
-        const char *text, surface *img,
-        int disabled,
-        spritebutton_click_cb cb,
-        void *userdata) 
-{
+component *spritebutton_create(const text_settings *tconf, const char *text, surface *img, int disabled,
+                               spritebutton_click_cb cb, void *userdata) {
     component *c = widget_create();
     component_disable(c, disabled);
 

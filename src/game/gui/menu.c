@@ -1,12 +1,12 @@
-#include "video/surface.h"
-#include "video/video.h"
 #include "game/gui/menu.h"
+#include "audio/sound.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/sizer.h"
-#include "audio/sound.h"
 #include "utils/allocator.h"
-#include "utils/vector.h"
 #include "utils/log.h"
+#include "utils/vector.h"
+#include "video/surface.h"
+#include "video/video.h"
 
 void menu_select(component *c, component *sc) {
     sizer *s = component_get_obj(c);
@@ -16,7 +16,7 @@ void menu_select(component *c, component *sc) {
     int i = 0;
     vector_iter_begin(&s->objs, &it);
     while((tmp = iter_next(&it)) != NULL) {
-        if (*tmp == sc) {
+        if(*tmp == sc) {
             break;
         }
         i++;
@@ -38,7 +38,7 @@ void menu_select(component *c, component *sc) {
     m->selected = i;
 }
 
-component* menu_selected(const component *mc) {
+component *menu_selected(const component *mc) {
     menu *m = sizer_get_obj(mc);
     component *c = sizer_get(mc, m->selected);
     if(c != NULL) {
@@ -65,8 +65,7 @@ static void menu_tick(component *c) {
     }
 
     // Check if we need to run submenu done -callback
-    if(m->submenu != NULL && menu_is_finished(m->submenu) &&
-       !m->prev_submenu_state) {
+    if(m->submenu != NULL && menu_is_finished(m->submenu) && !m->prev_submenu_state) {
         if(m->submenu_done) {
             m->submenu_done(c, m->submenu);
         }
@@ -124,7 +123,7 @@ static int menu_action(component *mc, int action) {
     }
 
     // Select last item if ESC is pressed
-    if(m->selected == sizer_size(mc)-1 && action == ACT_ESC) {
+    if(m->selected == sizer_size(mc) - 1 && action == ACT_ESC) {
         // If the last item is already selected, and ESC if punched, change the action to punch
         // This is then passed to the quit (last) component and its callback is called
         // Hacky, but works well in menu sizer.
@@ -196,7 +195,7 @@ void menu_link_menu(component *mc, guiframe *linked_menu) {
     component_layout(m->submenu, linked_menu->x, linked_menu->y, linked_menu->w, linked_menu->h);
 }
 
-component* menu_get_submenu(const component *c) {
+component *menu_get_submenu(const component *c) {
     menu *m = sizer_get_obj(c);
     return m->submenu;
 }
@@ -241,7 +240,7 @@ void menu_set_userdata(component *c, void *userdata) {
     m->userdata = userdata;
 }
 
-void* menu_get_userdata(const component *c) {
+void *menu_get_userdata(const component *c) {
     menu *m = sizer_get_obj(c);
     return m->userdata;
 }
@@ -271,7 +270,7 @@ static void menu_free(component *c) {
     omf_free(m);
 }
 
-static component* menu_find(component *c, int id) {
+static component *menu_find(component *c, int id) {
     menu *m = sizer_get_obj(c);
     if(m->submenu) {
         return component_find(m->submenu, id);
@@ -279,10 +278,10 @@ static component* menu_find(component *c, int id) {
     return NULL;
 }
 
-component* menu_create(int obj_h) {
+component *menu_create(int obj_h) {
     component *c = sizer_create();
 
-    menu* m = omf_calloc(1, sizeof(menu));
+    menu *m = omf_calloc(1, sizeof(menu));
     m->margin_top = 8;
     m->obj_h = obj_h;
     sizer_set_obj(c, m);
@@ -297,4 +296,3 @@ component* menu_create(int obj_h) {
 
     return c;
 }
-

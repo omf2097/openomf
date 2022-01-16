@@ -1,8 +1,8 @@
 #include "utils/config.h"
 #include "utils/log.h"
 #include "utils/vector.h"
-#include <string.h>
 #include <confuse.h>
+#include <string.h>
 
 cfg_t *cfg = NULL;
 
@@ -18,7 +18,7 @@ void conf_ensure_opt_init() {
     }
 }
 void conf_append_opt(vector *vec, cfg_opt_t *new_opt) {
-    cfg_opt_t *end = vector_get(vec, vector_size(vec)-1);
+    cfg_opt_t *end = vector_get(vec, vector_size(vec) - 1);
     memcpy(end, new_opt, sizeof(cfg_opt_t));
     cfg_opt_t c = CFG_END();
     vector_append(vec, &c);
@@ -47,7 +47,7 @@ void conf_addstring(char *name, char *default_val) {
 
 int conf_init_internal(const char *filename) {
     conf_ensure_opt_init();
-    cfg = cfg_init((cfg_opt_t*)cfg_opts.data, 0);
+    cfg = cfg_init((cfg_opt_t *)cfg_opts.data, 0);
     int ret = cfg_parse(cfg, filename);
     if(ret == CFG_FILE_ERROR) {
         PERROR("Error while attempting to read config file '%s' !", filename);
@@ -82,7 +82,7 @@ int conf_write_config(const char *filename) {
     FILE *fp = fopen(filename, "w");
     if(fp != NULL) {
         if(cfg == NULL) {
-            cfg_t *tmp = cfg_init((cfg_opt_t*)cfg_opts.data, 0); 
+            cfg_t *tmp = cfg_init((cfg_opt_t *)cfg_opts.data, 0);
             cfg_print(tmp, fp);
             cfg_free(tmp);
         } else {
@@ -106,7 +106,7 @@ int conf_bool(const char *name) {
     return cfg_getbool(cfg, name);
 }
 
-const char* conf_string(const char *name) {
+const char *conf_string(const char *name) {
     return cfg_getstr(cfg, name);
 }
 

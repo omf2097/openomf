@@ -1,13 +1,13 @@
-#include <SDL2/SDL_loadso.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include "plugins/plugins.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
-#include "utils/scandir.h"
 #include "utils/list.h"
 #include "utils/log.h"
+#include "utils/scandir.h"
+#include <SDL2/SDL_loadso.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define PLUGIN_MAX_COUNT 128
 static base_plugin _plugins[PLUGIN_MAX_COUNT];
@@ -113,13 +113,11 @@ void plugins_init() {
     INFO("%d plugins found.", _plugins_count);
 }
 
-int plugins_get_scaler(scaler_plugin *scaler, const char* name) {
+int plugins_get_scaler(scaler_plugin *scaler, const char *name) {
     // Search for a scaler with given name
     for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
-        if(_plugins[i].handle != NULL
-           && strcmp(_plugins[i].get_name(), name) == 0
-           && strcmp(_plugins[i].get_type(), "scaler") == 0)
-        {
+        if(_plugins[i].handle != NULL && strcmp(_plugins[i].get_name(), name) == 0 &&
+           strcmp(_plugins[i].get_type(), "scaler") == 0) {
             scaler->base = &_plugins[i];
             scaler->is_factor_available = SDL_LoadFunction(scaler->base->handle, "scaler_is_factor_available");
             scaler->get_factors_list = SDL_LoadFunction(scaler->base->handle, "scaler_get_factors_list");
@@ -131,15 +129,13 @@ int plugins_get_scaler(scaler_plugin *scaler, const char* name) {
     return 1;
 }
 
-int plugins_get_list_by_type(list *tlist, const char* type) {
+int plugins_get_list_by_type(list *tlist, const char *type) {
     // Search for a scaler with given type
     int count = 0;
     for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
-        if(_plugins[i].handle != NULL
-           && strcmp(_plugins[i].get_type(), type) == 0)
-        {
+        if(_plugins[i].handle != NULL && strcmp(_plugins[i].get_type(), type) == 0) {
             void *ptr = &_plugins[i];
-            list_append(tlist,&ptr,sizeof(base_plugin*));
+            list_append(tlist, &ptr, sizeof(base_plugin *));
             count++;
         }
     }

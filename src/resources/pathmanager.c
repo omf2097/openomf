@@ -1,8 +1,8 @@
+#include <SDL.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <unistd.h>
-#include <SDL.h>
 
 #if defined(_WIN32) || defined(WIN32)
 #include <shlobj.h> //SHCreateDirectoryEx
@@ -10,21 +10,21 @@
 #include <sys/stat.h> // mkdir
 #endif
 
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/compat.h"
-#include "resources/pathmanager.h"
 #include "utils/log.h"
 
 // Files
-static const char* logfile_name = "openomf.log";
-static const char* configfile_name = "openomf.conf";
-static const char* scorefile_name = "SCORES.DAT";
-static const char* savegamedir_name = "save/";
+static const char *logfile_name = "openomf.log";
+static const char *configfile_name = "openomf.conf";
+static const char *scorefile_name = "SCORES.DAT";
+static const char *savegamedir_name = "save/";
 static char errormessage[128];
 
 // Lists
-static char* local_paths[NUMBER_OF_LOCAL_PATHS];
-static char* resource_paths[NUMBER_OF_RESOURCES];
+static char *local_paths[NUMBER_OF_LOCAL_PATHS];
+static char *resource_paths[NUMBER_OF_RESOURCES];
 
 // Build directory
 static void local_path_build(int path_id, const char *path, const char *ext) {
@@ -125,23 +125,20 @@ int pm_init() {
 
     // check if we have overrides from the environment
     char *resource_env = getenv("OPENOMF_RESOURCE_DIR");
-    if (resource_env) {
+    if(resource_env) {
         char *ext = str_ends_with_sep(resource_env) ? "" : platform_sep;
         local_path_build(RESOURCE_PATH, resource_env, ext);
     }
 
     char *plugin_env = getenv("OPENOMF_PLUGIN_DIR");
-    if (plugin_env) {
+    if(plugin_env) {
         char *ext = str_ends_with_sep(plugin_env) ? "" : platform_sep;
         local_path_build(PLUGIN_PATH, plugin_env, ext);
     }
 
-
     // Set resource paths
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        resource_path_build(i,
-            pm_get_local_path(RESOURCE_PATH),
-            get_resource_file(i));
+        resource_path_build(i, pm_get_local_path(RESOURCE_PATH), get_resource_file(i));
     }
 
     // Check resources
@@ -163,9 +160,7 @@ error_0:
 void pm_log() {
     // Debug info
     for(unsigned int i = 0; i < NUMBER_OF_LOCAL_PATHS; i++) {
-        DEBUG("%s: %s",
-            pm_get_local_path_type_name(i),
-            pm_get_local_path(i));
+        DEBUG("%s: %s", pm_get_local_path_type_name(i), pm_get_local_path(i));
     }
 }
 
@@ -178,7 +173,7 @@ void pm_free() {
     }
 }
 
-const char* pm_get_errormsg() {
+const char *pm_get_errormsg() {
     return errormessage;
 }
 
@@ -204,7 +199,7 @@ int pm_in_portable_mode() {
     return 0;
 }
 
-char* pm_get_local_base_dir() {
+char *pm_get_local_base_dir() {
     char *out = NULL;
     if(pm_in_portable_mode()) {
         out = omf_calloc(1, 1);
@@ -237,43 +232,49 @@ char* pm_get_local_base_dir() {
     return out;
 }
 
-const char* pm_get_local_path(unsigned int local_id) {
+const char *pm_get_local_path(unsigned int local_id) {
     if(local_id >= NUMBER_OF_LOCAL_PATHS) {
         return NULL;
     }
     return local_paths[local_id];
 }
 
-const char* pm_get_resource_path(unsigned int resource_id) {
+const char *pm_get_resource_path(unsigned int resource_id) {
     if(resource_id >= NUMBER_OF_RESOURCES) {
         return NULL;
     }
     return resource_paths[resource_id];
 }
 
-const char* pm_get_local_path_type_name(unsigned int path_id) {
+const char *pm_get_local_path_type_name(unsigned int path_id) {
     switch(path_id) {
-        case RESOURCE_PATH: return "RESOURCE_PATH";
-        case PLUGIN_PATH: return "PLUGIN_PATH";
-        case CONFIG_PATH: return "CONFIG_PATH";
-        case LOG_PATH: return "LOG_PATH";
-        case SCORE_PATH: return "SCORE_PATH";
-        case SAVE_PATH: return "SAVE_PATH";
+        case RESOURCE_PATH:
+            return "RESOURCE_PATH";
+        case PLUGIN_PATH:
+            return "PLUGIN_PATH";
+        case CONFIG_PATH:
+            return "CONFIG_PATH";
+        case LOG_PATH:
+            return "LOG_PATH";
+        case SCORE_PATH:
+            return "SCORE_PATH";
+        case SAVE_PATH:
+            return "SAVE_PATH";
     }
     return "UNKNOWN";
 }
 
-int pm_create_dir(const char* dirname) {
-    #if defined(_WIN32) || defined(WIN32)
+int pm_create_dir(const char *dirname) {
+#if defined(_WIN32) || defined(WIN32)
     if(SHCreateDirectoryEx(NULL, dirname, NULL) != ERROR_SUCCESS) {
         PERROR("Error while attempting to create directory '%s'.", dirname);
         return 1;
     }
-    #else
+#else
     if(mkdir(dirname, 0755) != 0) {
         PERROR("Error while attempting to create directory '%s'.", dirname);
         return 1;
     }
-    #endif
+#endif
     return 0;
 }

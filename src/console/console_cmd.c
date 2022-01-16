@@ -1,11 +1,11 @@
-#include <stdio.h>
-#include "game/scenes/arena.h"
+#include "audio/music.h"
 #include "console/console.h"
 #include "console/console_type.h"
+#include "game/scenes/arena.h"
 #include "resources/ids.h"
-#include "video/video.h"
-#include "audio/music.h"
 #include "utils/allocator.h"
+#include "video/video.h"
+#include <stdio.h>
 
 // utils
 int strtoint(char *input, int *output) {
@@ -60,7 +60,7 @@ int console_cmd_help(game_state *gs, int argc, char **argv) {
     iterator it;
     hashmap_pair *pair, **ppair;
 
-    vector_create(&sorted, sizeof(hashmap_pair*));
+    vector_create(&sorted, sizeof(hashmap_pair *));
     hashmap_iter_begin(&con->cmds, &it);
     while((pair = iter_next(&it)) != NULL) {
         vector_append(&sorted, &pair);
@@ -100,7 +100,7 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
             }
 
             game_player *player = game_state_get_player(gs, 0);
-            if (scene_load_har(game_state_get_scene(gs), 0, player->har_id)) {
+            if(scene_load_har(game_state_get_scene(gs), 0, player->har_id)) {
                 return 1;
             }
 
@@ -109,7 +109,7 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
             int hd = object_get_direction(har_obj);
 
             object *obj = omf_calloc(1, sizeof(object));
-            object_create(obj, gs, pos, vec2f_create(0,0));
+            object_create(obj, gs, pos, vec2f_create(0, 0));
             player->har_id = i;
 
             if(har_create(obj, game_state_get_scene(gs)->af_data[0], hd, player->har_id, player->pilot_id, 0)) {
@@ -128,7 +128,6 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
             game_player_get_ctrl(player)->har = obj;
             game_player_get_har(player)->animation_state.enemy = game_player_get_har(game_state_get_player(gs, 1));
             game_player_get_har(game_state_get_player(gs, 1))->animation_state.enemy = game_player_get_har(player);
-
 
             maybe_install_har_hooks(game_state_get_scene(gs));
 
@@ -181,9 +180,8 @@ int console_cmd_rein(game_state *gs, int argc, char **argv) {
     return 1;
 }
 
-
 int console_cmd_god(game_state *gs, int argc, char **argv) {
-    for(int i = 0;i < game_state_num_players(gs);i++) {
+    for(int i = 0; i < game_state_num_players(gs); i++) {
         game_player *gp = game_state_get_player(gs, i);
         gp->god = !gp->god;
     }
@@ -203,7 +201,7 @@ int console_kreissack(game_state *gs, int argc, char **argv) {
 }
 
 int console_cmd_ez_destruct(game_state *gs, int argc, char **argv) {
-    for(int i = 0;i < game_state_num_players(gs);i++) {
+    for(int i = 0; i < game_state_num_players(gs); i++) {
         game_player *gp = game_state_get_player(gs, i);
         gp->ez_destruct = !gp->ez_destruct;
     }
@@ -228,20 +226,20 @@ int console_cmd_music(game_state *gs, int argc, char **argv) {
 
 void console_init_cmd() {
     // Add console commands
-    console_add_cmd("h",     &console_cmd_history,  "show command history");
-    console_add_cmd("clear", &console_cmd_clear,  "clear the console");
-    console_add_cmd("cls",   &console_cmd_clear,  "clear the console");
-    console_add_cmd("quit",  &console_cmd_quit,  "quit the game");
-    console_add_cmd("exit",  &console_cmd_quit,  "quit the game");
-    console_add_cmd("help",  &console_cmd_help,  "show all commands");
+    console_add_cmd("h", &console_cmd_history, "show command history");
+    console_add_cmd("clear", &console_cmd_clear, "clear the console");
+    console_add_cmd("cls", &console_cmd_clear, "clear the console");
+    console_add_cmd("quit", &console_cmd_quit, "quit the game");
+    console_add_cmd("exit", &console_cmd_quit, "quit the game");
+    console_add_cmd("help", &console_cmd_help, "show all commands");
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
     console_add_cmd("music", &console_cmd_music, "Play specified song (0-6)");
-    console_add_cmd("har",   &console_cmd_har,   "change har. usage: har 1, har 2, etc");
-    console_add_cmd("win",   &console_cmd_win,   "Set the other player's health to 0");
-    console_add_cmd("lose",  &console_cmd_lose,   "Set your health to 0");
-    console_add_cmd("stun",  &console_cmd_stun,   "Stun the other player");
-    console_add_cmd("rein",  &console_cmd_rein,   "R-E-I-N!");
-    console_add_cmd("god",   &console_cmd_god,  "Enable god mode");
-    console_add_cmd("kreissack",   &console_kreissack,  "Fight Kreissack");
-    console_add_cmd("ez-destruct",  &console_cmd_ez_destruct,  "Punch = destruction, kick = scrap");
+    console_add_cmd("har", &console_cmd_har, "change har. usage: har 1, har 2, etc");
+    console_add_cmd("win", &console_cmd_win, "Set the other player's health to 0");
+    console_add_cmd("lose", &console_cmd_lose, "Set your health to 0");
+    console_add_cmd("stun", &console_cmd_stun, "Stun the other player");
+    console_add_cmd("rein", &console_cmd_rein, "R-E-I-N!");
+    console_add_cmd("god", &console_cmd_god, "Enable god mode");
+    console_add_cmd("kreissack", &console_kreissack, "Fight Kreissack");
+    console_add_cmd("ez-destruct", &console_cmd_ez_destruct, "Punch = destruction, kick = scrap");
 }

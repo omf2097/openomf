@@ -1,20 +1,19 @@
 /** @file main.c
-  * @brief .AF file editor tool
-  * @author Tuomas Virtanen
-  * @license MIT
-  */
+ * @brief .AF file editor tool
+ * @author Tuomas Virtanen
+ * @license MIT
+ */
 
+#include "formats/error.h"
+#include "formats/fonts.h"
 #include <SDL2/SDL.h>
 #include <argtable2.h>
 #include <stdint.h>
 #include <string.h>
-#include "formats/fonts.h"
-#include "formats/error.h"
 
-
-SDL_Surface* render_text(sd_font *font, const char *text, int area_w) {
+SDL_Surface *render_text(sd_font *font, const char *text, int area_w) {
     // Vars
-    unsigned int rmask,gmask,bmask,amask;
+    unsigned int rmask, gmask, bmask, amask;
     int char_w, char_h;
     int pix_w, pix_h;
     int slen;
@@ -54,7 +53,7 @@ SDL_Surface* render_text(sd_font *font, const char *text, int area_w) {
     sd_rgba_image_create(&img, font->h, font->h);
     for(int i = 0; i < slen; i++) {
         sd_font_decode(font, &img, text[i] - 32, 64, 128, 64);
-        memcpy(tmp->pixels, img.data, 4*font->h*font->h);
+        memcpy(tmp->pixels, img.data, 4 * font->h * font->h);
         dst.y = i / char_w * font->h;
         dst.x = i % char_w * font->h;
         SDL_BlitSurface(tmp, 0, surface, &dst);
@@ -72,7 +71,7 @@ void export_to(sd_font *font, const char *filename, int split) {
         sd_rgba_image ch_img;
         sd_rgba_image_create(&ch_img, font->h, font->h);
         for(int i = 32; i < 256; i++) {
-            sd_font_decode(font, &ch_img, (char)(i-32), 0, 0, 0);
+            sd_font_decode(font, &ch_img, (char)(i - 32), 0, 0, 0);
             sprintf(path, "%s/uni%04x.png", filename, i);
             int ret = sd_rgba_image_to_png(&ch_img, path);
             if(ret != SD_SUCCESS) {
@@ -88,7 +87,7 @@ void export_to(sd_font *font, const char *filename, int split) {
         for(int i = 32; i < 256; i++) {
             int x = i % 16;
             int y = i / 16;
-            sd_font_decode(font, &ch_img, (char)(i-32), 0, 0, 0);
+            sd_font_decode(font, &ch_img, (char)(i - 32), 0, 0, 0);
             sd_rgba_image_blit(&dst_img, &ch_img, x * font->h, y * font->h);
         }
         sd_rgba_image_free(&ch_img);
@@ -112,15 +111,9 @@ void display(sd_font *font, int _sc, const char *text) {
     }
 
     // Init window
-    SDL_Window *window = SDL_CreateWindow(
-        "Fonttool v0.1",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        320 * _sc,
-        200 * _sc,
-        SDL_WINDOW_SHOWN
-    );
-    if (!window) {
+    SDL_Window *window = SDL_CreateWindow("Fonttool v0.1", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320 * _sc,
+                                          200 * _sc, SDL_WINDOW_SHOWN);
+    if(!window) {
         printf("Could not create window: %s\n", SDL_GetError());
         goto d_exit_1;
     }
@@ -143,7 +136,7 @@ void display(sd_font *font, int _sc, const char *text) {
     int run = 1;
     while(run) {
         if(SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
+            if(e.type == SDL_QUIT) {
                 run = 0;
             }
         }
@@ -166,7 +159,7 @@ d_exit_0:
     SDL_Quit();
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
@@ -177,8 +170,8 @@ int main(int argc, char* argv[]) {
     struct arg_file *export = arg_file0("e", "export", "<file>", "Export the full font to a PNG file");
     struct arg_lit *split = arg_lit0(NULL, "split", "Split to separate PNG files (set path in -e).");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,fh,text,scale,export,split,end};
-    const char* progname = "fonttool";
+    void *argtable[] = {help, vers, file, fh, text, scale, export, split, end};
+    const char *progname = "fonttool";
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -245,8 +238,10 @@ int main(int argc, char* argv[]) {
         if(scale->count > 0) {
             _sc = scale->ival[0];
         }
-        if(_sc > 4) _sc = 4;
-        if(_sc < 1) _sc = 1;
+        if(_sc > 4)
+            _sc = 4;
+        if(_sc < 1)
+            _sc = 1;
 
         display(&font, _sc, text->sval[0]);
     }
@@ -254,6 +249,6 @@ int main(int argc, char* argv[]) {
 exit_1:
     sd_font_free(&font);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

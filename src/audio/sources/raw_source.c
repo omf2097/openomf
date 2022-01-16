@@ -1,8 +1,8 @@
-#include <string.h>
-#include <stdlib.h>
 #include "audio/sources/raw_source.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct raw_source_t {
     char *buf;
@@ -28,7 +28,7 @@ void raw_source_close(audio_source *src) {
     source_set_userdata(src, local);
 }
 
-int raw_source_init(audio_source *src, char* buffer, int len) {
+int raw_source_init(audio_source *src, char *buffer, int len) {
     raw_source *local = omf_calloc(1, sizeof(raw_source));
 
     // Set data

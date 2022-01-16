@@ -5,8 +5,8 @@
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 
 #include "game/gui/gui.h"
-#include "resources/ids.h"
 #include "game/utils/settings.h"
+#include "resources/ids.h"
 
 void mainmenu_quit(component *c, void *userdata) {
     scene *s = userdata;
@@ -24,8 +24,10 @@ void mainmenu_1v1(component *c, void *userdata) {
         _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
     }
 
-    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)), settings_get()->gameplay.difficulty);
-    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 1)), settings_get()->gameplay.difficulty);
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)),
+                             settings_get()->gameplay.difficulty);
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 1)),
+                             settings_get()->gameplay.difficulty);
     _setup_ai(s->gs, 1);
 
     // Load MELEE scene
@@ -38,13 +40,13 @@ void mainmenu_1v2(component *c, void *userdata) {
     settings_keyboard *k = &settings_get()->keys;
     if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 0);
-    } else if (k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
+    } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
         _setup_joystick(s->gs, 0, k->joy_name1, k->joy_offset1);
     }
 
     if(k->ctrl_type2 == CTRL_TYPE_KEYBOARD) {
         _setup_keyboard(s->gs, 1);
-    } else if (k->ctrl_type2 == CTRL_TYPE_GAMEPAD) {
+    } else if(k->ctrl_type2 == CTRL_TYPE_GAMEPAD) {
         _setup_joystick(s->gs, 1, k->joy_name2, k->joy_offset2);
     }
 
@@ -88,18 +90,18 @@ void mainmenu_enter_network(component *c, void *userdata) {
     menu_set_submenu(c->parent, menu_net_create(s));
 }
 
-component* menu_main_create(scene *s) {
+component *menu_main_create(scene *s) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = color_create(0, 121, 0, 255);
 
-    component* menu = menu_create(11);
+    component *menu = menu_create(11);
     menu_attach(menu, textbutton_create(&tconf, "ONE PLAYER GAME", COM_ENABLED, mainmenu_1v1, s));
     menu_attach(menu, textbutton_create(&tconf, "TWO PLAYER GAME", COM_ENABLED, mainmenu_1v2, s));
     menu_attach(menu, textbutton_create(&tconf, "TOURNAMENT PLAY", COM_ENABLED, mainmenu_mechlab, s));
-    component *net =  textbutton_create(&tconf, "NETWORK PLAY", COM_ENABLED, mainmenu_enter_network, s);
+    component *net = textbutton_create(&tconf, "NETWORK PLAY", COM_ENABLED, mainmenu_enter_network, s);
     widget_set_id(net, NETWORK_BUTTON_ID);
     menu_attach(menu, net);
     menu_attach(menu, textbutton_create(&tconf, "CONFIGURATION", COM_ENABLED, mainmenu_enter_configuration, s));

@@ -1,14 +1,13 @@
 /** @file main.c
-  * @brief SOUNDS.DAT file editor / player
-  * @author Tuomas Virtanen
-  * @license MIT
-  */
+ * @brief SOUNDS.DAT file editor / player
+ * @author Tuomas Virtanen
+ * @license MIT
+ */
 
+#include "formats/error.h"
+#include "formats/sounds.h"
 #include <SDL.h>
 #include <argtable2.h>
-#include "formats/sounds.h"
-#include "formats/error.h"
-
 
 typedef struct _streamer {
     char *data;
@@ -16,14 +15,14 @@ typedef struct _streamer {
     int size;
 } Streamer;
 
-void stream(void* userdata, Uint8* stream, int len) {
-    Streamer *s = (Streamer*)userdata;
+void stream(void *userdata, Uint8 *stream, int len) {
+    Streamer *s = (Streamer *)userdata;
     SDL_memset(stream, 128, len);
     int left = s->size - s->pos;
     len = (len > left) ? left : len;
     SDL_memcpy(stream, s->data + s->pos, len);
     s->pos += len;
-    printf("Reading %d, size %d, left %d\n", len, s->size, (s->size-s->pos));
+    printf("Reading %d, size %d, left %d\n", len, s->size, (s->size - s->pos));
 }
 
 int main(int argc, char *argv[]) {
@@ -49,8 +48,8 @@ int main(int argc, char *argv[]) {
     struct arg_file *export = arg_file0("e", "export", "<file>", "Export selected sound to AU file");
     struct arg_file *import = arg_file0("i", "import", "<file>", "Import selected sound from AU file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,sid,sampleprint,play,export,import,end};
-    const char* progname = "soundtool";
+    void *argtable[] = {help, vers, file, output, sid, sampleprint, play, export, import, end};
+    const char *progname = "soundtool";
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -98,7 +97,7 @@ int main(int argc, char *argv[]) {
     if(sid->count > 0) {
         // Sound ID to handle
         int sound_id = sid->ival[0];
-        const sd_sound *sound = sd_sounds_get(&sf, sound_id-1);
+        const sd_sound *sound = sd_sounds_get(&sf, sound_id - 1);
         if(sound == NULL) {
             printf("Invalid sound ID");
             goto exit_1;
@@ -177,8 +176,8 @@ int main(int argc, char *argv[]) {
         for(int i = 0; i < SD_SOUNDS_MAX; i++) {
             const sd_sound *sound = sd_sounds_get(&sf, i);
             if(sound != NULL && sound->len > 2) {
-                printf("%d", i+1);
-                if((k+1)%6==0) {
+                printf("%d", i + 1);
+                if((k + 1) % 6 == 0) {
                     printf("\n");
                 } else {
                     printf("\t");
@@ -198,6 +197,6 @@ int main(int argc, char *argv[]) {
 exit_1:
     sd_sounds_free(&sf);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

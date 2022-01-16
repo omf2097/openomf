@@ -1,8 +1,8 @@
 /** @file main.c
-  * @brief .AF file diff  tool
-  * @author Tuomas Virtanen
-  * @license MIT
-  */
+ * @brief .AF file diff  tool
+ * @author Tuomas Virtanen
+ * @license MIT
+ */
 
 #include <argtable2.h>
 #include <stdint.h>
@@ -13,7 +13,7 @@
 
 #define VNAME(n) a->n, b->n
 
-int int_diff(const char* label, int a, int b) {
+int int_diff(const char *label, int a, int b) {
     if(a != b) {
         printf("%-30s: %-6d != %-6d\n", label, a, b);
         return 1;
@@ -21,7 +21,7 @@ int int_diff(const char* label, int a, int b) {
     return 0;
 }
 
-int null_diff(const char* label, void *a, void *b) {
+int null_diff(const char *label, void *a, void *b) {
     if((a == NULL || b == NULL) && a != b) {
         printf("%-30s: %-6s != %-6s\n", label, (a ? "Exists" : "NULL"), (b ? "Exists" : "NULL"));
         return 1;
@@ -29,7 +29,7 @@ int null_diff(const char* label, void *a, void *b) {
     return 0;
 }
 
-int float_diff(const char* label, float a, float b) {
+int float_diff(const char *label, float a, float b) {
     if(a != b) {
         printf("%-30s: %-6f != %-6f\n", label, a, b);
         return 1;
@@ -37,7 +37,7 @@ int float_diff(const char* label, float a, float b) {
     return 0;
 }
 
-int str_diff(const char* label, const char *a, const char *b) {
+int str_diff(const char *label, const char *a, const char *b) {
     if(strcmp(a, b) != 0) {
         printf("%-30s: A      != B\n", label);
         return 1;
@@ -148,7 +148,7 @@ int af_diff(sd_af_file *a, sd_af_file *b) {
     return d_found;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     sd_af_file af_a, af_b;
     int ret;
 
@@ -158,15 +158,15 @@ int main(int argc, char* argv[]) {
     struct arg_file *afile = arg_file1("a", "afile", "<file>", "First .AF file");
     struct arg_file *bfile = arg_file1("b", "bfile", "<file>", "Second .AF file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,afile,bfile,end};
-    const char* progname = "aftool";
-    
+    void *argtable[] = {help, vers, afile, bfile, end};
+    const char *progname = "aftool";
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
         goto exit_0;
     }
-    
+
     // Parse arguments
     int nerrors = arg_parse(argc, argv, argtable);
 
@@ -178,7 +178,7 @@ int main(int argc, char* argv[]) {
         arg_print_glossary(stdout, argtable, "%-25s %s\n");
         goto exit_0;
     }
-    
+
     // Handle version
     if(vers->count > 0) {
         printf("%s v0.1\n", progname);
@@ -194,7 +194,7 @@ int main(int argc, char* argv[]) {
         printf("Try '%s --help' for more information.\n", progname);
         goto exit_0;
     }
-    
+
     // Load A file
     sd_af_create(&af_a);
     ret = sd_af_load(&af_a, afile->filename[0]);
@@ -213,13 +213,13 @@ int main(int argc, char* argv[]) {
 
     // Do the diff!
     af_diff(&af_a, &af_b);
-    
+
     // Quit
 exit_2:
     sd_af_free(&af_b);
 exit_1:
     sd_af_free(&af_a);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

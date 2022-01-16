@@ -1,16 +1,16 @@
 /** @file main.c
-  * @brief PIC file parser tool
-  * @author Tuomas Virtanen
-  * @license MIT
-  */
+ * @brief PIC file parser tool
+ * @author Tuomas Virtanen
+ * @license MIT
+ */
 
-#include <argtable2.h>
 #include "formats/bk.h"
-#include "formats/pic.h"
 #include "formats/error.h"
+#include "formats/pic.h"
+#include <argtable2.h>
 
 int main(int argc, char *argv[]) {
-   // commandline argument parser options
+    // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "PIC file");
@@ -19,8 +19,8 @@ int main(int argc, char *argv[]) {
     struct arg_file *bkfile = arg_file0("b", "bk", "<file>", "BK file to load palette from");
     struct arg_file *output = arg_file0("o", "output", "<file>", "PIC output file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,export,bkfile,entry,end};
-    const char* progname = "pictool";
+    void *argtable[] = {help, vers, file, output, export, bkfile, entry, end};
+    const char *progname = "pictool";
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -94,60 +94,35 @@ int main(int argc, char *argv[]) {
 
         if(export->count > 0) {
             sd_rgba_image img;
-            sd_sprite_rgba_decode(
-                &img,
-                photo->sprite,
-                bk.palettes[0], -1);
+            sd_sprite_rgba_decode(&img, photo->sprite, bk.palettes[0], -1);
             ret = sd_rgba_image_to_ppm(&img, export->filename[0]);
             if(ret != SD_SUCCESS) {
-                printf("Failed to write photo %d to %s: %s\n",
-                    entry_id,
-                    export->filename[0],
-                    sd_get_error(ret));
+                printf("Failed to write photo %d to %s: %s\n", entry_id, export->filename[0], sd_get_error(ret));
             } else {
-                printf("Photo %d exported to %s.\n",
-                    entry_id,
-                    export->filename[0]);
+                printf("Photo %d exported to %s.\n", entry_id, export->filename[0]);
             }
             sd_rgba_image_free(&img);
         } else {
-            printf("Length = %d\n",
-                photo->sprite->len);
-            printf("Size = (%d,%d)\n",
-                photo->sprite->width,
-                photo->sprite->height);
-            printf("Position = (%d,%d)\n",
-                photo->sprite->pos_x,
-                photo->sprite->pos_y);
-            printf("Sex = %s (%d)\n",
-                (photo->sex ? "FEMALE" : "MALE"),
-                photo->sex);
-            printf("Is Player = %d\n",
-                photo->is_player);
+            printf("Length = %d\n", photo->sprite->len);
+            printf("Size = (%d,%d)\n", photo->sprite->width, photo->sprite->height);
+            printf("Position = (%d,%d)\n", photo->sprite->pos_x, photo->sprite->pos_y);
+            printf("Sex = %s (%d)\n", (photo->sex ? "FEMALE" : "MALE"), photo->sex);
+            printf("Is Player = %d\n", photo->is_player);
         }
     } else {
         printf("ID       Sex  Player  Length    W    H    X    Y  Unk\n");
         for(int i = 0; i < pic.photo_count; i++) {
             photo = sd_pic_get(&pic, i);
-            printf("%3d %8s %7d %7d %4d %4d %4d %4d %4d\n",
-                i,
-                (photo->sex ? "FEMALE" : "MALE"),
-                photo->is_player,
-                photo->sprite->len,
-                photo->sprite->width,
-                photo->sprite->height,
-                photo->sprite->pos_x,
-                photo->sprite->pos_y,
-                photo->unk_flag);
+            printf("%3d %8s %7d %7d %4d %4d %4d %4d %4d\n", i, (photo->sex ? "FEMALE" : "MALE"), photo->is_player,
+                   photo->sprite->len, photo->sprite->width, photo->sprite->height, photo->sprite->pos_x,
+                   photo->sprite->pos_y, photo->unk_flag);
         }
     }
 
     if(output->count > 0) {
         ret = sd_pic_save(&pic, output->filename[0]);
         if(ret != SD_SUCCESS) {
-            printf("Failed to save PIC file to %s: %s.",
-                output->filename[0],
-                sd_get_error(ret));
+            printf("Failed to save PIC file to %s: %s.", output->filename[0], sd_get_error(ret));
         }
     }
 
@@ -158,6 +133,6 @@ exit_2:
 exit_1:
     sd_pic_free(&pic);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

@@ -1,11 +1,11 @@
-#include <stdlib.h>
-#include <string.h>
+#include <png.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <png.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "formats/vga_image.h"
 #include "formats/error.h"
+#include "formats/vga_image.h"
 #include "utils/allocator.h"
 
 int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
@@ -70,12 +70,12 @@ int sd_vga_image_encode(sd_vga_image *dst, const sd_rgba_image *src, const palet
         return ret;
     }
     unsigned int rgb_size = (src->w * src->h * 4);
-    for(int pos = 0; pos <= rgb_size; pos+= 4) {
+    for(int pos = 0; pos <= rgb_size; pos += 4) {
         uint8_t r = src->data[pos];
-        uint8_t g = src->data[pos+1];
-        uint8_t b = src->data[pos+2];
+        uint8_t g = src->data[pos + 1];
+        uint8_t b = src->data[pos + 2];
         // ignore alpha channel, VGA images have no transparency
-        dst->data[pos/4] = palette_resolve_color(r, g, b, pal);
+        dst->data[pos / 4] = palette_resolve_color(r, g, b, pal);
     }
     return SD_SUCCESS;
 }
@@ -95,19 +95,19 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const palet
             uint8_t s = src->stencil[y * src->w + x];
             pos = ((y * src->w) + x) * 4;
             if(remapping > -1) {
-                dst->data[pos+0] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][0];
-                dst->data[pos+1] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][1];
-                dst->data[pos+2] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][2];
+                dst->data[pos + 0] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][0];
+                dst->data[pos + 1] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][1];
+                dst->data[pos + 2] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][2];
             } else {
-                dst->data[pos+0] = (uint8_t)pal->data[b][0];
-                dst->data[pos+1] = (uint8_t)pal->data[b][1];
-                dst->data[pos+2] = (uint8_t)pal->data[b][2];
+                dst->data[pos + 0] = (uint8_t)pal->data[b][0];
+                dst->data[pos + 1] = (uint8_t)pal->data[b][1];
+                dst->data[pos + 2] = (uint8_t)pal->data[b][2];
             }
             // check the stencil to see if this is a real pixel
             if(s == 1) {
-                dst->data[pos+3] = (uint8_t)255; // fully opaque
+                dst->data[pos + 3] = (uint8_t)255; // fully opaque
             } else {
-                dst->data[pos+3] = (uint8_t)0; // fully transparent
+                dst->data[pos + 3] = (uint8_t)0; // fully transparent
             }
         }
     }
@@ -144,7 +144,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
         ret = SD_OUT_OF_MEMORY;
         goto error_1;
     }
-  
+
     info_ptr = png_create_info_struct(png_ptr);
     if(!info_ptr) {
         ret = SD_OUT_OF_MEMORY;
@@ -194,7 +194,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
         goto error_3;
     }
     for(int y = 0; y < h; y++) {
-        png_byte* row = row_pointers[y];
+        png_byte *row = row_pointers[y];
         for(int x = 0; x < w; x++) {
             img->data[w * y + x] = row[x];
         }
@@ -251,21 +251,14 @@ int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char 
     png_init_io(png_ptr, handle);
 
     // Write header. Paletted, 8 bits per pixel
-    png_set_IHDR(png_ptr,
-                 info_ptr,
-                 img->w,
-                 img->h,
-                 8,
-                 PNG_COLOR_TYPE_PALETTE,
-                 PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE,
-                 PNG_FILTER_TYPE_BASE);
+    png_set_IHDR(png_ptr, info_ptr, img->w, img->h, 8, PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
     palette = png_malloc(png_ptr, 256 * sizeof(png_color));
     for(int i = 0; i < 256; i++) {
-        palette[i].red   = pal->data[i][0];
+        palette[i].red = pal->data[i][0];
         palette[i].green = pal->data[i][1];
-        palette[i].blue  = pal->data[i][2];
+        palette[i].blue = pal->data[i][2];
     }
     png_set_PLTE(png_ptr, info_ptr, palette, 256);
 
@@ -280,7 +273,7 @@ int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char 
 
     // Write data
     png_write_info(png_ptr, info_ptr);
-    png_write_image(png_ptr, (void*)rows);
+    png_write_image(png_ptr, (void *)rows);
     png_write_end(png_ptr, NULL);
 
     // Free everything

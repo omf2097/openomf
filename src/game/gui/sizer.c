@@ -1,7 +1,7 @@
 #include "game/gui/sizer.h"
 #include "utils/allocator.h"
 
-component* sizer_get(const component *nc, int item) {
+component *sizer_get(const component *nc, int item) {
     sizer *local = component_get_obj(nc);
     component **c;
     c = vector_get(&local->objs, item);
@@ -21,7 +21,7 @@ void sizer_set_obj(component *c, void *obj) {
     local->obj = obj;
 }
 
-void* sizer_get_obj(const component *c) {
+void *sizer_get_obj(const component *c) {
     sizer *local = component_get_obj(c);
     return local->obj;
 }
@@ -139,7 +139,7 @@ static void sizer_free(component *c) {
     omf_free(local);
 }
 
-static component* sizer_find(component *c, int id) {
+static component *sizer_find(component *c, int id) {
     sizer *local = component_get_obj(c);
 
     // Free all objects inside the sizer
@@ -164,11 +164,11 @@ static component* sizer_find(component *c, int id) {
     return NULL;
 }
 
-component* sizer_create() {
+component *sizer_create() {
     component *c = component_create();
 
     sizer *local = omf_calloc(1, sizeof(sizer));
-    vector_create(&local->objs, sizeof(component*));
+    vector_create(&local->objs, sizeof(component *));
     component_set_obj(c, local);
 
     component_set_tick_cb(c, sizer_tick);

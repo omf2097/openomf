@@ -1,7 +1,7 @@
-#include <stdlib.h>
 #include "audio/sink.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <stdlib.h>
 
 static unsigned int _sink_global_id = 1;
 
@@ -9,13 +9,15 @@ unsigned int gid_gen() {
     return _sink_global_id++;
 }
 
-audio_stream* sink_get_stream(audio_sink *sink, unsigned int sid) {
-    if(sid == 0) return NULL;
-    if(sink == NULL) return NULL;
+audio_stream *sink_get_stream(audio_sink *sink, unsigned int sid) {
+    if(sid == 0)
+        return NULL;
+    if(sink == NULL)
+        return NULL;
     audio_stream **s;
     unsigned int len;
-    if(hashmap_iget(&sink->streams, sid, (void**)&s, &len) != 0) {
-    	return NULL;
+    if(hashmap_iget(&sink->streams, sid, (void **)&s, &len) != 0) {
+        return NULL;
     }
     return *s;
 }
@@ -38,12 +40,7 @@ int sink_is_playing(audio_sink *sink, int sid) {
     return 0;
 }
 
-void sink_play(audio_sink *sink,
-			   audio_source *src,
-               int id,
-			   float volume,
-			   float panning,
-			   float pitch) {
+void sink_play(audio_sink *sink, audio_source *src, int id, float volume, float panning, float pitch) {
     audio_stream *stream = omf_calloc(1, sizeof(audio_stream));
     stream_init(stream, sink, src);
     sink_format_stream(sink, stream);
@@ -51,7 +48,7 @@ void sink_play(audio_sink *sink,
     stream->panning = panning;
     stream->pitch = pitch;
     stream_play(stream);
-    hashmap_iput(&sink->streams, id, &stream, sizeof(audio_stream*));
+    hashmap_iput(&sink->streams, id, &stream, sizeof(audio_stream *));
 }
 
 void sink_stop(audio_sink *sink, int sid) {
@@ -68,7 +65,7 @@ void sink_render(audio_sink *sink) {
     hashmap_iter_begin(&sink->streams, &it);
     hashmap_pair *pair;
     while((pair = iter_next(&it)) != NULL) {
-        audio_stream *stream = *((audio_stream**)pair->val);
+        audio_stream *stream = *((audio_stream **)pair->val);
         stream_render(stream);
 
         // If stream is done, free it here.
@@ -87,7 +84,7 @@ void sink_free(audio_sink *sink) {
     hashmap_iter_begin(&sink->streams, &it);
     hashmap_pair *pair;
     while((pair = iter_next(&it)) != NULL) {
-        audio_stream *stream = *((audio_stream**)pair->val);
+        audio_stream *stream = *((audio_stream **)pair->val);
         stream_stop(stream);
         stream_free(stream);
         omf_free(stream);
@@ -101,43 +98,46 @@ void sink_free(audio_sink *sink) {
 }
 
 void sink_set_stream_panning(audio_sink *sink, int sid, float panning) {
-	if(panning < PANNING_MIN || panning > PANNING_MAX) return;
-	audio_stream *s = sink_get_stream(sink, sid);
-	s->panning = panning;
-	stream_apply(s);
+    if(panning < PANNING_MIN || panning > PANNING_MAX)
+        return;
+    audio_stream *s = sink_get_stream(sink, sid);
+    s->panning = panning;
+    stream_apply(s);
 }
 
 void sink_set_stream_volume(audio_sink *sink, int sid, float volume) {
-	if(volume < VOLUME_MIN || volume > VOLUME_MAX) return;
-	audio_stream *s = sink_get_stream(sink, sid);
-	s->volume = volume;
-	stream_apply(s);
+    if(volume < VOLUME_MIN || volume > VOLUME_MAX)
+        return;
+    audio_stream *s = sink_get_stream(sink, sid);
+    s->volume = volume;
+    stream_apply(s);
 }
 
 void sink_set_stream_pitch(audio_sink *sink, int sid, float pitch) {
-	if(pitch < PITCH_MIN || pitch > PITCH_MAX) return;
-	audio_stream *s = sink_get_stream(sink, sid);
-	s->pitch = pitch;
-	stream_apply(s);
+    if(pitch < PITCH_MIN || pitch > PITCH_MAX)
+        return;
+    audio_stream *s = sink_get_stream(sink, sid);
+    s->pitch = pitch;
+    stream_apply(s);
 }
 
 float sink_get_stream_panning(audio_sink *sink, int sid) {
-	return sink_get_stream(sink, sid)->panning;
+    return sink_get_stream(sink, sid)->panning;
 }
 
 float sink_get_stream_volume(audio_sink *sink, int sid) {
-	return sink_get_stream(sink, sid)->volume;
+    return sink_get_stream(sink, sid)->volume;
 }
 
 float sink_get_stream_pitch(audio_sink *sink, int sid) {
-	return sink_get_stream(sink, sid)->pitch;
+    return sink_get_stream(sink, sid)->pitch;
 }
 
 void sink_set_userdata(audio_sink *sink, void *userdata) {
     sink->userdata = userdata;
 }
 
-void* sink_get_userdata(audio_sink *sink) {
+void *sink_get_userdata(audio_sink *sink) {
     return sink->userdata;
 }
 

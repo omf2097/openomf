@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "formats/error.h"
-#include "formats/internal/reader.h"
-#include "formats/internal/memreader.h"
-#include "formats/internal/writer.h"
-#include "formats/internal/memwriter.h"
 #include "formats/chr.h"
+#include "formats/error.h"
+#include "formats/internal/memreader.h"
+#include "formats/internal/memwriter.h"
+#include "formats/internal/reader.h"
+#include "formats/internal/writer.h"
 #include "utils/allocator.h"
 
 #define UNUSED(x) (void)(x)
@@ -20,7 +20,7 @@ int sd_chr_create(sd_chr_file *chr) {
 }
 
 int sd_chr_load(sd_chr_file *chr, const char *filename) {
-    if(chr == NULL ||filename == NULL) {
+    if(chr == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
 
@@ -75,7 +75,6 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     // Close & return
     sd_reader_close(r);
     return SD_SUCCESS;
-
 
 error_1:
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
@@ -142,7 +141,7 @@ void sd_chr_free(sd_chr_file *chr) {
     sd_sprite_free(chr->photo);
 }
 
-const sd_chr_enemy* sd_chr_get_enemy(sd_chr_file *chr, int enemy_num) {
+const sd_chr_enemy *sd_chr_get_enemy(sd_chr_file *chr, int enemy_num) {
     if(chr == NULL || enemy_num < 0 || enemy_num >= chr->pilot.enemies_inc_unranked) {
         return NULL;
     }

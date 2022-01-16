@@ -1,14 +1,14 @@
 #include <stdlib.h>
 
-#include "game/scenes/cutscene.h"
-#include "resources/languages.h"
-#include "game/gui/text_render.h"
-#include "game/game_state.h"
 #include "audio/music.h"
-#include "video/video.h"
+#include "game/game_state.h"
+#include "game/gui/text_render.h"
+#include "game/scenes/cutscene.h"
 #include "resources/ids.h"
+#include "resources/languages.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/video.h"
 
 #define END_TEXT 992
 #define END1_TEXT 993
@@ -26,38 +26,36 @@ typedef struct cutscene_local_t {
 } cutscene_local;
 
 int cutscene_next_scene(scene *scene) {
-  switch (scene->id) {
-    case SCENE_END:
-      return SCENE_END1;
-    case SCENE_END1:
-      return SCENE_END2;
-    case SCENE_END2:
-      return SCENE_SCOREBOARD;
-    default:
-      return SCENE_NONE;
-  }
+    switch(scene->id) {
+        case SCENE_END:
+            return SCENE_END1;
+        case SCENE_END1:
+            return SCENE_END2;
+        case SCENE_END2:
+            return SCENE_SCOREBOARD;
+        default:
+            return SCENE_NONE;
+    }
 }
 
 void cutscene_input_tick(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
-    ctrl_event *p1=NULL, *i;
+    ctrl_event *p1 = NULL, *i;
 
     controller_poll(player1->ctrl, &p1);
 
     i = p1;
-    if (i) {
+    if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                if (
-                        i->event_data.action == ACT_KICK ||
-                        i->event_data.action == ACT_PUNCH) {
+                if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
 
-                    if (strlen(local->current) + local->pos < local->len) {
-                        local->pos += strlen(local->current)+1;
-                        local->current += strlen(local->current)+1;
-                        char * p;
-                        if ((p = strchr(local->current, '\n'))) {
+                    if(strlen(local->current) + local->pos < local->len) {
+                        local->pos += strlen(local->current) + 1;
+                        local->current += strlen(local->current) + 1;
+                        char *p;
+                        if((p = strchr(local->current, '\n'))) {
                             // null out the byte
                             *p = '\0';
                         }
@@ -103,47 +101,47 @@ int cutscene_create(scene *scene) {
     game_player *p1 = game_state_get_player(scene->gs, 0);
 
     const char *text = "";
-    switch (scene->id) {
-      case SCENE_END:
-        music_play(PSM_END);
-        text = lang_get(END_TEXT);
-        local->text_x = 10;
-        local->text_y = 5;
-        local->text_width = 300;
-        local->text_conf.cforeground = COLOR_YELLOW;
-        break;
+    switch(scene->id) {
+        case SCENE_END:
+            music_play(PSM_END);
+            text = lang_get(END_TEXT);
+            local->text_x = 10;
+            local->text_y = 5;
+            local->text_width = 300;
+            local->text_conf.cforeground = COLOR_YELLOW;
+            break;
 
-      case SCENE_END1:
-        text = lang_get(END1_TEXT+p1->pilot_id);
-        local->text_x = 10;
-        local->text_y = 157;
-        local->text_width = 300;
-        local->text_conf.cforeground = COLOR_RED;
+        case SCENE_END1:
+            text = lang_get(END1_TEXT + p1->pilot_id);
+            local->text_x = 10;
+            local->text_y = 157;
+            local->text_width = 300;
+            local->text_conf.cforeground = COLOR_RED;
 
-        // Pilot face
-        animation *ani = &bk_get_info(&scene->bk_data, 3)->ani;
-        object *obj = omf_calloc(1, sizeof(object));
-        object_create(obj, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
-        object_set_animation(obj, ani);
-        object_select_sprite(obj, p1->pilot_id);
-        object_set_halt(obj, 1);
-        game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+            // Pilot face
+            animation *ani = &bk_get_info(&scene->bk_data, 3)->ani;
+            object *obj = omf_calloc(1, sizeof(object));
+            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_set_animation(obj, ani);
+            object_select_sprite(obj, p1->pilot_id);
+            object_set_halt(obj, 1);
+            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
 
-        // Face effects
-        ani = &bk_get_info(&scene->bk_data, 10+p1->pilot_id)->ani;
-        obj = omf_calloc(1, sizeof(object));
-        object_create(obj, scene->gs, vec2i_create(0,0), vec2f_create(0, 0));
-        object_set_animation(obj, ani);
-        game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
-        break;
+            // Face effects
+            ani = &bk_get_info(&scene->bk_data, 10 + p1->pilot_id)->ani;
+            obj = omf_calloc(1, sizeof(object));
+            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_set_animation(obj, ani);
+            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+            break;
 
-      case SCENE_END2:
-        text = lang_get(END2_TEXT+p1->pilot_id);
-        local->text_x = 10;
-        local->text_y = 160;
-        local->text_width = 300;
-        local->text_conf.cforeground = COLOR_GREEN;
-        break;
+        case SCENE_END2:
+            text = lang_get(END2_TEXT + p1->pilot_id);
+            local->text_x = 10;
+            local->text_y = 160;
+            local->text_width = 300;
+            local->text_conf.cforeground = COLOR_GREEN;
+            break;
     }
 
     size_t text_len = strlen(text);
@@ -154,9 +152,9 @@ int cutscene_create(scene *scene) {
     local->current = local->text;
 
     char *p;
-    if ((p = strchr(local->text, '\n'))) {
-      // null out the byte
-      *p = '\0';
+    if((p = strchr(local->text, '\n'))) {
+        // null out the byte
+        *p = '\0';
     }
 
     // Callbacks

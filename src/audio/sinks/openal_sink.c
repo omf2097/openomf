@@ -9,11 +9,11 @@
 #include <AL/alc.h>
 #endif
 
-#include <stdlib.h>
 #include "audio/sinks/openal_sink.h"
 #include "audio/sinks/openal_stream.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <stdlib.h>
 
 typedef struct {
     ALCdevice *device;

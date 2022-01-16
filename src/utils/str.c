@@ -1,22 +1,24 @@
-#include "utils/allocator.h"
 #include "utils/str.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
-#define STR_ALLOC(string, size) do { \
-    string->len = (size); \
-    string->data = omf_calloc(string->len + 1, 1); \
-} while(0)
+#define STR_ALLOC(string, size)                                                                                        \
+    do {                                                                                                               \
+        string->len = (size);                                                                                          \
+        string->data = omf_calloc(string->len + 1, 1);                                                                 \
+    } while(0)
 
-#define STR_REALLOC(string, size) do { \
-    string->len = (size); \
-    string->data = omf_realloc(string->data, string->len + 1); \
-} while(0)
+#define STR_REALLOC(string, size)                                                                                      \
+    do {                                                                                                               \
+        string->len = (size);                                                                                          \
+        string->data = omf_realloc(string->data, string->len + 1);                                                     \
+    } while(0)
 
 #define STR_ZERO(string) string->data[string->len] = 0
 
@@ -81,13 +83,14 @@ void str_from_slice(str *dst, const str *src, size_t start, size_t end) {
 }
 
 void str_free(str *dst) {
-    if(dst == NULL) { return; }
+    if(dst == NULL) {
+        return;
+    }
     omf_free(dst->data);
     dst->len = 0;
 }
 
 // ------------------------ Modification ------------------------
-
 
 void str_toupper(str *dst) {
     for(size_t i = 0; i < dst->len; i++) {
@@ -170,14 +173,11 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
     size_t current_pos = 0;
     while(_find_next(dst, seek[0], &current_pos) && (found < limit || limit < 0)) {
         if(strncmp(dst->data + current_pos, seek, seek_len) == 0) {
-            if(diff > 0) {  // Grow first, before move.
+            if(diff > 0) { // Grow first, before move.
                 STR_REALLOC(dst, dst->len + diff);
             }
-            memmove(
-                dst->data + current_pos + replacement_len,
-                dst->data + current_pos + seek_len,
-                dst->len - replacement_len - current_pos
-            );
+            memmove(dst->data + current_pos + replacement_len, dst->data + current_pos + seek_len,
+                    dst->len - replacement_len - current_pos);
             memcpy(dst->data + current_pos, replacement, replacement_len);
             if(diff < 0) { // Reduce after all is done.
                 STR_REALLOC(dst, dst->len + diff);
@@ -189,7 +189,6 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
         current_pos++;
     }
 }
-
 
 // ------------------------ Getters ------------------------
 
@@ -270,7 +269,7 @@ bool str_to_long(const str *string, long *result) {
     return (string->data != end);
 }
 
-const char* str_c(const str *string) {
+const char *str_c(const str *string) {
     // At the moment, the internal representation of
     // string is compatible with C strings. So just return
     // a pointer to that data

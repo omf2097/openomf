@@ -1,14 +1,14 @@
-#include <stdlib.h>
 #include "game/protos/scene.h"
-#include "video/video.h"
-#include "resources/ids.h"
-#include "resources/bk_loader.h"
+#include "game/game_player.h"
+#include "game/game_state_type.h"
 #include "resources/af_loader.h"
+#include "resources/bk_loader.h"
+#include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vec.h"
-#include "game/game_player.h"
-#include "game/game_state_type.h"
+#include "video/video.h"
+#include <stdlib.h>
 
 // Some internal functions
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata);
@@ -23,9 +23,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     // Load BK
     int resource_id = scene_to_resource(scene_id);
     if(load_bk_file(&scene->bk_data, resource_id)) {
-        PERROR("Unable to load scene %s (%s)!",
-            scene_get_name(scene_id),
-            get_resource_name(resource_id));
+        PERROR("Unable to load scene %s (%s)!", scene_get_name(scene_id), get_resource_name(resource_id));
         return 1;
     }
     scene->id = scene_id;
@@ -49,9 +47,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     video_set_base_palette(bk_get_palette(&scene->bk_data, 0));
 
     // All done.
-    DEBUG("Loaded scene %s (%s).",
-        scene_get_name(scene_id),
-        get_resource_name(resource_id));
+    DEBUG("Loaded scene %s (%s).", scene_get_name(scene_id), get_resource_name(resource_id));
     return 0;
 }
 
@@ -82,18 +78,14 @@ int scene_load_har(scene *scene, int player_id, int har_id) {
 
     int resource_id = har_to_resource(har_id);
     if(load_af_file(scene->af_data[player_id], resource_id)) {
-        PERROR("Unable to load HAR %s (%s)!",
-            har_get_name(har_id),
-            get_resource_name(resource_id));
+        PERROR("Unable to load HAR %s (%s)!", har_get_name(har_id), get_resource_name(resource_id));
         return 1;
     }
 
     // Fix some coordinates on jump sprites
     har_fix_sprite_coords(&af_get_move(scene->af_data[player_id], ANIM_JUMPING)->ani, 0, -50);
 
-    DEBUG("Loaded HAR %s (%s).",
-        har_get_name(har_id),
-        get_resource_name(resource_id));
+    DEBUG("Loaded HAR %s (%s).", har_get_name(har_id), get_resource_name(resource_id));
     return 0;
 }
 
@@ -106,7 +98,7 @@ void scene_init(scene *scene) {
     hashmap_iter_begin(&scene->bk_data.infos, &it);
     hashmap_pair *pair = NULL;
     while((pair = iter_next(&it)) != NULL) {
-        bk_info *info = (bk_info*)pair->val;
+        bk_info *info = (bk_info *)pair->val;
 
         // Ask scene if this animation should be played on start
         scene_startup(scene, info->ani.id, &m_load, &m_repeat);
@@ -114,12 +106,12 @@ void scene_init(scene *scene) {
         // Start up animations
         if(m_load) {
             object *obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0,0));
+            object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
             object_set_stl(obj, scene->bk_data.sound_translation_table);
             object_set_animation(obj, &info->ani);
             object_set_repeat(obj, m_repeat);
-            object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);
-            object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);
+            object_set_spawn_cb(obj, cb_scene_spawn_object, (void *)scene);
+            object_set_destroy_cb(obj, cb_scene_destroy_object, (void *)scene);
             int o_prio = scene_anim_prio_override(scene, info->ani.id);
             o_prio = (o_prio != -1) ? o_prio : RENDER_LAYER_BOTTOM;
             game_state_add_object(scene->gs, obj, o_prio, 0, 0);
@@ -160,7 +152,7 @@ void scene_set_userdata(scene *scene, void *userdata) {
     scene->userdata = userdata;
 }
 
-void* scene_get_userdata(scene *scene) {
+void *scene_get_userdata(scene *scene) {
     return scene->userdata;
 }
 
@@ -229,11 +221,11 @@ void scene_free(scene *scene) {
         scene->free(scene);
     }
     bk_free(&scene->bk_data);
-    if (scene->af_data[0]) {
+    if(scene->af_data[0]) {
         af_free(scene->af_data[0]);
         omf_free(scene->af_data[0]);
     }
-    if (scene->af_data[1]) {
+    if(scene->af_data[1]) {
         af_free(scene->af_data[1]);
         omf_free(scene->af_data[1]);
     }
@@ -277,7 +269,7 @@ void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc) {
 }
 
 void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata) {
-    scene *sc = (scene*)userdata;
+    scene *sc = (scene *)userdata;
 
     // Get next animation
     bk_info *info = bk_get_info(&sc->bk_data, id);

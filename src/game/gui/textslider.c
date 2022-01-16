@@ -1,14 +1,14 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <SDL.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "audio/sound.h"
 #include "game/gui/textslider.h"
 #include "game/gui/widget.h"
-#include "audio/sound.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/compat.h"
+#include "utils/log.h"
 #include "utils/str.h"
 
 typedef struct {
@@ -29,11 +29,11 @@ static void textslider_render(component *c) {
     textslider *tb = widget_get_obj(c);
     str txt;
     str_from_format(&txt, "%s ", tb->text);
-    if (tb->has_off && *tb->pos == 0) {
+    if(tb->has_off && *tb->pos == 0) {
         str_append_c(&txt, "OFF");
     } else {
         for(int i = 0; i < tb->positions; i++) {
-            if (i+1 > *tb->pos) {
+            if(i + 1 > *tb->pos) {
                 str_append_c(&txt, "|");
             } else {
                 str_append_c(&txt, "\x7f");
@@ -43,8 +43,8 @@ static void textslider_render(component *c) {
 
     if(component_is_selected(c)) {
         int t = tb->ticks / 2;
-        tb->tconf.cforeground = color_create(80 - t, 220 - t*2, 80 - t, 255);
-    } else if (component_is_disabled(c)) {
+        tb->tconf.cforeground = color_create(80 - t, 220 - t * 2, 80 - t, 255);
+    } else if(component_is_disabled(c)) {
         tb->tconf.cforeground = color_create(121, 121, 121, 255);
     } else {
         tb->tconf.cforeground = color_create(0, 121, 0, 255);
@@ -55,9 +55,9 @@ static void textslider_render(component *c) {
 
 static int textslider_action(component *c, int action) {
     textslider *tb = widget_get_obj(c);
-    if (action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
+    if(action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
         (*tb->pos)++;
-        if (*tb->pos > tb->positions) {
+        if(*tb->pos > tb->positions) {
             *tb->pos = tb->positions;
         } else {
             // Play menu sound
@@ -70,9 +70,9 @@ static int textslider_action(component *c, int action) {
         tb->ticks = 0;
         tb->dir = 0;
         return 0;
-    } else  if(action == ACT_LEFT) {
+    } else if(action == ACT_LEFT) {
         (*tb->pos)--;
-        if (*tb->pos < 0) {
+        if(*tb->pos < 0) {
             *tb->pos = 0;
         } else {
             // Play menu sound
@@ -110,7 +110,8 @@ static void textslider_free(component *c) {
     omf_free(tb);
 }
 
-component* textslider_create(const text_settings *tconf, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata) {
+component *textslider_create(const text_settings *tconf, const char *text, unsigned int positions, int has_off,
+                             textslider_slide_cb cb, void *userdata) {
     component *c = widget_create();
 
     textslider *tb = omf_calloc(1, sizeof(textslider));
@@ -133,11 +134,10 @@ component* textslider_create(const text_settings *tconf, const char *text, unsig
     return c;
 }
 
-component* textslider_create_bind(const text_settings *tconf, const char *text, unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata, int *bind) {
+component *textslider_create_bind(const text_settings *tconf, const char *text, unsigned int positions, int has_off,
+                                  textslider_slide_cb cb, void *userdata, int *bind) {
     component *c = textslider_create(tconf, text, positions, has_off, cb, userdata);
     textslider *ts = widget_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;
     return c;
 }
-
-

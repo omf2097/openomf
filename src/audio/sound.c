@@ -1,16 +1,17 @@
-#include <stdlib.h>
+#include "audio/sound.h"
 #include "audio/audio.h"
+#include "audio/sink.h"
 #include "audio/source.h"
 #include "audio/sources/raw_source.h"
-#include "audio/sink.h"
-#include "audio/sound.h"
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
+#include <stdlib.h>
 
 static float _sound_volume = VOLUME_DEFAULT;
 
 #ifdef STANDALONE_SERVER
-void sound_play(int id, float volume, float panning, float pitch) {}
+void sound_play(int id, float volume, float panning, float pitch) {
+}
 #else
 void sound_play(int id, float volume, float panning, float pitch) {
     audio_sink *sink = audio_get_sink();

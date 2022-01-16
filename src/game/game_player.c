@@ -1,5 +1,5 @@
-#include "utils/allocator.h"
 #include "game/game_player.h"
+#include "utils/allocator.h"
 #include <stdlib.h>
 
 void game_player_create(game_player *gp) {
@@ -31,7 +31,7 @@ void game_player_set_har(game_player *gp, object *har) {
     gp->har = har;
 }
 
-object* game_player_get_har(game_player *gp) {
+object *game_player_get_har(game_player *gp) {
     return gp->har;
 }
 
@@ -49,7 +49,7 @@ void game_player_set_ctrl(game_player *gp, controller *ctrl) {
     gp->ctrl = ctrl;
 }
 
-controller* game_player_get_ctrl(game_player *gp) {
+controller *game_player_get_ctrl(game_player *gp) {
     return gp->ctrl;
 }
 
@@ -57,7 +57,7 @@ void game_player_set_portrait(game_player *gp, surface *portrait) {
     gp->portrait = portrait;
 }
 
-surface* game_player_get_portrait(game_player *gp) {
+surface *game_player_get_portrait(game_player *gp) {
     return gp->portrait;
 }
 
@@ -69,10 +69,10 @@ int game_player_get_selectable(game_player *gp) {
     return gp->selectable;
 }
 
-sd_pilot* game_player_get_pilot(game_player *gp) {
+sd_pilot *game_player_get_pilot(game_player *gp) {
     return &gp->pilot;
 }
 
-chr_score* game_player_get_score(game_player *gp) {
+chr_score *game_player_get_score(game_player *gp) {
     return &gp->score;
 }

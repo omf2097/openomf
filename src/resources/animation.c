@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 void animation_create(animation *ani, void *src, int id) {
-    sd_animation *sdani = (sd_animation*)src;
+    sd_animation *sdani = (sd_animation *)src;
 
     // Copy simple stuff
     ani->id = id;
@@ -35,12 +35,12 @@ void animation_create(animation *ani, void *src, int id) {
     vector_create(&ani->sprites, sizeof(sprite));
     sprite tmp_sprite;
     for(int i = 0; i < sdani->sprite_count; i++) {
-        sprite_create(&tmp_sprite, (void*)sdani->sprites[i], i);
+        sprite_create(&tmp_sprite, (void *)sdani->sprites[i], i);
         vector_append(&ani->sprites, &tmp_sprite);
     }
 }
 
-animation* create_animation_from_single(sprite *sp, vec2i pos) {
+animation *create_animation_from_single(sprite *sp, vec2i pos) {
     animation *a = omf_calloc(1, sizeof(animation));
     a->start_pos = pos;
     a->id = -1;
@@ -53,8 +53,8 @@ animation* create_animation_from_single(sprite *sp, vec2i pos) {
     return a;
 }
 
-sprite* animation_get_sprite(animation *ani, int sprite_id) {
-    return (sprite*)vector_get(&ani->sprites, sprite_id);
+sprite *animation_get_sprite(animation *ani, int sprite_id) {
+    return (sprite *)vector_get(&ani->sprites, sprite_id);
 }
 
 int animation_get_sprite_count(animation *ani) {

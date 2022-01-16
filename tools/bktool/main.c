@@ -1,17 +1,17 @@
 /** @file main.c
-  * @brief .BK file editor tool
-  * @author Tuomas Virtanen
-  * @license MIT
-  */
+ * @brief .BK file editor tool
+ * @author Tuomas Virtanen
+ * @license MIT
+ */
 
+#include "../shared/animation_misc.h"
+#include "../shared/conversions.h"
+#include "formats/bk.h"
+#include "formats/error.h"
 #include <SDL.h>
 #include <argtable2.h>
 #include <stdint.h>
 #include <string.h>
-#include "formats/bk.h"
-#include "formats/error.h"
-#include "../shared/animation_misc.h"
-#include "../shared/conversions.h"
 
 void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim);
 
@@ -20,7 +20,8 @@ int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
         printf("Animation #%d does not exist.\n", anim);
         return 0;
     }
-    if(sprite < 0 || bk->anims[anim]->animation->sprites[sprite] == 0 || sprite >= bk->anims[anim]->animation->sprite_count) {
+    if(sprite < 0 || bk->anims[anim]->animation->sprites[sprite] == 0 ||
+       sprite >= bk->anims[anim]->animation->sprite_count) {
         printf("Sprite #%d does not exist.\n", sprite);
         return 0;
     }
@@ -38,7 +39,8 @@ int check_anim(sd_bk_file *bk, int anim) {
 // Sprites -------------------------------------------------------
 
 void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
-    if(!check_anim_sprite(bk, anim, sprite)) return;
+    if(!check_anim_sprite(bk, anim, sprite))
+        return;
     SDL_Surface *surface;
     SDL_Texture *texture;
     SDL_Texture *background;
@@ -46,16 +48,10 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     SDL_Rect rect;
     SDL_Rect dstrect;
     sd_sprite *s = bk->anims[anim]->animation->sprites[sprite];
-    SDL_Window *window = SDL_CreateWindow(
-            "OMF2097 Remake",
-            SDL_WINDOWPOS_CENTERED,
-            SDL_WINDOWPOS_CENTERED,
-            320 * scale,
-            200 * scale,
-            SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
-            );
+    SDL_Window *window = SDL_CreateWindow("OMF2097 Remake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320 * scale,
+                                          200 * scale, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
-    if (!window) {
+    if(!window) {
         printf("Could not create window: %s\n", SDL_GetError());
         return;
     }
@@ -74,18 +70,19 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     sd_rgba_image img;
     sd_vga_image_decode(&img, bk->background, bk->palettes[0], -1);
 
-    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img.data, img.w, img.h, 32, img.w*4,
-            rmask, gmask, bmask, amask))) {
+    if(!(surface =
+             SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask, bmask, amask))) {
         printf("Could not create surface: %s\n", SDL_GetError());
         return;
     }
 
-    if ((background = SDL_CreateTextureFromSurface(renderer, surface)) == 0) {
+    if((background = SDL_CreateTextureFromSurface(renderer, surface)) == 0) {
         printf("Could not create texture: %s\n", SDL_GetError());
         return;
     }
 
-    if((rendertarget = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 320, 200)) == 0) {
+    if((rendertarget = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 320, 200)) ==
+       0) {
         printf("Could not create texture: %s\n", SDL_GetError());
         return;
     }
@@ -95,13 +92,13 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
 
     sd_sprite_rgba_decode(&img, s, bk->palettes[0], -1);
 
-    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img.data, img.w, img.h, 32, img.w*4,
-            rmask, gmask, bmask, amask))) {
+    if(!(surface =
+             SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask, bmask, amask))) {
         printf("Could not create surface: %s\n", SDL_GetError());
         return;
     }
 
-    if ((texture = SDL_CreateTextureFromSurface(renderer, surface)) == 0) {
+    if((texture = SDL_CreateTextureFromSurface(renderer, surface)) == 0) {
         printf("Could not create texture: %s\n", SDL_GetError());
         return;
     }
@@ -121,31 +118,31 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
 
     while(1) {
         SDL_Event e;
-        if (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
+        if(SDL_PollEvent(&e)) {
+            if(e.type == SDL_QUIT) {
                 break;
-            } else if (e.type == SDL_KEYUP) {
+            } else if(e.type == SDL_KEYUP) {
                 int i = anim;
                 int changed = 0;
-                switch (e.key.keysym.sym) {
+                switch(e.key.keysym.sym) {
                     case SDLK_RIGHT:
-                        sprite = (sprite+1) % bk->anims[anim]->animation->sprite_count;
+                        sprite = (sprite + 1) % bk->anims[anim]->animation->sprite_count;
                         printf("sprite is now %u\n", sprite);
                         changed = 1;
                         break;
                     case SDLK_LEFT:
                         sprite--;
-                        if (sprite < 0) {
+                        if(sprite < 0) {
                             sprite = bk->anims[anim]->animation->sprite_count - 1;
                         }
                         changed = 1;
                         break;
                     case SDLK_UP:
                         i++;
-                        while (!check_anim(bk, i) && i < 50) {
+                        while(!check_anim(bk, i) && i < 50) {
                             i++;
                         }
-                        if (i == 50) {
+                        if(i == 50) {
                             printf("no more animations\n");
                         } else {
                             anim = i;
@@ -159,10 +156,10 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                         break;
                     case SDLK_DOWN:
                         i--;
-                        while (!check_anim(bk, i) && i >= 0) {
+                        while(!check_anim(bk, i) && i >= 0) {
                             i--;
                         }
-                        if (i < 0) {
+                        if(i < 0) {
                             printf("no previous animations\n");
                         } else {
                             anim = i;
@@ -177,20 +174,20 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                     default:
                         changed = 0;
                 }
-                if (changed) {
+                if(changed) {
                     s = bk->anims[anim]->animation->sprites[sprite];
                     sd_sprite_rgba_decode(&img, s, bk->palettes[0], -1);
                     int x = s->pos_x + bk->anims[anim]->animation->start_x;
                     int y = s->pos_y + bk->anims[anim]->animation->start_y;
                     printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", x, y, s->width, s->height, s->len);
 
-                    if(!(surface = SDL_CreateRGBSurfaceFrom((void*)img.data, img.w, img.h, 32, img.w*4,
-                                    rmask, gmask, bmask, amask))) {
+                    if(!(surface = SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask,
+                                                            bmask, amask))) {
                         printf("Could not create surface: %s\n", SDL_GetError());
                         return;
                     }
 
-                    if ((texture = SDL_CreateTextureFromSurface(renderer, surface)) == 0) {
+                    if((texture = SDL_CreateTextureFromSurface(renderer, surface)) == 0) {
                         printf("Could not create texture: %s\n", SDL_GetError());
                         return;
                     }
@@ -236,27 +233,48 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
 
 // Animations --------------------------------------------------------------
 
-int bkanim_key_get_id(const char* key) {
-    if(strcmp(key, "null") == 0) return 0;
-    if(strcmp(key, "chain_hit") == 0) return 1;
-    if(strcmp(key, "chain_no_hit") == 0) return 2;
-    if(strcmp(key, "load_on_start") == 0) return 3;
-    if(strcmp(key, "probability") == 0) return 4;
-    if(strcmp(key, "hazard_damage") == 0) return 5;
-    if(strcmp(key, "bk_str") == 0) return 6;
+int bkanim_key_get_id(const char *key) {
+    if(strcmp(key, "null") == 0)
+        return 0;
+    if(strcmp(key, "chain_hit") == 0)
+        return 1;
+    if(strcmp(key, "chain_no_hit") == 0)
+        return 2;
+    if(strcmp(key, "load_on_start") == 0)
+        return 3;
+    if(strcmp(key, "probability") == 0)
+        return 4;
+    if(strcmp(key, "hazard_damage") == 0)
+        return 5;
+    if(strcmp(key, "bk_str") == 0)
+        return 6;
     return anim_key_get_id(key);
 }
 
 void bkanim_set_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kcount, const char *value) {
     int kn = bkanim_key_get_id(key[0]);
     switch(kn) {
-        case 0:  bka->null = conv_ubyte(value); break;
-        case 1:  bka->chain_hit = conv_ubyte(value); break;
-        case 2:  bka->chain_no_hit = conv_ubyte(value); break;
-        case 3:  bka->load_on_start = conv_ubyte(value); break;
-        case 4:  bka->probability = conv_uword(value); break;
-        case 5:  bka->hazard_damage = conv_ubyte(value); break;
-        case 6:  sd_bk_set_anim_string(bka, value); break;
+        case 0:
+            bka->null = conv_ubyte(value);
+            break;
+        case 1:
+            bka->chain_hit = conv_ubyte(value);
+            break;
+        case 2:
+            bka->chain_no_hit = conv_ubyte(value);
+            break;
+        case 3:
+            bka->load_on_start = conv_ubyte(value);
+            break;
+        case 4:
+            bka->probability = conv_uword(value);
+            break;
+        case 5:
+            bka->hazard_damage = conv_ubyte(value);
+            break;
+        case 6:
+            sd_bk_set_anim_string(bka, value);
+            break;
         default:
             anim_set_key(ani, kn, key, kcount, value);
             return;
@@ -268,20 +286,35 @@ void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
     int kn = bkanim_key_get_id(key[0]);
 
     switch(kn) {
-        case 0: printf("%d\n", bka->null); break;
-        case 1: printf("%d\n", bka->chain_hit); break;
-        case 2: printf("%d\n", bka->chain_no_hit); break;
-        case 3: printf("%d\n", bka->load_on_start); break;
-        case 4: printf("%d\n", bka->probability); break;
-        case 5: printf("%d\n", bka->hazard_damage); break;
-        case 6: printf("%s\n", bka->footer_string); break;
+        case 0:
+            printf("%d\n", bka->null);
+            break;
+        case 1:
+            printf("%d\n", bka->chain_hit);
+            break;
+        case 2:
+            printf("%d\n", bka->chain_no_hit);
+            break;
+        case 3:
+            printf("%d\n", bka->load_on_start);
+            break;
+        case 4:
+            printf("%d\n", bka->probability);
+            break;
+        case 5:
+            printf("%d\n", bka->hazard_damage);
+            break;
+        case 6:
+            printf("%s\n", bka->footer_string);
+            break;
         default:
             anim_get_key(ani, kn, key, kcount, pcount);
     }
 }
 
 void anim_play(sd_bk_file *bk, int scale, int anim) {
-    if(!check_anim(bk, anim)) return;
+    if(!check_anim(bk, anim))
+        return;
     sprite_play(bk, scale, anim, 0);
 }
 
@@ -334,21 +367,32 @@ void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim) {
 
 // BK Root  --------------------------------------------------------------
 
-int bk_key_get_id(const char* key) {
-    if(strcmp(key, "fileid") == 0) return 0;
-    if(strcmp(key, "palette") == 0) return 1;
-    if(strcmp(key, "unknown") == 0) return 2;
-    if(strcmp(key, "footer") == 0) return 3;
-    if(strcmp(key, "background") == 0) return 4;
+int bk_key_get_id(const char *key) {
+    if(strcmp(key, "fileid") == 0)
+        return 0;
+    if(strcmp(key, "palette") == 0)
+        return 1;
+    if(strcmp(key, "unknown") == 0)
+        return 2;
+    if(strcmp(key, "footer") == 0)
+        return 3;
+    if(strcmp(key, "background") == 0)
+        return 4;
     return -1;
 }
 
 void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value) {
     int tmp = 0;
     switch(bk_key_get_id(key[0])) {
-        case 0: bk->file_id = conv_udword(value); break;
-        case 1: printf("Setting palette not supported."); break;
-        case 2: bk->unknown_a = conv_ubyte(value); break;
+        case 0:
+            bk->file_id = conv_udword(value);
+            break;
+        case 1:
+            printf("Setting palette not supported.");
+            break;
+        case 2:
+            bk->unknown_a = conv_ubyte(value);
+            break;
         case 3:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
@@ -362,7 +406,7 @@ void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value)
                 printf("Soundtable value requires index parameter (eg. --key soundtable --key 3).\n");
                 return;
             }
-        break;
+            break;
         default:
             printf("Value setting not supported for this key!\n");
             return;
@@ -372,29 +416,32 @@ void bk_set_key(sd_bk_file *bk, const char **key, int kcount, const char *value)
 
 void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
     int tmp = 0;
-    unsigned char r,g,b;
+    unsigned char r, g, b;
     switch(bk_key_get_id(key[0])) {
-        case 0: printf("%d\n", bk->file_id); break;
-        case 1: {
-                if(kcount <= 1) {
-                    printf("Palette index required for palette fetching.\n");
-                    return;
-                }
-                int index = conv_ubyte(key[1]);
-                palette *pal = sd_bk_get_palette(bk, index);
-                if(pal == NULL) {
-                    printf("No palette found at index %d.\n", index);
-                    return;
-                }
-                for(int tmp = 0; tmp < 256; tmp++) {
-                    r = pal->data[tmp][0];
-                    g = pal->data[tmp][1];
-                    b = pal->data[tmp][2];
-                    printf("%d = %3u %3u %3u\n", tmp, r, g, b);
-                }
-            }
+        case 0:
+            printf("%d\n", bk->file_id);
             break;
-        case 2: printf("%d\n", bk->unknown_a); break;
+        case 1: {
+            if(kcount <= 1) {
+                printf("Palette index required for palette fetching.\n");
+                return;
+            }
+            int index = conv_ubyte(key[1]);
+            palette *pal = sd_bk_get_palette(bk, index);
+            if(pal == NULL) {
+                printf("No palette found at index %d.\n", index);
+                return;
+            }
+            for(int tmp = 0; tmp < 256; tmp++) {
+                r = pal->data[tmp][0];
+                g = pal->data[tmp][1];
+                b = pal->data[tmp][2];
+                printf("%d = %3u %3u %3u\n", tmp, r, g, b);
+            }
+        } break;
+        case 2:
+            printf("%d\n", bk->unknown_a);
+            break;
         case 3:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
@@ -404,7 +451,10 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
                     printf("Soundtable index %d does not exist!\n", tmp);
                 }
             } else {
-                for(int i = 0; i < 30; i++) { printf("%d ", bk->soundtable[i]); } printf("\n");
+                for(int i = 0; i < 30; i++) {
+                    printf("%d ", bk->soundtable[i]);
+                }
+                printf("\n");
             }
             break;
         default:
@@ -420,8 +470,7 @@ void bk_push_key(sd_bk_file *bk, const char **key) {
             sd_bk_push_palette(bk, &pal);
             palette_free(&pal);
             printf("Element pushed; new size is %d.\n", bk->palette_count);
-            }
-            break;
+        } break;
         default:
             printf("Pushing not supported for this key.\n");
     }
@@ -456,8 +505,7 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 printf("Error while exporting palette: %s.", sd_get_error(ret));
                 return;
             }
-            }
-            break;
+        } break;
         case 4: {
             palette *pal = sd_bk_get_palette(bk, 0);
             if(pal == NULL) {
@@ -471,13 +519,10 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
             }
             int ret = sd_vga_image_to_png(img, pal, filename);
             if(ret != SD_SUCCESS) {
-                printf("Error while exporting background to %s: %s\n",
-                    filename,
-                    sd_get_error(ret));
+                printf("Error while exporting background to %s: %s\n", filename, sd_get_error(ret));
                 return;
             }
-            }
-            break;
+        } break;
         default:
             printf("Exporting not supported for this key.\n");
     }
@@ -501,21 +546,17 @@ void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 printf("Error while importing palette: %s.", sd_get_error(ret));
                 return;
             }
-            }
-            break;
+        } break;
         case 4: {
             sd_vga_image img;
             int ret = sd_vga_image_from_png(&img, filename);
             if(ret != SD_SUCCESS) {
-                printf("Error while attempting to import %s: %s\n",
-                    filename,
-                    sd_get_error(ret));
+                printf("Error while attempting to import %s: %s\n", filename, sd_get_error(ret));
                 return;
             }
             sd_bk_set_background(bk, &img);
             sd_vga_image_free(&img);
-            }
-            break;
+        } break;
         default:
             printf("Importing not supported for this key.\n");
     }
@@ -546,7 +587,7 @@ void bk_info(sd_bk_file *bk) {
                 start = m;
                 last = m;
             }
-            if(m > last+1) {
+            if(m > last + 1) {
                 if(start == last) {
                     printf("%d, ", last);
                 } else {
@@ -578,7 +619,7 @@ void bk_info(sd_bk_file *bk) {
     }
     printf("|\n");
     printf("   |");
-    for(int k = 0; k < 30*3; k++) {
+    for(int k = 0; k < 30 * 3; k++) {
         printf("-");
     }
     printf("|\n");
@@ -613,8 +654,9 @@ int main(int argc, char *argv[]) {
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
     struct arg_end *end = arg_end(30);
-    void* argtable[] = {help,vers,file,new,output,anim,all_anims,sprite,keylist,key,value,push,pop,export,import,stencil,play,scale,parse,end};
-    const char* progname = "bktool";
+    void *argtable[] = {help,  vers, file, new,    output, anim,    all_anims, sprite, keylist, key,
+                        value, push, pop,  export, import, stencil, play,      scale,  parse,   end};
+    const char *progname = "bktool";
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -719,8 +761,10 @@ int main(int argc, char *argv[]) {
     int _sc = 1;
     if(scale->count > 0) {
         _sc = scale->ival[0];
-        if(_sc > 4) _sc = 4;
-        if(_sc < 1) _sc = 1;
+        if(_sc > 4)
+            _sc = 4;
+        if(_sc < 1)
+            _sc = 1;
     }
 
     // Handle args
@@ -803,7 +847,7 @@ int main(int argc, char *argv[]) {
         sd_bk_anim *bka;
         sd_animation *ani;
         for(int i = 0; i < 50; i++) {
-            if (bk.anims[i]) {
+            if(bk.anims[i]) {
                 bka = bk.anims[i];
                 ani = bka->animation;
                 if(key->count > 0) {
@@ -848,9 +892,7 @@ done:
     if(output->count > 0) {
         int ret = sd_bk_save(&bk, output->filename[0]);
         if(ret != SD_SUCCESS) {
-            printf("Error attempting to save to %s: %s\n",
-                output->filename[0],
-                sd_get_error(ret));
+            printf("Error attempting to save to %s: %s\n", output->filename[0], sd_get_error(ret));
         }
     }
 
@@ -859,6 +901,6 @@ exit_1:
     sd_bk_free(&bk);
     SDL_Quit();
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

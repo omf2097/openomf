@@ -1,31 +1,20 @@
 /** @file main.c
-  * @brief TRN file parser tool
-  * @author Tuomas Virtanen
-  * @license MIT
-  */
+ * @brief TRN file parser tool
+ * @author Tuomas Virtanen
+ * @license MIT
+ */
 
+#include "../shared/pilot.h"
+#include "formats/error.h"
+#include "formats/tournament.h"
 #include <argtable2.h>
 #include <stdint.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "formats/tournament.h"
-#include "formats/error.h"
-#include "../shared/pilot.h"
+#include <string.h>
 
-
-const char *language_names[] = {
-    "English",
-    "German",
-    "French",
-    "Spanish",
-    "Mexican",
-    "Italian",
-    "Polish",
-    "Russian",
-    "Undef",
-    "Undef"
-};
+const char *language_names[] = {"English", "German", "French",  "Spanish", "Mexican",
+                                "Italian", "Polish", "Russian", "Undef",   "Undef"};
 
 void print_locale(sd_tournament_locale *locale, int lang_id) {
     // Make sure the locale is valid
@@ -34,25 +23,16 @@ void print_locale(sd_tournament_locale *locale, int lang_id) {
 
     // Print locale information
     printf("\n[%d] Locale '%s':\n", lang_id, language_names[lang_id]);
-    printf("  - Logo: length = %d, size = (%d,%d), pos = (%d,%d)\n",
-        locale->logo->len,
-        locale->logo->width,
-        locale->logo->height,
-        locale->logo->pos_x,
-        locale->logo->pos_y);
+    printf("  - Logo: length = %d, size = (%d,%d), pos = (%d,%d)\n", locale->logo->len, locale->logo->width,
+           locale->logo->height, locale->logo->pos_x, locale->logo->pos_y);
     printf("  - Title: %s\n", locale->title);
 
     // Print victory text pages
     printf("  - Text pages:\n");
     for(int har = 0; har < 11; har++) {
         for(int page = 0; page < 10; page++) {
-            if(locale->end_texts[har][page] != NULL
-                && locale->end_texts[har][page][0] != 0)
-            {
-                printf("    * Page (%d,%d): %s\n",
-                    har,
-                    page,
-                    locale->end_texts[har][page]);
+            if(locale->end_texts[har][page] != NULL && locale->end_texts[har][page][0] != 0) {
+                printf("    * Page (%d,%d): %s\n", har, page, locale->end_texts[har][page]);
             }
         }
     }
@@ -74,7 +54,7 @@ void print_info(sd_tournament_file *trn) {
 }
 
 int main(int argc, char *argv[]) {
-   // commandline argument parser options
+    // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "TRN file");
@@ -83,8 +63,8 @@ int main(int argc, char *argv[]) {
     struct arg_lit *info = arg_lit0(NULL, "info", "Only print tournament information");
     struct arg_file *output = arg_file0("o", "output", "<file>", "TRN output file");
     struct arg_end *end = arg_end(20);
-    void* argtable[] = {help,vers,file,output,locale,pilot,info,end};
-    const char* progname = "trntool";
+    void *argtable[] = {help, vers, file, output, locale, pilot, info, end};
+    const char *progname = "trntool";
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -125,9 +105,7 @@ int main(int argc, char *argv[]) {
     sd_tournament_create(&trn);
     int ret = sd_tournament_load(&trn, file->filename[0]);
     if(ret != SD_SUCCESS) {
-        printf("TRN file %s could not be loaded: %s\n",
-            file->filename[0],
-            sd_get_error(ret));
+        printf("TRN file %s could not be loaded: %s\n", file->filename[0], sd_get_error(ret));
         goto exit_0;
     }
 
@@ -163,10 +141,7 @@ int main(int argc, char *argv[]) {
             sd_tournament_locale *locale = trn.locales[i];
             if(locale->title[0] == 0)
                 continue;
-            printf("%2d %-10s %-25s\n",
-                i,
-                language_names[i],
-                locale->title);
+            printf("%2d %-10s %-25s\n", i, language_names[i], locale->title);
         }
 
         print_info(&trn);
@@ -175,9 +150,7 @@ int main(int argc, char *argv[]) {
     if(output->count > 0) {
         ret = sd_tournament_save(&trn, output->filename[0]);
         if(ret != SD_SUCCESS) {
-            printf("Failed to save TRN file to %s: %s\n",
-                output->filename[0],
-                sd_get_error(ret));
+            printf("Failed to save TRN file to %s: %s\n", output->filename[0], sd_get_error(ret));
         } else {
             printf("Saved.");
         }
@@ -186,6 +159,6 @@ int main(int argc, char *argv[]) {
 exit_1:
     sd_tournament_free(&trn);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }

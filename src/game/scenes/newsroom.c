@@ -1,17 +1,17 @@
 #include "game/scenes/newsroom.h"
-#include "game/gui/menu_background.h"
+#include "audio/music.h"
 #include "game/gui/dialog.h"
-#include "resources/languages.h"
+#include "game/gui/menu_background.h"
 #include "game/gui/text_render.h"
 #include "game/utils/settings.h"
-#include "audio/music.h"
 #include "resources/ids.h"
+#include "resources/languages.h"
 #include "resources/pilots.h"
 #include "utils/allocator.h"
-#include "utils/random.h"
-#include "utils/str.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "utils/random.h"
+#include "utils/str.h"
 #include "video/surface.h"
 #include "video/video.h"
 
@@ -31,15 +31,15 @@ typedef struct newsroom_local_t {
     dialog continue_dialog;
 } newsroom_local;
 
-const char* object_pronoun(int sex) {
-    if (sex == PILOT_SEX_MALE) {
+const char *object_pronoun(int sex) {
+    if(sex == PILOT_SEX_MALE) {
         return "Him";
     }
     return "Her";
 }
 
-const char* subject_pronoun(int sex) {
-    if (sex == PILOT_SEX_MALE) {
+const char *subject_pronoun(int sex) {
+    if(sex == PILOT_SEX_MALE) {
         return "He";
     }
     return "She";
@@ -82,10 +82,8 @@ void newsroom_fixup_str(newsroom_local *local) {
     str_free(&tmp);
 }
 
-void newsroom_set_names(newsroom_local *local,
-                        const char *pilot1, const char *pilot2,
-                        const char *har1, const char *har2,
-                        int sex1, int sex2) {
+void newsroom_set_names(newsroom_local *local, const char *pilot1, const char *pilot2, const char *har1,
+                        const char *har2, int sex1, int sex2) {
 
     str_from_c(&local->pilot1, pilot1);
     str_from_c(&local->pilot2, pilot2);
@@ -98,7 +96,6 @@ void newsroom_set_names(newsroom_local *local,
     str_rstrip(&local->pilot1);
     str_rstrip(&local->pilot2);
 }
-
 
 // newsroom callbacks
 void newsroom_free(scene *scene) {
@@ -144,11 +141,11 @@ void newsroom_overlay_render(scene *scene) {
     }
 }
 
-void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result){
+void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result) {
     scene *sc = dlg->userdata;
     if(result == DIALOG_RESULT_NO) {
         game_state_set_next(sc->gs, SCENE_SCOREBOARD);
-    } else if (result == DIALOG_RESULT_YES_OK) {
+    } else if(result == DIALOG_RESULT_YES_OK) {
         // Resetting p2->sp_wins here allows the game to progress,
         // otherwise you get stuck with the same opponent
         game_player *p1 = game_state_get_player(sc->gs, 0);
@@ -165,31 +162,29 @@ void newsroom_input_tick(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
 
     game_player *player1 = game_state_get_player(scene->gs, 0);
-    ctrl_event *p1=NULL, *i;
+    ctrl_event *p1 = NULL, *i;
     controller_poll(player1->ctrl, &p1);
     i = p1;
-    if (i) {
+    if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if(dialog_is_visible(&local->continue_dialog)) {
                     dialog_event(&local->continue_dialog, i->event_data.action);
-                } else if (
-                        i->event_data.action == ACT_ESC ||
-                        i->event_data.action == ACT_KICK ||
-                        i->event_data.action == ACT_PUNCH) {
+                } else if(i->event_data.action == ACT_ESC || i->event_data.action == ACT_KICK ||
+                          i->event_data.action == ACT_PUNCH) {
                     local->screen++;
                     newsroom_fixup_str(local);
                     if(local->screen >= 2) {
-                        if (local->won) {
+                        if(local->won) {
                             // pick a new player
                             game_player *p1 = game_state_get_player(scene->gs, 0);
                             game_player *p2 = game_state_get_player(scene->gs, 1);
                             DEBUG("wins are %d", p1->sp_wins);
-                            if (p1->sp_wins == (4094 ^ (2 << p1->pilot_id)))  {
+                            if(p1->sp_wins == (4094 ^ (2 << p1->pilot_id))) {
                                 // won the game
                                 game_state_set_next(scene->gs, SCENE_END);
                             } else {
-                                if (p1->sp_wins == (2046 ^ (2 << p1->pilot_id))) {
+                                if(p1->sp_wins == (2046 ^ (2 << p1->pilot_id))) {
                                     // everyone but kriessack
                                     p2->pilot_id = 10;
                                     p2->har_id = HAR_NOVA;
@@ -197,7 +192,7 @@ void newsroom_input_tick(scene *scene) {
                                     // pick an opponent we have not yet beaten
                                     while(1) {
                                         int i = rand_int(10);
-                                        if ((2 << i) & p1->sp_wins || i == p1->pilot_id) {
+                                        if((2 << i) & p1->sp_wins || i == p1->pilot_id) {
                                             continue;
                                         }
                                         p2->pilot_id = i;
@@ -231,18 +226,18 @@ void newsroom_input_tick(scene *scene) {
 }
 
 int pilot_sex(int pilot_id) {
-  switch (pilot_id) {
-    case 0:
-      // Crystal
-    case 7:
-      // Angel
-    case 8:
-      // Cossette
-      return PILOT_SEX_FEMALE;
-    default:
-      // everyone else is male
-      return PILOT_SEX_MALE;
-  }
+    switch(pilot_id) {
+        case 0:
+            // Crystal
+        case 7:
+            // Angel
+        case 8:
+            // Cossette
+            return PILOT_SEX_FEMALE;
+        default:
+            // everyone else is male
+            return PILOT_SEX_MALE;
+    }
 }
 
 void newsroom_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -257,7 +252,7 @@ void newsroom_startup(scene *scene, int id, int *m_load, int *m_repeat) {
 int newsroom_create(scene *scene) {
     newsroom_local *local = omf_calloc(1, sizeof(newsroom_local));
 
-    local->news_id = rand_int(24)*2;
+    local->news_id = rand_int(24) * 2;
     local->screen = 0;
     menu_background_create(&local->news_bg, 280, 50);
     str_create(&local->news_str);
@@ -270,7 +265,7 @@ int newsroom_create(scene *scene) {
     game_player *p2 = game_state_get_player(scene->gs, 1);
 
     int health = 0;
-    if (p2->sp_wins > 0) {
+    if(p2->sp_wins > 0) {
         // AI won, player lost
         local->won = 0;
         health = game_player_get_score(p2)->health;
@@ -281,25 +276,21 @@ int newsroom_create(scene *scene) {
 
     DEBUG("health is %d", health);
 
-    if (health > 40 && local->won == 1) {
-        local->news_id = rand_int(6)*2;
-    } else if (local->won == 1) {
-        local->news_id = 12+rand_int(6)*2;
-    } else if (health < 40 && local->won == 0) {
-        local->news_id = 38+rand_int(5)*2;
+    if(health > 40 && local->won == 1) {
+        local->news_id = rand_int(6) * 2;
+    } else if(local->won == 1) {
+        local->news_id = 12 + rand_int(6) * 2;
+    } else if(health < 40 && local->won == 0) {
+        local->news_id = 38 + rand_int(5) * 2;
     } else {
-        local->news_id = 24+rand_int(7)*2;
+        local->news_id = 24 + rand_int(7) * 2;
     }
 
     // XXX TODO get the real sex of pilot
     // XXX TODO strip spaces from the end of the pilots name
     // XXX TODO set winner/loser names properly
-    newsroom_set_names(local, lang_get(20+p1->pilot_id),
-                              lang_get(20+p2->pilot_id),
-                              har_get_name(p1->har_id),
-                              har_get_name(p2->har_id),
-                              pilot_sex(p1->pilot_id),
-                              pilot_sex(p2->pilot_id));
+    newsroom_set_names(local, lang_get(20 + p1->pilot_id), lang_get(20 + p2->pilot_id), har_get_name(p1->har_id),
+                       har_get_name(p2->har_id), pilot_sex(p1->pilot_id), pilot_sex(p2->pilot_id));
     newsroom_fixup_str(local);
 
     // Continue Dialog
