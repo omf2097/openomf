@@ -37,7 +37,8 @@
 #define MS_PER_OMF_TICK 10
 #define MS_PER_OMF_TICK_SLOWEST 60
 
-enum {
+enum
+{
     TICK_DYNAMIC = 0,
     TICK_STATIC,
 };

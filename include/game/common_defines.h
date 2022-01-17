@@ -1,11 +1,11 @@
 #ifndef COMMON_DEFINES_H
 #define COMMON_DEFINES_H
 
-const char* ai_difficulty_get_name(unsigned int id);
-const char* har_get_name(unsigned int id);
-const char* pilot_get_name(unsigned int id);
-const char* round_get_name(unsigned int id);
-const char* scene_get_name(unsigned int id);
+const char *ai_difficulty_get_name(unsigned int id);
+const char *har_get_name(unsigned int id);
+const char *pilot_get_name(unsigned int id);
+const char *round_get_name(unsigned int id);
+const char *scene_get_name(unsigned int id);
 
 int har_to_resource(unsigned int id);
 int scene_to_resource(unsigned int id);
@@ -18,7 +18,8 @@ extern const char *pilot_type_names[];
 extern const char *har_type_names[];
 extern const char *scene_type_names[];
 
-enum {
+enum
+{
     SCENE_NONE = 0,
     SCENE_INTRO,
     SCENE_OPENOMF,
@@ -44,7 +45,8 @@ enum {
     NUMBER_OF_SCENE_TYPES,
 };
 
-enum {
+enum
+{
     AI_DIFFICULTY_PUNCHING_BAG = 0,
     AI_DIFFICULTY_ROOKIE,
     AI_DIFFICULTY_VETERAN,
@@ -56,7 +58,8 @@ enum {
 };
 
 // These should match the resource list in order
-enum {
+enum
+{
     HAR_JAGUAR = 0,
     HAR_SHADOW,
     HAR_THORN,
@@ -71,7 +74,8 @@ enum {
     NUMBER_OF_HAR_TYPES,
 };
 
-enum {
+enum
+{
     PILOT_CRYSTAL = 0,
     PILOT_STEFFAN,
     PILOT_MILANO,
@@ -86,7 +90,8 @@ enum {
     NUMBER_OF_PILOT_TYPES,
 };
 
-enum {
+enum
+{
     ROUND_TYPE_ONE = 0,
     ROUND_TYPE_2_OF_3,
     ROUND_TYPE_3_OF_5,

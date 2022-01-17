@@ -3,7 +3,8 @@
 
 #include "game/protos/scene.h"
 
-enum {
+enum
+{
     ARENA_STATE_STARTING,
     ARENA_STATE_FIGHTING,
     ARENA_STATE_ENDING

@@ -1,11 +1,11 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
-#include <SDL.h>
-#include "utils/vector.h"
-#include "utils/random.h"
-#include "game/utils/serial.h"
 #include "game/game_state_type.h"
+#include "game/utils/serial.h"
+#include "utils/random.h"
+#include "utils/vector.h"
+#include <SDL.h>
 
 typedef struct scene_t scene;
 typedef struct game_player_t game_player;
@@ -20,16 +20,16 @@ void game_state_static_tick(game_state *gs);
 void game_state_dynamic_tick(game_state *gs);
 void game_state_tick_controllers(game_state *gs);
 unsigned int game_state_get_tick(game_state *gs);
-scene* game_state_get_scene(game_state *gs);
+scene *game_state_get_scene(game_state *gs);
 unsigned int game_state_is_running(game_state *gs);
 unsigned int game_state_is_paused(game_state *gs);
 void game_state_set_paused(game_state *gs, unsigned int paused);
 void game_state_set_next(game_state *gs, unsigned int next_scene_id);
-game_player* game_state_get_player(game_state *gs, int player_id);
+game_player *game_state_get_player(game_state *gs, int player_id);
 int game_state_num_players(game_state *gs);
 void game_state_init_demo(game_state *gs);
 int game_state_ms_per_dyntick(game_state *gs);
-ticktimer* game_state_get_ticktimer(game_state *gs);
+ticktimer *game_state_get_ticktimer(game_state *gs);
 int game_state_serialize(game_state *gs, serial *ser);
 int game_state_unserialize(game_state *gs, serial *ser, int rtt);
 

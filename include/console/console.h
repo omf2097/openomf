@@ -1,11 +1,11 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#include <SDL.h>
 #include "game/game_state_type.h"
+#include <SDL.h>
 
 // return 0 on success, otherwise return error code
-typedef int(*command_func)(game_state *scene, int argc, char **argv);
+typedef int (*command_func)(game_state *scene, int argc, char **argv);
 
 int console_init();
 void console_close();

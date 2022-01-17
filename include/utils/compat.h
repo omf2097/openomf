@@ -1,8 +1,8 @@
 #ifndef COMPAT_H
 #define COMPAT_H
 
-#include <string.h>
 #include "platform.h"
+#include <string.h>
 
 #ifndef HAVE_STD_STRDUP
 char *strdup(const char *s1);

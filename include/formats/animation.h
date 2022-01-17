@@ -10,23 +10,22 @@
 #ifndef SD_ANIMATION_H
 #define SD_ANIMATION_H
 
-#include <stdint.h>
-#include "formats/sprite.h"
 #include "formats/colcoord.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
-
+#include "formats/sprite.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define SD_ANIMATION_STRING_MAX 1024 ///< Maximum animation string size
-#define SD_EXTRA_STRING_MAX 512 ///< Maximum extra string size
+#define SD_EXTRA_STRING_MAX 512      ///< Maximum extra string size
 
-#define SD_SPRITE_COUNT_MAX 255 ///< Maximum amount of sprites allowed (technical limitation)
+#define SD_SPRITE_COUNT_MAX 255   ///< Maximum amount of sprites allowed (technical limitation)
 #define SD_COLCOORD_COUNT_MAX 256 ///< Maximum amount of collision coordinates allowed \todo find out the real maximum
-#define SD_EXTRASTR_COUNT_MAX 10 ///< Maximum amount of extra strings.
+#define SD_EXTRASTR_COUNT_MAX 10  ///< Maximum amount of extra strings.
 
 /*! \brief Generic animation container
  *
@@ -42,19 +41,19 @@ extern "C" {
  */
 typedef struct {
     // Header
-    int16_t start_x; ///< Animation start position, X-axis
-    int16_t start_y; ///< Animation start position, Y-axis
-    int32_t null; ///< Probably filler data
-    uint16_t coord_count; ///< Number of collision coordinates in animation frames
-    uint8_t sprite_count; ///< Number of sprites in animation
+    int16_t start_x;            ///< Animation start position, X-axis
+    int16_t start_y;            ///< Animation start position, Y-axis
+    int32_t null;               ///< Probably filler data
+    uint16_t coord_count;       ///< Number of collision coordinates in animation frames
+    uint8_t sprite_count;       ///< Number of sprites in animation
     uint8_t extra_string_count; ///< Number of extra strings in animation
 
     // Sprites and their collision coordinates
     sd_coord coord_table[SD_COLCOORD_COUNT_MAX]; ///< Collision coordinates
-    sd_sprite *sprites[SD_SPRITE_COUNT_MAX]; ///< Sprites
+    sd_sprite *sprites[SD_SPRITE_COUNT_MAX];     ///< Sprites
 
     // String header & Extra strings
-    char anim_string[SD_ANIMATION_STRING_MAX]; ///< Animation string
+    char anim_string[SD_ANIMATION_STRING_MAX];                      ///< Animation string
     char extra_strings[SD_EXTRASTR_COUNT_MAX][SD_EXTRA_STRING_MAX]; ///< Extra strings
 } sd_animation;
 
@@ -67,7 +66,7 @@ typedef struct {
  *
  * \param animation Allocated animation struct pointer.
  */
-int sd_animation_create(sd_animation* animation);
+int sd_animation_create(sd_animation *animation);
 
 /*! \brief Copy animation structure
  *
@@ -152,7 +151,7 @@ int sd_animation_pop_coord(sd_animation *animation);
  * \param animation Animation struct to modify
  * \param num Coordinate index
  */
-sd_coord* sd_animation_get_coord(sd_animation *animation, int num);
+sd_coord *sd_animation_get_coord(sd_animation *animation, int num);
 
 /*! \brief Sets the animation string
  *
@@ -228,7 +227,7 @@ int sd_animation_pop_extra_string(sd_animation *animation);
  * \param animation Animation struct to modify.
  * \param num Extra string index
  */
-char* sd_animation_get_extra_string(sd_animation *animation, int num);
+char *sd_animation_get_extra_string(sd_animation *animation, int num);
 
 /*! \brief Get extra string count
  *
@@ -292,12 +291,10 @@ int sd_animation_pop_sprite(sd_animation *animation);
  * \param animation Animation struct to modify.
  * \param num Sprite index
  */
-sd_sprite* sd_animation_get_sprite(sd_animation *animation, int num);
-
+sd_sprite *sd_animation_get_sprite(sd_animation *animation, int num);
 
 int sd_animation_load(sd_reader *reader, sd_animation *animation);
 int sd_animation_save(sd_writer *writer, const sd_animation *animation);
-
 
 #ifdef __cplusplus
 }

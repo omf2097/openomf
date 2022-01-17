@@ -24,9 +24,9 @@ extern "C" {
  * frame_id entry tells which sprite in animation the coordinate belongs to.
  */
 typedef struct {
-    int16_t x; ///< X position coordinate
-    int16_t y; ///< Y position coordinate
-    uint8_t null; ///< Probably null padding
+    int16_t x;        ///< X position coordinate
+    int16_t y;        ///< Y position coordinate
+    uint8_t null;     ///< Probably null padding
     uint8_t frame_id; ///< Sprite the coordinate belongs to
 } sd_coord;
 

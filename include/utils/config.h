@@ -13,7 +13,7 @@ void conf_close();
 int conf_int(const char *name);
 double conf_float(const char *name);
 int conf_bool(const char *name);
-const char* conf_string(const char *name);
+const char *conf_string(const char *name);
 
 void conf_setint(const char *name, int val);
 void conf_setfloat(const char *name, double val);

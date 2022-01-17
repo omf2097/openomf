@@ -1,12 +1,13 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include "game/protos/object.h"
 #include "game/objects/har.h"
+#include "game/protos/object.h"
 #include "game/utils/serial.h"
 #include "utils/list.h"
 
-enum {
+enum
+{
     ACT_STOP = 0x01,
     ACT_KICK = 0x02,
     ACT_PUNCH = 0x04,
@@ -18,7 +19,8 @@ enum {
     ACT_FLUSH = 0x100
 };
 
-enum {
+enum
+{
     CTRL_TYPE_KEYBOARD,
     CTRL_TYPE_GAMEPAD,
     CTRL_TYPE_NETWORK,
@@ -26,7 +28,8 @@ enum {
     CTRL_TYPE_REC
 };
 
-enum {
+enum
+{
     EVENT_TYPE_ACTION,
     EVENT_TYPE_SYNC,
     EVENT_TYPE_HB,
@@ -63,16 +66,16 @@ struct controller_t {
     int repeat;
 };
 
-void controller_init(controller* ctrl);
-void controller_cmd(controller* ctrl, int action, ctrl_event **ev);
+void controller_init(controller *ctrl);
+void controller_cmd(controller *ctrl, int action, ctrl_event **ev);
 void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev);
-void controller_close(controller* ctrl, ctrl_event **ev);
+void controller_close(controller *ctrl, ctrl_event **ev);
 int controller_poll(controller *ctrl, ctrl_event **ev);
 int controller_tick(controller *ctrl, int ticks, ctrl_event **ev);
 int controller_dyntick(controller *ctrl, int ticks, ctrl_event **ev);
 int controller_update(controller *ctrl, serial *state);
 int controller_har_hook(controller *ctrl, har_event event);
-void controller_add_hook(controller *ctrl, controller *source, void(*fp)(controller *ctrl, int act_type));
+void controller_add_hook(controller *ctrl, controller *source, void (*fp)(controller *ctrl, int act_type));
 void controller_clear_hooks(controller *ctrl);
 void controller_free_chain(ctrl_event *ev);
 void controller_set_repeat(controller *ctrl, int repeat);

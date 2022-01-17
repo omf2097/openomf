@@ -3,14 +3,15 @@
 
 #include "utils/vector.h"
 
-typedef enum {
+typedef enum
+{
     FONT_BIG,
     FONT_SMALL
 } font_size;
 
 typedef struct {
     font_size size;
-    int w,h;
+    int w, h;
     vector surfaces;
 } font;
 

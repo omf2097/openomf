@@ -10,11 +10,11 @@
 #ifndef PALETTE_H
 #define PALETTE_H
 
-#include <stdint.h>
 #include "formats/internal/memreader.h"
-#include "formats/internal/reader.h"
 #include "formats/internal/memwriter.h"
+#include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +26,7 @@ extern "C" {
  * Conversion is done automatically on palette load and save.
  */
 typedef struct {
-    unsigned char data[256][3];   ///< Palette data (256 indices, 3 channels/index)
+    unsigned char data[256][3];    ///< Palette data (256 indices, 3 channels/index)
     unsigned char remaps[19][256]; ///< Palette remapping tables.
 } palette;
 

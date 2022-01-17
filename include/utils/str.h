@@ -1,19 +1,19 @@
 #ifndef STR_H
 #define STR_H
 
-#include <stddef.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef struct {
     size_t len;
-    char* data;
+    char *data;
 } str;
 
 /**
  * @brief Create an empty string object.
  * @details Creates a new, empty string object. After creating the object, it must be freed
- *          using the str_free. 
+ *          using the str_free.
  * @param dst Target string object
  */
 void str_create(str *dst);
@@ -68,7 +68,7 @@ void str_from_slice(str *dst, const str *src, size_t start, size_t end);
  * @brief Free string object
  * @details Frees up any memory used by the string object. Usage of the string after freeing it
  *          is undefined behaviour.
- * 
+ *
  * @param string String to free
  */
 void str_free(str *string);
@@ -193,6 +193,6 @@ bool str_to_long(const str *string, long *m);
  * @param src String to convert
  * @return const char*
  */
-const char* str_c(const str *src);
+const char *str_c(const str *src);
 
 #endif // STR_H

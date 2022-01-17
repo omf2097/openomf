@@ -4,6 +4,6 @@
 #include "game/gui/component.h"
 #include "game/protos/scene.h"
 
-component* menu_video_create(scene *s);
+component *menu_video_create(scene *s);
 
 #endif // MENU_VIDEO_H

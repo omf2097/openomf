@@ -11,8 +11,8 @@
 #define SD_CHR_H
 
 #include "formats/palette.h"
-#include "formats/sprite.h"
 #include "formats/pilot.h"
+#include "formats/sprite.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,8 +25,8 @@ extern "C" {
  * Contains information about the current state of an enemy in the selected tournament.
  */
 typedef struct {
-    sd_pilot pilot;      ///< Enemy pilot data
-    char unknown[25];    ///< Unknown data TODO: Find out what this does
+    sd_pilot pilot;   ///< Enemy pilot data
+    char unknown[25]; ///< Unknown data TODO: Find out what this does
 } sd_chr_enemy;
 
 /*! \brief CHR Saved game
@@ -35,10 +35,10 @@ typedef struct {
  * \todo find out what the unknown data fields are.
  */
 typedef struct {
-    sd_pilot pilot;      ///< Pilot data
-    palette pal;         ///< Pilot palette
-    uint32_t unknown_b;  ///< Unkown value. Maybe tells if there is photo data ?
-    sd_sprite *photo;    ///< Pilot photo
+    sd_pilot pilot;                         ///< Pilot data
+    palette pal;                            ///< Pilot palette
+    uint32_t unknown_b;                     ///< Unkown value. Maybe tells if there is photo data ?
+    sd_sprite *photo;                       ///< Pilot photo
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES]; ///< List of enemy states in current tournament
 } sd_chr_file;
 
@@ -103,7 +103,7 @@ int sd_chr_save(sd_chr_file *chr, const char *filename);
  * \param chr CHR struct pointer.
  * \param enemy_num Enemy number to find
  */
-const sd_chr_enemy* sd_chr_get_enemy(sd_chr_file *chr, int enemy_num);
+const sd_chr_enemy *sd_chr_get_enemy(sd_chr_file *chr, int enemy_num);
 
 #ifdef __cplusplus
 }

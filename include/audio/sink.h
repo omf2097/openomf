@@ -1,9 +1,9 @@
 #ifndef SINK_H
 #define SINK_H
 
-#include "utils/hashmap.h"
-#include "audio/stream.h"
 #include "audio/source.h"
+#include "audio/stream.h"
+#include "utils/hashmap.h"
 
 #define VOLUME_DEFAULT 1.0f
 #define PANNING_DEFAULT 0.0f
@@ -49,7 +49,7 @@ float sink_get_stream_volume(audio_sink *sink, int sid);
 float sink_get_stream_pitch(audio_sink *sink, int sid);
 
 void sink_set_userdata(audio_sink *sink, void *userdata);
-void* sink_get_userdata(audio_sink *sink);
+void *sink_get_userdata(audio_sink *sink);
 void sink_set_close_cb(audio_sink *sink, sink_close_cb cbfunc);
 void sink_set_format_stream_cb(audio_sink *sink, sink_format_stream_cb cbfunc);
 

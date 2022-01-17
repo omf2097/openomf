@@ -1,7 +1,7 @@
-#include <CUnit/CUnit.h>
-#include <CUnit/Basic.h>
 #include "formats/af.h"
 #include "formats/error.h"
+#include <CUnit/Basic.h>
+#include <CUnit/CUnit.h>
 
 sd_af_file af;
 
@@ -99,7 +99,13 @@ void test_af_roundtrip(void) {
 }
 
 void af_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "test of sd_af_create", test_sd_af_create) == NULL) { return; }
-    if(CU_add_test(suite, "test of AF empty roundtripping", test_af_roundtrip) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_af_free", test_sd_af_free) == NULL) { return; }
+    if(CU_add_test(suite, "test of sd_af_create", test_sd_af_create) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of AF empty roundtripping", test_af_roundtrip) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_af_free", test_sd_af_free) == NULL) {
+        return;
+    }
 }

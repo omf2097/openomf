@@ -87,7 +87,8 @@ typedef struct ai_t {
     vector active_projectiles;
 } ai;
 
-enum {
+enum
+{
     TACTIC_ESCAPE = 1, // escape from enemy
     TACTIC_TURTLE,     // block attacks
     TACTIC_GRAB,       // charge and grab enemy
@@ -101,7 +102,8 @@ enum {
     TACTIC_COUNTER     // block then attack
 };
 
-enum {
+enum
+{
     MOVE_CLOSE = 1, // close distance
     MOVE_AVOID,     // gain distance
     MOVE_JUMP,      // jump towards
@@ -109,7 +111,8 @@ enum {
     MOVE_BLOCK      // hold block
 };
 
-enum {
+enum
+{
     ATTACK_ID = 1, // attack by id
     ATTACK_TRIP,   // trip attack
     ATTACK_GRAB,   // grab/throw attack
@@ -122,9 +125,20 @@ enum {
     ATTACK_RANDOM, // random attack
 };
 
-enum { RANGE_CRAMPED = 0, RANGE_CLOSE, RANGE_MID, RANGE_FAR };
+enum
+{
+    RANGE_CRAMPED = 0,
+    RANGE_CLOSE,
+    RANGE_MID,
+    RANGE_FAR
+};
 
-enum { MOVE_DIR_STILL, MOVE_DIR_FWD, MOVE_DIR_BACK };
+enum
+{
+    MOVE_DIR_STILL,
+    MOVE_DIR_FWD,
+    MOVE_DIR_BACK
+};
 
 int char_to_act(int ch, int direction) {
     switch(ch) {

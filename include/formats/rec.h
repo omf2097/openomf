@@ -10,12 +10,12 @@
 #ifndef SD_REC_H
 #define SD_REC_H
 
-#include <stdint.h>
-#include <stddef.h>
-#include "formats/pilot.h"
-#include "formats/palette.h"
-#include "formats/sprite.h"
 #include "formats/actions.h"
+#include "formats/palette.h"
+#include "formats/pilot.h"
+#include "formats/sprite.h"
+#include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,12 +41,12 @@ typedef struct {
  * \todo Find out about the unknowns here
  */
 typedef struct {
-    sd_pilot info;       ///< Pilot information
-    uint8_t unknown_a;   ///< Unknown value \todo: Find this out
-    uint16_t unknown_b;  ///< Unknown value \todo: Find this out
-    palette pal;         ///< Palette for this pilot photo
-    uint8_t has_photo;   ///< Tells if the pilot has a photo sprite
-    sd_sprite photo;     ///< Photo sprite
+    sd_pilot info;      ///< Pilot information
+    uint8_t unknown_a;  ///< Unknown value \todo: Find this out
+    uint16_t unknown_b; ///< Unknown value \todo: Find this out
+    palette pal;        ///< Palette for this pilot photo
+    uint8_t has_photo;  ///< Tells if the pilot has a photo sprite
+    sd_sprite photo;    ///< Photo sprite
 } sd_rec_pilot;
 
 /*! \brief REC recording
@@ -63,29 +63,29 @@ typedef struct {
     int8_t unknown_b;       ///< Unknown \todo: Find out
     int8_t unknown_c;       ///< Unknown \todo: Find out
 
-    int16_t throw_range;    ///< Throw range (%)
-    int16_t hit_pause;      ///< Hit pause (ticks)
-    int16_t block_damage;   ///< Block damage (%)
-    int16_t vitality;       ///< Vitality (%)
-    int16_t jump_height;    ///< Jump height (%)
-    int16_t unknown_i;      ///< Unknown \todo: Find out
-    int16_t unknown_j;      ///< Unknown \todo: Find out
-    int16_t unknown_k;      ///< Unknown \todo: Find out
+    int16_t throw_range;  ///< Throw range (%)
+    int16_t hit_pause;    ///< Hit pause (ticks)
+    int16_t block_damage; ///< Block damage (%)
+    int16_t vitality;     ///< Vitality (%)
+    int16_t jump_height;  ///< Jump height (%)
+    int16_t unknown_i;    ///< Unknown \todo: Find out
+    int16_t unknown_j;    ///< Unknown \todo: Find out
+    int16_t unknown_k;    ///< Unknown \todo: Find out
 
-    uint8_t knock_down;     ///< Knock down (0 = None, 1 = Kicks, 2 = Punches, 3 = both)
-    uint8_t rehit_mode;     ///< Rehit mode (On/Off)
-    uint8_t def_throws;     ///< Def. Throws (On/Off)
-    uint8_t arena_id;       ///< Arena ID
-    uint8_t power[2];       ///< Power 1,2 (0-7?)
-    uint8_t hazards;        ///< Hazards (On/Off)
-    uint8_t round_type;     ///< Round type (0=1, 1=2/3, 2=3/5, 3=4/7)
-    uint8_t unknown_l;      ///< Currently unknown \todo Find out what this does
-    uint8_t hyper_mode;     ///< Hyper mode (On/Off)
+    uint8_t knock_down; ///< Knock down (0 = None, 1 = Kicks, 2 = Punches, 3 = both)
+    uint8_t rehit_mode; ///< Rehit mode (On/Off)
+    uint8_t def_throws; ///< Def. Throws (On/Off)
+    uint8_t arena_id;   ///< Arena ID
+    uint8_t power[2];   ///< Power 1,2 (0-7?)
+    uint8_t hazards;    ///< Hazards (On/Off)
+    uint8_t round_type; ///< Round type (0=1, 1=2/3, 2=3/5, 3=4/7)
+    uint8_t unknown_l;  ///< Currently unknown \todo Find out what this does
+    uint8_t hyper_mode; ///< Hyper mode (On/Off)
 
-    int8_t unknown_m;       ///< Unknown \todo: Find out
+    int8_t unknown_m; ///< Unknown \todo: Find out
 
     unsigned int move_count; ///< How many REC event records
-    sd_rec_move *moves; ///< REC event records list
+    sd_rec_move *moves;      ///< REC event records list
 } sd_rec_file;
 
 /*! \brief Initialize REC file structure

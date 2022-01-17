@@ -1,14 +1,15 @@
 #ifndef SCORE_H
 #define SCORE_H
 
-#include <string.h>
-#include <stdlib.h>
+#include "game/gui/text_render.h"
+#include "game/protos/object.h"
 #include "utils/list.h"
 #include "video/surface.h"
-#include "game/protos/object.h"
-#include "game/gui/text_render.h"
+#include <stdlib.h>
+#include <string.h>
 
-enum {
+enum
+{
     SCORE_EV_PUNCH = 0,
     SCORE_EV_KICK,
     SCORE_EV_ROUNDHOUSE,
@@ -21,7 +22,7 @@ typedef struct chr_score_t {
     int rounds;
     int wins;
     int health;
-    int x,y;
+    int x, y;
     int direction;
     int difficulty;
     list texts;

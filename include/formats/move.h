@@ -10,16 +10,16 @@
 #ifndef SD_MOVE_H
 #define SD_MOVE_H
 
-#include <stdint.h>
 #include "formats/animation.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define SD_MOVE_STRING_MAX 21 ///< Maximum allowed move string length
+#define SD_MOVE_STRING_MAX 21         ///< Maximum allowed move string length
 #define SD_MOVE_FOOTER_STRING_MAX 512 ///< Maximum allowed footer string length
 
 /*! \brief HAR Move information
@@ -30,27 +30,27 @@ extern "C" {
 typedef struct {
     sd_animation *animation; ///< Animation field for Move. When saving AF file, this should be != NULL.
 
-    uint16_t unknown_0; ///< Unknown value
-    uint16_t unknown_2; ///< Unknown value
-    uint8_t unknown_4; ///< Unknown value
-    uint8_t unknown_5; ///< Unknown value
-    uint8_t unknown_6; ///< Unknown value
-    uint8_t unknown_7; ///< Unknown value
-    uint8_t unknown_8; ///< Unknown value
-    uint8_t unknown_9; ///< Unknown value
-    uint8_t unknown_10; ///< Unknown value
-    uint8_t unknown_11; ///< Unknown value
-    uint8_t next_anim_id; ///< Next animation ID
-    uint8_t category; ///< Move category ID
-    uint8_t unknown_14; ///< Unknown value
-    uint8_t scrap_amount; ///< Scrap amount when this move connects
-    uint8_t successor_id; ///< Successor animation ID
+    uint16_t unknown_0;    ///< Unknown value
+    uint16_t unknown_2;    ///< Unknown value
+    uint8_t unknown_4;     ///< Unknown value
+    uint8_t unknown_5;     ///< Unknown value
+    uint8_t unknown_6;     ///< Unknown value
+    uint8_t unknown_7;     ///< Unknown value
+    uint8_t unknown_8;     ///< Unknown value
+    uint8_t unknown_9;     ///< Unknown value
+    uint8_t unknown_10;    ///< Unknown value
+    uint8_t unknown_11;    ///< Unknown value
+    uint8_t next_anim_id;  ///< Next animation ID
+    uint8_t category;      ///< Move category ID
+    uint8_t unknown_14;    ///< Unknown value
+    uint8_t scrap_amount;  ///< Scrap amount when this move connects
+    uint8_t successor_id;  ///< Successor animation ID
     uint8_t damage_amount; ///< Damage amount when this move connects
-    uint8_t unknown_18; ///< Unknown value
-    uint8_t unknown_19; ///< Unknown value
-    uint8_t points;  ///< Score gained for this hit
+    uint8_t unknown_18;    ///< Unknown value
+    uint8_t unknown_19;    ///< Unknown value
+    uint8_t points;        ///< Score gained for this hit
 
-    char move_string[SD_MOVE_STRING_MAX];  ///< Move string
+    char move_string[SD_MOVE_STRING_MAX];          ///< Move string
     char footer_string[SD_MOVE_FOOTER_STRING_MAX]; ///< Footer string
 } sd_move;
 
@@ -117,7 +117,7 @@ int sd_move_set_animation(sd_move *move, const sd_animation *animation);
  *
  * \param move Move struct to modify.
  */
-sd_animation* sd_move_get_animation(const sd_move *move);
+sd_animation *sd_move_get_animation(const sd_move *move);
 
 /*! \brief Set move footer string for the Move struct.
  *
@@ -147,7 +147,6 @@ int sd_move_set_move_string(sd_move *move, const char *str);
 
 int sd_move_load(sd_reader *reader, sd_move *move);
 int sd_move_save(sd_writer *writer, const sd_move *move);
-
 
 #ifdef __cplusplus
 }

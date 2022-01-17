@@ -1,8 +1,8 @@
 #ifndef PROJECTILE_H
 #define PROJECTILE_H
 
-#include "game/protos/object.h"
 #include "game/objects/har.h"
+#include "game/protos/object.h"
 
 typedef struct har_t har;
 

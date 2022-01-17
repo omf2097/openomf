@@ -3,6 +3,6 @@
 
 #define TEST_STRING_COUNT 2490
 
-extern const char* test_strings[];
+extern const char *test_strings[];
 
 #endif // PARSER_TEST_STRINGS_H

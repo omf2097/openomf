@@ -1,7 +1,8 @@
 #ifndef IDS_H
 #define IDS_H
 
-enum RESOURCE_ID {
+enum RESOURCE_ID
+{
     BK_INTRO = 0,
     BK_OPENOMF,
     BK_MENU,
@@ -53,8 +54,8 @@ enum RESOURCE_ID {
     NUMBER_OF_RESOURCES
 };
 
-const char* get_resource_file(unsigned int id);
-const char* get_resource_name(unsigned int id);
+const char *get_resource_file(unsigned int id);
+const char *get_resource_name(unsigned int id);
 
 int is_arena(unsigned int id);
 int is_scene(unsigned int id);

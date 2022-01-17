@@ -10,16 +10,16 @@
 #ifndef SD_BK_H
 #define SD_BK_H
 
-#include <stdint.h>
-#include "formats/palette.h"
 #include "formats/bkanim.h"
+#include "formats/palette.h"
 #include "formats/vga_image.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_BK_ANIMS 50 ///< Amount of animations in the BK file. This is fixed!
+#define MAX_BK_ANIMS 50   ///< Amount of animations in the BK file. This is fixed!
 #define MAX_BK_PALETTES 8 ///< Maximum amount of palettes allowed in BK file.
 
 /*! \brief BK file information
@@ -27,12 +27,12 @@ extern "C" {
  * Contains information about an OMF:2097 scene. Eg. arenas, menus, intro, etc.
  */
 typedef struct {
-    uint32_t file_id; ///< File ID
-    uint8_t unknown_a; ///< Unknown value
+    uint32_t file_id;      ///< File ID
+    uint8_t unknown_a;     ///< Unknown value
     uint8_t palette_count; ///< Number of palettes in the BK file
 
-    sd_bk_anim *anims[MAX_BK_ANIMS]; ///< All animations contained by the BK file
-    sd_vga_image *background; ///< Background image. If NULL, a black background will be used.
+    sd_bk_anim *anims[MAX_BK_ANIMS];    ///< All animations contained by the BK file
+    sd_vga_image *background;           ///< Background image. If NULL, a black background will be used.
     palette *palettes[MAX_BK_PALETTES]; ///< All palettes in the BK file.
 
     char soundtable[30]; ///< All sounds used by the animations in this BK file.
@@ -91,7 +91,7 @@ int sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img);
  *
  * \param bk BK struct pointer.
  */
-sd_vga_image* sd_bk_get_background(const sd_bk_file *bk);
+sd_vga_image *sd_bk_get_background(const sd_bk_file *bk);
 
 /*! \brief Set bk animation
  *
@@ -123,7 +123,7 @@ int sd_bk_set_anim(sd_bk_file *bk, int index, const sd_bk_anim *anim);
  * \param bk BK struct pointer.
  * \param index Animation index. Must be 0 <= index <= 49
  */
-sd_bk_anim* sd_bk_get_anim(const sd_bk_file *bk, int index);
+sd_bk_anim *sd_bk_get_anim(const sd_bk_file *bk, int index);
 
 /*! \brief Set palette
  *
@@ -212,7 +212,7 @@ int sd_bk_load(sd_bk_file *bk, const char *filename);
  * \param bk BK struct pointer.
  * \param filename Name of the BK file to save into.
  */
-int sd_bk_save(const sd_bk_file *bk, const char* filename);
+int sd_bk_save(const sd_bk_file *bk, const char *filename);
 
 /*! \brief Free BK file structure
  *
