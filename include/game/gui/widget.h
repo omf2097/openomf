@@ -11,8 +11,8 @@ typedef void (*widget_tick_cb)(component *c);
 typedef void (*widget_free_cb)(component *c);
 
 typedef struct {
-    void *obj;                  ///< Pointer to internal object, eg. textbutton, etc.
-    int id;                     ///< Default is -1, which means "not set". User should always set positive values!
+    void *obj; ///< Pointer to internal object, eg. textbutton, etc.
+    int id;    ///< Default is -1, which means "not set". User should always set positive values!
 
     widget_render_cb render;
     widget_event_cb event;
@@ -22,10 +22,10 @@ typedef struct {
     widget_free_cb free;
 } widget;
 
-component* widget_create();
+component *widget_create();
 
 void widget_set_obj(component *c, void *obj);
-void* widget_get_obj(const component *c);
+void *widget_get_obj(const component *c);
 
 void widget_set_id(component *c, int id);
 int widget_get_id(const component *c);

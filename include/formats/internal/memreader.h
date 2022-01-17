@@ -1,8 +1,8 @@
 #ifndef MEMREADER_H
 #define MEMREADER_H
 
-#include <stdint.h>
 #include "formats/internal/reader.h"
+#include <stdint.h>
 
 typedef struct memreader_t {
     char *buf;
@@ -11,8 +11,8 @@ typedef struct memreader_t {
     long pos;
 } memreader;
 
-memreader* memreader_open(char *buf, long len);
-memreader* memreader_open_from_reader(sd_reader *reader, int len);
+memreader *memreader_open(char *buf, long len);
+memreader *memreader_open_from_reader(sd_reader *reader, int len);
 void memreader_close(memreader *reader);
 long memreader_size(const memreader *reader);
 long memreader_pos(const memreader *reader);

@@ -1,8 +1,8 @@
 #ifndef CONSOLE_TYPE_H
 #define CONSOLE_TYPE_H
 
-#include <SDL.h>
 #include "game/protos/scene.h"
+#include <SDL.h>
 
 typedef struct console_t {
     font font;

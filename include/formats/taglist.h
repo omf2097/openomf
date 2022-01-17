@@ -19,9 +19,9 @@ extern "C" {
  * Contains information about a single animation tag.
  */
 typedef struct {
-    const char *tag;          ///< Tag string
-    const int has_param;      ///< Tells if the tag can be expected to have a parameter.
-    const char *description;  ///< A short description for the tag.
+    const char *tag;         ///< Tag string
+    const int has_param;     ///< Tells if the tag can be expected to have a parameter.
+    const char *description; ///< A short description for the tag.
 } sd_tag;
 
 extern const sd_tag sd_taglist[]; ///< A global list of tags
@@ -41,7 +41,7 @@ extern const int sd_taglist_size; ///< Taglist size
  * \param tag A pointer to the tag string in library memory. Will be ignored if set to NULL.
  * \param desc A pointer to the description in library memory. Will be ignored if set to NULL.
  */
-int sd_tag_info(const char* search_tag, int *req_param, const char **tag, const char **desc);
+int sd_tag_info(const char *search_tag, int *req_param, const char **tag, const char **desc);
 
 #ifdef __cplusplus
 }

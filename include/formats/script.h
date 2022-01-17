@@ -10,8 +10,8 @@
 #ifndef SD_SCRIPT_H
 #define SD_SCRIPT_H
 
-#include <stddef.h>
 #include "formats/taglist.h"
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,8 +22,8 @@ extern "C" {
  * Describes a single tag in animation frame.
  */
 typedef struct {
-    const char* key;  ///< Tag name
-    const char* desc; ///< Tag description
+    const char *key;  ///< Tag name
+    const char *desc; ///< Tag description
     int has_param;    ///< Tells if the tag has a parameter
     int value;        ///< Tag parameter value. Only valid if has_param = 1.
 } sd_script_tag;
@@ -45,8 +45,8 @@ typedef struct {
  * A valid string must contain at least a single frame.
  */
 typedef struct {
-    int frame_count;          ///< Amount of frames in the string
-    sd_script_frame *frames;  ///< List of frames in this string
+    int frame_count;         ///< Amount of frames in the string
+    sd_script_frame *frames; ///< List of frames in this string
 } sd_script;
 
 /*! \brief Initialize script parser
@@ -80,9 +80,10 @@ void sd_script_free(sd_script *script);
  *
  * \param script Script structure to fill. Must be formatted using sd_script_create().
  * \param str Animation string to parse
- * \param invalid_pos Will contain problematic position in string if SD_INVALID_TAG is returned. Will be ignored if set to NULL.
+ * \param invalid_pos Will contain problematic position in string if SD_INVALID_TAG is returned. Will be ignored if set
+ * to NULL.
  */
-int sd_script_decode(sd_script *script, const char* str, int *invalid_pos);
+int sd_script_decode(sd_script *script, const char *str, int *invalid_pos);
 
 /*! \brief Encode animation string
  *
@@ -103,7 +104,7 @@ int sd_script_decode(sd_script *script, const char* str, int *invalid_pos);
  * \param script Script structure to encode
  * \param str Target string buffer. Make sure it's large enough!
  */
-int sd_script_encode(const sd_script *script, char* str, size_t len);
+int sd_script_encode(const sd_script *script, char *str, size_t len);
 
 /*! \brief Find the encoded length of a script
  *
@@ -169,7 +170,7 @@ int sd_script_get_sprite_at_frame(const sd_script *script, int frame_id);
  * \param ticks A position in time in game ticks
  * \return Frame pointer or NULL
  */
-const sd_script_frame* sd_script_get_frame_at(const sd_script *script, int ticks);
+const sd_script_frame *sd_script_get_frame_at(const sd_script *script, int ticks);
 
 /*! \brief Returns the frame at a given position
  *
@@ -184,7 +185,7 @@ const sd_script_frame* sd_script_get_frame_at(const sd_script *script, int ticks
  * \param frame_number Frame number to get
  * \return Frame pointer or NULL
  */
-const sd_script_frame* sd_script_get_frame(const sd_script *script, int frame_number);
+const sd_script_frame *sd_script_get_frame(const sd_script *script, int frame_number);
 
 /*! \brief Returns the information of a tag in a frame.
  *
@@ -198,7 +199,7 @@ const sd_script_frame* sd_script_get_frame(const sd_script *script, int frame_nu
  * \param tag Tag to look for. Must have a trailing zero.
  * \return Tag descriptor pointer or NULL
  */
-const sd_script_tag* sd_script_get_tag(const sd_script_frame* frame, const char* tag);
+const sd_script_tag *sd_script_get_tag(const sd_script_frame *frame, const char *tag);
 
 /*! \brief Tells if the frame changed between two points in time
  *
@@ -300,7 +301,7 @@ int sd_script_is_first_frame_at(const sd_script *script, int ticks);
  * \param tag Tag name to find
  * \return 1 or 0
  */
-int sd_script_isset(const sd_script_frame *frame, const char* tag);
+int sd_script_isset(const sd_script_frame *frame, const char *tag);
 
 /*! \brief Returns the tag value in frame
  *
@@ -312,7 +313,7 @@ int sd_script_isset(const sd_script_frame *frame, const char* tag);
  * \param tag Tag name to find
  * \return Tag parameter value or 0.
  */
-int sd_script_get(const sd_script_frame *frame, const char* tag);
+int sd_script_get(const sd_script_frame *frame, const char *tag);
 
 /*! \brief Returns the next frame number with a given sprite ID
  *
@@ -348,7 +349,7 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int
  * \param current_tick Current tick time
  * \return Frame ID or -1 on error
  */
-int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int current_tick);
+int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, int current_tick);
 
 /*! \brief Sets a tag for the given frame
  *
@@ -364,7 +365,7 @@ int sd_script_next_frame_with_tag(const sd_script *script, const char* tag, int 
  * \param tag Tag to add
  * \param value Value to set, if tag allows values.
  */
-int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int value);
+int sd_script_set_tag(sd_script *script, int frame_id, const char *tag, int value);
 
 /*! \brief Deletes a tag from the given frame
  *
@@ -377,10 +378,10 @@ int sd_script_set_tag(sd_script *script, int frame_id, const char* tag, int valu
  * \param frame_id Frame ID to modify
  * \param tag Tag to delete
  */
-int sd_script_delete_tag(sd_script *script, int frame_id, const char* tag);
+int sd_script_delete_tag(sd_script *script, int frame_id, const char *tag);
 
 /*! \brief Append a new frame to the end of the frame list
- * 
+ *
  * Appends a new frame to the end of the frame list, and sets its tick length and sprite ID.
  * Tag list will be empty after creation.
  *
@@ -394,7 +395,7 @@ int sd_script_delete_tag(sd_script *script, int frame_id, const char* tag);
 int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id);
 
 /*! \brief Clear frame tags
- * 
+ *
  * Clears all tags from the given frame.
  *
  * \retval SD_SUCCESS on successful removal
@@ -406,7 +407,7 @@ int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id);
 int sd_script_clear_tags(sd_script *script, int frame_id);
 
 /*! \brief Set frame tick length
- * 
+ *
  * Sets a new tick length for the given frame.
  *
  * \retval SD_SUCCESS on successful operation
@@ -419,7 +420,7 @@ int sd_script_clear_tags(sd_script *script, int frame_id);
 int sd_script_set_tick_len_at_frame(sd_script *script, int frame_id, int duration);
 
 /*! \brief Set frame sprite ID
- * 
+ *
  * Sets the sprite ID of the given frame.
  *
  * \retval SD_SUCCESS on successful operation

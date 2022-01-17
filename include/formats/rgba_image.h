@@ -19,10 +19,10 @@ extern "C" {
  * A very simple RGBA8888 image. Data size is always w * h * 4 bytes.
  */
 typedef struct {
-    unsigned int w; ///< Image pixel width
-    unsigned int h; ///< Image pixel height
+    unsigned int w;   ///< Image pixel width
+    unsigned int h;   ///< Image pixel height
     unsigned int len; ///< Image byte length
-    char *data; ///< Image data
+    char *data;       ///< Image data
 } sd_rgba_image;
 
 /*! \brief Initialize RGBA image structure

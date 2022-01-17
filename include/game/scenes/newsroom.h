@@ -3,7 +3,8 @@
 
 #include "game/protos/scene.h"
 
-enum {
+enum
+{
     PILOT_SEX_MALE,
     PILOT_SEX_FEMALE
 };

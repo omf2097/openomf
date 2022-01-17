@@ -1,8 +1,8 @@
 #ifndef HAZARD_H
 #define HAZARD_H
 
-#include "game/protos/object.h"
 #include "game/game_state_type.h"
+#include "game/protos/object.h"
 #include "resources/bk.h"
 #include "resources/bk_info.h"
 

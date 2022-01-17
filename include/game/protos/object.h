@@ -1,37 +1,41 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include "game/protos/player.h"
+#include "game/utils/serial.h"
 #include "resources/animation.h"
 #include "resources/sprite.h"
-#include "video/screen_palette.h"
-#include "game/protos/player.h"
-#include "utils/vec.h"
 #include "utils/hashmap.h"
 #include "utils/random.h"
+#include "utils/vec.h"
+#include "video/screen_palette.h"
 #include "video/surface.h"
-#include "game/utils/serial.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
 #define OBJECT_NO_GROUP -1
 
 #define OBJECT_EVENT_BUFFER_SIZE 16
 
-enum {
+enum
+{
     OBJECT_FACE_LEFT = -1,
     OBJECT_FACE_RIGHT = 1
 };
 
-enum {
+enum
+{
     OWNER_EXTERNAL,
     OWNER_OBJECT
 };
 
-enum {
+enum
+{
     PLAY_BACKWARDS,
     PLAY_FORWARDS
 };
 
-enum {
+enum
+{
     EFFECT_NONE = 0,
     EFFECT_SHADOW = 0x1,
     EFFECT_DARK_TINT = 0x2,
@@ -43,13 +47,13 @@ typedef struct object_t object;
 typedef struct game_state_t game_state;
 
 typedef void (*object_free_cb)(object *obj);
-typedef int  (*object_act_cb)(object *obj, int action);
+typedef int (*object_act_cb)(object *obj, int action);
 typedef void (*object_tick_cb)(object *obj);
 typedef void (*object_move_cb)(object *obj);
 typedef void (*object_collide_cb)(object *a, object *b);
 typedef void (*object_finish_cb)(object *obj);
-typedef int  (*object_serialize_cb)(object *obj, serial *ser);
-typedef int  (*object_unserialize_cb)(object *obj, serial *ser, int animation_id, game_state *gs);
+typedef int (*object_serialize_cb)(object *obj, serial *ser);
+typedef int (*object_unserialize_cb)(object *obj, serial *ser, int animation_id, game_state *gs);
 typedef void (*object_debug_cb)(object *obj);
 typedef int (*object_palette_transform_cb)(object *obj, screen_palette *pal);
 
@@ -150,7 +154,7 @@ void object_set_delay(object *obj, int delay);
 void object_set_playback_direction(object *obj, int dir);
 
 void object_set_stl(object *obj, char *ptr);
-char* object_get_stl(const object *obj);
+char *object_get_stl(const object *obj);
 
 void object_set_animation_owner(object *obj, int owner);
 void object_set_animation(object *obj, animation *ani);
@@ -230,8 +234,8 @@ void object_set_vx(object *obj, float val);
 void object_set_vy(object *obj, float val);
 
 uint32_t object_get_age(object *obj);
-serial* object_get_last_serialization_point(const object *obj);
-serial* object_get_serialization_point(const object *obj, unsigned int ticks_ago);
+serial *object_get_last_serialization_point(const object *obj);
+serial *object_get_serialization_point(const object *obj, unsigned int ticks_ago);
 
 void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata);
 void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata);

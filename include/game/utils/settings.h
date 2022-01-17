@@ -1,19 +1,22 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-typedef enum fight_mode_t {
+typedef enum fight_mode_t
+{
     FIGHT_MODE_NORMAL,
     FIGHT_MODE_HYPER
 } fight_mode;
 
-typedef enum knock_down_mode_t {
+typedef enum knock_down_mode_t
+{
     KNOCK_DOWN_NONE = 0,
     KNOCK_DOWN_PUNCHES,
     KNOCK_DOWN_KICKS,
     KNOCK_DOWN_BOTH
 } knock_down_mode;
 
-typedef enum difficulty_t {
+typedef enum difficulty_t
+{
     PUNCHING_BAG,
     ROOKIE,
     VETERAN,
@@ -116,7 +119,6 @@ typedef struct settings_network_t {
     int net_connect_port;
     int net_listen_port;
 } settings_network;
-
 
 typedef struct settings_t {
     settings_video video;

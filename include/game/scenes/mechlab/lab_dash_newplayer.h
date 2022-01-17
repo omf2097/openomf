@@ -8,6 +8,6 @@ typedef struct {
     component *input;
 } newplayer_widgets;
 
-component* lab_dash_newplayer_create(scene *s, newplayer_widgets *nw);
+component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw);
 
 #endif // LAB_DASH_NEWPLAYER_H

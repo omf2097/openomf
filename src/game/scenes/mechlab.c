@@ -19,7 +19,8 @@
 #include "utils/log.h"
 #include "video/video.h"
 
-typedef enum {
+typedef enum
+{
     DASHBOARD_NONE,
     DASHBOARD_STATS,
     DASHBOARD_NEW,

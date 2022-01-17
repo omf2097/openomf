@@ -3,7 +3,8 @@
 
 typedef struct object_t object;
 
-enum {
+enum
+{
     SPECID_NONE = 0,
     SPECID_HAR = 1,
     SPECID_PROJECTILE,

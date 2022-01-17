@@ -24,7 +24,7 @@ typedef struct {
     component *tournament;
 } dashboard_widgets;
 
-component* lab_dash_main_create(scene *s, dashboard_widgets *dw);
+component *lab_dash_main_create(scene *s, dashboard_widgets *dw);
 void lab_dash_main_update(scene *s, dashboard_widgets *dw);
 
 #endif // LAB_DASH_MAIN_H

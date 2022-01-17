@@ -5,6 +5,6 @@
 #include "game/protos/scene.h"
 #include "game/scenes/mechlab/lab_dash_main.h"
 
-component* lab_menu_pilotselect_create(scene *s, dashboard_widgets *nw);
+component *lab_menu_pilotselect_create(scene *s, dashboard_widgets *nw);
 
 #endif // LAB_MENU_PILOTSELECT_H

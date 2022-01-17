@@ -2,13 +2,14 @@
 #define ANIMATION_H
 
 #include "resources/sprite.h"
+#include "utils/str.h"
 #include "utils/vec.h"
 #include "utils/vector.h"
-#include "utils/str.h"
 
 // All HARs have these predefined animations
-enum {
-    ANIM_JUMPING=1,
+enum
+{
+    ANIM_JUMPING = 1,
     ANIM_STANDUP,
     ANIM_STUNNED,
     ANIM_CROUCHING,
@@ -22,9 +23,9 @@ enum {
     ANIM_SCRAP_METAL,
     ANIM_BOLT,
     ANIM_SCREW,
-    ANIM_VICTORY=48,
+    ANIM_VICTORY = 48,
     ANIM_DEFEAT,
-    ANIM_BLAST1=55,
+    ANIM_BLAST1 = 55,
     ANIM_BLAST2,
     ANIM_BLAST3
 };
@@ -45,11 +46,11 @@ typedef struct animation_t {
 } animation;
 
 void animation_create(animation *ani, void *src, int id);
-sprite* animation_get_sprite(animation *ani, int sprite_id);
+sprite *animation_get_sprite(animation *ani, int sprite_id);
 void animation_free(animation *ani);
 
 int animation_get_sprite_count(animation *ani);
 
-animation* create_animation_from_single(sprite *sp, vec2i pos);
+animation *create_animation_from_single(sprite *sp, vec2i pos);
 
 #endif // ANIMATION_H

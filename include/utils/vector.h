@@ -11,12 +11,12 @@ typedef struct vector_t {
     unsigned int inc_factor;
 } vector;
 
-typedef int (*vector_compare_func)(const void*, const void*);
+typedef int (*vector_compare_func)(const void *, const void *);
 
 void vector_create(vector *vector, unsigned int block_size);
 void vector_free(vector *vector);
 void vector_clear(vector *vector);
-void* vector_get(const vector *vector, unsigned int key);
+void *vector_get(const vector *vector, unsigned int key);
 int vector_append(vector *vector, const void *value);
 int vector_prepend(vector *vector, const void *value);
 void vector_sort(vector *vector, vector_compare_func cf);

@@ -8,11 +8,11 @@ struct iterator_t {
     void *vnow;
     int inow;
     int ended;
-    void* (*next)(iterator*);
-    void* (*prev)(iterator*);
+    void *(*next)(iterator *);
+    void *(*prev)(iterator *);
 };
 
-void* iter_next(iterator *iterator);
-void* iter_prev(iterator *iterator);
+void *iter_next(iterator *iterator);
+void *iter_prev(iterator *iterator);
 
 #endif // ITERATOR_H

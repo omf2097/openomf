@@ -28,6 +28,6 @@ int32_t serial_read_int32(serial *s);
 long serial_read_long(serial *s);
 float serial_read_float(serial *s);
 void serial_copy(serial *dst, const serial *src);
-serial* serial_calloc_copy(const serial *src);
+serial *serial_calloc_copy(const serial *src);
 
 #endif // SERIAL_H

@@ -25,7 +25,13 @@
 static settings _settings;
 static const char *settings_path;
 
-typedef enum field_type_t { TYPE_INT, TYPE_FLOAT, TYPE_BOOL, TYPE_STRING } field_type;
+typedef enum field_type_t
+{
+    TYPE_INT,
+    TYPE_FLOAT,
+    TYPE_BOOL,
+    TYPE_STRING
+} field_type;
 
 typedef union field_default_u {
     char *s;

@@ -1,9 +1,9 @@
+#include "formats/error.h"
+#include "formats/rec.h"
+#include <CUnit/Basic.h>
+#include <CUnit/CUnit.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <CUnit/CUnit.h>
-#include <CUnit/Basic.h>
-#include "formats/rec.h"
-#include "formats/error.h"
 
 sd_rec_file rec;
 
@@ -21,9 +21,9 @@ void test_sd_rec_create(void) {
     // Set some values
     for(int i = 0; i < 10; i++) {
         sd_rec_move mv;
-        fill((char*)&mv, sizeof(sd_rec_move));
+        fill((char *)&mv, sizeof(sd_rec_move));
         mv.lookup_id = 2;
-        mv.action = SD_ACT_KICK|SD_ACT_PUNCH|SD_ACT_LEFT|SD_ACT_DOWN;
+        mv.action = SD_ACT_KICK | SD_ACT_PUNCH | SD_ACT_LEFT | SD_ACT_DOWN;
         mv.extra_data = NULL;
         sd_rec_insert_action(&rec, i, &mv);
     }
@@ -50,20 +50,15 @@ void test_rec_roundtrip(void) {
 
         if(rec.moves[i].lookup_id > 2) {
             CU_ASSERT(rec.moves[i].raw_action == loaded.moves[i].raw_action);
-            CU_ASSERT_NSTRING_EQUAL(
-                rec.moves[i].extra_data,
-                loaded.moves[i].extra_data,
-                7);
+            CU_ASSERT_NSTRING_EQUAL(rec.moves[i].extra_data, loaded.moves[i].extra_data, 7);
         } else {
             CU_ASSERT(rec.moves[i].action == loaded.moves[i].action);
         }
     }
 
     // Test pilot data
-    CU_ASSERT_NSTRING_EQUAL(
-        (char*)&rec.pilots[0], (char*)&loaded.pilots[0], sizeof(loaded.pilots[0]));
-    CU_ASSERT_NSTRING_EQUAL(
-        (char*)&rec.pilots[1], (char*)&loaded.pilots[1], sizeof(loaded.pilots[1]));
+    CU_ASSERT_NSTRING_EQUAL((char *)&rec.pilots[0], (char *)&loaded.pilots[0], sizeof(loaded.pilots[0]));
+    CU_ASSERT_NSTRING_EQUAL((char *)&rec.pilots[1], (char *)&loaded.pilots[1], sizeof(loaded.pilots[1]));
 
     // Free the loaded struct
     sd_rec_free(&loaded);
@@ -71,14 +66,21 @@ void test_rec_roundtrip(void) {
 
 void test_crystal_shirro_load(void) {
     CU_ASSERT(sd_rec_create(&rec) == SD_SUCCESS);
-    CU_ASSERT(sd_rec_load(&rec, TESTS_ROOT_DIR
-                          "/recs/crystal-shirro.rec") == SD_SUCCESS);
+    CU_ASSERT(sd_rec_load(&rec, TESTS_ROOT_DIR "/recs/crystal-shirro.rec") == SD_SUCCESS);
     sd_rec_free(&rec);
 }
 
 void rec_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "test of sd_rec_create", test_sd_rec_create) == NULL) { return; }
-    if(CU_add_test(suite, "test of REC roundtripping", test_rec_roundtrip) == NULL) { return; }
-    if(CU_add_test(suite, "test of sd_rec_free", test_sd_rec_free) == NULL) { return; }
-    if(CU_add_test(suite, "test loading crystal-shirro.rec", test_crystal_shirro_load) == NULL) { return; }
+    if(CU_add_test(suite, "test of sd_rec_create", test_sd_rec_create) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of REC roundtripping", test_rec_roundtrip) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_rec_free", test_sd_rec_free) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test loading crystal-shirro.rec", test_crystal_shirro_load) == NULL) {
+        return;
+    }
 }

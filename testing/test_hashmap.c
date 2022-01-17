@@ -1,8 +1,8 @@
-#include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
+#include <CUnit/CUnit.h>
+#include <stdio.h>
 #include <utils/hashmap.h>
 #include <utils/iterator.h>
-#include <stdio.h>
 
 #define TEST_VAL_COUNT 1000
 
@@ -29,10 +29,10 @@ void test_hashmap_delete(void) {
     unsigned int *val;
     unsigned int vlen;
     int removed = 0;
-    for(unsigned int i = 0; i < TEST_VAL_COUNT; i+=10) {
+    for(unsigned int i = 0; i < TEST_VAL_COUNT; i += 10) {
         CU_ASSERT(hashmap_del(&test_map, &i, sizeof(int)) == 0);
         test_values[i] = 0;
-        CU_ASSERT(hashmap_get(&test_map, &i, sizeof(int), (void**)&val, &vlen) == 1);
+        CU_ASSERT(hashmap_get(&test_map, &i, sizeof(int), (void **)&val, &vlen) == 1);
         CU_ASSERT(val == NULL);
         CU_ASSERT(vlen == 0);
         removed++;
@@ -80,8 +80,8 @@ void test_hashmap_get(void) {
     unsigned int *val;
     unsigned int vlen;
 
-    for(unsigned int i = 0; i < TEST_VAL_COUNT; i ++) {
-        int ret = hashmap_get(&test_map, &i, sizeof(int), (void**)&val, &vlen);
+    for(unsigned int i = 0; i < TEST_VAL_COUNT; i++) {
+        int ret = hashmap_get(&test_map, &i, sizeof(int), (void **)&val, &vlen);
         CU_ASSERT_FATAL(ret == 0);
         CU_ASSERT(*val == test_values[i]);
         CU_ASSERT(vlen == sizeof(int));
@@ -139,7 +139,7 @@ void test_hashmap_clear(void) {
 void hashmap_test_autoresize(void) {
     hashmap_create(&test_map, 2);
 
-    hashmap_set_opts(&test_map, HASHMAP_AUTO_INC|HASHMAP_AUTO_DEC, 0.25, 0.75, 2, 8);
+    hashmap_set_opts(&test_map, HASHMAP_AUTO_INC | HASHMAP_AUTO_DEC, 0.25, 0.75, 2, 8);
     CU_ASSERT(test_map.buckets_x_max == 8);
     CU_ASSERT(test_map.buckets_x_min == 2);
     CU_ASSERT(test_map.flags & HASHMAP_AUTO_INC);
@@ -171,7 +171,6 @@ void hashmap_test_autoresize(void) {
     CU_ASSERT_DOUBLE_EQUAL(hashmap_get_pressure(&test_map), 0.5, 0.01);
     CU_ASSERT(test_map.buckets_x == 3);
 
-
     hashmap_del(&test_map, &c_key, sizeof(int));
     c_key--;
     hashmap_del(&test_map, &c_key, sizeof(int));
@@ -186,15 +185,37 @@ void hashmap_test_autoresize(void) {
 
 void hashmap_test_suite(CU_pSuite suite) {
     // Add tests
-    if(CU_add_test(suite, "Test for hashmap create", test_hashmap_create) == NULL) { return; }
-    if(CU_add_test(suite, "Test for hashmap insert operation", test_hashmap_insert) == NULL) { return; }
-    if(CU_add_test(suite, "Test for hashmap get pressure operation", test_hashmap_get_pressure) == NULL) { return; }
-    if(CU_add_test(suite, "Test for hashmap resize operation", test_hashmap_resize) == NULL) { return; }
-    if(CU_add_test(suite, "Test for hashmap get operation", test_hashmap_get) == NULL) { return; }
-    if(CU_add_test(suite, "Test for hashmap delete operation", test_hashmap_delete) == NULL) { return; }
-    if(CU_add_test(suite, "Test for hashmap iterator ", test_hashmap_iterator) == NULL) { return; }
-    if(CU_add_test(suite, "Test for hashmap iterator delete operation", test_hashmap_iter_del) == NULL) { return; }
-    if(CU_add_test(suite, "Test for hashmap clear operation", test_hashmap_clear) == NULL) { return; }
-    if(CU_add_test(suite, "Test for hashmap free operation", test_hashmap_free) == NULL) { return; }
-    if(CU_add_test(suite, "Test for hashmap auto resize", hashmap_test_autoresize) == NULL) { return; }
+    if(CU_add_test(suite, "Test for hashmap create", test_hashmap_create) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap insert operation", test_hashmap_insert) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap get pressure operation", test_hashmap_get_pressure) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap resize operation", test_hashmap_resize) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap get operation", test_hashmap_get) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap delete operation", test_hashmap_delete) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap iterator ", test_hashmap_iterator) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap iterator delete operation", test_hashmap_iter_del) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap clear operation", test_hashmap_clear) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap free operation", test_hashmap_free) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap auto resize", hashmap_test_autoresize) == NULL) {
+        return;
+    }
 }

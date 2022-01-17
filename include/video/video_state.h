@@ -3,10 +3,10 @@
 
 #include <stdbool.h>
 
-#include <SDL.h>
 #include "formats/palette.h"
-#include "video/screen_palette.h"
 #include "plugins/scaler_plugin.h"
+#include "video/screen_palette.h"
+#include <SDL.h>
 
 typedef struct video_state_t {
     SDL_Window *window;
@@ -29,8 +29,8 @@ typedef struct video_state_t {
     SDL_Texture *bg_target;
 
     // Palettes
-    palette *base_palette;  // Copy of the scenes base palette
-    screen_palette *screen_palette;  // Normal rendering palette
+    palette *base_palette;          // Copy of the scenes base palette
+    screen_palette *screen_palette; // Normal rendering palette
     screen_palette *extra_palette;  // Reflects base palette, used for additive blending
 } video_state;
 

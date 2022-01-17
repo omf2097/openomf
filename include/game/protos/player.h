@@ -1,13 +1,14 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <stdint.h>
 #include "formats/script.h"
 #include "utils/vec.h"
+#include <stdint.h>
 
 typedef struct object_t object;
 
-typedef void (*object_state_add_cb)(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata);
+typedef void (*object_state_add_cb)(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g,
+                                    void *userdata);
 typedef void (*object_state_del_cb)(object *parent, int id, void *userdata);
 
 typedef struct player_sprite_state_t {
@@ -25,12 +26,12 @@ typedef struct player_sprite_state_t {
     int blend_start;
     int blend_finish;
 
-    int pal_ref_index; // bpd
+    int pal_ref_index;   // bpd
     int pal_entry_count; // bpn
     int pal_start_index; // bps
-    int pal_begin; // bpb
-    int pal_end; // bpd
-    int pal_tint; // bz
+    int pal_begin;       // bpb
+    int pal_end;         // bpd
+    int pal_tint;        // bz
 } player_sprite_state;
 
 typedef struct player_slide_op_t {

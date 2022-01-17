@@ -25,11 +25,11 @@ extern "C" {
  * A single score entry for the scoreboard.
  */
 typedef struct {
-    uint32_t score;      ///< Player score
-    char name[16];       ///< Player name (NULL terminated)
-    uint32_t har_id:6;   ///< Har ID
-    uint32_t pilot_id:6; ///< Pilot ID
-    uint32_t padding:20; ///< empty padding
+    uint32_t score;        ///< Player score
+    char name[16];         ///< Player name (NULL terminated)
+    uint32_t har_id : 6;   ///< Har ID
+    uint32_t pilot_id : 6; ///< Pilot ID
+    uint32_t padding : 20; ///< empty padding
 } sd_score_entry;
 
 /*! \brief Scoreboard scores list
@@ -108,7 +108,7 @@ int sd_score_save(const sd_score *score, const char *filename);
  * \param page Scoreboard page number.
  * \param entry_id Score information entry id.
  */
-const sd_score_entry* sd_score_get(const sd_score *score, int page, int entry_id);
+const sd_score_entry *sd_score_get(const sd_score *score, int page, int entry_id);
 
 #ifdef __cplusplus
 }
