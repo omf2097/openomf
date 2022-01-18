@@ -203,8 +203,9 @@ int char_to_act(int ch, int direction) {
  *
  * \return Void.
  */
-void chain_controller_cmd(controller *ctrl, int commands[], ctrl_event **ev) {
-    for(int i = 0; i < sizeof *commands; i++) {
+void chain_controller_cmd(controller *ctrl, const int commands[], ctrl_event **ev) {
+    size_t n = sizeof(*commands) / sizeof(int);
+    for(int i = 0; i < n; i++) {
         controller_cmd(ctrl, commands[i], ev);
     }
 }
@@ -348,7 +349,7 @@ int get_enemy_range(const controller *ctrl) {
     har *h = object_get_userdata(o);
     object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
 
-    int range_units = abs(o_enemy->pos.x - o->pos.x) / 30;
+    int range_units = fabs(o_enemy->pos.x - o->pos.x) / 30;
     switch(range_units) {
         case 0:
         case 1:
@@ -1224,8 +1225,8 @@ int ai_har_event(controller *ctrl, har_event event) {
                 if(learning_moment(a) && a->thrown >= MAX_TIMES_THROWN) {
                     DEBUG("\e[33mAI adjusting in response to repeated throws.\e[0m");
                     // avoid defensive tactics
-                    if(pilot->att_def > -90)
-                        pilot->att_def = -10;
+                    if(pilot->att_def > 90)
+                        pilot->att_def = 10;
                     // favor sniper tactics
                     if(pilot->att_sniper < 90)
                         pilot->att_sniper += 10;
@@ -1238,7 +1239,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                     // favor backwards movement
                     if(pilot->pref_back < 90)
                         pilot->pref_back += 10;
-                    if(pilot->pref_fwd > -90)
+                    if(pilot->pref_fwd > 90)
                         pilot->pref_fwd -= 10;
                 }
             } else if(event.type == HAR_EVENT_TAKE_HIT_PROJECTILE) {
@@ -1247,7 +1248,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                 if(learning_moment(a) && a->shot >= MAX_TIMES_SHOT) {
                     DEBUG("\e[33mAI adjusting in response to repeated projectiles.\e[0m");
                     // avoid defensive tactics
-                    if(pilot->att_def > -90)
+                    if(pilot->att_def > 90)
                         pilot->att_def = 10;
                     // favor shooting tactics
                     if(pilot->att_sniper < 90)
@@ -1263,7 +1264,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                     // favor forwards movement
                     if(pilot->pref_fwd < 90)
                         pilot->pref_fwd += 10;
-                    if(pilot->pref_back > -90)
+                    if(pilot->pref_back > 90)
                         pilot->pref_back -= 10;
                 }
             }

@@ -109,7 +109,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Check if we want to export. If not, just print info
-    if(export->count > 0) {
+    if(export->count > 0 && bkfile->count > 0) {
+        if(bk.palette_count < 1) {
+            printf("BK file %s does not have palettes.\n", bkfile->filename[0]);
+            goto exit_2;
+        }
+
         sd_rgba_image img;
         sd_sprite_rgba_decode(&img, chr.photo, bk.palettes[0], -1);
         ret = sd_rgba_image_to_ppm(&img, export->filename[0]);

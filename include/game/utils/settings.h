@@ -1,13 +1,13 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-typedef enum fight_mode_t
+typedef enum
 {
     FIGHT_MODE_NORMAL,
     FIGHT_MODE_HYPER
 } fight_mode;
 
-typedef enum knock_down_mode_t
+typedef enum
 {
     KNOCK_DOWN_NONE = 0,
     KNOCK_DOWN_PUNCHES,
@@ -15,7 +15,7 @@ typedef enum knock_down_mode_t
     KNOCK_DOWN_BOTH
 } knock_down_mode;
 
-typedef enum difficulty_t
+typedef enum
 {
     PUNCHING_BAG,
     ROOKIE,
@@ -26,7 +26,7 @@ typedef enum difficulty_t
     ULTIMATE
 } difficulty;
 
-typedef struct settings_sound_t {
+typedef struct {
     char *sink;
     int music_mono;
     int music_frequency;
@@ -43,7 +43,7 @@ typedef struct settings_sound_t {
     char *music_menu;
 } settings_sound;
 
-typedef struct settings_video_t {
+typedef struct {
     int screen_w;
     int screen_h;
     int vsync;
@@ -55,7 +55,7 @@ typedef struct settings_video_t {
     int scale_factor;
 } settings_video;
 
-typedef struct settings_gameplay_t {
+typedef struct {
     int speed;
     int fight_mode;
     int power1;
@@ -65,11 +65,11 @@ typedef struct settings_gameplay_t {
     int rounds;
 } settings_gameplay;
 
-typedef struct settings_tournament_t {
+typedef struct {
     char *last_name;
 } settings_tournament;
 
-typedef struct settings_advanced_t {
+typedef struct {
     int rehit_mode;
     int defensive_throws;
     int throw_range;
@@ -80,7 +80,7 @@ typedef struct settings_advanced_t {
     int block_damage;
 } settings_advanced;
 
-typedef struct settings_keyboard_t {
+typedef struct {
     // Player one
     int ctrl_type1;
     char *joy_name1;
@@ -114,13 +114,13 @@ typedef struct settings_keyboard_t {
     char *key2_escape;
 } settings_keyboard;
 
-typedef struct settings_network_t {
+typedef struct {
     char *net_connect_ip;
     int net_connect_port;
     int net_listen_port;
 } settings_network;
 
-typedef struct settings_t {
+typedef struct {
     settings_video video;
     settings_sound sound;
     settings_gameplay gameplay;
