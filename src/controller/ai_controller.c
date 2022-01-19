@@ -39,6 +39,8 @@
 /* number of attack attempt ticks before bailing on tactic */
 #define TACTIC_ATTACK_TIMER_MAX 2
 
+#define N_ELEMENTS(array) (sizeof(array) / sizeof((array)[0]))
+
 typedef struct move_stat_t {
     int max_hit_dist;
     int min_hit_dist;
@@ -199,13 +201,13 @@ int char_to_act(int ch, int direction) {
  *
  * \param ctrl Controller instance.
  * \param commands An array of controller commands to chain.
+ * \param n_commands Number of elements in commands array.
  * \param ev The current controller event.
  *
  * \return Void.
  */
-void chain_controller_cmd(controller *ctrl, const int commands[], ctrl_event **ev) {
-    size_t n = sizeof(*commands) / sizeof(int);
-    for(int i = 0; i < n; i++) {
+void chain_controller_cmd(controller *ctrl, int commands[], size_t n_commands, ctrl_event **ev) {
+    for(size_t i = 0; i < n_commands; i++) {
         controller_cmd(ctrl, commands[i], ev);
     }
 }
@@ -1821,199 +1823,174 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
 
     // DEBUG("\e[35mHAR attempting charge:\e[0m %d", h->id);
     switch(h->id) {
-        case HAR_JAGUAR:
+        case HAR_JAGUAR: {
             // DEBUG("\e[35mJaguar move:\e[0m Leap");
             if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Shadow Leap : B,D,F+P
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)},
-                    ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Jaguar Leap : D,F+P
-            chain_controller_cmd(
-                ctrl,
-                (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_PUNCH},
-                ev);
-            break;
-        case HAR_SHADOW:
+            int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_SHADOW: {
             // DEBUG("\e[35mShadow move:\e[0m Shadow Grab");
             // Shadow Grab       : D,D+P
-            chain_controller_cmd(ctrl, (int[]){ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_DOWN | ACT_PUNCH, ACT_PUNCH}, ev);
-            break;
-        case HAR_KATANA:
+            int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_DOWN | ACT_PUNCH, ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_KATANA: {
             if(roll_chance(2) && roll_pref(a->pilot->ap_low)) {
                 // DEBUG("\e[35mKatana move:\e[0m Trip-slide");
                 // Trip-Slide attack : D+B+K
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
-                            ACT_KICK},
-                    ev);
+                int cmds[] = {ACT_DOWN,
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
+                              ACT_KICK};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 if(enemy_range >= RANGE_MID && roll_chance(2)) {
                     // DEBUG("\e[35mKatana move:\e[0m Foward Razor Spin");
                     // Foward Razor Spin : D,F+K
-                    chain_controller_cmd(
-                        ctrl,
-                        (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                                (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_KICK : ACT_LEFT | ACT_KICK),
-                                (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)},
-                        ev);
+                    int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                                  (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_KICK : ACT_LEFT | ACT_KICK),
+                                  (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)};
+                    chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 } else {
                     // DEBUG("\e[35mKatana move:\e[0m Rising Blade ");
                     if(enemy_range >= RANGE_CLOSE && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                         // Triple Blade : B,D,F+P
-                        chain_controller_cmd(
-                            ctrl,
-                            (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
-                                    (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)},
-                            ev);
+                        int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
+                                      (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)};
+                        chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                     }
                     // Rising Blade : D,F+P
-                    chain_controller_cmd(
-                        ctrl,
-                        (int[]){ACT_DOWN,
-                                (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
-                                (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                                (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH),
-                                ACT_PUNCH},
-                        ev);
+                    int cmds[] = {
+                        ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
+                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH), ACT_PUNCH};
+                    chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 }
             }
-            break;
-        case HAR_FLAIL:
+        } break;
+        case HAR_FLAIL: {
             // DEBUG("\e[35mFlail move:\e[0m Charging Punch");
             if(enemy_range > RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Shadow Punch : D,B,B,P
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)},
-                    ev);
+                int cmds[] = {ACT_DOWN,
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Charging Punch : B,B,P
-            chain_controller_cmd(
-                ctrl,
-                (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_PUNCH : ACT_RIGHT | ACT_PUNCH), ACT_PUNCH},
-                ev);
-            break;
-        case HAR_THORN:
+            int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_PUNCH : ACT_RIGHT | ACT_PUNCH),
+                          ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_THORN: {
             // DEBUG("\e[35mThorn move:\e[0m Spike-charge");
             // Spike-Charge : F,F+P
-            chain_controller_cmd(
-                ctrl,
-                (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH), ACT_PUNCH},
-                ev);
-            break;
-        case HAR_PYROS:
+            int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH),
+                          ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_PYROS: {
             // DEBUG("\e[35mPyros move:\e[0m Thrust");
             if(enemy_range > RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Shadow Thrust : F,F,F+P
-                chain_controller_cmd(ctrl,
-                                     (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_STOP}, ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_STOP};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Super Thrust : F,F+P
-            chain_controller_cmd(
-                ctrl,
-                (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_STOP,
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH), ACT_PUNCH},
-                ev);
-            break;
-        case HAR_ELECTRA:
+            int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_STOP,
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH),
+                          ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_ELECTRA: {
             // DEBUG("\e[35mElectra move:\e[0m Rolling Thunder");
             if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Super R.T. : B,D,F,F+P
-                chain_controller_cmd(ctrl,
-                                     (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT), ACT_DOWN}, ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT), ACT_DOWN};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Rolling Thunder : F,F+P
-            chain_controller_cmd(
-                ctrl,
-                (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_STOP,
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH), ACT_PUNCH},
-                ev);
-            break;
-        case HAR_CHRONOS:
+            int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_STOP,
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH),
+                          ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_CHRONOS: {
             if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // DEBUG("\e[35mChronos move:\e[0m Teleport");
                 // Teleportation : D,P
-                chain_controller_cmd(ctrl, (int[]){ACT_DOWN, ACT_STOP, ACT_PUNCH}, ev);
+                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_PUNCH};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 // follow up with a close-range tactic
                 chain_consider_tactics(ctrl, (int[]){TACTIC_GRAB, TACTIC_PUSH, TACTIC_SHOOT, TACTIC_SPAM, TACTIC_TRIP});
             } else {
                 // DEBUG("\e[35mChronos move\e[0m: Trip-slide");
                 // Trip-Slide attack : D,B+K
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
-                            ACT_KICK},
-                    ev);
+                int cmds[] = {ACT_DOWN,
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
+                              ACT_KICK};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
-            break;
-        case HAR_SHREDDER:
+        } break;
+        case HAR_SHREDDER: {
             if(enemy_range > RANGE_MID && roll_pref(a->pilot->att_jump) && diff_scale(a)) {
                 // DEBUG("\e[35mShredder move:\e[0m Flip-kick");
                 // Flip Kick : D,D+K
-                chain_controller_cmd(ctrl, (int[]){ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_DOWN | ACT_KICK, ACT_KICK}, ev);
+                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_DOWN | ACT_KICK, ACT_KICK};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // DEBUG("\e[35mShredder move:\e[0m Head-butt");
                 if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                     // Shadow Head-Butt : B,D,F+P
-                    chain_controller_cmd(
-                        ctrl,
-                        (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
-                                (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)},
-                        ev);
+                    int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
+                                  (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)};
+                    chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 }
                 // Head-Butt : D,F+P
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH),
-                            ACT_PUNCH},
-                    ev);
+                int cmds[] = {
+                    ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
+                    (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                    (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH), ACT_PUNCH};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
-            break;
-        case HAR_GARGOYLE:
+        } break;
+        case HAR_GARGOYLE: {
             if(enemy_range > RANGE_MID && roll_pref(a->pilot->att_jump) && diff_scale(a)) {
                 // DEBUG("\e[35mGargoyle move:\e[0m Wing-charge");
                 // Wing Charge : F,F,P
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH),
-                            ACT_PUNCH},
-                    ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH),
+                              ACT_PUNCH};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // DEBUG("\e[35mGargoyle move:\e[0m Talon");
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)};
                 if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                     // Shadow Talon : B,D,F,P
-                    chain_controller_cmd(
-                        ctrl,
-                        (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
-                                (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)},
-                        ev);
+                    chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 }
                 // Flying Talon : D,F,P
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH),
-                            ACT_PUNCH},
-                    ev);
+                int cmds2[] = {
+                    ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
+                    (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                    (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH), ACT_PUNCH};
+                chain_controller_cmd(ctrl, cmds2, N_ELEMENTS(cmds2), ev);
             }
-            break;
+        } break;
     }
 
     return true;
@@ -2049,91 +2026,83 @@ bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
 
     // DEBUG("\e[35mHAR attempting push:\e[0m %d", h->id);
     switch(h->id) {
-        case HAR_JAGUAR:
+        case HAR_JAGUAR: {
             // DEBUG("\e[35mJaguar move:\e[0m High Kick");
             // High Kick : B+K
-            chain_controller_cmd(
-                ctrl,
-                (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK), ACT_KICK},
-                ev);
-            break;
-        case HAR_KATANA:
+            int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK), ACT_KICK};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_KATANA: {
             // DEBUG("\e[35mKatana move:\e[0m Rising Blade");
             if(enemy_range >= RANGE_CLOSE && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Triple Blade : B,D,F+P
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)},
-                    ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Rising Blade : D,F+P
-            chain_controller_cmd(
-                ctrl,
-                (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_PUNCH},
-                ev);
-            break;
-        case HAR_FLAIL:
+            int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_FLAIL: {
             if(roll_chance(3)) {
                 // DEBUG("\e[35mFlail move:\e[0m Slow Swing Chains");
                 // Slow Swing Chain : D,K
-                chain_controller_cmd(ctrl, (int[]){ACT_DOWN, ACT_STOP, ACT_KICK}, ev);
+                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_KICK};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // DEBUG("\e[35mFlail move:\e[0m Swinging Chains");
                 // Swinging Chains : D,P
-                chain_controller_cmd(ctrl, (int[]){ACT_DOWN, ACT_STOP, ACT_PUNCH}, ev);
+                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_PUNCH};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
-            break;
-        case HAR_THORN:
+        } break;
+        case HAR_THORN: {
             // DEBUG("\e[35mThorn move:\e[0m Speed Kick");
             if(enemy_range >= RANGE_CLOSE && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Shadow Kick : B,D,F+K
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)},
-                    ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Speed Kick : D,F+K
-            chain_controller_cmd(
-                ctrl,
-                (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_KICK : ACT_LEFT | ACT_KICK),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_KICK : ACT_LEFT | ACT_KICK)},
-                ev);
-            break;
-        case HAR_PYROS:
+            int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_KICK : ACT_LEFT | ACT_KICK),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_KICK : ACT_LEFT | ACT_KICK)};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_PYROS: {
             // DEBUG("\e[35mPyros move:\e[0m Fire Spin");
             // Fire Spin : D+P
-            chain_controller_cmd(ctrl, (int[]){ACT_DOWN, ACT_STOP, ACT_PUNCH}, ev);
-            break;
-        case HAR_ELECTRA:
+            int cmds[] = {ACT_DOWN, ACT_STOP, ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_ELECTRA: {
             // DEBUG("\e[35mElectra move:\e[0m Electric Shards");
             // Electric Shards : D,F+P
-            chain_controller_cmd(
-                ctrl,
-                (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH), ACT_PUNCH},
-                ev);
-            break;
-        case HAR_NOVA:
+            int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_PUNCH : ACT_LEFT | ACT_PUNCH),
+                          ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_NOVA: {
             if(diff_scale(a)) {
                 // DEBUG("\e[35mNova move:\e[0m Earthquake Slam");
                 // Earthquake Slam : D,D,P
-                chain_controller_cmd(ctrl, (int[]){ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_PUNCH}, ev);
+                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_PUNCH};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // DEBUG("\e[35mNova move:\e[0m Heavy Kick");
                 // Heavy Kick : B+K
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK), ACT_KICK},
-                    ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK),
+                              ACT_KICK};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
-            break;
+        } break;
     }
 
     return true;
@@ -2166,11 +2135,9 @@ bool attempt_trip_attack(controller *ctrl, ctrl_event **ev) {
 
     // DEBUG("\e[35mHar move:\e[0m Trip");
     // Standard Trip : D+B+K
-    chain_controller_cmd(
-        ctrl,
-        (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
-                (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK), ACT_KICK},
-        ev);
+    int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
+                  (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK), ACT_KICK};
+    chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
 
     return true;
 }
@@ -2193,69 +2160,54 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
 
     // DEBUG("\e[35mHAR attempting projectile:\e[0m %d", h->id);
     switch(h->id) {
-        case HAR_JAGUAR:   // Concussion Cannon : D, B+P
-        case HAR_ELECTRA:  // Ball Lightning : D, B+P
-        case HAR_SHREDDER: // Flying Hands : D, B+P
-            chain_controller_cmd(ctrl,
-                                 (int[]){
-                                     ACT_DOWN,
-                                     (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
-                                     (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
-                                 },
-                                 ev);
+        case HAR_JAGUAR:     // Concussion Cannon : D, B+P
+        case HAR_ELECTRA:    // Ball Lightning : D, B+P
+        case HAR_SHREDDER: { // Flying Hands : D, B+P
+            int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT)};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             // these ones are picky so we need to split it up
-            chain_controller_cmd(
-                ctrl,
-                (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_PUNCH : ACT_RIGHT | ACT_PUNCH), ACT_PUNCH},
-                ev);
-            break;
-        case HAR_SHADOW:
-            chain_controller_cmd(
-                ctrl,
-                (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT)},
-                ev);
+            int cmds2[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_PUNCH : ACT_RIGHT | ACT_PUNCH),
+                           ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds2, N_ELEMENTS(cmds2), ev);
+        } break;
+        case HAR_SHADOW: {
+            int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT)};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             if(roll_chance(2)) {
                 // Shadow Punch : D,B+P
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_PUNCH : ACT_RIGHT | ACT_PUNCH),
-                            ACT_PUNCH},
-                    ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_PUNCH : ACT_RIGHT | ACT_PUNCH),
+                              ACT_PUNCH};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // Shadow Kick : D,B+K
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK), ACT_KICK},
-                    ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK),
+                              ACT_KICK};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
-            break;
-        case HAR_CHRONOS: // Stasis : D, B, P
-            chain_controller_cmd(
-                ctrl,
-                (int[]){ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
-                        (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT), ACT_PUNCH},
-                ev);
-            break;
-        case HAR_NOVA:
+        } break;
+        case HAR_CHRONOS: {
+            // Stasis : D, B, P
+            int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
+                          (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT), ACT_PUNCH};
+            chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+        } break;
+        case HAR_NOVA: {
             controller_cmd(ctrl, ACT_DOWN, ev);
             if(roll_chance(3)) {
                 // Mini-Grenade : D, B, P
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT)},
-                    ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT)};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // Missile : D, F, P
-                chain_controller_cmd(
-                    ctrl,
-                    (int[]){(o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
-                            (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)},
-                    ev);
+                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
+                              (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)};
+                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             controller_cmd(ctrl, ACT_PUNCH, ev);
-            break;
+        } break;
     }
 
     return true;
