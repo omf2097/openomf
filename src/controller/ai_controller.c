@@ -748,8 +748,8 @@ void queue_tactic(controller *ctrl, int tactic_type) {
  *
  * \return Void.
  */
-void chain_consider_tactics(controller *ctrl, int tactics[]) {
-    for(int i = 0; i < sizeof *tactics; i++) {
+void chain_consider_tactics(controller *ctrl, int tactics[], size_t n_tactics) {
+    for(size_t i = 0; i < n_tactics; i++) {
         if(likes_tactic(ctrl, tactics[i])) {
             queue_tactic(ctrl, tactics[i]);
             return;
@@ -1089,7 +1089,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 
     switch(event.type) {
         case HAR_EVENT_LAND_HIT:
-        case HAR_EVENT_LAND_HIT_PROJECTILE:
+        case HAR_EVENT_LAND_HIT_PROJECTILE: {
             ms = &a->move_stats[event.move->id];
 
             // in the heat of the moment they might forget what they have learnt
@@ -1127,16 +1127,18 @@ int ai_har_event(controller *ctrl, har_event event) {
 
             if(event.type == HAR_EVENT_LAND_HIT_PROJECTILE) {
                 // we hit with a projectile
-                chain_consider_tactics(ctrl, (int[]){TACTIC_FLY, TACTIC_TURTLE, TACTIC_CLOSE, TACTIC_SHOOT});
+                int tacs[] = {TACTIC_FLY, TACTIC_TURTLE, TACTIC_CLOSE, TACTIC_SHOOT};
+                chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
             } else {
                 // we hit with a HAR attack
-                chain_consider_tactics(ctrl, (int[]){TACTIC_QUICK, TACTIC_TRIP, TACTIC_GRAB, TACTIC_PUSH, TACTIC_CLOSE,
-                                                     TACTIC_SHOOT, TACTIC_TURTLE, TACTIC_SPAM});
+                int tacs[] = {TACTIC_QUICK, TACTIC_TRIP,  TACTIC_GRAB,   TACTIC_PUSH,
+                              TACTIC_CLOSE, TACTIC_SHOOT, TACTIC_TURTLE, TACTIC_SPAM};
+                chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
             }
-            break;
+        } break;
 
         case HAR_EVENT_ENEMY_BLOCK:
-        case HAR_EVENT_ENEMY_BLOCK_PROJECTILE:
+        case HAR_EVENT_ENEMY_BLOCK_PROJECTILE: {
             ms = &a->move_stats[event.move->id];
             if(!a->blocked) {
                 a->blocked = 1;
@@ -1149,20 +1151,20 @@ int ai_har_event(controller *ctrl, har_event event) {
 
                 if(event.type == HAR_EVENT_ENEMY_BLOCK_PROJECTILE) {
                     // enemy blocked our projectile
-                    chain_consider_tactics(
-                        ctrl, (int[]){TACTIC_FLY, TACTIC_ESCAPE, TACTIC_TURTLE, TACTIC_CLOSE, TACTIC_SHOOT});
+                    int tacs[] = {TACTIC_FLY, TACTIC_ESCAPE, TACTIC_TURTLE, TACTIC_CLOSE, TACTIC_SHOOT};
+                    chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
                 } else {
                     // enemy blocked our HAR attack
-                    chain_consider_tactics(ctrl,
-                                           (int[]){TACTIC_GRAB, TACTIC_TRIP, TACTIC_PUSH, TACTIC_COUNTER, TACTIC_TURTLE,
-                                                   TACTIC_ESCAPE, TACTIC_FLY, TACTIC_QUICK, TACTIC_SPAM});
+                    int tacs[] = {TACTIC_GRAB,   TACTIC_TRIP, TACTIC_PUSH,  TACTIC_COUNTER, TACTIC_TURTLE,
+                                  TACTIC_ESCAPE, TACTIC_FLY,  TACTIC_QUICK, TACTIC_SPAM};
+                    chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
                 }
             }
 
-            break;
+        } break;
 
         case HAR_EVENT_BLOCK:
-        case HAR_EVENT_BLOCK_PROJECTILE:
+        case HAR_EVENT_BLOCK_PROJECTILE: {
 
             if(has_queued_tactic && a->tactic->attack_on == HAR_EVENT_BLOCK) {
                 // do the attack now
@@ -1178,16 +1180,18 @@ int ai_har_event(controller *ctrl, har_event event) {
                 // count this as being shot to respond to spam quicker
                 a->shot++;
                 // we blocked a projectile
-                chain_consider_tactics(ctrl, (int[]){TACTIC_FLY, TACTIC_SHOOT, TACTIC_CLOSE, TACTIC_TURTLE});
+                int tacs[] = {TACTIC_FLY, TACTIC_SHOOT, TACTIC_CLOSE, TACTIC_TURTLE};
+                chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
             } else {
                 // we blocked a HAR attack
-                chain_consider_tactics(ctrl, (int[]){TACTIC_TRIP, TACTIC_PUSH, TACTIC_TURTLE, TACTIC_GRAB,
-                                                     TACTIC_ESCAPE, TACTIC_QUICK, TACTIC_SPAM});
+                int tacs[] = {TACTIC_TRIP,   TACTIC_PUSH,  TACTIC_TURTLE, TACTIC_GRAB,
+                              TACTIC_ESCAPE, TACTIC_QUICK, TACTIC_SPAM};
+                chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
             }
 
-            break;
+        } break;
 
-        case HAR_EVENT_LAND:
+        case HAR_EVENT_LAND: {
 
             if(has_queued_tactic && a->tactic->attack_on == HAR_EVENT_LAND && h->state == STATE_STANDING) {
                 // do the attack now
@@ -1198,27 +1202,28 @@ int ai_har_event(controller *ctrl, har_event event) {
                 a->act_timer = 0;
 
                 if(!has_queued_tactic && smart_usually(a)) {
-                    chain_consider_tactics(ctrl, (int[]){TACTIC_TRIP, TACTIC_SHOOT, TACTIC_TURTLE, TACTIC_QUICK,
-                                                         TACTIC_GRAB, TACTIC_PUSH, TACTIC_COUNTER, TACTIC_CLOSE});
+                    int tacs[] = {TACTIC_TRIP, TACTIC_SHOOT, TACTIC_TURTLE,  TACTIC_QUICK,
+                                  TACTIC_GRAB, TACTIC_PUSH,  TACTIC_COUNTER, TACTIC_CLOSE};
+                    chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
                 }
             }
 
-            break;
+        } break;
 
         case HAR_EVENT_ATTACK:
             a->tactic->move_timer = 0;
             break;
 
-        case HAR_EVENT_HIT_WALL:
-
+        case HAR_EVENT_HIT_WALL: {
             if(has_queued_tactic || !smart_usually(a))
                 break;
 
-            chain_consider_tactics(ctrl, (int[]){TACTIC_SHOOT, TACTIC_PUSH, TACTIC_TURTLE, TACTIC_TRIP, TACTIC_FLY,
-                                                 TACTIC_ESCAPE, TACTIC_COUNTER, TACTIC_CLOSE});
-            break;
+            int tacs[] = {TACTIC_SHOOT, TACTIC_PUSH,   TACTIC_TURTLE,  TACTIC_TRIP,
+                          TACTIC_FLY,   TACTIC_ESCAPE, TACTIC_COUNTER, TACTIC_CLOSE};
+            chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
+        } break;
         case HAR_EVENT_TAKE_HIT:
-        case HAR_EVENT_TAKE_HIT_PROJECTILE:
+        case HAR_EVENT_TAKE_HIT_PROJECTILE: {
 
             // if enemy is cheesing the AI will try to adjust
             if(event.move->category == CAT_THROW || event.move->category == CAT_CLOSE) {
@@ -1276,24 +1281,28 @@ int ai_har_event(controller *ctrl, har_event event) {
 
             if(event.move->category == CAT_THROW || event.move->category == CAT_CLOSE) {
                 // distance gaining tactics
-                chain_consider_tactics(ctrl, (int[]){TACTIC_ESCAPE, TACTIC_PUSH, TACTIC_FLY});
+                int tacs[] = {TACTIC_ESCAPE, TACTIC_PUSH, TACTIC_FLY};
+                chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
             } else if(event.type == HAR_EVENT_TAKE_HIT_PROJECTILE) {
                 // aggressive tactics
-                chain_consider_tactics(ctrl, (int[]){TACTIC_CLOSE, TACTIC_FLY, TACTIC_SHOOT, TACTIC_GRAB});
+                int tacs[] = {TACTIC_CLOSE, TACTIC_FLY, TACTIC_SHOOT, TACTIC_GRAB};
+                chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
             } else {
                 // defensive tactics
-                chain_consider_tactics(ctrl, (int[]){TACTIC_COUNTER, TACTIC_TURTLE, TACTIC_ESCAPE, TACTIC_PUSH,
-                                                     TACTIC_TRIP, TACTIC_QUICK, TACTIC_SPAM});
+                int tacs[] = {TACTIC_COUNTER, TACTIC_TURTLE, TACTIC_ESCAPE, TACTIC_PUSH,
+                              TACTIC_TRIP,    TACTIC_QUICK,  TACTIC_SPAM};
+                chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
             }
 
-            break;
-        case HAR_EVENT_RECOVER:
+        } break;
+        case HAR_EVENT_RECOVER: {
 
             if(has_queued_tactic || !smart_usually(a))
                 break;
 
-            chain_consider_tactics(ctrl, (int[]){TACTIC_SHOOT, TACTIC_COUNTER, TACTIC_TURTLE, TACTIC_ESCAPE});
-            break;
+            int tacs[] = {TACTIC_SHOOT, TACTIC_COUNTER, TACTIC_TURTLE, TACTIC_ESCAPE};
+            chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
+        } break;
         case HAR_EVENT_ENEMY_STUN:
 
             if(has_queued_tactic || !smart_usually(a))
@@ -1934,7 +1943,8 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
                 int cmds[] = {ACT_DOWN, ACT_STOP, ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 // follow up with a close-range tactic
-                chain_consider_tactics(ctrl, (int[]){TACTIC_GRAB, TACTIC_PUSH, TACTIC_SHOOT, TACTIC_SPAM, TACTIC_TRIP});
+                int tacs[] = {TACTIC_GRAB, TACTIC_PUSH, TACTIC_SHOOT, TACTIC_SPAM, TACTIC_TRIP};
+                chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
             } else {
                 // DEBUG("\e[35mChronos move\e[0m: Trip-slide");
                 // Trip-Slide attack : D,B+K
@@ -2506,7 +2516,8 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     if(h->id == HAR_SHADOW) {
                         // shadow charge is long range
                         // use this free time to consider a new tactic
-                        chain_consider_tactics(ctrl, (int[]){TACTIC_SHOOT, TACTIC_GRAB, TACTIC_FLY});
+                        int tacs[] = {TACTIC_SHOOT, TACTIC_GRAB, TACTIC_FLY};
+                        chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
                     }
                 }
                 break;
@@ -2655,8 +2666,8 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     // queue a random tactic for next poll
     if(a->last_move_id > 0 && (roll_chance(10) && diff_scale(a)) && a->tactic->tactic_type == 0 && can_move) {
         // DEBUG("\e[35mAttempt to queue random tactic[0m");
-        chain_consider_tactics(
-            ctrl, (int[]){TACTIC_SHOOT, TACTIC_CLOSE, TACTIC_FLY, TACTIC_PUSH, TACTIC_TRIP, TACTIC_GRAB, TACTIC_QUICK});
+        int tacs[] = {TACTIC_SHOOT, TACTIC_CLOSE, TACTIC_FLY, TACTIC_PUSH, TACTIC_TRIP, TACTIC_GRAB, TACTIC_QUICK};
+        chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
     }
 
     return 0;
