@@ -80,6 +80,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->next_wait_ticks = 0;
     gs->this_wait_ticks = 0;
 
+    // Disable warp (debug) speed by default. This can be set in console.
+    gs->warp_speed = 0;
+
     // Set up players
     gs->sc = omf_calloc(1, sizeof(scene));
     for(int i = 0; i < 2; i++) {
@@ -873,12 +876,17 @@ void game_state_free(game_state **_gs) {
 
 int game_state_ms_per_dyntick(game_state *gs) {
     float tmp;
+
     switch(gs->this_id) {
         case SCENE_ARENA0:
         case SCENE_ARENA1:
         case SCENE_ARENA2:
         case SCENE_ARENA3:
         case SCENE_ARENA4:
+            if(gs->warp_speed) {
+                // If warp speed (for debugging) is turned on, go fast.
+                return 1.0f;
+            }
             tmp = 8.0f + MS_PER_OMF_TICK_SLOWEST - ((float)gs->speed / 15.0f) * MS_PER_OMF_TICK_SLOWEST;
             return (int)tmp;
     }

@@ -52,6 +52,9 @@ typedef struct game_state_t {
     int next_wait_ticks;
     int this_wait_ticks;
 
+    // For debugging, sets fastest possible mode :)
+    int warp_speed;
+
     int next_requires_refresh; // If next frame requires a texture refresh, this should be set to 1
     int net_mode;              // NET_MODE_NONE, NET_MODE_CLIENT, NET_MODE_SERVER
     scene *sc;

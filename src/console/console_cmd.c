@@ -90,6 +90,11 @@ int console_cmd_scene(game_state *gs, int argc, char **argv) {
     return 1;
 }
 
+int console_toggle_warp(game_state *gs, int argc, char **argv) {
+    gs->warp_speed = !gs->warp_speed;
+    return 0;
+}
+
 int console_cmd_har(game_state *gs, int argc, char **argv) {
     // change har
     if(argc == 2) {
@@ -242,4 +247,5 @@ void console_init_cmd() {
     console_add_cmd("god", &console_cmd_god, "Enable god mode");
     console_add_cmd("kreissack", &console_kreissack, "Fight Kreissack");
     console_add_cmd("ez-destruct", &console_cmd_ez_destruct, "Punch = destruction, kick = scrap");
+    console_add_cmd("warp", &console_toggle_warp, "Toggle warp speed");
 }
