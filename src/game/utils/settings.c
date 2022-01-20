@@ -9,13 +9,13 @@
 #include <string.h>
 
 #define F_INT(struct_, var, def)                                                                                       \
-    { #var, TYPE_INT, {.i = def }, offsetof(struct_, var) }
+    { #var, {.i = def }, TYPE_INT, offsetof(struct_, var) }
 #define F_BOOL(struct_, var, def)                                                                                      \
-    { #var, TYPE_BOOL, {.b = def }, offsetof(struct_, var) }
+    { #var, {.b = def }, TYPE_BOOL, offsetof(struct_, var) }
 #define F_FLOAT(struct_, var, def)                                                                                     \
-    { #var, TYPE_FLOAT, {.f = def }, offsetof(struct_, var) }
+    { #var, {.f = def }, TYPE_FLOAT, offsetof(struct_, var) }
 #define F_STRING(struct_, var, def)                                                                                    \
-    { #var, TYPE_STRING, {.s = def }, offsetof(struct_, var) }
+    { #var, {.s = def }, TYPE_STRING, offsetof(struct_, var) }
 
 #define NFIELDS(struct_) sizeof(struct_) / sizeof(field)
 
@@ -25,7 +25,7 @@
 static settings _settings;
 static const char *settings_path;
 
-typedef enum field_type_t
+typedef enum
 {
     TYPE_INT,
     TYPE_FLOAT,
@@ -33,21 +33,21 @@ typedef enum field_type_t
     TYPE_STRING
 } field_type;
 
-typedef union field_default_u {
+typedef union {
     char *s;
     int i;
     int b;
     double f;
 } field_default;
 
-typedef struct field_t {
+typedef struct {
     char *name;
-    field_type type;
     field_default def;
+    field_type type;
     int offset;
 } field;
 
-typedef struct struct_to_field_t {
+typedef struct {
     void *_struct;
     const field *fields;
     int num_fields;

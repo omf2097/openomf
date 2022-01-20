@@ -40,9 +40,8 @@ int sd_language_load(sd_language *language, const char *filename) {
 
     // Find out how many strings there are in the file
     unsigned int string_count = 0;
-    unsigned int offset = 0;
     long file_size = sd_reader_filesize(r);
-    while((offset = sd_read_udword(r)) < file_size) {
+    while(sd_read_udword(r) < file_size) {
         sd_skip(r, 32);
         string_count++;
     }
@@ -55,6 +54,7 @@ int sd_language_load(sd_language *language, const char *filename) {
     }
 
     // Some variables etc.
+    unsigned int offset = 0;
     unsigned int offsets[string_count + 1];
     language->strings = omf_calloc(string_count, sizeof(sd_lang_string));
     language->count = string_count;

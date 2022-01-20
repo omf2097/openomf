@@ -221,9 +221,11 @@ char *pm_get_local_base_dir() {
     int sherr = SHCreateDirectoryEx(NULL, out, NULL);
     if(sherr == ERROR_FILE_EXISTS) {
         snprintf(errormessage, 128, "Please delete this file and relaunch OpenOMF: %s", out);
+        free(out);
         return NULL;
     } else if(sherr != ERROR_SUCCESS && sherr != ERROR_ALREADY_EXISTS) {
         snprintf(errormessage, 128, "Failed to create config path: %s", out);
+        free(out);
         return NULL;
     }
 #endif
