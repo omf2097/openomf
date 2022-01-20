@@ -34,8 +34,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        - { name: "gcc 11",   cc: gcc-11   }
-        - { name: "clang 11", cc: clang-11 }
+        - { name: "gcc 11",   cc: gcc-11,   tidy: "On"  }
+        - { name: "clang 11", cc: clang-11, tidy: "Off" }
 
     steps:
     - uses: actions/checkout@v2
@@ -45,12 +45,15 @@ jobs:
         sudo apt-get update
         sudo apt-get -y install cmake cmake-data libargtable2-dev libcunit1-dev \
           libopenal-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev \
-          ${{ matrix.config.cc }}
+          clang-tidy ${{ matrix.config.cc }}
 
     - name: Build tests
       run: |
         mkdir build-test && cd build-test
-        cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TESTS=On -DUSE_TOOLS=On ..
+        cmake -DCMAKE_BUILD_TYPE=Debug \
+              -DUSE_TIDY=${{ matrix.config.tidy }} \
+              -DUSE_TESTS=On \
+              -DUSE_TOOLS=On ..
         make -j2
 
     - name: Run tests

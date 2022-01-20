@@ -100,12 +100,15 @@ Some useful CMake flags:
 | ------------------------- | --------------------------------------- | --------------- | ------- |
 | CMAKE_BUILD_TYPE          | Chooses between build types             | -/Debug/Release | -       |
 | CMAKE_INSTALL_PREFIX      | Installation path                       | -               | -       |
-| USE_TESTS                 | Compile unittests                       | On/Off          | Off     |
-| USE_TOOLS                 | Compile dev tools                       | On/Off          | Off     |
 | USE_OGGVORBIS             | Selects Vorbis support                  | On/Off          | Off     |
 | USE_OPENAL                | Selects OpenAL support                  | On/Off          | On      |
 | USE_DUMB                  | Selects libdumb support                 | On/Off          | Off     |
 | USE_XMP                   | Selects libxmp support                  | On/Off          | On      |
+| USE_TESTS                 | Enables unittests (dev only!)           | On/Off          | Off     |
+| USE_TOOLS                 | Enables format editor tools (dev only!) | On/Off          | Off     |
+| USE_SANITIZERS            | Enables asan and ubsan (dev only!)      | On/Off          | Off     |
+| USE_FORMAT                | Enables clang-format (dev only!)        | On/Off          | Off     |
+| USE_TIDY                  | Enables clang-tidy (dev only!)          | On/Off          | Off     |
 
 Ogg Vorbis support is required if you wish to replace original OMF soundtracks with OGG files.
 Otherwise the switch is optional.
@@ -116,6 +119,9 @@ XMP is recommended due to ease of installation, but DUMB will also work just fin
 It is technically possible to select more than one audio sink, or none. Currently only one
 audio sink is supported (OpenAL). If all audio sinks are off, then no audio will be played.
 This will also of course reduce cpu usage a bit.
+
+Note that when USE_FORMAT is selected, you can run command "make clangformat" to run code
+formatter to the entire codebase.
 
 ## Data Files
 
