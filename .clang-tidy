@@ -1,6 +1,6 @@
 ---
 Checks: 'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-cplusplus*,-clang-diagnostic-unused-command-line-argument,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling'
-WarningsAsErrors: ''
+WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: llvm
 CheckOptions:
