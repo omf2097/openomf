@@ -50,7 +50,7 @@ void audio_render() {
 
 int audio_init(const char *sink_name) {
     struct sink_info_t si;
-    int found = 0;
+    memset(&si, 0, sizeof(struct sink_info_t));
 
     // If null sink given, disable audio
     if(sink_name == NULL || strlen(sink_name) <= 0) {
@@ -62,11 +62,10 @@ int audio_init(const char *sink_name) {
     for(unsigned c = 0; c < SINK_COUNT; ++c) {
         if(strcmp(sink_name, sinks[c].name) == 0) {
             si = sinks[c];
-            found = 1;
             break;
         }
     }
-    if(!found) {
+    if(si.name == NULL) {
         PERROR("Requested audio sink was not found!");
         return 1;
     }
