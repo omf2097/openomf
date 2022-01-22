@@ -1,6 +1,5 @@
 #include "game/objects/scrap.h"
 #include "game/objects/arena_constraints.h"
-#include <stdlib.h>
 
 #define SCRAP_KEEPALIVE 220
 #define IS_ZERO(n) (n < 0.1 && n > -0.1)

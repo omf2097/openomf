@@ -1,7 +1,5 @@
 #include <assert.h>
-#include <inttypes.h>
 #include <math.h>
-#include <stdlib.h>
 
 #include "audio/music.h"
 #include "audio/sink.h"
@@ -196,7 +194,6 @@ void player_set_delay(object *obj, int delay) {
         sd_script_set_tick_len_at_frame(&obj->animation_state.parser, i, new_duration);
         duration = sd_script_get_tick_len_at_frame(&obj->animation_state.parser, i);
         DEBUG("changed duration of frame %d from %d to %d", i, old_dur, duration);
-        (void)(old_dur); // Fixes compile complaints :P
     }
 }
 

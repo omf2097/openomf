@@ -1,7 +1,6 @@
 #include "game/gui/dialog.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/textbutton.h"
-#include "utils/log.h"
 #include "video/video.h"
 #include <string.h>
 

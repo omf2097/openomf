@@ -2,7 +2,7 @@
 #include "utils/vector.h"
 #include <stdlib.h>
 
-typedef struct ticktimer_unit_t {
+typedef struct {
     ticktimer_cb callback;
     int ticks;
     void *userdata;

@@ -1,14 +1,10 @@
 #include <SDL.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "game/gui/textinput.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
-#include "utils/log.h"
-#include "utils/vector.h"
 #include "video/color.h"
 #include "video/image.h"
 #include "video/video.h"

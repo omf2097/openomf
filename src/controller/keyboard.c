@@ -1,6 +1,5 @@
 #include "controller/keyboard.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include <stdlib.h>
 
 void keyboard_free(controller *ctrl) {

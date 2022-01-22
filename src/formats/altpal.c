@@ -10,7 +10,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-altpal_file *altpals = NULL;
+altpal_file *altpals = NULL; // Extern
 
 int altpals_init() {
     // Get filename

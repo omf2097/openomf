@@ -1,7 +1,6 @@
 #include "utils/array.h"
 #include "utils/allocator.h"
 #include <stdlib.h>
-#include <string.h>
 
 #define ARRAY_START_SIZE 64
 #define PTR_SIZE(bs) ((bs) * sizeof(void *))

@@ -2,7 +2,6 @@
 
 #include "game/game_state.h"
 #include "game/scenes/credits.h"
-#include "resources/ids.h"
 #include "utils/allocator.h"
 #include "video/video.h"
 

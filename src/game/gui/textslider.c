@@ -1,5 +1,3 @@
-#include <SDL.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,8 +5,6 @@
 #include "game/gui/textslider.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
-#include "utils/log.h"
 #include "utils/str.h"
 
 typedef struct {

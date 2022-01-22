@@ -5,7 +5,6 @@
 #include "formats/palette.h"
 #include "formats/sprite.h"
 #include "utils/allocator.h"
-#include <stdio.h>
 
 int sd_sprite_create(sd_sprite *sprite) {
     if(sprite == NULL) {

@@ -6,32 +6,22 @@
 #include "game/game_state.h"
 #include "game/gui/text_render.h"
 #include "game/utils/settings.h"
-#include "game/utils/ticktimer.h"
 #include "resources/languages.h"
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
-#include "utils/config.h"
 #include "utils/log.h"
 #include "video/surface.h"
 #include "video/video.h"
 #include <SDL.h>
-#include <signal.h> // signal()
 #include <stdio.h>
 
 static int run = 0;
 static int start_timeout = 30;
-#ifndef STANDALONE_SERVER
 static int take_screenshot = 0;
 static int enable_screen_updates = 1;
 static char screenshot_filename[128];
-#endif
-
-void exit_handler(int s) {
-    run = 0;
-}
 
 int engine_init() {
-#ifndef STANDALONE_SERVER
     settings *setting = settings_get();
 
     int w = setting->video.screen_w;
@@ -60,7 +50,6 @@ int engine_init() {
     }
     sound_set_volume(setting->sound.sound_vol / 10.0f);
     music_set_volume(setting->sound.music_vol / 10.0f);
-#endif
 
     if(sounds_loader_init()) {
         goto exit_2;
@@ -92,17 +81,10 @@ exit_4:
     lang_close();
 exit_3:
     sounds_loader_close();
-
 exit_2:
-#ifndef STANDALONE_SERVER
     audio_close();
-#endif
-
 exit_1:
-#ifndef STANDALONE_SERVER
     video_close();
-#endif
-
 exit_0:
     return 1;
 }
@@ -118,12 +100,6 @@ void engine_run(engine_init_flags *init_flags) {
 
     INFO(" --- BEGIN GAME LOG ---");
 
-#ifdef STANDALONE_SERVER
-    // Init interrupt signal handler
-    signal(SIGINT, exit_handler);
-#endif
-
-#ifndef STANDALONE_SERVER
     // Game start timeout.
     // Wait a moment so that people are mentally prepared
     // (with the recording software on) for the game to start :)
@@ -139,12 +115,10 @@ void engine_run(engine_init_flags *init_flags) {
         }
         video_render_prepare();
         video_render_finish();
-        continue;
     }
 
     // apply volume settings
     sound_set_volume(settings_get()->sound.sound_vol / 10.0f);
-#endif
 
     // Set up game
     game_state *gs = omf_calloc(1, sizeof(game_state));
@@ -158,8 +132,6 @@ void engine_run(engine_init_flags *init_flags) {
     int dynamic_wait = 0;
     int static_wait = 0;
     while(run && game_state_is_running(gs)) {
-
-#ifndef STANDALONE_SERVER
         // Handle events
         int check_fs;
         while(SDL_PollEvent(&e)) {
@@ -246,7 +218,7 @@ void engine_run(engine_init_flags *init_flags) {
                 SDL_ShowCursor(0);
             }
         }
-#endif
+
         // Tick controllers
         game_state_tick_controllers(gs);
 
@@ -281,7 +253,6 @@ void engine_run(engine_init_flags *init_flags) {
             dynamic_wait -= game_state_ms_per_dyntick(gs);
         }
 
-#ifndef STANDALONE_SERVER
         // Handle audio
         if(!visual_debugger) {
             audio_render();
@@ -319,10 +290,6 @@ void engine_run(engine_init_flags *init_flags) {
             // If screen updates are disabled, then wait
             SDL_Delay(1);
         }
-#else
-        // In standalone, just wait.
-        SDL_Delay(1);
-#endif // STANDALONE_SERVER
     }
 
     // Free scene object
@@ -337,9 +304,7 @@ void engine_close() {
     fonts_close();
     lang_close();
     sounds_loader_close();
-#ifndef STANDALONE_SERVER
     audio_close();
     video_close();
-#endif
     INFO("Engine deinit successful.");
 }

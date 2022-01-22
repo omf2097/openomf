@@ -1,5 +1,4 @@
 #include "controller/rec_controller.h"
-#include "formats/error.h"
 #include "formats/rec.h"
 #include "utils/allocator.h"
 #include "utils/log.h"

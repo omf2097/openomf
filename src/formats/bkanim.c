@@ -5,6 +5,7 @@
 #include "formats/bkanim.h"
 #include "formats/error.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 
 int sd_bk_anim_create(sd_bk_anim *bka) {
     if(bka == NULL) {
@@ -68,8 +69,8 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     // Footer string
     size = sd_read_uword(r);
     if(size >= SD_BK_FOOTER_STRING_MAX) {
-        DEBUGLOG("BK specific animation footer too big! Expected max %d bytes, got %hu bytes.", SD_BK_FOOTER_STRING_MAX,
-                 size);
+        DEBUG("BK specific animation footer too big! Expected max %d bytes, got %hu bytes.", SD_BK_FOOTER_STRING_MAX,
+              size);
         return SD_FILE_PARSE_ERROR;
     }
     if(size > 0) {

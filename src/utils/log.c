@@ -26,6 +26,9 @@ void log_close() {
     }
 }
 
+void log_hide(char mode, const char *fn, const char *fmt, ...) {
+} // Do nothing here. This is a no-op logger.
+
 void log_print(char mode, const char *fn, const char *fmt, ...) {
     if(handle == 0)
         return;

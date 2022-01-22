@@ -15,13 +15,6 @@
 extern "C" {
 #endif
 
-#ifdef DEBUGMODE
-void debug_print(const char *fn, int line, const char *fmt, ...);
-#define DEBUGLOG(...) debug_print(__func__, __LINE__, __VA_ARGS__)
-#else
-#define DEBUGLOG(...) ///< Prints debug text if the debugging mode is on.
-#endif
-
 /*! \brief Errorcode list.
  */
 enum SD_ERRORCODE
@@ -44,10 +37,10 @@ enum SD_ERRORCODE
  * Returns a clear text error message for the given error ID.
  *
  * \sa SD_ERRORCODE
- * \param errorcode Errorcode
+ * \param error_code Errorcode
  * \return Error message
  */
-const char *sd_get_error(int errorcode);
+const char *sd_get_error(int error_code);
 
 #ifdef __cplusplus
 }

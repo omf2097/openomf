@@ -6,7 +6,6 @@
 #include "resources/sprite.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "video/surface.h"
 #include "video/video.h"
 
 // Local small gauge type

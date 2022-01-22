@@ -6,7 +6,6 @@
 #include "game/scenes/scoreboard.h"
 #include "game/utils/formatting.h"
 #include "game/utils/settings.h"
-#include "resources/ids.h"
 #include "resources/scores.h"
 #include "utils/allocator.h"
 #include "utils/log.h"

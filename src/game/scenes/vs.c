@@ -1,19 +1,15 @@
 #include "game/scenes/vs.h"
 #include "controller/controller.h"
-#include "controller/keyboard.h"
 #include "game/game_state.h"
 #include "game/gui/dialog.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/text_render.h"
 #include "game/protos/scene.h"
 #include "game/utils/settings.h"
-#include "resources/ids.h"
 #include "resources/languages.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/random.h"
 #include "video/video.h"
-#include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 

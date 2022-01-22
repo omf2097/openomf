@@ -1,6 +1,4 @@
 #include "game/protos/intersect.h"
-#include "formats/rgba_image.h"
-#include "utils/log.h"
 
 /**
  * \brief Checks if objects hitboxes intersect.

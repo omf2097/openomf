@@ -14,19 +14,6 @@
 #include "audio/sources/vorbis_source.h"
 #include "audio/sources/xmp_source.h"
 
-#ifdef STANDALONE_SERVER
-int music_play(const char *filename) {
-    return 0;
-}
-void music_set_volume(float volume) {
-}
-void music_stop() {
-}
-int music_playing() {
-    return 1;
-}
-#else // STANDALONE_SERVER
-
 struct music_override_t {
     int id;
     const char *name;
@@ -233,5 +220,3 @@ int music_playing() {
 unsigned int music_get_resource() {
     return _music_resource_id;
 }
-
-#endif // STANDALONE_SERVER

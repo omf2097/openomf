@@ -1,9 +1,5 @@
 #include "game/utils/har_screencap.h"
-#include "utils/log.h"
-#include "video/image.h"
 #include "video/video.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 void har_screencaps_create(har_screencaps *caps) {
     for(int i = 0; i < 2; i++) {

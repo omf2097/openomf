@@ -2,7 +2,6 @@
 
 #include "game/gui/component.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 
 void component_tick(component *c) {
     if(c->tick) {

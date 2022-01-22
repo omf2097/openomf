@@ -9,8 +9,6 @@
 #include "formats/internal/writer.h"
 #include "utils/allocator.h"
 
-#define UNUSED(x) (void)(x)
-
 int sd_chr_create(sd_chr_file *chr) {
     if(chr == NULL) {
         return SD_INVALID_INPUT;

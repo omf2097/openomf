@@ -1,7 +1,6 @@
 #include "audio/stream.h"
 #include "audio/source.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include <stdlib.h>
 
 void stream_nullify(audio_stream *stream) {
