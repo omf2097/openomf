@@ -2,10 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#include <unistd.h> // Required on linux
 
 #include "formats/error.h"
-#include "formats/internal/memwriter.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/tournament.h"

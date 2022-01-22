@@ -6,7 +6,6 @@
 #include "formats/error.h"
 #include "formats/rec.h"
 #include "game/common_defines.h"
-#include "game/protos/intersect.h"
 #include "game/protos/object.h"
 #include "game/protos/scene.h"
 #include "game/scenes/arena.h"
@@ -23,7 +22,6 @@
 #include "game/utils/serial.h"
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
-#include "resources/ids.h"
 #include "resources/pilots.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
@@ -933,11 +931,9 @@ int game_state_serialize(game_state *gs, serial *ser) {
 }
 
 int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
-#ifdef DEBUGMODE
-    int oldtick = gs->tick;
-#endif
+    int old_tick = gs->tick;
     gs->tick = serial_read_int32(ser);
-    int endtick = gs->tick + ceil(rtt / 2.0f);
+    int end_tick = gs->tick + ceilf(rtt / 2.0f);
     rand_seed(serial_read_int32(ser));
     game_state_set_paused(gs, serial_read_int32(ser));
 
@@ -997,9 +993,9 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     chr_score_unserialize(game_player_get_score(game_state_get_player(gs, 1)), ser);
 
     // tick things back to the current time
-    DEBUG("replaying %d ticks", endtick - gs->tick);
-    DEBUG("adjusting clock from %d to %d (%d)", oldtick, endtick, ceil(rtt / 2.0f));
-    while(gs->tick <= endtick) {
+    DEBUG("replaying %d ticks", end_tick - gs->tick);
+    DEBUG("adjusting clock from %d to %d (%d)", old_tick, end_tick, ceilf(rtt / 2.0f));
+    while(gs->tick <= end_tick) {
         game_state_cleanup(gs);
         game_state_call_move(gs);
         game_state_call_collide(gs);

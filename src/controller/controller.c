@@ -1,6 +1,5 @@
 #include "controller/controller.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include <stdlib.h>
 
 typedef struct hook_function_t {

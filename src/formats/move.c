@@ -5,6 +5,7 @@
 #include "formats/error.h"
 #include "formats/move.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 
 int sd_move_create(sd_move *move) {
     if(move == NULL) {
@@ -114,7 +115,7 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     // Footer string
     size = sd_read_uword(r);
     if(size >= SD_MOVE_FOOTER_STRING_MAX) {
-        DEBUGLOG("Move footer too big! Expected max %d bytes, got %hu bytes.", SD_MOVE_FOOTER_STRING_MAX, size);
+        DEBUG("Move footer too big! Expected max %d bytes, got %hu bytes.", SD_MOVE_FOOTER_STRING_MAX, size);
         return SD_FILE_PARSE_ERROR;
     }
     if(size > 0) {

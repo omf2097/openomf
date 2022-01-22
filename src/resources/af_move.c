@@ -1,6 +1,5 @@
 #include "resources/af_move.h"
 #include "formats/move.h"
-#include <string.h>
 
 void af_move_create(af_move *move, void *src, int id) {
     sd_move *sdmv = (sd_move *)src;

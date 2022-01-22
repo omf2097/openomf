@@ -1,6 +1,5 @@
 #include "formats/bk.h"
 #include "resources/bk.h"
-#include <stdlib.h>
 #include <string.h>
 
 void bk_create(bk *b, void *src) {

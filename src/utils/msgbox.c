@@ -3,19 +3,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#ifdef STANDALONE_SERVER
+static char err_msgbox_buffer[1024];
 
-void err_msgbox(const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
-    fprintf(stderr, "... Exiting\n");
-    va_end(args);
-}
-
-#else // STANDALONE_SERVER
-
-char err_msgbox_buffer[1024];
 void err_msgbox(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -27,5 +16,3 @@ void err_msgbox(const char *fmt, ...) {
     }
     va_end(args);
 }
-
-#endif // STANDALONE_SERVER

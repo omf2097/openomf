@@ -7,7 +7,6 @@
 #include "resources/ids.h"
 #include "resources/languages.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "video/video.h"
 
 #define END_TEXT 992

@@ -13,7 +13,6 @@
 #include "game/scenes/mechlab/lab_menu_main.h"
 #include "game/scenes/mechlab/lab_menu_pilotselect.h"
 #include "game/utils/settings.h"
-#include "resources/ids.h"
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"

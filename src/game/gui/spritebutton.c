@@ -1,14 +1,10 @@
-#include <SDL.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "audio/sound.h"
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
-#include "utils/log.h"
 #include "utils/miscmath.h"
 #include "video/color.h"
 #include "video/video.h"

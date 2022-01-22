@@ -1,8 +1,6 @@
 #include "game/gui/menu_background.h"
-#include "utils/log.h"
 #include "video/color.h"
 #include "video/image.h"
-#include <stdlib.h>
 
 #define COLOR_MENU_LINE color_create(0, 0, 89, 255)
 #define COLOR_MENU_BORDER color_create(0, 0, 243, 255)

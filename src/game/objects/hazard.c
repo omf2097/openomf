@@ -5,7 +5,6 @@
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include <math.h>
-#include <stdlib.h>
 
 int orb_almost_there(vec2f a, vec2f b) {
     vec2f dir = vec2f_sub(a, b);

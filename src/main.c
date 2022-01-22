@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Init log
-#if defined(DEBUGMODE) || defined(STANDALONE_SERVER)
+#if defined(DEBUGMODE)
     if(log_init(0)) {
         err_msgbox("Error while initializing log!");
         printf("Error while initializing log!\n");
@@ -165,11 +165,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Init SDL2
-    unsigned int sdl_flags = SDL_INIT_TIMER;
-#ifndef STANDALONE_SERVER
-    sdl_flags |= SDL_INIT_VIDEO;
-#endif
-    if(SDL_Init(sdl_flags)) {
+    if(SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO)) {
         err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_2;
     }
@@ -178,7 +174,6 @@ int main(int argc, char *argv[]) {
     INFO("Found SDL v%d.%d.%d", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
     INFO("Running on platform: %s", SDL_GetPlatform());
 
-#ifndef STANDALONE_SERVER
     if(SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC)) {
         err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
         goto exit_2;
@@ -220,8 +215,6 @@ int main(int argc, char *argv[]) {
             SDL_JoystickClose(joy);
         }
     }
-
-#endif // STANDALONE_SERVER
 
     // Init enet
     if(enet_initialize() != 0) {

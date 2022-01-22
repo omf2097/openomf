@@ -1,9 +1,7 @@
 #include <ctype.h>
 #include <math.h>
-#include <string.h>
 
 #include "game/gui/text_render.h"
-#include "utils/log.h"
 #include "utils/vector.h"
 #include "video/video.h"
 

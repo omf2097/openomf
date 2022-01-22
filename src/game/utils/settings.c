@@ -1,7 +1,6 @@
 #include "game/utils/settings.h"
 #include "controller/controller.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
 #include "utils/config.h"
 #include "utils/log.h"
 #include <stddef.h> //offsetof

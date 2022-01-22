@@ -5,14 +5,9 @@
 #include "audio/sources/raw_source.h"
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
-#include <stdlib.h>
 
 static float _sound_volume = VOLUME_DEFAULT;
 
-#ifdef STANDALONE_SERVER
-void sound_play(int id, float volume, float panning, float pitch) {
-}
-#else
 void sound_play(int id, float volume, float panning, float pitch) {
     audio_sink *sink = audio_get_sink();
 
@@ -39,7 +34,6 @@ void sound_play(int id, float volume, float panning, float pitch) {
     raw_source_init(src, buf, len);
     sink_play(sink, src, id, volume * _sound_volume, panning, pitch);
 }
-#endif
 
 int sound_playing(unsigned int id) {
     audio_sink *sink = audio_get_sink();

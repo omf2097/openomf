@@ -1,11 +1,8 @@
-#include <SDL.h>
 #include <stdlib.h>
 
 #include "game/game_state.h"
 #include "game/scenes/openomf.h"
-#include "resources/ids.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "video/video.h"
 
 typedef struct openomf_local_t {

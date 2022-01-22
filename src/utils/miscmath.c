@@ -1,6 +1,5 @@
 #include "utils/miscmath.h"
 #include <math.h>
-#include <stdlib.h>
 
 int clamp(int val, int min, int max) {
     if(val > max)
@@ -35,5 +34,5 @@ int min2(int a, int b) {
 }
 
 float dist(float a, float b) {
-    return fabsf((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1 : -1);
+    return fabsf((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1.0f : -1.0f);
 }

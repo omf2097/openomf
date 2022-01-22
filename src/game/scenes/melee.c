@@ -1,8 +1,6 @@
-#include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 #include "audio/music.h"
 #include "audio/sound.h"
@@ -13,7 +11,6 @@
 #include "game/protos/object.h"
 #include "game/protos/scene.h"
 #include "game/scenes/melee.h"
-#include "game/utils/settings.h"
 #include "resources/animation.h"
 #include "resources/bk.h"
 #include "resources/ids.h"
@@ -21,7 +18,6 @@
 #include "resources/pilots.h"
 #include "resources/sprite.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/random.h"
 #include "video/video.h"
 

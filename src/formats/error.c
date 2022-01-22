@@ -1,24 +1,7 @@
 #include "formats/error.h"
-#include <string.h>
 
-#ifdef DEBUGMODE
-
-#include <stdarg.h>
-#include <stdio.h>
-
-void debug_print(const char *fn, int line, const char *fmt, ...) {
-    printf("[%s:%d] ", fn, line);
-    va_list args;
-    va_start(args, fmt);
-    printf(fmt, args);
-    va_end(args);
-    printf("\n");
-}
-
-#endif // DEBUGMODE
-
-const char *sd_get_error(int errorcode) {
-    switch(errorcode) {
+const char *sd_get_error(int error_code) {
+    switch(error_code) {
         case SD_SUCCESS:
             return "No error";
         case SD_FILE_OPEN_ERROR:

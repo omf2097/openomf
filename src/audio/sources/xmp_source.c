@@ -3,9 +3,7 @@
 #include "audio/sources/xmp_source.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <xmp.h>
 
 typedef struct {

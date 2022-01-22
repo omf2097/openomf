@@ -1,13 +1,6 @@
 #include "audio/sink.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include <stdlib.h>
-
-static unsigned int _sink_global_id = 1;
-
-unsigned int gid_gen() {
-    return _sink_global_id++;
-}
 
 audio_stream *sink_get_stream(audio_sink *sink, unsigned int sid) {
     if(sid == 0)

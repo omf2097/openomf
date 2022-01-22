@@ -1,9 +1,7 @@
-#include <stdlib.h>
 #include <string.h>
 
 #include "formats/error.h"
 #include "formats/internal/reader.h"
-#include "formats/internal/writer.h"
 #include "formats/setup.h"
 
 int sd_setup_create(sd_setup_file *setup) {

@@ -9,7 +9,6 @@
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/palette.h"
-#include "formats/rgba_image.h"
 #include "formats/vga_image.h"
 #include "utils/allocator.h"
 
