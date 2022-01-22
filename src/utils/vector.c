@@ -33,7 +33,9 @@ void vector_clear(vector *vec) {
     if(vec->free_cb) {
         for(unsigned int i = 0; i < vec->blocks; i++) {
             dst = vec->data + i * vec->block_size;
-            vec->free_cb(dst);
+            if(vec->free_cb) {
+                vec->free_cb(dst);
+            }
         }
     }
     vec->blocks = 0;
