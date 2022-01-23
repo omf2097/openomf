@@ -280,6 +280,6 @@ int surface_to_texture(surface *src, SDL_Texture *tex, screen_palette *pal, char
         SDL_UnlockTexture(tex);
         return 0;
     }
-    PERROR("Failed to lock texture (ptr: %d) for writing: %s", tex, SDL_GetError());
+    PERROR("Failed to lock texture for writing: %s", SDL_GetError());
     return 1;
 }

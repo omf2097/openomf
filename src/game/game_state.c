@@ -707,13 +707,13 @@ void game_state_dynamic_tick(game_state *gs) {
 
         // Increment tick
         gs->tick++;
-        LOGTICK(gs->tick);
+        log_tick(gs->tick);
     }
 
     // Free extra controller events
     game_state_ctrl_events_free(gs);
 
-    // int_tick is used for ping calculation so it shouldn't be touched
+    // int_tick is used for ping calculation, so it shouldn't be touched
     gs->int_tick++;
 }
 
@@ -994,7 +994,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
 
     // tick things back to the current time
     DEBUG("replaying %d ticks", end_tick - gs->tick);
-    DEBUG("adjusting clock from %d to %d (%d)", old_tick, end_tick, ceilf(rtt / 2.0f));
+    DEBUG("adjusting clock from %d to %d (%f)", old_tick, end_tick, ceilf(rtt / 2.0f));
     while(gs->tick <= end_tick) {
         game_state_cleanup(gs);
         game_state_call_move(gs);

@@ -2,22 +2,13 @@
 #define LOG_H
 
 #include <stdlib.h>
+#include <SDL_log.h>
 
-#ifdef DEBUGMODE
-#define DEBUG(...) log_print('D', __FUNCTION__, __VA_ARGS__)
-#define PERROR(...) log_print('E', __FUNCTION__, __VA_ARGS__)
-#define INFO(...) log_print('I', __FUNCTION__, __VA_ARGS__)
-#else
-#define DEBUG(...) log_hide('D', NULL, __VA_ARGS__)
-#define PERROR(...) log_print('E', NULL, __VA_ARGS__)
-#define INFO(...) log_print('I', NULL, __VA_ARGS__)
-#endif
+#define DEBUG(...) SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__)
+#define PERROR(...) SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__)
+#define INFO(...) SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__)
 
-#define LOGTICK(x) _log_tick = x;
-extern unsigned int _log_tick;
-
-void log_hide(char mode, const char *fn, const char *fmt, ...); // no-op
-void log_print(char mode, const char *fn, const char *fmt, ...);
+void log_tick(unsigned int tick);
 int log_init(const char *filename);
 void log_close();
 
