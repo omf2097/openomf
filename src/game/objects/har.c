@@ -148,6 +148,14 @@ void har_event_hazard_hit(har *h, bk_info *info) {
     fire_hooks(h, event);
 }
 
+void har_event_enemy_hazard_hit(har *h) {
+    har_event event;
+    event.type = HAR_EVENT_ENEMY_HAZARD_HIT;
+    event.player_id = h->player_id;
+
+    fire_hooks(h, event);
+}
+
 void har_event_stun(har *h) {
     har_event event;
     event.type = HAR_EVENT_STUN;
@@ -1157,6 +1165,10 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     if(!h->damage_received && intersect_sprite_hitpoint(o_hzd, o_har, level, &hit_coord)) {
         har_take_damage(o_har, &anim->footer_string, anim->hazard_damage);
         har_event_hazard_hit(h, anim);
+        // fire enemy hazard hit event
+        object *enemy_obj = game_player_get_har(game_state_get_player(o_har->gs, !h->player_id));
+        har *enemy_h = object_get_userdata(enemy_obj);
+        har_event_enemy_hazard_hit(enemy_h);
         if(anim->chain_no_hit) {
             object_set_animation(o_hzd, &bk_get_info(bk_data, anim->chain_no_hit)->ani);
             object_set_repeat(o_hzd, 0);
