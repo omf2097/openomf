@@ -740,7 +740,7 @@ void queue_tactic(controller *ctrl, int tactic_type) {
 
     // set tactic attack timer
     if(a->tactic->attack_type > 0) {
-        if (a->tactic->move_type == MOVE_JUMP || a->tactic->move_type == MOVE_HIGH_JUMP) {
+        if(a->tactic->move_type == MOVE_JUMP || a->tactic->move_type == MOVE_HIGH_JUMP) {
             a->tactic->attack_timer = TACTIC_JUMP_ATTACK_TIMER_MAX;
         } else {
             a->tactic->attack_timer = TACTIC_ATTACK_TIMER_MAX;
@@ -1075,11 +1075,8 @@ int ai_har_event(controller *ctrl, har_event event) {
                 }
                 break;
             case HAR_EVENT_ENEMY_STUN: {
-                if(
-                    a->tactic->tactic_type == TACTIC_GRAB ||
-                    a->tactic->tactic_type == TACTIC_CLOSE ||
-                    a->tactic->tactic_type == TACTIC_TRIP
-                ) {
+                if(a->tactic->tactic_type == TACTIC_GRAB || a->tactic->tactic_type == TACTIC_CLOSE ||
+                   a->tactic->tactic_type == TACTIC_TRIP) {
                     DEBUG("\e[35mExtend tactic move timer to capitalize on stun\e[0m");
                     a->tactic->move_timer = TACTIC_MOVE_TIMER_MAX;
                 } else if(a->tactic->tactic_type != TACTIC_SHOOT) {
@@ -2360,7 +2357,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
         bool in_attempt_range = (enemy_range <= RANGE_CLOSE || (enemy_range <= RANGE_MID && dumb_sometimes(a)));
         acted = true;
         tactic->attack_timer--;
-        if (tactic->attack_on == 0) {
+        if(tactic->attack_on == 0) {
             int attack_cat = 0;
             switch(tactic->attack_type) {
                 case ATTACK_ID: {
@@ -2379,7 +2376,8 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                         // chain another tactic
                         int tacs[] = {TACTIC_QUICK, TACTIC_GRAB, TACTIC_ESCAPE, TACTIC_SHOOT};
                         chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
-                        if (a->tactic->tactic_type > 0) a->tactic->chain_hit_on = CAT_LOW;
+                        if(a->tactic->tactic_type > 0)
+                            a->tactic->chain_hit_on = CAT_LOW;
                     }
                 } break;
                 case ATTACK_GRAB: {
@@ -2680,7 +2678,8 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     // DEBUG("=== POLL === handle_movement");
 
     // queue a random tactic for next poll
-    if(a->last_move_id > 0 && (roll_chance(RANDOM_ATTACK_CHANCE) && diff_scale(a)) && a->tactic->tactic_type == 0 && can_move) {
+    if(a->last_move_id > 0 && (roll_chance(RANDOM_ATTACK_CHANCE) && diff_scale(a)) && a->tactic->tactic_type == 0 &&
+       can_move) {
         // DEBUG("\e[35mAttempt to queue random tactic[0m");
         int tacs[] = {TACTIC_SHOOT, TACTIC_CLOSE, TACTIC_FLY, TACTIC_PUSH, TACTIC_TRIP, TACTIC_GRAB, TACTIC_QUICK};
         chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
