@@ -78,6 +78,7 @@ void har_event_air_turn(har *h) {
 void har_event_walk(har *h, int direction) {
     // direction is -1, 1, for backwards and forwards
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_WALK;
     event.player_id = h->player_id;
     event.direction = direction;
@@ -87,6 +88,7 @@ void har_event_walk(har *h, int direction) {
 
 void har_event_air_attack_done(har *h) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_AIR_ATTACK_DONE;
     event.player_id = h->player_id;
 
@@ -95,6 +97,7 @@ void har_event_air_attack_done(har *h) {
 
 void har_event_attack(har *h, af_move *move) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_ATTACK;
     event.player_id = h->player_id;
     event.move = move;
@@ -104,6 +107,7 @@ void har_event_attack(har *h, af_move *move) {
 
 void har_event_enemy_block(har *h, af_move *move, bool projectile) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = projectile ? HAR_EVENT_ENEMY_BLOCK_PROJECTILE : HAR_EVENT_ENEMY_BLOCK;
     event.type = HAR_EVENT_ENEMY_BLOCK;
     event.player_id = h->player_id;
@@ -114,6 +118,7 @@ void har_event_enemy_block(har *h, af_move *move, bool projectile) {
 
 void har_event_block(har *h, af_move *move, bool projectile) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = projectile ? HAR_EVENT_BLOCK_PROJECTILE : HAR_EVENT_BLOCK;
     event.player_id = h->player_id;
     event.move = move;
@@ -123,6 +128,7 @@ void har_event_block(har *h, af_move *move, bool projectile) {
 
 void har_event_take_hit(har *h, af_move *move, bool projectile) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = projectile ? HAR_EVENT_TAKE_HIT_PROJECTILE : HAR_EVENT_TAKE_HIT;
     event.player_id = h->player_id;
     event.move = move;
@@ -132,6 +138,7 @@ void har_event_take_hit(har *h, af_move *move, bool projectile) {
 
 void har_event_land_hit(har *h, af_move *move, bool projectile) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = projectile ? HAR_EVENT_LAND_HIT_PROJECTILE : HAR_EVENT_LAND_HIT;
     event.player_id = h->player_id;
     event.move = move;
@@ -141,6 +148,7 @@ void har_event_land_hit(har *h, af_move *move, bool projectile) {
 
 void har_event_hazard_hit(har *h, bk_info *info) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_HAZARD_HIT;
     event.player_id = h->player_id;
     event.info = info;
@@ -150,6 +158,7 @@ void har_event_hazard_hit(har *h, bk_info *info) {
 
 void har_event_enemy_hazard_hit(har *h) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_ENEMY_HAZARD_HIT;
     event.player_id = h->player_id;
 
@@ -158,6 +167,7 @@ void har_event_enemy_hazard_hit(har *h) {
 
 void har_event_stun(har *h) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_STUN;
     event.player_id = h->player_id;
 
@@ -166,6 +176,7 @@ void har_event_stun(har *h) {
 
 void har_event_enemy_stun(har *h) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_ENEMY_STUN;
     event.player_id = h->player_id;
 
@@ -174,6 +185,7 @@ void har_event_enemy_stun(har *h) {
 
 void har_event_recover(har *h) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_RECOVER;
     event.player_id = h->player_id;
 
@@ -182,6 +194,7 @@ void har_event_recover(har *h) {
 
 void har_event_hit_wall(har *h, int wall) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_HIT_WALL;
     event.player_id = h->player_id;
     event.wall = wall;
@@ -191,6 +204,7 @@ void har_event_hit_wall(har *h, int wall) {
 
 void har_event_land(har *h) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_LAND;
     event.player_id = h->player_id;
 
@@ -199,6 +213,7 @@ void har_event_land(har *h) {
 
 void har_event_defeat(har *h) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_DEFEAT;
     event.player_id = h->player_id;
 
@@ -207,6 +222,7 @@ void har_event_defeat(har *h) {
 
 void har_event_scrap(har *h) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_SCRAP;
     event.player_id = h->player_id;
 
@@ -215,6 +231,7 @@ void har_event_scrap(har *h) {
 
 void har_event_destruction(har *h) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_DESTRUCTION;
     event.player_id = h->player_id;
 
@@ -223,6 +240,7 @@ void har_event_destruction(har *h) {
 
 void har_event_done(har *h) {
     har_event event;
+    memset(&event, 0, sizeof(event));
     event.type = HAR_EVENT_DONE;
     event.player_id = h->player_id;
 
