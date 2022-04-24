@@ -35,9 +35,13 @@
 /* base likelihood to jump while standing still (lower is more likely) */
 #define BASE_STILL_JUMP_CHANCE 40
 /* number of move ticks before bailing on tactic */
-#define TACTIC_MOVE_TIMER_MAX 5
+#define TACTIC_MOVE_TIMER_MAX 30
 /* number of attack attempt ticks before bailing on tactic */
-#define TACTIC_ATTACK_TIMER_MAX 2
+#define TACTIC_ATTACK_TIMER_MAX 3
+/* number of jump attack attempt ticks before bailing on tactic */
+#define TACTIC_JUMP_ATTACK_TIMER_MAX 12
+/* likelihood of attempting a random attack/tactic (lower is more likely) */
+#define RANDOM_ATTACK_CHANCE 10
 
 #define N_ELEMENTS(array) (sizeof(array) / sizeof((array)[0]))
 
@@ -736,7 +740,11 @@ void queue_tactic(controller *ctrl, int tactic_type) {
 
     // set tactic attack timer
     if(a->tactic->attack_type > 0) {
-        a->tactic->attack_timer = TACTIC_ATTACK_TIMER_MAX;
+        if(a->tactic->move_type == MOVE_JUMP || a->tactic->move_type == MOVE_HIGH_JUMP) {
+            a->tactic->attack_timer = TACTIC_JUMP_ATTACK_TIMER_MAX;
+        } else {
+            a->tactic->attack_timer = TACTIC_ATTACK_TIMER_MAX;
+        }
     }
 }
 
@@ -1066,14 +1074,17 @@ int ai_har_event(controller *ctrl, har_event event) {
                     DEBUG("\e[90mReset tactic queue: EVENT_TAKE_HIT\e[0m");
                 }
                 break;
-            case HAR_EVENT_ENEMY_STUN:
-                if(a->tactic->tactic_type != TACTIC_GRAB && a->tactic->tactic_type != TACTIC_CLOSE &&
-                   a->tactic->tactic_type != TACTIC_TRIP && a->tactic->tactic_type != TACTIC_SHOOT) {
+            case HAR_EVENT_ENEMY_STUN: {
+                if(a->tactic->tactic_type == TACTIC_GRAB || a->tactic->tactic_type == TACTIC_CLOSE ||
+                   a->tactic->tactic_type == TACTIC_TRIP) {
+                    DEBUG("\e[35mExtend tactic move timer to capitalize on stun\e[0m");
+                    a->tactic->move_timer = TACTIC_MOVE_TIMER_MAX;
+                } else if(a->tactic->tactic_type != TACTIC_SHOOT) {
                     reset_tactic_state(a);
                     has_queued_tactic = false;
                     DEBUG("\e[90mReset tactic queue: EVENT_ENEMY_STUN\e[0m");
                 }
-                break;
+            } break;
         }
     }
 
@@ -1197,13 +1208,14 @@ int ai_har_event(controller *ctrl, har_event event) {
                 // do the attack now
                 DEBUG("\e[94mAttempting landing move\e[0m");
                 a->tactic->move_timer = 0;
+                a->tactic->attack_on = 0;
                 break;
             } else {
                 a->act_timer = 0;
 
                 if(!has_queued_tactic && smart_usually(a)) {
-                    int tacs[] = {TACTIC_TRIP, TACTIC_SHOOT, TACTIC_TURTLE,  TACTIC_QUICK,
-                                  TACTIC_GRAB, TACTIC_PUSH,  TACTIC_COUNTER, TACTIC_CLOSE};
+                    int tacs[] = {TACTIC_TRIP,  TACTIC_QUICK,   TACTIC_PUSH,   TACTIC_GRAB,
+                                  TACTIC_SHOOT, TACTIC_COUNTER, TACTIC_TURTLE, TACTIC_CLOSE};
                     chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
                 }
             }
@@ -1303,16 +1315,24 @@ int ai_har_event(controller *ctrl, har_event event) {
             int tacs[] = {TACTIC_SHOOT, TACTIC_COUNTER, TACTIC_TURTLE, TACTIC_ESCAPE};
             chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
         } break;
-        case HAR_EVENT_ENEMY_STUN:
-
+        case HAR_EVENT_ENEMY_HAZARD_HIT: {
             if(has_queued_tactic || !smart_usually(a))
                 break;
 
-            if(roll_chance(2)) {
-                queue_tactic(ctrl, TACTIC_GRAB);
-            } else {
-                queue_tactic(ctrl, TACTIC_CLOSE);
-            }
+            DEBUG("\e[35mHAR capitalize on hazard:\e[0m %d", h->id);
+
+            int tacs[] = {TACTIC_GRAB, TACTIC_TRIP, TACTIC_QUICK, TACTIC_CLOSE, TACTIC_SHOOT};
+            chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
+        } break;
+        case HAR_EVENT_ENEMY_STUN: {
+            if(has_queued_tactic || !smart_usually(a))
+                break;
+
+            DEBUG("\e[35mHAR capitalize on stun:\e[0m %d", h->id);
+
+            int tacs[] = {TACTIC_GRAB, TACTIC_CLOSE, TACTIC_TRIP, TACTIC_SHOOT};
+            chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
+        } break;
         default:
             break;
     }
@@ -2254,6 +2274,9 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                 } else {
                     tactic->move_timer = 0;
                     // DEBUG("\e[34mMovement close success\e[0m: %d", h->id);
+                    if(tactic->attack_type == 0 && smart_usually(a)) {
+                        queue_tactic(ctrl, TACTIC_GRAB);
+                    }
                 }
                 break;
             case MOVE_AVOID:
@@ -2334,226 +2357,216 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
         bool in_attempt_range = (enemy_range <= RANGE_CLOSE || (enemy_range <= RANGE_MID && dumb_sometimes(a)));
         acted = true;
         tactic->attack_timer--;
-        int attack_cat = 0;
-        switch(tactic->attack_type) {
-            case ATTACK_ID:
-                if(!in_attempt_range)
-                    break;
+        if(tactic->attack_on == 0) {
+            int attack_cat = 0;
+            switch(tactic->attack_type) {
+                case ATTACK_ID: {
+                    if(!in_attempt_range)
+                        break;
 
-                if(assign_move_by_id(ctrl, tactic->attack_id)) {
-                    reset_tactic_state(a);
-                    // DEBUG("\e[32mSpecific attack success\e[0m: %d", h->id);
-                }
-                break;
-            case ATTACK_TRIP:
-                if(attempt_trip_attack(ctrl, ev)) {
-                    reset_tactic_state(a);
-                    // DEBUG("\e[32mTrip attack success\e[0m: %d", h->id);
-
-                    // chain another tactic
-                    if(smart_sometimes(a)) {
-                        if(likes_tactic(ctrl, TACTIC_ESCAPE)) {
-                            // set chain tactic to shoot if low attack hits
-                            a->tactic->chain_hit_on = CAT_LOW;
-                            a->tactic->chain_hit_tactic = TACTIC_ESCAPE;
-                        } else if(likes_tactic(ctrl, TACTIC_SHOOT)) {
-                            // set chain tactic to escape if low attack hits
-                            a->tactic->chain_hit_on = CAT_LOW;
-                            a->tactic->chain_hit_tactic = TACTIC_SHOOT;
-                        }
+                    if(assign_move_by_id(ctrl, tactic->attack_id)) {
+                        reset_tactic_state(a);
+                        // DEBUG("\e[32mSpecific attack success\e[0m: %d", h->id);
                     }
-                }
-                break;
-            case ATTACK_GRAB:
-                if(!enemy_close)
-                    break;
+                } break;
+                case ATTACK_TRIP: {
+                    if(attempt_trip_attack(ctrl, ev)) {
+                        reset_tactic_state(a);
 
-                if(assign_move_by_cat(ctrl, CAT_THROW, false)) {
-                    attack_cat = CAT_THROW;
-                } else if(assign_move_by_cat(ctrl, CAT_CLOSE, true)) {
-                    attack_cat = CAT_CLOSE;
-                }
-
-                if(attack_cat > 0) {
-                    reset_tactic_state(a);
-                    // DEBUG("\e[32mGrab attack success\e[0m: %d", h->id);
-
-                    // chain another tactic
-                    if(smart_sometimes(a)) {
-                        if(likes_tactic(ctrl, TACTIC_PUSH)) {
-                            // set chain tactic to push if attack hits
-                            a->tactic->chain_hit_on = attack_cat;
-                            a->tactic->chain_hit_tactic = TACTIC_PUSH;
-                        } else if(likes_tactic(ctrl, TACTIC_FLY)) {
-                            // set chain tactic to fly if attack hits
-                            a->tactic->chain_hit_on = attack_cat;
-                            a->tactic->chain_hit_tactic = TACTIC_FLY;
-                        } else if(likes_tactic(ctrl, TACTIC_COUNTER)) {
-                            // set chain tactic to counter if attack hits
-                            a->tactic->chain_hit_on = attack_cat;
-                            a->tactic->chain_hit_tactic = TACTIC_COUNTER;
-                        } else if(likes_tactic(ctrl, TACTIC_SHOOT)) {
-                            // set chain tactic to shoot if attack hits
-                            a->tactic->chain_hit_on = attack_cat;
-                            a->tactic->chain_hit_tactic = TACTIC_SHOOT;
-                        }
-                    }
-                }
-                break;
-            case ATTACK_LIGHT:
-                if(!in_attempt_range)
-                    break;
-
-                int light_cat = roll_chance(2) ? CAT_BASIC : CAT_MEDIUM;
-                if(assign_move_by_cat(ctrl, light_cat, false)) {
-                    reset_tactic_state(a);
-                    // DEBUG("\e[32mLight attack success\e[0m: %d", h->id);
-
-                    // chain another tactic
-                    if(smart_sometimes(a)) {
-                        if(likes_tactic(ctrl, TACTIC_PUSH)) {
-                            // set chain tactic to push if attack hits
-                            a->tactic->chain_hit_on = light_cat;
-                            a->tactic->chain_hit_tactic = TACTIC_PUSH;
-                        } else if(likes_tactic(ctrl, TACTIC_TRIP)) {
-                            // set chain tactic to trip if attack hits
-                            a->tactic->chain_hit_on = light_cat;
-                            a->tactic->chain_hit_tactic = TACTIC_TRIP;
-                        } else if(likes_tactic(ctrl, TACTIC_FLY)) {
-                            // set chain tactic to fly if attack hits
-                            a->tactic->chain_hit_on = light_cat;
-                            a->tactic->chain_hit_tactic = TACTIC_FLY;
-                        }
-                    }
-                }
-                break;
-            case ATTACK_HEAVY:
-                if(!in_attempt_range)
-                    break;
-
-                int heavy_cat = roll_chance(2) ? CAT_MEDIUM : CAT_HIGH;
-                if(assign_move_by_cat(ctrl, heavy_cat, true)) {
-                    reset_tactic_state(a);
-                    // DEBUG("\e[32mHeavy attack success\e[0m: %d", h->id);
-
-                    // chain another tactic
-                    if(smart_sometimes(a)) {
-                        if(likes_tactic(ctrl, TACTIC_TRIP)) {
-                            // set chain tactic to trip if attack hits
-                            a->tactic->chain_hit_on = heavy_cat;
-                            a->tactic->chain_hit_tactic = TACTIC_TRIP;
-                        } else if(likes_tactic(ctrl, TACTIC_COUNTER)) {
-                            // set chain tactic to counter if attack hits
-                            a->tactic->chain_hit_on = heavy_cat;
-                            a->tactic->chain_hit_tactic = TACTIC_COUNTER;
-                        } else if(likes_tactic(ctrl, TACTIC_QUICK)) {
-                            // set chain tactic to quick if attack hits
-                            a->tactic->chain_hit_on = heavy_cat;
-                            a->tactic->chain_hit_tactic = TACTIC_QUICK;
-                        }
-                    }
-                }
-                break;
-            case ATTACK_JUMP:
-                if(!in_attempt_range && a->tactic->attack_timer > 0) {
-                    // DEBUG("\e[35mWaiting for jump attack range\e[0m");
-                    // when not in range we wait until last tick of attack timer
-                    // that way the attack won't fizzle out before we reach them
-                    return acted;
-                }
-
-                if(attempt_attack(ctrl, false)) {
-                    reset_tactic_state(a);
-                    // DEBUG("\e[32mJump attack success\e[0m: %d", h->id);
-
-                    // chain another tactic
-                    if(smart_usually(a)) {
-                        if(likes_tactic(ctrl, TACTIC_TRIP)) {
-                            // set chain tactic to counter if jumping attack hits
-                            a->tactic->chain_hit_on = a->selected_move->category;
-                            a->tactic->chain_hit_tactic = TACTIC_TRIP;
-                        } else if(likes_tactic(ctrl, TACTIC_GRAB)) {
-                            // set chain tactic to counter if jumping attack hits
-                            a->tactic->chain_hit_on = a->selected_move->category;
-                            a->tactic->chain_hit_tactic = TACTIC_GRAB;
-                        } else if(likes_tactic(ctrl, TACTIC_PUSH)) {
-                            // set chain tactic to counter if jumping attack hits
-                            a->tactic->chain_hit_on = a->selected_move->category;
-                            a->tactic->chain_hit_tactic = TACTIC_PUSH;
-                        }
-                    }
-                }
-                break;
-            case ATTACK_RANGED:
-                if(attempt_projectile_attack(ctrl, ev)) {
-                    reset_tactic_state(a);
-                    // DEBUG("\e[32mRanged attack success\e[0m: %d", h->id);
-
-                    // chain another tactic
-                    if(smart_sometimes(a)) {
-                        if(a->pilot->att_sniper && likes_tactic(ctrl, TACTIC_SHOOT)) {
-                            // set chain tactic to shoot if projectile hits
-                            a->tactic->chain_hit_on = CAT_PROJECTILE;
-                            a->tactic->chain_hit_tactic = TACTIC_SHOOT;
-                        } else if(likes_tactic(ctrl, TACTIC_FLY)) {
-                            // set chain tactic to fly if projectile hits
-                            a->tactic->chain_hit_on = CAT_PROJECTILE;
-                            a->tactic->chain_hit_tactic = TACTIC_FLY;
-                        } else if(likes_tactic(ctrl, TACTIC_COUNTER)) {
-                            // set chain tactic to counter if projectile hits
-                            a->tactic->chain_hit_on = CAT_PROJECTILE;
-                            a->tactic->chain_hit_tactic = TACTIC_COUNTER;
-                        }
-                    }
-                }
-                break;
-            case ATTACK_CHARGE:
-                // DEBUG("\e[35mCharge attempt\e[0m");
-                if(attempt_charge_attack(ctrl, ev)) {
-                    reset_tactic_state(a);
-                    // DEBUG("\e[32mCharge attack success\e[0m: %d", h->id);
-
-                    if(h->id == HAR_SHADOW) {
-                        // shadow charge is long range
-                        // use this free time to consider a new tactic
-                        int tacs[] = {TACTIC_SHOOT, TACTIC_GRAB, TACTIC_FLY};
+                        // chain another tactic
+                        int tacs[] = {TACTIC_QUICK, TACTIC_GRAB, TACTIC_ESCAPE, TACTIC_SHOOT};
                         chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
+                        if(a->tactic->tactic_type > 0)
+                            a->tactic->chain_hit_on = CAT_LOW;
                     }
-                }
-                break;
-            case ATTACK_PUSH:
-                if(attempt_push_attack(ctrl, ev)) {
-                    reset_tactic_state(a);
-                    // DEBUG("\e[32mPush attack success\e[0m: %d", h->id);
-                }
-                break;
-            case ATTACK_RANDOM:
-                if(attempt_attack(ctrl, false)) {
-                    reset_tactic_state(a);
-                    // DEBUG("\e[32mRandom attack success\e[0m: %d", h->id);
+                } break;
+                case ATTACK_GRAB: {
+                    if(!enemy_close)
+                        break;
 
-                    // chain another tactic
-                    if(smart_usually(a)) {
-                        if(likes_tactic(ctrl, TACTIC_TRIP)) {
-                            // set chain tactic to counter if jumping attack hits
-                            a->tactic->chain_hit_on = a->selected_move->category;
-                            a->tactic->chain_hit_tactic = TACTIC_TRIP;
-                        } else if(likes_tactic(ctrl, TACTIC_GRAB)) {
-                            // set chain tactic to counter if jumping attack hits
-                            a->tactic->chain_hit_on = a->selected_move->category;
-                            a->tactic->chain_hit_tactic = TACTIC_GRAB;
-                        } else if(likes_tactic(ctrl, TACTIC_PUSH)) {
-                            // set chain tactic to counter if jumping attack hits
-                            a->tactic->chain_hit_on = a->selected_move->category;
-                            a->tactic->chain_hit_tactic = TACTIC_PUSH;
+                    if(assign_move_by_cat(ctrl, CAT_THROW, false)) {
+                        attack_cat = CAT_THROW;
+                    } else if(assign_move_by_cat(ctrl, CAT_CLOSE, true)) {
+                        attack_cat = CAT_CLOSE;
+                    }
+
+                    if(attack_cat > 0) {
+                        reset_tactic_state(a);
+                        // DEBUG("\e[32mGrab attack success\e[0m: %d", h->id);
+
+                        // chain another tactic
+                        if(smart_sometimes(a)) {
+                            if(likes_tactic(ctrl, TACTIC_PUSH)) {
+                                // set chain tactic to push if attack hits
+                                a->tactic->chain_hit_on = attack_cat;
+                                a->tactic->chain_hit_tactic = TACTIC_PUSH;
+                            } else if(likes_tactic(ctrl, TACTIC_FLY)) {
+                                // set chain tactic to fly if attack hits
+                                a->tactic->chain_hit_on = attack_cat;
+                                a->tactic->chain_hit_tactic = TACTIC_FLY;
+                            } else if(likes_tactic(ctrl, TACTIC_COUNTER)) {
+                                // set chain tactic to counter if attack hits
+                                a->tactic->chain_hit_on = attack_cat;
+                                a->tactic->chain_hit_tactic = TACTIC_COUNTER;
+                            } else if(likes_tactic(ctrl, TACTIC_SHOOT)) {
+                                // set chain tactic to shoot if attack hits
+                                a->tactic->chain_hit_on = attack_cat;
+                                a->tactic->chain_hit_tactic = TACTIC_SHOOT;
+                            }
                         }
                     }
-                }
-                break;
-            default:
-                DEBUG("\e[31mFlushing invalid attack type\e[0m: %d", h->id);
-                tactic->attack_type = 0;
-                tactic->attack_timer = 0;
+                } break;
+                case ATTACK_LIGHT: {
+                    if(!in_attempt_range)
+                        break;
+
+                    int light_cat = roll_chance(2) ? CAT_BASIC : CAT_MEDIUM;
+                    if(assign_move_by_cat(ctrl, light_cat, false)) {
+                        reset_tactic_state(a);
+                        // DEBUG("\e[32mLight attack success\e[0m: %d", h->id);
+
+                        // chain another tactic
+                        if(smart_sometimes(a)) {
+                            if(likes_tactic(ctrl, TACTIC_PUSH)) {
+                                // set chain tactic to push if attack hits
+                                a->tactic->chain_hit_on = light_cat;
+                                a->tactic->chain_hit_tactic = TACTIC_PUSH;
+                            } else if(likes_tactic(ctrl, TACTIC_TRIP)) {
+                                // set chain tactic to trip if attack hits
+                                a->tactic->chain_hit_on = light_cat;
+                                a->tactic->chain_hit_tactic = TACTIC_TRIP;
+                            } else if(likes_tactic(ctrl, TACTIC_FLY)) {
+                                // set chain tactic to fly if attack hits
+                                a->tactic->chain_hit_on = light_cat;
+                                a->tactic->chain_hit_tactic = TACTIC_FLY;
+                            }
+                        }
+                    }
+                } break;
+                case ATTACK_HEAVY: {
+                    if(!in_attempt_range)
+                        break;
+
+                    int heavy_cat = roll_chance(2) ? CAT_MEDIUM : CAT_HIGH;
+                    if(assign_move_by_cat(ctrl, heavy_cat, true)) {
+                        reset_tactic_state(a);
+                        // DEBUG("\e[32mHeavy attack success\e[0m: %d", h->id);
+
+                        // chain another tactic
+                        if(smart_sometimes(a)) {
+                            if(likes_tactic(ctrl, TACTIC_TRIP)) {
+                                // set chain tactic to trip if attack hits
+                                a->tactic->chain_hit_on = heavy_cat;
+                                a->tactic->chain_hit_tactic = TACTIC_TRIP;
+                            } else if(likes_tactic(ctrl, TACTIC_COUNTER)) {
+                                // set chain tactic to counter if attack hits
+                                a->tactic->chain_hit_on = heavy_cat;
+                                a->tactic->chain_hit_tactic = TACTIC_COUNTER;
+                            } else if(likes_tactic(ctrl, TACTIC_QUICK)) {
+                                // set chain tactic to quick if attack hits
+                                a->tactic->chain_hit_on = heavy_cat;
+                                a->tactic->chain_hit_tactic = TACTIC_QUICK;
+                            }
+                        }
+                    }
+                } break;
+                case ATTACK_JUMP: {
+                    if(!in_attempt_range && a->tactic->attack_timer > 0) {
+                        // DEBUG("\e[35mWaiting for jump attack range\e[0m");
+                        // when not in range we wait until last tick of attack timer
+                        // that way the attack won't fizzle out before we reach them
+                        return acted;
+                    }
+
+                    if(attempt_attack(ctrl, false)) {
+                        reset_tactic_state(a);
+                        // DEBUG("\e[32mJump attack success\e[0m: %d", h->id);
+
+                        // chain another tactic
+                        if(smart_usually(a)) {
+                            if(likes_tactic(ctrl, TACTIC_TRIP)) {
+                                // set chain tactic to counter if jumping attack hits
+                                a->tactic->chain_hit_on = a->selected_move->category;
+                                a->tactic->chain_hit_tactic = TACTIC_TRIP;
+                            } else if(likes_tactic(ctrl, TACTIC_GRAB)) {
+                                // set chain tactic to counter if jumping attack hits
+                                a->tactic->chain_hit_on = a->selected_move->category;
+                                a->tactic->chain_hit_tactic = TACTIC_GRAB;
+                            } else if(likes_tactic(ctrl, TACTIC_PUSH)) {
+                                // set chain tactic to counter if jumping attack hits
+                                a->tactic->chain_hit_on = a->selected_move->category;
+                                a->tactic->chain_hit_tactic = TACTIC_PUSH;
+                            }
+                        }
+                    }
+                } break;
+                case ATTACK_RANGED: {
+                    if(attempt_projectile_attack(ctrl, ev)) {
+                        reset_tactic_state(a);
+
+                        // chain another tactic
+                        if(smart_sometimes(a)) {
+                            if(a->pilot->att_sniper && likes_tactic(ctrl, TACTIC_SHOOT)) {
+                                // set chain tactic to shoot if projectile hits
+                                a->tactic->chain_hit_on = CAT_PROJECTILE;
+                                a->tactic->chain_hit_tactic = TACTIC_SHOOT;
+                            } else if(likes_tactic(ctrl, TACTIC_FLY)) {
+                                // set chain tactic to fly if projectile hits
+                                a->tactic->chain_hit_on = CAT_PROJECTILE;
+                                a->tactic->chain_hit_tactic = TACTIC_FLY;
+                            } else if(likes_tactic(ctrl, TACTIC_COUNTER)) {
+                                // set chain tactic to counter if projectile hits
+                                a->tactic->chain_hit_on = CAT_PROJECTILE;
+                                a->tactic->chain_hit_tactic = TACTIC_COUNTER;
+                            }
+                        }
+                    }
+                } break;
+                case ATTACK_CHARGE: {
+                    if(attempt_charge_attack(ctrl, ev)) {
+                        reset_tactic_state(a);
+
+                        if(h->id == HAR_SHADOW) {
+                            // shadow charge is long range
+                            // use this free time to consider a new tactic
+                            int tacs[] = {TACTIC_SHOOT, TACTIC_GRAB, TACTIC_FLY};
+                            chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
+                        }
+                    }
+                } break;
+                case ATTACK_PUSH: {
+                    if(attempt_push_attack(ctrl, ev)) {
+                        reset_tactic_state(a);
+                    }
+                } break;
+                case ATTACK_RANDOM: {
+                    if(attempt_attack(ctrl, false)) {
+                        reset_tactic_state(a);
+                        // DEBUG("\e[32mRandom attack success\e[0m: %d", h->id);
+
+                        // chain another tactic
+                        if(smart_usually(a)) {
+                            if(likes_tactic(ctrl, TACTIC_TRIP)) {
+                                // set chain tactic to counter if jumping attack hits
+                                a->tactic->chain_hit_on = a->selected_move->category;
+                                a->tactic->chain_hit_tactic = TACTIC_TRIP;
+                            } else if(likes_tactic(ctrl, TACTIC_GRAB)) {
+                                // set chain tactic to counter if jumping attack hits
+                                a->tactic->chain_hit_on = a->selected_move->category;
+                                a->tactic->chain_hit_tactic = TACTIC_GRAB;
+                            } else if(likes_tactic(ctrl, TACTIC_PUSH)) {
+                                // set chain tactic to counter if jumping attack hits
+                                a->tactic->chain_hit_on = a->selected_move->category;
+                                a->tactic->chain_hit_tactic = TACTIC_PUSH;
+                            }
+                        }
+                    }
+                } break;
+                default:
+                    DEBUG("\e[31mFlushing invalid attack type\e[0m: %d", h->id);
+                    tactic->attack_type = 0;
+                    tactic->attack_timer = 0;
+            }
         }
     } else {
         // reset queued tactic
@@ -2635,12 +2648,13 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
 
     // attempt queued tactic
     if(a->tactic->tactic_type > 0 &&
-       (can_move || (a->tactic->tactic_type == TACTIC_FLY && h->state == STATE_JUMPING))) {
+       (can_move || (a->tactic->attack_type == ATTACK_JUMP && h->state == STATE_JUMPING))) {
         bool acted = handle_queued_tactic(ctrl, ev);
         // check if tactic is complete
         if(a->tactic->tactic_type == 0) {
             // reset movement act timer
-            reset_act_timer(a);
+            // set higher than zero to avoid glitching when bailing on tactics
+            a->act_timer = 3;
         }
 
         if(acted)
@@ -2650,7 +2664,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     int enemy_range = get_enemy_range(ctrl);
 
     // attempt a random attack
-    if((roll_chance(20) || diff_scale(a)) && (enemy_range <= RANGE_CLOSE || dumb_sometimes(a)) &&
+    if((roll_chance(RANDOM_ATTACK_CHANCE) || diff_scale(a)) && (enemy_range <= RANGE_CLOSE || dumb_sometimes(a)) &&
        attempt_attack(ctrl, false)) {
         // DEBUG("\e[32mRandom attack\e[0m: %d", h->id);
         // reset movement act timer
@@ -2664,7 +2678,8 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     // DEBUG("=== POLL === handle_movement");
 
     // queue a random tactic for next poll
-    if(a->last_move_id > 0 && (roll_chance(10) && diff_scale(a)) && a->tactic->tactic_type == 0 && can_move) {
+    if(a->last_move_id > 0 && (roll_chance(RANDOM_ATTACK_CHANCE) && diff_scale(a)) && a->tactic->tactic_type == 0 &&
+       can_move) {
         // DEBUG("\e[35mAttempt to queue random tactic[0m");
         int tacs[] = {TACTIC_SHOOT, TACTIC_CLOSE, TACTIC_FLY, TACTIC_PUSH, TACTIC_TRIP, TACTIC_GRAB, TACTIC_QUICK};
         chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));

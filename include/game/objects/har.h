@@ -75,6 +75,7 @@ enum
     HAR_EVENT_TAKE_HIT,               // Hit by HAR
     HAR_EVENT_TAKE_HIT_PROJECTILE,    // Hit by projectile
     HAR_EVENT_HAZARD_HIT,             // Hit by hazard
+    HAR_EVENT_ENEMY_HAZARD_HIT,
     HAR_EVENT_STUN,
     HAR_EVENT_ENEMY_STUN,
     HAR_EVENT_RECOVER,  // regained control after recoil/stun
