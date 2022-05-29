@@ -76,6 +76,11 @@ void str_free(str *string);
 // String modification
 
 /**
+ * @brief Make the string length 0.
+ */
+void str_clear(str *string);
+
+/**
  * @brief Change all letters to uppercase.
  */
 void str_toupper(str *dst);

@@ -92,6 +92,12 @@ void str_free(str *dst) {
 
 // ------------------------ Modification ------------------------
 
+void str_clear(str *string) {
+    assert(string != NULL);
+    string->len = 0;
+    string->data[0] = 0;
+}
+
 void str_toupper(str *dst) {
     for(size_t i = 0; i < dst->len; i++) {
         dst->data[i] = toupper(dst->data[i]);
