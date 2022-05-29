@@ -81,7 +81,7 @@ void str_free(str *string);
 void str_toupper(str *dst);
 
 /**
- * @brief Change all lettes to lowercase.
+ * @brief Change all letters to lowercase.
  */
 void str_tolower(str *dst);
 
@@ -123,7 +123,7 @@ void str_append_buf(str *dst, const char *buf, size_t len);
  * @brief Replace content in string with something else.
  * @details Replace occurrences of the search string with the replacement string.
  *          Limit parameter can be used to limit replacement to a certain number
- *          of occurences if so wanted (or -1 for unlimited).
+ *          of occurrences if so wanted (or -1 for unlimited).
  * @param dst Target string to modify
  * @param seek String to search and replace
  * @param replacement The replacement value
@@ -137,12 +137,12 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
 size_t str_size(const str *string);
 
 /**
- * @brief Find first occcurence of a character in a given string.
+ * @brief Find first occurrence of a character in a given string.
  */
 bool str_first_of(const str *string, char find, size_t *pos);
 
 /**
- * @brief Find last occcurence of a character in a given string.
+ * @brief Find last occurrence of a character in a given string.
  */
 bool str_last_of(const str *string, char find, size_t *pos);
 
@@ -187,8 +187,8 @@ bool str_to_float(const str *string, float *m);
 bool str_to_long(const str *string, long *m);
 
 /**
- * @brief Returns a C string compatible represantation of a string object.
- * @details Note! This will become invalid if any changes are performanced on the string
+ * @brief Returns a C string compatible representation of a string object.
+ * @details Note! This will become invalid if any changes are performed on the string
  *          object. Use with care!
  * @param src String to convert
  * @return const char*
