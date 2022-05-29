@@ -203,6 +203,14 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
     }
 }
 
+char str_pop_ch(str *string) {
+    assert(string->len > 0);
+    string->len--;
+    char ch = string->data[string->len];
+    string->data[string->len] = 0;
+    return ch;
+}
+
 // ------------------------ Getters ------------------------
 
 size_t str_size(const str *string) {

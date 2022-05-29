@@ -142,6 +142,11 @@ void str_copy_c(str *dst, const char *src);
 void str_replace(str *dst, const char *seek, const char *replacement, int limit);
 
 /**
+ * @brief Get and remove last character of the string.
+ */
+char str_pop_ch(str *src);
+
+/**
  * @brief Get string length.
  */
 size_t str_size(const str *string);
