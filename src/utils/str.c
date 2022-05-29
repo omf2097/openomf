@@ -160,6 +160,13 @@ void str_append_buf(str *dst, const char *buf, size_t len) {
     STR_ZERO(dst);
 }
 
+void str_copy_c(str *dst, const char *src) {
+    dst->len = strlen(src);
+    dst->data = realloc(dst->data, dst->len + 1);
+    memcpy(dst->data, src, dst->len);
+    dst->data[dst->len] = 0;
+}
+
 static bool _find_next(const str *string, char find, size_t *pos) {
     for(size_t i = *pos; i < string->len; i++) {
         if(string->data[i] == find) {

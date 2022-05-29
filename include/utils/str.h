@@ -125,6 +125,11 @@ void str_append_c(str *dst, const char *src);
 void str_append_buf(str *dst, const char *buf, size_t len);
 
 /**
+ * @brief Replace the string object data with a copy of the C string (null terminated).
+ */
+void str_copy_c(str *dst, const char *src);
+
+/**
  * @brief Replace content in string with something else.
  * @details Replace occurrences of the search string with the replacement string.
  *          Limit parameter can be used to limit replacement to a certain number
