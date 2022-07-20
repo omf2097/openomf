@@ -6,15 +6,15 @@ IndentWidth: 4
 SpaceBeforeParens: Never
 BreakBeforeBraces: Custom
 BraceWrapping:
-  AfterControlStatement: false
+  AfterControlStatement: 'false'
   AfterFunction:   false
   AfterStruct:     false
   AfterUnion:      false
   BeforeElse:      false
   IndentBraces:    false
-  AfterEnum:       false
-AllowShortFunctionsOnASingleLine: false
-AllowShortBlocksOnASingleLine: false
+  AfterEnum:       true
+AllowShortFunctionsOnASingleLine: 'None'
+AllowShortBlocksOnASingleLine: 'Never'
 AlignArrayOfStructures: Left
 IndentCaseLabels: true
 AllowShortEnumsOnASingleLine: false
