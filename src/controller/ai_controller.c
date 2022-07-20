@@ -1746,9 +1746,8 @@ bool attempt_attack(controller *ctrl, bool highest_damage) {
             move_stat *ms = &a->move_stats[i];
             if(is_valid_move(move, h, false)) {
                 // smart AI will bail out unless close enough to hit
-                if(!in_attempt_range &&
-                   (move->category == CAT_BASIC || move->category == CAT_LOW || move->category == CAT_MEDIUM ||
-                    move->category == CAT_HIGH)) {
+                if(!in_attempt_range && (move->category == CAT_BASIC || move->category == CAT_LOW ||
+                                         move->category == CAT_MEDIUM || move->category == CAT_HIGH)) {
                     continue;
                 }
 
@@ -2202,12 +2201,12 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
             if(roll_chance(2)) {
                 // Shadow Punch : D,B+P
                 int cmds2[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_PUNCH : ACT_RIGHT | ACT_PUNCH),
-                              ACT_PUNCH};
+                               ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds2, N_ELEMENTS(cmds2), ev);
             } else {
                 // Shadow Kick : D,B+K
                 int cmds2[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK),
-                              ACT_KICK};
+                               ACT_KICK};
                 chain_controller_cmd(ctrl, cmds2, N_ELEMENTS(cmds2), ev);
             }
         } break;
