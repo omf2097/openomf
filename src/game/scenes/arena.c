@@ -536,7 +536,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     chr_score *score = game_player_get_score(game_state_get_player(gs, other_player_id));
     object_select_sprite(local->player_rounds[other_player_id][score->rounds], 0);
     score->rounds++;
-    if(score->rounds >= ceil(local->rounds / 2.0f)) {
+    if(score->rounds >= ceilf(local->rounds / 2.0f)) {
         har_set_ani(winner, ANIM_VICTORY, 0);
         chr_score_victory(score, winner_har->health);
         winner_har->state = STATE_VICTORY;
@@ -704,7 +704,7 @@ void arena_free(scene *scene) {
         controller_set_repeat(game_player_get_ctrl(player), 0);
 
         for(int j = 0; j < 4; j++) {
-            if(j < ceil(local->rounds / 2.0f)) {
+            if(j < ceilf(local->rounds / 2.0f)) {
                 omf_free(local->player_rounds[i][j]);
             }
         }
@@ -930,8 +930,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
 
         // RTT stuff
-        hars[0]->delay = ceil(player2->ctrl->rtt / 2.0f);
-        hars[1]->delay = ceil(player1->ctrl->rtt / 2.0f);
+        hars[0]->delay = ceilf(player2->ctrl->rtt / 2.0f);
+        hars[1]->delay = ceilf(player1->ctrl->rtt / 2.0f);
 
         // Endings and beginnings
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
@@ -970,7 +970,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     // Calculate velocity etc.
                     float rv = rand_float() - 0.5f;
                     float velx = rv;
-                    float vely = -12 * sin(0 / 2 + rv);
+                    float vely = -12 * sinf(0 / 2 + rv);
 
                     // Make sure scrap has somekind of velocity
                     // (to prevent floating scrap objects)
@@ -1233,7 +1233,7 @@ int arena_create(scene *scene) {
 
         // Create round tokens
         for(int j = 0; j < 4; j++) {
-            if(j < ceil(local->rounds / 2.0f)) {
+            if(j < ceilf(local->rounds / 2.0f)) {
                 local->player_rounds[i][j] = omf_calloc(1, sizeof(object));
                 int xoff = 110 + 9 * j + 3 + j;
                 if(i == 1) {

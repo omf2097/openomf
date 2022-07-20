@@ -130,7 +130,7 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
             tmp_s = fit_lines * charw - settings->cspacing; // Total W minus last spacing
             switch(settings->halign) {
                 case TEXT_CENTER:
-                    start_x += ceil((xspace - tmp_s) / 2.0f);
+                    start_x += ceilf((xspace - tmp_s) / 2.0f);
                     break;
                 case TEXT_RIGHT:
                     start_x += (xspace - tmp_s);
@@ -143,7 +143,7 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
             tmp_s = fit_lines * charh - settings->lspacing; // Total H minus last spacing
             switch(settings->valign) {
                 case TEXT_MIDDLE:
-                    start_y += floor((yspace - tmp_s) / 2.0f);
+                    start_y += floorf((yspace - tmp_s) / 2.0f);
                     break;
                 case TEXT_BOTTOM:
                     start_y += (yspace - tmp_s);
@@ -188,7 +188,7 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
                 // Horizontal alignment for this line
                 switch(settings->halign) {
                     case TEXT_CENTER:
-                        mx += floor((xspace - line_pw) / 2.0f);
+                        mx += floorf((xspace - line_pw) / 2.0f);
                         break;
                     case TEXT_RIGHT:
                         mx += (xspace - line_pw);
@@ -204,7 +204,7 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
                 // Vertical alignment for this line
                 switch(settings->valign) {
                     case TEXT_MIDDLE:
-                        my += ceil((yspace - line_ph) / 2.0f);
+                        my += ceilf((yspace - line_ph) / 2.0f);
                         break;
                     case TEXT_BOTTOM:
                         my += (yspace - line_ph);

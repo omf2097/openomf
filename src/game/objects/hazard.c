@@ -81,8 +81,8 @@ void hazard_move(object *obj) {
         obj->pos.y = obj->orbit_pos.y + obj->orbit_pos_vary.y;
         obj->orbit_pos.x += 2 * obj->orbit_dest_dir.x;
         obj->orbit_pos.y += 2 * obj->orbit_dest_dir.y;
-        obj->orbit_pos_vary.x += sin(obj->orbit_tick) * 0.2f;
-        obj->orbit_pos_vary.y += cos(obj->orbit_tick) * 0.6f;
+        obj->orbit_pos_vary.x += sinf(obj->orbit_tick) * 0.2f;
+        obj->orbit_pos_vary.y += cosf(obj->orbit_tick) * 0.6f;
     }
 }
 

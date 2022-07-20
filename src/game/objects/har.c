@@ -660,8 +660,8 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
     for(int i = 0; i < amount; i++) {
         // Calculate velocity etc.
         float rv = rand_int(100) / 100.0f - 0.5;
-        float velx = (5 * cos(90 + i - (amount) / 2 + rv)) * object_get_direction(obj);
-        float vely = -12 * sin(i / amount + rv);
+        float velx = (5 * cosf(90 + i - (amount) / 2 + rv)) * object_get_direction(obj);
+        float vely = -12 * sinf(i / amount + rv);
 
         // Make sure the oil drops have somekind of velocity
         // (to prevent floating scrap objects)
@@ -713,8 +713,8 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     for(int i = 0; i < scrap_amount; i++) {
         // Calculate velocity etc.
         float rv = rand_int(100) / 100.0f - 0.5;
-        float velx = (5 * cos(90 + i - (scrap_amount) / 2 + rv)) * object_get_direction(obj);
-        float vely = -12 * sin(i / scrap_amount + rv);
+        float velx = (5 * cosf(90 + i - (scrap_amount) / 2 + rv)) * object_get_direction(obj);
+        float vely = -12 * sinf(i / scrap_amount + rv);
 
         // Make destruction moves look more impressive :P
         if(destr) {

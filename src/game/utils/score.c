@@ -197,7 +197,7 @@ void chr_score_victory(chr_score *score, int health) {
     text = omf_calloc(64, 1);
 
     int len = snprintf(text, 64, "vitality ");
-    int points = trunc((DESTRUCTION * multipliers[score->difficulty]) * (health / 100.0f));
+    int points = truncf((DESTRUCTION * multipliers[score->difficulty]) * (health / 100.0f));
     score_format(points, text + len, 64 - len);
     // XXX hardcode the y coordinate for now
     chr_score_add(score, text, points * (health / 100), vec2i_create(160, 100), 1.0f);
