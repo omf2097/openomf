@@ -5,12 +5,9 @@
 #include "game/objects/har.h"
 #include "game/objects/projectile.h"
 #include "game/objects/scrap.h"
-#include "game/protos/intersect.h"
 #include "game/protos/object_specializer.h"
 #include "game/scenes/arena.h"
-#include "game/utils/serial.h"
 #include "resources/af_loader.h"
-#include "resources/animation.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
@@ -26,8 +23,6 @@
 #define BASE_ACT_CHANCE 5
 /* base timer before we can consider changing movement action */
 #define BASE_ACT_TIMER 28
-/* base likelihood to jump mid-action (lower is more likely) */
-#define BASE_MID_ACT_JUMP_CHANCE 100
 /* base likelihood to jump while moving forwards (lower is more likely) */
 #define BASE_FWD_JUMP_CHANCE 5
 /* base likelihood to jump while moving backwards (lower is more likely) */
@@ -45,7 +40,7 @@
 
 #define N_ELEMENTS(array) (sizeof(array) / sizeof((array)[0]))
 
-typedef struct move_stat_t {
+typedef struct {
     int max_hit_dist;
     int min_hit_dist;
     int value;
@@ -54,7 +49,7 @@ typedef struct move_stat_t {
     int last_dist;
 } move_stat;
 
-typedef struct tactic_state_t {
+typedef struct {
     int tactic_type;
     int last_tactic;
     int move_type;
@@ -67,8 +62,7 @@ typedef struct tactic_state_t {
     int chain_hit_tactic;
 } tactic_state;
 
-typedef struct ai_t {
-    int har_event_hooked;
+typedef struct {
     int difficulty;
     int act_timer;
     int cur_act;
@@ -355,7 +349,7 @@ int get_enemy_range(const controller *ctrl) {
     har *h = object_get_userdata(o);
     object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
 
-    int range_units = fabs(o_enemy->pos.x - o->pos.x) / 30;
+    int range_units = fabsf(o_enemy->pos.x - o->pos.x) / 30;
     switch(range_units) {
         case 0:
         case 1:
@@ -1751,10 +1745,10 @@ bool attempt_attack(controller *ctrl, bool highest_damage) {
         if((move = af_get_move(h->af_data, i))) {
             move_stat *ms = &a->move_stats[i];
             if(is_valid_move(move, h, false)) {
-                // smart AI will bail-out unless close enough to hit
+                // smart AI will bail out unless close enough to hit
                 if(!in_attempt_range &&
                    (move->category == CAT_BASIC || move->category == CAT_LOW || move->category == CAT_MEDIUM ||
-                    move->category == CAT_HIGH || move->category == CAT_LOW)) {
+                    move->category == CAT_HIGH)) {
                     continue;
                 }
 
@@ -2173,7 +2167,7 @@ bool attempt_trip_attack(controller *ctrl, ctrl_event **ev) {
 }
 
 /**
- * \brief Attempt to initiate a projectile atack using direct keyboard combinations.
+ * \brief Attempt to initiate a projectile attack using direct keyboard combinations.
  *
  * \param ctrl Controller instance.
  * \param ev The current controller event.
@@ -2196,7 +2190,7 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
             int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
                           (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT)};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
-            // these ones are picky so we need to split it up
+            // these are picky, so we need to split it up
             int cmds2[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_PUNCH : ACT_RIGHT | ACT_PUNCH),
                            ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds2, N_ELEMENTS(cmds2), ev);
@@ -2207,14 +2201,14 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             if(roll_chance(2)) {
                 // Shadow Punch : D,B+P
-                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_PUNCH : ACT_RIGHT | ACT_PUNCH),
+                int cmds2[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_PUNCH : ACT_RIGHT | ACT_PUNCH),
                               ACT_PUNCH};
-                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+                chain_controller_cmd(ctrl, cmds2, N_ELEMENTS(cmds2), ev);
             } else {
                 // Shadow Kick : D,B+K
-                int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK),
+                int cmds2[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK),
                               ACT_KICK};
-                chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+                chain_controller_cmd(ctrl, cmds2, N_ELEMENTS(cmds2), ev);
             }
         } break;
         case HAR_CHRONOS: {
@@ -2690,7 +2684,6 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
 
 void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int pilot_id) {
     ai *a = omf_calloc(1, sizeof(ai));
-    a->har_event_hooked = 0;
     a->difficulty = difficulty + 1;
     a->act_timer = 0;
     a->cur_act = 0;
