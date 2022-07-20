@@ -3,6 +3,7 @@ Checks: >
   -*,
   clang-analyzer-*,
   clang-diagnostic-*,
+  performance-*,
   -clang-analyzer-cplusplus*,
   -clang-diagnostic-unused-command-line-argument,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,

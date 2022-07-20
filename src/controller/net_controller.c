@@ -46,8 +46,9 @@ int avg_rtt(int data[], int n) {
             j++;
         }
     }
-    if(j != 0)
-        return trunc(result / j);
+    if(j != 0) {
+        return truncf(result / j);
+    }
     return 0;
 }
 
