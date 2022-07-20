@@ -80,11 +80,9 @@ else()
 endif()
 
 # When building with MingW, do not look for Intl
-# Also, use static libgcc when on mingw
 if(MINGW)
     set(LIBINTL_INCLUDE_DIR "")
     set(LIBINTL_LIBRARIES "")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
 else()
     find_package(Intl)
 endif()
@@ -275,6 +273,14 @@ if(MINGW)
     if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
         set_target_properties(openomf PROPERTIES LINK_FLAGS "-mwindows")
     endif(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+endif()
+
+# Use static libgcc when on mingw
+if(MINGW)
+    target_link_options(openomf PRIVATE -static-libgcc)
+    foreach(TARGET ${TOOL_TARGET_NAMES})
+        target_link_options(${TARGET} PRIVATE -static-libgcc)
+    endforeach()
 endif()
 
 # Make sure libraries are linked
