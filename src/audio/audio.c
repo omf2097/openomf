@@ -18,13 +18,6 @@ struct sink_info_t {
 };
 #define SINK_COUNT (sizeof(sinks) / sizeof(struct sink_info_t))
 
-const char *audio_get_sink_name(int sink_id) {
-    // Get sink
-    if(sink_id < 0 || (unsigned)sink_id >= SINK_COUNT) {
-        return NULL;
-    }
-    return sinks[sink_id].name;
-}
 
 const char *audio_get_first_sink_name() {
     if(SINK_COUNT > 0) {
