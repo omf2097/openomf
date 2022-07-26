@@ -4,7 +4,6 @@
 #include "game/scenes/arena.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
-#include "video/video.h"
 #include <stdio.h>
 
 // utils
