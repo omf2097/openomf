@@ -4,26 +4,23 @@
 #include "controller/controller.h"
 #include <SDL.h>
 
-typedef struct joystick_keys_t joystick_keys;
-typedef struct joystick_t joystick;
-
-struct joystick_keys_t {
+typedef struct {
     int x_axis;
     int y_axis;
     int dpad[4];
     int punch;
     int kick;
     int escape;
-};
+} joystick_keys;
 
-struct joystick_t {
+typedef struct {
     SDL_GameController *joy;
     SDL_Haptic *haptic;
     joystick_keys *keys;
     int rumble;
     int last;
     int current;
-};
+} joystick;
 
 int joystick_create(controller *ctrl, int joystick_id);
 void joystick_free(controller *ctrl);

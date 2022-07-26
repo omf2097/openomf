@@ -6,7 +6,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-typedef struct wtf_t {
+typedef struct {
     ENetHost *host;
     ENetPeer *peer;
     int id;
@@ -292,4 +292,5 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     ctrl->tick_fun = &net_controller_tick;
     ctrl->update_fun = &net_controller_update;
     ctrl->controller_hook = &controller_hook;
+    ctrl->free_fun = &net_controller_free;
 }

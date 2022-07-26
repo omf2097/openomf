@@ -37,13 +37,7 @@ object *game_player_get_har(game_player *gp) {
 
 void game_player_set_ctrl(game_player *gp, controller *ctrl) {
     if(gp->ctrl != NULL) {
-        if(gp->ctrl->type == CTRL_TYPE_KEYBOARD) {
-            keyboard_free(gp->ctrl);
-        } else if(gp->ctrl->type == CTRL_TYPE_NETWORK) {
-            net_controller_free(gp->ctrl);
-        } else if(gp->ctrl->type == CTRL_TYPE_AI) {
-            ai_controller_free(gp->ctrl);
-        }
+        gp->ctrl->free_fun(gp->ctrl);
         omf_free(gp->ctrl);
     }
     gp->ctrl = ctrl;

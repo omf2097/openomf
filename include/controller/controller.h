@@ -60,6 +60,7 @@ struct controller_t {
     int (*rumble_fun)(controller *ctrl, float magnitude, int duration);
     int (*har_hook)(controller *ctrl, har_event event);
     void (*controller_hook)(controller *ctrl, int action);
+    void (*free_fun)(controller *ctrl);
     void *data;
     int type;
     int rtt;

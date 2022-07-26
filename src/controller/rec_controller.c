@@ -3,13 +3,21 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-typedef struct wtf_t {
+typedef struct {
     int id;
     int last_tick;
     int last_action;
     int max_tick;
     hashmap tick_lookup;
 } wtf;
+
+void rec_controller_free(controller *ctrl) {
+    wtf *data = ctrl->data;
+    if(data) {
+        hashmap_free(&data->tick_lookup);
+        omf_free(data);
+    }
+}
 
 int rec_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     wtf *data = ctrl->data;
@@ -79,4 +87,5 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_REC;
     ctrl->dyntick_fun = &rec_controller_tick;
+    ctrl->free_fun = &rec_controller_free;
 }
