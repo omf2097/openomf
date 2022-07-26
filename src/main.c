@@ -26,6 +26,51 @@ static const char *git_sha1_hash = "";
 static const char *git_sha1_hash = SHA1_HASH;
 #endif
 
+void load_game_controller_mappings() {
+    // Load SDL2 game controller mappings from built-in data.
+    SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
+    SDL_GameControllerAddMappingsFromRW(rw, 1);
+    INFO("Loaded built-in controller mappings");
+
+    // Load externally defined game controller mappings file
+    str controller_db_path;
+    const char *resource_path = pm_get_local_path(RESOURCE_PATH);
+    str_from_format(&controller_db_path, "%s/gamecontrollerdb.txt", resource_path);
+    if(SDL_GameControllerAddMappingsFromFile(str_c(&controller_db_path)) > 0) {
+        INFO("Loaded external game controller mappings from %s", str_c(&controller_db_path));
+    }
+    str_free(&controller_db_path);
+
+    // Just inform about controller mappings.
+    INFO("We currently have %d known game controller mappings.", SDL_GameControllerNumMappings());
+}
+
+void scan_game_controllers() {
+    INFO("Found %d joysticks attached", SDL_NumJoysticks());
+    SDL_Joystick *joy;
+    char guid_str[33];
+    for(int i = 0; i < SDL_NumJoysticks(); i++) {
+        joy = SDL_JoystickOpen(i);
+        if(joy) {
+            SDL_JoystickGUID guid = SDL_JoystickGetGUID(joy);
+            SDL_JoystickGetGUIDString(guid, guid_str, 33);
+            INFO("Opened Joystick %d", i);
+            INFO(" * Name:              %s", SDL_JoystickNameForIndex(i));
+            INFO(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
+            INFO(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
+            INFO(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
+            INFO(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
+            INFO(" * GUID          :    %s", guid_str);
+        } else {
+            INFO("Joystick %d is unsupported", i);
+        }
+
+        if(SDL_JoystickGetAttached(joy)) {
+            SDL_JoystickClose(joy);
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     // Set up initial state for misc things
     char *ip = NULL;
@@ -129,7 +174,7 @@ int main(int argc, char *argv[]) {
         INFO("Git SHA1 hash: %s", git_sha1_hash);
     }
 
-    // Dump pathmanager log
+    // Dump path manager log
     pm_log();
 
     // Random seed
@@ -179,42 +224,8 @@ int main(int argc, char *argv[]) {
         goto exit_2;
     }
 
-    // Attempt to find gamecontrollerdb.txt, either from resources or from
-    // built-in header
-    SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
-    SDL_GameControllerAddMappingsFromRW(rw, 1);
-    char *gamecontrollerdbpath = omf_calloc(128, 1);
-    snprintf(gamecontrollerdbpath, 128, "%s/gamecontrollerdb.txt", pm_get_local_path(RESOURCE_PATH));
-    int mappings_loaded = SDL_GameControllerAddMappingsFromFile(gamecontrollerdbpath);
-    if(mappings_loaded > 0) {
-        DEBUG("loaded %d mappings from %s", mappings_loaded, gamecontrollerdbpath);
-    }
-    omf_free(gamecontrollerdbpath);
-
-    // Load up joysticks
-    INFO("Found %d joysticks attached", SDL_NumJoysticks());
-    SDL_Joystick *joy;
-    char guidstr[33];
-    for(int i = 0; i < SDL_NumJoysticks(); i++) {
-        joy = SDL_JoystickOpen(i);
-        if(joy) {
-            SDL_JoystickGUID guid = SDL_JoystickGetGUID(joy);
-            SDL_JoystickGetGUIDString(guid, guidstr, 33);
-            INFO("Opened Joystick %d", i);
-            INFO(" * Name:              %s", SDL_JoystickNameForIndex(i));
-            INFO(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
-            INFO(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
-            INFO(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
-            INFO(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
-            INFO(" * GUID          :    %s", guidstr);
-        } else {
-            INFO("Joystick %d is unsupported", i);
-        }
-
-        if(SDL_JoystickGetAttached(joy)) {
-            SDL_JoystickClose(joy);
-        }
-    }
+    load_game_controller_mappings();
+    scan_game_controllers();
 
     // Init enet
     if(enet_initialize() != 0) {
