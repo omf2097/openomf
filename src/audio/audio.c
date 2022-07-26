@@ -6,18 +6,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-static audio_sink *_global_sink = NULL;
-
-struct sink_info_t {
+typedef struct {
     int (*sink_init_fn)(audio_sink *sink);
     const char *name;
-} const sinks[] = {
+} sink_info;
+
+static audio_sink *_global_sink = NULL;
+
+const sink_info sinks[] = {
 #ifdef USE_OPENAL
     {openal_sink_init, "openal"},
 #endif  // USE_OPENAL
 };
-#define SINK_COUNT (sizeof(sinks) / sizeof(struct sink_info_t))
-
+#define SINK_COUNT (sizeof(sinks) / sizeof(sink_info))
 
 const char *audio_get_first_sink_name() {
     if(SINK_COUNT > 0) {
@@ -42,8 +43,8 @@ void audio_render() {
 }
 
 int audio_init(const char *sink_name) {
-    struct sink_info_t si;
-    memset(&si, 0, sizeof(struct sink_info_t));
+    sink_info si;
+    memset(&si, 0, sizeof(sink_info));
 
     // If null sink given, disable audio
     if(sink_name == NULL || strlen(sink_name) <= 0) {
@@ -83,6 +84,7 @@ void audio_close() {
     if(_global_sink != NULL) {
         sink_free(_global_sink);
         omf_free(_global_sink);
+        _global_sink = NULL;
         INFO("Audio system closed.");
     }
 }
