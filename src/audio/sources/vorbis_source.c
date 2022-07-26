@@ -1,6 +1,5 @@
 #ifdef USE_OGGVORBIS
 
-#include <stdio.h>
 #include <stdlib.h>
 #define OV_EXCLUDE_STATIC_CALLBACKS
 #include "audio/sources/vorbis_source.h"
@@ -9,7 +8,7 @@
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
 
-typedef struct vorbis_source_t {
+typedef struct {
     OggVorbis_File src_file;
     int current_section;
 } vorbis_source;

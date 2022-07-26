@@ -10,16 +10,15 @@
 #include "utils/log.h"
 #include <dumb.h>
 
-typedef struct dumb_source_t {
+typedef struct {
     DUH_SIGRENDERER *renderer;
     sample_t **sig_samples;
     long sig_samples_size;
     DUH *data;
-    long vlen;
     long vpos;
 } dumb_source;
 
-audio_source_freq dumb_freqs[] = {
+const audio_source_freq dumb_freqs[] = {
     {11025, 0, "11025Hz"},
     {22050, 0, "22050Hz"},
     {44100, 1, "44100Hz"},
@@ -27,7 +26,7 @@ audio_source_freq dumb_freqs[] = {
     {0,     0, 0        }  // Guard
 };
 
-audio_source_resampler dumb_resamplers[] = {
+const audio_source_resampler dumb_resamplers[] = {
     {DUMB_RQ_ALIASING, 0, "Aliasing"},
     {DUMB_RQ_BLEP,     0, "BLEP"    },
     {DUMB_RQ_LINEAR,   1, "Linear"  },
@@ -37,11 +36,11 @@ audio_source_resampler dumb_resamplers[] = {
     {0,                0, 0         }  // Guard
 };
 
-audio_source_freq *dumb_get_freqs() {
+const audio_source_freq *dumb_get_freqs() {
     return dumb_freqs;
 }
 
-audio_source_resampler *dumb_get_resamplers() {
+const audio_source_resampler *dumb_get_resamplers() {
     return dumb_resamplers;
 }
 
@@ -109,7 +108,6 @@ int dumb_source_init(audio_source *src, const char *file, int channels, int freq
         goto error_0;
     }
     local->renderer = duh_start_sigrenderer(local->data, 0, channels, 0);
-    local->vlen = duh_get_length(local->data);
     local->vpos = 0;
     local->sig_samples = NULL;
     local->sig_samples_size = 0;

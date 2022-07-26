@@ -53,7 +53,7 @@ module_source *music_get_module_sources() {
     return module_sources;
 }
 
-audio_source_freq *music_module_get_freqs(int id) {
+const audio_source_freq *music_module_get_freqs(int id) {
     switch(id) {
 #ifdef USE_DUMB
         case SOURCE_DUMB:
@@ -67,7 +67,7 @@ audio_source_freq *music_module_get_freqs(int id) {
     return default_freqs;
 }
 
-audio_source_resampler *music_module_get_resamplers(int id) {
+const audio_source_resampler *music_module_get_resamplers(int id) {
     switch(id) {
 #ifdef USE_DUMB
         case SOURCE_DUMB:

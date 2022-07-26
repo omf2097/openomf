@@ -46,7 +46,7 @@ void menu_audio_done(component *c, void *userdata) {
 void menu_audio_reset_freqs(audio_menu_data *local, int use_settings) {
     module_source *sources = music_get_module_sources();
     int id = sources[textselector_get_pos(local->lib_selector)].id;
-    audio_source_freq *freqs = music_module_get_freqs(id);
+    const audio_source_freq *freqs = music_module_get_freqs(id);
 
     textselector_clear_options(local->freq_selector);
     for(int i = 0; freqs[i].name != 0; i++) {
@@ -61,7 +61,7 @@ void menu_audio_reset_freqs(audio_menu_data *local, int use_settings) {
 void menu_audio_reset_resamplers(audio_menu_data *local, int use_settings) {
     module_source *sources = music_get_module_sources();
     int id = sources[textselector_get_pos(local->lib_selector)].id;
-    audio_source_resampler *resamplers = music_module_get_resamplers(id);
+    const audio_source_resampler *resamplers = music_module_get_resamplers(id);
 
     textselector_clear_options(local->resampler_selector);
     for(int i = 0; resamplers[i].name != 0; i++) {
@@ -86,7 +86,7 @@ void menu_audio_freq_toggled(component *c, void *userdata, int pos) {
     audio_menu_data *local = userdata;
     module_source *sources = music_get_module_sources();
     int id = sources[textselector_get_pos(local->lib_selector)].id;
-    audio_source_freq *freqs = music_module_get_freqs(id);
+    const audio_source_freq *freqs = music_module_get_freqs(id);
     settings_get()->sound.music_frequency = freqs[pos].freq;
 }
 
@@ -94,7 +94,7 @@ void menu_audio_resampler_toggled(component *c, void *userdata, int pos) {
     audio_menu_data *local = userdata;
     module_source *sources = music_get_module_sources();
     int id = sources[textselector_get_pos(local->lib_selector)].id;
-    audio_source_resampler *resamplers = music_module_get_resamplers(id);
+    const audio_source_resampler *resamplers = music_module_get_resamplers(id);
     settings_get()->sound.music_resampler = resamplers[pos].internal_id;
 }
 
