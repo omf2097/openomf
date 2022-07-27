@@ -1,4 +1,4 @@
-#include "controller/gamecontrollerdb.h"
+#include "controller/game_controller_db.h"
 #include "engine.h"
 #include "game/game_state.h"
 #include "game/utils/settings.h"
@@ -25,25 +25,6 @@ static const char *git_sha1_hash = "";
 #else
 static const char *git_sha1_hash = SHA1_HASH;
 #endif
-
-void load_game_controller_mappings() {
-    // Load SDL2 game controller mappings from built-in data.
-    SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
-    SDL_GameControllerAddMappingsFromRW(rw, 1);
-    INFO("Loaded built-in controller mappings");
-
-    // Load externally defined game controller mappings file
-    str controller_db_path;
-    const char *resource_path = pm_get_local_path(RESOURCE_PATH);
-    str_from_format(&controller_db_path, "%s/gamecontrollerdb.txt", resource_path);
-    if(SDL_GameControllerAddMappingsFromFile(str_c(&controller_db_path)) > 0) {
-        INFO("Loaded external game controller mappings from %s", str_c(&controller_db_path));
-    }
-    str_free(&controller_db_path);
-
-    // Just inform about controller mappings.
-    INFO("We currently have %d known game controller mappings.", SDL_GameControllerNumMappings());
-}
 
 void scan_game_controllers() {
     INFO("Found %d joysticks attached", SDL_NumJoysticks());
@@ -224,7 +205,9 @@ int main(int argc, char *argv[]) {
         goto exit_2;
     }
 
-    load_game_controller_mappings();
+    // Load game controller support
+    joystick_load_builtin_mappings();
+    joystick_load_external_mappings();
     scan_game_controllers();
 
     // Init enet

@@ -1,7 +1,6 @@
-#ifndef GAMECONTROLLERDB_H
-#define GAMECONTROLLERDB_H
+#include "controller/builtin_mappings.h"
 
-static const char gamecontrollerdb[] =
+const char builtin_controller_mappings[] =
     "# Game Controller DB for SDL in 2.0.16 format\n"
     "# Source: https://github.com/gabomdq/SDL_GameControllerDB\n"
     "\n"
@@ -6180,5 +6179,3 @@ static const char gamecontrollerdb[] =
     "Controller,a:b0,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b9,leftshoulder:b4,leftstick:b6,"
     "lefttrigger:a2,leftx:a0,lefty:a1,misc1:b11,rightshoulder:b5,rightstick:b7,righttrigger:a5,rightx:a3,righty:a4,"
     "start:b10,x:b2,y:b3,platform:iOS,";
-
-#endif // GAMECONTROLLERDB_H
