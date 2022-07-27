@@ -86,4 +86,5 @@ void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_KEYBOARD;
     ctrl->poll_fun = &keyboard_poll;
+    ctrl->free_fun = &keyboard_free;
 }

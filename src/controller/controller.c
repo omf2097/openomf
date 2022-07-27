@@ -2,7 +2,7 @@
 #include "utils/allocator.h"
 #include <stdlib.h>
 
-typedef struct hook_function_t {
+typedef struct {
     void (*fp)(controller *ctrl, int act_type);
     controller *source;
 } hook_function;

@@ -2724,4 +2724,5 @@ void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int
     ctrl->type = CTRL_TYPE_AI;
     ctrl->poll_fun = &ai_controller_poll;
     ctrl->har_hook = &ai_har_event;
+    ctrl->free_fun = &ai_controller_free;
 }

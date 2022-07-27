@@ -61,14 +61,9 @@ void str_from_format(str *dst, const char *format, ...) {
     }
 
     // Make sure there is enough room for our vsnprintf call plus ending NULL,
-    // then render the output to our new buffer. Note that "size" includes the
-    // terminating null, so we pass "size-1" for allocator which wants the size
-    // of the string without any trailing nulls characters. Since vsnprintf DOES
-    // want to also know about the trailing null, we pass it the original "size"
-    // as is. As a result, we have a proper C string in dst->data, no need to
-    // set trailing null by ourselves anymore.
-    STR_ALLOC(dst, size - 1);
-    vsnprintf(dst->data, size, format, args2);
+    // then render the output to our new buffer.
+    STR_ALLOC(dst, size);
+    vsnprintf(dst->data, size + 1, format, args2);
     va_end(args2);
 }
 

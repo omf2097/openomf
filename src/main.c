@@ -1,4 +1,4 @@
-#include "controller/gamecontrollerdb.h"
+#include "controller/game_controller_db.h"
 #include "engine.h"
 #include "game/game_state.h"
 #include "game/utils/settings.h"
@@ -25,6 +25,32 @@ static const char *git_sha1_hash = "";
 #else
 static const char *git_sha1_hash = SHA1_HASH;
 #endif
+
+void scan_game_controllers() {
+    INFO("Found %d joysticks attached", SDL_NumJoysticks());
+    SDL_Joystick *joy;
+    char guid_str[33];
+    for(int i = 0; i < SDL_NumJoysticks(); i++) {
+        joy = SDL_JoystickOpen(i);
+        if(joy) {
+            SDL_JoystickGUID guid = SDL_JoystickGetGUID(joy);
+            SDL_JoystickGetGUIDString(guid, guid_str, 33);
+            INFO("Opened Joystick %d", i);
+            INFO(" * Name:              %s", SDL_JoystickNameForIndex(i));
+            INFO(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
+            INFO(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
+            INFO(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
+            INFO(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
+            INFO(" * GUID          :    %s", guid_str);
+        } else {
+            INFO("Joystick %d is unsupported", i);
+        }
+
+        if(SDL_JoystickGetAttached(joy)) {
+            SDL_JoystickClose(joy);
+        }
+    }
+}
 
 int main(int argc, char *argv[]) {
     // Set up initial state for misc things
@@ -129,7 +155,7 @@ int main(int argc, char *argv[]) {
         INFO("Git SHA1 hash: %s", git_sha1_hash);
     }
 
-    // Dump pathmanager log
+    // Dump path manager log
     pm_log();
 
     // Random seed
@@ -179,42 +205,10 @@ int main(int argc, char *argv[]) {
         goto exit_2;
     }
 
-    // Attempt to find gamecontrollerdb.txt, either from resources or from
-    // built-in header
-    SDL_RWops *rw = SDL_RWFromConstMem(gamecontrollerdb, strlen(gamecontrollerdb));
-    SDL_GameControllerAddMappingsFromRW(rw, 1);
-    char *gamecontrollerdbpath = omf_calloc(128, 1);
-    snprintf(gamecontrollerdbpath, 128, "%s/gamecontrollerdb.txt", pm_get_local_path(RESOURCE_PATH));
-    int mappings_loaded = SDL_GameControllerAddMappingsFromFile(gamecontrollerdbpath);
-    if(mappings_loaded > 0) {
-        DEBUG("loaded %d mappings from %s", mappings_loaded, gamecontrollerdbpath);
-    }
-    omf_free(gamecontrollerdbpath);
-
-    // Load up joysticks
-    INFO("Found %d joysticks attached", SDL_NumJoysticks());
-    SDL_Joystick *joy;
-    char guidstr[33];
-    for(int i = 0; i < SDL_NumJoysticks(); i++) {
-        joy = SDL_JoystickOpen(i);
-        if(joy) {
-            SDL_JoystickGUID guid = SDL_JoystickGetGUID(joy);
-            SDL_JoystickGetGUIDString(guid, guidstr, 33);
-            INFO("Opened Joystick %d", i);
-            INFO(" * Name:              %s", SDL_JoystickNameForIndex(i));
-            INFO(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
-            INFO(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
-            INFO(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
-            INFO(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
-            INFO(" * GUID          :    %s", guidstr);
-        } else {
-            INFO("Joystick %d is unsupported", i);
-        }
-
-        if(SDL_JoystickGetAttached(joy)) {
-            SDL_JoystickClose(joy);
-        }
-    }
+    // Load game controller support
+    joystick_load_builtin_mappings();
+    joystick_load_external_mappings();
+    scan_game_controllers();
 
     // Init enet
     if(enet_initialize() != 0) {
