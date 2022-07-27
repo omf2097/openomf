@@ -24,16 +24,8 @@ For feature tickets, we are currently interested only in certain things (more
 detailed list below or in milestones view). Before contributing features, make sure to pop in
 to #omf channel on freenode and check if the feature is not yet being developed by someone!
 
-Currently we are working on:
-* the basic fighting mechanics and animations
-* responsive input system
-* scoring system
-* graphical effects on arenas
-* robot and fighter stats and statistics
-
-Please see our milestones page for more details on these!
-
-You may also support us by donating via paypal. For that, please see http://www.openomf.org/.
+For current status, please see discussion page at https://github.com/omf2097/openomf/discussions/413
+and our milestone pages for more details.
 
 ## Pull Requests
 

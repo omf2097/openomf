@@ -2,7 +2,7 @@
 
 ## Installation from packages
 
-Latest experimental binaries for windows, macos and ubuntu are available at
+Latest experimental binaries for windows, macOS and ubuntu are available at
 https://github.com/omf2097/openomf/releases/tag/latest . These binaries may
 not always work correctly, but they will be following the git status very 
 closely. So, if you want to test the latest features, this is for you.
@@ -24,7 +24,7 @@ instructions are also available there.
    Note that this is not necessary for running the game.
 5. Start the game by running openomf.exe.
 
-### Unbuntu
+### Ubuntu
 
 1. Download an appropriate .deb file for your architecture (NOTE! 32bit not currently available!).
 2. Install the package. You can either run dpkg -i <packagefile> or do it by using graphical tools
@@ -65,7 +65,7 @@ On debian, it is possible to pull some libraries using apt-get.
 apt-get install libsdl2-dev libopenal-dev libpng-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
 ```
 
-On mac, you can use brew:
+On Mac, you can use brew:
 ```
 brew install argtable openal-soft confuse enet sdl2 libxmp libpng
 ```
@@ -78,9 +78,9 @@ Latest OpenOMF source can be acquired with the "git clone" command below.
 git clone https://github.com/omf2097/openomf.git
 ```
 
-Note that the latest sources do not necessarily compile or they may have bugs. To retrieve 
+Note that the latest sources do not necessarily compile, or they may have bugs. To retrieve 
 the latest source that compiles but will be out of date, see the 
-[releases](https://github.com/omf2097/openomf/releases) section of OpenOMF project in github.
+[releases](https://github.com/omf2097/openomf/releases) section of OpenOMF project in GitHub.
 
 ### Compiling
 
@@ -96,27 +96,27 @@ $ make install
 
 Some useful CMake flags:
 
-| Flag                      | Description                             | Choices         | Default |
-| ------------------------- | --------------------------------------- | --------------- | ------- |
-| CMAKE_BUILD_TYPE          | Chooses between build types             | -/Debug/Release | -       |
-| CMAKE_INSTALL_PREFIX      | Installation path                       | -               | -       |
-| USE_OGGVORBIS             | Selects Vorbis support                  | On/Off          | Off     |
-| USE_OPENAL                | Selects OpenAL support                  | On/Off          | On      |
-| USE_DUMB                  | Selects libdumb support                 | On/Off          | Off     |
-| USE_XMP                   | Selects libxmp support                  | On/Off          | On      |
-| USE_TESTS                 | Enables unittests (dev only!)           | On/Off          | Off     |
-| USE_TOOLS                 | Enables format editor tools (dev only!) | On/Off          | Off     |
-| USE_SANITIZERS            | Enables asan and ubsan (dev only!)      | On/Off          | Off     |
-| USE_FORMAT                | Enables clang-format (dev only!)        | On/Off          | Off     |
-| USE_TIDY                  | Enables clang-tidy (dev only!)          | On/Off          | Off     |
+| Flag                 | Description                             | Choices         | Default |
+|----------------------|-----------------------------------------|-----------------|---------|
+| CMAKE_BUILD_TYPE     | Chooses between build types             | -/Debug/Release | -       |
+| CMAKE_INSTALL_PREFIX | Installation path                       | -               | -       |
+| USE_OGGVORBIS        | Selects Vorbis support                  | On/Off          | Off     |
+| USE_OPENAL           | Selects OpenAL support                  | On/Off          | On      |
+| USE_DUMB             | Selects libdumb support                 | On/Off          | Off     |
+| USE_XMP              | Selects libxmp support                  | On/Off          | On      |
+| USE_TESTS            | Enables unittests (dev only!)           | On/Off          | Off     |
+| USE_TOOLS            | Enables format editor tools (dev only!) | On/Off          | Off     |
+| USE_SANITIZERS       | Enables asan and ubsan (dev only!)      | On/Off          | Off     |
+| USE_FORMAT           | Enables clang-format (dev only!)        | On/Off          | Off     |
+| USE_TIDY             | Enables clang-tidy (dev only!)          | On/Off          | Off     |
 
 Ogg Vorbis support is required if you wish to replace original OMF soundtracks with OGG files.
-Otherwise the switch is optional.
+Otherwise, the switch is optional.
 
 For music playback, select at least one (or more) of the module player libraries. 
 XMP is recommended due to ease of installation, but DUMB will also work just fine.
 
-It is technically possible to select more than one audio sink, or none. Currently only one
+It is technically possible to select more than one audio sink, or none. Currently, only one
 audio sink is supported (OpenAL). If all audio sinks are off, then no audio will be played.
 This will also of course reduce cpu usage a bit.
 
@@ -136,12 +136,12 @@ relative to the openomf binary. So if your binary is in /usr/local/bin, the reso
 be put in /usr/local/share/games/openomf/. With release or testing packages,
 the resources should be extracted to /usr/share/games/openomf/.
 
-On MacOS and windows, the resources should be put into the resources/ subdirectory.
+On macOS and windows, the resources should be put into the resources/ subdirectory.
 
 Note! Only BK,AF,PIC,TRN,PSM and DAT files are required, others may be removed to save space.
 
 You can override these default paths by setting the OPENOMF_RESOURCE_DIR environment
-variable to an absolute directory. Plugins have a similiar environment variable called
+variable to an absolute directory. Plugins have a similar environment variable called
 OPENOMF_PLUGIN_DIR.
 
 ## Play the game!
