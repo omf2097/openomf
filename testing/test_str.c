@@ -47,9 +47,10 @@ void test_str_from_format(void) {
     str d;
     str_from_format(&d, "%s, %d\n", "this is a test", 100);
 
-    CU_ASSERT(d.len == 19);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "this is a test, 100\n")
+    CU_ASSERT(d.len == 20);
     CU_ASSERT_PTR_NOT_NULL(d.data);
-    CU_ASSERT(d.data[19] == 0);
+    CU_ASSERT(d.data[20] == 0);
 
     str_free(&d);
 }
