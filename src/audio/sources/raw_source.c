@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct raw_source_t {
+typedef struct {
     char *buf;
     int len;
     int pos;

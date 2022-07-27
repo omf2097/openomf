@@ -10,7 +10,7 @@ typedef struct {
     xmp_context ctx;
 } xmp_source;
 
-audio_source_freq xmp_freqs[] = {
+const audio_source_freq xmp_freqs[] = {
     {11025, 0, "11025Hz"},
     {22050, 0, "22050Hz"},
     {44100, 1, "44100Hz"},
@@ -18,18 +18,18 @@ audio_source_freq xmp_freqs[] = {
     {0,     0, 0        }  // Guard
 };
 
-audio_source_resampler xmp_resamplers[] = {
+const audio_source_resampler xmp_resamplers[] = {
     {XMP_INTERP_NEAREST, 0, "Nearest"},
     {XMP_INTERP_LINEAR,  1, "Linear" },
     {XMP_INTERP_SPLINE,  0, "Cubic"  },
     {0,                  0, 0        }
 };
 
-audio_source_freq *xmp_get_freqs() {
+const audio_source_freq *xmp_get_freqs() {
     return xmp_freqs;
 }
 
-audio_source_resampler *xmp_get_resamplers() {
+const audio_source_resampler *xmp_get_resamplers() {
     return xmp_resamplers;
 }
 

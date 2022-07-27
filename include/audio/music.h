@@ -16,7 +16,7 @@ int music_playing();
 void music_set_volume(float volume);
 unsigned int music_get_resource();
 module_source *music_get_module_sources();
-audio_source_freq *music_module_get_freqs(int id);
-audio_source_resampler *music_module_get_resamplers(int id);
+const audio_source_freq *music_module_get_freqs(int id);
+const audio_source_resampler *music_module_get_resamplers(int id);
 
 #endif // MUSIC_H

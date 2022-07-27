@@ -4,7 +4,7 @@
 #include "game/protos/scene.h"
 #include <SDL.h>
 
-typedef struct console_t {
+typedef struct {
     font font;
     list history;
     int histpos;
@@ -24,7 +24,7 @@ typedef struct console_t {
     hashmap cmds; // string -> command
 } console;
 
-typedef struct command_t {
+typedef struct {
     command_func func;
     const char *doc;
 } command;
