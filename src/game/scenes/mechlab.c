@@ -18,16 +18,8 @@
 #include "utils/log.h"
 #include "video/video.h"
 
-typedef enum
-{
-    DASHBOARD_NONE,
-    DASHBOARD_STATS,
-    DASHBOARD_NEW,
-    DASHBOARD_SELECT_NEW_PIC,
-} dashboard_type;
-
 typedef struct {
-    dashboard_type dashtype;
+    dashboard_type dash_type;
     object bg_obj[3];
     guiframe *frame;
     guiframe *dashboard;
@@ -61,7 +53,7 @@ void mechlab_tick(scene *scene, int paused) {
     // Check if root is finished
     component *root = guiframe_get_root(local->frame);
     if(trnmenu_is_finished(root)) {
-        if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
+        if(local->dash_type == DASHBOARD_SELECT_NEW_PIC) {
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
             guiframe_set_root(local->frame, lab_menu_pilotselect_create(scene, &local->dw));
@@ -72,8 +64,9 @@ void mechlab_tick(scene *scene, int paused) {
     }
 }
 
-void mechlab_select_dashboard(scene *scene, mechlab_local *local, dashboard_type type) {
-    if(type == local->dashtype) {
+void mechlab_select_dashboard(scene *scene, dashboard_type type) {
+    mechlab_local *local = scene_get_userdata(scene);
+    if(type == local->dash_type) {
         // No change
         return;
     }
@@ -84,7 +77,7 @@ void mechlab_select_dashboard(scene *scene, mechlab_local *local, dashboard_type
     }
 
     // Switch to new dashboard
-    local->dashtype = type;
+    local->dash_type = type;
     switch(type) {
         // Dashboard with the gauges etc.
         case DASHBOARD_STATS:
@@ -119,7 +112,7 @@ int mechlab_event(scene *scene, SDL_Event *event) {
         return 1;
     }
 
-    if(local->dashtype == DASHBOARD_NEW) {
+    if(local->dash_type == DASHBOARD_NEW) {
         return guiframe_event(local->dashboard, event);
     } else {
         return guiframe_event(local->frame, event);
@@ -138,7 +131,7 @@ void mechlab_render(scene *scene) {
     guiframe_render(local->dashboard);
 
     // Only render mech in stats dashboard
-    if(local->dashtype == DASHBOARD_STATS) {
+    if(local->dash_type == DASHBOARD_STATS) {
         object_render(local->mech);
     }
 }
@@ -155,14 +148,14 @@ void mechlab_input_tick(scene *scene) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 // If view is new dashboard view, pass all input to it
-                if(local->dashtype == DASHBOARD_NEW) {
+                if(local->dash_type == DASHBOARD_NEW) {
                     // If inputting text for new player name is done, switch to next view.
                     // If ESC, exit view.
-                    // Otherwise handle text input
+                    // Otherwise, handle text input
                     if(i->event_data.action == ACT_ESC) {
                         trnmenu_finish(guiframe_get_root(local->frame));
                     } else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
-                        mechlab_select_dashboard(scene, local, DASHBOARD_SELECT_NEW_PIC);
+                        mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
                         trnmenu_finish(
                             guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
                     } else {
@@ -207,22 +200,21 @@ int mechlab_create(scene *scene) {
     if(last_name != NULL) {
         int ret = sg_load(&p1->pilot, last_name);
         if(ret != SD_SUCCESS) {
-            PERROR("Could not load saved game for playername '%s': %s!", last_name, sd_get_error(ret));
+            PERROR("Could not load saved game for player name '%s': %s!", last_name, sd_get_error(ret));
             last_name = NULL;
         } else {
-            DEBUG("Loaded savegame for playername '%s'.", last_name);
+            DEBUG("Loaded saved game for player name '%s'.", last_name);
         }
     }
 
-    // Either initialize a new tournament if no savegame is found,
-    // or just show old savegame stats directly if it was.
-    local->dashtype = DASHBOARD_NONE;
+    // Either initialize a new tournament if no saved game is found,
+    // or just show old saved game stats directly if it was.
+    local->dash_type = DASHBOARD_NONE;
     if(last_name == NULL) {
-        DEBUG("No previous savegame found");
+        DEBUG("No previous saved game found");
     } else {
-        DEBUG("Previous savegame found; loading as default.");
+        DEBUG("Previous saved game found; loading as default.");
     }
-    mechlab_select_dashboard(scene, local, DASHBOARD_STATS);
 
     // Create main menu
     local->frame = guiframe_create(0, 0, 320, 200);
@@ -249,5 +241,7 @@ int mechlab_create(scene *scene) {
     // Fix for some additive blending tricks.
     video_render_bg_separately(false);
 
+    // Pick the initial dashboard page. Note that userdata must be set for scene!
+    mechlab_select_dashboard(scene, DASHBOARD_STATS);
     return 0;
 }

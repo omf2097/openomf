@@ -4,11 +4,11 @@
 #include "game/gui/spritebutton.h"
 #include "game/gui/text_render.h"
 #include "game/gui/trn_menu.h"
+#include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/scenes/mechlab/lab_menu_training.h"
 #include "resources/bk.h"
-#include "utils/log.h"
 
 void lab_menu_main_quit(component *c, void *userdata) {
     scene *s = userdata;
@@ -25,6 +25,11 @@ void lab_menu_main_training_enter(component *c, void *userdata) {
     trnmenu_set_submenu(c->parent, lab_menu_training_create(s));
 }
 
+void lab_menu_new_pilot(component *c, void *userdata) {
+    scene *s = userdata;
+    mechlab_select_dashboard(s, DASHBOARD_NEW);
+}
+
 static const button_details details_list[] = {
   // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
     {NULL,                          "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
@@ -33,7 +38,7 @@ static const button_details details_list[] = {
     {lab_menu_main_customize_enter, "BUY",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_customize_enter, "SELL",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {NULL,                          "LOAD",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
-    {NULL,                          "NEW",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
+    {lab_menu_new_pilot,            "NEW",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
     {NULL,                          "DELETE",           TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_DISABLED},
     {NULL,                          "SIM",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_quit,            "QUIT",             TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_ENABLED },
