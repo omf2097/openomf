@@ -171,6 +171,11 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
             line_len = text_find_max_strlen(rows, text + ptr);
         real_len = line_len;
 
+        // If line ends in linebreak, skip it from calculation.
+        if(text[ptr + line_len - 1] == '\n') {
+            real_len--;
+        }
+
         // Skip spaces
         int k = 0;
         for(; k < line_len; k++) {
