@@ -20,7 +20,7 @@ enum
 
 enum
 {
-    COM_UNSELECTED = 0, ///< Componen unselected. Used in eg. menu sizers.
+    COM_UNSELECTED = 0, ///< Component unselected. Used in eg. menu sizers.
     COM_SELECTED = 1,   ///< Component selected. Used in eg. menu sizers.
 };
 

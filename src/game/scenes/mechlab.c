@@ -10,6 +10,7 @@
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/lab_dash_main.h"
 #include "game/scenes/mechlab/lab_dash_newplayer.h"
+#include "game/scenes/mechlab/lab_dash_tournament.h"
 #include "game/scenes/mechlab/lab_menu_main.h"
 #include "game/scenes/mechlab/lab_menu_pilotselect.h"
 #include "game/utils/settings.h"
@@ -64,6 +65,11 @@ void mechlab_tick(scene *scene, int paused) {
     }
 }
 
+dashboard_widgets* mechlab_get_dashboard_widgets(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+    return &local->dw;
+}
+
 void mechlab_select_dashboard(scene *scene, dashboard_type type) {
     mechlab_local *local = scene_get_userdata(scene);
     if(type == local->dash_type) {
@@ -76,7 +82,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
         guiframe_free(local->dashboard);
     }
 
-    // Switch to new dashboard
+    // Switch to new dashboard. This is what is shown in the top part of the tournament menu scene (mechlab).
     local->dash_type = type;
     switch(type) {
         // Dashboard with the gauges etc.
@@ -88,7 +94,12 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             lab_dash_main_update(scene, &local->dw);
             guiframe_layout(local->dashboard);
             break;
-        // Dashboard for new player
+        case DASHBOARD_SELECT_TOURNAMENT:
+            local->dashboard = guiframe_create(0, 0, 320, 200);
+            guiframe_set_root(local->dashboard, lab_dash_tournament_create(scene));
+            guiframe_layout(local->dashboard);
+            break;
+        // Dashboard for new player, this is used to ask for player name.
         case DASHBOARD_NEW:
             local->dashboard = guiframe_create(0, 0, 320, 200);
             guiframe_set_root(local->dashboard, lab_dash_newplayer_create(scene, &local->nw));
@@ -130,8 +141,8 @@ void mechlab_render(scene *scene) {
     guiframe_render(local->frame);
     guiframe_render(local->dashboard);
 
-    // Only render mech in stats dashboard
-    if(local->dash_type == DASHBOARD_STATS) {
+    // Don't render mech in new player dashboard or in tournament selection dashboard
+    if(local->dash_type != DASHBOARD_NEW && local->dash_type != DASHBOARD_SELECT_TOURNAMENT) {
         object_render(local->mech);
     }
 }
@@ -173,9 +184,7 @@ void mechlab_input_tick(scene *scene) {
 
 // Init mechlab
 int mechlab_create(scene *scene) {
-    // Alloc
     mechlab_local *local = omf_calloc(1, sizeof(mechlab_local));
-
     animation *bg_ani[3];
 
     // Init the background
@@ -197,6 +206,7 @@ int mechlab_create(scene *scene) {
     }
 
     // ... and attempt to load it, if one was found.
+    local->dash_type = DASHBOARD_NONE;
     if(last_name != NULL) {
         int ret = sg_load(&p1->pilot, last_name);
         if(ret != SD_SUCCESS) {
@@ -205,15 +215,8 @@ int mechlab_create(scene *scene) {
         } else {
             DEBUG("Loaded saved game for player name '%s'.", last_name);
         }
-    }
-
-    // Either initialize a new tournament if no saved game is found,
-    // or just show old saved game stats directly if it was.
-    local->dash_type = DASHBOARD_NONE;
-    if(last_name == NULL) {
-        DEBUG("No previous saved game found");
     } else {
-        DEBUG("Previous saved game found; loading as default.");
+        DEBUG("No previous saved game found");
     }
 
     // Create main menu
@@ -241,7 +244,7 @@ int mechlab_create(scene *scene) {
     // Fix for some additive blending tricks.
     video_render_bg_separately(false);
 
-    // Pick the initial dashboard page. Note that userdata must be set for scene!
+    // Pick the initial dashboard page. Note that userdata must be set for scene before this call!
     mechlab_select_dashboard(scene, DASHBOARD_STATS);
     return 0;
 }
