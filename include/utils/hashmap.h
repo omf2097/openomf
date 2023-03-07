@@ -9,22 +9,25 @@ enum hashmap_flags
     HASHMAP_AUTO_DEC = 0x2
 };
 
-typedef struct hashmap_pair_t hashmap_pair;
-typedef struct hashmap_node_t hashmap_node;
-typedef struct hashmap_t hashmap;
+typedef void (*hashmap_free_cb)(void *);
 
-struct hashmap_pair_t {
+typedef struct hashmap_node hashmap_node;
+typedef struct hashmap_pair hashmap_pair;
+typedef struct hashmap hashmap;
+
+struct hashmap_pair {
     unsigned int keylen, vallen;
     void *key, *val;
 };
 
-struct hashmap_node_t {
+struct hashmap_node {
     hashmap_pair pair;
     hashmap_node *next;
 };
 
-struct hashmap_t {
+struct hashmap {
     hashmap_node **buckets;
+    hashmap_free_cb free_cb;
     unsigned int buckets_x;
     unsigned int buckets_x_min;
     unsigned int buckets_x_max;
@@ -35,21 +38,22 @@ struct hashmap_t {
 };
 
 void hashmap_create(hashmap *hashmap, int n_size); // actual size will be 2^n_size
+void hashmap_create_cb(hashmap *hashmap, int n_size, hashmap_free_cb free_cb);
 void hashmap_free(hashmap *hashmap);
-void hashmap_set_opts(hashmap *hm, unsigned int flags, float min_pressure, float max_pressure, int buckets_min,
+void hashmap_set_opts(hashmap *hashmap, unsigned int flags, float min_pressure, float max_pressure, int buckets_min,
                       int buckets_max);
-int hashmap_resize(hashmap *hm, int n_size);
-float hashmap_get_pressure(hashmap *hm);
-void hashmap_autoresize(hashmap *hm);
+int hashmap_resize(hashmap *hashmap, int n_size);
+float hashmap_get_pressure(hashmap *hashmap);
+void hashmap_autoresize(hashmap *hashmap);
 unsigned int hashmap_size(const hashmap *hashmap);
 unsigned int hashmap_reserved(const hashmap *hashmap);
-void *hashmap_put(hashmap *hm, const void *key, unsigned int keylen, const void *val, unsigned int vallen);
+void *hashmap_put(hashmap *hashmap, const void *key, unsigned int keylen, const void *val, unsigned int vallen);
 void hashmap_sput(hashmap *hashmap, const char *key, void *value, unsigned int value_len);
 void hashmap_iput(hashmap *hashmap, unsigned int key, void *value, unsigned int value_len);
-int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen);
+int hashmap_get(hashmap *hashmap, const void *key, unsigned int keylen, void **val, unsigned int *vallen);
 int hashmap_sget(hashmap *hashmap, const char *key, void **value, unsigned int *value_len);
 int hashmap_iget(hashmap *hashmap, unsigned int key, void **value, unsigned int *value_len);
-int hashmap_del(hashmap *hm, const void *key, unsigned int keylen);
+int hashmap_del(hashmap *hashmap, const void *key, unsigned int keylen);
 void hashmap_sdel(hashmap *hashmap, const char *key);
 void hashmap_idel(hashmap *hashmap, unsigned int key);
 void hashmap_iter_begin(const hashmap *hashmap, iterator *iter);

@@ -3,17 +3,20 @@
 
 #include "iterator.h"
 
+typedef void (*vector_free_cb)(void *);
+typedef int (*vector_compare_func)(const void *, const void *);
+
 typedef struct vector_t {
     char *data;
     unsigned int block_size;
     unsigned int blocks;
     unsigned int reserved;
     unsigned int inc_factor;
+    vector_free_cb free_cb;
 } vector;
 
-typedef int (*vector_compare_func)(const void *, const void *);
-
 void vector_create(vector *vector, unsigned int block_size);
+void vector_create_cb(vector *vector, unsigned int block_size, vector_free_cb free_cb);
 void vector_free(vector *vector);
 void vector_clear(vector *vector);
 void *vector_get(const vector *vector, unsigned int key);

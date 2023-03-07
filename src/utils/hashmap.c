@@ -60,6 +60,19 @@ void hashmap_create(hashmap *hm, int n_size) {
     hm->flags = 0;
     hm->buckets = omf_calloc(hashmap_size(hm), sizeof(hashmap_node *));
     hm->reserved = 0;
+    hm->free_cb = NULL;
+}
+
+/**
+ * @brief Same as hashmap_create, except that this one accepts item free function callback.
+ * 
+ * @param hm Allocated hashmap pointer
+ * @param n_size Size of the hashmap. Final size will be pow(2, n_size)
+ * @param free_cb Item free() function callback
+ */
+void hashmap_create_cb(hashmap *hm, int n_size, hashmap_free_cb free_cb) {
+    hashmap_create(hm, n_size);
+    hm->free_cb = free_cb;
 }
 
 /** \brief Set hashmap options
