@@ -206,7 +206,7 @@ int video_reinit(int window_w, int window_h, int fullscreen, int vsync, const ch
 
     // Load scaler
     if(video_load_scaler(scaler_name, scale_factor)) {
-        DEBUG("Scaler %s plugin not found; using Nearest neighbour scaling.");
+        DEBUG("Scaler plugin not found; using Nearest neighbour scaling.");
         state.scale_factor = 1;
     } else {
         DEBUG("Scaler %s loaded w/ factor %d", scaler_name, scale_factor);

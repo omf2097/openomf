@@ -212,14 +212,14 @@ void player_describe_frame(const sd_script_frame *frame) {
 
 void player_describe_object(object *obj) {
     DEBUG("Object:");
-    DEBUG("  - Start: %d, %d", obj->start.x, obj->start.y);
-    DEBUG("  - Position: %d, %d", obj->pos.x, obj->pos.y);
-    DEBUG("  - Velocity: %d, %d", obj->vel.x, obj->vel.y);
+    DEBUG("  - Start: %f, %f", obj->start.x, obj->start.y);
+    DEBUG("  - Position: %f, %f", obj->pos.x, obj->pos.y);
+    DEBUG("  - Velocity: %f, %f", obj->vel.x, obj->vel.y);
     if(obj->cur_sprite) {
         DEBUG("  - Pos: %d, %d", obj->cur_sprite->pos.x, obj->cur_sprite->pos.y);
         DEBUG("  - Size: %d, %d", obj->cur_sprite->data->w, obj->cur_sprite->data->h);
         player_sprite_state *rstate = &obj->sprite_state;
-        DEBUG("CURRENT = %d - %d + %d - %d", obj->pos.y, obj->cur_sprite->pos.y, rstate->o_correction.y,
+        DEBUG("CURRENT = %f - %d + %d - %d", obj->pos.y, obj->cur_sprite->pos.y, rstate->o_correction.y,
               obj->cur_sprite->data->h);
     }
 }
