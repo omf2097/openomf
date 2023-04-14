@@ -4,6 +4,7 @@
 #include "utils/log.h"
 #include "utils/str.h"
 #include <SDL_gamecontroller.h>
+#include <string.h>
 
 void joystick_load_builtin_mappings() {
     SDL_RWops *rw = SDL_RWFromConstMem(builtin_controller_mappings, strlen(builtin_controller_mappings));
