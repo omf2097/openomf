@@ -268,15 +268,20 @@ else()
     message(STATUS "Development: Asan and Ubsan disabled")
 endif()
 
-# Don't show console on mingw in release builds
 if(MINGW)
+    # Don't show console on mingw in release builds (but enable if debug mode)
     if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
         set_target_properties(openomf PROPERTIES LINK_FLAGS "-mwindows")
-    endif(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
-endif()
+    else()
+        set_target_properties(openomf PROPERTIES LINK_FLAGS "-mconsole")
+    endif()
 
-# Use static libgcc when on mingw
-if(MINGW)
+    # Make sure console apps are always in terminal output mode.
+    foreach(TARGET ${TOOL_TARGET_NAMES})
+        set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-mconsole")
+    endforeach()
+
+    # Use static libgcc when on mingw
     target_link_options(openomf PRIVATE -static-libgcc)
     foreach(TARGET ${TOOL_TARGET_NAMES})
         target_link_options(${TARGET} PRIVATE -static-libgcc)
@@ -305,6 +310,11 @@ if(CUNIT_FOUND)
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
     target_link_libraries(openomf_test_main ${CORELIBS})
+
+    if(MINGW)
+        # Always build as a console executable with mingw
+        set_target_properties(openomf_test_main PROPERTIES LINK_FLAGS "-mconsole")
+    endif()
 
     add_test(main openomf_test_main)
 

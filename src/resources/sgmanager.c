@@ -34,7 +34,7 @@ int sg_init() {
         // New attempt
         ret = scan_directory(&dirlist, dirname);
         if(ret != 0) {
-            PERROR("Still cound not read from savegame directory, giving up.");
+            PERROR("Still could not read from savegame directory, giving up.");
             goto error_0;
         }
     }
