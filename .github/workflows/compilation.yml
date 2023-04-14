@@ -17,7 +17,7 @@ jobs:
     name: Formatting Check
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Run clang-format style check
       uses: jidicula/clang-format-action@v4.5.0
       with:
@@ -39,7 +39,7 @@ jobs:
         - { name: "clang 11", cc: clang-11, tidy: "Off" }
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Ubuntu Dependencies
       run: |
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Ubuntu Dependencies
       run: |
@@ -85,16 +85,16 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release ..
         make -j2
         make install
-    
+
     - name: Get short SHA
       id: slug
-      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+      run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
 
     - name: Generate TGZ package
       run: tar cvfz ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz -C build-release/release/ .
 
     - name: Upload TGZ artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64
         path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz
@@ -111,7 +111,7 @@ jobs:
         desc: 'One Must Fall 2097 Remake'
 
     - name: Upload DEB artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_deb_amd64
         path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_amd64.deb
@@ -125,7 +125,7 @@ jobs:
     runs-on: macos-11
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Mac Dependencies
       run: |
@@ -138,10 +138,10 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release ..
         make -j3
         make install
-    
+
     - name: Get short SHA
       id: slug
-      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+      run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
 
     - name: Generate ZIP package
       run: |
@@ -149,7 +149,7 @@ jobs:
         zip -r ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos11.zip .
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos11
         path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos11.zip
@@ -163,7 +163,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Dependencies
       run: |
@@ -189,7 +189,7 @@ jobs:
 
     - name: Get short SHA
       id: slug
-      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+      run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
 
     - name: Generate ZIP package
       run: |
@@ -197,7 +197,7 @@ jobs:
         zip -r ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64.zip openomf
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64
         path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64.zip
@@ -213,7 +213,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: '0'
 
