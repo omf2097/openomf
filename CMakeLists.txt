@@ -54,7 +54,7 @@ find_package(ZLIB)
 
 # Check functions and generate platform configuration file
 check_symbol_exists(strdup "string.h" HAVE_STD_STRDUP)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/platform.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/src/platform.h)
 
 # If USE_DUMB flag is on, turn on libdumb
 if(USE_DUMB)
@@ -109,8 +109,8 @@ endif()
 file(GLOB_RECURSE OPENOMF_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/*/*.c")
 
 set(COREINCS
-    include
-    ${CMAKE_CURRENT_BINARY_DIR}/include/
+    src
+    ${CMAKE_CURRENT_BINARY_DIR}/src/
     ${SDL2_INCLUDE_DIRS}
     ${CONFUSE_INCLUDE_DIR}
     ${Intl_INCLUDE_DIR}
@@ -245,7 +245,7 @@ if(USE_FORMAT)
         GLOB_RECURSE
         SRC_FILES
         RELATIVE ${CMAKE_SOURCE_DIR}
-        "include/*.h"
+        "src/*.h"
         "src/*.c"
         "tools/*.c"
         "tools/*.h"
@@ -298,7 +298,7 @@ endforeach()
 if(CUNIT_FOUND)
     enable_testing()
 
-    include_directories(${CUNIT_INCLUDE_DIR} testing/ include/)
+    include_directories(${CUNIT_INCLUDE_DIR} testing/ src/)
     SET(CORELIBS ${CORELIBS} ${CUNIT_LIBRARY})
 
     file(GLOB_RECURSE TEST_SRC RELATIVE ${CMAKE_SOURCE_DIR} "testing/*.c")
