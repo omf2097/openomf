@@ -227,20 +227,24 @@ jobs:
         github-token: ${{secrets.GITHUB_TOKEN}}          
         script: |
           try {
-              await github.git.deleteRef({
+              await github.rest.git.deleteRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: "tags/latest"
               })
           } catch (e) {
-            console.log("The latest tag doesn't exist yet: " + e)
+            console.log("The 'latest' tag doesn't exist yet", e)
           }
-          await github.git.createRef({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            ref: "refs/tags/latest",
-            sha: context.sha
-          })
+          try {
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: "refs/tags/latest",
+                sha: context.sha
+              })
+          } catch (e) {
+            console.log("Unable to create 'latest' tag", e)
+          }
 
     - name: Extract ubuntu releases
       run: |
