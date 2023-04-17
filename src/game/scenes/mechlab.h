@@ -10,6 +10,7 @@ typedef enum
     DASHBOARD_NEW,
     DASHBOARD_SELECT_NEW_PIC,
     DASHBOARD_SELECT_DIFFICULTY,
+    DASHBOARD_SELECT_TOURNAMENT,
 } dashboard_type;
 
 int mechlab_create(scene *scene);

@@ -11,8 +11,10 @@
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/lab_dash_main.h"
 #include "game/scenes/mechlab/lab_dash_newplayer.h"
+#include "game/scenes/mechlab/lab_dash_trnselect.h"
 #include "game/scenes/mechlab/lab_menu_main.h"
 #include "game/scenes/mechlab/lab_menu_pilotselect.h"
+#include "game/scenes/mechlab/lab_menu_trnselect.h"
 #include "game/scenes/mechlab/lab_menu_difficultyselect.h"
 #include "game/utils/settings.h"
 #include "resources/sgmanager.h"
@@ -28,6 +30,7 @@ typedef struct {
     object *mech;
     dashboard_widgets dw;
     newplayer_widgets nw;
+    trnselect_widgets tw;
 } mechlab_local;
 
 void mechlab_find_last_player(scene *scene) {
@@ -107,6 +110,11 @@ void mechlab_tick(scene *scene, int paused) {
             local->frame = guiframe_create(0, 0, 320, 200);
             guiframe_set_root(local->frame, lab_menu_difficultyselect_create(scene));
             guiframe_layout(local->frame);
+        } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
+            guiframe_free(local->frame);
+            local->frame = guiframe_create(0, 0, 320, 200);
+            guiframe_set_root(local->frame, lab_menu_trnselect_create(scene, &local->tw));
+            guiframe_layout(local->frame);
         } else {
             game_state_set_next(scene->gs, SCENE_MENU);
         }
@@ -156,6 +164,10 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             guiframe_set_root(local->dashboard, lab_dash_newplayer_create(scene, &local->nw));
             guiframe_layout(local->dashboard);
             break;
+        case DASHBOARD_SELECT_TOURNAMENT:
+            guiframe_set_root(local->dashboard, lab_dash_trnselect_create(scene, &local->tw));
+            guiframe_layout(local->dashboard);
+            break;
         // No dashboard selection. This shouldn't EVER happen.
         case DASHBOARD_NONE:
             PERROR("No dashboard selected; this should not happen!");
@@ -193,7 +205,9 @@ void mechlab_render(scene *scene) {
 
 
     if(local->dashtype != DASHBOARD_NEW && local->mech != NULL) {
-        object_render(local->mech);
+        if (local->dashtype != DASHBOARD_SELECT_TOURNAMENT) {
+            object_render(local->mech);
+        }
     }
 
     if (local->dashtype == DASHBOARD_STATS && local->mech != NULL) {
