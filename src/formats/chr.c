@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "formats/chr.h"
+#include "formats/tournament.h"
 #include "formats/error.h"
 #include "formats/internal/memreader.h"
 #include "formats/internal/memwriter.h"
@@ -14,6 +15,24 @@ int sd_chr_create(sd_chr_file *chr) {
         return SD_INVALID_INPUT;
     }
     memset(chr, 0, sizeof(sd_chr_file));
+    return SD_SUCCESS;
+}
+
+int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) {
+    memcpy(&chr->pilot, pilot, sizeof(sd_pilot));
+    int ranked = 0;
+    for (int i = 0; i < trn->enemy_count; i++) {
+        chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
+        sd_pilot_create(&chr->enemies[i]->pilot);
+        memcpy(&chr->enemies[i]->pilot, trn->enemies[i], sizeof(sd_pilot));
+        if (!trn->enemies[i]->secret) {
+            ranked++;
+            chr->enemies[i]->pilot.rank = ranked;
+        }
+    }
+    chr->pilot.enemies_inc_unranked = trn->enemy_count;
+    chr->pilot.enemies_ex_unranked = ranked;
+    chr->pilot.rank = ranked + 1;
     return SD_SUCCESS;
 }
 
