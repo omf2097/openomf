@@ -30,6 +30,46 @@ typedef struct {
     newplayer_widgets nw;
 } mechlab_local;
 
+void mechlab_find_last_player(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+    // Find last saved game ...
+    game_player *p1 = game_state_get_player(scene->gs, 0);
+    const char *last_name = settings_get()->tournament.last_name;
+    if(last_name == NULL || strlen(last_name) == 0) {
+        last_name = NULL;
+    }
+
+    // ... and attempt to load it, if one was found.
+    if(last_name != NULL) {
+        int ret = sg_load(&p1->pilot, last_name);
+        if(ret != SD_SUCCESS) {
+            PERROR("Could not load saved game for playername '%s': %s!", last_name, sd_get_error(ret));
+            last_name = NULL;
+        } else {
+            DEBUG("Loaded savegame for playername '%s'.", last_name);
+        }
+    }
+
+    // Either initialize a new tournament if no savegame is found,
+    // or just show old savegame stats directly if it was.
+    local->dashtype = DASHBOARD_NONE;
+    if(last_name == NULL) {
+        DEBUG("No previous savegame found");
+        local->mech = NULL;
+        p1->pilot.money=0;
+        p1->pilot.har_id=0;
+    } else {
+        DEBUG("Previous savegame found; loading as default.");
+        // Load HAR
+        animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot.har_id)->ani;
+        local->mech = omf_calloc(1, sizeof(object));
+        object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+        object_set_animation(local->mech, initial_har_ani);
+        object_set_repeat(local->mech, 1);
+        object_dynamic_tick(local->mech);
+    }
+}
+
 void mechlab_free(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
 
@@ -50,7 +90,9 @@ void mechlab_tick(scene *scene, int paused) {
 
     guiframe_tick(local->frame);
     guiframe_tick(local->dashboard);
-    object_dynamic_tick(local->mech);
+    if (local->mech != NULL) {
+            object_dynamic_tick(local->mech);
+    }
 
     // Check if root is finished
     component *root = guiframe_get_root(local->frame);
@@ -102,6 +144,15 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             // new pilots have 2000 credits
             game_player *player1 = game_state_get_player(scene->gs, 0);
             player1->pilot.money = 2000;
+            // and a jaguar
+            player1->pilot.har_id = 0;
+            animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + player1->pilot.har_id)->ani;
+            local->mech = omf_calloc(1, sizeof(object));
+            object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_set_animation(local->mech, initial_har_ani);
+            object_set_repeat(local->mech, 1);
+            object_dynamic_tick(local->mech);
+
             guiframe_set_root(local->dashboard, lab_dash_newplayer_create(scene, &local->nw));
             guiframe_layout(local->dashboard);
             break;
@@ -139,11 +190,16 @@ void mechlab_render(scene *scene) {
 
     // Render dashboard
     guiframe_render(local->frame);
-    guiframe_render(local->dashboard);
 
-    // Only render mech in stats dashboard
-    if(local->dashtype == DASHBOARD_STATS) {
+
+    if(local->dashtype != DASHBOARD_NEW && local->mech != NULL) {
         object_render(local->mech);
+    }
+
+    if (local->dashtype == DASHBOARD_STATS && local->mech != NULL) {
+        guiframe_render(local->dashboard);
+    } else if (local->dashtype != DASHBOARD_STATS) {
+        guiframe_render(local->dashboard);
     }
 }
 
@@ -164,6 +220,7 @@ void mechlab_input_tick(scene *scene) {
                     // If ESC, exit view.
                     // Otherwise handle text input
                     if(i->event_data.action == ACT_ESC) {
+                        mechlab_find_last_player(scene);
                         mechlab_select_dashboard(scene, DASHBOARD_STATS);
                     } else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
                         strcpy(player1->pilot.name, textinput_value(local->nw.input));
@@ -175,9 +232,16 @@ void mechlab_input_tick(scene *scene) {
                     }
 
                 } else if (local->dashtype == DASHBOARD_SELECT_NEW_PIC && i->event_data.action == ACT_ESC) {
+                    mechlab_find_last_player(scene);
                     mechlab_select_dashboard(scene, DASHBOARD_STATS);
                     guiframe_set_root(local->frame, lab_menu_main_create(scene));
                     guiframe_layout(local->frame);
+                } else if (local->dashtype == DASHBOARD_SELECT_DIFFICULTY && i->event_data.action == ACT_ESC) {
+                    mechlab_find_last_player(scene);
+                    mechlab_select_dashboard(scene, DASHBOARD_STATS);
+                    guiframe_set_root(local->frame, lab_menu_main_create(scene));
+                    guiframe_layout(local->frame);
+
                // } else if (local->dashtype == DASHBOARD_SELECT_NEW_PIC && (i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH)) {
                //         mechlab_select_dashboard(scene, DASHBOARD_SELECT_DIFFICULTY);
                //         trnmenu_finish(
@@ -210,47 +274,15 @@ int mechlab_create(scene *scene) {
         object_set_animation_owner(&local->bg_obj[i], OWNER_OBJECT);
     }
 
-    // Find last saved game ...
-    game_player *p1 = game_state_get_player(scene->gs, 0);
-    const char *last_name = settings_get()->tournament.last_name;
-    if(last_name == NULL || strlen(last_name) == 0) {
-        last_name = NULL;
-    }
 
-    // ... and attempt to load it, if one was found.
-    if(last_name != NULL) {
-        int ret = sg_load(&p1->pilot, last_name);
-        if(ret != SD_SUCCESS) {
-            PERROR("Could not load saved game for playername '%s': %s!", last_name, sd_get_error(ret));
-            last_name = NULL;
-        } else {
-            DEBUG("Loaded savegame for playername '%s'.", last_name);
-        }
-    }
-
-    // Either initialize a new tournament if no savegame is found,
-    // or just show old savegame stats directly if it was.
-    local->dashtype = DASHBOARD_NONE;
-    if(last_name == NULL) {
-        DEBUG("No previous savegame found");
-    } else {
-        DEBUG("Previous savegame found; loading as default.");
-    }
     scene_set_userdata(scene, local);
+    mechlab_find_last_player(scene);
     mechlab_select_dashboard(scene, DASHBOARD_STATS);
 
     // Create main menu
     local->frame = guiframe_create(0, 0, 320, 200);
     guiframe_set_root(local->frame, lab_menu_main_create(scene));
     guiframe_layout(local->frame);
-
-    // Load HAR
-    animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot.har_id)->ani;
-    local->mech = omf_calloc(1, sizeof(object));
-    object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-    object_set_animation(local->mech, initial_har_ani);
-    object_set_repeat(local->mech, 1);
-    object_dynamic_tick(local->mech);
 
     // Set callbacks
     scene_set_input_poll_cb(scene, mechlab_input_tick);
@@ -265,3 +297,5 @@ int mechlab_create(scene *scene) {
 
     return 0;
 }
+
+
