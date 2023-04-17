@@ -2,7 +2,7 @@
 #include "game/scenes/mechlab/lab_menu_trnselect.h"
 #include "game/common_defines.h"
 #include "game/gui/label.h"
-#include "game/gui/pilotpic.h"
+#include "game/gui/trnselect.h"
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/text_render.h"
@@ -19,10 +19,14 @@ void lab_menu_trnselect_choose(component *c, void *userdata) {
 
 void lab_menu_trnselect_left(component *c, void *userdata) {
     DEBUG("TRN -1");
+    trnselect_widgets *tw = userdata;
+    trnselect_prev(tw->trnselect);
 }
 
 void lab_menu_trnselect_right(component *c, void *userdata) {
     DEBUG("TRN +1");
+    trnselect_widgets *tw = userdata;
+    trnselect_next(tw->trnselect);
 }
 
 static const button_details details_list[] = {

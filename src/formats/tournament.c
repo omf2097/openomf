@@ -170,6 +170,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Make sure we are in correct position
     if(sd_reader_pos(r) != victory_text_offset) {
+        ret = SD_FILE_PARSE_ERROR;
         goto error_2;
     }
 

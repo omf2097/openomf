@@ -30,17 +30,18 @@ list* trnlist_init() {
     DEBUG("Found %d tournaments.", list_size(&dirlist));
 
     list *trnlist = omf_calloc(1, sizeof(list));
+    list_create(trnlist);
 
     iterator it;
     list_iter_begin(&dirlist, &it);
     char *trn_file;
     char tmp[1024];
     while((trn_file = iter_next(&it)) != NULL) {
-        sd_tournament_file *trn = omf_calloc(1, sizeof(sd_tournament_file));
-        sd_tournament_create(trn);
+        sd_tournament_file trn;
+        sd_tournament_create(&trn);
         snprintf(tmp, 1024, "%s/%s", dirname, trn_file);
-        if (SD_SUCCESS == sd_tournament_load(trn, tmp)) {
-            list_append(trnlist, trn, sizeof(trn));
+        if (SD_SUCCESS == sd_tournament_load(&trn, tmp)) {
+            list_append(trnlist, &trn, sizeof(sd_tournament_file));
         } else {
             PERROR("Could not load tournament %s", trn_file);
         }

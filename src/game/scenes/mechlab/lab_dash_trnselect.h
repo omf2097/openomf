@@ -5,7 +5,7 @@
 #include "game/protos/scene.h"
 
 typedef struct {
-    component *input;
+    component *trnselect;
 } trnselect_widgets;
 
 component *lab_dash_trnselect_create(scene *s, trnselect_widgets *tw);
