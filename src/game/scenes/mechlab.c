@@ -12,19 +12,12 @@
 #include "game/scenes/mechlab/lab_dash_newplayer.h"
 #include "game/scenes/mechlab/lab_menu_main.h"
 #include "game/scenes/mechlab/lab_menu_pilotselect.h"
+#include "game/scenes/mechlab/lab_menu_difficultyselect.h"
 #include "game/utils/settings.h"
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/video.h"
-
-typedef enum
-{
-    DASHBOARD_NONE,
-    DASHBOARD_STATS,
-    DASHBOARD_NEW,
-    DASHBOARD_SELECT_NEW_PIC,
-} dashboard_type;
 
 typedef struct {
     dashboard_type dashtype;
@@ -61,10 +54,18 @@ void mechlab_tick(scene *scene, int paused) {
     // Check if root is finished
     component *root = guiframe_get_root(local->frame);
     if(trnmenu_is_finished(root)) {
+        DEBUG("MENU FINISHED %d", local->dashtype);
         if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
+            DEBUG("finished pilot select");
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
             guiframe_set_root(local->frame, lab_menu_pilotselect_create(scene, &local->dw));
+            guiframe_layout(local->frame);
+        } else if(local->dashtype == DASHBOARD_SELECT_DIFFICULTY) {
+            DEBUG("finished ");
+            guiframe_free(local->frame);
+            local->frame = guiframe_create(0, 0, 320, 200);
+            guiframe_set_root(local->frame, lab_menu_difficultyselect_create(scene, &local->dw));
             guiframe_layout(local->frame);
         } else {
             game_state_set_next(scene->gs, SCENE_MENU);
@@ -72,7 +73,8 @@ void mechlab_tick(scene *scene, int paused) {
     }
 }
 
-void mechlab_select_dashboard(scene *scene, mechlab_local *local, dashboard_type type) {
+void mechlab_select_dashboard(scene *scene, dashboard_type type) {
+    mechlab_local *local = scene_get_userdata(scene);
     if(type == local->dashtype) {
         // No change
         return;
@@ -88,6 +90,7 @@ void mechlab_select_dashboard(scene *scene, mechlab_local *local, dashboard_type
     switch(type) {
         // Dashboard with the gauges etc.
         case DASHBOARD_STATS:
+        case DASHBOARD_SELECT_DIFFICULTY:
         case DASHBOARD_SELECT_NEW_PIC:
             // Dashboard widgets struct is filled with pointer to the necessary components for easy access
             local->dashboard = guiframe_create(0, 0, 320, 200);
@@ -160,15 +163,24 @@ void mechlab_input_tick(scene *scene) {
                     // If ESC, exit view.
                     // Otherwise handle text input
                     if(i->event_data.action == ACT_ESC) {
-                        trnmenu_finish(guiframe_get_root(local->frame));
+                        mechlab_select_dashboard(scene, DASHBOARD_STATS);
                     } else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
-                        mechlab_select_dashboard(scene, local, DASHBOARD_SELECT_NEW_PIC);
+                        mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
                         trnmenu_finish(
                             guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
                     } else {
                         guiframe_action(local->dashboard, i->event_data.action);
                     }
-                    // If view is any other, just pass input to the bottom menu
+
+                } else if (local->dashtype == DASHBOARD_SELECT_NEW_PIC && i->event_data.action == ACT_ESC) {
+                    mechlab_select_dashboard(scene, DASHBOARD_STATS);
+                    guiframe_set_root(local->frame, lab_menu_main_create(scene));
+                    guiframe_layout(local->frame);
+                } else if (local->dashtype == DASHBOARD_SELECT_NEW_PIC && (i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH)) {
+                        mechlab_select_dashboard(scene, DASHBOARD_SELECT_DIFFICULTY);
+                        trnmenu_finish(
+                            guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
+                // If view is any other, just pass input to the bottom menu
                 } else {
                     guiframe_action(local->frame, i->event_data.action);
                 }
@@ -222,7 +234,8 @@ int mechlab_create(scene *scene) {
     } else {
         DEBUG("Previous savegame found; loading as default.");
     }
-    mechlab_select_dashboard(scene, local, DASHBOARD_STATS);
+    scene_set_userdata(scene, local);
+    mechlab_select_dashboard(scene, DASHBOARD_STATS);
 
     // Create main menu
     local->frame = guiframe_create(0, 0, 320, 200);
@@ -238,7 +251,6 @@ int mechlab_create(scene *scene) {
     object_dynamic_tick(local->mech);
 
     // Set callbacks
-    scene_set_userdata(scene, local);
     scene_set_input_poll_cb(scene, mechlab_input_tick);
     scene_set_event_cb(scene, mechlab_event);
     scene_set_render_cb(scene, mechlab_render);

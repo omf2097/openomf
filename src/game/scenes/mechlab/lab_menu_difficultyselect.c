@@ -1,5 +1,4 @@
-#include "game/scenes/mechlab.h"
-#include "game/scenes/mechlab/lab_menu_pilotselect.h"
+#include "game/scenes/mechlab/lab_menu_difficultyselect.h"
 #include "game/common_defines.h"
 #include "game/gui/label.h"
 #include "game/gui/pilotpic.h"
@@ -11,39 +10,36 @@
 #include "resources/bk.h"
 #include "utils/log.h"
 
-void lab_menu_pilotselect_choose(component *c, void *userdata) {
-    //scene *s = userdata;
-    DEBUG("CHOOSE PILOT");
-    // why doesn't this work??
-    //mechlab_select_dashboard(s, DASHBOARD_SELECT_DIFFICULTY);
-    //trnmenu_finish(c->parent);
+void lab_menu_difficultyselect_aluminium(component *c, void *userdata) {
+    DEBUG("ALUMINIUM");
 }
 
-void lab_menu_pilotselect_left(component *c, void *userdata) {
-    DEBUG("PILOT -1");
-    dashboard_widgets *dw = userdata;
-    pilotpic_prev(dw->photo);
+void lab_menu_difficultyselect_iron(component *c, void *userdata) {
+    DEBUG("IRON");
 }
 
-void lab_menu_pilotselect_right(component *c, void *userdata) {
-    DEBUG("PILOT +1");
-    dashboard_widgets *dw = userdata;
-    pilotpic_next(dw->photo);
+void lab_menu_difficultyselect_steel(component *c, void *userdata) {
+    DEBUG("STEEL");
+}
+
+void lab_menu_difficultyselect_heavy(component *c, void *userdata) {
+    DEBUG("HEAVY");
 }
 
 static const button_details details_list[] = {
-    {lab_menu_pilotselect_choose, "SELECT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_pilotselect_left,   NULL,     TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_pilotselect_right,  NULL,     TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_aluminium, "Aluminium\n(easy)", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_iron, "Iron\n(medium)", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_steel, "Steel\n(hard)", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_heavy, "Heavy\nMetal", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
 
-component *lab_menu_pilotselect_create(scene *s, dashboard_widgets *dw) {
+component *lab_menu_difficultyselect_create(scene *s, dashboard_widgets *dw) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
-    animation *main_buttons = &bk_get_info(&s->bk_data, 7)->ani;
+    animation *main_buttons = &bk_get_info(&s->bk_data, 2)->ani;
     animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
 
     // Initialize menu, and set button sheet
-    sprite *msprite = animation_get_sprite(main_sheets, 4);
+    sprite *msprite = animation_get_sprite(main_sheets, 6);
     component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);
 
     // Default text configuration
@@ -72,7 +68,7 @@ component *lab_menu_pilotselect_create(scene *s, dashboard_widgets *dw) {
 
     // Add text label
     tconf.cforeground = color_create(0, 121, 0, 255);
-    component *label = label_create(&tconf, "SELECT PHOTO FOR PILOT");
+    component *label = label_create(&tconf, "SELECT A DIFFICULTY LEVEL");
     component_set_pos_hints(label, 87, 155);
     component_set_size_hints(label, 150, 10);
     trnmenu_attach(menu, label);
