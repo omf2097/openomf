@@ -40,8 +40,6 @@ component *lab_menu_trnselect_create(scene *s, trnselect_widgets *dw) {
     animation *main_buttons = &bk_get_info(&s->bk_data, 7)->ani;
     animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
 
-    trnlist_init();
-
     // Initialize menu, and set button sheet
     sprite *msprite = animation_get_sprite(main_sheets, 4);
     component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);

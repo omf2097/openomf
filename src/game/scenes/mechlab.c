@@ -165,6 +165,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             guiframe_layout(local->dashboard);
             break;
         case DASHBOARD_SELECT_TOURNAMENT:
+            local->dashboard = guiframe_create(0, 0, 320, 200);
             guiframe_set_root(local->dashboard, lab_dash_trnselect_create(scene, &local->tw));
             guiframe_layout(local->dashboard);
             break;
@@ -255,6 +256,12 @@ void mechlab_input_tick(scene *scene) {
                     mechlab_select_dashboard(scene, DASHBOARD_STATS);
                     guiframe_set_root(local->frame, lab_menu_main_create(scene));
                     guiframe_layout(local->frame);
+                } else if (local->dashtype == DASHBOARD_SELECT_TOURNAMENT && i->event_data.action == ACT_ESC) {
+                    mechlab_find_last_player(scene);
+                    mechlab_select_dashboard(scene, DASHBOARD_STATS);
+                    guiframe_set_root(local->frame, lab_menu_main_create(scene));
+                    guiframe_layout(local->frame);
+
 
                // } else if (local->dashtype == DASHBOARD_SELECT_NEW_PIC && (i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH)) {
                //         mechlab_select_dashboard(scene, DASHBOARD_SELECT_DIFFICULTY);
