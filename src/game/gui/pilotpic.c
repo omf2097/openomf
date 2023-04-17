@@ -93,6 +93,11 @@ void pilotpic_prev(component *c) {
     pilotpic_select(c, local->pic_id, select);
 }
 
+int pilotpic_selected(component *c) {
+    pilotpic *local = widget_get_obj(c);
+    return local->selected;
+}
+
 component *pilotpic_create(int pic_id, int pilot_id) {
     component *c = widget_create();
     c->supports_disable = 0;

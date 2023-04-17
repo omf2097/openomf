@@ -8,6 +8,7 @@
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "resources/bk.h"
+#include "resources/languages.h"
 #include "utils/log.h"
 
 void lab_menu_difficultyselect_aluminium(component *c, void *userdata) {
@@ -27,13 +28,13 @@ void lab_menu_difficultyselect_heavy(component *c, void *userdata) {
 }
 
 static const button_details details_list[] = {
-    {lab_menu_difficultyselect_aluminium, "Aluminium\n(easy)", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_difficultyselect_iron, "Iron\n(medium)", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_difficultyselect_steel, "Steel\n(hard)", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_difficultyselect_heavy, "Heavy\nMetal", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_aluminium, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_iron, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_steel, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_heavy, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
 
-component *lab_menu_difficultyselect_create(scene *s, dashboard_widgets *dw) {
+component *lab_menu_difficultyselect_create(scene *s) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(&s->bk_data, 2)->ani;
     animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
@@ -60,7 +61,7 @@ component *lab_menu_difficultyselect_create(scene *s, dashboard_widgets *dw) {
 
         sprite *bsprite = animation_get_sprite(main_buttons, i);
         component *button =
-            spritebutton_create(&tconf, details_list[i].text, bsprite->data, COM_ENABLED, details_list[i].cb, dw);
+            spritebutton_create(&tconf, lang_get(444+i), bsprite->data, COM_ENABLED, details_list[i].cb, s);
         component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
         trnmenu_attach(menu, button);

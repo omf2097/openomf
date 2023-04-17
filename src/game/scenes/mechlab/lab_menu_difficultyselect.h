@@ -5,6 +5,6 @@
 #include "game/protos/scene.h"
 #include "game/scenes/mechlab/lab_dash_main.h"
 
-component *lab_menu_difficultyselect_create(scene *s, dashboard_widgets *nw);
+component *lab_menu_difficultyselect_create(scene *s);
 
 #endif // LAB_MENU_DIFFICULTYSELECT_H

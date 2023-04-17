@@ -91,6 +91,7 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     label_set_text(dw->wins, tmp);
     snprintf(tmp, 64, "LOSES: %d", p1->pilot.losses);
     label_set_text(dw->losses, tmp);
+    // TODO this needs for format with commas for the thousands seperator
     snprintf(tmp, 64, "MONEY: $ %dK", p1->pilot.money);
     label_set_text(dw->money, tmp);
 

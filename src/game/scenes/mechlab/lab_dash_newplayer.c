@@ -4,6 +4,7 @@
 #include "game/gui/textinput.h"
 #include "game/gui/xysizer.h"
 #include "resources/bk.h"
+#include "resources/languages.h"
 
 component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     component *xy = xysizer_create();
@@ -21,7 +22,7 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     xysizer_attach(xy, spriteimage_create(msprite->data), msprite->pos.x, msprite->pos.y, -1, -1);
 
     // Dialog text
-    xysizer_attach(xy, label_create(&tconf, "ENTER PILOTS NAME"), 110, 43, 100, 50);
+    xysizer_attach(xy, label_create(&tconf, lang_get(192)), 110, 43, 100, 50);
 
     // Input field
     tconf.cforeground = color_create(0, 121, 0, 255);

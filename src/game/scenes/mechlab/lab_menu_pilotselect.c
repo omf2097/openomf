@@ -9,14 +9,20 @@
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "resources/bk.h"
+#include "resources/languages.h"
 #include "utils/log.h"
 
 void lab_menu_pilotselect_choose(component *c, void *userdata) {
-    //scene *s = userdata;
+    scene *s = userdata;
     DEBUG("CHOOSE PILOT");
-    // why doesn't this work??
-    //mechlab_select_dashboard(s, DASHBOARD_SELECT_DIFFICULTY);
-    //trnmenu_finish(c->parent);
+    // TODO we need to store the photo id in the pilot
+    // but none of the callbacks have a reference to both the
+    // scene, which contains the player, and the dashboard widgers
+    // which contain the photo id
+    //game_player *player1 = game_state_get_player(s->gs, 0);
+    //player1->pilot.photo_id = pilotpic_selected(dw->photo);
+    mechlab_select_dashboard(s, DASHBOARD_SELECT_DIFFICULTY);
+    trnmenu_finish(c->parent);
 }
 
 void lab_menu_pilotselect_left(component *c, void *userdata) {
@@ -32,7 +38,7 @@ void lab_menu_pilotselect_right(component *c, void *userdata) {
 }
 
 static const button_details details_list[] = {
-    {lab_menu_pilotselect_choose, "SELECT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_pilotselect_choose, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
     {lab_menu_pilotselect_left,   NULL,     TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
     {lab_menu_pilotselect_right,  NULL,     TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
@@ -53,6 +59,7 @@ component *lab_menu_pilotselect_create(scene *s, dashboard_widgets *dw) {
     tconf.cforeground = color_create(0, 0, 123, 255);
 
     // Init GUI buttons with locations from the "select" button sprites
+    // TODO the left-right buttons apply on focus, not select
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
         tconf.valign = details_list[i].valign;
         tconf.halign = details_list[i].halign;
@@ -64,7 +71,7 @@ component *lab_menu_pilotselect_create(scene *s, dashboard_widgets *dw) {
 
         sprite *bsprite = animation_get_sprite(main_buttons, i);
         component *button =
-            spritebutton_create(&tconf, details_list[i].text, bsprite->data, COM_ENABLED, details_list[i].cb, dw);
+            spritebutton_create(&tconf, i == 0 ? lang_get(223) : NULL, bsprite->data, COM_ENABLED, details_list[i].cb, i == 0 ? (void*)s : (void*)dw);
         component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
         trnmenu_attach(menu, button);
@@ -72,7 +79,8 @@ component *lab_menu_pilotselect_create(scene *s, dashboard_widgets *dw) {
 
     // Add text label
     tconf.cforeground = color_create(0, 121, 0, 255);
-    component *label = label_create(&tconf, "SELECT PHOTO FOR PILOT");
+    // TODO interpolate %s in the string here with blank
+    component *label = label_create(&tconf, lang_get(224));
     component_set_pos_hints(label, 87, 155);
     component_set_size_hints(label, 150, 10);
     trnmenu_attach(menu, label);
