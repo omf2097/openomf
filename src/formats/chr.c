@@ -8,6 +8,8 @@
 #include "formats/internal/memwriter.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include "game/gui/pilotpic.h"
+#include "resources/ids.h"
 #include "utils/allocator.h"
 
 int sd_chr_create(sd_chr_file *chr) {
@@ -33,6 +35,9 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
     chr->pilot.enemies_inc_unranked = trn->enemy_count;
     chr->pilot.enemies_ex_unranked = ranked;
     chr->pilot.rank = ranked + 1;
+    chr->photo = omf_calloc(1, sizeof(sd_sprite));
+    sd_sprite_create(chr->photo);
+    pilotpic_load(chr->photo, PIC_PLAYERS, pilot->photo_id);
     return SD_SUCCESS;
 }
 

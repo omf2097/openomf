@@ -53,9 +53,9 @@ void trnselect_prev(component *c) {
     sprite_create(local->img, logo, -1);
 }
 
-int trnselect_selected(component *c) {
+sd_tournament_file* trnselect_selected(component *c) {
     trnselect *local = widget_get_obj(c);
-    return local->selected;
+    return list_get(local->tournaments, local->selected);
 }
 
 component *trnselect_create() {

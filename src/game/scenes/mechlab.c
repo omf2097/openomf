@@ -2,6 +2,8 @@
 #include <stdlib.h>
 
 #include "formats/error.h"
+#include "formats/tournament.h"
+#include "formats/chr.h"
 #include "game/game_state.h"
 #include "game/gui/frame.h"
 #include "game/gui/trn_menu.h"
@@ -18,6 +20,7 @@
 #include "game/scenes/mechlab/lab_menu_difficultyselect.h"
 #include "game/utils/settings.h"
 #include "resources/sgmanager.h"
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/video.h"
@@ -33,7 +36,7 @@ typedef struct {
     trnselect_widgets tw;
 } mechlab_local;
 
-void mechlab_find_last_player(scene *scene) {
+bool mechlab_find_last_player(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
     // Find last saved game ...
     game_player *p1 = game_state_get_player(scene->gs, 0);
@@ -61,6 +64,7 @@ void mechlab_find_last_player(scene *scene) {
         local->mech = NULL;
         p1->pilot.money=0;
         p1->pilot.har_id=0;
+        return false;
     } else {
         DEBUG("Previous savegame found; loading as default.");
         // Load HAR
@@ -71,6 +75,7 @@ void mechlab_find_last_player(scene *scene) {
         object_set_repeat(local->mech, 1);
         object_dynamic_tick(local->mech);
     }
+    return true;
 }
 
 void mechlab_free(scene *scene) {
@@ -121,10 +126,22 @@ void mechlab_tick(scene *scene, int paused) {
             guiframe_set_root(local->frame, lab_menu_trnselect_create(scene, &local->tw));
             guiframe_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
+            sd_tournament_file *trn = lab_menu_trnselected(&local->tw);
+            game_player *player1 = game_state_get_player(scene->gs, 0);
+            sd_chr_file chr;
+            sd_chr_create(&chr);
+            sd_chr_from_trn(&chr, trn, &player1->pilot);
+            char tmp[1024];
+            const char *dirname = pm_get_local_path(SAVE_PATH);
+            snprintf(tmp, 1024, "%s/%s.CHR", dirname, player1->pilot.name);
+            sd_chr_save(&chr, tmp);
+            strcpy(settings_get()->tournament.last_name, player1->pilot.name);
+            settings_save();
+            bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->frame, lab_menu_main_create(scene));
+            guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
             guiframe_layout(local->frame);
         } else {
             game_state_set_next(scene->gs, SCENE_MENU);
@@ -258,19 +275,19 @@ void mechlab_input_tick(scene *scene) {
                     }
 
                 } else if (local->dashtype == DASHBOARD_SELECT_NEW_PIC && i->event_data.action == ACT_ESC) {
-                    mechlab_find_last_player(scene);
+                    bool found = mechlab_find_last_player(scene);
                     mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                    guiframe_set_root(local->frame, lab_menu_main_create(scene));
+                    guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
                     guiframe_layout(local->frame);
                 } else if (local->dashtype == DASHBOARD_SELECT_DIFFICULTY && i->event_data.action == ACT_ESC) {
-                    mechlab_find_last_player(scene);
+                    bool found = mechlab_find_last_player(scene);
                     mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                    guiframe_set_root(local->frame, lab_menu_main_create(scene));
+                    guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
                     guiframe_layout(local->frame);
                 } else if (local->dashtype == DASHBOARD_SELECT_TOURNAMENT && i->event_data.action == ACT_ESC) {
-                    mechlab_find_last_player(scene);
+                    bool found = mechlab_find_last_player(scene);
                     mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                    guiframe_set_root(local->frame, lab_menu_main_create(scene));
+                    guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
                     guiframe_layout(local->frame);
 
 
@@ -308,12 +325,12 @@ int mechlab_create(scene *scene) {
 
 
     scene_set_userdata(scene, local);
-    mechlab_find_last_player(scene);
+    bool found = mechlab_find_last_player(scene);
     mechlab_select_dashboard(scene, DASHBOARD_STATS);
 
     // Create main menu
     local->frame = guiframe_create(0, 0, 320, 200);
-    guiframe_set_root(local->frame, lab_menu_main_create(scene));
+    guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
     guiframe_layout(local->frame);
 
     // Set callbacks

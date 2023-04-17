@@ -13,6 +13,7 @@
 #include "formats/palette.h"
 #include "formats/pilot.h"
 #include "formats/sprite.h"
+#include "formats/tournament.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,6 +62,8 @@ int sd_chr_create(sd_chr_file *chr);
  * \param chr CHR struct to modify.
  */
 void sd_chr_free(sd_chr_file *chr);
+
+int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot);
 
 /*! \brief Load .CHR file
  *

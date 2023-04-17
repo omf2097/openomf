@@ -30,6 +30,10 @@ void lab_menu_trnselect_right(component *c, void *userdata) {
     trnselect_next(tw->trnselect);
 }
 
+sd_tournament_file* lab_menu_trnselected(trnselect_widgets *tw) {
+    return trnselect_selected(tw->trnselect);
+}
+
 static const button_details details_list[] = {
     {lab_menu_trnselect_choose, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
     {lab_menu_trnselect_left,   NULL,     TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},

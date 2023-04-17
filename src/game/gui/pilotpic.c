@@ -30,6 +30,33 @@ static void pilotpic_free(component *c) {
     omf_free(g);
 }
 
+int pilotpic_load(sd_sprite * sprite, int pic_id, int pilot_id) {
+    const char *filename = pm_get_resource_path(pic_id);
+    if(filename == NULL) {
+        PERROR("Could not find requested PIC file handle.");
+        return SD_FILE_OPEN_ERROR;
+    }
+
+    // Load PIC file and make a surface
+    sd_pic_file pics;
+    sd_pic_create(&pics);
+    int ret = sd_pic_load(&pics, filename);
+    if(ret != SD_SUCCESS) {
+        PERROR("Could not load PIC file %s: %s", filename, sd_get_error(ret));
+        return ret;
+    } else {
+        DEBUG("PIC file %s loaded, selecting picture %d.", get_resource_name(pic_id), pilot_id);
+    }
+
+    // Create new
+    const sd_pic_photo *photo = sd_pic_get(&pics, pilot_id);
+    sd_sprite_copy(sprite, photo->sprite);
+    // Free pics
+    sd_pic_free(&pics);
+
+    return SD_SUCCESS;
+}
+
 void pilotpic_select(component *c, int pic_id, int pilot_id) {
     pilotpic *local = widget_get_obj(c);
 
@@ -39,28 +66,11 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
         omf_free(local->img);
     }
 
-    // Find pic file handle
-    const char *filename = pm_get_resource_path(pic_id);
-    if(filename == NULL) {
-        PERROR("Could not find requested PIC file handle.");
-        return;
-    }
-
-    // Load PIC file and make a surface
-    sd_pic_file pics;
-    sd_pic_create(&pics);
-    int ret = sd_pic_load(&pics, filename);
-    if(ret != SD_SUCCESS) {
-        PERROR("Could not load PIC file %s: %s", filename, sd_get_error(ret));
-        return;
-    } else {
-        DEBUG("PIC file %s loaded, selecting picture %d.", get_resource_name(pic_id), pilot_id);
-    }
-
-    // Create new
-    const sd_pic_photo *photo = sd_pic_get(&pics, pilot_id);
     local->img = omf_calloc(1, sizeof(sprite));
-    sprite_create(local->img, photo->sprite, -1);
+    sd_sprite spr;
+    pilotpic_load(&spr, pic_id, pilot_id);
+
+    sprite_create(local->img, &spr, -1);
 
     // Position and size hints for the gui component
     // These are set on layout function call
@@ -68,11 +78,9 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
 
     // Save some information
     local->selected = pilot_id;
-    local->max = pics.photo_count;
+    local->max = 4; // TODO pics.photo_count;
     local->pic_id = pic_id;
 
-    // Free pics
-    sd_pic_free(&pics);
 }
 
 void pilotpic_next(component *c) {

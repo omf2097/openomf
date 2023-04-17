@@ -46,7 +46,7 @@ static const button_details details_list[] = {
     {NULL,                          "NEW TOURNAMENT",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_DISABLED},
 };
 
-component *lab_menu_main_create(scene *s) {
+component *lab_menu_main_create(scene *s, bool character_loaded) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(&s->bk_data, 8)->ani;
     animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
@@ -72,7 +72,11 @@ component *lab_menu_main_create(scene *s) {
         tconf.direction = details_list[i].dir;
 
         sprite *bsprite = animation_get_sprite(main_buttons, i);
-        component *button = spritebutton_create(&tconf, details_list[i].text, bsprite->data, details_list[i].enabled,
+        bool enabled = details_list[i].enabled;
+        if (details_list[i].enabled == COM_DISABLED && character_loaded == true) {
+            enabled = COM_ENABLED;
+        }
+        component *button = spritebutton_create(&tconf, details_list[i].text, bsprite->data, enabled,
                                                 details_list[i].cb, s);
         component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
