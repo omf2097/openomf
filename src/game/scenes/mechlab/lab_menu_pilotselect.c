@@ -13,7 +13,6 @@
 #include "utils/log.h"
 
 void lab_menu_pilotselect_choose(component *c, void *userdata) {
-    scene *s = userdata;
     DEBUG("CHOOSE PILOT");
     // TODO we need to store the photo id in the pilot
     // but none of the callbacks have a reference to both the
@@ -21,7 +20,6 @@ void lab_menu_pilotselect_choose(component *c, void *userdata) {
     // which contain the photo id
     //game_player *player1 = game_state_get_player(s->gs, 0);
     //player1->pilot.photo_id = pilotpic_selected(dw->photo);
-    mechlab_select_dashboard(s, DASHBOARD_SELECT_DIFFICULTY);
     trnmenu_finish(c->parent);
 }
 
@@ -35,6 +33,10 @@ void lab_menu_pilotselect_right(component *c, void *userdata) {
     DEBUG("PILOT +1");
     dashboard_widgets *dw = userdata;
     pilotpic_next(dw->photo);
+}
+
+int lab_menu_pilotselected(dashboard_widgets *dw) {
+    return pilotpic_selected(dw->photo);
 }
 
 static const button_details details_list[] = {

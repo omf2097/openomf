@@ -100,20 +100,31 @@ void mechlab_tick(scene *scene, int paused) {
     // Check if root is finished
     component *root = guiframe_get_root(local->frame);
     if(trnmenu_is_finished(root)) {
-        if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
+        if(local->dashtype == DASHBOARD_NEW) {
+            mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
             guiframe_set_root(local->frame, lab_menu_pilotselect_create(scene, &local->dw));
             guiframe_layout(local->frame);
-        } else if(local->dashtype == DASHBOARD_SELECT_DIFFICULTY) {
+        } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
+            game_player *player1 = game_state_get_player(scene->gs, 0);
+            player1->pilot.photo_id =  lab_menu_pilotselected(&local->dw);
+            mechlab_select_dashboard(scene, DASHBOARD_SELECT_DIFFICULTY);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
             guiframe_set_root(local->frame, lab_menu_difficultyselect_create(scene));
             guiframe_layout(local->frame);
-        } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
+        } else if(local->dashtype == DASHBOARD_SELECT_DIFFICULTY) {
+            mechlab_select_dashboard(scene, DASHBOARD_SELECT_TOURNAMENT);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
             guiframe_set_root(local->frame, lab_menu_trnselect_create(scene, &local->tw));
+            guiframe_layout(local->frame);
+        } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
+            mechlab_select_dashboard(scene, DASHBOARD_STATS);
+            guiframe_free(local->frame);
+            local->frame = guiframe_create(0, 0, 320, 200);
+            guiframe_set_root(local->frame, lab_menu_main_create(scene));
             guiframe_layout(local->frame);
         } else {
             game_state_set_next(scene->gs, SCENE_MENU);
@@ -239,7 +250,7 @@ void mechlab_input_tick(scene *scene) {
                         mechlab_select_dashboard(scene, DASHBOARD_STATS);
                     } else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
                         strcpy(player1->pilot.name, textinput_value(local->nw.input));
-                        mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
+                        //mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
                         trnmenu_finish(
                             guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
                     } else {

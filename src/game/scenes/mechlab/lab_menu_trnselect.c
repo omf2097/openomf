@@ -15,6 +15,7 @@
 
 void lab_menu_trnselect_choose(component *c, void *userdata) {
     DEBUG("CHOOSE TRN");
+    trnmenu_finish(c->parent);
 }
 
 void lab_menu_trnselect_left(component *c, void *userdata) {

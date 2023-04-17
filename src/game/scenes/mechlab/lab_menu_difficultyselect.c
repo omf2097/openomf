@@ -14,8 +14,6 @@
 
 void lab_menu_difficultyselect_aluminium(component *c, void *userdata) {
     DEBUG("ALUMINIUM");
-    scene *s = userdata;
-    mechlab_select_dashboard(s, DASHBOARD_SELECT_TOURNAMENT);
     trnmenu_finish(c->parent);
 }
 
