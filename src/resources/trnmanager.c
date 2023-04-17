@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-sd_tournament_file** trnlist_init() {
+list* trnlist_init() {
     int ret;
     list dirlist;
 
@@ -29,19 +29,28 @@ sd_tournament_file** trnlist_init() {
 
     DEBUG("Found %d tournaments.", list_size(&dirlist));
 
-    // TODO I assume this should be using a list
-    sd_tournament_file **trns = omf_calloc(list_size(&dirlist), sizeof(sd_tournament_file));
+    list *trnlist = omf_calloc(1, sizeof(list));
 
     iterator it;
     list_iter_begin(&dirlist, &it);
-    int i = 0;
     char *trn_file;
+    char tmp[1024];
     while((trn_file = iter_next(&it)) != NULL) {
-        sd_tournament_load(trns[i], trn_file);
+        sd_tournament_file *trn = omf_calloc(1, sizeof(sd_tournament_file));
+        sd_tournament_create(trn);
+        snprintf(tmp, 1024, "%s/%s", dirname, trn_file);
+        if (SD_SUCCESS == sd_tournament_load(trn, tmp)) {
+            list_append(trnlist, trn, sizeof(trn));
+        } else {
+            PERROR("Could not load tournament %s", trn_file);
+        }
     }
+    list_iter_end(&dirlist, &it);
+
+    DEBUG("Loaded %d tournaments", list_size(trnlist));
 
     list_free(&dirlist);
-    return trns;
+    return trnlist;
 
 error_0:
     list_free(&dirlist);
