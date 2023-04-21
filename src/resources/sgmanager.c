@@ -55,17 +55,17 @@ int sg_load(sd_chr_file *chr, const char *pilotname) {
 
     // Form the savegame filename
     const char *dirname = pm_get_local_path(SAVE_PATH);
-    snprintf(tmp, 1024, "%s/%s.CHR", dirname, pilotname);
+    snprintf(tmp, 1024, "%s%s.CHR", dirname, pilotname);
 
     // Attempt to load
     sd_chr_create(chr);
     int ret = sd_chr_load(chr, tmp);
     if(ret != SD_SUCCESS) {
         PERROR("Unable to load savegame file '%s'.", tmp);
-        return 1;
+        return ret;
     }
 
-    return 0;
+    return SD_SUCCESS;
 }
 
 int sd_save(const sd_pilot *pilot, const char *pilotname) {

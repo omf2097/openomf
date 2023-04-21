@@ -85,6 +85,21 @@ bool mechlab_find_last_player(scene *scene) {
 void mechlab_free(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
 
+    game_player *player1 = game_state_get_player(scene->gs, 0);
+    // save the character file
+    if(strlen(player1->pilot->name) != 0) {
+        DEBUG("saving player %s", player1->pilot->name);
+        char tmp[1024];
+        const char *dirname = pm_get_local_path(SAVE_PATH);
+        snprintf(tmp, 1024, "%s%s.CHR", dirname, player1->pilot->name);
+        sd_chr_save(&local->chr, tmp);
+        strcpy(settings_get()->tournament.last_name, player1->pilot->name);
+        settings_save();
+    } else {
+        DEBUG("not saving pilot");
+    }
+
+
     for(int i = 0; i < sizeof(local->bg_obj) / sizeof(object); i++) {
         object_free(&local->bg_obj[i]);
     }
@@ -141,11 +156,10 @@ void mechlab_tick(scene *scene, int paused) {
         } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
             sd_tournament_file *trn = lab_menu_trnselected(&local->tw);
             game_player *player1 = game_state_get_player(scene->gs, 0);
-            sd_chr_create(&local->chr);
             sd_chr_from_trn(&local->chr, trn, player1->pilot);
             char tmp[1024];
             const char *dirname = pm_get_local_path(SAVE_PATH);
-            snprintf(tmp, 1024, "%s/%s.CHR", dirname, player1->pilot->name);
+            snprintf(tmp, 1024, "%s%s.CHR", dirname, player1->pilot->name);
             sd_chr_save(&local->chr, tmp);
             strcpy(settings_get()->tournament.last_name, player1->pilot->name);
             settings_save();

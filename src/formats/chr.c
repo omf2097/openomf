@@ -32,6 +32,7 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
             chr->enemies[i]->pilot.rank = ranked;
         }
     }
+    palette_create(&chr->pal);
     chr->pilot.enemies_inc_unranked = trn->enemy_count;
     chr->pilot.enemies_ex_unranked = ranked;
     chr->pilot.rank = ranked + 1;
@@ -126,7 +127,9 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
     memwriter_save(mw, w);
     memwriter_close(mw);
 
-    // Write enemy data
+    // TODO why did I have to add this
+    sd_writer_seek_cur(w, 20);
+
     mw = memwriter_open();
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         sd_pilot_save_player_to_mem(mw, &chr->enemies[i]->pilot);
@@ -145,7 +148,10 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
     // Save photo. Hacky size fix.
     chr->photo->width--;
     chr->photo->height--;
-    sd_sprite_save(w, chr->photo);
+
+    if (SD_SUCCESS != sd_sprite_save(w, chr->photo)) {
+        return SD_FILE_WRITE_ERROR;
+    }
     chr->photo->width++;
     chr->photo->height++;
 
