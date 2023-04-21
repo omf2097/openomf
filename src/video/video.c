@@ -90,7 +90,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync) {
     // Disable screensaver :/
     SDL_DisableScreenSaver();
 
-    // Set rendertargets
+    // Set render targets
     reset_targets();
 
     // Init texture cache
@@ -126,7 +126,7 @@ void video_reinit_renderer(void) {
     SDL_RenderSetLogicalSize(state.renderer, NATIVE_W, NATIVE_H);
     tcache_reinit(state.renderer);
 
-    // Reset rendertarget
+    // Reset render target
     reset_targets();
 }
 
@@ -205,7 +205,7 @@ int video_screenshot(image *img) {
     image_create(img, state.w, state.h);
     int ret = SDL_RenderReadPixels(state.renderer, NULL, SDL_PIXELFORMAT_ABGR8888, img->data, img->w * 4);
     if(ret != 0) {
-        PERROR("Unable to read pixels from rendertarget: %s", SDL_GetError());
+        PERROR("Unable to read pixels from render target: %s", SDL_GetError());
         return 1;
     }
     return 0;
@@ -311,13 +311,13 @@ static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, 
 
     // Fetch object from texture cache. Palettes are versioned, so
     // we if object does not yet exist with given palette, it will be rendered
-    // and uploaded to videomem.
+    // and uploaded to video memory.
     SDL_Texture *tex = tcache_get(sur, pal, NULL, pal_offset);
     if(tex == NULL)
         return;
 
-    // Always render objects to foreground rendertarget. This way we avoid
-    // doing effects on the background (which is on another rendertarget).
+    // Always render objects to foreground render target. This way we avoid
+    // doing effects on the background (which is on another render target).
     SDL_SetRenderTarget(state->renderer, state->fg_target);
     SDL_SetTextureAlphaMod(tex, opacity);
     SDL_SetTextureColorMod(tex, color_mod.r, color_mod.g, color_mod.b);
@@ -375,7 +375,7 @@ void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, u
     if(flip_mode & FLIP_VERTICAL)
         flip |= SDL_FLIP_VERTICAL;
 
-    // Select SDL blendmode
+    // Select SDL blend mode
     SDL_BlendMode blend_mode = (rendering_mode == BLEND_ALPHA) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_ADD;
 
     render_sprite_fsot(&state, sur, &dst, blend_mode, pal_offset, flip, opacity, tint);
@@ -388,7 +388,7 @@ void video_tick(void) {
 
 // Called after frame has been rendered
 void video_render_finish(void) {
-    // Set our rendertarget to screen buffer.
+    // Set our render target to screen buffer.
     SDL_SetRenderTarget(state.renderer, NULL);
 
     // Clear screen (borders)
@@ -430,5 +430,5 @@ void video_close(void) {
     omf_free(state.screen_palette);
     omf_free(state.extra_palette);
     omf_free(state.base_palette);
-    INFO("Video deinit.");
+    INFO("Video renderer closed.");
 }
