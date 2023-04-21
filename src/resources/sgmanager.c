@@ -50,7 +50,7 @@ error_0:
     return 1;
 }
 
-int sg_load(sd_pilot *pilot, const char *pilotname) {
+int sg_load(sd_chr_file *chr, const char *pilotname) {
     char tmp[1024];
 
     // Form the savegame filename
@@ -58,15 +58,12 @@ int sg_load(sd_pilot *pilot, const char *pilotname) {
     snprintf(tmp, 1024, "%s/%s.CHR", dirname, pilotname);
 
     // Attempt to load
-    sd_chr_file chr;
-    sd_chr_create(&chr);
-    int ret = sd_chr_load(&chr, tmp);
+    sd_chr_create(chr);
+    int ret = sd_chr_load(chr, tmp);
     if(ret != SD_SUCCESS) {
         PERROR("Unable to load savegame file '%s'.", tmp);
         return 1;
     }
-    memcpy(pilot, &chr.pilot, sizeof(sd_pilot));
-    sd_chr_free(&chr);
 
     return 0;
 }

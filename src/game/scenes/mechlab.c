@@ -34,6 +34,7 @@ typedef struct {
     dashboard_widgets dw;
     newplayer_widgets nw;
     trnselect_widgets tw;
+    sd_chr_file chr;
 } mechlab_local;
 
 bool mechlab_find_last_player(scene *scene) {
@@ -47,7 +48,7 @@ bool mechlab_find_last_player(scene *scene) {
 
     // ... and attempt to load it, if one was found.
     if(last_name != NULL) {
-        int ret = sg_load(&p1->pilot, last_name);
+        int ret = sg_load(&local->chr, last_name);
         if(ret != SD_SUCCESS) {
             PERROR("Could not load saved game for playername '%s': %s!", last_name, sd_get_error(ret));
             last_name = NULL;
@@ -62,18 +63,21 @@ bool mechlab_find_last_player(scene *scene) {
     if(last_name == NULL) {
         DEBUG("No previous savegame found");
         local->mech = NULL;
-        p1->pilot.money=0;
-        p1->pilot.har_id=0;
+        p1->pilot->money=0;
+        p1->pilot->har_id=0;
         return false;
     } else {
         DEBUG("Previous savegame found; loading as default.");
         // Load HAR
-        animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot.har_id)->ani;
+        animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot->har_id)->ani;
         local->mech = omf_calloc(1, sizeof(object));
         object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(local->mech, initial_har_ani);
         object_set_repeat(local->mech, 1);
         object_dynamic_tick(local->mech);
+        sd_pilot *old_pilot = game_player_get_pilot(p1);
+        omf_free(old_pilot);
+        game_player_set_pilot(p1, &local->chr.pilot);
     }
     return true;
 }
@@ -91,6 +95,15 @@ void mechlab_free(scene *scene) {
     omf_free(local->mech);
     omf_free(local);
     scene_set_userdata(scene, local);
+    sd_pilot *new_pilot = omf_calloc(1, sizeof(sd_pilot));
+    sd_pilot_create(new_pilot);
+    game_player *p1 = game_state_get_player(scene->gs, 0);
+    game_player_set_pilot(p1, new_pilot);
+}
+
+void mechlab_update(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+    lab_dash_main_update(scene, &local->dw);
 }
 
 void mechlab_tick(scene *scene, int paused) {
@@ -113,7 +126,7 @@ void mechlab_tick(scene *scene, int paused) {
             guiframe_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
             game_player *player1 = game_state_get_player(scene->gs, 0);
-            player1->pilot.photo_id =  lab_menu_pilotselected(&local->dw);
+            player1->pilot->photo_id =  lab_menu_pilotselected(&local->dw);
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_DIFFICULTY);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
@@ -128,14 +141,13 @@ void mechlab_tick(scene *scene, int paused) {
         } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
             sd_tournament_file *trn = lab_menu_trnselected(&local->tw);
             game_player *player1 = game_state_get_player(scene->gs, 0);
-            sd_chr_file chr;
-            sd_chr_create(&chr);
-            sd_chr_from_trn(&chr, trn, &player1->pilot);
+            sd_chr_create(&local->chr);
+            sd_chr_from_trn(&local->chr, trn, player1->pilot);
             char tmp[1024];
             const char *dirname = pm_get_local_path(SAVE_PATH);
-            snprintf(tmp, 1024, "%s/%s.CHR", dirname, player1->pilot.name);
-            sd_chr_save(&chr, tmp);
-            strcpy(settings_get()->tournament.last_name, player1->pilot.name);
+            snprintf(tmp, 1024, "%s/%s.CHR", dirname, player1->pilot->name);
+            sd_chr_save(&local->chr, tmp);
+            strcpy(settings_get()->tournament.last_name, player1->pilot->name);
             settings_save();
             bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
@@ -179,10 +191,10 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             local->dashboard = guiframe_create(0, 0, 320, 200);
             // new pilots have 2000 credits
             game_player *player1 = game_state_get_player(scene->gs, 0);
-            player1->pilot.money = 2000;
+            player1->pilot->money = 2000;
             // and a jaguar
-            player1->pilot.har_id = 0;
-            animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + player1->pilot.har_id)->ani;
+            player1->pilot->har_id = 0;
+            animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + player1->pilot->har_id)->ani;
             local->mech = omf_calloc(1, sizeof(object));
             object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(local->mech, initial_har_ani);
@@ -266,7 +278,7 @@ void mechlab_input_tick(scene *scene) {
                         mechlab_find_last_player(scene);
                         mechlab_select_dashboard(scene, DASHBOARD_STATS);
                     } else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
-                        strcpy(player1->pilot.name, textinput_value(local->nw.input));
+                        strcpy(player1->pilot->name, textinput_value(local->nw.input));
                         //mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
                         trnmenu_finish(
                             guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
@@ -309,6 +321,7 @@ void mechlab_input_tick(scene *scene) {
 int mechlab_create(scene *scene) {
     // Alloc
     mechlab_local *local = omf_calloc(1, sizeof(mechlab_local));
+    sd_chr_create(&local->chr);
 
     animation *bg_ani[3];
 

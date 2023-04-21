@@ -1,4 +1,5 @@
 #include "game/scenes/mechlab/lab_menu_training.h"
+#include "game/scenes/mechlab.h"
 #include "game/common_defines.h"
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
@@ -8,15 +9,77 @@
 #include "resources/bk.h"
 #include "utils/log.h"
 
+int prices[] = {50, 80, 120, 180, 240, 300, 450, 600, 800, 1100, 1500, 2500};
+
+void lab_menu_training_power(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    sd_pilot *pilot = game_player_get_pilot(p1);
+    int price = prices[pilot->power];
+    pilot->money -= price;
+    pilot->power++;
+    mechlab_update(s);
+}
+
+void lab_menu_training_check_power_price(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    sd_pilot *pilot = game_player_get_pilot(p1);
+    int price = prices[pilot->power];
+    if (price > pilot->money) {
+        component_disable(c, 1);
+    }
+}
+
+void lab_menu_training_agility(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    sd_pilot *pilot = game_player_get_pilot(p1);
+    int price = prices[pilot->agility];
+    pilot->money -= price;
+    pilot->agility++;
+    mechlab_update(s);
+}
+
+void lab_menu_training_check_agility_price(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    sd_pilot *pilot = game_player_get_pilot(p1);
+    int price = prices[pilot->agility];
+    if (price > pilot->money) {
+        component_disable(c, 1);
+    }
+}
+
+void lab_menu_training_endurance(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    sd_pilot *pilot = game_player_get_pilot(p1);
+    int price = prices[pilot->endurance];
+    pilot->money -= price;
+    pilot->endurance++;
+    mechlab_update(s);
+}
+
+void lab_menu_training_check_endurance_price(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    sd_pilot *pilot = game_player_get_pilot(p1);
+    int price = prices[pilot->endurance];
+    if (price > pilot->money) {
+        component_disable(c, 1);
+    }
+}
+
 void lab_menu_training_done(component *c, void *userdata) {
     trnmenu_finish(c->parent);
 }
 
 static const button_details details_list[] = {
-    {NULL,                   "POWER",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
-    {NULL,                   "AGILITY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
-    {NULL,                   "ENDUR.",  TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_training_done, "DONE",    TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_training_power,    "POWER",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
+    {lab_menu_training_agility,  "AGILITY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
+    {lab_menu_training_endurance,"ENDUR.",  TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
+    {lab_menu_training_done,     "DONE",    TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
 
 component *lab_menu_training_create(scene *s) {
@@ -49,6 +112,15 @@ component *lab_menu_training_create(scene *s) {
             spritebutton_create(&tconf, details_list[i].text, bsprite->data, COM_ENABLED, details_list[i].cb, s);
         component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
+
+        if (i == 0) {
+            spritebutton_set_tick_cb(button, lab_menu_training_check_power_price);
+        } else if (i == 1) {
+            spritebutton_set_tick_cb(button, lab_menu_training_check_agility_price);
+        } else if (i == 2) {
+            spritebutton_set_tick_cb(button, lab_menu_training_check_endurance_price);
+        }
+
         trnmenu_attach(menu, button);
     }
 

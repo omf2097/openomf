@@ -85,21 +85,21 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     p1 = game_state_get_player(s->gs, 0);
 
     // Set up variables properly
-    snprintf(tmp, 64, "RANK: %d", p1->pilot.rank);
+    snprintf(tmp, 64, "RANK: %d", p1->pilot->rank);
     label_set_text(dw->rank, tmp);
-    snprintf(tmp, 64, "WINS: %d", p1->pilot.wins);
+    snprintf(tmp, 64, "WINS: %d", p1->pilot->wins);
     label_set_text(dw->wins, tmp);
-    snprintf(tmp, 64, "LOSES: %d", p1->pilot.losses);
+    snprintf(tmp, 64, "LOSES: %d", p1->pilot->losses);
     label_set_text(dw->losses, tmp);
     // TODO this needs for format with commas for the thousands seperator
-    snprintf(tmp, 64, "MONEY: $ %dK", p1->pilot.money);
+    snprintf(tmp, 64, "MONEY: $ %dK", p1->pilot->money);
     label_set_text(dw->money, tmp);
 
     // Tournament and player name
-    label_set_text(dw->name, p1->pilot.name);
-    label_set_text(dw->tournament, p1->pilot.trn_desc);
+    label_set_text(dw->name, p1->pilot->name);
+    label_set_text(dw->tournament, p1->pilot->trn_desc);
 
-#define SET_GAUGE_X(name) gauge_set_lit(dw->name, p1->pilot.name + 1)
+#define SET_GAUGE_X(name) gauge_set_lit(dw->name, p1->pilot->name + 1)
 
     // Pilot stats
     SET_GAUGE_X(power);
@@ -115,12 +115,12 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     SET_GAUGE_X(stun_resistance);
 
     // Select pilot picture
-    pilotpic_select(dw->photo, PIC_PLAYERS, p1->pilot.photo_id);
+    pilotpic_select(dw->photo, PIC_PLAYERS, p1->pilot->photo_id);
 
     // Palette
     palette *base_pal = video_get_base_palette();
-    palette_set_player_color(base_pal, 0, p1->pilot.color_3, 0);
-    palette_set_player_color(base_pal, 0, p1->pilot.color_2, 1);
-    palette_set_player_color(base_pal, 0, p1->pilot.color_1, 2);
+    palette_set_player_color(base_pal, 0, p1->pilot->color_3, 0);
+    palette_set_player_color(base_pal, 0, p1->pilot->color_2, 1);
+    palette_set_player_color(base_pal, 0, p1->pilot->color_1, 2);
     video_force_pal_refresh();
 }

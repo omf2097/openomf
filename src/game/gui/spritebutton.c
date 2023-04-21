@@ -17,6 +17,7 @@ typedef struct {
     int active;
 
     spritebutton_click_cb click_cb;
+    spritebutton_tick_cb tick_cb;
     void *userdata;
 } spritebutton;
 
@@ -46,6 +47,10 @@ static void spritebutton_tick(component *c) {
     spritebutton *sb = widget_get_obj(c);
     if(sb->active > 0) {
         sb->active--;
+    }
+
+    if(sb->tick_cb) {
+        sb->tick_cb(c, sb->userdata);
     }
 }
 
@@ -79,6 +84,7 @@ component *spritebutton_create(const text_settings *tconf, const char *text, sur
     sb->img = img;
     sb->userdata = userdata;
     widget_set_obj(c, sb);
+    sb->tick_cb = NULL;
 
     widget_set_render_cb(c, spritebutton_render);
     widget_set_action_cb(c, spritebutton_action);
@@ -86,4 +92,9 @@ component *spritebutton_create(const text_settings *tconf, const char *text, sur
     widget_set_free_cb(c, spritebutton_free);
 
     return c;
+}
+
+void spritebutton_set_tick_cb(component *c, spritebutton_tick_cb cb) {
+    spritebutton *sb = widget_get_obj(c);
+    sb->tick_cb = cb;
 }

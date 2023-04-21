@@ -16,7 +16,7 @@ void lab_menu_difficultyselect_aluminium(component *c, void *userdata) {
     DEBUG("ALUMINIUM");
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
-    player1->pilot.difficulty = 0;
+    player1->pilot->difficulty = 0;
     trnmenu_finish(c->parent);
 }
 
@@ -24,7 +24,7 @@ void lab_menu_difficultyselect_iron(component *c, void *userdata) {
     DEBUG("IRON");
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
-    player1->pilot.difficulty = 1;
+    player1->pilot->difficulty = 1;
     trnmenu_finish(c->parent);
 }
 
@@ -32,7 +32,7 @@ void lab_menu_difficultyselect_steel(component *c, void *userdata) {
     DEBUG("STEEL");
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
-    player1->pilot.difficulty = 2;
+    player1->pilot->difficulty = 2;
     trnmenu_finish(c->parent);
 }
 
@@ -40,7 +40,7 @@ void lab_menu_difficultyselect_heavy(component *c, void *userdata) {
     DEBUG("HEAVY");
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
-    player1->pilot.difficulty = 3;
+    player1->pilot->difficulty = 3;
     trnmenu_finish(c->parent);
 }
 

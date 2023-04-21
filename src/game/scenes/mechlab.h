@@ -14,6 +14,7 @@ typedef enum
 } dashboard_type;
 
 int mechlab_create(scene *scene);
+void mechlab_update(scene *scene);
 
 void mechlab_select_dashboard(scene *scene, dashboard_type type);
 

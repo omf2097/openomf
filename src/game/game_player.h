@@ -19,7 +19,7 @@ typedef struct game_player_t {
     object *har;
     controller *ctrl;
     surface *portrait;
-    sd_pilot pilot;
+    sd_pilot *pilot;
     int selectable;
     char colors[3];
     chr_score score;
@@ -41,6 +41,7 @@ surface *game_player_get_portrait(game_player *gp);
 void game_player_set_selectable(game_player *gp, int selectable);
 int game_player_get_selectable(game_player *gp);
 sd_pilot *game_player_get_pilot(game_player *gp);
+void game_player_set_pilot(game_player *gp, sd_pilot *new_pilot);
 chr_score *game_player_get_score(game_player *gp);
 
 #endif // GAME_PLAYER_H
