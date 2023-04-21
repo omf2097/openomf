@@ -18,9 +18,7 @@ instructions are also available there.
    If you do not know which package to download, get the "-win32.zip" version.
 2. Extract the zip file somewhere on your computer. If possible, use a directory other
    than "C:\Program Files".
-3. [optional] If you wish, you may install an xBRZ sprite scaler plugin.
-   This can be found from https://github.com/omf2097/openomf-scaler-xbrz/releases .
-   Note that this is not necessary for running the game.
+3. Install the game resources. Please see step 3. of this guide for this.
 4. Start the game by running openomf.exe.
 
 ### Ubuntu

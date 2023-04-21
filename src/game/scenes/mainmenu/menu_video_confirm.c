@@ -27,7 +27,7 @@ void video_confirm_cancel_clicked(component *c, void *userdata) {
     video_menu_confirm_data *local = userdata;
     settings_video *v = &settings_get()->video;
     *v = *local->old_video_settings;
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
+    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
 
     // Finish the menu
     menu *m = sizer_get_obj(c->parent);

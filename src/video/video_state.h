@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include "formats/palette.h"
-#include "plugins/scaler_plugin.h"
 #include "video/screen_palette.h"
 #include <SDL.h>
 
@@ -15,10 +14,6 @@ typedef struct video_state_t {
     int h;
     int fs;
     int vsync;
-
-    int scale_factor;
-    scaler_plugin scaler;
-    char scaler_name[17];
 
     float fade;
     int target_move_x;
