@@ -56,8 +56,7 @@ const field f_video[] = {
     F_INT(settings_video, screen_w, 640),    F_INT(settings_video, screen_h, 400),
     F_BOOL(settings_video, vsync, 0),        F_BOOL(settings_video, fullscreen, 0),
     F_INT(settings_video, scaling, 0),       F_BOOL(settings_video, instant_console, 0),
-    F_BOOL(settings_video, crossfade_on, 1), F_STRING(settings_video, scaler, "Nearest"),
-    F_INT(settings_video, scale_factor, 1),
+    F_BOOL(settings_video, crossfade_on, 1),
 };
 
 const field f_sound[] = {F_BOOL(settings_sound, music_mono, 0), F_INT(settings_sound, sound_vol, 5),
