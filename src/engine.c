@@ -29,8 +29,6 @@ int engine_init(void) {
     int h = setting->video.screen_h;
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
-    int scale_factor = setting->video.scale_factor;
-    char *scaler = setting->video.scaler;
     int frequency = setting->sound.music_frequency;
     int resampler = setting->sound.music_resampler;
     bool mono = setting->sound.music_mono;
@@ -38,7 +36,7 @@ int engine_init(void) {
     float sound_volume = setting->sound.sound_vol / 10.0;
 
     // Initialize everything.
-    if(video_init(w, h, fs, vsync, scaler, scale_factor))
+    if(video_init(w, h, fs, vsync))
         goto exit_0;
     if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
