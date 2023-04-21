@@ -120,6 +120,7 @@ component *lab_menu_training_create(scene *s) {
         } else if (i == 2) {
             spritebutton_set_tick_cb(button, lab_menu_training_check_endurance_price);
         }
+        component_tick(button);
 
         trnmenu_attach(menu, button);
     }
