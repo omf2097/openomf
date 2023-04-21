@@ -6,14 +6,15 @@
 #include "formats/palette.h"
 #include "video/screen_palette.h"
 #include <SDL.h>
+#include <SDL_opengl.h>
 
 typedef struct video_state_t {
     SDL_Window *window;
-    SDL_Renderer *renderer;
-    int w;
-    int h;
-    int fs;
-    int vsync;
+    SDL_GLContext *gl_context;
+    int screen_w;
+    int screen_h;
+    bool fullscreen;
+    bool vsync;
 
     float fade;
     int target_move_x;
