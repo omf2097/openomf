@@ -25,8 +25,8 @@ enum VIDEO_FLIP_MODE
     FLIP_VERTICAL = 0x2,
 };
 
-int video_init(int window_w, int window_h, int fullscreen, int vsync);
-int video_reinit(int window_w, int window_h, int fullscreen, int vsync);
+int video_init(int window_w, int window_h, bool fullscreen, bool vsync);
+int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync);
 void video_reinit_renderer(void);
 void video_get_state(int *w, int *h, int *fs, int *vsync);
 void video_move_target(int x, int y);

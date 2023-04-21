@@ -426,9 +426,6 @@ int game_load_new(game_state *gs, int scene_id) {
     scene_free(gs->sc);
     omf_free(gs->sc);
 
-    // Clear up old video cache objects
-    tcache_clear();
-
     // Remove old objects
     render_obj *robj;
     iterator it;

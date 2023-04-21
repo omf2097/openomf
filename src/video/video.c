@@ -5,256 +5,232 @@
 #include <string.h>
 
 #include "formats/palette.h"
-#include "plugins/plugins.h"
 #include "utils/allocator.h"
-#include "utils/list.h"
 #include "utils/log.h"
 #include "video/image.h"
 #include "video/tcache.h"
 #include "video/video.h"
 #include "video/video_state.h"
 
-static video_state state;
+static video_state g_video_state;
 
-void reset_targets(void) {
-    if(state.fg_target != NULL) {
-        SDL_DestroyTexture(state.fg_target);
-    }
-    if(state.bg_target != NULL) {
-        SDL_DestroyTexture(state.bg_target);
-    }
-    state.fg_target = SDL_CreateTexture(state.renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_TARGET,NATIVE_W, NATIVE_H);
-    state.bg_target = SDL_CreateTexture(state.renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_TARGET,NATIVE_W, NATIVE_H);
-    SDL_SetTextureBlendMode(state.bg_target, SDL_BLENDMODE_NONE);
-    SDL_SetTextureBlendMode(state.fg_target, SDL_BLENDMODE_BLEND);
-}
-
-int video_init(int window_w, int window_h, int fullscreen, int vsync) {
-    state.w = window_w;
-    state.h = window_h;
-    state.fs = fullscreen;
-    state.vsync = vsync;
-    state.fade = 1.0f;
-    state.fg_target = NULL;
-    state.bg_target = NULL;
-    state.target_move_x = 0;
-    state.target_move_y = 0;
-    state.render_bg_separately = true;
-
-    // Clear palettes
-    state.base_palette = omf_calloc(1, sizeof(palette));
-    state.extra_palette = omf_calloc(1, sizeof(screen_palette));
-    state.screen_palette = omf_calloc(1, sizeof(screen_palette));
-    state.extra_palette->version = 0;
-    state.screen_palette->version = 1;
-
-    // Form title string
+bool create_window(int width, int height, bool fullscreen) {
     char title[32];
     snprintf(title, 32, "OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
 
-    // Open window
-    state.window =
-        SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_w, window_h, SDL_WINDOW_SHOWN);
-    if(state.window == NULL) {
+    // Request OpenGL 3.3 core context. This also gives us GLSL 330.
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+    // TODO: Probably not required
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+    // RGBA8888
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
+    SDL_Window *window = SDL_CreateWindow(
+        title,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        width,
+        height,
+        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+    if(window == NULL) {
         PERROR("Could not create window: %s", SDL_GetError());
-        return 1;
+        return false;
     }
 
-    // Set fullscreen if needed
-    if(state.fs) {
-        if(SDL_SetWindowFullscreen(state.window, SDL_WINDOW_FULLSCREEN) != 0) {
+    if(fullscreen) {
+        if(SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN) != 0) {
             PERROR("Could not set fullscreen mode!");
         } else {
-            DEBUG("Fullscreen enabled!");
+            INFO("Fullscreen mode enabled!");
         }
     } else {
-        SDL_SetWindowFullscreen(state.window, 0);
+        SDL_SetWindowFullscreen(window, 0);
     }
 
-    // Form flags
-    int renderer_flags = SDL_RENDERER_ACCELERATED;
-    if(state.vsync) {
-        renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
-
-    // Create renderer
-    state.renderer = SDL_CreateRenderer(state.window, -1, renderer_flags);
-    if(state.renderer == NULL) {
-        PERROR("Could not create renderer: %s", SDL_GetError());
-        return 1;
-    }
-
-    // Default resolution for renderer. This will them get scaled up to screen size.
-    SDL_RenderSetLogicalSize(state.renderer, NATIVE_W, NATIVE_H);
-
-    // Disable screensaver :/
     SDL_DisableScreenSaver();
+    g_video_state.window = window;
+    return true;
+}
 
-    // Set render targets
-    reset_targets();
+bool create_gl_context(void) {
+    SDL_GLContext *context = SDL_GL_CreateContext(g_video_state.window);
+    if(context == NULL) {
+        PERROR("Could not acquire OpenGL context: %s", SDL_GetError());
+        return false;
+    }
+    INFO("OpenGL context acquired!");
+    INFO(" * Vendor: %s", glGetString(GL_VENDOR));
+    INFO(" * Renderer: %s", glGetString(GL_RENDERER));
+    INFO(" * Version: %s", glGetString(GL_VERSION));
+    INFO(" * GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    g_video_state.gl_context = context;
+    return true;
+}
 
-    // Init texture cache
-    tcache_init(state.renderer);
+bool enable_vsync(void) {
+    // Try for adaptive vsync first.
+    if(SDL_GL_SetSwapInterval(-1) == 0) {
+        INFO("Adaptive VSYNC enabled!");
+        return true;
+    } else {
+        PERROR("Adaptive VSYNC not supported: ", SDL_GetError());
+    }
+    // Fallback to normal, static vsync
+    if(SDL_GL_SetSwapInterval(1) == 0) {
+        INFO("Non-adaptive VSYNC enabled!");
+        return true;
+    } else {
+        PERROR("VSYNC not supported: ", SDL_GetError());
+    }
+    // Fallback to no vsync, in which case we do SDL_Delay.
+    if(SDL_GL_SetSwapInterval(0) == 0) {
+        INFO("VSYNC is disabled! Falling back to delay sleep.");
+        return true;
+    } else {
+        PERROR("Unable to set any VSYNC mode -- something is really broken.");
+    }
+    // We're out of fallbacks to give -- fail.
+    return false;
+}
 
-    // Get renderer data
-    SDL_RendererInfo rinfo;
-    SDL_GetRendererInfo(state.renderer, &rinfo);
+int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
+    g_video_state.screen_w = window_w;
+    g_video_state.screen_h = window_h;
+    g_video_state.fullscreen = fullscreen;
+    g_video_state.vsync = vsync;
+    g_video_state.fade = 1.0f;
+    g_video_state.fg_target = NULL;
+    g_video_state.bg_target = NULL;
+    g_video_state.target_move_x = 0;
+    g_video_state.target_move_y = 0;
+    g_video_state.render_bg_separately = true;
 
-    // Show some info
-    INFO("Video Init OK");
-    INFO(" * Driver: %s", SDL_GetCurrentVideoDriver());
-    INFO(" * Renderer: %s", rinfo.name);
-    INFO(" * Accelerated: %s", (rinfo.flags & SDL_RENDERER_ACCELERATED) ? "Yes" : "No");
-    INFO(" * VSync support: %s", (rinfo.flags & SDL_RENDERER_PRESENTVSYNC) ? "Yes" : "No");
-    INFO(" * Target support: %s", (rinfo.flags & SDL_RENDERER_TARGETTEXTURE) ? "Yes" : "No");
+    // Clear palettes
+    g_video_state.base_palette = omf_calloc(1, sizeof(palette));
+    g_video_state.extra_palette = omf_calloc(1, sizeof(screen_palette));
+    g_video_state.screen_palette = omf_calloc(1, sizeof(screen_palette));
+    g_video_state.extra_palette->version = 0;
+    g_video_state.screen_palette->version = 1;
+
+    if(!create_window(window_w, window_h, fullscreen)) {
+        goto error_0;
+    }
+    if(!create_gl_context()) {
+        goto error_1;
+    }
+    if(!enable_vsync()) {
+        goto error_2;
+    }
+
+    INFO("OpenGL Renderer initialized!");
     return 0;
+
+error_2:
+    SDL_GL_DeleteContext(g_video_state.gl_context);
+
+error_1:
+    SDL_DestroyWindow(g_video_state.window);
+
+error_0:
+    omf_free(g_video_state.screen_palette);
+    omf_free(g_video_state.extra_palette);
+    omf_free(g_video_state.base_palette);
+    return 1;
 }
 
 void video_reinit_renderer(void) {
-    // Clear old texture cache entries
-    tcache_clear();
 
-    // Kill old renderer
-    SDL_DestroyRenderer(state.renderer);
-
-    // Create a new renderer
-    int renderer_flags = SDL_RENDERER_ACCELERATED;
-    if(state.vsync) {
-        renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
-    state.renderer = SDL_CreateRenderer(state.window, -1, renderer_flags);
-    SDL_RenderSetLogicalSize(state.renderer, NATIVE_W, NATIVE_H);
-    tcache_reinit(state.renderer);
-
-    // Reset render target
-    reset_targets();
 }
 
-int video_reinit(int window_w, int window_h, int fullscreen, int vsync) {
-
-    // Tells if something has changed in video settings
-    int changed = 0;
-
-    // Set window size if necessary
-    if(window_w != state.w || window_h != state.h || fullscreen != state.fs) {
-        SDL_SetWindowSize(state.window, window_w, window_h);
-        DEBUG("Changing resolution to %dx%d", window_w, window_h);
-        changed = 1;
-    }
-
-    // Set fullscreen if necessary
-    if(fullscreen != state.fs) {
-        if(SDL_SetWindowFullscreen(state.window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0) != 0) {
-            PERROR("Could not set fullscreen mode!");
-        } else {
-            DEBUG("Fullscreen changed!");
-        }
-
-        changed = 1;
-    }
-
-    // Center window if we are changing into or in window mode
-    if(!fullscreen && changed) {
-        SDL_SetWindowPosition(state.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-    }
-
-    // Check for vsync changes
-    if(vsync != state.vsync) {
-        changed = 1;
-    }
-
-    // Set video state
-    state.vsync = vsync;
-    state.fs = fullscreen;
-    state.w = window_w;
-    state.h = window_h;
-
-    // If any settings changed, re-init the screen
-    if(changed) {
-        video_reinit_renderer();
-    }
-
+int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync) {
     return 0;
 }
 
+// Called on every game tick
+void video_tick() {
+}
+
+// Called after frame has been rendered
+void video_render_finish() {
+
+
+
+    // Flip buffers. If vsync is off, we should sleep here
+    // so hat our main loop doesn't eat up all cpu :)
+    SDL_GL_SwapWindow(g_video_state.window);
+    if(!g_video_state.vsync) {
+        SDL_Delay(1);
+    }
+}
+
+void video_close() {
+    SDL_GL_DeleteContext(g_video_state.gl_context);
+    SDL_DestroyWindow(g_video_state.window);
+    omf_free(g_video_state.screen_palette);
+    omf_free(g_video_state.extra_palette);
+    omf_free(g_video_state.base_palette);
+    INFO("Video renderer closed.");
+}
+
 void video_move_target(int x, int y) {
-    state.target_move_x = x;
-    state.target_move_y = y;
+    g_video_state.target_move_x = x;
+    g_video_state.target_move_y = y;
 }
 
 void video_get_state(int *w, int *h, int *fs, int *vsync) {
     if(w != NULL) {
-        *w = state.w;
+        *w = g_video_state.screen_w;
     }
     if(h != NULL) {
-        *h = state.h;
+        *h = g_video_state.screen_h;
     }
     if(fs != NULL) {
-        *fs = state.fs;
+        *fs = g_video_state.fullscreen;
     }
     if(vsync != NULL) {
-        *vsync = state.vsync;
+        *vsync = g_video_state.vsync;
     }
 }
 
 void video_set_fade(float fade) {
-    state.fade = fade;
+    g_video_state.fade = fade;
 }
 
 int video_screenshot(image *img) {
-    image_create(img, state.w, state.h);
-    int ret = SDL_RenderReadPixels(state.renderer, NULL, SDL_PIXELFORMAT_ABGR8888, img->data, img->w * 4);
-    if(ret != 0) {
-        PERROR("Unable to read pixels from render target: %s", SDL_GetError());
-        return 1;
-    }
-    return 0;
+    return 1;
 }
 
 int video_area_capture(surface *sur, int x, int y, int w, int h) {
-    float scale_x = (float)state.w / NATIVE_W;
-    float scale_y = (float)state.h / NATIVE_H;
-
-    // Correct position (take scaling into account)
-    SDL_Rect r;
-    r.x = x * scale_x;
-    r.y = y * scale_y;
-    r.w = w * scale_x;
-    r.h = h * scale_y;
-
-    // Create a new surface
-    surface_create(sur, SURFACE_TYPE_RGBA, r.w, r.h);
-
-    // Read pixels
-    int ret = SDL_RenderReadPixels(state.renderer, &r, SDL_PIXELFORMAT_ABGR8888, sur->data, sur->w * 4);
-    if(ret != 0) {
-        surface_free(sur);
-        PERROR("Unable to read pixels from renderer: %s", SDL_GetError());
-        return 1;
-    }
-
-    return 0;
+    return 1;
 }
 
 void video_force_pal_refresh(void) {
-    memcpy(state.screen_palette->data, state.base_palette->data, 768);
-    memcpy(state.extra_palette->data, state.base_palette->data, 768);
-    state.extra_palette->version = state.screen_palette->version + 1;
-    state.screen_palette->version = state.extra_palette->version + 1;
+    memcpy(g_video_state.screen_palette->data, g_video_state.base_palette->data, 768);
+    memcpy(g_video_state.extra_palette->data, g_video_state.base_palette->data, 768);
+    g_video_state.extra_palette->version = g_video_state.screen_palette->version + 1;
+    g_video_state.screen_palette->version = g_video_state.extra_palette->version + 1;
 }
 
 void video_set_base_palette(const palette *src) {
-    memcpy(state.base_palette, src, sizeof(palette));
+    memcpy(g_video_state.base_palette, src, sizeof(palette));
     video_force_pal_refresh();
 }
 
 palette *video_get_base_palette(void) {
-    return state.base_palette;
+    return g_video_state.base_palette;
 }
 
 void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount) {
-    memcpy(state.screen_palette->data + dst_start * 3, src->data + src_start * 3, amount * 3);
-    state.screen_palette->version++;
+    memcpy(g_video_state.screen_palette->data + dst_start * 3, src->data + src_start * 3, amount * 3);
+    g_video_state.screen_palette->version++;
 }
 
 void video_copy_base_pal_range(const palette *src, int src_start, int dst_start, int amount) {
@@ -263,66 +239,25 @@ void video_copy_base_pal_range(const palette *src, int src_start, int dst_start,
 }
 
 screen_palette *video_get_pal_ref(void) {
-    return state.screen_palette;
-}
-
-static void clear_render_target(SDL_Texture *target) {
-    SDL_SetRenderTarget(state.renderer, target);
-    SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 0);
-    SDL_RenderClear(state.renderer);
+    return g_video_state.screen_palette;
 }
 
 void video_render_prepare(void) {
     // Reset palette
-    memcpy(state.screen_palette->data, state.base_palette->data, 768);
-    clear_render_target(state.fg_target);
+    memcpy(g_video_state.screen_palette->data, g_video_state.base_palette->data, 768);
 }
 
 void video_render_bg_separately(bool separate) {
-    state.render_bg_separately = separate;
+    g_video_state.render_bg_separately = separate;
 }
 
 void video_render_background(surface *sur) {
-    SDL_Texture *tex = tcache_get(sur, state.screen_palette, NULL, 0);
-    if(tex == NULL) {
-        return;
-    }
 
-    if(state.render_bg_separately) {
-        SDL_SetRenderTarget(state.renderer, state.bg_target);
-    } else {
-        SDL_SetRenderTarget(state.renderer, state.fg_target);
-    }
-    SDL_SetTextureColorMod(tex, 0xFF, 0xFF, 0xFF);
-    SDL_SetTextureAlphaMod(tex, 0xFF);
-    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_NONE);
-    SDL_RenderCopy(state.renderer, tex, NULL, NULL);
 }
 
 static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, SDL_BlendMode blend_mode,
                                int pal_offset, SDL_RendererFlip flip_mode, uint8_t opacity, color color_mod) {
-    // If this is additive blend, always use the base palette.
-    // This is because additive blending effects should not stack
-    // with other effects.
-    screen_palette *pal = state->screen_palette;
-    if(blend_mode == SDL_BLENDMODE_ADD) {
-        pal = state->extra_palette;
-    }
-
-    // Fetch object from texture cache. Palettes are versioned, so
-    // we if object does not yet exist with given palette, it will be rendered
-    // and uploaded to video memory.
-    SDL_Texture *tex = tcache_get(sur, pal, NULL, pal_offset);
-    if(tex == NULL)
-        return;
-
-    // Always render objects to foreground render target. This way we avoid
-    // doing effects on the background (which is on another render target).
-    SDL_SetRenderTarget(state->renderer, state->fg_target);
-    SDL_SetTextureAlphaMod(tex, opacity);
-    SDL_SetTextureColorMod(tex, color_mod.r, color_mod.g, color_mod.b);
-    SDL_SetTextureBlendMode(tex, blend_mode);
-    SDL_RenderCopyEx(state->renderer, tex, NULL, dst, 0, NULL, flip_mode);
+    return;
 }
 
 void video_render_sprite_tint(surface *sur, int sx, int sy, color c, int pal_offset) {
@@ -344,8 +279,6 @@ void video_render_sprite_flip_scale_opacity(surface *sur, int sx, int sy, unsign
 }
 
 void video_render_sprite_size(surface *sur, int sx, int sy, int sw, int sh) {
-
-    // Position
     SDL_Rect dst;
     dst.w = sw;
     dst.h = sh;
@@ -353,7 +286,7 @@ void video_render_sprite_size(surface *sur, int sx, int sy, int sw, int sh) {
     dst.y = sy;
 
     // Render
-    render_sprite_fsot(&state, sur, &dst, SDL_BLENDMODE_BLEND, 0, 0, 0xFF,
+    render_sprite_fsot(&g_video_state, sur, &dst, SDL_BLENDMODE_BLEND, 0, 0, 0xFF,
                        color_create(0xFF, 0xFF, 0xFF, 0xFF)); // tint
 }
 
@@ -378,57 +311,5 @@ void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, u
     // Select SDL blend mode
     SDL_BlendMode blend_mode = (rendering_mode == BLEND_ALPHA) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_ADD;
 
-    render_sprite_fsot(&state, sur, &dst, blend_mode, pal_offset, flip, opacity, tint);
-}
-
-// Called on every game tick
-void video_tick(void) {
-    tcache_tick();
-}
-
-// Called after frame has been rendered
-void video_render_finish(void) {
-    // Set our render target to screen buffer.
-    SDL_SetRenderTarget(state.renderer, NULL);
-
-    // Clear screen (borders)
-    SDL_SetRenderDrawColor(state.renderer, 0, 0, 0, 255);
-    SDL_RenderClear(state.renderer);
-
-    // Handle fading by color modulation
-    uint8_t v = 255.0f * state.fade;
-    SDL_SetTextureColorMod(state.fg_target, v, v, v);
-    SDL_SetTextureColorMod(state.bg_target, v, v, v);
-
-    // Set screen position. take into account scaling and target moves (screen shakes)
-    SDL_Rect dst;
-    dst.x = state.target_move_x;
-    dst.y = state.target_move_y;
-    dst.w = NATIVE_W;
-    dst.h = NATIVE_H;
-    SDL_RenderCopy(state.renderer, state.bg_target, NULL, &dst);
-    SDL_RenderCopy(state.renderer, state.fg_target, NULL, &dst);
-
-    // Reset color modulation to normal
-    SDL_SetTextureColorMod(state.fg_target, 0xFF, 0xFF, 0xFF);
-    SDL_SetTextureColorMod(state.bg_target, 0xFF, 0xFF, 0xFF);
-
-    // Flip buffers. If vsync is off, we should sleep here
-    // so hat our main loop doesn't eat up all cpu :)
-    SDL_RenderPresent(state.renderer);
-    if(!state.vsync) {
-        SDL_Delay(1);
-    }
-}
-
-void video_close(void) {
-    tcache_close();
-    SDL_DestroyTexture(state.fg_target);
-    SDL_DestroyTexture(state.bg_target);
-    SDL_DestroyRenderer(state.renderer);
-    SDL_DestroyWindow(state.window);
-    omf_free(state.screen_palette);
-    omf_free(state.extra_palette);
-    omf_free(state.base_palette);
-    INFO("Video renderer closed.");
+    render_sprite_fsot(&g_video_state, sur, &dst, blend_mode, pal_offset, flip, opacity, tint);
 }
