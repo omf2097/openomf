@@ -7,6 +7,7 @@
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "resources/bk.h"
+#include "resources/languages.h"
 #include "utils/log.h"
 
 uint32_t prices[] = {50, 80, 120, 180, 240, 300, 450, 600, 800, 1100, 1500, 2500, 4000, 7000, 10000, 14000, 20000, 28000, 40000, 55000, 75000, 100000, 140000, 200000};
@@ -94,6 +95,43 @@ static const button_details details_list[] = {
     {lab_menu_training_done,     "DONE",    TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
 
+void lab_menu_focus_power(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(533));
+    }
+}
+
+void lab_menu_focus_agility(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(534));
+    }
+}
+
+void lab_menu_focus_endurance(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(535));
+    }
+}
+
+void lab_menu_focus_done(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(536));
+    }
+}
+
+
+static const spritebutton_focus_cb focus_cbs[] = {
+    lab_menu_focus_power,
+    lab_menu_focus_agility,
+    lab_menu_focus_endurance,
+    lab_menu_focus_done
+};
+
+
 component *lab_menu_training_create(scene *s) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(&s->bk_data, 9)->ani;
@@ -133,6 +171,8 @@ component *lab_menu_training_create(scene *s) {
             spritebutton_set_tick_cb(button, lab_menu_training_check_endurance_price);
         }
         component_tick(button);
+
+        spritebutton_set_focus_cb(button, focus_cbs[i]);
 
         trnmenu_attach(menu, button);
     }

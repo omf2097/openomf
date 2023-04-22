@@ -10,6 +10,7 @@
 #include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/scenes/mechlab/lab_menu_training.h"
 #include "resources/bk.h"
+#include "resources/languages.h"
 #include "utils/log.h"
 
 void lab_menu_main_quit(component *c, void *userdata) {
@@ -53,6 +54,90 @@ static const button_details details_list[] = {
     {NULL,                          "NEW TOURNAMENT",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_DISABLED},
 };
 
+void lab_menu_focus_arena(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(537));
+    }
+}
+
+void lab_menu_focus_training(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(538));
+    }
+}
+
+void lab_menu_focus_buy(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(539));
+    }
+}
+
+void lab_menu_focus_sell(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(540));
+    }
+}
+
+void lab_menu_focus_load(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(541));
+    }
+}
+
+void lab_menu_focus_new(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(542));
+    }
+}
+
+void lab_menu_focus_delete(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(543));
+    }
+}
+
+void lab_menu_focus_sim(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(544));
+    }
+}
+
+void lab_menu_focus_quit(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(545));
+    }
+}
+
+void lab_menu_focus_tournament(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        mechlab_set_hint(s, lang_get(546));
+    }
+}
+
+static const spritebutton_focus_cb focus_cbs[] = {
+    lab_menu_focus_arena,
+    lab_menu_focus_training,
+    lab_menu_focus_buy,
+    lab_menu_focus_sell,
+    lab_menu_focus_load,
+    lab_menu_focus_new,
+    lab_menu_focus_delete,
+    lab_menu_focus_sim,
+    lab_menu_focus_quit,
+    lab_menu_focus_tournament,
+};
+
+
 component *lab_menu_main_create(scene *s, bool character_loaded) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(&s->bk_data, 8)->ani;
@@ -87,6 +172,8 @@ component *lab_menu_main_create(scene *s, bool character_loaded) {
                                                 details_list[i].cb, s);
         component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
+
+        spritebutton_set_focus_cb(button, focus_cbs[i]);
         trnmenu_attach(menu, button);
     }
 

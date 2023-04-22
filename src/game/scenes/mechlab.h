@@ -21,4 +21,6 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type);
 void mechlab_set_selling(scene *scene, bool selling);
 bool mechlab_get_selling(scene *scene);
 
+void mechlab_set_hint(scene *scene, const char *hint);
+
 #endif // MECHLAB_H

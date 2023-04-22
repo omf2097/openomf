@@ -29,6 +29,7 @@ typedef struct component_t component;
 typedef void (*component_render_cb)(component *c);
 typedef int (*component_event_cb)(component *c, SDL_Event *event);
 typedef int (*component_action_cb)(component *c, int action);
+typedef void (*component_focus_cb)(component *c, bool focused);
 typedef void (*component_layout_cb)(component *c, int x, int y, int w, int h);
 typedef void (*component_tick_cb)(component *c);
 typedef void (*component_free_cb)(component *c);
@@ -66,6 +67,7 @@ struct component_t {
     component_render_cb render; ///< Render function callback. This tells the component to draw itself.
     component_event_cb event;   ///< Event function callback. Direct SDL2 event handler.
     component_action_cb action; ///< Action function callback. Handles OpenOMF abstract key events.
+    component_focus_cb focus; ///< Focus function callback. Handles OpenOMF focus events.
     component_layout_cb layout; ///< Layout function callback. This is called after the component tree is created. Sets
                                 ///< component size and position.
     component_tick_cb tick;     ///< Tick function callback. This is called periodically.
@@ -106,6 +108,7 @@ void *component_get_obj(const component *c);
 void component_set_render_cb(component *c, component_render_cb cb);
 void component_set_event_cb(component *c, component_event_cb cb);
 void component_set_action_cb(component *c, component_action_cb cb);
+void component_set_focus_cb(component *c, component_focus_cb cb);
 void component_set_layout_cb(component *c, component_layout_cb cb);
 void component_set_tick_cb(component *c, component_tick_cb cb);
 void component_set_free_cb(component *c, component_free_cb cb);

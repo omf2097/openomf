@@ -7,6 +7,7 @@
 #include "game/game_state.h"
 #include "game/gui/frame.h"
 #include "game/gui/trn_menu.h"
+#include "game/gui/label.h"
 #include "game/gui/textinput.h"
 #include "game/protos/object.h"
 #include "game/protos/scene.h"
@@ -36,6 +37,8 @@ typedef struct {
     trnselect_widgets tw;
     sd_chr_file chr;
     bool selling;
+    text_settings tconf_hint;
+    component *hint;
 } mechlab_local;
 
 bool mechlab_find_last_player(scene *scene) {
@@ -95,6 +98,11 @@ bool mechlab_get_selling(scene *scene) {
     return local->selling;
 }
 
+void mechlab_set_hint(scene *scene, const char *hint) {
+    mechlab_local *local = scene_get_userdata(scene);
+    label_set_text(local->hint, hint);
+}
+
 void mechlab_free(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
 
@@ -150,7 +158,9 @@ void mechlab_tick(scene *scene, int paused) {
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->frame, lab_menu_pilotselect_create(scene, &local->dw));
+            component *menu = lab_menu_pilotselect_create(scene, &local->dw);
+            //trnmenu_attach(menu, local->hint);
+            guiframe_set_root(local->frame, menu);
             guiframe_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
             game_player *player1 = game_state_get_player(scene->gs, 0);
@@ -158,13 +168,17 @@ void mechlab_tick(scene *scene, int paused) {
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_DIFFICULTY);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->frame, lab_menu_difficultyselect_create(scene));
+            component *menu = lab_menu_difficultyselect_create(scene);
+            //trnmenu_attach(menu, local->hint);
+            guiframe_set_root(local->frame, menu);
             guiframe_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_DIFFICULTY) {
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_TOURNAMENT);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->frame, lab_menu_trnselect_create(scene, &local->tw));
+            component *menu = lab_menu_trnselect_create(scene, &local->tw);
+            //trnmenu_attach(menu, local->hint);
+            guiframe_set_root(local->frame, menu);
             guiframe_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
             sd_tournament_file *trn = lab_menu_trnselected(&local->tw);
@@ -185,7 +199,9 @@ void mechlab_tick(scene *scene, int paused) {
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
+            component *menu = lab_menu_main_create(scene, found);
+            //trnmenu_attach(menu, local->hint);
+            guiframe_set_root(local->frame, menu);
             guiframe_layout(local->frame);
         } else {
             game_state_set_next(scene->gs, SCENE_MENU);
@@ -289,6 +305,7 @@ void mechlab_render(scene *scene) {
     } else if (local->dashtype != DASHBOARD_STATS) {
         guiframe_render(local->dashboard);
     }
+    component_render(local->hint);
 }
 
 void mechlab_input_tick(scene *scene) {
@@ -370,6 +387,17 @@ int mechlab_create(scene *scene) {
         object_set_animation_owner(&local->bg_obj[i], OWNER_OBJECT);
     }
 
+    text_defaults(&local->tconf_hint);
+    local->tconf_hint.font = FONT_SMALL;
+    local->tconf_hint.halign = TEXT_CENTER;
+    local->tconf_hint.valign = TEXT_CENTER;
+    local->tconf_hint.cforeground = color_create(100, 100, 0, 255);
+
+    local->hint = label_create(&local->tconf_hint, "HINTY");
+    component_set_pos_hints(local->hint, 32, 131);
+    component_set_size_hints(local->hint, 248, 13);
+    component_layout(local->hint, 32, 131, 248, 13);
+
 
     scene_set_userdata(scene, local);
     bool found = mechlab_find_last_player(scene);
@@ -377,7 +405,9 @@ int mechlab_create(scene *scene) {
 
     // Create main menu
     local->frame = guiframe_create(0, 0, 320, 200);
-    guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
+    component *menu = lab_menu_main_create(scene, found);
+    //trnmenu_attach(menu, local->hint);
+    guiframe_set_root(local->frame, menu);
     guiframe_layout(local->frame);
 
     // Set callbacks

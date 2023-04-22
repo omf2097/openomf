@@ -2,6 +2,7 @@
 
 #include "game/gui/component.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 
 void component_tick(component *c) {
     if(c->tick) {
@@ -55,6 +56,10 @@ void component_focus(component *c, int focused) {
     if(!c->supports_focus)
         return;
     c->is_focused = (focused != 0) ? 1 : 0;
+    if (c->focus) {
+        DEBUG("running component focus cb");
+        c->focus(c, c->is_focused == 1);
+    }
 }
 
 int component_is_disabled(const component *c) {
@@ -107,6 +112,10 @@ void component_set_event_cb(component *c, component_event_cb cb) {
 
 void component_set_action_cb(component *c, component_action_cb cb) {
     c->action = cb;
+}
+
+void component_set_focus_cb(component *c, component_focus_cb cb) {
+    c->focus = cb;
 }
 
 void component_set_layout_cb(component *c, component_layout_cb cb) {

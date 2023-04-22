@@ -7,6 +7,7 @@
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "resources/bk.h"
+#include "resources/languages.h"
 #include "utils/log.h"
 
 // negative values means the upgrade is unavailable at that level
@@ -283,6 +284,51 @@ static const spritebutton_tick_cb tickers[] = {
     NULL,
     NULL
 };
+
+void lab_menu_focus_blue(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(547));
+        } else {
+            mechlab_set_hint(s, lang_get(548));
+        }
+    }
+}
+
+void lab_menu_focus_yellow(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(551));
+        } else {
+            mechlab_set_hint(s, lang_get(552));
+        }
+    }
+}
+
+void lab_menu_focus_red(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(549));
+        } else {
+            mechlab_set_hint(s, lang_get(550));
+        }
+    }
+}
+
+void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(553)); // TODO sprintf arm/leg
+        } else {
+            mechlab_set_hint(s, lang_get(554)); // TODO sprintf arm/leg
+        }
+    }
+}
+
 
 component *lab_menu_customize_create(scene *s) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;

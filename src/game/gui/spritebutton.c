@@ -8,6 +8,7 @@
 #include "utils/miscmath.h"
 #include "video/color.h"
 #include "video/video.h"
+#include "utils/log.h"
 
 typedef struct {
     char *text;
@@ -18,6 +19,7 @@ typedef struct {
 
     spritebutton_click_cb click_cb;
     spritebutton_tick_cb tick_cb;
+    spritebutton_focus_cb focus_cb;
     void *userdata;
 } spritebutton;
 
@@ -54,6 +56,14 @@ static void spritebutton_tick(component *c) {
     }
 }
 
+static void spritebutton_focus(component *c, bool focused) {
+    DEBUG("spritebutton focused");
+    spritebutton *sb = widget_get_obj(c);
+    if(sb->focus_cb) {
+        sb->focus_cb(c, focused, sb->userdata);
+    }
+}
+
 static int spritebutton_action(component *c, int action) {
     spritebutton *sb = widget_get_obj(c);
     if(c->is_disabled) {
@@ -76,6 +86,8 @@ component *spritebutton_create(const text_settings *tconf, const char *text, sur
     component *c = widget_create();
     component_disable(c, disabled);
 
+    c->supports_focus = 1;
+
     spritebutton *sb = omf_calloc(1, sizeof(spritebutton));
     if(text != NULL)
         sb->text = strdup(text);
@@ -85,9 +97,11 @@ component *spritebutton_create(const text_settings *tconf, const char *text, sur
     sb->userdata = userdata;
     widget_set_obj(c, sb);
     sb->tick_cb = NULL;
+    sb->focus_cb = NULL;
 
     widget_set_render_cb(c, spritebutton_render);
     widget_set_action_cb(c, spritebutton_action);
+    widget_set_focus_cb(c, spritebutton_focus);
     widget_set_tick_cb(c, spritebutton_tick);
     widget_set_free_cb(c, spritebutton_free);
 
@@ -97,4 +111,9 @@ component *spritebutton_create(const text_settings *tconf, const char *text, sur
 void spritebutton_set_tick_cb(component *c, spritebutton_tick_cb cb) {
     spritebutton *sb = widget_get_obj(c);
     sb->tick_cb = cb;
+}
+
+void spritebutton_set_focus_cb(component *c, spritebutton_focus_cb cb) {
+    spritebutton *sb = widget_get_obj(c);
+    sb->focus_cb = cb;
 }
