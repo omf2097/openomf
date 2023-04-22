@@ -45,6 +45,7 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(xmp)
 find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
 find_package(enet)
 find_package(confuse)
 find_package(argtable2)
@@ -75,6 +76,7 @@ set(COREINCS
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
+    ${GLEW_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
     ${XMP_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
@@ -85,6 +87,7 @@ set(COREINCS
 
 set(CORELIBS
     ${OPENGL_LIBRARIES}
+    ${GLEW_LIBRARIES}
     ${CONFUSE_LIBRARY}
     ${XMP_LIBRARY}
     ${ENET_LIBRARY}
