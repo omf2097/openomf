@@ -45,6 +45,14 @@ void str_from_c(str *dst, const char *src);
 void str_from_buf(str *dst, const char *buf, size_t len);
 
 /**
+ * Create a string object from file contents
+ * @details Full source file content will be read, whether it contains null characters or not.
+ * @param dst Target string buffer
+ * @param file_name Filename to read
+ */
+void str_from_file(str *dst, const char *file_name);
+
+/**
  * @brief Create a string object by format string
  * @details This uses snprintf internally, so usual printf format strings are valid.
  * @param dst Target string object
@@ -131,7 +139,7 @@ void str_append_buf(str *dst, const char *buf, size_t len);
  * @brief Replace content in string with something else.
  * @details Replace occurrences of the search string with the replacement string.
  *          Limit parameter can be used to limit replacement to a certain number
- *          of occurences if so wanted (or -1 for unlimited).
+ *          of occurrences if so wanted (or -1 for unlimited).
  * @param dst Target string to modify
  * @param seek String to search and replace
  * @param replacement The replacement value
@@ -145,12 +153,17 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
 size_t str_size(const str *string);
 
 /**
- * @brief Find first occcurence of a character in a given string.
+ * @brief Find next occurrence of a character in a given string. Search is continued from given position.
+ */
+bool str_find_next(const str *string, char find, size_t *pos);
+
+/**
+ * @brief Find first occurrence of a character in a given string.
  */
 bool str_first_of(const str *string, char find, size_t *pos);
 
 /**
- * @brief Find last occcurence of a character in a given string.
+ * @brief Find last occurrence of a character in a given string.
  */
 bool str_last_of(const str *string, char find, size_t *pos);
 
