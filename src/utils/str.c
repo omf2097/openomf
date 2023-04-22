@@ -42,6 +42,37 @@ void str_from_buf(str *dst, const char *buf, size_t len) {
     STR_ZERO(dst);
 }
 
+#define READ_BLOCK_SIZE 4096
+
+void str_from_file(str *dst, const char *file_name) {
+    FILE *handle = fopen(file_name, "rb");
+    if(handle == NULL) {
+        PERROR("Unable to read file: %s", file_name);
+        abort();
+    }
+
+    fseek(handle, 0, SEEK_END);
+    long file_size = ftell(handle);
+    fseek(handle, 0, SEEK_SET);
+
+    STR_ALLOC(dst, file_size);
+    size_t got;
+    char *ptr = dst->data;
+    while(1) {
+        if(feof(handle))
+            break;
+        if(ferror(handle))
+            break;
+        got = fread(ptr, 1, READ_BLOCK_SIZE, handle);
+        if(got != READ_BLOCK_SIZE)
+            break;
+        ptr += got;
+    }
+    STR_ZERO(dst);
+
+    fclose(handle);
+}
+
 void str_from_format(str *dst, const char *format, ...) {
     int size;
     va_list args1;
@@ -114,7 +145,7 @@ static size_t _strip_size(const str *src, bool left) {
 }
 
 void str_rstrip(str *dst) {
-    // This is simple, just reduce sice and set ending 0.
+    // This is simple, just reduce size and set ending 0.
     size_t skip = _strip_size(dst, false);
     STR_REALLOC(dst, skip + 1);
     STR_ZERO(dst);
@@ -149,7 +180,7 @@ void str_append_buf(str *dst, const char *buf, size_t len) {
     STR_ZERO(dst);
 }
 
-static bool _find_next(const str *string, char find, size_t *pos) {
+bool str_find_next(const str *string, char find, size_t *pos) {
     for(size_t i = *pos; i < string->len; i++) {
         if(string->data[i] == find) {
             *pos = i;
@@ -166,7 +197,7 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
     int found = 0;
     size_t diff = replacement_len - seek_len;
     size_t current_pos = 0;
-    while(_find_next(dst, seek[0], &current_pos) && (found < limit || limit < 0)) {
+    while(str_find_next(dst, seek[0], &current_pos) && (found < limit || limit < 0)) {
         if(strncmp(dst->data + current_pos, seek, seek_len) == 0) {
             if(diff > 0) { // Grow first, before move.
                 STR_REALLOC(dst, dst->len + diff);
