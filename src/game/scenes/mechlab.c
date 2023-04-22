@@ -3,7 +3,6 @@
 
 #include "formats/error.h"
 #include "formats/tournament.h"
-#include "formats/chr.h"
 #include "game/game_state.h"
 #include "game/gui/frame.h"
 #include "game/gui/trn_menu.h"
@@ -101,6 +100,17 @@ bool mechlab_get_selling(scene *scene) {
 void mechlab_set_hint(scene *scene, const char *hint) {
     mechlab_local *local = scene_get_userdata(scene);
     label_set_text(local->hint, hint);
+}
+
+sd_chr_enemy *mechlab_next_opponent(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+
+    for (int i= 0; i < local->chr.pilot.enemies_inc_unranked; i++) {
+        if (local->chr.enemies[i]->pilot.rank == local->chr.pilot.rank - 1) {
+            return local->chr.enemies[i];
+        }
+    }
+    return NULL;
 }
 
 void mechlab_free(scene *scene) {

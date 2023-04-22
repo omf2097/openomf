@@ -2,6 +2,7 @@
 #include "game/scenes/mechlab.h"
 #include "game/common_defines.h"
 #include "game/gui/sizer.h"
+#include "formats/chr.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/text_render.h"
 #include "game/gui/trn_menu.h"
@@ -57,7 +58,12 @@ static const button_details details_list[] = {
 void lab_menu_focus_arena(component *c, bool focused, void *userdata) {
     if (focused) {
         scene *s = userdata;
-        mechlab_set_hint(s, lang_get(537));
+        sd_chr_enemy *enemy = mechlab_next_opponent(s);
+        if (enemy) {
+            char tmp[100];
+            snprintf(tmp, 100, lang_get(537), enemy->pilot.name);
+            mechlab_set_hint(s, tmp);
+        }
     }
 }
 

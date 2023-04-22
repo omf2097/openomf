@@ -329,6 +329,96 @@ void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {
     }
 }
 
+void lab_menu_focus_leg_power(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(555)); // TODO sprintf arm/leg
+        } else {
+            mechlab_set_hint(s, lang_get(556)); // TODO sprintf arm/leg
+        }
+    }
+}
+
+void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(557)); // TODO sprintf arm/leg
+        } else {
+            mechlab_set_hint(s, lang_get(558)); // TODO sprintf arm/leg
+        }
+    }
+}
+
+void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(559)); // TODO sprintf arm/leg
+        } else {
+            mechlab_set_hint(s, lang_get(560)); // TODO sprintf arm/leg
+        }
+    }
+}
+
+void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(561));
+        } else {
+            mechlab_set_hint(s, lang_get(562));
+        }
+    }
+}
+
+void lab_menu_focus_stun_resistance(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(563));
+        } else {
+            mechlab_set_hint(s, lang_get(564));
+        }
+    }
+}
+
+void lab_menu_focus_trade(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(565));
+        } else {
+            mechlab_set_hint(s, lang_get(566));
+        }
+    }
+}
+
+void lab_menu_focus_done(component *c, bool focused, void *userdata) {
+    if (focused) {
+        scene *s = userdata;
+        if (mechlab_get_selling(s)) {
+            mechlab_set_hint(s, lang_get(567));
+        } else {
+            mechlab_set_hint(s, lang_get(568));
+        }
+    }
+}
+
+static const spritebutton_focus_cb focus_cbs[] = {
+    lab_menu_focus_blue,
+    lab_menu_focus_yellow,
+    lab_menu_focus_red,
+    lab_menu_focus_arm_power,
+    lab_menu_focus_leg_power,
+    lab_menu_focus_arm_speed,
+    lab_menu_focus_leg_speed,
+    lab_menu_focus_armor,
+    lab_menu_focus_stun_resistance,
+    lab_menu_focus_trade,
+    lab_menu_focus_done,
+};
 
 component *lab_menu_customize_create(scene *s) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
@@ -361,6 +451,8 @@ component *lab_menu_customize_create(scene *s) {
         component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
         spritebutton_set_tick_cb(button, tickers[i]);
+
+        spritebutton_set_focus_cb(button, focus_cbs[i]);
 
         component_tick(button);
         trnmenu_attach(menu, button);

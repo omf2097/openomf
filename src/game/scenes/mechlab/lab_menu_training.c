@@ -116,7 +116,7 @@ void lab_menu_focus_endurance(component *c, bool focused, void *userdata) {
     }
 }
 
-void lab_menu_focus_done(component *c, bool focused, void *userdata) {
+void lab_menu_focus_training_done(component *c, bool focused, void *userdata) {
     if (focused) {
         scene *s = userdata;
         mechlab_set_hint(s, lang_get(536));
@@ -128,7 +128,7 @@ static const spritebutton_focus_cb focus_cbs[] = {
     lab_menu_focus_power,
     lab_menu_focus_agility,
     lab_menu_focus_endurance,
-    lab_menu_focus_done
+    lab_menu_focus_training_done
 };
 
 
