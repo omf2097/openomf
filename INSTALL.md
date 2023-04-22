@@ -52,12 +52,13 @@ Required:
 
 On debian, it is possible to pull some libraries using apt-get.
 ```
-apt-get install libsdl2-dev libsdl2-mixer-dev libpng-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
+apt-get install libsdl2-dev libsdl2-mixer-dev libpng-dev libconfuse-dev libenet-dev \
+    libargtable2-dev libxmp-dev libglew-dev libopengl-dev
 ```
 
 On Mac, you can use brew:
 ```
-brew install argtable sdl2_mixer confuse enet sdl2 libxmp libpng
+brew install argtable sdl2_mixer confuse enet sdl2 libxmp libpng glew
 ```
 
 ### Acquiring the sources
