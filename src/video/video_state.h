@@ -21,8 +21,8 @@ typedef struct video_state_t {
     int target_move_y;
 
     bool render_bg_separately;
-    SDL_Texture *fg_target;
-    SDL_Texture *bg_target;
+
+    GLuint shader_prog;
 
     // Palettes
     palette *base_palette;          // Copy of the scenes base palette

@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <stdio.h>
@@ -33,13 +34,8 @@ bool create_window(int width, int height, bool fullscreen) {
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
-    SDL_Window *window = SDL_CreateWindow(
-        title,
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        width,
-        height,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+    SDL_Window *window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
+                                          SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
     if(window == NULL) {
         PERROR("Could not create window: %s", SDL_GetError());
         return false;
@@ -75,6 +71,116 @@ bool create_gl_context(void) {
     return true;
 }
 
+bool load_glew(void) {
+    // This must be loaded after we have the GL context up.
+    GLuint err = glewInit();
+    if(err != GLEW_OK) {
+        PERROR("Failed to load GLEW: %s", glewGetErrorString(err));
+        return false;
+    }
+    INFO("Loaded GLEW %s", glewGetString(GLEW_VERSION));
+    return true;
+}
+
+void print_log(const char *buffer, long len, const char *header) {
+    str log;
+    str sub;
+
+    // Make sure the string always ends in one \n
+    str_from_buf(&log, buffer, len);
+    str_rstrip(&log);
+    str_append_c(&log, "\n");
+
+    // Print line by line
+    size_t pos = 0, last = 0;
+    PERROR("--- %s ---", header);
+    while(str_find_next(&log, '\n', &pos)) {
+        str_from_slice(&sub, &log, last, pos - 1);
+        PERROR("%s", str_c(&sub));
+        str_free(&sub);
+        last = ++pos;
+    }
+    PERROR("--- end log ---", header);
+
+    str_free(&log);
+}
+
+void print_shader_log(const GLuint shader, const char *header) {
+    if(!glIsShader(shader)) {
+        PERROR("Attempted to print logs for shader %d: not a shader", shader);
+        return;
+    }
+
+    int buffer_size = 0, read_size = 0;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &buffer_size);
+    char *buffer_data = omf_calloc(buffer_size, 1);
+    glGetShaderInfoLog(shader, buffer_size, &read_size, buffer_data);
+    print_log(buffer_data, read_size, header);
+    omf_free(buffer_data);
+}
+
+void print_program_log(const GLuint program) {
+    if(!glIsProgram(program)) {
+        PERROR("Attempted to print logs for program %d: not a program", program);
+        return;
+    }
+
+    int buffer_size = 0, read_size = 0;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &buffer_size);
+    char *buffer_data = omf_calloc(buffer_size, 1);
+    glGetProgramInfoLog(program, buffer_size, &read_size, buffer_data);
+    print_log(buffer_data, read_size, "program");
+    omf_free(buffer_data);
+}
+
+bool load_shader(GLuint program_id, GLenum shader_type, const char *shader_file) {
+    str shader_source;
+    str_from_file(&shader_source, shader_file);
+    const char *c_str = str_c(&shader_source);
+
+    GLuint shader = glCreateShader(shader_type);
+    glShaderSource(shader, 1, &c_str, NULL);
+    glCompileShader(shader);
+
+    str_free(&shader_source);
+
+    GLint status = GL_FALSE;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+    if(status != GL_TRUE) {
+        PERROR("Compilation error for shader %d (file=%s)", shader, shader_file);
+        print_shader_log(shader, shader_file);
+        return false;
+    }
+    DEBUG("Compilation succeeded for shader %d (file=%s)", shader, shader_file);
+    glAttachShader(program_id, shader);
+    return true;
+}
+
+bool create_program(GLuint *program_id, const char *vertex_shader, const char *fragment_shader) {
+    GLuint id = glCreateProgram();
+    if(!load_shader(id, GL_VERTEX_SHADER, vertex_shader))
+        goto error_0;
+    if(!load_shader(id, GL_FRAGMENT_SHADER, fragment_shader))
+        goto error_0;
+
+    glLinkProgram(id);
+    GLint status = GL_TRUE;
+    glGetProgramiv(id, GL_LINK_STATUS, &status);
+    if(status != GL_TRUE) {
+        PERROR("Compilation error for program %d (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
+        print_program_log(id);
+        goto error_0;
+    }
+
+    *program_id = id;
+    DEBUG("Compilation succeeded for program %d (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
+    return true;
+
+error_0:
+    glDeleteProgram(id);
+    return false;
+}
+
 bool enable_vsync(void) {
     // Try for adaptive vsync first.
     if(SDL_GL_SetSwapInterval(-1) == 0) {
@@ -107,8 +213,6 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.fullscreen = fullscreen;
     g_video_state.vsync = vsync;
     g_video_state.fade = 1.0f;
-    g_video_state.fg_target = NULL;
-    g_video_state.bg_target = NULL;
     g_video_state.target_move_x = 0;
     g_video_state.target_move_y = 0;
     g_video_state.render_bg_separately = true;
@@ -126,7 +230,13 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     if(!create_gl_context()) {
         goto error_1;
     }
+    if(!load_glew()) {
+        goto error_1;
+    }
     if(!enable_vsync()) {
+        goto error_2;
+    }
+    if(!create_program(&g_video_state.shader_prog, "direct.vert", "direct.frag")) {
         goto error_2;
     }
 
@@ -159,9 +269,7 @@ void video_tick() {
 }
 
 // Called after frame has been rendered
-void video_render_finish() {
-
-
+void video_render_finish(void) {
 
     // Flip buffers. If vsync is off, we should sleep here
     // so hat our main loop doesn't eat up all cpu :)
@@ -171,7 +279,8 @@ void video_render_finish() {
     }
 }
 
-void video_close() {
+void video_close(void) {
+    glDeleteProgram(g_video_state.shader_prog);
     SDL_GL_DeleteContext(g_video_state.gl_context);
     SDL_DestroyWindow(g_video_state.window);
     omf_free(g_video_state.screen_palette);
@@ -252,7 +361,6 @@ void video_render_bg_separately(bool separate) {
 }
 
 void video_render_background(surface *sur) {
-
 }
 
 static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, SDL_BlendMode blend_mode,

@@ -131,7 +131,8 @@ SDL_Texture *tcache_get(surface *sur, screen_palette *pal, char *remap_table, ui
         tcache_entry_value new_entry;
         new_entry.age = 0;
         new_entry.pal_version = pal->version;
-        new_entry.tex = SDL_CreateTexture(cache->renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, sur->w, sur->h);
+        new_entry.tex =
+            SDL_CreateTexture(cache->renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, sur->w, sur->h);
         SDL_SetTextureBlendMode(new_entry.tex, SDL_BLENDMODE_BLEND);
         val = tcache_add_entry(&key, &new_entry);
     }
