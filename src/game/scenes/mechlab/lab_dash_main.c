@@ -6,6 +6,7 @@
 #include "game/gui/xysizer.h"
 #include "game/scenes/mechlab/lab_dash_main.h"
 #include "resources/ids.h"
+#include "resources/languages.h"
 #include "utils/log.h"
 #include "video/video.h"
 
@@ -22,6 +23,12 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     tconf_light.font = FONT_SMALL;
     tconf_light.cforeground = color_create(50, 240, 50, 255);
 
+    text_settings tconf_light_centered;
+    text_defaults(&tconf_light_centered);
+    tconf_light_centered.font = FONT_SMALL;
+    tconf_light_centered.halign = TEXT_CENTER;
+    tconf_light_centered.cforeground = color_create(50, 240, 50, 255);
+
     // Pilot image
     dw->photo = pilotpic_create(PIC_PLAYERS, 1);
     xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
@@ -33,12 +40,16 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     dw->losses = label_create(&tconf_dark, "LOSES: 0");
     dw->money = label_create(&tconf_dark, "MONEY: $ 0K");
     dw->tournament = label_create(&tconf_light, "NO TOURNAMENT");
+    dw->har_name = label_create(&tconf_light_centered, "HAR NAME");
+    dw->har_moves = label_create(&tconf_light_centered, "HAR MOVES");
     xysizer_attach(xy, dw->name, 12, 58, 200, 6);
     xysizer_attach(xy, dw->rank, 18, 64, 200, 6);
     xysizer_attach(xy, dw->wins, 18, 70, 200, 6);
     xysizer_attach(xy, dw->losses, 12, 76, 200, 6);
     xysizer_attach(xy, dw->money, 12, 82, 200, 6);
     xysizer_attach(xy, dw->tournament, 12, 88, 200, 6);
+    xysizer_attach(xy, dw->har_name, 220, 2, 100, 6);
+    xysizer_attach(xy, dw->har_moves, 220, 19, 100, 70);
 
     // Bars and texts (bottom left side)
     xysizer_attach(xy, label_create(&tconf_dark, "POWER"), 12, 95, -1, -1);
@@ -94,6 +105,9 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     // TODO this needs for format with commas for the thousands seperator
     snprintf(tmp, 64, "MONEY: $ %dK", p1->pilot->money);
     label_set_text(dw->money, tmp);
+
+    label_set_text(dw->har_name, lang_get(31+p1->pilot->har_id));
+    label_set_text(dw->har_moves, lang_get(492+p1->pilot->har_id));
 
     // Tournament and player name
     label_set_text(dw->name, p1->pilot->name);

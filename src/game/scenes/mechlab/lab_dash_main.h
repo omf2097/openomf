@@ -22,6 +22,8 @@ typedef struct {
     component *wins;
     component *losses;
     component *tournament;
+    component *har_name;
+    component *har_moves;
 } dashboard_widgets;
 
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw);
