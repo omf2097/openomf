@@ -169,6 +169,11 @@ void mechlab_tick(scene *scene, int paused) {
         } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
             sd_tournament_file *trn = lab_menu_trnselected(&local->tw);
             game_player *player1 = game_state_get_player(scene->gs, 0);
+            if (player1->pilot->money < trn->registration_fee) {
+                player1->pilot->money = 0;
+            } else {
+                player1->pilot->money = player1->pilot->money - trn->registration_fee;
+            }
             sd_chr_from_trn(&local->chr, trn, player1->pilot);
             char tmp[1024];
             const char *dirname = pm_get_local_path(SAVE_PATH);
@@ -218,6 +223,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             local->dashboard = guiframe_create(0, 0, 320, 200);
             // new pilots have 2000 credits
             game_player *player1 = game_state_get_player(scene->gs, 0);
+            memset(player1->pilot, 0, sizeof(sd_pilot));
             player1->pilot->money = 2000;
             // and a jaguar
             player1->pilot->har_id = 0;
