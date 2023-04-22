@@ -9,13 +9,13 @@
 #include "resources/bk.h"
 #include "utils/log.h"
 
-int prices[] = {50, 80, 120, 180, 240, 300, 450, 600, 800, 1100, 1500, 2500};
+uint32_t prices[] = {50, 80, 120, 180, 240, 300, 450, 600, 800, 1100, 1500, 2500, 4000, 7000, 10000, 14000, 20000, 28000, 40000, 55000, 75000, 100000, 140000, 200000};
 
 void lab_menu_training_power(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    int price = prices[pilot->power];
+    uint32_t price = prices[pilot->power];
     pilot->money -= price;
     pilot->power++;
     mechlab_update(s);
@@ -25,7 +25,11 @@ void lab_menu_training_check_power_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    int price = prices[pilot->power];
+    if (pilot->power > 23) {
+        component_disable(c, 1);
+        return;
+    }
+    uint32_t price = prices[pilot->power];
     if (price > pilot->money) {
         component_disable(c, 1);
     }
@@ -35,7 +39,7 @@ void lab_menu_training_agility(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    int price = prices[pilot->agility];
+    uint32_t price = prices[pilot->agility];
     pilot->money -= price;
     pilot->agility++;
     mechlab_update(s);
@@ -45,7 +49,11 @@ void lab_menu_training_check_agility_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    int price = prices[pilot->agility];
+    if (pilot->agility > 23) {
+        component_disable(c, 1);
+        return;
+    }
+    uint32_t price = prices[pilot->agility];
     if (price > pilot->money) {
         component_disable(c, 1);
     }
@@ -55,7 +63,7 @@ void lab_menu_training_endurance(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    int price = prices[pilot->endurance];
+    uint32_t price = prices[pilot->endurance];
     pilot->money -= price;
     pilot->endurance++;
     mechlab_update(s);
@@ -65,7 +73,11 @@ void lab_menu_training_check_endurance_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    int price = prices[pilot->endurance];
+    if (pilot->endurance > 23) {
+        component_disable(c, 1);
+        return;
+    }
+    uint32_t price = prices[pilot->endurance];
     if (price > pilot->money) {
         component_disable(c, 1);
     }

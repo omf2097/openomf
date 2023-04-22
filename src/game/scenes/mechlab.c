@@ -35,6 +35,7 @@ typedef struct {
     newplayer_widgets nw;
     trnselect_widgets tw;
     sd_chr_file chr;
+    bool selling;
 } mechlab_local;
 
 bool mechlab_find_last_player(scene *scene) {
@@ -76,10 +77,22 @@ bool mechlab_find_last_player(scene *scene) {
         object_set_repeat(local->mech, 1);
         object_dynamic_tick(local->mech);
         sd_pilot *old_pilot = game_player_get_pilot(p1);
-        omf_free(old_pilot);
+        if (&local->chr.pilot != old_pilot) {
+            omf_free(old_pilot);
+        }
         game_player_set_pilot(p1, &local->chr.pilot);
     }
     return true;
+}
+
+void mechlab_set_selling(scene *scene, bool selling) {
+    mechlab_local *local = scene_get_userdata(scene);
+    local->selling = selling;
+}
+
+bool mechlab_get_selling(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+    return local->selling;
 }
 
 void mechlab_free(scene *scene) {
@@ -335,6 +348,7 @@ void mechlab_input_tick(scene *scene) {
 int mechlab_create(scene *scene) {
     // Alloc
     mechlab_local *local = omf_calloc(1, sizeof(mechlab_local));
+    local->selling = false;
     sd_chr_create(&local->chr);
 
     animation *bg_ani[3];

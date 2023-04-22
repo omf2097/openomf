@@ -18,4 +18,7 @@ void mechlab_update(scene *scene);
 
 void mechlab_select_dashboard(scene *scene, dashboard_type type);
 
+void mechlab_set_selling(scene *scene, bool selling);
+bool mechlab_get_selling(scene *scene);
+
 #endif // MECHLAB_H

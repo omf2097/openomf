@@ -1,4 +1,5 @@
 #include "game/scenes/mechlab/lab_menu_main.h"
+#include "game/scenes/mechlab.h"
 #include "game/common_defines.h"
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
@@ -16,8 +17,15 @@ void lab_menu_main_quit(component *c, void *userdata) {
     game_state_set_next(s->gs, SCENE_MENU);
 }
 
-void lab_menu_main_customize_enter(component *c, void *userdata) {
+void lab_menu_main_buy_enter(component *c, void *userdata) {
     scene *s = userdata;
+    mechlab_set_selling(s, false);
+    trnmenu_set_submenu(c->parent, lab_menu_customize_create(s));
+}
+
+void lab_menu_main_sell_enter(component *c, void *userdata) {
+    scene *s = userdata;
+    mechlab_set_selling(s, true);
     trnmenu_set_submenu(c->parent, lab_menu_customize_create(s));
 }
 
@@ -34,10 +42,9 @@ void lab_menu_main_new(component *c, void *userdata) {
 static const button_details details_list[] = {
   // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
     {NULL,                          "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
-    {lab_menu_main_training_enter,  "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0,
-     COM_DISABLED                                                                                                           },
-    {lab_menu_main_customize_enter, "BUY",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
-    {lab_menu_main_customize_enter, "SELL",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
+    {lab_menu_main_training_enter,  "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0, COM_DISABLED},
+    {lab_menu_main_buy_enter,       "BUY",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
+    {lab_menu_main_sell_enter,      "SELL",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {NULL,                          "LOAD",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
     {lab_menu_main_new,             "NEW",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
     {NULL,                          "DELETE",           TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_DISABLED},
