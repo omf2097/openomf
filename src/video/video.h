@@ -60,6 +60,7 @@ void video_set_base_palette(const palette *src);
 palette *video_get_base_palette();
 void video_force_pal_refresh();
 void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount);
+void video_copy_base_pal_range(const palette *src, int src_start, int dst_start, int amount);
 screen_palette *video_get_pal_ref();
 
 #endif // VIDEO_H

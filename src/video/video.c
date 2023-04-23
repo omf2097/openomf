@@ -301,6 +301,11 @@ void video_copy_pal_range(const palette *src, int src_start, int dst_start, int 
     state.screen_palette->version++;
 }
 
+void video_copy_base_pal_range(const palette *src, int src_start, int dst_start, int amount) {
+    memcpy(state.base_palette->data + dst_start * 3, src->data + src_start * 3, amount * 3);
+    video_force_pal_refresh();
+}
+
 screen_palette *video_get_pal_ref() {
     return state.screen_palette;
 }

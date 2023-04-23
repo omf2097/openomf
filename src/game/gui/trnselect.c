@@ -2,6 +2,7 @@
 #include "formats/error.h"
 #include "formats/tournament.h"
 #include "game/gui/widget.h"
+#include "game/gui/label.h"
 #include "resources/pathmanager.h"
 #include "resources/sprite.h"
 #include "resources/trnmanager.h"
@@ -14,6 +15,7 @@
 typedef struct {
     sprite *img;
     list *tournaments;
+    component *label;
     int max;
     int selected;
 } trnselect;
@@ -22,6 +24,7 @@ static void trnselect_render(component *c) {
     trnselect *g = widget_get_obj(c);
 
     video_render_sprite(g->img->data, c->x + g->img->pos.x, c->y + g->img->pos.y, BLEND_ALPHA, 0);
+    component_render(g->label);
 }
 
 static void trnselect_free(component *c) {
@@ -39,6 +42,8 @@ void trnselect_next(component *c) {
     }
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
+    video_copy_base_pal_range(&trn->pal, 128, 128, 40);
+    label_set_text(local->label, trn->locales[0]->description);
     sprite_create(local->img, logo, -1);
 }
 
@@ -50,6 +55,8 @@ void trnselect_prev(component *c) {
     }
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
+    video_copy_base_pal_range(&trn->pal, 128, 128, 40);
+    label_set_text(local->label, trn->locales[0]->description);
     sprite_create(local->img, logo, -1);
 }
 
@@ -71,8 +78,20 @@ component *trnselect_create() {
     local->max = list_size(local->tournaments);
     local->img = omf_calloc(1, sizeof(sprite));
 
+
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_SMALL;
+    tconf.halign = TEXT_CENTER;
+    tconf.valign = TEXT_CENTER;
+
+    local->label = label_create(&tconf, "");
+    component_layout(local->label, 0, 0, 320, 130);
+
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
+    video_copy_base_pal_range(&trn->pal, 128, 128, 40);
+
     sprite_create(local->img, logo, -1);
 
 

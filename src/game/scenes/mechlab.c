@@ -36,7 +36,6 @@ typedef struct {
     trnselect_widgets tw;
     sd_chr_file chr;
     bool selling;
-    text_settings tconf_hint;
     component *hint;
 } mechlab_local;
 
@@ -400,13 +399,14 @@ int mechlab_create(scene *scene) {
         object_set_animation_owner(&local->bg_obj[i], OWNER_OBJECT);
     }
 
-    text_defaults(&local->tconf_hint);
-    local->tconf_hint.font = FONT_SMALL;
-    local->tconf_hint.halign = TEXT_CENTER;
-    local->tconf_hint.valign = TEXT_CENTER;
-    local->tconf_hint.cforeground = color_create(255, 255, 0, 255);
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_SMALL;
+    tconf.halign = TEXT_CENTER;
+    tconf.valign = TEXT_CENTER;
+    tconf.cforeground = color_create(255, 255, 0, 255);
 
-    local->hint = label_create(&local->tconf_hint, "HINTY");
+    local->hint = label_create(&tconf, "HINTY");
     component_set_pos_hints(local->hint, 32, 131);
     component_set_size_hints(local->hint, 248, 13);
     component_layout(local->hint, 32, 131, 248, 13);
