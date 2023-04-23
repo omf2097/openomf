@@ -40,6 +40,7 @@ Use at least GCC 9 or Clang 10. MSVC is not supported at this time.
 
 Required:
 * SDL2 (>=2.0.16): http://www.libsdl.org/download-2.0.php
+* libglew: https://glew.sourceforge.net/
 * confuse: http://www.nongnu.org/confuse/
 * Enet: http://enet.bespin.org/
 * libargtable2: http://argtable.sourceforge.net/
