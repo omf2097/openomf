@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "formats/palette.h"
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/image.h"
@@ -134,8 +135,11 @@ void print_program_log(const GLuint program) {
 }
 
 bool load_shader(GLuint program_id, GLenum shader_type, const char *shader_file) {
+    str shader_path;
     str shader_source;
-    str_from_file(&shader_source, shader_file);
+
+    str_from_format(&shader_path, "%s%s", pm_get_local_path(SHADER_PATH), shader_file);
+    str_from_file(&shader_source, str_c(&shader_path));
     const char *c_str = str_c(&shader_source);
 
     GLuint shader = glCreateShader(shader_type);
@@ -143,6 +147,7 @@ bool load_shader(GLuint program_id, GLenum shader_type, const char *shader_file)
     glCompileShader(shader);
 
     str_free(&shader_source);
+    str_free(&shader_path);
 
     GLint status = GL_FALSE;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);

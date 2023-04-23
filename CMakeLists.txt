@@ -320,4 +320,5 @@ else()
         DESTINATION share/games/openomf/
         COMPONENT Data
     )
+    install(FILES shaders/* DESTINATION share/games/openomf/shaders/ COMPONENT Data)
 endif()
