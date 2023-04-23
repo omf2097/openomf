@@ -38,7 +38,7 @@ if(GIT_FOUND)
     )
     message(STATUS "Git SHA1 Hash: ${SHA1_HASH}")
     add_definitions(-DSHA1_HASH="${SHA1_HASH}")
-endif()
+endif ()
 
 # System packages (hard dependencies)
 find_package(SDL2 REQUIRED)
@@ -95,8 +95,6 @@ set(COREINCS
 )
 
 set(CORELIBS
-    ${OPENGL_LIBRARIES}
-    ${GLEW_LIBRARIES}
     ${CONFUSE_LIBRARY}
     ${Intl_LIBRARIES}
     ${XMP_LIBRARY}
@@ -251,9 +249,10 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf ${CORELIBS})
-target_link_libraries(openomf SDL2::Main SDL2::Mixer)
+target_link_libraries(openomf SDL2::Main SDL2::Mixer OpenGL::GL GLEW::GLEW)
 foreach(TARGET ${TOOL_TARGET_NAMES})
-    target_link_libraries(${TARGET} ${CORELIBS} SDL2::Main SDL2::Mixer)
+    target_link_libraries(${TARGET} ${CORELIBS})
+    target_link_libraries(${TARGET} SDL2::Main SDL2::Mixer OpenGL::GL GLEW::GLEW)
 endforeach()
 
 # Testing stuff
@@ -271,7 +270,7 @@ if(CUNIT_FOUND)
     target_compile_definitions(openomf_test_main PRIVATE
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
-    target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer)
+    target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer OpenGL::GL GLEW::GLEW)
 
     if(MINGW)
         # Always build as a console executable with mingw
@@ -294,7 +293,7 @@ if(WIN32)
     # This way we have an "openomf/" root directory inside the zip file.
     install(TARGETS openomf RUNTIME DESTINATION openomf/ COMPONENT Binaries)
     install(FILES resources/openomf.bk DESTINATION openomf/resources/ COMPONENT Data)
-    install(FILES shaders/* DESTINATION openomf/shaders/ COMPONENT Data)
+    install(DIRECTORY shaders/ DESTINATION openomf/shaders COMPONENT Data)
     install(FILES README.md INSTALL.md LICENSE DESTINATION openomf/ COMPONENT Data)
 else()
     # On unixy systems, follow standard.
@@ -304,5 +303,5 @@ else()
         DESTINATION share/games/openomf/
         COMPONENT Data
     )
-    install(FILES shaders/* DESTINATION share/games/openomf/shaders/ COMPONENT Data)
+    install(DIRECTORY shaders/ DESTINATION share/games/openomf/shaders COMPONENT Data)
 endif()
