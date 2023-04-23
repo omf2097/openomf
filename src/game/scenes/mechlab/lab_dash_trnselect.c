@@ -19,7 +19,7 @@ component *lab_dash_trnselect_create(scene *s, trnselect_widgets *tw) {
 
     // Pilot image
     tw->trnselect = trnselect_create();
-    xysizer_attach(xy, tw->trnselect, 12, -1, -1, -1);
+    xysizer_attach(xy, tw->trnselect, -1, -1, -1, -1);
 
     return xy;
 }

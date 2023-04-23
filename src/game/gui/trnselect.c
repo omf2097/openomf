@@ -21,7 +21,7 @@ typedef struct {
 static void trnselect_render(component *c) {
     trnselect *g = widget_get_obj(c);
 
-    video_render_sprite(g->img->data, c->x, c->y, BLEND_ALPHA, 0);
+    video_render_sprite(g->img->data, c->x + g->img->pos.x, c->y + g->img->pos.y, BLEND_ALPHA, 0);
 }
 
 static void trnselect_free(component *c) {
