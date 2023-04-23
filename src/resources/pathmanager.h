@@ -11,6 +11,7 @@ enum
     CONFIG_PATH,
     SCORE_PATH,
     SAVE_PATH,
+    SHADER_PATH,
     NUMBER_OF_LOCAL_PATHS
 };
 
