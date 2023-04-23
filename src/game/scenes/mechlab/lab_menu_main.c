@@ -13,6 +13,23 @@
 #include "resources/bk.h"
 #include "resources/languages.h"
 #include "utils/log.h"
+#include "utils/allocator.h"
+
+void lab_menu_main_arena(component *c, void *userdata) {
+    scene *s = userdata;
+    sd_chr_enemy *enemy = mechlab_next_opponent(s);
+    if (enemy) {
+        // make a new AI controller
+        controller *ctrl = omf_calloc(1, sizeof(controller));
+        controller_init(ctrl);
+        sd_pilot *pilot = &enemy->pilot;
+        game_player *p1 = game_state_get_player(s->gs, 0);
+        game_player *p2 = game_state_get_player(s->gs, 1);
+        ai_controller_create(ctrl, p1->pilot->difficulty, pilot, p2->pilot_id);
+        game_player_set_ctrl(p2, ctrl);
+        game_state_set_next(s->gs, SCENE_VS);
+    }
+}
 
 void lab_menu_main_quit(component *c, void *userdata) {
     scene *s = userdata;
@@ -43,7 +60,7 @@ void lab_menu_main_new(component *c, void *userdata) {
 
 static const button_details details_list[] = {
   // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
-    {NULL,                          "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
+    {lab_menu_main_arena,                          "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_training_enter,  "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0, COM_DISABLED},
     {lab_menu_main_buy_enter,       "BUY",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_sell_enter,      "SELL",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},

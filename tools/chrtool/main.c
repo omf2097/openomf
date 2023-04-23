@@ -28,7 +28,7 @@ void print_chr_pilot_info(sd_chr_file *chr) {
 
 void print_enemy_info(sd_chr_file *chr, int i) {
     printf("Enemy %d:\n", i);
-    print_pilot_player_info(&chr->enemies[i]->pilot);
+    print_pilot_info(&chr->enemies[i]->pilot);
     printf("  - Some unknown thingy: \n");
     print_bytes(chr->enemies[i]->unknown, sizeof(chr->enemies[i]->unknown), 10, 5);
     printf("\n");

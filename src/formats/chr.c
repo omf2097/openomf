@@ -40,7 +40,7 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
     strncpy(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_create(chr->photo);
-    pilotpic_load(chr->photo, PIC_PLAYERS, pilot->photo_id);
+    pilotpic_load(chr->photo, &chr->pal, PIC_PLAYERS, pilot->photo_id);
     return SD_SUCCESS;
 }
 

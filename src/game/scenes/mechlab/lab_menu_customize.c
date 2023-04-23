@@ -38,6 +38,29 @@ void lab_menu_customize_done(component *c, void *userdata) {
     trnmenu_finish(c->parent);
 }
 
+void lab_menu_customize_color_main(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    p1->chr->pilot.color_1 = (p1->chr->pilot.color_1 + 1) % 16;
+    mechlab_update(s);
+}
+
+void lab_menu_customize_color_secondary(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    p1->chr->pilot.color_2 = (p1->chr->pilot.color_2 + 1) % 16;
+    mechlab_update(s);
+}
+
+void lab_menu_customize_color_third(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    p1->chr->pilot.color_3 = (p1->chr->pilot.color_3 + 1) % 16;
+    mechlab_update(s);
+}
+
+
+
 void lab_menu_customize_arm_power(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
@@ -258,9 +281,9 @@ void lab_menu_customize_check_stun_resistance_price(component *c, void *userdata
 
 
 static const button_details details_list[] = {
-    {NULL,                         NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED}, // Blue
-    {NULL,                         NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED}, // Yellow
-    {NULL,                         NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED}, // Red
+    {lab_menu_customize_color_main,                         NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED}, // Blue
+    {lab_menu_customize_color_third,                         NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED}, // Yellow
+    {lab_menu_customize_color_secondary,                         NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED}, // Red
     {lab_menu_customize_arm_power, "ARM POWER",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
     {lab_menu_customize_leg_power, "LEG POWER",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
     {lab_menu_customize_arm_speed, "ARM SPEED",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},

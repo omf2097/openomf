@@ -128,8 +128,12 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     SET_GAUGE_X(leg_speed);
     SET_GAUGE_X(stun_resistance);
 
-    // Select pilot picture
-    pilotpic_select(dw->photo, PIC_PLAYERS, p1->pilot->photo_id);
+    if (p1->chr) {
+        pilotpic_set_photo(dw->photo, p1->chr->photo);
+    } else {
+        // Select pilot picture
+        pilotpic_select(dw->photo, PIC_PLAYERS, p1->pilot->photo_id);
+    }
 
     // Palette
     palette *base_pal = video_get_base_palette();

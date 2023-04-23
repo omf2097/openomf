@@ -8,6 +8,7 @@
 #include "controller/net_controller.h"
 #include "controller/rec_controller.h"
 #include "formats/pilot.h"
+#include "formats/chr.h"
 #include "game/protos/object.h"
 #include "game/utils/har_screencap.h"
 #include "game/utils/score.h"
@@ -20,6 +21,7 @@ typedef struct game_player_t {
     controller *ctrl;
     surface *portrait;
     sd_pilot *pilot;
+    sd_chr_file *chr;
     int selectable;
     char colors[3];
     chr_score score;

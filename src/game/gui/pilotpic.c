@@ -30,7 +30,8 @@ static void pilotpic_free(component *c) {
     omf_free(g);
 }
 
-int pilotpic_load(sd_sprite * sprite, int pic_id, int pilot_id) {
+
+int pilotpic_load(sd_sprite *sprite, palette *pal, int pic_id, int pilot_id) {
     const char *filename = pm_get_resource_path(pic_id);
     if(filename == NULL) {
         PERROR("Could not find requested PIC file handle.");
@@ -51,6 +52,7 @@ int pilotpic_load(sd_sprite * sprite, int pic_id, int pilot_id) {
     // Create new
     const sd_pic_photo *photo = sd_pic_get(&pics, pilot_id);
     sd_sprite_copy(sprite, photo->sprite);
+    palette_copy(pal, &photo->pal, 0, 48);
     // Free pics
     sd_pic_free(&pics);
 
@@ -68,7 +70,8 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
 
     local->img = omf_calloc(1, sizeof(sprite));
     sd_sprite spr;
-    pilotpic_load(&spr, pic_id, pilot_id);
+    palette pal;
+    pilotpic_load(&spr,&pal, pic_id, pilot_id);
 
     sprite_create(local->img, &spr, -1);
 
@@ -104,6 +107,20 @@ void pilotpic_prev(component *c) {
 int pilotpic_selected(component *c) {
     pilotpic *local = widget_get_obj(c);
     return local->selected;
+}
+
+void pilotpic_set_photo(component *c, sd_sprite *spr) {
+    pilotpic *local = widget_get_obj(c);
+    // Free old image
+    if(local->img != NULL) {
+        sprite_free(local->img);
+        omf_free(local->img);
+    }
+
+    local->img = omf_calloc(1, sizeof(sprite));
+
+    sprite_create(local->img, spr, -1);
+    component_set_size_hints(c, local->img->data->w, local->img->data->h);
 }
 
 component *pilotpic_create(int pic_id, int pilot_id) {

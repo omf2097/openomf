@@ -9,6 +9,7 @@ void game_player_create(game_player *gp) {
     gp->ctrl = NULL;
     gp->portrait = NULL;
     gp->selectable = 0;
+    gp->chr = NULL;
     // default to grey
     gp->colors[0] = 8;
     gp->colors[1] = 8;

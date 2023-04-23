@@ -34,7 +34,6 @@ typedef struct {
     dashboard_widgets dw;
     newplayer_widgets nw;
     trnselect_widgets tw;
-    sd_chr_file chr;
     bool selling;
     component *hint;
 } mechlab_local;
@@ -50,11 +49,13 @@ bool mechlab_find_last_player(scene *scene) {
 
     // ... and attempt to load it, if one was found.
     if(last_name != NULL) {
-        int ret = sg_load(&local->chr, last_name);
+        sd_chr_file *chr = omf_calloc(1, sizeof(sd_chr_file));
+        int ret = sg_load(chr, last_name);
         if(ret != SD_SUCCESS) {
             PERROR("Could not load saved game for playername '%s': %s!", last_name, sd_get_error(ret));
             last_name = NULL;
         } else {
+            p1->chr = chr;
             DEBUG("Loaded savegame for playername '%s'.", last_name);
         }
     }
@@ -62,7 +63,7 @@ bool mechlab_find_last_player(scene *scene) {
     // Either initialize a new tournament if no savegame is found,
     // or just show old savegame stats directly if it was.
     local->dashtype = DASHBOARD_NONE;
-    if(last_name == NULL) {
+    if(p1->chr == NULL) {
         DEBUG("No previous savegame found");
         local->mech = NULL;
         p1->pilot->money=0;
@@ -71,17 +72,17 @@ bool mechlab_find_last_player(scene *scene) {
     } else {
         DEBUG("Previous savegame found; loading as default.");
         // Load HAR
-        animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot->har_id)->ani;
+        animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->chr->pilot.har_id)->ani;
         local->mech = omf_calloc(1, sizeof(object));
         object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(local->mech, initial_har_ani);
         object_set_repeat(local->mech, 1);
         object_dynamic_tick(local->mech);
         sd_pilot *old_pilot = game_player_get_pilot(p1);
-        if (&local->chr.pilot != old_pilot) {
+        if (&p1->chr->pilot != old_pilot) {
             omf_free(old_pilot);
         }
-        game_player_set_pilot(p1, &local->chr.pilot);
+        game_player_set_pilot(p1, &p1->chr->pilot);
     }
     return true;
 }
@@ -102,11 +103,11 @@ void mechlab_set_hint(scene *scene, const char *hint) {
 }
 
 sd_chr_enemy *mechlab_next_opponent(scene *scene) {
-    mechlab_local *local = scene_get_userdata(scene);
 
-    for (int i= 0; i < local->chr.pilot.enemies_inc_unranked; i++) {
-        if (local->chr.enemies[i]->pilot.rank == local->chr.pilot.rank - 1) {
-            return local->chr.enemies[i];
+    game_player *p1 = game_state_get_player(scene->gs, 0);
+    for (int i= 0; i < p1->chr->pilot.enemies_inc_unranked; i++) {
+        if (p1->chr->enemies[i]->pilot.rank == p1->chr->pilot.rank - 1) {
+            return p1->chr->enemies[i];
         }
     }
     return NULL;
@@ -122,7 +123,7 @@ void mechlab_free(scene *scene) {
         char tmp[1024];
         const char *dirname = pm_get_local_path(SAVE_PATH);
         snprintf(tmp, 1024, "%s%s.CHR", dirname, player1->pilot->name);
-        sd_chr_save(&local->chr, tmp);
+        sd_chr_save(player1->chr, tmp);
         strcpy(settings_get()->tournament.last_name, player1->pilot->name);
         settings_save();
     } else {
@@ -197,11 +198,12 @@ void mechlab_tick(scene *scene, int paused) {
             } else {
                 player1->pilot->money = player1->pilot->money - trn->registration_fee;
             }
-            sd_chr_from_trn(&local->chr, trn, player1->pilot);
+            player1->chr = omf_calloc(1, sizeof(sd_chr_file));
+            sd_chr_from_trn(player1->chr, trn, player1->pilot);
             char tmp[1024];
             const char *dirname = pm_get_local_path(SAVE_PATH);
             snprintf(tmp, 1024, "%s%s.CHR", dirname, player1->pilot->name);
-            sd_chr_save(&local->chr, tmp);
+            sd_chr_save(player1->chr, tmp);
             strcpy(settings_get()->tournament.last_name, player1->pilot->name);
             settings_save();
             bool found = mechlab_find_last_player(scene);
@@ -384,7 +386,6 @@ int mechlab_create(scene *scene) {
     // Alloc
     mechlab_local *local = omf_calloc(1, sizeof(mechlab_local));
     local->selling = false;
-    sd_chr_create(&local->chr);
 
     animation *bg_ani[3];
 

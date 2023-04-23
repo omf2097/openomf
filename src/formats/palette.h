@@ -104,7 +104,7 @@ void palette_msave_range(memwriter *writer, const palette *pal, int index_start,
 void palette_save_range(sd_writer *writer, const palette *pal, int index_start, int index_count);
 void palette_save(sd_writer *writer, const palette *pal);
 void palette_set_player_color(palette *pal, int player, int sourcecolor, int destcolor);
-palette *palette_copy(palette *src);
+void palette_copy(palette *dst, const palette *src, int index_start, int inde_count);
 
 #ifdef __cplusplus
 }

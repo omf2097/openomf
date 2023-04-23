@@ -2,6 +2,7 @@
 #include "formats/altpal.h"
 #include "formats/error.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include "video/color.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -175,9 +176,9 @@ void palette_set_player_color(palette *pal, int player, int srccolor, int dstcol
     memcpy(pal->data, iz, 3);
 }
 
-palette *palette_copy(palette *src) {
-    palette *new = omf_calloc(1, sizeof(palette));
-    memcpy(new->data, src->data, 256 * 3);
-    memcpy(new->remaps, src->remaps, 19 * 256);
-    return new;
+void palette_copy(palette *dst, const palette *src, int index_start, int index_count) {
+    for(int i = index_start; i < index_start + index_count; i++) {
+        DEBUG("copying %d %d %d", src->data[i][0], src->data[i][1], src->data[i][2]);
+        memcpy(dst->data[i], src->data[i], 3);
+    }
 }
