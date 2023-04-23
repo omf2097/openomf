@@ -297,6 +297,9 @@ void mechlab_render(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
 
     for(int i = 0; i < sizeof(local->bg_obj) / sizeof(object); i++) {
+        if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT && i > 0) {
+            continue;
+        }
         object_render(&local->bg_obj[i]);
     }
 
