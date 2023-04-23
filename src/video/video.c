@@ -329,8 +329,8 @@ int video_area_capture(surface *sur, int x, int y, int w, int h) {
 void video_force_pal_refresh(void) {
     memcpy(g_video_state.screen_palette->data, g_video_state.base_palette->data, 768);
     memcpy(g_video_state.extra_palette->data, g_video_state.base_palette->data, 768);
-    g_video_state.extra_palette->version = g_video_state.screen_palette->version + 1;
-    g_video_state.screen_palette->version = g_video_state.extra_palette->version + 1;
+    g_video_state.extra_palette->version++;
+    g_video_state.screen_palette->version++;
 }
 
 void video_set_base_palette(const palette *src) {
