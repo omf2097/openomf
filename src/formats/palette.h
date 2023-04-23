@@ -14,6 +14,7 @@
 #include "formats/internal/memwriter.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include "video/color.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -63,6 +64,9 @@ void palette_free(palette *pal);
  * \return Resolved color index
  */
 unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const palette *pal);
+
+
+color palette_lookup_color(uint8_t i, const palette *pal);
 
 /*! \brief Exports palette to GIMP palette file.
  *

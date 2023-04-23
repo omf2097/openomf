@@ -302,7 +302,7 @@ void video_copy_pal_range(const palette *src, int src_start, int dst_start, int 
 }
 
 void video_copy_base_pal_range(const palette *src, int src_start, int dst_start, int amount) {
-    memcpy(state.base_palette->data + dst_start * 3, src->data + src_start * 3, amount * 3);
+    memcpy(state.base_palette->data + dst_start, src->data + src_start, amount * 3);
     video_force_pal_refresh();
 }
 

@@ -1,6 +1,7 @@
 #include "game/gui/trnselect.h"
 #include "formats/error.h"
 #include "formats/tournament.h"
+#include "formats/palette.h"
 #include "game/gui/widget.h"
 #include "game/gui/label.h"
 #include "resources/pathmanager.h"
@@ -18,17 +19,96 @@ typedef struct {
     component *label;
     int max;
     int selected;
+    palette palette_backup;
 } trnselect;
 
 static void trnselect_render(component *c) {
     trnselect *g = widget_get_obj(c);
 
     video_render_sprite(g->img->data, c->x + g->img->pos.x, c->y + g->img->pos.y, BLEND_ALPHA, 0);
-    component_render(g->label);
+    if(g->label) {
+        component_render(g->label);
+    }
+}
+
+void load_description(component **c, const char *desc) {
+    int width=320, center=0, vmove=0, size=-1, color=-1, x=0;
+    const char *end = desc;
+    char *ptr = NULL;
+    // don't judge me!
+    ptr = strstr(desc, "{WIDTH ");
+    if (ptr) {
+        sscanf(ptr, "{WIDTH %d}", &width);
+        end = ptr;
+    }
+    ptr = strstr(desc, "{CENTER ");
+    if (ptr) {
+        sscanf(ptr, "{CENTER %d}", &center);
+        if (ptr > end) {
+            end = ptr;
+        }
+    }
+    ptr = strstr(desc, "{VMOVE ");
+    if (ptr) {
+        sscanf(ptr, "{VMOVE %d}", &vmove);
+        if (ptr > end) {
+            end = ptr;
+        }
+    }
+    ptr = strstr(desc, "{SIZE ");
+    if (ptr) {
+        sscanf(ptr, "{SIZE %d}", &size);
+        if (ptr > end) {
+            end = ptr;
+        }
+    }
+    ptr = strstr(desc, "{COLOR ");
+    if (ptr) {
+        sscanf(ptr, "{COLOR %d}", &color);
+        if (ptr > end) {
+            end = ptr;
+        }
+    }
+
+    const char *start = strchr(end, '}');
+    if (!start) {
+        start = desc;
+    } else {
+        start++;
+    }
+
+    DEBUG("width %d, center %d, vmove %d size %d color %d", width, center, vmove, size, color);
+
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_SMALL;
+    tconf.halign = TEXT_CENTER;
+    tconf.valign = TEXT_CENTER;
+    if (color >= 0) {
+        tconf.cforeground = palette_lookup_color(color, video_get_base_palette());
+    } else {
+        // WAR invitational seems to use this color, none is specified
+        tconf.cforeground = palette_lookup_color(0xa5, video_get_base_palette());
+    }
+
+    if (*c) {
+        component_free(*c);
+    }
+
+    *c = label_create(&tconf, start);
+
+    if (center) {
+        x = center - (width/2);
+    } else if (width != 320) {
+        x = (320 - width) / 2;
+    }
+
+    component_layout(*c, x, vmove, width, 130 - vmove);
 }
 
 static void trnselect_free(component *c) {
     trnselect *g = widget_get_obj(c);
+    video_set_base_palette(&g->palette_backup);
     sprite_free(g->img);
     omf_free(g->img);
     omf_free(g);
@@ -43,7 +123,7 @@ void trnselect_next(component *c) {
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
     video_copy_base_pal_range(&trn->pal, 128, 128, 40);
-    label_set_text(local->label, trn->locales[0]->description);
+    load_description(&local->label, trn->locales[0]->description);
     sprite_create(local->img, logo, -1);
 }
 
@@ -56,7 +136,7 @@ void trnselect_prev(component *c) {
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
     video_copy_base_pal_range(&trn->pal, 128, 128, 40);
-    label_set_text(local->label, trn->locales[0]->description);
+    load_description(&local->label, trn->locales[0]->description);
     sprite_create(local->img, logo, -1);
 }
 
@@ -79,18 +159,14 @@ component *trnselect_create() {
     local->img = omf_calloc(1, sizeof(sprite));
 
 
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_SMALL;
-    tconf.halign = TEXT_CENTER;
-    tconf.valign = TEXT_CENTER;
+    local->label = NULL;
 
-    local->label = label_create(&tconf, "");
-    component_layout(local->label, 0, 0, 320, 130);
+    memcpy(&local->palette_backup, video_get_base_palette(), sizeof(palette));
 
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
     video_copy_base_pal_range(&trn->pal, 128, 128, 40);
+    load_description(&local->label, trn->locales[0]->description);
 
     sprite_create(local->img, logo, -1);
 
