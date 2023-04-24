@@ -1,9 +1,7 @@
 #include <SDL.h>
-#include <SDL_opengl.h>
 #include <epoxy/gl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "formats/palette.h"
 #include "resources/pathmanager.h"
@@ -150,6 +148,19 @@ bool load_shader(GLuint program_id, GLenum shader_type, const char *shader_file)
     return true;
 }
 
+void delete_program(GLuint program_id) {
+    GLsizei attached_count = 0;
+    glGetProgramiv(program_id, GL_ATTACHED_SHADERS, &attached_count);
+    GLuint shaders[attached_count];
+    glGetAttachedShaders(program_id, attached_count, NULL, shaders);
+    for(int i = 0; i < attached_count; i++) {
+        DEBUG("Shader %d deleted", i);
+        glDeleteShader(shaders[i]); // Mark for removal, glDeleteProgram will handle deletion.
+    }
+    glDeleteProgram(program_id);
+    DEBUG("Program %d deleted", program_id);
+}
+
 bool create_program(GLuint *program_id, const char *vertex_shader, const char *fragment_shader) {
     GLuint id = glCreateProgram();
     if(!load_shader(id, GL_VERTEX_SHADER, vertex_shader))
@@ -171,7 +182,7 @@ bool create_program(GLuint *program_id, const char *vertex_shader, const char *f
     return true;
 
 error_0:
-    glDeleteProgram(id);
+    delete_program(id);
     return false;
 }
 
@@ -271,7 +282,7 @@ void video_render_finish(void) {
 }
 
 void video_close(void) {
-    glDeleteProgram(g_video_state.shader_prog);
+    delete_program(g_video_state.shader_prog);
     SDL_GL_DeleteContext(g_video_state.gl_context);
     SDL_DestroyWindow(g_video_state.window);
     omf_free(g_video_state.screen_palette);
