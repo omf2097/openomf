@@ -10,6 +10,7 @@
 #include "game/scenes/mechlab/button_details.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
+#include "resources/ids.h"
 #include "utils/log.h"
 
 void lab_menu_pilotselect_choose(component *c, void *userdata) {
@@ -54,6 +55,9 @@ component *lab_menu_pilotselect_create(scene *s, dashboard_widgets *dw) {
     sprite *msprite = animation_get_sprite(main_sheets, 4);
     component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);
 
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    pilotpic_select(dw->photo, PIC_PLAYERS, p1->pilot->photo_id);
+
     // Default text configuration
     text_settings tconf;
     text_defaults(&tconf);
@@ -82,7 +86,9 @@ component *lab_menu_pilotselect_create(scene *s, dashboard_widgets *dw) {
     // Add text label
     tconf.cforeground = color_create(0, 121, 0, 255);
     // TODO interpolate %s in the string here with blank
-    component *label = label_create(&tconf, lang_get(224));
+    char tmp[200];
+    snprintf(tmp, 200, lang_get(224), p1->pilot->name);
+    component *label = label_create(&tconf, tmp);
     component_set_pos_hints(label, 87, 155);
     component_set_size_hints(label, 150, 10);
     trnmenu_attach(menu, label);

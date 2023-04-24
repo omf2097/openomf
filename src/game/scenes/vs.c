@@ -219,7 +219,11 @@ void vs_input_tick(scene *scene) {
                         // there's an active singleplayer campaign, confirm quitting
                         dialog_show(&local->quit_dialog, 1);
                     } else {
-                        game_state_set_next(scene->gs, SCENE_MELEE);
+                        if (player1->chr) {
+                            game_state_set_next(scene->gs, SCENE_MECHLAB);
+                        } else {
+                            game_state_set_next(scene->gs, SCENE_MELEE);
+                        }
                     }
                 } else {
                     vs_handle_action(scene, i->event_data.action);
@@ -267,6 +271,9 @@ void vs_render(scene *scene) {
     } else if(player2->pilot_id == PILOT_KREISSACK && settings_get()->gameplay.difficulty < 2) {
         // kriessack, but not on Veteran or higher
         font_render_wrapped(&font_small, lang_get(747), 59, 160, 200, COLOR_YELLOW);
+    } else if (player1->chr) {
+        font_render_wrapped(&font_small, player2->pilot->quotes[0], 59, 160, 150,
+                COLOR_YELLOW);
     } else {
         font_render_wrapped(&font_small, lang_get(749 + (11 * player1->pilot_id) + player2->pilot_id), 59, 160, 150,
                             COLOR_YELLOW);
@@ -305,10 +312,14 @@ int vs_create(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    const char *pilot1 = lang_get(20 + player1->pilot_id);
-    const char *pilot2 = lang_get(20 + player2->pilot_id);
-    snprintf(local->vs_str, 128, "%*.*s VS. %*.*s", (int)strlen(pilot1) - 1, (int)strlen(pilot1) - 1, pilot1,
-             (int)strlen(pilot2) - 1, (int)strlen(pilot2) - 1, pilot2);
+    if (player1->chr) {
+        snprintf(local->vs_str, 128, "%s VS. %s", player1->chr->pilot.name, player2->pilot->name);
+    } else  {
+        const char *pilot1 = lang_get(20 + player1->pilot_id);
+        const char *pilot2 = lang_get(20 + player2->pilot_id);
+        snprintf(local->vs_str, 128, "%*.*s VS. %*.*s", (int)strlen(pilot1) - 1, (int)strlen(pilot1) - 1, pilot1,
+                (int)strlen(pilot2) - 1, (int)strlen(pilot2) - 1, pilot2);
+    }
 
     animation *ani;
 
@@ -334,14 +345,26 @@ int vs_create(scene *scene) {
     object_set_pal_offset(&local->player2_har, 48);
 
     // PLAYER
-    ani = &bk_get_info(&scene->bk_data, 4)->ani;
     object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
-    object_set_animation(&local->player1_portrait, ani);
-    object_select_sprite(&local->player1_portrait, player1->pilot_id);
+    ani = &bk_get_info(&scene->bk_data, 4)->ani;
+    if (player1->chr) {
+        object_set_sprite_override(&local->player1_portrait, 1);
+        local->player1_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
+        sprite_create(local->player1_portrait.cur_sprite, player1->chr->photo, -1);
+    } else {
+        object_set_animation(&local->player1_portrait, ani);
+        object_select_sprite(&local->player1_portrait, player1->pilot_id);
+    }
 
     object_create(&local->player2_portrait, scene->gs, vec2i_create(330, 150), vec2f_create(0, 0));
-    object_set_animation(&local->player2_portrait, ani);
-    object_select_sprite(&local->player2_portrait, player2->pilot_id);
+    if (player1->chr) {
+        object_set_sprite_override(&local->player2_portrait, 1);
+        local->player2_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
+        sprite_create(local->player2_portrait.cur_sprite, player1->chr->photo, -1);
+    } else {
+        object_set_animation(&local->player2_portrait, ani);
+        object_select_sprite(&local->player2_portrait, player2->pilot_id);
+    }
     object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
 
     // clone the left side of the background image

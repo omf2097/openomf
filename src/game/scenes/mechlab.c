@@ -141,10 +141,6 @@ void mechlab_free(scene *scene) {
     omf_free(local->mech);
     omf_free(local);
     scene_set_userdata(scene, local);
-    sd_pilot *new_pilot = omf_calloc(1, sizeof(sd_pilot));
-    sd_pilot_create(new_pilot);
-    game_player *p1 = game_state_get_player(scene->gs, 0);
-    game_player_set_pilot(p1, new_pilot);
 }
 
 void mechlab_update(scene *scene) {
@@ -199,6 +195,7 @@ void mechlab_tick(scene *scene, int paused) {
                 player1->pilot->money = player1->pilot->money - trn->registration_fee;
             }
             player1->chr = omf_calloc(1, sizeof(sd_chr_file));
+            memcpy(&player1->chr->pilot, player1->pilot, sizeof(sd_pilot));
             sd_chr_from_trn(player1->chr, trn, player1->pilot);
             char tmp[1024];
             const char *dirname = pm_get_local_path(SAVE_PATH);
