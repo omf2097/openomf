@@ -153,7 +153,11 @@ void vs_handle_action(scene *scene, int action) {
         switch(action) {
             case ACT_KICK:
             case ACT_PUNCH:
-                game_state_set_next(scene->gs, SCENE_ARENA0 + local->arena);
+                if (game_state_get_player(scene->gs, 1)->pilot) {
+                    game_state_set_next(scene->gs, SCENE_ARENA0 + local->arena);
+                } else {
+                    game_state_set_next(scene->gs, SCENE_MECHLAB);
+                }
                 break;
             case ACT_UP:
             case ACT_LEFT:
@@ -272,10 +276,10 @@ void vs_render(scene *scene) {
 
         // arena description
         font_render_wrapped(&font_small, lang_get(66 + local->arena), 56 + 72, 160, (211 - 72) - 4, COLOR_GREEN);
-    } else if(player2->pilot_id == PILOT_KREISSACK && settings_get()->gameplay.difficulty < 2) {
+    } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK && settings_get()->gameplay.difficulty < 2) {
         // kriessack, but not on Veteran or higher
         font_render_wrapped(&font_small, lang_get(747), 59, 160, 200, COLOR_YELLOW);
-    } else if (player1->chr) {
+    } else if (player1->chr && player2->pilot) {
         sd_tournament_file trn;
         trn_load(&trn, player1->chr->pilot.trn_name);
         for (int i = 0; i < player1->chr->pilot.enemies_inc_unranked; i++) {
@@ -286,10 +290,12 @@ void vs_render(scene *scene) {
             }
         }
         sd_tournament_free(&trn);
+    } else if (!player2->pilot) {
+        // render plug's bitching
     } else {
-        font_render_wrapped(&font_small, lang_get(749 + (11 * player1->pilot_id) + player2->pilot_id), 59, 160, 150,
+        font_render_wrapped(&font_small, lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id), 59, 160, 150,
                             COLOR_YELLOW);
-        font_render_wrapped(&font_small, lang_get(870 + (11 * player2->pilot_id) + player1->pilot_id), 320 - (59 + 150),
+        font_render_wrapped(&font_small, lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id), 320 - (59 + 150),
                             180, 150, COLOR_YELLOW);
     }
 }
@@ -324,11 +330,13 @@ int vs_create(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    if (player1->chr) {
+    if (player2->pilot == NULL) {
+        // display the financial report with your host Plug!
+    } else if (player1->chr) {
         snprintf(local->vs_str, 128, "%s VS. %s", player1->chr->pilot.name, player2->pilot->name);
     } else  {
-        const char *pilot1 = lang_get(20 + player1->pilot_id);
-        const char *pilot2 = lang_get(20 + player2->pilot_id);
+        const char *pilot1 = lang_get(20 + player1->pilot->pilot_id);
+        const char *pilot2 = lang_get(20 + player2->pilot->pilot_id);
         snprintf(local->vs_str, 128, "%*.*s VS. %*.*s", (int)strlen(pilot1) - 1, (int)strlen(pilot1) - 1, pilot1,
                 (int)strlen(pilot2) - 1, (int)strlen(pilot2) - 1, pilot2);
     }
@@ -339,9 +347,11 @@ int vs_create(scene *scene) {
     palette_set_player_color(mpal, 0, player1->pilot->color_3, 0);
     palette_set_player_color(mpal, 0, player1->pilot->color_2, 1);
     palette_set_player_color(mpal, 0, player1->pilot->color_1, 2);
-    palette_set_player_color(mpal, 1, player2->colors[2], 0);
-    palette_set_player_color(mpal, 1, player2->colors[1], 1);
-    palette_set_player_color(mpal, 1, player2->colors[0], 2);
+    if (player2->pilot) {
+        palette_set_player_color(mpal, 1, player2->colors[2], 0);
+        palette_set_player_color(mpal, 1, player2->colors[1], 1);
+        palette_set_player_color(mpal, 1, player2->colors[0], 2);
+    }
     video_force_pal_refresh();
 
     // HAR
@@ -350,68 +360,72 @@ int vs_create(scene *scene) {
     object_set_animation(&local->player1_har, ani);
     object_select_sprite(&local->player1_har, player1->pilot->har_id);
 
-    object_create(&local->player2_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
-    object_set_animation(&local->player2_har, ani);
-    object_select_sprite(&local->player2_har, player2->pilot->har_id);
-    object_set_direction(&local->player2_har, OBJECT_FACE_LEFT);
-    object_set_pal_offset(&local->player2_har, 48);
+    if (player2->pilot != NULL) {
+        object_create(&local->player2_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
+        object_set_animation(&local->player2_har, ani);
+        object_select_sprite(&local->player2_har, player2->pilot->har_id);
+        object_set_direction(&local->player2_har, OBJECT_FACE_LEFT);
+        object_set_pal_offset(&local->player2_har, 48);
 
-    // PLAYER
-    object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
-    ani = &bk_get_info(&scene->bk_data, 4)->ani;
-    if (player1->chr) {
-        object_set_sprite_override(&local->player1_portrait, 1);
-        local->player1_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
-        sprite_create(local->player1_portrait.cur_sprite, player1->chr->photo, -1);
-    } else {
-        object_set_animation(&local->player1_portrait, ani);
-        object_select_sprite(&local->player1_portrait, player1->pilot_id);
-    }
-
-    object_create(&local->player2_portrait, scene->gs, vec2i_create(330, 150), vec2f_create(0, 0));
-    if (player1->chr) {
-        object_set_sprite_override(&local->player2_portrait, 1);
-        char tmp[200];
-        const char *dirname = pm_get_local_path(RESOURCE_PATH);
-        str pic_file;
-        str_from_c(&pic_file, player1->chr->pilot.trn_image);
-        str_toupper(&pic_file);
-        snprintf(tmp, 200, "%s%s", dirname, str_c(&pic_file));
-        str_free(&pic_file);
-        sd_pic_file pic;
-        sd_pic_create(&pic);
-        sd_pic_load(&pic, tmp);
-        DEBUG("opponent has photo id %d", player2->pilot->photo_id);
-        local->player2_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
-        sd_tournament_file trn;
-        trn_load(&trn, player1->chr->pilot.trn_name);
-        for (int i = 0; i < player1->chr->pilot.enemies_inc_unranked; i++) {
-            if (!strcmp(trn.enemies[i]->name, player2->pilot->name)) {
-                sprite_create(local->player2_portrait.cur_sprite, pic.photos[trn.enemies[i]->photo_id]->sprite, -1);
-                break;
-            }
+        // PLAYER
+        object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
+        ani = &bk_get_info(&scene->bk_data, 4)->ani;
+        if (player1->chr) {
+            object_set_sprite_override(&local->player1_portrait, 1);
+            local->player1_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
+            sprite_create(local->player1_portrait.cur_sprite, player1->chr->photo, -1);
+        } else {
+            object_set_animation(&local->player1_portrait, ani);
+            object_select_sprite(&local->player1_portrait, player1->pilot->pilot_id);
         }
-        sd_tournament_free(&trn);
-        sd_pic_free(&pic);
-    } else {
-        object_set_animation(&local->player2_portrait, ani);
-        object_select_sprite(&local->player2_portrait, player2->pilot_id);
-    }
-    object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
 
-    // clone the left side of the background image
-    // Note! We are touching the scene-wide background surface!
-    surface_sub(&scene->bk_data.background, // DST Surface
+        object_create(&local->player2_portrait, scene->gs, vec2i_create(330, 150), vec2f_create(0, 0));
+        if (player1->chr) {
+            object_set_sprite_override(&local->player2_portrait, 1);
+            char tmp[200];
+            const char *dirname = pm_get_local_path(RESOURCE_PATH);
+            str pic_file;
+            str_from_c(&pic_file, player1->chr->pilot.trn_image);
+            str_toupper(&pic_file);
+            snprintf(tmp, 200, "%s%s", dirname, str_c(&pic_file));
+            str_free(&pic_file);
+            sd_pic_file pic;
+            sd_pic_create(&pic);
+            sd_pic_load(&pic, tmp);
+            DEBUG("opponent has photo id %d", player2->pilot->photo_id);
+            local->player2_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
+            sd_tournament_file trn;
+            trn_load(&trn, player1->chr->pilot.trn_name);
+            for (int i = 0; i < player1->chr->pilot.enemies_inc_unranked; i++) {
+                if (!strcmp(trn.enemies[i]->name, player2->pilot->name)) {
+                    sprite_create(local->player2_portrait.cur_sprite, pic.photos[trn.enemies[i]->photo_id]->sprite, -1);
+                    break;
+                }
+            }
+            sd_tournament_free(&trn);
+            sd_pic_free(&pic);
+        } else {
+            object_set_animation(&local->player2_portrait, ani);
+            object_select_sprite(&local->player2_portrait, player2->pilot->pilot_id);
+        }
+        object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
+    }
+
+    if (player2->pilot != NULL) {
+        // clone the left side of the background image
+        // Note! We are touching the scene-wide background surface!
+        surface_sub(&scene->bk_data.background, // DST Surface
                 &scene->bk_data.background, // SRC Surface
                 160, 0,                     // DST
                 0, 0,                       // SRC
                 160, 200,                   // Size
                 SUB_METHOD_MIRROR);         // Flip the right side horizontally
+    }
 
     if(player2->selectable) {
         // player1 gets to choose, start at arena 0
         local->arena = 0;
-    } else if(player2->pilot_id == PILOT_KREISSACK) {
+    } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK) {
         // force arena 0 when fighting Kreissack in 1 player mode
         local->arena = 0;
     } else {
@@ -429,6 +443,12 @@ int vs_create(scene *scene) {
 
     // SCIENTIST
     int scientistpos = rand_int(4);
+    if (!player2->pilot && scientistpos % 2 == 1) {
+        // there is no right hand gantry
+        // so if the position is odd, sub 1
+        // to force it to the left side
+        scientistpos -= 1;
+    }
     vec2i scientistcoord = spawn_position(scientistpos, 1);
     if(scientistpos % 2) {
         scientistcoord.x += 50;
@@ -448,9 +468,13 @@ int vs_create(scene *scene) {
     // welder can't be on the same gantry or the same *side* as the scientist
     // he also can't be on the same 'level'
     // but he has 10 possible starting positions
-    while((welderpos % 2) == (scientistpos % 2) || (scientistpos < 2 && welderpos < 2) ||
+    while(((welderpos % 2) == (scientistpos % 2) && player2->pilot) || (scientistpos < 2 && welderpos < 2) ||
           (scientistpos > 1 && welderpos > 1 && welderpos < 4)) {
         welderpos = rand_int(6);
+        if (!player2->pilot && welderpos % 2 == 1) {
+            // no second HAR, so force the welder to a position on the left gantry
+            welderpos -= 1;
+        }
     }
     object *o_welder = omf_calloc(1, sizeof(object));
     ani = &bk_get_info(&scene->bk_data, 7)->ani;
@@ -470,12 +494,14 @@ int vs_create(scene *scene) {
     object_select_sprite(o_gantry_a, 0);
     game_state_add_object(scene->gs, o_gantry_a, RENDER_LAYER_TOP, 0, 0);
 
-    object *o_gantry_b = omf_calloc(1, sizeof(object));
-    object_create(o_gantry_b, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
-    object_set_animation(o_gantry_b, ani);
-    object_select_sprite(o_gantry_b, 0);
-    object_set_direction(o_gantry_b, OBJECT_FACE_LEFT);
-    game_state_add_object(scene->gs, o_gantry_b, RENDER_LAYER_TOP, 0, 0);
+    if (player2->pilot) {
+        object *o_gantry_b = omf_calloc(1, sizeof(object));
+        object_create(o_gantry_b, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
+        object_set_animation(o_gantry_b, ani);
+        object_select_sprite(o_gantry_b, 0);
+        object_set_direction(o_gantry_b, OBJECT_FACE_LEFT);
+        game_state_add_object(scene->gs, o_gantry_b, RENDER_LAYER_TOP, 0, 0);
+    }
 
     // Background tex
     menu_background2_create(&local->arena_select_bg, 211, 50);
@@ -492,7 +518,7 @@ int vs_create(scene *scene) {
     local->too_pathetic_dialog.userdata = scene;
     local->too_pathetic_dialog.clicked = vs_too_pathetic_dialog_clicked;
 
-    if(player2->pilot_id == PILOT_KREISSACK && settings_get()->gameplay.difficulty < 2) {
+    if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK && settings_get()->gameplay.difficulty < 2) {
         // kriessack, but not on Veteran or higher
         dialog_show(&local->too_pathetic_dialog, 1);
     }

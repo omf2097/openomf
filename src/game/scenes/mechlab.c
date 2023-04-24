@@ -42,13 +42,14 @@ bool mechlab_find_last_player(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
     // Find last saved game ...
     game_player *p1 = game_state_get_player(scene->gs, 0);
+
     const char *last_name = settings_get()->tournament.last_name;
     if(last_name == NULL || strlen(last_name) == 0) {
         last_name = NULL;
     }
 
-    // ... and attempt to load it, if one was found.
-    if(last_name != NULL) {
+    // ... and attempt to load it, if one was found and we don't have one already loaded
+    if(!p1->chr && last_name != NULL) {
         sd_chr_file *chr = omf_calloc(1, sizeof(sd_chr_file));
         int ret = sg_load(chr, last_name);
         if(ret != SD_SUCCESS) {
@@ -212,6 +213,12 @@ void mechlab_tick(scene *scene, int paused) {
             guiframe_set_root(local->frame, menu);
             guiframe_layout(local->frame);
         } else {
+            game_player *player1 = game_state_get_player(scene->gs, 0);
+            if (player1->chr) {
+                omf_free(player1->chr);
+                player1->pilot = omf_calloc(1, sizeof(sd_pilot));
+                sd_pilot_create(player1->pilot);
+            }
             game_state_set_next(scene->gs, SCENE_MENU);
         }
     }

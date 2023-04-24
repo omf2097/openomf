@@ -111,7 +111,7 @@ int cutscene_create(scene *scene) {
             break;
 
         case SCENE_END1:
-            text = lang_get(END1_TEXT + p1->pilot_id);
+            text = lang_get(END1_TEXT + p1->pilot->pilot_id);
             local->text_x = 10;
             local->text_y = 157;
             local->text_width = 300;
@@ -122,12 +122,12 @@ int cutscene_create(scene *scene) {
             object *obj = omf_calloc(1, sizeof(object));
             object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(obj, ani);
-            object_select_sprite(obj, p1->pilot_id);
+            object_select_sprite(obj, p1->pilot->pilot_id);
             object_set_halt(obj, 1);
             game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
 
             // Face effects
-            ani = &bk_get_info(&scene->bk_data, 10 + p1->pilot_id)->ani;
+            ani = &bk_get_info(&scene->bk_data, 10 + p1->pilot->pilot_id)->ani;
             obj = omf_calloc(1, sizeof(object));
             object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(obj, ani);
@@ -135,7 +135,7 @@ int cutscene_create(scene *scene) {
             break;
 
         case SCENE_END2:
-            text = lang_get(END2_TEXT + p1->pilot_id);
+            text = lang_get(END2_TEXT + p1->pilot->pilot_id);
             local->text_x = 10;
             local->text_y = 160;
             local->text_width = 300;

@@ -111,10 +111,10 @@ void menu_connect_tick(component *c) {
             // force the speed to 3
             game_state_set_speed(gs, 10);
 
-            p1->har_id = HAR_JAGUAR;
-            p1->pilot_id = 0;
-            p2->har_id = HAR_JAGUAR;
-            p2->pilot_id = 0;
+            p1->pilot->har_id = HAR_JAGUAR;
+            p1->pilot->pilot_id = 0;
+            p2->pilot->har_id = HAR_JAGUAR;
+            p2->pilot->pilot_id = 0;
 
             player1_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player1_ctrl);

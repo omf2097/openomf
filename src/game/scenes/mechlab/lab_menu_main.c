@@ -27,7 +27,7 @@ void lab_menu_main_arena(component *c, void *userdata) {
         game_player *p2 = game_state_get_player(s->gs, 1);
         p2->selectable = 0;
         p2->pilot = pilot;
-        ai_controller_create(ctrl, p1->pilot->difficulty, pilot, p2->pilot_id);
+        ai_controller_create(ctrl, p1->pilot->difficulty, pilot, p2->pilot->pilot_id);
         game_player_set_ctrl(p2, ctrl);
         game_state_set_next(s->gs, SCENE_VS);
     }

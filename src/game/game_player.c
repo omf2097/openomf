@@ -3,8 +3,6 @@
 #include <stdlib.h>
 
 void game_player_create(game_player *gp) {
-    gp->har_id = 0;
-    gp->pilot_id = 0;
     gp->har = NULL;
     gp->ctrl = NULL;
     gp->portrait = NULL;

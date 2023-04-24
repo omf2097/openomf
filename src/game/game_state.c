@@ -111,8 +111,8 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
             gs->players[i]->colors[0] = rec.pilots[i].info.color_3;
             gs->players[i]->colors[1] = rec.pilots[i].info.color_2;
             gs->players[i]->colors[2] = rec.pilots[i].info.color_1;
-            gs->players[i]->har_id = HAR_JAGUAR + rec.pilots[i].info.har_id;
-            gs->players[i]->pilot_id = rec.pilots[i].info.pilot_id;
+            gs->players[i]->pilot->har_id = HAR_JAGUAR + rec.pilots[i].info.har_id;
+            gs->players[i]->pilot->pilot_id = rec.pilots[i].info.pilot_id;
         }
 
         // XXX use playback controller once it exista
@@ -777,7 +777,7 @@ void _setup_ai(game_state *gs, int player_id) {
     controller_init(ctrl);
 
     sd_pilot *pilot = game_player_get_pilot(player);
-    ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, player->pilot_id);
+    ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, player->pilot->pilot_id);
 
     game_player_set_ctrl(player, ctrl);
     game_player_set_selectable(player, 0);
@@ -826,18 +826,18 @@ void game_state_init_demo(game_state *gs) {
         controller *ctrl = omf_calloc(1, sizeof(controller));
         controller_init(ctrl);
         sd_pilot *pl = game_player_get_pilot(player);
-        ai_controller_create(ctrl, 4, pl, player->pilot_id);
+        ai_controller_create(ctrl, 4, pl, player->pilot->pilot_id);
         game_player_set_ctrl(player, ctrl);
         game_player_set_selectable(player, 1);
 
         // select random pilot and har
-        player->pilot_id = rand_int(10);
-        player->har_id = rand_int(11);
+        player->pilot->pilot_id = rand_int(10);
+        player->pilot->har_id = rand_int(11);
         chr_score_reset(&player->score, 1);
 
         // set proper color
         pilot pilot_info;
-        pilot_get_info(&pilot_info, player->pilot_id);
+        pilot_get_info(&pilot_info, player->pilot->pilot_id);
         player->colors[0] = pilot_info.colors[0];
         player->colors[1] = pilot_info.colors[1];
         player->colors[2] = pilot_info.colors[2];

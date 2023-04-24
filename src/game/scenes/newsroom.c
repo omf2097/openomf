@@ -180,38 +180,43 @@ void newsroom_input_tick(scene *scene) {
                             game_player *p1 = game_state_get_player(scene->gs, 0);
                             game_player *p2 = game_state_get_player(scene->gs, 1);
                             DEBUG("wins are %d", p1->sp_wins);
-                            if(p1->sp_wins == (4094 ^ (2 << p1->pilot_id))) {
+                            if(p1->sp_wins == (4094 ^ (2 << p1->pilot->pilot_id))) {
                                 // won the game
                                 game_state_set_next(scene->gs, SCENE_END);
                             } else {
-                                if(p1->sp_wins == (2046 ^ (2 << p1->pilot_id))) {
+                                if(p1->sp_wins == (2046 ^ (2 << p1->pilot->pilot_id))) {
                                     // everyone but kriessack
-                                    p2->pilot_id = 10;
-                                    p2->har_id = HAR_NOVA;
+                                    p2->pilot->pilot_id = 10;
+                                    p2->pilot->har_id = HAR_NOVA;
                                 } else {
                                     // pick an opponent we have not yet beaten
                                     while(1) {
                                         int i = rand_int(10);
-                                        if((2 << i) & p1->sp_wins || i == p1->pilot_id) {
+                                        if((2 << i) & p1->sp_wins || i == p1->pilot->pilot_id) {
                                             continue;
                                         }
-                                        p2->pilot_id = i;
-                                        p2->har_id = rand_int(10);
+                                        p2->pilot->pilot_id = i;
+                                        p2->pilot->har_id = rand_int(10);
                                         break;
                                     }
                                 }
                                 pilot p;
-                                pilot_get_info(&p, p2->pilot_id);
+                                pilot_get_info(&p, p2->pilot->pilot_id);
                                 p2->colors[0] = p.colors[0];
                                 p2->colors[1] = p.colors[1];
                                 p2->colors[2] = p.colors[2];
 
-                                // make a new AI controller
-                                controller *ctrl = omf_calloc(1, sizeof(controller));
-                                controller_init(ctrl);
-                                sd_pilot *pilot = game_player_get_pilot(p2);
-                                ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, p2->pilot_id);
-                                game_player_set_ctrl(p2, ctrl);
+                                if (p1->chr) {
+                                    // clear the opponent as a signal to display plug on the VS
+                                    p2->pilot=NULL;
+                                } else {
+                                    // make a new AI controller
+                                    controller *ctrl = omf_calloc(1, sizeof(controller));
+                                    controller_init(ctrl);
+                                    sd_pilot *pilot = game_player_get_pilot(p2);
+                                    ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, p2->pilot->pilot_id);
+                                    game_player_set_ctrl(p2, ctrl);
+                                }
                                 game_state_set_next(scene->gs, SCENE_VS);
                             }
                         } else {
@@ -289,8 +294,8 @@ int newsroom_create(scene *scene) {
     // XXX TODO get the real sex of pilot
     // XXX TODO strip spaces from the end of the pilots name
     // XXX TODO set winner/loser names properly
-    newsroom_set_names(local, lang_get(20 + p1->pilot_id), lang_get(20 + p2->pilot_id), har_get_name(p1->har_id),
-                       har_get_name(p2->har_id), pilot_sex(p1->pilot_id), pilot_sex(p2->pilot_id));
+    newsroom_set_names(local, lang_get(20 + p1->pilot->pilot_id), lang_get(20 + p2->pilot->pilot_id), har_get_name(p1->pilot->har_id),
+                       har_get_name(p2->pilot->har_id), pilot_sex(p1->pilot->pilot_id), pilot_sex(p2->pilot->pilot_id));
     newsroom_fixup_str(local);
 
     // Continue Dialog

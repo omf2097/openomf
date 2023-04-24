@@ -210,8 +210,8 @@ int scoreboard_create(scene *scene) {
         if(score_fits_scoreboard(local, score)) {
             local->has_pending_data = 1;
             local->pending_data.score = score;
-            local->pending_data.har_id = player->har_id;
-            local->pending_data.pilot_id = player->pilot_id;
+            local->pending_data.har_id = player->pilot->har_id;
+            local->pending_data.pilot_id = player->pilot->pilot_id;
             local->pending_data.name[0] = 0;
         }
 

@@ -292,38 +292,38 @@ void handle_action(scene *scene, int player, int action) {
                         }
                     }
                     if(nova_activated[0] && local->row_a == 1 && local->column_a == 2) {
-                        player1->har_id = HAR_NOVA;
+                        player1->pilot->har_id = HAR_NOVA;
                     } else {
-                        player1->har_id = 5 * local->row_a + local->column_a;
+                        player1->pilot->har_id = 5 * local->row_a + local->column_a;
                     }
-                    player1->pilot_id = local->pilot_id_a;
+                    player1->pilot->pilot_id = local->pilot_id_a;
                     if(player2->selectable) {
                         if(nova_activated[1] && local->row_b == 1 && local->column_b == 2) {
-                            player2->har_id = HAR_NOVA;
+                            player2->pilot->har_id = HAR_NOVA;
                         } else {
-                            player2->har_id = 5 * local->row_b + local->column_b;
+                            player2->pilot->har_id = 5 * local->row_b + local->column_b;
                         }
-                        player2->pilot_id = local->pilot_id_b;
+                        player2->pilot->pilot_id = local->pilot_id_b;
                     } else {
-                        if(player1->sp_wins == (2046 ^ (2 << player1->pilot_id))) {
+                        if(player1->sp_wins == (2046 ^ (2 << player1->pilot->pilot_id))) {
                             // everyone but kriessack
-                            player2->pilot_id = 10;
-                            player2->har_id = HAR_NOVA;
+                            player2->pilot->pilot_id = 10;
+                            player2->pilot->har_id = HAR_NOVA;
                         } else {
                             // pick an opponent we have not yet beaten
                             while(1) {
                                 int i = rand_int(10);
-                                if((2 << i) & player1->sp_wins || i == player1->pilot_id) {
+                                if((2 << i) & player1->sp_wins || i == player1->pilot->pilot_id) {
                                     continue;
                                 }
-                                player2->pilot_id = i;
-                                player2->har_id = rand_int(10);
+                                player2->pilot->pilot_id = i;
+                                player2->pilot->har_id = rand_int(10);
                                 break;
                             }
                         }
 
                         pilot p_a;
-                        pilot_get_info(&p_a, player2->pilot_id);
+                        pilot_get_info(&p_a, player2->pilot->pilot_id);
                         player2->colors[0] = p_a.colors[0];
                         player2->colors[1] = p_a.colors[1];
                         player2->colors[2] = p_a.colors[2];

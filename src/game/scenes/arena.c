@@ -206,6 +206,13 @@ int is_singleplayer(scene *scene) {
     return 0;
 }
 
+int is_tournament(scene *scene) {
+    if(game_state_get_player(scene->gs, 0)->chr) {
+        return 1;
+    }
+    return 0;
+}
+
 int is_demoplay(scene *scene) {
     if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_AI &&
        game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_AI) {
@@ -245,7 +252,7 @@ void arena_end(scene *sc) {
             next_id = rand_arena();
         } while(next_id == sc->id);
         game_state_set_next(gs, next_id);
-    } else if(is_singleplayer(sc)) {
+    } else if(is_singleplayer(sc) || is_tournament(sc)) {
         game_state_set_next(gs, SCENE_NEWSROOM);
     } else if(is_twoplayer(sc)) {
         game_state_set_next(gs, SCENE_MELEE);
@@ -527,8 +534,11 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
             scene_youwin_anim_start(scene->gs);
         } else {
             if(player_id == 1) {
+                player_winner->pilot->rank--;
+                player_winner->pilot->wins++;
                 scene_youwin_anim_start(scene->gs);
             } else {
+                player_winner->pilot->losses++;
                 scene_youlose_anim_start(scene->gs);
             }
         }
@@ -542,8 +552,8 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         winner_har->state = STATE_VICTORY;
         local->over = 1;
         if(is_singleplayer(scene)) {
-            player_winner->sp_wins |= 2 << player_loser->pilot_id;
-            if(player_loser->pilot_id == 10) {
+            player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
+            if(player_loser->pilot->pilot_id == 10) {
                 // can't scrap/destruct kreissack
                 winner_har->state = STATE_DONE;
                 // major go boom
@@ -1056,16 +1066,16 @@ void arena_render_overlay(scene *scene) {
         }
 
         // Render HAR and pilot names
-        font_render_shadowed(&font_small, lang_get(player[0]->pilot_id + 20), 5, 19, TEXT_COLOR,
+        font_render_shadowed(&font_small, lang_get(player[0]->pilot->pilot_id + 20), 5, 19, TEXT_COLOR,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        font_render_shadowed(&font_small, lang_get((player[0]->har_id) + 31), 5, 26, TEXT_COLOR,
+        font_render_shadowed(&font_small, lang_get((player[0]->pilot->har_id) + 31), 5, 26, TEXT_COLOR,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
 
-        int p2len = (strlen(lang_get(player[1]->pilot_id + 20)) - 1) * font_small.w;
-        int h2len = (strlen(lang_get((player[1]->har_id) + 31)) - 1) * font_small.w;
-        font_render_shadowed(&font_small, lang_get(player[1]->pilot_id + 20), 315 - p2len, 19, TEXT_COLOR,
+        int p2len = (strlen(lang_get(player[1]->pilot->pilot_id + 20)) - 1) * font_small.w;
+        int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * font_small.w;
+        font_render_shadowed(&font_small, lang_get(player[1]->pilot->pilot_id + 20), 315 - p2len, 19, TEXT_COLOR,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        font_render_shadowed(&font_small, lang_get((player[1]->har_id) + 31), 315 - h2len, 26, TEXT_COLOR,
+        font_render_shadowed(&font_small, lang_get((player[1]->pilot->har_id) + 31), 315 - h2len, 26, TEXT_COLOR,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
 
         // Render score stuff
@@ -1214,13 +1224,13 @@ int arena_create(scene *scene) {
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
 
-        if(scene_load_har(scene, i, player->har_id)) {
+        if(scene_load_har(scene, i, player->pilot->har_id)) {
             omf_free(obj);
             return 1;
         }
 
         object_create(obj, scene->gs, pos[i], vec2f_create(0, 0));
-        if(har_create(obj, scene->af_data[i], dir[i], player->har_id, player->pilot_id, i)) {
+        if(har_create(obj, scene->af_data[i], dir[i], player->pilot->har_id, player->pilot->pilot_id, i)) {
             return 1;
         }
 
@@ -1395,13 +1405,13 @@ int arena_create(scene *scene) {
         for(int i = 0; i < 2; i++) {
             // Declare some vars
             game_player *player = game_state_get_player(scene->gs, i);
-            DEBUG("player %d using har %d", i, player->har_id);
-            local->rec->pilots[i].info.har_id = (unsigned char)player->har_id;
-            local->rec->pilots[i].info.pilot_id = player->pilot_id;
+            DEBUG("player %d using har %d", i, player->pilot->har_id);
+            local->rec->pilots[i].info.har_id = (unsigned char)player->pilot->har_id;
+            local->rec->pilots[i].info.pilot_id = player->pilot->pilot_id;
             local->rec->pilots[i].info.color_1 = player->colors[2];
             local->rec->pilots[i].info.color_2 = player->colors[1];
             local->rec->pilots[i].info.color_3 = player->colors[0];
-            memcpy(local->rec->pilots[i].info.name, lang_get(player->pilot_id + 20), 18);
+            memcpy(local->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
         }
         local->rec->arena_id = scene->id - SCENE_ARENA0;
     } else {
