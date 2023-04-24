@@ -18,12 +18,12 @@ Required:
 On Ubuntu, it is possible to pull the libraries using apt-get.
 ```
 apt-get install cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev libconfuse-dev libenet-dev \
-    libsdl2-dev libxmp-dev libpng-dev libglew-dev libopengl-dev
+    libsdl2-dev libxmp-dev libpng-dev libepoxy-dev libopengl-dev
 ```
 
 On Mac, you can use brew:
 ```
-brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng glew
+brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng epoxy
 ```
 
 ### Acquiring the sources

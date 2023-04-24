@@ -1,6 +1,6 @@
-#include <GL/glew.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <epoxy/gl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -69,17 +69,6 @@ bool create_gl_context(void) {
     INFO(" * Version: %s", glGetString(GL_VERSION));
     INFO(" * GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
     g_video_state.gl_context = context;
-    return true;
-}
-
-bool load_glew(void) {
-    // This must be loaded after we have the GL context up.
-    GLuint err = glewInit();
-    if(err != GLEW_OK) {
-        PERROR("Failed to load GLEW: %s", glewGetErrorString(err));
-        return false;
-    }
-    INFO("Loaded GLEW %s", glewGetString(GLEW_VERSION));
     return true;
 }
 
@@ -233,9 +222,6 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
         goto error_0;
     }
     if(!create_gl_context()) {
-        goto error_1;
-    }
-    if(!load_glew()) {
         goto error_1;
     }
     if(!enable_vsync()) {
