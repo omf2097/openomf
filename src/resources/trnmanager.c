@@ -63,7 +63,7 @@ int trn_load(sd_tournament_file *trn, const char *trnname) {
 
     // Form the savegame filename
     const char *dirname = pm_get_local_path(RESOURCE_PATH);
-    snprintf(tmp, 1024, "%s/%s.TRN", dirname, trnname);
+    snprintf(tmp, 1024, "%s%s", dirname, trnname);
 
     // Attempt to load
     sd_tournament_create(trn);
