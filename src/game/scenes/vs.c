@@ -360,7 +360,7 @@ int vs_create(scene *scene) {
     object_set_animation(&local->player1_har, ani);
     object_select_sprite(&local->player1_har, player1->pilot->har_id);
 
-    if (player2->pilot != NULL) {
+    if (player2->pilot) {
         object_create(&local->player2_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
         object_set_animation(&local->player2_har, ani);
         object_select_sprite(&local->player2_har, player2->pilot->har_id);
@@ -409,7 +409,15 @@ int vs_create(scene *scene) {
             object_select_sprite(&local->player2_portrait, player2->pilot->pilot_id);
         }
         object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
+    } else {
+
+        // plug is player 1 now
+        object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
+        ani = &bk_get_info(&scene->bk_data, 2)->ani;
+        object_set_animation(&local->player1_portrait, ani);
+        object_select_sprite(&local->player1_portrait, 0);
     }
+
 
     if (player2->pilot != NULL) {
         // clone the left side of the background image
