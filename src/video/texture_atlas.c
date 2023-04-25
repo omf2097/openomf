@@ -29,13 +29,15 @@ static GLuint create_atlas_texture(uint16_t width, uint16_t height) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG_INTEGER, width, height, 0, GL_RG_INTEGER, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, width, height, 0, GL_RG, GL_UNSIGNED_BYTE, NULL);
     return texture_id;
 }
 
 static void update_texture(GLuint texture_id, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *bytes) {
     glBindTexture(GL_TEXTURE_2D, texture_id);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RG_INTEGER, GL_UNSIGNED_BYTE, bytes);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RG8, GL_UNSIGNED_BYTE, bytes);
 }
 
 void atlas_create(texture_atlas *atlas, uint16_t width, uint16_t height) {
