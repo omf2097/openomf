@@ -1,216 +1,42 @@
 #include <SDL.h>
 #include <epoxy/gl.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "formats/palette.h"
-#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/image.h"
+#include "video/opengl/shaders.h"
+#include "video/opengl/texture_atlas.h"
+#include "video/sdl_window.h"
 #include "video/tcache.h"
 #include "video/video.h"
-#include "video/video_state.h"
+
+typedef struct video_state {
+    SDL_Window *window;
+    SDL_GLContext *gl_context;
+    texture_atlas *atlas;
+
+    int screen_w;
+    int screen_h;
+    bool fullscreen;
+    bool vsync;
+
+    float fade;
+    int target_move_x;
+    int target_move_y;
+
+    bool render_bg_separately;
+
+    GLuint shader_prog;
+
+    // Palettes
+    palette *base_palette;          // Copy of the scenes base palette
+    screen_palette *screen_palette; // Normal rendering palette
+    screen_palette *extra_palette;  // Reflects base palette, used for additive blending
+} video_state;
 
 static video_state g_video_state;
-
-bool create_window(int width, int height, bool fullscreen) {
-    char title[32];
-    snprintf(title, 32, "OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
-
-    // Request OpenGL 3.3 core context. This also gives us GLSL 330.
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-    // TODO: Probably not required
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-
-    // RGBA8888
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-
-    SDL_Window *window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
-                                          SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
-    if(window == NULL) {
-        PERROR("Could not create window: %s", SDL_GetError());
-        return false;
-    }
-
-    if(fullscreen) {
-        if(SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN) != 0) {
-            PERROR("Could not set fullscreen mode!");
-        } else {
-            INFO("Fullscreen mode enabled!");
-        }
-    } else {
-        SDL_SetWindowFullscreen(window, 0);
-    }
-
-    SDL_DisableScreenSaver();
-    g_video_state.window = window;
-    return true;
-}
-
-bool create_gl_context(void) {
-    SDL_GLContext *context = SDL_GL_CreateContext(g_video_state.window);
-    if(context == NULL) {
-        PERROR("Could not acquire OpenGL context: %s", SDL_GetError());
-        return false;
-    }
-    INFO("OpenGL context acquired!");
-    INFO(" * Vendor: %s", glGetString(GL_VENDOR));
-    INFO(" * Renderer: %s", glGetString(GL_RENDERER));
-    INFO(" * Version: %s", glGetString(GL_VERSION));
-    INFO(" * GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-    g_video_state.gl_context = context;
-    return true;
-}
-
-void print_log(const char *buffer, long len, const char *header) {
-    str log;
-    str sub;
-
-    // Make sure the string always ends in one \n
-    str_from_buf(&log, buffer, len);
-    str_rstrip(&log);
-    str_append_c(&log, "\n");
-
-    // Print line by line
-    size_t pos = 0, last = 0;
-    PERROR("--- %s ---", header);
-    while(str_find_next(&log, '\n', &pos)) {
-        str_from_slice(&sub, &log, last, pos - 1);
-        PERROR("%s", str_c(&sub));
-        str_free(&sub);
-        last = ++pos;
-    }
-    PERROR("--- end log ---", header);
-
-    str_free(&log);
-}
-
-void print_shader_log(const GLuint shader, const char *header) {
-    if(!glIsShader(shader)) {
-        PERROR("Attempted to print logs for shader %d: not a shader", shader);
-        return;
-    }
-
-    int buffer_size = 0, read_size = 0;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &buffer_size);
-    char *buffer_data = omf_calloc(buffer_size, 1);
-    glGetShaderInfoLog(shader, buffer_size, &read_size, buffer_data);
-    print_log(buffer_data, read_size, header);
-    omf_free(buffer_data);
-}
-
-void print_program_log(const GLuint program) {
-    if(!glIsProgram(program)) {
-        PERROR("Attempted to print logs for program %d: not a program", program);
-        return;
-    }
-
-    int buffer_size = 0, read_size = 0;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &buffer_size);
-    char *buffer_data = omf_calloc(buffer_size, 1);
-    glGetProgramInfoLog(program, buffer_size, &read_size, buffer_data);
-    print_log(buffer_data, read_size, "program");
-    omf_free(buffer_data);
-}
-
-bool load_shader(GLuint program_id, GLenum shader_type, const char *shader_file) {
-    str shader_path;
-    str shader_source;
-
-    str_from_format(&shader_path, "%s%s", pm_get_local_path(SHADER_PATH), shader_file);
-    str_from_file(&shader_source, str_c(&shader_path));
-    const char *c_str = str_c(&shader_source);
-
-    GLuint shader = glCreateShader(shader_type);
-    glShaderSource(shader, 1, &c_str, NULL);
-    glCompileShader(shader);
-
-    str_free(&shader_source);
-    str_free(&shader_path);
-
-    GLint status = GL_FALSE;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-    if(status != GL_TRUE) {
-        PERROR("Compilation error for shader %d (file=%s)", shader, shader_file);
-        print_shader_log(shader, shader_file);
-        return false;
-    }
-    DEBUG("Compilation succeeded for shader %d (file=%s)", shader, shader_file);
-    glAttachShader(program_id, shader);
-    return true;
-}
-
-void delete_program(GLuint program_id) {
-    GLsizei attached_count = 0;
-    glGetProgramiv(program_id, GL_ATTACHED_SHADERS, &attached_count);
-    GLuint shaders[attached_count];
-    glGetAttachedShaders(program_id, attached_count, NULL, shaders);
-    for(int i = 0; i < attached_count; i++) {
-        DEBUG("Shader %d deleted", i);
-        glDeleteShader(shaders[i]); // Mark for removal, glDeleteProgram will handle deletion.
-    }
-    glDeleteProgram(program_id);
-    DEBUG("Program %d deleted", program_id);
-}
-
-bool create_program(GLuint *program_id, const char *vertex_shader, const char *fragment_shader) {
-    GLuint id = glCreateProgram();
-    if(!load_shader(id, GL_VERTEX_SHADER, vertex_shader))
-        goto error_0;
-    if(!load_shader(id, GL_FRAGMENT_SHADER, fragment_shader))
-        goto error_0;
-
-    glLinkProgram(id);
-    GLint status = GL_TRUE;
-    glGetProgramiv(id, GL_LINK_STATUS, &status);
-    if(status != GL_TRUE) {
-        PERROR("Compilation error for program %d (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
-        print_program_log(id);
-        goto error_0;
-    }
-
-    *program_id = id;
-    DEBUG("Compilation succeeded for program %d (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
-    return true;
-
-error_0:
-    delete_program(id);
-    return false;
-}
-
-bool enable_vsync(void) {
-    // Try for adaptive vsync first.
-    if(SDL_GL_SetSwapInterval(-1) == 0) {
-        INFO("Adaptive VSYNC enabled!");
-        return true;
-    } else {
-        PERROR("Adaptive VSYNC not supported: ", SDL_GetError());
-    }
-    // Fallback to normal, static vsync
-    if(SDL_GL_SetSwapInterval(1) == 0) {
-        INFO("Non-adaptive VSYNC enabled!");
-        return true;
-    } else {
-        PERROR("VSYNC not supported: ", SDL_GetError());
-    }
-    // Fallback to no vsync, in which case we do SDL_Delay.
-    if(SDL_GL_SetSwapInterval(0) == 0) {
-        INFO("VSYNC is disabled! Falling back to delay sleep.");
-        return true;
-    } else {
-        PERROR("Unable to set any VSYNC mode -- something is really broken.");
-    }
-    // We're out of fallbacks to give -- fail.
-    return false;
-}
 
 int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.screen_w = window_w;
@@ -229,10 +55,10 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.extra_palette->version = 0;
     g_video_state.screen_palette->version = 1;
 
-    if(!create_window(window_w, window_h, fullscreen)) {
+    if(!create_window(&g_video_state.window, window_w, window_h, fullscreen)) {
         goto error_0;
     }
-    if(!create_gl_context()) {
+    if(!create_gl_context(&g_video_state.gl_context, g_video_state.window)) {
         goto error_1;
     }
     if(!enable_vsync()) {
@@ -241,6 +67,8 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     if(!create_program(&g_video_state.shader_prog, "direct.vert", "direct.frag")) {
         goto error_2;
     }
+
+    g_video_state.atlas = atlas_create(4096, 4096);
 
     INFO("OpenGL Renderer initialized!");
     return 0;
@@ -267,7 +95,7 @@ int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync) {
 }
 
 // Called on every game tick
-void video_tick() {
+void video_tick(void) {
 }
 
 // Called after frame has been rendered
@@ -282,6 +110,7 @@ void video_render_finish(void) {
 }
 
 void video_close(void) {
+    atlas_free(&g_video_state.atlas);
     delete_program(g_video_state.shader_prog);
     SDL_GL_DeleteContext(g_video_state.gl_context);
     SDL_DestroyWindow(g_video_state.window);
@@ -345,7 +174,7 @@ void video_copy_pal_range(const palette *src, int src_start, int dst_start, int 
 }
 
 void video_copy_base_pal_range(const palette *src, int src_start, int dst_start, int amount) {
-    memcpy(state.base_palette->data + dst_start, src->data + src_start, amount * 3);
+    memcpy(g_video_state.base_palette->data + dst_start, src->data + src_start, amount * 3);
     video_force_pal_refresh();
 }
 
