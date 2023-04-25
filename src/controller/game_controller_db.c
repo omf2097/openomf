@@ -14,7 +14,8 @@ void joystick_load_external_mappings(void) {
         INFO("Loaded %d external game controller mappings from %s", loaded, str_c(&controller_db_path));
         INFO("We have %d known game controller mappings", SDL_GameControllerNumMappings());
     } else {
-        INFO("No external game controller mappings file found from %s; skipping ...", str_c(&controller_db_path));
+        INFO("No external game controller mappings file found from '%s' (%s); skipping ...", str_c(&controller_db_path),
+             SDL_GetError());
     }
     str_free(&controller_db_path);
 }
