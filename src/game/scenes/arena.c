@@ -533,12 +533,12 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
             // XXX in two player mode, "you win" should always be displayed
             scene_youwin_anim_start(scene->gs);
         } else {
+            player_winner->pilot->wins++;
+            player_loser->pilot->losses++;
             if(player_id == 1) {
                 player_winner->pilot->rank--;
-                player_winner->pilot->wins++;
                 scene_youwin_anim_start(scene->gs);
             } else {
-                player_winner->pilot->losses++;
                 scene_youlose_anim_start(scene->gs);
             }
         }
@@ -1216,9 +1216,9 @@ int arena_create(scene *scene) {
 
         // load the player's colors into the palette
         palette *base_pal = video_get_base_palette();
-        palette_set_player_color(base_pal, i, player->colors[2], 0);
-        palette_set_player_color(base_pal, i, player->colors[1], 1);
-        palette_set_player_color(base_pal, i, player->colors[0], 2);
+        palette_set_player_color(base_pal, i, player->pilot->color_3, 0);
+        palette_set_player_color(base_pal, i, player->pilot->color_2, 1);
+        palette_set_player_color(base_pal, i, player->pilot->color_1, 2);
         video_force_pal_refresh();
 
         // Create object and specialize it as HAR.
@@ -1408,9 +1408,9 @@ int arena_create(scene *scene) {
             DEBUG("player %d using har %d", i, player->pilot->har_id);
             local->rec->pilots[i].info.har_id = (unsigned char)player->pilot->har_id;
             local->rec->pilots[i].info.pilot_id = player->pilot->pilot_id;
-            local->rec->pilots[i].info.color_1 = player->colors[2];
-            local->rec->pilots[i].info.color_2 = player->colors[1];
-            local->rec->pilots[i].info.color_3 = player->colors[0];
+            local->rec->pilots[i].info.color_1 = player->pilot->color_1;
+            local->rec->pilots[i].info.color_2 = player->pilot->color_2;
+            local->rec->pilots[i].info.color_3 = player->pilot->color_3;
             memcpy(local->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
         }
         local->rec->arena_id = scene->id - SCENE_ARENA0;

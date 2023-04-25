@@ -262,9 +262,9 @@ void handle_action(scene *scene, int player, int action) {
                     palette_set_player_color(base_pal, 0, p_a.colors[1], 1);
                     palette_set_player_color(base_pal, 0, p_a.colors[2], 0);
                     video_force_pal_refresh();
-                    player1->colors[0] = p_a.colors[0];
-                    player1->colors[1] = p_a.colors[1];
-                    player1->colors[2] = p_a.colors[2];
+                    player1->pilot->color_1 = p_a.colors[0];
+                    player1->pilot->color_2 = p_a.colors[1];
+                    player1->pilot->color_3 = p_a.colors[2];
 
                     if(player2->selectable) {
                         object_select_sprite(&local->bigportrait2, local->pilot_id_b);
@@ -274,9 +274,9 @@ void handle_action(scene *scene, int player, int action) {
                         palette_set_player_color(base_pal, 1, p_a.colors[1], 1);
                         palette_set_player_color(base_pal, 1, p_a.colors[2], 0);
                         video_force_pal_refresh();
-                        player2->colors[0] = p_a.colors[0];
-                        player2->colors[1] = p_a.colors[1];
-                        player2->colors[2] = p_a.colors[2];
+                        player2->pilot->color_1 = p_a.colors[0];
+                        player2->pilot->color_2 = p_a.colors[1];
+                        player2->pilot->color_3 = p_a.colors[2];
                     }
                 } else {
                     int nova_activated[2] = {1, 1};
@@ -324,9 +324,9 @@ void handle_action(scene *scene, int player, int action) {
 
                         pilot p_a;
                         pilot_get_info(&p_a, player2->pilot->pilot_id);
-                        player2->colors[0] = p_a.colors[0];
-                        player2->colors[1] = p_a.colors[1];
-                        player2->colors[2] = p_a.colors[2];
+                        player2->pilot->color_1 = p_a.colors[0];
+                        player2->pilot->color_2 = p_a.colors[1];
+                        player2->pilot->color_3 = p_a.colors[2];
                     }
                     game_state_set_next(scene->gs, SCENE_VS);
                 }

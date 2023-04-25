@@ -8,10 +8,6 @@ void game_player_create(game_player *gp) {
     gp->portrait = NULL;
     gp->selectable = 0;
     gp->chr = NULL;
-    // default to grey
-    gp->colors[0] = 8;
-    gp->colors[1] = 8;
-    gp->colors[2] = 8;
     // allocate the pilot separately so can be a pointer
     // into a CHR file in tournament mode
     gp->pilot = omf_calloc(1, sizeof(sd_pilot));

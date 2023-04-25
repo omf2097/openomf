@@ -108,9 +108,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
         // set the HAR colors, pilot, har type
         for(int i = 0; i < 2; i++) {
-            gs->players[i]->colors[0] = rec.pilots[i].info.color_3;
-            gs->players[i]->colors[1] = rec.pilots[i].info.color_2;
-            gs->players[i]->colors[2] = rec.pilots[i].info.color_1;
+            gs->players[i]->pilot->color_3 = rec.pilots[i].info.color_3;
+            gs->players[i]->pilot->color_2 = rec.pilots[i].info.color_2;
+            gs->players[i]->pilot->color_1 = rec.pilots[i].info.color_1;
             gs->players[i]->pilot->har_id = HAR_JAGUAR + rec.pilots[i].info.har_id;
             gs->players[i]->pilot->pilot_id = rec.pilots[i].info.pilot_id;
         }
@@ -838,9 +838,9 @@ void game_state_init_demo(game_state *gs) {
         // set proper color
         pilot pilot_info;
         pilot_get_info(&pilot_info, player->pilot->pilot_id);
-        player->colors[0] = pilot_info.colors[0];
-        player->colors[1] = pilot_info.colors[1];
-        player->colors[2] = pilot_info.colors[2];
+        player->pilot->color_1 = pilot_info.colors[0];
+        player->pilot->color_2 = pilot_info.colors[1];
+        player->pilot->color_3 = pilot_info.colors[2];
     }
 }
 

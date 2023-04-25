@@ -175,7 +175,7 @@ void newsroom_input_tick(scene *scene) {
                     local->screen++;
                     newsroom_fixup_str(local);
                     if(local->screen >= 2) {
-                        if(local->won) {
+                        if(local->won || player1->chr) {
                             // pick a new player
                             game_player *p1 = game_state_get_player(scene->gs, 0);
                             game_player *p2 = game_state_get_player(scene->gs, 1);
@@ -202,9 +202,9 @@ void newsroom_input_tick(scene *scene) {
                                 }
                                 pilot p;
                                 pilot_get_info(&p, p2->pilot->pilot_id);
-                                p2->colors[0] = p.colors[0];
-                                p2->colors[1] = p.colors[1];
-                                p2->colors[2] = p.colors[2];
+                                p2->pilot->color_1 = p.colors[0];
+                                p2->pilot->color_2 = p.colors[1];
+                                p2->pilot->color_3 = p.colors[2];
 
                                 if (p1->chr) {
                                     // clear the opponent as a signal to display plug on the VS

@@ -21,7 +21,6 @@ typedef struct game_player_t {
     sd_pilot *pilot;
     sd_chr_file *chr;
     int selectable;
-    char colors[3];
     chr_score score;
     int god;
     int ez_destruct;

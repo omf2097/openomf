@@ -348,9 +348,9 @@ int vs_create(scene *scene) {
     palette_set_player_color(mpal, 0, player1->pilot->color_2, 1);
     palette_set_player_color(mpal, 0, player1->pilot->color_1, 2);
     if (player2->pilot) {
-        palette_set_player_color(mpal, 1, player2->colors[2], 0);
-        palette_set_player_color(mpal, 1, player2->colors[1], 1);
-        palette_set_player_color(mpal, 1, player2->colors[0], 2);
+        palette_set_player_color(mpal, 1, player2->pilot->color_3, 0);
+        palette_set_player_color(mpal, 1, player2->pilot->color_2, 1);
+        palette_set_player_color(mpal, 1, player2->pilot->color_1, 2);
     }
     video_force_pal_refresh();
 
