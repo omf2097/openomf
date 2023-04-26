@@ -80,7 +80,7 @@ void engine_run(engine_init_flags *init_flags) {
     int debugger_render = 0;
 
     // if mouse_visible_ticks <= 0, hide mouse
-    int mouse_visible_ticks = 1000;
+    uint64_t mouse_visible_ticks = 1000;
 
     INFO(" --- BEGIN GAME LOG ---");
 
@@ -112,7 +112,7 @@ void engine_run(engine_init_flags *init_flags) {
     }
 
     // Game loop
-    int frame_start = SDL_GetTicks();
+    uint64_t frame_start = SDL_GetTicks64(); // Set game tick timer
     int dynamic_wait = 0;
     int static_wait = 0;
     while(run && game_state_is_running(gs)) {
@@ -197,7 +197,7 @@ void engine_run(engine_init_flags *init_flags) {
 
         // hide mouse after n ticks
         if(mouse_visible_ticks > 0) {
-            mouse_visible_ticks -= SDL_GetTicks() - frame_start;
+            mouse_visible_ticks -= SDL_GetTicks64() - frame_start;
             if(mouse_visible_ticks <= 0) {
                 SDL_ShowCursor(0);
             }
@@ -218,11 +218,11 @@ void engine_run(engine_init_flags *init_flags) {
         }
 
         // Render scene
-        int dt = (SDL_GetTicks() - frame_start);
-        frame_start = SDL_GetTicks(); // Reset timer
+        uint64_t frame_dt = SDL_GetTicks64() - frame_start;
+        frame_start = SDL_GetTicks64();
         if(!visual_debugger) {
-            dynamic_wait += dt;
-            static_wait += dt;
+            dynamic_wait += frame_dt;
+            static_wait += frame_dt;
         } else if(debugger_proceed) {
             dynamic_wait += 20;
             static_wait += 20;
@@ -231,7 +231,7 @@ void engine_run(engine_init_flags *init_flags) {
         int limit_static = 100;
         int limit_dynamic = 100;
         while(static_wait > 10 && limit_static--) {
-            // Static tick for gamestate
+            // Static tick for game state
             game_state_static_tick(gs, false);
 
             // Tick console
@@ -266,7 +266,7 @@ void engine_run(engine_init_flags *init_flags) {
                 image img;
                 int failed_screenshot = video_screenshot(&img);
                 if(!failed_screenshot) {
-                    snprintf(screenshot_filename, 128, "screenshot_%u.png", SDL_GetTicks());
+                    snprintf(screenshot_filename, 128, "screenshot_%llu.png", SDL_GetTicks64());
                     int scr_ret = image_write_png(&img, screenshot_filename);
                     if(scr_ret) {
                         PERROR("Screenshot write operation failed (%s)", screenshot_filename);
