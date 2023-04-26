@@ -137,8 +137,6 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
 
     // Palette
     palette *base_pal = video_get_base_palette();
-    palette_set_player_color(base_pal, 0, p1->pilot->color_3, 0);
-    palette_set_player_color(base_pal, 0, p1->pilot->color_2, 1);
-    palette_set_player_color(base_pal, 0, p1->pilot->color_1, 2);
+    palette_load_player_colors(base_pal, &p1->pilot->palette, 0);
     video_force_pal_refresh();
 }

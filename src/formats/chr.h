@@ -41,6 +41,8 @@ typedef struct {
     uint32_t unknown_b;                     ///< Unkown value. Maybe tells if there is photo data ?
     sd_sprite *photo;                       ///< Pilot photo
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES]; ///< List of enemy states in current tournament
+    unsigned int cutscene;                  ///< cutscene id for end of tournament
+    char *cutscene_text[10];                    ///< cutscene dialog text
 } sd_chr_file;
 
 /*! \brief Initialize CHR structure

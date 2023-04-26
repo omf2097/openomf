@@ -62,6 +62,7 @@ typedef struct arena_local_t {
     int round;
     int rounds;
     int over;
+    bool tournament;
 
     object *player_rounds[2][4];
 
@@ -537,6 +538,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
             player_loser->pilot->losses++;
             if(player_id == 1) {
                 player_winner->pilot->rank--;
+                player_winner->pilot->money += player_loser->pilot->money;
                 scene_youwin_anim_start(scene->gs);
             } else {
                 scene_youlose_anim_start(scene->gs);
@@ -1066,14 +1068,25 @@ void arena_render_overlay(scene *scene) {
         }
 
         // Render HAR and pilot names
-        font_render_shadowed(&font_small, lang_get(player[0]->pilot->pilot_id + 20), 5, 19, TEXT_COLOR,
+        const char *player1_name;
+        const char *player2_name;
+        if(player[0]->chr) {
+            player1_name = player[0]->pilot->name;
+            player2_name = player[1]->pilot->name;
+        } else {
+            // TODO put these in the pilot struct
+            player1_name = lang_get(player[0]->pilot->pilot_id + 20);
+            player2_name = lang_get(player[0]->pilot->pilot_id + 20);
+        }
+
+        font_render_shadowed(&font_small, player1_name, 5, 19, TEXT_COLOR,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
         font_render_shadowed(&font_small, lang_get((player[0]->pilot->har_id) + 31), 5, 26, TEXT_COLOR,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
 
-        int p2len = (strlen(lang_get(player[1]->pilot->pilot_id + 20)) - 1) * font_small.w;
+        int p2len = (strlen(player2_name) - 1) * font_small.w;
         int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * font_small.w;
-        font_render_shadowed(&font_small, lang_get(player[1]->pilot->pilot_id + 20), 315 - p2len, 19, TEXT_COLOR,
+        font_render_shadowed(&font_small, player2_name, 315 - p2len, 19, TEXT_COLOR,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
         font_render_shadowed(&font_small, lang_get((player[1]->pilot->har_id) + 31), 315 - h2len, 26, TEXT_COLOR,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
@@ -1200,6 +1213,7 @@ int arena_create(scene *scene) {
             local->rounds = 1;
             break;
     }
+    local->tournament = false;
     local->over = 0;
 
     // Initial har data
@@ -1212,13 +1226,17 @@ int arena_create(scene *scene) {
     for(int i = 0; i < 2; i++) {
         // Declare some vars
         game_player *player = game_state_get_player(scene->gs, i);
+
+        if (i == 0 && player->chr) {
+            // we are in tournament mode
+            local->rounds = 1;
+            local->tournament=true;
+        }
         object *obj = omf_calloc(1, sizeof(object));
 
         // load the player's colors into the palette
         palette *base_pal = video_get_base_palette();
-        palette_set_player_color(base_pal, i, player->pilot->color_3, 0);
-        palette_set_player_color(base_pal, i, player->pilot->color_2, 1);
-        palette_set_player_color(base_pal, i, player->pilot->color_1, 2);
+        palette_load_player_colors(base_pal, &player->pilot->palette, i);
         video_force_pal_refresh();
 
         // Create object and specialize it as HAR.
@@ -1241,20 +1259,24 @@ int arena_create(scene *scene) {
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
 
-        // Create round tokens
-        for(int j = 0; j < 4; j++) {
-            if(j < ceilf(local->rounds / 2.0f)) {
-                local->player_rounds[i][j] = omf_calloc(1, sizeof(object));
-                int xoff = 110 + 9 * j + 3 + j;
-                if(i == 1) {
-                    xoff = 210 - 9 * j - 3 - j;
+        if (local->tournament) {
+            // render pilot portraits
+        } else {
+            // Create round tokens
+            for(int j = 0; j < 4; j++) {
+                if(j < ceilf(local->rounds / 2.0f)) {
+                    local->player_rounds[i][j] = omf_calloc(1, sizeof(object));
+                    int xoff = 110 + 9 * j + 3 + j;
+                    if(i == 1) {
+                        xoff = 210 - 9 * j - 3 - j;
+                    }
+                    animation *ani = &bk_get_info(&scene->bk_data, 27)->ani;
+                    object_create(local->player_rounds[i][j], scene->gs, vec2i_create(xoff, 9), vec2f_create(0, 0));
+                    object_set_animation(local->player_rounds[i][j], ani);
+                    object_select_sprite(local->player_rounds[i][j], 1);
+                } else {
+                    local->player_rounds[i][j] = NULL;
                 }
-                animation *ani = &bk_get_info(&scene->bk_data, 27)->ani;
-                object_create(local->player_rounds[i][j], scene->gs, vec2i_create(xoff, 9), vec2f_create(0, 0));
-                object_set_animation(local->player_rounds[i][j], ani);
-                object_select_sprite(local->player_rounds[i][j], 1);
-            } else {
-                local->player_rounds[i][j] = NULL;
             }
         }
     }

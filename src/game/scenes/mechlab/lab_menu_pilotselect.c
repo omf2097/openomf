@@ -56,6 +56,11 @@ component *lab_menu_pilotselect_create(scene *s, dashboard_widgets *dw) {
     component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);
 
     game_player *p1 = game_state_get_player(s->gs, 0);
+    // TODO load the palettes in from the PIC file
+    palette_set_player_color(&p1->pilot->palette, 0, 7, 0);
+    palette_set_player_color(&p1->pilot->palette, 0, 8, 1);
+    palette_set_player_color(&p1->pilot->palette, 0, 9, 2);
+    mechlab_update(s);
     pilotpic_select(dw->photo, PIC_PLAYERS, p1->pilot->photo_id);
 
     // Default text configuration

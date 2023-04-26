@@ -33,6 +33,10 @@ int cutscene_next_scene(scene *scene) {
         case SCENE_END2:
             return SCENE_SCOREBOARD;
         default:
+            game_player *player1 = game_state_get_player(scene->gs, 0);
+            if (player1->chr) {
+                return SCENE_VS;
+            }
             return SCENE_NONE;
     }
 }
@@ -50,7 +54,10 @@ void cutscene_input_tick(scene *scene) {
             if(i->type == EVENT_TYPE_ACTION) {
                 if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
 
-                    if(strlen(local->current) + local->pos < local->len) {
+                    if (player1->chr && player1->chr->cutscene_text[local->pos + 1]) {
+                        local->pos++;
+                        local->current = player1->chr->cutscene_text[local->pos];
+                    } else if(!player1->chr && strlen(local->current) + local->pos < local->len) {
                         local->pos += strlen(local->current) + 1;
                         local->current += strlen(local->current) + 1;
                         char *p;
@@ -98,6 +105,7 @@ int cutscene_create(scene *scene) {
     local->text_conf.font = FONT_SMALL;
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
+    palette *mpal = video_get_base_palette();
 
     const char *text = "";
     switch(scene->id) {
@@ -141,19 +149,81 @@ int cutscene_create(scene *scene) {
             local->text_width = 300;
             local->text_conf.cforeground = COLOR_GREEN;
             break;
+        case SCENE_NORTHAM:
+
+
+            palette_load_player_colors(mpal, &p1->pilot->palette, 0);
+            video_force_pal_refresh();
+
+            ani = &bk_get_info(&scene->bk_data, 10 + p1->pilot->har_id)->ani;
+            obj = omf_calloc(1, sizeof(object));
+            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_set_animation(obj, ani);
+            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+            local->text_x = 10;
+            local->text_y = 160;
+            local->text_width = 300;
+
+            ani = &bk_get_info(&scene->bk_data, 45)->ani;
+            obj = omf_calloc(1, sizeof(object));
+            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_set_animation(obj, ani);
+            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+
+            ani = &bk_get_info(&scene->bk_data, 46)->ani;
+            obj = omf_calloc(1, sizeof(object));
+            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_set_animation(obj, ani);
+            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+            break;
+        case SCENE_KATUSHAI:
+
+
+            palette_load_player_colors(mpal, &p1->pilot->palette, 0);
+            video_force_pal_refresh();
+
+            ani = &bk_get_info(&scene->bk_data, 10 + p1->pilot->har_id)->ani;
+            obj = omf_calloc(1, sizeof(object));
+            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_set_animation(obj, ani);
+            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+            local->text_x = 10;
+            local->text_y = 160;
+            local->text_width = 300;
+
+            ani = &bk_get_info(&scene->bk_data, 1)->ani;
+            obj = omf_calloc(1, sizeof(object));
+            object_set_stl(obj, scene->bk_data.sound_translation_table);
+            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_set_animation(obj, ani);
+            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+
+            ani = &bk_get_info(&scene->bk_data, 2)->ani;
+            obj = omf_calloc(1, sizeof(object));
+            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_set_stl(obj, scene->bk_data.sound_translation_table);
+            object_set_animation(obj, ani);
+            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+            break;
+
     }
 
-    size_t text_len = strlen(text);
-    local->len = text_len - 1;
-    local->pos = 0;
-    local->text = omf_calloc(text_len + 1, 1);
-    strncpy(local->text, text, text_len);
-    local->current = local->text;
+    if (p1->chr) {
+        local->pos = 0;
+        local->current = p1->chr->cutscene_text[local->pos];
+    } else {
+        size_t text_len = strlen(text);
+        local->len = text_len - 1;
+        local->pos = 0;
+        local->text = omf_calloc(text_len + 1, 1);
+        strncpy(local->text, text, text_len);
+        local->current = local->text;
 
-    char *p;
-    if((p = strchr(local->text, '\n'))) {
-        // null out the byte
-        *p = '\0';
+        char *p;
+        if((p = strchr(local->text, '\n'))) {
+            // null out the byte
+            *p = '\0';
+        }
     }
 
     // Callbacks

@@ -2,6 +2,7 @@
 #include "console/console.h"
 #include "console/console_type.h"
 #include "game/scenes/arena.h"
+#include "game/scenes/mechlab.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
 #include <stdio.h>
@@ -104,36 +105,40 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
             }
 
             game_player *player = game_state_get_player(gs, 0);
-            if(scene_load_har(game_state_get_scene(gs), 0, player->pilot->har_id)) {
-                return 1;
-            }
-
-            object *har_obj = game_player_get_har(player);
-            vec2i pos = object_get_pos(har_obj);
-            int hd = object_get_direction(har_obj);
-
-            object *obj = omf_calloc(1, sizeof(object));
-            object_create(obj, gs, pos, vec2f_create(0, 0));
             player->pilot->har_id = i;
+            if (gs->this_id >= SCENE_ARENA0 && gs->this_id <= SCENE_ARENA4) {
+                if(scene_load_har(game_state_get_scene(gs), 0, player->pilot->har_id)) {
+                    return 1;
+                }
 
-            if(har_create(obj, game_state_get_scene(gs)->af_data[0], hd, player->pilot->har_id, player->pilot->pilot_id, 0)) {
-                object_free(obj);
-                omf_free(obj);
-                return 1;
+                object *har_obj = game_player_get_har(player);
+                vec2i pos = object_get_pos(har_obj);
+                int hd = object_get_direction(har_obj);
+
+                object *obj = omf_calloc(1, sizeof(object));
+                object_create(obj, gs, pos, vec2f_create(0, 0));
+
+                if(har_create(obj, game_state_get_scene(gs)->af_data[0], hd, player->pilot->har_id, player->pilot->pilot_id, 0)) {
+                    object_free(obj);
+                    omf_free(obj);
+                    return 1;
+                }
+
+                // Set HAR to controller and game_player
+                game_state_add_object(gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
+
+                game_state_del_object(gs, har_obj);
+
+                // Set HAR for player
+                game_player_set_har(player, obj);
+                game_player_get_ctrl(player)->har = obj;
+                game_player_get_har(player)->animation_state.enemy = game_player_get_har(game_state_get_player(gs, 1));
+                game_player_get_har(game_state_get_player(gs, 1))->animation_state.enemy = game_player_get_har(player);
+
+                maybe_install_har_hooks(game_state_get_scene(gs));
+            } else if (gs->this_id == SCENE_MECHLAB) {
+                mechlab_update(gs->sc);
             }
-
-            // Set HAR to controller and game_player
-            game_state_add_object(gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
-
-            game_state_del_object(gs, har_obj);
-
-            // Set HAR for player
-            game_player_set_har(player, obj);
-            game_player_get_ctrl(player)->har = obj;
-            game_player_get_har(player)->animation_state.enemy = game_player_get_har(game_state_get_player(gs, 1));
-            game_player_get_har(game_state_get_player(gs, 1))->animation_state.enemy = game_player_get_har(player);
-
-            maybe_install_har_hooks(game_state_get_scene(gs));
 
             return 0;
         }
@@ -228,6 +233,41 @@ int console_cmd_music(game_state *gs, int argc, char **argv) {
     return 0;
 }
 
+int console_cmd_money(game_state *gs, int argc, char **argv) {
+    // change pilot's money
+    if(argc == 2) {
+        int i;
+        if(strtoint(argv[1], &i)) {
+
+            game_player *player = game_state_get_player(gs, 0);
+            player->pilot->money = i;
+            if (gs->this_id == SCENE_MECHLAB) {
+                mechlab_update(gs->sc);
+            }
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int console_cmd_rank(game_state *gs, int argc, char **argv) {
+    // change tournament rank
+    if(argc == 2) {
+        int i;
+        if(strtoint(argv[1], &i)) {
+            game_player *player = game_state_get_player(gs, 0);
+            if (i > 0 && i <= player->pilot->enemies_ex_unranked +1) {
+                player->pilot->rank = i;
+                if (gs->this_id == SCENE_MECHLAB) {
+                    mechlab_update(gs->sc);
+                }
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
 void console_init_cmd() {
     // Add console commands
     console_add_cmd("h", &console_cmd_history, "show command history");
@@ -247,4 +287,6 @@ void console_init_cmd() {
     console_add_cmd("kreissack", &console_kreissack, "Fight Kreissack");
     console_add_cmd("ez-destruct", &console_cmd_ez_destruct, "Punch = destruction, kick = scrap");
     console_add_cmd("warp", &console_toggle_warp, "Toggle warp speed");
+    console_add_cmd("money", &console_cmd_money, "Set tournament mode money");
+    console_add_cmd("rank", &console_cmd_rank, "Set tournament mode rank");
 }

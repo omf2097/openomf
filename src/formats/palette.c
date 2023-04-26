@@ -167,12 +167,19 @@ void palette_save(sd_writer *writer, const palette *pal) {
     sd_write_buf(writer, (char *)pal->remaps, 19 * 256);
 }
 
+void palette_load_player_colors(palette *dst, palette *src, int player) {
+    int dstoff = player * 48;
+    memcpy(dst->data + dstoff, src->data, 48 * 3);
+}
+
 void palette_set_player_color(palette *pal, int player, int srccolor, int dstcolor) {
     int dst = dstcolor * 16 + player * 48;
     int src = srccolor * 16;
     char iz[3];
     memcpy(iz, pal->data, 3);
-    memcpy(pal->data + dst, altpals->palettes[0].data + src, 16 * 3);
+    if (altpals) {
+        memcpy(pal->data + dst, altpals->palettes[0].data + src, 16 * 3);
+    }
     memcpy(pal->data, iz, 3);
 }
 

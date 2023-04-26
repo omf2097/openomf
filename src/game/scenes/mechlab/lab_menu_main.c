@@ -162,6 +162,29 @@ static const spritebutton_focus_cb focus_cbs[] = {
     lab_menu_focus_tournament,
 };
 
+void lab_menu_tick_arena(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    if (p1->chr && p1->chr->pilot.rank > 1) {
+            component_disable(c, 0);
+    } else {
+            component_disable(c, 1);
+    }
+}
+
+
+static const spritebutton_tick_cb tick_cbs[] = {
+    lab_menu_tick_arena,
+    NULL, //lab_menu_tick_training,
+    NULL, //lab_menu_tick_buy,
+    NULL, //lab_menu_tick_sell,
+    NULL, //lab_menu_tick_load,
+    NULL, //lab_menu_tick_new,
+    NULL, //lab_menu_tick_delete,
+    NULL, //lab_menu_tick_sim,
+    NULL, //lab_menu_tick_quit,
+    NULL, //lab_menu_tick_tournament,
+};
 
 component *lab_menu_main_create(scene *s, bool character_loaded) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
@@ -199,6 +222,8 @@ component *lab_menu_main_create(scene *s, bool character_loaded) {
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
 
         spritebutton_set_focus_cb(button, focus_cbs[i]);
+        spritebutton_set_tick_cb(button, tick_cbs[i]);
+        component_tick(button);
         trnmenu_attach(menu, button);
     }
 

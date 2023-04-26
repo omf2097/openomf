@@ -106,6 +106,9 @@ void mechlab_set_hint(scene *scene, const char *hint) {
 sd_chr_enemy *mechlab_next_opponent(scene *scene) {
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
+    if (p1->chr->pilot.rank == 1) {
+        return NULL;
+    }
     for (int i= 0; i < p1->chr->pilot.enemies_inc_unranked; i++) {
         if (p1->chr->enemies[i]->pilot.rank == p1->chr->pilot.rank - 1) {
             return p1->chr->enemies[i];
@@ -146,6 +149,16 @@ void mechlab_free(scene *scene) {
 
 void mechlab_update(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
+    game_player *p1 = game_state_get_player(scene->gs, 0);
+    animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot->har_id)->ani;
+    if(local->mech && object_get_animation(local->mech) != initial_har_ani) {
+        object_free(local->mech);
+        object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+        object_set_animation(local->mech, initial_har_ani);
+        object_set_repeat(local->mech, 1);
+        object_dynamic_tick(local->mech);
+    }
+
     lab_dash_main_update(scene, &local->dw);
 }
 
@@ -204,6 +217,10 @@ void mechlab_tick(scene *scene, int paused) {
             sd_chr_save(player1->chr, tmp);
             strcpy(settings_get()->tournament.last_name, player1->pilot->name);
             settings_save();
+            // force the character to reload because its just easier
+            sd_chr_free(player1->chr);
+            omf_free(player1->chr);
+            player1->chr=NULL;
             bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
             guiframe_free(local->frame);
@@ -258,8 +275,8 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             player1->pilot->money = 2000;
             // and a jaguar
             player1->pilot->har_id = 0;
-            animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + player1->pilot->har_id)->ani;
             local->mech = omf_calloc(1, sizeof(object));
+            animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + player1->pilot->har_id)->ani;
             object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(local->mech, initial_har_ani);
             object_set_repeat(local->mech, 1);

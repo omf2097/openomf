@@ -28,6 +28,7 @@ typedef struct newsroom_local_t {
     str har1, har2;
     int sex1, sex2;
     int won;
+    bool champion;
     dialog continue_dialog;
 } newsroom_local;
 
@@ -61,7 +62,13 @@ void newsroom_fixup_str(newsroom_local *local) {
        11= He/She P2 - He
     */
 
-    unsigned int translation_id = NEWSROOM_TEXT + local->news_id + min2(local->screen, 1);
+    unsigned int translation_id;
+
+    if (local->champion && local->screen >= 2) {
+        translation_id=79;
+    } else {
+        translation_id = NEWSROOM_TEXT + local->news_id + min2(local->screen, 1);
+    }
 
     str tmp;
     str_from_c(&tmp, lang_get(translation_id));
@@ -174,7 +181,8 @@ void newsroom_input_tick(scene *scene) {
                           i->event_data.action == ACT_PUNCH) {
                     local->screen++;
                     newsroom_fixup_str(local);
-                    if(local->screen >= 2) {
+
+                    if((local->screen >= 2 && !local->champion) || local->screen >= 3) {
                         if(local->won || player1->chr) {
                             // pick a new player
                             game_player *p1 = game_state_get_player(scene->gs, 0);
@@ -202,9 +210,9 @@ void newsroom_input_tick(scene *scene) {
                                 }
                                 pilot p;
                                 pilot_get_info(&p, p2->pilot->pilot_id);
-                                p2->pilot->color_1 = p.colors[0];
-                                p2->pilot->color_2 = p.colors[1];
-                                p2->pilot->color_3 = p.colors[2];
+                                sd_pilot_set_player_color(p2->pilot, TERTIARY, p.colors[0]);
+                                sd_pilot_set_player_color(p2->pilot, SECONDARY, p.colors[1]);
+                                sd_pilot_set_player_color(p2->pilot, PRIMARY, p.colors[2]);
 
                                 if (p1->chr) {
                                     // clear the opponent as a signal to display plug on the VS
@@ -217,7 +225,11 @@ void newsroom_input_tick(scene *scene) {
                                     ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, p2->pilot->pilot_id);
                                     game_player_set_ctrl(p2, ctrl);
                                 }
-                                game_state_set_next(scene->gs, SCENE_VS);
+                                if (local->champion) {
+                                    game_state_set_next(scene->gs, p1->chr->cutscene);
+                                } else {
+                                    game_state_set_next(scene->gs, SCENE_VS);
+                                }
                             }
                         } else {
                             dialog_show(&local->continue_dialog, 1);
@@ -259,6 +271,7 @@ int newsroom_create(scene *scene) {
 
     local->news_id = rand_int(24) * 2;
     local->screen = 0;
+    local->champion = false;
     menu_background_create(&local->news_bg, 280, 50);
     str_create(&local->news_str);
     str_create(&local->pilot1);
@@ -276,6 +289,9 @@ int newsroom_create(scene *scene) {
         health = game_player_get_score(p2)->health;
     } else {
         local->won = 1;
+        if (p1->chr && p1->chr->pilot.rank == 1) {
+            local->champion = true;
+        }
         health = game_player_get_score(p1)->health;
     }
 

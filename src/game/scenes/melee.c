@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,6 +16,7 @@
 #include "resources/languages.h"
 #include "resources/pilots.h"
 #include "resources/sprite.h"
+#include "formats/pilot.h"
 #include "utils/allocator.h"
 #include "utils/random.h"
 #include "video/video.h"
@@ -258,26 +258,24 @@ void handle_action(scene *scene, int player, int action) {
                     palette *base_pal = video_get_base_palette();
                     pilot p_a;
                     pilot_get_info(&p_a, local->pilot_id_a);
-                    palette_set_player_color(base_pal, 0, p_a.colors[0], 2);
-                    palette_set_player_color(base_pal, 0, p_a.colors[1], 1);
-                    palette_set_player_color(base_pal, 0, p_a.colors[2], 0);
-                    video_force_pal_refresh();
-                    player1->pilot->color_1 = p_a.colors[0];
-                    player1->pilot->color_2 = p_a.colors[1];
-                    player1->pilot->color_3 = p_a.colors[2];
+                    sd_pilot_set_player_color(player1->pilot, TERTIARY, p_a.colors[0]);
+                    sd_pilot_set_player_color(player1->pilot, SECONDARY, p_a.colors[1]);
+                    sd_pilot_set_player_color(player1->pilot, PRIMARY, p_a.colors[2]);
+
+                    palette_load_player_colors(base_pal, &player1->pilot->palette, 0);
 
                     if(player2->selectable) {
                         object_select_sprite(&local->bigportrait2, local->pilot_id_b);
                         // update the player palette
                         pilot_get_info(&p_a, local->pilot_id_b);
-                        palette_set_player_color(base_pal, 1, p_a.colors[0], 2);
-                        palette_set_player_color(base_pal, 1, p_a.colors[1], 1);
-                        palette_set_player_color(base_pal, 1, p_a.colors[2], 0);
-                        video_force_pal_refresh();
-                        player2->pilot->color_1 = p_a.colors[0];
-                        player2->pilot->color_2 = p_a.colors[1];
-                        player2->pilot->color_3 = p_a.colors[2];
+                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
+                        sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
+                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
+
+                        palette_load_player_colors(base_pal, &player1->pilot->palette, 1);
+
                     }
+                    video_force_pal_refresh();
                 } else {
                     int nova_activated[2] = {1, 1};
                     for(int i = 0; i < 2; i++) {
@@ -324,9 +322,9 @@ void handle_action(scene *scene, int player, int action) {
 
                         pilot p_a;
                         pilot_get_info(&p_a, player2->pilot->pilot_id);
-                        player2->pilot->color_1 = p_a.colors[0];
-                        player2->pilot->color_2 = p_a.colors[1];
-                        player2->pilot->color_3 = p_a.colors[2];
+                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
+                        sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
+                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
                     }
                     game_state_set_next(scene->gs, SCENE_VS);
                 }

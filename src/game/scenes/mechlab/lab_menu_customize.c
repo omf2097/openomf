@@ -6,6 +6,7 @@
 #include "game/gui/text_render.h"
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab/button_details.h"
+#include "formats/pilot.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
 #include "utils/log.h"
@@ -41,21 +42,21 @@ void lab_menu_customize_done(component *c, void *userdata) {
 void lab_menu_customize_color_main(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    p1->chr->pilot.color_1 = (p1->chr->pilot.color_1 + 1) % 16;
+    sd_pilot_set_player_color(&p1->chr->pilot, SECONDARY, (p1->chr->pilot.color_2 + 1) % 16);
     mechlab_update(s);
 }
 
 void lab_menu_customize_color_secondary(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    p1->chr->pilot.color_2 = (p1->chr->pilot.color_2 + 1) % 16;
+    sd_pilot_set_player_color(&p1->chr->pilot, TERTIARY, (p1->chr->pilot.color_1 + 1) % 16);
     mechlab_update(s);
 }
 
 void lab_menu_customize_color_third(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    p1->chr->pilot.color_3 = (p1->chr->pilot.color_3 + 1) % 16;
+    sd_pilot_set_player_color(&p1->chr->pilot, PRIMARY, (p1->chr->pilot.color_3 + 1) % 16);
     mechlab_update(s);
 }
 

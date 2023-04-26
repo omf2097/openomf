@@ -12,8 +12,6 @@
 #include "utils/random.h"
 #include "utils/log.h"
 #include "video/video.h"
-#include "resources/trnmanager.h"
-#include "formats/pic.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -223,7 +221,7 @@ void vs_input_tick(scene *scene) {
                         dialog_event(&local->too_pathetic_dialog, i->event_data.action);
                     } else if(dialog_is_visible(&local->quit_dialog)) {
                         dialog_event(&local->quit_dialog, i->event_data.action);
-                    } else if(vs_is_singleplayer(scene) && player1->sp_wins != 0) {
+                    } else if(vs_is_singleplayer(scene) && player1->sp_wins != 0 && !player1->chr) {
                         // there's an active singleplayer campaign, confirm quitting
                         dialog_show(&local->quit_dialog, 1);
                     } else {
@@ -280,18 +278,12 @@ void vs_render(scene *scene) {
         // kriessack, but not on Veteran or higher
         font_render_wrapped(&font_small, lang_get(747), 59, 160, 200, COLOR_YELLOW);
     } else if (player1->chr && player2->pilot) {
-        sd_tournament_file trn;
-        trn_load(&trn, player1->chr->pilot.trn_name);
-        for (int i = 0; i < player1->chr->pilot.enemies_inc_unranked; i++) {
-            if (!strcmp(trn.enemies[i]->name, player2->pilot->name)) {
-                font_render_wrapped(&font_small, trn.enemies[i]->quotes[0], 320 - (59 + 150),
-                        165, 120, COLOR_YELLOW);
-                break;
-            }
-        }
-        sd_tournament_free(&trn);
+        font_render_wrapped(&font_small, player2->pilot->quotes[0], 320 - (59 + 150),
+                165, 120, COLOR_YELLOW);
     } else if (!player2->pilot) {
         // render plug's bitching
+        font_render_wrapped(&font_small, "Hmph. you'd think this remake would've been done by now, huh?", 59, 165, 220,
+                            COLOR_YELLOW);
     } else {
         font_render_wrapped(&font_small, lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id), 59, 160, 150,
                             COLOR_YELLOW);
@@ -344,13 +336,10 @@ int vs_create(scene *scene) {
     animation *ani;
 
     palette *mpal = video_get_base_palette();
-    palette_set_player_color(mpal, 0, player1->pilot->color_3, 0);
-    palette_set_player_color(mpal, 0, player1->pilot->color_2, 1);
-    palette_set_player_color(mpal, 0, player1->pilot->color_1, 2);
+
+    palette_load_player_colors(mpal, &player1->pilot->palette, 0);
     if (player2->pilot) {
-        palette_set_player_color(mpal, 1, player2->pilot->color_3, 0);
-        palette_set_player_color(mpal, 1, player2->pilot->color_2, 1);
-        palette_set_player_color(mpal, 1, player2->pilot->color_1, 2);
+        palette_load_player_colors(mpal, &player2->pilot->palette, 1);
     }
     video_force_pal_refresh();
 
@@ -382,28 +371,8 @@ int vs_create(scene *scene) {
         object_create(&local->player2_portrait, scene->gs, vec2i_create(330, 150), vec2f_create(0, 0));
         if (player1->chr) {
             object_set_sprite_override(&local->player2_portrait, 1);
-            char tmp[200];
-            const char *dirname = pm_get_local_path(RESOURCE_PATH);
-            str pic_file;
-            str_from_c(&pic_file, player1->chr->pilot.trn_image);
-            str_toupper(&pic_file);
-            snprintf(tmp, 200, "%s%s", dirname, str_c(&pic_file));
-            str_free(&pic_file);
-            sd_pic_file pic;
-            sd_pic_create(&pic);
-            sd_pic_load(&pic, tmp);
-            DEBUG("opponent has photo id %d", player2->pilot->photo_id);
             local->player2_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
-            sd_tournament_file trn;
-            trn_load(&trn, player1->chr->pilot.trn_name);
-            for (int i = 0; i < player1->chr->pilot.enemies_inc_unranked; i++) {
-                if (!strcmp(trn.enemies[i]->name, player2->pilot->name)) {
-                    sprite_create(local->player2_portrait.cur_sprite, pic.photos[trn.enemies[i]->photo_id]->sprite, -1);
-                    break;
-                }
-            }
-            sd_tournament_free(&trn);
-            sd_pic_free(&pic);
+            sprite_create(local->player2_portrait.cur_sprite, player2->pilot->photo, -1);
         } else {
             object_set_animation(&local->player2_portrait, ani);
             object_select_sprite(&local->player2_portrait, player2->pilot->pilot_id);
