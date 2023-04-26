@@ -1,7 +1,11 @@
 #version 330 core
 
-in vec2 LVertexPos2D;
+layout (location = 0) in vec4 vert;
+uniform mat4 projection;
+
+out vec2 TexCoords;
 
 void main() {
-    gl_Position = vec4(LVertexPos2D.x, LVertexPos2D.y, 0, 1);
+    TexCoords = vert.zw;
+    gl_Position = projection * vec4(vert.xy, 0.0, 1.0);
 }
