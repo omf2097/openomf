@@ -266,7 +266,7 @@ void engine_run(engine_init_flags *init_flags) {
                 image img;
                 int failed_screenshot = video_screenshot(&img);
                 if(!failed_screenshot) {
-                    snprintf(screenshot_filename, 128, "screenshot_%llu.png", SDL_GetTicks64());
+                    snprintf(screenshot_filename, 128, "screenshot_%u.png", SDL_GetTicks());
                     int scr_ret = image_write_png(&img, screenshot_filename);
                     if(scr_ret) {
                         PERROR("Screenshot write operation failed (%s)", screenshot_filename);
