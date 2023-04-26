@@ -6,6 +6,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/image.h"
+#include "video/opengl/object_array.h"
 #include "video/opengl/shaders.h"
 #include "video/opengl/texture_atlas.h"
 #include "video/sdl_window.h"
@@ -16,6 +17,7 @@ typedef struct video_state {
     SDL_Window *window;
     SDL_GLContext *gl_context;
     texture_atlas *atlas;
+    object_array *objects;
 
     int screen_w;
     int screen_h;
@@ -68,8 +70,19 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
         goto error_2;
     }
 
-    g_video_state.atlas = atlas_create(4096, 4096);
+    // Fetch viewport size which may be different from window size. Then set the opengl viewport
+    // and generate a projection matrix.
+    int viewport_w, viewport_h;
+    SDL_GL_GetDrawableSize(g_video_state.window, &viewport_w, &viewport_h);
+    glViewport(0, 0, viewport_w, viewport_h);
 
+    GLfloat projection_matrix[16];
+    ortho2d(projection_matrix, 0.0f, 320.0f, 200.0f, 0.0f);
+    activate_program(g_video_state.shader_prog);
+    bind_uniform_4fv(g_video_state.shader_prog, "projection", projection_matrix);
+
+    g_video_state.atlas = atlas_create(4096, 4096);
+    g_video_state.objects = object_array_create();
     INFO("OpenGL Renderer initialized!");
     return 0;
 
@@ -98,8 +111,18 @@ int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync) {
 void video_tick(void) {
 }
 
+void video_render_prepare(void) {
+    object_array_prepare(g_video_state.objects);
+}
+
 // Called after frame has been rendered
 void video_render_finish(void) {
+    object_array_finish(g_video_state.objects);
+
+    glClearColor(0.3, 0.4, 0.4, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    object_array_draw(g_video_state.objects);
 
     // Flip buffers. If vsync is off, we should sleep here
     // so hat our main loop doesn't eat up all cpu :)
@@ -110,6 +133,7 @@ void video_render_finish(void) {
 }
 
 void video_close(void) {
+    object_array_free(&g_video_state.objects);
     atlas_free(&g_video_state.atlas);
     delete_program(g_video_state.shader_prog);
     SDL_GL_DeleteContext(g_video_state.gl_context);
@@ -182,11 +206,6 @@ screen_palette *video_get_pal_ref(void) {
     return g_video_state.screen_palette;
 }
 
-void video_render_prepare(void) {
-    // Reset palette
-    memcpy(g_video_state.screen_palette->data, g_video_state.base_palette->data, 768);
-}
-
 void video_render_bg_separately(bool separate) {
     g_video_state.render_bg_separately = separate;
 }
@@ -196,7 +215,7 @@ void video_render_background(surface *sur) {
 
 static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, SDL_BlendMode blend_mode,
                                int pal_offset, SDL_RendererFlip flip_mode, uint8_t opacity, color color_mod) {
-    return;
+    object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h);
 }
 
 void video_render_sprite_tint(surface *sur, int sx, int sy, color c, int pal_offset) {

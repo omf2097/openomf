@@ -18,6 +18,33 @@ bool create_gl_context(SDL_GLContext **context, SDL_Window *window) {
     return true;
 }
 
+/** Fake out gluOrtho2d
+ * http://en.wikipedia.org/wiki/Orthographic_projection_(geometry)
+ */
+void ortho2d(GLfloat *matrix, float left, float right, float bottom, float top) {
+    const GLfloat z_near = -1.0f;
+    const GLfloat z_far = 1.0f;
+    const GLfloat inv_z = 1.0f / (z_far - z_near);
+    const GLfloat inv_y = 1.0f / (top - bottom);
+    const GLfloat inv_x = 1.0f / (right - left);
+    *matrix++ = 2.0f * inv_x;
+    *matrix++ = 0.0f;
+    *matrix++ = 0.0f;
+    *matrix++ = 0.0f;
+    *matrix++ = 0.0f;
+    *matrix++ = 2.0f * inv_y;
+    *matrix++ = 0.0f;
+    *matrix++ = 0.0f;
+    *matrix++ = 0.0f;
+    *matrix++ = 0.0f;
+    *matrix++ = -2.0f * inv_z;
+    *matrix++ = 0.0f;
+    *matrix++ = -(right + left) * inv_x;
+    *matrix++ = -(top + bottom) * inv_y;
+    *matrix++ = -(z_far + z_near) * inv_z;
+    *matrix++ = 1.0f;
+}
+
 bool create_window(SDL_Window **window, int width, int height, bool fullscreen) {
     char title[32];
     snprintf(title, 32, "OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);

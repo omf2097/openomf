@@ -88,6 +88,7 @@ void delete_program(GLuint program_id) {
     GLsizei attached_count = 0;
     glGetProgramiv(program_id, GL_ATTACHED_SHADERS, &attached_count);
     GLuint shaders[attached_count];
+    glUseProgram(0);
     glGetAttachedShaders(program_id, attached_count, NULL, shaders);
     for(int i = 0; i < attached_count; i++) {
         DEBUG("Shader %d deleted", i);
@@ -120,4 +121,13 @@ bool create_program(GLuint *program_id, const char *vertex_shader, const char *f
 error_0:
     delete_program(id);
     return false;
+}
+
+void bind_uniform_4fv(GLuint program_id, const char *name, GLfloat *data) {
+    GLuint ref = glGetUniformLocation(program_id, name);
+    glUniformMatrix4fv(ref, 1, GL_FALSE, data);
+}
+
+void activate_program(GLuint program_id) {
+    glUseProgram(program_id);
 }

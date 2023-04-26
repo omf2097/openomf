@@ -1,7 +1,10 @@
 #version 330 core
 
-out vec4 LFragment;
+in vec2 TexCoords;
+layout (location = 0) out vec4 color;
+
+uniform sampler2D image;
 
 void main() {
-    LFragment = vec4(1.0, 1.0, 1.0, 1.0);
+    color = vec4(1.0, 0.0, 1.0, 1.0);
 }
