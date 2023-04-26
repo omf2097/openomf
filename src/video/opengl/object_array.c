@@ -5,8 +5,10 @@
 #include "utils/log.h"
 #include "video/opengl/object_array.h"
 
-#define VBO_SIZE 8192
-#define MAX_FANS 256
+#define OBJ_SIZE 16
+#define OBJ_BYTES (OBJ_SIZE * sizeof(GLfloat))
+#define MAX_FANS 512
+#define VBO_SIZE (MAX_FANS * OBJ_BYTES)
 #define BUFFER_COUNT 2
 
 typedef struct object_array {
