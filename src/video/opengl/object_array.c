@@ -81,33 +81,23 @@ void object_array_draw(const object_array *array) {
     glMultiDrawArrays(GL_TRIANGLE_FAN, array->fans_starts, array->fans_sizes, array->item_count);
 }
 
+#define COORDS(ptr, offset, cx, cy, tx, ty)                                                                            \
+    ptr[offset + 0] = cx;                                                                                              \
+    ptr[offset + 1] = cy;                                                                                              \
+    ptr[offset + 2] = tx;                                                                                              \
+    ptr[offset + 3] = ty;
+
 void object_array_add(object_array *array, int x, int y, int w, int h) {
     if(array->item_count >= MAX_FANS) {
         PERROR("Too many objects!");
         return;
     }
 
-    int i = 0;
     GLfloat *coords = array->mapping + array->item_count * 16;
-    coords[i++] = x + w;
-    coords[i++] = y + h;
-    coords[i++] = 1.0f;
-    coords[i++] = 1.0f;
-
-    coords[i++] = x;
-    coords[i++] = y + h;
-    coords[i++] = -1.0f;
-    coords[i++] = 1.0f;
-
-    coords[i++] = x;
-    coords[i++] = y;
-    coords[i++] = -1.0f;
-    coords[i++] = -1.0f;
-
-    coords[i++] = x + w;
-    coords[i++] = y;
-    coords[i++] = 1.0f;
-    coords[i++] = -1.0f;
+    COORDS(coords, 0, x + w, y + h, 1.0f, 1.0f);
+    COORDS(coords, 4, x, y + h, -1.0f, 1.0f);
+    COORDS(coords, 8, x, y, -1.0f, -1.0f);
+    COORDS(coords, 12, x + w, y, 1.0f, -1.0f);
 
     array->fans_starts[array->item_count] = array->item_count * 4;
     array->fans_sizes[array->item_count] = 4;
