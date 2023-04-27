@@ -4,14 +4,37 @@
 #include "game/gui/label.h"
 #include "game/gui/pilotpic.h"
 #include "game/gui/xysizer.h"
+#include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab/lab_dash_main.h"
 #include "resources/ids.h"
 #include "resources/languages.h"
 #include "utils/log.h"
 #include "video/video.h"
 
+
+void lab_dash_main_select(component *c, void *userdata){
+    dashboard_widgets *dw = userdata;
+    dw->pilot->photo_id = pilotpic_selected(dw->photo);
+    pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
+    trnmenu_finish(c->parent);
+}
+
+void lab_dash_main_left(component *c, void *userdata) {
+    dashboard_widgets *dw = userdata;
+    pilotpic_prev(dw->photo);
+}
+
+void lab_dash_main_right(component *c, void *userdata) {
+    dashboard_widgets *dw = userdata;
+    pilotpic_next(dw->photo);
+}
+
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     component *xy = xysizer_create();
+
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    dw->pilot = p1->pilot;
+
 
     text_settings tconf_dark;
     text_defaults(&tconf_dark);
@@ -96,7 +119,11 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     p1 = game_state_get_player(s->gs, 0);
 
     // Set up variables properly
-    snprintf(tmp, 64, "RANK: %d", p1->pilot->rank);
+    if (p1->pilot->rank == 0) {
+        snprintf(tmp, 64, "RANK: NO RANK");
+    } else {
+        snprintf(tmp, 64, "RANK: %d", p1->pilot->rank);
+    }
     label_set_text(dw->rank, tmp);
     snprintf(tmp, 64, "WINS: %d", p1->pilot->wins);
     label_set_text(dw->wins, tmp);

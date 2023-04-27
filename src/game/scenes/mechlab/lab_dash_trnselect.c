@@ -7,6 +7,23 @@
 #include "resources/bk.h"
 #include "resources/languages.h"
 
+void lab_dash_trnselect_select(component *c, void *userdata) {
+}
+
+void lab_dash_trnselect_left(component *c, void *userdata) {
+    trnselect_widgets *tw = userdata;
+    trnselect_prev(tw->trnselect);
+}
+
+void lab_dash_trnselect_right(component *c, void *userdata) {
+    trnselect_widgets *tw = userdata;
+    trnselect_next(tw->trnselect);
+}
+
+sd_tournament_file* lab_dash_trnselect_selected(trnselect_widgets *tw) {
+    return trnselect_selected(tw->trnselect);
+}
+
 component *lab_dash_trnselect_create(scene *s, trnselect_widgets *tw) {
     component *xy = xysizer_create();
 

@@ -15,8 +15,7 @@
 #include "game/scenes/mechlab/lab_dash_newplayer.h"
 #include "game/scenes/mechlab/lab_dash_trnselect.h"
 #include "game/scenes/mechlab/lab_menu_main.h"
-#include "game/scenes/mechlab/lab_menu_pilotselect.h"
-#include "game/scenes/mechlab/lab_menu_trnselect.h"
+#include "game/scenes/mechlab/lab_menu_select.h"
 #include "game/scenes/mechlab/lab_menu_difficultyselect.h"
 #include "game/utils/settings.h"
 #include "resources/sgmanager.h"
@@ -178,13 +177,12 @@ void mechlab_tick(scene *scene, int paused) {
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
-            component *menu = lab_menu_pilotselect_create(scene, &local->dw);
-            //trnmenu_attach(menu, local->hint);
+            component *menu = lab_menu_select_create(scene, lab_dash_main_select, &local->dw, lab_dash_main_left, &local->dw, lab_dash_main_right, &local->dw, 224);
             guiframe_set_root(local->frame, menu);
             guiframe_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
-            game_player *player1 = game_state_get_player(scene->gs, 0);
-            player1->pilot->photo_id =  lab_menu_pilotselected(&local->dw);
+            //game_player *player1 = game_state_get_player(scene->gs, 0);
+            //player1->pilot->photo_id =  lab_dash_main_pilotselected(&local->dw);
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_DIFFICULTY);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
@@ -196,12 +194,12 @@ void mechlab_tick(scene *scene, int paused) {
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_TOURNAMENT);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
-            component *menu = lab_menu_trnselect_create(scene, &local->tw);
+            component *menu = lab_menu_select_create(scene, lab_dash_trnselect_select, &local->tw, lab_dash_trnselect_left, &local->tw, lab_dash_trnselect_right, &local->tw, 486);
             //trnmenu_attach(menu, local->hint);
             guiframe_set_root(local->frame, menu);
             guiframe_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
-            sd_tournament_file *trn = lab_menu_trnselected(&local->tw);
+            sd_tournament_file *trn = lab_dash_trnselect_selected(&local->tw);
             game_player *player1 = game_state_get_player(scene->gs, 0);
             if (player1->pilot->money < trn->registration_fee) {
                 player1->pilot->money = 0;

@@ -3,9 +3,11 @@
 
 #include "game/gui/component.h"
 #include "game/protos/scene.h"
+#include "formats/pilot.h"
 
 // For easy access to components
 typedef struct {
+    sd_pilot *pilot;
     component *photo;
     component *power;
     component *agility;
@@ -25,6 +27,13 @@ typedef struct {
     component *har_name;
     component *har_moves;
 } dashboard_widgets;
+
+
+void lab_dash_main_select(component *c, void *userdata);
+
+void lab_dash_main_left(component *c, void *userdata);
+
+void lab_dash_main_right(component *c, void *userdata);
 
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw);
 void lab_dash_main_update(scene *s, dashboard_widgets *dw);
