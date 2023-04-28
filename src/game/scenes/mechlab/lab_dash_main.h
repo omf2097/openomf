@@ -7,7 +7,10 @@
 
 // For easy access to components
 typedef struct {
+    scene *scene;
     sd_pilot *pilot;
+    list *savegames;
+    int16_t index;
     component *photo;
     component *power;
     component *agility;
@@ -29,11 +32,15 @@ typedef struct {
 } dashboard_widgets;
 
 
-void lab_dash_main_select(component *c, void *userdata);
+void lab_dash_main_photo_select(component *c, void *userdata);
+void lab_dash_main_photo_left(component *c, void *userdata);
+void lab_dash_main_photo_right(component *c, void *userdata);
 
-void lab_dash_main_left(component *c, void *userdata);
+void lab_dash_main_chr_load(component *c, void *userdata);
+void lab_dash_main_chr_delete(component *c, void *userdata);
+void lab_dash_main_chr_left(component *c, void *userdata);
+void lab_dash_main_chr_right(component *c, void *userdata);
 
-void lab_dash_main_right(component *c, void *userdata);
 
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw);
 void lab_dash_main_update(scene *s, dashboard_widgets *dw);

@@ -11,6 +11,7 @@
 #include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/scenes/mechlab/lab_menu_training.h"
 #include "resources/bk.h"
+#include "resources/sgmanager.h"
 #include "resources/languages.h"
 #include "utils/log.h"
 #include "utils/allocator.h"
@@ -60,18 +61,47 @@ void lab_menu_main_new(component *c, void *userdata) {
     mechlab_select_dashboard(s, DASHBOARD_NEW);
 }
 
+void lab_menu_main_tournament(component *c, void *userdata) {
+    scene *s = userdata;
+    mechlab_select_dashboard(s, DASHBOARD_SELECT_TOURNAMENT);
+    mechlab_enter_trnselect_menu(s);
+}
+
+void lab_menu_main_load(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    if (sg_count() == 1 && p1->chr) {
+        // TODO one and only loaded
+        return;
+    } else if (sg_count() == 0) {
+        // TODO none to load
+        return;
+    }
+    trnmenu_set_submenu(c->parent, mechlab_chrload_menu_create(s));
+}
+
+void lab_menu_main_delete(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    if (sg_count() < 2 && p1->chr) {
+        // none to delete 
+        return;
+    }
+    trnmenu_set_submenu(c->parent, mechlab_chrdelete_menu_create(s));
+}
+
 static const button_details details_list[] = {
   // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
-    {lab_menu_main_arena,                          "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
+    {lab_menu_main_arena,           "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_training_enter,  "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0, COM_DISABLED},
     {lab_menu_main_buy_enter,       "BUY",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_sell_enter,      "SELL",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
-    {NULL,                          "LOAD",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
+    {lab_menu_main_load,            "LOAD",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
     {lab_menu_main_new,             "NEW",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
-    {NULL,                          "DELETE",           TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_DISABLED},
+    {lab_menu_main_delete,          "DELETE",           TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_DISABLED},
     {NULL,                          "SIM",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_quit,            "QUIT",             TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_ENABLED },
-    {NULL,                          "NEW TOURNAMENT",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_DISABLED},
+    {lab_menu_main_tournament,      "NEW TOURNAMENT",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_DISABLED},
 };
 
 void lab_menu_focus_arena(component *c, bool focused, void *userdata) {

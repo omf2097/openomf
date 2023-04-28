@@ -6,35 +6,86 @@
 #include "game/gui/xysizer.h"
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab/lab_dash_main.h"
+#include "game/scenes/mechlab.h"
 #include "resources/ids.h"
 #include "resources/languages.h"
+#include "resources/sgmanager.h"
+#include "game/utils/settings.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/video.h"
 
 
-void lab_dash_main_select(component *c, void *userdata){
-    dashboard_widgets *dw = userdata;
-    dw->pilot->photo_id = pilotpic_selected(dw->photo);
-    pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
+void lab_dash_main_photo_select(component *c, void *userdata){
     trnmenu_finish(c->parent);
 }
 
-void lab_dash_main_left(component *c, void *userdata) {
+void lab_dash_main_photo_left(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     pilotpic_prev(dw->photo);
+    dw->pilot->photo_id = pilotpic_selected(dw->photo);
+    pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
+    palette *base_pal = video_get_base_palette();
+    palette_load_player_colors(base_pal, &dw->pilot->palette, 0);
+    video_force_pal_refresh();
 }
 
-void lab_dash_main_right(component *c, void *userdata) {
+void lab_dash_main_photo_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     pilotpic_next(dw->photo);
+    dw->pilot->photo_id = pilotpic_selected(dw->photo);
+    pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
+    palette *base_pal = video_get_base_palette();
+    palette_load_player_colors(base_pal, &dw->pilot->palette, 0);
+    video_force_pal_refresh();
 }
+
+void lab_dash_main_chr_load(component *c, void *userdata) {
+    dashboard_widgets *dw = userdata;
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+    p1->chr = ((sd_chr_file*)list_get(dw->savegames, dw->index));
+    p1->pilot = &p1->chr->pilot;
+    strcpy(settings_get()->tournament.last_name, p1->pilot->name);
+    settings_save();
+    trnmenu_finish(c);
+}
+
+void lab_dash_main_chr_delete(component *c, void *userdata) {
+}
+void lab_dash_main_chr_left(component *c, void *userdata) {
+    DEBUG("CHAR LEFT");
+    dashboard_widgets *dw = userdata;
+    dw->index--;
+    if (dw->index < 0) {
+        dw->index = list_size(dw->savegames) - 1;
+    }
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+    p1->pilot = &((sd_chr_file*)list_get(dw->savegames, dw->index))->pilot;
+    mechlab_update(dw->scene);
+}
+
+void lab_dash_main_chr_right(component *c, void *userdata) {
+    DEBUG("CHAR RIGHT");
+    dashboard_widgets *dw = userdata;
+    dw->index++;
+    if (dw->index >= list_size(dw->savegames)) {
+        dw->index = 0;
+    }
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+    p1->pilot = &((sd_chr_file*)list_get(dw->savegames, dw->index))->pilot;
+    mechlab_update(dw->scene);
+}
+
 
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     component *xy = xysizer_create();
 
+    dw->scene = s;
     game_player *p1 = game_state_get_player(s->gs, 0);
     dw->pilot = p1->pilot;
 
+    dw->savegames = sg_load_all();
+    dw->index = 0;
 
     text_settings tconf_dark;
     text_defaults(&tconf_dark);
@@ -53,7 +104,21 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     tconf_light_centered.cforeground = color_create(50, 240, 50, 255);
 
     // Pilot image
-    dw->photo = pilotpic_create(PIC_PLAYERS, 1);
+    dw->photo = pilotpic_create(PIC_PLAYERS, 0);
+    if (p1->pilot->photo) {
+        DEBUG("loading pilot photo from pilot");
+        pilotpic_set_photo(dw->photo, dw->pilot->photo);
+    } else {
+        dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
+        DEBUG("seletng default pilot photo");
+        dw->pilot->photo_id = pilotpic_selected(dw->photo);
+        pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
+    }
+    palette *base_pal = video_get_base_palette();
+    palette_load_player_colors(base_pal, &dw->pilot->palette, 0);
+    video_force_pal_refresh();
+
+
     xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
 
     // Texts
@@ -111,8 +176,8 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
 }
 
 void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
-    char tmp[64];
     game_player *p1;
+    char tmp[64];
 
     // Load the player information for player 1
     // P1 is always the one being edited in tournament dashboard
@@ -155,15 +220,20 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     SET_GAUGE_X(leg_speed);
     SET_GAUGE_X(stun_resistance);
 
-    if (p1->chr) {
-        pilotpic_set_photo(dw->photo, p1->chr->photo);
+    if (p1->pilot->photo) {
+        DEBUG("loading pilot photo from pilot");
+        pilotpic_set_photo(dw->photo, p1->pilot->photo);
     } else {
+        DEBUG("seletng default pilot photo");
         // Select pilot picture
-        pilotpic_select(dw->photo, PIC_PLAYERS, p1->pilot->photo_id);
+        pilotpic_select(dw->photo, PIC_PLAYERS, 0);
     }
 
     // Palette
     palette *base_pal = video_get_base_palette();
     palette_load_player_colors(base_pal, &p1->pilot->palette, 0);
     video_force_pal_refresh();
+
 }
+
+

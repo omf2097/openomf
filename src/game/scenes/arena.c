@@ -81,7 +81,15 @@ void game_menu_quit(component *c, void *userdata) {
     scene *s = userdata;
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 0)), 1);
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 1)), 1);
-    game_state_set_next(s->gs, SCENE_MENU);
+    game_player *player1 = game_state_get_player(((scene *)userdata)->gs, 0);
+    if (player1->chr) {
+        // quit back to VS for plug to call you a chicken
+        game_player *player2 = game_state_get_player(((scene *)userdata)->gs, 1);
+        player2->pilot = NULL;
+        game_state_set_next(s->gs, SCENE_VS);
+    } else {
+        game_state_set_next(s->gs, SCENE_MENU);
+    }
 }
 
 void game_menu_return(component *c, void *userdata) {
@@ -1072,7 +1080,10 @@ void arena_render_overlay(scene *scene) {
         const char *player2_name;
         if(player[0]->chr) {
             player1_name = player[0]->pilot->name;
-            player2_name = player[1]->pilot->name;
+            if (player[1]->pilot) {
+                // when quitting this can go null
+                player2_name = player[1]->pilot->name;
+            }
         } else {
             // TODO put these in the pilot struct
             player1_name = lang_get(player[0]->pilot->pilot_id + 20);
@@ -1084,12 +1095,15 @@ void arena_render_overlay(scene *scene) {
         font_render_shadowed(&font_small, lang_get((player[0]->pilot->har_id) + 31), 5, 26, TEXT_COLOR,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
 
-        int p2len = (strlen(player2_name) - 1) * font_small.w;
-        int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * font_small.w;
-        font_render_shadowed(&font_small, player2_name, 315 - p2len, 19, TEXT_COLOR,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        font_render_shadowed(&font_small, lang_get((player[1]->pilot->har_id) + 31), 315 - h2len, 26, TEXT_COLOR,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        if (player[1]->pilot) {
+            // when quitting, this can go null
+            int p2len = (strlen(player2_name) - 1) * font_small.w;
+            int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * font_small.w;
+            font_render_shadowed(&font_small, player2_name, 315 - p2len, 19, TEXT_COLOR,
+                    TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+            font_render_shadowed(&font_small, lang_get((player[1]->pilot->har_id) + 31), 315 - h2len, 26, TEXT_COLOR,
+                    TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        }
 
         // Render score stuff
         chr_score_render(game_player_get_score(player[0]));

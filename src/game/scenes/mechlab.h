@@ -3,6 +3,7 @@
 
 #include "formats/chr.h"
 #include "game/protos/scene.h"
+#include "game/gui/component.h"
 
 typedef enum
 {
@@ -16,6 +17,10 @@ typedef enum
 
 int mechlab_create(scene *scene);
 void mechlab_update(scene *scene);
+
+void mechlab_enter_trnselect_menu(scene *s);
+component *mechlab_chrload_menu_create(scene *scene);
+component *mechlab_chrdelete_menu_create(scene *scene);
 
 void mechlab_select_dashboard(scene *scene, dashboard_type type);
 

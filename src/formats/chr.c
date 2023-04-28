@@ -44,8 +44,7 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
     strncpy(chr->pilot.trn_desc, trn->locales[0]->title, sizeof(chr->pilot.trn_desc));
     strncpy(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
-    sd_sprite_create(chr->photo);
-    pilotpic_load(chr->photo, &chr->pal, PIC_PLAYERS, pilot->photo_id);
+    sd_sprite_copy(chr->photo, pilot->photo);
     return SD_SUCCESS;
 }
 
@@ -71,6 +70,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
 
     char tmp[200];
     str pic_file;
+    str trn_file;
     sd_tournament_file trn;
     sd_pic_file pic;
 
@@ -82,7 +82,9 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         sd_pic_create(&pic);
         sd_pic_load(&pic, tmp);
 
-        trn_load(&trn, chr->pilot.trn_name);
+        str_from_c(&trn_file, chr->pilot.trn_name);
+        str_toupper(&trn_file);
+        trn_load(&trn, str_c(&trn_file));
         for (int i = 0; i < 10; i++) {
             if (trn.locales[0]->end_texts[0][i]) {
                 chr->cutscene_text[i] = omf_calloc(1, strlen(trn.locales[0]->end_texts[0][i]));
@@ -114,6 +116,10 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
         sd_pilot_create(&chr->enemies[i]->pilot);
         sd_pilot_load_player_from_mem(mr, &chr->enemies[i]->pilot);
+        if (chr->enemies[i]->pilot.har_id == 255) {
+            // pick a random HAR
+            chr->enemies[i]->pilot.har_id = rand_int(10);
+        }
         if (dirname) {
             memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(palette));
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
@@ -151,6 +157,8 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     // Fix photo size
     chr->photo->width++;
     chr->photo->height++;
+
+    chr->pilot.photo = chr->photo;
 
     // Close & return
     sd_reader_close(r);

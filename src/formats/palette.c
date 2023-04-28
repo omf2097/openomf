@@ -2,7 +2,6 @@
 #include "formats/altpal.h"
 #include "formats/error.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "video/color.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -168,8 +167,10 @@ void palette_save(sd_writer *writer, const palette *pal) {
 }
 
 void palette_load_player_colors(palette *dst, palette *src, int player) {
-    int dstoff = player * 48;
-    memcpy(dst->data + dstoff, src->data, 48 * 3);
+    // only load 47 palette colors, skipping the first one
+    // because that seems to be ignored by the original
+    int dstoff = (player * 48) + 1;
+    memcpy(dst->data + dstoff, src->data+1, 47 * 3);
 }
 
 void palette_set_player_color(palette *pal, int player, int srccolor, int dstcolor) {
@@ -185,7 +186,6 @@ void palette_set_player_color(palette *pal, int player, int srccolor, int dstcol
 
 void palette_copy(palette *dst, const palette *src, int index_start, int index_count) {
     for(int i = index_start; i < index_start + index_count; i++) {
-        DEBUG("copying %d %d %d", src->data[i][0], src->data[i][1], src->data[i][2]);
         memcpy(dst->data[i], src->data[i], 3);
     }
 }

@@ -26,6 +26,7 @@ void list_delete(list *list, iterator *iter);
 unsigned int list_size(const list *list);
 void list_iter_begin(const list *list, iterator *iter);
 void list_iter_end(const list *list, iterator *iter);
+void *list_iter_next(iterator *iter);
 void *list_get(const list *list, unsigned int i);
 
 #endif // LIST_H

@@ -150,60 +150,33 @@ int cutscene_create(scene *scene) {
             local->text_conf.cforeground = COLOR_GREEN;
             break;
         case SCENE_NORTHAM:
-
-
-            palette_load_player_colors(mpal, &p1->pilot->palette, 0);
-            video_force_pal_refresh();
-
-            ani = &bk_get_info(&scene->bk_data, 10 + p1->pilot->har_id)->ani;
-            obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-            object_set_animation(obj, ani);
-            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
-            local->text_x = 10;
-            local->text_y = 160;
-            local->text_width = 300;
-
-            ani = &bk_get_info(&scene->bk_data, 45)->ani;
-            obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-            object_set_animation(obj, ani);
-            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
-
-            ani = &bk_get_info(&scene->bk_data, 46)->ani;
-            obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-            object_set_animation(obj, ani);
-            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
-            break;
         case SCENE_KATUSHAI:
-
+        case SCENE_WAR:
+        case SCENE_WORLD:
+            music_play(PSM_END);
 
             palette_load_player_colors(mpal, &p1->pilot->palette, 0);
             video_force_pal_refresh();
 
-            ani = &bk_get_info(&scene->bk_data, 10 + p1->pilot->har_id)->ani;
-            obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-            object_set_animation(obj, ani);
-            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+            // load all the animations, in order
+            // including the one for our HAR
+            for (int i = 0; i < 256; i++) {
+                if (i >= 10 && i <= 20 && i != 10 + p1->pilot->har_id) {
+                    continue;
+                }
+                bk_info *bki = bk_get_info(&scene->bk_data, i);
+                if (bki) {
+                    ani = &bki->ani;
+                    obj = omf_calloc(1, sizeof(object));
+                    object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+                    object_set_animation(obj, ani);
+                    game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+                }
+            }
             local->text_x = 10;
             local->text_y = 160;
             local->text_width = 300;
 
-            ani = &bk_get_info(&scene->bk_data, 1)->ani;
-            obj = omf_calloc(1, sizeof(object));
-            object_set_stl(obj, scene->bk_data.sound_translation_table);
-            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-            object_set_animation(obj, ani);
-            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
-
-            ani = &bk_get_info(&scene->bk_data, 2)->ani;
-            obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-            object_set_stl(obj, scene->bk_data.sound_translation_table);
-            object_set_animation(obj, ani);
-            game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
             break;
 
     }

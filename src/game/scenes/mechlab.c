@@ -146,6 +146,23 @@ void mechlab_free(scene *scene) {
     scene_set_userdata(scene, local);
 }
 
+void mechlab_enter_trnselect_menu(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+    component *menu = lab_menu_select_create(scene, lab_dash_trnselect_select, &local->tw, lab_dash_trnselect_left, &local->tw, lab_dash_trnselect_right, &local->tw, 486);
+    guiframe_set_root(local->frame, menu);
+    guiframe_layout(local->frame);
+}
+
+component *mechlab_chrload_menu_create(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+    return lab_menu_select_create(scene, lab_dash_main_chr_load, &local->dw, lab_dash_main_chr_left, &local->dw, lab_dash_main_chr_right, &local->dw, 225);
+}
+
+component *mechlab_chrdelete_menu_create(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+    return lab_menu_select_create(scene, lab_dash_main_chr_delete, &local->dw, lab_dash_main_chr_left, &local->dw, lab_dash_main_chr_right, &local->dw, 226);
+}
+
 void mechlab_update(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
     game_player *p1 = game_state_get_player(scene->gs, 0);
@@ -177,7 +194,7 @@ void mechlab_tick(scene *scene, int paused) {
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
-            component *menu = lab_menu_select_create(scene, lab_dash_main_select, &local->dw, lab_dash_main_left, &local->dw, lab_dash_main_right, &local->dw, 224);
+            component *menu = lab_menu_select_create(scene, lab_dash_main_photo_select, &local->dw, lab_dash_main_photo_left, &local->dw, lab_dash_main_photo_right, &local->dw, 224);
             guiframe_set_root(local->frame, menu);
             guiframe_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
@@ -194,10 +211,7 @@ void mechlab_tick(scene *scene, int paused) {
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_TOURNAMENT);
             guiframe_free(local->frame);
             local->frame = guiframe_create(0, 0, 320, 200);
-            component *menu = lab_menu_select_create(scene, lab_dash_trnselect_select, &local->tw, lab_dash_trnselect_left, &local->tw, lab_dash_trnselect_right, &local->tw, 486);
-            //trnmenu_attach(menu, local->hint);
-            guiframe_set_root(local->frame, menu);
-            guiframe_layout(local->frame);
+            mechlab_enter_trnselect_menu(scene);
         } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
             sd_tournament_file *trn = lab_dash_trnselect_selected(&local->tw);
             game_player *player1 = game_state_get_player(scene->gs, 0);
