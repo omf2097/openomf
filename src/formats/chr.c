@@ -87,8 +87,8 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         trn_load(&trn, str_c(&trn_file));
         for(int i = 0; i < 10; i++) {
             if(trn.locales[0]->end_texts[0][i]) {
-                chr->cutscene_text[i] = omf_calloc(1, strlen(trn.locales[0]->end_texts[0][i]));
-                strcpy(chr->cutscene_text[i], trn.locales[0]->end_texts[0][i]);
+                chr->cutscene_text[i] = omf_calloc(1, strlen(trn.locales[0]->end_texts[0][i]) + 1);
+                strncpy(chr->cutscene_text[i], trn.locales[0]->end_texts[0][i], strlen(trn.locales[0]->end_texts[0][i]));
             }
         }
         // TODO do something better here
@@ -130,7 +130,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
             if(dirname && trn.enemies[i]->quotes[m]) {
                 DEBUG("allocating %d bytes for quote %s", strlen(trn.enemies[i]->quotes[m]), trn.enemies[i]->quotes[m]);
                 chr->enemies[i]->pilot.quotes[m] = omf_calloc(1, strlen(trn.enemies[i]->quotes[m]) + 1);
-                strcpy(chr->enemies[i]->pilot.quotes[m], trn.enemies[i]->quotes[m]);
+                strncpy(chr->enemies[i]->pilot.quotes[m], trn.enemies[i]->quotes[m], strlen(trn.enemies[i]->quotes[m]));
             }
         }
     }

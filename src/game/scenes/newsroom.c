@@ -226,7 +226,7 @@ void newsroom_input_tick(scene *scene) {
                                                          p2->pilot->pilot_id);
                                     game_player_set_ctrl(p2, ctrl);
                                 }
-                                if(local->champion) {
+                                if(p1->chr && local->champion) {
                                     game_state_set_next(scene->gs, p1->chr->cutscene);
                                 } else {
                                     game_state_set_next(scene->gs, SCENE_VS);

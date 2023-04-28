@@ -44,7 +44,7 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     p1->chr = ((sd_chr_file *)list_get(dw->savegames, dw->index));
     p1->pilot = &p1->chr->pilot;
-    strcpy(settings_get()->tournament.last_name, p1->pilot->name);
+    settings_get()->tournament.last_name = p1->pilot->name;
     settings_save();
     trnmenu_finish(c);
 }

@@ -83,7 +83,7 @@ void load_description(component **c, const char *desc) {
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
     tconf.halign = TEXT_CENTER;
-    tconf.valign = TEXT_CENTER;
+    tconf.valign = TEXT_MIDDLE;
     if(color >= 0) {
         tconf.cforeground = palette_lookup_color(color, video_get_base_palette());
     } else {

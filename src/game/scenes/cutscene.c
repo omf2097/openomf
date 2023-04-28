@@ -25,6 +25,7 @@ typedef struct cutscene_local_t {
 } cutscene_local;
 
 int cutscene_next_scene(scene *scene) {
+    game_player *player1 = game_state_get_player(scene->gs, 0);
     switch(scene->id) {
         case SCENE_END:
             return SCENE_END1;
@@ -33,7 +34,6 @@ int cutscene_next_scene(scene *scene) {
         case SCENE_END2:
             return SCENE_SCOREBOARD;
         default:
-            game_player *player1 = game_state_get_player(scene->gs, 0);
             if(player1->chr) {
                 return SCENE_VS;
             }

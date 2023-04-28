@@ -127,7 +127,7 @@ void mechlab_free(scene *scene) {
         const char *dirname = pm_get_local_path(SAVE_PATH);
         snprintf(tmp, 1024, "%s%s.CHR", dirname, player1->pilot->name);
         sd_chr_save(player1->chr, tmp);
-        strcpy(settings_get()->tournament.last_name, player1->pilot->name);
+        settings_get()->tournament.last_name = player1->pilot->name;
         settings_save();
     } else {
         DEBUG("not saving pilot");
@@ -231,7 +231,7 @@ void mechlab_tick(scene *scene, int paused) {
             const char *dirname = pm_get_local_path(SAVE_PATH);
             snprintf(tmp, 1024, "%s%s.CHR", dirname, player1->pilot->name);
             sd_chr_save(player1->chr, tmp);
-            strcpy(settings_get()->tournament.last_name, player1->pilot->name);
+            settings_get()->tournament.last_name = player1->pilot->name;
             settings_save();
             // force the character to reload because its just easier
             sd_chr_free(player1->chr);
@@ -378,7 +378,7 @@ void mechlab_input_tick(scene *scene) {
                         mechlab_find_last_player(scene);
                         mechlab_select_dashboard(scene, DASHBOARD_STATS);
                     } else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
-                        strcpy(player1->pilot->name, textinput_value(local->nw.input));
+                        strncpy(player1->pilot->name, textinput_value(local->nw.input), 17);
                         // mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
                         trnmenu_finish(
                             guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
@@ -440,7 +440,7 @@ int mechlab_create(scene *scene) {
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
     tconf.halign = TEXT_CENTER;
-    tconf.valign = TEXT_CENTER;
+    tconf.valign = TEXT_MIDDLE;
     tconf.cforeground = color_create(255, 255, 0, 255);
 
     local->hint = label_create(&tconf, "HINTY");

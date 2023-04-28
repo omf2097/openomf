@@ -49,8 +49,8 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     selector->cb = select;
     selector->data = selectdata;
 
-    tconf.valign = TEXT_CENTER;
-    tconf.halign = TEXT_MIDDLE;
+    tconf.valign = TEXT_MIDDLE;
+    tconf.halign = TEXT_CENTER;
     tconf.padding.top = 0;
     tconf.padding.bottom = 0;
     tconf.padding.left = 0;
