@@ -8,21 +8,13 @@
 #include <string.h>
 
 #define F_INT(struct_, var, def)                                                                                       \
-    {                                                                                                                  \
-#var, {.i = def }, TYPE_INT, offsetof(struct_, var)                                                            \
-    }
+    { #var, {.i = def }, TYPE_INT, offsetof(struct_, var) }
 #define F_BOOL(struct_, var, def)                                                                                      \
-    {                                                                                                                  \
-#var, {.b = def }, TYPE_BOOL, offsetof(struct_, var)                                                           \
-    }
+    { #var, {.b = def }, TYPE_BOOL, offsetof(struct_, var) }
 #define F_FLOAT(struct_, var, def)                                                                                     \
-    {                                                                                                                  \
-#var, {.f = def }, TYPE_FLOAT, offsetof(struct_, var)                                                          \
-    }
+    { #var, {.f = def }, TYPE_FLOAT, offsetof(struct_, var) }
 #define F_STRING(struct_, var, def)                                                                                    \
-    {                                                                                                                  \
-#var, {.s = def }, TYPE_STRING, offsetof(struct_, var)                                                         \
-    }
+    { #var, {.s = def }, TYPE_STRING, offsetof(struct_, var) }
 
 #define NFIELDS(struct_) sizeof(struct_) / sizeof(field)
 
