@@ -85,6 +85,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         str_from_c(&trn_file, chr->pilot.trn_name);
         str_toupper(&trn_file);
         trn_load(&trn, str_c(&trn_file));
+        str_free(&trn_file);
         for(int i = 0; i < 10; i++) {
             if(trn.locales[0]->end_texts[0][i]) {
                 chr->cutscene_text[i] = omf_calloc(1, strlen(trn.locales[0]->end_texts[0][i]) + 1);
@@ -134,6 +135,11 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
                 strncpy(chr->enemies[i]->pilot.quotes[m], trn.enemies[i]->quotes[m], strlen(trn.enemies[i]->quotes[m]));
             }
         }
+    }
+
+    if (dirname) {
+        sd_pic_free(&pic);
+        sd_tournament_free(&trn);
     }
 
     // Close memory reader for enemy data block
@@ -230,10 +236,25 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
 void sd_chr_free(sd_chr_file *chr) {
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         if(chr->enemies[i] != NULL) {
+            if (chr->enemies[i]->pilot.photo) {
+                sd_sprite_free(chr->enemies[i]->pilot.photo);
+                omf_free(chr->enemies[i]->pilot.photo);
+            }
+            for(int m = 0; m < 10; m++) {
+                if(chr->enemies[i]->pilot.quotes[m]) {
+                    omf_free(chr->enemies[i]->pilot.quotes[m]);
+                }
+            }
             omf_free(chr->enemies[i]);
         }
     }
+    for (int i = 0; i < 10; i++) {
+        if (chr->cutscene_text[i]) {
+            omf_free(chr->cutscene_text[i]);
+        }
+    }
     sd_sprite_free(chr->photo);
+    omf_free(chr->photo);
 }
 
 const sd_chr_enemy *sd_chr_get_enemy(sd_chr_file *chr, int enemy_num) {

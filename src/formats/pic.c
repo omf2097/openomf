@@ -23,6 +23,7 @@ void free_photos(sd_pic_file *pic) {
         if(pic->photos[i]) {
             if(pic->photos[i]->sprite) {
                 sd_sprite_free(pic->photos[i]->sprite);
+                omf_free(pic->photos[i]->sprite);
             }
             omf_free(pic->photos[i]);
         }

@@ -56,7 +56,26 @@ int sg_count() {
     list_create(&dirlist);
     scan_directory(&dirlist, dirname);
 
-    return list_size(&dirlist) - 2;
+    iterator it;
+    char *filename = NULL;
+    char *ext = NULL;
+
+    list_iter_begin(&dirlist, &it);
+    while((filename =(char *)list_iter_next(&it))) {
+        if((ext = strrchr(filename, '.')) && strcmp(".CHR", ext) == 0) {
+            continue;
+        }
+        DEBUG("ignoring file %s", filename);
+        // not a CHR file, get lost
+        list_delete(&dirlist, &it);
+    }
+
+    DEBUG("Found %d savegames.", list_size(&dirlist));
+    int size = list_size(&dirlist);
+
+    list_free(&dirlist);
+
+    return size;
 }
 
 list *sg_load_all() {

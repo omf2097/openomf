@@ -52,6 +52,7 @@ bool mechlab_find_last_player(scene *scene) {
         sd_chr_file *chr = omf_calloc(1, sizeof(sd_chr_file));
         int ret = sg_load(chr, last_name);
         if(ret != SD_SUCCESS) {
+            omf_free(chr);
             PERROR("Could not load saved game for playername '%s': %s!", last_name, sd_get_error(ret));
             last_name = NULL;
         } else {
@@ -137,6 +138,7 @@ void mechlab_free(scene *scene) {
         object_free(&local->bg_obj[i]);
     }
 
+    component_free(local->hint);
     guiframe_free(local->frame);
     guiframe_free(local->dashboard);
     object_free(local->mech);
@@ -256,6 +258,7 @@ void mechlab_tick(scene *scene, int paused) {
         } else {
             game_player *player1 = game_state_get_player(scene->gs, 0);
             if(player1->chr) {
+                sd_chr_free(player1->chr);
                 omf_free(player1->chr);
                 player1->pilot = omf_calloc(1, sizeof(sd_pilot));
                 sd_pilot_create(player1->pilot);

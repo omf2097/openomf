@@ -94,6 +94,7 @@ int mainmenu_create(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
     if(player1->chr) {
+        sd_chr_free(player1->chr);
         omf_free(player1->chr);
         player1->chr = NULL;
         player1->pilot = omf_calloc(1, sizeof(sd_pilot));
