@@ -2,7 +2,7 @@
 #include "formats/chr.h"
 #include "formats/error.h"
 #include "resources/pathmanager.h"
-#include "utils/list.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/scandir.h"
 #include <stdio.h>
@@ -16,7 +16,7 @@ int sg_init() {
     const char *dirname = pm_get_local_path(SAVE_PATH);
     if(dirname == NULL) {
         PERROR("Could not find save path! Something is wrong with path manager!");
-        return 1;
+        return 0;
     }
 
     // Seek all files
@@ -38,10 +38,6 @@ int sg_init() {
             goto error_0;
         }
     }
-
-    // TODO: Handle looking up saves properly. Now just list_size - 2 (.. and .)
-    DEBUG("Found %d savegames.", list_size(&dirlist) - 2);
-
     list_free(&dirlist);
     return 0;
 
@@ -50,25 +46,91 @@ error_0:
     return 1;
 }
 
-int sg_load(sd_pilot *pilot, const char *pilotname) {
+int sg_count() {
+    if(sg_init()) {
+        return 0;
+    }
+    const char *dirname = pm_get_local_path(SAVE_PATH);
+    list dirlist;
+    // Seek all files
+    list_create(&dirlist);
+    scan_directory(&dirlist, dirname);
+
+    iterator it;
+    char *filename = NULL;
+    char *ext = NULL;
+
+    list_iter_begin(&dirlist, &it);
+    while((filename = (char *)list_iter_next(&it))) {
+        if((ext = strrchr(filename, '.')) && strcmp(".CHR", ext) == 0) {
+            continue;
+        }
+        DEBUG("ignoring file %s", filename);
+        // not a CHR file, get lost
+        list_delete(&dirlist, &it);
+    }
+
+    DEBUG("Found %d savegames.", list_size(&dirlist));
+    int size = list_size(&dirlist);
+
+    list_free(&dirlist);
+
+    return size;
+}
+
+list *sg_load_all() {
+
+    if(sg_init()) {
+        return NULL;
+    }
+
+    const char *dirname = pm_get_local_path(SAVE_PATH);
+    list dirlist;
+    // Seek all files
+    list_create(&dirlist);
+    scan_directory(&dirlist, dirname);
+
+    DEBUG("Found %d savegames.", list_size(&dirlist) - 2);
+
+    list *chrlist = omf_calloc(1, sizeof(list));
+
+    iterator it;
+    list_iter_begin(&dirlist, &it);
+    char *chrfile;
+    char *ext;
+    while((chrfile = (char *)list_iter_next(&it))) {
+        if(strcmp(".", chrfile) == 0 || strcmp("..", chrfile) == 0) {
+            continue;
+        }
+        if((ext = strrchr(chrfile, '.')) && strcmp(".CHR", ext) == 0) {
+            sd_chr_file *chr = omf_calloc(1, sizeof(sd_chr_file));
+            ext[0] = 0;
+            DEBUG("%s", chrfile);
+            sg_load(chr, chrfile);
+            list_append(chrlist, chr, sizeof(sd_chr_file));
+        }
+    }
+
+    list_free(&dirlist);
+    return chrlist;
+}
+
+int sg_load(sd_chr_file *chr, const char *pilotname) {
     char tmp[1024];
 
     // Form the savegame filename
     const char *dirname = pm_get_local_path(SAVE_PATH);
-    snprintf(tmp, 1024, "%s/%s.CHR", dirname, pilotname);
+    snprintf(tmp, 1024, "%s%s.CHR", dirname, pilotname);
 
     // Attempt to load
-    sd_chr_file chr;
-    sd_chr_create(&chr);
-    int ret = sd_chr_load(&chr, tmp);
+    sd_chr_create(chr);
+    int ret = sd_chr_load(chr, tmp);
     if(ret != SD_SUCCESS) {
         PERROR("Unable to load savegame file '%s'.", tmp);
-        return 1;
+        return ret;
     }
-    memcpy(pilot, &chr.pilot, sizeof(sd_pilot));
-    sd_chr_free(&chr);
 
-    return 0;
+    return SD_SUCCESS;
 }
 
 int sd_save(const sd_pilot *pilot, const char *pilotname) {

@@ -14,6 +14,7 @@
 #include "formats/internal/memwriter.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include "video/color.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -64,6 +65,8 @@ void palette_free(palette *pal);
  */
 unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const palette *pal);
 
+color palette_lookup_color(uint8_t i, const palette *pal);
+
 /*! \brief Exports palette to GIMP palette file.
  *
  * Exports a palette to GIMP palette format (GPL). Palette remappings are NOT
@@ -99,8 +102,9 @@ int palette_load(sd_reader *reader, palette *pal);
 void palette_msave_range(memwriter *writer, const palette *pal, int index_start, int index_count);
 void palette_save_range(sd_writer *writer, const palette *pal, int index_start, int index_count);
 void palette_save(sd_writer *writer, const palette *pal);
+void palette_load_player_colors(palette *dst, palette *src, int player);
 void palette_set_player_color(palette *pal, int player, int sourcecolor, int destcolor);
-palette *palette_copy(palette *src);
+void palette_copy(palette *dst, const palette *src, int index_start, int inde_count);
 
 #ifdef __cplusplus
 }

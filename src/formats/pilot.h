@@ -15,6 +15,7 @@
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/palette.h"
+#include "formats/sprite.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -110,7 +111,16 @@ typedef struct {
     uint16_t photo_id;    ///< Which face photo this pilot uses
 
     char *quotes[10]; ///< Pilot quotes for each supported language
+
+    sd_sprite *photo; ///< Pilot photo, in tournament mode only
 } sd_pilot;
+
+typedef enum
+{
+    PRIMARY,
+    SECONDARY,
+    TERTIARY
+} player_color;
 
 /*! \brief Initialize pilot struct
  *
@@ -138,6 +148,8 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot);
 void sd_pilot_save_player_to_mem(memwriter *mwriter, const sd_pilot *pilot);
 void sd_pilot_save_to_mem(memwriter *mwriter, const sd_pilot *pilot);
 int sd_pilot_save(sd_writer *writer, const sd_pilot *pilot);
+
+void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t color);
 
 #ifdef __cplusplus
 }

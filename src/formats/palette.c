@@ -2,6 +2,7 @@
 #include "formats/altpal.h"
 #include "formats/error.h"
 #include "utils/allocator.h"
+#include "video/color.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,6 +28,13 @@ unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const palet
         }
     }
     return 0;
+}
+
+color palette_lookup_color(uint8_t i, const palette *pal) {
+    uint8_t red = pal->data[i][0] & 0xff;
+    uint8_t green = pal->data[i][1] & 0xff;
+    uint8_t blue = pal->data[i][2] & 0xff;
+    return color_create(red, green, blue, 255);
 }
 
 int palette_to_gimp_palette(const palette *pal, const char *filename) {
@@ -157,18 +165,26 @@ void palette_save(sd_writer *writer, const palette *pal) {
     sd_write_buf(writer, (char *)pal->remaps, 19 * 256);
 }
 
+void palette_load_player_colors(palette *dst, palette *src, int player) {
+    // only load 47 palette colors, skipping the first one
+    // because that seems to be ignored by the original
+    int dstoff = (player * 48) + 1;
+    memcpy(dst->data + dstoff, src->data + 1, 47 * 3);
+}
+
 void palette_set_player_color(palette *pal, int player, int srccolor, int dstcolor) {
     int dst = dstcolor * 16 + player * 48;
     int src = srccolor * 16;
     char iz[3];
     memcpy(iz, pal->data, 3);
-    memcpy(pal->data + dst, altpals->palettes[0].data + src, 16 * 3);
+    if(altpals) {
+        memcpy(pal->data + dst, altpals->palettes[0].data + src, 16 * 3);
+    }
     memcpy(pal->data, iz, 3);
 }
 
-palette *palette_copy(palette *src) {
-    palette *new = omf_calloc(1, sizeof(palette));
-    memcpy(new->data, src->data, 256 * 3);
-    memcpy(new->remaps, src->remaps, 19 * 256);
-    return new;
+void palette_copy(palette *dst, const palette *src, int index_start, int index_count) {
+    for(int i = index_start; i < index_start + index_count; i++) {
+        memcpy(dst->data[i], src->data[i], 3);
+    }
 }

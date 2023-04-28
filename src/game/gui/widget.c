@@ -1,5 +1,6 @@
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 
 void widget_set_obj(component *c, void *obj) {
     widget *local = component_get_obj(c);
@@ -34,6 +35,11 @@ void widget_set_event_cb(component *c, widget_event_cb cb) {
 void widget_set_action_cb(component *c, widget_action_cb cb) {
     widget *local = component_get_obj(c);
     local->action = cb;
+}
+
+void widget_set_focus_cb(component *c, widget_focus_cb cb) {
+    widget *local = component_get_obj(c);
+    local->focus = cb;
 }
 
 void widget_set_layout_cb(component *c, widget_layout_cb cb) {
@@ -81,6 +87,15 @@ static int widget_action(component *c, int action) {
     return 1;
 }
 
+void widget_focus(component *c, bool focused) {
+    widget *local = component_get_obj(c);
+    DEBUG("widget focus");
+    if(local->focus) {
+        DEBUG("running widget focus cb");
+        local->focus(c, focused);
+    }
+}
+
 static void widget_layout(component *c, int x, int y, int w, int h) {
     widget *local = component_get_obj(c);
     if(local->layout) {
@@ -117,6 +132,7 @@ component *widget_create() {
     component_set_render_cb(c, widget_render);
     component_set_event_cb(c, widget_event);
     component_set_action_cb(c, widget_action);
+    component_set_focus_cb(c, widget_focus);
     component_set_layout_cb(c, widget_layout);
     component_set_free_cb(c, widget_free);
     component_set_find_cb(c, widget_find);

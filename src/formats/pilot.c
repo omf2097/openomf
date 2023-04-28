@@ -47,9 +47,9 @@ void sd_pilot_load_player_from_mem(memreader *mr, sd_pilot *pilot) {
     pilot->offense = memread_uword(mr);
     pilot->defense = memread_uword(mr);
     pilot->money = memread_udword(mr);
-    pilot->color_1 = memread_ubyte(mr);
-    pilot->color_2 = memread_ubyte(mr);
-    pilot->color_3 = memread_ubyte(mr);
+    sd_pilot_set_player_color(pilot, PRIMARY, memread_ubyte(mr));
+    sd_pilot_set_player_color(pilot, SECONDARY, memread_ubyte(mr));
+    sd_pilot_set_player_color(pilot, TERTIARY, memread_ubyte(mr));
 }
 
 void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
@@ -290,4 +290,21 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
         sd_write_variable_str(fw, pilot->quotes[m]);
     }
     return SD_SUCCESS;
+}
+
+void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t color) {
+    switch(index) {
+        case PRIMARY:
+            pilot->color_3 = color;
+            palette_set_player_color(&pilot->palette, 0, pilot->color_3, 0);
+            break;
+        case SECONDARY:
+            pilot->color_2 = color;
+            palette_set_player_color(&pilot->palette, 0, pilot->color_2, 1);
+            break;
+        case TERTIARY:
+            pilot->color_1 = color;
+            palette_set_player_color(&pilot->palette, 0, pilot->color_1, 2);
+            break;
+    }
 }

@@ -13,6 +13,7 @@
 #include "formats/palette.h"
 #include "formats/pilot.h"
 #include "formats/sprite.h"
+#include "formats/tournament.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +41,8 @@ typedef struct {
     uint32_t unknown_b;                     ///< Unkown value. Maybe tells if there is photo data ?
     sd_sprite *photo;                       ///< Pilot photo
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES]; ///< List of enemy states in current tournament
+    unsigned int cutscene;                  ///< cutscene id for end of tournament
+    char *cutscene_text[10];                ///< cutscene dialog text
 } sd_chr_file;
 
 /*! \brief Initialize CHR structure
@@ -61,6 +64,8 @@ int sd_chr_create(sd_chr_file *chr);
  * \param chr CHR struct to modify.
  */
 void sd_chr_free(sd_chr_file *chr);
+
+int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot);
 
 /*! \brief Load .CHR file
  *

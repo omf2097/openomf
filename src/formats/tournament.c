@@ -93,6 +93,13 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         goto error_0;
     }
 
+    // TODO check if this works on windows
+    char *justfile = strrchr(filename, '/');
+    if(justfile == NULL) {
+        strncpy(trn->filename, filename, sizeof(trn->filename));
+    } else {
+        strncpy(trn->filename, justfile + 1, sizeof(trn->filename));
+    }
     trn->enemy_count = enemy_count;
 
     // Read tournament data
@@ -170,6 +177,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Make sure we are in correct position
     if(sd_reader_pos(r) != victory_text_offset) {
+        ret = SD_FILE_PARSE_ERROR;
         goto error_2;
     }
 

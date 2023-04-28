@@ -1,9 +1,9 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "audio/music.h"
 #include "audio/sound.h"
+#include "formats/pilot.h"
 #include "game/game_state.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/progressbar.h"
@@ -258,26 +258,23 @@ void handle_action(scene *scene, int player, int action) {
                     palette *base_pal = video_get_base_palette();
                     pilot p_a;
                     pilot_get_info(&p_a, local->pilot_id_a);
-                    palette_set_player_color(base_pal, 0, p_a.colors[0], 2);
-                    palette_set_player_color(base_pal, 0, p_a.colors[1], 1);
-                    palette_set_player_color(base_pal, 0, p_a.colors[2], 0);
-                    video_force_pal_refresh();
-                    player1->colors[0] = p_a.colors[0];
-                    player1->colors[1] = p_a.colors[1];
-                    player1->colors[2] = p_a.colors[2];
+                    sd_pilot_set_player_color(player1->pilot, TERTIARY, p_a.colors[0]);
+                    sd_pilot_set_player_color(player1->pilot, SECONDARY, p_a.colors[1]);
+                    sd_pilot_set_player_color(player1->pilot, PRIMARY, p_a.colors[2]);
+
+                    palette_load_player_colors(base_pal, &player1->pilot->palette, 0);
 
                     if(player2->selectable) {
                         object_select_sprite(&local->bigportrait2, local->pilot_id_b);
                         // update the player palette
                         pilot_get_info(&p_a, local->pilot_id_b);
-                        palette_set_player_color(base_pal, 1, p_a.colors[0], 2);
-                        palette_set_player_color(base_pal, 1, p_a.colors[1], 1);
-                        palette_set_player_color(base_pal, 1, p_a.colors[2], 0);
-                        video_force_pal_refresh();
-                        player2->colors[0] = p_a.colors[0];
-                        player2->colors[1] = p_a.colors[1];
-                        player2->colors[2] = p_a.colors[2];
+                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
+                        sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
+                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
+
+                        palette_load_player_colors(base_pal, &player1->pilot->palette, 1);
                     }
+                    video_force_pal_refresh();
                 } else {
                     int nova_activated[2] = {1, 1};
                     for(int i = 0; i < 2; i++) {
@@ -292,41 +289,41 @@ void handle_action(scene *scene, int player, int action) {
                         }
                     }
                     if(nova_activated[0] && local->row_a == 1 && local->column_a == 2) {
-                        player1->har_id = HAR_NOVA;
+                        player1->pilot->har_id = HAR_NOVA;
                     } else {
-                        player1->har_id = 5 * local->row_a + local->column_a;
+                        player1->pilot->har_id = 5 * local->row_a + local->column_a;
                     }
-                    player1->pilot_id = local->pilot_id_a;
+                    player1->pilot->pilot_id = local->pilot_id_a;
                     if(player2->selectable) {
                         if(nova_activated[1] && local->row_b == 1 && local->column_b == 2) {
-                            player2->har_id = HAR_NOVA;
+                            player2->pilot->har_id = HAR_NOVA;
                         } else {
-                            player2->har_id = 5 * local->row_b + local->column_b;
+                            player2->pilot->har_id = 5 * local->row_b + local->column_b;
                         }
-                        player2->pilot_id = local->pilot_id_b;
+                        player2->pilot->pilot_id = local->pilot_id_b;
                     } else {
-                        if(player1->sp_wins == (2046 ^ (2 << player1->pilot_id))) {
+                        if(player1->sp_wins == (2046 ^ (2 << player1->pilot->pilot_id))) {
                             // everyone but kriessack
-                            player2->pilot_id = 10;
-                            player2->har_id = HAR_NOVA;
+                            player2->pilot->pilot_id = 10;
+                            player2->pilot->har_id = HAR_NOVA;
                         } else {
                             // pick an opponent we have not yet beaten
                             while(1) {
                                 int i = rand_int(10);
-                                if((2 << i) & player1->sp_wins || i == player1->pilot_id) {
+                                if((2 << i) & player1->sp_wins || i == player1->pilot->pilot_id) {
                                     continue;
                                 }
-                                player2->pilot_id = i;
-                                player2->har_id = rand_int(10);
+                                player2->pilot->pilot_id = i;
+                                player2->pilot->har_id = rand_int(10);
                                 break;
                             }
                         }
 
                         pilot p_a;
-                        pilot_get_info(&p_a, player2->pilot_id);
-                        player2->colors[0] = p_a.colors[0];
-                        player2->colors[1] = p_a.colors[1];
-                        player2->colors[2] = p_a.colors[2];
+                        pilot_get_info(&p_a, player2->pilot->pilot_id);
+                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
+                        sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
+                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
                     }
                     game_state_set_next(scene->gs, SCENE_VS);
                 }

@@ -159,7 +159,21 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Unk. Float B:    %f\n", pilot->unk_f_b);
 
         printf("  - Palette:\n");
-        print_bytes((char *)pilot->palette.data, 144, 16, 4);
+
+        printf("    ");
+        for(int i = 0; i < 48; i += 1) {
+            uint8_t r = pilot->palette.data[i][0];
+            uint8_t g = pilot->palette.data[i][1];
+            uint8_t b = pilot->palette.data[i][2];
+            printf("\033[48;2;%d;%d;%dm", r, g, b);
+            printf("%02x", i);
+            printf("\033[0m");
+            if(i % 16 == 15) {
+                printf("\n    ");
+            }
+            // printf(" %d %d %d\n",r, g, b);
+        }
+        // print_bytes((char *)pilot->palette.data, 144, 16, 4);
         printf("\n");
 
         printf("  - Unknown i        %d\n", pilot->unk_block_i);
