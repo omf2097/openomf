@@ -9,6 +9,7 @@
 
 typedef void (*trnmenu_tick_cb)(component *c);
 typedef void (*trnmenu_free_cb)(component *c);
+typedef void (*trnmenu_submenu_init_cb)(component *menu, component *submenu);
 typedef void (*trnmenu_submenu_done_cb)(component *menu, component *submenu);
 
 typedef struct {
@@ -34,6 +35,7 @@ typedef struct {
 
     char prev_submenu_state;
     component *submenu;
+    trnmenu_submenu_init_cb submenu_init;
     trnmenu_submenu_done_cb submenu_done;
     int finished;
 
@@ -49,6 +51,7 @@ void trnmenu_bind_hand(component *menu, animation *hand, game_state *gs);
 
 void trnmenu_set_submenu(component *menu, component *submenu);
 component *trnmenu_get_submenu(const component *menu);
+void trnmenu_set_submenu_init_cb(component *menu, trnmenu_submenu_init_cb done_cb);
 void trnmenu_set_submenu_done_cb(component *menu, trnmenu_submenu_done_cb done_cb);
 int trnmenu_is_finished(const component *menu);
 void trnmenu_finish(component *menu);

@@ -316,6 +316,12 @@ static void trnmenu_tick(component *c) {
             if(m->submenu_done) {
                 m->submenu_done(c, m->submenu);
             }
+
+            trnmenu *n = sizer_get_obj(m->submenu);
+            if(n->submenu_done) {
+                n->submenu_done(c, m->submenu);
+            }
+
             m->prev_submenu_state = 1;
         }
     }
@@ -383,6 +389,11 @@ void trnmenu_set_submenu(component *c, component *submenu) {
     submenu->parent = c; // Set correct parent
     component_layout(m->submenu, c->x, c->y, c->w, c->h);
 
+    trnmenu *n = sizer_get_obj(submenu);
+    if(n->submenu_init) {
+        n->submenu_init(c, m->submenu);
+    }
+
     m->opacity_step = -OPACITY_STEP;
     m->fade = 1;
 }
@@ -395,6 +406,11 @@ component *trnmenu_get_submenu(const component *c) {
 void trnmenu_set_submenu_done_cb(component *c, trnmenu_submenu_done_cb done_cb) {
     trnmenu *m = sizer_get_obj(c);
     m->submenu_done = done_cb;
+}
+
+void trnmenu_set_submenu_init_cb(component *c, trnmenu_submenu_init_cb init_cb) {
+    trnmenu *m = sizer_get_obj(c);
+    m->submenu_init = init_cb;
 }
 
 void trnmenu_finish(component *c) {
@@ -411,6 +427,8 @@ component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
     m->sheet_x = sheet_x;
     m->sheet_y = sheet_y;
     m->fade = 1;
+    m->submenu_init = NULL;
+    m->submenu_done = NULL;
     m->opacity_step = OPACITY_STEP;
     sizer_set_obj(c, m);
 

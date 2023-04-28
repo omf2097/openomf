@@ -155,14 +155,22 @@ void mechlab_enter_trnselect_menu(scene *scene) {
 
 component *mechlab_chrload_menu_create(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
-    return lab_menu_select_create(scene, lab_dash_main_chr_load, &local->dw, lab_dash_main_chr_left, &local->dw,
-                                  lab_dash_main_chr_right, &local->dw, 225);
+    component *menu = lab_menu_select_create(scene, lab_dash_main_chr_load, &local->dw, lab_dash_main_chr_left,
+                                             &local->dw, lab_dash_main_chr_right, &local->dw, 225);
+    trnmenu_set_submenu_init_cb(menu, lab_dash_main_chr_init);
+    trnmenu_set_submenu_done_cb(menu, lab_dash_main_chr_done);
+    trnmenu_set_userdata(menu, &local->dw);
+    return menu;
 }
 
 component *mechlab_chrdelete_menu_create(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
-    return lab_menu_select_create(scene, lab_dash_main_chr_delete, &local->dw, lab_dash_main_chr_left, &local->dw,
-                                  lab_dash_main_chr_right, &local->dw, 226);
+    component *menu = lab_menu_select_create(scene, lab_dash_main_chr_delete, &local->dw, lab_dash_main_chr_left,
+                                             &local->dw, lab_dash_main_chr_right, &local->dw, 226);
+    trnmenu_set_submenu_init_cb(menu, lab_dash_main_chr_init);
+    trnmenu_set_submenu_done_cb(menu, lab_dash_main_chr_done);
+    trnmenu_set_userdata(menu, &local->dw);
+    return menu;
 }
 
 void mechlab_update(scene *scene) {

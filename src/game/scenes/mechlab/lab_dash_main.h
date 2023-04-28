@@ -39,6 +39,8 @@ void lab_dash_main_chr_load(component *c, void *userdata);
 void lab_dash_main_chr_delete(component *c, void *userdata);
 void lab_dash_main_chr_left(component *c, void *userdata);
 void lab_dash_main_chr_right(component *c, void *userdata);
+void lab_dash_main_chr_init(component *menu, component *submenu);
+void lab_dash_main_chr_done(component *menu, component *submenu);
 
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw);
 void lab_dash_main_update(scene *s, dashboard_widgets *dw);

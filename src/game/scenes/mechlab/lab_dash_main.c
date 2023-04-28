@@ -42,7 +42,13 @@ void lab_dash_main_photo_right(component *c, void *userdata) {
 void lab_dash_main_chr_load(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    p1->chr = ((sd_chr_file *)list_get(dw->savegames, dw->index));
+    if(p1->chr) {
+        sd_chr_free(p1->chr);
+        omf_free(p1->chr);
+        p1->chr = NULL;
+    }
+    p1->chr = omf_calloc(1, sizeof(sd_chr_file));
+    memcpy(p1->chr, ((sd_chr_file *)list_get(dw->savegames, dw->index)), sizeof(sd_chr_file));
     p1->pilot = &p1->chr->pilot;
     strncpy(settings_get()->tournament.last_name, p1->pilot->name, 17);
     settings_save();
@@ -50,7 +56,12 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
 }
 
 void lab_dash_main_chr_delete(component *c, void *userdata) {
+    dashboard_widgets *dw = userdata;
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+    DEBUG("I would delete %s now!", p1->pilot->name);
+    trnmenu_finish(c);
 }
+
 void lab_dash_main_chr_left(component *c, void *userdata) {
     DEBUG("CHAR LEFT");
     dashboard_widgets *dw = userdata;
@@ -75,6 +86,64 @@ void lab_dash_main_chr_right(component *c, void *userdata) {
     mechlab_update(dw->scene);
 }
 
+void lab_dash_main_chr_init(component *menu, component *submenu) {
+    DEBUG("init chr select submenu");
+    dashboard_widgets *dw = trnmenu_get_userdata(submenu);
+    dw->savegames = sg_load_all();
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+    // find the current character, if any, and exclude them
+    // and set the first pilot in the list to be the loaded one
+    // and call mechlab_update to draw it
+    iterator it;
+    list_iter_begin(dw->savegames, &it);
+
+    sd_chr_file *chr = NULL;
+    while((chr = (sd_chr_file *)list_iter_next(&it))) {
+        if(p1->chr && strcmp(p1->chr->pilot.name, chr->pilot.name) == 0) {
+            sd_chr_free(chr);
+            list_delete(dw->savegames, &it);
+        }
+    }
+    dw->index = 0;
+    chr = list_get(dw->savegames, 0);
+    p1->pilot = &chr->pilot;
+    mechlab_update(dw->scene);
+}
+void lab_dash_main_chr_done(component *menu, component *submenu) {
+    DEBUG("end chr select submenu");
+    dashboard_widgets *dw = trnmenu_get_userdata(submenu);
+    // We can get here either when the user backs out of the menu
+    // or when they select something. In either case we want to makes
+    // sure that if there's a player->chr set, the player->pilot matches
+    // that CHR, that we do not free that CHR from the savegame list
+    // and if there's no CHR we null out the pilot as well.
+    iterator it;
+    list_iter_begin(dw->savegames, &it);
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+
+    sd_chr_file *chr = NULL;
+
+    if(p1->chr) {
+        // character is loaded, revert the pilot to it
+        p1->pilot = &p1->chr->pilot;
+    } else if(p1->pilot) {
+        // no character is loaded, we need to go back to nothing
+        p1->pilot = NULL;
+    }
+
+    while((chr = (sd_chr_file *)list_iter_next(&it))) {
+        if(p1->chr && strcmp(p1->chr->pilot.name, chr->pilot.name) != 0) {
+            sd_chr_free(chr);
+        }
+    }
+
+    list_free(dw->savegames);
+    omf_free(dw->savegames);
+    dw->savegames = NULL;
+
+    mechlab_update(dw->scene);
+}
+
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     component *xy = xysizer_create();
 
@@ -82,7 +151,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     dw->pilot = p1->pilot;
 
-    dw->savegames = sg_load_all();
+    dw->savegames = NULL;
     dw->index = 0;
 
     text_settings tconf_dark;
