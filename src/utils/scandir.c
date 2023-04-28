@@ -32,7 +32,6 @@ int scan_directory_prefix(list *dir_list, const char *dir, const char *prefix) {
     return 0;
 }
 
-
 int scan_directory_suffix(list *dir_list, const char *dir, const char *suffix) {
     DIR *dp;
     struct dirent *entry;
@@ -41,7 +40,7 @@ int scan_directory_suffix(list *dir_list, const char *dir, const char *suffix) {
     }
     while((entry = readdir(dp)) != NULL) {
         if(strlen(entry->d_name) >= strlen(suffix)) {
-            if(strncmp(entry->d_name + strlen(entry->d_name) - strlen(suffix) , suffix, strlen(suffix)) == 0) {
+            if(strncmp(entry->d_name + strlen(entry->d_name) - strlen(suffix), suffix, strlen(suffix)) == 0) {
                 list_append(dir_list, entry->d_name, strlen(entry->d_name) + 1);
             }
         }

@@ -106,7 +106,7 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
 
             game_player *player = game_state_get_player(gs, 0);
             player->pilot->har_id = i;
-            if (gs->this_id >= SCENE_ARENA0 && gs->this_id <= SCENE_ARENA4) {
+            if(gs->this_id >= SCENE_ARENA0 && gs->this_id <= SCENE_ARENA4) {
                 if(scene_load_har(game_state_get_scene(gs), 0, player->pilot->har_id)) {
                     return 1;
                 }
@@ -118,7 +118,8 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
                 object *obj = omf_calloc(1, sizeof(object));
                 object_create(obj, gs, pos, vec2f_create(0, 0));
 
-                if(har_create(obj, game_state_get_scene(gs)->af_data[0], hd, player->pilot->har_id, player->pilot->pilot_id, 0)) {
+                if(har_create(obj, game_state_get_scene(gs)->af_data[0], hd, player->pilot->har_id,
+                              player->pilot->pilot_id, 0)) {
                     object_free(obj);
                     omf_free(obj);
                     return 1;
@@ -136,7 +137,7 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
                 game_player_get_har(game_state_get_player(gs, 1))->animation_state.enemy = game_player_get_har(player);
 
                 maybe_install_har_hooks(game_state_get_scene(gs));
-            } else if (gs->this_id == SCENE_MECHLAB) {
+            } else if(gs->this_id == SCENE_MECHLAB) {
                 mechlab_update(gs->sc);
             }
 
@@ -241,7 +242,7 @@ int console_cmd_money(game_state *gs, int argc, char **argv) {
 
             game_player *player = game_state_get_player(gs, 0);
             player->pilot->money = i;
-            if (gs->this_id == SCENE_MECHLAB) {
+            if(gs->this_id == SCENE_MECHLAB) {
                 mechlab_update(gs->sc);
             }
             return 0;
@@ -256,9 +257,9 @@ int console_cmd_rank(game_state *gs, int argc, char **argv) {
         int i;
         if(strtoint(argv[1], &i)) {
             game_player *player = game_state_get_player(gs, 0);
-            if (i > 0 && i <= player->pilot->enemies_ex_unranked +1) {
+            if(i > 0 && i <= player->pilot->enemies_ex_unranked + 1) {
                 player->pilot->rank = i;
-                if (gs->this_id == SCENE_MECHLAB) {
+                if(gs->this_id == SCENE_MECHLAB) {
                     mechlab_update(gs->sc);
                 }
                 return 0;

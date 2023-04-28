@@ -64,8 +64,8 @@ void newsroom_fixup_str(newsroom_local *local) {
 
     unsigned int translation_id;
 
-    if (local->champion && local->screen >= 2) {
-        translation_id=79;
+    if(local->champion && local->screen >= 2) {
+        translation_id = 79;
     } else {
         translation_id = NEWSROOM_TEXT + local->news_id + min2(local->screen, 1);
     }
@@ -214,18 +214,19 @@ void newsroom_input_tick(scene *scene) {
                                 sd_pilot_set_player_color(p2->pilot, SECONDARY, p.colors[1]);
                                 sd_pilot_set_player_color(p2->pilot, PRIMARY, p.colors[2]);
 
-                                if (p1->chr) {
+                                if(p1->chr) {
                                     // clear the opponent as a signal to display plug on the VS
-                                    p2->pilot=NULL;
+                                    p2->pilot = NULL;
                                 } else {
                                     // make a new AI controller
                                     controller *ctrl = omf_calloc(1, sizeof(controller));
                                     controller_init(ctrl);
                                     sd_pilot *pilot = game_player_get_pilot(p2);
-                                    ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, p2->pilot->pilot_id);
+                                    ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot,
+                                                         p2->pilot->pilot_id);
                                     game_player_set_ctrl(p2, ctrl);
                                 }
-                                if (local->champion) {
+                                if(local->champion) {
                                     game_state_set_next(scene->gs, p1->chr->cutscene);
                                 } else {
                                     game_state_set_next(scene->gs, SCENE_VS);
@@ -289,7 +290,7 @@ int newsroom_create(scene *scene) {
         health = game_player_get_score(p2)->health;
     } else {
         local->won = 1;
-        if (p1->chr && p1->chr->pilot.rank == 1) {
+        if(p1->chr && p1->chr->pilot.rank == 1) {
             local->champion = true;
         }
         health = game_player_get_score(p1)->health;
@@ -310,8 +311,9 @@ int newsroom_create(scene *scene) {
     // XXX TODO get the real sex of pilot
     // XXX TODO strip spaces from the end of the pilots name
     // XXX TODO set winner/loser names properly
-    newsroom_set_names(local, lang_get(20 + p1->pilot->pilot_id), lang_get(20 + p2->pilot->pilot_id), har_get_name(p1->pilot->har_id),
-                       har_get_name(p2->pilot->har_id), pilot_sex(p1->pilot->pilot_id), pilot_sex(p2->pilot->pilot_id));
+    newsroom_set_names(local, lang_get(20 + p1->pilot->pilot_id), lang_get(20 + p2->pilot->pilot_id),
+                       har_get_name(p1->pilot->har_id), har_get_name(p2->pilot->har_id), pilot_sex(p1->pilot->pilot_id),
+                       pilot_sex(p2->pilot->pilot_id));
     newsroom_fixup_str(local);
 
     // Continue Dialog

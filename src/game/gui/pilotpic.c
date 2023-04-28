@@ -30,7 +30,6 @@ static void pilotpic_free(component *c) {
     omf_free(g);
 }
 
-
 int pilotpic_load(sd_sprite *sprite, palette *pal, int pic_id, int pilot_id) {
     const char *filename = pm_get_resource_path(pic_id);
     if(filename == NULL) {
@@ -71,7 +70,7 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
     local->img = omf_calloc(1, sizeof(sprite));
     sd_sprite spr;
     palette pal;
-    pilotpic_load(&spr,&pal, pic_id, pilot_id);
+    pilotpic_load(&spr, &pal, pic_id, pilot_id);
 
     sprite_create(local->img, &spr, -1);
 
@@ -83,7 +82,6 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
     local->selected = pilot_id;
     local->max = 4; // TODO pics.photo_count;
     local->pic_id = pic_id;
-
 }
 
 void pilotpic_next(component *c) {

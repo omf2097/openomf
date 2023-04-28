@@ -1,15 +1,15 @@
 #include "game/gui/trnselect.h"
 #include "formats/error.h"
-#include "formats/tournament.h"
 #include "formats/palette.h"
-#include "game/gui/widget.h"
+#include "formats/tournament.h"
 #include "game/gui/label.h"
+#include "game/gui/widget.h"
 #include "resources/pathmanager.h"
 #include "resources/sprite.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/list.h"
+#include "utils/log.h"
 #include "video/video.h"
 
 // Local small gauge type
@@ -32,46 +32,46 @@ static void trnselect_render(component *c) {
 }
 
 void load_description(component **c, const char *desc) {
-    int width=320, center=0, vmove=0, size=-1, color=-1, x=0;
+    int width = 320, center = 0, vmove = 0, size = -1, color = -1, x = 0;
     const char *end = desc;
     char *ptr = NULL;
     // don't judge me!
     ptr = strstr(desc, "{WIDTH ");
-    if (ptr) {
+    if(ptr) {
         sscanf(ptr, "{WIDTH %d}", &width);
         end = ptr;
     }
     ptr = strstr(desc, "{CENTER ");
-    if (ptr) {
+    if(ptr) {
         sscanf(ptr, "{CENTER %d}", &center);
-        if (ptr > end) {
+        if(ptr > end) {
             end = ptr;
         }
     }
     ptr = strstr(desc, "{VMOVE ");
-    if (ptr) {
+    if(ptr) {
         sscanf(ptr, "{VMOVE %d}", &vmove);
-        if (ptr > end) {
+        if(ptr > end) {
             end = ptr;
         }
     }
     ptr = strstr(desc, "{SIZE ");
-    if (ptr) {
+    if(ptr) {
         sscanf(ptr, "{SIZE %d}", &size);
-        if (ptr > end) {
+        if(ptr > end) {
             end = ptr;
         }
     }
     ptr = strstr(desc, "{COLOR ");
-    if (ptr) {
+    if(ptr) {
         sscanf(ptr, "{COLOR %d}", &color);
-        if (ptr > end) {
+        if(ptr > end) {
             end = ptr;
         }
     }
 
     const char *start = strchr(end, '}');
-    if (!start) {
+    if(!start) {
         start = desc;
     } else {
         start++;
@@ -84,22 +84,22 @@ void load_description(component **c, const char *desc) {
     tconf.font = FONT_SMALL;
     tconf.halign = TEXT_CENTER;
     tconf.valign = TEXT_CENTER;
-    if (color >= 0) {
+    if(color >= 0) {
         tconf.cforeground = palette_lookup_color(color, video_get_base_palette());
     } else {
         // WAR invitational seems to use this color, none is specified
         tconf.cforeground = palette_lookup_color(0xa5, video_get_base_palette());
     }
 
-    if (*c) {
+    if(*c) {
         component_free(*c);
     }
 
     *c = label_create(&tconf, start);
 
-    if (center) {
-        x = center - (width/2);
-    } else if (width != 320) {
+    if(center) {
+        x = center - (width / 2);
+    } else if(width != 320) {
         x = (320 - width) / 2;
     }
 
@@ -140,7 +140,7 @@ void trnselect_prev(component *c) {
     sprite_create(local->img, logo, -1);
 }
 
-sd_tournament_file* trnselect_selected(component *c) {
+sd_tournament_file *trnselect_selected(component *c) {
     trnselect *local = widget_get_obj(c);
     return list_get(local->tournaments, local->selected);
 }
@@ -158,7 +158,6 @@ component *trnselect_create() {
     local->max = list_size(local->tournaments);
     local->img = omf_calloc(1, sizeof(sprite));
 
-
     local->label = NULL;
 
     memcpy(&local->palette_backup, video_get_base_palette(), sizeof(palette));
@@ -169,7 +168,6 @@ component *trnselect_create() {
     load_description(&local->label, trn->locales[0]->description);
 
     sprite_create(local->img, logo, -1);
-
 
     // Set callbacks
     widget_set_obj(c, local);

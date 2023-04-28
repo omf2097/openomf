@@ -32,7 +32,6 @@ static int trnmenu_hand_deselect(component *c) {
     return 1;
 }
 
-
 static int trnmenu_hand_select(component *c) {
     trnmenu *m = sizer_get_obj(c);
     component *sel = sizer_get(c, m->selected);

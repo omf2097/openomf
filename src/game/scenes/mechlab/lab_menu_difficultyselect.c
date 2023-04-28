@@ -1,5 +1,4 @@
 #include "game/scenes/mechlab/lab_menu_difficultyselect.h"
-#include "game/scenes/mechlab.h"
 #include "game/common_defines.h"
 #include "game/gui/label.h"
 #include "game/gui/pilotpic.h"
@@ -7,6 +6,7 @@
 #include "game/gui/spritebutton.h"
 #include "game/gui/text_render.h"
 #include "game/gui/trn_menu.h"
+#include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
@@ -46,9 +46,9 @@ void lab_menu_difficultyselect_heavy(component *c, void *userdata) {
 
 static const button_details details_list[] = {
     {lab_menu_difficultyselect_aluminium, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_difficultyselect_iron, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_difficultyselect_steel, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_difficultyselect_heavy, NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_iron,      NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_steel,     NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_difficultyselect_heavy,     NULL, TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
 
 component *lab_menu_difficultyselect_create(scene *s) {
@@ -78,7 +78,7 @@ component *lab_menu_difficultyselect_create(scene *s) {
 
         sprite *bsprite = animation_get_sprite(main_buttons, i);
         component *button =
-            spritebutton_create(&tconf, lang_get(444+i), bsprite->data, COM_ENABLED, details_list[i].cb, s);
+            spritebutton_create(&tconf, lang_get(444 + i), bsprite->data, COM_ENABLED, details_list[i].cb, s);
         component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
         trnmenu_attach(menu, button);

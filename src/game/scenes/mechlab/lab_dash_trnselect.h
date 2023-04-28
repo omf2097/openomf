@@ -14,7 +14,7 @@ void lab_dash_trnselect_left(component *c, void *userdata);
 
 void lab_dash_trnselect_right(component *c, void *userdata);
 
-sd_tournament_file* lab_dash_trnselect_selected(trnselect_widgets *tw);
+sd_tournament_file *lab_dash_trnselect_selected(trnselect_widgets *tw);
 
 component *lab_dash_trnselect_create(scene *s, trnselect_widgets *tw);
 

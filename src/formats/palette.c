@@ -37,7 +37,6 @@ color palette_lookup_color(uint8_t i, const palette *pal) {
     return color_create(red, green, blue, 255);
 }
 
-
 int palette_to_gimp_palette(const palette *pal, const char *filename) {
     sd_writer *w;
     const unsigned char *d;
@@ -170,7 +169,7 @@ void palette_load_player_colors(palette *dst, palette *src, int player) {
     // only load 47 palette colors, skipping the first one
     // because that seems to be ignored by the original
     int dstoff = (player * 48) + 1;
-    memcpy(dst->data + dstoff, src->data+1, 47 * 3);
+    memcpy(dst->data + dstoff, src->data + 1, 47 * 3);
 }
 
 void palette_set_player_color(palette *pal, int player, int srccolor, int dstcolor) {
@@ -178,7 +177,7 @@ void palette_set_player_color(palette *pal, int player, int srccolor, int dstcol
     int src = srccolor * 16;
     char iz[3];
     memcpy(iz, pal->data, 3);
-    if (altpals) {
+    if(altpals) {
         memcpy(pal->data + dst, altpals->palettes[0].data + src, 16 * 3);
     }
     memcpy(pal->data, iz, 3);

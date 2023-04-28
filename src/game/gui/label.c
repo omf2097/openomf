@@ -43,7 +43,7 @@ component *label_create(const text_settings *tconf, const char *text) {
     memcpy(&local->tconf, tconf, sizeof(text_settings));
     local->text = strdup(text);
 
-    //local->tconf.cforeground = color_create(0, 255, 0, 255);
+    // local->tconf.cforeground = color_create(0, 255, 0, 255);
 
     widget_set_obj(c, local);
     widget_set_render_cb(c, label_render);

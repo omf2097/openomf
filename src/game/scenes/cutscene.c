@@ -34,7 +34,7 @@ int cutscene_next_scene(scene *scene) {
             return SCENE_SCOREBOARD;
         default:
             game_player *player1 = game_state_get_player(scene->gs, 0);
-            if (player1->chr) {
+            if(player1->chr) {
                 return SCENE_VS;
             }
             return SCENE_NONE;
@@ -54,7 +54,7 @@ void cutscene_input_tick(scene *scene) {
             if(i->type == EVENT_TYPE_ACTION) {
                 if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
 
-                    if (player1->chr && player1->chr->cutscene_text[local->pos + 1]) {
+                    if(player1->chr && player1->chr->cutscene_text[local->pos + 1]) {
                         local->pos++;
                         local->current = player1->chr->cutscene_text[local->pos];
                     } else if(!player1->chr && strlen(local->current) + local->pos < local->len) {
@@ -160,12 +160,12 @@ int cutscene_create(scene *scene) {
 
             // load all the animations, in order
             // including the one for our HAR
-            for (int i = 0; i < 256; i++) {
-                if (i >= 10 && i <= 20 && i != 10 + p1->pilot->har_id) {
+            for(int i = 0; i < 256; i++) {
+                if(i >= 10 && i <= 20 && i != 10 + p1->pilot->har_id) {
                     continue;
                 }
                 bk_info *bki = bk_get_info(&scene->bk_data, i);
-                if (bki) {
+                if(bki) {
                     ani = &bki->ani;
                     obj = omf_calloc(1, sizeof(object));
                     object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
@@ -178,10 +178,9 @@ int cutscene_create(scene *scene) {
             local->text_width = 300;
 
             break;
-
     }
 
-    if (p1->chr) {
+    if(p1->chr) {
         local->pos = 0;
         local->current = p1->chr->cutscene_text[local->pos];
     } else {

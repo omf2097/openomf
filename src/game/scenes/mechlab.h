@@ -2,8 +2,8 @@
 #define MECHLAB_H
 
 #include "formats/chr.h"
-#include "game/protos/scene.h"
 #include "game/gui/component.h"
+#include "game/protos/scene.h"
 
 typedef enum
 {

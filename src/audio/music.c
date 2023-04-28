@@ -41,12 +41,12 @@ static module_source module_sources[] = {
 
 audio_source_freq default_freqs[] = {
     {0, 1, "none"},
-    {0, 0 }
+    {0, 0}
 };
 
 audio_source_resampler default_resamplers[] = {
     {0, 1, "default"},
-    {0, 0 }
+    {0, 0}
 };
 
 module_source *music_get_module_sources() {

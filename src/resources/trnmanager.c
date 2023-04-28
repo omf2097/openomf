@@ -1,15 +1,15 @@
 #include "resources/trnmanager.h"
-#include "formats/tournament.h"
 #include "formats/error.h"
+#include "formats/tournament.h"
 #include "resources/pathmanager.h"
+#include "utils/allocator.h"
 #include "utils/list.h"
 #include "utils/log.h"
 #include "utils/scandir.h"
-#include "utils/allocator.h"
 #include <stdio.h>
 #include <string.h>
 
-list* trnlist_init() {
+list *trnlist_init() {
     int ret;
     list dirlist;
 
@@ -40,7 +40,7 @@ list* trnlist_init() {
         sd_tournament_file trn;
         sd_tournament_create(&trn);
         snprintf(tmp, 1024, "%s/%s", dirname, trn_file);
-        if (SD_SUCCESS == sd_tournament_load(&trn, tmp)) {
+        if(SD_SUCCESS == sd_tournament_load(&trn, tmp)) {
             list_append(trnlist, &trn, sizeof(sd_tournament_file));
         } else {
             PERROR("Could not load tournament %s", trn_file);

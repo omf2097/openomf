@@ -292,9 +292,8 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
     return SD_SUCCESS;
 }
 
-
 void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t color) {
-    switch (index) {
+    switch(index) {
         case PRIMARY:
             pilot->color_3 = color;
             palette_set_player_color(&pilot->palette, 0, pilot->color_3, 0);

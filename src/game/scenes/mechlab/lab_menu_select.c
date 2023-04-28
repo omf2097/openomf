@@ -1,4 +1,3 @@
-#include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/lab_menu_select.h"
 #include "game/common_defines.h"
 #include "game/gui/label.h"
@@ -6,12 +5,13 @@
 #include "game/gui/spritebutton.h"
 #include "game/gui/text_render.h"
 #include "game/gui/trn_menu.h"
+#include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
 #include "resources/trnmanager.h"
-#include "utils/log.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 
 void lab_menu_select_choose(component *c, void *userdata) {
     lab_menu_select_t *sel = userdata;
@@ -29,7 +29,8 @@ void lab_menu_select_right(component *c, void *userdata) {
     right->cb(c, right->data);
 }
 
-component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *selectdata, lab_menu_select_cb left, void *leftdata, lab_menu_select_cb right, void *rightdata, int title) {
+component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *selectdata, lab_menu_select_cb left,
+                                  void *leftdata, lab_menu_select_cb right, void *rightdata, int title) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(&s->bk_data, 7)->ani;
     animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
@@ -43,7 +44,6 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
     tconf.cforeground = color_create(0, 0, 123, 255);
-
 
     lab_menu_select_t *selector = omf_calloc(1, sizeof(lab_menu_select_t));
     selector->cb = select;
@@ -70,8 +70,7 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     goleft->data = leftdata;
 
     bsprite = animation_get_sprite(main_buttons, 1);
-    button =
-        spritebutton_create(&tconf, NULL, bsprite->data, COM_ENABLED, lab_menu_select_left, goleft);
+    button = spritebutton_create(&tconf, NULL, bsprite->data, COM_ENABLED, lab_menu_select_left, goleft);
     component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
     trnmenu_attach(menu, button);
@@ -81,14 +80,13 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     goright->data = rightdata;
 
     bsprite = animation_get_sprite(main_buttons, 2);
-    button =
-        spritebutton_create(&tconf, NULL, bsprite->data, COM_ENABLED, lab_menu_select_right, goright);
+    button = spritebutton_create(&tconf, NULL, bsprite->data, COM_ENABLED, lab_menu_select_right, goright);
     component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
     trnmenu_attach(menu, button);
 
     // TODO the left-right buttons apply on focus, not select
-    
+
     // Add text label
     tconf.cforeground = color_create(0, 121, 0, 255);
     // TODO interpolate %s in the string here with blank

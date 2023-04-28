@@ -1,8 +1,8 @@
 #include "game/scenes/mechlab/lab_dash_trnselect.h"
 #include "game/gui/label.h"
-#include "game/gui/trnselect.h"
 #include "game/gui/spriteimage.h"
 #include "game/gui/textinput.h"
+#include "game/gui/trnselect.h"
 #include "game/gui/xysizer.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
@@ -20,7 +20,7 @@ void lab_dash_trnselect_right(component *c, void *userdata) {
     trnselect_next(tw->trnselect);
 }
 
-sd_tournament_file* lab_dash_trnselect_selected(trnselect_widgets *tw) {
+sd_tournament_file *lab_dash_trnselect_selected(trnselect_widgets *tw) {
     return trnselect_selected(tw->trnselect);
 }
 

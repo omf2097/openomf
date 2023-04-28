@@ -82,7 +82,7 @@ void game_menu_quit(component *c, void *userdata) {
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 0)), 1);
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 1)), 1);
     game_player *player1 = game_state_get_player(((scene *)userdata)->gs, 0);
-    if (player1->chr) {
+    if(player1->chr) {
         // quit back to VS for plug to call you a chicken
         game_player *player2 = game_state_get_player(((scene *)userdata)->gs, 1);
         player2->pilot = NULL;
@@ -1080,7 +1080,7 @@ void arena_render_overlay(scene *scene) {
         const char *player2_name;
         if(player[0]->chr) {
             player1_name = player[0]->pilot->name;
-            if (player[1]->pilot) {
+            if(player[1]->pilot) {
                 // when quitting this can go null
                 player2_name = player[1]->pilot->name;
             }
@@ -1090,19 +1090,18 @@ void arena_render_overlay(scene *scene) {
             player2_name = lang_get(player[0]->pilot->pilot_id + 20);
         }
 
-        font_render_shadowed(&font_small, player1_name, 5, 19, TEXT_COLOR,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        font_render_shadowed(&font_small, player1_name, 5, 19, TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
         font_render_shadowed(&font_small, lang_get((player[0]->pilot->har_id) + 31), 5, 26, TEXT_COLOR,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
 
-        if (player[1]->pilot) {
+        if(player[1]->pilot) {
             // when quitting, this can go null
             int p2len = (strlen(player2_name) - 1) * font_small.w;
             int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * font_small.w;
             font_render_shadowed(&font_small, player2_name, 315 - p2len, 19, TEXT_COLOR,
-                    TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
             font_render_shadowed(&font_small, lang_get((player[1]->pilot->har_id) + 31), 315 - h2len, 26, TEXT_COLOR,
-                    TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
         }
 
         // Render score stuff
@@ -1241,10 +1240,10 @@ int arena_create(scene *scene) {
         // Declare some vars
         game_player *player = game_state_get_player(scene->gs, i);
 
-        if (i == 0 && player->chr) {
+        if(i == 0 && player->chr) {
             // we are in tournament mode
             local->rounds = 1;
-            local->tournament=true;
+            local->tournament = true;
         }
         object *obj = omf_calloc(1, sizeof(object));
 
@@ -1273,7 +1272,7 @@ int arena_create(scene *scene) {
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har = obj;
 
-        if (local->tournament) {
+        if(local->tournament) {
             // render pilot portraits
         } else {
             // Create round tokens

@@ -1,9 +1,9 @@
 #ifndef LAB_DASH_MAIN_H
 #define LAB_DASH_MAIN_H
 
+#include "formats/pilot.h"
 #include "game/gui/component.h"
 #include "game/protos/scene.h"
-#include "formats/pilot.h"
 
 // For easy access to components
 typedef struct {
@@ -31,7 +31,6 @@ typedef struct {
     component *har_moves;
 } dashboard_widgets;
 
-
 void lab_dash_main_photo_select(component *c, void *userdata);
 void lab_dash_main_photo_left(component *c, void *userdata);
 void lab_dash_main_photo_right(component *c, void *userdata);
@@ -40,7 +39,6 @@ void lab_dash_main_chr_load(component *c, void *userdata);
 void lab_dash_main_chr_delete(component *c, void *userdata);
 void lab_dash_main_chr_left(component *c, void *userdata);
 void lab_dash_main_chr_right(component *c, void *userdata);
-
 
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw);
 void lab_dash_main_update(scene *s, dashboard_widgets *dw);

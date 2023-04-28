@@ -3,6 +3,7 @@
 
 #include "audio/music.h"
 #include "audio/sound.h"
+#include "formats/pilot.h"
 #include "game/game_state.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/progressbar.h"
@@ -16,7 +17,6 @@
 #include "resources/languages.h"
 #include "resources/pilots.h"
 #include "resources/sprite.h"
-#include "formats/pilot.h"
 #include "utils/allocator.h"
 #include "utils/random.h"
 #include "video/video.h"
@@ -273,7 +273,6 @@ void handle_action(scene *scene, int player, int action) {
                         sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
 
                         palette_load_player_colors(base_pal, &player1->pilot->palette, 1);
-
                     }
                     video_force_pal_refresh();
                 } else {

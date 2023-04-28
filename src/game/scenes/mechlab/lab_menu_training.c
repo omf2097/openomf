@@ -1,16 +1,17 @@
 #include "game/scenes/mechlab/lab_menu_training.h"
-#include "game/scenes/mechlab.h"
 #include "game/common_defines.h"
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/text_render.h"
 #include "game/gui/trn_menu.h"
+#include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
 #include "utils/log.h"
 
-uint32_t prices[] = {50, 80, 120, 180, 240, 300, 450, 600, 800, 1100, 1500, 2500, 4000, 7000, 10000, 14000, 20000, 28000, 40000, 55000, 75000, 100000, 140000, 200000};
+uint32_t prices[] = {50,   80,   120,   180,   240,   300,   450,   600,   800,   1100,   1500,   2500,
+                     4000, 7000, 10000, 14000, 20000, 28000, 40000, 55000, 75000, 100000, 140000, 200000};
 
 void lab_menu_training_power(component *c, void *userdata) {
     scene *s = userdata;
@@ -26,12 +27,12 @@ void lab_menu_training_check_power_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    if (pilot->power > 23) {
+    if(pilot->power > 23) {
         component_disable(c, 1);
         return;
     }
     uint32_t price = prices[pilot->power];
-    if (price > pilot->money) {
+    if(price > pilot->money) {
         component_disable(c, 1);
     }
 }
@@ -50,12 +51,12 @@ void lab_menu_training_check_agility_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    if (pilot->agility > 23) {
+    if(pilot->agility > 23) {
         component_disable(c, 1);
         return;
     }
     uint32_t price = prices[pilot->agility];
-    if (price > pilot->money) {
+    if(price > pilot->money) {
         component_disable(c, 1);
     }
 }
@@ -74,12 +75,12 @@ void lab_menu_training_check_endurance_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    if (pilot->endurance > 23) {
+    if(pilot->endurance > 23) {
         component_disable(c, 1);
         return;
     }
     uint32_t price = prices[pilot->endurance];
-    if (price > pilot->money) {
+    if(price > pilot->money) {
         component_disable(c, 1);
     }
 }
@@ -89,48 +90,42 @@ void lab_menu_training_done(component *c, void *userdata) {
 }
 
 static const button_details details_list[] = {
-    {lab_menu_training_power,    "POWER",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_training_agility,  "AGILITY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_training_endurance,"ENDUR.",  TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_training_done,     "DONE",    TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_training_power,     "POWER",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
+    {lab_menu_training_agility,   "AGILITY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
+    {lab_menu_training_endurance, "ENDUR.",  TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
+    {lab_menu_training_done,      "DONE",    TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
 
 void lab_menu_focus_power(component *c, bool focused, void *userdata) {
-    if (focused) {
+    if(focused) {
         scene *s = userdata;
         mechlab_set_hint(s, lang_get(533));
     }
 }
 
 void lab_menu_focus_agility(component *c, bool focused, void *userdata) {
-    if (focused) {
+    if(focused) {
         scene *s = userdata;
         mechlab_set_hint(s, lang_get(534));
     }
 }
 
 void lab_menu_focus_endurance(component *c, bool focused, void *userdata) {
-    if (focused) {
+    if(focused) {
         scene *s = userdata;
         mechlab_set_hint(s, lang_get(535));
     }
 }
 
 void lab_menu_focus_training_done(component *c, bool focused, void *userdata) {
-    if (focused) {
+    if(focused) {
         scene *s = userdata;
         mechlab_set_hint(s, lang_get(536));
     }
 }
 
-
-static const spritebutton_focus_cb focus_cbs[] = {
-    lab_menu_focus_power,
-    lab_menu_focus_agility,
-    lab_menu_focus_endurance,
-    lab_menu_focus_training_done
-};
-
+static const spritebutton_focus_cb focus_cbs[] = {lab_menu_focus_power, lab_menu_focus_agility,
+                                                  lab_menu_focus_endurance, lab_menu_focus_training_done};
 
 component *lab_menu_training_create(scene *s) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
@@ -163,11 +158,11 @@ component *lab_menu_training_create(scene *s) {
         component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
 
-        if (i == 0) {
+        if(i == 0) {
             spritebutton_set_tick_cb(button, lab_menu_training_check_power_price);
-        } else if (i == 1) {
+        } else if(i == 1) {
             spritebutton_set_tick_cb(button, lab_menu_training_check_agility_price);
-        } else if (i == 2) {
+        } else if(i == 2) {
             spritebutton_set_tick_cb(button, lab_menu_training_check_endurance_price);
         }
         component_tick(button);

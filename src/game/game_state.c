@@ -4,8 +4,8 @@
 #include "controller/keyboard.h"
 #include "controller/rec_controller.h"
 #include "formats/error.h"
-#include "formats/rec.h"
 #include "formats/pilot.h"
+#include "formats/rec.h"
 #include "game/common_defines.h"
 #include "game/protos/object.h"
 #include "game/protos/scene.h"
@@ -842,7 +842,6 @@ void game_state_init_demo(game_state *gs) {
         sd_pilot_set_player_color(player->pilot, PRIMARY, pilot_info.colors[2]);
         sd_pilot_set_player_color(player->pilot, SECONDARY, pilot_info.colors[1]);
         sd_pilot_set_player_color(player->pilot, TERTIARY, pilot_info.colors[0]);
-
     }
 }
 

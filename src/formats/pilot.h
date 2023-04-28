@@ -115,7 +115,12 @@ typedef struct {
     sd_sprite *photo; ///< Pilot photo, in tournament mode only
 } sd_pilot;
 
-typedef enum { PRIMARY, SECONDARY, TERTIARY } player_color;
+typedef enum
+{
+    PRIMARY,
+    SECONDARY,
+    TERTIARY
+} player_color;
 
 /*! \brief Initialize pilot struct
  *

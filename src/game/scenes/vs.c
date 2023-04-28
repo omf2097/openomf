@@ -9,8 +9,8 @@
 #include "resources/languages.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
-#include "utils/random.h"
 #include "utils/log.h"
+#include "utils/random.h"
 #include "video/video.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -151,7 +151,7 @@ void vs_handle_action(scene *scene, int action) {
         switch(action) {
             case ACT_KICK:
             case ACT_PUNCH:
-                if (game_state_get_player(scene->gs, 1)->pilot) {
+                if(game_state_get_player(scene->gs, 1)->pilot) {
                     game_state_set_next(scene->gs, SCENE_ARENA0 + local->arena);
                 } else {
                     game_state_set_next(scene->gs, SCENE_MECHLAB);
@@ -225,7 +225,7 @@ void vs_input_tick(scene *scene) {
                         // there's an active singleplayer campaign, confirm quitting
                         dialog_show(&local->quit_dialog, 1);
                     } else {
-                        if (player1->chr) {
+                        if(player1->chr) {
                             game_state_set_next(scene->gs, SCENE_MECHLAB);
                         } else {
                             game_state_set_next(scene->gs, SCENE_MELEE);
@@ -274,21 +274,21 @@ void vs_render(scene *scene) {
 
         // arena description
         font_render_wrapped(&font_small, lang_get(66 + local->arena), 56 + 72, 160, (211 - 72) - 4, COLOR_GREEN);
-    } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK && settings_get()->gameplay.difficulty < 2) {
+    } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK &&
+              settings_get()->gameplay.difficulty < 2) {
         // kriessack, but not on Veteran or higher
         font_render_wrapped(&font_small, lang_get(747), 59, 160, 200, COLOR_YELLOW);
-    } else if (player1->chr && player2->pilot) {
-        font_render_wrapped(&font_small, player2->pilot->quotes[0], 320 - (59 + 150),
-                165, 120, COLOR_YELLOW);
-    } else if (!player2->pilot) {
+    } else if(player1->chr && player2->pilot) {
+        font_render_wrapped(&font_small, player2->pilot->quotes[0], 320 - (59 + 150), 165, 120, COLOR_YELLOW);
+    } else if(!player2->pilot) {
         // render plug's bitching
         font_render_wrapped(&font_small, "Hmph. you'd think this remake would've been done by now, huh?", 59, 165, 220,
                             COLOR_YELLOW);
     } else {
-        font_render_wrapped(&font_small, lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id), 59, 160, 150,
-                            COLOR_YELLOW);
-        font_render_wrapped(&font_small, lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id), 320 - (59 + 150),
-                            180, 150, COLOR_YELLOW);
+        font_render_wrapped(&font_small, lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id), 59,
+                            160, 150, COLOR_YELLOW);
+        font_render_wrapped(&font_small, lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id),
+                            320 - (59 + 150), 180, 150, COLOR_YELLOW);
     }
 }
 
@@ -322,15 +322,15 @@ int vs_create(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    if (player2->pilot == NULL) {
+    if(player2->pilot == NULL) {
         // display the financial report with your host Plug!
-    } else if (player1->chr) {
+    } else if(player1->chr) {
         snprintf(local->vs_str, 128, "%s VS. %s", player1->chr->pilot.name, player2->pilot->name);
-    } else  {
+    } else {
         const char *pilot1 = lang_get(20 + player1->pilot->pilot_id);
         const char *pilot2 = lang_get(20 + player2->pilot->pilot_id);
         snprintf(local->vs_str, 128, "%*.*s VS. %*.*s", (int)strlen(pilot1) - 1, (int)strlen(pilot1) - 1, pilot1,
-                (int)strlen(pilot2) - 1, (int)strlen(pilot2) - 1, pilot2);
+                 (int)strlen(pilot2) - 1, (int)strlen(pilot2) - 1, pilot2);
     }
 
     animation *ani;
@@ -338,7 +338,7 @@ int vs_create(scene *scene) {
     palette *mpal = video_get_base_palette();
 
     palette_load_player_colors(mpal, &player1->pilot->palette, 0);
-    if (player2->pilot) {
+    if(player2->pilot) {
         palette_load_player_colors(mpal, &player2->pilot->palette, 1);
     }
     video_force_pal_refresh();
@@ -349,7 +349,7 @@ int vs_create(scene *scene) {
     object_set_animation(&local->player1_har, ani);
     object_select_sprite(&local->player1_har, player1->pilot->har_id);
 
-    if (player2->pilot) {
+    if(player2->pilot) {
         object_create(&local->player2_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
         object_set_animation(&local->player2_har, ani);
         object_select_sprite(&local->player2_har, player2->pilot->har_id);
@@ -359,7 +359,7 @@ int vs_create(scene *scene) {
         // PLAYER
         object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
         ani = &bk_get_info(&scene->bk_data, 4)->ani;
-        if (player1->chr) {
+        if(player1->chr) {
             object_set_sprite_override(&local->player1_portrait, 1);
             local->player1_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
             sprite_create(local->player1_portrait.cur_sprite, player1->chr->photo, -1);
@@ -369,7 +369,7 @@ int vs_create(scene *scene) {
         }
 
         object_create(&local->player2_portrait, scene->gs, vec2i_create(330, 150), vec2f_create(0, 0));
-        if (player1->chr) {
+        if(player1->chr) {
             object_set_sprite_override(&local->player2_portrait, 1);
             local->player2_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
             sprite_create(local->player2_portrait.cur_sprite, player2->pilot->photo, -1);
@@ -387,16 +387,15 @@ int vs_create(scene *scene) {
         object_select_sprite(&local->player1_portrait, 0);
     }
 
-
-    if (player2->pilot != NULL) {
+    if(player2->pilot != NULL) {
         // clone the left side of the background image
         // Note! We are touching the scene-wide background surface!
         surface_sub(&scene->bk_data.background, // DST Surface
-                &scene->bk_data.background, // SRC Surface
-                160, 0,                     // DST
-                0, 0,                       // SRC
-                160, 200,                   // Size
-                SUB_METHOD_MIRROR);         // Flip the right side horizontally
+                    &scene->bk_data.background, // SRC Surface
+                    160, 0,                     // DST
+                    0, 0,                       // SRC
+                    160, 200,                   // Size
+                    SUB_METHOD_MIRROR);         // Flip the right side horizontally
     }
 
     if(player2->selectable) {
@@ -420,7 +419,7 @@ int vs_create(scene *scene) {
 
     // SCIENTIST
     int scientistpos = rand_int(4);
-    if (!player2->pilot && scientistpos % 2 == 1) {
+    if(!player2->pilot && scientistpos % 2 == 1) {
         // there is no right hand gantry
         // so if the position is odd, sub 1
         // to force it to the left side
@@ -448,7 +447,7 @@ int vs_create(scene *scene) {
     while(((welderpos % 2) == (scientistpos % 2) && player2->pilot) || (scientistpos < 2 && welderpos < 2) ||
           (scientistpos > 1 && welderpos > 1 && welderpos < 4)) {
         welderpos = rand_int(6);
-        if (!player2->pilot && welderpos % 2 == 1) {
+        if(!player2->pilot && welderpos % 2 == 1) {
             // no second HAR, so force the welder to a position on the left gantry
             welderpos -= 1;
         }
@@ -471,7 +470,7 @@ int vs_create(scene *scene) {
     object_select_sprite(o_gantry_a, 0);
     game_state_add_object(scene->gs, o_gantry_a, RENDER_LAYER_TOP, 0, 0);
 
-    if (player2->pilot) {
+    if(player2->pilot) {
         object *o_gantry_b = omf_calloc(1, sizeof(object));
         object_create(o_gantry_b, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
         object_set_animation(o_gantry_b, ani);

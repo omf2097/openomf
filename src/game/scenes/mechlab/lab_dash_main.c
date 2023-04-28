@@ -3,20 +3,19 @@
 #include "game/gui/gauge.h"
 #include "game/gui/label.h"
 #include "game/gui/pilotpic.h"
-#include "game/gui/xysizer.h"
 #include "game/gui/trn_menu.h"
-#include "game/scenes/mechlab/lab_dash_main.h"
+#include "game/gui/xysizer.h"
 #include "game/scenes/mechlab.h"
+#include "game/scenes/mechlab/lab_dash_main.h"
+#include "game/utils/settings.h"
 #include "resources/ids.h"
 #include "resources/languages.h"
 #include "resources/sgmanager.h"
-#include "game/utils/settings.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/video.h"
 
-
-void lab_dash_main_photo_select(component *c, void *userdata){
+void lab_dash_main_photo_select(component *c, void *userdata) {
     trnmenu_finish(c->parent);
 }
 
@@ -43,7 +42,7 @@ void lab_dash_main_photo_right(component *c, void *userdata) {
 void lab_dash_main_chr_load(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    p1->chr = ((sd_chr_file*)list_get(dw->savegames, dw->index));
+    p1->chr = ((sd_chr_file *)list_get(dw->savegames, dw->index));
     p1->pilot = &p1->chr->pilot;
     strcpy(settings_get()->tournament.last_name, p1->pilot->name);
     settings_save();
@@ -56,11 +55,11 @@ void lab_dash_main_chr_left(component *c, void *userdata) {
     DEBUG("CHAR LEFT");
     dashboard_widgets *dw = userdata;
     dw->index--;
-    if (dw->index < 0) {
+    if(dw->index < 0) {
         dw->index = list_size(dw->savegames) - 1;
     }
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    p1->pilot = &((sd_chr_file*)list_get(dw->savegames, dw->index))->pilot;
+    p1->pilot = &((sd_chr_file *)list_get(dw->savegames, dw->index))->pilot;
     mechlab_update(dw->scene);
 }
 
@@ -68,14 +67,13 @@ void lab_dash_main_chr_right(component *c, void *userdata) {
     DEBUG("CHAR RIGHT");
     dashboard_widgets *dw = userdata;
     dw->index++;
-    if (dw->index >= list_size(dw->savegames)) {
+    if(dw->index >= list_size(dw->savegames)) {
         dw->index = 0;
     }
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    p1->pilot = &((sd_chr_file*)list_get(dw->savegames, dw->index))->pilot;
+    p1->pilot = &((sd_chr_file *)list_get(dw->savegames, dw->index))->pilot;
     mechlab_update(dw->scene);
 }
-
 
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     component *xy = xysizer_create();
@@ -105,7 +103,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
 
     // Pilot image
     dw->photo = pilotpic_create(PIC_PLAYERS, 0);
-    if (p1->pilot->photo) {
+    if(p1->pilot->photo) {
         DEBUG("loading pilot photo from pilot");
         pilotpic_set_photo(dw->photo, dw->pilot->photo);
     } else {
@@ -117,7 +115,6 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     palette *base_pal = video_get_base_palette();
     palette_load_player_colors(base_pal, &dw->pilot->palette, 0);
     video_force_pal_refresh();
-
 
     xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
 
@@ -184,7 +181,7 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     p1 = game_state_get_player(s->gs, 0);
 
     // Set up variables properly
-    if (p1->pilot->rank == 0) {
+    if(p1->pilot->rank == 0) {
         snprintf(tmp, 64, "RANK: NO RANK");
     } else {
         snprintf(tmp, 64, "RANK: %d", p1->pilot->rank);
@@ -198,8 +195,8 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     snprintf(tmp, 64, "MONEY: $ %dK", p1->pilot->money);
     label_set_text(dw->money, tmp);
 
-    label_set_text(dw->har_name, lang_get(31+p1->pilot->har_id));
-    label_set_text(dw->har_moves, lang_get(492+p1->pilot->har_id));
+    label_set_text(dw->har_name, lang_get(31 + p1->pilot->har_id));
+    label_set_text(dw->har_moves, lang_get(492 + p1->pilot->har_id));
 
     // Tournament and player name
     label_set_text(dw->name, p1->pilot->name);
@@ -220,7 +217,7 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     SET_GAUGE_X(leg_speed);
     SET_GAUGE_X(stun_resistance);
 
-    if (p1->pilot->photo) {
+    if(p1->pilot->photo) {
         DEBUG("loading pilot photo from pilot");
         pilotpic_set_photo(dw->photo, p1->pilot->photo);
     } else {
@@ -233,7 +230,4 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     palette *base_pal = video_get_base_palette();
     palette_load_player_colors(base_pal, &p1->pilot->palette, 0);
     video_force_pal_refresh();
-
 }
-
-

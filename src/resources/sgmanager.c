@@ -2,9 +2,9 @@
 #include "formats/chr.h"
 #include "formats/error.h"
 #include "resources/pathmanager.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/scandir.h"
-#include "utils/allocator.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -47,7 +47,7 @@ error_0:
 }
 
 int sg_count() {
-    if (sg_init()) {
+    if(sg_init()) {
         return 0;
     }
     const char *dirname = pm_get_local_path(SAVE_PATH);
@@ -61,7 +61,7 @@ int sg_count() {
 
 list *sg_load_all() {
 
-    if (sg_init()) {
+    if(sg_init()) {
         return NULL;
     }
 
@@ -79,11 +79,11 @@ list *sg_load_all() {
     list_iter_begin(&dirlist, &it);
     char *chrfile;
     char *ext;
-    while ((chrfile = (char*)list_iter_next(&it))) {
-        if (strcmp(".", chrfile) == 0 || strcmp("..", chrfile) == 0) {
+    while((chrfile = (char *)list_iter_next(&it))) {
+        if(strcmp(".", chrfile) == 0 || strcmp("..", chrfile) == 0) {
             continue;
         }
-        if ((ext = strrchr(chrfile, '.')) && strcmp(".CHR", ext) == 0) {
+        if((ext = strrchr(chrfile, '.')) && strcmp(".CHR", ext) == 0) {
             sd_chr_file *chr = omf_calloc(1, sizeof(sd_chr_file));
             ext[0] = 0;
             DEBUG("%s", chrfile);

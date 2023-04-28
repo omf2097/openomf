@@ -505,7 +505,7 @@ void player_run(object *obj) {
             if(sd_script_isset(frame, "sb")) {
                 panning = clamp(sd_script_get(frame, "sb"), -100, 100) / 100.0f;
             }
-            if (obj->sound_translation_table) {
+            if(obj->sound_translation_table) {
                 int sound_id = obj->sound_translation_table[sd_script_get(frame, "s")] - 1;
                 sound_play(sound_id, volume, panning, pitch);
             }
