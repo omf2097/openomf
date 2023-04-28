@@ -88,7 +88,8 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         for(int i = 0; i < 10; i++) {
             if(trn.locales[0]->end_texts[0][i]) {
                 chr->cutscene_text[i] = omf_calloc(1, strlen(trn.locales[0]->end_texts[0][i]) + 1);
-                strncpy(chr->cutscene_text[i], trn.locales[0]->end_texts[0][i], strlen(trn.locales[0]->end_texts[0][i]));
+                strncpy(chr->cutscene_text[i], trn.locales[0]->end_texts[0][i],
+                        strlen(trn.locales[0]->end_texts[0][i]));
             }
         }
         // TODO do something better here
