@@ -61,7 +61,7 @@ int sg_count() {
     char *ext = NULL;
 
     list_iter_begin(&dirlist, &it);
-    while((filename =(char *)list_iter_next(&it))) {
+    while((filename = (char *)list_iter_next(&it))) {
         if((ext = strrchr(filename, '.')) && strcmp(".CHR", ext) == 0) {
             continue;
         }

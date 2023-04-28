@@ -94,7 +94,7 @@ static void trnmenu_free(component *c) {
         object_free(m->hand.obj);
         omf_free(m->hand.obj);
     }
-    if (m->submenu) {
+    if(m->submenu) {
         component_free(m->submenu);
     }
     omf_free(m);

@@ -137,7 +137,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         }
     }
 
-    if (dirname) {
+    if(dirname) {
         sd_pic_free(&pic);
         sd_tournament_free(&trn);
     }
@@ -236,7 +236,7 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
 void sd_chr_free(sd_chr_file *chr) {
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         if(chr->enemies[i] != NULL) {
-            if (chr->enemies[i]->pilot.photo) {
+            if(chr->enemies[i]->pilot.photo) {
                 sd_sprite_free(chr->enemies[i]->pilot.photo);
                 omf_free(chr->enemies[i]->pilot.photo);
             }
@@ -248,8 +248,8 @@ void sd_chr_free(sd_chr_file *chr) {
             omf_free(chr->enemies[i]);
         }
     }
-    for (int i = 0; i < 10; i++) {
-        if (chr->cutscene_text[i]) {
+    for(int i = 0; i < 10; i++) {
+        if(chr->cutscene_text[i]) {
             omf_free(chr->cutscene_text[i]);
         }
     }
