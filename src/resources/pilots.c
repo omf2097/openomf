@@ -11,7 +11,7 @@ void pilot_get_info(pilot *pilot, int id) {
             pilot->endurance = 9;
             pilot->colors[0] = 5;
             pilot->colors[1] = 11;
-            pilot->colors[2] = 15;
+            pilot->colors[2] = 8;
             break;
         case 1:
 
@@ -28,7 +28,7 @@ void pilot_get_info(pilot *pilot, int id) {
             pilot->endurance = 4;
             pilot->colors[0] = 11;
             pilot->colors[1] = 12;
-            pilot->colors[2] = 8;
+            pilot->colors[2] = 7;
             break;
         case 3:
             pilot->power = 9;
@@ -36,7 +36,7 @@ void pilot_get_info(pilot *pilot, int id) {
             pilot->endurance = 15;
             pilot->colors[0] = 8;
             pilot->colors[1] = 15;
-            pilot->colors[2] = 12;
+            pilot->colors[2] = 6;
             break;
         case 4:
             pilot->power = 20;
