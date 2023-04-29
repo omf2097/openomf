@@ -39,8 +39,8 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     strncpy(dst->footer_string, src->footer_string, sizeof(dst->footer_string));
 
     // Everything else
-    dst->unknown_0 = src->unknown_0;
-    dst->unknown_2 = src->unknown_2;
+    dst->ai_opts = src->ai_opts;
+    dst->pos_constraint = src->pos_constraint;
     dst->unknown_4 = src->unknown_4;
     dst->unknown_5 = src->unknown_5;
     dst->unknown_6 = src->unknown_6;
@@ -55,8 +55,8 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     dst->scrap_amount = src->scrap_amount;
     dst->successor_id = src->successor_id;
     dst->damage_amount = src->damage_amount;
-    dst->unknown_18 = src->unknown_18;
-    dst->unknown_19 = src->unknown_19;
+    dst->collision_opts = src->collision_opts;
+    dst->extra_string_selector = src->extra_string_selector;
     dst->points = src->points;
 
     return SD_SUCCESS;
@@ -89,8 +89,8 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     }
 
     // Header
-    move->unknown_0 = sd_read_uword(r);
-    move->unknown_2 = sd_read_uword(r);
+    move->ai_opts = sd_read_uword(r);
+    move->pos_constraint = sd_read_uword(r);
     move->unknown_4 = sd_read_ubyte(r);
     move->unknown_5 = sd_read_ubyte(r);
     move->unknown_6 = sd_read_ubyte(r);
@@ -105,8 +105,8 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     move->scrap_amount = sd_read_ubyte(r);
     move->successor_id = sd_read_ubyte(r);
     move->damage_amount = sd_read_ubyte(r);
-    move->unknown_18 = sd_read_ubyte(r);
-    move->unknown_19 = sd_read_ubyte(r);
+    move->collision_opts = sd_read_ubyte(r);
+    move->extra_string_selector = sd_read_ubyte(r);
     move->points = sd_read_ubyte(r);
 
     // move string
@@ -146,8 +146,8 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     }
 
     // Move header
-    sd_write_uword(w, move->unknown_0);
-    sd_write_uword(w, move->unknown_2);
+    sd_write_uword(w, move->ai_opts);
+    sd_write_uword(w, move->pos_constraint);
     sd_write_ubyte(w, move->unknown_4);
     sd_write_ubyte(w, move->unknown_5);
     sd_write_ubyte(w, move->unknown_6);
@@ -162,8 +162,8 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     sd_write_ubyte(w, move->scrap_amount);
     sd_write_ubyte(w, move->successor_id);
     sd_write_ubyte(w, move->damage_amount);
-    sd_write_ubyte(w, move->unknown_18);
-    sd_write_ubyte(w, move->unknown_19);
+    sd_write_ubyte(w, move->collision_opts);
+    sd_write_ubyte(w, move->extra_string_selector);
     sd_write_ubyte(w, move->points);
 
     // move string

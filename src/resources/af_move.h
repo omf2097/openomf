@@ -14,7 +14,9 @@ typedef struct af_move_t {
     uint16_t points;
     uint8_t scrap_amount;
     uint8_t collision_opts;
+    uint8_t extra_string_selector;
     float damage;
+    float stun;
     str move_string;
     str footer_string;
 #ifdef DEBUGMODE

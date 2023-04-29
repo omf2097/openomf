@@ -30,8 +30,8 @@ extern "C" {
 typedef struct {
     sd_animation *animation; ///< Animation field for Move. When saving AF file, this should be != NULL.
 
-    uint16_t unknown_0;    ///< Unknown value
-    uint16_t unknown_2;    ///< Unknown value
+    uint16_t ai_opts;    ///< Unknown value
+    uint16_t pos_constraint;    ///< Unknown value
     uint8_t unknown_4;     ///< Unknown value
     uint8_t unknown_5;     ///< Unknown value
     uint8_t unknown_6;     ///< Unknown value
@@ -46,8 +46,8 @@ typedef struct {
     uint8_t scrap_amount;  ///< Scrap amount when this move connects
     uint8_t successor_id;  ///< Successor animation ID
     uint8_t damage_amount; ///< Damage amount when this move connects
-    uint8_t unknown_18;    ///< Unknown value
-    uint8_t unknown_19;    ///< Unknown value
+    uint8_t collision_opts;    ///< Unknown value
+    uint8_t extra_string_selector;    ///< what upgrades change the animation string
     uint8_t points;        ///< Score gained for this hit
 
     char move_string[SD_MOVE_STRING_MAX];          ///< Move string

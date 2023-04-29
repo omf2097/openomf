@@ -107,7 +107,7 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
             game_player *player = game_state_get_player(gs, 0);
             player->pilot->har_id = i;
             if(gs->this_id >= SCENE_ARENA0 && gs->this_id <= SCENE_ARENA4) {
-                if(scene_load_har(game_state_get_scene(gs), 0, player->pilot->har_id)) {
+                if(scene_load_har(game_state_get_scene(gs), 0)) {
                     return 1;
                 }
 

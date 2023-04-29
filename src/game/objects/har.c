@@ -22,6 +22,7 @@
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
+#include "formats/af.h"
 
 #include "video/video.h"
 
@@ -550,7 +551,7 @@ void har_move(object *obj) {
     }
 }
 
-void har_take_damage(object *obj, const str *string, float damage) {
+void har_take_damage(object *obj, const str *string, float damage, float stun) {
     har *h = object_get_userdata(obj);
 
     // Got hit, disable stasis activator on this bot
@@ -559,9 +560,17 @@ void har_take_damage(object *obj, const str *string, float damage) {
     // Save damage taken
     h->last_damage_value = damage;
 
+    game_player *player = game_state_get_player(obj->gs, h->player_id);
     // If god mode is not on, take damage
-    if(!game_state_get_player(obj->gs, h->player_id)->god) {
-        h->health -= damage;
+    if(!player->god) {
+        if(player->pilot->photo) {
+            // in tournament mode, damage is mitigated by armor
+            // (Armor + 2.5) * .25
+            DEBUG("applying %f to %f modulated by armor %f", damage, h->health, ((player->pilot->armor + 2.5) * 0.25f));
+            h->health -= damage / ((player->pilot->armor + 2.5) * 0.25f);
+        } else {
+            h->health -= damage;
+        }
     }
 
     // Handle health changes
@@ -570,7 +579,8 @@ void har_take_damage(object *obj, const str *string, float damage) {
         h->endurance = 0.0f;
     }
 
-    h->endurance -= damage;
+    DEBUG("applying %f stun damage to %f", stun, h->endurance);
+    h->endurance -= stun;
     if(h->endurance < 1.0f) {
         if(h->state == STATE_STUNNED) {
             // refill endurance
@@ -588,7 +598,7 @@ void har_take_damage(object *obj, const str *string, float damage) {
 
     // If damage is high enough, slow down the game for a bit
     // Also slow down game more for last shot
-    if(damage > 12.0f || h->health == 0) {
+    if(damage > 24.0f || h->health == 0) {
         DEBUG("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
               h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
         game_state_slowdown(obj->gs, 120,
@@ -1040,7 +1050,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             // back the attacker off a little
             a->flinching = 1;
         }
-        har_take_damage(obj_b, &move->footer_string, move->damage);
+        har_take_damage(obj_b, &move->footer_string, move->damage, move->stun);
         if(hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->scrap_amount);
         }
@@ -1110,14 +1120,14 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             if(next_move->footer_string.data) {
                 DEBUG("HAR %s Takes %f units of damage on string %s", har_get_name(h->id), move->damage,
                       str_c(&move->footer_string));
-                har_take_damage(o_har, &move->footer_string, move->damage);
+                har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
                 damage = 1;
             }
         }
 
         // Just take damage normally if there is no footer string in successor
         if(!damage) {
-            har_take_damage(o_har, &move->footer_string, move->damage);
+            har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
         }
 
         har_event_take_hit(h, move, true);
@@ -1181,7 +1191,8 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     int level = 2;
     vec2i hit_coord;
     if(!h->damage_received && intersect_sprite_hitpoint(o_hzd, o_har, level, &hit_coord)) {
-        har_take_damage(o_har, &anim->footer_string, anim->hazard_damage);
+        // TODO figure out the formula for hazard damage
+        har_take_damage(o_har, &anim->footer_string, anim->hazard_damage, anim->hazard_damage);
         har_event_hazard_hit(h, anim);
         // fire enemy hazard hit event
         object *enemy_obj = game_player_get_har(game_state_get_player(o_har->gs, !h->player_id));
@@ -2141,15 +2152,19 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->id = har_id;
     local->player_id = player_id;
     local->pilot_id = pilot_id;
-
-    pilot p;
-    pilot_get_info(&p, pilot_id);
+    sd_pilot *pilot = local->gp->pilot;
 
     // Health, endurance
-    local->health_max = local->health = af_data->health * (p.endurance + 25) / 35;
-    local->endurance_max = local->endurance = (af_data->endurance * (p.endurance + 25)) / 37;
-    local->jump_boost = 0.8f + 0.4f * ((float)p.agility / 20.0f);
-    local->fall_boost = 0.9f + ((float)p.agility / 20.0f);
+    // HP is
+    // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
+    local->health_max = local->health = af_data->health * 3.6 * (pilot->endurance + 16) / 23;
+    //DEBUG("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance, af_data->health);
+    // The stun cap is calculated as follows
+    // HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
+    local->endurance_max = local->endurance = (af_data->endurance * (pilot->endurance + 25) / 35) * 1.1;
+    DEBUG("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance, af_data->endurance);
+    local->jump_boost = 0.8f + 0.4f * ((float)local->gp->pilot->agility / 20.0f);
+    local->fall_boost = 0.9f + ((float)local->gp->pilot->agility / 20.0f);
     local->close = 0;
     local->hard_close = 0;
     local->state = STATE_STANDING;
@@ -2222,6 +2237,80 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
         local->act_buf[i].count = 0;
         local->act_buf[i].age = 0;
     }
+
+    // fixup a bunch of stuff based on player stats
+
+    bool is_tournament = false;
+    float leg_power = 0.0f;
+    float arm_power = 0.0f;
+    // cheap way to check if we're in tournament mode
+    if (pilot->photo != NULL) {
+        is_tournament = true;
+        // (Limb Power + 3) * .192
+        leg_power = (pilot->leg_power + 3) * 0.192f;
+        arm_power = (pilot->arm_power + 3) * 0.192f;
+    }
+
+    af_move *move;
+    // apply pilot stats and HAR upgrades/enhancements to the HAR
+    for (int i = 0; i < MAX_AF_MOVES; i++) {
+        move = af_get_move(af_data, i);
+        if (move != NULL) {
+            if (!is_tournament) {
+                // Single Player
+                // Damage = Base Damage * (20 + Power) / 30 + 1
+                //  Stun = (Base Damage + 6) * 512
+                move->stun = (move->damage + 6) * 512;
+                move->damage = move->damage * (20 + pilot->power) / 30 + 1;
+            } else {
+                // Tournament Mode
+                // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
+                // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
+                move->stun = ((move->damage * (35 + pilot->power) / 45) * 2 + 12) * 256;
+                switch (move->extra_string_selector) {
+                    case 0:
+                        break;
+                    case 1:
+                        // arm speed and power
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
+                        if (move->ani.extra_string_count > 0) {
+                            str_free(&move->ani.animation_string);
+                            str_from(&move->ani.animation_string, vector_get(&move->ani.extra_strings, pilot->arm_speed));
+                        }
+                        break;
+                    case 2:
+                        // leg speed and power
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
+                        if (move->ani.extra_string_count > 0) {
+                            str_free(&move->ani.animation_string);
+                            str_from(&move->ani.animation_string, vector_get(&move->ani.extra_strings, pilot->leg_speed));
+                        }
+                        break;
+                    case 3:
+                        // check if you have the enhancement(s) (and apply arm power for damage)
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
+                        // TODO if you have 1 enhancement choose extra string 2
+                        // if you have 2 enhancements choose extra string 3
+                        break;
+                    case 4:
+                        // check if you have the enhancement(s) (and apply leg power for damage)
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
+                        // TODO if you have 1 enhancement choose extra string 2
+                        // if you have 2 enhancements choose extra string 3
+                        break;
+                    case 5:
+                        // check if you have the enhancement(s) (and apply leg and arm power for damage)
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * (leg_power + leg_power);
+                        // TODO if you have 1 enhancement choose extra string 2
+                        // if you have 2 enhancements choose extra string 3
+                        break;
+                }
+            }
+        }
+    }
+
+
+
 
     // All done
     return 0;
