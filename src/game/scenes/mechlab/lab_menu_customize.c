@@ -11,6 +11,12 @@
 #include "resources/languages.h"
 #include "utils/log.h"
 
+// TODO put these somewhere central
+static uint8_t max_arm_speed[11] = {7, 9, 5, 7, 10, 8, 9, 7, 10, 7, 8};
+static uint8_t max_leg_speed[11] = {9, 10, 6, 7, 9, 9, 8, 7, 8, 6, 7};
+static uint8_t max_arm_power[11] = {6, 6, 10, 9, 5, 7, 7, 6, 6, 7, 8};
+static uint8_t max_leg_power[11] = {7, 7, 9, 5, 6, 8, 6, 8, 7, 8, 8};
+
 // negative values means the upgrade is unavailable at that level
 int32_t arm_leg_prices[11][10] = {
   // jaguar
@@ -144,7 +150,7 @@ void lab_menu_customize_check_arm_power_price(component *c, void *userdata) {
         }
     } else {
         int32_t price = arm_leg_prices[pilot->har_id][pilot->arm_power + 1];
-        if(price < 0 || price > pilot->money) {
+        if(price < 0 || price > pilot->money || pilot->arm_power + 1 >= max_arm_power[pilot->har_id]) {
             component_disable(c, 1);
         }
     }
@@ -180,7 +186,7 @@ void lab_menu_customize_check_leg_power_price(component *c, void *userdata) {
         }
     } else {
         int32_t price = arm_leg_prices[pilot->har_id][pilot->leg_power + 1];
-        if(price < 0 || price > pilot->money) {
+        if(price < 0 || price > pilot->money || pilot->leg_power + 1 >= max_leg_power[pilot->har_id]) {
             component_disable(c, 1);
         }
     }
@@ -216,7 +222,7 @@ void lab_menu_customize_check_arm_speed_price(component *c, void *userdata) {
         }
     } else {
         int32_t price = arm_leg_prices[pilot->har_id][pilot->arm_speed + 1];
-        if(price < 0 || price > pilot->money) {
+        if(price < 0 || price > pilot->money || pilot->arm_speed + 1 >= max_arm_speed[pilot->har_id]) {
             component_disable(c, 1);
         }
     }
@@ -252,7 +258,7 @@ void lab_menu_customize_check_leg_speed_price(component *c, void *userdata) {
         }
     } else {
         int32_t price = arm_leg_prices[pilot->har_id][pilot->leg_speed + 1];
-        if(price < 0 || price > pilot->money) {
+        if(price < 0 || price > pilot->money || pilot->leg_speed + 1 >= max_leg_speed[pilot->har_id]) {
             component_disable(c, 1);
         }
     }

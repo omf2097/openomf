@@ -15,12 +15,13 @@
 #include "utils/log.h"
 #include "video/video.h"
 
-uint8_t max_arm_speed[11] = {7, 9, 5, 7, 10, 8, 9, 7, 10, 7, 8};
-uint8_t max_leg_speed[11] = {9, 10, 6, 7, 9, 9, 8, 7, 8, 6, 7};
-uint8_t max_arm_power[11] = {6, 6, 10, 9, 5, 7, 7, 6, 6, 7, 8};
-uint8_t max_leg_power[11] = {7, 7, 9, 5, 6, 8, 6, 8, 7, 8, 8};
-uint8_t max_stun_resistance[11] = {9, 7, 9, 7, 8, 7, 7, 8, 8, 8, 7};
-uint8_t max_armor[11] = {6, 8, 8, 9, 7, 9, 7, 10, 7, 7, 8};
+// TODO put these somewhere central
+static uint8_t max_arm_speed[11] = {7, 9, 5, 7, 10, 8, 9, 7, 10, 7, 8};
+static uint8_t max_leg_speed[11] = {9, 10, 6, 7, 9, 9, 8, 7, 8, 6, 7};
+static uint8_t max_arm_power[11] = {6, 6, 10, 9, 5, 7, 7, 6, 6, 7, 8};
+static uint8_t max_leg_power[11] = {7, 7, 9, 5, 6, 8, 6, 8, 7, 8, 8};
+static uint8_t max_stun_resistance[11] = {9, 7, 9, 7, 8, 7, 7, 8, 8, 8, 7};
+static uint8_t max_armor[11] = {6, 8, 8, 9, 7, 9, 7, 10, 7, 7, 8};
 
 void lab_dash_main_photo_select(component *c, void *userdata) {
     trnmenu_finish(c->parent);
