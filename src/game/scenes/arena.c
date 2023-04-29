@@ -546,7 +546,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
             player_loser->pilot->losses++;
             if(player_id == 1) {
                 player_winner->pilot->rank--;
-                player_winner->pilot->money += player_loser->pilot->money;
+                player_winner->pilot->money += player_loser->pilot->winnings;
                 scene_youwin_anim_start(scene->gs);
             } else {
                 scene_youlose_anim_start(scene->gs);
