@@ -2157,11 +2157,11 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // Health, endurance
     // HP is
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
-    local->health_max = local->health = af_data->health * 3.6 * (pilot->endurance + 16) / 23;
+    local->health_max = local->health = (af_data->health * (pilot->endurance + 25)) * 1.1;
     //DEBUG("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance, af_data->health);
     // The stun cap is calculated as follows
     // HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
-    local->endurance_max = local->endurance = (af_data->endurance * (pilot->endurance + 25) / 35) * 1.1;
+    local->endurance_max = local->endurance = af_data->endurance * 3.6 * (pilot->endurance + 16) / 23;
     DEBUG("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance, af_data->endurance);
     local->jump_boost = 0.8f + 0.4f * ((float)local->gp->pilot->agility / 20.0f);
     local->fall_boost = 0.9f + ((float)local->gp->pilot->agility / 20.0f);
