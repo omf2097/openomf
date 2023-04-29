@@ -155,7 +155,7 @@ void gauge_set_size(component *c, int size) {
     gauge *g = widget_get_obj(c);
     if(size != g->size) {
         g->size = size;
-        if (g->lit > g->size) {
+        if(g->lit > g->size) {
             g->lit = g->size;
         }
         gauge_update(c);
