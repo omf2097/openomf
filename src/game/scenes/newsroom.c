@@ -298,14 +298,35 @@ int newsroom_create(scene *scene) {
 
     DEBUG("health is %d", health);
 
-    if(health > 40 && local->won == 1) {
-        local->news_id = rand_int(6) * 2;
+    // there's 3 random messages for
+    // each situation for winner/loser
+    // depending on the winner's health
+    // > 75%, >50% >25% and >0%
+
+    if(health > 75 && local->won == 1) {
+        // player won with > 75%
+        local->news_id = rand_int(3) * 2;
+    } else if(health > 50 && local->won == 1) {
+        // player won with > 50%
+        local->news_id = 6 + rand_int(3) * 2;
+    } else if(health > 25 && local->won == 1) {
+        // player won with > 25%
+        local->news_id = 12 + rand_int(3) * 2;
     } else if(local->won == 1) {
-        local->news_id = 12 + rand_int(6) * 2;
-    } else if(health < 40 && local->won == 0) {
-        local->news_id = 38 + rand_int(5) * 2;
+        // player won with > 0%
+        local->news_id = 18 + rand_int(3) * 2;
+    } else if(health > 75 && local->won == 0) {
+        // opponent won with > 75%
+        local->news_id = 24 + rand_int(3) * 2;
+    } else if(health > 50 && local->won == 0) {
+        // opponent won with > 50%
+        local->news_id = 30 + rand_int(3) * 2;
+    } else if(health > 25 && local->won == 0) {
+        // opponent won with > 25%
+        local->news_id = 36 + rand_int(3) * 2;
     } else {
-        local->news_id = 24 + rand_int(7) * 2;
+        // opponent won with > 0%
+        local->news_id = 42 + rand_int(3) * 2;
     }
 
     // XXX TODO get the real sex of pilot
