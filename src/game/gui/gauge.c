@@ -100,6 +100,7 @@ static void gauge_update(component *c) {
         surface_create_from_data(&off, SURFACE_TYPE_RGBA, 8, 3, (const char *)gauge_big_off_img.pixel_data);
     }
 
+    surface_clear(g->img);
     // Blit required stuff to cached surface
     int k = 0;
     int x = 0;
@@ -148,6 +149,17 @@ int gauge_get_lit(component *c) {
 int gauge_get_size(component *c) {
     gauge *g = widget_get_obj(c);
     return g->size;
+}
+
+void gauge_set_size(component *c, int size) {
+    gauge *g = widget_get_obj(c);
+    if(size != g->size) {
+        g->size = size;
+        if (g->lit > g->size) {
+            g->lit = g->size;
+        }
+        gauge_update(c);
+    }
 }
 
 component *gauge_create(gauge_type type, int size, int lit) {
