@@ -311,9 +311,16 @@ int newsroom_create(scene *scene) {
     // XXX TODO get the real sex of pilot
     // XXX TODO strip spaces from the end of the pilots name
     // XXX TODO set winner/loser names properly
-    newsroom_set_names(local, lang_get(20 + p1->pilot->pilot_id), lang_get(20 + p2->pilot->pilot_id),
-                       har_get_name(p1->pilot->har_id), har_get_name(p2->pilot->har_id), pilot_sex(p1->pilot->pilot_id),
-                       pilot_sex(p2->pilot->pilot_id));
+    if(p1->chr) {
+        // TODO pilot genders
+        newsroom_set_names(local, p1->pilot->name, p2->pilot->name, har_get_name(p1->pilot->har_id),
+                           har_get_name(p2->pilot->har_id), pilot_sex(p1->pilot->pilot_id),
+                           pilot_sex(p2->pilot->pilot_id));
+    } else {
+        newsroom_set_names(local, lang_get(20 + p1->pilot->pilot_id), lang_get(20 + p2->pilot->pilot_id),
+                           har_get_name(p1->pilot->har_id), har_get_name(p2->pilot->har_id),
+                           pilot_sex(p1->pilot->pilot_id), pilot_sex(p2->pilot->pilot_id));
+    }
     newsroom_fixup_str(local);
 
     // Continue Dialog
