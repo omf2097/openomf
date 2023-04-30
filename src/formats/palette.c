@@ -172,6 +172,14 @@ void palette_load_player_colors(palette *dst, palette *src, int player) {
     memcpy(dst->data + dstoff, src->data + 1, 47 * 3);
 }
 
+void palette_load_player_cutscene_colors(palette *dst, palette *src) {
+    for(int i = 0; i < 48; i++) {
+        memcpy(dst->data + i * 2, src->data + i, 3);
+        memcpy(dst->data + i * 2 + 1, src->data + i, 3);
+        // TODO do real palette interpolation
+    }
+}
+
 void palette_set_player_color(palette *pal, int player, int srccolor, int dstcolor) {
     int dst = dstcolor * 16 + player * 48;
     int src = srccolor * 16;

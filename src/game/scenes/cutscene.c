@@ -155,7 +155,7 @@ int cutscene_create(scene *scene) {
         case SCENE_WORLD:
             music_play(PSM_END);
 
-            palette_load_player_colors(mpal, &p1->pilot->palette, 0);
+            palette_load_player_cutscene_colors(mpal, &p1->pilot->palette);
             video_force_pal_refresh();
 
             // load all the animations, in order
@@ -169,6 +169,7 @@ int cutscene_create(scene *scene) {
                     ani = &bki->ani;
                     obj = omf_calloc(1, sizeof(object));
                     object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+                    object_set_stl(obj, scene->bk_data.sound_translation_table);
                     object_set_animation(obj, ani);
                     game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
                 }
@@ -176,6 +177,8 @@ int cutscene_create(scene *scene) {
             local->text_x = 10;
             local->text_y = 160;
             local->text_width = 300;
+
+            local->text_conf.cforeground = palette_lookup_color(248, video_get_base_palette());
 
             break;
     }
