@@ -189,7 +189,7 @@ void hashmap_clear(hashmap *hm) {
 
 /** \brief Free hashmap
  *
- * Frees the hasmap. All contents will be freed and hashmap will be deallocated.
+ * Frees the hashmap. All contents will be freed and hashmap will be deallocated.
  * Any use of this hashmap after this will lead to undefined behaviour.
  *
  * \param hm Hashmap to free
@@ -353,17 +353,18 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
  *
  * \param hm Hashmap
  * \param key Pointer to key memory block
- * \param keylen Length of the key memory block
+ * \param key_len Length of the key memory block
  * \param val Pointer to value hashmap memory block
- * \param vallen Length of the hashmap value memory block
+ * \param val_len Length of the hashmap value memory block
  * \return Returns 0 on success, 1 on error (not found).
  */
-int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen) {
-    unsigned int index = fnv_32a_buf(key, keylen, hm->buckets_x);
+int hashmap_get(hashmap *hm, const void *key, unsigned int key_len, void **val, unsigned int *val_len) {
+    unsigned int index = fnv_32a_buf(key, key_len, hm->buckets_x);
 
     // Set defaults for error cases
     *val = NULL;
-    *vallen = 0;
+    if(val_len != NULL)
+        *val_len = 0;
 
     // Get node
     hashmap_node *node = hm->buckets[index];
@@ -372,9 +373,10 @@ int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, u
 
     // Find the node we want
     while(node) {
-        if(node->pair.keylen == keylen && memcmp(node->pair.key, key, keylen) == 0) {
+        if(node->pair.keylen == key_len && memcmp(node->pair.key, key, key_len) == 0) {
             *val = node->pair.val;
-            *vallen = node->pair.vallen;
+            if(val_len != NULL)
+                *val_len = node->pair.vallen;
             return 0;
         }
         node = node->next;
