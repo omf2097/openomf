@@ -7,6 +7,7 @@
 #include "utils/log.h"
 #include "video/image.h"
 #include "video/opengl/object_array.h"
+#include "video/opengl/pal_buffer.h"
 #include "video/opengl/shaders.h"
 #include "video/opengl/texture_atlas.h"
 #include "video/sdl_window.h"
@@ -17,6 +18,7 @@ typedef struct video_state {
     SDL_GLContext *gl_context;
     texture_atlas *atlas;
     object_array *objects;
+    pal_buffer *pal_buffer;
 
     int screen_w;
     int screen_h;
@@ -74,6 +76,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     int viewport_w, viewport_h;
     SDL_GL_GetDrawableSize(g_video_state.window, &viewport_w, &viewport_h);
     glViewport(0, 0, viewport_w, viewport_h);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
 
     GLfloat projection_matrix[16];
     ortho2d(projection_matrix, 0.0f, 320.0f, 200.0f, 0.0f);
@@ -82,6 +85,11 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
 
     g_video_state.atlas = atlas_create(4096, 4096);
     g_video_state.objects = object_array_create();
+    g_video_state.pal_buffer = pal_buffer_create();
+
+    GLuint pal_ubo_id = pal_buffer_get_block(g_video_state.pal_buffer);
+    bind_uniform_block(g_video_state.shader_prog, "palette", pal_ubo_id);
+
     INFO("OpenGL Renderer initialized!");
     return 0;
 
@@ -111,16 +119,16 @@ void video_tick(void) {
 }
 
 void video_render_prepare(void) {
+    memcpy(g_video_state.screen_palette->data, g_video_state.base_palette->data, 768);
     object_array_prepare(g_video_state.objects);
 }
 
 // Called after frame has been rendered
 void video_render_finish(void) {
+    pal_buffer_update(g_video_state.pal_buffer, (void *)g_video_state.screen_palette->data);
     object_array_finish(g_video_state.objects);
 
-    glClearColor(0.3, 0.4, 0.4, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     object_array_draw(g_video_state.objects);
 
     // Flip buffers. If vsync is off, we should sleep here
@@ -132,6 +140,7 @@ void video_render_finish(void) {
 }
 
 void video_close(void) {
+    pal_buffer_free(&g_video_state.pal_buffer);
     object_array_free(&g_video_state.objects);
     atlas_free(&g_video_state.atlas);
     delete_program(g_video_state.shader_prog);
