@@ -1,4 +1,6 @@
 #include "game/protos/scene.h"
+#include "formats/af.h"
+#include "formats/move.h"
 #include "game/game_player.h"
 #include "game/game_state_type.h"
 #include "resources/af_loader.h"
@@ -8,8 +10,6 @@
 #include "utils/log.h"
 #include "utils/vec.h"
 #include "video/video.h"
-#include "formats/move.h"
-#include "formats/af.h"
 #include <stdlib.h>
 
 // Some internal functions
@@ -87,7 +87,6 @@ int scene_load_har(scene *scene, int player_id) {
 
     // Fix some coordinates on jump sprites
     har_fix_sprite_coords(&af_get_move(scene->af_data[player_id], ANIM_JUMPING)->ani, 0, -50);
-
 
     DEBUG("Loaded HAR %s (%s).", har_get_name(player->pilot->har_id), get_resource_name(resource_id));
     return 0;

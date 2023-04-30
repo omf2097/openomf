@@ -5,6 +5,7 @@
 
 #include "audio/sound.h"
 #include "controller/controller.h"
+#include "formats/af.h"
 #include "game/common_defines.h"
 #include "game/game_state.h"
 #include "game/objects/arena_constraints.h"
@@ -22,7 +23,6 @@
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
-#include "formats/af.h"
 
 #include "video/video.h"
 
@@ -2157,11 +2157,13 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // HP is
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
     local->health_max = local->health = (af_data->health * (pilot->endurance + 25) / 35) * 1.1;
-    //DEBUG("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance, af_data->health);
-    // The stun cap is calculated as follows
-    // HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
+    // DEBUG("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
+    // af_data->health);
+    //  The stun cap is calculated as follows
+    //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
     local->endurance_max = local->endurance = af_data->endurance * 3.6 * (pilot->endurance + 16) / 23;
-    DEBUG("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance, af_data->endurance);
+    DEBUG("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance,
+          af_data->endurance);
     local->jump_boost = 0.8f + 0.4f * ((float)local->gp->pilot->agility / 20.0f);
     local->fall_boost = 0.9f + ((float)local->gp->pilot->agility / 20.0f);
     local->close = 0;
@@ -2243,7 +2245,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     float leg_power = 0.0f;
     float arm_power = 0.0f;
     // cheap way to check if we're in tournament mode
-    if (pilot->photo != NULL) {
+    if(pilot->photo != NULL) {
         is_tournament = true;
         // (Limb Power + 3) * .192
         leg_power = (pilot->leg_power + 3) * 0.192f;
@@ -2252,10 +2254,10 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     af_move *move;
     // apply pilot stats and HAR upgrades/enhancements to the HAR
-    for (int i = 0; i < MAX_AF_MOVES; i++) {
+    for(int i = 0; i < MAX_AF_MOVES; i++) {
         move = af_get_move(af_data, i);
-        if (move != NULL) {
-            if (!is_tournament) {
+        if(move != NULL) {
+            if(!is_tournament) {
                 // Single Player
                 // Damage = Base Damage * (20 + Power) / 30 + 1
                 //  Stun = (Base Damage + 6) * 512
@@ -2266,25 +2268,29 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
                 // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
                 move->stun = ((move->damage * (35 + pilot->power) / 45) * 2 + 12) * 256;
-                switch (move->extra_string_selector) {
+                switch(move->extra_string_selector) {
                     case 0:
                         break;
                     case 1:
                         // arm speed and power
                         move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
-                        if (move->ani.extra_string_count > 0) {
+                        if(move->ani.extra_string_count > 0) {
                             str_free(&move->ani.animation_string);
                             // sometimes there's not enough extra strings, so take the last available
-                            str_from(&move->ani.animation_string, vector_get(&move->ani.extra_strings, min2(pilot->arm_speed, move->ani.extra_string_count - 1)));
+                            str_from(&move->ani.animation_string,
+                                     vector_get(&move->ani.extra_strings,
+                                                min2(pilot->arm_speed, move->ani.extra_string_count - 1)));
                         }
                         break;
                     case 2:
                         // leg speed and power
                         move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
-                        if (move->ani.extra_string_count > 0) {
+                        if(move->ani.extra_string_count > 0) {
                             str_free(&move->ani.animation_string);
                             // sometimes there's not enough extra strings, so take the last available
-                            str_from(&move->ani.animation_string, vector_get(&move->ani.extra_strings, min2(pilot->leg_speed, move->ani.extra_string_count - 1)));
+                            str_from(&move->ani.animation_string,
+                                     vector_get(&move->ani.extra_strings,
+                                                min2(pilot->leg_speed, move->ani.extra_string_count - 1)));
                         }
                         break;
                     case 3:
@@ -2309,9 +2315,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
             }
         }
     }
-
-
-
 
     // All done
     return 0;
