@@ -187,37 +187,40 @@ void newsroom_input_tick(scene *scene) {
                             // pick a new player
                             game_player *p1 = game_state_get_player(scene->gs, 0);
                             game_player *p2 = game_state_get_player(scene->gs, 1);
-                            DEBUG("wins are %d", p1->sp_wins);
-                            if(p1->sp_wins == (4094 ^ (2 << p1->pilot->pilot_id))) {
-                                // won the game
-                                game_state_set_next(scene->gs, SCENE_END);
+                            if(p1->chr) {
+                                // clear the opponent as a signal to display plug on the VS
+                                p2->pilot = NULL;
+                                // also zero out the p2 wins so the game doesn't think
+                                // we keep losing
+                                p2->sp_wins = 0;
                             } else {
-                                if(p1->sp_wins == (2046 ^ (2 << p1->pilot->pilot_id))) {
-                                    // everyone but kriessack
-                                    p2->pilot->pilot_id = 10;
-                                    p2->pilot->har_id = HAR_NOVA;
+                                DEBUG("wins are %d", p1->sp_wins);
+                                if(p1->sp_wins == (4094 ^ (2 << p1->pilot->pilot_id))) {
+                                    // won the game
+                                    game_state_set_next(scene->gs, SCENE_END);
                                 } else {
-                                    // pick an opponent we have not yet beaten
-                                    while(1) {
-                                        int i = rand_int(10);
-                                        if((2 << i) & p1->sp_wins || i == p1->pilot->pilot_id) {
-                                            continue;
+                                    if(p1->sp_wins == (2046 ^ (2 << p1->pilot->pilot_id))) {
+                                        // everyone but kriessack
+                                        p2->pilot->pilot_id = 10;
+                                        p2->pilot->har_id = HAR_NOVA;
+                                    } else {
+                                        // pick an opponent we have not yet beaten
+                                        while(1) {
+                                            int i = rand_int(10);
+                                            if((2 << i) & p1->sp_wins || i == p1->pilot->pilot_id) {
+                                                continue;
+                                            }
+                                            p2->pilot->pilot_id = i;
+                                            p2->pilot->har_id = rand_int(10);
+                                            break;
                                         }
-                                        p2->pilot->pilot_id = i;
-                                        p2->pilot->har_id = rand_int(10);
-                                        break;
                                     }
-                                }
-                                pilot p;
-                                pilot_get_info(&p, p2->pilot->pilot_id);
-                                sd_pilot_set_player_color(p2->pilot, TERTIARY, p.colors[0]);
-                                sd_pilot_set_player_color(p2->pilot, SECONDARY, p.colors[1]);
-                                sd_pilot_set_player_color(p2->pilot, PRIMARY, p.colors[2]);
+                                    pilot p;
+                                    pilot_get_info(&p, p2->pilot->pilot_id);
+                                    sd_pilot_set_player_color(p2->pilot, TERTIARY, p.colors[0]);
+                                    sd_pilot_set_player_color(p2->pilot, SECONDARY, p.colors[1]);
+                                    sd_pilot_set_player_color(p2->pilot, PRIMARY, p.colors[2]);
 
-                                if(p1->chr) {
-                                    // clear the opponent as a signal to display plug on the VS
-                                    p2->pilot = NULL;
-                                } else {
                                     // make a new AI controller
                                     controller *ctrl = omf_calloc(1, sizeof(controller));
                                     controller_init(ctrl);
@@ -226,11 +229,11 @@ void newsroom_input_tick(scene *scene) {
                                                          p2->pilot->pilot_id);
                                     game_player_set_ctrl(p2, ctrl);
                                 }
-                                if(p1->chr && local->champion) {
-                                    game_state_set_next(scene->gs, p1->chr->cutscene);
-                                } else {
-                                    game_state_set_next(scene->gs, SCENE_VS);
-                                }
+                            }
+                            if(p1->chr && local->champion) {
+                                game_state_set_next(scene->gs, p1->chr->cutscene);
+                            } else {
+                                game_state_set_next(scene->gs, SCENE_VS);
                             }
                         } else {
                             dialog_show(&local->continue_dialog, 1);
