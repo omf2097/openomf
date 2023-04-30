@@ -941,7 +941,7 @@ int game_state_ms_per_dyntick(game_state *gs) {
         case SCENE_ARENA4:
             if(gs->warp_speed) {
                 // If warp speed (for debugging) is turned on, go fast.
-                return 1.0f;
+                return 5.0f;
             }
             tmp = 8.0f + MS_PER_OMF_TICK_SLOWEST - ((float)gs->speed / 15.0f) * MS_PER_OMF_TICK_SLOWEST;
             return (int)tmp;
