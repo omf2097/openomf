@@ -3,6 +3,7 @@
 
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/opengl/buffers.h"
 #include "video/opengl/object_array.h"
 
 #define OBJ_SIZE 16
@@ -21,44 +22,31 @@ typedef struct object_array {
     GLsizei fans_sizes[MAX_FANS];
 } object_array;
 
-static GLuint create_vbo() {
-    GLuint vbo_id;
-    glGenBuffers(1, &vbo_id);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
-    glBufferData(GL_ARRAY_BUFFER, VBO_SIZE, NULL, GL_DYNAMIC_DRAW);
-    return vbo_id;
-}
-
-static GLuint create_vao() {
-    GLuint vao_id;
-    glGenVertexArrays(1, &vao_id);
-    glBindVertexArray(vao_id);
+static void setup_vao_layout(GLuint id) {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
-    return vao_id;
 }
 
 object_array *object_array_create() {
     object_array *array = omf_calloc(1, sizeof(object_array));
     array->item_count = 0;
     array->mapping = NULL;
-    for(int i = 0; i < BUFFER_COUNT; i++) {
-        array->vbo_ids[i] = create_vbo();
-    }
-    array->vao_id = create_vao();
-    glBindVertexArray(array->vao_id);
+    for(int i = 0; i < BUFFER_COUNT; i++)
+        array->vbo_ids[i] = vbo_create(VBO_SIZE);
+    array->vao_id = vao_create();
+    setup_vao_layout(array->vao_id);
     return array;
 }
 
 void object_array_free(object_array **array) {
     object_array *obj = *array;
     glBindVertexArray(0);
-    glDeleteVertexArrays(1, &obj->vao_id);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glDeleteBuffers(BUFFER_COUNT, obj->vbo_ids);
-    glDeleteBuffers(1, &obj->vbo_ids[1]);
+    vao_free(obj->vao_id);
+    for(int i = 0; i < BUFFER_COUNT; i++)
+        vbo_free(obj->vbo_ids[1]);
     omf_free(obj);
     *array = NULL;
 }
