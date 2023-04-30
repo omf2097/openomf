@@ -46,7 +46,7 @@ unsigned int hashmap_reserved(const hashmap *hashmap);
 void *hashmap_put(hashmap *hm, const void *key, unsigned int keylen, const void *val, unsigned int vallen);
 void hashmap_sput(hashmap *hashmap, const char *key, void *value, unsigned int value_len);
 void hashmap_iput(hashmap *hashmap, unsigned int key, void *value, unsigned int value_len);
-int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen);
+int hashmap_get(hashmap *hm, const void *key, unsigned int key_len, void **val, unsigned int *val_len);
 int hashmap_sget(hashmap *hashmap, const char *key, void **value, unsigned int *value_len);
 int hashmap_iget(hashmap *hashmap, unsigned int key, void **value, unsigned int *value_len);
 int hashmap_del(hashmap *hm, const void *key, unsigned int keylen);
