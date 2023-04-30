@@ -126,6 +126,49 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
             memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(palette));
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
             sd_sprite_copy(chr->enemies[i]->pilot.photo, pic.photos[trn.enemies[i]->photo_id]->sprite);
+            //  copy all the "pilot" fields (eg. winnings) over from the tournament file
+            chr->enemies[i]->pilot.unk_f_c = trn.enemies[i]->unk_f_c;
+            chr->enemies[i]->pilot.unk_f_d = trn.enemies[i]->unk_f_d;
+            chr->enemies[i]->pilot.pilot_id = trn.enemies[i]->pilot_id;
+            chr->enemies[i]->pilot.unknown_k = trn.enemies[i]->unknown_k;
+            chr->enemies[i]->pilot.force_arena = trn.enemies[i]->force_arena;
+            chr->enemies[i]->pilot.difficulty = trn.enemies[i]->difficulty;
+            chr->enemies[i]->pilot.movement = trn.enemies[i]->movement;
+            // chr->enemies[i]->pilot.unk_block_c = trn.enemies[i]->unk_block_c;
+            memcpy(chr->enemies[i]->pilot.enhancements, trn.enemies[i]->enhancements,
+                   sizeof(chr->enemies[i]->pilot.enhancements));
+            chr->enemies[i]->pilot.secret = trn.enemies[i]->secret;
+            chr->enemies[i]->pilot.only_fight_once = trn.enemies[i]->only_fight_once;
+            chr->enemies[i]->pilot.req_rank = trn.enemies[i]->req_rank;
+            chr->enemies[i]->pilot.req_max_rank = trn.enemies[i]->req_max_rank;
+            chr->enemies[i]->pilot.req_fighter = trn.enemies[i]->req_fighter;
+            chr->enemies[i]->pilot.req_difficulty = trn.enemies[i]->req_difficulty;
+            chr->enemies[i]->pilot.req_enemy = trn.enemies[i]->req_enemy;
+            chr->enemies[i]->pilot.req_vitality = trn.enemies[i]->req_vitality;
+            chr->enemies[i]->pilot.req_accuracy = trn.enemies[i]->req_accuracy;
+            chr->enemies[i]->pilot.req_avg_dmg = trn.enemies[i]->req_avg_dmg;
+            chr->enemies[i]->pilot.req_scrap = trn.enemies[i]->req_scrap;
+            chr->enemies[i]->pilot.req_destroy = trn.enemies[i]->req_destroy;
+            chr->enemies[i]->pilot.att_normal = trn.enemies[i]->att_normal;
+            chr->enemies[i]->pilot.att_hyper = trn.enemies[i]->att_hyper;
+            chr->enemies[i]->pilot.att_def = trn.enemies[i]->att_def;
+            chr->enemies[i]->pilot.att_sniper = trn.enemies[i]->att_sniper;
+            chr->enemies[i]->pilot.ap_throw = trn.enemies[i]->ap_throw;
+            chr->enemies[i]->pilot.ap_special = trn.enemies[i]->ap_special;
+            chr->enemies[i]->pilot.ap_jump = trn.enemies[i]->ap_jump;
+            chr->enemies[i]->pilot.ap_high = trn.enemies[i]->ap_high;
+            chr->enemies[i]->pilot.ap_low = trn.enemies[i]->ap_low;
+            chr->enemies[i]->pilot.ap_middle = trn.enemies[i]->ap_middle;
+            chr->enemies[i]->pilot.pref_jump = trn.enemies[i]->pref_jump;
+            chr->enemies[i]->pilot.pref_fwd = trn.enemies[i]->pref_fwd;
+            chr->enemies[i]->pilot.pref_back = trn.enemies[i]->pref_back;
+            chr->enemies[i]->pilot.unknown_e = trn.enemies[i]->unknown_e;
+            chr->enemies[i]->pilot.learning = trn.enemies[i]->learning;
+            chr->enemies[i]->pilot.forget = trn.enemies[i]->forget;
+            // chr->enemies[i]->pilot.unk_block_f = trn.enemies[i]->unk_block_f;
+            chr->enemies[i]->pilot.winnings = trn.enemies[i]->winnings;
+            chr->enemies[i]->pilot.total_value = trn.enemies[i]->total_value;
+            chr->enemies[i]->pilot.photo_id = trn.enemies[i]->photo_id;
         }
         memread_buf(mr, chr->enemies[i]->unknown, 25);
         for(int m = 0; m < 10; m++) {
