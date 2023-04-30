@@ -1087,7 +1087,7 @@ void arena_render_overlay(scene *scene) {
         } else {
             // TODO put these in the pilot struct
             player1_name = lang_get(player[0]->pilot->pilot_id + 20);
-            player2_name = lang_get(player[0]->pilot->pilot_id + 20);
+            player2_name = lang_get(player[1]->pilot->pilot_id + 20);
         }
 
         font_render_shadowed(&font_small, player1_name, 5, 19, TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
@@ -1255,7 +1255,7 @@ int arena_create(scene *scene) {
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
 
-        if(scene_load_har(scene, i, player->pilot->har_id)) {
+        if(scene_load_har(scene, i)) {
             omf_free(obj);
             return 1;
         }

@@ -30,25 +30,25 @@ extern "C" {
 typedef struct {
     sd_animation *animation; ///< Animation field for Move. When saving AF file, this should be != NULL.
 
-    uint16_t unknown_0;    ///< Unknown value
-    uint16_t unknown_2;    ///< Unknown value
-    uint8_t unknown_4;     ///< Unknown value
-    uint8_t unknown_5;     ///< Unknown value
-    uint8_t unknown_6;     ///< Unknown value
-    uint8_t unknown_7;     ///< Unknown value
-    uint8_t unknown_8;     ///< Unknown value
-    uint8_t unknown_9;     ///< Unknown value
-    uint8_t unknown_10;    ///< Unknown value
-    uint8_t unknown_11;    ///< Unknown value
-    uint8_t next_anim_id;  ///< Next animation ID
-    uint8_t category;      ///< Move category ID
-    uint8_t unknown_14;    ///< Unknown value
-    uint8_t scrap_amount;  ///< Scrap amount when this move connects
-    uint8_t successor_id;  ///< Successor animation ID
-    uint8_t damage_amount; ///< Damage amount when this move connects
-    uint8_t unknown_18;    ///< Unknown value
-    uint8_t unknown_19;    ///< Unknown value
-    uint8_t points;        ///< Score gained for this hit
+    uint16_t ai_opts;        ///< Unknown value
+    uint16_t pos_constraint; ///< Unknown value
+    uint8_t unknown_4;       ///< Unknown value
+    uint8_t unknown_5;       ///< Unknown value
+    uint8_t unknown_6;       ///< Unknown value
+    uint8_t unknown_7;       ///< Unknown value
+    uint8_t unknown_8;       ///< Unknown value
+    uint8_t unknown_9;       ///< Unknown value
+    uint8_t unknown_10;      ///< Unknown value
+    uint8_t unknown_11;      ///< Unknown value
+    uint8_t next_anim_id;    ///< Next animation ID
+    uint8_t category;        ///< Move category ID
+    uint8_t block_damage;    ///< Damage applied when blocking this mode
+    uint8_t block_stun;   ///< How many frames to force the opponents block animation on hit, also used for scrap amount
+    uint8_t successor_id; ///< Successor animation ID
+    uint8_t damage_amount;         ///< Damage amount when this move connects
+    uint8_t collision_opts;        ///< Unknown value
+    uint8_t extra_string_selector; ///< what upgrades change the animation string
+    uint8_t points;                ///< Score gained for this hit
 
     char move_string[SD_MOVE_STRING_MAX];          ///< Move string
     char footer_string[SD_MOVE_FOOTER_STRING_MAX]; ///< Footer string

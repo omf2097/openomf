@@ -258,6 +258,9 @@ void handle_action(scene *scene, int player, int action) {
                     palette *base_pal = video_get_base_palette();
                     pilot p_a;
                     pilot_get_info(&p_a, local->pilot_id_a);
+                    player1->pilot->endurance = p_a.endurance;
+                    player1->pilot->power = p_a.power;
+                    player1->pilot->agility = p_a.agility;
                     sd_pilot_set_player_color(player1->pilot, TERTIARY, p_a.colors[0]);
                     sd_pilot_set_player_color(player1->pilot, SECONDARY, p_a.colors[1]);
                     sd_pilot_set_player_color(player1->pilot, PRIMARY, p_a.colors[2]);
@@ -268,6 +271,9 @@ void handle_action(scene *scene, int player, int action) {
                         object_select_sprite(&local->bigportrait2, local->pilot_id_b);
                         // update the player palette
                         pilot_get_info(&p_a, local->pilot_id_b);
+                        player2->pilot->endurance = p_a.endurance;
+                        player2->pilot->power = p_a.power;
+                        player2->pilot->agility = p_a.agility;
                         sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
                         sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
                         sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
@@ -321,6 +327,9 @@ void handle_action(scene *scene, int player, int action) {
 
                         pilot p_a;
                         pilot_get_info(&p_a, player2->pilot->pilot_id);
+                        player2->pilot->endurance = p_a.endurance;
+                        player2->pilot->power = p_a.power;
+                        player2->pilot->agility = p_a.agility;
                         sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
                         sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
                         sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);

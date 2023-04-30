@@ -116,7 +116,7 @@ int sd_af_load(sd_af_file *af, const char *filename) {
     // Header
     af->file_id = sd_read_uword(r);
     af->exec_window = sd_read_uword(r); // Always 10
-    af->endurance = sd_read_udword(r) / 256.0f;
+    af->endurance = sd_read_udword(r) * 1.0f;
     af->unknown_b = sd_read_ubyte(r); // Always 1 or 2
     af->health = sd_read_uword(r);
     af->forward_speed = sd_read_dword(r) / 256.0f;

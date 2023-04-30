@@ -1,4 +1,6 @@
 #include "game/protos/scene.h"
+#include "formats/af.h"
+#include "formats/move.h"
 #include "game/game_player.h"
 #include "game/game_state_type.h"
 #include "resources/af_loader.h"
@@ -69,23 +71,24 @@ void har_fix_sprite_coords(animation *ani, int fix_x, int fix_y) {
     }
 }
 
-int scene_load_har(scene *scene, int player_id, int har_id) {
+int scene_load_har(scene *scene, int player_id) {
+    game_player *player = game_state_get_player(scene->gs, player_id);
     if(scene->af_data[player_id]) {
         af_free(scene->af_data[player_id]);
         omf_free(scene->af_data[player_id]);
     }
     scene->af_data[player_id] = omf_calloc(1, sizeof(af));
 
-    int resource_id = har_to_resource(har_id);
+    int resource_id = har_to_resource(player->pilot->har_id);
     if(load_af_file(scene->af_data[player_id], resource_id)) {
-        PERROR("Unable to load HAR %s (%s)!", har_get_name(har_id), get_resource_name(resource_id));
+        PERROR("Unable to load HAR %s (%s)!", har_get_name(player->pilot->har_id), get_resource_name(resource_id));
         return 1;
     }
 
     // Fix some coordinates on jump sprites
     har_fix_sprite_coords(&af_get_move(scene->af_data[player_id], ANIM_JUMPING)->ani, 0, -50);
 
-    DEBUG("Loaded HAR %s (%s).", har_get_name(har_id), get_resource_name(resource_id));
+    DEBUG("Loaded HAR %s (%s).", har_get_name(player->pilot->har_id), get_resource_name(resource_id));
     return 0;
 }
 

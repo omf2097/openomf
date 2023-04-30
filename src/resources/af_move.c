@@ -9,11 +9,14 @@ void af_move_create(af_move *move, void *src, int id) {
     move->next_move = sdmv->next_anim_id;
     move->successor_id = sdmv->successor_id;
     move->category = sdmv->category;
-    move->damage = sdmv->damage_amount / 2.0f;
+    move->damage = sdmv->damage_amount;
+    move->stun = 0.0f;
     move->points = sdmv->points * 400;
-    move->scrap_amount = sdmv->scrap_amount;
-    move->pos_constraints = sdmv->unknown_2;
-    move->collision_opts = sdmv->unknown_18;
+    move->block_damage = sdmv->block_damage;
+    move->block_stun = sdmv->block_stun;
+    move->pos_constraints = sdmv->pos_constraint;
+    move->collision_opts = sdmv->collision_opts;
+    move->extra_string_selector = sdmv->extra_string_selector;
     animation_create(&move->ani, sdmv->animation, id);
 }
 

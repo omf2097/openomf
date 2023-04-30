@@ -243,9 +243,9 @@ int move_key_get_id(const char *key) {
         return 41;
     if(strcmp(key, "category") == 0)
         return 42;
-    if(strcmp(key, "unknown_14") == 0)
+    if(strcmp(key, "block_damage") == 0)
         return 43;
-    if(strcmp(key, "scrap_amount") == 0)
+    if(strcmp(key, "block_stun") == 0)
         return 44;
     if(strcmp(key, "successor_id") == 0)
         return 45;
@@ -271,10 +271,10 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
     switch(kn) {
 
         case 30:
-            move->unknown_0 = conv_uword(value);
+            move->ai_opts = conv_uword(value);
             break;
         case 31:
-            move->unknown_2 = conv_uword(value);
+            move->pos_constraint = conv_uword(value);
             break;
         case 33:
             move->unknown_4 = conv_ubyte(value);
@@ -307,10 +307,10 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             move->category = conv_ubyte(value);
             break;
         case 43:
-            move->unknown_14 = conv_ubyte(value);
+            move->block_damage = conv_ubyte(value);
             break;
         case 44:
-            move->scrap_amount = conv_ubyte(value);
+            move->block_stun = conv_ubyte(value);
             break;
         case 45:
             move->successor_id = conv_ubyte(value);
@@ -319,10 +319,10 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             move->damage_amount = conv_ubyte(value);
             break;
         case 47:
-            move->unknown_18 = conv_ubyte(value);
+            move->collision_opts = conv_ubyte(value);
             break;
         case 48:
-            move->unknown_19 = conv_ubyte(value);
+            move->extra_string_selector = conv_ubyte(value);
             break;
         case 49:
             move->points = conv_ubyte(value);
@@ -351,10 +351,10 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
     int kn = move_key_get_id(key[0]);
     switch(kn) {
         case 30:
-            printf("%d\n", move->unknown_0);
+            printf("%d\n", move->ai_opts);
             break;
         case 31:
-            printf("%d\n", move->unknown_2);
+            printf("%d\n", move->pos_constraint);
             break;
         case 33:
             printf("%d\n", move->unknown_4);
@@ -387,10 +387,10 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             printf("%d\n", move->category);
             break;
         case 43:
-            printf("%d\n", move->unknown_14);
+            printf("%d\n", move->block_damage);
             break;
         case 44:
-            printf("%d\n", move->scrap_amount);
+            printf("%d\n", move->block_stun);
             break;
         case 45:
             printf("%d\n", move->successor_id);
@@ -399,10 +399,10 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             printf("%d\n", move->damage_amount);
             break;
         case 47:
-            printf("%d\n", move->unknown_18);
+            printf("%d\n", move->collision_opts);
             break;
         case 48:
-            printf("%d\n", move->unknown_19);
+            printf("%d\n", move->extra_string_selector);
             break;
         case 49:
             printf("%d\n", move->points);
@@ -438,8 +438,8 @@ void move_keylist() {
     printf("* unknown_11\n");
     printf("* next_anim_id\n");
     printf("* category\n");
-    printf("* unknown_14\n");
-    printf("* scrap_amount\n");
+    printf("* block_damage\n");
+    printf("* block_stun\n");
     printf("* successor_id\n");
     printf("* damage_amount\n");
     printf("* unknown_18\n");
@@ -455,8 +455,8 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
     anim_common_info(ani);
 
     printf("\nAF specific footer:\n");
-    printf(" * unknown_0:       %d\n", move->unknown_0);
-    printf(" * unknown_2:       %d\n", move->unknown_2);
+    printf(" * ai_opts:       %d\n", move->ai_opts);
+    printf(" * pos_constraint:       %d\n", move->pos_constraint);
     printf(" * unknown_4:       %d\n", move->unknown_4);
     printf(" * unknown_5:       %d\n", move->unknown_5);
     printf(" * unknown_6:       %d\n", move->unknown_6);
@@ -467,12 +467,12 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
     printf(" * unknown_11:      %d\n", move->unknown_11);
     printf(" * next_anim_id:    %d\n", move->next_anim_id);
     printf(" * category:        %d\n", move->category);
-    printf(" * unknown_14:      %d\n", move->unknown_14);
-    printf(" * scrap_amount:    %d\n", move->scrap_amount);
+    printf(" * block_damage:    %d\n", move->block_damage);
+    printf(" * block_stun:      %d\n", move->block_stun);
     printf(" * successor_id:    %d\n", move->successor_id);
     printf(" * damage_amount:   %d\n", move->damage_amount);
-    printf(" * unknown_18:      %d\n", move->unknown_18);
-    printf(" * unknown_19:      %d\n", move->unknown_19);
+    printf(" * collision_opts:      %d\n", move->collision_opts);
+    printf(" * extra_string_selector:      %d\n", move->extra_string_selector);
     printf(" * points:          %d\n", move->points);
 
     printf(" * Move string:     %s\n", move->move_string);
