@@ -7,6 +7,7 @@
 #include <SDL.h>
 
 typedef struct {
+    uint32_t hash;
     int w;
     int h;
     int type;
@@ -44,6 +45,5 @@ void surface_to_rgba(surface *sur, char *dst, screen_palette *pal, char *remap_t
 void surface_additive_blit(surface *dst, surface *src, int dst_x, int dst_y, palette *remap_pal, SDL_RendererFlip flip);
 void surface_rgba_blit(surface *dst, const surface *src, int dst_x, int dst_y);
 void surface_alpha_blit(surface *dst, surface *src, int dst_x, int dst_y, SDL_RendererFlip flip);
-int surface_to_texture(surface *src, SDL_Texture *tex, screen_palette *pal, char *remap_table, uint8_t pal_offset);
 
 #endif // SURFACE_H
