@@ -7,5 +7,6 @@ bool create_program(GLuint *program_id, const char *const vertex_shader, const c
 void delete_program(GLuint program_id);
 void activate_program(GLuint program_id);
 void bind_uniform_4fv(GLuint program_id, const char *name, GLfloat *data);
+void bind_uniform_block(GLuint program_id, const char *name, GLuint binding);
 
 #endif // SHADERS_H

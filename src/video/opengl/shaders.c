@@ -128,6 +128,11 @@ void bind_uniform_4fv(GLuint program_id, const char *name, GLfloat *data) {
     glUniformMatrix4fv(ref, 1, GL_FALSE, data);
 }
 
+void bind_uniform_block(GLuint program_id, const char *name, GLuint binding) {
+    GLuint ref = glGetUniformBlockIndex(program_id, name);
+    glUniformBlockBinding(program_id, ref, binding);
+}
+
 void activate_program(GLuint program_id) {
     glUseProgram(program_id);
 }
