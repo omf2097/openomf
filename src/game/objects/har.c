@@ -1191,8 +1191,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     int level = 2;
     vec2i hit_coord;
     if(!h->damage_received && intersect_sprite_hitpoint(o_hzd, o_har, level, &hit_coord)) {
-        // TODO figure out the formula for hazard damage
-        har_take_damage(o_har, &anim->footer_string, anim->hazard_damage, anim->hazard_damage);
+        har_take_damage(o_har, &anim->footer_string, anim->hazard_damage, (anim->hazard_damage + 6) * 512);
         har_event_hazard_hit(h, anim);
         // fire enemy hazard hit event
         object *enemy_obj = game_player_get_har(game_state_get_player(o_har->gs, !h->player_id));
@@ -2157,7 +2156,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // Health, endurance
     // HP is
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
-    local->health_max = local->health = (af_data->health * (pilot->endurance + 25)) * 1.1;
+    local->health_max = local->health = (af_data->health * (pilot->endurance + 25) / 35) * 1.1;
     //DEBUG("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance, af_data->health);
     // The stun cap is calculated as follows
     // HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
@@ -2275,7 +2274,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
                         if (move->ani.extra_string_count > 0) {
                             str_free(&move->ani.animation_string);
-                            str_from(&move->ani.animation_string, vector_get(&move->ani.extra_strings, pilot->arm_speed));
+                            // sometimes there's not enough extra strings, so take the last available
+                            str_from(&move->ani.animation_string, vector_get(&move->ani.extra_strings, min2(pilot->arm_speed, move->ani.extra_string_count - 1)));
                         }
                         break;
                     case 2:
@@ -2283,7 +2283,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
                         if (move->ani.extra_string_count > 0) {
                             str_free(&move->ani.animation_string);
-                            str_from(&move->ani.animation_string, vector_get(&move->ani.extra_strings, pilot->leg_speed));
+                            // sometimes there's not enough extra strings, so take the last available
+                            str_from(&move->ani.animation_string, vector_get(&move->ani.extra_strings, min2(pilot->leg_speed, move->ani.extra_string_count - 1)));
                         }
                         break;
                     case 3:
@@ -2300,7 +2301,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         break;
                     case 5:
                         // check if you have the enhancement(s) (and apply leg and arm power for damage)
-                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * (leg_power + leg_power);
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power * leg_power;
                         // TODO if you have 1 enhancement choose extra string 2
                         // if you have 2 enhancements choose extra string 3
                         break;

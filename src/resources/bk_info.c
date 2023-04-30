@@ -8,7 +8,7 @@ void bk_info_create(bk_info *info, void *src, int id) {
     info->chain_no_hit = sdinfo->chain_no_hit;
     info->load_on_start = sdinfo->load_on_start;
     info->probability = sdinfo->probability;
-    info->hazard_damage = sdinfo->hazard_damage / 2;
+    info->hazard_damage = sdinfo->hazard_damage;
     str_from_c(&info->footer_string, sdinfo->footer_string);
 }
 
