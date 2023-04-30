@@ -4,6 +4,7 @@
 #include "utils/hashmap.h"
 #include "utils/log.h"
 #include "utils/vector.h"
+#include "video/opengl/buffers.h"
 #include "video/opengl/texture_atlas.h"
 
 // WIP
@@ -23,23 +24,8 @@ typedef struct texture_atlas {
     uint16_t h;
 } texture_atlas;
 
-static GLuint create_atlas_texture(uint16_t width, uint16_t height) {
-    GLuint texture_id = 0;
-    glGenTextures(1, &texture_id);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, width, height, 0, GL_RG, GL_UNSIGNED_BYTE, NULL);
-    return texture_id;
-}
-
-static void update_texture(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *bytes) {
-    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RG, GL_UNSIGNED_BYTE, bytes);
+int static inline zone_perimeter(zone *zone) {
+    return zone->w * 2 + zone->h * 2;
 }
 
 texture_atlas *atlas_create(uint16_t width, uint16_t height) {
@@ -48,7 +34,7 @@ texture_atlas *atlas_create(uint16_t width, uint16_t height) {
     vector_create(&atlas->free_space, sizeof(zone));
     atlas->w = width;
     atlas->h = height;
-    atlas->texture_id = create_atlas_texture(width, height);
+    atlas->texture_id = texture_create(width, height, GL_RG8, GL_RG);
     zone item = {0, 0, width, height};
     vector_append(&atlas->free_space, &item);
     DEBUG("Texture atlas %dx%d created", width, height);
@@ -59,7 +45,7 @@ void atlas_free(texture_atlas **atlas) {
     texture_atlas *obj = *atlas;
     hashmap_free(&obj->items);
     vector_free(&obj->free_space);
-    glDeleteTextures(1, &obj->texture_id);
+    texture_free(obj->texture_id);
     omf_free(obj);
     *atlas = NULL;
     DEBUG("Texture atlas freed");
@@ -73,13 +59,13 @@ static bool find_free_space(const texture_atlas *atlas, uint16_t w, uint16_t h, 
     zone *best_item = NULL, *item;
     int seek_limit = 10;
     int best_index = -1, index;
-    int best_perimeter = 4 * 4096, perimeter;
+    int best_perimeter = 4 * 4096 + 1, perimeter;
     for(int i = 0; i < vec_size; i++) {
         index = vec_size - i - 1;
         item = vector_get(&atlas->free_space, index);
         if(item->w >= w && item->h >= h) {
-            perimeter = 2 * item->w + 2 * item->h;
-            if(perimeter <= best_perimeter) {
+            perimeter = zone_perimeter(item);
+            if(perimeter < best_perimeter) {
                 best_index = index;
                 best_perimeter = perimeter;
                 best_item = item;
@@ -165,13 +151,13 @@ bool atlas_insert(texture_atlas *atlas, const char *bytes, uint16_t w, uint16_t 
     }
 
     // Split found, add the area to the atlas.
-    update_texture(free.x, free.y, w, h, bytes);
+    texture_update(free.x, free.y, w, h, bytes);
     *nx = free.x;
     *ny = free.y;
     return true;
 }
 
-static void convert_image(const surface *src, char *dst) {
+static void convert_surface(const surface *src, char *dst) {
     int size = src->w * src->h;
     int w = 0;
     for(int i = 0; i < size; i++) {
@@ -197,7 +183,7 @@ bool atlas_get(texture_atlas *atlas, const surface *surface, uint16_t *x, uint16
     // If item is NOT in the texture atlas, add it now.
     uint16_t nx, ny;
     char tmp[surface->w * surface->h * 2];
-    convert_image(surface, tmp);
+    convert_surface(surface, tmp);
     if(atlas_insert(atlas, tmp, surface->w, surface->h, &nx, &ny)) {
         *x = nx;
         *y = ny;
