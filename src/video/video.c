@@ -210,11 +210,19 @@ void video_render_bg_separately(bool separate) {
 }
 
 void video_render_background(surface *sur) {
+    uint16_t tx, ty, tw, th;
+    if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
+        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th);
+    }
 }
 
 static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, SDL_BlendMode blend_mode,
                                int pal_offset, SDL_RendererFlip flip_mode, uint8_t opacity, color color_mod) {
-    object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h);
+
+    uint16_t tx, ty, tw, th;
+    if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
+        object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th);
+    }
 }
 
 void video_render_sprite_tint(surface *sur, int sx, int sy, color c, int pal_offset) {

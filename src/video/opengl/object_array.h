@@ -9,6 +9,6 @@ void object_array_free(object_array **array);
 void object_array_prepare(object_array *array);
 void object_array_finish(object_array *array);
 void object_array_draw(const object_array *array);
-void object_array_add(object_array *array, int x, int y, int w, int h);
+void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th);
 
 #endif // OBJECT_ARRAY_H
