@@ -1722,7 +1722,6 @@ int har_act(object *obj, int act_type) {
 
     int oldstate = h->state;
 
-
     af_move *move = match_move(obj, h->inputs);
 
     if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
