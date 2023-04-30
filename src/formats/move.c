@@ -51,8 +51,8 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     dst->unknown_11 = src->unknown_11;
     dst->next_anim_id = src->next_anim_id;
     dst->category = src->category;
-    dst->unknown_14 = src->unknown_14;
-    dst->scrap_amount = src->scrap_amount;
+    dst->block_damage = src->block_damage;
+    dst->block_stun = src->block_stun;
     dst->successor_id = src->successor_id;
     dst->damage_amount = src->damage_amount;
     dst->collision_opts = src->collision_opts;
@@ -101,8 +101,8 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     move->unknown_11 = sd_read_ubyte(r);
     move->next_anim_id = sd_read_ubyte(r);
     move->category = sd_read_ubyte(r);
-    move->unknown_14 = sd_read_ubyte(r);
-    move->scrap_amount = sd_read_ubyte(r);
+    move->block_damage = sd_read_ubyte(r);
+    move->block_stun = sd_read_ubyte(r);
     move->successor_id = sd_read_ubyte(r);
     move->damage_amount = sd_read_ubyte(r);
     move->collision_opts = sd_read_ubyte(r);
@@ -158,8 +158,8 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     sd_write_ubyte(w, move->unknown_11);
     sd_write_ubyte(w, move->next_anim_id);
     sd_write_ubyte(w, move->category);
-    sd_write_ubyte(w, move->unknown_14);
-    sd_write_ubyte(w, move->scrap_amount);
+    sd_write_ubyte(w, move->block_damage);
+    sd_write_ubyte(w, move->block_stun);
     sd_write_ubyte(w, move->successor_id);
     sd_write_ubyte(w, move->damage_amount);
     sd_write_ubyte(w, move->collision_opts);

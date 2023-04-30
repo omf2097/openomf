@@ -12,7 +12,8 @@ void af_move_create(af_move *move, void *src, int id) {
     move->damage = sdmv->damage_amount;
     move->stun = 0.0f;
     move->points = sdmv->points * 400;
-    move->scrap_amount = sdmv->scrap_amount;
+    move->block_damage = sdmv->block_damage;
+    move->block_stun = sdmv->block_stun;
     move->pos_constraints = sdmv->pos_constraint;
     move->collision_opts = sdmv->collision_opts;
     move->extra_string_selector = sdmv->extra_string_selector;

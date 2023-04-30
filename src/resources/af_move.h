@@ -12,7 +12,8 @@ typedef struct af_move_t {
     uint8_t successor_id;
     uint8_t category;
     uint16_t points;
-    uint8_t scrap_amount;
+    uint8_t block_damage;
+    uint8_t block_stun;
     uint8_t collision_opts;
     uint8_t extra_string_selector;
     float damage;

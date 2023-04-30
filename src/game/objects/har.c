@@ -1052,7 +1052,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         }
         har_take_damage(obj_b, &move->footer_string, move->damage, move->stun);
         if(hit_coord.x != 0 || hit_coord.y != 0) {
-            har_spawn_scrap(obj_b, hit_coord, move->scrap_amount);
+            har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
 
         DEBUG("HAR %s to HAR %s collision at %d,%d!", har_get_name(a->id), har_get_name(b->id), hit_coord.x,
@@ -1133,7 +1133,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         har_event_take_hit(h, move, true);
         har_event_land_hit(other, move, true);
 
-        har_spawn_scrap(o_har, hit_coord, move->scrap_amount);
+        har_spawn_scrap(o_har, hit_coord, move->block_stun);
         h->damage_received = 1;
 
         vec2f vel = object_get_vel(o_har);
