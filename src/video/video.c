@@ -10,7 +10,6 @@
 #include "video/opengl/shaders.h"
 #include "video/opengl/texture_atlas.h"
 #include "video/sdl_window.h"
-#include "video/tcache.h"
 #include "video/video.h"
 
 typedef struct video_state {

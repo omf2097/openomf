@@ -28,7 +28,6 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "video/tcache.h"
 #include "video/video.h"
 #include <SDL.h>
 #include <math.h>
