@@ -1,8 +1,23 @@
 #include "video/surface.h"
 #include "utils/allocator.h"
 #include <stdlib.h>
-#include <string.h>
 #include <utils/log.h>
+
+uint32_t static fnv_32a_buf(const void *buf, unsigned int len) {
+    unsigned char *bp = (unsigned char *)buf;
+    unsigned char *be = bp + len;
+    uint32_t hash = ((uint32_t)2166136261);
+    while(bp < be) {
+        hash ^= (uint32_t)*bp++;
+        hash *= ((uint32_t)0x01000193);
+    }
+    return hash;
+}
+
+static inline void create_hash(surface *sur) {
+    int bytes = (sur->type == SURFACE_TYPE_RGBA) ? 4 : 1;
+    sur->hash = fnv_32a_buf(sur->data, sur->w * sur->h * bytes);
+}
 
 void surface_create(surface *sur, int type, int w, int h) {
     if(type == SURFACE_TYPE_RGBA) {
@@ -12,6 +27,7 @@ void surface_create(surface *sur, int type, int w, int h) {
         sur->data = omf_calloc(1, w * h);
         sur->stencil = omf_calloc(1, w * h);
     }
+    sur->hash = 0;
     sur->w = w;
     sur->h = h;
     sur->type = type;
@@ -29,6 +45,7 @@ void surface_create_from_data(surface *sur, int type, int w, int h, const char *
     if(type == SURFACE_TYPE_PALETTE) {
         memset(sur->stencil, 1, w * h);
     }
+    create_hash(sur);
 }
 
 void surface_create_from_image(surface *sur, image *img) {
@@ -60,6 +77,7 @@ void surface_clear(surface *sur) {
     } else {
         memset(sur->data, 0, sur->w * sur->h);
     }
+    create_hash(sur);
 }
 
 // Fills the whole surface with color
@@ -76,6 +94,8 @@ void surface_fill(surface *sur, color c) {
         sur->data[i * 4 + 2] = c.b;
         sur->data[i * 4 + 3] = c.a;
     }
+
+    create_hash(sur);
 }
 
 void surface_copy_ex(surface *dst, surface *src) {
@@ -86,6 +106,7 @@ void surface_copy_ex(surface *dst, surface *src) {
     memcpy(dst->data, src->data, size);
     if(src->stencil != NULL)
         memcpy(dst->stencil, src->stencil, src->w * src->h);
+    create_hash(dst);
 }
 
 // Copies a surface to a new surface
@@ -101,6 +122,7 @@ void surface_copy(surface *dst, surface *src) {
     } else {
         dst->stencil = NULL;
     }
+    create_hash(dst);
 }
 
 // Copies a an area of old surface to an entirely new surface
@@ -133,6 +155,7 @@ void surface_sub(surface *dst, surface *src, int dst_x, int dst_y, int src_x, in
             }
         }
     }
+    create_hash(dst);
 }
 
 void surface_additive_blit(surface *dst, surface *src, int dst_x, int dst_y, palette *remap_pal,
@@ -167,6 +190,7 @@ void surface_additive_blit(surface *dst, surface *src, int dst_x, int dst_y, pal
             }
         }
     }
+    create_hash(dst);
 }
 
 void surface_rgba_blit(surface *dst, const surface *src, int dst_x, int dst_y) {
@@ -193,6 +217,7 @@ void surface_rgba_blit(surface *dst, const surface *src, int dst_x, int dst_y) {
             dst->data[dst_pos + 3] = src->data[src_pos + 3];
         }
     }
+    create_hash(dst);
 }
 
 void surface_alpha_blit(surface *dst, surface *src, int dst_x, int dst_y, SDL_RendererFlip flip) {
@@ -221,6 +246,7 @@ void surface_alpha_blit(surface *dst, surface *src, int dst_x, int dst_y, SDL_Re
             }
         }
     }
+    create_hash(dst);
 }
 
 // Converts an existing surface to RGBA
@@ -238,6 +264,7 @@ void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset) 
     omf_free(sur->stencil);
     sur->data = pixels;
     sur->type = SURFACE_TYPE_RGBA;
+    create_hash(sur);
 }
 
 // Creates a new RGBA surface
@@ -268,18 +295,5 @@ void surface_to_rgba(surface *sur, char *dst, screen_palette *pal, char *remap_t
             *(dst + n + 3) = (sur->stencil[i] == 1) ? 0xFF : 0;
         }
     }
-}
-
-// Copies surface to an existing texture.
-// Note, texture has to be streaming type
-int surface_to_texture(surface *src, SDL_Texture *tex, screen_palette *pal, char *remap_table, uint8_t pal_offset) {
-    void *pixels;
-    int pitch;
-    if(SDL_LockTexture(tex, NULL, &pixels, &pitch) == 0) {
-        surface_to_rgba(src, pixels, pal, remap_table, pal_offset);
-        SDL_UnlockTexture(tex);
-        return 0;
-    }
-    PERROR("Failed to lock texture (ptr: %d) for writing: %s", tex, SDL_GetError());
-    return 1;
+    create_hash(sur);
 }
