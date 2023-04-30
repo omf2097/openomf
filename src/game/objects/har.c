@@ -1697,7 +1697,11 @@ int maybe_har_change_state(int oldstate, int direction, int act_type) {
 
 int har_act(object *obj, int act_type) {
     har *h = object_get_userdata(obj);
+
     int direction = object_get_direction(obj);
+    // always queue input, I guess
+    add_input(h->inputs, act_type, direction);
+
     if(!(h->state == STATE_STANDING || har_is_walking(h) || har_is_crouching(h) || h->state == STATE_JUMPING ||
          h->state == STATE_VICTORY || h->state == STATE_SCRAP) ||
        object_get_halt(obj)) {
@@ -1718,7 +1722,6 @@ int har_act(object *obj, int act_type) {
 
     int oldstate = h->state;
 
-    add_input(h->inputs, act_type, direction);
 
     af_move *move = match_move(obj, h->inputs);
 
