@@ -42,8 +42,6 @@ object_array *object_array_create() {
 
 void object_array_free(object_array **array) {
     object_array *obj = *array;
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     vao_free(obj->vao_id);
     for(int i = 0; i < BUFFER_COUNT; i++)
         vbo_free(obj->vbo_ids[1]);
@@ -57,13 +55,12 @@ void object_array_prepare(object_array *array) {
         return;
     }
     array->vbo_flip = (array->vbo_flip + 1) % BUFFER_COUNT;
-    glBindBuffer(GL_ARRAY_BUFFER, array->vbo_ids[array->vbo_flip]);
-    array->mapping = glMapBufferRange(GL_ARRAY_BUFFER, 0, VBO_SIZE, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    array->mapping = vbo_map(array->vbo_ids[array->vbo_flip], VBO_SIZE);
     array->item_count = 0;
 }
 
 void object_array_finish(object_array *array) {
-    glUnmapBuffer(GL_ARRAY_BUFFER);
+    vbo_unmap(array->vbo_ids[array->vbo_flip]);
     array->mapping = NULL;
 }
 
