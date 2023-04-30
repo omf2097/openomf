@@ -33,8 +33,10 @@ static GLuint create_vao() {
     GLuint vao_id;
     glGenVertexArrays(1, &vao_id);
     glBindVertexArray(vao_id);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
     return vao_id;
 }
 
@@ -87,17 +89,23 @@ void object_array_draw(const object_array *array) {
     ptr[offset + 2] = tx;                                                                                              \
     ptr[offset + 3] = ty;
 
-void object_array_add(object_array *array, int x, int y, int w, int h) {
+void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th) {
     if(array->item_count >= MAX_FANS) {
         PERROR("Too many objects!");
         return;
     }
+    float dx = 1.0f / 4096.0f;
+    float dy = 1.0f / 4096.0f;
+    float tx0 = tx * dx;
+    float ty0 = ty * dy;
+    float tx1 = (tx + tw) * dx;
+    float ty1 = (ty + th) * dy;
 
     GLfloat *coords = array->mapping + array->item_count * 16;
-    COORDS(coords, 0, x + w, y + h, 1.0f, 1.0f);
-    COORDS(coords, 4, x, y + h, -1.0f, 1.0f);
-    COORDS(coords, 8, x, y, -1.0f, -1.0f);
-    COORDS(coords, 12, x + w, y, 1.0f, -1.0f);
+    COORDS(coords, 0, x + w, y + h, tx1, ty1);
+    COORDS(coords, 4, x, y + h, tx0, ty1);
+    COORDS(coords, 8, x, y, tx0, ty0);
+    COORDS(coords, 12, x + w, y, tx1, ty0);
 
     array->fans_starts[array->item_count] = array->item_count * 4;
     array->fans_sizes[array->item_count] = 4;
