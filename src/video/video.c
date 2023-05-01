@@ -200,11 +200,6 @@ palette *video_get_base_palette(void) {
     return g_video_state.base_palette;
 }
 
-void video_copy_pal_range(const palette *src, int src_start, int dst_start, int amount) {
-    memcpy(g_video_state.screen_palette->data + dst_start * 3, src->data + src_start * 3, amount * 3);
-    g_video_state.screen_palette->version++;
-}
-
 void video_copy_base_pal_range(const palette *src, int src_start, int dst_start, int amount) {
     memcpy(g_video_state.base_palette->data + dst_start, src->data + src_start, amount * 3);
     video_force_pal_refresh();
