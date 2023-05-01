@@ -287,7 +287,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
         h->state = STATE_JUMPING;
     }
     object_set_repeat(obj, repeat);
-    object_set_stride(obj, h->stride);
+    object_set_stride(obj, 1);
     object_dynamic_tick(obj);
     // update this so mx/my have correct origins
     obj->start = obj->pos;
@@ -486,6 +486,7 @@ void har_move(object *obj) {
             /*} else {*/
             h->state = STATE_STANDING;
             har_set_ani(obj, ANIM_IDLE, 1);
+            object_set_stride(obj, h->stride);
             har_action_hook(obj, ACT_STOP);
             har_action_hook(obj, ACT_FLUSH);
             har_event_land(h);
@@ -628,7 +629,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             if(object_is_airborne(obj)) {
                 // airborne defeat
                 obj->vel.y = -7;
-                object_set_stride(obj, h->stride);
+                object_set_stride(obj, 1);
                 h->state = STATE_FALLEN;
             }
         } else if(object_is_airborne(obj)) {
@@ -647,7 +648,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
 
             obj->vel.y = -7 * object_get_direction(obj);
             h->state = STATE_FALLEN;
-            object_set_stride(obj, h->stride);
+            object_set_stride(obj, 1);
         } else {
             object_set_custom_string(obj, str_c(string));
         }
@@ -1908,6 +1909,7 @@ int har_act(object *obj, int act_type) {
                 break;
             case STATE_STANDING:
                 har_set_ani(obj, ANIM_IDLE, 1);
+                object_set_stride(obj, h->stride);
                 object_set_vel(obj, vec2f_create(0, 0));
                 obj->slide_state.vel.x = 0;
                 break;
@@ -1915,12 +1917,14 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_WALKING, 1);
                 vx = (h->af_data->forward_speed * direction);
                 object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
+                object_set_stride(obj, h->stride);
                 har_event_walk(h, 1);
                 break;
             case STATE_WALKFROM:
                 har_set_ani(obj, ANIM_WALKING, 1);
                 vx = (h->af_data->reverse_speed * direction * -1);
                 object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
+                object_set_stride(obj, h->stride);
                 har_event_walk(h, -1);
                 break;
             case STATE_JUMPING:
@@ -2202,8 +2206,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     local->stun_timer = 0;
 
-    object_set_stride(obj, local->stride);
-
     // Set palette offset 0 for player1, 48 for player2
     object_set_pal_offset(obj, player_id * 48);
 
@@ -2221,6 +2223,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     // Set running animation
     har_set_ani(obj, ANIM_IDLE, 1);
+    object_set_stride(obj, local->stride);
 
     // fill the input buffer with 'pauses'
     memset(local->inputs, '5', 10);
@@ -2330,7 +2333,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 void har_reset(object *obj) {
     har *h = object_get_userdata(obj);
     object_set_gravity(obj, h->af_data->fall_speed * h->fall_boost);
-    object_set_stride(obj, h->stride);
     h->close = 0;
     h->hard_close = 0;
     h->state = STATE_STANDING;
@@ -2347,4 +2349,5 @@ void har_reset(object *obj) {
     h->enqueued = 0;
 
     har_set_ani(obj, ANIM_IDLE, 1);
+    object_set_stride(obj, h->stride);
 }
