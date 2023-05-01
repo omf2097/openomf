@@ -12,14 +12,12 @@
 
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
 #include "utils/log.h"
 
 // Files
 static const char *logfile_name = "openomf.log";
 static const char *configfile_name = "openomf.conf";
 static const char *scorefile_name = "SCORES.DAT";
-static const char *savegamedir_name = "save/";
 static char errormessage[128];
 
 // Lists
@@ -75,7 +73,11 @@ int pm_init() {
     local_path_build(LOG_PATH, local_base_dir, logfile_name);
     local_path_build(CONFIG_PATH, local_base_dir, configfile_name);
     local_path_build(SCORE_PATH, local_base_dir, scorefile_name);
-    local_path_build(SAVE_PATH, local_base_dir, savegamedir_name);
+    if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+        local_path_build(SAVE_PATH, local_base_dir, "save\\");
+    } else {
+        local_path_build(SAVE_PATH, local_base_dir, "save/");
+    }
 
     // Set default base dirs for resources and plugins
     int m_ok = 0;
