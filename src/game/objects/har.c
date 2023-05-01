@@ -287,7 +287,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
         h->state = STATE_JUMPING;
     }
     object_set_repeat(obj, repeat);
-    object_set_stride(obj, 1);
+    object_set_stride(obj, h->stride);
     object_dynamic_tick(obj);
     // update this so mx/my have correct origins
     obj->start = obj->pos;
@@ -628,7 +628,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             if(object_is_airborne(obj)) {
                 // airborne defeat
                 obj->vel.y = -7;
-                object_set_stride(obj, 1);
+                object_set_stride(obj, h->stride);
                 h->state = STATE_FALLEN;
             }
         } else if(object_is_airborne(obj)) {
@@ -647,7 +647,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
 
             obj->vel.y = -7 * object_get_direction(obj);
             h->state = STATE_FALLEN;
-            object_set_stride(obj, 1);
+            object_set_stride(obj, h->stride);
         } else {
             object_set_custom_string(obj, str_c(string));
         }
@@ -2168,6 +2168,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
           af_data->endurance);
     local->jump_boost = 0.8f + 0.4f * ((float)local->gp->pilot->agility / 20.0f);
     local->fall_boost = 0.9f + ((float)local->gp->pilot->agility / 20.0f);
+    // TODO calculate a better value here
+    local->stride = lrint(1 + (local->gp->pilot->agility / 15));
+    DEBUG("setting HAR stride to %d", local->stride);
     local->close = 0;
     local->hard_close = 0;
     local->state = STATE_STANDING;
@@ -2198,6 +2201,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     list_create(&local->har_hooks);
 
     local->stun_timer = 0;
+
+    object_set_stride(obj, local->stride);
 
     // Set palette offset 0 for player1, 48 for player2
     object_set_pal_offset(obj, player_id * 48);
@@ -2325,6 +2330,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 void har_reset(object *obj) {
     har *h = object_get_userdata(obj);
     object_set_gravity(obj, h->af_data->fall_speed * h->fall_boost);
+    object_set_stride(obj, h->stride);
     h->close = 0;
     h->hard_close = 0;
     h->state = STATE_STANDING;

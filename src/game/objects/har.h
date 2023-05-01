@@ -143,6 +143,7 @@ typedef struct har_t {
 
     int in_stasis_ticks; // Handle stasis activator
 
+    uint8_t stride;
     int16_t health_max, health;
     float endurance_max, endurance;
     char inputs[11];
