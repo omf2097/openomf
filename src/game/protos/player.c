@@ -395,8 +395,8 @@ void player_run(object *obj) {
     // Handle vx+/-, vy+/-, x+/-. y+/-
     if(trans_x || trans_y) {
         if(sd_script_isset(frame, "v")) {
-            obj->vel.x = trans_x * (mp & 0x20 ? -1 : 1);
-            obj->vel.y = trans_y;
+            obj->vel.x = (trans_x * (mp & 0x20 ? -1 : 1)) * obj->horizontal_velocity_modifier;
+            obj->vel.y = trans_y * obj->vertical_velocity_modifier;
             // DEBUG("vel x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->vel.x, obj->vel.y);
         } else {
             obj->pos.x += trans_x * (mp & 0x20 ? -1 : 1);

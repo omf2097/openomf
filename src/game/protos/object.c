@@ -28,6 +28,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // remember the place we were spawned, the x= and y= tags are relative to that
     obj->start = vec2i_to_f(pos);
     obj->vel = vel;
+    obj->horizontal_velocity_modifier = obj->vertical_velocity_modifier = 1.0f;
     obj->direction = OBJECT_FACE_RIGHT;
     obj->y_percent = 1.0;
 
