@@ -13,8 +13,6 @@
 #define NATIVE_W 320
 #define NATIVE_H 200
 
-
-
 int video_init(int window_w, int window_h, bool fullscreen, bool vsync);
 int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync);
 void video_reinit_renderer(void);

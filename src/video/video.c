@@ -79,7 +79,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
     GLfloat projection_matrix[16];
-    ortho2d(projection_matrix, 0.0f, 320.0f, 200.0f, 0.0f);
+    ortho2d(projection_matrix, 0.0f, NATIVE_W, NATIVE_H, 0.0f);
     activate_program(g_video_state.shader_prog);
     bind_uniform_4fv(g_video_state.shader_prog, "projection", projection_matrix);
 
