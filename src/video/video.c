@@ -221,16 +221,16 @@ void video_render_bg_separately(bool separate) {
 void video_render_background(surface *sur) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th);
+        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0);
     }
 }
 
 static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, SDL_BlendMode blend_mode,
-                               int pal_offset, SDL_RendererFlip flip_mode, uint8_t opacity, color color_mod) {
+                               int pal_offset, unsigned int flip_mode, uint8_t opacity, color color_mod) {
 
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th);
+        object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode);
     }
 }
 
@@ -275,15 +275,8 @@ void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, u
     dst.x = sx;
     dst.y = sy + (sur->h - dst.h) / 2;
 
-    // Flipping
-    SDL_RendererFlip flip = 0;
-    if(flip_mode & FLIP_HORIZONTAL)
-        flip |= SDL_FLIP_HORIZONTAL;
-    if(flip_mode & FLIP_VERTICAL)
-        flip |= SDL_FLIP_VERTICAL;
-
     // Select SDL blend mode
     SDL_BlendMode blend_mode = (rendering_mode == BLEND_ALPHA) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_ADD;
 
-    render_sprite_fsot(&g_video_state, sur, &dst, blend_mode, pal_offset, flip, opacity, tint);
+    render_sprite_fsot(&g_video_state, sur, &dst, blend_mode, pal_offset, flip_mode, opacity, tint);
 }
