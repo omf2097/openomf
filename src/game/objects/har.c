@@ -486,6 +486,7 @@ void har_move(object *obj) {
             /*} else {*/
             h->state = STATE_STANDING;
             har_set_ani(obj, ANIM_IDLE, 1);
+            object_set_stride(obj, h->stride);
             har_action_hook(obj, ACT_STOP);
             har_action_hook(obj, ACT_FLUSH);
             har_event_land(h);
@@ -1820,6 +1821,8 @@ int har_act(object *obj, int act_type) {
         // If animation is scrap or destruction, then remove our customizations
         // from gravity/fall speed, and just use the HARs native value.
         if(move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
+            obj->horizontal_velocity_modifier = 1.0f;
+            obj->vertical_velocity_modifier = 1.0f;
             object_set_gravity(obj, h->af_data->fall_speed);
             object_set_gravity(enemy_obj, enemy_har->af_data->fall_speed);
         }
@@ -1908,29 +1911,32 @@ int har_act(object *obj, int act_type) {
                 break;
             case STATE_STANDING:
                 har_set_ani(obj, ANIM_IDLE, 1);
+                object_set_stride(obj, h->stride);
                 object_set_vel(obj, vec2f_create(0, 0));
                 obj->slide_state.vel.x = 0;
                 break;
             case STATE_WALKTO:
                 har_set_ani(obj, ANIM_WALKING, 1);
-                vx = (h->af_data->forward_speed * direction);
+                vx = h->fwd_speed * direction;
                 object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
+                object_set_stride(obj, h->stride);
                 har_event_walk(h, 1);
                 break;
             case STATE_WALKFROM:
                 har_set_ani(obj, ANIM_WALKING, 1);
-                vx = (h->af_data->reverse_speed * direction * -1);
+                vx = h->back_speed * direction * -1;
                 object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
+                object_set_stride(obj, h->stride);
                 har_event_walk(h, -1);
                 break;
             case STATE_JUMPING:
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 vx = 0.0f;
-                vy = (float)h->af_data->jump_speed * h->jump_boost;
+                vy = h->jump_speed;
                 int jump_dir = 0;
                 if((act_type == (ACT_UP | ACT_LEFT) && direction == OBJECT_FACE_LEFT) ||
                    (act_type == (ACT_UP | ACT_RIGHT) && direction == OBJECT_FACE_RIGHT)) {
-                    vx = (h->af_data->forward_speed * direction);
+                    vx = (h->fwd_speed * direction);
                     object_set_tick_pos(obj, 110);
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = 1;
@@ -1939,7 +1945,7 @@ int har_act(object *obj, int act_type) {
                     // at -100 frames (seems to be about right)
                     object_set_playback_direction(obj, PLAY_BACKWARDS);
                     object_set_tick_pos(obj, -110);
-                    vx = (h->af_data->reverse_speed * direction * -1);
+                    vx = (h->back_speed * direction * -1);
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = -1;
                 } else if(act_type == ACT_UP) {
@@ -1951,8 +1957,7 @@ int har_act(object *obj, int act_type) {
                 }
                 if(oldstate == STATE_CROUCHING || oldstate == STATE_CROUCHBLOCK) {
                     // jumping frop crouch makes you jump 25% higher
-                    vy = vy * 1.25;
-                    vx = vx * 1.25;
+                    vy = h->superjump_speed;
                 }
                 object_set_vel(obj, vec2f_create(vx, vy));
                 har_event_jump(h, jump_dir);
@@ -2166,8 +2171,29 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->endurance_max = local->endurance = af_data->endurance * 3.6 * (pilot->endurance + 16) / 23;
     DEBUG("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance,
           af_data->endurance);
-    local->jump_boost = 0.8f + 0.4f * ((float)local->gp->pilot->agility / 20.0f);
-    local->fall_boost = 0.9f + ((float)local->gp->pilot->agility / 20.0f);
+    // fwd speed = (Agility + 20) / 30 * fwd speed
+    // back speed = (Agility + 20) / 30 * back speed
+    // up speed = (Agility + 35) / 45 * up speed (edited)
+    // fall speed = (Agility + 20) / 30 * fall speed
+    //
+    // Insanius: there's a value labeled here horizontal_agility_modifier which is  (Agility + 35) / 45 (edited)
+    // Insanius: And vertical_agility_modifier which is (Agility + 20) / 30 (edited)
+    // Insanius: I suspect these labels may not be accurate but we'll see
+    // Insanius: I went ahead and changed the formulas to use division instead of multiplication since it's more precise
+    // for us Insanius: jump speed = speed up * vertical_agility_modifier * 212 / 256 Insanius: superjump speed = speed
+    // up * vertical_agility_modifier * 266 / 256
+    float horizontal_agility_modifier = ((float)local->gp->pilot->agility + 35) / 45;
+    float vertical_agility_modifier = ((float)local->gp->pilot->agility + 20) / 30;
+    obj->horizontal_velocity_modifier = horizontal_agility_modifier;
+    obj->vertical_velocity_modifier = vertical_agility_modifier;
+    local->jump_speed = (((float)local->gp->pilot->agility + 35) / 45) * af_data->jump_speed * 216 / 256;
+    local->superjump_speed = (((float)local->gp->pilot->agility + 35) / 45) * af_data->jump_speed * 266 / 256;
+    local->fall_speed = (((float)local->gp->pilot->agility + 20) / 30) * af_data->fall_speed;
+    local->fwd_speed = (((float)local->gp->pilot->agility + 20) / 30) * af_data->forward_speed;
+    local->back_speed = (((float)local->gp->pilot->agility + 20) / 30) * af_data->reverse_speed;
+    // TODO calculate a better value here
+    local->stride = lrint(1 + (local->gp->pilot->agility / 20));
+    DEBUG("setting HAR stride to %d", local->stride);
     local->close = 0;
     local->hard_close = 0;
     local->state = STATE_STANDING;
@@ -2203,7 +2229,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_pal_offset(obj, player_id * 48);
 
     // Object related stuff
-    object_set_gravity(obj, local->af_data->fall_speed * local->fall_boost);
+    object_set_gravity(obj, local->fall_speed);
     object_set_layers(obj, LAYER_HAR | (player_id == 0 ? LAYER_HAR1 : LAYER_HAR2));
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
@@ -2216,6 +2242,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     // Set running animation
     har_set_ani(obj, ANIM_IDLE, 1);
+    object_set_stride(obj, local->stride);
 
     // fill the input buffer with 'pauses'
     memset(local->inputs, '5', 10);
@@ -2324,7 +2351,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 void har_reset(object *obj) {
     har *h = object_get_userdata(obj);
-    object_set_gravity(obj, h->af_data->fall_speed * h->fall_boost);
+    object_set_gravity(obj, h->fall_speed);
     h->close = 0;
     h->hard_close = 0;
     h->state = STATE_STANDING;
@@ -2341,4 +2368,5 @@ void har_reset(object *obj) {
     h->enqueued = 0;
 
     har_set_ani(obj, ANIM_IDLE, 1);
+    object_set_stride(obj, h->stride);
 }
