@@ -5,6 +5,7 @@
 
 #include "formats/palette.h"
 #include "video/color.h"
+#include "video/enums.h"
 #include "video/image.h"
 #include "video/screen_palette.h"
 #include "video/surface.h"
@@ -12,18 +13,7 @@
 #define NATIVE_W 320
 #define NATIVE_H 200
 
-enum VIDEO_BLEND_MODE
-{
-    BLEND_ADDITIVE = 0,
-    BLEND_ALPHA
-};
 
-enum VIDEO_FLIP_MODE
-{
-    FLIP_NONE = 0,
-    FLIP_HORIZONTAL = 0x1,
-    FLIP_VERTICAL = 0x2,
-};
 
 int video_init(int window_w, int window_h, bool fullscreen, bool vsync);
 int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync);

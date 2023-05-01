@@ -3,6 +3,7 @@
 
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/enums.h"
 #include "video/opengl/buffers.h"
 #include "video/opengl/object_array.h"
 
@@ -22,7 +23,7 @@ typedef struct object_array {
     GLsizei fans_sizes[MAX_FANS];
 } object_array;
 
-static void setup_vao_layout(GLuint id) {
+static void setup_vao_layout() {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)0); // NOLINT
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void *)(2 * sizeof(GLfloat))); // NOLINT
@@ -36,7 +37,7 @@ object_array *object_array_create() {
     for(int i = 0; i < BUFFER_COUNT; i++)
         array->vbo_ids[i] = vbo_create(VBO_SIZE);
     array->vao_id = vao_create();
-    setup_vao_layout(array->vao_id);
+    setup_vao_layout();
     return array;
 }
 
@@ -74,19 +75,33 @@ void object_array_draw(const object_array *array) {
     ptr[offset + 2] = tx;                                                                                              \
     ptr[offset + 3] = ty;
 
-void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th) {
+void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th, int flags) {
     if(array->item_count >= MAX_FANS) {
         PERROR("Too many objects!");
         return;
     }
     float dx = 1.0f / 4096.0f;
     float dy = 1.0f / 4096.0f;
-    float tx0 = tx * dx;
-    float ty0 = ty * dy;
-    float tx1 = (tx + tw) * dx;
-    float ty1 = (ty + th) * dy;
 
-    GLfloat *coords = array->mapping + array->item_count * 16;
+    float tx0, tx1;
+    if(flags & FLIP_HORIZONTAL) {
+        tx0 = (tx + tw) * dx;
+        tx1 = tx * dx;
+    } else {
+        tx0 = tx * dx;
+        tx1 = (tx + tw) * dx;
+    }
+
+    float ty0, ty1;
+    if(flags & FLIP_VERTICAL) {
+        ty0 = (ty + th) * dy;
+        ty1 = ty * dy;
+    } else {
+        ty0 = ty * dy;
+        ty1 = (ty + th) * dy;
+    }
+
+    GLfloat *coords = array->mapping + array->item_count * OBJ_SIZE;
     COORDS(coords, 0, x + w, y + h, tx1, ty1);
     COORDS(coords, 4, x, y + h, tx0, ty1);
     COORDS(coords, 8, x, y, tx0, ty0);
