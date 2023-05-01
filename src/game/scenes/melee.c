@@ -278,7 +278,7 @@ void handle_action(scene *scene, int player, int action) {
                         sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
                         sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
 
-                        palette_load_player_colors(base_pal, &player1->pilot->palette, 1);
+                        palette_load_player_colors(base_pal, &player2->pilot->palette, 1);
                     }
                     video_force_pal_refresh();
                 } else {

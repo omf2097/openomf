@@ -141,8 +141,10 @@ void mechlab_free(scene *scene) {
     component_free(local->hint);
     guiframe_free(local->frame);
     guiframe_free(local->dashboard);
-    object_free(local->mech);
-    omf_free(local->mech);
+    if(local->mech) {
+        object_free(local->mech);
+        omf_free(local->mech);
+    }
     omf_free(local);
     scene_set_userdata(scene, local);
 }
