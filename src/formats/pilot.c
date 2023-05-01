@@ -16,6 +16,8 @@ int sd_pilot_create(sd_pilot *pilot) {
 }
 
 void sd_pilot_free(sd_pilot *pilot) {
+    if(pilot == NULL)
+        return;
     for(int m = 0; m < 10; m++) {
         omf_free(pilot->quotes[m]);
     }
