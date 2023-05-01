@@ -1,0 +1,17 @@
+#ifndef VIDEO_ENUMS_H
+#define VIDEO_ENUMS_H
+
+enum VIDEO_BLEND_MODE
+{
+    BLEND_ADDITIVE = 0,
+    BLEND_ALPHA
+};
+
+enum VIDEO_FLIP_MODE
+{
+    FLIP_NONE = 0,
+    FLIP_HORIZONTAL = 0x1,
+    FLIP_VERTICAL = 0x2,
+};
+
+#endif // VIDEO_ENUMS_H
