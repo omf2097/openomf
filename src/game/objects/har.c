@@ -2321,3 +2321,24 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // All done
     return 0;
 }
+
+void har_reset(object *obj) {
+    har *h = object_get_userdata(obj);
+    object_set_gravity(obj, h->af_data->fall_speed * h->fall_boost);
+    h->close = 0;
+    h->hard_close = 0;
+    h->state = STATE_STANDING;
+    h->executing_move = 0;
+    h->air_attacked = 0;
+    h->is_wallhugging = 0;
+    h->is_grabbed = 0;
+    h->inputs[10] = '\0';
+    h->health = h->health_max;
+    h->endurance = h->endurance_max;
+
+    h->in_stasis_ticks = 0;
+
+    h->enqueued = 0;
+
+    har_set_ani(obj, ANIM_IDLE, 1);
+}

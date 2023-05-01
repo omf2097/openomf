@@ -289,15 +289,9 @@ void arena_reset(scene *sc) {
         // Declare some vars
         game_player *player = game_state_get_player(sc->gs, i);
         object *har_obj = game_player_get_har(player);
-        har *h = object_get_userdata(har_obj);
-        h->state = STATE_STANDING;
-        har_set_ani(har_obj, ANIM_IDLE, 1);
-        h->health = h->health_max;
-        h->endurance = h->endurance_max;
-        h->air_attacked = 0;
+        har_reset(har_obj);
         object_set_pos(har_obj, pos[i]);
         object_set_vel(har_obj, vec2f_create(0, 0));
-        object_set_gravity(har_obj, 1);
         object_set_direction(har_obj, dir[i]);
         chr_score_clear_done(&player->score);
     }
