@@ -220,7 +220,7 @@ void video_render_background(surface *sur) {
     }
 }
 
-static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, SDL_BlendMode blend_mode,
+static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, VIDEO_BLEND_MODE blend_mode,
                                int pal_offset, unsigned int flip_mode, uint8_t opacity, color color_mod) {
 
     uint16_t tx, ty, tw, th;
@@ -235,15 +235,14 @@ void video_render_sprite_tint(surface *sur, int sx, int sy, color c, int pal_off
 }
 
 // Wrapper
-void video_render_sprite(surface *sur, int sx, int sy, unsigned int rendering_mode, int pal_offset) {
-
-    video_render_sprite_flip_scale_opacity(sur, sx, sy, rendering_mode, pal_offset, FLIP_NONE, 1.0f, 1.0f, 255);
+void video_render_sprite(surface *sur, int sx, int sy, VIDEO_BLEND_MODE blend_mode, int pal_offset) {
+    video_render_sprite_flip_scale_opacity(sur, sx, sy, blend_mode, pal_offset, FLIP_NONE, 1.0f, 1.0f, 255);
 }
 
-void video_render_sprite_flip_scale_opacity(surface *sur, int sx, int sy, unsigned int rendering_mode, int pal_offset,
+void video_render_sprite_flip_scale_opacity(surface *sur, int sx, int sy, VIDEO_BLEND_MODE blend_mode, int pal_offset,
                                             unsigned int flip_mode, float x_percent, float y_percent, uint8_t opacity) {
 
-    video_render_sprite_flip_scale_opacity_tint(sur, sx, sy, rendering_mode, pal_offset, flip_mode, x_percent,
+    video_render_sprite_flip_scale_opacity_tint(sur, sx, sy, blend_mode, pal_offset, flip_mode, x_percent,
                                                 y_percent, opacity, color_create(0xFF, 0xFF, 0xFF, 0xFF));
 }
 
@@ -255,11 +254,11 @@ void video_render_sprite_size(surface *sur, int sx, int sy, int sw, int sh) {
     dst.y = sy;
 
     // Render
-    render_sprite_fsot(&g_video_state, sur, &dst, SDL_BLENDMODE_BLEND, 0, 0, 0xFF,
+    render_sprite_fsot(&g_video_state, sur, &dst, BLEND_ALPHA, 0, 0, 0xFF,
                        color_create(0xFF, 0xFF, 0xFF, 0xFF)); // tint
 }
 
-void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, unsigned int rendering_mode,
+void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, VIDEO_BLEND_MODE blend_mode,
                                                  int pal_offset, unsigned int flip_mode, float x_percent,
                                                  float y_percent, uint8_t opacity, color tint) {
 
@@ -269,9 +268,6 @@ void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, u
     dst.h = sur->h * y_percent;
     dst.x = sx;
     dst.y = sy + (sur->h - dst.h) / 2;
-
-    // Select SDL blend mode
-    SDL_BlendMode blend_mode = (rendering_mode == BLEND_ALPHA) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_ADD;
 
     render_sprite_fsot(&g_video_state, sur, &dst, blend_mode, pal_offset, flip_mode, opacity, tint);
 }
