@@ -59,6 +59,9 @@ typedef struct arena_local_t {
     chr_score player1_score;
     chr_score player2_score;
 
+    object *player1_portrait;
+    object *player2_portrait;
+
     int round;
     int rounds;
     int over;
@@ -1058,6 +1061,12 @@ void arena_render_overlay(scene *scene) {
     snprintf(buf, 40, "%u", rand_get_seed());
     font_render(&font_small, buf, 130, 8, TEXT_COLOR);
 #endif
+
+    if(local->tournament) {
+        object_render(local->player1_portrait);
+        object_render(local->player2_portrait);
+    }
+
     for(int i = 0; i < 2; i++) {
         player[i] = game_state_get_player(scene->gs, i);
         obj[i] = game_player_get_har(player[i]);
@@ -1268,6 +1277,26 @@ int arena_create(scene *scene) {
 
         if(local->tournament) {
             // render pilot portraits
+            object *portrait = omf_calloc(1, sizeof(object));
+            if(i == 0) {
+                object_create(portrait, scene->gs, vec2i_create(105, 0), vec2f_create(0, 0));
+                portrait->cur_sprite = omf_calloc(1, sizeof(sprite));
+                portrait->x_percent = 0.70f;
+                portrait->y_percent = 0.70f;
+                object_set_sprite_override(portrait, 1);
+                sprite_create(portrait->cur_sprite, player->pilot->photo, -1);
+                local->player1_portrait = portrait;
+            } else {
+                object_create(portrait, scene->gs, vec2i_create(235, 0), vec2f_create(0, 0));
+                portrait->cur_sprite = omf_calloc(1, sizeof(sprite));
+                portrait->x_percent = 0.70f;
+                portrait->y_percent = 0.70f;
+                object_set_sprite_override(portrait, 1);
+                sprite_create(portrait->cur_sprite, player->pilot->photo, -1);
+                object_set_direction(portrait, OBJECT_FACE_LEFT);
+                local->player2_portrait = portrait;
+            }
+
         } else {
             // Create round tokens
             for(int j = 0; j < 4; j++) {
