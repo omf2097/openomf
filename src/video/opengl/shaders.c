@@ -124,12 +124,20 @@ error_0:
 }
 
 void bind_uniform_4fv(GLuint program_id, const char *name, GLfloat *data) {
-    GLuint ref = glGetUniformLocation(program_id, name);
+    GLint ref = glGetUniformLocation(program_id, name);
+    if(ref == -1) {
+        PERROR("Unable to find uniform; glGetUniformLocation() returned -1");
+        return;
+    }
     glUniformMatrix4fv(ref, 1, GL_FALSE, data);
 }
 
 void bind_uniform_block(GLuint program_id, const char *name, GLuint binding) {
     GLuint ref = glGetUniformBlockIndex(program_id, name);
+    if(ref == GL_INVALID_INDEX) {
+        PERROR("Unable to find ubo; glGetUniformBlockIndex() returned GL_INVALID_INDEX");
+        return;
+    }
     glUniformBlockBinding(program_id, 0, ref);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, binding);
 }
