@@ -31,6 +31,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->horizontal_velocity_modifier = obj->vertical_velocity_modifier = 1.0f;
     obj->direction = OBJECT_FACE_RIGHT;
     obj->y_percent = 1.0;
+    obj->x_percent = 1.0;
 
     // Physics
     obj->layers = OBJECT_DEFAULT_LAYER;
@@ -176,6 +177,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
 
     // Other stuff not included in serialization
     obj->y_percent = 1.0;
+    obj->x_percent = 1.0;
     obj->cur_animation_own = OWNER_EXTERNAL;
     obj->cur_animation = NULL;
     obj->cur_sprite = NULL;
@@ -419,7 +421,7 @@ void object_render(object *obj) {
 
     // Render
     video_render_sprite_flip_scale_opacity_tint(obj->cur_surface, x, y, rstate->blendmode, obj->pal_offset, flipmode,
-                                                obj->y_percent, opacity, tint);
+                                                obj->x_percent, obj->y_percent, opacity, tint);
 }
 
 void object_render_shadow(object *obj) {
@@ -447,7 +449,7 @@ void object_render_shadow(object *obj) {
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
         video_render_sprite_flip_scale_opacity_tint(obj->cur_sprite->data, x + i, y + i, BLEND_ALPHA, obj->pal_offset,
-                                                    flipmode, scale_y, 65, color_create(0, 0, 0, 255));
+                                                    flipmode, 1.0, scale_y, 65, color_create(0, 0, 0, 255));
     }
 }
 
