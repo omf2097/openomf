@@ -43,11 +43,13 @@ object_array *object_array_create() {
 
 void object_array_free(object_array **array) {
     object_array *obj = *array;
-    vao_free(obj->vao_id);
-    for(int i = 0; i < BUFFER_COUNT; i++)
-        vbo_free(obj->vbo_ids[1]);
-    omf_free(obj);
-    *array = NULL;
+    if(obj != NULL) {
+        vao_free(obj->vao_id);
+        for(int i = 0; i < BUFFER_COUNT; i++)
+            vbo_free(obj->vbo_ids[1]);
+        omf_free(obj);
+        *array = NULL;
+    }
 }
 
 void object_array_prepare(object_array *array) {
