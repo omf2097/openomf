@@ -242,8 +242,8 @@ void video_render_sprite(surface *sur, int sx, int sy, VIDEO_BLEND_MODE blend_mo
 void video_render_sprite_flip_scale_opacity(surface *sur, int sx, int sy, VIDEO_BLEND_MODE blend_mode, int pal_offset,
                                             unsigned int flip_mode, float x_percent, float y_percent, uint8_t opacity) {
 
-    video_render_sprite_flip_scale_opacity_tint(sur, sx, sy, blend_mode, pal_offset, flip_mode, x_percent,
-                                                y_percent, opacity, color_create(0xFF, 0xFF, 0xFF, 0xFF));
+    video_render_sprite_flip_scale_opacity_tint(sur, sx, sy, blend_mode, pal_offset, flip_mode, x_percent, y_percent,
+                                                opacity, color_create(0xFF, 0xFF, 0xFF, 0xFF));
 }
 
 void video_render_sprite_size(surface *sur, int sx, int sy, int sw, int sh) {
