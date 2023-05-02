@@ -19,7 +19,7 @@ static void print_log(const char *buffer, long len, const char *header) {
     size_t pos = 0, last = 0;
     PERROR("--- %s ---", header);
     while(str_find_next(&log, '\n', &pos)) {
-        str_from_slice(&sub, &log, last, pos - 1);
+        str_from_slice(&sub, &log, last, pos);
         PERROR("%s", str_c(&sub));
         str_free(&sub);
         last = ++pos;
