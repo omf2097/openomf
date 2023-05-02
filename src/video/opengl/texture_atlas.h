@@ -7,7 +7,7 @@
 
 typedef struct texture_atlas texture_atlas;
 
-texture_atlas *atlas_create(uint16_t width, uint16_t height);
+texture_atlas *atlas_create(GLuint tex_unit, uint16_t width, uint16_t height);
 void atlas_free(texture_atlas **atlas);
 
 bool atlas_insert(texture_atlas *atlas, const char *bytes, uint16_t w, uint16_t h, uint16_t *nx, uint16_t *ny);
