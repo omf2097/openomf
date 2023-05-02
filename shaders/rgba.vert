@@ -1,7 +1,7 @@
 #version 330 core
 
-const vec2 posCoord[4] = { vec2(320.0, 200.0), vec2(0.0, 200.0), vec2(0.0, 0.0), vec2(320.0, 0.0) };
-const vec2 texCoord[4] = { vec2(1.0, 0.0), vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0) };
+const vec2 posCoord[4] = vec2[](vec2(320.0, 200.0), vec2(0.0, 200.0), vec2(0.0, 0.0), vec2(320.0, 0.0));
+const vec2 texCoord[4] = vec2[](vec2(1.0, 0.0), vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));
 
 out vec2 tex_coord;
 uniform mat4 projection;
