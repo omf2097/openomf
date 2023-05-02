@@ -36,15 +36,16 @@ void video_render_sprite(surface *sur, int x, int y, unsigned int render_mode, i
 void video_render_sprite_size(surface *sur, int sx, int sy, int sw, int sh);
 
 void video_render_sprite_flip_scale(surface *sur, int x, int y, unsigned int render_mode, int pal_offset,
-                                    unsigned int flip_mode, float y_percent);
+                                    unsigned int flip_mode, float x_percent, float y_percent);
 
 void video_render_sprite_tint(surface *sur, int x, int y, color c, int pal_offset);
 
 void video_render_sprite_flip_scale_opacity(surface *sur, int x, int y, unsigned int render_mode, int pal_offset,
-                                            unsigned int flip_mode, float y_percent, uint8_t opacity);
+                                            unsigned int flip_mode, float x_percent, float y_percent, uint8_t opacity);
 
 void video_render_sprite_flip_scale_opacity_tint(surface *sur, int x, int y, unsigned int render_mode, int pal_offset,
-                                                 unsigned int flip_mode, float y_percent, uint8_t opacity, color tint);
+                                                 unsigned int flip_mode, float x_percent, float y_percent,
+                                                 uint8_t opacity, color tint);
 
 void video_tick();
 void video_render_background(surface *sur);

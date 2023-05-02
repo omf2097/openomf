@@ -81,6 +81,7 @@ struct object_t {
 
     struct random_t rand_state;
 
+    float x_percent;
     float y_percent;
     float gravity;
 
