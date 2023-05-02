@@ -111,8 +111,8 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
     int i = 0;
     int first_selected = 0;
     while((tmp = iter_next(&it)) != NULL) {
-        // Select first non-disabled component
-        if(!component_is_disabled(*tmp) && !first_selected) {
+        // Select first selectable component
+        if(component_is_selectable(*tmp) && !first_selected) {
             component_select(*tmp, 1);
             component_focus(*tmp, 1);
             first_selected = 1;
@@ -162,7 +162,7 @@ static int find_next_button(component *c, int act) {
     int idx_now = 0;
     while((tmp = iter_next(&it)) != NULL) {
         component *t = *tmp;
-        if(component_is_disabled(t)) {
+        if(!component_is_selectable(t)) {
             idx_now++;
             continue;
         }
