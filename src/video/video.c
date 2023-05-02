@@ -156,7 +156,6 @@ void video_render_finish(void) {
     render_target_activate(g_video_state.target);
     glViewport(0, 0, NATIVE_W, NATIVE_H);
     activate_program(g_video_state.palette_prog_id);
-    glClear(GL_COLOR_BUFFER_BIT);
     object_array_draw(g_video_state.objects);
 
     // Disable render target, and dump its contents as RGBA to the screen.
