@@ -1,9 +1,20 @@
+#include <assert.h>
+
 #include "video/opengl/bindings.h"
 
 static GLuint bound_ubo = 0;
 static GLuint bound_vbo = 0;
 static GLuint bound_vao = 0;
-static GLuint bound_tex = 0;
+static GLuint bound_tex[] = {0, 0};
+static GLuint bound_fbo = 0;
+static GLuint active_tex = -1;
+
+void binding_active_tex(GLuint unit_id) {
+    if(active_tex != unit_id) {
+        glActiveTexture(GL_TEXTURE0 + unit_id);
+        active_tex = unit_id;
+    }
+}
 
 void bindings_bind_vao(GLuint id) {
     if(bound_vao != id) {
@@ -47,16 +58,34 @@ void bindings_unbind_ubo(GLuint id) {
     }
 }
 
-void bindings_bind_tex(GLuint id) {
-    if(bound_tex != id) {
+void bindings_bind_tex(GLuint unit, GLuint id) {
+    assert(unit < 2);
+    binding_active_tex(unit);
+    if(bound_tex[unit] != id) {
         glBindTexture(GL_TEXTURE_2D, id);
-        bound_tex = id;
+        bound_tex[unit] = id;
     }
 }
 
-void bindings_unbind_tex(GLuint id) {
-    if(bound_tex == id) {
+void bindings_unbind_tex(GLuint unit, GLuint id) {
+    assert(unit < 2);
+    binding_active_tex(unit);
+    if(bound_tex[unit] == id) {
         glBindTexture(GL_TEXTURE_2D, 0);
-        bound_tex = 0;
+        bound_tex[unit] = 0;
+    }
+}
+
+void bindings_bind_fbo(GLuint id) {
+    if(bound_fbo != id) {
+        glBindFramebuffer(GL_FRAMEBUFFER, id);
+        bound_fbo = id;
+    }
+}
+
+void bindings_unbind_fbo(GLuint id) {
+    if(bound_fbo == id) {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        bound_fbo = 0;
     }
 }

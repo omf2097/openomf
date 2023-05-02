@@ -1,4 +1,5 @@
 #include "video/opengl/buffers.h"
+#include "utils/log.h"
 #include "video/opengl/bindings.h"
 
 GLuint ubo_create(GLsizeiptr size) {
@@ -19,10 +20,10 @@ void ubo_free(GLuint id) {
     glDeleteBuffers(1, &id);
 }
 
-GLuint texture_create(GLsizei w, GLsizei h, GLint internal_format, GLenum format) {
+GLuint texture_create(GLuint tex_unit, GLsizei w, GLsizei h, GLint internal_format, GLenum format) {
     GLuint id = 0;
     glGenTextures(1, &id);
-    bindings_bind_tex(id);
+    bindings_bind_tex(tex_unit, id);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -34,14 +35,31 @@ GLuint texture_create(GLsizei w, GLsizei h, GLint internal_format, GLenum format
     return id;
 }
 
-void texture_update(GLuint id, int x, int y, int w, int h, const char *bytes) {
-    bindings_bind_tex(id);
+void texture_update(GLuint tex_unit, GLuint id, int x, int y, int w, int h, const char *bytes) {
+    bindings_bind_tex(tex_unit, id);
     glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RG, GL_UNSIGNED_BYTE, bytes);
 }
 
-void texture_free(GLuint id) {
-    bindings_unbind_tex(id);
+void texture_free(GLuint tex_unit, GLuint id) {
+    bindings_unbind_tex(tex_unit, id);
     glDeleteTextures(1, &id);
+}
+
+GLuint fbo_create(GLuint texture_id) {
+    GLuint id;
+    glGenFramebuffers(1, &id);
+    bindings_bind_fbo(id);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id, 0);
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        PERROR("Framebuffer not complete!");
+    }
+    bindings_unbind_fbo(id);
+    return id;
+}
+
+void fbo_free(GLuint id) {
+    bindings_unbind_fbo(id);
+    glDeleteFramebuffers(1, &id);
 }
 
 GLuint vbo_create(GLsizeiptr size) {

@@ -8,6 +8,7 @@
 #include "video/image.h"
 #include "video/opengl/object_array.h"
 #include "video/opengl/pal_buffer.h"
+#include "video/opengl/render_target.h"
 #include "video/opengl/shaders.h"
 #include "video/opengl/texture_atlas.h"
 #include "video/sdl_window.h"
@@ -19,6 +20,13 @@ typedef struct video_state {
     texture_atlas *atlas;
     object_array *objects;
     pal_buffer *pal_buffer;
+    render_target *target;
+
+    GLuint palette_prog_id;
+    GLuint rgba_prog_id;
+
+    int viewport_w;
+    int viewport_h;
 
     int screen_w;
     int screen_h;
@@ -31,13 +39,14 @@ typedef struct video_state {
 
     bool render_bg_separately;
 
-    GLuint shader_prog;
-
     // Palettes
     palette *base_palette;          // Copy of the scenes base palette
     screen_palette *screen_palette; // Normal rendering palette
     screen_palette *extra_palette;  // Reflects base palette, used for additive blending
 } video_state;
+
+#define TEX_UNIT_ATLAS 0
+#define TEX_UNIT_FBO 1
 
 static video_state g_video_state;
 
@@ -67,31 +76,46 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     if(!enable_vsync()) {
         goto error_2;
     }
-    if(!create_program(&g_video_state.shader_prog, "direct.vert", "direct.frag")) {
+    if(!create_program(&g_video_state.palette_prog_id, "palette.vert", "palette.frag")) {
         goto error_2;
     }
+    if(!create_program(&g_video_state.rgba_prog_id, "rgba.vert", "rgba.frag")) {
+        goto error_3;
+    }
 
-    // Fetch viewport size which may be different from window size. Then set the opengl viewport
-    // and generate a projection matrix.
-    int viewport_w, viewport_h;
-    SDL_GL_GetDrawableSize(g_video_state.window, &viewport_w, &viewport_h);
-    glViewport(0, 0, viewport_w, viewport_h);
+    // Fetch viewport size which may be different from window size.
+    SDL_GL_GetDrawableSize(g_video_state.window, &g_video_state.viewport_w, &g_video_state.viewport_h);
+
+    // Reset background color to black.
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
-    GLfloat projection_matrix[16];
-    ortho2d(projection_matrix, 0.0f, NATIVE_W, NATIVE_H, 0.0f);
-    activate_program(g_video_state.shader_prog);
-    bind_uniform_4fv(g_video_state.shader_prog, "projection", projection_matrix);
-
-    g_video_state.atlas = atlas_create(4096, 4096);
+    // Create the rest of the graphics objects
+    g_video_state.atlas = atlas_create(TEX_UNIT_ATLAS, 4096, 4096);
     g_video_state.objects = object_array_create();
     g_video_state.pal_buffer = pal_buffer_create();
+    g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
 
+    // Create orthographic projection matrix for 2d stuff.
+    GLfloat projection_matrix[16];
+    ortho2d(projection_matrix, 0.0f, NATIVE_W, NATIVE_H, 0.0f);
+
+    // Activate palette program, and bind its variables now
+    activate_program(g_video_state.palette_prog_id);
+    bind_uniform_4fv(g_video_state.palette_prog_id, "projection", projection_matrix);
+    bind_uniform_li(g_video_state.palette_prog_id, "image", TEX_UNIT_ATLAS);
+
+    // Activate RGBA conversion program, and bind palette etc.
+    activate_program(g_video_state.rgba_prog_id);
+    bind_uniform_4fv(g_video_state.rgba_prog_id, "projection", projection_matrix);
     GLuint pal_ubo_id = pal_buffer_get_block(g_video_state.pal_buffer);
-    bind_uniform_block(g_video_state.shader_prog, "palette", pal_ubo_id);
+    bind_uniform_block(g_video_state.rgba_prog_id, "palette", pal_ubo_id);
+    bind_uniform_li(g_video_state.rgba_prog_id, "image", TEX_UNIT_FBO);
 
     INFO("OpenGL Renderer initialized!");
     return 0;
+
+error_3:
+    delete_program(g_video_state.palette_prog_id);
 
 error_2:
     SDL_GL_DeleteContext(g_video_state.gl_context);
@@ -128,8 +152,19 @@ void video_render_finish(void) {
     pal_buffer_update(g_video_state.pal_buffer, (void *)g_video_state.screen_palette->data);
     object_array_finish(g_video_state.objects);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Render using palette renderer to the palette FBO.
+    render_target_activate(g_video_state.target);
+    glViewport(0, 0, NATIVE_W, NATIVE_H);
+    activate_program(g_video_state.palette_prog_id);
+    glClear(GL_COLOR_BUFFER_BIT);
     object_array_draw(g_video_state.objects);
+
+    // Disable render target, and dump its contents as RGBA to the screen.
+    render_target_deactivate();
+    glViewport(0, 0, g_video_state.viewport_w, g_video_state.viewport_h);
+    activate_program(g_video_state.rgba_prog_id);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     // Flip buffers. If vsync is off, we should sleep here
     // so hat our main loop doesn't eat up all cpu :)
@@ -140,10 +175,12 @@ void video_render_finish(void) {
 }
 
 void video_close(void) {
+    render_target_free(&g_video_state.target);
     pal_buffer_free(&g_video_state.pal_buffer);
     object_array_free(&g_video_state.objects);
     atlas_free(&g_video_state.atlas);
-    delete_program(g_video_state.shader_prog);
+    delete_program(g_video_state.palette_prog_id);
+    delete_program(g_video_state.rgba_prog_id);
     SDL_GL_DeleteContext(g_video_state.gl_context);
     SDL_DestroyWindow(g_video_state.window);
     omf_free(g_video_state.screen_palette);

@@ -22,19 +22,21 @@ typedef struct texture_atlas {
     GLuint texture_id;
     uint16_t w;
     uint16_t h;
+    GLuint tex_unit;
 } texture_atlas;
 
 int static inline zone_perimeter(zone *zone) {
     return zone->w * 2 + zone->h * 2;
 }
 
-texture_atlas *atlas_create(uint16_t width, uint16_t height) {
+texture_atlas *atlas_create(GLuint tex_unit, uint16_t width, uint16_t height) {
     texture_atlas *atlas = omf_calloc(1, sizeof(texture_atlas));
     hashmap_create(&atlas->items);
     vector_create(&atlas->free_space, sizeof(zone));
     atlas->w = width;
     atlas->h = height;
-    atlas->texture_id = texture_create(width, height, GL_RG8, GL_RG);
+    atlas->tex_unit = tex_unit;
+    atlas->texture_id = texture_create(tex_unit, width, height, GL_RG8, GL_RG);
     zone item = {0, 0, width, height};
     vector_append(&atlas->free_space, &item);
     DEBUG("Texture atlas %dx%d created", width, height);
@@ -43,12 +45,14 @@ texture_atlas *atlas_create(uint16_t width, uint16_t height) {
 
 void atlas_free(texture_atlas **atlas) {
     texture_atlas *obj = *atlas;
-    hashmap_free(&obj->items);
-    vector_free(&obj->free_space);
-    texture_free(obj->texture_id);
-    omf_free(obj);
-    *atlas = NULL;
-    DEBUG("Texture atlas freed");
+    if(obj != NULL) {
+        hashmap_free(&obj->items);
+        vector_free(&obj->free_space);
+        texture_free(obj->tex_unit, obj->texture_id);
+        omf_free(obj);
+        *atlas = NULL;
+        DEBUG("Texture atlas freed");
+    }
 }
 
 /**
@@ -151,7 +155,7 @@ bool atlas_insert(texture_atlas *atlas, const char *bytes, uint16_t w, uint16_t 
     }
 
     // Split found, add the area to the atlas.
-    texture_update(atlas->texture_id, free.x, free.y, w, h, bytes);
+    texture_update(atlas->tex_unit, atlas->texture_id, free.x, free.y, w, h, bytes);
     *nx = free.x;
     *ny = free.y;
     return true;
