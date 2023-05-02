@@ -96,6 +96,8 @@ int component_is_disabled(const component *c);
 int component_is_selected(const component *c);
 int component_is_focused(const component *c);
 
+bool component_is_selectable(component *c);
+
 void component_set_size_hints(component *c, int w, int h);
 void component_set_pos_hints(component *c, int x, int y);
 

@@ -74,6 +74,13 @@ int component_is_selected(const component *c) {
     return c->is_selected;
 }
 
+bool component_is_selectable(component *c) {
+    if(!c->supports_select) {
+        return false;
+    }
+    return true;
+}
+
 int component_is_focused(const component *c) {
     if(!c->supports_focus)
         return 0;

@@ -194,8 +194,10 @@ void lab_menu_tick_arena(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(p1->chr && p1->chr->pilot.rank > 1) {
         component_disable(c, 0);
+        c->supports_select = true;
     } else {
         component_disable(c, 1);
+        c->supports_select = false;
     }
 }
 

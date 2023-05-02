@@ -1,5 +1,6 @@
 #include "game/scenes/mechlab/lab_menu_training.h"
 #include "game/common_defines.h"
+#include "game/gui/label.h"
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/text_render.h"
@@ -10,8 +11,12 @@
 #include "resources/languages.h"
 #include "utils/log.h"
 
-uint32_t prices[] = {50,   80,   120,   180,   240,   300,   450,   600,   800,   1100,   1500,   2500,
-                     4000, 7000, 10000, 14000, 20000, 28000, 40000, 55000, 75000, 100000, 140000, 200000};
+// I don't care anymore, sorry
+static component *label1;
+static component *label2;
+
+static uint32_t prices[] = {50,   80,   120,   180,   240,   300,   450,   600,   800,   1100,   1500,   2500,
+                            4000, 7000, 10000, 14000, 20000, 28000, 40000, 55000, 75000, 100000, 140000, 200000};
 
 void lab_menu_training_power(component *c, void *userdata) {
     scene *s = userdata;
@@ -99,6 +104,16 @@ static const button_details details_list[] = {
 void lab_menu_focus_power(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
+        game_player *p1 = game_state_get_player(s->gs, 0);
+        sd_pilot *pilot = game_player_get_pilot(p1);
+        label_set_text(label1, lang_get(512));
+        if(pilot->power > 23) {
+            label_set_text(label2, "UNAVAILABLE");
+        } else {
+            char tmp[20];
+            snprintf(tmp, 20, "$ %dK", prices[pilot->power]);
+            label_set_text(label2, tmp);
+        }
         mechlab_set_hint(s, lang_get(533));
     }
 }
@@ -106,6 +121,16 @@ void lab_menu_focus_power(component *c, bool focused, void *userdata) {
 void lab_menu_focus_agility(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
+        game_player *p1 = game_state_get_player(s->gs, 0);
+        sd_pilot *pilot = game_player_get_pilot(p1);
+        label_set_text(label1, lang_get(513));
+        if(pilot->agility > 23) {
+            label_set_text(label2, "UNAVAILABLE");
+        } else {
+            char tmp[20];
+            snprintf(tmp, 20, "$ %dK", prices[pilot->agility]);
+            label_set_text(label2, tmp);
+        }
         mechlab_set_hint(s, lang_get(534));
     }
 }
@@ -113,6 +138,16 @@ void lab_menu_focus_agility(component *c, bool focused, void *userdata) {
 void lab_menu_focus_endurance(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
+        game_player *p1 = game_state_get_player(s->gs, 0);
+        sd_pilot *pilot = game_player_get_pilot(p1);
+        label_set_text(label1, lang_get(514));
+        if(pilot->endurance > 23) {
+            label_set_text(label2, "UNAVAILABLE");
+        } else {
+            char tmp[20];
+            snprintf(tmp, 20, "$ %dK", prices[pilot->endurance]);
+            label_set_text(label2, tmp);
+        }
         mechlab_set_hint(s, lang_get(535));
     }
 }
@@ -120,6 +155,8 @@ void lab_menu_focus_endurance(component *c, bool focused, void *userdata) {
 void lab_menu_focus_training_done(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
+        label_set_text(label1, "");
+        label_set_text(label2, "");
         mechlab_set_hint(s, lang_get(536));
     }
 }
@@ -171,6 +208,21 @@ component *lab_menu_training_create(scene *s) {
 
         trnmenu_attach(menu, button);
     }
+
+    tconf.direction = TEXT_HORIZONTAL;
+    tconf.halign = TEXT_LEFT;
+    tconf.valign = TEXT_TOP;
+    tconf.cforeground = color_create(0, 200, 0, 255);
+    label1 = label_create(&tconf, "");
+    component_set_size_hints(label1, 90, 110);
+    component_set_pos_hints(label1, 200, 148);
+    trnmenu_attach(menu, label1);
+
+    tconf.cforeground = color_create(0, 255, 0, 255);
+    label2 = label_create(&tconf, "");
+    component_set_size_hints(label2, 90, 110);
+    component_set_pos_hints(label2, 200, 186);
+    trnmenu_attach(menu, label2);
 
     // Bind hand animation
     trnmenu_bind_hand(menu, hand_of_doom, s->gs);
