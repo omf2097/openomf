@@ -5,7 +5,9 @@
 #include "utils/log.h"
 #include "utils/miscmath.h"
 
-#define READ_BLOCK_SIZE 32
+// Anything above this seems to die on MSYS2 + mingw to EINVAL (22). Not sure why.
+// Anyways, touch at your own peril.
+#define READ_BLOCK_SIZE 1024
 
 FILE *file_open(const char *file_name, const char *mode) {
     FILE *handle = fopen(file_name, mode);
