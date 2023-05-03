@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 
 #include "utils/allocator.h"
 #include "video/opengl/buffers.h"
@@ -17,7 +16,6 @@ typedef struct shared {
 
 shared *shared_create() {
     shared *obj = omf_calloc(1, sizeof(shared));
-    memset(obj, 0, sizeof(shared));
     obj->ubo_id = ubo_create(sizeof(data_buffer));
     obj->dirty = false;
     for(int i = 0; i < 1024; i++) {

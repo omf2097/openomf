@@ -49,6 +49,7 @@ typedef struct video_state {
 #define TEX_UNIT_FBO 1
 
 #define PAL_BLOCK_BINDING 0
+#define PROPS_BLOCK_BINDING 1
 
 static video_state g_video_state;
 
@@ -105,6 +106,8 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     activate_program(g_video_state.palette_prog_id);
     bind_uniform_4fv(g_video_state.palette_prog_id, "projection", projection_matrix);
     bind_uniform_li(g_video_state.palette_prog_id, "image", TEX_UNIT_ATLAS);
+    GLuint props_ubo_id = object_array_get_block(g_video_state.objects);
+    bind_uniform_block(g_video_state.palette_prog_id, "props", PROPS_BLOCK_BINDING, props_ubo_id);
 
     // Activate RGBA conversion program, and bind palette etc.
     activate_program(g_video_state.rgba_prog_id);
@@ -255,7 +258,7 @@ void video_render_bg_separately(bool separate) {
 void video_render_background(surface *sur) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0);
+        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0, BLEND_ALPHA);
     }
 }
 
@@ -264,7 +267,7 @@ static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, 
 
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode);
+        object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode, blend_mode);
     }
 }
 
