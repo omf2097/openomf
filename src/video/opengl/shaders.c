@@ -91,7 +91,7 @@ void delete_program(GLuint program_id) {
     glUseProgram(0);
     glGetAttachedShaders(program_id, attached_count, NULL, shaders);
     for(int i = 0; i < attached_count; i++) {
-        DEBUG("Shader %d deleted", i);
+        DEBUG("Shader %d deleted", shaders[i]);
         glDeleteShader(shaders[i]); // Mark for removal, glDeleteProgram will handle deletion.
     }
     glDeleteProgram(program_id);
