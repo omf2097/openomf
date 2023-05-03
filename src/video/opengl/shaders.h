@@ -8,6 +8,6 @@ void delete_program(GLuint program_id);
 void activate_program(GLuint program_id);
 void bind_uniform_4fv(GLuint program_id, const char *name, GLfloat *data);
 void bind_uniform_li(GLuint program_id, const char *name, GLuint value);
-void bind_uniform_block(GLuint program_id, const char *name, GLuint binding);
+void bind_uniform_block(GLuint program_id, const char *name, GLuint binding_id, GLuint buffer);
 
 #endif // SHADERS_H

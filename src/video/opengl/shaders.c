@@ -141,14 +141,14 @@ void bind_uniform_li(GLuint program_id, const char *name, GLuint value) {
     glUniform1i(ref, value);
 }
 
-void bind_uniform_block(GLuint program_id, const char *name, GLuint binding) {
+void bind_uniform_block(GLuint program_id, const char *name, GLuint binding_id, GLuint buffer) {
     GLuint ref = glGetUniformBlockIndex(program_id, name);
     if(ref == GL_INVALID_INDEX) {
         PERROR("Unable to find ubo '%s'; glGetUniformBlockIndex() returned GL_INVALID_INDEX", name);
         return;
     }
-    glUniformBlockBinding(program_id, 0, ref);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, binding);
+    glUniformBlockBinding(program_id, ref, binding_id);
+    glBindBufferBase(GL_UNIFORM_BUFFER, binding_id, buffer);
 }
 
 void activate_program(GLuint program_id) {
