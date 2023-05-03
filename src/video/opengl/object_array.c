@@ -13,14 +13,20 @@
 #define VBO_SIZE (MAX_FANS * OBJ_BYTES)
 #define BUFFER_COUNT 2
 
+typedef struct object_props {
+    GLuint mode;
+} __attribute__((aligned(16))) object_props;
+
 typedef struct object_array {
     GLuint vbo_ids[BUFFER_COUNT];
     GLuint vao_id;
+    GLuint ubo_id;
     int vbo_flip;
     int item_count;
     GLfloat *mapping;
     GLint fans_starts[MAX_FANS];
     GLsizei fans_sizes[MAX_FANS];
+    object_props props[MAX_FANS];
 } object_array;
 
 static void setup_vao_layout() {
@@ -37,6 +43,7 @@ object_array *object_array_create() {
     for(int i = 0; i < BUFFER_COUNT; i++)
         array->vbo_ids[i] = vbo_create(VBO_SIZE);
     array->vao_id = vao_create();
+    array->ubo_id = ubo_create(sizeof(array->props));
     setup_vao_layout();
     return array;
 }
@@ -44,6 +51,7 @@ object_array *object_array_create() {
 void object_array_free(object_array **array) {
     object_array *obj = *array;
     if(obj != NULL) {
+        ubo_free(obj->ubo_id);
         vao_free(obj->vao_id);
         for(int i = 0; i < BUFFER_COUNT; i++)
             vbo_free(obj->vbo_ids[1]);
@@ -64,11 +72,16 @@ void object_array_prepare(object_array *array) {
 
 void object_array_finish(object_array *array) {
     vbo_unmap(array->vbo_ids[array->vbo_flip]);
+    ubo_update(array->ubo_id, sizeof(array->props), array->props);
     array->mapping = NULL;
 }
 
 void object_array_draw(const object_array *array) {
     glMultiDrawArrays(GL_TRIANGLE_FAN, array->fans_starts, array->fans_sizes, array->item_count);
+}
+
+GLuint object_array_get_block(object_array *array) {
+    return array->ubo_id;
 }
 
 #define COORDS(ptr, offset, cx, cy, tx, ty)                                                                            \
@@ -77,7 +90,8 @@ void object_array_draw(const object_array *array) {
     ptr[offset + 2] = tx;                                                                                              \
     ptr[offset + 3] = ty;
 
-void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th, int flags) {
+void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th, int flags,
+                      VIDEO_BLEND_MODE mode) {
     if(array->item_count >= MAX_FANS) {
         PERROR("Too many objects!");
         return;
@@ -111,5 +125,6 @@ void object_array_add(object_array *array, int x, int y, int w, int h, int tx, i
 
     array->fans_starts[array->item_count] = array->item_count * 4;
     array->fans_sizes[array->item_count] = 4;
+    array->props[array->item_count].mode = mode;
     array->item_count++;
 }
