@@ -1,5 +1,6 @@
 #include "utils/str.h"
 #include "utils/allocator.h"
+#include "utils/io.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 
@@ -8,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define READ_BLOCK_SIZE (1024)
 
 #define STR_ALLOC(string, size)                                                                                        \
     do {                                                                                                               \
@@ -43,35 +46,13 @@ void str_from_buf(str *dst, const char *buf, size_t len) {
     STR_ZERO(dst);
 }
 
-#define READ_BLOCK_SIZE 4096
-
 void str_from_file(str *dst, const char *file_name) {
-    FILE *handle = fopen(file_name, "rb");
-    if(handle == NULL) {
-        PERROR("Unable to read file: %s", file_name);
-        abort();
-    }
-
-    fseek(handle, 0, SEEK_END);
-    long file_size = ftell(handle);
-    fseek(handle, 0, SEEK_SET);
-
-    STR_ALLOC(dst, file_size);
-    size_t got;
-    char *ptr = dst->data;
-    while(1) {
-        if(feof(handle))
-            break;
-        if(ferror(handle))
-            break;
-        got = fread(ptr, 1, READ_BLOCK_SIZE, handle);
-        if(got != READ_BLOCK_SIZE)
-            break;
-        ptr += got;
-    }
+    FILE *handle = file_open(file_name, "rb");
+    long size = file_size(handle);
+    STR_ALLOC(dst, size + 1);
+    file_read(handle, dst->data, size);
+    file_close(handle);
     STR_ZERO(dst);
-
-    fclose(handle);
 }
 
 void str_from_format(str *dst, const char *format, ...) {
