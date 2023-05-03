@@ -1,4 +1,5 @@
 #include <string.h>
+#include <sys/stat.h>
 
 #include "utils/io.h"
 #include "utils/log.h"
@@ -15,20 +16,10 @@ FILE *file_open(const char *file_name, const char *mode) {
     return handle;
 }
 
-void file_seek(FILE *handle, long offset, int origin) {
-    if(fseek(handle, offset, origin)) {
-        PERROR("Unable to fseek to %d %d", origin, offset);
-        abort();
-    }
-}
-
 long file_size(FILE *handle) {
-    long pos, file_size;
-    pos = ftell(handle);
-    file_seek(handle, 0, SEEK_END);
-    file_size = ftell(handle);
-    file_seek(handle, pos, SEEK_SET);
-    return file_size;
+    struct stat info;
+    fstat(fileno(handle), &info);
+    return info.st_size;
 }
 
 void file_read(FILE *handle, char *buffer, long size) {
