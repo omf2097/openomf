@@ -7,9 +7,9 @@
 #include "utils/log.h"
 #include "video/image.h"
 #include "video/opengl/object_array.h"
-#include "video/opengl/pal_buffer.h"
 #include "video/opengl/render_target.h"
 #include "video/opengl/shaders.h"
+#include "video/opengl/shared.h"
 #include "video/opengl/texture_atlas.h"
 #include "video/sdl_window.h"
 #include "video/video.h"
@@ -19,7 +19,7 @@ typedef struct video_state {
     SDL_GLContext *gl_context;
     texture_atlas *atlas;
     object_array *objects;
-    pal_buffer *pal_buffer;
+    shared *shared;
     render_target *target;
 
     GLuint palette_prog_id;
@@ -47,6 +47,8 @@ typedef struct video_state {
 
 #define TEX_UNIT_ATLAS 0
 #define TEX_UNIT_FBO 1
+
+#define PAL_BLOCK_BINDING 0
 
 static video_state g_video_state;
 
@@ -92,7 +94,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     // Create the rest of the graphics objects
     g_video_state.atlas = atlas_create(TEX_UNIT_ATLAS, 4096, 4096);
     g_video_state.objects = object_array_create();
-    g_video_state.pal_buffer = pal_buffer_create();
+    g_video_state.shared = shared_create();
     g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
 
     // Create orthographic projection matrix for 2d stuff.
@@ -107,8 +109,8 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     // Activate RGBA conversion program, and bind palette etc.
     activate_program(g_video_state.rgba_prog_id);
     bind_uniform_4fv(g_video_state.rgba_prog_id, "projection", projection_matrix);
-    GLuint pal_ubo_id = pal_buffer_get_block(g_video_state.pal_buffer);
-    bind_uniform_block(g_video_state.rgba_prog_id, "palette", pal_ubo_id);
+    GLuint pal_ubo_id = shared_get_block(g_video_state.shared);
+    bind_uniform_block(g_video_state.rgba_prog_id, "palette", PAL_BLOCK_BINDING, pal_ubo_id);
     bind_uniform_li(g_video_state.rgba_prog_id, "image", TEX_UNIT_FBO);
 
     INFO("OpenGL Renderer initialized!");
@@ -149,7 +151,8 @@ void video_render_prepare(void) {
 
 // Called after frame has been rendered
 void video_render_finish(void) {
-    pal_buffer_update(g_video_state.pal_buffer, (void *)g_video_state.screen_palette->data);
+    shared_set_palette(g_video_state.shared, g_video_state.screen_palette->data);
+    shared_flush_dirty(g_video_state.shared);
     object_array_finish(g_video_state.objects);
 
     // Render using palette renderer to the palette FBO.
@@ -175,7 +178,7 @@ void video_render_finish(void) {
 
 void video_close(void) {
     render_target_free(&g_video_state.target);
-    pal_buffer_free(&g_video_state.pal_buffer);
+    shared_free(&g_video_state.shared);
     object_array_free(&g_video_state.objects);
     atlas_free(&g_video_state.atlas);
     delete_program(g_video_state.palette_prog_id);
