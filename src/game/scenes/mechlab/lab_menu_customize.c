@@ -728,6 +728,7 @@ component *lab_menu_customize_create(scene *s) {
     animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(&s->bk_data, 3)->ani;
     animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
+    animation *har_picture = &bk_get_info(&s->bk_data, 5)->ani;
 
     // Initialize menu, and set button sheet
     sprite *msprite = animation_get_sprite(main_sheets, 0);
@@ -761,6 +762,15 @@ component *lab_menu_customize_create(scene *s) {
         component_tick(button);
         trnmenu_attach(menu, button);
     }
+
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    sprite *bsprite = animation_get_sprite(har_picture, p1->pilot->har_id);
+    component *button = spritebutton_create(&tconf, "", bsprite->data, COM_ENABLED, NULL, NULL);
+    component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
+    component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
+    button->supports_select = false;
+    spritebutton_set_always_display(button);
+    trnmenu_attach(menu, button);
 
     tconf.direction = TEXT_HORIZONTAL;
     tconf.halign = TEXT_LEFT;
