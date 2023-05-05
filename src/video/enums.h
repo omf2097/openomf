@@ -4,7 +4,8 @@
 typedef enum
 {
     BLEND_ADDITIVE = 0,
-    BLEND_ALPHA
+    BLEND_ALPHA = 1,
+    BLEND_HACK = 2
 } VIDEO_BLEND_MODE;
 
 typedef enum

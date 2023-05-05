@@ -7,6 +7,7 @@
 #include "utils/log.h"
 #include "video/image.h"
 #include "video/opengl/object_array.h"
+#include "video/opengl/remaps.h"
 #include "video/opengl/render_target.h"
 #include "video/opengl/shaders.h"
 #include "video/opengl/shared.h"
@@ -20,7 +21,8 @@ typedef struct video_state {
     texture_atlas *atlas;
     object_array *objects;
     shared *shared;
-    render_target *target;
+    render_target *targets[2];
+    remaps *remaps;
 
     GLuint palette_prog_id;
     GLuint rgba_prog_id;
@@ -47,9 +49,12 @@ typedef struct video_state {
 
 #define TEX_UNIT_ATLAS 0
 #define TEX_UNIT_FBO 1
+#define TEX_UNIT_FBO2 2
 
 #define PAL_BLOCK_BINDING 0
-#define PROPS_BLOCK_BINDING 1
+#define REMAPS_BLOCK_BINDING 1
+
+static const int fbo_tex_units[] = {TEX_UNIT_FBO, TEX_UNIT_FBO2};
 
 static video_state g_video_state;
 
@@ -94,9 +99,11 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
 
     // Create the rest of the graphics objects
     g_video_state.atlas = atlas_create(TEX_UNIT_ATLAS, 4096, 4096);
-    g_video_state.objects = object_array_create();
+    g_video_state.objects = object_array_create(4096.0f, 4096.0f);
     g_video_state.shared = shared_create();
-    g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
+    g_video_state.targets[0] = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
+    g_video_state.targets[1] = render_target_create(TEX_UNIT_FBO2, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
+    g_video_state.remaps = remaps_create();
 
     // Create orthographic projection matrix for 2d stuff.
     GLfloat projection_matrix[16];
@@ -105,16 +112,16 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     // Activate palette program, and bind its variables now
     activate_program(g_video_state.palette_prog_id);
     bind_uniform_4fv(g_video_state.palette_prog_id, "projection", projection_matrix);
-    bind_uniform_li(g_video_state.palette_prog_id, "image", TEX_UNIT_ATLAS);
-    GLuint props_ubo_id = object_array_get_block(g_video_state.objects);
-    bind_uniform_block(g_video_state.palette_prog_id, "props", PROPS_BLOCK_BINDING, props_ubo_id);
+    bind_uniform_1i(g_video_state.palette_prog_id, "atlas", TEX_UNIT_ATLAS);
+    GLuint remaps_ubo_id = remaps_get_block_id(g_video_state.remaps);
+    bind_uniform_block(g_video_state.palette_prog_id, "remaps", REMAPS_BLOCK_BINDING, remaps_ubo_id);
 
     // Activate RGBA conversion program, and bind palette etc.
     activate_program(g_video_state.rgba_prog_id);
     bind_uniform_4fv(g_video_state.rgba_prog_id, "projection", projection_matrix);
     GLuint pal_ubo_id = shared_get_block(g_video_state.shared);
     bind_uniform_block(g_video_state.rgba_prog_id, "palette", PAL_BLOCK_BINDING, pal_ubo_id);
-    bind_uniform_li(g_video_state.rgba_prog_id, "image", TEX_UNIT_FBO);
+    bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", TEX_UNIT_FBO2);
 
     INFO("OpenGL Renderer initialized!");
     return 0;
@@ -156,18 +163,26 @@ void video_render_prepare(void) {
 void video_render_finish(void) {
     shared_set_palette(g_video_state.shared, g_video_state.screen_palette->data);
     shared_flush_dirty(g_video_state.shared);
+    remaps_update(g_video_state.remaps, (void *)g_video_state.base_palette->remaps);
     object_array_finish(g_video_state.objects);
 
-    // Render using palette renderer to the palette FBO.
-    render_target_activate(g_video_state.target);
+    int target_select = 0;
     glViewport(0, 0, NATIVE_W, NATIVE_H);
+    object_array_batch batch;
+    object_array_begin(g_video_state.objects, &batch);
     activate_program(g_video_state.palette_prog_id);
-    object_array_draw(g_video_state.objects);
+    while(object_array_get_batch(g_video_state.objects, &batch)) {
+        bind_uniform_1i(g_video_state.palette_prog_id, "framebuffer", fbo_tex_units[!target_select]);
+        render_target_activate(g_video_state.targets[target_select]);
+        object_array_draw(g_video_state.objects, &batch);
+        target_select = !target_select;
+    }
 
     // Disable render target, and dump its contents as RGBA to the screen.
     render_target_deactivate();
     glViewport(0, 0, g_video_state.viewport_w, g_video_state.viewport_h);
     activate_program(g_video_state.rgba_prog_id);
+    bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", fbo_tex_units[!target_select]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -180,7 +195,9 @@ void video_render_finish(void) {
 }
 
 void video_close(void) {
-    render_target_free(&g_video_state.target);
+    remaps_free(&g_video_state.remaps);
+    render_target_free(&g_video_state.targets[0]);
+    render_target_free(&g_video_state.targets[1]);
     shared_free(&g_video_state.shared);
     object_array_free(&g_video_state.objects);
     atlas_free(&g_video_state.atlas);
