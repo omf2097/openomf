@@ -150,7 +150,7 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Enemies (exl unranked): %d\n", pilot->enemies_ex_unranked);
 
         printf("  - Unk. Int A:      %d\n", pilot->unk_d_a);
-        printf("  - Unk. Int B:      %d\n", pilot->unk_d_b);
+        printf("  - Har Trades:      %d\n", pilot->har_trades);
 
         printf("  - Winnings:        %d\n", pilot->winnings);
         printf("  - Total value:     %d\n", pilot->total_value);

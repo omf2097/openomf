@@ -29,4 +29,6 @@ component *spritebutton_create(const text_settings *tconf, const char *text, sur
 void spritebutton_set_tick_cb(component *c, spritebutton_tick_cb);
 void spritebutton_set_focus_cb(component *c, spritebutton_focus_cb);
 
+void spritebutton_set_always_display(component *c);
+
 #endif // SPRITEBUTTON_H

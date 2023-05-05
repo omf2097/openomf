@@ -8,6 +8,7 @@
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
+#include "game/scenes/mechlab/lab_menu_trade.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
 #include "utils/log.h"
@@ -21,6 +22,8 @@ static uint8_t max_leg_power[11] = {6, 6, 8, 4, 5, 7, 5, 7, 6, 7, 7};
 // I don't care anymore, sorry
 static component *label1;
 static component *label2;
+
+static uint32_t har_prices[11] = {20000, 36000, 26000, 28000, 29000, 32000, 25000, 30000, 24000, 22000, 75000};
 
 // negative values means the upgrade is unavailable at that level
 int32_t arm_leg_prices[11][10] = {
@@ -47,8 +50,6 @@ int32_t arm_leg_prices[11][10] = {
  // nova
     {0, 1400, 4200, 9800, 16800, 25200, 42000, 70000, -1,    -1    }
 };
-
-uint32_t har_price[11] = {20000, 36000, 26000, 28000, 29000, 32000, 25000, 30000, 24000, 22000, 75000};
 
 int32_t stun_resistance_prices[11][10] = {
   // jaguar
@@ -99,6 +100,39 @@ int32_t armor_prices[][10] = {
  // nova
     {0, 3500, 10500, 24500, 42000, 63000, 105000, 175000, -1,     -1    }
 };
+
+int calculate_trade_value(sd_pilot *pilot) {
+    int trade_value = har_prices[pilot->har_id];
+    for(int i = 1; i < pilot->arm_power; i++) {
+        trade_value += arm_leg_prices[pilot->har_id][i];
+    }
+
+    for(int i = 1; i < pilot->leg_power; i++) {
+        trade_value += arm_leg_prices[pilot->har_id][i];
+    }
+
+    for(int i = 1; i < pilot->arm_speed; i++) {
+        trade_value += arm_leg_prices[pilot->har_id][i];
+    }
+
+    for(int i = 1; i < pilot->leg_speed; i++) {
+        trade_value += arm_leg_prices[pilot->har_id][i];
+    }
+
+    for(int i = 1; i < pilot->armor; i++) {
+        trade_value += armor_prices[pilot->har_id][i];
+    }
+
+    for(int i = 1; i < pilot->stun_resistance; i++) {
+        trade_value += stun_resistance_prices[pilot->har_id][i];
+    }
+
+    return trade_value * 0.85;
+}
+
+int har_price(int har_id) {
+    return har_prices[har_id];
+}
 
 void lab_menu_customize_done(component *c, void *userdata) {
     trnmenu_finish(c->parent);
@@ -341,6 +375,33 @@ void lab_menu_customize_check_stun_resistance_price(component *c, void *userdata
     }
 }
 
+void lab_menu_customize_trade(component *c, void *userdata) {
+    scene *s = userdata;
+    trnmenu_set_submenu(c->parent, lab_menu_trade_create(s));
+}
+
+void lab_menu_customize_check_trade_robot(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+
+    int trade_value = calculate_trade_value(p1->pilot);
+    bool trades = false;
+    for(int i = 0; i < 11; i++) {
+        if(i == p1->pilot->har_id) {
+            // don't trade for the current HAR
+            continue;
+        }
+        if((p1->pilot->har_trades >> i) & 1 && har_prices[i] < trade_value + p1->pilot->money) {
+            trades = true;
+        }
+    }
+    if(!trades) {
+        component_disable(c, 1);
+    } else {
+        component_disable(c, 0);
+    }
+}
+
 static const button_details details_list[] = {
     {lab_menu_customize_color_main,      NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED}, // Blue
     {lab_menu_customize_color_third,     NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0,
@@ -354,7 +415,7 @@ static const button_details details_list[] = {
     {lab_menu_customize_armor,           "ARMOR",       TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
     {lab_menu_customize_stun_resistance, "STUN RES.",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0,
      COM_ENABLED                                                                                                          },
-    {NULL,                               "TRADE ROBOT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_customize_trade,           "TRADE ROBOT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
     {lab_menu_customize_done,            "DONE",        TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
 
@@ -367,7 +428,7 @@ static const spritebutton_tick_cb tickers[] = {NULL,
                                                lab_menu_customize_check_leg_speed_price,
                                                lab_menu_customize_check_armor_price,
                                                lab_menu_customize_check_stun_resistance_price,
-                                               NULL,
+                                               lab_menu_customize_check_trade_robot,
                                                NULL};
 
 void lab_menu_focus_blue(component *c, bool focused, void *userdata) {
@@ -598,16 +659,49 @@ void lab_menu_focus_stun_resistance(component *c, bool focused, void *userdata) 
 void lab_menu_focus_trade(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
-        if(mechlab_get_selling(s)) {
-            mechlab_set_hint(s, lang_get(565));
+        game_player *p1 = game_state_get_player(s->gs, 0);
+        mechlab_set_hint(s, lang_get(565));
+        int trade_value = calculate_trade_value(p1->pilot);
+        uint8_t trades[5];
+        memset(trades, 0, sizeof(trades));
+        uint8_t tradecount = 0;
+        for(int i = 0; i < 11; i++) {
+            if(i == p1->pilot->har_id) {
+                // don't trade for the current HAR
+                continue;
+            }
+            if((p1->pilot->har_trades >> i) & 1 && har_prices[i] < trade_value + p1->pilot->money) {
+                trades[tradecount] = i;
+                tradecount++;
+            }
+        }
+        DEBUG("got %d trades from the bitmask %d", tradecount, p1->pilot->har_trades);
+        // check if there's anything for trade
+        if(tradecount == 0) {
+            label_set_text(label1, lang_get(488));
+            label_set_text(label2, "");
         } else {
-            mechlab_set_hint(s, lang_get(566));
+            label_set_text(label1, lang_get(461));
+            char tmp[200] = "";
+            // pick 5 of however many we got
+            // naturally, I unrolled this loop for performance
+            if(tradecount == 1) {
+                snprintf(tmp, 200, "%s", lang_get(31 + trades[0]));
+            } else if(tradecount == 2) {
+                snprintf(tmp, 200, "%s %s", lang_get(31 + trades[0]), lang_get(31 + trades[1]));
+            } else if(tradecount == 3) {
+                snprintf(tmp, 200, "%s %s %s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
+                         lang_get(31 + trades[2]));
+            } else if(tradecount == 4) {
+                snprintf(tmp, 200, "%s %s %s %s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
+                         lang_get(31 + trades[2]), lang_get(31 + trades[3]));
+            } else if(tradecount == 5) {
+                snprintf(tmp, 200, "%s %s %s %s %s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
+                         lang_get(31 + trades[2]), lang_get(31 + trades[3]), lang_get(31 + trades[4]));
+            }
+            label_set_text(label2, tmp);
         }
     }
-
-    // TODO check if there's anything for trade
-    label_set_text(label1, lang_get(488));
-    label_set_text(label2, "");
 }
 
 void lab_menu_focus_done(component *c, bool focused, void *userdata) {

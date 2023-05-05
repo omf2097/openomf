@@ -99,8 +99,8 @@ typedef struct {
     uint16_t enemies_inc_unranked; ///< Enemies in current tournament, including unranked opponents
     uint16_t enemies_ex_unranked;  ///< Same as above, excluding unranked opponents.
 
-    uint16_t unk_d_a; ///< Unknown.
-    uint32_t unk_d_b; ///< Unknown. Possible a bitmask ?
+    uint16_t unk_d_a;    ///< Unknown.
+    uint32_t har_trades; ///< Unknown. Possible a bitmask ?
 
     uint32_t winnings;    ///< Money made by winning opponents
     uint32_t total_value; ///< Total value for the pilot
