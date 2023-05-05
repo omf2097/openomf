@@ -20,6 +20,20 @@ void ubo_free(GLuint id) {
     glDeleteBuffers(1, &id);
 }
 
+GLuint texture_array_create(GLuint tex_unit, GLsizei w, GLsizei z, GLint internal_Format, GLenum format) {
+    GLuint id = 0;
+    glGenTextures(1, &id);
+    bindings_bind_tex(tex_unit, id);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_1D_ARRAY, 0, internal_Format, w, z, 0, format, GL_UNSIGNED_BYTE, NULL);
+    return id;
+}
+
+void texture_array_update(GLuint tex_unit, GLuint id, int x, int z, int w, int d, const char *bytes) {
+    bindings_bind_tex(tex_unit, id);
+    glTexSubImage2D(GL_TEXTURE_1D_ARRAY, 0, x, z, w, d, GL_RG, GL_UNSIGNED_BYTE, bytes);
+}
+
 GLuint texture_create(GLuint tex_unit, GLsizei w, GLsizei h, GLint internal_format, GLenum format) {
     GLuint id = 0;
     glGenTextures(1, &id);

@@ -132,7 +132,7 @@ void bind_uniform_4fv(GLuint program_id, const char *name, GLfloat *data) {
     glUniformMatrix4fv(ref, 1, GL_FALSE, data);
 }
 
-void bind_uniform_li(GLuint program_id, const char *name, GLuint value) {
+void bind_uniform_1i(GLuint program_id, const char *name, GLuint value) {
     GLint ref = glGetUniformLocation(program_id, name);
     if(ref == -1) {
         PERROR("Unable to find uniform '%s'; glGetUniformLocation() returned -1", name);
