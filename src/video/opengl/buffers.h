@@ -18,6 +18,8 @@ void vbo_free(GLuint id);
 GLuint vao_create();
 void vao_free(GLuint id);
 
+GLuint texture_array_create(GLuint tex_unit, GLsizei w, GLsizei z, GLint internal_Format, GLenum format);
+void texture_array_update(GLuint tex_unit, GLuint id, int x, int z, int w, int d, const char *bytes);
 GLuint texture_create(GLuint tex_unit, GLsizei w, GLsizei h, GLint internal_format, GLenum format);
 void texture_update(GLuint tex_unit, GLuint id, int x, int y, int w, int h, const char *bytes);
 void texture_free(GLuint tex_unit, GLuint id);

@@ -5,7 +5,7 @@
 static GLuint bound_ubo = 0;
 static GLuint bound_vbo = 0;
 static GLuint bound_vao = 0;
-static GLuint bound_tex[] = {0, 0};
+static GLuint bound_tex[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static GLuint bound_fbo = 0;
 static GLuint active_tex = -1;
 
@@ -59,7 +59,7 @@ void bindings_unbind_ubo(GLuint id) {
 }
 
 void bindings_bind_tex(GLuint unit, GLuint id) {
-    assert(unit < 2);
+    assert(unit < 16);
     binding_active_tex(unit);
     if(bound_tex[unit] != id) {
         glBindTexture(GL_TEXTURE_2D, id);
@@ -68,7 +68,7 @@ void bindings_bind_tex(GLuint unit, GLuint id) {
 }
 
 void bindings_unbind_tex(GLuint unit, GLuint id) {
-    assert(unit < 2);
+    assert(unit < 16);
     binding_active_tex(unit);
     if(bound_tex[unit] == id) {
         glBindTexture(GL_TEXTURE_2D, 0);
