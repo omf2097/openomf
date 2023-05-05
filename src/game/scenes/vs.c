@@ -5,6 +5,7 @@
 #include "game/gui/menu_background.h"
 #include "game/gui/text_render.h"
 #include "game/protos/scene.h"
+#include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
 #include "resources/pathmanager.h"
@@ -324,6 +325,41 @@ int vs_create(scene *scene) {
 
     if(player2->pilot == NULL) {
         // display the financial report with your host Plug!
+
+        // generate a new HAR trade list based on your HAR's value
+        // and your money
+        // TODO figure out how this really works, but this'll do for now
+        int trade_value = calculate_trade_value(player1->pilot);
+        int8_t trades[10];
+        memset(trades, -1, sizeof(trades));
+        uint8_t tradecount = 0;
+
+        // collect all the HARs we can afford that are
+        // not the current model
+        for(int i = 0; i < 11; i++) {
+            if(i == player1->pilot->har_id) {
+                // don't trade for the current HAR
+                continue;
+            }
+            if(har_price(i) < trade_value + player1->pilot->money) {
+                trades[tradecount] = i;
+                tradecount++;
+            }
+        }
+
+        // choose 5 random ones and pack them into the bitmask
+        uint16_t new_trades = 0;
+        for(int i = 0; i < tradecount;) {
+            uint8_t choice = rand_int(tradecount);
+            if(trades[choice] != -1) {
+                new_trades |= 1 << trades[choice];
+                trades[choice] = -1;
+                i++;
+            }
+        }
+
+        player1->pilot->har_trades = new_trades;
+
     } else if(player1->chr) {
         snprintf(local->vs_str, 128, "%s VS. %s", player1->chr->pilot.name, player2->pilot->name);
     } else {

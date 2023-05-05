@@ -30,7 +30,7 @@ static void spritebutton_render(component *c) {
     if(c->is_disabled) {
         video_render_sprite_flip_scale_opacity_tint(sb->img, c->x, c->y, BLEND_ALPHA, 0, 0, 1.0, 1.0, opacity,
                                                     color_create(128, 128, 128, 255));
-    } else if(sb->active > 0) {
+    } else if(sb->active) {
         video_render_sprite(sb->img, c->x, c->y, BLEND_ALPHA, 0);
     }
     if(sb->text) {
@@ -72,7 +72,9 @@ static int spritebutton_action(component *c, int action) {
 
     // Handle selection
     if(action == ACT_KICK || action == ACT_PUNCH) {
-        sb->active = 10;
+        if(sb->active >= 0) {
+            sb->active = 10;
+        }
         if(sb->click_cb) {
             sb->click_cb(c, sb->userdata);
         }
@@ -116,4 +118,9 @@ void spritebutton_set_tick_cb(component *c, spritebutton_tick_cb cb) {
 void spritebutton_set_focus_cb(component *c, spritebutton_focus_cb cb) {
     spritebutton *sb = widget_get_obj(c);
     sb->focus_cb = cb;
+}
+
+void spritebutton_set_always_display(component *c) {
+    spritebutton *sb = widget_get_obj(c);
+    sb->active = -1;
 }

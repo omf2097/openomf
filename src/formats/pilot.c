@@ -124,7 +124,7 @@ void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
     pilot->enemies_inc_unranked = memread_uword(mr);
     pilot->enemies_ex_unranked = memread_uword(mr);
     pilot->unk_d_a = memread_uword(mr);
-    pilot->unk_d_b = memread_udword(mr);
+    pilot->har_trades = memread_udword(mr);
     pilot->winnings = memread_udword(mr);
     pilot->total_value = memread_udword(mr);
     pilot->unk_f_a = memread_float(mr);
@@ -263,7 +263,7 @@ void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
     memwrite_uword(w, pilot->enemies_inc_unranked);
     memwrite_uword(w, pilot->enemies_ex_unranked);
     memwrite_uword(w, pilot->unk_d_a);
-    memwrite_udword(w, pilot->unk_d_b);
+    memwrite_udword(w, pilot->har_trades);
     memwrite_udword(w, pilot->winnings);
     memwrite_udword(w, pilot->total_value);
     memwrite_float(w, pilot->unk_f_a);
