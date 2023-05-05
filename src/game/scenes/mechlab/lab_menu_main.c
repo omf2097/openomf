@@ -27,13 +27,29 @@ void lab_menu_main_arena(component *c, void *userdata) {
         game_player *p2 = game_state_get_player(s->gs, 1);
         p2->selectable = 0;
         p2->pilot = pilot;
-        ai_controller_create(ctrl, p1->pilot->difficulty, pilot, p2->pilot->pilot_id);
+        // there's not an exact difficulty mapping
+        // for aluminum to 1p mode, but round up to
+        // veteran
+        int difficulty = AI_DIFFICULTY_VETERAN;
+        if(p1->pilot->difficulty == 1) {
+            // Iron == Champion
+            difficulty = AI_DIFFICULTY_CHAMPION;
+        } else if(p1->pilot->difficulty == 2) {
+            // Steel == Deadly
+            difficulty = AI_DIFFICULTY_DEADLY;
+        } else if(p1->pilot->difficulty == 3) {
+            // Heavy Metal == F.A.A.K. 2
+            difficulty = AI_DIFFICULTY_ULTIMATE;
+        }
+        ai_controller_create(ctrl, difficulty, pilot, p2->pilot->pilot_id);
         game_player_set_ctrl(p2, ctrl);
         // reset the score between matches in tournament mode
         // assume we used the score by now if we need it for
         // winnings calculations, etc
         chr_score_reset_wins(game_player_get_score(p1));
         chr_score_reset(game_player_get_score(p1), 1);
+        // set the score difficulty
+        chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)), difficulty);
         game_state_set_next(s->gs, SCENE_VS);
     }
 }

@@ -242,7 +242,7 @@ bool roll_pref(int pref_val) {
  * \return A boolean indicating whether the AI is smart enough.
  */
 bool smart_usually(const ai *a) {
-    if(a->difficulty == 6) {
+    if(a->difficulty >= 6) {
         // at highest difficulty 92% chance to be smart
         return !roll_chance(12);
     } else if(a->difficulty >= 3) {
