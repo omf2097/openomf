@@ -11,6 +11,7 @@
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "utils/random.h"
 #include "video/video.h"
 #include <stdio.h>
@@ -349,7 +350,7 @@ int vs_create(scene *scene) {
 
         // choose 5 random ones and pack them into the bitmask
         uint16_t new_trades = 0;
-        for(int i = 0; i < tradecount;) {
+        for(int i = 0; i < min2(5, tradecount);) {
             uint8_t choice = rand_int(tradecount);
             if(trades[choice] != -1) {
                 new_trades |= 1 << trades[choice];
