@@ -86,13 +86,11 @@ bool object_array_get_batch(const object_array *array, object_array_batch *state
     if(state->end >= array->item_count) {
         return false;
     }
-    int index = state->end + 1;
-    for(; index < array->item_count; index++) {
-        if(array->modes[index] != state->mode)
+    state->start = state->end;
+    for(; state->end < array->item_count; state->end++) {
+        if(array->modes[state->end] != state->mode)
             break;
     }
-    state->start = state->end;
-    state->end = index;
     state->mode = !state->mode; // We only have two modes, so flip-flop.
     return true;
 }
