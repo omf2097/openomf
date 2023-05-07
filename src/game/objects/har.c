@@ -1016,7 +1016,13 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             har_event_block(b, move, false);
             har_block(obj_b, hit_coord);
             if(b->is_wallhugging) {
-                a->flinching = 1;
+                vec2f push = object_get_vel(obj_a);
+                push.x += 2.0f * object_get_direction(obj_b);
+                object_set_vel(obj_a, push);
+            } else {
+                vec2f push = object_get_vel(obj_b);
+                push.x += 2.0f * object_get_direction(obj_a);
+                object_set_vel(obj_b, push);
             }
             return;
         }
@@ -1049,9 +1055,21 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         if(b->state == STATE_RECOIL || b->is_wallhugging) {
             // back the attacker off a little
-            a->flinching = 1;
+            vec2f push = object_get_vel(obj_a);
+            push.x += 2.0f * object_get_direction(obj_b);
+            object_set_vel(obj_a, push);
         }
         har_take_damage(obj_b, &move->footer_string, move->damage, move->stun);
+        if(b->is_wallhugging) {
+            vec2f push = object_get_vel(obj_a);
+            push.x += 3.0f * object_get_direction(obj_b);
+            object_set_vel(obj_a, push);
+        } else {
+            vec2f push = object_get_vel(obj_b);
+            push.x += 3.0f * object_get_direction(obj_a);
+            object_set_vel(obj_b, push);
+        }
+
         if(hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
@@ -1392,21 +1410,6 @@ void har_tick(object *obj) {
             vel.x = 0;
             object_set_vel(obj, vel);
         }
-    }
-
-    if(h->flinching) {
-        vec2f push = object_get_vel(obj);
-        // The infamous Harrison-Stetson method
-        // XXX TODO is there a non-hardcoded value that we could use?
-        if(h->executing_move == 0 && (h->state == STATE_CROUCHBLOCK || h->state == STATE_WALKFROM)) {
-            push.x = 8.0f * -object_get_direction(obj);
-        } else if(h->executing_move == 1 && !h->is_wallhugging) {
-            push.x = 1.5f * -object_get_direction(obj);
-        } else if(h->executing_move == 0 && !h->is_wallhugging) {
-            push.x = 3.0f * -object_get_direction(obj);
-        }
-        object_set_vel(obj, push);
-        h->flinching = 0;
     }
 
     // Endurance restore
