@@ -35,6 +35,7 @@ typedef struct video_state {
     bool fullscreen;
     bool vsync;
 
+    bool draw_atlas;
     float fade;
     int target_move_x;
     int target_move_y;
@@ -142,6 +143,10 @@ error_0:
     return 1;
 }
 
+void video_draw_atlas(bool draw_atlas) {
+    g_video_state.draw_atlas = draw_atlas;
+}
+
 void video_reinit_renderer(void) {
 
 }
@@ -182,7 +187,11 @@ void video_render_finish(void) {
     render_target_deactivate();
     glViewport(0, 0, g_video_state.viewport_w, g_video_state.viewport_h);
     activate_program(g_video_state.rgba_prog_id);
-    bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", fbo_tex_units[!target_select]);
+    if(g_video_state.draw_atlas) {
+        bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", TEX_UNIT_ATLAS);
+    } else {
+        bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", fbo_tex_units[!target_select]);
+    }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 

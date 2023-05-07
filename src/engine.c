@@ -128,6 +128,12 @@ void engine_run(engine_init_flags *init_flags) {
                     if(e.key.keysym.sym == SDLK_F1) {
                         take_screenshot = 1;
                     }
+                    if(e.key.keysym.sym == SDLK_F9) {
+                        video_draw_atlas(true);
+                    }
+                    if(e.key.keysym.sym == SDLK_F10) {
+                        video_draw_atlas(false);
+                    }
                     if(e.key.keysym.sym == SDLK_F5) {
                         visual_debugger = !visual_debugger;
                     }
