@@ -3,9 +3,20 @@
 #include "formats/error.h"
 #include "utils/allocator.h"
 #include "video/color.h"
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define COLOR_6TO8(color) ((color * 255.0) / 63.0)
+#define COLOR_8TO6(color) ((color * 63.0) / 255.0)
+
+static const int menu_colors[6][3] = {
+    {0,  0,  42},
+    {0,  0,  60},
+    {0,  0,  22},
+    {0,  63, 0 },
+    {0,  30, 0 },
+    {20, 63, 20},
+};
 
 int palette_create(palette *pal) {
     if(pal == NULL) {
@@ -110,13 +121,22 @@ int palette_from_gimp_palette(palette *pal, const char *filename) {
     return SD_SUCCESS;
 }
 
+void palette_set_menu_colors(palette *pal) {
+    // Set the default menu colors. These are always set for the default (0) palette.
+    for(int i = 0; i < 6; i++) {
+        pal->data[250 + i][0] = COLOR_6TO8(menu_colors[i][0]);
+        pal->data[250 + i][1] = COLOR_6TO8(menu_colors[i][0]);
+        pal->data[250 + i][2] = COLOR_6TO8(menu_colors[i][0]);
+    }
+}
+
 int palette_load_range(sd_reader *reader, palette *pal, int index_start, int index_count) {
     char d[3];
     for(int i = index_start; i < index_start + index_count; i++) {
         sd_read_buf(reader, d, 3);
-        pal->data[i][0] = ((d[0] << 2) | ((d[0] & 0x30) >> 4));
-        pal->data[i][1] = ((d[1] << 2) | ((d[1] & 0x30) >> 4));
-        pal->data[i][2] = ((d[2] << 2) | ((d[2] & 0x30) >> 4));
+        pal->data[i][0] = COLOR_6TO8(d[0]);
+        pal->data[i][1] = COLOR_6TO8(d[1]);
+        pal->data[i][2] = COLOR_6TO8(d[2]);
     }
     return SD_SUCCESS;
 }
@@ -125,9 +145,9 @@ int palette_mload_range(memreader *reader, palette *pal, int index_start, int in
     char d[3];
     for(int i = index_start; i < index_start + index_count; i++) {
         memread_buf(reader, d, 3);
-        pal->data[i][0] = ((d[0] << 2) | ((d[0] & 0x30) >> 4));
-        pal->data[i][1] = ((d[1] << 2) | ((d[1] & 0x30) >> 4));
-        pal->data[i][2] = ((d[2] << 2) | ((d[2] & 0x30) >> 4));
+        pal->data[i][0] = COLOR_6TO8(d[0]);
+        pal->data[i][1] = COLOR_6TO8(d[1]);
+        pal->data[i][2] = COLOR_6TO8(d[2]);
     }
     return SD_SUCCESS;
 }
@@ -143,9 +163,9 @@ void palette_save_range(sd_writer *writer, const palette *pal, int index_start, 
     for(int i = index_start; i < index_start + index_count; i++) {
         d = pal->data[i];
         // for some reason, we need to mask off the high bits or the bitshift doesn't work
-        sd_write_ubyte(writer, (d[0] & 0xff) >> 2);
-        sd_write_ubyte(writer, (d[1] & 0xff) >> 2);
-        sd_write_ubyte(writer, (d[2] & 0xff) >> 2);
+        sd_write_ubyte(writer, COLOR_8TO6(d[0]));
+        sd_write_ubyte(writer, COLOR_8TO6(d[1]));
+        sd_write_ubyte(writer, COLOR_8TO6(d[2]));
     }
 }
 
@@ -154,9 +174,9 @@ void palette_msave_range(memwriter *writer, const palette *pal, int index_start,
     for(int i = index_start; i < index_start + index_count; i++) {
         d = pal->data[i];
         // for some reason, we need to mask off the high bits or the bitshift doesn't work
-        memwrite_ubyte(writer, (d[0] & 0xff) >> 2);
-        memwrite_ubyte(writer, (d[1] & 0xff) >> 2);
-        memwrite_ubyte(writer, (d[2] & 0xff) >> 2);
+        memwrite_ubyte(writer, COLOR_8TO6(d[0]));
+        memwrite_ubyte(writer, COLOR_8TO6(d[1]));
+        memwrite_ubyte(writer, COLOR_8TO6(d[2]));
     }
 }
 
@@ -168,8 +188,8 @@ void palette_save(sd_writer *writer, const palette *pal) {
 void palette_load_player_colors(palette *dst, palette *src, int player) {
     // only load 47 palette colors, skipping the first one
     // because that seems to be ignored by the original
-    int dstoff = (player * 48) + 1;
-    memcpy(dst->data + dstoff, src->data + 1, 47 * 3);
+    int dst_offset = (player * 48) + 1;
+    memcpy(dst->data + dst_offset, src->data + 1, 47 * 3);
 }
 
 void palette_load_player_cutscene_colors(palette *dst, palette *src) {
@@ -180,9 +200,9 @@ void palette_load_player_cutscene_colors(palette *dst, palette *src) {
     }
 }
 
-void palette_set_player_color(palette *pal, int player, int srccolor, int dstcolor) {
-    int dst = dstcolor * 16 + player * 48;
-    int src = srccolor * 16;
+void palette_set_player_color(palette *pal, int player, int src_color, int dst_color) {
+    int dst = dst_color * 16 + player * 48;
+    int src = src_color * 16;
     char iz[3];
     memcpy(iz, pal->data, 3);
     if(altpals) {

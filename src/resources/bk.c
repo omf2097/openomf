@@ -1,6 +1,5 @@
 #include "formats/bk.h"
 #include "resources/bk.h"
-#include <string.h>
 
 void bk_create(bk *b, void *src) {
     sd_bk_file *sdbk = (sd_bk_file *)src;
@@ -20,6 +19,9 @@ void bk_create(bk *b, void *src) {
     for(int i = 0; i < sdbk->palette_count; i++) {
         vector_append(&b->palettes, (palette *)sdbk->palettes[i]);
     }
+
+    // All scenes always have the menu colors set for palette 0.
+    palette_set_menu_colors(vector_get(&b->palettes, 0));
 
     // Copy info structs
     hashmap_create(&b->infos);
