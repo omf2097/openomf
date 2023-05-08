@@ -96,6 +96,7 @@ int palette_to_gimp_palette(const palette *pal, const char *filename);
  */
 int palette_from_gimp_palette(palette *pal, const char *filename);
 
+void palette_set_menu_colors(palette *pal);
 int palette_mload_range(memreader *reader, palette *pal, int index_start, int index_count);
 int palette_load_range(sd_reader *reader, palette *pal, int index_start, int index_count);
 int palette_load(sd_reader *reader, palette *pal);
@@ -104,7 +105,7 @@ void palette_save_range(sd_writer *writer, const palette *pal, int index_start, 
 void palette_save(sd_writer *writer, const palette *pal);
 void palette_load_player_colors(palette *dst, palette *src, int player);
 void palette_load_player_cutscene_colors(palette *dst, palette *src);
-void palette_set_player_color(palette *pal, int player, int sourcecolor, int destcolor);
+void palette_set_player_color(palette *pal, int player, int src_color, int dst_color);
 void palette_copy(palette *dst, const palette *src, int index_start, int inde_count);
 
 #ifdef __cplusplus
