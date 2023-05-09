@@ -56,7 +56,7 @@ void surface_create_from_vga(surface *sur, const sd_vga_image *src) {
 }
 
 void surface_create_from_image(surface *sur, image *img) {
-    surface_create_from_data(sur, SURFACE_TYPE_RGBA, img->w, img->h, img->data);
+    surface_create_from_data(sur, SURFACE_TYPE_PALETTE, img->w, img->h, img->data);
 }
 
 int surface_to_image(surface *sur, image *img) {
