@@ -9,7 +9,7 @@
 
 #define OBJ_SIZE 20
 #define OBJ_BYTES (OBJ_SIZE * sizeof(GLfloat))
-#define MAX_FANS 512
+#define MAX_FANS 2048
 #define VBO_SIZE (MAX_FANS * OBJ_BYTES)
 #define BUFFER_COUNT 2
 
