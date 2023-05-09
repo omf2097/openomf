@@ -4,6 +4,7 @@
 #include "formats/fonts.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include "sprite.h"
 
 int sd_font_create(sd_font *font) {
     if(font == NULL) {
@@ -57,7 +58,7 @@ int sd_font_save(const sd_font *font, const char *file) {
     return SD_SUCCESS;
 }
 
-int sd_font_decode(const sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8_t g, uint8_t b) {
+int sd_font_decode(const sd_font *font, sd_vga_image *o, uint8_t ch, uint8_t color) {
     if(font == NULL || o == NULL || ch >= 224) {
         return SD_INVALID_INPUT;
     }
@@ -66,16 +67,13 @@ int sd_font_decode(const sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r,
     for(int i = 0; i < font->h; i++) {
         for(int k = font->h - 1; k >= 0; k--) {
             if(font->chars[ch].data[i] & (1 << k)) {
-                o->data[t++] = r;
-                o->data[t++] = g;
-                o->data[t++] = b;
-                o->data[t++] = (uint8_t)255;
+                o->data[t] = color;
+                o->stencil[t] = 1;
             } else {
-                o->data[t++] = 0;
-                o->data[t++] = 0;
-                o->data[t++] = 0;
-                o->data[t++] = 0;
+                o->data[t] = 0;
+                o->stencil[t] = 0;
             }
+            t++;
         }
     }
     return SD_SUCCESS;
