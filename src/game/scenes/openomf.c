@@ -54,9 +54,5 @@ int openomf_create(scene *scene) {
     scene_set_input_poll_cb(scene, openomf_input_tick);
     scene_set_free_cb(scene, openomf_free);
 
-    // Don't render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(false);
-
     return 0;
 }
