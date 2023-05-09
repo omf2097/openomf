@@ -95,7 +95,6 @@ void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     } else if(scene->id == SCENE_END2 && (id == 1 || id == 11)) {
         *m_load = 1;
     }
-    video_render_bg_separately(false);
 }
 
 int cutscene_create(scene *scene) {
