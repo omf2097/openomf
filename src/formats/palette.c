@@ -125,8 +125,8 @@ void palette_set_menu_colors(palette *pal) {
     // Set the default menu colors. These are always set for the default (0) palette.
     for(int i = 0; i < 6; i++) {
         pal->data[250 + i][0] = COLOR_6TO8(menu_colors[i][0]);
-        pal->data[250 + i][1] = COLOR_6TO8(menu_colors[i][0]);
-        pal->data[250 + i][2] = COLOR_6TO8(menu_colors[i][0]);
+        pal->data[250 + i][1] = COLOR_6TO8(menu_colors[i][1]);
+        pal->data[250 + i][2] = COLOR_6TO8(menu_colors[i][2]);
     }
 }
 
