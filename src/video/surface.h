@@ -2,6 +2,7 @@
 #define SURFACE_H
 
 #include "formats/palette.h"
+#include "formats/vga_image.h"
 #include "video/image.h"
 #include "video/screen_palette.h"
 #include <SDL.h>
@@ -30,6 +31,7 @@ enum
 
 void surface_create(surface *sur, int type, int w, int h);
 void surface_force_refresh(surface *sur);
+void surface_create_from_vga(surface *sur, const sd_vga_image *src);
 void surface_create_from_image(surface *sur, image *img);
 void surface_create_from_data(surface *sur, int type, int w, int h, const char *src);
 int surface_to_image(surface *sur, image *img);
