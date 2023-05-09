@@ -627,9 +627,5 @@ int vs_create(scene *scene) {
     scene_set_static_tick_cb(scene, vs_static_tick);
     scene_set_free_cb(scene, vs_free);
 
-    // Don't render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(false);
-
     return 0;
 }

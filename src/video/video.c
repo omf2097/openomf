@@ -40,8 +40,6 @@ typedef struct video_state {
     int target_move_x;
     int target_move_y;
 
-    bool render_bg_separately;
-
     // Palettes
     palette *base_palette;          // Copy of the scenes base palette
     screen_palette *screen_palette; // Normal rendering palette
@@ -67,7 +65,6 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.fade = 1.0f;
     g_video_state.target_move_x = 0;
     g_video_state.target_move_y = 0;
-    g_video_state.render_bg_separately = true;
 
     // Clear palettes
     g_video_state.base_palette = omf_calloc(1, sizeof(palette));
@@ -275,10 +272,6 @@ void video_copy_base_pal_range(const palette *src, int src_start, int dst_start,
 
 screen_palette *video_get_pal_ref(void) {
     return g_video_state.screen_palette;
-}
-
-void video_render_bg_separately(bool separate) {
-    g_video_state.render_bg_separately = separate;
 }
 
 void video_render_background(surface *sur) {

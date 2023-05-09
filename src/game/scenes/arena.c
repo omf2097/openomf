@@ -1535,10 +1535,6 @@ int arena_create(scene *scene) {
         local->rec = NULL;
     }
 
-    // Don't render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(false);
-
     // All done!
     return 0;
 }

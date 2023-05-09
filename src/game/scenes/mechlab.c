@@ -495,9 +495,5 @@ int mechlab_create(scene *scene) {
     scene_set_free_cb(scene, mechlab_free);
     scene_set_dynamic_tick_cb(scene, mechlab_tick);
 
-    // Don't render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(false);
-
     return 0;
 }

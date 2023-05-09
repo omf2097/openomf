@@ -40,7 +40,6 @@ void video_close(void);
 int video_screenshot(image *img);
 int video_area_capture(surface *sur, int x, int y, int w, int h);
 void video_set_fade(float fade);
-void video_render_bg_separately(bool separate);
 
 void video_draw_atlas(bool draw_atlas);
 void video_set_base_palette(const palette *src);
