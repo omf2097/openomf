@@ -9,9 +9,9 @@
 #include "video/image.h"
 #include "video/video.h"
 
-#define COLOR_MENU_LINE color_create(0, 0, 89, 255)
-#define COLOR_MENU_BORDER color_create(0, 0, 243, 255)
-#define COLOR_MENU_BG color_create(4, 4, 16, 210)
+#define COLOR_MENU_LINE 252
+#define COLOR_MENU_BORDER 251
+#define COLOR_MENU_BG 0
 
 typedef struct {
     char *text;

@@ -1,13 +1,12 @@
 #include "game/gui/menu_background.h"
-#include "video/color.h"
 #include "video/image.h"
 
-#define COLOR_MENU_LINE color_create(0, 0, 89, 255)
-#define COLOR_MENU_BORDER color_create(0, 0, 243, 255)
-#define COLOR_MENU_LINE2 color_create(0, 0, 125, 255)
-#define COLOR_MENU_BORDER1 color_create(0, 158, 0, 255)
-#define COLOR_MENU_BORDER2 color_create(0, 93, 0, 255)
-#define COLOR_MENU_BG color_create(4, 4, 16, 210)
+#define COLOR_MENU_LINE 252
+#define COLOR_MENU_BORDER 251
+#define COLOR_MENU_LINE2 250
+#define COLOR_MENU_BORDER1 253
+#define COLOR_MENU_BORDER2 254
+#define COLOR_MENU_BG 0
 
 void menu_background_create(surface *s, int w, int h) {
     image img;
@@ -45,7 +44,7 @@ void menu_background2_create(surface *s, int w, int h) {
 void menu_background_border_create(surface *s, int w, int h) {
     image img;
     image_create(&img, w, h);
-    image_clear(&img, color_create(0, 0, 0, 0));
+    image_clear(&img, 0);
     image_rect(&img, 0, 0, w - 1, h - 1, COLOR_MENU_BORDER);
     surface_create_from_image(s, &img);
     image_free(&img);

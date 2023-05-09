@@ -931,9 +931,9 @@ void har_debug(object *obj) {
     image img;
     surface_to_image(&h->cd_debug, &img);
 
-    color c = color_create(0, 255, 0, 255);
-    color red = color_create(0, 255, 0, 255);
-    color blank = color_create(0, 0, 0, 0);
+    uint8_t c = 0xCF;
+    uint8_t red = 0xCF;
+    uint8_t blank = 0;
 
     // video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
 
