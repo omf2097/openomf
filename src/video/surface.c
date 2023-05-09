@@ -48,6 +48,13 @@ void surface_create_from_data(surface *sur, int type, int w, int h, const char *
     create_hash(sur);
 }
 
+void surface_create_from_vga(surface *sur, const sd_vga_image *src) {
+    surface_create(sur, SURFACE_TYPE_PALETTE, src->w, src->h);
+    memcpy(sur->data, src->data, src->w * src->h);
+    memcpy(sur->stencil, src->stencil, src->w * src->h);
+    create_hash(sur);
+}
+
 void surface_create_from_image(surface *sur, image *img) {
     surface_create_from_data(sur, SURFACE_TYPE_RGBA, img->w, img->h, img->data);
 }
