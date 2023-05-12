@@ -2,15 +2,18 @@
 
 layout (location = 0) in vec2 position;
 layout (location = 1) in vec2 tex_offset;
-layout (location = 2) in float mode;
+layout (location = 2) in int mode;
+layout (location = 3) in int pal_offset;
 uniform mat4 projection;
 
 out vec2 tex_coord;
 out vec2 fbo_coord;
-out float blend_mode;
+flat out int blend_mode;
+flat out int palette_offset;
 
 void main() {
     blend_mode = mode;
+    palette_offset = pal_offset;
     tex_coord = tex_offset.xy;
     fbo_coord = vec2(
         position.x / 320.0,
