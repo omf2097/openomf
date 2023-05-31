@@ -1009,7 +1009,6 @@ bool dislikes_move(const ai *a, const af_move *move) {
         case CAT_HIGH:
             // pilots with bad high ability dislike high moves
             return !roll_pref(a->pilot->att_normal) && !roll_pref(a->pilot->ap_high);
-        case CAT_THROW:
         case CAT_CLOSE:
             // non-hyper pilots with bad throw ability dislike throw moves
             return !roll_pref(a->pilot->att_hyper) && !roll_pref(a->pilot->ap_throw);
@@ -1232,7 +1231,7 @@ int ai_har_event(controller *ctrl, har_event event) {
         case HAR_EVENT_TAKE_HIT_PROJECTILE: {
 
             // if enemy is cheesing the AI will try to adjust
-            if(event.move->category == CAT_THROW || event.move->category == CAT_CLOSE) {
+            if(event.move->category == CAT_CLOSE) {
                 // keep track of how many times we have been thrown
                 a->thrown++;
                 if(learning_moment(a) && a->thrown >= MAX_TIMES_THROWN) {
@@ -1285,7 +1284,7 @@ int ai_har_event(controller *ctrl, har_event event) {
             if(has_queued_tactic || !smart_usually(a))
                 break;
 
-            if(event.move->category == CAT_THROW || event.move->category == CAT_CLOSE) {
+            if(event.move->category == CAT_CLOSE) {
                 // distance gaining tactics
                 int tacs[] = {TACTIC_ESCAPE, TACTIC_PUSH, TACTIC_FLY};
                 chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
@@ -1375,6 +1374,9 @@ bool is_valid_move(const af_move *move, const har *h, bool force_allow_projectil
         return false;
     }
     if(move->category == CAT_DESTRUCTION && h->state != STATE_SCRAP) {
+        return false;
+    }
+    if(move->category == CAT_FIRE_ICE) {
         return false;
     }
 
@@ -2377,9 +2379,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     if(!enemy_close)
                         break;
 
-                    if(assign_move_by_cat(ctrl, CAT_THROW, false)) {
-                        attack_cat = CAT_THROW;
-                    } else if(assign_move_by_cat(ctrl, CAT_CLOSE, true)) {
+                    if(assign_move_by_cat(ctrl, CAT_CLOSE, true)) {
                         attack_cat = CAT_CLOSE;
                     }
 

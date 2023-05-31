@@ -1561,6 +1561,10 @@ af_move *match_move(object *obj, char *inputs) {
                     continue;
                 }
 
+                if(move->category == CAT_FIRE_ICE) {
+                    continue;
+                }
+
                 if(h->state != STATE_JUMPING && move->pos_constraints & 0x2) {
                     DEBUG("Position contraint prevents move when not jumping!");
                     // required to be jumping
