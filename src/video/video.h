@@ -19,20 +19,49 @@ void video_reinit_renderer(void);
 void video_get_state(int *w, int *h, int *fs, int *vsync);
 void video_move_target(int x, int y);
 
+/**
+ * @deprecated
+ */
 void video_render_sprite(surface *sur, int x, int y, VIDEO_BLEND_MODE blend_mode, int pal_offset);
 
+/**
+ * @deprecated
+ */
 void video_render_sprite_size(surface *sur, int sx, int sy, int sw, int sh);
 
+/**
+ * @deprecated
+ */
 void video_render_sprite_tint(surface *sur, int x, int y, color c, int pal_offset);
 
+/**
+ * @deprecated
+ */
 void video_render_sprite_flip_scale_opacity(surface *sur, int x, int y, VIDEO_BLEND_MODE blend_mode, int pal_offset,
                                             unsigned int flip_mode, float x_percent, float y_percent, uint8_t opacity);
 
+/**
+ * @deprecated
+ */
 void video_render_sprite_flip_scale_opacity_tint(surface *sur, int x, int y, VIDEO_BLEND_MODE blend_mode,
                                                  int pal_offset, unsigned int flip_mode, float x_percent,
                                                  float y_percent, uint8_t opacity, color tint);
 
+/**
+ * Render a sprite on the screen. Content of source surface will be saved to atlas for faster rendering.
+ * This is the simplest way to draw.
+ *
+ * @param src_surface Source surface
+ * @param x Destination X
+ * @param y Destination y
+ */
+void video_draw(surface *src_surface, int x, int y);
+
+/**
+ * @deprecated
+ */
 void video_tick(void);
+
 void video_render_background(surface *sur);
 void video_render_prepare(void);
 void video_render_finish(void);
@@ -42,6 +71,7 @@ int video_area_capture(surface *sur, int x, int y, int w, int h);
 void video_set_fade(float fade);
 
 void video_draw_atlas(bool draw_atlas);
+
 void video_set_base_palette(const palette *src);
 palette *video_get_base_palette(void);
 void video_force_pal_refresh(void);

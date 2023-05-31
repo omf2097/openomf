@@ -291,6 +291,15 @@ static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, 
     }
 }
 
+void video_draw(surface *src_surface, int x, int y) {
+    SDL_Rect dst;
+    dst.w = src_surface->w;
+    dst.h = src_surface->h;
+    dst.x = x;
+    dst.y = y;
+    render_sprite_fsot(&g_video_state, src_surface, &dst, BLEND_ALPHA, 0, 0, 255, color_create(0xFF, 0xFF, 0xFF, 0xFF));
+}
+
 void video_render_sprite_tint(surface *sur, int sx, int sy, color c, int pal_offset) {
 
     video_render_sprite_flip_scale_opacity_tint(sur, sx, sy, BLEND_ALPHA, pal_offset, FLIP_NONE, 1.0f, 1.0f, 255, c);
