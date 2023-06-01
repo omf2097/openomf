@@ -93,9 +93,7 @@ static void menu_render(component *c) {
     // Otherwise handle this component
     iterator it;
     component **tmp;
-    if(m->bg) {
-        video_render_sprite(m->bg, c->x, c->y, BLEND_ALPHA, 0);
-    }
+    video_draw(m->bg, c->x, c->y);
     vector_iter_begin(&s->objs, &it);
     int i = 0;
     while((tmp = iter_next(&it)) != NULL) {

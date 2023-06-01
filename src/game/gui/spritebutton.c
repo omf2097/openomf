@@ -32,7 +32,7 @@ static void spritebutton_render(component *c) {
         video_render_sprite_flip_scale_opacity_tint(sb->img, c->x, c->y, BLEND_ALPHA, 0, 0, 1.0, 1.0, opacity,
                                                     color_create(128, 128, 128, 255));
     } else if(sb->active) {
-        video_render_sprite(sb->img, c->x, c->y, BLEND_ALPHA, 0);
+        video_draw(sb->img, c->x, c->y);
     }
     if(sb->text) {
         sb->tconf.opacity = opacity;

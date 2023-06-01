@@ -19,7 +19,7 @@ typedef struct {
 static void pilotpic_render(component *c) {
     pilotpic *g = widget_get_obj(c);
     if(g->img != NULL) {
-        video_render_sprite(g->img->data, c->x, c->y, BLEND_ALPHA, 0);
+        video_draw(g->img->data, c->x, c->y);
     }
 }
 

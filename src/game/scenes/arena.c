@@ -1177,6 +1177,7 @@ void arena_render_overlay(scene *scene) {
     // Render menu (if visible)
     if(local->menu_visible) {
         guiframe_render(local->game_menu);
+        video_draw(&local->sur, 10, 150);
     }
 }
 

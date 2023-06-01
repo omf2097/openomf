@@ -313,7 +313,7 @@ void console_render(void) {
             con->input[0] = '\0';
             con->histpos_changed = 0;
         }
-        video_render_sprite(&con->background, -1, con->ypos - 101, BLEND_ALPHA, 0);
+        video_draw(&con->background, -1, con->ypos - 101);
         int t = con->ticks / 2;
         // input line
         font_render(&font_small, con->input, 0, con->ypos - 7, color_create(121, 121, 121, 255));

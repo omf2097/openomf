@@ -277,7 +277,7 @@ void vs_render(scene *scene) {
 
     if(player2->selectable) {
         // arena selection
-        video_render_sprite(&local->arena_select_bg, 55, 150, BLEND_ALPHA, 0);
+        video_draw(&local->arena_select_bg, 55, 150);
 
         object_render(&local->arena_select);
 

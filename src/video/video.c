@@ -305,18 +305,6 @@ void video_render_sprite_tint(surface *sur, int sx, int sy, color c, int pal_off
     video_render_sprite_flip_scale_opacity_tint(sur, sx, sy, BLEND_ALPHA, pal_offset, FLIP_NONE, 1.0f, 1.0f, 255, c);
 }
 
-// Wrapper
-void video_render_sprite(surface *sur, int sx, int sy, VIDEO_BLEND_MODE blend_mode, int pal_offset) {
-    video_render_sprite_flip_scale_opacity(sur, sx, sy, blend_mode, pal_offset, FLIP_NONE, 1.0f, 1.0f, 255);
-}
-
-void video_render_sprite_flip_scale_opacity(surface *sur, int sx, int sy, VIDEO_BLEND_MODE blend_mode, int pal_offset,
-                                            unsigned int flip_mode, float x_percent, float y_percent, uint8_t opacity) {
-
-    video_render_sprite_flip_scale_opacity_tint(sur, sx, sy, blend_mode, pal_offset, flip_mode, x_percent, y_percent,
-                                                opacity, color_create(0xFF, 0xFF, 0xFF, 0xFF));
-}
-
 void video_render_sprite_size(surface *sur, int sx, int sy, int sw, int sh) {
     SDL_Rect dst;
     dst.w = sw;

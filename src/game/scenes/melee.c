@@ -435,8 +435,8 @@ void melee_render(scene *scene) {
     int current_b = 5 * local->row_b + local->column_b;
 
     if(local->selection == 0) {
-        video_render_sprite(&local->feh, 70, 0, BLEND_ALPHA, 0);
-        video_render_sprite(&local->bleh, 0, 62, BLEND_ALPHA, 0);
+        video_draw(&local->feh, 70, 0);
+        video_draw(&local->bleh, 0, 62);
 
         // player bio
         font_render_wrapped_shadowed(&font_small, lang_get(135 + current_a), 4, 66, 152, COLOR_GREEN,
@@ -453,8 +453,8 @@ void melee_render(scene *scene) {
         component_render(local->bar_endurance[0]);
 
         if(player2->selectable) {
-            video_render_sprite(&local->feh, 320 - 70 - local->feh.w, 0, BLEND_ALPHA, 0);
-            video_render_sprite(&local->bleh, 320 - local->bleh.w, 62, BLEND_ALPHA, 0);
+            video_draw(&local->feh, 320 - 70 - local->feh.w, 0);
+            video_draw(&local->bleh, 320 - local->bleh.w, 62);
             // player bio
             font_render_wrapped_shadowed(&font_small, lang_get(135 + current_b), 320 - local->bleh.w + 4, 66, 152,
                                          COLOR_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
