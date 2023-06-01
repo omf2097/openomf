@@ -157,7 +157,6 @@ if (USE_TOOLS)
             tools/shared/animation_misc.c
             tools/shared/conversions.c)
     add_executable(soundtool tools/soundtool/main.c)
-    add_executable(fonttool tools/fonttool/main.c)
     add_executable(languagetool tools/languagetool/main.c)
     add_executable(omf_parse tools/stringparser/main.c)
     add_executable(afdiff tools/afdiff/main.c)
@@ -174,7 +173,6 @@ if (USE_TOOLS)
         bktool
         aftool
         soundtool
-        fonttool
         languagetool
         omf_parse
         afdiff
