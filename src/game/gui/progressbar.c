@@ -103,17 +103,16 @@ static void progressbar_render(component *c) {
         }
     }
 
-    // Render backgrond (flashing or not)
+    // Render background (flashing or not)
     if(bar->state) {
-        video_render_sprite(bar->background_alt, c->x, c->y, BLEND_ALPHA, 0);
+        video_draw(bar->background_alt, c->x, c->y);
     } else {
-        video_render_sprite(bar->background, c->x, c->y, BLEND_ALPHA, 0);
+        video_draw(bar->background, c->x, c->y);
     }
 
     // Render block
     if(bar->block != NULL) {
-        video_render_sprite(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w + 1),
-                            c->y, BLEND_ALPHA, 0);
+        video_draw(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w + 1), c->y);
     }
 }
 

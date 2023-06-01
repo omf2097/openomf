@@ -69,7 +69,7 @@ static void textbutton_render(component *c) {
 
     // Border
     if(tb->border_enabled) {
-        video_render_sprite(&tb->border, c->x - 2, c->y - 2, BLEND_ALPHA, 0);
+        video_draw(&tb->border, c->x - 2, c->y - 2);
     }
 }
 

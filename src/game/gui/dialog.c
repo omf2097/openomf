@@ -76,7 +76,7 @@ void dialog_render(dialog *dlg) {
     if(!dlg->visible) {
         return;
     }
-    video_render_sprite(&dlg->background, dlg->x, dlg->y, BLEND_ALPHA, 0);
+    video_draw(&dlg->background, dlg->x, dlg->y);
     if(dlg->yes) {
         component_render(dlg->yes);
     }
