@@ -29,7 +29,7 @@ static void textinput_render(component *c) {
     int chars = strlen(tb->buf);
 
     if(tb->bg_enabled) {
-        video_render_sprite(&tb->sur, c->x + (c->w - tb->sur.w) / 2, c->y - 2, BLEND_ALPHA, 0);
+        video_draw(&tb->sur, c->x + (c->w - tb->sur.w) / 2, c->y - 2);
     }
 
     if(component_is_selected(c)) {

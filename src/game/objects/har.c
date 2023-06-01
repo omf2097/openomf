@@ -926,7 +926,7 @@ void har_debug(object *obj) {
     uint8_t red = 0xCF;
     uint8_t blank = 0;
 
-    // video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
+    // video_draw(&h->cd_debug, 0, 0);
 
     if(obj->cur_sprite == NULL) {
         return;
@@ -977,7 +977,7 @@ void har_debug(object *obj) {
     image_set_pixel(&img, pos_a.x, pos_a.y, red);
 
     surface_force_refresh(&h->cd_debug); // Force refresh for the texture
-    video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
+    video_draw(&h->cd_debug, 0, 0);
 }
 #endif // DEBUGMODE
 
