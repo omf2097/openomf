@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// clang-format off
 #define F_INT(struct_, var, def)                                                                                       \
     { #var, {.i = def }, TYPE_INT, offsetof(struct_, var) }
 #define F_BOOL(struct_, var, def)                                                                                      \
@@ -20,6 +21,7 @@
 
 #define S_2_F(struct_, field)                                                                                          \
     { struct_, field, NFIELDS(field) }
+// clang-format on
 
 static settings _settings;
 static const char *settings_path;
