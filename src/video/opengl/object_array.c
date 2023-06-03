@@ -19,6 +19,7 @@ typedef struct {
     GLfloat tex_y;
     GLint blend_mode;
     GLint palette_offset;
+    GLint palette_limit;
 } __attribute__((aligned(4))) object_data;
 
 typedef struct object_array {
@@ -35,20 +36,27 @@ typedef struct object_array {
     int mode_flip;
 } object_array;
 
+#define ATTRIB(index, stride, step, size, type, normalize)                                                             \
+    glVertexAttribPointer(index, size, type, normalize, stride, step);                                                 \
+    glEnableVertexAttribArray(index);                                                                                  \
+    step += size * sizeof(GLfloat);                                                                                    \
+    index++
+
+#define ATTRIB_I(index, stride, step, size, type)                                                                      \
+    glVertexAttribIPointer(index, size, type, stride, step);                                                           \
+    glEnableVertexAttribArray(index);                                                                                  \
+    step += size * sizeof(GLint);                                                                                      \
+    index++
+
 static void setup_vao_layout() {
-    int stride = 4 * sizeof(GLfloat) + 2 * sizeof(GLint);
+    int stride = 4 * sizeof(GLfloat) + 3 * sizeof(GLint);
+    int index = 0;
     void *step = 0;
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, step); // NOLINT
-    glEnableVertexAttribArray(0);
-    step += 2 * sizeof(GLfloat);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, step); // NOLINT
-    glEnableVertexAttribArray(1);
-    step += 2 * sizeof(GLfloat);
-    glVertexAttribIPointer(2, 1, GL_INT, stride, step); // NOLINT
-    glEnableVertexAttribArray(2);
-    step += sizeof(GLint);
-    glVertexAttribIPointer(3, 1, GL_INT, stride, step); // NOLINT
-    glEnableVertexAttribArray(3);
+    ATTRIB(index, stride, step, 2, GL_FLOAT, GL_FALSE);
+    ATTRIB(index, stride, step, 2, GL_FLOAT, GL_FALSE);
+    ATTRIB_I(index, stride, step, 1, GL_INT);
+    ATTRIB_I(index, stride, step, 1, GL_INT);
+    ATTRIB_I(index, stride, step, 1, GL_INT);
 }
 
 object_array *object_array_create(GLfloat src_w, GLfloat src_h) {
@@ -115,16 +123,17 @@ void object_array_draw(const object_array *array, object_array_batch *state) {
     glMultiDrawArrays(GL_TRIANGLE_FAN, array->fans_starts + state->start, array->fans_sizes + state->start, count);
 }
 
-#define COORDS(ptr, cx, cy, tx, ty, mode, pal_offset)                                                                  \
+#define COORDS(ptr, cx, cy, tx, ty, mode, pal_offset, pal_limit)                                                       \
     ptr.x = cx;                                                                                                        \
     ptr.y = cy;                                                                                                        \
     ptr.tex_x = tx;                                                                                                    \
     ptr.tex_y = ty;                                                                                                    \
     ptr.blend_mode = mode;                                                                                             \
-    ptr.palette_offset = pal_offset;
+    ptr.palette_offset = pal_offset;                                                                                   \
+    ptr.palette_limit = pal_limit;
 
 static void add_item(object_array *array, float dx, float dy, int x, int y, int w, int h, int tx, int ty, int tw,
-                     int th, int flags, VIDEO_BLEND_MODE blend_mode, int pal_offset) {
+                     int th, int flags, VIDEO_BLEND_MODE blend_mode, int pal_offset, int pal_limit) {
     float tx0, tx1;
     if(flags & FLIP_HORIZONTAL) {
         tx0 = (tx + tw) * dx;
@@ -143,20 +152,12 @@ static void add_item(object_array *array, float dx, float dy, int x, int y, int 
         ty1 = (ty + th) * dy;
     }
 
-    // TODO: This is kind of a hack. Since the pal_offset
-    // is only ever used for player 2 har, we can safely
-    // make some assumptions. therefore, only apply offset,
-    // if the color we are handling is between 0 and 48 (har colors).
-    if(pal_offset > 47) {
-        pal_offset = 0;
-    }
-
     object_data *data = (object_data *)array->mapping;
     int row = array->item_count * 4;
-    COORDS(data[row + 0], x + w, y + h, tx1, ty1, blend_mode, pal_offset);
-    COORDS(data[row + 1], x, y + h, tx0, ty1, blend_mode, pal_offset);
-    COORDS(data[row + 2], x, y, tx0, ty0, blend_mode, pal_offset);
-    COORDS(data[row + 3], x + w, y, tx1, ty0, blend_mode, pal_offset);
+    COORDS(data[row + 0], x + w, y + h, tx1, ty1, blend_mode, pal_offset, pal_limit);
+    COORDS(data[row + 1], x, y + h, tx0, ty1, blend_mode, pal_offset, pal_limit);
+    COORDS(data[row + 2], x, y, tx0, ty0, blend_mode, pal_offset, pal_limit);
+    COORDS(data[row + 3], x + w, y, tx1, ty0, blend_mode, pal_offset, pal_limit);
 
     array->fans_starts[array->item_count] = array->item_count * 4;
     array->fans_sizes[array->item_count] = 4;
@@ -165,7 +166,7 @@ static void add_item(object_array *array, float dx, float dy, int x, int y, int 
 }
 
 void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th, int flags,
-                      VIDEO_BLEND_MODE blend_mode, int pal_offset) {
+                      VIDEO_BLEND_MODE blend_mode, int pal_offset, int pal_limit) {
     if(array->item_count >= MAX_FANS) {
         PERROR("Too many objects!");
         return;
@@ -176,9 +177,9 @@ void object_array_add(object_array *array, int x, int y, int w, int h, int tx, i
     if(array->mode_flip != blend_mode) {
         float dx = 1.0f / 320.0f;
         float dy = 1.0f / 200.0f;
-        add_item(array, dx, dy, 0, 0, 320, 200, 0, 0, 320, 200, FLIP_VERTICAL, BLEND_HACK, 0);
+        add_item(array, dx, dy, 0, 0, 320, 200, 0, 0, 320, 200, FLIP_VERTICAL, BLEND_HACK, 0, 255);
     }
     float dx = 1.0f / array->src_w;
     float dy = 1.0f / array->src_h;
-    add_item(array, dx, dy, x, y, w, h, tx, ty, tw, th, flags, blend_mode, pal_offset);
+    add_item(array, dx, dy, x, y, w, h, tx, ty, tw, th, flags, blend_mode, pal_offset, pal_limit);
 }
