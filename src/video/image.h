@@ -18,8 +18,5 @@ void image_set_pixel(image *img, int x, int y, uint8_t c);
 void image_rect(image *img, int x, int y, int w, int h, uint8_t c);
 void image_rect_bevel(image *img, int x, int y, int w, int h, uint8_t ctop, uint8_t cright, uint8_t cbottom,
                       uint8_t left);
-void image_filled_rect(image *img, int x, int y, int w, int h, uint8_t c);
-
-int image_write_png(image *img, const char *filename);
 
 #endif // IMAGE_H
