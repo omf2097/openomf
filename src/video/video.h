@@ -44,7 +44,20 @@ void video_render_sprite_flip_scale_opacity_tint(surface *sur, int x, int y, VID
  * @param x Destination X
  * @param y Destination y
  */
-void video_draw(surface *src_surface, int x, int y);
+void video_draw(const surface *src_surface, int x, int y);
+
+/**
+ * Render a sprite on the screen using palette offset. Content of source surface will be saved to atlas for faster
+ * rendering. This can be used to render a sprite using a modified palette offset. The offset is added to the
+ * color index of each pixel.
+ *
+ * @param src_surface Source surface
+ * @param x Destination X
+ * @param y Destination y
+ * @param offset Palette offset (default = 0)
+ * @param limit PAlette offset max limit (default = 255)
+ */
+void video_draw_offset(const surface *src_surface, int x, int y, int offset, int limit);
 
 /**
  * @deprecated

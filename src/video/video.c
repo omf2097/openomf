@@ -277,27 +277,40 @@ screen_palette *video_get_pal_ref(void) {
 void video_render_background(surface *sur) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0, BLEND_ALPHA, 0);
+        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0, BLEND_ALPHA, 0, -1);
     }
 }
 
-static void render_sprite_fsot(video_state *state, surface *sur, SDL_Rect *dst, VIDEO_BLEND_MODE blend_mode,
+static void render_sprite_fsot(video_state *state, const surface *sur, SDL_Rect *dst, VIDEO_BLEND_MODE blend_mode,
                                int pal_offset, unsigned int flip_mode, uint8_t opacity, color color_mod) {
 
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
         object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode, blend_mode,
-                         pal_offset);
+                         pal_offset, 255);
     }
 }
 
-void video_draw(surface *src_surface, int x, int y) {
+static void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, VIDEO_BLEND_MODE blend_mode,
+                      int pal_offset, int pal_limit, unsigned int flip_mode) {
+    uint16_t tx, ty, tw, th;
+    if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
+        object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode, blend_mode,
+                         pal_offset, pal_limit);
+    }
+}
+
+void video_draw_offset(const surface *src_surface, int x, int y, int offset, int limit) {
     SDL_Rect dst;
     dst.w = src_surface->w;
     dst.h = src_surface->h;
     dst.x = x;
     dst.y = y;
-    render_sprite_fsot(&g_video_state, src_surface, &dst, BLEND_ALPHA, 0, 0, 255, color_create(0xFF, 0xFF, 0xFF, 0xFF));
+    draw_args(&g_video_state, src_surface, &dst, BLEND_ALPHA, offset, limit, 0);
+}
+
+void video_draw(const surface *src_surface, int x, int y) {
+    video_draw_offset(src_surface, x, y, 0, 255);
 }
 
 void video_render_sprite_tint(surface *sur, int sx, int sy, color c, int pal_offset) {

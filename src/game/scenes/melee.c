@@ -572,6 +572,9 @@ int melee_create(scene *scene) {
     palette_set_player_color(mpal, 0, 8, 0);
     palette_set_player_color(mpal, 0, 8, 1);
     palette_set_player_color(mpal, 0, 8, 2);
+    palette_set_player_color(mpal, 1, 8, 0);
+    palette_set_player_color(mpal, 1, 8, 1);
+    palette_set_player_color(mpal, 1, 8, 2);
     video_force_pal_refresh();
 
     memset(&bitmap, 255, 51 * 36 * 4);
@@ -633,7 +636,7 @@ int melee_create(scene *scene) {
             object_set_animation(&local->harportraits_player2[i], ani);
             object_select_sprite(&local->harportraits_player2[i], 0);
             object_set_animation_owner(&local->harportraits_player2[i], OWNER_OBJECT);
-            object_set_pal_offset(&local->harportraits_player2[i], 48);
+            object_set_pal_offset(&local->harportraits_player2[i], 40);
 
             ani = &bk_get_info(scene->bk_data, 18 + i)->ani;
             object_create(&local->har_player2[i], scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
