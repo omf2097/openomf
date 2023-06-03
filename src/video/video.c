@@ -24,6 +24,8 @@ typedef struct video_state {
     render_target *targets[2];
     remaps *remaps;
 
+    int target_select;
+
     GLuint palette_prog_id;
     GLuint rgba_prog_id;
 
@@ -168,16 +170,15 @@ void video_render_finish(void) {
     remaps_update(g_video_state.remaps, (void *)g_video_state.base_palette->remaps);
     object_array_finish(g_video_state.objects);
 
-    int target_select = 0;
     glViewport(0, 0, NATIVE_W, NATIVE_H);
     object_array_batch batch;
     object_array_begin(g_video_state.objects, &batch);
     activate_program(g_video_state.palette_prog_id);
     while(object_array_get_batch(g_video_state.objects, &batch)) {
-        bind_uniform_1i(g_video_state.palette_prog_id, "framebuffer", fbo_tex_units[!target_select]);
-        render_target_activate(g_video_state.targets[target_select]);
+        bind_uniform_1i(g_video_state.palette_prog_id, "framebuffer", fbo_tex_units[!g_video_state.target_select]);
+        render_target_activate(g_video_state.targets[g_video_state.target_select]);
         object_array_draw(g_video_state.objects, &batch);
-        target_select = !target_select;
+        g_video_state.target_select = !g_video_state.target_select;
     }
 
     // Disable render target, and dump its contents as RGBA to the screen.
@@ -187,7 +188,7 @@ void video_render_finish(void) {
     if(g_video_state.draw_atlas) {
         bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", TEX_UNIT_ATLAS);
     } else {
-        bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", fbo_tex_units[!target_select]);
+        bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", fbo_tex_units[!g_video_state.target_select]);
     }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -241,12 +242,21 @@ void video_set_fade(float fade) {
     g_video_state.fade = fade;
 }
 
-int video_screenshot(image *img) {
-    return 1;
+void video_screenshot(surface *sur) {
+    video_area_capture(sur, 0, 0, NATIVE_W, NATIVE_H);
 }
 
-int video_area_capture(surface *sur, int x, int y, int w, int h) {
-    return 1;
+void video_area_capture(surface *sur, int x, int y, int w, int h) {
+    // Activate the latest used internal render target FBO. This is where we want to capture from,
+    // as we get the final version of the paletted image :)
+    render_target_activate(g_video_state.targets[!g_video_state.target_select]);
+
+    // Read pixels
+    DEBUG("SNAP %d, %d, %d, %d", x, y, w, h);
+    char *buffer = omf_calloc(1, w * h);
+    glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
+    surface_create_from_data_flip(sur, SURFACE_TYPE_PALETTE, w, h, buffer);
+    free(buffer);
 }
 
 void video_force_pal_refresh(void) {
@@ -281,16 +291,6 @@ void video_render_background(surface *sur) {
     }
 }
 
-static void render_sprite_fsot(video_state *state, const surface *sur, SDL_Rect *dst, VIDEO_BLEND_MODE blend_mode,
-                               int pal_offset, unsigned int flip_mode, uint8_t opacity, color color_mod) {
-
-    uint16_t tx, ty, tw, th;
-    if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode, blend_mode,
-                         pal_offset, 255);
-    }
-}
-
 static void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, VIDEO_BLEND_MODE blend_mode,
                       int pal_offset, int pal_limit, unsigned int flip_mode) {
     uint16_t tx, ty, tw, th;
@@ -309,6 +309,15 @@ void video_draw_offset(const surface *src_surface, int x, int y, int offset, int
     draw_args(&g_video_state, src_surface, &dst, BLEND_ALPHA, offset, limit, 0);
 }
 
+void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
+    SDL_Rect dst;
+    dst.w = w;
+    dst.h = h;
+    dst.x = x;
+    dst.y = y;
+    draw_args(&g_video_state, src_surface, &dst, BLEND_ALPHA, 0, 255, 0);
+}
+
 void video_draw(const surface *src_surface, int x, int y) {
     video_draw_offset(src_surface, x, y, 0, 255);
 }
@@ -316,18 +325,6 @@ void video_draw(const surface *src_surface, int x, int y) {
 void video_render_sprite_tint(surface *sur, int sx, int sy, color c, int pal_offset) {
     video_render_sprite_flip_scale_opacity_tint(sur, sx, sy, BLEND_ALPHA, pal_offset, 255, FLIP_NONE, 1.0f, 1.0f, 255,
                                                 c);
-}
-
-void video_render_sprite_size(surface *sur, int sx, int sy, int sw, int sh) {
-    SDL_Rect dst;
-    dst.w = sw;
-    dst.h = sh;
-    dst.x = sx;
-    dst.y = sy;
-
-    // Render
-    render_sprite_fsot(&g_video_state, sur, &dst, BLEND_ALPHA, 0, 0, 0xFF,
-                       color_create(0xFF, 0xFF, 0xFF, 0xFF)); // tint
 }
 
 void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, VIDEO_BLEND_MODE blend_mode,

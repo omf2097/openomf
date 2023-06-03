@@ -123,7 +123,7 @@ void scoreboard_input_tick(scene *scene) {
 
 void scoreboard_render_overlay(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
-    video_render_sprite_size(&local->black_surface, 0, 0, 320, 200);
+    video_draw_size(&local->black_surface, 0, 0, 320, 200);
     char row[128];
     char score_text[15];
     char temp_name[17];

@@ -1,5 +1,6 @@
 #include "video/surface.h"
 #include "utils/allocator.h"
+#include <png.h>
 #include <stdlib.h>
 #include <utils/log.h>
 
@@ -42,6 +43,19 @@ void surface_create_from_data(surface *sur, int type, int w, int h, const char *
     surface_create(sur, type, w, h);
     int size = w * h * ((type == SURFACE_TYPE_PALETTE) ? 1 : 4);
     memcpy(sur->data, src, size);
+    if(type == SURFACE_TYPE_PALETTE) {
+        memset(sur->stencil, 1, w * h);
+    }
+    create_hash(sur);
+}
+
+void surface_create_from_data_flip(surface *sur, int type, int w, int h, const char *src) {
+    surface_create(sur, type, w, h);
+    int bytes = (type == SURFACE_TYPE_PALETTE) ? 1 : 4;
+    int pitch = w * bytes;
+    for(int y = 0; y < h; y++) {
+        memcpy(sur->data + (h - y - 1) * pitch, src + y * pitch, pitch);
+    }
     if(type == SURFACE_TYPE_PALETTE) {
         memset(sur->stencil, 1, w * h);
     }
@@ -303,4 +317,29 @@ void surface_to_rgba(surface *sur, char *dst, screen_palette *pal, char *remap_t
         }
     }
     create_hash(sur);
+}
+
+bool surface_write_png(surface *sur, screen_palette *pal, const char *filename) {
+    png_image out;
+    memset(&out, 0, sizeof(out));
+    out.version = PNG_IMAGE_VERSION;
+    out.opaque = NULL;
+    out.width = sur->w;
+    out.height = sur->h;
+    out.flags = 0;
+    if(sur->type == SURFACE_TYPE_RGBA) {
+        out.format = PNG_FORMAT_RGBA;
+        out.colormap_entries = 0;
+        png_image_write_to_file(&out, filename, 0, sur->data, sur->w * 4, NULL);
+    } else {
+        out.format = PNG_FORMAT_RGB_COLORMAP;
+        out.colormap_entries = 256;
+        png_image_write_to_file(&out, filename, 0, sur->data, sur->w, pal->data);
+    }
+
+    if(PNG_IMAGE_FAILED(out)) {
+        PERROR("Unable to write PNG file: %s", out.message);
+        return false;
+    }
+    return true;
 }

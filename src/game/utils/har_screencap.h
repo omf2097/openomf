@@ -13,7 +13,7 @@
 // There should be screencaps for each HAR/player
 typedef struct {
     surface cap[2];
-    int ok[2];
+    bool ok[2];
 } har_screencaps;
 
 void har_screencaps_create(har_screencaps *caps);

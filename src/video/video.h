@@ -22,11 +22,6 @@ void video_move_target(int x, int y);
 /**
  * @deprecated
  */
-void video_render_sprite_size(surface *sur, int sx, int sy, int sw, int sh);
-
-/**
- * @deprecated
- */
 void video_render_sprite_tint(surface *sur, int x, int y, color c, int pal_offset);
 
 /**
@@ -60,6 +55,18 @@ void video_draw(const surface *src_surface, int x, int y);
 void video_draw_offset(const surface *src_surface, int x, int y, int offset, int limit);
 
 /**
+ * Render a sprite on the screen using at given size. Surface will be scaled as needed to fit the
+ * target size. Content of source surface will be saved to atlas for faster rendering.
+ *
+ * @param src_surface Source surface
+ * @param x Destination X
+ * @param y Destination Y
+ * @param w Destination width
+ * @param h Destination height
+ */
+void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
+
+/**
  * @deprecated
  */
 void video_tick(void);
@@ -68,8 +75,8 @@ void video_render_background(surface *sur);
 void video_render_prepare(void);
 void video_render_finish(void);
 void video_close(void);
-int video_screenshot(image *img);
-int video_area_capture(surface *sur, int x, int y, int w, int h);
+void video_screenshot(surface *sur);
+void video_area_capture(surface *sur, int x, int y, int w, int h);
 void video_set_fade(float fade);
 
 void video_draw_atlas(bool draw_atlas);

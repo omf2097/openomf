@@ -3,7 +3,7 @@
 
 void har_screencaps_create(har_screencaps *caps) {
     for(int i = 0; i < 2; i++) {
-        caps->ok[i] = 0;
+        caps->ok[i] = false;
     }
 }
 
@@ -11,7 +11,7 @@ void har_screencaps_free(har_screencaps *caps) {
     for(int i = 0; i < 2; i++) {
         if(caps->ok[i]) {
             surface_free(&caps->cap[i]);
-            caps->ok[i] = 0;
+            caps->ok[i] = false;
         }
     }
 }
@@ -32,7 +32,7 @@ int har_screencaps_clone(har_screencaps *src, har_screencaps *dst) {
 void har_screencaps_capture(har_screencaps *caps, object *obj, int id) {
     if(caps->ok[id]) {
         surface_free(&caps->cap[id]);
-        caps->ok[id] = 0;
+        caps->ok[id] = false;
     }
 
     // Position
@@ -48,8 +48,6 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, int id) {
         y = NATIVE_H - SCREENCAP_H;
 
     // Capture
-    int ret = video_area_capture(&caps->cap[id], x, y, SCREENCAP_W, SCREENCAP_H);
-    if(ret == 0) {
-        caps->ok[id] = 1;
-    }
+    video_area_capture(&caps->cap[id], x, y, SCREENCAP_W, SCREENCAP_H);
+    caps->ok[id] = true;
 }
