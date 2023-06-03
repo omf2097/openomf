@@ -43,6 +43,16 @@ void surface_clear(surface *sur);
 void surface_fill(surface *sur, color c);
 void surface_sub(surface *dst, surface *src, int dst_x, int dst_y, int src_x, int src_y, int w, int h, int method);
 void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset);
+
+/**
+ * Convert surface to grayscale using colors in palette from range-start to range-end (inclusive).
+ * Conversion is done by luminosity. Surface must be paletted.
+ * @param sur Surface to convert
+ * @param pal Palette to use.
+ * @param range_start First grey palette color
+ * @param range_end Last gray palette color
+ */
+void surface_convert_to_grayscale(surface *sur, screen_palette *pal, int range_start, int range_end);
 int surface_get_type(surface *sur);
 void surface_to_rgba(surface *sur, char *dst, screen_palette *pal, char *remap_table, uint8_t pal_offset);
 void surface_additive_blit(surface *dst, surface *src, int dst_x, int dst_y, palette *remap_pal, SDL_RendererFlip flip);
