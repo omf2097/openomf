@@ -116,6 +116,7 @@ int object_serialize(object *obj, serial *ser) {
     serial_write_int32(ser, random_get_seed(&obj->rand_state));
     serial_write_int8(ser, obj->cur_animation->id);
     serial_write_int8(ser, obj->pal_offset);
+    serial_write_int8(ser, obj->pal_limit);
     serial_write_int8(ser, obj->hit_frames);
     serial_write_int8(ser, obj->can_hit);
 
@@ -172,6 +173,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     random_seed(&obj->rand_state, serial_read_int32(ser));
     uint8_t animation_id = serial_read_int8(ser);
     uint8_t pal_offset = serial_read_int8(ser);
+    uint8_t pal_limit = serial_read_int8(ser);
     int8_t hit_frames = serial_read_int8(ser);
     int8_t can_hit = serial_read_int8(ser);
 
@@ -231,6 +233,7 @@ int object_unserialize(object *obj, serial *ser, game_state *gs) {
     object_set_gravity(obj, gravity);
     object_set_repeat(obj, repeat);
     object_set_pal_offset(obj, pal_offset);
+    object_set_pal_limit(obj, pal_limit);
     obj->hit_frames = hit_frames;
     obj->can_hit = can_hit;
 
@@ -420,8 +423,9 @@ void object_render(object *obj) {
     }
 
     // Render
-    video_render_sprite_flip_scale_opacity_tint(obj->cur_surface, x, y, rstate->blendmode, obj->pal_offset, flipmode,
-                                                obj->x_percent, obj->y_percent, opacity, tint);
+    video_render_sprite_flip_scale_opacity_tint(obj->cur_surface, x, y, rstate->blendmode, obj->pal_offset,
+                                                obj->pal_limit, flipmode, obj->x_percent, obj->y_percent, opacity,
+                                                tint);
 }
 
 void object_render_shadow(object *obj) {
@@ -449,7 +453,8 @@ void object_render_shadow(object *obj) {
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
         video_render_sprite_flip_scale_opacity_tint(obj->cur_sprite->data, x + i, y + i, BLEND_ALPHA, obj->pal_offset,
-                                                    flipmode, 1.0, scale_y, 65, color_create(0, 0, 0, 255));
+                                                    obj->pal_limit, flipmode, 1.0, scale_y, 65,
+                                                    color_create(0, 0, 0, 255));
     }
 }
 
@@ -695,6 +700,13 @@ void object_set_pal_offset(object *obj, int offset) {
 }
 int object_get_pal_offset(const object *obj) {
     return obj->pal_offset;
+}
+
+void object_set_pal_limit(object *obj, int limit) {
+    obj->pal_limit = limit;
+}
+int object_get_pal_limit(const object *obj) {
+    return obj->pal_limit;
 }
 
 void object_set_halt_ticks(object *obj, int ticks) {
