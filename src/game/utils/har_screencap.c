@@ -1,4 +1,5 @@
 #include "game/utils/har_screencap.h"
+#include "utils/miscmath.h"
 #include "video/video.h"
 
 void har_screencaps_create(har_screencaps *caps) {
@@ -36,16 +37,14 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, int id) {
     }
 
     // Position
-    int x = (object_px(obj) - object_w(obj) / 2) - (SCREENCAP_W - object_w(obj)) / 2;
-    int y = (object_py(obj) - object_h(obj)) - (SCREENCAP_H - object_h(obj)) / 2;
-    if(x < 0)
-        x = 0;
-    if(y < 0)
-        y = 0;
-    if(x + SCREENCAP_W >= NATIVE_W)
-        x = NATIVE_W - SCREENCAP_W;
-    if(y + SCREENCAP_H >= NATIVE_H)
-        y = NATIVE_H - SCREENCAP_H;
+    vec2i size = object_get_size(obj);
+    vec2i pos = object_get_pos(obj);
+    int x_margin = (SCREENCAP_W - size.x) / 2;
+    int y_margin = (SCREENCAP_H - size.y) / 2;
+    int x_center = pos.x - size.x / 2;
+    int y_center = (NATIVE_H - pos.y);
+    int x = clamp(x_center - x_margin, 0, NATIVE_W - SCREENCAP_W);
+    int y = clamp(y_center + y_margin, 0, NATIVE_H);
 
     // Capture
     video_area_capture(&caps->cap[id], x, y, SCREENCAP_W, SCREENCAP_H);
