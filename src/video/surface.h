@@ -34,6 +34,7 @@ void surface_force_refresh(surface *sur);
 void surface_create_from_vga(surface *sur, const sd_vga_image *src);
 void surface_create_from_image(surface *sur, image *img);
 void surface_create_from_data(surface *sur, int type, int w, int h, const char *src);
+void surface_create_from_data_flip(surface *sur, int type, int w, int h, const char *src);
 int surface_to_image(surface *sur, image *img);
 void surface_copy(surface *dst, surface *src);
 void surface_copy_ex(surface *dst, surface *src);
@@ -47,5 +48,6 @@ void surface_to_rgba(surface *sur, char *dst, screen_palette *pal, char *remap_t
 void surface_additive_blit(surface *dst, surface *src, int dst_x, int dst_y, palette *remap_pal, SDL_RendererFlip flip);
 void surface_rgba_blit(surface *dst, const surface *src, int dst_x, int dst_y);
 void surface_alpha_blit(surface *dst, surface *src, int dst_x, int dst_y, SDL_RendererFlip flip);
+bool surface_write_png(surface *sur, screen_palette *pal, const char *filename);
 
 #endif // SURFACE_H

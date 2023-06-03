@@ -1,12 +1,9 @@
 #include <math.h>
 #include <memory.h>
-#include <png.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "video/image.h"
 
 #define CHECK_COORD_BOUNDS(n, x) n = (n >= x ? (x - 1) : (n < 0 ? 0 : n))
@@ -72,32 +69,4 @@ void image_rect_bevel(image *img, int x, int y, int w, int h, uint8_t ctop, uint
     image_line(img, x, y + h, x + w, y + h, cbottom);
     image_line(img, x + w, y, x + w, y + h, cright);
     image_line(img, x, y, x, y + h, cleft);
-}
-
-void image_filled_rect(image *img, int x, int y, int w, int h, uint8_t c) {
-    for(int my = y; my < y + h; my++) {
-        for(int mx = x; mx < x + w; mx++) {
-            image_set_pixel(img, mx, my, c);
-        }
-    }
-}
-
-int image_write_png(image *img, const char *filename) {
-    png_image out;
-    memset(&out, 0, sizeof(out));
-    out.version = PNG_IMAGE_VERSION;
-    out.opaque = NULL;
-    out.width = img->w;
-    out.height = img->h;
-    out.format = PNG_FORMAT_RGBA;
-    out.flags = 0;
-    out.colormap_entries = 0;
-
-    png_image_write_to_file(&out, filename, 0, img->data, img->w * 4, NULL);
-
-    if(PNG_IMAGE_FAILED(out)) {
-        PERROR("Unable to write PNG file: %s", out.message);
-        return 1;
-    }
-    return 0;
 }
