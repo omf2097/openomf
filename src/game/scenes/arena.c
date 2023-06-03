@@ -1045,6 +1045,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
                     object_set_gravity(scrap, 0.4f);
                     object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
+                    object_set_pal_limit(scrap, object_get_pal_limit(h_obj));
                     object_set_layers(scrap, LAYER_SCRAP);
                     object_set_shadow(scrap, 1);
                     object_dynamic_tick(scrap);

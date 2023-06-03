@@ -252,7 +252,5 @@ int lobby_create(scene *scene) {
 
     scene_set_render_overlay_cb(scene, lobby_render_overlay);
     scene_set_event_cb(scene, lobby_event);
-
-    video_render_bg_separately(false);
     return 0;
 }

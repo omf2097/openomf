@@ -645,6 +645,7 @@ int melee_create(scene *scene) {
             object_set_repeat(&local->har_player2[i], 1);
             object_set_direction(&local->har_player2[i], OBJECT_FACE_LEFT);
             object_set_pal_offset(&local->har_player2[i], 48);
+            object_set_pal_limit(&local->har_player2[i], 96);
         }
     }
 

@@ -463,6 +463,7 @@ int vs_create(scene *scene) {
         object_select_sprite(&local->player2_har, player2->pilot->har_id);
         object_set_direction(&local->player2_har, OBJECT_FACE_LEFT);
         object_set_pal_offset(&local->player2_har, 48);
+        object_set_pal_limit(&local->player2_har, 96);
 
         // PLAYER
         object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));

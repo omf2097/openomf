@@ -102,6 +102,7 @@ struct object_t {
     uint32_t attached_to_id;
 
     uint8_t pal_offset;
+    uint8_t pal_limit;
     uint8_t cur_remap;
     uint8_t halt;
     int16_t halt_ticks;
@@ -216,6 +217,9 @@ int object_is_rewind_tag_disabled(const object *obj);
 
 void object_set_pal_offset(object *obj, int offset);
 int object_get_pal_offset(const object *obj);
+
+void object_set_pal_limit(object *obj, int limit);
+int object_get_pal_limit(const object *obj);
 
 vec2i object_get_size(const object *obj);
 vec2i object_get_pos(const object *obj);
