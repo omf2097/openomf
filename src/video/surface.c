@@ -288,6 +288,53 @@ void surface_convert_to_rgba(surface *sur, screen_palette *pal, int pal_offset) 
     create_hash(sur);
 }
 
+static uint8_t find_closest_gray(screen_palette *pal, int range_start, int range_end, int ref) {
+    uint8_t closest = 0, current;
+    int closest_dist = 256, dist;
+
+    for(int i = range_start; i <= range_end; i++) {
+        current = pal->data[i][0]; // Grayscale, r = g = b so pick any.
+        dist = current - ref;
+        if(dist < 0) {
+            dist = -dist;
+        }
+        if(dist > closest_dist) {
+            // We passed the optimum point, stop.
+            break;
+        }
+        if(dist < closest_dist) {
+            closest_dist = dist;
+            closest = i;
+        }
+    }
+
+    return closest;
+}
+
+void surface_convert_to_grayscale(surface *sur, screen_palette *pal, int range_start, int range_end) {
+    float r, g, b;
+    uint8_t idx;
+    char mapping[256];
+
+    if(sur->type != SURFACE_TYPE_PALETTE) {
+        return;
+    }
+
+    // Make a mapping for fast search.
+    for(int i = 0; i < 256; i++) {
+        r = pal->data[i][0] * 0.3;
+        g = pal->data[i][1] * 0.59;
+        b = pal->data[i][2] * 0.11;
+        mapping[i] = find_closest_gray(pal, range_start, range_end, r + g + b);
+    }
+
+    // Convert the image using the mapping
+    for(int i = 0; i < sur->w * sur->h; i++) {
+        idx = sur->data[i];
+        sur->data[i] = mapping[idx];
+    }
+}
+
 // Creates a new RGBA surface
 void surface_to_rgba(surface *sur, char *dst, screen_palette *pal, char *remap_table, uint8_t pal_offset) {
 

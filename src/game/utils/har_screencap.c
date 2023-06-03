@@ -49,5 +49,6 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, int id) {
 
     // Capture
     video_area_capture(&caps->cap[id], x, y, SCREENCAP_W, SCREENCAP_H);
+    surface_convert_to_grayscale(&caps->cap[id], video_get_pal_ref(), 0xD0, 0xDF);
     caps->ok[id] = true;
 }
