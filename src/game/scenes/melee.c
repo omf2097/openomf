@@ -51,12 +51,8 @@ typedef struct melee_local_t {
     surface feh;
     surface bleh;
     surface select_hilight;
-    unsigned int ticks;
-    unsigned int hartick;
-    unsigned int pulsedir;
 
-    object *harplayer_a;
-    object *harplayer_b;
+    unsigned int ticks;
 
     // nova selection cheat
     unsigned char har_selected[2][10];
@@ -146,20 +142,9 @@ void melee_tick(scene *scene, int paused) {
         } while((i = i->next));
     }
 
-    if(!local->pulsedir) {
-        local->ticks++;
-    } else {
-        local->ticks--;
-    }
-    if(local->ticks > 120) {
-        local->pulsedir = 1;
-    }
-    if(local->ticks == 0) {
-        local->pulsedir = 0;
-    }
-    local->hartick++;
-    if(local->selection == 1 && local->hartick > 10) {
-        local->hartick = 0;
+    local->ticks++;
+
+    if(local->selection == 1 && local->ticks % 10 == 0) {
         object_dynamic_tick(&local->har_player1[5 * local->row_a + local->column_a]);
         if(player2->selectable) {
             object_dynamic_tick(&local->har_player2[5 * local->row_b + local->column_b]);
@@ -401,30 +386,24 @@ void melee_input_tick(scene *scene) {
     controller_free_chain(p2);
 }
 
+static void draw_highlight(const melee_local *local, int row, int col, int offset) {
+    int x = 11 + (62 * col);
+    int y = 115 + (42 * row);
+    video_draw_offset(&local->select_hilight, x, y, offset, 255);
+}
+
 void render_highlights(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
     game_player *player2 = game_state_get_player(scene->gs, 1);
-    int trans;
+    float rate = (float)local->ticks / 20.0;
+    float norm = (1.0 + sinf(rate)) * 0.5;
     if(player2->selectable && local->row_a == local->row_b && local->column_a == local->column_b) {
-        video_render_sprite_tint(&local->select_hilight, 11 + (62 * local->column_a), 115 + (42 * local->row_a),
-                                 color_create(250 - local->ticks, 0, 250 - local->ticks, 0), 0);
+        draw_highlight(local, local->row_a, local->column_a, 0xBB + norm * 5.0);
     } else {
         if(player2->selectable) {
-            if(local->done_b) {
-                trans = 250;
-            } else {
-                trans = 250 - local->ticks;
-            }
-            video_render_sprite_tint(&local->select_hilight, 11 + (62 * local->column_b), 115 + (42 * local->row_b),
-                                     color_create(0, 0, trans, 0), 0);
+            draw_highlight(local, local->row_b, local->column_b, 0xAA + norm * 5.0);
         }
-        if(local->done_a) {
-            trans = 250;
-        } else {
-            trans = 250 - local->ticks;
-        }
-        video_render_sprite_tint(&local->select_hilight, 11 + (62 * local->column_a), 115 + (42 * local->row_a),
-                                 color_create(trans, 0, 0, 0), 0);
+        draw_highlight(local, local->row_a, local->column_a, 0xB2 + norm * 5.0);
     }
 }
 
@@ -556,8 +535,6 @@ void melee_render(scene *scene) {
 }
 
 int melee_create(scene *scene) {
-    char bitmap[51 * 36 * 4];
-
     // Init local data
     melee_local *local = omf_calloc(1, sizeof(melee_local));
     scene_set_userdata(scene, local);
@@ -572,14 +549,9 @@ int melee_create(scene *scene) {
     palette_set_player_color(mpal, 0, 8, 0);
     palette_set_player_color(mpal, 0, 8, 1);
     palette_set_player_color(mpal, 0, 8, 2);
-    palette_set_player_color(mpal, 1, 8, 0);
-    palette_set_player_color(mpal, 1, 8, 1);
-    palette_set_player_color(mpal, 1, 8, 2);
     video_force_pal_refresh();
 
-    memset(&bitmap, 255, 51 * 36 * 4);
     local->ticks = 0;
-    local->pulsedir = 0;
     local->selection = 0;
     local->row_a = 0;
     local->column_a = 0;
@@ -590,7 +562,10 @@ int melee_create(scene *scene) {
 
     menu_background2_create(&local->feh, 90, 61);
     menu_background2_create(&local->bleh, 160, 43);
-    surface_create_from_data(&local->select_hilight, SURFACE_TYPE_RGBA, 51, 36, bitmap);
+
+    char *black = omf_calloc(1, 51 * 36);
+    surface_create_from_data(&local->select_hilight, SURFACE_TYPE_PALETTE, 51, 36, black);
+    omf_free(black);
 
     // set up the magic controller hooks
     if(player1_ctrl && player2_ctrl) {
