@@ -61,7 +61,7 @@ int scene_serialize(scene *scene, serial *ser);
 int scene_unserialize(scene *scene, serial *ser);
 
 void scene_set_userdata(scene *scene, void *userdata);
-void *scene_get_userdata(scene *scene);
+void *scene_get_userdata(const scene *scene);
 
 void scene_set_free_cb(scene *scene, scene_free_cb cbfunc);
 void scene_set_event_cb(scene *scene, scene_event_cb cbfunc);
