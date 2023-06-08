@@ -16,77 +16,57 @@ uint32_t static fnv_32a_buf(const void *buf, unsigned int len) {
 }
 
 static inline void create_hash(surface *sur) {
-    int bytes = (sur->type == SURFACE_TYPE_RGBA) ? 4 : 1;
-    sur->hash = fnv_32a_buf(sur->data, sur->w * sur->h * bytes);
+    sur->hash = fnv_32a_buf(sur->data, sur->w * sur->h);
 }
 
-void surface_create(surface *sur, int type, int w, int h) {
-    if(type == SURFACE_TYPE_RGBA) {
-        sur->data = omf_calloc(1, w * h * 4);
-        sur->stencil = NULL;
-    } else {
-        sur->data = omf_calloc(1, w * h);
-        sur->stencil = omf_calloc(1, w * h);
-    }
+void surface_create(surface *sur, int w, int h) {
+    sur->data = omf_calloc(1, w * h);
+    sur->stencil = omf_calloc(1, w * h);
     sur->hash = 0;
     sur->w = w;
     sur->h = h;
-    sur->type = type;
 }
 
-void surface_create_from_data(surface *sur, int type, int w, int h, const unsigned char *src) {
-    surface_create(sur, type, w, h);
-    int size = w * h * ((type == SURFACE_TYPE_PALETTE) ? 1 : 4);
-    memcpy(sur->data, src, size);
-    if(type == SURFACE_TYPE_PALETTE) {
-        memset(sur->stencil, 1, w * h);
-    }
+void surface_create_from_data(surface *sur, int w, int h, const unsigned char *src) {
+    surface_create(sur, w, h);
+    memcpy(sur->data, src, w * h);
+    memset(sur->stencil, 1, w * h);
     create_hash(sur);
 }
 
-void surface_create_from_data_flip(surface *sur, int type, int w, int h, const unsigned char *src) {
-    surface_create(sur, type, w, h);
-    int bytes = (type == SURFACE_TYPE_PALETTE) ? 1 : 4;
-    int pitch = w * bytes;
+void surface_create_from_data_flip(surface *sur, int w, int h, const unsigned char *src) {
+    surface_create(sur, w, h);
     for(int y = 0; y < h; y++) {
-        memcpy(sur->data + (h - y - 1) * pitch, src + y * pitch, pitch);
+        memcpy(sur->data + (h - y - 1) * w, src + y * w, w);
     }
-    if(type == SURFACE_TYPE_PALETTE) {
-        memset(sur->stencil, 1, w * h);
-    }
+    memset(sur->stencil, 1, w * h);
     create_hash(sur);
 }
 
 void surface_create_from_vga(surface *sur, const sd_vga_image *src) {
-    surface_create(sur, SURFACE_TYPE_PALETTE, src->w, src->h);
+    surface_create(sur, src->w, src->h);
     memcpy(sur->data, src->data, src->w * src->h);
     memcpy(sur->stencil, src->stencil, src->w * src->h);
     create_hash(sur);
 }
 
-void surface_create_from_surface(surface *sur, int type, int w, int h, int src_x, int src_y, const surface *src) {
-    surface_create(sur, type, w, h);
+void surface_create_from_surface(surface *sur, int w, int h, int src_x, int src_y, const surface *src) {
+    surface_create(sur, w, h);
     surface_sub(sur, src, 0, 0, src_x, src_y, w, h, SUB_METHOD_NONE);
     create_hash(sur);
 }
 
 void surface_generate_stencil(const surface *sur, int index) {
-    if(sur->type != SURFACE_TYPE_PALETTE) {
-        return;
-    }
     for(int i = 0; i < sur->w * sur->h; i++) {
         sur->stencil[i] = (sur->data[i] == index) ? 0 : 1;
     }
 }
 
 void surface_create_from_image(surface *sur, image *img) {
-    surface_create_from_data(sur, SURFACE_TYPE_PALETTE, img->w, img->h, img->data);
+    surface_create_from_data(sur, img->w, img->h, img->data);
 }
 
 int surface_to_image(surface *sur, image *img) {
-    if(sur->type != SURFACE_TYPE_RGBA) {
-        return -1;
-    }
     img->w = sur->w;
     img->h = sur->h;
     img->data = sur->data;
@@ -99,81 +79,40 @@ void surface_free(surface *sur) {
 }
 
 void surface_clear(surface *sur) {
-    if(sur->type == SURFACE_TYPE_RGBA) {
-        memset(sur->data, 0, sur->w * sur->h * 4);
-    } else {
-        memset(sur->data, 0, sur->w * sur->h);
-    }
-    create_hash(sur);
-}
-
-// Fills the whole surface with color
-void surface_fill(surface *sur, color c) {
-    // Only for RGBA for now
-    if(sur->type == SURFACE_TYPE_PALETTE) {
-        return;
-    }
-
-    // Fill
-    for(int i = 0; i < sur->w * sur->h; i++) {
-        sur->data[i * 4 + 0] = c.r;
-        sur->data[i * 4 + 1] = c.g;
-        sur->data[i * 4 + 2] = c.b;
-        sur->data[i * 4 + 3] = c.a;
-    }
-
+    memset(sur->data, 0, sur->w * sur->h);
     create_hash(sur);
 }
 
 void surface_create_from(surface *dst, const surface *src) {
-    surface_create(dst, src->type, src->w, src->h);
-
-    int size = src->w * src->h * ((src->type == SURFACE_TYPE_PALETTE) ? 1 : 4);
-    memcpy(dst->data, src->data, size);
-
-    if(src->stencil != NULL && dst->stencil != NULL) {
-        memcpy(dst->stencil, src->stencil, src->w * src->h);
-    } else {
-        dst->stencil = NULL;
-    }
+    surface_create(dst, src->w, src->h);
+    memcpy(dst->data, src->data, src->w * src->h);
+    memcpy(dst->stencil, src->stencil, src->w * src->h);
     create_hash(dst);
 }
 
 // Copies a an area of old surface to an entirely new surface
 void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src_x, int src_y, int w, int h,
                  int method) {
-
-    // Make sure the source and destination are of the same type.
-    if(dst->type != src->type) {
-        return;
-    }
-
-    // Copy!
-    int bytes = (src->type == SURFACE_TYPE_RGBA) ? 4 : 1;
     int src_offset, dst_offset;
     for(int y = 0; y < h; y++) {
         for(int x = 0; x < w; x++) {
-            src_offset = (src_x + x + (src_y + y) * src->w) * bytes;
+            src_offset = (src_x + x + (src_y + y) * src->w);
             switch(method) {
                 case SUB_METHOD_MIRROR:
-                    dst_offset = (dst_x + (w - x - 1) + (dst_y + y) * dst->w) * bytes;
+                    dst_offset = (dst_x + (w - x - 1) + (dst_y + y) * dst->w);
                     break;
                 default:
-                    dst_offset = (dst_x + x + (dst_y + y) * dst->w) * bytes;
+                    dst_offset = (dst_x + x + (dst_y + y) * dst->w);
                     break;
             }
-            for(int m = 0; m < bytes; m++) {
-                dst->data[dst_offset + m] = src->data[src_offset + m];
-            }
-            if(bytes == 1) {
-                dst->stencil[dst_offset] = src->stencil[src_offset];
-            }
+            dst->data[dst_offset] = src->data[src_offset];
+            dst->stencil[dst_offset] = src->stencil[src_offset];
         }
     }
     create_hash(dst);
 }
 
-static uint8_t find_closest_gray(screen_palette *pal, int range_start, int range_end, int ref) {
+static uint8_t find_closest_gray(const screen_palette *pal, int range_start, int range_end, int ref) {
     uint8_t closest = 0, current;
     int closest_dist = 256, dist;
 
@@ -196,14 +135,10 @@ static uint8_t find_closest_gray(screen_palette *pal, int range_start, int range
     return closest;
 }
 
-void surface_convert_to_grayscale(surface *sur, screen_palette *pal, int range_start, int range_end) {
+void surface_convert_to_grayscale(surface *sur, const screen_palette *pal, int range_start, int range_end) {
     float r, g, b;
     uint8_t idx;
     char mapping[256];
-
-    if(sur->type != SURFACE_TYPE_PALETTE) {
-        return;
-    }
 
     // Make a mapping for fast search.
     for(int i = 0; i < 256; i++) {
@@ -220,7 +155,7 @@ void surface_convert_to_grayscale(surface *sur, screen_palette *pal, int range_s
     }
 }
 
-bool surface_write_png(const surface *sur, screen_palette *pal, const char *filename) {
+bool surface_write_png(const surface *sur, const screen_palette *pal, const char *filename) {
     png_image out;
     memset(&out, 0, sizeof(out));
     out.version = PNG_IMAGE_VERSION;
@@ -228,16 +163,9 @@ bool surface_write_png(const surface *sur, screen_palette *pal, const char *file
     out.width = sur->w;
     out.height = sur->h;
     out.flags = 0;
-    if(sur->type == SURFACE_TYPE_RGBA) {
-        out.format = PNG_FORMAT_RGBA;
-        out.colormap_entries = 0;
-        png_image_write_to_file(&out, filename, 0, sur->data, sur->w * 4, NULL);
-    } else {
-        out.format = PNG_FORMAT_RGB_COLORMAP;
-        out.colormap_entries = 256;
-        png_image_write_to_file(&out, filename, 0, sur->data, sur->w, pal->data);
-    }
-
+    out.format = PNG_FORMAT_RGB_COLORMAP;
+    out.colormap_entries = 256;
+    png_image_write_to_file(&out, filename, 0, sur->data, sur->w, pal->data);
     if(PNG_IMAGE_FAILED(out)) {
         PERROR("Unable to write PNG file: %s", out.message);
         return false;

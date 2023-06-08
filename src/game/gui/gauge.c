@@ -74,7 +74,7 @@ typedef struct {
 } gauge;
 
 static void surface_from_pix_img(surface *sur, const pixel_image *pix) {
-    surface_create_from_data(sur, SURFACE_TYPE_PALETTE, pix->width, pix->height, pix->data);
+    surface_create_from_data(sur, pix->width, pix->height, pix->data);
 }
 
 static void gauge_render(component *c) {

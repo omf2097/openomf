@@ -583,7 +583,7 @@ static void load_har_portraits(scene *scene, melee_local *local) {
         current = animation_get_sprite(hars_disabled, 0);
         target->x = current->pos.x + 62 * col;
         target->y = current->pos.y + 42 * row;
-        surface_create_from_surface(&target->enabled, SURFACE_TYPE_PALETTE, 51, 36, 62 * col, 42 * row, current->data);
+        surface_create_from_surface(&target->enabled, 51, 36, 62 * col, 42 * row, current->data);
 
         // Copy the enabled image, and compress the colors to grayscale
         surface_create_from(&target->disabled, &target->enabled);
@@ -639,7 +639,7 @@ int melee_create(scene *scene) {
 
     // Create a black surface for the highlight box. We modify the palette in renderer.
     unsigned char *black = omf_calloc(1, 51 * 36);
-    surface_create_from_data(&local->select_hilight, SURFACE_TYPE_PALETTE, 51, 36, black);
+    surface_create_from_data(&local->select_hilight, 51, 36, black);
     omf_free(black);
 
     // set up the magic controller hooks

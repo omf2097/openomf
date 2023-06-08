@@ -254,7 +254,7 @@ void video_area_capture(surface *sur, int x, int y, int w, int h) {
     // Read pixels
     unsigned char *buffer = omf_calloc(1, w * h);
     glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
-    surface_create_from_data_flip(sur, SURFACE_TYPE_PALETTE, w, h, buffer);
+    surface_create_from_data_flip(sur, w, h, buffer);
     free(buffer);
 }
 

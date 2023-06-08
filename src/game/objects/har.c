@@ -2218,7 +2218,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 #ifdef DEBUGMODE
     object_set_debug_cb(obj, har_debug);
-    surface_create(&local->cd_debug, SURFACE_TYPE_RGBA, 320, 200);
+    surface_create(&local->cd_debug, 320, 200);
     surface_clear(&local->cd_debug);
 #endif
 

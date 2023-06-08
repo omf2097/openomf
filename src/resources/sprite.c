@@ -19,7 +19,7 @@ void sprite_create(sprite *sp, void *src, int id) {
     // Load data
     sd_vga_image raw;
     sd_sprite_vga_decode(&raw, sdsprite);
-    surface_create_from_data(sp->data, SURFACE_TYPE_PALETTE, raw.w, raw.h, (unsigned char *)raw.data);
+    surface_create_from_data(sp->data, raw.w, raw.h, (unsigned char *)raw.data);
     memcpy(sp->data->stencil, raw.stencil, raw.w * raw.h);
     sd_vga_image_free(&raw);
 }
