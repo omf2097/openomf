@@ -987,7 +987,6 @@ void har_debug(object *obj) {
 
     image_set_pixel(&img, pos_a.x, pos_a.y, red);
 
-    surface_force_refresh(&h->cd_debug); // Force refresh for the texture
     video_draw(&h->cd_debug, 0, 0);
 }
 #endif // DEBUGMODE

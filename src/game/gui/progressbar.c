@@ -96,7 +96,6 @@ static void progressbar_render(component *c) {
                 bar->block = omf_calloc(1, sizeof(surface));
             }
             surface_create_from_image(bar->block, &tmp);
-            surface_force_refresh(bar->block);
             image_free(&tmp);
         } else {
             omf_free(bar->block);

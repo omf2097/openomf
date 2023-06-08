@@ -252,7 +252,7 @@ void video_area_capture(surface *sur, int x, int y, int w, int h) {
     render_target_activate(g_video_state.targets[!g_video_state.target_select]);
 
     // Read pixels
-    char *buffer = omf_calloc(1, w * h);
+    unsigned char *buffer = omf_calloc(1, w * h);
     glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
     surface_create_from_data_flip(sur, SURFACE_TYPE_PALETTE, w, h, buffer);
     free(buffer);

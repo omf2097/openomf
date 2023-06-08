@@ -6,7 +6,7 @@
 
 typedef struct image_t {
     unsigned int w, h;
-    char *data;
+    unsigned char *data;
 } image;
 
 int image_create(image *img, int w, int h);

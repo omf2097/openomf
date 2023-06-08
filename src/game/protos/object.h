@@ -136,6 +136,7 @@ struct object_t {
 };
 
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
+void object_create_static(object *obj, game_state *gs);
 void object_render(object *obj);
 void object_render_shadow(object *obj);
 void object_debug(object *obj);
@@ -144,7 +145,6 @@ void object_dynamic_tick(object *obj);
 void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
 int object_palette_transform(object *obj, screen_palette *pal);
-void object_render(object *obj);
 void object_collide(object *a, object *b);
 int object_act(object *obj, int action);
 int object_finished(object *obj);

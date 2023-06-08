@@ -79,10 +79,10 @@ int font_load(font *font, const char *filename, unsigned int size) {
 }
 
 int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
-    sd_rgba_image img;
+    //sd_rgba_image img;
     pcx_font pcx_font;
     int pixsize;
-    surface *sur;
+    //surface *sur;
 
     if(pcx_load_font(&pcx_font, filename)) {
         pcx_font_free(&pcx_font);
@@ -91,6 +91,7 @@ int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
 
     pixsize = pcx_font.glyph_height;
 
+    /* FIXME
     // Load into textures
     for(int i = 0; i < pcx_font.glyph_count; i++) {
         sd_rgba_image_create(&img, pcx_font.glyphs[i].width, pixsize);
@@ -100,6 +101,7 @@ int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
         vector_append(&font->surfaces, &sur);
         sd_rgba_image_free(&img);
     }
+    */
 
     // Set font info vars
     font->w = 0;
