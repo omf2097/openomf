@@ -219,9 +219,14 @@ int scoreboard_create(scene *scene) {
         chr_score_reset(game_player_get_score(player), 1);
     }
 
-    // Create a surface that has an appropriate alpha for darkening the screen a bit
-    surface_create(&local->black_surface, SURFACE_TYPE_RGBA, 32, 32);
-    surface_fill(&local->black_surface, color_create(0, 0, 0, 200));
+    // Darken the colors for the background a bit.
+    palette *pal = video_get_base_palette();
+    for(int i = 0; i < 0xEF; i++) {
+        pal->data[i][0] *= 0.6;
+        pal->data[i][1] *= 0.6;
+        pal->data[i][2] *= 0.6;
+    }
+    video_force_pal_refresh();
 
     // Set callbacks
     scene_set_userdata(scene, local);
