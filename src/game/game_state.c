@@ -754,7 +754,7 @@ unsigned int game_state_get_tick(game_state *gs) {
     return gs->tick;
 }
 
-game_player *game_state_get_player(game_state *gs, int player_id) {
+game_player *game_state_get_player(const game_state *gs, int player_id) {
     return gs->players[player_id];
 }
 
