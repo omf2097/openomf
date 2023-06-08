@@ -171,9 +171,6 @@ static void convert_surface(const surface *src, char *dst) {
 }
 
 bool atlas_get(texture_atlas *atlas, const surface *surface, uint16_t *x, uint16_t *y, uint16_t *w, uint16_t *h) {
-    if(surface->type == SURFACE_TYPE_RGBA)
-        return false;
-
     // First, check if item is already in the texture atlas. If it is, return coords immediately.
     zone *coords;
     if(hashmap_get(&atlas->items, (void *)&surface->hash, 4, (void **)&coords, NULL) == 0) {
