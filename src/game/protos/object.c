@@ -60,6 +60,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->cur_surface = NULL;
     obj->cur_remap = -1;
     obj->pal_offset = 0;
+    obj->pal_limit = 255;
     obj->halt = 0;
     obj->halt_ticks = 0;
     obj->stride = 1;
@@ -88,6 +89,10 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->unserialize = NULL;
     obj->debug = NULL;
     obj->pal_transform = NULL;
+}
+
+void object_create_static(object *obj, game_state *gs) {
+    object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
 }
 
 /**
