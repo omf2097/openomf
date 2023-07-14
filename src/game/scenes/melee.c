@@ -387,18 +387,29 @@ static void draw_highlight(const melee_local *local, const cursor_data *cursor, 
     video_draw_offset(&local->select_hilight, x, y, offset, 255);
 }
 
+/**
+ * Get current color palette index for a given tick. This is used in the pulsing effect of the
+ * har or pilot selector highlight thingy.
+ */
+static int get_index_for_tick(int ticks) {
+    double rate = ((double)ticks) / 18.0;
+    return round((sin(rate) + 1.0) * 3) + 1;
+}
+
 static void render_highlights(const melee_local *local, bool player2_is_selectable) {
-    int rate = floor((float)local->ticks / 14.0);
-    int index = abs((rate % 8) - 4);
+    int index = get_index_for_tick(local->ticks);
     if(player2_is_selectable && CURSORS_MATCH(local)) {
-        int offset = CURSORS_DONE(local) ? 0xBF : 0xBB + index;
+        int base = 0xE0;
+        int offset = CURSORS_DONE(local) ? base + 7 : base + index;
         draw_highlight(local, &local->cursor[0], offset);
     } else {
         if(player2_is_selectable) {
-            int offset = local->cursor[1].done ? 0xAE : 0xAA + index;
+            int base = 0xA8;
+            int offset = CURSOR_B_DONE(local) ? base + 7 : base + index;
             draw_highlight(local, &local->cursor[1], offset);
         }
-        int offset = local->cursor[0].done ? 0xB6 : 0xB2 + index;
+        int base = 0xB0;
+        int offset = CURSOR_A_DONE(local) ? base + 7 : base + index;
         draw_highlight(local, &local->cursor[0], offset);
     }
 }
@@ -469,8 +480,10 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
 
     render_highlights(local, player2_is_selectable);
     render_disabled_portraits(local->pilot_portraits);
+    render_enabled_portrait(local->pilot_portraits, &local->cursor[0]);
     object_render(&local->big_portrait_1);
     if(player2_is_selectable) {
+        render_enabled_portrait(local->pilot_portraits, &local->cursor[0]);
         object_render(&local->big_portrait_2);
     }
 }
@@ -480,8 +493,8 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
 
     // render the stupid unselected HAR portraits before anything
     // so we can render anything else on top of them
-    render_disabled_portraits(local->har_portraits);
     render_highlights(local, player2_is_selectable);
+    render_disabled_portraits(local->har_portraits);
 
     // currently selected player
     object_render(&local->big_portrait_1);
@@ -566,6 +579,11 @@ static void load_pilot_portraits(scene *scene, melee_local *local) {
 
         // Copy the face image in dimmed color (shown when not selected)
         surface_create_from(&target->disabled, &target->enabled);
+        surface_compress_index_blocks(&target->disabled, 0x60, 0xA0, 64, 16);
+        surface_compress_index_blocks(&target->disabled, 0xA0, 0xD0, 8, 3);
+        surface_compress_index_blocks(&target->disabled, 0xD0, 0xE0, 16, 3);
+        surface_compress_index_blocks(&target->disabled, 0xE0, 0xF0, 8, 2);
+        surface_compress_remap(&target->disabled, 0xF0, 0xF7, 0xB6, 3);
     }
 }
 
@@ -573,22 +591,22 @@ static void load_har_portraits(scene *scene, melee_local *local) {
     sprite *current;
     portrait *target;
     int row, col;
-    animation *hars_disabled = &bk_get_info(scene->bk_data, 1)->ani;
+    animation *har_portraits = &bk_get_info(scene->bk_data, 1)->ani;
     for(int i = 0; i < 10; i++) {
         row = i / 5;
         col = i % 5;
         target = &local->har_portraits[i];
 
         // Copy the HAR image in full color (shown when selected)
-        current = animation_get_sprite(hars_disabled, 0);
+        current = animation_get_sprite(har_portraits, 0);
         target->x = current->pos.x + 62 * col;
         target->y = current->pos.y + 42 * row;
         surface_create_from_surface(&target->enabled, 51, 36, 62 * col, 42 * row, current->data);
+        surface_generate_stencil(&target->enabled, 0xD0);
 
         // Copy the enabled image, and compress the colors to grayscale
         surface_create_from(&target->disabled, &target->enabled);
         surface_convert_to_grayscale(&target->disabled, video_get_pal_ref(), 0xD0, 0xDF);
-        surface_generate_stencil(&target->disabled, 0xD0);
     }
 }
 

@@ -1,5 +1,6 @@
 #include "video/surface.h"
 #include "utils/allocator.h"
+#include "utils/miscmath.h"
 #include <png.h>
 #include <stdlib.h>
 #include <utils/log.h>
@@ -138,7 +139,7 @@ static uint8_t find_closest_gray(const screen_palette *pal, int range_start, int
 void surface_convert_to_grayscale(surface *sur, const screen_palette *pal, int range_start, int range_end) {
     float r, g, b;
     uint8_t idx;
-    char mapping[256];
+    unsigned char mapping[256];
 
     // Make a mapping for fast search.
     for(int i = 0; i < 256; i++) {
@@ -153,6 +154,36 @@ void surface_convert_to_grayscale(surface *sur, const screen_palette *pal, int r
         idx = sur->data[i];
         sur->data[i] = mapping[idx];
     }
+    create_hash(sur);
+}
+
+void surface_compress_index_blocks(surface *sur, int range_start, int range_end, int block_size, int amount) {
+    uint8_t idx, real_start, old_idx, new_idx;
+    for(int i = 0; i < sur->w * sur->h; i++) {
+        idx = sur->data[i];
+        if(idx >= range_start && idx < range_end) {
+            real_start = idx - range_start;
+            old_idx = real_start % block_size;
+            new_idx = max2(0, old_idx - amount);
+            sur->data[i] = idx - old_idx + new_idx;
+        }
+    }
+    create_hash(sur);
+}
+
+void surface_compress_remap(surface *sur, int range_start, int range_end, int remap_to, int amount) {
+    uint8_t idx, real_start, d;
+    for(int i = 0; i < sur->w * sur->h; i++) {
+        idx = sur->data[i];
+        if(idx >= range_start && idx < range_end) {
+            real_start = idx - range_start;
+            if(real_start - amount < range_start) {
+                d = abs(real_start - amount);
+                sur->data[i] = remap_to - d;
+            }
+        }
+    }
+    create_hash(sur);
 }
 
 bool surface_write_png(const surface *sur, const screen_palette *pal, const char *filename) {
