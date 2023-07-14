@@ -36,6 +36,33 @@ void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src
 void surface_generate_stencil(const surface *sur, int index);
 
 /**
+ * Flatten each block of {block_size} colors by decrementing the index by {amount} in each block.
+ * Start counting from {range_start} and stop at {range_end}. A block can be e.g. a color slide
+ * of certain color.
+ *
+ * @param sur Surface to convert
+ * @param range_start Palette range start index
+ * @param range_end Palette range end index
+ * @param block_size Palette color block size, e.g. 8
+ * @param amount How much to decrement the index.
+ */
+void surface_compress_index_blocks(surface *sur, int range_start, int range_end, int block_size, int amount);
+
+/**
+ * Flatten a block of colors in palette by decrementing the index by {amount}. Start counting
+ * from {range_start} and stop at {range_end}. If the resulting index after decrementing goes
+ * below {range_start}, then continue decrementing from index {remap_to}. This virtually combines
+ * two separate color blocks in the palette (e.g. color slides).
+ *
+ * @param sur Surface to convert
+ * @param range_start Palette range start index
+ * @param range_end Palette range end index
+ * @param remap_to End index of a palette block to remap to
+ * @param amount How much to decrement the index.
+ */
+void surface_compress_remap(surface *sur, int range_start, int range_end, int remap_to, int amount);
+
+/**
  * Convert surface to grayscale using colors in palette from range-start to range-end (inclusive).
  * Conversion is done by luminosity.
  *
