@@ -5,19 +5,21 @@
 #include <stdlib.h>
 #include <utils/log.h>
 
-uint32_t static fnv_32a_buf(const void *buf, unsigned int len) {
+#define FNV_INITIAL ((uint32_t)2166136261)
+
+static void fnv_32a_buf(uint32_t *hash, const void *buf, unsigned int len) {
     unsigned char *bp = (unsigned char *)buf;
     unsigned char *be = bp + len;
-    uint32_t hash = ((uint32_t)2166136261);
     while(bp < be) {
-        hash ^= (uint32_t)*bp++;
-        hash *= ((uint32_t)0x01000193);
+        *hash ^= (uint32_t)*bp++;
+        *hash *= ((uint32_t)0x01000193);
     }
-    return hash;
 }
 
 static inline void create_hash(surface *sur) {
-    sur->hash = fnv_32a_buf(sur->data, sur->w * sur->h);
+    sur->hash = FNV_INITIAL;
+    fnv_32a_buf(&sur->hash, sur->data, sur->w * sur->h);
+    fnv_32a_buf(&sur->hash, sur->stencil, sur->w * sur->h);
 }
 
 void surface_create(surface *sur, int w, int h) {

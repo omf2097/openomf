@@ -13,8 +13,8 @@
 #include "video/video.h"
 
 #define MAX_PAGES (NUMBER_OF_ROUND_TYPES - 1)
-#define TEXT_COLOR_HEADER color_create(80, 220, 80, 0xFF)
-#define TEXT_COLOR_SCORES color_create(0xFF, 0xFF, 0xFF, 0xFF)
+#define TEXT_COLOR_HEADER TEXT_BLINKY_GREEN
+#define TEXT_COLOR_SCORES 0x7F
 #define CURSOR_STR "\x7f"
 
 typedef struct scoreboard_local_t {
