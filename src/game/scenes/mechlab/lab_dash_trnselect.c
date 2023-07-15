@@ -32,7 +32,7 @@ component *lab_dash_trnselect_create(scene *s, trnselect_widgets *tw) {
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = color_create(0, 0, 123, 255);
+    tconf.cforeground = TEXT_TRN_BLUE;
 
     // Pilot image
     tw->trnselect = trnselect_create();

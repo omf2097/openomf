@@ -37,7 +37,7 @@
 #include "video/surface.h"
 #include "video/video.h"
 
-#define TEXT_COLOR color_create(186, 250, 250, 255)
+#define TEXT_COLOR 0xC7
 
 #define HAR1_START_POS 110
 #define HAR2_START_POS 211
@@ -1395,7 +1395,7 @@ int arena_create(scene *scene) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
-    tconf.cforeground = COLOR_DARK_GREEN;
+    tconf.cforeground = TEXT_DARK_GREEN;
     tconf.halign = TEXT_CENTER;
 
     // Arena menu

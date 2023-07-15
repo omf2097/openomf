@@ -263,9 +263,7 @@ static void trnmenu_render(component *c) {
 
     // Render button sheet
     if(m->button_sheet) {
-        video_render_sprite_flip_scale_opacity_tint(m->button_sheet, m->sheet_x, m->sheet_y, BLEND_ALPHA, 0, 255,
-                                                    FLIP_NONE, 1.0f, 1.0f, clamp(s->opacity * 255, 0, 255),
-                                                    color_create(0xFF, 0xFF, 0xFF, 0xFF));
+        video_draw(m->button_sheet, m->sheet_x, m->sheet_y);
     }
 
     // Handle components

@@ -86,10 +86,10 @@ void load_description(component **c, const char *desc) {
     tconf.halign = TEXT_CENTER;
     tconf.valign = TEXT_MIDDLE;
     if(color >= 0) {
-        tconf.cforeground = palette_lookup_color(color, video_get_base_palette());
+        tconf.cforeground = color;
     } else {
         // WAR invitational seems to use this color, none is specified
-        tconf.cforeground = palette_lookup_color(0xa5, video_get_base_palette());
+        tconf.cforeground = 0xa5;
     }
 
     component_free(*c);

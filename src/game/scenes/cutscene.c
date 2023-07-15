@@ -114,7 +114,7 @@ int cutscene_create(scene *scene) {
             local->text_x = 10;
             local->text_y = 5;
             local->text_width = 300;
-            local->text_conf.cforeground = COLOR_YELLOW;
+            local->text_conf.cforeground = 0xF8;
             break;
 
         case SCENE_END1:
@@ -122,7 +122,7 @@ int cutscene_create(scene *scene) {
             local->text_x = 10;
             local->text_y = 157;
             local->text_width = 300;
-            local->text_conf.cforeground = COLOR_RED;
+            local->text_conf.cforeground = 0xFD;
 
             // Pilot face
             animation *ani = &bk_get_info(scene->bk_data, 3)->ani;
@@ -146,8 +146,9 @@ int cutscene_create(scene *scene) {
             local->text_x = 10;
             local->text_y = 160;
             local->text_width = 300;
-            local->text_conf.cforeground = COLOR_GREEN;
+            local->text_conf.cforeground = 0xF8;
             break;
+
         case SCENE_NORTHAM:
         case SCENE_KATUSHAI:
         case SCENE_WAR:
@@ -176,9 +177,7 @@ int cutscene_create(scene *scene) {
             local->text_x = 10;
             local->text_y = 160;
             local->text_width = 300;
-
-            local->text_conf.cforeground = palette_lookup_color(248, video_get_base_palette());
-
+            local->text_conf.cforeground = 0xF8;
             break;
     }
 

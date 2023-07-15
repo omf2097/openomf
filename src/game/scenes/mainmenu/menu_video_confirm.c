@@ -70,7 +70,7 @@ component *menu_video_confirm_create(scene *s, settings_video *old_settings) {
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = COLOR_DARK_GREEN;
+    tconf.cforeground = TEXT_MEDIUM_GREEN;
 
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "ACCEPT RESOLUTION?"));

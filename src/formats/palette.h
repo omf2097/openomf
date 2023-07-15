@@ -65,8 +65,6 @@ void palette_free(palette *pal);
  */
 unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const palette *pal);
 
-color palette_lookup_color(uint8_t i, const palette *pal);
-
 /*! \brief Exports palette to GIMP palette file.
  *
  * Exports a palette to GIMP palette format (GPL). Palette remappings are NOT

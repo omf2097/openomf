@@ -62,7 +62,7 @@ int font_load(font *font, const char *filename, unsigned int size) {
     sd_vga_image_create(&img, pixsize, pixsize);
     for(int i = 0; i < 224; i++) {
         sur = omf_calloc(1, sizeof(surface));
-        sd_font_decode(&sdfont, &img, i, 0xFE);
+        sd_font_decode(&sdfont, &img, i, 0);
         surface_create_from_vga(sur, &img);
         vector_append(&font->surfaces, &sur);
     }

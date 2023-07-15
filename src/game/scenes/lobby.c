@@ -5,11 +5,11 @@
 
 #include "game/gui/gui.h"
 
-#define TEXT_BRIGHT color_create(240, 250, 250, 255)
-#define TEXT_COLOR color_create(186, 250, 250, 255)
-#define BLUE_TEXT_COLOR color_create(60, 182, 255, 255)
+//#define TEXT_BRIGHT color_create(240, 250, 250, 255)
+//#define TEXT_COLOR color_create(186, 250, 250, 255)
+//#define BLUE_TEXT_COLOR color_create(60, 182, 255, 255)
 
-#define TEXT_BLACK color_create(0, 0, 0, 255)
+//#define TEXT_BLACK color_create(0, 0, 0, 255)
 
 enum
 {
@@ -120,26 +120,26 @@ void lobby_render_overlay(scene *scene) {
     char buf[100];
 
     snprintf(buf, sizeof(buf), "Player");
-    font_render(&font_net1, buf, 16, 7, TEXT_COLOR);
+    font_render(&font_net1, buf, 16, 7, COLOR_GREEN);
 
     snprintf(buf, sizeof(buf), "Action");
-    font_render(&font_net1, buf, 117, 7, TEXT_COLOR);
+    font_render(&font_net1, buf, 117, 7, COLOR_GREEN);
 
     snprintf(buf, sizeof(buf), "Wn/Loss");
-    font_render(&font_net2, buf, 200, 8, TEXT_COLOR);
+    font_render(&font_net2, buf, 200, 8, COLOR_GREEN);
 
     snprintf(buf, sizeof(buf), "Version");
-    font_render(&font_net2, buf, 240, 8, TEXT_COLOR);
+    font_render(&font_net2, buf, 240, 8, COLOR_GREEN);
 
     snprintf(buf, sizeof(buf), "1 of 0");
-    font_render(&font_net2, buf, 284, 8, TEXT_COLOR);
+    font_render(&font_net2, buf, 284, 8, COLOR_GREEN);
 
     if(!local->named) {
         snprintf(buf, sizeof(buf), "Enter your name:");
-        font_render_shadowed_colored(&font_net1, buf, 9, 140, BLUE_TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM,
+        font_render_shadowed_colored(&font_net1, buf, 9, 140, COLOR_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM,
                                      TEXT_BLACK);
         snprintf(buf, sizeof(buf), "%s%c", local->name, 127);
-        font_render_shadowed(&font_net1, buf, 130, 140, TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        font_render_shadowed(&font_net1, buf, 130, 140, COLOR_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
     } else {
         guiframe_render(local->frame);
     }
@@ -219,7 +219,7 @@ int lobby_create(scene *scene) {
     text_defaults(&tconf);
     tconf.font = FONT_NET1;
     tconf.halign = TEXT_LEFT;
-    tconf.cforeground = BLUE_TEXT_COLOR;
+    tconf.cforeground = COLOR_GREEN;
 
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);

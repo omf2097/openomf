@@ -12,12 +12,12 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
-    tconf.cforeground = COLOR_DARK_GREEN;
+    tconf.cforeground = TEXT_MEDIUM_GREEN;
 
     text_settings tconf_desc;
     text_defaults(&tconf_desc);
     tconf_desc.font = FONT_SMALL;
-    tconf_desc.cforeground = COLOR_DARK_GREEN;
+    tconf_desc.cforeground = TEXT_MEDIUM_GREEN;
 
     dlg->x = x;
     dlg->y = y;
@@ -36,15 +36,15 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     if(style == DIALOG_STYLE_YES_NO) {
         dlg->yes = textbutton_create(&tconf, "YES", NULL, COM_ENABLED, NULL, NULL);
         dlg->no = textbutton_create(&tconf, "NO", NULL, COM_ENABLED, NULL, NULL);
-        textbutton_set_border(dlg->yes, COLOR_BLUE);
-        textbutton_set_border(dlg->no, COLOR_BLUE);
+        textbutton_set_border(dlg->yes, TEXT_MEDIUM_GREEN);
+        textbutton_set_border(dlg->no, TEXT_MEDIUM_GREEN);
         component_layout(dlg->yes, x + 54, x + h + 6, 8, 8);
         component_layout(dlg->no, x + 114, x + h + 6, 8, 8);
         component_select(dlg->yes, 1);
         dlg->result = DIALOG_RESULT_YES_OK;
     } else if(style == DIALOG_STYLE_OK) {
         dlg->ok = textbutton_create(&tconf, "OK", NULL, COM_ENABLED, NULL, NULL);
-        textbutton_set_border(dlg->ok, COLOR_BLUE);
+        textbutton_set_border(dlg->ok, TEXT_MEDIUM_GREEN);
         component_layout(dlg->ok, x + 84, x + h + 6, 8, 8);
         component_select(dlg->ok, 1);
         dlg->result = DIALOG_RESULT_YES_OK;
@@ -86,7 +86,7 @@ void dialog_render(dialog *dlg) {
     if(dlg->ok) {
         component_render(dlg->ok);
     }
-    font_render_wrapped_shadowed(&font_small, dlg->text, dlg->x + 15, dlg->y + 3, MAX_WIDTH, COLOR_GREEN,
+    font_render_wrapped_shadowed(&font_small, dlg->text, dlg->x + 15, dlg->y + 3, MAX_WIDTH, TEXT_MEDIUM_GREEN,
                                  TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
 }
 

@@ -64,12 +64,11 @@ static void textselector_render(component *c) {
 
     // Render text
     if(component_is_selected(c)) {
-        int t = tb->ticks / 2;
-        tb->tconf.cforeground = color_create(80 - t, 220 - t * 2, 80 - t, 255);
+        tb->tconf.cforeground = TEXT_BLINKY_GREEN;
     } else if(component_is_disabled(c)) {
-        tb->tconf.cforeground = color_create(121, 121, 121, 255);
+        tb->tconf.cforeground = 0xC0;
     } else {
-        tb->tconf.cforeground = COLOR_DARK_GREEN;
+        tb->tconf.cforeground = TEXT_MEDIUM_GREEN;
     }
     text_render(&tb->tconf, c->x, c->y, c->w, c->h, buf);
 }

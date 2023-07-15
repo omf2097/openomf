@@ -11,22 +11,18 @@
 typedef struct {
     char *text;
     text_settings tconf;
-    int ticks;
-    int dir;
 
-    int border_enabled;
     int border_created;
-    color border_color;
+    uint8_t border_color;
     surface border;
 
     textbutton_click_cb click_cb;
     void *userdata;
 } textbutton;
 
-void textbutton_set_border(component *c, color col) {
+void textbutton_set_border(component *c, uint8_t color) {
     textbutton *tb = widget_get_obj(c);
-    tb->border_enabled = 1;
-    tb->border_color = col;
+    tb->border_color = color;
     if(tb->border_created) {
         // destroy the old border first
         surface_free(&tb->border);
@@ -36,12 +32,6 @@ void textbutton_set_border(component *c, color col) {
     int fsize = text_char_width(&tb->tconf);
     int width = text_width(&tb->tconf, tb->text);
     menu_background_border_create(&tb->border, width + 6, fsize + 3);
-    tb->border_created = 1;
-}
-
-void textbutton_remove_border(component *c) {
-    textbutton *tb = widget_get_obj(c);
-    tb->border_enabled = 0;
 }
 
 void textbutton_set_text(component *c, const char *text) {
@@ -58,17 +48,16 @@ static void textbutton_render(component *c) {
 
     // Select color and render
     if(component_is_selected(c)) {
-        int t = tb->ticks / 2;
-        tb->tconf.cforeground = color_create(80 - t, 220 - t * 2, 80 - t, 255);
+        tb->tconf.cforeground = TEXT_BLINKY_GREEN;
     } else if(component_is_disabled(c)) {
-        tb->tconf.cforeground = color_create(121, 121, 121, 255);
+        tb->tconf.cforeground = 0xC0;
     } else {
-        tb->tconf.cforeground = COLOR_DARK_GREEN;
+        tb->tconf.cforeground = TEXT_MEDIUM_GREEN;
     }
     text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->text);
 
     // Border
-    if(tb->border_enabled) {
+    if(tb->border_created) {
         video_draw(&tb->border, c->x - 2, c->y - 2);
     }
 }
@@ -87,24 +76,8 @@ static int textbutton_action(component *c, int action) {
     return 1;
 }
 
-static void textbutton_tick(component *c) {
-    textbutton *tb = widget_get_obj(c);
-    if(!tb->dir) {
-        tb->ticks++;
-    } else {
-        tb->ticks--;
-    }
-    if(tb->ticks > 120) {
-        tb->dir = 1;
-    }
-    if(tb->ticks == 0) {
-        tb->dir = 0;
-    }
-}
-
 static void textbutton_free(component *c) {
     textbutton *tb = widget_get_obj(c);
-
     if(tb->border_created) {
         surface_free(&tb->border);
     }
@@ -128,7 +101,6 @@ component *textbutton_create(const text_settings *tconf, const char *text, const
 
     widget_set_render_cb(c, textbutton_render);
     widget_set_action_cb(c, textbutton_action);
-    widget_set_tick_cb(c, textbutton_tick);
     widget_set_free_cb(c, textbutton_free);
 
     return c;

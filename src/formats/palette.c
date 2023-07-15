@@ -42,13 +42,6 @@ unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const palet
     return 0;
 }
 
-color palette_lookup_color(uint8_t i, const palette *pal) {
-    uint8_t red = pal->data[i][0] & 0xff;
-    uint8_t green = pal->data[i][1] & 0xff;
-    uint8_t blue = pal->data[i][2] & 0xff;
-    return color_create(red, green, blue, 255);
-}
-
 int palette_to_gimp_palette(const palette *pal, const char *filename) {
     sd_writer *w;
     const unsigned char *d;

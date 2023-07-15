@@ -16,11 +16,15 @@
 #include "resources/pilots.h"
 #include "resources/sprite.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/random.h"
+#include "utils/log.h"
 #include "video/video.h"
 
 #define MAX_STAT 20
+#define TEXT_GREEN 0xA6
+#define RED_CURSOR_INDEX 0xF6
+#define BLUE_CURSOR_INDEX 0xF7
+#define VIOLET_CURSOR_INDEX 0xF8
 
 typedef struct {
     int x;
@@ -118,6 +122,21 @@ void melee_free(scene *scene) {
     scene_set_userdata(scene, local);
 }
 
+static void set_cursor_colors(int offset) {
+    palette *pal = video_get_base_palette();
+    int base = 120;
+    pal->data[RED_CURSOR_INDEX][0] = base + offset;
+    pal->data[RED_CURSOR_INDEX][1] = 0;
+    pal->data[RED_CURSOR_INDEX][2] = 0;
+    pal->data[BLUE_CURSOR_INDEX][0] = 0;
+    pal->data[BLUE_CURSOR_INDEX][1] = 0;
+    pal->data[BLUE_CURSOR_INDEX][2] = base + offset;
+    pal->data[VIOLET_CURSOR_INDEX][0] = base + offset;
+    pal->data[VIOLET_CURSOR_INDEX][1] = 0;
+    pal->data[VIOLET_CURSOR_INDEX][2] = base + offset;
+    video_force_pal_refresh();
+}
+
 void melee_tick(scene *scene, int paused) {
     melee_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
@@ -148,14 +167,18 @@ void melee_tick(scene *scene, int paused) {
         } while((i = i->next));
     }
 
-    local->ticks++;
-
     if(local->page == HAR_SELECT && local->ticks % 10 == 1) {
         object_dynamic_tick(&local->har_player1[CURSOR_INDEX(local, 0)]);
         if(player2->selectable) {
             object_dynamic_tick(&local->har_player2[CURSOR_INDEX(local, 1)]);
         }
     }
+
+    // Tick cursor colors
+    local->ticks++;
+    double rate = ((double)local->ticks) / 25.0;
+    int num = round((sin(rate) + 1.0) * 64);
+    set_cursor_colors(num);
 }
 
 void refresh_pilot_stats(melee_local *local) {
@@ -387,30 +410,14 @@ static void draw_highlight(const melee_local *local, const cursor_data *cursor, 
     video_draw_offset(&local->select_hilight, x, y, offset, 255);
 }
 
-/**
- * Get current color palette index for a given tick. This is used in the pulsing effect of the
- * har or pilot selector highlight thingy.
- */
-static int get_index_for_tick(int ticks) {
-    double rate = ((double)ticks) / 18.0;
-    return round((sin(rate) + 1.0) * 3) + 1;
-}
-
 static void render_highlights(const melee_local *local, bool player2_is_selectable) {
-    int index = get_index_for_tick(local->ticks);
     if(player2_is_selectable && CURSORS_MATCH(local)) {
-        int base = 0xE0;
-        int offset = CURSORS_DONE(local) ? base + 7 : base + index;
-        draw_highlight(local, &local->cursor[0], offset);
+        draw_highlight(local, &local->cursor[0], VIOLET_CURSOR_INDEX);
     } else {
         if(player2_is_selectable) {
-            int base = 0xA8;
-            int offset = CURSOR_B_DONE(local) ? base + 7 : base + index;
-            draw_highlight(local, &local->cursor[1], offset);
+            draw_highlight(local, &local->cursor[1], BLUE_CURSOR_INDEX);
         }
-        int base = 0xB0;
-        int offset = CURSOR_A_DONE(local) ? base + 7 : base + index;
-        draw_highlight(local, &local->cursor[0], offset);
+        draw_highlight(local, &local->cursor[0], RED_CURSOR_INDEX);
     }
 }
 
@@ -434,12 +441,12 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     video_draw(&local->bg_player_bio, 0, 62);
 
     // player bio
-    font_render_wrapped_shadowed(&font_small, lang_get(135 + current_a), 4, 66, 152, COLOR_GREEN,
+    font_render_wrapped_shadowed(&font_small, lang_get(135 + current_a), 4, 66, 152, TEXT_GREEN,
                                  TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
     // player stats
-    font_render_shadowed(&font_small, lang_get(216), 74 + 27, 4, COLOR_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-    font_render_shadowed(&font_small, lang_get(217), 74 + 19, 22, COLOR_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-    font_render_shadowed(&font_small, lang_get(218), 74 + 12, 40, COLOR_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    font_render_shadowed(&font_small, lang_get(216), 74 + 27, 4, TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    font_render_shadowed(&font_small, lang_get(217), 74 + 19, 22, TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    font_render_shadowed(&font_small, lang_get(218), 74 + 12, 40, TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
     component_render(local->bar_power[0]);
     component_render(local->bar_agility[0]);
     component_render(local->bar_endurance[0]);
@@ -449,32 +456,32 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
         video_draw(&local->bg_player_bio, 320 - local->bg_player_bio.w, 62);
         // player bio
         font_render_wrapped_shadowed(&font_small, lang_get(135 + current_b), 320 - local->bg_player_bio.w + 4, 66, 152,
-                                     COLOR_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+                                     TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
         // player stats
-        font_render_shadowed(&font_small, lang_get(216), 320 - 66 - local->bg_player_stats.w + 27, 4, COLOR_GREEN,
+        font_render_shadowed(&font_small, lang_get(216), 320 - 66 - local->bg_player_stats.w + 27, 4, TEXT_GREEN,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        font_render_shadowed(&font_small, lang_get(217), 320 - 66 - local->bg_player_stats.w + 19, 22, COLOR_GREEN,
+        font_render_shadowed(&font_small, lang_get(217), 320 - 66 - local->bg_player_stats.w + 19, 22, TEXT_GREEN,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        font_render_shadowed(&font_small, lang_get(218), 320 - 66 - local->bg_player_stats.w + 12, 40, COLOR_GREEN,
+        font_render_shadowed(&font_small, lang_get(218), 320 - 66 - local->bg_player_stats.w + 12, 40, TEXT_GREEN,
                              TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
         component_render(local->bar_power[1]);
         component_render(local->bar_agility[1]);
         component_render(local->bar_endurance[1]);
     } else {
         // 'choose your pilot'
-        font_render_wrapped_shadowed(&font_small, lang_get(187), 160, 97, 160, COLOR_GREEN,
+        font_render_wrapped_shadowed(&font_small, lang_get(187), 160, 97, 160, TEXT_GREEN,
                                      TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
     }
 
     object_render(&local->player2_placeholder);
 
     // player 1 name
-    font_render_wrapped_shadowed(&font_small, lang_get(20 + current_a), 0, 52, 66, COLOR_BLACK,
+    font_render_wrapped_shadowed(&font_small, lang_get(20 + current_a), 0, 52, 66, TEXT_BLACK,
                                  TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
 
     if(player2_is_selectable) {
         // player 2 name
-        font_render_wrapped_shadowed(&font_small, lang_get(20 + current_b), 320 - 66, 52, 66, COLOR_BLACK,
+        font_render_wrapped_shadowed(&font_small, lang_get(20 + current_b), 320 - 66, 52, 66, TEXT_BLACK,
                                      TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
     }
 
@@ -504,12 +511,12 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
     object_render(&local->har_player1[CURSOR_INDEX(local, 0)]);
 
     // player 1 name
-    font_render_wrapped_shadowed(&font_small, lang_get(20 + local->pilot_id_a), 0, 52, 66, COLOR_BLACK,
+    font_render_wrapped_shadowed(&font_small, lang_get(20 + local->pilot_id_a), 0, 52, 66, TEXT_BLACK,
                                  TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
 
     if(player2_is_selectable) {
         // player 2 name
-        font_render_wrapped_shadowed(&font_small, lang_get(20 + local->pilot_id_b), 320 - 66, 52, 66, COLOR_BLACK,
+        font_render_wrapped_shadowed(&font_small, lang_get(20 + local->pilot_id_b), 320 - 66, 52, 66, TEXT_BLACK,
                                      TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
 
         // currently selected player
@@ -523,16 +530,16 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
         str vs_text;
         str_from_format(&vs_text, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)),
                         har_get_name(CURSOR_INDEX(local, 1)));
-        font_render_wrapped_shadowed(&font_small, str_c(&vs_text), 80, 107, 150, COLOR_BLACK,
+        font_render_wrapped_shadowed(&font_small, str_c(&vs_text), 80, 107, 150, TEXT_BLACK,
                                      TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
         str_free(&vs_text);
     } else {
         // 'choose your HAR'
-        font_render_wrapped_shadowed(&font_small, lang_get(186), 160, 97, 160, COLOR_GREEN,
+        font_render_wrapped_shadowed(&font_small, lang_get(186), 160, 97, 160, TEXT_MEDIUM_GREEN,
                                      TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
 
         // render HAR name
-        font_render_wrapped_shadowed(&font_small, har_get_name(CURSOR_INDEX(local, 0)), 130, 107, 66, COLOR_BLACK,
+        font_render_wrapped_shadowed(&font_small, har_get_name(CURSOR_INDEX(local, 0)), 130, 107, 66, TEXT_BLACK,
                                      TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
     }
 }
@@ -554,10 +561,10 @@ void melee_render(scene *scene) {
         str wins_text_a, wins_text_b;
         str_from_format(&wins_text_a, "Wins: %d", s1->wins);
         str_from_format(&wins_text_b, "Wins: %d", s2->wins);
-        font_render_shadowed(&font_small, str_c(&wins_text_a), text_x, 107, COLOR_BLACK,
+        font_render_shadowed(&font_small, str_c(&wins_text_a), text_x, 107, TEXT_BLACK,
                              TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
         text_x = 312 - str_size(&wins_text_b) * font_small.w;
-        font_render_shadowed(&font_small, str_c(&wins_text_a), text_x, 107, COLOR_BLACK,
+        font_render_shadowed(&font_small, str_c(&wins_text_a), text_x, 107, TEXT_BLACK,
                              TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
         str_free(&wins_text_a);
         str_free(&wins_text_b);
@@ -713,6 +720,7 @@ int melee_create(scene *scene) {
     component_layout(local->bar_endurance[1], 320 - 66 - local->bg_player_stats.w, 48, 20 * 4, 8);
 
     refresh_pilot_stats(local);
+    set_cursor_colors(0);
 
     // initialize nova selection cheat
     memset(local->har_selected, 0, sizeof(local->har_selected));

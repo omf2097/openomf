@@ -261,7 +261,7 @@ component *lab_menu_main_create(scene *s, bool character_loaded) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
-    tconf.cforeground = color_create(0, 0, 123, 255);
+    tconf.cforeground = TEXT_TRN_BLUE;
 
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {

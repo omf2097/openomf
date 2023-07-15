@@ -354,7 +354,7 @@ component *menu_create(int obj_h) {
     m->help_text_conf.font = FONT_SMALL;
     m->help_text_conf.halign = TEXT_CENTER;
     m->help_text_conf.valign = TEXT_MIDDLE;
-    m->help_text_conf.cforeground = COLOR_LIGHT_BLUE;
+    m->help_text_conf.cforeground = COLOR_GREEN;
 
     sizer_set_render_cb(c, menu_render);
     sizer_set_event_cb(c, menu_event);
