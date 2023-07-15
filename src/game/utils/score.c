@@ -6,14 +6,14 @@
 #include <math.h>
 #include <stdio.h>
 
-#define TEXT_COLOR color_create(186, 250, 250, 255)
+#define TEXT_COLOR 0xC7
 #define SLIDER_DISTANCE 50
 #define SLIDER_HANG_TIME 25
 
 #define SCRAP 100000
 #define DESTRUCTION 200000
 
-typedef struct score_text_t {
+typedef struct score_text {
     char *text;
     float position; // Position of text between middle of screen and (x,y). 1.0 at middle, 0.0 at end
     vec2i start;

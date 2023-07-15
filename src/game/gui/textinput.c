@@ -34,7 +34,7 @@ static void textinput_render(component *c) {
 
     if(component_is_selected(c)) {
         if(chars > 0) {
-            tb->tconf.cforeground = color_create(80, 220, 80, 255);
+            tb->tconf.cforeground = TEXT_BLINKY_GREEN;
             tb->buf[chars] = '\x7F';
             tb->buf[chars + 1] = 0;
             text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
@@ -42,17 +42,17 @@ static void textinput_render(component *c) {
         }
     } else if(component_is_disabled(c)) {
         if(chars > 0) {
-            tb->tconf.cforeground = color_create(121, 121, 121, 255);
+            tb->tconf.cforeground = 0xC0;
             text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
         }
     } else {
         if(chars > 0) {
-            tb->tconf.cforeground = COLOR_DARK_GREEN;
+            tb->tconf.cforeground = TEXT_MEDIUM_GREEN;
             text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
         }
     }
     if(chars == 0) {
-        tb->tconf.cforeground = color_create(121, 121, 121, 255);
+        tb->tconf.cforeground = 0xC0;
         text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->text);
     }
 }
