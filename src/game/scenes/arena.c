@@ -11,6 +11,7 @@
 #include "controller/net_controller.h"
 #include "formats/error.h"
 #include "formats/rec.h"
+#include "formats/chr.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/gui/filler.h"
@@ -546,7 +547,10 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
                 player_winner->pilot->money += player_loser->pilot->winnings;
                 scene_youwin_anim_start(scene->gs);
             } else {
-                scene_youlose_anim_start(scene->gs);
+               if (player_loser->pilot->rank = player_loser->pilot->enemies_ex_unranked) {
+                    player_loser->pilot->rank++;
+                   }
+               scene_youlose_anim_start(scene->gs);
             }
         }
     }
