@@ -47,27 +47,20 @@ Required:
 * Gettext (if you have problems with libintl)
 * Enet: http://enet.bespin.org/
 * libargtable2: http://argtable.sourceforge.net/
-* libpng: http://www.libpng.org/pub/png/libpng.html (for .PNG screenshots)
+* libpng: http://www.libpng.org/pub/png/libpng.html
 * zlib: http://www.zlib.net/ (for libpng)
-
-Recommended:
-* OpenAL: http://kcat.strangesoft.net/openal.html (for audio)
-* libxmp: https://github.com/cmatsuoka/libxmp (for module music)
-
-Optional:
-* libvorbis: https://www.xiph.org/downloads/
-* libogg: https://www.xiph.org/downloads/
-* libdumb (>=2.0.0): https://bitbucket.org/kode54/dumb (for module music)
+* SDL2_Mixer: https://github.com/libsdl-org/SDL_mixer
+* libxmp: https://github.com/cmatsuoka/libxmp
 
 
 On debian, it is possible to pull some libraries using apt-get.
 ```
-apt-get install libsdl2-dev libopenal-dev libpng-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
+apt-get install libsdl2-dev libsdl2-mixer-dev libpng-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
 ```
 
 On Mac, you can use brew:
 ```
-brew install argtable openal-soft confuse enet sdl2 libxmp libpng
+brew install argtable sdl2_mixer confuse enet sdl2 libxmp libpng
 ```
 
 ### Acquiring the sources
@@ -100,25 +93,11 @@ Some useful CMake flags:
 |----------------------|-----------------------------------------|-----------------|---------|
 | CMAKE_BUILD_TYPE     | Chooses between build types             | -/Debug/Release | -       |
 | CMAKE_INSTALL_PREFIX | Installation path                       | -               | -       |
-| USE_OGGVORBIS        | Selects Vorbis support                  | On/Off          | Off     |
-| USE_OPENAL           | Selects OpenAL support                  | On/Off          | On      |
-| USE_DUMB             | Selects libdumb support                 | On/Off          | Off     |
-| USE_XMP              | Selects libxmp support                  | On/Off          | On      |
 | USE_TESTS            | Enables unittests (dev only!)           | On/Off          | Off     |
 | USE_TOOLS            | Enables format editor tools (dev only!) | On/Off          | Off     |
 | USE_SANITIZERS       | Enables asan and ubsan (dev only!)      | On/Off          | Off     |
 | USE_FORMAT           | Enables clang-format (dev only!)        | On/Off          | Off     |
 | USE_TIDY             | Enables clang-tidy (dev only!)          | On/Off          | Off     |
-
-Ogg Vorbis support is required if you wish to replace original OMF soundtracks with OGG files.
-Otherwise, the switch is optional.
-
-For music playback, select at least one (or more) of the module player libraries. 
-XMP is recommended due to ease of installation, but DUMB will also work just fine.
-
-It is technically possible to select more than one audio sink, or none. Currently, only one
-audio sink is supported (OpenAL). If all audio sinks are off, then no audio will be played.
-This will also of course reduce cpu usage a bit.
 
 Note that when USE_FORMAT is selected, you can run command "make clangformat" to run code
 formatter to the entire codebase.

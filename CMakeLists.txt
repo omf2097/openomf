@@ -13,10 +13,6 @@ set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 # Options
 OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_TOOLS "Build tools" OFF)
-OPTION(USE_OGGVORBIS "Add support for Ogg Vorbis audio" OFF)
-OPTION(USE_DUMB "Use libdumb for module playback" OFF)
-OPTION(USE_XMP "Use libxmp for module playback" ON)
-OPTION(USE_OPENAL "Support OpenAL for audio playback" ON)
 OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 OPTION(USE_TIDY "Use clang-tidy for checks" OFF)
 OPTION(USE_FORMAT "Use clang-format for checks" OFF)
@@ -46,6 +42,8 @@ endif()
 
 # System packages (hard dependencies)
 find_package(SDL2 REQUIRED)
+find_package(SDL2_mixer REQUIRED)
+find_package(xmp)
 find_package(enet)
 find_package(confuse)
 find_package(argtable2)
@@ -56,42 +54,12 @@ find_package(ZLIB)
 check_symbol_exists(strdup "string.h" HAVE_STD_STRDUP)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/src/platform.h)
 
-# If USE_DUMB flag is on, turn on libdumb
-if(USE_DUMB)
-    find_package(dumb)
-    add_definitions(-DUSE_DUMB)
-    if(MINGW)
-        add_definitions(-D_FILE_OFFSET_BITS=64)
-    endif()
-endif()
-
-# If XMP has been selected, attempt to find it
-if(USE_XMP)
-    find_package(xmp)
-    add_definitions(-DUSE_XMP)
-endif()
-
-# Audio sink selection
-if(USE_OPENAL)
-    find_package(OpenAL)
-    add_definitions(-DUSE_OPENAL)
-else()
-    message(STATUS "Note! No audio sink selected; Music/sounds will not play.")
-endif()
-
 # When building with MingW, do not look for Intl
 if(MINGW)
     set(LIBINTL_INCLUDE_DIR "")
     set(LIBINTL_LIBRARIES "")
 else()
     find_package(Intl)
-endif()
-
-# If we want to build support for vorbis streaming, find these too
-if(USE_OGGVORBIS)
-    find_package(ogg)
-    find_package(vorbis)
-    add_definitions(-DUSE_OGGVORBIS)
 endif()
 
 # If tests are enabled, find CUnit
@@ -112,8 +80,10 @@ set(COREINCS
     src
     ${CMAKE_CURRENT_BINARY_DIR}/src/
     ${SDL2_INCLUDE_DIRS}
+    ${SDL2_MIXER_INCLUDE_DIRS}
     ${CONFUSE_INCLUDE_DIR}
     ${Intl_INCLUDE_DIR}
+    ${XMP_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
     ${ARGTABLE2_INCLUDE_DIR}
     ${PNG_INCLUDE_DIR}
@@ -121,36 +91,14 @@ set(COREINCS
 )
 
 set(CORELIBS
-    ${SDL2_LIBRARIES}
     ${CONFUSE_LIBRARY}
     ${Intl_LIBRARIES}
+    ${XMP_LIBRARY}
     ${ENET_LIBRARY}
     ${ARGTABLE2_LIBRARY}
     ${PNG_LIBRARY}
     ${ZLIB_LIBRARY}
 )
-
-# Handle module playback libraries
-if(USE_DUMB)
-    set(CORELIBS ${CORELIBS} ${DUMB_LIBRARY})
-    set(COREINCS ${COREINCS} ${DUMB_INCLUDE_DIR})
-endif()
-if(USE_XMP)
-    set(CORELIBS ${CORELIBS} ${XMP_LIBRARY})
-    set(COREINCS ${COREINCS} ${XMP_INCLUDE_DIR})
-endif()
-
-# Audio sinks
-if(USE_OPENAL)
-    set(CORELIBS ${CORELIBS} ${OPENAL_LIBRARY})
-    set(COREINCS ${COREINCS} ${OPENAL_INCLUDE_DIR})
-endif()
-
-# If we support ogg vorbis, add library includes etc.
-if(USE_OGGVORBIS)
-    set(COREINCS ${COREINCS} ${OGG_INCLUDE_DIR} ${VORBIS_INCLUDE_DIR})
-    set(CORELIBS ${CORELIBS} ${VORBISFILE_LIBRARY} ${VORBIS_LIBRARY} ${OGG_LIBRARY})
-endif()
 
 # MingW build should add mingw32 lib
 if(MINGW)
@@ -290,8 +238,9 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf ${CORELIBS})
+target_link_libraries(openomf SDL2::Main SDL2::Mixer)
 foreach(TARGET ${TOOL_TARGET_NAMES})
-    target_link_libraries(${TARGET} ${CORELIBS})
+    target_link_libraries(${TARGET} ${CORELIBS} SDL2::Main SDL2::Mixer)
 endforeach()
 
 # Testing stuff
