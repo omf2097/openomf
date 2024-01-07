@@ -1,9 +1,7 @@
 #include <assert.h>
 #include <math.h>
 
-#include "audio/music.h"
-#include "audio/sink.h"
-#include "audio/sound.h"
+#include "audio/audio.h"
 #include "formats/error.h"
 #include "formats/script.h"
 #include "game/game_player.h"
@@ -480,13 +478,13 @@ void player_run(object *obj) {
         // Music playback
         if(sd_script_isset(frame, "smo")) {
             if(sd_script_get(frame, "smo") == 0) {
-                music_stop();
+                audio_stop_music();
                 return;
             }
-            music_play(PSM_END + (sd_script_get(frame, "smo") - 1));
+            audio_play_music(PSM_END + (sd_script_get(frame, "smo") - 1));
         }
         if(sd_script_isset(frame, "smf")) {
-            music_stop();
+            audio_stop_music();
         }
 
         // Sound playback
@@ -507,7 +505,7 @@ void player_run(object *obj) {
             }
             if(obj->sound_translation_table) {
                 int sound_id = obj->sound_translation_table[sd_script_get(frame, "s")] - 1;
-                sound_play(sound_id, volume, panning, pitch);
+                audio_play_sound(sound_id, volume, panning, pitch);
             }
         }
 

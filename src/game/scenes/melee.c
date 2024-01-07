@@ -1,8 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "audio/music.h"
-#include "audio/sound.h"
+#include "audio/audio.h"
 #include "formats/pilot.h"
 #include "game/game_state.h"
 #include "game/gui/menu_background.h"
@@ -209,20 +208,20 @@ void handle_action(scene *scene, int player, int action) {
             if(*column < 0) {
                 *column = 4;
             }
-            sound_play(19, 0.5f, 0.0f, 2.0f);
+            audio_play_sound(19, 0.5f, 0.0f, 2.0f);
             break;
         case ACT_RIGHT:
             (*column)++;
             if(*column > 4) {
                 *column = 0;
             }
-            sound_play(19, 0.5f, 0.0f, 2.0f);
+            audio_play_sound(19, 0.5f, 0.0f, 2.0f);
             break;
         case ACT_UP:
             if(*row == 1) {
                 *row = 0;
             }
-            sound_play(19, 0.5f, 0.0f, 2.0f);
+            audio_play_sound(19, 0.5f, 0.0f, 2.0f);
             break;
         case ACT_DOWN:
             if(*row == 0) {
@@ -235,12 +234,12 @@ void handle_action(scene *scene, int player, int action) {
                     local->katana_down_count[player - 1] = 11;
                 }
             }
-            sound_play(19, 0.5f, 0.0f, 2.0f);
+            audio_play_sound(19, 0.5f, 0.0f, 2.0f);
             break;
         case ACT_KICK:
         case ACT_PUNCH:
             *done = 1;
-            sound_play(20, 0.5f, 0.0f, 2.0f);
+            audio_play_sound(20, 0.5f, 0.0f, 2.0f);
             if(local->done_a && (local->done_b || !player2->selectable)) {
                 local->done_a = 0;
                 local->done_b = 0;
@@ -367,7 +366,7 @@ void melee_input_tick(scene *scene) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if(i->event_data.action == ACT_ESC) {
-                    sound_play(20, 0.5f, 0.0f, 2.0f);
+                    audio_play_sound(20, 0.5f, 0.0f, 2.0f);
                     if(local->selection == 1) {
                         // restore the player selection
                         local->column_a = local->pilot_id_a % 5;
@@ -699,7 +698,7 @@ int melee_create(scene *scene) {
     scene_set_dynamic_tick_cb(scene, melee_tick);
 
     // Play correct music
-    music_play(PSM_MENU);
+    audio_play_music(PSM_MENU);
 
     // Don't render background on its own layer
     // Fix for some additive blending tricks.

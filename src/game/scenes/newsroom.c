@@ -1,5 +1,5 @@
 #include "game/scenes/newsroom.h"
-#include "audio/music.h"
+#include "audio/audio.h"
 #include "game/gui/dialog.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/text_render.h"
@@ -361,7 +361,7 @@ int newsroom_create(scene *scene) {
     scene_set_startup_cb(scene, newsroom_startup);
 
     // Start correct music
-    music_play(PSM_MENU);
+    audio_play_music(PSM_MENU);
 
     // Don't render background on its own layer
     // Fix for some additive blending tricks.

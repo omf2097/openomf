@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "audio/sound.h"
+#include "audio/audio.h"
 #include "controller/controller.h"
 #include "formats/af.h"
 #include "game/common_defines.h"
@@ -452,7 +452,7 @@ void har_floor_landing_effects(object *obj) {
     // Landing sound
     float d = ((float)obj->pos.x) / 640.0f;
     float pos_pan = d - 0.25f;
-    sound_play(56, 0.3f, pos_pan, 2.2f);
+    audio_play_sound(56, 0.3f, pos_pan, 2.2f);
 }
 
 void har_move(object *obj) {
@@ -780,7 +780,7 @@ void har_block(object *obj, vec2i hit_coord) {
     object_set_layers(scrape, LAYER_SCRAP);
     object_dynamic_tick(scrape);
     object_dynamic_tick(scrape);
-    sound_play(3, 0.7f, 0.5f, 1.0f);
+    audio_play_sound(3, 0.7f, 0.5f, 1.0f);
     game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE, 0, 0);
     h->damage_received = 1;
     if(h->state == STATE_CROUCHBLOCK) {

@@ -225,7 +225,17 @@ int is_har(unsigned int id) {
 }
 
 int is_music(unsigned int id) {
-    return (id >= PSM_MENU && id <= PSM_ARENA4);
+    switch(id) {
+        case PSM_MENU:
+        case PSM_END:
+        case PSM_ARENA0:
+        case PSM_ARENA1:
+        case PSM_ARENA2:
+        case PSM_ARENA3:
+        case PSM_ARENA4:
+            return 1;
+    }
+    return 0;
 }
 
 int is_pic(unsigned int id) {

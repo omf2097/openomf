@@ -1,7 +1,7 @@
 #ifndef IDS_H
 #define IDS_H
 
-enum RESOURCE_ID
+typedef enum resource_id
 {
     BK_INTRO = 0,
     BK_OPENOMF,
@@ -52,7 +52,7 @@ enum RESOURCE_ID
     PIC_WORLD,
     PIC_PLAYERS,
     NUMBER_OF_RESOURCES
-};
+} resource_id;
 
 const char *get_resource_file(unsigned int id);
 const char *get_resource_name(unsigned int id);
