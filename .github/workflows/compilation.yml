@@ -45,7 +45,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get -y install cmake cmake-data libargtable2-dev libcunit1-dev \
-          libopenal-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev \
+          libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev \
           clang-tidy ${{ matrix.config.cc }}
 
     - name: Build tests
@@ -76,7 +76,7 @@ jobs:
     - name: Install Ubuntu Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get -y install cmake libargtable2-dev libcunit1-dev libopenal-dev \
+        sudo apt-get -y install cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev \
           libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
 
     - name: Generate Release
@@ -107,7 +107,7 @@ jobs:
         maintainer: ${{ github.repository_owner }}
         version: 0.6.6-${{ steps.slug.outputs.sha8 }}
         arch: 'amd64'
-        depends: 'libargtable2, libopenal, libconfuse, libenet, libsdl2, libxmp, libpng'
+        depends: 'libargtable2, libsdl2-mixer, libconfuse, libenet, libsdl2, libxmp, libpng'
         desc: 'One Must Fall 2097 Remake'
 
     - name: Upload DEB artifact
@@ -130,7 +130,7 @@ jobs:
     - name: Install Mac Dependencies
       run: |
         brew update
-        brew install cmake argtable cunit openal-soft confuse enet sdl2 libxmp libpng
+        brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng
 
     - name: Generate Release
       run: |
