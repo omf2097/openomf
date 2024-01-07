@@ -1,6 +1,5 @@
 #include "engine.h"
 #include "audio/audio.h"
-#include "audio/music.h"
 #include "console/console.h"
 #include "formats/altpal.h"
 #include "game/game_state.h"
@@ -30,42 +29,27 @@ int engine_init() {
     int vsync = setting->video.vsync;
     int scale_factor = setting->video.scale_factor;
     char *scaler = setting->video.scaler;
-    const char *audiosink = setting->sound.sink;
+    int frequency = setting->sound.music_frequency;
+    int resampler = setting->sound.music_resampler;
+    bool mono = setting->sound.music_mono;
+    float music_volume = setting->sound.music_vol / 10.0;
+    float sound_volume = setting->sound.sound_vol / 10.0;
 
     // Initialize everything.
-    if(video_init(w, h, fs, vsync, scaler, scale_factor)) {
+    if(video_init(w, h, fs, vsync, scaler, scale_factor))
         goto exit_0;
-    }
-    if(!audio_is_sink_available(audiosink)) {
-        const char *prev_sink = audiosink;
-        audiosink = audio_get_first_sink_name();
-        if(audiosink == NULL) {
-            INFO("Could not find requested sink '%s'. No other sinks available; disabling audio.", prev_sink);
-        } else {
-            INFO("Could not find requested sink '%s'. Falling back to '%s'.", prev_sink, audiosink);
-        }
-    }
-    if(audio_init(audiosink)) {
+    if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
-    }
-    sound_set_volume(setting->sound.sound_vol / 10.0f);
-    music_set_volume(setting->sound.music_vol / 10.0f);
-
-    if(sounds_loader_init()) {
+    if(sounds_loader_init())
         goto exit_2;
-    }
-    if(lang_init()) {
+    if(lang_init())
         goto exit_3;
-    }
-    if(fonts_init()) {
+    if(fonts_init())
         goto exit_4;
-    }
-    if(altpals_init()) {
+    if(altpals_init())
         goto exit_5;
-    }
-    if(console_init()) {
+    if(console_init())
         goto exit_6;
-    }
 
     // Return successfully
     run = 1;
@@ -118,7 +102,7 @@ void engine_run(engine_init_flags *init_flags) {
     }
 
     // apply volume settings
-    sound_set_volume(settings_get()->sound.sound_vol / 10.0f);
+    audio_set_sound_volume(settings_get()->sound.sound_vol / 10.0f);
 
     // Set up game
     game_state *gs = omf_calloc(1, sizeof(game_state));
@@ -251,11 +235,6 @@ void engine_run(engine_init_flags *init_flags) {
 
             // Handle waiting period leftover time
             dynamic_wait -= game_state_ms_per_dyntick(gs);
-        }
-
-        // Handle audio
-        if(!visual_debugger) {
-            audio_render();
         }
 
         // Do the actual video rendering jobs

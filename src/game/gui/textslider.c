@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "audio/sound.h"
+#include "audio/audio.h"
 #include "game/gui/textslider.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
@@ -57,7 +57,7 @@ static int textslider_action(component *c, int action) {
             *tb->pos = tb->positions;
         } else {
             // Play menu sound
-            sound_play(20, 0.5f, 0.5f, 2.0f);
+            audio_play_sound(20, 0.5f, 0.5f, 2.0f);
         }
         if(tb->slide) {
             tb->slide(c, tb->userdata, *tb->pos);
@@ -72,7 +72,7 @@ static int textslider_action(component *c, int action) {
             *tb->pos = 0;
         } else {
             // Play menu sound
-            sound_play(20, 0.5f, -0.5f, 2.0f);
+            audio_play_sound(20, 0.5f, -0.5f, 2.0f);
         }
         if(tb->slide) {
             tb->slide(c, tb->userdata, *tb->pos);

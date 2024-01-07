@@ -1,5 +1,5 @@
 #include "game/scenes/mainmenu.h"
-#include "audio/music.h"
+#include "audio/audio.h"
 #include "game/gui/frame.h"
 #include "game/scenes/mainmenu/menu_main.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
@@ -152,7 +152,7 @@ int mainmenu_create(scene *scene) {
     local->prev_key[0] = local->prev_key[1] = ACT_PUNCH;
 
     // Music and renderer
-    music_play(PSM_MENU);
+    audio_play_music(PSM_MENU);
 
     // Don't render background on its own layer
     // Fix for some additive blending tricks.

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "audio/sound.h"
+#include "audio/audio.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/textbutton.h"
 #include "game/gui/widget.h"
@@ -81,7 +81,7 @@ static int textbutton_action(component *c, int action) {
         if(tb->click_cb) {
             tb->click_cb(c, tb->userdata);
         }
-        sound_play(20, 0.5f, 0.0f, 2.0f);
+        audio_play_sound(20, 0.5f, 0.0f, 2.0f);
         return 0;
     }
     return 1;

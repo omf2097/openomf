@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "audio/sound.h"
+#include "audio/audio.h"
 #include "game/gui/textselector.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
@@ -87,7 +87,7 @@ static int textselector_action(component *c, int action) {
         if(tb->toggle) {
             tb->toggle(c, tb->userdata, *tb->pos);
         }
-        sound_play(20, 0.5f, 0.5f, 2.0f);
+        audio_play_sound(20, 0.5f, 0.5f, 2.0f);
         // reset ticks so text is bright
         tb->ticks = 0;
         tb->dir = 0;
@@ -103,7 +103,7 @@ static int textselector_action(component *c, int action) {
         if(tb->toggle) {
             tb->toggle(c, tb->userdata, *tb->pos);
         }
-        sound_play(20, 0.5f, -0.5f, 2.0f);
+        audio_play_sound(20, 0.5f, -0.5f, 2.0f);
         // reset ticks so text is bright
         tb->ticks = 0;
         tb->dir = 0;

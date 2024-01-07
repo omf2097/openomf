@@ -1,4 +1,4 @@
-#include "audio/music.h"
+#include "audio/audio.h"
 #include "console/console.h"
 #include "console/console_type.h"
 #include "game/scenes/arena.h"
@@ -228,7 +228,7 @@ int console_cmd_music(game_state *gs, int argc, char **argv) {
     if(argc == 2) {
         int i;
         if(strtoint(argv[1], &i)) {
-            music_play(PSM_END + i);
+            audio_play_music(PSM_END + i);
         }
     }
     return 0;

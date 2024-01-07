@@ -5,8 +5,6 @@
 #include <string.h>
 
 #include "audio/audio.h"
-#include "audio/music.h"
-#include "audio/stream.h"
 #include "controller/controller.h"
 #include "controller/net_controller.h"
 #include "formats/error.h"
@@ -105,11 +103,11 @@ void game_menu_return(component *c, void *userdata) {
 }
 
 void arena_music_slide(component *c, void *userdata, int pos) {
-    music_set_volume(pos / 10.0f);
+    audio_set_music_volume(pos / 10.0f);
 }
 
 void arena_sound_slide(component *c, void *userdata, int pos) {
-    sound_set_volume(pos / 10.0f);
+    audio_set_sound_volume(pos / 10.0f);
 }
 
 void arena_speed_slide(component *c, void *userdata, int pos) {
@@ -490,7 +488,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         // Wallhit sound
         float d = ((float)o_har->pos.x) / 640.0f;
         float pos_pan = d - 0.25f;
-        sound_play(68, 1.0f, pos_pan, 2.0f);
+        audio_play_sound(68, 1.0f, pos_pan, 2.0f);
     }
 
     /**
@@ -732,7 +730,7 @@ void arena_free(scene *scene) {
     guiframe_free(local->game_menu);
     surface_free(&local->sur);
 
-    music_stop();
+    audio_stop_music();
 
     // Free bar components
     for(int i = 0; i < 2; i++) {
@@ -1188,19 +1186,19 @@ int arena_create(scene *scene) {
     // Handle music playback
     switch(scene->bk_data.file_id) {
         case 8:
-            music_play(PSM_ARENA0);
+            audio_play_music(PSM_ARENA0);
             break;
         case 16:
-            music_play(PSM_ARENA1);
+            audio_play_music(PSM_ARENA1);
             break;
         case 32:
-            music_play(PSM_ARENA2);
+            audio_play_music(PSM_ARENA2);
             break;
         case 64:
-            music_play(PSM_ARENA3);
+            audio_play_music(PSM_ARENA3);
             break;
         case 128:
-            music_play(PSM_ARENA4);
+            audio_play_music(PSM_ARENA4);
             break;
     }
 

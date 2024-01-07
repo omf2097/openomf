@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "audio/music.h"
+#include "audio/audio.h"
 #include "game/game_state.h"
 #include "game/gui/text_render.h"
 #include "game/scenes/cutscene.h"
@@ -110,7 +110,7 @@ int cutscene_create(scene *scene) {
     const char *text = "";
     switch(scene->id) {
         case SCENE_END:
-            music_play(PSM_END);
+            audio_play_music(PSM_END);
             text = lang_get(END_TEXT);
             local->text_x = 10;
             local->text_y = 5;
@@ -153,7 +153,7 @@ int cutscene_create(scene *scene) {
         case SCENE_KATUSHAI:
         case SCENE_WAR:
         case SCENE_WORLD:
-            music_play(PSM_END);
+            audio_play_music(PSM_END);
 
             palette_load_player_cutscene_colors(mpal, &p1->pilot->palette);
             video_force_pal_refresh();

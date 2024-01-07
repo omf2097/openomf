@@ -27,20 +27,11 @@ typedef enum
 } difficulty;
 
 typedef struct {
-    char *sink;
     int music_mono;
     int music_frequency;
     int music_resampler;
-    int music_library;
     int sound_vol;
     int music_vol;
-    char *music_arena0;
-    char *music_arena1;
-    char *music_arena2;
-    char *music_arena3;
-    char *music_arena4;
-    char *music_end;
-    char *music_menu;
 } settings_sound;
 
 typedef struct {

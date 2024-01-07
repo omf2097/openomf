@@ -1,5 +1,5 @@
 #include "game/gui/menu.h"
-#include "audio/sound.h"
+#include "audio/audio.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/sizer.h"
 #include "utils/allocator.h"
@@ -158,7 +158,7 @@ static int menu_action(component *mc, int action) {
 
         } while(component_is_disabled(c));
         // Play menu sound
-        sound_play(19, 0.5f, 0.0f, 2.0f);
+        audio_play_sound(19, 0.5f, 0.0f, 2.0f);
         component_select(c, 1);
         return 0;
     }
