@@ -165,7 +165,7 @@ exit_0:
 // Callback function for SDL_Mixer
 void audio_xmp_render(void *userdata, Uint8 *stream, int len) {
     assert(audio);
-    xmp_play_buffer(audio->xmp_context, stream, len, INT_MAX);
+    xmp_play_buffer(audio->xmp_context, stream, len, 0);
 }
 
 static void audio_close_module() {
@@ -312,7 +312,7 @@ void audio_set_music_volume(float volume) {
 void audio_set_sound_volume(float volume) {
     assert(audio);
     volume = clampf(volume, VOLUME_MIN, VOLUME_MAX);
-    Mix_MasterVolume(volume * MIX_MAX_VOLUME);
+    Mix_Volume(-1, volume * MIX_MAX_VOLUME);
 }
 
 const audio_freq *audio_get_freqs() {
