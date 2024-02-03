@@ -49,7 +49,7 @@ Required:
 * libargtable2: http://argtable.sourceforge.net/
 * libpng: http://www.libpng.org/pub/png/libpng.html
 * zlib: http://www.zlib.net/ (for libpng)
-* SDL2_Mixer: https://github.com/libsdl-org/SDL_mixer
+* SDL2_Mixer (>=2.0.4): https://github.com/libsdl-org/SDL_mixer
 * libxmp: https://github.com/cmatsuoka/libxmp
 
 
