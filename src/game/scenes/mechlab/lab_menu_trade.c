@@ -1,6 +1,5 @@
-#include "game/scenes/mechlab/lab_menu_trade.h"
-#include "game/common_defines.h"
-#include "game/gui/label.h"
+#include <stdio.h>
+
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/text_render.h"
@@ -9,6 +8,7 @@
 #include "game/scenes/mechlab/button_details.h"
 #include "game/scenes/mechlab/lab_menu_confirm.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
+#include "game/scenes/mechlab/lab_menu_trade.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
 #include "utils/allocator.h"

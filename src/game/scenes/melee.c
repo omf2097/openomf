@@ -1,5 +1,5 @@
+#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "audio/audio.h"
 #include "formats/pilot.h"
@@ -12,7 +12,6 @@
 #include "game/scenes/melee.h"
 #include "resources/animation.h"
 #include "resources/bk.h"
-#include "resources/ids.h"
 #include "resources/languages.h"
 #include "resources/pilots.h"
 #include "resources/sprite.h"
@@ -23,7 +22,6 @@
 #define MAX_STAT 20
 
 typedef struct melee_local_t {
-
     int selection;          // 0 for player, 1 for HAR
     int row_a, row_b;       // 0 or 1
     int column_a, column_b; // 0-4

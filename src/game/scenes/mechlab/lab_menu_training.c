@@ -1,5 +1,5 @@
-#include "game/scenes/mechlab/lab_menu_training.h"
-#include "game/common_defines.h"
+#include <stdio.h>
+
 #include "game/gui/label.h"
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
@@ -7,9 +7,9 @@
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
+#include "game/scenes/mechlab/lab_menu_training.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
-#include "utils/log.h"
 
 // I don't care anymore, sorry
 static component *label1;
