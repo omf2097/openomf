@@ -1,10 +1,11 @@
-#include "game/gui/trnselect.h"
-#include "formats/error.h"
+#include <stdio.h>
+#include <string.h>
+
 #include "formats/palette.h"
 #include "formats/tournament.h"
 #include "game/gui/label.h"
+#include "game/gui/trnselect.h"
 #include "game/gui/widget.h"
-#include "resources/pathmanager.h"
 #include "resources/sprite.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"

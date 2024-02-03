@@ -2,7 +2,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "audio/audio.h"
 #include "controller/controller.h"
@@ -19,7 +18,6 @@
 #include "game/gui/progressbar.h"
 #include "game/gui/text_render.h"
 #include "game/gui/textbutton.h"
-#include "game/gui/textselector.h"
 #include "game/gui/textslider.h"
 #include "game/objects/arena_constraints.h"
 #include "game/objects/har.h"
@@ -30,7 +28,6 @@
 #include "game/utils/score.h"
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
-#include "resources/ids.h"
 #include "resources/languages.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
@@ -53,9 +50,6 @@ typedef struct arena_local_t {
 
     component *health_bars[2];
     component *endurance_bars[2];
-
-    chr_score player1_score;
-    chr_score player2_score;
 
     object *player1_portrait;
     object *player2_portrait;
@@ -1079,8 +1073,8 @@ void arena_render_overlay(scene *scene) {
         }
 
         // Render HAR and pilot names
-        const char *player1_name;
-        const char *player2_name;
+        const char *player1_name = NULL;
+        const char *player2_name = NULL;
         if(player[0]->chr) {
             player1_name = player[0]->pilot->name;
             if(player[1]->pilot) {

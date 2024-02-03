@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,7 +12,6 @@
 #include "formats/tournament.h"
 #include "game/common_defines.h"
 #include "game/gui/pilotpic.h"
-#include "resources/ids.h"
 #include "resources/pathmanager.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
