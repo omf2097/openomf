@@ -258,7 +258,7 @@ if(CUNIT_FOUND)
     target_compile_definitions(openomf_test_main PRIVATE
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
-    target_link_libraries(openomf_test_main ${CORELIBS})
+    target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer)
 
     if(MINGW)
         # Always build as a console executable with mingw
