@@ -121,8 +121,8 @@ jobs:
   build_macos:
     needs: [unittest, formatting-check]
 
-    name: Build macos-11
-    runs-on: macos-11
+    name: Build macos-12
+    runs-on: macos-12
 
     steps:
     - uses: actions/checkout@v3
@@ -146,13 +146,13 @@ jobs:
     - name: Generate ZIP package
       run: |
         cd build-release/release
-        zip -r ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos11.zip .
+        zip -r ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos12.zip .
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos11
-        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos11.zip
+        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos12
+        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos12.zip
 
   # Build windows package, release artifact and update "latest" release if necessary.
   # -----------------------------------------------------------------------------------------------
