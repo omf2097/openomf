@@ -239,11 +239,8 @@ error_0:
 
 void audio_close() {
     if(audio != NULL) {
+        audio_stop_music();
         audio_close_module();
-        if(audio->xmp_context) {
-            xmp_free_context(audio->xmp_context);
-            audio->xmp_context = NULL;
-        }
         Mix_ChannelFinished(NULL);
         Mix_CloseAudio();
         for(int i = 0; i < CHANNEL_MAX; i++) {
@@ -251,6 +248,10 @@ void audio_close() {
                 Mix_FreeChunk(audio->channel_chunks[i]);
                 audio->channel_chunks[i] = NULL;
             }
+        }
+        if(audio->xmp_context) {
+            xmp_free_context(audio->xmp_context);
+            audio->xmp_context = NULL;
         }
         omf_free(audio);
         audio = NULL;
@@ -289,6 +290,7 @@ void audio_play_music(resource_id id) {
     assert(audio);
     assert(is_music(id));
     if(audio->music_id != id) {
+        audio_stop_music();
         audio_close_module();
         const char *music_file = pm_get_resource_path(id);
         if(!audio_load_module(music_file)) {
