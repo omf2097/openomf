@@ -12,7 +12,7 @@
 #include "utils/log.h"
 #include "utils/miscmath.h"
 
-#define CHANNEL_MAX 8
+#define CHANNEL_MAX 16
 
 const audio_freq output_freqs[] = {
     {11025, 0, "11025Hz"},
@@ -204,6 +204,9 @@ bool audio_init(int freq, bool mono, int resampler, float music_volume, float so
         PERROR("Unable to initialize audio device: %s", SDL_GetError());
         goto error_4;
     }
+
+    // Make sure we have the correct amount of channels.
+    Mix_AllocateChannels(CHANNEL_MAX);
 
     // Initialize playback parameters.
     audio_set_sound_volume(sound_volume);
