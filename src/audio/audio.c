@@ -276,9 +276,14 @@ void audio_play_sound(int id, float volume, float panning, float pitch) {
     pan_right = (panning < 0) ? 1.0f + panning : 1.0f;
 
     Mix_Chunk *chunk;
-    if(!(chunk = audio_get_chunk(id, volume, pitch)))
+    if(!(chunk = audio_get_chunk(id, volume, pitch))) {
+        PERROR("Unable to play sound: Failed to load chunk");
         return;
-    channel = Mix_GroupAvailable(-1);
+    }
+    if((channel = Mix_GroupAvailable(-1)) == -1) {
+        PERROR("Unable to play sound: No free channels");
+        return;
+    }
     audio->channel_chunks[channel] = chunk;
     Mix_SetPanning(channel, clamp(pan_left * 255, 0, 255), clamp(pan_right * 255, 0, 255));
     if(Mix_PlayChannel(channel, chunk, 0) == -1) {
