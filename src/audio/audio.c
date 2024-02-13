@@ -263,11 +263,12 @@ void audio_close() {
 void audio_play_sound(int id, float volume, float panning, float pitch) {
     assert(audio);
     int channel;
+    Mix_Chunk *chunk;
     float pan_left, pan_right;
 
     // Anything beyond these are invalid
     if(id < 0 || id > 299)
-        return;
+        goto error_0;
 
     volume = clampf(volume, VOLUME_MIN, VOLUME_MAX);
     panning = clampf(panning, PANNING_MIN, PANNING_MAX);
@@ -275,20 +276,26 @@ void audio_play_sound(int id, float volume, float panning, float pitch) {
     pan_left = (panning > 0) ? 1.0f - panning : 1.0f;
     pan_right = (panning < 0) ? 1.0f + panning : 1.0f;
 
-    Mix_Chunk *chunk;
-    if(!(chunk = audio_get_chunk(id, volume, pitch))) {
-        PERROR("Unable to play sound: Failed to load chunk");
-        return;
-    }
     if((channel = Mix_GroupAvailable(-1)) == -1) {
         PERROR("Unable to play sound: No free channels");
-        return;
+        goto error_0;
     }
-    audio->channel_chunks[channel] = chunk;
+    if((chunk = audio_get_chunk(id, volume, pitch)) == NULL) {
+        PERROR("Unable to play sound: Failed to load chunk");
+        goto error_0;
+    }
     Mix_SetPanning(channel, clamp(pan_left * 255, 0, 255), clamp(pan_right * 255, 0, 255));
     if(Mix_PlayChannel(channel, chunk, 0) == -1) {
         PERROR("Unable to play sound: %s", Mix_GetError());
+        goto error_1;
     }
+    audio->channel_chunks[channel] = chunk;
+    return;
+
+error_1:
+    free(chunk);
+error_0:
+    return;
 }
 
 void audio_play_music(resource_id id) {
