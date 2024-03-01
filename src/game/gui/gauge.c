@@ -5,131 +5,97 @@
 #include "video/surface.h"
 #include "video/video.h"
 
-/* GIMP RGBA C-Source image dump (gauge_small_off.c) */
-static const struct {
+typedef struct {
     unsigned int width;
     unsigned int height;
-    unsigned int bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */
-    unsigned char pixel_data[3 * 3 * 4 + 1];
-} gauge_small_off_img = {
-    3,
-    3,
-    4,
-    "\0\207\0\377\0\\\0\377\0"
-    "1\0\377\0\\\0\377\0,\0\377\0\10\0\377\0-\0\377"
-    "\0"
-    "6\0\377\0\14\0\377",
+    unsigned char data[24]; // 24 is the biggest pixel_image we make
+} pixel_image;
+
+// Palette indices used:
+// 0, 255, 0 = 0xA7
+// 0, 223, 0 = 0xA6
+// 0, 190, 0 = 0xA5
+// 0, 157, 0 = 0xA4
+// 0, 125, 0 = 0xA3
+// 0, 93,  0 = 0xA2
+// 0, 60,  0 = 0xA1
+// 0, 32,  0 = 0xA0
+
+// clang-format off
+static const pixel_image gauge_small_off_img = {
+    .width = 3,
+    .height = 3,
+    .data = {
+        0xA3, 0xA2, 0xA1,
+        0xA2, 0xA1, 0xA0,
+        0xA1, 0xA0, 0xA0
+    }
 };
 
-/* GIMP RGBA C-Source image dump (gauge_small_on.c) */
-static const struct {
-    unsigned int width;
-    unsigned int height;
-    unsigned int bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */
-    unsigned char pixel_data[3 * 3 * 4 + 1];
-} gauge_small_on_img = {
-    3,
-    3,
-    4,
-    "\0\377\0\377\0\370\0\377\0\314\0\377\0\317\0\377\0\241\0\377\0y\0\377\0y"
-    "\0\377\0N\0\377\0#\0\377",
+static const pixel_image gauge_small_on_img = {
+    .width = 3,
+    .height = 3,
+    .data = {
+        0xA7, 0xA6, 0xA5,
+        0xA5, 0xA4, 0xA3,
+        0xA3, 0xA2, 0xA1
+    }
 };
 
-/* GIMP RGBA C-Source image dump (gauge_big_on.c) */
-static const struct {
-    unsigned int width;
-    unsigned int height;
-    unsigned int bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */
-    unsigned char pixel_data[8 * 3 * 4 + 1];
-} gauge_big_on_img = {
-    8,
-    3,
-    4,
-    "\0\377\0\377\0\364\0\377\0\366\0\377\0\366\0\377\0\366\0\377\0\366\0\377"
-    "\0\373\0\377\0\314\0\377\0\317\0\377\0\235\0\377\0\241\0\377\0\241\0\377"
-    "\0\241\0\377\0\241\0\377\0\246\0\377\0y\0\377\0y\0\377\0J\0\377\0N\0\377"
-    "\0N\0\377\0N\0\377\0N\0\377\0S\0\377\0#\0\377",
+static const pixel_image gauge_big_on_img = {
+    .width = 8,
+    .height = 3,
+    .data = {
+        0xA7, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA5,
+        0xA5, 0xA4, 0xA4, 0xA4, 0xA4, 0xA4, 0xA4, 0xA3,
+        0xA3, 0xA2, 0xA2, 0xA2, 0xA2, 0xA2, 0xA2, 0xA1
+    }
 };
 
-/* GIMP RGBA C-Source image dump (gauge_big_off.c) */
-static const struct {
-    unsigned int width;
-    unsigned int height;
-    unsigned int bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */
-    unsigned char pixel_data[8 * 3 * 4 + 1];
-} gauge_big_off_img = {
-    8,
-    3,
-    4,
-    "\0\207\0\377\0X\0\377\0\\\0\377\0\\\0\377\0\\\0\377\0\\\0\377\0a\0\377\0"
-    ""
-    "1\0\377\0\\\0\377\0(\0\377\0-\0\377\0-\0\377\0-\0\377\0-\0\377\0"
-    "1\0\377"
-    "\0\10\0\377\0-\0\377\0"
-    "2\0\377\0"
-    "2\0\377\0"
-    "2\0\377\0"
-    "2\0\377\0"
-    "2\0\377"
-    "\0"
-    "6\0\377\0\14\0\377",
+static const pixel_image gauge_big_off_img = {
+    .width = 8,
+    .height = 3,
+    .data = {
+        0xA3, 0xA2, 0xA2, 0xA2, 0xA2, 0xA2, 0xA2, 0xA1,
+        0xA2, 0xA1, 0xA1, 0xA1, 0xA1, 0xA1, 0xA1, 0xA0,
+        0xA1, 0xA1, 0xA1, 0xA1, 0xA1, 0xA1, 0xA1, 0xA0
+    }
 };
+
+// clang-format on
 
 // Local small gauge type
 typedef struct {
     int size;
     int lit;
     gauge_type type;
-    surface *img;
-} gauge;
-
-static void gauge_update(component *c) {
-    gauge *g = widget_get_obj(c);
-
-    // Create ON & OFF surface from gimp C exports
     surface on;
     surface off;
-    int move;
-    if(g->type == GAUGE_SMALL) {
-        move = 3;
-        surface_create_from_data(&on, SURFACE_TYPE_RGBA, 3, 3, (const char *)gauge_small_on_img.pixel_data);
-        surface_create_from_data(&off, SURFACE_TYPE_RGBA, 3, 3, (const char *)gauge_small_off_img.pixel_data);
-    } else {
-        move = 8;
-        surface_create_from_data(&on, SURFACE_TYPE_RGBA, 8, 3, (const char *)gauge_big_on_img.pixel_data);
-        surface_create_from_data(&off, SURFACE_TYPE_RGBA, 8, 3, (const char *)gauge_big_off_img.pixel_data);
-    }
+} gauge;
 
-    surface_clear(g->img);
-    // Blit required stuff to cached surface
-    int k = 0;
-    int x = 0;
-    for(; k < g->lit; k++) {
-        surface_rgba_blit(g->img, &on, x, 0);
-        x += move;
-    }
-    for(; k < g->size; k++) {
-        surface_rgba_blit(g->img, &off, x, 0);
-        x += move;
-    }
-
-    // Free up unnecessary surfaces
-    surface_free(&on);
-    surface_free(&off);
-
-    // Force cached texture update!
-    surface_force_refresh(g->img);
+static void surface_from_pix_img(surface *sur, const pixel_image *pix) {
+    surface_create_from_data(sur, pix->width, pix->height, pix->data);
 }
 
 static void gauge_render(component *c) {
     gauge *g = widget_get_obj(c);
-    video_render_sprite(g->img, c->x, c->y, BLEND_ALPHA, 0);
+
+    int k = 0;
+    int x = c->x;
+    for(; k < g->lit; k++) {
+        video_draw(&g->on, x, c->y);
+        x += g->on.w;
+    }
+    for(; k < g->size; k++) {
+        video_draw(&g->off, x, c->y);
+        x += g->on.w;
+    }
 }
 
 static void gauge_free(component *c) {
     gauge *g = widget_get_obj(c);
-    surface_free(g->img);
-    omf_free(g->img);
+    surface_free(&g->on);
+    surface_free(&g->off);
     omf_free(g);
 }
 
@@ -137,7 +103,6 @@ void gauge_set_lit(component *c, int lit) {
     gauge *g = widget_get_obj(c);
     if(lit != g->lit) {
         g->lit = lit;
-        gauge_update(c);
     }
 }
 
@@ -158,7 +123,6 @@ void gauge_set_size(component *c, int size) {
         if(g->lit > g->size) {
             g->lit = g->size;
         }
-        gauge_update(c);
     }
 }
 
@@ -174,18 +138,20 @@ component *gauge_create(gauge_type type, int size, int lit) {
     local->type = type;
     local->lit = clamp(lit, 0, size);
 
-    // Initialize image
-    local->img = omf_calloc(1, sizeof(surface));
-    int pix = ((type == GAUGE_BIG) ? 8 : 3) * size;
-    surface_create(local->img, SURFACE_TYPE_RGBA, pix, 3);
-    component_set_size_hints(c, pix, 3);
+    // Initialize surfaces
+    if(local->type == GAUGE_SMALL) {
+        surface_from_pix_img(&local->on, &gauge_small_on_img);
+        surface_from_pix_img(&local->off, &gauge_small_off_img);
+        component_set_size_hints(c, gauge_small_on_img.width * size, gauge_small_on_img.height);
+    } else {
+        surface_from_pix_img(&local->on, &gauge_big_on_img);
+        surface_from_pix_img(&local->off, &gauge_big_off_img);
+        component_set_size_hints(c, gauge_small_on_img.width * size, gauge_small_on_img.height);
+    }
 
     // Set callbacks
     widget_set_obj(c, local);
     widget_set_render_cb(c, gauge_render);
     widget_set_free_cb(c, gauge_free);
-
-    // Update graphics
-    gauge_update(c);
     return c;
 }

@@ -38,12 +38,14 @@ if(GIT_FOUND)
     )
     message(STATUS "Git SHA1 Hash: ${SHA1_HASH}")
     add_definitions(-DSHA1_HASH="${SHA1_HASH}")
-endif()
+endif ()
 
 # System packages (hard dependencies)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(xmp)
+find_package(OpenGL REQUIRED)
+find_package(Epoxy REQUIRED)
 find_package(enet)
 find_package(confuse)
 find_package(argtable2)
@@ -81,6 +83,8 @@ set(COREINCS
     ${CMAKE_CURRENT_BINARY_DIR}/src/
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
+    ${OPENGL_INCLUDE_DIR}
+    ${EPOXY_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
     ${Intl_INCLUDE_DIR}
     ${XMP_INCLUDE_DIR}
@@ -124,24 +128,30 @@ add_library(openomf_core OBJECT ${OPENOMF_SRC})
 set(CORELIBS openomf_core ${CORELIBS})
 
 # Set icon for windows executable
-if(WIN32)
+if (WIN32)
     SET(ICON_RESOURCE "resources/icons/openomf.rc")
-endif()
+endif ()
 
 # Build the game binary
 add_executable(openomf src/main.c src/engine.c ${ICON_RESOURCE})
 
+# This is used to copy shader files from source directory to the binary output directory during compile.
+add_custom_target(
+    copy_shaders ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_BINARY_DIR}/shaders
+)
+add_dependencies(openomf copy_shaders)
+
 # Build tools if requested
 set(TOOL_TARGET_NAMES)
-if(USE_TOOLS)
+if (USE_TOOLS)
     add_executable(bktool tools/bktool/main.c
-                          tools/shared/animation_misc.c
-                          tools/shared/conversions.c)
+            tools/shared/animation_misc.c
+            tools/shared/conversions.c)
     add_executable(aftool tools/aftool/main.c
-                          tools/shared/animation_misc.c
-                          tools/shared/conversions.c)
+            tools/shared/animation_misc.c
+            tools/shared/conversions.c)
     add_executable(soundtool tools/soundtool/main.c)
-    add_executable(fonttool tools/fonttool/main.c)
     add_executable(languagetool tools/languagetool/main.c)
     add_executable(omf_parse tools/stringparser/main.c)
     add_executable(afdiff tools/afdiff/main.c)
@@ -157,7 +167,6 @@ if(USE_TOOLS)
         bktool
         aftool
         soundtool
-        fonttool
         languagetool
         omf_parse
         afdiff
@@ -238,9 +247,10 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf ${CORELIBS})
-target_link_libraries(openomf SDL2::Main SDL2::Mixer)
+target_link_libraries(openomf SDL2::Main SDL2::Mixer OpenGL::GL Epoxy::Main)
 foreach(TARGET ${TOOL_TARGET_NAMES})
-    target_link_libraries(${TARGET} ${CORELIBS} SDL2::Main SDL2::Mixer)
+    target_link_libraries(${TARGET} ${CORELIBS})
+    target_link_libraries(${TARGET} SDL2::Main SDL2::Mixer OpenGL::GL Epoxy::Main)
 endforeach()
 
 # Testing stuff
@@ -258,7 +268,7 @@ if(CUNIT_FOUND)
     target_compile_definitions(openomf_test_main PRIVATE
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
-    target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer)
+    target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer OpenGL::GL Epoxy::Main)
 
     if(MINGW)
         # Always build as a console executable with mingw
@@ -281,12 +291,15 @@ if(WIN32)
     # This way we have an "openomf/" root directory inside the zip file.
     install(TARGETS openomf RUNTIME DESTINATION openomf/ COMPONENT Binaries)
     install(FILES resources/openomf.bk DESTINATION openomf/resources/ COMPONENT Data)
+    install(DIRECTORY shaders/ DESTINATION openomf/shaders COMPONENT Data)
     install(FILES README.md INSTALL.md LICENSE DESTINATION openomf/ COMPONENT Data)
 else()
     # On unixy systems, follow standard.
     install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
-    install(FILES resources/openomf.bk resources/icons/openomf.png
+    install(
+        FILES resources/openomf.bk resources/icons/openomf.png
         DESTINATION share/games/openomf/
         COMPONENT Data
     )
+    install(DIRECTORY shaders/ DESTINATION share/games/openomf/shaders COMPONENT Data)
 endif()
