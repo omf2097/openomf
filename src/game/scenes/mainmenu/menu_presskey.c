@@ -79,7 +79,13 @@ void menu_presskey_tick(component *c) {
     // See if a key has been pressed
     int keys = 0;
     const unsigned char *state = SDL_GetKeyboardState(&keys);
-    for(int i = SDL_SCANCODE_A; i < keys; i++) {
+    for(int i = 0; i < keys; i++) {
+        if (i < SDL_SCANCODE_A ||
+                (i > SDL_SCANCODE_EXSEL && i < SDL_SCANCODE_KP_00) ||
+                i > SDL_SCANCODE_KP_HEXADECIMAL) {
+            continue;
+        }
+
         if(state[i]) {
             if(is_key_bound(i) && strcmp(SDL_GetScancodeName(i), *(local->key)) != 0) {
                 // Set texts to red as a warning
