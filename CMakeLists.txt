@@ -54,14 +54,6 @@ find_package(ZLIB)
 check_symbol_exists(strdup "string.h" HAVE_STD_STRDUP)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/src/platform.h)
 
-# When building with MingW, do not look for Intl
-if(MINGW)
-    set(LIBINTL_INCLUDE_DIR "")
-    set(LIBINTL_LIBRARIES "")
-else()
-    find_package(Intl)
-endif()
-
 # If tests are enabled, find CUnit
 if(USE_TESTS)
     find_package(CUnit)
@@ -82,7 +74,6 @@ set(COREINCS
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
     ${CONFUSE_INCLUDE_DIR}
-    ${Intl_INCLUDE_DIR}
     ${XMP_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
     ${ARGTABLE2_INCLUDE_DIR}
@@ -92,7 +83,6 @@ set(COREINCS
 
 set(CORELIBS
     ${CONFUSE_LIBRARY}
-    ${Intl_LIBRARIES}
     ${XMP_LIBRARY}
     ${ENET_LIBRARY}
     ${ARGTABLE2_LIBRARY}
