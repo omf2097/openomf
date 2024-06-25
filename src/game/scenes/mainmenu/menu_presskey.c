@@ -80,9 +80,8 @@ void menu_presskey_tick(component *c) {
     int keys = 0;
     const unsigned char *state = SDL_GetKeyboardState(&keys);
     for(int i = 0; i < keys; i++) {
-        if (i < SDL_SCANCODE_A ||
-                (i > SDL_SCANCODE_EXSEL && i < SDL_SCANCODE_KP_00) ||
-                i > SDL_SCANCODE_KP_HEXADECIMAL) {
+        if(i < SDL_SCANCODE_A || (i > SDL_SCANCODE_EXSEL && i < SDL_SCANCODE_KP_00) ||
+           i > SDL_SCANCODE_KP_HEXADECIMAL) {
             continue;
         }
 
