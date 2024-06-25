@@ -27,7 +27,7 @@ jobs:
   # -----------------------------------------------------------------------------------------------
   unittest:
     name: Run unit-tests on ${{ matrix.config.name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       CC: ${{ matrix.config.cc }}
 
