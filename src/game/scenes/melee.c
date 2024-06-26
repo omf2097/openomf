@@ -40,7 +40,6 @@ typedef struct {
     bool done;
 } cursor_data;
 
-
 #define CURSOR_INDEX(local, player) (5 * local->cursor[player].row + local->cursor[player].column)
 #define CURSOR_A_DONE(local) (local->cursor[0].done)
 #define CURSOR_B_DONE(local) (local->cursor[1].done)
