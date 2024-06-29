@@ -187,9 +187,15 @@ jobs:
     - name: Generate Release
       run: |
         mkdir build-release && cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
+
+    - name: Download omf 2097 assets
+      run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
+
+    - name: Extract omf 2097 assets
+      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
 
     - name: Get short SHA
       id: slug
