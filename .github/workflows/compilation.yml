@@ -114,6 +114,9 @@ jobs:
         depends: 'libargtable2-0, libsdl2-mixer-2.0-0, libconfuse2, libenet7, libsdl2-2.0-0, libxmp4, libpng16-16'
         desc: 'One Must Fall 2097 Remake'
 
+    - name: Install the DEB package
+      run: sudo apt install ./openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_amd64.deb
+
     - name: Upload DEB artifact
       uses: actions/upload-artifact@v4
       with:
