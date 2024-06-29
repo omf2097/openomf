@@ -244,6 +244,12 @@ jobs:
       id: slug
       run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
 
+    - name: Download omf 2097 assets
+      run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
+
+    - name: Extract omf 2097 assets
+      run: unzip -j omf2097-assets.zip -d build-release/release/openomf/resources
+
     - name: Generate ZIP package
       run: |
         cd build-release/release
