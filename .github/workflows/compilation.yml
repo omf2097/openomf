@@ -94,8 +94,22 @@ jobs:
       id: slug
       run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
 
+    - name: Restore omf2097-assets.zip
+      id: cache-assets
+      uses: actions/cache/restore@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
+
     - name: Download omf 2097 assets
+      if: steps.cache-assets.outputs.cache-hit != 'true'
       run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
+
+    - name: Cache omf2097-assets.zip
+      uses: actions/cache/save@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
 
     - name: Extract omf 2097 assets
       run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
@@ -154,8 +168,22 @@ jobs:
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
 
+    - name: Restore omf2097-assets.zip
+      id: cache-assets
+      uses: actions/cache/restore@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
+
     - name: Download omf 2097 assets
+      if: steps.cache-assets.outputs.cache-hit != 'true'
       run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
+
+    - name: Cache omf2097-assets.zip
+      uses: actions/cache/save@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
 
     - name: Extract omf 2097 assets
       run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
@@ -213,8 +241,22 @@ jobs:
       id: slug
       run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
 
+    - name: Restore omf2097-assets.zip
+      id: cache-assets
+      uses: actions/cache/restore@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
+
     - name: Download omf 2097 assets
+      if: steps.cache-assets.outputs.cache-hit != 'true'
       run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
+
+    - name: Cache omf2097-assets.zip
+      uses: actions/cache/save@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
 
     - name: Extract omf 2097 assets
       run: unzip -j omf2097-assets.zip -d build-release/release/openomf/resources
