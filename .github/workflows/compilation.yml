@@ -11,6 +11,7 @@ on:
 
 env:
   OPENOMF_VERSION: '0.6.6'
+  OPENOMF_ASSETS_URL: 'https://www.omf2097.com/pub/files/omf/omf2097-assets.zip'
 
 jobs:
 
@@ -85,13 +86,19 @@ jobs:
     - name: Generate Release
       run: |
         mkdir build-release && cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
 
     - name: Get short SHA
       id: slug
       run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
+
+    - name: Download omf 2097 assets
+      run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
+
+    - name: Extract omf 2097 assets
+      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
 
     - name: Generate TGZ package
       run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz -C build-release/release/ .
