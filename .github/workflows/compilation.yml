@@ -98,6 +98,7 @@ jobs:
       with:
         name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64
         path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz
+        if-no-files-found: error
 
     - name: Generate DEB package
       uses: jiro4989/build-deb-action@v2
@@ -115,6 +116,7 @@ jobs:
       with:
         name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_deb_amd64
         path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_amd64.deb
+        if-no-files-found: error
 
   # Build macos package, release artifact and update "latest" release if necessary.
   # -----------------------------------------------------------------------------------------------
@@ -153,6 +155,7 @@ jobs:
       with:
         name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos12
         path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos12.zip
+        if-no-files-found: error
 
   build_macos-arm:
     needs: [unittest, formatting-check]
@@ -189,6 +192,7 @@ jobs:
       with:
         name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos14_arm
         path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos14_arm.zip
+        if-no-files-found: error
 
   # Build windows package, release artifact and update "latest" release if necessary.
   # -----------------------------------------------------------------------------------------------
@@ -237,6 +241,7 @@ jobs:
       with:
         name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64
         path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64.zip
+        if-no-files-found: error
 
 
   # Create a "latest" release
