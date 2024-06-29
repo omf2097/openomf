@@ -19,10 +19,7 @@ instructions are also available there.
 2. Extract the zip file somewhere on your computer. If possible, use a directory other
    than "C:\Program Files".
 3. Install the game resources. Please see step 3. of this guide for this.
-4. [optional] If you wish, you may install an xBRZ sprite scaler plugin.
-   This can be found from https://github.com/omf2097/openomf-scaler-xbrz/releases .
-   Note that this is not necessary for running the game.
-5. Start the game by running openomf.exe.
+4. Start the game by running openomf.exe.
 
 ### Ubuntu
 
@@ -42,7 +39,8 @@ Compiling from source should be your last option, unless you know what you are d
 Use at least GCC 9 or Clang 10. MSVC is not supported at this time.
 
 Required:
-* SDL2 (>=2.0.16): http://www.libsdl.org/download-2.0.php
+* SDL2 (>=2.0.18): http://www.libsdl.org/download-2.0.php
+* libepoxy: https://github.com/anholt/libepoxy
 * confuse: http://www.nongnu.org/confuse/
 * Enet: http://enet.bespin.org/
 * libargtable2: http://argtable.sourceforge.net/
@@ -54,12 +52,13 @@ Required:
 
 On debian, it is possible to pull some libraries using apt-get.
 ```
-apt-get install libsdl2-dev libsdl2-mixer-dev libpng-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
+apt-get install libsdl2-dev libsdl2-mixer-dev libpng-dev libconfuse-dev libenet-dev \
+    libargtable2-dev libxmp-dev libepoxy-dev libopengl-dev
 ```
 
 On Mac, you can use brew:
 ```
-brew install argtable sdl2_mixer confuse enet sdl2 libxmp libpng
+brew install argtable sdl2_mixer confuse enet sdl2 libxmp libpng libepoxy
 ```
 
 ### Acquiring the sources

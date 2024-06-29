@@ -27,7 +27,7 @@ void video_confirm_cancel_clicked(component *c, void *userdata) {
     video_menu_confirm_data *local = userdata;
     settings_video *v = &settings_get()->video;
     *v = *local->old_video_settings;
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->scaler, v->scale_factor);
+    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
 
     // Finish the menu
     menu *m = sizer_get_obj(c->parent);
@@ -70,7 +70,7 @@ component *menu_video_confirm_create(scene *s, settings_video *old_settings) {
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = color_create(0, 121, 0, 255);
+    tconf.cforeground = TEXT_MEDIUM_GREEN;
 
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "ACCEPT RESOLUTION?"));

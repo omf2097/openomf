@@ -277,7 +277,7 @@ void player_run(object *obj) {
         player_clear_frame(obj);
 
         // Print out MP flags here (just once for this frame)
-        if(mp != 0) {
+        /*if(mp != 0) {
             DEBUG("mp flags set for new animation %d:", sd_script_get(frame, "m"));
             if(mp & 0x1)
                 DEBUG(" * 0x01: NON-HAR Sprite");
@@ -295,7 +295,7 @@ void player_run(object *obj) {
                 DEBUG(" * 0x40: Something about wall collisions ?");
             if(mp & 0x80)
                 DEBUG(" * 0x80: Sprite timer related ?");
-        }
+        }*/
 
         if(sd_script_isset(frame, "ar")) {
             rstate->dir_correction = -1;

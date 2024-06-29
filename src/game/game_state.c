@@ -27,7 +27,6 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "video/tcache.h"
 #include "video/video.h"
 #include <SDL.h>
 #include <math.h>
@@ -407,9 +406,6 @@ int game_load_new(game_state *gs, int scene_id) {
     scene_free(gs->sc);
     omf_free(gs->sc);
 
-    // Clear up old video cache objects
-    tcache_clear();
-
     // Remove old objects
     render_obj *robj;
     iterator it;
@@ -722,7 +718,7 @@ unsigned int game_state_get_tick(game_state *gs) {
     return gs->tick;
 }
 
-game_player *game_state_get_player(game_state *gs, int player_id) {
+game_player *game_state_get_player(const game_state *gs, int player_id) {
     return gs->players[player_id];
 }
 
@@ -884,7 +880,7 @@ int game_state_ms_per_dyntick(game_state *gs) {
         case SCENE_ARENA4:
             if(gs->warp_speed) {
                 // If warp speed (for debugging) is turned on, go fast.
-                return 1.0f;
+                return 5.0f;
             }
             tmp = 8.0f + MS_PER_OMF_TICK_SLOWEST - ((float)gs->speed / 15.0f) * MS_PER_OMF_TICK_SLOWEST;
             return (int)tmp;

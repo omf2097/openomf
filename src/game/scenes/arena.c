@@ -35,7 +35,7 @@
 #include "video/surface.h"
 #include "video/video.h"
 
-#define TEXT_COLOR color_create(186, 250, 250, 255)
+#define TEXT_COLOR 0xC7
 
 #define HAR1_START_POS 110
 #define HAR2_START_POS 211
@@ -995,6 +995,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
                     object_set_gravity(scrap, 0.4f);
                     object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
+                    object_set_pal_limit(scrap, object_get_pal_limit(h_obj));
                     object_set_layers(scrap, LAYER_SCRAP);
                     object_set_shadow(scrap, 1);
                     object_dynamic_tick(scrap);
@@ -1131,7 +1132,7 @@ void arena_render_overlay(scene *scene) {
     // Render menu (if visible)
     if(local->menu_visible) {
         guiframe_render(local->game_menu);
-        video_render_sprite(&local->sur, 10, 150, BLEND_ALPHA, 0);
+        video_draw(&local->sur, 10, 150);
     }
 }
 
@@ -1336,7 +1337,7 @@ int arena_create(scene *scene) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
-    tconf.cforeground = color_create(0, 121, 0, 255);
+    tconf.cforeground = TEXT_DARK_GREEN;
     tconf.halign = TEXT_CENTER;
 
     // Arena menu
@@ -1469,10 +1470,6 @@ int arena_create(scene *scene) {
     } else {
         local->rec = NULL;
     }
-
-    // Don't render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(false);
 
     // All done!
     return 0;

@@ -13,8 +13,8 @@
 #include "video/video.h"
 
 #define MAX_PAGES (NUMBER_OF_ROUND_TYPES - 1)
-#define TEXT_COLOR_HEADER color_create(80, 220, 80, 0xFF)
-#define TEXT_COLOR_SCORES color_create(0xFF, 0xFF, 0xFF, 0xFF)
+#define TEXT_COLOR_HEADER TEXT_BLINKY_GREEN
+#define TEXT_COLOR_SCORES 0x7F
 #define CURSOR_STR "\x7f"
 
 typedef struct scoreboard_local_t {
@@ -123,7 +123,7 @@ void scoreboard_input_tick(scene *scene) {
 
 void scoreboard_render_overlay(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
-    video_render_sprite_size(&local->black_surface, 0, 0, 320, 200);
+    video_draw_size(&local->black_surface, 0, 0, 320, 200);
     char row[128];
     char score_text[15];
     char temp_name[17];
@@ -219,9 +219,14 @@ int scoreboard_create(scene *scene) {
         chr_score_reset(game_player_get_score(player), 1);
     }
 
-    // Create a surface that has an appropriate alpha for darkening the screen a bit
-    surface_create(&local->black_surface, SURFACE_TYPE_RGBA, 32, 32);
-    surface_fill(&local->black_surface, color_create(0, 0, 0, 200));
+    // Darken the colors for the background a bit.
+    palette *pal = video_get_base_palette();
+    for(int i = 0; i < 0xEF; i++) {
+        pal->data[i][0] *= 0.6;
+        pal->data[i][1] *= 0.6;
+        pal->data[i][2] *= 0.6;
+    }
+    video_force_pal_refresh();
 
     // Set callbacks
     scene_set_userdata(scene, local);
@@ -229,10 +234,6 @@ int scoreboard_create(scene *scene) {
     scene_set_input_poll_cb(scene, scoreboard_input_tick);
     scene_set_render_overlay_cb(scene, scoreboard_render_overlay);
     scene_set_free_cb(scene, scoreboard_free);
-
-    // Don't render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(false);
 
     // All done
     return 0;
