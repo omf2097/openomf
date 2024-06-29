@@ -9,6 +9,9 @@ on:
   repository_dispatch:
     types: [run_build]
 
+env:
+  OPENOMF_VERSION: '0.6.6'
+
 jobs:
 
   # Check code formatting correctness
@@ -91,13 +94,13 @@ jobs:
       run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
 
     - name: Generate TGZ package
-      run: tar cvfz ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz -C build-release/release/ .
+      run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz -C build-release/release/ .
 
     - name: Upload TGZ artifact
       uses: actions/upload-artifact@v4
       with:
-        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64
-        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz
+        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_linux_amd64
+        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz
         if-no-files-found: error
 
     - name: Generate DEB package
@@ -106,7 +109,7 @@ jobs:
         package: openomf
         package_root: build-release/release
         maintainer: ${{ github.repository_owner }}
-        version: 0.6.6-${{ steps.slug.outputs.sha8 }}
+        version: ${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}
         arch: 'amd64'
         depends: 'libargtable2, libsdl2-mixer, libconfuse, libenet, libsdl2, libxmp, libpng'
         desc: 'One Must Fall 2097 Remake'
@@ -114,8 +117,8 @@ jobs:
     - name: Upload DEB artifact
       uses: actions/upload-artifact@v4
       with:
-        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_deb_amd64
-        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_amd64.deb
+        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_deb_amd64
+        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_amd64.deb
         if-no-files-found: error
 
   # Build macos package, release artifact and update "latest" release if necessary.
@@ -148,13 +151,13 @@ jobs:
     - name: Generate ZIP package
       run: |
         cd build-release/release
-        zip -r ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos12.zip .
+        zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos12.zip .
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos12
-        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos12.zip
+        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos12
+        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos12.zip
         if-no-files-found: error
 
   build_macos-arm:
@@ -185,13 +188,13 @@ jobs:
     - name: Generate ZIP package
       run: |
         cd build-release/release
-        zip -r ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos14_arm.zip .
+        zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm.zip .
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos14_arm
-        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_macos14_arm.zip
+        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm
+        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm.zip
         if-no-files-found: error
 
   # Build windows package, release artifact and update "latest" release if necessary.
@@ -234,13 +237,13 @@ jobs:
     - name: Generate ZIP package
       run: |
         cd build-release/release
-        zip -r ${GITHUB_WORKSPACE}/openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64.zip openomf
+        zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_amd64.zip openomf
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64
-        path: openomf_0.6.6-${{ steps.slug.outputs.sha8 }}_windows_amd64.zip
+        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_amd64
+        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_amd64.zip
         if-no-files-found: error
 
 
