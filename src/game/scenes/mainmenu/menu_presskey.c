@@ -65,7 +65,7 @@ void menu_presskey_tick(component *c) {
         if(local->warn_timeout == 0) {
             for(int i = 0; i < 2; i++) {
                 text_settings *tconf = label_get_text_settings(local->text[i]);
-                tconf->cforeground = color_create(0, 121, 0, 255);
+                tconf->cforeground = COLOR_DARK_GREEN;
             }
         }
     }
@@ -114,7 +114,7 @@ component *menu_presskey_create(char **key) {
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = color_create(0, 121, 0, 255);
+    tconf.cforeground = COLOR_DARK_GREEN;
 
     component *menu = menu_create(11);
     local->text[0] = label_create(&tconf, "PRESS A KEY FOR");

@@ -63,7 +63,7 @@ static void textbutton_render(component *c) {
     } else if(component_is_disabled(c)) {
         tb->tconf.cforeground = color_create(121, 121, 121, 255);
     } else {
-        tb->tconf.cforeground = color_create(0, 121, 0, 255);
+        tb->tconf.cforeground = COLOR_DARK_GREEN;
     }
     text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->text);
 

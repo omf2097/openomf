@@ -182,7 +182,7 @@ component *menu_video_create(scene *s) {
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = color_create(0, 121, 0, 255);
+    tconf.cforeground = COLOR_DARK_GREEN;
 
     // Create menu and its header
     component *menu = menu_create(11);

@@ -12,12 +12,12 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
-    tconf.cforeground = color_create(0, 121, 0, 255);
+    tconf.cforeground = COLOR_DARK_GREEN;
 
     text_settings tconf_desc;
     text_defaults(&tconf_desc);
     tconf_desc.font = FONT_SMALL;
-    tconf_desc.cforeground = color_create(0, 121, 0, 255);
+    tconf_desc.cforeground = COLOR_DARK_GREEN;
 
     dlg->x = x;
     dlg->y = y;
