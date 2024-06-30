@@ -200,8 +200,8 @@ void newsroom_input_tick(scene *scene) {
                                     game_state_set_next(scene->gs, SCENE_END);
                                 } else {
                                     if(p1->sp_wins == (2046 ^ (2 << p1->pilot->pilot_id))) {
-                                        // everyone but kriessack
-                                        p2->pilot->pilot_id = 10;
+                                        // everyone but kreissack
+                                        p2->pilot->pilot_id = PILOT_KREISSACK;
                                         p2->pilot->har_id = HAR_NOVA;
                                     } else {
                                         // pick an opponent we have not yet beaten
