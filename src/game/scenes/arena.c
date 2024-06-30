@@ -554,7 +554,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         local->over = 1;
         if(is_singleplayer(scene)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
-            if(player_loser->pilot->pilot_id == 10) {
+            if(player_loser->pilot->pilot_id == PILOT_KREISSACK) {
                 // can't scrap/destruct kreissack
                 winner_har->state = STATE_DONE;
                 // major go boom
