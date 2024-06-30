@@ -88,7 +88,7 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     // TODO the left-right buttons apply on focus, not select
 
     // Add text label
-    tconf.cforeground = color_create(0, 121, 0, 255);
+    tconf.cforeground = COLOR_DARK_GREEN;
     // TODO interpolate %s in the string here with blank
     component *label = label_create(&tconf, lang_get(title));
     component_set_pos_hints(label, 87, 155);

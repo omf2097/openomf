@@ -1336,7 +1336,7 @@ int arena_create(scene *scene) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
-    tconf.cforeground = color_create(0, 121, 0, 255);
+    tconf.cforeground = COLOR_DARK_GREEN;
     tconf.halign = TEXT_CENTER;
 
     // Arena menu

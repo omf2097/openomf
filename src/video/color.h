@@ -3,6 +3,7 @@
 
 #define COLOR_RED color_create(255, 0, 0, 255)
 #define COLOR_GREEN color_create(0, 255, 0, 255)
+#define COLOR_DARK_GREEN color_create(0, 121, 0, 255)
 #define COLOR_BLUE color_create(0, 0, 255, 255)
 #define COLOR_YELLOW color_create(255, 255, 0, 255)
 #define COLOR_WHITE color_create(255, 255, 255, 255)
