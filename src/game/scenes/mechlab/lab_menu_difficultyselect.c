@@ -85,7 +85,7 @@ component *lab_menu_difficultyselect_create(scene *s) {
     }
 
     // Add text label
-    tconf.cforeground = color_create(0, 121, 0, 255);
+    tconf.cforeground = COLOR_DARK_GREEN;
     component *label = label_create(&tconf, "SELECT A DIFFICULTY LEVEL");
     component_set_pos_hints(label, 87, 155);
     component_set_size_hints(label, 150, 10);

@@ -36,7 +36,7 @@ component *menu_configuration_create(scene *s) {
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = color_create(0, 121, 0, 255);
+    tconf.cforeground = COLOR_DARK_GREEN;
 
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "CONFIGURATION"));

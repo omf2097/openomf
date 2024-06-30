@@ -25,7 +25,7 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     xysizer_attach(xy, label_create(&tconf, lang_get(192)), 110, 43, 100, 50);
 
     // Input field
-    tconf.cforeground = color_create(0, 121, 0, 255);
+    tconf.cforeground = COLOR_DARK_GREEN;
     nw->input = textinput_create(&tconf, "Name", "");
     component_select(nw->input, 1);
     textinput_enable_background(nw->input, 0);
