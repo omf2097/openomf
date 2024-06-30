@@ -138,7 +138,7 @@ static int menu_action(component *mc, int action) {
 
     // Handle down/up selection movement
     c = sizer_get(mc, m->selected);
-    if(c != NULL && (action == ACT_DOWN || action == ACT_UP)) {
+    if(c != NULL && c->supports_select && (action == ACT_DOWN || action == ACT_UP)) {
         component_select(c, 0);
         do {
             if(action == ACT_DOWN) {
