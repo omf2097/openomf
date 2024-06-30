@@ -262,6 +262,9 @@ else()
     message(STATUS "Development: Unit-tests are disabled")
 endif()
 
+# Copy openomf.bk to destination resources directory to ease development setup.
+file(COPY resources/openomf.bk DESTINATION resources)
+
 # Packaging
 add_subdirectory(packaging)
 
