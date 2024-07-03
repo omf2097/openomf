@@ -261,7 +261,7 @@ void console_event(game_state *gs, SDL_Event *e) {
             // make sure it is not a unicode sequence
             unsigned char c = e->text.text[0];
             // only allow ASCII through
-            if(c >= 32 && c <= 126 && len < sizeof(con->input) - 1) {
+            if(isprint(c) && len < sizeof(con->input) - 1) {
                 con->input[len + 1] = '\0';
                 con->input[len] = tolower(c);
             }
