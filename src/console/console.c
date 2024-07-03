@@ -263,7 +263,7 @@ void console_event(game_state *gs, SDL_Event *e) {
             // only allow ASCII through
             if(c >= 32 && c <= 126 && len < sizeof(con->input) - 1) {
                 con->input[len + 1] = '\0';
-                con->input[len] = c;
+                con->input[len] = tolower(c);
             }
         }
     } else if(e->type == SDL_KEYDOWN) {
