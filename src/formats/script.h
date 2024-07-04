@@ -11,6 +11,8 @@
 #define SD_SCRIPT_H
 
 #include "formats/taglist.h"
+#include "utils/str.h"
+#include "utils/vector.h"
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -35,8 +37,7 @@ typedef struct {
 typedef struct {
     int sprite;          ///< Sprite ID that the frame relates to
     int tick_len;        ///< Length of the frame in ticks
-    int tag_count;       ///< Amount of tags in this frame
-    sd_script_tag *tags; ///< A list of tags in this frame
+    vector tags;         ///< A list of tags in this frame
 } sd_script_frame;
 
 /*! \brief Animation script
@@ -45,8 +46,7 @@ typedef struct {
  * A valid string must contain at least a single frame.
  */
 typedef struct {
-    int frame_count;         ///< Amount of frames in the string
-    sd_script_frame *frames; ///< List of frames in this string
+    vector frames; ///< List of frames in this string
 } sd_script;
 
 /*! \brief Initialize script parser
@@ -102,24 +102,9 @@ int sd_script_decode(sd_script *script, const char *str, int *invalid_pos);
  * \retval SD_SUCCESS Successful operation
  *
  * \param script Script structure to encode
- * \param str Target string buffer. Make sure it's large enough!
+ * \param str Target string object. Must be initialized!
  */
-int sd_script_encode(const sd_script *script, char *str, size_t len);
-
-/*! \brief Find the encoded length of a script
- *
- * Returns the encoded length of the animation script. The length will be the EXACT size
- * of the string, so you may need to add +1 to compensate for a trailing zero.
- *
- * The function will return 0 if there are no frames in the script, the frames are invalid,
- * or the script variable is NULL.
- *
- * \sa sd_script_decode
- *
- * \param script Script structure to check
- * \return Length of the encoded animation string.
- */
-int sd_script_encoded_length(const sd_script *script);
+int sd_script_encode(const sd_script *script, str *dst);
 
 /*! \brief Find the total duration of the script
  *

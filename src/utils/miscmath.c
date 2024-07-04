@@ -1,4 +1,5 @@
 #include "utils/miscmath.h"
+#include <limits.h>
 #include <math.h>
 
 int clamp(int val, int min, int max) {
@@ -14,6 +15,14 @@ float clampf(float val, float min, float max) {
         return max;
     if(val < min)
         return min;
+    return val;
+}
+
+int clamp_long_to_int(long val) {
+    if(val > INT_MAX)
+        return INT_MAX;
+    if(val < INT_MIN)
+        return INT_MIN;
     return val;
 }
 

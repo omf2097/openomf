@@ -1,7 +1,6 @@
 #include "formats/error.h"
 #include "formats/script.h"
 #include "misc/parser_test_strings.h"
-#include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
 
 sd_script script;
@@ -9,20 +8,26 @@ sd_script script;
 #define OK_STR "s05bpd1bps1bpn64A100-s1sf3B10-C34"
 #define OK_STR_ENC "s5bpd1bps1bpn64A100-s1sf3B10-C34"
 
+static int get_tag_count(const sd_script *scr, int frame_id) {
+    sd_script_frame *frame = vector_get(&scr->frames, frame_id);
+    CU_ASSERT_PTR_NOT_NULL(frame);
+    return vector_size(&frame->tags);
+}
+
 void test_script_create(void) {
     CU_ASSERT(sd_script_create(&script) == SD_SUCCESS);
     CU_ASSERT(sd_script_create(NULL) == SD_INVALID_INPUT);
-    CU_ASSERT(script.frame_count == 0);
+    CU_ASSERT(vector_size(&script.frames) == 0);
 }
 
 void test_script_decode(void) {
     CU_ASSERT(sd_script_decode(&script, NULL, NULL) == SD_INVALID_INPUT);
     CU_ASSERT(sd_script_decode(NULL, OK_STR, NULL) == SD_INVALID_INPUT);
     CU_ASSERT(sd_script_decode(&script, OK_STR, NULL) == SD_SUCCESS);
-    CU_ASSERT(script.frame_count == 3);
-    CU_ASSERT(script.frames[0].tag_count == 4);
-    CU_ASSERT(script.frames[1].tag_count == 2);
-    CU_ASSERT(script.frames[2].tag_count == 0);
+    CU_ASSERT(vector_size(&script.frames) == 3);
+    CU_ASSERT(get_tag_count(&script, 0) == 4);
+    CU_ASSERT(get_tag_count(&script, 1) == 2);
+    CU_ASSERT(get_tag_count(&script, 2) == 0);
 }
 
 void test_total_ticks(void) {
@@ -47,16 +52,12 @@ void test_tick_len_at_frame(void) {
     CU_ASSERT(sd_script_get_tick_len_at_frame(&script, 2) == 34);
 }
 
-void test_script_encoded_length(void) {
-    int len = sd_script_encoded_length(&script);
-    CU_ASSERT(len = strlen(OK_STR_ENC));
-}
-
 void test_script_encode(void) {
-    char buf[1024];
-    memset(buf, 0, 1024);
-    CU_ASSERT(sd_script_encode(&script, buf, 1024) == SD_SUCCESS);
-    CU_ASSERT(strcmp(OK_STR_ENC, buf) == 0);
+    str dst;
+    str_create(&dst);
+    CU_ASSERT(sd_script_encode(&script, &dst) == SD_SUCCESS);
+    CU_ASSERT(strcmp(OK_STR_ENC, str_c(&dst)) == 0);
+    str_free(&dst);
 }
 
 void test_script_get_frame(void) {
@@ -178,17 +179,21 @@ void test_script_free(void) {
 }
 
 void test_script_all(void) {
-    char buf[1024];
+    str dst;
+    int fail_at;
     for(int i = 0; i < TEST_STRING_COUNT; i++) {
+        str_create(&dst);
         sd_script s;
         CU_ASSERT_FATAL(sd_script_create(&s) == SD_SUCCESS);
-        int ret = sd_script_decode(&s, test_strings[i], NULL);
+        int ret = sd_script_decode(&s, test_strings[i], &fail_at);
         if(ret == SD_SUCCESS) {
-            CU_ASSERT(sd_script_encode(&s, buf, 1024) == SD_SUCCESS);
+            CU_ASSERT(sd_script_encode(&s, &dst) == SD_SUCCESS);
         } else {
+            printf("%s - (%d - %c)\n", test_strings[i], fail_at, test_strings[i][fail_at]);
             CU_FAIL("Parser failed. Broken string ?");
         }
         sd_script_free(&s);
+        str_free(&dst);
     }
 }
 
@@ -230,7 +235,7 @@ void test_set_tag(void) {
     CU_ASSERT(sd_script_get(sd_script_get_frame(&script, 1), "sf") == 3);
 
     // Check tag count
-    CU_ASSERT(script.frames[1].tag_count == 3);
+    CU_ASSERT_EQUAL(get_tag_count(&script, 1), 3);
 
     // Bad input values
     CU_ASSERT(sd_script_set_tag(NULL, 1, "bpd", 50) == SD_INVALID_INPUT);
@@ -277,30 +282,30 @@ void test_delete_tag(void) {
     CU_ASSERT(sd_script_create(&s) == SD_SUCCESS);
     CU_ASSERT(sd_script_append_frame(&s, 100, 0) == SD_SUCCESS);
     CU_ASSERT(sd_script_set_tag(&s, 0, "bpn", 10) == SD_SUCCESS);
-    CU_ASSERT(s.frames[0].tag_count == 1);
+    CU_ASSERT(get_tag_count(&s, 0) == 1);
     CU_ASSERT(sd_script_set_tag(&s, 0, "s", 15) == SD_SUCCESS);
-    CU_ASSERT(s.frames[0].tag_count == 2);
+    CU_ASSERT(get_tag_count(&s, 0) == 2);
     CU_ASSERT(sd_script_set_tag(&s, 0, "sf", 100) == SD_SUCCESS);
-    CU_ASSERT(s.frames[0].tag_count == 3);
+    CU_ASSERT(get_tag_count(&s, 0) == 3);
 
     // Real tests
     CU_ASSERT(sd_script_delete_tag(&s, 0, "bpn") == SD_SUCCESS);
     CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "bpn") == 0);
     CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "s") == 15);
     CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "sf") == 100);
-    CU_ASSERT(s.frames[0].tag_count == 2);
+    CU_ASSERT(get_tag_count(&s, 0) == 2);
 
     CU_ASSERT(sd_script_delete_tag(&s, 0, "s") == SD_SUCCESS);
     CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "bpn") == 0);
     CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "s") == 0);
     CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "sf") == 100);
-    CU_ASSERT(s.frames[0].tag_count == 1);
+    CU_ASSERT(get_tag_count(&s, 0) == 1);
 
     CU_ASSERT(sd_script_delete_tag(&s, 0, "sf") == SD_SUCCESS);
     CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "bpn") == 0);
     CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "s") == 0);
     CU_ASSERT(sd_script_get(sd_script_get_frame(&s, 0), "sf") == 0);
-    CU_ASSERT(s.frames[0].tag_count == 0);
+    CU_ASSERT(get_tag_count(&s, 0) == 0);
 
     sd_script_free(&s);
 }
@@ -361,9 +366,6 @@ void script_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "test of sd_script_get_tick_len_at_frame", test_tick_len_at_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_encoded_length", test_script_encoded_length) == NULL) {
         return;
     }
     if(CU_add_test(suite, "test of sd_script_encode", test_script_encode) == NULL) {
