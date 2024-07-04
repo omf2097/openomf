@@ -990,12 +990,6 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         return;
     }
 
-    // Check if collisions are switched off for the attacking HAR
-    if(player_frame_isset(obj_a, "n")) {
-        DEBUG("COLLISIONS: Disabled for this frame.");
-        return;
-    }
-
     // Check for collisions by sprite collision points
     int level = 1;
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
@@ -1105,12 +1099,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
     if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE) {
         // can't hit em while they're down
-        return;
-    }
-
-    // Check if collisions are switched off for the projectile
-    if(player_frame_isset(o_pjt, "n")) {
-        DEBUG("COLLISIONS: Disabled for this frame.");
         return;
     }
 

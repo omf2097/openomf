@@ -386,7 +386,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     object *o_har = game_player_get_har(game_state_get_player(scene->gs, player_id));
     har *h = object_get_userdata(o_har);
 
-    DEBUG("Player %d hit wall %d", player_id, wall);
+    // DEBUG("Player %d hit wall %d", player_id, wall);
 
     // HAR must be in the air to be get faceplanted to a wall.
     if(o_har->pos.y >= ARENA_FLOOR - 10) {
@@ -441,7 +441,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
      * On arena wall, the wall needs to pulse. Handle it here
      */
     if(scene->id == SCENE_ARENA4 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
-        DEBUG("hit desert wall %d", wall);
+        // DEBUG("hit desert wall %d", wall);
         h->state = STATE_WALLDAMAGE;
 
         // desert always shows the 'hit' animation when you touch the wall
@@ -462,14 +462,14 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
      */
     if(scene->id != SCENE_ARENA4 && scene->id != SCENE_ARENA2 &&
        (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
-        DEBUG("hit dusty wall %d", wall);
+        // DEBUG("hit dusty wall %d", wall);
         h->state = STATE_WALLDAMAGE;
 
         int amount = rand_int(2) + 3;
         for(int i = 0; i < amount; i++) {
             int variance = rand_int(20) - 10;
             int anim_no = rand_int(2) + 24;
-            DEBUG("XXX anim = %d, variance = %d", anim_no, variance);
+            // DEBUG("XXX anim = %d, variance = %d", anim_no, variance);
             int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i * 25;
             vec2i coord = vec2i_create(o_har->pos.x, pos_y);
             object *dust = omf_calloc(1, sizeof(object));
