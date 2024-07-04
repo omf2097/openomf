@@ -221,6 +221,28 @@ void player_describe_object(object *obj) {
               obj->cur_sprite->data->h);
     }
 }
+
+void player_describe_mp_flags(const sd_script_frame *frame, int mp) {
+    if(mp != 0) {
+        DEBUG("mp flags set for new animation %d:", sd_script_get(frame, "m"));
+        if(mp & 0x1)
+            DEBUG(" * 0x01: NON-HAR Sprite");
+        if(mp & 0x2)
+            DEBUG(" * 0x02: Unknown");
+        if(mp & 0x4)
+            DEBUG(" * 0x04: HAR 1 related");
+        if(mp & 0x8)
+            DEBUG(" * 0x08: Something timer related is skipped ?");
+        if(mp & 0x10)
+            DEBUG(" * 0x10: HAR 2 related");
+        if(mp & 0x20)
+            DEBUG(" * 0x20: Flip x operations");
+        if(mp & 0x40)
+            DEBUG(" * 0x40: Something about wall collisions ?");
+        if(mp & 0x80)
+            DEBUG(" * 0x80: Sprite timer related ?");
+    }
+}
 #endif /* DEBUGMODE */
 
 void player_run(object *obj) {
@@ -273,29 +295,9 @@ void player_run(object *obj) {
 #ifdef DEBUGMODE
         // player_describe_frame(frame);
         // player_describe_object(obj);
+        // player_describe_mp_flags(frame, mp);
 #endif
         player_clear_frame(obj);
-
-        // Print out MP flags here (just once for this frame)
-        if(mp != 0) {
-            DEBUG("mp flags set for new animation %d:", sd_script_get(frame, "m"));
-            if(mp & 0x1)
-                DEBUG(" * 0x01: NON-HAR Sprite");
-            if(mp & 0x2)
-                DEBUG(" * 0x02: Unknown");
-            if(mp & 0x4)
-                DEBUG(" * 0x04: HAR 1 related");
-            if(mp & 0x8)
-                DEBUG(" * 0x08: Something timer related is skipped ?");
-            if(mp & 0x10)
-                DEBUG(" * 0x10: HAR 2 related");
-            if(mp & 0x20)
-                DEBUG(" * 0x20: Flip x operations");
-            if(mp & 0x40)
-                DEBUG(" * 0x40: Something about wall collisions ?");
-            if(mp & 0x80)
-                DEBUG(" * 0x80: Sprite timer related ?");
-        }
 
         if(sd_script_isset(frame, "ar")) {
             rstate->dir_correction = -1;
@@ -365,7 +367,7 @@ void player_run(object *obj) {
         obj->pos.x = state->enemy->pos.x;
         obj->pos.y = state->enemy->pos.y;
         object_set_direction(obj, object_get_direction(state->enemy) * -1);
-        DEBUG("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
+        // DEBUG("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
 
     // Set to ground

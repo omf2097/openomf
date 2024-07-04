@@ -593,7 +593,7 @@ void object_set_custom_string(object *obj, const char *str) {
     omf_free(obj->custom_str);
     obj->custom_str = strdup(str);
     player_reload_with_str(obj, obj->custom_str);
-    DEBUG("Set animation string to %s", obj->custom_str);
+    // DEBUG("Set animation string to %s", obj->custom_str);
 }
 
 /** Returns a pointer to the currently playing animation

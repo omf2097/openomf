@@ -277,7 +277,7 @@ void audio_play_sound(int id, float volume, float panning, float pitch) {
     pan_right = (panning < 0) ? 1.0f + panning : 1.0f;
 
     if((channel = Mix_GroupAvailable(-1)) == -1) {
-        PERROR("Unable to play sound: No free channels");
+        // PERROR("Unable to play sound: No free channels");
         goto error_0;
     }
     if((chunk = audio_get_chunk(id, volume, pitch)) == NULL) {
