@@ -3,11 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct vector_iterator_t {
-    unsigned int now;
-    unsigned int dir;
-    vector *vec;
-} vector_iterator;
 
 void vector_init(vector *vec) {
     vec->blocks = 0;
