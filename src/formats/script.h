@@ -90,19 +90,13 @@ int sd_script_decode(sd_script *script, const char *str, int *invalid_pos);
  * Encodes the animation script structure back to an animation string.
  * Note that if the decoded string contained oddities like prefixed zeroes in
  * front of numbers, those will be automatically fixed. Therefore the output
- * string may not be exactly like the input string. Filler tags (u,c,p,o,z)
- * will also be removed.
- *
- * Note that the target str buffer needs to be large enough for the encoding operation.
- * It is possible to find the encoded string buffer size by using sd_script_encoded_lenghth() function.
- *
- * \sa sd_script_encoded_length
+ * string may not be exactly like the input string.
  *
  * \retval SD_INVALID_INPUT Script or str parameter was NULL
  * \retval SD_SUCCESS Successful operation
  *
  * \param script Script structure to encode
- * \param str Target string object. Must be initialized!
+ * \param dst Target string object. Must be initialized!
  */
 int sd_script_encode(const sd_script *script, str *dst);
 
