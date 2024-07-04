@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 void vector_init(vector *vec) {
     vec->blocks = 0;
     vec->reserved = 32;

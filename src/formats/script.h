@@ -35,9 +35,9 @@ typedef struct {
  * Describes a single frame in animation string.
  */
 typedef struct {
-    int sprite;          ///< Sprite ID that the frame relates to
-    int tick_len;        ///< Length of the frame in ticks
-    vector tags;         ///< A list of tags in this frame
+    int sprite;   ///< Sprite ID that the frame relates to
+    int tick_len; ///< Length of the frame in ticks
+    vector tags;  ///< A list of tags in this frame
 } sd_script_frame;
 
 /*! \brief Animation script
