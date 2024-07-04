@@ -217,7 +217,9 @@ void engine_run(engine_init_flags *init_flags) {
             static_wait += 20;
             debugger_proceed = 0;
         }
-        while(static_wait > 10) {
+        int limit_static = 100;
+        int limit_dynamic = 100;
+        while(static_wait > 10 && limit_static--) {
             // Static tick for gamestate
             game_state_static_tick(gs);
 
@@ -229,7 +231,7 @@ void engine_run(engine_init_flags *init_flags) {
 
             static_wait -= 10;
         }
-        while(dynamic_wait > game_state_ms_per_dyntick(gs)) {
+        while(dynamic_wait > game_state_ms_per_dyntick(gs) && limit_dynamic--) {
             // Tick scene
             game_state_dynamic_tick(gs);
 
