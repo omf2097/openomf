@@ -1,6 +1,7 @@
 #include "utils/str.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -69,8 +70,9 @@ void str_from_format(str *dst, const char *format, ...) {
 
 void str_from_slice(str *dst, const str *src, size_t start, size_t end) {
     assert(dst != src);
-    assert(end <= src->len);
     assert(start < end);
+    if(end > src->len)
+        end = src->len;
     size_t len = end - start;
     STR_ALLOC(dst, len);
     memcpy(dst->data, src->data + start, len);
@@ -114,7 +116,7 @@ static size_t _strip_size(const str *src, bool left) {
 }
 
 void str_rstrip(str *dst) {
-    // This is simple, just reduce sice and set ending 0.
+    // This is simple, just reduce size and set ending 0.
     size_t skip = _strip_size(dst, false);
     STR_REALLOC(dst, skip + 1);
     STR_ZERO(dst);
@@ -157,6 +159,14 @@ static bool _find_next(const str *string, char find, size_t *pos) {
         }
     }
     return false;
+}
+
+void str_cut(str *dst, size_t len) {
+    if(len > dst->len)
+        len = dst->len;
+    dst->len -= len;
+    STR_REALLOC(dst, dst->len);
+    STR_ZERO(dst);
 }
 
 void str_replace(str *dst, const char *seek, const char *replacement, int limit) {
@@ -262,6 +272,15 @@ bool str_to_long(const str *string, long *result) {
     char *end;
     *result = strtol(string->data, &end, 10);
     return (string->data != end);
+}
+
+bool str_to_int(const str *string, int *result) {
+    long value;
+    bool got = str_to_long(string, &value);
+    if(got) {
+        *result = clamp_long_to_int(value);
+    }
+    return got;
 }
 
 const char *str_c(const str *string) {

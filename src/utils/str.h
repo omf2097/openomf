@@ -65,6 +65,14 @@ void str_from_format(str *dst, const char *format, ...);
 void str_from_slice(str *dst, const str *src, size_t start, size_t end);
 
 /**
+ * @brief Cut away amount of characters from the end of the string.
+ * @details If cut amount is larger than the length of the string, the whole string will be cleared.
+ * @param dst String to cut
+ * @param len Amount to cut
+ */
+void str_cut(str *dst, size_t len);
+
+/**
  * @brief Free string object
  * @details Frees up any memory used by the string object. Usage of the string after freeing it
  *          is undefined behaviour.
@@ -185,6 +193,16 @@ bool str_to_float(const str *string, float *m);
  * @return false If failure (result value is invalid)
  */
 bool str_to_long(const str *string, long *m);
+
+/**
+ * @brief Convert string to int
+ * @details Returns true if conversion was a success, false if not.
+ * @param string String to convert
+ * @param m Result value
+ * @return true If success
+ * @return false If failure (result value is invalid)
+ */
+bool str_to_int(const str *string, int *m);
 
 /**
  * @brief Returns a C string compatible represantation of a string object.

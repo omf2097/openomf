@@ -8,14 +8,13 @@
 #include "formats/script.h"
 #include <argtable2.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
 
 int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
-    struct arg_str *astr = arg_str1("s", "str", "<str>", "Animation string");
+    struct arg_str *astr = arg_str1(NULL, NULL, "<str>", "Animation string");
     struct arg_end *end = arg_end(20);
     void *argtable[] = {help, vers, astr, end};
     const char *progname = "omf_parse";
@@ -82,11 +81,11 @@ int main(int argc, char *argv[]) {
         goto exit_1;
     }
 
-    for(int frame_id = 0; frame_id < script.frame_count; frame_id++) {
-        sd_script_frame *frame = &script.frames[frame_id];
+    for(int frame_id = 0; frame_id < vector_size(&script.frames); frame_id++) {
+        sd_script_frame *frame = vector_get(&script.frames, frame_id);
         printf("%d. Frame %d: '%c%d'\n", frame_id, frame->sprite, (char)(frame->sprite + 65), frame->tick_len);
-        for(int tag_id = 0; tag_id < frame->tag_count; tag_id++) {
-            sd_script_tag *tag = &frame->tags[tag_id];
+        for(int tag_id = 0; tag_id < vector_size(&frame->tags); tag_id++) {
+            sd_script_tag *tag = vector_get(&frame->tags, tag_id);
             if(tag->desc == NULL) {
                 tag->desc = "";
             }

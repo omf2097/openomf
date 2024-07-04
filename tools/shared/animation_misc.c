@@ -205,17 +205,20 @@ void anim_pop(sd_animation *ani) {
     printf("Last sprite popped from animation. Animation now has %d sprites.\n", ani->sprite_count);
 }
 
-void string_strip(char *str, size_t len, const char *tag) {
+void string_strip(char *input, size_t len, const char *tag) {
     sd_script s;
     sd_script_create(&s);
-    sd_script_decode(&s, str, NULL);
+    sd_script_decode(&s, input, NULL);
 
-    for(int i = 0; i < s.frame_count; i++) {
+    for(int i = 0; i < vector_size(&s.frames); i++) {
         sd_script_delete_tag(&s, i, tag);
     }
 
-    // Dont bother with resizing the result
-    sd_script_encode(&s, str, len);
+    str dst;
+    str_create(&dst);
+    sd_script_encode(&s, &dst);
+    strncpy(input, str_c(&dst), len);
+    str_free(&dst);
     sd_script_free(&s);
 }
 
