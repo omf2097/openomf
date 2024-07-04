@@ -331,6 +331,9 @@ int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
         }
         goto failed_parse;
     }
+
+    str_free(&src);
+    sd_script_frame_free(&frame);
     return SD_SUCCESS;
 
 failed_parse:
