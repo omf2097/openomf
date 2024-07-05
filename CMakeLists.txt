@@ -259,6 +259,12 @@ if(CUNIT_FOUND)
 
     add_test(main openomf_test_main)
 
+    find_program(VALGRIND "valgrind")
+    if(VALGRIND)
+        add_custom_target(valgrind
+            COMMAND ${VALGRIND} --tool=memcheck --leak-check=yes --show-reachable=yes ./openomf_test_main)
+    endif()
+
     message(STATUS "Development: Unit-tests are enabled")
 else()
     message(STATUS "Development: Unit-tests are disabled")
