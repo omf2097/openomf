@@ -1,7 +1,9 @@
-OpenOMF Readme 
+OpenOMF
 =======
 
 [![CI](https://github.com/omf2097/openomf/actions/workflows/compilation.yml/badge.svg?branch=master)](https://github.com/omf2097/openomf/actions/workflows/compilation.yml)
+
+![Flail vs Gargoyle](/doc/flail.png)
 
 OpenOMF is a Open Source remake of "One Must Fall 2097" by Diversions Entertainment.
 Since the original DOS game from 1994 still uses IPX networking and is a pain to set
