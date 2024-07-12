@@ -4,10 +4,10 @@
 
 Latest experimental binaries for windows, macOS and ubuntu are available at
 https://github.com/omf2097/openomf/releases/tag/latest . These binaries may
-not always work correctly, but they will be following the git status very 
+not always work correctly, but they will be following the git status very
 closely. So, if you want to test the latest features, this is for you.
 
-Official releases are (somewhat) stable, but don't necessary come with all 
+Official releases are (somewhat) stable, but don't necessary come with all
 the latest bells and whistles. However, if you wish to try them, they will
 be available at https://github.com/omf2097/openomf/releases . Installation
 instructions are also available there.
@@ -18,20 +18,18 @@ instructions are also available there.
    If you do not know which package to download, get the "-win32.zip" version.
 2. Extract the zip file somewhere on your computer. If possible, use a directory other
    than "C:\Program Files".
-3. Install the game resources. Please see step 3. of this guide for this.
-4. [optional] If you wish, you may install an xBRZ sprite scaler plugin.
+3. [optional] If you wish, you may install an xBRZ sprite scaler plugin.
    This can be found from https://github.com/omf2097/openomf-scaler-xbrz/releases .
    Note that this is not necessary for running the game.
-5. Start the game by running openomf.exe.
+4. Start the game by running openomf.exe.
 
 ### Ubuntu
 
 1. Download an appropriate .deb file for your architecture (NOTE! 32bit not currently available!).
 2. Install the package. You can either run dpkg -i <packagefile> or do it by using graphical tools
-   in your distribution. Note that currently the packages are only tested on debian; Ubuntu may or
+   in your distribution. Note that currently the packages are only tested on Ubuntu; Debian may or
    may not work.
-3. Install the game resources. Please see step 3. of this guide for this.
-4. Start the game by running ./openomf on command line.
+3. Start the game by running ./openomf on command line.
 
 ## Compiling from source
 
@@ -52,7 +50,7 @@ Required:
 * libxmp: https://github.com/cmatsuoka/libxmp
 
 
-On debian, it is possible to pull some libraries using apt-get.
+On Ubuntu, it is possible to pull some libraries using apt-get.
 ```
 apt-get install libsdl2-dev libsdl2-mixer-dev libpng-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
 ```
@@ -70,8 +68,8 @@ Latest OpenOMF source can be acquired with the "git clone" command below.
 git clone https://github.com/omf2097/openomf.git
 ```
 
-Note that the latest sources do not necessarily compile, or they may have bugs. To retrieve 
-the latest source that compiles but will be out of date, see the 
+Note that the latest sources do not necessarily compile, or they may have bugs. To retrieve
+the latest source that compiles but will be out of date, see the
 [releases](https://github.com/omf2097/openomf/releases) section of OpenOMF project in GitHub.
 
 ### Compiling
