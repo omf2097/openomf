@@ -1,0 +1,30 @@
+set(ARGTABLE3_SEARCH_PATHS
+    /usr/local
+    /usr
+    /opt
+)
+
+find_path(ARGTABLE3_INCLUDE_DIR argtable3.h 
+    HINTS
+    PATH_SUFFIXES include
+    PATHS ${ARGTABLE3_SEARCH_PATHS}
+)
+find_library(ARGTABLE3_LIBRARY argtable3 
+    HINTS
+    PATH_SUFFIXES lib64 lib
+    PATHS ${ARGTABLE3_SEARCH_PATHS}
+)
+
+if(ARGTABLE3_INCLUDE_DIR AND ARGTABLE3_LIBRARY)
+   set(ARGTABLE3_FOUND TRUE)
+endif()
+
+if(ARGTABLE3_FOUND)
+    set(ARGTABLE3_LIBRARIES ${ARGTABLE3_LIBRARY})
+    set(ARGTABLE3_INCLUDE_DIRS ${ARGTABLE3_INCLUDE_DIR})
+    message(STATUS "Found Argtable3: ${ARGTABLE3_LIBRARIES}")
+else()
+    message(WARNING "Could not find Argtable3")
+endif()
+
+mark_as_advanced(ARGTABLE3_INCLUDE_DIR ARGTABLE3_LIBRARY ARGTABLE3_SEARCH_PATHS)

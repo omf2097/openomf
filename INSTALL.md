@@ -45,7 +45,7 @@ Required:
 * SDL2 (>=2.0.16): http://www.libsdl.org/download-2.0.php
 * confuse: http://www.nongnu.org/confuse/
 * Enet: http://enet.bespin.org/
-* libargtable2: http://argtable.sourceforge.net/
+* libargtable2 or libargtable3: http://argtable.sourceforge.net/ or http://www.argtable.org/
 * libpng: http://www.libpng.org/pub/png/libpng.html
 * zlib: http://www.zlib.net/ (for libpng)
 * SDL2_Mixer (>=2.0.4): https://github.com/libsdl-org/SDL_mixer
