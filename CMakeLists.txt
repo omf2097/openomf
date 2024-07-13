@@ -95,6 +95,8 @@ if(ARGTABLE2_FOUND)
 elseif(ARGTABLE3_FOUND)
   set(COREINCS ${COREINCS} ${ARGTABLE3_INCLUDE_DIR})
   add_compile_definitions(ARGTABLE3_FOUND)
+else()
+  message(FATAL_ERROR "Neither argtable2 or argtable3 was found")
 endif()
 
 if(ARGTABLE2_FOUND)
