@@ -5,7 +5,11 @@
 
 #include "formats/altpal.h"
 #include "formats/error.h"
+#if ARGTABLE2_FOUND
 #include <argtable2.h>
+#elif ARGTABLE3_FOUND
+#include <argtable3.h>
+#endif
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

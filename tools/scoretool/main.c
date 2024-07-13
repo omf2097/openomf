@@ -6,7 +6,11 @@
 
 #include "formats/error.h"
 #include "formats/score.h"
+#if ARGTABLE2_FOUND
 #include <argtable2.h>
+#elif ARGTABLE3_FOUND
+#include <argtable3.h>
+#endif
 
 const char *page_name[] = {"ONE ROUND", "BEST 2 OF 3", "BEST 3 OF 5", "BEST 4 OF 7"};
 

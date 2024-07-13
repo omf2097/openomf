@@ -47,6 +47,7 @@ find_package(xmp)
 find_package(enet)
 find_package(confuse)
 find_package(argtable2)
+find_package(argtable3)
 find_package(PNG)
 find_package(ZLIB)
 
@@ -76,7 +77,6 @@ set(COREINCS
     ${CONFUSE_INCLUDE_DIR}
     ${XMP_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
-    ${ARGTABLE2_INCLUDE_DIR}
     ${PNG_INCLUDE_DIR}
     ${ZLIB_INCLUDE_DIR}
 )
@@ -85,10 +85,23 @@ set(CORELIBS
     ${CONFUSE_LIBRARY}
     ${XMP_LIBRARY}
     ${ENET_LIBRARY}
-    ${ARGTABLE2_LIBRARY}
     ${PNG_LIBRARY}
     ${ZLIB_LIBRARY}
 )
+
+if(ARGTABLE2_FOUND)
+  set(COREINCS ${COREINCS} ${ARGTABLE2_INCLUDE_DIR})
+  add_compile_definitions(ARGTABLE2_FOUND)
+elseif(ARGTABLE3_FOUND)
+  set(COREINCS ${COREINCS} ${ARGTABLE3_INCLUDE_DIR})
+  add_compile_definitions(ARGTABLE3_FOUND)
+endif()
+
+if(ARGTABLE2_FOUND)
+  set(CORELIBS ${CORELIBS} ${ARGTABLE2_LIBRARY})
+elseif(ARGTABLE3_FOUND)
+  set(CORELIBS ${CORELIBS} ${ARGTABLE3_LIBRARY})
+endif()
 
 # MingW build should add mingw32 lib
 if(MINGW)
