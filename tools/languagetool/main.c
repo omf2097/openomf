@@ -6,11 +6,7 @@
 
 #include "formats/error.h"
 #include "formats/language.h"
-#if ARGTABLE2_FOUND
-#include <argtable2.h>
-#elif ARGTABLE3_FOUND
-#include <argtable3.h>
-#endif
+#include "utils/argtable3.h"
 
 int main(int argc, char *argv[]) {
     // commandline argument parser options

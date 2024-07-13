@@ -45,7 +45,6 @@ Required:
 * SDL2 (>=2.0.16): http://www.libsdl.org/download-2.0.php
 * confuse: http://www.nongnu.org/confuse/
 * Enet: http://enet.bespin.org/
-* libargtable2 or libargtable3: http://argtable.sourceforge.net/ or http://www.argtable.org/
 * libpng: http://www.libpng.org/pub/png/libpng.html
 * zlib: http://www.zlib.net/ (for libpng)
 * SDL2_Mixer (>=2.0.4): https://github.com/libsdl-org/SDL_mixer
@@ -54,12 +53,12 @@ Required:
 
 On debian, it is possible to pull some libraries using apt-get.
 ```
-apt-get install libsdl2-dev libsdl2-mixer-dev libpng-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
+apt-get install libsdl2-dev libsdl2-mixer-dev libpng-dev libconfuse-dev libenet-dev libxmp-dev
 ```
 
 On Mac, you can use brew:
 ```
-brew install argtable sdl2_mixer confuse enet sdl2 libxmp libpng
+brew install sdl2_mixer confuse enet sdl2 libxmp libpng
 ```
 
 ### Acquiring the sources

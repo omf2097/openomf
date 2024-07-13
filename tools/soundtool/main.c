@@ -6,12 +6,8 @@
 
 #include "formats/error.h"
 #include "formats/sounds.h"
+#include "utils/argtable3.h"
 #include <SDL.h>
-#if ARGTABLE2_FOUND
-#include <argtable2.h>
-#elif ARGTABLE3_FOUND
-#include <argtable3.h>
-#endif
 
 typedef struct _streamer {
     char *data;

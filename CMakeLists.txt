@@ -46,8 +46,6 @@ find_package(SDL2_mixer REQUIRED)
 find_package(xmp)
 find_package(enet)
 find_package(confuse)
-find_package(argtable2)
-find_package(argtable3)
 find_package(PNG)
 find_package(ZLIB)
 

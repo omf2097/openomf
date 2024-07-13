@@ -6,17 +6,13 @@
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
 #include "resources/sgmanager.h"
+#include "utils/argtable3.h"
 #include "utils/allocator.h"
 #include "utils/compat.h"
 #include "utils/log.h"
 #include "utils/msgbox.h"
 #include "utils/random.h"
 #include <SDL.h>
-#if ARGTABLE2_FOUND
-#include <argtable2.h>
-#elif ARGTABLE3_FOUND
-#include <argtable3.h>
-#endif
 #include <enet/enet.h>
 #include <stdio.h>
 #include <string.h>

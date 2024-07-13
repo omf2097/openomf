@@ -7,11 +7,7 @@
 #include "../shared/pilot.h"
 #include "formats/error.h"
 #include "formats/tournament.h"
-#if ARGTABLE2_FOUND
-#include <argtable2.h>
-#elif ARGTABLE3_FOUND
-#include <argtable3.h>
-#endif
+#include "utils/argtable3.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
