@@ -8,6 +8,7 @@
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "game/scenes/mechlab/lab_menu_training.h"
+#include "game/utils/formatting.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
 
@@ -110,8 +111,10 @@ void lab_menu_focus_power(component *c, bool focused, void *userdata) {
         if(pilot->power > 23) {
             label_set_text(label2, "UNAVAILABLE");
         } else {
-            char tmp[20];
-            snprintf(tmp, 20, "$ %dK", prices[pilot->power]);
+            char tmp[32];
+            char price_str[16];
+            score_format(prices[pilot->power], price_str, sizeof(price_str));
+            snprintf(tmp, sizeof(tmp), "$ %sK", price_str);
             label_set_text(label2, tmp);
         }
         mechlab_set_hint(s, lang_get(533));
@@ -127,8 +130,10 @@ void lab_menu_focus_agility(component *c, bool focused, void *userdata) {
         if(pilot->agility > 23) {
             label_set_text(label2, "UNAVAILABLE");
         } else {
-            char tmp[20];
-            snprintf(tmp, 20, "$ %dK", prices[pilot->agility]);
+            char tmp[32];
+            char price_str[16];
+            score_format(prices[pilot->agility], price_str, sizeof(price_str));
+            snprintf(tmp, sizeof(tmp), "$ %sK", price_str);
             label_set_text(label2, tmp);
         }
         mechlab_set_hint(s, lang_get(534));
@@ -144,8 +149,10 @@ void lab_menu_focus_endurance(component *c, bool focused, void *userdata) {
         if(pilot->endurance > 23) {
             label_set_text(label2, "UNAVAILABLE");
         } else {
-            char tmp[20];
-            snprintf(tmp, 20, "$ %dK", prices[pilot->endurance]);
+            char tmp[32];
+            char price_str[16];
+            score_format(prices[pilot->endurance], price_str, sizeof(price_str));
+            snprintf(tmp, sizeof(tmp), "$ %sK", price_str);
             label_set_text(label2, tmp);
         }
         mechlab_set_hint(s, lang_get(535));
