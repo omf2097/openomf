@@ -7,6 +7,7 @@
 #include "game/gui/xysizer.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/lab_dash_main.h"
+#include "game/utils/formatting.h"
 #include "game/utils/settings.h"
 #include "resources/ids.h"
 #include "resources/languages.h"
@@ -252,6 +253,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
 void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     game_player *p1;
     char tmp[64];
+    char money[32];
 
     // Load the player information for player 1
     // P1 is always the one being edited in tournament dashboard
@@ -259,17 +261,17 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
 
     // Set up variables properly
     if(p1->pilot->rank == 0) {
-        snprintf(tmp, 64, "RANK: NO RANK");
+        snprintf(tmp, sizeof(tmp), "RANK: NO RANK");
     } else {
-        snprintf(tmp, 64, "RANK: %d", p1->pilot->rank);
+        snprintf(tmp, sizeof(tmp), "RANK: %d", p1->pilot->rank);
     }
     label_set_text(dw->rank, tmp);
-    snprintf(tmp, 64, "WINS: %d", p1->pilot->wins);
+    snprintf(tmp, sizeof(tmp), "WINS: %d", p1->pilot->wins);
     label_set_text(dw->wins, tmp);
-    snprintf(tmp, 64, "LOSES: %d", p1->pilot->losses);
+    snprintf(tmp, sizeof(tmp), "LOSES: %d", p1->pilot->losses);
     label_set_text(dw->losses, tmp);
-    // TODO this needs for format with commas for the thousands seperator
-    snprintf(tmp, 64, "MONEY: $ %dK", p1->pilot->money);
+    score_format(p1->pilot->money, money, sizeof(money));
+    snprintf(tmp, sizeof(tmp), "MONEY: $ %sK", money);
     label_set_text(dw->money, tmp);
 
     label_set_text(dw->har_name, lang_get(31 + p1->pilot->har_id));
