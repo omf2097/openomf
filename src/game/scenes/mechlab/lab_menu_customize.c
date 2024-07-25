@@ -10,6 +10,7 @@
 #include "game/scenes/mechlab/button_details.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/scenes/mechlab/lab_menu_trade.h"
+#include "game/utils/formatting.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
 #include "utils/log.h"
@@ -472,6 +473,8 @@ void lab_menu_focus_red(component *c, bool focused, void *userdata) {
 }
 
 void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {
+    char tmp[200];
+    char price_str[32];
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
@@ -482,8 +485,8 @@ void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->arm_power, (int)(price * 0.85));
+                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->arm_power, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(553)); // TODO sprintf arm/leg
@@ -493,8 +496,8 @@ void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->arm_power + 1, price);
+                score_format(price, price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->arm_power + 1, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(554)); // TODO sprintf arm/leg
@@ -503,6 +506,8 @@ void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {
 }
 
 void lab_menu_focus_leg_power(component *c, bool focused, void *userdata) {
+    char tmp[200];
+    char price_str[32];
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
@@ -513,8 +518,8 @@ void lab_menu_focus_leg_power(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->leg_power, (int)(price * 0.85));
+                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->leg_power, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(555)); // TODO sprintf arm/leg
@@ -524,8 +529,8 @@ void lab_menu_focus_leg_power(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->leg_power + 1, price);
+                score_format(price, price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->leg_power + 1, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(556)); // TODO sprintf arm/leg
@@ -534,6 +539,8 @@ void lab_menu_focus_leg_power(component *c, bool focused, void *userdata) {
 }
 
 void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata) {
+    char tmp[200];
+    char price_str[32];
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
@@ -544,8 +551,8 @@ void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->arm_speed, (int)(price * 0.85));
+                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->arm_speed, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(557)); // TODO sprintf arm/leg
@@ -555,8 +562,8 @@ void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->arm_speed + 1, price);
+                score_format(price, price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->arm_speed + 1, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(558)); // TODO sprintf arm/leg
@@ -565,6 +572,8 @@ void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata) {
 }
 
 void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata) {
+    char tmp[200];
+    char price_str[32];
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
@@ -575,8 +584,8 @@ void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->leg_speed, (int)(price * 0.85));
+                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->leg_speed, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(559)); // TODO sprintf arm/leg
@@ -586,8 +595,8 @@ void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->leg_speed + 1, price);
+                score_format(price, price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->leg_speed + 1, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(560)); // TODO sprintf arm/leg
@@ -596,6 +605,8 @@ void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata) {
 }
 
 void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
+    char tmp[200];
+    char price_str[32];
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
@@ -606,8 +617,8 @@ void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->armor, (int)(price * 0.85));
+                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->armor, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(561));
@@ -617,8 +628,8 @@ void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->armor + 1, price);
+                score_format(price, price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->armor + 1, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(562));
@@ -627,6 +638,8 @@ void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
 }
 
 void lab_menu_focus_stun_resistance(component *c, bool focused, void *userdata) {
+    char tmp[200];
+    char price_str[32];
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
@@ -637,8 +650,8 @@ void lab_menu_focus_stun_resistance(component *c, bool focused, void *userdata) 
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->stun_resistance, (int)(price * 0.85));
+                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->stun_resistance, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(563));
@@ -648,8 +661,8 @@ void lab_menu_focus_stun_resistance(component *c, bool focused, void *userdata) 
             if(price < 1) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
-                char tmp[200];
-                snprintf(tmp, 200, "Level %d\n\n$ %dK", pilot->stun_resistance + 1, price);
+                score_format(price, price_str, sizeof(price_str));
+                snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->stun_resistance + 1, price_str);
                 label_set_text(label2, tmp);
             }
             mechlab_set_hint(s, lang_get(564));
