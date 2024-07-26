@@ -77,13 +77,14 @@ int main(int argc, char *argv[]) {
         }
 
         printf("Title: %s\n", ds->description);
-        printf("Data: %s\n", ds->data);
+        printf("Data:  %s\n", ds->data);
     } else {
         for(int i = 0; i < language.count; i++) {
             ds = sd_language_get(&language, i);
             if(ds != NULL) {
+                printf("ID:    %d\n", i);
                 printf("Title: %s\n", ds->description);
-                printf("Data: %s\n", ds->data);
+                printf("Data:  %s\n", ds->data);
             }
         }
     }
