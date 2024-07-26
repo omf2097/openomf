@@ -6,6 +6,7 @@
 #include "game/gui/text_render.h"
 #include "game/protos/scene.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
+#include "game/utils/formatting.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
 #include "resources/pathmanager.h"
@@ -287,15 +288,30 @@ void vs_render(scene *scene) {
         font_render_wrapped(&font_small, "Hmph. you'd think this remake would've been done by now, huh?", 59, 165, 220,
                             COLOR_YELLOW);
 
-        // FIXME: Missing information, and money is not the same as winnings.
-        char winnings[16];
-        snprintf(winnings, sizeof(winnings), "$ %u", player1->pilot->money);
+        char text[32];
+        char money[16];
         font_render_wrapped(&font_small, "FINANCIAL REPORT", 190, 6, 100, COLOR_GREEN);
+
         font_render(&font_small, "WINNINGS:", 190, 16, COLOR_DARK_GREEN);
-        font_render(&font_small, winnings, 250, 16, COLOR_GREEN);
+        score_format(scene->gs->fight_stats.winnings, money, sizeof(money));
+        snprintf(text, sizeof(text), "$ %sK", money);
+        font_render(&font_small, text, 250, 16, COLOR_GREEN);
+
         font_render(&font_small, "BONUSES:", 196, 24, COLOR_DARK_GREEN);
+        score_format(scene->gs->fight_stats.bonuses, money, sizeof(money));
+        snprintf(text, sizeof(text), "$ %sK", money);
+        font_render(&font_small, text, 250, 24, COLOR_GREEN);
+
         font_render(&font_small, "REPAIR COST:", 172, 32, COLOR_DARK_GREEN);
+        score_format(scene->gs->fight_stats.repair_cost, money, sizeof(money));
+        snprintf(text, sizeof(text), "$ %sK", money);
+        font_render(&font_small, text, 250, 32, COLOR_GREEN);
+
         font_render(&font_small, "PROFIT:", 202, 40, COLOR_DARK_GREEN);
+        score_format(scene->gs->fight_stats.profit, money, sizeof(money));
+        snprintf(text, sizeof(text), "$ %sK", money);
+        font_render(&font_small, text, 250, 40, COLOR_GREEN);
+
         font_render_wrapped(&font_small, "FIGHT STATISTICS", 210, 60, 60, COLOR_GREEN);
     } else {
         font_render_wrapped(&font_small, lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id), 59,

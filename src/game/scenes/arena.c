@@ -521,6 +521,8 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     object *winner = game_player_get_har(player_winner);
     object *loser = game_player_get_har(player_loser);
     har *winner_har = object_get_userdata(winner);
+    fight_stats *fight_stats = &gs->fight_stats;
+    memset(fight_stats, 0, sizeof(*fight_stats));
     // XXX need a smarter way to detect if a player is networked or local
     if(player_winner->ctrl->type != CTRL_TYPE_NETWORK && player_loser->ctrl->type == CTRL_TYPE_NETWORK) {
         scene_youwin_anim_start(scene->gs);
@@ -534,12 +536,28 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
             player_winner->pilot->wins++;
             player_loser->pilot->losses++;
             if(player_id == 1) {
+                fight_stats->winnings = player_loser->pilot->winnings;
+                // TODO The repair costs formula here is completely bogus
+                fight_stats->repair_cost = (1.0f - ((float)winner_har->health / (float)winner_har->health_max)) * 1000;
+                fight_stats->profit = fight_stats->winnings - fight_stats->repair_cost;
                 player_winner->pilot->rank--;
-                player_winner->pilot->money += player_loser->pilot->winnings;
+                // TODO Selling parts here is not implemented
+                if((int)player_winner->pilot->money + fight_stats->profit < 0) {
+                    player_winner->pilot->money = 0;
+                } else {
+                    player_winner->pilot->money += fight_stats->profit;
+                }
                 scene_youwin_anim_start(scene->gs);
             } else {
                 if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked)
                     player_loser->pilot->rank++;
+                fight_stats->repair_cost = 1000;
+                fight_stats->profit = -fight_stats->repair_cost;
+                if((int)player_loser->pilot->money + fight_stats->profit < 0) {
+                    player_loser->pilot->money = 0;
+                } else {
+                    player_loser->pilot->money += fight_stats->profit;
+                }
                 scene_youlose_anim_start(scene->gs);
             }
         }

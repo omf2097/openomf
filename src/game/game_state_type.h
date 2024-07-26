@@ -2,6 +2,7 @@
 #define GAME_STATE_TYPE_H
 
 #include "engine.h"
+#include "game/protos/fight_stats.h"
 #include "utils/vector.h"
 
 enum
@@ -60,6 +61,8 @@ typedef struct game_state_t {
     scene *sc;
     vector objects;
     game_player *players[2];
+
+    fight_stats fight_stats;
 } game_state;
 
 #endif // GAME_STATE_TYPE_H
