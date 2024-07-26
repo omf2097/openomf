@@ -248,6 +248,7 @@ void arena_screengrab_winner(scene *sc) {
 
 void arena_end(scene *sc) {
     game_state *gs = sc->gs;
+    fight_stats *fight_stats = &gs->fight_stats;
     int next_id;
 
     // Switch scene
@@ -257,6 +258,15 @@ void arena_end(scene *sc) {
         } while(next_id == sc->id);
         game_state_set_next(gs, next_id);
     } else if(is_singleplayer(sc) || is_tournament(sc)) {
+        game_player *p1 = game_state_get_player(gs, 0);
+        fight_stats->bonuses = game_player_get_score(p1)->score / 1000;
+        fight_stats->profit = fight_stats->bonuses + fight_stats->winnings - fight_stats->repair_cost;
+        // TODO Selling parts here is not implemented
+        if((int)p1->pilot->money + fight_stats->profit < 0) {
+            p1->pilot->money = 0;
+        } else {
+            p1->pilot->money += fight_stats->profit;
+        }
         game_state_set_next(gs, SCENE_NEWSROOM);
     } else if(is_twoplayer(sc)) {
         game_state_set_next(gs, SCENE_MELEE);
@@ -539,25 +549,12 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
                 fight_stats->winnings = player_loser->pilot->winnings;
                 // TODO The repair costs formula here is completely bogus
                 fight_stats->repair_cost = (1.0f - ((float)winner_har->health / (float)winner_har->health_max)) * 1000;
-                fight_stats->profit = fight_stats->winnings - fight_stats->repair_cost;
                 player_winner->pilot->rank--;
-                // TODO Selling parts here is not implemented
-                if((int)player_winner->pilot->money + fight_stats->profit < 0) {
-                    player_winner->pilot->money = 0;
-                } else {
-                    player_winner->pilot->money += fight_stats->profit;
-                }
                 scene_youwin_anim_start(scene->gs);
             } else {
                 if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked)
                     player_loser->pilot->rank++;
                 fight_stats->repair_cost = 1000;
-                fight_stats->profit = -fight_stats->repair_cost;
-                if((int)player_loser->pilot->money + fight_stats->profit < 0) {
-                    player_loser->pilot->money = 0;
-                } else {
-                    player_loser->pilot->money += fight_stats->profit;
-                }
                 scene_youlose_anim_start(scene->gs);
             }
         }
