@@ -25,6 +25,7 @@
 #include "game/objects/scrap.h"
 #include "game/protos/object.h"
 #include "game/scenes/arena.h"
+#include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/utils/score.h"
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
@@ -548,13 +549,15 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
             if(player_id == 1) {
                 fight_stats->winnings = player_loser->pilot->winnings;
                 // TODO The repair costs formula here is completely bogus
-                fight_stats->repair_cost = (1.0f - ((float)winner_har->health / (float)winner_har->health_max)) * 1000;
+                int trade_value = calculate_trade_value(player_winner->pilot) / 100;
+                float percentage = (float)winner_har->health / (float)winner_har->health_max;
+                fight_stats->repair_cost = (1.0f - percentage) * trade_value;
                 player_winner->pilot->rank--;
                 scene_youwin_anim_start(scene->gs);
             } else {
                 if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked)
                     player_loser->pilot->rank++;
-                fight_stats->repair_cost = 1000;
+                fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
                 scene_youlose_anim_start(scene->gs);
             }
         }
