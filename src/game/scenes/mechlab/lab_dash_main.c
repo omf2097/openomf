@@ -54,7 +54,6 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
     if(p1->chr) {
         sd_chr_free(p1->chr);
         omf_free(p1->chr);
-        p1->chr = NULL;
     }
     p1->chr = omf_calloc(1, sizeof(sd_chr_file));
     memcpy(p1->chr, ((sd_chr_file *)list_get(dw->savegames, dw->index)), sizeof(sd_chr_file));
@@ -148,7 +147,6 @@ void lab_dash_main_chr_done(component *menu, component *submenu) {
 
     list_free(dw->savegames);
     omf_free(dw->savegames);
-    dw->savegames = NULL;
 
     mechlab_update(dw->scene);
 }

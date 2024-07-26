@@ -254,7 +254,6 @@ void audio_close() {
             audio->xmp_context = NULL;
         }
         omf_free(audio);
-        audio = NULL;
     }
     Mix_Quit();
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
