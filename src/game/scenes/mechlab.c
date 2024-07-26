@@ -249,7 +249,6 @@ void mechlab_tick(scene *scene, int paused) {
             // force the character to reload because its just easier
             sd_chr_free(player1->chr);
             omf_free(player1->chr);
-            player1->chr = NULL;
             bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
             guiframe_free(local->frame);

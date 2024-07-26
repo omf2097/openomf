@@ -569,7 +569,6 @@ void object_set_animation(object *obj, animation *ani) {
     }
     omf_free(obj->custom_str);
 
-    obj->custom_str = NULL;
     obj->cur_animation = ani;
     obj->cur_animation_own = OWNER_EXTERNAL;
     player_reload(obj);
