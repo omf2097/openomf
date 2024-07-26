@@ -977,7 +977,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
             if(local->ending_ticks == 18) {
                 arena_screengrab_winner(scene);
             }
-            if(local->ending_ticks > 20) {
+            if(local->ending_ticks == 20) {
                 if(!local->over) {
                     arena_reset(scene);
                 } else {
