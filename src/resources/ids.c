@@ -86,6 +86,8 @@ const char *get_resource_file(unsigned int id) {
             return "SOUNDS.DAT";
         case DAT_ENGLISH:
             return "ENGLISH.DAT";
+        case DAT_GERMAN:
+            return "GERMAN.DAT";
         case DAT_GRAPHCHR:
             return "GRAPHCHR.DAT";
         case DAT_CHARSMAL:
@@ -190,6 +192,8 @@ const char *get_resource_name(unsigned int id) {
             return "DAT_SOUNDS";
         case DAT_ENGLISH:
             return "DAT_ENGLISH";
+        case DAT_GERMAN:
+            return "DAT_GERMAN";
         case DAT_GRAPHCHR:
             return "DAT_GRAPHCHR";
         case DAT_CHARSMAL:
