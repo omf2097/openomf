@@ -288,31 +288,66 @@ void vs_render(scene *scene) {
         font_render_wrapped(&font_small, "Hmph. you'd think this remake would've been done by now, huh?", 59, 165, 220,
                             COLOR_YELLOW);
 
+        fight_stats *fight_stats = &scene->gs->fight_stats;
         char text[32];
         char money[16];
         font_render_wrapped(&font_small, "FINANCIAL REPORT", 190, 6, 100, COLOR_GREEN);
 
         font_render(&font_small, "WINNINGS:", 190, 16, COLOR_DARK_GREEN);
-        score_format(scene->gs->fight_stats.winnings, money, sizeof(money));
+        score_format(fight_stats->winnings, money, sizeof(money));
         snprintf(text, sizeof(text), "$ %sK", money);
         font_render(&font_small, text, 250, 16, COLOR_GREEN);
 
         font_render(&font_small, "BONUSES:", 196, 24, COLOR_DARK_GREEN);
-        score_format(scene->gs->fight_stats.bonuses, money, sizeof(money));
+        score_format(fight_stats->bonuses, money, sizeof(money));
         snprintf(text, sizeof(text), "$ %sK", money);
         font_render(&font_small, text, 250, 24, COLOR_GREEN);
 
         font_render(&font_small, "REPAIR COST:", 172, 32, COLOR_DARK_GREEN);
-        score_format(scene->gs->fight_stats.repair_cost, money, sizeof(money));
+        score_format(fight_stats->repair_cost, money, sizeof(money));
         snprintf(text, sizeof(text), "$ %sK", money);
         font_render(&font_small, text, 250, 32, COLOR_GREEN);
 
         font_render(&font_small, "PROFIT:", 202, 40, COLOR_DARK_GREEN);
-        score_format(scene->gs->fight_stats.profit, money, sizeof(money));
+        score_format(fight_stats->profit, money, sizeof(money));
         snprintf(text, sizeof(text), "$ %sK", money);
         font_render(&font_small, text, 250, 40, COLOR_GREEN);
 
         font_render_wrapped(&font_small, "FIGHT STATISTICS", 210, 60, 60, COLOR_GREEN);
+
+        font_render(&font_small, "HITS LANDED:", 202, 79, COLOR_DARK_GREEN);
+        snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[0]);
+        font_render(&font_small, text, 276, 79, COLOR_GREEN);
+
+        font_render(&font_small, "AVERAGE DAMAGE:", 184, 86, COLOR_DARK_GREEN);
+        snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[0]);
+        font_render(&font_small, text, 276, 86, COLOR_GREEN);
+
+        font_render(&font_small, "FAILED ATTACKS:", 184, 93, COLOR_DARK_GREEN);
+        snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[0] - fight_stats->hits_landed[0]);
+        font_render(&font_small, text, 276, 93, COLOR_GREEN);
+
+        font_render(&font_small, "HIT/MISS RATIO:", 184, 100, COLOR_DARK_GREEN);
+        snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[0]);
+        font_render(&font_small, text, 276, 100, COLOR_GREEN);
+
+        font_render(&font_small, "OPPONENT", 210, 108, COLOR_GREEN);
+
+        font_render(&font_small, "HITS LANDED:", 202, 115, COLOR_DARK_GREEN);
+        snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[1]);
+        font_render(&font_small, text, 276, 115, COLOR_GREEN);
+
+        font_render(&font_small, "AVERAGE DAMAGE:", 184, 123, COLOR_DARK_GREEN);
+        snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[1]);
+        font_render(&font_small, text, 276, 123, COLOR_GREEN);
+
+        font_render(&font_small, "FAILED ATTACKS:", 184, 130, COLOR_DARK_GREEN);
+        snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[1] - fight_stats->hits_landed[1]);
+        font_render(&font_small, text, 276, 130, COLOR_GREEN);
+
+        font_render(&font_small, "HIT/MISS RATIO:", 184, 137, COLOR_DARK_GREEN);
+        snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[1]);
+        font_render(&font_small, text, 276, 137, COLOR_GREEN);
     } else {
         font_render_wrapped(&font_small, lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id), 59,
                             160, 150, COLOR_YELLOW);

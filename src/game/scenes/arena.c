@@ -260,6 +260,9 @@ void arena_end(scene *sc) {
         game_state_set_next(gs, next_id);
     } else if(is_singleplayer(sc) || is_tournament(sc)) {
         game_player *p1 = game_state_get_player(gs, 0);
+        game_player *p2 = game_state_get_player(gs, 1);
+        har *p1_har = object_get_userdata(game_player_get_har(p1));
+        har *p2_har = object_get_userdata(game_player_get_har(p2));
         fight_stats->bonuses = game_player_get_score(p1)->score / 1000;
         fight_stats->profit = fight_stats->bonuses + fight_stats->winnings - fight_stats->repair_cost;
         // TODO Selling parts here is not implemented
@@ -268,6 +271,22 @@ void arena_end(scene *sc) {
         } else {
             p1->pilot->money += fight_stats->profit;
         }
+
+        if(fight_stats->hits_landed[0] != 0) {
+            fight_stats->average_damage[0] =
+                (float)(p2_har->health_max - p2_har->health) / (float)fight_stats->hits_landed[0];
+        }
+        if(fight_stats->total_attacks[0] != 0) {
+            fight_stats->hit_miss_ratio[0] = 100 * fight_stats->hits_landed[0] / fight_stats->total_attacks[0];
+        }
+        if(fight_stats->hits_landed[1] != 0) {
+            fight_stats->average_damage[1] =
+                (float)(p1_har->health_max - p1_har->health) / (float)fight_stats->hits_landed[1];
+        }
+        if(fight_stats->total_attacks[1] != 0) {
+            fight_stats->hit_miss_ratio[1] = 100 * fight_stats->hits_landed[1] / fight_stats->total_attacks[1];
+        }
+
         game_state_set_next(gs, SCENE_NEWSROOM);
     } else if(is_twoplayer(sc)) {
         game_state_set_next(gs, SCENE_MELEE);
@@ -353,6 +372,13 @@ void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
 
     if(is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
         return; // netplay clients do not keep score
+    }
+    fight_stats *fight_stats = &scene->gs->fight_stats;
+    // FIXME: Unsure how to calculate airborne attacks, so prevent underflow like this.
+    int hitter = abs(hittee - 1);
+    fight_stats->hits_landed[hitter]++;
+    if(fight_stats->hits_landed[hitter] > fight_stats->total_attacks[hitter]) {
+        fight_stats->total_attacks[hitter] = fight_stats->hits_landed[hitter];
     }
 
     if(hittee == 1) {
@@ -533,7 +559,6 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     object *loser = game_player_get_har(player_loser);
     har *winner_har = object_get_userdata(winner);
     fight_stats *fight_stats = &gs->fight_stats;
-    memset(fight_stats, 0, sizeof(*fight_stats));
     // XXX need a smarter way to detect if a player is networked or local
     if(player_winner->ctrl->type != CTRL_TYPE_NETWORK && player_loser->ctrl->type == CTRL_TYPE_NETWORK) {
         scene_youwin_anim_start(scene->gs);
@@ -610,6 +635,7 @@ void arena_maybe_turn_har(int player_id, scene *scene) {
 
 void arena_har_hook(har_event event, void *data) {
     scene *scene = data;
+    fight_stats *fight_stats = &scene->gs->fight_stats;
     int other_player_id = abs(event.player_id - 1);
     arena_local *arena = scene_get_userdata(scene);
     chr_score *score = game_player_get_score(game_state_get_player(scene->gs, event.player_id));
@@ -635,6 +661,7 @@ void arena_har_hook(har_event event, void *data) {
             arena_har_hit_wall_hook(event.player_id, event.wall, scene);
             break;
         case HAR_EVENT_ATTACK:
+            fight_stats->total_attacks[event.player_id]++;
             if(object_is_airborne(obj_har1)) {
                 har1->air_attacked = 1;
                 DEBUG("AIR ATTACK %u", event.player_id);
@@ -1189,6 +1216,9 @@ int arena_create(scene *scene) {
 
     // Load up settings
     setting = settings_get();
+
+    fight_stats *fight_stats = &scene->gs->fight_stats;
+    memset(fight_stats, 0, sizeof(*fight_stats));
 
     // Initialize Demo
     if(is_demoplay(scene)) {
