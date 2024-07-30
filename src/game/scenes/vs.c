@@ -49,6 +49,8 @@ int vs_is_singleplayer(scene *scene) {
     return 0;
 }
 
+// Even indexes go to the left, odd to the right.
+// Welder does an additionale roll for the 3 places on the torso.
 vec2i spawn_position(int index, int scientist) {
     switch(index) {
         case 0:
@@ -540,15 +542,19 @@ int vs_create(scene *scene) {
 
     // WELDER
     int welderpos = rand_int(6);
-    // welder can't be on the same gantry or the same *side* as the scientist
-    // he also can't be on the same 'level'
-    // but he has 10 possible starting positions
-    while(((welderpos % 2) == (scientistpos % 2) && player2->pilot) || (scientistpos < 2 && welderpos < 2) ||
-          (scientistpos > 1 && welderpos > 1 && welderpos < 4)) {
-        welderpos = rand_int(6);
-        if(!player2->pilot && welderpos % 2 == 1) {
-            // no second HAR, so force the welder to a position on the left gantry
-            welderpos -= 1;
+    // On non-tournament mode, the welder cannot be on the same gantry or the
+    // same *side* as the scientist he also can't be on the same 'level' but he
+    // has 10 possible starting positions
+    if(player2->pilot) {
+        while((welderpos % 2) == (scientistpos % 2) || (scientistpos < 2 && welderpos < 2) ||
+              (scientistpos > 1 && welderpos > 1 && welderpos < 4)) {
+            welderpos = rand_int(6);
+        }
+    } else {
+        // On tournament mode, the welder cannot be on the same level as the
+        // scientist.
+        while((welderpos % 2) == 1 || (scientistpos == welderpos)) {
+            welderpos = rand_int(3) * 2;
         }
     }
     object *o_welder = omf_calloc(1, sizeof(object));
