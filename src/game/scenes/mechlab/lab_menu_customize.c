@@ -493,7 +493,8 @@ void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {
         } else {
             label_set_text(label1, "ARM POWER:\n\nUPGRADE COST:");
             int32_t price = arm_leg_prices[pilot->har_id][pilot->arm_power + 1];
-            if(price < 1) {
+            bool max_level = pilot->arm_power >= max_arm_power[pilot->har_id];
+            if(price < 1 || max_level) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
@@ -526,7 +527,8 @@ void lab_menu_focus_leg_power(component *c, bool focused, void *userdata) {
         } else {
             label_set_text(label1, "LEG POWER:\n\nUPGRADE COST:");
             int32_t price = arm_leg_prices[pilot->har_id][pilot->leg_power + 1];
-            if(price < 1) {
+            bool max_level = pilot->leg_power >= max_leg_power[pilot->har_id];
+            if(price < 1 || max_level) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
@@ -559,7 +561,8 @@ void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata) {
         } else {
             label_set_text(label1, "ARM SPEED:\n\nUPGRADE COST:");
             int32_t price = arm_leg_prices[pilot->har_id][pilot->arm_speed + 1];
-            if(price < 1) {
+            bool max_level = pilot->arm_speed >= max_arm_speed[pilot->har_id];
+            if(price < 1 || max_level) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
@@ -592,7 +595,8 @@ void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata) {
         } else {
             label_set_text(label1, "LEG SPEED:\n\nUPGRADE COST:");
             int32_t price = arm_leg_prices[pilot->har_id][pilot->leg_speed + 1];
-            if(price < 1) {
+            bool max_level = pilot->leg_speed >= max_leg_speed[pilot->har_id];
+            if(price < 1 || max_level) {
                 label_set_text(label2, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
