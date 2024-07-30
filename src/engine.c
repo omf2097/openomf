@@ -243,9 +243,6 @@ void engine_run(engine_init_flags *init_flags) {
             // Tick console
             console_tick();
 
-            // Tick video (tcache)
-            video_tick();
-
             static_wait -= 10;
         }
         while(dynamic_wait > game_state_ms_per_dyntick(gs) && limit_dynamic--) {

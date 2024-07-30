@@ -61,10 +61,7 @@ void video_draw_offset(const surface *src_surface, int x, int y, int offset, int
  */
 void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
 
-/**
- * @deprecated
- */
-void video_tick(void);
+void video_reset_atlas(void);
 
 void video_render_background(surface *sur);
 void video_render_prepare(void);

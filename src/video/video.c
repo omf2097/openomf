@@ -98,8 +98,8 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
     // Create the rest of the graphics objects
-    g_video_state.atlas = atlas_create(TEX_UNIT_ATLAS, 4096, 4096);
-    g_video_state.objects = object_array_create(4096.0f, 4096.0f);
+    g_video_state.atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
+    g_video_state.objects = object_array_create(2048.0f, 2048.0f);
     g_video_state.shared = shared_create();
     g_video_state.targets[0] = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
     g_video_state.targets[1] = render_target_create(TEX_UNIT_FBO2, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
