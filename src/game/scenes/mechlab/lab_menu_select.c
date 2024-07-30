@@ -22,11 +22,19 @@ void lab_menu_select_choose(component *c, void *userdata) {
 void lab_menu_select_left(component *c, void *userdata) {
     lab_menu_select_t *left = userdata;
     left->cb(c, left->data);
+    trnmenu *m = sizer_get_obj(c->parent);
+    m->selected = 0;
+    component *sel = sizer_get(c->parent, m->selected);
+    object_set_pos(m->hand.obj, vec2i_create(sel->x + sel->w / 2, sel->y + sel->h / 2));
 }
 
 void lab_menu_select_right(component *c, void *userdata) {
     lab_menu_select_t *right = userdata;
     right->cb(c, right->data);
+    trnmenu *m = sizer_get_obj(c->parent);
+    m->selected = 0;
+    component *sel = sizer_get(c->parent, m->selected);
+    object_set_pos(m->hand.obj, vec2i_create(sel->x + sel->w / 2, sel->y + sel->h / 2));
 }
 
 component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *selectdata, lab_menu_select_cb left,
