@@ -33,6 +33,21 @@ void *vector_get(const vector *vec, unsigned int key) {
     return (char *)(vec->data + vec->block_size * key);
 }
 
+void *vector_back(const vector *vec) {
+    if(vec->blocks <= 0) {
+        return NULL;
+    }
+    return (char *)(vec->data + vec->block_size * (vec->blocks - 1));
+}
+
+int vector_set(vector *vec, unsigned int key, const void *value) {
+    if(key >= vec->blocks)
+        return 1;
+    void *dst = (char *)(vec->data + key * vec->block_size);
+    memmove(dst, value, vec->block_size);
+    return 0;
+}
+
 int vector_grow(vector *vec) {
     void *ndata = omf_realloc(vec->data, vec->reserved * vec->block_size * vec->inc_factor);
     if(ndata == NULL)
@@ -47,7 +62,7 @@ int vector_append(vector *vec, const void *value) {
         return 1;
     }
     void *dst = (char *)(vec->data + vec->blocks * vec->block_size);
-    memcpy(dst, value, vec->block_size);
+    memmove(dst, value, vec->block_size);
     vec->blocks++;
     return 0;
 }
@@ -65,6 +80,33 @@ int vector_prepend(vector *vec, const void *value) {
 
 unsigned int vector_size(const vector *vec) {
     return vec->blocks;
+}
+
+void vector_pop(vector *vec) {
+    if(vec->blocks > 0) {
+        vec->blocks--;
+    }
+}
+
+int vector_delete_at(vector *vec, int index) {
+    if(vec->blocks == 0)
+        return 1;
+
+    // If this is NOT the last entry, we need to do memmove.
+    if(index + 1 < vec->blocks) {
+        void *dst = vec->data + index * vec->block_size;
+        void *src = vec->data + (index + 1) * vec->block_size;
+        unsigned int size = (vec->blocks - 1 - index) * vec->block_size;
+        memmove(dst, src, size);
+    }
+
+    // We deleted an entry, so blocks-1
+    if(vec->blocks > 0) {
+        vec->blocks--;
+    }
+
+    // Return success
+    return 0;
 }
 
 int vector_delete(vector *vec, iterator *iter) {

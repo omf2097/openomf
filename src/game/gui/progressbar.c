@@ -9,33 +9,33 @@
 #include "video/video.h"
 
 const progressbar_theme _progressbar_theme_health = {
-    .border_topleft_color = {60,  0,  60,  255},
-    .border_bottomright_color = {178, 0,  223, 255},
-    .bg_color = {89,  40, 101, 255},
-    .bg_color_alt = {89,  40, 101, 255},
-    .int_topleft_color = {255, 0,  0,   255},
-    .int_bottomright_color = {158, 0,  0,   255},
-    .int_bg_color = {255, 56, 109, 255},
+    .border_topleft_color = 0xB9,
+    .border_bottomright_color = 0xBE,
+    .bg_color = 0xF9,
+    .bg_color_alt = 0xF9,
+    .int_topleft_color = 0xB7,
+    .int_bottomright_color = 0xB4,
+    .int_bg_color = 0xF6,
 };
 
 const progressbar_theme _progressbar_theme_endurance = {
-    .border_topleft_color = {60,  0,   60,  255},
-    .border_bottomright_color = {178, 0,   223, 255},
-    .bg_color = {89,  40,  101, 255},
-    .bg_color_alt = {178, 0,   223, 255},
-    .int_topleft_color = {24,  117, 138, 255},
-    .int_bottomright_color = {0,   69,  93,  255},
-    .int_bg_color = {97,  150, 186, 255},
+    .border_topleft_color = 0xB9,
+    .border_bottomright_color = 0xBE,
+    .bg_color = 0xF9,
+    .bg_color_alt = 0xBE,
+    .int_topleft_color = 0xE2,
+    .int_bottomright_color = 0xE0,
+    .int_bg_color = 0xF8,
 };
 
 const progressbar_theme _progressbar_theme_melee = {
-    .border_topleft_color = {0,  96,  0,  255},
-    .border_bottomright_color = {0,  96,  0,  255},
-    .bg_color = {80, 220, 80, 0  },
-    .bg_color_alt = {80, 220, 80, 0  },
-    .int_topleft_color = {0,  255, 0,  255},
-    .int_bottomright_color = {0,  125, 0,  255},
-    .int_bg_color = {0,  190, 0,  255},
+    .border_topleft_color = 0xA2,
+    .border_bottomright_color = 0xA2,
+    .bg_color = 0,
+    .bg_color_alt = 0,
+    .int_topleft_color = 0xA7,
+    .int_bottomright_color = 0xA3,
+    .int_bg_color = 0xA5,
 };
 
 typedef struct {
@@ -96,24 +96,22 @@ static void progressbar_render(component *c) {
                 bar->block = omf_calloc(1, sizeof(surface));
             }
             surface_create_from_image(bar->block, &tmp);
-            surface_force_refresh(bar->block);
             image_free(&tmp);
         } else {
             omf_free(bar->block);
         }
     }
 
-    // Render backgrond (flashing or not)
+    // Render background (flashing or not)
     if(bar->state) {
-        video_render_sprite(bar->background_alt, c->x, c->y, BLEND_ALPHA, 0);
+        video_draw(bar->background_alt, c->x, c->y);
     } else {
-        video_render_sprite(bar->background, c->x, c->y, BLEND_ALPHA, 0);
+        video_draw(bar->background, c->x, c->y);
     }
 
     // Render block
     if(bar->block != NULL) {
-        video_render_sprite(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w + 1),
-                            c->y, BLEND_ALPHA, 0);
+        video_draw(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w + 1), c->y);
     }
 }
 

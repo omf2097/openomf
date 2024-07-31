@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// clang-format off
 #define F_INT(struct_, var, def)                                                                                       \
     { #var, {.i = def }, TYPE_INT, offsetof(struct_, var) }
 #define F_BOOL(struct_, var, def)                                                                                      \
@@ -20,6 +21,7 @@
 
 #define S_2_F(struct_, field)                                                                                          \
     { struct_, field, NFIELDS(field) }
+// clang-format on
 
 static settings _settings;
 static const char *settings_path;
@@ -56,8 +58,7 @@ const field f_video[] = {
     F_INT(settings_video, screen_w, 640),    F_INT(settings_video, screen_h, 400),
     F_BOOL(settings_video, vsync, 0),        F_BOOL(settings_video, fullscreen, 0),
     F_INT(settings_video, scaling, 0),       F_BOOL(settings_video, instant_console, 0),
-    F_BOOL(settings_video, crossfade_on, 1), F_STRING(settings_video, scaler, "Nearest"),
-    F_INT(settings_video, scale_factor, 1),
+    F_BOOL(settings_video, crossfade_on, 1),
 };
 
 const field f_sound[] = {F_BOOL(settings_sound, music_mono, 0), F_INT(settings_sound, sound_vol, 5),

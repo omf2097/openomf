@@ -39,7 +39,7 @@ component *lab_menu_confirm_create(scene *s, lab_menu_select_cb yes, void *yesda
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
-    tconf.cforeground = color_create(0, 0, 123, 255);
+    tconf.cforeground = TEXT_TRN_BLUE;
 
     tconf.valign = TEXT_MIDDLE;
     tconf.halign = TEXT_CENTER;
@@ -73,7 +73,7 @@ component *lab_menu_confirm_create(scene *s, lab_menu_select_cb yes, void *yesda
     trnmenu_attach(menu, button);
 
     // Add text label
-    tconf.cforeground = COLOR_DARK_GREEN;
+    tconf.cforeground = TEXT_MEDIUM_GREEN;
     component *label = label_create(&tconf, title);
     component_set_pos_hints(label, 10, 155);
     component_set_size_hints(label, 300, 10);

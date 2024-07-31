@@ -64,7 +64,7 @@ component *lab_menu_difficultyselect_create(scene *s) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
-    tconf.cforeground = color_create(0, 0, 123, 255);
+    tconf.cforeground = TEXT_TRN_BLUE;
 
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
@@ -85,7 +85,7 @@ component *lab_menu_difficultyselect_create(scene *s) {
     }
 
     // Add text label
-    tconf.cforeground = COLOR_DARK_GREEN;
+    tconf.cforeground = TEXT_MEDIUM_GREEN;
     component *label = label_create(&tconf, "SELECT A DIFFICULTY LEVEL");
     component_set_pos_hints(label, 87, 155);
     component_set_size_hints(label, 150, 10);

@@ -1,5 +1,6 @@
 #include "utils/str.h"
 #include "utils/allocator.h"
+#include "utils/io.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 
@@ -8,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define READ_BLOCK_SIZE (1024)
 
 #define STR_ALLOC(string, size)                                                                                        \
     do {                                                                                                               \
@@ -40,6 +43,15 @@ void str_from_c(str *dst, const char *src) {
 void str_from_buf(str *dst, const char *buf, size_t len) {
     STR_ALLOC(dst, len);
     memcpy(dst->data, buf, len);
+    STR_ZERO(dst);
+}
+
+void str_from_file(str *dst, const char *file_name) {
+    FILE *handle = file_open(file_name, "rb");
+    long size = file_size(handle);
+    STR_ALLOC(dst, size + 1);
+    file_read(handle, dst->data, size);
+    file_close(handle);
     STR_ZERO(dst);
 }
 
@@ -151,7 +163,7 @@ void str_append_buf(str *dst, const char *buf, size_t len) {
     STR_ZERO(dst);
 }
 
-static bool _find_next(const str *string, char find, size_t *pos) {
+bool str_find_next(const str *string, char find, size_t *pos) {
     for(size_t i = *pos; i < string->len; i++) {
         if(string->data[i] == find) {
             *pos = i;
@@ -176,7 +188,7 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
     int found = 0;
     size_t diff = replacement_len - seek_len;
     size_t current_pos = 0;
-    while(_find_next(dst, seek[0], &current_pos) && (found < limit || limit < 0)) {
+    while(str_find_next(dst, seek[0], &current_pos) && (found < limit || limit < 0)) {
         if(strncmp(dst->data + current_pos, seek, seek_len) == 0) {
             if(diff > 0) { // Grow first, before move.
                 STR_REALLOC(dst, dst->len + diff);

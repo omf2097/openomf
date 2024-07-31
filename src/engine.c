@@ -27,8 +27,6 @@ int engine_init() {
     int h = setting->video.screen_h;
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
-    int scale_factor = setting->video.scale_factor;
-    char *scaler = setting->video.scaler;
     int frequency = setting->sound.music_frequency;
     int resampler = setting->sound.music_resampler;
     bool mono = setting->sound.music_mono;
@@ -36,7 +34,7 @@ int engine_init() {
     float sound_volume = setting->sound.sound_vol / 10.0;
 
     // Initialize everything.
-    if(video_init(w, h, fs, vsync, scaler, scale_factor))
+    if(video_init(w, h, fs, vsync))
         goto exit_0;
     if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
@@ -80,7 +78,7 @@ void engine_run(engine_init_flags *init_flags) {
     int debugger_render = 0;
 
     // if mouse_visible_ticks <= 0, hide mouse
-    int mouse_visible_ticks = 1000;
+    uint64_t mouse_visible_ticks = 1000;
 
     INFO(" --- BEGIN GAME LOG ---");
 
@@ -112,7 +110,7 @@ void engine_run(engine_init_flags *init_flags) {
     }
 
     // Game loop
-    int frame_start = SDL_GetTicks();
+    uint64_t frame_start = SDL_GetTicks64(); // Set game tick timer
     int dynamic_wait = 0;
     int static_wait = 0;
     while(run && game_state_is_running(gs)) {
@@ -127,6 +125,12 @@ void engine_run(engine_init_flags *init_flags) {
                 case SDL_KEYDOWN:
                     if(e.key.keysym.sym == SDLK_F1) {
                         take_screenshot = 1;
+                    }
+                    if(e.key.keysym.sym == SDLK_F9) {
+                        video_draw_atlas(true);
+                    }
+                    if(e.key.keysym.sym == SDLK_F10) {
+                        video_draw_atlas(false);
                     }
                     if(e.key.keysym.sym == SDLK_F5) {
                         visual_debugger = !visual_debugger;
@@ -197,7 +201,7 @@ void engine_run(engine_init_flags *init_flags) {
 
         // hide mouse after n ticks
         if(mouse_visible_ticks > 0) {
-            mouse_visible_ticks -= SDL_GetTicks() - frame_start;
+            mouse_visible_ticks -= SDL_GetTicks64() - frame_start;
             if(mouse_visible_ticks <= 0) {
                 SDL_ShowCursor(0);
             }
@@ -207,11 +211,11 @@ void engine_run(engine_init_flags *init_flags) {
         game_state_tick_controllers(gs);
 
         // Render scene
-        int dt = (SDL_GetTicks() - frame_start);
-        frame_start = SDL_GetTicks(); // Reset timer
+        uint64_t frame_dt = SDL_GetTicks64() - frame_start;
+        frame_start = SDL_GetTicks64();
         if(!visual_debugger) {
-            dynamic_wait += dt;
-            static_wait += dt;
+            dynamic_wait += frame_dt;
+            static_wait += frame_dt;
         } else if(debugger_proceed) {
             dynamic_wait += 20;
             static_wait += 20;
@@ -220,14 +224,11 @@ void engine_run(engine_init_flags *init_flags) {
         int limit_static = 100;
         int limit_dynamic = 100;
         while(static_wait > 10 && limit_static--) {
-            // Static tick for gamestate
+            // Static tick for game state
             game_state_static_tick(gs);
 
             // Tick console
             console_tick();
-
-            // Tick video (tcache)
-            video_tick();
 
             static_wait -= 10;
         }
@@ -252,19 +253,15 @@ void engine_run(engine_init_flags *init_flags) {
 
             // If screenshot requested, do it here.
             if(take_screenshot) {
-                image img;
-                int failed_screenshot = video_screenshot(&img);
-                if(!failed_screenshot) {
-                    snprintf(screenshot_filename, 128, "screenshot_%u.png", SDL_GetTicks());
-                    int scr_ret = image_write_png(&img, screenshot_filename);
-                    if(scr_ret) {
-                        PERROR("Screenshot write operation failed (%s)", screenshot_filename);
-                    } else {
-                        DEBUG("Got a screenshot: %s", screenshot_filename);
-                    }
+                surface sur;
+                video_screenshot(&sur);
+                snprintf(screenshot_filename, 128, "screenshot_%u.png", SDL_GetTicks());
+                if(surface_write_png(&sur, video_get_pal_ref(), screenshot_filename)) {
+                    DEBUG("Got a screenshot: %s", screenshot_filename);
+                } else {
+                    PERROR("Screenshot write operation failed (%s)", screenshot_filename);
                 }
-
-                image_free(&img);
+                surface_free(&sur);
                 take_screenshot = 0;
             }
         } else {

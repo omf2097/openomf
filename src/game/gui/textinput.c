@@ -9,9 +9,9 @@
 #include "video/image.h"
 #include "video/video.h"
 
-#define COLOR_MENU_LINE color_create(0, 0, 89, 255)
-#define COLOR_MENU_BORDER color_create(0, 0, 243, 255)
-#define COLOR_MENU_BG color_create(4, 4, 16, 210)
+#define COLOR_MENU_LINE 252
+#define COLOR_MENU_BORDER 251
+#define COLOR_MENU_BG 0
 
 typedef struct {
     char *text;
@@ -29,12 +29,12 @@ static void textinput_render(component *c) {
     int chars = strlen(tb->buf);
 
     if(tb->bg_enabled) {
-        video_render_sprite(&tb->sur, c->x + (c->w - tb->sur.w) / 2, c->y - 2, BLEND_ALPHA, 0);
+        video_draw(&tb->sur, c->x + (c->w - tb->sur.w) / 2, c->y - 2);
     }
 
     if(component_is_selected(c)) {
         if(chars > 0) {
-            tb->tconf.cforeground = color_create(80, 220, 80, 255);
+            tb->tconf.cforeground = TEXT_BLINKY_GREEN;
             tb->buf[chars] = '\x7F';
             tb->buf[chars + 1] = 0;
             text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
@@ -42,17 +42,17 @@ static void textinput_render(component *c) {
         }
     } else if(component_is_disabled(c)) {
         if(chars > 0) {
-            tb->tconf.cforeground = color_create(121, 121, 121, 255);
+            tb->tconf.cforeground = 0xC0;
             text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
         }
     } else {
         if(chars > 0) {
-            tb->tconf.cforeground = COLOR_DARK_GREEN;
+            tb->tconf.cforeground = TEXT_MEDIUM_GREEN;
             text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
         }
     }
     if(chars == 0) {
-        tb->tconf.cforeground = color_create(121, 121, 121, 255);
+        tb->tconf.cforeground = 0xC0;
         text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->text);
     }
 }
