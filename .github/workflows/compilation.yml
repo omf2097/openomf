@@ -112,7 +112,7 @@ jobs:
         key: omf2097-assets.zip
 
     - name: Extract omf 2097 assets
-      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
+      run: sudo unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
 
     - name: Generate TGZ package
       run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz -C build-release/release/ .
