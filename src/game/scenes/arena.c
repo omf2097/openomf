@@ -75,6 +75,7 @@ void write_rec_move(scene *scene, game_player *player, int action);
 
 void game_menu_quit(component *c, void *userdata) {
     scene *s = userdata;
+    s->gs->fight_stats.plug_text = PLUG_FORFEIT;
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 0)), 1);
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 1)), 1);
     game_player *player1 = game_state_get_player(((scene *)userdata)->gs, 0);
@@ -285,6 +286,18 @@ void arena_end(scene *sc) {
         }
         if(fight_stats->total_attacks[1] != 0) {
             fight_stats->hit_miss_ratio[1] = 100 * fight_stats->hits_landed[1] / fight_stats->total_attacks[1];
+        }
+        if(fight_stats->winner == 0) {
+            int hp_left_percent = 100 * p1_har->health / p1_har->health_max;
+            if(hp_left_percent >= 75) {
+                fight_stats->plug_text = PLUG_WIN_BIG + rand_int(3);
+            } else if(hp_left_percent >= 50) {
+                fight_stats->plug_text = PLUG_WIN_OK + rand_int(3);
+            } else {
+                fight_stats->plug_text = PLUG_WIN + rand_int(3);
+            }
+        } else {
+            fight_stats->plug_text = PLUG_LOSE + rand_int(5);
         }
 
         game_state_set_next(gs, SCENE_NEWSROOM);
@@ -559,6 +572,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     object *loser = game_player_get_har(player_loser);
     har *winner_har = object_get_userdata(winner);
     fight_stats *fight_stats = &gs->fight_stats;
+    fight_stats->winner = other_player_id;
     // XXX need a smarter way to detect if a player is networked or local
     if(player_winner->ctrl->type != CTRL_TYPE_NETWORK && player_loser->ctrl->type == CTRL_TYPE_NETWORK) {
         scene_youwin_anim_start(scene->gs);

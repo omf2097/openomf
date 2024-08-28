@@ -2,6 +2,9 @@
 #define FIGHT_STATS_H
 
 typedef struct fight_stats_t {
+    int winner;
+    unsigned plug_text;
+
     int winnings;
     int bonuses;
     int repair_cost;
@@ -12,5 +15,12 @@ typedef struct fight_stats_t {
     unsigned total_attacks[2];
     unsigned hit_miss_ratio[2];
 } fight_stats;
+
+#define PLUG_TEXT_START 587
+#define PLUG_FORFEIT 1
+#define PLUG_LOSE 2
+#define PLUG_WIN 7
+#define PLUG_WIN_OK 10
+#define PLUG_WIN_BIG 13
 
 #endif // FIGHT_STATS_H
