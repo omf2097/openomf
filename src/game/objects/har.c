@@ -2365,3 +2365,7 @@ void har_reset(object *obj) {
     har_set_ani(obj, ANIM_IDLE, 1);
     object_set_stride(obj, h->stride);
 }
+
+int16_t har_health_percent(har *h) {
+    return 100 * h->health / h->health_max;
+}
