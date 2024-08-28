@@ -288,7 +288,7 @@ void arena_end(scene *sc) {
             fight_stats->hit_miss_ratio[1] = 100 * fight_stats->hits_landed[1] / fight_stats->total_attacks[1];
         }
         if(fight_stats->winner == 0) {
-            int hp_left_percent = 100 * p1_har->health / p1_har->health_max;
+            int16_t hp_left_percent = har_health_percent(p1_har);
             if(hp_left_percent >= 75) {
                 fight_stats->plug_text = PLUG_WIN_BIG + rand_int(3);
             } else if(hp_left_percent >= 50) {
@@ -606,7 +606,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     score->rounds++;
     if(score->rounds >= ceilf(local->rounds / 2.0f)) {
         har_set_ani(winner, ANIM_VICTORY, 0);
-        chr_score_victory(score, winner_har->health);
+        chr_score_victory(score, har_health_percent(winner_har));
         winner_har->state = STATE_VICTORY;
         local->over = 1;
         if(is_singleplayer(scene)) {
