@@ -150,7 +150,7 @@ jobs:
   build_macos-arm:
     needs: [unittest, formatting-check]
 
-    name: Build macos-14
+    name: Build macos-14-arm
     runs-on: macos-14
 
     steps:
@@ -204,6 +204,67 @@ jobs:
       with:
         name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm
         path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm.dmg
+        if-no-files-found: error
+
+  # Build macos package, release artifact and update "latest" release if necessary.
+  # -----------------------------------------------------------------------------------------------
+  build_macos-intel:
+    needs: [unittest, formatting-check]
+
+    name: Build macos-14-intel
+    runs-on: macos-14-large
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Mac Dependencies
+      run: |
+        brew update
+        brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng
+        brew install create-dmg
+
+    - name: Generate Release
+      run: |
+        mkdir build-release && cd build-release
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
+        make -j $(getconf _NPROCESSORS_ONLN)
+        make -j $(getconf _NPROCESSORS_ONLN) install
+
+    - name: Restore omf2097-assets.zip
+      id: cache-assets
+      uses: actions/cache/restore@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
+
+    - name: Download omf 2097 assets
+      if: steps.cache-assets.outputs.cache-hit != 'true'
+      run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
+
+    - name: Cache omf2097-assets.zip
+      uses: actions/cache/save@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
+
+    - name: Extract omf 2097 assets
+      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
+
+    - name: Get short SHA
+      id: slug
+      run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
+
+    - name: Generate DMG package
+      run: |
+        cd build-release/release
+        create-dmg --volname "OpenOMF" \
+          "${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_intel.dmg" .
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_intel
+        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_intel.dmg
         if-no-files-found: error
 
   # Build windows package, release artifact and update "latest" release if necessary.
@@ -279,7 +340,7 @@ jobs:
   # Create a "latest" release
   # -----------------------------------------------------------------------------------------------
   make_release:
-    needs: [build_windows, build_macos-arm, build_ubuntu]
+    needs: [build_windows, build_macos-arm, build_macos-intel, build_ubuntu]
     if: github.ref == 'refs/heads/master'
 
     name: Make "latest" release
