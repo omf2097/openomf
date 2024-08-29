@@ -21,12 +21,12 @@ Required:
 
 On Ubuntu, it is possible to pull some libraries using apt-get.
 ```
-apt-get install libsdl2-dev libsdl2-mixer-dev libpng-dev libconfuse-dev libenet-dev libargtable2-dev libxmp-dev
+apt-get install cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
 ```
 
 On Mac, you can use brew:
 ```
-brew install argtable sdl2_mixer confuse enet sdl2 libxmp libpng
+brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng
 ```
 
 ### Acquiring the sources
