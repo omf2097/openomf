@@ -48,7 +48,7 @@ void sd_pilot_load_player_from_mem(memreader *mr, sd_pilot *pilot) {
 
     pilot->offense = memread_uword(mr);
     pilot->defense = memread_uword(mr);
-    pilot->money = memread_udword(mr);
+    pilot->money = memread_dword(mr);
     sd_pilot_set_player_color(pilot, PRIMARY, memread_ubyte(mr));
     sd_pilot_set_player_color(pilot, SECONDARY, memread_ubyte(mr));
     sd_pilot_set_player_color(pilot, TERTIARY, memread_ubyte(mr));
@@ -181,7 +181,7 @@ void sd_pilot_save_player_to_mem(memwriter *w, const sd_pilot *pilot) {
 
     memwrite_uword(w, pilot->offense);
     memwrite_uword(w, pilot->defense);
-    memwrite_udword(w, pilot->money);
+    memwrite_dword(w, pilot->money);
     memwrite_ubyte(w, pilot->color_1);
     memwrite_ubyte(w, pilot->color_2);
     memwrite_ubyte(w, pilot->color_3);
