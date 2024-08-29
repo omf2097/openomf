@@ -1,36 +1,5 @@
 # OpenOMF Installation
 
-## Installation from packages
-
-Latest experimental binaries for windows, macOS and ubuntu are available at
-https://github.com/omf2097/openomf/releases/tag/latest . These binaries may
-not always work correctly, but they will be following the git status very
-closely. So, if you want to test the latest features, this is for you.
-
-Official releases are (somewhat) stable, but don't necessary come with all
-the latest bells and whistles. However, if you wish to try them, they will
-be available at https://github.com/omf2097/openomf/releases . Installation
-instructions are also available there.
-
-### Windows
-
-1. Download an appropriate zip file. For 64bit computers, win64 package is available.
-   If you do not know which package to download, get the "-win32.zip" version.
-2. Extract the zip file somewhere on your computer. If possible, use a directory other
-   than "C:\Program Files".
-3. [optional] If you wish, you may install an xBRZ sprite scaler plugin.
-   This can be found from https://github.com/omf2097/openomf-scaler-xbrz/releases .
-   Note that this is not necessary for running the game.
-4. Start the game by running openomf.exe.
-
-### Ubuntu
-
-1. Download an appropriate .deb file for your architecture (NOTE! 32bit not currently available!).
-2. Install the package. You can either run dpkg -i <packagefile> or do it by using graphical tools
-   in your distribution. Note that currently the packages are only tested on Ubuntu; Debian may or
-   may not work.
-3. Start the game by running ./openomf on command line.
-
 ## Compiling from source
 
 Compiling from source should be your last option, unless you know what you are doing!
