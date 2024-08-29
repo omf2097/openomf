@@ -15,7 +15,20 @@ For mode detailed information about the project, please see [http://www.openomf.
 
 Installation
 ------------
-For installing & compiling, please see [BUILD.md](BUILD.md).
+
+### Ubuntu
+
+1. Download the latest .deb package from https://github.com/omf2097/openomf/releases/tag/latest
+2. Run `sudo apt install ./openomf_<version>_amd64.deb`
+
+### Windows
+
+1. Download the latest windows package from https://github.com/omf2097/openomf/releases/tag/latest
+2. Extract the zip file somewhere
+
+Build
+-----
+For compiling from sources, please see [BUILD.md](BUILD.md).
 
 License
 -------
