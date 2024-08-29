@@ -15,7 +15,7 @@ For mode detailed information about the project, please see [http://www.openomf.
 
 Installation
 ------------
-For installing & compiling, please see [INSTALL.md](https://github.com/omf2097/openomf/blob/master/INSTALL.md).
+For installing & compiling, please see [BUILD.md](BUILD.md).
 
 License
 -------
