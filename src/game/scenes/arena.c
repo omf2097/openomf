@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -266,13 +267,9 @@ void arena_end(scene *sc) {
         har *p2_har = object_get_userdata(game_player_get_har(p2));
         fight_stats->bonuses = game_player_get_score(p1)->score / 1000;
         fight_stats->profit = fight_stats->bonuses + fight_stats->winnings - fight_stats->repair_cost;
+        bool warning_given = p1->pilot->money < 0;
         // TODO Selling parts here is not implemented
-        if((int)p1->pilot->money + fight_stats->profit < 0) {
-            p1->pilot->money = 0;
-        } else {
-            p1->pilot->money += fight_stats->profit;
-        }
-
+        p1->pilot->money += fight_stats->profit;
         if(fight_stats->hits_landed[0] != 0) {
             fight_stats->average_damage[0] =
                 (float)(p2_har->health_max - p2_har->health) / (float)fight_stats->hits_landed[0];
@@ -296,6 +293,12 @@ void arena_end(scene *sc) {
             } else {
                 fight_stats->plug_text = PLUG_WIN + rand_int(3);
             }
+        } else if(warning_given && p1->pilot->money < 0) {
+            fight_stats->plug_text = PLUG_KICK_OUT;
+            p1->pilot->money = 0;
+            sd_pilot_exit_tournament(p1->pilot);
+        } else if(p1->pilot->money < 0) {
+            fight_stats->plug_text = PLUG_WARNING;
         } else {
             fight_stats->plug_text = PLUG_LOSE + rand_int(5);
         }

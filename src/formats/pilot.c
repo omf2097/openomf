@@ -310,3 +310,10 @@ void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t colo
             break;
     }
 }
+
+void sd_pilot_exit_tournament(sd_pilot *pilot) {
+    pilot->rank = 0;
+    pilot->trn_name[0] = '\0';
+    pilot->trn_desc[0] = '\0';
+    pilot->trn_image[0] = '\0';
+}
