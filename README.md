@@ -19,11 +19,11 @@ For installing & compiling, please see [BUILD.md](BUILD.md).
 
 License
 -------
-OpenOMF is developed under the MIT License. Please read [LICENSE](https://github.com/omf2097/openomf/blob/master/LICENSE) for more information.
+OpenOMF is developed under the MIT License. Please read [LICENSE](LICENSE) for more information.
 
 Contribute
 ----------
-For guidelines on contributing, please see [CONTRIBUTING.md](https://github.com/omf2097/openomf/blob/master/CONTRIBUTING.md).
+For guidelines on contributing, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Contact
 -------
