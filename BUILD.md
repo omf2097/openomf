@@ -1,9 +1,5 @@
 # OpenOMF Installation
 
-## Compiling from source
-
-Compiling from source should be your last option, unless you know what you are doing!
-
 ### Dependencies
 
 Use at least GCC 9 or Clang 10. MSVC is not supported at this time.
@@ -88,9 +84,3 @@ Note! Only BK,AF,PIC,TRN,PSM and DAT files are required, others may be removed t
 You can override these default paths by setting the OPENOMF_RESOURCE_DIR environment
 variable to an absolute directory. Plugins have a similar environment variable called
 OPENOMF_PLUGIN_DIR.
-
-## Play the game!
-
-Start the game by running the main binary. If there are problems, please contact us by either
-making an issue ticket, or at #omf @ freenode in IRC (mode details in the
-[README.md](https://github.com/omf2097/openomf/blob/master/README.md)).
