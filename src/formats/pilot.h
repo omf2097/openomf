@@ -44,7 +44,7 @@ typedef struct {
     uint8_t endurance;       ///< Pilot endurance (1-25).
     uint16_t offense;        ///< Offense preference value (100 high, should be under 200).
     uint16_t defense;        ///< Defense preference value (100 high, should be under 200).
-    uint32_t money;          ///< Amount of money the pilot currently has
+    int32_t money;           ///< Amount of money the pilot currently has
     uint8_t color_1;         ///< Color 1 field for the HAR (0-15). 255 means random.
     uint8_t color_2;         ///< Color 2 field for the HAR (0-15). 255 means random.
     uint8_t color_3;         ///< Color 3 field for the HAR (0-15). 255 means random.
