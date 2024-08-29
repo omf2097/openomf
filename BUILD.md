@@ -68,7 +68,7 @@ formatter to the entire codebase.
 
 OpenOMF loads the original data files from the original OMF:2097 game.
 Since One Must Fall 2079 is freeware, the files are obtainable for free from
-[www.omf2097.com](http://www.omf2097.com/pub/files/omf/omf2097.rar).
+[www.omf2097.com](http://www.omf2097.com/pub/files/omf/omf2097-assets.zip).
 
 On linux in debug mode, the OMF resource files should be put in resources/ subdirectory.
 
@@ -78,8 +78,6 @@ be put in /usr/local/share/games/openomf/. With release or testing packages,
 the resources should be extracted to /usr/share/games/openomf/.
 
 On macOS and windows, the resources should be put into the resources/ subdirectory.
-
-Note! Only BK,AF,PIC,TRN,PSM and DAT files are required, others may be removed to save space.
 
 You can override these default paths by setting the OPENOMF_RESOURCE_DIR environment
 variable to an absolute directory. Plugins have a similar environment variable called
