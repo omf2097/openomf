@@ -210,17 +210,10 @@ jobs:
     needs: [unittest, formatting-check]
 
     name: Build windows-amd64
-    runs-on: ubuntu-latest
+    runs-on: windows-22
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get -y install mingw-w64 unzip
-        wget -q https://github.com/omf2097/openomf-win-build/archive/refs/heads/main.zip
-        unzip -q main.zip && rm main.zip
 
     - name: Generate Windows Release
       run: |
