@@ -22,5 +22,7 @@ typedef struct fight_stats_t {
 #define PLUG_WIN 7
 #define PLUG_WIN_OK 10
 #define PLUG_WIN_BIG 13
+#define PLUG_WARNING 16
+#define PLUG_KICK_OUT 17
 
 #endif // FIGHT_STATS_H

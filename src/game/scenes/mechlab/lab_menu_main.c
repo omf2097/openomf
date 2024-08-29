@@ -205,7 +205,7 @@ static const spritebutton_focus_cb focus_cbs[] = {
     lab_menu_focus_new,   lab_menu_focus_delete,   lab_menu_focus_sim, lab_menu_focus_quit, lab_menu_focus_tournament,
 };
 
-void lab_menu_tick_arena(component *c, void *userdata) {
+void lab_menu_tick_in_tournament(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(p1->chr && p1->chr->pilot.rank > 1) {
@@ -218,16 +218,16 @@ void lab_menu_tick_arena(component *c, void *userdata) {
 }
 
 static const spritebutton_tick_cb tick_cbs[] = {
-    lab_menu_tick_arena,
-    NULL, // lab_menu_tick_training,
-    NULL, // lab_menu_tick_buy,
-    NULL, // lab_menu_tick_sell,
-    NULL, // lab_menu_tick_load,
-    NULL, // lab_menu_tick_new,
-    NULL, // lab_menu_tick_delete,
-    NULL, // lab_menu_tick_sim,
-    NULL, // lab_menu_tick_quit,
-    NULL, // lab_menu_tick_tournament,
+    lab_menu_tick_in_tournament, // lab_menu_tick_arena,
+    lab_menu_tick_in_tournament, // lab_menu_tick_training,
+    lab_menu_tick_in_tournament, // lab_menu_tick_buy,
+    lab_menu_tick_in_tournament, // lab_menu_tick_sell,
+    NULL,                        // lab_menu_tick_load,
+    NULL,                        // lab_menu_tick_new,
+    NULL,                        // lab_menu_tick_delete,
+    lab_menu_tick_in_tournament, // lab_menu_tick_sim,
+    NULL,                        // lab_menu_tick_quit,
+    NULL,                        // lab_menu_tick_tournament,
 };
 
 component *lab_menu_main_create(scene *s, bool character_loaded) {
