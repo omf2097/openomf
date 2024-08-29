@@ -160,6 +160,7 @@ jobs:
       run: |
         brew update
         brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng
+        brew install create-dmg
 
     - name: Generate Release
       run: |
@@ -192,16 +193,17 @@ jobs:
       id: slug
       run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
 
-    - name: Generate ZIP package
+    - name: Generate DMG package
       run: |
         cd build-release/release
-        zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm.zip .
+        create-dmg --volname "OpenOMF" \
+          "${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm.dmg" .
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm
-        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm.zip
+        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm.dmg
         if-no-files-found: error
 
   # Build windows package, release artifact and update "latest" release if necessary.
