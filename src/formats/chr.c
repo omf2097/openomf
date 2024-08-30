@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,6 +74,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     str trn_file;
     sd_tournament_file trn;
     sd_pic_file pic;
+    bool trn_loaded = false;
 
     if(dirname) {
         str_from_c(&pic_file, chr->pilot.trn_image);
@@ -82,10 +84,15 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         sd_pic_create(&pic);
         sd_pic_load(&pic, tmp);
 
-        str_from_c(&trn_file, chr->pilot.trn_name);
-        str_toupper(&trn_file);
-        trn_load(&trn, str_c(&trn_file));
-        str_free(&trn_file);
+        if(*chr->pilot.trn_name != '\0') {
+            str_from_c(&trn_file, chr->pilot.trn_name);
+            str_toupper(&trn_file);
+            trn_loaded = trn_load(&trn, str_c(&trn_file)) == 0;
+            str_free(&trn_file);
+        }
+    }
+
+    if(trn_loaded) {
         for(int i = 0; i < 10; i++) {
             if(trn.locales[0]->end_texts[0][i]) {
                 chr->cutscene_text[i] = omf_calloc(1, strlen(trn.locales[0]->end_texts[0][i]) + 1);
@@ -122,7 +129,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
             // pick a random HAR
             chr->enemies[i]->pilot.har_id = rand_int(10);
         }
-        if(dirname) {
+        if(trn_loaded) {
             memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(palette));
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
             sd_sprite_copy(chr->enemies[i]->pilot.photo, pic.photos[trn.enemies[i]->photo_id]->sprite);
@@ -172,7 +179,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         }
         memread_buf(mr, chr->enemies[i]->unknown, 25);
         for(int m = 0; m < 10; m++) {
-            if(dirname && trn.enemies[i]->quotes[m]) {
+            if(trn_loaded && trn.enemies[i]->quotes[m]) {
                 DEBUG("allocating %d bytes for quote %s", strlen(trn.enemies[i]->quotes[m]), trn.enemies[i]->quotes[m]);
                 chr->enemies[i]->pilot.quotes[m] = omf_calloc(1, strlen(trn.enemies[i]->quotes[m]) + 1);
                 strncpy(chr->enemies[i]->pilot.quotes[m], trn.enemies[i]->quotes[m], strlen(trn.enemies[i]->quotes[m]));
@@ -180,7 +187,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         }
     }
 
-    if(dirname) {
+    if(trn_loaded) {
         sd_pic_free(&pic);
         sd_tournament_free(&trn);
     }
