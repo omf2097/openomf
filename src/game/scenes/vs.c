@@ -287,12 +287,12 @@ void vs_render(scene *scene) {
         font_render_wrapped(&font_small, player2->pilot->quotes[0], 320 - (59 + 150), 165, 120, COLOR_YELLOW);
     } else if(!player2->pilot) {
         // render plug's bitching
-        fight_stats *fight_stats = &scene->gs->fight_stats;
-        font_render_wrapped(&font_small, lang_get(fight_stats->plug_text + PLUG_TEXT_START), 90, 156, 198,
-                            COLOR_YELLOW);
-
-        char text[32];
+        char text[256];
         char money[16];
+        fight_stats *fight_stats = &scene->gs->fight_stats;
+        snprintf(text, sizeof(text), lang_get(fight_stats->plug_text + PLUG_TEXT_START), fight_stats->sold);
+        font_render_wrapped(&font_small, text, 90, 156, 198, COLOR_YELLOW);
+
         font_render_wrapped(&font_small, "FINANCIAL REPORT", 190, 6, 100, COLOR_GREEN);
 
         font_render(&font_small, "WINNINGS:", 190, 16, COLOR_DARK_GREEN);

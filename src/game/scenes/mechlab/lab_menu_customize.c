@@ -811,3 +811,57 @@ component *lab_menu_customize_create(scene *s) {
 
     return menu;
 }
+
+int sell_highest_value_upgrade(sd_pilot *pilot, char *sold) {
+    int32_t prices[] = {
+        arm_leg_prices[pilot->har_id][pilot->arm_power],
+        arm_leg_prices[pilot->har_id][pilot->arm_speed],
+        arm_leg_prices[pilot->har_id][pilot->leg_power],
+        arm_leg_prices[pilot->har_id][pilot->leg_speed],
+        stun_resistance_prices[pilot->har_id][pilot->stun_resistance],
+        armor_prices[pilot->har_id][pilot->armor],
+    };
+    int max_idx = -1;
+    int32_t max_price = 0;
+    for(int i = 0; i < sizeof(prices) / sizeof(prices[0]); ++i) {
+        if(prices[i] > max_price) {
+            max_price = prices[i];
+            max_idx = i;
+        }
+    }
+    switch(max_idx) {
+        case 0:
+            pilot->money += (int32_t)(arm_leg_prices[pilot->har_id][pilot->arm_power] * 0.85);
+            snprintf(sold, SOLD_BUF_SIZE, "ARM POWER %u", pilot->arm_power);
+            pilot->arm_power--;
+            break;
+        case 1:
+            pilot->money += (int32_t)(arm_leg_prices[pilot->har_id][pilot->arm_speed] * 0.85);
+            snprintf(sold, SOLD_BUF_SIZE, "ARM SPEED %u", pilot->arm_speed);
+            pilot->arm_speed--;
+            break;
+        case 2:
+            pilot->money += (int32_t)(arm_leg_prices[pilot->har_id][pilot->leg_power] * 0.85);
+            snprintf(sold, SOLD_BUF_SIZE, "LEG POWER %u", pilot->leg_power);
+            pilot->leg_power--;
+            break;
+        case 3:
+            pilot->money += (int32_t)(arm_leg_prices[pilot->har_id][pilot->leg_speed] * 0.85);
+            snprintf(sold, SOLD_BUF_SIZE, "LEG SPEED %u", pilot->leg_speed);
+            pilot->leg_speed--;
+            break;
+        case 4:
+            pilot->money += (int32_t)(stun_resistance_prices[pilot->har_id][pilot->stun_resistance] * 0.85);
+            snprintf(sold, SOLD_BUF_SIZE, "STUN RESISTANCE %u", pilot->stun_resistance);
+            pilot->stun_resistance--;
+            break;
+        case 5:
+            pilot->money += (int32_t)(armor_prices[pilot->har_id][pilot->armor] * 0.85);
+            snprintf(sold, SOLD_BUF_SIZE, "ARMOR %u", pilot->armor);
+            pilot->armor--;
+            break;
+        default:
+            return 0;
+    }
+    return 1;
+}
