@@ -25,7 +25,7 @@ static uint8_t max_leg_power[11] = {6, 6, 8, 4, 5, 7, 5, 7, 6, 7, 7};
 static component *label1;
 static component *label2;
 
-static uint32_t har_prices[11] = {20000, 36000, 26000, 28000, 29000, 32000, 25000, 30000, 24000, 22000, 75000};
+static int32_t har_prices[11] = {20000, 36000, 26000, 28000, 29000, 32000, 25000, 30000, 24000, 22000, 75000};
 
 // negative values means the upgrade is unavailable at that level
 int32_t arm_leg_prices[11][10] = {
