@@ -832,32 +832,32 @@ int sell_highest_value_upgrade(sd_pilot *pilot, char *sold) {
     switch(max_idx) {
         case 0:
             pilot->money += (int32_t)(arm_leg_prices[pilot->har_id][pilot->arm_power] * 0.85);
-            snprintf(sold, SOLD_BUF_SIZE, "ARM POWER %u", pilot->arm_power);
+            snprintf(sold, SOLD_BUF_SIZE, "LEVEL %u ARM POWER", pilot->arm_power + 1);
             pilot->arm_power--;
             break;
         case 1:
             pilot->money += (int32_t)(arm_leg_prices[pilot->har_id][pilot->arm_speed] * 0.85);
-            snprintf(sold, SOLD_BUF_SIZE, "ARM SPEED %u", pilot->arm_speed);
+            snprintf(sold, SOLD_BUF_SIZE, "LEVEL %u ARM SPEED", pilot->arm_speed + 1);
             pilot->arm_speed--;
             break;
         case 2:
             pilot->money += (int32_t)(arm_leg_prices[pilot->har_id][pilot->leg_power] * 0.85);
-            snprintf(sold, SOLD_BUF_SIZE, "LEG POWER %u", pilot->leg_power);
+            snprintf(sold, SOLD_BUF_SIZE, "LEVEL %u LEG POWER", pilot->leg_power + 1);
             pilot->leg_power--;
             break;
         case 3:
             pilot->money += (int32_t)(arm_leg_prices[pilot->har_id][pilot->leg_speed] * 0.85);
-            snprintf(sold, SOLD_BUF_SIZE, "LEG SPEED %u", pilot->leg_speed);
+            snprintf(sold, SOLD_BUF_SIZE, "LEVEL %u LEG SPEED", pilot->leg_speed + 1);
             pilot->leg_speed--;
             break;
         case 4:
             pilot->money += (int32_t)(stun_resistance_prices[pilot->har_id][pilot->stun_resistance] * 0.85);
-            snprintf(sold, SOLD_BUF_SIZE, "STUN RESISTANCE %u", pilot->stun_resistance);
+            snprintf(sold, SOLD_BUF_SIZE, "LEVEL %u STUN RES.", pilot->stun_resistance + 1);
             pilot->stun_resistance--;
             break;
         case 5:
             pilot->money += (int32_t)(armor_prices[pilot->har_id][pilot->armor] * 0.85);
-            snprintf(sold, SOLD_BUF_SIZE, "ARMOR %u", pilot->armor);
+            snprintf(sold, SOLD_BUF_SIZE, "LEVEL %u ARMOR PLATE", pilot->armor + 1);
             pilot->armor--;
             break;
         default:
