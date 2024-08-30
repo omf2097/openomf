@@ -1,7 +1,7 @@
 #ifndef FIGHT_STATS_H
 #define FIGHT_STATS_H
 
-#define SOLD_BUF_SIZE 20
+#define SOLD_BUF_SIZE 24
 
 typedef struct fight_stats_t {
     int winner;
