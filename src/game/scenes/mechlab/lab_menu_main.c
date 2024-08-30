@@ -205,7 +205,7 @@ static const spritebutton_focus_cb focus_cbs[] = {
     lab_menu_focus_new,   lab_menu_focus_delete,   lab_menu_focus_sim, lab_menu_focus_quit, lab_menu_focus_tournament,
 };
 
-void lab_menu_tick_in_tournament(component *c, void *userdata) {
+void lab_menu_tick_arena(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(p1->chr && p1->chr->pilot.rank > 1) {
@@ -217,8 +217,20 @@ void lab_menu_tick_in_tournament(component *c, void *userdata) {
     }
 }
 
+void lab_menu_tick_in_tournament(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    if(p1->chr && p1->chr->pilot.rank != 0) {
+        component_disable(c, 0);
+        c->supports_select = true;
+    } else {
+        component_disable(c, 1);
+        c->supports_select = false;
+    }
+}
+
 static const spritebutton_tick_cb tick_cbs[] = {
-    lab_menu_tick_in_tournament, // lab_menu_tick_arena,
+    lab_menu_tick_arena,         // lab_menu_tick_arena,
     lab_menu_tick_in_tournament, // lab_menu_tick_training,
     lab_menu_tick_in_tournament, // lab_menu_tick_buy,
     lab_menu_tick_in_tournament, // lab_menu_tick_sell,
