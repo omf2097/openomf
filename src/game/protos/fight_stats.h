@@ -1,9 +1,12 @@
 #ifndef FIGHT_STATS_H
 #define FIGHT_STATS_H
 
+#define SOLD_BUF_SIZE 20
+
 typedef struct fight_stats_t {
     int winner;
     unsigned plug_text;
+    char sold[SOLD_BUF_SIZE];
 
     int winnings;
     int bonuses;
@@ -24,5 +27,6 @@ typedef struct fight_stats_t {
 #define PLUG_WIN_BIG 13
 #define PLUG_WARNING 16
 #define PLUG_KICK_OUT 17
+#define PLUG_SOLD_UPGRADE 18
 
 #endif // FIGHT_STATS_H
