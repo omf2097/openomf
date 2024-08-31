@@ -249,7 +249,7 @@ component *lab_menu_main_create(scene *s, bool character_loaded) {
 
     // Initialize menu, and set button sheet
     sprite *msprite = animation_get_sprite(main_sheets, 2);
-    component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);
+    component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y, false);
 
     // Default text configuration
     text_settings tconf;

@@ -58,7 +58,7 @@ component *lab_menu_difficultyselect_create(scene *s) {
 
     // Initialize menu, and set button sheet
     sprite *msprite = animation_get_sprite(main_sheets, 6);
-    component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);
+    component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y, false);
 
     // Default text configuration
     text_settings tconf;
