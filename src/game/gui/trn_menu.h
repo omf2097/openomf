@@ -27,6 +27,7 @@ typedef struct {
     surface *button_sheet;
     int sheet_x;
     int sheet_y;
+    bool return_hand;
 
     int fade;
     float opacity_step;
@@ -44,7 +45,7 @@ typedef struct {
     trnmenu_tick_cb tick;
 } trnmenu;
 
-component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y);
+component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y, bool return_hand);
 void trnmenu_attach(component *menu, component *c);
 
 void trnmenu_bind_hand(component *menu, animation *hand, game_state *gs);

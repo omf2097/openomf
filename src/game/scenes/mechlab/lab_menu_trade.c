@@ -229,7 +229,7 @@ component *lab_menu_trade_create(scene *s) {
     int x = 24;
     int y = 148;
     // Initialize menu, and set button sheet
-    component *menu = trnmenu_create(NULL, x, y);
+    component *menu = trnmenu_create(NULL, x, y, false);
     // sprite *msprite = animation_get_sprite(main_sheets, 1);
     // component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);
 

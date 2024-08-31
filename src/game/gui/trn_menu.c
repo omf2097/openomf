@@ -344,6 +344,11 @@ static void trnmenu_tick(component *c) {
         if(m->hand.moved >= 1.0) {
             m->hand.move = 0;
             object_set_pos(m->hand.obj, m->hand.pend);
+            if(m->return_hand && m->selected != 0) {
+                trnmenu_hand_deselect(c);
+                m->selected = 0;
+                trnmenu_hand_select(c);
+            }
         } else {
             vec2i dist = vec2i_sub(m->hand.pend, m->hand.pstart);
             vec2i m_pos = vec2i_create(dist.x * m->hand.moved, dist.y * m->hand.moved);
@@ -425,7 +430,7 @@ void trnmenu_finish(component *c) {
     m->opacity_step = -OPACITY_STEP;
 }
 
-component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
+component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y, bool return_hand) {
     component *c = sizer_create();
 
     trnmenu *m = omf_calloc(1, sizeof(trnmenu));
@@ -436,6 +441,7 @@ component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y) {
     m->submenu_init = NULL;
     m->submenu_done = NULL;
     m->opacity_step = OPACITY_STEP;
+    m->return_hand = return_hand;
     sizer_set_obj(c, m);
 
     sizer_set_render_cb(c, trnmenu_render);
