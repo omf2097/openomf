@@ -35,8 +35,6 @@ int sd_rec_create(sd_rec_file *rec) {
 void sd_rec_free(sd_rec_file *rec) {
     if(rec == NULL)
         return;
-    sd_pilot_free(&rec->pilots[0].info);
-    sd_pilot_free(&rec->pilots[1].info);
     if(rec->moves) {
         for(int i = 0; i < rec->move_count; i++) {
             omf_free(rec->moves[i].extra_data);

@@ -15,12 +15,13 @@ int sd_pilot_create(sd_pilot *pilot) {
     return SD_SUCCESS;
 }
 
-void sd_pilot_free(sd_pilot *pilot) {
-    if(pilot == NULL)
+void sd_pilot_free(sd_pilot **pilot) {
+    if(*pilot == NULL)
         return;
     for(int m = 0; m < 10; m++) {
-        omf_free(pilot->quotes[m]);
+        omf_free((*pilot)->quotes[m]);
     }
+    omf_free(*pilot);
 }
 
 // Reads exactly 24 + 8 + 11 = 43 bytes
