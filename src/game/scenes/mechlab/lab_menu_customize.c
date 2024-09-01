@@ -103,6 +103,13 @@ int32_t armor_prices[][10] = {
     {0, 3500, 10500, 24500, 42000, 63000, 105000, 175000, -1,     -1    }
 };
 
+static void lab_menu_focus_arm_power(component *c, bool focused, void *userdata);
+static void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata);
+static void lab_menu_focus_leg_power(component *c, bool focused, void *userdata);
+static void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata);
+static void lab_menu_focus_armor(component *c, bool focused, void *userdata);
+static void lab_menu_focus_stun_resistance(component *c, bool focused, void *userdata);
+
 int calculate_trade_value(sd_pilot *pilot) {
     int trade_value = har_prices[pilot->har_id];
     for(int i = 1; i < pilot->arm_power; i++) {
@@ -178,6 +185,7 @@ void lab_menu_customize_arm_power(component *c, void *userdata) {
         pilot->arm_power++;
         mechlab_update(s);
     }
+    lab_menu_focus_arm_power(c, true, userdata);
 }
 
 void lab_menu_customize_check_arm_power_price(component *c, void *userdata) {
@@ -214,6 +222,7 @@ void lab_menu_customize_leg_power(component *c, void *userdata) {
         pilot->leg_power++;
         mechlab_update(s);
     }
+    lab_menu_focus_leg_power(c, true, userdata);
 }
 
 void lab_menu_customize_check_leg_power_price(component *c, void *userdata) {
@@ -250,6 +259,7 @@ void lab_menu_customize_arm_speed(component *c, void *userdata) {
         pilot->arm_speed++;
         mechlab_update(s);
     }
+    lab_menu_focus_arm_speed(c, true, userdata);
 }
 
 void lab_menu_customize_check_arm_speed_price(component *c, void *userdata) {
@@ -286,6 +296,7 @@ void lab_menu_customize_leg_speed(component *c, void *userdata) {
         pilot->leg_speed++;
         mechlab_update(s);
     }
+    lab_menu_focus_leg_speed(c, true, userdata);
 }
 
 void lab_menu_customize_check_leg_speed_price(component *c, void *userdata) {
@@ -322,6 +333,7 @@ void lab_menu_customize_armor(component *c, void *userdata) {
         pilot->armor++;
         mechlab_update(s);
     }
+    lab_menu_focus_armor(c, true, userdata);
 }
 
 void lab_menu_customize_check_armor_price(component *c, void *userdata) {
@@ -358,6 +370,7 @@ void lab_menu_customize_stun_resistance(component *c, void *userdata) {
         pilot->stun_resistance++;
         mechlab_update(s);
     }
+    lab_menu_focus_stun_resistance(c, true, userdata);
 }
 
 void lab_menu_customize_check_stun_resistance_price(component *c, void *userdata) {
@@ -472,7 +485,7 @@ void lab_menu_focus_red(component *c, bool focused, void *userdata) {
     }
 }
 
-void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {
+static void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {
     char tmp[200];
     char price_str[32];
     if(focused) {
@@ -506,7 +519,7 @@ void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {
     }
 }
 
-void lab_menu_focus_leg_power(component *c, bool focused, void *userdata) {
+static void lab_menu_focus_leg_power(component *c, bool focused, void *userdata) {
     char tmp[200];
     char price_str[32];
     if(focused) {
@@ -540,7 +553,7 @@ void lab_menu_focus_leg_power(component *c, bool focused, void *userdata) {
     }
 }
 
-void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata) {
+static void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata) {
     char tmp[200];
     char price_str[32];
     if(focused) {
@@ -574,7 +587,7 @@ void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata) {
     }
 }
 
-void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata) {
+static void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata) {
     char tmp[200];
     char price_str[32];
     if(focused) {
@@ -608,7 +621,7 @@ void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata) {
     }
 }
 
-void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
+static void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
     char tmp[200];
     char price_str[32];
     if(focused) {
@@ -641,7 +654,7 @@ void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
     }
 }
 
-void lab_menu_focus_stun_resistance(component *c, bool focused, void *userdata) {
+static void lab_menu_focus_stun_resistance(component *c, bool focused, void *userdata) {
     char tmp[200];
     char price_str[32];
     if(focused) {
