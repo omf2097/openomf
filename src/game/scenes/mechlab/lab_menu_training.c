@@ -19,6 +19,10 @@ static component *label2;
 static int32_t prices[] = {50,   80,   120,   180,   240,   300,   450,   600,   800,   1100,   1500,   2500,
                            4000, 7000, 10000, 14000, 20000, 28000, 40000, 55000, 75000, 100000, 140000, 200000};
 
+static void lab_menu_focus_power(component *c, bool focused, void *userdata);
+static void lab_menu_focus_agility(component *c, bool focused, void *userdata);
+static void lab_menu_focus_endurance(component *c, bool focused, void *userdata);
+
 void lab_menu_training_power(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
@@ -27,6 +31,7 @@ void lab_menu_training_power(component *c, void *userdata) {
     pilot->money -= price;
     pilot->power++;
     mechlab_update(s);
+    lab_menu_focus_power(c, true, userdata);
 }
 
 void lab_menu_training_check_power_price(component *c, void *userdata) {
@@ -51,6 +56,7 @@ void lab_menu_training_agility(component *c, void *userdata) {
     pilot->money -= price;
     pilot->agility++;
     mechlab_update(s);
+    lab_menu_focus_agility(c, true, userdata);
 }
 
 void lab_menu_training_check_agility_price(component *c, void *userdata) {
@@ -75,6 +81,7 @@ void lab_menu_training_endurance(component *c, void *userdata) {
     pilot->money -= price;
     pilot->endurance++;
     mechlab_update(s);
+    lab_menu_focus_endurance(c, true, userdata);
 }
 
 void lab_menu_training_check_endurance_price(component *c, void *userdata) {
@@ -102,7 +109,7 @@ static const button_details details_list[] = {
     {lab_menu_training_done,      "DONE",    TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
 };
 
-void lab_menu_focus_power(component *c, bool focused, void *userdata) {
+static void lab_menu_focus_power(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
@@ -121,7 +128,7 @@ void lab_menu_focus_power(component *c, bool focused, void *userdata) {
     }
 }
 
-void lab_menu_focus_agility(component *c, bool focused, void *userdata) {
+static void lab_menu_focus_agility(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
@@ -140,7 +147,7 @@ void lab_menu_focus_agility(component *c, bool focused, void *userdata) {
     }
 }
 
-void lab_menu_focus_endurance(component *c, bool focused, void *userdata) {
+static void lab_menu_focus_endurance(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
