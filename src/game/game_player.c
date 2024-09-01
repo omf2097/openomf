@@ -20,7 +20,7 @@ void game_player_create(game_player *gp) {
 }
 
 void game_player_free(game_player *gp) {
-    sd_pilot_free(gp->pilot);
+    sd_pilot_free(&gp->pilot);
     chr_score_free(&gp->score);
     har_screencaps_free(&gp->screencaps);
 }
