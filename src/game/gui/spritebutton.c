@@ -78,9 +78,6 @@ static int spritebutton_action(component *c, int action) {
         if(sb->click_cb) {
             sb->click_cb(c, sb->userdata);
         }
-        if(sb->focus_cb) {
-            sb->focus_cb(c, true, sb->userdata);
-        }
         return 0;
     }
     return 1;
