@@ -11,6 +11,7 @@ typedef struct {
     sd_pilot *pilot;
     list *savegames;
     int16_t index;
+    uint8_t sim_rank;
     component *photo;
     component *power;
     component *agility;
@@ -44,8 +45,14 @@ void lab_dash_main_chr_done(component *menu, component *submenu);
 
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw);
 void lab_dash_main_update(scene *s, dashboard_widgets *dw);
-
 component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_pilot *pilot);
 void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot);
+
+void lab_dash_sim_init(component *menu, component *submenu);
+void lab_dash_sim_done(component *menu, component *submenu);
+void lab_dash_sim_left(component *c, void *userdata);
+void lab_dash_sim_right(component *c, void *userdata);
+component *lab_dash_sim_create(scene *s, dashboard_widgets *dw);
+void lab_dash_sim_update(scene *s, dashboard_widgets *dw, sd_pilot *pilot);
 
 #endif // LAB_DASH_MAIN_H

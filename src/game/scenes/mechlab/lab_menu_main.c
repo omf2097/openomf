@@ -110,6 +110,12 @@ void lab_menu_main_delete(component *c, void *userdata) {
     trnmenu_set_submenu(c->parent, mechlab_chrdelete_menu_create(s));
 }
 
+void lab_menu_main_sim(component *c, void *userdata) {
+    scene *s = userdata;
+    mechlab_select_dashboard(s, DASHBOARD_SIM);
+    trnmenu_set_submenu(c->parent, mechlab_sim_menu_create(s));
+}
+
 static const button_details details_list[] = {
   // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
     {lab_menu_main_arena,          "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
@@ -120,7 +126,7 @@ static const button_details details_list[] = {
     {lab_menu_main_load,           "LOAD",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
     {lab_menu_main_new,            "NEW",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
     {lab_menu_main_delete,         "DELETE",           TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_DISABLED},
-    {NULL,                         "SIM",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
+    {lab_menu_main_sim,            "SIM",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_quit,           "QUIT",             TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_ENABLED },
     {lab_menu_main_tournament,     "NEW TOURNAMENT",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_DISABLED},
 };
