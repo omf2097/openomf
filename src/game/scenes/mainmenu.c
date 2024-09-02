@@ -35,7 +35,7 @@ void mainmenu_input_tick(scene *scene) {
         game_player *player = game_state_get_player(scene->gs, i);
 
         // Poll the controller
-        ctrl_event *p = NULL;
+        ctrl_event *p = NULL, *handled_ev = NULL;
         controller_poll(player->ctrl, &p);
         if(p) {
             do {
@@ -50,7 +50,10 @@ void mainmenu_input_tick(scene *scene) {
                     // Pass on the event
                     guiframe_action(local->frame, p->event_data.action);
                 }
-            } while((p = p->next));
+                handled_ev = p;
+                p = p->next;
+                omf_free(handled_ev);
+            } while(p != NULL);
         }
         controller_free_chain(p);
     }
