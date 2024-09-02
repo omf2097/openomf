@@ -117,6 +117,45 @@ void lab_dash_main_chr_init(component *menu, component *submenu) {
     p1->pilot = &chr->pilot;
     mechlab_update(dw->scene);
 }
+
+void lab_dash_sim_left(component *c, void *userdata) {
+    dashboard_widgets *dw = userdata;
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+    if(dw->sim_rank > 1) {
+        dw->sim_rank--;
+    }
+    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+            lab_dash_sim_update(dw->scene, dw, &p1->chr->enemies[i]->pilot);
+        }
+    }
+}
+
+void lab_dash_sim_right(component *c, void *userdata) {
+    dashboard_widgets *dw = userdata;
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+    if(dw->sim_rank < p1->chr->pilot.enemies_ex_unranked) {
+        dw->sim_rank++;
+    }
+    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+            lab_dash_sim_update(dw->scene, dw, &p1->chr->enemies[i]->pilot);
+        }
+    }
+}
+
+void lab_dash_sim_init(component *menu, component *submenu) {
+    dashboard_widgets *dw = trnmenu_get_userdata(submenu);
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+    dw->sim_rank = p1->pilot->rank;
+}
+
+void lab_dash_sim_done(component *menu, component *submenu) {
+    dashboard_widgets *dw = trnmenu_get_userdata(submenu);
+    mechlab_select_dashboard(dw->scene, DASHBOARD_STATS);
+    mechlab_update(dw->scene);
+}
+
 void lab_dash_main_chr_done(component *menu, component *submenu) {
     DEBUG("end chr select submenu");
     dashboard_widgets *dw = trnmenu_get_userdata(submenu);
@@ -215,6 +254,61 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     return lab_dash_main_create_gauges(xy, dw, p1->pilot);
 }
 
+component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
+    component *xy = xysizer_create();
+
+    dw->scene = s;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    dw->pilot = p1->pilot;
+
+    text_settings tconf_dark;
+    text_defaults(&tconf_dark);
+    tconf_dark.font = FONT_SMALL;
+    tconf_dark.cforeground = color_create(0, 200, 0, 255);
+
+    text_settings tconf_light;
+    text_defaults(&tconf_light);
+    tconf_light.font = FONT_SMALL;
+    tconf_light.cforeground = color_create(50, 240, 50, 255);
+
+    text_settings tconf_light_centered;
+    text_defaults(&tconf_light_centered);
+    tconf_light_centered.font = FONT_SMALL;
+    tconf_light_centered.halign = TEXT_CENTER;
+    tconf_light_centered.cforeground = color_create(50, 240, 50, 255);
+
+    // Pilot image
+    dw->photo = pilotpic_create(PIC_PLAYERS, 0);
+    if(p1->pilot->photo) {
+        DEBUG("loading pilot photo from pilot");
+        pilotpic_set_photo(dw->photo, dw->pilot->photo);
+    } else {
+        dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
+        DEBUG("seletng default pilot photo");
+        dw->pilot->photo_id = pilotpic_selected(dw->photo);
+        pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
+    }
+    palette *base_pal = video_get_base_palette();
+    palette_load_player_colors(base_pal, &dw->pilot->palette, 0);
+    video_force_pal_refresh();
+
+    xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
+
+    // Texts
+    dw->name = label_create(&tconf_dark, "NAME: NO NAME");
+    dw->har_name = label_create(&tconf_dark, "MODEL: NO MODEL");
+    dw->wins = label_create(&tconf_dark, "WINS: 0");
+    dw->losses = label_create(&tconf_dark, "LOSES: 0");
+
+    xysizer_attach(xy, dw->name, 18, 70, 200, 6);
+    xysizer_attach(xy, dw->har_name, 12, 76, 200, 6);
+
+    xysizer_attach(xy, dw->wins, 168, 70, 200, 6);
+    xysizer_attach(xy, dw->losses, 162, 76, 200, 6);
+
+    return lab_dash_main_create_gauges(xy, dw, p1->pilot);
+}
+
 component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_pilot *pilot) {
     text_settings tconf_dark;
     text_defaults(&tconf_dark);
@@ -289,6 +383,21 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     label_set_text(dw->tournament, p1->pilot->trn_desc);
 
     lab_dash_main_update_gauges(dw, p1->pilot);
+}
+
+void lab_dash_sim_update(scene *s, dashboard_widgets *dw, sd_pilot *pilot) {
+    char tmp[64];
+
+    snprintf(tmp, sizeof(tmp), "WINS: %d", pilot->wins);
+    label_set_text(dw->wins, tmp);
+    snprintf(tmp, sizeof(tmp), "LOSES: %d", pilot->losses);
+    label_set_text(dw->losses, tmp);
+    snprintf(tmp, sizeof(tmp), "MODEL: %s", lang_get(31 + pilot->har_id));
+    label_set_text(dw->har_name, tmp);
+    snprintf(tmp, sizeof(tmp), "NAME: %s", pilot->name);
+    label_set_text(dw->name, tmp);
+
+    lab_dash_main_update_gauges(dw, pilot);
 }
 
 #define SET_GAUGE_X(name) gauge_set_lit(dw->name, pilot->name + 1)

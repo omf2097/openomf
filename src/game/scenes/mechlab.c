@@ -178,6 +178,16 @@ component *mechlab_chrdelete_menu_create(scene *scene) {
     return menu;
 }
 
+component *mechlab_sim_menu_create(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+    component *menu = lab_menu_select_create(scene, lab_dash_main_chr_delete, &local->dw, lab_dash_sim_left, &local->dw,
+                                             lab_dash_sim_right, &local->dw, 227, true);
+    trnmenu_set_submenu_init_cb(menu, lab_dash_sim_init);
+    trnmenu_set_submenu_done_cb(menu, lab_dash_sim_done);
+    trnmenu_set_userdata(menu, &local->dw);
+    return menu;
+}
+
 void mechlab_update(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
     game_player *p1 = game_state_get_player(scene->gs, 0);
@@ -272,6 +282,7 @@ void mechlab_tick(scene *scene, int paused) {
 
 void mechlab_select_dashboard(scene *scene, dashboard_type type) {
     mechlab_local *local = scene_get_userdata(scene);
+    game_player *player1 = game_state_get_player(scene->gs, 0);
     if(type == local->dashtype) {
         // No change
         return;
@@ -295,11 +306,16 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             lab_dash_main_update(scene, &local->dw);
             guiframe_layout(local->dashboard);
             break;
+        case DASHBOARD_SIM:
+            local->dashboard = guiframe_create(0, 0, 320, 200);
+            guiframe_set_root(local->dashboard, lab_dash_sim_create(scene, &local->dw));
+            lab_dash_sim_update(scene, &local->dw, player1->pilot);
+            guiframe_layout(local->dashboard);
+            break;
         // Dashboard for new player
         case DASHBOARD_NEW:
             local->dashboard = guiframe_create(0, 0, 320, 200);
             // new pilots have 2000 credits
-            game_player *player1 = game_state_get_player(scene->gs, 0);
             memset(player1->pilot, 0, sizeof(sd_pilot));
             player1->pilot->money = 2000;
             // and a jaguar
