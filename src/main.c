@@ -184,6 +184,8 @@ int main(int argc, char *argv[]) {
     if(ip) {
         DEBUG("Connect IP overridden to %s", ip);
         settings_get()->net.net_connect_ip = ip;
+        // Set ip to NULL here since it will be freed by the settings.
+        ip = NULL;
     }
     if(connect_port > 0 && connect_port < 0xFFFF) {
         DEBUG("Connect Port overridden to %u", connect_port & 0xFFFF);
