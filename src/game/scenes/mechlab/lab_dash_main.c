@@ -212,6 +212,15 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     xysizer_attach(xy, dw->har_name, 220, 2, 100, 6);
     xysizer_attach(xy, dw->har_moves, 220, 19, 100, 70);
 
+    return lab_dash_main_create_gauges(xy, dw, p1->pilot);
+}
+
+component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_pilot *pilot) {
+    text_settings tconf_dark;
+    text_defaults(&tconf_dark);
+    tconf_dark.font = FONT_SMALL;
+    tconf_dark.cforeground = color_create(0, 200, 0, 255);
+
     // Bars and texts (bottom left side)
     xysizer_attach(xy, label_create(&tconf_dark, "POWER"), 12, 95, -1, -1);
     dw->power = gauge_create(GAUGE_SMALL, 25, 3);
@@ -225,24 +234,24 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
 
     // Bars and texts (bottom middle)
     xysizer_attach(xy, label_create(&tconf_dark, "ARM POWER"), 125, 95, 200, 6);
-    dw->arm_power = gauge_create(GAUGE_BIG, max_arm_power[p1->pilot->har_id], 3);
+    dw->arm_power = gauge_create(GAUGE_BIG, max_arm_power[pilot->har_id], 3);
     xysizer_attach(xy, dw->arm_power, 125, 102, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "LEG POWER"), 125, 106, 200, 6);
-    dw->leg_power = gauge_create(GAUGE_BIG, max_leg_power[p1->pilot->har_id], 3);
+    dw->leg_power = gauge_create(GAUGE_BIG, max_leg_power[pilot->har_id], 3);
     xysizer_attach(xy, dw->leg_power, 125, 113, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "ARMOR"), 125, 117, 200, 6);
-    dw->armor = gauge_create(GAUGE_BIG, max_armor[p1->pilot->har_id], 3);
+    dw->armor = gauge_create(GAUGE_BIG, max_armor[pilot->har_id], 3);
     xysizer_attach(xy, dw->armor, 125, 124, -1, -1);
 
     // Bars and texts (bottom right side)
     xysizer_attach(xy, label_create(&tconf_dark, "ARM SPEED"), 228, 95, 200, 6);
-    dw->arm_speed = gauge_create(GAUGE_BIG, max_arm_speed[p1->pilot->har_id], 3);
+    dw->arm_speed = gauge_create(GAUGE_BIG, max_arm_speed[pilot->har_id], 3);
     xysizer_attach(xy, dw->arm_speed, 228, 102, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "LEG SPEED"), 228, 106, 200, 6);
-    dw->leg_speed = gauge_create(GAUGE_BIG, max_leg_speed[p1->pilot->har_id], 3);
+    dw->leg_speed = gauge_create(GAUGE_BIG, max_leg_speed[pilot->har_id], 3);
     xysizer_attach(xy, dw->leg_speed, 228, 113, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "STUN RES"), 228, 117, 200, 6);
-    dw->stun_resistance = gauge_create(GAUGE_BIG, max_stun_resistance[p1->pilot->har_id], 3);
+    dw->stun_resistance = gauge_create(GAUGE_BIG, max_stun_resistance[pilot->har_id], 3);
     xysizer_attach(xy, dw->stun_resistance, 228, 124, -1, -1);
 
     return xy;
