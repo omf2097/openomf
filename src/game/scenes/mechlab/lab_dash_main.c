@@ -58,6 +58,7 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
     p1->chr = omf_calloc(1, sizeof(sd_chr_file));
     memcpy(p1->chr, ((sd_chr_file *)list_get(dw->savegames, dw->index)), sizeof(sd_chr_file));
     p1->pilot = &p1->chr->pilot;
+    omf_free(settings_get()->tournament.last_name);
     settings_get()->tournament.last_name = strdup(p1->pilot->name);
     settings_save();
     trnmenu_finish(c);

@@ -129,6 +129,7 @@ void mechlab_free(scene *scene) {
         const char *dirname = pm_get_local_path(SAVE_PATH);
         snprintf(tmp, 1024, "%s%s.CHR", dirname, player1->pilot->name);
         sd_chr_save(player1->chr, tmp);
+        omf_free(settings_get()->tournament.last_name);
         settings_get()->tournament.last_name = strdup(player1->pilot->name);
         settings_save();
     } else {
@@ -254,6 +255,7 @@ void mechlab_tick(scene *scene, int paused) {
             const char *dirname = pm_get_local_path(SAVE_PATH);
             snprintf(tmp, 1024, "%s%s.CHR", dirname, player1->pilot->name);
             sd_chr_save(player1->chr, tmp);
+            omf_free(settings_get()->tournament.last_name);
             settings_get()->tournament.last_name = strdup(player1->pilot->name);
             settings_save();
             // force the character to reload because its just easier
