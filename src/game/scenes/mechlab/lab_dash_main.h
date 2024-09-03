@@ -45,4 +45,6 @@ void lab_dash_main_chr_done(component *menu, component *submenu);
 component *lab_dash_main_create(scene *s, dashboard_widgets *dw);
 void lab_dash_main_update(scene *s, dashboard_widgets *dw);
 
+void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot);
+
 #endif // LAB_DASH_MAIN_H
