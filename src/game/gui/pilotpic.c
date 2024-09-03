@@ -73,6 +73,7 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
     pilotpic_load(&spr, &pal, pic_id, pilot_id);
 
     sprite_create(local->img, &spr, -1);
+    sd_sprite_free(&spr);
 
     // Position and size hints for the gui component
     // These are set on layout function call
