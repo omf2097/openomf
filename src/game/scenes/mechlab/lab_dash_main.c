@@ -279,19 +279,24 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     label_set_text(dw->name, p1->pilot->name);
     label_set_text(dw->tournament, p1->pilot->trn_desc);
 
-#define SET_GAUGE_X(name) gauge_set_lit(dw->name, p1->pilot->name + 1)
+    lab_dash_main_update_gauges(dw, p1->pilot);
+}
 
+#define SET_GAUGE_X(name) gauge_set_lit(dw->name, pilot->name + 1)
+
+void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot) {
     // Pilot stats
     SET_GAUGE_X(power);
     SET_GAUGE_X(agility);
     SET_GAUGE_X(endurance);
 
-    gauge_set_size(dw->arm_power, max_arm_power[p1->pilot->har_id]);
-    gauge_set_size(dw->leg_power, max_leg_power[p1->pilot->har_id]);
-    gauge_set_size(dw->armor, max_armor[p1->pilot->har_id]);
-    gauge_set_size(dw->arm_speed, max_arm_speed[p1->pilot->har_id]);
-    gauge_set_size(dw->leg_speed, max_leg_speed[p1->pilot->har_id]);
-    gauge_set_size(dw->stun_resistance, max_stun_resistance[p1->pilot->har_id]);
+    gauge_set_size(dw->arm_power, max_arm_power[pilot->har_id]);
+    gauge_set_size(dw->leg_power, max_leg_power[pilot->har_id]);
+    gauge_set_size(dw->armor, max_armor[pilot->har_id]);
+    gauge_set_size(dw->arm_speed, max_arm_speed[pilot->har_id]);
+    gauge_set_size(dw->leg_speed, max_leg_speed[pilot->har_id]);
+    gauge_set_size(dw->stun_resistance, max_stun_resistance[pilot->har_id]);
+
     // Har stats
     SET_GAUGE_X(arm_power);
     SET_GAUGE_X(leg_power);
@@ -300,9 +305,9 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     SET_GAUGE_X(leg_speed);
     SET_GAUGE_X(stun_resistance);
 
-    if(p1->pilot->photo) {
+    if(pilot->photo) {
         DEBUG("loading pilot photo from pilot");
-        pilotpic_set_photo(dw->photo, p1->pilot->photo);
+        pilotpic_set_photo(dw->photo, pilot->photo);
     } else {
         DEBUG("seletng default pilot photo");
         // Select pilot picture
@@ -311,6 +316,6 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
 
     // Palette
     palette *base_pal = video_get_base_palette();
-    palette_load_player_colors(base_pal, &p1->pilot->palette, 0);
+    palette_load_player_colors(base_pal, &pilot->palette, 0);
     video_force_pal_refresh();
 }
