@@ -210,34 +210,36 @@ jobs:
     needs: [unittest, formatting-check]
 
     name: Build windows-amd64
-    runs-on: ubuntu-latest
+    runs-on: windows-2022
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Install Dependencies
+      shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get -y install mingw-w64 unzip
-        wget -q https://github.com/omf2097/openomf-win-build/archive/refs/heads/main.zip
+        curl -L "https://github.com/omf2097/openomf-win-build/archive/refs/heads/main.zip" >main.zip
         unzip -q main.zip && rm main.zip
+        pwd
+        find
 
     - name: Generate Windows Release
+      shell: bash
       run: |
         mkdir build-release && cd build-release
         cmake -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_INSTALL_PREFIX=release \
-              -DCMAKE_TOOLCHAIN_FILE="${GITHUB_WORKSPACE}/cmake-scripts/mingw-w64-toolchain.cmake" \
-              -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
-              -DCMAKE_INCLUDE_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/include/" \
-              -DCMAKE_LIBRARY_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/lib/" \
-              -DCMAKE_FIND_ROOT_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
-              "${GITHUB_WORKSPACE}"
+          -DCMAKE_INSTALL_PREFIX=release \
+          -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
+          -DCMAKE_INCLUDE_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/include/" \
+          -DCMAKE_LIBRARY_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/lib/" \
+          -DCMAKE_FIND_ROOT_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
+          "${GITHUB_WORKSPACE}"
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
         cp ${GITHUB_WORKSPACE}/openomf-win-build-main/bin/*.dll release/openomf/
 
     - name: Get short SHA
+      shell: bash
       id: slug
       run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
 
@@ -262,6 +264,7 @@ jobs:
       run: unzip -j omf2097-assets.zip -d build-release/release/openomf/resources
 
     - name: Generate ZIP package
+      shell: bash
       run: |
         cd build-release/release
         zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_amd64.zip openomf
