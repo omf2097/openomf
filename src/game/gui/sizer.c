@@ -142,7 +142,6 @@ static void sizer_free(component *c) {
 static component *sizer_find(component *c, int id) {
     sizer *local = component_get_obj(c);
 
-    // Free all objects inside the sizer
     iterator it;
     component **tmp;
     vector_iter_begin(&local->objs, &it);
