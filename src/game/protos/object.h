@@ -56,6 +56,8 @@ typedef int (*object_serialize_cb)(object *obj, serial *ser);
 typedef int (*object_unserialize_cb)(object *obj, serial *ser, int animation_id, game_state *gs);
 typedef void (*object_debug_cb)(object *obj);
 typedef int (*object_palette_transform_cb)(object *obj, screen_palette *pal);
+typedef int (*object_clone_cb)(object *src, object *dst);
+typedef int (*object_clone_free_cb)(object *obj);
 
 struct object_t {
     game_state *gs;
@@ -106,6 +108,7 @@ struct object_t {
     int16_t halt_ticks;
     uint8_t stride;
     uint8_t cast_shadow;
+    // pointer into obj->cur_sprite->data
     surface *cur_surface;
 
     player_sprite_state sprite_state;
@@ -130,6 +133,8 @@ struct object_t {
     object_unserialize_cb unserialize;
     object_debug_cb debug;
     object_palette_transform_cb pal_transform;
+    object_clone_cb clone;
+    object_clone_free_cb clone_free;
 };
 
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
@@ -149,6 +154,8 @@ void object_free(object *obj);
 
 int object_serialize(object *obj, serial *ser);
 int object_unserialize(object *obj, serial *ser, game_state *gs);
+
+int object_clone(object *src, object *dst);
 
 void object_attach_to(object *obj, const object *attach_to);
 

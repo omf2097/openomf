@@ -892,6 +892,42 @@ int game_state_ms_per_dyntick(game_state *gs) {
     return MS_PER_OMF_TICK;
 }
 
+int render_obj_clone(render_obj *src, render_obj *dst) {
+    memcpy(dst, src, sizeof(render_obj));
+    omf_calloc(1, sizeof(object));
+    return object_clone(src->obj, dst->obj);
+}
+
+int game_state_clone(game_state *src, game_state *dst) {
+    // copy all the static fields
+    memcpy(dst, src, sizeof(game_state));
+    // fix any pointers to volatile data
+    vector_create(&dst->objects, sizeof(render_obj));
+
+    iterator it;
+    vector_iter_begin(&src->objects, &it);
+    render_obj *robj;
+    while((robj = iter_next(&it)) != NULL) {
+        render_obj d;
+        render_obj_clone(robj, &d);
+        d.obj->gs = dst;
+        // TODO handle object attached_to field
+        vector_append(&dst->objects, &d);
+    }
+
+
+    for(int i = 0; i < 2; i++) {
+        dst->players[i] = omf_calloc(1, sizeof(game_player));
+        game_player_clone(src->players[i], dst->players[i]);
+        // TODO update HAR object pointers!
+    }
+
+    dst->sc = omf_calloc(1, sizeof(scene));
+    scene_clone(src->sc, dst->sc);
+
+    return 0;
+}
+
 int game_state_serialize(game_state *gs, serial *ser) {
     // serialize tick time and random seed, so client can reply state from this point
     serial_write_int32(ser, game_state_get_tick(gs));

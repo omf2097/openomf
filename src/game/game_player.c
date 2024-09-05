@@ -72,3 +72,7 @@ void game_player_set_pilot(game_player *gp, sd_pilot *new_pilot) {
 chr_score *game_player_get_score(game_player *gp) {
     return &gp->score;
 }
+
+void game_player_clone(game_player *src, game_player *dst) {
+    memcpy(dst, src, sizeof(game_player));
+}

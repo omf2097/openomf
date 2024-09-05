@@ -42,5 +42,6 @@ int game_player_get_selectable(game_player *gp);
 sd_pilot *game_player_get_pilot(game_player *gp);
 void game_player_set_pilot(game_player *gp, sd_pilot *new_pilot);
 chr_score *game_player_get_score(game_player *gp);
+void game_player_clone(game_player *src, game_player *dst);
 
 #endif // GAME_PLAYER_H

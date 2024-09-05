@@ -124,6 +124,44 @@ void *list_iter_prev(iterator *iter) {
     return ((list_node *)iter->vnow)->data;
 }
 
+void *list_iter_peek(iterator *iter) {
+
+    void *vnow = NULL;
+    if(iter->vnow == NULL) {
+        vnow = ((list *)iter->data)->first;
+    } else {
+        vnow = ((list_node *)iter->vnow)->next;
+    }
+    if(vnow == NULL) {
+        return NULL;
+    }
+    return ((list_node *)vnow)->data;
+}
+
+void list_iter_append(iterator *iter, const void *ptr, size_t size) {
+    if(iter->vnow == NULL) {
+        list_prepend((list *)iter->data, ptr, size);
+    } else {
+        list_node *vnow = ((list_node *)iter->vnow);
+        list_node *vnext = vnow->next;
+        if (vnext == NULL) {
+            list_append((list *)iter->data, ptr, size);
+        } else {
+            list_node *node = (list_node *)omf_calloc(1, sizeof(list_node));
+            list *l = (list*)iter->data;
+            node->next = NULL;
+            node->prev = l->last;
+            node->data = omf_calloc(size, 1);
+            memcpy(node->data, (const char *)ptr, size);
+            vnow->next = node;
+            node->prev = vnow;
+            vnext->prev = node;
+            node->next = vnext;
+            l->size++;
+        }
+    }
+}
+
 void *list_get(const list *list, unsigned int i) {
     if(i >= list_size(list))
         return NULL;

@@ -151,6 +151,13 @@ int scene_unserialize(scene *s, serial *ser) {
     return 0;
 }
 
+int scene_clone(scene *src, scene *dst) {
+
+    memcpy(dst, src, sizeof(scene));
+    src->clone(src, dst);
+    return 0;
+}
+
 void scene_set_userdata(scene *scene, void *userdata) {
     scene->userdata = userdata;
 }

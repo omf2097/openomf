@@ -88,6 +88,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->unserialize = NULL;
     obj->debug = NULL;
     obj->pal_transform = NULL;
+    obj->clone = NULL;
+    obj->clone_free = NULL;
 }
 
 /**
@@ -143,6 +145,19 @@ int object_serialize(object *obj, serial *ser) {
     }
 
     // Return success
+    return 0;
+}
+
+int object_clone(object *src, object *dst) {
+    memcpy(dst, src, sizeof(object));
+    src->clone(src, dst);
+    if (src->custom_str) {
+        dst->custom_str = strdup(src->custom_str);
+    }
+
+    if (src->clone) {
+        src->clone(src, dst);
+    }
     return 0;
 }
 
