@@ -109,7 +109,7 @@ int projectile_unserialize(object *obj, serial *ser, int animation_id, game_stat
             object_set_animation(obj, &move->ani);
             object_set_userdata(obj, h);
             object_set_stl(obj, object_get_stl(o));
-            projectile_create(obj);
+            projectile_create(obj, h);
             return 0;
         }
     }
@@ -123,13 +123,13 @@ void projectile_bootstrap(object *obj) {
     object_set_unserialize_cb(obj, projectile_unserialize);
 }
 
-int projectile_create(object *obj) {
+int projectile_create(object *obj, har *har) {
     // strore the HAR in local userdata instead
     projectile_local *local = omf_calloc(1, sizeof(projectile_local));
     local->owner = obj;
     local->wall_bounce = 0;
     local->ground_freeze = 0;
-    local->af_data = ((har *)object_get_userdata(obj))->af_data;
+    local->af_data = har->af_data;
 
     // Set up callbacks
     object_set_userdata(obj, local);

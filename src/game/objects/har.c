@@ -398,7 +398,6 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t f
     if(move != NULL) {
         object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, parent->gs, pos, vel);
-        object_set_userdata(obj, h);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &move->ani);
         object_set_gravity(obj, g / 256.0f);
@@ -411,7 +410,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t f
         object_set_shadow(obj, 1);
         object_set_direction(obj, object_get_direction(parent));
         obj->animation_state.enemy = parent->animation_state.enemy;
-        projectile_create(obj);
+        projectile_create(obj, h);
 
         // allow projectiles to spawn projectiles, eg. shadow's scrap animation
         object_set_spawn_cb(obj, cb_har_spawn_object, h);
