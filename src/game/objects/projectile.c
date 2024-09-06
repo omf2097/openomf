@@ -10,7 +10,7 @@
 #define IS_ZERO(n) (n < 0.1 && n > -0.1)
 
 typedef struct projectile_local_t {
-    object *owner;
+    uint8_t player_id;
     af *af_data;
     int wall_bounce;
     int ground_freeze;
@@ -102,7 +102,7 @@ int projectile_unserialize(object *obj, serial *ser, int animation_id, game_stat
 
     for(int i = 0; i < 2; i++) {
         player = game_state_get_player(gs, i);
-        o = game_player_get_har(player);
+        o = game_state_find_object(obj->gs, game_player_get_har_obj_id(player));
         h = object_get_userdata(o);
         if(h->af_data->id == har_id) {
             af_move *move = af_get_move(h->af_data, animation_id);
@@ -126,7 +126,7 @@ void projectile_bootstrap(object *obj) {
 int projectile_create(object *obj, har *har) {
     // strore the HAR in local userdata instead
     projectile_local *local = omf_calloc(1, sizeof(projectile_local));
-    local->owner = obj;
+    local->player_id = har->player_id;
     local->wall_bounce = 0;
     local->ground_freeze = 0;
     local->af_data = har->af_data;
@@ -144,8 +144,8 @@ af *projectile_get_af_data(object *obj) {
     return ((projectile_local *)object_get_userdata(obj))->af_data;
 }
 
-object *projectile_get_owner(object *obj) {
-    return ((projectile_local *)object_get_userdata(obj))->owner;
+uint8_t projectile_get_owner(object *obj) {
+    return ((projectile_local *)object_get_userdata(obj))->player_id;
 }
 
 void projectile_set_wall_bounce(object *obj, int bounce) {

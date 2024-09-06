@@ -245,6 +245,21 @@ void game_state_del_object(game_state *gs, object *target) {
     }
 }
 
+void game_state_del_object_by_id(game_state *gs, uint32_t target) {
+    iterator it;
+    render_obj *robj;
+    vector_iter_begin(&gs->objects, &it);
+    while((robj = iter_next(&it)) != NULL) {
+        if(target == robj->obj->id) {
+            object_free(robj->obj);
+            omf_free(robj->obj);
+            vector_delete(&gs->objects, &it);
+            return;
+        }
+    }
+}
+
+
 void game_state_get_projectiles(game_state *gs, vector *obj_proj) {
     iterator it;
     render_obj *robj;
@@ -333,8 +348,8 @@ void game_state_render(game_state *gs) {
 
     // Get har objects
     object *har[2];
-    har[0] = game_state_get_player(gs, 0)->har;
-    har[1] = game_state_get_player(gs, 1)->har;
+    har[0] = game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id);
+    har[1] = game_state_find_object(gs, game_state_get_player(gs, 1)->har_obj_id);
 
     // Render BOTTOM layer
     vector_iter_begin(&gs->objects, &it);
@@ -394,7 +409,7 @@ void game_state_debug(game_state *gs) {
     // If we are in debug mode, handle HAR debug layers
 #ifdef DEBUGMODE
     for(int i = 0; i < 2; i++) {
-        object *h = game_state_get_player(gs, i)->har;
+        object *h = game_state_find_object(gs, game_state_get_player(gs, i)->har_obj_id);
         if(h != NULL) {
             object_debug(h);
         }
@@ -735,7 +750,7 @@ void _setup_keyboard(game_state *gs, int player_id) {
     // Set up controller
     controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
+    controller_init(ctrl, gs);
 
     // Set up keyboards
     keyboard_keys *keys = omf_calloc(1, sizeof(keyboard_keys));
@@ -775,7 +790,7 @@ void _setup_keyboard(game_state *gs, int player_id) {
 void _setup_ai(game_state *gs, int player_id) {
     controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
+    controller_init(ctrl, gs);
 
     sd_pilot *pilot = game_player_get_pilot(player);
     ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, player->pilot->pilot_id);
@@ -787,7 +802,7 @@ void _setup_ai(game_state *gs, int player_id) {
 int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offset) {
     controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
+    controller_init(ctrl, gs);
 
     int res = joystick_create(ctrl, joystick_name_to_id(joyname, offset));
     game_player_set_ctrl(player, ctrl);
@@ -798,7 +813,7 @@ int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offs
 static void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec) {
     controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
+    controller_init(ctrl, gs);
 
     rec_controller_create(ctrl, player_id, rec);
     game_player_set_ctrl(player, ctrl);
@@ -825,7 +840,7 @@ void game_state_init_demo(game_state *gs) {
     for(int i = 0; i < game_state_num_players(gs); i++) {
         game_player *player = game_state_get_player(gs, i);
         controller *ctrl = omf_calloc(1, sizeof(controller));
-        controller_init(ctrl);
+        controller_init(ctrl, gs);
         sd_pilot *pl = game_player_get_pilot(player);
         ai_controller_create(ctrl, 4, pl, player->pilot->pilot_id);
         game_player_set_ctrl(player, ctrl);
@@ -844,6 +859,32 @@ void game_state_init_demo(game_state *gs) {
         sd_pilot_set_player_color(player->pilot, TERTIARY, pilot_info.colors[0]);
     }
 }
+
+/*void game_state_clone_free(game_state *gs) {
+    // Free objects
+    render_obj *robj;
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    while((robj = iter_next(&it)) != NULL) {
+        object_clone_free(robj->obj);
+        omf_free(robj->obj);
+        vector_delete(&gs->objects, &it);
+    }
+    vector_free(&gs->objects);
+
+    // Free scene
+    scene_clone_free(gs->sc);
+    omf_free(gs->sc);
+
+    // Free players
+    for(int i = 0; i < 2; i++) {
+        game_player_set_ctrl(gs->players[i], NULL);
+        game_player_clone_free(gs->players[i]);
+        omf_free(gs->players[i]);
+    }
+    omf_free(gs);
+
+}*/
 
 void game_state_free(game_state **_gs) {
     game_state *gs = *_gs;
@@ -898,6 +939,18 @@ int render_obj_clone(render_obj *src, render_obj *dst) {
     return object_clone(src->obj, dst->obj);
 }
 
+object * game_state_find_object(game_state *gs, uint32_t object_id) {
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    render_obj *robj;
+    while((robj = iter_next(&it)) != NULL) {
+        if (robj->obj->id == object_id) {
+            return robj->obj;
+        }
+    }
+    return NULL;
+}
+
 int game_state_clone(game_state *src, game_state *dst) {
     // copy all the static fields
     memcpy(dst, src, sizeof(game_state));
@@ -911,7 +964,6 @@ int game_state_clone(game_state *src, game_state *dst) {
         render_obj d;
         render_obj_clone(robj, &d);
         d.obj->gs = dst;
-        // TODO handle object attached_to field
         vector_append(&dst->objects, &d);
     }
 
@@ -919,7 +971,8 @@ int game_state_clone(game_state *src, game_state *dst) {
     for(int i = 0; i < 2; i++) {
         dst->players[i] = omf_calloc(1, sizeof(game_player));
         game_player_clone(src->players[i], dst->players[i]);
-        // TODO update HAR object pointers!
+        // update HAR object pointers
+        dst->players[i]->har_obj_id = src->players[i]->har_obj_id;
     }
 
     dst->sc = omf_calloc(1, sizeof(scene));
@@ -935,8 +988,8 @@ int game_state_serialize(game_state *gs, serial *ser) {
     serial_write_int32(ser, game_state_is_paused(gs));
 
     object *har[2];
-    har[0] = game_state_get_player(gs, 0)->har;
-    har[1] = game_state_get_player(gs, 1)->har;
+    har[0] = game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id);
+    har[1] = game_state_find_object(gs, game_state_get_player(gs, 1)->har_obj_id);
 
     object_serialize(har[0], ser);
     object_serialize(har[1], ser);
@@ -977,7 +1030,7 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
     for(int i = 0; i < 2; i++) {
         // Declare some vars
         game_player *player = game_state_get_player(gs, i);
-        game_state_del_object(gs, player->har);
+        game_state_del_object_by_id(gs, player->har_obj_id);
         object *obj = omf_calloc(1, sizeof(object));
 
         // Create object and specialize it as HAR.
@@ -991,16 +1044,16 @@ int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
 
         // Set HAR for player
         game_player_set_har(player, obj);
-        game_player_get_ctrl(player)->har = obj;
+        game_player_get_ctrl(player)->har_obj_id = obj->id;
     }
 
     // ensure the HARs know each other's positions
     object *obj_har1, *obj_har2;
-    obj_har1 = game_player_get_har(game_state_get_player(gs, 0));
-    obj_har2 = game_player_get_har(game_state_get_player(gs, 1));
+    obj_har1 = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, 0)));
+    obj_har2 = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, 1)));
 
-    obj_har1->animation_state.enemy = obj_har2;
-    obj_har2->animation_state.enemy = obj_har1;
+    obj_har1->animation_state.enemy_obj_id = obj_har2->id;
+    obj_har2->animation_state.enemy_obj_id = obj_har1->id;
 
     // clean out any current projectiles/hazards
     iterator it;

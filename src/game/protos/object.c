@@ -1,6 +1,6 @@
 #include "game/protos/object.h"
 #include "formats/sprite.h"
-#include "game/game_state_type.h"
+#include "game/game_state.h"
 #include "game/objects/arena_constraints.h"
 #include "game/protos/object_specializer.h"
 #include "utils/allocator.h"
@@ -13,6 +13,9 @@
 
 #define UNUSED(x) (void)(x)
 
+
+static uint32_t object_id = 1;
+
 /** \brief Creates a new, empty object.
  * \param obj Object handle
  * \param gs Game state handle
@@ -22,6 +25,7 @@
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // State
     obj->gs = gs;
+    obj->id = object_id++;
 
     // Position related
     obj->pos = vec2i_to_f(pos);
@@ -42,7 +46,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->video_effects = 0;
 
     // Attachment stuff
-    obj->attached_to = NULL;
+    obj->attached_to_id = 0;
 
     // Fire orb wandering
     obj->orbit = 0;
@@ -282,9 +286,10 @@ void object_set_playback_direction(object *obj, int dir) {
 void object_dynamic_tick(object *obj) {
     obj->age++;
 
-    if(obj->attached_to != NULL) {
-        object_set_pos(obj, object_get_pos(obj->attached_to));
-        object_set_direction(obj, object_get_direction(obj->attached_to));
+    if(obj->attached_to_id != 0) {
+        object *attached_to = game_state_find_object(obj->gs, obj->attached_to_id);
+        object_set_pos(obj, object_get_pos(attached_to));
+        object_set_direction(obj, object_get_direction(attached_to));
     }
 
     // Check if object still needs to be halted
@@ -551,6 +556,23 @@ void object_free(object *obj) {
     obj->cur_surface = NULL;
     obj->cur_animation = NULL;
 }
+
+void object_clone_free(object *obj) {
+    if(obj->clone_free != NULL) {
+        obj->clone_free(obj);
+    }
+    player_free(obj);
+    if(obj->cur_animation_own == OWNER_OBJECT) {
+        animation_free(obj->cur_animation);
+        omf_free(obj->cur_animation);
+    }
+    if(obj->custom_str) {
+        omf_free(obj->custom_str);
+    }
+    obj->cur_surface = NULL;
+    obj->cur_animation = NULL;
+}
+
 
 /** Sets a pointer to a sound translation table. Note! Does NOT copy!
  * \param obj Object handle
@@ -834,5 +856,5 @@ int object_is_airborne(const object *obj) {
 
 /* Attaches one object to another. Positions are synced to this from the attached. */
 void object_attach_to(object *obj, const object *attach_to) {
-    obj->attached_to = attach_to;
+    obj->attached_to_id = attach_to->id;
 }

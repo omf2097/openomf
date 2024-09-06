@@ -21,7 +21,7 @@ void lab_menu_main_arena(component *c, void *userdata) {
     if(enemy) {
         // make a new AI controller
         controller *ctrl = omf_calloc(1, sizeof(controller));
-        controller_init(ctrl);
+        controller_init(ctrl, s->gs);
         sd_pilot *pilot = &enemy->pilot;
         game_player *p1 = game_state_get_player(s->gs, 0);
         game_player *p2 = game_state_get_player(s->gs, 1);

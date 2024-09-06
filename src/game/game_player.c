@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 void game_player_create(game_player *gp) {
-    gp->har = NULL;
+    gp->har_obj_id = 0;
     gp->ctrl = NULL;
     gp->portrait = NULL;
     gp->selectable = 0;
@@ -26,11 +26,15 @@ void game_player_free(game_player *gp) {
 }
 
 void game_player_set_har(game_player *gp, object *har) {
-    gp->har = har;
+    if (har) {
+        gp->har_obj_id = har->id;
+    } else {
+        gp->har_obj_id = 0;
+    }
 }
 
-object *game_player_get_har(game_player *gp) {
-    return gp->har;
+uint32_t game_player_get_har_obj_id(game_player *gp) {
+    return gp->har_obj_id;
 }
 
 void game_player_set_ctrl(game_player *gp, controller *ctrl) {

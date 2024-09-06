@@ -7,10 +7,11 @@ typedef struct {
     controller *source;
 } hook_function;
 
-void controller_init(controller *ctrl) {
+void controller_init(controller *ctrl, game_state *gs) {
     list_create(&ctrl->hooks);
+    ctrl->gs = gs;
     ctrl->extra_events = NULL;
-    ctrl->har = NULL;
+    ctrl->har_obj_id = 0;
     ctrl->poll_fun = NULL;
     ctrl->tick_fun = NULL;
     ctrl->dyntick_fun = NULL;

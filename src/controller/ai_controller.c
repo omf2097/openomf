@@ -345,9 +345,9 @@ bool forgetful(const ai *a) {
  * \return A boolean indicating range classification.
  */
 int get_enemy_range(const controller *ctrl) {
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
-    object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
+    object *o_enemy = game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
 
     int range_units = fabsf(o_enemy->pos.x - o->pos.x) / 30;
     switch(range_units) {
@@ -460,7 +460,7 @@ bool har_has_push(int har_id) {
 bool likes_tactic(const controller *ctrl, int tactic_type) {
     ai *a = ctrl->data;
 
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
     sd_pilot *pilot = a->pilot;
 
@@ -558,7 +558,7 @@ bool likes_tactic(const controller *ctrl, int tactic_type) {
  */
 void queue_tactic(controller *ctrl, int tactic_type) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
 
     a->tactic->last_tactic = a->tactic->tactic_type > 0 ? a->tactic->tactic_type : 0;
@@ -1037,7 +1037,7 @@ bool move_too_powerful(const ai *a, const af_move *move) {
 
 int ai_har_event(controller *ctrl, har_event event) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
     sd_pilot *pilot = a->pilot;
     move_stat *ms;
@@ -1413,7 +1413,7 @@ bool is_valid_move(const af_move *move, const har *h, bool force_allow_projectil
  */
 void set_selected_move(controller *ctrl, af_move *selected_move) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
 
     a->move_stats[selected_move->id].attempts++;
@@ -1422,7 +1422,7 @@ void set_selected_move(controller *ctrl, af_move *selected_move) {
     // do the move
     a->selected_move = selected_move;
     a->move_str_pos = str_size(&selected_move->move_string) - 1;
-    object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
+    object *o_enemy = game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
     a->move_stats[a->selected_move->id].last_dist = fabsf(o->pos.x - o_enemy->pos.x);
     a->blocked = 0;
     // DEBUG("AI selected move %s", str_c(&selected_move->move_string));
@@ -1439,7 +1439,7 @@ void set_selected_move(controller *ctrl, af_move *selected_move) {
  */
 bool assign_move_by_cat(controller *ctrl, int category, bool highest_damage) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
 
     af_move *selected_move = NULL;
@@ -1512,7 +1512,7 @@ bool assign_move_by_cat(controller *ctrl, int category, bool highest_damage) {
  * \return A boolean indicating whether move was assigned.
  */
 bool assign_move_by_id(controller *ctrl, int move_id) {
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
 
     for(int i = 0; i < 70; i++) {
@@ -1544,9 +1544,9 @@ bool assign_move_by_id(controller *ctrl, int move_id) {
  */
 int ai_block_har(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
-    object *o_enemy = game_state_get_player(o->gs, h->player_id == 1 ? 0 : 1)->har;
+    object *o_enemy = game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
     har *h_enemy = object_get_userdata(o_enemy);
 
     // XXX TODO get maximum move distance from the animation object
@@ -1573,7 +1573,7 @@ int ai_block_har(controller *ctrl, ctrl_event **ev) {
  */
 int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
 
     bool remember_shooting = (learning_moment(a) && a->shot >= MAX_TIMES_SHOT);
 
@@ -1582,7 +1582,7 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
     vector_iter_begin(&a->active_projectiles, &it);
     while((o_tmp = iter_next(&it)) != NULL) {
         object *o_prj = *o_tmp;
-        if(projectile_get_owner(o_prj) == o) {
+        if(projectile_get_owner(o_prj) == har_player_id(o)) {
             continue;
         }
         if(o_prj->cur_sprite && (smart_usually(a) || remember_shooting)) {
@@ -1612,7 +1612,7 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
  */
 void process_selected_move(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
 
     if(a->input_lag_timer > 0) {
         a->input_lag_timer--;
@@ -1642,7 +1642,7 @@ void process_selected_move(controller *ctrl, ctrl_event **ev) {
  */
 void handle_movement(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
 
     // default mid-action jump chance
@@ -1733,7 +1733,7 @@ void handle_movement(controller *ctrl, ctrl_event **ev) {
  */
 bool attempt_attack(controller *ctrl, bool highest_damage) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
 
     int enemy_range = get_enemy_range(ctrl);
@@ -1828,7 +1828,7 @@ bool attempt_attack(controller *ctrl, bool highest_damage) {
  */
 bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
 
     int enemy_range = get_enemy_range(ctrl);
@@ -2032,7 +2032,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
  */
 bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
 
     int enemy_range = get_enemy_range(ctrl);
@@ -2143,7 +2143,7 @@ bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
  * \return Boolean indicating whether an attack was initiated.
  */
 bool attempt_trip_attack(controller *ctrl, ctrl_event **ev) {
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
 
     switch(h->state) {
@@ -2177,7 +2177,7 @@ bool attempt_trip_attack(controller *ctrl, ctrl_event **ev) {
  * \return Boolean indicating whether an attack was initiated.
  */
 bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
 
     if(h->state == STATE_WALKTO || h->state == STATE_WALKFROM || h->state == STATE_CROUCHBLOCK) {
@@ -2249,7 +2249,7 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
  */
 bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
     tactic_state *tactic = a->tactic;
     int enemy_close = h->close;
@@ -2573,7 +2573,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
 
 int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
-    object *o = ctrl->har;
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     if(!o) {
         return 1;
     }

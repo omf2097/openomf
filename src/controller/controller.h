@@ -2,6 +2,7 @@
 #define CONTROLLER_H
 
 #include "game/objects/har.h"
+#include "game/game_state_type.h"
 #include "game/protos/object.h"
 #include "game/utils/serial.h"
 #include "utils/list.h"
@@ -52,7 +53,8 @@ struct ctrl_event_t {
 typedef struct controller_t controller;
 
 struct controller_t {
-    object *har;
+    game_state *gs;
+    uint32_t har_obj_id;
     list hooks;
     ctrl_event *extra_events;
     int (*tick_fun)(controller *ctrl, int ticks, ctrl_event **ev);
@@ -69,7 +71,7 @@ struct controller_t {
     int repeat;
 };
 
-void controller_init(controller *ctrl);
+void controller_init(controller *ctrl, game_state *gs);
 void controller_cmd(controller *ctrl, int action, ctrl_event **ev);
 void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev);
 void controller_close(controller *ctrl, ctrl_event **ev);

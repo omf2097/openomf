@@ -111,12 +111,14 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
                     return 1;
                 }
 
-                object *har_obj = game_player_get_har(player);
+                object *har_obj = game_state_find_object(gs, game_player_get_har_obj_id(player));
                 vec2i pos = object_get_pos(har_obj);
                 int hd = object_get_direction(har_obj);
 
                 object *obj = omf_calloc(1, sizeof(object));
                 object_create(obj, gs, pos, vec2f_create(0, 0));
+                // set the object to the same as the old one, so all the references remain intact
+                obj->id = har_obj->id;
 
                 if(har_create(obj, game_state_get_scene(gs)->af_data[0], hd, player->pilot->har_id,
                               player->pilot->pilot_id, 0)) {
@@ -132,9 +134,6 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
 
                 // Set HAR for player
                 game_player_set_har(player, obj);
-                game_player_get_ctrl(player)->har = obj;
-                game_player_get_har(player)->animation_state.enemy = game_player_get_har(game_state_get_player(gs, 1));
-                game_player_get_har(game_state_get_player(gs, 1))->animation_state.enemy = game_player_get_har(player);
 
                 maybe_install_har_hooks(game_state_get_scene(gs));
             } else if(gs->this_id == SCENE_MECHLAB) {
@@ -150,7 +149,7 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
 int console_cmd_win(game_state *gs, int argc, char **argv) {
     if(argc == 1) {
         game_player *player = game_state_get_player(gs, 1);
-        object *har_obj = game_player_get_har(player);
+        object *har_obj = game_state_find_object(gs, game_player_get_har_obj_id(player));
         har *har = object_get_userdata(har_obj);
         har->health = 0;
         return 0;
@@ -161,7 +160,7 @@ int console_cmd_win(game_state *gs, int argc, char **argv) {
 int console_cmd_lose(game_state *gs, int argc, char **argv) {
     if(argc == 1) {
         game_player *player = game_state_get_player(gs, 0);
-        object *har_obj = game_player_get_har(player);
+        object *har_obj = game_state_find_object(gs, game_player_get_har_obj_id(player));
         har *har = object_get_userdata(har_obj);
         har->health = 0;
         return 0;
@@ -172,7 +171,7 @@ int console_cmd_lose(game_state *gs, int argc, char **argv) {
 int console_cmd_stun(game_state *gs, int argc, char **argv) {
     if(argc == 1) {
         game_player *player = game_state_get_player(gs, 1);
-        object *har_obj = game_player_get_har(player);
+        object *har_obj = game_state_find_object(gs, game_player_get_har_obj_id(player));
         har *har = object_get_userdata(har_obj);
         har->endurance = 0;
         har->state = STATE_RECOIL;

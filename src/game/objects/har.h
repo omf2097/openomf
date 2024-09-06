@@ -187,6 +187,8 @@ int har_is_blocking(har *h, af_move *move);
 void har_copy_actions(object *new, object *old);
 void har_reset(object *obj);
 
+uint8_t har_player_id(object *obj);
+
 int16_t har_health_percent(har *h);
 
 #endif // HAR_H

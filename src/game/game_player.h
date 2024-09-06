@@ -15,7 +15,7 @@
 #include "video/surface.h"
 
 typedef struct game_player_t {
-    object *har;
+    uint32_t har_obj_id;
     controller *ctrl;
     surface *portrait;
     sd_pilot *pilot;
@@ -32,7 +32,7 @@ void game_player_create(game_player *gp);
 void game_player_free(game_player *gp);
 
 void game_player_set_har(game_player *gp, object *har);
-object *game_player_get_har(game_player *gp);
+uint32_t game_player_get_har_obj_id(game_player *gp);
 void game_player_set_ctrl(game_player *gp, controller *ctrl);
 controller *game_player_get_ctrl(game_player *gp);
 void game_player_set_portrait(game_player *gp, surface *portrait);

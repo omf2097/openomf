@@ -60,6 +60,7 @@ typedef int (*object_clone_cb)(object *src, object *dst);
 typedef int (*object_clone_free_cb)(object *obj);
 
 struct object_t {
+    uint32_t id;
     game_state *gs;
 
     vec2f start;
@@ -98,9 +99,9 @@ struct object_t {
     char *sound_translation_table;
     uint8_t sprite_override; //< Tells whether cur_sprite should be kept constant regardless of anim string.
 
-    // NULL if this object is not attached to any other objects
-    // Object pointer if it is. In this case, velocity and direction will be matched.
-    const object *attached_to;
+    // 0 if this object is not attached to any other objects
+    // non zero object id if it is. In this case, velocity and direction will be matched.
+    uint32_t attached_to_id;
 
     uint8_t pal_offset;
     uint8_t cur_remap;

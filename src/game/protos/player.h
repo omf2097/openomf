@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "game/game_state.h"
 #include "formats/script.h"
 #include "utils/vec.h"
 #include <stdint.h>
@@ -46,6 +47,7 @@ typedef struct player_enemy_slide_op_t {
 } player_enemy_slide_state;
 
 typedef struct player_animation_state_t {
+    game_state *gs;
     uint32_t previous_tick;
     uint32_t current_tick;
     uint32_t end_frame;
@@ -60,7 +62,7 @@ typedef struct player_animation_state_t {
 
     void *spawn_userdata;
     void *destroy_userdata;
-    object *enemy;
+    uint32_t enemy_obj_id;
     object_state_add_cb spawn;
     object_state_del_cb destroy;
 } player_animation_state;

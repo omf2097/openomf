@@ -53,7 +53,7 @@ void fire_hooks(har *h, har_event event) {
         hook->cb(event, hook->data);
     }
     controller *ctrl = game_player_get_ctrl(h->gp);
-    if(object_get_userdata(ctrl->har) == h) {
+    if(object_get_userdata(game_state_find_object(ctrl->gs, ctrl->har_obj_id)) == h) {
         controller_har_hook(ctrl, event);
     }
 }
@@ -409,7 +409,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t f
         object_set_repeat(obj, 0);
         object_set_shadow(obj, 1);
         object_set_direction(obj, object_get_direction(parent));
-        obj->animation_state.enemy = parent->animation_state.enemy;
+        obj->animation_state.enemy_obj_id = parent->animation_state.enemy_obj_id;
         projectile_create(obj, h);
 
         // allow projectiles to spawn projectiles, eg. shadow's scrap animation
@@ -492,7 +492,7 @@ void har_move(object *obj) {
             har_floor_landing_effects(obj);
 
             // make sure HAR's are facing each other
-            object *obj_enemy = game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har;
+            object *obj_enemy = game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
             if(object_get_direction(obj) == object_get_direction(obj_enemy)) {
                 vec2i pos = object_get_pos(obj);
                 vec2i pos_enemy = object_get_pos(obj_enemy);
@@ -593,7 +593,8 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     // Take a screencap of enemy har
     if(h->health == 0) {
         game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
-        har_screencaps_capture(&other_player->screencaps, other_player->har, SCREENCAP_BLOW);
+        object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
+        har_screencaps_capture(&other_player->screencaps, other_har, SCREENCAP_BLOW);
     }
 
     // If damage is high enough, slow down the game for a bit
@@ -696,8 +697,8 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
 // HAR is doing destruction. If there is any way to do this better,
 // this should be changed.
 int is_destruction(game_state *gs) {
-    har *har_a = object_get_userdata(game_state_get_player(gs, 0)->har);
-    har *har_b = object_get_userdata(game_state_get_player(gs, 1)->har);
+    har *har_a = object_get_userdata(game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id));
+    har *har_b = object_get_userdata(game_state_find_object(gs, game_state_get_player(gs, 1)->har_obj_id));
     return (har_a->state == STATE_DESTRUCTION || har_b->state == STATE_DESTRUCTION);
 }
 
@@ -1094,7 +1095,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
     af *prog_owner_af_data = projectile_get_af_data(o_pjt);
-    har *other = object_get_userdata(game_state_get_player(o_har->gs, abs(h->player_id - 1))->har);
+    har *other = object_get_userdata(game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
     if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE) {
         // can't hit em while they're down
@@ -1200,7 +1201,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
         har_take_damage(o_har, &anim->footer_string, anim->hazard_damage, (anim->hazard_damage + 6) * 512);
         har_event_hazard_hit(h, anim);
         // fire enemy hazard hit event
-        object *enemy_obj = game_player_get_har(game_state_get_player(o_har->gs, !h->player_id));
+        object *enemy_obj = game_state_find_object(o_har->gs, game_player_get_har_obj_id(game_state_get_player(o_har->gs, !h->player_id)));
         har *enemy_h = object_get_userdata(enemy_obj);
         har_event_enemy_hazard_hit(enemy_h);
         if(anim->chain_no_hit) {
@@ -1212,7 +1213,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     } else if(anim->chain_hit && intersect_sprite_hitpoint(o_har, o_hzd, level, &hit_coord)) {
         // we can punch this! Only set on fire pit orb
         anim = bk_get_info(bk_data, anim->chain_hit);
-        o_hzd->animation_state.enemy = o_har->animation_state.enemy;
+        o_hzd->animation_state.enemy_obj_id = o_har->animation_state.enemy_obj_id;
         object_set_animation(o_hzd, &anim->ani);
         object_set_repeat(o_hzd, 0);
         o_hzd->animation_state.finished = 0;
@@ -1809,7 +1810,7 @@ int har_act(object *obj, int act_type) {
         object_set_vel(obj, spd);
 
         // Prefetch enemy object & har links, they may be needed
-        object *enemy_obj = game_player_get_har(game_state_get_player(obj->gs, !h->player_id));
+        object *enemy_obj = game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         har *enemy_har = (har *)enemy_obj->userdata;
 
         // If animation is scrap or destruction, then remove our customizations
@@ -1866,7 +1867,7 @@ int har_act(object *obj, int act_type) {
 
         // Send an event if the har tries to turn in the air by pressing either left/right/downleft/downright
         int opp_id = h->player_id ? 0 : 1;
-        object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
+        object *opp = game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, opp_id)));
         if(act_type == ACT_LEFT || act_type == ACT_RIGHT || act_type == (ACT_DOWN | ACT_LEFT) ||
            act_type == (ACT_DOWN | ACT_RIGHT)) {
             if(object_get_pos(obj).x > object_get_pos(opp).x) {
@@ -1965,7 +1966,7 @@ int har_act(object *obj, int act_type) {
     // if enemy is airborn we fire extra walk event to check whether we need to turn
     // fixes some rare behaviour where you cannot kick-counter someone who jumps over you
     int opp_id = h->player_id ? 0 : 1;
-    object *opp = game_player_get_har(game_state_get_player(obj->gs, opp_id));
+    object *opp = game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, opp_id)));
     if(object_is_airborne(opp)) {
         har_event_walk(h, 1);
     }
@@ -2003,7 +2004,7 @@ void har_finished(object *obj) {
         har_event_stun(h);
 
         // fire enemy stunned event
-        object *enemy_obj = game_player_get_har(game_state_get_player(obj->gs, !h->player_id));
+        object *enemy_obj = game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         har *enemy_h = object_get_userdata(enemy_obj);
         har_event_enemy_stun(enemy_h);
     } else if(h->state == STATE_RECOIL) {
@@ -2363,6 +2364,11 @@ void har_reset(object *obj) {
 
     har_set_ani(obj, ANIM_IDLE, 1);
     object_set_stride(obj, h->stride);
+}
+
+uint8_t har_player_id(object *obj) {
+    har *h = object_get_userdata(obj);
+    return h->player_id;
 }
 
 int16_t har_health_percent(har *h) {

@@ -84,6 +84,7 @@ void player_clear_frame(object *obj) {
 // ---------------- Public functions ----------------
 
 void player_create(object *obj) {
+    obj->animation_state.gs = obj->gs;
     obj->animation_state.reverse = 0;
     obj->animation_state.end_frame = UINT32_MAX;
     obj->animation_state.current_tick = 0;
@@ -96,7 +97,7 @@ void player_create(object *obj) {
     obj->animation_state.destroy = NULL;
     obj->animation_state.destroy_userdata = NULL;
     obj->animation_state.disable_d = 0;
-    obj->animation_state.enemy = NULL;
+    obj->animation_state.enemy_obj_id = 0;
     obj->animation_state.shadow_corner_hack = 0;
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0, 0);
@@ -249,6 +250,7 @@ void player_run(object *obj) {
     // Some vars for easier life
     player_animation_state *state = &obj->animation_state;
     player_sprite_state *rstate = &obj->sprite_state;
+    object *enemy = game_state_find_object(state->gs, state->enemy_obj_id);
     if(state->finished)
         return;
 
@@ -364,9 +366,9 @@ void player_run(object *obj) {
         obj->vel.y = 0;
 
         // Reset position to enemy coordinates and make sure facing is set correctly
-        obj->pos.x = state->enemy->pos.x;
-        obj->pos.y = state->enemy->pos.y;
-        object_set_direction(obj, object_get_direction(state->enemy) * -1);
+        obj->pos.x = enemy->pos.x;
+        obj->pos.x = enemy->pos.y;
+        object_set_direction(obj, object_get_direction(enemy) * -1);
         // DEBUG("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
 
@@ -384,10 +386,11 @@ void player_run(object *obj) {
 
     if(sd_script_isset(frame, "at")) {
         // set the object's X position to be behind the opponent
-        if(obj->pos.x > state->enemy->pos.x) { // From right to left
-            obj->pos.x = state->enemy->pos.x - object_get_size(obj).x / 2;
+
+        if(obj->pos.x > enemy->pos.x) { // From right to left
+            obj->pos.x = enemy->pos.x - object_get_size(obj).x / 2;
         } else { // From left to right
-            obj->pos.x = state->enemy->pos.x + object_get_size(state->enemy).x / 2;
+            obj->pos.x = enemy->pos.x + object_get_size(enemy).x / 2;
         }
         object_set_direction(obj, object_get_direction(obj) * -1);
     }
@@ -415,8 +418,8 @@ void player_run(object *obj) {
     // Handle slide in relation to enemy
     if(obj->enemy_slide_state.timer > 0) {
         obj->enemy_slide_state.duration++;
-        obj->pos.x = state->enemy->pos.x + obj->enemy_slide_state.dest.x;
-        obj->pos.y = state->enemy->pos.y + obj->enemy_slide_state.dest.y;
+        obj->pos.x = enemy->pos.x + obj->enemy_slide_state.dest.x;
+        obj->pos.y = enemy->pos.y + obj->enemy_slide_state.dest.y;
         obj->enemy_slide_state.timer--;
     }
 
@@ -430,8 +433,8 @@ void player_run(object *obj) {
             float vy = 0;
 
             if(obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65) {
-                mx = state->enemy->pos.x;
-                my = state->enemy->pos.y;
+                mx = enemy->pos.x;
+                my = enemy->pos.y;
             }
 
             // Staring X coordinate for new animation
@@ -545,7 +548,7 @@ void player_run(object *obj) {
         }
         if(sd_script_isset(frame, "bpf")) {
             // Exact values come from master.dat
-            if(game_state_get_player(obj->gs, 0)->har == obj) {
+            if(game_state_get_player(obj->gs, 0)->har_obj_id == obj->id) {
                 rstate->pal_start_index = 1;
                 rstate->pal_entry_count = 47;
             } else {
@@ -579,8 +582,8 @@ void player_run(object *obj) {
         }
 
         // If UA is set, force other HAR to damage animation
-        if(sd_script_isset(frame, "ua") && state->enemy->cur_animation->id != 9) {
-            har_set_ani(state->enemy, 9, 0);
+        if(sd_script_isset(frame, "ua") && enemy->cur_animation->id != 9) {
+            har_set_ani(enemy, 9, 0);
         }
 
         // BJ sets new animation for our HAR
