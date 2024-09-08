@@ -367,7 +367,7 @@ void player_run(object *obj) {
 
         // Reset position to enemy coordinates and make sure facing is set correctly
         obj->pos.x = enemy->pos.x;
-        obj->pos.x = enemy->pos.y;
+        obj->pos.y = enemy->pos.y;
         object_set_direction(obj, object_get_direction(enemy) * -1);
         // DEBUG("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
