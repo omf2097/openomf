@@ -74,6 +74,7 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
 
     component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
+    spritebutton_set_free_userdata(button, true);
     trnmenu_attach(menu, button);
 
     lab_menu_select_t *goleft = omf_calloc(1, sizeof(lab_menu_select_t));
@@ -85,6 +86,7 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
     spritebutton_set_focus_cb(button, lab_menu_focus_left);
+    spritebutton_set_free_userdata(button, true);
     trnmenu_attach(menu, button);
 
     lab_menu_select_t *goright = omf_calloc(1, sizeof(lab_menu_select_t));
@@ -96,6 +98,7 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
     spritebutton_set_focus_cb(button, lab_menu_focus_right);
+    spritebutton_set_free_userdata(button, true);
     trnmenu_attach(menu, button);
 
     // Add text label
