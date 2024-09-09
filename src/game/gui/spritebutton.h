@@ -30,5 +30,6 @@ void spritebutton_set_tick_cb(component *c, spritebutton_tick_cb);
 void spritebutton_set_focus_cb(component *c, spritebutton_focus_cb);
 
 void spritebutton_set_always_display(component *c);
+void spritebutton_set_free_userdata(component *c, bool free_userdata);
 
 #endif // SPRITEBUTTON_H

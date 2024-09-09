@@ -20,6 +20,7 @@ typedef struct {
     spritebutton_click_cb click_cb;
     spritebutton_tick_cb tick_cb;
     spritebutton_focus_cb focus_cb;
+    bool free_userdata;
     void *userdata;
 } spritebutton;
 
@@ -41,6 +42,9 @@ static void spritebutton_render(component *c) {
 
 static void spritebutton_free(component *c) {
     spritebutton *sb = widget_get_obj(c);
+    if(sb->free_userdata) {
+        omf_free(sb->userdata);
+    }
     omf_free(sb->text);
     omf_free(sb);
 }
@@ -123,4 +127,9 @@ void spritebutton_set_focus_cb(component *c, spritebutton_focus_cb cb) {
 void spritebutton_set_always_display(component *c) {
     spritebutton *sb = widget_get_obj(c);
     sb->active = -1;
+}
+
+void spritebutton_set_free_userdata(component *c, bool free_userdata) {
+    spritebutton *sb = widget_get_obj(c);
+    sb->free_userdata = free_userdata;
 }
