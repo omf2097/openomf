@@ -519,6 +519,9 @@ int object_palette_transform(object *obj, screen_palette *pal) {
  * \param obj Object handle
  */
 void object_free(object *obj) {
+    if(obj == NULL) {
+        return;
+    }
     if(obj->free != NULL) {
         obj->free(obj);
     }
