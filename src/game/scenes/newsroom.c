@@ -277,11 +277,6 @@ int newsroom_create(scene *scene) {
     local->screen = 0;
     local->champion = false;
     menu_background_create(&local->news_bg, 280, 50);
-    str_create(&local->news_str);
-    str_create(&local->pilot1);
-    str_create(&local->pilot2);
-    str_create(&local->har1);
-    str_create(&local->har2);
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
