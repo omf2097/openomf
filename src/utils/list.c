@@ -86,6 +86,9 @@ void list_delete(list *list, iterator *iter) {
     } else {
         iter->vnow = node->prev;
     }
+    if(list->free) {
+        list->free(node->data);
+    }
     omf_free(node->data);
     omf_free(node);
     list->size--;
