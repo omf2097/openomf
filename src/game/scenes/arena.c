@@ -794,6 +794,15 @@ void arena_free(scene *scene) {
         component_free(local->health_bars[i]);
         component_free(local->endurance_bars[i]);
     }
+    sprite_free(local->player1_portrait->cur_sprite);
+    omf_free(local->player1_portrait->cur_sprite);
+    object_free(local->player1_portrait);
+    omf_free(local->player1_portrait);
+
+    sprite_free(local->player2_portrait->cur_sprite);
+    omf_free(local->player2_portrait->cur_sprite);
+    object_free(local->player2_portrait);
+    omf_free(local->player2_portrait);
 
     settings_save();
 
