@@ -1336,6 +1336,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 void ai_controller_free(controller *ctrl) {
     ai *a = ctrl->data;
     vector_free(&a->active_projectiles);
+    omf_free(a->tactic);
     omf_free(a);
 }
 
