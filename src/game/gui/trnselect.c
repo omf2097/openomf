@@ -92,10 +92,7 @@ void load_description(component **c, const char *desc) {
         tconf.cforeground = palette_lookup_color(0xa5, video_get_base_palette());
     }
 
-    if(*c) {
-        component_free(*c);
-    }
-
+    component_free(*c);
     *c = label_create(&tconf, start);
 
     if(center) {
@@ -114,6 +111,7 @@ static void trnselect_free(component *c) {
     omf_free(g->img);
     list_free(g->tournaments);
     omf_free(g->tournaments);
+    component_free(g->label);
     omf_free(g);
 }
 
