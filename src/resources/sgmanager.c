@@ -108,6 +108,7 @@ list *sg_load_all() {
             DEBUG("%s", chrfile);
             sg_load(chr, chrfile);
             list_append(chrlist, chr, sizeof(sd_chr_file));
+            omf_free(chr);
         }
     }
 
