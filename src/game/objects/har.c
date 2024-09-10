@@ -567,8 +567,8 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         if(player->pilot->photo) {
             // in tournament mode, damage is mitigated by armor
             // (Armor + 2.5) * .25
-            DEBUG("applying %f to %f modulated by armor %f", damage, h->health, ((player->pilot->armor + 2.5) * 0.25f));
-            h->health -= damage / ((player->pilot->armor + 2.5) * 0.25f);
+            DEBUG("applying %f to %d modulated by armor %f", damage, h->health, 0.25f * (2.5f + player->pilot->armor));
+            h->health -= damage / (0.25f * (2.5f + player->pilot->armor));
         } else {
             h->health -= damage;
         }
