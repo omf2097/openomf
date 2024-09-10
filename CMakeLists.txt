@@ -282,9 +282,6 @@ endif()
 # Copy openomf.bk to destination resources directory to ease development setup.
 file(COPY resources/openomf.bk DESTINATION resources)
 
-# Packaging
-add_subdirectory(packaging)
-
 # Installation
 if(WIN32)
     # On windows, generate a flat directory structure under openomf/ subdir.
