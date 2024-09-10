@@ -112,6 +112,8 @@ static void trnselect_free(component *c) {
     video_set_base_palette(&g->palette_backup);
     sprite_free(g->img);
     omf_free(g->img);
+    list_free(g->tournaments);
+    omf_free(g->tournaments);
     omf_free(g);
 }
 
