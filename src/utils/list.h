@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 typedef struct list_node_t list_node;
+typedef void (*list_node_free_cb)(void *data);
 
 struct list_node_t {
     list_node *prev;
@@ -16,6 +17,7 @@ typedef struct list_t {
     list_node *first;
     list_node *last;
     unsigned int size;
+    list_node_free_cb free;
 } list;
 
 void list_create(list *list);
@@ -28,5 +30,6 @@ void list_iter_begin(const list *list, iterator *iter);
 void list_iter_end(const list *list, iterator *iter);
 void *list_iter_next(iterator *iter);
 void *list_get(const list *list, unsigned int i);
+void list_set_node_free_cb(list *list, list_node_free_cb cb);
 
 #endif // LIST_H
