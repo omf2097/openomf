@@ -67,7 +67,8 @@ bool mechlab_find_last_player(scene *scene) {
     local->dashtype = DASHBOARD_NONE;
     if(p1->chr == NULL) {
         DEBUG("No previous savegame found");
-        local->mech = NULL;
+        object_free(local->mech);
+        omf_free(local->mech);
         p1->pilot->money = 0;
         p1->pilot->har_id = 0;
         return false;
@@ -75,6 +76,8 @@ bool mechlab_find_last_player(scene *scene) {
         DEBUG("Previous savegame found; loading as default.");
         // Load HAR
         animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->chr->pilot.har_id)->ani;
+        object_free(local->mech);
+        omf_free(local->mech);
         local->mech = omf_calloc(1, sizeof(object));
         object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(local->mech, initial_har_ani);
@@ -143,10 +146,8 @@ void mechlab_free(scene *scene) {
     component_free(local->hint);
     guiframe_free(local->frame);
     guiframe_free(local->dashboard);
-    if(local->mech) {
-        object_free(local->mech);
-        omf_free(local->mech);
-    }
+    object_free(local->mech);
+    omf_free(local->mech);
     omf_free(local);
     scene_set_userdata(scene, local);
 }
@@ -322,6 +323,8 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             player1->pilot->money = 2000;
             // and a jaguar
             player1->pilot->har_id = 0;
+            object_free(local->mech);
+            omf_free(local->mech);
             local->mech = omf_calloc(1, sizeof(object));
             animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + player1->pilot->har_id)->ani;
             object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
