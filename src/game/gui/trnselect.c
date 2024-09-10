@@ -127,6 +127,7 @@ void trnselect_next(component *c) {
     sd_sprite *logo = trn->locales[0]->logo;
     video_copy_base_pal_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, trn->locales[0]->description);
+    sprite_free(local->img);
     sprite_create(local->img, logo, -1);
 }
 
@@ -140,6 +141,7 @@ void trnselect_prev(component *c) {
     sd_sprite *logo = trn->locales[0]->logo;
     video_copy_base_pal_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, trn->locales[0]->description);
+    sprite_free(local->img);
     sprite_create(local->img, logo, -1);
 }
 
