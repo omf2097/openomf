@@ -7,6 +7,7 @@ void list_create(list *list) {
     list->first = NULL;
     list->last = NULL;
     list->size = 0;
+    list->free = NULL;
 }
 
 void list_free(list *list) {
@@ -16,6 +17,9 @@ void list_free(list *list) {
     now = list->first;
     while(now != NULL) {
         next = now->next;
+        if(list->free) {
+            list->free(now->data);
+        }
         omf_free(now->data);
         omf_free(now);
         now = next;
@@ -149,4 +153,8 @@ void list_iter_end(const list *list, iterator *iter) {
     iter->next = NULL;
     iter->prev = list_iter_prev;
     iter->ended = (list->first == NULL);
+}
+
+void list_set_node_free_cb(list *list, list_node_free_cb cb) {
+    list->free = cb;
 }
