@@ -14,15 +14,15 @@ enum
 
 enum
 {
-    ROLE_CLIENT,
-    ROLE_SERVER
+    ROLE_SERVER,
+    ROLE_CLIENT
 };
 
 enum
 {
     NET_MODE_NONE,
-    NET_MODE_CLIENT,
-    NET_MODE_SERVER
+    NET_MODE_SERVER,
+    NET_MODE_CLIENT
 };
 
 typedef struct scene_t scene;

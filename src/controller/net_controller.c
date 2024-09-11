@@ -177,7 +177,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
 
         for (int j = 0; j < 2; j++) {
             if (ev->events[j]) {
-                int player_id = abs(j);
+                int player_id = j;
                 DEBUG("replaying input %d from player %d at tick %d", ev->events[j], player_id, ev->tick);
                 game_player *player = game_state_get_player(gs, player_id);
                 object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j]);
