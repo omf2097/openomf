@@ -33,6 +33,9 @@ ticktimer *game_state_get_ticktimer(game_state *gs);
 
 object * game_state_find_object(game_state *gs, uint32_t object_id);
 
+int game_state_clone(game_state *src, game_state *dst);
+void game_state_clone_free(game_state *gs);
+
 int game_state_serialize(game_state *gs, serial *ser);
 int game_state_unserialize(game_state *gs, serial *ser, int rtt);
 

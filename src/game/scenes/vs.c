@@ -112,7 +112,7 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t fl
     scene *sc = (scene *)userdata;
 
     // Get next animation
-    bk_info *info = bk_get_info(&sc->bk_data, id);
+    bk_info *info = bk_get_info(sc->bk_data, id);
     if(info != NULL) {
         object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, parent->gs, vec2i_add(pos, vec2f_to_i(parent->pos)), vel);
@@ -445,7 +445,7 @@ int vs_create(scene *scene) {
     video_force_pal_refresh();
 
     // HAR
-    ani = &bk_get_info(&scene->bk_data, 5)->ani;
+    ani = &bk_get_info(scene->bk_data, 5)->ani;
     object_create(&local->player1_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
     object_set_animation(&local->player1_har, ani);
     object_select_sprite(&local->player1_har, player1->pilot->har_id);
@@ -459,7 +459,7 @@ int vs_create(scene *scene) {
 
         // PLAYER
         object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
-        ani = &bk_get_info(&scene->bk_data, 4)->ani;
+        ani = &bk_get_info(scene->bk_data, 4)->ani;
         if(player1->chr) {
             object_set_sprite_override(&local->player1_portrait, 1);
             local->player1_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
@@ -483,7 +483,7 @@ int vs_create(scene *scene) {
 
         // plug is player 1 now
         object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
-        ani = &bk_get_info(&scene->bk_data, 2)->ani;
+        ani = &bk_get_info(scene->bk_data, 2)->ani;
         object_set_animation(&local->player1_portrait, ani);
         object_select_sprite(&local->player1_portrait, 0);
     }
@@ -491,8 +491,8 @@ int vs_create(scene *scene) {
     if(player2->pilot != NULL) {
         // clone the left side of the background image
         // Note! We are touching the scene-wide background surface!
-        surface_sub(&scene->bk_data.background, // DST Surface
-                    &scene->bk_data.background, // SRC Surface
+        surface_sub(&scene->bk_data->background, // DST Surface
+                    &scene->bk_data->background, // SRC Surface
                     160, 0,                     // DST
                     0, 0,                       // SRC
                     160, 200,                   // Size
@@ -512,7 +512,7 @@ int vs_create(scene *scene) {
 
     // Arena
     if(player2->selectable) {
-        ani = &bk_get_info(&scene->bk_data, 3)->ani;
+        ani = &bk_get_info(scene->bk_data, 3)->ani;
         object_create(&local->arena_select, scene->gs, vec2i_create(59, 155), vec2f_create(0, 0));
         object_set_animation(&local->arena_select, ani);
         object_select_sprite(&local->arena_select, local->arena);
@@ -533,7 +533,7 @@ int vs_create(scene *scene) {
         scientistcoord.x -= 50;
     }
     object *o_scientist = omf_calloc(1, sizeof(object));
-    ani = &bk_get_info(&scene->bk_data, 8)->ani;
+    ani = &bk_get_info(scene->bk_data, 8)->ani;
     object_create(o_scientist, scene->gs, scientistcoord, vec2f_create(0, 0));
     object_set_animation(o_scientist, ani);
     object_select_sprite(o_scientist, 0);
@@ -558,7 +558,7 @@ int vs_create(scene *scene) {
         }
     }
     object *o_welder = omf_calloc(1, sizeof(object));
-    ani = &bk_get_info(&scene->bk_data, 7)->ani;
+    ani = &bk_get_info(scene->bk_data, 7)->ani;
     object_create(o_welder, scene->gs, spawn_position(welderpos, 0), vec2f_create(0, 0));
     object_set_animation(o_welder, ani);
     object_select_sprite(o_welder, 0);
@@ -569,7 +569,7 @@ int vs_create(scene *scene) {
 
     // GANTRIES
     object *o_gantry_a = omf_calloc(1, sizeof(object));
-    ani = &bk_get_info(&scene->bk_data, 11)->ani;
+    ani = &bk_get_info(scene->bk_data, 11)->ani;
     object_create(o_gantry_a, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
     object_set_animation(o_gantry_a, ani);
     object_select_sprite(o_gantry_a, 0);

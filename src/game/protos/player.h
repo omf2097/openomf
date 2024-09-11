@@ -68,6 +68,7 @@ typedef struct player_animation_state_t {
 } player_animation_state;
 
 void player_create(object *obj);
+void player_clone(object *src, object *dst);
 void player_free(object *obj);
 void player_reload(object *obj);
 void player_reload_with_str(object *obj, const char *str);

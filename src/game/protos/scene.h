@@ -30,7 +30,7 @@ typedef void (*scene_clone_free_cb)(scene *scene);
 struct scene_t {
     game_state *gs;
     int id;
-    bk bk_data;
+    bk *bk_data;
     af *af_data[2];
     void *userdata;
 
@@ -65,6 +65,7 @@ int scene_serialize(scene *scene, serial *ser);
 int scene_unserialize(scene *scene, serial *ser);
 
 int scene_clone(scene *src, scene *dst);
+int scene_clone_free(scene *sc);
 
 void scene_set_userdata(scene *scene, void *userdata);
 void *scene_get_userdata(scene *scene);

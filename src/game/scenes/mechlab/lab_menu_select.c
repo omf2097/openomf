@@ -42,9 +42,9 @@ void lab_menu_focus_right(component *c, bool focused, void *userdata) {
 component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *selectdata, lab_menu_select_cb left,
                                   void *leftdata, lab_menu_select_cb right, void *rightdata, int title,
                                   bool return_hand) {
-    animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
-    animation *main_buttons = &bk_get_info(&s->bk_data, 7)->ani;
-    animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
+    animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
+    animation *main_buttons = &bk_get_info(s->bk_data, 7)->ani;
+    animation *hand_of_doom = &bk_get_info(s->bk_data, 29)->ani;
 
     // Initialize menu, and set button sheet
     sprite *msprite = animation_get_sprite(main_sheets, 4);

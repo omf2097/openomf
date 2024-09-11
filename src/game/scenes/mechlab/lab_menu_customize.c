@@ -756,10 +756,10 @@ static const spritebutton_focus_cb focus_cbs[] = {
 };
 
 component *lab_menu_customize_create(scene *s) {
-    animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
-    animation *main_buttons = &bk_get_info(&s->bk_data, 3)->ani;
-    animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
-    animation *har_picture = &bk_get_info(&s->bk_data, 5)->ani;
+    animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
+    animation *main_buttons = &bk_get_info(s->bk_data, 3)->ani;
+    animation *hand_of_doom = &bk_get_info(s->bk_data, 29)->ani;
+    animation *har_picture = &bk_get_info(s->bk_data, 5)->ani;
 
     // Initialize menu, and set button sheet
     sprite *msprite = animation_get_sprite(main_sheets, 0);

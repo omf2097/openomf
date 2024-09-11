@@ -126,7 +126,7 @@ int cutscene_create(scene *scene) {
             local->text_conf.cforeground = COLOR_RED;
 
             // Pilot face
-            animation *ani = &bk_get_info(&scene->bk_data, 3)->ani;
+            animation *ani = &bk_get_info(scene->bk_data, 3)->ani;
             object *obj = omf_calloc(1, sizeof(object));
             object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(obj, ani);
@@ -135,7 +135,7 @@ int cutscene_create(scene *scene) {
             game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
 
             // Face effects
-            ani = &bk_get_info(&scene->bk_data, 10 + p1->pilot->pilot_id)->ani;
+            ani = &bk_get_info(scene->bk_data, 10 + p1->pilot->pilot_id)->ani;
             obj = omf_calloc(1, sizeof(object));
             object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(obj, ani);
@@ -164,12 +164,12 @@ int cutscene_create(scene *scene) {
                 if(i >= 10 && i <= 20 && i != 10 + p1->pilot->har_id) {
                     continue;
                 }
-                bk_info *bki = bk_get_info(&scene->bk_data, i);
+                bk_info *bki = bk_get_info(scene->bk_data, i);
                 if(bki) {
                     ani = &bki->ani;
                     obj = omf_calloc(1, sizeof(object));
                     object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-                    object_set_stl(obj, scene->bk_data.sound_translation_table);
+                    object_set_stl(obj, scene->bk_data->sound_translation_table);
                     object_set_animation(obj, ani);
                     game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
                 }

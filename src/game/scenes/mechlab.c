@@ -75,7 +75,7 @@ bool mechlab_find_last_player(scene *scene) {
     } else {
         DEBUG("Previous savegame found; loading as default.");
         // Load HAR
-        animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->chr->pilot.har_id)->ani;
+        animation *initial_har_ani = &bk_get_info(scene->bk_data, 15 + p1->chr->pilot.har_id)->ani;
         object_free(local->mech);
         omf_free(local->mech);
         local->mech = omf_calloc(1, sizeof(object));
@@ -193,7 +193,7 @@ component *mechlab_sim_menu_create(scene *scene) {
 void mechlab_update(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
     game_player *p1 = game_state_get_player(scene->gs, 0);
-    animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + p1->pilot->har_id)->ani;
+    animation *initial_har_ani = &bk_get_info(scene->bk_data, 15 + p1->pilot->har_id)->ani;
     if(local->mech && object_get_animation(local->mech) != initial_har_ani) {
         object_free(local->mech);
         object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
@@ -326,7 +326,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             object_free(local->mech);
             omf_free(local->mech);
             local->mech = omf_calloc(1, sizeof(object));
-            animation *initial_har_ani = &bk_get_info(&scene->bk_data, 15 + player1->pilot->har_id)->ani;
+            animation *initial_har_ani = &bk_get_info(scene->bk_data, 15 + player1->pilot->har_id)->ani;
             object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(local->mech, initial_har_ani);
             object_set_repeat(local->mech, 1);
@@ -461,7 +461,7 @@ int mechlab_create(scene *scene) {
 
     // Init the background
     for(int i = 0; i < sizeof(bg_ani) / sizeof(animation *); i++) {
-        sprite *spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 14)->ani, i));
+        sprite *spr = sprite_copy(animation_get_sprite(&bk_get_info(scene->bk_data, 14)->ani, i));
         bg_ani[i] = create_animation_from_single(spr, spr->pos);
         object_create(&local->bg_obj[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(&local->bg_obj[i], bg_ani[i]);

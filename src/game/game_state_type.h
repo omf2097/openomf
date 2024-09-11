@@ -63,6 +63,7 @@ typedef struct game_state_t {
     game_player *players[2];
 
     fight_stats fight_stats;
+    void *new_state;
 } game_state;
 
 #endif // GAME_STATE_TYPE_H

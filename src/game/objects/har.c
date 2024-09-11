@@ -48,11 +48,11 @@ void fire_hooks(har *h, har_event event) {
     iterator it;
     har_hook *hook;
 
+    controller *ctrl = game_player_get_ctrl(h->gp);
     list_iter_begin(&h->har_hooks, &it);
     while((hook = iter_next(&it)) != NULL) {
-        hook->cb(event, hook->data);
+        hook->cb(event, ctrl->gs->sc);
     }
-    controller *ctrl = game_player_get_ctrl(h->gp);
     if(object_get_userdata(game_state_find_object(ctrl->gs, ctrl->har_obj_id)) == h) {
         controller_har_hook(ctrl, event);
     }
@@ -444,7 +444,7 @@ void har_floor_landing_effects(object *obj) {
         object *dust = omf_calloc(1, sizeof(object));
         object_create(dust, obj->gs, coord, vec2f_create(0, 0));
         object_set_stl(dust, object_get_stl(obj));
-        object_set_animation(dust, &bk_get_info(&game_state_get_scene(obj->gs)->bk_data, 26)->ani);
+        object_set_animation(dust, &bk_get_info(game_state_get_scene(obj->gs)->bk_data, 26)->ani);
         game_state_add_object(obj->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
     }
 

@@ -80,3 +80,8 @@ chr_score *game_player_get_score(game_player *gp) {
 void game_player_clone(game_player *src, game_player *dst) {
     memcpy(dst, src, sizeof(game_player));
 }
+
+int game_player_clone_free(game_player *gp) {
+    omf_free(gp);
+    return 0;
+}

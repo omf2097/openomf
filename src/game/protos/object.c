@@ -154,7 +154,7 @@ int object_serialize(object *obj, serial *ser) {
 
 int object_clone(object *src, object *dst) {
     memcpy(dst, src, sizeof(object));
-    src->clone(src, dst);
+    player_clone(src, dst);
     if (src->custom_str) {
         dst->custom_str = strdup(src->custom_str);
     }
@@ -557,20 +557,17 @@ void object_free(object *obj) {
     obj->cur_animation = NULL;
 }
 
-void object_clone_free(object *obj) {
+int object_clone_free(object *obj) {
     if(obj->clone_free != NULL) {
         obj->clone_free(obj);
     }
     player_free(obj);
-    if(obj->cur_animation_own == OWNER_OBJECT) {
-        animation_free(obj->cur_animation);
-        omf_free(obj->cur_animation);
-    }
     if(obj->custom_str) {
         omf_free(obj->custom_str);
     }
     obj->cur_surface = NULL;
     obj->cur_animation = NULL;
+    return 0;
 }
 
 

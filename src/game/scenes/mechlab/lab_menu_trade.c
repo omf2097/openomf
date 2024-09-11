@@ -211,9 +211,9 @@ static const spritebutton_focus_cb focus_cbs[] = {
     lab_menu_trade_for_chronos_focus,  lab_menu_trade_for_nova_focus};
 
 component *lab_menu_trade_create(scene *s) {
-    // animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
-    animation *main_buttons = &bk_get_info(&s->bk_data, 13)->ani;
-    animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
+    // animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
+    animation *main_buttons = &bk_get_info(s->bk_data, 13)->ani;
+    animation *hand_of_doom = &bk_get_info(s->bk_data, 29)->ani;
 
     game_player *p1 = game_state_get_player(s->gs, 0);
 

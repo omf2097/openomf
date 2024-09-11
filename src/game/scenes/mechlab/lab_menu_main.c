@@ -249,9 +249,9 @@ static const spritebutton_tick_cb tick_cbs[] = {
 };
 
 component *lab_menu_main_create(scene *s, bool character_loaded) {
-    animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
-    animation *main_buttons = &bk_get_info(&s->bk_data, 8)->ani;
-    animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
+    animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
+    animation *main_buttons = &bk_get_info(s->bk_data, 8)->ani;
+    animation *hand_of_doom = &bk_get_info(s->bk_data, 29)->ani;
 
     // Initialize menu, and set button sheet
     sprite *msprite = animation_get_sprite(main_sheets, 2);

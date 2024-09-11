@@ -65,6 +65,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->net_mode = init_flags->net_mode;
     gs->speed = settings_get()->gameplay.speed + 5;
     gs->init_flags = init_flags;
+    gs->new_state = NULL;
     vector_create(&gs->objects, sizeof(render_obj));
 
     // For screen shake
@@ -860,31 +861,33 @@ void game_state_init_demo(game_state *gs) {
     }
 }
 
-/*void game_state_clone_free(game_state *gs) {
+void game_state_clone_free(game_state *gs) {
     // Free objects
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     while((robj = iter_next(&it)) != NULL) {
         object_clone_free(robj->obj);
-        omf_free(robj->obj);
+        memset(robj->obj, 0, sizeof(object));
+        //omf_free(robj->obj);
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
 
     // Free scene
     scene_clone_free(gs->sc);
-    omf_free(gs->sc);
+    //omf_free(gs->sc);
 
     // Free players
-    for(int i = 0; i < 2; i++) {
-        game_player_set_ctrl(gs->players[i], NULL);
+    /*for(int i = 0; i < 2; i++) {
+        //game_player_set_ctrl(gs->players[i], NULL);
         game_player_clone_free(gs->players[i]);
-        omf_free(gs->players[i]);
-    }
-    omf_free(gs);
+        //omf_free(gs->players[i]);
+    }*/
+    memset(gs, 0, sizeof(game_state));
+    //omf_free(gs);
 
-}*/
+}
 
 void game_state_free(game_state **_gs) {
     game_state *gs = *_gs;
@@ -935,7 +938,7 @@ int game_state_ms_per_dyntick(game_state *gs) {
 
 int render_obj_clone(render_obj *src, render_obj *dst) {
     memcpy(dst, src, sizeof(render_obj));
-    omf_calloc(1, sizeof(object));
+    dst->obj = omf_calloc(1, sizeof(object));
     return object_clone(src->obj, dst->obj);
 }
 
@@ -960,23 +963,29 @@ int game_state_clone(game_state *src, game_state *dst) {
     iterator it;
     vector_iter_begin(&src->objects, &it);
     render_obj *robj;
+    int i = 0;
     while((robj = iter_next(&it)) != NULL) {
         render_obj d;
         render_obj_clone(robj, &d);
         d.obj->gs = dst;
+        d.obj->animation_state.gs = dst;
+        DEBUG("cloned object %d", d.obj->id);
         vector_append(&dst->objects, &d);
+        i++;
     }
+    DEBUG("cloned %d objects into new game state", i);
 
 
-    for(int i = 0; i < 2; i++) {
+    /*for(int i = 0; i < 2; i++) {
         dst->players[i] = omf_calloc(1, sizeof(game_player));
         game_player_clone(src->players[i], dst->players[i]);
         // update HAR object pointers
         dst->players[i]->har_obj_id = src->players[i]->har_obj_id;
-    }
+    }*/
 
     dst->sc = omf_calloc(1, sizeof(scene));
     scene_clone(src->sc, dst->sc);
+    dst->sc->gs = dst;
 
     return 0;
 }

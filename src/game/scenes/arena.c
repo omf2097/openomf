@@ -129,10 +129,10 @@ void scene_fight_anim_start(void *userdata) {
     // Start FIGHT animation
     game_state *gs = userdata;
     scene *scene = game_state_get_scene(gs);
-    animation *fight_ani = &bk_get_info(&scene->bk_data, 10)->ani;
+    animation *fight_ani = &bk_get_info(scene->bk_data, 10)->ani;
     object *fight = omf_calloc(1, sizeof(object));
     object_create(fight, gs, fight_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(fight, bk_get_stl(&scene->bk_data));
+    object_set_stl(fight, bk_get_stl(scene->bk_data));
     object_set_animation(fight, fight_ani);
     // object_set_finish_cb(fight, scene_fight_anim_done);
     game_state_add_object(gs, fight, RENDER_LAYER_TOP, 0, 0);
@@ -158,10 +158,10 @@ void scene_youwin_anim_start(void *userdata) {
     // Start FIGHT animation
     game_state *gs = userdata;
     scene *scene = game_state_get_scene(gs);
-    animation *youwin_ani = &bk_get_info(&scene->bk_data, 9)->ani;
+    animation *youwin_ani = &bk_get_info(scene->bk_data, 9)->ani;
     object *youwin = omf_calloc(1, sizeof(object));
     object_create(youwin, gs, youwin_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(youwin, bk_get_stl(&scene->bk_data));
+    object_set_stl(youwin, bk_get_stl(scene->bk_data));
     object_set_animation(youwin, youwin_ani);
     object_set_finish_cb(youwin, scene_youwin_anim_done);
     game_state_add_object(gs, youwin, RENDER_LAYER_MIDDLE, 0, 0);
@@ -180,10 +180,10 @@ void scene_youlose_anim_start(void *userdata) {
     // Start FIGHT animation
     game_state *gs = userdata;
     scene *scene = game_state_get_scene(gs);
-    animation *youlose_ani = &bk_get_info(&scene->bk_data, 8)->ani;
+    animation *youlose_ani = &bk_get_info(scene->bk_data, 8)->ani;
     object *youlose = omf_calloc(1, sizeof(object));
     object_create(youlose, gs, youlose_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(youlose, bk_get_stl(&scene->bk_data));
+    object_set_stl(youlose, bk_get_stl(scene->bk_data));
     object_set_animation(youlose, youlose_ani);
     object_set_finish_cb(youlose, scene_youlose_anim_done);
     game_state_add_object(gs, youlose, RENDER_LAYER_MIDDLE, 0, 0);
@@ -340,21 +340,21 @@ void arena_reset(scene *sc) {
         chr_score_clear_done(&player->score);
     }
 
-    sc->bk_data.sound_translation_table[3] = 23 + local->round; // NUMBER
+    sc->bk_data->sound_translation_table[3] = 23 + local->round; // NUMBER
     // ROUND animation
-    animation *round_ani = &bk_get_info(&sc->bk_data, 6)->ani;
+    animation *round_ani = &bk_get_info(sc->bk_data, 6)->ani;
     object *round = omf_calloc(1, sizeof(object));
     object_create(round, sc->gs, round_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(round, sc->bk_data.sound_translation_table);
+    object_set_stl(round, sc->bk_data->sound_translation_table);
     object_set_animation(round, round_ani);
     object_set_finish_cb(round, scene_ready_anim_done);
     game_state_add_object(sc->gs, round, RENDER_LAYER_TOP, 0, 0);
 
     // Round number
-    animation *number_ani = &bk_get_info(&sc->bk_data, 7)->ani;
+    animation *number_ani = &bk_get_info(sc->bk_data, 7)->ani;
     object *number = omf_calloc(1, sizeof(object));
     object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(number, sc->bk_data.sound_translation_table);
+    object_set_stl(number, sc->bk_data->sound_translation_table);
     object_set_animation(number, number_ani);
     object_select_sprite(number, local->round);
     object_set_sprite_override(number, 1);
@@ -362,6 +362,7 @@ void arena_reset(scene *sc) {
 }
 
 void arena_maybe_sync(scene *scene, int need_sync) {
+    return;
     game_state *gs = scene->gs;
     game_player *player1 = game_state_get_player(gs, 0);
     game_player *player2 = game_state_get_player(gs, 1);
@@ -469,19 +470,19 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         h->state = STATE_WALLDAMAGE;
 
         // Spawn wall animation
-        bk_info *info = bk_get_info(&scene->bk_data, 20 + wall);
+        bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
         object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
-        object_set_stl(obj, scene->bk_data.sound_translation_table);
+        object_set_stl(obj, scene->bk_data->sound_translation_table);
         object_set_animation(obj, &info->ani);
         if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 0) {
 
             // spawn the electricity on top of the HAR
             // TODO this doesn't track the har's position well...
-            info = bk_get_info(&scene->bk_data, 22);
+            info = bk_get_info(scene->bk_data, 22);
             object *obj2 = omf_calloc(1, sizeof(object));
             object_create(obj2, scene->gs, vec2i_create(o_har->pos.x, o_har->pos.y), vec2f_create(0, 0));
-            object_set_stl(obj2, scene->bk_data.sound_translation_table);
+            object_set_stl(obj2, scene->bk_data->sound_translation_table);
             object_set_animation(obj2, &info->ani);
             object_attach_to(obj2, o_har);
             // object_dynamic_tick(obj2);
@@ -501,10 +502,10 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         h->state = STATE_WALLDAMAGE;
 
         // desert always shows the 'hit' animation when you touch the wall
-        bk_info *info = bk_get_info(&scene->bk_data, 20 + wall);
+        bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
         object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
-        object_set_stl(obj, scene->bk_data.sound_translation_table);
+        object_set_stl(obj, scene->bk_data->sound_translation_table);
         object_set_animation(obj, &info->ani);
         object_set_custom_string(obj, "brwA1-brwB1-brwD1-brwE0-brwD4-brwC2-brwB2-brwA2");
         if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
@@ -530,8 +531,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             vec2i coord = vec2i_create(o_har->pos.x, pos_y);
             object *dust = omf_calloc(1, sizeof(object));
             object_create(dust, scene->gs, coord, vec2f_create(0, 0));
-            object_set_stl(dust, scene->bk_data.sound_translation_table);
-            object_set_animation(dust, &bk_get_info(&scene->bk_data, anim_no)->ani);
+            object_set_stl(dust, scene->bk_data->sound_translation_table);
+            object_set_animation(dust, &bk_get_info(scene->bk_data, anim_no)->ani);
             game_state_add_object(scene->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
         }
 
@@ -915,7 +916,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
             } else if(i->type == EVENT_TYPE_SYNC) {
                 DEBUG("sync");
                 game_state_unserialize(scene->gs, i->event_data.ser, player->ctrl->rtt);
-                maybe_install_har_hooks(scene);
+                //maybe_install_har_hooks(scene);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 if(player->ctrl->type == CTRL_TYPE_REC) {
                     game_state_set_next(scene->gs, SCENE_NONE);
@@ -931,7 +932,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
 
 void arena_spawn_hazard(scene *scene) {
     iterator it;
-    hashmap_iter_begin(&scene->bk_data.infos, &it);
+    hashmap_iter_begin(&scene->bk_data->infos, &it);
     hashmap_pair *pair = NULL;
 
     if(is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
@@ -948,7 +949,7 @@ void arena_spawn_hazard(scene *scene) {
                 // TODO don't spawn it if we already have this animation running
                 object *obj = omf_calloc(1, sizeof(object));
                 object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
-                object_set_stl(obj, scene->bk_data.sound_translation_table);
+                object_set_stl(obj, scene->bk_data->sound_translation_table);
                 object_set_animation(obj, &info->ani);
                 if(scene->id == SCENE_ARENA3 && info->ani.id == 0) {
                     // XXX fire pit orb has a bug whwre it double spawns. Use a custom animation string to avoid it
@@ -961,7 +962,7 @@ void arena_spawn_hazard(scene *scene) {
                 if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 0) {
                     object_set_layers(obj, LAYER_HAZARD | LAYER_HAR);
                     object_set_group(obj, GROUP_PROJECTILE);
-                    object_set_userdata(obj, &scene->bk_data);
+                    object_set_userdata(obj, scene->bk_data);
                     if(info->ani.extra_string_count > 0) {
                         // For the desert, there's a bunch of extra animation strgins for
                         // the different plane formations.
@@ -1000,7 +1001,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
         object *obj_har[2];
         har *hars[2];
         for(int i = 0; i < 2; i++) {
-            obj_har[i] = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, i)));
+            obj_har[i] = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
             hars[i] = obj_har[i]->userdata;
         }
 
@@ -1230,7 +1231,7 @@ void arena_toggle_rein(scene *scene) {
 }
 
 void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
-    if(scene->bk_data.file_id == 64) {
+    if(scene->bk_data->file_id == 64) {
         // Start up & repeat torches on arena startup
         switch(id) {
             case 1:
@@ -1260,7 +1261,7 @@ int arena_create(scene *scene) {
     }
 
     // Handle music playback
-    switch(scene->bk_data.file_id) {
+    switch(scene->bk_data->file_id) {
         case 8:
             audio_play_music(PSM_ARENA0);
             break;
@@ -1382,7 +1383,7 @@ int arena_create(scene *scene) {
                     if(i == 1) {
                         xoff = 210 - 9 * j - 3 - j;
                     }
-                    animation *ani = &bk_get_info(&scene->bk_data, 27)->ani;
+                    animation *ani = &bk_get_info(scene->bk_data, 27)->ani;
                     object_create(local->player_rounds[i][j], scene->gs, vec2i_create(xoff, 9), vec2f_create(0, 0));
                     object_set_animation(local->player_rounds[i][j], ani);
                     object_select_sprite(local->player_rounds[i][j], 1);
@@ -1399,12 +1400,12 @@ int arena_create(scene *scene) {
     for(int i = 0; i < 2; i++) {
         _player[i] = game_state_get_player(scene->gs, i);
     }
-    if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
+    /*if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
         controller_clear_hooks(game_player_get_ctrl(_player[1]));
     }
     if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
         controller_clear_hooks(game_player_get_ctrl(_player[0]));
-    }
+    }*/
 
     controller_set_repeat(game_player_get_ctrl(_player[0]), 1);
     controller_set_repeat(game_player_get_ctrl(_player[1]), 1);
@@ -1412,7 +1413,7 @@ int arena_create(scene *scene) {
     game_state_find_object(scene->gs, game_player_get_har_obj_id(_player[0]))->animation_state.enemy_obj_id = game_player_get_har_obj_id(_player[1]);
     game_state_find_object(scene->gs, game_player_get_har_obj_id(_player[1]))->animation_state.enemy_obj_id = game_player_get_har_obj_id(_player[0]);
 
-    maybe_install_har_hooks(scene);
+    //maybe_install_har_hooks(scene);
 
     // Arena menu text settings
     text_settings tconf;
@@ -1485,39 +1486,39 @@ int arena_create(scene *scene) {
     har_screencaps_reset(&_player[1]->screencaps);
 
     // Set correct sounds for ready, round and number STL fields
-    scene->bk_data.sound_translation_table[14] = 10;               // READY
-    scene->bk_data.sound_translation_table[15] = 16;               // ROUND
-    scene->bk_data.sound_translation_table[3] = 23 + local->round; // NUMBER
+    scene->bk_data->sound_translation_table[14] = 10;               // READY
+    scene->bk_data->sound_translation_table[15] = 16;               // ROUND
+    scene->bk_data->sound_translation_table[3] = 23 + local->round; // NUMBER
 
     // Disable the floating ball disappearence sound in fire arena
     if(scene->id == SCENE_ARENA3) {
-        scene->bk_data.sound_translation_table[20] = 0;
+        scene->bk_data->sound_translation_table[20] = 0;
     }
 
     if(local->rounds == 1) {
         // Start READY animation
-        animation *ready_ani = &bk_get_info(&scene->bk_data, 11)->ani;
+        animation *ready_ani = &bk_get_info(scene->bk_data, 11)->ani;
         object *ready = omf_calloc(1, sizeof(object));
         object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(ready, scene->bk_data.sound_translation_table);
+        object_set_stl(ready, scene->bk_data->sound_translation_table);
         object_set_animation(ready, ready_ani);
         object_set_finish_cb(ready, scene_ready_anim_done);
         game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP, 0, 0);
     } else {
         // ROUND
-        animation *round_ani = &bk_get_info(&scene->bk_data, 6)->ani;
+        animation *round_ani = &bk_get_info(scene->bk_data, 6)->ani;
         object *round = omf_calloc(1, sizeof(object));
         object_create(round, scene->gs, round_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(round, scene->bk_data.sound_translation_table);
+        object_set_stl(round, scene->bk_data->sound_translation_table);
         object_set_animation(round, round_ani);
         object_set_finish_cb(round, scene_ready_anim_done);
         game_state_add_object(scene->gs, round, RENDER_LAYER_TOP, 0, 0);
 
         // Number
-        animation *number_ani = &bk_get_info(&scene->bk_data, 7)->ani;
+        animation *number_ani = &bk_get_info(scene->bk_data, 7)->ani;
         object *number = omf_calloc(1, sizeof(object));
         object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(number, scene->bk_data.sound_translation_table);
+        object_set_stl(number, scene->bk_data->sound_translation_table);
         object_set_animation(number, number_ani);
         object_select_sprite(number, local->round);
         game_state_add_object(scene->gs, number, RENDER_LAYER_TOP, 0, 0);

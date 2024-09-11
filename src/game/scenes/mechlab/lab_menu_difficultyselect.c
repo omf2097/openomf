@@ -52,9 +52,9 @@ static const button_details details_list[] = {
 };
 
 component *lab_menu_difficultyselect_create(scene *s) {
-    animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
-    animation *main_buttons = &bk_get_info(&s->bk_data, 2)->ani;
-    animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
+    animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
+    animation *main_buttons = &bk_get_info(s->bk_data, 2)->ani;
+    animation *hand_of_doom = &bk_get_info(s->bk_data, 29)->ani;
 
     // Initialize menu, and set button sheet
     sprite *msprite = animation_get_sprite(main_sheets, 6);

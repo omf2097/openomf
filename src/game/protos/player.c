@@ -105,6 +105,19 @@ void player_create(object *obj) {
     player_clear_frame(obj);
 }
 
+void player_clone(object *src, object *dst) {
+    sd_script_clone(&src->animation_state.parser, &dst->animation_state.parser);
+    str s;
+    str_create(&s);
+    str d;
+    str_create(&d);
+    sd_script_encode(&src->animation_state.parser, &s);
+    sd_script_encode(&dst->animation_state.parser, &d);
+    DEBUG("cloned player from %s to %s", str_c(&s), str_c(&d));
+    str_free(&s);
+    str_free(&d);
+}
+
 void player_free(object *obj) {
     sd_script_free(&obj->animation_state.parser);
 }
@@ -251,6 +264,7 @@ void player_run(object *obj) {
     player_animation_state *state = &obj->animation_state;
     player_sprite_state *rstate = &obj->sprite_state;
     object *enemy = game_state_find_object(state->gs, state->enemy_obj_id);
+    //DEBUG("i am %d, enemy is %d", obj->id, state->enemy_obj_id);
     if(state->finished)
         return;
 
@@ -360,7 +374,9 @@ void player_run(object *obj) {
         state->current_tick = sd_script_get(frame, "d");
     }
 
-    if(sd_script_isset(frame, "e")) {
+    if(sd_script_isset(frame, "e") && enemy) {
+
+        DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         // Set speed to 0, since we're being controlled by animation tag system
         obj->vel.x = 0;
         obj->vel.y = 0;
@@ -384,7 +400,9 @@ void player_run(object *obj) {
         obj->vel.y = 0;
     }
 
-    if(sd_script_isset(frame, "at")) {
+    if(sd_script_isset(frame, "at") && enemy) {
+
+        DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         // set the object's X position to be behind the opponent
 
         if(obj->pos.x > enemy->pos.x) { // From right to left
@@ -416,7 +434,9 @@ void player_run(object *obj) {
     }
 
     // Handle slide in relation to enemy
-    if(obj->enemy_slide_state.timer > 0) {
+    if(obj->enemy_slide_state.timer > 0 && enemy) {
+
+        DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         obj->enemy_slide_state.duration++;
         obj->pos.x = enemy->pos.x + obj->enemy_slide_state.dest.x;
         obj->pos.y = enemy->pos.y + obj->enemy_slide_state.dest.y;
@@ -432,7 +452,9 @@ void player_run(object *obj) {
             float vx = 0;
             float vy = 0;
 
-            if(obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65) {
+            if(obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65 && enemy) {
+
+                DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
                 mx = enemy->pos.x;
                 my = enemy->pos.y;
             }
@@ -582,7 +604,9 @@ void player_run(object *obj) {
         }
 
         // If UA is set, force other HAR to damage animation
-        if(sd_script_isset(frame, "ua") && enemy->cur_animation->id != 9) {
+        if(sd_script_isset(frame, "ua") && enemy->cur_animation->id != 9 && enemy) {
+
+            DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
             har_set_ani(enemy, 9, 0);
         }
 

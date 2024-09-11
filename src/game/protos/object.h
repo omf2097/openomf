@@ -157,6 +157,7 @@ int object_serialize(object *obj, serial *ser);
 int object_unserialize(object *obj, serial *ser, game_state *gs);
 
 int object_clone(object *src, object *dst);
+int object_clone_free(object *obj);
 
 void object_attach_to(object *obj, const object *attach_to);
 
