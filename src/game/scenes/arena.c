@@ -69,7 +69,6 @@ typedef struct arena_local_t {
     int rec_last[2];
 } arena_local;
 
-void arena_maybe_sync(scene *scene, int need_sync);
 void write_rec_move(scene *scene, game_player *player, int action);
 
 // -------- Local callbacks --------
@@ -96,7 +95,6 @@ void game_menu_return(component *c, void *userdata) {
     controller_set_repeat(game_player_get_ctrl(player1), 1);
     local->menu_visible = 0;
     game_state_set_paused(((scene *)userdata)->gs, 0);
-    arena_maybe_sync(userdata, 1);
 }
 
 void arena_music_slide(component *c, void *userdata, int pos) {
@@ -361,29 +359,6 @@ void arena_reset(scene *sc) {
     game_state_add_object(sc->gs, number, RENDER_LAYER_TOP, 0, 0);
 }
 
-void arena_maybe_sync(scene *scene, int need_sync) {
-    return;
-    game_state *gs = scene->gs;
-    game_player *player1 = game_state_get_player(gs, 0);
-    game_player *player2 = game_state_get_player(gs, 1);
-
-    if(need_sync && gs->role == ROLE_SERVER &&
-       (player1->ctrl->type == CTRL_TYPE_NETWORK || player2->ctrl->type == CTRL_TYPE_NETWORK)) {
-
-        // some of the moves did something interesting and we should synchronize the peer
-        serial ser;
-        serial_create(&ser);
-        game_state_serialize(scene->gs, &ser);
-        if(player1->ctrl->type == CTRL_TYPE_NETWORK) {
-            controller_update(player1->ctrl, &ser);
-        }
-        if(player2->ctrl->type == CTRL_TYPE_NETWORK) {
-            controller_update(player2->ctrl, &ser);
-        }
-        serial_free(&ser);
-    }
-}
-
 void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
     chr_score *score;
     chr_score *otherscore;
@@ -416,16 +391,11 @@ void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
     }
     chr_score_hit(score, move->points);
     chr_score_interrupt(otherscore, object_get_pos(hit_har));
-    arena_maybe_sync(scene, 1);
 }
 
 void arena_har_recover_hook(int player_id, scene *scene) {
     chr_score *score;
     object *o_har;
-
-    if(is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
-        return; // netplay clients do not keep score
-    }
 
     if(player_id == 0) {
         score = game_player_get_score(game_state_get_player(scene->gs, 1));
@@ -434,9 +404,8 @@ void arena_har_recover_hook(int player_id, scene *scene) {
         score = game_player_get_score(game_state_get_player(scene->gs, 0));
         o_har = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, 0)));
     }
-    if(chr_score_end_combo(score, object_get_pos(o_har))) {
-        arena_maybe_sync(scene, 1);
-    }
+
+    chr_score_end_combo(score, object_get_pos(o_har));
 }
 
 void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
@@ -634,7 +603,6 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     object_set_vel(loser, vec2f_create(0, 0));
     object_set_vel(winner, vec2f_create(0, 0));
     // object_set_gravity(loser, 0);
-    arena_maybe_sync(scene, chr_score_interrupt(score, object_get_pos(winner)));
 }
 
 void arena_maybe_turn_har(int player_id, scene *scene) {
@@ -699,12 +667,10 @@ void arena_har_hook(har_event event, void *data) {
                 // jaguar ending up facing backwards after an overhead throw.
                 arena_maybe_turn_har(event.player_id, scene);
             }
-            arena_maybe_sync(scene, 1);
             DEBUG("LAND %u", event.player_id);
             break;
         case HAR_EVENT_AIR_ATTACK_DONE:
             har1->air_attacked = 0;
-            arena_maybe_sync(scene, 1);
             DEBUG("AIR_ATTACK_DONE %u", event.player_id);
             break;
         case HAR_EVENT_RECOVER:
@@ -913,10 +879,6 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                     need_sync += object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)), i->event_data.action);
                     write_rec_move(scene, player, i->event_data.action);
                 }
-            } else if(i->type == EVENT_TYPE_SYNC) {
-                DEBUG("sync");
-                game_state_unserialize(scene->gs, i->event_data.ser, player->ctrl->rtt);
-                //maybe_install_har_hooks(scene);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 if(player->ctrl->type == CTRL_TYPE_REC) {
                     game_state_set_next(scene->gs, SCENE_NONE);
@@ -939,8 +901,6 @@ void arena_spawn_hazard(scene *scene) {
         // only the server spawns hazards
         return;
     }
-
-    int changed = 0;
 
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info *)pair->val;
@@ -975,11 +935,7 @@ void arena_spawn_hazard(scene *scene) {
                         }
                     }
 
-                    // XXX without this, the object does not unserialize correctly in netplay
-                    object_dynamic_tick(obj);
-
                     DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
-                    changed++;
                 } else {
                     object_free(obj);
                     omf_free(obj);
@@ -987,8 +943,6 @@ void arena_spawn_hazard(scene *scene) {
             }
         }
     }
-
-    arena_maybe_sync(scene, changed);
 }
 
 void arena_dynamic_tick(scene *scene, int paused) {
@@ -1085,11 +1039,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
     } // if(!paused)
 
-    int need_sync = 0;
     // allow enemy HARs to move during a network game
-    need_sync += arena_handle_events(scene, player1, player1->ctrl->extra_events);
-    need_sync += arena_handle_events(scene, player2, player2->ctrl->extra_events);
-    arena_maybe_sync(scene, need_sync);
+    arena_handle_events(scene, player1, player1->ctrl->extra_events);
+    arena_handle_events(scene, player2, player2->ctrl->extra_events);
 }
 
 void arena_static_tick(scene *scene, int paused) {
@@ -1105,12 +1057,10 @@ void arena_input_tick(scene *scene) {
     controller_poll(player1->ctrl, &p1);
     controller_poll(player2->ctrl, &p2);
 
-    int need_sync = 0;
-    need_sync += arena_handle_events(scene, player1, p1);
-    need_sync += arena_handle_events(scene, player2, p2);
+    arena_handle_events(scene, player1, p1);
+    arena_handle_events(scene, player2, p2);
     controller_free_chain(p1);
     controller_free_chain(p2);
-    arena_maybe_sync(scene, need_sync);
 }
 
 int arena_event(scene *scene, SDL_Event *e) {

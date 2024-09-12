@@ -86,43 +86,6 @@ void projectile_move(object *obj) {
     }
 }
 
-int projectile_serialize(object *obj, serial *ser) {
-    projectile_local *local = object_get_userdata(obj);
-    serial_write_int8(ser, SPECID_PROJECTILE);
-    serial_write_int8(ser, local->af_data->id);
-    return 0;
-}
-
-int projectile_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) {
-    uint8_t har_id = serial_read_int8(ser);
-
-    game_player *player;
-    object *o;
-    har *h;
-
-    for(int i = 0; i < 2; i++) {
-        player = game_state_get_player(gs, i);
-        o = game_state_find_object(obj->gs, game_player_get_har_obj_id(player));
-        h = object_get_userdata(o);
-        if(h->af_data->id == har_id) {
-            af_move *move = af_get_move(h->af_data, animation_id);
-            object_set_animation(obj, &move->ani);
-            object_set_userdata(obj, h);
-            object_set_stl(obj, object_get_stl(o));
-            projectile_create(obj, h);
-            return 0;
-        }
-    }
-    DEBUG("COULD NOT FIND HAR ID %d", har_id);
-    // could not find the right HAR...
-    return 1;
-}
-
-void projectile_bootstrap(object *obj) {
-    object_set_serialize_cb(obj, projectile_serialize);
-    object_set_unserialize_cb(obj, projectile_unserialize);
-}
-
 int projectile_create(object *obj, har *har) {
     // strore the HAR in local userdata instead
     projectile_local *local = omf_calloc(1, sizeof(projectile_local));
@@ -136,7 +99,6 @@ int projectile_create(object *obj, har *har) {
     object_set_dynamic_tick_cb(obj, projectile_tick);
     object_set_free_cb(obj, projectile_free);
     object_set_move_cb(obj, projectile_move);
-    projectile_bootstrap(obj);
     return 0;
 }
 

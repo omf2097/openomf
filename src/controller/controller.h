@@ -32,7 +32,6 @@ enum
 enum
 {
     EVENT_TYPE_ACTION,
-    EVENT_TYPE_SYNC,
     EVENT_TYPE_HB,
     EVENT_TYPE_PROPOSE_START,
     EVENT_TYPE_CONFIRM_START,
@@ -60,7 +59,6 @@ struct controller_t {
     int (*tick_fun)(controller *ctrl, int ticks, ctrl_event **ev);
     int (*dyntick_fun)(controller *ctrl, int ticks, ctrl_event **ev);
     int (*poll_fun)(controller *ctrl, ctrl_event **ev);
-    int (*update_fun)(controller *ctrl, serial *state);
     int (*rumble_fun)(controller *ctrl, float magnitude, int duration);
     int (*har_hook)(controller *ctrl, har_event event);
     void (*controller_hook)(controller *ctrl, int action);
@@ -73,12 +71,10 @@ struct controller_t {
 
 void controller_init(controller *ctrl, game_state *gs);
 void controller_cmd(controller *ctrl, int action, ctrl_event **ev);
-void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev);
 void controller_close(controller *ctrl, ctrl_event **ev);
 int controller_poll(controller *ctrl, ctrl_event **ev);
 int controller_tick(controller *ctrl, int ticks, ctrl_event **ev);
 int controller_dyntick(controller *ctrl, int ticks, ctrl_event **ev);
-int controller_update(controller *ctrl, serial *state);
 int controller_har_hook(controller *ctrl, har_event event);
 void controller_add_hook(controller *ctrl, controller *source, void (*fp)(controller *ctrl, int act_type));
 void controller_clear_hooks(controller *ctrl);

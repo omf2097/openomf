@@ -61,9 +61,6 @@ void scene_input_poll(scene *scene);
 void scene_startup(scene *scene, int id, int *m_load, int *m_startup);
 int scene_anim_prio_override(scene *scene, int anim_id);
 
-int scene_serialize(scene *scene, serial *ser);
-int scene_unserialize(scene *scene, serial *ser);
-
 int scene_clone(scene *src, scene *dst);
 int scene_clone_free(scene *sc);
 

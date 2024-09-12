@@ -36,9 +36,6 @@ object * game_state_find_object(game_state *gs, uint32_t object_id);
 int game_state_clone(game_state *src, game_state *dst);
 void game_state_clone_free(game_state *gs);
 
-int game_state_serialize(game_state *gs, serial *ser);
-int game_state_unserialize(game_state *gs, serial *ser, int rtt);
-
 void _setup_keyboard(game_state *gs, int player_id);
 void _setup_ai(game_state *gs, int player_id);
 int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offset);

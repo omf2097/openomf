@@ -127,31 +127,6 @@ void scene_init(scene *scene) {
     ticktimer_init(&scene->tick_timer);
 }
 
-/*
- * Serializes the scene to a buffer. Should return 1 on error, 0 on success
- * This will call the specialized scenes, (eg. arena) for their
- * serialization data.
- */
-int scene_serialize(scene *s, serial *ser) {
-    game_state_serialize(s->gs, ser);
-
-    // Return success
-    return 0;
-}
-
-/*
- * Unserializes the data from buffer to a specialized object.
- * Should return 1 on error, 0 on success.
- * Serial reder position should be set to correct position before calling this.
- */
-int scene_unserialize(scene *s, serial *ser) {
-    // TODO: Read attributes
-    s->id = serial_read_int8(ser);
-
-    // Return success
-    return 0;
-}
-
 int scene_clone(scene *src, scene *dst) {
 
     memcpy(dst, src, sizeof(scene));

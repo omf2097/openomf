@@ -185,28 +185,5 @@ int hazard_create(object *obj, scene *scene) {
     obj->orbit_dest = vec2f_create((rand_float()*280.0f)+20.0f, (rand_float()*160.0f)+20.0f);
     DEBUG("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
 
-    hazard_bootstrap(obj);
-
     return 0;
-}
-
-int hazard_serialize(object *obj, serial *ser) {
-    /*DEBUG("serializing hazard");*/
-    // Specialization
-    serial_write_int8(ser, SPECID_HAZARD);
-    return 0;
-}
-
-int hazard_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) {
-    bk *bk_data = gs->sc->bk_data;
-    hazard_create(obj, gs->sc);
-    object_set_userdata(obj, bk_data);
-    object_set_stl(obj, bk_data->sound_translation_table);
-    object_set_animation(obj, &bk_get_info(bk_data, animation_id)->ani);
-    return 0;
-}
-
-void hazard_bootstrap(object *obj) {
-    object_set_serialize_cb(obj, hazard_serialize);
-    object_set_unserialize_cb(obj, hazard_unserialize);
 }

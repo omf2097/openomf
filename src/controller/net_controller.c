@@ -425,9 +425,6 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             data->confirmed = true;
                         }
                     } break;
-                    case EVENT_TYPE_SYNC:
-                        controller_sync(ctrl, &ser, ev);
-                        break;
                     default:
                         // Event type is unknown or we don't care about it
                         break;
@@ -477,28 +474,6 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     /*if(!handled) {*/
     /*controller_cmd(ctrl, ACT_STOP, ev);*/
     /*}*/
-    return 0;
-}
-
-int net_controller_update(controller *ctrl, serial *original) {
-    wtf *data = ctrl->data;
-    ENetPeer *peer = data->peer;
-    ENetHost *host = data->host;
-    ENetPacket *packet;
-
-    if(peer) {
-        serial ser;
-        serial_create(&ser);
-        serial_write_int8(&ser, EVENT_TYPE_SYNC);
-        serial_write(&ser, original->data, original->len);
-        packet = enet_packet_create(ser.data, serial_len(&ser), 0);
-        serial_free(&ser);
-        enet_peer_send(peer, 1, packet);
-        enet_host_flush(host);
-    } else {
-        DEBUG("peer is null~");
-    }
-
     return 0;
 }
 
@@ -598,7 +573,6 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
-    ctrl->update_fun = &net_controller_update;
     ctrl->controller_hook = &controller_hook;
     ctrl->free_fun = &net_controller_free;
 }

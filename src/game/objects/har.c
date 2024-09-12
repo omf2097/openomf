@@ -2032,88 +2032,6 @@ void har_finished(object *obj) {
     h->flinching = 0;
 }
 
-int har_serialize(object *obj, serial *ser) {
-    har *h = object_get_userdata(obj);
-
-    // Specialization
-    serial_write_int8(ser, SPECID_HAR);
-
-    // Set serialization data
-    serial_write_int16(ser, h->id);
-    serial_write_int8(ser, h->player_id);
-    serial_write_int8(ser, h->pilot_id);
-    serial_write_int8(ser, h->state);
-    serial_write_int8(ser, h->executing_move);
-    serial_write_int8(ser, h->flinching);
-    serial_write_int8(ser, h->close);
-    serial_write_int8(ser, h->hard_close);
-    serial_write_int8(ser, h->damage_done);
-    serial_write_int8(ser, h->damage_received);
-    serial_write_int8(ser, h->air_attacked);
-    serial_write_int16(ser, h->health);
-    serial_write_float(ser, h->endurance);
-    serial_write(ser, h->inputs, 10);
-
-    // ...
-    // TODO: Set the other ser attrs here
-
-    // Return success
-    return 0;
-}
-
-int har_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) {
-
-    int har_id = serial_read_int16(ser);
-    int player_id = serial_read_int8(ser);
-    int pilot_id = serial_read_int8(ser);
-    af *af_data;
-
-    /*DEBUG("unserializing HAR %d for player %d", har_id, player_id);*/
-
-    // find the AF data in the scene
-
-    if(gs->sc->af_data[player_id]->id == har_id) {
-        af_data = gs->sc->af_data[player_id];
-    } else {
-        DEBUG("expected har %d, got %d", har_id, gs->sc->af_data[player_id]->id);
-        // HAR IDs do not match!
-        // TODO maybe the other player changed their HAR, who knows
-        return 1;
-    }
-
-    har_create(obj, af_data, obj->direction, har_id, pilot_id, player_id);
-
-    har *h = object_get_userdata(obj);
-    // we are unserializing a state update for a HAR, we expect it to have the AF data already loaded into RAM, we're
-    // just updating the volatile attributes
-
-    // TODO sanity check pilot/player/HAR IDs
-    h->state = serial_read_int8(ser);
-    h->executing_move = serial_read_int8(ser);
-    h->flinching = serial_read_int8(ser);
-    h->close = serial_read_int8(ser);
-    h->hard_close = serial_read_int8(ser);
-    h->damage_done = serial_read_int8(ser);
-    h->damage_received = serial_read_int8(ser);
-    h->air_attacked = serial_read_int8(ser);
-    h->health = serial_read_int16(ser);
-    h->endurance = serial_read_float(ser);
-    serial_read(ser, h->inputs, 10);
-
-    /*DEBUG("har animation id is %d with state %d with %d", animation_id, h->state, h->executing_move);*/
-
-    object_set_animation(obj, &af_get_move(af_data, animation_id)->ani);
-
-    if(h->executing_move && (animation_id == ANIM_IDLE || animation_id == ANIM_CROUCHING)) {
-        // XXX this is a hack to fix a bug we can't find
-        DEBUG("============== HACK ATTACK =========================");
-        h->executing_move = 0;
-    }
-
-    // Return success
-    return 0;
-}
-
 void har_install_action_hook(har *h, har_action_hook_cb hook, void *data) {
     h->action_hook_cb = hook;
     h->action_hook_cb_data = data;
@@ -2145,8 +2063,6 @@ int har_clone_free(object *obj) {
 }
 
 void har_bootstrap(object *obj) {
-    object_set_serialize_cb(obj, har_serialize);
-    object_set_unserialize_cb(obj, har_unserialize);
     obj->clone = har_clone;
     obj->clone_free = har_clone_free;
 }

@@ -88,68 +88,10 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->collide = NULL;
     obj->finish = NULL;
     obj->move = NULL;
-    obj->serialize = NULL;
-    obj->unserialize = NULL;
     obj->debug = NULL;
     obj->pal_transform = NULL;
     obj->clone = NULL;
     obj->clone_free = NULL;
-}
-
-/**
- * \brief Serializes the object to a buffer.
- *
- * This will call the specialized objects, eg. har or projectile for their
- * serialization data.
- *
- * \param obj Object to serialize
- * \param ser Target serialization buffer to write into
- * \return 0 on success, 1 on error
- */
-int object_serialize(object *obj, serial *ser) {
-    serial_write_float(ser, obj->pos.x);
-    serial_write_float(ser, obj->pos.y);
-    serial_write_float(ser, obj->vel.x);
-    serial_write_float(ser, obj->vel.y);
-    serial_write_float(ser, obj->gravity);
-    serial_write_int8(ser, obj->direction);
-    serial_write_int8(ser, obj->group);
-    serial_write_int8(ser, obj->layers);
-    serial_write_int8(ser, obj->stride);
-    serial_write_int8(ser, object_get_repeat(obj));
-    serial_write_int8(ser, obj->sprite_override);
-    serial_write_int32(ser, obj->age);
-    serial_write_int32(ser, random_get_seed(&obj->rand_state));
-    serial_write_int8(ser, obj->cur_animation->id);
-    serial_write_int8(ser, obj->pal_offset);
-    serial_write_int8(ser, obj->hit_frames);
-    serial_write_int8(ser, obj->can_hit);
-
-    // Write animation state
-    if(obj->custom_str) {
-        serial_write_int16(ser, strlen(obj->custom_str) + 1);
-        serial_write(ser, obj->custom_str, strlen(obj->custom_str) + 1);
-    } else {
-        // using regular animation string from animation
-        serial_write_int16(ser, 0);
-    }
-    serial_write_int16(ser, (int)obj->animation_state.current_tick);
-    serial_write_int16(ser, (int)obj->animation_state.previous_tick);
-    serial_write_int8(ser, (int)obj->animation_state.reverse);
-
-    /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f",
-     * strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride,
-     * obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
-
-    // Serialize the underlying object
-    if(obj->serialize != NULL) {
-        obj->serialize(obj, ser);
-    } else {
-        serial_write_int8(ser, SPECID_NONE);
-    }
-
-    // Return success
-    return 0;
 }
 
 int object_clone(object *src, object *dst) {
@@ -162,102 +104,6 @@ int object_clone(object *src, object *dst) {
     if (src->clone) {
         src->clone(src, dst);
     }
-    return 0;
-}
-
-/**
- * \brief Unserializes the data from buffer to a specialized object.
- *
- * Serial render position should be set to correct position before calling this.
- *
- * \param obj Object to unserialize into
- * \param ser Serialization buffer to unserialize from
- * \param gs Gamestate
- * \return 0 on success, 1 on error.
- */
-int object_unserialize(object *obj, serial *ser, game_state *gs) {
-    obj->pos.x = serial_read_float(ser);
-    obj->pos.y = serial_read_float(ser);
-    obj->vel.x = serial_read_float(ser);
-    obj->vel.y = serial_read_float(ser);
-    float gravity = serial_read_float(ser);
-    obj->direction = serial_read_int8(ser);
-    obj->group = serial_read_int8(ser);
-    obj->layers = serial_read_int8(ser);
-    uint8_t stride = serial_read_int8(ser);
-    uint8_t repeat = serial_read_int8(ser);
-    obj->sprite_override = serial_read_int8(ser);
-    obj->age = serial_read_int32(ser);
-    random_seed(&obj->rand_state, serial_read_int32(ser));
-    uint8_t animation_id = serial_read_int8(ser);
-    uint8_t pal_offset = serial_read_int8(ser);
-    int8_t hit_frames = serial_read_int8(ser);
-    int8_t can_hit = serial_read_int8(ser);
-
-    // Other stuff not included in serialization
-    obj->y_percent = 1.0;
-    obj->x_percent = 1.0;
-    obj->cur_animation_own = OWNER_EXTERNAL;
-    obj->cur_animation = NULL;
-    obj->cur_sprite = NULL;
-    obj->sound_translation_table = NULL;
-    obj->cur_surface = NULL;
-    obj->cur_remap = 0;
-    obj->halt = 0;
-    obj->halt_ticks = 0;
-    obj->cast_shadow = 0;
-    player_create(obj);
-
-    // Read animation state
-    uint16_t anim_str_len = serial_read_int16(ser);
-    char anim_str[anim_str_len + 1];
-    if(anim_str_len > 0) {
-        serial_read(ser, anim_str, anim_str_len);
-    }
-    obj->animation_state.current_tick = (uint16_t)serial_read_int16(ser);
-    obj->animation_state.previous_tick = (uint16_t)serial_read_int16(ser);
-    uint8_t reverse = serial_read_int8(ser);
-
-    // Read the specialization ID from ther serial "stream".
-    // This should be an int.
-    int specialization_id = serial_read_int8(ser);
-
-    // This should automatically bootstrap the object so that it has at least
-    // unserialize function callback and local memory allocated
-    object_auto_specialize(obj, specialization_id);
-
-    // Now, if the object has unserialize function, call it with
-    // serialization data. serial object should be pointing to the
-    // start of that data.
-    if(obj->unserialize != NULL) {
-        obj->unserialize(obj, ser, animation_id, gs);
-    } else {
-        DEBUG("object has no special unserializer");
-    }
-
-    // Init animation with correct string and tick
-    if(anim_str_len > 0) {
-        // server is using a custom string
-        DEBUG("serialized object has custom animation string %s", anim_str);
-        player_reload_with_str(obj, anim_str);
-    }
-    if(reverse) {
-        object_set_playback_direction(obj, PLAY_BACKWARDS);
-    }
-
-    // deserializing hars can reset these, so we have to set this late
-    obj->stride = stride;
-    object_set_gravity(obj, gravity);
-    object_set_repeat(obj, repeat);
-    object_set_pal_offset(obj, pal_offset);
-    obj->hit_frames = hit_frames;
-    obj->can_hit = can_hit;
-
-    /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f",
-     * strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride,
-     * obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
-
-    // Return success
     return 0;
 }
 
@@ -696,12 +542,7 @@ void object_set_move_cb(object *obj, object_move_cb cbfunc) {
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc) {
     obj->debug = cbfunc;
 }
-void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc) {
-    obj->serialize = cbfunc;
-}
-void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc) {
-    obj->unserialize = cbfunc;
-}
+
 void object_set_pal_transform_cb(object *obj, object_palette_transform_cb cbfunc) {
     obj->pal_transform = cbfunc;
 }

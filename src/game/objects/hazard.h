@@ -9,6 +9,5 @@
 typedef struct har_t har;
 
 int hazard_create(object *obj, scene *scene);
-void hazard_bootstrap(object *obj);
 
 #endif // HAZARD_H

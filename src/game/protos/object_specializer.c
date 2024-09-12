@@ -13,11 +13,9 @@ int object_auto_specialize(object *obj, int specialization_id) {
             return 0;
         case SPECID_PROJECTILE:
             // DEBUG("Object is specialized as a projectile");
-            projectile_bootstrap(obj);
             return 0;
         case SPECID_HAZARD:
             // DEBUG("Object is specialized as a hazard");
-            hazard_bootstrap(obj);
             return 0;
         default:
             DEBUG("Object is specialized as %d", specialization_id);

@@ -15,7 +15,6 @@ void controller_init(controller *ctrl, game_state *gs) {
     ctrl->poll_fun = NULL;
     ctrl->tick_fun = NULL;
     ctrl->dyntick_fun = NULL;
-    ctrl->update_fun = NULL;
     ctrl->har_hook = NULL;
     ctrl->rumble_fun = NULL;
     ctrl->rtt = 0;
@@ -43,10 +42,6 @@ void controller_free_chain(ctrl_event *ev) {
     ctrl_event *now = ev;
     ctrl_event *tmp;
     while(now != NULL) {
-        if(now->type == EVENT_TYPE_SYNC) {
-            serial_free(now->event_data.ser);
-            omf_free(now->event_data.ser);
-        }
         tmp = now->next;
         omf_free(now);
         now = tmp;
@@ -80,15 +75,6 @@ void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
     }
 }
 
-void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev) {
-    // a sync event obsoletes all previous events
-    controller_free_chain(*ev);
-    *ev = omf_calloc(1, sizeof(ctrl_event));
-    (*ev)->type = EVENT_TYPE_SYNC;
-    (*ev)->event_data.ser = serial_calloc_copy(ser);
-    (*ev)->next = NULL;
-}
-
 void controller_close(controller *ctrl, ctrl_event **ev) {
     // a close event obsoletes all previous events
     controller_free_chain(*ev);
@@ -107,13 +93,6 @@ int controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
 int controller_dyntick(controller *ctrl, int ticks, ctrl_event **ev) {
     if(ctrl->dyntick_fun != NULL) {
         return ctrl->dyntick_fun(ctrl, ticks, ev);
-    }
-    return 0;
-}
-
-int controller_update(controller *ctrl, serial *state) {
-    if(ctrl->update_fun != NULL) {
-        return ctrl->update_fun(ctrl, state);
     }
     return 0;
 }

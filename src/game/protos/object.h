@@ -52,8 +52,6 @@ typedef void (*object_tick_cb)(object *obj);
 typedef void (*object_move_cb)(object *obj);
 typedef void (*object_collide_cb)(object *a, object *b);
 typedef void (*object_finish_cb)(object *obj);
-typedef int (*object_serialize_cb)(object *obj, serial *ser);
-typedef int (*object_unserialize_cb)(object *obj, serial *ser, int animation_id, game_state *gs);
 typedef void (*object_debug_cb)(object *obj);
 typedef int (*object_palette_transform_cb)(object *obj, screen_palette *pal);
 typedef int (*object_clone_cb)(object *src, object *dst);
@@ -130,8 +128,6 @@ struct object_t {
     object_collide_cb collide;
     object_finish_cb finish;
     object_move_cb move;
-    object_serialize_cb serialize;
-    object_unserialize_cb unserialize;
     object_debug_cb debug;
     object_palette_transform_cb pal_transform;
     object_clone_cb clone;
@@ -152,9 +148,6 @@ void object_collide(object *a, object *b);
 int object_act(object *obj, int action);
 int object_finished(object *obj);
 void object_free(object *obj);
-
-int object_serialize(object *obj, serial *ser);
-int object_unserialize(object *obj, serial *ser, game_state *gs);
 
 int object_clone(object *src, object *dst);
 int object_clone_free(object *obj);
@@ -199,8 +192,6 @@ void object_set_collide_cb(object *obj, object_collide_cb cbfunc);
 void object_set_finish_cb(object *obj, object_finish_cb cbfunc);
 void object_set_move_cb(object *obj, object_move_cb cbfunc);
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc);
-void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc);
-void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc);
 void object_set_pal_transform_cb(object *obj, object_palette_transform_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);
