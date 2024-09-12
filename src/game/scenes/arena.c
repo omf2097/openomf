@@ -1230,6 +1230,11 @@ void arena_toggle_rein(scene *scene) {
     local->rein_enabled = !local->rein_enabled;
 }
 
+void arena_clone(scene *src, scene *dst) {
+    // don't need to clone anything here, just install fresh hooks that point to the right scene
+    maybe_install_har_hooks(dst);
+}
+
 void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     if(scene->bk_data->file_id == 64) {
         // Start up & repeat torches on arena startup
@@ -1532,6 +1537,7 @@ int arena_create(scene *scene) {
     scene_set_startup_cb(scene, arena_startup);
     scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
+    scene->clone = arena_clone;
 
     // initalize recording, if enabled
     if(scene->gs->init_flags->record == 1) {

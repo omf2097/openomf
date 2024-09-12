@@ -2132,13 +2132,14 @@ void har_install_hook(har *h, har_hook_cb hook, void *data) {
 int har_clone(object *src, object *dst) {
     har *local = omf_calloc(1, sizeof(har));
     memcpy(local, object_get_userdata(src), sizeof(har));
-    // TODO clone the hooks list
+    list_create(&local->har_hooks);
     object_set_userdata(dst, local);
     return 0;
 }
 
 int har_clone_free(object *obj) {
     har *har = object_get_userdata(obj);
+    list_free(&har->har_hooks);
     omf_free(har);
     return 0;
 }
