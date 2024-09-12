@@ -180,7 +180,14 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
                 int player_id = j;
                 DEBUG("replaying input %d from player %d at tick %d", ev->events[j], player_id, ev->tick);
                 game_player *player = game_state_get_player(gs, player_id);
-                object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j]);
+                if (ev->events[j] & ACT_PUNCH) {
+                    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_PUNCH);
+                } else if (ev->events[j] & ACT_KICK) {
+                    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_KICK);
+                }
+                if (((ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH) != 0) {
+                    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), (ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH);
+                }
                 //write_rec_move(gs->sc, player, ev->events[j]);
             }
         }
