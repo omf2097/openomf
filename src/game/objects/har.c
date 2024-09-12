@@ -2048,6 +2048,7 @@ int har_clone(object *src, object *dst) {
     memcpy(local, object_get_userdata(src), sizeof(har));
     list_create(&local->har_hooks);
     object_set_userdata(dst, local);
+    object_set_spawn_cb(dst, cb_har_spawn_object, local);
     return 0;
 }
 

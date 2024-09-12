@@ -86,6 +86,20 @@ void projectile_move(object *obj) {
     }
 }
 
+int projectile_clone(object *src, object *dst) {
+    projectile_local *local = omf_calloc(1, sizeof(projectile_local));
+    memcpy(local, object_get_userdata(src), sizeof(projectile_local));
+    object_set_userdata(dst, local);
+    return 0;
+}
+
+int projectile_clone_free(object *obj) {
+    projectile_local *local = object_get_userdata(obj);
+    omf_free(local);
+    object_set_userdata(obj, NULL);
+    return 0;
+}
+
 int projectile_create(object *obj, har *har) {
     // strore the HAR in local userdata instead
     projectile_local *local = omf_calloc(1, sizeof(projectile_local));
@@ -99,6 +113,8 @@ int projectile_create(object *obj, har *har) {
     object_set_dynamic_tick_cb(obj, projectile_tick);
     object_set_free_cb(obj, projectile_free);
     object_set_move_cb(obj, projectile_move);
+    obj->clone = projectile_clone;
+    obj->clone_free = projectile_clone_free;
     return 0;
 }
 
