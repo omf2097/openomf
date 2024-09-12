@@ -39,7 +39,7 @@ void har_free(object *obj) {
     surface_free(&h->cd_debug);
 #endif
     omf_free(h);
-    object_set_userdata(obj, h);
+    object_set_userdata(obj, NULL);
 }
 
 /* hooks */
@@ -487,7 +487,6 @@ void har_move(object *obj) {
             har_set_ani(obj, ANIM_IDLE, 1);
             object_set_stride(obj, h->stride);
             har_action_hook(obj, ACT_STOP);
-            har_action_hook(obj, ACT_FLUSH);
             har_event_land(h);
             har_floor_landing_effects(obj);
 
@@ -1788,8 +1787,6 @@ int har_act(object *obj, int act_type) {
                     break;
             }
         }
-        har_action_hook(obj, ACT_FLUSH);
-
         // Set correct animation etc.
         // executing_move = 1 prevents new moves while old one is running.
         har_set_ani(obj, move->id, 0);
@@ -1959,7 +1956,6 @@ int har_act(object *obj, int act_type) {
                 break;
         }
         har_action_hook(obj, act_type);
-        har_action_hook(obj, ACT_FLUSH);
         return 1;
     }
 

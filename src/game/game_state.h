@@ -5,6 +5,7 @@
 #include "game/utils/serial.h"
 #include "utils/random.h"
 #include "utils/vector.h"
+#include <stdbool.h>
 #include <SDL.h>
 
 typedef struct scene_t scene;
@@ -17,7 +18,7 @@ int game_state_handle_event(game_state *gs, SDL_Event *event);
 void game_state_render(game_state *gs);
 void game_state_debug(game_state *gs);
 void game_state_static_tick(game_state *gs);
-void game_state_dynamic_tick(game_state *gs);
+void game_state_dynamic_tick(game_state *gs, bool replay);
 void game_state_tick_controllers(game_state *gs);
 unsigned int game_state_get_tick(game_state *gs);
 scene *game_state_get_scene(game_state *gs);

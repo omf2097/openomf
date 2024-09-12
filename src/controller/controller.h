@@ -16,8 +16,7 @@ enum
     ACT_DOWN = 0x10,
     ACT_LEFT = 0x20,
     ACT_ESC = 0x40,
-    ACT_RIGHT = 0x80,
-    ACT_FLUSH = 0x100
+    ACT_RIGHT = 0x80
 };
 
 enum

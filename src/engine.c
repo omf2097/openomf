@@ -246,7 +246,7 @@ void engine_run(engine_init_flags *init_flags) {
         }
         while(dynamic_wait > game_state_ms_per_dyntick(gs) && limit_dynamic--) {
             // Tick scene
-            game_state_dynamic_tick(gs);
+            game_state_dynamic_tick(gs, false);
 
             // Handle waiting period leftover time
             dynamic_wait -= game_state_ms_per_dyntick(gs);

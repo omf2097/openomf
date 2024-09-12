@@ -648,7 +648,7 @@ void game_state_static_tick(game_state *gs) {
 }
 
 // This function is called when the game speed requires it
-void game_state_dynamic_tick(game_state *gs) {
+void game_state_dynamic_tick(game_state *gs, bool replay) {
     // We want to load another scene
     if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
         // If this is the end, set run to 0 so that engine knows to close here
@@ -688,7 +688,8 @@ void game_state_dynamic_tick(game_state *gs) {
         for(int i = 0; i < game_state_num_players(gs); i++) {
             game_player *gp = game_state_get_player(gs, i);
             controller *c = game_player_get_ctrl(gp);
-            if(c) {
+            // TODO, like audio rumble needs to be reworked to be done in slices
+            if(c && !replay) {
                 controller_rumble(c, max2(gs->screen_shake_horizontal, gs->screen_shake_vertical) / 12.0f,
                                   max2(gs->screen_shake_horizontal, gs->screen_shake_vertical) *
                                       game_state_ms_per_dyntick(gs));
@@ -705,7 +706,7 @@ void game_state_dynamic_tick(game_state *gs) {
     scene_dynamic_tick(gs->sc, game_state_is_paused(gs));
 
     // Poll input. If console is opened, do not poll the controllers.
-    if(!console_window_is_open()) {
+    if(!console_window_is_open() && !replay) {
         scene_input_poll(gs->sc);
     }
 
@@ -727,8 +728,10 @@ void game_state_dynamic_tick(game_state *gs) {
         LOGTICK(gs->tick);
     }
 
-    // Free extra controller events
-    game_state_ctrl_events_free(gs);
+    if (!replay) {
+        // Free extra controller events
+        game_state_ctrl_events_free(gs);
+    }
 
     // int_tick is used for ping calculation so it shouldn't be touched
     gs->int_tick++;

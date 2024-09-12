@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "controller/net_controller.h"
 #include "game/game_state_type.h"
@@ -81,9 +82,6 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
     tick_events *nev = NULL;
     int i = 0;
     while((ev = (tick_events *)list_iter_next(&it))) {
-        if (id != data->id && tick > data->last_received_tick) {
-            data->last_received_tick = tick;
-        }
         if (i == 0 && ev->tick > tick) {
             tick_events event;
             event.tick = tick;
@@ -114,6 +112,31 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
     list_append(transcript, &event, sizeof(tick_events));
 }
 
+void send_events(wtf * data) {
+    serial ser;
+    ENetPacket *packet;
+    ENetPeer *peer = data->peer;
+    ENetHost *host = data->host;
+    list *transcript = &data->transcript;
+    iterator it;
+    list_iter_begin(transcript, &it);
+    tick_events *ev = NULL;
+    serial_create(&ser);
+    serial_write_int8(&ser, EVENT_TYPE_ACTION);
+
+    while((ev = (tick_events *)list_iter_next(&it))) {
+        if (ev->events[data->id] != 0 && ev->tick > data->last_received_tick && (ev->tick < data->last_tick || ev->events[data->id] == ACT_STOP)) {
+            serial_write_int16(&ser, ev->events[data->id]);
+            serial_write_int32(&ser, ev->tick);
+        }
+    }
+
+    packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
+    serial_free(&ser);
+    enet_peer_send(peer, 1, packet);
+    enet_host_flush(host);
+}
+
 void rewind_and_replay(wtf *data, game_state *gs_current) {
     // first, find the last frame we have input from the other side
     // this will be our next checkpoint (as no events can come in before
@@ -138,7 +161,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
     while((ev = (tick_events *)list_iter_next(&it))) {
         if (ev->tick + data->local_proposal < gs->int_tick) {
             // tick too old to matter
-            DEBUG("tick %d is older than %d", ev->tick, gs->int_tick - data->local_proposal);
+            //DEBUG("tick %d is older than %d", ev->tick, gs->int_tick - data->local_proposal);
             list_delete(transcript, &it);
             continue;
         }
@@ -166,7 +189,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         }
         while(dynamic_wait > 1 /*&& limit_dynamic--*/) {
             // Tick scene
-            game_state_dynamic_tick(gs);
+            game_state_dynamic_tick(gs, true);
 
             // Handle waiting period leftover time
             dynamic_wait -= 1;
@@ -180,18 +203,25 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
                 int player_id = j;
                 DEBUG("replaying input %d from player %d at tick %d", ev->events[j], player_id, ev->tick);
                 game_player *player = game_state_get_player(gs, player_id);
+                if (((ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH) != 0) {
+                    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), (ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH);
+                }
                 if (ev->events[j] & ACT_PUNCH) {
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_PUNCH);
                 } else if (ev->events[j] & ACT_KICK) {
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_KICK);
                 }
-                if (((ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH) != 0) {
-                    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), (ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH);
-                }
+
                 //write_rec_move(gs->sc, player, ev->events[j]);
             }
         }
         //controller_cmd(ctrl, action, ev);
+    }
+
+    if (gs_new == NULL) {
+        gs_new = omf_calloc(1, sizeof(game_state));
+        game_state_clone(gs, gs_new);
+        data->gs_bak = gs_new;
     }
 
     DEBUG("game state is %d, want %d", gs->int_tick, data->last_tick); 
@@ -209,7 +239,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
     }
     while(dynamic_wait > 1 /*&& limit_dynamic--*/) {
         // Tick scene
-        game_state_dynamic_tick(gs);
+        game_state_dynamic_tick(gs, true);
 
         // Handle waiting period leftover time
         dynamic_wait -= 1;
@@ -312,17 +342,26 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 serial_create_from(&ser, (const char *)event.packet->data, event.packet->dataLength);
                 switch(serial_read_int8(&ser)) {
                     case EVENT_TYPE_ACTION: {
-                        // dispatch keypress to scene
-                        int action = serial_read_int16(&ser);
-                        int remote_tick = serial_read_int32(&ser);
+                        assert(event.packet->dataLength % 6 == 1);
+                        int last_received = 0;
+                        for (int i = 1; i < event.packet->dataLength; i+= 6) {
+                            // dispatch keypress to scene
+                            int action = serial_read_int16(&ser);
+                            int remote_tick = serial_read_int32(&ser);
 
+                            if (data->synchronized && data->gs_bak) {
+                                insert_event(data, remote_tick, action, abs(data->id - 1));
+                                last_received = remote_tick;
+                                //print_transcript(&data->transcript);
+                            } else {
+                                DEBUG("Remote event %d at %d", action, remote_tick);
+                                controller_cmd(ctrl, action, ev);
+                            }
+                        }
                         if (data->synchronized && data->gs_bak) {
-                            insert_event(data, remote_tick - data->peer_proposal, action, abs(data->id - 1));
+                            print_transcript(&data->transcript);
                             rewind_and_replay(data, ctrl->gs);
-                            //print_transcript(&data->transcript);
-                        } else {
-                            DEBUG("Remote event %d at %d", action, remote_tick - data->peer_proposal);
-                            controller_cmd(ctrl, action, ev);
+                            data->last_received_tick = last_received;
                         }
                     } break;
                     case EVENT_TYPE_HB: {
@@ -478,11 +517,9 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
 }
 
 void controller_hook(controller *ctrl, int action) {
-    serial ser;
     wtf *data = ctrl->data;
     ENetPeer *peer = data->peer;
     ENetHost *host = data->host;
-    ENetPacket *packet;
     if(action == ACT_STOP && data->last_action == ACT_STOP) {
         //data->last_action = -1;
     //if (data->last_action == action) {
@@ -490,24 +527,27 @@ void controller_hook(controller *ctrl, int action) {
     }
     data->last_action = action;
 
-    DEBUG("controller hook firing");
-
     if(peer) {
-        if (data->synchronized) {
-            insert_event(data, data->last_tick - data->local_proposal, action, data->id);
-            //print_transcript(&data->transcript);
-        }
         DEBUG("Local event %d at %d", action, data->last_tick - data->local_proposal);
-        serial_create(&ser);
-        serial_write_int8(&ser, EVENT_TYPE_ACTION);
-        serial_write_int16(&ser, action);
-        serial_write_int32(&ser, data->last_tick);
-        /*DEBUG("controller hook fired with %d", action);*/
-        /*sprintf(buf, "k%d", action);*/
-        packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
-        serial_free(&ser);
-        enet_peer_send(peer, 1, packet);
-        enet_host_flush(host);
+        if (data->synchronized && data->gs_bak) {
+            insert_event(data, data->last_tick - data->local_proposal, action, data->id);
+            print_transcript(&data->transcript);
+            send_events(data);
+            //rewind_and_replay(data, ctrl->gs);
+        } else {
+            serial ser;
+            ENetPacket *packet;
+            serial_create(&ser);
+            serial_write_int8(&ser, EVENT_TYPE_ACTION);
+            serial_write_int16(&ser, action);
+            serial_write_int32(&ser, data->last_tick - data->local_proposal);
+            DEBUG("controller hook fired with %d", action);
+            /*sprintf(buf, "k%d", action);*/
+            packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
+            serial_free(&ser);
+            enet_peer_send(peer, 1, packet);
+            enet_host_flush(host);
+        }
     } else {
         DEBUG("peer is null~");
     }
@@ -516,37 +556,20 @@ void controller_hook(controller *ctrl, int action) {
 void net_controller_har_hook(int action, void *cb_data) {
     controller *ctrl = cb_data;
     wtf *data = ctrl->data;
-    serial ser;
     ENetPeer *peer = data->peer;
-    ENetHost *host = data->host;
-    ENetPacket *packet;
 
-    DEBUG("controller  har hookhook firing");
     if(action == ACT_STOP && data->last_action == ACT_STOP) {
-        data->last_action = -1;
-        return;
-    }
-    if(action == ACT_FLUSH) {
-        enet_host_flush(host);
+        //data->last_action = -1;
         return;
     }
     data->last_action = action;
     if(peer) {
-        if (data->synchronized) {
+        DEBUG("har hook!");
+        if (data->synchronized && data->gs_bak) {
             insert_event(data, data->last_tick - data->local_proposal, action, data->id);
+            send_events(data);
             //print_transcript(&data->transcript);
         }
-
-        serial_create(&ser);
-        serial_write_int8(&ser, EVENT_TYPE_ACTION);
-        serial_write_int16(&ser, action);
-        serial_write_int32(&ser, data->last_tick);
-        DEBUG("controller hook fired with %d", action);
-        /*sprintf(buf, "k%d", action);*/
-        packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
-        serial_free(&ser);
-        enet_peer_send(peer, 1, packet);
-        /*enet_host_flush (host);*/
     } else {
         DEBUG("peer is null~");
     }
@@ -569,6 +592,8 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->peer_proposal = 0;
     data->confirmed = false;
     data->last_tick = 0;
+    data->gs_bak = NULL;
+    data->last_received_tick = 0;
     list_create(&data->transcript);
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_NETWORK;

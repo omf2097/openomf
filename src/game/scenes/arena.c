@@ -365,9 +365,6 @@ void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
     object *hit_har;
     har *h;
 
-    if(is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
-        return; // netplay clients do not keep score
-    }
     fight_stats *fight_stats = &scene->gs->fight_stats;
     // FIXME: Unsure how to calculate airborne attacks, so prevent underflow like this.
     int hitter = abs(hittee - 1);
@@ -709,7 +706,7 @@ void maybe_install_har_hooks(scene *scene) {
     har1 = obj_har1->userdata;
     har2 = obj_har2->userdata;
 
-    if(scene->gs->role == ROLE_CLIENT) {
+    if(scene->gs->role == ROLE_CLIENT && false) {
         game_player *_player[2];
         for(int i = 0; i < 2; i++) {
             _player[i] = game_state_get_player(scene->gs, i);
@@ -897,11 +894,6 @@ void arena_spawn_hazard(scene *scene) {
     hashmap_iter_begin(&scene->bk_data->infos, &it);
     hashmap_pair *pair = NULL;
 
-    if(is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
-        // only the server spawns hazards
-        return;
-    }
-
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info *)pair->val;
         if(info->probability > 1) {
@@ -975,8 +967,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
 
         // RTT stuff
-        hars[0]->delay = ceilf(player2->ctrl->rtt / 2.0f);
-        hars[1]->delay = ceilf(player1->ctrl->rtt / 2.0f);
+        //hars[0]->delay = ceilf(player2->ctrl->rtt / 2.0f);
+        //hars[1]->delay = ceilf(player1->ctrl->rtt / 2.0f);
 
         // Endings and beginnings
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
