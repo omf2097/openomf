@@ -2129,9 +2129,25 @@ void har_install_hook(har *h, har_hook_cb hook, void *data) {
     /*h->hook_cb_data = data;*/
 }
 
+int har_clone(object *src, object *dst) {
+    har *local = omf_calloc(1, sizeof(har));
+    memcpy(local, object_get_userdata(src), sizeof(har));
+    // TODO clone the hooks list
+    object_set_userdata(dst, local);
+    return 0;
+}
+
+int har_clone_free(object *obj) {
+    har *har = object_get_userdata(obj);
+    omf_free(har);
+    return 0;
+}
+
 void har_bootstrap(object *obj) {
     object_set_serialize_cb(obj, har_serialize);
     object_set_unserialize_cb(obj, har_unserialize);
+    obj->clone = har_clone;
+    obj->clone_free = har_clone_free;
 }
 
 void har_copy_actions(object *new, object *old) {
