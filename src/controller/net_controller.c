@@ -125,18 +125,11 @@ void send_events(wtf * data) {
     serial_create(&ser);
     serial_write_int8(&ser, EVENT_TYPE_ACTION);
 
-    int count = 0;
     while((ev = (tick_events *)list_iter_next(&it))) {
         if (ev->events[data->id] != 0 && ev->tick > data->last_received_tick && (ev->tick < data->last_tick || ev->events[data->id] == ACT_STOP)) {
             serial_write_int16(&ser, ev->events[data->id]);
             serial_write_int32(&ser, ev->tick);
-            count++;
         }
-    }
-
-    if (count == 0 && data->last_tick - data->last_sent > 10 ) {
-        serial_write_int16(&ser, ACT_STOP);
-        serial_write_int32(&ser, data->last_tick  - 1);
     }
 
     data->last_sent = data->last_tick;
@@ -311,6 +304,11 @@ done:
     if(data->host) {
         enet_host_destroy(data->host);
         data->host = NULL;
+    }
+    list_free(&data->transcript);
+    if (data->gs_bak) {
+        game_state_clone_free(data->gs_bak);
+        data->gs_bak = NULL;
     }
     if(ctrl->data) {
         omf_free(ctrl->data);
@@ -488,8 +486,10 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 data->disconnected = 1;
                 event.peer->data = NULL;
                 data->synchronized = false;
-                game_state_clone_free(data->gs_bak);
-                data->gs_bak = NULL;
+                if (data->gs_bak) {
+                    game_state_clone_free(data->gs_bak);
+                    data->gs_bak = NULL;
+                }
                 controller_close(ctrl, ev);
                 return 1; // bail the fuck out
                 break;

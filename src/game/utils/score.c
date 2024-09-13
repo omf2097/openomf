@@ -269,3 +269,18 @@ int chr_score_end_combo(chr_score *score, vec2i pos) {
     score->combo_hit_score = 0;
     return ret;
 }
+
+int chr_score_clone(chr_score *src, chr_score *dst) {
+    iterator it;
+    score_text *t;
+    memcpy(dst, src, sizeof(chr_score));
+    list_create(&dst->texts);
+    list_iter_begin(&src->texts, &it);
+    while((t = iter_next(&it)) != NULL) {
+        score_text t2;
+        memcpy(&t2, t, sizeof(score_text));
+        t2.text = strdup(t->text);
+        list_append(&dst->texts, &t2, sizeof(score_text));
+    }
+    return 0;
+}

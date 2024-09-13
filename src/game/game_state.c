@@ -872,7 +872,7 @@ void game_state_clone_free(game_state *gs) {
     while((robj = iter_next(&it)) != NULL) {
         object_clone_free(robj->obj);
         memset(robj->obj, 0, sizeof(object));
-        //omf_free(robj->obj);
+        omf_free(robj->obj);
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
@@ -884,7 +884,7 @@ void game_state_clone_free(game_state *gs) {
     // Free players
     for(int i = 0; i < 2; i++) {
         //game_player_set_ctrl(gs->players[i], NULL);
-        //game_player_clone_free(gs->players[i]);
+        game_player_clone_free(gs->players[i]);
         omf_free(gs->players[i]);
     }
     memset(gs, 0, sizeof(game_state));

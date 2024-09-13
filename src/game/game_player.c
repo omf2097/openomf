@@ -23,6 +23,9 @@ void game_player_free(game_player *gp) {
     sd_pilot_free(&gp->pilot);
     chr_score_free(&gp->score);
     har_screencaps_free(&gp->screencaps);
+    if (gp->ctrl) {
+        controller_free(gp->ctrl);
+    }
 }
 
 void game_player_set_har(game_player *gp, object *har) {
@@ -39,7 +42,7 @@ uint32_t game_player_get_har_obj_id(game_player *gp) {
 
 void game_player_set_ctrl(game_player *gp, controller *ctrl) {
     if(gp->ctrl != NULL) {
-        gp->ctrl->free_fun(gp->ctrl);
+        controller_free(gp->ctrl);
         omf_free(gp->ctrl);
     }
     gp->ctrl = ctrl;
@@ -79,9 +82,12 @@ chr_score *game_player_get_score(game_player *gp) {
 
 void game_player_clone(game_player *src, game_player *dst) {
     memcpy(dst, src, sizeof(game_player));
+    chr_score_clone(&src->score, &dst->score);
+    har_screencaps_clone(&src->screencaps, &dst->screencaps);
 }
 
 int game_player_clone_free(game_player *gp) {
-    omf_free(gp);
+    chr_score_free(&gp->score);
+    har_screencaps_free(&gp->screencaps);
     return 0;
 }

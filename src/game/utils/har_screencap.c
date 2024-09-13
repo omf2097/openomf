@@ -20,6 +20,15 @@ void har_screencaps_reset(har_screencaps *caps) {
     har_screencaps_free(caps);
 }
 
+int har_screencaps_clone(har_screencaps *src, har_screencaps *dst) {
+    for(int i = 0; i < 2; i++) {
+        if(src->ok[i]) {
+            surface_copy(&dst->cap[i], &src->cap[i]);
+        }
+    }
+    return 1;
+}
+
 void har_screencaps_capture(har_screencaps *caps, object *obj, int id) {
     if(caps->ok[id]) {
         surface_free(&caps->cap[id]);

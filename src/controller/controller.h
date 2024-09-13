@@ -78,6 +78,7 @@ int controller_har_hook(controller *ctrl, har_event event);
 void controller_add_hook(controller *ctrl, controller *source, void (*fp)(controller *ctrl, int act_type));
 void controller_clear_hooks(controller *ctrl);
 void controller_free_chain(ctrl_event *ev);
+void controller_free(controller *ctrl);
 void controller_set_repeat(controller *ctrl, int repeat);
 int controller_rumble(controller *ctrl, float magnitude, int duration);
 

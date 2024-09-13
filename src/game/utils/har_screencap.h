@@ -19,6 +19,7 @@ typedef struct {
 void har_screencaps_create(har_screencaps *caps);
 void har_screencaps_free(har_screencaps *caps);
 void har_screencaps_reset(har_screencaps *caps);
+int har_screencaps_clone(har_screencaps *src, har_screencaps *dst);
 void har_screencaps_capture(har_screencaps *caps, object *obj, int id);
 
 #endif // HAR_SCREENCAP_H

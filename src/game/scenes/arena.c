@@ -781,6 +781,16 @@ void arena_free(scene *scene) {
     object_free(local->player2_portrait);
     omf_free(local->player2_portrait);
 
+    // free round tokens
+    for(int i = 0; i < 2; i++) {
+        for(int j = 0; j < 4; j++) {
+            if (local->player_rounds[i][j]) {
+                object_free(local->player_rounds[i][j]);
+                omf_free(local->player_rounds[i][j]);
+            }
+        }
+    }
+
     settings_save();
 
     omf_free(local);
