@@ -56,7 +56,6 @@ animation *create_animation_from_single(sprite *sp, vec2i pos) {
 int animation_clone(animation *src, animation *dst) {
     iterator it;
     memcpy(dst, src, sizeof(animation));
-    str_create(&dst->animation_string);
     str_from(&dst->animation_string, &src->animation_string);
     vector_create(&dst->collision_coords, sizeof(collision_coord));
     vector_iter_begin(&src->collision_coords, &it);

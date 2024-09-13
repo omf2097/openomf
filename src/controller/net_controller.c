@@ -339,13 +339,6 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
         game_state_clone(ctrl->gs, data->gs_bak);
     }
 
-    /*if (data->gs_bak && ticks - data->local_proposal % 673 == 0) {
-        DEBUG("replacing state!");
-        game_state *gs_new = omf_calloc(1, sizeof(game_state));
-        game_state_clone(data->gs_bak, gs_new);
-        ctrl->gs->new_state = gs_new;
-    }*/
-
     while(enet_host_service(host, &event, 0) > 0) {
         switch(event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
@@ -372,6 +365,20 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             //print_transcript(&data->transcript);
                             rewind_and_replay(data, ctrl->gs);
                             data->last_received_tick = last_received;
+                            if (data->last_sent + data->local_proposal < ticks - 50) {
+                                // if we haven't sent an event in a while, send a dummy event to force the peer to rewind/replay
+                                serial action_ser;
+                                ENetPacket *action_packet;
+                                serial_create(&action_ser);
+                                serial_write_int8(&action_ser, EVENT_TYPE_ACTION);
+                                serial_write_int16(&action_ser, 0);
+                                serial_write_int32(&action_ser, (ticks - data->local_proposal) - 1);
+                                data->last_sent = (ticks - data->local_proposal) - 1;
+                                action_packet = enet_packet_create(action_ser.data, serial_len(&action_ser), ENET_PACKET_FLAG_UNSEQUENCED);
+                                serial_free(&action_ser);
+                                enet_peer_send(peer, 1, action_packet);
+                                enet_host_flush(host);
+                            }
                         }
                     } break;
                     case EVENT_TYPE_HB: {

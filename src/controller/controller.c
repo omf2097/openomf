@@ -50,6 +50,7 @@ void controller_free_chain(ctrl_event *ev) {
 }
 
 void controller_free(controller *ctrl) {
+    controller_clear_hooks(ctrl);
     list_free(&ctrl->hooks);
     ctrl->free_fun(ctrl);
 }
