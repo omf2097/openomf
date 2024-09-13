@@ -1,5 +1,6 @@
 #include "controller/controller.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include <stdlib.h>
 
 typedef struct {
@@ -105,6 +106,7 @@ int controller_poll(controller *ctrl, ctrl_event **ev) {
 }
 
 int controller_har_hook(controller *ctrl, har_event event) {
+    DEBUG("trying to fire HAR hook");
     if(ctrl->har_hook != NULL) {
         return ctrl->har_hook(ctrl, event);
     }

@@ -94,12 +94,19 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->clone_free = NULL;
 }
 
-int object_clone(object *src, object *dst) {
+int object_clone(object *src, object *dst, game_state *gs) {
     memcpy(dst, src, sizeof(object));
+    dst->gs = gs;
     player_clone(src, dst);
     if (src->custom_str) {
         dst->custom_str = strdup(src->custom_str);
     }
+
+    if(src->cur_animation_own == OWNER_OBJECT) {
+        dst->cur_animation = omf_calloc(1, sizeof(animation));
+        animation_clone(src->cur_animation, dst->cur_animation);
+    }
+
 
     if (src->clone) {
         src->clone(src, dst);
@@ -408,6 +415,10 @@ int object_clone_free(object *obj) {
         obj->clone_free(obj);
     }
     player_free(obj);
+    if(obj->cur_animation_own == OWNER_OBJECT) {
+        animation_free(obj->cur_animation);
+        omf_free(obj->cur_animation);
+    }
     if(obj->custom_str) {
         omf_free(obj->custom_str);
     }

@@ -110,9 +110,10 @@ void arena_speed_slide(component *c, void *userdata, int pos) {
     game_state_set_speed(sc->gs, pos + 5);
 }
 
-void scene_fight_anim_done(void *userdata) {
-    object *parent = userdata;
-    scene *scene = game_state_get_scene(parent->gs);
+void scene_fight_anim_done(void *scenedata, void *userdata) {
+    scene *scene = scenedata;
+    //int parent_id = userdata;
+    //object *parent = game_state_find_object(scene->gs, parent_id;
     arena_local *arena = scene_get_userdata(scene);
 
     // This will release HARs for action
@@ -123,9 +124,10 @@ void scene_fight_anim_done(void *userdata) {
     // parent->animation_state.finished = 1;
 }
 
-void scene_fight_anim_start(void *userdata) {
+void scene_fight_anim_start(void *scenedata, void *userdata) {
     // Start FIGHT animation
-    game_state *gs = userdata;
+    scene *sc = scenedata;
+    game_state *gs = sc->gs;
     scene *scene = game_state_get_scene(gs);
     animation *fight_ani = &bk_get_info(scene->bk_data, 10)->ani;
     object *fight = omf_calloc(1, sizeof(object));
@@ -134,12 +136,12 @@ void scene_fight_anim_start(void *userdata) {
     object_set_animation(fight, fight_ani);
     // object_set_finish_cb(fight, scene_fight_anim_done);
     game_state_add_object(gs, fight, RENDER_LAYER_TOP, 0, 0);
-    ticktimer_add(&scene->tick_timer, 24, scene_fight_anim_done, fight);
+    ticktimer_add(&scene->tick_timer, 24, scene_fight_anim_done, NULL/*fight->id*/);
 }
 
 void scene_ready_anim_done(object *parent) {
     // Wait a moment before loading FIGHT animation
-    ticktimer_add(&game_state_get_scene(parent->gs)->tick_timer, 10, scene_fight_anim_start, parent->gs);
+    ticktimer_add(&game_state_get_scene(parent->gs)->tick_timer, 10, scene_fight_anim_start, NULL);
 
     // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
@@ -607,14 +609,17 @@ void arena_maybe_turn_har(int player_id, scene *scene) {
     object *obj_har1 = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
     object *obj_har2 = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
     if(obj_har1->pos.x > obj_har2->pos.x) {
+        DEBUG("ARENA facing player %d LEFT", player_id);
         object_set_direction(obj_har1, OBJECT_FACE_LEFT);
     } else {
+        DEBUG("ARENA facing player %d RIGHT", player_id);
         object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
     }
 
     // there isn;t an idle event hook, so do the best we can...
     har *har2 = obj_har2->userdata;
     if((har2->state == STATE_STANDING || har_is_crouching(har2) || har_is_walking(har2)) && !har2->executing_move) {
+        DEBUG("ARENA facing player %d", other_player_id);
         object_set_direction(obj_har2, object_get_direction(obj_har1) * -1);
     }
 }
@@ -629,6 +634,7 @@ void arena_har_hook(har_event event, void *data) {
     object *obj_har2 = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
     har *har1 = obj_har1->userdata;
     har *har2 = obj_har2->userdata;
+    DEBUG("HAR %d HOOK FIRED WITH %d at %d", event.player_id, event.type, scene->gs->int_tick);
     switch(event.type) {
         case HAR_EVENT_WALK:
             arena_maybe_turn_har(event.player_id, scene);
@@ -1360,7 +1366,7 @@ int arena_create(scene *scene) {
     game_state_find_object(scene->gs, game_player_get_har_obj_id(_player[0]))->animation_state.enemy_obj_id = game_player_get_har_obj_id(_player[1]);
     game_state_find_object(scene->gs, game_player_get_har_obj_id(_player[1]))->animation_state.enemy_obj_id = game_player_get_har_obj_id(_player[0]);
 
-    //maybe_install_har_hooks(scene);
+    maybe_install_har_hooks(scene);
 
     // Arena menu text settings
     text_settings tconf;

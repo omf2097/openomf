@@ -939,10 +939,10 @@ int game_state_ms_per_dyntick(game_state *gs) {
     return MS_PER_OMF_TICK;
 }
 
-int render_obj_clone(render_obj *src, render_obj *dst) {
+int render_obj_clone(render_obj *src, render_obj *dst, game_state *gs) {
     memcpy(dst, src, sizeof(render_obj));
     dst->obj = omf_calloc(1, sizeof(object));
-    return object_clone(src->obj, dst->obj);
+    return object_clone(src->obj, dst->obj, gs);
 }
 
 object * game_state_find_object(game_state *gs, uint32_t object_id) {
@@ -969,8 +969,7 @@ int game_state_clone(game_state *src, game_state *dst) {
     int i = 0;
     while((robj = iter_next(&it)) != NULL) {
         render_obj d;
-        render_obj_clone(robj, &d);
-        d.obj->gs = dst;
+        render_obj_clone(robj, &d, dst);
         d.obj->animation_state.gs = dst;
         DEBUG("cloned object %d", d.obj->id);
         vector_append(&dst->objects, &d);
@@ -987,8 +986,7 @@ int game_state_clone(game_state *src, game_state *dst) {
     }*/
 
     dst->sc = omf_calloc(1, sizeof(scene));
-    scene_clone(src->sc, dst->sc);
-    dst->sc->gs = dst;
+    scene_clone(src->sc, dst->sc, dst);
 
     return 0;
 }

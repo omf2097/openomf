@@ -493,14 +493,18 @@ void har_move(object *obj) {
             // make sure HAR's are facing each other
             object *obj_enemy = game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
             if(object_get_direction(obj) == object_get_direction(obj_enemy)) {
+                DEBUG("HARS facing same direction");
                 vec2i pos = object_get_pos(obj);
                 vec2i pos_enemy = object_get_pos(obj_enemy);
                 if(pos.x > pos_enemy.x) {
+                    DEBUG("HARS facing player %d LEFT", h->player_id);
                     object_set_direction(obj, OBJECT_FACE_LEFT);
                 } else {
+                    DEBUG("HARS facing player %d RIGHT", h->player_id);
                     object_set_direction(obj, OBJECT_FACE_RIGHT);
                 }
 
+                DEBUG("HARS facing enemy player %d", abs(h->player_id - 1));
                 object_set_direction(obj_enemy, object_get_direction(obj) * -1);
             }
             /*}*/
@@ -2056,6 +2060,7 @@ int har_clone_free(object *obj) {
     har *har = object_get_userdata(obj);
     list_free(&har->har_hooks);
     omf_free(har);
+    object_set_userdata(obj, NULL);
     return 0;
 }
 

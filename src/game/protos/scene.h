@@ -61,7 +61,7 @@ void scene_input_poll(scene *scene);
 void scene_startup(scene *scene, int id, int *m_load, int *m_startup);
 int scene_anim_prio_override(scene *scene, int anim_id);
 
-int scene_clone(scene *src, scene *dst);
+int scene_clone(scene *src, scene *dst, game_state *gs);
 int scene_clone_free(scene *sc);
 
 void scene_set_userdata(scene *scene, void *userdata);

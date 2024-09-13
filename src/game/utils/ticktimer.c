@@ -24,13 +24,13 @@ void ticktimer_add(ticktimer *tt, int ticks, ticktimer_cb cb, void *userdata) {
     vector_append(&tt->units, &unit);
 }
 
-void ticktimer_run(ticktimer *tt) {
+void ticktimer_run(ticktimer *tt, void *scenedata) {
     iterator it;
     vector_iter_begin(&tt->units, &it);
     ticktimer_unit *unit;
     while((unit = iter_next(&it)) != NULL) {
         if(unit->ticks <= 0) {
-            unit->callback(unit->userdata);
+            unit->callback(scenedata, unit->userdata);
             vector_delete(&tt->units, &it);
         } else {
             unit->ticks--;

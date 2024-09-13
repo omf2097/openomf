@@ -127,9 +127,10 @@ void scene_init(scene *scene) {
     ticktimer_init(&scene->tick_timer);
 }
 
-int scene_clone(scene *src, scene *dst) {
+int scene_clone(scene *src, scene *dst, game_state *gs) {
 
     memcpy(dst, src, sizeof(scene));
+    dst->gs = gs;
     if (src->clone) {
         src->clone(src, dst);
     }
@@ -199,7 +200,7 @@ void scene_static_tick(scene *scene, int paused) {
 void scene_dynamic_tick(scene *scene, int paused) {
     // Tick timers
     if(!paused) {
-        ticktimer_run(&scene->tick_timer);
+        ticktimer_run(&scene->tick_timer, scene);
     }
 
     if(scene->dynamic_tick != NULL) {

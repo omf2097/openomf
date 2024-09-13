@@ -29,6 +29,7 @@ typedef struct {
     int local_proposal;
     bool confirmed;
     int last_tick;
+    int last_sent;
     list transcript;
     int last_received_tick;
     game_state *gs_bak;
@@ -124,12 +125,21 @@ void send_events(wtf * data) {
     serial_create(&ser);
     serial_write_int8(&ser, EVENT_TYPE_ACTION);
 
+    int count = 0;
     while((ev = (tick_events *)list_iter_next(&it))) {
         if (ev->events[data->id] != 0 && ev->tick > data->last_received_tick && (ev->tick < data->last_tick || ev->events[data->id] == ACT_STOP)) {
             serial_write_int16(&ser, ev->events[data->id]);
             serial_write_int32(&ser, ev->tick);
+            count++;
         }
     }
+
+    if (count == 0 && data->last_tick - data->last_sent > 10 ) {
+        serial_write_int16(&ser, ACT_STOP);
+        serial_write_int32(&ser, data->last_tick  - 1);
+    }
+
+    data->last_sent = data->last_tick;
 
     packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
     serial_free(&ser);
@@ -199,10 +209,10 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         // XXX this is a hack for now
 
         for (int j = 0; j < 2; j++) {
+            int player_id = j;
+            game_player *player = game_state_get_player(gs, player_id);
             if (ev->events[j]) {
-                int player_id = j;
                 DEBUG("replaying input %d from player %d at tick %d", ev->events[j], player_id, ev->tick);
-                game_player *player = game_state_get_player(gs, player_id);
                 if (((ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH) != 0) {
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), (ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH);
                 }
@@ -213,6 +223,8 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
                 }
 
                 //write_rec_move(gs->sc, player, ev->events[j]);
+            } else {
+                object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
             }
         }
         //controller_cmd(ctrl, action, ev);
@@ -359,7 +371,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             }
                         }
                         if (data->synchronized && data->gs_bak) {
-                            print_transcript(&data->transcript);
+                            //print_transcript(&data->transcript);
                             rewind_and_replay(data, ctrl->gs);
                             data->last_received_tick = last_received;
                         }
@@ -475,6 +487,9 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 DEBUG("peer disconnected!");
                 data->disconnected = 1;
                 event.peer->data = NULL;
+                data->synchronized = false;
+                game_state_clone_free(data->gs_bak);
+                data->gs_bak = NULL;
                 controller_close(ctrl, ev);
                 return 1; // bail the fuck out
                 break;
@@ -528,10 +543,10 @@ void controller_hook(controller *ctrl, int action) {
     data->last_action = action;
 
     if(peer) {
-        DEBUG("Local event %d at %d", action, data->last_tick - data->local_proposal);
+        //DEBUG("Local event %d at %d", action, data->last_tick - data->local_proposal);
         if (data->synchronized && data->gs_bak) {
             insert_event(data, data->last_tick - data->local_proposal, action, data->id);
-            print_transcript(&data->transcript);
+            //print_transcript(&data->transcript);
             send_events(data);
             //rewind_and_replay(data, ctrl->gs);
         } else {
@@ -592,6 +607,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->peer_proposal = 0;
     data->confirmed = false;
     data->last_tick = 0;
+    data->last_sent = 0;
     data->gs_bak = NULL;
     data->last_received_tick = 0;
     list_create(&data->transcript);

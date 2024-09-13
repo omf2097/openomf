@@ -53,4 +53,6 @@ int animation_get_sprite_count(animation *ani);
 
 animation *create_animation_from_single(sprite *sp, vec2i pos);
 
+int animation_clone(animation *src, animation *dst);
+
 #endif // ANIMATION_H

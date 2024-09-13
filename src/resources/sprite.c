@@ -24,6 +24,13 @@ void sprite_create(sprite *sp, void *src, int id) {
     sd_vga_image_free(&raw);
 }
 
+int sprite_clone(sprite *src, sprite *dst) {
+    memcpy(dst, src, sizeof(sprite));
+    dst->data = omf_calloc(1, sizeof(surface));
+    surface_copy_ex(dst->data, src->data);
+    return 0;
+}
+
 void sprite_free(sprite *sp) {
     surface_free(sp->data);
     omf_free(sp->data);
