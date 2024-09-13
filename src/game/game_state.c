@@ -882,11 +882,11 @@ void game_state_clone_free(game_state *gs) {
     //omf_free(gs->sc);
 
     // Free players
-    /*for(int i = 0; i < 2; i++) {
+    for(int i = 0; i < 2; i++) {
         //game_player_set_ctrl(gs->players[i], NULL);
-        game_player_clone_free(gs->players[i]);
-        //omf_free(gs->players[i]);
-    }*/
+        //game_player_clone_free(gs->players[i]);
+        omf_free(gs->players[i]);
+    }
     memset(gs, 0, sizeof(game_state));
     //omf_free(gs);
 
@@ -978,12 +978,12 @@ int game_state_clone(game_state *src, game_state *dst) {
     DEBUG("cloned %d objects into new game state", i);
 
 
-    /*for(int i = 0; i < 2; i++) {
+    for(int i = 0; i < 2; i++) {
         dst->players[i] = omf_calloc(1, sizeof(game_player));
         game_player_clone(src->players[i], dst->players[i]);
         // update HAR object pointers
-        dst->players[i]->har_obj_id = src->players[i]->har_obj_id;
-    }*/
+        //dst->players[i]->har_obj_id = src->players[i]->har_obj_id;
+    }
 
     dst->sc = omf_calloc(1, sizeof(scene));
     scene_clone(src->sc, dst->sc, dst);

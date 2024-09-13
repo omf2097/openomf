@@ -121,7 +121,6 @@ typedef struct action_buffer_t {
 typedef struct game_player_t game_player;
 
 typedef struct har_t {
-    game_player *gp;
     uint8_t id;        // Har ID
     uint8_t player_id; // Player number, 0 or 1
     uint8_t pilot_id;  // Pilot ID
