@@ -125,6 +125,11 @@ static void audio_sound_finished(int channel) {
 static bool audio_load_module(const char *file) {
     assert(audio);
 
+    if((audio->xmp_context = xmp_create_context()) == NULL) {
+        PERROR("Unable to initialize XMP context.");
+        goto exit_0;
+    }
+
     // Load the module file
     if(xmp_load_module(audio->xmp_context, (char *)file) < 0) {
         PERROR("Unable to open module file");
@@ -165,6 +170,7 @@ exit_0:
 // Callback function for SDL_Mixer
 void audio_xmp_render(void *userdata, Uint8 *stream, int len) {
     assert(audio);
+    assert(audio->xmp_context);
     xmp_play_buffer(audio->xmp_context, stream, len, 0);
 }
 
@@ -172,6 +178,7 @@ static void audio_close_module() {
     if(is_music(audio->music_id)) {
         xmp_end_player(audio->xmp_context);
         xmp_release_module(audio->xmp_context);
+        audio->xmp_context = NULL;
         audio->music_id = NUMBER_OF_RESOURCES;
     }
 }
@@ -181,6 +188,7 @@ bool audio_init(int freq, bool mono, int resampler, float music_volume, float so
         PERROR("Unable to allocate audio subsystem");
         goto error_0;
     }
+    audio->xmp_context = NULL;
     if(SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
         PERROR("Unable to initialize audio subsystem: %s", SDL_GetError());
         goto error_1;
@@ -239,6 +247,7 @@ error_0:
 
 void audio_close() {
     if(audio != NULL) {
+        DEBUG("closing audio");
         audio_stop_music();
         audio_close_module();
         Mix_ChannelFinished(NULL);
@@ -254,6 +263,7 @@ void audio_close() {
             audio->xmp_context = NULL;
         }
         omf_free(audio);
+        audio = NULL;
     }
     Mix_Quit();
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
