@@ -241,7 +241,6 @@ error_2:
 error_1:
     omf_free(audio);
 error_0:
-    audio = NULL;
     return false;
 }
 
@@ -263,7 +262,6 @@ void audio_close() {
             audio->xmp_context = NULL;
         }
         omf_free(audio);
-        audio = NULL;
     }
     Mix_Quit();
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
