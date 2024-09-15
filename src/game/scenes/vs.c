@@ -462,8 +462,11 @@ int vs_create(scene *scene) {
         ani = &bk_get_info(scene->bk_data, 4)->ani;
         if(player1->chr) {
             object_set_sprite_override(&local->player1_portrait, 1);
-            local->player1_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
-            sprite_create(local->player1_portrait.cur_sprite, player1->chr->photo, -1);
+            sprite *sp = omf_calloc(1, sizeof(sprite));
+            sprite_create(sp, player1->chr->photo, -1);
+            object_set_animation(&local->player1_portrait, create_animation_from_single(sp, vec2i_create(0, 0)));
+            object_set_animation_owner(&local->player1_portrait, OWNER_OBJECT);
+            local->player1_portrait.cur_sprite_id = 0;
         } else {
             object_set_animation(&local->player1_portrait, ani);
             object_select_sprite(&local->player1_portrait, player1->pilot->pilot_id);
@@ -472,8 +475,11 @@ int vs_create(scene *scene) {
         object_create(&local->player2_portrait, scene->gs, vec2i_create(330, 150), vec2f_create(0, 0));
         if(player1->chr) {
             object_set_sprite_override(&local->player2_portrait, 1);
-            local->player2_portrait.cur_sprite = omf_calloc(1, sizeof(sprite));
-            sprite_create(local->player2_portrait.cur_sprite, player2->pilot->photo, -1);
+            sprite *sp = omf_calloc(1, sizeof(sprite));
+            sprite_create(sp, player2->pilot->photo, -1);
+            object_set_animation(&local->player2_portrait, create_animation_from_single(sp, vec2i_create(0, 0)));
+            object_set_animation_owner(&local->player2_portrait, OWNER_OBJECT);
+            local->player2_portrait.cur_sprite_id = 0;
         } else {
             object_set_animation(&local->player2_portrait, ani);
             object_select_sprite(&local->player2_portrait, player2->pilot->pilot_id);
@@ -481,6 +487,8 @@ int vs_create(scene *scene) {
         object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
     } else {
 
+        local->player2_har.cur_sprite_id = -1;
+        local->player2_portrait.cur_sprite_id = -1;
         // plug is player 1 now
         object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
         ani = &bk_get_info(scene->bk_data, 2)->ani;

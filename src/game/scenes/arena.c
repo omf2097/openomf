@@ -767,17 +767,17 @@ void arena_free(scene *scene) {
         component_free(local->endurance_bars[i]);
     }
 
-    if(local->player1_portrait != NULL) {
+    /*if(local->player1_portrait != NULL) {
         sprite_free(local->player1_portrait->cur_sprite);
         omf_free(local->player1_portrait->cur_sprite);
-    }
+    }*/
     object_free(local->player1_portrait);
     omf_free(local->player1_portrait);
 
-    if(local->player2_portrait != NULL) {
+    /*if(local->player2_portrait != NULL) {
         sprite_free(local->player2_portrait->cur_sprite);
         omf_free(local->player2_portrait->cur_sprite);
-    }
+    }*/
     object_free(local->player2_portrait);
     omf_free(local->player2_portrait);
 
@@ -1320,20 +1320,26 @@ int arena_create(scene *scene) {
             object *portrait = omf_calloc(1, sizeof(object));
             if(i == 0) {
                 object_create(portrait, scene->gs, vec2i_create(105, 0), vec2f_create(0, 0));
-                portrait->cur_sprite = omf_calloc(1, sizeof(sprite));
+                sprite *sp = omf_calloc(1, sizeof(sprite));
+                sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
                 portrait->y_percent = 0.70f;
                 object_set_sprite_override(portrait, 1);
-                sprite_create(portrait->cur_sprite, player->pilot->photo, -1);
+                object_set_animation(portrait, create_animation_from_single(sp, vec2i_create(105, 0)));
+                object_set_animation_owner(portrait, OWNER_OBJECT);
+                portrait->cur_sprite_id = 0;
                 local->player1_portrait = portrait;
             } else {
                 object_create(portrait, scene->gs, vec2i_create(235, 0), vec2f_create(0, 0));
-                portrait->cur_sprite = omf_calloc(1, sizeof(sprite));
+                sprite *sp = omf_calloc(1, sizeof(sprite));
+                sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
                 portrait->y_percent = 0.70f;
                 object_set_sprite_override(portrait, 1);
-                sprite_create(portrait->cur_sprite, player->pilot->photo, -1);
+                object_set_animation(portrait, create_animation_from_single(sp, vec2i_create(235, 0)));
                 object_set_direction(portrait, OBJECT_FACE_LEFT);
+                object_set_animation_owner(portrait, OWNER_OBJECT);
+                portrait->cur_sprite_id = 0;
                 local->player2_portrait = portrait;
             }
 

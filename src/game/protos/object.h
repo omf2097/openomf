@@ -93,7 +93,7 @@ struct object_t {
     uint8_t cur_animation_own;
 
     animation *cur_animation;
-    sprite *cur_sprite;
+    int cur_sprite_id;
     char *sound_translation_table;
     uint8_t sprite_override; //< Tells whether cur_sprite should be kept constant regardless of anim string.
 

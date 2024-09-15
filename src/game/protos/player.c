@@ -227,12 +227,13 @@ void player_describe_object(object *obj) {
     DEBUG("  - Start: %d, %d", obj->start.x, obj->start.y);
     DEBUG("  - Position: %d, %d", obj->pos.x, obj->pos.y);
     DEBUG("  - Velocity: %d, %d", obj->vel.x, obj->vel.y);
-    if(obj->cur_sprite) {
-        DEBUG("  - Pos: %d, %d", obj->cur_sprite->pos.x, obj->cur_sprite->pos.y);
-        DEBUG("  - Size: %d, %d", obj->cur_sprite->data->w, obj->cur_sprite->data->h);
+    if(obj->cur_sprite_id) {
+        sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+        DEBUG("  - Pos: %d, %d", cur_sprite->pos.x, cur_sprite->pos.y);
+        DEBUG("  - Size: %d, %d", cur_sprite->data->w, cur_sprite->data->h);
         player_sprite_state *rstate = &obj->sprite_state;
-        DEBUG("CURRENT = %d - %d + %d - %d", obj->pos.y, obj->cur_sprite->pos.y, rstate->o_correction.y,
-              obj->cur_sprite->data->h);
+        DEBUG("CURRENT = %d - %d + %d - %d", obj->pos.y, cur_sprite->pos.y, rstate->o_correction.y,
+              cur_sprite->data->h);
     }
 }
 
@@ -276,11 +277,11 @@ void player_run(object *obj) {
             player_reset(obj);
             frame = sd_script_get_frame_at(&state->parser, state->current_tick);
         } else if(obj->finish != NULL) {
-            obj->cur_sprite = NULL;
+            obj->cur_sprite_id = -1;
             obj->finish(obj);
             return;
         } else {
-            obj->cur_sprite = NULL;
+            obj->cur_sprite_id = -1;
             state->finished = 1;
             return;
         }
@@ -719,7 +720,7 @@ void player_run(object *obj) {
         // Set render settings
         if(frame->sprite < 25) {
             object_select_sprite(obj, frame->sprite);
-            if(obj->cur_sprite != NULL) {
+            if(obj->cur_sprite_id >= 0) {
                 rstate->duration = frame->tick_len;
                 rstate->blendmode = sd_script_isset(frame, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
                 if(sd_script_isset(frame, "r") || obj->animation_state.shadow_corner_hack) {

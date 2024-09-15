@@ -796,8 +796,8 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     vec2i pos_b = object_get_pos(obj_b);
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
-    sprite *sprite_a = obj_a->cur_sprite;
-    sprite *sprite_b = obj_b->cur_sprite;
+    sprite *sprite_a = animation_get_sprite(obj_a->cur_animation, obj_a->cur_sprite_id);
+    sprite *sprite_b = animation_get_sprite(obj_b->cur_animation, obj_b->cur_sprite_id);
     int hard_limit = 35; // Push opponent if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
 
@@ -931,7 +931,7 @@ void har_debug(object *obj) {
 
     // video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
 
-    if(obj->cur_sprite == NULL) {
+    if(obj->cur_sprite_id < 0) {
         return;
     }
     // Make sure there are hitpoints to check.
@@ -957,7 +957,7 @@ void har_debug(object *obj) {
 
     int found = 0;
     while((cc = iter_next(&it)) != NULL) {
-        if(cc->frame_index != obj->cur_sprite->id)
+        if(cc->frame_index != obj->cur_sprite_id)
             continue;
         found = 1;
     }
@@ -970,7 +970,7 @@ void har_debug(object *obj) {
 
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
     while((cc = iter_next(&it)) != NULL) {
-        if(cc->frame_index != obj->cur_sprite->id)
+        if(cc->frame_index != obj->cur_sprite_id)
             continue;
         image_set_pixel(&img, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y, c);
         // DEBUG("%d drawing hit point at %d %d ->%d %d", obj->cur_sprite->id, pos_a.x, pos_a.y, pos_a.x + (cc->pos.x *
@@ -1432,7 +1432,8 @@ void har_tick(object *obj) {
     // Mark new object as the owner of the animation, so that the animation gets
     // removed when the object is finished.
     if(player_frame_isset(obj, "ub") && obj->age % 2 == 0) {
-        sprite *nsp = sprite_copy(obj->cur_sprite);
+        sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+        sprite *nsp = sprite_copy(cur_sprite);
         object *nobj = omf_calloc(1, sizeof(object));
         object_create(nobj, obj->gs, object_get_pos(obj), vec2f_create(0, 0));
         object_set_stl(nobj, object_get_stl(obj));

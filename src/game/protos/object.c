@@ -58,7 +58,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;
     obj->cur_animation = NULL;
-    obj->cur_sprite = NULL;
+    obj->cur_sprite_id = -1;
     obj->sprite_override = 0;
     obj->sound_translation_table = NULL;
     obj->cur_surface = NULL;
@@ -222,11 +222,12 @@ void object_del_effects(object *obj, int effects) {
 
 void object_render(object *obj) {
     // Stop here if cur_sprite is NULL
-    if(obj->cur_sprite == NULL)
+    if(obj->cur_sprite_id < 0)
         return;
 
+    sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
     // Set current surface
-    obj->cur_surface = obj->cur_sprite->data;
+    obj->cur_surface = cur_sprite->data;
 
     // Something to ease the pain ...
     player_sprite_state *rstate = &obj->sprite_state;
@@ -237,20 +238,20 @@ void object_render(object *obj) {
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = obj->pos.y - obj->cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
+        y = obj->pos.y - cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
             y -= 100;
         }
     } else {
-        y = obj->pos.y + obj->cur_sprite->pos.y + rstate->o_correction.y;
+        y = obj->pos.y + cur_sprite->pos.y + rstate->o_correction.y;
     }
 
     // Set X coord, take into account the HAR facing.
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = obj->pos.x - obj->cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
+        x = obj->pos.x - cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
     } else {
-        x = obj->pos.x + obj->cur_sprite->pos.x + rstate->o_correction.x;
+        x = obj->pos.x + cur_sprite->pos.x + rstate->o_correction.x;
     }
 
     // Flip to face the right direction
@@ -298,9 +299,11 @@ void object_render(object *obj) {
 }
 
 void object_render_shadow(object *obj) {
-    if(obj->cur_sprite == NULL || !obj->cast_shadow) {
+    if(obj->cur_sprite_id < 0 || !obj->cast_shadow) {
         return;
     }
+
+    sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
 
     // Scale of the sprite on Y axis should be less than the
     // height of the sprite because of light position
@@ -308,9 +311,9 @@ void object_render_shadow(object *obj) {
 
     // Determine X
     int flipmode = obj->sprite_state.flipmode;
-    int x = obj->pos.x + obj->cur_sprite->pos.x + obj->sprite_state.o_correction.x;
+    int x = obj->pos.x + cur_sprite->pos.x + obj->sprite_state.o_correction.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = (obj->pos.x + obj->sprite_state.o_correction.x) - obj->cur_sprite->pos.x - object_get_size(obj).x;
+        x = (obj->pos.x + obj->sprite_state.o_correction.x) - cur_sprite->pos.x - object_get_size(obj).x;
         flipmode ^= FLIP_HORIZONTAL;
     }
 
@@ -321,7 +324,7 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_render_sprite_flip_scale_opacity_tint(obj->cur_sprite->data, x + i, y + i, BLEND_ALPHA, obj->pal_offset,
+        video_render_sprite_flip_scale_opacity_tint(cur_sprite->data, x + i, y + i, BLEND_ALPHA, obj->pal_offset,
                                                     flipmode, 1.0, scale_y, 65, color_create(0, 0, 0, 255));
     }
 }
@@ -506,11 +509,16 @@ void object_select_sprite(object *obj, int id) {
         return;
     if(!obj->sprite_override) {
         if(id < 0) {
-            obj->cur_sprite = NULL;
+            obj->cur_sprite_id = -1;
         } else {
-            obj->cur_sprite = animation_get_sprite(obj->cur_animation, id);
-            obj->sprite_state.blendmode = BLEND_ALPHA;
-            obj->sprite_state.flipmode = FLIP_NONE;
+            if (animation_get_sprite(obj->cur_animation, id)) {
+                obj->cur_sprite_id = id;
+                obj->sprite_state.blendmode = BLEND_ALPHA;
+                obj->sprite_state.flipmode = FLIP_NONE;
+            } else {
+                DEBUG("unable to find sprite %d", id);
+                obj->cur_sprite_id = -1;
+            }
         }
     }
 }
@@ -671,8 +679,9 @@ void object_set_vel(object *obj, vec2f vel) {
 }
 
 vec2i object_get_size(const object *obj) {
-    if(obj->cur_sprite != NULL) {
-        return sprite_get_size(obj->cur_sprite);
+    if(obj->cur_sprite_id >= 0) {
+        sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+        return sprite_get_size(cur_sprite);
     }
     return vec2i_create(0, 0);
 }
