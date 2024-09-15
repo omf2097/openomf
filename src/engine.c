@@ -235,7 +235,7 @@ void engine_run(engine_init_flags *init_flags) {
         int limit_dynamic = 100;
         while(static_wait > 10 && limit_static--) {
             // Static tick for gamestate
-            game_state_static_tick(gs);
+            game_state_static_tick(gs, false);
 
             // Tick console
             console_tick();

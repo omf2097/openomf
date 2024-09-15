@@ -629,15 +629,19 @@ void game_state_call_tick(game_state *gs, int mode) {
 }
 
 // This function is always called with the same interval, and game speed does not affect it
-void game_state_static_tick(game_state *gs) {
+void game_state_static_tick(game_state *gs, bool replay) {
     // Set scene crossfade values
     if(gs->next_wait_ticks > 0) {
         gs->next_wait_ticks--;
-        video_set_fade((float)gs->next_wait_ticks / (float)FRAME_WAIT_TICKS);
+        if (!replay) {
+            video_set_fade((float)gs->next_wait_ticks / (float)FRAME_WAIT_TICKS);
+        }
     }
     if(gs->this_wait_ticks > 0) {
         gs->this_wait_ticks--;
-        video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
+        if (!replay) {
+            video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
+        }
     }
 
     // Call static ticks for scene
@@ -681,7 +685,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
         gs->screen_shake_vertical--;
     }
 
-    if(gs->screen_shake_horizontal > 0 || gs->screen_shake_vertical > 0) {
+    if((gs->screen_shake_horizontal > 0 || gs->screen_shake_vertical > 0) && !replay) {
         float shake_x = sin(gs->screen_shake_horizontal) * 5 * ((float)gs->screen_shake_horizontal / 15);
         float shake_y = sin(gs->screen_shake_vertical) * 5 * ((float)gs->screen_shake_vertical / 15);
         video_move_target((int)shake_x, (int)shake_y);
@@ -697,7 +701,9 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
         }
     } else {
         // XXX Ocasionally the screen does not return back to normal position
-        video_move_target(0, 0);
+        if (!replay) {
+            video_move_target(0, 0);
+        }
     }
 
     game_state_dyntick_controllers(gs);

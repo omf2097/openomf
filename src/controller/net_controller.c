@@ -186,7 +186,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         //int limit_dynamic = 10;
         while(static_wait > 1 /*&& limit_static--*/) {
             // Static tick for gamestate
-            game_state_static_tick(gs);
+            game_state_static_tick(gs, true);
 
             static_wait -= 1;
         }
@@ -238,7 +238,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
     //int limit_dynamic = 10;
     while(static_wait > 1 /*&& limit_static--*/) {
         // Static tick for gamestate
-        game_state_static_tick(gs);
+        game_state_static_tick(gs, true);
 
         static_wait -= 1;
     }
@@ -565,7 +565,8 @@ void controller_hook(controller *ctrl, int action) {
             serial_write_int32(&ser, data->last_tick - data->local_proposal);
             DEBUG("controller hook fired with %d", action);
             /*sprintf(buf, "k%d", action);*/
-            packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
+            // non gameplay events are not repeated, so they need to be reliable
+            packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
             serial_free(&ser);
             enet_peer_send(peer, 1, packet);
             enet_host_flush(host);
