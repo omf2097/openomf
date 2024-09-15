@@ -1,12 +1,12 @@
 #include "engine.h"
 #include "audio/audio.h"
 #include "console/console.h"
+#include "controller/controller.h"
 #include "formats/altpal.h"
+#include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/gui/text_render.h"
 #include "game/utils/settings.h"
-#include "game/game_player.h"
-#include "controller/controller.h"
 #include "resources/languages.h"
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
@@ -209,16 +209,15 @@ void engine_run(engine_init_flags *init_flags) {
         game_state_tick_controllers(gs);
 
         // check if we need to replace the game state
-        if (gs->new_state) {
+        if(gs->new_state) {
             // one of the controllers wants to replace the game state
             game_state *old_gs = gs;
             gs = gs->new_state;
             DEBUG("replacing game state! %d %d", old_gs, gs);
-            //old_gs->new_state = NULL;
+            // old_gs->new_state = NULL;
             game_state_clone_free(old_gs);
             omf_free(old_gs);
         }
-
 
         // Render scene
         int dt = (SDL_GetTicks() - frame_start);

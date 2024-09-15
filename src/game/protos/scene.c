@@ -131,14 +131,14 @@ int scene_clone(scene *src, scene *dst, game_state *gs) {
 
     memcpy(dst, src, sizeof(scene));
     dst->gs = gs;
-    if (src->clone) {
+    if(src->clone) {
         src->clone(src, dst);
     }
     return 0;
 }
 
 int scene_clone_free(scene *sc) {
-    if (sc->clone_free) {
+    if(sc->clone_free) {
         sc->clone_free(sc);
     }
     memset(sc, 0, sizeof(scene));

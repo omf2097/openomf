@@ -501,10 +501,10 @@ int vs_create(scene *scene) {
         // Note! We are touching the scene-wide background surface!
         surface_sub(&scene->bk_data->background, // DST Surface
                     &scene->bk_data->background, // SRC Surface
-                    160, 0,                     // DST
-                    0, 0,                       // SRC
-                    160, 200,                   // Size
-                    SUB_METHOD_MIRROR);         // Flip the right side horizontally
+                    160, 0,                      // DST
+                    0, 0,                        // SRC
+                    160, 200,                    // Size
+                    SUB_METHOD_MIRROR);          // Flip the right side horizontally
     }
 
     if(player2->selectable) {

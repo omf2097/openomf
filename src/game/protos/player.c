@@ -265,7 +265,7 @@ void player_run(object *obj) {
     player_animation_state *state = &obj->animation_state;
     player_sprite_state *rstate = &obj->sprite_state;
     object *enemy = game_state_find_object(state->gs, state->enemy_obj_id);
-    //DEBUG("i am %d, enemy is %d", obj->id, state->enemy_obj_id);
+    // DEBUG("i am %d, enemy is %d", obj->id, state->enemy_obj_id);
     if(state->finished)
         return;
 

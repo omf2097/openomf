@@ -13,7 +13,6 @@
 
 #define UNUSED(x) (void)(x)
 
-
 static uint32_t object_id = 1;
 
 /** \brief Creates a new, empty object.
@@ -98,7 +97,7 @@ int object_clone(object *src, object *dst, game_state *gs) {
     memcpy(dst, src, sizeof(object));
     dst->gs = gs;
     player_clone(src, dst);
-    if (src->custom_str) {
+    if(src->custom_str) {
         dst->custom_str = strdup(src->custom_str);
     }
 
@@ -107,8 +106,7 @@ int object_clone(object *src, object *dst, game_state *gs) {
         animation_clone(src->cur_animation, dst->cur_animation);
     }
 
-
-    if (src->clone) {
+    if(src->clone) {
         src->clone(src, dst);
     }
     return 0;
@@ -430,7 +428,6 @@ int object_clone_free(object *obj) {
     return 0;
 }
 
-
 /** Sets a pointer to a sound translation table. Note! Does NOT copy!
  * \param obj Object handle
  * \param ptr Pointer to the STL (30 byte char array)
@@ -511,7 +508,7 @@ void object_select_sprite(object *obj, int id) {
         if(id < 0) {
             obj->cur_sprite_id = -1;
         } else {
-            if (animation_get_sprite(obj->cur_animation, id)) {
+            if(animation_get_sprite(obj->cur_animation, id)) {
                 obj->cur_sprite_id = id;
                 obj->sprite_state.blendmode = BLEND_ALPHA;
                 obj->sprite_state.flipmode = FLIP_NONE;

@@ -16,8 +16,8 @@
 #include "resources/pilots.h"
 #include "resources/sprite.h"
 #include "utils/allocator.h"
-#include "utils/random.h"
 #include "utils/log.h"
+#include "utils/random.h"
 #include "video/video.h"
 
 #define MAX_STAT 20

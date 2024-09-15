@@ -144,11 +144,11 @@ void list_iter_append(iterator *iter, const void *ptr, size_t size) {
     } else {
         list_node *vnow = ((list_node *)iter->vnow);
         list_node *vnext = vnow->next;
-        if (vnext == NULL) {
+        if(vnext == NULL) {
             list_append((list *)iter->data, ptr, size);
         } else {
             list_node *node = (list_node *)omf_calloc(1, sizeof(list_node));
-            list *l = (list*)iter->data;
+            list *l = (list *)iter->data;
             node->next = NULL;
             node->prev = l->last;
             node->data = omf_calloc(size, 1);

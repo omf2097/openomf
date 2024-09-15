@@ -1,8 +1,8 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include "game/objects/har.h"
 #include "game/game_state_type.h"
+#include "game/objects/har.h"
 #include "game/protos/object.h"
 #include "game/utils/serial.h"
 #include "utils/list.h"

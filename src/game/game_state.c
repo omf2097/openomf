@@ -260,7 +260,6 @@ void game_state_del_object_by_id(game_state *gs, uint32_t target) {
     }
 }
 
-
 void game_state_get_projectiles(game_state *gs, vector *obj_proj) {
     iterator it;
     render_obj *robj;
@@ -633,13 +632,13 @@ void game_state_static_tick(game_state *gs, bool replay) {
     // Set scene crossfade values
     if(gs->next_wait_ticks > 0) {
         gs->next_wait_ticks--;
-        if (!replay) {
+        if(!replay) {
             video_set_fade((float)gs->next_wait_ticks / (float)FRAME_WAIT_TICKS);
         }
     }
     if(gs->this_wait_ticks > 0) {
         gs->this_wait_ticks--;
-        if (!replay) {
+        if(!replay) {
             video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
         }
     }
@@ -701,7 +700,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
         }
     } else {
         // XXX Ocasionally the screen does not return back to normal position
-        if (!replay) {
+        if(!replay) {
             video_move_target(0, 0);
         }
     }
@@ -734,7 +733,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
         LOGTICK(gs->tick);
     }
 
-    if (!replay) {
+    if(!replay) {
         // Free extra controller events
         game_state_ctrl_events_free(gs);
     }
@@ -885,17 +884,16 @@ void game_state_clone_free(game_state *gs) {
 
     // Free scene
     scene_clone_free(gs->sc);
-    //omf_free(gs->sc);
+    // omf_free(gs->sc);
 
     // Free players
     for(int i = 0; i < 2; i++) {
-        //game_player_set_ctrl(gs->players[i], NULL);
+        // game_player_set_ctrl(gs->players[i], NULL);
         game_player_clone_free(gs->players[i]);
         omf_free(gs->players[i]);
     }
     memset(gs, 0, sizeof(game_state));
-    //omf_free(gs);
-
+    // omf_free(gs);
 }
 
 void game_state_free(game_state **_gs) {
@@ -951,12 +949,12 @@ int render_obj_clone(render_obj *src, render_obj *dst, game_state *gs) {
     return object_clone(src->obj, dst->obj, gs);
 }
 
-object * game_state_find_object(game_state *gs, uint32_t object_id) {
+object *game_state_find_object(game_state *gs, uint32_t object_id) {
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     render_obj *robj;
     while((robj = iter_next(&it)) != NULL) {
-        if (robj->obj->id == object_id) {
+        if(robj->obj->id == object_id) {
             return robj->obj;
         }
     }
@@ -983,12 +981,11 @@ int game_state_clone(game_state *src, game_state *dst) {
     }
     DEBUG("cloned %d objects into new game state", i);
 
-
     for(int i = 0; i < 2; i++) {
         dst->players[i] = omf_calloc(1, sizeof(game_player));
         game_player_clone(src->players[i], dst->players[i]);
         // update HAR object pointers
-        //dst->players[i]->har_obj_id = src->players[i]->har_obj_id;
+        // dst->players[i]->har_obj_id = src->players[i]->har_obj_id;
     }
 
     dst->sc = omf_calloc(1, sizeof(scene));

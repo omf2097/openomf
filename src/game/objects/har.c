@@ -491,7 +491,8 @@ void har_move(object *obj) {
             har_floor_landing_effects(obj);
 
             // make sure HAR's are facing each other
-            object *obj_enemy = game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
+            object *obj_enemy =
+                game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
             if(object_get_direction(obj) == object_get_direction(obj_enemy)) {
                 DEBUG("HARS facing same direction");
                 vec2i pos = object_get_pos(obj);
@@ -1101,7 +1102,8 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
     af *prog_owner_af_data = projectile_get_af_data(o_pjt);
-    har *other = object_get_userdata(game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
+    har *other = object_get_userdata(
+        game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
     if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE) {
         // can't hit em while they're down
@@ -1115,7 +1117,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
 
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
-        controller *ctrl_other = game_player_get_ctrl(game_state_get_player(o_pjt->gs,  other->player_id));
+        controller *ctrl_other = game_player_get_ctrl(game_state_get_player(o_pjt->gs, other->player_id));
         if(har_is_blocking(h, move)) {
             har_event_enemy_block(other, move, true, ctrl_other);
             har_event_block(h, move, true, ctrl);
@@ -1211,7 +1213,8 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
         har_event_hazard_hit(h, anim, ctrl);
         // fire enemy hazard hit event
-        object *enemy_obj = game_state_find_object(o_har->gs, game_player_get_har_obj_id(game_state_get_player(o_har->gs, !h->player_id)));
+        object *enemy_obj = game_state_find_object(
+            o_har->gs, game_player_get_har_obj_id(game_state_get_player(o_har->gs, !h->player_id)));
         har *enemy_h = object_get_userdata(enemy_obj);
         controller *enemy_ctrl = game_player_get_ctrl(game_state_get_player(enemy_obj->gs, enemy_h->player_id));
         har_event_enemy_hazard_hit(enemy_h, enemy_ctrl);
@@ -1822,7 +1825,8 @@ int har_act(object *obj, int act_type) {
         object_set_vel(obj, spd);
 
         // Prefetch enemy object & har links, they may be needed
-        object *enemy_obj = game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+        object *enemy_obj =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         har *enemy_har = (har *)enemy_obj->userdata;
 
         // If animation is scrap or destruction, then remove our customizations
@@ -1879,7 +1883,8 @@ int har_act(object *obj, int act_type) {
 
         // Send an event if the har tries to turn in the air by pressing either left/right/downleft/downright
         int opp_id = h->player_id ? 0 : 1;
-        object *opp = game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, opp_id)));
+        object *opp =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, opp_id)));
         if(act_type == ACT_LEFT || act_type == ACT_RIGHT || act_type == (ACT_DOWN | ACT_LEFT) ||
            act_type == (ACT_DOWN | ACT_RIGHT)) {
             if(object_get_pos(obj).x > object_get_pos(opp).x) {
@@ -2016,7 +2021,8 @@ void har_finished(object *obj) {
         har_event_stun(h, ctrl);
 
         // fire enemy stunned event
-        object *enemy_obj = game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+        object *enemy_obj =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         har *enemy_h = object_get_userdata(enemy_obj);
         controller *enemy_ctrl = game_player_get_ctrl(game_state_get_player(enemy_obj->gs, enemy_h->player_id));
         har_event_enemy_stun(enemy_h, enemy_ctrl);

@@ -23,13 +23,13 @@ void game_player_free(game_player *gp) {
     sd_pilot_free(&gp->pilot);
     chr_score_free(&gp->score);
     har_screencaps_free(&gp->screencaps);
-    if (gp->ctrl) {
+    if(gp->ctrl) {
         controller_free(gp->ctrl);
     }
 }
 
 void game_player_set_har(game_player *gp, object *har) {
-    if (har) {
+    if(har) {
         gp->har_obj_id = har->id;
     } else {
         gp->har_obj_id = 0;

@@ -112,8 +112,8 @@ void arena_speed_slide(component *c, void *userdata, int pos) {
 
 void scene_fight_anim_done(void *scenedata, void *userdata) {
     scene *scene = scenedata;
-    //int parent_id = userdata;
-    //object *parent = game_state_find_object(scene->gs, parent_id;
+    // int parent_id = userdata;
+    // object *parent = game_state_find_object(scene->gs, parent_id;
     arena_local *arena = scene_get_userdata(scene);
 
     // This will release HARs for action
@@ -136,7 +136,7 @@ void scene_fight_anim_start(void *scenedata, void *userdata) {
     object_set_animation(fight, fight_ani);
     // object_set_finish_cb(fight, scene_fight_anim_done);
     game_state_add_object(gs, fight, RENDER_LAYER_TOP, 0, 0);
-    ticktimer_add(&scene->tick_timer, 24, scene_fight_anim_done, NULL/*fight->id*/);
+    ticktimer_add(&scene->tick_timer, 24, scene_fight_anim_done, NULL /*fight->id*/);
 }
 
 void scene_ready_anim_done(object *parent) {
@@ -242,12 +242,10 @@ void arena_screengrab_winner(scene *sc) {
     object *o1 = game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id);
     har *h1 = object_get_userdata(o1);
     if(h1->state == STATE_VICTORY || h1->state == STATE_DONE) {
-        har_screencaps_capture(&game_state_get_player(gs, 0)->screencaps, o1,
-                               SCREENCAP_POSE);
+        har_screencaps_capture(&game_state_get_player(gs, 0)->screencaps, o1, SCREENCAP_POSE);
     } else {
         object *o2 = game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id);
-        har_screencaps_capture(&game_state_get_player(gs, 1)->screencaps, o2,
-                               SCREENCAP_POSE);
+        har_screencaps_capture(&game_state_get_player(gs, 1)->screencaps, o2, SCREENCAP_POSE);
     }
 }
 
@@ -408,7 +406,8 @@ void arena_har_recover_hook(int player_id, scene *scene) {
 }
 
 void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
-    object *o_har = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
+    object *o_har =
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
     har *h = object_get_userdata(o_har);
 
     // DEBUG("Player %d hit wall %d", player_id, wall);
@@ -606,8 +605,10 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
 
 void arena_maybe_turn_har(int player_id, scene *scene) {
     int other_player_id = abs(player_id - 1);
-    object *obj_har1 = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
-    object *obj_har2 = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
+    object *obj_har1 =
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
+    object *obj_har2 = game_state_find_object(
+        scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
     if(obj_har1->pos.x > obj_har2->pos.x) {
         DEBUG("ARENA facing player %d LEFT", player_id);
         object_set_direction(obj_har1, OBJECT_FACE_LEFT);
@@ -630,8 +631,10 @@ void arena_har_hook(har_event event, void *data) {
     int other_player_id = abs(event.player_id - 1);
     arena_local *arena = scene_get_userdata(scene);
     chr_score *score = game_player_get_score(game_state_get_player(scene->gs, event.player_id));
-    object *obj_har1 = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, event.player_id)));
-    object *obj_har2 = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
+    object *obj_har1 = game_state_find_object(
+        scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, event.player_id)));
+    object *obj_har2 = game_state_find_object(
+        scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
     har *har1 = obj_har1->userdata;
     har *har2 = obj_har2->userdata;
     DEBUG("HAR %d HOOK FIRED WITH %d at %d", event.player_id, event.type, scene->gs->int_tick);
@@ -784,7 +787,7 @@ void arena_free(scene *scene) {
     // free round tokens
     for(int i = 0; i < 2; i++) {
         for(int j = 0; j < 4; j++) {
-            if (local->player_rounds[i][j]) {
+            if(local->player_rounds[i][j]) {
                 object_free(local->player_rounds[i][j]);
                 omf_free(local->player_rounds[i][j]);
             }
@@ -874,7 +877,8 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
             } else if(i->type == EVENT_TYPE_ACTION) {
                 if(player->ctrl->type == CTRL_TYPE_NETWORK) {
                     do {
-                        object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)), i->event_data.action);
+                        object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
+                                   i->event_data.action);
                         write_rec_move(scene, player, i->event_data.action);
                         // Rewritten this way, we possible skipped some events
                         // before. We check if there is a next event, then
@@ -889,7 +893,8 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                     // rewind them ASAP
                     need_sync = 1;
                 } else {
-                    need_sync += object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)), i->event_data.action);
+                    need_sync += object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
+                                            i->event_data.action);
                     write_rec_move(scene, player, i->event_data.action);
                 }
             } else if(i->type == EVENT_TYPE_CLOSE) {
@@ -1379,8 +1384,10 @@ int arena_create(scene *scene) {
     controller_set_repeat(game_player_get_ctrl(_player[0]), 1);
     controller_set_repeat(game_player_get_ctrl(_player[1]), 1);
 
-    game_state_find_object(scene->gs, game_player_get_har_obj_id(_player[0]))->animation_state.enemy_obj_id = game_player_get_har_obj_id(_player[1]);
-    game_state_find_object(scene->gs, game_player_get_har_obj_id(_player[1]))->animation_state.enemy_obj_id = game_player_get_har_obj_id(_player[0]);
+    game_state_find_object(scene->gs, game_player_get_har_obj_id(_player[0]))->animation_state.enemy_obj_id =
+        game_player_get_har_obj_id(_player[1]);
+    game_state_find_object(scene->gs, game_player_get_har_obj_id(_player[1]))->animation_state.enemy_obj_id =
+        game_player_get_har_obj_id(_player[0]);
 
     maybe_install_har_hooks(scene);
 

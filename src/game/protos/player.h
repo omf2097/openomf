@@ -1,8 +1,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "game/game_state.h"
 #include "formats/script.h"
+#include "game/game_state.h"
 #include "utils/vec.h"
 #include <stdint.h>
 

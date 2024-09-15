@@ -5,8 +5,8 @@
 #include "game/utils/serial.h"
 #include "utils/random.h"
 #include "utils/vector.h"
-#include <stdbool.h>
 #include <SDL.h>
+#include <stdbool.h>
 
 typedef struct scene_t scene;
 typedef struct game_player_t game_player;
@@ -32,7 +32,7 @@ void game_state_init_demo(game_state *gs);
 int game_state_ms_per_dyntick(game_state *gs);
 ticktimer *game_state_get_ticktimer(game_state *gs);
 
-object * game_state_find_object(game_state *gs, uint32_t object_id);
+object *game_state_find_object(game_state *gs, uint32_t object_id);
 
 int game_state_clone(game_state *src, game_state *dst);
 void game_state_clone_free(game_state *gs);

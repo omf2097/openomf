@@ -347,7 +347,8 @@ bool forgetful(const ai *a) {
 int get_enemy_range(const controller *ctrl) {
     object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
-    object *o_enemy = game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
+    object *o_enemy =
+        game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
 
     int range_units = fabsf(o_enemy->pos.x - o->pos.x) / 30;
     switch(range_units) {
@@ -1422,7 +1423,8 @@ void set_selected_move(controller *ctrl, af_move *selected_move) {
     // do the move
     a->selected_move = selected_move;
     a->move_str_pos = str_size(&selected_move->move_string) - 1;
-    object *o_enemy = game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
+    object *o_enemy =
+        game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
     a->move_stats[a->selected_move->id].last_dist = fabsf(o->pos.x - o_enemy->pos.x);
     a->blocked = 0;
     // DEBUG("AI selected move %s", str_c(&selected_move->move_string));
@@ -1546,7 +1548,8 @@ int ai_block_har(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
-    object *o_enemy = game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
+    object *o_enemy =
+        game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
     har *h_enemy = object_get_userdata(o_enemy);
 
     // XXX TODO get maximum move distance from the animation object
