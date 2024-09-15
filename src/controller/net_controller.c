@@ -308,7 +308,7 @@ done:
     list_free(&data->transcript);
     if (data->gs_bak) {
         game_state_clone_free(data->gs_bak);
-        data->gs_bak = NULL;
+        omf_free(data->gs_bak);
     }
     if(ctrl->data) {
         omf_free(ctrl->data);
@@ -337,6 +337,10 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     if (data->gs_bak == NULL && is_arena(game_state_get_scene(ctrl->gs)->id) && game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
         data->gs_bak = omf_calloc(1, sizeof(game_state));
         game_state_clone(ctrl->gs, data->gs_bak);
+    } else if (data->gs_bak != NULL && !is_arena(game_state_get_scene(ctrl->gs)->id)) {
+        // changed scene and no longer need a game state backup, release it
+        game_state_clone_free(data->gs_bak);
+        omf_free(data->gs_bak);
     }
 
     while(enet_host_service(host, &event, 0) > 0) {
@@ -495,7 +499,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 data->synchronized = false;
                 if (data->gs_bak) {
                     game_state_clone_free(data->gs_bak);
-                    data->gs_bak = NULL;
+                    omf_free(data->gs_bak);
                 }
                 controller_close(ctrl, ev);
                 return 1; // bail the fuck out
