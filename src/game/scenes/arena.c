@@ -983,8 +983,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
 
         // RTT stuff
-        //hars[0]->delay = ceilf(player2->ctrl->rtt / 2.0f);
-        //hars[1]->delay = ceilf(player1->ctrl->rtt / 2.0f);
+        hars[0]->delay = ceilf(player2->ctrl->rtt / 2.0f);
+        hars[1]->delay = ceilf(player1->ctrl->rtt / 2.0f);
 
         // Endings and beginnings
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
