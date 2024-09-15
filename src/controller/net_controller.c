@@ -32,6 +32,7 @@ typedef struct {
     int last_sent;
     list transcript;
     int last_received_tick;
+    int last_har_state;
     game_state *gs_bak;
 } wtf;
 
@@ -546,12 +547,19 @@ void controller_hook(controller *ctrl, int action) {
     wtf *data = ctrl->data;
     ENetPeer *peer = data->peer;
     ENetHost *host = data->host;
-    if(action == ACT_STOP && data->last_action == ACT_STOP) {
+    //if(action == ACT_STOP && data->last_action == ACT_STOP) {
         //data->last_action = -1;
-    //if (data->last_action == action) {
-        return;
+
+    game_player *player = game_state_get_player(ctrl->gs, data->id);
+    object *har_obj = game_state_find_object(ctrl->gs, game_player_get_har_obj_id(player));
+    if (har_obj) {
+        har *har = object_get_userdata(har_obj);
+        if (data->last_action == action && har->state == data->last_har_state) {
+            return;
+        }
+        data->last_har_state = har->state;
+        data->last_action = action;
     }
-    data->last_action = action;
 
     if(peer) {
         //DEBUG("Local event %d at %d", action, data->last_tick - data->local_proposal);
@@ -622,6 +630,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->last_sent = 0;
     data->gs_bak = NULL;
     data->last_received_tick = 0;
+    data->last_har_state = -1;
     list_create(&data->transcript);
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_NETWORK;
