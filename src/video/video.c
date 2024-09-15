@@ -21,10 +21,8 @@ typedef struct video_state {
     texture_atlas *atlas;
     object_array *objects;
     shared *shared;
-    render_target *targets[2];
+    render_target *target;
     remaps *remaps;
-
-    int target_select;
 
     GLuint palette_prog_id;
     GLuint rgba_prog_id;
@@ -50,12 +48,9 @@ typedef struct video_state {
 
 #define TEX_UNIT_ATLAS 0
 #define TEX_UNIT_FBO 1
-#define TEX_UNIT_FBO2 2
 
 #define PAL_BLOCK_BINDING 0
 #define REMAPS_BLOCK_BINDING 1
-
-static const int fbo_tex_units[] = {TEX_UNIT_FBO, TEX_UNIT_FBO2};
 
 static video_state g_video_state;
 
@@ -101,8 +96,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
     g_video_state.objects = object_array_create(2048.0f, 2048.0f);
     g_video_state.shared = shared_create();
-    g_video_state.targets[0] = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
-    g_video_state.targets[1] = render_target_create(TEX_UNIT_FBO2, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
+    g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
     g_video_state.remaps = remaps_create();
 
     // Create orthographic projection matrix for 2d stuff.
@@ -121,7 +115,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     bind_uniform_4fv(g_video_state.rgba_prog_id, "projection", projection_matrix);
     GLuint pal_ubo_id = shared_get_block(g_video_state.shared);
     bind_uniform_block(g_video_state.rgba_prog_id, "palette", PAL_BLOCK_BINDING, pal_ubo_id);
-    bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", TEX_UNIT_FBO2);
+    bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
 
     INFO("OpenGL Renderer initialized!");
     return 0;
@@ -155,7 +149,8 @@ int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync) {
 }
 
 // Called on every game tick
-void video_tick(void) {
+void video_reset_atlas(void) {
+    atlas_reset(g_video_state.atlas);
 }
 
 void video_render_prepare(void) {
@@ -174,11 +169,10 @@ void video_render_finish(void) {
     object_array_batch batch;
     object_array_begin(g_video_state.objects, &batch);
     activate_program(g_video_state.palette_prog_id);
+    bind_uniform_1i(g_video_state.palette_prog_id, "framebuffer", TEX_UNIT_FBO);
+    render_target_activate(g_video_state.target);
     while(object_array_get_batch(g_video_state.objects, &batch)) {
-        bind_uniform_1i(g_video_state.palette_prog_id, "framebuffer", fbo_tex_units[!g_video_state.target_select]);
-        render_target_activate(g_video_state.targets[g_video_state.target_select]);
         object_array_draw(g_video_state.objects, &batch);
-        g_video_state.target_select = !g_video_state.target_select;
     }
 
     // Disable render target, and dump its contents as RGBA to the screen.
@@ -188,7 +182,7 @@ void video_render_finish(void) {
     if(g_video_state.draw_atlas) {
         bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", TEX_UNIT_ATLAS);
     } else {
-        bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", fbo_tex_units[!g_video_state.target_select]);
+        bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
     }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -203,8 +197,7 @@ void video_render_finish(void) {
 
 void video_close(void) {
     remaps_free(&g_video_state.remaps);
-    render_target_free(&g_video_state.targets[0]);
-    render_target_free(&g_video_state.targets[1]);
+    render_target_free(&g_video_state.target);
     shared_free(&g_video_state.shared);
     object_array_free(&g_video_state.objects);
     atlas_free(&g_video_state.atlas);
@@ -247,11 +240,7 @@ void video_screenshot(surface *sur) {
 }
 
 void video_area_capture(surface *sur, int x, int y, int w, int h) {
-    // Activate the latest used internal render target FBO. This is where we want to capture from,
-    // as we get the final version of the paletted image :)
-    render_target_activate(g_video_state.targets[!g_video_state.target_select]);
-
-    // Read pixels
+    render_target_activate(g_video_state.target);
     unsigned char *buffer = omf_calloc(1, w * h);
     glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
     surface_create_from_data_flip(sur, w, h, buffer);

@@ -17,7 +17,7 @@ layout (std140) uniform remaps {
 void main() {
     // Get rid of the branching later! We can split this into two or three shaders pretty easily
     // TODO: FIX LATER.
-    if (blend_mode == 0) {
+    if (blend_mode == 0) {  // Additive
         vec4 texel = texture(atlas, tex_coord);
         if (texel.g == 0) {
             discard;
@@ -33,7 +33,7 @@ void main() {
         int offset = layer * 256 + index;
         float red = mappings[offset].r;
         color = vec4(red, 0.0, 0.0, 1.0);
-    } else if (blend_mode == 1) {
+    } else if (blend_mode == 1) {  // Alpha
         vec4 texel = texture(atlas, tex_coord);
         if (texel.g == 0) {
             discard;
