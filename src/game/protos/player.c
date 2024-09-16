@@ -84,6 +84,7 @@ void player_clear_frame(object *obj) {
 // ---------------- Public functions ----------------
 
 void player_create(object *obj) {
+    obj->animation_state.gs = obj->gs;
     obj->animation_state.reverse = 0;
     obj->animation_state.end_frame = UINT32_MAX;
     obj->animation_state.current_tick = 0;
@@ -96,12 +97,25 @@ void player_create(object *obj) {
     obj->animation_state.destroy = NULL;
     obj->animation_state.destroy_userdata = NULL;
     obj->animation_state.disable_d = 0;
-    obj->animation_state.enemy = NULL;
+    obj->animation_state.enemy_obj_id = 0;
     obj->animation_state.shadow_corner_hack = 0;
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0, 0);
     sd_script_create(&obj->animation_state.parser);
     player_clear_frame(obj);
+}
+
+void player_clone(object *src, object *dst) {
+    sd_script_clone(&src->animation_state.parser, &dst->animation_state.parser);
+    str s;
+    str_create(&s);
+    str d;
+    str_create(&d);
+    sd_script_encode(&src->animation_state.parser, &s);
+    sd_script_encode(&dst->animation_state.parser, &d);
+    DEBUG("cloned player from %s to %s", str_c(&s), str_c(&d));
+    str_free(&s);
+    str_free(&d);
 }
 
 void player_free(object *obj) {
@@ -213,12 +227,13 @@ void player_describe_object(object *obj) {
     DEBUG("  - Start: %d, %d", obj->start.x, obj->start.y);
     DEBUG("  - Position: %d, %d", obj->pos.x, obj->pos.y);
     DEBUG("  - Velocity: %d, %d", obj->vel.x, obj->vel.y);
-    if(obj->cur_sprite) {
-        DEBUG("  - Pos: %d, %d", obj->cur_sprite->pos.x, obj->cur_sprite->pos.y);
-        DEBUG("  - Size: %d, %d", obj->cur_sprite->data->w, obj->cur_sprite->data->h);
+    if(obj->cur_sprite_id) {
+        sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+        DEBUG("  - Pos: %d, %d", cur_sprite->pos.x, cur_sprite->pos.y);
+        DEBUG("  - Size: %d, %d", cur_sprite->data->w, cur_sprite->data->h);
         player_sprite_state *rstate = &obj->sprite_state;
-        DEBUG("CURRENT = %d - %d + %d - %d", obj->pos.y, obj->cur_sprite->pos.y, rstate->o_correction.y,
-              obj->cur_sprite->data->h);
+        DEBUG("CURRENT = %d - %d + %d - %d", obj->pos.y, cur_sprite->pos.y, rstate->o_correction.y,
+              cur_sprite->data->h);
     }
 }
 
@@ -249,6 +264,8 @@ void player_run(object *obj) {
     // Some vars for easier life
     player_animation_state *state = &obj->animation_state;
     player_sprite_state *rstate = &obj->sprite_state;
+    object *enemy = game_state_find_object(state->gs, state->enemy_obj_id);
+    // DEBUG("i am %d, enemy is %d", obj->id, state->enemy_obj_id);
     if(state->finished)
         return;
 
@@ -260,11 +277,11 @@ void player_run(object *obj) {
             player_reset(obj);
             frame = sd_script_get_frame_at(&state->parser, state->current_tick);
         } else if(obj->finish != NULL) {
-            obj->cur_sprite = NULL;
+            obj->cur_sprite_id = -1;
             obj->finish(obj);
             return;
         } else {
-            obj->cur_sprite = NULL;
+            obj->cur_sprite_id = -1;
             state->finished = 1;
             return;
         }
@@ -358,15 +375,17 @@ void player_run(object *obj) {
         state->current_tick = sd_script_get(frame, "d");
     }
 
-    if(sd_script_isset(frame, "e")) {
+    if(sd_script_isset(frame, "e") && enemy) {
+
+        DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         // Set speed to 0, since we're being controlled by animation tag system
         obj->vel.x = 0;
         obj->vel.y = 0;
 
         // Reset position to enemy coordinates and make sure facing is set correctly
-        obj->pos.x = state->enemy->pos.x;
-        obj->pos.y = state->enemy->pos.y;
-        object_set_direction(obj, object_get_direction(state->enemy) * -1);
+        obj->pos.x = enemy->pos.x;
+        obj->pos.y = enemy->pos.y;
+        object_set_direction(obj, object_get_direction(enemy) * -1);
         // DEBUG("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
 
@@ -382,12 +401,15 @@ void player_run(object *obj) {
         obj->vel.y = 0;
     }
 
-    if(sd_script_isset(frame, "at")) {
+    if(sd_script_isset(frame, "at") && enemy) {
+
+        DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         // set the object's X position to be behind the opponent
-        if(obj->pos.x > state->enemy->pos.x) { // From right to left
-            obj->pos.x = state->enemy->pos.x - object_get_size(obj).x / 2;
+
+        if(obj->pos.x > enemy->pos.x) { // From right to left
+            obj->pos.x = enemy->pos.x - object_get_size(obj).x / 2;
         } else { // From left to right
-            obj->pos.x = state->enemy->pos.x + object_get_size(state->enemy).x / 2;
+            obj->pos.x = enemy->pos.x + object_get_size(enemy).x / 2;
         }
         object_set_direction(obj, object_get_direction(obj) * -1);
     }
@@ -413,10 +435,12 @@ void player_run(object *obj) {
     }
 
     // Handle slide in relation to enemy
-    if(obj->enemy_slide_state.timer > 0) {
+    if(obj->enemy_slide_state.timer > 0 && enemy) {
+
+        DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         obj->enemy_slide_state.duration++;
-        obj->pos.x = state->enemy->pos.x + obj->enemy_slide_state.dest.x;
-        obj->pos.y = state->enemy->pos.y + obj->enemy_slide_state.dest.y;
+        obj->pos.x = enemy->pos.x + obj->enemy_slide_state.dest.x;
+        obj->pos.y = enemy->pos.y + obj->enemy_slide_state.dest.y;
         obj->enemy_slide_state.timer--;
     }
 
@@ -429,9 +453,11 @@ void player_run(object *obj) {
             float vx = 0;
             float vy = 0;
 
-            if(obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65) {
-                mx = state->enemy->pos.x;
-                my = state->enemy->pos.y;
+            if(obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65 && enemy) {
+
+                DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+                mx = enemy->pos.x;
+                my = enemy->pos.y;
             }
 
             // Staring X coordinate for new animation
@@ -545,7 +571,7 @@ void player_run(object *obj) {
         }
         if(sd_script_isset(frame, "bpf")) {
             // Exact values come from master.dat
-            if(game_state_get_player(obj->gs, 0)->har == obj) {
+            if(game_state_get_player(obj->gs, 0)->har_obj_id == obj->id) {
                 rstate->pal_start_index = 1;
                 rstate->pal_entry_count = 47;
             } else {
@@ -579,8 +605,10 @@ void player_run(object *obj) {
         }
 
         // If UA is set, force other HAR to damage animation
-        if(sd_script_isset(frame, "ua") && state->enemy->cur_animation->id != 9) {
-            har_set_ani(state->enemy, 9, 0);
+        if(sd_script_isset(frame, "ua") && enemy->cur_animation->id != 9 && enemy) {
+
+            DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+            har_set_ani(enemy, 9, 0);
         }
 
         // BJ sets new animation for our HAR
@@ -692,7 +720,7 @@ void player_run(object *obj) {
         // Set render settings
         if(frame->sprite < 25) {
             object_select_sprite(obj, frame->sprite);
-            if(obj->cur_sprite != NULL) {
+            if(obj->cur_sprite_id >= 0) {
                 rstate->duration = frame->tick_len;
                 rstate->blendmode = sd_script_isset(frame, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
                 if(sd_script_isset(frame, "r") || obj->animation_state.shadow_corner_hack) {

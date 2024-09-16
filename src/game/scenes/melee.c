@@ -16,6 +16,7 @@
 #include "resources/pilots.h"
 #include "resources/sprite.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include "utils/random.h"
 #include "video/video.h"
 
@@ -591,10 +592,12 @@ int melee_create(scene *scene) {
     // set up the magic controller hooks
     if(player1_ctrl && player2_ctrl) {
         if(player1_ctrl->type == CTRL_TYPE_NETWORK) {
+            DEBUG("installing controller hook on controller 2");
             controller_add_hook(player2_ctrl, player1_ctrl, player1_ctrl->controller_hook);
         }
 
         if(player2_ctrl->type == CTRL_TYPE_NETWORK) {
+            DEBUG("installing controller hook on controller 1");
             controller_add_hook(player1_ctrl, player2_ctrl, player2_ctrl->controller_hook);
         }
     }
@@ -602,12 +605,12 @@ int melee_create(scene *scene) {
     animation *ani;
     sprite *spr;
     for(int i = 0; i < 10; i++) {
-        ani = &bk_get_info(&scene->bk_data, 3)->ani;
+        ani = &bk_get_info(scene->bk_data, 3)->ani;
         object_create(&local->pilots[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(&local->pilots[i], ani);
         object_select_sprite(&local->pilots[i], i);
 
-        ani = &bk_get_info(&scene->bk_data, 18 + i)->ani;
+        ani = &bk_get_info(scene->bk_data, 18 + i)->ani;
         object_create(&local->har_player1[i], scene->gs, vec2i_create(110, 95), vec2f_create(0, 0));
         object_set_animation(&local->har_player1[i], ani);
         object_select_sprite(&local->har_player1[i], 0);
@@ -615,7 +618,7 @@ int melee_create(scene *scene) {
 
         int row = i / 5;
         int col = i % 5;
-        spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0));
+        spr = sprite_copy(animation_get_sprite(&bk_get_info(scene->bk_data, 1)->ani, 0));
         mask_sprite(spr->data, 62 * col, 42 * row, 51, 36);
         ani = create_animation_from_single(spr, spr->pos);
         object_create(&local->harportraits_player1[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
@@ -623,7 +626,7 @@ int melee_create(scene *scene) {
         object_select_sprite(&local->harportraits_player1[i], 0);
         object_set_animation_owner(&local->harportraits_player1[i], OWNER_OBJECT);
         if(player2->selectable) {
-            spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0));
+            spr = sprite_copy(animation_get_sprite(&bk_get_info(scene->bk_data, 1)->ani, 0));
             mask_sprite(spr->data, 62 * col, 42 * row, 51, 36);
             ani = create_animation_from_single(spr, spr->pos);
             object_create(&local->harportraits_player2[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
@@ -632,7 +635,7 @@ int melee_create(scene *scene) {
             object_set_animation_owner(&local->harportraits_player2[i], OWNER_OBJECT);
             object_set_pal_offset(&local->harportraits_player2[i], 48);
 
-            ani = &bk_get_info(&scene->bk_data, 18 + i)->ani;
+            ani = &bk_get_info(scene->bk_data, 18 + i)->ani;
             object_create(&local->har_player2[i], scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
             object_set_animation(&local->har_player2[i], ani);
             object_select_sprite(&local->har_player2[i], 0);
@@ -642,7 +645,7 @@ int melee_create(scene *scene) {
         }
     }
 
-    ani = &bk_get_info(&scene->bk_data, 4)->ani;
+    ani = &bk_get_info(scene->bk_data, 4)->ani;
     object_create(&local->bigportrait1, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
     object_set_animation(&local->bigportrait1, ani);
     object_select_sprite(&local->bigportrait1, 0);
@@ -654,7 +657,7 @@ int melee_create(scene *scene) {
         object_set_direction(&local->bigportrait2, OBJECT_FACE_LEFT);
     }
 
-    ani = &bk_get_info(&scene->bk_data, 5)->ani;
+    ani = &bk_get_info(scene->bk_data, 5)->ani;
     object_create(&local->player2_placeholder, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
     object_set_animation(&local->player2_placeholder, ani);
     if(player2->selectable) {
@@ -663,7 +666,7 @@ int melee_create(scene *scene) {
         object_select_sprite(&local->player2_placeholder, 1);
     }
 
-    spr = sprite_copy(animation_get_sprite(&bk_get_info(&scene->bk_data, 1)->ani, 0));
+    spr = sprite_copy(animation_get_sprite(&bk_get_info(scene->bk_data, 1)->ani, 0));
     surface_convert_to_rgba(spr->data, video_get_pal_ref(), 0);
     ani = create_animation_from_single(spr, spr->pos);
     object_create(&local->unselected_har_portraits, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));

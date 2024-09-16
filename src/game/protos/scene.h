@@ -24,11 +24,13 @@ typedef void (*scene_tick_cb)(scene *scene, int paused);
 typedef void (*scene_input_poll_cb)(scene *scene);
 typedef void (*scene_startup_cb)(scene *scene, int anim_id, int *m_load, int *m_repeat);
 typedef int (*scene_anim_prio_override_cb)(scene *scene, int anim_id);
+typedef void (*scene_clone_cb)(scene *src, scene *dst);
+typedef void (*scene_clone_free_cb)(scene *scene);
 
 struct scene_t {
     game_state *gs;
     int id;
-    bk bk_data;
+    bk *bk_data;
     af *af_data[2];
     void *userdata;
 
@@ -41,6 +43,8 @@ struct scene_t {
     scene_input_poll_cb input_poll;
     scene_startup_cb startup;
     scene_anim_prio_override_cb prio_override;
+    scene_clone_cb clone;
+    scene_clone_free_cb clone_free;
     ticktimer tick_timer;
 };
 
@@ -57,8 +61,8 @@ void scene_input_poll(scene *scene);
 void scene_startup(scene *scene, int id, int *m_load, int *m_startup);
 int scene_anim_prio_override(scene *scene, int anim_id);
 
-int scene_serialize(scene *scene, serial *ser);
-int scene_unserialize(scene *scene, serial *ser);
+int scene_clone(scene *src, scene *dst, game_state *gs);
+int scene_clone_free(scene *sc);
 
 void scene_set_userdata(scene *scene, void *userdata);
 void *scene_get_userdata(scene *scene);

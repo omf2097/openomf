@@ -14,15 +14,15 @@ enum
 
 enum
 {
-    ROLE_CLIENT,
-    ROLE_SERVER
+    ROLE_SERVER,
+    ROLE_CLIENT
 };
 
 enum
 {
     NET_MODE_NONE,
-    NET_MODE_CLIENT,
-    NET_MODE_SERVER
+    NET_MODE_SERVER,
+    NET_MODE_CLIENT
 };
 
 typedef struct scene_t scene;
@@ -63,6 +63,7 @@ typedef struct game_state_t {
     game_player *players[2];
 
     fight_stats fight_stats;
+    void *new_state;
 } game_state;
 
 #endif // GAME_STATE_TYPE_H

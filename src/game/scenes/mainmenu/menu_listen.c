@@ -57,11 +57,11 @@ void menu_listen_tick(component *c) {
             p2->pilot->pilot_id = 0;
 
             player1_ctrl = omf_calloc(1, sizeof(controller));
-            controller_init(player1_ctrl);
-            player1_ctrl->har = p1->har;
+            controller_init(player1_ctrl, gs);
+            player1_ctrl->har_obj_id = p1->har_obj_id;
             player2_ctrl = omf_calloc(1, sizeof(controller));
-            controller_init(player2_ctrl);
-            player2_ctrl->har = p2->har;
+            controller_init(player2_ctrl, gs);
+            player2_ctrl->har_obj_id = p2->har_obj_id;
 
             // Player 1 controller -- Keyboard
             settings_keyboard *k = &settings_get()->keys;

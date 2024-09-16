@@ -1,8 +1,7 @@
 #include "game/protos/object.h"
 #include "formats/sprite.h"
-#include "game/game_state_type.h"
+#include "game/game_state.h"
 #include "game/objects/arena_constraints.h"
-#include "game/protos/object_specializer.h"
 #include "utils/allocator.h"
 #include "utils/compat.h"
 #include "utils/log.h"
@@ -13,6 +12,8 @@
 
 #define UNUSED(x) (void)(x)
 
+static uint32_t object_id = 1;
+
 /** \brief Creates a new, empty object.
  * \param obj Object handle
  * \param gs Game state handle
@@ -22,6 +23,7 @@
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // State
     obj->gs = gs;
+    obj->id = object_id++;
 
     // Position related
     obj->pos = vec2i_to_f(pos);
@@ -42,7 +44,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->video_effects = 0;
 
     // Attachment stuff
-    obj->attached_to = NULL;
+    obj->attached_to_id = 0;
 
     // Fire orb wandering
     obj->orbit = 0;
@@ -54,7 +56,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;
     obj->cur_animation = NULL;
-    obj->cur_sprite = NULL;
+    obj->cur_sprite_id = -1;
     obj->sprite_override = 0;
     obj->sound_translation_table = NULL;
     obj->cur_surface = NULL;
@@ -84,161 +86,28 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->collide = NULL;
     obj->finish = NULL;
     obj->move = NULL;
-    obj->serialize = NULL;
-    obj->unserialize = NULL;
     obj->debug = NULL;
     obj->pal_transform = NULL;
+    obj->clone = NULL;
+    obj->clone_free = NULL;
 }
 
-/**
- * \brief Serializes the object to a buffer.
- *
- * This will call the specialized objects, eg. har or projectile for their
- * serialization data.
- *
- * \param obj Object to serialize
- * \param ser Target serialization buffer to write into
- * \return 0 on success, 1 on error
- */
-int object_serialize(object *obj, serial *ser) {
-    serial_write_float(ser, obj->pos.x);
-    serial_write_float(ser, obj->pos.y);
-    serial_write_float(ser, obj->vel.x);
-    serial_write_float(ser, obj->vel.y);
-    serial_write_float(ser, obj->gravity);
-    serial_write_int8(ser, obj->direction);
-    serial_write_int8(ser, obj->group);
-    serial_write_int8(ser, obj->layers);
-    serial_write_int8(ser, obj->stride);
-    serial_write_int8(ser, object_get_repeat(obj));
-    serial_write_int8(ser, obj->sprite_override);
-    serial_write_int32(ser, obj->age);
-    serial_write_int32(ser, random_get_seed(&obj->rand_state));
-    serial_write_int8(ser, obj->cur_animation->id);
-    serial_write_int8(ser, obj->pal_offset);
-    serial_write_int8(ser, obj->hit_frames);
-    serial_write_int8(ser, obj->can_hit);
-
-    // Write animation state
-    if(obj->custom_str) {
-        serial_write_int16(ser, strlen(obj->custom_str) + 1);
-        serial_write(ser, obj->custom_str, strlen(obj->custom_str) + 1);
-    } else {
-        // using regular animation string from animation
-        serial_write_int16(ser, 0);
-    }
-    serial_write_int16(ser, (int)obj->animation_state.current_tick);
-    serial_write_int16(ser, (int)obj->animation_state.previous_tick);
-    serial_write_int8(ser, (int)obj->animation_state.reverse);
-
-    /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f",
-     * strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride,
-     * obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
-
-    // Serialize the underlying object
-    if(obj->serialize != NULL) {
-        obj->serialize(obj, ser);
-    } else {
-        serial_write_int8(ser, SPECID_NONE);
+int object_clone(object *src, object *dst, game_state *gs) {
+    memcpy(dst, src, sizeof(object));
+    dst->gs = gs;
+    player_clone(src, dst);
+    if(src->custom_str) {
+        dst->custom_str = strdup(src->custom_str);
     }
 
-    // Return success
-    return 0;
-}
-
-/**
- * \brief Unserializes the data from buffer to a specialized object.
- *
- * Serial render position should be set to correct position before calling this.
- *
- * \param obj Object to unserialize into
- * \param ser Serialization buffer to unserialize from
- * \param gs Gamestate
- * \return 0 on success, 1 on error.
- */
-int object_unserialize(object *obj, serial *ser, game_state *gs) {
-    obj->pos.x = serial_read_float(ser);
-    obj->pos.y = serial_read_float(ser);
-    obj->vel.x = serial_read_float(ser);
-    obj->vel.y = serial_read_float(ser);
-    float gravity = serial_read_float(ser);
-    obj->direction = serial_read_int8(ser);
-    obj->group = serial_read_int8(ser);
-    obj->layers = serial_read_int8(ser);
-    uint8_t stride = serial_read_int8(ser);
-    uint8_t repeat = serial_read_int8(ser);
-    obj->sprite_override = serial_read_int8(ser);
-    obj->age = serial_read_int32(ser);
-    random_seed(&obj->rand_state, serial_read_int32(ser));
-    uint8_t animation_id = serial_read_int8(ser);
-    uint8_t pal_offset = serial_read_int8(ser);
-    int8_t hit_frames = serial_read_int8(ser);
-    int8_t can_hit = serial_read_int8(ser);
-
-    // Other stuff not included in serialization
-    obj->y_percent = 1.0;
-    obj->x_percent = 1.0;
-    obj->cur_animation_own = OWNER_EXTERNAL;
-    obj->cur_animation = NULL;
-    obj->cur_sprite = NULL;
-    obj->sound_translation_table = NULL;
-    obj->cur_surface = NULL;
-    obj->cur_remap = 0;
-    obj->halt = 0;
-    obj->halt_ticks = 0;
-    obj->cast_shadow = 0;
-    player_create(obj);
-
-    // Read animation state
-    uint16_t anim_str_len = serial_read_int16(ser);
-    char anim_str[anim_str_len + 1];
-    if(anim_str_len > 0) {
-        serial_read(ser, anim_str, anim_str_len);
-    }
-    obj->animation_state.current_tick = (uint16_t)serial_read_int16(ser);
-    obj->animation_state.previous_tick = (uint16_t)serial_read_int16(ser);
-    uint8_t reverse = serial_read_int8(ser);
-
-    // Read the specialization ID from ther serial "stream".
-    // This should be an int.
-    int specialization_id = serial_read_int8(ser);
-
-    // This should automatically bootstrap the object so that it has at least
-    // unserialize function callback and local memory allocated
-    object_auto_specialize(obj, specialization_id);
-
-    // Now, if the object has unserialize function, call it with
-    // serialization data. serial object should be pointing to the
-    // start of that data.
-    if(obj->unserialize != NULL) {
-        obj->unserialize(obj, ser, animation_id, gs);
-    } else {
-        DEBUG("object has no special unserializer");
+    if(src->cur_animation_own == OWNER_OBJECT) {
+        dst->cur_animation = omf_calloc(1, sizeof(animation));
+        animation_clone(src->cur_animation, dst->cur_animation);
     }
 
-    // Init animation with correct string and tick
-    if(anim_str_len > 0) {
-        // server is using a custom string
-        DEBUG("serialized object has custom animation string %s", anim_str);
-        player_reload_with_str(obj, anim_str);
+    if(src->clone) {
+        src->clone(src, dst);
     }
-    if(reverse) {
-        object_set_playback_direction(obj, PLAY_BACKWARDS);
-    }
-
-    // deserializing hars can reset these, so we have to set this late
-    obj->stride = stride;
-    object_set_gravity(obj, gravity);
-    object_set_repeat(obj, repeat);
-    object_set_pal_offset(obj, pal_offset);
-    obj->hit_frames = hit_frames;
-    obj->can_hit = can_hit;
-
-    /*DEBUG("Animation state: [%d] %s, ticks = %d stride = %d direction = %d pos = %f,%f vel = %f,%f gravity = %f",
-     * strlen(player_get_str(obj))+1, player_get_str(obj), obj->animation_state.ticks, obj->stride,
-     * obj->animation_state.reverse, obj->pos.x, obj->pos.y, obj->vel.x, obj->vel.y, obj->gravity);*/
-
-    // Return success
     return 0;
 }
 
@@ -267,9 +136,10 @@ void object_set_playback_direction(object *obj, int dir) {
 void object_dynamic_tick(object *obj) {
     obj->age++;
 
-    if(obj->attached_to != NULL) {
-        object_set_pos(obj, object_get_pos(obj->attached_to));
-        object_set_direction(obj, object_get_direction(obj->attached_to));
+    if(obj->attached_to_id != 0) {
+        object *attached_to = game_state_find_object(obj->gs, obj->attached_to_id);
+        object_set_pos(obj, object_get_pos(attached_to));
+        object_set_direction(obj, object_get_direction(attached_to));
     }
 
     // Check if object still needs to be halted
@@ -349,11 +219,12 @@ void object_del_effects(object *obj, int effects) {
 
 void object_render(object *obj) {
     // Stop here if cur_sprite is NULL
-    if(obj->cur_sprite == NULL)
+    if(obj->cur_sprite_id < 0)
         return;
 
+    sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
     // Set current surface
-    obj->cur_surface = obj->cur_sprite->data;
+    obj->cur_surface = cur_sprite->data;
 
     // Something to ease the pain ...
     player_sprite_state *rstate = &obj->sprite_state;
@@ -364,20 +235,20 @@ void object_render(object *obj) {
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = obj->pos.y - obj->cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
+        y = obj->pos.y - cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
             y -= 100;
         }
     } else {
-        y = obj->pos.y + obj->cur_sprite->pos.y + rstate->o_correction.y;
+        y = obj->pos.y + cur_sprite->pos.y + rstate->o_correction.y;
     }
 
     // Set X coord, take into account the HAR facing.
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = obj->pos.x - obj->cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
+        x = obj->pos.x - cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
     } else {
-        x = obj->pos.x + obj->cur_sprite->pos.x + rstate->o_correction.x;
+        x = obj->pos.x + cur_sprite->pos.x + rstate->o_correction.x;
     }
 
     // Flip to face the right direction
@@ -425,9 +296,11 @@ void object_render(object *obj) {
 }
 
 void object_render_shadow(object *obj) {
-    if(obj->cur_sprite == NULL || !obj->cast_shadow) {
+    if(obj->cur_sprite_id < 0 || !obj->cast_shadow) {
         return;
     }
+
+    sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
 
     // Scale of the sprite on Y axis should be less than the
     // height of the sprite because of light position
@@ -435,9 +308,9 @@ void object_render_shadow(object *obj) {
 
     // Determine X
     int flipmode = obj->sprite_state.flipmode;
-    int x = obj->pos.x + obj->cur_sprite->pos.x + obj->sprite_state.o_correction.x;
+    int x = obj->pos.x + cur_sprite->pos.x + obj->sprite_state.o_correction.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = (obj->pos.x + obj->sprite_state.o_correction.x) - obj->cur_sprite->pos.x - object_get_size(obj).x;
+        x = (obj->pos.x + obj->sprite_state.o_correction.x) - cur_sprite->pos.x - object_get_size(obj).x;
         flipmode ^= FLIP_HORIZONTAL;
     }
 
@@ -448,7 +321,7 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_render_sprite_flip_scale_opacity_tint(obj->cur_sprite->data, x + i, y + i, BLEND_ALPHA, obj->pal_offset,
+        video_render_sprite_flip_scale_opacity_tint(cur_sprite->data, x + i, y + i, BLEND_ALPHA, obj->pal_offset,
                                                     flipmode, 1.0, scale_y, 65, color_create(0, 0, 0, 255));
     }
 }
@@ -537,6 +410,23 @@ void object_free(object *obj) {
     obj->cur_animation = NULL;
 }
 
+int object_clone_free(object *obj) {
+    if(obj->clone_free != NULL) {
+        obj->clone_free(obj);
+    }
+    player_free(obj);
+    if(obj->cur_animation_own == OWNER_OBJECT) {
+        animation_free(obj->cur_animation);
+        omf_free(obj->cur_animation);
+    }
+    if(obj->custom_str) {
+        omf_free(obj->custom_str);
+    }
+    obj->cur_surface = NULL;
+    obj->cur_animation = NULL;
+    return 0;
+}
+
 /** Sets a pointer to a sound translation table. Note! Does NOT copy!
  * \param obj Object handle
  * \param ptr Pointer to the STL (30 byte char array)
@@ -615,11 +505,16 @@ void object_select_sprite(object *obj, int id) {
         return;
     if(!obj->sprite_override) {
         if(id < 0) {
-            obj->cur_sprite = NULL;
+            obj->cur_sprite_id = -1;
         } else {
-            obj->cur_sprite = animation_get_sprite(obj->cur_animation, id);
-            obj->sprite_state.blendmode = BLEND_ALPHA;
-            obj->sprite_state.flipmode = FLIP_NONE;
+            if(animation_get_sprite(obj->cur_animation, id)) {
+                obj->cur_sprite_id = id;
+                obj->sprite_state.blendmode = BLEND_ALPHA;
+                obj->sprite_state.flipmode = FLIP_NONE;
+            } else {
+                DEBUG("unable to find sprite %d", id);
+                obj->cur_sprite_id = -1;
+            }
         }
     }
 }
@@ -662,12 +557,7 @@ void object_set_move_cb(object *obj, object_move_cb cbfunc) {
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc) {
     obj->debug = cbfunc;
 }
-void object_set_serialize_cb(object *obj, object_serialize_cb cbfunc) {
-    obj->serialize = cbfunc;
-}
-void object_set_unserialize_cb(object *obj, object_unserialize_cb cbfunc) {
-    obj->unserialize = cbfunc;
-}
+
 void object_set_pal_transform_cb(object *obj, object_palette_transform_cb cbfunc) {
     obj->pal_transform = cbfunc;
 }
@@ -785,8 +675,9 @@ void object_set_vel(object *obj, vec2f vel) {
 }
 
 vec2i object_get_size(const object *obj) {
-    if(obj->cur_sprite != NULL) {
-        return sprite_get_size(obj->cur_sprite);
+    if(obj->cur_sprite_id >= 0) {
+        sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+        return sprite_get_size(cur_sprite);
     }
     return vec2i_create(0, 0);
 }
@@ -819,5 +710,5 @@ int object_is_airborne(const object *obj) {
 
 /* Attaches one object to another. Positions are synced to this from the attached. */
 void object_attach_to(object *obj, const object *attach_to) {
-    obj->attached_to = attach_to;
+    obj->attached_to_id = attach_to->id;
 }

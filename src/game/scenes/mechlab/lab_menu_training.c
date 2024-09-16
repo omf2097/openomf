@@ -179,9 +179,9 @@ static const spritebutton_focus_cb focus_cbs[] = {lab_menu_focus_power, lab_menu
                                                   lab_menu_focus_endurance, lab_menu_focus_training_done};
 
 component *lab_menu_training_create(scene *s) {
-    animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
-    animation *main_buttons = &bk_get_info(&s->bk_data, 9)->ani;
-    animation *hand_of_doom = &bk_get_info(&s->bk_data, 29)->ani;
+    animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
+    animation *main_buttons = &bk_get_info(s->bk_data, 9)->ani;
+    animation *hand_of_doom = &bk_get_info(s->bk_data, 29)->ani;
 
     // Initialize menu, and set button sheet
     sprite *msprite = animation_get_sprite(main_sheets, 1);

@@ -55,7 +55,6 @@ void chr_score_clear_done(chr_score *score);
 int chr_score_end_combo(chr_score *score, vec2i pos);
 int chr_score_interrupt(chr_score *score, vec2i pos);
 
-void chr_score_serialize(chr_score *score, serial *ser);
-void chr_score_unserialize(chr_score *score, serial *ser);
+int chr_score_clone(chr_score *src, chr_score *dst);
 
 #endif // SCORE_H

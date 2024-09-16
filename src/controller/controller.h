@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#include "game/game_state_type.h"
 #include "game/objects/har.h"
 #include "game/protos/object.h"
 #include "game/utils/serial.h"
@@ -15,8 +16,7 @@ enum
     ACT_DOWN = 0x10,
     ACT_LEFT = 0x20,
     ACT_ESC = 0x40,
-    ACT_RIGHT = 0x80,
-    ACT_FLUSH = 0x100
+    ACT_RIGHT = 0x80
 };
 
 enum
@@ -31,8 +31,9 @@ enum
 enum
 {
     EVENT_TYPE_ACTION,
-    EVENT_TYPE_SYNC,
     EVENT_TYPE_HB,
+    EVENT_TYPE_PROPOSE_START,
+    EVENT_TYPE_CONFIRM_START,
     EVENT_TYPE_CLOSE
 };
 
@@ -50,13 +51,13 @@ struct ctrl_event_t {
 typedef struct controller_t controller;
 
 struct controller_t {
-    object *har;
+    game_state *gs;
+    uint32_t har_obj_id;
     list hooks;
     ctrl_event *extra_events;
     int (*tick_fun)(controller *ctrl, int ticks, ctrl_event **ev);
     int (*dyntick_fun)(controller *ctrl, int ticks, ctrl_event **ev);
     int (*poll_fun)(controller *ctrl, ctrl_event **ev);
-    int (*update_fun)(controller *ctrl, serial *state);
     int (*rumble_fun)(controller *ctrl, float magnitude, int duration);
     int (*har_hook)(controller *ctrl, har_event event);
     void (*controller_hook)(controller *ctrl, int action);
@@ -67,18 +68,17 @@ struct controller_t {
     int repeat;
 };
 
-void controller_init(controller *ctrl);
+void controller_init(controller *ctrl, game_state *gs);
 void controller_cmd(controller *ctrl, int action, ctrl_event **ev);
-void controller_sync(controller *ctrl, const serial *ser, ctrl_event **ev);
 void controller_close(controller *ctrl, ctrl_event **ev);
 int controller_poll(controller *ctrl, ctrl_event **ev);
 int controller_tick(controller *ctrl, int ticks, ctrl_event **ev);
 int controller_dyntick(controller *ctrl, int ticks, ctrl_event **ev);
-int controller_update(controller *ctrl, serial *state);
 int controller_har_hook(controller *ctrl, har_event event);
 void controller_add_hook(controller *ctrl, controller *source, void (*fp)(controller *ctrl, int act_type));
 void controller_clear_hooks(controller *ctrl);
 void controller_free_chain(ctrl_event *ev);
+void controller_free(controller *ctrl);
 void controller_set_repeat(controller *ctrl, int repeat);
 int controller_rumble(controller *ctrl, float magnitude, int duration);
 

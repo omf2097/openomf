@@ -121,7 +121,6 @@ typedef struct action_buffer_t {
 typedef struct game_player_t game_player;
 
 typedef struct har_t {
-    game_player *gp;
     uint8_t id;        // Har ID
     uint8_t player_id; // Player number, 0 or 1
     uint8_t pilot_id;  // Pilot ID
@@ -186,6 +185,8 @@ int har_is_walking(har *h);
 int har_is_blocking(har *h, af_move *move);
 void har_copy_actions(object *new, object *old);
 void har_reset(object *obj);
+
+uint8_t har_player_id(object *obj);
 
 int16_t har_health_percent(har *h);
 

@@ -10,7 +10,7 @@ void net_controller_free(controller *ctrl);
 int net_controller_get_rtt(controller *ctrl);
 void net_controller_har_hook(int action, void *cb_data);
 
-int net_controller_ready(controller *ctrl);
+bool net_controller_ready(controller *ctrl);
 int net_controller_tick_offset(controller *ctrl);
 
 #endif // NET_CONTROLLER_H

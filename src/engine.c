@@ -1,7 +1,9 @@
 #include "engine.h"
 #include "audio/audio.h"
 #include "console/console.h"
+#include "controller/controller.h"
 #include "formats/altpal.h"
+#include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/gui/text_render.h"
 #include "game/utils/settings.h"
@@ -206,6 +208,17 @@ void engine_run(engine_init_flags *init_flags) {
         // Tick controllers
         game_state_tick_controllers(gs);
 
+        // check if we need to replace the game state
+        if(gs->new_state) {
+            // one of the controllers wants to replace the game state
+            game_state *old_gs = gs;
+            gs = gs->new_state;
+            DEBUG("replacing game state! %d %d", old_gs, gs);
+            // old_gs->new_state = NULL;
+            game_state_clone_free(old_gs);
+            omf_free(old_gs);
+        }
+
         // Render scene
         int dt = (SDL_GetTicks() - frame_start);
         frame_start = SDL_GetTicks(); // Reset timer
@@ -221,7 +234,7 @@ void engine_run(engine_init_flags *init_flags) {
         int limit_dynamic = 100;
         while(static_wait > 10 && limit_static--) {
             // Static tick for gamestate
-            game_state_static_tick(gs);
+            game_state_static_tick(gs, false);
 
             // Tick console
             console_tick();
@@ -233,7 +246,7 @@ void engine_run(engine_init_flags *init_flags) {
         }
         while(dynamic_wait > game_state_ms_per_dyntick(gs) && limit_dynamic--) {
             // Tick scene
-            game_state_dynamic_tick(gs);
+            game_state_dynamic_tick(gs, false);
 
             // Handle waiting period leftover time
             dynamic_wait -= game_state_ms_per_dyntick(gs);

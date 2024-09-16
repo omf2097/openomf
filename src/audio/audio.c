@@ -125,9 +125,11 @@ static void audio_sound_finished(int channel) {
 static bool audio_load_module(const char *file) {
     assert(audio);
 
-    if((audio->xmp_context = xmp_create_context()) == NULL) {
-        PERROR("Unable to initialize XMP context.");
-        goto exit_0;
+    if(!audio->xmp_context) {
+        if((audio->xmp_context = xmp_create_context()) == NULL) {
+            PERROR("Unable to initialize XMP context.");
+            goto exit_0;
+        }
     }
 
     // Load the module file
@@ -178,6 +180,7 @@ static void audio_close_module() {
     if(is_music(audio->music_id)) {
         xmp_end_player(audio->xmp_context);
         xmp_release_module(audio->xmp_context);
+        xmp_free_context(audio->xmp_context);
         audio->xmp_context = NULL;
         audio->music_id = NUMBER_OF_RESOURCES;
     }

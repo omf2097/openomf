@@ -270,51 +270,17 @@ int chr_score_end_combo(chr_score *score, vec2i pos) {
     return ret;
 }
 
-void chr_score_serialize(chr_score *score, serial *ser) {
-    serial_write_int32(ser, score->score);
-    serial_write_int32(ser, score->done);
-    serial_write_int32(ser, score->scrap);
-    serial_write_int32(ser, score->destruction);
-    serial_write_int8(ser, score->texts.size);
+int chr_score_clone(chr_score *src, chr_score *dst) {
     iterator it;
     score_text *t;
-
-    list_iter_begin(&score->texts, &it);
+    memcpy(dst, src, sizeof(chr_score));
+    list_create(&dst->texts);
+    list_iter_begin(&src->texts, &it);
     while((t = iter_next(&it)) != NULL) {
-        serial_write_int8(ser, strlen(t->text) + 1);
-        serial_write(ser, t->text, strlen(t->text) + 1);
-        serial_write_float(ser, t->position);
-        serial_write_int16(ser, t->start.x);
-        serial_write_int16(ser, t->start.y);
-        serial_write_int32(ser, t->points);
+        score_text t2;
+        memcpy(&t2, t, sizeof(score_text));
+        t2.text = strdup(t->text);
+        list_append(&dst->texts, &t2, sizeof(score_text));
     }
-}
-
-void chr_score_unserialize(chr_score *score, serial *ser) {
-    score->score = serial_read_int32(ser);
-    score->done = serial_read_int32(ser);
-    score->scrap = serial_read_int32(ser);
-    score->destruction = serial_read_int32(ser);
-    uint8_t count = serial_read_int8(ser);
-    uint16_t text_len;
-    char *text;
-    float pos;
-    int x, y;
-    int points;
-
-    // clean it out
-    chr_score_free(score);
-    list_create(&score->texts);
-
-    for(int i = 0; i < count; i++) {
-        text_len = serial_read_int8(ser);
-        text = omf_calloc(text_len, 1);
-        serial_read(ser, text, text_len);
-        pos = serial_read_float(ser);
-        x = serial_read_int16(ser);
-        y = serial_read_int16(ser);
-        points = serial_read_int32(ser);
-
-        chr_score_add(score, text, points, vec2i_create(x, y), pos);
-    }
+    return 0;
 }

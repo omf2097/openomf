@@ -53,6 +53,37 @@ animation *create_animation_from_single(sprite *sp, vec2i pos) {
     return a;
 }
 
+int animation_clone(animation *src, animation *dst) {
+    iterator it;
+    memcpy(dst, src, sizeof(animation));
+    str_from(&dst->animation_string, &src->animation_string);
+    vector_create(&dst->collision_coords, sizeof(collision_coord));
+    vector_iter_begin(&src->collision_coords, &it);
+    collision_coord *tmp_coord = NULL;
+    while((tmp_coord = iter_next(&it)) != NULL) {
+        vector_append(&dst->collision_coords, tmp_coord);
+    }
+    str *tmp_str = NULL;
+    vector_create(&dst->extra_strings, sizeof(str));
+    vector_iter_begin(&src->extra_strings, &it);
+    while((tmp_str = iter_next(&it)) != NULL) {
+        str new_str;
+        str_create(&new_str);
+        str_from(&new_str, tmp_str);
+        vector_append(&dst->extra_strings, &new_str);
+    }
+    vector_create(&dst->sprites, sizeof(sprite));
+    vector_iter_begin(&src->sprites, &it);
+    sprite *tmp_sprite = NULL;
+    while((tmp_sprite = iter_next(&it)) != NULL) {
+        sprite new_sprite;
+        sprite_clone(tmp_sprite, &new_sprite);
+        vector_append(&dst->sprites, &new_sprite);
+    }
+
+    return 0;
+}
+
 sprite *animation_get_sprite(animation *ani, int sprite_id) {
     return (sprite *)vector_get(&ani->sprites, sprite_id);
 }

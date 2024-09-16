@@ -1,10 +1,10 @@
 #include "game/objects/hazard.h"
-#include "game/protos/object_specializer.h"
 #include "game/protos/scene.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include <math.h>
+#include <stdlib.h>
 
 int orb_almost_there(vec2f a, vec2f b) {
     vec2f dir = vec2f_sub(a, b);
@@ -51,10 +51,10 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags
     scene *sc = (scene *)userdata;
 
     // Get next animation
-    bk_info *info = bk_get_info(&sc->bk_data, id);
+    bk_info *info = bk_get_info(sc->bk_data, id);
     if(info != NULL) {
         object *obj = omf_calloc(1, sizeof(object));
-        object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vel);
+        object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vec2f_create(0, 0));
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &info->ani);
         if(info->probability == 1) {
@@ -64,8 +64,9 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags
         object_set_group(obj, GROUP_PROJECTILE);
         object_set_userdata(obj, object_get_userdata(parent));
         hazard_create(obj, sc);
-        if(s) {
-            // If MS tag is set, correct the bullet damage animation position
+        if(sc->bk_data->file_id == 128 && id == 14) {
+            // XXX hack because we don't understand the ms and md tags
+            // without this, the 'bullet damage' sprite in the desert spawns at 0,0
             obj->pos = parent->pos;
         }
         game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);
@@ -74,15 +75,101 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags
     }
 }
 
+vec2f generate_destination(vec2f old) {
+    vec2f new = vec2f_create((rand_float() * 280.0f) + 20.0f, (rand_float() * 160.0f) + 20.0f);
+    while(vec2f_dist(old, new) < 100) {
+        new = vec2f_create((rand_float() * 280.0f) + 20.0f, (rand_float() * 160.0f) + 20.0f);
+    }
+    return new;
+}
+
+void accelerate_orbit(object *obj) {
+    float x_dist = obj->pos.x - obj->orbit_dest.x;
+    float y_dist = obj->pos.y - obj->orbit_dest.y;
+    float bigger = max2(x_dist, y_dist);
+    if(fabsf(bigger) > 20) {
+        bigger *= -1.0f;
+    }
+    if(obj->vel.x < 1.0f) {
+        obj->vel.x += x_dist / (bigger * 10);
+    }
+    if(obj->vel.y < 1.0f) {
+        obj->vel.y += y_dist / (bigger * 10);
+    }
+}
+
 void hazard_move(object *obj) {
     if(obj->orbit) {
+        /*
+        if (obj->pos.x > 280 || obj->pos.x < 40 || obj->pos.y < 40 || obj->pos.y > 160) {
+            if (obj->vel.x > 0.1f) {
+                obj->vel.x /= 2;
+            }
+            if (obj->vel.x > 0.1f) {
+                obj->vel.y /= 2;
+            }
+        }
+        if (obj->pos.x >= 320 || obj->pos.x <= 0) {
+            obj->vel.x = 0.0f;
+        }
+
+        if (obj->pos.x >= 200 || obj->pos.x <= 0) {
+            obj->vel.y = 0.0f;
+        }*/
+
+        if((dist(obj->pos.x, obj->orbit_pos.x) >= dist(obj->orbit_dest.x, obj->orbit_pos.x)) &&
+           (dist(obj->pos.y, obj->orbit_pos.y) >= dist(obj->orbit_dest.y, obj->orbit_pos.y))) {
+            obj->orbit_pos.x = obj->pos.x;
+            obj->orbit_pos.y = obj->pos.y;
+            obj->orbit_dest = generate_destination(obj->orbit_dest);
+            DEBUG("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
+        }
+
+        // accelerate_orbit(obj);
+
+        float x_dist = obj->pos.x - obj->orbit_dest.x;
+        float y_dist = obj->pos.y - obj->orbit_dest.y;
+        float bigger = fabsf(y_dist);
+        if(fabsf(x_dist) > fabsf(y_dist)) {
+            bigger = x_dist;
+        }
+
+        if(obj->orbit_dest.x > obj->pos.x) {
+            if(obj->vel.x < 1.0f) {
+                DEBUG("accel +%f", x_dist / (bigger * 10));
+                obj->vel.x += x_dist / (bigger * 10);
+            }
+        }
+        if(obj->orbit_dest.x < obj->pos.x) {
+            if(obj->vel.x < 1.0f) {
+                DEBUG("accel -%f", x_dist / (bigger * 10));
+                obj->vel.x -= x_dist / (bigger * 10);
+            }
+        }
+        if(obj->orbit_dest.y > obj->pos.y) {
+            if(obj->vel.y < 1.0f) {
+                DEBUG("accel +%f", y_dist / (bigger * 10));
+                obj->vel.y += y_dist / (bigger * 10);
+            }
+        }
+        if(obj->orbit_dest.y < obj->pos.y) {
+            if(obj->vel.y < 1.0f) {
+                DEBUG("accel -%f", y_dist / (bigger * 10));
+                obj->vel.y -= y_dist / (bigger * 10);
+            }
+        }
+
         // Make this object orbit around the center of the arena
-        obj->pos.x = obj->orbit_pos.x + obj->orbit_pos_vary.x;
-        obj->pos.y = obj->orbit_pos.y + obj->orbit_pos_vary.y;
-        obj->orbit_pos.x += 2 * obj->orbit_dest_dir.x;
-        obj->orbit_pos.y += 2 * obj->orbit_dest_dir.y;
-        obj->orbit_pos_vary.x += sinf(obj->orbit_tick) * 0.2f;
-        obj->orbit_pos_vary.y += cosf(obj->orbit_tick) * 0.6f;
+        /*obj->vel.x += 0.01f;*/
+        /*obj->vel.y += 0.01f;*/
+        obj->pos.x += obj->vel.x;
+        obj->pos.y += obj->vel.y;
+        // obj->pos.x = obj->orbit_pos.x+obj->orbit_pos_vary.x;
+        // obj->pos.y = obj->orbit_pos.y+obj->orbit_pos_vary.y;
+        // obj->orbit_pos.x += 2*obj->orbit_dest_dir.x;
+        // obj->orbit_pos.y += 2*obj->orbit_dest_dir.y;
+        // obj->orbit_pos_vary.x += sin(obj->orbit_tick)*0.2f;
+        // obj->orbit_pos_vary.y += cos(obj->orbit_tick)*0.6f;
     }
 }
 
@@ -93,28 +180,10 @@ int hazard_create(object *obj, scene *scene) {
     object_set_move_cb(obj, hazard_move);
     object_set_dynamic_tick_cb(obj, hazard_tick);
 
-    hazard_bootstrap(obj);
+    obj->orbit_pos.x = obj->pos.x;
+    obj->orbit_pos.y = obj->pos.y;
+    obj->orbit_dest = vec2f_create((rand_float() * 280.0f) + 20.0f, (rand_float() * 160.0f) + 20.0f);
+    DEBUG("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
 
     return 0;
-}
-
-int hazard_serialize(object *obj, serial *ser) {
-    /*DEBUG("serializing hazard");*/
-    // Specialization
-    serial_write_int8(ser, SPECID_HAZARD);
-    return 0;
-}
-
-int hazard_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) {
-    bk *bk_data = &gs->sc->bk_data;
-    hazard_create(obj, gs->sc);
-    object_set_userdata(obj, bk_data);
-    object_set_stl(obj, bk_data->sound_translation_table);
-    object_set_animation(obj, &bk_get_info(bk_data, animation_id)->ani);
-    return 0;
-}
-
-void hazard_bootstrap(object *obj) {
-    object_set_serialize_cb(obj, hazard_serialize);
-    object_set_unserialize_cb(obj, hazard_unserialize);
 }

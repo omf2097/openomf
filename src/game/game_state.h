@@ -6,6 +6,7 @@
 #include "utils/random.h"
 #include "utils/vector.h"
 #include <SDL.h>
+#include <stdbool.h>
 
 typedef struct scene_t scene;
 typedef struct game_player_t game_player;
@@ -16,8 +17,8 @@ void game_state_free(game_state **gs);
 int game_state_handle_event(game_state *gs, SDL_Event *event);
 void game_state_render(game_state *gs);
 void game_state_debug(game_state *gs);
-void game_state_static_tick(game_state *gs);
-void game_state_dynamic_tick(game_state *gs);
+void game_state_static_tick(game_state *gs, bool replay);
+void game_state_dynamic_tick(game_state *gs, bool replay);
 void game_state_tick_controllers(game_state *gs);
 unsigned int game_state_get_tick(game_state *gs);
 scene *game_state_get_scene(game_state *gs);
@@ -30,8 +31,11 @@ int game_state_num_players(game_state *gs);
 void game_state_init_demo(game_state *gs);
 int game_state_ms_per_dyntick(game_state *gs);
 ticktimer *game_state_get_ticktimer(game_state *gs);
-int game_state_serialize(game_state *gs, serial *ser);
-int game_state_unserialize(game_state *gs, serial *ser, int rtt);
+
+object *game_state_find_object(game_state *gs, uint32_t object_id);
+
+int game_state_clone(game_state *src, game_state *dst);
+void game_state_clone_free(game_state *gs);
 
 void _setup_keyboard(game_state *gs, int player_id);
 void _setup_ai(game_state *gs, int player_id);

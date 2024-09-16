@@ -17,7 +17,7 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     tconf.cforeground = color_create(0, 0, 123, 255);
 
     // Background name box
-    animation *main_sheets = &bk_get_info(&s->bk_data, 1)->ani;
+    animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
     sprite *msprite = animation_get_sprite(main_sheets, 5);
     xysizer_attach(xy, spriteimage_create(msprite->data), msprite->pos.x, msprite->pos.y, -1, -1);
 

@@ -69,7 +69,6 @@ typedef struct arena_local_t {
     int rec_last[2];
 } arena_local;
 
-void arena_maybe_sync(scene *scene, int need_sync);
 void write_rec_move(scene *scene, game_player *player, int action);
 
 // -------- Local callbacks --------
@@ -96,7 +95,6 @@ void game_menu_return(component *c, void *userdata) {
     controller_set_repeat(game_player_get_ctrl(player1), 1);
     local->menu_visible = 0;
     game_state_set_paused(((scene *)userdata)->gs, 0);
-    arena_maybe_sync(userdata, 1);
 }
 
 void arena_music_slide(component *c, void *userdata, int pos) {
@@ -112,9 +110,10 @@ void arena_speed_slide(component *c, void *userdata, int pos) {
     game_state_set_speed(sc->gs, pos + 5);
 }
 
-void scene_fight_anim_done(void *userdata) {
-    object *parent = userdata;
-    scene *scene = game_state_get_scene(parent->gs);
+void scene_fight_anim_done(void *scenedata, void *userdata) {
+    scene *scene = scenedata;
+    // int parent_id = userdata;
+    // object *parent = game_state_find_object(scene->gs, parent_id;
     arena_local *arena = scene_get_userdata(scene);
 
     // This will release HARs for action
@@ -125,23 +124,24 @@ void scene_fight_anim_done(void *userdata) {
     // parent->animation_state.finished = 1;
 }
 
-void scene_fight_anim_start(void *userdata) {
+void scene_fight_anim_start(void *scenedata, void *userdata) {
     // Start FIGHT animation
-    game_state *gs = userdata;
+    scene *sc = scenedata;
+    game_state *gs = sc->gs;
     scene *scene = game_state_get_scene(gs);
-    animation *fight_ani = &bk_get_info(&scene->bk_data, 10)->ani;
+    animation *fight_ani = &bk_get_info(scene->bk_data, 10)->ani;
     object *fight = omf_calloc(1, sizeof(object));
     object_create(fight, gs, fight_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(fight, bk_get_stl(&scene->bk_data));
+    object_set_stl(fight, bk_get_stl(scene->bk_data));
     object_set_animation(fight, fight_ani);
     // object_set_finish_cb(fight, scene_fight_anim_done);
     game_state_add_object(gs, fight, RENDER_LAYER_TOP, 0, 0);
-    ticktimer_add(&scene->tick_timer, 24, scene_fight_anim_done, fight);
+    ticktimer_add(&scene->tick_timer, 24, scene_fight_anim_done, NULL /*fight->id*/);
 }
 
 void scene_ready_anim_done(object *parent) {
     // Wait a moment before loading FIGHT animation
-    ticktimer_add(&game_state_get_scene(parent->gs)->tick_timer, 10, scene_fight_anim_start, parent->gs);
+    ticktimer_add(&game_state_get_scene(parent->gs)->tick_timer, 10, scene_fight_anim_start, NULL);
 
     // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
@@ -158,10 +158,10 @@ void scene_youwin_anim_start(void *userdata) {
     // Start FIGHT animation
     game_state *gs = userdata;
     scene *scene = game_state_get_scene(gs);
-    animation *youwin_ani = &bk_get_info(&scene->bk_data, 9)->ani;
+    animation *youwin_ani = &bk_get_info(scene->bk_data, 9)->ani;
     object *youwin = omf_calloc(1, sizeof(object));
     object_create(youwin, gs, youwin_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(youwin, bk_get_stl(&scene->bk_data));
+    object_set_stl(youwin, bk_get_stl(scene->bk_data));
     object_set_animation(youwin, youwin_ani);
     object_set_finish_cb(youwin, scene_youwin_anim_done);
     game_state_add_object(gs, youwin, RENDER_LAYER_MIDDLE, 0, 0);
@@ -180,10 +180,10 @@ void scene_youlose_anim_start(void *userdata) {
     // Start FIGHT animation
     game_state *gs = userdata;
     scene *scene = game_state_get_scene(gs);
-    animation *youlose_ani = &bk_get_info(&scene->bk_data, 8)->ani;
+    animation *youlose_ani = &bk_get_info(scene->bk_data, 8)->ani;
     object *youlose = omf_calloc(1, sizeof(object));
     object_create(youlose, gs, youlose_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(youlose, bk_get_stl(&scene->bk_data));
+    object_set_stl(youlose, bk_get_stl(scene->bk_data));
     object_set_animation(youlose, youlose_ani);
     object_set_finish_cb(youlose, scene_youlose_anim_done);
     game_state_add_object(gs, youlose, RENDER_LAYER_MIDDLE, 0, 0);
@@ -239,13 +239,13 @@ void arena_screengrab_winner(scene *sc) {
     game_state *gs = sc->gs;
 
     // take victory pose screenshot for the newsroom
-    har *h1 = object_get_userdata(game_state_get_player(gs, 0)->har);
+    object *o1 = game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id);
+    har *h1 = object_get_userdata(o1);
     if(h1->state == STATE_VICTORY || h1->state == STATE_DONE) {
-        har_screencaps_capture(&game_state_get_player(gs, 0)->screencaps, game_state_get_player(gs, 0)->har,
-                               SCREENCAP_POSE);
+        har_screencaps_capture(&game_state_get_player(gs, 0)->screencaps, o1, SCREENCAP_POSE);
     } else {
-        har_screencaps_capture(&game_state_get_player(gs, 1)->screencaps, game_state_get_player(gs, 1)->har,
-                               SCREENCAP_POSE);
+        object *o2 = game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id);
+        har_screencaps_capture(&game_state_get_player(gs, 1)->screencaps, o2, SCREENCAP_POSE);
     }
 }
 
@@ -263,8 +263,8 @@ void arena_end(scene *sc) {
     } else if(is_singleplayer(sc) || is_tournament(sc)) {
         game_player *p1 = game_state_get_player(gs, 0);
         game_player *p2 = game_state_get_player(gs, 1);
-        har *p1_har = object_get_userdata(game_player_get_har(p1));
-        har *p2_har = object_get_userdata(game_player_get_har(p2));
+        har *p1_har = object_get_userdata(game_state_find_object(gs, game_player_get_har_obj_id(p1)));
+        har *p2_har = object_get_userdata(game_state_find_object(gs, game_player_get_har_obj_id(p2)));
         fight_stats->bonuses = game_player_get_score(p1)->score / 1000;
         fight_stats->profit = fight_stats->bonuses + fight_stats->winnings - fight_stats->repair_cost;
         bool warning_given = p1->pilot->money < 0;
@@ -330,7 +330,7 @@ void arena_reset(scene *sc) {
     for(int i = 0; i < 2; i++) {
         // Declare some vars
         game_player *player = game_state_get_player(sc->gs, i);
-        object *har_obj = game_player_get_har(player);
+        object *har_obj = game_state_find_object(sc->gs, game_player_get_har_obj_id(player));
         har_reset(har_obj);
         object_set_pos(har_obj, pos[i]);
         object_set_vel(har_obj, vec2f_create(0, 0));
@@ -338,47 +338,25 @@ void arena_reset(scene *sc) {
         chr_score_clear_done(&player->score);
     }
 
-    sc->bk_data.sound_translation_table[3] = 23 + local->round; // NUMBER
+    sc->bk_data->sound_translation_table[3] = 23 + local->round; // NUMBER
     // ROUND animation
-    animation *round_ani = &bk_get_info(&sc->bk_data, 6)->ani;
+    animation *round_ani = &bk_get_info(sc->bk_data, 6)->ani;
     object *round = omf_calloc(1, sizeof(object));
     object_create(round, sc->gs, round_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(round, sc->bk_data.sound_translation_table);
+    object_set_stl(round, sc->bk_data->sound_translation_table);
     object_set_animation(round, round_ani);
     object_set_finish_cb(round, scene_ready_anim_done);
     game_state_add_object(sc->gs, round, RENDER_LAYER_TOP, 0, 0);
 
     // Round number
-    animation *number_ani = &bk_get_info(&sc->bk_data, 7)->ani;
+    animation *number_ani = &bk_get_info(sc->bk_data, 7)->ani;
     object *number = omf_calloc(1, sizeof(object));
     object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(number, sc->bk_data.sound_translation_table);
+    object_set_stl(number, sc->bk_data->sound_translation_table);
     object_set_animation(number, number_ani);
     object_select_sprite(number, local->round);
     object_set_sprite_override(number, 1);
     game_state_add_object(sc->gs, number, RENDER_LAYER_TOP, 0, 0);
-}
-
-void arena_maybe_sync(scene *scene, int need_sync) {
-    game_state *gs = scene->gs;
-    game_player *player1 = game_state_get_player(gs, 0);
-    game_player *player2 = game_state_get_player(gs, 1);
-
-    if(need_sync && gs->role == ROLE_SERVER &&
-       (player1->ctrl->type == CTRL_TYPE_NETWORK || player2->ctrl->type == CTRL_TYPE_NETWORK)) {
-
-        // some of the moves did something interesting and we should synchronize the peer
-        serial ser;
-        serial_create(&ser);
-        game_state_serialize(scene->gs, &ser);
-        if(player1->ctrl->type == CTRL_TYPE_NETWORK) {
-            controller_update(player1->ctrl, &ser);
-        }
-        if(player2->ctrl->type == CTRL_TYPE_NETWORK) {
-            controller_update(player2->ctrl, &ser);
-        }
-        serial_free(&ser);
-    }
 }
 
 void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
@@ -387,9 +365,6 @@ void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
     object *hit_har;
     har *h;
 
-    if(is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
-        return; // netplay clients do not keep score
-    }
     fight_stats *fight_stats = &scene->gs->fight_stats;
     // FIXME: Unsure how to calculate airborne attacks, so prevent underflow like this.
     int hitter = abs(hittee - 1);
@@ -401,11 +376,11 @@ void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
     if(hittee == 1) {
         score = game_player_get_score(game_state_get_player(scene->gs, 0));
         otherscore = game_player_get_score(game_state_get_player(scene->gs, 1));
-        hit_har = game_player_get_har(game_state_get_player(scene->gs, 1));
+        hit_har = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, 1)));
     } else {
         score = game_player_get_score(game_state_get_player(scene->gs, 1));
         otherscore = game_player_get_score(game_state_get_player(scene->gs, 0));
-        hit_har = game_player_get_har(game_state_get_player(scene->gs, 0));
+        hit_har = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, 0)));
     }
     h = hit_har->userdata;
     if(h->state == STATE_RECOIL) {
@@ -413,31 +388,26 @@ void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
     }
     chr_score_hit(score, move->points);
     chr_score_interrupt(otherscore, object_get_pos(hit_har));
-    arena_maybe_sync(scene, 1);
 }
 
 void arena_har_recover_hook(int player_id, scene *scene) {
     chr_score *score;
     object *o_har;
 
-    if(is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
-        return; // netplay clients do not keep score
-    }
-
     if(player_id == 0) {
         score = game_player_get_score(game_state_get_player(scene->gs, 1));
-        o_har = game_player_get_har(game_state_get_player(scene->gs, 1));
+        o_har = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, 1)));
     } else {
         score = game_player_get_score(game_state_get_player(scene->gs, 0));
-        o_har = game_player_get_har(game_state_get_player(scene->gs, 0));
+        o_har = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, 0)));
     }
-    if(chr_score_end_combo(score, object_get_pos(o_har))) {
-        arena_maybe_sync(scene, 1);
-    }
+
+    chr_score_end_combo(score, object_get_pos(o_har));
 }
 
 void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
-    object *o_har = game_player_get_har(game_state_get_player(scene->gs, player_id));
+    object *o_har =
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
     har *h = object_get_userdata(o_har);
 
     // DEBUG("Player %d hit wall %d", player_id, wall);
@@ -467,19 +437,19 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         h->state = STATE_WALLDAMAGE;
 
         // Spawn wall animation
-        bk_info *info = bk_get_info(&scene->bk_data, 20 + wall);
+        bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
         object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
-        object_set_stl(obj, scene->bk_data.sound_translation_table);
+        object_set_stl(obj, scene->bk_data->sound_translation_table);
         object_set_animation(obj, &info->ani);
         if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 0) {
 
             // spawn the electricity on top of the HAR
             // TODO this doesn't track the har's position well...
-            info = bk_get_info(&scene->bk_data, 22);
+            info = bk_get_info(scene->bk_data, 22);
             object *obj2 = omf_calloc(1, sizeof(object));
             object_create(obj2, scene->gs, vec2i_create(o_har->pos.x, o_har->pos.y), vec2f_create(0, 0));
-            object_set_stl(obj2, scene->bk_data.sound_translation_table);
+            object_set_stl(obj2, scene->bk_data->sound_translation_table);
             object_set_animation(obj2, &info->ani);
             object_attach_to(obj2, o_har);
             // object_dynamic_tick(obj2);
@@ -499,10 +469,10 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         h->state = STATE_WALLDAMAGE;
 
         // desert always shows the 'hit' animation when you touch the wall
-        bk_info *info = bk_get_info(&scene->bk_data, 20 + wall);
+        bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
         object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
-        object_set_stl(obj, scene->bk_data.sound_translation_table);
+        object_set_stl(obj, scene->bk_data->sound_translation_table);
         object_set_animation(obj, &info->ani);
         object_set_custom_string(obj, "brwA1-brwB1-brwD1-brwE0-brwD4-brwC2-brwB2-brwA2");
         if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
@@ -528,8 +498,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             vec2i coord = vec2i_create(o_har->pos.x, pos_y);
             object *dust = omf_calloc(1, sizeof(object));
             object_create(dust, scene->gs, coord, vec2f_create(0, 0));
-            object_set_stl(dust, scene->bk_data.sound_translation_table);
-            object_set_animation(dust, &bk_get_info(&scene->bk_data, anim_no)->ani);
+            object_set_stl(dust, scene->bk_data->sound_translation_table);
+            object_set_animation(dust, &bk_get_info(scene->bk_data, anim_no)->ani);
             game_state_add_object(scene->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
         }
 
@@ -572,8 +542,8 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     int other_player_id = abs(player_id - 1);
     game_player *player_winner = game_state_get_player(scene->gs, other_player_id);
     game_player *player_loser = game_state_get_player(scene->gs, player_id);
-    object *winner = game_player_get_har(player_winner);
-    object *loser = game_player_get_har(player_loser);
+    object *winner = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_winner));
+    object *loser = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_loser));
     har *winner_har = object_get_userdata(winner);
     fight_stats *fight_stats = &gs->fight_stats;
     fight_stats->winner = other_player_id;
@@ -631,22 +601,26 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     object_set_vel(loser, vec2f_create(0, 0));
     object_set_vel(winner, vec2f_create(0, 0));
     // object_set_gravity(loser, 0);
-    arena_maybe_sync(scene, chr_score_interrupt(score, object_get_pos(winner)));
 }
 
 void arena_maybe_turn_har(int player_id, scene *scene) {
     int other_player_id = abs(player_id - 1);
-    object *obj_har1 = game_player_get_har(game_state_get_player(scene->gs, player_id));
-    object *obj_har2 = game_player_get_har(game_state_get_player(scene->gs, other_player_id));
+    object *obj_har1 =
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
+    object *obj_har2 = game_state_find_object(
+        scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
     if(obj_har1->pos.x > obj_har2->pos.x) {
+        DEBUG("ARENA facing player %d LEFT", player_id);
         object_set_direction(obj_har1, OBJECT_FACE_LEFT);
     } else {
+        DEBUG("ARENA facing player %d RIGHT", player_id);
         object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
     }
 
     // there isn;t an idle event hook, so do the best we can...
     har *har2 = obj_har2->userdata;
     if((har2->state == STATE_STANDING || har_is_crouching(har2) || har_is_walking(har2)) && !har2->executing_move) {
+        DEBUG("ARENA facing player %d", other_player_id);
         object_set_direction(obj_har2, object_get_direction(obj_har1) * -1);
     }
 }
@@ -657,10 +631,13 @@ void arena_har_hook(har_event event, void *data) {
     int other_player_id = abs(event.player_id - 1);
     arena_local *arena = scene_get_userdata(scene);
     chr_score *score = game_player_get_score(game_state_get_player(scene->gs, event.player_id));
-    object *obj_har1 = game_player_get_har(game_state_get_player(scene->gs, event.player_id));
-    object *obj_har2 = game_player_get_har(game_state_get_player(scene->gs, other_player_id));
+    object *obj_har1 = game_state_find_object(
+        scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, event.player_id)));
+    object *obj_har2 = game_state_find_object(
+        scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
     har *har1 = obj_har1->userdata;
     har *har2 = obj_har2->userdata;
+    DEBUG("HAR %d HOOK FIRED WITH %d at %d", event.player_id, event.type, scene->gs->int_tick);
     switch(event.type) {
         case HAR_EVENT_WALK:
             arena_maybe_turn_har(event.player_id, scene);
@@ -696,12 +673,10 @@ void arena_har_hook(har_event event, void *data) {
                 // jaguar ending up facing backwards after an overhead throw.
                 arena_maybe_turn_har(event.player_id, scene);
             }
-            arena_maybe_sync(scene, 1);
             DEBUG("LAND %u", event.player_id);
             break;
         case HAR_EVENT_AIR_ATTACK_DONE:
             har1->air_attacked = 0;
-            arena_maybe_sync(scene, 1);
             DEBUG("AIR_ATTACK_DONE %u", event.player_id);
             break;
         case HAR_EVENT_RECOVER:
@@ -734,13 +709,14 @@ void arena_har_hook(har_event event, void *data) {
 
 void maybe_install_har_hooks(scene *scene) {
     object *obj_har1, *obj_har2;
-    obj_har1 = game_player_get_har(game_state_get_player(scene->gs, 0));
-    obj_har2 = game_player_get_har(game_state_get_player(scene->gs, 1));
+    obj_har1 = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, 0)));
+    obj_har2 = game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, 1)));
     har *har1, *har2;
     har1 = obj_har1->userdata;
     har2 = obj_har2->userdata;
 
-    if(scene->gs->role == ROLE_CLIENT) {
+    // TODO investigate fixing these
+    if(scene->gs->role == ROLE_CLIENT && false) {
         game_player *_player[2];
         for(int i = 0; i < 2; i++) {
             _player[i] = game_state_get_player(scene->gs, i);
@@ -779,6 +755,7 @@ void arena_free(scene *scene) {
 
         for(int j = 0; j < 4; j++) {
             if(j < ceilf(local->rounds / 2.0f)) {
+                object_free(local->player_rounds[i][j]);
                 omf_free(local->player_rounds[i][j]);
             }
         }
@@ -795,17 +772,9 @@ void arena_free(scene *scene) {
         component_free(local->endurance_bars[i]);
     }
 
-    if(local->player1_portrait != NULL) {
-        sprite_free(local->player1_portrait->cur_sprite);
-        omf_free(local->player1_portrait->cur_sprite);
-    }
     object_free(local->player1_portrait);
     omf_free(local->player1_portrait);
 
-    if(local->player2_portrait != NULL) {
-        sprite_free(local->player2_portrait->cur_sprite);
-        omf_free(local->player2_portrait->cur_sprite);
-    }
     object_free(local->player2_portrait);
     omf_free(local->player2_portrait);
 
@@ -892,7 +861,8 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
             } else if(i->type == EVENT_TYPE_ACTION) {
                 if(player->ctrl->type == CTRL_TYPE_NETWORK) {
                     do {
-                        object_act(game_player_get_har(player), i->event_data.action);
+                        object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
+                                   i->event_data.action);
                         write_rec_move(scene, player, i->event_data.action);
                         // Rewritten this way, we possible skipped some events
                         // before. We check if there is a next event, then
@@ -907,13 +877,10 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                     // rewind them ASAP
                     need_sync = 1;
                 } else {
-                    need_sync += object_act(game_player_get_har(player), i->event_data.action);
+                    need_sync += object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
+                                            i->event_data.action);
                     write_rec_move(scene, player, i->event_data.action);
                 }
-            } else if(i->type == EVENT_TYPE_SYNC) {
-                DEBUG("sync");
-                game_state_unserialize(scene->gs, i->event_data.ser, player->ctrl->rtt);
-                maybe_install_har_hooks(scene);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 if(player->ctrl->type == CTRL_TYPE_REC) {
                     game_state_set_next(scene->gs, SCENE_NONE);
@@ -929,15 +896,8 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
 
 void arena_spawn_hazard(scene *scene) {
     iterator it;
-    hashmap_iter_begin(&scene->bk_data.infos, &it);
+    hashmap_iter_begin(&scene->bk_data->infos, &it);
     hashmap_pair *pair = NULL;
-
-    if(is_netplay(scene) && scene->gs->role == ROLE_CLIENT) {
-        // only the server spawns hazards
-        return;
-    }
-
-    int changed = 0;
 
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info *)pair->val;
@@ -946,7 +906,7 @@ void arena_spawn_hazard(scene *scene) {
                 // TODO don't spawn it if we already have this animation running
                 object *obj = omf_calloc(1, sizeof(object));
                 object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
-                object_set_stl(obj, scene->bk_data.sound_translation_table);
+                object_set_stl(obj, scene->bk_data->sound_translation_table);
                 object_set_animation(obj, &info->ani);
                 if(scene->id == SCENE_ARENA3 && info->ani.id == 0) {
                     // XXX fire pit orb has a bug whwre it double spawns. Use a custom animation string to avoid it
@@ -959,7 +919,7 @@ void arena_spawn_hazard(scene *scene) {
                 if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 0) {
                     object_set_layers(obj, LAYER_HAZARD | LAYER_HAR);
                     object_set_group(obj, GROUP_PROJECTILE);
-                    object_set_userdata(obj, &scene->bk_data);
+                    object_set_userdata(obj, scene->bk_data);
                     if(info->ani.extra_string_count > 0) {
                         // For the desert, there's a bunch of extra animation strgins for
                         // the different plane formations.
@@ -972,11 +932,7 @@ void arena_spawn_hazard(scene *scene) {
                         }
                     }
 
-                    // XXX without this, the object does not unserialize correctly in netplay
-                    object_dynamic_tick(obj);
-
                     DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
-                    changed++;
                 } else {
                     object_free(obj);
                     omf_free(obj);
@@ -984,8 +940,6 @@ void arena_spawn_hazard(scene *scene) {
             }
         }
     }
-
-    arena_maybe_sync(scene, changed);
 }
 
 void arena_dynamic_tick(scene *scene, int paused) {
@@ -998,7 +952,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
         object *obj_har[2];
         har *hars[2];
         for(int i = 0; i < 2; i++) {
-            obj_har[i] = game_player_get_har(game_state_get_player(scene->gs, i));
+            obj_har[i] = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
             hars[i] = obj_har[i]->userdata;
         }
 
@@ -1053,7 +1007,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
             if(rand_float() > 0.65f) {
                 vec2i pos = vec2i_create(rand_int(NATIVE_W), -10);
                 for(int harnum = 0; harnum < game_state_num_players(gs); harnum++) {
-                    object *h_obj = game_state_get_player(gs, harnum)->har;
+                    object *h_obj = game_state_find_object(gs, game_state_get_player(gs, harnum)->har_obj_id);
                     har *h = object_get_userdata(h_obj);
                     // Calculate velocity etc.
                     float rv = rand_float() - 0.5f;
@@ -1082,11 +1036,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
     } // if(!paused)
 
-    int need_sync = 0;
     // allow enemy HARs to move during a network game
-    need_sync += arena_handle_events(scene, player1, player1->ctrl->extra_events);
-    need_sync += arena_handle_events(scene, player2, player2->ctrl->extra_events);
-    arena_maybe_sync(scene, need_sync);
+    arena_handle_events(scene, player1, player1->ctrl->extra_events);
+    arena_handle_events(scene, player2, player2->ctrl->extra_events);
 }
 
 void arena_static_tick(scene *scene, int paused) {
@@ -1102,12 +1054,10 @@ void arena_input_tick(scene *scene) {
     controller_poll(player1->ctrl, &p1);
     controller_poll(player2->ctrl, &p2);
 
-    int need_sync = 0;
-    need_sync += arena_handle_events(scene, player1, p1);
-    need_sync += arena_handle_events(scene, player2, p2);
+    arena_handle_events(scene, player1, p1);
+    arena_handle_events(scene, player2, p2);
     controller_free_chain(p1);
     controller_free_chain(p2);
-    arena_maybe_sync(scene, need_sync);
 }
 
 int arena_event(scene *scene, SDL_Event *e) {
@@ -1140,7 +1090,7 @@ void arena_render_overlay(scene *scene) {
 
     for(int i = 0; i < 2; i++) {
         player[i] = game_state_get_player(scene->gs, i);
-        obj[i] = game_player_get_har(player[i]);
+        obj[i] = game_state_find_object(scene->gs, game_player_get_har_obj_id(player[i]));
     }
     if(obj[0] != NULL && obj[1] != NULL) {
         //  Render progress bar components
@@ -1227,8 +1177,13 @@ void arena_toggle_rein(scene *scene) {
     local->rein_enabled = !local->rein_enabled;
 }
 
+void arena_clone(scene *src, scene *dst) {
+    // don't need to clone anything here, just install fresh hooks that point to the right scene
+    maybe_install_har_hooks(dst);
+}
+
 void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
-    if(scene->bk_data.file_id == 64) {
+    if(scene->bk_data->file_id == 64) {
         // Start up & repeat torches on arena startup
         switch(id) {
             case 1:
@@ -1258,7 +1213,7 @@ int arena_create(scene *scene) {
     }
 
     // Handle music playback
-    switch(scene->bk_data.file_id) {
+    switch(scene->bk_data->file_id) {
         case 8:
             audio_play_music(PSM_ARENA0);
             break;
@@ -1347,27 +1302,33 @@ int arena_create(scene *scene) {
 
         // Set HAR for player
         game_player_set_har(player, obj);
-        game_player_get_ctrl(player)->har = obj;
+        game_player_get_ctrl(player)->har_obj_id = obj->id;
 
         if(local->tournament) {
             // render pilot portraits
             object *portrait = omf_calloc(1, sizeof(object));
             if(i == 0) {
                 object_create(portrait, scene->gs, vec2i_create(105, 0), vec2f_create(0, 0));
-                portrait->cur_sprite = omf_calloc(1, sizeof(sprite));
+                sprite *sp = omf_calloc(1, sizeof(sprite));
+                sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
                 portrait->y_percent = 0.70f;
                 object_set_sprite_override(portrait, 1);
-                sprite_create(portrait->cur_sprite, player->pilot->photo, -1);
+                object_set_animation(portrait, create_animation_from_single(sp, vec2i_create(105, 0)));
+                object_set_animation_owner(portrait, OWNER_OBJECT);
+                portrait->cur_sprite_id = 0;
                 local->player1_portrait = portrait;
             } else {
                 object_create(portrait, scene->gs, vec2i_create(235, 0), vec2f_create(0, 0));
-                portrait->cur_sprite = omf_calloc(1, sizeof(sprite));
+                sprite *sp = omf_calloc(1, sizeof(sprite));
+                sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
                 portrait->y_percent = 0.70f;
                 object_set_sprite_override(portrait, 1);
-                sprite_create(portrait->cur_sprite, player->pilot->photo, -1);
+                object_set_animation(portrait, create_animation_from_single(sp, vec2i_create(235, 0)));
                 object_set_direction(portrait, OBJECT_FACE_LEFT);
+                object_set_animation_owner(portrait, OWNER_OBJECT);
+                portrait->cur_sprite_id = 0;
                 local->player2_portrait = portrait;
             }
 
@@ -1380,7 +1341,7 @@ int arena_create(scene *scene) {
                     if(i == 1) {
                         xoff = 210 - 9 * j - 3 - j;
                     }
-                    animation *ani = &bk_get_info(&scene->bk_data, 27)->ani;
+                    animation *ani = &bk_get_info(scene->bk_data, 27)->ani;
                     object_create(local->player_rounds[i][j], scene->gs, vec2i_create(xoff, 9), vec2f_create(0, 0));
                     object_set_animation(local->player_rounds[i][j], ani);
                     object_select_sprite(local->player_rounds[i][j], 1);
@@ -1397,18 +1358,14 @@ int arena_create(scene *scene) {
     for(int i = 0; i < 2; i++) {
         _player[i] = game_state_get_player(scene->gs, i);
     }
-    if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
-        controller_clear_hooks(game_player_get_ctrl(_player[1]));
-    }
-    if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
-        controller_clear_hooks(game_player_get_ctrl(_player[0]));
-    }
 
     controller_set_repeat(game_player_get_ctrl(_player[0]), 1);
     controller_set_repeat(game_player_get_ctrl(_player[1]), 1);
 
-    game_player_get_har(_player[0])->animation_state.enemy = game_player_get_har(_player[1]);
-    game_player_get_har(_player[1])->animation_state.enemy = game_player_get_har(_player[0]);
+    game_state_find_object(scene->gs, game_player_get_har_obj_id(_player[0]))->animation_state.enemy_obj_id =
+        game_player_get_har_obj_id(_player[1]);
+    game_state_find_object(scene->gs, game_player_get_har_obj_id(_player[1]))->animation_state.enemy_obj_id =
+        game_player_get_har_obj_id(_player[0]);
 
     maybe_install_har_hooks(scene);
 
@@ -1483,39 +1440,39 @@ int arena_create(scene *scene) {
     har_screencaps_reset(&_player[1]->screencaps);
 
     // Set correct sounds for ready, round and number STL fields
-    scene->bk_data.sound_translation_table[14] = 10;               // READY
-    scene->bk_data.sound_translation_table[15] = 16;               // ROUND
-    scene->bk_data.sound_translation_table[3] = 23 + local->round; // NUMBER
+    scene->bk_data->sound_translation_table[14] = 10;               // READY
+    scene->bk_data->sound_translation_table[15] = 16;               // ROUND
+    scene->bk_data->sound_translation_table[3] = 23 + local->round; // NUMBER
 
     // Disable the floating ball disappearence sound in fire arena
     if(scene->id == SCENE_ARENA3) {
-        scene->bk_data.sound_translation_table[20] = 0;
+        scene->bk_data->sound_translation_table[20] = 0;
     }
 
     if(local->rounds == 1) {
         // Start READY animation
-        animation *ready_ani = &bk_get_info(&scene->bk_data, 11)->ani;
+        animation *ready_ani = &bk_get_info(scene->bk_data, 11)->ani;
         object *ready = omf_calloc(1, sizeof(object));
         object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(ready, scene->bk_data.sound_translation_table);
+        object_set_stl(ready, scene->bk_data->sound_translation_table);
         object_set_animation(ready, ready_ani);
         object_set_finish_cb(ready, scene_ready_anim_done);
         game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP, 0, 0);
     } else {
         // ROUND
-        animation *round_ani = &bk_get_info(&scene->bk_data, 6)->ani;
+        animation *round_ani = &bk_get_info(scene->bk_data, 6)->ani;
         object *round = omf_calloc(1, sizeof(object));
         object_create(round, scene->gs, round_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(round, scene->bk_data.sound_translation_table);
+        object_set_stl(round, scene->bk_data->sound_translation_table);
         object_set_animation(round, round_ani);
         object_set_finish_cb(round, scene_ready_anim_done);
         game_state_add_object(scene->gs, round, RENDER_LAYER_TOP, 0, 0);
 
         // Number
-        animation *number_ani = &bk_get_info(&scene->bk_data, 7)->ani;
+        animation *number_ani = &bk_get_info(scene->bk_data, 7)->ani;
         object *number = omf_calloc(1, sizeof(object));
         object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(number, scene->bk_data.sound_translation_table);
+        object_set_stl(number, scene->bk_data->sound_translation_table);
         object_set_animation(number, number_ani);
         object_select_sprite(number, local->round);
         game_state_add_object(scene->gs, number, RENDER_LAYER_TOP, 0, 0);
@@ -1529,6 +1486,7 @@ int arena_create(scene *scene) {
     scene_set_startup_cb(scene, arena_startup);
     scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
+    scene->clone = arena_clone;
 
     // initalize recording, if enabled
     if(scene->gs->init_flags->record == 1) {

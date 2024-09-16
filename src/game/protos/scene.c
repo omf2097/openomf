@@ -24,7 +24,8 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
 
     // Load BK
     int resource_id = scene_to_resource(scene_id);
-    if(load_bk_file(&scene->bk_data, resource_id)) {
+    scene->bk_data = omf_calloc(1, sizeof(bk));
+    if(load_bk_file(scene->bk_data, resource_id)) {
         PERROR("Unable to load scene %s (%s)!", scene_get_name(scene_id), get_resource_name(resource_id));
         return 1;
     }
@@ -46,7 +47,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->prio_override = NULL;
 
     // Set base palette
-    video_set_base_palette(bk_get_palette(&scene->bk_data, 0));
+    video_set_base_palette(bk_get_palette(scene->bk_data, 0));
 
     // All done.
     DEBUG("Loaded scene %s (%s).", scene_get_name(scene_id), get_resource_name(resource_id));
@@ -98,7 +99,7 @@ void scene_init(scene *scene) {
 
     // Bootstrap animations
     iterator it;
-    hashmap_iter_begin(&scene->bk_data.infos, &it);
+    hashmap_iter_begin(&scene->bk_data->infos, &it);
     hashmap_pair *pair = NULL;
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info *)pair->val;
@@ -110,7 +111,7 @@ void scene_init(scene *scene) {
         if(m_load) {
             object *obj = omf_calloc(1, sizeof(object));
             object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
-            object_set_stl(obj, scene->bk_data.sound_translation_table);
+            object_set_stl(obj, scene->bk_data->sound_translation_table);
             object_set_animation(obj, &info->ani);
             object_set_repeat(obj, m_repeat);
             object_set_spawn_cb(obj, cb_scene_spawn_object, (void *)scene);
@@ -126,28 +127,21 @@ void scene_init(scene *scene) {
     ticktimer_init(&scene->tick_timer);
 }
 
-/*
- * Serializes the scene to a buffer. Should return 1 on error, 0 on success
- * This will call the specialized scenes, (eg. arena) for their
- * serialization data.
- */
-int scene_serialize(scene *s, serial *ser) {
-    game_state_serialize(s->gs, ser);
+int scene_clone(scene *src, scene *dst, game_state *gs) {
 
-    // Return success
+    memcpy(dst, src, sizeof(scene));
+    dst->gs = gs;
+    if(src->clone) {
+        src->clone(src, dst);
+    }
     return 0;
 }
 
-/*
- * Unserializes the data from buffer to a specialized object.
- * Should return 1 on error, 0 on success.
- * Serial reder position should be set to correct position before calling this.
- */
-int scene_unserialize(scene *s, serial *ser) {
-    // TODO: Read attributes
-    s->id = serial_read_int8(ser);
-
-    // Return success
+int scene_clone_free(scene *sc) {
+    if(sc->clone_free) {
+        sc->clone_free(sc);
+    }
+    omf_free(sc);
     return 0;
 }
 
@@ -182,7 +176,7 @@ void scene_render_overlay(scene *scene) {
 }
 
 void scene_render(scene *scene) {
-    video_render_background(&scene->bk_data.background);
+    video_render_background(&scene->bk_data->background);
 
     if(scene->render != NULL) {
         scene->render(scene);
@@ -205,7 +199,7 @@ void scene_static_tick(scene *scene, int paused) {
 void scene_dynamic_tick(scene *scene, int paused) {
     // Tick timers
     if(!paused) {
-        ticktimer_run(&scene->tick_timer);
+        ticktimer_run(&scene->tick_timer, scene);
     }
 
     if(scene->dynamic_tick != NULL) {
@@ -223,7 +217,8 @@ void scene_free(scene *scene) {
     if(scene->free != NULL) {
         scene->free(scene);
     }
-    bk_free(&scene->bk_data);
+    bk_free(scene->bk_data);
+    omf_free(scene->bk_data);
     if(scene->af_data[0]) {
         af_free(scene->af_data[0]);
         omf_free(scene->af_data[0]);
@@ -275,7 +270,7 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t
     scene *sc = (scene *)userdata;
 
     // Get next animation
-    bk_info *info = bk_get_info(&sc->bk_data, id);
+    bk_info *info = bk_get_info(sc->bk_data, id);
     if(info != NULL) {
         object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vel);

@@ -24,6 +24,32 @@ static void sd_script_frame_create(sd_script_frame *frame) {
     frame->sprite = 0;
 }
 
+int sd_script_frame_clone(sd_script_frame *src, sd_script_frame *dst) {
+    iterator it;
+    sd_script_tag *tag;
+    vector_iter_begin(&src->tags, &it);
+    while((tag = iter_next(&it)) != NULL) {
+        vector_append(&dst->tags, tag);
+    }
+    return SD_SUCCESS;
+}
+
+int sd_script_clone(sd_script *src, sd_script *dst) {
+    sd_script_create(dst);
+    iterator it;
+    sd_script_frame *frame;
+    vector_iter_begin(&src->frames, &it);
+    while((frame = iter_next(&it)) != NULL) {
+        sd_script_frame new_frame;
+        sd_script_frame_create(&new_frame);
+        new_frame.sprite = frame->sprite;
+        new_frame.tick_len = frame->tick_len;
+        sd_script_frame_clone(frame, &new_frame);
+        vector_append(&dst->frames, &new_frame);
+    }
+    return SD_SUCCESS;
+}
+
 static void sd_script_frame_free(sd_script_frame *frame) {
     if(frame == NULL)
         return;

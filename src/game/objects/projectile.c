@@ -2,7 +2,6 @@
 #include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/objects/arena_constraints.h"
-#include "game/protos/object_specializer.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include <stdlib.h>
@@ -10,7 +9,7 @@
 #define IS_ZERO(n) (n < 0.1 && n > -0.1)
 
 typedef struct projectile_local_t {
-    object *owner;
+    uint8_t player_id;
     af *af_data;
     int wall_bounce;
     int ground_freeze;
@@ -41,7 +40,7 @@ void projectile_tick(object *obj) {
 void projectile_free(object *obj) {
     projectile_local *local = object_get_userdata(obj);
     omf_free(local);
-    object_set_userdata(obj, local);
+    object_set_userdata(obj, NULL);
 }
 
 void projectile_move(object *obj) {
@@ -86,57 +85,35 @@ void projectile_move(object *obj) {
     }
 }
 
-int projectile_serialize(object *obj, serial *ser) {
-    projectile_local *local = object_get_userdata(obj);
-    serial_write_int8(ser, SPECID_PROJECTILE);
-    serial_write_int8(ser, local->af_data->id);
+int projectile_clone(object *src, object *dst) {
+    projectile_local *local = omf_calloc(1, sizeof(projectile_local));
+    memcpy(local, object_get_userdata(src), sizeof(projectile_local));
+    object_set_userdata(dst, local);
     return 0;
 }
 
-int projectile_unserialize(object *obj, serial *ser, int animation_id, game_state *gs) {
-    uint8_t har_id = serial_read_int8(ser);
-
-    game_player *player;
-    object *o;
-    har *h;
-
-    for(int i = 0; i < 2; i++) {
-        player = game_state_get_player(gs, i);
-        o = game_player_get_har(player);
-        h = object_get_userdata(o);
-        if(h->af_data->id == har_id) {
-            af_move *move = af_get_move(h->af_data, animation_id);
-            object_set_animation(obj, &move->ani);
-            object_set_userdata(obj, h);
-            object_set_stl(obj, object_get_stl(o));
-            projectile_create(obj);
-            return 0;
-        }
-    }
-    DEBUG("COULD NOT FIND HAR ID %d", har_id);
-    // could not find the right HAR...
-    return 1;
+int projectile_clone_free(object *obj) {
+    projectile_local *local = object_get_userdata(obj);
+    omf_free(local);
+    object_set_userdata(obj, NULL);
+    return 0;
 }
 
-void projectile_bootstrap(object *obj) {
-    object_set_serialize_cb(obj, projectile_serialize);
-    object_set_unserialize_cb(obj, projectile_unserialize);
-}
-
-int projectile_create(object *obj) {
+int projectile_create(object *obj, har *har) {
     // strore the HAR in local userdata instead
     projectile_local *local = omf_calloc(1, sizeof(projectile_local));
-    local->owner = obj;
+    local->player_id = har->player_id;
     local->wall_bounce = 0;
     local->ground_freeze = 0;
-    local->af_data = ((har *)object_get_userdata(obj))->af_data;
+    local->af_data = har->af_data;
 
     // Set up callbacks
     object_set_userdata(obj, local);
     object_set_dynamic_tick_cb(obj, projectile_tick);
     object_set_free_cb(obj, projectile_free);
     object_set_move_cb(obj, projectile_move);
-    projectile_bootstrap(obj);
+    obj->clone = projectile_clone;
+    obj->clone_free = projectile_clone_free;
     return 0;
 }
 
@@ -144,8 +121,8 @@ af *projectile_get_af_data(object *obj) {
     return ((projectile_local *)object_get_userdata(obj))->af_data;
 }
 
-object *projectile_get_owner(object *obj) {
-    return ((projectile_local *)object_get_userdata(obj))->owner;
+uint8_t projectile_get_owner(object *obj) {
+    return ((projectile_local *)object_get_userdata(obj))->player_id;
 }
 
 void projectile_set_wall_bounce(object *obj, int bounce) {

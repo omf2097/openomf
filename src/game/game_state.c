@@ -65,6 +65,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->net_mode = init_flags->net_mode;
     gs->speed = settings_get()->gameplay.speed + 5;
     gs->init_flags = init_flags;
+    gs->new_state = NULL;
     vector_create(&gs->objects, sizeof(render_obj));
 
     // For screen shake
@@ -245,6 +246,20 @@ void game_state_del_object(game_state *gs, object *target) {
     }
 }
 
+void game_state_del_object_by_id(game_state *gs, uint32_t target) {
+    iterator it;
+    render_obj *robj;
+    vector_iter_begin(&gs->objects, &it);
+    while((robj = iter_next(&it)) != NULL) {
+        if(target == robj->obj->id) {
+            object_free(robj->obj);
+            omf_free(robj->obj);
+            vector_delete(&gs->objects, &it);
+            return;
+        }
+    }
+}
+
 void game_state_get_projectiles(game_state *gs, vector *obj_proj) {
     iterator it;
     render_obj *robj;
@@ -333,8 +348,8 @@ void game_state_render(game_state *gs) {
 
     // Get har objects
     object *har[2];
-    har[0] = game_state_get_player(gs, 0)->har;
-    har[1] = game_state_get_player(gs, 1)->har;
+    har[0] = game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id);
+    har[1] = game_state_find_object(gs, game_state_get_player(gs, 1)->har_obj_id);
 
     // Render BOTTOM layer
     vector_iter_begin(&gs->objects, &it);
@@ -394,7 +409,7 @@ void game_state_debug(game_state *gs) {
     // If we are in debug mode, handle HAR debug layers
 #ifdef DEBUGMODE
     for(int i = 0; i < 2; i++) {
-        object *h = game_state_get_player(gs, i)->har;
+        object *h = game_state_find_object(gs, game_state_get_player(gs, i)->har_obj_id);
         if(h != NULL) {
             object_debug(h);
         }
@@ -613,15 +628,19 @@ void game_state_call_tick(game_state *gs, int mode) {
 }
 
 // This function is always called with the same interval, and game speed does not affect it
-void game_state_static_tick(game_state *gs) {
+void game_state_static_tick(game_state *gs, bool replay) {
     // Set scene crossfade values
     if(gs->next_wait_ticks > 0) {
         gs->next_wait_ticks--;
-        video_set_fade((float)gs->next_wait_ticks / (float)FRAME_WAIT_TICKS);
+        if(!replay) {
+            video_set_fade((float)gs->next_wait_ticks / (float)FRAME_WAIT_TICKS);
+        }
     }
     if(gs->this_wait_ticks > 0) {
         gs->this_wait_ticks--;
-        video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
+        if(!replay) {
+            video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
+        }
     }
 
     // Call static ticks for scene
@@ -632,7 +651,7 @@ void game_state_static_tick(game_state *gs) {
 }
 
 // This function is called when the game speed requires it
-void game_state_dynamic_tick(game_state *gs) {
+void game_state_dynamic_tick(game_state *gs, bool replay) {
     // We want to load another scene
     if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
         // If this is the end, set run to 0 so that engine knows to close here
@@ -665,14 +684,15 @@ void game_state_dynamic_tick(game_state *gs) {
         gs->screen_shake_vertical--;
     }
 
-    if(gs->screen_shake_horizontal > 0 || gs->screen_shake_vertical > 0) {
+    if((gs->screen_shake_horizontal > 0 || gs->screen_shake_vertical > 0) && !replay) {
         float shake_x = sin(gs->screen_shake_horizontal) * 5 * ((float)gs->screen_shake_horizontal / 15);
         float shake_y = sin(gs->screen_shake_vertical) * 5 * ((float)gs->screen_shake_vertical / 15);
         video_move_target((int)shake_x, (int)shake_y);
         for(int i = 0; i < game_state_num_players(gs); i++) {
             game_player *gp = game_state_get_player(gs, i);
             controller *c = game_player_get_ctrl(gp);
-            if(c) {
+            // TODO, like audio rumble needs to be reworked to be done in slices
+            if(c && !replay) {
                 controller_rumble(c, max2(gs->screen_shake_horizontal, gs->screen_shake_vertical) / 12.0f,
                                   max2(gs->screen_shake_horizontal, gs->screen_shake_vertical) *
                                       game_state_ms_per_dyntick(gs));
@@ -680,7 +700,9 @@ void game_state_dynamic_tick(game_state *gs) {
         }
     } else {
         // XXX Ocasionally the screen does not return back to normal position
-        video_move_target(0, 0);
+        if(!replay) {
+            video_move_target(0, 0);
+        }
     }
 
     game_state_dyntick_controllers(gs);
@@ -689,7 +711,7 @@ void game_state_dynamic_tick(game_state *gs) {
     scene_dynamic_tick(gs->sc, game_state_is_paused(gs));
 
     // Poll input. If console is opened, do not poll the controllers.
-    if(!console_window_is_open()) {
+    if(!console_window_is_open() && !replay) {
         scene_input_poll(gs->sc);
     }
 
@@ -711,8 +733,10 @@ void game_state_dynamic_tick(game_state *gs) {
         LOGTICK(gs->tick);
     }
 
-    // Free extra controller events
-    game_state_ctrl_events_free(gs);
+    if(!replay) {
+        // Free extra controller events
+        game_state_ctrl_events_free(gs);
+    }
 
     // int_tick is used for ping calculation so it shouldn't be touched
     gs->int_tick++;
@@ -735,7 +759,7 @@ void _setup_keyboard(game_state *gs, int player_id) {
     // Set up controller
     controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
+    controller_init(ctrl, gs);
 
     // Set up keyboards
     keyboard_keys *keys = omf_calloc(1, sizeof(keyboard_keys));
@@ -775,7 +799,7 @@ void _setup_keyboard(game_state *gs, int player_id) {
 void _setup_ai(game_state *gs, int player_id) {
     controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
+    controller_init(ctrl, gs);
 
     sd_pilot *pilot = game_player_get_pilot(player);
     ai_controller_create(ctrl, settings_get()->gameplay.difficulty, pilot, player->pilot->pilot_id);
@@ -787,7 +811,7 @@ void _setup_ai(game_state *gs, int player_id) {
 int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offset) {
     controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
+    controller_init(ctrl, gs);
 
     int res = joystick_create(ctrl, joystick_name_to_id(joyname, offset));
     game_player_set_ctrl(player, ctrl);
@@ -798,7 +822,7 @@ int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offs
 static void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec) {
     controller *ctrl = omf_calloc(1, sizeof(controller));
     game_player *player = game_state_get_player(gs, player_id);
-    controller_init(ctrl);
+    controller_init(ctrl, gs);
 
     rec_controller_create(ctrl, player_id, rec);
     game_player_set_ctrl(player, ctrl);
@@ -825,7 +849,7 @@ void game_state_init_demo(game_state *gs) {
     for(int i = 0; i < game_state_num_players(gs); i++) {
         game_player *player = game_state_get_player(gs, i);
         controller *ctrl = omf_calloc(1, sizeof(controller));
-        controller_init(ctrl);
+        controller_init(ctrl, gs);
         sd_pilot *pl = game_player_get_pilot(player);
         ai_controller_create(ctrl, 4, pl, player->pilot->pilot_id);
         game_player_set_ctrl(player, ctrl);
@@ -843,6 +867,31 @@ void game_state_init_demo(game_state *gs) {
         sd_pilot_set_player_color(player->pilot, SECONDARY, pilot_info.colors[1]);
         sd_pilot_set_player_color(player->pilot, TERTIARY, pilot_info.colors[0]);
     }
+}
+
+void game_state_clone_free(game_state *gs) {
+    // Free objects
+    render_obj *robj;
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    while((robj = iter_next(&it)) != NULL) {
+        object_clone_free(robj->obj);
+        omf_free(robj->obj);
+        vector_delete(&gs->objects, &it);
+    }
+    vector_free(&gs->objects);
+
+    // Free scene
+    scene_clone_free(gs->sc);
+    // omf_free(gs->sc);
+
+    // Free players
+    for(int i = 0; i < 2; i++) {
+        // game_player_set_ctrl(gs->players[i], NULL);
+        game_player_clone_free(gs->players[i]);
+        omf_free(gs->players[i]);
+    }
+    // omf_free(gs);
 }
 
 void game_state_free(game_state **_gs) {
@@ -892,118 +941,53 @@ int game_state_ms_per_dyntick(game_state *gs) {
     return MS_PER_OMF_TICK;
 }
 
-int game_state_serialize(game_state *gs, serial *ser) {
-    // serialize tick time and random seed, so client can reply state from this point
-    serial_write_int32(ser, game_state_get_tick(gs));
-    serial_write_int32(ser, rand_get_seed());
-    serial_write_int32(ser, game_state_is_paused(gs));
-
-    object *har[2];
-    har[0] = game_state_get_player(gs, 0)->har;
-    har[1] = game_state_get_player(gs, 1)->har;
-
-    object_serialize(har[0], ser);
-    object_serialize(har[1], ser);
-
-    serial objects;
-    serial_create(&objects);
-
-    // serialize any HAZARD or PROJECTILE objects
-    iterator it;
-    vector_iter_begin(&gs->objects, &it);
-    render_obj *robj;
-    uint8_t count = 0;
-    while((robj = iter_next(&it)) != NULL) {
-        if(robj->obj->group == GROUP_PROJECTILE) {
-            serial_write_int8(&objects, robj->layer);
-            object_serialize(robj->obj, &objects);
-            count++;
-        }
-    }
-    serial_write_int8(ser, count);
-
-    serial_write(ser, objects.data, objects.len);
-    serial_free(&objects);
-
-    chr_score_serialize(game_player_get_score(game_state_get_player(gs, 0)), ser);
-    chr_score_serialize(game_player_get_score(game_state_get_player(gs, 1)), ser);
-
-    return 0;
+int render_obj_clone(render_obj *src, render_obj *dst, game_state *gs) {
+    memcpy(dst, src, sizeof(render_obj));
+    dst->obj = omf_calloc(1, sizeof(object));
+    return object_clone(src->obj, dst->obj, gs);
 }
 
-int game_state_unserialize(game_state *gs, serial *ser, int rtt) {
-    int old_tick = gs->tick;
-    gs->tick = serial_read_int32(ser);
-    int end_tick = gs->tick + ceilf(rtt / 2.0f);
-    rand_seed(serial_read_int32(ser));
-    game_state_set_paused(gs, serial_read_int32(ser));
-
-    for(int i = 0; i < 2; i++) {
-        // Declare some vars
-        game_player *player = game_state_get_player(gs, i);
-        game_state_del_object(gs, player->har);
-        object *obj = omf_calloc(1, sizeof(object));
-
-        // Create object and specialize it as HAR.
-        // Errors are unlikely here, but check anyway.
-
-        object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
-        object_unserialize(obj, ser, gs);
-
-        // Set HAR to controller and game_player
-        game_state_add_object(gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
-
-        // Set HAR for player
-        game_player_set_har(player, obj);
-        game_player_get_ctrl(player)->har = obj;
-    }
-
-    // ensure the HARs know each other's positions
-    object *obj_har1, *obj_har2;
-    obj_har1 = game_player_get_har(game_state_get_player(gs, 0));
-    obj_har2 = game_player_get_har(game_state_get_player(gs, 1));
-
-    obj_har1->animation_state.enemy = obj_har2;
-    obj_har2->animation_state.enemy = obj_har1;
-
-    // clean out any current projectiles/hazards
+object *game_state_find_object(game_state *gs, uint32_t object_id) {
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     render_obj *robj;
     while((robj = iter_next(&it)) != NULL) {
-        if(robj->obj->group == GROUP_PROJECTILE) {
-            object_free(robj->obj);
-            omf_free(robj->obj);
-            vector_delete(&gs->objects, &it);
+        if(robj->obj->id == object_id) {
+            return robj->obj;
         }
     }
+    return NULL;
+}
 
-    uint8_t count = serial_read_int8(ser);
+int game_state_clone(game_state *src, game_state *dst) {
+    // copy all the static fields
+    memcpy(dst, src, sizeof(game_state));
+    // fix any pointers to volatile data
+    vector_create(&dst->objects, sizeof(render_obj));
 
-    for(int i = 0; i < count; i++) {
-        object *obj = omf_calloc(1, sizeof(object));
-        int layer = serial_read_int8(ser);
-        object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
-        object_unserialize(obj, ser, gs);
-        DEBUG("newly added object finish status %d", object_finished(obj));
+    iterator it;
+    vector_iter_begin(&src->objects, &it);
+    render_obj *robj;
+    int i = 0;
+    while((robj = iter_next(&it)) != NULL) {
+        render_obj d;
+        render_obj_clone(robj, &d, dst);
+        d.obj->animation_state.gs = dst;
+        DEBUG("cloned object %d", d.obj->id);
+        vector_append(&dst->objects, &d);
+        i++;
+    }
+    DEBUG("cloned %d objects into new game state", i);
 
-        game_state_add_object(gs, obj, layer, 0, 0);
+    for(int i = 0; i < 2; i++) {
+        dst->players[i] = omf_calloc(1, sizeof(game_player));
+        game_player_clone(src->players[i], dst->players[i]);
+        // update HAR object pointers
+        // dst->players[i]->har_obj_id = src->players[i]->har_obj_id;
     }
 
-    chr_score_unserialize(game_player_get_score(game_state_get_player(gs, 0)), ser);
-    chr_score_unserialize(game_player_get_score(game_state_get_player(gs, 1)), ser);
-
-    // tick things back to the current time
-    DEBUG("replaying %d ticks", end_tick - gs->tick);
-    DEBUG("adjusting clock from %d to %d (%d)", old_tick, end_tick, ceilf(rtt / 2.0f));
-    while(gs->tick <= end_tick) {
-        game_state_cleanup(gs);
-        game_state_call_move(gs);
-        game_state_call_collide(gs);
-        game_state_call_tick(gs, TICK_DYNAMIC);
-        gs->tick++;
-    }
-    DEBUG("replay done");
+    dst->sc = omf_calloc(1, sizeof(scene));
+    scene_clone(src->sc, dst->sc, dst);
 
     return 0;
 }

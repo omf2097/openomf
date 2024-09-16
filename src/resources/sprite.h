@@ -12,6 +12,7 @@ typedef struct sprite_t {
 
 void sprite_create(sprite *sp, void *src, int id);
 void sprite_create_custom(sprite *sp, vec2i pos, surface *sur);
+int sprite_clone(sprite *src, sprite *dst);
 void sprite_free(sprite *sp);
 
 vec2i sprite_get_size(sprite *s);

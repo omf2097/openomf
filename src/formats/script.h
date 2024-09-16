@@ -60,6 +60,8 @@ typedef struct {
  */
 int sd_script_create(sd_script *script);
 
+int sd_script_clone(sd_script *src, sd_script *dst);
+
 /*! \brief Free script parser
  *
  * Frees up all memory reserved by the script parser structure.

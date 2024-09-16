@@ -117,11 +117,11 @@ void menu_connect_tick(component *c) {
             p2->pilot->pilot_id = 0;
 
             player1_ctrl = omf_calloc(1, sizeof(controller));
-            controller_init(player1_ctrl);
-            player1_ctrl->har = p1->har;
+            controller_init(player1_ctrl, gs);
+            player1_ctrl->har_obj_id = p1->har_obj_id;
             player2_ctrl = omf_calloc(1, sizeof(controller));
-            controller_init(player2_ctrl);
-            player2_ctrl->har = p2->har;
+            controller_init(player2_ctrl, gs);
+            player2_ctrl->har_obj_id = p2->har_obj_id;
 
             // Player 1 controller -- Network
             net_controller_create(player1_ctrl, local->host, event.peer, ROLE_CLIENT);
@@ -159,7 +159,7 @@ void menu_connect_tick(component *c) {
 
         game_player *p1 = game_state_get_player(gs, 0);
         controller *c1 = game_player_get_ctrl(p1);
-        if(c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1) == 1) {
+        if(c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1)) {
             DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1), c1->rtt);
             local->host = NULL;
             local->controllers_created = 0;
