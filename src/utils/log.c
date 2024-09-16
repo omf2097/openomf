@@ -4,6 +4,7 @@
 
 FILE *handle = 0;
 unsigned int _log_tick = 0;
+char log_buf[1024];
 
 int log_init(const char *filename) {
     if(handle)
@@ -32,15 +33,16 @@ void log_hide(char mode, const char *fn, const char *fmt, ...) {
 void log_print(char mode, const char *fn, const char *fmt, ...) {
     if(handle == 0)
         return;
+    int len;
     if(fn != NULL) {
-        fprintf(handle, "[%7u][%c] %s(): ", _log_tick, mode, fn);
+        len = snprintf(log_buf, sizeof(log_buf), "[%7u][%c] %s(): ", _log_tick, mode, fn);
     } else {
-        fprintf(handle, "[%7u][%c] ", _log_tick, mode);
+        len = snprintf(log_buf, sizeof(log_buf), "[%7u][%c] ", _log_tick, mode);
     }
     va_list args;
     va_start(args, fmt);
-    vfprintf(handle, fmt, args);
+    vsnprintf(&log_buf[len], sizeof(log_buf) - len, fmt, args);
     va_end(args);
-    fprintf(handle, "\n");
+    fprintf(handle, "%s\n", log_buf);
     fflush(handle);
 }
