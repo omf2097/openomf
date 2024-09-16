@@ -25,6 +25,7 @@ void game_player_free(game_player *gp) {
     har_screencaps_free(&gp->screencaps);
     if(gp->ctrl) {
         controller_free(gp->ctrl);
+        omf_free(gp->ctrl);
     }
 }
 
