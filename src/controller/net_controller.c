@@ -201,8 +201,8 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
                 }
 
                 // write_rec_move(gs->sc, player, ev->events[j]);
-            //} else {
-            //    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
+                //} else {
+                //    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
             }
         }
         // controller_cmd(ctrl, action, ev);
@@ -305,8 +305,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
         }
     }
 
-    if(data->gs_bak == NULL && is_arena(game_state_get_scene(ctrl->gs)->id) &&
-            ctrl->gs->this_wait_ticks == 0 &&
+    if(data->gs_bak == NULL && is_arena(game_state_get_scene(ctrl->gs)->id) && ctrl->gs->this_wait_ticks == 0 &&
        game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
         data->gs_bak = omf_calloc(1, sizeof(game_state));
         game_state_clone(ctrl->gs, data->gs_bak);

@@ -1,8 +1,8 @@
 #include "game/objects/hazard.h"
 #include "game/protos/scene.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "utils/allocator.h"
 #include <math.h>
 #include <stdlib.h>
 

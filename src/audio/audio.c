@@ -125,7 +125,7 @@ static void audio_sound_finished(int channel) {
 static bool audio_load_module(const char *file) {
     assert(audio);
 
-    if (!audio->xmp_context) {
+    if(!audio->xmp_context) {
         if((audio->xmp_context = xmp_create_context()) == NULL) {
             PERROR("Unable to initialize XMP context.");
             goto exit_0;

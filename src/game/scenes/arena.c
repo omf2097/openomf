@@ -715,6 +715,7 @@ void maybe_install_har_hooks(scene *scene) {
     har1 = obj_har1->userdata;
     har2 = obj_har2->userdata;
 
+    // TODO investigate fixing these
     if(scene->gs->role == ROLE_CLIENT && false) {
         game_player *_player[2];
         for(int i = 0; i < 2; i++) {
