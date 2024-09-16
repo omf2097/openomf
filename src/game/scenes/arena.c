@@ -733,6 +733,25 @@ void maybe_install_har_hooks(scene *scene) {
     har_install_hook(har2, &arena_har_hook, scene);
 }
 
+// djb hash
+uint32_t arena_state_hash(game_state *gs) {
+    uint32_t hash = 5381;
+    for(int i = 0; i < 2; i++) {
+        object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
+        har *har = obj_har->userdata;
+        vec2i pos = object_get_pos(obj_har);
+        uint32_t x = (uint32_t)pos.x;
+        uint32_t y = (uint32_t)pos.y;
+        uint32_t health = (uint32_t)har->health;
+        uint32_t endurance = (uint32_t)har->endurance;
+        hash = ((hash << 5) + hash) + x;
+        hash = ((hash << 5) + hash) + y;
+        hash = ((hash << 5) + hash) + health;
+        hash = ((hash << 5) + hash) + endurance;
+    }
+    return hash;
+}
+
 // -------- Scene callbacks --------
 
 void arena_free(scene *scene) {
