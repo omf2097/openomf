@@ -1138,11 +1138,11 @@ void arena_render_overlay(scene *scene) {
 
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
-            snprintf(buf, 40, "ping %u", player[0]->ctrl->rtt);
+            snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt);
             font_render(&font_small, buf, 5, 40, TEXT_COLOR);
         }
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
-            snprintf(buf, 40, "ping %u", player[1]->ctrl->rtt);
+            snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt);
             font_render(&font_small, buf, 315 - (strlen(buf) * font_small.w), 40, TEXT_COLOR);
         }
 

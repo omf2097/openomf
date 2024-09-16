@@ -197,7 +197,7 @@ component *menu_video_create(scene *s) {
     resolution *res = find_resolution_by_settings(setting);
     if(!res) {
         char tmp_label[32];
-        snprintf(tmp_label, 32, "%ux%u", setting->video.screen_w, setting->video.screen_h);
+        snprintf(tmp_label, 32, "%dx%d", setting->video.screen_w, setting->video.screen_h);
         textselector_add_option(res_selector, tmp_label);
         local->custom_resolution.x = setting->video.screen_w;
         local->custom_resolution.y = setting->video.screen_h;
