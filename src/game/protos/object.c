@@ -2,7 +2,6 @@
 #include "formats/sprite.h"
 #include "game/game_state.h"
 #include "game/objects/arena_constraints.h"
-#include "game/protos/object_specializer.h"
 #include "utils/allocator.h"
 #include "utils/compat.h"
 #include "utils/log.h"

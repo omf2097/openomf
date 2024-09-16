@@ -1,5 +1,4 @@
 #include "game/objects/hazard.h"
-#include "game/protos/object_specializer.h"
 #include "game/protos/scene.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"

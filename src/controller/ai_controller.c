@@ -5,7 +5,6 @@
 #include "game/objects/har.h"
 #include "game/objects/projectile.h"
 #include "game/objects/scrap.h"
-#include "game/protos/object_specializer.h"
 #include "game/scenes/arena.h"
 #include "resources/af_loader.h"
 #include "resources/ids.h"

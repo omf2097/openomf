@@ -13,7 +13,6 @@
 #include "game/objects/projectile.h"
 #include "game/objects/scrap.h"
 #include "game/protos/intersect.h"
-#include "game/protos/object_specializer.h"
 #include "game/scenes/arena.h"
 #include "game/utils/serial.h"
 #include "resources/af_loader.h"
