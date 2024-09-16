@@ -9,11 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 
-static void trnlist_node_free_callback(void *data) {
-    sd_tournament_file *trn = data;
-    sd_tournament_free(trn);
-}
-
 list *trnlist_init() {
     int ret;
     list dirlist;
@@ -36,7 +31,6 @@ list *trnlist_init() {
 
     list *trnlist = omf_calloc(1, sizeof(list));
     list_create(trnlist);
-    list_set_node_free_cb(trnlist, trnlist_node_free_callback);
 
     iterator it;
     list_iter_begin(&dirlist, &it);
