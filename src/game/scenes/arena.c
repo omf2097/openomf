@@ -770,17 +770,9 @@ void arena_free(scene *scene) {
         component_free(local->endurance_bars[i]);
     }
 
-    /*if(local->player1_portrait != NULL) {
-        sprite_free(local->player1_portrait->cur_sprite);
-        omf_free(local->player1_portrait->cur_sprite);
-    }*/
     object_free(local->player1_portrait);
     omf_free(local->player1_portrait);
 
-    /*if(local->player2_portrait != NULL) {
-        sprite_free(local->player2_portrait->cur_sprite);
-        omf_free(local->player2_portrait->cur_sprite);
-    }*/
     object_free(local->player2_portrait);
     omf_free(local->player2_portrait);
 
@@ -1374,12 +1366,6 @@ int arena_create(scene *scene) {
     for(int i = 0; i < 2; i++) {
         _player[i] = game_state_get_player(scene->gs, i);
     }
-    /*if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
-        controller_clear_hooks(game_player_get_ctrl(_player[1]));
-    }
-    if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
-        controller_clear_hooks(game_player_get_ctrl(_player[0]));
-    }*/
 
     controller_set_repeat(game_player_get_ctrl(_player[0]), 1);
     controller_set_repeat(game_player_get_ctrl(_player[1]), 1);
