@@ -141,7 +141,6 @@ int scene_clone_free(scene *sc) {
     if(sc->clone_free) {
         sc->clone_free(sc);
     }
-    memset(sc, 0, sizeof(scene));
     omf_free(sc);
     return 0;
 }

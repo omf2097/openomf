@@ -82,13 +82,14 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
     list_iter_begin(transcript, &it);
     tick_events *ev = NULL;
     tick_events *nev = NULL;
+    tick_events event;
+    event.tick = tick;
+    event.events[id] = action;
+    event.events[abs(id - 1)] = 0;
     int i = 0;
+
     while((ev = (tick_events *)list_iter_next(&it))) {
         if(i == 0 && ev->tick > tick) {
-            tick_events event;
-            event.tick = tick;
-            event.events[id] = action;
-            event.events[abs(id - 1)] = 0;
             list_prepend(transcript, &event, sizeof(tick_events));
             return;
         } else if(ev->tick == tick) {
@@ -97,20 +98,12 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
         }
         nev = list_iter_peek(&it);
         if(ev->tick < tick && nev && nev->tick > tick) {
-            tick_events event;
-            event.tick = tick;
-            event.events[id] = action;
-            event.events[abs(id - 1)] = 0;
             list_iter_append(&it, &event, sizeof(tick_events));
             return;
         }
         i++;
     }
     // either the list is empty, or this tick is later than anything else
-    tick_events event;
-    event.tick = tick;
-    event.events[id] = action;
-    event.events[abs(id - 1)] = 0;
     list_append(transcript, &event, sizeof(tick_events));
 }
 
@@ -180,25 +173,13 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
             game_state_clone(gs, gs_new);
             data->gs_bak = gs_new;
         }
+        // these are 'dynamic ticks'
         int ticks = (ev->tick + data->local_proposal) - gs->int_tick;
 
-        int static_wait = (ticks * 10) / game_state_ms_per_dyntick(gs);
-        int dynamic_wait = ticks;
-        DEBUG("static wait %d, dynamic wait %d", static_wait, dynamic_wait);
-        // int limit_static = 10;
-        // int limit_dynamic = 10;
-        while(static_wait > 1 /*&& limit_static--*/) {
-            // Static tick for gamestate
-            game_state_static_tick(gs, true);
-
-            static_wait -= 1;
-        }
-        while(dynamic_wait > 1 /*&& limit_dynamic--*/) {
+        // tick the number of required times
+        for(int dynamic_wait = ticks; dynamic_wait > 1; dynamic_wait--) {
             // Tick scene
             game_state_dynamic_tick(gs, true);
-
-            // Handle waiting period leftover time
-            dynamic_wait -= 1;
         }
 
         // feed in the inputs
@@ -220,8 +201,8 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
                 }
 
                 // write_rec_move(gs->sc, player, ev->events[j]);
-            } else {
-                object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
+            //} else {
+            //    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
             }
         }
         // controller_cmd(ctrl, action, ev);
@@ -235,23 +216,10 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
 
     DEBUG("game state is %d, want %d", gs->int_tick, data->last_tick);
     int ticks = data->last_tick - gs->int_tick;
-    int static_wait = (ticks * 10) / game_state_ms_per_dyntick(gs);
-    int dynamic_wait = ticks;
-    DEBUG("FINAL static wait %d, dynamic wait %d", static_wait, dynamic_wait);
-    // int limit_static = 10;
-    // int limit_dynamic = 10;
-    while(static_wait > 1 /*&& limit_static--*/) {
-        // Static tick for gamestate
-        game_state_static_tick(gs, true);
-
-        static_wait -= 1;
-    }
-    while(dynamic_wait > 1 /*&& limit_dynamic--*/) {
+    // tick the number of required times
+    for(int dynamic_wait = ticks; dynamic_wait > 1; dynamic_wait--) {
         // Tick scene
         game_state_dynamic_tick(gs, true);
-
-        // Handle waiting period leftover time
-        dynamic_wait -= 1;
     }
 
     DEBUG("advanced game state to %d, expected %d", gs->int_tick - data->local_proposal,
@@ -338,6 +306,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     }
 
     if(data->gs_bak == NULL && is_arena(game_state_get_scene(ctrl->gs)->id) &&
+            ctrl->gs->this_wait_ticks == 0 &&
        game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
         data->gs_bak = omf_calloc(1, sizeof(game_state));
         game_state_clone(ctrl->gs, data->gs_bak);

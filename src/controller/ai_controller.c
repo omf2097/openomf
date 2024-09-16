@@ -1588,7 +1588,7 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
         if(projectile_get_owner(o_prj) == har_player_id(o)) {
             continue;
         }
-        if(o_prj->cur_sprite_id > 0 && (smart_usually(a) || remember_shooting)) {
+        if(o_prj->cur_sprite_id >= 0 && (smart_usually(a) || remember_shooting)) {
             sprite *cur_sprite = animation_get_sprite(o_prj->cur_animation, o_prj->cur_sprite_id);
             vec2i pos_prj = vec2i_add(object_get_pos(o_prj), cur_sprite->pos);
             vec2i size_prj = object_get_size(o_prj);
