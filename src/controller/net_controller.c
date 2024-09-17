@@ -204,7 +204,8 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         // XXX this is a hack for now
 
         if((ev->events[0] || ev->events[1]) && ev->tick <= data->last_received_tick) {
-            int sz = snprintf(buf, 254, "%d - player 1 %d -- player 2 %d\n", ev->tick, ev->events[0], ev->events[1]);
+            int sz =
+                snprintf(buf, sizeof(buf), "%d - player 1 %d -- player 2 %d\n", ev->tick, ev->events[0], ev->events[1]);
             SDL_RWwrite(data->trace_file, buf, sz, 1);
         }
 

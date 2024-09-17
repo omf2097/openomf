@@ -174,8 +174,6 @@ void settings_load_fields(void *st, const field *fields, int nfields) {
                 omf_free(*s);
                 if(conf_string(f->name)) {
                     *s = strdup(conf_string(f->name));
-                } else {
-                    *s = NULL;
                 }
             } break;
         }
