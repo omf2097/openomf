@@ -34,7 +34,7 @@ typedef struct {
     list transcript;
     int last_received_tick;
     int last_har_state;
-    FILE *trace_file;
+    SDL_RWops *trace_file;
     game_state *gs_bak;
 } wtf;
 
@@ -159,6 +159,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
     tick_events *ev = NULL;
     game_state *gs = data->gs_bak;
     game_state *gs_new = NULL;
+    char buf[255];
 
     DEBUG("current game ticks is %d, stored game ticks are %d, last tick is %d", gs_current->int_tick, gs->int_tick,
           data->last_tick);
@@ -203,8 +204,8 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         // XXX this is a hack for now
         
         if ((ev->events[0] || ev->events[1]) && ev->tick <= data->last_received_tick) {
-            fprintf(data->trace_file, "%d - player 1 %d -- player 2 %d\n", ev->tick, ev->events[0], ev->events[1]);
-            fflush(data->trace_file);
+            int sz = snprintf(buf, 254, "%d - player 1 %d -- player 2 %d\n", ev->tick, ev->events[0], ev->events[1]);
+            SDL_RWwrite(data->trace_file, buf, sz, 1);
         }
 
         for(int j = 0; j < 2; j++) {
@@ -272,7 +273,7 @@ int net_controller_tick_offset(controller *ctrl) {
 
 void net_controller_free(controller *ctrl) {
     wtf *data = ctrl->data;
-    fclose(data->trace_file);
+    SDL_RWclose(data->trace_file);
     ENetEvent event;
     if(!data->disconnected) {
         DEBUG("closing connection");
@@ -650,13 +651,12 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->last_har_state = -1;
     data->trace_file = NULL;
     if (id == ROLE_SERVER) {
-        data->trace_file = fopen("/tmp/openomf_server.log", "w");
+        data->trace_file = SDL_RWFromFile("/tmp/openomf_server.log", "w");
     } else {
-        data->trace_file = fopen("/tmp/openomf_client.log", "w");
+        data->trace_file = SDL_RWFromFile("/tmp/openomf_client.log", "w");
     }
     if (!data->trace_file) {
         DEBUG("failed to open trace file");
-        perror("failed to open trace file");
     }
     list_create(&data->transcript);
     ctrl->data = data;
