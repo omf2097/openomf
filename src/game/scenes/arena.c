@@ -572,14 +572,11 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     }
     chr_score *score = game_player_get_score(game_state_get_player(gs, other_player_id));
     object *round_token = game_state_find_object(gs, local->player_rounds[other_player_id][score->rounds]);
-    if (!round_token) {
-        DEBUG("could not found round token [%d][%d]", other_player_id, score->rounds);
-    } else {
-        DEBUG("found round token [%d][%d] at %d", other_player_id, score->rounds, local->player_rounds[other_player_id][score->rounds]);
+    if(round_token) {
+        object_set_sprite_override(round_token, 0);
+        object_select_sprite(round_token, 0);
+        object_set_sprite_override(round_token, 1);
     }
-    object_set_sprite_override(round_token, 0);
-    object_select_sprite(round_token, 0);
-    object_set_sprite_override(round_token, 1);
     score->rounds++;
     if(score->rounds >= ceilf(local->rounds / 2.0f)) {
         har_set_ani(winner, ANIM_VICTORY, 0);
