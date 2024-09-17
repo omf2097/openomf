@@ -6,6 +6,7 @@
 #include "game/game_state_type.h"
 #include "game/protos/scene.h"
 #include "game/utils/serial.h"
+#include "game/utils/settings.h"
 #include "game/scenes/arena.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
@@ -650,13 +651,12 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->last_received_tick = 0;
     data->last_har_state = -1;
     data->trace_file = NULL;
-    if (id == ROLE_SERVER) {
-        data->trace_file = SDL_RWFromFile("/tmp/openomf_server.log", "w");
-    } else {
-        data->trace_file = SDL_RWFromFile("/tmp/openomf_client.log", "w");
-    }
-    if (!data->trace_file) {
-        DEBUG("failed to open trace file");
+    char *trace_file =  settings_get()->net.trace_file;
+    if (trace_file) {
+        data->trace_file = SDL_RWFromFile(trace_file, "w");
+        if (!data->trace_file) {
+            DEBUG("failed to open trace file");
+        }
     }
     list_create(&data->transcript);
     ctrl->data = data;
