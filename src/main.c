@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
         if(port->count > 0) {
             connect_port = port->ival[0] & 0xFFFF;
         }
-        if (trace->count > 0) {
+        if(trace->count > 0) {
             trace_file = strdup(trace->sval[0]);
         }
     } else if(listen->count > 0) {
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
         if(port->count > 0) {
             listen_port = port->ival[0] & 0xFFFF;
         }
-        if (trace->count > 0) {
+        if(trace->count > 0) {
             trace_file = strdup(trace->sval[0]);
         }
     } else if(play->count > 0) {
@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
         // Set ip to NULL here since it will be freed by the settings.
         ip = NULL;
     }
-    if (trace_file) {
+    if(trace_file) {
         omf_free(settings_get()->net.trace_file);
         settings_get()->net.trace_file = trace_file;
         trace_file = NULL;

@@ -860,7 +860,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 guiframe_action(local->game_menu, i->event_data.action);
             } else if(i->type == EVENT_TYPE_ACTION) {
                 need_sync += object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
-                        i->event_data.action);
+                                        i->event_data.action);
                 write_rec_move(scene, player, i->event_data.action);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 if(player->ctrl->type == CTRL_TYPE_REC) {

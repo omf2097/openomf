@@ -5,9 +5,9 @@
 #include "controller/net_controller.h"
 #include "game/game_state_type.h"
 #include "game/protos/scene.h"
+#include "game/scenes/arena.h"
 #include "game/utils/serial.h"
 #include "game/utils/settings.h"
-#include "game/scenes/arena.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/list.h"
@@ -116,12 +116,11 @@ bool has_event(wtf *data, int tick) {
     list_iter_begin(&data->transcript, &it);
     tick_events *ev = NULL;
     while((ev = (tick_events *)list_iter_next(&it))) {
-        if (ev->tick == tick - data->local_proposal && ev->events[data->id]) {
+        if(ev->tick == tick - data->local_proposal && ev->events[data->id]) {
             return true;
         }
     }
     return false;
-
 }
 
 void send_events(wtf *data) {
@@ -174,7 +173,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         }
     }
 
-    //int gs_start = gs->int_tick - data->local_proposal;
+    // int gs_start = gs->int_tick - data->local_proposal;
 
     while((ev = (tick_events *)list_iter_next(&it))) {
         if(ev->tick + data->local_proposal <= gs->int_tick) {
@@ -203,8 +202,8 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
 
         // feed in the inputs
         // XXX this is a hack for now
-        
-        if ((ev->events[0] || ev->events[1]) && ev->tick <= data->last_received_tick) {
+
+        if((ev->events[0] || ev->events[1]) && ev->tick <= data->last_received_tick) {
             int sz = snprintf(buf, 254, "%d - player 1 %d -- player 2 %d\n", ev->tick, ev->events[0], ev->events[1]);
             SDL_RWwrite(data->trace_file, buf, sz, 1);
         }
@@ -213,7 +212,8 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
             int player_id = j;
             game_player *player = game_state_get_player(gs, player_id);
             if(ev->events[j]) {
-                DEBUG("replaying input %d from player %d at tick %d %d", ev->events[j], player_id, ev->tick, gs->int_tick - data->local_proposal);
+                DEBUG("replaying input %d from player %d at tick %d %d", ev->events[j], player_id, ev->tick,
+                      gs->int_tick - data->local_proposal);
                 if(((ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH) != 0) {
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)),
                                (ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH);
@@ -318,8 +318,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     ENetPeer *peer = data->peer;
     serial ser;
 
-
-    if (has_event(data, ticks - 1) && ticks > data->last_tick) {
+    if(has_event(data, ticks - 1) && ticks > data->last_tick) {
         DEBUG("sending events %d", ticks);
         send_events(data);
         data->last_tick = ticks;
@@ -573,7 +572,7 @@ void controller_hook(controller *ctrl, int action) {
             return;
         }
         int arena_state = arena_get_state(game_state_get_scene(ctrl->gs));
-        if (arena_state != ARENA_STATE_FIGHTING) {
+        if(arena_state != ARENA_STATE_FIGHTING) {
             return;
         }
         data->last_har_state = har->state;
@@ -651,10 +650,10 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->last_received_tick = 0;
     data->last_har_state = -1;
     data->trace_file = NULL;
-    char *trace_file =  settings_get()->net.trace_file;
-    if (trace_file) {
+    char *trace_file = settings_get()->net.trace_file;
+    if(trace_file) {
         data->trace_file = SDL_RWFromFile(trace_file, "w");
-        if (!data->trace_file) {
+        if(!data->trace_file) {
             DEBUG("failed to open trace file");
         }
     }
