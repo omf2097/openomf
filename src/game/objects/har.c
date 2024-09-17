@@ -605,7 +605,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     if(damage > 24.0f || h->health == 0) {
         DEBUG("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
               h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
-        game_state_slowdown(obj->gs, 120,
+        game_state_slowdown(obj->gs, 12,
                             h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
     }
 
