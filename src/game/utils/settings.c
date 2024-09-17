@@ -104,7 +104,8 @@ const field f_keyboard[] = {
     F_STRING(settings_keyboard, key2_punch, "Left Ctrl"), F_STRING(settings_keyboard, key2_escape, "Escape")};
 
 const field f_net[] = {F_STRING(settings_network, net_connect_ip, "localhost"),
-                       F_INT(settings_network, net_connect_port, 2097), F_INT(settings_network, net_listen_port, 2097)};
+                       F_STRING(settings_network, trace_file, NULL), F_INT(settings_network, net_connect_port, 2097),
+                       F_INT(settings_network, net_listen_port, 2097)};
 
 // Map struct to field
 const struct_to_field struct_to_fields[] = {S_2_F(&_settings.video, f_video),
@@ -171,7 +172,9 @@ void settings_load_fields(void *st, const field *fields, int nfields) {
                 // make a copy of the string
                 char **s = fieldstr(st, f->offset);
                 omf_free(*s);
-                *s = strdup(conf_string(f->name));
+                if(conf_string(f->name)) {
+                    *s = strdup(conf_string(f->name));
+                }
             } break;
         }
     }

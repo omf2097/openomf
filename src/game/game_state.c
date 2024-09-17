@@ -616,15 +616,6 @@ void game_state_call_tick(game_state *gs, int mode) {
             object_static_tick(robj->obj);
         }
     }
-
-    // Speed back up
-    if(gs->speed_slowdown_time == 0) {
-        DEBUG("Slowdown: Speed back up from %d to %d.", gs->speed, gs->speed_slowdown_previous);
-        gs->speed = gs->speed_slowdown_previous;
-    }
-    if(gs->speed_slowdown_time >= 0) {
-        gs->speed_slowdown_time--;
-    }
 }
 
 // This function is always called with the same interval, and game speed does not affect it
@@ -736,6 +727,15 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
     if(!replay) {
         // Free extra controller events
         game_state_ctrl_events_free(gs);
+    }
+
+    // Speed back up
+    if(gs->speed_slowdown_time == 0) {
+        DEBUG("Slowdown: Speed back up from %d to %d.", gs->speed, gs->speed_slowdown_previous);
+        gs->speed = gs->speed_slowdown_previous;
+    }
+    if(gs->speed_slowdown_time >= 0) {
+        gs->speed_slowdown_time--;
     }
 
     // int_tick is used for ping calculation so it shouldn't be touched

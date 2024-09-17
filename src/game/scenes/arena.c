@@ -859,28 +859,9 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 // menu events
                 guiframe_action(local->game_menu, i->event_data.action);
             } else if(i->type == EVENT_TYPE_ACTION) {
-                if(player->ctrl->type == CTRL_TYPE_NETWORK) {
-                    do {
-                        object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
-                                   i->event_data.action);
-                        write_rec_move(scene, player, i->event_data.action);
-                        // Rewritten this way, we possible skipped some events
-                        // before. We check if there is a next event, then
-                        // check if it is EVENT_TYPE_ACTION and only then we
-                        // move the event iterator. If conditions fail then we
-                        // move to the next element at the end of the loop as
-                        // usual.
-                        if(i->next == NULL || i->next->type != EVENT_TYPE_ACTION)
-                            break;
-                    } while((i = i->next) != NULL);
-                    // always trigger a synchronization, since if the client's move did not actually happen, we want to
-                    // rewind them ASAP
-                    need_sync = 1;
-                } else {
-                    need_sync += object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
-                                            i->event_data.action);
-                    write_rec_move(scene, player, i->event_data.action);
-                }
+                need_sync += object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
+                                        i->event_data.action);
+                write_rec_move(scene, player, i->event_data.action);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 if(player->ctrl->type == CTRL_TYPE_REC) {
                     game_state_set_next(scene->gs, SCENE_NONE);

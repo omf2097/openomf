@@ -59,6 +59,7 @@ void scan_game_controllers() {
 int main(int argc, char *argv[]) {
     // Set up initial state for misc things
     char *ip = NULL;
+    char *trace_file = NULL;
     unsigned short connect_port = 0;
     unsigned short listen_port = 0;
     engine_init_flags init_flags;
@@ -78,11 +79,12 @@ int main(int argc, char *argv[]) {
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_lit *listen = arg_lit0("l", "listen", "Start a network game server");
     struct arg_str *connect = arg_str0("c", "connect", "<host>", "Connect to a remote game");
+    struct arg_str *trace = arg_str0("t", "trace", "<file>", "Trace netplay events to file");
     struct arg_int *port = arg_int0("p", "port", "<port>", "Port to connect or listen (default: 2097)");
     struct arg_file *play = arg_file0("P", "play", "<file>", "Play an existing recfile");
     struct arg_file *rec = arg_file0("R", "rec", "<file>", "Record a new recfile");
     struct arg_end *end = arg_end(30);
-    void *argtable[] = {help, vers, listen, connect, port, play, rec, end};
+    void *argtable[] = {help, vers, listen, connect, trace, port, play, rec, end};
     const char *progname = "openomf";
 
     // Make sure everything got allocated
@@ -125,11 +127,17 @@ int main(int argc, char *argv[]) {
         if(port->count > 0) {
             connect_port = port->ival[0] & 0xFFFF;
         }
+        if(trace->count > 0) {
+            trace_file = strdup(trace->sval[0]);
+        }
     } else if(listen->count > 0) {
         init_flags.net_mode = NET_MODE_SERVER;
         listen_port = 2097;
         if(port->count > 0) {
             listen_port = port->ival[0] & 0xFFFF;
+        }
+        if(trace->count > 0) {
+            trace_file = strdup(trace->sval[0]);
         }
     } else if(play->count > 0) {
         strncpy(init_flags.rec_file, play->filename[0], 254);
@@ -183,9 +191,15 @@ int main(int argc, char *argv[]) {
     // Network game override stuff
     if(ip) {
         DEBUG("Connect IP overridden to %s", ip);
+        omf_free(settings_get()->net.net_connect_ip);
         settings_get()->net.net_connect_ip = ip;
         // Set ip to NULL here since it will be freed by the settings.
         ip = NULL;
+    }
+    if(trace_file) {
+        omf_free(settings_get()->net.trace_file);
+        settings_get()->net.trace_file = trace_file;
+        trace_file = NULL;
     }
     if(connect_port > 0 && connect_port < 0xFFFF) {
         DEBUG("Connect Port overridden to %u", connect_port & 0xFFFF);
@@ -246,6 +260,9 @@ exit_1:
 exit_0:
     if(ip) {
         omf_free(ip);
+    }
+    if(trace_file) {
+        omf_free(trace_file);
     }
     plugins_close();
     arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
