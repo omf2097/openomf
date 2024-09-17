@@ -50,15 +50,12 @@ typedef struct arena_local_t {
     component *health_bars[2];
     component *endurance_bars[2];
 
-    object *player1_portrait;
-    object *player2_portrait;
-
     int round;
     int rounds;
     int over;
     bool tournament;
 
-    object *player_rounds[2][4];
+    int player_rounds[2][4];
 
     int rein_enabled;
 
@@ -574,7 +571,15 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         }
     }
     chr_score *score = game_player_get_score(game_state_get_player(gs, other_player_id));
-    object_select_sprite(local->player_rounds[other_player_id][score->rounds], 0);
+    object *round_token = game_state_find_object(gs, local->player_rounds[other_player_id][score->rounds]);
+    if (!round_token) {
+        DEBUG("could not found round token [%d][%d]", other_player_id, score->rounds);
+    } else {
+        DEBUG("found round token [%d][%d] at %d", other_player_id, score->rounds, local->player_rounds[other_player_id][score->rounds]);
+    }
+    object_set_sprite_override(round_token, 0);
+    object_select_sprite(round_token, 0);
+    object_set_sprite_override(round_token, 1);
     score->rounds++;
     if(score->rounds >= ceilf(local->rounds / 2.0f)) {
         har_set_ani(winner, ANIM_VICTORY, 0);
@@ -785,13 +790,6 @@ void arena_free(scene *scene) {
         game_player_set_har(player, NULL);
         // game_player_set_ctrl(player, NULL);
         controller_set_repeat(game_player_get_ctrl(player), 0);
-
-        for(int j = 0; j < 4; j++) {
-            if(j < ceilf(local->rounds / 2.0f)) {
-                object_free(local->player_rounds[i][j]);
-                omf_free(local->player_rounds[i][j]);
-            }
-        }
     }
 
     guiframe_free(local->game_menu);
@@ -803,12 +801,6 @@ void arena_free(scene *scene) {
         component_free(local->health_bars[i]);
         component_free(local->endurance_bars[i]);
     }
-
-    object_free(local->player1_portrait);
-    omf_free(local->player1_portrait);
-
-    object_free(local->player2_portrait);
-    omf_free(local->player2_portrait);
 
     settings_save();
 
@@ -1100,11 +1092,6 @@ void arena_render_overlay(scene *scene) {
     font_render(&font_small, buf, 130, 8, TEXT_COLOR);
 #endif
 
-    if(local->tournament) {
-        object_render(local->player1_portrait);
-        object_render(local->player2_portrait);
-    }
-
     for(int i = 0; i < 2; i++) {
         player[i] = game_state_get_player(scene->gs, i);
         obj[i] = game_state_find_object(scene->gs, game_player_get_har_obj_id(player[i]));
@@ -1161,14 +1148,6 @@ void arena_render_overlay(scene *scene) {
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt);
             font_render(&font_small, buf, 315 - (strlen(buf) * font_small.w), 40, TEXT_COLOR);
-        }
-
-        for(int i = 0; i < 2; i++) {
-            for(int j = 0; j < 4; j++) {
-                if(local->player_rounds[i][j]) {
-                    object_render(local->player_rounds[i][j]);
-                }
-            }
         }
     }
 
@@ -1335,7 +1314,7 @@ int arena_create(scene *scene) {
                 object_set_animation(portrait, create_animation_from_single(sp, vec2i_create(105, 0)));
                 object_set_animation_owner(portrait, OWNER_OBJECT);
                 portrait->cur_sprite_id = 0;
-                local->player1_portrait = portrait;
+                game_state_add_object(scene->gs, portrait, RENDER_LAYER_TOP, 0, 0);
             } else {
                 object_create(portrait, scene->gs, vec2i_create(235, 0), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
@@ -1347,24 +1326,27 @@ int arena_create(scene *scene) {
                 object_set_direction(portrait, OBJECT_FACE_LEFT);
                 object_set_animation_owner(portrait, OWNER_OBJECT);
                 portrait->cur_sprite_id = 0;
-                local->player2_portrait = portrait;
+                game_state_add_object(scene->gs, portrait, RENDER_LAYER_TOP, 0, 0);
             }
 
         } else {
             // Create round tokens
             for(int j = 0; j < 4; j++) {
                 if(j < ceilf(local->rounds / 2.0f)) {
-                    local->player_rounds[i][j] = omf_calloc(1, sizeof(object));
+                    object *round_token = omf_calloc(1, sizeof(object));
                     int xoff = 110 + 9 * j + 3 + j;
                     if(i == 1) {
                         xoff = 210 - 9 * j - 3 - j;
                     }
                     animation *ani = &bk_get_info(scene->bk_data, 27)->ani;
-                    object_create(local->player_rounds[i][j], scene->gs, vec2i_create(xoff, 9), vec2f_create(0, 0));
-                    object_set_animation(local->player_rounds[i][j], ani);
-                    object_select_sprite(local->player_rounds[i][j], 1);
+                    object_create(round_token, scene->gs, vec2i_create(xoff, 9), vec2f_create(0, 0));
+                    local->player_rounds[i][j] = round_token->id;
+                    object_set_animation(round_token, ani);
+                    object_select_sprite(round_token, 1);
+                    object_set_sprite_override(round_token, 1);
+                    game_state_add_object(scene->gs, round_token, RENDER_LAYER_TOP, 0, 0);
                 } else {
-                    local->player_rounds[i][j] = NULL;
+                    local->player_rounds[i][j] = 0;
                 }
             }
         }
