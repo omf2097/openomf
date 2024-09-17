@@ -6,6 +6,7 @@
 #include "game/game_state_type.h"
 #include "game/protos/scene.h"
 #include "game/utils/serial.h"
+#include "game/scenes/arena.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/list.h"
@@ -107,6 +108,20 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
     list_append(transcript, &event, sizeof(tick_events));
 }
 
+bool has_event(wtf *data, int tick) {
+
+    iterator it;
+    list_iter_begin(&data->transcript, &it);
+    tick_events *ev = NULL;
+    while((ev = (tick_events *)list_iter_next(&it))) {
+        if (ev->tick == tick - data->local_proposal && ev->events[data->id]) {
+            return true;
+        }
+    }
+    return false;
+
+}
+
 void send_events(wtf *data) {
     serial ser;
     ENetPacket *packet;
@@ -120,8 +135,7 @@ void send_events(wtf *data) {
     serial_write_int8(&ser, EVENT_TYPE_ACTION);
 
     while((ev = (tick_events *)list_iter_next(&it))) {
-        if(ev->events[data->id] != 0 && ev->tick > data->last_received_tick &&
-           (ev->tick < data->last_tick || ev->events[data->id] == ACT_STOP)) {
+        if(ev->events[data->id] != 0 && ev->tick > data->last_received_tick && ev->tick < data->last_tick) {
             serial_write_int16(&ser, ev->events[data->id]);
             serial_write_int32(&ser, ev->tick);
         }
@@ -157,15 +171,17 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         }
     }
 
+    //int gs_start = gs->int_tick - data->local_proposal;
+
     while((ev = (tick_events *)list_iter_next(&it))) {
-        if(ev->tick + data->local_proposal < gs->int_tick) {
+        if(ev->tick + data->local_proposal <= gs->int_tick) {
             // tick too old to matter
             // DEBUG("tick %d is older than %d", ev->tick, gs->int_tick - data->local_proposal);
             list_delete(transcript, &it);
             continue;
         }
 
-        if(gs_new == NULL && ev->tick >= data->last_received_tick) {
+        if(gs_new == NULL && ev->tick > data->last_received_tick) {
             DEBUG("tick %d is newer than last received tick %d", ev->tick, data->last_received_tick);
             // save off the game state at the point we last agreed
             // on the state of the game
@@ -177,7 +193,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         int ticks = (ev->tick + data->local_proposal) - gs->int_tick;
 
         // tick the number of required times
-        for(int dynamic_wait = ticks; dynamic_wait > 1; dynamic_wait--) {
+        for(int dynamic_wait = ticks; dynamic_wait > 0; dynamic_wait--) {
             // Tick scene
             game_state_dynamic_tick(gs, true);
         }
@@ -189,7 +205,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
             int player_id = j;
             game_player *player = game_state_get_player(gs, player_id);
             if(ev->events[j]) {
-                DEBUG("replaying input %d from player %d at tick %d", ev->events[j], player_id, ev->tick);
+                DEBUG("replaying input %d from player %d at tick %d %d", ev->events[j], player_id, ev->tick, gs->int_tick - data->local_proposal);
                 if(((ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH) != 0) {
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)),
                                (ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH);
@@ -217,7 +233,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
     DEBUG("game state is %d, want %d", gs->int_tick, data->last_tick);
     int ticks = data->last_tick - gs->int_tick;
     // tick the number of required times
-    for(int dynamic_wait = ticks; dynamic_wait > 1; dynamic_wait--) {
+    for(int dynamic_wait = ticks; dynamic_wait > 0; dynamic_wait--) {
         // Tick scene
         game_state_dynamic_tick(gs, true);
     }
@@ -293,6 +309,14 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     ENetPeer *peer = data->peer;
     serial ser;
 
+
+    if (has_event(data, ticks - 1) && ticks > data->last_tick) {
+        DEBUG("sending events %d", ticks);
+        send_events(data);
+        data->last_tick = ticks;
+        rewind_and_replay(data, ctrl->gs);
+    }
+
     data->last_tick = ticks;
 
     if(ticks == data->local_proposal && !data->synchronized) {
@@ -339,8 +363,8 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                         }
                         if(data->synchronized && data->gs_bak) {
                             // print_transcript(&data->transcript);
-                            rewind_and_replay(data, ctrl->gs);
                             data->last_received_tick = last_received;
+                            rewind_and_replay(data, ctrl->gs);
                             if(data->last_sent + data->local_proposal < ticks - 50) {
                                 // if we haven't sent an event in a while, send a dummy event to force the peer to
                                 // rewind/replay
@@ -539,6 +563,10 @@ void controller_hook(controller *ctrl, int action) {
         if(data->last_action == action && har->state == data->last_har_state) {
             return;
         }
+        int arena_state = arena_get_state(game_state_get_scene(ctrl->gs));
+        if (arena_state != ARENA_STATE_FIGHTING) {
+            return;
+        }
         data->last_har_state = har->state;
         data->last_action = action;
     }
@@ -548,7 +576,7 @@ void controller_hook(controller *ctrl, int action) {
         if(data->synchronized && data->gs_bak) {
             insert_event(data, data->last_tick - data->local_proposal, action, data->id);
             // print_transcript(&data->transcript);
-            send_events(data);
+            // send_events(data);
             // rewind_and_replay(data, ctrl->gs);
         } else {
             serial ser;
