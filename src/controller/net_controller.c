@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -204,8 +205,8 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         // XXX this is a hack for now
 
         if((ev->events[0] || ev->events[1]) && ev->tick <= data->last_received_tick) {
-            int sz =
-                snprintf(buf, sizeof(buf), "%d - player 1 %d -- player 2 %d\n", ev->tick, ev->events[0], ev->events[1]);
+            int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- hash %" PRIu32 "\n", ev->tick,
+                              ev->events[0], ev->events[1], arena_state_hash(gs));
             SDL_RWwrite(data->trace_file, buf, sz, 1);
         }
 
