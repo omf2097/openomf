@@ -35,6 +35,7 @@ typedef struct {
     int last_sent;
     list transcript;
     int last_received_tick;
+    int last_acked_tick;
     int last_har_state;
     SDL_RWops *trace_file;
     game_state *gs_bak;
@@ -135,9 +136,10 @@ void send_events(wtf *data) {
     tick_events *ev = NULL;
     serial_create(&ser);
     serial_write_int8(&ser, EVENT_TYPE_ACTION);
+    serial_write_int32(&ser, data->last_received_tick);
 
     while((ev = (tick_events *)list_iter_next(&it))) {
-        if(ev->events[data->id] != 0 && ev->tick > data->last_received_tick && ev->tick < data->last_tick) {
+        if(ev->events[data->id] != 0 && ev->tick > data->last_acked_tick && ev->tick < data->last_tick) {
             serial_write_int16(&ser, ev->events[data->id]);
             serial_write_int32(&ser, ev->tick);
         }
@@ -184,7 +186,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
             continue;
         }
 
-        if(gs_new == NULL && ev->tick > data->last_received_tick) {
+        if(gs_new == NULL && ev->tick > data->last_acked_tick) {
             DEBUG("tick %d is newer than last received tick %d", ev->tick, data->last_received_tick);
             // save off the game state at the point we last agreed
             // on the state of the game
@@ -321,7 +323,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
     serial ser;
 
     if(has_event(data, ticks - 1) && ticks > data->last_tick) {
-        DEBUG("sending events %d", ticks);
+        DEBUG("sending events %d -- %d", ticks - data->local_proposal, data->last_acked_tick);
         send_events(data);
         data->last_tick = ticks;
         rewind_and_replay(data, ctrl->gs);
@@ -355,14 +357,16 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 serial_create_from(&ser, (const char *)event.packet->data, event.packet->dataLength);
                 switch(serial_read_int8(&ser)) {
                     case EVENT_TYPE_ACTION: {
-                        assert(event.packet->dataLength % 6 == 1);
+                        assert(event.packet->dataLength % 6 == 5);
                         int last_received = 0;
-                        for(int i = 1; i < event.packet->dataLength; i += 6) {
+                        int last_acked = serial_read_int32(&ser);
+                        for(int i = 5; i < event.packet->dataLength; i += 6) {
                             // dispatch keypress to scene
                             int action = serial_read_int16(&ser);
                             int remote_tick = serial_read_int32(&ser);
 
                             if(data->synchronized && data->gs_bak) {
+                                DEBUG("inserting event %d at tick %d", action, remote_tick);
                                 insert_event(data, remote_tick, action, abs(data->id - 1));
                                 last_received = remote_tick;
                                 // print_transcript(&data->transcript);
@@ -374,6 +378,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                         if(data->synchronized && data->gs_bak) {
                             // print_transcript(&data->transcript);
                             data->last_received_tick = last_received;
+                            data->last_acked_tick = last_acked;
                             rewind_and_replay(data, ctrl->gs);
                             if(data->last_sent + data->local_proposal < ticks - 50) {
                                 // if we haven't sent an event in a while, send a dummy event to force the peer to
@@ -382,6 +387,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                                 ENetPacket *action_packet;
                                 serial_create(&action_ser);
                                 serial_write_int8(&action_ser, EVENT_TYPE_ACTION);
+                                serial_write_int32(&action_ser, data->last_received_tick);
                                 serial_write_int16(&action_ser, 0);
                                 serial_write_int32(&action_ser, (ticks - data->local_proposal) - 1);
                                 data->last_sent = (ticks - data->local_proposal) - 1;
@@ -584,6 +590,7 @@ void controller_hook(controller *ctrl, int action) {
     if(peer) {
         // DEBUG("Local event %d at %d", action, data->last_tick - data->local_proposal);
         if(data->synchronized && data->gs_bak) {
+            DEBUG("inserting event %d at tick %d", action, data->last_tick - data->local_proposal);
             insert_event(data, data->last_tick - data->local_proposal, action, data->id);
             // print_transcript(&data->transcript);
             // send_events(data);
@@ -593,6 +600,7 @@ void controller_hook(controller *ctrl, int action) {
             ENetPacket *packet;
             serial_create(&ser);
             serial_write_int8(&ser, EVENT_TYPE_ACTION);
+            serial_write_int32(&ser, 0);
             serial_write_int16(&ser, action);
             serial_write_int32(&ser, data->last_tick - data->local_proposal);
             DEBUG("controller hook fired with %d", action);
@@ -650,6 +658,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->last_sent = 0;
     data->gs_bak = NULL;
     data->last_received_tick = 0;
+    data->last_acked_tick = 0;
     data->last_har_state = -1;
     data->trace_file = NULL;
     char *trace_file = settings_get()->net.trace_file;
