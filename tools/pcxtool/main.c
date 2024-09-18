@@ -1,0 +1,136 @@
+#if ARGTABLE2_FOUND
+#include <argtable2.h>
+#elif ARGTABLE3_FOUND
+#include <argtable3.h>
+#endif
+#include "formats/error.h"
+#include "formats/pcx.h"
+#include "utils/allocator.h"
+#include <SDL.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <string.h>
+#include <unistd.h>
+
+static void show_pcx(pcx_file *pcx) {
+    SDL_Surface *surface;
+    SDL_Texture *background;
+    SDL_Texture *rendertarget;
+    SDL_Window *window = SDL_CreateWindow("OMF2097 Remake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320, 200,
+                                          SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+
+    if(!window) {
+        printf("Could not create window: %s\n", SDL_GetError());
+        return;
+    }
+
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+    uint32_t rmask, gmask, bmask, amask;
+
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+
+    if(!(surface = SDL_CreateRGBSurfaceFrom((void *)pcx->image, 320, 200, 8, 320, rmask, gmask, bmask, amask))) {
+        printf("Could not create surface: %s\n", SDL_GetError());
+        return;
+    }
+
+    if((background = SDL_CreateTextureFromSurface(renderer, surface)) == 0) {
+        printf("Could not create texture: %s\n", SDL_GetError());
+        return;
+    }
+
+    if((rendertarget = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 320, 200)) ==
+       0) {
+        printf("Could not create texture: %s\n", SDL_GetError());
+        return;
+    }
+
+    SDL_FreeSurface(surface);
+
+    while(1) {
+        SDL_Event e;
+        if(SDL_PollEvent(&e)) {
+            if(e.type == SDL_QUIT) {
+                break;
+            }
+        }
+    }
+}
+
+int main(int argc, char *argv[]) {
+    struct arg_lit *help = arg_lit0("h", "help", "Print this help and exit");
+    struct arg_file *file = arg_file0("f", "file", "<file>", "Input .PCX file");
+    struct arg_end *end = arg_end(20);
+    void *argtable[] = {help, file, end};
+    const char *progname = "pcxtool";
+
+    if(arg_nullcheck(argtable) != 0) {
+        printf("%s: Insufficient memory\n", progname);
+        goto exit_0;
+    }
+
+    int nerrors = arg_parse(argc, argv, argtable);
+
+    if(help->count > 0) {
+        printf("Usage: %s", progname);
+        arg_print_syntax(stdout, argtable, "\n");
+        printf("\nArguments:\n");
+        arg_print_glossary(stdout, argtable, "%-25s %s\n");
+        goto exit_0;
+    }
+
+    if(file->count == 0) {
+        printf("The --file argument is required\n");
+        goto exit_0;
+    } else if(access(file->filename[0], F_OK) != 0) {
+        printf("File %s cannot be accessed\n", file->filename[0]);
+        goto exit_0;
+    }
+
+    if(nerrors > 0) {
+        arg_print_errors(stdout, end, progname);
+        printf("Try '%s --help' for more information.\n", progname);
+        goto exit_0;
+    }
+
+    pcx_file *pcx = omf_calloc(1, sizeof(*pcx));
+    if(pcx_load(pcx, file->filename[0]) != SD_SUCCESS) {
+        printf("Could not load %s: %m\n", file->filename[0]);
+        goto exit_0;
+    }
+    printf("Manufacturer: %" PRIx8 "\n", pcx->manufacturer);
+    printf("Version: %" PRIx8 "\n", pcx->version);
+    printf("Encoding: %" PRIx8 "\n", pcx->encoding);
+    printf("Bits per plane: %" PRIx8 "\n", pcx->bits_per_plane);
+
+    printf("Window X Min: %" PRIu16 "\n", pcx->window_x_min);
+    printf("Window Y Min: %" PRIu16 "\n", pcx->window_y_min);
+    printf("Window X Max: %" PRIu16 "\n", pcx->window_x_max);
+    printf("Window Y Max: %" PRIu16 "\n", pcx->window_y_max);
+
+    printf("Horz DPI: %" PRIu16 "\n", pcx->horz_dpi);
+    printf("Vert DPI: %" PRIu16 "\n", pcx->vert_dpi);
+
+    for(int i = 0; i < 48; ++i) {
+        printf("Palette %d: %" PRIu8 "\n", i, pcx->palette[i]);
+    }
+    printf("Reserved: %" PRIu8 "\n", pcx->reserved);
+    printf("Color Planes: %" PRIu8 "\n", pcx->color_planes);
+
+    printf("Bytes Per Plane Line: %" PRIu16 "\n", pcx->bytes_per_plane_line);
+    printf("Palette Info: %" PRIu16 "\n", pcx->palette_info);
+
+    printf("Hor Scr Size: %" PRIu16 "\n", pcx->hor_scr_size);
+    printf("Ver Scr Size: %" PRIu16 "\n", pcx->ver_scr_size);
+
+    SDL_Init(SDL_INIT_VIDEO);
+    show_pcx(pcx);
+
+exit_0:
+    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
+    return 0;
+}
