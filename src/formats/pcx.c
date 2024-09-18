@@ -48,7 +48,7 @@ int pcx_load(pcx_file *pcx, const char *filename) {
     pcx->window_x_min = sd_read_uword(reader);
     pcx->window_y_min = sd_read_uword(reader);
     pcx->window_x_max = sd_read_uword(reader);
-    pcx->window_x_max = sd_read_uword(reader);
+    pcx->window_y_max = sd_read_uword(reader);
 
     pcx->horz_dpi = sd_read_uword(reader);
     pcx->vert_dpi = sd_read_uword(reader);
