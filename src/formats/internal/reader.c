@@ -23,7 +23,7 @@ sd_reader *sd_reader_open(const char *file) {
     reader->handle = fopen(file, "rb");
     if(!reader->handle) {
         omf_free(reader);
-        return 0;
+        return NULL;
     }
 
     // Find file size
@@ -44,7 +44,7 @@ sd_reader *sd_reader_open(const char *file) {
 error:
     fclose(reader->handle);
     omf_free(reader);
-    return 0;
+    return NULL;
 }
 
 long sd_reader_filesize(const sd_reader *reader) {
