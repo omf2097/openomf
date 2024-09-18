@@ -14,14 +14,12 @@ static unsigned decode_next_bytes(char *dest, sd_reader *reader) {
     }
     if(repeat == 0) {
         dest[0] = fst_byte;
-        // printf("Wrote byte %"PRIx8"\n", fst_byte);
         return 1;
     }
     uint8_t snd_byte = sd_read_ubyte(reader);
     for(unsigned i = 0; i < repeat; ++i) {
         dest[i] = snd_byte;
     }
-    // printf("Wrote byte %"PRIx8" %"PRIu8" times\n", snd_byte, repeat);
     return repeat;
 }
 
@@ -73,11 +71,10 @@ int pcx_load(pcx_file *pcx, const char *filename) {
     int ret;
     pcx->image = omf_calloc(1, sizeof(sd_vga_image));
     if((ret = sd_vga_image_create(pcx->image, 320, 200)) != SD_SUCCESS) {
-        return SD_OUT_OF_MEMORY;
+        return ret;
     }
 
     for(unsigned j = 0; j < 200; ++j) {
-        // printf("Start of line %u\n", j);
         for(unsigned i = 0; i < 320;) {
             i += decode_next_bytes(&pcx->image->data[(320 * j) + i], reader);
         }
@@ -95,16 +92,6 @@ int pcx_load(pcx_file *pcx, const char *filename) {
         sd_reader_close(reader);
         return SD_FILE_READ_ERROR;
     }
-
-    /*for (int i = 0; i < 256; i+=3) {
-        char r = pcx->palette->data[i][0];
-        //char g = pcx->palette->data[i][1];
-        char b = pcx->palette->data[i][2];
-        pcx->palette->data[i][0] = b;
-        pcx->palette->data[i][2] = r;
-        //pcx->palette->data[i][1] = pcx->palette->data[i][2];
-        //pcx->palette->data[i][2] = tmp;
-    }*/
 
     sd_reader_close(reader);
     return SD_SUCCESS;
