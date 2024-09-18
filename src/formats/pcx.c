@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static unsigned decode_next_bytes(uint8_t *dest, sd_reader *reader) {
+static unsigned decode_next_bytes(char *dest, sd_reader *reader) {
     uint8_t fst_byte = sd_read_ubyte(reader);
     uint8_t repeat = 0;
     if(fst_byte >= 192) {
@@ -53,7 +53,7 @@ int pcx_load(pcx_file *pcx, const char *filename) {
     pcx->horz_dpi = sd_read_uword(reader);
     pcx->vert_dpi = sd_read_uword(reader);
 
-    if(sd_read_buf(reader, (void *)pcx->palette, 48) != 1) {
+    if(sd_read_buf(reader, (void *)pcx->header_palette, 48) != 1) {
         sd_reader_close(reader);
         return SD_FILE_READ_ERROR;
     }
@@ -70,12 +70,41 @@ int pcx_load(pcx_file *pcx, const char *filename) {
         return SD_FILE_INVALID_TYPE;
     }
 
+    int ret;
+    pcx->image = omf_calloc(1, sizeof(sd_vga_image));
+    if((ret = sd_vga_image_create(pcx->image, 320, 200)) != SD_SUCCESS) {
+        return SD_OUT_OF_MEMORY;
+    }
+
     for(unsigned j = 0; j < 200; ++j) {
         // printf("Start of line %u\n", j);
         for(unsigned i = 0; i < 320;) {
-            i += decode_next_bytes(&pcx->image[j][i], reader);
+            i += decode_next_bytes(&pcx->image->data[(320 * j) + i], reader);
         }
     }
+
+    pcx->palette = omf_calloc(1, sizeof(palette));
+    memset(pcx->palette, 0, sizeof(palette));
+
+    char foo = sd_read_ubyte(reader);
+    if(foo != 0x0c) {
+        return SD_FILE_READ_ERROR;
+    }
+
+    if(sd_read_buf(reader, (void *)pcx->palette->data, 768) != 1) {
+        sd_reader_close(reader);
+        return SD_FILE_READ_ERROR;
+    }
+
+    /*for (int i = 0; i < 256; i+=3) {
+        char r = pcx->palette->data[i][0];
+        //char g = pcx->palette->data[i][1];
+        char b = pcx->palette->data[i][2];
+        pcx->palette->data[i][0] = b;
+        pcx->palette->data[i][2] = r;
+        //pcx->palette->data[i][1] = pcx->palette->data[i][2];
+        //pcx->palette->data[i][2] = tmp;
+    }*/
 
     sd_reader_close(reader);
     return SD_SUCCESS;

@@ -1,6 +1,7 @@
 #ifndef PCX_H
 #define PCX_H
 
+#include "formats/vga_image.h"
 #include <stdint.h>
 
 typedef struct {
@@ -17,7 +18,7 @@ typedef struct {
     uint16_t horz_dpi;
     uint16_t vert_dpi;
 
-    uint8_t palette[48];
+    uint8_t header_palette[48];
     uint8_t reserved;
     uint8_t color_planes;
 
@@ -29,7 +30,8 @@ typedef struct {
 
     // After the headers here, there is 54 bytes of padding.
 
-    uint8_t image[200][320];
+    sd_vga_image *image;
+    palette *palette;
 } pcx_file;
 
 int pcx_load(pcx_file *pcx, const char *filename);
