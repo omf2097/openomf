@@ -69,30 +69,33 @@ int pcx_load(pcx_file *pcx, const char *filename) {
     }
 
     int ret;
-    pcx->image = omf_calloc(1, sizeof(sd_vga_image));
-    if((ret = sd_vga_image_create(pcx->image, 320, 200)) != SD_SUCCESS) {
+    if((ret = sd_vga_image_create(&(pcx->image), 320, 200)) != SD_SUCCESS) {
         return ret;
     }
 
     for(unsigned j = 0; j < 200; ++j) {
         for(unsigned i = 0; i < 320;) {
-            i += decode_next_bytes(&pcx->image->data[(320 * j) + i], reader);
+            i += decode_next_bytes(&(pcx->image.data)[(320 * j) + i], reader);
         }
     }
-
-    pcx->palette = omf_calloc(1, sizeof(palette));
-    memset(pcx->palette, 0, sizeof(palette));
 
     char foo = sd_read_ubyte(reader);
     if(foo != 0x0c) {
         return SD_FILE_READ_ERROR;
     }
 
-    if(sd_read_buf(reader, (void *)pcx->palette->data, 768) != 1) {
+    if(sd_read_buf(reader, (void *)&(pcx->palette.data), 768) != 1) {
         sd_reader_close(reader);
         return SD_FILE_READ_ERROR;
     }
 
     sd_reader_close(reader);
     return SD_SUCCESS;
+}
+
+void pcx_free(pcx_file *pcx) {
+    if(pcx == NULL)
+        return;
+    sd_vga_image_free(&pcx->image);
+    palette_free(&pcx->palette);
 }

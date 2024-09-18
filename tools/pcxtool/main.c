@@ -27,7 +27,7 @@ static void show_pcx(pcx_file *pcx) {
     }
 
     sd_rgba_image img;
-    sd_vga_image_decode(&img, pcx->image, pcx->palette, -1);
+    sd_vga_image_decode(&img, &pcx->image, &pcx->palette, -1);
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -64,6 +64,7 @@ static void show_pcx(pcx_file *pcx) {
     }
 
     SDL_FreeSurface(surface);
+    sd_rgba_image_free(&img);
 
     while(1) {
         SDL_Event e;
@@ -150,6 +151,8 @@ int main(int argc, char *argv[]) {
 
     SDL_Init(SDL_INIT_VIDEO);
     show_pcx(pcx);
+    pcx_free(pcx);
+    omf_free(pcx);
 
 exit_0:
     arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
