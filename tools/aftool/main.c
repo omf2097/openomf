@@ -794,11 +794,11 @@ int main(int argc, char *argv[]) {
         }
     }
     if(file->count == 0 && new->count == 0) {
-        printf("Either --file or --new argument required!");
+        printf("Either --file or --new argument required!\n");
         goto exit_0;
     }
     if(file->count == 1 && new->count == 1) {
-        printf("Define at most one of (--file, --new).");
+        printf("Define at most one of (--file, --new).\n");
         goto exit_0;
     }
 
