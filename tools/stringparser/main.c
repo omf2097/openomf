@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     struct arg_str *astr = arg_str1(NULL, NULL, "<str>", "Animation string");
     struct arg_end *end = arg_end(20);
     void *argtable[] = {help, vers, astr, end};
-    const char *progname = "omf_parse";
+    const char *progname = "stringparser";
     char tmp_str[512];
 
     // Make sure everything got allocated

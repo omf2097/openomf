@@ -148,7 +148,6 @@ if(USE_TOOLS)
     add_executable(soundtool tools/soundtool/main.c)
     add_executable(fonttool tools/fonttool/main.c)
     add_executable(languagetool tools/languagetool/main.c)
-    add_executable(omf_parse tools/stringparser/main.c)
     add_executable(afdiff tools/afdiff/main.c)
     add_executable(rectool tools/rectool/main.c tools/shared/pilot.c)
     add_executable(pictool tools/pictool/main.c)
@@ -165,7 +164,6 @@ if(USE_TOOLS)
         soundtool
         fonttool
         languagetool
-        omf_parse
         afdiff
         rectool
         pictool
