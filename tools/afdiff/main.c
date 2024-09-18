@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
     struct arg_file *bfile = arg_file1("b", "bfile", "<file>", "Second .AF file");
     struct arg_end *end = arg_end(20);
     void *argtable[] = {help, vers, afile, bfile, end};
-    const char *progname = "aftool";
+    const char *progname = "afdiff";
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
