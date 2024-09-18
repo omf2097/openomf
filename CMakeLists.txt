@@ -150,6 +150,7 @@ if(USE_TOOLS)
     add_executable(languagetool tools/languagetool/main.c)
     add_executable(afdiff tools/afdiff/main.c)
     add_executable(rectool tools/rectool/main.c tools/shared/pilot.c)
+    add_executable(pcxtool tools/pcxtool/main.c)
     add_executable(pictool tools/pictool/main.c)
     add_executable(scoretool tools/scoretool/main.c)
     add_executable(trntool tools/trntool/main.c tools/shared/pilot.c)
@@ -166,6 +167,7 @@ if(USE_TOOLS)
         languagetool
         afdiff
         rectool
+        pcxtool
         pictool
         scoretool
         trntool
