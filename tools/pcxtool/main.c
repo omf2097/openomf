@@ -12,6 +12,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "formats/vga_image.h"
+
 static void show_pcx(pcx_file *pcx) {
     SDL_Surface *surface;
     SDL_Texture *background;
@@ -24,7 +26,19 @@ static void show_pcx(pcx_file *pcx) {
         return;
     }
 
+    sd_rgba_image img;
+    sd_vga_image_decode(&img, pcx->image, pcx->palette, -1);
+
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+    SDL_Rect dstrect;
+
+    int scale = 1;
+
+    dstrect.x = 0;
+    dstrect.y = 0;
+    dstrect.w = 320 * scale;
+    dstrect.h = 200 * scale;
 
     uint32_t rmask, gmask, bmask, amask;
 
@@ -33,7 +47,7 @@ static void show_pcx(pcx_file *pcx) {
     bmask = 0x00ff0000;
     amask = 0xff000000;
 
-    if(!(surface = SDL_CreateRGBSurfaceFrom((void *)pcx->image, 320, 200, 8, 320, rmask, gmask, bmask, amask))) {
+    if(!(surface = SDL_CreateRGBSurfaceFrom((void *)img.data, 320, 200, 32, 320 * 4, rmask, gmask, bmask, amask))) {
         printf("Could not create surface: %s\n", SDL_GetError());
         return;
     }
@@ -58,6 +72,13 @@ static void show_pcx(pcx_file *pcx) {
                 break;
             }
         }
+        SDL_RenderClear(renderer);
+        SDL_SetRenderTarget(renderer, rendertarget);
+        SDL_RenderCopy(renderer, background, NULL, NULL);
+        SDL_SetRenderTarget(renderer, NULL);
+        SDL_RenderCopy(renderer, rendertarget, NULL, &dstrect);
+        SDL_RenderPresent(renderer);
+        SDL_Delay(10); // don't chew too much CPU
     }
 }
 
@@ -116,7 +137,7 @@ int main(int argc, char *argv[]) {
     printf("Vert DPI: %" PRIu16 "\n", pcx->vert_dpi);
 
     for(int i = 0; i < 48; ++i) {
-        printf("Palette %d: %" PRIu8 "\n", i, pcx->palette[i]);
+        printf("Header Palette %d: %" PRIu8 "\n", i, pcx->header_palette[i]);
     }
     printf("Reserved: %" PRIu8 "\n", pcx->reserved);
     printf("Color Planes: %" PRIu8 "\n", pcx->color_planes);
