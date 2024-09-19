@@ -1,6 +1,7 @@
 #include "formats/fonts.h"
 #include "formats/error.h"
 #include "resources/fonts.h"
+#include "formats/pcx.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
@@ -10,6 +11,8 @@
 
 font font_small;
 font font_large;
+font font_net1;
+font font_net2;
 static int fonts_loaded = 0;
 
 void font_create(font *f) {
@@ -75,22 +78,73 @@ int font_load(font *font, const char *filename, unsigned int size) {
     return 0;
 }
 
+int pcx_font_load(font *font, const char *filename) {
+    sd_rgba_image img;
+    pcx_font pcx_font;
+    int pixsize;
+    surface *sur;
+
+    if (pcx_load_font(&pcx_font, filename)) {
+        pcx_font_free(&pcx_font);
+        return 1;
+    }
+
+    pixsize = pcx_font.glyph_height;
+
+    // Load into textures
+    for(int i = 0; i < pcx_font.glyph_count; i++) {
+        sd_rgba_image_create(&img, pcx_font.glyphs[i].width, pixsize);
+        sur = omf_calloc(1, sizeof(surface));
+        pcx_font_decode(&pcx_font, &img, i);
+        surface_create_from_data(sur, SURFACE_TYPE_RGBA, img.w, img.h, img.data);
+        vector_append(&font->surfaces, &sur);
+        sd_rgba_image_free(&img);
+    }
+
+    // Set font info vars
+    font->w = 0;
+    font->h = pixsize;
+    font->size = pixsize;
+
+    // Free resources
+    pcx_font_free(&pcx_font);
+    return 0;
+}
+
 int fonts_init() {
     font_create(&font_small);
     font_create(&font_large);
+    font_create(&font_net1);
+    font_create(&font_net2);
     const char *filename = NULL;
 
     // Load small font
     filename = pm_get_resource_path(DAT_CHARSMAL);
     if(font_load(&font_small, filename, FONT_SMALL)) {
         PERROR("Unable to load font file '%s'!", filename);
-        goto error_2;
+        goto error_4;
     }
     INFO("Loaded font file '%s'", filename);
 
     // Load big font
     filename = pm_get_resource_path(DAT_GRAPHCHR);
     if(font_load(&font_large, filename, FONT_BIG)) {
+        PERROR("Unable to load font file '%s'!", filename);
+        goto error_3;
+    }
+    INFO("Loaded font file '%s'", filename);
+
+    // Load big net font
+    filename = pm_get_resource_path(PCX_NETFONT1);
+    if(pcx_font_load(&font_net1, filename)) {
+        PERROR("Unable to load font file '%s'!", filename);
+        goto error_2;
+    }
+    INFO("Loaded font file '%s'", filename);
+
+    // Load small net font
+    filename = pm_get_resource_path(PCX_NETFONT2);
+    if(pcx_font_load(&font_net2, filename)) {
         PERROR("Unable to load font file '%s'!", filename);
         goto error_1;
     }
@@ -100,10 +154,14 @@ int fonts_init() {
     fonts_loaded = 1;
     return 0;
 
-error_2:
-    font_free(&font_small);
 error_1:
+    font_free(&font_net2);
+error_2:
+    font_free(&font_net1);
+error_3:
     font_free(&font_large);
+error_4:
+    font_free(&font_small);
     return 1;
 }
 

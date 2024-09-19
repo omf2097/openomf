@@ -49,6 +49,7 @@ typedef struct {
 
 int pcx_load(pcx_file *pcx, const char *filename);
 int pcx_load_font(pcx_font *font, const char *filename);
+int pcx_font_decode(const pcx_font *font, sd_rgba_image *o, uint8_t ch);
 void pcx_free(pcx_file *pcx);
 void pcx_font_free(pcx_font *font);
 

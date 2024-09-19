@@ -6,7 +6,9 @@
 typedef enum
 {
     FONT_BIG,
-    FONT_SMALL
+    FONT_SMALL,
+    FONT_NET1,
+    FONT_NET2
 } font_size;
 
 typedef struct {
@@ -17,6 +19,9 @@ typedef struct {
 
 extern font font_small;
 extern font font_large;
+extern font font_net1;
+extern font font_net2;
+
 
 int fonts_init();
 void fonts_close();

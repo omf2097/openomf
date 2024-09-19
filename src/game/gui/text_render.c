@@ -26,6 +26,13 @@ void text_render_char(const text_settings *settings, int x, int y, char ch) {
     if(settings->font == FONT_SMALL) {
         sur = vector_get(&font_small.surfaces, code);
     }
+    if(settings->font == FONT_NET1) {
+        sur = vector_get(&font_net1.surfaces, code);
+    }
+    if(settings->font == FONT_NET2) {
+        sur = vector_get(&font_net2.surfaces, code);
+    }
+
     if(sur == NULL || *sur == NULL) {
         return;
     }
@@ -88,7 +95,13 @@ int text_find_max_strlen(int maxchars, const char *ptr) {
 }
 
 int text_char_width(const text_settings *settings) {
-    return (settings->font == FONT_BIG) ? 8 : 6;
+    // TODO this data is in the font itself, and we should handle variable width NET fonts, too
+    switch (settings->font) {
+        case FONT_BIG: return 8;
+        case FONT_SMALL: return 6;
+        case FONT_NET1: return 8;
+        case FONT_NET2: return 6;
+    }
 }
 
 int text_find_line_count(text_direction dir, int cols, int rows, int len, const char *text) {
