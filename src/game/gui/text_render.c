@@ -96,12 +96,17 @@ int text_find_max_strlen(int maxchars, const char *ptr) {
 
 int text_char_width(const text_settings *settings) {
     // TODO this data is in the font itself, and we should handle variable width NET fonts, too
-    switch (settings->font) {
-        case FONT_BIG: return 8;
-        case FONT_SMALL: return 6;
-        case FONT_NET1: return 8;
-        case FONT_NET2: return 6;
+    switch(settings->font) {
+        case FONT_BIG:
+            return 8;
+        case FONT_SMALL:
+            return 6;
+        case FONT_NET1:
+            return 8;
+        case FONT_NET2:
+            return 6;
     }
+    return 6;
 }
 
 int text_find_line_count(text_direction dir, int cols, int rows, int len, const char *text) {
