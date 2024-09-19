@@ -1,7 +1,7 @@
 #include "formats/fonts.h"
 #include "formats/error.h"
-#include "resources/fonts.h"
 #include "formats/pcx.h"
+#include "resources/fonts.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
@@ -84,7 +84,7 @@ int pcx_font_load(font *font, const char *filename) {
     int pixsize;
     surface *sur;
 
-    if (pcx_load_font(&pcx_font, filename)) {
+    if(pcx_load_font(&pcx_font, filename)) {
         pcx_font_free(&pcx_font);
         return 1;
     }
