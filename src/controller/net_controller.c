@@ -13,6 +13,7 @@
 #include "utils/allocator.h"
 #include "utils/list.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 
 typedef struct {
     ENetHost *host;
@@ -37,6 +38,7 @@ typedef struct {
     int last_received_tick;
     int last_acked_tick;
     int last_har_state;
+    int last_traced_tick;
     SDL_RWops *trace_file;
     game_state *gs_bak;
 } wtf;
@@ -44,6 +46,7 @@ typedef struct {
 typedef struct {
     int tick;
     uint16_t events[2];
+    bool seen_peer;
 } tick_events;
 
 // simple standard deviation calculation
@@ -91,6 +94,7 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
     event.tick = tick;
     event.events[id] = action;
     event.events[abs(id - 1)] = 0;
+    event.seen_peer = id != data->id;
     int i = 0;
 
     while((ev = (tick_events *)list_iter_next(&it))) {
@@ -99,7 +103,11 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
             return;
         } else if(ev->tick == tick) {
             ev->events[id] |= action;
+            ev->seen_peer = ev->seen_peer || id != data->id;
             return;
+        } else if(ev->tick < tick) {
+            // even though we have no events for this tick, mark the peer has events past here
+            ev->seen_peer = ev->seen_peer || id != data->id;
         }
         nev = list_iter_peek(&it);
         if(ev->tick < tick && nev && nev->tick > tick) {
@@ -206,7 +214,9 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         // feed in the inputs
         // XXX this is a hack for now
 
-        if((ev->events[0] || ev->events[1]) && ev->tick <= data->last_received_tick) {
+        if((ev->events[0] || ev->events[1]) && ev->tick <= data->last_received_tick && ev->seen_peer &&
+           ev->tick > data->last_traced_tick) {
+            data->last_traced_tick = ev->tick;
             int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- hash %" PRIu32 "\n", ev->tick,
                               ev->events[0], ev->events[1], arena_state_hash(gs));
             SDL_RWwrite(data->trace_file, buf, sz, 1);
@@ -377,8 +387,8 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                         }
                         if(data->synchronized && data->gs_bak) {
                             // print_transcript(&data->transcript);
-                            data->last_received_tick = last_received;
-                            data->last_acked_tick = last_acked;
+                            data->last_received_tick = max2(data->last_received_tick, last_received);
+                            data->last_acked_tick = max2(data->last_acked_tick, last_acked);
                             rewind_and_replay(data, ctrl->gs);
                             if(data->last_sent + data->local_proposal < ticks - 50) {
                                 // if we haven't sent an event in a while, send a dummy event to force the peer to
@@ -661,6 +671,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int
     data->last_acked_tick = 0;
     data->last_har_state = -1;
     data->trace_file = NULL;
+    data->last_traced_tick = 0;
     char *trace_file = settings_get()->net.trace_file;
     if(trace_file) {
         data->trace_file = SDL_RWFromFile(trace_file, "w");
