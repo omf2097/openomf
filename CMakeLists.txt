@@ -4,6 +4,13 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckSymbolExists)
+INCLUDE(FetchContent)
+FetchContent_Declare(
+    libfixmath
+    GIT_REPOSITORY https://github.com/PetteriAimonen/libfixmath.git
+    GIT_TAG d308e466e1a09118d03f677c52e5fbf402f6fdd0
+)
+FetchContent_MakeAvailable(libfixmath)
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "6")
@@ -72,6 +79,7 @@ file(GLOB_RECURSE OPENOMF_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/*/*.c")
 set(COREINCS
     src
     ${CMAKE_CURRENT_BINARY_DIR}/src/
+    ${CMAKE_CURRENT_BINARY_DIR}/_deps/libfixmath-src
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
     ${CONFUSE_INCLUDE_DIR}
@@ -82,6 +90,7 @@ set(COREINCS
 )
 
 set(CORELIBS
+    ${CMAKE_CURRENT_BINARY_DIR}/_deps/libfixmath-build/liblibfixmath.a
     ${CONFUSE_LIBRARY}
     ${XMP_LIBRARY}
     ${ENET_LIBRARY}
@@ -246,6 +255,7 @@ endif()
 # Make sure libraries are linked
 target_link_libraries(openomf ${CORELIBS})
 target_link_libraries(openomf SDL2::Main SDL2::Mixer)
+target_link_libraries(openomf libfixmath)
 foreach(TARGET ${TOOL_TARGET_NAMES})
     target_link_libraries(${TARGET} ${CORELIBS} SDL2::Main SDL2::Mixer)
 endforeach()
