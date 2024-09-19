@@ -13,6 +13,7 @@
 #include "utils/allocator.h"
 #include "utils/list.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 
 typedef struct {
     ENetHost *host;
@@ -377,8 +378,8 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                         }
                         if(data->synchronized && data->gs_bak) {
                             // print_transcript(&data->transcript);
-                            data->last_received_tick = last_received;
-                            data->last_acked_tick = last_acked;
+                            data->last_received_tick = max2(data->last_received_tick, last_received);
+                            data->last_acked_tick = max2(data->last_acked_tick, last_acked);
                             rewind_and_replay(data, ctrl->gs);
                             if(data->last_sent + data->local_proposal < ticks - 50) {
                                 // if we haven't sent an event in a while, send a dummy event to force the peer to
