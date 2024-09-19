@@ -78,7 +78,7 @@ int font_load(font *font, const char *filename, unsigned int size) {
     return 0;
 }
 
-int pcx_font_load(font *font, const char *filename) {
+int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
     sd_rgba_image img;
     pcx_font pcx_font;
     int pixsize;
@@ -95,7 +95,7 @@ int pcx_font_load(font *font, const char *filename) {
     for(int i = 0; i < pcx_font.glyph_count; i++) {
         sd_rgba_image_create(&img, pcx_font.glyphs[i].width, pixsize);
         sur = omf_calloc(1, sizeof(surface));
-        pcx_font_decode(&pcx_font, &img, i);
+        pcx_font_decode(&pcx_font, &img, i, palette_offset);
         surface_create_from_data(sur, SURFACE_TYPE_RGBA, img.w, img.h, img.data);
         vector_append(&font->surfaces, &sur);
         sd_rgba_image_free(&img);
@@ -136,7 +136,7 @@ int fonts_init() {
 
     // Load big net font
     filename = pm_get_resource_path(PCX_NETFONT1);
-    if(pcx_font_load(&font_net1, filename)) {
+    if(pcx_font_load(&font_net1, filename, 3)) {
         PERROR("Unable to load font file '%s'!", filename);
         goto error_2;
     }
@@ -144,7 +144,7 @@ int fonts_init() {
 
     // Load small net font
     filename = pm_get_resource_path(PCX_NETFONT2);
-    if(pcx_font_load(&font_net2, filename)) {
+    if(pcx_font_load(&font_net2, filename, 16)) {
         PERROR("Unable to load font file '%s'!", filename);
         goto error_1;
     }
