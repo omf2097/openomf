@@ -425,7 +425,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     // The limit here is entirely guesswork, and might not be it at all
     // However, it is a close enough guess.
     // TODO: Find out how this really works.
-    if(h->last_damage_value <= 15) {
+    if(h->last_damage_value <= F16(15)) {
         return;
     }
 
