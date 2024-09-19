@@ -141,6 +141,34 @@ int pcx_load_font(pcx_font *font, const char *filename) {
     return SD_SUCCESS;
 }
 
+int pcx_font_decode(const pcx_font *font, sd_rgba_image *o, uint8_t ch) {
+    if (ch >= font->glyph_count || font == NULL || o == NULL) {
+        return SD_INVALID_INPUT;
+    }
+
+    int k = 0;
+    for (int i = font->glyphs[ch].y; i < font->glyphs[ch].y + font->glyph_height; i++) {
+        int l = 0;
+        for (int j = font->glyphs[ch].x; j < font->glyphs[ch].x + font->glyphs[ch].width; j++) {
+            if (font->pcx.image.data[(i*320)+j]) {
+                o->data[(k*font->glyphs[ch].width*4) + l] = font->pcx.palette.data[(int)font->pcx.image.data[(i*320)+j]][0];
+                o->data[(k*font->glyphs[ch].width*4) + l + 1] = font->pcx.palette.data[(int)font->pcx.image.data[(i*320)+j]][1];
+                o->data[(k*font->glyphs[ch].width*4) + l + 2] = font->pcx.palette.data[(int)font->pcx.image.data[(i*320)+j]][2];
+                o->data[(k*font->glyphs[ch].width*4) + l + 3] = (char)255;
+            } else {
+                o->data[(k*font->glyphs[ch].width*4) + l] = 0;
+                o->data[(k*font->glyphs[ch].width*4) + l+1] = 0;
+                o->data[(k*font->glyphs[ch].width*4) + l+2] = 0;
+                o->data[(k*font->glyphs[ch].width*4) + l+3] = 0;
+            }
+
+            l+=4;
+        }
+        k++;
+    }
+    return SD_SUCCESS;
+}
+
 void pcx_free(pcx_file *pcx) {
     if(pcx == NULL)
         return;
