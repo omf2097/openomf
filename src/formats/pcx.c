@@ -93,9 +93,64 @@ int pcx_load(pcx_file *pcx, const char *filename) {
     return SD_SUCCESS;
 }
 
+int pcx_load_font(pcx_font *font, const char *filename) {
+    memset(font, 0, sizeof(pcx_font));
+    int ret = SD_SUCCESS;
+    if((ret = pcx_load(&font->pcx, filename)) != SD_SUCCESS) {
+        return ret;
+    }
+
+    char corner_color = font->pcx.image.data[0];
+
+    // check this is actually a font sheet
+    if(font->pcx.image.data[1] != corner_color || font->pcx.image.data[320] != corner_color ||
+       font->pcx.image.data[321] == corner_color) {
+        return SD_FORMAT_NOT_SUPPORTED;
+    }
+
+    // figure out the height of the font, we can do this just once
+    font->glyph_height = 0;
+    for(int i = 1; i < 200; i++) {
+        if(font->pcx.image.data[(320 * i) + 1] == corner_color) {
+            break;
+        }
+        font->glyph_height++;
+    }
+
+    int glyph = 0;
+    // we know the first row never has a font pixel in it, so start at the second line
+    for(int i = 1; i < 200 && font->pcx.image.data[(320 * (i + font->glyph_height)) + 1] == corner_color;
+        i += font->glyph_height + 1) {
+        // glyph starts on the first column
+        int width = 0;
+        for(int j = 1; j < 320; j++) {
+            if(font->pcx.image.data[(320 * i) + j] == corner_color) {
+                font->glyphs[glyph].width = width;
+                font->glyphs[glyph].x = j - width;
+                font->glyphs[glyph].y = i;
+                glyph++;
+                width = 0;
+            } else {
+                width++;
+            }
+        }
+    }
+
+    font->glyph_count = glyph;
+
+    return SD_SUCCESS;
+}
+
 void pcx_free(pcx_file *pcx) {
     if(pcx == NULL)
         return;
     sd_vga_image_free(&pcx->image);
     palette_free(&pcx->palette);
+}
+
+void pcx_font_free(pcx_font *font) {
+    if(font == NULL)
+        return;
+    sd_vga_image_free(&font->pcx.image);
+    palette_free(&font->pcx.palette);
 }
