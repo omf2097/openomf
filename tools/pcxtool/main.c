@@ -86,8 +86,9 @@ static void show_pcx(pcx_file *pcx) {
 int main(int argc, char *argv[]) {
     struct arg_lit *help = arg_lit0("h", "help", "Print this help and exit");
     struct arg_file *file = arg_file0("f", "file", "<file>", "Input .PCX file");
+    struct arg_lit *font = arg_lit0("F", "font", "Parse this file as a font");
     struct arg_end *end = arg_end(20);
-    void *argtable[] = {help, file, end};
+    void *argtable[] = {help, file, font, end};
     const char *progname = "pcxtool";
 
     if(arg_nullcheck(argtable) != 0) {
@@ -119,40 +120,57 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
-    pcx_file *pcx = omf_calloc(1, sizeof(*pcx));
-    if(pcx_load(pcx, file->filename[0]) != SD_SUCCESS) {
-        printf("Could not load %s: %m\n", file->filename[0]);
-        goto exit_0;
+    if(font->count) {
+        pcx_font *pcx_font = omf_calloc(1, sizeof(*pcx_font));
+        if(pcx_load_font(pcx_font, file->filename[0]) != SD_SUCCESS) {
+            printf("Could not load %s: %m\n", file->filename[0]);
+            pcx_font_free(pcx_font);
+            omf_free(pcx_font);
+            goto exit_0;
+        }
+        printf("loaded font!\n");
+        for(int g = 0; g < pcx_font->glyph_count; g++) {
+            printf("glyph %d dimensions: %d,%d, %dx%d -> %d,%d\n", g, pcx_font->glyphs[g].x, pcx_font->glyphs[g].y,
+                   pcx_font->glyphs[g].width, pcx_font->glyph_height, pcx_font->glyphs[g].x + pcx_font->glyphs[g].width,
+                   pcx_font->glyphs[g].y + pcx_font->glyph_height);
+        }
+    } else {
+        pcx_file *pcx = omf_calloc(1, sizeof(*pcx));
+        if(pcx_load(pcx, file->filename[0]) != SD_SUCCESS) {
+            printf("Could not load %s: %m\n", file->filename[0]);
+            goto exit_0;
+        }
+        printf("Manufacturer: %" PRIx8 "\n", pcx->manufacturer);
+        printf("Version: %" PRIx8 "\n", pcx->version);
+        printf("Encoding: %" PRIx8 "\n", pcx->encoding);
+        printf("Bits per plane: %" PRIx8 "\n", pcx->bits_per_plane);
+
+        printf("Window X Min: %" PRIu16 "\n", pcx->window_x_min);
+        printf("Window Y Min: %" PRIu16 "\n", pcx->window_y_min);
+        printf("Window X Max: %" PRIu16 "\n", pcx->window_x_max);
+        printf("Window Y Max: %" PRIu16 "\n", pcx->window_y_max);
+
+        printf("Horz DPI: %" PRIu16 "\n", pcx->horz_dpi);
+        printf("Vert DPI: %" PRIu16 "\n", pcx->vert_dpi);
+
+        for(int i = 0; i < 48; ++i) {
+            printf("Header Palette %d: %" PRIu8 "\n", i, pcx->header_palette[i]);
+        }
+        printf("Reserved: %" PRIu8 "\n", pcx->reserved);
+        printf("Color Planes: %" PRIu8 "\n", pcx->color_planes);
+
+        printf("Bytes Per Plane Line: %" PRIu16 "\n", pcx->bytes_per_plane_line);
+        printf("Palette Info: %" PRIu16 "\n", pcx->palette_info);
+
+        printf("Hor Scr Size: %" PRIu16 "\n", pcx->hor_scr_size);
+        printf("Ver Scr Size: %" PRIu16 "\n", pcx->ver_scr_size);
+
+        SDL_Init(SDL_INIT_VIDEO);
+
+        show_pcx(pcx);
+        pcx_free(pcx);
+        omf_free(pcx);
     }
-    printf("Manufacturer: %" PRIx8 "\n", pcx->manufacturer);
-    printf("Version: %" PRIx8 "\n", pcx->version);
-    printf("Encoding: %" PRIx8 "\n", pcx->encoding);
-    printf("Bits per plane: %" PRIx8 "\n", pcx->bits_per_plane);
-
-    printf("Window X Min: %" PRIu16 "\n", pcx->window_x_min);
-    printf("Window Y Min: %" PRIu16 "\n", pcx->window_y_min);
-    printf("Window X Max: %" PRIu16 "\n", pcx->window_x_max);
-    printf("Window Y Max: %" PRIu16 "\n", pcx->window_y_max);
-
-    printf("Horz DPI: %" PRIu16 "\n", pcx->horz_dpi);
-    printf("Vert DPI: %" PRIu16 "\n", pcx->vert_dpi);
-
-    for(int i = 0; i < 48; ++i) {
-        printf("Header Palette %d: %" PRIu8 "\n", i, pcx->header_palette[i]);
-    }
-    printf("Reserved: %" PRIu8 "\n", pcx->reserved);
-    printf("Color Planes: %" PRIu8 "\n", pcx->color_planes);
-
-    printf("Bytes Per Plane Line: %" PRIu16 "\n", pcx->bytes_per_plane_line);
-    printf("Palette Info: %" PRIu16 "\n", pcx->palette_info);
-
-    printf("Hor Scr Size: %" PRIu16 "\n", pcx->hor_scr_size);
-    printf("Ver Scr Size: %" PRIu16 "\n", pcx->ver_scr_size);
-
-    SDL_Init(SDL_INIT_VIDEO);
-    show_pcx(pcx);
-    pcx_free(pcx);
-    omf_free(pcx);
 
 exit_0:
     arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));

@@ -34,7 +34,22 @@ typedef struct {
     palette palette;
 } pcx_file;
 
+typedef struct {
+    uint16_t x;
+    uint8_t y;
+    uint8_t width;
+} pcx_font_glyph;
+
+typedef struct {
+    pcx_file pcx;
+    uint8_t glyph_height;
+    uint8_t glyph_count;
+    pcx_font_glyph glyphs[256];
+} pcx_font;
+
 int pcx_load(pcx_file *pcx, const char *filename);
+int pcx_load_font(pcx_font *font, const char *filename);
 void pcx_free(pcx_file *pcx);
+void pcx_font_free(pcx_font *font);
 
 #endif // PCX_H
