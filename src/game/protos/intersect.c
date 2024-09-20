@@ -75,6 +75,9 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
     // Some useful variables
     sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
     sprite *target_sprite = animation_get_sprite(target->cur_animation, target->cur_sprite_id);
+    if(target_sprite == NULL) {
+        return 0;
+    }
     vec2i pos_a = vec2i_add(object_get_pos(obj), cur_sprite->pos);
     vec2i pos_b = vec2i_add(object_get_pos(target), target_sprite->pos);
     vec2i size_a = object_get_size(obj);
