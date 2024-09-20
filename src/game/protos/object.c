@@ -301,6 +301,9 @@ void object_render_shadow(object *obj) {
     }
 
     sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+    if(cur_sprite == NULL) {
+        return;
+    }
 
     // Scale of the sprite on Y axis should be less than the
     // height of the sprite because of light position
