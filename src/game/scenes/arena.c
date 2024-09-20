@@ -752,6 +752,16 @@ uint32_t arena_state_hash(game_state *gs) {
     return hash;
 }
 
+void arena_state_dump(game_state *gs) {
+    for(int i = 0; i < 2; i++) {
+        object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
+        har *har = obj_har->userdata;
+        vec2i pos = object_get_pos(obj_har);
+        DEBUG("har %d pos %f,%f, health %f, endurance %f", i, (float)pos.x, (float)pos.y, (float)har->health,
+              (float)har->endurance);
+    }
+}
+
 // -------- Scene callbacks --------
 
 void arena_free(scene *scene) {

@@ -40,6 +40,10 @@ typedef struct {
     int last_acked_tick;
     int last_har_state;
     int last_traced_tick;
+    int peer_last_hash;
+    int peer_last_hash_tick;
+    int last_hash;
+    int last_hash_tick;
     SDL_RWops *trace_file;
     game_state *gs_bak;
 } wtf;
@@ -47,7 +51,7 @@ typedef struct {
 typedef struct {
     int tick;
     uint16_t events[2];
-    bool seen_peer;
+    uint8_t seen_peer;
 } tick_events;
 
 // simple standard deviation calculation
@@ -95,7 +99,7 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
     event.tick = tick;
     event.events[id] = action;
     event.events[abs(id - 1)] = 0;
-    event.seen_peer = id != data->id;
+    event.seen_peer = 1 << id;
     int i = 0;
 
     while((ev = (tick_events *)list_iter_next(&it))) {
@@ -104,16 +108,17 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
             return;
         } else if(ev->tick == tick) {
             ev->events[id] |= action;
-            ev->seen_peer = ev->seen_peer || id != data->id;
+            ev->seen_peer |= 1 << id;
             return;
         } else if(ev->tick < tick) {
             // even though we have no events for this tick, mark the peer has events past here
-            ev->seen_peer = ev->seen_peer || id != data->id;
+            ev->seen_peer |= 1 << id;
         }
         nev = list_iter_peek(&it);
         if(ev->tick < tick && nev && nev->tick > tick) {
             list_iter_append(&it, &event, sizeof(tick_events));
-            return;
+                  nev->tick);
+                  return;
         }
         i++;
     }
@@ -146,12 +151,22 @@ void send_events(wtf *data) {
     serial_create(&ser);
     serial_write_int8(&ser, EVENT_TYPE_ACTION);
     serial_write_int32(&ser, data->last_received_tick);
+    serial_write_int32(&ser, data->last_hash_tick);
+    serial_write_int32(&ser, data->last_hash);
+
+    int events = 0;
 
     while((ev = (tick_events *)list_iter_next(&it))) {
         if(ev->events[data->id] != 0 && ev->tick > data->last_acked_tick && ev->tick < data->last_tick) {
             serial_write_int16(&ser, ev->events[data->id]);
             serial_write_int32(&ser, ev->tick);
+            events++;
         }
+    }
+
+    if(!events) {
+        // serial_write_int16(&ser, 0);
+        // serial_write_int32(&ser, data->last_tick - 10);
     }
 
     data->last_sent = data->last_tick;
@@ -162,7 +177,7 @@ void send_events(wtf *data) {
     enet_host_flush(host);
 }
 
-void rewind_and_replay(wtf *data, game_state *gs_current) {
+int rewind_and_replay(wtf *data, game_state *gs_current) {
     // first, find the last frame we have input from the other side
     // this will be our next checkpoint (as no events can come in before
     iterator it;
@@ -188,15 +203,15 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
     // int gs_start = gs->int_tick - data->local_proposal;
 
     while((ev = (tick_events *)list_iter_next(&it))) {
-        if(ev->tick + data->local_proposal <= gs->int_tick) {
+        if(ev->tick + data->local_proposal < data->gs_bak->int_tick) {
             // tick too old to matter
-            // DEBUG("tick %d is older than %d", ev->tick, gs->int_tick - data->local_proposal);
+            DEBUG("tick %d is older than %d", ev->tick, data->gs_bak->int_tick - data->local_proposal);
             list_delete(transcript, &it);
             continue;
         }
 
-        if(gs_new == NULL && ev->tick > data->last_acked_tick) {
-            DEBUG("tick %d is newer than last received tick %d", ev->tick, data->last_received_tick);
+        if(gs_new == NULL && ev->tick >= data->last_acked_tick && ev->seen_peer == 3) {
+            DEBUG("tick %d is newer than last acked tick %d", ev->tick, data->last_acked_tick);
             // save off the game state at the point we last agreed
             // on the state of the game
             gs_new = omf_calloc(1, sizeof(game_state));
@@ -210,12 +225,29 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
         for(int dynamic_wait = ticks; dynamic_wait > 0; dynamic_wait--) {
             // Tick scene
             game_state_dynamic_tick(gs, true);
+            DEBUG("arena tick %d, hash %d", gs->int_tick - data->local_proposal, arena_state_hash(gs));
+            arena_state_dump(gs);
+            if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick &&
+               data->peer_last_hash != arena_state_hash(gs)) {
+                DEBUG("arena hash mismatch at %d (%d) -- got %d expected %d!", gs->int_tick - data->local_proposal,
+                      data->peer_last_hash_tick, data->peer_last_hash, arena_state_hash(gs));
+                for(int i = 0; i < game_state_num_players(gs); i++) {
+                    game_player *gp = game_state_get_player(gs, i);
+                    controller *c = game_player_get_ctrl(gp);
+                    if(c) {
+                        c->gs = gs_current;
+                    }
+                }
+                return 1;
+            } else if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick) {
+                DEBUG("arena hashes agree!");
+            }
         }
 
         // feed in the inputs
         // XXX this is a hack for now
 
-        if((ev->events[0] || ev->events[1]) && ev->tick <= data->last_received_tick && ev->seen_peer &&
+        if((ev->events[0] || ev->events[1]) && ev->tick <= data->last_received_tick && ev->seen_peer == 3 &&
            ev->tick > data->last_traced_tick) {
             data->last_traced_tick = ev->tick;
             int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- hash %" PRIu32 "\n", ev->tick,
@@ -244,6 +276,10 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
                 //    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
             }
         }
+        if(ev->seen_peer == 3) {
+            data->last_hash_tick = gs->int_tick - data->local_proposal;
+            data->last_hash = arena_state_hash(gs);
+        }
         // controller_cmd(ctrl, action, ev);
     }
 
@@ -266,6 +302,7 @@ void rewind_and_replay(wtf *data, game_state *gs_current) {
 
     // replace the game state with the replayed one
     gs_current->new_state = gs;
+    return 0;
 }
 
 void print_transcript(list *transcript) {
@@ -337,7 +374,10 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
         DEBUG("sending events %d -- %d", ticks - data->local_proposal, data->last_acked_tick);
         send_events(data);
         data->last_tick = ticks;
-        rewind_and_replay(data, ctrl->gs);
+        if(rewind_and_replay(data, ctrl->gs)) {
+            enet_peer_disconnect(data->peer, 0);
+            return 0;
+        }
     }
 
     data->last_tick = ticks;
@@ -356,6 +396,10 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
        game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
         data->gs_bak = omf_calloc(1, sizeof(game_state));
         game_state_clone(ctrl->gs, data->gs_bak);
+        DEBUG("cloned game state at arena tick %d, hash %d", data->gs_bak->int_tick - data->local_proposal,
+              arena_state_hash(data->gs_bak));
+        data->last_hash_tick = data->gs_bak->int_tick - data->local_proposal;
+        data->last_hash = arena_state_hash(data->gs_bak);
     } else if(data->gs_bak != NULL && !is_arena(game_state_get_scene(ctrl->gs)->id)) {
         // changed scene and no longer need a game state backup, release it
         game_state_clone_free(data->gs_bak);
@@ -368,17 +412,22 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                 serial_create_from(&ser, (const char *)event.packet->data, event.packet->dataLength);
                 switch(serial_read_int8(&ser)) {
                     case EVENT_TYPE_ACTION: {
-                        assert(event.packet->dataLength % 6 == 5);
+                        assert(event.packet->dataLength % 6 == 1);
                         int last_received = 0;
                         int last_acked = serial_read_int32(&ser);
-                        for(int i = 5; i < event.packet->dataLength; i += 6) {
+                        int peer_last_hash_tick = serial_read_int32(&ser);
+                        int peer_last_hash = serial_read_int32(&ser);
+
+                        for(int i = 13; i < event.packet->dataLength; i += 6) {
                             // dispatch keypress to scene
                             int action = serial_read_int16(&ser);
                             int remote_tick = serial_read_int32(&ser);
 
                             if(data->synchronized && data->gs_bak) {
                                 DEBUG("inserting event %d at tick %d", action, remote_tick);
-                                insert_event(data, remote_tick, action, abs(data->id - 1));
+                                if(remote_tick > data->last_received_tick) {
+                                    insert_event(data, remote_tick, action, abs(data->id - 1));
+                                }
                                 last_received = remote_tick;
                                 // print_transcript(&data->transcript);
                             } else {
@@ -390,23 +439,20 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             // print_transcript(&data->transcript);
                             data->last_received_tick = max2(data->last_received_tick, last_received);
                             data->last_acked_tick = max2(data->last_acked_tick, last_acked);
-                            rewind_and_replay(data, ctrl->gs);
+                            if(peer_last_hash_tick > data->peer_last_hash_tick) {
+                                data->peer_last_hash_tick = peer_last_hash_tick;
+                                data->peer_last_hash = peer_last_hash;
+                                DEBUG("peer last hash is %d %d, local is %d %d", data->peer_last_hash_tick,
+                                      data->peer_last_hash, data->gs_bak->int_tick, arena_state_hash(data->gs_bak));
+                            }
+                            if(rewind_and_replay(data, ctrl->gs)) {
+                                enet_peer_disconnect(data->peer, 0);
+                                return 0;
+                            }
                             if(data->last_sent + data->local_proposal < ticks - 50) {
                                 // if we haven't sent an event in a while, send a dummy event to force the peer to
                                 // rewind/replay
-                                serial action_ser;
-                                ENetPacket *action_packet;
-                                serial_create(&action_ser);
-                                serial_write_int8(&action_ser, EVENT_TYPE_ACTION);
-                                serial_write_int32(&action_ser, data->last_received_tick);
-                                serial_write_int16(&action_ser, 0);
-                                serial_write_int32(&action_ser, (ticks - data->local_proposal) - 1);
-                                data->last_sent = (ticks - data->local_proposal) - 1;
-                                action_packet = enet_packet_create(action_ser.data, serial_len(&action_ser),
-                                                                   ENET_PACKET_FLAG_UNSEQUENCED);
-                                serial_free(&action_ser);
-                                enet_peer_send(peer, 1, action_packet);
-                                enet_host_flush(host);
+                                send_events(data);
                             }
                         }
                     } break;
@@ -608,8 +654,8 @@ void controller_hook(controller *ctrl, int action) {
     if(peer) {
         // DEBUG("Local event %d at %d", action, data->last_tick - data->local_proposal);
         if(data->synchronized && data->gs_bak) {
-            DEBUG("inserting event %d at tick %d", action, data->last_tick - data->local_proposal);
-            insert_event(data, data->last_tick - data->local_proposal, action, data->id);
+            DEBUG("inserting event %d at tick %d", action, ctrl->gs->int_tick - data->local_proposal);
+            insert_event(data, ctrl->gs->int_tick - data->local_proposal, action, data->id);
             // print_transcript(&data->transcript);
             // send_events(data);
             // rewind_and_replay(data, ctrl->gs);
@@ -618,6 +664,8 @@ void controller_hook(controller *ctrl, int action) {
             ENetPacket *packet;
             serial_create(&ser);
             serial_write_int8(&ser, EVENT_TYPE_ACTION);
+            serial_write_int32(&ser, 0);
+            serial_write_int32(&ser, 0);
             serial_write_int32(&ser, 0);
             serial_write_int16(&ser, action);
             serial_write_int32(&ser, data->last_tick - data->local_proposal);
