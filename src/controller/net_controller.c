@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "controller/net_controller.h"
 #include "game/game_state_type.h"
@@ -436,8 +437,10 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                                 // we're synchronized on a stable connection, propose a time to start the match
                                 data->peer_proposal = peerticks + (newrtt / 2) + 50;
                                 data->local_proposal = ticks + 50;
-                                DEBUG("proposing peer start game at their time %d, my time %d", data->peer_proposal,
-                                      data->local_proposal);
+                                uint32_t seed = time(NULL);
+                                rand_seed(seed);
+                                DEBUG("proposing peer start game at their time %d, my time %d, seed %" PRIu32,
+                                      data->peer_proposal, data->local_proposal, seed);
                                 ENetPacket *start_packet;
                                 serial start_ser;
                                 serial_create(&start_ser);
@@ -445,6 +448,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                                 serial_write_int8(&start_ser, EVENT_TYPE_PROPOSE_START);
                                 serial_write_int32(&start_ser, data->peer_proposal);
                                 serial_write_int32(&start_ser, data->local_proposal);
+                                serial_write_uint32(&start_ser, seed);
 
                                 start_packet = enet_packet_create(start_ser.data, serial_len(&start_ser),
                                                                   ENET_PACKET_FLAG_UNSEQUENCED);
@@ -489,11 +493,15 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                     case EVENT_TYPE_PROPOSE_START: {
                         int peer_proposal = serial_read_int32(&ser);
                         int local_proposal = serial_read_int32(&ser);
+                        uint32_t seed = serial_read_uint32(&ser);
                         if(peer_proposal + data->tick_offset > ticks && data->peer_proposal == 0) {
-                            DEBUG("got peer proposal to start @ %d (currently %d)", peer_proposal, ticks);
+                            DEBUG("got peer proposal to start @ %d (currently %d), seed %" PRIu32, peer_proposal, ticks,
+                                  seed);
                             data->local_proposal = peer_proposal;
                             data->peer_proposal = local_proposal;
                             data->confirmed = true;
+                            rand_seed(seed);
+
                             ENetPacket *start_packet;
                             serial start_ser;
                             serial_create(&start_ser);
