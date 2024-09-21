@@ -12,7 +12,8 @@ the game we love. Together with networking, we try to make it easier to play
 One Must Fall in its original glory on multiple platforms (Linux, Mac OSX,
 Windows, BSD to name a few).
 
-For mode detailed information about the project, please see [http://www.openomf.org/](http://www.openomf.org).
+For more detailed information about the project, please see
+[http://www.openomf.org/](http://www.openomf.org).
 
 Installation
 ------------
@@ -33,7 +34,8 @@ For compiling from sources, please see [BUILD.md](BUILD.md).
 
 License
 -------
-OpenOMF is developed under the MIT License. Please read [LICENSE](LICENSE) for more information.
+OpenOMF is developed under the MIT License. Please read [LICENSE](LICENSE)
+for more information.
 
 Contribute
 ----------
@@ -41,5 +43,4 @@ For guidelines on contributing, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Contact
 -------
-
 Discord: https://discord.gg/7CPPzab
