@@ -83,6 +83,11 @@ void serial_write_int32(serial *s, int32_t v) {
     serial_write(s, (char *)&t, sizeof(t));
 }
 
+void serial_write_uint32(serial *s, uint32_t v) {
+    uint32_t t = htonl(v);
+    serial_write(s, (char *)&t, sizeof(t));
+}
+
 void serial_write_float(serial *s, float v) {
     float t = htonf(v);
     serial_write(s, (char *)&t, sizeof(t));
@@ -125,6 +130,12 @@ int16_t serial_read_int16(serial *s) {
 
 int32_t serial_read_int32(serial *s) {
     int32_t v;
+    serial_read(s, (char *)&v, sizeof(v));
+    return ntohl(v);
+}
+
+uint32_t serial_read_uint32(serial *s) {
+    uint32_t v;
     serial_read(s, (char *)&v, sizeof(v));
     return ntohl(v);
 }
