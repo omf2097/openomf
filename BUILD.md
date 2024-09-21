@@ -2,7 +2,7 @@
 
 ### Dependencies
 
-Use at least GCC 9 or Clang 10. MSVC is not supported at this time.
+Use at least GCC 9 or Clang 10. MSVC is not supported.
 
 Required:
 * SDL2 (>=2.0.16): http://www.libsdl.org/download-2.0.php
@@ -15,7 +15,7 @@ Required:
 * libxmp: https://github.com/cmatsuoka/libxmp
 
 
-On Ubuntu, it is possible to pull some libraries using apt-get.
+On Ubuntu, it is possible to pull the libraries using apt-get.
 ```
 apt-get install cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
 ```
@@ -33,9 +33,9 @@ Latest OpenOMF source can be acquired with the "git clone" command below.
 git clone https://github.com/omf2097/openomf.git
 ```
 
-Note that the latest sources do not necessarily compile, or they may have bugs. To retrieve
-the latest source that compiles but will be out of date, see the
-[releases](https://github.com/omf2097/openomf/releases) section of OpenOMF project in GitHub.
+To retrieve the latest source that compiles but will be out of date, see the
+[releases](https://github.com/omf2097/openomf/releases) section of OpenOMF
+project in GitHub.
 
 ### Compiling
 
@@ -70,14 +70,14 @@ OpenOMF loads the original data files from the original OMF:2097 game.
 Since One Must Fall 2079 is freeware, the files are obtainable for free from
 [www.omf2097.com](http://www.omf2097.com/pub/files/omf/omf2097-assets.zip).
 
-On linux in debug mode, the OMF resource files should be put in resources/ subdirectory.
+On Linux in debug mode, the OMF resource files should be put in resources/ subdirectory.
 
-On linux in release mode, the resources should be located in ../share/games/openomf/,
+On Linux in release mode, the resources should be located in ../share/games/openomf/,
 relative to the openomf binary. So if your binary is in /usr/local/bin, the resources should
 be put in /usr/local/share/games/openomf/. With release or testing packages,
 the resources should be extracted to /usr/share/games/openomf/.
 
-On macOS and windows, the resources should be put into the resources/ subdirectory.
+On MacOS and Windows, the resources should be put into the resources/ subdirectory.
 
 You can override these default paths by setting the OPENOMF_RESOURCE_DIR environment
 variable to an absolute directory. Plugins have a similar environment variable called
