@@ -117,8 +117,7 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
         nev = list_iter_peek(&it);
         if(ev->tick < tick && nev && nev->tick > tick) {
             list_iter_append(&it, &event, sizeof(tick_events));
-                  nev->tick);
-                  return;
+            return;
         }
         i++;
     }
