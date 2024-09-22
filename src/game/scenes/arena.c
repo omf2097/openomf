@@ -493,7 +493,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
 
         int amount = rand_int(2) + 3;
         for(int i = 0; i < amount; i++) {
-            int variance = rand_int(20) - 10;
+            int variance = random_int(&scene->gs->rand, 20) - 10;
             int anim_no = rand_int(2) + 24;
             // DEBUG("XXX anim = %d, variance = %d", anim_no, variance);
             int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i * 25;
@@ -920,7 +920,7 @@ void arena_spawn_hazard(scene *scene) {
     while((pair = iter_next(&it)) != NULL) {
         bk_info *info = (bk_info *)pair->val;
         if(info->probability > 1) {
-            if(rand_int(info->probability) == 1) {
+            if(random_int(&scene->gs->rand, info->probability) == 1) {
                 // TODO don't spawn it if we already have this animation running
                 object *obj = omf_calloc(1, sizeof(object));
                 object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
@@ -943,7 +943,7 @@ void arena_spawn_hazard(scene *scene) {
                         // the different plane formations.
                         // Pick one, rather than always use the first
 
-                        int r = rand_int(info->ani.extra_string_count);
+                        int r = random_int(&scene->gs->rand, info->ani.extra_string_count);
                         if(r > 0) {
                             str *s = vector_get(&info->ani.extra_strings, r);
                             object_set_custom_string(obj, str_c(s));
@@ -1097,7 +1097,7 @@ void arena_render_overlay(scene *scene) {
 #ifdef DEBUGMODE
     snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
     font_render(&font_small, buf, 160, 0, TEXT_COLOR);
-    snprintf(buf, 40, "%u", rand_get_seed());
+    snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
     font_render(&font_small, buf, 130, 8, TEXT_COLOR);
 #endif
 
