@@ -689,10 +689,10 @@ void arena_har_hook(har_event event, void *data) {
             }
             break;
         case HAR_EVENT_DEFEAT:
-            arena_har_defeat_hook(event.player_id, scene);
             if(arena->state != ARENA_STATE_ENDING) {
                 arena->ending_ticks = 0;
                 arena->state = ARENA_STATE_ENDING;
+                arena_har_defeat_hook(event.player_id, scene);
             }
             break;
         case HAR_EVENT_SCRAP:
