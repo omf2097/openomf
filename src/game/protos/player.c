@@ -107,6 +107,7 @@ void player_create(object *obj) {
 
 void player_clone(object *src, object *dst) {
     sd_script_clone(&src->animation_state.parser, &dst->animation_state.parser);
+    dst->animation_state.gs = dst->gs;
     str s;
     str_create(&s);
     str d;
@@ -278,6 +279,7 @@ void player_run(object *obj) {
             frame = sd_script_get_frame_at(&state->parser, state->current_tick);
         } else if(obj->finish != NULL) {
             obj->cur_sprite_id = -1;
+            state->finished = 1;
             obj->finish(obj);
             return;
         } else {
