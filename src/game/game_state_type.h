@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "game/protos/fight_stats.h"
 #include "utils/vector.h"
+#include "utils/random.h"
 
 enum
 {
@@ -64,6 +65,7 @@ typedef struct game_state_t {
 
     fight_stats fight_stats;
     void *new_state;
+    struct random_t rand;
 } game_state;
 
 #endif // GAME_STATE_TYPE_H

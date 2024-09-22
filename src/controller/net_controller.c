@@ -484,7 +484,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                                 data->peer_proposal = peerticks + (newrtt / 2) + 50;
                                 data->local_proposal = ticks + 50;
                                 uint32_t seed = time(NULL);
-                                rand_seed(seed);
+                                random_seed(&ctrl->gs->rand, seed);
                                 DEBUG("proposing peer start game at their time %d, my time %d, seed %" PRIu32,
                                       data->peer_proposal, data->local_proposal, seed);
                                 ENetPacket *start_packet;
@@ -546,7 +546,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             data->local_proposal = peer_proposal;
                             data->peer_proposal = local_proposal;
                             data->confirmed = true;
-                            rand_seed(seed);
+                            random_seed(&ctrl->gs->rand, seed);
 
                             ENetPacket *start_packet;
                             serial start_ser;

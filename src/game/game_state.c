@@ -32,6 +32,7 @@
 #include <SDL.h>
 #include <math.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define MS_PER_OMF_TICK 10
 #define MS_PER_OMF_TICK_SLOWEST 60
@@ -144,6 +145,8 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
             }
         }
     }
+
+    random_seed(&gs->rand, time(NULL));
 
     // Initialize scene
     scene_init(gs->sc);
