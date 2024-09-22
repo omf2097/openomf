@@ -242,6 +242,11 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 DEBUG("arena hashes agree!");
             }
         }
+        if(ev->seen_peer == 3) {
+            data->last_hash_tick = gs->int_tick - data->local_proposal;
+            data->last_hash = arena_state_hash(gs);
+        }
+
 
         // feed in the inputs
         // XXX this is a hack for now
@@ -274,10 +279,6 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 //} else {
                 //    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
             }
-        }
-        if(ev->seen_peer == 3) {
-            data->last_hash_tick = gs->int_tick - data->local_proposal;
-            data->last_hash = arena_state_hash(gs);
         }
         // controller_cmd(ctrl, action, ev);
     }

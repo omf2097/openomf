@@ -696,7 +696,9 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
         }
     }
 
-    game_state_dyntick_controllers(gs);
+    if (!replay) {
+        game_state_dyntick_controllers(gs);
+    }
 
     // Tick scene
     scene_dynamic_tick(gs->sc, game_state_is_paused(gs));

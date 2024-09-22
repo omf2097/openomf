@@ -317,6 +317,8 @@ void arena_reset(scene *sc) {
     local->round++;
     local->state = ARENA_STATE_STARTING;
 
+    DEBUG("resetting arena");
+
     // Kill all hazards and projectiles
     game_state_clear_hazards_projectiles(sc->gs);
 
@@ -740,6 +742,7 @@ uint32_t arena_state_hash(game_state *gs) {
         object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
         har *har = obj_har->userdata;
         vec2i pos = object_get_pos(obj_har);
+        vec2f vel = object_get_vel(obj_har);
         uint32_t x = (uint32_t)pos.x;
         uint32_t y = (uint32_t)pos.y;
         uint32_t health = (uint32_t)har->health;
@@ -748,6 +751,10 @@ uint32_t arena_state_hash(game_state *gs) {
         hash = ((hash << 5) + hash) + y;
         hash = ((hash << 5) + hash) + health;
         hash = ((hash << 5) + hash) + endurance;
+        hash = ((hash << 5) + hash) + (uint32_t)vel.x;
+        //hash = ((hash << 5) + hash) + (uint32_t)vel.y;
+        hash = ((hash << 5) + hash) + har->state;
+        hash = ((hash << 5) + hash) + har->executing_move;
     }
     return hash;
 }
@@ -757,8 +764,9 @@ void arena_state_dump(game_state *gs) {
         object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
         har *har = obj_har->userdata;
         vec2i pos = object_get_pos(obj_har);
-        DEBUG("har %d pos %f,%f, health %f, endurance %f", i, (float)pos.x, (float)pos.y, (float)har->health,
-              (float)har->endurance);
+        vec2f vel = object_get_vel(obj_har);
+        DEBUG("har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %d, executing_move %d", i, pos.x, pos.y, har->health,
+              (float)har->endurance, vel.x, vel.y, har->state, har->executing_move);
     }
 }
 
