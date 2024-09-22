@@ -47,7 +47,6 @@ typedef struct player_enemy_slide_op_t {
 } player_enemy_slide_state;
 
 typedef struct player_animation_state_t {
-    game_state *gs;
     uint32_t previous_tick;
     uint32_t current_tick;
     uint32_t end_frame;

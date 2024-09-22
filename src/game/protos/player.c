@@ -84,7 +84,6 @@ void player_clear_frame(object *obj) {
 // ---------------- Public functions ----------------
 
 void player_create(object *obj) {
-    obj->animation_state.gs = obj->gs;
     obj->animation_state.reverse = 0;
     obj->animation_state.end_frame = UINT32_MAX;
     obj->animation_state.current_tick = 0;
@@ -107,7 +106,6 @@ void player_create(object *obj) {
 
 void player_clone(object *src, object *dst) {
     sd_script_clone(&src->animation_state.parser, &dst->animation_state.parser);
-    dst->animation_state.gs = dst->gs;
     str s;
     str_create(&s);
     str d;
@@ -265,7 +263,7 @@ void player_run(object *obj) {
     // Some vars for easier life
     player_animation_state *state = &obj->animation_state;
     player_sprite_state *rstate = &obj->sprite_state;
-    object *enemy = game_state_find_object(state->gs, state->enemy_obj_id);
+    object *enemy = game_state_find_object(obj->gs, state->enemy_obj_id);
     // DEBUG("i am %d, enemy is %d", obj->id, state->enemy_obj_id);
     if(state->finished)
         return;

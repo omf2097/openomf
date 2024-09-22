@@ -977,7 +977,6 @@ int game_state_clone(game_state *src, game_state *dst) {
     while((robj = iter_next(&it)) != NULL) {
         render_obj d;
         render_obj_clone(robj, &d, dst);
-        d.obj->animation_state.gs = dst;
         DEBUG("cloned object %d", d.obj->id);
         vector_append(&dst->objects, &d);
         i++;
