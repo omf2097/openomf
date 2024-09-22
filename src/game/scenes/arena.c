@@ -493,7 +493,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
 
         int amount = rand_int(2) + 3;
         for(int i = 0; i < amount; i++) {
-            int variance = random_int(&scene->gs->rand, 20) - 10;
+            int variance = rand_int(20) - 10;
             int anim_no = rand_int(2) + 24;
             // DEBUG("XXX anim = %d, variance = %d", anim_no, variance);
             int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i * 25;
@@ -990,8 +990,10 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
 
         // RTT stuff
-        hars[0]->delay = ceilf(player2->ctrl->rtt / 2.0f);
-        hars[1]->delay = ceilf(player1->ctrl->rtt / 2.0f);
+        // TODO do this elsewhere because it is incorrect here
+        // we need to do it only on the 'live' gamestate, never on the replayed one
+        //hars[0]->delay = ceilf(player2->ctrl->rtt / 2.0f);
+        //hars[1]->delay = ceilf(player1->ctrl->rtt / 2.0f);
 
         // Endings and beginnings
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
