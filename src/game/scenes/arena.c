@@ -1198,7 +1198,9 @@ void arena_toggle_rein(scene *scene) {
 }
 
 void arena_clone(scene *src, scene *dst) {
-    // don't need to clone anything here, just install fresh hooks that point to the right scene
+    arena_local *local = omf_calloc(1, sizeof(arena_local));
+    dst->userdata = local;
+    memcpy(dst->userdata, src->userdata, sizeof(arena_local));
     maybe_install_har_hooks(dst);
 }
 
