@@ -222,7 +222,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         if(ev->tick + data->local_proposal < data->gs_bak->int_tick) {
             // tick too old to matter
             DEBUG("tick %d is older than %d", ev->tick, data->gs_bak->int_tick - data->local_proposal);
-            //list_delete(transcript, &it);
+            assert(ev->seen_peer == 3);
+            list_delete(transcript, &it);
             continue;
         }
 
@@ -232,7 +233,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         }
         last_seen_peer = ev->seen_peer;
 
-        if(gs_new == NULL && ev->tick >= data->last_acked_tick && ev->seen_peer == 3) {
+        // XXX TODO disable this for now, for unknown reason
+        if(false && gs_new == NULL && ev->tick > min2(data->last_acked_tick, data->last_received_tick) && ev->seen_peer == 3) {
             DEBUG("tick %d is newer than last acked tick %d", ev->tick, data->last_acked_tick);
             // save off the game state at the point we last agreed
             // on the state of the game
