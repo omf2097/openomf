@@ -40,9 +40,9 @@ typedef struct {
     int last_acked_tick;
     int last_har_state;
     int last_traced_tick;
-    int peer_last_hash;
+    uint32_t peer_last_hash;
     int peer_last_hash_tick;
-    int last_hash;
+    uint32_t last_hash;
     int last_hash_tick;
     SDL_RWops *trace_file;
     game_state *gs_bak;
@@ -162,7 +162,7 @@ void send_events(wtf *data) {
     serial_write_int8(&ser, EVENT_TYPE_ACTION);
     serial_write_int32(&ser, data->last_received_tick);
     serial_write_int32(&ser, data->last_hash_tick);
-    serial_write_int32(&ser, data->last_hash);
+    serial_write_uint32(&ser, data->last_hash);
 
     int events = 0;
 
@@ -264,13 +264,14 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
             if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick &&
                data->peer_last_hash != arena_state_hash(gs) && ev->seen_peer == 3) {
-                int sz = snprintf(buf, sizeof(buf), "---MISMATCH at %d (%d) got %d expected %d\n",
+                int sz = snprintf(buf, sizeof(buf), "---MISMATCH at %d (%d) got %" PRIu32 " expected %" PRIu32 "\n",
                                   gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash,
                                   arena_state_hash(gs));
                 SDL_RWwrite(data->trace_file, buf, sz, 1);
 
-                DEBUG("arena hash mismatch at %d (%d) -- got %d expected %d!", gs->int_tick - data->local_proposal,
-                      data->peer_last_hash_tick, data->peer_last_hash, arena_state_hash(gs));
+                DEBUG("arena hash mismatch at %d (%d) -- got %" PRIu32 " expected %" PRIu32 "!",
+                      gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash,
+                      arena_state_hash(gs));
                 for(int i = 0; i < game_state_num_players(gs); i++) {
                     game_player *gp = game_state_get_player(gs, i);
                     controller *c = game_player_get_ctrl(gp);
@@ -463,7 +464,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                         int last_received = 0;
                         int last_acked = serial_read_int32(&ser);
                         int peer_last_hash_tick = serial_read_int32(&ser);
-                        int peer_last_hash = serial_read_int32(&ser);
+                        uint32_t peer_last_hash = serial_read_uint32(&ser);
 
                         for(int i = 13; i < event.packet->dataLength; i += 6) {
                             // dispatch keypress to scene
@@ -489,8 +490,9 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                             if(peer_last_hash_tick > data->peer_last_hash_tick) {
                                 data->peer_last_hash_tick = peer_last_hash_tick;
                                 data->peer_last_hash = peer_last_hash;
-                                DEBUG("peer last hash is %d %d, local is %d %d", data->peer_last_hash_tick,
-                                      data->peer_last_hash, data->gs_bak->int_tick, arena_state_hash(data->gs_bak));
+                                DEBUG("peer last hash is %" PRIu32 " %d, local is %d %" PRIu32,
+                                      data->peer_last_hash_tick, data->peer_last_hash, data->gs_bak->int_tick,
+                                      arena_state_hash(data->gs_bak));
                             }
                             if(last_received && rewind_and_replay(data, ctrl->gs)) {
                                 enet_peer_disconnect(data->peer, 0);
