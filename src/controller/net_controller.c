@@ -282,7 +282,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 DEBUG("arena hashes agree!");
             }
         }
-        if(ev->seen_peer == 3) {
+        if(ev->seen_peer == 3 && data->last_hash_tick < gs->int_tick - data->local_proposal) {
             data->last_hash_tick = gs->int_tick - data->local_proposal;
             data->last_hash = arena_state_hash(gs);
         }
