@@ -421,10 +421,10 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
         DEBUG("sending events %d -- %d", ticks - data->local_proposal, data->last_acked_tick);
         send_events(data);
         data->last_tick = ticks;
-        if(rewind_and_replay(data, ctrl->gs)) {
-            enet_peer_disconnect(data->peer, 0);
-            return 0;
-        }
+        // if(rewind_and_replay(data, ctrl->gs)) {
+        //     enet_peer_disconnect(data->peer, 0);
+        //     return 0;
+        // }
     }
 
     data->last_tick = ticks;
@@ -492,7 +492,7 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
                                 DEBUG("peer last hash is %d %d, local is %d %d", data->peer_last_hash_tick,
                                       data->peer_last_hash, data->gs_bak->int_tick, arena_state_hash(data->gs_bak));
                             }
-                            if(rewind_and_replay(data, ctrl->gs)) {
+                            if(last_received && rewind_and_replay(data, ctrl->gs)) {
                                 enet_peer_disconnect(data->peer, 0);
                                 return 0;
                             }
