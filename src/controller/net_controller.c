@@ -140,6 +140,15 @@ bool has_event(wtf *data, int tick) {
     return false;
 }
 
+void print_transcript(list *transcript) {
+    iterator it;
+    list_iter_begin(transcript, &it);
+    tick_events *ev = NULL;
+    while((ev = (tick_events *)list_iter_next(&it))) {
+        DEBUG("tick %d has events %d -- %d (%d)", ev->tick, ev->events[0], ev->events[1], ev->seen_peer);
+    }
+}
+
 void send_events(wtf *data) {
     serial ser;
     ENetPacket *packet;
@@ -158,7 +167,7 @@ void send_events(wtf *data) {
     int events = 0;
 
     while((ev = (tick_events *)list_iter_next(&it))) {
-        if(ev->events[data->id] != 0 && ev->tick > data->last_acked_tick && ev->tick < data->last_tick) {
+        if(ev->events[data->id] != 0 && ev->tick > data->last_acked_tick && ev->tick < data->last_tick - data->local_proposal) {
             serial_write_int16(&ser, ev->events[data->id]);
             serial_write_int32(&ser, ev->tick);
             events++;
@@ -189,8 +198,12 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     game_state *gs_new = NULL;
     char buf[255];
 
-    DEBUG("current game ticks is %d, stored game ticks are %d, last tick is %d", gs_current->int_tick, gs->int_tick,
-          data->last_tick);
+    game_state *gs_old = omf_calloc(1, sizeof(game_state));
+    game_state_clone(gs, gs_old);
+
+
+    DEBUG("current game ticks is %d, stored game ticks are %d, last tick is %d", gs_current->int_tick - data->local_proposal, gs->int_tick - data->local_proposal,
+          data->last_tick - data->local_proposal);
 
     // fix the game state pointers in the controllers
     for(int i = 0; i < game_state_num_players(gs); i++) {
@@ -202,14 +215,22 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     }
 
     // int gs_start = gs->int_tick - data->local_proposal;
+    
+    int last_seen_peer = 0;
 
     while((ev = (tick_events *)list_iter_next(&it))) {
         if(ev->tick + data->local_proposal < data->gs_bak->int_tick) {
             // tick too old to matter
             DEBUG("tick %d is older than %d", ev->tick, data->gs_bak->int_tick - data->local_proposal);
-            list_delete(transcript, &it);
+            //list_delete(transcript, &it);
             continue;
         }
+
+        if (last_seen_peer && last_seen_peer!= 3 && ev->seen_peer == 3) {
+            print_transcript(transcript);
+            assert(false);
+        }
+        last_seen_peer = ev->seen_peer;
 
         if(gs_new == NULL && ev->tick >= data->last_acked_tick && ev->seen_peer == 3) {
             DEBUG("tick %d is newer than last acked tick %d", ev->tick, data->last_acked_tick);
@@ -218,6 +239,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             gs_new = omf_calloc(1, sizeof(game_state));
             game_state_clone(gs, gs_new);
             data->gs_bak = gs_new;
+            game_state_clone_free(gs_old);
+            omf_free(gs_old);
         }
         // these are 'dynamic ticks'
         int ticks = (ev->tick + data->local_proposal) - gs->int_tick;
@@ -228,8 +251,19 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             game_state_dynamic_tick(gs, true);
             DEBUG("arena tick %d, hash %d", gs->int_tick - data->local_proposal, arena_state_hash(gs));
             arena_state_dump(gs);
+            if((ev->events[0] || ev->events[1]) && ev->seen_peer == 3 &&
+                    ev->tick > data->last_traced_tick) {
+                data->last_traced_tick = ev->tick;
+                int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- hash %" PRIu32 "\n", ev->tick,
+                        ev->events[0], ev->events[1], arena_state_hash(gs));
+                SDL_RWwrite(data->trace_file, buf, sz, 1);
+            }
+
             if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick &&
-               data->peer_last_hash != arena_state_hash(gs)) {
+               data->peer_last_hash != arena_state_hash(gs) && ev->seen_peer == 3) {
+                int sz = snprintf(buf, sizeof(buf), "---MISMATCH at %d (%d) got %d expected %d\n", gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash, arena_state_hash(gs));
+                SDL_RWwrite(data->trace_file, buf, sz, 1);
+
                 DEBUG("arena hash mismatch at %d (%d) -- got %d expected %d!", gs->int_tick - data->local_proposal,
                       data->peer_last_hash_tick, data->peer_last_hash, arena_state_hash(gs));
                 for(int i = 0; i < game_state_num_players(gs); i++) {
@@ -238,6 +272,10 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                     if(c) {
                         c->gs = gs_current;
                     }
+                }
+                if (gs_old) {
+                    game_state_clone_free(gs_old);
+                    omf_free(gs_old);
                 }
                 return 1;
             } else if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick) {
@@ -253,20 +291,13 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         // feed in the inputs
         // XXX this is a hack for now
 
-        if((ev->events[0] || ev->events[1]) && ev->tick <= data->last_received_tick && ev->seen_peer == 3 &&
-           ev->tick > data->last_traced_tick) {
-            data->last_traced_tick = ev->tick;
-            int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- hash %" PRIu32 "\n", ev->tick,
-                              ev->events[0], ev->events[1], arena_state_hash(gs));
-            SDL_RWwrite(data->trace_file, buf, sz, 1);
-        }
 
         for(int j = 0; j < 2; j++) {
             int player_id = j;
             game_player *player = game_state_get_player(gs, player_id);
             if(ev->events[j]) {
-                DEBUG("replaying input %d from player %d at tick %d %d", ev->events[j], player_id, ev->tick,
-                      gs->int_tick - data->local_proposal);
+                DEBUG("replaying input %d from player %d at tick %d %d -- peer_seen %d", ev->events[j], player_id, ev->tick,
+                      gs->int_tick - data->local_proposal, ev->seen_peer);
                 if(((ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH) != 0) {
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)),
                                (ev->events[j] & ~ACT_KICK) & ~ACT_PUNCH);
@@ -285,10 +316,14 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         // controller_cmd(ctrl, action, ev);
     }
 
-    if(gs_new == NULL) {
+    if(gs_new == NULL && gs->int_tick - data->local_proposal <= data->last_acked_tick) {
         gs_new = omf_calloc(1, sizeof(game_state));
         game_state_clone(gs, gs_new);
         data->gs_bak = gs_new;
+        game_state_clone_free(gs_old);
+        omf_free(gs_old);
+    } else if (gs_new == NULL) {
+        data->gs_bak = gs_old;
     }
 
     DEBUG("game state is %d, want %d", gs->int_tick, data->last_tick);
@@ -307,15 +342,6 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     return 0;
 }
 
-void print_transcript(list *transcript) {
-    iterator it;
-    list_iter_begin(transcript, &it);
-    tick_events *ev = NULL;
-    while((ev = (tick_events *)list_iter_next(&it))) {
-        DEBUG("tick %d has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
-    }
-}
-
 bool net_controller_ready(controller *ctrl) {
     wtf *data = ctrl->data;
     return data->synchronized;
@@ -328,6 +354,23 @@ int net_controller_tick_offset(controller *ctrl) {
 
 void net_controller_free(controller *ctrl) {
     wtf *data = ctrl->data;
+
+    char buf[255];
+    int sz = snprintf(buf, sizeof(buf), "------BEGIN TRANSCRIPT-------\n");
+
+    SDL_RWwrite(data->trace_file, buf, sz, 1);
+
+    iterator it;
+    list_iter_begin(&data->transcript, &it);
+    tick_events *ev = NULL;
+    while((ev = (tick_events *)list_iter_next(&it))) {
+        DEBUG("tick %d has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
+        int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- seen_peer %d\n", ev->tick,
+            ev->events[0], ev->events[1], ev->seen_peer);
+        SDL_RWwrite(data->trace_file, buf, sz, 1);
+    }
+
+
     SDL_RWclose(data->trace_file);
     ENetEvent event;
     if(!data->disconnected) {

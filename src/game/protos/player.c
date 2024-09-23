@@ -106,15 +106,6 @@ void player_create(object *obj) {
 
 void player_clone(object *src, object *dst) {
     sd_script_clone(&src->animation_state.parser, &dst->animation_state.parser);
-    str s;
-    str_create(&s);
-    str d;
-    str_create(&d);
-    sd_script_encode(&src->animation_state.parser, &s);
-    sd_script_encode(&dst->animation_state.parser, &d);
-    DEBUG("cloned player from %s to %s", str_c(&s), str_c(&d));
-    str_free(&s);
-    str_free(&d);
 }
 
 void player_free(object *obj) {
