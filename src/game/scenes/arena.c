@@ -752,7 +752,7 @@ uint32_t arena_state_hash(game_state *gs) {
         hash = ((hash << 5) + hash) + health;
         hash = ((hash << 5) + hash) + endurance;
         hash = ((hash << 5) + hash) + (uint32_t)vel.x;
-        //hash = ((hash << 5) + hash) + (uint32_t)vel.y;
+        // hash = ((hash << 5) + hash) + (uint32_t)vel.y;
         hash = ((hash << 5) + hash) + har->state;
         hash = ((hash << 5) + hash) + har->executing_move;
     }
@@ -765,8 +765,8 @@ void arena_state_dump(game_state *gs) {
         har *har = obj_har->userdata;
         vec2i pos = object_get_pos(obj_har);
         vec2f vel = object_get_vel(obj_har);
-        DEBUG("har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %d, executing_move %d", i, pos.x, pos.y, har->health,
-              (float)har->endurance, vel.x, vel.y, har->state, har->executing_move);
+        DEBUG("har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %d, executing_move %d", i, pos.x, pos.y,
+              har->health, (float)har->endurance, vel.x, vel.y, har->state, har->executing_move);
     }
 }
 
@@ -992,8 +992,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
         // RTT stuff
         // TODO do this elsewhere because it is incorrect here
         // we need to do it only on the 'live' gamestate, never on the replayed one
-        //hars[0]->delay = ceilf(player2->ctrl->rtt / 2.0f);
-        //hars[1]->delay = ceilf(player1->ctrl->rtt / 2.0f);
+        // hars[0]->delay = ceilf(player2->ctrl->rtt / 2.0f);
+        // hars[1]->delay = ceilf(player1->ctrl->rtt / 2.0f);
 
         // Endings and beginnings
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
