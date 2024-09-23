@@ -104,6 +104,7 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
 
     while((ev = (tick_events *)list_iter_next(&it))) {
         if(i == 0 && ev->tick > tick) {
+            event.seen_peer |= ev->seen_peer;
             list_prepend(transcript, &event, sizeof(tick_events));
             return;
         } else if(ev->tick == tick) {
@@ -116,6 +117,7 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
         }
         nev = list_iter_peek(&it);
         if(ev->tick < tick && nev && nev->tick > tick) {
+            event.seen_peer |= nev->seen_peer;
             list_iter_append(&it, &event, sizeof(tick_events));
             return;
         }
