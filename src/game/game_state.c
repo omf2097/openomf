@@ -970,6 +970,10 @@ int game_state_clone(game_state *src, game_state *dst) {
     // fix any pointers to volatile data
     vector_create(&dst->objects, sizeof(render_obj));
 
+    dst->next_wait_ticks = 0;
+    dst->this_wait_ticks = 0;
+
+
     iterator it;
     vector_iter_begin(&src->objects, &it);
     render_obj *robj;
