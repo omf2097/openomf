@@ -3,8 +3,8 @@
 
 #include "engine.h"
 #include "game/protos/fight_stats.h"
-#include "utils/vector.h"
 #include "utils/random.h"
+#include "utils/vector.h"
 
 enum
 {

@@ -699,7 +699,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
         }
     }
 
-    if (!replay) {
+    if(!replay) {
         game_state_dyntick_controllers(gs);
     }
 
@@ -972,7 +972,6 @@ int game_state_clone(game_state *src, game_state *dst) {
 
     dst->next_wait_ticks = 0;
     dst->this_wait_ticks = 0;
-
 
     iterator it;
     vector_iter_begin(&src->objects, &it);

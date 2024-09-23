@@ -20,5 +20,4 @@ uint32_t arena_state_hash(game_state *gs);
 void arena_state_dump(game_state *gs);
 void arena_reset(scene *sc);
 
-
 #endif // ARENA_H
