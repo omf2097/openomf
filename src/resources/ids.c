@@ -102,6 +102,8 @@ const char *get_resource_file(unsigned int id) {
             return "WORLD.PIC";
         case PIC_PLAYERS:
             return "PLAYERS.PIC";
+        case PCX_NETARENA:
+            return "NETARENA.PCX";
         case PCX_NETFONT1:
             return "NETFONT1.PCX";
         case PCX_NETFONT2:
@@ -210,6 +212,8 @@ const char *get_resource_name(unsigned int id) {
             return "PIC_WORLD";
         case PIC_PLAYERS:
             return "PIC_PLAYERS";
+        case PCX_NETARENA:
+            return "PCX_NETARENA";
         default:
             break;
     }
