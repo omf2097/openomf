@@ -441,13 +441,14 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
         }
     }
 
-    if(data->gs_bak == NULL && is_arena(game_state_get_scene(ctrl->gs)->id) && (ticks - data->local_proposal) % 7 == 0 &&
-            game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
+    if(data->gs_bak == NULL && is_arena(game_state_get_scene(ctrl->gs)->id) &&
+       (ticks - data->local_proposal) % 7 == 0 &&
+       game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
         arena_reset(ctrl->gs->sc);
         data->gs_bak = omf_calloc(1, sizeof(game_state));
         game_state_clone(ctrl->gs, data->gs_bak);
-        DEBUG("cloned game state at arena tick %d hash %"PRIu32, data->gs_bak->int_tick - data->local_proposal,
-                arena_state_hash(data->gs_bak));
+        DEBUG("cloned game state at arena tick %d hash %" PRIu32, data->gs_bak->int_tick - data->local_proposal,
+              arena_state_hash(data->gs_bak));
         data->local_proposal = ticks; // reset the tick offset to the start of the match
         data->last_hash_tick = data->gs_bak->int_tick - data->local_proposal;
         data->last_hash = arena_state_hash(data->gs_bak);
