@@ -411,12 +411,13 @@ done:
     }
 }
 
-int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
+int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
     ENetEvent event;
     wtf *data = ctrl->data;
     ENetHost *host = data->host;
     ENetPeer *peer = data->peer;
     serial ser;
+    int ticks = ctrl->gs->int_tick;
 
     if(has_event(data, ticks - 1) && ticks > data->last_tick) {
         DEBUG("sending events %d -- %d", ticks - data->local_proposal, data->last_acked_tick);
@@ -440,12 +441,14 @@ int net_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
         }
     }
 
-    if(data->gs_bak == NULL && is_arena(game_state_get_scene(ctrl->gs)->id) && ctrl->gs->this_wait_ticks == 0 &&
-       game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
+    if(data->gs_bak == NULL && is_arena(game_state_get_scene(ctrl->gs)->id) && (ticks - data->local_proposal) % 7 == 0 &&
+            game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
+        arena_reset(ctrl->gs->sc);
         data->gs_bak = omf_calloc(1, sizeof(game_state));
         game_state_clone(ctrl->gs, data->gs_bak);
-        DEBUG("cloned game state at arena tick %d, hash %d", data->gs_bak->int_tick - data->local_proposal,
-              arena_state_hash(data->gs_bak));
+        DEBUG("cloned game state at arena tick %d hash %"PRIu32, data->gs_bak->int_tick - data->local_proposal,
+                arena_state_hash(data->gs_bak));
+        data->local_proposal = ticks; // reset the tick offset to the start of the match
         data->last_hash_tick = data->gs_bak->int_tick - data->local_proposal;
         data->last_hash = arena_state_hash(data->gs_bak);
     } else if(data->gs_bak != NULL && !is_arena(game_state_get_scene(ctrl->gs)->id)) {
