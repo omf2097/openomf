@@ -121,7 +121,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palett
         uint8_t b = src->data[pos + 2];
         uint8_t a = src->data[pos + 3];
 
-        // ignore anytjhing but fully opaque pixels
+        // ignore anything but fully opaque pixels
         if(a == 255) {
             int16_t x = (pos / 4) % src->w;
             int16_t y = (pos / 4) / src->w;
