@@ -533,8 +533,8 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                                 (data->id == ROLE_CLIENT && ticks % 73 == 0)) &&
                                !data->synchronized && data->peer_proposal == 0) {
                                 // we're synchronized on a stable connection, propose a time to start the match
-                                data->peer_proposal = peerticks + (newrtt / 2) + 50;
-                                data->local_proposal = ticks + 50;
+                                data->peer_proposal = peerticks + (newrtt / 2) + 100;
+                                data->local_proposal = ticks + 100;
                                 uint32_t seed = time(NULL);
                                 random_seed(&ctrl->gs->rand, seed);
                                 DEBUG("proposing peer start game at their time %d, my time %d, seed %" PRIu32,
