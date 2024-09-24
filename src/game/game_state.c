@@ -13,6 +13,7 @@
 #include "game/scenes/credits.h"
 #include "game/scenes/cutscene.h"
 #include "game/scenes/intro.h"
+#include "game/scenes/lobby.h"
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/melee.h"
@@ -500,6 +501,12 @@ int game_load_new(game_state *gs, int scene_id) {
         case SCENE_NEWSROOM:
             if(newsroom_create(gs->sc)) {
                 PERROR("Error while creating Newsroom scene.");
+                goto error_1;
+            }
+            break;
+        case SCENE_LOBBY:
+            if(lobby_create(gs->sc)) {
+                PERROR("Error creating Lobby scene.");
                 goto error_1;
             }
             break;
