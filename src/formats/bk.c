@@ -9,6 +9,7 @@
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/palette.h"
+#include "formats/pcx.h"
 #include "formats/vga_image.h"
 #include "utils/allocator.h"
 
@@ -95,6 +96,11 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     sd_reader *r;
     int ret = SD_SUCCESS;
 
+    size_t fn_len = strlen(filename);
+    if(fn_len >= 4 && strncasecmp(&filename[fn_len - 4], ".PCX", 4) == 0) {
+        return sd_bk_load_from_pcx(bk, filename);
+    }
+
     // Initialize reader
     if(!(r = sd_reader_open(filename))) {
         return SD_FILE_OPEN_ERROR;
@@ -150,6 +156,23 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
 exit_0:
     sd_reader_close(r);
     return ret;
+}
+
+int sd_bk_load_from_pcx(sd_bk_file *bk, const char *filename) {
+    int ret;
+    pcx_file *pcx = omf_calloc(1, sizeof(pcx_file));
+    if((ret = pcx_load(pcx, filename)) != SD_SUCCESS) {
+        return ret;
+    }
+    bk->file_id = 0;
+    bk->palette_count = 1;
+    bk->background = omf_calloc(1, sizeof(sd_vga_image));
+    sd_vga_image_copy(bk->background, &pcx->image);
+    bk->palettes[0] = omf_calloc(1, sizeof(palette));
+    palette_copy(bk->palettes[0], &pcx->palette, 0, 256);
+    pcx_free(pcx);
+    omf_free(pcx);
+    return SD_SUCCESS;
 }
 
 int sd_bk_save(const sd_bk_file *bk, const char *filename) {
