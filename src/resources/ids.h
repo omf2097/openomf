@@ -51,6 +51,7 @@ typedef enum resource_id
     PIC_WAR,
     PIC_WORLD,
     PIC_PLAYERS,
+    PCX_NETARENA,
     PCX_NETFONT1,
     PCX_NETFONT2,
     NUMBER_OF_RESOURCES
