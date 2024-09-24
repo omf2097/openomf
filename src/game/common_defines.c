@@ -24,7 +24,7 @@ const char *scene_type_names[] = {
     "SCENE_NONE",     "SCENE_INTRO",   "SCENE_OPENOMF", "SCENE_MENU",       "SCENE_END",    "SCENE_END1",
     "SCENE_END2",     "SCENE_CREDITS", "SCENE_MECHLAB", "SCENE_VS",         "SCENE_MELEE",  "SCENE_NEWSROOM",
     "SCENE_ARENA0",   "SCENE_ARENA1",  "SCENE_ARENA2",  "SCENE_ARENA3",     "SCENE_ARENA4", "SCENE_NORTHAM",
-    "SCENE_KATUSHAI", "SCENE_WAR",     "SCENE_WORLD",   "SCENE_SCOREBOARD",
+    "SCENE_KATUSHAI", "SCENE_WAR",     "SCENE_WORLD",   "SCENE_SCOREBOARD", "SCENE_LOBBY",
 };
 
 int rand_arena() {
@@ -75,6 +75,8 @@ int scene_to_resource(unsigned int id) {
     switch(id) {
         case SCENE_SCOREBOARD:
             return BK_MENU;
+        case SCENE_LOBBY:
+            return PCX_NETARENA;
         default:
             return BK_INTRO + (id - 1);
     }
