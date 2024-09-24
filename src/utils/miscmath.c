@@ -45,3 +45,11 @@ int min2(int a, int b) {
 float dist(float a, float b) {
     return fabsf((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1.0f : -1.0f);
 }
+
+unsigned powu(unsigned x, unsigned y) {
+    unsigned ret = 1;
+    while(y--) {
+        ret *= x;
+    }
+    return ret;
+}

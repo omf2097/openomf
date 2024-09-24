@@ -10,5 +10,6 @@ int clamp(int val, int _min, int _max);
 int max2(int a, int b);
 int min2(int a, int b);
 int clamp_long_to_int(long val);
+unsigned powu(unsigned x, unsigned y);
 
 #endif // MISCMATH_H
