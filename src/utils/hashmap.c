@@ -1,5 +1,6 @@
 #include "utils/hashmap.h"
 #include "utils/allocator.h"
+#include "utils/miscmath.h"
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -8,7 +9,7 @@
 #define FNV_32_PRIME ((uint32_t)0x01000193)
 #define FNV1_32_INIT ((uint32_t)2166136261)
 #define TINY_MASK(x) (((uint32_t)1 << (x)) - 1)
-#define BUCKETS_SIZE(x) (pow(2, (x)))
+#define BUCKETS_SIZE(x) (powu(2, (x)))
 
 #define AUTO_INC_CHECK()                                                                                               \
     if(hm->flags & HASHMAP_AUTO_INC && hm->buckets_x < hm->buckets_x_max &&                                            \
