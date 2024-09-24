@@ -314,7 +314,6 @@ void arena_end(scene *sc) {
 
 void arena_reset(scene *sc) {
     arena_local *local = scene_get_userdata(sc);
-    local->round++;
     local->state = ARENA_STATE_STARTING;
 
     DEBUG("resetting arena");
@@ -1015,6 +1014,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
             }
             if(local->ending_ticks == 20) {
                 if(!local->over) {
+                    local->round++;
                     arena_reset(scene);
                 } else {
                     arena_end(scene);
