@@ -105,7 +105,7 @@ void lobby_input_tick(scene *scene) {
 void lobby_render_overlay(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
 
-    char buf[40];
+    char buf[100];
 
     snprintf(buf, sizeof(buf), "Player");
     font_render(&font_net1, buf, 16, 7, TEXT_COLOR);
