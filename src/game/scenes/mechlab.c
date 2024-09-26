@@ -414,8 +414,11 @@ void mechlab_input_tick(scene *scene) {
                     mechlab_find_last_player(scene);
                     mechlab_select_dashboard(scene, DASHBOARD_STATS);
                 } else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
-                    strncpy(player1->pilot->name, textinput_value(local->nw.input), 17);
-                    trnmenu_finish(guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
+                    if(strlen(textinput_value(local->nw.input)) > 0) {
+                        strncpy(player1->pilot->name, textinput_value(local->nw.input), 17);
+                        trnmenu_finish(
+                            guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
+                    }
                 } else {
                     guiframe_action(local->dashboard, i->event_data.action);
                 }
