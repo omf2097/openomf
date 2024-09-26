@@ -29,7 +29,8 @@ enum SD_ERRORCODE
     SD_FORMAT_NOT_SUPPORTED, ///< File format is not supported
     SD_INVALID_TAG,          ///< Invalid tag in animation string
     SD_FILE_WRITE_ERROR,     ///< File could not be written
-    SD_FILE_READ_ERROR       ///< File could not be read
+    SD_FILE_READ_ERROR,      ///< File could not be read
+    SD_FILE_UNLINK_ERROR,    ///< File could not be unlinked
 };
 
 /*! \brief Get text error for error ID

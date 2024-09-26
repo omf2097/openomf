@@ -25,6 +25,8 @@ const char *sd_get_error(enum SD_ERRORCODE error_code) {
             return "File could not be written";
         case SD_FILE_READ_ERROR:
             return "File could not be read";
+        case SD_FILE_UNLINK_ERROR:
+            return "File could not be unlinked";
     }
     abort();
 }
