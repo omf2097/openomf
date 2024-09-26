@@ -7,6 +7,7 @@
 #include "utils/scandir.h"
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 int sg_init() {
     int ret;
@@ -131,5 +132,18 @@ int sg_load(sd_chr_file *chr, const char *pilotname) {
         return ret;
     }
 
+    return SD_SUCCESS;
+}
+
+int sg_delete(const char *pilotname) {
+    char pathname[1024];
+
+    const char *dirname = pm_get_local_path(SAVE_PATH);
+    snprintf(pathname, sizeof(pathname), "%s%s.CHR", dirname, pilotname);
+    int ret = unlink(pathname);
+    if(ret < 0) {
+        PERROR("Failed to delete %s: %m", pathname);
+        return SD_FILE_UNLINK_ERROR;
+    }
     return SD_SUCCESS;
 }
