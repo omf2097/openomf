@@ -63,9 +63,10 @@ typedef struct {
 void text_defaults(text_settings *settings);
 int text_find_max_strlen(int maxchars, const char *ptr);
 int text_find_line_count(text_direction dir, int cols, int rows, int len, const char *text);
-void text_render_char(const text_settings *settings, int x, int y, char ch);
+int text_render_char(const text_settings *settings, int x, int y, char ch);
 void text_render(const text_settings *settings, int x, int y, int w, int h, const char *text);
 int text_char_width(const text_settings *settings);
+int text_width(const text_settings *settings, const char *text);
 
 // Old functions
 void font_get_wrapped_size(const font *font, const char *text, int max_w, int *out_w, int *out_h);

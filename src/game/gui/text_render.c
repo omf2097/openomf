@@ -11,12 +11,12 @@ void text_defaults(text_settings *settings) {
     settings->opacity = 0xFF;
 }
 
-void text_render_char(const text_settings *settings, int x, int y, char ch) {
+int text_render_char(const text_settings *settings, int x, int y, char ch) {
     // Make sure code is valid
     int code = ch - 32;
     surface **sur = NULL;
     if(code < 0) {
-        return;
+        return 0;
     }
 
     // Select font face surface
@@ -34,7 +34,7 @@ void text_render_char(const text_settings *settings, int x, int y, char ch) {
     }
 
     if(sur == NULL || *sur == NULL) {
-        return;
+        return 0;
     }
 
     // Handle shadows if necessary
@@ -55,6 +55,8 @@ void text_render_char(const text_settings *settings, int x, int y, char ch) {
     // Handle the font face itself
     video_render_sprite_flip_scale_opacity_tint(*sur, x, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 1.0f, settings->opacity,
                                                 settings->cforeground);
+
+    return (*sur)->w;
 }
 
 int text_find_max_strlen(int maxchars, const char *ptr) {
@@ -92,6 +94,38 @@ int text_find_max_strlen(int maxchars, const char *ptr) {
     }
 
     return i;
+}
+
+int text_width(const text_settings *settings, const char *text) {
+
+    int len = strlen(text);
+    int width = 0;
+    int code = 0;
+    surface **sur = NULL;
+    for(int i = 0; i < len; i++) {
+        code = text[i] - 32;
+        if(code < 0) {
+            continue;
+        }
+        // Select font face surface
+        if(settings->font == FONT_BIG) {
+            sur = vector_get(&font_large.surfaces, code);
+        }
+        if(settings->font == FONT_SMALL) {
+            sur = vector_get(&font_small.surfaces, code);
+        }
+        if(settings->font == FONT_NET1) {
+            sur = vector_get(&font_net1.surfaces, code);
+        }
+        if(settings->font == FONT_NET2) {
+            sur = vector_get(&font_net2.surfaces, code);
+        }
+        if(sur == NULL || *sur == NULL) {
+            continue;
+        }
+        width += (*sur)->w;
+    }
+    return width;
 }
 
 int text_char_width(const text_settings *settings) {
@@ -238,6 +272,7 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
                 break;
         }
 
+        int w = 0;
         // Render characters
         for(; k < line_len; k++) {
             // Skip line endings.
@@ -245,11 +280,11 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
                 continue;
 
             // Render character
-            text_render_char(settings, mx + start_x, my + start_y, text[ptr + k]);
+            w = text_render_char(settings, mx + start_x, my + start_y, text[ptr + k]);
 
             // Render to the right direction
             if(settings->direction == TEXT_HORIZONTAL) {
-                mx += charw;
+                mx += w + settings->cspacing;
             } else {
                 my += charh;
             }

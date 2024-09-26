@@ -15,6 +15,7 @@ typedef struct {
     int obj_h;
     int margin_top;
     int finished;
+    bool horizontal;
 
     char prev_submenu_state;
     component *submenu;
@@ -40,5 +41,6 @@ void menu_set_userdata(component *menu, void *userdata);
 void *menu_get_userdata(const component *menu);
 void menu_set_free_cb(component *menu, menu_free_cb cb);
 void menu_set_tick_cb(component *menu, menu_tick_cb cb);
+void menu_set_horizontal(component *c, bool horizontal);
 
 #endif // MENU_H
