@@ -1,6 +1,9 @@
+#include "game/gui/frame.h"
 #include "game/protos/scene.h"
 #include "utils/allocator.h"
 #include "video/video.h"
+
+#include "game/gui/gui.h"
 
 #define TEXT_BRIGHT color_create(240, 250, 250, 255)
 #define TEXT_COLOR color_create(186, 250, 250, 255)
@@ -24,6 +27,8 @@ typedef struct lobby_local_t {
     list log;
     bool named;
     uint8_t mode;
+
+    guiframe *frame;
 } lobby_local;
 
 static int lobby_event(scene *scene, SDL_Event *e) {
@@ -56,7 +61,8 @@ static int lobby_event(scene *scene, SDL_Event *e) {
             return 0;
         }
     } else {
-        if(e->type == SDL_TEXTINPUT && (local->mode == LOBBY_WHISPER || local->mode == LOBBY_YELL)) {
+        return guiframe_event(local->frame, e);
+        /*if(e->type == SDL_TEXTINPUT && (local->mode == LOBBY_WHISPER || local->mode == LOBBY_YELL)) {
             strncat(local->msg, e->text.text, sizeof(local->msg) - strlen(local->msg));
             return 0;
         } else if(e->type == SDL_KEYDOWN) {
@@ -78,13 +84,14 @@ static int lobby_event(scene *scene, SDL_Event *e) {
                     local->mode = LOBBY_EXIT;
                 }
             }
-        }
+        }*/
     }
 
     return 1;
 }
 
 void lobby_input_tick(scene *scene) {
+    lobby_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *p1 = NULL, *i;
     controller_poll(player1->ctrl, &p1);
@@ -97,6 +104,8 @@ void lobby_input_tick(scene *scene) {
                     game_state_set_next(scene->gs, SCENE_MENU);
                 }
             }
+
+            guiframe_action(local->frame, p1->event_data.action);
         } while((i = i->next));
     }
     controller_free_chain(p1);
@@ -129,23 +138,57 @@ void lobby_render_overlay(scene *scene) {
         snprintf(buf, sizeof(buf), "%s%c", local->name, 127);
         font_render_shadowed(&font_net1, buf, 130, 140, TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
     } else {
-        color c = (local->mode == LOBBY_CHALLENGE && scene->gs->int_tick % 2 == 0) ? TEXT_BRIGHT : BLUE_TEXT_COLOR;
-        snprintf(buf, sizeof(buf), "Challenge");
-        font_render_shadowed_colored(&font_net1, buf, 9, 140, c, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM, TEXT_BLACK);
-        c = (local->mode == LOBBY_WHISPER && scene->gs->int_tick % 2 == 0) ? TEXT_BRIGHT : BLUE_TEXT_COLOR;
-        snprintf(buf, sizeof(buf), "Whisper");
-        font_render_shadowed_colored(&font_net1, buf, 85, 140, c, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM, TEXT_BLACK);
-        c = (local->mode == LOBBY_YELL && scene->gs->int_tick % 2 == 0) ? TEXT_BRIGHT : BLUE_TEXT_COLOR;
-        snprintf(buf, sizeof(buf), "Yell");
-        font_render_shadowed_colored(&font_net1, buf, 143, 140, c, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM, TEXT_BLACK);
-        c = (local->mode == LOBBY_REFRESH && scene->gs->int_tick % 2 == 0) ? TEXT_BRIGHT : BLUE_TEXT_COLOR;
-        snprintf(buf, sizeof(buf), "Refresh");
-        font_render_shadowed_colored(&font_net1, buf, 178, 140, c, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM, TEXT_BLACK);
-
-        c = (local->mode == LOBBY_EXIT && scene->gs->int_tick % 2 == 0) ? TEXT_BRIGHT : BLUE_TEXT_COLOR;
-        snprintf(buf, sizeof(buf), "Exit");
-        font_render_shadowed_colored(&font_net1, buf, 240, 140, c, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM, TEXT_BLACK);
+        guiframe_render(local->frame);
     }
+}
+
+void lobby_challenge(component *c, void *userdata) {
+}
+
+void lobby_whisper(component *c, void *userdata) {
+}
+
+void lobby_yell(component *c, void *userdata) {
+}
+
+void lobby_refresh(component *c, void *userdata) {
+}
+
+void lobby_do_exit(component *c, void *userdata) {
+    scene *scene = userdata;
+    game_state_set_next(scene->gs, SCENE_MENU);
+}
+
+void lobby_refuse_exit(component *c, void *userdata) {
+    menu *m = sizer_get_obj(c->parent);
+    m->finished = 1;
+}
+
+component *lobby_exit_create(scene *s) {
+    // Text config
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_NET1;
+    tconf.halign = TEXT_LEFT;
+    tconf.cforeground = COLOR_DARK_GREEN;
+
+    component *menu = menu_create(11);
+    menu_set_horizontal(menu, true);
+    menu_attach(menu, textbutton_create(&tconf, "Exit the Challenge Arena?", COM_DISABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&tconf, "Yes", COM_ENABLED, lobby_do_exit, s));
+    menu_attach(menu, textbutton_create(&tconf, "No", COM_ENABLED, lobby_refuse_exit, NULL));
+
+    return menu;
+}
+
+void lobby_exit(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, lobby_exit_create(s));
+}
+
+void lobby_tick(scene *scene, int paused) {
+    lobby_local *local = scene_get_userdata(scene);
+    guiframe_tick(local->frame);
 }
 
 int lobby_create(scene *scene) {
@@ -167,7 +210,27 @@ int lobby_create(scene *scene) {
     local->named = false;
     local->mode = LOBBY_CHALLENGE;
 
-    // scene_set_input_poll_cb(scene, lobby_input_tick);
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_NET1;
+    tconf.halign = TEXT_LEFT;
+    tconf.cforeground = COLOR_DARK_GREEN;
+
+    component *menu = menu_create(11);
+    menu_set_horizontal(menu, true);
+    menu_attach(menu, textbutton_create(&tconf, "Challenge", COM_ENABLED, lobby_challenge, scene));
+    menu_attach(menu, textbutton_create(&tconf, "Whisper", COM_ENABLED, lobby_whisper, scene));
+    menu_attach(menu, textbutton_create(&tconf, "Yell", COM_ENABLED, lobby_yell, scene));
+    menu_attach(menu, textbutton_create(&tconf, "Refresh", COM_ENABLED, lobby_refresh, scene));
+    menu_attach(menu, textbutton_create(&tconf, "Exit", COM_ENABLED, lobby_exit, scene));
+
+    local->frame = guiframe_create(9, 140, 300, 12);
+    guiframe_set_root(local->frame, menu);
+    guiframe_layout(local->frame);
+
+    scene_set_input_poll_cb(scene, lobby_input_tick);
+
+    scene_set_dynamic_tick_cb(scene, lobby_tick);
 
     scene_set_render_overlay_cb(scene, lobby_render_overlay);
     scene_set_event_cb(scene, lobby_event);

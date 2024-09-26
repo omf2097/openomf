@@ -33,9 +33,8 @@ void textbutton_set_border(component *c, color col) {
     }
 
     // create new border
-    int chars = strlen(tb->text);
     int fsize = text_char_width(&tb->tconf);
-    int width = chars * fsize;
+    int width = text_width(&tb->tconf, tb->text);
     menu_background_border_create(&tb->border, width + 6, fsize + 3);
     tb->border_created = 1;
 }
@@ -51,6 +50,7 @@ void textbutton_set_text(component *c, const char *text) {
         omf_free(tb->text);
     }
     tb->text = strdup(text);
+    component_set_size_hints(c, text_width(&tb->tconf, text), 8);
 }
 
 static void textbutton_render(component *c) {
@@ -119,6 +119,7 @@ component *textbutton_create(const text_settings *tconf, const char *text, int d
 
     textbutton *tb = omf_calloc(1, sizeof(textbutton));
     tb->text = strdup(text);
+    component_set_size_hints(c, text_width(tconf, text), 8);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->click_cb = cb;
     tb->userdata = userdata;

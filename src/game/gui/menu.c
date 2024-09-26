@@ -138,13 +138,21 @@ static int menu_action(component *mc, int action) {
 
     // Handle down/up selection movement
     c = sizer_get(mc, m->selected);
-    if(c != NULL && c->supports_select && (action == ACT_DOWN || action == ACT_UP)) {
+    if(c != NULL && c->supports_select &&
+       (((action == ACT_DOWN || action == ACT_UP) && !m->horizontal) ||
+        ((action == ACT_LEFT || action == ACT_RIGHT) && m->horizontal))) {
         component_select(c, 0);
         do {
-            if(action == ACT_DOWN) {
+            if(action == ACT_DOWN && !m->horizontal) {
                 m->selected++;
             }
-            if(action == ACT_UP) {
+            if(action == ACT_RIGHT && m->horizontal) {
+                m->selected++;
+            }
+            if(action == ACT_UP && !m->horizontal) {
+                m->selected--;
+            }
+            if(action == ACT_LEFT && m->horizontal) {
                 m->selected--;
             }
             // wrap around
@@ -221,6 +229,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     vector_iter_begin(&s->objs, &it);
     int i = 0;
     int first_selected = 0;
+    int x_offset = 0;
     while((tmp = iter_next(&it)) != NULL) {
         // Select first non-disabled component
         if(!component_is_disabled(*tmp) && !first_selected) {
@@ -230,7 +239,12 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
         }
 
         // Set component position and size
-        component_layout(*tmp, x, m->margin_top + y + i * m->obj_h, w, m->obj_h);
+        if(m->horizontal) {
+            component_layout(*tmp, x + x_offset, m->margin_top + y, w, m->obj_h);
+            x_offset += (*tmp)->w_hint + 5;
+        } else {
+            component_layout(*tmp, x, m->margin_top + y + i * m->obj_h, w, m->obj_h);
+        }
         i++;
     }
 }
@@ -253,6 +267,11 @@ void menu_set_free_cb(component *c, menu_free_cb cb) {
 void menu_set_tick_cb(component *c, menu_tick_cb cb) {
     menu *m = sizer_get_obj(c);
     m->tick = cb;
+}
+
+void menu_set_horizontal(component *c, bool horizontal) {
+    menu *m = sizer_get_obj(c);
+    m->horizontal = horizontal;
 }
 
 static void menu_free(component *c) {
@@ -284,6 +303,7 @@ component *menu_create(int obj_h) {
     menu *m = omf_calloc(1, sizeof(menu));
     m->margin_top = 8;
     m->obj_h = obj_h;
+    m->horizontal = false;
     sizer_set_obj(c, m);
 
     sizer_set_render_cb(c, menu_render);
