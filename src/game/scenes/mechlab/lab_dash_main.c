@@ -67,7 +67,8 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
 void lab_dash_main_chr_delete(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    DEBUG("I would delete %s now!", p1->pilot->name);
+    const char *pilot_name = p1->pilot->name;
+    sg_delete(pilot_name);
     trnmenu_finish(c);
 }
 
