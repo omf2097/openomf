@@ -133,8 +133,3 @@ int sg_load(sd_chr_file *chr, const char *pilotname) {
 
     return SD_SUCCESS;
 }
-
-int sd_save(const sd_pilot *pilot, const char *pilotname) {
-    // Report error for now
-    return 1;
-}
