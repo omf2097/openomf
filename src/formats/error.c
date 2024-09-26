@@ -1,6 +1,7 @@
 #include "formats/error.h"
+#include <stdlib.h>
 
-const char *sd_get_error(int error_code) {
+const char *sd_get_error(enum SD_ERRORCODE error_code) {
     switch(error_code) {
         case SD_SUCCESS:
             return "No error";
@@ -20,7 +21,10 @@ const char *sd_get_error(int error_code) {
             return "Format is not supported";
         case SD_INVALID_TAG:
             return "String contains an invalid tag";
-        default:
-            return "Unknown errorcode.";
+        case SD_FILE_WRITE_ERROR:
+            return "File could not be written";
+        case SD_FILE_READ_ERROR:
+            return "File could not be read";
     }
+    abort();
 }

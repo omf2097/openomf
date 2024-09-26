@@ -40,7 +40,7 @@ enum SD_ERRORCODE
  * \param error_code Errorcode
  * \return Error message
  */
-const char *sd_get_error(int error_code);
+const char *sd_get_error(enum SD_ERRORCODE error_code);
 
 #ifdef __cplusplus
 }
