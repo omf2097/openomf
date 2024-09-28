@@ -29,6 +29,20 @@ void hashmap_create(hashmap *hm) {
     hm->capacity = SHRINK_LIMIT;
     hm->buckets = omf_calloc(hashmap_size(hm), sizeof(hashmap_node *));
     hm->reserved = 0;
+    hm->free_cb = NULL;
+}
+
+/** \brief Creates a new hashmap with an object free callback.
+ *
+ * The free callback is called when object is removed, in e.g. hashmap deinit, clear, delete, etc. operations.
+ *
+ * \param hm Allocated hashmap pointer
+ * \param initial_capacity Size of the hashmap.
+ * \param free_cb Callback function to free a removed object
+ */
+void hashmap_create_cb(hashmap *hm, hashmap_free_cb free_cb) {
+    hashmap_create(hm);
+    hm->free_cb = free_cb;
 }
 
 static void hashmap_resize(hashmap *hm, unsigned int new_size) {
@@ -95,6 +109,9 @@ void hashmap_clear(hashmap *hm) {
         while(node != NULL) {
             tmp = node;
             node = node->next;
+            if(hm->free_cb != NULL) {
+                hm->free_cb(tmp->pair.val);
+            }
             omf_free(tmp->pair.key);
             omf_free(tmp->pair.val);
             omf_free(tmp);
@@ -253,6 +270,9 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
             // If node is first in chain, set possible next entry as first
             hm->buckets[index] = node->next;
         }
+        if(hm->free_cb != NULL) {
+            hm->free_cb(node->pair.val);
+        }
         omf_free(node->pair.key);
         omf_free(node->pair.val);
         omf_free(node);
@@ -377,7 +397,10 @@ int hashmap_delete(hashmap *hm, iterator *iter) {
             iter->inow--;
         }
 
-        // Alld one, free up memory.
+        // Got one, free up memory.
+        if(hm->free_cb != NULL) {
+            hm->free_cb(node->pair.val);
+        }
         omf_free(node->pair.key);
         omf_free(node->pair.val);
         omf_free(node);

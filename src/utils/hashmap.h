@@ -6,6 +6,7 @@
 typedef struct hashmap_pair_t hashmap_pair;
 typedef struct hashmap_node_t hashmap_node;
 typedef struct hashmap_t hashmap;
+typedef void (*hashmap_free_cb)(void *);
 
 struct hashmap_pair_t {
     unsigned int keylen, vallen;
@@ -21,9 +22,11 @@ struct hashmap_t {
     hashmap_node **buckets;
     unsigned int capacity;
     unsigned int reserved;
+    hashmap_free_cb free_cb;
 };
 
 void hashmap_create(hashmap *hm);
+void hashmap_create_cb(hashmap *hm, hashmap_free_cb free_cb);
 void hashmap_free(hashmap *hashmap);
 unsigned int hashmap_size(const hashmap *hashmap);
 unsigned int hashmap_reserved(const hashmap *hashmap);
