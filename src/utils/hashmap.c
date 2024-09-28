@@ -51,33 +51,32 @@ void hashmap_create_cb(hashmap *hm, hashmap_free_cb free_cb) {
  * All existing key-value pairs are rehashed, so this has some CPU impact.
  */
 static void hashmap_resize(hashmap *hm, unsigned int new_size) {
-    // Do not resize if equal size was requested
-    if(new_size == hm->capacity || new_size < 1)
+    if(new_size <= hm->capacity)
         return;
 
     // Allocate and zero out a new memory blocks for the resized bucket list
-    hashmap_node **new_buckets = omf_calloc(new_size, sizeof(hashmap_node *));
+    size_t new_bytes = new_size * sizeof(hashmap_node *);
+    hm->buckets = omf_realloc(hm->buckets, new_bytes);
+    memset(&hm->buckets[hm->capacity], 0,
+           (&hm->buckets[new_size] - &hm->buckets[hm->capacity]) * sizeof(hashmap_node *));
 
     // Rehash
     hashmap_node *node = NULL;
     hashmap_node *this = NULL;
     unsigned int index;
-    for(unsigned int i = 0; i < hashmap_size(hm); i++) {
+    for(unsigned int i = 0; i < hm->capacity; i++) {
         node = hm->buckets[i];
+        hm->buckets[i] = NULL;
         while(node != NULL) {
             this = node;
             node = node->next;
 
             // Recalculate index, and prepend the new index to the bucket list
             index = fnv_32a_buf(this->pair.key, this->pair.key_len, new_size);
-            this->next = new_buckets[index];
-            new_buckets[index] = this;
+            this->next = hm->buckets[index];
+            hm->buckets[index] = this;
         }
     }
-
-    // Free old bucket list and assign new list and size of the hashmap
-    omf_free(hm->buckets);
-    hm->buckets = new_buckets;
     hm->capacity = new_size;
 }
 
