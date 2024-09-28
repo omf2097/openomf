@@ -69,7 +69,7 @@ int console_cmd_help(game_state *gs, int argc, char **argv) {
     vector_iter_begin(&sorted, &it);
     while((ppair = iter_next(&it)) != NULL) {
         char *name = (*ppair)->key;
-        command *cmd = (*ppair)->val;
+        command *cmd = (*ppair)->value;
         console_output_add(name);
         console_output_add(" - ");
         console_output_addline(cmd->doc);

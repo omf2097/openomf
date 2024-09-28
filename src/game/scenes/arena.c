@@ -916,7 +916,7 @@ void arena_spawn_hazard(scene *scene) {
     hashmap_pair *pair = NULL;
 
     while((pair = iter_next(&it)) != NULL) {
-        bk_info *info = (bk_info *)pair->val;
+        bk_info *info = (bk_info *)pair->value;
         if(info->probability > 1) {
             if(random_int(&scene->gs->rand, info->probability) == 1) {
                 // TODO don't spawn it if we already have this animation running

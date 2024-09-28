@@ -68,7 +68,7 @@ void tcache_clear() {
     hashmap_iter_begin(&cache->entries, &it);
     hashmap_pair *pair;
     while((pair = iter_next(&it)) != NULL) {
-        tcache_entry_value *entry = pair->val;
+        tcache_entry_value *entry = pair->value;
         SDL_DestroyTexture(entry->tex);
     }
     hashmap_clear(&cache->entries);
@@ -79,7 +79,7 @@ void tcache_tick() {
     hashmap_iter_begin(&cache->entries, &it);
     hashmap_pair *pair;
     while((pair = iter_next(&it)) != NULL) {
-        tcache_entry_value *entry = pair->val;
+        tcache_entry_value *entry = pair->value;
         entry->age++;
         if(entry->age > CACHE_LIFETIME) {
             SDL_DestroyTexture(entry->tex);
