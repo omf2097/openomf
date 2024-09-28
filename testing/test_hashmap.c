@@ -115,11 +115,6 @@ void hashmap_test_autoresize(void) {
     hashmap_iput(&test_map, 4, &c_value, sizeof(int));
     CU_ASSERT_EQUAL(test_map.capacity, 8);
 
-    hashmap_idel(&test_map, 4);
-    hashmap_idel(&test_map, 3);
-    hashmap_idel(&test_map, 2);
-
-    CU_ASSERT_EQUAL(test_map.capacity, 4);
     hashmap_free(&test_map);
 }
 

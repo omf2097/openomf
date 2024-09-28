@@ -6,7 +6,6 @@
 
 #define FNV_32_PRIME ((uint32_t)0x01000193)
 #define FNV1_32_INIT ((uint32_t)2166136261)
-#define SHRINK_LIMIT 4
 #define ENLARGE_LIMIT 1024
 
 uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int max_size) {
@@ -26,9 +25,9 @@ uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int max_size) {
  * \param initial_capacity Size of the hashmap.
  */
 void hashmap_create(hashmap *hm) {
-    hm->capacity = SHRINK_LIMIT;
     hm->buckets = omf_calloc(hashmap_size(hm), sizeof(hashmap_node *));
     hm->reserved = 0;
+    hm->capacity = 4;
     hm->free_cb = NULL;
 }
 
@@ -45,6 +44,11 @@ void hashmap_create_cb(hashmap *hm, hashmap_free_cb free_cb) {
     hm->free_cb = free_cb;
 }
 
+/**
+ * Resizes the hashmap to a new capacity.
+ *
+ * All existing key-value pairs are rehashed, so this has some CPU impact.
+ */
 static void hashmap_resize(hashmap *hm, unsigned int new_size) {
     // Do not resize if equal size was requested
     if(new_size == hm->capacity || new_size < 1)
@@ -76,21 +80,15 @@ static void hashmap_resize(hashmap *hm, unsigned int new_size) {
     hm->capacity = new_size;
 }
 
+/**
+ * Check if hashmap pressure is high enough for automatic resize, and resize if yes.
+ */
 static void hashmap_enlarge_check(hashmap *hm) {
     if(hm->capacity >= ENLARGE_LIMIT)
         return;
     unsigned int q = hm->capacity - (hm->capacity >> 2);
     if(hm->reserved > q) {
         hashmap_resize(hm, hm->capacity << 1);
-    }
-}
-
-static void hashmap_shrink_check(hashmap *hm) {
-    if(hm->capacity <= SHRINK_LIMIT)
-        return;
-    unsigned int q = hm->capacity >> 2;
-    if(hm->reserved < q) {
-        hashmap_resize(hm, hm->capacity >> 1);
     }
 }
 
@@ -258,8 +256,6 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int key_len) {
         omf_free(node->pair.value);
         omf_free(node);
         hm->reserved--;
-
-        hashmap_shrink_check(hm);
         return 0;
     }
     return 1;
