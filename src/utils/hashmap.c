@@ -7,6 +7,7 @@
 #define FNV_32_PRIME ((uint32_t)0x01000193)
 #define FNV1_32_INIT ((uint32_t)2166136261)
 #define ENLARGE_LIMIT 1024
+#define INITIAL_SIZE 4
 
 uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int max_size) {
     unsigned char *bp = (unsigned char *)buf;
@@ -25,9 +26,9 @@ uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int max_size) {
  * \param initial_capacity Size of the hashmap.
  */
 void hashmap_create(hashmap *hm) {
-    hm->buckets = omf_calloc(hashmap_size(hm), sizeof(hashmap_node *));
+    hm->buckets = omf_calloc(INITIAL_SIZE, sizeof(hashmap_node *));
     hm->reserved = 0;
-    hm->capacity = 4;
+    hm->capacity = INITIAL_SIZE;
     hm->free_cb = NULL;
 }
 
