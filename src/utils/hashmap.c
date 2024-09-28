@@ -64,7 +64,7 @@ static void hashmap_resize(hashmap *hm, unsigned int new_size) {
             node = node->next;
 
             // Recalculate index, and prepend the new index to the bucket list
-            index = fnv_32a_buf(this->pair.key, this->pair.keylen, new_size);
+            index = fnv_32a_buf(this->pair.key, this->pair.key_len, new_size);
             this->next = new_buckets[index];
             new_buckets[index] = this;
         }
@@ -110,10 +110,10 @@ void hashmap_clear(hashmap *hm) {
             tmp = node;
             node = node->next;
             if(hm->free_cb != NULL) {
-                hm->free_cb(tmp->pair.val);
+                hm->free_cb(tmp->pair.value);
             }
             omf_free(tmp->pair.key);
-            omf_free(tmp->pair.val);
+            omf_free(tmp->pair.value);
             omf_free(tmp);
             hm->reserved--;
         }
@@ -148,11 +148,6 @@ unsigned int hashmap_size(const hashmap *hm) {
 
 /** \brief Gets hashmap reserved buckets
  *
- * Returns the amount of items in the hashmap. Note that the item count
- * can be larger than the bucket count, if the hashmap is full enough.
- * If there are a lot more items than buckets, you should really consider
- * growing your hashmap bucket count ...
- *
  * \param hm Hashmap
  * \return Amount of items in the hashmap
  */
@@ -166,29 +161,22 @@ unsigned int hashmap_reserved(const hashmap *hm) {
  * contents of the value memory block will be copied. However,
  * any memory _pointed to_ by it will NOT be copied. So be careful!
  *
- * If auto-resizing is on, this will check if the hashmap needs
- * to be increased in size. If yes, size will be doubled and a full
- * rehashing operation will be run. This will take time!
- *
- * This function does NOT automatically decrease size, even if HASHMAP_AUTO_DEC
- * flag is enabled.
- *
  * \param hm Hashmap
  * \param key Pointer to key memory block
- * \param keylen Length of the key memory block
+ * \param key_len Length of the key memory block
  * \param val Pointer to value memory block
- * \param vallen Length of the value memory block
+ * \param value_len Length of the value memory block
  * \return Returns a pointer to the newly reserved hashmap pair.
  */
-void *hashmap_put(hashmap *hm, const void *key, unsigned int keylen, const void *val, unsigned int vallen) {
-    unsigned int index = fnv_32a_buf(key, keylen, hm->capacity);
+void *hashmap_put(hashmap *hm, const void *key, unsigned int key_len, const void *val, unsigned int value_len) {
+    unsigned int index = fnv_32a_buf(key, key_len, hm->capacity);
     hashmap_node *root = hm->buckets[index];
     hashmap_node *seek = root;
 
     // See if the key already exists in the buckets list
     int found = 0;
     while(seek) {
-        if(seek->pair.keylen == keylen && memcmp(seek->pair.key, key, keylen) == 0) {
+        if(seek->pair.key_len == key_len && memcmp(seek->pair.key, key, key_len) == 0) {
             found = 1;
             break;
         }
@@ -197,29 +185,29 @@ void *hashmap_put(hashmap *hm, const void *key, unsigned int keylen, const void 
 
     if(found) {
         // The key is already in the hashmap, so just realloc and reset the contents.
-        seek->pair.val = omf_realloc(seek->pair.val, vallen);
-        memcpy(seek->pair.val, val, vallen);
-        seek->pair.vallen = vallen;
+        seek->pair.value = omf_realloc(seek->pair.value, value_len);
+        memcpy(seek->pair.value, val, value_len);
+        seek->pair.value_len = value_len;
 
         hashmap_enlarge_check(hm);
-        return seek->pair.val;
+        return seek->pair.value;
     } else {
         // Key is not yet in the hashmap, so create a new node and set it
         // as the first entry in the buckets list.
         hashmap_node *node = omf_calloc(1, sizeof(hashmap_node));
-        node->pair.keylen = keylen;
-        node->pair.vallen = vallen;
-        node->pair.key = omf_calloc(1, keylen);
-        node->pair.val = omf_calloc(1, vallen);
-        memcpy(node->pair.key, key, keylen);
-        memcpy(node->pair.val, val, vallen);
+        node->pair.key_len = key_len;
+        node->pair.value_len = value_len;
+        node->pair.key = omf_calloc(1, key_len);
+        node->pair.value = omf_calloc(1, value_len);
+        memcpy(node->pair.key, key, key_len);
+        memcpy(node->pair.value, val, value_len);
 
         node->next = root;
         hm->buckets[index] = node;
         hm->reserved++;
 
         hashmap_enlarge_check(hm);
-        return node->pair.val;
+        return node->pair.value;
     }
 }
 
@@ -229,20 +217,13 @@ void *hashmap_put(hashmap *hm, const void *key, unsigned int keylen, const void 
  * iterator may lead to weird behavior. If you wish to delete inside an
  * iterator, please use hashmap_delete.
  *
- * If autoresizing is on, this will check if the hashmap needs
- * to be decreased in size. If yes, size will be cut in half and a full
- * rehashing operation will be run. This will take time!
- *
- * This function does NOT automatically increase size, even if HASHMAP_AUTO_INC
- * flag is enabled.
- *
  * \param hm Hashmap
  * \param key Pointer to key memory block
- * \param keylen Length of the key memory block
+ * \param key_len Length of the key memory block
  * \return Returns 0 on success, 1 on error (not found).
  */
-int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
-    unsigned int index = fnv_32a_buf(key, keylen, hm->capacity);
+int hashmap_del(hashmap *hm, const void *key, unsigned int key_len) {
+    unsigned int index = fnv_32a_buf(key, key_len, hm->capacity);
 
     // Get node
     hashmap_node *node = hm->buckets[index];
@@ -253,7 +234,7 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
     // Find the node we want to delete
     int found = 0;
     while(node) {
-        if(node->pair.keylen == keylen && memcmp(node->pair.key, key, keylen) == 0) {
+        if(node->pair.key_len == key_len && memcmp(node->pair.key, key, key_len) == 0) {
             found = 1;
             break;
         }
@@ -271,10 +252,10 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
             hm->buckets[index] = node->next;
         }
         if(hm->free_cb != NULL) {
-            hm->free_cb(node->pair.val);
+            hm->free_cb(node->pair.value);
         }
         omf_free(node->pair.key);
-        omf_free(node->pair.val);
+        omf_free(node->pair.value);
         omf_free(node);
         hm->reserved--;
 
@@ -286,21 +267,19 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int keylen) {
 
 /** \brief Gets an item from the hashmap
  *
- * Returns an item from the hashmap.
- *
  * \param hm Hashmap
  * \param key Pointer to key memory block
- * \param keylen Length of the key memory block
- * \param val Pointer to value hashmap memory block
- * \param vallen Length of the hashmap value memory block
+ * \param key_len Length of the key memory block
+ * \param value Pointer to value hashmap memory block
+ * \param value_len Length of the hashmap value memory block
  * \return Returns 0 on success, 1 on error (not found).
  */
-int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, unsigned int *vallen) {
-    unsigned int index = fnv_32a_buf(key, keylen, hm->capacity);
+int hashmap_get(hashmap *hm, const void *key, unsigned int key_len, void **value, unsigned int *value_len) {
+    unsigned int index = fnv_32a_buf(key, key_len, hm->capacity);
 
     // Set defaults for error cases
-    *val = NULL;
-    *vallen = 0;
+    *value = NULL;
+    *value_len = 0;
 
     // Get node
     hashmap_node *node = hm->buckets[index];
@@ -309,9 +288,9 @@ int hashmap_get(hashmap *hm, const void *key, unsigned int keylen, void **val, u
 
     // Find the node we want
     while(node) {
-        if(node->pair.keylen == keylen && memcmp(node->pair.key, key, keylen) == 0) {
-            *val = node->pair.val;
-            *vallen = node->pair.vallen;
+        if(node->pair.key_len == key_len && memcmp(node->pair.key, key, key_len) == 0) {
+            *value = node->pair.value;
+            *value_len = node->pair.value_len;
             return 0;
         }
         node = node->next;
@@ -349,11 +328,6 @@ void hashmap_idel(hashmap *hm, unsigned int key) {
  * Deletes an item from the hashmap by a matching iterator key.
  * This function is iterator safe. In theory, this function
  * should not fail, as the iterable value should exist.
- *
- * Note! This function does NOT autoresize at all, even if the flags
- * are enabled. This is to avoid trouble while iterating. If you do
- * a large amount of deletions here and suspect the minimum limit has been
- * reached, call hashmap_autoresize to run a check and resize operation.
  *
  * \param hm Hashmap
  * \param iter Iterator
@@ -399,10 +373,10 @@ int hashmap_delete(hashmap *hm, iterator *iter) {
 
         // Got one, free up memory.
         if(hm->free_cb != NULL) {
-            hm->free_cb(node->pair.val);
+            hm->free_cb(node->pair.value);
         }
         omf_free(node->pair.key);
-        omf_free(node->pair.val);
+        omf_free(node->pair.value);
         omf_free(node);
         hm->reserved--;
         return 0;
