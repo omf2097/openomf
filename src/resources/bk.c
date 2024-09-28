@@ -22,7 +22,7 @@ void bk_create(bk *b, void *src) {
     }
 
     // Copy info structs
-    hashmap_create(&b->infos, 7);
+    hashmap_create(&b->infos);
     bk_info tmp_bk_info;
     for(int i = 0; i < 50; i++) {
         if(sdbk->anims[i] != NULL) {

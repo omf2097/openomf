@@ -46,7 +46,7 @@ tcache_entry_value *tcache_get_entry(tcache_entry_key *key) {
 
 void tcache_init(SDL_Renderer *renderer, int scale_factor, scaler_plugin *scaler) {
     cache = omf_calloc(1, sizeof(tcache));
-    hashmap_create(&cache->entries, 6);
+    hashmap_create(&cache->entries);
     cache->renderer = renderer;
     cache->scaler = scaler;
     cache->scale_factor = scale_factor;

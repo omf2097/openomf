@@ -217,7 +217,7 @@ int console_init() {
     con->histpos = -1;
     con->histpos_changed = 0;
     list_create(&con->history);
-    hashmap_create(&con->cmds, 8);
+    hashmap_create(&con->cmds);
     menu_background_create(&con->background, 322, 101);
 
     console_init_cmd();
