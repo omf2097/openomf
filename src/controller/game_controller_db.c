@@ -1,18 +1,9 @@
 #include <SDL_gamecontroller.h>
 #include <string.h>
 
-#include "controller/builtin_mappings.h"
-#include "controller/game_controller_db.h"
 #include "resources/pathmanager.h"
 #include "utils/log.h"
 #include "utils/str.h"
-
-void joystick_load_builtin_mappings() {
-    SDL_RWops *rw = SDL_RWFromConstMem(builtin_controller_mappings, strlen(builtin_controller_mappings));
-    SDL_GameControllerAddMappingsFromRW(rw, 1);
-    INFO("Loaded built-in controller mappings");
-    INFO("We currently have %d known game controller mappings", SDL_GameControllerNumMappings());
-}
 
 void joystick_load_external_mappings() {
     str controller_db_path;

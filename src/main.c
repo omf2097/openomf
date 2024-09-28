@@ -226,7 +226,6 @@ int main(int argc, char *argv[]) {
     }
 
     // Load game controller support
-    joystick_load_builtin_mappings();
     joystick_load_external_mappings();
     scan_game_controllers();
 
