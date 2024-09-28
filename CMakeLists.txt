@@ -289,8 +289,8 @@ else()
     message(STATUS "Development: Unit-tests are disabled")
 endif()
 
-# Copy openomf.bk to destination resources directory to ease development setup.
-file(COPY resources/openomf.bk DESTINATION resources)
+# Copy some resources to destination resources directory to ease development setup.
+file(COPY resources/openomf.bk resources/gamecontrollerdb.txt DESTINATION resources)
 
 # Installation
 if(WIN32)
