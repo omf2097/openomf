@@ -45,6 +45,14 @@ void str_from_c(str *dst, const char *src);
 void str_from_buf(str *dst, const char *buf, size_t len);
 
 /**
+ * Create a string object from file contents
+ * @details Full source file content will be read, whether it contains null characters or not.
+ * @param dst Target string buffer
+ * @param file_name Filename to read
+ */
+void str_from_file(str *dst, const char *file_name);
+
+/**
  * @brief Create a string object by format string
  * @details This uses snprintf internally, so usual printf format strings are valid.
  * @param dst Target string object
