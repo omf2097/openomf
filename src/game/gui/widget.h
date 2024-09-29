@@ -24,7 +24,7 @@ typedef struct {
     widget_free_cb free;
 } widget;
 
-component *widget_create();
+component *widget_create(void);
 
 void widget_set_obj(component *c, void *obj);
 void *widget_get_obj(const component *c);

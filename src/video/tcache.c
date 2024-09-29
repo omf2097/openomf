@@ -63,7 +63,7 @@ void tcache_reinit(SDL_Renderer *renderer, int scale_factor, scaler_plugin *scal
     tcache_clear();
 }
 
-void tcache_clear() {
+void tcache_clear(void) {
     iterator it;
     hashmap_iter_begin(&cache->entries, &it);
     hashmap_pair *pair;
@@ -74,7 +74,7 @@ void tcache_clear() {
     hashmap_clear(&cache->entries);
 }
 
-void tcache_tick() {
+void tcache_tick(void) {
     iterator it;
     hashmap_iter_begin(&cache->entries, &it);
     hashmap_pair *pair;
@@ -89,7 +89,7 @@ void tcache_tick() {
     }
 }
 
-void tcache_close() {
+void tcache_close(void) {
     DEBUG("Texture cache:");
     DEBUG(" * Misses:    %d", cache->misses);
     DEBUG(" * Hits:      %d", cache->hits);

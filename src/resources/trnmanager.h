@@ -4,7 +4,7 @@
 #include "formats/tournament.h"
 #include "utils/list.h"
 
-list *trnlist_init();
+list *trnlist_init(void);
 int trn_load(sd_tournament_file *trn, const char *trnname);
 
 #endif // TRNMANAGER_H

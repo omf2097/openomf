@@ -118,7 +118,7 @@ static component *widget_find(component *c, int id) {
     return NULL;
 }
 
-component *widget_create() {
+component *widget_create(void) {
     component *c = component_create();
     c->supports_disable = 1;
     c->supports_select = 1;

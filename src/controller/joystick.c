@@ -29,7 +29,7 @@ void joystick_cmd(controller *ctrl, int action, ctrl_event **ev) {
     k->current |= action;
 }
 
-int joystick_count() {
+int joystick_count(void) {
     int valid_joysticks = 0;
     SDL_Joystick *joy;
     for(int i = 0; i < SDL_NumJoysticks(); i++) {

@@ -145,7 +145,7 @@ void component_set_help_text(component *c, const char *help) {
     c->help = help;
 }
 
-component *component_create() {
+component *component_create(void) {
     component *c = omf_calloc(1, sizeof(component));
     c->x_hint = -1;
     c->y_hint = -1;

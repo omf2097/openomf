@@ -10,7 +10,7 @@ const char *scene_get_name(unsigned int id);
 int har_to_resource(unsigned int id);
 int scene_to_resource(unsigned int id);
 
-int rand_arena();
+int rand_arena(void);
 
 extern const char *ai_difficulty_names[];
 extern const char *round_type_names[];

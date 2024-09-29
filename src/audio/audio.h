@@ -44,7 +44,7 @@ bool audio_init(int freq, bool mono, int resampler, float music_volume, float so
 /**
  * Closes the audio subsystem.
  */
-void audio_close();
+void audio_close(void);
 
 /**
  * Plays sound with given parameters.
@@ -66,7 +66,7 @@ void audio_play_music(resource_id id);
 /**
  * Stops music playback.
  */
-void audio_stop_music();
+void audio_stop_music(void);
 
 /**
  * Set music volume
@@ -83,11 +83,11 @@ void audio_set_sound_volume(float volume);
 /**
  * Get supported audio frequencies list
  */
-const audio_freq *audio_get_freqs();
+const audio_freq *audio_get_freqs(void);
 
 /**
  * Get supported music resamplers list
  */
-const audio_mod_resampler *audio_get_resamplers();
+const audio_mod_resampler *audio_get_resamplers(void);
 
 #endif // AUDIO_H

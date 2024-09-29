@@ -27,7 +27,7 @@ const char *scene_type_names[] = {
     "SCENE_KATUSHAI", "SCENE_WAR",     "SCENE_WORLD",   "SCENE_SCOREBOARD", "SCENE_LOBBY",
 };
 
-int rand_arena() {
+int rand_arena(void) {
     return SCENE_ARENA0 + rand_int(5);
 }
 

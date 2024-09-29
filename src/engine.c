@@ -22,7 +22,7 @@ static int take_screenshot = 0;
 static int enable_screen_updates = 1;
 static char screenshot_filename[128];
 
-int engine_init() {
+int engine_init(void) {
     settings *setting = settings_get();
 
     int w = setting->video.screen_w;
@@ -292,7 +292,7 @@ void engine_run(engine_init_flags *init_flags) {
     INFO(" --- END GAME LOG ---");
 }
 
-void engine_close() {
+void engine_close(void) {
     console_close();
     altpals_close();
     fonts_close();

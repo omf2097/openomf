@@ -5,8 +5,8 @@
 #include "plugins/scaler_plugin.h"
 #include "utils/list.h"
 
-void plugins_init();
-void plugins_close();
+void plugins_init(void);
+void plugins_close(void);
 
 int plugins_get_scaler(scaler_plugin *scaler, const char *name);
 

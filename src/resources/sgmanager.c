@@ -9,7 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int sg_init() {
+int sg_init(void) {
     int ret;
     list dirlist;
 
@@ -47,7 +47,7 @@ error_0:
     return 1;
 }
 
-int sg_count() {
+int sg_count(void) {
     if(sg_init()) {
         return 0;
     }
@@ -79,7 +79,7 @@ int sg_count() {
     return size;
 }
 
-list *sg_load_all() {
+list *sg_load_all(void) {
 
     if(sg_init()) {
         return NULL;

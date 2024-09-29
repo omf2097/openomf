@@ -30,7 +30,7 @@ static const char *git_sha1_hash = "";
 static const char *git_sha1_hash = SHA1_HASH;
 #endif
 
-void scan_game_controllers() {
+void scan_game_controllers(void) {
     INFO("Found %d joysticks attached", SDL_NumJoysticks());
     SDL_Joystick *joy;
     char guid_str[33];

@@ -10,7 +10,7 @@ typedef struct memwriter_t {
     long data_len; // Current data size in buffer
 } memwriter;
 
-memwriter *memwriter_open();
+memwriter *memwriter_open(void);
 void memwriter_save(const memwriter *src, sd_writer *dst);
 void memwriter_close(memwriter *writer);
 long memwriter_pos(const memwriter *writer);

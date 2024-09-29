@@ -7,7 +7,7 @@ typedef struct {
     base_plugin *base;
     int (*is_factor_available)(int factor);
     int (*get_factors_list)(int **factors);
-    int (*get_color_format)();
+    int (*get_color_format)(void);
     int (*scale)(const char *in, char *out, int w, int h, int factor);
 } scaler_plugin;
 

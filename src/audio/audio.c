@@ -176,7 +176,7 @@ void audio_xmp_render(void *userdata, Uint8 *stream, int len) {
     xmp_play_buffer(audio->xmp_context, stream, len, 0);
 }
 
-static void audio_close_module() {
+static void audio_close_module(void) {
     if(is_music(audio->music_id)) {
         xmp_end_player(audio->xmp_context);
         xmp_release_module(audio->xmp_context);
@@ -247,7 +247,7 @@ error_0:
     return false;
 }
 
-void audio_close() {
+void audio_close(void) {
     if(audio != NULL) {
         DEBUG("closing audio");
         audio_stop_music();
@@ -324,7 +324,7 @@ void audio_play_music(resource_id id) {
     }
 }
 
-void audio_stop_music() {
+void audio_stop_music(void) {
     assert(audio);
     Mix_HaltMusic();
     Mix_HookMusic(NULL, NULL);
@@ -342,10 +342,10 @@ void audio_set_sound_volume(float volume) {
     Mix_Volume(-1, volume * MIX_MAX_VOLUME);
 }
 
-const audio_freq *audio_get_freqs() {
+const audio_freq *audio_get_freqs(void) {
     return output_freqs;
 }
 
-const audio_mod_resampler *audio_get_resamplers() {
+const audio_mod_resampler *audio_get_resamplers(void) {
     return music_resamplers;
 }

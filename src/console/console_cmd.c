@@ -268,7 +268,7 @@ int console_cmd_rank(game_state *gs, int argc, char **argv) {
     return 1;
 }
 
-void console_init_cmd() {
+void console_init_cmd(void) {
     // Add console commands
     console_add_cmd("h", &console_cmd_history, "show command history");
     console_add_cmd("clear", &console_cmd_clear, "clear the console");

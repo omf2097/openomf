@@ -80,7 +80,7 @@ struct component_t {
 };
 
 // Create & free
-component *component_create();
+component *component_create(void);
 void component_free(component *c);
 
 // Internal callbacks

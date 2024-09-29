@@ -163,7 +163,7 @@ static component *sizer_find(component *c, int id) {
     return NULL;
 }
 
-component *sizer_create() {
+component *sizer_create(void) {
     component *c = component_create();
 
     sizer *local = omf_calloc(1, sizeof(sizer));

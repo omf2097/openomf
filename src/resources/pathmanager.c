@@ -43,7 +43,7 @@ int str_ends_with_sep(const char *str) {
 }
 
 // Makes sure resource file exists
-int pm_validate_resources() {
+int pm_validate_resources(void) {
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         const char *testfile = pm_get_resource_path(i);
         if(access(testfile, F_OK) == -1) {
@@ -54,7 +54,7 @@ int pm_validate_resources() {
     return 0;
 }
 
-int pm_init() {
+int pm_init(void) {
     char *local_base_dir;
     char *bin_base_dir;
 
@@ -159,14 +159,14 @@ error_0:
     return 1;
 }
 
-void pm_log() {
+void pm_log(void) {
     // Debug info
     for(unsigned int i = 0; i < NUMBER_OF_LOCAL_PATHS; i++) {
         DEBUG("%s: %s", pm_get_local_path_type_name(i), pm_get_local_path(i));
     }
 }
 
-void pm_free() {
+void pm_free(void) {
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         omf_free(resource_paths[i]);
     }
@@ -175,11 +175,11 @@ void pm_free() {
     }
 }
 
-const char *pm_get_errormsg() {
+const char *pm_get_errormsg(void) {
     return errormessage;
 }
 
-int pm_in_debug_mode() {
+int pm_in_debug_mode(void) {
 #ifdef DEBUGMODE
     return 1;
 #else
@@ -187,21 +187,21 @@ int pm_in_debug_mode() {
 #endif
 }
 
-int pm_in_release_mode() {
+int pm_in_release_mode(void) {
     if(!pm_in_portable_mode() && !pm_in_debug_mode()) {
         return 1;
     }
     return 0;
 }
 
-int pm_in_portable_mode() {
+int pm_in_portable_mode(void) {
     if(access(configfile_name, F_OK) != -1) {
         return 1;
     }
     return 0;
 }
 
-char *pm_get_local_base_dir() {
+char *pm_get_local_base_dir(void) {
     char *out = NULL;
     if(pm_in_portable_mode()) {
         out = omf_calloc(1, 1);

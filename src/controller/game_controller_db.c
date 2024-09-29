@@ -5,7 +5,7 @@
 #include "utils/log.h"
 #include "utils/str.h"
 
-void joystick_load_external_mappings() {
+void joystick_load_external_mappings(void) {
     str controller_db_path;
     const char *resource_path = pm_get_local_path(RESOURCE_PATH);
     str_from_format(&controller_db_path, "%sgamecontrollerdb.txt", resource_path);

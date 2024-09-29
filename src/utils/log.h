@@ -19,6 +19,6 @@ extern unsigned int _log_tick;
 void log_hide(char mode, const char *fn, const char *fmt, ...); // no-op
 void log_print(char mode, const char *fn, const char *fmt, ...);
 int log_init(const char *filename);
-void log_close();
+void log_close(void);
 
 #endif // LOG_H

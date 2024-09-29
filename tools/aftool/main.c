@@ -426,7 +426,7 @@ void move_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim) {
     sprite_play(af, bk, scale, anim, 0);
 }
 
-void move_keylist() {
+void move_keylist(void) {
     printf("Valid field keys for Move structure:\n");
     anim_keylist();
 
@@ -618,7 +618,7 @@ void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value)
     printf("Value set!\n");
 }
 
-void af_keylist() {
+void af_keylist(void) {
     printf("Valid field keys for AF file root:\n");
     printf("* fileid\n");
     printf("* exec_window\n");

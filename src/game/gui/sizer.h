@@ -28,7 +28,7 @@ typedef struct {
     sizer_find_cb find;
 } sizer;
 
-component *sizer_create();
+component *sizer_create(void);
 
 void sizer_set_obj(component *c, void *obj);
 void *sizer_get_obj(const component *c);

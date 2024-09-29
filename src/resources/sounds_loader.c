@@ -9,7 +9,7 @@
 
 static sd_sound_file *sound_data = NULL;
 
-int sounds_loader_init() {
+int sounds_loader_init(void) {
     // Get filename
     const char *filename = pm_get_resource_path(DAT_SOUNDS);
 
@@ -51,7 +51,7 @@ int sounds_loader_get(int id, char **buffer, int *len) {
     return 0; // Success
 }
 
-void sounds_loader_close() {
+void sounds_loader_close(void) {
     if(sound_data != NULL) {
         sd_sounds_free(sound_data);
         omf_free(sound_data);

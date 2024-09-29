@@ -13,7 +13,7 @@
 static base_plugin _plugins[PLUGIN_MAX_COUNT];
 static int _plugins_count;
 
-void plugins_init() {
+void plugins_init(void) {
     // Zero out plugin list
     _plugins_count = 0;
     for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
@@ -148,7 +148,7 @@ int plugins_get_list_by_type(list *tlist, const char *type) {
     return count;
 }
 
-void plugins_close() {
+void plugins_close(void) {
     for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
         if(_plugins[i].handle != NULL) {
             SDL_UnloadObject(_plugins[i].handle);
