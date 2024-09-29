@@ -9,7 +9,7 @@
 static array language_strings;
 static sd_language *language;
 
-int lang_init() {
+int lang_init(void) {
     // Get filename
     const char *filename = pm_get_resource_path(DAT_ENGLISH);
 
@@ -39,7 +39,7 @@ error_0:
     return 1;
 }
 
-void lang_close() {
+void lang_close(void) {
     array_free(&language_strings);
     sd_language_free(language);
     omf_free(language);

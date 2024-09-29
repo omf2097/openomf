@@ -15,7 +15,7 @@
 
 static video_state state;
 
-void reset_targets() {
+void reset_targets(void) {
     if(state.fg_target != NULL) {
         SDL_DestroyTexture(state.fg_target);
     }
@@ -136,7 +136,7 @@ int video_init(int window_w, int window_h, int fullscreen, int vsync, const char
     return 0;
 }
 
-void video_reinit_renderer() {
+void video_reinit_renderer(void) {
     // Clear old texture cache entries
     tcache_clear();
 
@@ -280,7 +280,7 @@ int video_area_capture(surface *sur, int x, int y, int w, int h) {
     return 0;
 }
 
-void video_force_pal_refresh() {
+void video_force_pal_refresh(void) {
     memcpy(state.screen_palette->data, state.base_palette->data, 768);
     memcpy(state.extra_palette->data, state.base_palette->data, 768);
     state.extra_palette->version = state.screen_palette->version + 1;
@@ -292,7 +292,7 @@ void video_set_base_palette(const palette *src) {
     video_force_pal_refresh();
 }
 
-palette *video_get_base_palette() {
+palette *video_get_base_palette(void) {
     return state.base_palette;
 }
 
@@ -306,7 +306,7 @@ void video_copy_base_pal_range(const palette *src, int src_start, int dst_start,
     video_force_pal_refresh();
 }
 
-screen_palette *video_get_pal_ref() {
+screen_palette *video_get_pal_ref(void) {
     return state.screen_palette;
 }
 
@@ -316,7 +316,7 @@ static void clear_render_target(SDL_Texture *target) {
     SDL_RenderClear(state.renderer);
 }
 
-void video_render_prepare() {
+void video_render_prepare(void) {
     // Reset palette
     memcpy(state.screen_palette->data, state.base_palette->data, 768);
     clear_render_target(state.fg_target);
@@ -444,12 +444,12 @@ void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, u
 }
 
 // Called on every game tick
-void video_tick() {
+void video_tick(void) {
     tcache_tick();
 }
 
 // Called after frame has been rendered
-void video_render_finish() {
+void video_render_finish(void) {
     // Set our rendertarget to screen buffer.
     SDL_SetRenderTarget(state.renderer, NULL);
 
@@ -483,7 +483,7 @@ void video_render_finish() {
     }
 }
 
-void video_close() {
+void video_close(void) {
     tcache_close();
     SDL_DestroyTexture(state.fg_target);
     SDL_DestroyTexture(state.bg_target);

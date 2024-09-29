@@ -124,11 +124,11 @@ typedef struct {
 
 int settings_write_defaults(const char *path);
 int settings_init(const char *path);
-void settings_free();
+void settings_free(void);
 
-void settings_load();
-void settings_save();
+void settings_load(void);
+void settings_save(void);
 
-settings *settings_get();
+settings *settings_get(void);
 
 #endif // SETTINGS_H

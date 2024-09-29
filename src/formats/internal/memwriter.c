@@ -17,7 +17,7 @@
         writer->real_len = newsize;                                                                                    \
     }
 
-memwriter *memwriter_open() {
+memwriter *memwriter_open(void) {
     memwriter *mwriter = omf_calloc(1, sizeof(memwriter));
     mwriter->buf = omf_calloc(GROW, 1);
     mwriter->real_len = GROW;

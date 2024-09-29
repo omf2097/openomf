@@ -65,7 +65,7 @@ void sprite_get_key(sd_sprite *s, const char **key, int kcount) {
     }
 }
 
-void sprite_keylist() {
+void sprite_keylist(void) {
     printf("Valid field keys for Sprite structure:\n");
     printf("* x\n");
     printf("* y\n");
@@ -184,7 +184,7 @@ int anim_key_get_id(const char *key) {
     return -1;
 }
 
-void anim_keylist() {
+void anim_keylist(void) {
     printf("* start_x\n");
     printf("* start_y\n");
     printf("* ani_header\n");

@@ -7,8 +7,8 @@
  * texture with the help of text.h ?
  */
 
-int lang_init();
-void lang_close();
+int lang_init(void);
+void lang_close(void);
 
 // Maybe something like this ?
 const char *lang_get(unsigned int id);

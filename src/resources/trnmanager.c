@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-list *trnlist_init() {
+list *trnlist_init(void) {
     int ret;
     list dirlist;
 

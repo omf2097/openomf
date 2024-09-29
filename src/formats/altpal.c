@@ -12,7 +12,7 @@
 
 altpal_file *altpals = NULL; // Extern
 
-int altpals_init() {
+int altpals_init(void) {
     // Get filename
     const char *filename = pm_get_resource_path(DAT_ALTPALS);
 
@@ -34,7 +34,7 @@ error_0:
     return 1;
 }
 
-void altpals_close() {
+void altpals_close(void) {
     if(altpals != NULL) {
         altpal_free(altpals);
         omf_free(altpals);

@@ -89,7 +89,7 @@ static void xysizer_free(component *c) {
     omf_free(m);
 }
 
-component *xysizer_create() {
+component *xysizer_create(void) {
     component *c = sizer_create();
 
     xysizer *m = omf_calloc(1, sizeof(xysizer));

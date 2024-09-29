@@ -235,14 +235,14 @@ int settings_init(const char *path) {
     return conf_init(settings_path);
 }
 
-void settings_load() {
+void settings_load(void) {
     for(int i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
         const struct_to_field *s2f = &struct_to_fields[i];
         settings_load_fields(s2f->_struct, s2f->fields, s2f->num_fields);
     }
 }
 
-void settings_save() {
+void settings_save(void) {
     for(int i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
         const struct_to_field *s2f = &struct_to_fields[i];
         settings_save_fields(s2f->_struct, s2f->fields, s2f->num_fields);
@@ -252,7 +252,7 @@ void settings_save() {
     }
 }
 
-void settings_free() {
+void settings_free(void) {
     for(int i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
         const struct_to_field *s2f = &struct_to_fields[i];
         settings_free_strings(s2f->_struct, s2f->fields, s2f->num_fields);
@@ -260,6 +260,6 @@ void settings_free() {
     conf_close();
 }
 
-settings *settings_get() {
+settings *settings_get(void) {
     return &_settings;
 }

@@ -9,7 +9,7 @@ cfg_t *cfg = NULL;
 vector cfg_opts;
 int cfg_opts_init = 0;
 
-void conf_ensure_opt_init() {
+void conf_ensure_opt_init(void) {
     if(!cfg_opts_init) {
         vector_create(&cfg_opts, sizeof(cfg_opt_t));
         cfg_opt_t c = CFG_END();
@@ -126,7 +126,7 @@ void conf_setstring(const char *name, const char *val) {
     cfg_setstr(cfg, name, val);
 }
 
-void conf_close() {
+void conf_close(void) {
     if(cfg) {
         cfg_free(cfg);
         cfg = NULL;

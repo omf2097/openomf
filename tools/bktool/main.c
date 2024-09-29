@@ -341,7 +341,7 @@ void bkanim_pop(sd_bk_file *bk, int key) {
     printf("Popped animation from index %d\n", key);
 }
 
-void bkanim_keylist() {
+void bkanim_keylist(void) {
     printf("Valid field keys for Animation structure:\n");
     printf("* null\n");
     printf("* chain_hit\n");
@@ -566,7 +566,7 @@ void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
     }
 }
 
-void bk_keylist() {
+void bk_keylist(void) {
     printf("Valid field keys for BK file root:\n");
     printf("* fileid\n");
     printf("* palette [<palette_index>]\n");

@@ -29,8 +29,8 @@ typedef struct {
 // globals, yay
 extern altpal_file *altpals;
 
-int altpals_init();
-void altpals_close();
+int altpals_init(void);
+void altpals_close(void);
 
 /*! \brief Initialize the alternate palette list structure
  *

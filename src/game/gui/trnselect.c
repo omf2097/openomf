@@ -148,7 +148,7 @@ sd_tournament_file *trnselect_selected(component *c) {
     return list_get(local->tournaments, local->selected);
 }
 
-component *trnselect_create() {
+component *trnselect_create(void) {
     component *c = widget_create();
     c->supports_disable = 0;
     c->supports_select = 0;

@@ -9,7 +9,7 @@ typedef struct {
     void *userdata;
 } xysizer;
 
-component *xysizer_create();
+component *xysizer_create(void);
 void xysizer_attach(component *sizer, component *c, int x, int y, int w, int h);
 void xysizer_set_userdata(component *sizer, void *userdata);
 void *xysizer_get_userdata(component *sizer);

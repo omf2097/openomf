@@ -16,7 +16,7 @@
 console *con = NULL;
 
 // defined in console_cmd.c
-void console_init_cmd();
+void console_init_cmd(void);
 
 int make_argv(char *p, char **argv) {
     // split line into argv, warning: does not handle quoted strings
@@ -100,7 +100,7 @@ void console_handle_line(game_state *gs) {
     }
 }
 
-void console_output_scroll_to_end() {
+void console_output_scroll_to_end(void) {
     // iterate the output buffer backward to count up to 16 lines or 480 chars, whichever comes first
     unsigned int lines = 0;
     unsigned int si;
@@ -179,7 +179,7 @@ void console_output_addline(const char *text) {
     console_output_add("\n");
 }
 
-void console_output_render() {
+void console_output_render(void) {
     int x = 0;
     int y = 0;
     unsigned int lines = 0;
@@ -199,7 +199,7 @@ void console_output_render() {
     }
 }
 
-int console_init() {
+int console_init(void) {
     if(con != NULL)
         return 1;
     con = omf_calloc(1, sizeof(console));
@@ -247,7 +247,7 @@ int console_init() {
     return 0;
 }
 
-void console_close() {
+void console_close(void) {
     surface_free(&con->background);
     list_free(&con->history);
     hashmap_free(&con->cmds);
@@ -302,7 +302,7 @@ void console_event(game_state *gs, SDL_Event *e) {
     }
 }
 
-void console_render() {
+void console_render(void) {
     if(con->ypos > 0) {
         if(con->histpos != -1 && con->histpos_changed) {
             char *input = list_get(&con->history, con->histpos);
@@ -324,7 +324,7 @@ void console_render() {
     }
 }
 
-void console_tick() {
+void console_tick(void) {
     if(con->isopen && con->ypos < 100) {
         con->ypos += 4;
         if(settings_get()->video.instant_console) {
@@ -360,11 +360,11 @@ void console_remove_cmd(const char *name) {
     hashmap_sdel(&con->cmds, name);
 }
 
-int console_window_is_open() {
+int console_window_is_open(void) {
     return con->isopen;
 }
 
-void console_window_open() {
+void console_window_open(void) {
     if(!SDL_IsTextInputActive()) {
         SDL_StartTextInput();
         con->ownsinput = 1;
@@ -374,7 +374,7 @@ void console_window_open() {
     con->isopen = 1;
 }
 
-void console_window_close() {
+void console_window_close(void) {
     if(con->ownsinput) {
         SDL_StopTextInput();
     }

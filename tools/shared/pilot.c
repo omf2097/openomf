@@ -28,7 +28,7 @@ void print_bytes(char *buf, int len, int line, int padding) {
     }
 }
 
-void print_pilot_array_header() {
+void print_pilot_array_header(void) {
     printf("ID Name          Wins Loss HAR      Money   AP LP AS LS AR SR PW AG EN OFF   DEF   C1  C2  C3  Secret "
            "Photo Value\n");
 }

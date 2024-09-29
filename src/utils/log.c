@@ -21,7 +21,7 @@ int log_init(const char *filename) {
     return 0;
 }
 
-void log_close() {
+void log_close(void) {
     if(handle != stdout && handle != 0) {
         fclose(handle);
     }

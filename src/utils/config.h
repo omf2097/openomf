@@ -8,7 +8,7 @@ void conf_addstring(char *name, char *default_val);
 
 int conf_init(const char *filename);
 int conf_write_config(const char *filename);
-void conf_close();
+void conf_close(void);
 
 int conf_int(const char *name);
 double conf_float(const char *name);

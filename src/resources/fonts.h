@@ -22,7 +22,7 @@ extern font font_large;
 extern font font_net1;
 extern font font_net2;
 
-int fonts_init();
-void fonts_close();
+int fonts_init(void);
+void fonts_close(void);
 
 #endif // FONTS_H
