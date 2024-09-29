@@ -51,6 +51,8 @@ endif()
 find_package(SDL2 REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(xmp)
+find_package(OpenGL REQUIRED)
+find_package(Epoxy REQUIRED)
 find_package(enet)
 find_package(confuse)
 find_package(argtable2)
@@ -82,6 +84,8 @@ set(COREINCS
     ${CMAKE_CURRENT_BINARY_DIR}/_deps/libfixmath-src
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
+    ${OPENGL_INCLUDE_DIR}
+    ${EPOXY_INCLUDE_DIR}
     ${CONFUSE_INCLUDE_DIR}
     ${XMP_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
@@ -254,10 +258,11 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf ${CORELIBS})
-target_link_libraries(openomf SDL2::Main SDL2::Mixer)
+target_link_libraries(openomf SDL2::Main SDL2::Mixer OpenGL::GL Epoxy::Main)
 target_link_libraries(openomf libfixmath)
 foreach(TARGET ${TOOL_TARGET_NAMES})
-    target_link_libraries(${TARGET} ${CORELIBS} SDL2::Main SDL2::Mixer)
+    target_link_libraries(${TARGET} ${CORELIBS})
+    target_link_libraries(${TARGET} SDL2::Main SDL2::Mixer OpenGL::GL Epoxy::Main)
 endforeach()
 
 # Testing stuff
@@ -275,7 +280,7 @@ if(CUNIT_FOUND)
     target_compile_definitions(openomf_test_main PRIVATE
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
-    target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer)
+    target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer OpenGL::GL Epoxy::Main)
 
     if(MINGW)
         # Always build as a console executable with mingw
