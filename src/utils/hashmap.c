@@ -57,8 +57,7 @@ static void hashmap_resize(hashmap *hm, unsigned int new_size) {
     // Allocate and zero out a new memory blocks for the resized bucket list
     size_t new_bytes = new_size * sizeof(hashmap_node *);
     hm->buckets = omf_realloc(hm->buckets, new_bytes);
-    memset(&hm->buckets[hm->capacity], 0,
-           (&hm->buckets[new_size] - &hm->buckets[hm->capacity]) * sizeof(hashmap_node *));
+    memset(&hm->buckets[hm->capacity], 0, (new_size - hm->capacity) * sizeof(hashmap_node *));
 
     // Rehash
     hashmap_node *node = NULL;
