@@ -139,7 +139,7 @@ void str_append_buf(str *dst, const char *buf, size_t len);
  * @brief Replace content in string with something else.
  * @details Replace occurrences of the search string with the replacement string.
  *          Limit parameter can be used to limit replacement to a certain number
- *          of occurences if so wanted (or -1 for unlimited).
+ *          of occurrences if so wanted (or -1 for unlimited).
  * @param dst Target string to modify
  * @param seek String to search and replace
  * @param replacement The replacement value
@@ -153,12 +153,17 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
 size_t str_size(const str *string);
 
 /**
- * @brief Find first occcurence of a character in a given string.
+ * @brief Find next occurrence of a character in a given string. Search is continued from given position.
+ */
+bool str_find_next(const str *string, char find, size_t *pos);
+
+/**
+ * @brief Find first occurrence of a character in a given string.
  */
 bool str_first_of(const str *string, char find, size_t *pos);
 
 /**
- * @brief Find last occcurence of a character in a given string.
+ * @brief Find last occurrence of a character in a given string.
  */
 bool str_last_of(const str *string, char find, size_t *pos);
 
