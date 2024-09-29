@@ -798,7 +798,6 @@ void arena_free(scene *scene) {
     }
 
     guiframe_free(local->game_menu);
-    surface_free(&local->sur);
 
     audio_stop_music();
 
@@ -1178,7 +1177,6 @@ void arena_render_overlay(scene *scene) {
     // Render menu (if visible)
     if(local->menu_visible) {
         guiframe_render(local->game_menu);
-        video_render_sprite(&local->sur, 10, 150, BLEND_ALPHA, 0);
     }
 }
 
@@ -1438,10 +1436,6 @@ int arena_create(scene *scene) {
     guiframe_set_root(local->game_menu, menu);
     guiframe_layout(local->game_menu);
     menu_select(menu, return_button);
-
-    // background for the 'help' at the bottom of the screen
-    // TODO support rendering text onto it
-    menu_background_create(&local->sur, 301, 37);
 
     // Health and endurance bars
     local->health_bars[0] = progressbar_create(PROGRESSBAR_THEME_HEALTH, PROGRESSBAR_RIGHT, 100);
