@@ -18,6 +18,18 @@ static const int menu_colors[6][3] = {
     {20, 63, 20}, // 80, 255, 80
 };
 
+static const int pulse_colors[9][3] = {
+    {0,  30, 0 },
+    {2,  34, 2 },
+    {5,  38, 5 },
+    {7,  42, 7 },
+    {10, 46, 10},
+    {12, 50, 12},
+    {15, 54, 15},
+    {17, 60, 17},
+    {20, 63, 20},
+};
+
 int palette_create(palette *pal) {
     if(pal == NULL) {
         return SD_INVALID_INPUT;
@@ -121,6 +133,16 @@ void palette_set_menu_colors(palette *pal) {
         pal->data[250 + i][1] = COLOR_6TO8(menu_colors[i][1]);
         pal->data[250 + i][2] = COLOR_6TO8(menu_colors[i][2]);
     }
+}
+
+void palette_pulse_menu_colors(palette *pal, int tick) {
+    int i = tick % 16;
+    if(i > 8) {
+        i = 16 - i;
+    }
+    pal->data[255][0] = COLOR_6TO8(pulse_colors[i][0]);
+    pal->data[255][1] = COLOR_6TO8(pulse_colors[i][1]);
+    pal->data[255][2] = COLOR_6TO8(pulse_colors[i][2]);
 }
 
 int palette_load_range(sd_reader *reader, palette *pal, int index_start, int index_count) {
