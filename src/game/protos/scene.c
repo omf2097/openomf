@@ -149,7 +149,7 @@ void scene_set_userdata(scene *scene, void *userdata) {
     scene->userdata = userdata;
 }
 
-void *scene_get_userdata(scene *scene) {
+void *scene_get_userdata(const scene *scene) {
     return scene->userdata;
 }
 
