@@ -29,8 +29,6 @@ int engine_init(void) {
     int h = setting->video.screen_h;
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
-    int scale_factor = setting->video.scale_factor;
-    char *scaler = setting->video.scaler;
     int frequency = setting->sound.music_frequency;
     int resampler = setting->sound.music_resampler;
     bool mono = setting->sound.music_mono;
@@ -38,7 +36,7 @@ int engine_init(void) {
     float sound_volume = setting->sound.sound_vol / 10.0;
 
     // Initialize everything.
-    if(video_init(w, h, fs, vsync, scaler, scale_factor))
+    if(video_init(w, h, fs, vsync))
         goto exit_0;
     if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
@@ -129,6 +127,12 @@ void engine_run(engine_init_flags *init_flags) {
                 case SDL_KEYDOWN:
                     if(e.key.keysym.sym == SDLK_F1) {
                         take_screenshot = 1;
+                    }
+                    if(e.key.keysym.sym == SDLK_F9) {
+                        video_draw_atlas(true);
+                    }
+                    if(e.key.keysym.sym == SDLK_F10) {
+                        video_draw_atlas(false);
                     }
                     if(e.key.keysym.sym == SDLK_F5) {
                         visual_debugger = !visual_debugger;
@@ -239,9 +243,6 @@ void engine_run(engine_init_flags *init_flags) {
             // Tick console
             console_tick();
 
-            // Tick video (tcache)
-            video_tick();
-
             static_wait -= 10;
         }
         while(dynamic_wait > game_state_ms_per_dyntick(gs) && limit_dynamic--) {
@@ -265,19 +266,15 @@ void engine_run(engine_init_flags *init_flags) {
 
             // If screenshot requested, do it here.
             if(take_screenshot) {
-                image img;
-                int failed_screenshot = video_screenshot(&img);
-                if(!failed_screenshot) {
-                    snprintf(screenshot_filename, 128, "screenshot_%u.png", SDL_GetTicks());
-                    int scr_ret = image_write_png(&img, screenshot_filename);
-                    if(scr_ret) {
-                        PERROR("Screenshot write operation failed (%s)", screenshot_filename);
-                    } else {
-                        DEBUG("Got a screenshot: %s", screenshot_filename);
-                    }
+                surface sur;
+                video_screenshot(&sur);
+                snprintf(screenshot_filename, 128, "screenshot_%u.png", SDL_GetTicks());
+                if(surface_write_png(&sur, video_get_pal_ref(), screenshot_filename)) {
+                    DEBUG("Got a screenshot: %s", screenshot_filename);
+                } else {
+                    PERROR("Screenshot write operation failed (%s)", screenshot_filename);
                 }
-
-                image_free(&img);
+                surface_free(&sur);
                 take_screenshot = 0;
             }
         } else {
