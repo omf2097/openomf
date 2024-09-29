@@ -5,11 +5,10 @@
 
 #include "game/gui/gui.h"
 
-#define TEXT_BRIGHT color_create(240, 250, 250, 255)
-#define TEXT_COLOR color_create(186, 250, 250, 255)
-#define BLUE_TEXT_COLOR color_create(60, 182, 255, 255)
+// FIXME: No idea what these should be
+#define TEXT_COLOR 0xFE
+#define BLUE_TEXT_COLOR 0xFE
 
-#define TEXT_BLACK color_create(0, 0, 0, 255)
 
 enum
 {
@@ -253,6 +252,5 @@ int lobby_create(scene *scene) {
     scene_set_render_overlay_cb(scene, lobby_render_overlay);
     scene_set_event_cb(scene, lobby_event);
 
-    video_render_bg_separately(false);
     return 0;
 }

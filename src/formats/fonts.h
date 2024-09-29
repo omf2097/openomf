@@ -11,6 +11,7 @@
 #define SD_FONTS_H
 
 #include "formats/rgba_image.h"
+#include "vga_image.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -92,13 +93,11 @@ int sd_font_save(const sd_font *font, const char *filename);
  * \retval SD_SUCCESS Success.
  *
  * \param font Font struct pointer.
- * \param surface Image surface to save to. Must be preallocated!
+ * \param surface Image surface to save to. Must be pre-allocated!
  * \param ch Character to load. Must be 0 <= ch <= 224.
- * \param r Red color index (0 - 0xFF)
- * \param g Green color index (0 - 0xFF)
- * \param b Blue color index (0 - 0xFF)
+ * \param color Color palette index (0 - 0xFF)
  */
-int sd_font_decode(const sd_font *font, sd_rgba_image *surface, uint8_t ch, uint8_t r, uint8_t g, uint8_t b);
+int sd_font_decode(const sd_font *font, sd_vga_image *surface, uint8_t ch, uint8_t color);
 
 #ifdef __cplusplus
 }

@@ -277,15 +277,15 @@ void vs_render(scene *scene) {
 
     if(player2->selectable) {
         // arena selection
-        video_render_sprite(&local->arena_select_bg, 55, 150, BLEND_ALPHA, 0);
+        video_draw(&local->arena_select_bg, 55, 150);
 
         object_render(&local->arena_select);
 
         // arena name
-        font_render_wrapped(&font_small, lang_get(56 + local->arena), 56 + 72, 153, (211 - 72) - 4, COLOR_GREEN);
+        font_render_wrapped(&font_small, lang_get(56 + local->arena), 56 + 72, 153, (211 - 72) - 4, TEXT_MEDIUM_GREEN);
 
         // arena description
-        font_render_wrapped(&font_small, lang_get(66 + local->arena), 56 + 72, 160, (211 - 72) - 4, COLOR_GREEN);
+        font_render_wrapped(&font_small, lang_get(66 + local->arena), 56 + 72, 160, (211 - 72) - 4, TEXT_MEDIUM_GREEN);
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK &&
               settings_get()->gameplay.difficulty < 2) {
         // kreissack, but not on Veteran or higher
@@ -463,6 +463,7 @@ int vs_create(scene *scene) {
         object_select_sprite(&local->player2_har, player2->pilot->har_id);
         object_set_direction(&local->player2_har, OBJECT_FACE_LEFT);
         object_set_pal_offset(&local->player2_har, 48);
+        object_set_pal_limit(&local->player2_har, 96);
 
         // PLAYER
         object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
@@ -626,10 +627,6 @@ int vs_create(scene *scene) {
     scene_set_dynamic_tick_cb(scene, vs_dynamic_tick);
     scene_set_static_tick_cb(scene, vs_static_tick);
     scene_set_free_cb(scene, vs_free);
-
-    // Don't render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(false);
 
     return 0;
 }

@@ -94,7 +94,7 @@ static void menu_render(component *c) {
     iterator it;
     component **tmp;
     if(m->bg) {
-        video_render_sprite(m->bg, c->x, c->y, BLEND_ALPHA, 0);
+        video_draw(m->bg, c->x, c->y);
     }
     vector_iter_begin(&s->objs, &it);
     int i = 0;
@@ -102,7 +102,7 @@ static void menu_render(component *c) {
         component_render(*tmp);
         if(m->selected == i && (*tmp)->help) {
             if(m->help_bg) {
-                video_render_sprite(m->help_bg, m->help_x - 8, m->help_y - 8, BLEND_ALPHA, 0);
+                video_draw(m->help_bg, m->help_x - 8, m->help_y - 8);
             }
             text_render(&m->help_text_conf, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
         }

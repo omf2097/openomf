@@ -1,10 +1,17 @@
 #ifndef TEXT_RENDER_H
 #define TEXT_RENDER_H
 
-#include "resources/fonts.h"
-#include "video/color.h"
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "resources/fonts.h"
+#include "utils/str.h"
+
+#define TEXT_DARK_GREEN 0xFE
+#define TEXT_MEDIUM_GREEN 0xFE
+#define TEXT_BLINKY_GREEN 0xFF
+#define TEXT_BLACK 0
+#define TEXT_TRN_BLUE 0xAB
 
 typedef enum
 {
@@ -40,13 +47,11 @@ enum
     TEXT_SHADOW_BOTTOM = 0x2,
     TEXT_SHADOW_LEFT = 0x4,
     TEXT_SHADOW_RIGHT = 0x8,
-    TEXT_SHADOW_HORIZONTAL = 0xC,
-    TEXT_SHADOW_VERTICAL = 0x3,
     TEXT_SHADOW_ALL = 0xF
 };
 
 typedef struct {
-    color cforeground;
+    uint8_t cforeground;
     text_valign valign;
     text_halign halign;
     text_padding padding;
@@ -55,13 +60,12 @@ typedef struct {
     uint8_t shadow;
     uint8_t cspacing;
     uint8_t lspacing;
-    uint8_t opacity;
     bool wrap;
 } text_settings;
 
 // New text rendering functions
 void text_defaults(text_settings *settings);
-int text_find_max_strlen(int maxchars, const char *ptr);
+int text_find_max_strlen(int max_chars, const char *ptr);
 int text_find_line_count(text_direction dir, int cols, int rows, int len, const char *text);
 int text_render_char(const text_settings *settings, int x, int y, char ch);
 void text_render(const text_settings *settings, int x, int y, int w, int h, const char *text);
@@ -72,13 +76,14 @@ int text_width(const text_settings *settings, const char *text);
 void font_get_wrapped_size(const font *font, const char *text, int max_w, int *out_w, int *out_h);
 void font_get_wrapped_size_shadowed(const font *font, const char *text, int max_w, int shadow_flag, int *out_w,
                                     int *out_h);
-void font_render_char(const font *font, char ch, int x, int y, color c);
-void font_render_len(const font *font, const char *text, int len, int x, int y, color c);
-void font_render(const font *font, const char *text, int x, int y, color c);
-void font_render_shadowed(const font *font, const char *text, int x, int y, color c, int shadow_flags);
-void font_render_shadowed_colored(const font *font, const char *text, int x, int y, color c, int shadow_flags,
-                                  color shadow_color);
-void font_render_wrapped(const font *font, const char *text, int x, int y, int w, color c);
-void font_render_wrapped_shadowed(const font *font, const char *text, int x, int y, int w, color c, int shadow_flags);
+void font_render_char(const font *font, char ch, int x, int y, uint8_t c);
+int font_render_char_shadowed(const font *font, char ch, int x, int y, uint8_t c, int shadow_flags, uint8_t shadow_color);
+void font_render_len(const font *font, const char *text, int len, int x, int y, uint8_t c);
+void font_render_len_shadowed(const font *font, const char *text, int len, int x, int y, uint8_t c, int shadow_flags, uint8_t shadow_color);
+void font_render(const font *font, const char *text, int x, int y, uint8_t c);
+void font_render_shadowed(const font *font, const char *text, int x, int y, uint8_t c, int shadow_flags);
+void font_render_shadowed_colored(const font *font, const char *text, int x, int y, uint8_t c, int shadow_flags, uint8_t shadow_color);
+void font_render_wrapped(const font *font, const char *text, int x, int y, int w, uint8_t c);
+void font_render_wrapped_shadowed(const font *font, const char *text, int x, int y, int w, uint8_t c, int shadow_flags);
 
 #endif // TEXT_RENDER_H

@@ -95,7 +95,7 @@ component *menu_main_create(scene *s) {
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = COLOR_DARK_GREEN;
+    tconf.cforeground = TEXT_DARK_GREEN;
 
     component *menu = menu_create(11);
     menu_attach(menu, textbutton_create(&tconf, "ONE PLAYER GAME", NULL, COM_ENABLED, mainmenu_1v1, s));

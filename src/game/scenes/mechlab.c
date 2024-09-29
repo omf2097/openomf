@@ -470,7 +470,7 @@ int mechlab_create(scene *scene) {
     tconf.font = FONT_SMALL;
     tconf.halign = TEXT_CENTER;
     tconf.valign = TEXT_MIDDLE;
-    tconf.cforeground = color_create(255, 255, 0, 255);
+    tconf.cforeground = TEXT_DARK_GREEN;
 
     local->hint = label_create(&tconf, "HINTY");
     component_set_pos_hints(local->hint, 32, 131);
@@ -494,10 +494,6 @@ int mechlab_create(scene *scene) {
     scene_set_render_cb(scene, mechlab_render);
     scene_set_free_cb(scene, mechlab_free);
     scene_set_dynamic_tick_cb(scene, mechlab_tick);
-
-    // Don't render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(false);
 
     return 0;
 }

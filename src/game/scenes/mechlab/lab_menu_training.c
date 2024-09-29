@@ -191,7 +191,7 @@ component *lab_menu_training_create(scene *s) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
-    tconf.cforeground = color_create(0, 0, 123, 255);
+    tconf.cforeground = TEXT_TRN_BLUE;
 
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
@@ -226,13 +226,13 @@ component *lab_menu_training_create(scene *s) {
     tconf.direction = TEXT_HORIZONTAL;
     tconf.halign = TEXT_LEFT;
     tconf.valign = TEXT_TOP;
-    tconf.cforeground = color_create(0, 200, 0, 255);
+    tconf.cforeground = 0xA5;
     label1 = label_create(&tconf, "");
     component_set_size_hints(label1, 90, 110);
     component_set_pos_hints(label1, 200, 148);
     trnmenu_attach(menu, label1);
 
-    tconf.cforeground = color_create(0, 255, 0, 255);
+    tconf.cforeground = 0xA7;
     label2 = label_create(&tconf, "");
     component_set_size_hints(label2, 90, 110);
     component_set_pos_hints(label2, 200, 186);

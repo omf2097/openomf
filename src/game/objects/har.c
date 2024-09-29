@@ -400,6 +400,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t f
         object_set_animation(obj, &move->ani);
         object_set_gravity(obj, g / 256.0f);
         object_set_pal_offset(obj, object_get_pal_offset(parent));
+        object_set_pal_limit(obj, object_get_pal_limit(parent));
         // Set all projectiles to their own layer + har layer
         object_set_layers(obj, LAYER_PROJECTILE | (h->player_id == 0 ? LAYER_HAR2 : LAYER_HAR1));
         // To avoid projectile-to-projectile collisions, set them to same group
@@ -755,6 +756,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         object_set_stl(scrap, object_get_stl(obj));
         object_set_gravity(scrap, 1);
         object_set_pal_offset(scrap, object_get_pal_offset(obj));
+        object_set_pal_limit(obj, object_get_pal_limit(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_dynamic_tick(scrap);
         object_set_shadow(scrap, 1);
@@ -931,11 +933,11 @@ void har_debug(object *obj) {
     image img;
     surface_to_image(&h->cd_debug, &img);
 
-    color c = color_create(0, 255, 0, 255);
-    color red = color_create(0, 255, 0, 255);
-    color blank = color_create(0, 0, 0, 0);
+    uint8_t c = 0xCF;
+    uint8_t red = 0xCF;
+    uint8_t blank = 0;
 
-    // video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
+    // video_draw(&h->cd_debug, 0, 0);
 
     if(obj->cur_sprite_id < 0) {
         return;
@@ -985,8 +987,7 @@ void har_debug(object *obj) {
 
     image_set_pixel(&img, pos_a.x, pos_a.y, red);
 
-    surface_force_refresh(&h->cd_debug); // Force refresh for the texture
-    video_render_sprite(&h->cd_debug, 0, 0, 0, 0);
+    video_draw(&h->cd_debug, 0, 0);
 }
 #endif // DEBUGMODE
 
@@ -2184,6 +2185,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     // Set palette offset 0 for player1, 48 for player2
     object_set_pal_offset(obj, player_id * 48);
+    object_set_pal_limit(obj, (player_id + 1) * 48);
 
     // Object related stuff
     object_set_gravity(obj, local->fall_speed);
@@ -2216,7 +2218,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 #ifdef DEBUGMODE
     object_set_debug_cb(obj, har_debug);
-    surface_create(&local->cd_debug, SURFACE_TYPE_RGBA, 320, 200);
+    surface_create(&local->cd_debug, 320, 200);
     surface_clear(&local->cd_debug);
 #endif
 

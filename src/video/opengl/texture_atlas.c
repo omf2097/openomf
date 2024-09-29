@@ -31,7 +31,7 @@ int static inline zone_perimeter(zone *zone) {
 
 texture_atlas *atlas_create(GLuint tex_unit, uint16_t width, uint16_t height) {
     texture_atlas *atlas = omf_calloc(1, sizeof(texture_atlas));
-    hashmap_create(&atlas->items, 10);
+    hashmap_create(&atlas->items);
     vector_create(&atlas->free_space, sizeof(zone));
     atlas->w = width;
     atlas->h = height;

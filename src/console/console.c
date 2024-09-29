@@ -183,7 +183,6 @@ void console_output_render(void) {
     int x = 0;
     int y = 0;
     unsigned int lines = 0;
-    const color textcolor = color_create(121, 121, 121, 255);
     for(unsigned int i = con->output_pos; i != con->output_tail && lines < 15; i = BUFFER_INC(i)) {
 
         char c = con->output[i];
@@ -193,7 +192,7 @@ void console_output_render(void) {
             lines++;
         } else {
             // TODO add word wrapping?
-            font_render_char(&font_small, c, x, y + con->ypos - 100, textcolor);
+            font_render_char(&font_small, c, x, y + con->ypos - 100, TEXT_MEDIUM_GREEN);
             x += font_small.w;
         }
     }
@@ -206,8 +205,6 @@ int console_init(void) {
     con->isopen = 0;
     con->ownsinput = 0;
     con->ypos = 0;
-    con->ticks = 0;
-    con->dir = 0;
     con->input[0] = '\0';
     con->output[0] = '\0';
     con->output_head = 0;
@@ -313,13 +310,11 @@ void console_render(void) {
             con->input[0] = '\0';
             con->histpos_changed = 0;
         }
-        video_render_sprite(&con->background, -1, con->ypos - 101, BLEND_ALPHA, 0);
-        int t = con->ticks / 2;
+        video_draw(&con->background, -1, con->ypos - 101);
         // input line
-        font_render(&font_small, con->input, 0, con->ypos - 7, color_create(121, 121, 121, 255));
+        font_render(&font_small, con->input, 0, con->ypos - 7, TEXT_MEDIUM_GREEN);
         // cursor
-        font_render(&font_small, CURSOR_STR, strlen(con->input) * font_small.w, con->ypos - 7,
-                    color_create(121 - t, 121 - t, 121 - t, 255));
+        font_render(&font_small, CURSOR_STR, strlen(con->input) * font_small.w, con->ypos - 7, TEXT_BLINKY_GREEN);
         console_output_render();
     }
 }
@@ -335,17 +330,6 @@ void console_tick(void) {
         if(settings_get()->video.instant_console) {
             con->ypos = 0;
         }
-    }
-    if(!con->dir) {
-        con->ticks++;
-    } else {
-        con->ticks--;
-    }
-    if(con->ticks > 120) {
-        con->dir = 1;
-    }
-    if(con->ticks == 0) {
-        con->dir = 0;
     }
 }
 

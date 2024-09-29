@@ -54,7 +54,7 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
-    tconf.cforeground = color_create(0, 0, 123, 255);
+    tconf.cforeground = TEXT_TRN_BLUE;
 
     lab_menu_select_t *selector = omf_calloc(1, sizeof(lab_menu_select_t));
     selector->cb = select;
@@ -102,7 +102,7 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     trnmenu_attach(menu, button);
 
     // Add text label
-    tconf.cforeground = COLOR_DARK_GREEN;
+    tconf.cforeground = TEXT_MEDIUM_GREEN;
     // TODO interpolate %s in the string here with blank
     component *label = label_create(&tconf, lang_get(title));
     component_set_pos_hints(label, 87, 155);

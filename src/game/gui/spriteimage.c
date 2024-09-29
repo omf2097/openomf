@@ -12,7 +12,7 @@ typedef struct {
 
 static void spriteimage_render(component *c) {
     spriteimage *sb = widget_get_obj(c);
-    video_render_sprite(sb->img, c->x, c->y, BLEND_ALPHA, 0);
+    video_draw(sb->img, c->x, c->y);
 }
 
 static void spriteimage_free(component *c) {

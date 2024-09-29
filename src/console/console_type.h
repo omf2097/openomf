@@ -19,8 +19,6 @@ typedef struct {
     int isopen;
     int ownsinput;
     int ypos;
-    unsigned int ticks;
-    unsigned int dir;
     hashmap cmds; // string -> command
 } console;
 

@@ -1,6 +1,5 @@
 #include "formats/bk.h"
 #include "resources/bk.h"
-#include <string.h>
 
 void bk_create(bk *b, void *src) {
     sd_bk_file *sdbk = (sd_bk_file *)src;
@@ -9,8 +8,8 @@ void bk_create(bk *b, void *src) {
     b->file_id = sdbk->file_id;
 
     // Copy VGA image
-    surface_create_from_data(&b->background, SURFACE_TYPE_PALETTE, sdbk->background->w, sdbk->background->h,
-                             sdbk->background->data);
+    surface_create_from_data(&b->background, sdbk->background->w, sdbk->background->h,
+                             (unsigned char *)sdbk->background->data);
 
     // Copy sound translation table
     memcpy(b->sound_translation_table, sdbk->soundtable, 30);
@@ -20,6 +19,13 @@ void bk_create(bk *b, void *src) {
     for(int i = 0; i < sdbk->palette_count; i++) {
         vector_append(&b->palettes, (palette *)sdbk->palettes[i]);
     }
+
+    // All scenes always have the menu colors set for palette 0.
+    palette *pal = vector_get(&b->palettes, 0);
+    palette_set_menu_colors(pal);
+
+    // Index 0 is always black.
+    pal->data[0][0] = pal->data[0][1] = pal->data[0][2] = 0;
 
     // Copy info structs
     hashmap_create(&b->infos);
