@@ -1405,24 +1405,35 @@ int arena_create(scene *scene) {
     menu_attach(menu, label_create(&tconf, "OPENOMF"));
     menu_attach(menu, filler_create());
     menu_attach(menu, filler_create());
-    component *return_button = textbutton_create(&tconf, "RETURN TO GAME", COM_ENABLED, game_menu_return, scene);
+    component *return_button =
+        textbutton_create(&tconf, "RETURN TO GAME", "Continue fighting.", COM_ENABLED, game_menu_return, scene);
     menu_attach(menu, return_button);
 
     menu_attach(menu,
-                textslider_create_bind(&tconf, "SOUND", 10, 1, arena_sound_slide, NULL, &setting->sound.sound_vol));
-    menu_attach(menu,
-                textslider_create_bind(&tconf, "MUSIC", 10, 1, arena_music_slide, NULL, &setting->sound.music_vol));
+                textslider_create_bind(&tconf, "SOUND",
+                                       "Raise or lower the volume of all sound effects. Press left or right to change.",
+                                       10, 1, arena_sound_slide, NULL, &setting->sound.sound_vol));
+    menu_attach(menu, textslider_create_bind(&tconf, "MUSIC",
+                                             "Raise or lower the volume of music. Press right or left to change.", 10,
+                                             1, arena_music_slide, NULL, &setting->sound.music_vol));
 
-    component *speed_slider =
-        textslider_create_bind(&tconf, "SPEED", 10, 0, arena_speed_slide, scene, &setting->gameplay.speed);
+    component *speed_slider = textslider_create_bind(
+        &tconf, "SPEED", "Change the speed of the game when in the arena. Press left or right to change", 10, 0,
+        arena_speed_slide, scene, &setting->gameplay.speed);
     if(is_netplay(scene)) {
         component_disable(speed_slider, 1);
     }
     menu_attach(menu, speed_slider);
 
-    menu_attach(menu, textbutton_create(&tconf, "VIDEO OPTIONS", COM_DISABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&tconf, "HELP", COM_DISABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&tconf, "QUIT", COM_ENABLED, game_menu_quit, scene));
+    menu_attach(menu, textbutton_create(&tconf, "VIDEO OPTIONS",
+                                        "These are miscellaneous options for visual effects and detail levels.",
+                                        COM_DISABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&tconf, "HELP",
+                                        "Obtain detailed and thorough explanation of the various options for which you "
+                                        "may need a detailed and thorough explanation.",
+                                        COM_DISABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED,
+                                        game_menu_quit, scene));
 
     guiframe_set_root(local->game_menu, menu);
     guiframe_layout(local->game_menu);

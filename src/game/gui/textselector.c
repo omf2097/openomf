@@ -145,11 +145,12 @@ static void textselector_free(component *c) {
     omf_free(tb);
 }
 
-component *textselector_create(const text_settings *tconf, const char *text, textselector_toggle_cb cb,
-                               void *userdata) {
+component *textselector_create(const text_settings *tconf, const char *text, const char *help,
+                               textselector_toggle_cb cb, void *userdata) {
     component *c = widget_create();
 
     textselector *tb = omf_calloc(1, sizeof(textselector));
+    component_set_help_text(c, help);
     tb->text = strdup(text);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->pos = &tb->pos_;
@@ -166,17 +167,18 @@ component *textselector_create(const text_settings *tconf, const char *text, tex
     return c;
 }
 
-component *textselector_create_bind(const text_settings *tconf, const char *text, textselector_toggle_cb toggle_cb,
-                                    void *userdata, int *bind) {
-    component *c = textselector_create(tconf, text, toggle_cb, userdata);
+component *textselector_create_bind(const text_settings *tconf, const char *text, const char *help,
+                                    textselector_toggle_cb toggle_cb, void *userdata, int *bind) {
+    component *c = textselector_create(tconf, text, help, toggle_cb, userdata);
     textselector *ts = widget_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;
     return c;
 }
 
-component *textselector_create_bind_opts(const text_settings *tconf, const char *text, textselector_toggle_cb toggle_cb,
-                                         void *userdata, int *bind, const char **opts, int opt_size) {
-    component *c = textselector_create_bind(tconf, text, toggle_cb, userdata, bind);
+component *textselector_create_bind_opts(const text_settings *tconf, const char *text, const char *help,
+                                         textselector_toggle_cb toggle_cb, void *userdata, int *bind, const char **opts,
+                                         int opt_size) {
+    component *c = textselector_create_bind(tconf, text, help, toggle_cb, userdata, bind);
     for(int i = 0; i < opt_size; i++) {
         textselector_add_option(c, opts[i]);
     }

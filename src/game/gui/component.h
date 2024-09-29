@@ -63,6 +63,7 @@ struct component_t {
 
     char supports_focus; ///< Whether the component can be focused by component_focus() call.
     char is_focused;     ///< Whether the component is focused
+    const char *help;    ///< Help text, if available
 
     component_render_cb render; ///< Render function callback. This tells the component to draw itself.
     component_event_cb event;   ///< Event function callback. Direct SDL2 event handler.
@@ -100,6 +101,8 @@ bool component_is_selectable(component *c);
 
 void component_set_size_hints(component *c, int w, int h);
 void component_set_pos_hints(component *c, int x, int y);
+
+void component_set_help_text(component *c, const char *help);
 
 // ID lookup stuff
 component *component_find(component *c, int id);

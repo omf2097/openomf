@@ -98,17 +98,17 @@ component *menu_main_create(scene *s) {
     tconf.cforeground = COLOR_DARK_GREEN;
 
     component *menu = menu_create(11);
-    menu_attach(menu, textbutton_create(&tconf, "ONE PLAYER GAME", COM_ENABLED, mainmenu_1v1, s));
-    menu_attach(menu, textbutton_create(&tconf, "TWO PLAYER GAME", COM_ENABLED, mainmenu_1v2, s));
-    menu_attach(menu, textbutton_create(&tconf, "TOURNAMENT PLAY", COM_ENABLED, mainmenu_mechlab, s));
-    component *net = textbutton_create(&tconf, "NETWORK PLAY", COM_ENABLED, mainmenu_enter_network, s);
+    menu_attach(menu, textbutton_create(&tconf, "ONE PLAYER GAME", NULL, COM_ENABLED, mainmenu_1v1, s));
+    menu_attach(menu, textbutton_create(&tconf, "TWO PLAYER GAME", NULL, COM_ENABLED, mainmenu_1v2, s));
+    menu_attach(menu, textbutton_create(&tconf, "TOURNAMENT PLAY", NULL, COM_ENABLED, mainmenu_mechlab, s));
+    component *net = textbutton_create(&tconf, "NETWORK PLAY", NULL, COM_ENABLED, mainmenu_enter_network, s);
     widget_set_id(net, NETWORK_BUTTON_ID);
     menu_attach(menu, net);
-    menu_attach(menu, textbutton_create(&tconf, "CONFIGURATION", COM_ENABLED, mainmenu_enter_configuration, s));
-    menu_attach(menu, textbutton_create(&tconf, "GAMEPLAY", COM_ENABLED, mainmenu_enter_gameplay, s));
-    menu_attach(menu, textbutton_create(&tconf, "HELP", COM_DISABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&tconf, "DEMO", COM_ENABLED, mainmenu_demo, s));
-    menu_attach(menu, textbutton_create(&tconf, "SCOREBOARD", COM_ENABLED, mainmenu_soreboard, s));
-    menu_attach(menu, textbutton_create(&tconf, "QUIT", COM_ENABLED, mainmenu_quit, s));
+    menu_attach(menu, textbutton_create(&tconf, "CONFIGURATION", NULL, COM_ENABLED, mainmenu_enter_configuration, s));
+    menu_attach(menu, textbutton_create(&tconf, "GAMEPLAY", NULL, COM_ENABLED, mainmenu_enter_gameplay, s));
+    menu_attach(menu, textbutton_create(&tconf, "HELP", NULL, COM_DISABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&tconf, "DEMO", NULL, COM_ENABLED, mainmenu_demo, s));
+    menu_attach(menu, textbutton_create(&tconf, "SCOREBOARD", NULL, COM_ENABLED, mainmenu_soreboard, s));
+    menu_attach(menu, textbutton_create(&tconf, "QUIT", NULL, COM_ENABLED, mainmenu_quit, s));
     return menu;
 }

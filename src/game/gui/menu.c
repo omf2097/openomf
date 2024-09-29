@@ -2,6 +2,7 @@
 #include "audio/audio.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/sizer.h"
+#include "game/gui/text_render.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vector.h"
@@ -92,10 +93,20 @@ static void menu_render(component *c) {
     // Otherwise handle this component
     iterator it;
     component **tmp;
-    video_render_sprite(m->bg, c->x, c->y, BLEND_ALPHA, 0);
+    if(m->bg) {
+        video_render_sprite(m->bg, c->x, c->y, BLEND_ALPHA, 0);
+    }
     vector_iter_begin(&s->objs, &it);
+    int i = 0;
     while((tmp = iter_next(&it)) != NULL) {
         component_render(*tmp);
+        if(m->selected == i && (*tmp)->help) {
+            if(m->help_bg) {
+                video_render_sprite(m->help_bg, m->help_x - 8, m->help_y - 8, BLEND_ALPHA, 0);
+            }
+            text_render(&m->help_text_conf, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
+        }
+        i++;
     }
 }
 
@@ -220,9 +231,14 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     menu *m = sizer_get_obj(c);
 
     // Set the background now that we know the width and height
-    if(m->bg == NULL) {
+    if(m->bg == NULL && m->background) {
         m->bg = omf_calloc(1, sizeof(surface));
         menu_background_create(m->bg, w, h);
+    }
+
+    if(m->help_bg == NULL && m->background) {
+        m->help_bg = omf_calloc(1, sizeof(surface));
+        menu_background_create(m->help_bg, m->help_w + 16, m->help_w / 8);
     }
 
     // Set layout for all components in the sizer
@@ -276,11 +292,33 @@ void menu_set_horizontal(component *c, bool horizontal) {
     m->horizontal = horizontal;
 }
 
+void menu_set_background(component *c, bool background) {
+    menu *m = sizer_get_obj(c);
+    m->background = background;
+}
+
+void menu_set_help_pos(component *c, int x, int y, int w, int h) {
+    menu *m = sizer_get_obj(c);
+    m->help_x = x;
+    m->help_y = y;
+    m->help_w = w;
+    m->help_h = h;
+}
+
+void menu_set_help_text_settings(component *c, text_settings *settings) {
+    menu *m = sizer_get_obj(c);
+    memcpy(&m->help_text_conf, settings, sizeof(text_settings));
+}
+
 static void menu_free(component *c) {
     menu *m = sizer_get_obj(c);
     if(m->bg) {
         surface_free(m->bg);
         omf_free(m->bg);
+    }
+    if(m->help_bg) {
+        surface_free(m->help_bg);
+        omf_free(m->help_bg);
     }
     if(m->submenu) {
         component_free(m->submenu); // Free submenu component
@@ -306,7 +344,18 @@ component *menu_create(int obj_h) {
     m->margin_top = 8;
     m->obj_h = obj_h;
     m->horizontal = false;
+    m->background = true;
     sizer_set_obj(c, m);
+
+    m->help_w = 284;
+    m->help_h = 20;
+    m->help_x = 16;
+    m->help_y = 156;
+
+    text_defaults(&m->help_text_conf);
+    m->help_text_conf.font = FONT_SMALL;
+    m->help_text_conf.halign = TEXT_CENTER;
+    m->help_text_conf.valign = TEXT_MIDDLE;
 
     sizer_set_render_cb(c, menu_render);
     sizer_set_event_cb(c, menu_event);

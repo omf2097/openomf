@@ -3,6 +3,7 @@
 
 #include "game/gui/component.h"
 #include "game/gui/frame.h"
+#include "game/gui/text_render.h"
 #include "video/surface.h"
 
 typedef void (*menu_tick_cb)(component *c);
@@ -11,11 +12,20 @@ typedef void (*menu_submenu_done_cb)(component *menu, component *submenu);
 
 typedef struct {
     surface *bg;
+    surface *help_bg;
     int selected;
     int obj_h;
     int margin_top;
     int finished;
     bool horizontal;
+    bool background;
+
+    int help_x;
+    int help_y;
+    int help_w;
+    int help_h;
+
+    text_settings help_text_conf;
 
     char prev_submenu_state;
     component *submenu;
@@ -42,5 +52,8 @@ void *menu_get_userdata(const component *menu);
 void menu_set_free_cb(component *menu, menu_free_cb cb);
 void menu_set_tick_cb(component *menu, menu_tick_cb cb);
 void menu_set_horizontal(component *c, bool horizontal);
+void menu_set_background(component *c, bool background);
+void menu_set_help_pos(component *c, int x, int y, int h, int w);
+void menu_set_help_text_settings(component *c, text_settings *settings);
 
 #endif // MENU_H

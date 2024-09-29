@@ -188,9 +188,12 @@ component *menu_connect_create(scene *s) {
 
     local->controllers_created = 0;
     local->connect_start = 0;
-    local->addr_input = textinput_create(&tconf, "Host/IP", settings_get()->net.net_connect_ip);
-    local->connect_button = textbutton_create(&tconf, "CONNECT", COM_ENABLED, menu_connect_start, s);
-    local->cancel_button = textbutton_create(&tconf, "CANCEL", COM_ENABLED, menu_connect_cancel, s);
+    local->addr_input = textinput_create(&tconf, "Host/IP", "Enter an IP address you wish to connect to.",
+                                         settings_get()->net.net_connect_ip);
+    local->connect_button =
+        textbutton_create(&tconf, "CONNECT", "Connect to the provided IP address.", COM_ENABLED, menu_connect_start, s);
+    local->cancel_button =
+        textbutton_create(&tconf, "CANCEL", "Exit from this menu.", COM_ENABLED, menu_connect_cancel, s);
     widget_set_id(local->connect_button, NETWORK_CONNECT_IP_BUTTON_ID);
     menu_attach(menu, local->addr_input);
     menu_attach(menu, local->connect_button);

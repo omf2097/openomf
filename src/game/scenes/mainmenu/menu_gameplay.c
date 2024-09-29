@@ -28,18 +28,38 @@ component *menu_gameplay_create(scene *s) {
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "GAMEPLAY"));
     menu_attach(menu, filler_create());
-    menu_attach(menu, textslider_create_bind(&tconf, "SPEED", 10, 1, menu_gameplay_speed_slide, s,
-                                             &settings_get()->gameplay.speed));
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "FIGHT MODE", NULL, NULL,
-                                                    &settings_get()->gameplay.fight_mode, fightmode_opts, 2));
-    menu_attach(menu, textslider_create_bind(&tconf, "POWER 1", 8, 0, NULL, NULL, &settings_get()->gameplay.power1));
-    menu_attach(menu, textslider_create_bind(&tconf, "POWER 2", 8, 0, NULL, NULL, &settings_get()->gameplay.power2));
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "HAZARDS", NULL, NULL, &settings_get()->gameplay.hazards_on,
-                                                    hazard_opts, 2));
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "CPU:", NULL, NULL, &settings_get()->gameplay.difficulty,
-                                                    ai_difficulty_names, NUMBER_OF_AI_DIFFICULTY_TYPES));
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "", NULL, NULL, &settings_get()->gameplay.rounds,
-                                                    round_type_names, NUMBER_OF_ROUND_TYPES));
-    menu_attach(menu, textbutton_create(&tconf, "DONE", COM_ENABLED, menu_gameplay_done, NULL));
+    menu_attach(menu, textslider_create_bind(&tconf, "SPEED",
+                                             "Change the overall speed of the game. Press left and right to change.",
+                                             10, 1, menu_gameplay_speed_slide, s, &settings_get()->gameplay.speed));
+    menu_attach(menu, textselector_create_bind_opts(
+                          &tconf, "FIGHT MODE",
+                          "Fight mode can be either normal or hyper. Hyper mode will enhance your special moves. Check "
+                          "the robot description section of help for more information.",
+                          NULL, NULL, &settings_get()->gameplay.fight_mode, fightmode_opts, 2));
+    menu_attach(menu, textslider_create_bind(&tconf, "POWER 1",
+                                             "Change the power of player 1's hits and throws. This setting will take "
+                                             "effect only in two player games. Press left and right to change.",
+                                             8, 0, NULL, NULL, &settings_get()->gameplay.power1));
+    menu_attach(menu, textslider_create_bind(&tconf, "POWER 2",
+                                             "Change the power of player 1's hits and throws. This setting will take "
+                                             "effect only in two player games. Press left and right to change.",
+                                             8, 0, NULL, NULL, &settings_get()->gameplay.power2));
+    menu_attach(menu, textselector_create_bind_opts(&tconf, "HAZARDS",
+                                                    "Some arenas have dangerous environments: spikes, electrivity, "
+                                                    "fighter planes, and the like. This option turns them on and off.",
+                                                    NULL, NULL, &settings_get()->gameplay.hazards_on, hazard_opts, 2));
+    menu_attach(menu,
+                textselector_create_bind_opts(&tconf, "CPU:",
+                                              "This determines how well the computer fights in a one player game. This "
+                                              "has no effect on two player games. Press left and right to change.",
+                                              NULL, NULL, &settings_get()->gameplay.difficulty, ai_difficulty_names,
+                                              NUMBER_OF_AI_DIFFICULTY_TYPES));
+    menu_attach(menu, textselector_create_bind_opts(&tconf, "",
+                                                    "This will set matches so they are one round, best two out of "
+                                                    "three rounds, or best three out of five rounds.",
+                                                    NULL, NULL, &settings_get()->gameplay.rounds, round_type_names,
+                                                    NUMBER_OF_ROUND_TYPES));
+    menu_attach(menu,
+                textbutton_create(&tconf, "DONE", "Go back to the main menu.", COM_ENABLED, menu_gameplay_done, NULL));
     return menu;
 }

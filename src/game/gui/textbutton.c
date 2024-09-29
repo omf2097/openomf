@@ -112,14 +112,15 @@ static void textbutton_free(component *c) {
     omf_free(tb);
 }
 
-component *textbutton_create(const text_settings *tconf, const char *text, int disabled, textbutton_click_cb cb,
-                             void *userdata) {
+component *textbutton_create(const text_settings *tconf, const char *text, const char *help, int disabled,
+                             textbutton_click_cb cb, void *userdata) {
     component *c = widget_create();
     component_disable(c, disabled);
 
     textbutton *tb = omf_calloc(1, sizeof(textbutton));
     tb->text = strdup(text);
     component_set_size_hints(c, text_width(tconf, text), 8);
+    component_set_help_text(c, help);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->click_cb = cb;
     tb->userdata = userdata;

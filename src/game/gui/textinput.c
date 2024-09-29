@@ -125,7 +125,7 @@ void textinput_enable_background(component *c, int enabled) {
     tb->bg_enabled = enabled;
 }
 
-component *textinput_create(const text_settings *tconf, const char *text, const char *initialvalue) {
+component *textinput_create(const text_settings *tconf, const char *text, const char *help, const char *initialvalue) {
     component *c = widget_create();
 
     textinput *tb = omf_calloc(1, sizeof(textinput));
@@ -133,6 +133,8 @@ component *textinput_create(const text_settings *tconf, const char *text, const 
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->bg_enabled = 1;
     tb->max_chars = 15;
+
+    component_set_help_text(c, help);
 
     // Background for field
     int tsize = text_char_width(&tb->tconf);

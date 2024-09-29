@@ -34,8 +34,8 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     menu_background_create(&dlg->background, MAX_WIDTH + 30, h + 24 + tsize);
 
     if(style == DIALOG_STYLE_YES_NO) {
-        dlg->yes = textbutton_create(&tconf, "YES", COM_ENABLED, NULL, NULL);
-        dlg->no = textbutton_create(&tconf, "NO", COM_ENABLED, NULL, NULL);
+        dlg->yes = textbutton_create(&tconf, "YES", NULL, COM_ENABLED, NULL, NULL);
+        dlg->no = textbutton_create(&tconf, "NO", NULL, COM_ENABLED, NULL, NULL);
         textbutton_set_border(dlg->yes, COLOR_BLUE);
         textbutton_set_border(dlg->no, COLOR_BLUE);
         component_layout(dlg->yes, x + 54, x + h + 6, 8, 8);
@@ -43,7 +43,7 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
         component_select(dlg->yes, 1);
         dlg->result = DIALOG_RESULT_YES_OK;
     } else if(style == DIALOG_STYLE_OK) {
-        dlg->ok = textbutton_create(&tconf, "OK", COM_ENABLED, NULL, NULL);
+        dlg->ok = textbutton_create(&tconf, "OK", NULL, COM_ENABLED, NULL, NULL);
         textbutton_set_border(dlg->ok, COLOR_BLUE);
         component_layout(dlg->ok, x + 84, x + h + 6, 8, 8);
         component_select(dlg->ok, 1);
