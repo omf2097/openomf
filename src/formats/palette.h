@@ -95,6 +95,7 @@ int palette_to_gimp_palette(const palette *pal, const char *filename);
 int palette_from_gimp_palette(palette *pal, const char *filename);
 
 void palette_set_menu_colors(palette *pal);
+void palette_pulse_menu_colors(palette *pal, int tick);
 int palette_mload_range(memreader *reader, palette *pal, int index_start, int index_count);
 int palette_load_range(sd_reader *reader, palette *pal, int index_start, int index_count);
 int palette_load(sd_reader *reader, palette *pal);

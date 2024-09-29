@@ -25,6 +25,9 @@ void mainmenu_free(scene *scene) {
 
 void mainmenu_tick(scene *scene, int paused) {
     mainmenu_local *local = scene_get_userdata(scene);
+    palette *base_pal = video_get_base_palette();
+    palette_pulse_menu_colors(base_pal, scene->gs->tick / 8);
+    video_force_pal_refresh();
     guiframe_tick(local->frame);
 }
 
