@@ -297,12 +297,12 @@ if(WIN32)
     # On windows, generate a flat directory structure under openomf/ subdir.
     # This way we have an "openomf/" root directory inside the zip file.
     install(TARGETS openomf RUNTIME DESTINATION openomf/ COMPONENT Binaries)
-    install(FILES resources/openomf.bk DESTINATION openomf/resources/ COMPONENT Data)
+    install(FILES resources/openomf.bk resources/gamecontrollerdb.txt DESTINATION openomf/resources/ COMPONENT Data)
     install(FILES README.md BUILD.md LICENSE DESTINATION openomf/ COMPONENT Data)
 else()
     # On unixy systems, follow standard.
     install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
-    install(FILES resources/openomf.bk resources/icons/openomf.png
+    install(FILES resources/openomf.bk resources/gamecontrollerdb.txt resources/icons/openomf.png
         DESTINATION share/games/openomf/
         COMPONENT Data
     )
