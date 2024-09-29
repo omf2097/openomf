@@ -80,7 +80,7 @@ void engine_run(engine_init_flags *init_flags) {
     int debugger_render = 0;
 
     // if mouse_visible_ticks <= 0, hide mouse
-    int mouse_visible_ticks = 1000;
+    uint64_t mouse_visible_ticks = 1000;
 
     INFO(" --- BEGIN GAME LOG ---");
 
@@ -112,7 +112,7 @@ void engine_run(engine_init_flags *init_flags) {
     }
 
     // Game loop
-    int frame_start = SDL_GetTicks();
+    uint64_t frame_start = SDL_GetTicks64(); // Set game tick timer
     int dynamic_wait = 0;
     int static_wait = 0;
     while(run && game_state_is_running(gs)) {
@@ -203,7 +203,7 @@ void engine_run(engine_init_flags *init_flags) {
 
         // hide mouse after n ticks
         if(mouse_visible_ticks > 0) {
-            mouse_visible_ticks -= SDL_GetTicks() - frame_start;
+            mouse_visible_ticks -= SDL_GetTicks64() - frame_start;
             if(mouse_visible_ticks <= 0) {
                 SDL_ShowCursor(0);
             }
@@ -224,11 +224,11 @@ void engine_run(engine_init_flags *init_flags) {
         }
 
         // Render scene
-        int dt = (SDL_GetTicks() - frame_start);
-        frame_start = SDL_GetTicks(); // Reset timer
+        uint64_t frame_dt = SDL_GetTicks64() - frame_start;
+        frame_start = SDL_GetTicks64();
         if(!visual_debugger) {
-            dynamic_wait += dt;
-            static_wait += dt;
+            dynamic_wait += frame_dt;
+            static_wait += frame_dt;
         } else if(debugger_proceed) {
             dynamic_wait += 20;
             static_wait += 20;
