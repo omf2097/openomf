@@ -42,8 +42,6 @@ typedef struct {
     int scaling;
     int instant_console;
     int crossfade_on;
-    char *scaler;
-    int scale_factor;
 } settings_video;
 
 typedef struct {
