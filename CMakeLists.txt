@@ -149,17 +149,23 @@ endif()
 # Build the game binary
 add_executable(openomf src/main.c src/engine.c ${ICON_RESOURCE})
 
+# This is used to copy shader files from source directory to the binary output directory during compile.
+add_custom_target(
+    copy_shaders ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_BINARY_DIR}/shaders
+)
+add_dependencies(openomf copy_shaders)
+
 # Build tools if requested
 set(TOOL_TARGET_NAMES)
-if(USE_TOOLS)
+if (USE_TOOLS)
     add_executable(bktool tools/bktool/main.c
-                          tools/shared/animation_misc.c
-                          tools/shared/conversions.c)
+        tools/shared/animation_misc.c
+        tools/shared/conversions.c)
     add_executable(aftool tools/aftool/main.c
-                          tools/shared/animation_misc.c
-                          tools/shared/conversions.c)
+        tools/shared/animation_misc.c
+        tools/shared/conversions.c)
     add_executable(soundtool tools/soundtool/main.c)
-    add_executable(fonttool tools/fonttool/main.c)
     add_executable(languagetool tools/languagetool/main.c)
     add_executable(afdiff tools/afdiff/main.c)
     add_executable(rectool tools/rectool/main.c tools/shared/pilot.c)
@@ -176,7 +182,6 @@ if(USE_TOOLS)
         bktool
         aftool
         soundtool
-        fonttool
         languagetool
         afdiff
         rectool
@@ -303,6 +308,7 @@ if(WIN32)
     # This way we have an "openomf/" root directory inside the zip file.
     install(TARGETS openomf RUNTIME DESTINATION openomf/ COMPONENT Binaries)
     install(FILES resources/openomf.bk resources/gamecontrollerdb.txt DESTINATION openomf/resources/ COMPONENT Data)
+    install(DIRECTORY shaders/ DESTINATION openomf/shaders COMPONENT Data)
     install(FILES README.md BUILD.md LICENSE DESTINATION openomf/ COMPONENT Data)
 else()
     # On unixy systems, follow standard.
@@ -311,4 +317,5 @@ else()
         DESTINATION share/games/openomf/
         COMPONENT Data
     )
+    install(DIRECTORY shaders/ DESTINATION share/games/openomf/shaders COMPONENT Data)
 endif()

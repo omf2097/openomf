@@ -28,7 +28,6 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "video/tcache.h"
 #include "video/video.h"
 #include <SDL.h>
 #include <math.h>
@@ -426,9 +425,6 @@ int game_load_new(game_state *gs, int scene_id) {
     scene_free(gs->sc);
     omf_free(gs->sc);
 
-    // Clear up old video cache objects
-    tcache_clear();
-
     // Remove old objects
     render_obj *robj;
     iterator it;
@@ -440,6 +436,9 @@ int game_load_new(game_state *gs, int scene_id) {
             vector_delete(&gs->objects, &it);
         }
     }
+
+    // Free texture items, we are going to create new ones.
+    video_reset_atlas();
 
     // Initialize new scene with BK data etc.
     gs->sc = omf_calloc(1, sizeof(scene));
