@@ -7,6 +7,7 @@
 #include "formats/pcx.h"
 #include "utils/allocator.h"
 #include <SDL.h>
+#include <errno.h>
 #include <inttypes.h>
 #include <stdint.h>
 #include <string.h>
@@ -123,7 +124,7 @@ int main(int argc, char *argv[]) {
     if(font->count) {
         pcx_font *pcx_font = omf_calloc(1, sizeof(*pcx_font));
         if(pcx_load_font(pcx_font, file->filename[0]) != SD_SUCCESS) {
-            printf("Could not load %s: %m\n", file->filename[0]);
+            printf("Could not load %s: %s\n", file->filename[0], strerror(errno));
             pcx_font_free(pcx_font);
             omf_free(pcx_font);
             goto exit_0;
@@ -137,7 +138,7 @@ int main(int argc, char *argv[]) {
     } else {
         pcx_file *pcx = omf_calloc(1, sizeof(*pcx));
         if(pcx_load(pcx, file->filename[0]) != SD_SUCCESS) {
-            printf("Could not load %s: %m\n", file->filename[0]);
+            printf("Could not load %s: %s\n", file->filename[0], strerror(errno));
             goto exit_0;
         }
         printf("Manufacturer: %" PRIx8 "\n", pcx->manufacturer);
