@@ -190,7 +190,8 @@ component *menu_video_create(scene *s) {
     menu_attach(menu, filler_create());
 
     // Resolution selector
-    component *res_selector = textselector_create(&tconf, "RES:", resolution_toggled, local);
+    component *res_selector =
+        textselector_create(&tconf, "RES:", "Choose the game resolution to use.", resolution_toggled, local);
     menu_attach(menu, res_selector);
 
     // If custom resolution is set, add it as first selection
@@ -213,13 +214,16 @@ component *menu_video_create(scene *s) {
     }
 
     // vsync and fullscreen
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "VSYNC", NULL, NULL, &setting->video.vsync, offon_opts, 2));
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "FULLSCREEN", NULL, NULL, &setting->video.fullscreen,
-                                                    offon_opts, 2));
+    menu_attach(menu, textselector_create_bind_opts(&tconf, "VSYNC", "Toggle vertical sync on or off.", NULL, NULL,
+                                                    &setting->video.vsync, offon_opts, 2));
+    menu_attach(menu, textselector_create_bind_opts(&tconf, "FULLSCREEN", "Run the game in a fullscreen window.", NULL,
+                                                    NULL, &setting->video.fullscreen, offon_opts, 2));
 
     // Scaler selection
-    component *scaler = textselector_create(&tconf, "SCALER:", scaler_toggled, local);
-    component *factor = textselector_create(&tconf, "SCALING FACTOR:", scaling_factor_toggled, local);
+    component *scaler =
+        textselector_create(&tconf, "SCALER:", "Choose a method of scaling the graphics.", scaler_toggled, local);
+    component *factor = textselector_create(&tconf, "SCALING FACTOR:", "Choose a scaling factor to use.",
+                                            scaling_factor_toggled, local);
     menu_attach(menu, scaler);
     menu_attach(menu, factor);
     textselector_add_option(scaler, "NEAREST");
@@ -269,7 +273,7 @@ component *menu_video_create(scene *s) {
     }
 
     // Done button
-    menu_attach(menu, textbutton_create(&tconf, "DONE", COM_ENABLED, menu_video_done, s));
+    menu_attach(menu, textbutton_create(&tconf, "DONE", "Return to the main menu.", COM_ENABLED, menu_video_done, s));
 
     // Userdata & free function for it
     menu_set_userdata(menu, local);

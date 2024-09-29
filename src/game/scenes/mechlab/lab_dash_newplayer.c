@@ -26,7 +26,7 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
 
     // Input field
     tconf.cforeground = COLOR_DARK_GREEN;
-    nw->input = textinput_create(&tconf, "Name", "");
+    nw->input = textinput_create(&tconf, "Name", NULL, "");
     component_select(nw->input, 1);
     textinput_enable_background(nw->input, 0);
     textinput_set_max_chars(nw->input, 8);

@@ -106,13 +106,14 @@ static void textslider_free(component *c) {
     omf_free(tb);
 }
 
-component *textslider_create(const text_settings *tconf, const char *text, unsigned int positions, int has_off,
-                             textslider_slide_cb cb, void *userdata) {
+component *textslider_create(const text_settings *tconf, const char *text, const char *help, unsigned int positions,
+                             int has_off, textslider_slide_cb cb, void *userdata) {
     component *c = widget_create();
 
     textslider *tb = omf_calloc(1, sizeof(textslider));
     tb->text = strdup(text);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
+    component_set_help_text(c, help);
     tb->ticks = 0;
     tb->dir = 0;
     tb->pos_ = 1;
@@ -130,9 +131,10 @@ component *textslider_create(const text_settings *tconf, const char *text, unsig
     return c;
 }
 
-component *textslider_create_bind(const text_settings *tconf, const char *text, unsigned int positions, int has_off,
-                                  textslider_slide_cb cb, void *userdata, int *bind) {
-    component *c = textslider_create(tconf, text, positions, has_off, cb, userdata);
+component *textslider_create_bind(const text_settings *tconf, const char *text, const char *help,
+                                  unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata,
+                                  int *bind) {
+    component *c = textslider_create(tconf, text, help, positions, has_off, cb, userdata);
     textslider *ts = widget_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;
     return c;

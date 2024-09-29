@@ -141,12 +141,17 @@ void component_set_find_cb(component *c, component_find_cb cb) {
     c->find = cb;
 }
 
+void component_set_help_text(component *c, const char *help) {
+    c->help = help;
+}
+
 component *component_create() {
     component *c = omf_calloc(1, sizeof(component));
     c->x_hint = -1;
     c->y_hint = -1;
     c->w_hint = -1;
     c->h_hint = -1;
+    c->help = NULL;
     return c;
 }
 

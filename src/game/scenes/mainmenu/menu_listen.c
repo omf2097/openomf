@@ -148,7 +148,8 @@ component *menu_listen_create(scene *s) {
     menu_attach(menu, filler_create());
     menu_attach(menu, label_create(&tconf, "Waiting ..."));
     menu_attach(menu, filler_create());
-    local->cancel_button = textbutton_create(&tconf, "CANCEL", COM_ENABLED, menu_listen_cancel, s);
+    local->cancel_button =
+        textbutton_create(&tconf, "CANCEL", "Cancel listening for a connection.", COM_ENABLED, menu_listen_cancel, s);
     menu_attach(menu, local->cancel_button);
 
     menu_set_userdata(menu, local);

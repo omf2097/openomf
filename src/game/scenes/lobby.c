@@ -54,6 +54,9 @@ static int lobby_event(scene *scene, SDL_Event *e) {
                     strncat(local->name, SDL_GetClipboardText(), sizeof(local->name) - strlen(local->name));
                 }
             } else if(state[SDL_SCANCODE_RETURN] && strlen(local->name) > 0) {
+                char buf[128];
+                snprintf(buf, sizeof(buf), "%s has entered the Arena", local->name);
+                list_append(&local->log, buf, strlen(buf) + 1);
                 local->named = true;
             } else if(state[SDL_SCANCODE_ESCAPE]) {
                 game_state_set_next(scene->gs, SCENE_MENU);
@@ -174,9 +177,10 @@ component *lobby_exit_create(scene *s) {
 
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
-    menu_attach(menu, textbutton_create(&tconf, "Exit the Challenge Arena?", COM_DISABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&tconf, "Yes", COM_ENABLED, lobby_do_exit, s));
-    menu_attach(menu, textbutton_create(&tconf, "No", COM_ENABLED, lobby_refuse_exit, NULL));
+    menu_set_background(menu, false);
+    menu_attach(menu, textbutton_create(&tconf, "Exit the Challenge Arena?", NULL, COM_DISABLED, NULL, NULL));
+    menu_attach(menu, textbutton_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
+    menu_attach(menu, textbutton_create(&tconf, "No", NULL, COM_ENABLED, lobby_refuse_exit, NULL));
 
     return menu;
 }
@@ -209,22 +213,36 @@ int lobby_create(scene *scene) {
     local->msg[0] = 0;
     local->named = false;
     local->mode = LOBBY_CHALLENGE;
+    list_create(&local->log);
 
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_NET1;
     tconf.halign = TEXT_LEFT;
-    tconf.cforeground = COLOR_DARK_GREEN;
+    tconf.cforeground = BLUE_TEXT_COLOR;
 
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
-    menu_attach(menu, textbutton_create(&tconf, "Challenge", COM_ENABLED, lobby_challenge, scene));
-    menu_attach(menu, textbutton_create(&tconf, "Whisper", COM_ENABLED, lobby_whisper, scene));
-    menu_attach(menu, textbutton_create(&tconf, "Yell", COM_ENABLED, lobby_yell, scene));
-    menu_attach(menu, textbutton_create(&tconf, "Refresh", COM_ENABLED, lobby_refresh, scene));
-    menu_attach(menu, textbutton_create(&tconf, "Exit", COM_ENABLED, lobby_exit, scene));
+    menu_set_background(menu, false);
 
-    local->frame = guiframe_create(9, 140, 300, 12);
+    menu_set_help_pos(menu, 10, 155, 500, 10);
+    text_settings help_text;
+    text_defaults(&help_text);
+    help_text.font = FONT_NET2;
+    help_text.halign = TEXT_LEFT;
+    menu_set_help_text_settings(menu, &help_text);
+    menu_attach(menu, textbutton_create(&tconf, "Challenge",
+                                        "Challenge this player to a fight. Challenge yourself for 1-player game.",
+                                        COM_ENABLED, lobby_challenge, scene));
+    menu_attach(menu, textbutton_create(&tconf, "Whisper", "Whisper a message to this player.", COM_ENABLED,
+                                        lobby_whisper, scene));
+    menu_attach(menu,
+                textbutton_create(&tconf, "Yell", "Chat with everybody in the arena.", COM_ENABLED, lobby_yell, scene));
+    menu_attach(menu,
+                textbutton_create(&tconf, "Refresh", "Refresh the player list.", COM_ENABLED, lobby_refresh, scene));
+    menu_attach(menu, textbutton_create(&tconf, "Exit", "Exit and disconnect.", COM_ENABLED, lobby_exit, scene));
+
+    local->frame = guiframe_create(9, 132, 300, 12);
     guiframe_set_root(local->frame, menu);
     guiframe_layout(local->frame);
 
