@@ -65,7 +65,7 @@ int scene_clone(scene *src, scene *dst, game_state *gs);
 int scene_clone_free(scene *sc);
 
 void scene_set_userdata(scene *scene, void *userdata);
-void *scene_get_userdata(scene *scene);
+void *scene_get_userdata(const scene *scene);
 
 void scene_set_free_cb(scene *scene, scene_free_cb cbfunc);
 void scene_set_event_cb(scene *scene, scene_event_cb cbfunc);
