@@ -61,7 +61,8 @@ static void menu_tick(component *c) {
 
     // If submenu is set, we need to tick it
     if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
-        return component_tick(m->submenu);
+        component_tick(m->submenu);
+        return;
     }
 
     // Check if we need to run submenu done -callback
@@ -84,7 +85,8 @@ static void menu_render(component *c) {
 
     // If submenu is set, we need to use it
     if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
-        return component_render(m->submenu);
+        component_render(m->submenu);
+        return;
     }
 
     // Otherwise handle this component
