@@ -64,11 +64,14 @@ void plugins_init() {
 
             // Build plugin
             _plugins[_plugins_count].handle = handle;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
             _plugins[_plugins_count].get_name = SDL_LoadFunction(handle, "plugin_get_name");
             _plugins[_plugins_count].get_author = SDL_LoadFunction(handle, "plugin_get_author");
             _plugins[_plugins_count].get_license = SDL_LoadFunction(handle, "plugin_get_license");
             _plugins[_plugins_count].get_type = SDL_LoadFunction(handle, "plugin_get_type");
             _plugins[_plugins_count].get_version = SDL_LoadFunction(handle, "plugin_get_version");
+#pragma GCC diagnostic pop
 
             // Make sure we have all functions
             if(_plugins[_plugins_count].get_name == NULL) {
@@ -119,10 +122,13 @@ int plugins_get_scaler(scaler_plugin *scaler, const char *name) {
         if(_plugins[i].handle != NULL && strcmp(_plugins[i].get_name(), name) == 0 &&
            strcmp(_plugins[i].get_type(), "scaler") == 0) {
             scaler->base = &_plugins[i];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
             scaler->is_factor_available = SDL_LoadFunction(scaler->base->handle, "scaler_is_factor_available");
             scaler->get_factors_list = SDL_LoadFunction(scaler->base->handle, "scaler_get_factors_list");
             scaler->get_color_format = SDL_LoadFunction(scaler->base->handle, "scaler_get_color_format");
             scaler->scale = SDL_LoadFunction(scaler->base->handle, "scaler_handle");
+#pragma GCC diagnostic pop
             return 0;
         }
     }
