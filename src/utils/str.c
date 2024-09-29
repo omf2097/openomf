@@ -1,5 +1,6 @@
 #include "utils/str.h"
 #include "utils/allocator.h"
+#include "utils/io.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 
@@ -8,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define READ_BLOCK_SIZE (1024)
 
 #define STR_ALLOC(string, size)                                                                                        \
     do {                                                                                                               \
@@ -40,6 +43,15 @@ void str_from_c(str *dst, const char *src) {
 void str_from_buf(str *dst, const char *buf, size_t len) {
     STR_ALLOC(dst, len);
     memcpy(dst->data, buf, len);
+    STR_ZERO(dst);
+}
+
+void str_from_file(str *dst, const char *file_name) {
+    FILE *handle = file_open(file_name, "rb");
+    long size = file_size(handle);
+    STR_ALLOC(dst, size + 1);
+    file_read(handle, dst->data, size);
+    file_close(handle);
     STR_ZERO(dst);
 }
 
