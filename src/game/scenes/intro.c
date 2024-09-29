@@ -75,9 +75,5 @@ int intro_create(scene *scene) {
     scene_set_startup_cb(scene, intro_startup);
     scene_set_anim_prio_override_cb(scene, intro_anim_override);
 
-    // Render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(true);
-
     return 0;
 }

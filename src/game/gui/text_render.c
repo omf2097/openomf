@@ -2,13 +2,13 @@
 #include <math.h>
 
 #include "game/gui/text_render.h"
+#include "utils/log.h"
 #include "utils/vector.h"
 #include "video/video.h"
 
 void text_defaults(text_settings *settings) {
     memset(settings, 0, sizeof(text_settings));
-    settings->cforeground = color_create(0xFF, 0xFF, 0xFF, 0xFF);
-    settings->opacity = 0xFF;
+    settings->cforeground = 0xFF;
 }
 
 int text_render_char(const text_settings *settings, int x, int y, char ch) {
@@ -38,28 +38,21 @@ int text_render_char(const text_settings *settings, int x, int y, char ch) {
     }
 
     // Handle shadows if necessary
-    float of = settings->opacity / 255.0f;
     if(settings->shadow & TEXT_SHADOW_RIGHT)
-        video_render_sprite_flip_scale_opacity_tint(*sur, x + 1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 1.0f, of * 80,
-                                                    settings->cforeground);
+        video_draw_offset(*sur, x + 1, y, 0xC0, 255);
     if(settings->shadow & TEXT_SHADOW_LEFT)
-        video_render_sprite_flip_scale_opacity_tint(*sur, x - 1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 1.0f, of * 80,
-                                                    settings->cforeground);
+        video_draw_offset(*sur, x - 1, y, 0xC0, 255);
     if(settings->shadow & TEXT_SHADOW_BOTTOM)
-        video_render_sprite_flip_scale_opacity_tint(*sur, x, y + 1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 1.0f, of * 80,
-                                                    settings->cforeground);
+        video_draw_offset(*sur, x, y + 1, 0xC0, 255);
     if(settings->shadow & TEXT_SHADOW_TOP)
-        video_render_sprite_flip_scale_opacity_tint(*sur, x, y - 1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 1.0f, of * 80,
-                                                    settings->cforeground);
+        video_draw_offset(*sur, x, y - 1, 0xC0, 255);
 
-    // Handle the font face itself
-    video_render_sprite_flip_scale_opacity_tint(*sur, x, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 1.0f, settings->opacity,
-                                                settings->cforeground);
-
+    // Draw the actual font
+    video_draw_offset(*sur, x, y, settings->cforeground, 255);
     return (*sur)->w;
 }
 
-int text_find_max_strlen(int maxchars, const char *ptr) {
+int text_find_max_strlen(int max_chars, const char *ptr) {
     int i;
     int len = strlen(ptr);
 
@@ -74,8 +67,8 @@ int text_find_max_strlen(int maxchars, const char *ptr) {
 
     // Walk through the rest of the string
     int last_space = i;
-    int max = maxchars + i;
-    int lstart = i;
+    int max = max_chars + i;
+    int line_start = i;
     for(; i < len; i++) {
         // If we detect newline, this line ends here
         if(ptr[i] == '\n')
@@ -85,7 +78,7 @@ int text_find_max_strlen(int maxchars, const char *ptr) {
         if(i >= max) {
             if(ptr[i] == ' ') { // If we are at valid end character (space), end here
                 return i;
-            } else if(last_space != lstart) {
+            } else if(last_space != line_start) {
                 return last_space;
             }
         } else if(ptr[i] == ' ') {
@@ -297,7 +290,11 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
 
 /// ---------------- OLD RENDERER FUNCTIONS ---------------------
 
-int font_render_char_shadowed(const font *font, char ch, int x, int y, color c, int shadow_flags, color shadow_color) {
+void font_render_char(const font *font, char ch, int x, int y, uint8_t c) {
+    font_render_char_shadowed(font, ch, x, y, c, 0, c);
+}
+
+int font_render_char_shadowed(const font *font, char ch, int x, int y, uint8_t c, int shadow_flags, uint8_t shadow_color) {
     // Make sure code is valid
     int code = ch - 32;
     surface **sur = NULL;
@@ -310,61 +307,50 @@ int font_render_char_shadowed(const font *font, char ch, int x, int y, color c, 
 
     // Handle shadows if necessary
     if(shadow_flags & TEXT_SHADOW_RIGHT)
-        video_render_sprite_flip_scale_opacity_tint(*sur, x + 1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 1.0f, 80,
-                                                    shadow_color);
+        video_draw_offset(*sur, x + 1, y, shadow_color, 255);
     if(shadow_flags & TEXT_SHADOW_LEFT)
-        video_render_sprite_flip_scale_opacity_tint(*sur, x - 1, y, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 1.0f, 80,
-                                                    shadow_color);
+        video_draw_offset(*sur, x - 1, y, shadow_color, 255);
     if(shadow_flags & TEXT_SHADOW_BOTTOM)
-        video_render_sprite_flip_scale_opacity_tint(*sur, x, y + 1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 1.0f, 80,
-                                                    shadow_color);
+        video_draw_offset(*sur, x, y + 1, shadow_color, 255);
     if(shadow_flags & TEXT_SHADOW_TOP)
-        video_render_sprite_flip_scale_opacity_tint(*sur, x, y - 1, BLEND_ALPHA, 0, FLIP_NONE, 1.0f, 1.0f, 80,
-                                                    shadow_color);
+        video_draw_offset(*sur, x, y - 1, shadow_color, 255);
 
     // Handle the font face itself
-    video_render_sprite_tint(*sur, x, y, c, 0);
-
-    return (*sur)->w;
+    video_draw_offset(*sur, x, y, c, 255);
+    return font->w;
 }
 
-void font_render_char(const font *font, char ch, int x, int y, color c) {
-    font_render_char_shadowed(font, ch, x, y, c, 0, c);
+void font_render_len(const font *font, const char *text, int len, int x, int y, uint8_t c) {
+    font_render_len_shadowed(font, text, len, x, y, c, 0, c);
 }
 
-void font_render_len_shadowed(const font *font, const char *text, int len, int x, int y, color c, int shadow_flags,
-                              color shadow_color) {
+void font_render_len_shadowed(const font *font, const char *text, int len, int x, int y, uint8_t c, int shadow_flags, uint8_t shadow_color) {
     int pos_x = x;
     for(int i = 0; i < len; i++) {
         pos_x += font_render_char_shadowed(font, text[i], pos_x, y, c, shadow_flags, shadow_color);
     }
 }
 
-void font_render_len(const font *font, const char *text, int len, int x, int y, color c) {
-    font_render_len_shadowed(font, text, len, x, y, c, 0, c);
-}
-
-void font_render(const font *font, const char *text, int x, int y, color c) {
+void font_render(const font *font, const char *text, int x, int y, uint8_t c) {
     int len = strlen(text);
     font_render_len(font, text, len, x, y, c);
 }
 
-void font_render_shadowed(const font *font, const char *text, int x, int y, color c, int shadow_flags) {
+void font_render_shadowed(const font *font, const char *text, int x, int y, uint8_t c, int shadow_flags) {
     int len = strlen(text);
     font_render_len_shadowed(font, text, len, x, y, c, shadow_flags, c);
 }
 
-void font_render_shadowed_colored(const font *font, const char *text, int x, int y, color c, int shadow_flags,
-                                  color shadow_color) {
+void font_render_shadowed_colored(const font *font, const char *text, int x, int y, uint8_t c, int shadow_flags, uint8_t shadow_color) {
     int len = strlen(text);
     font_render_len_shadowed(font, text, len, x, y, c, shadow_flags, shadow_color);
 }
 
-void font_render_wrapped(const font *font, const char *text, int x, int y, int w, color c) {
+void font_render_wrapped(const font *font, const char *text, int x, int y, int w, uint8_t c) {
     font_render_wrapped_shadowed(font, text, x, y, w, c, 0);
 }
 
-void font_render_wrapped_internal(const font *font, const char *text, int x, int y, int max_w, color c,
+void font_render_wrapped_internal(const font *font, const char *text, int x, int y, int max_w, uint8_t c,
                                   int shadow_flags, int only_size, int *out_w, int *out_h) {
     int len = strlen(text);
     int has_newline = 0;
@@ -460,18 +446,17 @@ void font_render_wrapped_internal(const font *font, const char *text, int x, int
     }
 }
 
-void font_render_wrapped_shadowed(const font *font, const char *text, int x, int y, int w, color c, int shadow_flags) {
+void font_render_wrapped_shadowed(const font *font, const char *text, int x, int y, int w, uint8_t c,
+                                  int shadow_flags) {
     int tmp;
     font_render_wrapped_internal(font, text, x, y, w, c, shadow_flags, 0, &tmp, &tmp);
 }
 
 void font_get_wrapped_size(const font *font, const char *text, int max_w, int *out_w, int *out_h) {
-    static color c = {0};
-    font_render_wrapped_internal(font, text, 0, 0, max_w, c, 0, 1, out_w, out_h);
+    font_render_wrapped_internal(font, text, 0, 0, max_w, 0, 0, 1, out_w, out_h);
 }
 
 void font_get_wrapped_size_shadowed(const font *font, const char *text, int max_w, int shadow_flag, int *out_w,
                                     int *out_h) {
-    static color c = {0};
-    font_render_wrapped_internal(font, text, 0, 0, max_w, c, shadow_flag, 1, out_w, out_h);
+    font_render_wrapped_internal(font, text, 0, 0, max_w, 0, shadow_flag, 1, out_w, out_h);
 }

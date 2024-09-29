@@ -62,6 +62,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->cur_surface = NULL;
     obj->cur_remap = -1;
     obj->pal_offset = 0;
+    obj->pal_limit = 255;
     obj->halt = 0;
     obj->halt_ticks = 0;
     obj->stride = 1;
@@ -108,7 +109,14 @@ int object_clone(object *src, object *dst, game_state *gs) {
     if(src->clone) {
         src->clone(src, dst);
     }
+
     return 0;
+}
+
+// FIXME: This was removed in HEAD, not sure why or what is the replacement
+// TODO: GET RID
+void object_create_static(object *obj, game_state *gs) {
+    object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
 }
 
 void object_set_stride(object *obj, int stride) {
@@ -291,8 +299,9 @@ void object_render(object *obj) {
     }
 
     // Render
-    video_render_sprite_flip_scale_opacity_tint(obj->cur_surface, x, y, rstate->blendmode, obj->pal_offset, flipmode,
-                                                obj->x_percent, obj->y_percent, opacity, tint);
+    video_render_sprite_flip_scale_opacity_tint(obj->cur_surface, x, y, rstate->blendmode, obj->pal_offset,
+                                                obj->pal_limit, flipmode, obj->x_percent, obj->y_percent, opacity,
+                                                tint);
 }
 
 void object_render_shadow(object *obj) {
@@ -325,7 +334,8 @@ void object_render_shadow(object *obj) {
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
         video_render_sprite_flip_scale_opacity_tint(cur_sprite->data, x + i, y + i, BLEND_ALPHA, obj->pal_offset,
-                                                    flipmode, 1.0, scale_y, 65, color_create(0, 0, 0, 255));
+                                                    obj->pal_limit, flipmode, 1.0, scale_y, 65,
+                                                    color_create(0, 0, 0, 255));
     }
 }
 
@@ -590,6 +600,13 @@ void object_set_pal_offset(object *obj, int offset) {
 }
 int object_get_pal_offset(const object *obj) {
     return obj->pal_offset;
+}
+
+void object_set_pal_limit(object *obj, int limit) {
+    obj->pal_limit = limit;
+}
+int object_get_pal_limit(const object *obj) {
+    return obj->pal_limit;
 }
 
 void object_set_halt_ticks(object *obj, int ticks) {

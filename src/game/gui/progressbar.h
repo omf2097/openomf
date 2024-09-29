@@ -5,13 +5,13 @@
 #include "video/color.h"
 
 typedef struct {
-    color border_topleft_color;
-    color border_bottomright_color;
-    color bg_color;
-    color bg_color_alt;
-    color int_topleft_color;
-    color int_bottomright_color;
-    color int_bg_color;
+    uint8_t border_topleft_color;
+    uint8_t border_bottomright_color;
+    uint8_t bg_color;
+    uint8_t bg_color_alt;
+    uint8_t int_topleft_color;
+    uint8_t int_bottomright_color;
+    uint8_t int_bg_color;
 } progressbar_theme;
 
 extern const progressbar_theme _progressbar_theme_health;

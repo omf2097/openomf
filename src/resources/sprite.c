@@ -19,7 +19,7 @@ void sprite_create(sprite *sp, void *src, int id) {
     // Load data
     sd_vga_image raw;
     sd_sprite_vga_decode(&raw, sdsprite);
-    surface_create_from_data(sp->data, SURFACE_TYPE_PALETTE, raw.w, raw.h, raw.data);
+    surface_create_from_data(sp->data, raw.w, raw.h, (unsigned char *)raw.data);
     memcpy(sp->data->stencil, raw.stencil, raw.w * raw.h);
     sd_vga_image_free(&raw);
 }
@@ -27,7 +27,7 @@ void sprite_create(sprite *sp, void *src, int id) {
 int sprite_clone(sprite *src, sprite *dst) {
     memcpy(dst, src, sizeof(sprite));
     dst->data = omf_calloc(1, sizeof(surface));
-    surface_copy_ex(dst->data, src->data);
+    surface_create_from(dst->data, src->data);
     return 0;
 }
 
@@ -53,6 +53,6 @@ sprite *sprite_copy(sprite *src) {
 
     // Copy surface
     new->data = omf_calloc(1, sizeof(surface));
-    surface_copy(new->data, src->data);
+    surface_create_from(new->data, src->data);
     return new;
 }

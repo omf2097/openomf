@@ -205,18 +205,18 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     text_settings tconf_dark;
     text_defaults(&tconf_dark);
     tconf_dark.font = FONT_SMALL;
-    tconf_dark.cforeground = color_create(0, 200, 0, 255);
+    tconf_dark.cforeground = TEXT_DARK_GREEN;
 
     text_settings tconf_light;
     text_defaults(&tconf_light);
     tconf_light.font = FONT_SMALL;
-    tconf_light.cforeground = color_create(50, 240, 50, 255);
+    tconf_light.cforeground = TEXT_BLINKY_GREEN;
 
     text_settings tconf_light_centered;
     text_defaults(&tconf_light_centered);
     tconf_light_centered.font = FONT_SMALL;
     tconf_light_centered.halign = TEXT_CENTER;
-    tconf_light_centered.cforeground = color_create(50, 240, 50, 255);
+    tconf_light_centered.cforeground = TEXT_BLINKY_GREEN;
 
     // Pilot image
     dw->photo = pilotpic_create(PIC_PLAYERS, 0);
@@ -266,18 +266,18 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     text_settings tconf_dark;
     text_defaults(&tconf_dark);
     tconf_dark.font = FONT_SMALL;
-    tconf_dark.cforeground = color_create(0, 200, 0, 255);
+    tconf_dark.cforeground = TEXT_DARK_GREEN;
 
     text_settings tconf_light;
     text_defaults(&tconf_light);
     tconf_light.font = FONT_SMALL;
-    tconf_light.cforeground = color_create(50, 240, 50, 255);
+    tconf_light.cforeground = TEXT_MEDIUM_GREEN;
 
     text_settings tconf_light_centered;
     text_defaults(&tconf_light_centered);
     tconf_light_centered.font = FONT_SMALL;
     tconf_light_centered.halign = TEXT_CENTER;
-    tconf_light_centered.cforeground = color_create(50, 240, 50, 255);
+    tconf_light_centered.cforeground = TEXT_MEDIUM_GREEN;
 
     // Pilot image
     dw->photo = pilotpic_create(PIC_PLAYERS, 0);
@@ -315,7 +315,7 @@ component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_
     text_settings tconf_dark;
     text_defaults(&tconf_dark);
     tconf_dark.font = FONT_SMALL;
-    tconf_dark.cforeground = color_create(0, 200, 0, 255);
+    tconf_dark.cforeground = TEXT_MEDIUM_GREEN;
 
     // Bars and texts (bottom left side)
     xysizer_attach(xy, label_create(&tconf_dark, "POWER"), 12, 95, -1, -1);

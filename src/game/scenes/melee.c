@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "audio/audio.h"
@@ -21,22 +20,50 @@
 #include "video/video.h"
 
 #define MAX_STAT 20
+#define TEXT_GREEN 0xA6
+#define RED_CURSOR_INDEX 0xF6
+#define BLUE_CURSOR_INDEX 0xF7
+#define VIOLET_CURSOR_INDEX 0xF8
 
-typedef struct melee_local_t {
-    int selection;          // 0 for player, 1 for HAR
-    int row_a, row_b;       // 0 or 1
-    int column_a, column_b; // 0-4
-    int done_a, done_b;     // 0-1
+typedef struct {
+    int x;
+    int y;
+    int disabled_offset;
+    surface enabled;
+    surface disabled;
+} portrait;
 
-    object bigportrait1;
-    object bigportrait2;
+typedef struct {
+    int row;
+    int column;
+    bool done;
+} cursor_data;
+
+#define CURSOR_INDEX(local, player) (5 * local->cursor[player].row + local->cursor[player].column)
+#define CURSOR_A_DONE(local) (local->cursor[0].done)
+#define CURSOR_B_DONE(local) (local->cursor[1].done)
+#define CURSORS_MATCH(local)                                                                                           \
+    (local->cursor[0].column == local->cursor[1].column && local->cursor[0].row == local->cursor[1].row)
+#define CURSORS_DONE(local) (local->cursor[0].done && local->cursor[1].done)
+#define CURSOR_NOVA_SELECT(local, player) (local->cursor[player].row == 1 && local->cursor[player].column == 2)
+
+typedef enum
+{
+    PILOT_SELECT = 0,
+    HAR_SELECT = 1
+} selection_page;
+
+typedef struct {
+    cursor_data cursor[2];
+    selection_page page;
+
+    object big_portrait_1;
+    object big_portrait_2;
     object player2_placeholder;
     object unselected_har_portraits;
 
-    object pilots[10];
-
-    object harportraits_player1[10];
-    object harportraits_player2[10];
+    portrait pilot_portraits[10];
+    portrait har_portraits[10];
 
     object har_player1[10];
     object har_player2[10];
@@ -48,15 +75,11 @@ typedef struct melee_local_t {
     int pilot_id_a;
     int pilot_id_b;
 
-    surface feh;
-    surface bleh;
+    surface bg_player_stats;
+    surface bg_player_bio;
     surface select_hilight;
-    unsigned int ticks;
-    unsigned int hartick;
-    unsigned int pulsedir;
 
-    object *harplayer_a;
-    object *harplayer_b;
+    unsigned int ticks;
 
     // nova selection cheat
     unsigned char har_selected[2][10];
@@ -65,30 +88,12 @@ typedef struct melee_local_t {
 
 void handle_action(scene *scene, int player, int action);
 
-void mask_sprite(surface *vga, int x, int y, int w, int h) {
-    for(int i = 0; i < vga->h; i++) {
-        for(int j = 0; j < vga->w; j++) {
-            int offset = (i * vga->w) + j;
-            if((i < y || i > y + h) || (j < x || j > x + w)) {
-                vga->stencil[offset] = 0;
-            } else {
-                if(vga->data[offset] == -48) {
-                    // strip out the black pixels
-                    vga->stencil[offset] = 0;
-                } else {
-                    vga->stencil[offset] = 1;
-                }
-            }
-        }
-    }
-}
-
 void melee_free(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    surface_free(&local->feh);
-    surface_free(&local->bleh);
+    surface_free(&local->bg_player_stats);
+    surface_free(&local->bg_player_bio);
     surface_free(&local->select_hilight);
     for(int i = 0; i < 2; i++) {
         component_free(local->bar_power[i]);
@@ -97,23 +102,37 @@ void melee_free(scene *scene) {
     }
 
     for(int i = 0; i < 10; i++) {
-        object_free(&local->pilots[i]);
-        object_free(&local->harportraits_player1[i]);
+        surface_free(&local->har_portraits[i].enabled);
+        surface_free(&local->har_portraits[i].disabled);
         object_free(&local->har_player1[i]);
         if(player2->selectable) {
-            object_free(&local->harportraits_player2[i]);
             object_free(&local->har_player2[i]);
         }
     }
 
     object_free(&local->player2_placeholder);
     object_free(&local->unselected_har_portraits);
-    object_free(&local->bigportrait1);
+    object_free(&local->big_portrait_1);
     if(player2->selectable) {
-        object_free(&local->bigportrait2);
+        object_free(&local->big_portrait_2);
     }
     omf_free(local);
     scene_set_userdata(scene, local);
+}
+
+static void set_cursor_colors(int offset) {
+    palette *pal = video_get_base_palette();
+    int base = 120;
+    pal->data[RED_CURSOR_INDEX][0] = base + offset;
+    pal->data[RED_CURSOR_INDEX][1] = 0;
+    pal->data[RED_CURSOR_INDEX][2] = 0;
+    pal->data[BLUE_CURSOR_INDEX][0] = 0;
+    pal->data[BLUE_CURSOR_INDEX][1] = 0;
+    pal->data[BLUE_CURSOR_INDEX][2] = base + offset;
+    pal->data[VIOLET_CURSOR_INDEX][0] = base + offset;
+    pal->data[VIOLET_CURSOR_INDEX][1] = 0;
+    pal->data[VIOLET_CURSOR_INDEX][2] = base + offset;
+    video_force_pal_refresh();
 }
 
 void melee_tick(scene *scene, int paused) {
@@ -146,34 +165,24 @@ void melee_tick(scene *scene, int paused) {
         } while((i = i->next));
     }
 
-    if(!local->pulsedir) {
-        local->ticks++;
-    } else {
-        local->ticks--;
-    }
-    if(local->ticks > 120) {
-        local->pulsedir = 1;
-    }
-    if(local->ticks == 0) {
-        local->pulsedir = 0;
-    }
-    local->hartick++;
-    if(local->selection == 1 && local->hartick > 10) {
-        local->hartick = 0;
-        object_dynamic_tick(&local->har_player1[5 * local->row_a + local->column_a]);
+    if(local->page == HAR_SELECT && local->ticks % 10 == 1) {
+        object_dynamic_tick(&local->har_player1[CURSOR_INDEX(local, 0)]);
         if(player2->selectable) {
-            object_dynamic_tick(&local->har_player2[5 * local->row_b + local->column_b]);
+            object_dynamic_tick(&local->har_player2[CURSOR_INDEX(local, 1)]);
         }
     }
+
+    // Tick cursor colors
+    local->ticks++;
+    double rate = ((double)local->ticks) / 25.0;
+    int num = round((sin(rate) + 1.0) * 64);
+    set_cursor_colors(num);
 }
 
 void refresh_pilot_stats(melee_local *local) {
-    int current_a = 5 * local->row_a + local->column_a;
-    int current_b = 5 * local->row_b + local->column_b;
     pilot p_a, p_b;
-
-    pilot_get_info(&p_a, current_a);
-    pilot_get_info(&p_b, current_b);
+    pilot_get_info(&p_a, CURSOR_INDEX(local, 0));
+    pilot_get_info(&p_b, CURSOR_INDEX(local, 1));
     progressbar_set_progress(local->bar_power[0], (p_a.power * 100) / MAX_STAT);
     progressbar_set_progress(local->bar_agility[0], (p_a.agility * 100) / MAX_STAT);
     progressbar_set_progress(local->bar_endurance[0], (p_a.endurance * 100) / MAX_STAT);
@@ -186,16 +195,9 @@ void handle_action(scene *scene, int player, int action) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
     melee_local *local = scene_get_userdata(scene);
-    int *row, *column, *done;
-    if(player == 1) {
-        row = &local->row_a;
-        column = &local->column_a;
-        done = &local->done_a;
-    } else {
-        row = &local->row_b;
-        column = &local->column_b;
-        done = &local->done_b;
-    }
+    int *row = &local->cursor[player - 1].row;
+    int *column = &local->cursor[player - 1].column;
+    bool *done = &local->cursor[player - 1].done;
 
     if(*done) {
         return;
@@ -239,19 +241,19 @@ void handle_action(scene *scene, int player, int action) {
         case ACT_PUNCH:
             *done = 1;
             audio_play_sound(20, 0.5f, 0.0f, 2.0f);
-            if(local->done_a && (local->done_b || !player2->selectable)) {
-                local->done_a = 0;
-                local->done_b = 0;
-                if(local->selection == 0) {
-                    local->selection = 1;
-                    local->pilot_id_a = 5 * local->row_a + local->column_a;
-                    local->pilot_id_b = 5 * local->row_b + local->column_b;
+            if(CURSOR_A_DONE(local) && (CURSOR_B_DONE(local) || !player2->selectable)) {
+                local->cursor[0].done = 0;
+                local->cursor[1].done = 0;
+                if(local->page == PILOT_SELECT) {
+                    local->page = HAR_SELECT;
+                    local->pilot_id_a = CURSOR_INDEX(local, 0);
+                    local->pilot_id_b = CURSOR_INDEX(local, 1);
 
                     // nova selection cheat
                     local->har_selected[0][local->pilot_id_a] = 1;
                     local->har_selected[1][local->pilot_id_b] = 1;
 
-                    object_select_sprite(&local->bigportrait1, local->pilot_id_a);
+                    object_select_sprite(&local->big_portrait_1, local->pilot_id_a);
                     // update the player palette
                     palette *base_pal = video_get_base_palette();
                     pilot p_a;
@@ -266,7 +268,7 @@ void handle_action(scene *scene, int player, int action) {
                     palette_load_player_colors(base_pal, &player1->pilot->palette, 0);
 
                     if(player2->selectable) {
-                        object_select_sprite(&local->bigportrait2, local->pilot_id_b);
+                        object_select_sprite(&local->big_portrait_2, local->pilot_id_b);
                         // update the player palette
                         pilot_get_info(&p_a, local->pilot_id_b);
                         player2->pilot->endurance = p_a.endurance;
@@ -292,17 +294,17 @@ void handle_action(scene *scene, int player, int action) {
                             nova_activated[i] = 0;
                         }
                     }
-                    if(nova_activated[0] && local->row_a == 1 && local->column_a == 2) {
+                    if(nova_activated[0] && CURSOR_NOVA_SELECT(local, 0)) {
                         player1->pilot->har_id = HAR_NOVA;
                     } else {
-                        player1->pilot->har_id = 5 * local->row_a + local->column_a;
+                        player1->pilot->har_id = CURSOR_INDEX(local, 0);
                     }
                     player1->pilot->pilot_id = local->pilot_id_a;
                     if(player2->selectable) {
-                        if(nova_activated[1] && local->row_b == 1 && local->column_b == 2) {
+                        if(nova_activated[1] && CURSOR_NOVA_SELECT(local, 1)) {
                             player2->pilot->har_id = HAR_NOVA;
                         } else {
-                            player2->pilot->har_id = 5 * local->row_b + local->column_b;
+                            player2->pilot->har_id = CURSOR_INDEX(local, 1);
                         }
                         player2->pilot->pilot_id = local->pilot_id_b;
                     } else {
@@ -338,15 +340,15 @@ void handle_action(scene *scene, int player, int action) {
             break;
     }
 
-    if(local->selection == 0) {
-        object_select_sprite(&local->bigportrait1, 5 * local->row_a + local->column_a);
+    if(local->page == PILOT_SELECT) {
+        object_select_sprite(&local->big_portrait_1, CURSOR_INDEX(local, 0));
         if(player2->selectable) {
-            object_select_sprite(&local->bigportrait2, 5 * local->row_b + local->column_b);
+            object_select_sprite(&local->big_portrait_2, CURSOR_INDEX(local, 1));
         }
     }
 
     // nova selection cheat
-    if(local->selection == 1) {
+    if(local->page == HAR_SELECT) {
         local->har_selected[player - 1][5 * (*row) + *column] = 1;
     }
 
@@ -366,16 +368,15 @@ void melee_input_tick(scene *scene) {
             if(i->type == EVENT_TYPE_ACTION) {
                 if(i->event_data.action == ACT_ESC) {
                     audio_play_sound(20, 0.5f, 0.0f, 2.0f);
-                    if(local->selection == 1) {
+                    if(local->page == HAR_SELECT) {
                         // restore the player selection
-                        local->column_a = local->pilot_id_a % 5;
-                        local->row_a = local->pilot_id_a / 5;
-                        local->column_b = local->pilot_id_b % 5;
-                        local->row_b = local->pilot_id_b / 5;
-
-                        local->selection = 0;
-                        local->done_a = 0;
-                        local->done_b = 0;
+                        local->cursor[0].column = local->pilot_id_a % 5;
+                        local->cursor[0].row = local->pilot_id_a / 5;
+                        local->cursor[0].done = 0;
+                        local->cursor[1].column = local->pilot_id_b % 5;
+                        local->cursor[1].row = local->pilot_id_b / 5;
+                        local->cursor[1].done = 0;
+                        local->page = PILOT_SELECT;
                     } else {
                         game_state_set_next(scene->gs, SCENE_MENU);
                     }
@@ -401,166 +402,248 @@ void melee_input_tick(scene *scene) {
     controller_free_chain(p2);
 }
 
-void render_highlights(scene *scene) {
-    melee_local *local = scene_get_userdata(scene);
-    game_player *player2 = game_state_get_player(scene->gs, 1);
-    int trans;
-    if(player2->selectable && local->row_a == local->row_b && local->column_a == local->column_b) {
-        video_render_sprite_tint(&local->select_hilight, 11 + (62 * local->column_a), 115 + (42 * local->row_a),
-                                 color_create(250 - local->ticks, 0, 250 - local->ticks, 0), 0);
+static void draw_highlight(const melee_local *local, const cursor_data *cursor, int offset) {
+    int x = 11 + (62 * cursor->column);
+    int y = 115 + (42 * cursor->row);
+    video_draw_offset(&local->select_hilight, x, y, offset, 255);
+}
+
+static void render_highlights(const melee_local *local, bool player2_is_selectable) {
+    if(player2_is_selectable && CURSORS_MATCH(local)) {
+        draw_highlight(local, &local->cursor[0], VIOLET_CURSOR_INDEX);
     } else {
-        if(player2->selectable) {
-            if(local->done_b) {
-                trans = 250;
-            } else {
-                trans = 250 - local->ticks;
-            }
-            video_render_sprite_tint(&local->select_hilight, 11 + (62 * local->column_b), 115 + (42 * local->row_b),
-                                     color_create(0, 0, trans, 0), 0);
+        if(player2_is_selectable) {
+            draw_highlight(local, &local->cursor[1], BLUE_CURSOR_INDEX);
         }
-        if(local->done_a) {
-            trans = 250;
-        } else {
-            trans = 250 - local->ticks;
-        }
-        video_render_sprite_tint(&local->select_hilight, 11 + (62 * local->column_a), 115 + (42 * local->row_a),
-                                 color_create(trans, 0, 0, 0), 0);
+        draw_highlight(local, &local->cursor[0], RED_CURSOR_INDEX);
+    }
+}
+
+static void render_disabled_portraits(const portrait *portraits) {
+    for(int i = 0; i < 10; i++) {
+        const portrait *p = &portraits[i];
+        video_draw_offset(&p->disabled, p->x, p->y, p->disabled_offset, 255);
+    }
+}
+
+static void render_enabled_portrait(const portrait *portraits, cursor_data *cursor) {
+    const portrait *p = &portraits[5 * cursor->row + cursor->column];
+    video_draw(&p->enabled, p->x, p->y);
+}
+
+static void render_pilot_select(melee_local *local, bool player2_is_selectable) {
+    int current_a = CURSOR_INDEX(local, 0);
+    int current_b = CURSOR_INDEX(local, 1);
+
+    video_draw(&local->bg_player_stats, 70, 0);
+    video_draw(&local->bg_player_bio, 0, 62);
+
+    // player bio
+    font_render_wrapped_shadowed(&font_small, lang_get(135 + current_a), 4, 66, 152, TEXT_GREEN,
+                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    // player stats
+    font_render_shadowed(&font_small, lang_get(216), 74 + 27, 4, TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    font_render_shadowed(&font_small, lang_get(217), 74 + 19, 22, TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    font_render_shadowed(&font_small, lang_get(218), 74 + 12, 40, TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    component_render(local->bar_power[0]);
+    component_render(local->bar_agility[0]);
+    component_render(local->bar_endurance[0]);
+
+    if(player2_is_selectable) {
+        video_draw(&local->bg_player_stats, 320 - 70 - local->bg_player_stats.w, 0);
+        video_draw(&local->bg_player_bio, 320 - local->bg_player_bio.w, 62);
+        // player bio
+        font_render_wrapped_shadowed(&font_small, lang_get(135 + current_b), 320 - local->bg_player_bio.w + 4, 66, 152,
+                                     TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        // player stats
+        font_render_shadowed(&font_small, lang_get(216), 320 - 66 - local->bg_player_stats.w + 27, 4, TEXT_GREEN,
+                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        font_render_shadowed(&font_small, lang_get(217), 320 - 66 - local->bg_player_stats.w + 19, 22, TEXT_GREEN,
+                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        font_render_shadowed(&font_small, lang_get(218), 320 - 66 - local->bg_player_stats.w + 12, 40, TEXT_GREEN,
+                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        component_render(local->bar_power[1]);
+        component_render(local->bar_agility[1]);
+        component_render(local->bar_endurance[1]);
+    } else {
+        // 'choose your pilot'
+        font_render_wrapped_shadowed(&font_small, lang_get(187), 160, 97, 160, TEXT_GREEN,
+                                     TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    }
+
+    object_render(&local->player2_placeholder);
+
+    // player 1 name
+    font_render_wrapped_shadowed(&font_small, lang_get(20 + current_a), 0, 52, 66, TEXT_BLACK,
+                                 TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+
+    if(player2_is_selectable) {
+        // player 2 name
+        font_render_wrapped_shadowed(&font_small, lang_get(20 + current_b), 320 - 66, 52, 66, TEXT_BLACK,
+                                     TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+    }
+
+    render_highlights(local, player2_is_selectable);
+    render_disabled_portraits(local->pilot_portraits);
+    render_enabled_portrait(local->pilot_portraits, &local->cursor[0]);
+    object_render(&local->big_portrait_1);
+    if(player2_is_selectable) {
+        render_enabled_portrait(local->pilot_portraits, &local->cursor[0]);
+        object_render(&local->big_portrait_2);
+    }
+}
+
+static void render_har_select(melee_local *local, bool player2_is_selectable) {
+    object_render(&local->player2_placeholder);
+
+    // render the stupid unselected HAR portraits before anything
+    // so we can render anything else on top of them
+    render_highlights(local, player2_is_selectable);
+    render_disabled_portraits(local->har_portraits);
+
+    // currently selected player
+    object_render(&local->big_portrait_1);
+
+    // currently selected HAR
+    render_enabled_portrait(local->har_portraits, &local->cursor[0]);
+    object_render(&local->har_player1[CURSOR_INDEX(local, 0)]);
+
+    // player 1 name
+    font_render_wrapped_shadowed(&font_small, lang_get(20 + local->pilot_id_a), 0, 52, 66, TEXT_BLACK,
+                                 TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+
+    if(player2_is_selectable) {
+        // player 2 name
+        font_render_wrapped_shadowed(&font_small, lang_get(20 + local->pilot_id_b), 320 - 66, 52, 66, TEXT_BLACK,
+                                     TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+
+        // currently selected player
+        object_render(&local->big_portrait_2);
+
+        // currently selected HAR
+        render_enabled_portrait(local->har_portraits, &local->cursor[1]);
+        object_render(&local->har_player2[CURSOR_INDEX(local, 1)]);
+
+        // render HAR name (Har1 VS. Har2)
+        str vs_text;
+        str_from_format(&vs_text, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)),
+                        har_get_name(CURSOR_INDEX(local, 1)));
+        font_render_wrapped_shadowed(&font_small, str_c(&vs_text), 80, 107, 150, TEXT_BLACK,
+                                     TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+        str_free(&vs_text);
+    } else {
+        // 'choose your HAR'
+        font_render_wrapped_shadowed(&font_small, lang_get(186), 160, 97, 160, TEXT_MEDIUM_GREEN,
+                                     TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+
+        // render HAR name
+        font_render_wrapped_shadowed(&font_small, har_get_name(CURSOR_INDEX(local, 0)), 130, 107, 66, TEXT_BLACK,
+                                     TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
     }
 }
 
 void melee_render(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
     game_player *player2 = game_state_get_player(scene->gs, 1);
-    int current_a = 5 * local->row_a + local->column_a;
-    int current_b = 5 * local->row_b + local->column_b;
 
-    if(local->selection == 0) {
-        video_render_sprite(&local->feh, 70, 0, BLEND_ALPHA, 0);
-        video_render_sprite(&local->bleh, 0, 62, BLEND_ALPHA, 0);
-
-        // player bio
-        font_render_wrapped_shadowed(&font_small, lang_get(135 + current_a), 4, 66, 152, COLOR_GREEN,
-                                     TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        // player stats
-        font_render_shadowed(&font_small, lang_get(216), 74 + 27, 4, COLOR_GREEN,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        font_render_shadowed(&font_small, lang_get(217), 74 + 19, 22, COLOR_GREEN,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        font_render_shadowed(&font_small, lang_get(218), 74 + 12, 40, COLOR_GREEN,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        component_render(local->bar_power[0]);
-        component_render(local->bar_agility[0]);
-        component_render(local->bar_endurance[0]);
-
-        if(player2->selectable) {
-            video_render_sprite(&local->feh, 320 - 70 - local->feh.w, 0, BLEND_ALPHA, 0);
-            video_render_sprite(&local->bleh, 320 - local->bleh.w, 62, BLEND_ALPHA, 0);
-            // player bio
-            font_render_wrapped_shadowed(&font_small, lang_get(135 + current_b), 320 - local->bleh.w + 4, 66, 152,
-                                         COLOR_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-            // player stats
-            font_render_shadowed(&font_small, lang_get(216), 320 - 66 - local->feh.w + 27, 4, COLOR_GREEN,
-                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-            font_render_shadowed(&font_small, lang_get(217), 320 - 66 - local->feh.w + 19, 22, COLOR_GREEN,
-                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-            font_render_shadowed(&font_small, lang_get(218), 320 - 66 - local->feh.w + 12, 40, COLOR_GREEN,
-                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-            component_render(local->bar_power[1]);
-            component_render(local->bar_agility[1]);
-            component_render(local->bar_endurance[1]);
-        } else {
-            // 'choose your pilot'
-            font_render_wrapped_shadowed(&font_small, lang_get(187), 160, 97, 160, COLOR_GREEN,
-                                         TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        }
-    }
-
-    object_render(&local->player2_placeholder);
-
-    if(local->selection == 0) {
-        // player 1 name
-        font_render_wrapped_shadowed(&font_small, lang_get(20 + current_a), 0, 52, 66, COLOR_BLACK,
-                                     TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
-
-        if(player2->selectable) {
-            // player 2 name
-            font_render_wrapped_shadowed(&font_small, lang_get(20 + current_b), 320 - 66, 52, 66, COLOR_BLACK,
-                                         TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
-        }
-
-        render_highlights(scene);
-        for(int i = 0; i < 10; i++) {
-            object_render(&local->pilots[i]);
-        }
-        object_render(&local->bigportrait1);
-        if(player2->selectable) {
-            object_render(&local->bigportrait2);
-        }
+    if(local->page == PILOT_SELECT) {
+        render_pilot_select(local, player2->selectable);
     } else {
-        // render the stupid unselected HAR portraits before anything
-        // so we can render anything else on top of them
-        object_render(&local->unselected_har_portraits);
-        render_highlights(scene);
-
-        // currently selected player
-        object_render(&local->bigportrait1);
-
-        // currently selected HAR
-        object_render(&local->harportraits_player1[5 * local->row_a + local->column_a]);
-        object_render(&local->har_player1[5 * local->row_a + local->column_a]);
-
-        // player 1 name
-        font_render_wrapped_shadowed(&font_small, lang_get(20 + local->pilot_id_a), 0, 52, 66, COLOR_BLACK,
-                                     TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
-
-        if(player2->selectable) {
-            // player 2 name
-            font_render_wrapped_shadowed(&font_small, lang_get(20 + local->pilot_id_b), 320 - 66, 52, 66, COLOR_BLACK,
-                                         TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
-
-            // currently selected player
-            object_render(&local->bigportrait2);
-
-            // currently selected HAR
-            object_render(&local->harportraits_player2[5 * local->row_b + local->column_b]);
-            object_render(&local->har_player2[5 * local->row_b + local->column_b]);
-
-            // render HAR name (Har1 VS. Har2)
-            str vstext;
-            str_from_format(&vstext, "%s VS. %s", har_get_name(5 * local->row_a + local->column_a),
-                            har_get_name(5 * local->row_b + local->column_b));
-            font_render_wrapped_shadowed(&font_small, str_c(&vstext), 80, 107, 150, COLOR_BLACK,
-                                         TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
-            str_free(&vstext);
-        } else {
-            // 'choose your HAR'
-            font_render_wrapped_shadowed(&font_small, lang_get(186), 160, 97, 160, COLOR_GREEN,
-                                         TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-
-            // render HAR name
-            font_render_wrapped_shadowed(&font_small, har_get_name(5 * local->row_a + local->column_a), 130, 107, 66,
-                                         COLOR_BLACK, TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
-        }
+        render_har_select(local, player2->selectable);
     }
 
     if(player2->selectable) {
+        int text_x = 8;
         chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
         chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
-        char winstext[48];
-        snprintf(winstext, 48, "Wins: %d", s1->wins);
-        font_render_shadowed(&font_small, winstext, 8, 107, COLOR_BLACK, TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
-        snprintf(winstext, 48, "Wins: %d", s2->wins);
-        font_render_shadowed(&font_small, winstext, 312 - (strlen(winstext) * font_small.w), 107, COLOR_BLACK,
+        str wins_text_a, wins_text_b;
+        str_from_format(&wins_text_a, "Wins: %d", s1->wins);
+        str_from_format(&wins_text_b, "Wins: %d", s2->wins);
+        font_render_shadowed(&font_small, str_c(&wins_text_a), text_x, 107, TEXT_BLACK,
                              TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+        text_x = 312 - str_size(&wins_text_b) * font_small.w;
+        font_render_shadowed(&font_small, str_c(&wins_text_a), text_x, 107, TEXT_BLACK,
+                             TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+        str_free(&wins_text_a);
+        str_free(&wins_text_b);
+    }
+}
+
+static void load_pilot_portraits(scene *scene, melee_local *local) {
+    sprite *current;
+    portrait *target;
+    animation *pilots_enabled = &bk_get_info(scene->bk_data, 3)->ani;
+    for(int i = 0; i < 10; i++) {
+        target = &local->pilot_portraits[i];
+
+        // Copy the face image in full color (shown when selected)
+        current = animation_get_sprite(pilots_enabled, i);
+        target->x = current->pos.x;
+        target->y = current->pos.y;
+        surface_create_from(&target->enabled, current->data);
+
+        // Copy the face image in dimmed color (shown when not selected)
+        surface_create_from(&target->disabled, &target->enabled);
+        surface_compress_index_blocks(&target->disabled, 0x60, 0xA0, 64, 16);
+        surface_compress_index_blocks(&target->disabled, 0xA0, 0xD0, 8, 3);
+        surface_compress_index_blocks(&target->disabled, 0xD0, 0xE0, 16, 3);
+        surface_compress_index_blocks(&target->disabled, 0xE0, 0xF0, 8, 2);
+        surface_compress_remap(&target->disabled, 0xF0, 0xF7, 0xB6, 3);
+    }
+}
+
+static void load_har_portraits(scene *scene, melee_local *local) {
+    sprite *current;
+    portrait *target;
+    int row, col;
+    animation *har_portraits = &bk_get_info(scene->bk_data, 1)->ani;
+    for(int i = 0; i < 10; i++) {
+        row = i / 5;
+        col = i % 5;
+        target = &local->har_portraits[i];
+
+        // Copy the HAR image in full color (shown when selected)
+        current = animation_get_sprite(har_portraits, 0);
+        target->x = current->pos.x + 62 * col;
+        target->y = current->pos.y + 42 * row;
+        surface_create_from_surface(&target->enabled, 51, 36, 62 * col, 42 * row, current->data);
+        surface_generate_stencil(&target->enabled, 0xD0);
+
+        // Copy the enabled image, and compress the colors to grayscale
+        surface_create_from(&target->disabled, &target->enabled);
+        surface_convert_to_grayscale(&target->disabled, video_get_pal_ref(), 0xD0, 0xDF);
+    }
+}
+
+static void load_hars(scene *scene, melee_local *local, bool player2_is_selectable) {
+    animation *ani;
+    for(int i = 0; i < 10; i++) {
+        ani = &bk_get_info(scene->bk_data, 18 + i)->ani;
+        object_create(&local->har_player1[i], scene->gs, vec2i_create(110, 95), vec2f_create(0, 0));
+        object_set_animation(&local->har_player1[i], ani);
+        object_select_sprite(&local->har_player1[i], 0);
+        object_set_repeat(&local->har_player1[i], 1);
+
+        if(player2_is_selectable) {
+            ani = &bk_get_info(scene->bk_data, 18 + i)->ani;
+            object_create(&local->har_player2[i], scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
+            object_set_animation(&local->har_player2[i], ani);
+            object_select_sprite(&local->har_player2[i], 0);
+            object_set_repeat(&local->har_player2[i], 1);
+            object_set_direction(&local->har_player2[i], OBJECT_FACE_LEFT);
+            object_set_pal_offset(&local->har_player2[i], 48);
+            object_set_pal_limit(&local->har_player2[i], 96);
+        }
     }
 }
 
 int melee_create(scene *scene) {
-    char bitmap[51 * 36 * 4];
-
     // Init local data
     melee_local *local = omf_calloc(1, sizeof(melee_local));
     scene_set_userdata(scene, local);
+
+    local->cursor[1].row = 0;
+    local->cursor[1].column = 4;
 
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
@@ -574,20 +657,13 @@ int melee_create(scene *scene) {
     palette_set_player_color(mpal, 0, 8, 2);
     video_force_pal_refresh();
 
-    memset(&bitmap, 255, 51 * 36 * 4);
-    local->ticks = 0;
-    local->pulsedir = 0;
-    local->selection = 0;
-    local->row_a = 0;
-    local->column_a = 0;
-    local->row_b = 0;
-    local->column_b = 4;
-    local->done_a = 0;
-    local->done_b = 0;
+    menu_background2_create(&local->bg_player_stats, 90, 61);
+    menu_background2_create(&local->bg_player_bio, 160, 43);
 
-    menu_background2_create(&local->feh, 90, 61);
-    menu_background2_create(&local->bleh, 160, 43);
-    surface_create_from_data(&local->select_hilight, SURFACE_TYPE_RGBA, 51, 36, bitmap);
+    // Create a black surface for the highlight box. We modify the palette in renderer.
+    unsigned char *black = omf_calloc(1, 51 * 36);
+    surface_create_from_data(&local->select_hilight, 51, 36, black);
+    omf_free(black);
 
     // set up the magic controller hooks
     if(player1_ctrl && player2_ctrl) {
@@ -602,77 +678,32 @@ int melee_create(scene *scene) {
         }
     }
 
-    animation *ani;
-    sprite *spr;
-    for(int i = 0; i < 10; i++) {
-        ani = &bk_get_info(scene->bk_data, 3)->ani;
-        object_create(&local->pilots[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-        object_set_animation(&local->pilots[i], ani);
-        object_select_sprite(&local->pilots[i], i);
+    // Load HAR and Pilot face portraits and har sprites for the selection grid
+    load_pilot_portraits(scene, local);
+    load_har_portraits(scene, local);
+    load_hars(scene, local, player2->selectable);
 
-        ani = &bk_get_info(scene->bk_data, 18 + i)->ani;
-        object_create(&local->har_player1[i], scene->gs, vec2i_create(110, 95), vec2f_create(0, 0));
-        object_set_animation(&local->har_player1[i], ani);
-        object_select_sprite(&local->har_player1[i], 0);
-        object_set_repeat(&local->har_player1[i], 1);
-
-        int row = i / 5;
-        int col = i % 5;
-        spr = sprite_copy(animation_get_sprite(&bk_get_info(scene->bk_data, 1)->ani, 0));
-        mask_sprite(spr->data, 62 * col, 42 * row, 51, 36);
-        ani = create_animation_from_single(spr, spr->pos);
-        object_create(&local->harportraits_player1[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-        object_set_animation(&local->harportraits_player1[i], ani);
-        object_select_sprite(&local->harportraits_player1[i], 0);
-        object_set_animation_owner(&local->harportraits_player1[i], OWNER_OBJECT);
-        if(player2->selectable) {
-            spr = sprite_copy(animation_get_sprite(&bk_get_info(scene->bk_data, 1)->ani, 0));
-            mask_sprite(spr->data, 62 * col, 42 * row, 51, 36);
-            ani = create_animation_from_single(spr, spr->pos);
-            object_create(&local->harportraits_player2[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-            object_set_animation(&local->harportraits_player2[i], ani);
-            object_select_sprite(&local->harportraits_player2[i], 0);
-            object_set_animation_owner(&local->harportraits_player2[i], OWNER_OBJECT);
-            object_set_pal_offset(&local->harportraits_player2[i], 48);
-
-            ani = &bk_get_info(scene->bk_data, 18 + i)->ani;
-            object_create(&local->har_player2[i], scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
-            object_set_animation(&local->har_player2[i], ani);
-            object_select_sprite(&local->har_player2[i], 0);
-            object_set_repeat(&local->har_player2[i], 1);
-            object_set_direction(&local->har_player2[i], OBJECT_FACE_LEFT);
-            object_set_pal_offset(&local->har_player2[i], 48);
-        }
-    }
-
-    ani = &bk_get_info(scene->bk_data, 4)->ani;
-    object_create(&local->bigportrait1, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-    object_set_animation(&local->bigportrait1, ani);
-    object_select_sprite(&local->bigportrait1, 0);
-
+    // Load the big faces on the top corners
+    animation *pilot_big_portraits = &bk_get_info(scene->bk_data, 4)->ani;
+    object_create_static(&local->big_portrait_1, scene->gs);
+    object_set_animation(&local->big_portrait_1, pilot_big_portraits);
+    object_select_sprite(&local->big_portrait_1, 0);
     if(player2->selectable) {
-        object_create(&local->bigportrait2, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
-        object_set_animation(&local->bigportrait2, ani);
-        object_select_sprite(&local->bigportrait2, 4);
-        object_set_direction(&local->bigportrait2, OBJECT_FACE_LEFT);
+        object_create(&local->big_portrait_2, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
+        object_set_animation(&local->big_portrait_2, pilot_big_portraits);
+        object_select_sprite(&local->big_portrait_2, 4);
+        object_set_direction(&local->big_portrait_2, OBJECT_FACE_LEFT);
     }
 
-    ani = &bk_get_info(scene->bk_data, 5)->ani;
-    object_create(&local->player2_placeholder, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-    object_set_animation(&local->player2_placeholder, ani);
+    // This contains the big logo and the frames
+    animation *misc_stuff = &bk_get_info(scene->bk_data, 5)->ani;
+    object_create_static(&local->player2_placeholder, scene->gs);
+    object_set_animation(&local->player2_placeholder, misc_stuff);
     if(player2->selectable) {
         object_select_sprite(&local->player2_placeholder, 0);
     } else {
         object_select_sprite(&local->player2_placeholder, 1);
     }
-
-    spr = sprite_copy(animation_get_sprite(&bk_get_info(scene->bk_data, 1)->ani, 0));
-    surface_convert_to_rgba(spr->data, video_get_pal_ref(), 0);
-    ani = create_animation_from_single(spr, spr->pos);
-    object_create(&local->unselected_har_portraits, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-    object_set_animation(&local->unselected_har_portraits, ani);
-    object_select_sprite(&local->unselected_har_portraits, 0);
-    object_set_animation_owner(&local->unselected_har_portraits, OWNER_OBJECT);
 
     for(int i = 0; i < 2; i++) {
         local->bar_power[i] = progressbar_create(PROGRESSBAR_THEME_MELEE, PROGRESSBAR_LEFT, 50);
@@ -682,11 +713,12 @@ int melee_create(scene *scene) {
     component_layout(local->bar_power[0], 74, 12, 20 * 4, 8);
     component_layout(local->bar_agility[0], 74, 30, 20 * 4, 8);
     component_layout(local->bar_endurance[0], 74, 48, 20 * 4, 8);
-    component_layout(local->bar_power[1], 320 - 66 - local->feh.w, 12, 20 * 4, 8);
-    component_layout(local->bar_agility[1], 320 - 66 - local->feh.w, 30, 20 * 4, 8);
-    component_layout(local->bar_endurance[1], 320 - 66 - local->feh.w, 48, 20 * 4, 8);
+    component_layout(local->bar_power[1], 320 - 66 - local->bg_player_stats.w, 12, 20 * 4, 8);
+    component_layout(local->bar_agility[1], 320 - 66 - local->bg_player_stats.w, 30, 20 * 4, 8);
+    component_layout(local->bar_endurance[1], 320 - 66 - local->bg_player_stats.w, 48, 20 * 4, 8);
 
     refresh_pilot_stats(local);
+    set_cursor_colors(0);
 
     // initialize nova selection cheat
     memset(local->har_selected, 0, sizeof(local->har_selected));
@@ -700,10 +732,6 @@ int melee_create(scene *scene) {
 
     // Play correct music
     audio_play_music(PSM_MENU);
-
-    // Don't render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(false);
 
     // All done
     return 0;

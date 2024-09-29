@@ -51,7 +51,7 @@ typedef struct object_array {
 static void setup_vao_layout() {
     int stride = 4 * sizeof(GLfloat) + 3 * sizeof(GLint);
     int index = 0;
-    void *step = 0;
+    unsigned char *step = 0;
     ATTRIB(index, stride, step, 2, GL_FLOAT, GL_FALSE);
     ATTRIB(index, stride, step, 2, GL_FLOAT, GL_FALSE);
     ATTRIB_I(index, stride, step, 1, GL_INT);

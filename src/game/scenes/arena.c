@@ -15,7 +15,6 @@
 #include "game/gui/frame.h"
 #include "game/gui/label.h"
 #include "game/gui/menu.h"
-#include "game/gui/menu_background.h"
 #include "game/gui/progressbar.h"
 #include "game/gui/text_render.h"
 #include "game/gui/textbutton.h"
@@ -34,10 +33,9 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/random.h"
-#include "video/surface.h"
 #include "video/video.h"
 
-#define TEXT_COLOR color_create(186, 250, 250, 255)
+#define TEXT_COLOR 0xC7
 
 #define HAR1_START_POS 110
 #define HAR2_START_POS 211
@@ -45,7 +43,6 @@
 typedef struct arena_local_t {
     guiframe *game_menu;
 
-    surface sur;
     int menu_visible;
     unsigned int state;
     int ending_ticks;
@@ -1045,6 +1042,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
                     object_set_gravity(scrap, 0.4f);
                     object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
+                    object_set_pal_limit(scrap, object_get_pal_limit(h_obj));
                     object_set_layers(scrap, LAYER_SCRAP);
                     object_set_shadow(scrap, 1);
                     object_dynamic_tick(scrap);
@@ -1393,7 +1391,7 @@ int arena_create(scene *scene) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
-    tconf.cforeground = COLOR_DARK_GREEN;
+    tconf.cforeground = TEXT_DARK_GREEN;
     tconf.halign = TEXT_CENTER;
 
     // Arena menu
@@ -1534,10 +1532,6 @@ int arena_create(scene *scene) {
     } else {
         local->rec = NULL;
     }
-
-    // Don't render background on its own layer
-    // Fix for some additive blending tricks.
-    video_render_bg_separately(false);
 
     // All done!
     return 0;

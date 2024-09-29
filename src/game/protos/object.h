@@ -102,6 +102,7 @@ struct object_t {
     uint32_t attached_to_id;
 
     uint8_t pal_offset;
+    uint8_t pal_limit;
     uint8_t cur_remap;
     uint8_t halt;
     int16_t halt_ticks;
@@ -135,6 +136,7 @@ struct object_t {
 };
 
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
+void object_create_static(object *obj, game_state *gs);
 void object_render(object *obj);
 void object_render_shadow(object *obj);
 void object_debug(object *obj);
@@ -143,7 +145,6 @@ void object_dynamic_tick(object *obj);
 void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
 int object_palette_transform(object *obj, screen_palette *pal);
-void object_render(object *obj);
 void object_collide(object *a, object *b);
 int object_act(object *obj, int action);
 int object_finished(object *obj);
@@ -216,6 +217,9 @@ int object_is_rewind_tag_disabled(const object *obj);
 
 void object_set_pal_offset(object *obj, int offset);
 int object_get_pal_offset(const object *obj);
+
+void object_set_pal_limit(object *obj, int limit);
+int object_get_pal_limit(const object *obj);
 
 vec2i object_get_size(const object *obj);
 vec2i object_get_pos(const object *obj);

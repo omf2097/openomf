@@ -8,8 +8,7 @@ typedef void (*textbutton_click_cb)(component *c, void *userdata);
 
 component *textbutton_create(const text_settings *tconf, const char *text, const char *help, int disabled,
                              textbutton_click_cb cb, void *userdata);
-void textbutton_set_border(component *c, color col);
+void textbutton_set_border(component *c, uint8_t color);
 void textbutton_set_text(component *c, const char *text);
-void textbutton_remove_border(component *c);
 
 #endif // TEXTBUTTON_H

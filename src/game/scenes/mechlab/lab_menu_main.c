@@ -117,7 +117,7 @@ void lab_menu_main_sim(component *c, void *userdata) {
 }
 
 static const button_details details_list[] = {
-  // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
+    // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
     {lab_menu_main_arena,          "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0,
      COM_DISABLED                                                                                                          },
@@ -261,7 +261,7 @@ component *lab_menu_main_create(scene *s, bool character_loaded) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
-    tconf.cforeground = color_create(0, 0, 123, 255);
+    tconf.cforeground = TEXT_TRN_BLUE;
 
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
