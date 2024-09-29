@@ -257,7 +257,8 @@ static void trnmenu_render(component *c) {
 
     // If submenu is set, we need to use it
     if(!m->fade && m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
-        return component_render(m->submenu);
+        component_render(m->submenu);
+        return;
     }
 
     // Render button sheet
@@ -289,7 +290,8 @@ static void trnmenu_tick(component *c) {
     if(!m->fade) {
         // If submenu is set, we need to tick it
         if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
-            return component_tick(m->submenu);
+            component_tick(m->submenu);
+            return;
         }
     } else {
         // Tick opacity
