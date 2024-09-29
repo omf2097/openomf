@@ -274,7 +274,8 @@ int hashmap_get(hashmap *hm, const void *key, unsigned int key_len, void **value
 
     // Set defaults for error cases
     *value = NULL;
-    *value_len = 0;
+    if(value_len != NULL)
+        *value_len = 0;
 
     // Get node
     hashmap_node *node = hm->buckets[index];
@@ -285,7 +286,8 @@ int hashmap_get(hashmap *hm, const void *key, unsigned int key_len, void **value
     while(node) {
         if(node->pair.key_len == key_len && memcmp(node->pair.key, key, key_len) == 0) {
             *value = node->pair.value;
-            *value_len = node->pair.value_len;
+            if(value_len != NULL)
+                *value_len = node->pair.value_len;
             return 0;
         }
         node = node->next;
