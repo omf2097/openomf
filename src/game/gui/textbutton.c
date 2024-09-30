@@ -47,14 +47,13 @@ static void textbutton_render(component *c) {
     textbutton *tb = widget_get_obj(c);
 
     // Select color and render
+    int text_mode = TEXT_UNSELECTED;
     if(component_is_selected(c)) {
-        tb->tconf.cforeground = TEXT_BLINKY_GREEN;
+        text_mode = TEXT_SELECTED;
     } else if(component_is_disabled(c)) {
-        tb->tconf.cforeground = 0xC0;
-    } else {
-        tb->tconf.cforeground = TEXT_MEDIUM_GREEN;
+        text_mode = TEXT_DISABLED;
     }
-    text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->text);
+    text_render(&tb->tconf, text_mode, c->x, c->y, c->w, c->h, tb->text);
 
     // Border
     if(tb->border_created) {

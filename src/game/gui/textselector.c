@@ -63,14 +63,13 @@ static void textselector_render(component *c) {
     }
 
     // Render text
+    text_mode mode = TEXT_UNSELECTED;
     if(component_is_selected(c)) {
-        tb->tconf.cforeground = TEXT_BLINKY_GREEN;
+        mode = TEXT_SELECTED;
     } else if(component_is_disabled(c)) {
-        tb->tconf.cforeground = 0xC0;
-    } else {
-        tb->tconf.cforeground = TEXT_MEDIUM_GREEN;
+        mode = TEXT_DISABLED;
     }
-    text_render(&tb->tconf, c->x, c->y, c->w, c->h, buf);
+    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, buf);
 }
 
 static int textselector_action(component *c, int action) {

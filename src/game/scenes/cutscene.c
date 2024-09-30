@@ -77,7 +77,7 @@ void cutscene_input_tick(scene *scene) {
 
 void cutscene_render_overlay(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
-    text_render(&local->text_conf, local->text_x, local->text_y, local->text_width, 200, local->current);
+    text_render(&local->text_conf, TEXT_DEFAULT, local->text_x, local->text_y, local->text_width, 200, local->current);
 }
 
 void cutscene_free(scene *scene) {

@@ -217,7 +217,10 @@ int lobby_create(scene *scene) {
     text_defaults(&tconf);
     tconf.font = FONT_NET1;
     tconf.halign = TEXT_LEFT;
-    tconf.cforeground = BLUE_TEXT_COLOR;
+    tconf.cforeground = 0;
+    tconf.cselected = 5;
+    tconf.cdisabled = 0;
+    tconf.cinactive = 3;
 
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
@@ -228,6 +231,8 @@ int lobby_create(scene *scene) {
     text_defaults(&help_text);
     help_text.font = FONT_NET2;
     help_text.halign = TEXT_LEFT;
+    help_text.cforeground = 56;
+
     menu_set_help_text_settings(menu, &help_text);
     menu_attach(menu, textbutton_create(&tconf, "Challenge",
                                         "Challenge this player to a fight. Challenge yourself for 1-player game.",

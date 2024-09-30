@@ -24,13 +24,16 @@ typedef struct {
 
 static void spritebutton_render(component *c) {
     spritebutton *sb = widget_get_obj(c);
+    text_mode mode = TEXT_UNSELECTED;
     if(c->is_disabled) {
         video_draw_offset(sb->img, c->x, c->y, 5, 0x5F);
+        mode = TEXT_DISABLED;
     } else if(sb->active) {
         video_draw(sb->img, c->x, c->y);
+        mode = TEXT_SELECTED;
     }
     if(sb->text) {
-        text_render(&sb->tconf, c->x, c->y, c->w, c->h, sb->text);
+        text_render(&sb->tconf, mode, c->x, c->y, c->w, c->h, sb->text);
     }
 }
 

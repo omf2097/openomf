@@ -10,7 +10,7 @@ typedef struct {
 
 static void label_render(component *c) {
     label *local = widget_get_obj(c);
-    text_render(&local->tconf, c->x, c->y, c->w, c->h, local->text);
+    text_render(&local->tconf, TEXT_DEFAULT, c->x, c->y, c->w, c->h, local->text);
 }
 
 static void label_free(component *c) {
