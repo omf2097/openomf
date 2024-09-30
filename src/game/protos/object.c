@@ -333,9 +333,8 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_render_sprite_flip_scale_opacity_tint(cur_sprite->data, x + i, y + i, BLEND_ALPHA, obj->pal_offset,
-                                                    obj->pal_limit, flipmode, 1.0, scale_y, 65,
-                                                    color_create(0, 0, 0, 255));
+        video_render_sprite_flip_scale_opacity_tint(cur_sprite->data, x + i, y + i, BLEND_ALPHA, 192, 192, flipmode,
+                                                    1.0, scale_y, 65, color_create(0, 0, 0, 255));
     }
 }
 
