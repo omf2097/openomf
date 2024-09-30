@@ -121,13 +121,11 @@ int plugins_get_scaler(scaler_plugin *scaler, const char *name) {
         if(_plugins[i].handle != NULL && strcmp(_plugins[i].get_name(), name) == 0 &&
            strcmp(_plugins[i].get_type(), "scaler") == 0) {
             scaler->base = &_plugins[i];
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-            scaler->is_factor_available = SDL_LoadFunction(scaler->base->handle, "scaler_is_factor_available");
-            scaler->get_factors_list = SDL_LoadFunction(scaler->base->handle, "scaler_get_factors_list");
-            scaler->get_color_format = SDL_LoadFunction(scaler->base->handle, "scaler_get_color_format");
-            scaler->scale = SDL_LoadFunction(scaler->base->handle, "scaler_handle");
-#pragma GCC diagnostic pop
+            *(void **)(&scaler->is_factor_available) =
+                SDL_LoadFunction(scaler->base->handle, "scaler_is_factor_available");
+            *(void **)(&scaler->get_factors_list) = SDL_LoadFunction(scaler->base->handle, "scaler_get_factors_list");
+            *(void **)(&scaler->get_color_format) = SDL_LoadFunction(scaler->base->handle, "scaler_get_color_format");
+            *(void **)(&scaler->scale) = SDL_LoadFunction(scaler->base->handle, "scaler_handle");
             return 0;
         }
     }
