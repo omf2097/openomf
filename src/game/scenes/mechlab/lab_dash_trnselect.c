@@ -33,6 +33,9 @@ component *lab_dash_trnselect_create(scene *s, trnselect_widgets *tw) {
     tconf.font = FONT_SMALL;
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = TEXT_TRN_BLUE;
+    tconf.cselected = TEXT_TRN_BLUE;
+    tconf.cinactive = TEXT_TRN_BLUE;
+    tconf.cdisabled = TEXT_TRN_BLUE;
 
     // Pilot image
     tw->trnselect = trnselect_create();
