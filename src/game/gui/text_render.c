@@ -318,7 +318,7 @@ int font_render_char_shadowed(const font *font, char ch, int x, int y, uint8_t c
 
     // Handle the font face itself
     video_draw_offset(*sur, x, y, c, 255);
-    return font->w;
+    return (*sur)->w;
 }
 
 void font_render_len(const font *font, const char *text, int len, int x, int y, uint8_t c) {

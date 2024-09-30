@@ -79,10 +79,10 @@ int font_load(font *font, const char *filename, unsigned int size) {
 }
 
 int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
-    // sd_rgba_image img;
+    sd_vga_image img;
     pcx_font pcx_font;
     int pixsize;
-    // surface *sur;
+    surface *sur;
 
     if(pcx_load_font(&pcx_font, filename)) {
         pcx_font_free(&pcx_font);
@@ -91,18 +91,16 @@ int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
 
     pixsize = pcx_font.glyph_height;
 
-    // FIXME: Correct this
     // Load into textures
-    /*
+
     for(int i = 0; i < pcx_font.glyph_count; i++) {
-        sd_rgba_image_create(&img, pcx_font.glyphs[i].width, pixsize);
+        sd_vga_image_create(&img, pcx_font.glyphs[i].width, pixsize);
         sur = omf_calloc(1, sizeof(surface));
-        pcx_font_decode(&pcx_font, &img, i, palette_offset);
-        surface_create_from_data(sur, SURFACE_TYPE_RGBA, img.w, img.h, img.data);
+        pcx_font_decode(&pcx_font, &img, i, 0);
+        surface_create_from_vga(sur, &img);
         vector_append(&font->surfaces, &sur);
-        sd_rgba_image_free(&img);
+        sd_vga_image_free(&img);
     }
-    */
 
     // Set font info vars
     font->w = 0;
