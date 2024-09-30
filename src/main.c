@@ -2,7 +2,6 @@
 #include "engine.h"
 #include "game/game_state.h"
 #include "game/utils/settings.h"
-#include "plugins/plugins.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
 #include "resources/sgmanager.h"
@@ -185,9 +184,6 @@ int main(int argc, char *argv[]) {
     // TODO: Handle errors
     sg_init();
 
-    // Find plugins and make sure they are valid
-    plugins_init();
-
     // Network game override stuff
     if(ip) {
         DEBUG("Connect IP overridden to %s", ip);
@@ -263,7 +259,6 @@ exit_0:
     if(trace_file) {
         omf_free(trace_file);
     }
-    plugins_close();
     arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     pm_free();
     return ret;

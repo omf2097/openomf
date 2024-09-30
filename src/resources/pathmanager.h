@@ -5,7 +5,6 @@
 
 enum
 {
-    PLUGIN_PATH,
     RESOURCE_PATH,
     LOG_PATH,
     CONFIG_PATH,
