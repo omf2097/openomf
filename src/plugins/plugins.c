@@ -19,11 +19,11 @@ void plugins_init(void) {
     _plugins_count = 0;
     for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
         _plugins[i].handle = NULL;
-        _plugins[i].get_name = NULL;
-        _plugins[i].get_author = NULL;
-        _plugins[i].get_license = NULL;
-        _plugins[i].get_type = NULL;
-        _plugins[i].get_version = NULL;
+        _plugins[i].get_name.ptr = NULL;
+        _plugins[i].get_author.ptr = NULL;
+        _plugins[i].get_license.ptr = NULL;
+        _plugins[i].get_type.ptr = NULL;
+        _plugins[i].get_version.ptr = NULL;
     }
 
     // Search for plugins
@@ -66,45 +66,42 @@ void plugins_init(void) {
 
             // Build plugin
             _plugins[_plugins_count].handle = handle;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-            _plugins[_plugins_count].get_name = SDL_LoadFunction(handle, "plugin_get_name");
-            _plugins[_plugins_count].get_author = SDL_LoadFunction(handle, "plugin_get_author");
-            _plugins[_plugins_count].get_license = SDL_LoadFunction(handle, "plugin_get_license");
-            _plugins[_plugins_count].get_type = SDL_LoadFunction(handle, "plugin_get_type");
-            _plugins[_plugins_count].get_version = SDL_LoadFunction(handle, "plugin_get_version");
-#pragma GCC diagnostic pop
+            _plugins[_plugins_count].get_name.ptr = SDL_LoadFunction(handle, "plugin_get_name");
+            _plugins[_plugins_count].get_author.ptr = SDL_LoadFunction(handle, "plugin_get_author");
+            _plugins[_plugins_count].get_license.ptr = SDL_LoadFunction(handle, "plugin_get_license");
+            _plugins[_plugins_count].get_type.ptr = SDL_LoadFunction(handle, "plugin_get_type");
+            _plugins[_plugins_count].get_version.ptr = SDL_LoadFunction(handle, "plugin_get_version");
 
             // Make sure we have all functions
-            if(_plugins[_plugins_count].get_name == NULL) {
+            if(_plugins[_plugins_count].get_name.ptr == NULL) {
                 PERROR("Plugin get_name handle not found: %s", SDL_GetError());
                 continue;
             }
-            if(_plugins[_plugins_count].get_author == NULL) {
+            if(_plugins[_plugins_count].get_author.ptr == NULL) {
                 PERROR("Plugin get_author handle not found: %s", SDL_GetError());
                 continue;
             }
-            if(_plugins[_plugins_count].get_license == NULL) {
+            if(_plugins[_plugins_count].get_license.ptr == NULL) {
                 PERROR("Plugin get_license handle not found: %s", SDL_GetError());
                 continue;
             }
-            if(_plugins[_plugins_count].get_type == NULL) {
+            if(_plugins[_plugins_count].get_type.ptr == NULL) {
                 PERROR("Plugin get_type handle not found: %s", SDL_GetError());
                 continue;
             }
-            if(_plugins[_plugins_count].get_version == NULL) {
+            if(_plugins[_plugins_count].get_version.ptr == NULL) {
                 DEBUG("Plugin get_version handle not found; your plugin is old.");
             }
 #ifdef DEBUGMODE
             // Print some debug information
             base_plugin *tmp = &_plugins[_plugins_count];
             DEBUG(" * File: %s", plugin_file);
-            DEBUG("   - Name: %s", tmp->get_name());
-            DEBUG("   - Author: %s", tmp->get_author());
-            DEBUG("   - License: %s", tmp->get_license());
-            DEBUG("   - Type: %s", tmp->get_type());
-            if(tmp->get_version) {
-                DEBUG("   - Version: %s", tmp->get_version());
+            DEBUG("   - Name: %s", tmp->get_name.fn());
+            DEBUG("   - Author: %s", tmp->get_author.fn());
+            DEBUG("   - License: %s", tmp->get_license.fn());
+            DEBUG("   - Type: %s", tmp->get_type.fn());
+            if(tmp->get_version.ptr != NULL) {
+                DEBUG("   - Version: %s", tmp->get_version.fn());
             }
 #endif
             _plugins_count++;
@@ -121,8 +118,8 @@ void plugins_init(void) {
 int plugins_get_scaler(scaler_plugin *scaler, const char *name) {
     // Search for a scaler with given name
     for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
-        if(_plugins[i].handle != NULL && strcmp(_plugins[i].get_name(), name) == 0 &&
-           strcmp(_plugins[i].get_type(), "scaler") == 0) {
+        if(_plugins[i].handle != NULL && strcmp(_plugins[i].get_name.fn(), name) == 0 &&
+           strcmp(_plugins[i].get_type.fn(), "scaler") == 0) {
             scaler->base = &_plugins[i];
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
@@ -141,7 +138,7 @@ int plugins_get_list_by_type(list *tlist, const char *type) {
     // Search for a scaler with given type
     int count = 0;
     for(int i = 0; i < PLUGIN_MAX_COUNT; i++) {
-        if(_plugins[i].handle != NULL && strcmp(_plugins[i].get_type(), type) == 0) {
+        if(_plugins[i].handle != NULL && strcmp(_plugins[i].get_type.fn(), type) == 0) {
             void *ptr = &_plugins[i];
             list_append(tlist, &ptr, sizeof(base_plugin *));
             count++;

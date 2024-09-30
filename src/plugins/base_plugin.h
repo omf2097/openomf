@@ -1,13 +1,18 @@
 #ifndef BASE_PLUGIN_H
 #define BASE_PLUGIN_H
 
+typedef union {
+    void *ptr;
+    const char *(*fn)(void);
+} SDL_fn_ptr;
+
 typedef struct {
     void *handle;
-    const char *(*get_name)(void);
-    const char *(*get_author)(void);
-    const char *(*get_license)(void);
-    const char *(*get_type)(void);
-    const char *(*get_version)(void);
+    SDL_fn_ptr get_name;
+    SDL_fn_ptr get_author;
+    SDL_fn_ptr get_license;
+    SDL_fn_ptr get_type;
+    SDL_fn_ptr get_version;
 } base_plugin;
 
 #endif // BASE_PLUGIN_H
