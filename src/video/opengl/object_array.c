@@ -161,7 +161,7 @@ static void add_item(object_array *array, float dx, float dy, int x, int y, int 
 
     array->fans_starts[array->item_count] = array->item_count * 4;
     array->fans_sizes[array->item_count] = 4;
-    array->modes[array->item_count] = (blend_mode == BLEND_ALPHA) ? BLEND_ALPHA : BLEND_ADDITIVE; // IGNORE BLEND_HACK
+    array->modes[array->item_count] = blend_mode;
     array->item_count++;
 }
 
@@ -173,11 +173,6 @@ void object_array_add(object_array *array, int x, int y, int w, int h, int tx, i
     }
     if(array->mode_flip == -1) {
         array->mode_flip = blend_mode;
-    }
-    if(array->mode_flip != blend_mode) {
-        float dx = 1.0f / 320.0f;
-        float dy = 1.0f / 200.0f;
-        add_item(array, dx, dy, 0, 0, 320, 200, 0, 0, 320, 200, FLIP_VERTICAL, BLEND_HACK, 0, 255);
     }
     float dx = 1.0f / array->src_w;
     float dy = 1.0f / array->src_h;

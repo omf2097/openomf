@@ -27,6 +27,8 @@ typedef struct video_state {
     GLuint palette_prog_id;
     GLuint rgba_prog_id;
 
+    int current_blend_mode;
+
     int viewport_w;
     int viewport_h;
 
@@ -50,7 +52,6 @@ typedef struct video_state {
 #define TEX_UNIT_FBO 1
 
 #define PAL_BLOCK_BINDING 0
-#define REMAPS_BLOCK_BINDING 1
 
 static video_state g_video_state;
 
@@ -62,6 +63,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.fade = 1.0f;
     g_video_state.target_move_x = 0;
     g_video_state.target_move_y = 0;
+    g_video_state.current_blend_mode = 0;
 
     // Clear palettes
     g_video_state.base_palette = omf_calloc(1, sizeof(palette));
@@ -90,14 +92,14 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     SDL_GL_GetDrawableSize(g_video_state.window, &g_video_state.viewport_w, &g_video_state.viewport_h);
 
     // Reset background color to black.
+    glEnable(GL_BLEND);
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
     // Create the rest of the graphics objects
     g_video_state.atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
     g_video_state.objects = object_array_create(2048.0f, 2048.0f);
     g_video_state.shared = shared_create();
-    g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
-    g_video_state.remaps = remaps_create();
+    g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RG8, GL_RG);
 
     // Create orthographic projection matrix for 2d stuff.
     GLfloat projection_matrix[16];
@@ -107,8 +109,6 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     activate_program(g_video_state.palette_prog_id);
     bind_uniform_4fv(g_video_state.palette_prog_id, "projection", projection_matrix);
     bind_uniform_1i(g_video_state.palette_prog_id, "atlas", TEX_UNIT_ATLAS);
-    GLuint remaps_ubo_id = remaps_get_block_id(g_video_state.remaps);
-    bind_uniform_block(g_video_state.palette_prog_id, "remaps", REMAPS_BLOCK_BINDING, remaps_ubo_id);
 
     // Activate RGBA conversion program, and bind palette etc.
     activate_program(g_video_state.rgba_prog_id);
@@ -157,20 +157,33 @@ void video_render_prepare(void) {
     object_array_prepare(g_video_state.objects);
 }
 
+static void video_set_blend_mode(int request_mode) {
+    if(g_video_state.current_blend_mode == request_mode)
+        return;
+
+    if(request_mode == BLEND_ALPHA) { // ALPHA
+        glBlendFunc(GL_ONE, GL_ZERO); // 1 * src + 0 * dst
+    } else {                          // ADDITIVE
+        glBlendFunc(GL_ONE, GL_ONE);  // 1 * src + 1 * dst
+    }
+
+    g_video_state.current_blend_mode = request_mode;
+}
+
 // Called after frame has been rendered
 void video_render_finish(void) {
     shared_set_palette(g_video_state.shared, g_video_state.screen_palette->data);
     shared_flush_dirty(g_video_state.shared);
-    remaps_update(g_video_state.remaps, (void *)g_video_state.base_palette->remaps);
     object_array_finish(g_video_state.objects);
 
+    // Set to VGA emulation state, and render to an indexed surface
     glViewport(0, 0, NATIVE_W, NATIVE_H);
     object_array_batch batch;
     object_array_begin(g_video_state.objects, &batch);
     activate_program(g_video_state.palette_prog_id);
-    bind_uniform_1i(g_video_state.palette_prog_id, "framebuffer", TEX_UNIT_FBO);
     render_target_activate(g_video_state.target);
     while(object_array_get_batch(g_video_state.objects, &batch)) {
+        video_set_blend_mode(!batch.mode);
         object_array_draw(g_video_state.objects, &batch);
     }
 
