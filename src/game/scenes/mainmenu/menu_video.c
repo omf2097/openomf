@@ -241,8 +241,8 @@ component *menu_video_create(scene *s) {
     int i = 1;
     int plugin_found = 0;
     while((plugin = iter_next(&it)) != NULL) {
-        textselector_add_option(scaler, (*plugin)->get_name.fn());
-        if(strcmp((*plugin)->get_name.fn(), setting->video.scaler) == 0) {
+        textselector_add_option(scaler, (*plugin)->get_name());
+        if(strcmp((*plugin)->get_name(), setting->video.scaler) == 0) {
             textselector_set_pos(scaler, i);
             plugin_found = 1;
         }
