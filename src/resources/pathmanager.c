@@ -79,7 +79,7 @@ int pm_init(void) {
         local_path_build(SAVE_PATH, local_base_dir, "save/");
     }
 
-    // Set default base dirs for resources and plugins
+    // Set default base dirs for resources
     int m_ok = 0;
     if(pm_in_release_mode()) {
         // where is the openomf binary, if this call fails we will look for resources in ./resources
@@ -88,7 +88,6 @@ int pm_init(void) {
             if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
                 // on windows, the resources will be in ./resources, relative to the binary
                 local_path_build(RESOURCE_PATH, bin_base_dir, "resources\\");
-                local_path_build(PLUGIN_PATH, bin_base_dir, "plugins\\");
                 local_path_build(SHADER_PATH, bin_base_dir, "shaders\\");
                 m_ok = 1;
             } else if(!strcasecmp(SDL_GetPlatform(), "Linux")) {
@@ -97,14 +96,12 @@ int pm_init(void) {
                 // the resources will be in /usr/local/share/games/openomf
                 local_path_build(RESOURCE_PATH, bin_base_dir, "../share/games/openomf/");
                 local_path_build(SHADER_PATH, bin_base_dir, "../share/games/openomf/shaders/");
-                local_path_build(PLUGIN_PATH, bin_base_dir, "../lib/openomf/");
                 m_ok = 1;
             } else if(!strcasecmp(SDL_GetPlatform(), "Mac OS X")) {
                 // on OSX, GetBasePath returns the 'Resources' directory
                 // if run from an app bundle, so we can use this as-is
                 local_path_build(RESOURCE_PATH, bin_base_dir, "");
                 local_path_build(SHADER_PATH, bin_base_dir, "shaders/");
-                local_path_build(PLUGIN_PATH, bin_base_dir, "plugins/");
                 m_ok = 1;
             }
             // any other platform will look in ./resources
@@ -112,15 +109,13 @@ int pm_init(void) {
         }
     }
 
-    // Set default resource and plugins paths
+    // Set default resource paths
     if(!m_ok) {
         if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
             local_path_build(RESOURCE_PATH, "resources\\", "");
-            local_path_build(PLUGIN_PATH, "plugins\\", "");
             local_path_build(SHADER_PATH, "shaders\\", "");
         } else {
             local_path_build(RESOURCE_PATH, "resources/", "");
-            local_path_build(PLUGIN_PATH, "plugins/", "");
             local_path_build(SHADER_PATH, "shaders/", "");
         }
     }
@@ -135,12 +130,6 @@ int pm_init(void) {
     if(resource_env) {
         char *ext = str_ends_with_sep(resource_env) ? "" : platform_sep;
         local_path_build(RESOURCE_PATH, resource_env, ext);
-    }
-
-    char *plugin_env = getenv("OPENOMF_PLUGIN_DIR");
-    if(plugin_env) {
-        char *ext = str_ends_with_sep(plugin_env) ? "" : platform_sep;
-        local_path_build(PLUGIN_PATH, plugin_env, ext);
     }
 
     char *shader_env = getenv("OPENOMF_SHADER_DIR");
@@ -265,8 +254,6 @@ const char *pm_get_local_path_type_name(unsigned int path_id) {
     switch(path_id) {
         case RESOURCE_PATH:
             return "RESOURCE_PATH";
-        case PLUGIN_PATH:
-            return "PLUGIN_PATH";
         case CONFIG_PATH:
             return "CONFIG_PATH";
         case LOG_PATH:

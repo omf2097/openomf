@@ -80,5 +80,4 @@ the resources should be extracted to /usr/share/games/openomf/.
 On MacOS and Windows, the resources should be put into the resources/ subdirectory.
 
 You can override these default paths by setting the OPENOMF_RESOURCE_DIR environment
-variable to an absolute directory. Plugins have a similar environment variable called
-OPENOMF_PLUGIN_DIR.
+variable to an absolute directory.

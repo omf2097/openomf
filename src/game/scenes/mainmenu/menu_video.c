@@ -5,7 +5,6 @@
 
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
-#include "plugins/plugins.h"
 #include "utils/allocator.h"
 #include "utils/compat.h"
 #include "video/video.h"
