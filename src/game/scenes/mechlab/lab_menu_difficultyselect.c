@@ -65,6 +65,9 @@ component *lab_menu_difficultyselect_create(scene *s) {
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
     tconf.cforeground = TEXT_TRN_BLUE;
+    tconf.cselected = TEXT_TRN_BLUE;
+    tconf.cinactive = TEXT_TRN_BLUE;
+    tconf.cdisabled = TEXT_TRN_BLUE;
 
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {

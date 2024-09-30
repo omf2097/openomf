@@ -15,6 +15,9 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     tconf.font = FONT_SMALL;
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = TEXT_TRN_BLUE;
+    tconf.cselected = TEXT_TRN_BLUE;
+    tconf.cinactive = TEXT_TRN_BLUE;
+    tconf.cdisabled = TEXT_TRN_BLUE;
 
     // Background name box
     animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;

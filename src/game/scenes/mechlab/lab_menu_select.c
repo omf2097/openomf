@@ -55,6 +55,9 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
     tconf.cforeground = TEXT_TRN_BLUE;
+    tconf.cselected = TEXT_TRN_BLUE;
+    tconf.cinactive = TEXT_TRN_BLUE;
+    tconf.cdisabled = TEXT_TRN_BLUE;
 
     lab_menu_select_t *selector = omf_calloc(1, sizeof(lab_menu_select_t));
     selector->cb = select;

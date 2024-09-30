@@ -40,6 +40,9 @@ component *lab_menu_confirm_create(scene *s, lab_menu_select_cb yes, void *yesda
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
     tconf.cforeground = TEXT_TRN_BLUE;
+    tconf.cselected = TEXT_TRN_BLUE;
+    tconf.cinactive = TEXT_TRN_BLUE;
+    tconf.cdisabled = TEXT_TRN_BLUE;
 
     tconf.valign = TEXT_MIDDLE;
     tconf.halign = TEXT_CENTER;
