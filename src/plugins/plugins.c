@@ -5,6 +5,7 @@
 #include "utils/log.h"
 #include "utils/scandir.h"
 #include <SDL2/SDL_loadso.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,8 +32,9 @@ void plugins_init(void) {
 
     // Find all files from the plugin path
     list_create(&scanned);
-    if(scan_directory(&scanned, pm_get_local_path(PLUGIN_PATH))) {
-        PERROR("Error while attempting to open plugin directory.");
+    const char *plugin_dir = pm_get_local_path(PLUGIN_PATH);
+    if(scan_directory(&scanned, plugin_dir)) {
+        PERROR("Could not scan directory %s: %s", plugin_dir, strerror(errno));
         return;
     }
 
@@ -50,9 +52,9 @@ void plugins_init(void) {
             }
 
             // Open the plugin file
-            int psize = strlen(pm_get_local_path(PLUGIN_PATH)) + strlen(plugin_file) + 1;
+            int psize = strlen(plugin_dir) + strlen(plugin_file) + 1;
             plugin_path = omf_calloc(psize, 1);
-            snprintf(plugin_path, psize, "%s%s", pm_get_local_path(PLUGIN_PATH), plugin_file);
+            snprintf(plugin_path, psize, "%s%s", plugin_dir, plugin_file);
             handle = SDL_LoadObject(plugin_path);
             omf_free(plugin_path);
 
