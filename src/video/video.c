@@ -141,7 +141,6 @@ void video_draw_atlas(bool draw_atlas) {
 }
 
 void video_reinit_renderer(void) {
-
 }
 
 int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync) {

@@ -117,7 +117,7 @@ void lab_menu_main_sim(component *c, void *userdata) {
 }
 
 static const button_details details_list[] = {
-    // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
+  // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
     {lab_menu_main_arena,          "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0,
      COM_DISABLED                                                                                                          },

@@ -79,10 +79,10 @@ int font_load(font *font, const char *filename, unsigned int size) {
 }
 
 int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
-    //sd_rgba_image img;
+    // sd_rgba_image img;
     pcx_font pcx_font;
     int pixsize;
-    //surface *sur;
+    // surface *sur;
 
     if(pcx_load_font(&pcx_font, filename)) {
         pcx_font_free(&pcx_font);

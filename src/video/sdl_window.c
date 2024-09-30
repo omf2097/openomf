@@ -86,7 +86,7 @@ bool create_window(SDL_Window **window, int width, int height, bool fullscreen) 
     return true;
 }
 
-bool enable_vsync() {
+bool enable_vsync(void) {
     // Try for adaptive vsync first.
     if(SDL_GL_SetSwapInterval(-1) == 0) {
         INFO("Adaptive VSYNC enabled!");

@@ -15,7 +15,7 @@ void *vbo_map(GLuint id, GLsizei size);
 void vbo_unmap(GLuint id);
 void vbo_free(GLuint id);
 
-GLuint vao_create();
+GLuint vao_create(void);
 void vao_free(GLuint id);
 
 GLuint texture_array_create(GLuint tex_unit, GLsizei w, GLsizei z, GLint internal_Format, GLenum format);
