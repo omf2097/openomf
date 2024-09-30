@@ -11,7 +11,7 @@ typedef struct remaps {
 
 // TODO: Move the remappings to 1D array texture!
 
-remaps *remaps_create() {
+remaps *remaps_create(void) {
     remaps *maps = omf_calloc(1, sizeof(remaps));
     maps->ubo_id = ubo_create(UBO_SIZE * 4);
     return maps;

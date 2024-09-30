@@ -14,7 +14,7 @@ typedef struct shared {
     bool dirty;
 } shared;
 
-shared *shared_create() {
+shared *shared_create(void) {
     shared *obj = omf_calloc(1, sizeof(shared));
     obj->ubo_id = ubo_create(sizeof(data_buffer));
     obj->dirty = false;

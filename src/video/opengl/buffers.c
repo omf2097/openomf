@@ -99,7 +99,7 @@ void vbo_free(GLuint id) {
     glDeleteBuffers(1, &id);
 }
 
-GLuint vao_create() {
+GLuint vao_create(void) {
     GLuint id;
     glGenVertexArrays(1, &id);
     bindings_bind_vao(id);

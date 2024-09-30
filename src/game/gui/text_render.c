@@ -294,7 +294,8 @@ void font_render_char(const font *font, char ch, int x, int y, uint8_t c) {
     font_render_char_shadowed(font, ch, x, y, c, 0, c);
 }
 
-int font_render_char_shadowed(const font *font, char ch, int x, int y, uint8_t c, int shadow_flags, uint8_t shadow_color) {
+int font_render_char_shadowed(const font *font, char ch, int x, int y, uint8_t c, int shadow_flags,
+                              uint8_t shadow_color) {
     // Make sure code is valid
     int code = ch - 32;
     surface **sur = NULL;
@@ -324,7 +325,8 @@ void font_render_len(const font *font, const char *text, int len, int x, int y, 
     font_render_len_shadowed(font, text, len, x, y, c, 0, c);
 }
 
-void font_render_len_shadowed(const font *font, const char *text, int len, int x, int y, uint8_t c, int shadow_flags, uint8_t shadow_color) {
+void font_render_len_shadowed(const font *font, const char *text, int len, int x, int y, uint8_t c, int shadow_flags,
+                              uint8_t shadow_color) {
     int pos_x = x;
     for(int i = 0; i < len; i++) {
         pos_x += font_render_char_shadowed(font, text[i], pos_x, y, c, shadow_flags, shadow_color);
@@ -341,7 +343,8 @@ void font_render_shadowed(const font *font, const char *text, int x, int y, uint
     font_render_len_shadowed(font, text, len, x, y, c, shadow_flags, c);
 }
 
-void font_render_shadowed_colored(const font *font, const char *text, int x, int y, uint8_t c, int shadow_flags, uint8_t shadow_color) {
+void font_render_shadowed_colored(const font *font, const char *text, int x, int y, uint8_t c, int shadow_flags,
+                                  uint8_t shadow_color) {
     int len = strlen(text);
     font_render_len_shadowed(font, text, len, x, y, c, shadow_flags, shadow_color);
 }

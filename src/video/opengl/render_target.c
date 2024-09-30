@@ -23,7 +23,7 @@ void render_target_activate(const render_target *target) {
     bindings_bind_fbo(target->fbo_id);
 }
 
-void render_target_deactivate() {
+void render_target_deactivate(void) {
     bindings_bind_fbo(0);
 }
 

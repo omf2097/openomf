@@ -48,7 +48,7 @@ typedef struct object_array {
     step += size * sizeof(GLint);                                                                                      \
     index++
 
-static void setup_vao_layout() {
+static void setup_vao_layout(void) {
     int stride = 4 * sizeof(GLfloat) + 3 * sizeof(GLint);
     int index = 0;
     unsigned char *step = 0;

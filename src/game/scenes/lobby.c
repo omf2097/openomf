@@ -9,7 +9,6 @@
 #define TEXT_COLOR 0xFE
 #define BLUE_TEXT_COLOR 0xFE
 
-
 enum
 {
     LOBBY_CHALLENGE,

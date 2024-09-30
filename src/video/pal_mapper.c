@@ -17,30 +17,30 @@ typedef struct {
 
 static state g_state;
 
-void pal_mapper_init() {
+void pal_mapper_init(void) {
     memset(&g_state, 0, sizeof(state));
     vector_create(&g_state.layers, sizeof(layer));
     g_state.is_dirty = false;
     DEBUG("Palette mapper created!");
 }
 
-void pal_mapper_close() {
+void pal_mapper_close(void) {
     vector_free(&g_state.layers);
     memset(&g_state, 0, sizeof(state));
     DEBUG("Palette mapper freed!");
 }
 
-void pal_mapper_clear();
+void pal_mapper_clear(void);
 void pal_mapper_reset(const vga_palette *base_palette);
 
 void pal_mapper_push_range(const vga_palette *pal, int start_index, int end_index);
 void pal_mapper_push_all(const vga_palette *pal);
 
-void pal_mapper_pop_one();
-void pal_mapper_pop_all();
+void pal_mapper_pop_one(void);
+void pal_mapper_pop_all(void);
 void pal_mapper_pop_num(int i);
 
-bool pal_mapper_is_dirty() {
+bool pal_mapper_is_dirty(void) {
     return g_state.is_dirty;
 }
 
