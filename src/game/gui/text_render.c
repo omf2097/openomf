@@ -8,10 +8,13 @@
 
 void text_defaults(text_settings *settings) {
     memset(settings, 0, sizeof(text_settings));
-    settings->cforeground = 0xFF;
+    settings->cforeground = 0xFD;
+    settings->cselected = 0xFF;
+    settings->cinactive = 0xFE;
+    settings->cdisabled = 0xC0;
 }
 
-int text_render_char(const text_settings *settings, int x, int y, char ch) {
+int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
     // Make sure code is valid
     int code = ch - 32;
     surface **sur = NULL;
@@ -47,8 +50,23 @@ int text_render_char(const text_settings *settings, int x, int y, char ch) {
     if(settings->shadow & TEXT_SHADOW_TOP)
         video_draw_offset(*sur, x, y - 1, 0xC0, 255);
 
+    int color;
+    switch(state) {
+        case TEXT_SELECTED:
+            color = settings->cselected;
+            break;
+        case TEXT_UNSELECTED:
+            color = settings->cinactive;
+            break;
+        case TEXT_DISABLED:
+            color = settings->cdisabled;
+            break;
+        default:
+            color = settings->cforeground;
+    }
+
     // Draw the actual font
-    video_draw_offset(*sur, x, y, settings->cforeground, 255);
+    video_draw_offset(*sur, x, y, color, 255);
     return (*sur)->w;
 }
 
@@ -153,7 +171,7 @@ int text_find_line_count(text_direction dir, int cols, int rows, int len, const 
     return lines;
 }
 
-void text_render(const text_settings *settings, int x, int y, int w, int h, const char *text) {
+void text_render(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text) {
     int len = strlen(text);
 
     int size = text_char_width(settings);
@@ -273,7 +291,7 @@ void text_render(const text_settings *settings, int x, int y, int w, int h, cons
                 continue;
 
             // Render character
-            w = text_render_char(settings, mx + start_x, my + start_y, text[ptr + k]);
+            w = text_render_char(settings, mode, mx + start_x, my + start_y, text[ptr + k]);
 
             // Render to the right direction
             if(settings->direction == TEXT_HORIZONTAL) {

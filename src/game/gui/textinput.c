@@ -32,29 +32,22 @@ static void textinput_render(component *c) {
         video_draw(&tb->sur, c->x + (c->w - tb->sur.w) / 2, c->y - 2);
     }
 
+    text_mode mode = TEXT_UNSELECTED;
     if(component_is_selected(c)) {
         if(chars > 0) {
-            tb->tconf.cforeground = TEXT_BLINKY_GREEN;
+            mode = TEXT_SELECTED;
             tb->buf[chars] = '\x7F';
             tb->buf[chars + 1] = 0;
-            text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
             tb->buf[chars] = 0;
         }
     } else if(component_is_disabled(c)) {
-        if(chars > 0) {
-            tb->tconf.cforeground = 0xC0;
-            text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
-        }
-    } else {
-        if(chars > 0) {
-            tb->tconf.cforeground = TEXT_MEDIUM_GREEN;
-            text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->buf);
-        }
+        mode = TEXT_DISABLED;
     }
     if(chars == 0) {
-        tb->tconf.cforeground = 0xC0;
-        text_render(&tb->tconf, c->x, c->y, c->w, c->h, tb->text);
+        mode = TEXT_DISABLED;
     }
+
+    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->buf);
 }
 
 static int textinput_event(component *c, SDL_Event *e) {

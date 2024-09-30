@@ -104,7 +104,7 @@ static void menu_render(component *c) {
             if(m->help_bg) {
                 video_draw(m->help_bg, m->help_x - 8, m->help_y - 8);
             }
-            text_render(&m->help_text_conf, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
+            text_render(&m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
         }
         i++;
     }

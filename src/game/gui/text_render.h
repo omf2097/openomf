@@ -27,6 +27,14 @@ typedef enum
     TEXT_RIGHT
 } text_halign;
 
+typedef enum
+{
+    TEXT_DEFAULT = 0,
+    TEXT_SELECTED,
+    TEXT_UNSELECTED,
+    TEXT_DISABLED
+} text_mode;
+
 typedef struct {
     uint8_t left;
     uint8_t right;
@@ -52,6 +60,9 @@ enum
 
 typedef struct {
     uint8_t cforeground;
+    uint8_t cdisabled;
+    uint8_t cinactive;
+    uint8_t cselected;
     text_valign valign;
     text_halign halign;
     text_padding padding;
@@ -67,8 +78,8 @@ typedef struct {
 void text_defaults(text_settings *settings);
 int text_find_max_strlen(int max_chars, const char *ptr);
 int text_find_line_count(text_direction dir, int cols, int rows, int len, const char *text);
-int text_render_char(const text_settings *settings, int x, int y, char ch);
-void text_render(const text_settings *settings, int x, int y, int w, int h, const char *text);
+int text_render_char(const text_settings *settings, text_mode mode, int x, int y, char ch);
+void text_render(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text);
 int text_char_width(const text_settings *settings);
 int text_width(const text_settings *settings, const char *text);
 

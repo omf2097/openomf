@@ -37,14 +37,13 @@ static void textslider_render(component *c) {
         }
     }
 
+    text_mode mode = TEXT_UNSELECTED;
     if(component_is_selected(c)) {
-        tb->tconf.cforeground = TEXT_BLINKY_GREEN;
+        mode = TEXT_SELECTED;
     } else if(component_is_disabled(c)) {
-        tb->tconf.cforeground = 0xC0;
-    } else {
-        tb->tconf.cforeground = TEXT_MEDIUM_GREEN;
+        mode = TEXT_DISABLED;
     }
-    text_render(&tb->tconf, c->x, c->y, c->w, c->h, str_c(&txt));
+    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&txt));
     str_free(&txt);
 }
 
