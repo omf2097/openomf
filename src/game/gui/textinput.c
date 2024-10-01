@@ -39,12 +39,12 @@ static void textinput_render(component *c) {
     if(component_is_selected(c)) {
         mode = TEXT_SELECTED;
         if(chars > 0) {
-            if (chars < tb->max_chars) {
+            if(chars < tb->max_chars) {
                 tb->buf[chars] = '\x7F';
                 tb->buf[chars + 1] = 0;
             }
             text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->buf);
-            if (chars < tb->max_chars) {
+            if(chars < tb->max_chars) {
                 tb->buf[chars] = 0;
             }
             return;
@@ -53,7 +53,7 @@ static void textinput_render(component *c) {
         mode = TEXT_DISABLED;
     }
     if(chars == 0) {
-        text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, "\x7F");
+        text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, "\x7F ");
     } else {
         text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->buf);
     }
@@ -81,7 +81,7 @@ static int textinput_event(component *c, SDL_Event *e) {
             if(SDL_HasClipboardText()) {
                 strncat(tb->buf, SDL_GetClipboardText(), tb->max_chars - strlen(tb->buf));
             }
-        }  else if(state[SDL_SCANCODE_RETURN] && strlen(tb->buf) > 0 && tb->done_cb) {
+        } else if(state[SDL_SCANCODE_RETURN] && strlen(tb->buf) > 0 && tb->done_cb) {
             tb->done_cb(c, tb->userdata);
         }
         return 0;
@@ -129,12 +129,11 @@ void textinput_enable_background(component *c, int enabled) {
     tb->bg_enabled = enabled;
 }
 
-void textinput_set_done_cb(component *c,   textinput_done_cb done_cb, void *userdata) {
+void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userdata) {
     textinput *tb = widget_get_obj(c);
     tb->done_cb = done_cb;
     tb->userdata = userdata;
 }
-
 
 component *textinput_create(const text_settings *tconf, const char *text, const char *help, const char *initialvalue) {
     component *c = widget_create();
@@ -159,12 +158,11 @@ component *textinput_create(const text_settings *tconf, const char *text, const 
     surface_create_from_image(&tb->sur, &img);
     image_free(&img);
 
-
     component_set_size_hints(c, 15 * tsize + 2, tsize + 3);
 
-    if (initialvalue && strlen(initialvalue)) {
-    // Copy over the initial value
-    strncpy(tb->buf, initialvalue, tb->max_chars);
+    if(initialvalue && strlen(initialvalue)) {
+        // Copy over the initial value
+        strncpy(tb->buf, initialvalue, tb->max_chars);
     }
     // Widget stuff
     widget_set_obj(c, tb);
