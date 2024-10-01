@@ -10,6 +10,6 @@ component *textinput_create(const text_settings *tconf, const char *text, const 
 char *textinput_value(const component *c);
 void textinput_enable_background(component *c, int enabled);
 void textinput_set_max_chars(component *c, int max_chars);
-void textinput_set_done_cb(component *c,   textinput_done_cb done_cb, void *userdata);
+void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userdata);
 
 #endif // TEXTINPUT_H
