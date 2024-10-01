@@ -40,7 +40,7 @@ void lab_menu_focus_right(component *c, bool focused, void *userdata) {
 }
 
 component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *selectdata, lab_menu_select_cb left,
-                                  void *leftdata, lab_menu_select_cb right, void *rightdata, int title,
+                                  void *leftdata, lab_menu_select_cb right, void *rightdata, const char *title,
                                   bool return_hand) {
     animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(s->bk_data, 7)->ani;
@@ -106,8 +106,7 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
 
     // Add text label
     tconf.cforeground = TEXT_MEDIUM_GREEN;
-    // TODO interpolate %s in the string here with blank
-    component *label = label_create(&tconf, lang_get(title));
+    component *label = label_create(&tconf, title);
     component_set_pos_hints(label, 87, 155);
     component_set_size_hints(label, 150, 10);
     trnmenu_attach(menu, label);
