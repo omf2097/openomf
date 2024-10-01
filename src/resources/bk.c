@@ -81,5 +81,4 @@ void bk_free(bk *b) {
         omf_free(sprite);
     }
     array_free(&b->sprites);
-
 }

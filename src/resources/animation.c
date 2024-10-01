@@ -32,7 +32,7 @@ void animation_create(animation *ani, array *sprites, void *src, int id) {
     }
 
     // Handle sprites
-    vector_create_with_size(&ani->sprites, sizeof(sprite), sdani->sprite_count);
+    vector_create_with_size(&ani->sprites, sizeof(sprite *), sdani->sprite_count);
     sprite *tmp_sprite;
     for(int i = 0; i < sdani->sprite_count; i++) {
         if(sdani->sprites[i]->missing) {
@@ -54,7 +54,7 @@ animation *create_animation_from_single(sprite *sp, vec2i pos) {
     str_from_c(&a->animation_string, "A9999999999");
     vector_create_with_size(&a->collision_coords, sizeof(collision_coord), 0);
     vector_create_with_size(&a->extra_strings, sizeof(str), 0);
-    vector_create_with_size(&a->sprites, sizeof(sprite), 1);
+    vector_create_with_size(&a->sprites, sizeof(sprite *), 1);
     vector_append(&a->sprites, sp);
     return a;
 }
@@ -90,7 +90,7 @@ int animation_clone(animation *src, animation *dst) {
 
 sprite *animation_get_sprite(animation *ani, int sprite_id) {
     sprite **s = (sprite **)vector_get(&ani->sprites, sprite_id);
-    if (s == NULL) {
+    if(s == NULL) {
         return NULL;
     }
     return *s;

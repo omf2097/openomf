@@ -2,10 +2,10 @@
 #define ANIMATION_H
 
 #include "resources/sprite.h"
+#include "utils/array.h"
 #include "utils/str.h"
 #include "utils/vec.h"
 #include "utils/vector.h"
-#include "utils/array.h"
 
 // All HARs have these predefined animations
 enum

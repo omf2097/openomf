@@ -2,8 +2,8 @@
 #define AF_H
 
 #include "resources/af_move.h"
-#include "utils/array.h"
 #include "utils/allocator.h"
+#include "utils/array.h"
 
 typedef struct af_t {
     unsigned int id;

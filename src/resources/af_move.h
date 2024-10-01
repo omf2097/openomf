@@ -2,8 +2,8 @@
 #define AF_MOVE_H
 
 #include "resources/animation.h"
-#include "utils/str.h"
 #include "utils/array.h"
+#include "utils/str.h"
 
 typedef struct af_move_t {
     int id;

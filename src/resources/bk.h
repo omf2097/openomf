@@ -2,9 +2,9 @@
 #define BK_H
 
 #include "resources/bk_info.h"
+#include "utils/array.h"
 #include "utils/hashmap.h"
 #include "utils/vector.h"
-#include "utils/array.h"
 
 typedef struct bk_t {
     int file_id;
