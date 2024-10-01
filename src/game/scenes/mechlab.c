@@ -273,7 +273,6 @@ void mechlab_tick(scene *scene, int paused) {
             guiframe_set_root(local->frame, menu);
             guiframe_layout(local->frame);
         } else {
-            game_player *player1 = game_state_get_player(scene->gs, 0);
             if(player1->chr) {
                 sd_chr_free(player1->chr);
                 omf_free(player1->chr);
