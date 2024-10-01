@@ -31,7 +31,7 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
     for(int i = 0; i < trn->enemy_count; i++) {
         chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
         sd_pilot_create(&chr->enemies[i]->pilot);
-        memcpy(&chr->enemies[i]->pilot, trn->enemies[i], sizeof(sd_pilot));
+        sd_pilot_clone(&chr->enemies[i]->pilot, trn->enemies[i]);
         if(!trn->enemies[i]->secret) {
             ranked++;
             chr->enemies[i]->pilot.rank = ranked;
