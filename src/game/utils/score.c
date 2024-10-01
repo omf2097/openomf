@@ -200,7 +200,7 @@ void chr_score_victory(chr_score *score, int health) {
     int points = truncf((DESTRUCTION * multipliers[score->difficulty]) * (health / 100.0f));
     score_format(points, text + len, 64 - len);
     // XXX hardcode the y coordinate for now
-    chr_score_add(score, text, points * (health / 100), vec2i_create(160, 100), 1.0f);
+    chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
 }
 
 void chr_score_scrap(chr_score *score) {
