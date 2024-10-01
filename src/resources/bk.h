@@ -4,12 +4,14 @@
 #include "resources/bk_info.h"
 #include "utils/hashmap.h"
 #include "utils/vector.h"
+#include "utils/array.h"
 
 typedef struct bk_t {
     int file_id;
     surface background;
     hashmap infos;
     vector palettes;
+    array sprites;
     char sound_translation_table[30];
 } bk;
 

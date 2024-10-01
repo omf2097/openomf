@@ -3,7 +3,7 @@
 #include "utils/allocator.h"
 #include <stdlib.h>
 
-void animation_create(animation *ani, void *src, int id) {
+void animation_create(animation *ani, array *sprites, void *src, int id) {
     sd_animation *sdani = (sd_animation *)src;
 
     // Copy simple stuff
@@ -33,10 +33,17 @@ void animation_create(animation *ani, void *src, int id) {
 
     // Handle sprites
     vector_create_with_size(&ani->sprites, sizeof(sprite), sdani->sprite_count);
-    sprite tmp_sprite;
+    sprite *tmp_sprite;
     for(int i = 0; i < sdani->sprite_count; i++) {
-        sprite_create(&tmp_sprite, (void *)sdani->sprites[i], i);
-        vector_append(&ani->sprites, &tmp_sprite);
+        if(sdani->sprites[i]->missing) {
+            tmp_sprite = array_get(sprites, sdani->sprites[i]->index);
+            vector_append(&ani->sprites, &tmp_sprite);
+        } else {
+            tmp_sprite = omf_calloc(1, sizeof(sprite));
+            sprite_create(tmp_sprite, (void *)sdani->sprites[i], i);
+            array_set(sprites, sdani->sprites[i]->index, tmp_sprite);
+            vector_append(&ani->sprites, &tmp_sprite);
+        }
     }
 }
 
@@ -49,7 +56,6 @@ animation *create_animation_from_single(sprite *sp, vec2i pos) {
     vector_create_with_size(&a->extra_strings, sizeof(str), 0);
     vector_create_with_size(&a->sprites, sizeof(sprite), 1);
     vector_append(&a->sprites, sp);
-    omf_free(sp);
     return a;
 }
 
@@ -74,18 +80,20 @@ int animation_clone(animation *src, animation *dst) {
     }
     vector_create_with_size(&dst->sprites, sizeof(sprite), vector_size(&src->sprites));
     vector_iter_begin(&src->sprites, &it);
-    sprite *tmp_sprite = NULL;
+    sprite **tmp_sprite = NULL;
     while((tmp_sprite = iter_next(&it)) != NULL) {
-        sprite new_sprite;
-        sprite_clone(tmp_sprite, &new_sprite);
-        vector_append(&dst->sprites, &new_sprite);
+        vector_append(&dst->sprites, *tmp_sprite);
     }
 
     return 0;
 }
 
 sprite *animation_get_sprite(animation *ani, int sprite_id) {
-    return (sprite *)vector_get(&ani->sprites, sprite_id);
+    sprite **s = (sprite **)vector_get(&ani->sprites, sprite_id);
+    if (s == NULL) {
+        return NULL;
+    }
+    return *s;
 }
 
 int animation_get_sprite_count(animation *ani) {
@@ -109,11 +117,5 @@ void animation_free(animation *ani) {
     }
     vector_free(&ani->extra_strings);
 
-    // Free animations
-    vector_iter_begin(&ani->sprites, &it);
-    sprite *tmp_sprite = NULL;
-    while((tmp_sprite = iter_next(&it)) != NULL) {
-        sprite_free(tmp_sprite);
-    }
     vector_free(&ani->sprites);
 }

@@ -5,6 +5,7 @@
 #include "utils/str.h"
 #include "utils/vec.h"
 #include "utils/vector.h"
+#include "utils/array.h"
 
 // All HARs have these predefined animations
 enum
@@ -45,7 +46,7 @@ typedef struct animation_t {
     vector sprites;
 } animation;
 
-void animation_create(animation *ani, void *src, int id);
+void animation_create(animation *ani, array *sprites, void *src, int id);
 sprite *animation_get_sprite(animation *ani, int sprite_id);
 void animation_free(animation *ani);
 

@@ -3,6 +3,7 @@
 
 #include "resources/animation.h"
 #include "utils/str.h"
+#include "utils/array.h"
 
 typedef struct af_move_t {
     int id;
@@ -25,7 +26,7 @@ typedef struct af_move_t {
 #endif
 } af_move;
 
-void af_move_create(af_move *move, void *src, int id);
+void af_move_create(af_move *move, array *sprites, void *src, int id);
 void af_move_free(af_move *move);
 
 #endif // AF_MOVE_H
