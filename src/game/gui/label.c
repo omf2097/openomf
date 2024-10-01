@@ -43,6 +43,8 @@ component *label_create(const text_settings *tconf, const char *text) {
     memcpy(&local->tconf, tconf, sizeof(text_settings));
     local->text = strdup(text);
 
+    component_set_size_hints(c, text_width(tconf, text), 8);
+
     // local->tconf.cforeground = color_create(0, 255, 0, 255);
 
     widget_set_obj(c, local);
