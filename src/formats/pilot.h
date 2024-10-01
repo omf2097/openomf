@@ -133,6 +133,8 @@ typedef enum
  */
 int sd_pilot_create(sd_pilot *pilot);
 
+void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src);
+
 /*! \brief Free pilot structure
  *
  * Frees up all memory reserved by the pilot structure.
