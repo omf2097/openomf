@@ -82,7 +82,48 @@ void lobby_render_overlay(scene *scene) {
 void lobby_challenge(component *c, void *userdata) {
 }
 
+void lobby_do_whisper(component *c, void *userdata) {
+    menu *m = sizer_get_obj(c->parent);
+    // TODO get the message and send/log it from the textinput component 'c'
+    m->finished = 1;
+}
+
+component *lobby_whisper_create(scene *s) {
+    // Text config
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_NET1;
+    tconf.halign = TEXT_LEFT;
+    tconf.cforeground = 6;
+    tconf.cselected = 5;
+    tconf.cdisabled = 4;
+    tconf.cinactive = 3;
+
+    text_settings help_text;
+    text_defaults(&help_text);
+    help_text.font = FONT_NET2;
+    help_text.halign = TEXT_LEFT;
+    help_text.cforeground = 56;
+
+    component *menu = menu_create(11);
+
+    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_text_settings(menu, &help_text);
+    menu_set_horizontal(menu, true);
+    menu_set_background(menu, false);
+    menu_attach(menu, label_create(&tconf, "Whisper:"));
+    component *whisper_input =
+        textinput_create(&tconf, "Whisper:", "Whisper a message to %s. Press ener when done, esc to abort.", "");
+    menu_attach(menu, whisper_input);
+    textinput_enable_background(whisper_input, 0);
+    textinput_set_done_cb(whisper_input, lobby_do_whisper, s);
+
+    return menu;
+}
+
 void lobby_whisper(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, lobby_whisper_create(s));
 }
 
 void lobby_yell(component *c, void *userdata) {
@@ -110,7 +151,6 @@ void lobby_entered_name(component *c, void *userdata) {
     list_append(&local->log, buf, strlen(buf) + 1);
     menu *m = sizer_get_obj(c->parent);
     m->finished = 1;
-
 }
 
 component *lobby_exit_create(scene *s) {
@@ -119,7 +159,10 @@ component *lobby_exit_create(scene *s) {
     text_defaults(&tconf);
     tconf.font = FONT_NET1;
     tconf.halign = TEXT_LEFT;
-    tconf.cforeground = COLOR_DARK_GREEN;
+    tconf.cforeground = 6;
+    tconf.cselected = 5;
+    tconf.cdisabled = 4;
+    tconf.cinactive = 3;
 
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
@@ -164,9 +207,9 @@ int lobby_create(scene *scene) {
     text_defaults(&tconf);
     tconf.font = FONT_NET1;
     tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 0;
+    tconf.cforeground = 6;
     tconf.cselected = 5;
-    tconf.cdisabled = 0;
+    tconf.cdisabled = 4;
     tconf.cinactive = 3;
 
     component *menu = menu_create(11);
@@ -201,8 +244,6 @@ int lobby_create(scene *scene) {
     textinput_enable_background(name_input, 0);
     textinput_set_done_cb(name_input, lobby_entered_name, scene);
     menu_attach(name_menu, name_input);
-
-
 
     local->frame = guiframe_create(9, 132, 300, 12);
     guiframe_set_root(local->frame, menu);
