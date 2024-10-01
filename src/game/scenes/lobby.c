@@ -32,64 +32,7 @@ typedef struct lobby_local_t {
 
 static int lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
-    if(!local->named) {
-        // Handle selection
-        if(e->type == SDL_TEXTINPUT) {
-            strncat(local->name, e->text.text, sizeof(local->name) - strlen(local->name));
-            return 0;
-        } else if(e->type == SDL_KEYDOWN) {
-            size_t len = strlen(local->name);
-            const unsigned char *state = SDL_GetKeyboardState(NULL);
-            if(state[SDL_SCANCODE_BACKSPACE] || state[SDL_SCANCODE_DELETE]) {
-                if(len > 0) {
-                    local->name[len - 1] = '\0';
-                }
-            } else if(state[SDL_SCANCODE_LEFT]) {
-                // TODO move cursor to the left
-            } else if(state[SDL_SCANCODE_RIGHT]) {
-                // TODO move cursor to the right
-            } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
-                if(SDL_HasClipboardText()) {
-                    strncat(local->name, SDL_GetClipboardText(), sizeof(local->name) - strlen(local->name));
-                }
-            } else if(state[SDL_SCANCODE_RETURN] && strlen(local->name) > 0) {
-                char buf[128];
-                snprintf(buf, sizeof(buf), "%s has entered the Arena", local->name);
-                list_append(&local->log, buf, strlen(buf) + 1);
-                local->named = true;
-            } else if(state[SDL_SCANCODE_ESCAPE]) {
-                game_state_set_next(scene->gs, SCENE_MENU);
-            }
-            return 0;
-        }
-    } else {
-        return guiframe_event(local->frame, e);
-        /*if(e->type == SDL_TEXTINPUT && (local->mode == LOBBY_WHISPER || local->mode == LOBBY_YELL)) {
-            strncat(local->msg, e->text.text, sizeof(local->msg) - strlen(local->msg));
-            return 0;
-        } else if(e->type == SDL_KEYDOWN) {
-            const unsigned char *state = SDL_GetKeyboardState(NULL);
-            if((state[SDL_SCANCODE_BACKSPACE] || state[SDL_SCANCODE_DELETE]) &&
-               (local->mode == LOBBY_WHISPER || local->mode == LOBBY_YELL)) {
-                size_t len = strlen(local->msg);
-                if(len > 0) {
-                    local->msg[len - 1] = '\0';
-                }
-            } else if(state[SDL_SCANCODE_RIGHT]) {
-                local->mode++;
-                if(local->mode >= LOBBY_ACTION_COUNT) {
-                    local->mode = LOBBY_CHALLENGE;
-                }
-            } else if(state[SDL_SCANCODE_LEFT]) {
-                local->mode--;
-                if(local->mode >= LOBBY_ACTION_COUNT) {
-                    local->mode = LOBBY_EXIT;
-                }
-            }
-        }*/
-    }
-
-    return 1;
+    return guiframe_event(local->frame, e);
 }
 
 void lobby_input_tick(scene *scene) {
@@ -133,15 +76,7 @@ void lobby_render_overlay(scene *scene) {
     snprintf(buf, sizeof(buf), "1 of 0");
     font_render(&font_net2, buf, 284, 8, TEXT_COLOR);
 
-    if(!local->named) {
-        snprintf(buf, sizeof(buf), "Enter your name:");
-        font_render_shadowed_colored(&font_net1, buf, 9, 140, BLUE_TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM,
-                                     TEXT_BLACK);
-        snprintf(buf, sizeof(buf), "%s%c", local->name, 127);
-        font_render_shadowed(&font_net1, buf, 130, 140, TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-    } else {
-        guiframe_render(local->frame);
-    }
+    guiframe_render(local->frame);
 }
 
 void lobby_challenge(component *c, void *userdata) {
@@ -166,6 +101,18 @@ void lobby_refuse_exit(component *c, void *userdata) {
     m->finished = 1;
 }
 
+void lobby_entered_name(component *c, void *userdata) {
+    scene *scene = userdata;
+    char buf[128];
+    lobby_local *local = scene_get_userdata(scene);
+    strncpy(local->name, textinput_value(c), sizeof(local->name));
+    snprintf(buf, sizeof(buf), "%s has entered the Arena", local->name);
+    list_append(&local->log, buf, strlen(buf) + 1);
+    menu *m = sizer_get_obj(c->parent);
+    m->finished = 1;
+
+}
+
 component *lobby_exit_create(scene *s) {
     // Text config
     text_settings tconf;
@@ -177,7 +124,7 @@ component *lobby_exit_create(scene *s) {
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_attach(menu, textbutton_create(&tconf, "Exit the Challenge Arena?", NULL, COM_DISABLED, NULL, NULL));
+    menu_attach(menu, label_create(&tconf, "Exit the Challenge Arena?"));
     menu_attach(menu, textbutton_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
     menu_attach(menu, textbutton_create(&tconf, "No", NULL, COM_ENABLED, lobby_refuse_exit, NULL));
 
@@ -210,7 +157,6 @@ int lobby_create(scene *scene) {
 
     local->name[0] = 0;
     local->msg[0] = 0;
-    local->named = false;
     local->mode = LOBBY_CHALLENGE;
     list_create(&local->log);
 
@@ -246,9 +192,23 @@ int lobby_create(scene *scene) {
                 textbutton_create(&tconf, "Refresh", "Refresh the player list.", COM_ENABLED, lobby_refresh, scene));
     menu_attach(menu, textbutton_create(&tconf, "Exit", "Exit and disconnect.", COM_ENABLED, lobby_exit, scene));
 
+    component *name_menu = menu_create(11);
+    menu_set_horizontal(name_menu, true);
+    menu_set_background(name_menu, false);
+    menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
+    // TODO pull the last used name from settings
+    component *name_input = textinput_create(&tconf, "", "", "");
+    textinput_enable_background(name_input, 0);
+    textinput_set_done_cb(name_input, lobby_entered_name, scene);
+    menu_attach(name_menu, name_input);
+
+
+
     local->frame = guiframe_create(9, 132, 300, 12);
     guiframe_set_root(local->frame, menu);
     guiframe_layout(local->frame);
+
+    menu_set_submenu(menu, name_menu);
 
     scene_set_input_poll_cb(scene, lobby_input_tick);
 
