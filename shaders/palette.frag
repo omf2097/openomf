@@ -13,7 +13,7 @@ void main() {
     vec4 texel = texture(atlas, tex_coord);
     if (texel.g == 0) discard;  // Don't render if it's transparent pixel
     if (blend_mode == 0) {
-        color = vec4(texel.r, texel.r, 0.0, 1.0);
+        color = vec4(0.0, texel.r, 0.0, 1.0);
     } else {
         int pal_index = int(texel.r * 255.0);
         if (pal_index <= palette_limit) {
