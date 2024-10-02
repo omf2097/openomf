@@ -59,6 +59,19 @@ static void textinput_render(component *c) {
     }
 }
 
+static int textinput_action(component *c, int action) {
+    textinput *tb = widget_get_obj(c);
+
+    // Handle selection
+    if(action == ACT_KICK || action == ACT_PUNCH) {
+        if(tb->done_cb) {
+            tb->done_cb(c, tb->userdata);
+        }
+        return 0;
+    }
+    return 1;
+}
+
 static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     if(e->type == SDL_TEXTINPUT) {
@@ -81,8 +94,6 @@ static int textinput_event(component *c, SDL_Event *e) {
             if(SDL_HasClipboardText()) {
                 strncat(tb->buf, SDL_GetClipboardText(), tb->max_chars - strlen(tb->buf));
             }
-        } else if(state[SDL_SCANCODE_RETURN] && strlen(tb->buf) > 0 && tb->done_cb) {
-            tb->done_cb(c, tb->userdata);
         }
         return 0;
     }
@@ -107,6 +118,11 @@ static void textinput_tick(component *c) {
 char *textinput_value(const component *c) {
     textinput *tb = widget_get_obj(c);
     return tb->buf;
+}
+
+void textinput_clear(component *c) {
+    textinput *tb = widget_get_obj(c);
+    tb->buf[0] = 0;
 }
 
 static void textinput_free(component *c) {
@@ -168,6 +184,7 @@ component *textinput_create(const text_settings *tconf, const char *text, const 
     widget_set_obj(c, tb);
     widget_set_render_cb(c, textinput_render);
     widget_set_event_cb(c, textinput_event);
+    widget_set_action_cb(c, textinput_action);
     widget_set_tick_cb(c, textinput_tick);
     widget_set_free_cb(c, textinput_free);
     return c;
