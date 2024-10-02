@@ -20,6 +20,7 @@ typedef struct {
     GLint blend_mode;
     GLint palette_offset;
     GLint palette_limit;
+    GLint alternate_index;
 } __attribute__((aligned(4))) object_data;
 
 typedef struct object_array {
@@ -49,11 +50,12 @@ typedef struct object_array {
     index++
 
 static void setup_vao_layout(void) {
-    int stride = 4 * sizeof(GLfloat) + 3 * sizeof(GLint);
+    int stride = 4 * sizeof(GLfloat) + 4 * sizeof(GLint);
     int index = 0;
     unsigned char *step = 0;
     ATTRIB(index, stride, step, 2, GL_FLOAT, GL_FALSE);
     ATTRIB(index, stride, step, 2, GL_FLOAT, GL_FALSE);
+    ATTRIB_I(index, stride, step, 1, GL_INT);
     ATTRIB_I(index, stride, step, 1, GL_INT);
     ATTRIB_I(index, stride, step, 1, GL_INT);
     ATTRIB_I(index, stride, step, 1, GL_INT);
@@ -102,19 +104,22 @@ void object_array_finish(object_array *array) {
 void object_array_begin(const object_array *array, object_array_batch *state) {
     state->start = 0;
     state->end = 0;
-    state->mode = (array->item_count > 0) ? array->modes[0] : 0;
+    state->mode = (array->item_count > 0) ? array->modes[0] : BLEND_SET;
 }
 
-bool object_array_get_batch(const object_array *array, object_array_batch *state) {
+bool object_array_get_batch(const object_array *array, object_array_batch *state, video_blend_mode *mode) {
     if(state->end >= array->item_count) {
         return false;
     }
     state->start = state->end;
+    video_blend_mode next;
     for(; state->end < array->item_count; state->end++) {
-        if(array->modes[state->end] != state->mode)
+        next = array->modes[state->end];
+        if(next != state->mode)
             break;
     }
-    state->mode = !state->mode; // We only have two modes, so flip-flop.
+    *mode = state->mode;
+    state->mode = next;
     return true;
 }
 
@@ -123,17 +128,18 @@ void object_array_draw(const object_array *array, object_array_batch *state) {
     glMultiDrawArrays(GL_TRIANGLE_FAN, array->fans_starts + state->start, array->fans_sizes + state->start, count);
 }
 
-#define COORDS(ptr, cx, cy, tx, ty, mode, pal_offset, pal_limit)                                                       \
+#define COORDS(ptr, cx, cy, tx, ty, mode, pal_offset, pal_limit, alt_index)                                            \
     ptr.x = cx;                                                                                                        \
     ptr.y = cy;                                                                                                        \
     ptr.tex_x = tx;                                                                                                    \
     ptr.tex_y = ty;                                                                                                    \
     ptr.blend_mode = mode;                                                                                             \
     ptr.palette_offset = pal_offset;                                                                                   \
-    ptr.palette_limit = pal_limit;
+    ptr.palette_limit = pal_limit;                                                                                     \
+    ptr.alternate_index = alt_index;
 
 static void add_item(object_array *array, float dx, float dy, int x, int y, int w, int h, int tx, int ty, int tw,
-                     int th, int flags, VIDEO_BLEND_MODE blend_mode, int pal_offset, int pal_limit) {
+                     int th, int flags, video_blend_mode blend_mode, int pal_offset, int pal_limit, int alt_index) {
     float tx0, tx1;
     if(flags & FLIP_HORIZONTAL) {
         tx0 = (tx + tw) * dx;
@@ -154,10 +160,10 @@ static void add_item(object_array *array, float dx, float dy, int x, int y, int 
 
     object_data *data = (object_data *)array->mapping;
     int row = array->item_count * 4;
-    COORDS(data[row + 0], x + w, y + h, tx1, ty1, blend_mode, pal_offset, pal_limit);
-    COORDS(data[row + 1], x, y + h, tx0, ty1, blend_mode, pal_offset, pal_limit);
-    COORDS(data[row + 2], x, y, tx0, ty0, blend_mode, pal_offset, pal_limit);
-    COORDS(data[row + 3], x + w, y, tx1, ty0, blend_mode, pal_offset, pal_limit);
+    COORDS(data[row + 0], x + w, y + h, tx1, ty1, blend_mode, pal_offset, pal_limit, alt_index);
+    COORDS(data[row + 1], x, y + h, tx0, ty1, blend_mode, pal_offset, pal_limit, alt_index);
+    COORDS(data[row + 2], x, y, tx0, ty0, blend_mode, pal_offset, pal_limit, alt_index);
+    COORDS(data[row + 3], x + w, y, tx1, ty0, blend_mode, pal_offset, pal_limit, alt_index);
 
     array->fans_starts[array->item_count] = array->item_count * 4;
     array->fans_sizes[array->item_count] = 4;
@@ -166,7 +172,7 @@ static void add_item(object_array *array, float dx, float dy, int x, int y, int 
 }
 
 void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th, int flags,
-                      VIDEO_BLEND_MODE blend_mode, int pal_offset, int pal_limit) {
+                      video_blend_mode blend_mode, int pal_offset, int pal_limit, int alt_index) {
     if(array->item_count >= MAX_FANS) {
         PERROR("Too many objects!");
         return;
@@ -176,5 +182,5 @@ void object_array_add(object_array *array, int x, int y, int w, int h, int tx, i
     }
     float dx = 1.0f / array->src_w;
     float dy = 1.0f / array->src_h;
-    add_item(array, dx, dy, x, y, w, h, tx, ty, tw, th, flags, blend_mode, pal_offset, pal_limit);
+    add_item(array, dx, dy, x, y, w, h, tx, ty, tw, th, flags, blend_mode, pal_offset, pal_limit, alt_index);
 }

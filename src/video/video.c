@@ -27,7 +27,7 @@ typedef struct video_state {
     GLuint palette_prog_id;
     GLuint rgba_prog_id;
 
-    int current_blend_mode;
+    video_blend_mode current_blend_mode;
 
     int viewport_w;
     int viewport_h;
@@ -63,7 +63,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.fade = 1.0f;
     g_video_state.target_move_x = 0;
     g_video_state.target_move_y = 0;
-    g_video_state.current_blend_mode = 0;
+    g_video_state.current_blend_mode = BLEND_SET;
 
     // Clear palettes
     g_video_state.base_palette = omf_calloc(1, sizeof(palette));
@@ -91,15 +91,18 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     // Fetch viewport size which may be different from window size.
     SDL_GL_GetDrawableSize(g_video_state.window, &g_video_state.viewport_w, &g_video_state.viewport_h);
 
-    // Reset background color to black.
+    // Enable default blending mode.
     glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ZERO);
+
+    // Reset background color to black.
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
     // Create the rest of the graphics objects
     g_video_state.atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
     g_video_state.objects = object_array_create(2048.0f, 2048.0f);
     g_video_state.shared = shared_create();
-    g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RG8, GL_RG);
+    g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RGB8, GL_RGB);
 
     // Create orthographic projection matrix for 2d stuff.
     GLfloat projection_matrix[16];
@@ -157,14 +160,18 @@ void video_render_prepare(void) {
     object_array_prepare(g_video_state.objects);
 }
 
-static void video_set_blend_mode(int request_mode) {
+static void video_set_blend_mode(video_blend_mode request_mode) {
     if(g_video_state.current_blend_mode == request_mode)
         return;
 
-    if(request_mode == BLEND_ALPHA) { // ALPHA
-        glBlendFunc(GL_ONE, GL_ZERO); // 1 * src + 0 * dst
-    } else {                          // ADDITIVE
-        glBlendFunc(GL_ONE, GL_ONE);  // 1 * src + 1 * dst
+    switch(request_mode) {
+        case BLEND_SET:
+            glBlendFunc(GL_ONE, GL_ZERO); // 1 * src + 0 * dst
+            break;
+        case BLEND_ADD:
+        case BLEND_SUB:
+            glBlendFunc(GL_ONE, GL_ONE);  // 1 * src + 1 * dst
+            break;
     }
 
     g_video_state.current_blend_mode = request_mode;
@@ -172,6 +179,7 @@ static void video_set_blend_mode(int request_mode) {
 
 // Called after frame has been rendered
 void video_render_finish(void) {
+    video_blend_mode mode;
     shared_set_palette(g_video_state.shared, g_video_state.screen_palette->data);
     shared_flush_dirty(g_video_state.shared);
     object_array_finish(g_video_state.objects);
@@ -182,8 +190,8 @@ void video_render_finish(void) {
     object_array_begin(g_video_state.objects, &batch);
     activate_program(g_video_state.palette_prog_id);
     render_target_activate(g_video_state.target);
-    while(object_array_get_batch(g_video_state.objects, &batch)) {
-        video_set_blend_mode(!batch.mode);
+    while(object_array_get_batch(g_video_state.objects, &batch, &mode)) {
+        video_set_blend_mode(mode);
         object_array_draw(g_video_state.objects, &batch);
     }
 
@@ -287,17 +295,36 @@ screen_palette *video_get_pal_ref(void) {
 void video_render_background(surface *sur) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0, BLEND_ALPHA, 0, -1);
+        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0, BLEND_SET, 0, -1, 0);
     }
 }
 
-static void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, VIDEO_BLEND_MODE blend_mode,
-                      int pal_offset, int pal_limit, unsigned int flip_mode) {
+static void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, video_blend_mode blend_mode,
+                      int pal_offset, int pal_limit, int alt_index, unsigned int flip_mode) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
         object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode, blend_mode,
-                         pal_offset, pal_limit);
+                         pal_offset, pal_limit, alt_index);
     }
+}
+
+void video_draw_full(
+    const surface *src_surface,
+    int x,
+    int y,
+    int w,
+    int h, video_blend_mode blend_mode,
+    int offset,
+    int limit,
+    int alt_index,
+    unsigned int flip_mode
+) {
+    SDL_Rect dst;
+    dst.w = w;
+    dst.h = h;
+    dst.x = x;
+    dst.y = y;
+    draw_args(&g_video_state, src_surface, &dst, blend_mode, offset, limit, alt_index, flip_mode);
 }
 
 void video_draw_offset(const surface *src_surface, int x, int y, int offset, int limit) {
@@ -306,7 +333,7 @@ void video_draw_offset(const surface *src_surface, int x, int y, int offset, int
     dst.h = src_surface->h;
     dst.x = x;
     dst.y = y;
-    draw_args(&g_video_state, src_surface, &dst, BLEND_ALPHA, offset, limit, 0);
+    draw_args(&g_video_state, src_surface, &dst, BLEND_SET, offset, limit, 0, 0);
 }
 
 void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
@@ -315,23 +342,9 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
     dst.h = h;
     dst.x = x;
     dst.y = y;
-    draw_args(&g_video_state, src_surface, &dst, BLEND_ALPHA, 0, 255, 0);
+    draw_args(&g_video_state, src_surface, &dst, BLEND_SET, 0, 255, 0, 0);
 }
 
 void video_draw(const surface *src_surface, int x, int y) {
     video_draw_offset(src_surface, x, y, 0, 255);
-}
-
-void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, VIDEO_BLEND_MODE blend_mode,
-                                                 int pal_offset, int pal_limit, unsigned int flip_mode, float x_percent,
-                                                 float y_percent, uint8_t opacity, color tint) {
-
-    // Position
-    SDL_Rect dst;
-    dst.w = sur->w * x_percent;
-    dst.h = sur->h * y_percent;
-    dst.x = sx;
-    dst.y = sy + (sur->h - dst.h) / 2;
-
-    draw_args(&g_video_state, sur, &dst, blend_mode, pal_offset, pal_limit, flip_mode);
 }

@@ -240,6 +240,8 @@ void object_render(object *obj) {
     // Position
     int x;
     int y;
+    int w = obj->cur_surface->w * obj->x_percent;
+    int h = obj->cur_surface->h * obj->y_percent;
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
@@ -259,27 +261,38 @@ void object_render(object *obj) {
         x = obj->pos.x + cur_sprite->pos.x + rstate->o_correction.x;
     }
 
+    // Centrify if scaled
+    x = x + (obj->cur_surface->w - w) / 2;
+    y = y + (obj->cur_surface->h - h) / 2;
+
     // Flip to face the right direction
-    int flipmode = rstate->flipmode;
+    int flip_mode = rstate->flipmode;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        flipmode ^= FLIP_HORIZONTAL;
+        flip_mode ^= FLIP_HORIZONTAL;
     }
 
     // Blend start / blend finish
+    /*
     uint8_t opacity = rstate->blend_finish;
     if(rstate->duration > 0) {
         float moment = (float)rstate->timer / (float)rstate->duration;
         float d = ((float)rstate->blend_finish - (float)rstate->blend_start) * moment;
         opacity = rstate->blend_start + d;
     }
+     */
+
+    video_blend_mode mode = rstate->blendmode;
+    int alt_index = 0;
 
     // Default Tint color
-    color tint = color_create(0xFF, 0xFF, 0xFF, 0xFF);
+    //color tint = color_create(0xFF, 0xFF, 0xFF, 0xFF);
 
     // These two force set the sprite color, so handle them first
     if(obj->video_effects & EFFECT_SHADOW) {
-        tint = color_create(0x20, 0x20, 0x20, 0xFF);
+        alt_index = 16;
+        mode = BLEND_SUB;
     }
+    /*
     if(obj->video_effects & EFFECT_DARK_TINT) {
         tint = color_create(0x60, 0x60, 0x60, 0xFF);
     }
@@ -297,11 +310,10 @@ void object_render(object *obj) {
         tint.g *= shade;
         tint.b *= shade;
     }
+    */
 
-    // Render
-    video_render_sprite_flip_scale_opacity_tint(obj->cur_surface, x, y, rstate->blendmode, obj->pal_offset,
-                                                obj->pal_limit, flipmode, obj->x_percent, obj->y_percent, opacity,
-                                                tint);
+
+    video_draw_full(obj->cur_surface, x, y, w, h, mode, 0, 0, alt_index, flip_mode);
 }
 
 void object_render_shadow(object *obj) {
@@ -317,24 +329,23 @@ void object_render_shadow(object *obj) {
     // Scale of the sprite on Y axis should be less than the
     // height of the sprite because of light position
     float scale_y = 0.25f;
+    int w = cur_sprite->data->w;
+    int h = cur_sprite->data->h;
+    int scaled_h = h * scale_y;
 
-    // Determine X
-    int flipmode = obj->sprite_state.flipmode;
+    // Determine X, Y
+    int flip_mode = obj->sprite_state.flipmode;
     int x = obj->pos.x + cur_sprite->pos.x + obj->sprite_state.o_correction.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
         x = (obj->pos.x + obj->sprite_state.o_correction.x) - cur_sprite->pos.x - object_get_size(obj).x;
-        flipmode ^= FLIP_HORIZONTAL;
+        flip_mode ^= FLIP_HORIZONTAL;
     }
-
-    // Determine Y
-    float temp = object_h(obj) * scale_y;
-    int y = 190 - temp - (object_h(obj) - temp) / 2;
+    int y = 190 - scaled_h;
 
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_render_sprite_flip_scale_opacity_tint(cur_sprite->data, x + i, y + i, BLEND_ALPHA, 192, 192, flipmode,
-                                                    1.0, scale_y, 65, color_create(0, 0, 0, 255));
+        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, BLEND_SUB, 0, 0, 4, flip_mode);
     }
 }
 
@@ -521,7 +532,7 @@ void object_select_sprite(object *obj, int id) {
         } else {
             if(animation_get_sprite(obj->cur_animation, id)) {
                 obj->cur_sprite_id = id;
-                obj->sprite_state.blendmode = BLEND_ALPHA;
+                obj->sprite_state.blendmode = BLEND_SET;
                 obj->sprite_state.flipmode = FLIP_NONE;
             } else {
                 DEBUG("unable to find sprite %d", id);

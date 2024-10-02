@@ -1,12 +1,42 @@
 #version 330 core
 
+// Palette color band min values
+// These are only somewhat correct ...
+const int lows[16] = int[16](
+    0x01, 0x01, 0x01,
+    0x30, 0x30, 0x30,
+    0x60, 0x60,
+    0x80, 0x80,
+    0xA0,
+    0xB0,
+    0xC0,
+    0xD0,
+    0xE0,
+    0xF0
+);
+
+// Palette color band max values
+// These are only somewhat correct ...
+const int highs[16] = int[16](
+    0x2F, 0x2F, 0x2F,
+    0x5F, 0x5F, 0x5F,
+    0x7F, 0x7F,
+    0x9F, 0x9F,
+    0xAF,
+    0xBF,
+    0xCF,
+    0xDF,
+    0xEF,
+    0xFF
+);
+
 // In
 in vec2 tex_coord;
 layout (std140) uniform palette {
     vec4 colors[256];
 };
-uniform sampler2D framebuffer;
 
+uniform sampler2D framebuffer;
 // Out
 layout (location = 0) out vec4 color;
 
@@ -17,20 +47,32 @@ void main() {
     vec4 texel = texture(framebuffer, tex_coord);
     int color_index = int(texel.r * 255.0);
     int add_index = int(texel.g * 255.0);
-    int real_index = color_index + add_index;
+    int sub_index = int(texel.b * 255.0);
+
     if (color_index <= 0) {
+        // Color index 0 is always magic black.
         color = colors[0].rgba;
     }
     else if (add_index > 0) {
-        float row = floor(color_index / 16.0);
-        int high = int(row * 16.0) + 16;
-        if (real_index >= high) {
+        // If additive value is set, check if we are withing a "row" (a color slide). If we go outside,
+        // then just use the 0xEF or "white" color.
+        int real_index = color_index + add_index;
+        int row = int(color_index / 16.0);
+        if (real_index > highs[row]) {
             color = colors[0xEF].rgba;
         } else {
             color = colors[real_index].rgba;
         }
     }
+    else if (sub_index > 0) {
+        // If subtractive value is set, check if we are withing a "row" (a color slide). If we go outside,
+        // then just use the 0xEF or "white" color.
+        int row = int(color_index / 16.0);
+        int real_index = clamp(color_index - sub_index, lows[row], 255);
+        color = colors[real_index].rgba;
+    }
     else {
+        // Normal draw; just pick the color and output it.
         color = colors[color_index].rgba;
     }
 }
