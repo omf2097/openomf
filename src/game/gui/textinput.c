@@ -131,6 +131,19 @@ static int textinput_action(component *c, int action) {
     return 1;
 }
 
+static int textinput_action(component *c, int action) {
+    textinput *tb = widget_get_obj(c);
+
+    // Handle selection
+    if(action == ACT_KICK || action == ACT_PUNCH) {
+        if(tb->done_cb) {
+            tb->done_cb(c, tb->userdata);
+        }
+        return 0;
+    }
+    return 1;
+}
+
 static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     if(e->type == SDL_TEXTINPUT) {
@@ -158,8 +171,6 @@ static int textinput_event(component *c, SDL_Event *e) {
                 strncat(tb->buf + tb->pos, clip, tb->max_chars - tb->pos);
                 tb->pos = min2(tb->max_chars, tb->pos + strlen(clip));
             }
-        } else if(state[SDL_SCANCODE_RETURN] && strlen(tb->buf) > 0 && tb->done_cb) {
-            tb->done_cb(c, tb->userdata);
         }
         return 0;
     }
@@ -188,6 +199,11 @@ char *textinput_value(const component *c) {
         tb->buf[i] = '\0';
     }
     return tb->buf;
+}
+
+void textinput_clear(component *c) {
+    textinput *tb = widget_get_obj(c);
+    tb->buf[0] = 0;
 }
 
 static void textinput_free(component *c) {
