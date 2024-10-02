@@ -17,17 +17,17 @@ void main() {
     vec4 texel = texture(framebuffer, tex_coord);
     int color_index = int(texel.r * 255.0);
     int add_index = int(texel.g * 255.0);
-    int real_index = color_index - add_index;
-    if (real_index <= 0) {
+    int real_index = color_index + add_index;
+    if (color_index <= 0) {
         color = colors[0].rgba;
     }
     else if (add_index > 0) {
-        float row = floor(real_index / 16.0);
+        float row = floor(color_index / 16.0);
         int high = int(row * 16.0) + 16;
-        if (color_index >= high) {
+        if (real_index >= high) {
             color = colors[0xEF].rgba;
         } else {
-            color = colors[color_index].rgba;
+            color = colors[real_index].rgba;
         }
     }
     else {
