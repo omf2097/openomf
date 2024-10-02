@@ -1,6 +1,7 @@
 #include "game/gui/frame.h"
 #include "game/protos/scene.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include "video/video.h"
 
 #include "game/gui/gui.h"
@@ -44,11 +45,11 @@ void lobby_input_tick(scene *scene) {
     i = p1;
     if(i) {
         do {
-            if(i->type == EVENT_TYPE_ACTION) {
+            /*if(i->type == EVENT_TYPE_ACTION) {
                 if(i->event_data.action == ACT_ESC) {
                     game_state_set_next(scene->gs, SCENE_MENU);
                 }
-            }
+            }*/
 
             guiframe_action(local->frame, p1->event_data.action);
         } while((i = i->next));
@@ -82,8 +83,49 @@ void lobby_render_overlay(scene *scene) {
 void lobby_challenge(component *c, void *userdata) {
 }
 
+void lobby_do_yell(component *c, void *userdata) {
+    // menu *m = sizer_get_obj(c->parent);
+    DEBUG("yelled %s", textinput_value(c));
+    textinput_clear(c);
+    // TODO get the message and send/log it from the textinput component 'c'
+}
+
+component *lobby_yell_create(scene *s) {
+    // Text config
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_NET1;
+    tconf.halign = TEXT_LEFT;
+    tconf.cforeground = 6;
+    tconf.cselected = 5;
+    tconf.cdisabled = 4;
+    tconf.cinactive = 3;
+
+    text_settings help_text;
+    text_defaults(&help_text);
+    help_text.font = FONT_NET2;
+    help_text.halign = TEXT_LEFT;
+    help_text.cforeground = 56;
+
+    component *menu = menu_create(11);
+
+    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_text_settings(menu, &help_text);
+    menu_set_horizontal(menu, true);
+    menu_set_background(menu, false);
+    menu_attach(menu, label_create(&tconf, "Yell:"));
+    component *yell_input =
+        textinput_create(&tconf, "Yell:", "Yell a message to everybody in the challenge arena.", "");
+    menu_attach(menu, yell_input);
+    textinput_enable_background(yell_input, 0);
+    textinput_set_done_cb(yell_input, lobby_do_yell, s);
+
+    return menu;
+}
+
 void lobby_do_whisper(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);
+    DEBUG("whispered %s", textinput_value(c));
     // TODO get the message and send/log it from the textinput component 'c'
     m->finished = 1;
 }
@@ -113,7 +155,7 @@ component *lobby_whisper_create(scene *s) {
     menu_set_background(menu, false);
     menu_attach(menu, label_create(&tconf, "Whisper:"));
     component *whisper_input =
-        textinput_create(&tconf, "Whisper:", "Whisper a message to %s. Press ener when done, esc to abort.", "");
+        textinput_create(&tconf, "Whisper:", "Whisper a message to %s. Press enter when done, esc to abort.", "");
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
     textinput_set_done_cb(whisper_input, lobby_do_whisper, s);
@@ -127,6 +169,8 @@ void lobby_whisper(component *c, void *userdata) {
 }
 
 void lobby_yell(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, lobby_yell_create(s));
 }
 
 void lobby_refresh(component *c, void *userdata) {
