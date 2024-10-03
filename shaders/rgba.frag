@@ -46,8 +46,8 @@ layout (location = 0) out vec4 color;
 void main() {
     vec4 texel = texture(framebuffer, tex_coord);
     int color_index = int(texel.r * 255.0);
-    int add_index = int((texel.g * 255.0) * 255.0 / 63.0);  // Palette 6bit to 8bit conversion + float2int conversion.
-    int sub_index = int((texel.b * 255.0) * 255.0 / 63.0);  // Palette 6bit to 8bit conversion + float2int conversion.
+    int add_index = int(texel.g * 255.0);
+    int sub_index = int(texel.b * 255.0);
 
     if (color_index <= 0) {
         // Color index 0 is always magic black.
