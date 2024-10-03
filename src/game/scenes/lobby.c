@@ -2,6 +2,7 @@
 #include "game/protos/scene.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "video/video.h"
 
 #include "game/gui/gui.h"
@@ -35,6 +36,7 @@ enum
     PACKET_WHISPER,
     PACKET_CHALLENGE,
     PACKET_DISCONNECT,
+    PACKET_PRESENCE,
     PACKET_COUNT
 };
 
@@ -46,6 +48,7 @@ typedef struct lobby_local_t {
     uint8_t mode;
     ENetHost *client;
     ENetPeer *peer;
+    uint8_t active_user;
 
     guiframe *frame;
 } lobby_local;
@@ -69,13 +72,19 @@ void lobby_input_tick(scene *scene) {
     i = p1;
     if(i) {
         do {
-            /*if(i->type == EVENT_TYPE_ACTION) {
-                if(i->event_data.action == ACT_ESC) {
-                    game_state_set_next(scene->gs, SCENE_MENU);
+            if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_DOWN) {
+                local->active_user++;
+                if(local->active_user >= list_size(&local->users)) {
+                    local->active_user = 0;
                 }
-            }*/
-
-            guiframe_action(local->frame, p1->event_data.action);
+            } else if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_UP) {
+                local->active_user--;
+                if(local->active_user >= list_size(&local->users)) {
+                    local->active_user = list_size(&local->users) - 1;
+                }
+            } else {
+                guiframe_action(local->frame, p1->event_data.action);
+            }
         } while((i = i->next));
     }
     controller_free_chain(p1);
@@ -106,8 +115,13 @@ void lobby_render_overlay(scene *scene) {
         char *username;
         list_iter_begin(&local->users, &it);
         int i = 0;
+        local->active_user = min2(local->active_user, list_size(&local->users) - 1);
         while((username = list_iter_next(&it)) && i < 8) {
-            font_render(&font_net1, username, 16, 18 + (10 * i), 8);
+            if(i == local->active_user) {
+                font_render(&font_net1, username, 16, 18 + (10 * i), 7);
+            } else {
+                font_render(&font_net1, username, 16, 18 + (10 * i), 8);
+            }
             font_render(&font_net2, "available", 117, 18 + (10 * i), 40);
             font_render(&font_net2, "0/0", 200, 18 + (10 * i), 56);
             font_render(&font_net2, "OpenOMF 0.9.6-git", 240, 18 + (10 * i), 56);
@@ -368,6 +382,9 @@ void lobby_tick(scene *scene, int paused) {
                 DEBUG("A packet of length %u containing %s was received from %s on channel %u.",
                       event.packet->dataLength, event.packet->data, (char *)event.peer->data, event.channelID);
                 switch(event.packet->data[0]) {
+                    case PACKET_PRESENCE:
+                        list_append(&local->users, event.packet->data + 1, event.packet->dataLength - 1);
+                        break;
                     case PACKET_JOIN:
                         list_append(&local->users, event.packet->data + 1, event.packet->dataLength - 1);
                         log_event log;
@@ -381,9 +398,24 @@ void lobby_tick(scene *scene, int paused) {
                         strncpy(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
                         list_append(&local->log, &log, sizeof(log));
                     } break;
-                    case PACKET_WHISPER:
-                        list_append(&local->log, event.packet->data + 1, event.packet->dataLength - 1);
-                        break;
+                    case PACKET_WHISPER: {
+                        log_event log;
+                        log.color = WHISPER_COLOR;
+                        strncpy(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
+                        list_append(&local->log, &log, sizeof(log));
+                    } break;
+                    case PACKET_DISCONNECT: {
+                        char *name = (char *)(event.packet->data + 1);
+                        iterator it;
+                        char *username;
+                        list_iter_begin(&local->users, &it);
+                        while((username = list_iter_next(&it))) {
+                            if(strncmp(name, username, 16) == 0) {
+                                list_delete(&local->users, &it);
+                                break;
+                            }
+                        }
+                    } break;
                     default:
                         DEBUG("unknown packet of type %d received", event.packet->data[0]);
                         break;
