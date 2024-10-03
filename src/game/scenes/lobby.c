@@ -15,6 +15,7 @@
 #define YELL_COLOR 3
 #define JOIN_COLOR 7
 #define WHISPER_COLOR 6
+#define LEAVE_COLOR 5
 
 enum
 {
@@ -409,11 +410,19 @@ void lobby_tick(scene *scene, int paused) {
                         iterator it;
                         char *username;
                         list_iter_begin(&local->users, &it);
+                        bool found = false;
                         while((username = list_iter_next(&it))) {
                             if(strncmp(name, username, 16) == 0) {
                                 list_delete(&local->users, &it);
+                                found = true;
                                 break;
                             }
+                        }
+                        if(found) {
+                            log_event log;
+                            log.color = LEAVE_COLOR;
+                            snprintf(log.msg, sizeof(log.msg), "%s has left the Arena", name);
+                            list_append(&local->log, &log, sizeof(log));
                         }
                     } break;
                     default:
