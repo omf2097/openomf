@@ -11,6 +11,10 @@
 #define BLUE_TEXT_COLOR 0xFE
 #define TEXT_BLACK 1
 
+#define YELL_COLOR 3
+#define JOIN_COLOR 7
+#define WHISPER_COLOR 6
+
 enum
 {
     LOBBY_STARTING,
@@ -24,7 +28,8 @@ enum
     LOBBY_ACTION_COUNT
 };
 
-enum {
+enum
+{
     PACKET_JOIN = 1,
     PACKET_YELL,
     PACKET_WHISPER,
@@ -34,16 +39,21 @@ enum {
 };
 
 typedef struct lobby_local_t {
-    char name[40];
+    char name[16];
     list log;
     list users;
     bool named;
     uint8_t mode;
-    ENetHost * client;
+    ENetHost *client;
     ENetPeer *peer;
 
     guiframe *frame;
 } lobby_local;
+
+typedef struct log_event_t {
+    uint8_t color;
+    char msg[51];
+} log_event;
 
 static int lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
@@ -76,57 +86,56 @@ void lobby_render_overlay(scene *scene) {
 
     char buf[100];
 
-
     if(local->mode > LOBBY_YELL) {
         snprintf(buf, sizeof(buf), "Player");
-        font_render(&font_net1, buf, 16, 7, TEXT_COLOR);
+        font_render(&font_net1, buf, 16, 7, 3);
 
         snprintf(buf, sizeof(buf), "Action");
-        font_render(&font_net1, buf, 117, 7, TEXT_COLOR);
+        font_render(&font_net1, buf, 117, 7, 3);
 
         snprintf(buf, sizeof(buf), "Wn/Loss");
-        font_render(&font_net2, buf, 200, 8, TEXT_COLOR);
+        font_render(&font_net2, buf, 200, 8, 56);
 
         snprintf(buf, sizeof(buf), "Version");
-        font_render(&font_net2, buf, 240, 8, TEXT_COLOR);
+        font_render(&font_net2, buf, 240, 8, 56);
 
         snprintf(buf, sizeof(buf), "1 of 0");
-        font_render(&font_net2, buf, 284, 8, TEXT_COLOR);
+        font_render(&font_net2, buf, 284, 8, 56);
 
         iterator it;
-        char* username;
+        char *username;
         list_iter_begin(&local->users, &it);
         int i = 0;
         while((username = list_iter_next(&it)) && i < 8) {
-            font_render(&font_net1, username, 16, 18+(10*i), TEXT_COLOR);
-            font_render(&font_net2, "available", 117, 18+(10*i), TEXT_COLOR);
-            font_render(&font_net2, "0/0", 200, 18+(10*i), TEXT_COLOR);
-            font_render(&font_net2, "OpenOMF 0.9.6-git", 240, 18+(10*i), TEXT_COLOR);
+            font_render(&font_net1, username, 16, 18 + (10 * i), 8);
+            font_render(&font_net2, "available", 117, 18 + (10 * i), 40);
+            font_render(&font_net2, "0/0", 200, 18 + (10 * i), 56);
+            font_render(&font_net2, "OpenOMF 0.9.6-git", 240, 18 + (10 * i), 56);
             i++;
         }
 
         i = 0;
         list_iter_end(&local->log, &it);
-        char* logmsg;
+        log_event *logmsg;
         int length = list_size(&local->log);
-        if (length > 4) {
+        if(length > 4) {
             length = 4;
         }
         while((logmsg = list_iter_next(&it)) && i < 4) {
-            font_render(&font_net1, logmsg, 10, 196 - (8*length) + (8*i), TEXT_COLOR);
+            font_render(&font_net1, logmsg->msg, 10, 196 - (8 * length) + (8 * i), logmsg->color);
             i++;
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
         int i = 0;
         list_iter_end(&local->log, &it);
-        char* logmsg;
+        log_event *logmsg;
         int length = list_size(&local->log);
-        if (length > 13) {
+        if(length > 13) {
             length = 13;
         }
         while((logmsg = list_iter_next(&it)) && i < 13) {
-            font_render(&font_net1, logmsg, 10, 130 - (8*length) + (8*i), TEXT_COLOR);
+            font_render(&font_net1, logmsg->msg, 10, 130 - (8 * length) + (8 * i), logmsg->color);
             i++;
         }
     }
@@ -144,16 +153,14 @@ void lobby_do_yell(component *c, void *userdata) {
     // menu *m = sizer_get_obj(c->parent);
     char *yell = textinput_value(c);
 
-    if (strlen(yell) > 0) {
+    if(strlen(yell) > 0) {
         DEBUG("yelled %s", textinput_value(c));
 
         char yell_packet[50];
         snprintf(yell_packet, sizeof(yell_packet), "\2%s", yell);
 
-        ENetPacket * packet = enet_packet_create (yell_packet,
-                strlen (yell_packet) + 1,
-                ENET_PACKET_FLAG_RELIABLE);
-        enet_peer_send (local->peer, 0, packet);
+        ENetPacket *packet = enet_packet_create(yell_packet, strlen(yell_packet) + 1, ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send(local->peer, 0, packet);
         textinput_clear(c);
     }
     // TODO get the message and send/log it from the textinput component 'c'
@@ -272,55 +279,46 @@ void lobby_entered_name(component *c, void *userdata) {
     scene *scene = userdata;
     lobby_local *local = scene_get_userdata(scene);
 
-    local->client = enet_host_create (NULL /* create a client host */,
-            1 /* only allow 1 outgoing connection */,
-            2 /* allow up 2 channels to be used, 0 and 1 */,
-            0 /* assume any amount of incoming bandwidth */,
-            0 /* assume any amount of outgoing bandwidth */);
+    local->client = enet_host_create(NULL /* create a client host */, 1 /* only allow 1 outgoing connection */,
+                                     2 /* allow up 2 channels to be used, 0 and 1 */,
+                                     0 /* assume any amount of incoming bandwidth */,
+                                     0 /* assume any amount of outgoing bandwidth */);
 
     ENetAddress address;
     ENetEvent event;
     ENetPeer *peer = NULL;
-    if (local->client == NULL)
-    {
+    if(local->client == NULL) {
         DEBUG("An error occurred while trying to create an ENet client host.\n");
     }
-    enet_address_set_host (& address, "127.0.0.1");
+    enet_address_set_host(&address, "127.0.0.1");
     address.port = 2098;
     /* Initiate the connection, allocating the two channels 0 and 1. */
-    local->peer = enet_host_connect (local->client, & address, 2, 0);
+    local->peer = enet_host_connect(local->client, &address, 2, 0);
 
-    if (local->peer == NULL)
-    {
+    if(local->peer == NULL) {
         DEBUG("No available peers for initiating an ENet connection.\n");
     }
     /* Wait up to 5 seconds for the connection attempt to succeed. */
-    else if (enet_host_service (local->client, & event, 5000) > 0 &&
-            event.type == ENET_EVENT_TYPE_CONNECT)
-    {
+    else if(enet_host_service(local->client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
         DEBUG("Connection to server succeeded.");
 
-        event.peer -> data = "Client information";
+        event.peer->data = "Client information";
         strncpy(local->name, textinput_value(c), sizeof(local->name));
 
         char name_packet[20];
         snprintf(name_packet, sizeof(name_packet), "\1%s", textinput_value(c));
 
-        ENetPacket * packet = enet_packet_create (name_packet,
-                strlen (name_packet) + 1,
-                ENET_PACKET_FLAG_RELIABLE);
-        enet_peer_send (local->peer, 0, packet);
+        ENetPacket *packet = enet_packet_create(name_packet, strlen(name_packet) + 1, ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send(local->peer, 0, packet);
 
         menu *m = sizer_get_obj(c->parent);
         m->finished = 1;
         local->mode = LOBBY_MAIN;
-    }
-    else
-    {
+    } else {
         /* Either the 5 seconds are up or a disconnect event was */
         /* received. Reset the peer in the event the 5 seconds   */
         /* had run out without any significant event.            */
-        enet_peer_reset (peer);
+        enet_peer_reset(peer);
 
         DEBUG("Connection to server failed.");
     }
@@ -355,59 +353,57 @@ void lobby_exit(component *c, void *userdata) {
 void lobby_tick(scene *scene, int paused) {
     lobby_local *local = scene_get_userdata(scene);
     ENetEvent event;
-    while (local->client && enet_host_service(local->client, & event, 0) > 0) {
-        switch (event.type)
-        {
+    while(local->client && enet_host_service(local->client, &event, 0) > 0) {
+        switch(event.type) {
             case ENET_EVENT_TYPE_NONE:
                 break;
             case ENET_EVENT_TYPE_CONNECT:
-                DEBUG("A new client connected from %x:%u.",
-                        event.peer -> address.host,
-                        event.peer -> address.port);
+                DEBUG("A new client connected from %x:%u.", event.peer->address.host, event.peer->address.port);
 
                 /* Store any relevant client information here. */
-                event.peer -> data = "Client information";
+                event.peer->data = "Client information";
 
                 break;
             case ENET_EVENT_TYPE_RECEIVE:
                 DEBUG("A packet of length %u containing %s was received from %s on channel %u.",
-                        event.packet -> dataLength,
-                        event.packet -> data,
-                        (char *)event.peer -> data,
-                        event.channelID);
-                switch (event.packet->data[0]) {
+                      event.packet->dataLength, event.packet->data, (char *)event.peer->data, event.channelID);
+                switch(event.packet->data[0]) {
                     case PACKET_JOIN:
-                        list_append(&local->users, event.packet->data+1, event.packet->dataLength - 1);
-                        char buf[80];
-                        snprintf(buf, sizeof(buf), "%s has entered the Arena", event.packet->data+1),
-                        list_append(&local->log, buf, strlen(buf) + 1);
+                        list_append(&local->users, event.packet->data + 1, event.packet->dataLength - 1);
+                        log_event log;
+                        log.color = JOIN_COLOR;
+                        snprintf(log.msg, sizeof(log.msg), "%s has entered the Arena", event.packet->data + 1),
+                            list_append(&local->log, &log, sizeof(log));
                         break;
-                    case PACKET_YELL:
-                        list_append(&local->log, event.packet->data+1, event.packet->dataLength - 1);
-                        break;
+                    case PACKET_YELL: {
+                        log_event log;
+                        log.color = YELL_COLOR;
+                        strncpy(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
+                        list_append(&local->log, &log, sizeof(log));
+                    } break;
                     case PACKET_WHISPER:
-                        list_append(&local->log, event.packet->data+1, event.packet->dataLength - 1);
+                        list_append(&local->log, event.packet->data + 1, event.packet->dataLength - 1);
                         break;
                     default:
                         DEBUG("unknown packet of type %d received", event.packet->data[0]);
                         break;
                 }
                 /* Clean up the packet now that we're done using it. */
-                enet_packet_destroy (event.packet);
+                enet_packet_destroy(event.packet);
 
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
-                DEBUG("%s disconnected.\n", (char *)event.peer -> data);
+                DEBUG("%s disconnected.\n", (char *)event.peer->data);
 
                 /* Reset the peer's client information. */
 
-                event.peer -> data = NULL;
+                event.peer->data = NULL;
         }
     }
     guiframe_tick(local->frame);
 
     component *c = guiframe_get_root(local->frame);
-    if ((c = menu_get_submenu(c)) && menu_is_finished(c)) {
+    if((c = menu_get_submenu(c)) && menu_is_finished(c)) {
         local->mode = LOBBY_MAIN;
     }
 }
