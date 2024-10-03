@@ -135,7 +135,7 @@ static int textinput_action(component *c, int action) {
     textinput *tb = widget_get_obj(c);
 
     // Handle selection
-    if(action == ACT_KICK || action == ACT_PUNCH) {
+    if(action == ACT_PUNCH) {
         if(tb->done_cb) {
             tb->done_cb(c, tb->userdata);
         }
